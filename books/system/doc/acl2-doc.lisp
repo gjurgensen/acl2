@@ -16304,7 +16304,7 @@ subtree of X with T, without duplication.</p>
           (type integer i j k)
           (type (satisfies integerp) m1 m2))
  (declare (xargs :guard (and (integerp i)
-                             (&lt;= 0 i))
+                             (<= 0 i))
                  :guard-hints ((\"Goal\" :use (:instance lemma3
                                                (x (+ i j)))))))
  })
