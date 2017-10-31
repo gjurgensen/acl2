@@ -97196,12 +97196,12 @@ arithmetic) for libraries of @(see books) for arithmetic reasoning.</p>")
  that the function returns one result or else @('result') is an @(tsee mv)
  expression, @('(mv s1 ... sn)'), where @('n>1'), each @('si') is a symbol,
  indicating that the function returns @('n') results.  At most one of the
- formals may be the symbol @('STATE'), indicating that corresponding argument
- must be ACL2's built-in @(tsee state).  If @('state') appears in @('formals')
- then @('state') may appear once in @('result').  All ``variable symbols''
- other than @('state') in old style signatures denote ordinary objects,
- regardless of whether the symbol has been defined to be a single-threaded
- object name!</p>
+ formals may be the symbol @('STATE'), indicating that the corresponding
+ argument must be ACL2's built-in @(tsee state).  If @('state') appears in
+ @('formals') then @('state') may appear once in @('result').  All ``variable
+ symbols'' other than @('state') in old style signatures denote ordinary
+ objects, regardless of whether the symbol has been defined to be a
+ single-threaded object name!</p>
 
  <p>The optional @('k') is as described above for newer-style signatures,
  except that the user is also allowed to declare which symbols (besides
