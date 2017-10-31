@@ -36505,7 +36505,7 @@ current fast alists."
 
  <p>@('Value') is a computed hint, which is an expression that evaluates either
  to @('nil') &mdash; indicating that the @(':backtrack') hint is to have no
- effect &mdash; or to a non-empty alternating list of @(':keyi :vali') pairs,
+ effect &mdash; or to a non-empty alternating list of @(':keyi vali') pairs,
  as expected for a hint.  However, unlike ordinary computed hints,
  @(':backtrack') hints are evaluated <b>after</b> a goal has been processed to
  yield zero or more subgoals, not before.  Moreover, variables @('PROCESSOR')
@@ -97127,7 +97127,7 @@ arithmetic) for libraries of @(see books) for arithmetic reasoning.</p>")
 
  <p>where @('fn') is the constrained function symbol, @('...') is a list of
  asterisks and/or the names of single-threaded objects, @('stobj') is a
- single-threaded object name, and the optional @(':kwdi') and @(':vali') are as
+ single-threaded object name, and the optional @(':kwdi') and @('vali') are as
  described below.  ACL2 also supports an older style of signature, described
  below after we describe the preferred style.</p>
 
@@ -113972,7 +113972,7 @@ for the execution of @('form')."
  keyword argument of @(tsee set-evisc-tuple) other than @(':trace') (that is, a
  member of the list @(`(remove1-eq :trace *evisc-tuple-sites*)`)), and each
  value evaluates to a legal @(see evisc-tuple) for that keyword.  Otherwise
- @(':keyi') is @(':stack'), in which case @(':vali') is @(':push') or
+ @(':keyi') is @(':stack'), in which case @('vali') is @(':push') or
  @(':pop'); for now assume that @(':stack') is not specified (we'll return to
  it below).  The result of evaluating the General Form above is to evaluate
  @('form'), but in an environment where output occurs as follows.  If
