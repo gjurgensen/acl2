@@ -22732,7 +22732,14 @@ ld) and @(tsee include-book)"
 
   General Form:
   ACL2>:doc name
- })")
+ })
+
+ <p>Note that links are always printed with respect to the @('\"ACL2\"')
+ package (that is, as though the current package were @('\"ACL2\"')).  So for
+ example, a link to the present topic will be displayed as @('[doc]'), not as
+ @('[acl2::doc]'), regardless of the current package or the package of the
+ topic being displayed.  Such links can thus take you to topics in the acl2-doc
+ Emacs browser (see @(see acl2-doc)).</p>")
 
 (defxdoc documentation
 
@@ -77115,6 +77122,13 @@ it."
  in your @('.emacs') file before loading ACL2 file @('emacs/emacs-acl2.el'), if
  you want to avoid redefining `@('meta-,')'.  Thanks to Keshav Kini and Mihir
  Mehta for helpful discussions.</p>
+
+ <p>For documentation printed at the terminal with @(':')@(tsee doc), links
+ (enclosed in in square brackets, ``[..]'') continue to be printed with respect
+ to the @('\"ACL2\"') package (that is, as though the current package were
+ @('\"ACL2\"')).  Now, however, where a link formerly might be printed as
+ ``[acl2::foo]'', it is now printed as ``[foo]''; that is, a package prefix of
+ @('\"ACL2\"') (regardless of case) is not printed.</p>
 
  <h3>Experimental Versions</h3>
 

@@ -36,17 +36,13 @@
 
 (defconst *acl2-system-documentation* '
 ((&ALLOW-OTHER-KEYS (POINTERS)
-                    "See acl2::macro-args (see [MACRO-ARGS]).")
- (&BODY (POINTERS)
-        "See acl2::macro-args (see [MACRO-ARGS]).")
- (&KEY (POINTERS)
-       "See acl2::macro-args (see [MACRO-ARGS]).")
+                    "See [macro-args].")
+ (&BODY (POINTERS) "See [macro-args].")
+ (&KEY (POINTERS) "See [macro-args].")
  (&OPTIONAL (POINTERS)
-            "See acl2::macro-args (see [MACRO-ARGS]).")
- (&REST (POINTERS)
-        "See acl2::macro-args (see [MACRO-ARGS]).")
- (&WHOLE (POINTERS)
-         "See acl2::macro-args (see [MACRO-ARGS]).")
+            "See [macro-args].")
+ (&REST (POINTERS) "See [macro-args].")
+ (&WHOLE (POINTERS) "See [macro-args].")
  (*
   (NUMBERS ACL2-BUILT-INS)
   "Multiplication macro
@@ -7410,7 +7406,7 @@ Subtopics
   [Binary-append]
       [concatenate] two lists")
  (APROPOS (POINTERS)
-          "See acl2::finding-documentation (see [FINDING-DOCUMENTATION]).")
+          "See [finding-documentation].")
  (ARCHITECTURE-OF-THE-PROVER
   (INTRODUCTION-TO-THE-THEOREM-PROVER)
   "A simple overview of how the prover works
@@ -7619,8 +7615,7 @@ Subtopics
   is not defined in w.
 
 See [arity+] for a variant of arity with a stronger [guard].")
- (ARRAY (POINTERS)
-        "See acl2::arrays (see [ARRAYS]).")
+ (ARRAY (POINTERS) "See [arrays].")
  (ARRAY1P
   (ARRAYS ACL2-BUILT-INS)
   "Recognize a 1-dimensional array
@@ -25699,7 +25694,14 @@ Subtopics
     ACL2 !>:doc logical-name    ; print documentation of LOGICAL-NAME
 
     General Form:
-    ACL2>:doc name")
+    ACL2>:doc name
+
+  Note that links are always printed with respect to the \"ACL2\" package
+  (that is, as though the current package were \"ACL2\").  So for
+  example, a link to the present topic will be displayed as [doc],
+  not as [acl2::doc], regardless of the current package or the
+  package of the topic being displayed.  Such links can thus take you
+  to topics in the acl2-doc Emacs browser (see [ACL2-doc]).")
  (DOCUMENTATION
   (ACL2)
   "Information about options for downloading and viewing the ACL2
@@ -28035,10 +28037,8 @@ Subtopics
                                                   <expr{k-1}>
                                                   (cond (erp (mv erp val state))
                                                         (t <exprk>)))))))))")
- (ERROR
-  (POINTERS)
-  "See acl2::hints (see [HINTS]) for information about the keyword
-  :error.")
+ (ERROR (POINTERS)
+        "See [hints] for information about the keyword :error.")
  (ERROR-TRIPLE
   (ERRORS PROGRAMMING-WITH-STATE)
   "A common ACL2 programming idiom
@@ -39601,7 +39601,7 @@ Subtopics
         Value is a computed hint, which is an expression that evaluates
         either to nil --- indicating that the :backtrack hint is to
         have no effect --- or to a non-empty alternating list of
-        :keyi :vali pairs, as expected for a hint.  However, unlike
+        :keyi vali pairs, as expected for a hint.  However, unlike
         ordinary computed hints, :backtrack hints are evaluated after
         a goal has been processed to yield zero or more subgoals, not
         before.  Moreover, variables PROCESSOR and CLAUSE-LIST are
@@ -43007,7 +43007,7 @@ Subtopics
     Time: 869/100 seconds
     ACL2 !>")
  (INLINE (POINTERS)
-         "See acl2::defun-inline (see [DEFUN-INLINE]).")
+         "See [defun-inline].")
  (INSTRUCTIONS
   (PROOF-BUILDER)
   "Instructions to the interactive proof-builder
@@ -47803,8 +47803,7 @@ Subtopics
            (cond ((endp lst) nil)
                  (t (cons (kwote (car lst))
                           (kwote-lst (cdr lst))))))")
- (LAMBDA (POINTERS)
-         "See acl2::term (see [TERM]).")
+ (LAMBDA (POINTERS) "See [term].")
  (LAMBDA-APPLICATIONP (POINTERS)
                       "See [system-utilities].")
  (LAMBDA-BODY (POINTERS)
@@ -75798,6 +75797,13 @@ EMACS Support
   `meta-,'.  Thanks to Keshav Kini and Mihir Mehta for helpful
   discussions.
 
+  For documentation printed at the terminal with :[doc], links
+  (enclosed in in square brackets, ``[..]'') continue to be printed
+  with respect to the \"ACL2\" package (that is, as though the current
+  package were \"ACL2\").  Now, however, where a link formerly might be
+  printed as ``[acl2::foo]'', it is now printed as ``[foo]''; that
+  is, a package prefix of \"ACL2\" (regardless of case) is not printed.
+
 
 Experimental Versions
 
@@ -79266,8 +79272,7 @@ Subtopics
 
   If you are at an ACL2 prompt (as opposed to a raw Lisp break), then
   you may type :p! in place of (p!); see [keyword-commands].")
- (PACKAGE (POINTERS)
-          "See acl2::packages (see [PACKAGES]).")
+ (PACKAGE (POINTERS) "See [packages].")
  (PACKAGE-REINCARNATION-IMPORT-RESTRICTIONS
   (PACKAGES)
   "Re-defining undone [defpkg]s
@@ -81192,22 +81197,22 @@ Subtopics
 Subtopics
 
   [&allow-other-keys]
-      See acl2::macro-args (see [MACRO-ARGS]).
+      See [macro-args].
 
   [&body]
-      See acl2::macro-args (see [MACRO-ARGS]).
+      See [macro-args].
 
   [&key]
-      See acl2::macro-args (see [MACRO-ARGS]).
+      See [macro-args].
 
   [&optional]
-      See acl2::macro-args (see [MACRO-ARGS]).
+      See [macro-args].
 
   [&rest]
-      See acl2::macro-args (see [MACRO-ARGS]).
+      See [macro-args].
 
   [&whole]
-      See acl2::macro-args (see [MACRO-ARGS]).
+      See [macro-args].
 
   [Abstract-stobj]
       See [defabsstobj].
@@ -81240,13 +81245,13 @@ Subtopics
       See [system-utilities].
 
   [Apropos]
-      See acl2::finding-documentation (see [FINDING-DOCUMENTATION]).
+      See [finding-documentation].
 
   [Arglistp]
       See [system-utilities].
 
   [Array]
-      See acl2::arrays (see [ARRAYS]).
+      See [arrays].
 
   [Assoc-eq]
       See common-lisp::assoc (see [ASSOC]).
@@ -81345,8 +81350,7 @@ Subtopics
       See [programming-with-state].
 
   [Error]
-      See acl2::hints (see [HINTS]) for information about the keyword
-      :error.
+      See [hints] for information about the keyword :error.
 
   [Execution]
       See [evaluation].
@@ -81499,7 +81503,7 @@ Subtopics
       See [hints] for information about the keyword :induct.
 
   [Inline]
-      See acl2::defun-inline (see [DEFUN-INLINE]).
+      See [defun-inline].
 
   [Intersection-eq]
       See [intersection$].
@@ -81523,7 +81527,7 @@ Subtopics
       See [keywordp].
 
   [Lambda]
-      See acl2::term (see [TERM]).
+      See [term].
 
   [Lambda-applicationp]
       See [system-utilities].
@@ -81658,7 +81662,7 @@ Subtopics
       See [declare].
 
   [Package]
-      See acl2::packages (see [PACKAGES]).
+      See [packages].
 
   [Pe-table]
       See [extend-pe-table].
@@ -98208,9 +98212,9 @@ Subtopics
 
   where fn is the constrained function symbol, ... is a list of
   asterisks and/or the names of single-threaded objects, stobj is a
-  single-threaded object name, and the optional :kwdi and :vali are
-  as described below.  ACL2 also supports an older style of
-  signature, described below after we describe the preferred style.
+  single-threaded object name, and the optional :kwdi and vali are as
+  described below.  ACL2 also supports an older style of signature,
+  described below after we describe the preferred style.
 
   Signatures specify three syntactic aspects of a function symbol: (1)
   the ``arity'' or how many arguments the function takes, (2) the
@@ -98278,7 +98282,7 @@ Subtopics
   denoting that the function returns one result or else result is an
   [mv] expression, (mv s1 ... sn), where n>1, each si is a symbol,
   indicating that the function returns n results.  At most one of the
-  formals may be the symbol STATE, indicating that corresponding
+  formals may be the symbol STATE, indicating that the corresponding
   argument must be ACL2's built-in [state].  If state appears in
   formals then state may appear once in result.  All ``variable
   symbols'' other than state in old style signatures denote ordinary
@@ -115022,26 +115026,26 @@ Subtopics
   :sites keyword argument of [set-evisc-tuple] other than :trace
   (that is, a member of the list (:term :ld :abbrev :gag-mode)), and
   each value evaluates to a legal [evisc-tuple] for that keyword.
-  Otherwise :keyi is :stack, in which case :vali is :push or :pop;
-  for now assume that :stack is not specified (we'll return to it
-  below).  The result of evaluating the General Form above is to
-  evaluate form, but in an environment where output occurs as
-  follows.  If :on :all is specified, then every output type is
-  turned on except as inhibited by :off; else if :off :all is
-  specified, then every output type is inhibited except as specified
-  by :on; and otherwise, the currently-inhibited output types are
-  reduced as specified by :on and then extended as specified by :off.
-  If :gag-mode and/or :evisc are specified, then before modifying how
-  output is inhibited, [gag-mode] and/or the appropriate
-  [evisc-tuple]s are set for the evaluation of form as specified by
-  the values of those keywords; see [set-gag-mode] and
-  [set-evisc-tuple].  If summary is among the output types that are
-  turned on (not inhibited), then if :summary is specified, the only
-  parts of the summary to be printed will be those specified by the
-  value of :summary.  The correspondence should be clear, except
-  perhaps that header refers to the line containing only the word
-  Summary, and value refers to the value of the form printed during
-  evaluation of sequences of events as for [progn] and [encapsulate].
+  Otherwise :keyi is :stack, in which case vali is :push or :pop; for
+  now assume that :stack is not specified (we'll return to it below).
+  The result of evaluating the General Form above is to evaluate
+  form, but in an environment where output occurs as follows.  If :on
+  :all is specified, then every output type is turned on except as
+  inhibited by :off; else if :off :all is specified, then every
+  output type is inhibited except as specified by :on; and otherwise,
+  the currently-inhibited output types are reduced as specified by
+  :on and then extended as specified by :off.  If :gag-mode and/or
+  :evisc are specified, then before modifying how output is
+  inhibited, [gag-mode] and/or the appropriate [evisc-tuple]s are set
+  for the evaluation of form as specified by the values of those
+  keywords; see [set-gag-mode] and [set-evisc-tuple].  If summary is
+  among the output types that are turned on (not inhibited), then if
+  :summary is specified, the only parts of the summary to be printed
+  will be those specified by the value of :summary.  The
+  correspondence should be clear, except perhaps that header refers
+  to the line containing only the word Summary, and value refers to
+  the value of the form printed during evaluation of sequences of
+  events as for [progn] and [encapsulate].
 
   Note that the handling of the :stack argument pays no attention to
   the :summary argument.
