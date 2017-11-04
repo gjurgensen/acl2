@@ -83513,9 +83513,12 @@ arithmetic) for libraries of @(see books) for arithmetic reasoning.</p>")
  executable-counterpart (see @(see evaluation)) always checks the guard.  If
  the guard fails, then even if guard-checking is off, an error is signaled
  because a program-only function is assumed to have an executable-counterpart
- that can only execute the raw Lisp definition.  Moreover, an error is always
- signaled when in @(see safe-mode) (e.g., during macroexpansion), because there
- is no guarantee that evaluation of the raw Lisp code will be ``safe''.</p>")
+ that should only execute the raw Lisp definition.  Moreover, an error is
+ always signaled when in @(see safe-mode) (e.g., during macroexpansion),
+ because there is no guarantee that evaluation of the raw Lisp code will be
+ ``safe''.</p>
+
+ <p>See @(see safe-mode-cheat-sheet) for possible workarounds.</p>")
 
 (defxdoc program-wrapper
   :parents (program programming advanced-features)
@@ -91477,7 +91480,95 @@ arithmetic) for libraries of @(see books) for arithmetic reasoning.</p>")
  <p>Notice that because of the @('set-guard-checking') call above, no guard
  violation was reported for @('foo').  However, @('safe-mode') caused the call
  of the @(see primitive), @(tsee car), to be guard-checked, and a violation was
- reported.</p>")
+ reported.</p>
+
+ <p>To understand how safe-mode works we refer to the notion of
+ ``executable-counterpart''; see @(see evaluation) for relevant background.
+ ACL2 arranges for that for the executable-counterpart of any program mode
+ function, @('F'), then for every called subroutine @('G') of @('F') that is in
+ program mode, the executable-counterpart of @('G') is called rather than the
+ raw Lisp function for @('G').  This may result in an attempt to evaluate a
+ so-called ``@(see program-only)'' function in safe-mode, which is illegal.
+ See @(see safe-mode-cheat-sheet) for possible workarounds.</p>")
+
+(defxdoc safe-mode-cheat-sheet
+  :parents (safe-mode)
+  :short "Working around ``@(see program-only)'' issues"
+  :long "<p>This cheat sheet gives workarounds for errors caused by attempts to
+ evaluate executable-counterparts (see @(see evaluation)) of so-called @(see
+ program-only) functions.  This most often occurs when @(see safe-mode) is
+ active.  Recall that safe-mode can be set by @('(assign safe-mode t)'), and
+ also is used during macroexpansion and other logical acts that might involve
+ @(':')@(tsee program) mode functions.</p>
+
+ <p>The problems manifest with a hard error like this:</p>
+
+ @({
+ HARD ACL2 ERROR in PROGRAM-ONLY:  The call
+ <term>
+ is an illegal call of a function that has been marked as ``program-
+ only,'' presumably because it has special raw Lisp code and safe-mode
+ is active.  See :DOC program-only for further explanation and a link
+ to possible workarounds.
+ (See :DOC set-iprint to be able to see elided values in this message.)
+ })
+
+ <p>When the term is a call of @('ev-w'), an unsafe hack allowing such calls
+ is as follows.  Warning: This may result in unsoundness!</p>
+
+ @({
+ (value :q)
+ (setf (symbol-function (*1*-symbol 'ev-w))
+       (symbol-function 'ev-w))
+ (lp)
+ })
+
+ <p>Typically that just leads to other similar errors and so you discover the
+ call tree, each of whose functions can be handled similarly (also in raw
+ Lisp):</p>
+
+ @({
+ (setf (symbol-function (*1*-symbol 'ev-rec))
+       (symbol-function 'ev-rec))
+ (setf (symbol-function (*1*-symbol 'ev-fncall-rec))
+       (symbol-function 'ev-fncall-rec))
+ (setf (symbol-function (*1*-symbol 'push-warning))
+       (symbol-function 'push-warning))
+ })
+
+ <p>Other times you may avoid the problem by defining your own utilities.  For
+ example, in safe-mode you can't use the utility @(tsee without-evisc) (which
+ is useful when @(see iprint)ing is active).  But the following works, provided
+ @('form') evaluates to an @(see error-triple).</p>
+
+ @({
+ (defmacro without-evisc-error-triple (form)
+   `(state-global-let*
+     ((abbrev-evisc-tuple nil set-abbrev-evisc-tuple-state)
+      (gag-mode-evisc-tuple nil set-gag-mode-evisc-tuple-state)
+      (term-evisc-tuple nil set-term-evisc-tuple-state)
+      (ld-evisc-tuple nil set-ld-evisc-tuple-state))
+     ,form))
+ })
+
+ <p>The following log illustrates how to use this utility to avoid an error
+ caused by @('without-evisc') in safe-mode.</p>
+
+ @({
+ ACL2 !>(set-iprint t)
+
+ ACL2 Observation in SET-IPRINT:  Iprinting has been enabled.
+ ACL2 !>(assign safe-mode t)
+  T
+ ACL2 !>(cw \"Something printed with evisceration: ~X01~|\"
+            '((((DEEP))))
+            (evisc-tuple 3 4 nil nil))
+ Something printed with evisceration: (((#@1#)))
+ NIL
+ ACL2 !>(without-evisc-error-triple (value '(((#@1#)))))
+  ((((DEEP))))
+ ACL2 !>
+ })")
 
 (defxdoc save-and-clear-memoization-settings
   :parents (memoize)
