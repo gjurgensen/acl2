@@ -8873,11 +8873,12 @@ books unless Glucose is present.</p>
 <p>If you just want to get a copy of the ACL2+Books manual for local viewing,
 you probably <b>don't need to build it yourself</b> because you can just <a
 href='download/'>download</a> a copy.  If for some reason you do want to build
-the manual yourself, you should be able to run, e.g.,</p>
+the manual yourself, you should be able to do so as follows, provided you have
+installed glucose.  (That requirement might be eliminated in the future.)</p>
 
 @({
     $ cd /path/to/acl2-sources/books
-    $ make manual USE_QUICKLISP=1 -j 4
+    $ make manual -j 4
 })
 
 <p>Building the manual should work on at least CCL and SBCL on Linux and Mac OS
@@ -14034,8 +14035,8 @@ with any questions about building the community books.</p>")
   :short "The relations to maintain while simplifying arguments"
   :long "<p>See @(see rule-classes) for a general discussion of rule classes
  and how they are used to build rules from formulas.  An example @(':')@(tsee
- corollary) formula from which a @(':congruence') rule might be built, assuming
- that @('set-equal') is a known @(see equivalence) relation, is:</p>
+ corollary) formula from which a rule of class @(':congruence') might be built,
+ assuming that @('set-equal') is a known @(see equivalence) relation, is:</p>
 
  @({
   Example:
@@ -14088,31 +14089,38 @@ with any questions about building the community books.</p>")
  relations, all equality rules are always available.  See @(see
  refinement).</p>
 
- <p>All known @(':congruence') rules about a given outside equivalence and
- @('fn') can be used independently.  That is, consider two @(':congruence')
- rules with the same outside equivalence, @('equiv'), and about the same
- function @('fn').  Suppose one says that @('equiv1') is the inside equivalence
- for the first argument and the other says @('equiv2') is the inside
- equivalence for the second argument.  Then @('(fn a b)') is @('equiv') <tt>(fn
- a' b')</tt> provided @('a') is @('equiv1') to @('a'') and @('b') is
- @('equiv2') to @('b'').  This is an easy consequence of the transitivity of
- @('equiv').  It permits you to think independently about the inside
- equivalences.</p>
+ <p>All known congruence rules about a given outside equivalence and @('fn')
+ can be used independently.  That is, consider two congruence rules with the
+ same outside equivalence, @('equiv'), and about the same function @('fn').
+ Suppose one says that @('equiv1') is the inside equivalence for the first
+ argument and the other says @('equiv2') is the inside equivalence for the
+ second argument.  Then @('(fn a b)') is @('equiv') <tt>(fn a' b')</tt>
+ provided @('a') is @('equiv1') to @('a'') and @('b') is @('equiv2') to
+ @('b'').  This is an easy consequence of the transitivity of @('equiv').  It
+ permits you to think independently about the inside equivalences.</p>
 
  <p>Furthermore, it is possible that more than one inside equivalence for a
  given argument slot will maintain a given outside equivalence.  For example,
  @('(length a)') is equal to <tt>(length a')</tt> if @('a') and @('a'') are
  related either by @('list-equal') or by @(tsee string-equal).  You may prove
- two (or more) @(':congruence') rules for the same slot of a function.  The
- result is that the system uses a new, ``generated'' equivalence relation for
- that slot with the result that rules of both (or all) kinds are available
- while rewriting.</p>
+ two (or more) congruence rules for the same slot of a function.  The result is
+ that the system uses a new, ``generated'' equivalence relation for that slot
+ with the result that rules of both (or all) kinds are available while
+ rewriting.</p>
 
- <p>@(':Congruence') rules can be disabled.  For example, if you have two
+ <p>Congruence rules can be @(see disable)d.  For example, if you have two
  different inside equivalences for a given argument position and you find that
  the @(':')@(tsee rewrite) rules for one are unexpectedly preventing the
  application of the desired rule, you can disable the rule that introduced the
  unwanted inside equivalence.</p>
+
+ <p><b>NOTE</b> however that unlike other rules, the tracking of congruence
+ rules is incomplete.  Specifically: when congruence rules are used by the
+ rewriter as it descends through terms, to maintain the generated equivalence
+ relation used for rewriting, ACL2 does not track the congruence rules that are
+ used, even though it is relevant that they are all @(see enable)d.  Congruence
+ rules that are used only in this way will therefore not appear in the
+ summary.</p>
 
  <p><i>Remark on Replacing IFF by EQUAL.</i> You may encounter a warning
  suggesting that a congruence rule ``can be strengthened by replacing the
@@ -41819,7 +41827,7 @@ tables in the current Hons Space."
  instances of @('(REV x)') and @('(APPEND x y)') by @('set-equal') terms, even
  though the results are not actually @('EQUAL').  This is possible provided the
  target occurs in a context admitting @('set-equal') as a congruence relation.
- For example, the @(':congruence') rule:</p>
+ For example, the congruence rule:</p>
 
  @({
   (implies (set-equal a b)
@@ -76676,14 +76684,11 @@ it."
  category, though of course many changes could be placed in more than one
  category.</p>
 
- <p>Note that only ACL2 system changes are listed below.  Changes to the @(see
- books) can be found by browsing the <a
- href='https://github.com/acl2/acl2/'>ACL2+Books GitHub repository</a>, in
- particular, the raw <a
- href='https://github.com/acl2/acl2/commits/master'>commit log</a>.  Also note
- that with each release, some built-in functions that were formerly in
- @(':')@(tsee program) mode are now @('see guard')-verified @(':')@(tsee logic)
- mode functions.</p>
+ <p>Note that only ACL2 system changes are listed below.  See also @(see
+ note-7-5-books) for a summary of changes made to the ACL2 Community Books
+ since ACL2 7.4, including the build system.  Also note that with each release,
+ some built-in functions that were formerly in @(':')@(tsee program) mode are
+ now @('see guard')-verified @(':')@(tsee logic) mode functions.</p>
 
  <h3>Changes to Existing Features</h3>
 
@@ -77051,6 +77056,10 @@ it."
  pertaining to ignored variables.  Thanks to Eric Smith for bringing one of
  these to our attention.</p>
 
+ <p>Fixed a bug in the @(see proof-builder): @(see hints) on the @('prove')
+ command were not being passed down to induction.  Thanks to Mihir Mehta for
+ bringing this bug to our attention with a reproducible example.</p>
+
  <h3>Changes at the System Level</h3>
 
  <p>When building the combined manual, an error occurs if there is more than
@@ -77098,6 +77107,11 @@ it."
  some other Lisps, when including a book that redefines a function as a macro
  or vice-versa.  We have eliminated those raw Lisp warnings.</p>
 
+ <p>It is now checked that the @('books/') directory exists before attempting
+ any operations using @(''make'') on that directory.  Thanks to Keshav Kini for
+ sugesting this check, since there are source-only distributions, without the
+ books.</p>
+
  <h3>EMACS Support</h3>
 
  <p>Now, tags table @('TAGS-acl2-doc') is automatically built when building the
@@ -77122,6 +77136,9 @@ it."
  in your @('.emacs') file before loading ACL2 file @('emacs/emacs-acl2.el'), if
  you want to avoid redefining `@('meta-,')'.  Thanks to Keshav Kini and Mihir
  Mehta for helpful discussions.</p>
+
+ <p>Removed both non-ascii characters from @('emacs/emacs-acl2.el').  Thanks to
+ Keshav Kini for the suggestion.</p>
 
  <p>For documentation printed at the terminal with @(':')@(tsee doc), links
  (enclosed in in square brackets, ``[..]'') continue to be printed with respect
@@ -81000,7 +81017,9 @@ arithmetic) for libraries of @(see books) for arithmetic reasoning.</p>")
   :parents (rule-classes)
   :short "Removing restrictions on classic @(see congruence) rules"
   :long "<p>This topic assumes familiarity with the basics of congruence
- rules; see @(see congruence).</p>
+ rules; see @(see congruence).  Some aspects of congruence rules carry over to
+ patterned congruence rules; in particular, they may be @(see disable)d, but
+ they are not tracked for reporting in the summary.</p>
 
  <p>We begin our discussion by showing some patterned congruence rules and
  using them to illustrate some terminology.</p>

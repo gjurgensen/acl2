@@ -11265,10 +11265,12 @@ Building the manual
   If you just want to get a copy of the ACL2+Books manual for local
   viewing, you probably don't need to build it yourself because you
   can just {download | download/} a copy.  If for some reason you do
-  want to build the manual yourself, you should be able to run, e.g.,
+  want to build the manual yourself, you should be able to do so as
+  follows, provided you have installed glucose.  (That requirement
+  might be eliminated in the future.)
 
     $ cd /path/to/acl2-sources/books
-    $ make manual USE_QUICKLISP=1 -j 4
+    $ make manual -j 4
 
   Building the manual should work on at least CCL and SBCL on Linux and
   Mac OS X.  It may not work for some other OS/Lisp combinations.  In
@@ -16865,8 +16867,9 @@ Subtopics
 
   See [rule-classes] for a general discussion of rule classes and how
   they are used to build rules from formulas.  An example
-  :[corollary] formula from which a :congruence rule might be built,
-  assuming that set-equal is a known [equivalence] relation, is:
+  :[corollary] formula from which a rule of class :congruence might
+  be built, assuming that set-equal is a known [equivalence]
+  relation, is:
 
     Example:
     (defthm set-equal-implies-iff-memb-2
@@ -16915,8 +16918,8 @@ Subtopics
   of all equivalence relations, all equality rules are always
   available.  See [refinement].
 
-  All known :congruence rules about a given outside equivalence and fn
-  can be used independently.  That is, consider two :congruence rules
+  All known congruence rules about a given outside equivalence and fn
+  can be used independently.  That is, consider two congruence rules
   with the same outside equivalence, equiv, and about the same
   function fn.  Suppose one says that equiv1 is the inside
   equivalence for the first argument and the other says equiv2 is the
@@ -16929,16 +16932,24 @@ Subtopics
   a given argument slot will maintain a given outside equivalence.
   For example, (length a) is equal to (length a') if a and a' are
   related either by list-equal or by [string-equal].  You may prove
-  two (or more) :congruence rules for the same slot of a function.
+  two (or more) congruence rules for the same slot of a function.
   The result is that the system uses a new, ``generated'' equivalence
   relation for that slot with the result that rules of both (or all)
   kinds are available while rewriting.
 
-  :Congruence rules can be disabled.  For example, if you have two
+  Congruence rules can be [disable]d.  For example, if you have two
   different inside equivalences for a given argument position and you
   find that the :[rewrite] rules for one are unexpectedly preventing
   the application of the desired rule, you can disable the rule that
   introduced the unwanted inside equivalence.
+
+  NOTE however that unlike other rules, the tracking of congruence
+  rules is incomplete.  Specifically: when congruence rules are used
+  by the rewriter as it descends through terms, to maintain the
+  generated equivalence relation used for rewriting, ACL2 does not
+  track the congruence rules that are used, even though it is
+  relevant that they are all [enable]d.  Congruence rules that are
+  used only in this way will therefore not appear in the summary.
 
   Remark on Replacing IFF by EQUAL. You may encounter a warning
   suggesting that a congruence rule ``can be strengthened by
@@ -45110,7 +45121,7 @@ Subtopics
   instances of (REV x) and (APPEND x y) by set-equal terms, even
   though the results are not actually EQUAL.  This is possible
   provided the target occurs in a context admitting set-equal as a
-  congruence relation.  For example, the :congruence rule:
+  congruence relation.  For example, the congruence rule:
 
     (implies (set-equal a b)
              (iff (member e a)
@@ -75362,10 +75373,9 @@ Experimental Versions
   Each change is described in just one category, though of course
   many changes could be placed in more than one category.
 
-  Note that only ACL2 system changes are listed below.  Changes to the
-  [books] can be found by browsing the {ACL2+Books GitHub repository
-  | https://github.com/acl2/acl2/}, in particular, the raw {commit
-  log | https://github.com/acl2/acl2/commits/master}.  Also note that
+  Note that only ACL2 system changes are listed below.  See also
+  note-7-5-books for a summary of changes made to the ACL2 Community
+  Books since ACL2 7.4, including the build system.  Also note that
   with each release, some built-in functions that were formerly in
   :[program] mode are now see guard-verified :[logic] mode functions.
 
@@ -75721,6 +75731,10 @@ Bug Fixes
   pertaining to ignored variables.  Thanks to Eric Smith for bringing
   one of these to our attention.
 
+  Fixed a bug in the [proof-builder]: [hints] on the prove command were
+  not being passed down to induction.  Thanks to Mihir Mehta for
+  bringing this bug to our attention with a reproducible example.
+
 
 Changes at the System Level
 
@@ -75769,6 +75783,11 @@ Changes at the System Level
   as a macro or vice-versa.  We have eliminated those raw Lisp
   warnings.
 
+  It is now checked that the books/ directory exists before attempting
+  any operations using 'make' on that directory.  Thanks to Keshav
+  Kini for sugesting this check, since there are source-only
+  distributions, without the books.
+
 
 EMACS Support
 
@@ -75796,6 +75815,9 @@ EMACS Support
   ACL2 file emacs/emacs-acl2.el, if you want to avoid redefining
   `meta-,'.  Thanks to Keshav Kini and Mihir Mehta for helpful
   discussions.
+
+  Removed both non-ascii characters from emacs/emacs-acl2.el.  Thanks
+  to Keshav Kini for the suggestion.
 
   For documentation printed at the terminal with :[doc], links
   (enclosed in in square brackets, ``[..]'') continue to be printed
@@ -80540,7 +80562,9 @@ Subtopics
   "Removing restrictions on classic [congruence] rules
 
   This topic assumes familiarity with the basics of congruence rules;
-  see [congruence].
+  see [congruence].  Some aspects of congruence rules carry over to
+  patterned congruence rules; in particular, they may be [disable]d,
+  but they are not tracked for reporting in the summary.
 
   We begin our discussion by showing some patterned congruence rules
   and using them to illustrate some terminology.
