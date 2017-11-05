@@ -77109,7 +77109,7 @@ it."
 
  <p>It is now checked that the @('books/') directory exists before attempting
  any operations using @(''make'') on that directory.  Thanks to Keshav Kini for
- sugesting this check, since there are source-only distributions, without the
+ suggesting this check, since there are source-only distributions, without the
  books.</p>
 
  <h3>EMACS Support</h3>
