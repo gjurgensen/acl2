@@ -11265,10 +11265,12 @@ Building the manual
   If you just want to get a copy of the ACL2+Books manual for local
   viewing, you probably don't need to build it yourself because you
   can just {download | download/} a copy.  If for some reason you do
-  want to build the manual yourself, you should be able to run, e.g.,
+  want to build the manual yourself, you should be able to do so as
+  follows, provided you have installed glucose.  (That requirement
+  might be eliminated in the future.)
 
     $ cd /path/to/acl2-sources/books
-    $ make manual USE_QUICKLISP=1 -j 4
+    $ make manual -j 4
 
   Building the manual should work on at least CCL and SBCL on Linux and
   Mac OS X.  It may not work for some other OS/Lisp combinations.  In
@@ -16865,8 +16867,9 @@ Subtopics
 
   See [rule-classes] for a general discussion of rule classes and how
   they are used to build rules from formulas.  An example
-  :[corollary] formula from which a :congruence rule might be built,
-  assuming that set-equal is a known [equivalence] relation, is:
+  :[corollary] formula from which a rule of class :congruence might
+  be built, assuming that set-equal is a known [equivalence]
+  relation, is:
 
     Example:
     (defthm set-equal-implies-iff-memb-2
@@ -16915,8 +16918,8 @@ Subtopics
   of all equivalence relations, all equality rules are always
   available.  See [refinement].
 
-  All known :congruence rules about a given outside equivalence and fn
-  can be used independently.  That is, consider two :congruence rules
+  All known congruence rules about a given outside equivalence and fn
+  can be used independently.  That is, consider two congruence rules
   with the same outside equivalence, equiv, and about the same
   function fn.  Suppose one says that equiv1 is the inside
   equivalence for the first argument and the other says equiv2 is the
@@ -16929,16 +16932,24 @@ Subtopics
   a given argument slot will maintain a given outside equivalence.
   For example, (length a) is equal to (length a') if a and a' are
   related either by list-equal or by [string-equal].  You may prove
-  two (or more) :congruence rules for the same slot of a function.
+  two (or more) congruence rules for the same slot of a function.
   The result is that the system uses a new, ``generated'' equivalence
   relation for that slot with the result that rules of both (or all)
   kinds are available while rewriting.
 
-  :Congruence rules can be disabled.  For example, if you have two
+  Congruence rules can be [disable]d.  For example, if you have two
   different inside equivalences for a given argument position and you
   find that the :[rewrite] rules for one are unexpectedly preventing
   the application of the desired rule, you can disable the rule that
   introduced the unwanted inside equivalence.
+
+  NOTE however that unlike other rules, the tracking of congruence
+  rules is incomplete.  Specifically: when congruence rules are used
+  by the rewriter as it descends through terms, to maintain the
+  generated equivalence relation used for rewriting, ACL2 does not
+  track the congruence rules that are used, even though it is
+  relevant that they are all [enable]d.  Congruence rules that are
+  used only in this way will therefore not appear in the summary.
 
   Remark on Replacing IFF by EQUAL. You may encounter a warning
   suggesting that a congruence rule ``can be strengthened by
@@ -45110,7 +45121,7 @@ Subtopics
   instances of (REV x) and (APPEND x y) by set-equal terms, even
   though the results are not actually EQUAL.  This is possible
   provided the target occurs in a context admitting set-equal as a
-  congruence relation.  For example, the :congruence rule:
+  congruence relation.  For example, the congruence rule:
 
     (implies (set-equal a b)
              (iff (member e a)
@@ -75362,10 +75373,9 @@ Experimental Versions
   Each change is described in just one category, though of course
   many changes could be placed in more than one category.
 
-  Note that only ACL2 system changes are listed below.  Changes to the
-  [books] can be found by browsing the {ACL2+Books GitHub repository
-  | https://github.com/acl2/acl2/}, in particular, the raw {commit
-  log | https://github.com/acl2/acl2/commits/master}.  Also note that
+  Note that only ACL2 system changes are listed below.  See also
+  note-7-5-books for a summary of changes made to the ACL2 Community
+  Books since ACL2 7.4, including the build system.  Also note that
   with each release, some built-in functions that were formerly in
   :[program] mode are now see guard-verified :[logic] mode functions.
 
@@ -75721,6 +75731,10 @@ Bug Fixes
   pertaining to ignored variables.  Thanks to Eric Smith for bringing
   one of these to our attention.
 
+  Fixed a bug in the [proof-builder]: [hints] on the prove command were
+  not being passed down to induction.  Thanks to Mihir Mehta for
+  bringing this bug to our attention with a reproducible example.
+
 
 Changes at the System Level
 
@@ -75769,6 +75783,11 @@ Changes at the System Level
   as a macro or vice-versa.  We have eliminated those raw Lisp
   warnings.
 
+  It is now checked that the books/ directory exists before attempting
+  any operations using 'make' on that directory.  Thanks to Keshav
+  Kini for sugesting this check, since there are source-only
+  distributions, without the books.
+
 
 EMACS Support
 
@@ -75796,6 +75815,9 @@ EMACS Support
   ACL2 file emacs/emacs-acl2.el, if you want to avoid redefining
   `meta-,'.  Thanks to Keshav Kini and Mihir Mehta for helpful
   discussions.
+
+  Removed both non-ascii characters from emacs/emacs-acl2.el.  Thanks
+  to Keshav Kini for the suggestion.
 
   For documentation printed at the terminal with :[doc], links
   (enclosed in in square brackets, ``[..]'') continue to be printed
@@ -80540,7 +80562,9 @@ Subtopics
   "Removing restrictions on classic [congruence] rules
 
   This topic assumes familiarity with the basics of congruence rules;
-  see [congruence].
+  see [congruence].  Some aspects of congruence rules carry over to
+  patterned congruence rules; in particular, they may be [disable]d,
+  but they are not tracked for reporting in the summary.
 
   We begin our discussion by showing some patterned congruence rules
   and using them to illustrate some terminology.
@@ -83738,10 +83762,12 @@ Subtopics
   executable-counterpart (see [evaluation]) always checks the guard.
   If the guard fails, then even if guard-checking is off, an error is
   signaled because a program-only function is assumed to have an
-  executable-counterpart that can only execute the raw Lisp
+  executable-counterpart that should only execute the raw Lisp
   definition.  Moreover, an error is always signaled when in
   [safe-mode] (e.g., during macroexpansion), because there is no
-  guarantee that evaluation of the raw Lisp code will be ``safe''.")
+  guarantee that evaluation of the raw Lisp code will be ``safe''.
+
+  See [safe-mode-cheat-sheet] for possible workarounds.")
  (PROGRAM-WRAPPER
   (PROGRAM PROGRAMMING ADVANCED-FEATURES)
   "Avoiding expensive guard checks using [program]-mode functions
@@ -92679,7 +92705,92 @@ Subtopics
   Notice that because of the set-guard-checking call above, no guard
   violation was reported for foo.  However, safe-mode caused the call
   of the [primitive], [car], to be guard-checked, and a violation was
-  reported.")
+  reported.
+
+  To understand how safe-mode works we refer to the notion of
+  ``executable-counterpart''; see [evaluation] for relevant
+  background.  ACL2 arranges for that for the executable-counterpart
+  of any program mode function, F, then for every called subroutine G
+  of F that is in program mode, the executable-counterpart of G is
+  called rather than the raw Lisp function for G.  This may result in
+  an attempt to evaluate a so-called ``[program-only]'' function in
+  safe-mode, which is illegal.  See [safe-mode-cheat-sheet] for
+  possible workarounds.
+
+
+Subtopics
+
+  [Safe-mode-cheat-sheet]
+      Working around ``[program-only]'' issues")
+ (SAFE-MODE-CHEAT-SHEET
+  (SAFE-MODE)
+  "Working around ``[program-only]'' issues
+
+  This cheat sheet gives workarounds for errors caused by attempts to
+  evaluate executable-counterparts (see [evaluation]) of so-called
+  [program-only] functions.  This most often occurs when [safe-mode]
+  is active.  Recall that safe-mode can be set by (assign safe-mode
+  t), and also is used during macroexpansion and other logical acts
+  that might involve :[program] mode functions.
+
+  The problems manifest with a hard error like this:
+
+    HARD ACL2 ERROR in PROGRAM-ONLY:  The call
+    <term>
+    is an illegal call of a function that has been marked as ``program-
+    only,'' presumably because it has special raw Lisp code and safe-mode
+    is active.  See :DOC program-only for further explanation and a link
+    to possible workarounds.
+    (See :DOC set-iprint to be able to see elided values in this message.)
+
+  When the term is a call of ev-w, an unsafe hack allowing such calls
+  is as follows.  Warning: This may result in unsoundness!
+
+    (value :q)
+    (setf (symbol-function (*1*-symbol 'ev-w))
+          (symbol-function 'ev-w))
+    (lp)
+
+  Typically that just leads to other similar errors and so you discover
+  the call tree, each of whose functions can be handled similarly
+  (also in raw Lisp):
+
+    (setf (symbol-function (*1*-symbol 'ev-rec))
+          (symbol-function 'ev-rec))
+    (setf (symbol-function (*1*-symbol 'ev-fncall-rec))
+          (symbol-function 'ev-fncall-rec))
+    (setf (symbol-function (*1*-symbol 'push-warning))
+          (symbol-function 'push-warning))
+
+  Other times you may avoid the problem by defining your own utilities.
+  For example, in safe-mode you can't use the utility [without-evisc]
+  (which is useful when [iprint]ing is active).  But the following
+  works, provided form evaluates to an [error-triple].
+
+    (defmacro without-evisc-error-triple (form)
+      `(state-global-let*
+        ((abbrev-evisc-tuple nil set-abbrev-evisc-tuple-state)
+         (gag-mode-evisc-tuple nil set-gag-mode-evisc-tuple-state)
+         (term-evisc-tuple nil set-term-evisc-tuple-state)
+         (ld-evisc-tuple nil set-ld-evisc-tuple-state))
+        ,form))
+
+  The following log illustrates how to use this utility to avoid an
+  error caused by without-evisc in safe-mode.
+
+    ACL2 !>(set-iprint t)
+
+    ACL2 Observation in SET-IPRINT:  Iprinting has been enabled.
+    ACL2 !>(assign safe-mode t)
+     T
+    ACL2 !>(cw \"Something printed with evisceration: ~X01~|\"
+               '((((DEEP))))
+               (evisc-tuple 3 4 nil nil))
+    Something printed with evisceration: (((#@1#)))
+    NIL
+    ACL2 !>(without-evisc-error-triple (value '(((#@1#)))))
+     ((((DEEP))))
+    ACL2 !>")
  (SAVE-AND-CLEAR-MEMOIZATION-SETTINGS
   (MEMOIZE)
   "Save and remove the current memoization settings
