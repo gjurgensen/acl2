@@ -75785,7 +75785,7 @@ Changes at the System Level
 
   It is now checked that the books/ directory exists before attempting
   any operations using 'make' on that directory.  Thanks to Keshav
-  Kini for sugesting this check, since there are source-only
+  Kini for suggesting this check, since there are source-only
   distributions, without the books.
 
 
@@ -102981,7 +102981,8 @@ List of a few ACL2 system utilities:
       :common-lisp-compliant is name is [guard]-verified, and
       otherwise, :ideal.  If name is the name of a theorem (more
       specifically, has a 'theorem property; see [getprop]), return
-      :ideal.  Otherwise return :program.
+      :ideal unless the theorem is guard-verified, in which case
+      return :common-lisp-compliant.  Otherwise return :program.
     * (termp x w): Is x a [term] in logical [world] w?
     * (trans-eval form ctx state aok): Translate and then evaluate form.
       See [trans-eval] for discussion and related utilities.

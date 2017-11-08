@@ -101743,7 +101743,8 @@ arithmetic) for libraries of @(see books) for arithmetic reasoning.</p>")
  program) mode, @(':common-lisp-compliant') is @('name') is @(see
  guard)-verified, and otherwise, @(':ideal').  If @('name') is the name of a
  theorem (more specifically, has a @(''theorem') property; see @(see getprop)),
- return @(':ideal').  Otherwise return @(':program').</li>
+ return @(':ideal') unless the theorem is guard-verified, in which case return
+ @(':common-lisp-compliant').  Otherwise return @(':program').</li>
 
  <li>@('(termp x w)'): Is @('x') a @(see term) in logical @(see world)
  @('w')?</li>
