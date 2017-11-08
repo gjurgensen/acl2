@@ -77171,6 +77171,10 @@ it."
  Rager for a helpful discussion.  If you see an increase in hangs while using
  ACL2(p), please contact the implementors.</p>
 
+ <p>Fixed an infinite loop that could be caused with parallelism enabled when
+ there is an error, when Lisp variable @('*hard-error-is-error*') has been set
+ to a non-@('nil') value in raw Lisp (see @(see hard-error)).</p>
+
  ")
 
 (defxdoc note1

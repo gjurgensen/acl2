@@ -75849,7 +75849,11 @@ Experimental Versions
   ACL2(p) (instead of using [cw]) that is used in regular ACL2.
   Thanks to David Rager for a helpful discussion.  If you see an
   increase in hangs while using ACL2(p), please contact the
-  implementors.")
+  implementors.
+
+  Fixed an infinite loop that could be caused with parallelism enabled
+  when there is an error, when Lisp variable *hard-error-is-error*
+  has been set to a non-nil value in raw Lisp (see [hard-error]).")
  (NOTE1
   (RELEASE-NOTES)
   "Acl2 Version 1.1 Notes
