@@ -36,17 +36,13 @@
 
 (defconst *acl2-system-documentation* '
 ((&ALLOW-OTHER-KEYS (POINTERS)
-                    "See acl2::macro-args (see [MACRO-ARGS]).")
- (&BODY (POINTERS)
-        "See acl2::macro-args (see [MACRO-ARGS]).")
- (&KEY (POINTERS)
-       "See acl2::macro-args (see [MACRO-ARGS]).")
+                    "See [macro-args].")
+ (&BODY (POINTERS) "See [macro-args].")
+ (&KEY (POINTERS) "See [macro-args].")
  (&OPTIONAL (POINTERS)
-            "See acl2::macro-args (see [MACRO-ARGS]).")
- (&REST (POINTERS)
-        "See acl2::macro-args (see [MACRO-ARGS]).")
- (&WHOLE (POINTERS)
-         "See acl2::macro-args (see [MACRO-ARGS]).")
+            "See [macro-args].")
+ (&REST (POINTERS) "See [macro-args].")
+ (&WHOLE (POINTERS) "See [macro-args].")
  (*
   (NUMBERS ACL2-BUILT-INS)
   "Multiplication macro
@@ -7410,7 +7406,7 @@ Subtopics
   [Binary-append]
       [concatenate] two lists")
  (APROPOS (POINTERS)
-          "See acl2::finding-documentation (see [FINDING-DOCUMENTATION]).")
+          "See [finding-documentation].")
  (ARCHITECTURE-OF-THE-PROVER
   (INTRODUCTION-TO-THE-THEOREM-PROVER)
   "A simple overview of how the prover works
@@ -7619,8 +7615,7 @@ Subtopics
   is not defined in w.
 
 See [arity+] for a variant of arity with a stronger [guard].")
- (ARRAY (POINTERS)
-        "See acl2::arrays (see [ARRAYS]).")
+ (ARRAY (POINTERS) "See [arrays].")
  (ARRAY1P
   (ARRAYS ACL2-BUILT-INS)
   "Recognize a 1-dimensional array
@@ -11270,10 +11265,12 @@ Building the manual
   If you just want to get a copy of the ACL2+Books manual for local
   viewing, you probably don't need to build it yourself because you
   can just {download | download/} a copy.  If for some reason you do
-  want to build the manual yourself, you should be able to run, e.g.,
+  want to build the manual yourself, you should be able to do so as
+  follows, provided you have installed glucose.  (That requirement
+  might be eliminated in the future.)
 
     $ cd /path/to/acl2-sources/books
-    $ make manual USE_QUICKLISP=1 -j 4
+    $ make manual -j 4
 
   Building the manual should work on at least CCL and SBCL on Linux and
   Mac OS X.  It may not work for some other OS/Lisp combinations.  In
@@ -16870,8 +16867,9 @@ Subtopics
 
   See [rule-classes] for a general discussion of rule classes and how
   they are used to build rules from formulas.  An example
-  :[corollary] formula from which a :congruence rule might be built,
-  assuming that set-equal is a known [equivalence] relation, is:
+  :[corollary] formula from which a rule of class :congruence might
+  be built, assuming that set-equal is a known [equivalence]
+  relation, is:
 
     Example:
     (defthm set-equal-implies-iff-memb-2
@@ -16920,8 +16918,8 @@ Subtopics
   of all equivalence relations, all equality rules are always
   available.  See [refinement].
 
-  All known :congruence rules about a given outside equivalence and fn
-  can be used independently.  That is, consider two :congruence rules
+  All known congruence rules about a given outside equivalence and fn
+  can be used independently.  That is, consider two congruence rules
   with the same outside equivalence, equiv, and about the same
   function fn.  Suppose one says that equiv1 is the inside
   equivalence for the first argument and the other says equiv2 is the
@@ -16934,16 +16932,24 @@ Subtopics
   a given argument slot will maintain a given outside equivalence.
   For example, (length a) is equal to (length a') if a and a' are
   related either by list-equal or by [string-equal].  You may prove
-  two (or more) :congruence rules for the same slot of a function.
+  two (or more) congruence rules for the same slot of a function.
   The result is that the system uses a new, ``generated'' equivalence
   relation for that slot with the result that rules of both (or all)
   kinds are available while rewriting.
 
-  :Congruence rules can be disabled.  For example, if you have two
+  Congruence rules can be [disable]d.  For example, if you have two
   different inside equivalences for a given argument position and you
   find that the :[rewrite] rules for one are unexpectedly preventing
   the application of the desired rule, you can disable the rule that
   introduced the unwanted inside equivalence.
+
+  NOTE however that unlike other rules, the tracking of congruence
+  rules is incomplete.  Specifically: when congruence rules are used
+  by the rewriter as it descends through terms, to maintain the
+  generated equivalence relation used for rewriting, ACL2 does not
+  track the congruence rules that are used, even though it is
+  relevant that they are all [enable]d.  Congruence rules that are
+  used only in this way will therefore not appear in the summary.
 
   Remark on Replacing IFF by EQUAL. You may encounter a warning
   suggesting that a congruence rule ``can be strengthened by
@@ -19214,7 +19220,7 @@ Usage
              (type integer i j k)
              (type (satisfies integerp) m1 m2))
     (declare (xargs :guard (and (integerp i)
-                                (&lt;= 0 i))
+                                (<= 0 i))
                     :guard-hints ((\"Goal\" :use (:instance lemma3
                                                   (x (+ i j)))))))
 
@@ -25699,7 +25705,14 @@ Subtopics
     ACL2 !>:doc logical-name    ; print documentation of LOGICAL-NAME
 
     General Form:
-    ACL2>:doc name")
+    ACL2>:doc name
+
+  Note that links are always printed with respect to the \"ACL2\" package
+  (that is, as though the current package were \"ACL2\").  So for
+  example, a link to the present topic will be displayed as [doc],
+  not as [acl2::doc], regardless of the current package or the
+  package of the topic being displayed.  Such links can thus take you
+  to topics in the acl2-doc Emacs browser (see [ACL2-doc]).")
  (DOCUMENTATION
   (ACL2)
   "Information about options for downloading and viewing the ACL2
@@ -28035,10 +28048,8 @@ Subtopics
                                                   <expr{k-1}>
                                                   (cond (erp (mv erp val state))
                                                         (t <exprk>)))))))))")
- (ERROR
-  (POINTERS)
-  "See acl2::hints (see [HINTS]) for information about the keyword
-  :error.")
+ (ERROR (POINTERS)
+        "See [hints] for information about the keyword :error.")
  (ERROR-TRIPLE
   (ERRORS PROGRAMMING-WITH-STATE)
   "A common ACL2 programming idiom
@@ -39601,7 +39612,7 @@ Subtopics
         Value is a computed hint, which is an expression that evaluates
         either to nil --- indicating that the :backtrack hint is to
         have no effect --- or to a non-empty alternating list of
-        :keyi :vali pairs, as expected for a hint.  However, unlike
+        :keyi vali pairs, as expected for a hint.  However, unlike
         ordinary computed hints, :backtrack hints are evaluated after
         a goal has been processed to yield zero or more subgoals, not
         before.  Moreover, variables PROCESSOR and CLAUSE-LIST are
@@ -43007,7 +43018,7 @@ Subtopics
     Time: 869/100 seconds
     ACL2 !>")
  (INLINE (POINTERS)
-         "See acl2::defun-inline (see [DEFUN-INLINE]).")
+         "See [defun-inline].")
  (INSTRUCTIONS
   (PROOF-BUILDER)
   "Instructions to the interactive proof-builder
@@ -45110,7 +45121,7 @@ Subtopics
   instances of (REV x) and (APPEND x y) by set-equal terms, even
   though the results are not actually EQUAL.  This is possible
   provided the target occurs in a context admitting set-equal as a
-  congruence relation.  For example, the :congruence rule:
+  congruence relation.  For example, the congruence rule:
 
     (implies (set-equal a b)
              (iff (member e a)
@@ -47803,8 +47814,7 @@ Subtopics
            (cond ((endp lst) nil)
                  (t (cons (kwote (car lst))
                           (kwote-lst (cdr lst))))))")
- (LAMBDA (POINTERS)
-         "See acl2::term (see [TERM]).")
+ (LAMBDA (POINTERS) "See [term].")
  (LAMBDA-APPLICATIONP (POINTERS)
                       "See [system-utilities].")
  (LAMBDA-BODY (POINTERS)
@@ -75363,10 +75373,9 @@ Experimental Versions
   Each change is described in just one category, though of course
   many changes could be placed in more than one category.
 
-  Note that only ACL2 system changes are listed below.  Changes to the
-  [books] can be found by browsing the {ACL2+Books GitHub repository
-  | https://github.com/acl2/acl2/}, in particular, the raw {commit
-  log | https://github.com/acl2/acl2/commits/master}.  Also note that
+  Note that only ACL2 system changes are listed below.  See also
+  note-7-5-books for a summary of changes made to the ACL2 Community
+  Books since ACL2 7.4, including the build system.  Also note that
   with each release, some built-in functions that were formerly in
   :[program] mode are now see guard-verified :[logic] mode functions.
 
@@ -75722,6 +75731,10 @@ Bug Fixes
   pertaining to ignored variables.  Thanks to Eric Smith for bringing
   one of these to our attention.
 
+  Fixed a bug in the [proof-builder]: [hints] on the prove command were
+  not being passed down to induction.  Thanks to Mihir Mehta for
+  bringing this bug to our attention with a reproducible example.
+
 
 Changes at the System Level
 
@@ -75770,6 +75783,11 @@ Changes at the System Level
   as a macro or vice-versa.  We have eliminated those raw Lisp
   warnings.
 
+  It is now checked that the books/ directory exists before attempting
+  any operations using 'make' on that directory.  Thanks to Keshav
+  Kini for suggesting this check, since there are source-only
+  distributions, without the books.
+
 
 EMACS Support
 
@@ -75798,6 +75816,16 @@ EMACS Support
   `meta-,'.  Thanks to Keshav Kini and Mihir Mehta for helpful
   discussions.
 
+  Removed both non-ascii characters from emacs/emacs-acl2.el.  Thanks
+  to Keshav Kini for the suggestion.
+
+  For documentation printed at the terminal with :[doc], links
+  (enclosed in in square brackets, ``[..]'') continue to be printed
+  with respect to the \"ACL2\" package (that is, as though the current
+  package were \"ACL2\").  Now, however, where a link formerly might be
+  printed as ``[acl2::foo]'', it is now printed as ``[foo]''; that
+  is, a package prefix of \"ACL2\" (regardless of case) is not printed.
+
 
 Experimental Versions
 
@@ -75821,7 +75849,11 @@ Experimental Versions
   ACL2(p) (instead of using [cw]) that is used in regular ACL2.
   Thanks to David Rager for a helpful discussion.  If you see an
   increase in hangs while using ACL2(p), please contact the
-  implementors.")
+  implementors.
+
+  Fixed an infinite loop that could be caused with parallelism enabled
+  when there is an error, when Lisp variable *hard-error-is-error*
+  has been set to a non-nil value in raw Lisp (see [hard-error]).")
  (NOTE1
   (RELEASE-NOTES)
   "Acl2 Version 1.1 Notes
@@ -79266,8 +79298,7 @@ Subtopics
 
   If you are at an ACL2 prompt (as opposed to a raw Lisp break), then
   you may type :p! in place of (p!); see [keyword-commands].")
- (PACKAGE (POINTERS)
-          "See acl2::packages (see [PACKAGES]).")
+ (PACKAGE (POINTERS) "See [packages].")
  (PACKAGE-REINCARNATION-IMPORT-RESTRICTIONS
   (PACKAGES)
   "Re-defining undone [defpkg]s
@@ -80535,7 +80566,9 @@ Subtopics
   "Removing restrictions on classic [congruence] rules
 
   This topic assumes familiarity with the basics of congruence rules;
-  see [congruence].
+  see [congruence].  Some aspects of congruence rules carry over to
+  patterned congruence rules; in particular, they may be [disable]d,
+  but they are not tracked for reporting in the summary.
 
   We begin our discussion by showing some patterned congruence rules
   and using them to illustrate some terminology.
@@ -81192,22 +81225,22 @@ Subtopics
 Subtopics
 
   [&allow-other-keys]
-      See acl2::macro-args (see [MACRO-ARGS]).
+      See [macro-args].
 
   [&body]
-      See acl2::macro-args (see [MACRO-ARGS]).
+      See [macro-args].
 
   [&key]
-      See acl2::macro-args (see [MACRO-ARGS]).
+      See [macro-args].
 
   [&optional]
-      See acl2::macro-args (see [MACRO-ARGS]).
+      See [macro-args].
 
   [&rest]
-      See acl2::macro-args (see [MACRO-ARGS]).
+      See [macro-args].
 
   [&whole]
-      See acl2::macro-args (see [MACRO-ARGS]).
+      See [macro-args].
 
   [Abstract-stobj]
       See [defabsstobj].
@@ -81240,13 +81273,13 @@ Subtopics
       See [system-utilities].
 
   [Apropos]
-      See acl2::finding-documentation (see [FINDING-DOCUMENTATION]).
+      See [finding-documentation].
 
   [Arglistp]
       See [system-utilities].
 
   [Array]
-      See acl2::arrays (see [ARRAYS]).
+      See [arrays].
 
   [Assoc-eq]
       See common-lisp::assoc (see [ASSOC]).
@@ -81345,8 +81378,7 @@ Subtopics
       See [programming-with-state].
 
   [Error]
-      See acl2::hints (see [HINTS]) for information about the keyword
-      :error.
+      See [hints] for information about the keyword :error.
 
   [Execution]
       See [evaluation].
@@ -81499,7 +81531,7 @@ Subtopics
       See [hints] for information about the keyword :induct.
 
   [Inline]
-      See acl2::defun-inline (see [DEFUN-INLINE]).
+      See [defun-inline].
 
   [Intersection-eq]
       See [intersection$].
@@ -81523,7 +81555,7 @@ Subtopics
       See [keywordp].
 
   [Lambda]
-      See acl2::term (see [TERM]).
+      See [term].
 
   [Lambda-applicationp]
       See [system-utilities].
@@ -81658,7 +81690,7 @@ Subtopics
       See [declare].
 
   [Package]
-      See acl2::packages (see [PACKAGES]).
+      See [packages].
 
   [Pe-table]
       See [extend-pe-table].
@@ -83734,10 +83766,12 @@ Subtopics
   executable-counterpart (see [evaluation]) always checks the guard.
   If the guard fails, then even if guard-checking is off, an error is
   signaled because a program-only function is assumed to have an
-  executable-counterpart that can only execute the raw Lisp
+  executable-counterpart that should only execute the raw Lisp
   definition.  Moreover, an error is always signaled when in
   [safe-mode] (e.g., during macroexpansion), because there is no
-  guarantee that evaluation of the raw Lisp code will be ``safe''.")
+  guarantee that evaluation of the raw Lisp code will be ``safe''.
+
+  See [safe-mode-cheat-sheet] for possible workarounds.")
  (PROGRAM-WRAPPER
   (PROGRAM PROGRAMMING ADVANCED-FEATURES)
   "Avoiding expensive guard checks using [program]-mode functions
@@ -92675,7 +92709,92 @@ Subtopics
   Notice that because of the set-guard-checking call above, no guard
   violation was reported for foo.  However, safe-mode caused the call
   of the [primitive], [car], to be guard-checked, and a violation was
-  reported.")
+  reported.
+
+  To understand how safe-mode works we refer to the notion of
+  ``executable-counterpart''; see [evaluation] for relevant
+  background.  ACL2 arranges for that for the executable-counterpart
+  of any program mode function, F, then for every called subroutine G
+  of F that is in program mode, the executable-counterpart of G is
+  called rather than the raw Lisp function for G.  This may result in
+  an attempt to evaluate a so-called ``[program-only]'' function in
+  safe-mode, which is illegal.  See [safe-mode-cheat-sheet] for
+  possible workarounds.
+
+
+Subtopics
+
+  [Safe-mode-cheat-sheet]
+      Working around ``[program-only]'' issues")
+ (SAFE-MODE-CHEAT-SHEET
+  (SAFE-MODE)
+  "Working around ``[program-only]'' issues
+
+  This cheat sheet gives workarounds for errors caused by attempts to
+  evaluate executable-counterparts (see [evaluation]) of so-called
+  [program-only] functions.  This most often occurs when [safe-mode]
+  is active.  Recall that safe-mode can be set by (assign safe-mode
+  t), and also is used during macroexpansion and other logical acts
+  that might involve :[program] mode functions.
+
+  The problems manifest with a hard error like this:
+
+    HARD ACL2 ERROR in PROGRAM-ONLY:  The call
+    <term>
+    is an illegal call of a function that has been marked as ``program-
+    only,'' presumably because it has special raw Lisp code and safe-mode
+    is active.  See :DOC program-only for further explanation and a link
+    to possible workarounds.
+    (See :DOC set-iprint to be able to see elided values in this message.)
+
+  When the term is a call of ev-w, an unsafe hack allowing such calls
+  is as follows.  Warning: This may result in unsoundness!
+
+    (value :q)
+    (setf (symbol-function (*1*-symbol 'ev-w))
+          (symbol-function 'ev-w))
+    (lp)
+
+  Typically that just leads to other similar errors and so you discover
+  the call tree, each of whose functions can be handled similarly
+  (also in raw Lisp):
+
+    (setf (symbol-function (*1*-symbol 'ev-rec))
+          (symbol-function 'ev-rec))
+    (setf (symbol-function (*1*-symbol 'ev-fncall-rec))
+          (symbol-function 'ev-fncall-rec))
+    (setf (symbol-function (*1*-symbol 'push-warning))
+          (symbol-function 'push-warning))
+
+  Other times you may avoid the problem by defining your own utilities.
+  For example, in safe-mode you can't use the utility [without-evisc]
+  (which is useful when [iprint]ing is active).  But the following
+  works, provided form evaluates to an [error-triple].
+
+    (defmacro without-evisc-error-triple (form)
+      `(state-global-let*
+        ((abbrev-evisc-tuple nil set-abbrev-evisc-tuple-state)
+         (gag-mode-evisc-tuple nil set-gag-mode-evisc-tuple-state)
+         (term-evisc-tuple nil set-term-evisc-tuple-state)
+         (ld-evisc-tuple nil set-ld-evisc-tuple-state))
+        ,form))
+
+  The following log illustrates how to use this utility to avoid an
+  error caused by without-evisc in safe-mode.
+
+    ACL2 !>(set-iprint t)
+
+    ACL2 Observation in SET-IPRINT:  Iprinting has been enabled.
+    ACL2 !>(assign safe-mode t)
+     T
+    ACL2 !>(cw \"Something printed with evisceration: ~X01~|\"
+               '((((DEEP))))
+               (evisc-tuple 3 4 nil nil))
+    Something printed with evisceration: (((#@1#)))
+    NIL
+    ACL2 !>(without-evisc-error-triple (value '(((#@1#)))))
+     ((((DEEP))))
+    ACL2 !>")
  (SAVE-AND-CLEAR-MEMOIZATION-SETTINGS
   (MEMOIZE)
   "Save and remove the current memoization settings
@@ -98208,9 +98327,9 @@ Subtopics
 
   where fn is the constrained function symbol, ... is a list of
   asterisks and/or the names of single-threaded objects, stobj is a
-  single-threaded object name, and the optional :kwdi and :vali are
-  as described below.  ACL2 also supports an older style of
-  signature, described below after we describe the preferred style.
+  single-threaded object name, and the optional :kwdi and vali are as
+  described below.  ACL2 also supports an older style of signature,
+  described below after we describe the preferred style.
 
   Signatures specify three syntactic aspects of a function symbol: (1)
   the ``arity'' or how many arguments the function takes, (2) the
@@ -98278,7 +98397,7 @@ Subtopics
   denoting that the function returns one result or else result is an
   [mv] expression, (mv s1 ... sn), where n>1, each si is a symbol,
   indicating that the function returns n results.  At most one of the
-  formals may be the symbol STATE, indicating that corresponding
+  formals may be the symbol STATE, indicating that the corresponding
   argument must be ACL2's built-in [state].  If state appears in
   formals then state may appear once in result.  All ``variable
   symbols'' other than state in old style signatures denote ordinary
@@ -102866,7 +102985,8 @@ List of a few ACL2 system utilities:
       :common-lisp-compliant is name is [guard]-verified, and
       otherwise, :ideal.  If name is the name of a theorem (more
       specifically, has a 'theorem property; see [getprop]), return
-      :ideal.  Otherwise return :program.
+      :ideal unless the theorem is guard-verified, in which case
+      return :common-lisp-compliant.  Otherwise return :program.
     * (termp x w): Is x a [term] in logical [world] w?
     * (trans-eval form ctx state aok): Translate and then evaluate form.
       See [trans-eval] for discussion and related utilities.
@@ -115022,26 +115142,26 @@ Subtopics
   :sites keyword argument of [set-evisc-tuple] other than :trace
   (that is, a member of the list (:term :ld :abbrev :gag-mode)), and
   each value evaluates to a legal [evisc-tuple] for that keyword.
-  Otherwise :keyi is :stack, in which case :vali is :push or :pop;
-  for now assume that :stack is not specified (we'll return to it
-  below).  The result of evaluating the General Form above is to
-  evaluate form, but in an environment where output occurs as
-  follows.  If :on :all is specified, then every output type is
-  turned on except as inhibited by :off; else if :off :all is
-  specified, then every output type is inhibited except as specified
-  by :on; and otherwise, the currently-inhibited output types are
-  reduced as specified by :on and then extended as specified by :off.
-  If :gag-mode and/or :evisc are specified, then before modifying how
-  output is inhibited, [gag-mode] and/or the appropriate
-  [evisc-tuple]s are set for the evaluation of form as specified by
-  the values of those keywords; see [set-gag-mode] and
-  [set-evisc-tuple].  If summary is among the output types that are
-  turned on (not inhibited), then if :summary is specified, the only
-  parts of the summary to be printed will be those specified by the
-  value of :summary.  The correspondence should be clear, except
-  perhaps that header refers to the line containing only the word
-  Summary, and value refers to the value of the form printed during
-  evaluation of sequences of events as for [progn] and [encapsulate].
+  Otherwise :keyi is :stack, in which case vali is :push or :pop; for
+  now assume that :stack is not specified (we'll return to it below).
+  The result of evaluating the General Form above is to evaluate
+  form, but in an environment where output occurs as follows.  If :on
+  :all is specified, then every output type is turned on except as
+  inhibited by :off; else if :off :all is specified, then every
+  output type is inhibited except as specified by :on; and otherwise,
+  the currently-inhibited output types are reduced as specified by
+  :on and then extended as specified by :off.  If :gag-mode and/or
+  :evisc are specified, then before modifying how output is
+  inhibited, [gag-mode] and/or the appropriate [evisc-tuple]s are set
+  for the evaluation of form as specified by the values of those
+  keywords; see [set-gag-mode] and [set-evisc-tuple].  If summary is
+  among the output types that are turned on (not inhibited), then if
+  :summary is specified, the only parts of the summary to be printed
+  will be those specified by the value of :summary.  The
+  correspondence should be clear, except perhaps that header refers
+  to the line containing only the word Summary, and value refers to
+  the value of the form printed during evaluation of sequences of
+  events as for [progn] and [encapsulate].
 
   Note that the handling of the :stack argument pays no attention to
   the :summary argument.

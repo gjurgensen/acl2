@@ -8873,11 +8873,12 @@ books unless Glucose is present.</p>
 <p>If you just want to get a copy of the ACL2+Books manual for local viewing,
 you probably <b>don't need to build it yourself</b> because you can just <a
 href='download/'>download</a> a copy.  If for some reason you do want to build
-the manual yourself, you should be able to run, e.g.,</p>
+the manual yourself, you should be able to do so as follows, provided you have
+installed glucose.  (That requirement might be eliminated in the future.)</p>
 
 @({
     $ cd /path/to/acl2-sources/books
-    $ make manual USE_QUICKLISP=1 -j 4
+    $ make manual -j 4
 })
 
 <p>Building the manual should work on at least CCL and SBCL on Linux and Mac OS
@@ -14034,8 +14035,8 @@ with any questions about building the community books.</p>")
   :short "The relations to maintain while simplifying arguments"
   :long "<p>See @(see rule-classes) for a general discussion of rule classes
  and how they are used to build rules from formulas.  An example @(':')@(tsee
- corollary) formula from which a @(':congruence') rule might be built, assuming
- that @('set-equal') is a known @(see equivalence) relation, is:</p>
+ corollary) formula from which a rule of class @(':congruence') might be built,
+ assuming that @('set-equal') is a known @(see equivalence) relation, is:</p>
 
  @({
   Example:
@@ -14088,31 +14089,38 @@ with any questions about building the community books.</p>")
  relations, all equality rules are always available.  See @(see
  refinement).</p>
 
- <p>All known @(':congruence') rules about a given outside equivalence and
- @('fn') can be used independently.  That is, consider two @(':congruence')
- rules with the same outside equivalence, @('equiv'), and about the same
- function @('fn').  Suppose one says that @('equiv1') is the inside equivalence
- for the first argument and the other says @('equiv2') is the inside
- equivalence for the second argument.  Then @('(fn a b)') is @('equiv') <tt>(fn
- a' b')</tt> provided @('a') is @('equiv1') to @('a'') and @('b') is
- @('equiv2') to @('b'').  This is an easy consequence of the transitivity of
- @('equiv').  It permits you to think independently about the inside
- equivalences.</p>
+ <p>All known congruence rules about a given outside equivalence and @('fn')
+ can be used independently.  That is, consider two congruence rules with the
+ same outside equivalence, @('equiv'), and about the same function @('fn').
+ Suppose one says that @('equiv1') is the inside equivalence for the first
+ argument and the other says @('equiv2') is the inside equivalence for the
+ second argument.  Then @('(fn a b)') is @('equiv') <tt>(fn a' b')</tt>
+ provided @('a') is @('equiv1') to @('a'') and @('b') is @('equiv2') to
+ @('b'').  This is an easy consequence of the transitivity of @('equiv').  It
+ permits you to think independently about the inside equivalences.</p>
 
  <p>Furthermore, it is possible that more than one inside equivalence for a
  given argument slot will maintain a given outside equivalence.  For example,
  @('(length a)') is equal to <tt>(length a')</tt> if @('a') and @('a'') are
  related either by @('list-equal') or by @(tsee string-equal).  You may prove
- two (or more) @(':congruence') rules for the same slot of a function.  The
- result is that the system uses a new, ``generated'' equivalence relation for
- that slot with the result that rules of both (or all) kinds are available
- while rewriting.</p>
+ two (or more) congruence rules for the same slot of a function.  The result is
+ that the system uses a new, ``generated'' equivalence relation for that slot
+ with the result that rules of both (or all) kinds are available while
+ rewriting.</p>
 
- <p>@(':Congruence') rules can be disabled.  For example, if you have two
+ <p>Congruence rules can be @(see disable)d.  For example, if you have two
  different inside equivalences for a given argument position and you find that
  the @(':')@(tsee rewrite) rules for one are unexpectedly preventing the
  application of the desired rule, you can disable the rule that introduced the
  unwanted inside equivalence.</p>
+
+ <p><b>NOTE</b> however that unlike other rules, the tracking of congruence
+ rules is incomplete.  Specifically: when congruence rules are used by the
+ rewriter as it descends through terms, to maintain the generated equivalence
+ relation used for rewriting, ACL2 does not track the congruence rules that are
+ used, even though it is relevant that they are all @(see enable)d.  Congruence
+ rules that are used only in this way will therefore not appear in the
+ summary.</p>
 
  <p><i>Remark on Replacing IFF by EQUAL.</i> You may encounter a warning
  suggesting that a congruence rule ``can be strengthened by replacing the
@@ -16304,7 +16312,7 @@ subtree of X with T, without duplication.</p>
           (type integer i j k)
           (type (satisfies integerp) m1 m2))
  (declare (xargs :guard (and (integerp i)
-                             (&lt;= 0 i))
+                             (<= 0 i))
                  :guard-hints ((\"Goal\" :use (:instance lemma3
                                                (x (+ i j)))))))
  })
@@ -22732,7 +22740,14 @@ ld) and @(tsee include-book)"
 
   General Form:
   ACL2>:doc name
- })")
+ })
+
+ <p>Note that links are always printed with respect to the @('\"ACL2\"')
+ package (that is, as though the current package were @('\"ACL2\"')).  So for
+ example, a link to the present topic will be displayed as @('[doc]'), not as
+ @('[acl2::doc]'), regardless of the current package or the package of the
+ topic being displayed.  Such links can thus take you to topics in the acl2-doc
+ Emacs browser (see @(see acl2-doc)).</p>")
 
 (defxdoc documentation
 
@@ -36505,7 +36520,7 @@ current fast alists."
 
  <p>@('Value') is a computed hint, which is an expression that evaluates either
  to @('nil') &mdash; indicating that the @(':backtrack') hint is to have no
- effect &mdash; or to a non-empty alternating list of @(':keyi :vali') pairs,
+ effect &mdash; or to a non-empty alternating list of @(':keyi vali') pairs,
  as expected for a hint.  However, unlike ordinary computed hints,
  @(':backtrack') hints are evaluated <b>after</b> a goal has been processed to
  yield zero or more subgoals, not before.  Moreover, variables @('PROCESSOR')
@@ -41812,7 +41827,7 @@ tables in the current Hons Space."
  instances of @('(REV x)') and @('(APPEND x y)') by @('set-equal') terms, even
  though the results are not actually @('EQUAL').  This is possible provided the
  target occurs in a context admitting @('set-equal') as a congruence relation.
- For example, the @(':congruence') rule:</p>
+ For example, the congruence rule:</p>
 
  @({
   (implies (set-equal a b)
@@ -76669,14 +76684,11 @@ it."
  category, though of course many changes could be placed in more than one
  category.</p>
 
- <p>Note that only ACL2 system changes are listed below.  Changes to the @(see
- books) can be found by browsing the <a
- href='https://github.com/acl2/acl2/'>ACL2+Books GitHub repository</a>, in
- particular, the raw <a
- href='https://github.com/acl2/acl2/commits/master'>commit log</a>.  Also note
- that with each release, some built-in functions that were formerly in
- @(':')@(tsee program) mode are now @('see guard')-verified @(':')@(tsee logic)
- mode functions.</p>
+ <p>Note that only ACL2 system changes are listed below.  See also @(see
+ note-7-5-books) for a summary of changes made to the ACL2 Community Books
+ since ACL2 7.4, including the build system.  Also note that with each release,
+ some built-in functions that were formerly in @(':')@(tsee program) mode are
+ now @('see guard')-verified @(':')@(tsee logic) mode functions.</p>
 
  <h3>Changes to Existing Features</h3>
 
@@ -77044,6 +77056,10 @@ it."
  pertaining to ignored variables.  Thanks to Eric Smith for bringing one of
  these to our attention.</p>
 
+ <p>Fixed a bug in the @(see proof-builder): @(see hints) on the @('prove')
+ command were not being passed down to induction.  Thanks to Mihir Mehta for
+ bringing this bug to our attention with a reproducible example.</p>
+
  <h3>Changes at the System Level</h3>
 
  <p>When building the combined manual, an error occurs if there is more than
@@ -77091,6 +77107,11 @@ it."
  some other Lisps, when including a book that redefines a function as a macro
  or vice-versa.  We have eliminated those raw Lisp warnings.</p>
 
+ <p>It is now checked that the @('books/') directory exists before attempting
+ any operations using @(''make'') on that directory.  Thanks to Keshav Kini for
+ suggesting this check, since there are source-only distributions, without the
+ books.</p>
+
  <h3>EMACS Support</h3>
 
  <p>Now, tags table @('TAGS-acl2-doc') is automatically built when building the
@@ -77116,6 +77137,16 @@ it."
  you want to avoid redefining `@('meta-,')'.  Thanks to Keshav Kini and Mihir
  Mehta for helpful discussions.</p>
 
+ <p>Removed both non-ascii characters from @('emacs/emacs-acl2.el').  Thanks to
+ Keshav Kini for the suggestion.</p>
+
+ <p>For documentation printed at the terminal with @(':')@(tsee doc), links
+ (enclosed in in square brackets, ``[..]'') continue to be printed with respect
+ to the @('\"ACL2\"') package (that is, as though the current package were
+ @('\"ACL2\"')).  Now, however, where a link formerly might be printed as
+ ``[acl2::foo]'', it is now printed as ``[foo]''; that is, a package prefix of
+ @('\"ACL2\"') (regardless of case) is not printed.</p>
+
  <h3>Experimental Versions</h3>
 
  <p>Improved @(see type-set) reasoning for the function, @(tsee imagpart).
@@ -77139,6 +77170,10 @@ it."
  (instead of using @(tsee cw)) that is used in regular ACL2.  Thanks to David
  Rager for a helpful discussion.  If you see an increase in hangs while using
  ACL2(p), please contact the implementors.</p>
+
+ <p>Fixed an infinite loop that could be caused with parallelism enabled when
+ there is an error, when Lisp variable @('*hard-error-is-error*') has been set
+ to a non-@('nil') value in raw Lisp (see @(see hard-error)).</p>
 
  ")
 
@@ -80986,7 +81021,9 @@ arithmetic) for libraries of @(see books) for arithmetic reasoning.</p>")
   :parents (rule-classes)
   :short "Removing restrictions on classic @(see congruence) rules"
   :long "<p>This topic assumes familiarity with the basics of congruence
- rules; see @(see congruence).</p>
+ rules; see @(see congruence).  Some aspects of congruence rules carry over to
+ patterned congruence rules; in particular, they may be @(see disable)d, but
+ they are not tracked for reporting in the summary.</p>
 
  <p>We begin our discussion by showing some patterned congruence rules and
  using them to illustrate some terminology.</p>
@@ -83480,9 +83517,12 @@ arithmetic) for libraries of @(see books) for arithmetic reasoning.</p>")
  executable-counterpart (see @(see evaluation)) always checks the guard.  If
  the guard fails, then even if guard-checking is off, an error is signaled
  because a program-only function is assumed to have an executable-counterpart
- that can only execute the raw Lisp definition.  Moreover, an error is always
- signaled when in @(see safe-mode) (e.g., during macroexpansion), because there
- is no guarantee that evaluation of the raw Lisp code will be ``safe''.</p>")
+ that should only execute the raw Lisp definition.  Moreover, an error is
+ always signaled when in @(see safe-mode) (e.g., during macroexpansion),
+ because there is no guarantee that evaluation of the raw Lisp code will be
+ ``safe''.</p>
+
+ <p>See @(see safe-mode-cheat-sheet) for possible workarounds.</p>")
 
 (defxdoc program-wrapper
   :parents (program programming advanced-features)
@@ -91444,7 +91484,95 @@ arithmetic) for libraries of @(see books) for arithmetic reasoning.</p>")
  <p>Notice that because of the @('set-guard-checking') call above, no guard
  violation was reported for @('foo').  However, @('safe-mode') caused the call
  of the @(see primitive), @(tsee car), to be guard-checked, and a violation was
- reported.</p>")
+ reported.</p>
+
+ <p>To understand how safe-mode works we refer to the notion of
+ ``executable-counterpart''; see @(see evaluation) for relevant background.
+ ACL2 arranges for that for the executable-counterpart of any program mode
+ function, @('F'), then for every called subroutine @('G') of @('F') that is in
+ program mode, the executable-counterpart of @('G') is called rather than the
+ raw Lisp function for @('G').  This may result in an attempt to evaluate a
+ so-called ``@(see program-only)'' function in safe-mode, which is illegal.
+ See @(see safe-mode-cheat-sheet) for possible workarounds.</p>")
+
+(defxdoc safe-mode-cheat-sheet
+  :parents (safe-mode)
+  :short "Working around ``@(see program-only)'' issues"
+  :long "<p>This cheat sheet gives workarounds for errors caused by attempts to
+ evaluate executable-counterparts (see @(see evaluation)) of so-called @(see
+ program-only) functions.  This most often occurs when @(see safe-mode) is
+ active.  Recall that safe-mode can be set by @('(assign safe-mode t)'), and
+ also is used during macroexpansion and other logical acts that might involve
+ @(':')@(tsee program) mode functions.</p>
+
+ <p>The problems manifest with a hard error like this:</p>
+
+ @({
+ HARD ACL2 ERROR in PROGRAM-ONLY:  The call
+ <term>
+ is an illegal call of a function that has been marked as ``program-
+ only,'' presumably because it has special raw Lisp code and safe-mode
+ is active.  See :DOC program-only for further explanation and a link
+ to possible workarounds.
+ (See :DOC set-iprint to be able to see elided values in this message.)
+ })
+
+ <p>When the term is a call of @('ev-w'), an unsafe hack allowing such calls
+ is as follows.  Warning: This may result in unsoundness!</p>
+
+ @({
+ (value :q)
+ (setf (symbol-function (*1*-symbol 'ev-w))
+       (symbol-function 'ev-w))
+ (lp)
+ })
+
+ <p>Typically that just leads to other similar errors and so you discover the
+ call tree, each of whose functions can be handled similarly (also in raw
+ Lisp):</p>
+
+ @({
+ (setf (symbol-function (*1*-symbol 'ev-rec))
+       (symbol-function 'ev-rec))
+ (setf (symbol-function (*1*-symbol 'ev-fncall-rec))
+       (symbol-function 'ev-fncall-rec))
+ (setf (symbol-function (*1*-symbol 'push-warning))
+       (symbol-function 'push-warning))
+ })
+
+ <p>Other times you may avoid the problem by defining your own utilities.  For
+ example, in safe-mode you can't use the utility @(tsee without-evisc) (which
+ is useful when @(see iprint)ing is active).  But the following works, provided
+ @('form') evaluates to an @(see error-triple).</p>
+
+ @({
+ (defmacro without-evisc-error-triple (form)
+   `(state-global-let*
+     ((abbrev-evisc-tuple nil set-abbrev-evisc-tuple-state)
+      (gag-mode-evisc-tuple nil set-gag-mode-evisc-tuple-state)
+      (term-evisc-tuple nil set-term-evisc-tuple-state)
+      (ld-evisc-tuple nil set-ld-evisc-tuple-state))
+     ,form))
+ })
+
+ <p>The following log illustrates how to use this utility to avoid an error
+ caused by @('without-evisc') in safe-mode.</p>
+
+ @({
+ ACL2 !>(set-iprint t)
+
+ ACL2 Observation in SET-IPRINT:  Iprinting has been enabled.
+ ACL2 !>(assign safe-mode t)
+  T
+ ACL2 !>(cw \"Something printed with evisceration: ~X01~|\"
+            '((((DEEP))))
+            (evisc-tuple 3 4 nil nil))
+ Something printed with evisceration: (((#@1#)))
+ NIL
+ ACL2 !>(without-evisc-error-triple (value '(((#@1#)))))
+  ((((DEEP))))
+ ACL2 !>
+ })")
 
 (defxdoc save-and-clear-memoization-settings
   :parents (memoize)
@@ -97127,7 +97255,7 @@ arithmetic) for libraries of @(see books) for arithmetic reasoning.</p>")
 
  <p>where @('fn') is the constrained function symbol, @('...') is a list of
  asterisks and/or the names of single-threaded objects, @('stobj') is a
- single-threaded object name, and the optional @(':kwdi') and @(':vali') are as
+ single-threaded object name, and the optional @(':kwdi') and @('vali') are as
  described below.  ACL2 also supports an older style of signature, described
  below after we describe the preferred style.</p>
 
@@ -97196,12 +97324,12 @@ arithmetic) for libraries of @(see books) for arithmetic reasoning.</p>")
  that the function returns one result or else @('result') is an @(tsee mv)
  expression, @('(mv s1 ... sn)'), where @('n>1'), each @('si') is a symbol,
  indicating that the function returns @('n') results.  At most one of the
- formals may be the symbol @('STATE'), indicating that corresponding argument
- must be ACL2's built-in @(tsee state).  If @('state') appears in @('formals')
- then @('state') may appear once in @('result').  All ``variable symbols''
- other than @('state') in old style signatures denote ordinary objects,
- regardless of whether the symbol has been defined to be a single-threaded
- object name!</p>
+ formals may be the symbol @('STATE'), indicating that the corresponding
+ argument must be ACL2's built-in @(tsee state).  If @('state') appears in
+ @('formals') then @('state') may appear once in @('result').  All ``variable
+ symbols'' other than @('state') in old style signatures denote ordinary
+ objects, regardless of whether the symbol has been defined to be a
+ single-threaded object name!</p>
 
  <p>The optional @('k') is as described above for newer-style signatures,
  except that the user is also allowed to declare which symbols (besides
@@ -101619,7 +101747,8 @@ arithmetic) for libraries of @(see books) for arithmetic reasoning.</p>")
  program) mode, @(':common-lisp-compliant') is @('name') is @(see
  guard)-verified, and otherwise, @(':ideal').  If @('name') is the name of a
  theorem (more specifically, has a @(''theorem') property; see @(see getprop)),
- return @(':ideal').  Otherwise return @(':program').</li>
+ return @(':ideal') unless the theorem is guard-verified, in which case return
+ @(':common-lisp-compliant').  Otherwise return @(':program').</li>
 
  <li>@('(termp x w)'): Is @('x') a @(see term) in logical @(see world)
  @('w')?</li>
@@ -113972,7 +114101,7 @@ for the execution of @('form')."
  keyword argument of @(tsee set-evisc-tuple) other than @(':trace') (that is, a
  member of the list @(`(remove1-eq :trace *evisc-tuple-sites*)`)), and each
  value evaluates to a legal @(see evisc-tuple) for that keyword.  Otherwise
- @(':keyi') is @(':stack'), in which case @(':vali') is @(':push') or
+ @(':keyi') is @(':stack'), in which case @('vali') is @(':push') or
  @(':pop'); for now assume that @(':stack') is not specified (we'll return to
  it below).  The result of evaluating the General Form above is to evaluate
  @('form'), but in an environment where output occurs as follows.  If
