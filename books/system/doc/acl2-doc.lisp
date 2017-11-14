@@ -54936,6 +54936,1350 @@ it."
 
  @(def not)")
 
+(defxdoc note-1-1
+  :parents (release-notes)
+  :short "Acl2 Version 1.1 Notes"
+  :long "<p>The new features are extensively documented.  The relevant topics
+ are:</p>
+
+ <p>It is especially important to read all of of the @(see documentation) for
+ @(see books) before trying to use books.  However, the new @(':more')
+ keyword command is so handy for reading long @(see documentation) strings that
+ we recommend you start with @(':')@(tsee doc) more if reading at the terminal.
+ Some documentation has been written for @(see guard)s which you might find
+ interesting.</p>")
+
+(defxdoc note-1-2
+  :parents (release-notes)
+  :short "Acl2 Version 1.2 Notes"
+  :long "<p>Hacker mode has been eliminated and @(see programming) mode has
+ been added.  @(see Programming) mode is unsound but does syntax checking and
+ permits redefinitions of names.  See @(':')@(tsee doc) @('load-mode') and
+ @(':')@(tsee doc) @('g-mode').</p>
+
+ <p>The arguments to @(tsee ld) have changed.  @(tsee Ld) is now much more
+ sophisticated.  See @(see ld).</p>
+
+ <p>For those occasions on which you wish to look at a large list structure
+ that you are afraid to print, try @('(walkabout x state)'), where @('x') is an
+ Acl2 expression that evaluates to the structure in question.  I am afraid
+ there is no @(see documentation) yet, but it is similar in spirit to the
+ Interlisp structure editor.  You are standing on an object and commands move
+ you around in it.  E.g., 1 moves you to its first element, 2 to its second,
+ etc.; 0 moves you up to its parent; @('nx') and @('bk') move you to its next
+ sibling and previous sibling; @('pp') prettyprints it; @(tsee q) exits
+ returning @('nil'); @(tsee =) exits returning the thing you're standing on;
+ @('(= symb)') assigns the thing you're standing on to the @(see state) global
+ variable @('symb').</p>
+
+ <p>Several new @(see hints) have been implemented, including @(':by') and
+ @(':do-not').  The old @(':do-not-generalize') has been scrapped in favor of
+ such new @(see hints) as @(':do-not') @('(generalize elim)').  @(':By') lets
+ you say ``this goal is subsumed by'' a given lemma instance.  The @(':by')
+ hint also lets you say ``this goal can't be proved yet but skip it and see how
+ the rest of the proof goes.'' See @(see hints).</p>")
+
+(defxdoc note-1-3
+  :parents (release-notes)
+  :short "Acl2 Version 1.3 Notes"
+  :long "<p>@(see Programming) mode has been eliminated.  Instead, all
+ functions have a ``color'' which indicates what can be done with the function.
+ For example, @(':red') functions can be executed but have no axioms describing
+ them.  Thus, @(':red') functions can be introduced after passing a simple
+ syntactic check and they can be redefined without undoing.  But nothing of
+ consequence can be proved about them.  At the other extreme are @(':gold')
+ functions which can be executed and which also have passed both the
+ termination and the @(see guard) verification proofs.  The color of a function
+ can be specified with the new @(tsee xargs) keyword, @(':color'), which, if
+ omitted defaults to the global setting of @('ld-color').  @('Ld-color')
+ replaces @('load-mode').  Setting @('ld-color') to @(':red') causes behavior
+ similar to the old @(':g-mode').  Setting @('ld-color') to @(':gold') causes
+ behavior similar to the old @(':v-mode').  It is possible to prototype your
+ system in @(':red') and then convert @(':red') functions to :@('blue')
+ individually by calling @(tsee verify-termination) on them.  They can then be
+ converted to @(':gold') with @(tsee verify-guards).  This allows us to
+ undertake to verify the termination and @(see guard)s of system functions.
+ See @(':')@(tsee doc) color for an introduction to the use of colors.</p>
+
+ <p>Type prescription rules have been added.  Recall that in Nqthm, some @(tsee
+ rewrite) rules were actually stored as ``@(see type-prescription)s.''  Such
+ rules allow the user to inform Nqthm's primitive type mechanism as to the
+ kinds of shells returned by a function.  Earlier versions of Acl2 did not have
+ an analogous kind of rule because Acl2's type mechanism is complicated by
+ @(see guard)s.  Version 1.3 supports @(tsee type-prescription) rules.  See
+ @(see type-prescription).</p>
+
+ <p>Three more new @(see rule-classes) implement congruence-based rewriting.
+ It is possible to identify a binary relation as an equivalence relation (see
+ @(see equivalence)), to show that one equivalence relation refines another
+ (see @(see refinement)) and to show that a given equivalence relation is
+ maintained when rewriting a given function call, e.g., @('(fn ...xk...)'), by
+ maintaining another equivalence relation while rewriting the @('k')th argument
+ (see @(see congruence)).  If @('r') has been shown to be an @(see equivalence)
+ relation and then @('(implies hyps (r (foo x) (bar x)))') is proved as a
+ @(':')@(tsee rewrite) rule, then instances of @('(foo x)') will be replaced by
+ corresponding instances of @('(bar x)') provided the instance occurs in a slot
+ where the maintenance of @('r-equivalence') is known to be sufficient and
+ @('hyps') can be established as usual.</p>
+
+ <p>In Version 1.2, @(see rule-classes) were simple keywords, e.g.,
+ @(':')@(tsee rewrite) or @(':')@(tsee elim).  In Version 1.3, @(see
+ rule-classes) have been elaborated to allow you to specify how the theorem
+ ought to be used as a rule.  That is, the new @(see rule-classes) allows you
+ to separate the mathematical statement of the formula from its interpretation
+ as a rule.  See @(see rule-classes).</p>
+
+ <p>Rules used to be named by symbols, e.g., @(tsee car) and @('car-cons') were
+ the names of rules.  Unfortunately, this was ambiguous because there are three
+ rules associated with function symbols: the symbolic definition, the
+ executable-counterpart, and the @(see type-prescription); many different rules
+ might be associated with theorems, depending on the rule classes.  In Version
+ 1.3 rules are named by ``@(see rune)s'' (which is just short hand for ``rule
+ names'').  Example @(see rune)s are @('(:definition car)'),
+ @('(:executable-counterpart car)'), and @('(:type-prescription car . 1)').
+ Every rule added by an event has a different name and you can @(see enable)
+ and @(see disable) them independently.  See @(see rune) and see @(see
+ theories).</p>
+
+ <p>The identity function @(tsee force), of one argument, has been added and
+ given a special interpretation by the functions responsible for establishing
+ hypotheses in backchaining: When the system fails to establish some hypothesis
+ of the form @('(force term)'), it simply assumes it is true and goes on,
+ delaying until later the establishment of term.  In particular, pushes a new
+ subgoal to prove term in the current context.  When that subgoal is attacked,
+ all of the resources of the theorem prover, not just rewriting, are brought to
+ bear.  Thus, for example, if you wish to prove the rule <tt>(implies
+ (good-statep s) (equal (exec s n) s'))</tt> and it is your expectation that
+ every time @('exec') appears its first argument is a @('good-statep') then you
+ might write the rule as <tt>(implies (force (good-statep s)) (equal (exec s n)
+ s'))</tt>.  This rule is essentially an unconditional rewrite of @('(exec s
+ n)') to @('s'') that spawns the new goal @('(good-statep s)').  See @(see
+ force).  Because you can now specify independently how a theorem is used as a
+ rule, you need not write the @(tsee force) in the actual theorem proved.  See
+ @(see rule-classes).</p>
+
+ <p>Version 1.3 supports a facility similar to Nqthm's @(tsee break-lemma).
+ See @(see break-rewrite).  You can install ``@(see monitor)s'' on @(see rune)s
+ that will cause interactive breaks under certain conditions.</p>
+
+ <p>Acl2 also provides ``@(see wormhole)s'' which allow you to write functions
+ that cause interaction with the user but which do not require that you have
+ access to @(tsee state).  See @(see wormhole).</p>
+
+ <p>The rewriter now automatically backchains to stronger recognizers.  There
+ is no user hook to this feature but it may simplify some proofs with which
+ older versions of Acl2 had trouble.  For example, if the rewriter is trying to
+ prove @('(rationalp (foo a b c))') it is now smart enough to try lemmas that
+ match with @('(integerp (foo a b c))').</p>")
+
+(defxdoc note-1-4
+  :parents (release-notes)
+  :short "Acl2 Version 1.4 Notes"
+  :long "<p>Once again @(tsee ld) only takes one required argument, as the
+ @('bind-flg') has been deleted.</p>
+
+ <p>Three commands have been added in the spirit of @(':')@(tsee pe).
+ @(':')@(tsee Pe!) is similar to @(':')@(tsee pe) but it prints all @(see
+ events) with the given name, rather than just the most recent.  The command
+ @(':')@(tsee pf) prints the corollary formula corresponding to a name or @(see
+ rune).  The command @(':')@(tsee pl) (print lemmas) prints rules whose top
+ function symbol is the given name.  See @(see pe!), see @(see pf), and see
+ @(see pl).</p>
+
+ <p>Book naming conventions have been changed somewhat.  The once-required
+ @('.lisp') extension is now prohibited!  Directories are supported, including
+ a notion of ``connected book directory''.  See @(see book-name).  Also, the
+ second argument of @(tsee certify-book) is now optional, defaulting to
+ @('0').</p>
+
+ <p>@(see Compilation) is now supported inside the Acl2 loop.  See @(see comp)
+ and see @(see set-compile-fns).</p>
+
+ <p>The default color is now part of the Acl2 @(see world); see @(':')@(tsee
+ doc) @('default-color').  @('Ld-color') is no longer an @(tsee ld) special.
+ Instead, colors are @(see events); see the documentation for @('red'),
+ @('pink'), @('blue'), and @('gold').</p>
+
+ <p>A @(see table) exists for controlling whether Acl2 prints comments when it
+ @(see force)s hypotheses of rules; see @(':')@(tsee doc) @('force-table').
+ Also, it is now possible to turn off the forcing of assumptions by disabling
+ the definition of @(see force); see @(see force).</p>
+
+ <p>The event @('defconstant') is no longer supported, but a very similar
+ event, @(tsee defconst), has been provided in its place.  See @(see
+ defconst).</p>
+
+ <p>The event for defining @(see congruence) relations is now @(tsee defcong)
+ (formerly, @('defcon')).</p>
+
+ <p>Patterns are now allowed in @(':expand') @(see hints).  See the
+ documentation for @(':expand') inside the documentation for @(see hints).</p>
+
+ <p>We have improved the way we report rules used by the simplifier.  All @(see
+ rune)s of the same type are reported together in the running commentary
+ associated with each goal, so that for example, executable-counterparts are
+ listed separately from definitions, and rewrite rules are listed separately
+ from @(see linear) rules.  The preprocessor now mentions ``simple'' rules; see
+ @(see simple).</p>
+
+ <p>The mechanism for printing warning messages for new rewrite rules, related
+ to subsumption, now avoids worrying about nonrecursive function symbols when
+ those symbols are @(see disable)d.  These messages have also been eliminated
+ for the case where the old rule is a @(':')@(tsee definition) rule.</p>
+
+ <p>Backquote has been modified so that it can usually provide predictable
+ results when used on the left side of a rewrite rule.</p>
+
+ <p>Time statistics are now printed even when an event fails.</p>
+
+ <p>The Acl2 trace package has been modified so that it prints using the values
+ of the Lisp globals @('*print-level*') and @('*print-length*')
+ (respectively).</p>
+
+ <p>@(see Table) has been modified so that the @(':clear') option lets you
+ replace the entire @(see table) with one that satisfies the @('val') and key
+ guards (if any); see @(see table).</p>
+
+ <p>We have relaxed the translation rules for @(':measure') @(see hints) to
+ @(tsee defun), so that the the same rules apply to these terms that apply to
+ terms in @(tsee defthm) @(see events).  In particular, in @(':measure') @(see
+ hints) @(tsee mv) is treated just like @(tsee list), and @(tsee state)
+ receives no special handling.</p>
+
+ <p>The @(see loop-stopper) test has been relaxed.  The old test required that
+ every new argument be strictly less than the corresponding old argument in a
+ certain @(see term-order).  The new test uses a lexicographic order on term
+ lists instead.  For example, consider the following rewrite rule.</p>
+
+ @({
+    (equal
+     (variable-update var1
+                      val1 (variable-update var2 val2 vs))
+     (variable-update var2
+                      val2 (variable-update var1 val1 vs)))
+ })
+
+ <p>This rule is permutative.  Now imagine that we want to apply this rule to
+ the term</p>
+
+ @({
+    (variable-update u y (variable-update u x vs)).
+ })
+
+ <p>Since the actual corresponding to both @('var1') and @('var2') is @('u'),
+ which is not strictly less than itself in the @(see term-order), this rule
+ would fail to be applied in this situation when using the old test.  However,
+ since the pair @('(u x)') is lexicographically less than the pair @('(u y)')
+ with respect to our @(see term-order), the rule is in fact applied using our
+ new test.</p>
+
+ <p>Messages about @(see events) now contain a space after certain left
+ parentheses, in order to assist emacs users.  For example, the event</p>
+
+ @({
+    (defthm abc (equal (+ (len x) 0) (len x)))
+ })
+
+ <p>leads to a summary containing the line</p>
+
+ @({
+    Form:  ( DEFTHM ABC ...)
+ })
+
+ <p>and hence, if you search backwards for ``@('(defthm abc')'', you won't stop
+ at this message.</p>
+
+ <p>More tautology checking is done during a proof; in fact, no goal printed to
+ the screen, except for the results of applying @(':use') and @(':by') @(see
+ hints) or the top-level goals from an induction proof, are known to Acl2 to be
+ tautologies.</p>
+
+ <p>The @(tsee ld-query-control-alist) may now be used to suppress printing of
+ queries; see @(see ld-query-control-alist).</p>
+
+ <p>Warning messages are printed with short summary strings, for example the
+ string ``@('Use')'' in the following message.</p>
+
+ @({
+    Acl2 Warning [Use] in DEFTHM:  It is unusual to :USE an enabled
+    :REWRITE or :DEFINITION rule, so you may want to consider
+    disabling FOO.
+ })
+
+ <p>At the end of the event, just before the time is printed, all such summary
+ strings are printed out.</p>
+
+ <p>The keyword command @(':u') has been introduced as an abbreviation for
+ @(':')@(tsee ubt) @(':')@(tsee max).  Printing of query messages is suppressed
+ by @(':u').</p>
+
+ <p>The keyword @(':cheat') is no longer supported by any event form.</p>
+
+ <p>Some irrelevant formals are detected; see @(see irrelevant-formals).</p>
+
+ <p>A bug in the application of metafunctions was fixed: now if the output of a
+ metafunction is equal to its input, the application of the metafunction is
+ deemed unsuccessful and the next metafunction is tried.</p>
+
+ <p>An example has been added to the documentation for @(see equivalence) to
+ suggest how to make use of @(see equivalence) relations in rewriting.</p>
+
+ <p>The following Common Lisp functions have been added to Acl2: @(tsee
+ alpha-char-p), @(tsee upper-case-p), @(tsee lower-case-p), @(tsee
+ char-upcase), @(tsee char-downcase), @(tsee string-downcase), @(tsee
+ string-upcase), and @('digit-charp-p').</p>
+
+ <p>A documentation section called @(tsee proof-builder) has been added for the
+ interactive facility, whose documentation has been slightly improved.  See in
+ particular the documentation for @(see proof-builder), @(tsee verify), and
+ @(see macro-command).</p>
+
+ <p>A number of @(see events) that had been inadvertently disallowed in @(see
+ books) are now permitted in @(see books).  These are: @(tsee defcong),
+ @('defcor'), @(tsee defequiv), @(tsee defrefinement), @(tsee defstub), and
+ @(tsee verify-termination).</p>")
+
+(defxdoc note-1-5
+  :parents (release-notes)
+  :short "Acl2 Version 1.5 Notes"
+  :long "<p>Acl2 now allows ``complex rationals,'' which are complex numbers
+ whose real parts are rationals and whose imaginary parts are non-zero
+ rationals.  See @(see complex).</p>
+
+ <p>A new way of handling @(tsee force)d hypotheses has been implemented.
+ Rather than cause a case split at the time the @(tsee force) occurs, we
+ complete the main proof and then embark on one or more ``forcing rounds'' in
+ which we try to prove the @(see force)d hypotheses.  See @(see forcing-round).
+ To allow us to compare the new handling of @(tsee force) with the old, Version
+ 1.5 implements both and uses a flag in @(tsee state) to determine which method
+ should be used.  Do @('(assign old-style-forcing t)') if you want @(tsee
+ force) to be handled as it was in Version 1.4.  However, we expect to
+ eliminate the old-style forcing eventually because we think the new style is
+ more effective.  To see the difference between the two approaches to forcing,
+ try proving the associativity of @(see append) under both settings of
+ @('old-style-forcing').  To get the new behavior invoke:</p>
+
+ @({
+  (thm (implies (and (true-listp a) (true-listp b))
+                (equal (append (append a b) c)
+                       (append a (append b c)))))
+ })
+
+ <p>Then @('(assign old-style-forcing t)') and invoke the @('thm') @(see
+ command) above again.</p>
+
+ <p>A new @(':cases') @(see hints) allows proof by cases.  See @(see
+ hints).</p>
+
+ <p>@(tsee Include-book) and @(tsee encapsulate) now restore the @(tsee
+ acl2-defaults-table) when they complete.  See @(see include-book) and see
+ @(see encapsulate).</p>
+
+ <p>The @(see guard)s on many Acl2 primitives defined in @('axioms.lisp') have
+ been weakened to permit them to be used in accordance with lisp custom and
+ tradition.</p>
+
+ <p>It is possible to attach heuristic filters to @(':')@(tsee rewrite) rules
+ to limit their applicability.  See @(see syntaxp).</p>
+
+ <p>A tutorial has been added (but as of Version_3.6.1 it has become
+ obsolete).</p>
+
+ <p>@(see Events) now print the Summary paragraph listing @(see rune)s used,
+ time, etc., whether they succeed or fail.  The format of the ``@(see failure)
+ banner'' has been changed but still has multiple asterisks in it.  @('Thm')
+ also prints a Summary, whether it succeeds or fails; but @('thm') is not an
+ event.</p>
+
+ <p>A new event form @(tsee skip-proofs) has been added; see @(see
+ skip-proofs).</p>
+
+ <p>A user-specific customization facility has been added in the form of a book
+ that is automatically included, if it exists on the current directory.  See
+ @(see acl2-customization).</p>
+
+ <p>A facility for conditional metalemmas has been implemented; see @(see
+ meta).</p>
+
+ <p>The acceptable values for @(tsee ld-skip-proofsp) have changed.  In the old
+ version (Version 1.4), a value of @('t') meant that proofs and @(tsee local)
+ @(see events) are to be skipped.  In Version 1.5, a value of @('t') means
+ proofs (but not @(tsee local) @(see events)) are to be skipped.  A value of
+ @(''')@(tsee include-book) means proofs and @(tsee local) @(see events) are to
+ be skipped.  There are two other, more obscure, acceptable values.  See @(see
+ ld-skip-proofsp).</p>
+
+ <p>In order to turn off the forcing of assumptions, one should now @(see
+ disable) the @(':')@(tsee executable-counterpart) of @(tsee force) (rather
+ than the @(':')@(tsee definition) of @(tsee force), as in the previous
+ release); see @(see force).</p>
+
+ <p>The macros @(tsee enable-forcing) and @(tsee disable-forcing) make it
+ convenient to @(see enable) or @(see disable) forcing.  See @(see
+ enable-forcing) and see @(see disable-forcing).</p>
+
+ <p>The new commands @(':')@(tsee pr) and @(':')@(tsee pr!) print the rules
+ created by an event or command.  See @(see pr) and see @(see pr!).</p>
+
+ <p>The new @(see history) @(see command)s @(':')@(tsee puff) and @(':')@(tsee
+ puff*) will replace a compound @(see command) such as an @(tsee encapsulate)
+ or @(tsee include-book) by the sequence of @(see events) in it.  That is, they
+ ``@(see puff) up'' or ``lift'' the subevents of a @(see command) to the @(see
+ command) level, eliminating the formerly superior @(see command) and
+ lengthening the @(see history).  This is useful if you want to ``partially
+ undo'' an @(tsee encapsulate) or book or other compound @(see command) so you
+ can experiment.  See @(see puff) and see @(see puff*).</p>
+
+ <p>Theory expressions now are allowed to use the free variable @(tsee world)
+ and prohibited from using the free variable @(tsee state).  See @(see
+ theories), although it is essentially the same as before except it mentions
+ @(tsee world) instead of @(tsee state).  See @(see world) for a discussion of
+ the Acl2 logical @(see world).  Allowing @(tsee in-theory) @(see events) to be
+ state-sensitive violated an important invariant about how @(see books)
+ behaved.</p>
+
+ <p>@(tsee Table) keys and values now are allowed to use the free variable
+ @(tsee world) and prohibited from using the free variable @(tsee state).  See
+ the note above about theory expressions for some explanation.</p>
+
+ <p>The macro for minus, @(tsee -), used to expand @('(- x 3)') to @('(+ x
+ -3)') and now expands it to @('(+ -3 x)') instead.  The old macro, if used in
+ the left-hand sides of rewrite rules, produced inapplicable rules because the
+ constant occurs in the second argument of the @(tsee +), but potential target
+ terms generally had the constant in the first argument position because of the
+ effect of @('commutativity-of-+').</p>
+
+ <p>A new class of rule, @(':linear-alias') rules, allows one to implement the
+ nqthm package and similar hacks in which a @(see disable)d function is to be
+ known equivalent to an arithmetic function.</p>
+
+ <p>A new class of rule, @(':built-in-clause') rules, allows one to extend the
+ set of clauses proved silently by @(tsee defun) during measure and @(see
+ guard) processing.  See @(see built-in-clause).</p>
+
+ <p>The new command @(tsee pcb!) is like @(tsee pcb) but sketches the @(see
+ command) and then prints its subsidiary @(see events) in full.  See @(see
+ pcb!).</p>
+
+ <p>@(':')@(tsee Rewrite) class rules may now specify the @(':')@(tsee
+ loop-stopper) field.  See @(see rule-classes) and see @(see loop-stopper).</p>
+
+ <p>The rules for how @(see loop-stopper)s control permutative rewrite rules
+ have been changed.  One effect of this change is that now when the built-in
+ commutativity rules for @(tsee +) are used, the terms @('a') and @('(- a)')
+ are permuted into adjacency.  For example, @('(+ a b (- a))') is now
+ normalized by the commutativity rules to @('(+ a (- a) b)'); in Version 1.4,
+ @('b') was considered syntactically smaller than @('(- a)') and so @('(+ a b
+ (- a))') is considered to be in normal form.  Now it is possible to arrange
+ for unary functions be be considered ``invisible'' when they are used in
+ certain contexts.  By default, @(tsee unary--) is considered invisible when
+ its application appears in the argument list of @(tsee binary-+).  See @(see
+ loop-stopper) and see :DOC set-invisible-fns-table.</p>
+
+ <p>Extensive documentation has been provided on the topic of Acl2's ``term
+ ordering.''  See @(see term-order).</p>
+
+ <p>Calls of @(tsee ld) now default @(tsee ld-error-action) to @(':return')
+ rather than to the current setting.</p>
+
+ <p>The @(see command) descriptor @(':x') has been introduced and is synonymous
+ with @(':')@(tsee max), the most recently executed @(see command).  @(see
+ History) @(see command)s such as @(':')@(tsee pbt) print a @(':x') beside the
+ most recent @(see command), simply to indicate that it <b>is</b> the most
+ recent one.</p>
+
+ <p>The @(see command) descriptor @(':x-23') is synonymous with @('(:x -23)').
+ More generally, every symbol in the keyword package whose first character is
+ @('#\\x') and whose remaining @(see characters) parse as a negative integer is
+ appropriately understood.  This allows @(':')@(tsee pbt) @(':x-10') where
+ @(':')@(tsee pbt) @('(:max -10)') or @(':')@(tsee pbt) @('(:here -10)') were
+ previously used.  The old forms are still legal.</p>
+
+ <p>The order of the arguments to @(tsee defcong) has been changed.</p>
+
+ <p>The simplifier now reports the use of unspecified built-in type information
+ about the primitives with the phrase ``primitive type reasoning.''  This
+ phrase may sometimes occur in situations where ``propositional calculus'' was
+ formerly credited with the proof.</p>
+
+ <p>The function @(tsee pairlis) has been replaced in the code by a new
+ function @(tsee pairlis$), because Common Lisp does not adequately specify its
+ @(tsee pairlis) function.</p>
+
+ <p>Some new Common Lisp functions have been added, including @(tsee logtest),
+ @(tsee logcount), @(tsee integer-length), @(tsee make-list), @(tsee
+ remove-duplicates), @(tsee string), and @(tsee concatenate).  The source file
+ @('/slocal/src/acl2/axioms.lisp') is the ultimate reference regarding Common
+ Lisp functions in Acl2.</p>
+
+ <p>The functions @(tsee defuns) and @(tsee theory-invariant) have been
+ documented.  See @(see defuns) and see @(see theory-invariant).</p>
+
+ <p>A few symbols have been added to the list @('*acl2-exports*').</p>
+
+ <p>A new key has been implemented for the @(tsee acl2-defaults-table),
+ @(':irrelevant-formals-ok').  See @(see set-irrelevant-formals-ok).</p>
+
+ <p>The connected book directory, @(tsee cbd), must be nonempty and begin and
+ end with a slash.  It is set (and displayed) automatically upon your first
+ entry to @(tsee lp).  You may change the setting with @(tsee set-cbd).  See
+ @(see cbd).</p>
+
+ <p>@(':')@(tsee oops) will undo the last @(':')@(tsee ubt).  See @(see
+ oops).</p>
+
+ <p>Documentation has been written about the ordinals.  See :DOC
+ @('e0-ordinalp') and see :DOC @('e0-ord-<').  [Note added later: Starting with
+ Version_2.8, instead see @(see o-p) and see @(see o<).</p>
+
+ <p>The color @(see events) &mdash; (red), (pink), (blue), and (gold) &mdash;
+ may no longer be enclosed inside calls of @(tsee local), for soundness
+ reasons.  In fact, neither may any event that sets the @(tsee
+ acl2-defaults-table).  See @(see embedded-event-form).</p>
+
+ <p>See @(see ld-keyword-aliases) for an example of how to change the exit
+ keyword from @(':')@(tsee q) to something else.</p>
+
+ <p>The attempt to install a @(see monitor) on @(':')@(tsee rewrite) rules
+ stored as simple abbreviations now causes an error because the application of
+ abbreviations is not tracked.</p>
+
+ <p>A new message is sometimes printed by the theorem prover, indicating that a
+ given simplification is ``specious'' because the subgoals it produces include
+ the input goal.  In Version 1.4 this was detected but not reported, causing
+ behavior some users found bizarre.  See @(see specious-simplification).</p>
+
+ <p>@(':')@(tsee Definition) rules are no longer always required to specify the
+ @(':clique') and @(':controller-alist') fields; those fields can be defaulted
+ to system-determined values in many common instances.  See @(see
+ definition).</p>
+
+ <p>A warning is printed if a macro form with keyword arguments is given
+ duplicate keyword values.  Execute @('(thm t :doc nil :doc \"ignored\")') and
+ read the warning printed.</p>
+
+ <p>A new restriction has been placed on @(tsee encapsulate).  Non-@(tsee
+ local) recursive definitions inside the @(tsee encapsulate) may not use, in
+ their tests and recursive calls, the constrained functions introduced by the
+ @(tsee encapsulate).  See @(see subversive-recursions).  (Note added in
+ Version 2.3: Subversive recursions were first recognized by us here in Version
+ 1.5, but our code for recognizing them was faulty and the bug was not fixed
+ until Version 2.3.)</p>
+
+ <p>The @(see events) @(tsee defequiv), @(tsee defcong), @(tsee defrefinement),
+ and @(tsee defevaluator) have been reimplemented so that they are just macros
+ that expand into appropriate @(tsee defthm) or @(tsee encapsulate) @(see
+ events); they are no longer primitive @(see events).  See the @(see
+ documentation) of each affected event.</p>
+
+ <p>The @('defcor') event, which was a shorthand for a @(tsee defthm) that
+ established a @(see corollary) of a named, previously proved event, has been
+ eliminated because its implementation relied on a technique we have decided to
+ ban from our code.  If you want the effect of a @('defcor') in Version 1.5 you
+ must submit the corresponding @(tsee defthm) with a @(':by') hint naming the
+ previously proved event.</p>
+
+ <p>Error reporting has been improved for inappropriate @(tsee in-theory) @(see
+ hints) and @(see events), and for syntax errors in rule classes, and for
+ non-existent filename arguments to @(tsee ld).</p>
+
+ <p>Technical Note: We now maintain the Third Invariant on @('type-alists'), as
+ described in the Essay on the Invariants on Type-alists, and Canonicality.
+ This change will affect some proofs, for example, by causing a to rewrite more
+ quickly to @('c') when @('(equiv a b)') and @('(equiv b c)') are both known
+ and @('c') is the canonical representative of the three.</p>")
+
+(defxdoc note-1-6
+  :parents (release-notes)
+  :short "Acl2 Version 1.6 Notes"
+  :long "<p>A new key has been implemented for the @(tsee acl2-defaults-table),
+ @(':ignore-ok').  See @(see set-ignore-ok).</p>
+
+ <p>It is now legal to have color @(see events), such as @('(red)'), in the
+ @(see portcullis) of a book.  More generally, it is legal to set the @(tsee
+ acl2-defaults-table) in the @(see portcullis) of a book.  For example, if you
+ execute @(':red') and then certify a book, the event @('(red)') will show up
+ in the @(see portcullis) of that book, and hence the definitions in that book
+ will all be red (except when overridden by appropriate declarations or @(see
+ events)).  When that book is included, then as always, its @(see portcullis)
+ must first be ``raised,'' and that will cause the default color to become red
+ before the @(see events) in the book are executed.  As always, the value of
+ @(tsee acl2-defaults-table) immediately after execution of an @(tsee
+ include-book), @(tsee certify-book), or @(tsee encapsulate) form will be the
+ same as it was immediately before execution (and hence, so will the default
+ color).  See @(see portcullis) and, for more about books, see @(see
+ books).</p>
+
+ <p>A theory @(tsee ground-zero) has been defined to contain exactly those
+ rules that are @(see enable)d when Acl2 starts up.  See @(see
+ ground-zero).</p>
+
+ <p>The function @(tsee nth) is now @(see enable)d, correcting an oversight
+ from Version 1.5.</p>
+
+ <p>Customization files no longer need to meet the syntactic restrictions put
+ on @(see books); rather, they can contain arbitrary Acl2 forms.  See @(see
+ acl2-customization).</p>
+
+ <p>Structured directory names and structured file names are supported; see
+ especially the documentation for @(see pathname), @(see book-name), and @(tsee
+ cbd).</p>
+
+ <p>Acl2 now works with some Common Lisp implementations other than akcl,
+ including Lucid, Allegro, and MCL.</p>
+
+ <p>A facility has been added for displaying proof trees, especially using
+ emacs; see @(see proof-tree).</p>
+
+ <p>There is a considerable amount of new @(see documentation), in particular
+ for the printing functions @(tsee fmt), @(tsee fmt1), and @(tsee fms), and for
+ the notion of Acl2 term (see @(see term)).</p>
+
+ <p>It is possible to introduce new well-founded relations, to specify which
+ relation should be used by @(tsee defun), and to set a default relation.  See
+ @(see well-founded-relation-rule).</p>
+
+ <p>It is possible to make functions suggest new inductions.  See @(see
+ induction).</p>
+
+ <p>It is possible to change how Acl2 expresses @(see type-set) information; in
+ particular, this affects what clauses are proved when @(see force)d
+ assumptions are generated.  See @(see type-set-inverter).</p>
+
+ <p>A new restriction has been added to @(tsee defpkg), having to do with
+ undoing.  If you undo a @(tsee defpkg) and define the same package name again,
+ the imports list must be identical to the previous imports or else an
+ explanatory error will occur.  See @(see
+ package-reincarnation-import-restrictions).</p>
+
+ <p>@(tsee Theory-invariant) and @(tsee set-irrelevant-formals-ok) are now
+ embedded event forms.</p>
+
+ <p>The command @(':')@(tsee good-bye) may now be used to quit entirely out of
+ Lisp, thus losing your work forever.  This command works in akcl but may not
+ work in every Common Lisp.</p>
+
+ <p>A theory @(tsee ground-zero) has been added that contains exactly the @(see
+ enable)d rules in the @(see startup) theory.  See @(see ground-zero).</p>
+
+ <p>@('Define-pc-macro') and @('define-pc-atomic-macro') now automatically
+ define @(':red') functions.  (It used to be necessary, in general, to change
+ color to @(':red') before invoking these.)</p>
+
+ <p>For a proof of the well-foundedness of @('e0-ord-<') on the
+ @('e0-ordinalp')s, see @(see proof-of-well-foundedness).  [Note added later:
+ Starting with Version_2.8, @(tsee o<) and @(tsee o-p) replace @('e0-ord-<')
+ and @('e0-ordinalp'), respectively.]</p>
+
+ <p>Free variables are now handled properly for hypotheses of @(':')@(tsee
+ type-prescription) rules.</p>
+
+ <p>When the system is loaded or saved, @(tsee state) is now bound to
+ @('*the-live-state*').</p>
+
+ <p>@(tsee Certify-book) has been modified so that when it compiles a file, it
+ loads that object file.</p>
+
+ <p>@(tsee Defstub) has been modified so that it works when the color is hot
+ (@(':red') or @(':pink')).</p>
+
+ <p>Several basic, but not particularly commonly used, @(see events) have been
+ added or changed.  The obscure axiom @('symbol-name-intern') has been
+ modified.  The definition of @('firstn') has been changed.  @(tsee Butlast) is
+ now defined.  The definition of @(tsee integer-length) has been modified.  The
+ left-hand side of the rewrite rule @('rational-implies2') has been changed
+ from @('(* (numerator x) (/ (denominator x)))') to @('(* (/ (denominator x))
+ (numerator x))'), in order to respect the fact that @(tsee unary-/) is
+ invisible with respect to @(tsee binary-*).  See @(see loop-stopper).</p>
+
+ <p>The `preprocess' process in the waterfall (see @(see hints) for a
+ discussion of the @(':do-not') hint) has been changed so that it works to
+ avoid case-splitting.  The `simplify' process refuses to force (see @(see
+ force)) when there are @(tsee if) terms, including @(tsee and) and @(tsee or)
+ terms, in the goal being simplified.</p>
+
+ <p>The function @('apply') is no longer introduced automatically by
+ translation of user input to internal form when functions are called on
+ inappropriate explicit values, e.g., @('(car 3)').</p>
+
+ <p>The choice of which variable to use as the measured variable in a recursive
+ definition has been very slightly changed.</p>")
+
+(defxdoc note-1-7
+  :parents (release-notes)
+  :short "ACL2 Version 1.7 (released October 1994) Notes"
+  :long "<p>@(tsee Include-book) now takes (optionally) an additional keyword
+ argument, indicating whether a compiled file is to be loaded.  The default
+ behavior is unchanged, except that a warning is printed when a compiled file
+ is not loaded.  See @(see include-book).</p>
+
+ <p>A markup language for @(see documentation) strings has been
+ implemented, and many of the source files have been marked up using this
+ language (thanks largely to the efforts of Laura Lawless).  See markup.
+ Moreover, there are translators that we have used to provide versions of the
+ ACL2 @(see documentation) in info (for use in emacs), html (for Mosaic), and
+ tex (for hardcopy) formats.</p>
+
+ <p>A new event @('defdoc') has been implemented.  It is like @(tsee deflabel),
+ but allows redefinition of @(see doc) strings and has other advantages.  See
+ @('defdoc').</p>
+
+ <p>We used to ignore corollaries when collecting up the axioms introduced
+ about constrained functions.  That bug has been fixed.  We thank John Cowles
+ for bringing this bug to our attention.</p>
+
+ <p>The macro @(tsee defstub) now allows a @(':')@(tsee doc) keyword argument,
+ so that @(see documentation) may be attached to the name being introduced.</p>
+
+ <p>A new command @(tsee nqthm-to-acl2) has been added to help Nqthm users to
+ make the transition to ACL2.  See @(see nqthm-to-acl2), which also includes a
+ complete listing of the relevant tables.</p>
+
+ <p>Many function names, especially of the form ``foo@('-lst')'', have been
+ changed in order to support the following convention, for any ``foo'':</p>
+
+ <p>@('(foo-listp lst)') represents the notion @('(for x in lst always foop
+ x)').</p>
+
+ <p>A complete list of these changes may be found at the end of this note.  All
+ of them except @('symbolp-listp') and @('list-of-symbolp-listp') have the
+ string ``@('-lst')'' in their names.  Note also that @('keyword-listp') has
+ been renamed @(tsee keyword-value-listp).</p>
+
+ <p>Accumulated persistence has been implemented.  It is not connected to
+ @(':')@(tsee brr) or rule monitoring.  See @(see accumulated-persistence).</p>
+
+ <p>@(':Trigger-terms') has been added for @(':')@(tsee linear) rule classes,
+ so you can hang a @(see linear) rule under any addend you want.  See @(see
+ linear), which has been improved and expanded.</p>
+
+ <p>ACL2 now accepts @('256') @(see characters) and includes the Common Lisp
+ functions @(tsee code-char) and @(tsee char-code).  However, ACL2 controls the
+ lisp reader so that @('#\\c') may only be used when @('c') is a single
+ standard character or one of @('Newline'), @('Space'), @('Page'), @('Rubout'),
+ @('Tab').  If you want to enter other @(see characters) use @(tsee code-char),
+ e.g., @('(coerce (list (code-char 7) (code-char 240) #a) 'string)').  See
+ @(see characters).  Note: our current handling of @(see characters) makes the
+ set of theorems different under Macintosh Common Lisp (MCL) than under other
+ Common Lisps.  We hope to rectify this situation before the final release of
+ ACL2.</p>
+
+ <p>A new @(see table), @(tsee macro-aliases-table), has been implemented, that
+ associates macro names with function names.  So for example, since @(tsee
+ append) is associated with @(tsee binary-append), the form @('(disable
+ append)') it is interpreted as though it were @('(disable binary-append)').
+ See @(see macro-aliases-table), see @(see add-macro-alias) and see @(see
+ remove-macro-alias).</p>
+
+ <p>The implementation of conditional metalemmas has been modified so that the
+ metafunction is applied before the hypothesis metafunction is applied.  See
+ @(see meta).</p>
+
+ <p>The Common Lisp functions @(tsee acons) and @(tsee endp) have been defined
+ in the ACL2 logic.</p>
+
+ <p>We have added the symbol @(tsee declare) to the list @('*acl2-exports*'),
+ and hence to the package @('\"ACL2-USER\"').</p>
+
+ <p>A new hint, @(':restrict'), has been implemented.  See @(see hints).</p>
+
+ <p>It used to be that if @(':')@(tsee ubt) were given a number that is greater
+ than the largest current @(see command) number, it treated that number the
+ same as @(':')@(tsee max).  Now, an error is caused.</p>
+
+ <p>The @(see table) @(':force-table') has been eliminated.</p>
+
+ <p>A command @(':')@(tsee disabledp) (and macro @(tsee disabledp)) has been
+ added; see @(see disabledp).</p>
+
+ <p>@(see Compilation) via @(':')@(tsee set-compile-fns) is now suppressed
+ during @(tsee include-book).  In fact, whenever the @(see state) global
+ variable @(tsee ld-skip-proofsp) has value @(''')@(tsee include-book).</p>
+
+ <p>Here are some less important changes, additions, and so on.</p>
+
+ <p>Unlike previous releases, we have not proved all the theorems in
+ @('axioms.lisp'); instead we have simply assumed them.  We have deferred such
+ proofs because we anticipate a fairly major changed in Version 1.8 in how we
+ deal with @(see guard)s.</p>
+
+ <p>We used to (accidentally) prohibit the ``redefinition'' of a @(see table)
+ as a function.  That is no longer the case.</p>
+
+ <p>The check for whether a @(see corollary) follows tautologically has been
+ sped up, at the cost of making the check less ``smart'' in the following
+ sense: no longer do we expand primitive functions such as @(tsee implies)
+ before checking this propositional implication.</p>
+
+ <p>The @(see command) @(tsee ubt!) has been modified so that it never causes
+ or reports an error.  See @(see ubt!).</p>
+
+ <p>ACL2 now works in Harlequin LispWorks.</p>
+
+ <p>The user can now specify the @(':trigger-terms') for @(':')@(tsee linear)
+ rules.  See @(see linear).</p>
+
+ <p>The name of the system is now ``ACL2''; no longer is it ``Acl2''.</p>
+
+ <p>The raw lisp counterpart of @(tsee theory-invariant) is now defined to be a
+ no-op as is consistent with the idea that it is just a call of @(tsee
+ table).</p>
+
+ <p>A bug was fixed that caused @(see proof-builder) @(see instructions) to be
+ executed when @(tsee ld-skip-proofsp) was @('t').</p>
+
+ <p>The function @(tsee rassoc) has been added, along with a corresponding
+ function used in its @(see guard), @('r-eqlable-alistp').</p>
+
+ <p>The @(tsee in-theory) event and hint now print a warning not only when
+ certain ``primitive'' @(':')@(tsee definition) rules are @(see disable)d, but
+ also when certain ``primitive'' @(':')@(tsee executable-counterpart) rules are
+ @(see disable)d.</p>
+
+ <p>The modified version of @('trace') provided by ACL2, for use in raw Lisp,
+ has been modified so that the lisp special variable @('*trace-alist*') is
+ consulted.  This alist associates, using @(tsee eq), values with their print
+ representations.  For example, initially @('*trace-alist*') is a one-element
+ list containing the pair @('(cons state '|*the-live-state*|)').</p>
+
+ <p>The system now prints an observation when a form is skipped because the
+ default color is @(':red') or @(':pink').  (Technically: @('when-cool') has
+ been modified.)</p>
+
+ <p>Additional protection exists when you submit a form to raw Common Lisp that
+ should only be submitted inside the ACL2 read-eval-print loop.</p>
+
+ <p>Here is a complete list of the changes in function names described near the
+ top of this note, roughly of the form</p>
+
+ @({
+  foo-lst --> foo-listp
+ })
+
+ <p>meaning: the name ``@('foo-lst')'' has been changed to
+ ``@('foo-listp').''</p>
+
+ @({
+  symbolp-listp    --> symbol-listp
+  list-of-symbolp-listp  --> symbol-list-listp
+                         {for consistency with change to symbol-listp}
+  rational-lst     --> rational-listp
+                       {which in fact was already defined as well}
+  integer-lst      --> integer-listp
+  character-lst    --> character-listp
+  stringp-lst      --> string-listp
+  32-bit-integer-lst   --> 32-bit-integer-listp
+  typed-io-lst     --> typed-io-listp
+  open-channel-lst --> open-channel-listp
+  readable-files-lst   --> readable-files-listp
+  written-file-lst --> written-file-listp
+  read-file-lst    --> read-file-listp
+  writeable-file-lst   --> writable-file-listp
+                       {note change in spelling of ``writable''}
+  writeable-file-lst1  --> writable-file-listp1
+  pseudo-termp-lst     --> pseudo-term-listp
+  hot-termp-lst --> hot-term-listp {by analogy with pseudo-term-listp}
+  weak-termp-lst   --> weak-term-listp
+  weak-termp-lst-lst   --> weak-termp-list-listp
+  ts-builder-case-lstp -> ts-builder-case-listp
+  quotep-lst       --> quote-listp
+  termp-lst        --> term-listp
+  instr-lst        --> instr-listp
+  spliced-instr-lst    --> spliced-instr-listp
+  rewrite-fncallp-lst  --> rewrite-fncallp-listp
+  every-occurrence-equiv-hittablep1-lst -->
+              every-occurrence-equiv-hittablep1-listp
+  some-occurrence-equiv-hittablep1-lst  -->
+              some-occurrence-equiv-hittablep1-listp
+              {by analogy with the preceding, even though it's a
+               ``some'' instead of ``all'' predicate]
+  almost-quotep1-lst   --> almost-quotep1-listp
+  ffnnames-subsetp-lst --> ffnnames-subsetp-listp
+  boolean-lstp     --> boolean-listp
+  subst-expr1-lst-okp  --> subst-expr1-ok-listp
+ })")
+
+(defxdoc note-1-8
+  :parents (release-notes)
+  :short "ACL2 Version 1.8 (May, 1995) Notes"
+  :long "<p>See @(see note-1-8-update) for yet more recent changes.</p>
+
+ <p>@(see Guard)s have been eliminated from the ACL2 logic.  A summary is
+ contained in this brief note.  Also see @(see defun-mode) and see @(see
+ set-guard-checking).</p>
+
+ <p>@(see Guard)s may be included in @(see defuns) as usual but are ignored
+ from the perspective of admission to the logic: functions must terminate on
+ all arguments.</p>
+
+ <p>As in Nqthm, primitive functions, e.g., @(tsee +) and @(tsee car),
+ logically default unexpected arguments to convenient values.  Thus, @('(+ 'abc
+ 3)') is @('3') and @('(car 'abc)') is @('nil').  See @(see programming), and
+ see the @(see documentation) for the individual primitive functions.</p>
+
+ <p>In contrast to earlier versions of ACL2, Version 1.8 logical functions are
+ executed at Nqthm speeds even when @(see guard)s have not been verified.  In
+ versions before 1.8, such functions were interpreted by ACL2.</p>
+
+ <p>Colors have been eliminated.  Two ``@(see defun-mode)s'' are supported,
+ @(':')@(tsee program) and @(':')@(tsee logic).  Roughly speaking, @(':')@(tsee
+ program) does what @(':red') used to do, namely, allow you to prototype
+ functions for execution without any proof burdens.  @(':')@(tsee Logic) mode
+ does what @(':blue') used to do, namely, allow you to add a new definitional
+ axiom to the logic.  A global @(see default-defun-mode) is comparable to the
+ old default color.  The system comes up in @(':')@(tsee logic) mode.  To
+ change the global @(see defun-mode), type @(':')@(tsee program) or
+ @(':')@(tsee logic) at the top-level.  To specify the @(see defun-mode) of a
+ @(tsee defun) locally use</p>
+
+ <code> @('(declare (xargs :mode mode))').  </code>
+
+ <p>The @(see prompt) has changed.  The initial @(see prompt), indicating
+ @(':')@(tsee logic) mode, is</p>
+
+ @({
+  ACL2 !>
+ })
+
+ <p>If you change to @(':')@(tsee program) mode the @(see prompt) becomes</p>
+
+ @({
+  ACL2 p!>
+ })
+
+ <p>@(see Guard)s can be seen as having either of two roles: (a) they are a
+ specification device allowing you to characterize the kinds of inputs a
+ function ``should'' have, or (b) they are an efficiency device allowing
+ logically defined functions to be executed directly in Common Lisp.  If a
+ @(see guard) is specified, as with @(tsee xargs) @(':')@(tsee guard), then it
+ is ``verified'' at defun-time (unless you also specify @(tsee xargs)
+ @(':verify-guards nil')).  @(see Guard) verification means what it always has:
+ the input @(see guard) is shown to imply the @(see guard)s on all subroutines
+ in the body.  If the @(see guard)s of a function are verified, then a call of
+ the function on inputs satisfying the @(see guard) can be computed directly by
+ Common Lisp.  Thus, verifying the @(see guard)s on your functions will allow
+ them to execute more efficiently.  But it does not affect their logical
+ behavior and since you will automatically get Nqthm speeds on unverified
+ logical definitions, most users will probably use @(see guard)s either as a
+ specification device or only use them when execution efficiency is extremely
+ important.</p>
+
+ <p>Given the presence of @(see guard)s in the system, two issues are
+ unavoidable.  Are @(see guard)s verified as part of the @(tsee defun) process?
+ And are @(see guard)s checked when terms are evaluated?  We answer both of
+ those questions below.</p>
+
+ <p>Roughly speaking, in its initial @(see state) the system will try to verify
+ the @(see guard)s of a @(tsee defun) if a @(':')@(tsee guard) is supplied in
+ the @(tsee xargs) and will not try otherwise.  However, @(see guard)
+ verification in @(tsee defun) can be inhibited ``locally'' by supplying the
+ @(tsee xargs) @(':')@(tsee verify-guards) @('nil').  ``Global'' inhibition can
+ be obtained via the @(':')@(tsee set-verify-guards-eagerness).  If you do not
+ use the @(':')@(tsee guard) @(tsee xargs), you will not need to think about
+ @(see guard) verification.</p>
+
+ <p>We now turn to the evaluation of expressions.  Even if your functions
+ contain no @(see guard)s, the primitive functions do and hence you have the
+ choice: when you submit an expression for evaluation do you mean for @(see
+ guard)s to be checked at runtime or not?  Put another way, do you mean for the
+ expression to be evaluated in Common Lisp (if possible) or in the logic?
+ Note: If Common Lisp delivers an answer, it will be the same as in the logic,
+ but it might be erroneous to execute the form in Common Lisp.  For example,
+ should @('(car 'abc)') cause a @(see guard) violation error or return
+ @('nil')?</p>
+
+ <p>The top-level ACL2 loop has a variable which controls which sense of
+ execution is provided.  To turn ``@(see guard) checking on,'' by which we mean
+ that @(see guard)s are checked at runtime, execute the top-level form
+ @(':set-guard-checking t').  To turn it off, do @(':set-guard-checking nil').
+ The status of this variable is reflected in the @(see prompt).</p>
+
+ @({
+  ACL2 !>
+ })
+
+ <p>means @(see guard) checking is on and</p>
+
+ @({
+  ACL2 >
+ })
+
+ <p>means @(see guard) checking is off.  The exclamation mark can be thought of
+ as ``barring'' certain computations.  The absence of the mark suggests the
+ absence of error messages or unbarred access to the logical axioms.  Thus, for
+ example</p>
+
+ @({
+  ACL2 !>(car 'abc)
+ })
+
+ <p>will signal an error, while</p>
+
+ @({
+  ACL2 >(car 'abc)
+ })
+
+ <p>will return @('nil').</p>
+
+ <p>Note that whether or not @(see guard)s are checked at runtime is
+ independent of whether you are operating in @(':')@(tsee program) mode or
+ @(':')@(tsee logic) mode and whether theorems are being proved or not.
+ (Although it must be added that functions defined in @(':')@(tsee program)
+ mode cannot help but check their @(see guard)s because no logical definition
+ exists.)</p>
+
+ <p>Version 1.8 permits the verification of the @(see guard)s of theorems, thus
+ insuring that all instances of the theorem will evaluate without error in
+ Common Lisp.  To verify the @(see guard)s of a theorem named @('name') execute
+ the event</p>
+
+ @({
+  (verify-guards name).
+ })
+
+ <p>If a theorem's @(see guard)s have been verified, the theorem is guaranteed
+ to evaluate without error to non-@('nil') in Common Lisp (provided resource
+ errors do not arise).</p>
+
+ <p>Caveat about @(tsee verify-guards): @(tsee implies) is a function symbol,
+ so in the term @('(implies p q)'), @('p') cannot be assumed true when @('q')
+ is evaluated; they are both evaluated ``outside.''  Hence, you cannot
+ generally verify the @(see guard)s on a theorem if @(tsee implies) is used to
+ state the hypotheses.  Use @(tsee if) instead.  In a future version of ACL2,
+ @(tsee implies) will likely be a macro.</p>
+
+ <p>See sum-list-example.lisp for a nice example of the use of Version 1.8.
+ This is roughly the same as the documentation for @(see guard-example).</p>
+
+ <p>We have removed the capability to do ``old-style-forcing'' as existed
+ before Version 1.5.  See @(see note-1-5).</p>
+
+ <p>NOTE: Some low level details have, of course, changed.  One such change is
+ that there are no longer two distinct type prescriptions stored when a
+ function is admitted with its @(see guard)s verified.  So for example, the
+ type prescription @(see rune) for @(tsee binary-append) is now</p>
+
+ @({
+  (:type-prescription binary-append)
+ })
+
+ <p>while in Versions 1.7 and earlier, there were two such @(see rune)s:</p>
+
+ @({
+  (:type-prescription binary-append . 1)
+  (:type-prescription binary-append . 2)
+ })
+
+ <p>Nqthm-style forcing on @(see linear) arithmetic assumptions is no longer
+ executed when forcing is @(see disable)d.</p>
+
+ <p>Functional instantiation now benefits from a trick also used in Nqthm: once
+ a @(see constraint) generated by a @(':functional-instance') lemma instance
+ (see @(see lemma-instance)) has been proved on behalf of a successful event,
+ it will not have to be re-proved on behalf of a later event.</p>
+
+ <p>@(tsee 1+) and @(tsee 1-) are now macros in the logic, not functions.
+ Hence, for example, it is ``safe'' to use them on left-hand sides of rewrite
+ rules, without invoking the common warning about the presence of nonrecursive
+ function symbols.</p>
+
+ <p>A new @(see documentation) section @(see file-reading-example) illustrates
+ how to process forms in a file.</p>
+
+ <p>A new @(see proof-builder) command @('forwardchain') has been added; see
+ @(see acl2-pc::forwardchain).</p>
+
+ <p>It is now possible to use quantifiers.  See @(see defun-sk) and see @(see
+ defchoose).</p>
+
+ <p>There is a new event @(tsee set-inhibit-warnings), which allows the user to
+ turn off warnings of various types.  see @(see set-inhibit-warnings).</p>
+
+ <p>An unsoundness relating @(tsee encapsulate) and @(':functional-instance')
+ @(see hints) has been remedied, with a few small effects visible at the user
+ level.  The main observable effect is that @(tsee defaxiom) and non-local
+ @(tsee include-book) @(see events) are no longer allowed in the scope of any
+ @(tsee encapsulate) event that has a non-empty @(see signature).</p>
+
+ <p>When @(tsee certify-book) is called, we now require that the default @(see
+ defun-mode) (see @(see default-defun-mode)) be @(':')@(tsee logic).  On a
+ related note, the default @(see defun-mode) is irrelevant to @(tsee
+ include-book); the mode is always set to @(':')@(tsee logic) initially, though
+ it may be changed within the book and reverts to its original value at the
+ conclusion of the @(tsee include-book).  A bug in @(tsee include-book)
+ prevented it from acting this way even though the @(see documentation) said
+ otherwise.</p>
+
+ <p>The @(see documentation) has been substantially improved.  A new section
+ ``Programming'' contains @(see documentation) of many useful functions
+ provided by ACL2; see @(see programming).  Also, the @(see documentation) has
+ been ``marked up'' extensively.  Thus in particular, users of Mosaic will find
+ many links in the @(see documentation).</p>
+
+ <p>The symbols @(tsee force), @(tsee mv-nth), and @('acl2-count') have been
+ added to the list @('*acl2-exports*').</p>
+
+ <p>We now permit most names from the main Lisp package to be used as names,
+ except for names that define functions, macros, or constants.  See @(see
+ name).</p>
+
+ <p>We have changed the list of imports from the Common Lisp package to ACL2,
+ i.e., the list @('*common-lisp-symbols-from-main-lisp-package*'), to be
+ exactly those external symbols of the Common Lisp package as specified by the
+ draft Common Lisp standard.  In order to accommodate this change, we have
+ renamed some ACL2 functions as shown below, but these and other ramifications
+ of this change should be transparent to most ACL2 users.</p>
+
+ @({
+  warning      --> warning$
+  print-object --> print-object$
+ })
+
+ <p>Proof trees are no longer enabled by default.  To start them up,
+ @(':')@(tsee start-proof-tree).</p>
+
+ <p>We have added the capability of building smaller images.  The easiest way
+ to do this on a Unix (trademark of AT&amp;T) system is: @('make small').</p>
+
+ <p>Here we will put some less important changes, additions, and so on.</p>
+
+ <p>We have added definitions for the Common Lisp function @(tsee position)
+ (for the test @(tsee eql)), as well as corresponding versions @(tsee
+ position-equal) and @(tsee position-eq) that use tests @(tsee equal) and
+ @(tsee eq), respectively.  See @(see position), see @(see position-equal), and
+ see @(see position-eq).</p>
+
+ <p>The @(tsee defthm) event @('rational-listp-implies-rationalp-car') no
+ longer exists.</p>
+
+ <p>We fixed a bug in the hint mechanism that applied @(':by'), @(':cases'),
+ and @(':use') @(see hints) to the first induction goal when the prover
+ reverted to proving the original goal by induction.</p>
+
+ <p>We fixed a bug in the handling of @('(set-irrelevant-formals-ok
+ :warn)').</p>
+
+ <p>In support of removing the old-style forcing capability, we deleted the
+ initialization of @(see state) global @('old-style-forcing') and deleted the
+ definitions of @('recover-assumptions'), @('recover-assumptions-from-goal'),
+ @('remove-assumptions1'), @('remove-assumptions'), and
+ @('split-on-assumptions'), and we renamed @('split-on-assumptions1') to
+ @('split-on-assumptions').</p>
+
+ <p>The special value @(''none') in the @(see proof-builder) commands
+ @('claim') and @(tsee =) has been replaced by @(':none').</p>
+
+ <p>A bug in the handling of @(see hints) by subgoals has been fixed.  For
+ example, formerly a @(':do-not') hint could be ``erased'' by a @(':use') hint
+ on a subgoal.  Thanks go to Art Flatau for noticing the bug.</p>
+
+ <p>The functions @('weak-termp') and @('weak-term-listp') have been deleted,
+ and their calls have been replaced by corresponding calls of @(tsee
+ pseudo-termp) and @('pseudo-term-listp').  The notion of @(tsee pseudo-termp)
+ has been slightly strengthened by requiring that terms of the form @('(quote
+ ...)') have length 2.</p>
+
+ <p>Performance has been improved in various ways.  At the prover level,
+ backchaining through the recognizer alist has been eliminated in order to
+ significantly speed up ACL2's rewriter.  Among the other prover changes (of
+ which there are several, all technical): we no longer clausify the input term
+ when a proof is interrupted in favor of inducting on the input term.  At the
+ @(see IO) level, we have improved performance somewhat by suitable
+ declarations and proclamations.  These include technical modifications to the
+ macros @(tsee mv) and @(tsee mv-let), and introduction of a macro @('the-mv')
+ analogous to the macro @(tsee the) but for forms returning multiple
+ values.</p>
+
+ <p>The function @('spaces') now takes an extra argument, the current
+ column.</p>
+
+ <p>A bug in the @(see proof-builder) @('equiv') command was fixed.</p>
+
+ <p>The function @('intersectp') has been deleted, because it was essentially
+ duplicated by the function @(tsee intersectp-equal).</p>
+
+ <p>We now proclaim functions in AKCL and GCL before compiling @(see books).
+ This should result in somewhat increased speed.</p>
+
+ <p>The function @('repeat') has been eliminated; use @(tsee make-list)
+ instead.</p>
+
+ <p>The @(see proof-builder) command @('expand') has been fixed so that it
+ eliminates @(tsee let) (lambda) expressions when one would expect it to.</p>
+
+ <p>A new primitive function, @(tsee mv-nth), has been introduced.  @(tsee
+ Mv-nth) is equivalent to @(tsee nth) and is used in place of @(tsee nth) in
+ the translation of @(tsee mv-let) expressions.  This allows the user to
+ control the simplification of @(tsee mv-let) expressions without affecting how
+ @(tsee nth) is treated.  In that spirit, the rewriter has been modified so
+ that certain @(tsee mv-nth) expressions, namely those produced in the
+ translation of @('(mv-let (a b c)(mv x y z) p)'), are given special
+ treatment.</p>
+
+ <p>A minor bug in @('untranslate') has been fixed, which for example will fix
+ the printing of conjunctions.</p>
+
+ <p>@('Translate') now takes a @('logicp') argument, which indicates whether it
+ enforces the restriction that @(':')@(tsee program) mode functions do not
+ occur in the result.</p>
+
+ <p>The modified version of @('trace') provided by ACL2, for use in raw Lisp,
+ has been modified so that the lisp special variable @('*trace-alist*') has a
+ slightly different functionality.  This alist associates, using @(tsee eq),
+ symbols with the print representations of their values.  For example,
+ initially @('*trace-alist*') is a one-element list containing the pair
+ @('(cons 'state '|*the-live-state*|)').  Thus, one may cons the pair @('(cons
+ '*foo* \"It's a FOO!\")') on to @('*trace-alist*'); then until @('*foo*') is
+ defined, this change will have no effect, but after for example</p>
+
+ @({
+  (defconst *foo* 17)
+ })
+
+ <p>then @('trace') will print @('17') as @('\"It's a FOO!\"').</p>
+
+ <p>@('Trace') also traces the corresponding logic function.</p>
+
+ <p>@(see Proof-tree) display has been improved slightly in the case of
+ successful proofs and certain event failures.</p>
+
+ <p>The function @('positive-integer-log2') has been deleted.</p>
+
+ <p>The macro @(tsee skip-proofs) now prints a warning message when it is
+ encountered in the context of an @(tsee encapsulate) event or a book.  See
+ @(see skip-proofs).</p>
+
+ <p>Some functions related to @('the-fn') and @('wormhole1') now have @(see
+ defun-mode) @(':')@(tsee program), but this change is almost certain to be
+ inconsequential to all users.</p>")
+
+(defxdoc note-1-8-update
+  :parents (release-notes)
+  :short "ACL2 Version 1.8 (Summer, 1995) Notes"
+  :long "<p>ACL2 can now use Ordered Binary Decision Diagram technology.  See
+ @(see bdd).  There is also a @(see proof-builder) @('bdd') command.</p>
+
+ <p>ACL2 is now more respectful of the intention of the function @(tsee hide).
+ In particular, it is more careful not to dive inside any call of @(tsee hide)
+ during equality substitution and case splitting.</p>
+
+ <p>The @(tsee ld) special (see @(see ld)) @(tsee ld-pre-eval-print) may now be
+ used to turn off printing of input forms during processing of @(tsee
+ encapsulate) and @(tsee certify-book) forms, by setting it to the value
+ @(':never'), i.e., @('(set-ld-pre-eval-print :never state)').  See @(see
+ ld-pre-eval-print).</p>
+
+ <p>The TUTORIAL documentation section (now obsolete) has, with much help from
+ Bill Young, been substantially improved to a bona fide introduction.</p>
+
+ <p>The term pretty-printer has been modified to introduce @('(<= X Y)') as an
+ abbreviation for @('(not (< Y X))').</p>
+
+ <p>Forward chaining and linear arithmetic now both benefit from the evaluation
+ of ground subterms.</p>
+
+ <p>A new macro @(tsee set-inhibit-output-lst) has been defined.  This should
+ be used when setting the @(see state) global @('inhibit-output-lst'); see
+ @(see set-inhibit-output-lst) and see @(see proof-tree).</p>
+
+ <p>The test for redundancy in definitions includes the @(see guard) and type
+ declarations.  See @(see redundant-events).</p>
+
+ <p>See @(see generalized-booleans) for a discussion of a potential soundness
+ problem for ACL2 related to the question: Which Common Lisp functions are
+ known to return Boolean values?</p>
+
+ <p>Here we will put some less important changes, additions, and so on.</p>
+
+ <p>A bug has been fixed so that now, execution of @(':comp t') (see @(see
+ comp)) correctly handles non-standard characters.</p>
+
+ <p>A bug in @(tsee digit-char-p) has been fixed, so that the ``default'' is
+ @('nil') rather than @('0').</p>
+
+ <p>@(tsee True-listp) now tests the final @(tsee cdr) against @('nil') using
+ @(tsee eq) instead of @(tsee equal), for improved efficiency.  The logical
+ meaning is, however, unchanged.</p>
+
+ <p>@(tsee Put-assoc-equal) has been added to the logic (it used to have
+ @(':')@(tsee defun-mode) @(':')@(tsee program), and has been documented.</p>")
+
+(defxdoc note-1-9
+  :parents (release-notes)
+  :short "ACL2 Version 1.9 (Fall, 1996) Notes"
+  :long "<p>By default, when the system is started it is illegal to use the
+ variable @(tsee STATE) as a formal parameter of a function definition.  The
+ aim is to prevent novice users from stumbling into the Byzantine syntactic
+ restrictions on that variable symbol.  Use</p>
+
+ @({
+  :set-state-ok t
+ })
+
+ <p>or, equivalently,</p>
+
+ @({
+  (set-state-ok t)
+ })
+
+ <p>to switch back to the old default mode.  See @(see set-state-ok)</p>
+
+ <p>@('Set-state-ok') is an event that affects the ACL2 defaults table (see
+ @(see acl2-defaults-table)).  Recall that when books are included, the
+ defaults table is restored to its pre-inclusion state.  Thus, while a
+ @('set-state-ok') form will permit the book to define a @('state')-using
+ function, it will not permit the user of the book to make such a definition.
+ We recommend putting @('(set-state-ok t)') in any book that defines a
+ @('state') using function.</p>
+
+ <p>Books certified under Version 1.8 must be recertified under Version 1.9.
+ See :DOC version.</p>
+
+ <p>The simplifier has been made to look out for built-in clauses, whereas in
+ past versions such clauses were only noticed by the ``preprocessor'' at the
+ top of the waterfall.  THIS CHANGE MAY PREVENT OLD SCRIPTS FROM REPLAYING!
+ The undesirable side-effect is caused by the fact that @(':HINTS') require you
+ to refer to clauses by their exact name (see @(see goal-spec)) and because the
+ new simplifier proves more clauses than before, the goals produced have
+ different names.  Thus, if a script uses @(':HINTS') that refer to clauses
+ other than \"Goal\", e.g., \"Subgoal 1.3\" then the hint may be applied to a
+ different subgoal than originally intended.</p>
+
+ <p>The use of built-in-clauses has been made more efficient.  If a set of
+ clauses arise often in a piece of work, it might be advantageous to build them
+ in even if that results in a large set (hundreds?) of built-in clauses.  See
+ @(see built-in-clause)</p>
+
+ <p>Wormholes can now be used in :logic mode functions. See @(see wormhole)</p>
+
+ <p>It is now possible to provide ``computed hints.''  For example, have you
+ ever wished to say ``in all goals with a name like this, :use that'' or ``if
+ this term is in the subgoal, then :use that''?  Well, see @(see
+ computed-hints) and the extraordinarily long example in see @(see
+ using-computed-hints).</p>
+
+ <p>@('Hide') terms may be rewritten with :rewrite rules about @('hide').  See
+ @(see hide), where we also now explain why @('hide') terms are sometimes
+ introduced into your proof attempts.</p>
+
+ <p>A bug that sometimes caused the ``non-lazy IF'' hard error message was
+ fixed.</p>
+
+ <p>A bug that sometimes caused a hard error in forward chaining was fixed.</p>
+
+ <p>A bug in print-rules (:pr) was fixed.</p>
+
+ <p>We report the use of :executable-counterparts in the evaluation of SYNTAXP
+ forms.</p>
+
+ <p>Some documentation errors were fixed.</p>
+
+ <p>A bug in parent-tree tracking in add-literal-and-pt was fixed.</p>
+
+ <p>A bug in ok$, go$ and eval$ was fixed.</p>
+
+ <p>Clausify now optimizes (mv-nth 'k (list x0 ... xk ... xn)) to xk.</p>")
+
 (defxdoc note-2-0
   :parents (release-notes)
   :short "ACL2 Version 2.0 (July, 1997) Notes"
@@ -77176,1350 +78520,6 @@ it."
  to a non-@('nil') value in raw Lisp (see @(see hard-error)).</p>
 
  ")
-
-(defxdoc note-1-1
-  :parents (release-notes)
-  :short "Acl2 Version 1.1 Notes"
-  :long "<p>The new features are extensively documented.  The relevant topics
- are:</p>
-
- <p>It is especially important to read all of of the @(see documentation) for
- @(see books) before trying to use books.  However, the new @(':more')
- keyword command is so handy for reading long @(see documentation) strings that
- we recommend you start with @(':')@(tsee doc) more if reading at the terminal.
- Some documentation has been written for @(see guard)s which you might find
- interesting.</p>")
-
-(defxdoc note-1-2
-  :parents (release-notes)
-  :short "Acl2 Version 1.2 Notes"
-  :long "<p>Hacker mode has been eliminated and @(see programming) mode has
- been added.  @(see Programming) mode is unsound but does syntax checking and
- permits redefinitions of names.  See @(':')@(tsee doc) @('load-mode') and
- @(':')@(tsee doc) @('g-mode').</p>
-
- <p>The arguments to @(tsee ld) have changed.  @(tsee Ld) is now much more
- sophisticated.  See @(see ld).</p>
-
- <p>For those occasions on which you wish to look at a large list structure
- that you are afraid to print, try @('(walkabout x state)'), where @('x') is an
- Acl2 expression that evaluates to the structure in question.  I am afraid
- there is no @(see documentation) yet, but it is similar in spirit to the
- Interlisp structure editor.  You are standing on an object and commands move
- you around in it.  E.g., 1 moves you to its first element, 2 to its second,
- etc.; 0 moves you up to its parent; @('nx') and @('bk') move you to its next
- sibling and previous sibling; @('pp') prettyprints it; @(tsee q) exits
- returning @('nil'); @(tsee =) exits returning the thing you're standing on;
- @('(= symb)') assigns the thing you're standing on to the @(see state) global
- variable @('symb').</p>
-
- <p>Several new @(see hints) have been implemented, including @(':by') and
- @(':do-not').  The old @(':do-not-generalize') has been scrapped in favor of
- such new @(see hints) as @(':do-not') @('(generalize elim)').  @(':By') lets
- you say ``this goal is subsumed by'' a given lemma instance.  The @(':by')
- hint also lets you say ``this goal can't be proved yet but skip it and see how
- the rest of the proof goes.'' See @(see hints).</p>")
-
-(defxdoc note-1-3
-  :parents (release-notes)
-  :short "Acl2 Version 1.3 Notes"
-  :long "<p>@(see Programming) mode has been eliminated.  Instead, all
- functions have a ``color'' which indicates what can be done with the function.
- For example, @(':red') functions can be executed but have no axioms describing
- them.  Thus, @(':red') functions can be introduced after passing a simple
- syntactic check and they can be redefined without undoing.  But nothing of
- consequence can be proved about them.  At the other extreme are @(':gold')
- functions which can be executed and which also have passed both the
- termination and the @(see guard) verification proofs.  The color of a function
- can be specified with the new @(tsee xargs) keyword, @(':color'), which, if
- omitted defaults to the global setting of @('ld-color').  @('Ld-color')
- replaces @('load-mode').  Setting @('ld-color') to @(':red') causes behavior
- similar to the old @(':g-mode').  Setting @('ld-color') to @(':gold') causes
- behavior similar to the old @(':v-mode').  It is possible to prototype your
- system in @(':red') and then convert @(':red') functions to :@('blue')
- individually by calling @(tsee verify-termination) on them.  They can then be
- converted to @(':gold') with @(tsee verify-guards).  This allows us to
- undertake to verify the termination and @(see guard)s of system functions.
- See @(':')@(tsee doc) color for an introduction to the use of colors.</p>
-
- <p>Type prescription rules have been added.  Recall that in Nqthm, some @(tsee
- rewrite) rules were actually stored as ``@(see type-prescription)s.''  Such
- rules allow the user to inform Nqthm's primitive type mechanism as to the
- kinds of shells returned by a function.  Earlier versions of Acl2 did not have
- an analogous kind of rule because Acl2's type mechanism is complicated by
- @(see guard)s.  Version 1.3 supports @(tsee type-prescription) rules.  See
- @(see type-prescription).</p>
-
- <p>Three more new @(see rule-classes) implement congruence-based rewriting.
- It is possible to identify a binary relation as an equivalence relation (see
- @(see equivalence)), to show that one equivalence relation refines another
- (see @(see refinement)) and to show that a given equivalence relation is
- maintained when rewriting a given function call, e.g., @('(fn ...xk...)'), by
- maintaining another equivalence relation while rewriting the @('k')th argument
- (see @(see congruence)).  If @('r') has been shown to be an @(see equivalence)
- relation and then @('(implies hyps (r (foo x) (bar x)))') is proved as a
- @(':')@(tsee rewrite) rule, then instances of @('(foo x)') will be replaced by
- corresponding instances of @('(bar x)') provided the instance occurs in a slot
- where the maintenance of @('r-equivalence') is known to be sufficient and
- @('hyps') can be established as usual.</p>
-
- <p>In Version 1.2, @(see rule-classes) were simple keywords, e.g.,
- @(':')@(tsee rewrite) or @(':')@(tsee elim).  In Version 1.3, @(see
- rule-classes) have been elaborated to allow you to specify how the theorem
- ought to be used as a rule.  That is, the new @(see rule-classes) allows you
- to separate the mathematical statement of the formula from its interpretation
- as a rule.  See @(see rule-classes).</p>
-
- <p>Rules used to be named by symbols, e.g., @(tsee car) and @('car-cons') were
- the names of rules.  Unfortunately, this was ambiguous because there are three
- rules associated with function symbols: the symbolic definition, the
- executable-counterpart, and the @(see type-prescription); many different rules
- might be associated with theorems, depending on the rule classes.  In Version
- 1.3 rules are named by ``@(see rune)s'' (which is just short hand for ``rule
- names'').  Example @(see rune)s are @('(:definition car)'),
- @('(:executable-counterpart car)'), and @('(:type-prescription car . 1)').
- Every rule added by an event has a different name and you can @(see enable)
- and @(see disable) them independently.  See @(see rune) and see @(see
- theories).</p>
-
- <p>The identity function @(tsee force), of one argument, has been added and
- given a special interpretation by the functions responsible for establishing
- hypotheses in backchaining: When the system fails to establish some hypothesis
- of the form @('(force term)'), it simply assumes it is true and goes on,
- delaying until later the establishment of term.  In particular, pushes a new
- subgoal to prove term in the current context.  When that subgoal is attacked,
- all of the resources of the theorem prover, not just rewriting, are brought to
- bear.  Thus, for example, if you wish to prove the rule <tt>(implies
- (good-statep s) (equal (exec s n) s'))</tt> and it is your expectation that
- every time @('exec') appears its first argument is a @('good-statep') then you
- might write the rule as <tt>(implies (force (good-statep s)) (equal (exec s n)
- s'))</tt>.  This rule is essentially an unconditional rewrite of @('(exec s
- n)') to @('s'') that spawns the new goal @('(good-statep s)').  See @(see
- force).  Because you can now specify independently how a theorem is used as a
- rule, you need not write the @(tsee force) in the actual theorem proved.  See
- @(see rule-classes).</p>
-
- <p>Version 1.3 supports a facility similar to Nqthm's @(tsee break-lemma).
- See @(see break-rewrite).  You can install ``@(see monitor)s'' on @(see rune)s
- that will cause interactive breaks under certain conditions.</p>
-
- <p>Acl2 also provides ``@(see wormhole)s'' which allow you to write functions
- that cause interaction with the user but which do not require that you have
- access to @(tsee state).  See @(see wormhole).</p>
-
- <p>The rewriter now automatically backchains to stronger recognizers.  There
- is no user hook to this feature but it may simplify some proofs with which
- older versions of Acl2 had trouble.  For example, if the rewriter is trying to
- prove @('(rationalp (foo a b c))') it is now smart enough to try lemmas that
- match with @('(integerp (foo a b c))').</p>")
-
-(defxdoc note-1-4
-  :parents (release-notes)
-  :short "Acl2 Version 1.4 Notes"
-  :long "<p>Once again @(tsee ld) only takes one required argument, as the
- @('bind-flg') has been deleted.</p>
-
- <p>Three commands have been added in the spirit of @(':')@(tsee pe).
- @(':')@(tsee Pe!) is similar to @(':')@(tsee pe) but it prints all @(see
- events) with the given name, rather than just the most recent.  The command
- @(':')@(tsee pf) prints the corollary formula corresponding to a name or @(see
- rune).  The command @(':')@(tsee pl) (print lemmas) prints rules whose top
- function symbol is the given name.  See @(see pe!), see @(see pf), and see
- @(see pl).</p>
-
- <p>Book naming conventions have been changed somewhat.  The once-required
- @('.lisp') extension is now prohibited!  Directories are supported, including
- a notion of ``connected book directory''.  See @(see book-name).  Also, the
- second argument of @(tsee certify-book) is now optional, defaulting to
- @('0').</p>
-
- <p>@(see Compilation) is now supported inside the Acl2 loop.  See @(see comp)
- and see @(see set-compile-fns).</p>
-
- <p>The default color is now part of the Acl2 @(see world); see @(':')@(tsee
- doc) @('default-color').  @('Ld-color') is no longer an @(tsee ld) special.
- Instead, colors are @(see events); see the documentation for @('red'),
- @('pink'), @('blue'), and @('gold').</p>
-
- <p>A @(see table) exists for controlling whether Acl2 prints comments when it
- @(see force)s hypotheses of rules; see @(':')@(tsee doc) @('force-table').
- Also, it is now possible to turn off the forcing of assumptions by disabling
- the definition of @(see force); see @(see force).</p>
-
- <p>The event @('defconstant') is no longer supported, but a very similar
- event, @(tsee defconst), has been provided in its place.  See @(see
- defconst).</p>
-
- <p>The event for defining @(see congruence) relations is now @(tsee defcong)
- (formerly, @('defcon')).</p>
-
- <p>Patterns are now allowed in @(':expand') @(see hints).  See the
- documentation for @(':expand') inside the documentation for @(see hints).</p>
-
- <p>We have improved the way we report rules used by the simplifier.  All @(see
- rune)s of the same type are reported together in the running commentary
- associated with each goal, so that for example, executable-counterparts are
- listed separately from definitions, and rewrite rules are listed separately
- from @(see linear) rules.  The preprocessor now mentions ``simple'' rules; see
- @(see simple).</p>
-
- <p>The mechanism for printing warning messages for new rewrite rules, related
- to subsumption, now avoids worrying about nonrecursive function symbols when
- those symbols are @(see disable)d.  These messages have also been eliminated
- for the case where the old rule is a @(':')@(tsee definition) rule.</p>
-
- <p>Backquote has been modified so that it can usually provide predictable
- results when used on the left side of a rewrite rule.</p>
-
- <p>Time statistics are now printed even when an event fails.</p>
-
- <p>The Acl2 trace package has been modified so that it prints using the values
- of the Lisp globals @('*print-level*') and @('*print-length*')
- (respectively).</p>
-
- <p>@(see Table) has been modified so that the @(':clear') option lets you
- replace the entire @(see table) with one that satisfies the @('val') and key
- guards (if any); see @(see table).</p>
-
- <p>We have relaxed the translation rules for @(':measure') @(see hints) to
- @(tsee defun), so that the the same rules apply to these terms that apply to
- terms in @(tsee defthm) @(see events).  In particular, in @(':measure') @(see
- hints) @(tsee mv) is treated just like @(tsee list), and @(tsee state)
- receives no special handling.</p>
-
- <p>The @(see loop-stopper) test has been relaxed.  The old test required that
- every new argument be strictly less than the corresponding old argument in a
- certain @(see term-order).  The new test uses a lexicographic order on term
- lists instead.  For example, consider the following rewrite rule.</p>
-
- @({
-    (equal
-     (variable-update var1
-                      val1 (variable-update var2 val2 vs))
-     (variable-update var2
-                      val2 (variable-update var1 val1 vs)))
- })
-
- <p>This rule is permutative.  Now imagine that we want to apply this rule to
- the term</p>
-
- @({
-    (variable-update u y (variable-update u x vs)).
- })
-
- <p>Since the actual corresponding to both @('var1') and @('var2') is @('u'),
- which is not strictly less than itself in the @(see term-order), this rule
- would fail to be applied in this situation when using the old test.  However,
- since the pair @('(u x)') is lexicographically less than the pair @('(u y)')
- with respect to our @(see term-order), the rule is in fact applied using our
- new test.</p>
-
- <p>Messages about @(see events) now contain a space after certain left
- parentheses, in order to assist emacs users.  For example, the event</p>
-
- @({
-    (defthm abc (equal (+ (len x) 0) (len x)))
- })
-
- <p>leads to a summary containing the line</p>
-
- @({
-    Form:  ( DEFTHM ABC ...)
- })
-
- <p>and hence, if you search backwards for ``@('(defthm abc')'', you won't stop
- at this message.</p>
-
- <p>More tautology checking is done during a proof; in fact, no goal printed to
- the screen, except for the results of applying @(':use') and @(':by') @(see
- hints) or the top-level goals from an induction proof, are known to Acl2 to be
- tautologies.</p>
-
- <p>The @(tsee ld-query-control-alist) may now be used to suppress printing of
- queries; see @(see ld-query-control-alist).</p>
-
- <p>Warning messages are printed with short summary strings, for example the
- string ``@('Use')'' in the following message.</p>
-
- @({
-    Acl2 Warning [Use] in DEFTHM:  It is unusual to :USE an enabled
-    :REWRITE or :DEFINITION rule, so you may want to consider
-    disabling FOO.
- })
-
- <p>At the end of the event, just before the time is printed, all such summary
- strings are printed out.</p>
-
- <p>The keyword command @(':u') has been introduced as an abbreviation for
- @(':')@(tsee ubt) @(':')@(tsee max).  Printing of query messages is suppressed
- by @(':u').</p>
-
- <p>The keyword @(':cheat') is no longer supported by any event form.</p>
-
- <p>Some irrelevant formals are detected; see @(see irrelevant-formals).</p>
-
- <p>A bug in the application of metafunctions was fixed: now if the output of a
- metafunction is equal to its input, the application of the metafunction is
- deemed unsuccessful and the next metafunction is tried.</p>
-
- <p>An example has been added to the documentation for @(see equivalence) to
- suggest how to make use of @(see equivalence) relations in rewriting.</p>
-
- <p>The following Common Lisp functions have been added to Acl2: @(tsee
- alpha-char-p), @(tsee upper-case-p), @(tsee lower-case-p), @(tsee
- char-upcase), @(tsee char-downcase), @(tsee string-downcase), @(tsee
- string-upcase), and @('digit-charp-p').</p>
-
- <p>A documentation section called @(tsee proof-builder) has been added for the
- interactive facility, whose documentation has been slightly improved.  See in
- particular the documentation for @(see proof-builder), @(tsee verify), and
- @(see macro-command).</p>
-
- <p>A number of @(see events) that had been inadvertently disallowed in @(see
- books) are now permitted in @(see books).  These are: @(tsee defcong),
- @('defcor'), @(tsee defequiv), @(tsee defrefinement), @(tsee defstub), and
- @(tsee verify-termination).</p>")
-
-(defxdoc note-1-5
-  :parents (release-notes)
-  :short "Acl2 Version 1.5 Notes"
-  :long "<p>Acl2 now allows ``complex rationals,'' which are complex numbers
- whose real parts are rationals and whose imaginary parts are non-zero
- rationals.  See @(see complex).</p>
-
- <p>A new way of handling @(tsee force)d hypotheses has been implemented.
- Rather than cause a case split at the time the @(tsee force) occurs, we
- complete the main proof and then embark on one or more ``forcing rounds'' in
- which we try to prove the @(see force)d hypotheses.  See @(see forcing-round).
- To allow us to compare the new handling of @(tsee force) with the old, Version
- 1.5 implements both and uses a flag in @(tsee state) to determine which method
- should be used.  Do @('(assign old-style-forcing t)') if you want @(tsee
- force) to be handled as it was in Version 1.4.  However, we expect to
- eliminate the old-style forcing eventually because we think the new style is
- more effective.  To see the difference between the two approaches to forcing,
- try proving the associativity of @(see append) under both settings of
- @('old-style-forcing').  To get the new behavior invoke:</p>
-
- @({
-  (thm (implies (and (true-listp a) (true-listp b))
-                (equal (append (append a b) c)
-                       (append a (append b c)))))
- })
-
- <p>Then @('(assign old-style-forcing t)') and invoke the @('thm') @(see
- command) above again.</p>
-
- <p>A new @(':cases') @(see hints) allows proof by cases.  See @(see
- hints).</p>
-
- <p>@(tsee Include-book) and @(tsee encapsulate) now restore the @(tsee
- acl2-defaults-table) when they complete.  See @(see include-book) and see
- @(see encapsulate).</p>
-
- <p>The @(see guard)s on many Acl2 primitives defined in @('axioms.lisp') have
- been weakened to permit them to be used in accordance with lisp custom and
- tradition.</p>
-
- <p>It is possible to attach heuristic filters to @(':')@(tsee rewrite) rules
- to limit their applicability.  See @(see syntaxp).</p>
-
- <p>A tutorial has been added (but as of Version_3.6.1 it has become
- obsolete).</p>
-
- <p>@(see Events) now print the Summary paragraph listing @(see rune)s used,
- time, etc., whether they succeed or fail.  The format of the ``@(see failure)
- banner'' has been changed but still has multiple asterisks in it.  @('Thm')
- also prints a Summary, whether it succeeds or fails; but @('thm') is not an
- event.</p>
-
- <p>A new event form @(tsee skip-proofs) has been added; see @(see
- skip-proofs).</p>
-
- <p>A user-specific customization facility has been added in the form of a book
- that is automatically included, if it exists on the current directory.  See
- @(see acl2-customization).</p>
-
- <p>A facility for conditional metalemmas has been implemented; see @(see
- meta).</p>
-
- <p>The acceptable values for @(tsee ld-skip-proofsp) have changed.  In the old
- version (Version 1.4), a value of @('t') meant that proofs and @(tsee local)
- @(see events) are to be skipped.  In Version 1.5, a value of @('t') means
- proofs (but not @(tsee local) @(see events)) are to be skipped.  A value of
- @(''')@(tsee include-book) means proofs and @(tsee local) @(see events) are to
- be skipped.  There are two other, more obscure, acceptable values.  See @(see
- ld-skip-proofsp).</p>
-
- <p>In order to turn off the forcing of assumptions, one should now @(see
- disable) the @(':')@(tsee executable-counterpart) of @(tsee force) (rather
- than the @(':')@(tsee definition) of @(tsee force), as in the previous
- release); see @(see force).</p>
-
- <p>The macros @(tsee enable-forcing) and @(tsee disable-forcing) make it
- convenient to @(see enable) or @(see disable) forcing.  See @(see
- enable-forcing) and see @(see disable-forcing).</p>
-
- <p>The new commands @(':')@(tsee pr) and @(':')@(tsee pr!) print the rules
- created by an event or command.  See @(see pr) and see @(see pr!).</p>
-
- <p>The new @(see history) @(see command)s @(':')@(tsee puff) and @(':')@(tsee
- puff*) will replace a compound @(see command) such as an @(tsee encapsulate)
- or @(tsee include-book) by the sequence of @(see events) in it.  That is, they
- ``@(see puff) up'' or ``lift'' the subevents of a @(see command) to the @(see
- command) level, eliminating the formerly superior @(see command) and
- lengthening the @(see history).  This is useful if you want to ``partially
- undo'' an @(tsee encapsulate) or book or other compound @(see command) so you
- can experiment.  See @(see puff) and see @(see puff*).</p>
-
- <p>Theory expressions now are allowed to use the free variable @(tsee world)
- and prohibited from using the free variable @(tsee state).  See @(see
- theories), although it is essentially the same as before except it mentions
- @(tsee world) instead of @(tsee state).  See @(see world) for a discussion of
- the Acl2 logical @(see world).  Allowing @(tsee in-theory) @(see events) to be
- state-sensitive violated an important invariant about how @(see books)
- behaved.</p>
-
- <p>@(tsee Table) keys and values now are allowed to use the free variable
- @(tsee world) and prohibited from using the free variable @(tsee state).  See
- the note above about theory expressions for some explanation.</p>
-
- <p>The macro for minus, @(tsee -), used to expand @('(- x 3)') to @('(+ x
- -3)') and now expands it to @('(+ -3 x)') instead.  The old macro, if used in
- the left-hand sides of rewrite rules, produced inapplicable rules because the
- constant occurs in the second argument of the @(tsee +), but potential target
- terms generally had the constant in the first argument position because of the
- effect of @('commutativity-of-+').</p>
-
- <p>A new class of rule, @(':linear-alias') rules, allows one to implement the
- nqthm package and similar hacks in which a @(see disable)d function is to be
- known equivalent to an arithmetic function.</p>
-
- <p>A new class of rule, @(':built-in-clause') rules, allows one to extend the
- set of clauses proved silently by @(tsee defun) during measure and @(see
- guard) processing.  See @(see built-in-clause).</p>
-
- <p>The new command @(tsee pcb!) is like @(tsee pcb) but sketches the @(see
- command) and then prints its subsidiary @(see events) in full.  See @(see
- pcb!).</p>
-
- <p>@(':')@(tsee Rewrite) class rules may now specify the @(':')@(tsee
- loop-stopper) field.  See @(see rule-classes) and see @(see loop-stopper).</p>
-
- <p>The rules for how @(see loop-stopper)s control permutative rewrite rules
- have been changed.  One effect of this change is that now when the built-in
- commutativity rules for @(tsee +) are used, the terms @('a') and @('(- a)')
- are permuted into adjacency.  For example, @('(+ a b (- a))') is now
- normalized by the commutativity rules to @('(+ a (- a) b)'); in Version 1.4,
- @('b') was considered syntactically smaller than @('(- a)') and so @('(+ a b
- (- a))') is considered to be in normal form.  Now it is possible to arrange
- for unary functions be be considered ``invisible'' when they are used in
- certain contexts.  By default, @(tsee unary--) is considered invisible when
- its application appears in the argument list of @(tsee binary-+).  See @(see
- loop-stopper) and see :DOC set-invisible-fns-table.</p>
-
- <p>Extensive documentation has been provided on the topic of Acl2's ``term
- ordering.''  See @(see term-order).</p>
-
- <p>Calls of @(tsee ld) now default @(tsee ld-error-action) to @(':return')
- rather than to the current setting.</p>
-
- <p>The @(see command) descriptor @(':x') has been introduced and is synonymous
- with @(':')@(tsee max), the most recently executed @(see command).  @(see
- History) @(see command)s such as @(':')@(tsee pbt) print a @(':x') beside the
- most recent @(see command), simply to indicate that it <b>is</b> the most
- recent one.</p>
-
- <p>The @(see command) descriptor @(':x-23') is synonymous with @('(:x -23)').
- More generally, every symbol in the keyword package whose first character is
- @('#\\x') and whose remaining @(see characters) parse as a negative integer is
- appropriately understood.  This allows @(':')@(tsee pbt) @(':x-10') where
- @(':')@(tsee pbt) @('(:max -10)') or @(':')@(tsee pbt) @('(:here -10)') were
- previously used.  The old forms are still legal.</p>
-
- <p>The order of the arguments to @(tsee defcong) has been changed.</p>
-
- <p>The simplifier now reports the use of unspecified built-in type information
- about the primitives with the phrase ``primitive type reasoning.''  This
- phrase may sometimes occur in situations where ``propositional calculus'' was
- formerly credited with the proof.</p>
-
- <p>The function @(tsee pairlis) has been replaced in the code by a new
- function @(tsee pairlis$), because Common Lisp does not adequately specify its
- @(tsee pairlis) function.</p>
-
- <p>Some new Common Lisp functions have been added, including @(tsee logtest),
- @(tsee logcount), @(tsee integer-length), @(tsee make-list), @(tsee
- remove-duplicates), @(tsee string), and @(tsee concatenate).  The source file
- @('/slocal/src/acl2/axioms.lisp') is the ultimate reference regarding Common
- Lisp functions in Acl2.</p>
-
- <p>The functions @(tsee defuns) and @(tsee theory-invariant) have been
- documented.  See @(see defuns) and see @(see theory-invariant).</p>
-
- <p>A few symbols have been added to the list @('*acl2-exports*').</p>
-
- <p>A new key has been implemented for the @(tsee acl2-defaults-table),
- @(':irrelevant-formals-ok').  See @(see set-irrelevant-formals-ok).</p>
-
- <p>The connected book directory, @(tsee cbd), must be nonempty and begin and
- end with a slash.  It is set (and displayed) automatically upon your first
- entry to @(tsee lp).  You may change the setting with @(tsee set-cbd).  See
- @(see cbd).</p>
-
- <p>@(':')@(tsee oops) will undo the last @(':')@(tsee ubt).  See @(see
- oops).</p>
-
- <p>Documentation has been written about the ordinals.  See :DOC
- @('e0-ordinalp') and see :DOC @('e0-ord-<').  [Note added later: Starting with
- Version_2.8, instead see @(see o-p) and see @(see o<).</p>
-
- <p>The color @(see events) &mdash; (red), (pink), (blue), and (gold) &mdash;
- may no longer be enclosed inside calls of @(tsee local), for soundness
- reasons.  In fact, neither may any event that sets the @(tsee
- acl2-defaults-table).  See @(see embedded-event-form).</p>
-
- <p>See @(see ld-keyword-aliases) for an example of how to change the exit
- keyword from @(':')@(tsee q) to something else.</p>
-
- <p>The attempt to install a @(see monitor) on @(':')@(tsee rewrite) rules
- stored as simple abbreviations now causes an error because the application of
- abbreviations is not tracked.</p>
-
- <p>A new message is sometimes printed by the theorem prover, indicating that a
- given simplification is ``specious'' because the subgoals it produces include
- the input goal.  In Version 1.4 this was detected but not reported, causing
- behavior some users found bizarre.  See @(see specious-simplification).</p>
-
- <p>@(':')@(tsee Definition) rules are no longer always required to specify the
- @(':clique') and @(':controller-alist') fields; those fields can be defaulted
- to system-determined values in many common instances.  See @(see
- definition).</p>
-
- <p>A warning is printed if a macro form with keyword arguments is given
- duplicate keyword values.  Execute @('(thm t :doc nil :doc \"ignored\")') and
- read the warning printed.</p>
-
- <p>A new restriction has been placed on @(tsee encapsulate).  Non-@(tsee
- local) recursive definitions inside the @(tsee encapsulate) may not use, in
- their tests and recursive calls, the constrained functions introduced by the
- @(tsee encapsulate).  See @(see subversive-recursions).  (Note added in
- Version 2.3: Subversive recursions were first recognized by us here in Version
- 1.5, but our code for recognizing them was faulty and the bug was not fixed
- until Version 2.3.)</p>
-
- <p>The @(see events) @(tsee defequiv), @(tsee defcong), @(tsee defrefinement),
- and @(tsee defevaluator) have been reimplemented so that they are just macros
- that expand into appropriate @(tsee defthm) or @(tsee encapsulate) @(see
- events); they are no longer primitive @(see events).  See the @(see
- documentation) of each affected event.</p>
-
- <p>The @('defcor') event, which was a shorthand for a @(tsee defthm) that
- established a @(see corollary) of a named, previously proved event, has been
- eliminated because its implementation relied on a technique we have decided to
- ban from our code.  If you want the effect of a @('defcor') in Version 1.5 you
- must submit the corresponding @(tsee defthm) with a @(':by') hint naming the
- previously proved event.</p>
-
- <p>Error reporting has been improved for inappropriate @(tsee in-theory) @(see
- hints) and @(see events), and for syntax errors in rule classes, and for
- non-existent filename arguments to @(tsee ld).</p>
-
- <p>Technical Note: We now maintain the Third Invariant on @('type-alists'), as
- described in the Essay on the Invariants on Type-alists, and Canonicality.
- This change will affect some proofs, for example, by causing a to rewrite more
- quickly to @('c') when @('(equiv a b)') and @('(equiv b c)') are both known
- and @('c') is the canonical representative of the three.</p>")
-
-(defxdoc note-1-6
-  :parents (release-notes)
-  :short "Acl2 Version 1.6 Notes"
-  :long "<p>A new key has been implemented for the @(tsee acl2-defaults-table),
- @(':ignore-ok').  See @(see set-ignore-ok).</p>
-
- <p>It is now legal to have color @(see events), such as @('(red)'), in the
- @(see portcullis) of a book.  More generally, it is legal to set the @(tsee
- acl2-defaults-table) in the @(see portcullis) of a book.  For example, if you
- execute @(':red') and then certify a book, the event @('(red)') will show up
- in the @(see portcullis) of that book, and hence the definitions in that book
- will all be red (except when overridden by appropriate declarations or @(see
- events)).  When that book is included, then as always, its @(see portcullis)
- must first be ``raised,'' and that will cause the default color to become red
- before the @(see events) in the book are executed.  As always, the value of
- @(tsee acl2-defaults-table) immediately after execution of an @(tsee
- include-book), @(tsee certify-book), or @(tsee encapsulate) form will be the
- same as it was immediately before execution (and hence, so will the default
- color).  See @(see portcullis) and, for more about books, see @(see
- books).</p>
-
- <p>A theory @(tsee ground-zero) has been defined to contain exactly those
- rules that are @(see enable)d when Acl2 starts up.  See @(see
- ground-zero).</p>
-
- <p>The function @(tsee nth) is now @(see enable)d, correcting an oversight
- from Version 1.5.</p>
-
- <p>Customization files no longer need to meet the syntactic restrictions put
- on @(see books); rather, they can contain arbitrary Acl2 forms.  See @(see
- acl2-customization).</p>
-
- <p>Structured directory names and structured file names are supported; see
- especially the documentation for @(see pathname), @(see book-name), and @(tsee
- cbd).</p>
-
- <p>Acl2 now works with some Common Lisp implementations other than akcl,
- including Lucid, Allegro, and MCL.</p>
-
- <p>A facility has been added for displaying proof trees, especially using
- emacs; see @(see proof-tree).</p>
-
- <p>There is a considerable amount of new @(see documentation), in particular
- for the printing functions @(tsee fmt), @(tsee fmt1), and @(tsee fms), and for
- the notion of Acl2 term (see @(see term)).</p>
-
- <p>It is possible to introduce new well-founded relations, to specify which
- relation should be used by @(tsee defun), and to set a default relation.  See
- @(see well-founded-relation-rule).</p>
-
- <p>It is possible to make functions suggest new inductions.  See @(see
- induction).</p>
-
- <p>It is possible to change how Acl2 expresses @(see type-set) information; in
- particular, this affects what clauses are proved when @(see force)d
- assumptions are generated.  See @(see type-set-inverter).</p>
-
- <p>A new restriction has been added to @(tsee defpkg), having to do with
- undoing.  If you undo a @(tsee defpkg) and define the same package name again,
- the imports list must be identical to the previous imports or else an
- explanatory error will occur.  See @(see
- package-reincarnation-import-restrictions).</p>
-
- <p>@(tsee Theory-invariant) and @(tsee set-irrelevant-formals-ok) are now
- embedded event forms.</p>
-
- <p>The command @(':')@(tsee good-bye) may now be used to quit entirely out of
- Lisp, thus losing your work forever.  This command works in akcl but may not
- work in every Common Lisp.</p>
-
- <p>A theory @(tsee ground-zero) has been added that contains exactly the @(see
- enable)d rules in the @(see startup) theory.  See @(see ground-zero).</p>
-
- <p>@('Define-pc-macro') and @('define-pc-atomic-macro') now automatically
- define @(':red') functions.  (It used to be necessary, in general, to change
- color to @(':red') before invoking these.)</p>
-
- <p>For a proof of the well-foundedness of @('e0-ord-<') on the
- @('e0-ordinalp')s, see @(see proof-of-well-foundedness).  [Note added later:
- Starting with Version_2.8, @(tsee o<) and @(tsee o-p) replace @('e0-ord-<')
- and @('e0-ordinalp'), respectively.]</p>
-
- <p>Free variables are now handled properly for hypotheses of @(':')@(tsee
- type-prescription) rules.</p>
-
- <p>When the system is loaded or saved, @(tsee state) is now bound to
- @('*the-live-state*').</p>
-
- <p>@(tsee Certify-book) has been modified so that when it compiles a file, it
- loads that object file.</p>
-
- <p>@(tsee Defstub) has been modified so that it works when the color is hot
- (@(':red') or @(':pink')).</p>
-
- <p>Several basic, but not particularly commonly used, @(see events) have been
- added or changed.  The obscure axiom @('symbol-name-intern') has been
- modified.  The definition of @('firstn') has been changed.  @(tsee Butlast) is
- now defined.  The definition of @(tsee integer-length) has been modified.  The
- left-hand side of the rewrite rule @('rational-implies2') has been changed
- from @('(* (numerator x) (/ (denominator x)))') to @('(* (/ (denominator x))
- (numerator x))'), in order to respect the fact that @(tsee unary-/) is
- invisible with respect to @(tsee binary-*).  See @(see loop-stopper).</p>
-
- <p>The `preprocess' process in the waterfall (see @(see hints) for a
- discussion of the @(':do-not') hint) has been changed so that it works to
- avoid case-splitting.  The `simplify' process refuses to force (see @(see
- force)) when there are @(tsee if) terms, including @(tsee and) and @(tsee or)
- terms, in the goal being simplified.</p>
-
- <p>The function @('apply') is no longer introduced automatically by
- translation of user input to internal form when functions are called on
- inappropriate explicit values, e.g., @('(car 3)').</p>
-
- <p>The choice of which variable to use as the measured variable in a recursive
- definition has been very slightly changed.</p>")
-
-(defxdoc note-1-7
-  :parents (release-notes)
-  :short "ACL2 Version 1.7 (released October 1994) Notes"
-  :long "<p>@(tsee Include-book) now takes (optionally) an additional keyword
- argument, indicating whether a compiled file is to be loaded.  The default
- behavior is unchanged, except that a warning is printed when a compiled file
- is not loaded.  See @(see include-book).</p>
-
- <p>A markup language for @(see documentation) strings has been
- implemented, and many of the source files have been marked up using this
- language (thanks largely to the efforts of Laura Lawless).  See markup.
- Moreover, there are translators that we have used to provide versions of the
- ACL2 @(see documentation) in info (for use in emacs), html (for Mosaic), and
- tex (for hardcopy) formats.</p>
-
- <p>A new event @('defdoc') has been implemented.  It is like @(tsee deflabel),
- but allows redefinition of @(see doc) strings and has other advantages.  See
- @('defdoc').</p>
-
- <p>We used to ignore corollaries when collecting up the axioms introduced
- about constrained functions.  That bug has been fixed.  We thank John Cowles
- for bringing this bug to our attention.</p>
-
- <p>The macro @(tsee defstub) now allows a @(':')@(tsee doc) keyword argument,
- so that @(see documentation) may be attached to the name being introduced.</p>
-
- <p>A new command @(tsee nqthm-to-acl2) has been added to help Nqthm users to
- make the transition to ACL2.  See @(see nqthm-to-acl2), which also includes a
- complete listing of the relevant tables.</p>
-
- <p>Many function names, especially of the form ``foo@('-lst')'', have been
- changed in order to support the following convention, for any ``foo'':</p>
-
- <p>@('(foo-listp lst)') represents the notion @('(for x in lst always foop
- x)').</p>
-
- <p>A complete list of these changes may be found at the end of this note.  All
- of them except @('symbolp-listp') and @('list-of-symbolp-listp') have the
- string ``@('-lst')'' in their names.  Note also that @('keyword-listp') has
- been renamed @(tsee keyword-value-listp).</p>
-
- <p>Accumulated persistence has been implemented.  It is not connected to
- @(':')@(tsee brr) or rule monitoring.  See @(see accumulated-persistence).</p>
-
- <p>@(':Trigger-terms') has been added for @(':')@(tsee linear) rule classes,
- so you can hang a @(see linear) rule under any addend you want.  See @(see
- linear), which has been improved and expanded.</p>
-
- <p>ACL2 now accepts @('256') @(see characters) and includes the Common Lisp
- functions @(tsee code-char) and @(tsee char-code).  However, ACL2 controls the
- lisp reader so that @('#\\c') may only be used when @('c') is a single
- standard character or one of @('Newline'), @('Space'), @('Page'), @('Rubout'),
- @('Tab').  If you want to enter other @(see characters) use @(tsee code-char),
- e.g., @('(coerce (list (code-char 7) (code-char 240) #a) 'string)').  See
- @(see characters).  Note: our current handling of @(see characters) makes the
- set of theorems different under Macintosh Common Lisp (MCL) than under other
- Common Lisps.  We hope to rectify this situation before the final release of
- ACL2.</p>
-
- <p>A new @(see table), @(tsee macro-aliases-table), has been implemented, that
- associates macro names with function names.  So for example, since @(tsee
- append) is associated with @(tsee binary-append), the form @('(disable
- append)') it is interpreted as though it were @('(disable binary-append)').
- See @(see macro-aliases-table), see @(see add-macro-alias) and see @(see
- remove-macro-alias).</p>
-
- <p>The implementation of conditional metalemmas has been modified so that the
- metafunction is applied before the hypothesis metafunction is applied.  See
- @(see meta).</p>
-
- <p>The Common Lisp functions @(tsee acons) and @(tsee endp) have been defined
- in the ACL2 logic.</p>
-
- <p>We have added the symbol @(tsee declare) to the list @('*acl2-exports*'),
- and hence to the package @('\"ACL2-USER\"').</p>
-
- <p>A new hint, @(':restrict'), has been implemented.  See @(see hints).</p>
-
- <p>It used to be that if @(':')@(tsee ubt) were given a number that is greater
- than the largest current @(see command) number, it treated that number the
- same as @(':')@(tsee max).  Now, an error is caused.</p>
-
- <p>The @(see table) @(':force-table') has been eliminated.</p>
-
- <p>A command @(':')@(tsee disabledp) (and macro @(tsee disabledp)) has been
- added; see @(see disabledp).</p>
-
- <p>@(see Compilation) via @(':')@(tsee set-compile-fns) is now suppressed
- during @(tsee include-book).  In fact, whenever the @(see state) global
- variable @(tsee ld-skip-proofsp) has value @(''')@(tsee include-book).</p>
-
- <p>Here are some less important changes, additions, and so on.</p>
-
- <p>Unlike previous releases, we have not proved all the theorems in
- @('axioms.lisp'); instead we have simply assumed them.  We have deferred such
- proofs because we anticipate a fairly major changed in Version 1.8 in how we
- deal with @(see guard)s.</p>
-
- <p>We used to (accidentally) prohibit the ``redefinition'' of a @(see table)
- as a function.  That is no longer the case.</p>
-
- <p>The check for whether a @(see corollary) follows tautologically has been
- sped up, at the cost of making the check less ``smart'' in the following
- sense: no longer do we expand primitive functions such as @(tsee implies)
- before checking this propositional implication.</p>
-
- <p>The @(see command) @(tsee ubt!) has been modified so that it never causes
- or reports an error.  See @(see ubt!).</p>
-
- <p>ACL2 now works in Harlequin LispWorks.</p>
-
- <p>The user can now specify the @(':trigger-terms') for @(':')@(tsee linear)
- rules.  See @(see linear).</p>
-
- <p>The name of the system is now ``ACL2''; no longer is it ``Acl2''.</p>
-
- <p>The raw lisp counterpart of @(tsee theory-invariant) is now defined to be a
- no-op as is consistent with the idea that it is just a call of @(tsee
- table).</p>
-
- <p>A bug was fixed that caused @(see proof-builder) @(see instructions) to be
- executed when @(tsee ld-skip-proofsp) was @('t').</p>
-
- <p>The function @(tsee rassoc) has been added, along with a corresponding
- function used in its @(see guard), @('r-eqlable-alistp').</p>
-
- <p>The @(tsee in-theory) event and hint now print a warning not only when
- certain ``primitive'' @(':')@(tsee definition) rules are @(see disable)d, but
- also when certain ``primitive'' @(':')@(tsee executable-counterpart) rules are
- @(see disable)d.</p>
-
- <p>The modified version of @('trace') provided by ACL2, for use in raw Lisp,
- has been modified so that the lisp special variable @('*trace-alist*') is
- consulted.  This alist associates, using @(tsee eq), values with their print
- representations.  For example, initially @('*trace-alist*') is a one-element
- list containing the pair @('(cons state '|*the-live-state*|)').</p>
-
- <p>The system now prints an observation when a form is skipped because the
- default color is @(':red') or @(':pink').  (Technically: @('when-cool') has
- been modified.)</p>
-
- <p>Additional protection exists when you submit a form to raw Common Lisp that
- should only be submitted inside the ACL2 read-eval-print loop.</p>
-
- <p>Here is a complete list of the changes in function names described near the
- top of this note, roughly of the form</p>
-
- @({
-  foo-lst --> foo-listp
- })
-
- <p>meaning: the name ``@('foo-lst')'' has been changed to
- ``@('foo-listp').''</p>
-
- @({
-  symbolp-listp    --> symbol-listp
-  list-of-symbolp-listp  --> symbol-list-listp
-                         {for consistency with change to symbol-listp}
-  rational-lst     --> rational-listp
-                       {which in fact was already defined as well}
-  integer-lst      --> integer-listp
-  character-lst    --> character-listp
-  stringp-lst      --> string-listp
-  32-bit-integer-lst   --> 32-bit-integer-listp
-  typed-io-lst     --> typed-io-listp
-  open-channel-lst --> open-channel-listp
-  readable-files-lst   --> readable-files-listp
-  written-file-lst --> written-file-listp
-  read-file-lst    --> read-file-listp
-  writeable-file-lst   --> writable-file-listp
-                       {note change in spelling of ``writable''}
-  writeable-file-lst1  --> writable-file-listp1
-  pseudo-termp-lst     --> pseudo-term-listp
-  hot-termp-lst --> hot-term-listp {by analogy with pseudo-term-listp}
-  weak-termp-lst   --> weak-term-listp
-  weak-termp-lst-lst   --> weak-termp-list-listp
-  ts-builder-case-lstp -> ts-builder-case-listp
-  quotep-lst       --> quote-listp
-  termp-lst        --> term-listp
-  instr-lst        --> instr-listp
-  spliced-instr-lst    --> spliced-instr-listp
-  rewrite-fncallp-lst  --> rewrite-fncallp-listp
-  every-occurrence-equiv-hittablep1-lst -->
-              every-occurrence-equiv-hittablep1-listp
-  some-occurrence-equiv-hittablep1-lst  -->
-              some-occurrence-equiv-hittablep1-listp
-              {by analogy with the preceding, even though it's a
-               ``some'' instead of ``all'' predicate]
-  almost-quotep1-lst   --> almost-quotep1-listp
-  ffnnames-subsetp-lst --> ffnnames-subsetp-listp
-  boolean-lstp     --> boolean-listp
-  subst-expr1-lst-okp  --> subst-expr1-ok-listp
- })")
-
-(defxdoc note-1-8
-  :parents (release-notes)
-  :short "ACL2 Version 1.8 (May, 1995) Notes"
-  :long "<p>See @(see note-1-8-update) for yet more recent changes.</p>
-
- <p>@(see Guard)s have been eliminated from the ACL2 logic.  A summary is
- contained in this brief note.  Also see @(see defun-mode) and see @(see
- set-guard-checking).</p>
-
- <p>@(see Guard)s may be included in @(see defuns) as usual but are ignored
- from the perspective of admission to the logic: functions must terminate on
- all arguments.</p>
-
- <p>As in Nqthm, primitive functions, e.g., @(tsee +) and @(tsee car),
- logically default unexpected arguments to convenient values.  Thus, @('(+ 'abc
- 3)') is @('3') and @('(car 'abc)') is @('nil').  See @(see programming), and
- see the @(see documentation) for the individual primitive functions.</p>
-
- <p>In contrast to earlier versions of ACL2, Version 1.8 logical functions are
- executed at Nqthm speeds even when @(see guard)s have not been verified.  In
- versions before 1.8, such functions were interpreted by ACL2.</p>
-
- <p>Colors have been eliminated.  Two ``@(see defun-mode)s'' are supported,
- @(':')@(tsee program) and @(':')@(tsee logic).  Roughly speaking, @(':')@(tsee
- program) does what @(':red') used to do, namely, allow you to prototype
- functions for execution without any proof burdens.  @(':')@(tsee Logic) mode
- does what @(':blue') used to do, namely, allow you to add a new definitional
- axiom to the logic.  A global @(see default-defun-mode) is comparable to the
- old default color.  The system comes up in @(':')@(tsee logic) mode.  To
- change the global @(see defun-mode), type @(':')@(tsee program) or
- @(':')@(tsee logic) at the top-level.  To specify the @(see defun-mode) of a
- @(tsee defun) locally use</p>
-
- <code> @('(declare (xargs :mode mode))').  </code>
-
- <p>The @(see prompt) has changed.  The initial @(see prompt), indicating
- @(':')@(tsee logic) mode, is</p>
-
- @({
-  ACL2 !>
- })
-
- <p>If you change to @(':')@(tsee program) mode the @(see prompt) becomes</p>
-
- @({
-  ACL2 p!>
- })
-
- <p>@(see Guard)s can be seen as having either of two roles: (a) they are a
- specification device allowing you to characterize the kinds of inputs a
- function ``should'' have, or (b) they are an efficiency device allowing
- logically defined functions to be executed directly in Common Lisp.  If a
- @(see guard) is specified, as with @(tsee xargs) @(':')@(tsee guard), then it
- is ``verified'' at defun-time (unless you also specify @(tsee xargs)
- @(':verify-guards nil')).  @(see Guard) verification means what it always has:
- the input @(see guard) is shown to imply the @(see guard)s on all subroutines
- in the body.  If the @(see guard)s of a function are verified, then a call of
- the function on inputs satisfying the @(see guard) can be computed directly by
- Common Lisp.  Thus, verifying the @(see guard)s on your functions will allow
- them to execute more efficiently.  But it does not affect their logical
- behavior and since you will automatically get Nqthm speeds on unverified
- logical definitions, most users will probably use @(see guard)s either as a
- specification device or only use them when execution efficiency is extremely
- important.</p>
-
- <p>Given the presence of @(see guard)s in the system, two issues are
- unavoidable.  Are @(see guard)s verified as part of the @(tsee defun) process?
- And are @(see guard)s checked when terms are evaluated?  We answer both of
- those questions below.</p>
-
- <p>Roughly speaking, in its initial @(see state) the system will try to verify
- the @(see guard)s of a @(tsee defun) if a @(':')@(tsee guard) is supplied in
- the @(tsee xargs) and will not try otherwise.  However, @(see guard)
- verification in @(tsee defun) can be inhibited ``locally'' by supplying the
- @(tsee xargs) @(':')@(tsee verify-guards) @('nil').  ``Global'' inhibition can
- be obtained via the @(':')@(tsee set-verify-guards-eagerness).  If you do not
- use the @(':')@(tsee guard) @(tsee xargs), you will not need to think about
- @(see guard) verification.</p>
-
- <p>We now turn to the evaluation of expressions.  Even if your functions
- contain no @(see guard)s, the primitive functions do and hence you have the
- choice: when you submit an expression for evaluation do you mean for @(see
- guard)s to be checked at runtime or not?  Put another way, do you mean for the
- expression to be evaluated in Common Lisp (if possible) or in the logic?
- Note: If Common Lisp delivers an answer, it will be the same as in the logic,
- but it might be erroneous to execute the form in Common Lisp.  For example,
- should @('(car 'abc)') cause a @(see guard) violation error or return
- @('nil')?</p>
-
- <p>The top-level ACL2 loop has a variable which controls which sense of
- execution is provided.  To turn ``@(see guard) checking on,'' by which we mean
- that @(see guard)s are checked at runtime, execute the top-level form
- @(':set-guard-checking t').  To turn it off, do @(':set-guard-checking nil').
- The status of this variable is reflected in the @(see prompt).</p>
-
- @({
-  ACL2 !>
- })
-
- <p>means @(see guard) checking is on and</p>
-
- @({
-  ACL2 >
- })
-
- <p>means @(see guard) checking is off.  The exclamation mark can be thought of
- as ``barring'' certain computations.  The absence of the mark suggests the
- absence of error messages or unbarred access to the logical axioms.  Thus, for
- example</p>
-
- @({
-  ACL2 !>(car 'abc)
- })
-
- <p>will signal an error, while</p>
-
- @({
-  ACL2 >(car 'abc)
- })
-
- <p>will return @('nil').</p>
-
- <p>Note that whether or not @(see guard)s are checked at runtime is
- independent of whether you are operating in @(':')@(tsee program) mode or
- @(':')@(tsee logic) mode and whether theorems are being proved or not.
- (Although it must be added that functions defined in @(':')@(tsee program)
- mode cannot help but check their @(see guard)s because no logical definition
- exists.)</p>
-
- <p>Version 1.8 permits the verification of the @(see guard)s of theorems, thus
- insuring that all instances of the theorem will evaluate without error in
- Common Lisp.  To verify the @(see guard)s of a theorem named @('name') execute
- the event</p>
-
- @({
-  (verify-guards name).
- })
-
- <p>If a theorem's @(see guard)s have been verified, the theorem is guaranteed
- to evaluate without error to non-@('nil') in Common Lisp (provided resource
- errors do not arise).</p>
-
- <p>Caveat about @(tsee verify-guards): @(tsee implies) is a function symbol,
- so in the term @('(implies p q)'), @('p') cannot be assumed true when @('q')
- is evaluated; they are both evaluated ``outside.''  Hence, you cannot
- generally verify the @(see guard)s on a theorem if @(tsee implies) is used to
- state the hypotheses.  Use @(tsee if) instead.  In a future version of ACL2,
- @(tsee implies) will likely be a macro.</p>
-
- <p>See sum-list-example.lisp for a nice example of the use of Version 1.8.
- This is roughly the same as the documentation for @(see guard-example).</p>
-
- <p>We have removed the capability to do ``old-style-forcing'' as existed
- before Version 1.5.  See @(see note-1-5).</p>
-
- <p>NOTE: Some low level details have, of course, changed.  One such change is
- that there are no longer two distinct type prescriptions stored when a
- function is admitted with its @(see guard)s verified.  So for example, the
- type prescription @(see rune) for @(tsee binary-append) is now</p>
-
- @({
-  (:type-prescription binary-append)
- })
-
- <p>while in Versions 1.7 and earlier, there were two such @(see rune)s:</p>
-
- @({
-  (:type-prescription binary-append . 1)
-  (:type-prescription binary-append . 2)
- })
-
- <p>Nqthm-style forcing on @(see linear) arithmetic assumptions is no longer
- executed when forcing is @(see disable)d.</p>
-
- <p>Functional instantiation now benefits from a trick also used in Nqthm: once
- a @(see constraint) generated by a @(':functional-instance') lemma instance
- (see @(see lemma-instance)) has been proved on behalf of a successful event,
- it will not have to be re-proved on behalf of a later event.</p>
-
- <p>@(tsee 1+) and @(tsee 1-) are now macros in the logic, not functions.
- Hence, for example, it is ``safe'' to use them on left-hand sides of rewrite
- rules, without invoking the common warning about the presence of nonrecursive
- function symbols.</p>
-
- <p>A new @(see documentation) section @(see file-reading-example) illustrates
- how to process forms in a file.</p>
-
- <p>A new @(see proof-builder) command @('forwardchain') has been added; see
- @(see acl2-pc::forwardchain).</p>
-
- <p>It is now possible to use quantifiers.  See @(see defun-sk) and see @(see
- defchoose).</p>
-
- <p>There is a new event @(tsee set-inhibit-warnings), which allows the user to
- turn off warnings of various types.  see @(see set-inhibit-warnings).</p>
-
- <p>An unsoundness relating @(tsee encapsulate) and @(':functional-instance')
- @(see hints) has been remedied, with a few small effects visible at the user
- level.  The main observable effect is that @(tsee defaxiom) and non-local
- @(tsee include-book) @(see events) are no longer allowed in the scope of any
- @(tsee encapsulate) event that has a non-empty @(see signature).</p>
-
- <p>When @(tsee certify-book) is called, we now require that the default @(see
- defun-mode) (see @(see default-defun-mode)) be @(':')@(tsee logic).  On a
- related note, the default @(see defun-mode) is irrelevant to @(tsee
- include-book); the mode is always set to @(':')@(tsee logic) initially, though
- it may be changed within the book and reverts to its original value at the
- conclusion of the @(tsee include-book).  A bug in @(tsee include-book)
- prevented it from acting this way even though the @(see documentation) said
- otherwise.</p>
-
- <p>The @(see documentation) has been substantially improved.  A new section
- ``Programming'' contains @(see documentation) of many useful functions
- provided by ACL2; see @(see programming).  Also, the @(see documentation) has
- been ``marked up'' extensively.  Thus in particular, users of Mosaic will find
- many links in the @(see documentation).</p>
-
- <p>The symbols @(tsee force), @(tsee mv-nth), and @('acl2-count') have been
- added to the list @('*acl2-exports*').</p>
-
- <p>We now permit most names from the main Lisp package to be used as names,
- except for names that define functions, macros, or constants.  See @(see
- name).</p>
-
- <p>We have changed the list of imports from the Common Lisp package to ACL2,
- i.e., the list @('*common-lisp-symbols-from-main-lisp-package*'), to be
- exactly those external symbols of the Common Lisp package as specified by the
- draft Common Lisp standard.  In order to accommodate this change, we have
- renamed some ACL2 functions as shown below, but these and other ramifications
- of this change should be transparent to most ACL2 users.</p>
-
- @({
-  warning      --> warning$
-  print-object --> print-object$
- })
-
- <p>Proof trees are no longer enabled by default.  To start them up,
- @(':')@(tsee start-proof-tree).</p>
-
- <p>We have added the capability of building smaller images.  The easiest way
- to do this on a Unix (trademark of AT&amp;T) system is: @('make small').</p>
-
- <p>Here we will put some less important changes, additions, and so on.</p>
-
- <p>We have added definitions for the Common Lisp function @(tsee position)
- (for the test @(tsee eql)), as well as corresponding versions @(tsee
- position-equal) and @(tsee position-eq) that use tests @(tsee equal) and
- @(tsee eq), respectively.  See @(see position), see @(see position-equal), and
- see @(see position-eq).</p>
-
- <p>The @(tsee defthm) event @('rational-listp-implies-rationalp-car') no
- longer exists.</p>
-
- <p>We fixed a bug in the hint mechanism that applied @(':by'), @(':cases'),
- and @(':use') @(see hints) to the first induction goal when the prover
- reverted to proving the original goal by induction.</p>
-
- <p>We fixed a bug in the handling of @('(set-irrelevant-formals-ok
- :warn)').</p>
-
- <p>In support of removing the old-style forcing capability, we deleted the
- initialization of @(see state) global @('old-style-forcing') and deleted the
- definitions of @('recover-assumptions'), @('recover-assumptions-from-goal'),
- @('remove-assumptions1'), @('remove-assumptions'), and
- @('split-on-assumptions'), and we renamed @('split-on-assumptions1') to
- @('split-on-assumptions').</p>
-
- <p>The special value @(''none') in the @(see proof-builder) commands
- @('claim') and @(tsee =) has been replaced by @(':none').</p>
-
- <p>A bug in the handling of @(see hints) by subgoals has been fixed.  For
- example, formerly a @(':do-not') hint could be ``erased'' by a @(':use') hint
- on a subgoal.  Thanks go to Art Flatau for noticing the bug.</p>
-
- <p>The functions @('weak-termp') and @('weak-term-listp') have been deleted,
- and their calls have been replaced by corresponding calls of @(tsee
- pseudo-termp) and @('pseudo-term-listp').  The notion of @(tsee pseudo-termp)
- has been slightly strengthened by requiring that terms of the form @('(quote
- ...)') have length 2.</p>
-
- <p>Performance has been improved in various ways.  At the prover level,
- backchaining through the recognizer alist has been eliminated in order to
- significantly speed up ACL2's rewriter.  Among the other prover changes (of
- which there are several, all technical): we no longer clausify the input term
- when a proof is interrupted in favor of inducting on the input term.  At the
- @(see IO) level, we have improved performance somewhat by suitable
- declarations and proclamations.  These include technical modifications to the
- macros @(tsee mv) and @(tsee mv-let), and introduction of a macro @('the-mv')
- analogous to the macro @(tsee the) but for forms returning multiple
- values.</p>
-
- <p>The function @('spaces') now takes an extra argument, the current
- column.</p>
-
- <p>A bug in the @(see proof-builder) @('equiv') command was fixed.</p>
-
- <p>The function @('intersectp') has been deleted, because it was essentially
- duplicated by the function @(tsee intersectp-equal).</p>
-
- <p>We now proclaim functions in AKCL and GCL before compiling @(see books).
- This should result in somewhat increased speed.</p>
-
- <p>The function @('repeat') has been eliminated; use @(tsee make-list)
- instead.</p>
-
- <p>The @(see proof-builder) command @('expand') has been fixed so that it
- eliminates @(tsee let) (lambda) expressions when one would expect it to.</p>
-
- <p>A new primitive function, @(tsee mv-nth), has been introduced.  @(tsee
- Mv-nth) is equivalent to @(tsee nth) and is used in place of @(tsee nth) in
- the translation of @(tsee mv-let) expressions.  This allows the user to
- control the simplification of @(tsee mv-let) expressions without affecting how
- @(tsee nth) is treated.  In that spirit, the rewriter has been modified so
- that certain @(tsee mv-nth) expressions, namely those produced in the
- translation of @('(mv-let (a b c)(mv x y z) p)'), are given special
- treatment.</p>
-
- <p>A minor bug in @('untranslate') has been fixed, which for example will fix
- the printing of conjunctions.</p>
-
- <p>@('Translate') now takes a @('logicp') argument, which indicates whether it
- enforces the restriction that @(':')@(tsee program) mode functions do not
- occur in the result.</p>
-
- <p>The modified version of @('trace') provided by ACL2, for use in raw Lisp,
- has been modified so that the lisp special variable @('*trace-alist*') has a
- slightly different functionality.  This alist associates, using @(tsee eq),
- symbols with the print representations of their values.  For example,
- initially @('*trace-alist*') is a one-element list containing the pair
- @('(cons 'state '|*the-live-state*|)').  Thus, one may cons the pair @('(cons
- '*foo* \"It's a FOO!\")') on to @('*trace-alist*'); then until @('*foo*') is
- defined, this change will have no effect, but after for example</p>
-
- @({
-  (defconst *foo* 17)
- })
-
- <p>then @('trace') will print @('17') as @('\"It's a FOO!\"').</p>
-
- <p>@('Trace') also traces the corresponding logic function.</p>
-
- <p>@(see Proof-tree) display has been improved slightly in the case of
- successful proofs and certain event failures.</p>
-
- <p>The function @('positive-integer-log2') has been deleted.</p>
-
- <p>The macro @(tsee skip-proofs) now prints a warning message when it is
- encountered in the context of an @(tsee encapsulate) event or a book.  See
- @(see skip-proofs).</p>
-
- <p>Some functions related to @('the-fn') and @('wormhole1') now have @(see
- defun-mode) @(':')@(tsee program), but this change is almost certain to be
- inconsequential to all users.</p>")
-
-(defxdoc note-1-8-update
-  :parents (release-notes)
-  :short "ACL2 Version 1.8 (Summer, 1995) Notes"
-  :long "<p>ACL2 can now use Ordered Binary Decision Diagram technology.  See
- @(see bdd).  There is also a @(see proof-builder) @('bdd') command.</p>
-
- <p>ACL2 is now more respectful of the intention of the function @(tsee hide).
- In particular, it is more careful not to dive inside any call of @(tsee hide)
- during equality substitution and case splitting.</p>
-
- <p>The @(tsee ld) special (see @(see ld)) @(tsee ld-pre-eval-print) may now be
- used to turn off printing of input forms during processing of @(tsee
- encapsulate) and @(tsee certify-book) forms, by setting it to the value
- @(':never'), i.e., @('(set-ld-pre-eval-print :never state)').  See @(see
- ld-pre-eval-print).</p>
-
- <p>The TUTORIAL documentation section (now obsolete) has, with much help from
- Bill Young, been substantially improved to a bona fide introduction.</p>
-
- <p>The term pretty-printer has been modified to introduce @('(<= X Y)') as an
- abbreviation for @('(not (< Y X))').</p>
-
- <p>Forward chaining and linear arithmetic now both benefit from the evaluation
- of ground subterms.</p>
-
- <p>A new macro @(tsee set-inhibit-output-lst) has been defined.  This should
- be used when setting the @(see state) global @('inhibit-output-lst'); see
- @(see set-inhibit-output-lst) and see @(see proof-tree).</p>
-
- <p>The test for redundancy in definitions includes the @(see guard) and type
- declarations.  See @(see redundant-events).</p>
-
- <p>See @(see generalized-booleans) for a discussion of a potential soundness
- problem for ACL2 related to the question: Which Common Lisp functions are
- known to return Boolean values?</p>
-
- <p>Here we will put some less important changes, additions, and so on.</p>
-
- <p>A bug has been fixed so that now, execution of @(':comp t') (see @(see
- comp)) correctly handles non-standard characters.</p>
-
- <p>A bug in @(tsee digit-char-p) has been fixed, so that the ``default'' is
- @('nil') rather than @('0').</p>
-
- <p>@(tsee True-listp) now tests the final @(tsee cdr) against @('nil') using
- @(tsee eq) instead of @(tsee equal), for improved efficiency.  The logical
- meaning is, however, unchanged.</p>
-
- <p>@(tsee Put-assoc-equal) has been added to the logic (it used to have
- @(':')@(tsee defun-mode) @(':')@(tsee program), and has been documented.</p>")
-
-(defxdoc note-1-9
-  :parents (release-notes)
-  :short "ACL2 Version 1.9 (Fall, 1996) Notes"
-  :long "<p>By default, when the system is started it is illegal to use the
- variable @(tsee STATE) as a formal parameter of a function definition.  The
- aim is to prevent novice users from stumbling into the Byzantine syntactic
- restrictions on that variable symbol.  Use</p>
-
- @({
-  :set-state-ok t
- })
-
- <p>or, equivalently,</p>
-
- @({
-  (set-state-ok t)
- })
-
- <p>to switch back to the old default mode.  See @(see set-state-ok)</p>
-
- <p>@('Set-state-ok') is an event that affects the ACL2 defaults table (see
- @(see acl2-defaults-table)).  Recall that when books are included, the
- defaults table is restored to its pre-inclusion state.  Thus, while a
- @('set-state-ok') form will permit the book to define a @('state')-using
- function, it will not permit the user of the book to make such a definition.
- We recommend putting @('(set-state-ok t)') in any book that defines a
- @('state') using function.</p>
-
- <p>Books certified under Version 1.8 must be recertified under Version 1.9.
- See :DOC version.</p>
-
- <p>The simplifier has been made to look out for built-in clauses, whereas in
- past versions such clauses were only noticed by the ``preprocessor'' at the
- top of the waterfall.  THIS CHANGE MAY PREVENT OLD SCRIPTS FROM REPLAYING!
- The undesirable side-effect is caused by the fact that @(':HINTS') require you
- to refer to clauses by their exact name (see @(see goal-spec)) and because the
- new simplifier proves more clauses than before, the goals produced have
- different names.  Thus, if a script uses @(':HINTS') that refer to clauses
- other than \"Goal\", e.g., \"Subgoal 1.3\" then the hint may be applied to a
- different subgoal than originally intended.</p>
-
- <p>The use of built-in-clauses has been made more efficient.  If a set of
- clauses arise often in a piece of work, it might be advantageous to build them
- in even if that results in a large set (hundreds?) of built-in clauses.  See
- @(see built-in-clause)</p>
-
- <p>Wormholes can now be used in :logic mode functions. See @(see wormhole)</p>
-
- <p>It is now possible to provide ``computed hints.''  For example, have you
- ever wished to say ``in all goals with a name like this, :use that'' or ``if
- this term is in the subgoal, then :use that''?  Well, see @(see
- computed-hints) and the extraordinarily long example in see @(see
- using-computed-hints).</p>
-
- <p>@('Hide') terms may be rewritten with :rewrite rules about @('hide').  See
- @(see hide), where we also now explain why @('hide') terms are sometimes
- introduced into your proof attempts.</p>
-
- <p>A bug that sometimes caused the ``non-lazy IF'' hard error message was
- fixed.</p>
-
- <p>A bug that sometimes caused a hard error in forward chaining was fixed.</p>
-
- <p>A bug in print-rules (:pr) was fixed.</p>
-
- <p>We report the use of :executable-counterparts in the evaluation of SYNTAXP
- forms.</p>
-
- <p>Some documentation errors were fixed.</p>
-
- <p>A bug in parent-tree tracking in add-literal-and-pt was fixed.</p>
-
- <p>A bug in ok$, go$ and eval$ was fixed.</p>
-
- <p>Clausify now optimizes (mv-nth 'k (list x0 ... xk ... xn)) to xk.</p>")
 
 (defpointer note1 note-1-1)
 (defpointer note2 note-1-2)
