@@ -8662,7 +8662,7 @@ and @(tsee include-book)"
  })")
 
 (defxdoc books
-  :parents (acl2 note-1-1)
+  :parents (acl2)
   :short "<i>Books</i> are files of ACL2 @(see events)&mdash;they are the main
 way to split up large ACL2 developments into separate modules."
 
