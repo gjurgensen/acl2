@@ -8662,7 +8662,7 @@ and @(tsee include-book)"
  })")
 
 (defxdoc books
-  :parents (acl2 note1)
+  :parents (acl2 note-1-1)
   :short "<i>Books</i> are files of ACL2 @(see events)&mdash;they are the main
 way to split up large ACL2 developments into separate modules."
 
@@ -77177,7 +77177,7 @@ it."
 
  ")
 
-(defxdoc note1
+(defxdoc note-1-1
   :parents (release-notes)
   :short "Acl2 Version 1.1 Notes"
   :long "<p>The new features are extensively documented.  The relevant topics
@@ -77190,7 +77190,7 @@ it."
  Some documentation has been written for @(see guard)s which you might find
  interesting.</p>")
 
-(defxdoc note2
+(defxdoc note-1-2
   :parents (release-notes)
   :short "Acl2 Version 1.2 Notes"
   :long "<p>Hacker mode has been eliminated and @(see programming) mode has
@@ -77220,7 +77220,7 @@ it."
  hint also lets you say ``this goal can't be proved yet but skip it and see how
  the rest of the proof goes.'' See @(see hints).</p>")
 
-(defxdoc note3
+(defxdoc note-1-3
   :parents (release-notes)
   :short "Acl2 Version 1.3 Notes"
   :long "<p>@(see Programming) mode has been eliminated.  Instead, all
@@ -77313,7 +77313,7 @@ it."
  prove @('(rationalp (foo a b c))') it is now smart enough to try lemmas that
  match with @('(integerp (foo a b c))').</p>")
 
-(defxdoc note4
+(defxdoc note-1-4
   :parents (release-notes)
   :short "Acl2 Version 1.4 Notes"
   :long "<p>Once again @(tsee ld) only takes one required argument, as the
@@ -77480,7 +77480,7 @@ it."
  @('defcor'), @(tsee defequiv), @(tsee defrefinement), @(tsee defstub), and
  @(tsee verify-termination).</p>")
 
-(defxdoc note5
+(defxdoc note-1-5
   :parents (release-notes)
   :short "Acl2 Version 1.5 Notes"
   :long "<p>Acl2 now allows ``complex rationals,'' which are complex numbers
@@ -77730,7 +77730,7 @@ it."
  quickly to @('c') when @('(equiv a b)') and @('(equiv b c)') are both known
  and @('c') is the canonical representative of the three.</p>")
 
-(defxdoc note6
+(defxdoc note-1-6
   :parents (release-notes)
   :short "Acl2 Version 1.6 Notes"
   :long "<p>A new key has been implemented for the @(tsee acl2-defaults-table),
@@ -77846,7 +77846,7 @@ it."
  <p>The choice of which variable to use as the measured variable in a recursive
  definition has been very slightly changed.</p>")
 
-(defxdoc note7
+(defxdoc note-1-7
   :parents (release-notes)
   :short "ACL2 Version 1.7 (released October 1994) Notes"
   :long "<p>@(tsee Include-book) now takes (optionally) an additional keyword
@@ -78040,10 +78040,10 @@ it."
   subst-expr1-lst-okp  --> subst-expr1-ok-listp
  })")
 
-(defxdoc note8
+(defxdoc note-1-8
   :parents (release-notes)
   :short "ACL2 Version 1.8 (May, 1995) Notes"
-  :long "<p>See @(see note8-update) for yet more recent changes.</p>
+  :long "<p>See @(see note-1-8-update) for yet more recent changes.</p>
 
  <p>@(see Guard)s have been eliminated from the ACL2 logic.  A summary is
  contained in this brief note.  Also see @(see defun-mode) and see @(see
@@ -78193,7 +78193,7 @@ it."
  This is roughly the same as the documentation for @(see guard-example).</p>
 
  <p>We have removed the capability to do ``old-style-forcing'' as existed
- before Version 1.5.  See @(see note5).</p>
+ before Version 1.5.  See @(see note-1-5).</p>
 
  <p>NOTE: Some low level details have, of course, changed.  One such change is
  that there are no longer two distinct type prescriptions stored when a
@@ -78394,7 +78394,7 @@ it."
  defun-mode) @(':')@(tsee program), but this change is almost certain to be
  inconsequential to all users.</p>")
 
-(defxdoc note8-update
+(defxdoc note-1-8-update
   :parents (release-notes)
   :short "ACL2 Version 1.8 (Summer, 1995) Notes"
   :long "<p>ACL2 can now use Ordered Binary Decision Diagram technology.  See
@@ -78445,7 +78445,7 @@ it."
  <p>@(tsee Put-assoc-equal) has been added to the logic (it used to have
  @(':')@(tsee defun-mode) @(':')@(tsee program), and has been documented.</p>")
 
-(defxdoc note9
+(defxdoc note-1-9
   :parents (release-notes)
   :short "ACL2 Version 1.9 (Fall, 1996) Notes"
   :long "<p>By default, when the system is started it is illegal to use the
@@ -78520,6 +78520,17 @@ it."
  <p>A bug in ok$, go$ and eval$ was fixed.</p>
 
  <p>Clausify now optimizes (mv-nth 'k (list x0 ... xk ... xn)) to xk.</p>")
+
+(defpointer note1 note-1-1)
+(defpointer note2 note-1-2)
+(defpointer note3 note-1-3)
+(defpointer note4 note-1-4)
+(defpointer note5 note-1-5)
+(defpointer note6 note-1-6)
+(defpointer note7 note-1-7)
+(defpointer note8 note-1-8)
+(defpointer note8-update note-1-8-update)
+(defpointer note9 note-1-9)
 
 (defxdoc nqthm-to-acl2
   :parents (acl2-tutorial)
