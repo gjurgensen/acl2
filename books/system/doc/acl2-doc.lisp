@@ -90075,6 +90075,61 @@ arithmetic) for libraries of @(see books) for arithmetic reasoning.</p>")
 
  @(def reverse)")
 
+(defxdoc revert-world
+  :parents (programming)
+  :short "Evaluate without (ultimately) changing the @(see world)"
+  :long "@({
+ General Form:
+ (revert-world form)
+ })
+
+ <p>where @('form') evaluates to an @(see error-triple).</p>
+
+ <p>Evaluation of @('(revert-world form) returns the same result, @('(mv erp
+ val state)'), as the given @('form'), except that the @(see world) of the
+ returned @(tsee state) is the same as the world of the input state even if the
+ evaluation of @('form') modifies the world of the input state.</p>
+
+ <p>To see @('revert-world') in action, consider the following defintion.</p>
+
+ @({
+ (defun test-revert-world (state)
+  (declare (xargs :mode :program :stobjs state))
+  (er-progn
+   (value (cw \"Length of (w state) before defun: ~x0~%\"
+              (length (w state))))
+   (revert-world (er-progn
+                  (trans-eval '(with-output :off :all ; avoid output ;
+                                 (defun foo (x) x))
+                              'my-ctx state nil)
+                  (value (cw \"Length of (w state) after defun: ~x0~%\"
+                             (length (w state))))))
+   (value (cw \"Length of (w state) after revert-world: ~x0~%\"
+              (length (w state))))))
+ })
+
+ <p>Here is a log produced after admitting the definition above in a fresh
+ session (for an ACL2 build circa November 2017).  It shows that the definition
+ lengthens the world, but that the world's length is back to its initial value
+ after we return from @('revert-world').</p>
+
+ @({
+ ACL2 !>(test-revert-world state)
+ Length of (w state) before defun: 107133
+ Length of (w state) after defun: 107153
+ Length of (w state) after revert-world: 107133
+  NIL
+ ACL2 !>:pbt 0
+            0  (EXIT-BOOT-STRAP-MODE)
+  P         1:x(DEFUN TEST-REVERT-WORLD (STATE) ...)
+ ACL2 !>
+ })
+
+ <p>The macroexpansion of @('(revert-world form)') contains a call of a @(see
+ program)-mode function.  It is thus illegal to call @('revert-world') in the
+ body of a @(see logic)-mode function.  Contact the ACL2 implementors if you
+ want them to consider working to lift this restriction.</p>")
+
 (defxdoc rewrite
   :parents (rule-classes)
   :short "Make some @(':rewrite') rules (possibly conditional ones)"
@@ -110466,7 +110521,7 @@ introduction-to-the-tau-system) for more information about Tau.</dd>
  is issuing those warnings, but the ``context'' on the first line of the
  warning &mdash; @('FOO'), above &mdash; may give a clue.</p>
 
- <p>The remained of this topic is directed at tool writers.  It discusses how
+ <p>The remainder of this topic is directed at tool writers.  It discusses how
  to write tools that avoid producing such warnings, and the advisability (or
  not) of doing so.  For background on @('trans-eval'), see @(see
  trans-eval).</p>
