@@ -83974,6 +83974,9 @@ Subtopics
   [Redefining-programs]
       An explanation of why we restrict redefinitions
 
+  [Revert-world]
+      Evaluate without (ultimately) changing the [world]
+
   [Set-check-invariant-risk]
       Affect certain [program]-mode updates to [stobj]s or [arrays]
 
@@ -91242,6 +91245,57 @@ Subtopics
                   (coerce (revappend (coerce x 'list) nil)
                           'string))
                  (t (revappend x nil))))")
+ (REVERT-WORLD
+  (PROGRAMMING)
+  "Evaluate without (ultimately) changing the [world]
+
+    General Form:
+    (revert-world form)
+
+  where form evaluates to an [error-triple].
+
+  Evaluation of (revert-world form) returns the same result, @('(mv erp
+  val state), as the given form, except that the [world] of the
+  returned [state] is the same as the world of the input state even
+  if the evaluation of form modifies the world of the input state.
+
+  To see revert-world in action, consider the following defintion.
+
+    (defun test-revert-world (state)
+     (declare (xargs :mode :program :stobjs state))
+     (er-progn
+      (value (cw \"Length of (w state) before defun: ~x0~%\"
+                 (length (w state))))
+      (revert-world (er-progn
+                     (trans-eval '(with-output :off :all ; avoid output ;
+                                    (defun foo (x) x))
+                                 'my-ctx state nil)
+                     (value (cw \"Length of (w state) after defun: ~x0~%\"
+                                (length (w state))))))
+      (value (cw \"Length of (w state) after revert-world: ~x0~%\"
+                 (length (w state))))))
+
+  Here is a log produced after admitting the definition above in a
+  fresh session (for an ACL2 build circa November 2017).  It shows
+  that the definition lengthens the world, but that the world's
+  length is back to its initial value after we return from
+  revert-world.
+
+    ACL2 !>(test-revert-world state)
+    Length of (w state) before defun: 107133
+    Length of (w state) after defun: 107153
+    Length of (w state) after revert-world: 107133
+     NIL
+    ACL2 !>:pbt 0
+               0  (EXIT-BOOT-STRAP-MODE)
+     P         1:x(DEFUN TEST-REVERT-WORLD (STATE) ...)
+    ACL2 !>
+
+  The macroexpansion of (revert-world form) contains a call of a
+  [program]-mode function.  It is thus illegal to call revert-world
+  in the body of a [logic]-mode function.  Contact the ACL2
+  implementors if you want them to consider working to lift this
+  restriction.")
  (REVISITING_THE_ADMISSION_OF_APP
   (PAGES_WRITTEN_ESPECIALLY_FOR_THE_TOURS)
   "Revisiting the Admission of App
@@ -111639,10 +111693,10 @@ Subtopics
   ``context'' on the first line of the warning --- FOO, above --- may
   give a clue.
 
-  The remained of this topic is directed at tool writers.  It discusses
-  how to write tools that avoid producing such warnings, and the
-  advisability (or not) of doing so.  For background on trans-eval,
-  see [trans-eval].
+  The remainder of this topic is directed at tool writers.  It
+  discusses how to write tools that avoid producing such warnings,
+  and the advisability (or not) of doing so.  For background on
+  trans-eval, see [trans-eval].
 
   The following example illustrates the issue.
 
