@@ -78297,6 +78297,15 @@ it."
  bodies of executable definitions, is now also applied to @(see guard)s.
  Thanks to Sol Swords for suggesting this change and its implementation.</p>
 
+ <p>The function @(tsee resize-list) is now defined using @(tsee mbe) so that
+ its execution is tail-recursive.  Thanks to Martin Simmons of LispWorks
+ Technical Support for diagnosing a stall in the certification of community
+ book @('books/centaur/truth/perm4.lisp') as being due to a stack overflow
+ caused by an invocation of @('resize-list').  Based on his advice we no longer
+ automatically grow the stack in LispWorks; this will ease debugging when
+ compilation is done with safety 3.  The maximum stack size is 399998, at least
+ in our 64-bit LispWorks build.</p>
+
  <h3>Bug Fixes</h3>
 
  <p>Soundness bugs have been fixed in the handling of @(tsee stobj-let), due to

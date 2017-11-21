@@ -76938,6 +76938,16 @@ Heuristic and Efficiency Improvements
   Thanks to Sol Swords for suggesting this change and its
   implementation.
 
+  The function [resize-list] is now defined using [mbe] so that its
+  execution is tail-recursive.  Thanks to Martin Simmons of LispWorks
+  Technical Support for diagnosing a stall in the certification of
+  community book books/centaur/truth/perm4.lisp as being due to a
+  stack overflow caused by an invocation of resize-list.  Based on
+  his advice we no longer automatically grow the stack in LispWorks;
+  this will ease debugging when compilation is done with safety 3.
+  The maximum stack size is 399998, at least in our 64-bit LispWorks
+  build.
+
 
 Bug Fixes
 
@@ -90602,14 +90612,16 @@ Subtopics
 
   Function: <resize-list>
 
-    (defun resize-list (lst n default-value)
-           (declare (xargs :guard t))
-           (if (and (integerp n) (> n 0))
-               (cons (if (atom lst) default-value (car lst))
-                     (resize-list (if (atom lst) lst (cdr lst))
-                                  (1- n)
-                                  default-value))
-               nil))")
+    (defun
+        resize-list (lst n default-value)
+        (declare (xargs :guard t))
+        (mbe :logic (if (and (integerp n) (> n 0))
+                        (cons (if (atom lst) default-value (car lst))
+                              (resize-list (if (atom lst) lst (cdr lst))
+                                           (1- n)
+                                           default-value))
+                        nil)
+             :exec (resize-list-exec lst n default-value nil)))")
  (REST
   (NTH ACL2-BUILT-INS)
   "Rest ([cdr]) of the list
