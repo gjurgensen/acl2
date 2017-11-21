@@ -49029,7 +49029,7 @@ tables in the current Hons Space."
  <p>Note that @('make-event') is generally legal only where an embedded event
  form is expected: essentially, at the top level of a book or the
  read-eval-print loop, possibly within surrounding calls of @('make-event') or
- of event constructors such as @('tsee progn') and @('tsee encapsulate').  For
+ of event constructors such as @(tsee progn) and @(tsee encapsulate).  For
  details see the section ``Restriction to Event Contexts'', below.</p>
 
  <p>@('Make-event') is related to Lisp macroexpansion in the sense that its
