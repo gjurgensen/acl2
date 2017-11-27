@@ -2790,6 +2790,9 @@ Subtopics
   [Append]
       [concatenate] zero or more lists
 
+  [Apply$]
+      Apply a function to arguments
+
   [Aref1]
       Access the elements of a 1-dimensional array
 
@@ -7405,6 +7408,44 @@ Subtopics
 
   [Binary-append]
       [concatenate] two lists")
+ (APPLY$
+  (ACL2-BUILT-INS)
+  "Apply a function to arguments
+
+  This documentation topic is currently little more than a stub, but
+  with pointers to helpful information about apply$ and related
+  functions ev$ and ev$-list.  Here is a little edited log, produced
+  immediately after starting ACL2, that shows apply$ at work.
+
+    ACL2 !>(defun$ foo (x y) (+ x y))
+    [[.. elided output ..]]
+     :WARRANTED
+    ACL2 !>(apply$ 'foo (list 3 (- 10 2)))
+    11
+    ACL2 !>(thm (implies (warrant foo)
+                         (equal (apply$ 'foo (list x y))
+                                (foo x y))))
+    [[.. elided output ..]]
+    Proof succeeded.
+    ACL2 !>
+
+  The paper {``Limited Second-Order Functionality in a First-Order
+  Setting'' |
+  http://www.cs.utexas.edu/users/kaufmann/papers/apply/index.html} by
+  Matt Kaufmann and J Strother Moore is the definitive reference on
+  apply$.  That paper serves not only as a manual, but it also
+  provides logical foundations, which are illustrated in
+  [community-books] directory books/projects/apply-model/.
+
+  A quick way to start using apply$ is to start with
+
+    (include-book \"projects/apply/apply-lemmas\" :dir :system)
+
+  to load useful lemmas for reasoning about apply$.
+
+  Then run some examples in the community book,
+  books/projects/apply/apply-lemmas.lisp, to learn how to do proofs
+  about apply$.")
  (APROPOS (POINTERS)
           "See [finding-documentation].")
  (ARCHITECTURE-OF-THE-PROVER
@@ -20133,7 +20174,7 @@ Subtopics
   something like ``higher-order'' programs, in which constrained
   functions may be refined to different executable functions.  More
   uses of defattach may be found in the ACL2 source code,
-  specifically, file boot-strap-pass-2.lisp.
+  specifically, file boot-strap-pass-2-a.lisp.
 
   The argument :skip-checks t enables easy experimentation with
   defattach, by permitting use of :[program] mode functions and the
@@ -28205,6 +28246,8 @@ Subtopics
   execute a form in Common Lisp as opposed to ACL2, exit [lp] with
   :[q], submit the desired forms to the Common Lisp read-eval-print
   loop, and reenter ACL2 with (lp).")
+ (EV$ (POINTERS) "See [apply$].")
+ (EV$-LIST (POINTERS) "See [apply$].")
  (EVALUATING_APP_ON_SAMPLE_INPUT
   (PAGES_WRITTEN_ESPECIALLY_FOR_THE_TOURS)
   "Evaluating App on Sample Input
@@ -52884,8 +52927,8 @@ Subtopics
   Note that make-event is generally legal only where an embedded event
   form is expected: essentially, at the top level of a book or the
   read-eval-print loop, possibly within surrounding calls of
-  make-event or of event constructors such as tsee progn and tsee
-  encapsulate.  For details see the section ``Restriction to Event
+  make-event or of event constructors such as [progn] and
+  [encapsulate].  For details see the section ``Restriction to Event
   Contexts'', below.
 
   Make-event is related to Lisp macroexpansion in the sense that its
@@ -76865,8 +76908,16 @@ Changes to Existing Features
     * Both oracle-apply and oracle-funcall have been eliminated.  Use
       [magic-ev-fncall] where you would otherwise use one of those.
 
+  Expressions in [table] [events] may now use not only the variable,
+  WORLD, but also the variable, ENS.  See [table].
+
 
 New Features
+
+  A new utility, [apply$], provides a weak version of the Common Lisp
+  second-order utility, apply.  Using this new primitive the user can
+  define functions like map, which can apply either function symbols
+  or lambda expressions.
 
   Added utility [checkpoint-summary-limit].  Thanks to Mihir Mehta for
   an email leading to this addition.
@@ -76915,6 +76966,10 @@ New Features
   this level of reporting useful are encouraged to tell us as we
   could incorporate it into the documentation topic,
   [forward-chaining-reports].
+
+  Normally, hard error messages (see [er]) are not inhibited.  A new
+  [state] global, INHIBIT-ER-HARD, inhibits hard error messages when
+  ERROR output is inhibited; see [set-inhibit-output-lst].
 
 
 Heuristic and Efficiency Improvements
@@ -80904,22 +80959,22 @@ Subtopics
 
   See [command-descriptor].
 
-  Pcb takes one argument, a [command] descriptor, and prints in an
-  abbreviated format the [command] block of the [command] described.
-  See [command-descriptor] for details of [command] descriptors.  See
-  [pc] for description of the format in which [command]s are
-  displayed.  The [command] block of a [command] consists of the
-  [command] itself and all of the [events] it created.  If the
-  [command] created a single event and that event is in fact the
-  [command] (i.e., if the [command] typed was just an event such as a
-  [defun] or [defthm] rather than a macro that expanded to some event
-  forms), then pcb just prints the [command] (unless the event is
-  replaced using [extend-pe-table]).  Pcb sketches [command] and all
-  of the [events] it created, rather than printing them fully.  If
-  you wish to see just the [command], in its entirety, use [pc].  If
-  you wish to see one of the [events] within the block, in its
-  entirety, use [pe].  If you wish to see the [command] sketched and
-  all of the [events] it created, in their entirety, use [pcb!].")
+  Pcb takes one argument, a [command-descriptor], and prints in an
+  abbreviated format the [command] block of the command described.
+  See [pc] for description of the format in which [command]s are
+  displayed.  The command block of a command consists of the command
+  itself and all of the [events] it created.  If the command created
+  a single event and that event is in fact the command (i.e., if the
+  command typed was just an event such as a [defun] or [defthm]
+  rather than a macro that expanded to some event forms), then pcb
+  just prints the command (unless the event is replaced using
+  [extend-pe-table]).  Pcb sketches the command and all of the
+  [events] it created, rather than printing them fully.  If you wish
+  to see just the command, in its entirety, use [pc].  If you wish to
+  see one of the [events] within the block, in its entirety, use
+  [pe].  If you wish to see the command sketched and all of the
+  events it created, in their entirety, use [pcb!].  For a sequence
+  of commands, see [pcs] and [gcs].")
  (PCB!
   (HISTORY)
   "Print in full the [command] block described by a [command] descriptor
@@ -81393,6 +81448,12 @@ Subtopics
 
   [Error]
       See [hints] for information about the keyword :error.
+
+  [Ev$]
+      See [apply$].
+
+  [Ev$-list]
+      See [apply$].
 
   [Execution]
       See [evaluation].
@@ -95388,7 +95449,7 @@ Example
   list of names, each of which is the name of one of the following
   ``kinds'' of output produced by ACL2.
 
-    error          error messages
+    error          error messages (but for hard errors, see below)
     warning        warnings other than those related to soundness
     warning!       warnings (of all degrees of importance)
     observation    observations
@@ -95420,6 +95481,11 @@ Example
   inhibited when both 'event and 'prove belong to lst.  Otherwise,
   printing of events is controlled by the [ld] special
   [ld-pre-eval-print].
+
+  Normally, hard error messages (see [er]) are not inhibited.  To
+  inhibit those as well when ERROR output is inhibited: (assign
+  inhibit-er-hard t).  To restore the original behavior: (assign
+  inhibit-er-hard nil).
 
   Note for advanced users. By including warning! in lst, you are
   automatically including warning as well: all warnings will be
@@ -103135,9 +103201,9 @@ Subtopics
     (table table-name key-term value-term op term)
 
   where table-name is a symbol that is the name of a (possibly new)
-  table, key-term and value-term, if present, are arbitrary terms
-  involving (at most) the single variable [world], op, if present, is
-  one of the table operations below, and term, if present, is a term.
+  table; key-term and value-term, if present, are arbitrary terms
+  involving (at most) the variables WORLD and ENS; op, if present, is
+  one of the table operations below; and term, if present, is a term.
   Table returns an ACL2 [error-triple].  The effect of table on
   [state] depends on op and how many arguments are presented.  Some
   invocations actually have no effect on the ACL2 [world] and hence
@@ -103152,14 +103218,14 @@ Subtopics
     (table-alist 'tests world)
 
   returns the alist representation of the table named test in the given
-  world.  Often you have access to world.
+  [world].  Often you have access to world.
 
   The ACL2 system provides ``tables'' by which the user can associate
   one object with another.  Tables are in essence just conventional
   association lists --- lists of pairs --- but the ACL2 environment
   provides a means of storing these lists in the ``ACL2 world'' of
   the current [state].  The ACL2 user could accomplish the same ends
-  by using ACL2 ``global variables;'' however, limitations on global
+  by using ACL2 ``global variables''; however, limitations on global
   variable names are imposed to ensure ACL2's soundness.  Some
   features of the system use tables, and the user is invited to make
   free use of tables.  By convention, no user-defined table is
@@ -103214,10 +103280,14 @@ Subtopics
   :guard on the named table and then ``modifies'' the named table so
   that the value associated with key is value.  When used like this,
   table is actually an event in the sense that it changes the ACL2
-  [world].  In general, the forms evaluated to obtain the key and
-  value may involve the variable [world], which is bound to the
-  then-current [world] during the evaluation of the forms.  However,
-  in the special case that the table in question is named
+  [world].  In general, the forms that are evaluated to obtain the
+  key and value may involve two variables: WORLD, which is bound to
+  the then-current [world]; and ENS, which is bound to the enabled
+  structure representing the current theory.  (The enabled structure
+  is passed as a formal parameter to many built-in functions; for
+  example, see [system-utilities] for a description of built-in
+  utilities enabled-numep and enabled-runep.)  However, in the
+  special case that the table in question is named
   [ACL2-defaults-table], the key and value terms may not contain any
   variables.  Essentially, the keys and values used in [events]
   setting the [ACL2-defaults-table] must be explicitly given
@@ -103254,12 +103324,13 @@ Subtopics
 
   Provided the named table is empty and has not yet been assigned a
   :guard and term (which is not evaluated) is a term that mentions at
-  most the variables key, val and [world], this event sets the :guard
-  of the named table to term.  Whenever a subsequent :put occurs,
-  term will be evaluated with key bound to the key argument of the
-  :put, val bound to the val argument of the :put, and [world] bound
-  to the then current [world].  An error will be caused by the :put
-  if the result of the evaluation is nil.
+  most the variables KEY, VAL, WORLD, and ENS, this event sets the
+  :guard of the named table to term.  Whenever a subsequent :put
+  occurs, term will be evaluated with KEY bound to the key argument
+  of the :put, VAL bound to the val argument of the :put, WORLD bound
+  to the then current [world], and ENS bound to the enabled structure
+  representing the current theory.  An error will be caused by the
+  :put if the result of the evaluation is nil.
 
   Note that it is not allowed to change the :guard on a table once it
   has been explicitly set.  Before the :guard is explicitly set, it

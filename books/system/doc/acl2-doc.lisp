@@ -4991,6 +4991,48 @@ and @(tsee include-book)"
  @(def append)
  @(def binary-append)")
 
+(defxdoc apply$
+  :parents (acl2-built-ins)
+  :short "Apply a function to arguments"
+  :long "<p>This documentation topic is currently little more than a stub, but
+ with pointers to helpful information about @('apply$') and related functions
+ @('ev$') and @('ev$-list').  Here is a little edited log, produced immediately
+ after starting ACL2, that shows @('apply$') at work.</p>
+
+ @({
+ ACL2 !>(defun$ foo (x y) (+ x y))
+ [[.. elided output ..]]
+  :WARRANTED
+ ACL2 !>(apply$ 'foo (list 3 (- 10 2)))
+ 11
+ ACL2 !>(thm (implies (warrant foo)
+                      (equal (apply$ 'foo (list x y))
+                             (foo x y))))
+ [[.. elided output ..]]
+ Proof succeeded.
+ ACL2 !>
+ })
+
+ <p>The paper <a
+ href='http://www.cs.utexas.edu/users/kaufmann/papers/apply/index.html'>``Limited
+ Second-Order Functionality in a First-Order Setting''</a> by Matt Kaufmann and
+ J Strother Moore is the definitive reference on @('apply$').  That paper
+ serves not only as a manual, but it also provides logical foundations, which
+ are illustrated in @(see community-books) directory
+ @('books/projects/apply-model/').</p>
+
+ <p>A quick way to start using @('apply$') is to start with</p>
+
+ @({
+ (include-book \"projects/apply/apply-lemmas\" :dir :system)
+ })
+
+ <p>to load useful lemmas for reasoning about @('apply$').</p>
+
+ <p>Then run some examples in the community book,
+ @('books/projects/apply/apply-lemmas.lisp'), to learn how to do proofs about
+ apply$.</p>")
+
 (defxdoc architecture-of-the-prover
   :parents (introduction-to-the-theorem-prover)
   :short "A simple overview of how the prover works"
@@ -17246,7 +17288,7 @@ subtree of X with T, without duplication.</p>
  example.  it illustrates how @('defattach') may be used to build something
  like ``higher-order'' programs, in which constrained functions may be refined
  to different executable functions.  More uses of @('defattach') may be found
- in the ACL2 source code, specifically, file @('boot-strap-pass-2.lisp').</p>
+ in the ACL2 source code, specifically, file @('boot-strap-pass-2-a.lisp').</p>
 
  <p>The argument @(':skip-checks t') enables easy experimentation with
  @('defattach'), by permitting use of @(':')@(tsee program) mode functions and
@@ -78015,6 +78057,12 @@ it."
 ; has been shortened considerably, with a pointer to a new :doc topic,
 ; program-only.
 
+; Fixed the build check, check-none-ideal, to check for ideal functions defined
+; under mutual-recursion.  (That check was previously missing.)
+
+; Improved system-verify-guards to handle mutual-recursion with arbitrary
+; measures.
+
   :parents (release-notes)
   :short "ACL2 Version  7.5 (xxx, 20xx) Notes"
   :long "<p>NOTE!  New users can ignore these release notes, because the @(see
@@ -78230,7 +78278,15 @@ it."
 
  </ul>
 
+ <p>Expressions in @(see table) @(see events) may now use not only the
+ variable, @('WORLD'), but also the variable, @('ENS').  See @(see table).</p>
+
  <h3>New Features</h3>
+
+ <p>A new utility, @(tsee apply$), provides a weak version of the Common Lisp
+ second-order utility, @('apply').  Using this new primitive the user can
+ define functions like @('map'), which can apply either function symbols or
+ lambda expressions.</p>
 
  <p>Added utility @(tsee checkpoint-summary-limit).  Thanks to Mihir Mehta for
  an email leading to this addition.</p>
@@ -78276,6 +78332,10 @@ it."
  comment at the top of that @('defun').  Users who find this level of reporting
  useful are encouraged to tell us as we could incorporate it into the
  documentation topic, @(see forward-chaining-reports).</p>
+
+ <p>Normally, hard error messages (see @(see er)) are not inhibited.  A new
+ @(see state) global, @('INHIBIT-ER-HARD'), inhibits hard error messages when
+ @('ERROR') output is inhibited; see @(see set-inhibit-output-lst).</p>
 
  <h3>Heuristic and Efficiency Improvements</h3>
 
@@ -81392,22 +81452,21 @@ arithmetic) for libraries of @(see books) for arithmetic reasoning.</p>")
 
  <p>See @(see command-descriptor).</p>
 
- <p>@('Pcb') takes one argument, a @(see command) descriptor, and prints in an
- abbreviated format the @(see command) block of the @(see command) described.
- See @(see command-descriptor) for details of @(see command) descriptors.  See
+ <p>@('Pcb') takes one argument, a @(see command-descriptor), and prints in an
+ abbreviated format the @(see command) block of the command described.  See
  @(see pc) for description of the format in which @(see command)s are
- displayed.  The @(see command) block of a @(see command) consists of the @(see
- command) itself and all of the @(see events) it created.  If the @(see
- command) created a single event and that event is in fact the @(see
- command) (i.e., if the @(see command) typed was just an event such as a @(tsee
- defun) or @(tsee defthm) rather than a macro that expanded to some event
- forms), then @('pcb') just prints the @(see command) (unless the event is
- replaced using @(tsee extend-pe-table)).  @('Pcb') sketches @(see command) and
- all of the @(see events) it created, rather than printing them fully.  If you
- wish to see just the @(see command), in its entirety, use @(tsee pc).  If you
- wish to see one of the @(see events) within the block, in its entirety, use
- @(tsee pe).  If you wish to see the @(see command) sketched and all of the
- @(see events) it created, in their entirety, use @(tsee pcb!).</p>")
+ displayed.  The command block of a command consists of the command itself and
+ all of the @(see events) it created.  If the command created a single event
+ and that event is in fact the command (i.e., if the command typed was just an
+ event such as a @(tsee defun) or @(tsee defthm) rather than a macro that
+ expanded to some event forms), then @('pcb') just prints the command (unless
+ the event is replaced using @(tsee extend-pe-table)).  @('Pcb') sketches the
+ command and all of the @(see events) it created, rather than printing them
+ fully.  If you wish to see just the command, in its entirety, use @(tsee pc).
+ If you wish to see one of the @(see events) within the block, in its entirety,
+ use @(tsee pe).  If you wish to see the command sketched and all of the events
+ it created, in their entirety, use @(tsee pcb!).  For a sequence of commands,
+ see @(see pcs) and @(see gcs).</p>")
 
 (defxdoc pcb!
   :parents (history)
@@ -94160,7 +94219,7 @@ arithmetic) for libraries of @(see books) for arithmetic reasoning.</p>")
  ``kinds'' of output produced by ACL2.</p>
 
  @({
-    error          error messages
+    error          error messages (but for hard errors, see below)
     warning        warnings other than those related to soundness
     warning!       warnings (of all degrees of importance)
     observation    observations
@@ -94192,6 +94251,11 @@ arithmetic) for libraries of @(see books) for arithmetic reasoning.</p>")
  encapsulate) is inhibited when both @(''event') and @(''prove') belong to
  @('lst').  Otherwise, printing of events is controlled by the @(tsee ld)
  special @(tsee ld-pre-eval-print).</p>
+
+ <p>Normally, hard error messages (see @(see er)) are not inhibited.  To
+ inhibit those as well when @('ERROR') output is inhibited: @('(assign
+ inhibit-er-hard t)').  To restore the original behavior: @('(assign
+ inhibit-er-hard nil)').</p>
 
  <p><i>Note for advanced users.</i> By including @('warning!') in @('lst'), you
  are automatically including @('warning') as well: all warnings will be
@@ -101935,14 +101999,14 @@ arithmetic) for libraries of @(see books) for arithmetic reasoning.</p>")
  })
 
  <p>where @('table-name') is a symbol that is the name of a (possibly new)
- table, @('key-term') and @('value-term'), if present, are arbitrary terms
- involving (at most) the single variable @(tsee world), @('op'), if present, is
- one of the table operations below, and @('term'), if present, is a term.
- @('Table') returns an ACL2 @(see error-triple).  The effect of @('table') on
- @(tsee state) depends on @('op') and how many arguments are presented.  Some
- invocations actually have no effect on the ACL2 @(see world) and hence an
- invocation of @('table') is not always an ``event''.  We explain below, after
- giving some background information.</p>
+ table; @('key-term') and @('value-term'), if present, are arbitrary terms
+ involving (at most) the variables @('WORLD') and @('ENS'); @('op'), if
+ present, is one of the table operations below; and @('term'), if present, is a
+ term.  @('Table') returns an ACL2 @(see error-triple).  The effect of
+ @('table') on @(tsee state) depends on @('op') and how many arguments are
+ presented.  Some invocations actually have no effect on the ACL2 @(see world)
+ and hence an invocation of @('table') is not always an ``event''.  We explain
+ below, after giving some background information.</p>
 
  <p><b>Important Note:</b> The @('table') forms above are calls of a macro that
  expand to involve the special variable @(tsee state).  This will prevent you
@@ -101954,14 +102018,14 @@ arithmetic) for libraries of @(see books) for arithmetic reasoning.</p>")
  })
 
  <p>returns the alist representation of the table named @('test') in the given
- world.  Often you have access to @('world').</p>
+ @(tsee world).  Often you have access to @('world').</p>
 
  <p>The ACL2 system provides ``tables'' by which the user can associate one
  object with another.  Tables are in essence just conventional association
  lists &mdash; lists of pairs &mdash; but the ACL2 environment provides a means
  of storing these lists in the ``ACL2 world'' of the current @(tsee state).
  The ACL2 user could accomplish the same ends by using ACL2 ``global
- variables;'' however, limitations on global variable names are imposed to
+ variables''; however, limitations on global variable names are imposed to
  ensure ACL2's soundness.  Some features of the system use tables, and the user
  is invited to make free use of tables.  By convention, no user-defined table
  is important to ACL2's soundness.  Because tables are stored in the ACL2 @(see
@@ -102015,13 +102079,17 @@ arithmetic) for libraries of @(see books) for arithmetic reasoning.</p>")
  @(':guard') on the named table and then ``modifies'' the named table so that
  the value associated with @('key') is @('value').  When used like this,
  @('table') is actually an event in the sense that it changes the ACL2 @(see
- world).  In general, the forms evaluated to obtain the @('key') and @('value')
- may involve the variable @(tsee world), which is bound to the then-current
- @(see world) during the evaluation of the forms.  However, in the special case
- that the table in question is named @(tsee acl2-defaults-table), the @('key')
- and @('value') terms may not contain any variables.  Essentially, the keys and
- values used in @(see events) setting the @(tsee acl2-defaults-table) must be
- explicitly given constants.  See @(see acl2-defaults-table).</p>
+ world).  In general, the forms that are evaluated to obtain the @('key') and
+ @('value') may involve two variables: @('WORLD'), which is bound to the
+ then-current @(see world); and @('ENS'), which is bound to the enabled
+ structure representing the current theory.  (The enabled structure is passed
+ as a formal parameter to many built-in functions; for example, see @(see
+ system-utilities) for a description of built-in utilities @('enabled-numep')
+ and @('enabled-runep').)  However, in the special case that the table in
+ question is named @(tsee acl2-defaults-table), the @('key') and @('value')
+ terms may not contain any variables.  Essentially, the keys and values used in
+ @(see events) setting the @(tsee acl2-defaults-table) must be explicitly given
+ constants.  See @(see acl2-defaults-table).</p>
 
  @({
   (table name key-term nil :get)          ; long form
@@ -102063,12 +102131,13 @@ arithmetic) for libraries of @(see books) for arithmetic reasoning.</p>")
 
  <p>Provided the named table is empty and has not yet been assigned a
  @(':guard') and @('term') (which is not evaluated) is a term that mentions at
- most the variables @('key'), @('val') and @(tsee world), this event sets the
- @(':guard') of the named table to @('term').  Whenever a subsequent @(':put')
- occurs, @('term') will be evaluated with @('key') bound to the key argument of
- the @(':put'), @('val') bound to the @('val') argument of the @(':put'), and
- @(tsee world) bound to the then current @(see world).  An error will be caused
- by the @(':put') if the result of the evaluation is @('nil').</p>
+ most the variables @('KEY'), @('VAL'), @('WORLD'), and @('ENS'), this event
+ sets the @(':guard') of the named table to @('term').  Whenever a subsequent
+ @(':put') occurs, @('term') will be evaluated with @('KEY') bound to the key
+ argument of the @(':put'), @('VAL') bound to the @('val') argument of the
+ @(':put'), @('WORLD') bound to the then current @(see world), and @('ENS')
+ bound to the enabled structure representing the current theory.  An error will
+ be caused by the @(':put') if the result of the evaluation is @('nil').</p>
 
  <p>Note that it is not allowed to change the @(':guard') on a table once it
  has been explicitly set.  Before the @(':guard') is explicitly set, it is
@@ -119475,6 +119544,8 @@ expand function call at the current subterm, without simplifying"
 (defpointer enabled-runep system-utilities)
 (defpointer er-let* programming-with-state)
 (defpointer error hints t)
+(defpointer ev$ apply$)
+(defpointer ev$-list apply$)
 (defpointer execution evaluation)
 (defpointer expand hints t)
 (defpointer extended-syntaxp syntaxp)
