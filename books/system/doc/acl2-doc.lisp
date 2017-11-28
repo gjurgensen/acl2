@@ -165,6 +165,7 @@
     (INCLUDE-RAW "[books]/tools/include-raw.lisp")
     (INSTALL-NOT-NORMALIZED "[books]/misc/install-not-normalized.lisp")
     (LOGBITP-REASONING "[books]/centaur/bitops/equal-by-logbitp.lisp")
+    (MAKE-EVENT-TERSE "[books]/kestrel/utilities/user-interface.lisp")
     (MAKE-FLAG "[books]/tools/flag.lisp")
     (MAKE-TERMINATION-THEOREM
      "[books]/kestrel/utilities/make-termination-theorem.lisp")
