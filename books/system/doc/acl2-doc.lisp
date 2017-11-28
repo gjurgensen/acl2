@@ -44,6 +44,19 @@
 
 (defconst *acl2-broken-links-alist*
 
+; The value of this constant is an alist whose keys are the XDOC topics
+; referenced in the ACL2-only manual that are not in the ACL2-only manual
+; (i.e. that are in the Books part of the ACL2+Books manual).  Each key in this
+; alist is associated with the name of the file where the referenced topic is
+; defined.  Each file name is a string starting with [books]/ (see below).
+
+; So in practice, if you link to an ACL2+books topic that is not in the
+; ACL2-only manual, just add an entry following the pattern below.  It would be
+; best if you keep it sorted by the SYMBOL-NAME of the CAR.
+
+; The remaining long comment can generally be ignored except at release time,
+; as a final check.
+
 ; The following long comment shows how to create this value.  It would be good
 ; to re-create it on occasion, or better yet, to automate a check that the
 ; value is up-to-date.
@@ -5030,7 +5043,7 @@ and @(tsee include-book)"
  <p>to load useful lemmas for reasoning about @('apply$').</p>
 
  <p>Then run some examples in the community book,
- @('books/projects/apply/apply-lemmas.lisp'), to learn how to do proofs about
+ @('books/projects/apply/report.lisp'), to learn how to do proofs about
  apply$.</p>")
 
 (defxdoc architecture-of-the-prover
