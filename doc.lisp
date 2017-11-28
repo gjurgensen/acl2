@@ -76916,8 +76916,8 @@ New Features
 
   A new utility, [apply$], provides a weak version of the Common Lisp
   second-order utility, apply.  Using this new primitive the user can
-  define functions like map, which can apply either function symbols
-  or lambda expressions.
+  define functions like map, which can apply certain function symbols
+  and lambda expressions.
 
   Added utility [checkpoint-summary-limit].  Thanks to Mihir Mehta for
   an email leading to this addition.

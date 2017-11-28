@@ -78285,7 +78285,7 @@ it."
 
  <p>A new utility, @(tsee apply$), provides a weak version of the Common Lisp
  second-order utility, @('apply').  Using this new primitive the user can
- define functions like @('map'), which can apply either function symbols or
+ define functions like @('map'), which can apply certain function symbols and
  lambda expressions.</p>
 
  <p>Added utility @(tsee checkpoint-summary-limit).  Thanks to Mihir Mehta for
