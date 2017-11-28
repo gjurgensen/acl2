@@ -48,9 +48,10 @@
 ; referenced in the ACL2-only manual that are not in the ACL2-only manual
 ; (i.e. that are in the Books part of the ACL2+Books manual).  Each key in this
 ; alist is associated with the name of the file where the referenced topic is
-; defined.  Each file name is a string starting with [books]/ (see below).
+; defined.  Each file name is a string starting with [books]/ (see below).  So
+; these links are "broken" in the ACL2-only manual.
 
-; So in practice, if you link to an ACL2+books topic that is not in the
+; So in practice, if you link to an ACL2+Books topic that is not in the
 ; ACL2-only manual, just add an entry following the pattern below.  It would be
 ; best if you keep it sorted by the SYMBOL-NAME of the CAR.
 
