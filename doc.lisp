@@ -7444,8 +7444,8 @@ Subtopics
   to load useful lemmas for reasoning about apply$.
 
   Then run some examples in the community book,
-  books/projects/apply/apply-lemmas.lisp, to learn how to do proofs
-  about apply$.")
+  books/projects/apply/report.lisp, to learn how to do proofs about
+  apply$.")
  (APROPOS (POINTERS)
           "See [finding-documentation].")
  (ARCHITECTURE-OF-THE-PROVER
