@@ -12985,6 +12985,7 @@ Subtopics
        (include-raw \"[books]/tools/include-raw.lisp\")
        (install-not-normalized \"[books]/misc/install-not-normalized.lisp\")
        (logbitp-reasoning \"[books]/centaur/bitops/equal-by-logbitp.lisp\")
+       (make-event-terse \"[books]/kestrel/utilities/user-interface.lisp\")
        (make-flag \"[books]/tools/flag.lisp\")
        (make-termination-theorem
             \"[books]/kestrel/utilities/make-termination-theorem.lisp\")
@@ -77161,6 +77162,11 @@ Changes at the System Level
   any operations using 'make' on that directory.  Thanks to Keshav
   Kini for suggesting this check, since there are source-only
   distributions, without the books.
+
+  (SBCL only) The setting of environment variable SBCL_HOME has been
+  tweaked to be more robust.  In particular, we expect it to
+  unnecessary, and even inadvisable, to set SBCL_HOME manually.
+  Thanks to Keshav Kini for contributing this change.
 
 
 EMACS Support

@@ -78540,6 +78540,11 @@ it."
  suggesting this check, since there are source-only distributions, without the
  books.</p>
 
+ <p>(SBCL only) The setting of environment variable @('SBCL_HOME') has been
+ tweaked to be more robust.  In particular, we expect it to unnecessary, and
+ even inadvisable, to set @('SBCL_HOME') manually.  Thanks to Keshav Kini for
+ contributing this change.</p>
+
  <h3>EMACS Support</h3>
 
  <p>Now, tags table @('TAGS-acl2-doc') is automatically built when building the
