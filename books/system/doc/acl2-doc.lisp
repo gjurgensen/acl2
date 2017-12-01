@@ -78541,7 +78541,7 @@ it."
  books.</p>
 
  <p>(SBCL only) The setting of environment variable @('SBCL_HOME') has been
- tweaked to be more robust.  In particular, we expect it to unnecessary, and
+ tweaked to be more robust.  In particular, we expect it to be unnecessary, and
  even inadvisable, to set @('SBCL_HOME') manually.  Thanks to Keshav Kini for
  contributing this change.</p>
 
