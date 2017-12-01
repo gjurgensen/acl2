@@ -77164,7 +77164,7 @@ Changes at the System Level
   distributions, without the books.
 
   (SBCL only) The setting of environment variable SBCL_HOME has been
-  tweaked to be more robust.  In particular, we expect it to
+  tweaked to be more robust.  In particular, we expect it to be
   unnecessary, and even inadvisable, to set SBCL_HOME manually.
   Thanks to Keshav Kini for contributing this change.
 
