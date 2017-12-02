@@ -78078,6 +78078,15 @@ it."
 ; Improved system-verify-guards to handle mutual-recursion with arbitrary
 ; measures.
 
+; One example sent by Keshav Kini for identifying the problem with type-set
+; reasoning for COMPLEX was (thm (implies (zerop (conjugate x)) (zerop x))).
+; However, due to changes in the definition of conjugate, that is no longer a
+; theorem (consider x = t, for example).
+
+; Regarding books/system/check-system-guards.lisp, mentioned in the release
+; note below: that also caught a bug in the guard of source function
+; warning-off-p1.
+
   :parents (release-notes)
   :short "ACL2 Version  7.5 (xxx, 20xx) Notes"
   :long "<p>NOTE!  New users can ignore these release notes, because the @(see
@@ -78488,6 +78497,12 @@ it."
  command were not being passed down to induction.  Thanks to Mihir Mehta for
  bringing this bug to our attention with a reproducible example.</p>
 
+ <p>Fixed a low-level bug (in source functions @('note-relieve-hyp-failure')),
+ discovered by using the new community book
+ @('books/system/check-system-guards.lisp').  That book, which is useful for
+ system development, checks all top-level calls of built-in functions that are
+ in @(see logic) mode, @(see guard)-verified.</p>
+
  <h3>Changes at the System Level</h3>
 
  <p>When building the combined manual, an error occurs if there is more than
@@ -78584,8 +78599,8 @@ it."
 
  <p>Improved @(see type-set) reasoning for the function, @(tsee imagpart).
  Thanks to Keshav Kini for identifying the problem and suggesting a code
- change, and for sending this example of a theorem that formerly failed to be
- proved in ACL2(r): @('(thm (implies (zerop (conjugate x)) (zerop x)))').</p>
+ change, and for sending an example of a theorem that formerly failed to be
+ proved in ACL2(r).</p>
 
  <p>Improved @(see type-set) reasoning for the function, @(tsee complex).
  Thanks to Keshav Kini for identifying the problem and sending a patch, which

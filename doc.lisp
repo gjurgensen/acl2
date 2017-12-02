@@ -77110,6 +77110,12 @@ Bug Fixes
   not being passed down to induction.  Thanks to Mihir Mehta for
   bringing this bug to our attention with a reproducible example.
 
+  Fixed a low-level bug (in source functions note-relieve-hyp-failure),
+  discovered by using the new community book
+  books/system/check-system-guards.lisp.  That book, which is useful
+  for system development, checks all top-level calls of built-in
+  functions that are in [logic] mode, [guard]-verified.
+
 
 Changes at the System Level
 
@@ -77211,9 +77217,8 @@ Experimental Versions
 
   Improved [type-set] reasoning for the function, [imagpart].  Thanks
   to Keshav Kini for identifying the problem and suggesting a code
-  change, and for sending this example of a theorem that formerly
-  failed to be proved in ACL2(r): (thm (implies (zerop (conjugate x))
-  (zerop x))).
+  change, and for sending an example of a theorem that formerly
+  failed to be proved in ACL2(r).
 
   Improved [type-set] reasoning for the function, [complex].  Thanks to
   Keshav Kini for identifying the problem and sending a patch, which
