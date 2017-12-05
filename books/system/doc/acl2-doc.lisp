@@ -78087,6 +78087,11 @@ it."
 ; note below: that also caught a bug in the guard of source function
 ; warning-off-p1.
 
+; Made the warning banner for development snapshots less scary.
+
+; (GCL only) Changed si::*code-block-reserve* as per suggestion from Camm
+; Maguire.
+
   :parents (release-notes)
   :short "ACL2 Version  7.5 (xxx, 20xx) Notes"
   :long "<p>NOTE!  New users can ignore these release notes, because the @(see
