@@ -77,7 +77,7 @@ Subtopics
   [defthm], [in-theory], [xargs], [state], etc., without an acl2::
   prefix.
 
-  The constant *acl2-exports* lists 1426 symbols, including most
+  The constant *acl2-exports* lists 1431 symbols, including most
   documented ACL2 system constants, functions, and macros.  You will
   typically also want to import many symbols from Common Lisp; see
   [*common-lisp-symbols-from-main-lisp-package*].
@@ -127,7 +127,7 @@ Subtopics
        allocate-fixnum-range alpha-char-p
        alpha-char-p-forward-to-characterp
        alphorder and and-macro
-       append aref-32-bit-integer-stack
+       append apply$ aref-32-bit-integer-stack
        aref-t-stack aref1 aref2 args
        arities-okp arity array1p array1p-cons
        array1p-forward array1p-linear
@@ -278,8 +278,8 @@ Subtopics
        eqlablep eqlablep-recog
        equal equal-char-code er er-let*
        er-progn er-progn-fn er-progn-fn@par
-       er-progn@par er-soft-logic
-       evenp evens event evisc-tuple
+       er-progn@par er-soft-logic ev$
+       ev$-list evenp evens event evisc-tuple
        executable-counterpart-theory
        exists exit explode-atom
        explode-nonnegative-integer expt
@@ -331,7 +331,7 @@ Subtopics
        if if* iff iff-implies-equal-implies-1
        iff-implies-equal-implies-2
        iff-implies-equal-not
-       iff-is-an-equivalence ifix
+       iff-is-an-equivalence ifix ignorable
        ignore illegal imagpart imagpart-complex
        immediate-force-modep implies
        improper-consp in-arithmetic-theory
@@ -347,11 +347,12 @@ Subtopics
        integer-step integerp intern
        intern$ intern-in-package-of-symbol
        intern-in-package-of-symbol-symbol-name
-       intersection$ intersection-eq
-       intersection-equal intersection-theories
-       intersectp intersectp-eq
-       intersectp-equal inverse-of-*
-       inverse-of-+ invisible-fns-table
+       intersection$
+       intersection-eq intersection-equal
+       intersection-theories intersectp
+       intersectp-eq intersectp-equal
+       inverse-of-* inverse-of-+
+       invisible-fns-table irrelevant
        keyword-package keyword-value-listp
        keyword-value-listp-assoc-keyword
        keyword-value-listp-forward-to-true-listp
@@ -380,7 +381,8 @@ Subtopics
        lognot logorc1 logorc2 logtest logxor
        lower-case-p lower-case-p-char-downcase
        lower-case-p-forward-to-alpha-char-p
-       lowest-terms lp macro-aliases macro-args
+       lowest-terms lp
+       macro-aliases macro-args magic-ev-fncall
        main-timer main-timer-type-prescription
        make make-character-list
        make-character-list-make-character-list
@@ -435,9 +437,9 @@ Subtopics
        open-output-channel-any-p1
        open-output-channel-p
        open-output-channel-p1
-       open-output-channels open-trace-file or
-       or-macro oracle-apply oracle-apply-raw
-       oracle-funcall ordered-symbol-alistp
+       open-output-channels
+       open-trace-file optimize
+       or or-macro ordered-symbol-alistp
        ordered-symbol-alistp-add-pair
        ordered-symbol-alistp-add-pair-forward
        ordered-symbol-alistp-delete-assoc-eq
@@ -521,9 +523,9 @@ Subtopics
        reset-ld-specials reset-prehistory
        reset-print-control resize-list
        rest restore-memoization-settings
-       retract-world
-       retrieve return-last return-last-table
-       revappend reverse rewrite-stack-limit
+       retract-world retrieve
+       return-last return-last-table revappend
+       reverse revert-world rewrite-stack-limit
        rfix round rw-cache satisfies
        save-and-clear-memoization-settings
        save-exec search second serialize-read
@@ -12975,8 +12977,8 @@ Subtopics
        (getopt-demo::demo2 \"[books]/centaur/getopt/demo2.lisp\")
        (do-not-hint \"[books]/tools/do-not.lisp\")
        (easy-simplify-term \"[books]/tools/easy-simplify.lisp\")
-       (er-soft-logic \"[books]/tools/er-soft-logic.lisp\")
        (er-soft+ \"[books]/kestrel/utilities/er-soft-plus.lisp\")
+       (er-soft-logic \"[books]/tools/er-soft-logic.lisp\")
        (fty \"[books]/centaur/fty/top.lisp\")
        (getopt \"[books]/centaur/getopt/top.lisp\")
        (gl \"[books]/centaur/gl/doc.lisp\")
@@ -12985,7 +12987,6 @@ Subtopics
        (include-raw \"[books]/tools/include-raw.lisp\")
        (install-not-normalized \"[books]/misc/install-not-normalized.lisp\")
        (logbitp-reasoning \"[books]/centaur/bitops/equal-by-logbitp.lisp\")
-       (make-event-terse \"[books]/kestrel/utilities/user-interface.lisp\")
        (make-flag \"[books]/tools/flag.lisp\")
        (make-termination-theorem
             \"[books]/kestrel/utilities/make-termination-theorem.lisp\")
@@ -12996,6 +12997,7 @@ Subtopics
        (note-7-0-books \"[books]/doc/relnotes.lisp\")
        (note-7-1-books \"[books]/doc/relnotes.lisp\")
        (note-7-2-books \"[books]/doc/relnotes.lisp\")
+       (note-8-0-books \"[books]/doc/relnotes.lisp\")
        (str::numbers \"[books]/std/strings/top.lisp\")
        (oracle-timelimit \"[books]/tools/oracle-timelimit.lisp\")
        (oslib \"[books]/oslib/top-logic.lisp\")
@@ -13006,9 +13008,10 @@ Subtopics
        (str::pretty-printing \"[books]/std/strings/pretty.lisp\")
        (profile-acl2 \"[books]/centaur/memoize/old/profile.lisp\")
        (profile-all \"[books]/centaur/memoize/old/profile.lisp\")
-       (run-script \"[books]/tools/run-script.lisp\")
        (quicklisp \"[books]/centaur/quicklisp/top.lisp\")
+       (release-notes-books \"[books]/doc/relnotes.lisp\")
        (removable-runes \"[books]/tools/removable-runes.lisp\")
+       (run-script \"[books]/tools/run-script.lisp\")
        (satlink::sat-solver-options \"[books]/centaur/satlink/top.lisp\")
        (satlink \"[books]/centaur/satlink/top.lisp\")
        (xdoc::save \"[books]/xdoc/topics.lisp\")
@@ -13023,6 +13026,8 @@ Subtopics
        (std::strict-list-recognizers \"[books]/std/util/deflist-base.lisp\")
        (subseq-list \"[books]/std/lists/subseq.lisp\")
        (trans-eval-error-triple
+            \"[books]/kestrel/utilities/trans-eval-error-triple.lisp\")
+       (trans-eval-state
             \"[books]/kestrel/utilities/trans-eval-error-triple.lisp\")
        (unsound-read \"[books]/std/io/unsound-read.lisp\")
        (untranslate-patterns \"[books]/misc/untranslate-patterns.lisp\")
@@ -36197,7 +36202,7 @@ Change and Test
 
       Also, consider adding some high-level information about your changes
       to the Community Books' release notes --- i.e., the appropriate
-      release-notes-books XDOC topic in books/doc/relnotes.lisp.
+      [release-notes-books] XDOC topic in books/doc/relnotes.lisp.
    4. Run a regression.
 
           (time nice make -j 8 regression-fresh) >& make-regression.log
@@ -36343,7 +36348,7 @@ Change and Test
 
       Also, consider adding some high-level information about your changes
       to the Community Books' release notes --- i.e., the appropriate
-      release-notes-books XDOC topic in books/doc/relnotes.lisp.
+      [release-notes-books] XDOC topic in books/doc/relnotes.lisp.
    4. Run a regression.
 
           (time nice make -j 8 regression-fresh) >& make-regression.log
@@ -54208,7 +54213,7 @@ Subtopics
       >& make-regression-everything-ccl-quicklisp-j-8.log&
 
   Be sure to document your changes.  This will typically involve adding
-  a release note to a topic like [note-7-5].  The XDOC source code
+  a release note to a topic like [note-8-0].  The XDOC source code
   documentation resides in the community book
   books/system/doc/acl2-doc.lisp.  If the change is minor, for
   example a tweak to an error message, a Lisp comment in the
@@ -76711,9 +76716,9 @@ Experimental Versions
   analogous to the existing rule rationalp-implies-acl2-numberp.
   Thanks to Dmitry Nadezhin for suggesting the addition of this rule,
   which he observed is necessary for some ACL2(r) proofs.")
- (NOTE-7-5
+ (NOTE-8-0
   (RELEASE-NOTES)
-  "ACL2 Version 7.5 (xxx, 20xx) Notes
+  "ACL2 Version 8.0 (xxx, 20xx) Notes
 
   NOTE!  New users can ignore these release notes, because the
   [documentation] has been updated to reflect all changes that are
@@ -76727,10 +76732,11 @@ Experimental Versions
   many changes could be placed in more than one category.
 
   Note that only ACL2 system changes are listed below.  See also
-  note-7-5-books for a summary of changes made to the ACL2 Community
-  Books since ACL2 7.4, including the build system.  Also note that
-  with each release, some built-in functions that were formerly in
-  :[program] mode are now see guard-verified :[logic] mode functions.
+  [note-8-0-books] for a summary of changes made to the ACL2
+  Community Books since ACL2 7.4, including the build system.  Also
+  note that with each release, some built-in functions that were
+  formerly in :[program] mode are now see guard-verified :[logic]
+  mode functions.
 
 
 Changes to Existing Features
@@ -77173,6 +77179,11 @@ Changes at the System Level
   tweaked to be more robust.  In particular, we expect it to be
   unnecessary, and even inadvisable, to set SBCL_HOME manually.
   Thanks to Keshav Kini for contributing this change.
+
+  (CMUCL only) ACL2 Version 8.0 cannot be reliably run on CMUCL, so we
+  have disabled building ACL2 on CMUCL.  The CMUCL implementor is
+  aware of the problem, and we are hoping for a fix before the next
+  ACL2 release
 
 
 EMACS Support
@@ -79002,11 +79013,10 @@ Subtopics
   ACL2 currently runs on Unix, Linux, Windows, and Macintosh OS X
   operating systems.
 
-  It can be built in any of the following Common Lisps:
+  It can generally be built in any of the following Common Lisps:
 
     * Allegro Common Lisp,
     * CCL (formerly OpenMCL)
-    * CLISP,
     * CMU Common Lisp,
     * GCL (Gnu Common Lisp),
     * LispWorks, and
@@ -90098,8 +90108,8 @@ Subtopics
   [Note-7-4]
       ACL2 Version 7.4 (March, 2017) Notes
 
-  [Note-7-5]
-      ACL2 Version 7.5 (xxx, 20xx) Notes")
+  [Note-8-0]
+      ACL2 Version 8.0 (xxx, 20xx) Notes")
  (REM
   (NUMBERS ACL2-BUILT-INS)
   "Remainder using [truncate]
@@ -108591,7 +108601,7 @@ Subtopics
 
   Also see simple-translate-and-eval-cmp in the ACL2 sources, and see
   [trans-eval-error-triple] (and, which is perhaps less useful,
-  trans-eval-state).
+  [trans-eval-state]).
 
   If you use trans-eval then you may see a warning, for example as
   follows.

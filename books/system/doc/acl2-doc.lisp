@@ -129,7 +129,7 @@
 
 ||#
 
-  '((*acl2-system-exports* "[books]/system/acl2-system-exports.lisp")
+  '((*ACL2-SYSTEM-EXPORTS* "[books]/system/acl2-system-exports.lisp")
     (<< "[books]/misc/total-order.lisp")
     (APPEND-WITHOUT-GUARD "[books]/std/lists/flatten.lisp")
     (OSLIB::ARGV "[books]/oslib/argv-logic.lisp")
@@ -155,8 +155,8 @@
     (GETOPT-DEMO::DEMO2 "[books]/centaur/getopt/demo2.lisp")
     (DO-NOT-HINT "[books]/tools/do-not.lisp")
     (EASY-SIMPLIFY-TERM "[books]/tools/easy-simplify.lisp")
-    (ER-SOFT-LOGIC "[books]/tools/er-soft-logic.lisp")
     (ER-SOFT+ "[books]/kestrel/utilities/er-soft-plus.lisp")
+    (ER-SOFT-LOGIC "[books]/tools/er-soft-logic.lisp")
     (FTY "[books]/centaur/fty/top.lisp")
     (GETOPT "[books]/centaur/getopt/top.lisp")
     (GL "[books]/centaur/gl/doc.lisp")
@@ -165,7 +165,6 @@
     (INCLUDE-RAW "[books]/tools/include-raw.lisp")
     (INSTALL-NOT-NORMALIZED "[books]/misc/install-not-normalized.lisp")
     (LOGBITP-REASONING "[books]/centaur/bitops/equal-by-logbitp.lisp")
-    (MAKE-EVENT-TERSE "[books]/kestrel/utilities/user-interface.lisp")
     (MAKE-FLAG "[books]/tools/flag.lisp")
     (MAKE-TERMINATION-THEOREM
      "[books]/kestrel/utilities/make-termination-theorem.lisp")
@@ -176,6 +175,7 @@
     (NOTE-7-0-BOOKS "[books]/doc/relnotes.lisp")
     (NOTE-7-1-BOOKS "[books]/doc/relnotes.lisp")
     (NOTE-7-2-BOOKS "[books]/doc/relnotes.lisp")
+    (NOTE-8-0-BOOKS "[books]/doc/relnotes.lisp")
     (STR::NUMBERS "[books]/std/strings/top.lisp")
     (ORACLE-TIMELIMIT "[books]/tools/oracle-timelimit.lisp")
     (OSLIB "[books]/oslib/top-logic.lisp")
@@ -186,9 +186,10 @@
     (STR::PRETTY-PRINTING "[books]/std/strings/pretty.lisp")
     (PROFILE-ACL2 "[books]/centaur/memoize/old/profile.lisp")
     (PROFILE-ALL "[books]/centaur/memoize/old/profile.lisp")
-    (RUN-SCRIPT "[books]/tools/run-script.lisp")
     (QUICKLISP "[books]/centaur/quicklisp/top.lisp")
+    (RELEASE-NOTES-BOOKS "[books]/doc/relnotes.lisp")
     (REMOVABLE-RUNES "[books]/tools/removable-runes.lisp")
+    (RUN-SCRIPT "[books]/tools/run-script.lisp")
     (SATLINK::SAT-SOLVER-OPTIONS "[books]/centaur/satlink/top.lisp")
     (SATLINK "[books]/centaur/satlink/top.lisp")
     (XDOC::SAVE "[books]/xdoc/topics.lisp")
@@ -203,6 +204,7 @@
     (STD::STRICT-LIST-RECOGNIZERS "[books]/std/util/deflist-base.lisp")
     (SUBSEQ-LIST "[books]/std/lists/subseq.lisp")
     (TRANS-EVAL-ERROR-TRIPLE "[books]/kestrel/utilities/trans-eval-error-triple.lisp")
+    (TRANS-EVAL-STATE "[books]/kestrel/utilities/trans-eval-error-triple.lisp")
     (UNSOUND-READ "[books]/std/io/unsound-read.lisp")
     (UNTRANSLATE-PATTERNS "[books]/misc/untranslate-patterns.lisp")
     (BUILD::USING-EXTENDED-ACL2-IMAGES "[books]/build/doc.lisp")
@@ -50404,7 +50406,7 @@ it."
  })
 
  <p>Be sure to document your changes.  This will typically involve adding a
- release note to a topic like @(see note-7-5).  The XDOC source code
+ release note to a topic like @(see note-8-0).  The XDOC source code
  documentation resides in the community book
  @('books/system/doc/acl2-doc.lisp').  If the change is minor, for example a
  tweak to an error message, a Lisp comment in the corresponding @('defxdoc')
@@ -77995,7 +77997,12 @@ it."
 
  ")
 
-(defxdoc note-7-5
+(defxdoc note-8-0
+
+; Total number of release note items: 79.
+
+; The following comments include changes not covered in the release notes
+; items-- for example, because they are about changes in error messages.
 
 ; Improved an error message when stobj-let references a stobj not declared by
 ; :stobjs, thanks to a bug report and example from Sol Swords.
@@ -78093,7 +78100,7 @@ it."
 ; Maguire.
 
   :parents (release-notes)
-  :short "ACL2 Version  7.5 (xxx, 20xx) Notes"
+  :short "ACL2 Version  8.0 (xxx, 20xx) Notes"
   :long "<p>NOTE!  New users can ignore these release notes, because the @(see
  documentation) has been updated to reflect all changes that are recorded
  here.</p>
@@ -78106,7 +78113,7 @@ it."
  category.</p>
 
  <p>Note that only ACL2 system changes are listed below.  See also @(see
- note-7-5-books) for a summary of changes made to the ACL2 Community Books
+ note-8-0-books) for a summary of changes made to the ACL2 Community Books
  since ACL2 7.4, including the build system.  Also note that with each release,
  some built-in functions that were formerly in @(':')@(tsee program) mode are
  now @('see guard')-verified @(':')@(tsee logic) mode functions.</p>
@@ -78564,6 +78571,10 @@ it."
  tweaked to be more robust.  In particular, we expect it to be unnecessary, and
  even inadvisable, to set @('SBCL_HOME') manually.  Thanks to Keshav Kini for
  contributing this change.</p>
+
+ <p>(CMUCL only) ACL2 Version  8.0 cannot be reliably run on CMUCL, so we have
+ disabled building ACL2 on CMUCL.  The CMUCL implementor is aware of the
+ problem, and we are hoping for a fix before the next ACL2 release</p>
 
  <h3>EMACS Support</h3>
 
@@ -80173,12 +80184,11 @@ arithmetic) for libraries of @(see books) for arithmetic reasoning.</p>")
  <p>ACL2 currently runs on <b>Unix</b>, <b>Linux</b>, <b>Windows</b>, and
  <b>Macintosh OS X</b> operating systems.</p>
 
- <p>It can be built in any of the following Common Lisps:</p>
+ <p>It can generally be built in any of the following Common Lisps:</p>
 
  <code>
    * <b>Allegro Common Lisp</b>,
    * <b>CCL</b> (formerly OpenMCL)
-   * <b>CLISP</b>,
    * <b>CMU Common Lisp</b>,
    * <b>GCL</b> (Gnu Common Lisp),
    * <b>LispWorks</b>, and
