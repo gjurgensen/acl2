@@ -77999,7 +77999,7 @@ it."
 
 (defxdoc note-8-0
 
-; Total number of release note items: 79.
+; Total number of release note items: 30.
 
 ; The following comments include changes not covered in the release notes
 ; items-- for example, because they are about changes in error messages.
@@ -78575,6 +78575,12 @@ it."
  <p>(CMUCL only) ACL2 Version  8.0 cannot be reliably run on CMUCL, so we have
  disabled building ACL2 on CMUCL.  The CMUCL implementor is aware of the
  problem, and we are hoping for a fix before the next ACL2 release</p>
+
+ <p>The @(see state) global variables, @('serialize-character-system') and
+ @('serialize-character'), are now preserved after @(tsee make-event)
+ expansion.  This change for @('serialize-character-system') allows the use of
+ @('make-event') to avoid a stack overflow when writing out a @(see
+ certificate) file; see @(see set-serialize-character-system).</p>
 
  <h3>EMACS Support</h3>
 
@@ -96012,6 +96018,14 @@ arithmetic) for libraries of @(see books) for arithmetic reasoning.</p>")
  cd books ; \\
  make basic \\
  ACL2_CUSTOMIZATION=`pwd`/../acl2-customization-files/no-serialize.lisp
+ })
+
+ <p>Alternatively, you can put the following form directly into the book:</p>
+
+ @({
+ (make-event
+  (pprogn (set-serialize-character-system nil state)
+          (value '(value-triple nil))))
  })
 
  <p>To control the use of @(see serialize) for writes controlled by the user
