@@ -2,7 +2,7 @@
 ;
 ; acl2-doc.lisp - Documentation for the ACL2 Theorem Prover
 ;
-; ACL2 Version 7.4 -- A Computational Logic for Applicative Common Lisp
+; ACL2 Version 8.0 -- A Computational Logic for Applicative Common Lisp
 ; Copyright (C) 2017, Regents of the University of Texas
 ;
 ; This documentation was derived from the ACL2 system in October 2013, which
@@ -223,7 +223,7 @@
 ; who are looking at an older version of ACL2 will see the corresponding
 ; ACL2+Books Manual at this link.
 
-  "http://www.cs.utexas.edu/users/moore/acl2/v7-4/")
+  "http://www.cs.utexas.edu/users/moore/acl2/v8-0/")
 
 (defconst *installation-url*
 
@@ -77999,7 +77999,7 @@ it."
 
 (defxdoc note-8-0
 
-; Total number of release note items: 30.
+; Total number of release note items: 80.
 
 ; The following comments include changes not covered in the release notes
 ; items-- for example, because they are about changes in error messages.
@@ -78100,7 +78100,7 @@ it."
 ; Maguire.
 
   :parents (release-notes)
-  :short "ACL2 Version  8.0 (xxx, 20xx) Notes"
+  :short "ACL2 Version  8.0 (December, 2017) Notes"
   :long "<p>NOTE!  New users can ignore these release notes, because the @(see
  documentation) has been updated to reflect all changes that are recorded
  here.</p>

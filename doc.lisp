@@ -3,8 +3,8 @@
 ; The contents of this file are derived from ACL2 Community Book
 ; books/system/doc/acl2-doc.lisp.
 
-; ACL2 Version 7.4 -- A Computational Logic for Applicative Common Lisp
-; Copyright (C) 2016, Regents of the University of Texas
+; ACL2 Version 8.0 -- A Computational Logic for Applicative Common Lisp
+; Copyright (C) 2017, Regents of the University of Texas
 
 ; This version of ACL2 is a descendent of ACL2 Version 1.9, Copyright
 ; (C) 1997 Computational Logic, Inc.  See the documentation topic NOTE-2-0.
@@ -1494,7 +1494,7 @@ Subtopics
   (ACL2)
   "General information About ACL2
 
-  This is ACL2 Version 7.4, [copyright] (C) 2017, Regents of the
+  This is ACL2 Version 8.0, [copyright] (C) 2017, Regents of the
   University of Texas, authored by Matt Kaufmann and J Strother
   Moore.
 
@@ -2506,7 +2506,7 @@ Subtopics
   This is the ACL2 documentation.  For the ACL2+Books Manual, which
   that includes both the ACL2 documentation and the ACL2
   [community-books], see the {ACL2+Books Manual |
-  http://www.cs.utexas.edu/users/moore/acl2/v7-4/combined-manual/index.html}.
+  http://www.cs.utexas.edu/users/moore/acl2/v8-0/combined-manual/index.html}.
 
 
 Subtopics
@@ -4550,7 +4550,7 @@ Subtopics
 
   As discussed elsewhere (see [documentation]), the web-based
   {ACL2+Books Manual |
-  http://www.cs.utexas.edu/users/moore/acl2/v7-4/combined-manual/index.html}
+  http://www.cs.utexas.edu/users/moore/acl2/v8-0/combined-manual/index.html}
   provides a way to browse the combined documentation for the ACL2
   system and community books.  Such documentation can also be read at
   the terminal using the :[doc] command, though documentation for
@@ -11189,7 +11189,7 @@ Prerequisites
 
   We assume that you have already downloaded and installed ACL2 as per
   the {ACL2 installation instructions |
-  http://www.cs.utexas.edu/users/moore/acl2/v7-4/HTML/installation/installation.html}
+  http://www.cs.utexas.edu/users/moore/acl2/v8-0/HTML/installation/installation.html}
   on the ACL2 home page.
 
   We assume you know the path to your ACL2 executable.  Typically this
@@ -11439,7 +11439,7 @@ Subtopics
 
   For more information about installing ACL2, see the {ACL2
   installation instructions |
-  http://www.cs.utexas.edu/users/moore/acl2/v7-4/HTML/installation/installation.html}.
+  http://www.cs.utexas.edu/users/moore/acl2/v8-0/HTML/installation/installation.html}.
   For information about so-called ``classic ACL2 `make'-based
   certification'', which provides support for certifying directories
   of books but may disappear in a future ACL2 release, see
@@ -12926,7 +12926,7 @@ Subtopics
   contains [documentation] only about the ACL2 system, and does not
   include documentation from the [community-books].  Please point
   your browser at the {ACL2+Books Manual |
-  http://www.cs.utexas.edu/users/moore/acl2/v7-4/combined-manual/index.html}
+  http://www.cs.utexas.edu/users/moore/acl2/v8-0/combined-manual/index.html}
   (or if browsing in [ACL2-Doc], switch to that manual with meta-0 I)
   to access the desired topic.
 
@@ -18311,7 +18311,7 @@ Subtopics
   [documentation-copyright], which notes that there are many
   documentation authors.
 
-  ACL2 Version 7.4 --- A Computational Logic for Applicative Common
+  ACL2 Version 8.0 --- A Computational Logic for Applicative Common
   Lisp
 
   Copyright (C) 2017, Regents of the University of Texas
@@ -25740,7 +25740,7 @@ Subtopics
   defined in books.  However, most users will probably access the
   ACL2 documentation in other ways; see [documentation].  In
   particular, consider using the {ACL2+Books Manual |
-  http://www.cs.utexas.edu/users/moore/acl2/v7-4/combined-manual/index.html},
+  http://www.cs.utexas.edu/users/moore/acl2/v8-0/combined-manual/index.html},
   for topics documented in the ACL2 community [books] or in the ACL2
   system (where the latter are rearranged).
 
@@ -25782,7 +25782,7 @@ Available Documentation
     * The online version (recommended). If you expect to have an internet
       connection while using the documentation, you may prefer to use
       the online version of the {ACL2+Books Manual |
-      http://www.cs.utexas.edu/users/moore/acl2/v7-4/combined-manual/index.html}.
+      http://www.cs.utexas.edu/users/moore/acl2/v8-0/combined-manual/index.html}.
     * A local version. If you sometimes work without an internet
       connection, you can {download | download/} a local copy of any
       web-based XDOC manual using the \"down arrow\" icon at the top of
@@ -31550,7 +31550,7 @@ Subtopics
   not included in the current ACL2 session?
 
   The [xdoc] {ACL2+Books Manual |
-  http://www.cs.utexas.edu/users/moore/acl2/v7-4/combined-manual/index.html}
+  http://www.cs.utexas.edu/users/moore/acl2/v8-0/combined-manual/index.html}
   includes documentation for both the ACL2 system and the
   [community-books].  For more information on this manual and how to
   view it, see [documentation].")
@@ -76718,7 +76718,7 @@ Experimental Versions
   which he observed is necessary for some ACL2(r) proofs.")
  (NOTE-8-0
   (RELEASE-NOTES)
-  "ACL2 Version 8.0 (xxx, 20xx) Notes
+  "ACL2 Version 8.0 (December, 2017) Notes
 
   NOTE!  New users can ignore these release notes, because the
   [documentation] has been updated to reflect all changes that are
@@ -77184,6 +77184,12 @@ Changes at the System Level
   have disabled building ACL2 on CMUCL.  The CMUCL implementor is
   aware of the problem, and we are hoping for a fix before the next
   ACL2 release
+
+  The [state] global variables, serialize-character-system and
+  serialize-character, are now preserved after [make-event]
+  expansion.  This change for serialize-character-system allows the
+  use of make-event to avoid a stack overflow when writing out a
+  [certificate] file; see [set-serialize-character-system].
 
 
 EMACS Support
@@ -90109,7 +90115,7 @@ Subtopics
       ACL2 Version 7.4 (March, 2017) Notes
 
   [Note-8-0]
-      ACL2 Version 8.0 (xxx, 20xx) Notes")
+      ACL2 Version 8.0 (December, 2017) Notes")
  (REM
   (NUMBERS ACL2-BUILT-INS)
   "Remainder using [truncate]
@@ -97159,6 +97165,12 @@ Subtopics
     cd books ; \\
     make basic \\
     ACL2_CUSTOMIZATION=`pwd`/../acl2-customization-files/no-serialize.lisp
+
+  Alternatively, you can put the following form directly into the book:
+
+    (make-event
+     (pprogn (set-serialize-character-system nil state)
+             (value '(value-triple nil))))
 
   To control the use of [serialize] for writes controlled by the user
   rather than by the system, see [with-serialize-character].")
