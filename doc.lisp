@@ -76735,8 +76735,8 @@ Experimental Versions
   [note-8-0-books] for a summary of changes made to the ACL2
   Community Books since ACL2 7.4, including the build system.  Also
   note that with each release, some built-in functions that were
-  formerly in :[program] mode are now see guard-verified :[logic]
-  mode functions.
+  formerly in :[program] mode are now [guard]-verified :[logic] mode
+  functions.
 
 
 Changes to Existing Features
@@ -76941,9 +76941,9 @@ New Features
   print-object$, respectively.  The function read-object-with-case
   lets you specify that case is preserved, inverted, or converted to
   lower case or (as with read-object) to upper case.  The function
-  print-object$-preserving-case) prints symbols without escaping them
+  print-object$-preserving-case prints symbols without escaping them
   for case; for example, the symbol in the current package with name
-  @('\"abc\" is printed as abc, not as |abc| as would be printed by
+  \"abc\" is printed as abc, not as |abc| as would be printed by
   print-object$.  See [io].
 
   New macro with-output! is the same as [with-output] except for two
