@@ -78647,6 +78647,42 @@ it."
 
  ")
 
+(defxdoc note-8-1
+  :parents (release-notes)
+  :short "ACL2 Version  8.1 (xxx, 20xx) Notes"
+  :long "<p>NOTE!  New users can ignore these release notes, because the @(see
+ documentation) has been updated to reflect all changes that are recorded
+ here.</p>
+
+ <p>Below we roughly organize the changes to ACL2 since Version 8.0 into the
+ following categories of changes: existing features, new features, heuristic
+ and efficiency improvements, bug fixes, changes at the system level, Emacs
+ support, and experimental versions.  Each change is described in just one
+ category, though of course many changes could be placed in more than one
+ category.</p>
+
+ <p>Note that only ACL2 system changes are listed below.  See also @(see
+ note-8-1-books) for a summary of changes made to the ACL2 Community Books
+ since ACL2 8.0, including the build system.  Also note that with each release,
+ some built-in functions that were formerly in @(':')@(tsee program) mode are
+ now @('see guard')-verified @(':')@(tsee logic) mode functions.</p>
+
+ <h3>Changes to Existing Features</h3>
+
+ <h3>New Features</h3>
+
+ <h3>Heuristic and Efficiency Improvements</h3>
+
+ <h3>Bug Fixes</h3>
+
+ <h3>Changes at the System Level</h3>
+
+ <h3>EMACS Support</h3>
+
+ <h3>Experimental Versions</h3>
+
+ ")
+
 (defpointer note1 note-1-1)
 (defpointer note2 note-1-2)
 (defpointer note3 note-1-3)
