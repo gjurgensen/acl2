@@ -11165,7 +11165,7 @@ Subtopics
   which is recommended for certifying a specified subset of those
   books from the books/ directory of your ACL2 distribution.
   Alternate instructions are however available for certifying from
-  the top-leel directory (see [books-certification-alt]).
+  the top-level directory (see [books-certification-alt]).
 
   Below are instructions for certifying various sets of books.  They
   all have the following form in common.
