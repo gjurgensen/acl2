@@ -78669,11 +78669,21 @@ it."
 
  <h3>Changes to Existing Features</h3>
 
+ <p>The evaluation of @(see table) guards now allows attachments.  This is
+ important for the implementation of @(tsee apply$) (see below).</p>
+
  <h3>New Features</h3>
 
  <h3>Heuristic and Efficiency Improvements</h3>
 
  <h3>Bug Fixes</h3>
+
+ <p>Fixed two bugs in @(tsee apply$): we now @(tsee disable) the @(see
+ executable-counterpart) of @('good-bye-fn') to prevent quitting ACL2 entirely
+ during a proof, and we avoid the error ``ACL2 cannot ev the call of
+ non-executable function ANCESTORS-CHECK...'' by allowing attachments to be
+ used when checking table guards (as discussed above).  Thanks to Dmitry
+ Nadezhin for sending relayable examples that exhibited these bugs.</p>
 
  <h3>Changes at the System Level</h3>
 
@@ -102137,8 +102147,9 @@ arithmetic) for libraries of @(see books) for arithmetic reasoning.</p>")
  ``values.'' In addition, each table has a ``@(':guard'),'' which is a term
  that must be true of any key and value used.  By setting the @(':guard') on a
  table you may enforce an invariant on the objects in the table, e.g., that all
- keys are positive integers and all values are symbols.  Each table has a
- ``name,'' which must be a symbol.  Given a table name, the following
+ keys are positive integers and all values are symbols.  Note that attachments
+ are allowed when evaluating a table guard (see @(see defattach)).  Each table
+ has a ``name,'' which must be a symbol.  Given a table name, the following
  operations can be performed on the table.</p>
 
  <p>@(':put') &mdash; associate a value with a key (possibly changing the value

@@ -77280,6 +77280,9 @@ Experimental Versions
 
 Changes to Existing Features
 
+  The evaluation of [table] guards now allows attachments.  This is
+  important for the implementation of [apply$] (see below).
+
 
 New Features
 
@@ -77288,6 +77291,14 @@ Heuristic and Efficiency Improvements
 
 
 Bug Fixes
+
+  Fixed two bugs in [apply$]: we now [disable] the
+  [executable-counterpart] of good-bye-fn to prevent quitting ACL2
+  entirely during a proof, and we avoid the error ``ACL2 cannot ev
+  the call of non-executable function ANCESTORS-CHECK...'' by
+  allowing attachments to be used when checking table guards (as
+  discussed above).  Thanks to Dmitry Nadezhin for sending relayable
+  examples that exhibited these bugs.
 
 
 Changes at the System Level
@@ -103317,9 +103328,10 @@ Subtopics
   term that must be true of any key and value used.  By setting the
   :guard on a table you may enforce an invariant on the objects in
   the table, e.g., that all keys are positive integers and all values
-  are symbols.  Each table has a ``name,'' which must be a symbol.
-  Given a table name, the following operations can be performed on
-  the table.
+  are symbols.  Note that attachments are allowed when evaluating a
+  table guard (see [defattach]).  Each table has a ``name,'' which
+  must be a symbol.  Given a table name, the following operations can
+  be performed on the table.
 
   :put --- associate a value with a key (possibly changing the value
   currently associated with that key).
