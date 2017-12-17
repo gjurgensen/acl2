@@ -8781,7 +8781,7 @@ way to split up large ACL2 developments into separate modules."
   :long "<p>The <see topic='@(url community-books)'>Community Books</see>
 provides a @('make') system, which is recommended for certifying a specified
 subset of those books from the @('books/') directory of your ACL2 distribution.
-Alternate instructions are however available for certifying from the top-leel
+Alternate instructions are however available for certifying from the top-level
 directory (see @(see books-certification-alt)).</p>
 
 <p>Below are instructions for certifying various sets of books.  They all have
