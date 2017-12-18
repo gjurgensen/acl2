@@ -5014,9 +5014,13 @@ and @(tsee include-book)"
   :long "<p>This documentation topic is currently little more than a stub, but
  with pointers to helpful information about @('apply$') and related functions
  @('ev$') and @('ev$-list').  Here is a little edited log, produced immediately
- after starting ACL2, that shows @('apply$') at work.</p>
+ after starting ACL2, that shows @('apply$') at work.  The @(tsee include-book)
+ form is not necessary for this small example, but is recommended for any
+ serious proof work involving @('apply$').</p>
 
  @({
+ ACL2 !>(include-book \"projects/apply/apply-lemmas\" :dir :system)
+ [[.. elided output ..]]
  ACL2 !>(defun$ foo (x y) (+ x y))
  [[.. elided output ..]]
   :WARRANTED
