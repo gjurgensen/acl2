@@ -77303,6 +77303,18 @@ Bug Fixes
 
 Changes at the System Level
 
+  Fixed the use of `<a href='URL'>...</a>' so that if URL has the
+  ampersand character in it, all will be well for both the web-based
+  manual and text-based rendering (as when :[doc] is used at the
+  terminal or [ACL2-doc] is used) provided that character is written
+  as &amp; in the documentation string.  Previously, the web-based
+  manual could fail to display the page for & in the documentation
+  string, while with &amp; used, the web-based manual could display
+  the page but the text-based rendering showed &amp; instead of
+  simply &.  Thanks to Cuong Chau for pointing out that the topic
+  [double-rewrite] was not being displayed in the online manual (back
+  when & was used in the URL in the documentation string).
+
 
 EMACS Support
 

@@ -23035,7 +23035,7 @@ ld) and @(tsee include-book)"
  J Strother Moore, in the proceedings of the 2006 ACL2 Workshop (paper is
  published in the <a href='http://portal.acm.org/toc.cfm?id=1217975'>ACM
  Digital Library</a>); you might also find it for free <a
- href='http://citeseerx.ist.psu.edu/viewdoc/download?doi=10.1.1.90.7190&rep=rep1&type=pdf'>here</a>.</p>
+ href='http://citeseerx.ist.psu.edu/viewdoc/download?doi=10.1.1.90.7190&amp;rep=rep1&amp;type=pdf'>here</a>.</p>
 
  <p><b>Suggesting congruence rules.</b></p>
 
@@ -78686,6 +78686,18 @@ it."
  Nadezhin for sending relayable examples that exhibited these bugs.</p>
 
  <h3>Changes at the System Level</h3>
+
+ <p>Fixed the use of `@('<a href='URL'>...</a>')' so that if @('URL') has the
+ ampersand character in it, all will be well for both the web-based manual and
+ text-based rendering (as when @(':')@(tsee doc) is used at the terminal or
+ @(tsee acl2-doc) is used) provided that character is written as @('&amp;') in
+ the documentation string.  Previously, the web-based manual could fail to
+ display the page for @('&') in the documentation string, while with @('&amp;')
+ used, the web-based manual could display the page but the text-based rendering
+ showed @('&amp;') instead of simply @('&').  Thanks to Cuong Chau for pointing
+ out that the topic @(tsee double-rewrite) was not being displayed in the
+ online manual (back when @('&') was used in the URL in the documentation
+ string).</p>
 
  <h3>EMACS Support</h3>
 
