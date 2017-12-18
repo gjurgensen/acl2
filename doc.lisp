@@ -3,8 +3,8 @@
 ; The contents of this file are derived from ACL2 Community Book
 ; books/system/doc/acl2-doc.lisp.
 
-; ACL2 Version 7.4 -- A Computational Logic for Applicative Common Lisp
-; Copyright (C) 2016, Regents of the University of Texas
+; ACL2 Version 8.0 -- A Computational Logic for Applicative Common Lisp
+; Copyright (C) 2017, Regents of the University of Texas
 
 ; This version of ACL2 is a descendent of ACL2 Version 1.9, Copyright
 ; (C) 1997 Computational Logic, Inc.  See the documentation topic NOTE-2-0.
@@ -1494,7 +1494,7 @@ Subtopics
   (ACL2)
   "General information About ACL2
 
-  This is ACL2 Version 7.4, [copyright] (C) 2017, Regents of the
+  This is ACL2 Version 8.0, [copyright] (C) 2017, Regents of the
   University of Texas, authored by Matt Kaufmann and J Strother
   Moore.
 
@@ -2506,7 +2506,7 @@ Subtopics
   This is the ACL2 documentation.  For the ACL2+Books Manual, which
   that includes both the ACL2 documentation and the ACL2
   [community-books], see the {ACL2+Books Manual |
-  http://www.cs.utexas.edu/users/moore/acl2/v7-4/combined-manual/index.html}.
+  http://www.cs.utexas.edu/users/moore/acl2/v8-0/combined-manual/index.html}.
 
 
 Subtopics
@@ -4550,7 +4550,7 @@ Subtopics
 
   As discussed elsewhere (see [documentation]), the web-based
   {ACL2+Books Manual |
-  http://www.cs.utexas.edu/users/moore/acl2/v7-4/combined-manual/index.html}
+  http://www.cs.utexas.edu/users/moore/acl2/v8-0/combined-manual/index.html}
   provides a way to browse the combined documentation for the ACL2
   system and community books.  Such documentation can also be read at
   the terminal using the :[doc] command, though documentation for
@@ -7417,8 +7417,12 @@ Subtopics
   This documentation topic is currently little more than a stub, but
   with pointers to helpful information about apply$ and related
   functions ev$ and ev$-list.  Here is a little edited log, produced
-  immediately after starting ACL2, that shows apply$ at work.
+  immediately after starting ACL2, that shows apply$ at work.  The
+  [include-book] form is not necessary for this small example, but is
+  recommended for any serious proof work involving apply$.
 
+    ACL2 !>(include-book \"projects/apply/apply-lemmas\" :dir :system)
+    [[.. elided output ..]]
     ACL2 !>(defun$ foo (x y) (+ x y))
     [[.. elided output ..]]
      :WARRANTED
@@ -11165,7 +11169,7 @@ Subtopics
   which is recommended for certifying a specified subset of those
   books from the books/ directory of your ACL2 distribution.
   Alternate instructions are however available for certifying from
-  the top-leel directory (see [books-certification-alt]).
+  the top-level directory (see [books-certification-alt]).
 
   Below are instructions for certifying various sets of books.  They
   all have the following form in common.
@@ -11189,7 +11193,7 @@ Prerequisites
 
   We assume that you have already downloaded and installed ACL2 as per
   the {ACL2 installation instructions |
-  http://www.cs.utexas.edu/users/moore/acl2/v7-4/HTML/installation/installation.html}
+  http://www.cs.utexas.edu/users/moore/acl2/v8-0/HTML/installation/installation.html}
   on the ACL2 home page.
 
   We assume you know the path to your ACL2 executable.  Typically this
@@ -11439,7 +11443,7 @@ Subtopics
 
   For more information about installing ACL2, see the {ACL2
   installation instructions |
-  http://www.cs.utexas.edu/users/moore/acl2/v7-4/HTML/installation/installation.html}.
+  http://www.cs.utexas.edu/users/moore/acl2/v8-0/HTML/installation/installation.html}.
   For information about so-called ``classic ACL2 `make'-based
   certification'', which provides support for certifying directories
   of books but may disappear in a future ACL2 release, see
@@ -12926,7 +12930,7 @@ Subtopics
   contains [documentation] only about the ACL2 system, and does not
   include documentation from the [community-books].  Please point
   your browser at the {ACL2+Books Manual |
-  http://www.cs.utexas.edu/users/moore/acl2/v7-4/combined-manual/index.html}
+  http://www.cs.utexas.edu/users/moore/acl2/v8-0/combined-manual/index.html}
   (or if browsing in [ACL2-Doc], switch to that manual with meta-0 I)
   to access the desired topic.
 
@@ -18311,7 +18315,7 @@ Subtopics
   [documentation-copyright], which notes that there are many
   documentation authors.
 
-  ACL2 Version 7.4 --- A Computational Logic for Applicative Common
+  ACL2 Version 8.0 --- A Computational Logic for Applicative Common
   Lisp
 
   Copyright (C) 2017, Regents of the University of Texas
@@ -25740,7 +25744,7 @@ Subtopics
   defined in books.  However, most users will probably access the
   ACL2 documentation in other ways; see [documentation].  In
   particular, consider using the {ACL2+Books Manual |
-  http://www.cs.utexas.edu/users/moore/acl2/v7-4/combined-manual/index.html},
+  http://www.cs.utexas.edu/users/moore/acl2/v8-0/combined-manual/index.html},
   for topics documented in the ACL2 community [books] or in the ACL2
   system (where the latter are rearranged).
 
@@ -25782,7 +25786,7 @@ Available Documentation
     * The online version (recommended). If you expect to have an internet
       connection while using the documentation, you may prefer to use
       the online version of the {ACL2+Books Manual |
-      http://www.cs.utexas.edu/users/moore/acl2/v7-4/combined-manual/index.html}.
+      http://www.cs.utexas.edu/users/moore/acl2/v8-0/combined-manual/index.html}.
     * A local version. If you sometimes work without an internet
       connection, you can {download | download/} a local copy of any
       web-based XDOC manual using the \"down arrow\" icon at the top of
@@ -31550,7 +31554,7 @@ Subtopics
   not included in the current ACL2 session?
 
   The [xdoc] {ACL2+Books Manual |
-  http://www.cs.utexas.edu/users/moore/acl2/v7-4/combined-manual/index.html}
+  http://www.cs.utexas.edu/users/moore/acl2/v8-0/combined-manual/index.html}
   includes documentation for both the ACL2 system and the
   [community-books].  For more information on this manual and how to
   view it, see [documentation].")
@@ -76718,7 +76722,7 @@ Experimental Versions
   which he observed is necessary for some ACL2(r) proofs.")
  (NOTE-8-0
   (RELEASE-NOTES)
-  "ACL2 Version 8.0 (xxx, 20xx) Notes
+  "ACL2 Version 8.0 (December, 2017) Notes
 
   NOTE!  New users can ignore these release notes, because the
   [documentation] has been updated to reflect all changes that are
@@ -76735,8 +76739,8 @@ Experimental Versions
   [note-8-0-books] for a summary of changes made to the ACL2
   Community Books since ACL2 7.4, including the build system.  Also
   note that with each release, some built-in functions that were
-  formerly in :[program] mode are now see guard-verified :[logic]
-  mode functions.
+  formerly in :[program] mode are now [guard]-verified :[logic] mode
+  functions.
 
 
 Changes to Existing Features
@@ -76941,9 +76945,9 @@ New Features
   print-object$, respectively.  The function read-object-with-case
   lets you specify that case is preserved, inverted, or converted to
   lower case or (as with read-object) to upper case.  The function
-  print-object$-preserving-case) prints symbols without escaping them
+  print-object$-preserving-case prints symbols without escaping them
   for case; for example, the symbol in the current package with name
-  @('\"abc\" is printed as abc, not as |abc| as would be printed by
+  \"abc\" is printed as abc, not as |abc| as would be printed by
   print-object$.  See [io].
 
   New macro with-output! is the same as [with-output] except for two
@@ -77185,6 +77189,12 @@ Changes at the System Level
   aware of the problem, and we are hoping for a fix before the next
   ACL2 release
 
+  The [state] global variables, serialize-character-system and
+  serialize-character, are now preserved after [make-event]
+  expansion.  This change for serialize-character-system allows the
+  use of make-event to avoid a stack overflow when writing out a
+  [certificate] file; see [set-serialize-character-system].
+
 
 EMACS Support
 
@@ -77250,6 +77260,70 @@ Experimental Versions
   Fixed an infinite loop that could be caused with parallelism enabled
   when there is an error, when Lisp variable *hard-error-is-error*
   has been set to a non-nil value in raw Lisp (see [hard-error]).")
+ (NOTE-8-1
+  (RELEASE-NOTES)
+  "ACL2 Version 8.1 (xxx, 20xx) Notes
+
+  NOTE!  New users can ignore these release notes, because the
+  [documentation] has been updated to reflect all changes that are
+  recorded here.
+
+  Below we roughly organize the changes to ACL2 since Version 8.0 into
+  the following categories of changes: existing features, new
+  features, heuristic and efficiency improvements, bug fixes, changes
+  at the system level, Emacs support, and experimental versions.
+  Each change is described in just one category, though of course
+  many changes could be placed in more than one category.
+
+  Note that only ACL2 system changes are listed below.  See also
+  note-8-1-books for a summary of changes made to the ACL2 Community
+  Books since ACL2 8.0, including the build system.  Also note that
+  with each release, some built-in functions that were formerly in
+  :[program] mode are now see guard-verified :[logic] mode functions.
+
+
+Changes to Existing Features
+
+  The evaluation of [table] guards now allows attachments.  This is
+  important for the implementation of [apply$] (see below).
+
+
+New Features
+
+
+Heuristic and Efficiency Improvements
+
+
+Bug Fixes
+
+  Fixed two bugs in [apply$]: we now [disable] the
+  [executable-counterpart] of good-bye-fn to prevent quitting ACL2
+  entirely during a proof, and we avoid the error ``ACL2 cannot ev
+  the call of non-executable function ANCESTORS-CHECK...'' by
+  allowing attachments to be used when checking table guards (as
+  discussed above).  Thanks to Dmitry Nadezhin for sending relayable
+  examples that exhibited these bugs.
+
+
+Changes at the System Level
+
+  Fixed the use of `<a href='URL'>...</a>' so that if URL has the
+  ampersand character in it, all will be well for both the web-based
+  manual and text-based rendering (as when :[doc] is used at the
+  terminal or [ACL2-doc] is used) provided that character is written
+  as &amp; in the documentation string.  Previously, the web-based
+  manual could fail to display the page for & in the documentation
+  string, while with &amp; used, the web-based manual could display
+  the page but the text-based rendering showed &amp; instead of
+  simply &.  Thanks to Cuong Chau for pointing out that the topic
+  [double-rewrite] was not being displayed in the online manual (back
+  when & was used in the URL in the documentation string).
+
+
+EMACS Support
+
+
+Experimental Versions")
  (NOTE1 (POINTERS) "See [note-1-1].")
  (NOTE2 (POINTERS) "See [note-1-2].")
  (NOTE3 (POINTERS) "See [note-1-3].")
@@ -90109,7 +90183,10 @@ Subtopics
       ACL2 Version 7.4 (March, 2017) Notes
 
   [Note-8-0]
-      ACL2 Version 8.0 (xxx, 20xx) Notes")
+      ACL2 Version 8.0 (December, 2017) Notes
+
+  [Note-8-1]
+      ACL2 Version 8.1 (xxx, 20xx) Notes")
  (REM
   (NUMBERS ACL2-BUILT-INS)
   "Remainder using [truncate]
@@ -97160,6 +97237,12 @@ Subtopics
     make basic \\
     ACL2_CUSTOMIZATION=`pwd`/../acl2-customization-files/no-serialize.lisp
 
+  Alternatively, you can put the following form directly into the book:
+
+    (make-event
+     (pprogn (set-serialize-character-system nil state)
+             (value '(value-triple nil))))
+
   To control the use of [serialize] for writes controlled by the user
   rather than by the system, see [with-serialize-character].")
  (SET-SKIP-META-TERMP-CHECKS
@@ -103261,9 +103344,10 @@ Subtopics
   term that must be true of any key and value used.  By setting the
   :guard on a table you may enforce an invariant on the objects in
   the table, e.g., that all keys are positive integers and all values
-  are symbols.  Each table has a ``name,'' which must be a symbol.
-  Given a table name, the following operations can be performed on
-  the table.
+  are symbols.  Note that attachments are allowed when evaluating a
+  table guard (see [defattach]).  Each table has a ``name,'' which
+  must be a symbol.  Given a table name, the following operations can
+  be performed on the table.
 
   :put --- associate a value with a key (possibly changing the value
   currently associated with that key).

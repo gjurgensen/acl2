@@ -2,7 +2,7 @@
 ;
 ; acl2-doc.lisp - Documentation for the ACL2 Theorem Prover
 ;
-; ACL2 Version 7.4 -- A Computational Logic for Applicative Common Lisp
+; ACL2 Version 8.0 -- A Computational Logic for Applicative Common Lisp
 ; Copyright (C) 2017, Regents of the University of Texas
 ;
 ; This documentation was derived from the ACL2 system in October 2013, which
@@ -223,7 +223,7 @@
 ; who are looking at an older version of ACL2 will see the corresponding
 ; ACL2+Books Manual at this link.
 
-  "http://www.cs.utexas.edu/users/moore/acl2/v7-4/")
+  "http://www.cs.utexas.edu/users/moore/acl2/v8-0/")
 
 (defconst *installation-url*
 
@@ -5014,9 +5014,13 @@ and @(tsee include-book)"
   :long "<p>This documentation topic is currently little more than a stub, but
  with pointers to helpful information about @('apply$') and related functions
  @('ev$') and @('ev$-list').  Here is a little edited log, produced immediately
- after starting ACL2, that shows @('apply$') at work.</p>
+ after starting ACL2, that shows @('apply$') at work.  The @(tsee include-book)
+ form is not necessary for this small example, but is recommended for any
+ serious proof work involving @('apply$').</p>
 
  @({
+ ACL2 !>(include-book \"projects/apply/apply-lemmas\" :dir :system)
+ [[.. elided output ..]]
  ACL2 !>(defun$ foo (x y) (+ x y))
  [[.. elided output ..]]
   :WARRANTED
@@ -8781,7 +8785,7 @@ way to split up large ACL2 developments into separate modules."
   :long "<p>The <see topic='@(url community-books)'>Community Books</see>
 provides a @('make') system, which is recommended for certifying a specified
 subset of those books from the @('books/') directory of your ACL2 distribution.
-Alternate instructions are however available for certifying from the top-leel
+Alternate instructions are however available for certifying from the top-level
 directory (see @(see books-certification-alt)).</p>
 
 <p>Below are instructions for certifying various sets of books.  They all have
@@ -23035,7 +23039,7 @@ ld) and @(tsee include-book)"
  J Strother Moore, in the proceedings of the 2006 ACL2 Workshop (paper is
  published in the <a href='http://portal.acm.org/toc.cfm?id=1217975'>ACM
  Digital Library</a>); you might also find it for free <a
- href='http://citeseerx.ist.psu.edu/viewdoc/download?doi=10.1.1.90.7190&rep=rep1&type=pdf'>here</a>.</p>
+ href='http://citeseerx.ist.psu.edu/viewdoc/download?doi=10.1.1.90.7190&amp;rep=rep1&amp;type=pdf'>here</a>.</p>
 
  <p><b>Suggesting congruence rules.</b></p>
 
@@ -77999,7 +78003,7 @@ it."
 
 (defxdoc note-8-0
 
-; Total number of release note items: 79.
+; Total number of release note items: 80.
 
 ; The following comments include changes not covered in the release notes
 ; items-- for example, because they are about changes in error messages.
@@ -78100,7 +78104,7 @@ it."
 ; Maguire.
 
   :parents (release-notes)
-  :short "ACL2 Version  8.0 (xxx, 20xx) Notes"
+  :short "ACL2 Version  8.0 (December, 2017) Notes"
   :long "<p>NOTE!  New users can ignore these release notes, because the @(see
  documentation) has been updated to reflect all changes that are recorded
  here.</p>
@@ -78116,7 +78120,7 @@ it."
  note-8-0-books) for a summary of changes made to the ACL2 Community Books
  since ACL2 7.4, including the build system.  Also note that with each release,
  some built-in functions that were formerly in @(':')@(tsee program) mode are
- now @('see guard')-verified @(':')@(tsee logic) mode functions.</p>
+ now @(see guard)-verified @(':')@(tsee logic) mode functions.</p>
 
  <h3>Changes to Existing Features</h3>
 
@@ -78339,7 +78343,7 @@ it."
  @('print-object$'), respectively.  The function @('read-object-with-case')
  lets you specify that case is preserved, inverted, or converted to lower case
  or (as with @('read-object')) to upper case.  The function
- @('print-object$-preserving-case) prints symbols without escaping them for
+ @('print-object$-preserving-case') prints symbols without escaping them for
  case; for example, the symbol in the current package with name @('\"abc\"') is
  printed as @('abc'), not as @('|abc|') as would be printed by
  @('print-object$').  See @(see io).</p>
@@ -78576,6 +78580,12 @@ it."
  disabled building ACL2 on CMUCL.  The CMUCL implementor is aware of the
  problem, and we are hoping for a fix before the next ACL2 release</p>
 
+ <p>The @(see state) global variables, @('serialize-character-system') and
+ @('serialize-character'), are now preserved after @(tsee make-event)
+ expansion.  This change for @('serialize-character-system') allows the use of
+ @('make-event') to avoid a stack overflow when writing out a @(see
+ certificate) file; see @(see set-serialize-character-system).</p>
+
  <h3>EMACS Support</h3>
 
  <p>Now, tags table @('TAGS-acl2-doc') is automatically built when building the
@@ -78638,6 +78648,64 @@ it."
  <p>Fixed an infinite loop that could be caused with parallelism enabled when
  there is an error, when Lisp variable @('*hard-error-is-error*') has been set
  to a non-@('nil') value in raw Lisp (see @(see hard-error)).</p>
+
+ ")
+
+(defxdoc note-8-1
+  :parents (release-notes)
+  :short "ACL2 Version  8.1 (xxx, 20xx) Notes"
+  :long "<p>NOTE!  New users can ignore these release notes, because the @(see
+ documentation) has been updated to reflect all changes that are recorded
+ here.</p>
+
+ <p>Below we roughly organize the changes to ACL2 since Version 8.0 into the
+ following categories of changes: existing features, new features, heuristic
+ and efficiency improvements, bug fixes, changes at the system level, Emacs
+ support, and experimental versions.  Each change is described in just one
+ category, though of course many changes could be placed in more than one
+ category.</p>
+
+ <p>Note that only ACL2 system changes are listed below.  See also @(see
+ note-8-1-books) for a summary of changes made to the ACL2 Community Books
+ since ACL2 8.0, including the build system.  Also note that with each release,
+ some built-in functions that were formerly in @(':')@(tsee program) mode are
+ now @('see guard')-verified @(':')@(tsee logic) mode functions.</p>
+
+ <h3>Changes to Existing Features</h3>
+
+ <p>The evaluation of @(see table) guards now allows attachments.  This is
+ important for the implementation of @(tsee apply$) (see below).</p>
+
+ <h3>New Features</h3>
+
+ <h3>Heuristic and Efficiency Improvements</h3>
+
+ <h3>Bug Fixes</h3>
+
+ <p>Fixed two bugs in @(tsee apply$): we now @(tsee disable) the @(see
+ executable-counterpart) of @('good-bye-fn') to prevent quitting ACL2 entirely
+ during a proof, and we avoid the error ``ACL2 cannot ev the call of
+ non-executable function ANCESTORS-CHECK...'' by allowing attachments to be
+ used when checking table guards (as discussed above).  Thanks to Dmitry
+ Nadezhin for sending relayable examples that exhibited these bugs.</p>
+
+ <h3>Changes at the System Level</h3>
+
+ <p>Fixed the use of `@('<a href='URL'>...</a>')' so that if @('URL') has the
+ ampersand character in it, all will be well for both the web-based manual and
+ text-based rendering (as when @(':')@(tsee doc) is used at the terminal or
+ @(tsee acl2-doc) is used) provided that character is written as @('&amp;') in
+ the documentation string.  Previously, the web-based manual could fail to
+ display the page for @('&') in the documentation string, while with @('&amp;')
+ used, the web-based manual could display the page but the text-based rendering
+ showed @('&amp;') instead of simply @('&').  Thanks to Cuong Chau for pointing
+ out that the topic @(tsee double-rewrite) was not being displayed in the
+ online manual (back when @('&') was used in the URL in the documentation
+ string).</p>
+
+ <h3>EMACS Support</h3>
+
+ <h3>Experimental Versions</h3>
 
  ")
 
@@ -96014,6 +96082,14 @@ arithmetic) for libraries of @(see books) for arithmetic reasoning.</p>")
  ACL2_CUSTOMIZATION=`pwd`/../acl2-customization-files/no-serialize.lisp
  })
 
+ <p>Alternatively, you can put the following form directly into the book:</p>
+
+ @({
+ (make-event
+  (pprogn (set-serialize-character-system nil state)
+          (value '(value-triple nil))))
+ })
+
  <p>To control the use of @(see serialize) for writes controlled by the user
  rather than by the system, see @(see with-serialize-character).</p>")
 
@@ -102087,8 +102163,9 @@ arithmetic) for libraries of @(see books) for arithmetic reasoning.</p>")
  ``values.'' In addition, each table has a ``@(':guard'),'' which is a term
  that must be true of any key and value used.  By setting the @(':guard') on a
  table you may enforce an invariant on the objects in the table, e.g., that all
- keys are positive integers and all values are symbols.  Each table has a
- ``name,'' which must be a symbol.  Given a table name, the following
+ keys are positive integers and all values are symbols.  Note that attachments
+ are allowed when evaluating a table guard (see @(see defattach)).  Each table
+ has a ``name,'' which must be a symbol.  Given a table name, the following
  operations can be performed on the table.</p>
 
  <p>@(':put') &mdash; associate a value with a key (possibly changing the value
