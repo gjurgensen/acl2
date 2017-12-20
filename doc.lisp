@@ -77304,6 +77304,15 @@ Bug Fixes
   discussed above).  Thanks to Dmitry Nadezhin for sending relayable
   examples that exhibited these bugs.
 
+  Fixed [guard]s for functions [enabled-runep], [enabled-numep],
+  disabledp-fn, and disabledp-fn-lst, thus eliminating bogus guard
+  violations.  Thanks to Alessandro Coglio and Eric Smith for sending
+  an example that illustrated the bug for enabled-runep.  Technical
+  note: this fix was made by replacing calls of bounded-nat-alistp
+  (which is no longer defined) by calls of nat-alistp (which is newly
+  defined).  We also made corresponding tweak to the definition of
+  enabled-numep.
+
 
 Changes at the System Level
 
