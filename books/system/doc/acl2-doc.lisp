@@ -5014,9 +5014,13 @@ and @(tsee include-book)"
   :long "<p>This documentation topic is currently little more than a stub, but
  with pointers to helpful information about @('apply$') and related functions
  @('ev$') and @('ev$-list').  Here is a little edited log, produced immediately
- after starting ACL2, that shows @('apply$') at work.</p>
+ after starting ACL2, that shows @('apply$') at work.  The @(tsee include-book)
+ form is not necessary for this small example, but is recommended for any
+ serious proof work involving @('apply$').</p>
 
  @({
+ ACL2 !>(include-book \"projects/apply/apply-lemmas\" :dir :system)
+ [[.. elided output ..]]
  ACL2 !>(defun$ foo (x y) (+ x y))
  [[.. elided output ..]]
   :WARRANTED
@@ -23035,7 +23039,7 @@ ld) and @(tsee include-book)"
  J Strother Moore, in the proceedings of the 2006 ACL2 Workshop (paper is
  published in the <a href='http://portal.acm.org/toc.cfm?id=1217975'>ACM
  Digital Library</a>); you might also find it for free <a
- href='http://citeseerx.ist.psu.edu/viewdoc/download?doi=10.1.1.90.7190&rep=rep1&type=pdf'>here</a>.</p>
+ href='http://citeseerx.ist.psu.edu/viewdoc/download?doi=10.1.1.90.7190&amp;rep=rep1&amp;type=pdf'>here</a>.</p>
 
  <p><b>Suggesting congruence rules.</b></p>
 
@@ -78685,7 +78689,27 @@ it."
  used when checking table guards (as discussed above).  Thanks to Dmitry
  Nadezhin for sending relayable examples that exhibited these bugs.</p>
 
+ <p>Fixed @(see guard)s for functions @(tsee enabled-runep), @(tsee
+ enabled-numep), @('disabledp-fn'), and @('disabledp-fn-lst'), thus eliminating
+ bogus guard violations.  Thanks to Alessandro Coglio and Eric Smith for
+ sending an example that illustrated the bug for @('enabled-runep').  Technical
+ note: this fix was made by replacing calls of @('bounded-nat-alistp') (which
+ is no longer defined) by calls of @('nat-alistp') (which is newly defined).
+ We also made corresponding tweak to the definition of @('enabled-numep').</p>
+
  <h3>Changes at the System Level</h3>
+
+ <p>Fixed the use of `@('<a href='URL'>...</a>')' so that if @('URL') has the
+ ampersand character in it, all will be well for both the web-based manual and
+ text-based rendering (as when @(':')@(tsee doc) is used at the terminal or
+ @(tsee acl2-doc) is used) provided that character is written as @('&amp;') in
+ the documentation string.  Previously, the web-based manual could fail to
+ display the page for @('&') in the documentation string, while with @('&amp;')
+ used, the web-based manual could display the page but the text-based rendering
+ showed @('&amp;') instead of simply @('&').  Thanks to Cuong Chau for pointing
+ out that the topic @(tsee double-rewrite) was not being displayed in the
+ online manual (back when @('&') was used in the URL in the documentation
+ string).</p>
 
  <h3>EMACS Support</h3>
 

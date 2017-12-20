@@ -7417,8 +7417,12 @@ Subtopics
   This documentation topic is currently little more than a stub, but
   with pointers to helpful information about apply$ and related
   functions ev$ and ev$-list.  Here is a little edited log, produced
-  immediately after starting ACL2, that shows apply$ at work.
+  immediately after starting ACL2, that shows apply$ at work.  The
+  [include-book] form is not necessary for this small example, but is
+  recommended for any serious proof work involving apply$.
 
+    ACL2 !>(include-book \"projects/apply/apply-lemmas\" :dir :system)
+    [[.. elided output ..]]
     ACL2 !>(defun$ foo (x y) (+ x y))
     [[.. elided output ..]]
      :WARRANTED
@@ -77300,8 +77304,29 @@ Bug Fixes
   discussed above).  Thanks to Dmitry Nadezhin for sending relayable
   examples that exhibited these bugs.
 
+  Fixed [guard]s for functions [enabled-runep], [enabled-numep],
+  disabledp-fn, and disabledp-fn-lst, thus eliminating bogus guard
+  violations.  Thanks to Alessandro Coglio and Eric Smith for sending
+  an example that illustrated the bug for enabled-runep.  Technical
+  note: this fix was made by replacing calls of bounded-nat-alistp
+  (which is no longer defined) by calls of nat-alistp (which is newly
+  defined).  We also made corresponding tweak to the definition of
+  enabled-numep.
+
 
 Changes at the System Level
+
+  Fixed the use of `<a href='URL'>...</a>' so that if URL has the
+  ampersand character in it, all will be well for both the web-based
+  manual and text-based rendering (as when :[doc] is used at the
+  terminal or [ACL2-doc] is used) provided that character is written
+  as &amp; in the documentation string.  Previously, the web-based
+  manual could fail to display the page for & in the documentation
+  string, while with &amp; used, the web-based manual could display
+  the page but the text-based rendering showed &amp; instead of
+  simply &.  Thanks to Cuong Chau for pointing out that the topic
+  [double-rewrite] was not being displayed in the online manual (back
+  when & was used in the URL in the documentation string).
 
 
 EMACS Support
