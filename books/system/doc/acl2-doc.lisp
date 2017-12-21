@@ -50239,10 +50239,17 @@ it."
   General Form:  (make-wormhole-status whs code data)
  })
 
- <p>See @(see wormhole).  @('Whs') should be a well-formed wormhole status,
- @('code') should be @(':ENTER') or @(':SKIP'), and @('data') is arbitrary.
- This function returns a new status with the specified entry code and data,
- reusing @('whs') if it is appropriate.</p>")
+ <p>See @(see wormhole).  @('Whs') is generally a well-formed wormhole status
+ (but see below), @('code') should be @(':ENTER') or @(':SKIP'), and @('data')
+ is arbitrary.  This function returns a new status with the specified entry
+ code and data.  The result does not logically depend on @('whs'), but if the
+ wormhole status corresponding to the given code and data is equal to @('whs'),
+ then @('whs') is returned, which will save a cons.</p>
+
+ <p><b>Warning</b>: if @('data') is large then the equality test can be slow.
+ That problem is avoided by passing @('whs = nil').  For an example of this use
+ of @('nil') in the ACL2 source code, see source function
+ @('save-ev-fncall-guard-er').</p>")
 
 (defxdoc making-system-changes
   :parents (system-development)
@@ -78679,6 +78686,21 @@ it."
  <h3>New Features</h3>
 
  <h3>Heuristic and Efficiency Improvements</h3>
+
+ <p>The implementation of @(see wormhole)s has been tweaked to avoid an
+ efficiency problem.  In the old implementation, an update to the wormhole
+ status was avoided in the case of equal old and new status values.  That
+ update avoided some consing, but the equality test could be very slow; indeed,
+ @(':')@(tsee print-gv) could be slow because of its use of wormholes.  The new
+ wormhole implementation &mdash; specifically, the new raw Lisp implementation
+ of @(tsee wormhole-eval) &mdash; avoids that equality test, and also can avoid
+ consing by its use of destructive operations.  That fixes one reason
+ @(':print-gv') could be slow; a second change, made to the implementation of
+ @(':print-gv'), is to pass @('nil') as the wormhole-status (@('whs')) argument
+ of @('make-wormhole-status').  See @(see make-wormhole-status) for a
+ discussion of how that use of @('nil') can avoid an expensive equality
+ test.  Thanks to Alessandro Coglio and Eric Smith for sending an example that
+ illustrated the problem.</p>
 
  <h3>Bug Fixes</h3>
 
