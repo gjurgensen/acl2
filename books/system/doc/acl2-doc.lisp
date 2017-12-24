@@ -21685,7 +21685,8 @@ subtree of X with T, without duplication.</p>
   (defun-sk fn (var1 ... varn)
     dcl_1 dcl_2 ... dcl_k
     body
-    &key rewrite quant-ok skolem-name thm-name witness-dcls strengthen)
+    &key
+    rewrite quant-ok skolem-name thm-name witness-dcls strengthen constrain)
  })
 
  <p>where @('fn') is the symbol you wish to define and is a new symbolic @(see
@@ -21713,9 +21714,9 @@ subtree of X with T, without duplication.</p>
 
  <p>It is intended to represent the predicate with formal parameters @('y') and
  @('z') that holds when for some @('x'), @('(and (p0 x y z) (q0 x y z))')
- holds.  In fact @('defun-sk') is a macro that adds the following two @(see
- events), as shown just below.  The first event guarantees that if this new
- predicate holds of @('y') and @('z'), then the term shown,
+ holds.  In fact @('defun-sk') is a macro, and the call above adds the
+ following two @(see events), as shown just below.  The first event guarantees
+ that if this new predicate holds of @('y') and @('z'), then the term shown,
  @('(exists-x-p0-and-q0-witness y z)'), is an example of the @('x') that is
  therefore supposed to exist.  (Intuitively, we are axiomatizing
  @('exists-x-p0-and-q0-witness') to pick a witness if there is one.  We comment
@@ -21810,13 +21811,15 @@ subtree of X with T, without duplication.</p>
  <p>The result of this event is to introduce a ``Skolem function,'' whose name
  is the keyword argument @('skolem-name') if that is supplied, and otherwise is
  the result of modifying @('fn') by suffixing \"-WITNESS\" to its name.  The
- following definition and one of the following two theorems (as indicated) are
- introduced for @('skolem-name') and @('fn') in the case that @('bound-vars')
- (see above) is a single variable @('v').  The name of the @(tsee defthm) event
- may be supplied as the value of the keyword argument @(':thm-name'); if it is
- not supplied, then it is the result of modifying @('fn') by suffixing
- \"-SUFF\" to its name in the case that the quantifier is @(tsee exists), and
- \"-NECC\" in the case that the quantifier is @(tsee forall).</p>
+ following definition (or a corresponding rule; see the discussion of
+ @(':constrain') below) and one of the following two theorems (as indicated)
+ are introduced for @('skolem-name') and @('fn') in the case that
+ @('bound-vars') (see above) is a single variable @('v').  The name of the
+ @(tsee defthm) event may be supplied as the value of the keyword argument
+ @(':thm-name'); if it is not supplied, then it is the result of modifying
+ @('fn') by suffixing \"-SUFF\" to its name in the case that the quantifier is
+ @(tsee exists), and \"-NECC\" in the case that the quantifier is @(tsee
+ forall).</p>
 
  @({
   (defun-nx fn (var1 ... varn)
@@ -21886,10 +21889,10 @@ subtree of X with T, without duplication.</p>
  notation that might some day be deprecated) as a list of @('declare') supplied
  as the value of keyword argument @(':witness-dcls'); or, both.  These will
  become the @('declare') forms in the generated @(tsee defun).  Note that if at
- least one declare form is supplied, but none of those forms contain the form
- @('(declare (xargs :non-executable t))'), then the appropriate wrapper for
- non-executable functions will not be added, i.e., @(tsee defun) will be used
- in place of @(tsee defun-nx).</p>
+ least one @('declare') form is supplied, but none of those forms contain the
+ form @('(declare (xargs :non-executable t))'), then the appropriate wrapper
+ for non-executable functions will not be added, i.e., @(tsee defun) will be
+ used in place of @(tsee defun-nx).</p>
 
  <p>@(csee Guard) verification is handled specially for @('defun-sk') events.
  Unlike @(tsee defun), the value of @('verify-guards-eagerness') is irrelevant
@@ -21923,6 +21926,20 @@ subtree of X with T, without duplication.</p>
  Another option is to write your own variant of the @('defun-sk') macro, say,
  @('my-defun-sk'), for example by modifying a copy of the definition of
  @('defun-sk') from the ACL2 sources.</p>
+
+ <p>There is one more keyword argument not explained above: @(':constrain').
+ The default is @('nil'); otherwise this argument must be a symbol, which we
+ call @('name-def'), except that in the case of @('t'), @('name-def') is
+ obtained by adding the suffix @('\"-DEFINITION\"') to @('fn').  For a
+ non-@('nil') @(':constrain') argument, this @('name-def') is the name of a
+ rule of class @(':')@(tsee definition) that equates @('(fn var1 ... varn)')
+ with the body of the definition of @('fn').  Furthermore, in this case of a
+ non-@('nil') @(':constrain') value the definition of @('fn') is local to the
+ surrounding @('encapsulate'), which contains a signature for @('fn').  As
+ usual, the simplest way to see the effects of @(':constrain') may be to apply
+ @(':trans1') to your @('defun-sk') form.  Note that constraining the function
+ can make it possible to attach to it (see @(see defattach)) and to introduce
+ it as a @(see guard)-verified function.</p>
 
  <p>If you want to represent nested quantifiers, you can use more than one
  @('defun-sk') event.  For example, in order to represent</p>
@@ -78682,6 +78699,13 @@ it."
 
  <p>The evaluation of @(see table) guards now allows attachments.  This is
  important for the implementation of @(tsee apply$) (see below).</p>
+
+ <p>A new keyword argument for @(tsee defun-sk), @(':constrain'), can specify
+ that the newly-introduced function is constrained rather than defined.  See
+ @(see defun-sk).  Note that by constraining the function we make it possible
+ to attach to it, and also to introduce it as a @(see guard)-verified function.
+ We also made a minor change to @('defun-sk'), by moving the call of @(tsee
+ extend-pe-table) out of the generated @(tsee encapsulate) form.</p>
 
  <h3>New Features</h3>
 
