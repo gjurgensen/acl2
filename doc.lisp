@@ -20544,6 +20544,17 @@ Subtopics
   Defattach events are illegal inside any [encapsulate] event with a
   non-empty [signature] unless they are [local] to the [encapsulate].
 
+  (Of interest only to users of [apply$].)  Special handling is applied
+  when attempting to attach to a so-called warrant, which is produced
+  by an appication of def-warrant (or defun$).  In that case it is
+  legal to attach the function true-apply$-warrant to the warrant,
+  without any proof obligation.  This attachment is actually
+  performed automatically by def-warrant, so users (even users of
+  apply$) need not deal explicitly with such attachments.  However,
+  these attachments make warrants executable in the loop; for
+  example, after (def-warrant foo), (warrant foo) will evaluate to t
+  in the loop.
+
   We next discuss a restriction based on a notion of a function symbol
   syntactically supporting an event.  Function symbol f is ancestral
   in event E if either f occurs in E, or (recursively) f occurs in an
@@ -77317,6 +77328,16 @@ Changes to Existing Features
   [guard]-verified function.  We also made a minor change to
   defun-sk, by moving the call of [extend-pe-table] out of the
   generated [encapsulate] form.
+
+  (Of interest only to users of [apply$].)  When invoking def-warrant
+  or defun$, a so-called warrant is introduced.  Warrants are now
+  always [guard]-verified, with a guard of t.  Moreover, warrants are
+  now executable in the top-level loop; for example, after
+  successfully processing (def-warrant foo) or (defun$ foo ...),
+  (warrant foo) will evaluate to t in the loop.  (Note: each warrant
+  has an attachment, true-apply$-warrant, that always returns t; see
+  [defattach].)  Thanks to Dmitry Nadezhin for requesting these
+  enhancements.
 
 
 New Features
