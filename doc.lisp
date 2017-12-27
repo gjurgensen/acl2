@@ -20544,6 +20544,17 @@ Subtopics
   Defattach events are illegal inside any [encapsulate] event with a
   non-empty [signature] unless they are [local] to the [encapsulate].
 
+  (Of interest only to users of [apply$].)  Special handling is applied
+  when attempting to attach to a so-called warrant, which is produced
+  by an appication of def-warrant (or defun$).  In that case it is
+  legal to attach the function true-apply$-warrant to the warrant,
+  without any proof obligation.  This attachment is actually
+  performed automatically by def-warrant, so users (even users of
+  apply$) need not deal explicitly with such attachments.  However,
+  these attachments make warrants executable in the loop; for
+  example, after (def-warrant foo), (warrant foo) will evaluate to t
+  in the loop.
+
   We next discuss a restriction based on a notion of a function symbol
   syntactically supporting an event.  Function symbol f is ancestral
   in event E if either f occurs in E, or (recursively) f occurs in an
@@ -24562,7 +24573,8 @@ Subtopics
     (defun-sk fn (var1 ... varn)
       dcl_1 dcl_2 ... dcl_k
       body
-      &key rewrite quant-ok skolem-name thm-name witness-dcls strengthen)
+      &key
+      rewrite quant-ok skolem-name thm-name witness-dcls strengthen constrain)
 
   where fn is the symbol you wish to define and is a new symbolic
   [name], (var1 ... varn) is its list of formal parameters, the
@@ -24588,16 +24600,16 @@ Subtopics
 
   It is intended to represent the predicate with formal parameters y
   and z that holds when for some x, (and (p0 x y z) (q0 x y z))
-  holds.  In fact defun-sk is a macro that adds the following two
-  [events], as shown just below.  The first event guarantees that if
-  this new predicate holds of y and z, then the term shown,
-  (exists-x-p0-and-q0-witness y z), is an example of the x that is
-  therefore supposed to exist.  (Intuitively, we are axiomatizing
-  exists-x-p0-and-q0-witness to pick a witness if there is one.  We
-  comment below on the use of [defun-nx]; for now, consider defun-nx
-  to be [defun].)  Conversely, the second event below guarantees that
-  if there is any x for which the term in question holds, then the
-  new predicate does indeed hold of y and z.
+  holds.  In fact defun-sk is a macro, and the call above adds the
+  following two [events], as shown just below.  The first event
+  guarantees that if this new predicate holds of y and z, then the
+  term shown, (exists-x-p0-and-q0-witness y z), is an example of the
+  x that is therefore supposed to exist.  (Intuitively, we are
+  axiomatizing exists-x-p0-and-q0-witness to pick a witness if there
+  is one.  We comment below on the use of [defun-nx]; for now,
+  consider defun-nx to be [defun].)  Conversely, the second event
+  below guarantees that if there is any x for which the term in
+  question holds, then the new predicate does indeed hold of y and z.
 
     (defun-nx exists-x-p0-and-q0 (y z)
       (let ((x (exists-x-p0-and-q0-witness y z)))
@@ -24673,7 +24685,8 @@ Subtopics
   The result of this event is to introduce a ``Skolem function,'' whose
   name is the keyword argument skolem-name if that is supplied, and
   otherwise is the result of modifying fn by suffixing \"-WITNESS\" to
-  its name.  The following definition and one of the following two
+  its name.  The following definition (or a corresponding rule; see
+  the discussion of :constrain below) and one of the following two
   theorems (as indicated) are introduced for skolem-name and fn in
   the case that bound-vars (see above) is a single variable v.  The
   name of the [defthm] event may be supplied as the value of the
@@ -24781,6 +24794,20 @@ Subtopics
   [defthm] events.  Another option is to write your own variant of
   the defun-sk macro, say, my-defun-sk, for example by modifying a
   copy of the definition of defun-sk from the ACL2 sources.
+
+  There is one more keyword argument not explained above: :constrain.
+  The default is nil; otherwise this argument must be a symbol, which
+  we call name-def, except that in the case of t, name-def is
+  obtained by adding the suffix \"-DEFINITION\" to fn.  For a non-nil
+  :constrain argument, this name-def is the name of a rule of class
+  :[definition] that equates (fn var1 ... varn) with the body of the
+  definition of fn.  Furthermore, in this case of a non-nil
+  :constrain value the definition of fn is local to the surrounding
+  encapsulate, which contains a signature for fn.  As usual, the
+  simplest way to see the effects of :constrain may be to apply
+  :trans1 to your defun-sk form.  Note that constraining the function
+  can make it possible to attach to it (see [defattach]) and to
+  introduce it as a [guard]-verified function.
 
   If you want to represent nested quantifiers, you can use more than
   one defun-sk event.  For example, in order to represent
@@ -54055,10 +54082,17 @@ Subtopics
 
     General Form:  (make-wormhole-status whs code data)
 
-  See [wormhole].  Whs should be a well-formed wormhole status, code
-  should be :ENTER or :SKIP, and data is arbitrary.  This function
-  returns a new status with the specified entry code and data,
-  reusing whs if it is appropriate.")
+  See [wormhole].  Whs is generally a well-formed wormhole status (but
+  see below), code should be :ENTER or :SKIP, and data is arbitrary.
+  This function returns a new status with the specified entry code
+  and data.  The result does not logically depend on whs, but if the
+  wormhole status corresponding to the given code and data is equal
+  to whs, then whs is returned, which will save a cons.
+
+  Warning: if data is large then the equality test can be slow.  That
+  problem is avoided by passing whs = nil.  For an example of this
+  use of nil in the ACL2 source code, see source function
+  save-ev-fncall-guard-er.")
  (MAKING-SYSTEM-CHANGES
   (SYSTEM-DEVELOPMENT)
   "Guidelines for modifying ACL2 source code
@@ -77287,11 +77321,45 @@ Changes to Existing Features
   The evaluation of [table] guards now allows attachments.  This is
   important for the implementation of [apply$] (see below).
 
+  A new keyword argument for [defun-sk], :constrain, can specify that
+  the newly-introduced function is constrained rather than defined.
+  See [defun-sk].  Note that by constraining the function we make it
+  possible to attach to it, and also to introduce it as a
+  [guard]-verified function.  We also made a minor change to
+  defun-sk, by moving the call of [extend-pe-table] out of the
+  generated [encapsulate] form.
+
+  (Of interest only to users of [apply$].)  When invoking def-warrant
+  or defun$, a so-called warrant is introduced.  Warrants are now
+  always [guard]-verified, with a guard of t.  Moreover, warrants are
+  now executable in the top-level loop; for example, after
+  successfully processing (def-warrant foo) or (defun$ foo ...),
+  (warrant foo) will evaluate to t in the loop.  (Note: each warrant
+  has an attachment, true-apply$-warrant, that always returns t; see
+  [defattach].)  Thanks to Dmitry Nadezhin for requesting these
+  enhancements.
+
 
 New Features
 
 
 Heuristic and Efficiency Improvements
+
+  The implementation of [wormhole]s has been tweaked to avoid an
+  efficiency problem.  In the old implementation, an update to the
+  wormhole status was avoided in the case of equal old and new status
+  values.  That update avoided some consing, but the equality test
+  could be very slow; indeed, :[print-gv] could be slow because of
+  its use of wormholes.  The new wormhole implementation ---
+  specifically, the new raw Lisp implementation of [wormhole-eval]
+  --- avoids that equality test, and also can avoid consing by its
+  use of destructive operations.  That fixes one reason :print-gv
+  could be slow; a second change, made to the implementation of
+  :print-gv, is to pass nil as the wormhole-status (whs) argument of
+  make-wormhole-status.  See [make-wormhole-status] for a discussion
+  of how that use of nil can avoid an expensive equality test.
+  Thanks to Alessandro Coglio and Eric Smith for sending an example
+  that illustrated the problem.
 
 
 Bug Fixes
@@ -77303,6 +77371,15 @@ Bug Fixes
   allowing attachments to be used when checking table guards (as
   discussed above).  Thanks to Dmitry Nadezhin for sending relayable
   examples that exhibited these bugs.
+
+  Fixed [guard]s for functions [enabled-runep], [enabled-numep],
+  disabledp-fn, and disabledp-fn-lst, thus eliminating bogus guard
+  violations.  Thanks to Alessandro Coglio and Eric Smith for sending
+  an example that illustrated the bug for enabled-runep.  Technical
+  note: this fix was made by replacing calls of bounded-nat-alistp
+  (which is no longer defined) by calls of nat-alistp (which is newly
+  defined).  We also made corresponding tweak to the definition of
+  enabled-numep.
 
 
 Changes at the System Level
