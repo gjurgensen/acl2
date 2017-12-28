@@ -78763,6 +78763,10 @@ it."
  is no longer defined) by calls of @('nat-alistp') (which is newly defined).
  We also made corresponding tweak to the definition of @('enabled-numep').</p>
 
+ <p>Warnings labeled with ``Double-rewrite'' failed to take into account
+ patterned @(see congruence) rules.  This has been fixed.  Thanks to Mihir
+ Mehta for pointing out the problem with a helpful example.</p>
+
  <h3>Changes at the System Level</h3>
 
  <p>Fixed the use of `@('<a href='URL'>...</a>')' so that if @('URL') has the

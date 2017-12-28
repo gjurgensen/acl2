@@ -77381,6 +77381,10 @@ Bug Fixes
   defined).  We also made corresponding tweak to the definition of
   enabled-numep.
 
+  Warnings labeled with ``Double-rewrite'' failed to take into account
+  patterned [congruence] rules.  This has been fixed.  Thanks to
+  Mihir Mehta for pointing out the problem with a helpful example.
+
 
 Changes at the System Level
 
