@@ -16502,6 +16502,12 @@ subtree of X with T, without duplication.</p>
  <p>ACL2 insists on the declaration to ensure that the definition is processed
  the same way no matter what the context.</p>")
 
+(defxdoc def-warrant
+  :parents (acl2-built-ins)
+  :short "Warrant a function to pass to @(tsee apply$)"
+  :long "<p>This documentation topic is a stub.  It is likely to be fleshed out
+ sometime in January 2018.</p>")
+
 (defxdoc defabbrev
   :parents (macros events programming)
   :short "A convenient form of macro definition for simple expansions"
@@ -78726,6 +78732,12 @@ it."
  has an attachment, @('true-apply$-warrant'), that always returns @('t'); see
  @(see defattach).)  Thanks to Dmitry Nadezhin for requesting these
  enhancements.</p>
+
+ <p>It is now required to include the system book
+ @('projects/apply/apply-lemmas.lisp') before evaluating a call of @('defun$')
+ or @(tsee def-warrant).  This requirement, which is enforced with an error
+ that prints the necessary @(tsee include-book) form, avoids stack overflows
+ that could occur when that book is not included.</p>
 
  <h3>New Features</h3>
 

@@ -3085,6 +3085,9 @@ Subtopics
       Extra declarations that can occur in function definitions, [let]
       bindings, and so forth.
 
+  [Def-warrant]
+      Warrant a function to pass to [apply$]
+
   [Default]
       Return the :default from the [header] of a 1- or 2-dimensional array
 
@@ -19398,6 +19401,12 @@ Subtopics
 
   ACL2 insists on the declaration to ensure that the definition is
   processed the same way no matter what the context.")
+ (DEF-WARRANT
+  (ACL2-BUILT-INS)
+  "Warrant a function to pass to [apply$]
+
+  This documentation topic is a stub.  It is likely to be fleshed out
+  sometime in January 2018.")
  (DEFABBREV
   (MACROS EVENTS PROGRAMMING)
   "A convenient form of macro definition for simple expansions
@@ -77338,6 +77347,12 @@ Changes to Existing Features
   has an attachment, true-apply$-warrant, that always returns t; see
   [defattach].)  Thanks to Dmitry Nadezhin for requesting these
   enhancements.
+
+  It is now required to include the system book
+  projects/apply/apply-lemmas.lisp before evaluating a call of defun$
+  or [def-warrant].  This requirement, which is enforced with an
+  error that prints the necessary [include-book] form, avoids stack
+  overflows that could occur when that book is not included.
 
 
 New Features
