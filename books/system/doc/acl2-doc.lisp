@@ -186,7 +186,7 @@
     (STR::PRETTY-PRINTING "[books]/std/strings/pretty.lisp")
     (PROFILE-ACL2 "[books]/centaur/memoize/old/profile.lisp")
     (PROFILE-ALL "[books]/centaur/memoize/old/profile.lisp")
-    (QUICKLISP "[books]/centaur/quicklisp/top.lisp")
+    (QUICKLISP "[books]/quicklisp/top.lisp")
     (RELEASE-NOTES-BOOKS "[books]/doc/relnotes.lisp")
     (REMOVABLE-RUNES "[books]/tools/removable-runes.lisp")
     (RUN-SCRIPT "[books]/tools/run-script.lisp")
