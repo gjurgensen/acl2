@@ -11068,11 +11068,12 @@ Subtopics
 
   You can arrange for a book-hash to be a checksum instead of an alist,
   which gives a bit greater security, as illustrated in an example
-  provided below.  Nevertheless, the (default) use of book-hash
-  alists may be worthwhile, in spite of the decreased security,
-  because of faster times for [certify-book] and [include-book] when
-  using book-hash alists instead of checksums.  If you want to use
-  checksums, however, there are these two ways to do so.
+  provided below.  See [checksum].  Nevertheless, the (default) use
+  of book-hash alists may be worthwhile, in spite of the decreased
+  security, because of faster times for [certify-book] and
+  [include-book] when using book-hash alists instead of checksums.
+  If you want to use checksums, however, there are these two ways to
+  do so.
 
     * Before starting ACL2, set environment variable ACL2_BOOK_HASH_ALISTP
       to NIL (or nil; actually it suffices that [string-upcase]

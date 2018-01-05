@@ -8664,11 +8664,11 @@ and @(tsee include-book)"
 
  <p>You can arrange for a book-hash to be a checksum instead of an alist, which
  gives a bit greater security, as illustrated in an example provided below.
- Nevertheless, the (default) use of book-hash alists may be worthwhile, in
- spite of the decreased security, because of faster times for @(tsee
- certify-book) and @(tsee include-book) when using book-hash alists instead of
- checksums.  If you want to use checksums, however, there are these two ways to
- do so.</p>
+ See @(see checksum).  Nevertheless, the (default) use of book-hash alists may
+ be worthwhile, in spite of the decreased security, because of faster times for
+ @(tsee certify-book) and @(tsee include-book) when using book-hash alists
+ instead of checksums.  If you want to use checksums, however, there are these
+ two ways to do so.</p>
 
  <ul>
 
