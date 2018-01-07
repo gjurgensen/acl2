@@ -78355,6 +78355,15 @@ Changes to Existing Features
   error that prints the necessary [include-book] form, avoids stack
   overflows that could occur when that book is not included.
 
+  When performing [make-event] expansion under a surrounding [local]
+  context, it is no longer illegal to set the [ACL2-defaults-table].
+  For example, the following event formerly caused an error but is
+  now legal.
+
+    (local (make-event (er-progn (set-ignore-ok t)
+                                 (defun foo (x) x)
+                                 (value `(value-triple ,(length (w state)))))))
+
 
 New Features
 
