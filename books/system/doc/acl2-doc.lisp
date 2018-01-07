@@ -79775,6 +79775,17 @@ it."
  that prints the necessary @(tsee include-book) form, avoids stack overflows
  that could occur when that book is not included.</p>
 
+ <p>When performing @(tsee make-event) expansion under a surrounding @(see
+ local) context, it is no longer illegal to set the @(see
+ acl2-defaults-table).  For example, the following event formerly caused an
+ error but is now legal.</p>
+
+ @({
+ (local (make-event (er-progn (set-ignore-ok t)
+                              (defun foo (x) x)
+                              (value `(value-triple ,(length (w state)))))))
+ })
+
  <h3>New Features</h3>
 
  <h3>Heuristic and Efficiency Improvements</h3>
