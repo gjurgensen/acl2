@@ -79082,7 +79082,7 @@ it."
 ; Total number of release note items: 80.
 
 ; The following comments include changes not covered in the release notes
-; items-- for example, because they are about changes in error messages.
+; items -- for example, because they are about changes in error messages.
 
 ; Improved an error message when stobj-let references a stobj not declared by
 ; :stobjs, thanks to a bug report and example from Sol Swords.
@@ -79728,6 +79728,13 @@ it."
  ")
 
 (defxdoc note-8-1
+
+; The following comments include changes not covered in the release notes
+; items -- for example, because they are about changes in error messages.
+
+; Fixed some error messages for ACL2(r) pertaining to classical
+; vs. non-classical functions in measures, recursion, etc.
+
   :parents (release-notes)
   :short "ACL2 Version  8.1 (xxx, 20xx) Notes"
   :long "<p>NOTE!  New users can ignore these release notes, because the @(see
