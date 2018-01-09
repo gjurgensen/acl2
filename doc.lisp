@@ -78364,6 +78364,13 @@ Changes to Existing Features
                                  (defun foo (x) x)
                                  (value `(value-triple ,(length (w state)))))))
 
+  Information printed when giving :use [hints] has been improved for
+  the case that a [lemma-instance] is a :[termination-theorem] or a
+  :[guard-theorem].  Formerly, only the name was shown in the
+  `Hint-events' summary and in the proof output; now, one will see
+  ``names'' of the form (:termination-theorem NAME) and
+  (:guard-theorem NAME).
+
 
 New Features
 

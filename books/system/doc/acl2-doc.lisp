@@ -79786,6 +79786,13 @@ it."
                               (value `(value-triple ,(length (w state)))))))
  })
 
+ <p>Information printed when giving @(':use') @(see hints) has been improved
+ for the case that a @(see lemma-instance) is a @(':')@(tsee
+ termination-theorem) or a @(':')@(tsee guard-theorem).  Formerly, only the
+ name was shown in the `@('Hint-events')' summary and in the proof output; now,
+ one will see ``names'' of the form @('(:termination-theorem NAME)') and
+ @('(:guard-theorem NAME)').</p>
+
  <h3>New Features</h3>
 
  <h3>Heuristic and Efficiency Improvements</h3>
