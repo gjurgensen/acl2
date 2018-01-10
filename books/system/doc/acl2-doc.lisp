@@ -79800,6 +79800,9 @@ it."
  one will see ``names'' of the form @('(:termination-theorem NAME)') and
  @('(:guard-theorem NAME)').</p>
 
+ <p>We improved redundancy checking for @(tsee defun) forms so that it is not
+ sensitive to whether @(tsee state) has a @(':stobj') declaration.</p>
+
  <h3>New Features</h3>
 
  <h3>Heuristic and Efficiency Improvements</h3>
@@ -79853,6 +79856,11 @@ it."
  out that the topic @(tsee double-rewrite) was not being displayed in the
  online manual (back when @('&') was used in the URL in the documentation
  string).</p>
+
+ <p>The \"clean\" target of \"make\" has been deprecated since ACl2 Version
+ 7.4 (released in March, 2017). Its replacement is target \"clean-lite\"; or,
+ use target \"clean-all\" (or equivalently, \"distclean\") if you want a more
+ thorough cleaning.</p>
 
  <h3>EMACS Support</h3>
 
@@ -89852,6 +89860,12 @@ arithmetic) for libraries of @(see books) for arithmetic reasoning.</p>")
  redundancy requires that both are @(tsee mutual-recursion) events that define
  the same set of function symbols.</li>
 
+ <li>The @(see stobj)s declared by the two definitions are allowed to disagree
+ on @('state'): one can declare @('state') among its declared @(':stobj')
+ values while the other does not, regardless of whether or not @(tsee
+ set-state-ok) has been evaluated.  That is, they only need to agree on the
+ <i>user-defined</i> stobjs.</li>
+
  </ol>
 
  <p>An @(tsee encapsulate) event is most commonly redundant when a
@@ -89914,17 +89928,18 @@ arithmetic) for libraries of @(see books) for arithmetic reasoning.</p>")
  <p><i>Note About Appropriate Modes:</i></p>
 
  <p>Suppose a function is being redefined and that the formals, guards, types,
- stobjs, and bodies are identical.  When are the modes (@(':')@(tsee program)
- or @(':')@(tsee logic)) ``appropriate?''  Identical modes are appropriate.
- But what if the old mode was @(':program') and the new mode is @(':logic')?
- This is appropriate, provided the definition meets the requirements of the
- logical definitional principle.  That is, you may redefine ``redundantly'' a
- @(':program') mode function as a @(':logic') mode function provide the measure
- conjectures can be proved.  This is what @(tsee verify-termination) does.  Now
- consider the reverse style of redefinition.  Suppose the function was defined
- in @(':logic') mode and is being identically redefined in @(':program') mode.
- ACL2 will treat the redefinition as redundant, provided the appropriate
- criteria are met (as though it were in :logic mode).</p>
+ user-defined stobjs, and bodies are identical.  When are the
+ modes (@(':')@(tsee program) or @(':')@(tsee logic)) ``appropriate?''
+ Identical modes are appropriate.  But what if the old mode was @(':program')
+ and the new mode is @(':logic')?  This is appropriate, provided the definition
+ meets the requirements of the logical definitional principle.  That is, you
+ may redefine ``redundantly'' a @(':program') mode function as a @(':logic')
+ mode function provide the measure conjectures can be proved.  This is what
+ @(tsee verify-termination) does.  Now consider the reverse style of
+ redefinition.  Suppose the function was defined in @(':logic') mode and is
+ being identically redefined in @(':program') mode.  ACL2 will treat the
+ redefinition as redundant, provided the appropriate criteria are met (as
+ though it were in :logic mode).</p>
 
  <p><i>Note About Shifting Logical Names:</i></p>
 

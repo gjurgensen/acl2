@@ -78371,6 +78371,9 @@ Changes to Existing Features
   ``names'' of the form (:termination-theorem NAME) and
   (:guard-theorem NAME).
 
+  We improved redundancy checking for [defun] forms so that it is not
+  sensitive to whether [state] has a :stobj declaration.
+
 
 New Features
 
@@ -78431,6 +78434,11 @@ Changes at the System Level
   simply &.  Thanks to Cuong Chau for pointing out that the topic
   [double-rewrite] was not being displayed in the online manual (back
   when & was used in the URL in the documentation string).
+
+  The \"clean\" target of \"make\" has been deprecated since ACl2 Version
+  7.4 (released in March, 2017). Its replacement is target
+  \"clean-lite\"; or, use target \"clean-all\" (or equivalently,
+  \"distclean\") if you want a more thorough cleaning.
 
 
 EMACS Support
@@ -90745,6 +90753,11 @@ Subtopics
    4. If either the old or new event is a [mutual-recursion] event, then
       redundancy requires that both are [mutual-recursion] events
       that define the same set of function symbols.
+   5. The [stobj]s declared by the two definitions are allowed to disagree
+      on state: one can declare state among its declared :stobj
+      values while the other does not, regardless of whether or not
+      [set-state-ok] has been evaluated.  That is, they only need to
+      agree on the user-defined stobjs.
 
   An [encapsulate] event is most commonly redundant when a
   syntactically identical [encapsulate] has already been executed
@@ -90807,8 +90820,8 @@ Subtopics
   Note About Appropriate Modes:
 
   Suppose a function is being redefined and that the formals, guards,
-  types, stobjs, and bodies are identical.  When are the modes
-  (:[program] or :[logic]) ``appropriate?'' Identical modes are
+  types, user-defined stobjs, and bodies are identical.  When are the
+  modes (:[program] or :[logic]) ``appropriate?'' Identical modes are
   appropriate.  But what if the old mode was :program and the new
   mode is :logic?  This is appropriate, provided the definition meets
   the requirements of the logical definitional principle.  That is,
