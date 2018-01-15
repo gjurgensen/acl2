@@ -79822,6 +79822,12 @@ it."
  test.  Thanks to Alessandro Coglio and Eric Smith for sending an example that
  illustrated the problem.</p>
 
+ <p>Calls of the form @('(apply$ (lambda ...) ...)') were running slowly
+ because an optimization failed to be installed during the ACL2 build.  That
+ optimization is now in place.  (The optimization, which compiles and caches
+ ``tame compliant'' lambdas, had been used in the unadvertised use of ``The
+ Rubric'' prior to the release of ACL2 Version 8.0.)</p>
+
  <h3>Bug Fixes</h3>
 
  <p>Fixed two bugs in @(tsee apply$): we now @(tsee disable) the @(see
@@ -114053,7 +114059,7 @@ introduction-to-the-tau-system) for more information about Tau.</dd>
   :parents (verify-termination)
   :short "Permit @(tsee verify-termination) for functions with raw Lisp code."
   :long "<p>By default, it is not permitted to <see topic='@(url
- verify-termination)'> verify termination</see> for functions with raw Lisp
+ verify-termination)'>verify termination</see> for functions with raw Lisp
  code.  (Technical note: With sufficient effort this restriction could perhaps
  be lifted, but that would involve significant modification to the ACL2
  sources, in particular to handle properly code generation for
@@ -114067,6 +114073,8 @@ introduction-to-the-tau-system) for more information about Tau.</dd>
  @({
  (defttag t)
  (remove-untouchable verify-termination-on-raw-program-okp nil)
+ ; In the following, t can be replaced by an expression that evaluates to a
+ ; list of symbols for which it is permitted to verify termination.
  (assign verify-termination-on-raw-program-okp t)
  })")
 

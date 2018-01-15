@@ -78396,6 +78396,13 @@ Heuristic and Efficiency Improvements
   Thanks to Alessandro Coglio and Eric Smith for sending an example
   that illustrated the problem.
 
+  Calls of the form (apply$ (lambda ...) ...) were running slowly
+  because an optimization failed to be installed during the ACL2
+  build.  That optimization is now in place.  (The optimization,
+  which compiles and caches ``tame compliant'' lambdas, had been used
+  in the unadvertised use of ``The Rubric'' prior to the release of
+  ACL2 Version 8.0.)
+
 
 Bug Fixes
 
@@ -115024,7 +115031,7 @@ Subtopics
   (VERIFY-TERMINATION)
   "Permit [verify-termination] for functions with raw Lisp code.
 
-  By default, it is not permitted to  verify termination (see
+  By default, it is not permitted to verify termination (see
   [VERIFY-TERMINATION]) for functions with raw Lisp code.  (Technical
   note: With sufficient effort this restriction could perhaps be
   lifted, but that would involve significant modification to the ACL2
@@ -115039,6 +115046,8 @@ Subtopics
 
     (defttag t)
     (remove-untouchable verify-termination-on-raw-program-okp nil)
+    ; In the following, t can be replaced by an expression that evaluates to a
+    ; list of symbols for which it is permitted to verify termination.
     (assign verify-termination-on-raw-program-okp t)")
  (VERSION
   (ABOUT-ACL2)
