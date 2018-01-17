@@ -12145,7 +12145,9 @@ with any questions about building the community books.</p>")
   :long "<p>Also see @(see certificate) for information about the
  @('\".cert\"') file produced by @('certify-book'), in particular for
  information about the use of @(see book-hash) values to help ensure that the
- corresponding book has not been modified since certification.</p>
+ corresponding book has not been modified since certification.  See @(see
+ certify-book-debug) for some potential remedies for failures of
+ @('certify-book').</p>
 
  @({
   Examples:
@@ -12378,6 +12380,45 @@ with any questions about building the community books.</p>")
 
  <p>This completes the tour through the @(see documentation) of @(see
  books).</p>")
+
+(defxdoc certify-book-debug
+  :parents (certify-book books-reference)
+  :short "Some possible ways to work around @(tsee certify-book) failures"
+  :long "<p>This topic provides some ideas for how to deal with @(tsee
+ certify-book) failures.  Ideally, this topic will continue to grow over
+ time.</p>
+
+ <p>Stack overflows may show up as follows.</p>
+
+ @({
+ ***********************************************
+ ************ ABORTING from raw Lisp ***********
+ ********** (see :DOC raw-lisp-error) **********
+ Error:  Stack overflow on value stack.
+ ***********************************************
+ })
+
+ <p>When this occurs during book certification, it could be during an attempt
+ to handle large objects, in particular by the @(see serialize) writer or by a
+ @(see memoize)d version of the check for ``bad'' objects.  These two potential
+ causes can be remedied by first evaluating the following forms,
+ respectively.</p>
+
+ @({
+ (set-serialize-character-system nil)
+ (set-bad-lisp-consp-memoize nil)
+ })
+
+ <p>If the large object is in an event in the book under certification, then
+ you may need to avoid printing it, as follows.</p>
+
+ @({
+ (set-inhibit-output-lst '(proof-tree event))
+ })
+
+ <p>Other failures of @('certify-book') may have error messages that point to
+ the problem.  When that is not the case, it would be good to explain possible
+ workarounds in this topic!</p>")
 
 (defxdoc certify-book!
   :parents (certify-book)
@@ -120888,6 +120929,7 @@ expand function call at the current subterm, without simplifying"
 (defpointer book-makefiles books-certification)
 (defpointer by hints t)
 (defpointer cases hints t)
+(defpointer certify-book-failure certify-book-debug)
 (defpointer certifying-books books-certification)
 (defpointer check-invariant-risk set-check-invariant-risk)
 (defpointer close-input-channel io)
