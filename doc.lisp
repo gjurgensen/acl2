@@ -3,8 +3,8 @@
 ; The contents of this file are derived from ACL2 Community Book
 ; books/system/doc/acl2-doc.lisp.
 
-; ACL2 Version 7.4 -- A Computational Logic for Applicative Common Lisp
-; Copyright (C) 2016, Regents of the University of Texas
+; ACL2 Version 8.0 -- A Computational Logic for Applicative Common Lisp
+; Copyright (C) 2017, Regents of the University of Texas
 
 ; This version of ACL2 is a descendent of ACL2 Version 1.9, Copyright
 ; (C) 1997 Computational Logic, Inc.  See the documentation topic NOTE-2-0.
@@ -1494,7 +1494,7 @@ Subtopics
   (ACL2)
   "General information About ACL2
 
-  This is ACL2 Version 7.4, [copyright] (C) 2017, Regents of the
+  This is ACL2 Version 8.0, [copyright] (C) 2017, Regents of the
   University of Texas, authored by Matt Kaufmann and J Strother
   Moore.
 
@@ -2506,7 +2506,7 @@ Subtopics
   This is the ACL2 documentation.  For the ACL2+Books Manual, which
   that includes both the ACL2 documentation and the ACL2
   [community-books], see the {ACL2+Books Manual |
-  http://www.cs.utexas.edu/users/moore/acl2/v7-4/combined-manual/index.html}.
+  http://www.cs.utexas.edu/users/moore/acl2/v8-0/combined-manual/index.html}.
 
 
 Subtopics
@@ -2793,7 +2793,7 @@ Subtopics
       [concatenate] zero or more lists
 
   [Apply$]
-      Apply a function to arguments
+      Apply an authorized function or tame lambda to arguments
 
   [Aref1]
       Access the elements of a 1-dimensional array
@@ -3084,6 +3084,9 @@ Subtopics
   [Declare]
       Extra declarations that can occur in function definitions, [let]
       bindings, and so forth.
+
+  [Def-warrant]
+      Warrant a function so [apply$] can use it
 
   [Default]
       Return the :default from the [header] of a 1- or 2-dimensional array
@@ -4550,7 +4553,7 @@ Subtopics
 
   As discussed elsewhere (see [documentation]), the web-based
   {ACL2+Books Manual |
-  http://www.cs.utexas.edu/users/moore/acl2/v7-4/combined-manual/index.html}
+  http://www.cs.utexas.edu/users/moore/acl2/v8-0/combined-manual/index.html}
   provides a way to browse the combined documentation for the ACL2
   system and community books.  Such documentation can also be read at
   the terminal using the :[doc] command, though documentation for
@@ -7411,43 +7414,410 @@ Subtopics
   [Binary-append]
       [concatenate] two lists")
  (APPLY$
-  (ACL2-BUILT-INS)
-  "Apply a function to arguments
+  (ACL2-BUILT-INS PROGRAMMING)
+  "Apply an authorized function or tame lambda to arguments
 
-  This documentation topic is currently little more than a stub, but
-  with pointers to helpful information about apply$ and related
-  functions ev$ and ev$-list.  Here is a little edited log, produced
-  immediately after starting ACL2, that shows apply$ at work.
+  See [introduction-to-apply$] for a tutorial on apply$ and related
+  concepts.  That topic cites a technical paper that gives the full
+  details.  It also includes links to some relevant books.
 
-    ACL2 !>(defun$ foo (x y) (+ x y))
-    [[.. elided output ..]]
-     :WARRANTED
-    ACL2 !>(apply$ 'foo (list 3 (- 10 2)))
-    11
-    ACL2 !>(thm (implies (warrant foo)
-                         (equal (apply$ 'foo (list x y))
-                                (foo x y))))
-    [[.. elided output ..]]
-    Proof succeeded.
-    ACL2 !>
 
-  The paper {``Limited Second-Order Functionality in a First-Order
-  Setting'' |
-  http://www.cs.utexas.edu/users/kaufmann/papers/apply/index.html} by
-  Matt Kaufmann and J Strother Moore is the definitive reference on
-  apply$.  That paper serves not only as a manual, but it also
-  provides logical foundations, which are illustrated in
-  [community-books] directory books/projects/apply-model/.
+Start Up
 
-  A quick way to start using apply$ is to start with
+  You are advised to:
 
     (include-book \"projects/apply/apply-lemmas\" :dir :system)
 
-  to load useful lemmas for reasoning about apply$.
+  in any session in which you plan to use or experiment with apply$.
 
-  Then run some examples in the community book,
-  books/projects/apply/report.lisp, to learn how to do proofs about
-  apply$.")
+
+User-Defined Functions Used in This Topic
+
+  To illustrate apply$ and some related concepts we need some
+  user-defined functions.  We therefore imagine that the following
+  two events have been successfully admitted.
+
+    (defun$ sq (x) (* x x))
+
+    (defun$ foldr (lst fn init)
+      (if (endp lst)
+          init
+          (apply$ fn
+                  (list (car lst)
+                        (foldr (cdr lst) fn init)))))
+
+
+Specification of APPLY$
+
+  Warning: The following documentation is pretty dense and technical.
+  It is meant as a reference guide.  However, in the interests of
+  newcomers to apply$ we have tried to make this topic self-contained
+  rather than hyperlinked to many other concepts.  We enclose the
+  first mention of each apply$-related concept in double quotes below
+  and define the concepts later in the topic.
+
+    General Form:
+    (apply$ fn args)
+
+  where fn is a function symbol or lambda expression and args is a true
+  list.  In the special case that fn is known to be a ``tame''
+  function, our apply$ is just the familiar notion of function
+  application: fn, a function of arity n, is applied to the first n
+  elements of args, extending args with NILs as necessary.
+
+  If fn is a symbol with no ``badge'' (hence is not ``authorized'') or
+  is a lambda expression that is not known to be tame, an error is
+  caused.
+
+  Note: It remains therefore to explain what apply$ returns when fn is
+  a badged, ``authorized'' function symbol that is not tame.  We call
+  such functions ``mapping functions'' and foldr above is an example.
+  Mapping functions take one or more ``functional'' arguments (to be
+  applied by apply$) or ``expressional'' arguments (to be evaluated
+  by ev$).
+
+  Note: We do not discuss ev$ here but it is, with one twist, the
+  natural notion of evaluation in this context: look up the values of
+  variables in the alist argument to ev$, return quoted constants,
+  and otherwise apply$ function symbols and lambda expressions to the
+  recursively obtained list of values obtained by evaluating the
+  actuals.  The twist is that ev$ first checks that the expression is
+  ``tame.''
+
+  We assume below that fn is authorized (hence badged) but is not tame,
+  which means it has one or more formals of ``ilk'' :FN or :EXPR.
+
+  Let n be the arity of fn.  The value of (apply$ fn args) is the
+  result of applying the function identified by fn to the first n
+  elements of args, extending args with NILs as needed, provided the
+  successive ilks of fn are satisfied by the successive elements of
+  args as follows: the ilk :FN is satisfied only by a tame function
+  symbol or lambda expression, and the ilk :EXPR is satisfied only by
+  a tame expression.  The ilk NIL is satisfied by any object.
+
+  We define ``tame,'' ``mapping function,'' ``badge,'' ``authorized,''
+  and ``ilks'' below.
+
+
+Proving Theorems Involving APPLY$
+
+  The description of apply$ above deals with the behavior of apply$ in
+  ACL2's evaluation theory, e.g., what you can expect when you call
+  apply$ or mapping functions at the top-level of the ACL2 loop.  But
+  it hides some logical details that are necessary if you try to
+  prove theorems about apply$.
+
+  Apply$ is defined on the ``apply$ built-ins'' (defined below).  That
+  list includes virtually every function in ACL2's initial world that
+  is in :logic mode, returns a single value, and does not traffic in
+  [stobj]s or [state].  It also includes apply$ and ev$.  All the
+  built-ins are tame except apply$ and ev$.
+
+  But apply$ is undefined on user-defined functions!  Instead, the
+  definition of apply$ calls an undefined function when a
+  user-defined function symbol is to be applied.  The link between
+  apply$ and a user-defined function, fn, must be provided by a
+  hypothesis, called the warrant for fn.  The warrant for fn is
+  itself a term that calls a 0-ary function, called the warrant
+  function for fn which is named APPLY$-WARRANT-fn.  The warrant
+  function for fn is introduced by the command (def-warrant fn).  If
+  def-warrant succeeds it computes a badge for fn, it uses [defun-sk]
+  to introduce the warrant function, and it proves the key rewrite
+  rules for linking the warrant to badge and apply$.  See
+  [def-warrant].  The ACL2 evaluation theory is arranged, via
+  attachments (see [defattach]), as though every warrant were
+  implicitly assumed.
+
+  There exists a model of apply$ and all of your mapping functions that
+  makes every warrant issued by def-warrant valid! This is proved in
+  the paper cited in [introduction-to-apply$].  This means that you
+  do not have to worry that theorems burdened with warrants might be
+  vacuously valid because the warrants are false.
+
+  Instead of writing (APPLY$-WARRANT-fn) we typically use the macro
+  form (WARRANT fn).  You may list multiple function symbols in the
+  WARRANT expression and it expands to the conjunction of the
+  individual warrants.  See [warrant].
+
+  The macro [defun$] is just an abbreviation for an ordinary [defun]
+  followed by def-warrant and is the typical way to introduce new
+  functions known to apply$.
+
+  For example, once foldr has been admitted with defun$ as above the
+  following two rewrite rules are available:
+
+    (defthm apply$-foldr
+      (and (implies (force (warrant foldr))
+                    (equal (badge 'foldr)
+                           '(apply$-badge t 3 nil :fn nil)))
+           (implies (and (force (warrant foldr))
+                         (tamep-functionp (car (cdr args))))
+                    (equal (apply$ 'foldr args)
+                           (foldr (car args)
+                                  (car (cdr args))
+                                  (car (cdr (cdr args))))))))
+
+  The first tells the rewriter how to ``evaluate'' badge on 'foldr,
+  yielding the badge computed by def-warrant.  The second tells the
+  rewriter how to ``expand'' (apply$ 'foldr args) to a call of foldr
+  provided the second element of args is a tame function.  Both rules
+  [force] the warrant on foldr.
+
+  So there are three lessons here:
+
+  Lesson 1: When stating theorems involving apply$ or mapping functions
+  on concrete user-defined functions, provide as additional
+  hypotheses the warrants for all user-defined functions that apply$
+  will encounter during the proof.  This generally means you should
+  add the hypothesis (warrant fn1 fn2 ... fnk) listing every function
+  symbol that appears inside a quoted constant destined for apply$ or
+  ev$ in your conjecture.  In particular, you should include every
+  quoted function symbol appearing in a :FN slot of apply$ or any
+  mapping function, including every function symbol appearing in the
+  body of any such lambda expression.
+
+  Lesson 2: You need not worry that adding warrant hypotheses makes
+  your theorems vacuously valid!  There is a model of apply$ and all
+  your mapping functions in which all warrants are valid.
+
+  Lesson 3: If a proof involving apply$ or a mapping function fails in
+  a forcing round with a checkpoint whose conclusion is the warrant
+  for some function, you should remember Lesson 1 and include that
+  function symbol in the warrant for your conjecture!  That is, if
+  you forget to supply a warrant but your conjecture is otherwise
+  provable, ACL2's checkpoints will remind you.
+
+
+Apply$ in the Evaluation Theory versus the Proof Theory
+
+  If sq has been introduced with defun$ as shown above, then the
+  following top-level evaluation is possible:
+
+    ACL2 !>(apply$ 'sq '(5))
+    25
+
+  You might expect to be able to prove the obvious little theorem
+
+    (thm (equal (apply$ 'sq '(5)) 25))
+
+  However, you would be wrong!  While ACL2's evaluation theory
+  implicitly makes all warrants true, the evaluation theory is not
+  used for proof-time evaluation.  (If it were we could suffer the
+  LOCAL problem mentioned in [introduction-to-apply$].)  Logically,
+  there is no connection between apply$ and the user-defined function
+  sq.  That connection is established by warrant and the appropriate
+  warrants must be explicitly provided as hypotheses by the user.
+
+  The warranted version of the little theorem above is easily proved.
+
+    (thm (implies (warrant sq) (equal (apply$ 'sq '(5)) 25)))
+
+  If you try to prove the unwarranted version of the theorem it fails
+  in a forcing round with
+
+    [1]Goal
+    (APPLY$-WARRANT-SQ)
+
+  This is a clear indication that you forgot to provide the warrant.
+
+
+Definitions of Apply$-Related Concepts
+
+  In this section we define ``tame,'' ``mapping function,'' ``badge,''
+  ``authorized,'' ``ilks'' and the apply$ ``built-in'' function
+  symbols.  Someday perhaps we'll break these out into separate
+  documentation topics, but they are so intertwined that we introduce
+  them together.
+
+  A badge is a data structure associated with some function symbols.  A
+  badge is of the form (APPLY$-BADGE flg n . ilks), where flg is
+  Boolean, n is a natural number, and ilks is either T or a list of n
+  symbols, each of which is one of NIL, :FN, or :EXPR.
+
+  To see the badge, if any, of a function symbol, evaluate (badge fn)
+  at the top-level of the ACL2 loop.  For example:
+
+    ACL2 !>(badge 'CONS)
+    (APPLY$-BADGE T 2 . T)
+
+    ACL2 !>(badge 'APPLY$)
+    (APPLY$-BADGE T 2 :FN NIL)
+
+    ACL2 !>(badge 'EV$)
+    (APPLY$-BADGE T 2 :EXPR NIL)
+
+    ACL2 !>(badge 'SQ)
+    (APPLY$-BADGE T 1 . T)
+
+    ACL2 !>(badge 'FOLDR)
+    (APPLY$-BADGE T 3 NIL :FN NIL)
+
+  An error is caused if badge is called at the top-level on a function
+  symbol without a badge.
+
+  If a symbol, fn, has a badge, (APPLY$-BADGE flg n . ilks) then fn is
+  a function in the current world, we call flg the authorization flag
+  of fn, n is the arity of fn, and, when ilks is not T, each
+  successive element of ilks is called the ilk of the corresponding
+  formal of fn.  Ilks T is really just an implementation shorthand
+  for a list of NILs as long as the arity of the badged function.  So
+  if the ilks field is T each formal's ilk is NIL.
+
+  Note: The authorization flag in a badge tells us whether the function
+  returns a single value (flg T) or multiple values (flg NIL).
+
+  For example, the fact that (badge 'foldr) is non-nil (non-erroneous)
+  tells us that foldr is a function in the current world.  Its
+  authorization flag tells us foldr returns a single value, its arity
+  field tells us foldr has three formals, and the fact the ilks of
+  the first and last formals are NIL tells us they are treated as
+  ordinary objects.  The fact that its middle ilk is :FN tells us
+  that foldr treats its middle argument as a function object.
+
+  We say fn is authorized if and only if fn is badged and its
+  authorization flag is T.
+
+  The ilk of each formal of fn determines (and is determined by) how
+  the body of the function treats the corresponding formal.  Let the
+  ith formal of fn be v and suppose the ilk of v is:
+
+  :FN --- then v is used only as a function object.  The formal may be
+  passed to other badged functions called by fn provided it is passed
+  only into :FN slots.  It must be passed into at least one :FN slot
+  of some function, other than fn itself, called in the body of fn,
+  e.g., to APPLY$.  The formal must be passed as the ith actual in
+  every recursive call of fn itself.  The formal may not be returned
+  as the value of fn. The formal may not be otherwise inspected or
+  manipulated.
+
+  :EXPR --- then v is used only as an expression object.  The formal
+  may be passed to other badged functions called by fn provided it is
+  passed only into :EXPR slots.  It must be passed into at least one
+  :EXPR slot of some function, other than fn itself, called in the
+  body of fn, e.g., to EV$.  The formal must be passed as the ith
+  actual in every recursive call of fn itself.  The formal may not be
+  returned as the value of fn. The formal may not be otherwise
+  inspected or manipulated.
+
+  :NIL --- then v is used as an ordinary object.  The formal may be
+  passed to other badged functions into NIL slots and may be returned
+  as the value of fn.  The formal may never be passed into a :FN or
+  :EXPR slot of any call.
+
+  Informally, if an object is passed into a :FN or :EXPR slot of a
+  function, then it will eventually reach an apply$ or ev$,
+  respectively --- those being the only primitive functions with :FN
+  or :EXPR slots.  Furthermore, aside from being passed around in
+  such special slots it is never touched by any function other than
+  apply$ or ev$.
+
+  Note also that it is possible to define functions for which this
+  classification of formals is impossible.  An example is
+
+    (defun bad (fn) (apply$ fn (list fn)))
+
+  where the formal is neither purely functional nor purely ordinary.
+  Such functions cannot have badges.
+
+  A mapping function is any badged functions whose ilks is not T, i.e.,
+  any badged function with at least one formal of ilk :FN or :EXPR.
+
+  An object is a tame function iff it is either (a) an authorized
+  symbol and its ilks is T, or (b) it is of the form (LAMBDA vars
+  body) where vars is a list of symbols and body is a tame expression
+  (see below).
+
+  An object is a tame expression iff it is a symbol, a quoted constant,
+  the call of an authorized function symbol on the correct number of
+  suitably tame expressions (see below) with respect to the ilks of
+  the function symbol (see below), or the call of a tame lambda
+  expression on the correct number of tame expressions.
+
+  A list of objects is suitably tame with respect to a list of ilks iff
+  the list is a true list with as many elements as there are ilks,
+  and when an ilk is :FN the corresponding object is a quoted tame
+  function, when an ilk is :EXPR the object is a quoted tame
+  expression, and when an ilk is NIL the object is a tame expression.
+
+  Note in particular our use of the word ``quoted'' above when defining
+  the concept of a suitably tame list of expressions with respect to
+  some ilks.  For example, if ilks is (NIL :FN :EXPR) then this list
+  of objects:
+
+    ((CONS X Y)
+     (QUOTE SQ)
+     (QUOTE (BINARY-+ X Y)))
+
+  is suitably tame with respect to the given ilks.  That means that if
+  the function symbol FOO has those particular ilks and the above
+  list of suitably tame expressions appears as the actual expressions
+  in a call of FOO, i.e.,
+
+    (FOO (CONS X Y)
+         (QUOTE SQ)
+         (QUOTE (BINARY-+ X Y)))
+
+  then that call of FOO is a tame expression.  This is important
+  because it means that a tame expression can have an untame function
+  symbol provided the appropriate actual expressions are quoted and
+  appropriately tame.
+
+  At the top-level of the ACL2 loop you can determine whether a
+  function symbol or lambda expression is tame by calling
+  tamep-functionp on it.  You can determine if an expression is tame
+  by calling tamep on it.  The notion of a suitably tame list of
+  expressions is implemented by suitably-tamep-listp but we generally
+  do not call it directly but just use tamep to see whether an
+  appropriate function call is tame.  These three concepts are
+  mutually recursive and you can see their formal definitions by :pe
+  tamep.
+
+  The apply$ built-ins are the functions returned by evaluating the
+  following expression at the top-level of the ACL2 loop (assuming
+  you have defined foldr as above):
+
+    (foldr *badge-prim-falist*
+           '(lambda (x ac)
+              (if (car (cdr (cdr x)))
+                  (cons (car x) ac)
+                  ac))
+           '(BADGE
+             TAMEP
+             TAMEP-FUNCTIONP
+             SUITABLY-TAMEP-LISTP
+             APPLY$
+             EV$))
+
+  If you attempt to apply$ any other symbol it will need to be
+  warranted.  That is, if you supply any other symbol to apply$ or
+  another mapping function, that symbol must have been processed
+  successfully by def-warrant, or equivalently, that symbol must have
+  been introduced with [defun$].  If you are proving a conjecture
+  involving such a symbol, you should include the warrant for the
+  symbol as a hypothesis to the conjecture.  If you are just
+  evaluating apply$ and other mapping functions on the symbol at the
+  top-level of the ACL2 loop, it is sufficient for def-warrant (or
+  defun$) to have succeeded, but you do not have to make explicit use
+  of the warrant since the ACL2 evaluation theory makes all warrants
+  valid.
+
+
+Subtopics
+
+  [Def-warrant]
+      Warrant a function so [apply$] can use it
+
+  [Defun$]
+      Define a function symbol and generate a warrant
+
+  [Fn-equal]
+      Equivalence relation on tame functions
+
+  [Introduction-to-apply$]
+      Background knowledge on how to use [apply$], [def-warrant], etc.
+
+  [Warrant]
+      Giving [apply$] permission to call a user-defined function")
  (APROPOS (POINTERS)
           "See [finding-documentation].")
  (ARCHITECTURE-OF-THE-PROVER
@@ -8956,6 +9326,7 @@ Subtopics
   class (see [rule-classes]) in ACL2.")
  (BACKTRACK (POINTERS)
             "See [hints] for information about the keyword :backtrack.")
+ (BADGE (POINTERS) "See [apply$].")
  (BASICS
   (PROGRAMMING)
   "Basic control structures for [programming] like [if] and [cond],
@@ -10697,11 +11068,12 @@ Subtopics
 
   You can arrange for a book-hash to be a checksum instead of an alist,
   which gives a bit greater security, as illustrated in an example
-  provided below.  Nevertheless, the (default) use of book-hash
-  alists may be worthwhile, in spite of the decreased security,
-  because of faster times for [certify-book] and [include-book] when
-  using book-hash alists instead of checksums.  If you want to use
-  checksums, however, there are these two ways to do so.
+  provided below.  See [checksum].  Nevertheless, the (default) use
+  of book-hash alists may be worthwhile, in spite of the decreased
+  security, because of faster times for [certify-book] and
+  [include-book] when using book-hash alists instead of checksums.
+  If you want to use checksums, however, there are these two ways to
+  do so.
 
     * Before starting ACL2, set environment variable ACL2_BOOK_HASH_ALISTP
       to NIL (or nil; actually it suffices that [string-upcase]
@@ -11165,7 +11537,7 @@ Subtopics
   which is recommended for certifying a specified subset of those
   books from the books/ directory of your ACL2 distribution.
   Alternate instructions are however available for certifying from
-  the top-leel directory (see [books-certification-alt]).
+  the top-level directory (see [books-certification-alt]).
 
   Below are instructions for certifying various sets of books.  They
   all have the following form in common.
@@ -11189,7 +11561,7 @@ Prerequisites
 
   We assume that you have already downloaded and installed ACL2 as per
   the {ACL2 installation instructions |
-  http://www.cs.utexas.edu/users/moore/acl2/v7-4/HTML/installation/installation.html}
+  http://www.cs.utexas.edu/users/moore/acl2/v8-0/HTML/installation/installation.html}
   on the ACL2 home page.
 
   We assume you know the path to your ACL2 executable.  Typically this
@@ -11439,7 +11811,7 @@ Subtopics
 
   For more information about installing ACL2, see the {ACL2
   installation instructions |
-  http://www.cs.utexas.edu/users/moore/acl2/v7-4/HTML/installation/installation.html}.
+  http://www.cs.utexas.edu/users/moore/acl2/v8-0/HTML/installation/installation.html}.
   For information about so-called ``classic ACL2 `make'-based
   certification'', which provides support for certifying directories
   of books but may disappear in a future ACL2 release, see
@@ -12926,7 +13298,7 @@ Subtopics
   contains [documentation] only about the ACL2 system, and does not
   include documentation from the [community-books].  Please point
   your browser at the {ACL2+Books Manual |
-  http://www.cs.utexas.edu/users/moore/acl2/v7-4/combined-manual/index.html}
+  http://www.cs.utexas.edu/users/moore/acl2/v8-0/combined-manual/index.html}
   (or if browsing in [ACL2-Doc], switch to that manual with meta-0 I)
   to access the desired topic.
 
@@ -13008,7 +13380,7 @@ Subtopics
        (str::pretty-printing \"[books]/std/strings/pretty.lisp\")
        (profile-acl2 \"[books]/centaur/memoize/old/profile.lisp\")
        (profile-all \"[books]/centaur/memoize/old/profile.lisp\")
-       (quicklisp \"[books]/centaur/quicklisp/top.lisp\")
+       (quicklisp \"[books]/quicklisp/top.lisp\")
        (release-notes-books \"[books]/doc/relnotes.lisp\")
        (removable-runes \"[books]/tools/removable-runes.lisp\")
        (run-script \"[books]/tools/run-script.lisp\")
@@ -18311,7 +18683,7 @@ Subtopics
   [documentation-copyright], which notes that there are many
   documentation authors.
 
-  ACL2 Version 7.4 --- A Computational Logic for Applicative Common
+  ACL2 Version 8.0 --- A Computational Logic for Applicative Common
   Lisp
 
   Copyright (C) 2017, Regents of the University of Texas
@@ -19394,6 +19766,200 @@ Subtopics
 
   ACL2 insists on the declaration to ensure that the definition is
   processed the same way no matter what the context.")
+ (DEF-WARRANT
+  (APPLY$ ACL2-BUILT-INS)
+  "Warrant a function so [apply$] can use it
+
+  In the following documentation, we freely use the words ``tame,''
+  ``badge,'' ``ilk,'' and ``authorized.'' These concepts are defined
+  in the documentation for [apply$] and we assume you have read that
+  documentation.  We repeat the Getting Started advice there too:
+
+    (include-book \"projects/apply/apply-lemmas\" :dir :system)
+
+  before using or experimenting with def-warrant.  Several lemmas in
+  that book are necessary for def-warrant to prove the theorems it
+  must prove.
+
+    General Form:
+    (def-warrant fn)
+
+  where fn is a defined function name.  This command analyzes the body
+  of fn to determine whether it satisfies certain syntactic
+  conditions that allow [apply$] to apply the function to arguments
+  and that allow future calls of def-warrant to analyze definitions
+  that call this fn.
+
+  The conditions include:
+
+  (a) Fn is a defined, singly-recursive (or non-recursive) :logic mode
+  function that (if recursive) is justified with a tame measure, tame
+  domain predicate, and tame well-founded relation, and that (if
+  recursive and at least one formal has ilk :FN or :EXPR) has a
+  natural-number-valued measure and well-founded relation o<.
+
+  (b) Every function called in the body of fn, except fn itself,
+  already has a badge.
+
+  (c) The formals can be classified into three ilks as described in the
+  definition of badges in [apply$].  Roughly put this means that
+  formals of ilk :FN are treated purely as function objects to be
+  touched only by apply$, formals of ilk :EXPR are treated as purely
+  as expression objects to be touched only by ev$, and formals of ilk
+  NIL are treated as ordinary objects and are never touched by apply$
+  or ev$.  Furthermore, every formal of ilk either :FN or :EXPR is
+  passed unchanged into the same argument position in every recursive
+  call of fn in the body.
+
+  (d) Every :FN/:EXPR slot of every function called in the body of fn
+  is occupied either by a formal of fn of the same ilk or, in the
+  case of calls of functions other than fn, a quoted tame
+  function/expression.
+
+  If these conditions are not met, an error is caused by def-warrant.
+
+  If these conditions are met, def-warrant determines the badge for fn,
+  setting the authorization flag to T if fn returns a single value
+  and NIL if it does not, setting the arity field in the badge to the
+  arity, n, of fn, and setting the ilks field to the list of ilks (or
+  to T if every formal has ilk NIL).
+
+  The authorization flag indicates whether apply$ is allowed to call
+  fn.  A fn that satisfies the conditions above but returns multiple
+  values cannot be called by apply$ because apply$ always returns a
+  single value.  But fn might be used in some other function that
+  also satisfies the rules and returns a single value, so that caller
+  can be authorized.  There is an example of this at the end of this
+  documentation topic.
+
+  The generated badge is stored for the future use of def-warrant.
+  Furthermore, if the generated badge is authorized, def-warrant
+  generates the warrant for fn.  The name of that 0-ary function will
+  be APPLY$-WARRANT-fn and the warrant itself is a call of that
+  function, (APPLY$-WARRANT-fn).  The warrant function is defined
+  with [defun-sk] because it specifies the values returned by (apply$
+  'fn args) for all possible args.  The warrant is actually phrased
+  in terms of the two undefined functions, badge-userfn and
+  apply$-userfn, used to produce values for badge and apply$ on
+  user-defined functions.  To extend apply$ correctly, def-warrant
+  turns the ilks of fn into tameness conditions on the corresponding
+  elements of the args.
+
+  It is easiest to understand the above paragraph by looking at the
+  generated warrant function for foldr, whose definition is shown at
+  the top of the documentation for [apply$].
+
+    (defun-sk apply$-warrant-foldr ()
+      (forall (args)
+        (implies (tamep-functionp (cadr args))
+                 (and (equal (badge-userfn 'foldr)
+                             '(APPLY$-BADGE T 3 NIL :FN NIL))
+                      (equal (apply$-userfn 'foldr args)
+                             (foldr (car args)
+                                    (cadr args)
+                                    (caddr args))))))
+      :constrained t)
+
+  Notice that the tameness hypothesis involves the universally
+  quantified variable args, but that the first conjunct of the
+  conclusion does not mention that variable.  So we can read
+  (apply$-warrant-foldr) as equivalent to the conjunction of:
+
+    (equal (badge-userfn 'foldr)
+           '(APPLY$-BADGE T 3 NIL :FN NIL))
+
+  and
+
+    (forall (args)
+        (implies (tamep-functionp (cadr args))
+                 (equal (apply$-userfn 'foldr args)
+                        (foldr (car args)
+                               (cadr args)
+                               (caddr args)))))
+
+  The first specifies the value of the undefined function used by badge
+  to find the badge of a user-defined function.  The second specifies
+  the behavior of the undefined function used by apply$ to apply$
+  'foldr and requires that the second element of args be a tame
+  function.
+
+  Notice also that the warrant function for foldr,
+  apply$-warrant-foldr, ancestrally depends on foldr: foldr is called
+  in the defun-sk.  That is crucial to avoiding the LOCAL problem
+  noted in [introduction-to-apply$] because the warrant for every
+  non-built-in symbol apply$ed in the proof must be provided as a
+  hypothesis, which means the theorem is ancestrally dependent on
+  each of the correspondingly named functions, which means none of
+  those functions may be local to the environment from which that
+  theorem is exported.
+
+  Once def-warrant has introduced the warrant function for fn it proves
+  the rewrite rules shown in the apply$-foldr defthm event in the
+  documentation for [apply$].  Those two rules establish that the
+  warrant implies the described behavior for badge and apply$.
+
+  Def-warrant also proves that [fn-equal] is a congruence relation for
+  each :FN position of fn.
+
+
+An Example of an Authorized Function Calling an Unauthorized One
+
+  Recall above that def-warrant sometimes refuses to generate a warrant
+  but does generate a badge so that the function can be used in other
+  definitions.  Below is a script in which we define a function that
+  returns multiple values and a second function that uses it to
+  compute a single value.  We have omitted the output generated by
+  these two ordinary defuns.  We then call def-warrant on each and
+  show the output, which is self-explanatory.
+
+    (defun sum-and-diff (x y)
+      (mv (+ x y) (- x y)))
+
+    (defun diff-squares (x y)
+      (mv-let (sum diff)
+        (sum-and-diff x y)
+        (* sum diff)))
+
+    (def-warrant sum-and-diff)
+
+    SUM-AND-DIFF cannot be warranted because it returns multiple values, but it
+    otherwise satisfies the syntactic restrictions on warrants.  So a badge for
+    SUM-AND-DIFF has been issued -- allowing you to use SUM-AND-DIFF in other
+    functions that may be warranted -- but no warrant for SUM-AND-DIFF can be
+    issued.  The badge of SUM-AND-DIFF is (APPLY$-BADGE NIL 2 . T).
+
+    (def-warrant diff-squares)
+
+    DIFF-SQUARES is now warranted, with badge (APPLY$-BADGE T 2 . T).
+
+  From the definition of ``tame function'' in the documentation for
+  [apply$] we see that sum-and-diff is not a tame function because it
+  is not authorized for use by apply$.  But diff-squares, which uses
+  sum-and-diff, is a tame function.
+
+  We cannot expect:
+
+    (apply$ 'sum-and-diff '(3 5)) = (sum-and-diff 3 5)
+
+  because apply$ returns 1 value while sum-and-diff returns 2.
+
+  Since diff-squares is a tame function, apply$ can know how to apply
+  it.  But its warrant is needed to reason about it since
+  diff-squares is not built into apply$.
+
+    (defthm diff-squares-works
+          (implies (warrant diff-squares)
+                   (equal (apply$ 'diff-squares (list x y))
+                          (- (expt x 2) (expt y 2)))))
+
+  By the way, an arithmetic book, e.g., \"arithmetic-5/top\" is needed to
+  prove the theorem above.
+
+
+Subtopics
+
+  [Fn-equal]
+      Equivalence relation on tame functions")
  (DEFABBREV
   (MACROS EVENTS PROGRAMMING)
   "A convenient form of macro definition for simple expansions
@@ -20539,6 +21105,17 @@ Subtopics
 
   Defattach events are illegal inside any [encapsulate] event with a
   non-empty [signature] unless they are [local] to the [encapsulate].
+
+  (Of interest only to users of [apply$].)  Special handling is applied
+  when attempting to attach to a so-called warrant, which is produced
+  by an appication of [def-warrant] (or [defun$]).  In that case it
+  is legal to attach the function true-apply$-warrant to the warrant,
+  without any proof obligation.  This attachment is actually
+  performed automatically by def-warrant, so users (even users of
+  apply$) need not deal explicitly with such attachments.  However,
+  these attachments make warrants executable in the loop; for
+  example, after (def-warrant foo), (warrant foo) will evaluate to t
+  in the loop.
 
   We next discuss a restriction based on a notion of a function symbol
   syntactically supporting an event.  Function symbol f is ancestral
@@ -24050,6 +24627,9 @@ Subtopics
   [Defnd]
       [disable]d definition with [guard] t
 
+  [Defun$]
+      Define a function symbol and generate a warrant
+
   [Defun-inline]
       Define a potentially inlined function symbol and associated macro
 
@@ -24103,6 +24683,12 @@ Subtopics
 
   [Xargs]
       Extra arguments, for example to give [hints] to [defun]")
+ (DEFUN$
+  (DEFUN EVENTS APPLY$)
+  "Define a function symbol and generate a warrant
+
+  Defun$ is just a macro that expands to the obvious [defun] followed
+  by [def-warrant].")
  (DEFUN-INLINE
   (DEFUN EVENTS)
   "Define a potentially inlined function symbol and associated macro
@@ -24558,7 +25144,8 @@ Subtopics
     (defun-sk fn (var1 ... varn)
       dcl_1 dcl_2 ... dcl_k
       body
-      &key rewrite quant-ok skolem-name thm-name witness-dcls strengthen)
+      &key
+      rewrite quant-ok skolem-name thm-name witness-dcls strengthen constrain)
 
   where fn is the symbol you wish to define and is a new symbolic
   [name], (var1 ... varn) is its list of formal parameters, the
@@ -24584,16 +25171,16 @@ Subtopics
 
   It is intended to represent the predicate with formal parameters y
   and z that holds when for some x, (and (p0 x y z) (q0 x y z))
-  holds.  In fact defun-sk is a macro that adds the following two
-  [events], as shown just below.  The first event guarantees that if
-  this new predicate holds of y and z, then the term shown,
-  (exists-x-p0-and-q0-witness y z), is an example of the x that is
-  therefore supposed to exist.  (Intuitively, we are axiomatizing
-  exists-x-p0-and-q0-witness to pick a witness if there is one.  We
-  comment below on the use of [defun-nx]; for now, consider defun-nx
-  to be [defun].)  Conversely, the second event below guarantees that
-  if there is any x for which the term in question holds, then the
-  new predicate does indeed hold of y and z.
+  holds.  In fact defun-sk is a macro, and the call above adds the
+  following two [events], as shown just below.  The first event
+  guarantees that if this new predicate holds of y and z, then the
+  term shown, (exists-x-p0-and-q0-witness y z), is an example of the
+  x that is therefore supposed to exist.  (Intuitively, we are
+  axiomatizing exists-x-p0-and-q0-witness to pick a witness if there
+  is one.  We comment below on the use of [defun-nx]; for now,
+  consider defun-nx to be [defun].)  Conversely, the second event
+  below guarantees that if there is any x for which the term in
+  question holds, then the new predicate does indeed hold of y and z.
 
     (defun-nx exists-x-p0-and-q0 (y z)
       (let ((x (exists-x-p0-and-q0-witness y z)))
@@ -24669,7 +25256,8 @@ Subtopics
   The result of this event is to introduce a ``Skolem function,'' whose
   name is the keyword argument skolem-name if that is supplied, and
   otherwise is the result of modifying fn by suffixing \"-WITNESS\" to
-  its name.  The following definition and one of the following two
+  its name.  The following definition (or a corresponding rule; see
+  the discussion of :constrain below) and one of the following two
   theorems (as indicated) are introduced for skolem-name and fn in
   the case that bound-vars (see above) is a single variable v.  The
   name of the [defthm] event may be supplied as the value of the
@@ -24777,6 +25365,20 @@ Subtopics
   [defthm] events.  Another option is to write your own variant of
   the defun-sk macro, say, my-defun-sk, for example by modifying a
   copy of the definition of defun-sk from the ACL2 sources.
+
+  There is one more keyword argument not explained above: :constrain.
+  The default is nil; otherwise this argument must be a symbol, which
+  we call name-def, except that in the case of t, name-def is
+  obtained by adding the suffix \"-DEFINITION\" to fn.  For a non-nil
+  :constrain argument, this name-def is the name of a rule of class
+  :[definition] that equates (fn var1 ... varn) with the body of the
+  definition of fn.  Furthermore, in this case of a non-nil
+  :constrain value the definition of fn is local to the surrounding
+  encapsulate, which contains a signature for fn.  As usual, the
+  simplest way to see the effects of :constrain may be to apply
+  :trans1 to your defun-sk form.  Note that constraining the function
+  can make it possible to attach to it (see [defattach]) and to
+  introduce it as a [guard]-verified function.
 
   If you want to represent nested quantifiers, you can use more than
   one defun-sk event.  For example, in order to represent
@@ -25740,7 +26342,7 @@ Subtopics
   defined in books.  However, most users will probably access the
   ACL2 documentation in other ways; see [documentation].  In
   particular, consider using the {ACL2+Books Manual |
-  http://www.cs.utexas.edu/users/moore/acl2/v7-4/combined-manual/index.html},
+  http://www.cs.utexas.edu/users/moore/acl2/v8-0/combined-manual/index.html},
   for topics documented in the ACL2 community [books] or in the ACL2
   system (where the latter are rearranged).
 
@@ -25782,7 +26384,7 @@ Available Documentation
     * The online version (recommended). If you expect to have an internet
       connection while using the documentation, you may prefer to use
       the online version of the {ACL2+Books Manual |
-      http://www.cs.utexas.edu/users/moore/acl2/v7-4/combined-manual/index.html}.
+      http://www.cs.utexas.edu/users/moore/acl2/v8-0/combined-manual/index.html}.
     * A local version. If you sometimes work without an internet
       connection, you can {download | download/} a local copy of any
       web-based XDOC manual using the \"down arrow\" icon at the top of
@@ -28989,6 +29591,9 @@ Subtopics
   [Defun]
       Define a function symbol
 
+  [Defun$]
+      Define a function symbol and generate a warrant
+
   [Defun-inline]
       Define a potentially inlined function symbol and associated macro
 
@@ -31550,7 +32155,7 @@ Subtopics
   not included in the current ACL2 session?
 
   The [xdoc] {ACL2+Books Manual |
-  http://www.cs.utexas.edu/users/moore/acl2/v7-4/combined-manual/index.html}
+  http://www.cs.utexas.edu/users/moore/acl2/v8-0/combined-manual/index.html}
   includes documentation for both the ACL2 system and the
   [community-books].  For more information on this manual and how to
   view it, see [documentation].")
@@ -32407,6 +33012,28 @@ Subtopics
                   "See [printing-to-strings].")
  (FMT1-TO-STRING (POINTERS)
                  "See [printing-to-strings].")
+ (FN-EQUAL
+  (APPLY$ DEF-WARRANT)
+  "Equivalence relation on tame functions
+
+  Fn-equal is an equivalence relation on tame functions.  It holds
+  between fn1 and fn2 iff both are tame functions and (apply$ fn1
+  args) is (apply$ fn2 args), for all args.  A defun-sk event is used
+  to express the universally quantified condition.  [Def-warrant]
+  proves that fn-equal is a congruence relation for every argument
+  position of ilk :FN.
+
+  Ideally one can substitute one functional object for an equivalent
+  one in functional positions.  For example, fn-equal holds between
+  '(lambda (x) x) and 'IDENTITY, so one would hold that (collect lst
+  '(lambda (x) x)) could be rewritten to (collect lst 'identity)
+  since the second argument of collect (as defined in the
+  [introduction-to-apply$]) has ilk :FN.  Unfortunately, because
+  these are quoted constants, ACL2's rewriter will not rewrite one to
+  the other!
+
+  We regard fn-equal as a reminder to us --- or a challenge to users!
+  --- to find a way to handle functional equivalence in the rewriter.")
  (FN-SYMB (POINTERS)
           "See [system-utilities].")
  (FNCALL-TERM (POINTERS)
@@ -44241,6 +44868,420 @@ Subtopics
   If you have been working your way through the tutorial introduction
   to the theorem prover, use your browser's Back Button now to return
   to [introduction-to-the-theorem-prover].")
+ (INTRODUCTION-TO-APPLY$
+  (APPLY$)
+  "Background knowledge on how to use [apply$], [def-warrant], etc.
+
+  The paper {``Limited Second-Order Functionality in a First-Order
+  Setting'' |
+  http://www.cs.utexas.edu/users/kaufmann/papers/apply/index.html} by
+  Matt Kaufmann and J Strother Moore is the definitive reference on
+  [apply$].  That paper serves not only as a manual, but it also
+  provides logical foundations.  We refer to it below simply as ``the
+  paper.'' Supplemental material on the logical foundations of apply$
+  can be found in the [community-books] directory
+  books/projects/apply-model/.  Also see [apply$] for detailed
+  documentation on apply$ that complements the introduction below, to
+  be read carefully when you're ready to use apply$ in your own
+  projects.
+
+  The unreachable goal of this work is to allow the ACL2 user to pass
+  `functions' as objects and to apply them.  That goal is unreachable
+  because ACL2 remains a first order system.  However, we can
+  identify a certain syntactic class of ordinary ACL2 objects, called
+  the `tame functions' (which are in fact not functions but are
+  merely symbols and list expressions) and we can allow functions
+  with certain tameness properties to be passed around and used as
+  functions.
+
+  ``Tameness'' imposes strict rules on how functional arguments are
+  used.  We'll discuss it further below but tame functions are
+  recognized by the :logic mode function tamep-functionp and the
+  paper gives explanatory details.
+
+  The fundamental question raised by apply$ is ``How can apply$ know
+  the correspondence between an ordinary ACL2 object, like a symbol
+  or a list, and the ACL2 function the user means to apply?'' The
+  definition of apply$ builds in about 800 ACL2 primitives, so that
+  for example:
+
+    (apply$ 'car (list a)) = (car a)
+
+  and
+
+    (apply$ 'assoc-equal (list a b)) = (assoc-equal a b).
+
+  But user-defined functions are problematic because once apply$ has
+  been defined in the ACL2 sources it cannot be extended to handle
+  new symbols.
+
+  Intuitively, if you have defined the n-ary function foo then you
+  would expect (apply$ 'foo (list a1...an)) to be (foo a1...an).  One
+  way to arrange that might be to leave apply$ undefined on the
+  symbol foo but to assume, as by an axiom or hypothesis,
+
+    forall a1...an : (apply$ 'foo (list a1...an)) = (foo a1...an).
+
+  It will turn out that using new axioms for this purpose is a bad
+  idea.  Hiding the link between apply$ and new symbols in axioms
+  raises a problem with ACL2's notion of [local].  We illustrate this
+  problem later in this doc topic.  But for that reason, the
+  suppositions extending apply$ will take the form of hypotheses to
+  be added to conjectures in which the behavior of apply$ on new
+  symbols is important.  These hypotheses are called ``warrants.''
+
+  Warrant (Merriam-Webster): (noun) a commission or document giving
+  authority to do something....
+
+  In our case, a warrant for foo gives apply$ permission to apply foo.
+
+  But there is a fundamental logical problem: it is not always possible
+  to satisfy such suppositions. There may be no way that apply$ could
+  handle foo.  An example of a foo for which that hypothesis is
+  unsatisfiable is
+
+    (defun foo (x y) (not (apply$ x (list y y)))).
+
+  This definition of foo is not recursive: it does not call itself.  So
+  this definition is admissible.  But if we had a warrant for apply$
+  and that warrant were as simple as
+
+    (apply$ 'foo (list x y)) = (foo x y)
+
+  then we would have this classical problem with self-reference:
+
+    (foo 'foo 'foo)
+    =                                      {def foo}
+    (not (apply$ 'foo (list 'foo 'foo)))
+    =                                      {warrant foo}
+    (not (foo 'foo 'foo))
+
+  which is contradictory.
+
+  This problem is addressed by introducing the notion of ``tameness.''
+  Tameness is a syntactic property of terms and functions that
+  implies that it is ok to ``extend'' apply$ to handle them.
+
+  It should be pretty clear that if the user defines an ACL2 function
+  that in no way depends on apply$, e.g., a function like:
+
+    (defun sq (x) (* x x))
+
+  then the hypothesis
+
+    forall x : (apply$ 'sq (list x)) = (sq x)
+
+  is satisfiable: we could have introduced sq before apply$ and then
+  defined apply$ in the first place to handle that particular symbol.
+
+  Sq is a particularly simple example of a tame function.  One
+  challenge in this work has been to extend the notion of tameness so
+  that it includes a lot of what a normal ACL2 programmer might want
+  in apply$ while maintaining the soundness of the resulting theory.
+
+  For example, consider the following function, which maps a given
+  function over a list and collects the results.
+
+    (defun collect (lst fn)
+      (if (endp lst)
+          nil
+          (cons (apply$ fn (list (car lst)))
+                (collect (cdr lst) fn))))
+
+  Our definition of tameness considers (collect lst 'sq) to be a tame
+  expression, even though collect calls apply$.  The reason we can
+  allow this is that in this particular call of collect the function
+  to be applied is itself tame.  But if (collect lst 'sq) is a tame
+  expression, then '(lambda (lst) (collect lst 'sq)) is a tame
+  function and thus
+
+    (collect z '(lambda (lst) (collect lst 'sq)))
+
+  is a tame expression.  So, for example, at the top-level of ACL2 one
+  can do this:
+
+    ACL2 !>(collect '((1 2 3) (4 5 6) (7 8 9))
+                    '(lambda (lst) (collect lst 'sq)))
+    ((1 4 9) (16 25 36) (49 64 81))
+
+  Of course, this presumes we have defined sq and collect and have
+  analyzed them to make sure they have the appropriate tameness
+  properties.  (Note that collect is not tame, but the way it uses
+  its ``functional'' argument is crucial to the tameness of (collect
+  lst 'sq).)  To use apply$ to full advantage we need to analyze
+  every relevant function definition, which has the side-effect of
+  producing warrants for those functions.  We therefore have
+  introduced the new command defun$, which is just an ordinary
+  [defun] followed by a [def-warrant] command which analyzes
+  definitions and sometimes produces warrants.
+
+  We explain further via an annotated example, starting from scratch
+  but from the basic background just sketched.  For many additional
+  examples, see [community-books] books/projects/apply/report.lisp
+  which is a certified book containing the examples in the paper.
+
+  Note carefully: the directory books/projects/apply-model/, mentioned
+  earlier in conjunction with the paper, is different from the
+  directory books/projects/apply/ just mentioned!  The former
+  directory concerns the logical foundations of apply$.  The latter
+  is more directly relevant to ACL2 users and provides useful lemmas
+  about apply$ and many example theorems.
+
+  To get started, define two ordinary ACL2 functions, one that squares
+  its argument and the other that reverses its argument.
+
+    (defun sq (x) (* x x))
+
+    (defun rev (x)
+      (if (endp x)
+          nil
+          (append (rev (cdr x)) (list (car x)))))
+
+  Lesson 0: Learn about apply$ by reading this tutorial introduction.
+  But this tutorial mentions many undefined concepts: tameness,
+  warrants, badges, ilks.  Because these concepts are intertwined
+  with apply$ and warrants through mutual recursion, constraints,
+  rewrite rules, etc., we decided not to document each individually
+  and instead to define them all in the documentation for [apply$].
+  So please tolerate the use of undefined words here --- we'll try to
+  give you a sense of what they mean --- and remember to read the
+  documentation of [apply$] carefully when you're ready to use apply$
+  in your own projects.
+
+  Lesson 1: To use apply$, be sure to include the following book of
+  lemmas.  These lemmas are important not just to proving theorems
+  about apply$ but to defining functions that use apply$.
+
+    (include-book \"projects/apply/apply-lemmas\" :dir :system)
+
+  Lesson 2: To allow a function symbol to be passed to apply$ the
+  function must be ``warranted.'' Actually, of course, you can pass
+  anything to apply$: ACL2 is untyped and all functions are total!
+  But apply$ won't work as you expect if the argument to apply$ is
+  not warranted!  To issue warrants for sq and rev do:
+
+    (def-warrant sq)
+
+    (def-warrant rev)
+
+  [Def-warrant] checks that its argument, fn, is a defined function
+  symbol that satisfies our syntactic notion of tameness.
+  Def-warrant causes an error if fn is not tame.  But if def-warrant
+  does not cause an error it produces a ``badge'' for fn that
+  describes which formals are treated as ``functions.'' Henceforth,
+  we'll say such formals are ``functional'' even though they take on
+  ordinary (first order) objects as their values.  In addition to
+  computing a badge, non-erroneous calls of def-warrant may produce a
+  ``warrant'' for fn that specifies the conditions under which apply$
+  ``works'' on the function symbol fn.
+
+  Lesson 3: We'll say more about tameness, badges, and warrants later.
+  But you might as well learn two major limitations now: (i)
+  Functions that use stobjs or STATE are not tame!  Sorry!  (ii)
+  Functions that return multiple values can be tame but not
+  warranted: tameness means they follow our syntactic rules on the
+  use of functional arguments but the absence of a warrant means they
+  cannot be applied with apply$.  The reason they cannot be applied
+  is that apply$ returns one result and so it is impossible for it to
+  return multiple values.
+
+  Lesson 4: If you want to define a function and immediately call
+  def-warrant on it you can use the handy macro defun$.  We'll use
+  defun$ freely below.
+
+  Lesson 5: You can define functions that take (tame) ``functions'' as
+  arguments and apply them.  Here is a function that applies its
+  second argument to every element of its first argument and collects
+  the results.  We call functions like collect ``mapping'' functions
+  because they map over some range applying some functional argument.
+
+    (defun$ collect (lst fn)
+      (if (endp lst)
+          nil
+          (cons (apply$ fn (list (car lst)))
+                (collect (cdr lst) fn))))
+
+  Note: We define collect with defun$ simply because we might be in the
+  habit now of using defun$.  Unless we mean to pass collect to
+  apply$ or to some mapping function in the future, there is no
+  reason to have a warrant for collect.  Had we defined collect with
+  the ordinary defun and realized later that we want to pass collect
+  as a functional argument, we could get a warrant for collect by
+  calling (def-warrant collect).
+
+  Here's another useful mapping function:
+
+    (defun$ all (lst fn)
+      (if (endp lst)
+          t
+          (and (apply$ fn (list (car lst)))
+               (all (cdr lst) fn))))
+
+  It checks that every element of lst satisfies its functional argument
+  fn.
+
+  Lesson 6: You can run mapping functions on warranted function
+  symbols:
+
+    ACL2 !>(collect '(1 -2 3 -4) 'sq)
+    (1 4 9 16)
+
+    ACL2 !>(collect '((1 2 3) (4 5 6) (7 8 9)) 'rev)
+    ((3 2 1) (6 5 4) (9 8 7))
+
+  Lesson 7: You can run mapping functions on (tame) lambda expressions
+  --- but those lambda expressions have to be fully translated, e.g.,
+  they cannot use macros like + or cond and must quote all constants.
+  See [term].
+
+    ACL2 !>(collect '(1 -2 3 -4)
+                    '(lambda (x)
+                       (if (< x '0) (binary-* '10 x) (sq x))))
+    (1 -20 9 -40)
+
+  Lesson 8: Almost all ACL2 primitives are known to apply$.  For a
+  complete list of the built-ins, see the definition of ``apply$
+  built-ins'' in the documentation for [apply$].  You can freely use
+  these ACL2 primitives in your lambda expressions.
+
+  Lesson 9: You can prove and use theorems about mapping functions.
+
+    (defthm collect-append
+      (equal (collect (append a b) fn)
+             (append (collect a fn)
+                     (collect b fn))))
+
+    (thm (equal (collect (append c d) '(lambda (x) (sq (sq x))))
+                (append (collect c '(lambda (x) (sq (sq x))))
+                        (collect d '(lambda (x) (sq (sq x)))))))
+
+  Notice that the lemma collect-append talks about an arbitrary fn.  It
+  simply doesn't matter what apply$ does for this theorem to hold.
+  Once collect-append has been proved can be instantiated with
+  anything for fn.  This is demonstrated when the thm above is
+  proved: the proof is just to rewrite with collect-append.
+
+  Lesson 10: But when your theorems depend on the behavior of apply$ on
+  particular user-defined functions, you will need to provide
+  hypotheses stipulating the behavior of apply$ on those values.
+  Those hypotheses are the warrants for the function symbols
+  involved.  Here is an example: If lst is a list of integers and we
+  square every element by mapping over it with sq then the result is
+  a list of naturals --- but this theorem depends on the fact that
+  (apply$ 'sq (list x)) is (sq x), which is what the warrant for sq
+  tells us.  Thus, the warrant for sq is required as a hypothesis!
+
+    (defthm all-natp-collect-sq
+      (implies (and (warrant sq)
+                    (all lst 'integerp))
+               (all (collect lst 'sq) 'natp)))
+
+  Note that this theorem uses the mapping function all to express the
+  ideas of ``list of integers'' and ``list of naturals.'' Note also
+  that we don't need to provide warrants for integerp or natp because
+  they are ACL2 primitives and thus built into the behavior of
+  apply$.
+
+  Lesson 11: Warrants solve ``the LOCAL problem.'' Imagine the trouble
+  we'd be in if the theorem above did not require a warrant on sq.
+  We could get away with this:
+
+    (encapsulate nil
+      (local (defun sq (x) (* x x)))
+      (defthm unwarranted-all-natp-collect-sq
+        (implies (all lst 'integerp)
+                 (all (collect lst 'sq) 'natp))))
+
+    (defun sq (x) (* x x x))
+
+    (thm (implies (all lst 'integerp)
+                  (all (collect lst 'sq) 'natp)))
+
+  This would be a disaster because the final thm is invalid since (sq
+  -2) here is -8 and yet the thm is trivially proved by appealing to
+  the unwarranted theorem exported from the encapsulate.
+
+  If we could prove the unwarranted theorem we could export it because
+  it does not mention or depend on the function sq, it just mentions
+  the constant 'sq.  Fortunately, we cannot actually prove the
+  unwarranted version of the theorem because there is no a priori
+  connection between (apply$ 'sq (list x)) and (sq x).  And if we add
+  the warrant for sq to the defthm in the encapsulate we can prove
+  the theorem but we cannot export it because the warrant ancestrally
+  depends on locally defined function sq.
+
+  Lesson 12: While we may have given the impression that we've provided
+  a convenient fragment of second-order functionality in ACL2 its
+  limitations will annoy you!  For example, when ACL2 tries to use
+  the lemma
+
+    (defthm all-natp-collect-sq
+      (implies (and (warrant sq)
+                    (all lst 'integerp))
+               (all (collect lst 'sq) 'natp)))
+
+  it just employs its usual first-order matching algorithm.  Thus, the
+  lemma won't apply to
+
+    (all (collect lst '(lambda (x) (binary-* x x))) 'natp)
+
+  because the constant symbol 'sq is not the same as the constant list
+  '(lambda (x) (binary-* x x)) even though they are equivalent if
+  understood as functions.  See the discussion at [fn-equal].
+
+  Perhaps an even more common frustration is that
+
+    (all (collect lst '(lambda (x) (* x x))) 'natp)
+
+  doesn't even mean what you think it means because we accidentally
+  (but quite naturally) used the macro * inside our lambda constant.
+
+  Lesson 13: Recall Lesson 0!  Before you start to use apply$ outside
+  of this simple demo script, we advise you to read the documentation
+  for apply$.
+
+  An Advanced Lesson: We conclude this tutorial by defining one of the
+  most useful mapping functions and proving a couple of theorems
+  illustrating its flexibility: foldr.
+
+    (defun$ foldr (lst fn init)
+      (if (endp lst)
+          init
+          (apply$ fn
+                  (list (car lst)
+                        (foldr (cdr lst) fn init)))))
+
+  Note that foldr maps over the list in its first argument, applying
+  its second argument to two things: successive elements of the list
+  and the result of recursively calling itself on the rest of the
+  list.  It returns its third argument when the list is empty.
+
+  When its functional argument is cons foldr is just the concatenation
+  of its other two arguments:
+
+    (defthm foldr-cons
+      (equal (foldr x 'cons y)
+             (append x y)))
+
+  We do not need a warrant for cons because it is built into apply$.
+  In fact, the built-ins don't have warrants.
+
+  By supplying a certain lambda expression we can use foldr to reverse
+  its first argument:
+
+    (defthm foldr-can-be-rev
+      (implies (warrant foldr)
+               (equal (foldr x
+                             '(lambda (x y)
+                                (foldr y 'cons (cons x 'nil)))
+                             nil)
+                      (rev x))))
+
+  Note that the lambda expression calls foldr.  Because of this, we
+  must provide the warrant for foldr since that inner foldr will be
+  applied by the outer foldr.  This illustrates an important point:
+  mapping functions can apply other mapping functions, including
+  themselves, as long as the applications are tame.")
  (INTRODUCTION-TO-HINTS
   (INTRODUCTION-TO-THE-THEOREM-PROVER)
   "How to provide hints to the theorem prover
@@ -54051,10 +55092,17 @@ Subtopics
 
     General Form:  (make-wormhole-status whs code data)
 
-  See [wormhole].  Whs should be a well-formed wormhole status, code
-  should be :ENTER or :SKIP, and data is arbitrary.  This function
-  returns a new status with the specified entry code and data,
-  reusing whs if it is appropriate.")
+  See [wormhole].  Whs is generally a well-formed wormhole status (but
+  see below), code should be :ENTER or :SKIP, and data is arbitrary.
+  This function returns a new status with the specified entry code
+  and data.  The result does not logically depend on whs, but if the
+  wormhole status corresponding to the given code and data is equal
+  to whs, then whs is returned, which will save a cons.
+
+  Warning: if data is large then the equality test can be slow.  That
+  problem is avoided by passing whs = nil.  For an example of this
+  use of nil in the ACL2 source code, see source function
+  save-ev-fncall-guard-er.")
  (MAKING-SYSTEM-CHANGES
   (SYSTEM-DEVELOPMENT)
   "Guidelines for modifying ACL2 source code
@@ -76718,7 +77766,7 @@ Experimental Versions
   which he observed is necessary for some ACL2(r) proofs.")
  (NOTE-8-0
   (RELEASE-NOTES)
-  "ACL2 Version 8.0 (xxx, 20xx) Notes
+  "ACL2 Version 8.0 (December, 2017) Notes
 
   NOTE!  New users can ignore these release notes, because the
   [documentation] has been updated to reflect all changes that are
@@ -76735,8 +77783,8 @@ Experimental Versions
   [note-8-0-books] for a summary of changes made to the ACL2
   Community Books since ACL2 7.4, including the build system.  Also
   note that with each release, some built-in functions that were
-  formerly in :[program] mode are now see guard-verified :[logic]
-  mode functions.
+  formerly in :[program] mode are now [guard]-verified :[logic] mode
+  functions.
 
 
 Changes to Existing Features
@@ -76941,9 +77989,9 @@ New Features
   print-object$, respectively.  The function read-object-with-case
   lets you specify that case is preserved, inverted, or converted to
   lower case or (as with read-object) to upper case.  The function
-  print-object$-preserving-case) prints symbols without escaping them
+  print-object$-preserving-case prints symbols without escaping them
   for case; for example, the symbol in the current package with name
-  @('\"abc\" is printed as abc, not as |abc| as would be printed by
+  \"abc\" is printed as abc, not as |abc| as would be printed by
   print-object$.  See [io].
 
   New macro with-output! is the same as [with-output] except for two
@@ -77185,6 +78233,12 @@ Changes at the System Level
   aware of the problem, and we are hoping for a fix before the next
   ACL2 release
 
+  The [state] global variables, serialize-character-system and
+  serialize-character, are now preserved after [make-event]
+  expansion.  This change for serialize-character-system allows the
+  use of make-event to avoid a stack overflow when writing out a
+  [certificate] file; see [set-serialize-character-system].
+
 
 EMACS Support
 
@@ -77250,6 +78304,166 @@ Experimental Versions
   Fixed an infinite loop that could be caused with parallelism enabled
   when there is an error, when Lisp variable *hard-error-is-error*
   has been set to a non-nil value in raw Lisp (see [hard-error]).")
+ (NOTE-8-1
+  (RELEASE-NOTES)
+  "ACL2 Version 8.1 (xxx, 20xx) Notes
+
+  NOTE!  New users can ignore these release notes, because the
+  [documentation] has been updated to reflect all changes that are
+  recorded here.
+
+  Below we roughly organize the changes to ACL2 since Version 8.0 into
+  the following categories of changes: existing features, new
+  features, heuristic and efficiency improvements, bug fixes, changes
+  at the system level, Emacs support, and experimental versions.
+  Each change is described in just one category, though of course
+  many changes could be placed in more than one category.
+
+  Note that only ACL2 system changes are listed below.  See also
+  note-8-1-books for a summary of changes made to the ACL2 Community
+  Books since ACL2 8.0, including the build system.  Also note that
+  with each release, some built-in functions that were formerly in
+  :[program] mode are now see guard-verified :[logic] mode functions.
+
+
+Changes to Existing Features
+
+  The evaluation of [table] guards now allows attachments.  This is
+  important for the implementation of [apply$] (see below).
+
+  A new keyword argument for [defun-sk], :constrain, can specify that
+  the newly-introduced function is constrained rather than defined.
+  See [defun-sk].  Note that by constraining the function we make it
+  possible to attach to it, and also to introduce it as a
+  [guard]-verified function.  We also made a minor change to
+  defun-sk, by moving the call of [extend-pe-table] out of the
+  generated [encapsulate] form.
+
+  (Of interest only to users of [apply$].)  When invoking [def-warrant]
+  or [defun$], a so-called `[warrant]' is introduced.  Warrants are
+  now always [guard]-verified, with a guard of t.  Moreover, warrants
+  are now executable in the top-level loop; for example, after
+  successfully processing (def-warrant foo) or (defun$ foo ...),
+  (warrant foo) will evaluate to t in the loop.  (Note: each warrant
+  has an attachment, true-apply$-warrant, that always returns t; see
+  [defattach].)  Thanks to Dmitry Nadezhin for requesting these
+  enhancements.
+
+  It is now required to include the system book
+  projects/apply/apply-lemmas.lisp before evaluating a call of defun$
+  or [def-warrant].  This requirement, which is enforced with an
+  error that prints the necessary [include-book] form, avoids stack
+  overflows that could occur when that book is not included.
+
+  When performing [make-event] expansion under a surrounding [local]
+  context, it is no longer illegal to set the [ACL2-defaults-table].
+  For example, the following event formerly caused an error but is
+  now legal.
+
+    (local (make-event (er-progn (set-ignore-ok t)
+                                 (defun foo (x) x)
+                                 (value `(value-triple ,(length (w state)))))))
+
+  Information printed when giving :use [hints] has been improved for
+  the case that a [lemma-instance] is a :[termination-theorem] or a
+  :[guard-theorem].  Formerly, only the name was shown in the
+  `Hint-events' summary and in the proof output; now, one will see
+  ``names'' of the form (:termination-theorem NAME) and
+  (:guard-theorem NAME).
+
+  We improved redundancy checking for [defun] forms so that it is not
+  sensitive to whether [state] has a :stobj declaration.
+
+
+New Features
+
+
+Heuristic and Efficiency Improvements
+
+  The implementation of [wormhole]s has been tweaked to avoid an
+  efficiency problem.  In the old implementation, an update to the
+  wormhole status was avoided in the case of equal old and new status
+  values.  That update avoided some consing, but the equality test
+  could be very slow; indeed, :[print-gv] could be slow because of
+  its use of wormholes.  The new wormhole implementation ---
+  specifically, the new raw Lisp implementation of [wormhole-eval]
+  --- avoids that equality test, and also can avoid consing by its
+  use of destructive operations.  That fixes one reason :print-gv
+  could be slow; a second change, made to the implementation of
+  :print-gv, is to pass nil as the wormhole-status (whs) argument of
+  make-wormhole-status.  See [make-wormhole-status] for a discussion
+  of how that use of nil can avoid an expensive equality test.
+  Thanks to Alessandro Coglio and Eric Smith for sending an example
+  that illustrated the problem.
+
+  The following improvements have been made for evaluating calls of the
+  form (apply$ (lambda ...) ...).
+
+    * An optimization had failed to be fully in place, causing such calls
+      to run slowly.  That optimization compiles and caches ``tame
+      compliant'' lambdas: lambda forms whose [guard]s are verified
+      by the [tau-system] and that are tame (see [apply$]).  The
+      optimization had been used in the unadvertised use of ``The
+      Rubric'' prior to the release of ACL2 Version 8.0.
+    * The optimization above has been improved so that instead of three
+      cache lines, there is an efficient implementation using 1000
+      cache lines.  That is probably many more than are needed, but
+      the large size is harmless.  The additional cache lines
+      dramatically improve speed when more than three lambdas are
+      actively being applied; see [community-books] file
+      books/system/tests/apply-timings.lisp.
+    * ACL2 no longer causes an error when the cache is in an inconsistent
+      state; instead, the cache is suitably reset quietly.
+
+
+Bug Fixes
+
+  Fixed two bugs in [apply$]: we now [disable] the
+  [executable-counterpart] of good-bye-fn to prevent quitting ACL2
+  entirely during a proof, and we avoid the error ``ACL2 cannot ev
+  the call of non-executable function ANCESTORS-CHECK...'' by
+  allowing attachments to be used when checking table guards (as
+  discussed above).  Thanks to Dmitry Nadezhin for sending relayable
+  examples that exhibited these bugs.
+
+  Fixed [guard]s for functions [enabled-runep], [enabled-numep],
+  disabledp-fn, and disabledp-fn-lst, thus eliminating bogus guard
+  violations.  Thanks to Alessandro Coglio and Eric Smith for sending
+  an example that illustrated the bug for enabled-runep.  Technical
+  note: this fix was made by replacing calls of bounded-nat-alistp
+  (which is no longer defined) by calls of nat-alistp (which is newly
+  defined).  We also made corresponding tweak to the definition of
+  enabled-numep.
+
+  Warnings labeled with ``Double-rewrite'' failed to take into account
+  patterned [congruence] rules.  This has been fixed.  Thanks to
+  Mihir Mehta for pointing out the problem with a helpful example.
+
+
+Changes at the System Level
+
+  Fixed the use of `<a href='URL'>...</a>' so that if URL has the
+  ampersand character in it, all will be well for both the web-based
+  manual and text-based rendering (as when :[doc] is used at the
+  terminal or [ACL2-doc] is used) provided that character is written
+  as &amp; in the documentation string.  Previously, the web-based
+  manual could fail to display the page for & in the documentation
+  string, while with &amp; used, the web-based manual could display
+  the page but the text-based rendering showed &amp; instead of
+  simply &.  Thanks to Cuong Chau for pointing out that the topic
+  [double-rewrite] was not being displayed in the online manual (back
+  when & was used in the URL in the documentation string).
+
+  The \"clean\" target of \"make\" has been deprecated since ACl2 Version
+  7.4 (released in March, 2017). Its replacement is target
+  \"clean-lite\"; or, use target \"clean-all\" (or equivalently,
+  \"distclean\") if you want a more thorough cleaning.
+
+
+EMACS Support
+
+
+Experimental Versions")
  (NOTE1 (POINTERS) "See [note-1-1].")
  (NOTE2 (POINTERS) "See [note-1-2].")
  (NOTE3 (POINTERS) "See [note-1-3].")
@@ -81383,6 +82597,9 @@ Subtopics
   [Backtrack]
       See [hints] for information about the keyword :backtrack.
 
+  [Badge]
+      See [apply$].
+
   [Body]
       See [system-utilities].
 
@@ -83967,6 +85184,9 @@ Subtopics
 
   [Alists]
       Operations on association lists, which bind keys to values.
+
+  [Apply$]
+      Apply an authorized function or tame lambda to arguments
 
   [Arrays]
       ACL2 arrays and operations on them
@@ -89552,6 +90772,11 @@ Subtopics
    4. If either the old or new event is a [mutual-recursion] event, then
       redundancy requires that both are [mutual-recursion] events
       that define the same set of function symbols.
+   5. The [stobj]s declared by the two definitions are allowed to disagree
+      on state: one can declare state among its declared :stobj
+      values while the other does not, regardless of whether or not
+      [set-state-ok] has been evaluated.  That is, they only need to
+      agree on the user-defined stobjs.
 
   An [encapsulate] event is most commonly redundant when a
   syntactically identical [encapsulate] has already been executed
@@ -89614,8 +90839,8 @@ Subtopics
   Note About Appropriate Modes:
 
   Suppose a function is being redefined and that the formals, guards,
-  types, stobjs, and bodies are identical.  When are the modes
-  (:[program] or :[logic]) ``appropriate?'' Identical modes are
+  types, user-defined stobjs, and bodies are identical.  When are the
+  modes (:[program] or :[logic]) ``appropriate?'' Identical modes are
   appropriate.  But what if the old mode was :program and the new
   mode is :logic?  This is appropriate, provided the definition meets
   the requirements of the logical definitional principle.  That is,
@@ -90109,7 +91334,10 @@ Subtopics
       ACL2 Version 7.4 (March, 2017) Notes
 
   [Note-8-0]
-      ACL2 Version 8.0 (xxx, 20xx) Notes")
+      ACL2 Version 8.0 (December, 2017) Notes
+
+  [Note-8-1]
+      ACL2 Version 8.1 (xxx, 20xx) Notes")
  (REM
   (NUMBERS ACL2-BUILT-INS)
   "Remainder using [truncate]
@@ -97160,6 +98388,12 @@ Subtopics
     make basic \\
     ACL2_CUSTOMIZATION=`pwd`/../acl2-customization-files/no-serialize.lisp
 
+  Alternatively, you can put the following form directly into the book:
+
+    (make-event
+     (pprogn (set-serialize-character-system nil state)
+             (value '(value-triple nil))))
+
   To control the use of [serialize] for writes controlled by the user
   rather than by the system, see [with-serialize-character].")
  (SET-SKIP-META-TERMP-CHECKS
@@ -103261,9 +104495,10 @@ Subtopics
   term that must be true of any key and value used.  By setting the
   :guard on a table you may enforce an invariant on the objects in
   the table, e.g., that all keys are positive integers and all values
-  are symbols.  Each table has a ``name,'' which must be a symbol.
-  Given a table name, the following operations can be performed on
-  the table.
+  are symbols.  Note that attachments are allowed when evaluating a
+  table guard (see [defattach]).  Each table has a ``name,'' which
+  must be a symbol.  Given a table name, the following operations can
+  be performed on the table.
 
   :put --- associate a value with a key (possibly changing the value
   currently associated with that key).
@@ -113808,7 +115043,7 @@ Subtopics
   (VERIFY-TERMINATION)
   "Permit [verify-termination] for functions with raw Lisp code.
 
-  By default, it is not permitted to  verify termination (see
+  By default, it is not permitted to verify termination (see
   [VERIFY-TERMINATION]) for functions with raw Lisp code.  (Technical
   note: With sufficient effort this restriction could perhaps be
   lifted, but that would involve significant modification to the ACL2
@@ -113823,6 +115058,8 @@ Subtopics
 
     (defttag t)
     (remove-untouchable verify-termination-on-raw-program-okp nil)
+    ; In the following, t can be replaced by an expression that evaluates to a
+    ; list of symbols for which it is permitted to verify termination.
     (assign verify-termination-on-raw-program-okp t)")
  (VERSION
   (ABOUT-ACL2)
@@ -114034,6 +115271,50 @@ Subtopics
   The prover can emit many warnings when processing [events].  See
   [set-inhibit-warnings] and see [set-inhibit-output-lst] for how to
   disable and enable them.")
+ (WARRANT
+  (APPLY$)
+  "Giving [apply$] permission to call a user-defined function
+
+  The word ``warrant'' is defined in the Merriam-Webster dictionary as
+  ``a commission or document giving authority to do something....''
+
+  In ACL2, a warrant for a defined function, fn, is a term that
+  effectively defines the behavior of the functions badge and
+  [apply$] when they are applied to the symbol naming the function
+  fn. That is, our warrants give badge and apply$ permission to
+  operate on fn.  A warrant for fn can only be issued if the
+  definition of fn satisfies certain properties; not every function
+  can be warranted.
+
+  To understand what an ACL2 ``warrant'' is see the definition of
+  ``warrant'' and the many interrelated concepts in the documentation
+  for [apply$].
+
+  To generate a warrant function (if possible) for a given defined
+  function, see [def-warrant].  The warrant for fn is the term
+  (APPLY$-WARRANT-fn), i.e., a call of the 0-ary warrant function,
+  APPLY$-WARRANT-fn.  If def-warrant approves of the definition of fn
+  it defines the warrant function for fn.  Def-warrant also proves
+  rewrite rules that characterize the behavior of (badge 'fn) and of
+  (apply$ 'fn args), the latter rule being conditional on certain
+  elements of args being tame, and both rules forcing (see [force])
+  the warrant.  See [def-warrant].
+
+  Because ``APPLY$-WARRANT-fn'' is hard to remember, we provide a macro
+  for referring to the conjunction of warrant terms for a list of
+  functions.
+
+      General Form:
+      (warrant fn1 fn2 ... fnk)
+
+    where each fni is the name of a defined function on which def-warrant
+    has been previously called and succeeded.  (Warrant fn1 fn2 ...
+    fnk) expands to:
+
+      (AND (APPLY$-WARRANT-fn1)
+           (APPLY$-WARRANT-fn2)
+           ...
+           (APPLY$-WARRANT-fnk))")
  (WATERFALL (POINTERS)
             "See [hints-and-the-waterfall].")
  (WATERFALL-PARALLELISM
