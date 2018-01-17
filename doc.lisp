@@ -78396,12 +78396,24 @@ Heuristic and Efficiency Improvements
   Thanks to Alessandro Coglio and Eric Smith for sending an example
   that illustrated the problem.
 
-  Calls of the form (apply$ (lambda ...) ...) were running slowly
-  because an optimization failed to be installed during the ACL2
-  build.  That optimization is now in place.  (The optimization,
-  which compiles and caches ``tame compliant'' lambdas, had been used
-  in the unadvertised use of ``The Rubric'' prior to the release of
-  ACL2 Version 8.0.)
+  The following improvements have been made for evaluating calls of the
+  form (apply$ (lambda ...) ...).
+
+    * An optimization had failed to be fully in place, causing such calls
+      to run slowly.  That optimization compiles and caches ``tame
+      compliant'' lambdas: lambda forms whose [guard]s are verified
+      by the [tau-system] and that are tame (see [apply$]).  The
+      optimization had been used in the unadvertised use of ``The
+      Rubric'' prior to the release of ACL2 Version 8.0.
+    * The optimization above has been improved so that instead of three
+      cache lines, there is an efficient implementation using 1000
+      cache lines.  That is probably many more than are needed, but
+      the large size is harmless.  The additional cache lines
+      dramatically improve speed when more than three lambdas are
+      actively being applied; see [community-books] file
+      books/system/tests/apply-timings.lisp.
+    * ACL2 no longer causes an error when the cache is in an inconsistent
+      state; instead, the cache is suitably reset quietly.
 
 
 Bug Fixes
