@@ -12322,6 +12322,9 @@ Subtopics
   [Certify-book]
       How to produce a [certificate] for a book
 
+  [Certify-book-debug]
+      Some possible ways to work around [certify-book] failures
+
   [Delete-include-book-dir]
       Unlink keyword for :dir argument of [ld] and [include-book]
 
@@ -14668,7 +14671,9 @@ Subtopics
   Also see [certificate] for information about the \".cert\" file
   produced by certify-book, in particular for information about the
   use of [book-hash] values to help ensure that the corresponding
-  book has not been modified since certification.
+  book has not been modified since certification.  See
+  [certify-book-debug] for some potential remedies for failures of
+  certify-book.
 
     Examples:
     (certify-book \"my-arith\")          ; certify in a world with 0 commands
@@ -14910,7 +14915,10 @@ Subtopics
 Subtopics
 
   [Certify-book!]
-      A variant of [certify-book]")
+      A variant of [certify-book]
+
+  [Certify-book-debug]
+      Some possible ways to work around [certify-book] failures")
  (CERTIFY-BOOK!
   (CERTIFY-BOOK)
   "A variant of [certify-book]
@@ -14933,6 +14941,40 @@ Subtopics
   argument k may not be t in certify-book! and if k exceeds the
   current [command] number, then an appropriate [ubt!] will be
   executed first.  See [certify-book] and see [ubt!].")
+ (CERTIFY-BOOK-DEBUG
+  (CERTIFY-BOOK BOOKS-REFERENCE)
+  "Some possible ways to work around [certify-book] failures
+
+  This topic provides some ideas for how to deal with [certify-book]
+  failures.  Ideally, this topic will continue to grow over time.
+
+  Stack overflows may show up as follows.
+
+    ***********************************************
+    ************ ABORTING from raw Lisp ***********
+    ********** (see :DOC raw-lisp-error) **********
+    Error:  Stack overflow on value stack.
+    ***********************************************
+
+  When this occurs during book certification, it could be during an
+  attempt to handle large objects, in particular by the [serialize]
+  writer or by a [memoize]d version of the check for ``bad'' objects.
+  These two potential causes can be remedied by first evaluating the
+  following forms, respectively.
+
+    (set-serialize-character-system nil)
+    (set-bad-lisp-consp-memoize nil)
+
+  If the large object is in an event in the book under certification,
+  then you may need to avoid printing it, as follows.
+
+    (set-inhibit-output-lst '(proof-tree event))
+
+  Other failures of certify-book may have error messages that point to
+  the problem.  When that is not the case, it would be good to
+  explain possible workarounds in this topic!")
+ (CERTIFY-BOOK-FAILURE (POINTERS)
+                       "See [certify-book-debug].")
  (CERTIFYING-BOOKS (POINTERS)
                    "See [books-certification].")
  (CHANGE
@@ -82611,6 +82653,9 @@ Subtopics
 
   [Cases]
       See [hints] for information about the keyword :cases.
+
+  [Certify-book-failure]
+      See [certify-book-debug].
 
   [Certifying-books]
       See [books-certification].
