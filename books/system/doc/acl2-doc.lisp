@@ -79908,6 +79908,11 @@ it."
  patterned @(see congruence) rules.  This has been fixed.  Thanks to Mihir
  Mehta for pointing out the problem with a helpful example.</p>
 
+ <p>It is now possible, once again, to @(see monitor) rules of class
+ @(':')@(tsee linear).  This capability has (accidentally) been unavailable
+ since Version 7.4.  Thanks to Dmitry Nadezhin for reporting the bug with a
+ helpful example.</p>
+
  <h3>Changes at the System Level</h3>
 
  <p>Fixed the use of `@('<a href='URL'>...</a>')' so that if @('URL') has the
