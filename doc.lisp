@@ -78481,6 +78481,11 @@ Bug Fixes
   patterned [congruence] rules.  This has been fixed.  Thanks to
   Mihir Mehta for pointing out the problem with a helpful example.
 
+  It is now possible, once again, to [monitor] rules of class
+  :[linear].  This capability has (accidentally) been unavailable
+  since Version 7.4.  Thanks to Dmitry Nadezhin for reporting the bug
+  with a helpful example.
+
 
 Changes at the System Level
 
