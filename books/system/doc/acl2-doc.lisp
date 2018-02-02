@@ -40129,11 +40129,11 @@ tables in the current Hons Space."
         t))
  })
 
- <p>Observe that this function recursively decomposes its integer argument by
- subtracting @('2') from it repeatedly and stops when the argument is @('1') or
- less.  The value of the function is irrelevant; it is its induction scheme
- that concerns us.  The induction scheme suggested by @('(recursion-by-sub2
- i)') is</p>
+ <p>Observe that this function recursively decomposes its natural number
+ argument by subtracting @('2') from it repeatedly and stops when the argument
+ is @('1') or less.  The value of the function is irrelevant; it is its
+ induction scheme that concerns us.  The induction scheme suggested by
+ @('(recursion-by-sub2 i)') is</p>
 
  @({
   (and (implies (not (and (integerp i) (< 1 i)))   ; base case
@@ -40144,11 +40144,12 @@ tables in the current Hons Space."
  })
 
  <p>We can think of the base case as covering two situations.  The first is
- when @('i') is not an integer.  The second is when the integer @('i') is
- @('0') or @('1').  In the base case we must prove @('(:p i)') without further
- help.  The induction step deals with those integer @('i') greater than @('1'),
- and inductively assumes the conjecture for @('i-2') while proving it for
- @('i').  Let us call this scheme ``induction on @('i') by twos.''</p>
+ when @('i') is not a natural number.  The second is when the natural number
+ @('i') is @('0') or @('1').  In the base case we must prove @('(:p i)')
+ without further help.  The induction step deals with those natural numbers
+ @('i') greater than @('1'), and inductively assumes the conjecture for
+ @('i-2') while proving it for @('i').  Let us call this scheme ``induction on
+ @('i') by twos.''</p>
 
  <p>Suppose the above @(':induction') rule has been added.  Then an occurrence
  of, say, @('(* 1/2 k)') in a conjecture to be proved by induction would
