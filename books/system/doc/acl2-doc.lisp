@@ -12145,7 +12145,9 @@ with any questions about building the community books.</p>")
   :long "<p>Also see @(see certificate) for information about the
  @('\".cert\"') file produced by @('certify-book'), in particular for
  information about the use of @(see book-hash) values to help ensure that the
- corresponding book has not been modified since certification.</p>
+ corresponding book has not been modified since certification.  See @(see
+ certify-book-debug) for some potential remedies for failures of
+ @('certify-book').</p>
 
  @({
   Examples:
@@ -12378,6 +12380,45 @@ with any questions about building the community books.</p>")
 
  <p>This completes the tour through the @(see documentation) of @(see
  books).</p>")
+
+(defxdoc certify-book-debug
+  :parents (certify-book books-reference)
+  :short "Some possible ways to work around @(tsee certify-book) failures"
+  :long "<p>This topic provides some ideas for how to deal with @(tsee
+ certify-book) failures.  Ideally, this topic will continue to grow over
+ time.</p>
+
+ <p>Stack overflows may show up as follows.</p>
+
+ @({
+ ***********************************************
+ ************ ABORTING from raw Lisp ***********
+ ********** (see :DOC raw-lisp-error) **********
+ Error:  Stack overflow on value stack.
+ ***********************************************
+ })
+
+ <p>When this occurs during book certification, it could be during an attempt
+ to handle large objects, in particular by the @(see serialize) writer or by a
+ @(see memoize)d version of the check for ``bad'' objects.  These two potential
+ causes can be remedied by first evaluating the following forms,
+ respectively.</p>
+
+ @({
+ (set-serialize-character-system nil)
+ (set-bad-lisp-consp-memoize nil)
+ })
+
+ <p>If the large object is in an event in the book under certification, then
+ you may need to avoid printing it, as follows.</p>
+
+ @({
+ (set-inhibit-output-lst '(proof-tree event))
+ })
+
+ <p>Other failures of @('certify-book') may have error messages that point to
+ the problem.  When that is not the case, it would be good to explain possible
+ workarounds in this topic!</p>")
 
 (defxdoc certify-book!
   :parents (certify-book)
@@ -18892,8 +18933,7 @@ subtree of X with T, without duplication.</p>
     :instructions instructions
     :hints hints
     :otf-flg otf-flg
-    :event-name event-name
-    :doc doc)
+    :event-name event-name)
  })
 
  <p>where @('fn') is a function symbol of arity 2, @('event-name'), if
@@ -40088,11 +40128,11 @@ tables in the current Hons Space."
         t))
  })
 
- <p>Observe that this function recursively decomposes its integer argument by
- subtracting @('2') from it repeatedly and stops when the argument is @('1') or
- less.  The value of the function is irrelevant; it is its induction scheme
- that concerns us.  The induction scheme suggested by @('(recursion-by-sub2
- i)') is</p>
+ <p>Observe that this function recursively decomposes its natural number
+ argument by subtracting @('2') from it repeatedly and stops when the argument
+ is @('1') or less.  The value of the function is irrelevant; it is its
+ induction scheme that concerns us.  The induction scheme suggested by
+ @('(recursion-by-sub2 i)') is</p>
 
  @({
   (and (implies (not (and (integerp i) (< 1 i)))   ; base case
@@ -40103,11 +40143,12 @@ tables in the current Hons Space."
  })
 
  <p>We can think of the base case as covering two situations.  The first is
- when @('i') is not an integer.  The second is when the integer @('i') is
- @('0') or @('1').  In the base case we must prove @('(:p i)') without further
- help.  The induction step deals with those integer @('i') greater than @('1'),
- and inductively assumes the conjecture for @('i-2') while proving it for
- @('i').  Let us call this scheme ``induction on @('i') by twos.''</p>
+ when @('i') is not an integer.  The second is when the integer @('i') is less
+ than or equal to @('1').  In the base case we must prove @('(:p i)') without
+ further help.  The induction step deals with those natural numbers @('i')
+ greater than @('1'), and inductively assumes the conjecture for @('i-2') while
+ proving it for @('i').  Let us call this scheme ``induction on @('i') by
+ twos.''</p>
 
  <p>Suppose the above @(':induction') rule has been added.  Then an occurrence
  of, say, @('(* 1/2 k)') in a conjecture to be proved by induction would
@@ -79867,6 +79908,16 @@ it."
  patterned @(see congruence) rules.  This has been fixed.  Thanks to Mihir
  Mehta for pointing out the problem with a helpful example.</p>
 
+ <p>It is now possible, once again, to @(see monitor) rules of class
+ @(':')@(tsee linear).  This capability has (accidentally) been unavailable
+ since Version 7.4.  Thanks to Dmitry Nadezhin for reporting the bug with a
+ helpful example.</p>
+
+ <p>For @(tsee defequiv), a @(':doc') keyword argument was allegedly (in the
+ documentation) supported but caused an ugly error.  The @(':doc') keyword
+ argument is now fully eliminated.  Thanks to Eric Smith for pointing out this
+ issue.</p>
+
  <h3>Changes at the System Level</h3>
 
  <p>Fixed the use of `@('<a href='URL'>...</a>')' so that if @('URL') has the
@@ -79887,6 +79938,10 @@ it."
  thorough cleaning.</p>
 
  <h3>EMACS Support</h3>
+
+ <p>Removed setting of the buffer coding system from @('emacs/emacs-acl2.el').
+ Thanks to Keshav Kini for suggesting this change.  This should avoid certain
+ modifications of ``unusual'' characters when saving a file.</p>
 
  <h3>Experimental Versions</h3>
 
@@ -120888,6 +120943,7 @@ expand function call at the current subterm, without simplifying"
 (defpointer book-makefiles books-certification)
 (defpointer by hints t)
 (defpointer cases hints t)
+(defpointer certify-book-failure certify-book-debug)
 (defpointer certifying-books books-certification)
 (defpointer check-invariant-risk set-check-invariant-risk)
 (defpointer close-input-channel io)

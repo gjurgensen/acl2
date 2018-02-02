@@ -12322,6 +12322,9 @@ Subtopics
   [Certify-book]
       How to produce a [certificate] for a book
 
+  [Certify-book-debug]
+      Some possible ways to work around [certify-book] failures
+
   [Delete-include-book-dir]
       Unlink keyword for :dir argument of [ld] and [include-book]
 
@@ -14668,7 +14671,9 @@ Subtopics
   Also see [certificate] for information about the \".cert\" file
   produced by certify-book, in particular for information about the
   use of [book-hash] values to help ensure that the corresponding
-  book has not been modified since certification.
+  book has not been modified since certification.  See
+  [certify-book-debug] for some potential remedies for failures of
+  certify-book.
 
     Examples:
     (certify-book \"my-arith\")          ; certify in a world with 0 commands
@@ -14910,7 +14915,10 @@ Subtopics
 Subtopics
 
   [Certify-book!]
-      A variant of [certify-book]")
+      A variant of [certify-book]
+
+  [Certify-book-debug]
+      Some possible ways to work around [certify-book] failures")
  (CERTIFY-BOOK!
   (CERTIFY-BOOK)
   "A variant of [certify-book]
@@ -14933,6 +14941,40 @@ Subtopics
   argument k may not be t in certify-book! and if k exceeds the
   current [command] number, then an appropriate [ubt!] will be
   executed first.  See [certify-book] and see [ubt!].")
+ (CERTIFY-BOOK-DEBUG
+  (CERTIFY-BOOK BOOKS-REFERENCE)
+  "Some possible ways to work around [certify-book] failures
+
+  This topic provides some ideas for how to deal with [certify-book]
+  failures.  Ideally, this topic will continue to grow over time.
+
+  Stack overflows may show up as follows.
+
+    ***********************************************
+    ************ ABORTING from raw Lisp ***********
+    ********** (see :DOC raw-lisp-error) **********
+    Error:  Stack overflow on value stack.
+    ***********************************************
+
+  When this occurs during book certification, it could be during an
+  attempt to handle large objects, in particular by the [serialize]
+  writer or by a [memoize]d version of the check for ``bad'' objects.
+  These two potential causes can be remedied by first evaluating the
+  following forms, respectively.
+
+    (set-serialize-character-system nil)
+    (set-bad-lisp-consp-memoize nil)
+
+  If the large object is in an event in the book under certification,
+  then you may need to avoid printing it, as follows.
+
+    (set-inhibit-output-lst '(proof-tree event))
+
+  Other failures of certify-book may have error messages that point to
+  the problem.  When that is not the case, it would be good to
+  explain possible workarounds in this topic!")
+ (CERTIFY-BOOK-FAILURE (POINTERS)
+                       "See [certify-book-debug].")
  (CERTIFYING-BOOKS (POINTERS)
                    "See [books-certification].")
  (CHANGE
@@ -21760,8 +21802,7 @@ Subtopics
       :instructions instructions
       :hints hints
       :otf-flg otf-flg
-      :event-name event-name
-      :doc doc)
+      :event-name event-name)
 
   where fn is a function symbol of arity 2, event-name, if supplied, is
   a symbol, and all other arguments are as specified in the
@@ -43435,7 +43476,7 @@ Subtopics
           (recursion-by-sub2 (- i 2))
           t))
 
-  Observe that this function recursively decomposes its integer
+  Observe that this function recursively decomposes its natural number
   argument by subtracting 2 from it repeatedly and stops when the
   argument is 1 or less.  The value of the function is irrelevant; it
   is its induction scheme that concerns us.  The induction scheme
@@ -43448,11 +43489,12 @@ Subtopics
                   (:p i)))
 
   We can think of the base case as covering two situations.  The first
-  is when i is not an integer.  The second is when the integer i is 0
-  or 1.  In the base case we must prove (:p i) without further help.
-  The induction step deals with those integer i greater than 1, and
-  inductively assumes the conjecture for i-2 while proving it for i.
-  Let us call this scheme ``induction on i by twos.''
+  is when i is not an integer.  The second is when the integer i is
+  less than or equal to 1.  In the base case we must prove (:p i)
+  without further help.  The induction step deals with those natural
+  numbers i greater than 1, and inductively assumes the conjecture
+  for i-2 while proving it for i.  Let us call this scheme
+  ``induction on i by twos.''
 
   Suppose the above :induction rule has been added.  Then an occurrence
   of, say, (* 1/2 k) in a conjecture to be proved by induction would
@@ -78439,6 +78481,16 @@ Bug Fixes
   patterned [congruence] rules.  This has been fixed.  Thanks to
   Mihir Mehta for pointing out the problem with a helpful example.
 
+  It is now possible, once again, to [monitor] rules of class
+  :[linear].  This capability has (accidentally) been unavailable
+  since Version 7.4.  Thanks to Dmitry Nadezhin for reporting the bug
+  with a helpful example.
+
+  For [defequiv], a :doc keyword argument was allegedly (in the
+  documentation) supported but caused an ugly error.  The :doc
+  keyword argument is now fully eliminated.  Thanks to Eric Smith for
+  pointing out this issue.
+
 
 Changes at the System Level
 
@@ -78461,6 +78513,11 @@ Changes at the System Level
 
 
 EMACS Support
+
+  Removed setting of the buffer coding system from emacs/emacs-acl2.el.
+  Thanks to Keshav Kini for suggesting this change.  This should
+  avoid certain modifications of ``unusual'' characters when saving a
+  file.
 
 
 Experimental Versions")
@@ -82611,6 +82668,9 @@ Subtopics
 
   [Cases]
       See [hints] for information about the keyword :cases.
+
+  [Certify-book-failure]
+      See [certify-book-debug].
 
   [Certifying-books]
       See [books-certification].
