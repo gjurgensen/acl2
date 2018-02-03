@@ -79914,6 +79914,10 @@ it."
  since Version 7.4.  Thanks to Dmitry Nadezhin for reporting the bug with a
  helpful example.</p>
 
+ <p>It was possible for users to change the attachments to built-in functions
+ @('badge-userfn') and @('apply$-userfn'), which support the implementation of
+ @(tsee apply$).  This is now prevented.</p>
+
  <h3>Changes at the System Level</h3>
 
  <p>Fixed the use of `@('<a href='URL'>...</a>')' so that if @('URL') has the
