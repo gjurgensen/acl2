@@ -18933,8 +18933,7 @@ subtree of X with T, without duplication.</p>
     :instructions instructions
     :hints hints
     :otf-flg otf-flg
-    :event-name event-name
-    :doc doc)
+    :event-name event-name)
  })
 
  <p>where @('fn') is a function symbol of arity 2, @('event-name'), if
@@ -40144,12 +40143,12 @@ tables in the current Hons Space."
  })
 
  <p>We can think of the base case as covering two situations.  The first is
- when @('i') is not a natural number.  The second is when the natural number
- @('i') is @('0') or @('1').  In the base case we must prove @('(:p i)')
- without further help.  The induction step deals with those natural numbers
- @('i') greater than @('1'), and inductively assumes the conjecture for
- @('i-2') while proving it for @('i').  Let us call this scheme ``induction on
- @('i') by twos.''</p>
+ when @('i') is not an integer.  The second is when the integer @('i') is less
+ than or equal to @('1').  In the base case we must prove @('(:p i)') without
+ further help.  The induction step deals with those natural numbers @('i')
+ greater than @('1'), and inductively assumes the conjecture for @('i-2') while
+ proving it for @('i').  Let us call this scheme ``induction on @('i') by
+ twos.''</p>
 
  <p>Suppose the above @(':induction') rule has been added.  Then an occurrence
  of, say, @('(* 1/2 k)') in a conjecture to be proved by induction would
@@ -79918,6 +79917,11 @@ it."
  @('badge-userfn') and @('apply$-userfn'), which support the implementation of
  @(tsee apply$).  This is now prevented.</p>
 
+ <p>For @(tsee defequiv), a @(':doc') keyword argument was allegedly (in the
+ documentation) supported but caused an ugly error.  The @(':doc') keyword
+ argument is now fully eliminated.  Thanks to Eric Smith for pointing out this
+ issue.</p>
+
  <h3>Changes at the System Level</h3>
 
  <p>Fixed the use of `@('<a href='URL'>...</a>')' so that if @('URL') has the
@@ -79938,6 +79942,10 @@ it."
  thorough cleaning.</p>
 
  <h3>EMACS Support</h3>
+
+ <p>Removed setting of the buffer coding system from @('emacs/emacs-acl2.el').
+ Thanks to Keshav Kini for suggesting this change.  This should avoid certain
+ modifications of ``unusual'' characters when saving a file.</p>
 
  <h3>Experimental Versions</h3>
 
