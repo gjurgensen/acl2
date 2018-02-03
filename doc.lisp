@@ -78486,6 +78486,10 @@ Bug Fixes
   since Version 7.4.  Thanks to Dmitry Nadezhin for reporting the bug
   with a helpful example.
 
+  It was possible for users to change the attachments to built-in
+  functions badge-userfn and apply$-userfn, which support the
+  implementation of [apply$].  This is now prevented.
+
   For [defequiv], a :doc keyword argument was allegedly (in the
   documentation) supported but caused an ugly error.  The :doc
   keyword argument is now fully eliminated.  Thanks to Eric Smith for
