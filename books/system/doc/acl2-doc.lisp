@@ -3313,8 +3313,9 @@
  <p>The community book @('hints/merge-hint.lisp') can be useful in writing
  custom keyword hints.  See the examples near the of the file.</p>
 
- <p>Note: This is an event!  It does not print the usual event summary but
- nevertheless changes the ACL2 logical @(see world) and is so recorded.</p>")
+ <p>Note: This is an event!  It does not print the usual event @(see summary)
+ but nevertheless changes the ACL2 logical @(see world) and is so
+ recorded.</p>")
 
 (defxdoc add-default-hints
   :parents (default-hints)
@@ -3328,10 +3329,11 @@
                      :at-end t)
  })
 
- <p>Note: This is an event!  It does not print the usual event summary but
- nevertheless changes the ACL2 logical @(see world) and is so recorded.  It is
- @(tsee local) to the book or @(tsee encapsulate) form in which it occurs (see
- @(see add-default-hints!) for a corresponding non-@(tsee local) event).</p>
+ <p>Note: This is an event!  It does not print the usual event @(see summary)
+ but nevertheless changes the ACL2 logical @(see world) and is so recorded.  It
+ is @(tsee local) to the book or @(tsee encapsulate) form in which it
+ occurs (see @(see add-default-hints!) for a corresponding non-@(tsee local)
+ event).</p>
 
  @({
   General Forms:
@@ -3399,10 +3401,11 @@ include-book)"
  (add-include-book-dir :util \"utilities\")
  })
 
- <p>Note: This is an event!  It does not print the usual event summary but
- nevertheless changes the ACL2 logical @(see world) and is so recorded.  It is
- @(tsee local) to the book or @(tsee encapsulate) form in which it occurs.  See
- @(tsee add-include-book-dir!) for a corresponding non-@(tsee local) event.</p>
+ <p>Note: This is an event!  It does not print the usual event @(see summary)
+ but nevertheless changes the ACL2 logical @(see world) and is so recorded.  It
+ is @(tsee local) to the book or @(tsee encapsulate) form in which it occurs.
+ See @(tsee add-include-book-dir!) for a corresponding non-@(tsee local)
+ event.</p>
 
  @({
   General Form:
@@ -3477,8 +3480,8 @@ and @(tsee include-book)"
  good reason for wanting to export the effect of this event outside the
  enclosing @(tsee encapsulate) or book.</p>
 
- <p>Note: This is an event!  It does not print the usual event summary but
- nevertheless changes the ACL2 logical @(see world) and is so recorded.</p>
+ <p>Note: This is an event!  It does not print the usual event @(see summary)
+ but nevertheless changes the ACL2 logical @(see world) and is so recorded.</p>
 
  <p>This macro is essentially a @(tsee table) event that updates the table
  @('include-book-dir!-table'), which associates keywords with absolute
@@ -3664,8 +3667,8 @@ and @(tsee include-book)"
  <p>This event only affects rules that exist at the time it is executed.
  Future rules are not affected by the override.</p>
 
- <p>Note: This is an event!  It does not print the usual event summary but
- nevertheless changes the ACL2 logical @(see world) and is so recorded.  It
+ <p>Note: This is an event!  It does not print the usual event @(see summary)
+ but nevertheless changes the ACL2 logical @(see world) and is so recorded.  It
  uses the @(tsee acl2-defaults-table), and hence its effect is @(tsee local) to
  the book or @(tsee encapsulate) form in which it occurs.</p>
 
@@ -4629,7 +4632,7 @@ and @(tsee include-book)"
  the function @('my-app') will always return a value that is either a @(see
  cons) pair or is equal to the second parameter.</p>
 
- <p>The summary provides information about which previously introduced
+ <p>The @(see summary) provides information about which previously introduced
  definitions and lemmas were used in this proof, about some notable things to
  watch out for (the Warnings), and about how long this event took to
  process.</p></blockquote>
@@ -4855,18 +4858,18 @@ and @(tsee include-book)"
  pointers on using the theorem prover effectively.</p>
 
  <p>When the prover has successfully proved all subgoals, the proof is
- finished.  As with a @(tsee defun), a summary of the proof is printed.  This
- was an extremely simple proof, needing no additional guidance.  More realistic
- examples typically require the user to look carefully at the failed proof log
- to find ways to influence the prover to do better on its next attempt.  This
- means either: proving some rules that will then be available to the prover,
- changing the global state in ways that will affect the proof, or providing
- some @(see hints) locally that will influence the prover's behavior.  Proving
- this lemma (@('my-app-length')) is an example of the first.  Since this is a
- @(see rewrite) rule, whenever in a later proof an instance of the form @('(LEN
- (MY-APP X Y))') is encountered, it will be rewritten to the corresponding
- instance of @('(+ (LEN X) (LEN Y))').  Disabling the rule by executing the
- @(see command)</p>
+ finished.  As with a @(tsee defun), a @(see summary) of the proof is printed.
+ This was an extremely simple proof, needing no additional guidance.  More
+ realistic examples typically require the user to look carefully at the failed
+ proof log to find ways to influence the prover to do better on its next
+ attempt.  This means either: proving some rules that will then be available to
+ the prover, changing the global state in ways that will affect the proof, or
+ providing some @(see hints) locally that will influence the prover's behavior.
+ Proving this lemma (@('my-app-length')) is an example of the first.  Since
+ this is a @(see rewrite) rule, whenever in a later proof an instance of the
+ form @('(LEN (MY-APP X Y))') is encountered, it will be rewritten to the
+ corresponding instance of @('(+ (LEN X) (LEN Y))').  Disabling the rule by
+ executing the @(see command)</p>
 
  @({
     (in-theory (disable my-app-length)),
@@ -9772,9 +9775,9 @@ with any questions about building the community books.</p>")
  line as part of the `make' command.</p>
 
  <p>2. (Optional; usually skipped.)  Set the @('INHIBIT') variable if you want
- to see more than the summary output.  For example, if you want to see the same
- output as you would normally see at the terminal, put this line in your
- Makefile after the `@('include')' lines.</p>
+ to see more than the @(see summary) output.  For example, if you want to see
+ the same output as you would normally see at the terminal, put this line in
+ your Makefile after the `@('include')' lines.</p>
 
  @({
   INHIBIT = (assign inhibit-output-lst (list (quote proof-tree)))
@@ -12849,7 +12852,7 @@ with any questions about building the community books.</p>")
  the translation of @('expr') to a term.</p>")
 
 (defxdoc checkpoint-summary-limit
-  :parents (set-gag-mode)
+  :parents (summary set-gag-mode)
   :short "Control printing of key checkpoints upon a proof's failure"
   :long "<p>See @(see set-checkpoint-summary-limit) for a discussion of the
  checkpoint-summary-limit.  Evaluation of the form
@@ -14580,8 +14583,8 @@ with any questions about building the community books.</p>")
  rewriter as it descends through terms, to maintain the generated equivalence
  relation used for rewriting, ACL2 does not track the congruence rules that are
  used, even though it is relevant that they are all @(see enable)d.  Congruence
- rules that are used only in this way will therefore not appear in the
- summary.</p>
+ rules that are used only in this way will therefore not appear in the @(see
+ summary).</p>
 
  <p><i>Remark on Replacing IFF by EQUAL.</i> You may encounter a warning
  suggesting that a congruence rule ``can be strengthened by replacing the
@@ -16318,8 +16321,8 @@ subtree of X with T, without duplication.</p>
  <p>By ``used in a proof'' above, we mean: applied as a rule or supplied
  explicitly via @(see hints) of type @(':use'), @(':by'), or
  @(':clause-processor').  That is, the @(see events) ``used in a proof'' for
- admitting an event @('E') are those listed in the summary printed at the
- conclusion of admitting @('E').</p>
+ admitting an event @('E') are those listed in the @(see summary) printed at
+ the conclusion of admitting @('E').</p>
 
  <p>Note that if proofs are skipped when admitting event @('E'), say because
  the last admission of @('E') was done by @(tsee include-book) (or
@@ -16591,8 +16594,8 @@ subtree of X with T, without duplication.</p>
 
  <p>If the tau system contributes to a proof, the @(see rune) @('(:')@(tsee
  executable-counterpart)@(' tau-system)') will be listed among the Rules in the
- Summary.  However, merely by being attempted the tau system can slow down
- proofs in which it makes no contribution.</p>
+ @(See Summary).  However, merely by being attempted the tau system can slow
+ down proofs in which it makes no contribution.</p>
 
  <p>The most brutal and fool-proof way to isolate a proof from the tau system
  is to disable the entire system.  This can be done globally by</p>
@@ -21296,8 +21299,8 @@ subtree of X with T, without duplication.</p>
  redundant-events)).  Even if the @('defthm') event is redundant, then the
  @(tsee in-theory) event will still be executed.</p>
 
- <p>The summary for the @(tsee in-theory) event is suppressed.  See @(see
- defthm) for documentation of @('defthm').</p>")
+ <p>The @(see summary) for the @(tsee in-theory) event is suppressed.  See
+ @(see defthm) for documentation of @('defthm').</p>")
 
 (defxdoc defthy
   :parents (events theories deftheory)
@@ -21427,9 +21430,9 @@ subtree of X with T, without duplication.</p>
  @(see events) in which it occurs; see @(see acl2-defaults-table).  We say more
  about the scope of @('defttag') forms below.</p>
 
- <p>Note: This is an event!  It does not print the usual event summary but
- nevertheless executes the above @(tsee table) event and hence changes the ACL2
- logical @(see world), and is so recorded.  Although no event summary is
+ <p>Note: This is an event!  It does not print the usual event @(see summary)
+ but nevertheless executes the above @(tsee table) event and hence changes the
+ ACL2 logical @(see world), and is so recorded.  Although no event summary is
  printed, it is important to note that the ``TTAG NOTE'', discussed below, is
  always printed for a non-nil @(':tag-name') (unless deferred; see @(see
  set-deferred-ttag-notes)).</p>
@@ -22708,7 +22711,7 @@ subtree of X with T, without duplication.</p>
  functions, the @(':')@(tsee induction) rule) for the function are disabled.
  In particular, @('defund') does not disable either the @(':')@(tsee
  type-prescription) or the @(':')@(tsee executable-counterpart) rule.  Also,
- the summary for the @(tsee in-theory) event is suppressed.</p>
+ the @(see summary) for the @(tsee in-theory) event is suppressed.</p>
 
  <p>If the function is defined in @(':')@(tsee program) mode, either because
  the @(see default-defun-mode) is @(':')@(tsee program) or because @(':mode
@@ -22847,8 +22850,8 @@ include-book)"
  @(':dir') argument of @(tsee include-book) and @(tsee ld).  See @(tsee
  add-include-book-dir) for how to associate a new directory with a keyword.</p>
 
- <p>Note: This is an event!  It does not print the usual event summary but
- nevertheless changes the ACL2 logical @(see world) and is so recorded.</p>
+ <p>Note: This is an event!  It does not print the usual event @(see summary)
+ but nevertheless changes the ACL2 logical @(see world) and is so recorded.</p>
 
  <p>This macro is @(tsee local) to any @(see books) and @(tsee encapsulate)
  @(see events) in which it occurs; see @(see add-include-book-dir) for a
@@ -22869,8 +22872,8 @@ ld) and @(tsee include-book)"
  @('delete-include-book-dir!') removes associations previously placed by
  @(tsee add-include-book-dir!).</p>
 
- <p>Note: This is an event!  It does not print the usual event summary but
- nevertheless changes the ACL2 logical @(see world) and is so recorded.</p>
+ <p>Note: This is an event!  It does not print the usual event @(see summary)
+ but nevertheless changes the ACL2 logical @(see world) and is so recorded.</p>
 
  <p>This macro is essentially a @(tsee table) event that updates the table
  @('include-book-dir!-table'), which associates keywords with absolute
@@ -26551,11 +26554,11 @@ ld) and @(tsee include-book)"
  introduce exactly one (e.g., @(tsee defmacro) and @(tsee defthm)), and some
  may introduce many (e.g., @(tsee encapsulate) ).</p>
 
- <p>ACL2 typically completes processing of an event by printing a summary.
- Unless proofs are skipped (see @(see ld-skip-proofsp)) or summary output is
- inhibited (see @(see set-inhibit-output-lst)), information about the proof
- attempt (if any) is printed that includes a list of rules used, a summary of
- warnings, and the number of ``prover steps'' (if any; see @(see
+ <p>ACL2 typically completes processing of an event by printing a @(see
+ summary).  Unless proofs are skipped (see @(see ld-skip-proofsp)) or summary
+ output is inhibited (see @(see set-inhibit-output-lst)), information about the
+ proof attempt (if any) is printed that includes a list of rules used, a
+ summary of warnings, and the number of ``prover steps'' (if any; see @(see
  with-prover-step-limit)).  A breakdown of the time used is also printed, which
  by default is runtime (cpu time), but can be changed to realtime (wall clock
  time); see @(see get-internal-time).</p>
@@ -28391,19 +28394,20 @@ ld) and @(tsee include-book)"
  <p>If you think the conjecture is a theorem, then you must figure out from
  ACL2's output what you know that ACL2 doesn't about the functions in the
  conjecture and how to impart that knowledge to ACL2 in the form of rules.  The
- ``key checkpoint'' information printed at the end of the summary provides a
- fine place to start.  See @(see the-method) for a general discussion of how to
- prove theorems with ACL2, and see @(see introduction-to-the-theorem-prover)
- for a more detailed tutorial.  Also see @(see set-gag-mode) for discussion of
- key checkpoints and an abbreviated output mode that focuses attention on them.
- You may find it most useful to start by focusing on key checkpoints that are
- not under a proof by induction, if any, both because these are more likely to
- suggest useful lemmas and because they are more likely to be theorems; for
- example, generalization may have occurred before a proof by induction has
- begun.  If you need more information than is provided by the key checkpoints
- &mdash; although this should rarely be necessary &mdash; then you can look at
- the full proof, perhaps with the aid of certain utilities: see @(see
- proof-tree), see @(see set-gag-mode), and see @(see set-saved-output).</p>
+ ``key checkpoint'' information printed at the end of the @(see summary)
+ provides a fine place to start.  See @(see the-method) for a general
+ discussion of how to prove theorems with ACL2, and see @(see
+ introduction-to-the-theorem-prover) for a more detailed tutorial.  Also see
+ @(see set-gag-mode) for discussion of key checkpoints and an abbreviated
+ output mode that focuses attention on them.  You may find it most useful to
+ start by focusing on key checkpoints that are not under a proof by induction,
+ if any, both because these are more likely to suggest useful lemmas and
+ because they are more likely to be theorems; for example, generalization may
+ have occurred before a proof by induction has begun.  If you need more
+ information than is provided by the key checkpoints &mdash; although this
+ should rarely be necessary &mdash; then you can look at the full proof,
+ perhaps with the aid of certain utilities: see @(see proof-tree), see @(see
+ set-gag-mode), and see @(see set-saved-output).</p>
 
  <p>For information on a tool to help debug failures of @(tsee encapsulate) and
  @(tsee progn) events, as well as @(tsee certify-book) failures, see @(see
@@ -28834,22 +28838,24 @@ current fast alists."
 
 (defxdoc finalize-event-user
   :parents (prover-output)
-  :short "User-supplied code to complete @(see events), e.g., with extra summary output"
+  :short "User-supplied code to complete @(see events), e.g., with extra @(see
+ summary) output"
   :long "<p>This utility is intended for system hackers, not standard ACL2
  users.</p>
 
  <p>ACL2 prints summaries at the conclusions of processing @(see events)
  (unless summaries are inhibited; see @(see set-inhibit-output-lst) and also
  see @(see set-inhibited-summary-types)).  You may arrange for processing to
- take place just after the summary, by defining a function with argument list
- @('(ctx body state)') that returns one value, namely @('state').  We describe
- @('ctx') and @('body') at the end below, but you may simply prefer to ignore
- these arguments.)  Your function should normally be a @(see guard)-verified
- @(':')@(tsee logic) mode function with no guard other than that provided by
- the input requirement on @(tsee state), that is, @('(state-p state)'); but
- later below we discuss how to avoid this requirement.  You then attach (see
- @(see defattach)) your function to the function @('finalize-event-user').  The
- following example illustrates how this all works.</p>
+ take place just after the @(see summary), by defining a function with argument
+ list @('(ctx body state)') that returns one value, namely @('state').  We
+ describe @('ctx') and @('body') at the end below, but you may simply prefer to
+ ignore these arguments.)  Your function should normally be a @(see
+ guard)-verified @(':')@(tsee logic) mode function with no guard other than
+ that provided by the input requirement on @(tsee state), that is, @('(state-p
+ state)'); but later below we discuss how to avoid this requirement.  You then
+ attach (see @(see defattach)) your function to the function
+ @('finalize-event-user').  The following example illustrates how this all
+ works.</p>
 
  @({
   (defun finalize-event-user-test (ctx body state)
@@ -28872,8 +28878,8 @@ current fast alists."
   (defattach finalize-event-user finalize-event-user-test)
  })
 
- <p>After admission of the two events above, an event summary will conclude
- with extra printout, for example:</p>
+ <p>After admission of the two events above, an event @(see summary) will
+ conclude with extra printout, for example:</p>
 
  @({
   Note: Abbrev-evisc-tuple has its default value.
@@ -33510,8 +33516,8 @@ current fast alists."
  @('key') in an association list, namely, in the value of @(see state) global
  variable @('last-event-data') (see @(see programming-with-state)).  That alist
  contains certain information stored at the conclusion of the immediately
- preceding event.  For each key the corresponding value, @('VAL'), is as
- follows.</p>
+ preceding event, some of which corresponds to the event's @(see summary).  For
+ each key the corresponding value, @('VAL'), is as follows.</p>
 
  <ul>
 
@@ -33536,6 +33542,10 @@ current fast alists."
 
  <li>@('SPLITTER-RULES'): @('VAL') represents the corresponding field of the
  event summary, as the list @('(case-split immed-forced if-intro)').</li>
+
+ <li>@('SYSTEM-ATTACHMENTS'): @('VAL') lists the pairs @('(f . g)') for which
+ @('f') is a system function with attachment @('g') (@(see defattach)), which
+ differs from the attachment to @('f') when ACL2 starts up.</li>
 
  <li>@('TIME'): @('VAL') represents the corresponding field of the event
  summary, as the list @('(prove print proof-tree other)').</li>
@@ -33570,8 +33580,8 @@ current fast alists."
              (value '(value-triple nil))))
  })
 
- <p>A typical time summary might be as follows, drastically under-reporting the
- elapsed time.</p>
+ <p>A typical time @(see summary) might be as follows, drastically
+ under-reporting the elapsed time.</p>
 
  @({
     Time:  0.01 seconds (prove: 0.00, print: 0.00, other: 0.01)
@@ -40559,10 +40569,10 @@ tables in the current Hons Space."
  @(see world).</li>
 
  <li>The @(see rune)s used during an @(':instructions') hint are not tracked
- beyond that hint, hence may not show up in the summary of the overall proof.
- Again, think of the @(':instructions') hint as a @(see clause-processor) call,
- which has some effect not tracked by the surrounding proof other than for the
- child goals that it returns.</li>
+ beyond that hint, hence may not show up in the @(see summary) of the overall
+ proof.  Again, think of the @(':instructions') hint as a @(see
+ clause-processor) call, which has some effect not tracked by the surrounding
+ proof other than for the child goals that it returns.</li>
 
  </ul>
 
@@ -40723,7 +40733,8 @@ tables in the current Hons Space."
                 (equal (reverse (reverse x)) x)))
  })
 
- <p>then you will see the following checkpoint printed with the summary.</p>
+ <p>then you will see the following checkpoint printed with the @(see
+ summary).</p>
 
  @({
   Subgoal *1/3''
@@ -43163,8 +43174,8 @@ tables in the current Hons Space."
  disabling the entire tau system, by disabling @('(:')@(tsee
  executable-counterpart)@(' tau-system)').  If any tau reasoning is used in a
  proof, the rune @('(:')@(tsee executable-counterpart)@(' tau-system)') is
- reported in the summary.  For a complete list of all the runes in the tau
- database, evaluate @('(global-val 'tau-runes (w state))').  Any of these
+ reported in the @(see summary).  For a complete list of all the runes in the
+ tau database, evaluate @('(global-val 'tau-runes (w state))').  Any of these
  associated theorems could have been used.</p>
 
  <p>These design criteria are not always achieved!  For example, the tau
@@ -44531,8 +44542,8 @@ tables in the current Hons Space."
   ; appropriate infrastructure has been built up.  But because the
   ; infrastructure is ``heavy'' we tend not to invest in it for small projects.
 
-  ; In summary, different users might take home different lessons about whether a
-  ; direct or indirect proof is better here.  This is in part due to the
+  ; In summary, different users might take home different lessons about whether
+  ; a direct or indirect proof is better here.  This is in part due to the
   ; complexity of the functional relationship between collect-once and
   ; while-loop-version, which additionally involved append, list-minus, and rev.
   ; Had the relationship been simpler, the indirect proof would have been
@@ -45438,11 +45449,11 @@ tables in the current Hons Space."
  set-prover-step-limit) and see @(see with-prover-step-limit).  The value of
  the form @('(last-prover-steps state)') indicates the number of prover steps
  taken, in the sense described below, for the most recent context in which an
- event summary would normally be printed.  Note that the value of
+ event @(see summary) would normally be printed.  Note that the value of
  @('(last-prover-steps state)') is updated for all @(see events), and for all
  other forms such as calls of @(tsee thm) or @(tsee certify-book), that would
- print a summary &mdash; regardless of whether or not such output is inhibited
- (see @(see set-inhibit-output-lst) and see @(see
+ print a @(see summary) &mdash; regardless of whether or not such output is
+ inhibited (see @(see set-inhibit-output-lst) and see @(see
  set-inhibited-summary-types)).  In particular, the value is updated (typically
  to @('nil')) for @(tsee table) @(see events), even when no summary is printed;
  for example, the value is updated to @('nil') for @('table') events such as
@@ -46500,8 +46511,8 @@ tables in the current Hons Space."
  carried out when the book was certified.</p>
 
  <p>A non-@('nil') value for @('ld-skip-proofsp') also affects the system's
- output messages.  Event summaries (the paragraphs that begin ``Summary'' and
- display the event forms, rules used, etc.) are not printed when
+ output messages.  Event summaries (the paragraphs that begin ``@(see
+ Summary)'' and display the event forms, rules used, etc.) are not printed when
  @('ld-skip-proofsp') is non-@('nil').  Warnings and observations are printed
  when @('ld-skip-proofsp') is @('t') but are not printed when it is
  @(''')@(tsee include-book).</p>
@@ -47560,8 +47571,8 @@ tables in the current Hons Space."
  <p>Functions defined in @(':logic') mode are logically defined.  See @(see
  defun-mode).</p>
 
- <p>Note: This is an event!  It does not print the usual event summary but
- nevertheless changes the ACL2 logical @(see world) and is so recorded.</p>
+ <p>Note: This is an event!  It does not print the usual event @(see summary)
+ but nevertheless changes the ACL2 logical @(see world) and is so recorded.</p>
 
  <p>See @(see defun-mode) for a discussion of the @(see defun-mode)s available
  and what their effects on the logic are.  See @(see default-defun-mode) for a
@@ -52391,9 +52402,9 @@ it."
  value is ignored.</p>
 
  <p>If @(':verbose') is supplied, it should either be @('nil'), which will
- inhibit proof, event, and summary output (see @(see with-output)), or else
- @('t') (the default), which does not inhibit output.  If the output baffles
- you, try</p>
+ inhibit proof, event, and @(see summary) output (see @(see with-output)), or
+ else @('t') (the default), which does not inhibit output.  If the output
+ baffles you, try</p>
 
  @({
   :trans1 (memoize ...)
@@ -53451,12 +53462,12 @@ it."
                    b)))
  })
 
- <p>Happily, the test succeeds, with the summary showing that our meta rule,
- @('meta-fn-correct'), was indeed used in the proof.  But if we first submit
- the form @('(trace$ meta-fn meta-hyp-fn meta-helper)'), we will see that
- @('meta-helper') is called twice on the term @('(FOO A (FOO B (UNARY-- A)))'):
- once on behalf of @('meta-fn') and once on behalf of @('meta-hyp-fn').  This
- would be unfortunate if @('meta-helper') were expensive to compute.</p>
+ <p>Happily, the test succeeds, with the @(see summary) showing that our meta
+ rule, @('meta-fn-correct'), was indeed used in the proof.  But if we first
+ submit the form @('(trace$ meta-fn meta-hyp-fn meta-helper)'), we will see
+ that @('meta-helper') is called twice on the term @('(FOO A (FOO B (UNARY--
+ A)))'): once on behalf of @('meta-fn') and once on behalf of @('meta-hyp-fn').
+ This would be unfortunate if @('meta-helper') were expensive to compute.</p>
 
  <p>So let us back up and try a different approach, which illustrates the idea
  of using an ``implicit hypothesis'' in order to avoid recomputation.  This
@@ -55592,7 +55603,7 @@ it."
  <p>Let's dig a bit deeper by considering two cases for production of a
  @('NIL') subgoal.  First consider the case that the subgoal is a key
  checkpoint at the top level or under a top-level induction &mdash; that is, a
- key checkpoint listed in the proof summary.  In that case, the original
+ key checkpoint listed in the proof @(see summary).  In that case, the original
  conjecture is very likely not a theorem.  Otherwise, if you are using @(see
  gag-mode) (which is the case by default), then you may need to issue the
  command @(':')@(tsee pso) (``Print Saved Output'') to see whether the goal was
@@ -55604,8 +55615,8 @@ it."
  <p>If some @('NIL') subgoal is under a key checkpoint at the top level or
  under a top-level induction, then as discussed above, the original conjecture
  is probably not a theorem.  Therefore, in that case, ACL2 always prints a
- @('NIL') subgoal first in a list of checkpoints printed in the summary, so
- that a @('NIL') subgoal comes quickly to your attention.</p>")
+ @('NIL') subgoal first in a list of checkpoints printed in the @(see summary),
+ so that a @('NIL') subgoal comes quickly to your attention.</p>")
 
 (defxdoc ninth
   :parents (nth acl2-built-ins)
@@ -56360,7 +56371,7 @@ it."
     (defthm abc (equal (+ (len x) 0) (len x)))
  })
 
- <p>leads to a summary containing the line</p>
+ <p>leads to a @(see summary) containing the line</p>
 
  @({
     Form:  ( DEFTHM ABC ...)
@@ -79776,6 +79787,8 @@ it."
 ; Fixed some error messages for ACL2(r) pertaining to classical
 ; vs. non-classical functions in measures, recursion, etc.
 
+; Added :doc summary.
+
   :parents (release-notes)
   :short "ACL2 Version  8.1 (xxx, 20xx) Notes"
   :long "<p>NOTE!  New users can ignore these release notes, because the @(see
@@ -79837,14 +79850,18 @@ it."
  <p>Information printed when giving @(':use') @(see hints) has been improved
  for the case that a @(see lemma-instance) is a @(':')@(tsee
  termination-theorem) or a @(':')@(tsee guard-theorem).  Formerly, only the
- name was shown in the `@('Hint-events')' summary and in the proof output; now,
- one will see ``names'' of the form @('(:termination-theorem NAME)') and
- @('(:guard-theorem NAME)').</p>
+ name was shown in the `@('Hint-events')' @(see summary) and in the proof
+ output; now, one will see ``names'' of the form @('(:termination-theorem
+ NAME)') and @('(:guard-theorem NAME)').</p>
 
  <p>We improved redundancy checking for @(tsee defun) forms so that it is not
  sensitive to whether @(tsee state) has a @(':stobj') declaration.</p>
 
  <h3>New Features</h3>
+
+ <p>The @(see summary) now shows, by default, the list of doublets @('(f g)')
+ for which @('f') is a system function with attachment @('g') (see @(see
+ defattach)), when @('g') differs from the initial attachment to @('f').</p>
 
  <h3>Heuristic and Efficiency Improvements</h3>
 
@@ -82460,10 +82477,10 @@ arithmetic) for libraries of @(see books) for arithmetic reasoning.</p>")
 (defxdoc patterned-congruence
   :parents (rule-classes)
   :short "Removing restrictions on classic @(see congruence) rules"
-  :long "<p>This topic assumes familiarity with the basics of congruence
- rules; see @(see congruence).  Some aspects of congruence rules carry over to
+  :long "<p>This topic assumes familiarity with the basics of congruence rules;
+ see @(see congruence).  Some aspects of congruence rules carry over to
  patterned congruence rules; in particular, they may be @(see disable)d, but
- they are not tracked for reporting in the summary.</p>
+ they are not tracked for reporting in the @(see summary).</p>
 
  <p>We begin our discussion by showing some patterned congruence rules and
  using them to illustrate some terminology.</p>
@@ -84928,8 +84945,8 @@ arithmetic) for libraries of @(see books) for arithmetic reasoning.</p>")
   defchoose
  })
 
- <p>Note: This is an event!  It does not print the usual event summary but
- nevertheless changes the ACL2 logical @(see world) and is so recorded.</p>
+ <p>Note: This is an event!  It does not print the usual event @(see summary)
+ but nevertheless changes the ACL2 logical @(see world) and is so recorded.</p>
 
  <p>See @(see defun-mode) for a discussion of the @(see defun-mode)s available
  and what their effects on the logic are.  See @(see default-defun-mode) for a
@@ -85884,8 +85901,8 @@ arithmetic) for libraries of @(see books) for arithmetic reasoning.</p>")
 
  <p>This form binds state global variable @('inhibit-output-lst') to the result
  of adding the symbol, @('summary'), to the current value of that state global.
- Thus (see @(see set-inhibit-output-lst)), the usual summary is not printed
- when evaluating this call of @(tsee thm).</p>
+ Thus (see @(see set-inhibit-output-lst)), the usual @(see summary) is not
+ printed when evaluating this call of @(tsee thm).</p>
 
  <p>See @(see state-global-let*) for more complete @(see documentation).</p>
 
@@ -90385,8 +90402,9 @@ arithmetic) for libraries of @(see books) for arithmetic reasoning.</p>")
  <p>For an explanation of how custom keyword hints are processed, see @(see
  custom-keyword-hints); also see @(see add-custom-keyword-hint).</p>
 
- <p>Note: This is an event!  It does not print the usual event summary but
- nevertheless changes the ACL2 logical @(see world) and is so recorded.</p>")
+ <p>Note: This is an event!  It does not print the usual event @(see summary)
+ but nevertheless changes the ACL2 logical @(see world) and is so
+ recorded.</p>")
 
 (defxdoc remove-default-hints
   :parents (default-hints)
@@ -90398,10 +90416,11 @@ arithmetic) for libraries of @(see books) for arithmetic reasoning.</p>")
                                            stable-under-simplificationp)))
  })
 
- <p>Note: This is an event!  It does not print the usual event summary but
- nevertheless changes the ACL2 logical @(see world) and is so recorded.  It is
- @(tsee local) to the book or @(tsee encapsulate) form in which it occurs (see
- @(see remove-default-hints!) for a corresponding non-@(tsee local) event).</p>
+ <p>Note: This is an event!  It does not print the usual event @(see summary)
+ but nevertheless changes the ACL2 logical @(see world) and is so recorded.  It
+ is @(tsee local) to the book or @(tsee encapsulate) form in which it
+ occurs (see @(see remove-default-hints!) for a corresponding non-@(tsee local)
+ event).</p>
 
  @({
   General Form:
@@ -93703,11 +93722,11 @@ arithmetic) for libraries of @(see books) for arithmetic reasoning.</p>")
 (defxdoc set-backchain-limit
   :parents (backchain-limit)
   :short "Sets the backchain-limit used by the type-set and rewriting mechanisms"
-  :long "<p>Note: This is an event!  It does not print the usual event summary
- but nevertheless changes the ACL2 logical @(see world) and is so recorded.
- Moreover, its effect is to set the @(tsee acl2-defaults-table), and hence its
- effect is @(tsee local) to the book or @(tsee encapsulate) form containing it;
- see @(see acl2-defaults-table).</p>
+  :long "<p>Note: This is an event!  It does not print the usual event @(see
+ summary) but nevertheless changes the ACL2 logical @(see world) and is so
+ recorded.  Moreover, its effect is to set the @(tsee acl2-defaults-table), and
+ hence its effect is @(tsee local) to the book or @(tsee encapsulate) form
+ containing it; see @(see acl2-defaults-table).</p>
 
  <p>This event sets the global @(tsee backchain-limit) used by the ACL2
  type-set and rewriting mechanisms.  Its value may be a cons whose car and cdr
@@ -93844,8 +93863,8 @@ arithmetic) for libraries of @(see books) for arithmetic reasoning.</p>")
  this is the default.  The third example allows bogus mutual recursion, but
  prints an appropriate warning.</p>
 
- <p>Note: This is an event!  It does not print the usual event summary but
- nevertheless changes the ACL2 logical @(see world) and is so recorded.
+ <p>Note: This is an event!  It does not print the usual event @(see summary)
+ but nevertheless changes the ACL2 logical @(see world) and is so recorded.
  Moreover, its effect is to set the @(tsee acl2-defaults-table), and hence its
  effect is @(tsee local) to the book or @(tsee encapsulate) form containing it;
  see @(see acl2-defaults-table).</p>
@@ -93875,8 +93894,8 @@ arithmetic) for libraries of @(see books) for arithmetic reasoning.</p>")
  involved.  It also discourages the clause simplifier from splitting into more
  than 100 cases at once.</p>
 
- <p>Note: This is an event!  It does not print the usual event summary but
- nevertheless changes the ACL2 logical @(see world) and is so recorded.
+ <p>Note: This is an event!  It does not print the usual event @(see summary)
+ but nevertheless changes the ACL2 logical @(see world) and is so recorded.
  Moreover, its effect is to set the @(tsee acl2-defaults-table), and hence its
  effect is @(tsee local) to the book or @(tsee encapsulate) form containing it;
  see @(see acl2-defaults-table).</p>
@@ -94237,12 +94256,12 @@ arithmetic) for libraries of @(see books) for arithmetic reasoning.</p>")
 
  <p>where each of @('n1') and @('n2') is a natural number or @('nil').  For the
  second form, @('n') can be a natural number or @('nil') and is treated as
- @('(n . n)').  The value @('t') inhibits all printing of checkpoint summary
- information.  The values @('n1') and @('n2') determine printing of key
- checkpoints generated before the first induction and generated after the first
- induction, respectively, where at most @('n1') or @('n2') (respectively) such
- key checkpoints are printed unless the value is @('nil'), in which case there
- is no limitation.</p>
+ @('(n . n)').  The value @('t') inhibits all printing of checkpoint @(see
+ summary) information.  The values @('n1') and @('n2') determine printing of
+ key checkpoints generated before the first induction and generated after the
+ first induction, respectively, where at most @('n1') or @('n2') (respectively)
+ such key checkpoints are printed unless the value is @('nil'), in which case
+ there is no limitation.</p>
 
  <p>The argument @('x') for @('set-checkpoint-summary-limit'), as described
  above, may be quoted, i.e. supplied as @(''x') or @('(quote x)').  Thus, you
@@ -94269,8 +94288,8 @@ arithmetic) for libraries of @(see books) for arithmetic reasoning.</p>")
   (set-compile-fns nil)  ; new functions not compiled after DEFUN
  })
 
- <p>Note: This is an event!  It does not print the usual event summary but
- nevertheless changes the ACL2 logical @(see world) and is so recorded.</p>
+ <p>Note: This is an event!  It does not print the usual event @(see summary)
+ but nevertheless changes the ACL2 logical @(see world) and is so recorded.</p>
 
  <p>Also see @(see comp), because it may be more efficient in some Common Lisps
  to compile many functions at once rather than to compile each one as you go
@@ -94464,11 +94483,11 @@ arithmetic) for libraries of @(see books) for arithmetic reasoning.</p>")
 (defxdoc set-default-backchain-limit
   :parents (backchain-limit)
   :short "Sets the default backchain-limit used when admitting a rule"
-  :long "<p>Note: This is an event!  It does not print the usual event summary
- but nevertheless changes the ACL2 logical @(see world) and is so recorded.
- Moreover, its effect is to set the @(tsee acl2-defaults-table), and hence its
- effect is @(tsee local) to the book or @(tsee encapsulate) form containing it;
- see @(see acl2-defaults-table).</p>
+  :long "<p>Note: This is an event!  It does not print the usual event @(see
+ summary) but nevertheless changes the ACL2 logical @(see world) and is so
+ recorded.  Moreover, its effect is to set the @(tsee acl2-defaults-table), and
+ hence its effect is @(tsee local) to the book or @(tsee encapsulate) form
+ containing it; see @(see acl2-defaults-table).</p>
 
  <p>This event sets the default @(tsee backchain-limit) used when a new @(tsee
  rewrite), @(tsee linear), @(tsee meta), or @(tsee type-prescription) rule is
@@ -94526,10 +94545,10 @@ arithmetic) for libraries of @(see books) for arithmetic reasoning.</p>")
   (set-default-hints nil)
  })
 
- <p>Note: This is an event!  It does not print the usual event summary but
- nevertheless changes the ACL2 logical @(see world) and is so recorded.  It is
- @(tsee local) to the book or @(tsee encapsulate) form in which it occurs; see
- @(see set-default-hints!) for a corresponding non-@(tsee local) event.</p>
+ <p>Note: This is an event!  It does not print the usual event @(see summary)
+ but nevertheless changes the ACL2 logical @(see world) and is so recorded.  It
+ is @(tsee local) to the book or @(tsee encapsulate) form in which it occurs;
+ see @(see set-default-hints!) for a corresponding non-@(tsee local) event.</p>
 
  @({
   General Form:
@@ -94710,12 +94729,12 @@ arithmetic) for libraries of @(see books) for arithmetic reasoning.</p>")
  whether @('val') is the keyword @(':error'), @(':warning'), or @('nil'),
  respectively.</p>
 
- <p>Note: This is an event!  It does not print the usual event summary but
- nevertheless changes the ACL2 logical @(see world) and is so recorded.  It is
- @(tsee local) to the book or @(tsee encapsulate) form in which it occurs; see
- @(see set-duplicate-keys-action!) for a corresponding non-@(tsee local) event.
- Indeed, @('(set-duplicate-keys-action ...)') is equivalent to @('(local
- (set-duplicate-keys-action! ...))').</p>")
+ <p>Note: This is an event!  It does not print the usual event @(see summary)
+ but nevertheless changes the ACL2 logical @(see world) and is so recorded.  It
+ is @(tsee local) to the book or @(tsee encapsulate) form in which it occurs;
+ see @(see set-duplicate-keys-action!) for a corresponding non-@(tsee local)
+ event.  Indeed, @('(set-duplicate-keys-action ...)') is equivalent to
+ @('(local (set-duplicate-keys-action! ...))').</p>")
 
 (defxdoc set-duplicate-keys-action!
   :parents (prover-output)
@@ -94738,8 +94757,8 @@ arithmetic) for libraries of @(see books) for arithmetic reasoning.</p>")
   (set-enforce-redundancy :warn) ; warn for most non-redundant events
  })
 
- <p>Note: This is an event!  It does not print the usual event summary but
- nevertheless changes the ACL2 logical @(see world) and is so recorded.</p>
+ <p>Note: This is an event!  It does not print the usual event @(see summary)
+ but nevertheless changes the ACL2 logical @(see world) and is so recorded.</p>
 
  @({
   General Form:
@@ -95545,8 +95564,8 @@ arithmetic) for libraries of @(see books) for arithmetic reasoning.</p>")
  The second example disallows unused formals and locals; this is the default.
  The third example allows them, but prints an appropriate warning.</p>
 
- <p>Note: This is an event!  It does not print the usual event summary but
- nevertheless changes the ACL2 logical @(see world) and is so recorded.
+ <p>Note: This is an event!  It does not print the usual event @(see summary)
+ but nevertheless changes the ACL2 logical @(see world) and is so recorded.
  Moreover, its effect is to set the @(tsee acl2-defaults-table), and hence its
  effect is @(tsee local) to the book or @(tsee encapsulate) form containing it;
  see @(see acl2-defaults-table).</p>
@@ -95612,7 +95631,7 @@ arithmetic) for libraries of @(see books) for arithmetic reasoning.</p>")
  <p>See @(see with-output) for a variant of this utility that can be used in
  @(see books).  Also see @(see set-inhibit-warnings) for how to inhibit
  individual warning types and see @(see set-inhibited-summary-types) for how to
- inhibit individual parts of the summary.</p>
+ inhibit individual parts of the @(see summary).</p>
 
  <p>Printing of events on behalf of @(tsee certify-book) and @(tsee
  encapsulate) is inhibited when both @(''event') and @(''prove') belong to
@@ -95640,10 +95659,10 @@ arithmetic) for libraries of @(see books) for arithmetic reasoning.</p>")
   (set-inhibit-warnings \"theory\" \"use\")
  })
 
- <p>Note: This is an event!  It does not print the usual event summary but
- nevertheless changes the ACL2 logical @(see world) and is so recorded.  It is
- @(tsee local) to the book or @(tsee encapsulate) form in which it occurs; see
- @(see set-inhibit-warnings!) for a corresponding non-@(tsee local) event.
+ <p>Note: This is an event!  It does not print the usual event @(see summary)
+ but nevertheless changes the ACL2 logical @(see world) and is so recorded.  It
+ is @(tsee local) to the book or @(tsee encapsulate) form in which it occurs;
+ see @(see set-inhibit-warnings!) for a corresponding non-@(tsee local) event.
  Indeed, @('(set-inhibit-warnings ...)') is equivalent to @('(local
  (set-inhibit-warnings! ...))').</p>
 
@@ -95695,7 +95714,7 @@ arithmetic) for libraries of @(see books) for arithmetic reasoning.</p>")
 
 (defxdoc set-inhibited-summary-types
   :parents (prover-output)
-  :short "Control which parts of the summary are printed"
+  :short "Control which parts of the @(see summary) are printed"
   :long "@({
   Example:
   (set-inhibited-summary-types '(rules time))
@@ -95710,12 +95729,11 @@ arithmetic) for libraries of @(see books) for arithmetic reasoning.</p>")
  })
 
  <p>where form evaluates to a true-list of symbols, each of which is among the
- values of the constant @('*summary-types*'), i.e.: @('header'), @('form'),
- @('rules'), @('hint-events'), @('warnings'), @('time'), @('steps'),
- @('value'), and @('splitter-rules').  Each specified type inhibits printing of
- the corresponding portion of the summaries printed at the conclusions of @(see
- events), where @('header') refers to an initial newline followed by the line
- containing just the word @('Summary').</p>
+ values of the constant @('*summary-types*'), which is @(`*summary-types*`).
+ Each specified type inhibits printing of the corresponding portion of the
+ summaries printed at the conclusions of @(see events), where @('header')
+ refers to an initial newline followed by the line containing just the word
+ @('Summary').</p>
 
  <p>Note the distinction between @('rules') and @('hint-events').  @('Rules')
  provides a record of automatic rule usage by the prover, while
@@ -95726,7 +95744,7 @@ arithmetic) for libraries of @(see books) for arithmetic reasoning.</p>")
  <p>Also see @(see set-inhibit-output-lst).  Note that
  @('set-inhibited-summary-types') has no effect when @('summary') is one of the
  types inhibited by @(see set-inhibit-output-lst), because in that case none of
- the summary will be printed.</p>
+ the @(see summary) will be printed.</p>
 
  <p>To control summary types for a single event, see @(see with-output).</p>")
 
@@ -96223,8 +96241,8 @@ arithmetic) for libraries of @(see books) for arithmetic reasoning.</p>")
  the default.  The third example allows irrelevant formals, but prints an
  appropriate warning.</p>
 
- <p>Note: This is an event!  It does not print the usual event summary but
- nevertheless changes the ACL2 logical @(see world) and is so recorded.
+ <p>Note: This is an event!  It does not print the usual event @(see summary)
+ but nevertheless changes the ACL2 logical @(see world) and is so recorded.
  Moreover, its effect is to set the @(tsee acl2-defaults-table), and hence its
  effect is @(tsee local) to the book or @(tsee encapsulate) form containing it;
  see @(see acl2-defaults-table).</p>
@@ -96242,11 +96260,11 @@ arithmetic) for libraries of @(see books) for arithmetic reasoning.</p>")
 (defxdoc set-let*-abstractionp
   :parents (prover-output)
   :short "To shorten many prettyprinted clauses"
-  :long "<p>Note: This is an event!  It does not print the usual event summary
- but nevertheless changes the ACL2 logical @(see world) and is so recorded.
- Moreover, its effect is to set the @(tsee acl2-defaults-table), and hence its
- effect is @(tsee local) to the book or @(tsee encapsulate) form containing it;
- see @(see acl2-defaults-table).</p>
+  :long "<p>Note: This is an event!  It does not print the usual event @(see
+ summary) but nevertheless changes the ACL2 logical @(see world) and is so
+ recorded.  Moreover, its effect is to set the @(tsee acl2-defaults-table), and
+ hence its effect is @(tsee local) to the book or @(tsee encapsulate) form
+ containing it; see @(see acl2-defaults-table).</p>
 
  <p>When this flag is set to @('t'), subterms that occur more than once in a
  clause are abstracted away with @(tsee let*), generally shortening the
@@ -96304,8 +96322,8 @@ arithmetic) for libraries of @(see books) for arithmetic reasoning.</p>")
  @('set-match-free-default') specifies @('nil'), then ACL2 reverts to the
  behavior it had at start-up, as described in Remarks (2) and (3) below.</p>
 
- <p>Note: This is an event!  It does not print the usual event summary but
- nevertheless changes the ACL2 logical @(see world) and is so recorded.  It
+ <p>Note: This is an event!  It does not print the usual event @(see summary)
+ but nevertheless changes the ACL2 logical @(see world) and is so recorded.  It
  uses the @(tsee acl2-defaults-table), and hence its effect is @(tsee local) to
  the book or @(tsee encapsulate) form in which it occurs.</p>
 
@@ -96375,8 +96393,8 @@ arithmetic) for libraries of @(see books) for arithmetic reasoning.</p>")
   (set-measure-function nqthm::count)
  })
 
- <p>Note: This is an event!  It does not print the usual event summary but
- nevertheless changes the ACL2 logical @(see world) and is so recorded.</p>
+ <p>Note: This is an event!  It does not print the usual event @(see summary)
+ but nevertheless changes the ACL2 logical @(see world) and is so recorded.</p>
 
  @({
   General Form:
@@ -96738,8 +96756,8 @@ arithmetic) for libraries of @(see books) for arithmetic reasoning.</p>")
  returns an indicator of the number of prover steps most recently taken, see
  @(see last-prover-steps).</p>
 
- <p>Note: This is an event!  It does not print the usual event summary but
- nevertheless changes the ACL2 logical @(see world) and is so recorded.
+ <p>Note: This is an event!  It does not print the usual event @(see summary)
+ but nevertheless changes the ACL2 logical @(see world) and is so recorded.
  Moreover, its effect is to set the @(tsee acl2-defaults-table), and hence its
  effect is @(tsee local) to the book or @(tsee encapsulate) form containing it;
  see @(see acl2-defaults-table).</p>
@@ -96781,10 +96799,10 @@ arithmetic) for libraries of @(see books) for arithmetic reasoning.</p>")
 
  <p>The limit is relevant for every event, as well as for calls of @(tsee thm)
  and @(tsee certify-book) &mdash; and more generally, to any form that creates
- a ``summary context'' to print the usual event summary.  The limit is also put
- in force when entering the interactive @(see proof-builder).  A call of
- @('set-prover-step-limit') applies to each subsequent form unless the call of
- @('set-prover-step-limit') is within a summary context, in which case its
+ a ``summary context'' to print the usual event @(see summary).  The limit is
+ also put in force when entering the interactive @(see proof-builder).  A call
+ of @('set-prover-step-limit') applies to each subsequent form unless the call
+ of @('set-prover-step-limit') is within a summary context, in which case its
  effect disappears when exiting that summary context.</p>
 
  <p>The limit applies to each event, not just ``atomic'' events.  Consider the
@@ -96804,7 +96822,7 @@ arithmetic) for libraries of @(see books) for arithmetic reasoning.</p>")
  })
 
  <p>The first @(tsee defthm) event, @('lemma-1') takes 380 steps (as of this
- writing), as shown in the summary:</p>
+ writing), as shown in the @(see summary):</p>
 
  @({
   Prover steps counted:  380
@@ -97132,8 +97150,8 @@ arithmetic) for libraries of @(see books) for arithmetic reasoning.</p>")
  @('(set-register-invariant-risk nil)'), then define a function that calls the
  stobj updater.</p>
 
- <p>Note: This is an event!  It does not print the usual event summary but
- nevertheless changes the ACL2 logical @(see world) and is so recorded.
+ <p>Note: This is an event!  It does not print the usual event @(see summary)
+ but nevertheless changes the ACL2 logical @(see world) and is so recorded.
  Moreover, its effect is to set the @(tsee acl2-defaults-table), and hence its
  effect is @(tsee local) to the book or @(tsee encapsulate) form containing it;
  see @(see acl2-defaults-table).</p>")
@@ -97141,8 +97159,9 @@ arithmetic) for libraries of @(see books) for arithmetic reasoning.</p>")
 (defxdoc set-rewrite-stack-limit
   :parents (rewrite-stack-limit)
   :short "Sets the rewrite stack depth used by the rewriter"
-  :long "<p>Note: This is an event!  It does not print the usual event summary
- but nevertheless changes the ACL2 logical @(see world) and is so recorded.</p>
+  :long "<p>Note: This is an event!  It does not print the usual event @(see
+ summary) but nevertheless changes the ACL2 logical @(see world) and is so
+ recorded.</p>
 
  @({
   Example Forms:
@@ -97222,10 +97241,11 @@ arithmetic) for libraries of @(see books) for arithmetic reasoning.</p>")
   (thm (equal (car (f2 a)) (cdr (f2 a))))
  })
 
- <p>Note: This is an event!  It does not print the usual event summary but
- nevertheless changes the ACL2 logical @(see world) and is so recorded.  It is
- @(tsee local) to the book or @(tsee encapsulate) form in which it occurs (see
- @(see set-rw-cache-state!) for a corresponding non-@(tsee local) event).</p>
+ <p>Note: This is an event!  It does not print the usual event @(see summary)
+ but nevertheless changes the ACL2 logical @(see world) and is so recorded.  It
+ is @(tsee local) to the book or @(tsee encapsulate) form in which it
+ occurs (see @(see set-rw-cache-state!) for a corresponding non-@(tsee local)
+ event).</p>
 
  <p>We also note that rw-cache-state changes may also be caused at the subgoal
  level; see @(see hints).</p>
@@ -97302,8 +97322,8 @@ arithmetic) for libraries of @(see books) for arithmetic reasoning.</p>")
  inhibited.</p>
 
  <p>See @(see set-inhibit-output-lst) if you want to inhibit certain output
- from the prover but not other output (e.g., not the summary), and you don't
- want to save any output.</p>")
+ from the prover but not other output (e.g., not the @(see summary)), and you
+ don't want to save any output.</p>")
 
 (defxdoc set-serialize-character-system
   :parents (serialize)
@@ -97452,8 +97472,9 @@ arithmetic) for libraries of @(see books) for arithmetic reasoning.</p>")
 (defxdoc set-state-ok
   :parents (state)
   :short "Allow the use of STATE as a formal parameter"
-  :long "<p>Note: This is an event!  It does not print the usual event summary
- but nevertheless changes the ACL2 logical @(see world) and is so recorded.</p>
+  :long "<p>Note: This is an event!  It does not print the usual event @(see
+ summary) but nevertheless changes the ACL2 logical @(see world) and is so
+ recorded.</p>
 
  <p>In brief: The variable symbol @(tsee STATE) has an unusual status in ACL2.
  In order to use it, you either need to issue @(':set-state-ok t'), as we
@@ -97799,8 +97820,8 @@ arithmetic) for libraries of @(see books) for arithmetic reasoning.</p>")
   (set-verify-guards-eagerness 2) ; yes, unless :verify-guards nil
  })
 
- <p>Note: This is an event!  It does not print the usual event summary but
- nevertheless changes the ACL2 logical @(see world) and is so recorded.</p>
+ <p>Note: This is an event!  It does not print the usual event @(see summary)
+ but nevertheless changes the ACL2 logical @(see world) and is so recorded.</p>
 
  @({
   General Form:
@@ -98063,8 +98084,8 @@ arithmetic) for libraries of @(see books) for arithmetic reasoning.</p>")
 
  <p>provided @('lex2') has been proved to be a well-founded relation (see @(see
  well-founded-relation-rule)).  Note: This is an event!  It does not print the
- usual event summary but nevertheless changes the ACL2 logical @(see world) and
- is so recorded.</p>
+ usual event @(see summary) but nevertheless changes the ACL2 logical @(see
+ world) and is so recorded.</p>
 
  @({
   General Form:
@@ -99699,10 +99720,11 @@ arithmetic) for libraries of @(see books) for arithmetic reasoning.</p>")
 
  (b) During the proof, @(see gag-mode) or raw proof format on<br></br>
 
- (c) Summary</p></blockquote>
+ (c) @(See Summary)</p></blockquote>
 
  <p>Of course, (a) and (b) are skipped if proof output is inhibited, and (c) is
- skipped if summary output is inhibited; see @(see set-inhibit-output-lst).</p>
+ skipped if @(see summary) output is inhibited; see @(see
+ set-inhibit-output-lst).</p>
 
  <p>(a) During the proof, @(see gag-mode) and raw proof format (see @(see
  set-raw-proof-format)) off</p>
@@ -99745,7 +99767,7 @@ arithmetic) for libraries of @(see books) for arithmetic reasoning.</p>")
  <p>No such splitter notes are printed for the use of @(tsee force) (when @(see
  immediate-force-modep) is off).</p>
 
- <p>(c) Summary</p>
+ <p>(c) @(See Summary)</p>
 
  <p>Here is a possible summary corresponding to our running example.  In the
  summary, ``Splitter rules'' is omitted if there are no splitter rules, and a
@@ -101939,6 +101961,58 @@ arithmetic) for libraries of @(see books) for arithmetic reasoning.</p>")
  subversive; an induction scheme is thus stored for @('f').  (This restriction
  to measured formal positions of recursive calls, for determining subversive
  definitions, is new in Version_3.5 of ACL2.)</p>")
+
+(defxdoc summary
+
+; Warning: Keep this topic in sync with *summary-types*.
+
+  :parents (prover-output)
+  :short "The summary printed at the conclusion of an event"
+  :long "<p>At the conclusion of an @(see event) form, ACL2 prints (by default)
+ information summarizing the event.  The entire summary may be avoided &mdash;
+ see @(see set-inhibit-output-lst) &mdash; or if you prefer, you may inhibit
+ just specified component of the summary &mdash; see @(see
+ set-inhibited-summary-types).  The components are listed in the constant
+ @('*summary-types*') and most are available programatically: see @(see
+ get-event-data).  Some are omitted, however, if they would otherwise be empty.
+ Here is a brief summary of the components, listed alphabetically.  Most are
+ printed with an initial field indicator, e.g., ``@('Rules: ')''; a few, as
+ indicated below, are not.</p>
+
+ <ul>
+
+ <li>@('Errors'): The final error message (no field indicator)</li>
+
+ <li>@('Form'): The ``context'' for the event (@(see ctx)) (no field
+ indicator)</li>
+
+ <li>@('Header'): The initial word ``Summary'' (no field indicator)</li>
+
+ <li>@('Hint-events'): Hints (e.g., @(':use') hints) supplied</li>
+
+ <li>@('Prover steps counted'): Prover steps (see @(see
+ set-prover-step-limit))</li>
+
+ <li>@('Rules'): @(see Rune)s contributing to the proof or storage of the
+ event</li>
+
+ <li>@('Splitter-rules'): Potential causes of case splits (see @(see
+ splitter))</li>
+
+ <li>@('System-attachments'): List of doublets @('(f g)') for which @('f') is a
+ system function with attachment @('g') (see @(see defattach)), when @('g')
+ differs from the initial attachment to @('f')</li>
+
+ <li>@('Time'): Runtime (or real time; see @(see get-internal-time))</li>
+
+ <li>@('Value'): When an event form under @(tsee progn) or @(tsee encapsulate)
+ evaluates to @('(mv nil val state)'), @('val') is printed immediately under
+ the summary fields.  (No field indicator)</li>
+
+ <li>@('Warnings'): All warning string summaries printed during processing of
+ the event</li>
+
+ </ul>")
 
 (defxdoc symbol-<
   :parents (symbols acl2-built-ins)
@@ -104822,7 +104896,7 @@ arithmetic) for libraries of @(see books) for arithmetic reasoning.</p>")
  })
 
  <p>With this hint, the termination proof succeeds, printing the following line
- in the event summary.</p>
+ in the event @(see summary).</p>
 
  @({
  Hint-events: ((:USE LOG10))
@@ -104839,7 +104913,7 @@ arithmetic) for libraries of @(see books) for arithmetic reasoning.</p>")
  :use ((:rewrite car-cons) (:termination-theorem log10))
  })
 
- <p>then the @('Hint-events') summary line will be as follows.</p>
+ <p>then the @('Hint-events') @(see summary) line will be as follows.</p>
 
  @({
  Hint-events: ((:USE CAR-CONS) (:USE LOG10))
@@ -106126,8 +106200,8 @@ arithmetic) for libraries of @(see books) for arithmetic reasoning.</p>")
 
  <p>The first @('time-tracker') call (above) ends any existing time-tracking
  for tag @(':tau').  One might have expected it to be put into code managing
- the proof summary, but we decided not to rely on that code being executed,
- say, in case of an interrupt.  When a given tag is not already being
+ the proof @(see summary), but we decided not to rely on that code being
+ executed, say, in case of an interrupt.  When a given tag is not already being
  time-tracked, then @(':end') is a no-op (rather than an error).</p>
 
  <p>The second @('time-tracker') call (above) initiates time-tracking for the
@@ -106334,7 +106408,8 @@ arithmetic) for libraries of @(see books) for arithmetic reasoning.</p>")
   :DOC time-tracker-tau.
  })
 
- <p>Just below a proof summary you may see a message such as the following.</p>
+ <p>Just below a proof @(see summary) you may see a message such as the
+ following.</p>
 
  @({
   TIME-TRACKER-NOTE [:TAU]: For the proof above, the total runtime spent
@@ -109552,10 +109627,10 @@ introduction-to-the-tau-system) for more information about Tau.</dd>
  ACL2 !>
  })
 
- <p>Notice in particular the phrase, ``We used the :type-prescription
- rule ALISTP,'' and the corresponding @(see rune) @('(:TYPE-PRESCRIPTION
- ALISTP)') in the list of rules printed in the summary.  These are telling us
- that ACL2 used the indicated rule during the process of computing a
+ <p>Notice in particular the phrase, ``We used the :type-prescription rule
+ ALISTP,'' and the corresponding @(see rune) @('(:TYPE-PRESCRIPTION ALISTP)')
+ in the list of rules printed in the @(see summary).  These are telling us that
+ ACL2 used the indicated rule during the process of computing a
  (@see type-prescription) rule for @('f').</p>
 
  <p>Now suppose that in a different session we instead proceed as follows.</p>
@@ -115672,26 +115747,26 @@ for the execution of @('form')."
  keyword argument of @(tsee set-evisc-tuple) other than @(':trace') (that is, a
  member of the list @(`(remove1-eq :trace *evisc-tuple-sites*)`)), and each
  value evaluates to a legal @(see evisc-tuple) for that keyword.  Otherwise
- @(':keyi') is @(':stack'), in which case @('vali') is @(':push') or
- @(':pop'); for now assume that @(':stack') is not specified (we'll return to
- it below).  The result of evaluating the General Form above is to evaluate
- @('form'), but in an environment where output occurs as follows.  If
- @(':on :all') is specified, then every output type is turned on except as
- inhibited by @(':off'); else if @(':off :all') is specified, then every output
- type is inhibited except as specified by @(':on'); and otherwise, the
+ @(':keyi') is @(':stack'), in which case @('vali') is @(':push') or @(':pop');
+ for now assume that @(':stack') is not specified (we'll return to it below).
+ The result of evaluating the General Form above is to evaluate @('form'), but
+ in an environment where output occurs as follows.  If @(':on :all') is
+ specified, then every output type is turned on except as inhibited by
+ @(':off'); else if @(':off :all') is specified, then every output type is
+ inhibited except as specified by @(':on'); and otherwise, the
  currently-inhibited output types are reduced as specified by @(':on') and then
  extended as specified by @(':off').  If @(':gag-mode') and/or @(':evisc') are
  specified, then before modifying how output is inhibited, @(tsee gag-mode)
  and/or the appropriate @(see evisc-tuple)s are set for the evaluation of
  @('form') as specified by the values of those keywords; see @(see
  set-gag-mode) and @(see set-evisc-tuple).  If @('summary') is among the output
- types that are turned on
- (not inhibited), then if @(':summary') is specified, the only parts of the
- summary to be printed will be those specified by the value of @(':summary').
- The correspondence should be clear, except perhaps that @('header') refers to
- the line containing only the word @('Summary'), and @('value') refers to the
- value of the form printed during evaluation of sequences of events as for
- @(tsee progn) and @(tsee encapsulate).</p>
+ types that are turned on (not inhibited), then if @(':summary') is specified,
+ the only parts of the @(see summary) to be printed will be those specified by
+ the value of @(':summary').  The correspondence should be clear, except
+ perhaps that @('header') refers to the line containing only the word
+ @('Summary'), and @('value') refers to the value of the form printed during
+ evaluation of sequences of events as for @(tsee progn) and @(tsee
+ encapsulate).</p>
 
  <p>Note that the handling of the @(':stack') argument pays no attention to the
  @(':summary') argument.</p>
@@ -120975,6 +121050,7 @@ expand function call at the current subterm, without simplifying"
 (defpointer error hints t)
 (defpointer ev$ apply$)
 (defpointer ev$-list apply$)
+(defpointer event events)
 (defpointer execution evaluation)
 (defpointer expand hints t)
 (defpointer extended-syntaxp syntaxp)

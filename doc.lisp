@@ -5579,7 +5579,7 @@ Subtopics
   The community book hints/merge-hint.lisp can be useful in writing
   custom keyword hints.  See the examples near the of the file.
 
-  Note: This is an event!  It does not print the usual event summary
+  Note: This is an event!  It does not print the usual event [summary]
   but nevertheless changes the ACL2 logical [world] and is so
   recorded.")
  (ADD-DEFAULT-HINTS
@@ -5593,7 +5593,7 @@ Subtopics
     (add-default-hints '((computed-hint-3 id clause world))
                        :at-end t)
 
-  Note: This is an event!  It does not print the usual event summary
+  Note: This is an event!  It does not print the usual event [summary]
   but nevertheless changes the ACL2 logical [world] and is so
   recorded.  It is [local] to the book or [encapsulate] form in which
   it occurs (see [add-default-hints!] for a corresponding non-[local]
@@ -5659,7 +5659,7 @@ Subtopics
     ; corresponding to the relative pathname, \"utilities/\".
     (add-include-book-dir :util \"utilities\")
 
-  Note: This is an event!  It does not print the usual event summary
+  Note: This is an event!  It does not print the usual event [summary]
   but nevertheless changes the ACL2 logical [world] and is so
   recorded.  It is [local] to the book or [encapsulate] form in which
   it occurs.  See [add-include-book-dir!] for a corresponding
@@ -5738,7 +5738,7 @@ Subtopics
   a good reason for wanting to export the effect of this event
   outside the enclosing [encapsulate] or book.
 
-  Note: This is an event!  It does not print the usual event summary
+  Note: This is an event!  It does not print the usual event [summary]
   but nevertheless changes the ACL2 logical [world] and is so
   recorded.
 
@@ -5915,7 +5915,7 @@ Subtopics
   This event only affects rules that exist at the time it is executed.
   Future rules are not affected by the override.
 
-  Note: This is an event!  It does not print the usual event summary
+  Note: This is an event!  It does not print the usual event [summary]
   but nevertheless changes the ACL2 logical [world] and is so
   recorded.  It uses the [ACL2-defaults-table], and hence its effect
   is [local] to the book or [encapsulate] form in which it occurs.
@@ -6871,7 +6871,7 @@ Subtopics
       of the function my-app will always return a value that is
       either a [cons] pair or is equal to the second parameter.
 
-      The summary provides information about which previously introduced
+      The [summary] provides information about which previously introduced
       definitions and lemmas were used in this proof, about some
       notable things to watch out for (the Warnings), and about how
       long this event took to process.
@@ -7097,7 +7097,7 @@ Subtopics
   the theorem prover effectively.
 
   When the prover has successfully proved all subgoals, the proof is
-  finished.  As with a [defun], a summary of the proof is printed.
+  finished.  As with a [defun], a [summary] of the proof is printed.
   This was an extremely simple proof, needing no additional guidance.
   More realistic examples typically require the user to look
   carefully at the failed proof log to find ways to influence the
@@ -12126,8 +12126,8 @@ Subtopics
       or provided on the command line as part of the `make' command.
 
       2. (Optional; usually skipped.)  Set the INHIBIT variable if you want
-      to see more than the summary output.  For example, if you want
-      to see the same output as you would normally see at the
+      to see more than the [summary] output.  For example, if you
+      want to see the same output as you would normally see at the
       terminal, put this line in your Makefile after the `include'
       lines.
 
@@ -15551,7 +15551,7 @@ Subtopics
   executed.  To return to the default behavior, use the command
   (checkpoint-forced-goals nil).")
  (CHECKPOINT-SUMMARY-LIMIT
-  (SET-GAG-MODE)
+  (SUMMARY SET-GAG-MODE)
   "Control printing of key checkpoints upon a proof's failure
 
   See [set-checkpoint-summary-limit] for a discussion of the
@@ -17410,7 +17410,7 @@ Subtopics
   generated equivalence relation used for rewriting, ACL2 does not
   track the congruence rules that are used, even though it is
   relevant that they are all [enable]d.  Congruence rules that are
-  used only in this way will therefore not appear in the summary.
+  used only in this way will therefore not appear in the [summary].
 
   Remark on Replacing IFF by EQUAL. You may encounter a warning
   suggesting that a congruence rule ``can be strengthened by
@@ -19166,7 +19166,7 @@ Subtopics
   By ``used in a proof'' above, we mean: applied as a rule or supplied
   explicitly via [hints] of type :use, :by, or :clause-processor.
   That is, the [events] ``used in a proof'' for admitting an event E
-  are those listed in the summary printed at the conclusion of
+  are those listed in the [summary] printed at the conclusion of
   admitting E.
 
   Note that if proofs are skipped when admitting event E, say because
@@ -19421,7 +19421,7 @@ Subtopics
 
   If the tau system contributes to a proof, the [rune]
   (:[executable-counterpart] tau-system) will be listed among the
-  Rules in the Summary.  However, merely by being attempted the tau
+  Rules in the [Summary].  However, merely by being attempted the tau
   system can slow down proofs in which it makes no contribution.
 
   The most brutal and fool-proof way to isolate a proof from the tau
@@ -24125,7 +24125,7 @@ Subtopics
   [redundant-events]).  Even if the defthm event is redundant, then
   the [in-theory] event will still be executed.
 
-  The summary for the [in-theory] event is suppressed.  See [defthm]
+  The [summary] for the [in-theory] event is suppressed.  See [defthm]
   for documentation of defthm.")
  (DEFTHY
   (EVENTS THEORIES DEFTHEORY)
@@ -24247,7 +24247,7 @@ Subtopics
   which it occurs; see [ACL2-defaults-table].  We say more about the
   scope of defttag forms below.
 
-  Note: This is an event!  It does not print the usual event summary
+  Note: This is an event!  It does not print the usual event [summary]
   but nevertheless executes the above [table] event and hence changes
   the ACL2 logical [world], and is so recorded.  Although no event
   summary is printed, it is important to note that the ``TTAG NOTE'',
@@ -25587,7 +25587,7 @@ Subtopics
   Only the :[definition] rule (and, for recursively defined functions,
   the :[induction] rule) for the function are disabled.  In
   particular, defund does not disable either the :[type-prescription]
-  or the :[executable-counterpart] rule.  Also, the summary for the
+  or the :[executable-counterpart] rule.  Also, the [summary] for the
   [in-theory] event is suppressed.
 
   If the function is defined in :[program] mode, either because the
@@ -25741,7 +25741,7 @@ Subtopics
   argument of [include-book] and [ld].  See [add-include-book-dir]
   for how to associate a new directory with a keyword.
 
-  Note: This is an event!  It does not print the usual event summary
+  Note: This is an event!  It does not print the usual event [summary]
   but nevertheless changes the ACL2 logical [world] and is so
   recorded.
 
@@ -25764,7 +25764,7 @@ Subtopics
   delete-include-book-dir! removes associations previously placed by
   [add-include-book-dir!].
 
-  Note: This is an event!  It does not print the usual event summary
+  Note: This is an event!  It does not print the usual event [summary]
   but nevertheless changes the ACL2 logical [world] and is so
   recorded.
 
@@ -29497,6 +29497,7 @@ Subtopics
     (defun evenp (x)
            (declare (xargs :guard (integerp x)))
            (integerp (* x (/ 2))))")
+ (EVENT (POINTERS) "See [events].")
  (EVENTS
   (ACL2)
   "Functions that extend the logic
@@ -29515,7 +29516,7 @@ Subtopics
   [defthm]), and some may introduce many (e.g., [encapsulate] ).
 
   ACL2 typically completes processing of an event by printing a
-  summary.  Unless proofs are skipped (see [ld-skip-proofsp]) or
+  [summary].  Unless proofs are skipped (see [ld-skip-proofsp]) or
   summary output is inhibited (see [set-inhibit-output-lst]),
   information about the proof attempt (if any) is printed that
   includes a list of rules used, a summary of warnings, and the
@@ -31455,7 +31456,7 @@ Subtopics
   from ACL2's output what you know that ACL2 doesn't about the
   functions in the conjecture and how to impart that knowledge to
   ACL2 in the form of rules.  The ``key checkpoint'' information
-  printed at the end of the summary provides a fine place to start.
+  printed at the end of the [summary] provides a fine place to start.
   See [the-method] for a general discussion of how to prove theorems
   with ACL2, and see [introduction-to-the-theorem-prover] for a more
   detailed tutorial.  Also see [set-gag-mode] for discussion of key
@@ -32045,7 +32046,7 @@ Subtopics
                        state)))")
  (FINALIZE-EVENT-USER
   (PROVER-OUTPUT)
-  "User-supplied code to complete [events], e.g., with extra summary
+  "User-supplied code to complete [events], e.g., with extra [summary]
   output
 
   This utility is intended for system hackers, not standard ACL2 users.
@@ -32053,7 +32054,7 @@ Subtopics
   ACL2 prints summaries at the conclusions of processing [events]
   (unless summaries are inhibited; see [set-inhibit-output-lst] and
   also see [set-inhibited-summary-types]).  You may arrange for
-  processing to take place just after the summary, by defining a
+  processing to take place just after the [summary], by defining a
   function with argument list (ctx body state) that returns one
   value, namely state.  We describe ctx and body at the end below,
   but you may simply prefer to ignore these arguments.)  Your
@@ -32083,7 +32084,7 @@ Subtopics
 
     (defattach finalize-event-user finalize-event-user-test)
 
-  After admission of the two events above, an event summary will
+  After admission of the two events above, an event [summary] will
   conclude with extra printout, for example:
 
     Note: Abbrev-evisc-tuple has its default value.
@@ -36577,8 +36578,9 @@ Subtopics
   of key in an association list, namely, in the value of [state]
   global variable last-event-data (see [programming-with-state]).
   That alist contains certain information stored at the conclusion of
-  the immediately preceding event.  For each key the corresponding
-  value, VAL, is as follows.
+  the immediately preceding event, some of which corresponds to the
+  event's [summary].  For each key the corresponding value, VAL, is
+  as follows.
 
     * ABORT-CAUSES: VAL is a list of reasons why the proof aborted.  In
       particular, if the value INTERRUPT is in the list, then the
@@ -36594,6 +36596,9 @@ Subtopics
     * RULES: VAL is as in the corresponding field of the event summary.
     * SPLITTER-RULES: VAL represents the corresponding field of the event
       summary, as the list (case-split immed-forced if-intro).
+    * SYSTEM-ATTACHMENTS: VAL lists the pairs (f . g) for which f is a
+      system function with attachment g ([defattach]), which differs
+      from the attachment to f when ACL2 starts up.
     * TIME: VAL represents the corresponding field of the event summary, as
       the list (prove print proof-tree other).
     * WARNINGS: VAL is as in the corresponding field of the event summary.")
@@ -36622,7 +36627,7 @@ Subtopics
      (prog2$ (sys-call \"sleep\" '(\"2\"))
              (value '(value-triple nil))))
 
-  A typical time summary might be as follows, drastically
+  A typical time [summary] might be as follows, drastically
   under-reporting the elapsed time.
 
     Time:  0.01 seconds (prove: 0.00, print: 0.00, other: 0.01)
@@ -43880,8 +43885,8 @@ Subtopics
       [enable] and [disable] expressions, are also references to the
       current theory of the ACL2 logical [world].
     * The [rune]s used during an :instructions hint are not tracked beyond
-      that hint, hence may not show up in the summary of the overall
-      proof.  Again, think of the :instructions hint as a
+      that hint, hence may not show up in the [summary] of the
+      overall proof.  Again, think of the :instructions hint as a
       [clause-processor] call, which has some effect not tracked by
       the surrounding proof other than for the child goals that it
       returns.
@@ -44035,7 +44040,8 @@ Subtopics
     (thm (implies (true-listp x)
                   (equal (reverse (reverse x)) x)))
 
-  then you will see the following checkpoint printed with the summary.
+  then you will see the following checkpoint printed with the
+  [summary].
 
     Subgoal *1/3''
     (IMPLIES (AND (CONSP X)
@@ -46414,7 +46420,7 @@ Subtopics
   from being used is by disabling the entire tau system, by disabling
   (:[executable-counterpart] tau-system).  If any tau reasoning is
   used in a proof, the rune (:[executable-counterpart] tau-system) is
-  reported in the summary.  For a complete list of all the runes in
+  reported in the [summary].  For a complete list of all the runes in
   the tau database, evaluate (global-val 'tau-runes (w state)).  Any
   of these associated theorems could have been used.
 
@@ -47936,8 +47942,8 @@ Subtopics
     ; appropriate infrastructure has been built up.  But because the
     ; infrastructure is ``heavy'' we tend not to invest in it for small projects.
 
-    ; In summary, different users might take home different lessons about whether a
-    ; direct or indirect proof is better here.  This is in part due to the
+    ; In summary, different users might take home different lessons about whether
+    ; a direct or indirect proof is better here.  This is in part due to the
     ; complexity of the functional relationship between collect-once and
     ; while-loop-version, which additionally involved append, list-minus, and rev.
     ; Had the relationship been simpler, the indirect proof would have been
@@ -48985,11 +48991,11 @@ Subtopics
   and see [with-prover-step-limit].  The value of the form
   (last-prover-steps state) indicates the number of prover steps
   taken, in the sense described below, for the most recent context in
-  which an event summary would normally be printed.  Note that the
+  which an event [summary] would normally be printed.  Note that the
   value of (last-prover-steps state) is updated for all [events], and
   for all other forms such as calls of [thm] or [certify-book], that
-  would print a summary --- regardless of whether or not such output
-  is inhibited (see [set-inhibit-output-lst] and see
+  would print a [summary] --- regardless of whether or not such
+  output is inhibited (see [set-inhibit-output-lst] and see
   [set-inhibited-summary-types]).  In particular, the value is
   updated (typically to nil) for [table] [events], even when no
   summary is printed; for example, the value is updated to nil for
@@ -50102,7 +50108,7 @@ Subtopics
   presumably, successfully carried out when the book was certified.
 
   A non-nil value for ld-skip-proofsp also affects the system's output
-  messages.  Event summaries (the paragraphs that begin ``Summary''
+  messages.  Event summaries (the paragraphs that begin ``[Summary]''
   and display the event forms, rules used, etc.) are not printed when
   ld-skip-proofsp is non-nil.  Warnings and observations are printed
   when ld-skip-proofsp is t but are not printed when it is
@@ -51431,7 +51437,7 @@ Subtopics
   Functions defined in :logic mode are logically defined.  See
   [defun-mode].
 
-  Note: This is an event!  It does not print the usual event summary
+  Note: This is an event!  It does not print the usual event [summary]
   but nevertheless changes the ACL2 logical [world] and is so
   recorded.
 
@@ -56186,7 +56192,7 @@ Subtopics
   value is ignored.
 
   If :verbose is supplied, it should either be nil, which will inhibit
-  proof, event, and summary output (see [with-output]), or else t
+  proof, event, and [summary] output (see [with-output]), or else t
   (the default), which does not inhibit output.  If the output
   baffles you, try
 
@@ -57188,7 +57194,7 @@ Example
                (equal (foo a (foo b (- a)))
                       b)))
 
-  Happily, the test succeeds, with the summary showing that our meta
+  Happily, the test succeeds, with the [summary] showing that our meta
   rule, meta-fn-correct, was indeed used in the proof.  But if we
   first submit the form (trace$ meta-fn meta-hyp-fn meta-helper), we
   will see that meta-helper is called twice on the term (FOO A (FOO B
@@ -59368,7 +59374,7 @@ SECTION: Precise documentation for stobj-let
   Let's dig a bit deeper by considering two cases for production of a
   NIL subgoal.  First consider the case that the subgoal is a key
   checkpoint at the top level or under a top-level induction --- that
-  is, a key checkpoint listed in the proof summary.  In that case,
+  is, a key checkpoint listed in the proof [summary].  In that case,
   the original conjecture is very likely not a theorem.  Otherwise,
   if you are using [gag-mode] (which is the case by default), then
   you may need to issue the command :[pso] (``Print Saved Output'')
@@ -59381,8 +59387,8 @@ SECTION: Precise documentation for stobj-let
   under a top-level induction, then as discussed above, the original
   conjecture is probably not a theorem.  Therefore, in that case,
   ACL2 always prints a NIL subgoal first in a list of checkpoints
-  printed in the summary, so that a NIL subgoal comes quickly to your
-  attention.")
+  printed in the [summary], so that a NIL subgoal comes quickly to
+  your attention.")
  (NINTH
   (NTH ACL2-BUILT-INS)
   "Ninth member of the list
@@ -60154,7 +60160,7 @@ Subtopics
 
     (defthm abc (equal (+ (len x) 0) (len x)))
 
-  leads to a summary containing the line
+  leads to a [summary] containing the line
 
     Form:  ( DEFTHM ABC ...)
 
@@ -78409,7 +78415,7 @@ Changes to Existing Features
   Information printed when giving :use [hints] has been improved for
   the case that a [lemma-instance] is a :[termination-theorem] or a
   :[guard-theorem].  Formerly, only the name was shown in the
-  `Hint-events' summary and in the proof output; now, one will see
+  `Hint-events' [summary] and in the proof output; now, one will see
   ``names'' of the form (:termination-theorem NAME) and
   (:guard-theorem NAME).
 
@@ -78418,6 +78424,10 @@ Changes to Existing Features
 
 
 New Features
+
+  The [summary] now shows, by default, the list of doublets (f g) for
+  which f is a system function with attachment g (see [defattach]),
+  when g differs from the initial attachment to f.
 
 
 Heuristic and Efficiency Improvements
@@ -81933,7 +81943,7 @@ Subtopics
   This topic assumes familiarity with the basics of congruence rules;
   see [congruence].  Some aspects of congruence rules carry over to
   patterned congruence rules; in particular, they may be [disable]d,
-  but they are not tracked for reporting in the summary.
+  but they are not tracked for reporting in the [summary].
 
   We begin our discussion by showing some patterned congruence rules
   and using them to illustrate some terminology.
@@ -82756,6 +82766,9 @@ Subtopics
 
   [Ev$-list]
       See [apply$].
+
+  [Event]
+      See [events].
 
   [Execution]
       See [evaluation].
@@ -85138,7 +85151,7 @@ Subtopics
     theory-invariant
     defchoose
 
-  Note: This is an event!  It does not print the usual event summary
+  Note: This is an event!  It does not print the usual event [summary]
   but nevertheless changes the ACL2 logical [world] and is so
   recorded.
 
@@ -86178,7 +86191,7 @@ Subtopics
   This form binds state global variable inhibit-output-lst to the
   result of adding the symbol, summary, to the current value of that
   state global.  Thus (see [set-inhibit-output-lst]), the usual
-  summary is not printed when evaluating this call of [thm].
+  [summary] is not printed when evaluating this call of [thm].
 
   See [state-global-let*] for more complete [documentation].
 
@@ -87617,7 +87630,7 @@ Subtopics
 Subtopics
 
   [Finalize-event-user]
-      User-supplied code to complete [events], e.g., with extra summary
+      User-supplied code to complete [events], e.g., with extra [summary]
       output
 
   [Gag-mode]
@@ -87657,7 +87670,7 @@ Subtopics
       Control warnings non-[local]ly
 
   [Set-inhibited-summary-types]
-      Control which parts of the summary are printed
+      Control which parts of the [summary] are printed
 
   [Set-let*-abstractionp]
       To shorten many prettyprinted clauses
@@ -87670,6 +87683,9 @@ Subtopics
 
   [Set-raw-warning-format]
       Print some warnings in a ``raw'', s-expression format
+
+  [Summary]
+      The summary printed at the conclusion of an event
 
   [Warnings]
       Warnings emitted by the ACL2 proof process
@@ -91503,7 +91519,7 @@ Subtopics
   For an explanation of how custom keyword hints are processed, see
   [custom-keyword-hints]; also see [add-custom-keyword-hint].
 
-  Note: This is an event!  It does not print the usual event summary
+  Note: This is an event!  It does not print the usual event [summary]
   but nevertheless changes the ACL2 logical [world] and is so
   recorded.")
  (REMOVE-DEFAULT-HINTS
@@ -91515,7 +91531,7 @@ Subtopics
                             (computed-hint-2 clause
                                              stable-under-simplificationp)))
 
-  Note: This is an event!  It does not print the usual event summary
+  Note: This is an event!  It does not print the usual event [summary]
   but nevertheless changes the ACL2 logical [world] and is so
   recorded.  It is [local] to the book or [encapsulate] form in which
   it occurs (see [remove-default-hints!] for a corresponding
@@ -94969,7 +94985,7 @@ Subtopics
   "Sets the backchain-limit used by the type-set and rewriting
   mechanisms
 
-  Note: This is an event!  It does not print the usual event summary
+  Note: This is an event!  It does not print the usual event [summary]
   but nevertheless changes the ACL2 logical [world] and is so
   recorded.  Moreover, its effect is to set the
   [ACL2-defaults-table], and hence its effect is [local] to the book
@@ -95102,7 +95118,7 @@ Subtopics
   default.  The third example allows bogus mutual recursion, but
   prints an appropriate warning.
 
-  Note: This is an event!  It does not print the usual event summary
+  Note: This is an event!  It does not print the usual event [summary]
   but nevertheless changes the ACL2 logical [world] and is so
   recorded.  Moreover, its effect is to set the
   [ACL2-defaults-table], and hence its effect is [local] to the book
@@ -95129,7 +95145,7 @@ Subtopics
   are involved.  It also discourages the clause simplifier from
   splitting into more than 100 cases at once.
 
-  Note: This is an event!  It does not print the usual event summary
+  Note: This is an event!  It does not print the usual event [summary]
   but nevertheless changes the ACL2 logical [world] and is so
   recorded.  Moreover, its effect is to set the
   [ACL2-defaults-table], and hence its effect is [local] to the book
@@ -95477,7 +95493,7 @@ Subtopics
 
   where each of n1 and n2 is a natural number or nil.  For the second
   form, n can be a natural number or nil and is treated as (n . n).
-  The value t inhibits all printing of checkpoint summary
+  The value t inhibits all printing of checkpoint [summary]
   information.  The values n1 and n2 determine printing of key
   checkpoints generated before the first induction and generated
   after the first induction, respectively, where at most n1 or n2
@@ -95505,7 +95521,7 @@ Subtopics
     (set-compile-fns t)    ; new functions compiled after DEFUN
     (set-compile-fns nil)  ; new functions not compiled after DEFUN
 
-  Note: This is an event!  It does not print the usual event summary
+  Note: This is an event!  It does not print the usual event [summary]
   but nevertheless changes the ACL2 logical [world] and is so
   recorded.
 
@@ -95685,7 +95701,7 @@ Subtopics
   (BACKCHAIN-LIMIT)
   "Sets the default backchain-limit used when admitting a rule
 
-  Note: This is an event!  It does not print the usual event summary
+  Note: This is an event!  It does not print the usual event [summary]
   but nevertheless changes the ACL2 logical [world] and is so
   recorded.  Moreover, its effect is to set the
   [ACL2-defaults-table], and hence its effect is [local] to the book
@@ -95743,7 +95759,7 @@ Subtopics
                                           stable-under-simplificationp)))
     (set-default-hints nil)
 
-  Note: This is an event!  It does not print the usual event summary
+  Note: This is an event!  It does not print the usual event [summary]
   but nevertheless changes the ACL2 logical [world] and is so
   recorded.  It is [local] to the book or [encapsulate] form in which
   it occurs; see [set-default-hints!] for a corresponding non-[local]
@@ -95930,7 +95946,7 @@ Subtopics
   according to whether val is the keyword :error, :warning, or nil,
   respectively.
 
-  Note: This is an event!  It does not print the usual event summary
+  Note: This is an event!  It does not print the usual event [summary]
   but nevertheless changes the ACL2 logical [world] and is so
   recorded.  It is [local] to the book or [encapsulate] form in which
   it occurs; see [set-duplicate-keys-action!] for a corresponding
@@ -95955,7 +95971,7 @@ Subtopics
     (set-enforce-redundancy t)     ; most events (see below) must be redundant
     (set-enforce-redundancy :warn) ; warn for most non-redundant events
 
-  Note: This is an event!  It does not print the usual event summary
+  Note: This is an event!  It does not print the usual event [summary]
   but nevertheless changes the ACL2 logical [world] and is so
   recorded.
 
@@ -96726,7 +96742,7 @@ Example
   this is the default.  The third example allows them, but prints an
   appropriate warning.
 
-  Note: This is an event!  It does not print the usual event summary
+  Note: This is an event!  It does not print the usual event [summary]
   but nevertheless changes the ACL2 logical [world] and is so
   recorded.  Moreover, its effect is to set the
   [ACL2-defaults-table], and hence its effect is [local] to the book
@@ -96788,7 +96804,7 @@ Example
   See [with-output] for a variant of this utility that can be used in
   [books].  Also see [set-inhibit-warnings] for how to inhibit
   individual warning types and see [set-inhibited-summary-types] for
-  how to inhibit individual parts of the summary.
+  how to inhibit individual parts of the [summary].
 
   Printing of events on behalf of [certify-book] and [encapsulate] is
   inhibited when both 'event and 'prove belong to lst.  Otherwise,
@@ -96814,7 +96830,7 @@ Example
     Examples:
     (set-inhibit-warnings \"theory\" \"use\")
 
-  Note: This is an event!  It does not print the usual event summary
+  Note: This is an event!  It does not print the usual event [summary]
   but nevertheless changes the ACL2 logical [world] and is so
   recorded.  It is [local] to the book or [encapsulate] form in which
   it occurs; see [set-inhibit-warnings!] for a corresponding
@@ -96865,7 +96881,7 @@ Example
   enclosing [encapsulate] or book.")
  (SET-INHIBITED-SUMMARY-TYPES
   (PROVER-OUTPUT)
-  "Control which parts of the summary are printed
+  "Control which parts of the [summary] are printed
 
     Example:
     (set-inhibited-summary-types '(rules time))
@@ -96877,12 +96893,13 @@ Example
     (set-inhibited-summary-types form)
 
   where form evaluates to a true-list of symbols, each of which is
-  among the values of the constant *summary-types*, i.e.: header,
-  form, rules, hint-events, warnings, time, steps, value, and
-  splitter-rules.  Each specified type inhibits printing of the
-  corresponding portion of the summaries printed at the conclusions
-  of [events], where header refers to an initial newline followed by
-  the line containing just the word Summary.
+  among the values of the constant *summary-types*, which is (errors
+  form header hint-events rules splitter-rules steps
+  system-attachments time value warnings).  Each specified type
+  inhibits printing of the corresponding portion of the summaries
+  printed at the conclusions of [events], where header refers to an
+  initial newline followed by the line containing just the word
+  Summary.
 
   Note the distinction between rules and hint-events.  Rules provides a
   record of automatic rule usage by the prover, while hint-events
@@ -96893,7 +96910,7 @@ Example
   Also see [set-inhibit-output-lst].  Note that
   set-inhibited-summary-types has no effect when summary is one of
   the types inhibited by [set-inhibit-output-lst], because in that
-  case none of the summary will be printed.
+  case none of the [summary] will be printed.
 
   To control summary types for a single event, see [with-output].")
  (SET-INVISIBLE-FNS-TABLE
@@ -97361,7 +97378,7 @@ Example
   formals; this is the default.  The third example allows irrelevant
   formals, but prints an appropriate warning.
 
-  Note: This is an event!  It does not print the usual event summary
+  Note: This is an event!  It does not print the usual event [summary]
   but nevertheless changes the ACL2 logical [world] and is so
   recorded.  Moreover, its effect is to set the
   [ACL2-defaults-table], and hence its effect is [local] to the book
@@ -97392,7 +97409,7 @@ Example
   (PROVER-OUTPUT)
   "To shorten many prettyprinted clauses
 
-  Note: This is an event!  It does not print the usual event summary
+  Note: This is an event!  It does not print the usual event [summary]
   but nevertheless changes the ACL2 logical [world] and is so
   recorded.  Moreover, its effect is to set the
   [ACL2-defaults-table], and hence its effect is [local] to the book
@@ -97451,7 +97468,7 @@ Example
   behavior it had at start-up, as described in Remarks (2) and (3)
   below.
 
-  Note: This is an event!  It does not print the usual event summary
+  Note: This is an event!  It does not print the usual event [summary]
   but nevertheless changes the ACL2 logical [world] and is so
   recorded.  It uses the [ACL2-defaults-table], and hence its effect
   is [local] to the book or [encapsulate] form in which it occurs.
@@ -97520,7 +97537,7 @@ Example
     Examples:
     (set-measure-function nqthm::count)
 
-  Note: This is an event!  It does not print the usual event summary
+  Note: This is an event!  It does not print the usual event [summary]
   but nevertheless changes the ACL2 logical [world] and is so
   recorded.
 
@@ -97874,7 +97891,7 @@ Example
   indicator of the number of prover steps most recently taken, see
   [last-prover-steps].
 
-  Note: This is an event!  It does not print the usual event summary
+  Note: This is an event!  It does not print the usual event [summary]
   but nevertheless changes the ACL2 logical [world] and is so
   recorded.  Moreover, its effect is to set the
   [ACL2-defaults-table], and hence its effect is [local] to the book
@@ -97917,12 +97934,12 @@ Example
 
   The limit is relevant for every event, as well as for calls of [thm]
   and [certify-book] --- and more generally, to any form that creates
-  a ``summary context'' to print the usual event summary.  The limit
-  is also put in force when entering the interactive [proof-builder].
-  A call of set-prover-step-limit applies to each subsequent form
-  unless the call of set-prover-step-limit is within a summary
-  context, in which case its effect disappears when exiting that
-  summary context.
+  a ``summary context'' to print the usual event [summary].  The
+  limit is also put in force when entering the interactive
+  [proof-builder].  A call of set-prover-step-limit applies to each
+  subsequent form unless the call of set-prover-step-limit is within
+  a summary context, in which case its effect disappears when exiting
+  that summary context.
 
   The limit applies to each event, not just ``atomic'' events.
   Consider the following example.
@@ -97939,7 +97956,7 @@ Example
         :rule-classes nil))
 
   The first [defthm] event, lemma-1 takes 380 steps (as of this
-  writing), as shown in the summary:
+  writing), as shown in the [summary]:
 
     Prover steps counted:  380
     LEMMA-1
@@ -98261,7 +98278,7 @@ Subtopics
   invoked (set-register-invariant-risk nil), then define a function
   that calls the stobj updater.
 
-  Note: This is an event!  It does not print the usual event summary
+  Note: This is an event!  It does not print the usual event [summary]
   but nevertheless changes the ACL2 logical [world] and is so
   recorded.  Moreover, its effect is to set the
   [ACL2-defaults-table], and hence its effect is [local] to the book
@@ -98270,7 +98287,7 @@ Subtopics
   (REWRITE-STACK-LIMIT)
   "Sets the rewrite stack depth used by the rewriter
 
-  Note: This is an event!  It does not print the usual event summary
+  Note: This is an event!  It does not print the usual event [summary]
   but nevertheless changes the ACL2 logical [world] and is so
   recorded.
 
@@ -98347,7 +98364,7 @@ Subtopics
     :monitor (:rewrite f1->f2) t
     (thm (equal (car (f2 a)) (cdr (f2 a))))
 
-  Note: This is an event!  It does not print the usual event summary
+  Note: This is an event!  It does not print the usual event [summary]
   but nevertheless changes the ACL2 logical [world] and is so
   recorded.  It is [local] to the book or [encapsulate] form in which
   it occurs (see [set-rw-cache-state!] for a corresponding
@@ -98426,7 +98443,7 @@ Subtopics
   inhibited.
 
   See [set-inhibit-output-lst] if you want to inhibit certain output
-  from the prover but not other output (e.g., not the summary), and
+  from the prover but not other output (e.g., not the [summary]), and
   you don't want to save any output.")
  (SET-SERIALIZE-CHARACTER (POINTERS)
                           "See [with-serialize-character].")
@@ -98570,7 +98587,7 @@ Subtopics
   (STATE)
   "Allow the use of STATE as a formal parameter
 
-  Note: This is an event!  It does not print the usual event summary
+  Note: This is an event!  It does not print the usual event [summary]
   but nevertheless changes the ACL2 logical [world] and is so
   recorded.
 
@@ -98903,7 +98920,7 @@ Subtopics
     (set-verify-guards-eagerness 1) ; yes if a guard or type is supplied
     (set-verify-guards-eagerness 2) ; yes, unless :verify-guards nil
 
-  Note: This is an event!  It does not print the usual event summary
+  Note: This is an event!  It does not print the usual event [summary]
   but nevertheless changes the ACL2 logical [world] and is so
   recorded.
 
@@ -99156,8 +99173,8 @@ Subtopics
 
   provided lex2 has been proved to be a well-founded relation (see
   [well-founded-relation-rule]).  Note: This is an event!  It does
-  not print the usual event summary but nevertheless changes the ACL2
-  logical [world] and is so recorded.
+  not print the usual event [summary] but nevertheless changes the
+  ACL2 logical [world] and is so recorded.
 
     General Form:
     (set-well-founded-relation rel)
@@ -100728,10 +100745,10 @@ Subtopics
       (a) During the proof, [gag-mode] and raw proof format (see
       [set-raw-proof-format]) off
       (b) During the proof, [gag-mode] or raw proof format on
-      (c) Summary
+      (c) [Summary]
 
   Of course, (a) and (b) are skipped if proof output is inhibited, and
-  (c) is skipped if summary output is inhibited; see
+  (c) is skipped if [summary] output is inhibited; see
   [set-inhibit-output-lst].
 
   (a) During the proof, [gag-mode] and raw proof format (see
@@ -100773,7 +100790,7 @@ Subtopics
   No such splitter notes are printed for the use of [force] (when
   [immediate-force-modep] is off).
 
-  (c) Summary
+  (c) [Summary]
 
   Here is a possible summary corresponding to our running example.  In
   the summary, ``Splitter rules'' is omitted if there are no splitter
@@ -103189,6 +103206,43 @@ Subtopics
     (app a (app b c))
 
   The variable recursively decomposed is indicated in bold.")
+ (SUMMARY
+  (PROVER-OUTPUT)
+  "The summary printed at the conclusion of an event
+
+  At the conclusion of an [event] form, ACL2 prints (by default)
+  information summarizing the event.  The entire summary may be
+  avoided --- see [set-inhibit-output-lst] --- or if you prefer, you
+  may inhibit just specified component of the summary --- see
+  [set-inhibited-summary-types].  The components are listed in the
+  constant *summary-types* and most are available programatically:
+  see [get-event-data].  Some are omitted, however, if they would
+  otherwise be empty.  Here is a brief summary of the components,
+  listed alphabetically.  Most are printed with an initial field
+  indicator, e.g., ``Rules: ''; a few, as indicated below, are not.
+
+    * Errors: The final error message (no field indicator)
+    * Form: The ``context'' for the event ([ctx]) (no field indicator)
+    * Header: The initial word ``Summary'' (no field indicator)
+    * Hint-events: Hints (e.g., :use hints) supplied
+    * Prover steps counted: Prover steps (see [set-prover-step-limit])
+    * Rules: [Rune]s contributing to the proof or storage of the event
+    * Splitter-rules: Potential causes of case splits (see [splitter])
+    * System-attachments: List of doublets (f g) for which f is a system
+      function with attachment g (see [defattach]), when g differs
+      from the initial attachment to f
+    * Time: Runtime (or real time; see [get-internal-time])
+    * Value: When an event form under [progn] or [encapsulate] evaluates to
+      (mv nil val state), val is printed immediately under the
+      summary fields.  (No field indicator)
+    * Warnings: All warning string summaries printed during processing of
+      the event
+
+
+Subtopics
+
+  [Checkpoint-summary-limit]
+      Control printing of key checkpoints upon a proof's failure")
  (SYMBOL-<
   (SYMBOLS ACL2-BUILT-INS)
   "Less-than test for symbols
@@ -105977,7 +106031,7 @@ Subtopics
                 (list (mod x 10)))))
 
   With this hint, the termination proof succeeds, printing the
-  following line in the event summary.
+  following line in the event [summary].
 
     Hint-events: ((:USE LOG10))
 
@@ -105990,7 +106044,7 @@ Subtopics
 
     :use ((:rewrite car-cons) (:termination-theorem log10))
 
-  then the Hint-events summary line will be as follows.
+  then the Hint-events [summary] line will be as follows.
 
     Hint-events: ((:USE CAR-CONS) (:USE LOG10))
 
@@ -108245,10 +108299,10 @@ Subtopics
 
   The first time-tracker call (above) ends any existing time-tracking
   for tag :tau.  One might have expected it to be put into code
-  managing the proof summary, but we decided not to rely on that code
-  being executed, say, in case of an interrupt.  When a given tag is
-  not already being time-tracked, then :end is a no-op (rather than
-  an error).
+  managing the proof [summary], but we decided not to rely on that
+  code being executed, say, in case of an interrupt.  When a given
+  tag is not already being time-tracked, then :end is a no-op (rather
+  than an error).
 
   The second time-tracker call (above) initiates time-tracking for the
   tag, :tau.  Moreover, it specifies the effect of the :print?
@@ -108449,7 +108503,7 @@ Subtopics
     TIME-TRACKER-NOTE [:TAU]: Elapsed runtime in tau is 4.95 secs; see
     :DOC time-tracker-tau.
 
-  Just below a proof summary you may see a message such as the
+  Just below a proof [summary] you may see a message such as the
   following.
 
     TIME-TRACKER-NOTE [:TAU]: For the proof above, the total runtime spent
@@ -111598,7 +111652,7 @@ Subtopics
 
   Notice in particular the phrase, ``We used the :type-prescription
   rule ALISTP,'' and the corresponding [rune] (:TYPE-PRESCRIPTION
-  ALISTP) in the list of rules printed in the summary.  These are
+  ALISTP) in the list of rules printed in the [summary].  These are
   telling us that ACL2 used the indicated rule during the process of
   computing a (@see type-prescription) rule for f.
 
@@ -116693,8 +116747,8 @@ Subtopics
   for the evaluation of form as specified by the values of those
   keywords; see [set-gag-mode] and [set-evisc-tuple].  If summary is
   among the output types that are turned on (not inhibited), then if
-  :summary is specified, the only parts of the summary to be printed
-  will be those specified by the value of :summary.  The
+  :summary is specified, the only parts of the [summary] to be
+  printed will be those specified by the value of :summary.  The
   correspondence should be clear, except perhaps that header refers
   to the line containing only the word Summary, and value refers to
   the value of the form printed during evaluation of sequences of
