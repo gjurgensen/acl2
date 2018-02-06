@@ -79857,6 +79857,15 @@ it."
  <p>We improved redundancy checking for @(tsee defun) forms so that it is not
  sensitive to whether @(tsee state) has a @(':stobj') declaration.</p>
 
+ <p>The @(see warnings) for weak @(see type-prescription) rules have been
+ eliminated.  These warnings were issued when a rule was insufficient to prove
+ itself by @(see type-set) reasoning, but it seems more appropriate to
+ parse the formula into a type-prescription rule before applying that check
+ (for example, expanding away @(see guard-holders), which was already done, and
+ beta reducing lambda applications, which was not).  Then the chance of not
+ proving the result seems remote.  Thanks to Keshav Kini for an example and a
+ conversation leading to this improvement.</p>
+
  <h3>New Features</h3>
 
  <p>The @(see summary) now shows, by default, the list of doublets @('(f g)')
