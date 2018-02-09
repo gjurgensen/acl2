@@ -19900,7 +19900,7 @@ Subtopics
                              (foldr (car args)
                                     (cadr args)
                                     (caddr args))))))
-      :constrained t)
+      :constrain t)
 
   Notice that the tameness hypothesis involves the universally
   quantified variable args, but that the first conjunct of the
@@ -104450,6 +104450,15 @@ List of a few ACL2 system utilities:
       order, [lexorder], on the ACL2 universe.
     * (nvariablep x): For a [pseudo-termp] x, return true iff x is not a
       variable (i.e. it is a quoted constant or a function call).
+    * (partition-rest-and-keyword-args x keys): x should be a list of the
+      form (a1 ... an :key1 v1 ... :keyk vk), where no ai is a
+      keyword.  The result is (mv erp rest alist), where erp is
+      non-nil if and only if the keyword section of x (that is,
+      starting with :key1) is ill-formed, that is: some :keyi is not
+      a keyword, :keyi and :keyj are the same for some distinct i and
+      j, or some :keyi is not a member of keys.  When erp is nil,
+      then rest is (a1 ... an) and alist is ((:key1 . v1) ... (:keyk
+      . vk)).
     * (plist-worldp alist): Recognizer for when alist is syntactically
       well-formed as an ACL2 logical [world], sometimes suitable for
       use in [guard]s.  Note: for a somewhat deeper check, see
