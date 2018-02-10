@@ -78432,6 +78432,16 @@ Changes to Existing Features
   result seems remote.  Thanks to Keshav Kini for an example and a
   conversation leading to this improvement.
 
+  The [checksum] computation that can support certifying or including
+  [books] --- which is not used by default, but see [book-hash] for
+  how to enable it --- has been improved.  Specifically, at least one
+  of the [community-books] (namely, books/centaur/aignet/rwlib.lisp)
+  formerly caused a stack overflow (with host Lisp SBCL, at least)
+  before making this change.  (Technical note: the change is to avoid
+  memoization for calls of fchecksum-obj with stack depth exceeding
+  10000.)  Thanks to Keshav Kini for reporting this issue and for
+  related helpful communications.
+
 
 New Features
 
