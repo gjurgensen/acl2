@@ -79866,6 +79866,16 @@ it."
  proving the result seems remote.  Thanks to Keshav Kini for an example and a
  conversation leading to this improvement.</p>
 
+ <p>The @(see checksum) computation that can support certifying or including
+ @(see books) &mdash; which is not used by default, but see @(see book-hash)
+ for how to enable it &mdash; has been improved.  Specifically, at least one of
+ the @(see community-books) (namely, @('books/centaur/aignet/rwlib.lisp'))
+ formerly caused a stack overflow (with host Lisp SBCL, at least) before making
+ this change.  (Technical note: the change is to avoid memoization for calls of
+ @('fchecksum-obj') with stack depth exceeding
+ @(`*fchecksum-obj-stack-bound-init*`).)  Thanks to Keshav Kini for reporting
+ this issue and for related helpful communications.</p>
+
  <h3>New Features</h3>
 
  <p>The @(see summary) now shows, by default, the list of doublets @('(f g)')
@@ -103253,8 +103263,8 @@ arithmetic) for libraries of @(see books) for arithmetic reasoning.</p>")
  with @(':key1')) is ill-formed, that is: some @(':keyi') is not a keyword,
  @(':keyi') and @(':keyj') are the same for some distinct i and j, or some
  @(':keyi') is not a member of @('keys').  When @('erp') is @('nil'), then
- @('rest') is @('(a1 ... an)') and alist is @('((:key1 . v1) ... (:keyk
- . vk))').</li>
+ @('rest') is @('(a1 ... an)') and alist is equivalent (as a mapping) to
+ @('((:key1 . v1) ... (:keyk . vk))').</li>
 
  <li>@('(plist-worldp alist)'): Recognizer for when @('alist') is syntactically
  well-formed as an ACL2 logical @(see world), sometimes suitable for use in
