@@ -78525,6 +78525,14 @@ Bug Fixes
   keyword argument is now fully eliminated.  Thanks to Eric Smith for
   pointing out this issue.
 
+  Fixed :[pso] and related utiltiies :[pso!], :[psof], and :[psog], to
+  avoid printing some error messages.  Thanks to Keshav Kini for
+  sending us an example to bring this bug to our attention.  Also
+  tweaked these utilities to avoid accumulating later event failure
+  messages into the saved output for a previous proof attempt, and to
+  avoid some bogus output when invoked before the first proof attempt
+  of the session.
+
 
 Changes at the System Level
 
@@ -81913,6 +81921,8 @@ Subtopics
 
   See [parallelism-at-the-top-level] for restrictions on evaluating
   parallelism primitives from within the ACL2 top-level loop.")
+ (PARTITION-REST-AND-KEYWORD-ARGS (POINTERS)
+                                  "See [system-utilities].")
  (PATHNAME
   (BOOKS-REFERENCE)
   "Introduction to filename conventions in ACL2
@@ -83131,6 +83141,9 @@ Subtopics
 
   [Package]
       See [packages].
+
+  [Partition-rest-and-keyword-args]
+      See [system-utilities].
 
   [Pe-table]
       See [extend-pe-table].
@@ -104467,8 +104480,8 @@ List of a few ACL2 system utilities:
       starting with :key1) is ill-formed, that is: some :keyi is not
       a keyword, :keyi and :keyj are the same for some distinct i and
       j, or some :keyi is not a member of keys.  When erp is nil,
-      then rest is (a1 ... an) and alist is ((:key1 . v1) ... (:keyk
-      . vk)).
+      then rest is (a1 ... an) and alist is equivalent (as a mapping)
+      to ((:key1 . v1) ... (:keyk . vk)).
     * (plist-worldp alist): Recognizer for when alist is syntactically
       well-formed as an ACL2 logical [world], sometimes suitable for
       use in [guard]s.  Note: for a somewhat deeper check, see

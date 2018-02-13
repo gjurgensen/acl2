@@ -79958,6 +79958,14 @@ it."
  argument is now fully eliminated.  Thanks to Eric Smith for pointing out this
  issue.</p>
 
+ <p>Fixed @(':')@(tsee pso) and related utiltiies @(':')@(tsee pso!),
+ @(':')@(tsee psof), and @(':')@(tsee psog), to avoid printing some error
+ messages.  Thanks to Keshav Kini for sending us an example to bring this bug
+ to our attention.  Also tweaked these utilities to avoid accumulating later
+ event failure messages into the saved output for a previous proof attempt, and
+ to avoid some bogus output when invoked before the first proof attempt of the
+ session.</p>
+
  <h3>Changes at the System Level</h3>
 
  <p>Fixed the use of `@('<a href='URL'>...</a>')' so that if @('URL') has the
@@ -121184,6 +121192,7 @@ expand function call at the current subterm, without simplifying"
 (defpointer open-output-channel-p io)
 (defpointer optimize declare)
 (defpointer package packages)
+(defpointer partition-rest-and-keyword-args system-utilities)
 (defpointer pe-table extend-pe-table)
 (defpointer peek-char$ io)
 (defpointer plist-worldp system-utilities)
