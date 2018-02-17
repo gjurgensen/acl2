@@ -79966,6 +79966,12 @@ it."
  to avoid some bogus output when invoked before the first proof attempt of the
  session.</p>
 
+ <p>When an invocation of @(tsee defthmd) resulted in a macroexpansion error,
+ the failure did not cause an error message to be printed.  This has been
+ fixed.  Related tweaks improve error reporting, including a clearer error
+ message when attempting to supply @(':rule-classes nil') with @('defthmd').
+ Thanks to Keshav Kini for reporting these issues.</p>
+
  <h3>Changes at the System Level</h3>
 
  <p>Fixed the use of `@('<a href='URL'>...</a>')' so that if @('URL') has the
