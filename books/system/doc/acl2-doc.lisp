@@ -34063,7 +34063,7 @@ current fast alists."
  check that things seem to be in order, and then adopt your changes.")
 
 (defxdoc goal-spec
-  :parents (hints)
+  :parents (hints prover-output)
   :short "To indicate where a hint is to be used"
   :long "@({
   Examples:
@@ -34154,6 +34154,19 @@ current fast alists."
  goals to prove by induction.  The induct hint is attached to the formula in
  the pool and when the time comes to turn our attention to that goal, the
  induct advice is followed.</p>
+
+ <p>You can probably figure out the naming conventions for goals after seeing
+ some examples in prover output.  Let's discuss the use of the character @(''')
+ for a suffix.  If a goal has a single subgoal then a prime is added; e.g., if
+ @('\"Subgoal 3.2\"') has a single subgoal then it is named @('\"Subgoal
+ 3.2'\"') rather than @('\"Subgoal 3.2.1\"').  If in turn that goal has a
+ single subgoal, it is named @('\"Subgoal 3.2''\"'); and so on.  When four or
+ more primes would be generated, say, @('n') primes, then the suffix is
+ @('\"'n'\"); e.g., continuing the preceding example we get @('\"Subgoal
+ 3.2'''\"'), @('\"Subgoal 3.2'4'\"'), @('\"Subgoal 3.2'5'\"'), and so on.  If
+ any of these generates at least two subgoals then any ``prime'' suffix is
+ dropped; for example, if @('\"Subgoal 3.2'5'\"') has two subgoals then they
+ are named @('\"Subgoal 3.2.2\"') and @('\"Subgoal 3.2.1\"').</p>
 
  <p>We conclude by emphasizing a point made above, that a hint is applied to a
  goal when the hint's goal specification matches the name ACL2 assigns to the
