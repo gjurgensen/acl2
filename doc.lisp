@@ -78456,6 +78456,12 @@ Changes to Existing Features
   10000.)  Thanks to Keshav Kini for reporting this issue and for
   related helpful communications.
 
+  When a [break-rewrite] command such as :eval or :go shows that a rule
+  fails because a [backchain-limit] is exceeded, more information is
+  printed than before.  Now, the responsible rule(s) or global
+  backchain-limit is indicated.  Thanks to Alessandro Coglio and Eric
+  Smith for requesting this enhancement.
+
 
 New Features
 

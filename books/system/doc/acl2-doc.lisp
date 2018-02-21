@@ -79889,6 +79889,12 @@ it."
  @(`*fchecksum-obj-stack-bound-init*`).)  Thanks to Keshav Kini for reporting
  this issue and for related helpful communications.</p>
 
+ <p>When a @(see break-rewrite) command such as @(':eval') or @(':go') shows
+ that a rule fails because a @(see backchain-limit) is exceeded, more
+ information is printed than before.  Now, the responsible rule(s) or global
+ backchain-limit is indicated.  Thanks to Alessandro Coglio and Eric Smith for
+ requesting this enhancement.</p>
+
  <h3>New Features</h3>
 
  <p>The @(see summary) now shows, by default, the list of doublets @('(f g)')
