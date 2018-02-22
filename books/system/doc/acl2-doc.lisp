@@ -28481,9 +28481,11 @@ for string literals.  This syntax has no special characters, so nothing needs
 to be escaped.  The end of the string is recognized by the unusual character
 sequence @('\"\"\"}').</p>
 
-<p>Of course, a string that needs to contain the sequence @('\"\"\"}') cannot
-be represented using this fancy string literal syntax, but in practice that's
-rarely ever a problem.</p>")
+<p>In the rare case that you need to have the sequence @('\"\"\"}') in your
+string, you can instead use @('\"\"\"\\}').  If you need to have the sequence
+@('\"\"\"\\}'), you can use @('\"\"\"\\\\}').  In general, when a substring
+contains three doublequotes followed by 1 or more backslashes and a right
+curlybrace, it just removes one of the backslashes.</p>")
 
 (defxdoc fast-alist-clean
   :parents (fast-alists acl2-built-ins)
@@ -79894,6 +79896,11 @@ it."
  information is printed than before.  Now, the responsible rule(s) or global
  backchain-limit is indicated.  Thanks to Alessandro Coglio and Eric Smith for
  requesting this enhancement.</p>
+
+ <p>The fancy string reader now accepts a string with three string quotes
+ followed by a closing curly brace.  See @(see fancy-string-reader), in
+ particular the final paragraph.  Thanks to Sol Swords for contributing this
+ enhancement.</p>
 
  <h3>New Features</h3>
 

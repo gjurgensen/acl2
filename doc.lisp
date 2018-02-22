@@ -31535,9 +31535,11 @@ Subtopics
   needs to be escaped.  The end of the string is recognized by the
   unusual character sequence \"\"\"}.
 
-  Of course, a string that needs to contain the sequence \"\"\"} cannot be
-  represented using this fancy string literal syntax, but in practice
-  that's rarely ever a problem.")
+  In the rare case that you need to have the sequence \"\"\"} in your
+  string, you can instead use \"\"\"\\}.  If you need to have the
+  sequence \"\"\"\\}, you can use \"\"\"\\\\}.  In general, when a substring
+  contains three doublequotes followed by 1 or more backslashes and a
+  right curlybrace, it just removes one of the backslashes.")
  (FARGN (POINTERS)
         "See [system-utilities].")
  (FARGS (POINTERS)
@@ -78461,6 +78463,11 @@ Changes to Existing Features
   printed than before.  Now, the responsible rule(s) or global
   backchain-limit is indicated.  Thanks to Alessandro Coglio and Eric
   Smith for requesting this enhancement.
+
+  The fancy string reader now accepts a string with three string quotes
+  followed by a closing curly brace.  See [fancy-string-reader], in
+  particular the final paragraph.  Thanks to Sol Swords for
+  contributing this enhancement.
 
 
 New Features
