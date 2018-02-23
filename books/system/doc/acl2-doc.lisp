@@ -79902,6 +79902,39 @@ it."
  particular the final paragraph.  Thanks to Sol Swords for contributing this
  enhancement.</p>
 
+ <p>The printing (untranslation) of @(see term)s now prints calls of @(tsee
+ mbe), @(tsee mbt), and @(tsee ec-call).  Such terms rarely occur in practice
+ because definitional bodies are stored without such @(see guard-holders).
+ However, here is an example of how they could arise.  First consider the
+ following definition.</p>
+
+ @({
+ (defun g (n)
+   (declare (xargs :normalize nil))
+   (ec-call (natp n)))
+ })
+
+ <p>Here is a log before the change.</p>
+
+ @({
+ ACL2 !>(verify (equal (g x) yyy))
+ ->: 1
+ ->: p
+ (G X)
+ ->: x-dumb
+ ->: p
+ (LET ((N X)) (EC-CALL1 NIL (NATP N)))
+ ->: 
+ })
+
+ <p>After the change, the log instead ends as follows.</p>
+
+ @({
+ ->: p
+ (LET ((N X)) (EC-CALL (NATP N)))
+ ->: 
+ })
+
  <h3>New Features</h3>
 
  <p>The @(see summary) now shows, by default, the list of doublets @('(f g)')
