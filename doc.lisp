@@ -78469,6 +78469,33 @@ Changes to Existing Features
   particular the final paragraph.  Thanks to Sol Swords for
   contributing this enhancement.
 
+  The printing (untranslation) of [term]s now prints calls of [mbe],
+  [mbt], and [ec-call].  Such terms rarely occur in practice because
+  definitional bodies are stored without such [guard-holders].
+  However, here is an example of how they could arise.  First
+  consider the following definition.
+
+    (defun g (n)
+      (declare (xargs :normalize nil))
+      (ec-call (natp n)))
+
+  Here is a log before the change.
+
+    ACL2 !>(verify (equal (g x) yyy))
+    ->: 1
+    ->: p
+    (G X)
+    ->: x-dumb
+    ->: p
+    (LET ((N X)) (EC-CALL1 NIL (NATP N)))
+    ->:
+
+  After the change, the log instead ends as follows.
+
+    ->: p
+    (LET ((N X)) (EC-CALL (NATP N)))
+    ->:
+
 
 New Features
 
