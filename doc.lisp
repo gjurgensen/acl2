@@ -29501,6 +29501,8 @@ Subtopics
     (defun evenp (x)
            (declare (xargs :guard (integerp x)))
            (integerp (* x (/ 2))))")
+ (EVENS (POINTERS)
+        "See [system-utilities].")
  (EVENT (POINTERS) "See [events].")
  (EVENTS
   (ACL2)
@@ -48890,9 +48892,10 @@ Subtopics
   (KEYWORDP LISTS ACL2-BUILT-INS)
   "Recognizer for true lists whose even-position elements are keywords
 
-  (keyword-value-listp l) is true if and only if l is a list of even
+  (Keyword-value-listp l) is true if and only if l is a list of even
   length of the form (k1 a1 k2 a2 ... kn an), where each ki is a
-  keyword.
+  keyword.  To list the keys ki and values ai of l evaluate (evens l)
+  and (odds l), respectively.
 
   Function: <keyword-value-listp>
 
@@ -79829,6 +79832,8 @@ Subtopics
     (defun oddp (x)
            (declare (xargs :guard (integerp x)))
            (not (evenp x)))")
+ (ODDS (POINTERS)
+       "See [system-utilities].")
  (OK-IF
   (BREAK-REWRITE)
   "Conditional exit from break-rewrite
@@ -82875,6 +82880,9 @@ Subtopics
   [Ev$-list]
       See [apply$].
 
+  [Evens]
+      See [system-utilities].
+
   [Event]
       See [events].
 
@@ -83207,6 +83215,9 @@ Subtopics
 
   [Observation-cw]
       See [observation].
+
+  [Odds]
+      See [system-utilities].
 
   [Open-input-channel]
       See [io].
@@ -104480,6 +104491,11 @@ List of a few ACL2 system utilities:
       enabled structure (as discussed for enabled-numep, just above).
       See also enabled-numep, which may be more efficient since
       enabled-runep is defined in terms of enabled-numep.
+    * (evens l): Return the restriction of the true-list l to its
+      even-indexed members (with zero-based indexing).  Note that if
+      x is a list (k1 a1 k2 a2 ... kn an) that satisfies the
+      predicate [keyword-value-listp], then (evens x) lists the keys
+      ki of x.
     * (fargn x n): For a [pseudo-termp] x that is a function call and for a
       positive integer n, return the n-th argument of x, where the
       numbering of arguments starts at 1.
@@ -104573,6 +104589,10 @@ List of a few ACL2 system utilities:
       order, [lexorder], on the ACL2 universe.
     * (nvariablep x): For a [pseudo-termp] x, return true iff x is not a
       variable (i.e. it is a quoted constant or a function call).
+    * (odds l): Return the restriction of the true-list l to its
+      odd-indexed members (with zero-based indexing).  Note that if x
+      is a list (k1 a1 k2 a2 ... kn an) that satisfies the predicate
+      [keyword-value-listp], then (odds x) lists the values ai of x.
     * (pairlis-x1 x1 lst): Cons x1 onto the front of each element of the
       the true-list, lst.
     * (pairlis-x2 lst x2): Make an alist pairing each element of lst, a

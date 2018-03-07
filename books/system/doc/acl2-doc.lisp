@@ -45385,9 +45385,10 @@ tables in the current Hons Space."
 (defxdoc keyword-value-listp
   :parents (keywordp lists acl2-built-ins)
   :short "Recognizer for true lists whose even-position elements are keywords"
-  :long "<p>@('(keyword-value-listp l)') is true if and only if @('l') is a
+  :long "<p>@('(Keyword-value-listp l)') is true if and only if @('l') is a
  list of even length of the form @('(k1 a1 k2 a2 ... kn an)'), where each
- @('ki') is a keyword.</p>
+ @('ki') is a keyword.  To list the keys @('ki') and values @('ai') of @('l')
+ evaluate @('(evens l)') and @('(odds l)'), respectively.</p>
 
  @(def keyword-value-listp)")
 
@@ -103210,6 +103211,12 @@ arithmetic) for libraries of @(see books) for arithmetic reasoning.</p>")
  @('enabled-numep'), which may be more efficient since @('enabled-runep') is
  defined in terms of @('enabled-numep').</li>
 
+ <li>@('(evens l)'): Return the restriction of the true-list @('l') to its
+ even-indexed members (with zero-based indexing).  Note that if @('x') is a
+ list @('(k1 a1 k2 a2 ... kn an)') that satisfies the predicate @(tsee
+ keyword-value-listp), then @('(evens x)') lists the keys @('ki') of
+ @('x').</li>
+
  <li>@('(fargn x n)'): For a @(tsee pseudo-termp) @('x') that is a function
  call and for a positive integer @('n'), return the @('n')-th argument of
  @('x'), where the numbering of arguments starts at 1.</li>
@@ -103336,6 +103343,12 @@ arithmetic) for libraries of @(see books) for arithmetic reasoning.</p>")
  <li>@('(nvariablep x)'): For a @(tsee pseudo-termp) @('x'), return true iff
  @('x') is not a variable (i.e. it is a quoted constant or a function
  call).</li>
+
+ <li>@('(odds l)'): Return the restriction of the true-list @('l') to its
+ odd-indexed members (with zero-based indexing).  Note that if @('x') is a list
+ @('(k1 a1 k2 a2 ... kn an)') that satisfies the predicate @(tsee
+ keyword-value-listp), then @('(odds x)') lists the values @('ai') of
+ @('x').</li>
 
  <li>@('(pairlis-x1 x1 lst)'): Cons @('x1') onto the front of each element of
  the the true-list, @('lst').</li>
@@ -121168,6 +121181,7 @@ expand function call at the current subterm, without simplifying"
 (defpointer error hints t)
 (defpointer ev$ apply$)
 (defpointer ev$-list apply$)
+(defpointer evens system-utilities)
 (defpointer event events)
 (defpointer execution evaluation)
 (defpointer expand hints t)
@@ -121269,6 +121283,7 @@ expand function call at the current subterm, without simplifying"
 (defpointer normalization normalize)
 (defpointer nvariablep system-utilities)
 (defpointer observation-cw observation)
+(defpointer odds system-utilities)
 (defpointer open-input-channel io)
 (defpointer open-input-channel-p io)
 (defpointer open-output-channel io)
