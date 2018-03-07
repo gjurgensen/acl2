@@ -6359,6 +6359,10 @@ Subtopics
 
   [Set-register-invariant-risk]
       Avoid [invariant-risk] checking for specified functions")
+ (ALIST-KEYS-SUBSETP (POINTERS)
+                     "See [system-utilities].")
+ (ALIST-TO-DOUBLETS (POINTERS)
+                    "See [system-utilities].")
  (ALISTP
   (ALISTS ACL2-BUILT-INS)
   "Recognizer for association lists
@@ -32208,6 +32212,8 @@ Subtopics
   "First member of the list
 
   See any Common Lisp documentation for details.")
+ (FIRST-KEYWORD (POINTERS)
+                "See [system-utilities].")
  (FIX
   (NUMBERS ACL2-BUILT-INS)
   "Coerce to a number
@@ -48878,6 +48884,8 @@ Subtopics
   form was available immediately: the form t that had been supplied
   by the user.  So the query returned immediately and the set-iprint
   call was completed.")
+ (KEYWORD-LISTP (POINTERS)
+                "See [system-utilities].")
  (KEYWORD-VALUE-LISTP
   (KEYWORDP LISTS ACL2-BUILT-INS)
   "Recognizer for true lists whose even-position elements are keywords
@@ -81238,6 +81246,10 @@ Subtopics
                              (t (cons (cons (car x) (car y))
                                       (pairlis$ (cdr x) (cdr y)))))
                 :exec (pairlis$-tailrec x y nil)))")
+ (PAIRLIS-X1 (POINTERS)
+             "See [system-utilities].")
+ (PAIRLIS-X2 (POINTERS)
+             "See [system-utilities].")
  (PAND
   (PARALLEL-PROGRAMMING ACL2-BUILT-INS)
   "Parallel, Boolean version of [and]
@@ -82731,6 +82743,12 @@ Subtopics
   [Add-to-set-equal]
       See [add-to-set].
 
+  [Alist-keys-subsetp]
+      See [system-utilities].
+
+  [Alist-to-doublets]
+      See [system-utilities].
+
   [All-calls]
       See [system-utilities].
 
@@ -82908,6 +82926,9 @@ Subtopics
   [Ffnnamep-lst]
       See [system-utilities].
 
+  [First-keyword]
+      See [system-utilities].
+
   [Flambda-applicationp]
       See [system-utilities].
 
@@ -83033,6 +83054,9 @@ Subtopics
 
   [Keyword]
       See [keywordp].
+
+  [Keyword-listp]
+      See [system-utilities].
 
   [Lambda]
       See [term].
@@ -83201,6 +83225,12 @@ Subtopics
 
   [Package]
       See [packages].
+
+  [Pairlis-x1]
+      See [system-utilities].
+
+  [Pairlis-x2]
+      See [system-utilities].
 
   [Partition-rest-and-keyword-args]
       See [system-utilities].
@@ -104341,6 +104371,11 @@ List of a few ACL2 system utilities:
   Every function mentioned below belongs in the constant
   [*ACL2-system-exports*].
 
+    * (alist-keys-subsetp alist keys): For the given alist and list of
+      symbols, return t when each key of alist belongs to keys, else
+      return nil.  This is Boolean-equivalent to (subsetp-eq
+      (strip-cars alist) keys), but it avoids consing up the keys of
+      alist.
     * (alist-to-doublets alist): Return the result of replacing each pair
       (x . y) in the given alist by the two-element list (x y).  The
       order is preserved, i.e., the following is a theorem.
@@ -104519,6 +104554,8 @@ List of a few ACL2 system utilities:
     * (guard fn stobj-optp w): For a function symbol or lambda expression
       fn of [world] w, return its [guard]. Optimize the [stobj]
       recognizers away iff stobj-optp is true.
+    * (keyword-listp x): Return t when x is a true-list whose members are
+      all keywords, else return nil.
     * (implicate t1 t2): For terms t1 and t2, return a term that is
       propositionally equivalent to (implies t1 t2).
     * (lambda-applicationp x): For a [pseudo-termp] x, return t if it is a
@@ -104536,6 +104573,10 @@ List of a few ACL2 system utilities:
       order, [lexorder], on the ACL2 universe.
     * (nvariablep x): For a [pseudo-termp] x, return true iff x is not a
       variable (i.e. it is a quoted constant or a function call).
+    * (pairlis-x1 x1 lst): Cons x1 onto the front of each element of the
+      the true-list, lst.
+    * (pairlis-x2 lst x2): Make an alist pairing each element of lst, a
+      true-list, with x2.
     * (partition-rest-and-keyword-args x keys): x should be a list of the
       form (a1 ... an :key1 v1 ... :keyk vk), where no ai is a
       keyword.  The result is (mv erp rest alist), where erp is

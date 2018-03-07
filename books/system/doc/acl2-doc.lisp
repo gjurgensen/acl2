@@ -79924,7 +79924,7 @@ it."
  ->: x-dumb
  ->: p
  (LET ((N X)) (EC-CALL1 NIL (NATP N)))
- ->: 
+ ->:
  })
 
  <p>After the change, the log instead ends as follows.</p>
@@ -79932,7 +79932,7 @@ it."
  @({
  ->: p
  (LET ((N X)) (EC-CALL (NATP N)))
- ->: 
+ ->:
  })
 
  <h3>New Features</h3>
@@ -103080,6 +103080,11 @@ arithmetic) for libraries of @(see books) for arithmetic reasoning.</p>")
 
  <ul>
 
+ <li>@('(alist-keys-subsetp alist keys)'): For the given alist and list of
+ symbols, return @('t') when each key of @('alist') belongs to @('keys'), else
+ return @('nil').  This is Boolean-equivalent to @('(subsetp-eq (strip-cars
+ alist) keys)'), but it avoids consing up the keys of @('alist').</li>
+
  <li>@('(alist-to-doublets alist)'): Return the result of replacing each pair
  @('(x . y)') in the given alist by the two-element list @('(x y)').  The order
  is preserved, i.e., the following is a theorem.</li>
@@ -103302,6 +103307,9 @@ arithmetic) for libraries of @(see books) for arithmetic reasoning.</p>")
  expression @('fn') of @(see world) @('w'), return its @(see guard). Optimize
  the @(see stobj) recognizers away iff @('stobj-optp') is true.</li>
 
+ <li>@('(keyword-listp x)'): Return @('t') when @('x') is a true-list whose
+ members are all keywords, else return @('nil').</li>
+
  <li>@('(implicate t1 t2)'): For terms @('t1') and @('t2'), return a term that
  is propositionally equivalent to @('(implies t1 t2)').</li>
 
@@ -103328,6 +103336,12 @@ arithmetic) for libraries of @(see books) for arithmetic reasoning.</p>")
  <li>@('(nvariablep x)'): For a @(tsee pseudo-termp) @('x'), return true iff
  @('x') is not a variable (i.e. it is a quoted constant or a function
  call).</li>
+
+ <li>@('(pairlis-x1 x1 lst)'): Cons @('x1') onto the front of each element of
+ the the true-list, @('lst').</li>
+
+ <li>@('(pairlis-x2 lst x2)'): Make an alist pairing each element of @('lst'),
+ a true-list, with @('x2').</li>
 
  <li>@('(partition-rest-and-keyword-args x keys)'): @('x') should be a list of
  the form @('(a1 ... an :key1 v1 ... :keyk vk)'), where no @('ai') is a
@@ -121110,6 +121124,8 @@ expand function call at the current subterm, without simplifying"
 (defpointer add-to-set-eq add-to-set)
 (defpointer add-to-set-eql add-to-set) ; pre-v4-3 compatibility
 (defpointer add-to-set-equal add-to-set)
+(defpointer alist-keys-subsetp system-utilities)
+(defpointer alist-to-doublets system-utilities)
 (defpointer all-calls system-utilities)
 (defpointer all-vars system-utilities)
 (defpointer apropos finding-documentation)
@@ -121169,6 +121185,7 @@ expand function call at the current subterm, without simplifying"
 (defpointer ffn-symb-p system-utilities)
 (defpointer ffnnamep system-utilities)
 (defpointer ffnnamep-lst system-utilities)
+(defpointer first-keyword system-utilities)
 (defpointer flambda-applicationp system-utilities)
 (defpointer flambdap system-utilities)
 (defpointer fms!-to-string printing-to-strings)
@@ -121211,6 +121228,7 @@ expand function call at the current subterm, without simplifying"
 (defpointer iprint set-iprint)
 (defpointer iprinting set-iprint)
 (defpointer keyword keywordp)
+(defpointer keyword-listp system-utilities)
 (defpointer lambda term)
 (defpointer lambda-applicationp system-utilities)
 (defpointer lambda-body system-utilities)
@@ -121257,6 +121275,8 @@ expand function call at the current subterm, without simplifying"
 (defpointer open-output-channel-p io)
 (defpointer optimize declare)
 (defpointer package packages)
+(defpointer pairlis-x1 system-utilities)
+(defpointer pairlis-x2 system-utilities)
 (defpointer partition-rest-and-keyword-args system-utilities)
 (defpointer pe-table extend-pe-table)
 (defpointer peek-char$ io)
