@@ -14706,8 +14706,8 @@ subtree of X with T, without duplication.</p>
  however, @('cons-with-hint') is likely much cheaper than @('hons') and hence
  can be useful for reducing consing without the overhead of @('hons').</p>
 
- <p>Logically @('(cons x y hint)') is just @('(cons x y)'); @('hint') is
- completely irrelevant and ignored.  We generally expect that
+ <p>Logically @('(cons-with-hint x y hint)') is just @('(cons x y)'); @('hint')
+ is completely irrelevant and ignored.  We generally expect that
  @('cons-with-hint') will just be left @(see enable)d, so you should never have
  to reason about it.</p>
 
