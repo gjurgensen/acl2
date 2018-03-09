@@ -17546,10 +17546,10 @@ Subtopics
   hons and hence can be useful for reducing consing without the
   overhead of hons.
 
-  Logically (cons x y hint) is just (cons x y); hint is completely
-  irrelevant and ignored.  We generally expect that cons-with-hint
-  will just be left [enable]d, so you should never have to reason
-  about it.
+  Logically (cons-with-hint x y hint) is just (cons x y); hint is
+  completely irrelevant and ignored.  We generally expect that
+  cons-with-hint will just be left [enable]d, so you should never
+  have to reason about it.
 
   But cons-with-hint has a special raw Common Lisp definition that
   tries to avoid consing by using your hint.  Specifically: if hint
