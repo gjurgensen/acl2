@@ -4997,7 +4997,7 @@ and @(tsee include-book)"
   :parents (lists acl2-built-ins)
   :short "@(see concatenate) zero or more lists"
   :long "<p>@('Append'), which takes zero or more arguments, expects all the
- arguments except perhaps the last to be true (null-terminated) lists.  It
+ arguments except perhaps the last to be true (@('nil')-terminated) lists.  It
  returns the result of concatenating all the elements of all the given lists
  into a single list.  Actually, in ACL2 @('append') is a macro that expands
  into calls of the binary function @(tsee binary-append) if there are at least
@@ -39641,7 +39641,7 @@ tables in the current Hons Space."
 
 (defxdoc improper-consp
   :parents (lists acl2-built-ins)
-  :short "Recognizer for improper (non-null-terminated) non-empty lists"
+  :short "Recognizer for improper (non-@('nil')-terminated) non-empty lists"
   :long "<p>@('Improper-consp') is the function that checks whether its
  argument is a non-empty list that ends in other than @('nil').  See @(see
  proper-consp) and also see @(see true-listp).</p>
@@ -54157,12 +54157,12 @@ it."
   :parents (io acl2-built-ins)
   :short "Weak recognizer for a ``message''"
   :long "<p>The form @('(msgp x)') evaluates to true when @('x') evaluates
- either to a string or to a null-terminated list (see @(see true-listp)) whose
- first element is a string.  Thus, @('msgp') distinguishes <i>messages</i>
- &mdash; that is, values suitable as arguments for @('~@') directives of @(tsee
- fmt) &mdash; from Booleans and other values that are obviously not messages.
- Note that @('msgp') should always hold for the output of the macro, @('msg');
- see @(see msg).</p>
+ either to a string or to a @('nil')-terminated list (see @(see true-listp))
+ whose first element is a string.  Thus, @('msgp') distinguishes
+ <i>messages</i> &mdash; that is, values suitable as arguments for @('~@')
+ directives of @(tsee fmt) &mdash; from Booleans and other values that are
+ obviously not messages.  Note that @('msgp') should always hold for the output
+ of the macro, @('msg'); see @(see msg).</p>
 
  @(def msgp)")
 
@@ -54619,11 +54619,11 @@ it."
  <p>Logically, @('(mv-list n term)') is just @('term'); that is, in the logic
  @('mv-list') simply returns its second argument.  However, the evaluation of a
  call of @('mv-list') on explicit values always results in a single value,
- which is a (null-terminated) list.  For evaluation, the term @('n') above (the
- first argument to an @('mv-list') call) must ``essentially'' (see below) be an
- integer not less than 2, where that integer is the number of values returned
- by the evaluation of @('term') (the second argument to that @('mv-list')
- call).</p>
+ which is a (@('nil')-terminated) list.  For evaluation, the term @('n')
+ above (the first argument to an @('mv-list') call) must ``essentially'' (see
+ below) be an integer not less than 2, where that integer is the number of
+ values returned by the evaluation of @('term') (the second argument to that
+ @('mv-list') call).</p>
 
  <p>We say ``essentially'' above because it suffices that the translation of
  @('n') to a term (see @(see trans)) be of the form @('(quote k)'), where
@@ -86804,7 +86804,7 @@ arithmetic) for libraries of @(see books) for arithmetic reasoning.</p>")
 
 (defxdoc proper-consp
   :parents (lists acl2-built-ins)
-  :short "Recognizer for proper (null-terminated) non-empty lists"
+  :short "Recognizer for proper (@('nil')-terminated) non-empty lists"
   :long "<p>@('Proper-consp') is the function that checks whether its argument
  is a non-empty list that ends in @('nil').  Also see @(see true-listp).</p>
 
@@ -99950,8 +99950,8 @@ arithmetic) for libraries of @(see books) for arithmetic reasoning.</p>")
   :parents (characters lists acl2-built-ins)
   :short "Recognizer for a true list of standard characters"
   :long "<p>@('(standard-char-listp x)') is true if and only if @('x') is a
- null-terminated list all of whose members are standard @(see characters).  See
- @(see standard-char-p).</p>
+ @('nil')-terminated list all of whose members are standard @(see characters).
+ See @(see standard-char-p).</p>
 
  <p>@('Standard-char-listp') has a @(see guard) of @('t').</p>
 
@@ -103341,7 +103341,7 @@ arithmetic) for libraries of @(see books) for arithmetic reasoning.</p>")
  application that is essentially @('((lambda formals body) . actuals)').
  However, extra formals and corresponding actuals are added when @('body') has
  free variables that do not belong to @('formals'), because lambdas must be
- closed in ACL2.</p>
+ closed in ACL2.</li>
 
  <li>@('(merge-sort-lexorder l)'): Sort the list @('l') using a non-strict
  total order, @(tsee lexorder), on the ACL2 universe.</li>
@@ -108082,7 +108082,7 @@ arithmetic) for libraries of @(see books) for arithmetic reasoning.</p>")
 
 (defxdoc true-listp
   :parents (lists acl2-built-ins)
-  :short "Recognizer for proper (null-terminated) lists"
+  :short "Recognizer for proper (@('nil')-terminated) lists"
   :long "<p>@('True-listp') is the function that checks whether its argument is
  a list that ends in, or equals, @('nil').</p>
 
@@ -109887,7 +109887,7 @@ introduction-to-the-tau-system) for more information about Tau.</dd>
   *TS-NIL*                   ;;; {nil}
   *TS-T*                     ;;; {t}
   *TS-NON-T-NON-NIL-SYMBOL*  ;;; symbols other than nil, t
-  *TS-PROPER-CONS*           ;;; null-terminated non-empty lists
+  *TS-PROPER-CONS*           ;;; nil-terminated non-empty lists
   *TS-IMPROPER-CONS*         ;;; conses that are not proper
   *TS-STRING*                ;;; strings
   *TS-CHARACTER*             ;;; characters

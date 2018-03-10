@@ -3357,7 +3357,7 @@ Subtopics
       Logical implication
 
   [Improper-consp]
-      Recognizer for improper (non-null-terminated) non-empty lists
+      Recognizer for improper (non-nil-terminated) non-empty lists
 
   [In-package]
       Select current package
@@ -3720,7 +3720,7 @@ Subtopics
       The proofs character output channel
 
   [Proper-consp]
-      Recognizer for proper (null-terminated) non-empty lists
+      Recognizer for proper (nil-terminated) non-empty lists
 
   [Pseudo-term-listp]
       A predicate for recognizing lists of term-like s-expressions
@@ -4001,7 +4001,7 @@ Subtopics
       Recognizer for true (proper) lists of true lists
 
   [True-listp]
-      Recognizer for proper (null-terminated) lists
+      Recognizer for proper (nil-terminated) lists
 
   [Truncate]
       Division returning an integer by truncating toward 0
@@ -7385,7 +7385,7 @@ Subtopics
   "[concatenate] zero or more lists
 
   Append, which takes zero or more arguments, expects all the arguments
-  except perhaps the last to be true (null-terminated) lists.  It
+  except perhaps the last to be true (nil-terminated) lists.  It
   returns the result of concatenating all the elements of all the
   given lists into a single list.  Actually, in ACL2 append is a
   macro that expands into calls of the binary function
@@ -43003,7 +43003,7 @@ Subtopics
            (if p (if q t nil) t))")
  (IMPROPER-CONSP
   (LISTS ACL2-BUILT-INS)
-  "Recognizer for improper (non-null-terminated) non-empty lists
+  "Recognizer for improper (non-nil-terminated) non-empty lists
 
   Improper-consp is the function that checks whether its argument is a
   non-empty list that ends in other than nil.  See [proper-consp] and
@@ -51036,7 +51036,7 @@ Subtopics
       Recognizer for a true list of ``good'' [atom]s
 
   [Improper-consp]
-      Recognizer for improper (non-null-terminated) non-empty lists
+      Recognizer for improper (non-nil-terminated) non-empty lists
 
   [Integer-listp]
       Recognizer for a true list of integers
@@ -51099,7 +51099,7 @@ Subtopics
       Position of an item in a string or a list
 
   [Proper-consp]
-      Recognizer for proper (null-terminated) non-empty lists
+      Recognizer for proper (nil-terminated) non-empty lists
 
   [Rational-listp]
       Recognizer for a true list of rational numbers
@@ -51153,7 +51153,7 @@ Subtopics
       Recognizer for true (proper) lists of true lists
 
   [True-listp]
-      Recognizer for proper (null-terminated) lists
+      Recognizer for proper (nil-terminated) lists
 
   [Union$]
       A list that contains exactly the elements of the given lists
@@ -55050,6 +55050,8 @@ Subtopics
   the alist.)")
  (MAKE-LAMBDA (POINTERS)
               "See [system-utilities].")
+ (MAKE-LAMBDA-TERM (POINTERS)
+                   "See [system-utilities].")
  (MAKE-LIST
   (LISTS ACL2-BUILT-INS)
   "Make a list of a given size
@@ -58049,7 +58051,7 @@ Subtopics
   "Weak recognizer for a ``message''
 
   The form (msgp x) evaluates to true when x evaluates either to a
-  string or to a null-terminated list (see [true-listp]) whose first
+  string or to a nil-terminated list (see [true-listp]) whose first
   element is a string.  Thus, msgp distinguishes messages --- that
   is, values suitable as arguments for ~@ directives of [fmt] ---
   from Booleans and other values that are obviously not messages.
@@ -58518,7 +58520,7 @@ Subtopics
   Logically, (mv-list n term) is just term; that is, in the logic
   mv-list simply returns its second argument.  However, the
   evaluation of a call of mv-list on explicit values always results
-  in a single value, which is a (null-terminated) list.  For
+  in a single value, which is a (nil-terminated) list.  For
   evaluation, the term n above (the first argument to an mv-list
   call) must ``essentially'' (see below) be an integer not less than
   2, where that integer is the number of values returned by the
@@ -83087,6 +83089,9 @@ Subtopics
   [Make-lambda]
       See [system-utilities].
 
+  [Make-lambda-term]
+      See [system-utilities].
+
   [Match-free]
       See [free-variables].
 
@@ -87671,7 +87676,7 @@ Subtopics
   [*standard-co*]).")
  (PROPER-CONSP
   (LISTS ACL2-BUILT-INS)
-  "Recognizer for proper (null-terminated) non-empty lists
+  "Recognizer for proper (nil-terminated) non-empty lists
 
   Proper-consp is the function that checks whether its argument is a
   non-empty list that ends in nil.  Also see [true-listp].
@@ -101016,7 +101021,7 @@ Subtopics
   (CHARACTERS LISTS ACL2-BUILT-INS)
   "Recognizer for a true list of standard characters
 
-  (standard-char-listp x) is true if and only if x is a null-terminated
+  (standard-char-listp x) is true if and only if x is a nil-terminated
   list all of whose members are standard [characters].  See
   [standard-char-p].
 
@@ -104583,8 +104588,13 @@ List of a few ACL2 system utilities:
     * (logicp fn w): For a function symbol fn of [world] w, return t when
       the symbol-class of fn in w is not :program, else nil.  (See
       symbol-class, below.)
-    * (make-lambda args body): Return lambda expression with formal
+    * (make-lambda args body): Return the lambda expression with formal
       parameters args and body body.
+    * (make-lambda-term formals actuals body): Return the lambda
+      application that is essentially ((lambda formals body) .
+      actuals).  However, extra formals and corresponding actuals are
+      added when body has free variables that do not belong to
+      formals, because lambdas must be closed in ACL2.
     * (merge-sort-lexorder l): Sort the list l using a non-strict total
       order, [lexorder], on the ACL2 universe.
     * (nvariablep x): For a [pseudo-termp] x, return true iff x is not a
@@ -110182,7 +110192,7 @@ Subtopics
                          (true-list-listp (cdr x))))))")
  (TRUE-LISTP
   (LISTS ACL2-BUILT-INS)
-  "Recognizer for proper (null-terminated) lists
+  "Recognizer for proper (nil-terminated) lists
 
   True-listp is the function that checks whether its argument is a list
   that ends in, or equals, nil.
@@ -111935,7 +111945,7 @@ Subtopics
     *TS-NIL*                   ;;; {nil}
     *TS-T*                     ;;; {t}
     *TS-NON-T-NON-NIL-SYMBOL*  ;;; symbols other than nil, t
-    *TS-PROPER-CONS*           ;;; null-terminated non-empty lists
+    *TS-PROPER-CONS*           ;;; nil-terminated non-empty lists
     *TS-IMPROPER-CONS*         ;;; conses that are not proper
     *TS-STRING*                ;;; strings
     *TS-CHARACTER*             ;;; characters
