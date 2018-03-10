@@ -103334,8 +103334,14 @@ arithmetic) for libraries of @(see books) for arithmetic reasoning.</p>")
  @('w'), return @('t') when the @('symbol-class') of @('fn') in @('w') is not
  @(':program'), else @('nil').  (See @('symbol-class'), below.)</li>
 
- <li>@('(make-lambda args body)'): Return @('lambda') expression with formal
- parameters @('args') and body @('body').</li>
+ <li>@('(make-lambda args body)'): Return the @('lambda') expression with
+ formal parameters @('args') and body @('body').</li>
+
+ <li>@('(make-lambda-term formals actuals body)'): Return the @('lambda')
+ application that is essentially @('((lambda formals body) . actuals)').
+ However, extra formals and corresponding actuals are added when @('body') has
+ free variables that do not belong to @('formals'), because lambdas must be
+ closed in ACL2.</p>
 
  <li>@('(merge-sort-lexorder l)'): Sort the list @('l') using a non-strict
  total order, @(tsee lexorder), on the ACL2 universe.</li>
@@ -121250,6 +121256,7 @@ expand function call at the current subterm, without simplifying"
 (defpointer let-mbe equality-variants-details)
 (defpointer logicp system-utilities)
 (defpointer make-lambda system-utilities)
+(defpointer make-lambda-term system-utilities)
 (defpointer match-free free-variables)
 (defpointer measure-theorem termination-theorem)
 (defpointer member-eq member)
