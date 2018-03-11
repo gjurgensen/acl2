@@ -17890,13 +17890,17 @@ subtree of X with T, without duplication.</p>
   :long "<p>This @(see documentation) topic is organized into the following
  sections:</p>
 
- <p><b>Introductory example.</b><br></br>
+ <ul>
 
- <b>Syntax and semantics of defattach.</b><br></br>
+ <li>Introductory example.</li>
 
- <b>Three primary uses of defattach.</b><br></br>
+ <li>Syntax and semantics of defattach.</li>
 
- <b>Miscellaneous remarks, with discussion of possible user errors.</b></p>
+ <li>Three primary uses of defattach.</li>
+
+ <li>Miscellaneous remarks, with discussion of possible user errors.</li>
+
+ </ul>
 
  <p>Please see @(see encapsulate) if you intend to use @('defattach') but are
  not already familiar with the use of @('encapsulate') to introduce constrained
@@ -17908,19 +17912,7 @@ subtree of X with T, without duplication.</p>
  to different executable functions.  More uses of @('defattach') may be found
  in the ACL2 source code, specifically, file @('boot-strap-pass-2-a.lisp').</p>
 
- <p>The argument @(':skip-checks t') enables easy experimentation with
- @('defattach'), by permitting use of @(':')@(tsee program) mode functions and
- the skipping of semantic checks.  Also permitted is @(':skip-checks nil') (the
- default) and @(':skip-checks :cycles'), which turns off only the update of the
- extended ancestor relation (see below) and hence the check for cycles in this
- relation; see below.  We do not make any logical claims when the value of
- @(':skip-checks') is non-@('nil'); indeed, a trust tag is required in this
- case (see @(see defttag)).  Note that the interaction of memoization and
- attachments is not tracked for attachments introduced with a non-@('nil')
- value of @(':skip-checks').  For more discussion of @(':skip-checks t'), see
- @(see defproxy); we do not discuss @(':skip-checks') further, here.</p>
-
- <p><b>Introductory example.</b></p>
+ <h3>Introductory example.</h3>
 
  <p>We begin with a short log illustrating the use of @('defattach').  Notice
  that after evaluating the event @('(defattach f g)'), a call of the
@@ -17980,7 +17972,7 @@ subtree of X with T, without duplication.</p>
   ACL2 !>
  })
 
- <p><b>Syntax and semantics of defattach.</b></p>
+ <h3>Syntax and semantics of defattach.</h3>
 
  <p>The log above shows that the event @('(defattach f g)') allows @('g') to be
  used for evaluating calls of @('f').  From a logical perspective, the
@@ -18058,19 +18050,33 @@ subtree of X with T, without duplication.</p>
              :kwd'' val'' ...)
  })
 
- <p>where each indicated keyword-value pair is optional and each keyword is one
- of @(':ATTACH'), @(':HINTS'), @(':OTF-FLG'), or @(':INSTRUCTIONS').  The value
- of each @(':ATTACH') keyword is either @('t') or @('nil'), with default @('t')
- except that the value of @(':ATTACH') at the ``top level,'' after each entry
- @('(fi gi ...)'), is the default for each @(':ATTACH') keyword supplied in
- such an entry.  We discuss the @(':ATTACH') keyword later in this @(see
- documentation) topic.  The associated values for the other keywords have the
- usual meanings for the proof obligations described below: the guard proof
- obligation for keywords within each @('(fi gi ...)') entry, and the constraint
- proof obligation for keywords at the top level.  No keyword may occur twice in
- the same context, i.e., within the same @('(fi gi ...)') entry or at the top
- level; and @(':INSTRUCTIONS') may not occur in the same context with
- @(':HINTS') or @(':OTF-FLG').</p>
+ <p>where each indicated keyword-value pair is optional and each keyword is in
+ the list @(`*defattach-keys-plus-skip-checks*`).  The @(':')@(tsee hints),
+ @(':')@(tsee instructions'), and @(':')@(tsee otf-flg) keywords have their
+ usual values, as when used (for example) in @(tsee defthm) @(tsee events).
+ The value of each @(':attach') keyword is either @('t') or @('nil'), with
+ default @('t') except that the value of @(':attach') at the ``top level,''
+ after each entry @('(fi gi ...)'), is the default for each @(':attach')
+ keyword supplied in such an entry.  We discuss the @(':attach') keyword later
+ in this @(see documentation) topic.  The associated values for the other
+ keywords have the usual meanings for the proof obligations described below:
+ the guard proof obligation for keywords within each @('(fi gi ...)') entry,
+ and the constraint proof obligation for keywords at the top level.  No keyword
+ may occur twice in the same context, i.e., within the same @('(fi gi ...)')
+ entry or at the top level; and @(':instructions') may not occur in the same
+ context with @(':hints') or @(':otf-flg').</p>
+
+ <p>The argument @(':skip-checks t') enables easy experimentation with
+ @('defattach'), by permitting use of @(':')@(tsee program) mode functions and
+ the skipping of semantic checks.  Also permitted is @(':skip-checks nil') (the
+ default) and @(':skip-checks :cycles'), which turns off only the update of the
+ extended ancestor relation and hence the check for cycles in this relation;
+ see below.  We do not make any logical claims when the value of
+ @(':skip-checks') is non-@('nil'); indeed, a trust tag is then required (see
+ @(see defttag)).  Note that the interaction of @(see memoization) and
+ attachments is not tracked for attachments introduced with a non-@('nil')
+ value of @(':skip-checks').  For more discussion of @(':skip-checks t'), see
+ @(see defproxy); we do not discuss @(':skip-checks') further, here.</p>
 
  <p>The first General Form above is simply an abbreviation for the form
  @('(defattach (f g))'), which is an instance of the second General Form above.
@@ -18207,34 +18213,40 @@ subtree of X with T, without duplication.</p>
  ``siblings'' &mdash; function symbols introduced by the same event &mdash; as
  siblings are considered equivalent for purposes of the acyclicity check.</p>
 
- <p><b>Three primary uses of defattach.</b><br></br></p>
+ <h3>Three primary uses of defattach.</h3>
 
  <p>We anticipate three uses of @('defattach'):</p>
 
- <p>(1) Constrained function execution</p>
+ <ol>
 
- <p>(2) Sound modification of the ACL2 system</p>
+ <li>Constrained function execution</li>
 
- <p>(3) Program refinement</p>
+ <li>Sound modification of the ACL2 system</li>
+
+ <li>Program refinement</li>
+
+ </ol>
 
  <p>We discuss these in turn.</p>
 
- <p>(1) The example at the beginning of this @(see documentation) illustrates
- constrained function execution.</p>
+ <ol>
 
- <p>(2) ACL2 is written essentially in itself.  Thus, there is an opportunity
+ <li>The example at the beginning of this @(see documentation) illustrates
+ constrained function execution.</li>
+
+ <li>ACL2 is written essentially in itself.  Thus, there is an opportunity
  to attaching to system functions.  For example, encapsulated function
  @('too-many-ifs-post-rewrite'), in the ACL2 source code, receives an
  attachment of @('too-many-ifs-post-rewrite-builtin'), which implements a
  heuristic used in the rewriter.  To find all such examples, search the source
- code for the string `-builtin'.</p>
+ code for the string `-builtin'.<br/>
 
- <p>Over time, we expect to continue replacing ACL2 source code in a similar
+ Over time, we expect to continue replacing ACL2 source code in a similar
  manner.  We invite the ACL2 community to assist in this ``open architecture''
  enterprise; feel free to email the ACL2 implementors if you are interested in
- such activity.</p>
+ such activity.</li>
 
- <p>(3) Recall that for an attachment pair @('<f,g>'), a proof obligation is
+ <li>Recall that for an attachment pair @('<f,g>'), a proof obligation is
  (speaking informally) that @('g') satisfies the constraint on @('f').  Yet
  more informally speaking, @('g') is ``more defined'' than @('f'); we can think
  of @('g') as ``refining'' @('f').  With these informal notions as motivation,
@@ -18243,9 +18255,11 @@ subtree of X with T, without duplication.</p>
  specifically by the addition of all attachment equations.  For the
  logic-inclined, it may be useful to think model-theoretically: The class of
  models of the evaluation theory is non-empty but is a subset of the class of
- models of the current session theory.</p>
+ models of the current session theory.</li>
 
- <p><b>Miscellaneous remarks, with discussion of possible user errors.</b></p>
+ </ol>
+
+ <h3>Miscellaneous remarks, with discussion of possible user errors.</h3>
 
  <p>We conclude with remarks on some details.</p>
 
@@ -79805,6 +79819,17 @@ it."
 
 ; Added :doc summary.
 
+; We updated the Essay on Admitting a Model for Apply$ and the Functions that
+; Use It, by clarifying interaction between the doppelganger construction and
+; existing attachments.  We also fixed the definitions of G1 and G2 to be about
+; ancestral independence of apply$-userfn instead of apply$.  We made a
+; corresponding strengthening of the criterion for measures of warrants, as
+; evidenced by the name change from ancestrally-dependent-on-apply$p to
+; ancestrally-dependent-on-apply$-userfn-p.  However, it doesn't seem that
+; there is any user-visible change, since apply$-userfn is not badged; so any
+; attempt to supply a measure to a that depends on it would already fail due to
+; the requirement that the measure be tame.
+
   :parents (release-notes)
   :short "ACL2 Version  8.1 (xxx, 20xx) Notes"
   :long "<p>NOTE!  New users can ignore these release notes, because the @(see
@@ -80031,6 +80056,9 @@ it."
  fixed.  Related tweaks improve error reporting, including a clearer error
  message when attempting to supply @(':rule-classes nil') with @('defthmd').
  Thanks to Keshav Kini for reporting these issues.</p>
+
+ <p>When @(tsee defattach) was provided the argument @(':skip-checks nil'), a
+ hard error was signaled.  This has been fixed.</p>
 
  <h3>Changes at the System Level</h3>
 
