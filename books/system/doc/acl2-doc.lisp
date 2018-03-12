@@ -18052,7 +18052,7 @@ subtree of X with T, without duplication.</p>
 
  <p>where each indicated keyword-value pair is optional and each keyword is in
  the list @(`*defattach-keys-plus-skip-checks*`).  The @(':')@(tsee hints),
- @(':')@(tsee instructions'), and @(':')@(tsee otf-flg) keywords have their
+ @(':')@(tsee instructions), and @(':')@(tsee otf-flg) keywords have their
  usual values, as when used (for example) in @(tsee defthm) @(tsee events).
  The value of each @(':attach') keyword is either @('t') or @('nil'), with
  default @('t') except that the value of @(':attach') at the ``top level,''
