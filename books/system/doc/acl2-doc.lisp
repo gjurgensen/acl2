@@ -17887,18 +17887,32 @@ subtree of X with T, without duplication.</p>
 (defxdoc defattach
   :parents (events)
   :short "Execute constrained functions using corresponding attached functions"
-  :long "<p>This @(see documentation) topic is organized into the following
+  :long "
+ @({
+  General Forms:
+  (defattach f g)   ; single attach or, if g is nil, unattach
+  (defattach (f1 g1 :kwd val ...)
+             ...
+             (fk gk :kwd' val' ...)
+             :kwd'' val'' ...)
+ })
+
+ <p>where each indicated keyword-value pair is optional and each keyword is in
+ the list @(`*defattach-keys-extended*`).  More details are in the ``Syntax and
+ Semantics'' section below.</p>
+
+ <p>This @(see documentation) topic is organized into the following
  sections:</p>
 
  <ul>
 
- <li>Introductory example.</li>
+ <li>Introductory Example.</li>
 
- <li>Syntax and semantics of defattach.</li>
+ <li>Syntax and Semantics of Defattach.</li>
 
- <li>Three primary uses of defattach.</li>
+ <li>Three Primary Uses of Defattach.</li>
 
- <li>Miscellaneous remarks, with discussion of possible user errors.</li>
+ <li>Miscellaneous Remarks, with discussion of possible user errors.</li>
 
  </ul>
 
@@ -17912,7 +17926,7 @@ subtree of X with T, without duplication.</p>
  to different executable functions.  More uses of @('defattach') may be found
  in the ACL2 source code, specifically, file @('boot-strap-pass-2-a.lisp').</p>
 
- <h3>Introductory example.</h3>
+ <h3>Introductory Example.</h3>
 
  <p>We begin with a short log illustrating the use of @('defattach').  Notice
  that after evaluating the event @('(defattach f g)'), a call of the
@@ -17972,7 +17986,7 @@ subtree of X with T, without duplication.</p>
   ACL2 !>
  })
 
- <h3>Syntax and semantics of defattach.</h3>
+ <h3>Syntax and Semantics of Defattach.</h3>
 
  <p>The log above shows that the event @('(defattach f g)') allows @('g') to be
  used for evaluating calls of @('f').  From a logical perspective, the
@@ -18044,27 +18058,41 @@ subtree of X with T, without duplication.</p>
 
   General Forms:
   (defattach f g)   ; single attach or, if g is nil, unattach
-  (defattach (f1 g1 :kwd val ...)
+  (defattach (f1 g1 :kwd11val11 ...)
              ...
-             (fk gk :kwd' val' ...)
-             :kwd'' val'' ...)
+             (fk gk :kwdk1 valk1 ...)
+             :kwd1 val1 ...)
  })
 
  <p>where each indicated keyword-value pair is optional and each keyword is in
- the list @(`*defattach-keys-plus-skip-checks*`).  The @(':')@(tsee hints),
- @(':')@(tsee instructions), and @(':')@(tsee otf-flg) keywords have their
- usual values, as when used (for example) in @(tsee defthm) @(tsee events).
- The value of each @(':attach') keyword is either @('t') or @('nil'), with
- default @('t') except that the value of @(':attach') at the ``top level,''
- after each entry @('(fi gi ...)'), is the default for each @(':attach')
- keyword supplied in such an entry.  We discuss the @(':attach') keyword later
- in this @(see documentation) topic.  The associated values for the other
- keywords have the usual meanings for the proof obligations described below:
- the guard proof obligation for keywords within each @('(fi gi ...)') entry,
- and the constraint proof obligation for keywords at the top level.  No keyword
- may occur twice in the same context, i.e., within the same @('(fi gi ...)')
- entry or at the top level; and @(':instructions') may not occur in the same
- context with @(':hints') or @(':otf-flg').</p>
+ the list @(`*defattach-keys-extended*`).  We distinguish between keywords
+ within the @('(fi gi :kwdi1 vali1 ...)'), which we call <i>guard keywords</i>,
+ and keywords at the top level, shown above as @(':kwd1 val1 ...'), which we
+ call <i>top-level keywords</i>.</p>
+
+ <ul>
+
+ <li>The guard keywords are in the list @(`*defattach-keys*`).  The
+ @(':')@(tsee hints), @(':')@(tsee instructions), and @(':')@(tsee otf-flg)
+ keywords in @('(fi gi ...)') are used in the proofs of the guard proof
+ obligation for the attachment of @('gi') to @('fi').  They have their usual
+ values and meanings, as when used (for example) in @(tsee defthm) @(tsee
+ events).  The value of each @(':attach') keyword is either @('t') or @('nil').
+ We discuss the @(':attach') keyword later in this @(see documentation)
+ topic.</li>
+
+ <li>The top-level keywords @(':hints'), @(':instructions'), and @(':otf-flg')
+ are used in the constraint proof obligations just as described above for the
+ guard proof obligations.  When @(':attach') is used as a top-level keyword,
+ its value serves as a default for entries @('(fi gi ...)') that do not specify
+ @(':attach').  @(':Skip-checks') and @(':system-ok') are described below.</li>
+
+ </ul>
+
+ <p>No keyword may occur twice in the same context: that is, neither twice as a
+ guard keyword in the same @('(fi gi ...)')  entry, nor twice as a top-level
+ keyword.  Moreover, @(':instructions') may not occur in the same context with
+ @(':hints') or @(':otf-flg').</p>
 
  <p>The argument @(':skip-checks t') enables easy experimentation with
  @('defattach'), by permitting use of @(':')@(tsee program) mode functions and
@@ -18077,6 +18105,18 @@ subtree of X with T, without duplication.</p>
  attachments is not tracked for attachments introduced with a non-@('nil')
  value of @(':skip-checks').  For more discussion of @(':skip-checks t'), see
  @(see defproxy); we do not discuss @(':skip-checks') further, here.</p>
+
+ <p>The argument @(':system-ok t') allows attachment to system functions.
+ Without this argument, the @('defattach') event will fail if any @('fi') is a
+ built-in ACL2 function.  Rather than supplying this argument directly, it is
+ recommended to use @(tsee defattach-system), which has the same syntax as
+ @('defattach') with two exceptions: it adds @(':system-ok t') automatically,
+ that is, @(':system-ok') is implicit; and it expands to a @(tsee local) call
+ of @('defattach').  The latter is important so that the attachment does not
+ affect system behavior outside a book containing the @('defattach') event.  Of
+ course, if it is truly intended to affect such behavior, the argument
+ @(':system-ok t') may be given directly to @('defattach'), without a
+ surrounding use of @('local').</p>
 
  <p>The first General Form above is simply an abbreviation for the form
  @('(defattach (f g))'), which is an instance of the second General Form above.
@@ -18213,7 +18253,7 @@ subtree of X with T, without duplication.</p>
  ``siblings'' &mdash; function symbols introduced by the same event &mdash; as
  siblings are considered equivalent for purposes of the acyclicity check.</p>
 
- <h3>Three primary uses of defattach.</h3>
+ <h3>Three Primary Uses of Defattach.</h3>
 
  <p>We anticipate three uses of @('defattach'):</p>
 
@@ -18259,7 +18299,7 @@ subtree of X with T, without duplication.</p>
 
  </ol>
 
- <h3>Miscellaneous remarks, with discussion of possible user errors.</h3>
+ <h3>Miscellaneous Remarks, with discussion of possible user errors.</h3>
 
  <p>We conclude with remarks on some details.</p>
 
@@ -18436,6 +18476,25 @@ subtree of X with T, without duplication.</p>
  thus be inconsistent, and at a more concrete level, the user might well be
  surprised by evaluation results if the code were written with the assumption
  specified in the constraint @('f2=f1').</p>")
+
+(defxdoc defattach-system
+  :parents (defattach)
+  :short "Attach to built-in, system-level, constrained functions"
+  :long "<p>For background on attachments, see @(see defattach).  The macro
+ @('defattach-system') is a convenient way to attach to built-in functions.
+ The event @('(defattach f g)') will fail if @('f') is built into ACL2.  This
+ failure can be overcome by specifying top-level keyword argument @(':system-ok
+ t'), for example: @('(defattach (f g) :system-ok t)').  However, rather than
+ supplying this argument directly, it is recommended to use
+ @('defattach-system'), which has the same syntax as @('defattach') with two
+ exceptions: it adds @(':system-ok t') automatically, that is, @(':system-ok')
+ is implicit; and it expands to a @(tsee local) call of @('defattach').  The
+ latter is important so that the attachment does not affect system behavior
+ outside a book containing the @('defattach') event.  Of course, if it is truly
+ intended to affect such behavior, the argument @(':system-ok t') may be given
+ directly to @('defattach'), without a surrounding use of @('local').</p>
+
+ <p>See @(see system-attachments) for discussion of system attachments.</p>")
 
 (defxdoc default
   :parents (arrays acl2-built-ins)
@@ -79830,6 +79889,11 @@ it."
 ; attempt to supply a measure to a that depends on it would already fail due to
 ; the requirement that the measure be tame.
 
+; Changed *defattach-keys-plus-skip-checks* to *defattach-keys-extended* when
+; adding the :system-ok argument to defattach.
+
+; Improved :doc defattach.
+
   :parents (release-notes)
   :short "ACL2 Version  8.1 (xxx, 20xx) Notes"
   :long "<p>NOTE!  New users can ignore these release notes, because the @(see
@@ -79961,11 +80025,44 @@ it."
  ->:
  })
 
+ <p>It is now illegal by default to attach to built-in functions.  To overcome
+ this default behavior, see @(see defattach-system).</p>
+
  <h3>New Features</h3>
 
  <p>The @(see summary) now shows, by default, the list of doublets @('(f g)')
  for which @('f') is a system function with attachment @('g') (see @(see
  defattach)), when @('g') differs from the initial attachment to @('f').</p>
+
+ <p>(Warning: The following describes advanced features that can likely be
+ ignored by most users.  They are available using the new utility, @(tsee
+ defattach-system).)  Two new system-level functions may be given attachments:
+ @('remove-trivial-equivalences-enabled-p') and
+ @('assume-true-false-aggressive-p').  (Thanks to Eric Smith for suggesting
+ these, and to him and Alessandro Coglio for helpful discussions.)  By default,
+ these have the attachments @('constant-t-function-arity-0') and
+ @('constant-nil-function-arity-0'), respectively, which provide the existing
+ system behavior.  But these attachments may be changed by the user.</p>
+
+ <ul>
+
+ <li>@('Remove-trivial-equivalences-enabled-p') may receive the attachment
+ @('constant-nil-function-arity-0') to avoid the
+ @('remove-trivial-equivalences') heuristic, which substitutes the equality (or
+ even equivalence) of a variable to a term into the rest of the
+ goal.  (However, perhaps similar heuristics will still be used, for example as
+ part of the @(see tau-system).)</li>
+
+ <li>@('Assume-true-false-aggressive-p') may receive the attachment
+ @('constant-t-function-arity-0') to strengthen the rewriter's use of the @(see
+ type-alist) when diving into @('if') terms.  A common use is to rewrite what
+ amounts to @('(if (or test1 test2) (if test1 _ x) _)'); then the @(see
+ type-alist) will note that @('test2') is true when rewriting @('x').  This
+ change may slow down ACL2 considerably in some cases, and should rarely if
+ ever be necessary when calling the prover; but it can be useful in
+ applications that call the rewriter directly.</li>
+
+ </ul>
 
  <h3>Heuristic and Efficiency Improvements</h3>
 
@@ -102933,6 +103030,48 @@ arithmetic) for libraries of @(see books) for arithmetic reasoning.</p>")
  be the numeric value returned by the host operating system for the underlying
  system call.  For more information, see @(see sys-call).</p>")
 
+(defxdoc system-attachments
+  :parents (programming defattach)
+  :short "System-level algorithms that users can modify with attachments"
+  :long "<p>For background on attachments, see @(see defattach).</p>
+
+ <p>If you evaluate the form @('(all-attachments (w state))') immediately after
+ starting ACL2, you will see a list of pairs of the form @('(f . g)'), where
+ @('f') is a constrained system utility and @('g') is its attachment.  Here is
+ one such pair.</p>
+
+ @({
+ (ASSUME-TRUE-FALSE-AGGRESSIVE-P . CONSTANT-NIL-FUNCTION-ARITY-0)
+ })
+
+ <p>Users are permitted to modify these attachments, even without a trust tag
+ (see @(see defttag)), because they do not affect soundness.  See @(see
+ defattach-system).</p>
+
+ <p>We do not attempt to explain how to define functions to attach to system
+ functions.  We do however point out these two useful functions, for attaching
+ to some constant functions (functions with arity 0).</p>
+
+ @(def constant-t-function-arity-0)
+
+ @(def constant-nil-function-arity-0)
+
+ <p>To see how to use one of these functions, consider again the example above,
+ where constrained system function @('assume-true-false-aggressive-p') has the
+ attachment, @('constant-nil-function-arity-0').  Here we make the so-called
+ ``assume-true-false'' algorithm more aggressive.</p>
+
+ @({
+ (defattach-system assume-true-false-aggressive-p constant-t-function-arity-0)
+ })
+
+ <p>Note that we are not explaining here what it means to make that algorithm
+ more aggressive!  We expect those who want to use these attachments to be
+ comfortable as ``system programmers'', as they peruse the ACL2 source code and
+ its comments in order to see how to modify system behavior with attachments.
+ Perhaps more user-level documentation will be written to help with that
+ process.</p>")
+
 (defxdoc system-development
   :parents (programming)
   :short "Developing ACL2 system code"
@@ -103085,14 +103224,16 @@ arithmetic) for libraries of @(see books) for arithmetic reasoning.</p>")
  grep '^; Essay on' *.lisp
  })
 
- <p>in your ACL2 sources directory, you will see the names of more than 80 long
+ <p>in your ACL2 sources directory, you will see the names of more than 90 long
  source comments, or ``Essays'', that can provide additional background.</p>
 
  <p>Also see @(see programming) and its subtopics, in particular @(see
  programming-with-state), which describes <em>many</em> system-level utilities.
  For example, a subsection of @(see programming-with-state), entitled
  ``SEQUENTIAL PROGRAMMING'', introduces handy utilities @(tsee pprogn) and
- @(tsee er-progn) along with links to their documentation.</p>
+ @(tsee er-progn) along with links to their documentation.  You may also wish
+ to see @(see system-attachments) for how to make a few changes to the behavior
+ of ACL2.</p>
 
  <p>Here is another option for finding a system utility: As ACL2 developers
  sometimes do, use @('meta-.') or @('meta-x tags-apropos') in Emacs to find
