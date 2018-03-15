@@ -20776,12 +20776,24 @@ Subtopics
   (EVENTS)
   "Execute constrained functions using corresponding attached functions
 
+    General Forms:
+    (defattach f g)   ; single attach or, if g is nil, unattach
+    (defattach (f1 g1 :kwd val ...)
+               ...
+               (fk gk :kwd' val' ...)
+               :kwd'' val'' ...)
+
+  where each indicated keyword-value pair is optional and each keyword
+  is in the list (:hints :instructions :otf-flg :attach :skip-checks
+  :system-ok).  More details are in the ``Syntax and Semantics''
+  section below.
+
   This [documentation] topic is organized into the following sections:
 
-    * Introductory example.
-    * Syntax and semantics of defattach.
-    * Three primary uses of defattach.
-    * Miscellaneous remarks, with discussion of possible user errors.
+    * Introductory Example.
+    * Syntax and Semantics of Defattach.
+    * Three Primary Uses of Defattach.
+    * Miscellaneous Remarks, with discussion of possible user errors.
 
   Please see [encapsulate] if you intend to use defattach but are not
   already familiar with the use of encapsulate to introduce
@@ -20795,7 +20807,7 @@ Subtopics
   specifically, file boot-strap-pass-2-a.lisp.
 
 
-Introductory example.
+Introductory Example.
 
   We begin with a short log illustrating the use of defattach.  Notice
   that after evaluating the event (defattach f g), a call of the
@@ -20854,7 +20866,7 @@ Introductory example.
     ACL2 !>
 
 
-Syntax and semantics of defattach.
+Syntax and Semantics of Defattach.
 
   The log above shows that the event (defattach f g) allows g to be
   used for evaluating calls of f.  From a logical perspective, the
@@ -20924,27 +20936,37 @@ Syntax and semantics of defattach.
 
     General Forms:
     (defattach f g)   ; single attach or, if g is nil, unattach
-    (defattach (f1 g1 :kwd val ...)
+    (defattach (f1 g1 :kwd11val11 ...)
                ...
-               (fk gk :kwd' val' ...)
-               :kwd'' val'' ...)
+               (fk gk :kwdk1 valk1 ...)
+               :kwd1 val1 ...)
 
   where each indicated keyword-value pair is optional and each keyword
-  is in the list (:skip-checks :hints :instructions :otf-flg
-  :attach).  The :[hints], :[instructions], and :[otf-flg] keywords
-  have their usual values, as when used (for example) in [defthm]
-  [events].  The value of each :attach keyword is either t or nil,
-  with default t except that the value of :attach at the ``top
-  level,'' after each entry (fi gi ...), is the default for each
-  :attach keyword supplied in such an entry.  We discuss the :attach
-  keyword later in this [documentation] topic.  The associated values
-  for the other keywords have the usual meanings for the proof
-  obligations described below: the guard proof obligation for
-  keywords within each (fi gi ...) entry, and the constraint proof
-  obligation for keywords at the top level.  No keyword may occur
-  twice in the same context, i.e., within the same (fi gi ...) entry
-  or at the top level; and :instructions may not occur in the same
-  context with :hints or :otf-flg.
+  is in the list (:hints :instructions :otf-flg :attach :skip-checks
+  :system-ok).  We distinguish between keywords within the (fi gi
+  :kwdi1 vali1 ...), which we call guard keywords, and keywords at
+  the top level, shown above as :kwd1 val1 ..., which we call
+  top-level keywords.
+
+    * The guard keywords are in the list (:hints :instructions :otf-flg
+      :attach).  The :[hints], :[instructions], and :[otf-flg]
+      keywords in (fi gi ...) are used in the proofs of the guard
+      proof obligation for the attachment of gi to fi.  They have
+      their usual values and meanings, as when used (for example) in
+      [defthm] [events].  The value of each :attach keyword is either
+      t or nil.  We discuss the :attach keyword later in this
+      [documentation] topic.
+    * The top-level keywords :hints, :instructions, and :otf-flg are used
+      in the constraint proof obligations just as described above for
+      the guard proof obligations.  When :attach is used as a
+      top-level keyword, its value serves as a default for entries
+      (fi gi ...) that do not specify :attach.  :Skip-checks and
+      :system-ok are described below.
+
+  No keyword may occur twice in the same context: that is, neither
+  twice as a guard keyword in the same (fi gi ...) entry, nor twice
+  as a top-level keyword.  Moreover, :instructions may not occur in
+  the same context with :hints or :otf-flg.
 
   The argument :skip-checks t enables easy experimentation with
   defattach, by permitting use of :[program] mode functions and the
@@ -20958,6 +20980,18 @@ Syntax and semantics of defattach.
   introduced with a non-nil value of :skip-checks.  For more
   discussion of :skip-checks t, see [defproxy]; we do not discuss
   :skip-checks further, here.
+
+  The argument :system-ok t allows attachment to system functions.
+  Without this argument, the defattach event will fail if any fi is a
+  built-in ACL2 function.  Rather than supplying this argument
+  directly, it is recommended to use [defattach-system], which has
+  the same syntax as defattach with two exceptions: it adds
+  :system-ok t automatically, that is, :system-ok is implicit; and it
+  expands to a [local] call of defattach.  The latter is important so
+  that the attachment does not affect system behavior outside a book
+  containing the defattach event.  Of course, if it is truly intended
+  to affect such behavior, the argument :system-ok t may be given
+  directly to defattach, without a surrounding use of local.
 
   The first General Form above is simply an abbreviation for the form
   (defattach (f g)), which is an instance of the second General Form
@@ -21090,7 +21124,7 @@ Syntax and semantics of defattach.
   acyclicity check.
 
 
-Three primary uses of defattach.
+Three Primary Uses of Defattach.
 
   We anticipate three uses of defattach:
 
@@ -21126,7 +21160,7 @@ Three primary uses of defattach.
       the class of models of the current session theory.
 
 
-Miscellaneous remarks, with discussion of possible user errors.
+Miscellaneous Remarks, with discussion of possible user errors.
 
   We conclude with remarks on some details.
 
@@ -21293,8 +21327,34 @@ Miscellaneous remarks, with discussion of possible user errors.
 
 Subtopics
 
+  [Defattach-system]
+      Attach to built-in, system-level, constrained functions
+
   [Ignored-attachment]
-      Why attachments are sometimes not used")
+      Why attachments are sometimes not used
+
+  [System-attachments]
+      System-level algorithms that users can modify with attachments")
+ (DEFATTACH-SYSTEM
+  (DEFATTACH)
+  "Attach to built-in, system-level, constrained functions
+
+  For background on attachments, see [defattach].  The macro
+  defattach-system is a convenient way to attach to built-in
+  functions.  The event (defattach f g) will fail if f is built into
+  ACL2.  This failure can be overcome by specifying top-level keyword
+  argument :system-ok t, for example: (defattach (f g) :system-ok t).
+  However, rather than supplying this argument directly, it is
+  recommended to use defattach-system, which has the same syntax as
+  defattach with two exceptions: it adds :system-ok t automatically,
+  that is, :system-ok is implicit; and it expands to a [local] call
+  of defattach.  The latter is important so that the attachment does
+  not affect system behavior outside a book containing the defattach
+  event.  Of course, if it is truly intended to affect such behavior,
+  the argument :system-ok t may be given directly to defattach,
+  without a surrounding use of local.
+
+  See [system-attachments] for discussion of system attachments.")
  (DEFAULT
   (ARRAYS ACL2-BUILT-INS)
   "Return the :default from the [header] of a 1- or 2-dimensional array
@@ -78511,12 +78571,42 @@ Changes to Existing Features
     (LET ((N X)) (EC-CALL (NATP N)))
     ->:
 
+  It is now illegal by default to attach to built-in functions.  To
+  overcome this default behavior, see [defattach-system].
+
 
 New Features
 
   The [summary] now shows, by default, the list of doublets (f g) for
   which f is a system function with attachment g (see [defattach]),
   when g differs from the initial attachment to f.
+
+  (Warning: The following describes advanced features that can likely
+  be ignored by most users.  They are available using the new
+  utility, [defattach-system].)  Two new system-level functions may
+  be given attachments: remove-trivial-equivalences-enabled-p and
+  assume-true-false-aggressive-p.  (Thanks to Eric Smith for
+  suggesting these, and to him and Alessandro Coglio for helpful
+  discussions.)  By default, these have the attachments
+  constant-t-function-arity-0 and constant-nil-function-arity-0,
+  respectively, which provide the existing system behavior.  But
+  these attachments may be changed by the user.
+
+    * Remove-trivial-equivalences-enabled-p may receive the attachment
+      constant-nil-function-arity-0 to avoid the
+      remove-trivial-equivalences heuristic, which substitutes the
+      equality (or even equivalence) of a variable to a term into the
+      rest of the goal.  (However, perhaps similar heuristics will
+      still be used, for example as part of the [tau-system].)
+    * Assume-true-false-aggressive-p may receive the attachment
+      constant-t-function-arity-0 to strengthen the rewriter's use of
+      the [type-alist] when diving into if terms.  A common use is to
+      rewrite what amounts to (if (or test1 test2) (if test1 _ x) _);
+      then the [type-alist] will note that test2 is true when
+      rewriting x.  This change may slow down ACL2 considerably in
+      some cases, and should rarely if ever be necessary when calling
+      the prover; but it can be useful in applications that call the
+      rewriter directly.
 
 
 Heuristic and Efficiency Improvements
@@ -85534,6 +85624,9 @@ Subtopics
 
   [Symbols]
       Symbols in ACL2 and operations on them
+
+  [System-attachments]
+      System-level algorithms that users can modify with attachments
 
   [System-development]
       Developing ACL2 system code
@@ -104204,6 +104297,54 @@ Subtopics
   that Lisp function, which may well be the numeric value returned by
   the host operating system for the underlying system call.  For more
   information, see [sys-call].")
+ (SYSTEM-ATTACHMENTS
+  (PROGRAMMING DEFATTACH)
+  "System-level algorithms that users can modify with attachments
+
+  For background on attachments, see [defattach].
+
+  If you evaluate the form (all-attachments (w state)) immediately
+  after starting ACL2, you will see a list of pairs of the form (f .
+  g), where f is a constrained system utility and g is its
+  attachment.  Here is one such pair.
+
+    (ASSUME-TRUE-FALSE-AGGRESSIVE-P . CONSTANT-NIL-FUNCTION-ARITY-0)
+
+  Users are permitted to modify these attachments, even without a trust
+  tag (see [defttag]), because they do not affect soundness.  See
+  [defattach-system].
+
+  We do not attempt to explain how to define functions to attach to
+  system functions.  We do however point out these two useful
+  functions, for attaching to some constant functions (functions with
+  arity 0).
+
+  Function: <constant-t-function-arity-0>
+
+    (defun constant-t-function-arity-0
+           nil (declare (xargs :guard t))
+           t)
+
+  Function: <constant-nil-function-arity-0>
+
+    (defun constant-nil-function-arity-0
+           nil (declare (xargs :guard t))
+           nil)
+
+  To see how to use one of these functions, consider again the example
+  above, where constrained system function
+  assume-true-false-aggressive-p has the attachment,
+  constant-nil-function-arity-0.  Here we make the so-called
+  ``assume-true-false'' algorithm more aggressive.
+
+    (defattach-system assume-true-false-aggressive-p constant-t-function-arity-0)
+
+  Note that we are not explaining here what it means to make that
+  algorithm more aggressive!  We expect those who want to use these
+  attachments to be comfortable as ``system programmers'', as they
+  peruse the ACL2 source code and its comments in order to see how to
+  modify system behavior with attachments.  Perhaps more user-level
+  documentation will be written to help with that process.")
  (SYSTEM-DEVELOPMENT
   (PROGRAMMING)
   "Developing ACL2 system code
@@ -104368,7 +104509,7 @@ Subtopics
     grep '^; Essay on' *.lisp
 
   in your ACL2 sources directory, you will see the names of more than
-  80 long source comments, or ``Essays'', that can provide additional
+  90 long source comments, or ``Essays'', that can provide additional
   background.
 
   Also see [programming] and its subtopics, in particular
@@ -104376,6 +104517,8 @@ Subtopics
   utilities.  For example, a subsection of [programming-with-state],
   entitled ``SEQUENTIAL PROGRAMMING'', introduces handy utilities
   [pprogn] and [er-progn] along with links to their documentation.
+  You may also wish to see [system-attachments] for how to make a few
+  changes to the behavior of ACL2.
 
   Here is another option for finding a system utility: As ACL2
   developers sometimes do, use meta-. or meta-x tags-apropos in Emacs
