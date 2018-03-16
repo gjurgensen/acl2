@@ -11629,7 +11629,11 @@ with any questions about building the community books.</p>")
 
  <p>Note that @('case-match') returns @('nil') if no @('pati') matches.  Thus
  if we must return @('7') in that case, we have to add as the final pattern the
- @('&'), which always matches anything.</p>")
+ @('&'), which always matches anything.</p>
+
+ <p>Technical point: The symbol @('sym') referenced by the symbol @('!sym') is
+ in the same package as @('!sym') but with the leading exclamation point
+ character, @('\\#!'), removed from the @(tsee symbol-name) of @('!sym').</p>")
 
 (defxdoc case-split
   :parents (rewrite linear type-prescription definition meta forward-chaining)
@@ -80156,6 +80160,10 @@ it."
 
  <p>When @(tsee defattach) was provided the argument @(':skip-checks nil'), a
  hard error was signaled.  This has been fixed.</p>
+
+ <p>The @(tsee case-match) macro did not properly handle the @('!sym')
+ construct when the symbol, @('!sym'), is not in the @('\"ACL2\"') package.
+ This has been fixed.  Thanks to Alessandro Coglio for reporting this bug.</p>
 
  <h3>Changes at the System Level</h3>
 
