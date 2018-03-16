@@ -4997,7 +4997,7 @@ and @(tsee include-book)"
   :parents (lists acl2-built-ins)
   :short "@(see concatenate) zero or more lists"
   :long "<p>@('Append'), which takes zero or more arguments, expects all the
- arguments except perhaps the last to be true (null-terminated) lists.  It
+ arguments except perhaps the last to be true (@('nil')-terminated) lists.  It
  returns the result of concatenating all the elements of all the given lists
  into a single list.  Actually, in ACL2 @('append') is a macro that expands
  into calls of the binary function @(tsee binary-append) if there are at least
@@ -11629,7 +11629,11 @@ with any questions about building the community books.</p>")
 
  <p>Note that @('case-match') returns @('nil') if no @('pati') matches.  Thus
  if we must return @('7') in that case, we have to add as the final pattern the
- @('&'), which always matches anything.</p>")
+ @('&'), which always matches anything.</p>
+
+ <p>Technical point: The symbol @('sym') referenced by the symbol @('!sym') is
+ in the same package as @('!sym') but with the leading exclamation point
+ character, @('\\#!'), removed from the @(tsee symbol-name) of @('!sym').</p>")
 
 (defxdoc case-split
   :parents (rewrite linear type-prescription definition meta forward-chaining)
@@ -14706,8 +14710,8 @@ subtree of X with T, without duplication.</p>
  however, @('cons-with-hint') is likely much cheaper than @('hons') and hence
  can be useful for reducing consing without the overhead of @('hons').</p>
 
- <p>Logically @('(cons x y hint)') is just @('(cons x y)'); @('hint') is
- completely irrelevant and ignored.  We generally expect that
+ <p>Logically @('(cons-with-hint x y hint)') is just @('(cons x y)'); @('hint')
+ is completely irrelevant and ignored.  We generally expect that
  @('cons-with-hint') will just be left @(see enable)d, so you should never have
  to reason about it.</p>
 
@@ -17887,16 +17891,34 @@ subtree of X with T, without duplication.</p>
 (defxdoc defattach
   :parents (events)
   :short "Execute constrained functions using corresponding attached functions"
-  :long "<p>This @(see documentation) topic is organized into the following
+  :long "
+ @({
+  General Forms:
+  (defattach f g)   ; single attach or, if g is nil, unattach
+  (defattach (f1 g1 :kwd val ...)
+             ...
+             (fk gk :kwd' val' ...)
+             :kwd'' val'' ...)
+ })
+
+ <p>where each indicated keyword-value pair is optional and each keyword is in
+ the list @(`*defattach-keys-extended*`).  More details are in the ``Syntax and
+ Semantics'' section below.</p>
+
+ <p>This @(see documentation) topic is organized into the following
  sections:</p>
 
- <p><b>Introductory example.</b><br></br>
+ <ul>
 
- <b>Syntax and semantics of defattach.</b><br></br>
+ <li>Introductory Example.</li>
 
- <b>Three primary uses of defattach.</b><br></br>
+ <li>Syntax and Semantics of Defattach.</li>
 
- <b>Miscellaneous remarks, with discussion of possible user errors.</b></p>
+ <li>Three Primary Uses of Defattach.</li>
+
+ <li>Miscellaneous Remarks, with discussion of possible user errors.</li>
+
+ </ul>
 
  <p>Please see @(see encapsulate) if you intend to use @('defattach') but are
  not already familiar with the use of @('encapsulate') to introduce constrained
@@ -17908,19 +17930,7 @@ subtree of X with T, without duplication.</p>
  to different executable functions.  More uses of @('defattach') may be found
  in the ACL2 source code, specifically, file @('boot-strap-pass-2-a.lisp').</p>
 
- <p>The argument @(':skip-checks t') enables easy experimentation with
- @('defattach'), by permitting use of @(':')@(tsee program) mode functions and
- the skipping of semantic checks.  Also permitted is @(':skip-checks nil') (the
- default) and @(':skip-checks :cycles'), which turns off only the update of the
- extended ancestor relation (see below) and hence the check for cycles in this
- relation; see below.  We do not make any logical claims when the value of
- @(':skip-checks') is non-@('nil'); indeed, a trust tag is required in this
- case (see @(see defttag)).  Note that the interaction of memoization and
- attachments is not tracked for attachments introduced with a non-@('nil')
- value of @(':skip-checks').  For more discussion of @(':skip-checks t'), see
- @(see defproxy); we do not discuss @(':skip-checks') further, here.</p>
-
- <p><b>Introductory example.</b></p>
+ <h3>Introductory Example.</h3>
 
  <p>We begin with a short log illustrating the use of @('defattach').  Notice
  that after evaluating the event @('(defattach f g)'), a call of the
@@ -17980,7 +17990,7 @@ subtree of X with T, without duplication.</p>
   ACL2 !>
  })
 
- <p><b>Syntax and semantics of defattach.</b></p>
+ <h3>Syntax and Semantics of Defattach.</h3>
 
  <p>The log above shows that the event @('(defattach f g)') allows @('g') to be
  used for evaluating calls of @('f').  From a logical perspective, the
@@ -18052,25 +18062,65 @@ subtree of X with T, without duplication.</p>
 
   General Forms:
   (defattach f g)   ; single attach or, if g is nil, unattach
-  (defattach (f1 g1 :kwd val ...)
+  (defattach (f1 g1 :kwd11val11 ...)
              ...
-             (fk gk :kwd' val' ...)
-             :kwd'' val'' ...)
+             (fk gk :kwdk1 valk1 ...)
+             :kwd1 val1 ...)
  })
 
- <p>where each indicated keyword-value pair is optional and each keyword is one
- of @(':ATTACH'), @(':HINTS'), @(':OTF-FLG'), or @(':INSTRUCTIONS').  The value
- of each @(':ATTACH') keyword is either @('t') or @('nil'), with default @('t')
- except that the value of @(':ATTACH') at the ``top level,'' after each entry
- @('(fi gi ...)'), is the default for each @(':ATTACH') keyword supplied in
- such an entry.  We discuss the @(':ATTACH') keyword later in this @(see
- documentation) topic.  The associated values for the other keywords have the
- usual meanings for the proof obligations described below: the guard proof
- obligation for keywords within each @('(fi gi ...)') entry, and the constraint
- proof obligation for keywords at the top level.  No keyword may occur twice in
- the same context, i.e., within the same @('(fi gi ...)') entry or at the top
- level; and @(':INSTRUCTIONS') may not occur in the same context with
- @(':HINTS') or @(':OTF-FLG').</p>
+ <p>where each indicated keyword-value pair is optional and each keyword is in
+ the list @(`*defattach-keys-extended*`).  We distinguish between keywords
+ within the @('(fi gi :kwdi1 vali1 ...)'), which we call <i>guard keywords</i>,
+ and keywords at the top level, shown above as @(':kwd1 val1 ...'), which we
+ call <i>top-level keywords</i>.</p>
+
+ <ul>
+
+ <li>The guard keywords are in the list @(`*defattach-keys*`).  The
+ @(':')@(tsee hints), @(':')@(tsee instructions), and @(':')@(tsee otf-flg)
+ keywords in @('(fi gi ...)') are used in the proofs of the guard proof
+ obligation for the attachment of @('gi') to @('fi').  They have their usual
+ values and meanings, as when used (for example) in @(tsee defthm) @(tsee
+ events).  The value of each @(':attach') keyword is either @('t') or @('nil').
+ We discuss the @(':attach') keyword later in this @(see documentation)
+ topic.</li>
+
+ <li>The top-level keywords @(':hints'), @(':instructions'), and @(':otf-flg')
+ are used in the constraint proof obligations just as described above for the
+ guard proof obligations.  When @(':attach') is used as a top-level keyword,
+ its value serves as a default for entries @('(fi gi ...)') that do not specify
+ @(':attach').  @(':Skip-checks') and @(':system-ok') are described below.</li>
+
+ </ul>
+
+ <p>No keyword may occur twice in the same context: that is, neither twice as a
+ guard keyword in the same @('(fi gi ...)')  entry, nor twice as a top-level
+ keyword.  Moreover, @(':instructions') may not occur in the same context with
+ @(':hints') or @(':otf-flg').</p>
+
+ <p>The argument @(':skip-checks t') enables easy experimentation with
+ @('defattach'), by permitting use of @(':')@(tsee program) mode functions and
+ the skipping of semantic checks.  Also permitted is @(':skip-checks nil') (the
+ default) and @(':skip-checks :cycles'), which turns off only the update of the
+ extended ancestor relation and hence the check for cycles in this relation;
+ see below.  We do not make any logical claims when the value of
+ @(':skip-checks') is non-@('nil'); indeed, a trust tag is then required (see
+ @(see defttag)).  Note that the interaction of @(see memoization) and
+ attachments is not tracked for attachments introduced with a non-@('nil')
+ value of @(':skip-checks').  For more discussion of @(':skip-checks t'), see
+ @(see defproxy); we do not discuss @(':skip-checks') further, here.</p>
+
+ <p>The argument @(':system-ok t') allows attachment to system functions.
+ Without this argument, the @('defattach') event will fail if any @('fi') is a
+ built-in ACL2 function.  Rather than supplying this argument directly, it is
+ recommended to use @(tsee defattach-system), which has the same syntax as
+ @('defattach') with two exceptions: it adds @(':system-ok t') automatically,
+ that is, @(':system-ok') is implicit; and it expands to a @(tsee local) call
+ of @('defattach').  The latter is important so that the attachment does not
+ affect system behavior outside a book containing the @('defattach') event.  Of
+ course, if it is truly intended to affect such behavior, the argument
+ @(':system-ok t') may be given directly to @('defattach'), without a
+ surrounding use of @('local').</p>
 
  <p>The first General Form above is simply an abbreviation for the form
  @('(defattach (f g))'), which is an instance of the second General Form above.
@@ -18207,34 +18257,40 @@ subtree of X with T, without duplication.</p>
  ``siblings'' &mdash; function symbols introduced by the same event &mdash; as
  siblings are considered equivalent for purposes of the acyclicity check.</p>
 
- <p><b>Three primary uses of defattach.</b><br></br></p>
+ <h3>Three Primary Uses of Defattach.</h3>
 
  <p>We anticipate three uses of @('defattach'):</p>
 
- <p>(1) Constrained function execution</p>
+ <ol>
 
- <p>(2) Sound modification of the ACL2 system</p>
+ <li>Constrained function execution</li>
 
- <p>(3) Program refinement</p>
+ <li>Sound modification of the ACL2 system</li>
+
+ <li>Program refinement</li>
+
+ </ol>
 
  <p>We discuss these in turn.</p>
 
- <p>(1) The example at the beginning of this @(see documentation) illustrates
- constrained function execution.</p>
+ <ol>
 
- <p>(2) ACL2 is written essentially in itself.  Thus, there is an opportunity
+ <li>The example at the beginning of this @(see documentation) illustrates
+ constrained function execution.</li>
+
+ <li>ACL2 is written essentially in itself.  Thus, there is an opportunity
  to attaching to system functions.  For example, encapsulated function
  @('too-many-ifs-post-rewrite'), in the ACL2 source code, receives an
  attachment of @('too-many-ifs-post-rewrite-builtin'), which implements a
  heuristic used in the rewriter.  To find all such examples, search the source
- code for the string `-builtin'.</p>
+ code for the string `-builtin'.<br/>
 
- <p>Over time, we expect to continue replacing ACL2 source code in a similar
+ Over time, we expect to continue replacing ACL2 source code in a similar
  manner.  We invite the ACL2 community to assist in this ``open architecture''
  enterprise; feel free to email the ACL2 implementors if you are interested in
- such activity.</p>
+ such activity.</li>
 
- <p>(3) Recall that for an attachment pair @('<f,g>'), a proof obligation is
+ <li>Recall that for an attachment pair @('<f,g>'), a proof obligation is
  (speaking informally) that @('g') satisfies the constraint on @('f').  Yet
  more informally speaking, @('g') is ``more defined'' than @('f'); we can think
  of @('g') as ``refining'' @('f').  With these informal notions as motivation,
@@ -18243,9 +18299,11 @@ subtree of X with T, without duplication.</p>
  specifically by the addition of all attachment equations.  For the
  logic-inclined, it may be useful to think model-theoretically: The class of
  models of the evaluation theory is non-empty but is a subset of the class of
- models of the current session theory.</p>
+ models of the current session theory.</li>
 
- <p><b>Miscellaneous remarks, with discussion of possible user errors.</b></p>
+ </ol>
+
+ <h3>Miscellaneous Remarks, with discussion of possible user errors.</h3>
 
  <p>We conclude with remarks on some details.</p>
 
@@ -18422,6 +18480,25 @@ subtree of X with T, without duplication.</p>
  thus be inconsistent, and at a more concrete level, the user might well be
  surprised by evaluation results if the code were written with the assumption
  specified in the constraint @('f2=f1').</p>")
+
+(defxdoc defattach-system
+  :parents (defattach)
+  :short "Attach to built-in, system-level, constrained functions"
+  :long "<p>For background on attachments, see @(see defattach).  The macro
+ @('defattach-system') is a convenient way to attach to built-in functions.
+ The event @('(defattach f g)') will fail if @('f') is built into ACL2.  This
+ failure can be overcome by specifying top-level keyword argument @(':system-ok
+ t'), for example: @('(defattach (f g) :system-ok t)').  However, rather than
+ supplying this argument directly, it is recommended to use
+ @('defattach-system'), which has the same syntax as @('defattach') with two
+ exceptions: it adds @(':system-ok t') automatically, that is, @(':system-ok')
+ is implicit; and it expands to a @(tsee local) call of @('defattach').  The
+ latter is important so that the attachment does not affect system behavior
+ outside a book containing the @('defattach') event.  Of course, if it is truly
+ intended to affect such behavior, the argument @(':system-ok t') may be given
+ directly to @('defattach'), without a surrounding use of @('local').</p>
+
+ <p>See @(see system-attachments) for discussion of system attachments.</p>")
 
 (defxdoc default
   :parents (arrays acl2-built-ins)
@@ -39641,7 +39718,7 @@ tables in the current Hons Space."
 
 (defxdoc improper-consp
   :parents (lists acl2-built-ins)
-  :short "Recognizer for improper (non-null-terminated) non-empty lists"
+  :short "Recognizer for improper (non-@('nil')-terminated) non-empty lists"
   :long "<p>@('Improper-consp') is the function that checks whether its
  argument is a non-empty list that ends in other than @('nil').  See @(see
  proper-consp) and also see @(see true-listp).</p>
@@ -45385,9 +45462,10 @@ tables in the current Hons Space."
 (defxdoc keyword-value-listp
   :parents (keywordp lists acl2-built-ins)
   :short "Recognizer for true lists whose even-position elements are keywords"
-  :long "<p>@('(keyword-value-listp l)') is true if and only if @('l') is a
+  :long "<p>@('(Keyword-value-listp l)') is true if and only if @('l') is a
  list of even length of the form @('(k1 a1 k2 a2 ... kn an)'), where each
- @('ki') is a keyword.</p>
+ @('ki') is a keyword.  To list the keys @('ki') and values @('ai') of @('l')
+ evaluate @('(evens l)') and @('(odds l)'), respectively.</p>
 
  @(def keyword-value-listp)")
 
@@ -54156,12 +54234,12 @@ it."
   :parents (io acl2-built-ins)
   :short "Weak recognizer for a ``message''"
   :long "<p>The form @('(msgp x)') evaluates to true when @('x') evaluates
- either to a string or to a null-terminated list (see @(see true-listp)) whose
- first element is a string.  Thus, @('msgp') distinguishes <i>messages</i>
- &mdash; that is, values suitable as arguments for @('~@') directives of @(tsee
- fmt) &mdash; from Booleans and other values that are obviously not messages.
- Note that @('msgp') should always hold for the output of the macro, @('msg');
- see @(see msg).</p>
+ either to a string or to a @('nil')-terminated list (see @(see true-listp))
+ whose first element is a string.  Thus, @('msgp') distinguishes
+ <i>messages</i> &mdash; that is, values suitable as arguments for @('~@')
+ directives of @(tsee fmt) &mdash; from Booleans and other values that are
+ obviously not messages.  Note that @('msgp') should always hold for the output
+ of the macro, @('msg'); see @(see msg).</p>
 
  @(def msgp)")
 
@@ -54618,11 +54696,11 @@ it."
  <p>Logically, @('(mv-list n term)') is just @('term'); that is, in the logic
  @('mv-list') simply returns its second argument.  However, the evaluation of a
  call of @('mv-list') on explicit values always results in a single value,
- which is a (null-terminated) list.  For evaluation, the term @('n') above (the
- first argument to an @('mv-list') call) must ``essentially'' (see below) be an
- integer not less than 2, where that integer is the number of values returned
- by the evaluation of @('term') (the second argument to that @('mv-list')
- call).</p>
+ which is a (@('nil')-terminated) list.  For evaluation, the term @('n')
+ above (the first argument to an @('mv-list') call) must ``essentially'' (see
+ below) be an integer not less than 2, where that integer is the number of
+ values returned by the evaluation of @('term') (the second argument to that
+ @('mv-list') call).</p>
 
  <p>We say ``essentially'' above because it suffices that the translation of
  @('n') to a term (see @(see trans)) be of the form @('(quote k)'), where
@@ -79804,6 +79882,22 @@ it."
 
 ; Added :doc summary.
 
+; We updated the Essay on Admitting a Model for Apply$ and the Functions that
+; Use It, by clarifying interaction between the doppelganger construction and
+; existing attachments.  We also fixed the definitions of G1 and G2 to be about
+; ancestral independence of apply$-userfn instead of apply$.  We made a
+; corresponding strengthening of the criterion for measures of warrants, as
+; evidenced by the name change from ancestrally-dependent-on-apply$p to
+; ancestrally-dependent-on-apply$-userfn-p.  However, it doesn't seem that
+; there is any user-visible change, since apply$-userfn is not badged; so any
+; attempt to supply a measure to a that depends on it would already fail due to
+; the requirement that the measure be tame.
+
+; Changed *defattach-keys-plus-skip-checks* to *defattach-keys-extended* when
+; adding the :system-ok argument to defattach.
+
+; Improved :doc defattach.
+
   :parents (release-notes)
   :short "ACL2 Version  8.1 (xxx, 20xx) Notes"
   :long "<p>NOTE!  New users can ignore these release notes, because the @(see
@@ -79924,7 +80018,7 @@ it."
  ->: x-dumb
  ->: p
  (LET ((N X)) (EC-CALL1 NIL (NATP N)))
- ->: 
+ ->:
  })
 
  <p>After the change, the log instead ends as follows.</p>
@@ -79932,14 +80026,47 @@ it."
  @({
  ->: p
  (LET ((N X)) (EC-CALL (NATP N)))
- ->: 
+ ->:
  })
+
+ <p>It is now illegal by default to attach to built-in functions.  To overcome
+ this default behavior, see @(see defattach-system).</p>
 
  <h3>New Features</h3>
 
  <p>The @(see summary) now shows, by default, the list of doublets @('(f g)')
  for which @('f') is a system function with attachment @('g') (see @(see
  defattach)), when @('g') differs from the initial attachment to @('f').</p>
+
+ <p>(Warning: The following describes advanced features that can likely be
+ ignored by most users.  They are available using the new utility, @(tsee
+ defattach-system).)  Two new system-level functions may be given attachments:
+ @('remove-trivial-equivalences-enabled-p') and
+ @('assume-true-false-aggressive-p').  (Thanks to Eric Smith for suggesting
+ these, and to him and Alessandro Coglio for helpful discussions.)  By default,
+ these have the attachments @('constant-t-function-arity-0') and
+ @('constant-nil-function-arity-0'), respectively, which provide the existing
+ system behavior.  But these attachments may be changed by the user.</p>
+
+ <ul>
+
+ <li>@('Remove-trivial-equivalences-enabled-p') may receive the attachment
+ @('constant-nil-function-arity-0') to avoid the
+ @('remove-trivial-equivalences') heuristic, which substitutes the equality (or
+ even equivalence) of a variable to a term into the rest of the
+ goal.  (However, perhaps similar heuristics will still be used, for example as
+ part of the @(see tau-system).)</li>
+
+ <li>@('Assume-true-false-aggressive-p') may receive the attachment
+ @('constant-t-function-arity-0') to strengthen the rewriter's use of the @(see
+ type-alist) when diving into @('if') terms.  A common use is to rewrite what
+ amounts to @('(if (or test1 test2) (if test1 _ x) _)'); then the @(see
+ type-alist) will note that @('test2') is true when rewriting @('x').  This
+ change may slow down ACL2 considerably in some cases, and should rarely if
+ ever be necessary when calling the prover; but it can be useful in
+ applications that call the rewriter directly.</li>
+
+ </ul>
 
  <h3>Heuristic and Efficiency Improvements</h3>
 
@@ -80030,6 +80157,13 @@ it."
  fixed.  Related tweaks improve error reporting, including a clearer error
  message when attempting to supply @(':rule-classes nil') with @('defthmd').
  Thanks to Keshav Kini for reporting these issues.</p>
+
+ <p>When @(tsee defattach) was provided the argument @(':skip-checks nil'), a
+ hard error was signaled.  This has been fixed.</p>
+
+ <p>The @(tsee case-match) macro did not properly handle the @('!sym')
+ construct when the symbol, @('!sym'), is not in the @('\"ACL2\"') package.
+ This has been fixed.  Thanks to Alessandro Coglio for reporting this bug.</p>
 
  <h3>Changes at the System Level</h3>
 
@@ -86803,7 +86937,7 @@ arithmetic) for libraries of @(see books) for arithmetic reasoning.</p>")
 
 (defxdoc proper-consp
   :parents (lists acl2-built-ins)
-  :short "Recognizer for proper (null-terminated) non-empty lists"
+  :short "Recognizer for proper (@('nil')-terminated) non-empty lists"
   :long "<p>@('Proper-consp') is the function that checks whether its argument
  is a non-empty list that ends in @('nil').  Also see @(see true-listp).</p>
 
@@ -99949,8 +100083,8 @@ arithmetic) for libraries of @(see books) for arithmetic reasoning.</p>")
   :parents (characters lists acl2-built-ins)
   :short "Recognizer for a true list of standard characters"
   :long "<p>@('(standard-char-listp x)') is true if and only if @('x') is a
- null-terminated list all of whose members are standard @(see characters).  See
- @(see standard-char-p).</p>
+ @('nil')-terminated list all of whose members are standard @(see characters).
+ See @(see standard-char-p).</p>
 
  <p>@('Standard-char-listp') has a @(see guard) of @('t').</p>
 
@@ -102904,6 +103038,48 @@ arithmetic) for libraries of @(see books) for arithmetic reasoning.</p>")
  be the numeric value returned by the host operating system for the underlying
  system call.  For more information, see @(see sys-call).</p>")
 
+(defxdoc system-attachments
+  :parents (programming defattach)
+  :short "System-level algorithms that users can modify with attachments"
+  :long "<p>For background on attachments, see @(see defattach).</p>
+
+ <p>If you evaluate the form @('(all-attachments (w state))') immediately after
+ starting ACL2, you will see a list of pairs of the form @('(f . g)'), where
+ @('f') is a constrained system utility and @('g') is its attachment.  Here is
+ one such pair.</p>
+
+ @({
+ (ASSUME-TRUE-FALSE-AGGRESSIVE-P . CONSTANT-NIL-FUNCTION-ARITY-0)
+ })
+
+ <p>Users are permitted to modify these attachments, even without a trust tag
+ (see @(see defttag)), because they do not affect soundness.  See @(see
+ defattach-system).</p>
+
+ <p>We do not attempt to explain how to define functions to attach to system
+ functions.  We do however point out these two useful functions, for attaching
+ to some constant functions (functions with arity 0).</p>
+
+ @(def constant-t-function-arity-0)
+
+ @(def constant-nil-function-arity-0)
+
+ <p>To see how to use one of these functions, consider again the example above,
+ where constrained system function @('assume-true-false-aggressive-p') has the
+ attachment, @('constant-nil-function-arity-0').  Here we make the so-called
+ ``assume-true-false'' algorithm more aggressive.</p>
+
+ @({
+ (defattach-system assume-true-false-aggressive-p constant-t-function-arity-0)
+ })
+
+ <p>Note that we are not explaining here what it means to make that algorithm
+ more aggressive!  We expect those who want to use these attachments to be
+ comfortable as ``system programmers'', as they peruse the ACL2 source code and
+ its comments in order to see how to modify system behavior with attachments.
+ Perhaps more user-level documentation will be written to help with that
+ process.</p>")
+
 (defxdoc system-development
   :parents (programming)
   :short "Developing ACL2 system code"
@@ -103056,14 +103232,16 @@ arithmetic) for libraries of @(see books) for arithmetic reasoning.</p>")
  grep '^; Essay on' *.lisp
  })
 
- <p>in your ACL2 sources directory, you will see the names of more than 80 long
+ <p>in your ACL2 sources directory, you will see the names of more than 90 long
  source comments, or ``Essays'', that can provide additional background.</p>
 
  <p>Also see @(see programming) and its subtopics, in particular @(see
  programming-with-state), which describes <em>many</em> system-level utilities.
  For example, a subsection of @(see programming-with-state), entitled
  ``SEQUENTIAL PROGRAMMING'', introduces handy utilities @(tsee pprogn) and
- @(tsee er-progn) along with links to their documentation.</p>
+ @(tsee er-progn) along with links to their documentation.  You may also wish
+ to see @(see system-attachments) for how to make a few changes to the behavior
+ of ACL2.</p>
 
  <p>Here is another option for finding a system utility: As ACL2 developers
  sometimes do, use @('meta-.') or @('meta-x tags-apropos') in Emacs to find
@@ -103079,6 +103257,11 @@ arithmetic) for libraries of @(see books) for arithmetic reasoning.</p>")
  *acl2-system-exports*).</p>
 
  <ul>
+
+ <li>@('(alist-keys-subsetp alist keys)'): For the given alist and list of
+ symbols, return @('t') when each key of @('alist') belongs to @('keys'), else
+ return @('nil').  This is Boolean-equivalent to @('(subsetp-eq (strip-cars
+ alist) keys)'), but it avoids consing up the keys of @('alist').</li>
 
  <li>@('(alist-to-doublets alist)'): Return the result of replacing each pair
  @('(x . y)') in the given alist by the two-element list @('(x y)').  The order
@@ -103205,6 +103388,12 @@ arithmetic) for libraries of @(see books) for arithmetic reasoning.</p>")
  @('enabled-numep'), which may be more efficient since @('enabled-runep') is
  defined in terms of @('enabled-numep').</li>
 
+ <li>@('(evens l)'): Return the restriction of the true-list @('l') to its
+ even-indexed members (with zero-based indexing).  Note that if @('x') is a
+ list @('(k1 a1 k2 a2 ... kn an)') that satisfies the predicate @(tsee
+ keyword-value-listp), then @('(evens x)') lists the keys @('ki') of
+ @('x').</li>
+
  <li>@('(fargn x n)'): For a @(tsee pseudo-termp) @('x') that is a function
  call and for a positive integer @('n'), return the @('n')-th argument of
  @('x'), where the numbering of arguments starts at 1.</li>
@@ -103302,6 +103491,9 @@ arithmetic) for libraries of @(see books) for arithmetic reasoning.</p>")
  expression @('fn') of @(see world) @('w'), return its @(see guard). Optimize
  the @(see stobj) recognizers away iff @('stobj-optp') is true.</li>
 
+ <li>@('(keyword-listp x)'): Return @('t') when @('x') is a true-list whose
+ members are all keywords, else return @('nil').</li>
+
  <li>@('(implicate t1 t2)'): For terms @('t1') and @('t2'), return a term that
  is propositionally equivalent to @('(implies t1 t2)').</li>
 
@@ -103319,8 +103511,14 @@ arithmetic) for libraries of @(see books) for arithmetic reasoning.</p>")
  @('w'), return @('t') when the @('symbol-class') of @('fn') in @('w') is not
  @(':program'), else @('nil').  (See @('symbol-class'), below.)</li>
 
- <li>@('(make-lambda args body)'): Return @('lambda') expression with formal
- parameters @('args') and body @('body').</li>
+ <li>@('(make-lambda args body)'): Return the @('lambda') expression with
+ formal parameters @('args') and body @('body').</li>
+
+ <li>@('(make-lambda-term formals actuals body)'): Return the @('lambda')
+ application that is essentially @('((lambda formals body) . actuals)').
+ However, extra formals and corresponding actuals are added when @('body') has
+ free variables that do not belong to @('formals'), because lambdas must be
+ closed in ACL2.</li>
 
  <li>@('(merge-sort-lexorder l)'): Sort the list @('l') using a non-strict
  total order, @(tsee lexorder), on the ACL2 universe.</li>
@@ -103328,6 +103526,18 @@ arithmetic) for libraries of @(see books) for arithmetic reasoning.</p>")
  <li>@('(nvariablep x)'): For a @(tsee pseudo-termp) @('x'), return true iff
  @('x') is not a variable (i.e. it is a quoted constant or a function
  call).</li>
+
+ <li>@('(odds l)'): Return the restriction of the true-list @('l') to its
+ odd-indexed members (with zero-based indexing).  Note that if @('x') is a list
+ @('(k1 a1 k2 a2 ... kn an)') that satisfies the predicate @(tsee
+ keyword-value-listp), then @('(odds x)') lists the values @('ai') of
+ @('x').</li>
+
+ <li>@('(pairlis-x1 x1 lst)'): Cons @('x1') onto the front of each element of
+ the the true-list, @('lst').</li>
+
+ <li>@('(pairlis-x2 lst x2)'): Make an alist pairing each element of @('lst'),
+ a true-list, with @('x2').</li>
 
  <li>@('(partition-rest-and-keyword-args x keys)'): @('x') should be a list of
  the form @('(a1 ... an :key1 v1 ... :keyk vk)'), where no @('ai') is a
@@ -108049,7 +108259,7 @@ arithmetic) for libraries of @(see books) for arithmetic reasoning.</p>")
 
 (defxdoc true-listp
   :parents (lists acl2-built-ins)
-  :short "Recognizer for proper (null-terminated) lists"
+  :short "Recognizer for proper (@('nil')-terminated) lists"
   :long "<p>@('True-listp') is the function that checks whether its argument is
  a list that ends in, or equals, @('nil').</p>
 
@@ -109854,7 +110064,7 @@ introduction-to-the-tau-system) for more information about Tau.</dd>
   *TS-NIL*                   ;;; {nil}
   *TS-T*                     ;;; {t}
   *TS-NON-T-NON-NIL-SYMBOL*  ;;; symbols other than nil, t
-  *TS-PROPER-CONS*           ;;; null-terminated non-empty lists
+  *TS-PROPER-CONS*           ;;; nil-terminated non-empty lists
   *TS-IMPROPER-CONS*         ;;; conses that are not proper
   *TS-STRING*                ;;; strings
   *TS-CHARACTER*             ;;; characters
@@ -121110,6 +121320,8 @@ expand function call at the current subterm, without simplifying"
 (defpointer add-to-set-eq add-to-set)
 (defpointer add-to-set-eql add-to-set) ; pre-v4-3 compatibility
 (defpointer add-to-set-equal add-to-set)
+(defpointer alist-keys-subsetp system-utilities)
+(defpointer alist-to-doublets system-utilities)
 (defpointer all-calls system-utilities)
 (defpointer all-vars system-utilities)
 (defpointer apropos finding-documentation)
@@ -121152,6 +121364,7 @@ expand function call at the current subterm, without simplifying"
 (defpointer error hints t)
 (defpointer ev$ apply$)
 (defpointer ev$-list apply$)
+(defpointer evens system-utilities)
 (defpointer event events)
 (defpointer execution evaluation)
 (defpointer expand hints t)
@@ -121169,6 +121382,7 @@ expand function call at the current subterm, without simplifying"
 (defpointer ffn-symb-p system-utilities)
 (defpointer ffnnamep system-utilities)
 (defpointer ffnnamep-lst system-utilities)
+(defpointer first-keyword system-utilities)
 (defpointer flambda-applicationp system-utilities)
 (defpointer flambdap system-utilities)
 (defpointer fms!-to-string printing-to-strings)
@@ -121211,6 +121425,7 @@ expand function call at the current subterm, without simplifying"
 (defpointer iprint set-iprint)
 (defpointer iprinting set-iprint)
 (defpointer keyword keywordp)
+(defpointer keyword-listp system-utilities)
 (defpointer lambda term)
 (defpointer lambda-applicationp system-utilities)
 (defpointer lambda-body system-utilities)
@@ -121218,6 +121433,7 @@ expand function call at the current subterm, without simplifying"
 (defpointer let-mbe equality-variants-details)
 (defpointer logicp system-utilities)
 (defpointer make-lambda system-utilities)
+(defpointer make-lambda-term system-utilities)
 (defpointer match-free free-variables)
 (defpointer measure-theorem termination-theorem)
 (defpointer member-eq member)
@@ -121251,12 +121467,15 @@ expand function call at the current subterm, without simplifying"
 (defpointer normalization normalize)
 (defpointer nvariablep system-utilities)
 (defpointer observation-cw observation)
+(defpointer odds system-utilities)
 (defpointer open-input-channel io)
 (defpointer open-input-channel-p io)
 (defpointer open-output-channel io)
 (defpointer open-output-channel-p io)
 (defpointer optimize declare)
 (defpointer package packages)
+(defpointer pairlis-x1 system-utilities)
+(defpointer pairlis-x2 system-utilities)
 (defpointer partition-rest-and-keyword-args system-utilities)
 (defpointer pe-table extend-pe-table)
 (defpointer peek-char$ io)

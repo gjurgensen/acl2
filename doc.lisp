@@ -3357,7 +3357,7 @@ Subtopics
       Logical implication
 
   [Improper-consp]
-      Recognizer for improper (non-null-terminated) non-empty lists
+      Recognizer for improper (non-nil-terminated) non-empty lists
 
   [In-package]
       Select current package
@@ -3720,7 +3720,7 @@ Subtopics
       The proofs character output channel
 
   [Proper-consp]
-      Recognizer for proper (null-terminated) non-empty lists
+      Recognizer for proper (nil-terminated) non-empty lists
 
   [Pseudo-term-listp]
       A predicate for recognizing lists of term-like s-expressions
@@ -4001,7 +4001,7 @@ Subtopics
       Recognizer for true (proper) lists of true lists
 
   [True-listp]
-      Recognizer for proper (null-terminated) lists
+      Recognizer for proper (nil-terminated) lists
 
   [Truncate]
       Division returning an integer by truncating toward 0
@@ -6359,6 +6359,10 @@ Subtopics
 
   [Set-register-invariant-risk]
       Avoid [invariant-risk] checking for specified functions")
+ (ALIST-KEYS-SUBSETP (POINTERS)
+                     "See [system-utilities].")
+ (ALIST-TO-DOUBLETS (POINTERS)
+                    "See [system-utilities].")
  (ALISTP
   (ALISTS ACL2-BUILT-INS)
   "Recognizer for association lists
@@ -7381,7 +7385,7 @@ Subtopics
   "[concatenate] zero or more lists
 
   Append, which takes zero or more arguments, expects all the arguments
-  except perhaps the last to be true (null-terminated) lists.  It
+  except perhaps the last to be true (nil-terminated) lists.  It
   returns the result of concatenating all the elements of all the
   given lists into a single list.  Actually, in ACL2 append is a
   macro that expands into calls of the binary function
@@ -14145,7 +14149,11 @@ Subtopics
 
   Note that case-match returns nil if no pati matches.  Thus if we must
   return 7 in that case, we have to add as the final pattern the &,
-  which always matches anything.")
+  which always matches anything.
+
+  Technical point: The symbol sym referenced by the symbol !sym is in
+  the same package as !sym but with the leading exclamation point
+  character, \\#!, removed from the [symbol-name] of !sym.")
  (CASE-SPLIT
   (REWRITE LINEAR TYPE-PRESCRIPTION
            DEFINITION META FORWARD-CHAINING)
@@ -17542,10 +17550,10 @@ Subtopics
   hons and hence can be useful for reducing consing without the
   overhead of hons.
 
-  Logically (cons x y hint) is just (cons x y); hint is completely
-  irrelevant and ignored.  We generally expect that cons-with-hint
-  will just be left [enable]d, so you should never have to reason
-  about it.
+  Logically (cons-with-hint x y hint) is just (cons x y); hint is
+  completely irrelevant and ignored.  We generally expect that
+  cons-with-hint will just be left [enable]d, so you should never
+  have to reason about it.
 
   But cons-with-hint has a special raw Common Lisp definition that
   tries to avoid consing by using your hint.  Specifically: if hint
@@ -20772,12 +20780,24 @@ Subtopics
   (EVENTS)
   "Execute constrained functions using corresponding attached functions
 
+    General Forms:
+    (defattach f g)   ; single attach or, if g is nil, unattach
+    (defattach (f1 g1 :kwd val ...)
+               ...
+               (fk gk :kwd' val' ...)
+               :kwd'' val'' ...)
+
+  where each indicated keyword-value pair is optional and each keyword
+  is in the list (:hints :instructions :otf-flg :attach :skip-checks
+  :system-ok).  More details are in the ``Syntax and Semantics''
+  section below.
+
   This [documentation] topic is organized into the following sections:
 
-  Introductory example.
-  Syntax and semantics of defattach.
-  Three primary uses of defattach.
-  Miscellaneous remarks, with discussion of possible user errors.
+    * Introductory Example.
+    * Syntax and Semantics of Defattach.
+    * Three Primary Uses of Defattach.
+    * Miscellaneous Remarks, with discussion of possible user errors.
 
   Please see [encapsulate] if you intend to use defattach but are not
   already familiar with the use of encapsulate to introduce
@@ -20790,20 +20810,8 @@ Subtopics
   uses of defattach may be found in the ACL2 source code,
   specifically, file boot-strap-pass-2-a.lisp.
 
-  The argument :skip-checks t enables easy experimentation with
-  defattach, by permitting use of :[program] mode functions and the
-  skipping of semantic checks.  Also permitted is :skip-checks nil
-  (the default) and :skip-checks :cycles, which turns off only the
-  update of the extended ancestor relation (see below) and hence the
-  check for cycles in this relation; see below.  We do not make any
-  logical claims when the value of :skip-checks is non-nil; indeed, a
-  trust tag is required in this case (see [defttag]).  Note that the
-  interaction of memoization and attachments is not tracked for
-  attachments introduced with a non-nil value of :skip-checks.  For
-  more discussion of :skip-checks t, see [defproxy]; we do not
-  discuss :skip-checks further, here.
 
-  Introductory example.
+Introductory Example.
 
   We begin with a short log illustrating the use of defattach.  Notice
   that after evaluating the event (defattach f g), a call of the
@@ -20861,7 +20869,8 @@ Subtopics
 
     ACL2 !>
 
-  Syntax and semantics of defattach.
+
+Syntax and Semantics of Defattach.
 
   The log above shows that the event (defattach f g) allows g to be
   used for evaluating calls of f.  From a logical perspective, the
@@ -20931,25 +20940,62 @@ Subtopics
 
     General Forms:
     (defattach f g)   ; single attach or, if g is nil, unattach
-    (defattach (f1 g1 :kwd val ...)
+    (defattach (f1 g1 :kwd11val11 ...)
                ...
-               (fk gk :kwd' val' ...)
-               :kwd'' val'' ...)
+               (fk gk :kwdk1 valk1 ...)
+               :kwd1 val1 ...)
 
   where each indicated keyword-value pair is optional and each keyword
-  is one of :ATTACH, :HINTS, :OTF-FLG, or :INSTRUCTIONS.  The value
-  of each :ATTACH keyword is either t or nil, with default t except
-  that the value of :ATTACH at the ``top level,'' after each entry
-  (fi gi ...), is the default for each :ATTACH keyword supplied in
-  such an entry.  We discuss the :ATTACH keyword later in this
-  [documentation] topic.  The associated values for the other
-  keywords have the usual meanings for the proof obligations
-  described below: the guard proof obligation for keywords within
-  each (fi gi ...) entry, and the constraint proof obligation for
-  keywords at the top level.  No keyword may occur twice in the same
-  context, i.e., within the same (fi gi ...) entry or at the top
-  level; and :INSTRUCTIONS may not occur in the same context with
-  :HINTS or :OTF-FLG.
+  is in the list (:hints :instructions :otf-flg :attach :skip-checks
+  :system-ok).  We distinguish between keywords within the (fi gi
+  :kwdi1 vali1 ...), which we call guard keywords, and keywords at
+  the top level, shown above as :kwd1 val1 ..., which we call
+  top-level keywords.
+
+    * The guard keywords are in the list (:hints :instructions :otf-flg
+      :attach).  The :[hints], :[instructions], and :[otf-flg]
+      keywords in (fi gi ...) are used in the proofs of the guard
+      proof obligation for the attachment of gi to fi.  They have
+      their usual values and meanings, as when used (for example) in
+      [defthm] [events].  The value of each :attach keyword is either
+      t or nil.  We discuss the :attach keyword later in this
+      [documentation] topic.
+    * The top-level keywords :hints, :instructions, and :otf-flg are used
+      in the constraint proof obligations just as described above for
+      the guard proof obligations.  When :attach is used as a
+      top-level keyword, its value serves as a default for entries
+      (fi gi ...) that do not specify :attach.  :Skip-checks and
+      :system-ok are described below.
+
+  No keyword may occur twice in the same context: that is, neither
+  twice as a guard keyword in the same (fi gi ...) entry, nor twice
+  as a top-level keyword.  Moreover, :instructions may not occur in
+  the same context with :hints or :otf-flg.
+
+  The argument :skip-checks t enables easy experimentation with
+  defattach, by permitting use of :[program] mode functions and the
+  skipping of semantic checks.  Also permitted is :skip-checks nil
+  (the default) and :skip-checks :cycles, which turns off only the
+  update of the extended ancestor relation and hence the check for
+  cycles in this relation; see below.  We do not make any logical
+  claims when the value of :skip-checks is non-nil; indeed, a trust
+  tag is then required (see [defttag]).  Note that the interaction of
+  [memoization] and attachments is not tracked for attachments
+  introduced with a non-nil value of :skip-checks.  For more
+  discussion of :skip-checks t, see [defproxy]; we do not discuss
+  :skip-checks further, here.
+
+  The argument :system-ok t allows attachment to system functions.
+  Without this argument, the defattach event will fail if any fi is a
+  built-in ACL2 function.  Rather than supplying this argument
+  directly, it is recommended to use [defattach-system], which has
+  the same syntax as defattach with two exceptions: it adds
+  :system-ok t automatically, that is, :system-ok is implicit; and it
+  expands to a [local] call of defattach.  The latter is important so
+  that the attachment does not affect system behavior outside a book
+  containing the defattach event.  Of course, if it is truly intended
+  to affect such behavior, the argument :system-ok t may be given
+  directly to defattach, without a surrounding use of local.
 
   The first General Form above is simply an abbreviation for the form
   (defattach (f g)), which is an instance of the second General Form
@@ -21081,46 +21127,44 @@ Subtopics
   --- as siblings are considered equivalent for purposes of the
   acyclicity check.
 
-  Three primary uses of defattach.
+
+Three Primary Uses of Defattach.
 
   We anticipate three uses of defattach:
 
-  (1) Constrained function execution
-
-  (2) Sound modification of the ACL2 system
-
-  (3) Program refinement
+   1. Constrained function execution
+   2. Sound modification of the ACL2 system
+   3. Program refinement
 
   We discuss these in turn.
 
-  (1) The example at the beginning of this [documentation] illustrates
-  constrained function execution.
+   1. The example at the beginning of this [documentation] illustrates
+      constrained function execution.
+   2. ACL2 is written essentially in itself.  Thus, there is an opportunity
+      to attaching to system functions.  For example, encapsulated
+      function too-many-ifs-post-rewrite, in the ACL2 source code,
+      receives an attachment of too-many-ifs-post-rewrite-builtin,
+      which implements a heuristic used in the rewriter.  To find all
+      such examples, search the source code for the string
+      `-builtin'.
+      Over time, we expect to continue replacing ACL2 source code in a
+      similar manner.  We invite the ACL2 community to assist in this
+      ``open architecture'' enterprise; feel free to email the ACL2
+      implementors if you are interested in such activity.
+   3. Recall that for an attachment pair <f,g>, a proof obligation is
+      (speaking informally) that g satisfies the constraint on f.
+      Yet more informally speaking, g is ``more defined'' than f; we
+      can think of g as ``refining'' f.  With these informal notions
+      as motivation, we can view defattach as providing refinement
+      through the following formal observation: the evaluation theory
+      extends the theory of the ACL2 session, specifically by the
+      addition of all attachment equations.  For the logic-inclined,
+      it may be useful to think model-theoretically: The class of
+      models of the evaluation theory is non-empty but is a subset of
+      the class of models of the current session theory.
 
-  (2) ACL2 is written essentially in itself.  Thus, there is an
-  opportunity to attaching to system functions.  For example,
-  encapsulated function too-many-ifs-post-rewrite, in the ACL2 source
-  code, receives an attachment of too-many-ifs-post-rewrite-builtin,
-  which implements a heuristic used in the rewriter.  To find all
-  such examples, search the source code for the string `-builtin'.
 
-  Over time, we expect to continue replacing ACL2 source code in a
-  similar manner.  We invite the ACL2 community to assist in this
-  ``open architecture'' enterprise; feel free to email the ACL2
-  implementors if you are interested in such activity.
-
-  (3) Recall that for an attachment pair <f,g>, a proof obligation is
-  (speaking informally) that g satisfies the constraint on f.  Yet
-  more informally speaking, g is ``more defined'' than f; we can
-  think of g as ``refining'' f.  With these informal notions as
-  motivation, we can view defattach as providing refinement through
-  the following formal observation: the evaluation theory extends the
-  theory of the ACL2 session, specifically by the addition of all
-  attachment equations.  For the logic-inclined, it may be useful to
-  think model-theoretically: The class of models of the evaluation
-  theory is non-empty but is a subset of the class of models of the
-  current session theory.
-
-  Miscellaneous remarks, with discussion of possible user errors.
+Miscellaneous Remarks, with discussion of possible user errors.
 
   We conclude with remarks on some details.
 
@@ -21287,8 +21331,34 @@ Subtopics
 
 Subtopics
 
+  [Defattach-system]
+      Attach to built-in, system-level, constrained functions
+
   [Ignored-attachment]
-      Why attachments are sometimes not used")
+      Why attachments are sometimes not used
+
+  [System-attachments]
+      System-level algorithms that users can modify with attachments")
+ (DEFATTACH-SYSTEM
+  (DEFATTACH)
+  "Attach to built-in, system-level, constrained functions
+
+  For background on attachments, see [defattach].  The macro
+  defattach-system is a convenient way to attach to built-in
+  functions.  The event (defattach f g) will fail if f is built into
+  ACL2.  This failure can be overcome by specifying top-level keyword
+  argument :system-ok t, for example: (defattach (f g) :system-ok t).
+  However, rather than supplying this argument directly, it is
+  recommended to use defattach-system, which has the same syntax as
+  defattach with two exceptions: it adds :system-ok t automatically,
+  that is, :system-ok is implicit; and it expands to a [local] call
+  of defattach.  The latter is important so that the attachment does
+  not affect system behavior outside a book containing the defattach
+  event.  Of course, if it is truly intended to affect such behavior,
+  the argument :system-ok t may be given directly to defattach,
+  without a surrounding use of local.
+
+  See [system-attachments] for discussion of system attachments.")
  (DEFAULT
   (ARRAYS ACL2-BUILT-INS)
   "Return the :default from the [header] of a 1- or 2-dimensional array
@@ -29497,6 +29567,8 @@ Subtopics
     (defun evenp (x)
            (declare (xargs :guard (integerp x)))
            (integerp (* x (/ 2))))")
+ (EVENS (POINTERS)
+        "See [system-utilities].")
  (EVENT (POINTERS) "See [events].")
  (EVENTS
   (ACL2)
@@ -32208,6 +32280,8 @@ Subtopics
   "First member of the list
 
   See any Common Lisp documentation for details.")
+ (FIRST-KEYWORD (POINTERS)
+                "See [system-utilities].")
  (FIX
   (NUMBERS ACL2-BUILT-INS)
   "Coerce to a number
@@ -42995,7 +43069,7 @@ Subtopics
            (if p (if q t nil) t))")
  (IMPROPER-CONSP
   (LISTS ACL2-BUILT-INS)
-  "Recognizer for improper (non-null-terminated) non-empty lists
+  "Recognizer for improper (non-nil-terminated) non-empty lists
 
   Improper-consp is the function that checks whether its argument is a
   non-empty list that ends in other than nil.  See [proper-consp] and
@@ -48878,13 +48952,16 @@ Subtopics
   form was available immediately: the form t that had been supplied
   by the user.  So the query returned immediately and the set-iprint
   call was completed.")
+ (KEYWORD-LISTP (POINTERS)
+                "See [system-utilities].")
  (KEYWORD-VALUE-LISTP
   (KEYWORDP LISTS ACL2-BUILT-INS)
   "Recognizer for true lists whose even-position elements are keywords
 
-  (keyword-value-listp l) is true if and only if l is a list of even
+  (Keyword-value-listp l) is true if and only if l is a list of even
   length of the form (k1 a1 k2 a2 ... kn an), where each ki is a
-  keyword.
+  keyword.  To list the keys ki and values ai of l evaluate (evens l)
+  and (odds l), respectively.
 
   Function: <keyword-value-listp>
 
@@ -51025,7 +51102,7 @@ Subtopics
       Recognizer for a true list of ``good'' [atom]s
 
   [Improper-consp]
-      Recognizer for improper (non-null-terminated) non-empty lists
+      Recognizer for improper (non-nil-terminated) non-empty lists
 
   [Integer-listp]
       Recognizer for a true list of integers
@@ -51088,7 +51165,7 @@ Subtopics
       Position of an item in a string or a list
 
   [Proper-consp]
-      Recognizer for proper (null-terminated) non-empty lists
+      Recognizer for proper (nil-terminated) non-empty lists
 
   [Rational-listp]
       Recognizer for a true list of rational numbers
@@ -51142,7 +51219,7 @@ Subtopics
       Recognizer for true (proper) lists of true lists
 
   [True-listp]
-      Recognizer for proper (null-terminated) lists
+      Recognizer for proper (nil-terminated) lists
 
   [Union$]
       A list that contains exactly the elements of the given lists
@@ -55039,6 +55116,8 @@ Subtopics
   the alist.)")
  (MAKE-LAMBDA (POINTERS)
               "See [system-utilities].")
+ (MAKE-LAMBDA-TERM (POINTERS)
+                   "See [system-utilities].")
  (MAKE-LIST
   (LISTS ACL2-BUILT-INS)
   "Make a list of a given size
@@ -58038,7 +58117,7 @@ Subtopics
   "Weak recognizer for a ``message''
 
   The form (msgp x) evaluates to true when x evaluates either to a
-  string or to a null-terminated list (see [true-listp]) whose first
+  string or to a nil-terminated list (see [true-listp]) whose first
   element is a string.  Thus, msgp distinguishes messages --- that
   is, values suitable as arguments for ~@ directives of [fmt] ---
   from Booleans and other values that are obviously not messages.
@@ -58507,7 +58586,7 @@ Subtopics
   Logically, (mv-list n term) is just term; that is, in the logic
   mv-list simply returns its second argument.  However, the
   evaluation of a call of mv-list on explicit values always results
-  in a single value, which is a (null-terminated) list.  For
+  in a single value, which is a (nil-terminated) list.  For
   evaluation, the term n above (the first argument to an mv-list
   call) must ``essentially'' (see below) be an integer not less than
   2, where that integer is the number of values returned by the
@@ -78496,12 +78575,42 @@ Changes to Existing Features
     (LET ((N X)) (EC-CALL (NATP N)))
     ->:
 
+  It is now illegal by default to attach to built-in functions.  To
+  overcome this default behavior, see [defattach-system].
+
 
 New Features
 
   The [summary] now shows, by default, the list of doublets (f g) for
   which f is a system function with attachment g (see [defattach]),
   when g differs from the initial attachment to f.
+
+  (Warning: The following describes advanced features that can likely
+  be ignored by most users.  They are available using the new
+  utility, [defattach-system].)  Two new system-level functions may
+  be given attachments: remove-trivial-equivalences-enabled-p and
+  assume-true-false-aggressive-p.  (Thanks to Eric Smith for
+  suggesting these, and to him and Alessandro Coglio for helpful
+  discussions.)  By default, these have the attachments
+  constant-t-function-arity-0 and constant-nil-function-arity-0,
+  respectively, which provide the existing system behavior.  But
+  these attachments may be changed by the user.
+
+    * Remove-trivial-equivalences-enabled-p may receive the attachment
+      constant-nil-function-arity-0 to avoid the
+      remove-trivial-equivalences heuristic, which substitutes the
+      equality (or even equivalence) of a variable to a term into the
+      rest of the goal.  (However, perhaps similar heuristics will
+      still be used, for example as part of the [tau-system].)
+    * Assume-true-false-aggressive-p may receive the attachment
+      constant-t-function-arity-0 to strengthen the rewriter's use of
+      the [type-alist] when diving into if terms.  A common use is to
+      rewrite what amounts to (if (or test1 test2) (if test1 _ x) _);
+      then the [type-alist] will note that test2 is true when
+      rewriting x.  This change may slow down ACL2 considerably in
+      some cases, and should rarely if ever be necessary when calling
+      the prover; but it can be useful in applications that call the
+      rewriter directly.
 
 
 Heuristic and Efficiency Improvements
@@ -78592,6 +78701,13 @@ Bug Fixes
   been fixed.  Related tweaks improve error reporting, including a
   clearer error message when attempting to supply :rule-classes nil
   with defthmd.  Thanks to Keshav Kini for reporting these issues.
+
+  When [defattach] was provided the argument :skip-checks nil, a hard
+  error was signaled.  This has been fixed.
+
+  The [case-match] macro did not properly handle the !sym construct
+  when the symbol, !sym, is not in the \"ACL2\" package.  This has been
+  fixed.  Thanks to Alessandro Coglio for reporting this bug.
 
 
 Changes at the System Level
@@ -79821,6 +79937,8 @@ Subtopics
     (defun oddp (x)
            (declare (xargs :guard (integerp x)))
            (not (evenp x)))")
+ (ODDS (POINTERS)
+       "See [system-utilities].")
  (OK-IF
   (BREAK-REWRITE)
   "Conditional exit from break-rewrite
@@ -81238,6 +81356,10 @@ Subtopics
                              (t (cons (cons (car x) (car y))
                                       (pairlis$ (cdr x) (cdr y)))))
                 :exec (pairlis$-tailrec x y nil)))")
+ (PAIRLIS-X1 (POINTERS)
+             "See [system-utilities].")
+ (PAIRLIS-X2 (POINTERS)
+             "See [system-utilities].")
  (PAND
   (PARALLEL-PROGRAMMING ACL2-BUILT-INS)
   "Parallel, Boolean version of [and]
@@ -82731,6 +82853,12 @@ Subtopics
   [Add-to-set-equal]
       See [add-to-set].
 
+  [Alist-keys-subsetp]
+      See [system-utilities].
+
+  [Alist-to-doublets]
+      See [system-utilities].
+
   [All-calls]
       See [system-utilities].
 
@@ -82857,6 +82985,9 @@ Subtopics
   [Ev$-list]
       See [apply$].
 
+  [Evens]
+      See [system-utilities].
+
   [Event]
       See [events].
 
@@ -82906,6 +83037,9 @@ Subtopics
       See [system-utilities].
 
   [Ffnnamep-lst]
+      See [system-utilities].
+
+  [First-keyword]
       See [system-utilities].
 
   [Flambda-applicationp]
@@ -83034,6 +83168,9 @@ Subtopics
   [Keyword]
       See [keywordp].
 
+  [Keyword-listp]
+      See [system-utilities].
+
   [Lambda]
       See [term].
 
@@ -83053,6 +83190,9 @@ Subtopics
       See [system-utilities].
 
   [Make-lambda]
+      See [system-utilities].
+
+  [Make-lambda-term]
       See [system-utilities].
 
   [Match-free]
@@ -83184,6 +83324,9 @@ Subtopics
   [Observation-cw]
       See [observation].
 
+  [Odds]
+      See [system-utilities].
+
   [Open-input-channel]
       See [io].
 
@@ -83201,6 +83344,12 @@ Subtopics
 
   [Package]
       See [packages].
+
+  [Pairlis-x1]
+      See [system-utilities].
+
+  [Pairlis-x2]
+      See [system-utilities].
 
   [Partition-rest-and-keyword-args]
       See [system-utilities].
@@ -85484,6 +85633,9 @@ Subtopics
   [Symbols]
       Symbols in ACL2 and operations on them
 
+  [System-attachments]
+      System-level algorithms that users can modify with attachments
+
   [System-development]
       Developing ACL2 system code
 
@@ -87630,7 +87782,7 @@ Subtopics
   [*standard-co*]).")
  (PROPER-CONSP
   (LISTS ACL2-BUILT-INS)
-  "Recognizer for proper (null-terminated) non-empty lists
+  "Recognizer for proper (nil-terminated) non-empty lists
 
   Proper-consp is the function that checks whether its argument is a
   non-empty list that ends in nil.  Also see [true-listp].
@@ -100975,7 +101127,7 @@ Subtopics
   (CHARACTERS LISTS ACL2-BUILT-INS)
   "Recognizer for a true list of standard characters
 
-  (standard-char-listp x) is true if and only if x is a null-terminated
+  (standard-char-listp x) is true if and only if x is a nil-terminated
   list all of whose members are standard [characters].  See
   [standard-char-p].
 
@@ -104153,6 +104305,54 @@ Subtopics
   that Lisp function, which may well be the numeric value returned by
   the host operating system for the underlying system call.  For more
   information, see [sys-call].")
+ (SYSTEM-ATTACHMENTS
+  (PROGRAMMING DEFATTACH)
+  "System-level algorithms that users can modify with attachments
+
+  For background on attachments, see [defattach].
+
+  If you evaluate the form (all-attachments (w state)) immediately
+  after starting ACL2, you will see a list of pairs of the form (f .
+  g), where f is a constrained system utility and g is its
+  attachment.  Here is one such pair.
+
+    (ASSUME-TRUE-FALSE-AGGRESSIVE-P . CONSTANT-NIL-FUNCTION-ARITY-0)
+
+  Users are permitted to modify these attachments, even without a trust
+  tag (see [defttag]), because they do not affect soundness.  See
+  [defattach-system].
+
+  We do not attempt to explain how to define functions to attach to
+  system functions.  We do however point out these two useful
+  functions, for attaching to some constant functions (functions with
+  arity 0).
+
+  Function: <constant-t-function-arity-0>
+
+    (defun constant-t-function-arity-0
+           nil (declare (xargs :guard t))
+           t)
+
+  Function: <constant-nil-function-arity-0>
+
+    (defun constant-nil-function-arity-0
+           nil (declare (xargs :guard t))
+           nil)
+
+  To see how to use one of these functions, consider again the example
+  above, where constrained system function
+  assume-true-false-aggressive-p has the attachment,
+  constant-nil-function-arity-0.  Here we make the so-called
+  ``assume-true-false'' algorithm more aggressive.
+
+    (defattach-system assume-true-false-aggressive-p constant-t-function-arity-0)
+
+  Note that we are not explaining here what it means to make that
+  algorithm more aggressive!  We expect those who want to use these
+  attachments to be comfortable as ``system programmers'', as they
+  peruse the ACL2 source code and its comments in order to see how to
+  modify system behavior with attachments.  Perhaps more user-level
+  documentation will be written to help with that process.")
  (SYSTEM-DEVELOPMENT
   (PROGRAMMING)
   "Developing ACL2 system code
@@ -104317,7 +104517,7 @@ Subtopics
     grep '^; Essay on' *.lisp
 
   in your ACL2 sources directory, you will see the names of more than
-  80 long source comments, or ``Essays'', that can provide additional
+  90 long source comments, or ``Essays'', that can provide additional
   background.
 
   Also see [programming] and its subtopics, in particular
@@ -104325,6 +104525,8 @@ Subtopics
   utilities.  For example, a subsection of [programming-with-state],
   entitled ``SEQUENTIAL PROGRAMMING'', introduces handy utilities
   [pprogn] and [er-progn] along with links to their documentation.
+  You may also wish to see [system-attachments] for how to make a few
+  changes to the behavior of ACL2.
 
   Here is another option for finding a system utility: As ACL2
   developers sometimes do, use meta-. or meta-x tags-apropos in Emacs
@@ -104341,6 +104543,11 @@ List of a few ACL2 system utilities:
   Every function mentioned below belongs in the constant
   [*ACL2-system-exports*].
 
+    * (alist-keys-subsetp alist keys): For the given alist and list of
+      symbols, return t when each key of alist belongs to keys, else
+      return nil.  This is Boolean-equivalent to (subsetp-eq
+      (strip-cars alist) keys), but it avoids consing up the keys of
+      alist.
     * (alist-to-doublets alist): Return the result of replacing each pair
       (x . y) in the given alist by the two-element list (x y).  The
       order is preserved, i.e., the following is a theorem.
@@ -104445,6 +104652,11 @@ List of a few ACL2 system utilities:
       enabled structure (as discussed for enabled-numep, just above).
       See also enabled-numep, which may be more efficient since
       enabled-runep is defined in terms of enabled-numep.
+    * (evens l): Return the restriction of the true-list l to its
+      even-indexed members (with zero-based indexing).  Note that if
+      x is a list (k1 a1 k2 a2 ... kn an) that satisfies the
+      predicate [keyword-value-listp], then (evens x) lists the keys
+      ki of x.
     * (fargn x n): For a [pseudo-termp] x that is a function call and for a
       positive integer n, return the n-th argument of x, where the
       numbering of arguments starts at 1.
@@ -104519,6 +104731,8 @@ List of a few ACL2 system utilities:
     * (guard fn stobj-optp w): For a function symbol or lambda expression
       fn of [world] w, return its [guard]. Optimize the [stobj]
       recognizers away iff stobj-optp is true.
+    * (keyword-listp x): Return t when x is a true-list whose members are
+      all keywords, else return nil.
     * (implicate t1 t2): For terms t1 and t2, return a term that is
       propositionally equivalent to (implies t1 t2).
     * (lambda-applicationp x): For a [pseudo-termp] x, return t if it is a
@@ -104530,12 +104744,25 @@ List of a few ACL2 system utilities:
     * (logicp fn w): For a function symbol fn of [world] w, return t when
       the symbol-class of fn in w is not :program, else nil.  (See
       symbol-class, below.)
-    * (make-lambda args body): Return lambda expression with formal
+    * (make-lambda args body): Return the lambda expression with formal
       parameters args and body body.
+    * (make-lambda-term formals actuals body): Return the lambda
+      application that is essentially ((lambda formals body) .
+      actuals).  However, extra formals and corresponding actuals are
+      added when body has free variables that do not belong to
+      formals, because lambdas must be closed in ACL2.
     * (merge-sort-lexorder l): Sort the list l using a non-strict total
       order, [lexorder], on the ACL2 universe.
     * (nvariablep x): For a [pseudo-termp] x, return true iff x is not a
       variable (i.e. it is a quoted constant or a function call).
+    * (odds l): Return the restriction of the true-list l to its
+      odd-indexed members (with zero-based indexing).  Note that if x
+      is a list (k1 a1 k2 a2 ... kn an) that satisfies the predicate
+      [keyword-value-listp], then (odds x) lists the values ai of x.
+    * (pairlis-x1 x1 lst): Cons x1 onto the front of each element of the
+      the true-list, lst.
+    * (pairlis-x2 lst x2): Make an alist pairing each element of lst, a
+      true-list, with x2.
     * (partition-rest-and-keyword-args x keys): x should be a list of the
       form (a1 ... an :key1 v1 ... :keyk vk), where no ai is a
       keyword.  The result is (mv erp rest alist), where erp is
@@ -110121,7 +110348,7 @@ Subtopics
                          (true-list-listp (cdr x))))))")
  (TRUE-LISTP
   (LISTS ACL2-BUILT-INS)
-  "Recognizer for proper (null-terminated) lists
+  "Recognizer for proper (nil-terminated) lists
 
   True-listp is the function that checks whether its argument is a list
   that ends in, or equals, nil.
@@ -111874,7 +112101,7 @@ Subtopics
     *TS-NIL*                   ;;; {nil}
     *TS-T*                     ;;; {t}
     *TS-NON-T-NON-NIL-SYMBOL*  ;;; symbols other than nil, t
-    *TS-PROPER-CONS*           ;;; null-terminated non-empty lists
+    *TS-PROPER-CONS*           ;;; nil-terminated non-empty lists
     *TS-IMPROPER-CONS*         ;;; conses that are not proper
     *TS-STRING*                ;;; strings
     *TS-CHARACTER*             ;;; characters
