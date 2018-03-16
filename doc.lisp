@@ -14149,7 +14149,11 @@ Subtopics
 
   Note that case-match returns nil if no pati matches.  Thus if we must
   return 7 in that case, we have to add as the final pattern the &,
-  which always matches anything.")
+  which always matches anything.
+
+  Technical point: The symbol sym referenced by the symbol !sym is in
+  the same package as !sym but with the leading exclamation point
+  character, \\#!, removed from the [symbol-name] of !sym.")
  (CASE-SPLIT
   (REWRITE LINEAR TYPE-PRESCRIPTION
            DEFINITION META FORWARD-CHAINING)
@@ -78700,6 +78704,10 @@ Bug Fixes
 
   When [defattach] was provided the argument :skip-checks nil, a hard
   error was signaled.  This has been fixed.
+
+  The [case-match] macro did not properly handle the !sym construct
+  when the symbol, !sym, is not in the \"ACL2\" package.  This has been
+  fixed.  Thanks to Alessandro Coglio for reporting this bug.
 
 
 Changes at the System Level
