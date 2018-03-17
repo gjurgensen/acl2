@@ -79898,6 +79898,9 @@ it."
 
 ; Improved :doc defattach.
 
+; Strengthened the guards for functions print-rational-as-decimal and
+; print-timer.
+
   :parents (release-notes)
   :short "ACL2 Version  8.1 (xxx, 20xx) Notes"
   :long "<p>NOTE!  New users can ignore these release notes, because the @(see
@@ -80031,6 +80034,13 @@ it."
 
  <p>It is now illegal by default to attach to built-in functions.  To overcome
  this default behavior, see @(see defattach-system).</p>
+
+ <p>Functions from the @(tsee fmt) family, including for example @(tsee fms)
+ and @(tsee fmt-to-string), now have (incomplete) guards that, in particular,
+ imply that the @('alist') argument must satisfy @('character-alistp'), i.e.,
+ be an association list whose keys are all characters.  Thanks to Eric Smith
+ for pointing out that an expression like @('(fmt-to-string \"~x0\" 3)') could
+ cause a raw Lisp error.</p>
 
  <h3>New Features</h3>
 
