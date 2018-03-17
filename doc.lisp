@@ -78578,6 +78578,13 @@ Changes to Existing Features
   It is now illegal by default to attach to built-in functions.  To
   overcome this default behavior, see [defattach-system].
 
+  Functions from the [fmt] family, including for example [fms] and
+  [fmt-to-string], now have (incomplete) guards that, in particular,
+  imply that the alist argument must satisfy character-alistp, i.e.,
+  be an association list whose keys are all characters.  Thanks to
+  Eric Smith for pointing out that an expression like (fmt-to-string
+  \"~x0\" 3) could cause a raw Lisp error.
+
 
 New Features
 
