@@ -9156,6 +9156,15 @@ cd /path/to/acl2-sources/books
 make ACL2=/path/to/acl2-sources/saved_acl2 ...
 })
 
+<p>For example, the section ``A Full Build'', below, says to do the following
+if you would like to make a change to the @(see community-books) (where the
+@('-j') argument is optional).</p>
+
+@({
+    $ cd /path/to/acl2-sources/books
+    $ make ACL2=/path/to/acl2-sources/saved_acl2 -j 2 all
+})
+
 <p>Success is indicated by a Linux exit status of 0.  Equivalently, there
 should be no failures in the log.  Failures may be found by searching for
 @('**'); for example, if output is redirected to a log file

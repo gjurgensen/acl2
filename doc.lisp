@@ -11549,6 +11549,13 @@ Subtopics
     cd /path/to/acl2-sources/books
     make ACL2=/path/to/acl2-sources/saved_acl2 ...
 
+  For example, the section ``A Full Build'', below, says to do the
+  following if you would like to make a change to the
+  [community-books] (where the -j argument is optional).
+
+    $ cd /path/to/acl2-sources/books
+    $ make ACL2=/path/to/acl2-sources/saved_acl2 -j 2 all
+
   Success is indicated by a Linux exit status of 0.  Equivalently,
   there should be no failures in the log.  Failures may be found by
   searching for **; for example, if output is redirected to a log
