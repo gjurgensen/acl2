@@ -50267,6 +50267,10 @@ Subtopics
   in which #\\v is the ACL2 version string, #\\l is the level of the
   current recursion in [ld] and/or [wormhole], and #\\c is the
   connected book directory (cbd).")
+ (LEGAL-CONSTANTP (POINTERS)
+                  "See [system-utilities].")
+ (LEGAL-VARIABLEP (POINTERS)
+                  "See [system-utilities].")
  (LEMMA-INSTANCE
   (HINTS FUNCTIONAL-INSTANTIATION)
   "An object denoting an instance of a theorem
@@ -78716,6 +78720,11 @@ Bug Fixes
   when the symbol, !sym, is not in the \"ACL2\" package.  This has been
   fixed.  Thanks to Alessandro Coglio for reporting this bug.
 
+  Fixed handling of some guard violation error messages for built-in
+  functions.  For example, the form (apply$-lambda 3 nil) produces a
+  guard violation, but before this fix, the error message reported an
+  implementation error.
+
 
 Changes at the System Level
 
@@ -83188,6 +83197,12 @@ Subtopics
       See [system-utilities].
 
   [Lambda-formals]
+      See [system-utilities].
+
+  [Legal-constantp]
+      See [system-utilities].
+
+  [Legal-variablep]
       See [system-utilities].
 
   [Let-mbe]
@@ -104748,6 +104763,12 @@ List of a few ACL2 system utilities:
     * (lambda-body x): For a lambda expression x, return its body.
     * (lambda-formals x): For a lambda expression x, return its formal
       parameters.
+    * (legal-constantp name): Returns t if name is a legal constant name,
+      else nil.
+    * (legal-variablep name): Returns t if name is a legal variable name,
+      else nil.  For example, x is a legal variable name but the
+      following are not: :abc, t, nil, &a (a lambda keyword), *c*
+      (syntax of a constant), and pi (a Common Lisp constant).
     * (logicp fn w): For a function symbol fn of [world] w, return t when
       the symbol-class of fn in w is not :program, else nil.  (See
       symbol-class, below.)
