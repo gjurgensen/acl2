@@ -103522,6 +103522,15 @@ arithmetic) for libraries of @(see books) for arithmetic reasoning.</p>")
  <li>@('(lambda-formals x)'): For a @('lambda') expression @('x'), return its
  formal parameters.</li>
 
+ <li>@('(legal-constantp name)'): Returns @('t') if @('name') is a legal
+ constant name, else @('nil').</li>
+
+ <li>@('(legal-variablep name)'): Returns @('t') if @('name') is a legal
+ variable name, else @('nil').  For example, @('x') is a legal variable name
+ but the following are not: @(':abc'), @('t'), @('nil'), @('&a') (a lambda
+ keyword), @('*c*') (syntax of a constant), and @('pi') (a Common Lisp
+ constant).</li>
+
  <li>@('(logicp fn w)'): For a function symbol @('fn') of @(see world)
  @('w'), return @('t') when the @('symbol-class') of @('fn') in @('w') is not
  @(':program'), else @('nil').  (See @('symbol-class'), below.)</li>
@@ -121445,6 +121454,8 @@ expand function call at the current subterm, without simplifying"
 (defpointer lambda-applicationp system-utilities)
 (defpointer lambda-body system-utilities)
 (defpointer lambda-formals system-utilities)
+(defpointer legal-constantp system-utilities)
+(defpointer legal-variablep system-utilities)
 (defpointer let-mbe equality-variants-details)
 (defpointer logicp system-utilities)
 (defpointer make-lambda system-utilities)
