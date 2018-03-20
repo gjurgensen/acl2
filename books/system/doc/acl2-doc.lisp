@@ -80175,6 +80175,11 @@ it."
  construct when the symbol, @('!sym'), is not in the @('\"ACL2\"') package.
  This has been fixed.  Thanks to Alessandro Coglio for reporting this bug.</p>
 
+ <p>Fixed handling of some guard violation error messages for built-in
+ functions.  For example, the form @('(apply$-lambda 3 nil)') produces a guard
+ violation, but before this fix, the error message reported an implementation
+ error.</p>
+
  <h3>Changes at the System Level</h3>
 
  <p>Fixed the use of `@('<a href='URL'>...</a>')' so that if @('URL') has the

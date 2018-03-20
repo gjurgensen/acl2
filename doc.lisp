@@ -78716,6 +78716,11 @@ Bug Fixes
   when the symbol, !sym, is not in the \"ACL2\" package.  This has been
   fixed.  Thanks to Alessandro Coglio for reporting this bug.
 
+  Fixed handling of some guard violation error messages for built-in
+  functions.  For example, the form (apply$-lambda 3 nil) produces a
+  guard violation, but before this fix, the error message reported an
+  implementation error.
+
 
 Changes at the System Level
 
