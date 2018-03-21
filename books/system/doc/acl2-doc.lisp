@@ -9196,12 +9196,13 @@ extensions, e.g., ACL2(p) and ACL2(r).</p>
 
 <h3>A Basic Build</h3>
 
-<p>In previous versions of ACL2, building the Community Books could take
-several hours.  Starting in ACL2 6.4, the default build has been made <b>much
-faster by excluding many books</b> by default.</p>
-
-<p>The new default @('make') target, called @('basic'), now certifies only the
-following, widely used books:</p>
+<p>Before ACL2 Version 6.4, building the Community Books could take several
+hours.  Now, the default @('make') target in @('books/GNUmakefile'), called
+@('basic'), is much faster &mdash; it excludes many books and certifies only
+books listed below, which tend to be widely used.  <b>WARNING</b>: the
+@('basic') target of @('books/GNUmakefile') is insufficient for validating
+changes that will go into the @(see community-books); for that, use the
+@('all') target.</p>
 
 <ul>
 <li>arithmetic</li>

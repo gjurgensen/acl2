@@ -11588,12 +11588,13 @@ Prerequisites
 
 A Basic Build
 
-  In previous versions of ACL2, building the Community Books could take
-  several hours.  Starting in ACL2 6.4, the default build has been
-  made much faster by excluding many books by default.
-
-  The new default make target, called basic, now certifies only the
-  following, widely used books:
+  Before ACL2 Version 6.4, building the Community Books could take
+  several hours.  Now, the default make target in books/GNUmakefile,
+  called basic, is much faster --- it excludes many books and
+  certifies only books listed below, which tend to be widely used.
+  WARNING: the basic target of books/GNUmakefile is insufficient for
+  validating changes that will go into the [community-books]; for
+  that, use the all target.
 
     * arithmetic
     * arithmetic-3
