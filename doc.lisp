@@ -21568,11 +21568,13 @@ Subtopics
   WARNING: We strongly recommend that you not add axioms.  If at all
   possible you should use [defun] or [mutual-recursion] to define new
   concepts recursively or use [encapsulate] to constrain them
-  constructively.  If your goal is to defer a proof by using a
-  top-down style, consider using [skip-proofs]; see the discussion on
-  ``Top-Down Proof'' in Section B.1.2 of ``Computer-Aided Reasoning:
-  An Approach.'' Adding new axioms frequently renders the logic
-  inconsistent.
+  constructively.  If your goal is to defer proving a formula that
+  is, logically speaking, a theorem of the current theory, then
+  consider using [skip-proofs] instead.  One such case is the use of
+  a top-down style, as per the discussion on ``Top-Down Proof'' in
+  Section B.1.2 of ``Computer-Aided Reasoning: An Approach.'' Note
+  that adding new axioms may frequently render the logic
+  inconsistent!
 
     Example:
     (defaxiom sbar (equal t nil)
@@ -100298,8 +100300,12 @@ Subtopics
   skip-proofs around more than one event, consider the following (see
   [progn]): (skip-proofs (progn event1 event2 ... eventk)).
 
-  WARNING: Skip-proofs allows inconsistent [events] to be admitted to
-  the logic.  Use it at your own risk!
+  WARNING: The use of skip-proofs carries an implicit promise by the
+  user that the ensuing proof obligations are indeed theorems of the
+  current theory.  When that is not the case, skip-proofs can even
+  allow inconsistent [events] to be admitted to the logic.  Use it at
+  your own risk!  If your intention is truly to extend the current
+  logical theory, consider using [defaxiom] instead.
 
   Sometimes in the development of a formal model or proof it is
   convenient to skip the proofs required by a given event.  By

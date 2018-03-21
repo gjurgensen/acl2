@@ -18698,10 +18698,12 @@ subtree of X with T, without duplication.</p>
   :long "<p>WARNING: We strongly recommend that you not add axioms.  If at all
  possible you should use @(tsee defun) or @(tsee mutual-recursion) to define
  new concepts recursively or use @(tsee encapsulate) to constrain them
- constructively.  If your goal is to defer a proof by using a top-down style,
- consider using @(tsee skip-proofs); see the discussion on ``Top-Down Proof''
- in Section B.1.2 of ``Computer-Aided Reasoning: An Approach.''  Adding new
- axioms frequently renders the logic inconsistent.</p>
+ constructively.  If your goal is to defer proving a formula that is, logically
+ speaking, a theorem of the current theory, then consider using @(tsee
+ skip-proofs) instead.  One such case is the use of a top-down style, as per
+ the discussion on ``Top-Down Proof'' in Section B.1.2 of ``Computer-Aided
+ Reasoning: An Approach.''  Note that adding new axioms may frequently render
+ the logic inconsistent!</p>
 
  @({
   Example:
@@ -99227,8 +99229,12 @@ arithmetic) for libraries of @(see books) for arithmetic reasoning.</p>")
  @('skip-proofs') around more than one event, consider the following (see @(see
  progn)): @('(skip-proofs (progn event1 event2 ... eventk))').</p>
 
- <p>WARNING: @('Skip-proofs') allows inconsistent @(see events) to be admitted
- to the logic.  Use it at your own risk!</p>
+ <p><b>WARNING</b>: The use of @('skip-proofs') carries an implicit promise by
+ the user that the ensuing proof obligations are indeed theorems of the current
+ theory.  When that is not the case, @('skip-proofs') can even allow
+ inconsistent @(see events) to be admitted to the logic.  Use it at your own
+ risk!  If your intention is truly to extend the current logical theory,
+ consider using @(tsee defaxiom) instead.</p>
 
  <p>Sometimes in the development of a formal model or proof it is convenient to
  skip the proofs required by a given event.  By embedding the event in a
