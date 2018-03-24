@@ -121524,6 +121524,8 @@ expand function call at the current subterm, without simplifying"
 (defpointer open-output-channel-p io)
 (defpointer optimize declare)
 (defpointer package packages)
+(defpointer packn system-utilities)
+(defpointer packn-pos system-utilities)
 (defpointer pairlis-x1 system-utilities)
 (defpointer pairlis-x2 system-utilities)
 (defpointer partition-rest-and-keyword-args system-utilities)

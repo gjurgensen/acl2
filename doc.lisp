@@ -80998,6 +80998,10 @@ Subtopics
 
   [Symbol-package-name]
       The name of the package of a symbol (a string)")
+ (PACKN (POINTERS)
+        "See [system-utilities].")
+ (PACKN-POS (POINTERS)
+            "See [system-utilities].")
  (PAGES_WRITTEN_ESPECIALLY_FOR_THE_TOURS
   (ACL2-TUTORIAL)
   "Pages Written Especially for the Tours
@@ -83376,6 +83380,12 @@ Subtopics
 
   [Package]
       See [packages].
+
+  [Packn]
+      See [system-utilities].
+
+  [Packn-pos]
+      See [system-utilities].
 
   [Pairlis-x1]
       See [system-utilities].
@@ -104801,6 +104811,12 @@ List of a few ACL2 system utilities:
       odd-indexed members (with zero-based indexing).  Note that if x
       is a list (k1 a1 k2 a2 ... kn an) that satisfies the predicate
       [keyword-value-listp], then (odds x) lists the values ai of x.
+    * (packn lst): Return a symbol.  The symbol's name will be a
+      concatenation of string representations of the atoms in the
+      [good-atom-listp] lst, and the symbol's package will be \"ACL2\".
+    * (packn-pos lst witness): Behaves like packn, except the returned
+      symbol's package will instead be the package of the symbol
+      witness.
     * (pairlis-x1 x1 lst): Cons x1 onto the front of each element of the
       the true-list, lst.
     * (pairlis-x2 lst x2): Make an alist pairing each element of lst, a
