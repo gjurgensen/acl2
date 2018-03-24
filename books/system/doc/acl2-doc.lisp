@@ -103573,6 +103573,14 @@ arithmetic) for libraries of @(see books) for arithmetic reasoning.</p>")
  keyword-value-listp), then @('(odds x)') lists the values @('ai') of
  @('x').</li>
 
+ <li>@('(packn lst)'): Return a symbol.  The symbol's name will be a
+ concatenation of string representations of the atoms in the @(tsee
+ good-atom-listp) @('lst'), and the symbol's package will be
+ @('\"ACL2\"').</li>
+
+ <li>@('(packn-pos lst witness)'): Behaves like @('packn'), except the returned
+ symbol's package will instead be the package of the symbol @('witness').</li>
+
  <li>@('(pairlis-x1 x1 lst)'): Cons @('x1') onto the front of each element of
  the the true-list, @('lst').</li>
 
