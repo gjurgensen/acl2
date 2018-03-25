@@ -78599,6 +78599,13 @@ Changes to Existing Features
   Eric Smith for pointing out that an expression like (fmt-to-string
   \"~x0\" 3) could cause a raw Lisp error.
 
+  The previously-undocumented built-in-function, [packn], now has a
+  slightly different behavior.  Formerly, it always returned a symbol
+  in the \"ACL2\" package.  Now, the package of the symbol returned is
+  the package of the first symbol in lst whose package is not
+  \"COMMON-LISP\" if any, else \"ACL2\".  Thanks to Keshav Kini for
+  suggesting this change and providing its implementation.
+
 
 New Features
 
@@ -104811,9 +104818,11 @@ List of a few ACL2 system utilities:
       odd-indexed members (with zero-based indexing).  Note that if x
       is a list (k1 a1 k2 a2 ... kn an) that satisfies the predicate
       [keyword-value-listp], then (odds x) lists the values ai of x.
-    * (packn lst): Return a symbol.  The symbol's name will be a
-      concatenation of string representations of the atoms in the
-      [good-atom-listp] lst, and the symbol's package will be \"ACL2\".
+    * (packn lst): Return a symbol.  The symbol's name is a concatenation
+      of string representations of the atoms in the [good-atom-listp]
+      lst, and the symbol's package is the package of the first
+      symbol in lst whose package is not \"COMMON-LISP\" if any, else
+      \"ACL2\".
     * (packn-pos lst witness): Behaves like packn, except the returned
       symbol's package will instead be the package of the symbol
       witness.

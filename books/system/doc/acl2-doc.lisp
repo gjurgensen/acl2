@@ -80054,6 +80054,13 @@ it."
  for pointing out that an expression like @('(fmt-to-string \"~x0\" 3)') could
  cause a raw Lisp error.</p>
 
+ <p>The previously-undocumented built-in-function, @(tsee packn), now has a
+ slightly different behavior.  Formerly, it always returned a symbol in the
+ @('\"ACL2\"') package.  Now, the package of the symbol returned is the package
+ of the first symbol in @('lst') whose package is not @('\"COMMON-LISP\"') if
+ any, else @('\"ACL2\"').  Thanks to Keshav Kini for suggesting this change and
+ providing its implementation.</p>
+
  <h3>New Features</h3>
 
  <p>The @(see summary) now shows, by default, the list of doublets @('(f g)')
@@ -103573,9 +103580,10 @@ arithmetic) for libraries of @(see books) for arithmetic reasoning.</p>")
  keyword-value-listp), then @('(odds x)') lists the values @('ai') of
  @('x').</li>
 
- <li>@('(packn lst)'): Return a symbol.  The symbol's name will be a
- concatenation of string representations of the atoms in the @(tsee
- good-atom-listp) @('lst'), and the symbol's package will be
+ <li>@('(packn lst)'): Return a symbol.  The symbol's name is a concatenation
+ of string representations of the atoms in the @(tsee good-atom-listp)
+ @('lst'), and the symbol's package is the package of the first symbol in
+ @('lst') whose package is not @('\"COMMON-LISP\"') if any, else
  @('\"ACL2\"').</li>
 
  <li>@('(packn-pos lst witness)'): Behaves like @('packn'), except the returned
