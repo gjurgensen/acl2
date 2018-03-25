@@ -78678,6 +78678,11 @@ Heuristic and Efficiency Improvements
     * ACL2 no longer causes an error when the cache is in an inconsistent
       state; instead, the cache is suitably reset quietly.
 
+  Rewriting of calls of [implies] has been optimized in the cases that
+  the rewritten arguments are equal or at least one is a constant.
+  Thanks to Eric Smith for pointing out an incompleteness in the
+  rewriting of implies calls.
+
 
 Bug Fixes
 

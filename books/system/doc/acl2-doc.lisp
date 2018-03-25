@@ -79913,6 +79913,25 @@ it."
 ; Strengthened the guards for functions print-rational-as-decimal and
 ; print-timer.
 
+; Below is Eric Smith's example showing what was an incompleteness in the
+; rewriting of calls of IMPLIES.  The failed rewrites now exhibit the failed
+; rewritten hypothesis as (< '3 X), which is good, but formerly exhibited it
+; as (IF 'T (IF (< # X) 'T 'NIL) 'T).
+;
+;   (defthm my-car-cons
+;      (implies (implies (natp x)  ;note that the hyp is an implies
+;                        (< x y))
+;               (equal (car (cons x y))
+;                      x)))
+;
+;   (in-theory (disable car-cons))
+;
+;   :brr t
+;   :monitor my-car-cons '(:go)
+;
+;   (thm
+;     (equal (car (cons 3 x)) 3))
+
   :parents (release-notes)
   :short "ACL2 Version  8.1 (xxx, 20xx) Notes"
   :long "<p>NOTE!  New users can ignore these release notes, because the @(see
@@ -80137,6 +80156,11 @@ it."
  state; instead, the cache is suitably reset quietly.</li>
 
  </ul>
+
+ <p>Rewriting of calls of @(tsee implies) has been optimized in the cases that
+ the rewritten arguments are equal or at least one is a constant.  Thanks to
+ Eric Smith for pointing out an incompleteness in the rewriting of @('implies')
+ calls.</p>
 
  <h3>Bug Fixes</h3>
 
