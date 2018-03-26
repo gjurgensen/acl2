@@ -78606,6 +78606,14 @@ Changes to Existing Features
   \"COMMON-LISP\" if any, else \"ACL2\".  Thanks to Keshav Kini for
   suggesting this change and providing its implementation.
 
+  The [guard] on [apply$] (also the guard on apply$-lambda) has been
+  strengthened to require that a [lambda] be applied to the correct
+  number of arguments.  The under-the-hood implementation for
+  applying lambdas has been made slightly more efficient as a result,
+  though that improvement may usually be trivial.  Perhaps more
+  important is that guard verification may now catch bugs in the
+  application of lambdas that were missed previously.
+
 
 New Features
 

@@ -80080,6 +80080,14 @@ it."
  any, else @('\"ACL2\"').  Thanks to Keshav Kini for suggesting this change and
  providing its implementation.</p>
 
+ <p>The @(see guard) on @(tsee apply$) (also the guard on @('apply$-lambda'))
+ has been strengthened to require that a @(see lambda) be applied to the
+ correct number of arguments.  The under-the-hood implementation for applying
+ lambdas has been made slightly more efficient as a result, though that
+ improvement may usually be trivial.  Perhaps more important is that guard
+ verification may now catch bugs in the application of lambdas that were missed
+ previously.</p>
+
  <h3>New Features</h3>
 
  <p>The @(see summary) now shows, by default, the list of doublets @('(f g)')
