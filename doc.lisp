@@ -48793,6 +48793,8 @@ Subtopics
 
   [Wof]
       Direct standard output and proofs output to a file")
+ (IO? (POINTERS)
+      "See [system-utilities].")
  (IPRINT (POINTERS) "See [set-iprint].")
  (IPRINTING (POINTERS)
             "See [set-iprint].")
@@ -83039,6 +83041,9 @@ Subtopics
   [Intersectp-equal]
       See [intersectp].
 
+  [Io?]
+      See [system-utilities].
+
   [Iprint]
       See [set-iprint].
 
@@ -104509,6 +104514,26 @@ List of a few ACL2 system utilities:
     * (guard fn stobj-optp w): For a function symbol or lambda expression
       fn of [world] w, return its [guard]. Optimize the [stobj]
       recognizers away iff stobj-optp is true.
+    * (io? token commentp shape vars body &key ...): This is a complex
+      macro that may be most fully understood by reading the source
+      code, including comments in its definition and examples of its
+      use.  But the following example from the definition of source
+      function print-failure1 may get the idea across.
+
+          (io? summary nil state (channel)
+               (fms *proof-failure-string* nil channel state nil))
+
+      This is essentially just the body argument, which here is the
+      indicated [fms] call, but where, going through the other
+      arguments:
+        * summary --- printing only takes place when summary output is enabled
+          (see [set-inhibit-output-lst]);
+        * nil --- don't enter a wormhole;
+        * state --- the body (which here is the fms call) returns a single
+          state value; and finally
+        * channel --- this is the list of free variables in the body (which
+          here is the fms call).
+
     * (keyword-listp x): Return t when x is a true-list whose members are
       all keywords, else return nil.
     * (implicate t1 t2): For terms t1 and t2, return a term that is

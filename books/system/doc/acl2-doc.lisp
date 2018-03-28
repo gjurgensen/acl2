@@ -103272,6 +103272,36 @@ arithmetic) for libraries of @(see books) for arithmetic reasoning.</p>")
  expression @('fn') of @(see world) @('w'), return its @(see guard). Optimize
  the @(see stobj) recognizers away iff @('stobj-optp') is true.</li>
 
+ <li>@('(io? token commentp shape vars body &key ...)'): This is a complex
+ macro that may be most fully understood by reading the source code, including
+ comments in its definition and examples of its use.  But the following
+ example from the definition of source function @('print-failure1') may get the
+ idea across.
+
+ @({
+     (io? summary nil state (channel)
+          (fms *proof-failure-string* nil channel state nil))
+ })
+
+ This is essentially just the @('body') argument, which here is the indicated
+ @(tsee fms) call, but where, going through the other arguments:
+
+   <ul>
+
+   <li>@('summary') &mdash; printing only takes place when @('summary') output is
+   enabled (see @(see set-inhibit-output-lst));</li>
+
+   <li>@('nil') &mdash; don't enter a wormhole;</li>
+
+   <li>@('state') &mdash; the body (which here is the @('fms') call) returns a
+   single @('state') value; and finally</li>
+
+   <li>@('channel') &mdash; this is the list of free variables in the
+   body (which here is the @('fms') call).</li>
+
+   </ul>
+ </li>
+
  <li>@('(keyword-listp x)'): Return @('t') when @('x') is a true-list whose
  members are all keywords, else return @('nil').</li>
 
@@ -121225,6 +121255,7 @@ expand function call at the current subterm, without simplifying"
 (defpointer intersection-equal intersection$)
 (defpointer intersectp-eq intersectp)
 (defpointer intersectp-equal intersectp)
+(defpointer io? system-utilities)
 (defpointer iprint set-iprint)
 (defpointer iprinting set-iprint)
 (defpointer keyword keywordp)
