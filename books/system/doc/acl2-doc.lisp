@@ -153,6 +153,7 @@
     (DEFPUN "[books]/misc/defpun.lisp")
     (DEFTHMG "[books]/tools/defthmg.lisp")
     (GETOPT-DEMO::DEMO2 "[books]/centaur/getopt/demo2.lisp")
+    (DEVELOPERS-GUIDE "[books]/system/doc/developers-guide.lisp")
     (DO-NOT-HINT "[books]/tools/do-not.lisp")
     (EASY-SIMPLIFY-TERM "[books]/tools/easy-simplify.lisp")
     (ER-SOFT+ "[books]/kestrel/utilities/er-soft-plus.lisp")
@@ -4997,7 +4998,7 @@ and @(tsee include-book)"
   :parents (lists acl2-built-ins)
   :short "@(see concatenate) zero or more lists"
   :long "<p>@('Append'), which takes zero or more arguments, expects all the
- arguments except perhaps the last to be true (null-terminated) lists.  It
+ arguments except perhaps the last to be true (@('nil')-terminated) lists.  It
  returns the result of concatenating all the elements of all the given lists
  into a single list.  Actually, in ACL2 @('append') is a macro that expands
  into calls of the binary function @(tsee binary-append) if there are at least
@@ -9156,6 +9157,15 @@ cd /path/to/acl2-sources/books
 make ACL2=/path/to/acl2-sources/saved_acl2 ...
 })
 
+<p>For example, the section ``A Full Build'', below, says to do the following
+if you would like to make a change to the @(see community-books) (where the
+@('-j') argument is optional).</p>
+
+@({
+    $ cd /path/to/acl2-sources/books
+    $ make ACL2=/path/to/acl2-sources/saved_acl2 -j 2 all
+})
+
 <p>Success is indicated by a Linux exit status of 0.  Equivalently, there
 should be no failures in the log.  Failures may be found by searching for
 @('**'); for example, if output is redirected to a log file
@@ -9187,12 +9197,13 @@ extensions, e.g., ACL2(p) and ACL2(r).</p>
 
 <h3>A Basic Build</h3>
 
-<p>In previous versions of ACL2, building the Community Books could take
-several hours.  Starting in ACL2 6.4, the default build has been made <b>much
-faster by excluding many books</b> by default.</p>
-
-<p>The new default @('make') target, called @('basic'), now certifies only the
-following, widely used books:</p>
+<p>Before ACL2 Version 6.4, building the Community Books could take several
+hours.  Now, the default @('make') target in @('books/GNUmakefile'), called
+@('basic'), is much faster &mdash; it excludes many books and certifies only
+books listed below, which tend to be widely used.  <b>WARNING</b>: the
+@('basic') target of @('books/GNUmakefile') is insufficient for validating
+changes that will go into the @(see community-books); for that, use the
+@('all') target.</p>
 
 <ul>
 <li>arithmetic</li>
@@ -11629,7 +11640,11 @@ with any questions about building the community books.</p>")
 
  <p>Note that @('case-match') returns @('nil') if no @('pati') matches.  Thus
  if we must return @('7') in that case, we have to add as the final pattern the
- @('&'), which always matches anything.</p>")
+ @('&'), which always matches anything.</p>
+
+ <p>Technical point: The symbol @('sym') referenced by the symbol @('!sym') is
+ in the same package as @('!sym') but with the leading exclamation point
+ character, @('\\#!'), removed from the @(tsee symbol-name) of @('!sym').</p>")
 
 (defxdoc case-split
   :parents (rewrite linear type-prescription definition meta forward-chaining)
@@ -14706,8 +14721,8 @@ subtree of X with T, without duplication.</p>
  however, @('cons-with-hint') is likely much cheaper than @('hons') and hence
  can be useful for reducing consing without the overhead of @('hons').</p>
 
- <p>Logically @('(cons x y hint)') is just @('(cons x y)'); @('hint') is
- completely irrelevant and ignored.  We generally expect that
+ <p>Logically @('(cons-with-hint x y hint)') is just @('(cons x y)'); @('hint')
+ is completely irrelevant and ignored.  We generally expect that
  @('cons-with-hint') will just be left @(see enable)d, so you should never have
  to reason about it.</p>
 
@@ -17887,16 +17902,34 @@ subtree of X with T, without duplication.</p>
 (defxdoc defattach
   :parents (events)
   :short "Execute constrained functions using corresponding attached functions"
-  :long "<p>This @(see documentation) topic is organized into the following
+  :long "
+ @({
+  General Forms:
+  (defattach f g)   ; single attach or, if g is nil, unattach
+  (defattach (f1 g1 :kwd val ...)
+             ...
+             (fk gk :kwd' val' ...)
+             :kwd'' val'' ...)
+ })
+
+ <p>where each indicated keyword-value pair is optional and each keyword is in
+ the list @(`*defattach-keys-extended*`).  More details are in the ``Syntax and
+ Semantics'' section below.</p>
+
+ <p>This @(see documentation) topic is organized into the following
  sections:</p>
 
- <p><b>Introductory example.</b><br></br>
+ <ul>
 
- <b>Syntax and semantics of defattach.</b><br></br>
+ <li>Introductory Example.</li>
 
- <b>Three primary uses of defattach.</b><br></br>
+ <li>Syntax and Semantics of Defattach.</li>
 
- <b>Miscellaneous remarks, with discussion of possible user errors.</b></p>
+ <li>Three Primary Uses of Defattach.</li>
+
+ <li>Miscellaneous Remarks, with discussion of possible user errors.</li>
+
+ </ul>
 
  <p>Please see @(see encapsulate) if you intend to use @('defattach') but are
  not already familiar with the use of @('encapsulate') to introduce constrained
@@ -17908,19 +17941,7 @@ subtree of X with T, without duplication.</p>
  to different executable functions.  More uses of @('defattach') may be found
  in the ACL2 source code, specifically, file @('boot-strap-pass-2-a.lisp').</p>
 
- <p>The argument @(':skip-checks t') enables easy experimentation with
- @('defattach'), by permitting use of @(':')@(tsee program) mode functions and
- the skipping of semantic checks.  Also permitted is @(':skip-checks nil') (the
- default) and @(':skip-checks :cycles'), which turns off only the update of the
- extended ancestor relation (see below) and hence the check for cycles in this
- relation; see below.  We do not make any logical claims when the value of
- @(':skip-checks') is non-@('nil'); indeed, a trust tag is required in this
- case (see @(see defttag)).  Note that the interaction of memoization and
- attachments is not tracked for attachments introduced with a non-@('nil')
- value of @(':skip-checks').  For more discussion of @(':skip-checks t'), see
- @(see defproxy); we do not discuss @(':skip-checks') further, here.</p>
-
- <p><b>Introductory example.</b></p>
+ <h3>Introductory Example.</h3>
 
  <p>We begin with a short log illustrating the use of @('defattach').  Notice
  that after evaluating the event @('(defattach f g)'), a call of the
@@ -17980,7 +18001,7 @@ subtree of X with T, without duplication.</p>
   ACL2 !>
  })
 
- <p><b>Syntax and semantics of defattach.</b></p>
+ <h3>Syntax and Semantics of Defattach.</h3>
 
  <p>The log above shows that the event @('(defattach f g)') allows @('g') to be
  used for evaluating calls of @('f').  From a logical perspective, the
@@ -18052,25 +18073,65 @@ subtree of X with T, without duplication.</p>
 
   General Forms:
   (defattach f g)   ; single attach or, if g is nil, unattach
-  (defattach (f1 g1 :kwd val ...)
+  (defattach (f1 g1 :kwd11val11 ...)
              ...
-             (fk gk :kwd' val' ...)
-             :kwd'' val'' ...)
+             (fk gk :kwdk1 valk1 ...)
+             :kwd1 val1 ...)
  })
 
- <p>where each indicated keyword-value pair is optional and each keyword is one
- of @(':ATTACH'), @(':HINTS'), @(':OTF-FLG'), or @(':INSTRUCTIONS').  The value
- of each @(':ATTACH') keyword is either @('t') or @('nil'), with default @('t')
- except that the value of @(':ATTACH') at the ``top level,'' after each entry
- @('(fi gi ...)'), is the default for each @(':ATTACH') keyword supplied in
- such an entry.  We discuss the @(':ATTACH') keyword later in this @(see
- documentation) topic.  The associated values for the other keywords have the
- usual meanings for the proof obligations described below: the guard proof
- obligation for keywords within each @('(fi gi ...)') entry, and the constraint
- proof obligation for keywords at the top level.  No keyword may occur twice in
- the same context, i.e., within the same @('(fi gi ...)') entry or at the top
- level; and @(':INSTRUCTIONS') may not occur in the same context with
- @(':HINTS') or @(':OTF-FLG').</p>
+ <p>where each indicated keyword-value pair is optional and each keyword is in
+ the list @(`*defattach-keys-extended*`).  We distinguish between keywords
+ within the @('(fi gi :kwdi1 vali1 ...)'), which we call <i>guard keywords</i>,
+ and keywords at the top level, shown above as @(':kwd1 val1 ...'), which we
+ call <i>top-level keywords</i>.</p>
+
+ <ul>
+
+ <li>The guard keywords are in the list @(`*defattach-keys*`).  The
+ @(':')@(tsee hints), @(':')@(tsee instructions), and @(':')@(tsee otf-flg)
+ keywords in @('(fi gi ...)') are used in the proofs of the guard proof
+ obligation for the attachment of @('gi') to @('fi').  They have their usual
+ values and meanings, as when used (for example) in @(tsee defthm) @(tsee
+ events).  The value of each @(':attach') keyword is either @('t') or @('nil').
+ We discuss the @(':attach') keyword later in this @(see documentation)
+ topic.</li>
+
+ <li>The top-level keywords @(':hints'), @(':instructions'), and @(':otf-flg')
+ are used in the constraint proof obligations just as described above for the
+ guard proof obligations.  When @(':attach') is used as a top-level keyword,
+ its value serves as a default for entries @('(fi gi ...)') that do not specify
+ @(':attach').  @(':Skip-checks') and @(':system-ok') are described below.</li>
+
+ </ul>
+
+ <p>No keyword may occur twice in the same context: that is, neither twice as a
+ guard keyword in the same @('(fi gi ...)')  entry, nor twice as a top-level
+ keyword.  Moreover, @(':instructions') may not occur in the same context with
+ @(':hints') or @(':otf-flg').</p>
+
+ <p>The argument @(':skip-checks t') enables easy experimentation with
+ @('defattach'), by permitting use of @(':')@(tsee program) mode functions and
+ the skipping of semantic checks.  Also permitted is @(':skip-checks nil') (the
+ default) and @(':skip-checks :cycles'), which turns off only the update of the
+ extended ancestor relation and hence the check for cycles in this relation;
+ see below.  We do not make any logical claims when the value of
+ @(':skip-checks') is non-@('nil'); indeed, a trust tag is then required (see
+ @(see defttag)).  Note that the interaction of @(see memoization) and
+ attachments is not tracked for attachments introduced with a non-@('nil')
+ value of @(':skip-checks').  For more discussion of @(':skip-checks t'), see
+ @(see defproxy); we do not discuss @(':skip-checks') further, here.</p>
+
+ <p>The argument @(':system-ok t') allows attachment to system functions.
+ Without this argument, the @('defattach') event will fail if any @('fi') is a
+ built-in ACL2 function.  Rather than supplying this argument directly, it is
+ recommended to use @(tsee defattach-system), which has the same syntax as
+ @('defattach') with two exceptions: it adds @(':system-ok t') automatically,
+ that is, @(':system-ok') is implicit; and it expands to a @(tsee local) call
+ of @('defattach').  The latter is important so that the attachment does not
+ affect system behavior outside a book containing the @('defattach') event.  Of
+ course, if it is truly intended to affect such behavior, the argument
+ @(':system-ok t') may be given directly to @('defattach'), without a
+ surrounding use of @('local').</p>
 
  <p>The first General Form above is simply an abbreviation for the form
  @('(defattach (f g))'), which is an instance of the second General Form above.
@@ -18207,34 +18268,40 @@ subtree of X with T, without duplication.</p>
  ``siblings'' &mdash; function symbols introduced by the same event &mdash; as
  siblings are considered equivalent for purposes of the acyclicity check.</p>
 
- <p><b>Three primary uses of defattach.</b><br></br></p>
+ <h3>Three Primary Uses of Defattach.</h3>
 
  <p>We anticipate three uses of @('defattach'):</p>
 
- <p>(1) Constrained function execution</p>
+ <ol>
 
- <p>(2) Sound modification of the ACL2 system</p>
+ <li>Constrained function execution</li>
 
- <p>(3) Program refinement</p>
+ <li>Sound modification of the ACL2 system</li>
+
+ <li>Program refinement</li>
+
+ </ol>
 
  <p>We discuss these in turn.</p>
 
- <p>(1) The example at the beginning of this @(see documentation) illustrates
- constrained function execution.</p>
+ <ol>
 
- <p>(2) ACL2 is written essentially in itself.  Thus, there is an opportunity
+ <li>The example at the beginning of this @(see documentation) illustrates
+ constrained function execution.</li>
+
+ <li>ACL2 is written essentially in itself.  Thus, there is an opportunity
  to attaching to system functions.  For example, encapsulated function
  @('too-many-ifs-post-rewrite'), in the ACL2 source code, receives an
  attachment of @('too-many-ifs-post-rewrite-builtin'), which implements a
  heuristic used in the rewriter.  To find all such examples, search the source
- code for the string `-builtin'.</p>
+ code for the string `-builtin'.<br/>
 
- <p>Over time, we expect to continue replacing ACL2 source code in a similar
+ Over time, we expect to continue replacing ACL2 source code in a similar
  manner.  We invite the ACL2 community to assist in this ``open architecture''
  enterprise; feel free to email the ACL2 implementors if you are interested in
- such activity.</p>
+ such activity.</li>
 
- <p>(3) Recall that for an attachment pair @('<f,g>'), a proof obligation is
+ <li>Recall that for an attachment pair @('<f,g>'), a proof obligation is
  (speaking informally) that @('g') satisfies the constraint on @('f').  Yet
  more informally speaking, @('g') is ``more defined'' than @('f'); we can think
  of @('g') as ``refining'' @('f').  With these informal notions as motivation,
@@ -18243,9 +18310,11 @@ subtree of X with T, without duplication.</p>
  specifically by the addition of all attachment equations.  For the
  logic-inclined, it may be useful to think model-theoretically: The class of
  models of the evaluation theory is non-empty but is a subset of the class of
- models of the current session theory.</p>
+ models of the current session theory.</li>
 
- <p><b>Miscellaneous remarks, with discussion of possible user errors.</b></p>
+ </ol>
+
+ <h3>Miscellaneous Remarks, with discussion of possible user errors.</h3>
 
  <p>We conclude with remarks on some details.</p>
 
@@ -18422,6 +18491,25 @@ subtree of X with T, without duplication.</p>
  thus be inconsistent, and at a more concrete level, the user might well be
  surprised by evaluation results if the code were written with the assumption
  specified in the constraint @('f2=f1').</p>")
+
+(defxdoc defattach-system
+  :parents (defattach)
+  :short "Attach to built-in, system-level, constrained functions"
+  :long "<p>For background on attachments, see @(see defattach).  The macro
+ @('defattach-system') is a convenient way to attach to built-in functions.
+ The event @('(defattach f g)') will fail if @('f') is built into ACL2.  This
+ failure can be overcome by specifying top-level keyword argument @(':system-ok
+ t'), for example: @('(defattach (f g) :system-ok t)').  However, rather than
+ supplying this argument directly, it is recommended to use
+ @('defattach-system'), which has the same syntax as @('defattach') with two
+ exceptions: it adds @(':system-ok t') automatically, that is, @(':system-ok')
+ is implicit; and it expands to a @(tsee local) call of @('defattach').  The
+ latter is important so that the attachment does not affect system behavior
+ outside a book containing the @('defattach') event.  Of course, if it is truly
+ intended to affect such behavior, the argument @(':system-ok t') may be given
+ directly to @('defattach'), without a surrounding use of @('local').</p>
+
+ <p>See @(see system-attachments) for discussion of system attachments.</p>")
 
 (defxdoc default
   :parents (arrays acl2-built-ins)
@@ -18611,10 +18699,12 @@ subtree of X with T, without duplication.</p>
   :long "<p>WARNING: We strongly recommend that you not add axioms.  If at all
  possible you should use @(tsee defun) or @(tsee mutual-recursion) to define
  new concepts recursively or use @(tsee encapsulate) to constrain them
- constructively.  If your goal is to defer a proof by using a top-down style,
- consider using @(tsee skip-proofs); see the discussion on ``Top-Down Proof''
- in Section B.1.2 of ``Computer-Aided Reasoning: An Approach.''  Adding new
- axioms frequently renders the logic inconsistent.</p>
+ constructively.  If your goal is to defer proving a formula that is, logically
+ speaking, a theorem of the current theory, then consider using @(tsee
+ skip-proofs) instead.  One such case is the use of a top-down style, as per
+ the discussion on ``Top-Down Proof'' in Section B.1.2 of ``Computer-Aided
+ Reasoning: An Approach.''  Note that adding new axioms may frequently render
+ the logic inconsistent!</p>
 
  @({
   Example:
@@ -39641,7 +39731,7 @@ tables in the current Hons Space."
 
 (defxdoc improper-consp
   :parents (lists acl2-built-ins)
-  :short "Recognizer for improper (non-null-terminated) non-empty lists"
+  :short "Recognizer for improper (non-@('nil')-terminated) non-empty lists"
   :long "<p>@('Improper-consp') is the function that checks whether its
  argument is a non-empty list that ends in other than @('nil').  See @(see
  proper-consp) and also see @(see true-listp).</p>
@@ -51388,189 +51478,6 @@ it."
  of @('nil') in the ACL2 source code, see source function
  @('save-ev-fncall-guard-er').</p>")
 
-(defxdoc making-system-changes
-  :parents (system-development)
-  :short "Guidelines for modifying ACL2 source code"
-  :long "<p>ACL2 is maintained solely by Matt Kaufmann and J Moore, although
- for some time they have occasionally vetted code written by others, ultimately
- incorporating it into the system.  Although this is anticipated to remain the
- case for the foreseeable future, a process is underway towards gradually
- turning maintenance over to some other small group of trusted, reliable,
- responsible people.  This documentation topic was motivated by the desire to
- begin to support the eventual development of such a group.  Here we suggest
- steps for making changes to the ACL2 source code.</p>
-
- <p>(Of course, given the permissive license of ACL2, anyone is allowed to
- modify a copy of its source code.  Here we are talking about what is generally
- called ``ACL2'', which is distributed from github and from the University of
- Texas at Austin.)</p>
-
- <p>NOTE: See also @(see system-development-hints) for additional helpful hints
- for ACL2 development, and see @(see system-style-guide) for style
- conventions.</p>
-
- <p>Before you start, you should already be on the @('acl2-devel') mailing
- list.  If not, and if you are a reasonably experienced ACL2 user (a necessary
- prerequisite), you may email Matt Kaufmann with a request to be added.  If you
- are on that list and you want to work towards contributing a patch, we suggest
- that you send email to the list, explaining what you have in mind.  This will
- avoid duplication and also provide an opportunity for feedback.  In
- particular, if you desire that your work will ultimately be incorporated into
- the ACL2 system, you may want to wait for confirmation from Matt and J that at
- least one of them will be willing to review your patch; otherwise they make no
- commitment to do so.</p>
-
- <p>The first step is to create a patch file, which here we call
- @('patch.lisp').  It will typically have the following shape.</p>
-
- @({
- ;;; Github commit hash as of your starting ACL2 version (see below)
-
- ;;; Comments at the top (perhaps an email thread with a request for the
- ;;; change)
-
- (redef+)
-
- <your code>
-
- (redef-)
- (reset-prehistory) ; optional
- })
-
- <p>The reason to record the github commit hash is to enable Matt and J can
- correctly merge in your changes even after there have been several ACL2
- commits.  You can get that hash by running the following command under the
- main ACL2 directory.</p>
-
- @({
- git rev-parse HEAD
- })
-
- <p>Next, start copying into @('patch.lisp') source functions that you want to
- modify.  (It is helpful for this process to use @('meta-.') in Emacs.)  It is
- often best to keep the functions in order: if @('f') calls @('g') and both are
- defined (or redefined) in @('patch.lisp'), then the definition of @('g')
- should precede the definition of @('f') in @('patch.lisp').</p>
-
- <p>Now modify those source functions and write any additional supporting
- functions that you need.  Try to use existing source functions when possible.
- perhaps finding them by using the Emacs command, @('meta-x tags-apropos').
- For example, to find a function that concatenates a list of strings, you could
- run @('meta-x tags-apropos append') and then search for @('string') in the
- resulting display; you would find @('string-append-lst'), and you could run
- the Emacs command @('meta-.') on that word in order to find its definition in
- the sources, to see if it has the desired functionality.</p>
-
- <p>If there are further changes you wish to make to the ACL2 source code which
- are not of the form of function definitions or redefinitions &mdash; for
- example, if you want to add or modify a top-level comment, put some of the new
- functions in a particular file or a newly created file, etc. &mdash; then feel
- free to add instructions that reflect your intent in comments in
- @('patch.lisp'), within reason.  We will be reading over @('patch.lisp')
- manually, so human-directed comments are welcome &mdash; the exact format of
- @('patch.lisp') is not rigid.</p>
-
- <p>Test your patch by starting ACL2 and evaluating the following form in the
- loop (but see below for an exception).  The use of @(':ld-pre-eval-print') is
- optional, but can be helpful when debugging since it prints each form before
- evaluating it.</p>
-
- @({
- (ld \"patch.lisp\" :ld-pre-eval-print t)
- })
-
- <p>EXCEPTION: the form above may not work if your patch file has any
- occurrences of the @('acl2-loop-only') readtime conditional (preceded either
- by @('#+') or by @('#-')).  In that case, do the following instead.  NOTE: if
- you are making changes that affect definition processing, then you may need to
- switch the order: first @('load'), then after @('(LP!)'), run @('ld').</p>
-
- @({
- :q
- (LP!)
- (ld \"patch.lisp\" :ld-pre-eval-print t)
- :q
- (load \"patch.lisp\") ; only needed if #-acl2-loop-only occurs in patch.lisp
- (LP)
- })
-
- <p>Remark (only rarely to be considered).  If efficiency is a concern and you
- are using a Lisp implementation that does not compile on-the-fly (as of this
- writing, that includes Lisps other than CCL and SBCL), then put
- @('(set-compile-fns t)') near the top of @('patch.lisp'), and replace @('(load
- \"patch.lisp\")') just above by the following (perhaps first adding
- @('(in-package \"ACL2\")') at the top of @('patch.lisp')):</p>
-
- @({
- (load \"patch.lisp\")
- (compile-file \"patch.lisp\")
- (load \"patch\")
- })
-
- <p>Now test your patch.  A quick test could be the following.</p>
-
- @({
- (mini-proveall) ; should complete normally
- (ubt! 1) ; back to just after reset-prehistory was evaluated
- })
-
- <p>You might also want to do your own tests.  In some cases, you could even
- add a book of tests in directory @('books/system/tests/').  If the change was
- inspired by problems with a specific event in an existing book, the following
- can be useful.</p>
-
- @({
- (ld \"foo.port\")
- (rebuild \"foo.lisp\" t)
- :ubt <bad-event-name>
- <bad-event>
- })
-
- <p>When you are satisfied that all is well, take your copy of ACL2 and install
- the patches: for each system function redefined in patch.lisp, replace the
- definition in your copy of the ACL2 sources with the redefinition, preceded by
- new supporting definitions as necessary.  Then in your acl2-sources directory,
- build the system, for example:</p>
-
- @({
- make LISP=<path_to_your_lisp> >& make.log
- })
-
- <p>Check the log to see if the build seems to have completed normally, in
- particular with ``Initialization SUCCEEDED'' printed near the end of the log.
- It is a good idea to do case-insensitive searches for the string,
- \"compiler\", if the Lisp is CCL (you should find four occurrences, all of
- them SET-COMPILER-ENABLED) and for \"warning:\" for the other Lisp
- implementations (you should find no occurrences).</p>
-
- <p>Now do a regression.  The most complete regression might be done with a
- command like the following in the ACL2 sources directory; it could take a few
- hours (perhaps 3 or 4 hours, depending on the Lisp and the machine).</p>
-
- @({
- make clean-books ; \\
- (time nice make -j 8 regression-everything USE_QUICKLISP=1) \\
-   >& make-regression-everything-ccl-quicklisp-j-8.log&
- })
-
- <p>Be sure to document your changes.  This will typically involve adding a
- release note to a topic like @(see note-8-0).  The XDOC source code
- documentation resides in the community book
- @('books/system/doc/acl2-doc.lisp').  If the change is minor, for example a
- tweak to an error message, a Lisp comment in the corresponding @('defxdoc')
- form is probably best; the existing @('(defxdoc note-xxx ...)') forms can
- provide guidance on this.  Be sure to keep the @(see XDOC) documentation at a
- user level, not at the level of the implementation.  Also be sure to comment
- your code well with Lisp comments.  Ultimately you should also update ACL2
- source file @('doc.lisp'), which is a generated file based on
- @('books/system/doc/acl2-doc.lisp').  Be careful regarding the constant @(tsee
- *acl2-exports*)!  See the ``WARNING'' comment in the definition of
- @('*acl2-exports*').</p>
-
- <p>Now feel free to send all changed files and also the starting git commit
- hash (or even the entire patch file, too) to whoever has offered to look at
- your patch!</p>")
-
 (defxdoc managing-acl2-packages
   :parents (packages)
   :short "User-contributed documentation on packages"
@@ -54157,12 +54064,12 @@ it."
   :parents (io acl2-built-ins)
   :short "Weak recognizer for a ``message''"
   :long "<p>The form @('(msgp x)') evaluates to true when @('x') evaluates
- either to a string or to a null-terminated list (see @(see true-listp)) whose
- first element is a string.  Thus, @('msgp') distinguishes <i>messages</i>
- &mdash; that is, values suitable as arguments for @('~@') directives of @(tsee
- fmt) &mdash; from Booleans and other values that are obviously not messages.
- Note that @('msgp') should always hold for the output of the macro, @('msg');
- see @(see msg).</p>
+ either to a string or to a @('nil')-terminated list (see @(see true-listp))
+ whose first element is a string.  Thus, @('msgp') distinguishes
+ <i>messages</i> &mdash; that is, values suitable as arguments for @('~@')
+ directives of @(tsee fmt) &mdash; from Booleans and other values that are
+ obviously not messages.  Note that @('msgp') should always hold for the output
+ of the macro, @('msg'); see @(see msg).</p>
 
  @(def msgp)")
 
@@ -54619,11 +54526,11 @@ it."
  <p>Logically, @('(mv-list n term)') is just @('term'); that is, in the logic
  @('mv-list') simply returns its second argument.  However, the evaluation of a
  call of @('mv-list') on explicit values always results in a single value,
- which is a (null-terminated) list.  For evaluation, the term @('n') above (the
- first argument to an @('mv-list') call) must ``essentially'' (see below) be an
- integer not less than 2, where that integer is the number of values returned
- by the evaluation of @('term') (the second argument to that @('mv-list')
- call).</p>
+ which is a (@('nil')-terminated) list.  For evaluation, the term @('n')
+ above (the first argument to an @('mv-list') call) must ``essentially'' (see
+ below) be an integer not less than 2, where that integer is the number of
+ values returned by the evaluation of @('term') (the second argument to that
+ @('mv-list') call).</p>
 
  <p>We say ``essentially'' above because it suffices that the translation of
  @('n') to a term (see @(see trans)) be of the form @('(quote k)'), where
@@ -78835,11 +78742,12 @@ it."
  system-utilities) for a discussion of @('recursivep').  Thanks to Alessandro
  Coglio for suggesting this change.</p>
 
- <p>There is now some documentation on ACL2 system development; see @(see
- system-development) and its subtopics.  These replace the pages under web
- directory @('http://www.cs.utexas.edu/users/moore/acl2/open-architecture/').
- Thanks to Eric Smith for encouraging us to move that documentation to
- XDOC.</p>
+ <p>There is now some documentation on ACL2 system development [formerly in the
+ topic, system-development, and its subtopics; now expanded into <see
+ topic='@(url developers-guide)'>the Developer's Guide</see>].  These replace
+ the pages under web directory
+ @('http://www.cs.utexas.edu/users/moore/acl2/open-architecture/').  Thanks to
+ Eric Smith for encouraging us to move that documentation to XDOC.</p>
 
  <p>The Common Lisp variable @('*debug-io*') is now used in printing
  backtraces, but also is bound to @('*standard-output*') when entering the ACL2
@@ -79805,6 +79713,44 @@ it."
 
 ; Added :doc summary.
 
+; We updated the Essay on Admitting a Model for Apply$ and the Functions that
+; Use It, by clarifying interaction between the doppelganger construction and
+; existing attachments.  We also fixed the definitions of G1 and G2 to be about
+; ancestral independence of apply$-userfn instead of apply$.  We made a
+; corresponding strengthening of the criterion for measures of warrants, as
+; evidenced by the name change from ancestrally-dependent-on-apply$p to
+; ancestrally-dependent-on-apply$-userfn-p.  However, it doesn't seem that
+; there is any user-visible change, since apply$-userfn is not badged; so any
+; attempt to supply a measure to a that depends on it would already fail due to
+; the requirement that the measure be tame.
+
+; Changed *defattach-keys-plus-skip-checks* to *defattach-keys-extended* when
+; adding the :system-ok argument to defattach.
+
+; Improved :doc defattach.
+
+; Strengthened the guards for functions print-rational-as-decimal and
+; print-timer.
+
+; Below is Eric Smith's example showing what was an incompleteness in the
+; rewriting of calls of IMPLIES.  The failed rewrites now exhibit the failed
+; rewritten hypothesis as (< '3 X), which is good, but formerly exhibited it
+; as (IF 'T (IF (< # X) 'T 'NIL) 'T).
+;
+;   (defthm my-car-cons
+;      (implies (implies (natp x)  ;note that the hyp is an implies
+;                        (< x y))
+;               (equal (car (cons x y))
+;                      x)))
+;
+;   (in-theory (disable car-cons))
+;
+;   :brr t
+;   :monitor my-car-cons '(:go)
+;
+;   (thm
+;     (equal (car (cons 3 x)) 3))
+
   :parents (release-notes)
   :short "ACL2 Version  8.1 (xxx, 20xx) Notes"
   :long "<p>NOTE!  New users can ignore these release notes, because the @(see
@@ -79936,11 +79882,66 @@ it."
  ->:
  })
 
+ <p>It is now illegal by default to attach to built-in functions.  To overcome
+ this default behavior, see @(see defattach-system).</p>
+
+ <p>Functions from the @(tsee fmt) family, including for example @(tsee fms)
+ and @(tsee fmt-to-string), now have (incomplete) guards that, in particular,
+ imply that the @('alist') argument must satisfy @('character-alistp'), i.e.,
+ be an association list whose keys are all characters.  Thanks to Eric Smith
+ for pointing out that an expression like @('(fmt-to-string \"~x0\" 3)') could
+ cause a raw Lisp error.</p>
+
+ <p>The previously-undocumented built-in-function, @(tsee packn), now has a
+ slightly different behavior.  Formerly, it always returned a symbol in the
+ @('\"ACL2\"') package.  Now, the package of the symbol returned is the package
+ of the first symbol in @('lst') whose package is not @('\"COMMON-LISP\"') if
+ any, else @('\"ACL2\"').  Thanks to Keshav Kini for suggesting this change and
+ providing its implementation.</p>
+
+ <p>The @(see guard) on @(tsee apply$) (also the guard on @('apply$-lambda'))
+ has been strengthened to require that a @(see lambda) be applied to the
+ correct number of arguments.  The under-the-hood implementation for applying
+ lambdas has been made slightly more efficient as a result, though that
+ improvement may usually be trivial.  Perhaps more important is that guard
+ verification may now catch bugs in the application of lambdas that were missed
+ previously.</p>
+
  <h3>New Features</h3>
 
  <p>The @(see summary) now shows, by default, the list of doublets @('(f g)')
  for which @('f') is a system function with attachment @('g') (see @(see
  defattach)), when @('g') differs from the initial attachment to @('f').</p>
+
+ <p>(Warning: The following describes advanced features that can likely be
+ ignored by most users.  They are available using the new utility, @(tsee
+ defattach-system).)  Two new system-level functions may be given attachments:
+ @('remove-trivial-equivalences-enabled-p') and
+ @('assume-true-false-aggressive-p').  (Thanks to Eric Smith for suggesting
+ these, and to him and Alessandro Coglio for helpful discussions.)  By default,
+ these have the attachments @('constant-t-function-arity-0') and
+ @('constant-nil-function-arity-0'), respectively, which provide the existing
+ system behavior.  But these attachments may be changed by the user.</p>
+
+ <ul>
+
+ <li>@('Remove-trivial-equivalences-enabled-p') may receive the attachment
+ @('constant-nil-function-arity-0') to avoid the
+ @('remove-trivial-equivalences') heuristic, which substitutes the equality (or
+ even equivalence) of a variable to a term into the rest of the
+ goal.  (However, perhaps similar heuristics will still be used, for example as
+ part of the @(see tau-system).)</li>
+
+ <li>@('Assume-true-false-aggressive-p') may receive the attachment
+ @('constant-t-function-arity-0') to strengthen the rewriter's use of the @(see
+ type-alist) when diving into @('if') terms.  A common use is to rewrite what
+ amounts to @('(if (or test1 test2) (if test1 _ x) _)'); then the @(see
+ type-alist) will note that @('test2') is true when rewriting @('x').  This
+ change may slow down ACL2 considerably in some cases, and should rarely if
+ ever be necessary when calling the prover; but it can be useful in
+ applications that call the rewriter directly.</li>
+
+ </ul>
 
  <h3>Heuristic and Efficiency Improvements</h3>
 
@@ -79982,6 +79983,11 @@ it."
  state; instead, the cache is suitably reset quietly.</li>
 
  </ul>
+
+ <p>Rewriting of calls of @(tsee implies) has been optimized in the cases that
+ the rewritten arguments are equal or at least one is a constant.  Thanks to
+ Eric Smith for pointing out an incompleteness in the rewriting of @('implies')
+ calls.</p>
 
  <h3>Bug Fixes</h3>
 
@@ -80031,6 +80037,18 @@ it."
  fixed.  Related tweaks improve error reporting, including a clearer error
  message when attempting to supply @(':rule-classes nil') with @('defthmd').
  Thanks to Keshav Kini for reporting these issues.</p>
+
+ <p>When @(tsee defattach) was provided the argument @(':skip-checks nil'), a
+ hard error was signaled.  This has been fixed.</p>
+
+ <p>The @(tsee case-match) macro did not properly handle the @('!sym')
+ construct when the symbol, @('!sym'), is not in the @('\"ACL2\"') package.
+ This has been fixed.  Thanks to Alessandro Coglio for reporting this bug.</p>
+
+ <p>Fixed handling of some guard violation error messages for built-in
+ functions.  For example, the form @('(apply$-lambda 3 nil)') produces a guard
+ violation, but before this fix, the error message reported an implementation
+ error.</p>
 
  <h3>Changes at the System Level</h3>
 
@@ -86804,7 +86822,7 @@ arithmetic) for libraries of @(see books) for arithmetic reasoning.</p>")
 
 (defxdoc proper-consp
   :parents (lists acl2-built-ins)
-  :short "Recognizer for proper (null-terminated) non-empty lists"
+  :short "Recognizer for proper (@('nil')-terminated) non-empty lists"
   :long "<p>@('Proper-consp') is the function that checks whether its argument
  is a non-empty list that ends in @('nil').  Also see @(see true-listp).</p>
 
@@ -99069,8 +99087,12 @@ arithmetic) for libraries of @(see books) for arithmetic reasoning.</p>")
  @('skip-proofs') around more than one event, consider the following (see @(see
  progn)): @('(skip-proofs (progn event1 event2 ... eventk))').</p>
 
- <p>WARNING: @('Skip-proofs') allows inconsistent @(see events) to be admitted
- to the logic.  Use it at your own risk!</p>
+ <p><b>WARNING</b>: The use of @('skip-proofs') carries an implicit promise by
+ the user that the ensuing proof obligations are indeed theorems of the current
+ theory.  When that is not the case, @('skip-proofs') can even allow
+ inconsistent @(see events) to be admitted to the logic.  Use it at your own
+ risk!  If your intention is truly to extend the current logical theory,
+ consider using @(tsee defaxiom) instead.</p>
 
  <p>Sometimes in the development of a formal model or proof it is convenient to
  skip the proofs required by a given event.  By embedding the event in a
@@ -99950,8 +99972,8 @@ arithmetic) for libraries of @(see books) for arithmetic reasoning.</p>")
   :parents (characters lists acl2-built-ins)
   :short "Recognizer for a true list of standard characters"
   :long "<p>@('(standard-char-listp x)') is true if and only if @('x') is a
- null-terminated list all of whose members are standard @(see characters).  See
- @(see standard-char-p).</p>
+ @('nil')-terminated list all of whose members are standard @(see characters).
+ See @(see standard-char-p).</p>
 
  <p>@('Standard-char-listp') has a @(see guard) of @('t').</p>
 
@@ -102905,113 +102927,47 @@ arithmetic) for libraries of @(see books) for arithmetic reasoning.</p>")
  be the numeric value returned by the host operating system for the underlying
  system call.  For more information, see @(see sys-call).</p>")
 
-(defxdoc system-development
-  :parents (programming)
-  :short "Developing ACL2 system code"
-  :long "<p>ACL2 is maintained solely by Matt Kaufmann and J Moore.  However,
- we anticipate that a few others will eventually contribute as well.  The
- subtopics of this topic provide information that is intended to help future
- developers.</p>
+(defxdoc system-attachments
+  :parents (programming defattach)
+  :short "System-level algorithms that users can modify with attachments"
+  :long "<p>For background on attachments, see @(see defattach).</p>
 
- <p>The website for the (first) Developer's Workshop is: <code><a
- href='http://www.cs.utexas.edu/users/moore/acl2/workshop-devel-2017/'>http://www.cs.utexas.edu/users/moore/acl2/workshop-devel-2017/</a></code></p>
-
- <p>For a small list of potential ACL2 development tasks, see community books
- file @('books/system/to-do.txt').</p>")
-
-(defxdoc system-development-hints
-  :parents (system-development)
-  :short "Helpful hints for developing ACL2 system code"
-  :long "<p>ACL2 is maintained solely by Matt Kaufmann and J Moore.  However,
- we anticipate that a few others will eventually contribute as well.  Here we
- provide a few suggestions that might facilitate the writing of ACL2 system
- code; however, the topic @(see making-system-changes) is the primary topic
- discussing how to make system changes.  Also see @(see system-style-guide) for
- style guidelines.</p>
-
- <p>NOTE: This is an evolving topic.  Please feel free to augment it with
- additional useful tips!</p>
-
- <p>Emacs provides several useful utilities for ACL2 coding, including the
- following.  If you can do these kinds of things quickly without Emacs, that's
- fine; otherwise it would probably be best for you to invest in learning
- Emacs.</p>
-
- <ul>
-
- <li>Find a function definition: @('meta-.') or @('meta-x tags-apropos').</li>
-
- <li>Find an Essay such as ``Essay on Hidden Packages'': @('meta-x
- tags-search').</li>
-
- <li>Change a name globally: @('meta-x tags-query-replace').  WARNING: if you
- do this, consider changing names in books as well, for example by using the
- following shell command.
+ <p>If you evaluate the form @('(all-attachments (w state))') immediately after
+ starting ACL2, you will see a list of pairs of the form @('(f . g)'), where
+ @('f') is a constrained system utility and @('g') is its attachment.  Here is
+ one such pair.</p>
 
  @({
- time fgrep --include='*.l*sp' -ri 'some-old-name' .
- })</li>
-
- </ul>
-
- <p>Defensive programming is a good idea.  For an example, see
- @('all-runes-in-ttree'), which causes a hard error if an unexpected tag is
- encountered and also is nice in how it documents tag-trees.</p>")
-
-(defxdoc system-style-guide
-  :parents (system-development)
-  :short "Style guidelines for developing ACL2 system code"
-  :long "<p>ACL2 is maintained solely by Matt Kaufmann and J Moore.  However,
- we anticipate that a few others will eventually contribute as well.  Here we
- set out some style guidelines that have traditionally been followed, and can
- guide development to help maintain ACL2's quality.  Separate topics provide
- instruction on maintaining ACL2 system code; see @(see making-system-changes)
- and @(see system-development-hints).</p>
-
- <p>The right margin is 79.  (In emacs: @('set-fill-column 79').)  Existing
- code with margin 70 is OK to leave as is, though it's nice to convert to a
- margin of 79 when modifying comments within a given function.</p>
-
- <p>Tabs are not used.  In emacs, setting buffer-local variable
- @('indent-tabs-mode') to @('nil') will accomplish this.  That can be
- accomplished automatically for Lisp files, as is done in distributed file
- @('emacs/emacs-acl2.el'); search there for @('indent-tabs-mode'), or simply
- load that file in your @('.emacs') file.</p>
-
- <p>Periods that end sentences are followed by two spaces (useful for
- @('meta-e') command in emacs).</p>
-
- <p>Comments for a function go immediately after its formal parameters
- (even before @(see declare) forms).</p>
-
- <p>Comments generally consist of complete sentences, starting on the left
- margin, each line starting with a single semicolon followed by a space.  An
- exception is very short comments to the right of code up to the end of the
- same line.</p>
-
- <p>Use of the @(tsee cond) macro is generally preferred to the use of @('if'),
- an exception being small expressions that are not at the top level.</p>
-
- <p>System state globals need to be included in @('*initial-global-table*') or
- @('*initial-ld-special-bindings*').</p>
-
- <p>Blank lines are avoided except in the usual circumstances, e.g. surrounding
- comments and between definitions.  Avoid consecutive blank lines.</p>
-
- <p>A multi-line argument is not followed by an argument on the same line.  For
- example, there should be a linebreak before the argument, @('arg'), after the
- string in this @('COND') clause:</p>
-
- @({
- (t (er soft ctx
-        \"The value associated with a :SOME-NEW-HINT hint must be a positive ~
-        integer, but ~x0 is not.\" arg))
+ (ASSUME-TRUE-FALSE-AGGRESSIVE-P . CONSTANT-NIL-FUNCTION-ARITY-0)
  })
 
- <p>We generally avoid capitalizing all letters in a single word, except
- perhaps for keywords or quoted constants.</p>
+ <p>Users are permitted to modify these attachments, even without a trust tag
+ (see @(see defttag)), because they do not affect soundness.  See @(see
+ defattach-system).</p>
 
- <p>There are no multi-line comments: @('#|| ... ||#').</p>")
+ <p>We do not attempt to explain how to define functions to attach to system
+ functions.  We do however point out these two useful functions, for attaching
+ to some constant functions (functions with arity 0).</p>
+
+ @(def constant-t-function-arity-0)
+
+ @(def constant-nil-function-arity-0)
+
+ <p>To see how to use one of these functions, consider again the example above,
+ where constrained system function @('assume-true-false-aggressive-p') has the
+ attachment, @('constant-nil-function-arity-0').  Here we make the so-called
+ ``assume-true-false'' algorithm more aggressive.</p>
+
+ @({
+ (defattach-system assume-true-false-aggressive-p constant-t-function-arity-0)
+ })
+
+ <p>Note that we are not explaining here what it means to make that algorithm
+ more aggressive!  We expect those who want to use these attachments to be
+ comfortable as ``system programmers'', as they peruse the ACL2 source code and
+ its comments in order to see how to modify system behavior with attachments.
+ Perhaps more user-level documentation will be written to help with that
+ process.</p>")
 
 (defxdoc system-utilities
 
@@ -103057,14 +103013,16 @@ arithmetic) for libraries of @(see books) for arithmetic reasoning.</p>")
  grep '^; Essay on' *.lisp
  })
 
- <p>in your ACL2 sources directory, you will see the names of more than 80 long
+ <p>in your ACL2 sources directory, you will see the names of more than 90 long
  source comments, or ``Essays'', that can provide additional background.</p>
 
  <p>Also see @(see programming) and its subtopics, in particular @(see
  programming-with-state), which describes <em>many</em> system-level utilities.
  For example, a subsection of @(see programming-with-state), entitled
  ``SEQUENTIAL PROGRAMMING'', introduces handy utilities @(tsee pprogn) and
- @(tsee er-progn) along with links to their documentation.</p>
+ @(tsee er-progn) along with links to their documentation.  You may also wish
+ to see @(see system-attachments) for how to make a few changes to the behavior
+ of ACL2.</p>
 
  <p>Here is another option for finding a system utility: As ACL2 developers
  sometimes do, use @('meta-.') or @('meta-x tags-apropos') in Emacs to find
@@ -103314,6 +103272,36 @@ arithmetic) for libraries of @(see books) for arithmetic reasoning.</p>")
  expression @('fn') of @(see world) @('w'), return its @(see guard). Optimize
  the @(see stobj) recognizers away iff @('stobj-optp') is true.</li>
 
+ <li>@('(io? token commentp shape vars body &key ...)'): This is a complex
+ macro that may be most fully understood by reading the source code, including
+ comments in its definition and examples of its use.  But the following
+ example from the definition of source function @('print-failure1') may get the
+ idea across.
+
+ @({
+     (io? summary nil state (channel)
+          (fms *proof-failure-string* nil channel state nil))
+ })
+
+ This is essentially just the @('body') argument, which here is the indicated
+ @(tsee fms) call, but where, going through the other arguments:
+
+   <ul>
+
+   <li>@('summary') &mdash; printing only takes place when @('summary') output is
+   enabled (see @(see set-inhibit-output-lst));</li>
+
+   <li>@('nil') &mdash; don't enter a wormhole;</li>
+
+   <li>@('state') &mdash; the body (which here is the @('fms') call) returns a
+   single @('state') value; and finally</li>
+
+   <li>@('channel') &mdash; this is the list of free variables in the
+   body (which here is the @('fms') call).</li>
+
+   </ul>
+ </li>
+
  <li>@('(keyword-listp x)'): Return @('t') when @('x') is a true-list whose
  members are all keywords, else return @('nil').</li>
 
@@ -103330,12 +103318,27 @@ arithmetic) for libraries of @(see books) for arithmetic reasoning.</p>")
  <li>@('(lambda-formals x)'): For a @('lambda') expression @('x'), return its
  formal parameters.</li>
 
+ <li>@('(legal-constantp name)'): Returns @('t') if @('name') is a legal
+ constant name, else @('nil').</li>
+
+ <li>@('(legal-variablep name)'): Returns @('t') if @('name') is a legal
+ variable name, else @('nil').  For example, @('x') is a legal variable name
+ but the following are not: @(':abc'), @('t'), @('nil'), @('&a') (a lambda
+ keyword), @('*c*') (syntax of a constant), and @('pi') (a Common Lisp
+ constant).</li>
+
  <li>@('(logicp fn w)'): For a function symbol @('fn') of @(see world)
  @('w'), return @('t') when the @('symbol-class') of @('fn') in @('w') is not
  @(':program'), else @('nil').  (See @('symbol-class'), below.)</li>
 
- <li>@('(make-lambda args body)'): Return @('lambda') expression with formal
- parameters @('args') and body @('body').</li>
+ <li>@('(make-lambda args body)'): Return the @('lambda') expression with
+ formal parameters @('args') and body @('body').</li>
+
+ <li>@('(make-lambda-term formals actuals body)'): Return the @('lambda')
+ application that is essentially @('((lambda formals body) . actuals)').
+ However, extra formals and corresponding actuals are added when @('body') has
+ free variables that do not belong to @('formals'), because lambdas must be
+ closed in ACL2.</li>
 
  <li>@('(merge-sort-lexorder l)'): Sort the list @('l') using a non-strict
  total order, @(tsee lexorder), on the ACL2 universe.</li>
@@ -103349,6 +103352,15 @@ arithmetic) for libraries of @(see books) for arithmetic reasoning.</p>")
  @('(k1 a1 k2 a2 ... kn an)') that satisfies the predicate @(tsee
  keyword-value-listp), then @('(odds x)') lists the values @('ai') of
  @('x').</li>
+
+ <li>@('(packn lst)'): Return a symbol.  The symbol's name is a concatenation
+ of string representations of the atoms in the @(tsee good-atom-listp)
+ @('lst'), and the symbol's package is the package of the first symbol in
+ @('lst') whose package is not @('\"COMMON-LISP\"') if any, else
+ @('\"ACL2\"').</li>
+
+ <li>@('(packn-pos lst witness)'): Behaves like @('packn'), except the returned
+ symbol's package will instead be the package of the symbol @('witness').</li>
 
  <li>@('(pairlis-x1 x1 lst)'): Cons @('x1') onto the front of each element of
  the the true-list, @('lst').</li>
@@ -108076,7 +108088,7 @@ arithmetic) for libraries of @(see books) for arithmetic reasoning.</p>")
 
 (defxdoc true-listp
   :parents (lists acl2-built-ins)
-  :short "Recognizer for proper (null-terminated) lists"
+  :short "Recognizer for proper (@('nil')-terminated) lists"
   :long "<p>@('True-listp') is the function that checks whether its argument is
  a list that ends in, or equals, @('nil').</p>
 
@@ -108187,17 +108199,21 @@ arithmetic) for libraries of @(see books) for arithmetic reasoning.</p>")
  @(see termp) is: @('(termination-theorem 'FN (w state))').</p>")
 
 (defxdoc ttree
-  :parents (system-development)
+  :parents (miscellaneous)
   :short "Tag-trees"
   :long "<p>Many low-level ACL2 functions take and return ``tag trees'' or
- ``ttrees'' (pronounced ``tee-trees'') which contain various useful bits of
- information such as the lemmas used, the linearize assumptions made, etc.</p>
+ ``ttrees'' (pronounced ``tee-trees'') which contain useful information such as
+ the lemmas used, the linearize assumptions made, etc.  Here we present only
+ minimal user-level information, for example in support of the use of the @(see
+ break-rewrite) utility or writing metafunctions.  Implementation-level
+ information about tag trees may be found in the Developer's Guide; users
+ should probably not visit <see topic='@(url developers-guide-utilities)'>that
+ topic</see> unless they plan to become ACL2 developers.</p>
 
  <p>Abstractly a tag-tree represents a list of sets, each member set having a
  name given by one of the ``tags'' (which are symbols) of the ttree.  The
  elements of the set named @('tag') are all of the objects tagged @('tag') in
- the tree.  You are invited to browse the source code.  Definitions of
- primitives are labeled with the comment ``; Note: Tag-tree primitive''.</p>
+ the tree.</p>
 
  <p>The rewriter, for example, takes a term and a ttree (among other things),
  and returns a new term, term', and new ttree, ttree'.  Term' is equivalent to
@@ -109881,7 +109897,7 @@ introduction-to-the-tau-system) for more information about Tau.</dd>
   *TS-NIL*                   ;;; {nil}
   *TS-T*                     ;;; {t}
   *TS-NON-T-NON-NIL-SYMBOL*  ;;; symbols other than nil, t
-  *TS-PROPER-CONS*           ;;; null-terminated non-empty lists
+  *TS-PROPER-CONS*           ;;; nil-terminated non-empty lists
   *TS-IMPROPER-CONS*         ;;; conses that are not proper
   *TS-STRING*                ;;; strings
   *TS-CHARACTER*             ;;; characters
@@ -114043,7 +114059,7 @@ introduction-to-the-tau-system) for more information about Tau.</dd>
  @(see world) where @('f1') is guard-verified and @('f2') is not.</p>")
 
 (defxdoc verify-guards-for-system-functions
-  :parents (system-development verify-termination verify-guards)
+  :parents (verify-termination verify-guards)
   :short "Arranging that source functions come up as guard-verified"
   :long "<p>ACL2 is maintained solely by Matt Kaufmann and J Moore.  However,
  we anticipate that a few others will eventually contribute as well.  Here we
@@ -114055,9 +114071,9 @@ introduction-to-the-tau-system) for more information about Tau.</dd>
 
  <p>To put a system function into @(':logic') mode, you might first need or
  want to modify ACL2, for example replacing @('(null lst)') by @('(endp lst)')
- in a function's definition in support of the termination proof.  You might
- wish to see @(see making-system-changes) for information on modifying system
- code.</p>
+ in a function's definition in support of the termination proof.  You don't
+ need to become a system developer to do this, but see @(see developers-guide)
+ if you are an experienced ACL2 user and system development interests you.</p>
 
  <p>After making such changes, build an ACL2 executable image containing your
  modified code.  The next step is typically to create a new file, perhaps named
@@ -114087,7 +114103,8 @@ introduction-to-the-tau-system) for more information about Tau.</dd>
  (time nice make ACL2_DEVEL=d) >& make-devel.log
  })</li>
 
- <li>Check that the build worked (see @(see making-system-changes)).</li>
+ <li>Check that the build seems to have worked, for example by finding the
+ string @('\"Successfully built\"') near the end of your log file.</li>
 
  <li>Run a ``devel'' regression, for example as follows if starting in the ACL2
  sources directory.
@@ -114130,8 +114147,7 @@ introduction-to-the-tau-system) for more information about Tau.</dd>
  SUCCESS for devel-check
  })</li>
 
- <li>Ideally, you will finally do a normal build and regression; again, see
- @(see making-system-changes).</li>
+ <li>Ideally, you will finally do a normal build and regression.</li>
 
  </ol>")
 
@@ -121239,6 +121255,7 @@ expand function call at the current subterm, without simplifying"
 (defpointer intersection-equal intersection$)
 (defpointer intersectp-eq intersectp)
 (defpointer intersectp-equal intersectp)
+(defpointer io? system-utilities)
 (defpointer iprint set-iprint)
 (defpointer iprinting set-iprint)
 (defpointer keyword keywordp)
@@ -121247,9 +121264,12 @@ expand function call at the current subterm, without simplifying"
 (defpointer lambda-applicationp system-utilities)
 (defpointer lambda-body system-utilities)
 (defpointer lambda-formals system-utilities)
+(defpointer legal-constantp system-utilities)
+(defpointer legal-variablep system-utilities)
 (defpointer let-mbe equality-variants-details)
 (defpointer logicp system-utilities)
 (defpointer make-lambda system-utilities)
+(defpointer make-lambda-term system-utilities)
 (defpointer match-free free-variables)
 (defpointer measure-theorem termination-theorem)
 (defpointer member-eq member)
@@ -121290,6 +121310,8 @@ expand function call at the current subterm, without simplifying"
 (defpointer open-output-channel-p io)
 (defpointer optimize declare)
 (defpointer package packages)
+(defpointer packn system-utilities)
+(defpointer packn-pos system-utilities)
 (defpointer pairlis-x1 system-utilities)
 (defpointer pairlis-x2 system-utilities)
 (defpointer partition-rest-and-keyword-args system-utilities)
@@ -121332,6 +121354,7 @@ expand function call at the current subterm, without simplifying"
 (defpointer reorder hints t)
 (defpointer reset-print-control print-control)
 (defpointer restrict hints t)
+(defpointer rewrite-cache set-rw-cache-state)
 (defpointer ruler-extenders rulers)
 (defpointer ruler rulers)
 (defpointer rw-cache set-rw-cache-state)
