@@ -32159,15 +32159,16 @@ Subtopics
                                          state))
              (pprogn
               (if (eq (f-get-global 'abbrev-evisc-tuple state) :DEFAULT)
-                  (princ$ \"Abbrev-evisc-tuple has its default value.~%\"
+                  (princ$ \"Abbrev-evisc-tuple has its default value.\"
                           *standard-co*
                           state)
-                (princ$ \"Abbrev-evisc-tuple has been modified.~%\"
+                (princ$ \"Abbrev-evisc-tuple has been modified.\"
                         *standard-co*
-                        state))))
+                        state))
+              (newline *standard-co* state)))
             (t state)))
 
-    (defattach finalize-event-user finalize-event-user-test)
+    (defattach-system finalize-event-user finalize-event-user-test)
 
   After admission of the two events above, an event [summary] will
   conclude with extra printout, for example:
@@ -32179,7 +32180,7 @@ Subtopics
   :skip-checks argument of [defattach] to get around the requirement,
   as illustrated by the following example.
 
-    (defun finalize-event-user-test2 (state)
+    (defun finalize-event-user-test2 (ctx body state)
       (declare (xargs :stobjs state
                       :mode :program)
                (ignore ctx body))
@@ -32190,8 +32191,8 @@ Subtopics
 
     (defttag t) ; needed for :skip-checks t
 
-    (defattach (finalize-event-user finalize-event-user-test2)
-               :skip-checks t)
+    (defattach-system (finalize-event-user finalize-event-user-test2)
+      :skip-checks t)
 
   So for example:
 
@@ -34960,7 +34961,7 @@ Subtopics
                (xargs :mode :logic :guard t))
       t)
 
-    (defattach oncep-tp oncep-tp-always)
+    (defattach-system oncep-tp oncep-tp-always)
 
   The second thm form above will now fail, because only one
   free-variable match is permitted for the first hypothesis of rule
@@ -34978,7 +34979,7 @@ Subtopics
                                                (symbolp (cadr rune)))))
       (not (eq (base-symbol rune) 'f1-prop)))
 
-    (defattach oncep-tp oncep-tp-always-except-f1-prop)
+    (defattach-system oncep-tp oncep-tp-always-except-f1-prop)
 
   In general, your [defattach] event will attach a function symbol to
   oncep-tp.  The [guard] of that function symbol must be implied by
@@ -43796,7 +43797,7 @@ Subtopics
   (implicitly) only that state satisfies state-p unless you use trust
   tags to avoid that requirement.  For example:
 
-    (defattach initialize-event-user initialize-event-user-test)
+    (defattach-system initialize-event-user initialize-event-user-test)
 
   Why would you want to do this?  Presumably you are building a system
   on top of ACL2 and you want to track your own data.  For example,
@@ -43825,8 +43826,8 @@ Subtopics
                         (cw \"BIG SURPRISE!~%\"))
                       (f-put-global 'end-time seconds state))))
 
-    (defattach initialize-event-user my-init)
-    (defattach finalize-event-user my-final)
+    (defattach-system initialize-event-user my-init)
+    (defattach-system finalize-event-user my-final)
 
   Here is an abbreviated log, showing the time being printed at the
   end.
@@ -89614,7 +89615,7 @@ Subtopics
                (xargs :mode :logic :guard t))
       nil)
 
-    (defattach quick-and-dirty-srs quick-and-dirty-srs-off)
+    (defattach-system quick-and-dirty-srs quick-and-dirty-srs-off)
 
   However, if you feel the need to try this out, please remember that
   the proof is likely to fail anyway since other parts of ACL2 will
@@ -89631,7 +89632,7 @@ Subtopics
 
   To turn the heuristic back on:
 
-    (defattach quick-and-dirty-srs quick-and-dirty-srs-builtin)")
+    (defattach-system quick-and-dirty-srs quick-and-dirty-srs-builtin)")
  (QUIT (GOOD-BYE)
        "Quit entirely out of Lisp
 
@@ -97916,7 +97917,7 @@ Example
            (<= (access clause-id cl-id :primes)
                4)))
 
-    (defattach print-clause-id-okp print-clause-id-okp-level-4)")
+    (defattach-system print-clause-id-okp print-clause-id-okp-level-4)")
  (SET-PRINT-ESCAPE (POINTERS)
                    "See [print-control].")
  (SET-PRINT-GV-DEFAULTS
