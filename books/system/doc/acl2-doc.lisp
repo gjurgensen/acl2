@@ -79916,11 +79916,12 @@ it."
 
  <p>(Warning: The following describes advanced features that can likely be
  ignored by most users.  They are available using the new utility, @(tsee
- defattach-system).)  Two new system-level functions may be given attachments:
- @('remove-trivial-equivalences-enabled-p') and
- @('assume-true-false-aggressive-p').  (Thanks to Eric Smith for suggesting
- these, and to him and Alessandro Coglio for helpful discussions.)  By default,
- these have the attachments @('constant-t-function-arity-0') and
+ defattach-system).)  Three new system-level functions may be given
+ attachments: @('remove-trivial-equivalences-enabled-p'),
+ @('assume-true-false-aggressive-p'), and @('rewrite-if-avoid-swap').  (Thanks
+ to Eric Smith for suggesting these, and to him and Alessandro Coglio for
+ helpful discussions.)  By default, these have the attachments
+ @('constant-t-function-arity-0'), @('constant-nil-function-arity-0'), and
  @('constant-nil-function-arity-0'), respectively, which provide the existing
  system behavior.  But these attachments may be changed by the user.</p>
 
@@ -79941,6 +79942,12 @@ it."
  change may slow down ACL2 considerably in some cases, and should rarely if
  ever be necessary when calling the prover; but it can be useful in
  applications that call the rewriter directly.</li>
+
+ <li>@('Rewrite-if-avoid-swap') may receive the attachment
+ @('constant-t-function-arity-0') to cause the rewriter &mdash; specifically,
+ source function @('rewrite-if') &mdash; to avoid swapping true and false
+ branches of a call of @('IF'), which could formerly happen when the test is a
+ call of @('NOT').</li>
 
  </ul>
 
