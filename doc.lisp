@@ -13362,6 +13362,7 @@ Subtopics
        (defpun \"[books]/misc/defpun.lisp\")
        (defthmg \"[books]/tools/defthmg.lisp\")
        (getopt-demo::demo2 \"[books]/centaur/getopt/demo2.lisp\")
+       (developers-guide \"[books]/system/doc/developers-guide.lisp\")
        (do-not-hint \"[books]/tools/do-not.lisp\")
        (easy-simplify-term \"[books]/tools/easy-simplify.lisp\")
        (er-soft+ \"[books]/kestrel/utilities/er-soft-plus.lisp\")
@@ -32158,15 +32159,16 @@ Subtopics
                                          state))
              (pprogn
               (if (eq (f-get-global 'abbrev-evisc-tuple state) :DEFAULT)
-                  (princ$ \"Abbrev-evisc-tuple has its default value.~%\"
+                  (princ$ \"Abbrev-evisc-tuple has its default value.\"
                           *standard-co*
                           state)
-                (princ$ \"Abbrev-evisc-tuple has been modified.~%\"
+                (princ$ \"Abbrev-evisc-tuple has been modified.\"
                         *standard-co*
-                        state))))
+                        state))
+              (newline *standard-co* state)))
             (t state)))
 
-    (defattach finalize-event-user finalize-event-user-test)
+    (defattach-system finalize-event-user finalize-event-user-test)
 
   After admission of the two events above, an event [summary] will
   conclude with extra printout, for example:
@@ -32178,7 +32180,7 @@ Subtopics
   :skip-checks argument of [defattach] to get around the requirement,
   as illustrated by the following example.
 
-    (defun finalize-event-user-test2 (state)
+    (defun finalize-event-user-test2 (ctx body state)
       (declare (xargs :stobjs state
                       :mode :program)
                (ignore ctx body))
@@ -32189,8 +32191,8 @@ Subtopics
 
     (defttag t) ; needed for :skip-checks t
 
-    (defattach (finalize-event-user finalize-event-user-test2)
-               :skip-checks t)
+    (defattach-system (finalize-event-user finalize-event-user-test2)
+      :skip-checks t)
 
   So for example:
 
@@ -34959,7 +34961,7 @@ Subtopics
                (xargs :mode :logic :guard t))
       t)
 
-    (defattach oncep-tp oncep-tp-always)
+    (defattach-system oncep-tp oncep-tp-always)
 
   The second thm form above will now fail, because only one
   free-variable match is permitted for the first hypothesis of rule
@@ -34977,7 +34979,7 @@ Subtopics
                                                (symbolp (cadr rune)))))
       (not (eq (base-symbol rune) 'f1-prop)))
 
-    (defattach oncep-tp oncep-tp-always-except-f1-prop)
+    (defattach-system oncep-tp oncep-tp-always-except-f1-prop)
 
   In general, your [defattach] event will attach a function symbol to
   oncep-tp.  The [guard] of that function symbol must be implied by
@@ -43795,7 +43797,7 @@ Subtopics
   (implicitly) only that state satisfies state-p unless you use trust
   tags to avoid that requirement.  For example:
 
-    (defattach initialize-event-user initialize-event-user-test)
+    (defattach-system initialize-event-user initialize-event-user-test)
 
   Why would you want to do this?  Presumably you are building a system
   on top of ACL2 and you want to track your own data.  For example,
@@ -43824,8 +43826,8 @@ Subtopics
                         (cw \"BIG SURPRISE!~%\"))
                       (f-put-global 'end-time seconds state))))
 
-    (defattach initialize-event-user my-init)
-    (defattach finalize-event-user my-final)
+    (defattach-system initialize-event-user my-init)
+    (defattach-system finalize-event-user my-final)
 
   Here is an abbreviated log, showing the time being printed at the
   end.
@@ -48792,6 +48794,8 @@ Subtopics
 
   [Wof]
       Direct standard output and proofs output to a file")
+ (IO? (POINTERS)
+      "See [system-utilities].")
  (IPRINT (POINTERS) "See [set-iprint].")
  (IPRINTING (POINTERS)
             "See [set-iprint].")
@@ -55260,181 +55264,6 @@ Subtopics
   problem is avoided by passing whs = nil.  For an example of this
   use of nil in the ACL2 source code, see source function
   save-ev-fncall-guard-er.")
- (MAKING-SYSTEM-CHANGES
-  (SYSTEM-DEVELOPMENT)
-  "Guidelines for modifying ACL2 source code
-
-  ACL2 is maintained solely by Matt Kaufmann and J Moore, although for
-  some time they have occasionally vetted code written by others,
-  ultimately incorporating it into the system.  Although this is
-  anticipated to remain the case for the foreseeable future, a
-  process is underway towards gradually turning maintenance over to
-  some other small group of trusted, reliable, responsible people.
-  This documentation topic was motivated by the desire to begin to
-  support the eventual development of such a group.  Here we suggest
-  steps for making changes to the ACL2 source code.
-
-  (Of course, given the permissive license of ACL2, anyone is allowed
-  to modify a copy of its source code.  Here we are talking about
-  what is generally called ``ACL2'', which is distributed from github
-  and from the University of Texas at Austin.)
-
-  NOTE: See also [system-development-hints] for additional helpful
-  hints for ACL2 development, and see [system-style-guide] for style
-  conventions.
-
-  Before you start, you should already be on the acl2-devel mailing
-  list.  If not, and if you are a reasonably experienced ACL2 user (a
-  necessary prerequisite), you may email Matt Kaufmann with a request
-  to be added.  If you are on that list and you want to work towards
-  contributing a patch, we suggest that you send email to the list,
-  explaining what you have in mind.  This will avoid duplication and
-  also provide an opportunity for feedback.  In particular, if you
-  desire that your work will ultimately be incorporated into the ACL2
-  system, you may want to wait for confirmation from Matt and J that
-  at least one of them will be willing to review your patch;
-  otherwise they make no commitment to do so.
-
-  The first step is to create a patch file, which here we call
-  patch.lisp.  It will typically have the following shape.
-
-    ;;; Github commit hash as of your starting ACL2 version (see below)
-
-    ;;; Comments at the top (perhaps an email thread with a request for the
-    ;;; change)
-
-    (redef+)
-
-    <your code>
-
-    (redef-)
-    (reset-prehistory) ; optional
-
-  The reason to record the github commit hash is to enable Matt and J
-  can correctly merge in your changes even after there have been
-  several ACL2 commits.  You can get that hash by running the
-  following command under the main ACL2 directory.
-
-    git rev-parse HEAD
-
-  Next, start copying into patch.lisp source functions that you want to
-  modify.  (It is helpful for this process to use meta-. in Emacs.)
-  It is often best to keep the functions in order: if f calls g and
-  both are defined (or redefined) in patch.lisp, then the definition
-  of g should precede the definition of f in patch.lisp.
-
-  Now modify those source functions and write any additional supporting
-  functions that you need.  Try to use existing source functions when
-  possible.  perhaps finding them by using the Emacs command, meta-x
-  tags-apropos.  For example, to find a function that concatenates a
-  list of strings, you could run meta-x tags-apropos append and then
-  search for string in the resulting display; you would find
-  string-append-lst, and you could run the Emacs command meta-. on
-  that word in order to find its definition in the sources, to see if
-  it has the desired functionality.
-
-  If there are further changes you wish to make to the ACL2 source code
-  which are not of the form of function definitions or redefinitions
-  --- for example, if you want to add or modify a top-level comment,
-  put some of the new functions in a particular file or a newly
-  created file, etc. --- then feel free to add instructions that
-  reflect your intent in comments in patch.lisp, within reason.  We
-  will be reading over patch.lisp manually, so human-directed
-  comments are welcome --- the exact format of patch.lisp is not
-  rigid.
-
-  Test your patch by starting ACL2 and evaluating the following form in
-  the loop (but see below for an exception).  The use of
-  :ld-pre-eval-print is optional, but can be helpful when debugging
-  since it prints each form before evaluating it.
-
-    (ld \"patch.lisp\" :ld-pre-eval-print t)
-
-  EXCEPTION: the form above may not work if your patch file has any
-  occurrences of the acl2-loop-only readtime conditional (preceded
-  either by #+ or by #-).  In that case, do the following instead.
-  NOTE: if you are making changes that affect definition processing,
-  then you may need to switch the order: first load, then after
-  (LP!), run ld.
-
-    :q
-    (LP!)
-    (ld \"patch.lisp\" :ld-pre-eval-print t)
-    :q
-    (load \"patch.lisp\") ; only needed if #-acl2-loop-only occurs in patch.lisp
-    (LP)
-
-  Remark (only rarely to be considered).  If efficiency is a concern
-  and you are using a Lisp implementation that does not compile
-  on-the-fly (as of this writing, that includes Lisps other than CCL
-  and SBCL), then put (set-compile-fns t) near the top of patch.lisp,
-  and replace (load \"patch.lisp\") just above by the following
-  (perhaps first adding (in-package \"ACL2\") at the top of
-  patch.lisp):
-
-    (load \"patch.lisp\")
-    (compile-file \"patch.lisp\")
-    (load \"patch\")
-
-  Now test your patch.  A quick test could be the following.
-
-    (mini-proveall) ; should complete normally
-    (ubt! 1) ; back to just after reset-prehistory was evaluated
-
-  You might also want to do your own tests.  In some cases, you could
-  even add a book of tests in directory books/system/tests/.  If the
-  change was inspired by problems with a specific event in an
-  existing book, the following can be useful.
-
-    (ld \"foo.port\")
-    (rebuild \"foo.lisp\" t)
-    :ubt <bad-event-name>
-    <bad-event>
-
-  When you are satisfied that all is well, take your copy of ACL2 and
-  install the patches: for each system function redefined in
-  patch.lisp, replace the definition in your copy of the ACL2 sources
-  with the redefinition, preceded by new supporting definitions as
-  necessary.  Then in your acl2-sources directory, build the system,
-  for example:
-
-    make LISP=<path_to_your_lisp> >& make.log
-
-  Check the log to see if the build seems to have completed normally,
-  in particular with ``Initialization SUCCEEDED'' printed near the
-  end of the log.  It is a good idea to do case-insensitive searches
-  for the string, \"compiler\", if the Lisp is CCL (you should find
-  four occurrences, all of them SET-COMPILER-ENABLED) and for
-  \"warning:\" for the other Lisp implementations (you should find no
-  occurrences).
-
-  Now do a regression.  The most complete regression might be done with
-  a command like the following in the ACL2 sources directory; it
-  could take a few hours (perhaps 3 or 4 hours, depending on the Lisp
-  and the machine).
-
-    make clean-books ; \\
-    (time nice make -j 8 regression-everything USE_QUICKLISP=1) \\
-      >& make-regression-everything-ccl-quicklisp-j-8.log&
-
-  Be sure to document your changes.  This will typically involve adding
-  a release note to a topic like [note-8-0].  The XDOC source code
-  documentation resides in the community book
-  books/system/doc/acl2-doc.lisp.  If the change is minor, for
-  example a tweak to an error message, a Lisp comment in the
-  corresponding defxdoc form is probably best; the existing (defxdoc
-  note-xxx ...) forms can provide guidance on this.  Be sure to keep
-  the [xdoc] documentation at a user level, not at the level of the
-  implementation.  Also be sure to comment your code well with Lisp
-  comments.  Ultimately you should also update ACL2 source file
-  doc.lisp, which is a generated file based on
-  books/system/doc/acl2-doc.lisp.  Be careful regarding the constant
-  [*ACL2-exports*]!  See the ``WARNING'' comment in the definition of
-  *acl2-exports*.
-
-  Now feel free to send all changed files and also the starting git
-  commit hash (or even the entire patch file, too) to whoever has
-  offered to look at your patch!")
  (MANAGING-ACL2-PACKAGES
   (PACKAGES)
   "User-contributed documentation on packages
@@ -57662,6 +57491,9 @@ Subtopics
 
   [Ttags-seen]
       List some declared trust tags (ttags)
+
+  [Ttree]
+      Tag-trees
 
   [Type-set]
       How type information is encoded in ACL2
@@ -77652,9 +77484,10 @@ Changes at the System Level
   [system-utilities] for a discussion of recursivep.  Thanks to
   Alessandro Coglio for suggesting this change.
 
-  There is now some documentation on ACL2 system development; see
-  [system-development] and its subtopics.  These replace the pages
-  under web directory
+  There is now some documentation on ACL2 system development [formerly
+  in the topic, system-development, and its subtopics; now expanded
+  into the Developer's Guide (see [DEVELOPERS-GUIDE])].  These
+  replace the pages under web directory
   http://www.cs.utexas.edu/users/moore/acl2/open-architecture/.
   Thanks to Eric Smith for encouraging us to move that documentation
   to XDOC.
@@ -78599,6 +78432,21 @@ Changes to Existing Features
   Eric Smith for pointing out that an expression like (fmt-to-string
   \"~x0\" 3) could cause a raw Lisp error.
 
+  The previously-undocumented built-in-function, [packn], now has a
+  slightly different behavior.  Formerly, it always returned a symbol
+  in the \"ACL2\" package.  Now, the package of the symbol returned is
+  the package of the first symbol in lst whose package is not
+  \"COMMON-LISP\" if any, else \"ACL2\".  Thanks to Keshav Kini for
+  suggesting this change and providing its implementation.
+
+  The [guard] on [apply$] (also the guard on apply$-lambda) has been
+  strengthened to require that a [lambda] be applied to the correct
+  number of arguments.  The under-the-hood implementation for
+  applying lambdas has been made slightly more efficient as a result,
+  though that improvement may usually be trivial.  Perhaps more
+  important is that guard verification may now catch bugs in the
+  application of lambdas that were missed previously.
+
 
 New Features
 
@@ -78608,12 +78456,13 @@ New Features
 
   (Warning: The following describes advanced features that can likely
   be ignored by most users.  They are available using the new
-  utility, [defattach-system].)  Two new system-level functions may
-  be given attachments: remove-trivial-equivalences-enabled-p and
-  assume-true-false-aggressive-p.  (Thanks to Eric Smith for
-  suggesting these, and to him and Alessandro Coglio for helpful
-  discussions.)  By default, these have the attachments
-  constant-t-function-arity-0 and constant-nil-function-arity-0,
+  utility, [defattach-system].)  Three new system-level functions may
+  be given attachments: remove-trivial-equivalences-enabled-p,
+  assume-true-false-aggressive-p, and rewrite-if-avoid-swap.  (Thanks
+  to Eric Smith for suggesting these, and to him and Alessandro
+  Coglio for helpful discussions.)  By default, these have the
+  attachments constant-t-function-arity-0,
+  constant-nil-function-arity-0, and constant-nil-function-arity-0,
   respectively, which provide the existing system behavior.  But
   these attachments may be changed by the user.
 
@@ -78632,6 +78481,11 @@ New Features
       some cases, and should rarely if ever be necessary when calling
       the prover; but it can be useful in applications that call the
       rewriter directly.
+    * Rewrite-if-avoid-swap may receive the attachment
+      constant-t-function-arity-0 to cause the rewriter ---
+      specifically, source function rewrite-if --- to avoid swapping
+      true and false branches of a call of IF, which could formerly
+      happen when the test is a call of NOT.
 
 
 Heuristic and Efficiency Improvements
@@ -78670,6 +78524,11 @@ Heuristic and Efficiency Improvements
       books/system/tests/apply-timings.lisp.
     * ACL2 no longer causes an error when the cache is in an inconsistent
       state; instead, the cache is suitably reset quietly.
+
+  Rewriting of calls of [implies] has been optimized in the cases that
+  the rewritten arguments are equal or at least one is a constant.
+  Thanks to Eric Smith for pointing out an incompleteness in the
+  rewriting of implies calls.
 
 
 Bug Fixes
@@ -80998,6 +80857,10 @@ Subtopics
 
   [Symbol-package-name]
       The name of the package of a symbol (a string)")
+ (PACKN (POINTERS)
+        "See [system-utilities].")
+ (PACKN-POS (POINTERS)
+            "See [system-utilities].")
  (PAGES_WRITTEN_ESPECIALLY_FOR_THE_TOURS
   (ACL2-TUTORIAL)
   "Pages Written Especially for the Tours
@@ -83185,6 +83048,9 @@ Subtopics
   [Intersectp-equal]
       See [intersectp].
 
+  [Io?]
+      See [system-utilities].
+
   [Iprint]
       See [set-iprint].
 
@@ -83377,6 +83243,12 @@ Subtopics
   [Package]
       See [packages].
 
+  [Packn]
+      See [system-utilities].
+
+  [Packn-pos]
+      See [system-utilities].
+
   [Pairlis-x1]
       See [system-utilities].
 
@@ -83502,6 +83374,9 @@ Subtopics
 
   [Restrict]
       See [hints] for information about the keyword :restrict.
+
+  [Rewrite-cache]
+      See [set-rw-cache-state].
 
   [Ruler]
       See [rulers].
@@ -85667,9 +85542,6 @@ Subtopics
 
   [System-attachments]
       System-level algorithms that users can modify with attachments
-
-  [System-development]
-      Developing ACL2 system code
 
   [System-utilities]
       List of system-level programming utilities
@@ -89749,7 +89621,7 @@ Subtopics
                (xargs :mode :logic :guard t))
       nil)
 
-    (defattach quick-and-dirty-srs quick-and-dirty-srs-off)
+    (defattach-system quick-and-dirty-srs quick-and-dirty-srs-off)
 
   However, if you feel the need to try this out, please remember that
   the proof is likely to fail anyway since other parts of ACL2 will
@@ -89766,7 +89638,7 @@ Subtopics
 
   To turn the heuristic back on:
 
-    (defattach quick-and-dirty-srs quick-and-dirty-srs-builtin)")
+    (defattach-system quick-and-dirty-srs quick-and-dirty-srs-builtin)")
  (QUIT (GOOD-BYE)
        "Quit entirely out of Lisp
 
@@ -93209,6 +93081,8 @@ Subtopics
 
   [Syntaxp]
       Attach a heuristic filter on a rule")
+ (REWRITE-CACHE (POINTERS)
+                "See [set-rw-cache-state].")
  (REWRITE-STACK-LIMIT
   (REWRITE)
   "Limiting the stack depth of the ACL2 rewriter
@@ -98049,7 +97923,7 @@ Example
            (<= (access clause-id cl-id :primes)
                4)))
 
-    (defattach print-clause-id-okp print-clause-id-okp-level-4)")
+    (defattach-system print-clause-id-okp print-clause-id-okp-level-4)")
  (SET-PRINT-ESCAPE (POINTERS)
                    "See [print-control].")
  (SET-PRINT-GV-DEFAULTS
@@ -104389,126 +104263,6 @@ Subtopics
   peruse the ACL2 source code and its comments in order to see how to
   modify system behavior with attachments.  Perhaps more user-level
   documentation will be written to help with that process.")
- (SYSTEM-DEVELOPMENT
-  (PROGRAMMING)
-  "Developing ACL2 system code
-
-  ACL2 is maintained solely by Matt Kaufmann and J Moore.  However, we
-  anticipate that a few others will eventually contribute as well.
-  The subtopics of this topic provide information that is intended to
-  help future developers.
-
-  The website for the (first) Developer's Workshop is:
-
-      {http://www.cs.utexas.edu/users/moore/acl2/workshop-devel-2017/ | http://www.cs.utexas.edu/users/moore/acl2/workshop-devel-2017/}
-
-  For a small list of potential ACL2 development tasks, see community
-  books file books/system/to-do.txt.
-
-
-Subtopics
-
-  [Making-system-changes]
-      Guidelines for modifying ACL2 source code
-
-  [System-development-hints]
-      Helpful hints for developing ACL2 system code
-
-  [System-style-guide]
-      Style guidelines for developing ACL2 system code
-
-  [Ttree]
-      Tag-trees
-
-  [Verify-guards-for-system-functions]
-      Arranging that source functions come up as guard-verified")
- (SYSTEM-DEVELOPMENT-HINTS
-  (SYSTEM-DEVELOPMENT)
-  "Helpful hints for developing ACL2 system code
-
-  ACL2 is maintained solely by Matt Kaufmann and J Moore.  However, we
-  anticipate that a few others will eventually contribute as well.
-  Here we provide a few suggestions that might facilitate the writing
-  of ACL2 system code; however, the topic [making-system-changes] is
-  the primary topic discussing how to make system changes.  Also see
-  [system-style-guide] for style guidelines.
-
-  NOTE: This is an evolving topic.  Please feel free to augment it with
-  additional useful tips!
-
-  Emacs provides several useful utilities for ACL2 coding, including
-  the following.  If you can do these kinds of things quickly without
-  Emacs, that's fine; otherwise it would probably be best for you to
-  invest in learning Emacs.
-
-    * Find a function definition: meta-. or meta-x tags-apropos.
-    * Find an Essay such as ``Essay on Hidden Packages'': meta-x
-      tags-search.
-    * Change a name globally: meta-x tags-query-replace.  WARNING: if you
-      do this, consider changing names in books as well, for example
-      by using the following shell command.
-
-          time fgrep --include='*.l*sp' -ri 'some-old-name' .
-
-  Defensive programming is a good idea.  For an example, see
-  all-runes-in-ttree, which causes a hard error if an unexpected tag
-  is encountered and also is nice in how it documents tag-trees.")
- (SYSTEM-STYLE-GUIDE
-  (SYSTEM-DEVELOPMENT)
-  "Style guidelines for developing ACL2 system code
-
-  ACL2 is maintained solely by Matt Kaufmann and J Moore.  However, we
-  anticipate that a few others will eventually contribute as well.
-  Here we set out some style guidelines that have traditionally been
-  followed, and can guide development to help maintain ACL2's
-  quality.  Separate topics provide instruction on maintaining ACL2
-  system code; see [making-system-changes] and
-  [system-development-hints].
-
-  The right margin is 79.  (In emacs: set-fill-column 79.)  Existing
-  code with margin 70 is OK to leave as is, though it's nice to
-  convert to a margin of 79 when modifying comments within a given
-  function.
-
-  Tabs are not used.  In emacs, setting buffer-local variable
-  indent-tabs-mode to nil will accomplish this.  That can be
-  accomplished automatically for Lisp files, as is done in
-  distributed file emacs/emacs-acl2.el; search there for
-  indent-tabs-mode, or simply load that file in your .emacs file.
-
-  Periods that end sentences are followed by two spaces (useful for
-  meta-e command in emacs).
-
-  Comments for a function go immediately after its formal parameters
-  (even before [declare] forms).
-
-  Comments generally consist of complete sentences, starting on the
-  left margin, each line starting with a single semicolon followed by
-  a space.  An exception is very short comments to the right of code
-  up to the end of the same line.
-
-  Use of the [cond] macro is generally preferred to the use of if, an
-  exception being small expressions that are not at the top level.
-
-  System state globals need to be included in *initial-global-table* or
-  *initial-ld-special-bindings*.
-
-  Blank lines are avoided except in the usual circumstances, e.g.
-  surrounding comments and between definitions.  Avoid consecutive
-  blank lines.
-
-  A multi-line argument is not followed by an argument on the same
-  line.  For example, there should be a linebreak before the
-  argument, arg, after the string in this COND clause:
-
-    (t (er soft ctx
-           \"The value associated with a :SOME-NEW-HINT hint must be a positive ~
-           integer, but ~x0 is not.\" arg))
-
-  We generally avoid capitalizing all letters in a single word, except
-  perhaps for keywords or quoted constants.
-
-  There are no multi-line comments: #|| ... ||#.")
  (SYSTEM-UTILITIES
   (PROGRAMMING)
   "List of system-level programming utilities
@@ -104767,6 +104521,26 @@ List of a few ACL2 system utilities:
     * (guard fn stobj-optp w): For a function symbol or lambda expression
       fn of [world] w, return its [guard]. Optimize the [stobj]
       recognizers away iff stobj-optp is true.
+    * (io? token commentp shape vars body &key ...): This is a complex
+      macro that may be most fully understood by reading the source
+      code, including comments in its definition and examples of its
+      use.  But the following example from the definition of source
+      function print-failure1 may get the idea across.
+
+          (io? summary nil state (channel)
+               (fms *proof-failure-string* nil channel state nil))
+
+      This is essentially just the body argument, which here is the
+      indicated [fms] call, but where, going through the other
+      arguments:
+        * summary --- printing only takes place when summary output is enabled
+          (see [set-inhibit-output-lst]);
+        * nil --- don't enter a wormhole;
+        * state --- the body (which here is the fms call) returns a single
+          state value; and finally
+        * channel --- this is the list of free variables in the body (which
+          here is the fms call).
+
     * (keyword-listp x): Return t when x is a true-list whose members are
       all keywords, else return nil.
     * (implicate t1 t2): For terms t1 and t2, return a term that is
@@ -104801,6 +104575,14 @@ List of a few ACL2 system utilities:
       odd-indexed members (with zero-based indexing).  Note that if x
       is a list (k1 a1 k2 a2 ... kn an) that satisfies the predicate
       [keyword-value-listp], then (odds x) lists the values ai of x.
+    * (packn lst): Return a symbol.  The symbol's name is a concatenation
+      of string representations of the atoms in the [good-atom-listp]
+      lst, and the symbol's package is the package of the first
+      symbol in lst whose package is not \"COMMON-LISP\" if any, else
+      \"ACL2\".
+    * (packn-pos lst witness): Behaves like packn, except the returned
+      symbol's package will instead be the package of the symbol
+      witness.
     * (pairlis-x1 x1 lst): Cons x1 onto the front of each element of the
       the true-list, lst.
     * (pairlis-x2 lst x2): Make an alist pairing each element of lst, a
@@ -110520,20 +110302,22 @@ Subtopics
   Technical note: a corresponding evaluation that provides a
   (translated) [termp] is: (termination-theorem 'FN (w state)).")
  (TTREE
-  (SYSTEM-DEVELOPMENT)
+  (MISCELLANEOUS)
   "Tag-trees
 
   Many low-level ACL2 functions take and return ``tag trees'' or
-  ``ttrees'' (pronounced ``tee-trees'') which contain various useful
-  bits of information such as the lemmas used, the linearize
-  assumptions made, etc.
+  ``ttrees'' (pronounced ``tee-trees'') which contain useful
+  information such as the lemmas used, the linearize assumptions
+  made, etc.  Here we present only minimal user-level information,
+  for example in support of the use of the [break-rewrite] utility or
+  writing metafunctions.  Implementation-level information about tag
+  trees may be found in the Developer's Guide; users should probably
+  not visit that topic unless they plan to become ACL2 developers.
 
   Abstractly a tag-tree represents a list of sets, each member set
   having a name given by one of the ``tags'' (which are symbols) of
   the ttree.  The elements of the set named tag are all of the
-  objects tagged tag in the tree.  You are invited to browse the
-  source code.  Definitions of primitives are labeled with the
-  comment ``; Note: Tag-tree primitive''.
+  objects tagged tag in the tree.
 
   The rewriter, for example, takes a term and a ttree (among other
   things), and returns a new term, term', and new ttree, ttree'.
@@ -115252,7 +115036,7 @@ Subtopics
  (VERIFY-GUARDS-EAGERNESS (POINTERS)
                           "See [set-verify-guards-eagerness].")
  (VERIFY-GUARDS-FOR-SYSTEM-FUNCTIONS
-  (SYSTEM-DEVELOPMENT VERIFY-TERMINATION VERIFY-GUARDS)
+  (VERIFY-TERMINATION VERIFY-GUARDS)
   "Arranging that source functions come up as guard-verified
 
   ACL2 is maintained solely by Matt Kaufmann and J Moore.  However, we
@@ -115266,8 +115050,9 @@ Subtopics
   To put a system function into :logic mode, you might first need or
   want to modify ACL2, for example replacing (null lst) by (endp lst)
   in a function's definition in support of the termination proof.
-  You might wish to see [making-system-changes] for information on
-  modifying system code.
+  You don't need to become a system developer to do this, but see
+  [developers-guide] if you are an experienced ACL2 user and system
+  development interests you.
 
   After making such changes, build an ACL2 executable image containing
   your modified code.  The next step is typically to create a new
@@ -115295,7 +115080,8 @@ Subtopics
 
           (time nice make ACL2_DEVEL=d) >& make-devel.log
 
-   2. Check that the build worked (see [making-system-changes]).
+   2. Check that the build seems to have worked, for example by finding the
+      string \"Successfully built\" near the end of your log file.
    3. Run a ``devel'' regression, for example as follows if starting in the
       ACL2 sources directory.
 
@@ -115327,8 +115113,7 @@ Subtopics
           SUCCESS for check-system-events
           SUCCESS for devel-check
 
-   6. Ideally, you will finally do a normal build and regression; again,
-      see [making-system-changes].")
+   6. Ideally, you will finally do a normal build and regression.")
  (VERIFY-GUARDS-FORMULA
   (GUARD-FORMULA-UTILITIES)
   "View the guard proof obligation, without proving it
