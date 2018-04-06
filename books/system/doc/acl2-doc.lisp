@@ -28959,15 +28959,16 @@ current fast alists."
                                        state))
            (pprogn
             (if (eq (f-get-global 'abbrev-evisc-tuple state) :DEFAULT)
-                (princ$ \"Abbrev-evisc-tuple has its default value.~%\"
+                (princ$ \"Abbrev-evisc-tuple has its default value.\"
                         *standard-co*
                         state)
-              (princ$ \"Abbrev-evisc-tuple has been modified.~%\"
+              (princ$ \"Abbrev-evisc-tuple has been modified.\"
                       *standard-co*
-                      state))))
+                      state))
+            (newline *standard-co* state)))
           (t state)))
 
-  (defattach finalize-event-user finalize-event-user-test)
+  (defattach-system finalize-event-user finalize-event-user-test)
  })
 
  <p>After admission of the two events above, an event @(see summary) will
@@ -28983,7 +28984,7 @@ current fast alists."
  the following example.</p>
 
  @({
-  (defun finalize-event-user-test2 (state)
+  (defun finalize-event-user-test2 (ctx body state)
     (declare (xargs :stobjs state
                     :mode :program)
              (ignore ctx body))
@@ -28994,8 +28995,8 @@ current fast alists."
 
   (defttag t) ; needed for :skip-checks t
 
-  (defattach (finalize-event-user finalize-event-user-test2)
-             :skip-checks t)
+  (defattach-system (finalize-event-user finalize-event-user-test2)
+    :skip-checks t)
  })
 
  <p>So for example:</p>
@@ -31837,7 +31838,7 @@ current fast alists."
              (xargs :mode :logic :guard t))
     t)
 
-  (defattach oncep-tp oncep-tp-always)
+  (defattach-system oncep-tp oncep-tp-always)
  })
 
  <p>The second @('thm') form above will now fail, because only one
@@ -31857,7 +31858,7 @@ current fast alists."
                                              (symbolp (cadr rune)))))
     (not (eq (base-symbol rune) 'f1-prop)))
 
-  (defattach oncep-tp oncep-tp-always-except-f1-prop)
+  (defattach-system oncep-tp oncep-tp-always-except-f1-prop)
  })
 
  <p>In general, your @(tsee defattach) event will attach a function symbol to
@@ -40477,7 +40478,7 @@ tables in the current Hons Space."
  tags to avoid that requirement.  For example:</p>
 
  @({
-  (defattach initialize-event-user initialize-event-user-test)
+  (defattach-system initialize-event-user initialize-event-user-test)
  })
 
  <p>Why would you want to do this?  Presumably you are building a system on top
@@ -40508,8 +40509,8 @@ tables in the current Hons Space."
                       (cw \"BIG SURPRISE!~%\"))
                     (f-put-global 'end-time seconds state))))
 
-  (defattach initialize-event-user my-init)
-  (defattach finalize-event-user my-final)
+  (defattach-system initialize-event-user my-init)
+  (defattach-system finalize-event-user my-final)
  })
 
  <p>Here is an abbreviated log, showing the time being printed at the end.</p>
@@ -79751,6 +79752,9 @@ it."
 ;   (thm
 ;     (equal (car (cons 3 x)) 3))
 
+; Tweaked the code for the ACL2 home page, in doc/home-page.lisp, following
+; advice and code provided by Keshav Kini.
+
   :parents (release-notes)
   :short "ACL2 Version  8.1 (xxx, 20xx) Notes"
   :long "<p>NOTE!  New users can ignore these release notes, because the @(see
@@ -79915,11 +79919,12 @@ it."
 
  <p>(Warning: The following describes advanced features that can likely be
  ignored by most users.  They are available using the new utility, @(tsee
- defattach-system).)  Two new system-level functions may be given attachments:
- @('remove-trivial-equivalences-enabled-p') and
- @('assume-true-false-aggressive-p').  (Thanks to Eric Smith for suggesting
- these, and to him and Alessandro Coglio for helpful discussions.)  By default,
- these have the attachments @('constant-t-function-arity-0') and
+ defattach-system).)  Three new system-level functions may be given
+ attachments: @('remove-trivial-equivalences-enabled-p'),
+ @('assume-true-false-aggressive-p'), and @('rewrite-if-avoid-swap').  (Thanks
+ to Eric Smith for suggesting these, and to him and Alessandro Coglio for
+ helpful discussions.)  By default, these have the attachments
+ @('constant-t-function-arity-0'), @('constant-nil-function-arity-0'), and
  @('constant-nil-function-arity-0'), respectively, which provide the existing
  system behavior.  But these attachments may be changed by the user.</p>
 
@@ -79940,6 +79945,12 @@ it."
  change may slow down ACL2 considerably in some cases, and should rarely if
  ever be necessary when calling the prover; but it can be useful in
  applications that call the rewriter directly.</li>
+
+ <li>@('Rewrite-if-avoid-swap') may receive the attachment
+ @('constant-t-function-arity-0') to cause the rewriter &mdash; specifically,
+ source function @('rewrite-if') &mdash; to avoid swapping true and false
+ branches of a call of @('IF'), which could formerly happen when the test is a
+ call of @('NOT').</li>
 
  </ul>
 
@@ -88810,7 +88821,7 @@ arithmetic) for libraries of @(see books) for arithmetic reasoning.</p>")
              (xargs :mode :logic :guard t))
     nil)
 
-  (defattach quick-and-dirty-srs quick-and-dirty-srs-off)
+  (defattach-system quick-and-dirty-srs quick-and-dirty-srs-off)
  })
 
  <p>However, if you feel the need to try this out, please remember that the
@@ -88829,7 +88840,7 @@ arithmetic) for libraries of @(see books) for arithmetic reasoning.</p>")
  <p>To turn the heuristic back on:</p>
 
  @({
-  (defattach quick-and-dirty-srs quick-and-dirty-srs-builtin)
+  (defattach-system quick-and-dirty-srs quick-and-dirty-srs-builtin)
  })")
 
 (defxdoc quit
@@ -96749,7 +96760,7 @@ arithmetic) for libraries of @(see books) for arithmetic reasoning.</p>")
          (<= (access clause-id cl-id :primes)
              4)))
 
-  (defattach print-clause-id-okp print-clause-id-okp-level-4)
+  (defattach-system print-clause-id-okp print-clause-id-okp-level-4)
  })")
 
 (defxdoc set-print-gv-defaults
