@@ -79752,6 +79752,9 @@ it."
 ;   (thm
 ;     (equal (car (cons 3 x)) 3))
 
+; Tweaked the code for the ACL2 home page, in doc/home-page.lisp, following
+; advice and code provided by Keshav Kini.
+
   :parents (release-notes)
   :short "ACL2 Version  8.1 (xxx, 20xx) Notes"
   :long "<p>NOTE!  New users can ignore these release notes, because the @(see
