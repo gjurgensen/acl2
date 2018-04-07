@@ -121252,6 +121252,7 @@ expand function call at the current subterm, without simplifying"
 (defpointer get-skipped-proofs-p system-utilities)
 (defpointer getting-started acl2-tutorial)
 (defpointer guards guard)
+(defpointer guard-checking set-guard-checking)
 (defpointer guard-hints xargs t)
 (defpointer guard-msg-table set-guard-msg)
 (defpointer hands-off hints t)
