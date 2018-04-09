@@ -37679,6 +37679,8 @@ Subtopics
 
   [With-guard-checking-event]
       Suppress or enable guard-checking for an event form")
+ (GUARD-CHECKING (POINTERS)
+                 "See [set-guard-checking].")
  (GUARD-CHECKING-INHIBITED
   (EVALUATION GUARD)
   "Evaluating ACL2 expressions
@@ -83034,6 +83036,9 @@ Subtopics
 
   [Getting-started]
       See [acl2-tutorial].
+
+  [Guard-checking]
+      See [set-guard-checking].
 
   [Guard-hints]
       See [xargs] for information about the keyword :guard-hints.
