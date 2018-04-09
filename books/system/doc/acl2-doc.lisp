@@ -80139,17 +80139,6 @@ it."
 
  ")
 
-(defpointer note1 note-1-1)
-(defpointer note2 note-1-2)
-(defpointer note3 note-1-3)
-(defpointer note4 note-1-4)
-(defpointer note5 note-1-5)
-(defpointer note6 note-1-6)
-(defpointer note7 note-1-7)
-(defpointer note8 note-1-8)
-(defpointer note8-update note-1-8-update)
-(defpointer note9 note-1-9)
-
 (defxdoc nqthm-to-acl2
   :parents (acl2-tutorial)
   :short "ACL2 analogues of Nqthm functions and commands"
@@ -121301,6 +121290,7 @@ expand function call at the current subterm, without simplifying"
 (defpointer get-skipped-proofs-p system-utilities)
 (defpointer getting-started acl2-tutorial)
 (defpointer guards guard)
+(defpointer guard-checking set-guard-checking)
 (defpointer guard-hints xargs t)
 (defpointer guard-msg-table set-guard-msg)
 (defpointer hands-off hints t)
@@ -121361,6 +121351,16 @@ expand function call at the current subterm, without simplifying"
 (defpointer non-executable xargs t)
 (defpointer nonlinearp hints t)
 (defpointer normalization normalize)
+(defpointer note1 note-1-1)
+(defpointer note2 note-1-2)
+(defpointer note3 note-1-3)
+(defpointer note4 note-1-4)
+(defpointer note5 note-1-5)
+(defpointer note6 note-1-6)
+(defpointer note7 note-1-7)
+(defpointer note8 note-1-8)
+(defpointer note8-update note-1-8-update)
+(defpointer note9 note-1-9)
 (defpointer nvariablep system-utilities)
 (defpointer observation-cw observation)
 (defpointer odds system-utilities)
