@@ -11401,40 +11401,74 @@ with any questions about building the community books.</p>")
   :long "<p>The macro @(tsee ld) was designed to be called directly in the
  top-level ACL2 loop, although there may be a few occasions for calling it from
  functions.  ACL2 cannot cope with invocations of @(tsee ld) during the process
- of loading a compiled file for a book, so this is an error.</p>
+ of loading a compiled file for a book, so that is an error.</p>
 
- <p>To see how that can happen, consider the following book, where file
- @('const.lsp') contains the single form @('(defconst *foo* '(a b))').</p>
+ <p>Specifically: ACL2 will cause an error in the following two
+ circumstances:</p>
 
- @({
-    (in-package \"ACL2\")
-    (defttag t)
-    (progn! (ld \"const.lsp\"))
- })
+ <ul>
 
- <p>An attempt to certify this book will cause an error, but that particular
- error can be avoided, as discussed below.  If the book is certified, however,
- with production of a corresponding compiled file (which is the default
- behavior for @(tsee certify-book)), then any subsequent call of @(tsee
- include-book) that loads this compiled file will cause an error.  Again, this
- error is necessary because of how ACL2 is designed; specifically, this @(tsee
- ld) call would interfere with tracking of constant definitions when loading
- the compiled file for the book.</p>
+ <li>when calling @(tsee ld) inside @(tsee progn!) unless state global
+ @('ld-okp') is first set to @('t'), e.g., using @('(assign ld-okp t)');
+ also,</li>
 
- <p>Because including such a book (with a compiled file) causes an error, then
- as a courtesy to the user, ACL2 arranges that the certification will fail
- (thus avoiding a surprise later when trying to include the book).  The error
- in that case will look as follows.</p>
+ <li>when calling @('ld') while inside raw Lisp, e.g., when loading a compiled
+ file during an invocation of @(tsee include-book).</li>
+
+ </ul>
+
+ <p>Consider for example the following book, where file @('const.lsp') contains
+ the single form @('(defconst *foo* '(a b))') after its initial @(tsee
+ in-package) form.</p>
 
  @({
-    ACL2 Error in LD:  It is illegal to call LD in this context.  See DOC
-    calling-ld-in-bad-contexts.
+ (in-package \"ACL2\")
+ (defttag t)
+ (progn! (ld \"const.lsp\"))
  })
 
- <p>If you really think it is OK to avoid this error, you can get around it by
- setting @(see state) global variable @('ld-okp') to t: @('(assign ld-okp t)').
- You can then certify the book in the example above, but you will still not be
- able to include it with a compiled file.</p>")
+ <p>An attempt to certify this book as follows</p>
+
+ @({
+ (certify-book \"const-wrapper\" 0 t :ttags :all)
+ })
+
+ <p>will cause an error:</p>
+
+ @({
+ ACL2 Error in LD:  It is illegal to call LD in this context.  See :DOC
+ calling-ld-in-bad-contexts.
+ })
+
+ <p>However, that error can be avoided by expanding the @(tsee progn!) call as
+ follows.</p>
+
+ @({
+ (progn! (assign ld-okp t)
+         (ld \"const.lsp\"))
+ })
+
+ <p>Now certification succeeds; however, any subsequent call of @(tsee
+ include-book) will fail to load the compiled file for the book.  Again, that
+ is necessary because of how ACL2 is designed; in this case, the @(tsee ld)
+ call would interfere with tracking of constant definitions when loading the
+ compiled file for the book.  To avoid warnings about loading compiled files,
+ either certify the book without creating a compiled file or else include the
+ book without loading the compiled file; see @(see certify-book) and @(see
+ include-book).</p>
+
+ <p>Note that it is legal to put a definition such as the following into a
+ book, where @('ld') is called in the body of a function; the two conditions
+ above do not prohibit this.</p>
+
+ @({
+ (defun foo (state)
+   (declare (xargs :guard t :stobjs state :mode :program))
+   (ld '((defun h (x) x)) :ld-user-stobjs-modified-warning t))
+ })
+
+ <p>One can then include the book, evaluate @('(foo state)'), and then evaluate
+ calls of @('h').</p>")
 
 (defxdoc canonical-pathname
   :parents (programming-with-state acl2-built-ins)
@@ -45618,7 +45652,7 @@ tables in the current Hons Space."
  (LD standard-oi                  ; open obj in channel, stringp file name
                                   ; to open and close, or list of forms
                                   ; Optional keyword arguments:
-     :dir                ...      ; use this add-include-book-dir directory
+     :dir                ...      ; directory spec if standard-oi is a string
      :standard-co        ...      ; open char out or file to open and close
      :proofs-co          ...      ; open char out or file to open and close
      :current-package    ...      ; known package name
@@ -45717,16 +45751,19 @@ tables in the current Hons Space."
  and is used for both.</p>
 
  <p>As a special convenience, when @(tsee standard-oi) is a string and the
- @(':dir') argument provided and not @('nil'), we look up @(':dir') in the
+ @(':dir') argument is provided and not @('nil'), we look up @(':dir') in the
  table of directories maintained by @(tsee add-include-book-dir), and prepend
- this directory to @(tsee standard-oi) to create the filename.  (In this case,
- however, we require that @('standard-oi') is a relative pathname, not an
- absolute pathname.)  For example, one can write @('(ld
+ this directory to @(tsee standard-oi) to create the filename.  Note that
+ @('standard-oi') must be a string that is a relative pathname, not an absolute
+ pathname.  For example, one can write @('(ld
  \"arithmetic/top-with-meta.lisp\" :dir :system)') to @('ld') that particular
- community books library.  (Of course, you should almost always load books like
- @('arithmetic/top-with-meta') using @(tsee include-book) instead of @('ld').)
- If @(':dir') is not specified, then a relative pathname is resolved using the
- connected book directory; see @(see cbd).</p>
+ @(see community-books) library.  (Of course, for certified @(see books) you
+ should almost always use @(tsee include-book) instead of @('ld').)  If
+ @(':dir') is not specified, then a relative pathname is resolved using the
+ connected book directory; see @(see cbd).  If you want to load a list of
+ forms, then consider prepending a call of @(tsee set-cbd) to that list rather
+ than using @(':dir'), which is not supported when @('standard-oi') is a
+ list.</p>
 
  <p>Several other alternatives are allowed for @(tsee standard-oi).  If @(tsee
  standard-oi) is a true list then it is taken as the list of forms to be
@@ -79752,6 +79789,13 @@ it."
 ;   (thm
 ;     (equal (car (cons 3 x)) 3))
 
+; Tweaked the code for the ACL2 home page, in doc/home-page.lisp, following
+; advice and code provided by Keshav Kini.
+
+; Made slightly more robust the protection against certain calls of LD
+; (by default, defeated by assigning state global ld-okp to t), by
+; also making the check when outside the ACL2 loop.
+
   :parents (release-notes)
   :short "ACL2 Version  8.1 (xxx, 20xx) Notes"
   :long "<p>NOTE!  New users can ignore these release notes, because the @(see
@@ -79908,6 +79952,11 @@ it."
  verification may now catch bugs in the application of lambdas that were missed
  previously.</p>
 
+ <p>The @(':dir') argument to @(tsee ld) was previously ignored when the first
+ argument of the call of @('ld') is not a string.  Now, that is an error.  If
+ you get this error, just remove the (previously ignored) @(':dir')
+ argument.</p>
+
  <h3>New Features</h3>
 
  <p>The @(see summary) now shows, by default, the list of doublets @('(f g)')
@@ -80058,6 +80107,9 @@ it."
  violation, but before this fix, the error message reported an implementation
  error.</p>
 
+ <p>Fixed the @(':')@(tsee puff) command to avoid certain errors involving
+ @(see local) @(see events).</p>
+
  <h3>Changes at the System Level</h3>
 
  <p>Fixed the use of `@('<a href='URL'>...</a>')' so that if @('URL') has the
@@ -80086,17 +80138,6 @@ it."
  <h3>Experimental Versions</h3>
 
  ")
-
-(defpointer note1 note-1-1)
-(defpointer note2 note-1-2)
-(defpointer note3 note-1-3)
-(defpointer note4 note-1-4)
-(defpointer note5 note-1-5)
-(defpointer note6 note-1-6)
-(defpointer note7 note-1-7)
-(defpointer note8 note-1-8)
-(defpointer note8-update note-1-8-update)
-(defpointer note9 note-1-9)
 
 (defxdoc nqthm-to-acl2
   :parents (acl2-tutorial)
@@ -121249,6 +121290,7 @@ expand function call at the current subterm, without simplifying"
 (defpointer get-skipped-proofs-p system-utilities)
 (defpointer getting-started acl2-tutorial)
 (defpointer guards guard)
+(defpointer guard-checking set-guard-checking)
 (defpointer guard-hints xargs t)
 (defpointer guard-msg-table set-guard-msg)
 (defpointer hands-off hints t)
@@ -121309,6 +121351,16 @@ expand function call at the current subterm, without simplifying"
 (defpointer non-executable xargs t)
 (defpointer nonlinearp hints t)
 (defpointer normalization normalize)
+(defpointer note1 note-1-1)
+(defpointer note2 note-1-2)
+(defpointer note3 note-1-3)
+(defpointer note4 note-1-4)
+(defpointer note5 note-1-5)
+(defpointer note6 note-1-6)
+(defpointer note7 note-1-7)
+(defpointer note8 note-1-8)
+(defpointer note8-update note-1-8-update)
+(defpointer note9 note-1-9)
 (defpointer nvariablep system-utilities)
 (defpointer observation-cw observation)
 (defpointer odds system-utilities)

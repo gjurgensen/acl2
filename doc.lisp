@@ -13943,38 +13943,59 @@ Subtopics
   The macro [ld] was designed to be called directly in the top-level
   ACL2 loop, although there may be a few occasions for calling it
   from functions.  ACL2 cannot cope with invocations of [ld] during
-  the process of loading a compiled file for a book, so this is an
+  the process of loading a compiled file for a book, so that is an
   error.
 
-  To see how that can happen, consider the following book, where file
-  const.lsp contains the single form (defconst *foo* '(a b)).
+  Specifically: ACL2 will cause an error in the following two
+  circumstances:
+
+    * when calling [ld] inside [progn!] unless state global ld-okp is first
+      set to t, e.g., using (assign ld-okp t); also,
+    * when calling ld while inside raw Lisp, e.g., when loading a compiled
+      file during an invocation of [include-book].
+
+  Consider for example the following book, where file const.lsp
+  contains the single form (defconst *foo* '(a b)) after its initial
+  [in-package] form.
 
     (in-package \"ACL2\")
     (defttag t)
     (progn! (ld \"const.lsp\"))
 
-  An attempt to certify this book will cause an error, but that
-  particular error can be avoided, as discussed below.  If the book
-  is certified, however, with production of a corresponding compiled
-  file (which is the default behavior for [certify-book]), then any
-  subsequent call of [include-book] that loads this compiled file
-  will cause an error.  Again, this error is necessary because of how
-  ACL2 is designed; specifically, this [ld] call would interfere with
-  tracking of constant definitions when loading the compiled file for
-  the book.
+  An attempt to certify this book as follows
 
-  Because including such a book (with a compiled file) causes an error,
-  then as a courtesy to the user, ACL2 arranges that the
-  certification will fail (thus avoiding a surprise later when trying
-  to include the book).  The error in that case will look as follows.
+    (certify-book \"const-wrapper\" 0 t :ttags :all)
 
-    ACL2 Error in LD:  It is illegal to call LD in this context.  See DOC
+  will cause an error:
+
+    ACL2 Error in LD:  It is illegal to call LD in this context.  See :DOC
     calling-ld-in-bad-contexts.
 
-  If you really think it is OK to avoid this error, you can get around
-  it by setting [state] global variable ld-okp to t: (assign ld-okp
-  t).  You can then certify the book in the example above, but you
-  will still not be able to include it with a compiled file.")
+  However, that error can be avoided by expanding the [progn!] call as
+  follows.
+
+    (progn! (assign ld-okp t)
+            (ld \"const.lsp\"))
+
+  Now certification succeeds; however, any subsequent call of
+  [include-book] will fail to load the compiled file for the book.
+  Again, that is necessary because of how ACL2 is designed; in this
+  case, the [ld] call would interfere with tracking of constant
+  definitions when loading the compiled file for the book.  To avoid
+  warnings about loading compiled files, either certify the book
+  without creating a compiled file or else include the book without
+  loading the compiled file; see [certify-book] and [include-book].
+
+  Note that it is legal to put a definition such as the following into
+  a book, where ld is called in the body of a function; the two
+  conditions above do not prohibit this.
+
+    (defun foo (state)
+      (declare (xargs :guard t :stobjs state :mode :program))
+      (ld '((defun h (x) x)) :ld-user-stobjs-modified-warning t))
+
+  One can then include the book, evaluate (foo state), and then
+  evaluate calls of h.")
  (CANONICAL-PATHNAME
   (PROGRAMMING-WITH-STATE ACL2-BUILT-INS)
   "The true absolute filename, with soft links resolved
@@ -37658,6 +37679,8 @@ Subtopics
 
   [With-guard-checking-event]
       Suppress or enable guard-checking for an event form")
+ (GUARD-CHECKING (POINTERS)
+                 "See [set-guard-checking].")
  (GUARD-CHECKING-INHIBITED
   (EVALUATION GUARD)
   "Evaluating ACL2 expressions
@@ -49153,7 +49176,7 @@ Subtopics
     (LD standard-oi                  ; open obj in channel, stringp file name
                                      ; to open and close, or list of forms
                                      ; Optional keyword arguments:
-        :dir                ...      ; use this add-include-book-dir directory
+        :dir                ...      ; directory spec if standard-oi is a string
         :standard-co        ...      ; open char out or file to open and close
         :proofs-co          ...      ; open char out or file to open and close
         :current-package    ...      ; known package name
@@ -49250,16 +49273,19 @@ Subtopics
   file, only one channel to that file is opened and is used for both.
 
   As a special convenience, when [standard-oi] is a string and the :dir
-  argument provided and not nil, we look up :dir in the table of
+  argument is provided and not nil, we look up :dir in the table of
   directories maintained by [add-include-book-dir], and prepend this
-  directory to [standard-oi] to create the filename.  (In this case,
-  however, we require that standard-oi is a relative pathname, not an
-  absolute pathname.)  For example, one can write (ld
+  directory to [standard-oi] to create the filename.  Note that
+  standard-oi must be a string that is a relative pathname, not an
+  absolute pathname.  For example, one can write (ld
   \"arithmetic/top-with-meta.lisp\" :dir :system) to ld that particular
-  community books library.  (Of course, you should almost always load
-  books like arithmetic/top-with-meta using [include-book] instead of
-  ld.)  If :dir is not specified, then a relative pathname is
-  resolved using the connected book directory; see [cbd].
+  [community-books] library.  (Of course, for certified [books] you
+  should almost always use [include-book] instead of ld.)  If :dir is
+  not specified, then a relative pathname is resolved using the
+  connected book directory; see [cbd].  If you want to load a list of
+  forms, then consider prepending a call of [set-cbd] to that list
+  rather than using :dir, which is not supported when standard-oi is
+  a list.
 
   Several other alternatives are allowed for [standard-oi].  If
   [standard-oi] is a true list then it is taken as the list of forms
@@ -78447,6 +78473,11 @@ Changes to Existing Features
   important is that guard verification may now catch bugs in the
   application of lambdas that were missed previously.
 
+  The :dir argument to [ld] was previously ignored when the first
+  argument of the call of ld is not a string.  Now, that is an error.
+  If you get this error, just remove the (previously ignored) :dir
+  argument.
+
 
 New Features
 
@@ -78593,6 +78624,9 @@ Bug Fixes
   functions.  For example, the form (apply$-lambda 3 nil) produces a
   guard violation, but before this fix, the error message reported an
   implementation error.
+
+  Fixed the :[puff] command to avoid certain errors involving [local]
+  [events].
 
 
 Changes at the System Level
@@ -83002,6 +83036,9 @@ Subtopics
 
   [Getting-started]
       See [acl2-tutorial].
+
+  [Guard-checking]
+      See [set-guard-checking].
 
   [Guard-hints]
       See [xargs] for information about the keyword :guard-hints.
