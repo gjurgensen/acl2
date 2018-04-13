@@ -2036,9 +2036,31 @@
  <p>On the other hand, if you wish to prevent undoing commands from the
  customization file, see @(see reset-prehistory).</p>
 
- <p>Finally, we note that except on Windows-based systems, if there is a file
+ <p>Note that except on Windows-based systems, if there is a file
  @('acl2-init.lsp') in your home directory, then it will be loaded into raw
- Lisp when ACL2 is invoked.</p>")
+ Lisp when ACL2 is invoked.</p>
+
+ <h3>Silent loading of ACL2 customization files</h3>
+
+ <p>When the environment variable @('ACL2_CUSTOMIZATION_QUIET') is set and not
+ @('\"\"'), there will generally be no output from ACL2 customization.  A
+ special value of @('\"all\"') for this variable will cause continued minimal
+ output after startup, as explained in the following remark.</p>
+
+ <p>Technical Remark.  For quiet loading of acl2-customization files, @(tsee
+ ld) specials are bound to the following values.</p>
+
+ @({
+ ld-verbose = nil
+ ld-pre-eval-print = :never
+ ld-post-eval-print = nil
+ ld-prompt = nil
+ })
+
+ <p>These @('ld') specials are returned to their normal values after loading an
+ ACL2 customization file, with one exception: if @('ACL2_CUSTOMIZATION_QUIET')
+ has value @('\"ALL\"') (or @('\"all\"'); the case is irrelevant), then those
+ values are retained in the ACL2 loop even after customization completes.</p>")
 
 (defxdoc acl2-defaults-table
   :parents (table)
@@ -80000,6 +80022,11 @@ it."
 
  </ul>
 
+ <p>When the environment variable @('ACL2_CUSTOMIZATION_QUIET') is set and not
+ @('\"\"'), there will generally be no output from ACL2 customization.  A
+ special value of @('\"all\"') for this variable will cause continued minimal
+ output after startup.  See @(see acl2-customization).</p>
+
  <h3>Heuristic and Efficiency Improvements</h3>
 
  <p>The implementation of @(see wormhole)s has been tweaked to avoid an
@@ -80109,6 +80136,12 @@ it."
 
  <p>Fixed the @(':')@(tsee puff) command to avoid certain errors involving
  @(see local) @(see events).</p>
+
+ <p>Eliminated some raw Lisp errors that could occur from ill-formed calls of
+ @(tsee cw) and the family of @(tsee fmt) functions.  Thanks to Jared Davis for
+ pointing out this problem in 2010 (!) with the example @('(cw \"Bad: ~&0.~%\"
+ 5)'), and for Eric Smith for prodding us much more recently with the example
+ @('(cw \"~&0\" 'x)').</p>
 
  <h3>Changes at the System Level</h3>
 
