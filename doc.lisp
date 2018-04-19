@@ -78500,6 +78500,13 @@ Changes to Existing Features
   If you get this error, just remove the (previously ignored) :dir
   argument.
 
+  The function [magic-ev-fncall] sometimes printed a message in the
+  error case in addition to returning that message.  It now only
+  returns that message.  Thanks to Sol Swords for bringing to our
+  attention that certification of a community book,
+  books/projects/x86isa/proofs/popcount/popcount.lisp, was printing a
+  warning about \"Meta-level function Problem\" for thousands of lines.
+
 
 New Features
 
