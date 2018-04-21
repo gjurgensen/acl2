@@ -23779,7 +23779,8 @@ Subtopics
   below in calls, which also indicate the arities of the functions.
   In the expressions, we use x as the object to be recognized by
   field recognizers, i as an array index, v as the ``new value'' to
-  be installed by an updater, and name as the single-threaded object.
+  be installed by an updater, k as the ``new size'' to be set by a
+  resizer, and name as the single-threaded object.
 
                      non-array field        array field
     recognizer         (cP x)                (cP x)
