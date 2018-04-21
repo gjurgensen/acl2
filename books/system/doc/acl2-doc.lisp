@@ -20951,7 +20951,8 @@ subtree of X with T, without duplication.</p>
  is named @('c'). The default names are shown below in calls, which also
  indicate the arities of the functions.  In the expressions, we use @('x') as
  the object to be recognized by field recognizers, @('i') as an array index,
- @('v') as the ``new value'' to be installed by an updater, and @('name') as
+ @('v') as the ``new value'' to be installed by an updater, @('k') as the ``new
+ size'' to be set by a resizer, and @('name') as
  the single-threaded object.</p>
 
  @({
