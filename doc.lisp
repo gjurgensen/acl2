@@ -3562,7 +3562,7 @@ Subtopics
       Construct a ``message'' suitable for the ~@ directive of [fmt]
 
   [Msgp]
-      Weak recognizer for a ``message''
+      Recognizer for a ``message''
 
   [Must-be-equal]
       Attach code for execution
@@ -48769,7 +48769,7 @@ Subtopics
       Construct a ``message'' suitable for the ~@ directive of [fmt]
 
   [Msgp]
-      Weak recognizer for a ``message''
+      Recognizer for a ``message''
 
   [Observation]
       Print an observation
@@ -58009,22 +58009,21 @@ Subtopics
   bound to the successive elements of (arg1 ... argk).")
  (MSGP
   (IO ACL2-BUILT-INS)
-  "Weak recognizer for a ``message''
+  "Recognizer for a ``message''
 
   The form (msgp x) evaluates to true when x evaluates either to a
-  string or to a nil-terminated list (see [true-listp]) whose first
-  element is a string.  Thus, msgp distinguishes messages --- that
-  is, values suitable as arguments for ~@ directives of [fmt] ---
-  from Booleans and other values that are obviously not messages.
-  Note that msgp should always hold for the output of the macro, msg;
-  see [msg].
+  string or to a cons whose cdr satisfies [character-alistp].  Note
+  that msgp will always hold for the output of the macro, msg; see
+  [msg].
 
   Function: <msgp>
 
     (defun msgp (x)
            (declare (xargs :guard t))
            (or (stringp x)
-               (and (true-listp x) (stringp (car x)))))")
+               (and (consp x)
+                    (stringp (car x))
+                    (character-alistp (cdr x)))))")
  (MUST-BE-EQUAL
   (MBE ACL2-BUILT-INS)
   "Attach code for execution
@@ -78507,6 +78506,9 @@ Changes to Existing Features
   attention that certification of a community book,
   books/projects/x86isa/proofs/popcount/popcount.lisp, was printing a
   warning about \"Meta-level function Problem\" for thousands of lines.
+
+  The definition of [msgp] has been strengthened to require that for a
+  cons pair, the cdr must satisfy [character-alistp].
 
 
 New Features

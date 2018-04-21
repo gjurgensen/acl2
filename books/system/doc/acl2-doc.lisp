@@ -54123,14 +54123,11 @@ it."
 
 (defxdoc msgp
   :parents (io acl2-built-ins)
-  :short "Weak recognizer for a ``message''"
+  :short "Recognizer for a ``message''"
   :long "<p>The form @('(msgp x)') evaluates to true when @('x') evaluates
- either to a string or to a @('nil')-terminated list (see @(see true-listp))
- whose first element is a string.  Thus, @('msgp') distinguishes
- <i>messages</i> &mdash; that is, values suitable as arguments for @('~@')
- directives of @(tsee fmt) &mdash; from Booleans and other values that are
- obviously not messages.  Note that @('msgp') should always hold for the output
- of the macro, @('msg'); see @(see msg).</p>
+ either to a string or to a @('cons') whose @('cdr') satisfies @(tsee
+ character-alistp).  Note that @('msgp') will always hold for the output of the
+ macro, @('msg'); see @(see msg).</p>
 
  @(def msgp)")
 
@@ -79819,6 +79816,24 @@ it."
 ; (by default, defeated by assigning state global ld-okp to t), by
 ; also making the check when outside the ACL2 loop.
 
+; Here are examples of expressions whose evaluation caused raw Lisp errors in
+; Version 8.0 but no longer.
+;   (cw "~@0" (cons 3 4))
+;   (cw "~*0" 3)
+;   (cw "~&0" 3)
+;   (cw "~n0" '(a b))
+;   (cw "~s0" '(a b))
+;   (cw "~_0" '(a b))
+; The error message is better now for this one:
+;   (cw "~t0" 'a)
+
+; Improved the error message for a call of a fmt function (including fms, cw,
+; fmx, etc.) when for ~Xij, ~Yij, ~Pij, or ~Qij, the character #\j is unbound.
+; Formerly the position of the ~ was reported as one greater than it should
+; have been.  For example, the error for (fmx "~X04" 3) mentioned
+; the "tilde directive at location 1" but now it reports "location 0",
+; consistently with other such messages.
+
   :parents (release-notes)
   :short "ACL2 Version  8.1 (xxx, 20xx) Notes"
   :long "<p>NOTE!  New users can ignore these release notes, because the @(see
@@ -79986,6 +80001,9 @@ it."
  certification of a community book,
  @('books/projects/x86isa/proofs/popcount/popcount.lisp'), was printing a
  warning about @('\"Meta-level function Problem\"') for thousands of lines.</p>
+
+ <p>The definition of @(tsee msgp) has been strengthened to require that for a
+ @('cons') pair, the @('cdr') must satisfy @(tsee character-alistp).</p>
 
  <h3>New Features</h3>
 
