@@ -78671,6 +78671,11 @@ Bug Fixes
   (cw \"Bad: ~&0.~%\" 5), and for Eric Smith for prodding us much more
   recently with the example (cw \"~&0\" 'x).
 
+  Redundancy notes could be seen during [include-book] while loading
+  the compiled file for a book.  These notes (along with, perhaps,
+  some other output) have been eliminated.  Thanks to Eric Smith for
+  pointing us to this problem with a reproducible example.
+
 
 Changes at the System Level
 

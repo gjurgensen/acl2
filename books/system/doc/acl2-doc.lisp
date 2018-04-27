@@ -80169,6 +80169,11 @@ it."
  5)'), and for Eric Smith for prodding us much more recently with the example
  @('(cw \"~&0\" 'x)').</p>
 
+ <p>Redundancy notes could be seen during @(tsee include-book) while loading
+ the compiled file for a book.  These notes (along with, perhaps, some other
+ output) have been eliminated.  Thanks to Eric Smith for pointing us to this
+ problem with a reproducible example.</p>
+
  <h3>Changes at the System Level</h3>
 
  <p>Fixed the use of `@('<a href='URL'>...</a>')' so that if @('URL') has the
