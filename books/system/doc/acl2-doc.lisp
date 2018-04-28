@@ -50169,32 +50169,40 @@ tables in the current Hons Space."
   :short "Evaluate (expand) a given form and then evaluate the result"
   :long "<p>@('Make-event') is a utility for generating @(see events).  It
  provides a capability not offered by Lisp macros (see @(see defmacro)), as it
- allows access to the ACL2 @(tsee state) and logical @(see world).  In essence,
+ allows access to the ACL2 @(see state) and logical @(see world).  In essence,
  the expression @('(make-event form)') replaces itself with the result of
- evaluating @('form'), say, @('ev'), as though one had submitted @('ev')
- instead of the @('make-event') call.  For example,
+ evaluating @('form') &mdash; let's call that result @('ev') &mdash; as though
+ one had submitted @('ev') instead of the @('make-event') call.  For example,
  @('(make-event (quote (defun f (x) x)))') is equivalent to the event @('(defun
  f (x) x)').</p>
+
+ <p>We assume basic familiarity with the ACL2 <i>state</i>.  For relevant
+ background, see @(see state) and perhaps see @(see
+ programming-with-state).</p>
 
  <p>There are several simple examples below.  See @(see make-event-example) for
  development of a more complex example.</p>
 
  <p>We break this documentation into the following sections.</p>
 
- <p><b>Introduction</b><br></br>
+ <ul>
 
- <b>Detailed Documentation</b><br></br>
+ <li><b>Introduction</b></li>
 
- <b>Error Reporting</b><br></br>
+ <li><b>Detailed Documentation</b></li>
 
- <b>Restriction to Event Contexts</b><br></br>
+ <li><b>Error Reporting</b></li>
 
- <b>Examples Illustrating How to Access State</b><br></br>
+ <li><b>Restriction to Event Contexts</b></li>
 
- <b>Advanced Expansion Control</b></p>
+ <li><b>Examples Illustrating How to Access State</b></li>
 
- <p>We begin with an informal introduction, which focuses on examples and
- introduces the key notion of ``expansion phase''.</p>
+ <li><b>Advanced Expansion Control</b></li>
+
+ </ul>
+
+ <p>We begin with an introduction, which focuses on examples and introduces the
+ key notion of ``expansion phase''.</p>
 
  <p><b>Introduction</b></p>
 
@@ -50253,11 +50261,11 @@ tables in the current Hons Space."
     (list 'defconst name (length (w state))))
  })
 
- <p>But ACL2 rejects such a definition, because a macro cannot take the ACL2
- state as a parameter; instead, the formal parameter to this macro named
- @('\"STATE\"') merely represents an ordinary object.  You can try to
- experiment with other such direct methods to define such a macro, but they
- won't work.</p>
+ <p>But ACL2 rejects such a definition, because the formal parameter
+ @('\"STATE\"') is bound to the syntactic object in the macro call, not to the
+ actual ACL2 @(see state); see @(see defmacro).  You can try to experiment with
+ other such direct methods to define a macro that accesses the ACL2 state, but
+ they won't work.</p>
 
  <p>Instead, however, you can use the approach illustrated by the
  @('make-event') example above to define the desired macro, as follows.</p>
@@ -50267,106 +50275,120 @@ tables in the current Hons Space."
     `(make-event (list 'defconst ',name (length (w state)))))
  })
 
- <p>Here are example uses of this macro.</p>
+ <p>Here is a log that may help to explain this macro, assuming it has been
+ defined as displayed just above.</p>
 
  @({
-    ACL2 !>(define-world-length-constant *foo*)
+ ACL2 !>:trans1 (define-world-length-constant *foo*)
+  (MAKE-EVENT (LIST 'DEFCONST
+                    '*FOO*
+                    (LENGTH (W STATE))))
+ ACL2 !>(LIST 'DEFCONST
+              '*FOO*
+              (LENGTH (W STATE)))
+ (DEFCONST *FOO* 109707)
+ ACL2 !>
+ ACL2 !>(define-world-length-constant *foo*)
 
-    Summary
-    Form:  ( DEFCONST *FOO* ...)
-    Rules: NIL
-    Time:  0.00 seconds (prove: 0.00, print: 0.00, other: 0.00)
+ Summary
+ Form:  ( DEFCONST *FOO* ...)
+ Rules: NIL
+ Time:  0.00 seconds (prove: 0.00, print: 0.00, other: 0.00)
 
-    Summary
-    Form:  ( MAKE-EVENT (LIST ...))
-    Rules: NIL
-    Time:  0.00 seconds (prove: 0.00, print: 0.00, other: 0.00)
-     *FOO*
-    ACL2 !>*foo*
-    98891
-    ACL2 !>:pe *foo*
-              2:x(DEFINE-WORLD-LENGTH-CONSTANT *FOO*)
+ Summary
+ Form:  ( MAKE-EVENT (LIST ...))
+ Rules: NIL
+ Time:  0.01 seconds (prove: 0.00, print: 0.00, other: 0.01)
+  *FOO*
+ ACL2 !>*foo*
+ 109707
+ ACL2 !>:pe *foo*
+            2:x(DEFINE-WORLD-LENGTH-CONSTANT *FOO*)
+               \
+ >              (DEFCONST *FOO* 109707)
+ ACL2 !>(length (w state))
+ 109713
+ ACL2 !>(define-world-length-constant *bar*)
 
-    >             (DEFCONST *FOO* 98891)
-    ACL2 !>(length (w state))
-    98897
-    ACL2 !>(define-world-length-constant *bar*)
+ Summary
+ Form:  ( DEFCONST *BAR* ...)
+ Rules: NIL
+ Time:  0.00 seconds (prove: 0.00, print: 0.00, other: 0.00)
 
-    Summary
-    Form:  ( DEFCONST *BAR* ...)
-    Rules: NIL
-    Time:  0.00 seconds (prove: 0.00, print: 0.00, other: 0.00)
-
-    Summary
-    Form:  ( MAKE-EVENT (LIST ...))
-    Rules: NIL
-    Time:  0.01 seconds (prove: 0.00, print: 0.00, other: 0.01)
-     *BAR*
-    ACL2 !>*bar*
-    98897
-    ACL2 !>:pe *bar*
-              3:x(DEFINE-WORLD-LENGTH-CONSTANT *BAR*)
-
-    >             (DEFCONST *BAR* 98897)
-    ACL2 !>(length (w state))
-    98903
-    ACL2 !>
+ Summary
+ Form:  ( MAKE-EVENT (LIST ...))
+ Rules: NIL
+ Time:  0.01 seconds (prove: 0.00, print: 0.00, other: 0.01)
+  *BAR*
+ ACL2 !>*bar*
+ 109713
+ ACL2 !>:pe *bar*
+            3:x(DEFINE-WORLD-LENGTH-CONSTANT *BAR*)
+               \
+ >              (DEFCONST *BAR* 109713)
+ ACL2 !>(length (w state))
+ 109719
+ ACL2 !>
  })
 
- <p>Finally, we note that the expansion phase can be used for computation that
- has side effects, generally by modifying state.  Here is a modification of the
- above example that does not change the world at all, but instead saves the
- length of the world in a state global.</p>
+ <p>The expansion phase can be used for computation that has side effects,
+ generally by modifying state.  Here is a modification of the above example
+ that does not change the ACL2 world at all, but instead saves the length of the
+ world into a state global variable.</p>
 
  @({
   (make-event
-   (pprogn (f-put-global 'my-world-length (length (w state)) state)
-           (value '(value-triple nil))))
+   (er-progn (assign my-world-length (length (w state)))
+             (value '(value-triple nil))))
  })
 
- <p>Notice that this time, the value returned by the expansion phase is not an
- event form, but rather, is an @(see error-triple) whose value component is an
+ <p>Notice that this time, the value returned by the expansion phase is not a
+ single value; rather, it is an @(see error-triple) whose value component is an
  event form, namely, the event form @('(value-triple nil)').  Evaluation of
  that event form does not change the ACL2 world (see @(see value-triple)).
  Thus, the sole purpose of the @('make-event') call above is to change the
  @(see state) by associating the length of the current logical world with the
- state global named @(''my-world-length').  After evaluating this form, @('(@
+ state global, @('my-world-length').  After evaluating this form, @('(@
  my-world-length)') provides the length of the ACL2 world, as illustrated by
  the following transcript.</p>
 
  @({
-    ACL2 !>:pbt 0
-              0:x(EXIT-BOOT-STRAP-MODE)
-    ACL2 !>(length (w state))
-    98883
-    ACL2 !>(make-event
-            (pprogn (f-put-global 'my-world-length (length (w state)) state)
-                    (value '(value-triple nil))))
+ ACL2 !>:pbt 0
+            0:x(EXIT-BOOT-STRAP-MODE)
+ ACL2 !>(length (w state))
+ 109700
+ ACL2 !>(make-event
+             (er-progn (assign my-world-length (length (w state)))
+                       (value '(value-triple nil))))
 
-    Summary
-    Form:  ( MAKE-EVENT (PPROGN ...))
-    Rules: NIL
-    Time:  0.01 seconds (prove: 0.00, print: 0.00, other: 0.01)
-     NIL
-    ACL2 !>(length (w state))
-    98883
-    ACL2 !>:pbt 0
-              0:x(EXIT-BOOT-STRAP-MODE)
-    ACL2 !>
+ Summary
+ Form:  ( MAKE-EVENT (ER-PROGN ...))
+ Rules: NIL
+ Time:  0.01 seconds (prove: 0.00, print: 0.00, other: 0.01)
+  NIL
+ ACL2 !>(length (w state))
+ 109700
+ ACL2 !>:pbt 0
+            0:x(EXIT-BOOT-STRAP-MODE)
+ ACL2 !>
  })
 
  <p>When @('make-event') is invoked by a book, it is expanded during book
- certification but not, by default, when the book is included.  So for the
- example @('(define-world-length-constant *foo*)') given above, if that form is
- in a book, then the value of @('*foo*') will be the length of the world at the
- time this form was invoked during book certification, regardless of world
- length at @(tsee include-book) time.  (The expansion is recorded in the book's
- @(see certificate), and re-used.)  To overcome this default, you can specify
- keyword value @(':CHECK-EXPANSION t').  This will cause an error if the
- expansion is different, but it can be useful for side effects.  For example,
- if you insert the following form in a book, then the length of the world will
- be printed when the form is encountered, whether during @(tsee certify-book)
- or during @(tsee include-book).</p>
+ certification but not, by default, when the book is included.  Consider again
+ the example @('(define-world-length-constant *foo*)') given above.  If that
+ form is in a book, then the value of @('*foo*') will be the length of the
+ world at the time this form was invoked during book certification, regardless
+ of world length at @(tsee include-book) time.  That is because the expansion,
+ @('(DEFCONST *FOO* 109700)'), is recorded in the book's @(see certificate) and
+ re-used during a subsequent @(tsee include-book).</p>
+
+ <p>However, the keyword @(':check-expansion') may be given the value @('t') so
+ that the expansion is done even during @('include-book'), which comes with a
+ check that the result is the same as it was during book certification.  This
+ keyword can be useful for side effects.  For example, if you insert the
+ following form in a book, then the length of the world will be printed when
+ the form is encountered, whether during @(tsee certify-book) or during @(tsee
+ include-book).</p>
 
  @({
   (make-event
@@ -51177,6 +51199,10 @@ tables in the current Hons Space."
  comprehensive, some may find this example to be a good starting point, to get
  a sense of how to develop tools that take advantage of @('make-event').  We
  thank Yan Peng for putting forward this problem.</p>
+
+ <p>(Note: A rather complex example of the use of @('make-event') may be found
+ in the @(see community-book),
+ @('books/make-event/search-generation.lisp').)</p>
 
  <p>We begin by discussing prerequisites for this presentation.  Next, we
  present the challenge problem, followed by code that solves the problem

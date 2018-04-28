@@ -54000,23 +54000,27 @@ Subtopics
   capability not offered by Lisp macros (see [defmacro]), as it
   allows access to the ACL2 [state] and logical [world].  In essence,
   the expression (make-event form) replaces itself with the result of
-  evaluating form, say, ev, as though one had submitted ev instead of
-  the make-event call.  For example, (make-event (quote (defun f (x)
-  x))) is equivalent to the event (defun f (x) x).
+  evaluating form --- let's call that result ev --- as though one had
+  submitted ev instead of the make-event call.  For example,
+  (make-event (quote (defun f (x) x))) is equivalent to the event
+  (defun f (x) x).
+
+  We assume basic familiarity with the ACL2 state.  For relevant
+  background, see [state] and perhaps see [programming-with-state].
 
   There are several simple examples below.  See [make-event-example]
   for development of a more complex example.
 
   We break this documentation into the following sections.
 
-  Introduction
-  Detailed Documentation
-  Error Reporting
-  Restriction to Event Contexts
-  Examples Illustrating How to Access State
-  Advanced Expansion Control
+    * Introduction
+    * Detailed Documentation
+    * Error Reporting
+    * Restriction to Event Contexts
+    * Examples Illustrating How to Access State
+    * Advanced Expansion Control
 
-  We begin with an informal introduction, which focuses on examples and
+  We begin with an introduction, which focuses on examples and
   introduces the key notion of ``expansion phase''.
 
   Introduction
@@ -54074,11 +54078,11 @@ Subtopics
     (defmacro define-world-length-constant (name state)
       (list 'defconst name (length (w state))))
 
-  But ACL2 rejects such a definition, because a macro cannot take the
-  ACL2 state as a parameter; instead, the formal parameter to this
-  macro named \"STATE\" merely represents an ordinary object.  You can
-  try to experiment with other such direct methods to define such a
-  macro, but they won't work.
+  But ACL2 rejects such a definition, because the formal parameter
+  \"STATE\" is bound to the syntactic object in the macro call, not to
+  the actual ACL2 [state]; see [defmacro].  You can try to experiment
+  with other such direct methods to define a macro that accesses the
+  ACL2 state, but they won't work.
 
   Instead, however, you can use the approach illustrated by the
   make-event example above to define the desired macro, as follows.
@@ -54086,8 +54090,18 @@ Subtopics
     (defmacro define-world-length-constant (name)
       `(make-event (list 'defconst ',name (length (w state)))))
 
-  Here are example uses of this macro.
+  Here is a log that may help to explain this macro, assuming it has
+  been defined as displayed just above.
 
+    ACL2 !>:trans1 (define-world-length-constant *foo*)
+     (MAKE-EVENT (LIST 'DEFCONST
+                       '*FOO*
+                       (LENGTH (W STATE))))
+    ACL2 !>(LIST 'DEFCONST
+                 '*FOO*
+                 (LENGTH (W STATE)))
+    (DEFCONST *FOO* 109707)
+    ACL2 !>
     ACL2 !>(define-world-length-constant *foo*)
 
     Summary
@@ -54098,16 +54112,16 @@ Subtopics
     Summary
     Form:  ( MAKE-EVENT (LIST ...))
     Rules: NIL
-    Time:  0.00 seconds (prove: 0.00, print: 0.00, other: 0.00)
+    Time:  0.01 seconds (prove: 0.00, print: 0.00, other: 0.01)
      *FOO*
     ACL2 !>*foo*
-    98891
+    109707
     ACL2 !>:pe *foo*
-              2:x(DEFINE-WORLD-LENGTH-CONSTANT *FOO*)
+               2:x(DEFINE-WORLD-LENGTH-CONSTANT *FOO*)
 
-    >             (DEFCONST *FOO* 98891)
+    >              (DEFCONST *FOO* 109707)
     ACL2 !>(length (w state))
-    98897
+    109713
     ACL2 !>(define-world-length-constant *bar*)
 
     Summary
@@ -54121,67 +54135,70 @@ Subtopics
     Time:  0.01 seconds (prove: 0.00, print: 0.00, other: 0.01)
      *BAR*
     ACL2 !>*bar*
-    98897
+    109713
     ACL2 !>:pe *bar*
-              3:x(DEFINE-WORLD-LENGTH-CONSTANT *BAR*)
+               3:x(DEFINE-WORLD-LENGTH-CONSTANT *BAR*)
 
-    >             (DEFCONST *BAR* 98897)
+    >              (DEFCONST *BAR* 109713)
     ACL2 !>(length (w state))
-    98903
+    109719
     ACL2 !>
 
-  Finally, we note that the expansion phase can be used for computation
-  that has side effects, generally by modifying state.  Here is a
-  modification of the above example that does not change the world at
-  all, but instead saves the length of the world in a state global.
+  The expansion phase can be used for computation that has side
+  effects, generally by modifying state.  Here is a modification of
+  the above example that does not change the ACL2 world at all, but
+  instead saves the length of the world into a state global variable.
 
     (make-event
-     (pprogn (f-put-global 'my-world-length (length (w state)) state)
-             (value '(value-triple nil))))
+     (er-progn (assign my-world-length (length (w state)))
+               (value '(value-triple nil))))
 
   Notice that this time, the value returned by the expansion phase is
-  not an event form, but rather, is an [error-triple] whose value
+  not a single value; rather, it is an [error-triple] whose value
   component is an event form, namely, the event form (value-triple
   nil).  Evaluation of that event form does not change the ACL2 world
   (see [value-triple]).  Thus, the sole purpose of the make-event
   call above is to change the [state] by associating the length of
-  the current logical world with the state global named
-  'my-world-length.  After evaluating this form, (@ my-world-length)
-  provides the length of the ACL2 world, as illustrated by the
-  following transcript.
+  the current logical world with the state global, my-world-length.
+  After evaluating this form, (@ my-world-length) provides the length
+  of the ACL2 world, as illustrated by the following transcript.
 
     ACL2 !>:pbt 0
-              0:x(EXIT-BOOT-STRAP-MODE)
+               0:x(EXIT-BOOT-STRAP-MODE)
     ACL2 !>(length (w state))
-    98883
+    109700
     ACL2 !>(make-event
-            (pprogn (f-put-global 'my-world-length (length (w state)) state)
-                    (value '(value-triple nil))))
+                (er-progn (assign my-world-length (length (w state)))
+                          (value '(value-triple nil))))
 
     Summary
-    Form:  ( MAKE-EVENT (PPROGN ...))
+    Form:  ( MAKE-EVENT (ER-PROGN ...))
     Rules: NIL
     Time:  0.01 seconds (prove: 0.00, print: 0.00, other: 0.01)
      NIL
     ACL2 !>(length (w state))
-    98883
+    109700
     ACL2 !>:pbt 0
-              0:x(EXIT-BOOT-STRAP-MODE)
+               0:x(EXIT-BOOT-STRAP-MODE)
     ACL2 !>
 
   When make-event is invoked by a book, it is expanded during book
-  certification but not, by default, when the book is included.  So
-  for the example (define-world-length-constant *foo*) given above,
-  if that form is in a book, then the value of *foo* will be the
-  length of the world at the time this form was invoked during book
-  certification, regardless of world length at [include-book] time.
-  (The expansion is recorded in the book's [certificate], and
-  re-used.)  To overcome this default, you can specify keyword value
-  :CHECK-EXPANSION t.  This will cause an error if the expansion is
-  different, but it can be useful for side effects.  For example, if
-  you insert the following form in a book, then the length of the
-  world will be printed when the form is encountered, whether during
-  [certify-book] or during [include-book].
+  certification but not, by default, when the book is included.
+  Consider again the example (define-world-length-constant *foo*)
+  given above.  If that form is in a book, then the value of *foo*
+  will be the length of the world at the time this form was invoked
+  during book certification, regardless of world length at
+  [include-book] time.  That is because the expansion, (DEFCONST
+  *FOO* 109700), is recorded in the book's [certificate] and re-used
+  during a subsequent [include-book].
+
+  However, the keyword :check-expansion may be given the value t so
+  that the expansion is done even during include-book, which comes
+  with a check that the result is the same as it was during book
+  certification.  This keyword can be useful for side effects.  For
+  example, if you insert the following form in a book, then the
+  length of the world will be printed when the form is encountered,
+  whether during [certify-book] or during [include-book].
 
     (make-event
      (pprogn (fms \"Length of current world: ~x0~|\"
@@ -54959,6 +54976,9 @@ Expansion errors and the :ON-BEHALF-OF keyword
   comprehensive, some may find this example to be a good starting
   point, to get a sense of how to develop tools that take advantage
   of make-event.  We thank Yan Peng for putting forward this problem.
+
+  (Note: A rather complex example of the use of make-event may be found
+  in the [community-book], books/make-event/search-generation.lisp.)
 
   We begin by discussing prerequisites for this presentation.  Next, we
   present the challenge problem, followed by code that solves the
