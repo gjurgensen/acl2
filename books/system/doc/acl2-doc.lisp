@@ -16066,7 +16066,10 @@ subtree of X with T, without duplication.</p>
 (defxdoc cw
   :parents (io acl2-built-ins)
   :short "Print to the comment window"
-  :long "<p>Example:</p>
+  :long "<p>@('Cw') is a macro that expands to a function whose guard is
+ @('t').  For a guarded variant of @('cw'), see @(see fmx-cw).</p>
+
+ <p>Example:</p>
 
  @({
   (cw \"The goal is ~p0 and the alist is ~x1.~%\"
@@ -29540,7 +29543,8 @@ current fast alists."
  write forms to files in a manner that allows them to be read, by avoiding
  using backslash (@('\\')) to break long lines.  There are also analogues of
  these functions that return a string without taking @(tsee state) as an
- argument; see @(see printing-to-strings).</p>
+ argument; see @(see printing-to-strings).  A convenient macro, @('fmx'), is
+ described below; also see @(see cw) and see @(see fmx-cw).</p>
 
  <p>All three print a given string under an alist pairing character objects
  with values, interpreting certain ``tilde-directives'' in the string.
@@ -29684,17 +29688,18 @@ current fast alists."
  format variables.</p>
 
  <p>The following text contains examples that can be evaluated.  To make this
- process easier, we use a macro which is defined as part of ACL2 just for this
- @(see documentation).  The macro is named @('fmx') and it takes up to eleven
- arguments, the first of which is a format string, @('str'), and the others of
- which are taken as the values of format variables.  The variables used are
- @('#\\0') through @('#\\9').  The macro constructs an appropriate alist,
- @('a'), and then evaluates @('(fmt str a *standard-co* state nil)').</p>
+ process easier, we use a macro, @('fmx').  It takes up to eleven arguments,
+ the first of which is a format string, @('str'), and the others of which are
+ taken as the values of format variables; for similar utilities that can be
+ called in @(':')@(tsee logic) mode functions, see @(see cw) and @(see fmx-cw).
+ The variables used are @('#\\0') through @('#\\9').  The macro constructs an
+ appropriate alist, @('a'), and then evaluates @('(fmt` str a 0 *standard-co*
+ state nil)').</p>
 
  <p>Thus,</p>
 
  @({
-  (fmx \"Here is v0, ~x0, and here is v1, ~x1.\"
+  (fmx \"~%Here is v0, ~x0, and here is v1, ~x1.\"
        (cons 'value 0)
        (cons 'value 1))
  })
@@ -29702,15 +29707,16 @@ current fast alists."
  <p>is just an abbreviation for</p>
 
  @({
-  (fmt \"Here is v0, ~x0, and here is v1, ~x1.\"
-       (list (cons #\\0 (cons 'value 0))
-             (cons #\\1 (cons 'value 1)))
-       *standard-co*
-       state
-       nil)
+  (fmt1 \"~%Here is v0, ~x0, and here is v1, ~x1.\"
+        (list (cons #\\0 (cons 'value 0))
+              (cons #\\1 (cons 'value 1)))
+        0
+        *standard-co*
+        state
+        nil)
  })
 
- <p>which returns @('(mv 53 state)') after printing the line</p>
+ <p>which returns @('(mv 53 state)') after printing, on a separate line,</p>
 
  @({
      Here is v0, (VALUE . 0), and here is v1, (VALUE . 1).
@@ -29834,7 +29840,7 @@ current fast alists."
  @({
   (let
    ((pair
-    '(\"Error:  The instruction ~x0 is illegal when the stack is ~x1.~%\"
+    '(\"~%Error:  The instruction ~x0 is illegal when the stack is ~x1.~%\"
       (#\\0 POPI 3)
       (#\\1 A B))))
    (fmx \"~@0\" pair)).
@@ -29855,7 +29861,7 @@ current fast alists."
                 ~x1.~%\"
                 (#\\0 POPI 3)
                 (#\\1 A B))))
-   (fmx \"~@0\" pair)).
+   (fmx \"~%~@0\" pair)).
  })
 
  <p>Finally, observe that when @('~@0') extends the current alist, @('alist'),
@@ -30043,6 +30049,48 @@ current fast alists."
  when forced to print past the right margin in order to make the output a bit
  clearer in that case.  Use @('fmt1!') instead if you want to be able to read
  the forms back in.</p>")
+
+(defxdoc fmx
+  :parents (io acl2-built-ins)
+  :short "@('(fmx str &rest args) => state')"
+  :long "<p>See @(see fmt) for further explanation, including documentation of
+ the tilde-directives.</p>")
+
+(defxdoc fmx-cw
+  :parents (io acl2-built-ins)
+  :short "@('(fmx-cw str &rest args) => state')"
+  :long "<p>@('Fmx-cw') is a variant of @('cw'): both take the same arguments
+ and have the same behavior on well-formed input, and both return @('nil').
+ See @(see cw) for documentation on how to use both utilities.  Unlike @('cw'),
+ @('fmx-cw') is well-@(see guard)ed, so it can catch errors in the use of
+ tilde-directives.  Here is an example of such a guard violation.</p>
+
+ @({
+ ACL2 !>(fmx-cw \"Hello ~s0.\" '(world))
+
+
+ ACL2 Error in TOP-LEVEL:  Guard violation for FMX-CW-FN:
+ Illegal Fmt Syntax.  The tilde-s directive at position 6 of the string
+ below is illegal because its variable evaluated to (WORLD), which is
+ not a symbol, a string, or a number.
+
+ \"Hello ~s0.\"
+
+ ACL2 !>
+ })
+
+ <p>Thus, call @('fmx-cw') instead of @('cw') in the body of @(':')@(tsee
+ logic) mode definition when you want its @(see guard) verification to avoid
+ runtime errors from that call.  (While the guard on @('fmx-cw') is likely
+ complete in practice, this is not an ironclad guarantee.  Perhaps, some day,
+ all formatted printing code will be fully guarded and guard-verified.)  Note
+ that if you call @('fmx-cw') in a definition, the guard proof may benefit from
+ the lemma, @('fmx-cw-msg-1-opener'), found in @(see community-book)
+ @('books/system/fmx-cw.lisp').</p>
+
+ <p>The variant @('fmx!-cw') avoids the insertion of backslash (\) characters
+ when forced to print past the right margin.  Thus, use @('fmx!-cw') instead of
+ @('fmx-cw') if you want the output to be machine-readable.</p>")
 
 (defxdoc fn-equal
   :parents (apply$ def-warrant)
@@ -79824,8 +79872,11 @@ it."
 ;   (cw "~n0" '(a b))
 ;   (cw "~s0" '(a b))
 ;   (cw "~_0" '(a b))
-; The error message is better now for this one:
+;   (cw "~X01" 3 4)
+;   (cw "~#0~[~" 3)
+; The error message is better now for each of these:
 ;   (cw "~t0" 'a)
+;   (cw "~X0" 3)
 
 ; Improved the error message for a call of a fmt function (including fms, cw,
 ; fmx, etc.) when for ~Xij, ~Yij, ~Pij, or ~Qij, the character #\j is unbound.
@@ -79968,12 +80019,29 @@ it."
  <p>It is now illegal by default to attach to built-in functions.  To overcome
  this default behavior, see @(see defattach-system).</p>
 
- <p>Functions from the @(tsee fmt) family, including for example @(tsee fms)
- and @(tsee fmt-to-string), now have (incomplete) guards that, in particular,
- imply that the @('alist') argument must satisfy @('character-alistp'), i.e.,
- be an association list whose keys are all characters.  Thanks to Eric Smith
- for pointing out that an expression like @('(fmt-to-string \"~x0\" 3)') could
- cause a raw Lisp error.</p>
+ <p>Improvements have been made to functions in the @(tsee fmt) family,
+ including for example @(tsee fms), @(tsee fmt-to-string), and @(tsee cw).
+ (Also see discussion of @(tsee fmx-cw) under ``New Features,'' below.)</p>
+
+ <ul>
+
+ <li>Many @(see guard)s have been strengthened, for example to imply that the
+ @('alist') argument must satisfy @(tsee character-alistp).  Thanks to Eric
+ Smith for pointing out that an expression like @('(fmt-to-string \"~x0\" 3)')
+ could cause a raw Lisp error (rather than causing a guard violation).</li>
+
+ <li>Eliminated raw Lisp errors from ill-formed calls.  Thanks to Jared Davis
+ for pointing out this problem in 2010 (!) with the example @('(cw \"Bad:
+ ~&0.~%\" 5)'), and for Eric Smith for prodding us much more recently with the
+ example @('(cw \"~&0\" 'x)').</li>
+
+ <li>The utility @(tsee fmx) no longer prints an initial newline.  Of course, a
+ call @('(fmx \"<some-string>\" ...)') can be modified to generate an initial
+ newline (thus providing the former behavior) by adding the newline
+ tilde-directive, @('\"~%\"'), that is, @('(fmx \"~%<some-string>\"
+ ...)').</li>
+
+ </ul>
 
  <p>The previously-undocumented built-in-function, @(tsee packn), now has a
  slightly different behavior.  Formerly, it always returned a symbol in the
@@ -80052,6 +80120,26 @@ it."
  @('\"\"'), there will generally be no output from ACL2 customization.  A
  special value of @('\"all\"') for this variable will cause continued minimal
  output after startup.  See @(see acl2-customization).</p>
+
+ <p>New utilities, @(tsee fmx-cw) and @(tsee fmx!-cw), are essentially the same
+ as @(tsee cw) and @(tsee cw!) (respectively), except that @('fmx-cw') and
+ @('fmx!-cw') are well-@(see guard)ed, which can catch errors in the use of
+ tilde-directives.  Thanks to Eric Smith for requesting such a capability.  For
+ example:</p>
+
+ @({
+ ACL2 !>(fmx-cw \"Hello ~s0.\" '(world))
+
+
+ ACL2 Error in TOP-LEVEL:  Guard violation for FMX-CW-FN:
+ Illegal Fmt Syntax.  The tilde-s directive at position 6 of the string
+ below is illegal because its variable evaluated to (WORLD), which is
+ not a symbol, a string, or a number.
+
+ \"Hello ~s0.\"
+
+ ACL2 !>
+ })
 
  <h3>Heuristic and Efficiency Improvements</h3>
 
@@ -80162,12 +80250,6 @@ it."
 
  <p>Fixed the @(':')@(tsee puff) command to avoid certain errors involving
  @(see local) @(see events).</p>
-
- <p>Eliminated some raw Lisp errors that could occur from ill-formed calls of
- @(tsee cw) and the family of @(tsee fmt) functions.  Thanks to Jared Davis for
- pointing out this problem in 2010 (!) with the example @('(cw \"Bad: ~&0.~%\"
- 5)'), and for Eric Smith for prodding us much more recently with the example
- @('(cw \"~&0\" 'x)').</p>
 
  <p>Redundancy notes could be seen during @(tsee include-book) while loading
  the compiled file for a book.  These notes (along with, perhaps, some other
@@ -121337,6 +121419,7 @@ expand function call at the current subterm, without simplifying"
 (defpointer fmt-to-string printing-to-strings)
 (defpointer fmt1!-to-string printing-to-strings)
 (defpointer fmt1-to-string printing-to-strings)
+(defpointer fmx!-cw fmx-cw)
 (defpointer fn-symb system-utilities)
 (defpointer fncall-term meta-extract)
 (defpointer forced force)

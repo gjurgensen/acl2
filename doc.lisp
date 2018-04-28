@@ -3240,6 +3240,12 @@ Subtopics
   [Fmt1!]
       (fmt1! str alist col channel state evisc) => (mv col state)
 
+  [Fmx]
+      (fmx str &rest args) => state
+
+  [Fmx-cw]
+      (fmx-cw str &rest args) => state
+
   [Formula]
       The formula of a name or [rune]
 
@@ -19066,6 +19072,9 @@ Subtopics
   (IO ACL2-BUILT-INS)
   "Print to the comment window
 
+  Cw is a macro that expands to a function whose guard is t.  For a
+  guarded variant of cw, see [fmx-cw].
+
   Example:
 
     (cw \"The goal is ~p0 and the alist is ~x1.~%\"
@@ -32716,7 +32725,8 @@ Subtopics
   files in a manner that allows them to be read, by avoiding using
   backslash (\\) to break long lines.  There are also analogues of
   these functions that return a string without taking [state] as an
-  argument; see [printing-to-strings].
+  argument; see [printing-to-strings].  A convenient macro, fmx, is
+  described below; also see [cw] and see [fmx-cw].
 
   All three print a given string under an alist pairing character
   objects with values, interpreting certain ``tilde-directives'' in
@@ -32857,30 +32867,31 @@ Subtopics
   item explicitly with our format variables.
 
   The following text contains examples that can be evaluated.  To make
-  this process easier, we use a macro which is defined as part of
-  ACL2 just for this [documentation].  The macro is named fmx and it
-  takes up to eleven arguments, the first of which is a format
-  string, str, and the others of which are taken as the values of
-  format variables.  The variables used are #\\0 through #\\9.  The
-  macro constructs an appropriate alist, a, and then evaluates (fmt
-  str a *standard-co* state nil).
+  this process easier, we use a macro, fmx.  It takes up to eleven
+  arguments, the first of which is a format string, str, and the
+  others of which are taken as the values of format variables; for
+  similar utilities that can be called in :[logic] mode functions,
+  see [cw] and [fmx-cw].  The variables used are #\\0 through #\\9.
+  The macro constructs an appropriate alist, a, and then evaluates
+  (fmt` str a 0 *standard-co* state nil).
 
   Thus,
 
-    (fmx \"Here is v0, ~x0, and here is v1, ~x1.\"
+    (fmx \"~%Here is v0, ~x0, and here is v1, ~x1.\"
          (cons 'value 0)
          (cons 'value 1))
 
   is just an abbreviation for
 
-    (fmt \"Here is v0, ~x0, and here is v1, ~x1.\"
-         (list (cons #\\0 (cons 'value 0))
-               (cons #\\1 (cons 'value 1)))
-         *standard-co*
-         state
-         nil)
+    (fmt1 \"~%Here is v0, ~x0, and here is v1, ~x1.\"
+          (list (cons #\\0 (cons 'value 0))
+                (cons #\\1 (cons 'value 1)))
+          0
+          *standard-co*
+          state
+          nil)
 
-  which returns (mv 53 state) after printing the line
+  which returns (mv 53 state) after printing, on a separate line,
 
     Here is v0, (VALUE . 0), and here is v1, (VALUE . 1).
 
@@ -32983,7 +32994,7 @@ Subtopics
 
     (let
      ((pair
-      '(\"Error:  The instruction ~x0 is illegal when the stack is ~x1.~%\"
+      '(\"~%Error:  The instruction ~x0 is illegal when the stack is ~x1.~%\"
         (#\\0 POPI 3)
         (#\\1 A B))))
      (fmx \"~@0\" pair)).
@@ -33003,7 +33014,7 @@ Subtopics
                   ~x1.~%\"
                   (#\\0 POPI 3)
                   (#\\1 A B))))
-     (fmx \"~@0\" pair)).
+     (fmx \"~%~@0\" pair)).
 
   Finally, observe that when ~@0 extends the current alist, alist, with
   the one, a, in its argument, the bindings from a are added to the
@@ -33186,6 +33197,47 @@ Subtopics
                   "See [printing-to-strings].")
  (FMT1-TO-STRING (POINTERS)
                  "See [printing-to-strings].")
+ (FMX
+  (IO ACL2-BUILT-INS)
+  "(fmx str &rest args) => state
+
+  See [fmt] for further explanation, including documentation of the
+  tilde-directives.")
+ (FMX!-CW (POINTERS) "See [fmx-cw].")
+ (FMX-CW
+  (IO ACL2-BUILT-INS)
+  "(fmx-cw str &rest args) => state
+
+  Fmx-cw is a variant of cw: both take the same arguments and have the
+  same behavior on well-formed input, and both return nil.  See [cw]
+  for documentation on how to use both utilities.  Unlike cw, fmx-cw
+  is well-[guard]ed, so it can catch errors in the use of
+  tilde-directives.  Here is an example of such a guard violation.
+
+    ACL2 !>(fmx-cw \"Hello ~s0.\" '(world))
+
+
+    ACL2 Error in TOP-LEVEL:  Guard violation for FMX-CW-FN:
+    Illegal Fmt Syntax.  The tilde-s directive at position 6 of the string
+    below is illegal because its variable evaluated to (WORLD), which is
+    not a symbol, a string, or a number.
+
+    \"Hello ~s0.\"
+
+    ACL2 !>
+
+  Thus, call fmx-cw instead of cw in the body of :[logic] mode
+  definition when you want its [guard] verification to avoid runtime
+  errors from that call.  (While the guard on fmx-cw is likely
+  complete in practice, this is not an ironclad guarantee.  Perhaps,
+  some day, all formatted printing code will be fully guarded and
+  guard-verified.)  Note that if you call fmx-cw in a definition, the
+  guard proof may benefit from the lemma, fmx-cw-msg-1-opener, found
+  in [community-book] books/system/fmx-cw.lisp.
+
+  The variant fmx!-cw avoids the insertion of backslash () characters
+  when forced to print past the right margin.  Thus, use fmx!-cw
+  instead of fmx-cw if you want the output to be machine-readable.")
  (FN-EQUAL
   (APPLY$ DEF-WARRANT)
   "Equivalence relation on tame functions
@@ -48764,6 +48816,12 @@ Subtopics
 
   [Fmt1!]
       (fmt1! str alist col channel state evisc) => (mv col state)
+
+  [Fmx]
+      (fmx str &rest args) => state
+
+  [Fmx-cw]
+      (fmx-cw str &rest args) => state
 
   [Msg]
       Construct a ``message'' suitable for the ~@ directive of [fmt]
@@ -78473,12 +78531,24 @@ Changes to Existing Features
   It is now illegal by default to attach to built-in functions.  To
   overcome this default behavior, see [defattach-system].
 
-  Functions from the [fmt] family, including for example [fms] and
-  [fmt-to-string], now have (incomplete) guards that, in particular,
-  imply that the alist argument must satisfy character-alistp, i.e.,
-  be an association list whose keys are all characters.  Thanks to
-  Eric Smith for pointing out that an expression like (fmt-to-string
-  \"~x0\" 3) could cause a raw Lisp error.
+  Improvements have been made to functions in the [fmt] family,
+  including for example [fms], [fmt-to-string], and [cw].  (Also see
+  discussion of [fmx-cw] under ``New Features,'' below.)
+
+    * Many [guard]s have been strengthened, for example to imply that the
+      alist argument must satisfy [character-alistp].  Thanks to Eric
+      Smith for pointing out that an expression like (fmt-to-string
+      \"~x0\" 3) could cause a raw Lisp error (rather than causing a
+      guard violation).
+    * Eliminated raw Lisp errors from ill-formed calls.  Thanks to Jared
+      Davis for pointing out this problem in 2010 (!) with the
+      example (cw \"Bad: ~&0.~%\" 5), and for Eric Smith for prodding
+      us much more recently with the example (cw \"~&0\" 'x).
+    * The utility [fmx] no longer prints an initial newline.  Of course, a
+      call (fmx \"<some-string>\" ...) can be modified to generate an
+      initial newline (thus providing the former behavior) by adding
+      the newline tilde-directive, \"~%\", that is, (fmx
+      \"~%<some-string>\" ...).
 
   The previously-undocumented built-in-function, [packn], now has a
   slightly different behavior.  Formerly, it always returned a symbol
@@ -78554,6 +78624,24 @@ New Features
   \"\", there will generally be no output from ACL2 customization.  A
   special value of \"all\" for this variable will cause continued
   minimal output after startup.  See [ACL2-customization].
+
+  New utilities, [fmx-cw] and [fmx!-cw], are essentially the same as
+  [cw] and [cw!] (respectively), except that fmx-cw and fmx!-cw are
+  well-[guard]ed, which can catch errors in the use of
+  tilde-directives.  Thanks to Eric Smith for requesting such a
+  capability.  For example:
+
+    ACL2 !>(fmx-cw \"Hello ~s0.\" '(world))
+
+
+    ACL2 Error in TOP-LEVEL:  Guard violation for FMX-CW-FN:
+    Illegal Fmt Syntax.  The tilde-s directive at position 6 of the string
+    below is illegal because its variable evaluated to (WORLD), which is
+    not a symbol, a string, or a number.
+
+    \"Hello ~s0.\"
+
+    ACL2 !>
 
 
 Heuristic and Efficiency Improvements
@@ -78664,12 +78752,6 @@ Bug Fixes
 
   Fixed the :[puff] command to avoid certain errors involving [local]
   [events].
-
-  Eliminated some raw Lisp errors that could occur from ill-formed
-  calls of [cw] and the family of [fmt] functions.  Thanks to Jared
-  Davis for pointing out this problem in 2010 (!) with the example
-  (cw \"Bad: ~&0.~%\" 5), and for Eric Smith for prodding us much more
-  recently with the example (cw \"~&0\" 'x).
 
   Redundancy notes could be seen during [include-book] while loading
   the compiled file for a book.  These notes (along with, perhaps,
@@ -83036,6 +83118,9 @@ Subtopics
 
   [Fmt1-to-string]
       See [printing-to-strings].
+
+  [Fmx!-cw]
+      See [fmx-cw].
 
   [Fn-symb]
       See [system-utilities].
