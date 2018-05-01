@@ -39222,6 +39222,8 @@ Subtopics
       View the guard proof obligation, without proving it")
  (GUARD-HINTS (POINTERS)
               "See [xargs] for information about the keyword :guard-hints.")
+ (GUARD-HOLDER (POINTERS)
+               "See [guard-holders].")
  (GUARD-HOLDERS
   (RULE-CLASSES TERM GUARD)
   "Remove trivial calls from a [term]
@@ -83195,6 +83197,9 @@ Subtopics
 
   [Guard-hints]
       See [xargs] for information about the keyword :guard-hints.
+
+  [Guard-holder]
+      See [guard-holders].
 
   [Guard-msg-table]
       See [set-guard-msg].

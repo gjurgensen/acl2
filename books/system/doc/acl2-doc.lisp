@@ -121466,6 +121466,7 @@ expand function call at the current subterm, without simplifying"
 (defpointer guard-checking set-guard-checking)
 (defpointer guard-hints xargs t)
 (defpointer guard-msg-table set-guard-msg)
+(defpointer guard-holder guard-holders)
 (defpointer hands-off hints t)
 (defpointer if-intro splitter)
 (defpointer ignorable declare)
