@@ -3240,6 +3240,12 @@ Subtopics
   [Fmt1!]
       (fmt1! str alist col channel state evisc) => (mv col state)
 
+  [Fmx]
+      (fmx str &rest args) => state
+
+  [Fmx-cw]
+      (fmx-cw str &rest args) => state
+
   [Formula]
       The formula of a name or [rune]
 
@@ -3562,7 +3568,7 @@ Subtopics
       Construct a ``message'' suitable for the ~@ directive of [fmt]
 
   [Msgp]
-      Weak recognizer for a ``message''
+      Recognizer for a ``message''
 
   [Must-be-equal]
       Attach code for execution
@@ -4194,9 +4200,31 @@ Subtopics
   On the other hand, if you wish to prevent undoing commands from the
   customization file, see [reset-prehistory].
 
-  Finally, we note that except on Windows-based systems, if there is a
-  file acl2-init.lsp in your home directory, then it will be loaded
-  into raw Lisp when ACL2 is invoked.")
+  Note that except on Windows-based systems, if there is a file
+  acl2-init.lsp in your home directory, then it will be loaded into
+  raw Lisp when ACL2 is invoked.
+
+
+Silent loading of ACL2 customization files
+
+  When the environment variable ACL2_CUSTOMIZATION_QUIET is set and not
+  \"\", there will generally be no output from ACL2 customization.  A
+  special value of \"all\" for this variable will cause continued
+  minimal output after startup, as explained in the following remark.
+
+  Technical Remark.  For quiet loading of acl2-customization files,
+  [ld] specials are bound to the following values.
+
+    ld-verbose = nil
+    ld-pre-eval-print = :never
+    ld-post-eval-print = nil
+    ld-prompt = nil
+
+  These ld specials are returned to their normal values after loading
+  an ACL2 customization file, with one exception: if
+  ACL2_CUSTOMIZATION_QUIET has value \"ALL\" (or \"all\"; the case is
+  irrelevant), then those values are retained in the ACL2 loop even
+  after customization completes.")
  (ACL2-DEFAULTS-TABLE
   (TABLE)
   "A [table] specifying certain defaults, e.g., the default [defun-mode]
@@ -13943,38 +13971,59 @@ Subtopics
   The macro [ld] was designed to be called directly in the top-level
   ACL2 loop, although there may be a few occasions for calling it
   from functions.  ACL2 cannot cope with invocations of [ld] during
-  the process of loading a compiled file for a book, so this is an
+  the process of loading a compiled file for a book, so that is an
   error.
 
-  To see how that can happen, consider the following book, where file
-  const.lsp contains the single form (defconst *foo* '(a b)).
+  Specifically: ACL2 will cause an error in the following two
+  circumstances:
+
+    * when calling [ld] inside [progn!] unless state global ld-okp is first
+      set to t, e.g., using (assign ld-okp t); also,
+    * when calling ld while inside raw Lisp, e.g., when loading a compiled
+      file during an invocation of [include-book].
+
+  Consider for example the following book, where file const.lsp
+  contains the single form (defconst *foo* '(a b)) after its initial
+  [in-package] form.
 
     (in-package \"ACL2\")
     (defttag t)
     (progn! (ld \"const.lsp\"))
 
-  An attempt to certify this book will cause an error, but that
-  particular error can be avoided, as discussed below.  If the book
-  is certified, however, with production of a corresponding compiled
-  file (which is the default behavior for [certify-book]), then any
-  subsequent call of [include-book] that loads this compiled file
-  will cause an error.  Again, this error is necessary because of how
-  ACL2 is designed; specifically, this [ld] call would interfere with
-  tracking of constant definitions when loading the compiled file for
-  the book.
+  An attempt to certify this book as follows
 
-  Because including such a book (with a compiled file) causes an error,
-  then as a courtesy to the user, ACL2 arranges that the
-  certification will fail (thus avoiding a surprise later when trying
-  to include the book).  The error in that case will look as follows.
+    (certify-book \"const-wrapper\" 0 t :ttags :all)
 
-    ACL2 Error in LD:  It is illegal to call LD in this context.  See DOC
+  will cause an error:
+
+    ACL2 Error in LD:  It is illegal to call LD in this context.  See :DOC
     calling-ld-in-bad-contexts.
 
-  If you really think it is OK to avoid this error, you can get around
-  it by setting [state] global variable ld-okp to t: (assign ld-okp
-  t).  You can then certify the book in the example above, but you
-  will still not be able to include it with a compiled file.")
+  However, that error can be avoided by expanding the [progn!] call as
+  follows.
+
+    (progn! (assign ld-okp t)
+            (ld \"const.lsp\"))
+
+  Now certification succeeds; however, any subsequent call of
+  [include-book] will fail to load the compiled file for the book.
+  Again, that is necessary because of how ACL2 is designed; in this
+  case, the [ld] call would interfere with tracking of constant
+  definitions when loading the compiled file for the book.  To avoid
+  warnings about loading compiled files, either certify the book
+  without creating a compiled file or else include the book without
+  loading the compiled file; see [certify-book] and [include-book].
+
+  Note that it is legal to put a definition such as the following into
+  a book, where ld is called in the body of a function; the two
+  conditions above do not prohibit this.
+
+    (defun foo (state)
+      (declare (xargs :guard t :stobjs state :mode :program))
+      (ld '((defun h (x) x)) :ld-user-stobjs-modified-warning t))
+
+  One can then include the book, evaluate (foo state), and then
+  evaluate calls of h.")
  (CANONICAL-PATHNAME
   (PROGRAMMING-WITH-STATE ACL2-BUILT-INS)
   "The true absolute filename, with soft links resolved
@@ -19023,6 +19072,9 @@ Subtopics
   (IO ACL2-BUILT-INS)
   "Print to the comment window
 
+  Cw is a macro that expands to a function whose guard is t.  For a
+  guarded variant of cw, see [fmx-cw].
+
   Example:
 
     (cw \"The goal is ~p0 and the alist is ~x1.~%\"
@@ -23736,7 +23788,8 @@ Subtopics
   below in calls, which also indicate the arities of the functions.
   In the expressions, we use x as the object to be recognized by
   field recognizers, i as an array index, v as the ``new value'' to
-  be installed by an updater, and name as the single-threaded object.
+  be installed by an updater, k as the ``new size'' to be set by a
+  resizer, and name as the single-threaded object.
 
                      non-array field        array field
     recognizer         (cP x)                (cP x)
@@ -32672,7 +32725,8 @@ Subtopics
   files in a manner that allows them to be read, by avoiding using
   backslash (\\) to break long lines.  There are also analogues of
   these functions that return a string without taking [state] as an
-  argument; see [printing-to-strings].
+  argument; see [printing-to-strings].  A convenient macro, fmx, is
+  described below; also see [cw] and see [fmx-cw].
 
   All three print a given string under an alist pairing character
   objects with values, interpreting certain ``tilde-directives'' in
@@ -32813,30 +32867,31 @@ Subtopics
   item explicitly with our format variables.
 
   The following text contains examples that can be evaluated.  To make
-  this process easier, we use a macro which is defined as part of
-  ACL2 just for this [documentation].  The macro is named fmx and it
-  takes up to eleven arguments, the first of which is a format
-  string, str, and the others of which are taken as the values of
-  format variables.  The variables used are #\\0 through #\\9.  The
-  macro constructs an appropriate alist, a, and then evaluates (fmt
-  str a *standard-co* state nil).
+  this process easier, we use a macro, fmx.  It takes up to eleven
+  arguments, the first of which is a format string, str, and the
+  others of which are taken as the values of format variables; for
+  similar utilities that can be called in :[logic] mode functions,
+  see [cw] and [fmx-cw].  The variables used are #\\0 through #\\9.
+  The macro constructs an appropriate alist, a, and then evaluates
+  (fmt` str a 0 *standard-co* state nil).
 
   Thus,
 
-    (fmx \"Here is v0, ~x0, and here is v1, ~x1.\"
+    (fmx \"~%Here is v0, ~x0, and here is v1, ~x1.\"
          (cons 'value 0)
          (cons 'value 1))
 
   is just an abbreviation for
 
-    (fmt \"Here is v0, ~x0, and here is v1, ~x1.\"
-         (list (cons #\\0 (cons 'value 0))
-               (cons #\\1 (cons 'value 1)))
-         *standard-co*
-         state
-         nil)
+    (fmt1 \"~%Here is v0, ~x0, and here is v1, ~x1.\"
+          (list (cons #\\0 (cons 'value 0))
+                (cons #\\1 (cons 'value 1)))
+          0
+          *standard-co*
+          state
+          nil)
 
-  which returns (mv 53 state) after printing the line
+  which returns (mv 53 state) after printing, on a separate line,
 
     Here is v0, (VALUE . 0), and here is v1, (VALUE . 1).
 
@@ -32939,7 +32994,7 @@ Subtopics
 
     (let
      ((pair
-      '(\"Error:  The instruction ~x0 is illegal when the stack is ~x1.~%\"
+      '(\"~%Error:  The instruction ~x0 is illegal when the stack is ~x1.~%\"
         (#\\0 POPI 3)
         (#\\1 A B))))
      (fmx \"~@0\" pair)).
@@ -32959,7 +33014,7 @@ Subtopics
                   ~x1.~%\"
                   (#\\0 POPI 3)
                   (#\\1 A B))))
-     (fmx \"~@0\" pair)).
+     (fmx \"~%~@0\" pair)).
 
   Finally, observe that when ~@0 extends the current alist, alist, with
   the one, a, in its argument, the bindings from a are added to the
@@ -33142,6 +33197,47 @@ Subtopics
                   "See [printing-to-strings].")
  (FMT1-TO-STRING (POINTERS)
                  "See [printing-to-strings].")
+ (FMX
+  (IO ACL2-BUILT-INS)
+  "(fmx str &rest args) => state
+
+  See [fmt] for further explanation, including documentation of the
+  tilde-directives.")
+ (FMX!-CW (POINTERS) "See [fmx-cw].")
+ (FMX-CW
+  (IO ACL2-BUILT-INS)
+  "(fmx-cw str &rest args) => state
+
+  Fmx-cw is a variant of cw: both take the same arguments and have the
+  same behavior on well-formed input, and both return nil.  See [cw]
+  for documentation on how to use both utilities.  Unlike cw, fmx-cw
+  is well-[guard]ed, so it can catch errors in the use of
+  tilde-directives.  Here is an example of such a guard violation.
+
+    ACL2 !>(fmx-cw \"Hello ~s0.\" '(world))
+
+
+    ACL2 Error in TOP-LEVEL:  Guard violation for FMX-CW-FN:
+    Illegal Fmt Syntax.  The tilde-s directive at position 6 of the string
+    below is illegal because its variable evaluated to (WORLD), which is
+    not a symbol, a string, or a number.
+
+    \"Hello ~s0.\"
+
+    ACL2 !>
+
+  Thus, call fmx-cw instead of cw in the body of :[logic] mode
+  definition when you want its [guard] verification to avoid runtime
+  errors from that call.  (While the guard on fmx-cw is likely
+  complete in practice, this is not an ironclad guarantee.  Perhaps,
+  some day, all formatted printing code will be fully guarded and
+  guard-verified.)  Note that if you call fmx-cw in a definition, the
+  guard proof may benefit from the lemma, fmx-cw-msg-1-opener, found
+  in [community-book] books/system/fmx-cw.lisp.
+
+  The variant fmx!-cw avoids the insertion of backslash () characters
+  when forced to print past the right margin.  Thus, use fmx!-cw
+  instead of fmx-cw if you want the output to be machine-readable.")
  (FN-EQUAL
   (APPLY$ DEF-WARRANT)
   "Equivalence relation on tame functions
@@ -37658,6 +37754,8 @@ Subtopics
 
   [With-guard-checking-event]
       Suppress or enable guard-checking for an event form")
+ (GUARD-CHECKING (POINTERS)
+                 "See [set-guard-checking].")
  (GUARD-CHECKING-INHIBITED
   (EVALUATION GUARD)
   "Evaluating ACL2 expressions
@@ -39124,6 +39222,8 @@ Subtopics
       View the guard proof obligation, without proving it")
  (GUARD-HINTS (POINTERS)
               "See [xargs] for information about the keyword :guard-hints.")
+ (GUARD-HOLDER (POINTERS)
+               "See [guard-holders].")
  (GUARD-HOLDERS
   (RULE-CLASSES TERM GUARD)
   "Remove trivial calls from a [term]
@@ -48719,11 +48819,17 @@ Subtopics
   [Fmt1!]
       (fmt1! str alist col channel state evisc) => (mv col state)
 
+  [Fmx]
+      (fmx str &rest args) => state
+
+  [Fmx-cw]
+      (fmx-cw str &rest args) => state
+
   [Msg]
       Construct a ``message'' suitable for the ~@ directive of [fmt]
 
   [Msgp]
-      Weak recognizer for a ``message''
+      Recognizer for a ``message''
 
   [Observation]
       Print an observation
@@ -49153,7 +49259,7 @@ Subtopics
     (LD standard-oi                  ; open obj in channel, stringp file name
                                      ; to open and close, or list of forms
                                      ; Optional keyword arguments:
-        :dir                ...      ; use this add-include-book-dir directory
+        :dir                ...      ; directory spec if standard-oi is a string
         :standard-co        ...      ; open char out or file to open and close
         :proofs-co          ...      ; open char out or file to open and close
         :current-package    ...      ; known package name
@@ -49250,16 +49356,19 @@ Subtopics
   file, only one channel to that file is opened and is used for both.
 
   As a special convenience, when [standard-oi] is a string and the :dir
-  argument provided and not nil, we look up :dir in the table of
+  argument is provided and not nil, we look up :dir in the table of
   directories maintained by [add-include-book-dir], and prepend this
-  directory to [standard-oi] to create the filename.  (In this case,
-  however, we require that standard-oi is a relative pathname, not an
-  absolute pathname.)  For example, one can write (ld
+  directory to [standard-oi] to create the filename.  Note that
+  standard-oi must be a string that is a relative pathname, not an
+  absolute pathname.  For example, one can write (ld
   \"arithmetic/top-with-meta.lisp\" :dir :system) to ld that particular
-  community books library.  (Of course, you should almost always load
-  books like arithmetic/top-with-meta using [include-book] instead of
-  ld.)  If :dir is not specified, then a relative pathname is
-  resolved using the connected book directory; see [cbd].
+  [community-books] library.  (Of course, for certified [books] you
+  should almost always use [include-book] instead of ld.)  If :dir is
+  not specified, then a relative pathname is resolved using the
+  connected book directory; see [cbd].  If you want to load a list of
+  forms, then consider prepending a call of [set-cbd] to that list
+  rather than using :dir, which is not supported when standard-oi is
+  a list.
 
   Several other alternatives are allowed for [standard-oi].  If
   [standard-oi] is a true list then it is taken as the list of forms
@@ -53893,23 +54002,27 @@ Subtopics
   capability not offered by Lisp macros (see [defmacro]), as it
   allows access to the ACL2 [state] and logical [world].  In essence,
   the expression (make-event form) replaces itself with the result of
-  evaluating form, say, ev, as though one had submitted ev instead of
-  the make-event call.  For example, (make-event (quote (defun f (x)
-  x))) is equivalent to the event (defun f (x) x).
+  evaluating form --- let's call that result ev --- as though one had
+  submitted ev instead of the make-event call.  For example,
+  (make-event (quote (defun f (x) x))) is equivalent to the event
+  (defun f (x) x).
+
+  We assume basic familiarity with the ACL2 state.  For relevant
+  background, see [state] and perhaps see [programming-with-state].
 
   There are several simple examples below.  See [make-event-example]
   for development of a more complex example.
 
   We break this documentation into the following sections.
 
-  Introduction
-  Detailed Documentation
-  Error Reporting
-  Restriction to Event Contexts
-  Examples Illustrating How to Access State
-  Advanced Expansion Control
+    * Introduction
+    * Detailed Documentation
+    * Error Reporting
+    * Restriction to Event Contexts
+    * Examples Illustrating How to Access State
+    * Advanced Expansion Control
 
-  We begin with an informal introduction, which focuses on examples and
+  We begin with an introduction, which focuses on examples and
   introduces the key notion of ``expansion phase''.
 
   Introduction
@@ -53967,11 +54080,11 @@ Subtopics
     (defmacro define-world-length-constant (name state)
       (list 'defconst name (length (w state))))
 
-  But ACL2 rejects such a definition, because a macro cannot take the
-  ACL2 state as a parameter; instead, the formal parameter to this
-  macro named \"STATE\" merely represents an ordinary object.  You can
-  try to experiment with other such direct methods to define such a
-  macro, but they won't work.
+  But ACL2 rejects such a definition, because the formal parameter
+  \"STATE\" is bound to the syntactic object in the macro call, not to
+  the actual ACL2 [state]; see [defmacro].  You can try to experiment
+  with other such direct methods to define a macro that accesses the
+  ACL2 state, but they won't work.
 
   Instead, however, you can use the approach illustrated by the
   make-event example above to define the desired macro, as follows.
@@ -53979,8 +54092,18 @@ Subtopics
     (defmacro define-world-length-constant (name)
       `(make-event (list 'defconst ',name (length (w state)))))
 
-  Here are example uses of this macro.
+  Here is a log that may help to explain this macro, assuming it has
+  been defined as displayed just above.
 
+    ACL2 !>:trans1 (define-world-length-constant *foo*)
+     (MAKE-EVENT (LIST 'DEFCONST
+                       '*FOO*
+                       (LENGTH (W STATE))))
+    ACL2 !>(LIST 'DEFCONST
+                 '*FOO*
+                 (LENGTH (W STATE)))
+    (DEFCONST *FOO* 109707)
+    ACL2 !>
     ACL2 !>(define-world-length-constant *foo*)
 
     Summary
@@ -53991,16 +54114,16 @@ Subtopics
     Summary
     Form:  ( MAKE-EVENT (LIST ...))
     Rules: NIL
-    Time:  0.00 seconds (prove: 0.00, print: 0.00, other: 0.00)
+    Time:  0.01 seconds (prove: 0.00, print: 0.00, other: 0.01)
      *FOO*
     ACL2 !>*foo*
-    98891
+    109707
     ACL2 !>:pe *foo*
-              2:x(DEFINE-WORLD-LENGTH-CONSTANT *FOO*)
+               2:x(DEFINE-WORLD-LENGTH-CONSTANT *FOO*)
 
-    >             (DEFCONST *FOO* 98891)
+    >              (DEFCONST *FOO* 109707)
     ACL2 !>(length (w state))
-    98897
+    109713
     ACL2 !>(define-world-length-constant *bar*)
 
     Summary
@@ -54014,67 +54137,70 @@ Subtopics
     Time:  0.01 seconds (prove: 0.00, print: 0.00, other: 0.01)
      *BAR*
     ACL2 !>*bar*
-    98897
+    109713
     ACL2 !>:pe *bar*
-              3:x(DEFINE-WORLD-LENGTH-CONSTANT *BAR*)
+               3:x(DEFINE-WORLD-LENGTH-CONSTANT *BAR*)
 
-    >             (DEFCONST *BAR* 98897)
+    >              (DEFCONST *BAR* 109713)
     ACL2 !>(length (w state))
-    98903
+    109719
     ACL2 !>
 
-  Finally, we note that the expansion phase can be used for computation
-  that has side effects, generally by modifying state.  Here is a
-  modification of the above example that does not change the world at
-  all, but instead saves the length of the world in a state global.
+  The expansion phase can be used for computation that has side
+  effects, generally by modifying state.  Here is a modification of
+  the above example that does not change the ACL2 world at all, but
+  instead saves the length of the world into a state global variable.
 
     (make-event
-     (pprogn (f-put-global 'my-world-length (length (w state)) state)
-             (value '(value-triple nil))))
+     (er-progn (assign my-world-length (length (w state)))
+               (value '(value-triple nil))))
 
   Notice that this time, the value returned by the expansion phase is
-  not an event form, but rather, is an [error-triple] whose value
+  not a single value; rather, it is an [error-triple] whose value
   component is an event form, namely, the event form (value-triple
   nil).  Evaluation of that event form does not change the ACL2 world
   (see [value-triple]).  Thus, the sole purpose of the make-event
   call above is to change the [state] by associating the length of
-  the current logical world with the state global named
-  'my-world-length.  After evaluating this form, (@ my-world-length)
-  provides the length of the ACL2 world, as illustrated by the
-  following transcript.
+  the current logical world with the state global, my-world-length.
+  After evaluating this form, (@ my-world-length) provides the length
+  of the ACL2 world, as illustrated by the following transcript.
 
     ACL2 !>:pbt 0
-              0:x(EXIT-BOOT-STRAP-MODE)
+               0:x(EXIT-BOOT-STRAP-MODE)
     ACL2 !>(length (w state))
-    98883
+    109700
     ACL2 !>(make-event
-            (pprogn (f-put-global 'my-world-length (length (w state)) state)
-                    (value '(value-triple nil))))
+                (er-progn (assign my-world-length (length (w state)))
+                          (value '(value-triple nil))))
 
     Summary
-    Form:  ( MAKE-EVENT (PPROGN ...))
+    Form:  ( MAKE-EVENT (ER-PROGN ...))
     Rules: NIL
     Time:  0.01 seconds (prove: 0.00, print: 0.00, other: 0.01)
      NIL
     ACL2 !>(length (w state))
-    98883
+    109700
     ACL2 !>:pbt 0
-              0:x(EXIT-BOOT-STRAP-MODE)
+               0:x(EXIT-BOOT-STRAP-MODE)
     ACL2 !>
 
   When make-event is invoked by a book, it is expanded during book
-  certification but not, by default, when the book is included.  So
-  for the example (define-world-length-constant *foo*) given above,
-  if that form is in a book, then the value of *foo* will be the
-  length of the world at the time this form was invoked during book
-  certification, regardless of world length at [include-book] time.
-  (The expansion is recorded in the book's [certificate], and
-  re-used.)  To overcome this default, you can specify keyword value
-  :CHECK-EXPANSION t.  This will cause an error if the expansion is
-  different, but it can be useful for side effects.  For example, if
-  you insert the following form in a book, then the length of the
-  world will be printed when the form is encountered, whether during
-  [certify-book] or during [include-book].
+  certification but not, by default, when the book is included.
+  Consider again the example (define-world-length-constant *foo*)
+  given above.  If that form is in a book, then the value of *foo*
+  will be the length of the world at the time this form was invoked
+  during book certification, regardless of world length at
+  [include-book] time.  That is because the expansion, (DEFCONST
+  *FOO* 109700), is recorded in the book's [certificate] and re-used
+  during a subsequent [include-book].
+
+  However, the keyword :check-expansion may be given the value t so
+  that the expansion is done even during include-book, which comes
+  with a check that the result is the same as it was during book
+  certification.  This keyword can be useful for side effects.  For
+  example, if you insert the following form in a book, then the
+  length of the world will be printed when the form is encountered,
+  whether during [certify-book] or during [include-book].
 
     (make-event
      (pprogn (fms \"Length of current world: ~x0~|\"
@@ -54852,6 +54978,9 @@ Expansion errors and the :ON-BEHALF-OF keyword
   comprehensive, some may find this example to be a good starting
   point, to get a sense of how to develop tools that take advantage
   of make-event.  We thank Yan Peng for putting forward this problem.
+
+  (Note: A rather complex example of the use of make-event may be found
+  in the [community-book], books/make-event/search-generation.lisp.)
 
   We begin by discussing prerequisites for this presentation.  Next, we
   present the challenge problem, followed by code that solves the
@@ -57960,22 +58089,21 @@ Subtopics
   bound to the successive elements of (arg1 ... argk).")
  (MSGP
   (IO ACL2-BUILT-INS)
-  "Weak recognizer for a ``message''
+  "Recognizer for a ``message''
 
   The form (msgp x) evaluates to true when x evaluates either to a
-  string or to a nil-terminated list (see [true-listp]) whose first
-  element is a string.  Thus, msgp distinguishes messages --- that
-  is, values suitable as arguments for ~@ directives of [fmt] ---
-  from Booleans and other values that are obviously not messages.
-  Note that msgp should always hold for the output of the macro, msg;
-  see [msg].
+  string or to a cons whose cdr satisfies [character-alistp].  Note
+  that msgp will always hold for the output of the macro, msg; see
+  [msg].
 
   Function: <msgp>
 
     (defun msgp (x)
            (declare (xargs :guard t))
            (or (stringp x)
-               (and (true-listp x) (stringp (car x)))))")
+               (and (consp x)
+                    (stringp (car x))
+                    (character-alistp (cdr x)))))")
  (MUST-BE-EQUAL
   (MBE ACL2-BUILT-INS)
   "Attach code for execution
@@ -78425,12 +78553,24 @@ Changes to Existing Features
   It is now illegal by default to attach to built-in functions.  To
   overcome this default behavior, see [defattach-system].
 
-  Functions from the [fmt] family, including for example [fms] and
-  [fmt-to-string], now have (incomplete) guards that, in particular,
-  imply that the alist argument must satisfy character-alistp, i.e.,
-  be an association list whose keys are all characters.  Thanks to
-  Eric Smith for pointing out that an expression like (fmt-to-string
-  \"~x0\" 3) could cause a raw Lisp error.
+  Improvements have been made to functions in the [fmt] family,
+  including for example [fms], [fmt-to-string], and [cw].  (Also see
+  discussion of [fmx-cw] under ``New Features,'' below.)
+
+    * Many [guard]s have been strengthened, for example to imply that the
+      alist argument must satisfy [character-alistp].  Thanks to Eric
+      Smith for pointing out that an expression like (fmt-to-string
+      \"~x0\" 3) could cause a raw Lisp error (rather than causing a
+      guard violation).
+    * Eliminated raw Lisp errors from ill-formed calls.  Thanks to Jared
+      Davis for pointing out this problem in 2010 (!) with the
+      example (cw \"Bad: ~&0.~%\" 5), and for Eric Smith for prodding
+      us much more recently with the example (cw \"~&0\" 'x).
+    * The utility [fmx] no longer prints an initial newline.  Of course, a
+      call (fmx \"<some-string>\" ...) can be modified to generate an
+      initial newline (thus providing the former behavior) by adding
+      the newline tilde-directive, \"~%\", that is, (fmx
+      \"~%<some-string>\" ...).
 
   The previously-undocumented built-in-function, [packn], now has a
   slightly different behavior.  Formerly, it always returned a symbol
@@ -78446,6 +78586,21 @@ Changes to Existing Features
   though that improvement may usually be trivial.  Perhaps more
   important is that guard verification may now catch bugs in the
   application of lambdas that were missed previously.
+
+  The :dir argument to [ld] was previously ignored when the first
+  argument of the call of ld is not a string.  Now, that is an error.
+  If you get this error, just remove the (previously ignored) :dir
+  argument.
+
+  The function [magic-ev-fncall] sometimes printed a message in the
+  error case in addition to returning that message.  It now only
+  returns that message.  Thanks to Sol Swords for bringing to our
+  attention that certification of a community book,
+  books/projects/x86isa/proofs/popcount/popcount.lisp, was printing a
+  warning about \"Meta-level function Problem\" for thousands of lines.
+
+  The definition of [msgp] has been strengthened to require that for a
+  cons pair, the cdr must satisfy [character-alistp].
 
 
 New Features
@@ -78486,6 +78641,29 @@ New Features
       specifically, source function rewrite-if --- to avoid swapping
       true and false branches of a call of IF, which could formerly
       happen when the test is a call of NOT.
+
+  When the environment variable ACL2_CUSTOMIZATION_QUIET is set and not
+  \"\", there will generally be no output from ACL2 customization.  A
+  special value of \"all\" for this variable will cause continued
+  minimal output after startup.  See [ACL2-customization].
+
+  New utilities, [fmx-cw] and [fmx!-cw], are essentially the same as
+  [cw] and [cw!] (respectively), except that fmx-cw and fmx!-cw are
+  well-[guard]ed, which can catch errors in the use of
+  tilde-directives.  Thanks to Eric Smith for requesting such a
+  capability.  For example:
+
+    ACL2 !>(fmx-cw \"Hello ~s0.\" '(world))
+
+
+    ACL2 Error in TOP-LEVEL:  Guard violation for FMX-CW-FN:
+    Illegal Fmt Syntax.  The tilde-s directive at position 6 of the string
+    below is illegal because its variable evaluated to (WORLD), which is
+    not a symbol, a string, or a number.
+
+    \"Hello ~s0.\"
+
+    ACL2 !>
 
 
 Heuristic and Efficiency Improvements
@@ -78593,6 +78771,14 @@ Bug Fixes
   functions.  For example, the form (apply$-lambda 3 nil) produces a
   guard violation, but before this fix, the error message reported an
   implementation error.
+
+  Fixed the :[puff] command to avoid certain errors involving [local]
+  [events].
+
+  Redundancy notes could be seen during [include-book] while loading
+  the compiled file for a book.  These notes (along with, perhaps,
+  some other output) have been eliminated.  Thanks to Eric Smith for
+  pointing us to this problem with a reproducible example.
 
 
 Changes at the System Level
@@ -82955,6 +83141,9 @@ Subtopics
   [Fmt1-to-string]
       See [printing-to-strings].
 
+  [Fmx!-cw]
+      See [fmx-cw].
+
   [Fn-symb]
       See [system-utilities].
 
@@ -83003,8 +83192,14 @@ Subtopics
   [Getting-started]
       See [acl2-tutorial].
 
+  [Guard-checking]
+      See [set-guard-checking].
+
   [Guard-hints]
       See [xargs] for information about the keyword :guard-hints.
+
+  [Guard-holder]
+      See [guard-holders].
 
   [Guard-msg-table]
       See [set-guard-msg].
