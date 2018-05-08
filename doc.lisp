@@ -78708,6 +78708,10 @@ Heuristic and Efficiency Improvements
   Thanks to Eric Smith for pointing out an incompleteness in the
   rewriting of implies calls.
 
+  The algorithm has been tweaked for generating a [type-prescription]
+  rule to store for a given definition, so that the rule is sometimes
+  stronger than was previously the case.
+
 
 Bug Fixes
 
