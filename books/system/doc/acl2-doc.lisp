@@ -16066,7 +16066,10 @@ subtree of X with T, without duplication.</p>
 (defxdoc cw
   :parents (io acl2-built-ins)
   :short "Print to the comment window"
-  :long "<p>Example:</p>
+  :long "<p>@('Cw') is a macro that expands to a function whose guard is
+ @('t').  For a guarded variant of @('cw'), see @(see fmx-cw).</p>
+
+ <p>Example:</p>
 
  @({
   (cw \"The goal is ~p0 and the alist is ~x1.~%\"
@@ -20951,7 +20954,8 @@ subtree of X with T, without duplication.</p>
  is named @('c'). The default names are shown below in calls, which also
  indicate the arities of the functions.  In the expressions, we use @('x') as
  the object to be recognized by field recognizers, @('i') as an array index,
- @('v') as the ``new value'' to be installed by an updater, and @('name') as
+ @('v') as the ``new value'' to be installed by an updater, @('k') as the ``new
+ size'' to be set by a resizer, and @('name') as
  the single-threaded object.</p>
 
  @({
@@ -29539,7 +29543,8 @@ current fast alists."
  write forms to files in a manner that allows them to be read, by avoiding
  using backslash (@('\\')) to break long lines.  There are also analogues of
  these functions that return a string without taking @(tsee state) as an
- argument; see @(see printing-to-strings).</p>
+ argument; see @(see printing-to-strings).  A convenient macro, @('fmx'), is
+ described below; also see @(see cw) and see @(see fmx-cw).</p>
 
  <p>All three print a given string under an alist pairing character objects
  with values, interpreting certain ``tilde-directives'' in the string.
@@ -29683,17 +29688,18 @@ current fast alists."
  format variables.</p>
 
  <p>The following text contains examples that can be evaluated.  To make this
- process easier, we use a macro which is defined as part of ACL2 just for this
- @(see documentation).  The macro is named @('fmx') and it takes up to eleven
- arguments, the first of which is a format string, @('str'), and the others of
- which are taken as the values of format variables.  The variables used are
- @('#\\0') through @('#\\9').  The macro constructs an appropriate alist,
- @('a'), and then evaluates @('(fmt str a *standard-co* state nil)').</p>
+ process easier, we use a macro, @('fmx').  It takes up to eleven arguments,
+ the first of which is a format string, @('str'), and the others of which are
+ taken as the values of format variables; for similar utilities that can be
+ called in @(':')@(tsee logic) mode functions, see @(see cw) and @(see fmx-cw).
+ The variables used are @('#\\0') through @('#\\9').  The macro constructs an
+ appropriate alist, @('a'), and then evaluates @('(fmt` str a 0 *standard-co*
+ state nil)').</p>
 
  <p>Thus,</p>
 
  @({
-  (fmx \"Here is v0, ~x0, and here is v1, ~x1.\"
+  (fmx \"~%Here is v0, ~x0, and here is v1, ~x1.\"
        (cons 'value 0)
        (cons 'value 1))
  })
@@ -29701,15 +29707,16 @@ current fast alists."
  <p>is just an abbreviation for</p>
 
  @({
-  (fmt \"Here is v0, ~x0, and here is v1, ~x1.\"
-       (list (cons #\\0 (cons 'value 0))
-             (cons #\\1 (cons 'value 1)))
-       *standard-co*
-       state
-       nil)
+  (fmt1 \"~%Here is v0, ~x0, and here is v1, ~x1.\"
+        (list (cons #\\0 (cons 'value 0))
+              (cons #\\1 (cons 'value 1)))
+        0
+        *standard-co*
+        state
+        nil)
  })
 
- <p>which returns @('(mv 53 state)') after printing the line</p>
+ <p>which returns @('(mv 53 state)') after printing, on a separate line,</p>
 
  @({
      Here is v0, (VALUE . 0), and here is v1, (VALUE . 1).
@@ -29833,7 +29840,7 @@ current fast alists."
  @({
   (let
    ((pair
-    '(\"Error:  The instruction ~x0 is illegal when the stack is ~x1.~%\"
+    '(\"~%Error:  The instruction ~x0 is illegal when the stack is ~x1.~%\"
       (#\\0 POPI 3)
       (#\\1 A B))))
    (fmx \"~@0\" pair)).
@@ -29854,7 +29861,7 @@ current fast alists."
                 ~x1.~%\"
                 (#\\0 POPI 3)
                 (#\\1 A B))))
-   (fmx \"~@0\" pair)).
+   (fmx \"~%~@0\" pair)).
  })
 
  <p>Finally, observe that when @('~@0') extends the current alist, @('alist'),
@@ -30042,6 +30049,48 @@ current fast alists."
  when forced to print past the right margin in order to make the output a bit
  clearer in that case.  Use @('fmt1!') instead if you want to be able to read
  the forms back in.</p>")
+
+(defxdoc fmx
+  :parents (io acl2-built-ins)
+  :short "@('(fmx str &rest args) => state')"
+  :long "<p>See @(see fmt) for further explanation, including documentation of
+ the tilde-directives.</p>")
+
+(defxdoc fmx-cw
+  :parents (io acl2-built-ins)
+  :short "@('(fmx-cw str &rest args) => state')"
+  :long "<p>@('Fmx-cw') is a variant of @('cw'): both take the same arguments
+ and have the same behavior on well-formed input, and both return @('nil').
+ See @(see cw) for documentation on how to use both utilities.  Unlike @('cw'),
+ @('fmx-cw') is well-@(see guard)ed, so it can catch errors in the use of
+ tilde-directives.  Here is an example of such a guard violation.</p>
+
+ @({
+ ACL2 !>(fmx-cw \"Hello ~s0.\" '(world))
+
+
+ ACL2 Error in TOP-LEVEL:  Guard violation for FMX-CW-FN:
+ Illegal Fmt Syntax.  The tilde-s directive at position 6 of the string
+ below is illegal because its variable evaluated to (WORLD), which is
+ not a symbol, a string, or a number.
+
+ \"Hello ~s0.\"
+
+ ACL2 !>
+ })
+
+ <p>Thus, call @('fmx-cw') instead of @('cw') in the body of @(':')@(tsee
+ logic) mode definition when you want its @(see guard) verification to avoid
+ runtime errors from that call.  (While the guard on @('fmx-cw') is likely
+ complete in practice, this is not an ironclad guarantee.  Perhaps, some day,
+ all formatted printing code will be fully guarded and guard-verified.)  Note
+ that if you call @('fmx-cw') in a definition, the guard proof may benefit from
+ the lemma, @('fmx-cw-msg-1-opener'), found in @(see community-book)
+ @('books/system/fmx-cw.lisp').</p>
+
+ <p>The variant @('fmx!-cw') avoids the insertion of backslash (\) characters
+ when forced to print past the right margin.  Thus, use @('fmx!-cw') instead of
+ @('fmx-cw') if you want the output to be machine-readable.</p>")
 
 (defxdoc fn-equal
   :parents (apply$ def-warrant)
@@ -50120,32 +50169,40 @@ tables in the current Hons Space."
   :short "Evaluate (expand) a given form and then evaluate the result"
   :long "<p>@('Make-event') is a utility for generating @(see events).  It
  provides a capability not offered by Lisp macros (see @(see defmacro)), as it
- allows access to the ACL2 @(tsee state) and logical @(see world).  In essence,
+ allows access to the ACL2 @(see state) and logical @(see world).  In essence,
  the expression @('(make-event form)') replaces itself with the result of
- evaluating @('form'), say, @('ev'), as though one had submitted @('ev')
- instead of the @('make-event') call.  For example,
+ evaluating @('form') &mdash; let's call that result @('ev') &mdash; as though
+ one had submitted @('ev') instead of the @('make-event') call.  For example,
  @('(make-event (quote (defun f (x) x)))') is equivalent to the event @('(defun
  f (x) x)').</p>
+
+ <p>We assume basic familiarity with the ACL2 <i>state</i>.  For relevant
+ background, see @(see state) and perhaps see @(see
+ programming-with-state).</p>
 
  <p>There are several simple examples below.  See @(see make-event-example) for
  development of a more complex example.</p>
 
  <p>We break this documentation into the following sections.</p>
 
- <p><b>Introduction</b><br></br>
+ <ul>
 
- <b>Detailed Documentation</b><br></br>
+ <li><b>Introduction</b></li>
 
- <b>Error Reporting</b><br></br>
+ <li><b>Detailed Documentation</b></li>
 
- <b>Restriction to Event Contexts</b><br></br>
+ <li><b>Error Reporting</b></li>
 
- <b>Examples Illustrating How to Access State</b><br></br>
+ <li><b>Restriction to Event Contexts</b></li>
 
- <b>Advanced Expansion Control</b></p>
+ <li><b>Examples Illustrating How to Access State</b></li>
 
- <p>We begin with an informal introduction, which focuses on examples and
- introduces the key notion of ``expansion phase''.</p>
+ <li><b>Advanced Expansion Control</b></li>
+
+ </ul>
+
+ <p>We begin with an introduction, which focuses on examples and introduces the
+ key notion of ``expansion phase''.</p>
 
  <p><b>Introduction</b></p>
 
@@ -50204,11 +50261,11 @@ tables in the current Hons Space."
     (list 'defconst name (length (w state))))
  })
 
- <p>But ACL2 rejects such a definition, because a macro cannot take the ACL2
- state as a parameter; instead, the formal parameter to this macro named
- @('\"STATE\"') merely represents an ordinary object.  You can try to
- experiment with other such direct methods to define such a macro, but they
- won't work.</p>
+ <p>But ACL2 rejects such a definition, because the formal parameter
+ @('\"STATE\"') is bound to the syntactic object in the macro call, not to the
+ actual ACL2 @(see state); see @(see defmacro).  You can try to experiment with
+ other such direct methods to define a macro that accesses the ACL2 state, but
+ they won't work.</p>
 
  <p>Instead, however, you can use the approach illustrated by the
  @('make-event') example above to define the desired macro, as follows.</p>
@@ -50218,106 +50275,120 @@ tables in the current Hons Space."
     `(make-event (list 'defconst ',name (length (w state)))))
  })
 
- <p>Here are example uses of this macro.</p>
+ <p>Here is a log that may help to explain this macro, assuming it has been
+ defined as displayed just above.</p>
 
  @({
-    ACL2 !>(define-world-length-constant *foo*)
+ ACL2 !>:trans1 (define-world-length-constant *foo*)
+  (MAKE-EVENT (LIST 'DEFCONST
+                    '*FOO*
+                    (LENGTH (W STATE))))
+ ACL2 !>(LIST 'DEFCONST
+              '*FOO*
+              (LENGTH (W STATE)))
+ (DEFCONST *FOO* 109707)
+ ACL2 !>
+ ACL2 !>(define-world-length-constant *foo*)
 
-    Summary
-    Form:  ( DEFCONST *FOO* ...)
-    Rules: NIL
-    Time:  0.00 seconds (prove: 0.00, print: 0.00, other: 0.00)
+ Summary
+ Form:  ( DEFCONST *FOO* ...)
+ Rules: NIL
+ Time:  0.00 seconds (prove: 0.00, print: 0.00, other: 0.00)
 
-    Summary
-    Form:  ( MAKE-EVENT (LIST ...))
-    Rules: NIL
-    Time:  0.00 seconds (prove: 0.00, print: 0.00, other: 0.00)
-     *FOO*
-    ACL2 !>*foo*
-    98891
-    ACL2 !>:pe *foo*
-              2:x(DEFINE-WORLD-LENGTH-CONSTANT *FOO*)
+ Summary
+ Form:  ( MAKE-EVENT (LIST ...))
+ Rules: NIL
+ Time:  0.01 seconds (prove: 0.00, print: 0.00, other: 0.01)
+  *FOO*
+ ACL2 !>*foo*
+ 109707
+ ACL2 !>:pe *foo*
+            2:x(DEFINE-WORLD-LENGTH-CONSTANT *FOO*)
+               \
+ >              (DEFCONST *FOO* 109707)
+ ACL2 !>(length (w state))
+ 109713
+ ACL2 !>(define-world-length-constant *bar*)
 
-    >             (DEFCONST *FOO* 98891)
-    ACL2 !>(length (w state))
-    98897
-    ACL2 !>(define-world-length-constant *bar*)
+ Summary
+ Form:  ( DEFCONST *BAR* ...)
+ Rules: NIL
+ Time:  0.00 seconds (prove: 0.00, print: 0.00, other: 0.00)
 
-    Summary
-    Form:  ( DEFCONST *BAR* ...)
-    Rules: NIL
-    Time:  0.00 seconds (prove: 0.00, print: 0.00, other: 0.00)
-
-    Summary
-    Form:  ( MAKE-EVENT (LIST ...))
-    Rules: NIL
-    Time:  0.01 seconds (prove: 0.00, print: 0.00, other: 0.01)
-     *BAR*
-    ACL2 !>*bar*
-    98897
-    ACL2 !>:pe *bar*
-              3:x(DEFINE-WORLD-LENGTH-CONSTANT *BAR*)
-
-    >             (DEFCONST *BAR* 98897)
-    ACL2 !>(length (w state))
-    98903
-    ACL2 !>
+ Summary
+ Form:  ( MAKE-EVENT (LIST ...))
+ Rules: NIL
+ Time:  0.01 seconds (prove: 0.00, print: 0.00, other: 0.01)
+  *BAR*
+ ACL2 !>*bar*
+ 109713
+ ACL2 !>:pe *bar*
+            3:x(DEFINE-WORLD-LENGTH-CONSTANT *BAR*)
+               \
+ >              (DEFCONST *BAR* 109713)
+ ACL2 !>(length (w state))
+ 109719
+ ACL2 !>
  })
 
- <p>Finally, we note that the expansion phase can be used for computation that
- has side effects, generally by modifying state.  Here is a modification of the
- above example that does not change the world at all, but instead saves the
- length of the world in a state global.</p>
+ <p>The expansion phase can be used for computation that has side effects,
+ generally by modifying state.  Here is a modification of the above example
+ that does not change the ACL2 world at all, but instead saves the length of the
+ world into a state global variable.</p>
 
  @({
   (make-event
-   (pprogn (f-put-global 'my-world-length (length (w state)) state)
-           (value '(value-triple nil))))
+   (er-progn (assign my-world-length (length (w state)))
+             (value '(value-triple nil))))
  })
 
- <p>Notice that this time, the value returned by the expansion phase is not an
- event form, but rather, is an @(see error-triple) whose value component is an
+ <p>Notice that this time, the value returned by the expansion phase is not a
+ single value; rather, it is an @(see error-triple) whose value component is an
  event form, namely, the event form @('(value-triple nil)').  Evaluation of
  that event form does not change the ACL2 world (see @(see value-triple)).
  Thus, the sole purpose of the @('make-event') call above is to change the
  @(see state) by associating the length of the current logical world with the
- state global named @(''my-world-length').  After evaluating this form, @('(@
+ state global, @('my-world-length').  After evaluating this form, @('(@
  my-world-length)') provides the length of the ACL2 world, as illustrated by
  the following transcript.</p>
 
  @({
-    ACL2 !>:pbt 0
-              0:x(EXIT-BOOT-STRAP-MODE)
-    ACL2 !>(length (w state))
-    98883
-    ACL2 !>(make-event
-            (pprogn (f-put-global 'my-world-length (length (w state)) state)
-                    (value '(value-triple nil))))
+ ACL2 !>:pbt 0
+            0:x(EXIT-BOOT-STRAP-MODE)
+ ACL2 !>(length (w state))
+ 109700
+ ACL2 !>(make-event
+             (er-progn (assign my-world-length (length (w state)))
+                       (value '(value-triple nil))))
 
-    Summary
-    Form:  ( MAKE-EVENT (PPROGN ...))
-    Rules: NIL
-    Time:  0.01 seconds (prove: 0.00, print: 0.00, other: 0.01)
-     NIL
-    ACL2 !>(length (w state))
-    98883
-    ACL2 !>:pbt 0
-              0:x(EXIT-BOOT-STRAP-MODE)
-    ACL2 !>
+ Summary
+ Form:  ( MAKE-EVENT (ER-PROGN ...))
+ Rules: NIL
+ Time:  0.01 seconds (prove: 0.00, print: 0.00, other: 0.01)
+  NIL
+ ACL2 !>(length (w state))
+ 109700
+ ACL2 !>:pbt 0
+            0:x(EXIT-BOOT-STRAP-MODE)
+ ACL2 !>
  })
 
  <p>When @('make-event') is invoked by a book, it is expanded during book
- certification but not, by default, when the book is included.  So for the
- example @('(define-world-length-constant *foo*)') given above, if that form is
- in a book, then the value of @('*foo*') will be the length of the world at the
- time this form was invoked during book certification, regardless of world
- length at @(tsee include-book) time.  (The expansion is recorded in the book's
- @(see certificate), and re-used.)  To overcome this default, you can specify
- keyword value @(':CHECK-EXPANSION t').  This will cause an error if the
- expansion is different, but it can be useful for side effects.  For example,
- if you insert the following form in a book, then the length of the world will
- be printed when the form is encountered, whether during @(tsee certify-book)
- or during @(tsee include-book).</p>
+ certification but not, by default, when the book is included.  Consider again
+ the example @('(define-world-length-constant *foo*)') given above.  If that
+ form is in a book, then the value of @('*foo*') will be the length of the
+ world at the time this form was invoked during book certification, regardless
+ of world length at @(tsee include-book) time.  That is because the expansion,
+ @('(DEFCONST *FOO* 109700)'), is recorded in the book's @(see certificate) and
+ re-used during a subsequent @(tsee include-book).</p>
+
+ <p>However, the keyword @(':check-expansion') may be given the value @('t') so
+ that the expansion is done even during @('include-book'), which comes with a
+ check that the result is the same as it was during book certification.  This
+ keyword can be useful for side effects.  For example, if you insert the
+ following form in a book, then the length of the world will be printed when
+ the form is encountered, whether during @(tsee certify-book) or during @(tsee
+ include-book).</p>
 
  @({
   (make-event
@@ -51128,6 +51199,10 @@ tables in the current Hons Space."
  comprehensive, some may find this example to be a good starting point, to get
  a sense of how to develop tools that take advantage of @('make-event').  We
  thank Yan Peng for putting forward this problem.</p>
+
+ <p>(Note: A rather complex example of the use of @('make-event') may be found
+ in the @(see community-book),
+ @('books/make-event/search-generation.lisp').)</p>
 
  <p>We begin by discussing prerequisites for this presentation.  Next, we
  present the challenge problem, followed by code that solves the problem
@@ -54122,14 +54197,11 @@ it."
 
 (defxdoc msgp
   :parents (io acl2-built-ins)
-  :short "Weak recognizer for a ``message''"
+  :short "Recognizer for a ``message''"
   :long "<p>The form @('(msgp x)') evaluates to true when @('x') evaluates
- either to a string or to a @('nil')-terminated list (see @(see true-listp))
- whose first element is a string.  Thus, @('msgp') distinguishes
- <i>messages</i> &mdash; that is, values suitable as arguments for @('~@')
- directives of @(tsee fmt) &mdash; from Booleans and other values that are
- obviously not messages.  Note that @('msgp') should always hold for the output
- of the macro, @('msg'); see @(see msg).</p>
+ either to a string or to a @('cons') whose @('cdr') satisfies @(tsee
+ character-alistp).  Note that @('msgp') will always hold for the output of the
+ macro, @('msg'); see @(see msg).</p>
 
  @(def msgp)")
 
@@ -79818,6 +79890,27 @@ it."
 ; (by default, defeated by assigning state global ld-okp to t), by
 ; also making the check when outside the ACL2 loop.
 
+; Here are examples of expressions whose evaluation caused raw Lisp errors in
+; Version 8.0 but no longer.
+;   (cw "~@0" (cons 3 4))
+;   (cw "~*0" 3)
+;   (cw "~&0" 3)
+;   (cw "~n0" '(a b))
+;   (cw "~s0" '(a b))
+;   (cw "~_0" '(a b))
+;   (cw "~X01" 3 4)
+;   (cw "~#0~[~" 3)
+; The error message is better now for each of these:
+;   (cw "~t0" 'a)
+;   (cw "~X0" 3)
+
+; Improved the error message for a call of a fmt function (including fms, cw,
+; fmx, etc.) when for ~Xij, ~Yij, ~Pij, or ~Qij, the character #\j is unbound.
+; Formerly the position of the ~ was reported as one greater than it should
+; have been.  For example, the error for (fmx "~X04" 3) mentioned
+; the "tilde directive at location 1" but now it reports "location 0",
+; consistently with other such messages.
+
   :parents (release-notes)
   :short "ACL2 Version  8.1 (xxx, 20xx) Notes"
   :long "<p>NOTE!  New users can ignore these release notes, because the @(see
@@ -79952,12 +80045,29 @@ it."
  <p>It is now illegal by default to attach to built-in functions.  To overcome
  this default behavior, see @(see defattach-system).</p>
 
- <p>Functions from the @(tsee fmt) family, including for example @(tsee fms)
- and @(tsee fmt-to-string), now have (incomplete) guards that, in particular,
- imply that the @('alist') argument must satisfy @('character-alistp'), i.e.,
- be an association list whose keys are all characters.  Thanks to Eric Smith
- for pointing out that an expression like @('(fmt-to-string \"~x0\" 3)') could
- cause a raw Lisp error.</p>
+ <p>Improvements have been made to functions in the @(tsee fmt) family,
+ including for example @(tsee fms), @(tsee fmt-to-string), and @(tsee cw).
+ (Also see discussion of @(tsee fmx-cw) under ``New Features,'' below.)</p>
+
+ <ul>
+
+ <li>Many @(see guard)s have been strengthened, for example to imply that the
+ @('alist') argument must satisfy @(tsee character-alistp).  Thanks to Eric
+ Smith for pointing out that an expression like @('(fmt-to-string \"~x0\" 3)')
+ could cause a raw Lisp error (rather than causing a guard violation).</li>
+
+ <li>Eliminated raw Lisp errors from ill-formed calls.  Thanks to Jared Davis
+ for pointing out this problem in 2010 (!) with the example @('(cw \"Bad:
+ ~&0.~%\" 5)'), and for Eric Smith for prodding us much more recently with the
+ example @('(cw \"~&0\" 'x)').</li>
+
+ <li>The utility @(tsee fmx) no longer prints an initial newline.  Of course, a
+ call @('(fmx \"<some-string>\" ...)') can be modified to generate an initial
+ newline (thus providing the former behavior) by adding the newline
+ tilde-directive, @('\"~%\"'), that is, @('(fmx \"~%<some-string>\"
+ ...)').</li>
+
+ </ul>
 
  <p>The previously-undocumented built-in-function, @(tsee packn), now has a
  slightly different behavior.  Formerly, it always returned a symbol in the
@@ -79978,6 +80088,16 @@ it."
  argument of the call of @('ld') is not a string.  Now, that is an error.  If
  you get this error, just remove the (previously ignored) @(':dir')
  argument.</p>
+
+ <p>The function @(tsee magic-ev-fncall) sometimes printed a message in the
+ error case in addition to returning that message.  It now only returns that
+ message.  Thanks to Sol Swords for bringing to our attention that
+ certification of a community book,
+ @('books/projects/x86isa/proofs/popcount/popcount.lisp'), was printing a
+ warning about @('\"Meta-level function Problem\"') for thousands of lines.</p>
+
+ <p>The definition of @(tsee msgp) has been strengthened to require that for a
+ @('cons') pair, the @('cdr') must satisfy @(tsee character-alistp).</p>
 
  <h3>New Features</h3>
 
@@ -80026,6 +80146,26 @@ it."
  @('\"\"'), there will generally be no output from ACL2 customization.  A
  special value of @('\"all\"') for this variable will cause continued minimal
  output after startup.  See @(see acl2-customization).</p>
+
+ <p>New utilities, @(tsee fmx-cw) and @(tsee fmx!-cw), are essentially the same
+ as @(tsee cw) and @(tsee cw!) (respectively), except that @('fmx-cw') and
+ @('fmx!-cw') are well-@(see guard)ed, which can catch errors in the use of
+ tilde-directives.  Thanks to Eric Smith for requesting such a capability.  For
+ example:</p>
+
+ @({
+ ACL2 !>(fmx-cw \"Hello ~s0.\" '(world))
+
+
+ ACL2 Error in TOP-LEVEL:  Guard violation for FMX-CW-FN:
+ Illegal Fmt Syntax.  The tilde-s directive at position 6 of the string
+ below is illegal because its variable evaluated to (WORLD), which is
+ not a symbol, a string, or a number.
+
+ \"Hello ~s0.\"
+
+ ACL2 !>
+ })
 
  <h3>Heuristic and Efficiency Improvements</h3>
 
@@ -80137,11 +80277,10 @@ it."
  <p>Fixed the @(':')@(tsee puff) command to avoid certain errors involving
  @(see local) @(see events).</p>
 
- <p>Eliminated some raw Lisp errors that could occur from ill-formed calls of
- @(tsee cw) and the family of @(tsee fmt) functions.  Thanks to Jared Davis for
- pointing out this problem in 2010 (!) with the example @('(cw \"Bad: ~&0.~%\"
- 5)'), and for Eric Smith for prodding us much more recently with the example
- @('(cw \"~&0\" 'x)').</p>
+ <p>Redundancy notes could be seen during @(tsee include-book) while loading
+ the compiled file for a book.  These notes (along with, perhaps, some other
+ output) have been eliminated.  Thanks to Eric Smith for pointing us to this
+ problem with a reproducible example.</p>
 
  <h3>Changes at the System Level</h3>
 
@@ -121306,6 +121445,7 @@ expand function call at the current subterm, without simplifying"
 (defpointer fmt-to-string printing-to-strings)
 (defpointer fmt1!-to-string printing-to-strings)
 (defpointer fmt1-to-string printing-to-strings)
+(defpointer fmx!-cw fmx-cw)
 (defpointer fn-symb system-utilities)
 (defpointer fncall-term meta-extract)
 (defpointer forced force)
@@ -121326,6 +121466,7 @@ expand function call at the current subterm, without simplifying"
 (defpointer guard-checking set-guard-checking)
 (defpointer guard-hints xargs t)
 (defpointer guard-msg-table set-guard-msg)
+(defpointer guard-holder guard-holders)
 (defpointer hands-off hints t)
 (defpointer if-intro splitter)
 (defpointer ignorable declare)
