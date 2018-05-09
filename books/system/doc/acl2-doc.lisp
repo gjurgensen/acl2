@@ -80213,6 +80213,10 @@ it."
  Eric Smith for pointing out an incompleteness in the rewriting of @('implies')
  calls.</p>
 
+ <p>The algorithm has been tweaked for generating a @(see type-prescription)
+ rule to store for a given definition, so that the rule is sometimes stronger
+ than was previously the case.</p>
+
  <h3>Bug Fixes</h3>
 
  <p>Fixed two bugs in @(tsee apply$): we now @(tsee disable) the @(see
