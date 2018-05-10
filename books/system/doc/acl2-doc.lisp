@@ -80213,6 +80213,10 @@ it."
  Eric Smith for pointing out an incompleteness in the rewriting of @('implies')
  calls.</p>
 
+ <p>The algorithm has been tweaked for generating a @(see type-prescription)
+ rule to store for a given definition, so that the rule is sometimes stronger
+ than was previously the case.</p>
+
  <h3>Bug Fixes</h3>
 
  <p>Fixed two bugs in @(tsee apply$): we now @(tsee disable) the @(see
@@ -80300,6 +80304,13 @@ it."
  7.4 (released in March, 2017). Its replacement is target \"clean-lite\"; or,
  use target \"clean-all\" (or equivalently, \"distclean\") if you want a more
  thorough cleaning.</p>
+
+ <p>(SBCL only) ACL2 has been updated so that it builds on recent SBCL
+ versions.  In particular, the build was broken for SBCL 1.4.7, as SBCL changed
+ the ``RDTSC'' timing capability used in @(see memoization).  Thanks to Keshav
+ Kini for help with this issue, which has been resolved in ACL2 source file
+ @('memoize-raw.lisp'), as explained in the comment there about
+ ``read-cycle-counter''.</p>
 
  <h3>EMACS Support</h3>
 
