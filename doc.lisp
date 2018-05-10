@@ -78804,6 +78804,13 @@ Changes at the System Level
   \"clean-lite\"; or, use target \"clean-all\" (or equivalently,
   \"distclean\") if you want a more thorough cleaning.
 
+  (SBCL only) ACL2 has been updated so that it builds on recent SBCL
+  versions.  In particular, the build was broken for SBCL 1.4.7, as
+  SBCL changed the ``RDTSC'' timing capability used in [memoization].
+  Thanks to Keshav Kini for help with this issue, which has been
+  resolved in ACL2 source file memoize-raw.lisp, as explained in the
+  comment there about ``read-cycle-counter''.
+
 
 EMACS Support
 
