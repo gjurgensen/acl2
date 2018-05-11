@@ -79911,6 +79911,8 @@ it."
 ; the "tilde directive at location 1" but now it reports "location 0",
 ; consistently with other such messages.
 
+; Changed conjoin-untranslated-terms to produce more user-friendly results.
+
   :parents (release-notes)
   :short "ACL2 Version  8.1 (xxx, 20xx) Notes"
   :long "<p>NOTE!  New users can ignore these release notes, because the @(see
