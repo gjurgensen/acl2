@@ -80286,6 +80286,11 @@ it."
  output) have been eliminated.  Thanks to Eric Smith for pointing us to this
  problem with a reproducible example.</p>
 
+ <p>We eliminated an obscure hard error mentioning the source function
+ @('assume-true-false-if'), which could occur in the middle of a proof.  Thanks
+ to Dave Greve for pointing out this problem by sending us an illustrative
+ example that we could run.</p>
+
  <h3>Changes at the System Level</h3>
 
  <p>Fixed the use of `@('<a href='URL'>...</a>')' so that if @('URL') has the

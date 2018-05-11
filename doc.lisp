@@ -78784,6 +78784,11 @@ Bug Fixes
   some other output) have been eliminated.  Thanks to Eric Smith for
   pointing us to this problem with a reproducible example.
 
+  We eliminated an obscure hard error mentioning the source function
+  assume-true-false-if, which could occur in the middle of a proof.
+  Thanks to Dave Greve for pointing out this problem by sending us an
+  illustrative example that we could run.
+
 
 Changes at the System Level
 
