@@ -12369,8 +12369,8 @@ with any questions about building the community books.</p>")
  the full admissibility checks on each form (proving termination of recursive
  functions, proving theorems, etc.), checking as it goes that each form is an
  embedded event form (see @(see embedded-event-form)); (3) may roll back the
- @(see world) (how far? ~-[] see below) and perform an @(tsee include-book) to
- check for @(tsee local) incompatibilities (see @(see
+ @(see world) (how far? &mdash; see below) and perform an @(tsee include-book)
+ to check for @(tsee local) incompatibilities (see @(see
  local-incompatibility)); (4) writes a @(see certificate) recording not only
  that the book was certified but also recording the @(see command)s necessary
  to recreate the certification @(see world) (so the appropriate packages can be

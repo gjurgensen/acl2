@@ -14889,7 +14889,7 @@ Subtopics
   (proving termination of recursive functions, proving theorems,
   etc.), checking as it goes that each form is an embedded event form
   (see [embedded-event-form]); (3) may roll back the [world] (how
-  far? ~-[] see below) and perform an [include-book] to check for
+  far? --- see below) and perform an [include-book] to check for
   [local] incompatibilities (see [local-incompatibility]); (4) writes
   a [certificate] recording not only that the book was certified but
   also recording the [command]s necessary to recreate the
