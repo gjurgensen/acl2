@@ -90165,11 +90165,14 @@ Subtopics
   usual [io] routines provided by ACL2, as shown by the sequence of
   definitions below.  However, under-the-hood raw Lisp code provides
   an implementation that not only is efficient, but also does not
-  return [state], although the expansion of a call of this macro
-  takes state as an argument.  (Technical remark: the use of
-  [with-local-state] in the logical definition of key subroutine
-  read-file-into-string2 does not require a trust tag (see
-  [defttag]), because that function is defined by ACL2, not in a
+  return [state].  Note that the expansion of a call of this macro
+  does take state as an argument, which (as usual for functions that
+  take state) necessitates either that (set-state-ok t) has already
+  been evaluated, or else that a suitable :stobjs declaration,
+  typically :stobjs state, is provided (see [xargs]).  (Technical
+  remark: the use of [with-local-state] in the logical definition of
+  key subroutine read-file-into-string2 does not require a trust tag
+  (see [defttag]), because that function is defined by ACL2, not in a
   book.)
 
   The value of the constant *read-file-into-string-bound* (see the

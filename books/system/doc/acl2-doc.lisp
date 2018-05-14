@@ -89341,11 +89341,15 @@ arithmetic) for libraries of @(see books) for arithmetic reasoning.</p>")
  <p>This macro provides functionality that can be obtained through the usual
  @(see IO) routines provided by ACL2, as shown by the sequence of definitions
  below.  However, under-the-hood raw Lisp code provides an implementation that
- not only is efficient, but also does not return @(tsee state), although the
- expansion of a call of this macro takes @('state') as an argument.  (Technical
- remark: the use of @(tsee with-local-state) in the logical definition of key
- subroutine @('read-file-into-string2') does not require a trust tag (see @(see
- defttag)), because that function is defined by ACL2, not in a book.)</p>
+ not only is efficient, but also does not return @(tsee state).  Note that the
+ expansion of a call of this macro does take @('state') as an argument,
+ which (as usual for functions that take @('state')) necessitates either that
+ @('(set-state-ok t)') has already been evaluated, or else that a suitable
+ @(':stobjs') declaration, typically @(':stobjs state'), is provided (see @(see
+ xargs)).  (Technical remark: the use of @(tsee with-local-state) in the
+ logical definition of key subroutine @('read-file-into-string2') does not
+ require a trust tag (see @(see defttag)), because that function is defined by
+ ACL2, not in a book.)</p>
 
  <p>The value of the constant @('*read-file-into-string-bound*')
  (see the definition below) is a strict upper bound on the size of the string
