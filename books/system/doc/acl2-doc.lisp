@@ -12369,8 +12369,8 @@ with any questions about building the community books.</p>")
  the full admissibility checks on each form (proving termination of recursive
  functions, proving theorems, etc.), checking as it goes that each form is an
  embedded event form (see @(see embedded-event-form)); (3) may roll back the
- @(see world) (how far? ~-[] see below) and perform an @(tsee include-book) to
- check for @(tsee local) incompatibilities (see @(see
+ @(see world) (how far? &mdash; see below) and perform an @(tsee include-book)
+ to check for @(tsee local) incompatibilities (see @(see
  local-incompatibility)); (4) writes a @(see certificate) recording not only
  that the book was certified but also recording the @(see command)s necessary
  to recreate the certification @(see world) (so the appropriate packages can be
@@ -79911,6 +79911,8 @@ it."
 ; the "tilde directive at location 1" but now it reports "location 0",
 ; consistently with other such messages.
 
+; Changed conjoin-untranslated-terms to produce more user-friendly results.
+
   :parents (release-notes)
   :short "ACL2 Version  8.1 (xxx, 20xx) Notes"
   :long "<p>NOTE!  New users can ignore these release notes, because the @(see
@@ -80213,6 +80215,10 @@ it."
  Eric Smith for pointing out an incompleteness in the rewriting of @('implies')
  calls.</p>
 
+ <p>The algorithm has been tweaked for generating a @(see type-prescription)
+ rule to store for a given definition, so that the rule is sometimes stronger
+ than was previously the case.</p>
+
  <h3>Bug Fixes</h3>
 
  <p>Fixed two bugs in @(tsee apply$): we now @(tsee disable) the @(see
@@ -80282,6 +80288,11 @@ it."
  output) have been eliminated.  Thanks to Eric Smith for pointing us to this
  problem with a reproducible example.</p>
 
+ <p>We eliminated an obscure hard error mentioning the source function
+ @('assume-true-false-if'), which could occur in the middle of a proof.  Thanks
+ to Dave Greve for pointing out this problem by sending us an illustrative
+ example that we could run.</p>
+
  <h3>Changes at the System Level</h3>
 
  <p>Fixed the use of `@('<a href='URL'>...</a>')' so that if @('URL') has the
@@ -80300,6 +80311,13 @@ it."
  7.4 (released in March, 2017). Its replacement is target \"clean-lite\"; or,
  use target \"clean-all\" (or equivalently, \"distclean\") if you want a more
  thorough cleaning.</p>
+
+ <p>(SBCL only) ACL2 has been updated so that it builds on recent SBCL
+ versions.  In particular, the build was broken for SBCL 1.4.7, as SBCL changed
+ the ``RDTSC'' timing capability used in @(see memoization).  Thanks to Keshav
+ Kini for help with this issue, which has been resolved in ACL2 source file
+ @('memoize-raw.lisp'), as explained in the comment there about
+ ``read-cycle-counter''.</p>
 
  <h3>EMACS Support</h3>
 
@@ -89323,11 +89341,15 @@ arithmetic) for libraries of @(see books) for arithmetic reasoning.</p>")
  <p>This macro provides functionality that can be obtained through the usual
  @(see IO) routines provided by ACL2, as shown by the sequence of definitions
  below.  However, under-the-hood raw Lisp code provides an implementation that
- not only is efficient, but also does not return @(tsee state), although the
- expansion of a call of this macro takes @('state') as an argument.  (Technical
- remark: the use of @(tsee with-local-state) in the logical definition of key
- subroutine @('read-file-into-string2') does not require a trust tag (see @(see
- defttag)), because that function is defined by ACL2, not in a book.)</p>
+ not only is efficient, but also does not return @(tsee state).  Note that the
+ expansion of a call of this macro does take @('state') as an argument,
+ which (as usual for functions that take @('state')) necessitates either that
+ @('(set-state-ok t)') has already been evaluated, or else that a suitable
+ @(':stobjs') declaration, typically @(':stobjs state'), is provided (see @(see
+ xargs)).  (Technical remark: the use of @(tsee with-local-state) in the
+ logical definition of key subroutine @('read-file-into-string2') does not
+ require a trust tag (see @(see defttag)), because that function is defined by
+ ACL2, not in a book.)</p>
 
  <p>The value of the constant @('*read-file-into-string-bound*')
  (see the definition below) is a strict upper bound on the size of the string

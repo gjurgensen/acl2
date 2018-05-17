@@ -14889,7 +14889,7 @@ Subtopics
   (proving termination of recursive functions, proving theorems,
   etc.), checking as it goes that each form is an embedded event form
   (see [embedded-event-form]); (3) may roll back the [world] (how
-  far? ~-[] see below) and perform an [include-book] to check for
+  far? --- see below) and perform an [include-book] to check for
   [local] incompatibilities (see [local-incompatibility]); (4) writes
   a [certificate] recording not only that the book was certified but
   also recording the [command]s necessary to recreate the
@@ -78708,6 +78708,10 @@ Heuristic and Efficiency Improvements
   Thanks to Eric Smith for pointing out an incompleteness in the
   rewriting of implies calls.
 
+  The algorithm has been tweaked for generating a [type-prescription]
+  rule to store for a given definition, so that the rule is sometimes
+  stronger than was previously the case.
+
 
 Bug Fixes
 
@@ -78780,6 +78784,11 @@ Bug Fixes
   some other output) have been eliminated.  Thanks to Eric Smith for
   pointing us to this problem with a reproducible example.
 
+  We eliminated an obscure hard error mentioning the source function
+  assume-true-false-if, which could occur in the middle of a proof.
+  Thanks to Dave Greve for pointing out this problem by sending us an
+  illustrative example that we could run.
+
 
 Changes at the System Level
 
@@ -78799,6 +78808,13 @@ Changes at the System Level
   7.4 (released in March, 2017). Its replacement is target
   \"clean-lite\"; or, use target \"clean-all\" (or equivalently,
   \"distclean\") if you want a more thorough cleaning.
+
+  (SBCL only) ACL2 has been updated so that it builds on recent SBCL
+  versions.  In particular, the build was broken for SBCL 1.4.7, as
+  SBCL changed the ``RDTSC'' timing capability used in [memoization].
+  Thanks to Keshav Kini for help with this issue, which has been
+  resolved in ACL2 source file memoize-raw.lisp, as explained in the
+  comment there about ``read-cycle-counter''.
 
 
 EMACS Support
@@ -90149,11 +90165,14 @@ Subtopics
   usual [io] routines provided by ACL2, as shown by the sequence of
   definitions below.  However, under-the-hood raw Lisp code provides
   an implementation that not only is efficient, but also does not
-  return [state], although the expansion of a call of this macro
-  takes state as an argument.  (Technical remark: the use of
-  [with-local-state] in the logical definition of key subroutine
-  read-file-into-string2 does not require a trust tag (see
-  [defttag]), because that function is defined by ACL2, not in a
+  return [state].  Note that the expansion of a call of this macro
+  does take state as an argument, which (as usual for functions that
+  take state) necessitates either that (set-state-ok t) has already
+  been evaluated, or else that a suitable :stobjs declaration,
+  typically :stobjs state, is provided (see [xargs]).  (Technical
+  remark: the use of [with-local-state] in the logical definition of
+  key subroutine read-file-into-string2 does not require a trust tag
+  (see [defttag]), because that function is defined by ACL2, not in a
   book.)
 
   The value of the constant *read-file-into-string-bound* (see the
