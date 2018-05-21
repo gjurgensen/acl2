@@ -5263,7 +5263,7 @@ Subtopics
   unproved in the following sense: a subgoal is a key checkpoint if
   it leads, in the current call of the waterfall, to a goal that is
   pushed for induction.")
- (ACL2S (POINTERS) "See [acl2-sedan].")
+ (ACL2S (POINTERS) "See [ACL2-sedan].")
  (ACL2_AS_AN_INTERACTIVE_THEOREM_PROVER
   (PAGES_WRITTEN_ESPECIALLY_FOR_THE_TOURS)
   "ACL2 as an Interactive Theorem Prover
@@ -8968,10 +8968,8 @@ Subtopics
                  ((equal x (car (car alist)))
                   (car alist))
                  (t (assoc-equal x (cdr alist)))))")
- (ASSOC-EQ (POINTERS)
-           "See common-lisp::assoc (see [ASSOC]).")
- (ASSOC-EQUAL (POINTERS)
-              "See common-lisp::assoc (see [ASSOC]).")
+ (ASSOC-EQ (POINTERS) "See [assoc].")
+ (ASSOC-EQUAL (POINTERS) "See [assoc].")
  (ASSOC-KEYWORD
   (KEYWORD-VALUE-LISTP ACL2-BUILT-INS)
   "Look up key in a [keyword-value-listp]
@@ -9051,6 +9049,8 @@ Subtopics
            (cond ((atom lst) (eq lst nil))
                  (t (and (atom (car lst))
                          (atom-listp (cdr lst))))))")
+ (AUTO-INSTANCE (POINTERS)
+                "See defthm<w.")
  (A_FLYING_TOUR_OF_ACL2
   (PAGES_WRITTEN_ESPECIALLY_FOR_THE_TOURS)
   "A Flying Tour of ACL2
@@ -36948,7 +36948,7 @@ Subtopics
                                         (cons 'current-acl2-world 'nil))
                                   (cons world-alist 'nil)))))))")
  (GETTING-STARTED (POINTERS)
-                  "See [acl2-tutorial].")
+                  "See [ACL2-tutorial].")
  (GIT-QUICK-START
   (ABOUT-ACL2)
   "Git quick start guide
@@ -55920,10 +55920,9 @@ Subtopics
            (cond ((endp lst) nil)
                  ((equal x (car lst)) lst)
                  (t (member-equal x (cdr lst)))))")
- (MEMBER-EQ (POINTERS)
-            "See common-lisp::member (see [MEMBER]).")
+ (MEMBER-EQ (POINTERS) "See [member].")
  (MEMBER-EQUAL (POINTERS)
-               "See common-lisp::member (see [MEMBER]).")
+               "See [member].")
  (MEMOIZATION (POINTERS)
               "See [memoize].")
  (MEMOIZE
@@ -82927,7 +82926,7 @@ Subtopics
       See [accumulated-persistence].
 
   [ACL2s]
-      See [acl2-sedan].
+      See [ACL2-sedan].
 
   [Add-ld-keyword-alias]
       See [ld-keyword-aliases].
@@ -82966,10 +82965,13 @@ Subtopics
       See [arrays].
 
   [Assoc-eq]
-      See common-lisp::assoc (see [ASSOC]).
+      See [assoc].
 
   [Assoc-equal]
-      See common-lisp::assoc (see [ASSOC]).
+      See [assoc].
+
+  [Auto-instance]
+      See defthm<w.
 
   [Backchain-limit-rw]
       See [hints] for information about the keyword :backchain-limit-rw.
@@ -83206,7 +83208,7 @@ Subtopics
       See [system-utilities].
 
   [Getting-started]
-      See [acl2-tutorial].
+      See [ACL2-tutorial].
 
   [Guard-checking]
       See [set-guard-checking].
@@ -83311,10 +83313,10 @@ Subtopics
       See [termination-theorem].
 
   [Member-eq]
-      See common-lisp::member (see [MEMBER]).
+      See [member].
 
   [Member-equal]
-      See common-lisp::member (see [MEMBER]).
+      See [member].
 
   [Memoization]
       See [memoize].
@@ -83479,10 +83481,10 @@ Subtopics
       See [system-utilities].
 
   [Position-eq]
-      See common-lisp::position (see [POSITION]).
+      See [position].
 
   [Position-equal]
-      See common-lisp::position (see [POSITION]).
+      See [position].
 
   [Pound-bang-reader]
       See [sharp-bang-reader].
@@ -83524,10 +83526,10 @@ Subtopics
       See [system-utilities].
 
   [Rassoc-eq]
-      See common-lisp::rassoc (see [RASSOC]).
+      See [rassoc].
 
   [Rassoc-equal]
-      See common-lisp::rassoc (see [RASSOC]).
+      See [rassoc].
 
   [Read-byte$]
       See [io].
@@ -83557,16 +83559,16 @@ Subtopics
       See [books-certification].
 
   [Remove-duplicates-eq]
-      See common-lisp::remove-duplicates (see [REMOVE-DUPLICATES]).
+      See [remove-duplicates].
 
   [Remove-duplicates-equal]
-      See common-lisp::remove-duplicates (see [REMOVE-DUPLICATES]).
+      See [remove-duplicates].
 
   [Remove-eq]
-      See common-lisp::remove (see [REMOVE]).
+      See [remove].
 
   [Remove-equal]
-      See common-lisp::remove (see [REMOVE]).
+      See [remove].
 
   [Remove-guard-holders]
       See [guard-holders].
@@ -83713,10 +83715,10 @@ Subtopics
       See [system-utilities].
 
   [Subsetp-eq]
-      See common-lisp::subsetp (see [SUBSETP]).
+      See [subsetp].
 
   [Subsetp-equal]
-      See common-lisp::subsetp (see [SUBSETP]).
+      See [subsetp].
 
   [Subst-expr]
       See [system-utilities].
@@ -83981,9 +83983,9 @@ Subtopics
                  (t (position-equal-ac item (cdr lst)
                                        (1+ acc)))))")
  (POSITION-EQ (POINTERS)
-              "See common-lisp::position (see [POSITION]).")
+              "See [position].")
  (POSITION-EQUAL (POINTERS)
-                 "See common-lisp::position (see [POSITION]).")
+                 "See [position].")
  (POSP
   (NUMBERS ACL2-BUILT-INS)
   "A recognizer for the positive integers
@@ -89983,10 +89985,9 @@ Subtopics
 
   Rassoc is defined by Common Lisp.  See any Common Lisp documentation
   for more information.")
- (RASSOC-EQ (POINTERS)
-            "See common-lisp::rassoc (see [RASSOC]).")
+ (RASSOC-EQ (POINTERS) "See [rassoc].")
  (RASSOC-EQUAL (POINTERS)
-               "See common-lisp::rassoc (see [RASSOC]).")
+               "See [rassoc].")
  (RATIONAL-LISTP
   (NUMBERS LISTS ACL2-BUILT-INS)
   "Recognizer for a true list of rational numbers
@@ -92007,16 +92008,13 @@ Subtopics
 
   Remove-duplicates is defined by Common Lisp.  See any Common Lisp
   documentation for more information.")
- (REMOVE-DUPLICATES-EQ
-      (POINTERS)
-      "See common-lisp::remove-duplicates (see [REMOVE-DUPLICATES]).")
- (REMOVE-DUPLICATES-EQUAL
-      (POINTERS)
-      "See common-lisp::remove-duplicates (see [REMOVE-DUPLICATES]).")
- (REMOVE-EQ (POINTERS)
-            "See common-lisp::remove (see [REMOVE]).")
+ (REMOVE-DUPLICATES-EQ (POINTERS)
+                       "See [remove-duplicates].")
+ (REMOVE-DUPLICATES-EQUAL (POINTERS)
+                          "See [remove-duplicates].")
+ (REMOVE-EQ (POINTERS) "See [remove].")
  (REMOVE-EQUAL (POINTERS)
-               "See common-lisp::remove (see [REMOVE]).")
+               "See [remove].")
  (REMOVE-GUARD-HOLDERS (POINTERS)
                        "See [guard-holders].")
  (REMOVE-INVISIBLE-FNS
@@ -103313,10 +103311,9 @@ Subtopics
 
   Subsetp is defined by Common Lisp.  See any Common Lisp documentation
   for more information.")
- (SUBSETP-EQ (POINTERS)
-             "See common-lisp::subsetp (see [SUBSETP]).")
+ (SUBSETP-EQ (POINTERS) "See [subsetp].")
  (SUBSETP-EQUAL (POINTERS)
-                "See common-lisp::subsetp (see [SUBSETP]).")
+                "See [subsetp].")
  (SUBST
   (CONSES ACL2-BUILT-INS)
   "A single substitution into a tree

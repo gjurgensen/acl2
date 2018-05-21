@@ -121405,6 +121405,7 @@ expand function call at the current subterm, without simplifying"
 (defpointer array arrays)
 (defpointer assoc-eq assoc)
 (defpointer assoc-equal assoc)
+(defpointer auto-instance defthm<w)
 (defpointer backchain-limit-rw hints t)
 (defpointer backtrack hints t)
 (defpointer badge apply$)
