@@ -78691,7 +78691,9 @@ Heuristic and Efficiency Improvements
       compliant'' lambdas: lambda forms whose [guard]s are verified
       by the [tau-system] and that are tame (see [apply$]).  The
       optimization had been used in the unadvertised use of ``The
-      Rubric'' prior to the release of ACL2 Version 8.0.
+      Rubric'' prior to the release of ACL2 Version 8.0.  Warnings
+      about non-tame-compliant lambdas will now appear when
+      appropriate, as had been the case in Version 7.4.
     * The optimization above has been improved so that instead of three
       cache lines, there is an efficient implementation using 1000
       cache lines.  That is probably many more than are needed, but

@@ -80196,7 +80196,8 @@ it."
  lambda forms whose @(see guard)s are verified by the @(see tau-system) and
  that are <i>tame</i> (see @(see apply$)).  The optimization had been used in
  the unadvertised use of ``The Rubric'' prior to the release of ACL2 Version
- 8.0.</li>
+ 8.0.  Warnings about non-tame-compliant lambdas will now appear when
+ appropriate, as had been the case in Version  7.4.</li>
 
  <li>The optimization above has been improved so that instead of three cache
  lines, there is an efficient implementation using 1000 cache lines.  That is
