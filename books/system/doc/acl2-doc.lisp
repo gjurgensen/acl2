@@ -80101,6 +80101,9 @@ it."
  <p>The definition of @(tsee msgp) has been strengthened to require that for a
  @('cons') pair, the @('cdr') must satisfy @(tsee character-alistp).</p>
 
+ <p>The @(see proof-builder) command, @('quiet!'), now inhibits all output
+ except @('error') output (and that too, if already inhibited).</p>
+
  <h3>New Features</h3>
 
  <p>The @(see summary) now shows, by default, the list of doublets @('(f g)')
