@@ -78601,6 +78601,9 @@ Changes to Existing Features
   The definition of [msgp] has been strengthened to require that for a
   cons pair, the cdr must satisfy [character-alistp].
 
+  The [proof-builder] command, quiet!, now inhibits all output except
+  error output (and that too, if already inhibited).
+
 
 New Features
 
