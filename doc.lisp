@@ -4933,12 +4933,19 @@ Silent loading of ACL2 customization files
       is determined by cursor position: if the cursor is sitting on a
       letter of a documentation topic name, or on a space character
       immediately after it, then that name will be offered as the
-      default.  Completion is carried out with the usual emacs
-      ``completing-read''; thus, for example, the character `?' is a
-      help key, so if you want that character as part of your topic
-      name, prefix it with control-q.  For example, after the `g'
-      command you can go to the topic [mv?] by typing the character
-      sequence <m,v,control-q ?>.
+      default.  Completion tips:
+
+        * Completion is carried out with the usual emacs ``completing-read'';
+          thus, for example, the character `?' is a help key, so if
+          you want that character as part of your topic name, prefix
+          it with control-q.  For example, after the `g' command you
+          can go to the topic [mv?] by typing the character sequence
+          <m,v,control-q ?>.
+        * To find completions that have package prefixes, type a colon (:) in
+          the front, and completion will show matching topics.  For
+          example, \"g\" followed by \":rew\" and then two tabs will
+          show, at least in recent versions of Emacs, a list of
+          topics that includes \"ACL2-PC::REWRITE\".
 
     * Square brackets typically indicate documentation topic names, for
       example: [acl2-doc].  (As mentioned above, there are occasional
