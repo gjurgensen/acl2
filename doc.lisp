@@ -22321,7 +22321,7 @@ Subtopics
   "Define a proof-builder macro command
 
   A call of define-pc-macro defines a sort of macro, which is a tactic
-  that generate [proof-builder] instructions.  This topic contains
+  that generates [proof-builder] instructions.  This topic contains
   basic information about how to use this utility.  For somewhat
   sophisticated, but commented, examples, see the [community-book]
   books/kestrel/utilities/proof-builder-macros.lisp and associated
@@ -22340,7 +22340,7 @@ Subtopics
   goals.  (See [proof-builder-commands] for documentation of the
   command then, which is itself a pc-macro command, and commands
   induct and bash.)  Rather than issuing (then induct bash), or worse
-  yet issuing induct and then issuing bash for each resulting goals,
+  yet issuing induct and then issuing bash for each resulting goal,
   the above definition of ib would let you issue ib and get the same
   effect.
 
@@ -86763,6 +86763,11 @@ Subtopics
 
   The proof-builder supports user-defined macros, which are tactics
   that generate proof-builder instructions.  See [define-pc-macro].
+
+  Remark. The ``pc-'' prefix, for example in ``define-pc-macro'' above,
+  stems from an earlier name for the proof-builder, which was
+  ``proof-checker''.  That also accounts for the string \"PC\" in the
+  package name, \"ACL2-PC\".
 
 
 Subtopics

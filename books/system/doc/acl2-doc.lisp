@@ -86412,7 +86412,12 @@ arithmetic) for libraries of @(see books) for arithmetic reasoning.</p>")
  commands, see @(see proof-builder-commands-short-list).</p>
 
  <p>The proof-builder supports user-defined macros, which are tactics that
- generate proof-builder instructions.  See @(see define-pc-macro).</p>")
+ generate proof-builder instructions.  See @(see define-pc-macro).</p>
+
+ <p><i>Remark.</i>  The ``pc-'' prefix, for example in ``define-pc-macro''
+ above, stems from an earlier name for the proof-builder, which was
+ ``proof-checker''.  That also accounts for the string @('\"PC\"') in the
+ package name, @('\"ACL2-PC\"').</p>")
 
 (defxdoc proof-builder-commands
   :parents (proof-builder)
