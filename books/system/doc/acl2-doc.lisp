@@ -19500,13 +19500,21 @@ subtree of X with T, without duplication.</p>
 (defxdoc define-pc-macro
   :parents (proof-builder)
   :short "Define a proof-builder macro command"
-  :long "@({
-  Example:
-  (define-pc-macro ib (&optional term)
-    (value
-     (if term
-         `(then (induct ,term) bash)
-       `(then induct bash))))
+  :long "<p>A call of @('define-pc-macro') defines a sort of macro, which is a
+ tactic that generate @(see proof-builder) instructions.  This topic contains
+ basic information about how to use this utility.  For somewhat sophisticated,
+ but commented, examples, see the @(see community-book)
+ @('books/kestrel/utilities/proof-builder-macros.lisp') and associated tests in
+ the same directory, @('proof-builder-macros-tests.lisp').</p>
+
+ <p>We begin with the following example.</p>
+
+ @({
+ (define-pc-macro ib (&optional term)
+   (value
+    (if term
+        `(then (induct ,term) bash)
+      `(then induct bash))))
  })
 
  <p>The example above captures a common paradigm: one attempts to prove the
@@ -19518,8 +19526,8 @@ subtree of X with T, without duplication.</p>
  @('ib') would let you issue @('ib') and get the same effect.</p>
 
  @({
-  General Form:
-  (define-pc-macro cmd args doc-string dcl ... dcl body)
+ General Form:
+ (define-pc-macro cmd args doc-string dcl ... dcl body)
  })
 
  <p>where @('cmd') is the name of the pc-macro than you want to define,
@@ -19530,8 +19538,7 @@ subtree of X with T, without duplication.</p>
  <p>The value of @('body') should be an @(see error-triple), of the form @('(mv
  erp xxx state)') for some @('erp') and @('xxx').  If @('erp') is @('nil'),
  then @('xxx') is handed off to the interactive proof-builder's instruction
- interpreter.  Otherwise, evaluation typically halts.  We may write more on the
- full story later if there is interest in reading it.</p>")
+ interpreter.  Otherwise, evaluation typically halts.</p>")
 
 (defxdoc define-pc-meta
   :parents (proof-builder)
@@ -86402,7 +86409,10 @@ arithmetic) for libraries of @(see books) for arithmetic reasoning.</p>")
 
  <p>Individual proof-builder commands are documented in subsection @(see
  proof-builder-commands).  For a list of perhaps the most commonly used
- commands, see @(see proof-builder-commands-short-list).</p>")
+ commands, see @(see proof-builder-commands-short-list).</p>
+
+ <p>The proof-builder supports user-defined macros, which are tactics that
+ generate proof-builder instructions.  See @(see define-pc-macro).</p>")
 
 (defxdoc proof-builder-commands
   :parents (proof-builder)

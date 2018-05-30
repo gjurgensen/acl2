@@ -22320,7 +22320,15 @@ Subtopics
   (PROOF-BUILDER)
   "Define a proof-builder macro command
 
-    Example:
+  A call of define-pc-macro defines a sort of macro, which is a tactic
+  that generate [proof-builder] instructions.  This topic contains
+  basic information about how to use this utility.  For somewhat
+  sophisticated, but commented, examples, see the [community-book]
+  books/kestrel/utilities/proof-builder-macros.lisp and associated
+  tests in the same directory, proof-builder-macros-tests.lisp.
+
+  We begin with the following example.
+
     (define-pc-macro ib (&optional term)
       (value
        (if term
@@ -22347,8 +22355,7 @@ Subtopics
   The value of body should be an [error-triple], of the form (mv erp
   xxx state) for some erp and xxx.  If erp is nil, then xxx is handed
   off to the interactive proof-builder's instruction interpreter.
-  Otherwise, evaluation typically halts.  We may write more on the
-  full story later if there is interest in reading it.")
+  Otherwise, evaluation typically halts.")
  (DEFINE-PC-META
   (PROOF-BUILDER)
   "Define a proof-builder meta command
@@ -86753,6 +86760,9 @@ Subtopics
   Individual proof-builder commands are documented in subsection
   [proof-builder-commands].  For a list of perhaps the most commonly
   used commands, see [proof-builder-commands-short-list].
+
+  The proof-builder supports user-defined macros, which are tactics
+  that generate proof-builder instructions.  See [define-pc-macro].
 
 
 Subtopics
