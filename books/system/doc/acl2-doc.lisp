@@ -19501,7 +19501,7 @@ subtree of X with T, without duplication.</p>
   :parents (proof-builder)
   :short "Define a proof-builder macro command"
   :long "<p>A call of @('define-pc-macro') defines a sort of macro, which is a
- tactic that generate @(see proof-builder) instructions.  This topic contains
+ tactic that generates @(see proof-builder) instructions.  This topic contains
  basic information about how to use this utility.  For somewhat sophisticated,
  but commented, examples, see the @(see community-book)
  @('books/kestrel/utilities/proof-builder-macros.lisp') and associated tests in
