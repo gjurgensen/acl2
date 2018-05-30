@@ -19522,7 +19522,7 @@ subtree of X with T, without duplication.</p>
  @(see proof-builder-commands) for documentation of the command @('then'),
  which is itself a pc-macro command, and commands @('induct') and @('bash').)
  Rather than issuing @('(then induct bash)'), or worse yet issuing @('induct')
- and then issuing @('bash') for each resulting goals, the above definition of
+ and then issuing @('bash') for each resulting goal, the above definition of
  @('ib') would let you issue @('ib') and get the same effect.</p>
 
  @({
