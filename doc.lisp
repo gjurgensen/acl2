@@ -78618,6 +78618,11 @@ Changes to Existing Features
   The [proof-builder] command, quiet!, now inhibits all output except
   error output (and that too, if already inhibited).
 
+  Warnings have been modified that are labeled ``[Non-rec]'', generated
+  for rules with problematic occurrences of non-recursive function
+  symbols.  Now they take into account rules of class :[definition].
+  Thanks to Mihir Mehta for bringing this issue to our attention.
+
 
 New Features
 
