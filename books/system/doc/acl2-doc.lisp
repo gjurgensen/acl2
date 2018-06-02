@@ -2864,12 +2864,23 @@
  <li>Many commands offer defaults, and many offer completion.  The default is
  determined by cursor position: if the cursor is sitting on a letter of a
  documentation topic name, or on a space character immediately after it, then
- that name will be offered as the default.  Completion is carried out with the
- usual emacs ``@('completing-read')''; thus, for example, the character
- `@('?')' is a help key, so if you want that character as part of your topic
- name, prefix it with @('control-q').  For example, after the `@('g')' command
- you can go to the topic @(tsee mv?) by typing the character sequence
- @('<m,v,control-q ?>').<p/></li>
+ that name will be offered as the default.  Completion tips:<p/>
+
+ <ul>
+
+ <li>Completion is carried out with the usual emacs ``@('completing-read')'';
+ thus, for example, the character `@('?')' is a help key, so if you want that
+ character as part of your topic name, prefix it with @('control-q').  For
+ example, after the `@('g')' command you can go to the topic @(tsee mv?) by
+ typing the character sequence @('<m,v,control-q ?>').</li>
+
+ <li>To find completions that have package prefixes, type a colon (:) in the
+ front, and completion will show matching topics.  For example, @('\"g\"')
+ followed by @('\":rew\"') and then two tabs will show, at least in recent
+ versions of Emacs, a list of topics that includes
+ @('\"ACL2-PC::REWRITE\"').</li>
+
+ </ul><p/></li>
 
  <li>Square brackets typically indicate documentation topic names, for example:
  <tt>[acl2-doc]</tt>.  (As mentioned above, there are occasional exceptions,
@@ -19489,13 +19500,21 @@ subtree of X with T, without duplication.</p>
 (defxdoc define-pc-macro
   :parents (proof-builder)
   :short "Define a proof-builder macro command"
-  :long "@({
-  Example:
-  (define-pc-macro ib (&optional term)
-    (value
-     (if term
-         `(then (induct ,term) bash)
-       `(then induct bash))))
+  :long "<p>A call of @('define-pc-macro') defines a sort of macro, which is a
+ tactic that generates @(see proof-builder) instructions.  This topic contains
+ basic information about how to use this utility.  For somewhat sophisticated,
+ but commented, examples, see the @(see community-book)
+ @('books/kestrel/utilities/proof-builder-macros.lisp') and associated tests in
+ the same directory, @('proof-builder-macros-tests.lisp').</p>
+
+ <p>We begin with the following example.</p>
+
+ @({
+ (define-pc-macro ib (&optional term)
+   (value
+    (if term
+        `(then (induct ,term) bash)
+      `(then induct bash))))
  })
 
  <p>The example above captures a common paradigm: one attempts to prove the
@@ -19503,12 +19522,12 @@ subtree of X with T, without duplication.</p>
  @(see proof-builder-commands) for documentation of the command @('then'),
  which is itself a pc-macro command, and commands @('induct') and @('bash').)
  Rather than issuing @('(then induct bash)'), or worse yet issuing @('induct')
- and then issuing @('bash') for each resulting goals, the above definition of
+ and then issuing @('bash') for each resulting goal, the above definition of
  @('ib') would let you issue @('ib') and get the same effect.</p>
 
  @({
-  General Form:
-  (define-pc-macro cmd args doc-string dcl ... dcl body)
+ General Form:
+ (define-pc-macro cmd args doc-string dcl ... dcl body)
  })
 
  <p>where @('cmd') is the name of the pc-macro than you want to define,
@@ -19519,8 +19538,7 @@ subtree of X with T, without duplication.</p>
  <p>The value of @('body') should be an @(see error-triple), of the form @('(mv
  erp xxx state)') for some @('erp') and @('xxx').  If @('erp') is @('nil'),
  then @('xxx') is handed off to the interactive proof-builder's instruction
- interpreter.  Otherwise, evaluation typically halts.  We may write more on the
- full story later if there is interest in reading it.</p>")
+ interpreter.  Otherwise, evaluation typically halts.</p>")
 
 (defxdoc define-pc-meta
   :parents (proof-builder)
@@ -80104,6 +80122,11 @@ it."
  <p>The @(see proof-builder) command, @('quiet!'), now inhibits all output
  except @('error') output (and that too, if already inhibited).</p>
 
+ <p>Warnings have been modified that are labeled ``[Non-rec]'', generated for
+ rules with problematic occurrences of non-recursive function symbols.  Now
+ they take into account rules of class @(':')@(tsee definition).  Thanks to
+ Mihir Mehta for bringing this issue to our attention.</p>
+
  <h3>New Features</h3>
 
  <p>The @(see summary) now shows, by default, the list of doublets @('(f g)')
@@ -86391,7 +86414,15 @@ arithmetic) for libraries of @(see books) for arithmetic reasoning.</p>")
 
  <p>Individual proof-builder commands are documented in subsection @(see
  proof-builder-commands).  For a list of perhaps the most commonly used
- commands, see @(see proof-builder-commands-short-list).</p>")
+ commands, see @(see proof-builder-commands-short-list).</p>
+
+ <p>The proof-builder supports user-defined macros, which are tactics that
+ generate proof-builder instructions.  See @(see define-pc-macro).</p>
+
+ <p><i>Remark.</i>  The ``pc-'' prefix, for example in ``define-pc-macro''
+ above, stems from an earlier name for the proof-builder, which was
+ ``proof-checker''.  That also accounts for the string @('\"PC\"') in the
+ package name, @('\"ACL2-PC\"').</p>")
 
 (defxdoc proof-builder-commands
   :parents (proof-builder)

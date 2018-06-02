@@ -4933,12 +4933,19 @@ Silent loading of ACL2 customization files
       is determined by cursor position: if the cursor is sitting on a
       letter of a documentation topic name, or on a space character
       immediately after it, then that name will be offered as the
-      default.  Completion is carried out with the usual emacs
-      ``completing-read''; thus, for example, the character `?' is a
-      help key, so if you want that character as part of your topic
-      name, prefix it with control-q.  For example, after the `g'
-      command you can go to the topic [mv?] by typing the character
-      sequence <m,v,control-q ?>.
+      default.  Completion tips:
+
+        * Completion is carried out with the usual emacs ``completing-read'';
+          thus, for example, the character `?' is a help key, so if
+          you want that character as part of your topic name, prefix
+          it with control-q.  For example, after the `g' command you
+          can go to the topic [mv?] by typing the character sequence
+          <m,v,control-q ?>.
+        * To find completions that have package prefixes, type a colon (:) in
+          the front, and completion will show matching topics.  For
+          example, \"g\" followed by \":rew\" and then two tabs will
+          show, at least in recent versions of Emacs, a list of
+          topics that includes \"ACL2-PC::REWRITE\".
 
     * Square brackets typically indicate documentation topic names, for
       example: [acl2-doc].  (As mentioned above, there are occasional
@@ -22313,7 +22320,15 @@ Subtopics
   (PROOF-BUILDER)
   "Define a proof-builder macro command
 
-    Example:
+  A call of define-pc-macro defines a sort of macro, which is a tactic
+  that generates [proof-builder] instructions.  This topic contains
+  basic information about how to use this utility.  For somewhat
+  sophisticated, but commented, examples, see the [community-book]
+  books/kestrel/utilities/proof-builder-macros.lisp and associated
+  tests in the same directory, proof-builder-macros-tests.lisp.
+
+  We begin with the following example.
+
     (define-pc-macro ib (&optional term)
       (value
        (if term
@@ -22325,7 +22340,7 @@ Subtopics
   goals.  (See [proof-builder-commands] for documentation of the
   command then, which is itself a pc-macro command, and commands
   induct and bash.)  Rather than issuing (then induct bash), or worse
-  yet issuing induct and then issuing bash for each resulting goals,
+  yet issuing induct and then issuing bash for each resulting goal,
   the above definition of ib would let you issue ib and get the same
   effect.
 
@@ -22340,8 +22355,7 @@ Subtopics
   The value of body should be an [error-triple], of the form (mv erp
   xxx state) for some erp and xxx.  If erp is nil, then xxx is handed
   off to the interactive proof-builder's instruction interpreter.
-  Otherwise, evaluation typically halts.  We may write more on the
-  full story later if there is interest in reading it.")
+  Otherwise, evaluation typically halts.")
  (DEFINE-PC-META
   (PROOF-BUILDER)
   "Define a proof-builder meta command
@@ -78604,6 +78618,11 @@ Changes to Existing Features
   The [proof-builder] command, quiet!, now inhibits all output except
   error output (and that too, if already inhibited).
 
+  Warnings have been modified that are labeled ``[Non-rec]'', generated
+  for rules with problematic occurrences of non-recursive function
+  symbols.  Now they take into account rules of class :[definition].
+  Thanks to Mihir Mehta for bringing this issue to our attention.
+
 
 New Features
 
@@ -86746,6 +86765,14 @@ Subtopics
   Individual proof-builder commands are documented in subsection
   [proof-builder-commands].  For a list of perhaps the most commonly
   used commands, see [proof-builder-commands-short-list].
+
+  The proof-builder supports user-defined macros, which are tactics
+  that generate proof-builder instructions.  See [define-pc-macro].
+
+  Remark. The ``pc-'' prefix, for example in ``define-pc-macro'' above,
+  stems from an earlier name for the proof-builder, which was
+  ``proof-checker''.  That also accounts for the string \"PC\" in the
+  package name, \"ACL2-PC\".
 
 
 Subtopics
