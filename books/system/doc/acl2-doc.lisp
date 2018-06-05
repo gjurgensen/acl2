@@ -80127,6 +80127,16 @@ it."
  they take into account rules of class @(':')@(tsee definition).  Thanks to
  Mihir Mehta for bringing this issue to our attention.</p>
 
+ <p>It is no longer required to specify @(':install-body nil') in a @(see
+ definition) rule when the function symbol is a member of the value of the
+ constant @('*definition-minimal-theory*').  Thanks to Eric Smith for pointing
+ out that the utility, @(tsee install-not-normalized), was failing on, for
+ example, @(tsee eq).  This change fixes that problem.  Technical note for
+ system hackers only: Because of this change, the value of @('(body fn t
+ wrld)') is no longer guaranteed to get the original definition of @('fn') when
+ fn is in @('*definition-minimal-theory*'); for that purpose use the new
+ utility, @('bbody').</p>
+
  <h3>New Features</h3>
 
  <p>The @(see summary) now shows, by default, the list of doublets @('(f g)')
@@ -92465,17 +92475,15 @@ arithmetic) for libraries of @(see books) for arithmetic reasoning.</p>")
  is omitted or the value is @(':normalize'), then this definition will be
  simplified with the @(see normalization) procedure that is used by default
  when processing definitions made with @(tsee defun).  You must explicitly
- specify @(':install-body nil') in the following cases: @('fn') (as above) is a
- member of the value of constant @('*definition-minimal-theory*'), the
- arguments are not a list of distinct variables, @('equiv') (as above) is not
- @(tsee equal), or there are free variables in the hypotheses or right-hand
- side (see @(see free-variables)).  However, supplying @(':install-body nil')
- will not affect the rewriter's application of the @(':definition') rule, other
- than to avoid using the rule to apply @(':expand') hints.  If a definition
- rule equates @('(f a1 ... ak)') with @('body') but there are hypotheses,
- @('hyps'), then @(':expand') @(see hints) will replace terms @('(f term1
- ... termk)') by corresponding terms @('(if hyps body (hide (f term1
- ... termk)))').</p>
+ specify @(':install-body nil') in the following cases: the arguments are not a
+ list of distinct variables, @('equiv') (as above) is not @(tsee equal), or
+ there are free variables in the hypotheses or right-hand side (see @(see
+ free-variables)).  However, supplying @(':install-body nil') will not affect
+ the rewriter's application of the @(':definition') rule, other than to avoid
+ using the rule to apply @(':expand') hints.  If a definition rule equates
+ @('(f a1 ... ak)') with @('body') but there are hypotheses, @('hyps'), then
+ @(':expand') @(see hints) will replace terms @('(f term1 ... termk)') by
+ corresponding terms @('(if hyps body (hide (f term1 ... termk)))').</p>
 
  <p>@(':')@(tsee Loop-stopper) &mdash; this field may only be supplied if the
  class is @(':')@(tsee rewrite).  Its value must be a list of entries each
