@@ -50542,11 +50542,13 @@ Subtopics
   ...)), where for each i from 1 to k the number of formal parameters
   is the same for fi and gi, then the functional substitution ((f1 .
   g1) ... (fk . gk)) is applied to the termination theorem for the
-  fi.  Note that unlike normal [functional-instantiation], here there
-  is no proof obligation.  (Logical justification in a nutshell: the
-  termination proof for the fi took place before adding their
-  definitional equations to the current theory, where the fi were
-  thus stubs with no axioms.)
+  fi.  (Logical justification in a nutshell: the termination proof
+  for the fi took place before adding their definitional equations to
+  the current theory, where the fi were thus stubs with no axioms.)
+  Note that unlike normal [functional-instantiation], here there is
+  no proof obligation.  However, the restriction applies from (5)
+  above that the functions fi are instantiable; when that fails, then
+  the replacement of each fi by gi will not take place.
 
   Finally, note that an optional second argument to
   :termination-theorem specifies an explicit functional substitution
@@ -78748,6 +78750,13 @@ Heuristic and Efficiency Improvements
 
 
 Bug Fixes
+
+  There was a soundness bug in the automatic functional instantiation
+  that can be applied for a :termination-theorem [lemma-instance].
+  Thanks to Eric Smith for sending an example to illustrate this bug,
+  for suggesting its cause, and for permission to include that
+  example in a comment in the ACL2 sources definition of the
+  constant, *non-instantiable-primitives*.
 
   Fixed two bugs in [apply$]: we now [disable] the
   [executable-counterpart] of good-bye-fn to prevent quitting ACL2
