@@ -120989,11 +120989,12 @@ Subtopics
     General Form:
     (repeat instruction)
 
-  The given instruction is run repeatedly until it ``fails''.
+  The given instruction is run repeatedly until it ``fails''.  A call
+  of :repeat always ``succeeds''.
 
   Remark: There is nothing here in general to prevent the instruction
-  from being run after all goals have been proved, though this is
-  indeed the case for primitive instructions.")
+  from being run after all goals have been proved, though it may then
+  fail, thus causing :repeat to return.")
  (ACL2-PC::REPEAT-REC
       (PROOF-BUILDER-COMMANDS)
       "(macro) auxiliary to repeat

@@ -120350,11 +120350,12 @@ repeat the given instruction until it ``fails''"
   (repeat instruction)
  })
 
- <p>The given @('instruction') is run repeatedly until it ``fails''.</p>
+ <p>The given @('instruction') is run repeatedly until it ``fails''.  A call of
+ @(':repeat') always ``succeeds''.</p>
 
  <p><b>Remark:</b> There is nothing here in general to prevent the instruction
- from being run after all goals have been proved, though this is indeed the
- case for primitive instructions.</p>")
+ from being run after all goals have been proved, though it may then fail, thus
+ causing @(':repeat') to return.</p>")
 
 (defxdoc acl2-pc::repeat-rec
   :parents (proof-builder-commands)
