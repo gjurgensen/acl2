@@ -50121,7 +50121,7 @@ tables in the current Hons Space."
  </ul>
 
  <p>The implementation of these checks incorporates a bit of trickery so that
- they are not reasonably efficient.</p>
+ they are reasonably efficient.</p>
 
  <p>Note that @(tsee set-guard-checking) affects evaluation of calls of
  @('(magic-ev-fncall fn ...)') just as it affects calls of @('fn'), for example
