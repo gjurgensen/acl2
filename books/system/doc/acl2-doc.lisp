@@ -79951,7 +79951,7 @@ it."
  note-8-1-books) for a summary of changes made to the ACL2 Community Books
  since ACL2 8.0, including the build system.  Also note that with each release,
  some built-in functions that were formerly in @(':')@(tsee program) mode are
- now @('see guard')-verified @(':')@(tsee logic) mode functions.</p>
+ now @(see guard)-verified @(':')@(tsee logic) mode functions.</p>
 
  <h3>Changes to Existing Features</h3>
 

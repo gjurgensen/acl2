@@ -53950,7 +53950,7 @@ Subtopics
     * Fn must not be untouchable (see [push-untouchable]).
 
   The implementation of these checks incorporates a bit of trickery so
-  that they are not reasonably efficient.
+  that they are reasonably efficient.
 
   Note that [set-guard-checking] affects evaluation of calls of
   (magic-ev-fncall fn ...) just as it affects calls of fn, for
@@ -78456,7 +78456,7 @@ Experimental Versions
   note-8-1-books for a summary of changes made to the ACL2 Community
   Books since ACL2 8.0, including the build system.  Also note that
   with each release, some built-in functions that were formerly in
-  :[program] mode are now see guard-verified :[logic] mode functions.
+  :[program] mode are now [guard]-verified :[logic] mode functions.
 
 
 Changes to Existing Features
