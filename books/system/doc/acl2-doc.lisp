@@ -2864,12 +2864,23 @@
  <li>Many commands offer defaults, and many offer completion.  The default is
  determined by cursor position: if the cursor is sitting on a letter of a
  documentation topic name, or on a space character immediately after it, then
- that name will be offered as the default.  Completion is carried out with the
- usual emacs ``@('completing-read')''; thus, for example, the character
- `@('?')' is a help key, so if you want that character as part of your topic
- name, prefix it with @('control-q').  For example, after the `@('g')' command
- you can go to the topic @(tsee mv?) by typing the character sequence
- @('<m,v,control-q ?>').<p/></li>
+ that name will be offered as the default.  Completion tips:<p/>
+
+ <ul>
+
+ <li>Completion is carried out with the usual emacs ``@('completing-read')'';
+ thus, for example, the character `@('?')' is a help key, so if you want that
+ character as part of your topic name, prefix it with @('control-q').  For
+ example, after the `@('g')' command you can go to the topic @(tsee mv?) by
+ typing the character sequence @('<m,v,control-q ?>').</li>
+
+ <li>To find completions that have package prefixes, type a colon (:) in the
+ front, and completion will show matching topics.  For example, @('\"g\"')
+ followed by @('\":rew\"') and then two tabs will show, at least in recent
+ versions of Emacs, a list of topics that includes
+ @('\"ACL2-PC::REWRITE\"').</li>
+
+ </ul><p/></li>
 
  <li>Square brackets typically indicate documentation topic names, for example:
  <tt>[acl2-doc]</tt>.  (As mentioned above, there are occasional exceptions,
@@ -19489,13 +19500,21 @@ subtree of X with T, without duplication.</p>
 (defxdoc define-pc-macro
   :parents (proof-builder)
   :short "Define a proof-builder macro command"
-  :long "@({
-  Example:
-  (define-pc-macro ib (&optional term)
-    (value
-     (if term
-         `(then (induct ,term) bash)
-       `(then induct bash))))
+  :long "<p>A call of @('define-pc-macro') defines a sort of macro, which is a
+ tactic that generates @(see proof-builder) instructions.  This topic contains
+ basic information about how to use this utility.  For somewhat sophisticated,
+ but commented, examples, see the @(see community-book)
+ @('books/kestrel/utilities/proof-builder-macros.lisp') and associated tests in
+ the same directory, @('proof-builder-macros-tests.lisp').</p>
+
+ <p>We begin with the following example.</p>
+
+ @({
+ (define-pc-macro ib (&optional term)
+   (value
+    (if term
+        `(then (induct ,term) bash)
+      `(then induct bash))))
  })
 
  <p>The example above captures a common paradigm: one attempts to prove the
@@ -19503,12 +19522,12 @@ subtree of X with T, without duplication.</p>
  @(see proof-builder-commands) for documentation of the command @('then'),
  which is itself a pc-macro command, and commands @('induct') and @('bash').)
  Rather than issuing @('(then induct bash)'), or worse yet issuing @('induct')
- and then issuing @('bash') for each resulting goals, the above definition of
+ and then issuing @('bash') for each resulting goal, the above definition of
  @('ib') would let you issue @('ib') and get the same effect.</p>
 
  @({
-  General Form:
-  (define-pc-macro cmd args doc-string dcl ... dcl body)
+ General Form:
+ (define-pc-macro cmd args doc-string dcl ... dcl body)
  })
 
  <p>where @('cmd') is the name of the pc-macro than you want to define,
@@ -19519,8 +19538,7 @@ subtree of X with T, without duplication.</p>
  <p>The value of @('body') should be an @(see error-triple), of the form @('(mv
  erp xxx state)') for some @('erp') and @('xxx').  If @('erp') is @('nil'),
  then @('xxx') is handed off to the interactive proof-builder's instruction
- interpreter.  Otherwise, evaluation typically halts.  We may write more on the
- full story later if there is interest in reading it.</p>")
+ interpreter.  Otherwise, evaluation typically halts.</p>")
 
 (defxdoc define-pc-meta
   :parents (proof-builder)
@@ -46931,11 +46949,14 @@ tables in the current Hons Space."
  ...)  ... (defun gk ...))'), where for each @('i') from @('1') to @('k') the
  number of formal parameters is the same for @('fi') and @('gi'), then the
  functional substitution @('((f1 . g1) ... (fk . gk))') is applied to the
- termination theorem for the @('fi').  Note that unlike normal @(see
- functional-instantiation), here there is no proof obligation.  (Logical
- justification in a nutshell: the termination proof for the @('fi') took place
- before adding their definitional equations to the current theory, where the
- @('fi') were thus stubs with no axioms.)</p>
+ termination theorem for the @('fi').  (Logical justification in a nutshell:
+ the termination proof for the @('fi') took place before adding their
+ definitional equations to the current theory, where the @('fi') were thus
+ stubs with no axioms.)  Note that unlike normal @(see
+ functional-instantiation), here there is no proof obligation.  However, the
+ restriction applies from (5) above that the functions @('fi') are
+ instantiable; when that fails, then the replacement of each @('fi') by @('gi')
+ will not take place.</p>
 
  <p>Finally, note that an optional second argument to @(':termination-theorem')
  specifies an explicit functional substitution @('((f1 g1) ... (fn gn))'),
@@ -50100,7 +50121,7 @@ tables in the current Hons Space."
  </ul>
 
  <p>The implementation of these checks incorporates a bit of trickery so that
- they are not reasonably efficient.</p>
+ they are reasonably efficient.</p>
 
  <p>Note that @(tsee set-guard-checking) affects evaluation of calls of
  @('(magic-ev-fncall fn ...)') just as it affects calls of @('fn'), for example
@@ -79930,7 +79951,7 @@ it."
  note-8-1-books) for a summary of changes made to the ACL2 Community Books
  since ACL2 8.0, including the build system.  Also note that with each release,
  some built-in functions that were formerly in @(':')@(tsee program) mode are
- now @('see guard')-verified @(':')@(tsee logic) mode functions.</p>
+ now @(see guard)-verified @(':')@(tsee logic) mode functions.</p>
 
  <h3>Changes to Existing Features</h3>
 
@@ -80101,6 +80122,24 @@ it."
  <p>The definition of @(tsee msgp) has been strengthened to require that for a
  @('cons') pair, the @('cdr') must satisfy @(tsee character-alistp).</p>
 
+ <p>The @(see proof-builder) command, @('quiet!'), now inhibits all output
+ except @('error') output (and that too, if already inhibited).</p>
+
+ <p>Warnings have been modified that are labeled ``[Non-rec]'', generated for
+ rules with problematic occurrences of non-recursive function symbols.  Now
+ they take into account rules of class @(':')@(tsee definition).  Thanks to
+ Mihir Mehta for bringing this issue to our attention.</p>
+
+ <p>It is no longer required to specify @(':install-body nil') in a @(see
+ definition) rule when the function symbol is a member of the value of the
+ constant @('*definition-minimal-theory*').  Thanks to Eric Smith for pointing
+ out that the utility, @(tsee install-not-normalized), was failing on, for
+ example, @(tsee eq).  This change fixes that problem.  Technical note for
+ system hackers only: Because of this change, the value of @('(body fn t
+ wrld)') is no longer guaranteed to get the original definition of @('fn') when
+ fn is in @('*definition-minimal-theory*'); for that purpose use the new
+ utility, @('bbody').</p>
+
  <h3>New Features</h3>
 
  <p>The @(see summary) now shows, by default, the list of doublets @('(f g)')
@@ -80196,7 +80235,8 @@ it."
  lambda forms whose @(see guard)s are verified by the @(see tau-system) and
  that are <i>tame</i> (see @(see apply$)).  The optimization had been used in
  the unadvertised use of ``The Rubric'' prior to the release of ACL2 Version
- 8.0.</li>
+ 8.0.  Warnings about non-tame-compliant lambdas will now appear when
+ appropriate, as had been the case in Version  7.4.</li>
 
  <li>The optimization above has been improved so that instead of three cache
  lines, there is an efficient implementation using 1000 cache lines.  That is
@@ -80220,6 +80260,12 @@ it."
  than was previously the case.</p>
 
  <h3>Bug Fixes</h3>
+
+ <p>There was a soundness bug in the automatic functional instantiation that
+ can be applied for a @(':termination-theorem') @(see lemma-instance).  Thanks
+ to Eric Smith for sending an example to illustrate this bug, for suggesting
+ its cause, and for permission to include that example in a comment in the ACL2
+ sources definition of the constant, @('*non-instantiable-primitives*').</p>
 
  <p>Fixed two bugs in @(tsee apply$): we now @(tsee disable) the @(see
  executable-counterpart) of @('good-bye-fn') to prevent quitting ACL2 entirely
@@ -86387,7 +86433,15 @@ arithmetic) for libraries of @(see books) for arithmetic reasoning.</p>")
 
  <p>Individual proof-builder commands are documented in subsection @(see
  proof-builder-commands).  For a list of perhaps the most commonly used
- commands, see @(see proof-builder-commands-short-list).</p>")
+ commands, see @(see proof-builder-commands-short-list).</p>
+
+ <p>The proof-builder supports user-defined macros, which are tactics that
+ generate proof-builder instructions.  See @(see define-pc-macro).</p>
+
+ <p><i>Remark.</i>  The ``pc-'' prefix, for example in ``define-pc-macro''
+ above, stems from an earlier name for the proof-builder, which was
+ ``proof-checker''.  That also accounts for the string @('\"PC\"') in the
+ package name, @('\"ACL2-PC\"').</p>")
 
 (defxdoc proof-builder-commands
   :parents (proof-builder)
@@ -92430,17 +92484,15 @@ arithmetic) for libraries of @(see books) for arithmetic reasoning.</p>")
  is omitted or the value is @(':normalize'), then this definition will be
  simplified with the @(see normalization) procedure that is used by default
  when processing definitions made with @(tsee defun).  You must explicitly
- specify @(':install-body nil') in the following cases: @('fn') (as above) is a
- member of the value of constant @('*definition-minimal-theory*'), the
- arguments are not a list of distinct variables, @('equiv') (as above) is not
- @(tsee equal), or there are free variables in the hypotheses or right-hand
- side (see @(see free-variables)).  However, supplying @(':install-body nil')
- will not affect the rewriter's application of the @(':definition') rule, other
- than to avoid using the rule to apply @(':expand') hints.  If a definition
- rule equates @('(f a1 ... ak)') with @('body') but there are hypotheses,
- @('hyps'), then @(':expand') @(see hints) will replace terms @('(f term1
- ... termk)') by corresponding terms @('(if hyps body (hide (f term1
- ... termk)))').</p>
+ specify @(':install-body nil') in the following cases: the arguments are not a
+ list of distinct variables, @('equiv') (as above) is not @(tsee equal), or
+ there are free variables in the hypotheses or right-hand side (see @(see
+ free-variables)).  However, supplying @(':install-body nil') will not affect
+ the rewriter's application of the @(':definition') rule, other than to avoid
+ using the rule to apply @(':expand') hints.  If a definition rule equates
+ @('(f a1 ... ak)') with @('body') but there are hypotheses, @('hyps'), then
+ @(':expand') @(see hints) will replace terms @('(f term1 ... termk)') by
+ corresponding terms @('(if hyps body (hide (f term1 ... termk)))').</p>
 
  <p>@(':')@(tsee Loop-stopper) &mdash; this field may only be supplied if the
  class is @(':')@(tsee rewrite).  Its value must be a list of entries each
@@ -120298,11 +120350,12 @@ repeat the given instruction until it ``fails''"
   (repeat instruction)
  })
 
- <p>The given @('instruction') is run repeatedly until it ``fails''.</p>
+ <p>The given @('instruction') is run repeatedly until it ``fails''.  A call of
+ @(':repeat') always ``succeeds''.</p>
 
  <p><b>Remark:</b> There is nothing here in general to prevent the instruction
- from being run after all goals have been proved, though this is indeed the
- case for primitive instructions.</p>")
+ from being run after all goals have been proved, though it may then fail, thus
+ causing @(':repeat') to return.</p>")
 
 (defxdoc acl2-pc::repeat-rec
   :parents (proof-builder-commands)

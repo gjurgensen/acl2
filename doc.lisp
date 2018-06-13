@@ -4933,12 +4933,19 @@ Silent loading of ACL2 customization files
       is determined by cursor position: if the cursor is sitting on a
       letter of a documentation topic name, or on a space character
       immediately after it, then that name will be offered as the
-      default.  Completion is carried out with the usual emacs
-      ``completing-read''; thus, for example, the character `?' is a
-      help key, so if you want that character as part of your topic
-      name, prefix it with control-q.  For example, after the `g'
-      command you can go to the topic [mv?] by typing the character
-      sequence <m,v,control-q ?>.
+      default.  Completion tips:
+
+        * Completion is carried out with the usual emacs ``completing-read'';
+          thus, for example, the character `?' is a help key, so if
+          you want that character as part of your topic name, prefix
+          it with control-q.  For example, after the `g' command you
+          can go to the topic [mv?] by typing the character sequence
+          <m,v,control-q ?>.
+        * To find completions that have package prefixes, type a colon (:) in
+          the front, and completion will show matching topics.  For
+          example, \"g\" followed by \":rew\" and then two tabs will
+          show, at least in recent versions of Emacs, a list of
+          topics that includes \"ACL2-PC::REWRITE\".
 
     * Square brackets typically indicate documentation topic names, for
       example: [acl2-doc].  (As mentioned above, there are occasional
@@ -22313,7 +22320,15 @@ Subtopics
   (PROOF-BUILDER)
   "Define a proof-builder macro command
 
-    Example:
+  A call of define-pc-macro defines a sort of macro, which is a tactic
+  that generates [proof-builder] instructions.  This topic contains
+  basic information about how to use this utility.  For somewhat
+  sophisticated, but commented, examples, see the [community-book]
+  books/kestrel/utilities/proof-builder-macros.lisp and associated
+  tests in the same directory, proof-builder-macros-tests.lisp.
+
+  We begin with the following example.
+
     (define-pc-macro ib (&optional term)
       (value
        (if term
@@ -22325,7 +22340,7 @@ Subtopics
   goals.  (See [proof-builder-commands] for documentation of the
   command then, which is itself a pc-macro command, and commands
   induct and bash.)  Rather than issuing (then induct bash), or worse
-  yet issuing induct and then issuing bash for each resulting goals,
+  yet issuing induct and then issuing bash for each resulting goal,
   the above definition of ib would let you issue ib and get the same
   effect.
 
@@ -22340,8 +22355,7 @@ Subtopics
   The value of body should be an [error-triple], of the form (mv erp
   xxx state) for some erp and xxx.  If erp is nil, then xxx is handed
   off to the interactive proof-builder's instruction interpreter.
-  Otherwise, evaluation typically halts.  We may write more on the
-  full story later if there is interest in reading it.")
+  Otherwise, evaluation typically halts.")
  (DEFINE-PC-META
   (PROOF-BUILDER)
   "Define a proof-builder meta command
@@ -50528,11 +50542,13 @@ Subtopics
   ...)), where for each i from 1 to k the number of formal parameters
   is the same for fi and gi, then the functional substitution ((f1 .
   g1) ... (fk . gk)) is applied to the termination theorem for the
-  fi.  Note that unlike normal [functional-instantiation], here there
-  is no proof obligation.  (Logical justification in a nutshell: the
-  termination proof for the fi took place before adding their
-  definitional equations to the current theory, where the fi were
-  thus stubs with no axioms.)
+  fi.  (Logical justification in a nutshell: the termination proof
+  for the fi took place before adding their definitional equations to
+  the current theory, where the fi were thus stubs with no axioms.)
+  Note that unlike normal [functional-instantiation], here there is
+  no proof obligation.  However, the restriction applies from (5)
+  above that the functions fi are instantiable; when that fails, then
+  the replacement of each fi by gi will not take place.
 
   Finally, note that an optional second argument to
   :termination-theorem specifies an explicit functional substitution
@@ -53934,7 +53950,7 @@ Subtopics
     * Fn must not be untouchable (see [push-untouchable]).
 
   The implementation of these checks incorporates a bit of trickery so
-  that they are not reasonably efficient.
+  that they are reasonably efficient.
 
   Note that [set-guard-checking] affects evaluation of calls of
   (magic-ev-fncall fn ...) just as it affects calls of fn, for
@@ -78440,7 +78456,7 @@ Experimental Versions
   note-8-1-books for a summary of changes made to the ACL2 Community
   Books since ACL2 8.0, including the build system.  Also note that
   with each release, some built-in functions that were formerly in
-  :[program] mode are now see guard-verified :[logic] mode functions.
+  :[program] mode are now [guard]-verified :[logic] mode functions.
 
 
 Changes to Existing Features
@@ -78601,6 +78617,25 @@ Changes to Existing Features
   The definition of [msgp] has been strengthened to require that for a
   cons pair, the cdr must satisfy [character-alistp].
 
+  The [proof-builder] command, quiet!, now inhibits all output except
+  error output (and that too, if already inhibited).
+
+  Warnings have been modified that are labeled ``[Non-rec]'', generated
+  for rules with problematic occurrences of non-recursive function
+  symbols.  Now they take into account rules of class :[definition].
+  Thanks to Mihir Mehta for bringing this issue to our attention.
+
+  It is no longer required to specify :install-body nil in a
+  [definition] rule when the function symbol is a member of the value
+  of the constant *definition-minimal-theory*.  Thanks to Eric Smith
+  for pointing out that the utility, [install-not-normalized], was
+  failing on, for example, [eq].  This change fixes that problem.
+  Technical note for system hackers only: Because of this change, the
+  value of (body fn t wrld) is no longer guaranteed to get the
+  original definition of fn when fn is in
+  *definition-minimal-theory*; for that purpose use the new utility,
+  bbody.
+
 
 New Features
 
@@ -78691,7 +78726,9 @@ Heuristic and Efficiency Improvements
       compliant'' lambdas: lambda forms whose [guard]s are verified
       by the [tau-system] and that are tame (see [apply$]).  The
       optimization had been used in the unadvertised use of ``The
-      Rubric'' prior to the release of ACL2 Version 8.0.
+      Rubric'' prior to the release of ACL2 Version 8.0.  Warnings
+      about non-tame-compliant lambdas will now appear when
+      appropriate, as had been the case in Version 7.4.
     * The optimization above has been improved so that instead of three
       cache lines, there is an efficient implementation using 1000
       cache lines.  That is probably many more than are needed, but
@@ -78713,6 +78750,13 @@ Heuristic and Efficiency Improvements
 
 
 Bug Fixes
+
+  There was a soundness bug in the automatic functional instantiation
+  that can be applied for a :termination-theorem [lemma-instance].
+  Thanks to Eric Smith for sending an example to illustrate this bug,
+  for suggesting its cause, and for permission to include that
+  example in a comment in the ACL2 sources definition of the
+  constant, *non-instantiable-primitives*.
 
   Fixed two bugs in [apply$]: we now [disable] the
   [executable-counterpart] of good-bye-fn to prevent quitting ACL2
@@ -86742,6 +86786,14 @@ Subtopics
   [proof-builder-commands].  For a list of perhaps the most commonly
   used commands, see [proof-builder-commands-short-list].
 
+  The proof-builder supports user-defined macros, which are tactics
+  that generate proof-builder instructions.  See [define-pc-macro].
+
+  Remark. The ``pc-'' prefix, for example in ``define-pc-macro'' above,
+  stems from an earlier name for the proof-builder, which was
+  ``proof-checker''.  That also accounts for the string \"PC\" in the
+  package name, \"ACL2-PC\".
+
 
 Subtopics
 
@@ -93688,18 +93740,16 @@ Subtopics
       :normalize, then this definition will be simplified with the
       [normalization] procedure that is used by default when
       processing definitions made with [defun].  You must explicitly
-      specify :install-body nil in the following cases: fn (as above)
-      is a member of the value of constant
-      *definition-minimal-theory*, the arguments are not a list of
-      distinct variables, equiv (as above) is not [equal], or there
-      are free variables in the hypotheses or right-hand side (see
-      [free-variables]).  However, supplying :install-body nil will
-      not affect the rewriter's application of the :definition rule,
-      other than to avoid using the rule to apply :expand hints.  If
-      a definition rule equates (f a1 ... ak) with body but there are
-      hypotheses, hyps, then :expand [hints] will replace terms (f
-      term1 ... termk) by corresponding terms (if hyps body (hide (f
-      term1 ... termk))).
+      specify :install-body nil in the following cases: the arguments
+      are not a list of distinct variables, equiv (as above) is not
+      [equal], or there are free variables in the hypotheses or
+      right-hand side (see [free-variables]).  However, supplying
+      :install-body nil will not affect the rewriter's application of
+      the :definition rule, other than to avoid using the rule to
+      apply :expand hints.  If a definition rule equates (f a1 ...
+      ak) with body but there are hypotheses, hyps, then :expand
+      [hints] will replace terms (f term1 ... termk) by corresponding
+      terms (if hyps body (hide (f term1 ... termk))).
 
       :[Loop-stopper] --- this field may only be supplied if the class is
       :[rewrite].  Its value must be a list of entries each
@@ -120939,11 +120989,12 @@ Subtopics
     General Form:
     (repeat instruction)
 
-  The given instruction is run repeatedly until it ``fails''.
+  The given instruction is run repeatedly until it ``fails''.  A call
+  of :repeat always ``succeeds''.
 
   Remark: There is nothing here in general to prevent the instruction
-  from being run after all goals have been proved, though this is
-  indeed the case for primitive instructions.")
+  from being run after all goals have been proved, though it may then
+  fail, thus causing :repeat to return.")
  (ACL2-PC::REPEAT-REC
       (PROOF-BUILDER-COMMANDS)
       "(macro) auxiliary to repeat
