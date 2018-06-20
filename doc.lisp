@@ -3240,6 +3240,12 @@ Subtopics
   [Fmt1!]
       (fmt1! str alist col channel state evisc) => (mv col state)
 
+  [Fmx]
+      (fmx str &rest args) => state
+
+  [Fmx-cw]
+      (fmx-cw str &rest args) => state
+
   [Formula]
       The formula of a name or [rune]
 
@@ -3562,7 +3568,7 @@ Subtopics
       Construct a ``message'' suitable for the ~@ directive of [fmt]
 
   [Msgp]
-      Weak recognizer for a ``message''
+      Recognizer for a ``message''
 
   [Must-be-equal]
       Attach code for execution
@@ -4194,9 +4200,31 @@ Subtopics
   On the other hand, if you wish to prevent undoing commands from the
   customization file, see [reset-prehistory].
 
-  Finally, we note that except on Windows-based systems, if there is a
-  file acl2-init.lsp in your home directory, then it will be loaded
-  into raw Lisp when ACL2 is invoked.")
+  Note that except on Windows-based systems, if there is a file
+  acl2-init.lsp in your home directory, then it will be loaded into
+  raw Lisp when ACL2 is invoked.
+
+
+Silent loading of ACL2 customization files
+
+  When the environment variable ACL2_CUSTOMIZATION_QUIET is set and not
+  \"\", there will generally be no output from ACL2 customization.  A
+  special value of \"all\" for this variable will cause continued
+  minimal output after startup, as explained in the following remark.
+
+  Technical Remark.  For quiet loading of acl2-customization files,
+  [ld] specials are bound to the following values.
+
+    ld-verbose = nil
+    ld-pre-eval-print = :never
+    ld-post-eval-print = nil
+    ld-prompt = nil
+
+  These ld specials are returned to their normal values after loading
+  an ACL2 customization file, with one exception: if
+  ACL2_CUSTOMIZATION_QUIET has value \"ALL\" (or \"all\"; the case is
+  irrelevant), then those values are retained in the ACL2 loop even
+  after customization completes.")
  (ACL2-DEFAULTS-TABLE
   (TABLE)
   "A [table] specifying certain defaults, e.g., the default [defun-mode]
@@ -4905,12 +4933,19 @@ Subtopics
       is determined by cursor position: if the cursor is sitting on a
       letter of a documentation topic name, or on a space character
       immediately after it, then that name will be offered as the
-      default.  Completion is carried out with the usual emacs
-      ``completing-read''; thus, for example, the character `?' is a
-      help key, so if you want that character as part of your topic
-      name, prefix it with control-q.  For example, after the `g'
-      command you can go to the topic [mv?] by typing the character
-      sequence <m,v,control-q ?>.
+      default.  Completion tips:
+
+        * Completion is carried out with the usual emacs ``completing-read'';
+          thus, for example, the character `?' is a help key, so if
+          you want that character as part of your topic name, prefix
+          it with control-q.  For example, after the `g' command you
+          can go to the topic [mv?] by typing the character sequence
+          <m,v,control-q ?>.
+        * To find completions that have package prefixes, type a colon (:) in
+          the front, and completion will show matching topics.  For
+          example, \"g\" followed by \":rew\" and then two tabs will
+          show, at least in recent versions of Emacs, a list of
+          topics that includes \"ACL2-PC::REWRITE\".
 
     * Square brackets typically indicate documentation topic names, for
       example: [acl2-doc].  (As mentioned above, there are occasional
@@ -5235,7 +5270,7 @@ Subtopics
   unproved in the following sense: a subgoal is a key checkpoint if
   it leads, in the current call of the waterfall, to a goal that is
   pushed for induction.")
- (ACL2S (POINTERS) "See [acl2-sedan].")
+ (ACL2S (POINTERS) "See [ACL2-sedan].")
  (ACL2_AS_AN_INTERACTIVE_THEOREM_PROVER
   (PAGES_WRITTEN_ESPECIALLY_FOR_THE_TOURS)
   "ACL2 as an Interactive Theorem Prover
@@ -8940,10 +8975,8 @@ Subtopics
                  ((equal x (car (car alist)))
                   (car alist))
                  (t (assoc-equal x (cdr alist)))))")
- (ASSOC-EQ (POINTERS)
-           "See common-lisp::assoc (see [ASSOC]).")
- (ASSOC-EQUAL (POINTERS)
-              "See common-lisp::assoc (see [ASSOC]).")
+ (ASSOC-EQ (POINTERS) "See [assoc].")
+ (ASSOC-EQUAL (POINTERS) "See [assoc].")
  (ASSOC-KEYWORD
   (KEYWORD-VALUE-LISTP ACL2-BUILT-INS)
   "Look up key in a [keyword-value-listp]
@@ -9023,6 +9056,8 @@ Subtopics
            (cond ((atom lst) (eq lst nil))
                  (t (and (atom (car lst))
                          (atom-listp (cdr lst))))))")
+ (AUTO-INSTANCE (POINTERS)
+                "See defthm<w.")
  (A_FLYING_TOUR_OF_ACL2
   (PAGES_WRITTEN_ESPECIALLY_FOR_THE_TOURS)
   "A Flying Tour of ACL2
@@ -14861,7 +14896,7 @@ Subtopics
   (proving termination of recursive functions, proving theorems,
   etc.), checking as it goes that each form is an embedded event form
   (see [embedded-event-form]); (3) may roll back the [world] (how
-  far? ~-[] see below) and perform an [include-book] to check for
+  far? --- see below) and perform an [include-book] to check for
   [local] incompatibilities (see [local-incompatibility]); (4) writes
   a [certificate] recording not only that the book was certified but
   also recording the [command]s necessary to recreate the
@@ -19044,6 +19079,9 @@ Subtopics
   (IO ACL2-BUILT-INS)
   "Print to the comment window
 
+  Cw is a macro that expands to a function whose guard is t.  For a
+  guarded variant of cw, see [fmx-cw].
+
   Example:
 
     (cw \"The goal is ~p0 and the alist is ~x1.~%\"
@@ -22282,7 +22320,15 @@ Subtopics
   (PROOF-BUILDER)
   "Define a proof-builder macro command
 
-    Example:
+  A call of define-pc-macro defines a sort of macro, which is a tactic
+  that generates [proof-builder] instructions.  This topic contains
+  basic information about how to use this utility.  For somewhat
+  sophisticated, but commented, examples, see the [community-book]
+  books/kestrel/utilities/proof-builder-macros.lisp and associated
+  tests in the same directory, proof-builder-macros-tests.lisp.
+
+  We begin with the following example.
+
     (define-pc-macro ib (&optional term)
       (value
        (if term
@@ -22294,7 +22340,7 @@ Subtopics
   goals.  (See [proof-builder-commands] for documentation of the
   command then, which is itself a pc-macro command, and commands
   induct and bash.)  Rather than issuing (then induct bash), or worse
-  yet issuing induct and then issuing bash for each resulting goals,
+  yet issuing induct and then issuing bash for each resulting goal,
   the above definition of ib would let you issue ib and get the same
   effect.
 
@@ -22309,8 +22355,7 @@ Subtopics
   The value of body should be an [error-triple], of the form (mv erp
   xxx state) for some erp and xxx.  If erp is nil, then xxx is handed
   off to the interactive proof-builder's instruction interpreter.
-  Otherwise, evaluation typically halts.  We may write more on the
-  full story later if there is interest in reading it.")
+  Otherwise, evaluation typically halts.")
  (DEFINE-PC-META
   (PROOF-BUILDER)
   "Define a proof-builder meta command
@@ -23757,7 +23802,8 @@ Subtopics
   below in calls, which also indicate the arities of the functions.
   In the expressions, we use x as the object to be recognized by
   field recognizers, i as an array index, v as the ``new value'' to
-  be installed by an updater, and name as the single-threaded object.
+  be installed by an updater, k as the ``new size'' to be set by a
+  resizer, and name as the single-threaded object.
 
                      non-array field        array field
     recognizer         (cP x)                (cP x)
@@ -32693,7 +32739,8 @@ Subtopics
   files in a manner that allows them to be read, by avoiding using
   backslash (\\) to break long lines.  There are also analogues of
   these functions that return a string without taking [state] as an
-  argument; see [printing-to-strings].
+  argument; see [printing-to-strings].  A convenient macro, fmx, is
+  described below; also see [cw] and see [fmx-cw].
 
   All three print a given string under an alist pairing character
   objects with values, interpreting certain ``tilde-directives'' in
@@ -32834,30 +32881,31 @@ Subtopics
   item explicitly with our format variables.
 
   The following text contains examples that can be evaluated.  To make
-  this process easier, we use a macro which is defined as part of
-  ACL2 just for this [documentation].  The macro is named fmx and it
-  takes up to eleven arguments, the first of which is a format
-  string, str, and the others of which are taken as the values of
-  format variables.  The variables used are #\\0 through #\\9.  The
-  macro constructs an appropriate alist, a, and then evaluates (fmt
-  str a *standard-co* state nil).
+  this process easier, we use a macro, fmx.  It takes up to eleven
+  arguments, the first of which is a format string, str, and the
+  others of which are taken as the values of format variables; for
+  similar utilities that can be called in :[logic] mode functions,
+  see [cw] and [fmx-cw].  The variables used are #\\0 through #\\9.
+  The macro constructs an appropriate alist, a, and then evaluates
+  (fmt` str a 0 *standard-co* state nil).
 
   Thus,
 
-    (fmx \"Here is v0, ~x0, and here is v1, ~x1.\"
+    (fmx \"~%Here is v0, ~x0, and here is v1, ~x1.\"
          (cons 'value 0)
          (cons 'value 1))
 
   is just an abbreviation for
 
-    (fmt \"Here is v0, ~x0, and here is v1, ~x1.\"
-         (list (cons #\\0 (cons 'value 0))
-               (cons #\\1 (cons 'value 1)))
-         *standard-co*
-         state
-         nil)
+    (fmt1 \"~%Here is v0, ~x0, and here is v1, ~x1.\"
+          (list (cons #\\0 (cons 'value 0))
+                (cons #\\1 (cons 'value 1)))
+          0
+          *standard-co*
+          state
+          nil)
 
-  which returns (mv 53 state) after printing the line
+  which returns (mv 53 state) after printing, on a separate line,
 
     Here is v0, (VALUE . 0), and here is v1, (VALUE . 1).
 
@@ -32960,7 +33008,7 @@ Subtopics
 
     (let
      ((pair
-      '(\"Error:  The instruction ~x0 is illegal when the stack is ~x1.~%\"
+      '(\"~%Error:  The instruction ~x0 is illegal when the stack is ~x1.~%\"
         (#\\0 POPI 3)
         (#\\1 A B))))
      (fmx \"~@0\" pair)).
@@ -32980,7 +33028,7 @@ Subtopics
                   ~x1.~%\"
                   (#\\0 POPI 3)
                   (#\\1 A B))))
-     (fmx \"~@0\" pair)).
+     (fmx \"~%~@0\" pair)).
 
   Finally, observe that when ~@0 extends the current alist, alist, with
   the one, a, in its argument, the bindings from a are added to the
@@ -33163,6 +33211,47 @@ Subtopics
                   "See [printing-to-strings].")
  (FMT1-TO-STRING (POINTERS)
                  "See [printing-to-strings].")
+ (FMX
+  (IO ACL2-BUILT-INS)
+  "(fmx str &rest args) => state
+
+  See [fmt] for further explanation, including documentation of the
+  tilde-directives.")
+ (FMX!-CW (POINTERS) "See [fmx-cw].")
+ (FMX-CW
+  (IO ACL2-BUILT-INS)
+  "(fmx-cw str &rest args) => state
+
+  Fmx-cw is a variant of cw: both take the same arguments and have the
+  same behavior on well-formed input, and both return nil.  See [cw]
+  for documentation on how to use both utilities.  Unlike cw, fmx-cw
+  is well-[guard]ed, so it can catch errors in the use of
+  tilde-directives.  Here is an example of such a guard violation.
+
+    ACL2 !>(fmx-cw \"Hello ~s0.\" '(world))
+
+
+    ACL2 Error in TOP-LEVEL:  Guard violation for FMX-CW-FN:
+    Illegal Fmt Syntax.  The tilde-s directive at position 6 of the string
+    below is illegal because its variable evaluated to (WORLD), which is
+    not a symbol, a string, or a number.
+
+    \"Hello ~s0.\"
+
+    ACL2 !>
+
+  Thus, call fmx-cw instead of cw in the body of :[logic] mode
+  definition when you want its [guard] verification to avoid runtime
+  errors from that call.  (While the guard on fmx-cw is likely
+  complete in practice, this is not an ironclad guarantee.  Perhaps,
+  some day, all formatted printing code will be fully guarded and
+  guard-verified.)  Note that if you call fmx-cw in a definition, the
+  guard proof may benefit from the lemma, fmx-cw-msg-1-opener, found
+  in [community-book] books/system/fmx-cw.lisp.
+
+  The variant fmx!-cw avoids the insertion of backslash () characters
+  when forced to print past the right margin.  Thus, use fmx!-cw
+  instead of fmx-cw if you want the output to be machine-readable.")
  (FN-EQUAL
   (APPLY$ DEF-WARRANT)
   "Equivalence relation on tame functions
@@ -36873,7 +36962,7 @@ Subtopics
                                         (cons 'current-acl2-world 'nil))
                                   (cons world-alist 'nil)))))))")
  (GETTING-STARTED (POINTERS)
-                  "See [acl2-tutorial].")
+                  "See [ACL2-tutorial].")
  (GIT-QUICK-START
   (ABOUT-ACL2)
   "Git quick start guide
@@ -39147,6 +39236,8 @@ Subtopics
       View the guard proof obligation, without proving it")
  (GUARD-HINTS (POINTERS)
               "See [xargs] for information about the keyword :guard-hints.")
+ (GUARD-HOLDER (POINTERS)
+               "See [guard-holders].")
  (GUARD-HOLDERS
   (RULE-CLASSES TERM GUARD)
   "Remove trivial calls from a [term]
@@ -48742,11 +48833,17 @@ Subtopics
   [Fmt1!]
       (fmt1! str alist col channel state evisc) => (mv col state)
 
+  [Fmx]
+      (fmx str &rest args) => state
+
+  [Fmx-cw]
+      (fmx-cw str &rest args) => state
+
   [Msg]
       Construct a ``message'' suitable for the ~@ directive of [fmt]
 
   [Msgp]
-      Weak recognizer for a ``message''
+      Recognizer for a ``message''
 
   [Observation]
       Print an observation
@@ -50445,11 +50542,13 @@ Subtopics
   ...)), where for each i from 1 to k the number of formal parameters
   is the same for fi and gi, then the functional substitution ((f1 .
   g1) ... (fk . gk)) is applied to the termination theorem for the
-  fi.  Note that unlike normal [functional-instantiation], here there
-  is no proof obligation.  (Logical justification in a nutshell: the
-  termination proof for the fi took place before adding their
-  definitional equations to the current theory, where the fi were
-  thus stubs with no axioms.)
+  fi.  (Logical justification in a nutshell: the termination proof
+  for the fi took place before adding their definitional equations to
+  the current theory, where the fi were thus stubs with no axioms.)
+  Note that unlike normal [functional-instantiation], here there is
+  no proof obligation.  However, the restriction applies from (5)
+  above that the functions fi are instantiable; when that fails, then
+  the replacement of each fi by gi will not take place.
 
   Finally, note that an optional second argument to
   :termination-theorem specifies an explicit functional substitution
@@ -53851,7 +53950,7 @@ Subtopics
     * Fn must not be untouchable (see [push-untouchable]).
 
   The implementation of these checks incorporates a bit of trickery so
-  that they are not reasonably efficient.
+  that they are reasonably efficient.
 
   Note that [set-guard-checking] affects evaluation of calls of
   (magic-ev-fncall fn ...) just as it affects calls of fn, for
@@ -53919,23 +54018,27 @@ Subtopics
   capability not offered by Lisp macros (see [defmacro]), as it
   allows access to the ACL2 [state] and logical [world].  In essence,
   the expression (make-event form) replaces itself with the result of
-  evaluating form, say, ev, as though one had submitted ev instead of
-  the make-event call.  For example, (make-event (quote (defun f (x)
-  x))) is equivalent to the event (defun f (x) x).
+  evaluating form --- let's call that result ev --- as though one had
+  submitted ev instead of the make-event call.  For example,
+  (make-event (quote (defun f (x) x))) is equivalent to the event
+  (defun f (x) x).
+
+  We assume basic familiarity with the ACL2 state.  For relevant
+  background, see [state] and perhaps see [programming-with-state].
 
   There are several simple examples below.  See [make-event-example]
   for development of a more complex example.
 
   We break this documentation into the following sections.
 
-  Introduction
-  Detailed Documentation
-  Error Reporting
-  Restriction to Event Contexts
-  Examples Illustrating How to Access State
-  Advanced Expansion Control
+    * Introduction
+    * Detailed Documentation
+    * Error Reporting
+    * Restriction to Event Contexts
+    * Examples Illustrating How to Access State
+    * Advanced Expansion Control
 
-  We begin with an informal introduction, which focuses on examples and
+  We begin with an introduction, which focuses on examples and
   introduces the key notion of ``expansion phase''.
 
   Introduction
@@ -53993,11 +54096,11 @@ Subtopics
     (defmacro define-world-length-constant (name state)
       (list 'defconst name (length (w state))))
 
-  But ACL2 rejects such a definition, because a macro cannot take the
-  ACL2 state as a parameter; instead, the formal parameter to this
-  macro named \"STATE\" merely represents an ordinary object.  You can
-  try to experiment with other such direct methods to define such a
-  macro, but they won't work.
+  But ACL2 rejects such a definition, because the formal parameter
+  \"STATE\" is bound to the syntactic object in the macro call, not to
+  the actual ACL2 [state]; see [defmacro].  You can try to experiment
+  with other such direct methods to define a macro that accesses the
+  ACL2 state, but they won't work.
 
   Instead, however, you can use the approach illustrated by the
   make-event example above to define the desired macro, as follows.
@@ -54005,8 +54108,18 @@ Subtopics
     (defmacro define-world-length-constant (name)
       `(make-event (list 'defconst ',name (length (w state)))))
 
-  Here are example uses of this macro.
+  Here is a log that may help to explain this macro, assuming it has
+  been defined as displayed just above.
 
+    ACL2 !>:trans1 (define-world-length-constant *foo*)
+     (MAKE-EVENT (LIST 'DEFCONST
+                       '*FOO*
+                       (LENGTH (W STATE))))
+    ACL2 !>(LIST 'DEFCONST
+                 '*FOO*
+                 (LENGTH (W STATE)))
+    (DEFCONST *FOO* 109707)
+    ACL2 !>
     ACL2 !>(define-world-length-constant *foo*)
 
     Summary
@@ -54017,16 +54130,16 @@ Subtopics
     Summary
     Form:  ( MAKE-EVENT (LIST ...))
     Rules: NIL
-    Time:  0.00 seconds (prove: 0.00, print: 0.00, other: 0.00)
+    Time:  0.01 seconds (prove: 0.00, print: 0.00, other: 0.01)
      *FOO*
     ACL2 !>*foo*
-    98891
+    109707
     ACL2 !>:pe *foo*
-              2:x(DEFINE-WORLD-LENGTH-CONSTANT *FOO*)
+               2:x(DEFINE-WORLD-LENGTH-CONSTANT *FOO*)
 
-    >             (DEFCONST *FOO* 98891)
+    >              (DEFCONST *FOO* 109707)
     ACL2 !>(length (w state))
-    98897
+    109713
     ACL2 !>(define-world-length-constant *bar*)
 
     Summary
@@ -54040,67 +54153,70 @@ Subtopics
     Time:  0.01 seconds (prove: 0.00, print: 0.00, other: 0.01)
      *BAR*
     ACL2 !>*bar*
-    98897
+    109713
     ACL2 !>:pe *bar*
-              3:x(DEFINE-WORLD-LENGTH-CONSTANT *BAR*)
+               3:x(DEFINE-WORLD-LENGTH-CONSTANT *BAR*)
 
-    >             (DEFCONST *BAR* 98897)
+    >              (DEFCONST *BAR* 109713)
     ACL2 !>(length (w state))
-    98903
+    109719
     ACL2 !>
 
-  Finally, we note that the expansion phase can be used for computation
-  that has side effects, generally by modifying state.  Here is a
-  modification of the above example that does not change the world at
-  all, but instead saves the length of the world in a state global.
+  The expansion phase can be used for computation that has side
+  effects, generally by modifying state.  Here is a modification of
+  the above example that does not change the ACL2 world at all, but
+  instead saves the length of the world into a state global variable.
 
     (make-event
-     (pprogn (f-put-global 'my-world-length (length (w state)) state)
-             (value '(value-triple nil))))
+     (er-progn (assign my-world-length (length (w state)))
+               (value '(value-triple nil))))
 
   Notice that this time, the value returned by the expansion phase is
-  not an event form, but rather, is an [error-triple] whose value
+  not a single value; rather, it is an [error-triple] whose value
   component is an event form, namely, the event form (value-triple
   nil).  Evaluation of that event form does not change the ACL2 world
   (see [value-triple]).  Thus, the sole purpose of the make-event
   call above is to change the [state] by associating the length of
-  the current logical world with the state global named
-  'my-world-length.  After evaluating this form, (@ my-world-length)
-  provides the length of the ACL2 world, as illustrated by the
-  following transcript.
+  the current logical world with the state global, my-world-length.
+  After evaluating this form, (@ my-world-length) provides the length
+  of the ACL2 world, as illustrated by the following transcript.
 
     ACL2 !>:pbt 0
-              0:x(EXIT-BOOT-STRAP-MODE)
+               0:x(EXIT-BOOT-STRAP-MODE)
     ACL2 !>(length (w state))
-    98883
+    109700
     ACL2 !>(make-event
-            (pprogn (f-put-global 'my-world-length (length (w state)) state)
-                    (value '(value-triple nil))))
+                (er-progn (assign my-world-length (length (w state)))
+                          (value '(value-triple nil))))
 
     Summary
-    Form:  ( MAKE-EVENT (PPROGN ...))
+    Form:  ( MAKE-EVENT (ER-PROGN ...))
     Rules: NIL
     Time:  0.01 seconds (prove: 0.00, print: 0.00, other: 0.01)
      NIL
     ACL2 !>(length (w state))
-    98883
+    109700
     ACL2 !>:pbt 0
-              0:x(EXIT-BOOT-STRAP-MODE)
+               0:x(EXIT-BOOT-STRAP-MODE)
     ACL2 !>
 
   When make-event is invoked by a book, it is expanded during book
-  certification but not, by default, when the book is included.  So
-  for the example (define-world-length-constant *foo*) given above,
-  if that form is in a book, then the value of *foo* will be the
-  length of the world at the time this form was invoked during book
-  certification, regardless of world length at [include-book] time.
-  (The expansion is recorded in the book's [certificate], and
-  re-used.)  To overcome this default, you can specify keyword value
-  :CHECK-EXPANSION t.  This will cause an error if the expansion is
-  different, but it can be useful for side effects.  For example, if
-  you insert the following form in a book, then the length of the
-  world will be printed when the form is encountered, whether during
-  [certify-book] or during [include-book].
+  certification but not, by default, when the book is included.
+  Consider again the example (define-world-length-constant *foo*)
+  given above.  If that form is in a book, then the value of *foo*
+  will be the length of the world at the time this form was invoked
+  during book certification, regardless of world length at
+  [include-book] time.  That is because the expansion, (DEFCONST
+  *FOO* 109700), is recorded in the book's [certificate] and re-used
+  during a subsequent [include-book].
+
+  However, the keyword :check-expansion may be given the value t so
+  that the expansion is done even during include-book, which comes
+  with a check that the result is the same as it was during book
+  certification.  This keyword can be useful for side effects.  For
+  example, if you insert the following form in a book, then the
+  length of the world will be printed when the form is encountered,
+  whether during [certify-book] or during [include-book].
 
     (make-event
      (pprogn (fms \"Length of current world: ~x0~|\"
@@ -54878,6 +54994,9 @@ Expansion errors and the :ON-BEHALF-OF keyword
   comprehensive, some may find this example to be a good starting
   point, to get a sense of how to develop tools that take advantage
   of make-event.  We thank Yan Peng for putting forward this problem.
+
+  (Note: A rather complex example of the use of make-event may be found
+  in the [community-book], books/make-event/search-generation.lisp.)
 
   We begin by discussing prerequisites for this presentation.  Next, we
   present the challenge problem, followed by code that solves the
@@ -55817,10 +55936,9 @@ Subtopics
            (cond ((endp lst) nil)
                  ((equal x (car lst)) lst)
                  (t (member-equal x (cdr lst)))))")
- (MEMBER-EQ (POINTERS)
-            "See common-lisp::member (see [MEMBER]).")
+ (MEMBER-EQ (POINTERS) "See [member].")
  (MEMBER-EQUAL (POINTERS)
-               "See common-lisp::member (see [MEMBER]).")
+               "See [member].")
  (MEMOIZATION (POINTERS)
               "See [memoize].")
  (MEMOIZE
@@ -57986,22 +58104,21 @@ Subtopics
   bound to the successive elements of (arg1 ... argk).")
  (MSGP
   (IO ACL2-BUILT-INS)
-  "Weak recognizer for a ``message''
+  "Recognizer for a ``message''
 
   The form (msgp x) evaluates to true when x evaluates either to a
-  string or to a nil-terminated list (see [true-listp]) whose first
-  element is a string.  Thus, msgp distinguishes messages --- that
-  is, values suitable as arguments for ~@ directives of [fmt] ---
-  from Booleans and other values that are obviously not messages.
-  Note that msgp should always hold for the output of the macro, msg;
-  see [msg].
+  string or to a cons whose cdr satisfies [character-alistp].  Note
+  that msgp will always hold for the output of the macro, msg; see
+  [msg].
 
   Function: <msgp>
 
     (defun msgp (x)
            (declare (xargs :guard t))
            (or (stringp x)
-               (and (true-listp x) (stringp (car x)))))")
+               (and (consp x)
+                    (stringp (car x))
+                    (character-alistp (cdr x)))))")
  (MUST-BE-EQUAL
   (MBE ACL2-BUILT-INS)
   "Attach code for execution
@@ -78339,7 +78456,7 @@ Experimental Versions
   note-8-1-books for a summary of changes made to the ACL2 Community
   Books since ACL2 8.0, including the build system.  Also note that
   with each release, some built-in functions that were formerly in
-  :[program] mode are now see guard-verified :[logic] mode functions.
+  :[program] mode are now [guard]-verified :[logic] mode functions.
 
 
 Changes to Existing Features
@@ -78451,12 +78568,24 @@ Changes to Existing Features
   It is now illegal by default to attach to built-in functions.  To
   overcome this default behavior, see [defattach-system].
 
-  Functions from the [fmt] family, including for example [fms] and
-  [fmt-to-string], now have (incomplete) guards that, in particular,
-  imply that the alist argument must satisfy character-alistp, i.e.,
-  be an association list whose keys are all characters.  Thanks to
-  Eric Smith for pointing out that an expression like (fmt-to-string
-  \"~x0\" 3) could cause a raw Lisp error.
+  Improvements have been made to functions in the [fmt] family,
+  including for example [fms], [fmt-to-string], and [cw].  (Also see
+  discussion of [fmx-cw] under ``New Features,'' below.)
+
+    * Many [guard]s have been strengthened, for example to imply that the
+      alist argument must satisfy [character-alistp].  Thanks to Eric
+      Smith for pointing out that an expression like (fmt-to-string
+      \"~x0\" 3) could cause a raw Lisp error (rather than causing a
+      guard violation).
+    * Eliminated raw Lisp errors from ill-formed calls.  Thanks to Jared
+      Davis for pointing out this problem in 2010 (!) with the
+      example (cw \"Bad: ~&0.~%\" 5), and for Eric Smith for prodding
+      us much more recently with the example (cw \"~&0\" 'x).
+    * The utility [fmx] no longer prints an initial newline.  Of course, a
+      call (fmx \"<some-string>\" ...) can be modified to generate an
+      initial newline (thus providing the former behavior) by adding
+      the newline tilde-directive, \"~%\", that is, (fmx
+      \"~%<some-string>\" ...).
 
   The previously-undocumented built-in-function, [packn], now has a
   slightly different behavior.  Formerly, it always returned a symbol
@@ -78477,6 +78606,35 @@ Changes to Existing Features
   argument of the call of ld is not a string.  Now, that is an error.
   If you get this error, just remove the (previously ignored) :dir
   argument.
+
+  The function [magic-ev-fncall] sometimes printed a message in the
+  error case in addition to returning that message.  It now only
+  returns that message.  Thanks to Sol Swords for bringing to our
+  attention that certification of a community book,
+  books/projects/x86isa/proofs/popcount/popcount.lisp, was printing a
+  warning about \"Meta-level function Problem\" for thousands of lines.
+
+  The definition of [msgp] has been strengthened to require that for a
+  cons pair, the cdr must satisfy [character-alistp].
+
+  The [proof-builder] command, quiet!, now inhibits all output except
+  error output (and that too, if already inhibited).
+
+  Warnings have been modified that are labeled ``[Non-rec]'', generated
+  for rules with problematic occurrences of non-recursive function
+  symbols.  Now they take into account rules of class :[definition].
+  Thanks to Mihir Mehta for bringing this issue to our attention.
+
+  It is no longer required to specify :install-body nil in a
+  [definition] rule when the function symbol is a member of the value
+  of the constant *definition-minimal-theory*.  Thanks to Eric Smith
+  for pointing out that the utility, [install-not-normalized], was
+  failing on, for example, [eq].  This change fixes that problem.
+  Technical note for system hackers only: Because of this change, the
+  value of (body fn t wrld) is no longer guaranteed to get the
+  original definition of fn when fn is in
+  *definition-minimal-theory*; for that purpose use the new utility,
+  bbody.
 
 
 New Features
@@ -78518,6 +78676,29 @@ New Features
       true and false branches of a call of IF, which could formerly
       happen when the test is a call of NOT.
 
+  When the environment variable ACL2_CUSTOMIZATION_QUIET is set and not
+  \"\", there will generally be no output from ACL2 customization.  A
+  special value of \"all\" for this variable will cause continued
+  minimal output after startup.  See [ACL2-customization].
+
+  New utilities, [fmx-cw] and [fmx!-cw], are essentially the same as
+  [cw] and [cw!] (respectively), except that fmx-cw and fmx!-cw are
+  well-[guard]ed, which can catch errors in the use of
+  tilde-directives.  Thanks to Eric Smith for requesting such a
+  capability.  For example:
+
+    ACL2 !>(fmx-cw \"Hello ~s0.\" '(world))
+
+
+    ACL2 Error in TOP-LEVEL:  Guard violation for FMX-CW-FN:
+    Illegal Fmt Syntax.  The tilde-s directive at position 6 of the string
+    below is illegal because its variable evaluated to (WORLD), which is
+    not a symbol, a string, or a number.
+
+    \"Hello ~s0.\"
+
+    ACL2 !>
+
 
 Heuristic and Efficiency Improvements
 
@@ -78545,7 +78726,9 @@ Heuristic and Efficiency Improvements
       compliant'' lambdas: lambda forms whose [guard]s are verified
       by the [tau-system] and that are tame (see [apply$]).  The
       optimization had been used in the unadvertised use of ``The
-      Rubric'' prior to the release of ACL2 Version 8.0.
+      Rubric'' prior to the release of ACL2 Version 8.0.  Warnings
+      about non-tame-compliant lambdas will now appear when
+      appropriate, as had been the case in Version 7.4.
     * The optimization above has been improved so that instead of three
       cache lines, there is an efficient implementation using 1000
       cache lines.  That is probably many more than are needed, but
@@ -78561,8 +78744,19 @@ Heuristic and Efficiency Improvements
   Thanks to Eric Smith for pointing out an incompleteness in the
   rewriting of implies calls.
 
+  The algorithm has been tweaked for generating a [type-prescription]
+  rule to store for a given definition, so that the rule is sometimes
+  stronger than was previously the case.
+
 
 Bug Fixes
+
+  There was a soundness bug in the automatic functional instantiation
+  that can be applied for a :termination-theorem [lemma-instance].
+  Thanks to Eric Smith for sending an example to illustrate this bug,
+  for suggesting its cause, and for permission to include that
+  example in a comment in the ACL2 sources definition of the
+  constant, *non-instantiable-primitives*.
 
   Fixed two bugs in [apply$]: we now [disable] the
   [executable-counterpart] of good-bye-fn to prevent quitting ACL2
@@ -78628,6 +78822,16 @@ Bug Fixes
   Fixed the :[puff] command to avoid certain errors involving [local]
   [events].
 
+  Redundancy notes could be seen during [include-book] while loading
+  the compiled file for a book.  These notes (along with, perhaps,
+  some other output) have been eliminated.  Thanks to Eric Smith for
+  pointing us to this problem with a reproducible example.
+
+  We eliminated an obscure hard error mentioning the source function
+  assume-true-false-if, which could occur in the middle of a proof.
+  Thanks to Dave Greve for pointing out this problem by sending us an
+  illustrative example that we could run.
+
 
 Changes at the System Level
 
@@ -78647,6 +78851,13 @@ Changes at the System Level
   7.4 (released in March, 2017). Its replacement is target
   \"clean-lite\"; or, use target \"clean-all\" (or equivalently,
   \"distclean\") if you want a more thorough cleaning.
+
+  (SBCL only) ACL2 has been updated so that it builds on recent SBCL
+  versions.  In particular, the build was broken for SBCL 1.4.7, as
+  SBCL changed the ``RDTSC'' timing capability used in [memoization].
+  Thanks to Keshav Kini for help with this issue, which has been
+  resolved in ACL2 source file memoize-raw.lisp, as explained in the
+  comment there about ``read-cycle-counter''.
 
 
 EMACS Support
@@ -82759,7 +82970,7 @@ Subtopics
       See [accumulated-persistence].
 
   [ACL2s]
-      See [acl2-sedan].
+      See [ACL2-sedan].
 
   [Add-ld-keyword-alias]
       See [ld-keyword-aliases].
@@ -82798,10 +83009,13 @@ Subtopics
       See [arrays].
 
   [Assoc-eq]
-      See common-lisp::assoc (see [ASSOC]).
+      See [assoc].
 
   [Assoc-equal]
-      See common-lisp::assoc (see [ASSOC]).
+      See [assoc].
+
+  [Auto-instance]
+      See defthm<w.
 
   [Backchain-limit-rw]
       See [hints] for information about the keyword :backchain-limit-rw.
@@ -82989,6 +83203,9 @@ Subtopics
   [Fmt1-to-string]
       See [printing-to-strings].
 
+  [Fmx!-cw]
+      See [fmx-cw].
+
   [Fn-symb]
       See [system-utilities].
 
@@ -83035,13 +83252,16 @@ Subtopics
       See [system-utilities].
 
   [Getting-started]
-      See [acl2-tutorial].
+      See [ACL2-tutorial].
 
   [Guard-checking]
       See [set-guard-checking].
 
   [Guard-hints]
       See [xargs] for information about the keyword :guard-hints.
+
+  [Guard-holder]
+      See [guard-holders].
 
   [Guard-msg-table]
       See [set-guard-msg].
@@ -83137,10 +83357,10 @@ Subtopics
       See [termination-theorem].
 
   [Member-eq]
-      See common-lisp::member (see [MEMBER]).
+      See [member].
 
   [Member-equal]
-      See common-lisp::member (see [MEMBER]).
+      See [member].
 
   [Memoization]
       See [memoize].
@@ -83305,10 +83525,10 @@ Subtopics
       See [system-utilities].
 
   [Position-eq]
-      See common-lisp::position (see [POSITION]).
+      See [position].
 
   [Position-equal]
-      See common-lisp::position (see [POSITION]).
+      See [position].
 
   [Pound-bang-reader]
       See [sharp-bang-reader].
@@ -83350,10 +83570,10 @@ Subtopics
       See [system-utilities].
 
   [Rassoc-eq]
-      See common-lisp::rassoc (see [RASSOC]).
+      See [rassoc].
 
   [Rassoc-equal]
-      See common-lisp::rassoc (see [RASSOC]).
+      See [rassoc].
 
   [Read-byte$]
       See [io].
@@ -83383,16 +83603,16 @@ Subtopics
       See [books-certification].
 
   [Remove-duplicates-eq]
-      See common-lisp::remove-duplicates (see [REMOVE-DUPLICATES]).
+      See [remove-duplicates].
 
   [Remove-duplicates-equal]
-      See common-lisp::remove-duplicates (see [REMOVE-DUPLICATES]).
+      See [remove-duplicates].
 
   [Remove-eq]
-      See common-lisp::remove (see [REMOVE]).
+      See [remove].
 
   [Remove-equal]
-      See common-lisp::remove (see [REMOVE]).
+      See [remove].
 
   [Remove-guard-holders]
       See [guard-holders].
@@ -83539,10 +83759,10 @@ Subtopics
       See [system-utilities].
 
   [Subsetp-eq]
-      See common-lisp::subsetp (see [SUBSETP]).
+      See [subsetp].
 
   [Subsetp-equal]
-      See common-lisp::subsetp (see [SUBSETP]).
+      See [subsetp].
 
   [Subst-expr]
       See [system-utilities].
@@ -83807,9 +84027,9 @@ Subtopics
                  (t (position-equal-ac item (cdr lst)
                                        (1+ acc)))))")
  (POSITION-EQ (POINTERS)
-              "See common-lisp::position (see [POSITION]).")
+              "See [position].")
  (POSITION-EQUAL (POINTERS)
-                 "See common-lisp::position (see [POSITION]).")
+                 "See [position].")
  (POSP
   (NUMBERS ACL2-BUILT-INS)
   "A recognizer for the positive integers
@@ -86565,6 +86785,14 @@ Subtopics
   Individual proof-builder commands are documented in subsection
   [proof-builder-commands].  For a list of perhaps the most commonly
   used commands, see [proof-builder-commands-short-list].
+
+  The proof-builder supports user-defined macros, which are tactics
+  that generate proof-builder instructions.  See [define-pc-macro].
+
+  Remark. The ``pc-'' prefix, for example in ``define-pc-macro'' above,
+  stems from an earlier name for the proof-builder, which was
+  ``proof-checker''.  That also accounts for the string \"PC\" in the
+  package name, \"ACL2-PC\".
 
 
 Subtopics
@@ -89809,10 +90037,9 @@ Subtopics
 
   Rassoc is defined by Common Lisp.  See any Common Lisp documentation
   for more information.")
- (RASSOC-EQ (POINTERS)
-            "See common-lisp::rassoc (see [RASSOC]).")
+ (RASSOC-EQ (POINTERS) "See [rassoc].")
  (RASSOC-EQUAL (POINTERS)
-               "See common-lisp::rassoc (see [RASSOC]).")
+               "See [rassoc].")
  (RATIONAL-LISTP
   (NUMBERS LISTS ACL2-BUILT-INS)
   "Recognizer for a true list of rational numbers
@@ -89991,11 +90218,14 @@ Subtopics
   usual [io] routines provided by ACL2, as shown by the sequence of
   definitions below.  However, under-the-hood raw Lisp code provides
   an implementation that not only is efficient, but also does not
-  return [state], although the expansion of a call of this macro
-  takes state as an argument.  (Technical remark: the use of
-  [with-local-state] in the logical definition of key subroutine
-  read-file-into-string2 does not require a trust tag (see
-  [defttag]), because that function is defined by ACL2, not in a
+  return [state].  Note that the expansion of a call of this macro
+  does take state as an argument, which (as usual for functions that
+  take state) necessitates either that (set-state-ok t) has already
+  been evaluated, or else that a suitable :stobjs declaration,
+  typically :stobjs state, is provided (see [xargs]).  (Technical
+  remark: the use of [with-local-state] in the logical definition of
+  key subroutine read-file-into-string2 does not require a trust tag
+  (see [defttag]), because that function is defined by ACL2, not in a
   book.)
 
   The value of the constant *read-file-into-string-bound* (see the
@@ -91830,16 +92060,13 @@ Subtopics
 
   Remove-duplicates is defined by Common Lisp.  See any Common Lisp
   documentation for more information.")
- (REMOVE-DUPLICATES-EQ
-      (POINTERS)
-      "See common-lisp::remove-duplicates (see [REMOVE-DUPLICATES]).")
- (REMOVE-DUPLICATES-EQUAL
-      (POINTERS)
-      "See common-lisp::remove-duplicates (see [REMOVE-DUPLICATES]).")
- (REMOVE-EQ (POINTERS)
-            "See common-lisp::remove (see [REMOVE]).")
+ (REMOVE-DUPLICATES-EQ (POINTERS)
+                       "See [remove-duplicates].")
+ (REMOVE-DUPLICATES-EQUAL (POINTERS)
+                          "See [remove-duplicates].")
+ (REMOVE-EQ (POINTERS) "See [remove].")
  (REMOVE-EQUAL (POINTERS)
-               "See common-lisp::remove (see [REMOVE]).")
+               "See [remove].")
  (REMOVE-GUARD-HOLDERS (POINTERS)
                        "See [guard-holders].")
  (REMOVE-INVISIBLE-FNS
@@ -93296,12 +93523,12 @@ Subtopics
   :[equivalence], :[forward-chaining], :[generalize], :[induction],
   :[linear], :[meta], :[refinement], :[tau-system],
   :[type-prescription], :[type-set-inverter], and
-  :WELL-FOUNDED-RELATION.  Some classes require the
-  user-specification of certain class-specific attributes.  Each
-  class of rule affects the theorem prover's behavior in a different
-  way, as discussed in the corresponding documentation topic.  In
-  this topic we discuss the various attributes that may be attached
-  to rule classes.
+  :well-founded-relation (see [well-founded-relation-rule]).  Some
+  classes require the user-specification of certain class-specific
+  attributes.  Each class of rule affects the theorem prover's
+  behavior in a different way, as discussed in the corresponding
+  documentation topic.  In this topic we discuss the various
+  attributes that may be attached to rule classes.
 
   Note that not all [events] generate rules.  For example, a [defthm]
   event that specifies :rule-classes nil does not generate a rule.
@@ -93513,18 +93740,16 @@ Subtopics
       :normalize, then this definition will be simplified with the
       [normalization] procedure that is used by default when
       processing definitions made with [defun].  You must explicitly
-      specify :install-body nil in the following cases: fn (as above)
-      is a member of the value of constant
-      *definition-minimal-theory*, the arguments are not a list of
-      distinct variables, equiv (as above) is not [equal], or there
-      are free variables in the hypotheses or right-hand side (see
-      [free-variables]).  However, supplying :install-body nil will
-      not affect the rewriter's application of the :definition rule,
-      other than to avoid using the rule to apply :expand hints.  If
-      a definition rule equates (f a1 ... ak) with body but there are
-      hypotheses, hyps, then :expand [hints] will replace terms (f
-      term1 ... termk) by corresponding terms (if hyps body (hide (f
-      term1 ... termk))).
+      specify :install-body nil in the following cases: the arguments
+      are not a list of distinct variables, equiv (as above) is not
+      [equal], or there are free variables in the hypotheses or
+      right-hand side (see [free-variables]).  However, supplying
+      :install-body nil will not affect the rewriter's application of
+      the :definition rule, other than to avoid using the rule to
+      apply :expand hints.  If a definition rule equates (f a1 ...
+      ak) with body but there are hypotheses, hyps, then :expand
+      [hints] will replace terms (f term1 ... termk) by corresponding
+      terms (if hyps body (hide (f term1 ... termk))).
 
       :[Loop-stopper] --- this field may only be supplied if the class is
       :[rewrite].  Its value must be a list of entries each
@@ -103136,10 +103361,9 @@ Subtopics
 
   Subsetp is defined by Common Lisp.  See any Common Lisp documentation
   for more information.")
- (SUBSETP-EQ (POINTERS)
-             "See common-lisp::subsetp (see [SUBSETP]).")
+ (SUBSETP-EQ (POINTERS) "See [subsetp].")
  (SUBSETP-EQUAL (POINTERS)
-                "See common-lisp::subsetp (see [SUBSETP]).")
+                "See [subsetp].")
  (SUBST
   (CONSES ACL2-BUILT-INS)
   "A single substitution into a tree
@@ -116043,7 +116267,7 @@ Subtopics
   written
 
     (defun g (x)
-     (declare (xargs :well-founded-relation (mp . rel)))
+     (declare (xargs :well-founded-relation rel))
      (if (test x) (g (step x)) (base x)))
 
   Alternatively, rel may be specified as the
@@ -120765,11 +120989,12 @@ Subtopics
     General Form:
     (repeat instruction)
 
-  The given instruction is run repeatedly until it ``fails''.
+  The given instruction is run repeatedly until it ``fails''.  A call
+  of :repeat always ``succeeds''.
 
   Remark: There is nothing here in general to prevent the instruction
-  from being run after all goals have been proved, though this is
-  indeed the case for primitive instructions.")
+  from being run after all goals have been proved, though it may then
+  fail, thus causing :repeat to return.")
  (ACL2-PC::REPEAT-REC
       (PROOF-BUILDER-COMMANDS)
       "(macro) auxiliary to repeat
