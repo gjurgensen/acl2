@@ -93523,12 +93523,12 @@ Subtopics
   :[equivalence], :[forward-chaining], :[generalize], :[induction],
   :[linear], :[meta], :[refinement], :[tau-system],
   :[type-prescription], :[type-set-inverter], and
-  :WELL-FOUNDED-RELATION.  Some classes require the
-  user-specification of certain class-specific attributes.  Each
-  class of rule affects the theorem prover's behavior in a different
-  way, as discussed in the corresponding documentation topic.  In
-  this topic we discuss the various attributes that may be attached
-  to rule classes.
+  :well-founded-relation (see [well-founded-relation-rule]).  Some
+  classes require the user-specification of certain class-specific
+  attributes.  Each class of rule affects the theorem prover's
+  behavior in a different way, as discussed in the corresponding
+  documentation topic.  In this topic we discuss the various
+  attributes that may be attached to rule classes.
 
   Note that not all [events] generate rules.  For example, a [defthm]
   event that specifies :rule-classes nil does not generate a rule.
@@ -116267,7 +116267,7 @@ Subtopics
   written
 
     (defun g (x)
-     (declare (xargs :well-founded-relation (mp . rel)))
+     (declare (xargs :well-founded-relation rel))
      (if (test x) (g (step x)) (base x)))
 
   Alternatively, rel may be specified as the
