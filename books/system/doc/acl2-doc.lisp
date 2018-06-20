@@ -92273,11 +92273,12 @@ arithmetic) for libraries of @(see books) for arithmetic reasoning.</p>")
  GENERALIZE), @(':')@(tsee INDUCTION), @(':')@(tsee LINEAR), @(':')@(tsee
  META), @(':')@(tsee REFINEMENT), @(':')@(tsee TAU-SYSTEM), @(':')@(tsee
  TYPE-PRESCRIPTION), @(':')@(tsee TYPE-SET-INVERTER), and
- @(':WELL-FOUNDED-RELATION').  Some classes <i>require</i> the
- user-specification of certain class-specific attributes.  Each class of rule
- affects the theorem prover's behavior in a different way, as discussed in the
- corresponding documentation topic.  In this topic we discuss the various
- attributes that may be attached to rule classes.</p>
+ @(':well-founded-relation') (see @(see well-founded-relation-rule)).  Some
+ classes <i>require</i> the user-specification of certain class-specific
+ attributes.  Each class of rule affects the theorem prover's behavior in a
+ different way, as discussed in the corresponding documentation topic.  In this
+ topic we discuss the various attributes that may be attached to rule
+ classes.</p>
 
  <p>Note that not all @(see events) generate rules.  For example, a @(tsee
  defthm) event that specifies @(':rule-classes nil') does not generate a rule.
@@ -115352,7 +115353,7 @@ introduction-to-the-tau-system) for more information about Tau.</dd>
 
  @({
   (defun g (x)
-   (declare (xargs :well-founded-relation (mp . rel)))
+   (declare (xargs :well-founded-relation rel))
    (if (test x) (g (step x)) (base x)))
  })
 
