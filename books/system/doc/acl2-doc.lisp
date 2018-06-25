@@ -85138,12 +85138,19 @@ arithmetic) for libraries of @(see books) for arithmetic reasoning.</p>")
  })
 
  <p>where @('k') &gt;= 0 and each @('eventi') is a legal embedded event form
- (see @(see embedded-event-form)).  Each event is printed (by default) and
- evaluated, in sequence.  If any event fails, the entire @('progn') call is
- deemed to have failed, and the logical @(see world) is rolled back to what it
- was immediately before the @('progn') call was evaluated.  A utility is
- provided to assist in debugging failures of such execution; see @(see
- redo-flat).</p>
+ (see @(see embedded-event-form)).  Each event is evaluated, in sequence.  If
+ any event fails, the entire @('progn') call is deemed to have failed, and the
+ logical @(see world) is rolled back to what it was immediately before the
+ @('progn') call was evaluated.  A utility is provided to assist in debugging
+ failures of such execution; see @(see redo-flat).</p>
+
+ <p>See @(see set-inhibit-output-lst) for how to control the printing done for
+ each event.  By default, each event is printed before it is evaluated and a
+ suitable value is printed after successful completion.  (Technical note:
+ successful completion produces a mutiple-value return that is an @(see
+ error-triple) @('(mv nil val state)'); then the value @('val') is printed.)
+ Printing of both the event and its value can both be inhibited by including
+ the symbol, @('EVENT'), in your call of @('set-inhibit-output-lst').</p>
 
  <p>NOTE: If the @('eventi') above are not all legal embedded event forms (see
  @(see embedded-event-form)), consider using @(tsee er-progn) or (with great
