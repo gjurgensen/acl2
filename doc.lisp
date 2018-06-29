@@ -85364,12 +85364,20 @@ Subtopics
     (progn event1 event2 ... eventk)
 
   where k >= 0 and each eventi is a legal embedded event form (see
-  [embedded-event-form]).  Each event is printed (by default) and
-  evaluated, in sequence.  If any event fails, the entire progn call
-  is deemed to have failed, and the logical [world] is rolled back to
-  what it was immediately before the progn call was evaluated.  A
-  utility is provided to assist in debugging failures of such
-  execution; see [redo-flat].
+  [embedded-event-form]).  Each event is evaluated, in sequence.  If
+  any event fails, the entire progn call is deemed to have failed,
+  and the logical [world] is rolled back to what it was immediately
+  before the progn call was evaluated.  A utility is provided to
+  assist in debugging failures of such execution; see [redo-flat].
+
+  See [set-inhibit-output-lst] for how to control the printing done for
+  each event.  By default, each event is printed before it is
+  evaluated and a suitable value is printed after successful
+  completion.  (Technical note: successful completion produces a
+  mutiple-value return that is an [error-triple] (mv nil val state);
+  then the value val is printed.)  Printing of both the event and its
+  value can both be inhibited by including the symbol, EVENT, in your
+  call of set-inhibit-output-lst.
 
   NOTE: If the eventi above are not all legal embedded event forms (see
   [embedded-event-form]), consider using [er-progn] or (with great
@@ -93523,12 +93531,12 @@ Subtopics
   :[equivalence], :[forward-chaining], :[generalize], :[induction],
   :[linear], :[meta], :[refinement], :[tau-system],
   :[type-prescription], :[type-set-inverter], and
-  :WELL-FOUNDED-RELATION.  Some classes require the
-  user-specification of certain class-specific attributes.  Each
-  class of rule affects the theorem prover's behavior in a different
-  way, as discussed in the corresponding documentation topic.  In
-  this topic we discuss the various attributes that may be attached
-  to rule classes.
+  :well-founded-relation (see [well-founded-relation-rule]).  Some
+  classes require the user-specification of certain class-specific
+  attributes.  Each class of rule affects the theorem prover's
+  behavior in a different way, as discussed in the corresponding
+  documentation topic.  In this topic we discuss the various
+  attributes that may be attached to rule classes.
 
   Note that not all [events] generate rules.  For example, a [defthm]
   event that specifies :rule-classes nil does not generate a rule.
@@ -116267,7 +116275,7 @@ Subtopics
   written
 
     (defun g (x)
-     (declare (xargs :well-founded-relation (mp . rel)))
+     (declare (xargs :well-founded-relation rel))
      (if (test x) (g (step x)) (base x)))
 
   Alternatively, rel may be specified as the
