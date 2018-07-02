@@ -51235,7 +51235,7 @@ tables in the current Hons Space."
 
  <li>Access various elements of this function (e.g., unnormalized body).</li>
 
- <li>Create and return a new @('defun') that’s based on elements of the
+ <li>Create and return a new @('defun') that's based on elements of the
  previous one.</li>
 
  <li>Submit this new defun via a @(tsee make-event), but in a state that does
@@ -51244,7 +51244,7 @@ tables in the current Hons Space."
  </ol>
 
  <p>We illustrate how to do this sort of thing by specifying the ``new
- @('defun') that’s based on elements of the previous one'' to be as follows:
+ @('defun') that's based on elements of the previous one'' to be as follows:
  add the formal, @('y'), and modify the body so that @('y') is consed onto the
  old body.  Of course, this is a trivial example that could be done without
  @('make-event'); but we solve it in a way that shows how to solve any such
