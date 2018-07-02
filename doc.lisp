@@ -55007,13 +55007,13 @@ Expansion errors and the :ON-BEHALF-OF keyword
    2. Submit it to ACL2, obtaining a new ACL2 [state] whose [world]
       includes the function just submitted.
    3. Access various elements of this function (e.g., unnormalized body).
-   4. Create and return a new defun that’s based on elements of the
+   4. Create and return a new defun that's based on elements of the
       previous one.
    5. Submit this new defun via a [make-event], but in a state that does
       not include the previous defun.
 
   We illustrate how to do this sort of thing by specifying the ``new
-  defun that’s based on elements of the previous one'' to be as
+  defun that's based on elements of the previous one'' to be as
   follows: add the formal, y, and modify the body so that y is consed
   onto the old body.  Of course, this is a trivial example that could
   be done without make-event; but we solve it in a way that shows how
