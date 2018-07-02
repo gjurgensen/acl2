@@ -50201,8 +50201,11 @@ tables in the current Hons Space."
  background, see @(see state) and perhaps see @(see
  programming-with-state).</p>
 
- <p>There are several simple examples below.  See @(see make-event-example) for
- development of a more complex example.</p>
+ <p>There are several simple examples below.  For examples that can give
+ additional insight into the use of @('make-event') for tool development, see
+ @(see make-event-example-1) and @(see make-event-example-2).  Also see the
+ @('make-event/') subdirectory of the ACL2 @(see community-books) for more
+ examples, for example, @('books/make-event/search-generation.lisp').</p>
 
  <p>We break this documentation into the following sections.</p>
 
@@ -51212,18 +51215,181 @@ tables in the current Hons Space."
  <p>Note that errors generated during expansion are not affected by the cases
  above; those only control the concluding error message, if any.</p>")
 
-(defxdoc make-event-example
+(defxdoc make-event-example-1
   :parents (make-event)
   :short "An example use of @(tsee make-event)"
-  :long "<p>Here, we develop a reasonably self-contained example showing how to
- use @('make-event').  Although the documentation for @(tsee make-event) is
- comprehensive, some may find this example to be a good starting point, to get
- a sense of how to develop tools that take advantage of @('make-event').  We
- thank Yan Peng for putting forward this problem.</p>
+  :long "<p>Here, we develop a reasonably self-contained example that
+ illustrates how to use @('make-event') to develop tools, by solving a
+ challenge posed by Alessandro Coglio.  For another such example, see @(see
+ make-event-example-2).</p>
 
- <p>(Note: A rather complex example of the use of @('make-event') may be found
- in the @(see community-book),
- @('books/make-event/search-generation.lisp').)</p>
+ <p>The challenge is to develop a programmatic method for solving the following
+ sort of problem.</p>
+
+ <ol>
+
+ <li>Create a @(tsee defun) form.</li>
+
+ <li>Submit it to ACL2, obtaining a new ACL2 @(see state) whose @(see world)
+ includes the function just submitted.</li>
+
+ <li>Access various elements of this function (e.g., unnormalized body).</li>
+
+ <li>Create and return a new @('defun') that's based on elements of the
+ previous one.</li>
+
+ <li>Submit this new defun via a @(tsee make-event), but in a state that does
+ not include the previous @('defun').</li>
+
+ </ol>
+
+ <p>We illustrate how to do this sort of thing by specifying the ``new
+ @('defun') that's based on elements of the previous one'' to be as follows:
+ add the formal, @('y'), and modify the body so that @('y') is consed onto the
+ old body.  Of course, this is a trivial example that could be done without
+ @('make-event'); but we solve it in a way that shows how to solve any such
+ problem.  For simplificity, let's not worry about the case that @('y') is
+ already a formal of the existing @('defun').  Here are the main steps.</p>
+
+ <ul>
+
+ <li>(a) Submit the @('defun').</li>
+
+ <li>(b) Gather information from the resulting world.  In this case, we access
+ the formals and body of the definition.</li>
+
+ <li>(c) Create the desired event.</li>
+
+ </ul>
+
+ <p>The following code does those three things, as explained in comments below,
+ which include references to the three steps above.</p>
+
+ @({
+ (er-progn
+
+ ; Each of the two forms below returns an error triple (see @(see
+ ; error-triple)), so we can evaluate both by using er-progn, which
+ ; returns the last (second) error triple.
+
+  (defun foo (x) (cons x x)) ; (a)
+  (let ((formals (formals 'foo (w state))) ; (b)
+        (body (body 'foo nil (w state))))
+    (value `(defun foo ,(cons 'y formals) ; (c)
+              (cons y ,body)))))
+ })
+
+ <p>So far so good: we have computed an error triple @('(mv nil val state)')
+ whose value component, @('val'), is the desired @('defun') form.  However,
+ that leaves us in a world that includes the first @('defun') form.  For a
+ solution to the original challenge (for our specific case), that must not be
+ the case, and moveover the second @('defun') form should be included in the
+ current world.  Fortunately, @(tsee make-event) is perfectly suited to do both
+ of these things.  Consider the following form, which simply wraps
+ @('make-event') around the code displayed just above.</p>
+
+ @({
+ (make-event (er-progn
+              (defun foo (x) (cons x x))
+              (let ((formals (formals 'foo (w state)))
+                    (body (body 'foo nil (w state))))
+                (value `(defun foo ,(cons 'y formals)
+                          (cons y ,body))))))
+ })
+
+ <p>The expansion phase (see @(see make-event)) computes the new @('defun')
+ form &mdash; the one with the extra formal and modified body &mdash; and then
+ that new @('defun') form is evaluated in the original world, which does not
+ include the first @('defun') form.</p>
+
+ <p>We complete the job by making a programmatic solution, with a macro that
+ expands to such a @('make-event') form.  We make it nice by inhibiting all
+ output except error output.</p>
+
+ @({
+ (defmacro cons-y-onto-body (def new-name)
+   `(make-event
+     (with-output!
+       :off :all
+       :on error
+       (er-progn
+        ,def
+        (let* ((name ',(cadr def))
+               (new-name ',new-name)
+               (formals (formals name (w state)))
+               (body (body name nil (w state))))
+          (value (list 'defun new-name (cons 'y formals)
+                       (list 'cons 'y body))))))
+     :on-behalf-of :quiet!))
+ })
+
+ <p>This could be improved by doing some error checking, but we leave that as
+ an exercise.</p>
+
+ <p>Below is a log, with comments added, that shows uses of the macro
+ above.</p>
+
+ @({
+ ; First we call the macro successfully.  Notice that although we inhibited
+ ; output during the expansion phase (using with-output!), below we see output
+ ; from the resulting new defun event.
+
+ ACL2 !>(cons-y-onto-body (defun f (x) x) new-f)
+
+ Since NEW-F is non-recursive, its admission is trivial.  We observe
+ that the type of NEW-F is described by the theorem (CONSP (NEW-F Y X)).
+ We used primitive type reasoning.
+
+ Summary
+ Form:  ( DEFUN NEW-F ...)
+ Rules: ((:FAKE-RUNE-FOR-TYPE-SET NIL))
+ Time:  0.01 seconds (prove: 0.00, print: 0.00, other: 0.01)
+
+ Summary
+ Form:  ( MAKE-EVENT (WITH-OUTPUT! :OFF ...) ...)
+ Rules: NIL
+ Time:  0.03 seconds (prove: 0.00, print: 0.00, other: 0.03)
+  NEW-F
+ ACL2 !>:pe new-f ; Check that the new definition was indeed submitted.
+  L         2:x(CONS-Y-ONTO-BODY (DEFUN F # ...) NEW-F)
+               \
+ >L             (DEFUN NEW-F (Y X) (CONS Y X))
+ ACL2 !>:pe f ; Check that the old definition was NOT submitted.
+
+
+ ACL2 Error in :PE:  The object F is not a logical name.  See :DOC logical-
+ name.
+
+ ; The defun below is ill-formed, so we get an error when it is submitted,
+ ; during the expansion phase.  Our use of with-output! allowed error messages,
+ ; so we see the error message in this case.
+
+ ACL2 !>(cons-y-onto-body (defun g (x) (+ y y)) new-g)
+
+
+ ACL2 Error in ( DEFUN G ...):  The body of G contains a free occurrence
+ of the variable symbol Y.
+
+
+ Summary
+ Form:  ( MAKE-EVENT (WITH-OUTPUT! :OFF ...) ...)
+ Rules: NIL
+ Time:  0.00 seconds (prove: 0.00, print: 0.00, other: 0.00)
+
+ ACL2 Error in ( MAKE-EVENT (WITH-OUTPUT! :OFF ...) ...):  See :DOC
+ failure.
+
+ ******** FAILED ********
+ ACL2 !>
+ })")
+
+(defxdoc make-event-example-2
+  :parents (make-event)
+  :short "An example use of @(tsee make-event)"
+  :long "<p>Here, we develop a reasonably self-contained example that
+ illustrates how to use @('make-event') to develop tools.  For another such
+ example, see @(see make-event-example-1).  We thank Yan Peng for putting
+ forward this problem.</p>
 
  <p>We begin by discussing prerequisites for this presentation.  Next, we
  present the challenge problem, followed by code that solves the problem
@@ -51466,16 +51632,16 @@ tables in the current Hons Space."
  <p><b>Exercise</b>: Modify this tool so that instead of merely updating a
  state global, it prints the failed events at the end of execution; and
  moreover, it prints them in their original order.  See @(see
- make-event-example-exercise) for a solution.</p>")
+ make-event-example-2-exercise) for a solution.</p>")
 
-(defxdoc make-event-example-exercise
-  :parents (make-event-example)
-  :short "Solution to an exercise from @(tsee make-event-example)"
-  :long "<p>See @(see make-event-example) for a worked example using @(tsee
+(defxdoc make-event-example-2-exercise
+  :parents (make-event-example-2)
+  :short "Solution to an exercise from @(tsee make-event-example-2)"
+  :long "<p>See @(see make-event-example-2) for a worked example using @(tsee
  make-event), concluding with an exercise.  Here we present a solution to that
  exercise.  It assumes that we have evaluated the definitions of
  @('save-progn+-error'), @('progn+-fn'), and @('progn+') from @(see
- make-event-example).</p>
+ make-event-example-2).</p>
 
  @({
  (defmacro progn+-errors (&rest lst)
@@ -80139,6 +80305,13 @@ it."
  wrld)') is no longer guaranteed to get the original definition of @('fn') when
  fn is in @('*definition-minimal-theory*'); for that purpose use the new
  utility, @('bbody').</p>
+
+ <p>Many error messages now show variables according to order of appearance,
+ where formerly the order was reversed.  Thanks to Eric Smith for supplying an
+ example of a top-level form, @('+ a b c'), for which the error message
+ reported variables in reverse order: ``Global variables, such as C, B and A,
+ are not allowed.''  The message now says ``A, B, and C'' instead of ``C, B and
+ A.''</p>
 
  <h3>New Features</h3>
 

@@ -54026,8 +54026,11 @@ Subtopics
   We assume basic familiarity with the ACL2 state.  For relevant
   background, see [state] and perhaps see [programming-with-state].
 
-  There are several simple examples below.  See [make-event-example]
-  for development of a more complex example.
+  There are several simple examples below.  For examples that can give
+  additional insight into the use of make-event for tool development,
+  see [make-event-example-1] and [make-event-example-2].  Also see
+  the make-event/ subdirectory of the ACL2 [community-books] for more
+  examples, for example, books/make-event/search-generation.lisp.
 
   We break this documentation into the following sections.
 
@@ -54719,7 +54722,10 @@ Subtopics
   [Make-event-details]
       Details on [make-event] expansion
 
-  [Make-event-example]
+  [Make-event-example-1]
+      An example use of [make-event]
+
+  [Make-event-example-2]
       An example use of [make-event]")
  (MAKE-EVENT-DETAILS
   (MAKE-EVENT)
@@ -54985,18 +54991,162 @@ Expansion errors and the :ON-BEHALF-OF keyword
   Note that errors generated during expansion are not affected by the
   cases above; those only control the concluding error message, if
   any.")
- (MAKE-EVENT-EXAMPLE
+ (MAKE-EVENT-EXAMPLE-1
   (MAKE-EVENT)
   "An example use of [make-event]
 
-  Here, we develop a reasonably self-contained example showing how to
-  use make-event.  Although the documentation for [make-event] is
-  comprehensive, some may find this example to be a good starting
-  point, to get a sense of how to develop tools that take advantage
-  of make-event.  We thank Yan Peng for putting forward this problem.
+  Here, we develop a reasonably self-contained example that illustrates
+  how to use make-event to develop tools, by solving a challenge
+  posed by Alessandro Coglio.  For another such example, see
+  [make-event-example-2].
 
-  (Note: A rather complex example of the use of make-event may be found
-  in the [community-book], books/make-event/search-generation.lisp.)
+  The challenge is to develop a programmatic method for solving the
+  following sort of problem.
+
+   1. Create a [defun] form.
+   2. Submit it to ACL2, obtaining a new ACL2 [state] whose [world]
+      includes the function just submitted.
+   3. Access various elements of this function (e.g., unnormalized body).
+   4. Create and return a new defun that's based on elements of the
+      previous one.
+   5. Submit this new defun via a [make-event], but in a state that does
+      not include the previous defun.
+
+  We illustrate how to do this sort of thing by specifying the ``new
+  defun that's based on elements of the previous one'' to be as
+  follows: add the formal, y, and modify the body so that y is consed
+  onto the old body.  Of course, this is a trivial example that could
+  be done without make-event; but we solve it in a way that shows how
+  to solve any such problem.  For simplificity, let's not worry about
+  the case that y is already a formal of the existing defun.  Here
+  are the main steps.
+
+    * (a) Submit the defun.
+    * (b) Gather information from the resulting world.  In this case, we
+      access the formals and body of the definition.
+    * (c) Create the desired event.
+
+  The following code does those three things, as explained in comments
+  below, which include references to the three steps above.
+
+    (er-progn
+
+    ; Each of the two forms below returns an error triple (see @(see
+    ; error-triple)), so we can evaluate both by using er-progn, which
+    ; returns the last (second) error triple.
+
+     (defun foo (x) (cons x x)) ; (a)
+     (let ((formals (formals 'foo (w state))) ; (b)
+           (body (body 'foo nil (w state))))
+       (value `(defun foo ,(cons 'y formals) ; (c)
+                 (cons y ,body)))))
+
+  So far so good: we have computed an error triple (mv nil val state)
+  whose value component, val, is the desired defun form.  However,
+  that leaves us in a world that includes the first defun form.  For
+  a solution to the original challenge (for our specific case), that
+  must not be the case, and moveover the second defun form should be
+  included in the current world.  Fortunately, [make-event] is
+  perfectly suited to do both of these things.  Consider the
+  following form, which simply wraps make-event around the code
+  displayed just above.
+
+    (make-event (er-progn
+                 (defun foo (x) (cons x x))
+                 (let ((formals (formals 'foo (w state)))
+                       (body (body 'foo nil (w state))))
+                   (value `(defun foo ,(cons 'y formals)
+                             (cons y ,body))))))
+
+  The expansion phase (see [make-event]) computes the new defun form
+  --- the one with the extra formal and modified body --- and then
+  that new defun form is evaluated in the original world, which does
+  not include the first defun form.
+
+  We complete the job by making a programmatic solution, with a macro
+  that expands to such a make-event form.  We make it nice by
+  inhibiting all output except error output.
+
+    (defmacro cons-y-onto-body (def new-name)
+      `(make-event
+        (with-output!
+          :off :all
+          :on error
+          (er-progn
+           ,def
+           (let* ((name ',(cadr def))
+                  (new-name ',new-name)
+                  (formals (formals name (w state)))
+                  (body (body name nil (w state))))
+             (value (list 'defun new-name (cons 'y formals)
+                          (list 'cons 'y body))))))
+        :on-behalf-of :quiet!))
+
+  This could be improved by doing some error checking, but we leave
+  that as an exercise.
+
+  Below is a log, with comments added, that shows uses of the macro
+  above.
+
+    ; First we call the macro successfully.  Notice that although we inhibited
+    ; output during the expansion phase (using with-output!), below we see output
+    ; from the resulting new defun event.
+
+    ACL2 !>(cons-y-onto-body (defun f (x) x) new-f)
+
+    Since NEW-F is non-recursive, its admission is trivial.  We observe
+    that the type of NEW-F is described by the theorem (CONSP (NEW-F Y X)).
+    We used primitive type reasoning.
+
+    Summary
+    Form:  ( DEFUN NEW-F ...)
+    Rules: ((:FAKE-RUNE-FOR-TYPE-SET NIL))
+    Time:  0.01 seconds (prove: 0.00, print: 0.00, other: 0.01)
+
+    Summary
+    Form:  ( MAKE-EVENT (WITH-OUTPUT! :OFF ...) ...)
+    Rules: NIL
+    Time:  0.03 seconds (prove: 0.00, print: 0.00, other: 0.03)
+     NEW-F
+    ACL2 !>:pe new-f ; Check that the new definition was indeed submitted.
+     L         2:x(CONS-Y-ONTO-BODY (DEFUN F # ...) NEW-F)
+
+    >L             (DEFUN NEW-F (Y X) (CONS Y X))
+    ACL2 !>:pe f ; Check that the old definition was NOT submitted.
+
+
+    ACL2 Error in :PE:  The object F is not a logical name.  See :DOC logical-
+    name.
+
+    ; The defun below is ill-formed, so we get an error when it is submitted,
+    ; during the expansion phase.  Our use of with-output! allowed error messages,
+    ; so we see the error message in this case.
+
+    ACL2 !>(cons-y-onto-body (defun g (x) (+ y y)) new-g)
+
+
+    ACL2 Error in ( DEFUN G ...):  The body of G contains a free occurrence
+    of the variable symbol Y.
+
+
+    Summary
+    Form:  ( MAKE-EVENT (WITH-OUTPUT! :OFF ...) ...)
+    Rules: NIL
+    Time:  0.00 seconds (prove: 0.00, print: 0.00, other: 0.00)
+
+    ACL2 Error in ( MAKE-EVENT (WITH-OUTPUT! :OFF ...) ...):  See :DOC
+    failure.
+
+    ******** FAILED ********
+    ACL2 !>")
+ (MAKE-EVENT-EXAMPLE-2
+  (MAKE-EVENT)
+  "An example use of [make-event]
+
+  Here, we develop a reasonably self-contained example that illustrates
+  how to use make-event to develop tools.  For another such example,
+  see [make-event-example-1].  We thank Yan Peng for putting forward
+  this problem.
 
   We begin by discussing prerequisites for this presentation.  Next, we
   present the challenge problem, followed by code that solves the
@@ -55226,21 +55376,22 @@ Development of the solution
   Exercise: Modify this tool so that instead of merely updating a state
   global, it prints the failed events at the end of execution; and
   moreover, it prints them in their original order.  See
-  [make-event-example-exercise] for a solution.
+  [make-event-example-2-exercise] for a solution.
 
 
 Subtopics
 
-  [Make-event-example-exercise]
-      Solution to an exercise from [make-event-example]")
- (MAKE-EVENT-EXAMPLE-EXERCISE
-  (MAKE-EVENT-EXAMPLE)
-  "Solution to an exercise from [make-event-example]
+  [Make-event-example-2-exercise]
+      Solution to an exercise from [make-event-example-2]")
+ (MAKE-EVENT-EXAMPLE-2-EXERCISE
+  (MAKE-EVENT-EXAMPLE-2)
+  "Solution to an exercise from [make-event-example-2]
 
-  See [make-event-example] for a worked example using [make-event],
+  See [make-event-example-2] for a worked example using [make-event],
   concluding with an exercise.  Here we present a solution to that
   exercise.  It assumes that we have evaluated the definitions of
-  save-progn+-error, progn+-fn, and progn+ from [make-event-example].
+  save-progn+-error, progn+-fn, and progn+ from
+  [make-event-example-2].
 
     (defmacro progn+-errors (&rest lst)
       (declare (xargs :guard (and (true-listp lst)
@@ -78635,6 +78786,13 @@ Changes to Existing Features
   original definition of fn when fn is in
   *definition-minimal-theory*; for that purpose use the new utility,
   bbody.
+
+  Many error messages now show variables according to order of
+  appearance, where formerly the order was reversed.  Thanks to Eric
+  Smith for supplying an example of a top-level form, + a b c, for
+  which the error message reported variables in reverse order:
+  ``Global variables, such as C, B and A, are not allowed.'' The
+  message now says ``A, B, and C'' instead of ``C, B and A.''
 
 
 New Features
