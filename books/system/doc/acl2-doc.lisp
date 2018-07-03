@@ -19022,8 +19022,8 @@ subtree of X with T, without duplication.</p>
   :short "Define a constant"
   :long "@({
   Examples:
-  (defconst *digits* '(0 1 2 3 4 5 6 7 8 9))
-  (defconst *n-digits* (the unsigned-byte (length *digits*)))
+  (defconst *my-digits* '(0 1 2 3 4 5 6 7 8 9))
+  (defconst *len-my-digits* (the unsigned-byte (length *my-digits*)))
 
   General Form:
   (defconst name term doc-string)
@@ -80198,11 +80198,12 @@ it."
  particular the final paragraph.  Thanks to Sol Swords for contributing this
  enhancement.</p>
 
- <p>The printing (untranslation) of @(see term)s now prints calls of @(tsee
- mbe), @(tsee mbt), and @(tsee ec-call).  Such terms rarely occur in practice
- because definitional bodies are stored without such @(see guard-holders).
- However, here is an example of how they could arise.  First consider the
- following definition.</p>
+ <p>The printing (untranslation) of @(see term)s can now print calls of @(tsee
+ mbe), @(tsee mbt), @(tsee ec-call), @(tsee cw), and @(tsee time$).  Thanks to
+ Alessandro Coglio and Eric Smith for discussions leading to some of these
+ changes.  Such terms rarely occur in practice because definitional bodies are
+ stored without such @(see guard-holders).  However, here is an example of how
+ they could arise.  First consider the following definition.</p>
 
  @({
  (defun g (n)
