@@ -78992,6 +78992,10 @@ Bug Fixes
   Thanks to Dave Greve for pointing out this problem by sending us an
   illustrative example that we could run.
 
+  It was possible to get a raw Lisp error from ill-formed calls of
+  [ec-call] not intended for execution, for example, (defun foo (x)
+  (non-exec (ec-call x))).  This has been fixed.
+
 
 Changes at the System Level
 
