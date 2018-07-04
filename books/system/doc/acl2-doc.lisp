@@ -80514,6 +80514,10 @@ it."
  to Dave Greve for pointing out this problem by sending us an illustrative
  example that we could run.</p>
 
+ <p>It was possible to get a raw Lisp error from ill-formed calls of @(tsee
+ ec-call) not intended for execution, for example, @('(defun foo (x) (non-exec
+ (ec-call x)))').  This has been fixed.</p>
+
  <h3>Changes at the System Level</h3>
 
  <p>Fixed the use of `@('<a href='URL'>...</a>')' so that if @('URL') has the
