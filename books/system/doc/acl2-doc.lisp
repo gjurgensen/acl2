@@ -80202,8 +80202,9 @@ it."
  mbe), @(tsee mbt), @(tsee ec-call), @(tsee cw), and @(tsee time$).  Thanks to
  Alessandro Coglio and Eric Smith for discussions leading to some of these
  changes.  Such terms rarely occur in practice because definitional bodies are
- stored without such @(see guard-holders).  However, here is an example of how
- they could arise.  First consider the following definition.</p>
+ stored with calls of @(see guard-holders) and @('cw') expanded.  However, here
+ is an example of how they could arise.  First consider the following
+ definition.</p>
 
  @({
  (defun g (n)
