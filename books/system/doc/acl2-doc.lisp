@@ -80100,6 +80100,8 @@ it."
 
 ; Changed conjoin-untranslated-terms to produce more user-friendly results.
 
+; Added function maybe-kwote.
+
   :parents (release-notes)
   :short "ACL2 Version  8.1 (xxx, 20xx) Notes"
   :long "<p>NOTE!  New users can ignore these release notes, because the @(see
