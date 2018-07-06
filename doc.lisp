@@ -21864,8 +21864,8 @@ Subtopics
   "Define a constant
 
     Examples:
-    (defconst *digits* '(0 1 2 3 4 5 6 7 8 9))
-    (defconst *n-digits* (the unsigned-byte (length *digits*)))
+    (defconst *my-digits* '(0 1 2 3 4 5 6 7 8 9))
+    (defconst *len-my-digits* (the unsigned-byte (length *my-digits*)))
 
     General Form:
     (defconst name term doc-string)
@@ -78689,11 +78689,13 @@ Changes to Existing Features
   particular the final paragraph.  Thanks to Sol Swords for
   contributing this enhancement.
 
-  The printing (untranslation) of [term]s now prints calls of [mbe],
-  [mbt], and [ec-call].  Such terms rarely occur in practice because
-  definitional bodies are stored without such [guard-holders].
-  However, here is an example of how they could arise.  First
-  consider the following definition.
+  The printing (untranslation) of [term]s can now print calls of [mbe],
+  [mbt], [ec-call], [cw], and [time$].  Thanks to Alessandro Coglio
+  and Eric Smith for discussions leading to some of these changes.
+  Such terms rarely occur in practice because definitional bodies are
+  stored with calls of [guard-holders] and cw expanded.  However,
+  here is an example of how they could arise.  First consider the
+  following definition.
 
     (defun g (n)
       (declare (xargs :normalize nil))
@@ -78989,6 +78991,10 @@ Bug Fixes
   assume-true-false-if, which could occur in the middle of a proof.
   Thanks to Dave Greve for pointing out this problem by sending us an
   illustrative example that we could run.
+
+  It was possible to get a raw Lisp error from ill-formed calls of
+  [ec-call] not intended for execution, for example, (defun foo (x)
+  (non-exec (ec-call x))).  This has been fixed.
 
 
 Changes at the System Level
