@@ -80520,6 +80520,20 @@ it."
  ec-call) not intended for execution, for example, @('(defun foo (x) (non-exec
  (ec-call x)))').  This has been fixed.</p>
 
+ <p>Certain syntactic requirements are normally applied to function bodies but
+ not to theorems.  However, these were being applied under calls of @(tsee
+ flet).  Consider the following example.</p>
+
+ @({
+ (thm
+  (flet ((foo (x) (car x)))
+    (foo (mv-nth 1 (mv x x)))))
+ })
+
+ <p>This was rejected with an error: ``The expected number of return values for
+ (MV X X) is 1 but the actual number of return values is 2.''  This has been
+ fixed.  Thanks to Eric Smith for bringing this problem to our attention.</p>
+
  <h3>Changes at the System Level</h3>
 
  <p>Fixed the use of `@('<a href='URL'>...</a>')' so that if @('URL') has the

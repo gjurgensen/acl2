@@ -78996,6 +78996,19 @@ Bug Fixes
   [ec-call] not intended for execution, for example, (defun foo (x)
   (non-exec (ec-call x))).  This has been fixed.
 
+  Certain syntactic requirements are normally applied to function
+  bodies but not to theorems.  However, these were being applied
+  under calls of [flet].  Consider the following example.
+
+    (thm
+     (flet ((foo (x) (car x)))
+       (foo (mv-nth 1 (mv x x)))))
+
+  This was rejected with an error: ``The expected number of return
+  values for (MV X X) is 1 but the actual number of return values is
+  2.'' This has been fixed.  Thanks to Eric Smith for bringing this
+  problem to our attention.
+
 
 Changes at the System Level
 
