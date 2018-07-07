@@ -80317,6 +80317,14 @@ it."
  are not allowed.''  The message now says ``A, B, and C'' instead of ``C, B and
  A.''</p>
 
+ <p>For @(tsee value-triple), the keyword argument @(':on-skip-proofs')
+ provides new behavior if it is given the value, @(':interactive').  In that
+ case, evaluation is still done under a call of @(tsee skip-proofs), as when
+ the value of @(':on-skip-proofs') is @('t'); but evaluation is skipped when
+ the reason proofs are being skipped is only that a book is being included or
+ the second pass is being made through an @(tsee encapsulate).  Thanks to Eric
+ Smith for requesting this feature.</p>
+
  <h3>New Features</h3>
 
  <p>The @(see summary) now shows, by default, the list of doublets @('(f g)')
@@ -114056,6 +114064,7 @@ introduction-to-the-tau-system) for more information about Tau.</dd>
   Examples:
   (value-triple (+ 3 4))
   (value-triple (cw \"hi\") :on-skip-proofs t)
+  (value-triple (cw \"hi\") :on-skip-proofs :interactive)
   (value-triple (@ ld-pre-eval-print))
   (value-triple (@ ld-pre-eval-print) :check t)
 
@@ -114073,12 +114082,14 @@ introduction-to-the-tau-system) for more information about Tau.</dd>
  value.</p>
 
  <p>Calls of @('value-triple') are generally skipped when proofs are being
- skipped, in particular when ACL2 is performing the second pass through the
- @(see events) of an @(tsee encapsulate) form or during an @(tsee
- include-book), or indeed any time @(tsee ld-skip-proofsp) is non-@('nil').  If
- you want the call evaluated during those times as well, use a non-@('nil')
- value for @(':on-skip-proofs').  Note that the argument to
- @(':on-skip-proofs') is not evaluated.</p>
+ skipped.  However, a call of @('value-triple') will be evaluated even when
+ proofs are being skipped if there is a non-@('nil') value for keyword argument
+ @(':on-skip-proofs'), typically, @('t').  The special value for
+ @(':on-skip-proofs'), @(':interactive'), is more restrictive than @('t'): it
+ will still cause the @('value-triple') call to be evaluated under a call of
+ @(tsee skip-proofs), but <i>not</i> when proofs are being skipped only due to
+ either making a second pass through an @(tsee encapsulate) or executing an
+ @(tsee include-book).</p>
 
  <p>If you expect the form to evaluate to a non-@('nil') value and you want an
  error to occur when that is not the case, you can use @(':check t').  More
