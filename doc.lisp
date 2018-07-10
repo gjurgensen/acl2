@@ -3081,6 +3081,12 @@ Subtopics
   [Cw!]
       Print to the comment window
 
+  [Cw-print-base-radix]
+      Print to the comment window in a given print-base
+
+  [Cw-print-base-radix!]
+      Print to the comment window in a given print-base
+
   [Declare]
       Extra declarations that can occur in function definitions, [let]
       bindings, and so forth.
@@ -19222,6 +19228,66 @@ Subtopics
   Suggestion: Once you have found the loop and fixed it, you should
   execute the ACL2 command :[brr] nil, so that you don't slow down
   subsequent proof attempts.")
+ (CW-PRINT-BASE-RADIX
+  (IO ACL2-BUILT-INS)
+  "Print to the comment window in a given print-base
+
+  See [cw] for relevant background.  This variant of cw requires
+  specification of a print-base and, optionally, a print-radix (see
+  [set-print-base], [set-print-radix], and [set-print-base-radix]).
+
+  The following examples show that cw-print-base-radix is just like
+  [cw], except that there is a new argument in the first position
+  that specifies the print-base and can, for that print-base,
+  override the default print-radix.
+
+    ACL2 !>(cw-print-base-radix 16 \"~x0~%\" '(3 12 16 17))
+    (#x3 #xC #x10 #x11)
+    NIL
+    ACL2 !>(cw-print-base-radix '(16 . t) \"~x0~%\" '(3 12 16 17))
+    (#x3 #xC #x10 #x11)
+    NIL
+    ACL2 !>(cw-print-base-radix '(16 . nil) \"~x0~%\" '(3 12 16 17))
+    (3 C 10 11)
+    NIL
+    ACL2 !>(cw-print-base-radix 10 \"~x0~%\" '(3 12 16 17))
+    (3 12 16 17)
+    NIL
+    ACL2 !>(cw-print-base-radix '(10 . t) \"~x0~%\" '(3 12 16 17))
+    (3. 12. 16. 17.)
+    NIL
+    ACL2 !>(cw-print-base-radix '(10 . nil) \"~x0~%\" '(3 12 16 17))
+    (3 12 16 17)
+    NIL
+    ACL2 !>
+
+    @({
+    General Forms:
+
+    (cw-print-base-radix print-base fmt-string arg1 arg2 ... argn)
+    (cw-print-base-radix print-base/print-radix fmt-string arg1 arg2 ... argn)
+
+  where all arguments of this macro are evaluated; print-base is a
+  legal print-base as recognized by [print-base-p];
+  print-base/print-radix is a cons whose car is a legal print-base;
+  fmt-string is a string suitable for passing to [fmt]; and arg1
+  through argn (where n is at most 9) are corresponding arguments for
+  fmt-string.  Printing is done according to the specified
+  print-base, which is the first argument in the first general form
+  and is the car of the first argument in the second general form.
+  The print-radix value that is used for printing in the first
+  general form is the print-radix as specified for
+  [set-print-base-radix], while in the second general form, it is the
+  cdr.")
+ (CW-PRINT-BASE-RADIX!
+  (IO ACL2-BUILT-INS)
+  "Print to the comment window in a given print-base
+
+  This is the same as [cw-print-base-radix], except that
+  [cw-print-base-radix] inserts backslash (\\) characters when forced
+  to print past the right margin, in order to make the output a bit
+  clearer in that case.  Use cw-print-base-radix! instead if you want
+  to be able to read the forms back in.")
  (DEAD-EVENTS
   (DEBUGGING)
   "Using proof supporters to identify dead code and unused theorems
@@ -33176,20 +33242,24 @@ Subtopics
   See [cw] for an introduction to the comment window and the usual way
   to print it.
 
-  Function fmt-to-comment-window is identical to fmt1 (see [fmt]),
-  except that the channel is [*standard-co*] and the ACL2 [state] is
-  neither an input nor an output.  An analogous function,
-  fmt-to-comment-window!, prints with [fmt!] instead of [fmt], in
-  order to avoid insertion of backslash (\\) characters for margins;
-  also see [cw!].  Note that even if you change the value of [ld]
-  special standard-co (see [standard-co]), fmt-to-comment-window will
-  print to [*standard-co*], which is the original value of
+  Function fmt-to-comment-window is similar to fmt1 (see [fmt]), except
+  that the channel is [*standard-co*] and the ACL2 [state] is neither
+  an input nor an output, and moreover, an additional argument
+  specifies the print-base and optionally the print-radix.  That
+  additional argument is treated the same as the first argument of
+  cw-print-base-radix; see [cw-print-base-radix].  An analogous
+  function, fmt-to-comment-window!, prints with [fmt!] instead of
+  [fmt], in order to avoid insertion of backslash (\\) characters for
+  margins; also see [cw!].  Note that even if you change the value of
+  [ld] special standard-co (see [standard-co]), fmt-to-comment-window
+  will print to [*standard-co*], which is the original value of
   [standard-co].
 
     General Form:
-    (fmt-to-comment-window fmt-string alist col evisc-tuple)
+    (fmt-to-comment-window fmt-string alist col evisc-tuple print-base-radix)
 
-  where these arguments are as described for [fmt1]; see [fmt].")
+  where these arguments are as described for [fmt1] (see [fmt]) except
+  that the last argument is as described for [cw-print-base-radix].")
  (FMT-TO-STRING (POINTERS)
                 "See [printing-to-strings].")
  (FMT1
@@ -48796,6 +48866,12 @@ Subtopics
 
   [Cw!]
       Print to the comment window
+
+  [Cw-print-base-radix]
+      Print to the comment window in a given print-base
+
+  [Cw-print-base-radix!]
+      Print to the comment window in a given print-base
 
   [Delete-file$]
       Delete a file
@@ -78804,6 +78880,11 @@ Changes to Existing Features
   included or the second pass is being made through an [encapsulate].
   Thanks to Eric Smith for requesting this feature.
 
+  Both [fmt-to-comment-window] and fmt-to-comment-window! have an extra
+  argument, print-base-radix, which is the same as the first argument
+  to the new utilities, [cw-print-base-radix] and
+  [cw-print-base-radix!] (see below).
+
 
 New Features
 
@@ -78866,6 +78947,12 @@ New Features
     \"Hello ~s0.\"
 
     ACL2 !>
+
+  New utilities, [cw-print-base-radix] and [cw-print-base-radix!], are
+  like [cw] and [cw!], respectively, except for an additional
+  argument that specifies the print-base and, optionally, the
+  print-radix.  Thanks to Eric Smith for requesting
+  [cw-print-base-radix].
 
 
 Heuristic and Efficiency Improvements
@@ -98293,10 +98380,9 @@ Example
 
   See [set-print-base] and [set-print-radix] for detailed discussions
   of those functions.  Set-print-base-radix combines their
-  functionality by setting the radix (as is done by
-  [set-print-base]), and then causing the radix to be printed (as is
-  done by [set-print-radix]) exactly when the specified radix is not
-  10.
+  functionality by setting the base (as is done by [set-print-base]),
+  and then causing the radix to be printed (as is done by
+  [set-print-radix]) exactly when the specified radix is not 10.
 
   Here is a sample log.
 

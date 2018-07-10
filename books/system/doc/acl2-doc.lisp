@@ -16235,6 +16235,67 @@ subtree of X with T, without duplication.</p>
  the ACL2 command @(':')@(tsee brr)@(' nil'), so that you don't slow down
  subsequent proof attempts.</p>")
 
+(defxdoc cw-print-base-radix
+  :parents (io acl2-built-ins)
+  :short "Print to the comment window in a given print-base"
+  :long "<p>See @(tsee cw) for relevant background.  This variant of @('cw')
+ requires specification of a print-base and, optionally, a print-radix (see
+ @(see set-print-base), @(see set-print-radix), and @(see
+ set-print-base-radix)).</p>
+
+ <p>The following examples show that @('cw-print-base-radix') is just like
+ @(tsee cw), except that there is a new argument in the first position that
+ specifies the print-base and can, for that print-base, override the default
+ print-radix.</p>
+
+ @({
+ ACL2 !>(cw-print-base-radix 16 \"~x0~%\" '(3 12 16 17))
+ (#x3 #xC #x10 #x11)
+ NIL
+ ACL2 !>(cw-print-base-radix '(16 . t) \"~x0~%\" '(3 12 16 17))
+ (#x3 #xC #x10 #x11)
+ NIL
+ ACL2 !>(cw-print-base-radix '(16 . nil) \"~x0~%\" '(3 12 16 17))
+ (3 C 10 11)
+ NIL
+ ACL2 !>(cw-print-base-radix 10 \"~x0~%\" '(3 12 16 17))
+ (3 12 16 17)
+ NIL
+ ACL2 !>(cw-print-base-radix '(10 . t) \"~x0~%\" '(3 12 16 17))
+ (3. 12. 16. 17.)
+ NIL
+ ACL2 !>(cw-print-base-radix '(10 . nil) \"~x0~%\" '(3 12 16 17))
+ (3 12 16 17)
+ NIL
+ ACL2 !>
+
+ @({
+ General Forms:
+
+ (cw-print-base-radix print-base fmt-string arg1 arg2 ... argn)
+ (cw-print-base-radix print-base/print-radix fmt-string arg1 arg2 ... argn)
+ })
+
+ <p>where all arguments of this macro are evaluated; @('print-base') is a legal
+ print-base as recognized by @(tsee print-base-p); @('print-base/print-radix')
+ is a cons whose car is a legal print-base; @('fmt-string') is a string
+ suitable for passing to @(tsee fmt); and @('arg1') through @('argn') (where n
+ is at most 9) are corresponding arguments for @('fmt-string').  Printing is
+ done according to the specified print-base, which is the first argument in the
+ first general form and is the car of the first argument in the second general
+ form.  The print-radix value that is used for printing in the first general
+ form is the print-radix as specified for @(tsee set-print-base-radix), while
+ in the second general form, it is the cdr.</p>")
+
+(defxdoc cw-print-base-radix!
+  :parents (io acl2-built-ins)
+  :short "Print to the comment window in a given print-base"
+  :long "<p>This is the same as @(tsee cw-print-base-radix), except that @(tsee
+ cw-print-base-radix) inserts backslash (\\) characters when forced to print
+ past the right margin, in order to make the output a bit clearer in that case.
+ Use @('cw-print-base-radix!')  instead if you want to be able to read the
+ forms back in.</p>")
+
 (defxdoc |Common Lisp|
   :parents (|Pages Written Especially for the Tours|)
   :short "Common Lisp"
@@ -30035,23 +30096,27 @@ current fast alists."
   :long "<p>See @(see cw) for an introduction to the comment window and the
  usual way to print it.</p>
 
- <p>Function @('fmt-to-comment-window') is identical to @('fmt1') (see @(see
+ <p>Function @('fmt-to-comment-window') is similar to @('fmt1') (see @(see
  fmt)), except that the channel is @(tsee *standard-co*) and the ACL2 @(tsee
- state) is neither an input nor an output.  An analogous function,
- @('fmt-to-comment-window!'), prints with @(tsee fmt!) instead of @(tsee fmt),
- in order to avoid insertion of backslash (\\) characters for margins; also see
- @(see cw!).  Note that even if you change the value of @(tsee ld) special
- @('standard-co') (see @(see standard-co)), @('fmt-to-comment-window') will
- print to @(tsee *standard-co*), which is the original value of @(tsee
- standard-co).</p>
+ state) is neither an input nor an output, and moreover, an additional argument
+ specifies the print-base and optionally the print-radix.  That additional
+ argument is treated the same as the first argument of
+ @('cw-print-base-radix'); see @(see cw-print-base-radix).  An analogous
+ function, @('fmt-to-comment-window!'), prints with @(tsee fmt!) instead of
+ @(tsee fmt), in order to avoid insertion of backslash (\\) characters for
+ margins; also see @(see cw!).  Note that even if you change the value of
+ @(tsee ld) special @('standard-co') (see @(see standard-co)),
+ @('fmt-to-comment-window') will print to @(tsee *standard-co*), which is the
+ original value of @(tsee standard-co).</p>
 
  @({
   General Form:
-  (fmt-to-comment-window fmt-string alist col evisc-tuple)
+  (fmt-to-comment-window fmt-string alist col evisc-tuple print-base-radix)
  })
 
- <p>where these arguments are as described for @(tsee fmt1); see @(see
- fmt).</p>")
+ <p>where these arguments are as described for @(tsee fmt1) (see @(see fmt))
+ except that the last argument is as described for @(tsee
+ cw-print-base-radix).</p>")
 
 (defxdoc fmt1
   :parents (io acl2-built-ins)
@@ -80325,6 +80390,11 @@ it."
  the second pass is being made through an @(tsee encapsulate).  Thanks to Eric
  Smith for requesting this feature.</p>
 
+ <p>Both @(tsee fmt-to-comment-window) and @('fmt-to-comment-window!') have an
+ extra argument, @('print-base-radix'), which is the same as the first argument
+ to the new utilities, @(tsee cw-print-base-radix) and @(tsee
+ cw-print-base-radix!) (see below).</p>
+
  <h3>New Features</h3>
 
  <p>The @(see summary) now shows, by default, the list of doublets @('(f g)')
@@ -80392,6 +80462,12 @@ it."
 
  ACL2 !>
  })
+
+ <p>New utilities, @(tsee cw-print-base-radix) and @(tsee
+ cw-print-base-radix!), are like @(tsee cw) and @(tsee cw!), respectively,
+ except for an additional argument that specifies the print-base and,
+ optionally, the print-radix.  Thanks to Eric Smith for requesting @(tsee
+ cw-print-base-radix).</p>
 
  <h3>Heuristic and Efficiency Improvements</h3>
 
@@ -97166,7 +97242,7 @@ arithmetic) for libraries of @(see books) for arithmetic reasoning.</p>")
   :short "Control radix in which numbers are printed and printing of the radix"
   :long "<p>See @(tsee set-print-base) and @(tsee set-print-radix) for detailed
  discussions of those functions.  @('Set-print-base-radix') combines their
- functionality by setting the radix (as is done by @(tsee set-print-base)), and
+ functionality by setting the base (as is done by @(tsee set-print-base)), and
  then causing the radix to be printed (as is done by @(tsee set-print-radix))
  exactly when the specified radix is not 10.</p>
 
