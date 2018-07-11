@@ -2864,12 +2864,23 @@
  <li>Many commands offer defaults, and many offer completion.  The default is
  determined by cursor position: if the cursor is sitting on a letter of a
  documentation topic name, or on a space character immediately after it, then
- that name will be offered as the default.  Completion is carried out with the
- usual emacs ``@('completing-read')''; thus, for example, the character
- `@('?')' is a help key, so if you want that character as part of your topic
- name, prefix it with @('control-q').  For example, after the `@('g')' command
- you can go to the topic @(tsee mv?) by typing the character sequence
- @('<m,v,control-q ?>').<p/></li>
+ that name will be offered as the default.  Completion tips:<p/>
+
+ <ul>
+
+ <li>Completion is carried out with the usual emacs ``@('completing-read')'';
+ thus, for example, the character `@('?')' is a help key, so if you want that
+ character as part of your topic name, prefix it with @('control-q').  For
+ example, after the `@('g')' command you can go to the topic @(tsee mv?) by
+ typing the character sequence @('<m,v,control-q ?>').</li>
+
+ <li>To find completions that have package prefixes, type a colon (:) in the
+ front, and completion will show matching topics.  For example, @('\"g\"')
+ followed by @('\":rew\"') and then two tabs will show, at least in recent
+ versions of Emacs, a list of topics that includes
+ @('\"ACL2-PC::REWRITE\"').</li>
+
+ </ul><p/></li>
 
  <li>Square brackets typically indicate documentation topic names, for example:
  <tt>[acl2-doc]</tt>.  (As mentioned above, there are occasional exceptions,
@@ -12369,8 +12380,8 @@ with any questions about building the community books.</p>")
  the full admissibility checks on each form (proving termination of recursive
  functions, proving theorems, etc.), checking as it goes that each form is an
  embedded event form (see @(see embedded-event-form)); (3) may roll back the
- @(see world) (how far? ~-[] see below) and perform an @(tsee include-book) to
- check for @(tsee local) incompatibilities (see @(see
+ @(see world) (how far? &mdash; see below) and perform an @(tsee include-book)
+ to check for @(tsee local) incompatibilities (see @(see
  local-incompatibility)); (4) writes a @(see certificate) recording not only
  that the book was certified but also recording the @(see command)s necessary
  to recreate the certification @(see world) (so the appropriate packages can be
@@ -16224,6 +16235,67 @@ subtree of X with T, without duplication.</p>
  the ACL2 command @(':')@(tsee brr)@(' nil'), so that you don't slow down
  subsequent proof attempts.</p>")
 
+(defxdoc cw-print-base-radix
+  :parents (io acl2-built-ins)
+  :short "Print to the comment window in a given print-base"
+  :long "<p>See @(tsee cw) for relevant background.  This variant of @('cw')
+ requires specification of a print-base and, optionally, a print-radix (see
+ @(see set-print-base), @(see set-print-radix), and @(see
+ set-print-base-radix)).</p>
+
+ <p>The following examples show that @('cw-print-base-radix') is just like
+ @(tsee cw), except that there is a new argument in the first position that
+ specifies the print-base and can, for that print-base, override the default
+ print-radix.</p>
+
+ @({
+ ACL2 !>(cw-print-base-radix 16 \"~x0~%\" '(3 12 16 17))
+ (#x3 #xC #x10 #x11)
+ NIL
+ ACL2 !>(cw-print-base-radix '(16 . t) \"~x0~%\" '(3 12 16 17))
+ (#x3 #xC #x10 #x11)
+ NIL
+ ACL2 !>(cw-print-base-radix '(16 . nil) \"~x0~%\" '(3 12 16 17))
+ (3 C 10 11)
+ NIL
+ ACL2 !>(cw-print-base-radix 10 \"~x0~%\" '(3 12 16 17))
+ (3 12 16 17)
+ NIL
+ ACL2 !>(cw-print-base-radix '(10 . t) \"~x0~%\" '(3 12 16 17))
+ (3. 12. 16. 17.)
+ NIL
+ ACL2 !>(cw-print-base-radix '(10 . nil) \"~x0~%\" '(3 12 16 17))
+ (3 12 16 17)
+ NIL
+ ACL2 !>
+
+ @({
+ General Forms:
+
+ (cw-print-base-radix print-base fmt-string arg1 arg2 ... argn)
+ (cw-print-base-radix print-base/print-radix fmt-string arg1 arg2 ... argn)
+ })
+
+ <p>where all arguments of this macro are evaluated; @('print-base') is a legal
+ print-base as recognized by @(tsee print-base-p); @('print-base/print-radix')
+ is a cons whose car is a legal print-base; @('fmt-string') is a string
+ suitable for passing to @(tsee fmt); and @('arg1') through @('argn') (where n
+ is at most 9) are corresponding arguments for @('fmt-string').  Printing is
+ done according to the specified print-base, which is the first argument in the
+ first general form and is the car of the first argument in the second general
+ form.  The print-radix value that is used for printing in the first general
+ form is the print-radix as specified for @(tsee set-print-base-radix), while
+ in the second general form, it is the cdr.</p>")
+
+(defxdoc cw-print-base-radix!
+  :parents (io acl2-built-ins)
+  :short "Print to the comment window in a given print-base"
+  :long "<p>This is the same as @(tsee cw-print-base-radix), except that @(tsee
+ cw-print-base-radix) inserts backslash (\\) characters when forced to print
+ past the right margin, in order to make the output a bit clearer in that case.
+ Use @('cw-print-base-radix!')  instead if you want to be able to read the
+ forms back in.</p>")
+
 (defxdoc |Common Lisp|
   :parents (|Pages Written Especially for the Tours|)
   :short "Common Lisp"
@@ -19011,8 +19083,8 @@ subtree of X with T, without duplication.</p>
   :short "Define a constant"
   :long "@({
   Examples:
-  (defconst *digits* '(0 1 2 3 4 5 6 7 8 9))
-  (defconst *n-digits* (the unsigned-byte (length *digits*)))
+  (defconst *my-digits* '(0 1 2 3 4 5 6 7 8 9))
+  (defconst *len-my-digits* (the unsigned-byte (length *my-digits*)))
 
   General Form:
   (defconst name term doc-string)
@@ -19489,13 +19561,21 @@ subtree of X with T, without duplication.</p>
 (defxdoc define-pc-macro
   :parents (proof-builder)
   :short "Define a proof-builder macro command"
-  :long "@({
-  Example:
-  (define-pc-macro ib (&optional term)
-    (value
-     (if term
-         `(then (induct ,term) bash)
-       `(then induct bash))))
+  :long "<p>A call of @('define-pc-macro') defines a sort of macro, which is a
+ tactic that generates @(see proof-builder) instructions.  This topic contains
+ basic information about how to use this utility.  For somewhat sophisticated,
+ but commented, examples, see the @(see community-book)
+ @('books/kestrel/utilities/proof-builder-macros.lisp') and associated tests in
+ the same directory, @('proof-builder-macros-tests.lisp').</p>
+
+ <p>We begin with the following example.</p>
+
+ @({
+ (define-pc-macro ib (&optional term)
+   (value
+    (if term
+        `(then (induct ,term) bash)
+      `(then induct bash))))
  })
 
  <p>The example above captures a common paradigm: one attempts to prove the
@@ -19503,12 +19583,12 @@ subtree of X with T, without duplication.</p>
  @(see proof-builder-commands) for documentation of the command @('then'),
  which is itself a pc-macro command, and commands @('induct') and @('bash').)
  Rather than issuing @('(then induct bash)'), or worse yet issuing @('induct')
- and then issuing @('bash') for each resulting goals, the above definition of
+ and then issuing @('bash') for each resulting goal, the above definition of
  @('ib') would let you issue @('ib') and get the same effect.</p>
 
  @({
-  General Form:
-  (define-pc-macro cmd args doc-string dcl ... dcl body)
+ General Form:
+ (define-pc-macro cmd args doc-string dcl ... dcl body)
  })
 
  <p>where @('cmd') is the name of the pc-macro than you want to define,
@@ -19519,8 +19599,7 @@ subtree of X with T, without duplication.</p>
  <p>The value of @('body') should be an @(see error-triple), of the form @('(mv
  erp xxx state)') for some @('erp') and @('xxx').  If @('erp') is @('nil'),
  then @('xxx') is handed off to the interactive proof-builder's instruction
- interpreter.  Otherwise, evaluation typically halts.  We may write more on the
- full story later if there is interest in reading it.</p>")
+ interpreter.  Otherwise, evaluation typically halts.</p>")
 
 (defxdoc define-pc-meta
   :parents (proof-builder)
@@ -30017,23 +30096,27 @@ current fast alists."
   :long "<p>See @(see cw) for an introduction to the comment window and the
  usual way to print it.</p>
 
- <p>Function @('fmt-to-comment-window') is identical to @('fmt1') (see @(see
+ <p>Function @('fmt-to-comment-window') is similar to @('fmt1') (see @(see
  fmt)), except that the channel is @(tsee *standard-co*) and the ACL2 @(tsee
- state) is neither an input nor an output.  An analogous function,
- @('fmt-to-comment-window!'), prints with @(tsee fmt!) instead of @(tsee fmt),
- in order to avoid insertion of backslash (\\) characters for margins; also see
- @(see cw!).  Note that even if you change the value of @(tsee ld) special
- @('standard-co') (see @(see standard-co)), @('fmt-to-comment-window') will
- print to @(tsee *standard-co*), which is the original value of @(tsee
- standard-co).</p>
+ state) is neither an input nor an output, and moreover, an additional argument
+ specifies the print-base and optionally the print-radix.  That additional
+ argument is treated the same as the first argument of
+ @('cw-print-base-radix'); see @(see cw-print-base-radix).  An analogous
+ function, @('fmt-to-comment-window!'), prints with @(tsee fmt!) instead of
+ @(tsee fmt), in order to avoid insertion of backslash (\\) characters for
+ margins; also see @(see cw!).  Note that even if you change the value of
+ @(tsee ld) special @('standard-co') (see @(see standard-co)),
+ @('fmt-to-comment-window') will print to @(tsee *standard-co*), which is the
+ original value of @(tsee standard-co).</p>
 
  @({
   General Form:
-  (fmt-to-comment-window fmt-string alist col evisc-tuple)
+  (fmt-to-comment-window fmt-string alist col evisc-tuple print-base-radix)
  })
 
- <p>where these arguments are as described for @(tsee fmt1); see @(see
- fmt).</p>")
+ <p>where these arguments are as described for @(tsee fmt1) (see @(see fmt))
+ except that the last argument is as described for @(tsee
+ cw-print-base-radix).</p>")
 
 (defxdoc fmt1
   :parents (io acl2-built-ins)
@@ -46931,11 +47014,14 @@ tables in the current Hons Space."
  ...)  ... (defun gk ...))'), where for each @('i') from @('1') to @('k') the
  number of formal parameters is the same for @('fi') and @('gi'), then the
  functional substitution @('((f1 . g1) ... (fk . gk))') is applied to the
- termination theorem for the @('fi').  Note that unlike normal @(see
- functional-instantiation), here there is no proof obligation.  (Logical
- justification in a nutshell: the termination proof for the @('fi') took place
- before adding their definitional equations to the current theory, where the
- @('fi') were thus stubs with no axioms.)</p>
+ termination theorem for the @('fi').  (Logical justification in a nutshell:
+ the termination proof for the @('fi') took place before adding their
+ definitional equations to the current theory, where the @('fi') were thus
+ stubs with no axioms.)  Note that unlike normal @(see
+ functional-instantiation), here there is no proof obligation.  However, the
+ restriction applies from (5) above that the functions @('fi') are
+ instantiable; when that fails, then the replacement of each @('fi') by @('gi')
+ will not take place.</p>
 
  <p>Finally, note that an optional second argument to @(':termination-theorem')
  specifies an explicit functional substitution @('((f1 g1) ... (fn gn))'),
@@ -50100,7 +50186,7 @@ tables in the current Hons Space."
  </ul>
 
  <p>The implementation of these checks incorporates a bit of trickery so that
- they are not reasonably efficient.</p>
+ they are reasonably efficient.</p>
 
  <p>Note that @(tsee set-guard-checking) affects evaluation of calls of
  @('(magic-ev-fncall fn ...)') just as it affects calls of @('fn'), for example
@@ -50180,8 +50266,11 @@ tables in the current Hons Space."
  background, see @(see state) and perhaps see @(see
  programming-with-state).</p>
 
- <p>There are several simple examples below.  See @(see make-event-example) for
- development of a more complex example.</p>
+ <p>There are several simple examples below.  For examples that can give
+ additional insight into the use of @('make-event') for tool development, see
+ @(see make-event-example-1) and @(see make-event-example-2).  Also see the
+ @('make-event/') subdirectory of the ACL2 @(see community-books) for more
+ examples, for example, @('books/make-event/search-generation.lisp').</p>
 
  <p>We break this documentation into the following sections.</p>
 
@@ -51191,18 +51280,181 @@ tables in the current Hons Space."
  <p>Note that errors generated during expansion are not affected by the cases
  above; those only control the concluding error message, if any.</p>")
 
-(defxdoc make-event-example
+(defxdoc make-event-example-1
   :parents (make-event)
   :short "An example use of @(tsee make-event)"
-  :long "<p>Here, we develop a reasonably self-contained example showing how to
- use @('make-event').  Although the documentation for @(tsee make-event) is
- comprehensive, some may find this example to be a good starting point, to get
- a sense of how to develop tools that take advantage of @('make-event').  We
- thank Yan Peng for putting forward this problem.</p>
+  :long "<p>Here, we develop a reasonably self-contained example that
+ illustrates how to use @('make-event') to develop tools, by solving a
+ challenge posed by Alessandro Coglio.  For another such example, see @(see
+ make-event-example-2).</p>
 
- <p>(Note: A rather complex example of the use of @('make-event') may be found
- in the @(see community-book),
- @('books/make-event/search-generation.lisp').)</p>
+ <p>The challenge is to develop a programmatic method for solving the following
+ sort of problem.</p>
+
+ <ol>
+
+ <li>Create a @(tsee defun) form.</li>
+
+ <li>Submit it to ACL2, obtaining a new ACL2 @(see state) whose @(see world)
+ includes the function just submitted.</li>
+
+ <li>Access various elements of this function (e.g., unnormalized body).</li>
+
+ <li>Create and return a new @('defun') that's based on elements of the
+ previous one.</li>
+
+ <li>Submit this new defun via a @(tsee make-event), but in a state that does
+ not include the previous @('defun').</li>
+
+ </ol>
+
+ <p>We illustrate how to do this sort of thing by specifying the ``new
+ @('defun') that's based on elements of the previous one'' to be as follows:
+ add the formal, @('y'), and modify the body so that @('y') is consed onto the
+ old body.  Of course, this is a trivial example that could be done without
+ @('make-event'); but we solve it in a way that shows how to solve any such
+ problem.  For simplificity, let's not worry about the case that @('y') is
+ already a formal of the existing @('defun').  Here are the main steps.</p>
+
+ <ul>
+
+ <li>(a) Submit the @('defun').</li>
+
+ <li>(b) Gather information from the resulting world.  In this case, we access
+ the formals and body of the definition.</li>
+
+ <li>(c) Create the desired event.</li>
+
+ </ul>
+
+ <p>The following code does those three things, as explained in comments below,
+ which include references to the three steps above.</p>
+
+ @({
+ (er-progn
+
+ ; Each of the two forms below returns an error triple (see @(see
+ ; error-triple)), so we can evaluate both by using er-progn, which
+ ; returns the last (second) error triple.
+
+  (defun foo (x) (cons x x)) ; (a)
+  (let ((formals (formals 'foo (w state))) ; (b)
+        (body (body 'foo nil (w state))))
+    (value `(defun foo ,(cons 'y formals) ; (c)
+              (cons y ,body)))))
+ })
+
+ <p>So far so good: we have computed an error triple @('(mv nil val state)')
+ whose value component, @('val'), is the desired @('defun') form.  However,
+ that leaves us in a world that includes the first @('defun') form.  For a
+ solution to the original challenge (for our specific case), that must not be
+ the case, and moveover the second @('defun') form should be included in the
+ current world.  Fortunately, @(tsee make-event) is perfectly suited to do both
+ of these things.  Consider the following form, which simply wraps
+ @('make-event') around the code displayed just above.</p>
+
+ @({
+ (make-event (er-progn
+              (defun foo (x) (cons x x))
+              (let ((formals (formals 'foo (w state)))
+                    (body (body 'foo nil (w state))))
+                (value `(defun foo ,(cons 'y formals)
+                          (cons y ,body))))))
+ })
+
+ <p>The expansion phase (see @(see make-event)) computes the new @('defun')
+ form &mdash; the one with the extra formal and modified body &mdash; and then
+ that new @('defun') form is evaluated in the original world, which does not
+ include the first @('defun') form.</p>
+
+ <p>We complete the job by making a programmatic solution, with a macro that
+ expands to such a @('make-event') form.  We make it nice by inhibiting all
+ output except error output.</p>
+
+ @({
+ (defmacro cons-y-onto-body (def new-name)
+   `(make-event
+     (with-output!
+       :off :all
+       :on error
+       (er-progn
+        ,def
+        (let* ((name ',(cadr def))
+               (new-name ',new-name)
+               (formals (formals name (w state)))
+               (body (body name nil (w state))))
+          (value (list 'defun new-name (cons 'y formals)
+                       (list 'cons 'y body))))))
+     :on-behalf-of :quiet!))
+ })
+
+ <p>This could be improved by doing some error checking, but we leave that as
+ an exercise.</p>
+
+ <p>Below is a log, with comments added, that shows uses of the macro
+ above.</p>
+
+ @({
+ ; First we call the macro successfully.  Notice that although we inhibited
+ ; output during the expansion phase (using with-output!), below we see output
+ ; from the resulting new defun event.
+
+ ACL2 !>(cons-y-onto-body (defun f (x) x) new-f)
+
+ Since NEW-F is non-recursive, its admission is trivial.  We observe
+ that the type of NEW-F is described by the theorem (CONSP (NEW-F Y X)).
+ We used primitive type reasoning.
+
+ Summary
+ Form:  ( DEFUN NEW-F ...)
+ Rules: ((:FAKE-RUNE-FOR-TYPE-SET NIL))
+ Time:  0.01 seconds (prove: 0.00, print: 0.00, other: 0.01)
+
+ Summary
+ Form:  ( MAKE-EVENT (WITH-OUTPUT! :OFF ...) ...)
+ Rules: NIL
+ Time:  0.03 seconds (prove: 0.00, print: 0.00, other: 0.03)
+  NEW-F
+ ACL2 !>:pe new-f ; Check that the new definition was indeed submitted.
+  L         2:x(CONS-Y-ONTO-BODY (DEFUN F # ...) NEW-F)
+               \
+ >L             (DEFUN NEW-F (Y X) (CONS Y X))
+ ACL2 !>:pe f ; Check that the old definition was NOT submitted.
+
+
+ ACL2 Error in :PE:  The object F is not a logical name.  See :DOC logical-
+ name.
+
+ ; The defun below is ill-formed, so we get an error when it is submitted,
+ ; during the expansion phase.  Our use of with-output! allowed error messages,
+ ; so we see the error message in this case.
+
+ ACL2 !>(cons-y-onto-body (defun g (x) (+ y y)) new-g)
+
+
+ ACL2 Error in ( DEFUN G ...):  The body of G contains a free occurrence
+ of the variable symbol Y.
+
+
+ Summary
+ Form:  ( MAKE-EVENT (WITH-OUTPUT! :OFF ...) ...)
+ Rules: NIL
+ Time:  0.00 seconds (prove: 0.00, print: 0.00, other: 0.00)
+
+ ACL2 Error in ( MAKE-EVENT (WITH-OUTPUT! :OFF ...) ...):  See :DOC
+ failure.
+
+ ******** FAILED ********
+ ACL2 !>
+ })")
+
+(defxdoc make-event-example-2
+  :parents (make-event)
+  :short "An example use of @(tsee make-event)"
+  :long "<p>Here, we develop a reasonably self-contained example that
+ illustrates how to use @('make-event') to develop tools.  For another such
+ example, see @(see make-event-example-1).  We thank Yan Peng for putting
+ forward this problem.</p>
 
  <p>We begin by discussing prerequisites for this presentation.  Next, we
  present the challenge problem, followed by code that solves the problem
@@ -51445,16 +51697,16 @@ tables in the current Hons Space."
  <p><b>Exercise</b>: Modify this tool so that instead of merely updating a
  state global, it prints the failed events at the end of execution; and
  moreover, it prints them in their original order.  See @(see
- make-event-example-exercise) for a solution.</p>")
+ make-event-example-2-exercise) for a solution.</p>")
 
-(defxdoc make-event-example-exercise
-  :parents (make-event-example)
-  :short "Solution to an exercise from @(tsee make-event-example)"
-  :long "<p>See @(see make-event-example) for a worked example using @(tsee
+(defxdoc make-event-example-2-exercise
+  :parents (make-event-example-2)
+  :short "Solution to an exercise from @(tsee make-event-example-2)"
+  :long "<p>See @(see make-event-example-2) for a worked example using @(tsee
  make-event), concluding with an exercise.  Here we present a solution to that
  exercise.  It assumes that we have evaluated the definitions of
  @('save-progn+-error'), @('progn+-fn'), and @('progn+') from @(see
- make-event-example).</p>
+ make-event-example-2).</p>
 
  @({
  (defmacro progn+-errors (&rest lst)
@@ -79911,6 +80163,10 @@ it."
 ; the "tilde directive at location 1" but now it reports "location 0",
 ; consistently with other such messages.
 
+; Changed conjoin-untranslated-terms to produce more user-friendly results.
+
+; Added function maybe-kwote.
+
   :parents (release-notes)
   :short "ACL2 Version  8.1 (xxx, 20xx) Notes"
   :long "<p>NOTE!  New users can ignore these release notes, because the @(see
@@ -79928,7 +80184,7 @@ it."
  note-8-1-books) for a summary of changes made to the ACL2 Community Books
  since ACL2 8.0, including the build system.  Also note that with each release,
  some built-in functions that were formerly in @(':')@(tsee program) mode are
- now @('see guard')-verified @(':')@(tsee logic) mode functions.</p>
+ now @(see guard)-verified @(':')@(tsee logic) mode functions.</p>
 
  <h3>Changes to Existing Features</h3>
 
@@ -80009,11 +80265,13 @@ it."
  particular the final paragraph.  Thanks to Sol Swords for contributing this
  enhancement.</p>
 
- <p>The printing (untranslation) of @(see term)s now prints calls of @(tsee
- mbe), @(tsee mbt), and @(tsee ec-call).  Such terms rarely occur in practice
- because definitional bodies are stored without such @(see guard-holders).
- However, here is an example of how they could arise.  First consider the
- following definition.</p>
+ <p>The printing (untranslation) of @(see term)s can now print calls of @(tsee
+ mbe), @(tsee mbt), @(tsee ec-call), @(tsee cw), and @(tsee time$).  Thanks to
+ Alessandro Coglio and Eric Smith for discussions leading to some of these
+ changes.  Such terms rarely occur in practice because definitional bodies are
+ stored with calls of @(see guard-holders) and @('cw') expanded.  However, here
+ is an example of how they could arise.  First consider the following
+ definition.</p>
 
  @({
  (defun g (n)
@@ -80099,6 +80357,44 @@ it."
  <p>The definition of @(tsee msgp) has been strengthened to require that for a
  @('cons') pair, the @('cdr') must satisfy @(tsee character-alistp).</p>
 
+ <p>The @(see proof-builder) command, @('quiet!'), now inhibits all output
+ except @('error') output (and that too, if already inhibited).</p>
+
+ <p>Warnings have been modified that are labeled ``[Non-rec]'', generated for
+ rules with problematic occurrences of non-recursive function symbols.  Now
+ they take into account rules of class @(':')@(tsee definition).  Thanks to
+ Mihir Mehta for bringing this issue to our attention.</p>
+
+ <p>It is no longer required to specify @(':install-body nil') in a @(see
+ definition) rule when the function symbol is a member of the value of the
+ constant @('*definition-minimal-theory*').  Thanks to Eric Smith for pointing
+ out that the utility, @(tsee install-not-normalized), was failing on, for
+ example, @(tsee eq).  This change fixes that problem.  Technical note for
+ system hackers only: Because of this change, the value of @('(body fn t
+ wrld)') is no longer guaranteed to get the original definition of @('fn') when
+ fn is in @('*definition-minimal-theory*'); for that purpose use the new
+ utility, @('bbody').</p>
+
+ <p>Many error messages now show variables according to order of appearance,
+ where formerly the order was reversed.  Thanks to Eric Smith for supplying an
+ example of a top-level form, @('+ a b c'), for which the error message
+ reported variables in reverse order: ``Global variables, such as C, B and A,
+ are not allowed.''  The message now says ``A, B, and C'' instead of ``C, B and
+ A.''</p>
+
+ <p>For @(tsee value-triple), the keyword argument @(':on-skip-proofs')
+ provides new behavior if it is given the value, @(':interactive').  In that
+ case, evaluation is still done under a call of @(tsee skip-proofs), as when
+ the value of @(':on-skip-proofs') is @('t'); but evaluation is skipped when
+ the reason proofs are being skipped is only that a book is being included or
+ the second pass is being made through an @(tsee encapsulate).  Thanks to Eric
+ Smith for requesting this feature.</p>
+
+ <p>Both @(tsee fmt-to-comment-window) and @('fmt-to-comment-window!') have an
+ extra argument, @('print-base-radix'), which is the same as the first argument
+ to the new utilities, @(tsee cw-print-base-radix) and @(tsee
+ cw-print-base-radix!) (see below).</p>
+
  <h3>New Features</h3>
 
  <p>The @(see summary) now shows, by default, the list of doublets @('(f g)')
@@ -80167,6 +80463,12 @@ it."
  ACL2 !>
  })
 
+ <p>New utilities, @(tsee cw-print-base-radix) and @(tsee
+ cw-print-base-radix!), are like @(tsee cw) and @(tsee cw!), respectively,
+ except for an additional argument that specifies the print-base and,
+ optionally, the print-radix.  Thanks to Eric Smith for requesting @(tsee
+ cw-print-base-radix).</p>
+
  <h3>Heuristic and Efficiency Improvements</h3>
 
  <p>The implementation of @(see wormhole)s has been tweaked to avoid an
@@ -80194,7 +80496,8 @@ it."
  lambda forms whose @(see guard)s are verified by the @(see tau-system) and
  that are <i>tame</i> (see @(see apply$)).  The optimization had been used in
  the unadvertised use of ``The Rubric'' prior to the release of ACL2 Version
- 8.0.</li>
+ 8.0.  Warnings about non-tame-compliant lambdas will now appear when
+ appropriate, as had been the case in Version  7.4.</li>
 
  <li>The optimization above has been improved so that instead of three cache
  lines, there is an efficient implementation using 1000 cache lines.  That is
@@ -80218,6 +80521,12 @@ it."
  than was previously the case.</p>
 
  <h3>Bug Fixes</h3>
+
+ <p>There was a soundness bug in the automatic functional instantiation that
+ can be applied for a @(':termination-theorem') @(see lemma-instance).  Thanks
+ to Eric Smith for sending an example to illustrate this bug, for suggesting
+ its cause, and for permission to include that example in a comment in the ACL2
+ sources definition of the constant, @('*non-instantiable-primitives*').</p>
 
  <p>Fixed two bugs in @(tsee apply$): we now @(tsee disable) the @(see
  executable-counterpart) of @('good-bye-fn') to prevent quitting ACL2 entirely
@@ -80285,6 +80594,29 @@ it."
  the compiled file for a book.  These notes (along with, perhaps, some other
  output) have been eliminated.  Thanks to Eric Smith for pointing us to this
  problem with a reproducible example.</p>
+
+ <p>We eliminated an obscure hard error mentioning the source function
+ @('assume-true-false-if'), which could occur in the middle of a proof.  Thanks
+ to Dave Greve for pointing out this problem by sending us an illustrative
+ example that we could run.</p>
+
+ <p>It was possible to get a raw Lisp error from ill-formed calls of @(tsee
+ ec-call) not intended for execution, for example, @('(defun foo (x) (non-exec
+ (ec-call x)))').  This has been fixed.</p>
+
+ <p>Certain syntactic requirements are normally applied to function bodies but
+ not to theorems.  However, these were being applied under calls of @(tsee
+ flet).  Consider the following example.</p>
+
+ @({
+ (thm
+  (flet ((foo (x) (car x)))
+    (foo (mv-nth 1 (mv x x)))))
+ })
+
+ <p>This was rejected with an error: ``The expected number of return values for
+ (MV X X) is 1 but the actual number of return values is 2.''  This has been
+ fixed.  Thanks to Eric Smith for bringing this problem to our attention.</p>
 
  <h3>Changes at the System Level</h3>
 
@@ -85085,12 +85417,19 @@ arithmetic) for libraries of @(see books) for arithmetic reasoning.</p>")
  })
 
  <p>where @('k') &gt;= 0 and each @('eventi') is a legal embedded event form
- (see @(see embedded-event-form)).  Each event is printed (by default) and
- evaluated, in sequence.  If any event fails, the entire @('progn') call is
- deemed to have failed, and the logical @(see world) is rolled back to what it
- was immediately before the @('progn') call was evaluated.  A utility is
- provided to assist in debugging failures of such execution; see @(see
- redo-flat).</p>
+ (see @(see embedded-event-form)).  Each event is evaluated, in sequence.  If
+ any event fails, the entire @('progn') call is deemed to have failed, and the
+ logical @(see world) is rolled back to what it was immediately before the
+ @('progn') call was evaluated.  A utility is provided to assist in debugging
+ failures of such execution; see @(see redo-flat).</p>
+
+ <p>See @(see set-inhibit-output-lst) for how to control the printing done for
+ each event.  By default, each event is printed before it is evaluated and a
+ suitable value is printed after successful completion.  (Technical note:
+ successful completion produces a mutiple-value return that is an @(see
+ error-triple) @('(mv nil val state)'); then the value @('val') is printed.)
+ Printing of both the event and its value can both be inhibited by including
+ the symbol, @('EVENT'), in your call of @('set-inhibit-output-lst').</p>
 
  <p>NOTE: If the @('eventi') above are not all legal embedded event forms (see
  @(see embedded-event-form)), consider using @(tsee er-progn) or (with great
@@ -86380,7 +86719,15 @@ arithmetic) for libraries of @(see books) for arithmetic reasoning.</p>")
 
  <p>Individual proof-builder commands are documented in subsection @(see
  proof-builder-commands).  For a list of perhaps the most commonly used
- commands, see @(see proof-builder-commands-short-list).</p>")
+ commands, see @(see proof-builder-commands-short-list).</p>
+
+ <p>The proof-builder supports user-defined macros, which are tactics that
+ generate proof-builder instructions.  See @(see define-pc-macro).</p>
+
+ <p><i>Remark.</i>  The ``pc-'' prefix, for example in ``define-pc-macro''
+ above, stems from an earlier name for the proof-builder, which was
+ ``proof-checker''.  That also accounts for the string @('\"PC\"') in the
+ package name, @('\"ACL2-PC\"').</p>")
 
 (defxdoc proof-builder-commands
   :parents (proof-builder)
@@ -89334,11 +89681,15 @@ arithmetic) for libraries of @(see books) for arithmetic reasoning.</p>")
  <p>This macro provides functionality that can be obtained through the usual
  @(see IO) routines provided by ACL2, as shown by the sequence of definitions
  below.  However, under-the-hood raw Lisp code provides an implementation that
- not only is efficient, but also does not return @(tsee state), although the
- expansion of a call of this macro takes @('state') as an argument.  (Technical
- remark: the use of @(tsee with-local-state) in the logical definition of key
- subroutine @('read-file-into-string2') does not require a trust tag (see @(see
- defttag)), because that function is defined by ACL2, not in a book.)</p>
+ not only is efficient, but also does not return @(tsee state).  Note that the
+ expansion of a call of this macro does take @('state') as an argument,
+ which (as usual for functions that take @('state')) necessitates either that
+ @('(set-state-ok t)') has already been evaluated, or else that a suitable
+ @(':stobjs') declaration, typically @(':stobjs state'), is provided (see @(see
+ xargs)).  (Technical remark: the use of @(tsee with-local-state) in the
+ logical definition of key subroutine @('read-file-into-string2') does not
+ require a trust tag (see @(see defttag)), because that function is defined by
+ ACL2, not in a book.)</p>
 
  <p>The value of the constant @('*read-file-into-string-bound*')
  (see the definition below) is a strict upper bound on the size of the string
@@ -92208,11 +92559,12 @@ arithmetic) for libraries of @(see books) for arithmetic reasoning.</p>")
  GENERALIZE), @(':')@(tsee INDUCTION), @(':')@(tsee LINEAR), @(':')@(tsee
  META), @(':')@(tsee REFINEMENT), @(':')@(tsee TAU-SYSTEM), @(':')@(tsee
  TYPE-PRESCRIPTION), @(':')@(tsee TYPE-SET-INVERTER), and
- @(':WELL-FOUNDED-RELATION').  Some classes <i>require</i> the
- user-specification of certain class-specific attributes.  Each class of rule
- affects the theorem prover's behavior in a different way, as discussed in the
- corresponding documentation topic.  In this topic we discuss the various
- attributes that may be attached to rule classes.</p>
+ @(':well-founded-relation') (see @(see well-founded-relation-rule)).  Some
+ classes <i>require</i> the user-specification of certain class-specific
+ attributes.  Each class of rule affects the theorem prover's behavior in a
+ different way, as discussed in the corresponding documentation topic.  In this
+ topic we discuss the various attributes that may be attached to rule
+ classes.</p>
 
  <p>Note that not all @(see events) generate rules.  For example, a @(tsee
  defthm) event that specifies @(':rule-classes nil') does not generate a rule.
@@ -92419,17 +92771,15 @@ arithmetic) for libraries of @(see books) for arithmetic reasoning.</p>")
  is omitted or the value is @(':normalize'), then this definition will be
  simplified with the @(see normalization) procedure that is used by default
  when processing definitions made with @(tsee defun).  You must explicitly
- specify @(':install-body nil') in the following cases: @('fn') (as above) is a
- member of the value of constant @('*definition-minimal-theory*'), the
- arguments are not a list of distinct variables, @('equiv') (as above) is not
- @(tsee equal), or there are free variables in the hypotheses or right-hand
- side (see @(see free-variables)).  However, supplying @(':install-body nil')
- will not affect the rewriter's application of the @(':definition') rule, other
- than to avoid using the rule to apply @(':expand') hints.  If a definition
- rule equates @('(f a1 ... ak)') with @('body') but there are hypotheses,
- @('hyps'), then @(':expand') @(see hints) will replace terms @('(f term1
- ... termk)') by corresponding terms @('(if hyps body (hide (f term1
- ... termk)))').</p>
+ specify @(':install-body nil') in the following cases: the arguments are not a
+ list of distinct variables, @('equiv') (as above) is not @(tsee equal), or
+ there are free variables in the hypotheses or right-hand side (see @(see
+ free-variables)).  However, supplying @(':install-body nil') will not affect
+ the rewriter's application of the @(':definition') rule, other than to avoid
+ using the rule to apply @(':expand') hints.  If a definition rule equates
+ @('(f a1 ... ak)') with @('body') but there are hypotheses, @('hyps'), then
+ @(':expand') @(see hints) will replace terms @('(f term1 ... termk)') by
+ corresponding terms @('(if hyps body (hide (f term1 ... termk)))').</p>
 
  <p>@(':')@(tsee Loop-stopper) &mdash; this field may only be supplied if the
  class is @(':')@(tsee rewrite).  Its value must be a list of entries each
@@ -96892,7 +97242,7 @@ arithmetic) for libraries of @(see books) for arithmetic reasoning.</p>")
   :short "Control radix in which numbers are printed and printing of the radix"
   :long "<p>See @(tsee set-print-base) and @(tsee set-print-radix) for detailed
  discussions of those functions.  @('Set-print-base-radix') combines their
- functionality by setting the radix (as is done by @(tsee set-print-base)), and
+ functionality by setting the base (as is done by @(tsee set-print-base)), and
  then causing the radix to be printed (as is done by @(tsee set-print-radix))
  exactly when the specified radix is not 10.</p>
 
@@ -113790,6 +114140,7 @@ introduction-to-the-tau-system) for more information about Tau.</dd>
   Examples:
   (value-triple (+ 3 4))
   (value-triple (cw \"hi\") :on-skip-proofs t)
+  (value-triple (cw \"hi\") :on-skip-proofs :interactive)
   (value-triple (@ ld-pre-eval-print))
   (value-triple (@ ld-pre-eval-print) :check t)
 
@@ -113807,12 +114158,14 @@ introduction-to-the-tau-system) for more information about Tau.</dd>
  value.</p>
 
  <p>Calls of @('value-triple') are generally skipped when proofs are being
- skipped, in particular when ACL2 is performing the second pass through the
- @(see events) of an @(tsee encapsulate) form or during an @(tsee
- include-book), or indeed any time @(tsee ld-skip-proofsp) is non-@('nil').  If
- you want the call evaluated during those times as well, use a non-@('nil')
- value for @(':on-skip-proofs').  Note that the argument to
- @(':on-skip-proofs') is not evaluated.</p>
+ skipped.  However, a call of @('value-triple') will be evaluated even when
+ proofs are being skipped if there is a non-@('nil') value for keyword argument
+ @(':on-skip-proofs'), typically, @('t').  The special value for
+ @(':on-skip-proofs'), @(':interactive'), is more restrictive than @('t'): it
+ will still cause the @('value-triple') call to be evaluated under a call of
+ @(tsee skip-proofs), but <i>not</i> when proofs are being skipped only due to
+ either making a second pass through an @(tsee encapsulate) or executing an
+ @(tsee include-book).</p>
 
  <p>If you expect the form to evaluate to a non-@('nil') value and you want an
  error to occur when that is not the case, you can use @(':check t').  More
@@ -115289,7 +115642,7 @@ introduction-to-the-tau-system) for more information about Tau.</dd>
 
  @({
   (defun g (x)
-   (declare (xargs :well-founded-relation (mp . rel)))
+   (declare (xargs :well-founded-relation rel))
    (if (test x) (g (step x)) (base x)))
  })
 
@@ -120287,11 +120640,12 @@ repeat the given instruction until it ``fails''"
   (repeat instruction)
  })
 
- <p>The given @('instruction') is run repeatedly until it ``fails''.</p>
+ <p>The given @('instruction') is run repeatedly until it ``fails''.  A call of
+ @(':repeat') always ``succeeds''.</p>
 
  <p><b>Remark:</b> There is nothing here in general to prevent the instruction
- from being run after all goals have been proved, though this is indeed the
- case for primitive instructions.</p>")
+ from being run after all goals have been proved, though it may then fail, thus
+ causing @(':repeat') to return.</p>")
 
 (defxdoc acl2-pc::repeat-rec
   :parents (proof-builder-commands)
@@ -121394,6 +121748,7 @@ expand function call at the current subterm, without simplifying"
 (defpointer array arrays)
 (defpointer assoc-eq assoc)
 (defpointer assoc-equal assoc)
+(defpointer auto-instance defthm<w)
 (defpointer backchain-limit-rw hints t)
 (defpointer backtrack hints t)
 (defpointer badge apply$)
