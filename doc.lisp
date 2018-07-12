@@ -105083,6 +105083,15 @@ List of a few ACL2 system utilities:
 
     * (keyword-listp x): Return t when x is a true-list whose members are
       all keywords, else return nil.
+    * (known-package-alist state): Returns a list of package entries, as
+      explained in the definition of make-package-entry in ACL2
+      sources, which is followed by simple accessor definitions (all
+      in file axioms.lisp as of this writing).  This list includes
+      entries for hidden packages (see [hidden-death-package]).  As a
+      package is introduced, its package entry is pushed on the front
+      of the existing known-package-alist.  Note that this list can
+      be accessed directly from a [world], w, with: (global-val
+      'known-package-alist w).
     * (implicate t1 t2): For terms t1 and t2, return a term that is
       propositionally equivalent to (implies t1 t2).
     * (lambda-applicationp x): For a [pseudo-termp] x, return t if it is a
