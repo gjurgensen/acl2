@@ -80167,6 +80167,9 @@ it."
 
 ; Added function maybe-kwote.
 
+; Improved the error message for bad characters such as #\xyz, following
+; feedback from David Russinoff.
+
   :parents (release-notes)
   :short "ACL2 Version  8.1 (xxx, 20xx) Notes"
   :long "<p>NOTE!  New users can ignore these release notes, because the @(see
