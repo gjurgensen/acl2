@@ -3081,6 +3081,12 @@ Subtopics
   [Cw!]
       Print to the comment window
 
+  [Cw-print-base-radix]
+      Print to the comment window in a given print-base
+
+  [Cw-print-base-radix!]
+      Print to the comment window in a given print-base
+
   [Declare]
       Extra declarations that can occur in function definitions, [let]
       bindings, and so forth.
@@ -19222,6 +19228,66 @@ Subtopics
   Suggestion: Once you have found the loop and fixed it, you should
   execute the ACL2 command :[brr] nil, so that you don't slow down
   subsequent proof attempts.")
+ (CW-PRINT-BASE-RADIX
+  (IO ACL2-BUILT-INS)
+  "Print to the comment window in a given print-base
+
+  See [cw] for relevant background.  This variant of cw requires
+  specification of a print-base and, optionally, a print-radix (see
+  [set-print-base], [set-print-radix], and [set-print-base-radix]).
+
+  The following examples show that cw-print-base-radix is just like
+  [cw], except that there is a new argument in the first position
+  that specifies the print-base and can, for that print-base,
+  override the default print-radix.
+
+    ACL2 !>(cw-print-base-radix 16 \"~x0~%\" '(3 12 16 17))
+    (#x3 #xC #x10 #x11)
+    NIL
+    ACL2 !>(cw-print-base-radix '(16 . t) \"~x0~%\" '(3 12 16 17))
+    (#x3 #xC #x10 #x11)
+    NIL
+    ACL2 !>(cw-print-base-radix '(16 . nil) \"~x0~%\" '(3 12 16 17))
+    (3 C 10 11)
+    NIL
+    ACL2 !>(cw-print-base-radix 10 \"~x0~%\" '(3 12 16 17))
+    (3 12 16 17)
+    NIL
+    ACL2 !>(cw-print-base-radix '(10 . t) \"~x0~%\" '(3 12 16 17))
+    (3. 12. 16. 17.)
+    NIL
+    ACL2 !>(cw-print-base-radix '(10 . nil) \"~x0~%\" '(3 12 16 17))
+    (3 12 16 17)
+    NIL
+    ACL2 !>
+
+    @({
+    General Forms:
+
+    (cw-print-base-radix print-base fmt-string arg1 arg2 ... argn)
+    (cw-print-base-radix print-base/print-radix fmt-string arg1 arg2 ... argn)
+
+  where all arguments of this macro are evaluated; print-base is a
+  legal print-base as recognized by [print-base-p];
+  print-base/print-radix is a cons whose car is a legal print-base;
+  fmt-string is a string suitable for passing to [fmt]; and arg1
+  through argn (where n is at most 9) are corresponding arguments for
+  fmt-string.  Printing is done according to the specified
+  print-base, which is the first argument in the first general form
+  and is the car of the first argument in the second general form.
+  The print-radix value that is used for printing in the first
+  general form is the print-radix as specified for
+  [set-print-base-radix], while in the second general form, it is the
+  cdr.")
+ (CW-PRINT-BASE-RADIX!
+  (IO ACL2-BUILT-INS)
+  "Print to the comment window in a given print-base
+
+  This is the same as [cw-print-base-radix], except that
+  [cw-print-base-radix] inserts backslash (\\) characters when forced
+  to print past the right margin, in order to make the output a bit
+  clearer in that case.  Use cw-print-base-radix! instead if you want
+  to be able to read the forms back in.")
  (DEAD-EVENTS
   (DEBUGGING)
   "Using proof supporters to identify dead code and unused theorems
@@ -21864,8 +21930,8 @@ Subtopics
   "Define a constant
 
     Examples:
-    (defconst *digits* '(0 1 2 3 4 5 6 7 8 9))
-    (defconst *n-digits* (the unsigned-byte (length *digits*)))
+    (defconst *my-digits* '(0 1 2 3 4 5 6 7 8 9))
+    (defconst *len-my-digits* (the unsigned-byte (length *my-digits*)))
 
     General Form:
     (defconst name term doc-string)
@@ -33176,20 +33242,24 @@ Subtopics
   See [cw] for an introduction to the comment window and the usual way
   to print it.
 
-  Function fmt-to-comment-window is identical to fmt1 (see [fmt]),
-  except that the channel is [*standard-co*] and the ACL2 [state] is
-  neither an input nor an output.  An analogous function,
-  fmt-to-comment-window!, prints with [fmt!] instead of [fmt], in
-  order to avoid insertion of backslash (\\) characters for margins;
-  also see [cw!].  Note that even if you change the value of [ld]
-  special standard-co (see [standard-co]), fmt-to-comment-window will
-  print to [*standard-co*], which is the original value of
+  Function fmt-to-comment-window is similar to fmt1 (see [fmt]), except
+  that the channel is [*standard-co*] and the ACL2 [state] is neither
+  an input nor an output, and moreover, an additional argument
+  specifies the print-base and optionally the print-radix.  That
+  additional argument is treated the same as the first argument of
+  cw-print-base-radix; see [cw-print-base-radix].  An analogous
+  function, fmt-to-comment-window!, prints with [fmt!] instead of
+  [fmt], in order to avoid insertion of backslash (\\) characters for
+  margins; also see [cw!].  Note that even if you change the value of
+  [ld] special standard-co (see [standard-co]), fmt-to-comment-window
+  will print to [*standard-co*], which is the original value of
   [standard-co].
 
     General Form:
-    (fmt-to-comment-window fmt-string alist col evisc-tuple)
+    (fmt-to-comment-window fmt-string alist col evisc-tuple print-base-radix)
 
-  where these arguments are as described for [fmt1]; see [fmt].")
+  where these arguments are as described for [fmt1] (see [fmt]) except
+  that the last argument is as described for [cw-print-base-radix].")
  (FMT-TO-STRING (POINTERS)
                 "See [printing-to-strings].")
  (FMT1
@@ -48797,6 +48867,12 @@ Subtopics
   [Cw!]
       Print to the comment window
 
+  [Cw-print-base-radix]
+      Print to the comment window in a given print-base
+
+  [Cw-print-base-radix!]
+      Print to the comment window in a given print-base
+
   [Delete-file$]
       Delete a file
 
@@ -54026,8 +54102,11 @@ Subtopics
   We assume basic familiarity with the ACL2 state.  For relevant
   background, see [state] and perhaps see [programming-with-state].
 
-  There are several simple examples below.  See [make-event-example]
-  for development of a more complex example.
+  There are several simple examples below.  For examples that can give
+  additional insight into the use of make-event for tool development,
+  see [make-event-example-1] and [make-event-example-2].  Also see
+  the make-event/ subdirectory of the ACL2 [community-books] for more
+  examples, for example, books/make-event/search-generation.lisp.
 
   We break this documentation into the following sections.
 
@@ -54719,7 +54798,10 @@ Subtopics
   [Make-event-details]
       Details on [make-event] expansion
 
-  [Make-event-example]
+  [Make-event-example-1]
+      An example use of [make-event]
+
+  [Make-event-example-2]
       An example use of [make-event]")
  (MAKE-EVENT-DETAILS
   (MAKE-EVENT)
@@ -54985,18 +55067,162 @@ Expansion errors and the :ON-BEHALF-OF keyword
   Note that errors generated during expansion are not affected by the
   cases above; those only control the concluding error message, if
   any.")
- (MAKE-EVENT-EXAMPLE
+ (MAKE-EVENT-EXAMPLE-1
   (MAKE-EVENT)
   "An example use of [make-event]
 
-  Here, we develop a reasonably self-contained example showing how to
-  use make-event.  Although the documentation for [make-event] is
-  comprehensive, some may find this example to be a good starting
-  point, to get a sense of how to develop tools that take advantage
-  of make-event.  We thank Yan Peng for putting forward this problem.
+  Here, we develop a reasonably self-contained example that illustrates
+  how to use make-event to develop tools, by solving a challenge
+  posed by Alessandro Coglio.  For another such example, see
+  [make-event-example-2].
 
-  (Note: A rather complex example of the use of make-event may be found
-  in the [community-book], books/make-event/search-generation.lisp.)
+  The challenge is to develop a programmatic method for solving the
+  following sort of problem.
+
+   1. Create a [defun] form.
+   2. Submit it to ACL2, obtaining a new ACL2 [state] whose [world]
+      includes the function just submitted.
+   3. Access various elements of this function (e.g., unnormalized body).
+   4. Create and return a new defun that's based on elements of the
+      previous one.
+   5. Submit this new defun via a [make-event], but in a state that does
+      not include the previous defun.
+
+  We illustrate how to do this sort of thing by specifying the ``new
+  defun that's based on elements of the previous one'' to be as
+  follows: add the formal, y, and modify the body so that y is consed
+  onto the old body.  Of course, this is a trivial example that could
+  be done without make-event; but we solve it in a way that shows how
+  to solve any such problem.  For simplificity, let's not worry about
+  the case that y is already a formal of the existing defun.  Here
+  are the main steps.
+
+    * (a) Submit the defun.
+    * (b) Gather information from the resulting world.  In this case, we
+      access the formals and body of the definition.
+    * (c) Create the desired event.
+
+  The following code does those three things, as explained in comments
+  below, which include references to the three steps above.
+
+    (er-progn
+
+    ; Each of the two forms below returns an error triple (see @(see
+    ; error-triple)), so we can evaluate both by using er-progn, which
+    ; returns the last (second) error triple.
+
+     (defun foo (x) (cons x x)) ; (a)
+     (let ((formals (formals 'foo (w state))) ; (b)
+           (body (body 'foo nil (w state))))
+       (value `(defun foo ,(cons 'y formals) ; (c)
+                 (cons y ,body)))))
+
+  So far so good: we have computed an error triple (mv nil val state)
+  whose value component, val, is the desired defun form.  However,
+  that leaves us in a world that includes the first defun form.  For
+  a solution to the original challenge (for our specific case), that
+  must not be the case, and moveover the second defun form should be
+  included in the current world.  Fortunately, [make-event] is
+  perfectly suited to do both of these things.  Consider the
+  following form, which simply wraps make-event around the code
+  displayed just above.
+
+    (make-event (er-progn
+                 (defun foo (x) (cons x x))
+                 (let ((formals (formals 'foo (w state)))
+                       (body (body 'foo nil (w state))))
+                   (value `(defun foo ,(cons 'y formals)
+                             (cons y ,body))))))
+
+  The expansion phase (see [make-event]) computes the new defun form
+  --- the one with the extra formal and modified body --- and then
+  that new defun form is evaluated in the original world, which does
+  not include the first defun form.
+
+  We complete the job by making a programmatic solution, with a macro
+  that expands to such a make-event form.  We make it nice by
+  inhibiting all output except error output.
+
+    (defmacro cons-y-onto-body (def new-name)
+      `(make-event
+        (with-output!
+          :off :all
+          :on error
+          (er-progn
+           ,def
+           (let* ((name ',(cadr def))
+                  (new-name ',new-name)
+                  (formals (formals name (w state)))
+                  (body (body name nil (w state))))
+             (value (list 'defun new-name (cons 'y formals)
+                          (list 'cons 'y body))))))
+        :on-behalf-of :quiet!))
+
+  This could be improved by doing some error checking, but we leave
+  that as an exercise.
+
+  Below is a log, with comments added, that shows uses of the macro
+  above.
+
+    ; First we call the macro successfully.  Notice that although we inhibited
+    ; output during the expansion phase (using with-output!), below we see output
+    ; from the resulting new defun event.
+
+    ACL2 !>(cons-y-onto-body (defun f (x) x) new-f)
+
+    Since NEW-F is non-recursive, its admission is trivial.  We observe
+    that the type of NEW-F is described by the theorem (CONSP (NEW-F Y X)).
+    We used primitive type reasoning.
+
+    Summary
+    Form:  ( DEFUN NEW-F ...)
+    Rules: ((:FAKE-RUNE-FOR-TYPE-SET NIL))
+    Time:  0.01 seconds (prove: 0.00, print: 0.00, other: 0.01)
+
+    Summary
+    Form:  ( MAKE-EVENT (WITH-OUTPUT! :OFF ...) ...)
+    Rules: NIL
+    Time:  0.03 seconds (prove: 0.00, print: 0.00, other: 0.03)
+     NEW-F
+    ACL2 !>:pe new-f ; Check that the new definition was indeed submitted.
+     L         2:x(CONS-Y-ONTO-BODY (DEFUN F # ...) NEW-F)
+
+    >L             (DEFUN NEW-F (Y X) (CONS Y X))
+    ACL2 !>:pe f ; Check that the old definition was NOT submitted.
+
+
+    ACL2 Error in :PE:  The object F is not a logical name.  See :DOC logical-
+    name.
+
+    ; The defun below is ill-formed, so we get an error when it is submitted,
+    ; during the expansion phase.  Our use of with-output! allowed error messages,
+    ; so we see the error message in this case.
+
+    ACL2 !>(cons-y-onto-body (defun g (x) (+ y y)) new-g)
+
+
+    ACL2 Error in ( DEFUN G ...):  The body of G contains a free occurrence
+    of the variable symbol Y.
+
+
+    Summary
+    Form:  ( MAKE-EVENT (WITH-OUTPUT! :OFF ...) ...)
+    Rules: NIL
+    Time:  0.00 seconds (prove: 0.00, print: 0.00, other: 0.00)
+
+    ACL2 Error in ( MAKE-EVENT (WITH-OUTPUT! :OFF ...) ...):  See :DOC
+    failure.
+
+    ******** FAILED ********
+    ACL2 !>")
+ (MAKE-EVENT-EXAMPLE-2
+  (MAKE-EVENT)
+  "An example use of [make-event]
+
+  Here, we develop a reasonably self-contained example that illustrates
+  how to use make-event to develop tools.  For another such example,
+  see [make-event-example-1].  We thank Yan Peng for putting forward
+  this problem.
 
   We begin by discussing prerequisites for this presentation.  Next, we
   present the challenge problem, followed by code that solves the
@@ -55226,21 +55452,22 @@ Development of the solution
   Exercise: Modify this tool so that instead of merely updating a state
   global, it prints the failed events at the end of execution; and
   moreover, it prints them in their original order.  See
-  [make-event-example-exercise] for a solution.
+  [make-event-example-2-exercise] for a solution.
 
 
 Subtopics
 
-  [Make-event-example-exercise]
-      Solution to an exercise from [make-event-example]")
- (MAKE-EVENT-EXAMPLE-EXERCISE
-  (MAKE-EVENT-EXAMPLE)
-  "Solution to an exercise from [make-event-example]
+  [Make-event-example-2-exercise]
+      Solution to an exercise from [make-event-example-2]")
+ (MAKE-EVENT-EXAMPLE-2-EXERCISE
+  (MAKE-EVENT-EXAMPLE-2)
+  "Solution to an exercise from [make-event-example-2]
 
-  See [make-event-example] for a worked example using [make-event],
+  See [make-event-example-2] for a worked example using [make-event],
   concluding with an exercise.  Here we present a solution to that
   exercise.  It assumes that we have evaluated the definitions of
-  save-progn+-error, progn+-fn, and progn+ from [make-event-example].
+  save-progn+-error, progn+-fn, and progn+ from
+  [make-event-example-2].
 
     (defmacro progn+-errors (&rest lst)
       (declare (xargs :guard (and (true-listp lst)
@@ -78538,11 +78765,13 @@ Changes to Existing Features
   particular the final paragraph.  Thanks to Sol Swords for
   contributing this enhancement.
 
-  The printing (untranslation) of [term]s now prints calls of [mbe],
-  [mbt], and [ec-call].  Such terms rarely occur in practice because
-  definitional bodies are stored without such [guard-holders].
-  However, here is an example of how they could arise.  First
-  consider the following definition.
+  The printing (untranslation) of [term]s can now print calls of [mbe],
+  [mbt], [ec-call], [cw], and [time$].  Thanks to Alessandro Coglio
+  and Eric Smith for discussions leading to some of these changes.
+  Such terms rarely occur in practice because definitional bodies are
+  stored with calls of [guard-holders] and cw expanded.  However,
+  here is an example of how they could arise.  First consider the
+  following definition.
 
     (defun g (n)
       (declare (xargs :normalize nil))
@@ -78636,6 +78865,26 @@ Changes to Existing Features
   *definition-minimal-theory*; for that purpose use the new utility,
   bbody.
 
+  Many error messages now show variables according to order of
+  appearance, where formerly the order was reversed.  Thanks to Eric
+  Smith for supplying an example of a top-level form, + a b c, for
+  which the error message reported variables in reverse order:
+  ``Global variables, such as C, B and A, are not allowed.'' The
+  message now says ``A, B, and C'' instead of ``C, B and A.''
+
+  For [value-triple], the keyword argument :on-skip-proofs provides new
+  behavior if it is given the value, :interactive.  In that case,
+  evaluation is still done under a call of [skip-proofs], as when the
+  value of :on-skip-proofs is t; but evaluation is skipped when the
+  reason proofs are being skipped is only that a book is being
+  included or the second pass is being made through an [encapsulate].
+  Thanks to Eric Smith for requesting this feature.
+
+  Both [fmt-to-comment-window] and fmt-to-comment-window! have an extra
+  argument, print-base-radix, which is the same as the first argument
+  to the new utilities, [cw-print-base-radix] and
+  [cw-print-base-radix!] (see below).
+
 
 New Features
 
@@ -78698,6 +78947,12 @@ New Features
     \"Hello ~s0.\"
 
     ACL2 !>
+
+  New utilities, [cw-print-base-radix] and [cw-print-base-radix!], are
+  like [cw] and [cw!], respectively, except for an additional
+  argument that specifies the print-base and, optionally, the
+  print-radix.  Thanks to Eric Smith for requesting
+  [cw-print-base-radix].
 
 
 Heuristic and Efficiency Improvements
@@ -78831,6 +79086,29 @@ Bug Fixes
   assume-true-false-if, which could occur in the middle of a proof.
   Thanks to Dave Greve for pointing out this problem by sending us an
   illustrative example that we could run.
+
+  It was possible to get a raw Lisp error from ill-formed calls of
+  [ec-call] not intended for execution, for example, (defun foo (x)
+  (non-exec (ec-call x))).  This has been fixed.
+
+  Certain syntactic requirements are normally applied to function
+  bodies but not to theorems.  However, these were being applied
+  under calls of [flet].  Consider the following example.
+
+    (thm
+     (flet ((foo (x) (car x)))
+       (foo (mv-nth 1 (mv x x)))))
+
+  This was rejected with an error: ``The expected number of return
+  values for (MV X X) is 1 but the actual number of return values is
+  2.'' This has been fixed.  Thanks to Eric Smith for bringing this
+  problem to our attention.
+
+  A bug has been fixed in the logical definition of the function,
+  read-file-into-string2, which supports the macro,
+  [read-file-into-string].  Thanks to Keshav Kini for finding this
+  bug and to Mihir Mehta for a query leading to Keshav's
+  investigation.
 
 
 Changes at the System Level
@@ -85364,12 +85642,20 @@ Subtopics
     (progn event1 event2 ... eventk)
 
   where k >= 0 and each eventi is a legal embedded event form (see
-  [embedded-event-form]).  Each event is printed (by default) and
-  evaluated, in sequence.  If any event fails, the entire progn call
-  is deemed to have failed, and the logical [world] is rolled back to
-  what it was immediately before the progn call was evaluated.  A
-  utility is provided to assist in debugging failures of such
-  execution; see [redo-flat].
+  [embedded-event-form]).  Each event is evaluated, in sequence.  If
+  any event fails, the entire progn call is deemed to have failed,
+  and the logical [world] is rolled back to what it was immediately
+  before the progn call was evaluated.  A utility is provided to
+  assist in debugging failures of such execution; see [redo-flat].
+
+  See [set-inhibit-output-lst] for how to control the printing done for
+  each event.  By default, each event is printed before it is
+  evaluated and a suitable value is printed after successful
+  completion.  (Technical note: successful completion produces a
+  mutiple-value return that is an [error-triple] (mv nil val state);
+  then the value val is printed.)  Printing of both the event and its
+  value can both be inhibited by including the symbol, EVENT, in your
+  call of set-inhibit-output-lst.
 
   NOTE: If the eventi above are not all legal embedded event forms (see
   [embedded-event-form]), consider using [er-progn] or (with great
@@ -90330,10 +90616,10 @@ Subtopics
                               (mv nil val state)))))))
          (mv erp
              (and (stringp val)
-                  (<= start (len val))
+                  (<= start (length val))
                   (subseq val start
-                          (if bytes (min (+ start bytes) (len val))
-                              (len val)))))))
+                          (if bytes (min (+ start bytes) (length val))
+                              (length val)))))))
        (declare (ignore erp))
        val)))
 
@@ -93523,12 +93809,12 @@ Subtopics
   :[equivalence], :[forward-chaining], :[generalize], :[induction],
   :[linear], :[meta], :[refinement], :[tau-system],
   :[type-prescription], :[type-set-inverter], and
-  :WELL-FOUNDED-RELATION.  Some classes require the
-  user-specification of certain class-specific attributes.  Each
-  class of rule affects the theorem prover's behavior in a different
-  way, as discussed in the corresponding documentation topic.  In
-  this topic we discuss the various attributes that may be attached
-  to rule classes.
+  :well-founded-relation (see [well-founded-relation-rule]).  Some
+  classes require the user-specification of certain class-specific
+  attributes.  Each class of rule affects the theorem prover's
+  behavior in a different way, as discussed in the corresponding
+  documentation topic.  In this topic we discuss the various
+  attributes that may be attached to rule classes.
 
   Note that not all [events] generate rules.  For example, a [defthm]
   event that specifies :rule-classes nil does not generate a rule.
@@ -98100,10 +98386,9 @@ Example
 
   See [set-print-base] and [set-print-radix] for detailed discussions
   of those functions.  Set-print-base-radix combines their
-  functionality by setting the radix (as is done by
-  [set-print-base]), and then causing the radix to be printed (as is
-  done by [set-print-radix]) exactly when the specified radix is not
-  10.
+  functionality by setting the base (as is done by [set-print-base]),
+  and then causing the radix to be printed (as is done by
+  [set-print-radix]) exactly when the specified radix is not 10.
 
   Here is a sample log.
 
@@ -104804,6 +105089,15 @@ List of a few ACL2 system utilities:
 
     * (keyword-listp x): Return t when x is a true-list whose members are
       all keywords, else return nil.
+    * (known-package-alist state): Returns a list of package entries, as
+      explained in the definition of make-package-entry in ACL2
+      sources, which is followed by simple accessor definitions (all
+      in file axioms.lisp as of this writing).  This list includes
+      entries for hidden packages (see [hidden-death-package]).  As a
+      package is introduced, its package entry is pushed on the front
+      of the existing known-package-alist.  Note that this list can
+      be accessed directly from a [world], w, with: (global-val
+      'known-package-alist w).
     * (implicate t1 t2): For terms t1 and t2, return a term that is
       propositionally equivalent to (implies t1 t2).
     * (lambda-applicationp x): For a [pseudo-termp] x, return t if it is a
@@ -114817,6 +115111,7 @@ Subtopics
     Examples:
     (value-triple (+ 3 4))
     (value-triple (cw \"hi\") :on-skip-proofs t)
+    (value-triple (cw \"hi\") :on-skip-proofs :interactive)
     (value-triple (@ ld-pre-eval-print))
     (value-triple (@ ld-pre-eval-print) :check t)
 
@@ -114832,12 +115127,14 @@ Subtopics
   [events].  The form should evaluate to a single, non-[stobj] value.
 
   Calls of value-triple are generally skipped when proofs are being
-  skipped, in particular when ACL2 is performing the second pass
-  through the [events] of an [encapsulate] form or during an
-  [include-book], or indeed any time [ld-skip-proofsp] is non-nil.
-  If you want the call evaluated during those times as well, use a
-  non-nil value for :on-skip-proofs.  Note that the argument to
-  :on-skip-proofs is not evaluated.
+  skipped.  However, a call of value-triple will be evaluated even
+  when proofs are being skipped if there is a non-nil value for
+  keyword argument :on-skip-proofs, typically, t.  The special value
+  for :on-skip-proofs, :interactive, is more restrictive than t: it
+  will still cause the value-triple call to be evaluated under a call
+  of [skip-proofs], but not when proofs are being skipped only due to
+  either making a second pass through an [encapsulate] or executing
+  an [include-book].
 
   If you expect the form to evaluate to a non-nil value and you want an
   error to occur when that is not the case, you can use :check t.
@@ -116267,7 +116564,7 @@ Subtopics
   written
 
     (defun g (x)
-     (declare (xargs :well-founded-relation (mp . rel)))
+     (declare (xargs :well-founded-relation rel))
      (if (test x) (g (step x)) (base x)))
 
   Alternatively, rel may be specified as the
