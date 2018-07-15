@@ -80621,6 +80621,11 @@ it."
  (MV X X) is 1 but the actual number of return values is 2.''  This has been
  fixed.  Thanks to Eric Smith for bringing this problem to our attention.</p>
 
+ <p>A bug has been fixed in the logical definition of the function,
+ @('read-file-into-string2'), which supports the macro, @(tsee
+ read-file-into-string).  Thanks to Keshav Kini for finding this bug and to
+ Mihir Mehta for a query leading to Keshav's investigation.</p>
+
  <h3>Changes at the System Level</h3>
 
  <p>Fixed the use of `@('<a href='URL'>...</a>')' so that if @('URL') has the

@@ -79104,6 +79104,12 @@ Bug Fixes
   2.'' This has been fixed.  Thanks to Eric Smith for bringing this
   problem to our attention.
 
+  A bug has been fixed in the logical definition of the function,
+  read-file-into-string2, which supports the macro,
+  [read-file-into-string].  Thanks to Keshav Kini for finding this
+  bug and to Mihir Mehta for a query leading to Keshav's
+  investigation.
+
 
 Changes at the System Level
 
@@ -90610,10 +90616,10 @@ Subtopics
                               (mv nil val state)))))))
          (mv erp
              (and (stringp val)
-                  (<= start (len val))
+                  (<= start (length val))
                   (subseq val start
-                          (if bytes (min (+ start bytes) (len val))
-                              (len val)))))))
+                          (if bytes (min (+ start bytes) (length val))
+                              (length val)))))))
        (declare (ignore erp))
        val)))
 
