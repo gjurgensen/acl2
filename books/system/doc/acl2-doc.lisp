@@ -80167,6 +80167,9 @@ it."
 
 ; Added function maybe-kwote.
 
+; Improved the error message for bad characters such as #\xyz, following
+; feedback from David Russinoff.
+
   :parents (release-notes)
   :short "ACL2 Version  8.1 (xxx, 20xx) Notes"
   :long "<p>NOTE!  New users can ignore these release notes, because the @(see
@@ -80617,6 +80620,11 @@ it."
  <p>This was rejected with an error: ``The expected number of return values for
  (MV X X) is 1 but the actual number of return values is 2.''  This has been
  fixed.  Thanks to Eric Smith for bringing this problem to our attention.</p>
+
+ <p>A bug has been fixed in the logical definition of the function,
+ @('read-file-into-string2'), which supports the macro, @(tsee
+ read-file-into-string).  Thanks to Keshav Kini for finding this bug and to
+ Mihir Mehta for a query leading to Keshav's investigation.</p>
 
  <h3>Changes at the System Level</h3>
 
@@ -103886,6 +103894,15 @@ arithmetic) for libraries of @(see books) for arithmetic reasoning.</p>")
 
  <li>@('(keyword-listp x)'): Return @('t') when @('x') is a true-list whose
  members are all keywords, else return @('nil').</li>
+
+ <li>@('(known-package-alist state)'): Returns a list of package entries, as
+ explained in the definition of @('make-package-entry') in ACL2 sources, which
+ is followed by simple accessor definitions (all in file @('axioms.lisp') as of
+ this writing).  This list includes entries for hidden packages (see @(see
+ hidden-death-package)).  As a package is introduced, its package entry is
+ pushed on the front of the existing known-package-alist.  Note that this list
+ can be accessed directly from a @(see world), @('w'), with: @('(global-val
+ 'known-package-alist w)').</li>
 
  <li>@('(implicate t1 t2)'): For terms @('t1') and @('t2'), return a term that
  is propositionally equivalent to @('(implies t1 t2)').</li>
