@@ -80626,6 +80626,10 @@ it."
  read-file-into-string).  Thanks to Keshav Kini for finding this bug and to
  Mihir Mehta for a query leading to Keshav's investigation.</p>
 
+ <p>The previous release was supposed to include a new utility, @(tsee
+ checkpoint-summary-limit), but that was missing.  Thanks to Keshav Kini for
+ pointing this out (and supplying the expected implementation).</p>
+
  <h3>Changes at the System Level</h3>
 
  <p>Fixed the use of `@('<a href='URL'>...</a>')' so that if @('URL') has the

@@ -79110,6 +79110,11 @@ Bug Fixes
   bug and to Mihir Mehta for a query leading to Keshav's
   investigation.
 
+  The previous release was supposed to include a new utility,
+  [checkpoint-summary-limit], but that was missing.  Thanks to Keshav
+  Kini for pointing this out (and supplying the expected
+  implementation).
+
 
 Changes at the System Level
 
