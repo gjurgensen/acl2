@@ -7408,10 +7408,12 @@ Subtopics
 
   The next few stops along the Walking Tour will show you
 
-     * how to use the ACL2 documentation, * what happens when the above
-    definition is submitted to ACL2, * what happens when you evaluate calls of
-    app, * what one simple theorem about app looks like, * how ACL2
-    proves the theorem, and * how that theorem can be used in another proof.
+    * how to use the ACL2 documentation,
+    * what happens when the above definition is submitted to ACL2,
+    * what happens when you evaluate calls of app,
+    * what one simple theorem about app looks like,
+    * how ACL2 proves the theorem, and
+    * how that theorem can be used in another proof.
 
   Along the way we will talk about the definitional principle, types,
   the ACL2 read-eval-print loop, and how the theorem prover works.
@@ -41600,22 +41602,23 @@ Subtopics
   ACL2 keeps track of the [command]s that you have executed that have
   extended the logic or the rule database, as by the definition of
   macros, functions, etc.  Using the facilities in this section you
-  can review the sequence of [command]s executed so far.  For
-  example, you can ask to see the most recently executed [command],
-  or the [command] 10 before that, or the [command] that introduced a
-  given function symbol.  You can also undo back through some
-  previous [command], restoring the logical [world] to what it was
-  before the given [command].
+  can review the sequence of commands executed so far.  For example,
+  you can ask to see the most recently executed command (by issuing
+  :[pc] :x), or the preceding 10 commands (by issuing :[pbt] :x-10),
+  or the command that introduced a given function symbol, fn (by
+  issuing :pc fn).  You can also undo back through some previous
+  command (see [ubt]), restoring the logical [world] to what it was
+  before the given command.
 
   The annotations printed in the margin in response to some of these
   commands (including `P', `L', `V', `D', `d', 'M', and 'm') are
   explained in the documentation for :[pc].
 
   Several technical terms are used in the documentation of the history
-  [command]s.  You must understand these terms to use the [command]s.
-  These terms are documented via :[doc] entries of their own.  See
-  [command], see [events], see [command-descriptor], and see
-  [logical-name].
+  commands.  You must understand these terms to use the commands.
+  These terms are documented with [documentation] entries of their
+  own.  See [command], see [events], see [command-descriptor], and
+  see [logical-name].
 
 
 Subtopics
