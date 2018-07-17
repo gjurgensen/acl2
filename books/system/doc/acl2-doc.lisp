@@ -6606,11 +6606,6 @@ and @(tsee include-book)"
  <p>At the end of the tours you will have a chance to revisit them quickly to
  explore alternative paths more fully.</p>
 
- <p>Finally, every page contains two icons at the bottom.  The ACL2 icon leads
- you back to the ACL2 Home Page.  The Index icon allows you to browse an
- alphabetical listing of all the topics in ACL2's online documentation.  But
- both icons take you off the main route of the tour.</p>
-
  <p><see topic='@(url |What Is ACL2(Q)|)'><img
  src='res/tours/flying.gif'></img></see></p>")
 
@@ -39401,12 +39396,6 @@ tables in the current Hons Space."
   :short "How To Find Out about ACL2 Functions (cont)"
   :long "<p><see topic='@(url |The Admission of App|)'><img
  src='res/tours/walking.gif'></img></see></p>
-
- <p>You can always use the Index <see
- topic='ACL2____A_02Tiny_02Warning_02Sign'><icon src='res/tours/twarning.gif'/></see>
- icon below to find the documentation of functions.  Try it.  Click on the
- Index icon below.  Then use the Find command of your browser to find ``endp''
- in that document and follow the link.  But remember to come back here.</p>
 
  <p>The ACL2 documentation is also available in Emacs, via the ACL2-Doc
  browser (see @(see ACL2-Doc)) <see
