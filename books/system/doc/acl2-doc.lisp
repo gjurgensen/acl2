@@ -80269,13 +80269,14 @@ it."
  particular the final paragraph.  Thanks to Sol Swords for contributing this
  enhancement.</p>
 
- <p>The printing (untranslation) of @(see term)s can now print calls of @(tsee
- mbe), @(tsee mbt), @(tsee ec-call), @(tsee cw), and @(tsee time$).  Thanks to
- Alessandro Coglio and Eric Smith for discussions leading to some of these
- changes.  Such terms rarely occur in practice because definitional bodies are
- stored with calls of @(see guard-holders) and @('cw') expanded.  However, here
- is an example of how they could arise.  First consider the following
- definition.</p>
+ <p>The ACL2 @(tsee untranslate) function, which converts the internal
+ representation of @(see term)s to user-level syntax, can now return calls of
+ @(tsee mbe), @(tsee mbt), @(tsee ec-call), @(tsee cw), @(tsee time$), and
+ @(tsee mv-let).  Thanks to Alessandro Coglio, Eric Smith, and Stephen Westfold
+ for discussions leading to some of these changes.  Such terms rarely occur in
+ practice because definitional bodies are stored with calls of @(see
+ guard-holders) and @('cw') expanded.  However, here is an example of how they
+ could arise.  First consider the following definition.</p>
 
  @({
  (defun g (n)
