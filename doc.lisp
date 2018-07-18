@@ -78756,13 +78756,14 @@ Changes to Existing Features
   particular the final paragraph.  Thanks to Sol Swords for
   contributing this enhancement.
 
-  The printing (untranslation) of [term]s can now print calls of [mbe],
-  [mbt], [ec-call], [cw], and [time$].  Thanks to Alessandro Coglio
-  and Eric Smith for discussions leading to some of these changes.
-  Such terms rarely occur in practice because definitional bodies are
-  stored with calls of [guard-holders] and cw expanded.  However,
-  here is an example of how they could arise.  First consider the
-  following definition.
+  The ACL2 [untranslate] function, which converts the internal
+  representation of [term]s to user-level syntax, can now return
+  calls of [mbe], [mbt], [ec-call], [cw], [time$], and [mv-let].
+  Thanks to Alessandro Coglio, Eric Smith, and Stephen Westfold for
+  discussions leading to some of these changes.  Such terms rarely
+  occur in practice because definitional bodies are stored with calls
+  of [guard-holders] and cw expanded.  However, here is an example of
+  how they could arise.  First consider the following definition.
 
     (defun g (n)
       (declare (xargs :normalize nil))
