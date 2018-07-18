@@ -6606,11 +6606,6 @@ and @(tsee include-book)"
  <p>At the end of the tours you will have a chance to revisit them quickly to
  explore alternative paths more fully.</p>
 
- <p>Finally, every page contains two icons at the bottom.  The ACL2 icon leads
- you back to the ACL2 Home Page.  The Index icon allows you to browse an
- alphabetical listing of all the topics in ACL2's online documentation.  But
- both icons take you off the main route of the tour.</p>
-
  <p><see topic='@(url |What Is ACL2(Q)|)'><img
  src='res/tours/flying.gif'></img></see></p>")
 
@@ -39401,12 +39396,6 @@ tables in the current Hons Space."
   :short "How To Find Out about ACL2 Functions (cont)"
   :long "<p><see topic='@(url |The Admission of App|)'><img
  src='res/tours/walking.gif'></img></see></p>
-
- <p>You can always use the Index <see
- topic='ACL2____A_02Tiny_02Warning_02Sign'><icon src='res/tours/twarning.gif'/></see>
- icon below to find the documentation of functions.  Try it.  Click on the
- Index icon below.  Then use the Find command of your browser to find ``endp''
- in that document and follow the link.  But remember to come back here.</p>
 
  <p>The ACL2 documentation is also available in Emacs, via the ACL2-Doc
  browser (see @(see ACL2-Doc)) <see
@@ -80280,13 +80269,14 @@ it."
  particular the final paragraph.  Thanks to Sol Swords for contributing this
  enhancement.</p>
 
- <p>The printing (untranslation) of @(see term)s can now print calls of @(tsee
- mbe), @(tsee mbt), @(tsee ec-call), @(tsee cw), and @(tsee time$).  Thanks to
- Alessandro Coglio and Eric Smith for discussions leading to some of these
- changes.  Such terms rarely occur in practice because definitional bodies are
- stored with calls of @(see guard-holders) and @('cw') expanded.  However, here
- is an example of how they could arise.  First consider the following
- definition.</p>
+ <p>The ACL2 @(tsee untranslate) function, which converts the internal
+ representation of @(see term)s to user-level syntax, can now return calls of
+ @(tsee mbe), @(tsee mbt), @(tsee ec-call), @(tsee cw), @(tsee time$), and
+ @(tsee mv-let).  Thanks to Alessandro Coglio, Eric Smith, and Stephen Westfold
+ for discussions leading to some of these changes.  Such terms rarely occur in
+ practice because definitional bodies are stored with calls of @(see
+ guard-holders) and @('cw') expanded.  However, here is an example of how they
+ could arise.  First consider the following definition.</p>
 
  @({
  (defun g (n)

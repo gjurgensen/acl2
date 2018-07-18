@@ -1583,12 +1583,6 @@ Subtopics
   At the end of the tours you will have a chance to revisit them
   quickly to explore alternative paths more fully.
 
-  Finally, every page contains two icons at the bottom.  The ACL2 icon
-  leads you back to the ACL2 Home Page.  The Index icon allows you to
-  browse an alphabetical listing of all the topics in ACL2's online
-  documentation.  But both icons take you off the main route of the
-  tour.
-
   {IMAGE} (see [What_Is_ACL2{Q}])")
  (ABOUT_THE_ADMISSION_OF_RECURSIVE_DEFINITIONS
   (PAGES_WRITTEN_ESPECIALLY_FOR_THE_TOURS)
@@ -42753,12 +42747,6 @@ Subtopics
 
   {IMAGE} (see [The_Admission_of_App])
 
-  You can always use the Index {ICON} (see [A_Tiny_Warning_Sign]) icon
-  below to find the documentation of functions.  Try it.  Click on
-  the Index icon below.  Then use the Find command of your browser to
-  find ``endp'' in that document and follow the link.  But remember
-  to come back here.
-
   The ACL2 documentation is also available in Emacs, via the ACL2-Doc
   browser (see [ACL2-Doc]) {ICON} (see [A_Tiny_Warning_Sign]),
   allowing you to explore the hyperlinked documentation in the
@@ -78768,13 +78756,14 @@ Changes to Existing Features
   particular the final paragraph.  Thanks to Sol Swords for
   contributing this enhancement.
 
-  The printing (untranslation) of [term]s can now print calls of [mbe],
-  [mbt], [ec-call], [cw], and [time$].  Thanks to Alessandro Coglio
-  and Eric Smith for discussions leading to some of these changes.
-  Such terms rarely occur in practice because definitional bodies are
-  stored with calls of [guard-holders] and cw expanded.  However,
-  here is an example of how they could arise.  First consider the
-  following definition.
+  The ACL2 [untranslate] function, which converts the internal
+  representation of [term]s to user-level syntax, can now return
+  calls of [mbe], [mbt], [ec-call], [cw], [time$], and [mv-let].
+  Thanks to Alessandro Coglio, Eric Smith, and Stephen Westfold for
+  discussions leading to some of these changes.  Such terms rarely
+  occur in practice because definitional bodies are stored with calls
+  of [guard-holders] and cw expanded.  However, here is an example of
+  how they could arise.  First consider the following definition.
 
     (defun g (n)
       (declare (xargs :normalize nil))
