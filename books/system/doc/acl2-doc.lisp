@@ -34176,8 +34176,8 @@ current fast alists."
  more often, you should see @(see github-commit-code-using-push).</p>
 
  A nice result of using pull requests is that all changes will be peer-reviewed
- before being committed.  Also, we sometimes call this method the <it>Fork and
- Pull</it> method.
+ before being committed.  Also, we sometimes call this method the <i>Fork and
+ Pull</i> method.
 
  <h2>(A) GETTING STARTED</h2>
 
@@ -34319,7 +34319,7 @@ current fast alists."
   git push
  })
 
- You now need to create a <it>pull request</it>, where you request that changes
+ You now need to create a <i>pull request</i>, where you request that changes
  from your github repository be accepted into the Community ACL2 repository.
  To achieve this:
 
@@ -120209,7 +120209,7 @@ prettyprint the conclusion, highlighting the current term"
 
  <p>Prettyprint the the conclusion, highlighting the current term.  The usual
  user syntax is used, as with the command @('p') (as opposed to @('pp')).  This
- is illustrated in the example above, where one would <it>*not*</it> see
+ is illustrated in the example above, where one would <i>*not*</i> see
  @('(equal (if x (*** (p y) ***) 'nil) (foo z))').</p>
 
  <p><b>Remark</b> (obscure): In some situations, a term of the form @('(if x t
