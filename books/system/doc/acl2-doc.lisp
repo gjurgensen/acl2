@@ -2359,6 +2359,13 @@
 
  <p>For an explanation of this key, see @(see set-register-invariant-risk).</p>
 
+ @({
+  :in-theory-redundant-okp
+ })
+
+ <p>When this key's value is @('t'), an @(tsee in-theory) event may be
+ redundant.  See @(tsee set-in-theory-redundant-okp).</p>
+
  <p>Note: Unlike all other @(see table)s, @('acl2-defaults-table') can affect
  the soundness of the system.  The @(see table) mechanism therefore enforces on
  it a restriction not imposed on other @(see table)s: when @(tsee table) is
@@ -21518,23 +21525,21 @@ subtree of X with T, without duplication.</p>
   (defthmd NAME TERM ...)
  })
 
- <p>expands to:</p>
+ <p>expands to the following, except that some output is inhibited for the
+ @(tsee in-theory) event:</p>
 
  @({
   (progn
     (defthmd NAME TERM ...)
-    (with-output
-     :off summary
-     (in-theory (disable NAME)))
+    (in-theory (disable NAME))
     (value-triple '(:defthmd NAME))).
  })
 
- <p>Note that @('defthmd') commands are never redundant (see @(see
- redundant-events)).  Even if the @('defthm') event is redundant, then the
- @(tsee in-theory) event will still be executed.</p>
+ <p>@('Defthmd') events are generally not redundant, because the generated
+ @(tsee in-theory) event is not redundant.  This default can be changed; see
+ @(see set-in-theory-redundant-okp).</p>
 
- <p>The @(see summary) for the @(tsee in-theory) event is suppressed.  See
- @(see defthm) for documentation of @('defthm').</p>")
+ <p>See @(see defthm) for documentation of @('defthm').</p>")
 
 (defxdoc defthy
   :parents (events theories deftheory)
@@ -22920,32 +22925,30 @@ subtree of X with T, without duplication.</p>
 (defxdoc defund
   :parents (defun events)
   :short "Define a function symbol and then disable it"
-  :long "<p>Use @('defund') instead of @(tsee defun) when you want to disable a
- function immediately after its definition in @(':')@(tsee logic) mode.  This
- macro has been provided for users who prefer working in a mode where functions
- are only enabled when explicitly directed by @(':')@(tsee in-theory).
- Specifically, the form</p>
+  :long "<p>Use @('defund') instead of @(tsee defun) when you want to @(see
+ disable) a function immediately after its definition in @(':')@(tsee logic)
+ mode.  This macro has been provided for users who prefer working in a mode
+ where functions are only enabled when explicitly directed by @(':')@(tsee
+ in-theory).  Specifically, the form</p>
 
  @({
   (defund NAME FORMALS ...)
  })
 
- <p>expands to:</p>
+ <p>expands to the following, except that some output is inhibited for the
+ @(tsee in-theory) event:</p>
 
  @({
   (progn
     (defun NAME FORMALS ...)
-    (with-output
-     :off summary
-     (in-theory (disable NAME)))
+    (in-theory (disable NAME))
     (value-triple '(:defund NAME))).
  })
 
- <p>Only the @(':')@(tsee definition) rule (and, for recursively defined
- functions, the @(':')@(tsee induction) rule) for the function are disabled.
+ <p>Only the @(':')@(tsee definition) rule and, for recursively defined
+ functions, the @(':')@(tsee induction) rule are disabled for the function.
  In particular, @('defund') does not disable either the @(':')@(tsee
- type-prescription) or the @(':')@(tsee executable-counterpart) rule.  Also,
- the @(see summary) for the @(tsee in-theory) event is suppressed.</p>
+ type-prescription) or the @(':')@(tsee executable-counterpart) rule.</p>
 
  <p>If the function is defined in @(':')@(tsee program) mode, either because
  the @(see default-defun-mode) is @(':')@(tsee program) or because @(':mode
@@ -22955,9 +22958,9 @@ subtree of X with T, without duplication.</p>
  @(':')@(tsee program), and if @(':mode :program') is specified then
  @('defund') does not generate an @(tsee in-theory) event.)</p>
 
- <p>Note that @('defund') commands are never redundant (see @(see
- redundant-events)) when the @(see default-defun-mode) is @(':')@(tsee logic),
- because the @(tsee in-theory) event will always be executed.</p>
+ <p>@('Defund') events are generally not redundant, because the generated
+ @(tsee in-theory) event is not redundant.  This default can be changed; see
+ @(see set-in-theory-redundant-okp).</p>
 
  <p>See @(see defun) for documentation of @('defun').</p>")
 
@@ -80474,6 +80477,12 @@ it."
  optionally, the print-radix.  Thanks to Eric Smith for requesting @(tsee
  cw-print-base-radix).</p>
 
+ <p>A new event macro, @(tsee set-in-theory-redundant-okp), allows @(tsee
+ in-theory) events to be @(see redundant), which prevents @(tsee defund) and
+ @(tsee defthmd) @(see events) from laying down @(tsee command) markers (as
+ seen, for example, using @(':')@(tsee pbt)).  Thanks to Eric Smith for asking
+ for a way for @('in-theory') events to be redundant.</p>
+
  <h3>Heuristic and Efficiency Improvements</h3>
 
  <p>The implementation of @(see wormhole)s has been tweaked to avoid an
@@ -90683,8 +90692,9 @@ arithmetic) for libraries of @(see books) for arithmetic reasoning.</p>")
  @('encapsulate') events is more complex, for example ignoring contents of
  @(tsee local) @(see events); see @(see redundant-encapsulate).</p>
 
- <p>An @(tsee in-theory) event is never redundant.  Note that it doesn't define
- any name.</p>
+ <p>An @(tsee in-theory) event is never redundant by default, though that can
+ be changed; see @(see set-in-theory-redundant-okp).  Note that it doesn't
+ define any name.</p>
 
  <p>An @(tsee include-book) event is redundant if the book has already been
  included.</p>
@@ -96292,6 +96302,35 @@ arithmetic) for libraries of @(see books) for arithmetic reasoning.</p>")
  <p>Note: Defun will continue to report irrelevant formals even if
  @(':set-ignore-ok') has been set to @('t'), unless you also use @(tsee
  set-irrelevant-formals-ok) to instruct it otherwise.</p>")
+
+(defxdoc set-in-theory-redundant-okp
+  :parents (redundant-events)
+  :short "Allow @(tsee in-theory) events to be redundant"
+  :long "<p>See @(see redundant-events) for discussion of the notion of
+ redundant events.</p>
+
+ @({
+  General Forms:
+  (set-in-theory-redundant-okp nil) ; default
+  (set-in-theory-redundant-okp t)   ; allow in-theory events to be redundant
+ })
+
+ <p>By default, @(tsee in-theory) events are never redundant.  This behavior
+ avoids a redundancy check that could be a bit expensive, as it would require
+ computing the current theory and checking its equality to the new theory.
+ Evaluation of the event @('(set-in-theory-redundant-okp t)') enables that
+ redundancy check, so that when an @('in-theory') event computes a theory that
+ is equal to the current theory, then that event is redundant.</p>
+
+ <p>To see the current setting (i.e., the default of @('nil') or else @('t')
+ after evaluation of @('(set-in-theory-redundant-okp t)')), evaluate
+ @('(get-in-theory-redundant-okp state)').</p>
+
+ <p>Note: This is an event!  It does not print the usual event @(see summary)
+ but nevertheless changes the ACL2 logical @(see world) and is so recorded.
+ Moreover, its effect is to set the @(tsee acl2-defaults-table), and hence its
+ effect is @(tsee local) to the book or @(tsee encapsulate) form containing it;
+ see @(see acl2-defaults-table).</p>")
 
 (defxdoc set-inhibit-output-lst
   :parents (prover-output)
@@ -121847,6 +121886,7 @@ expand function call at the current subterm, without simplifying"
 (defpointer get-brr-local system-utilities)
 (defpointer get-check-invariant-risk set-check-invariant-risk)
 (defpointer get-event system-utilities)
+(defpointer get-in-theory-redundant-okp set-in-theory-redundant-okp)
 (defpointer get-output-stream-string$ io)
 (defpointer get-register-invariant-risk set-register-invariant-risk)
 (defpointer get-skipped-proofs-p system-utilities)
@@ -121966,6 +122006,7 @@ expand function call at the current subterm, without simplifying"
 (defpointer recursivep system-utilities)
 (defpointer redefine ld-redefinition-action)
 (defpointer redefining ld-redefinition-action)
+(defpointer redundant redundant-events)
 (defpointer regression books-certification)
 (defpointer remove-duplicates-eq remove-duplicates)
 (defpointer remove-duplicates-equal remove-duplicates)
