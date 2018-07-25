@@ -4464,6 +4464,11 @@ Silent loading of ACL2 customization files
 
   For an explanation of this key, see [set-register-invariant-risk].
 
+    :in-theory-redundant-okp
+
+  When this key's value is t, an [in-theory] event may be redundant.
+  See [set-in-theory-redundant-okp].
+
   Note: Unlike all other [table]s, acl2-defaults-table can affect the
   soundness of the system.  The [table] mechanism therefore enforces
   on it a restriction not imposed on other [table]s: when [table] is
@@ -24322,21 +24327,19 @@ Subtopics
 
     (defthmd NAME TERM ...)
 
-  expands to:
+  expands to the following, except that some output is inhibited for
+  the [in-theory] event:
 
     (progn
       (defthmd NAME TERM ...)
-      (with-output
-       :off summary
-       (in-theory (disable NAME)))
+      (in-theory (disable NAME))
       (value-triple '(:defthmd NAME))).
 
-  Note that defthmd commands are never redundant (see
-  [redundant-events]).  Even if the defthm event is redundant, then
-  the [in-theory] event will still be executed.
+  Defthmd events are generally not redundant, because the generated
+  [in-theory] event is not redundant.  This default can be changed;
+  see [set-in-theory-redundant-okp].
 
-  The [summary] for the [in-theory] event is suppressed.  See [defthm]
-  for documentation of defthm.")
+  See [defthm] for documentation of defthm.")
  (DEFTHY
   (EVENTS THEORIES DEFTHEORY)
   "Define a theory (to [enable] or [disable] a set of rules)
@@ -25777,7 +25780,7 @@ Subtopics
   (DEFUN EVENTS)
   "Define a function symbol and then disable it
 
-  Use defund instead of [defun] when you want to disable a function
+  Use defund instead of [defun] when you want to [disable] a function
   immediately after its definition in :[logic] mode.  This macro has
   been provided for users who prefer working in a mode where
   functions are only enabled when explicitly directed by
@@ -25785,20 +25788,18 @@ Subtopics
 
     (defund NAME FORMALS ...)
 
-  expands to:
+  expands to the following, except that some output is inhibited for
+  the [in-theory] event:
 
     (progn
       (defun NAME FORMALS ...)
-      (with-output
-       :off summary
-       (in-theory (disable NAME)))
+      (in-theory (disable NAME))
       (value-triple '(:defund NAME))).
 
-  Only the :[definition] rule (and, for recursively defined functions,
-  the :[induction] rule) for the function are disabled.  In
+  Only the :[definition] rule and, for recursively defined functions,
+  the :[induction] rule are disabled for the function.  In
   particular, defund does not disable either the :[type-prescription]
-  or the :[executable-counterpart] rule.  Also, the [summary] for the
-  [in-theory] event is suppressed.
+  or the :[executable-counterpart] rule.
 
   If the function is defined in :[program] mode, either because the
   [default-defun-mode] is :[program] or because :mode :program has
@@ -25808,9 +25809,9 @@ Subtopics
   :mode :program is specified then defund does not generate an
   [in-theory] event.)
 
-  Note that defund commands are never redundant (see
-  [redundant-events]) when the [default-defun-mode] is :[logic],
-  because the [in-theory] event will always be executed.
+  Defund events are generally not redundant, because the generated
+  [in-theory] event is not redundant.  This default can be changed;
+  see [set-in-theory-redundant-okp].
 
   See [defun] for documentation of defun.")
  (DEFUND-INLINE
@@ -36866,6 +36867,8 @@ Subtopics
     * TIME: VAL represents the corresponding field of the event summary, as
       the list (prove print proof-tree other).
     * WARNINGS: VAL is as in the corresponding field of the event summary.")
+ (GET-IN-THEORY-REDUNDANT-OKP (POINTERS)
+                              "See [set-in-theory-redundant-okp].")
  (GET-INTERNAL-TIME
   (PROGRAMMING ACL2-BUILT-INS)
   "Runtime vs. realtime in ACL2 timings
@@ -37087,7 +37090,7 @@ Subtopics
 
 A nice result of using pull requests is that all changes will be
 peer-reviewed before being committed.  Also, we sometimes call this
-method theFork and Pullmethod.
+method the Fork and Pull method.
 
 
 (A) GETTING STARTED
@@ -37198,8 +37201,9 @@ Contribute Your Changes
     git commit -a -m '<some message, with descriptive first line>'
     git push
 
-You now need to create apull request, where you request that changes from your github repository be
-accepted into the Community ACL2 repository.  To achieve this:
+You now need to create a pull request, where you request that
+changes from your github repository be accepted into the Community
+ACL2 repository.  To achieve this:
    1. Goto https://github.com/<your-github-username>/acl2.
    2. Click the Pull request button (you can search for it with your
       browser).
@@ -78946,6 +78950,12 @@ New Features
   print-radix.  Thanks to Eric Smith for requesting
   [cw-print-base-radix].
 
+  A new event macro, [set-in-theory-redundant-okp], allows [in-theory]
+  events to be [redundant], which prevents [defund] and [defthmd]
+  [events] from laying down [command] markers (as seen, for example,
+  using :[pbt]).  Thanks to Eric Smith for asking for a way for
+  in-theory events to be redundant.
+
 
 Heuristic and Efficiency Improvements
 
@@ -79106,6 +79116,11 @@ Bug Fixes
   [checkpoint-summary-limit], but that was missing.  Thanks to Keshav
   Kini for pointing this out (and supplying the expected
   implementation).
+
+  Fixed a bug in the guard for built-in function warning1-cw, which
+  could be seen for example by evaluating the form (warning$-cw
+  'my-ctx \"The :REWRITE rule ~x0 loops forever.\" 'foo).  Thanks to
+  Keshav Kini for bringing this issue to our attention.
 
 
 Changes at the System Level
@@ -83517,6 +83532,9 @@ Subtopics
   [Get-event]
       See [system-utilities].
 
+  [Get-in-theory-redundant-okp]
+      See [set-in-theory-redundant-okp].
+
   [Get-output-stream-string$]
       See [io].
 
@@ -83873,6 +83891,9 @@ Subtopics
 
   [Redefining]
       See [ld-redefinition-action].
+
+  [Redundant]
+      See [redundant-events].
 
   [Regression]
       See [books-certification].
@@ -91305,6 +91326,8 @@ Subtopics
   interrupted a proof (with control-c).  However, redo-flat will not
   produce the desired result after an interrupt if you have enabled
   the debugger using (set-debugger-enable t),")
+ (REDUNDANT (POINTERS)
+            "See [redundant-events].")
  (REDUNDANT-ENCAPSULATE
   (ENCAPSULATE)
   "Redundancy of [encapsulate] [events]
@@ -91567,8 +91590,9 @@ Subtopics
   redundancy of encapsulate events is more complex, for example
   ignoring contents of [local] [events]; see [redundant-encapsulate].
 
-  An [in-theory] event is never redundant.  Note that it doesn't define
-  any name.
+  An [in-theory] event is never redundant by default, though that can
+  be changed; see [set-in-theory-redundant-okp].  Note that it
+  doesn't define any name.
 
   An [include-book] event is redundant if the book has already been
   included.
@@ -91779,7 +91803,10 @@ Subtopics
       Query the [world] on whether redundancy is being enforced
 
   [Set-enforce-redundancy]
-      Require most events to be redundant")
+      Require most events to be redundant
+
+  [Set-in-theory-redundant-okp]
+      Allow [in-theory] events to be redundant")
  (REFINEMENT
   (RULE-CLASSES)
   "Record that one equivalence relation refines another
@@ -97460,6 +97487,34 @@ Example
   Note: Defun will continue to report irrelevant formals even if
   :set-ignore-ok has been set to t, unless you also use
   [set-irrelevant-formals-ok] to instruct it otherwise.")
+ (SET-IN-THEORY-REDUNDANT-OKP
+  (REDUNDANT-EVENTS)
+  "Allow [in-theory] events to be redundant
+
+  See [redundant-events] for discussion of the notion of redundant
+  events.
+
+    General Forms:
+    (set-in-theory-redundant-okp nil) ; default
+    (set-in-theory-redundant-okp t)   ; allow in-theory events to be redundant
+
+  By default, [in-theory] events are never redundant.  This behavior
+  avoids a redundancy check that could be a bit expensive, as it
+  would require computing the current theory and checking its
+  equality to the new theory.  Evaluation of the event
+  (set-in-theory-redundant-okp t) enables that redundancy check, so
+  that when an in-theory event computes a theory that is equal to the
+  current theory, then that event is redundant.
+
+  To see the current setting (i.e., the default of nil or else t after
+  evaluation of (set-in-theory-redundant-okp t)), evaluate
+  (get-in-theory-redundant-okp state).
+
+  Note: This is an event!  It does not print the usual event [summary]
+  but nevertheless changes the ACL2 logical [world] and is so
+  recorded.  Moreover, its effect is to set the
+  [ACL2-defaults-table], and hence its effect is [local] to the book
+  or [encapsulate] form containing it; see [ACL2-defaults-table].")
  (SET-INHIBIT-OUTPUT-LST
   (PROVER-OUTPUT)
   "Control output
@@ -120890,7 +120945,8 @@ Subtopics
 
   Prettyprint the the conclusion, highlighting the current term.  The
   usual user syntax is used, as with the command p (as opposed to
-  pp).  This is illustrated in the example above, where one would*not*see (equal (if x (*** (p y) ***) 'nil) (foo z)).
+  pp).  This is illustrated in the example above, where one would
+  *not* see (equal (if x (*** (p y) ***) 'nil) (foo z)).
 
   Remark (obscure): In some situations, a term of the form (if x t y)
   occurring inside the current subterm will not print as (or x y),
