@@ -80641,6 +80641,11 @@ it."
  checkpoint-summary-limit), but that was missing.  Thanks to Keshav Kini for
  pointing this out (and supplying the expected implementation).</p>
 
+ <p>Fixed a bug in the guard for built-in function @('warning1-cw'), which
+ could be seen for example by evaluating the form @('(warning$-cw 'my-ctx
+ \"The :REWRITE rule ~x0 loops forever.\" 'foo)').  Thanks to Keshav Kini for
+ bringing this issue to our attention.</p>
+
  <h3>Changes at the System Level</h3>
 
  <p>Fixed the use of `@('<a href='URL'>...</a>')' so that if @('URL') has the
