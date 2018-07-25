@@ -79117,6 +79117,11 @@ Bug Fixes
   Kini for pointing this out (and supplying the expected
   implementation).
 
+  Fixed a bug in the guard for built-in function warning1-cw, which
+  could be seen for example by evaluating the form (warning$-cw
+  'my-ctx \"The :REWRITE rule ~x0 loops forever.\" 'foo).  Thanks to
+  Keshav Kini for bringing this issue to our attention.
+
 
 Changes at the System Level
 
