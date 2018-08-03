@@ -47782,7 +47782,7 @@ tables in the current Hons Space."
  @('logand') returns their bitwise logical `and'.  In ACL2 @('logand') is a
  macro that expands into calls of the binary function @('binary-logand'),
  except that @('(logand)') expands to @('-1') and @('(logand x)') expands to
- @('x').</p>
+ @('(the integer x)').</p>
 
  <p>The @(see guard) for @('binary-logand') requires its arguments to be
  integers.  @('Logand') is defined in Common Lisp.  See any Common Lisp
@@ -47852,7 +47852,7 @@ tables in the current Hons Space."
  @('logeqv') returns their bitwise logical equivalence.  In ACL2 @('logeqv') is
  a macro that expands into calls of the binary function @('binary-logeqv'),
  except that @('(logeqv)') expands to @('-1') and @('(logeqv x)') expands to
- @('x').</p>
+ @('(the integer x)').</p>
 
  <p>The @(see guard) for @('binary-logeqv') requires its arguments to be
  integers.  @('Logeqv') is defined in Common Lisp.  See any Common Lisp
@@ -49557,7 +49557,7 @@ tables in the current Hons Space."
  @('logior') returns their bitwise logical inclusive or.  In ACL2 @('logior')
  is a macro that expands into calls of the binary function @('binary-logior'),
  except that @('(logior)') expands to @('0') and @('(logior x)') expands to
- @('x').</p>
+ @('(the integer x)').</p>
 
  <p>The @(see guard) for @('binary-logior') requires its arguments to be
  integers.  @('Logior') is defined in Common Lisp.  See any Common Lisp
@@ -49655,7 +49655,7 @@ tables in the current Hons Space."
  @('logxor') returns their bitwise logical exclusive or.  In ACL2 @('logxor')
  is a macro that expands into calls of the binary function @('binary-logxor'),
  except that @('(logxor)') expands to @('0') and @('(logxor x)') expands to
- @('x').</p>
+ @('(the integer x)').</p>
 
  <p>The @(see guard) for @('binary-logxor') requires its arguments to be
  integers.  @('Logxor') is defined in Common Lisp.  See any Common Lisp
@@ -80645,6 +80645,19 @@ it."
  could be seen for example by evaluating the form @('(warning$-cw 'my-ctx
  \"The :REWRITE rule ~x0 loops forever.\" 'foo)').  Thanks to Keshav Kini for
  bringing this issue to our attention.</p>
+
+ <p>The definitions of the macros @(tsee logand), @(tsee logior), @(tsee
+ logxor), and @(tsee logeqv) were such that when any of these was applied to a
+ single argument, the expansion was simply that argument.  For example,
+ @('(logand (foo a))') expanded to @('(foo a)').  These definitions failed to
+ reflect the fact that in Common Lisp, an error may be signaled if that single
+ argument does not evaluate to an integer.  For example, the following
+ definition was admitted: @('(defun f (x) (declare (xargs :guard t)) (logand
+ x))'); yet a raw Lisp error was signaled when attempting to evaluate @('(f
+ 'x)'), in ACL2 built on Allegro Common Lisp.  This bug has been fixed: now,
+ when any of these four macros is applied to a single argument, @('a'), the
+ expansion is @('(the integer a)').  Thanks to Eric Smith for bringing this bug
+ to our attention.</p>
 
  <h3>Changes at the System Level</h3>
 
