@@ -26708,17 +26708,21 @@ ld) and @(tsee include-book)"
                       (CONS (EVL2 (CAR X-LST) A)
                             (EVL2-LIST (CDR X-LST) A)))))
     (DEFTHM EVL2-CONSTRAINT-6
+      (IMPLIES (AND (NOT (CONSP X))
+                    (NOT (SYMBOLP X)))
+               (EQUAL (EVL2 X A) NIL)))
+    (DEFTHM EVL2-CONSTRAINT-7
       (IMPLIES (AND (CONSP X) (EQUAL (CAR X) 'F))
                (EQUAL (EVL2 X A) ; changed f to f2 just below
                       (F2 (EVL2 (CADR X) A)))))
-    (DEFTHM EVL2-CONSTRAINT-7
+    (DEFTHM EVL2-CONSTRAINT-8
       (IMPLIES (AND (CONSP X) (EQUAL (CAR X) 'F2))
                (EQUAL (EVL2 X A)
                       (F2 (EVL2 (CADR X) A)))))
-    (DEFTHM EVL2-CONSTRAINT-8
+    (DEFTHM EVL2-CONSTRAINT-9
       (IMPLIES (AND (CONSP X) (EQUAL (CAR X) 'G))
                (EQUAL (EVL2 X A) (G))))
-    (DEFTHM EVL2-CONSTRAINT-9
+    (DEFTHM EVL2-CONSTRAINT-10
       (IMPLIES (AND (CONSP X) (EQUAL (CAR X) 'G2))
                (EQUAL (EVL2 X A) (G2)))))
 
