@@ -51602,7 +51602,8 @@ Subtopics
   When integers are viewed in their two's complement representation,
   logand returns their bitwise logical `and'.  In ACL2 logand is a
   macro that expands into calls of the binary function binary-logand,
-  except that (logand) expands to -1 and (logand x) expands to x.
+  except that (logand) expands to -1 and (logand x) expands to (the
+  integer x).
 
   The [guard] for binary-logand requires its arguments to be integers.
   Logand is defined in Common Lisp.  See any Common Lisp
@@ -51612,7 +51613,9 @@ Subtopics
 
     (defmacro logand (&rest args)
               (cond ((null args) -1)
-                    ((null (cdr args)) (car args))
+                    ((null (cdr args))
+                     (cons 'the
+                           (cons 'integer (cons (car args) 'nil))))
                     (t (xxxjoin 'binary-logand args))))
 
   Function: <binary-logand>
@@ -51713,7 +51716,7 @@ Subtopics
   logeqv returns their bitwise logical equivalence.  In ACL2 logeqv
   is a macro that expands into calls of the binary function
   binary-logeqv, except that (logeqv) expands to -1 and (logeqv x)
-  expands to x.
+  expands to (the integer x).
 
   The [guard] for binary-logeqv requires its arguments to be integers.
   Logeqv is defined in Common Lisp.  See any Common Lisp
@@ -51723,7 +51726,9 @@ Subtopics
 
     (defmacro logeqv (&rest args)
               (cond ((null args) -1)
-                    ((null (cdr args)) (car args))
+                    ((null (cdr args))
+                     (cons 'the
+                           (cons 'integer (cons (car args) 'nil))))
                     (t (xxxjoin 'binary-logeqv args))))
 
   Function: <binary-logeqv>
@@ -53290,7 +53295,7 @@ Subtopics
   logior returns their bitwise logical inclusive or.  In ACL2 logior
   is a macro that expands into calls of the binary function
   binary-logior, except that (logior) expands to 0 and (logior x)
-  expands to x.
+  expands to (the integer x).
 
   The [guard] for binary-logior requires its arguments to be integers.
   Logior is defined in Common Lisp.  See any Common Lisp
@@ -53300,7 +53305,9 @@ Subtopics
 
     (defmacro logior (&rest args)
               (cond ((null args) 0)
-                    ((null (cdr args)) (car args))
+                    ((null (cdr args))
+                     (cons 'the
+                           (cons 'integer (cons (car args) 'nil))))
                     (t (xxxjoin 'binary-logior args))))
 
   Function: <binary-logior>
@@ -53419,7 +53426,7 @@ Subtopics
   logxor returns their bitwise logical exclusive or.  In ACL2 logxor
   is a macro that expands into calls of the binary function
   binary-logxor, except that (logxor) expands to 0 and (logxor x)
-  expands to x.
+  expands to (the integer x).
 
   The [guard] for binary-logxor requires its arguments to be integers.
   Logxor is defined in Common Lisp.  See any Common Lisp
@@ -53429,7 +53436,9 @@ Subtopics
 
     (defmacro logxor (&rest args)
               (cond ((null args) 0)
-                    ((null (cdr args)) (car args))
+                    ((null (cdr args))
+                     (cons 'the
+                           (cons 'integer (cons (car args) 'nil))))
                     (t (xxxjoin 'binary-logxor args))))
 
   Function: <binary-logxor>
@@ -79121,6 +79130,19 @@ Bug Fixes
   could be seen for example by evaluating the form (warning$-cw
   'my-ctx \"The :REWRITE rule ~x0 loops forever.\" 'foo).  Thanks to
   Keshav Kini for bringing this issue to our attention.
+
+  The definitions of the macros [logand], [logior], [logxor], and
+  [logeqv] were such that when any of these was applied to a single
+  argument, the expansion was simply that argument.  For example,
+  (logand (foo a)) expanded to (foo a).  These definitions failed to
+  reflect the fact that in Common Lisp, an error may be signaled if
+  that single argument does not evaluate to an integer.  For example,
+  the following definition was admitted: (defun f (x) (declare (xargs
+  :guard t)) (logand x)); yet a raw Lisp error was signaled when
+  attempting to evaluate (f 'x), in ACL2 built on Allegro Common
+  Lisp.  This bug has been fixed: now, when any of these four macros
+  is applied to a single argument, a, the expansion is (the integer
+  a).  Thanks to Eric Smith for bringing this bug to our attention.
 
 
 Changes at the System Level
