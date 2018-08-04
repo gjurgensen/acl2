@@ -84136,6 +84136,9 @@ Subtopics
   [Translate-cmp]
       See [system-utilities].
 
+  [Translate-hints]
+      See [system-utilities].
+
   [Translate1]
       See [system-utilities].
 
@@ -110825,6 +110828,8 @@ Subtopics
             "See [system-utilities].")
  (TRANSLATE-CMP (POINTERS)
                 "See [system-utilities].")
+ (TRANSLATE-HINTS (POINTERS)
+                  "See [system-utilities].")
  (TRANSLATE1 (POINTERS)
              "See [system-utilities].")
  (TRANSLATE1-CMP (POINTERS)

@@ -122134,6 +122134,7 @@ expand function call at the current subterm, without simplifying"
 (defpointer symbol-class system-utilities)
 (defpointer tag-tree ttree)
 (defpointer translate system-utilities)
+(defpointer translate-hints system-utilities)
 (defpointer translate1 system-utilities)
 (defpointer translate11 system-utilities)
 (defpointer translate-cmp system-utilities)
