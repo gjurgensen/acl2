@@ -13394,6 +13394,7 @@ Subtopics
        (bridge \"[books]/centaur/bridge/top.lisp\")
        (build::cert.pl \"[books]/build/doc.lisp\")
        (build::cert_param \"[books]/build/doc.lisp\")
+       (cgen \"[books]/acl2s/cgen/top.lisp\")
        (std::defaggregate \"[books]/std/util/defaggregate.lisp\")
        (defconsts \"[books]/std/util/defconsts.lisp\")
        (defdata \"[books]/acl2s/defdata/top.lisp\")
@@ -19718,7 +19719,7 @@ Subtopics
       How to deal with a proof [failure] in a forcing round
 
   [Failure]
-      How to deal with a proof failure
+      How to deal with a failure to admit an event
 
   [Forward-chaining-reports]
       To see reports about the forward chaining process
@@ -31651,7 +31652,26 @@ Subtopics
          :hints ((\"Goal\" :use rationalp-implies-main)))")
  (FAILURE
   (DEBUGGING)
-  "How to deal with a proof failure
+  "How to deal with a failure to admit an event
+
+  There are many reasons why an event can fail to be admitted.
+  Generally, an error message will explain the failure, sometimes
+  pointing to documentation that is specific to the relevant issue.
+  There are tools that can sometimes help: for example, to debug
+  failures of [encapsulate] or [progn] events, as well as
+  [certify-book] failures, see [redo-flat].
+
+  However, proof failures are typically not as trivial to debug as, for
+  example, syntactic errors (such as spelling errors in the name of a
+  function).  Fortunately, ACL2 offers a variety of techniques for
+  dealing with proof failures, and some are discussed below.  Also
+  see relevant subtopics of the topic, [debugging].  Some
+  frequently-used tools for proof debugging that are discussed in
+  those subtopics include [accumulated-persistence], [break-rewrite],
+  [cgen], and [proof-builder].  Also see [nil-goal] for ideas about
+  how to proceed when the prover generates a goal of NIL.
+
+  We turn now to the problem of dealing with proof failures.
 
   When ACL2 gives up it does not mean that the submitted conjecture is
   invalid, even if the last formula ACL2 printed in its proof attempt
@@ -31683,10 +31703,6 @@ Subtopics
   although this should rarely be necessary --- then you can look at
   the full proof, perhaps with the aid of certain utilities: see
   [proof-tree], see [set-gag-mode], and see [set-saved-output].
-
-  For information on a tool to help debug failures of [encapsulate] and
-  [progn] events, as well as [certify-book] failures, see
-  [redo-flat].
 
   Again, see [the-method] for a general discussion of how to prove
   theorems with ACL2, and see [introduction-to-the-theorem-prover]
@@ -68497,7 +68513,8 @@ Subtopics
   :[program] mode functions for [verify-termination] and during
   macroexpansion, we have computed a much more complete list of
   functions that need such restrictions, the value of constant
-  *primitive-program-fns-with-raw-code*.
+  *primitive-program-fns-with-raw-code*.  [This constant was renamed
+  *initial-program-fns-with-raw-code* after Version 8.0.]
 
   Modified what is printed when a proof fails, to indicate more clearly
   which event failed.
@@ -78889,6 +78906,25 @@ Changes to Existing Features
   argument, print-base-radix, which is the same as the first argument
   to the new utilities, [cw-print-base-radix] and
   [cw-print-base-radix!] (see below).
+
+  The undocumented constants *primitive-program-fns-with-raw-code*,
+  *primitive-logic-fns-with-raw-code*, and
+  *primitive-macros-with-raw-code* have been renamed respectively to
+  *initial-program-fns-with-raw-code*,
+  *initial-logic-fns-with-raw-code*, and
+  *initial-macros-with-raw-code*.  Thanks to Alessandro Coglio for
+  suggesting these improved names.
+
+  The [save-exec] utility now utilizes a relative pathname in the
+  saved_acl2 script, which can allow it and a corresponding image
+  file to be moved, even across filesystems --- though if there is an
+  image file, then probably the Lisp executable must have the same
+  pathname even after the move.  Thanks to Eric Smith for suggesting
+  this capability and providing a hint for how to implement it, to
+  Sol Swords for pointing out a limitation of the initial
+  implementation, and to {this website |
+  https://serverfault.com/questions/40144/how-can-i-retrieve-the-absolute-filename-in-a-shell-script-on-mac-os-x}
+  for making that solution robust.
 
 
 New Features
@@ -104901,18 +104937,24 @@ Subtopics
   initial version created by the ACL2 implementors, and others will
   likely continue to add to it over time.
 
-  WARNING: Some system utilities are in :[program] mode, and for many
-  of those, [guard]s are incomplete or missing entirely.  Incorrect
-  use of such utilities can thus lead to scary (though often
-  harmless) raw Lisp errors!  Although this situation may improve
-  over time, for now users of these utilities must cope with that
-  danger just as the ACL2 implementors cope with it, which is by
+  WARNING 1.  Some system utilities are in :[program] mode, and for
+  many of those, [guard]s are incomplete or missing entirely.
+  Incorrect use of such utilities can thus lead to scary (though
+  often harmless) raw Lisp errors!  Although this situation may
+  improve over time, for now users of these utilities must cope with
+  that danger just as the ACL2 implementors cope with it, which is by
   understanding the requirements on each utility that is invoked.
   For example, if you incorrectly invoke (untranslate (cons 3 4) nil
   (w state)), where perhaps (untranslate '(cons '3 '4) nil (w state))
   was intended, then the resulting raw Lisp error is your
   responsibility for invoking untranslate on the object (3 . 4)
   instead of the term (cons '3 '4).
+
+  WARNING 2.  These utilities are subject to change.  They were
+  developed to support the ACL2 system, and as ACL2 evolves, its
+  developers claim the right to modify these functions --- even their
+  input-output [signature]s.  That said, changes to these functions
+  are likely to be quite rare.
 
   The ACL2 system comes with substantial comments.  As of Version_7.1
   (May, 2015), out of slightly under 10 MB of source code (not
@@ -105319,6 +105361,11 @@ List of a few ACL2 system utilities:
       translated [term]s, as recognized by termp.  Note that these
       functions perform macroexpansion, which checks [guard]s on
       [primitive]s; see [safe-mode].
+    * (translate-hints name-tree lst ctx wrld state): Translate a given
+      list of user-level hints, lst, to internal form.  NOTE: this
+      function returns an [error-triple], and it checks the syntax of
+      lst.  Its documentation essentially resides in a comment in
+      source function translate-hints1.
     * (untranslate term iff-flg w): see [untranslate].
     * (value x): This macro call expands to (mv nil x state).  For related
       discussion, see [error-triple].
@@ -122270,15 +122317,13 @@ Subtopics
 
   For example, if the current subterm is (append a b), then after x the
   current subterm will probably be (cons (car a) (append (cdr a) b))
-  if (consp a) and (true-listp a) are among the top-level hypotheses
-  and governors.  If there are no top-level hypotheses and governors,
-  then after x the current subterm will probably be:
+  if (consp a) is among the top-level hypotheses and governors.  If
+  there are no top-level hypotheses and governors, then after x the
+  current subterm will probably be:
 
-    (if (true-listp x)
-        (if x
-            (cons (car x) (append (cdr x) y))
-          y)
-      (apply 'binary-append (list x y))).
+    (if (consp a)
+        (cons (car a) (append (cdr a) b))
+        b).
 
     General Form:
     (X &key
