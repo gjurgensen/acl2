@@ -80722,6 +80722,10 @@ it."
  @('memoize-raw.lisp'), as explained in the comment there about
  ``read-cycle-counter''.</p>
 
+ <p>(CCL only) Raw Lisp error messages now mention the caller.  Thanks to Eric
+ Smith for pointing out that this information wasn't being provided in the ACL2
+ loop even though it was being provided in raw Lisp.</p>
+
  <h3>EMACS Support</h3>
 
  <p>Removed setting of the buffer coding system from @('emacs/emacs-acl2.el').
