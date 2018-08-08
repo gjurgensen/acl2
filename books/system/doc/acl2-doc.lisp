@@ -1940,6 +1940,10 @@
  some of the more obscure functions provided by ACL2 that do not correspond to
  functions of Common Lisp.</p>
 
+ <p>If you are already familiar with Common Lisp (or even some other Lisp
+ variant), then you may find it helpful to start with the topic, @(see
+ introduction-to-programming-in-acl2-for-those-who-know-lisp).</p>
+
  <p>See any documentation for Common Lisp for more details on many of these
  functions.</p>")
 
@@ -3214,7 +3218,7 @@
  the serial version of the waterfall, which skips printing the subgoal as a
  checkpoint.</p>
 
- <p>For those familiar with the ACL2 waterfall, we note that that the parallel
+ <p>For those familiar with the ACL2 waterfall, we note that the parallel
  version of the waterfall prints key checkpoints that are unproved in the
  following sense: a subgoal is a key checkpoint if it leads, in the current
  call of the waterfall, to a goal that is pushed for induction.</p>")
@@ -3867,7 +3871,7 @@ and @(tsee include-book)"
  about the function @('add-to-set-equal').</p>")
 
 (defxdoc advanced-features
-  :parents (acl2-tutorial)
+  :parents (acl2-tutorial programming)
   :short "Some advanced features of ACL2"
   :long "<p>Maybe you've been using ACL2 for awhile, and you wonder if there
  are lesser-known features that you might find useful.  Then this topic is for
@@ -41583,10 +41587,10 @@ tables in the current Hons Space."
 
  <p>@('(Intersection$ x y)') equals a list that contains the @('member')s of
  @('x') that are also @('member')s of @('y').  More precisely, the resulting
- list is the result of deleting from @('x') those members that that are not
- members of @('y').  The optional keyword, @(':TEST'), has no effect logically,
- but provides the test (default @(tsee eql)) used for comparing members of the
- two lists.</p>
+ list is the result of deleting from @('x') those members that are not members
+ of @('y').  The optional keyword, @(':TEST'), has no effect logically, but
+ provides the test (default @(tsee eql)) used for comparing members of the two
+ lists.</p>
 
  <p>@('Intersection$') need not take exactly two arguments, though it must take
  at least one argument: @('(intersection$ x)') is @('x'), @('(intersection$ x y
@@ -42657,6 +42661,134 @@ tables in the current Hons Space."
  <p>If you are reading this as part of the tutorial introduction to the theorem
  prover, use your browser's <b>Back Button</b> now to return to @(see
  introduction-to-the-theorem-prover).</p>")
+
+(defxdoc introduction-to-programming-in-acl2-for-those-who-know-lisp
+  :parents (programming introduction-to-the-theorem-prover)
+  :short "Introduction to programming in ACL2 for Lisp users"
+  :long "<p>The @(see documentation) topics @(see programming) and @(see
+ acl2-built-ins) are starting points for a rich collection of primitives and
+ features in the ACL2 programming language.  In the present topic (below) we
+ give a succinct introduction to that language for those who are already
+ reasonably familiar with Common Lisp, or perhaps another Lisp.  Follow the
+ hyperlinks if you want to drill down; for example, we mention multiple values
+ below but say very little about them, instead providing links to topics that
+ explain their handling in a little more depth.</p>
+
+ <p>The @(tsee documentation) for ACL2 and its @(see community-books) provides
+ a rich set of topics for further exploration.  This particular topic is
+ intended to serve only as a brief introduction to programming in ACL2 for
+ those who know Lisp, especially Common Lisp.  Supplementary reading that may
+ interest a few readers includes ``<a
+ href='http://www.cs.utexas.edu/users/moore/publications/km97a.pdf'>A Precise
+ Description of the ACL2 Logic</a>'' (Matt Kaufmann and J Moore, April,
+ 1998).</p>
+
+ <h3>Applicative Common Lisp</h3>
+
+ <p>The ACL2 (``A Computational Logic for Applicative Common Lisp'')
+ programming language is essentially a subset of Common Lisp &mdash; albeit
+ with some useful extensions &mdash; that is <i>applicative</i>: the value
+ returned by a function depends only on its inputs, not state.  (There is an
+ ACL2 notion of @(see state), introduced briefly below; but that state must be
+ passed as an explicit argument.)  Many commonly-used functions and special
+ forms in the applicative subset of Common Lisp are also in ACL2, such as (to
+ name just a very few) @(tsee car), @(tsee cons), @(tsee nth), @(tsee append),
+ @(tsee let), and @(tsee let*).  A few others are not directly included in ACL2
+ because they have incomplete specifications in Common Lisp, such as @(tsee
+ pairlis); according to the Common Lisp HyperSpec: ``The new pairs may appear
+ in the resulting association list in either forward or backward order.''  Many
+ such functions tend to have close analogues in ACL2, named by concatenating
+ @('\"$\"') to the Common Lisp name; for example, ACL2 has @(tsee pairlis$),
+ @(tsee union$), and even $(tsee random$).  See @(see acl2-built-ins) for a
+ much more comprehensive list of functions, macros, and special forms provided
+ by the ACL2 programming language.  In particular, a search through that
+ documentation topic for `@('$')' will show you utilities like @('pairlis$')
+ that are based on related Common Lisp utilities.</p>
+
+ <p>In the ACL2 read-eval-print loop, you can define functions and macros with
+ @(tsee defun) and @(tsee defmacro) just as in Common Lisp, with some
+ restrictions (see for example @(see name)) and also some additional @(tsee
+ declare) forms.</p>
+
+ <h3>Data types</h3>
+
+ <p>Only certain Lisp data types are supported for programming in ACL2: numbers
+ that are either rational numbers or complex numbers with rational
+ coefficients (see @(see numbers-introduction)); the @(see characters)
+ constructed with @('(code-char n)') for @('n') from 0 to 255; @(see strings)
+ formed from those characters; @(see symbols) whose @(tsee symbol-name) and
+ @(tsee symbol-package-name) are ACL2 strings; and objects constructed from
+ others using @(tsee cons).</p>
+
+ <p>In particular, arrays are not directly supported as an ACL2
+ datatype (except for strings).  However, ACL2 supports an applicative notion
+ of array, which is logically an association list but has an associated Lisp
+ array that provides fast reads in single-threaded programs.  See @(see
+ arrays).  If your code creates an array and does many more reads to it than
+ writes, or even if there are rarely two writes to the same index (as when
+ writes are primarily to initialize the array), then ACL2 arrays may perform
+ well.  Otherwise you may get significantly better performance, avoiding the
+ consing done by writes (to build the association list), by using a different
+ sort of representation of arrays in ACL2: <i>single-threaded objects</i>, or
+ <i>stobjs</i>; see @(see stobj).</p>
+
+ <p>Structures can be simulated in ACL2 using suitable macros.  For a simple
+ such macro that is built into ACL2, together with alternatives to it, see
+ @(see defrec).</p>
+
+ <h3>Program and logic modes</h3>
+
+ <p>If you are using ACL2 as a programming language but you do not intend to
+ prove anything about your code, at least not at first, then you might be
+ well-served by using @(see program) mode.  In this mode, ACL2 will admit the
+ definition if syntactic checks succeed, in particular without requiring a
+ proof of termination for recursive definitions.  You can specify the mode
+ directly in a declaration (see @(see xargs) for how to specify @(':program')
+ in a @(see declare) form), or you can set the default @(see defun-mode) to
+ @(':program') (see @(see default-defun-mode) and see @(see program)).</p>
+
+ <p>When you are ready to reason about your functions, you can use @(':')@(tsee
+ logic) mode instead, or you can convert a program-mode function to logic-mode
+ with @(tsee verify-termination).</p>
+
+ <h3>Connection to Common Lisp</h3>
+
+ <p>Many Common Lisp functions should only be applied to certain types of
+ objects: for example, @(tsee car) should only be applied to a cons pair or
+ @('nil').  Every ACL2 function has a <i>guard</i>, which specifies the
+ intended domain of the function; see @(see guard).  For example, the guard for
+ @('car') is @('(OR (CONSP X) (EQUAL X NIL))').  See @(see args) for a utility
+ that provides this and other information about a given function symbol.</p>
+
+ <p>Beginning ACL2 programmers should probably ignore guards, at least
+ initially.  Otherwise, see @(see xargs) for how to specify a guard; also see
+ @(see verify-guards).</p>
+
+ <h3>Multiple values</h3>
+
+ <p>The analogues of Common Lisp utilities @('multiple-value-bind') and
+ @('values') are @(tsee mv-let) and @(tsee mv), respectively.  Also see @(see
+ b*) for an alternative to @(tsee let*) that can be convenient in the presence
+ of multiple values.</p>
+
+ <h3>State</h3>
+
+ <p>ACL2 provides a notion of <i>state</i> that is useful for certain kinds of
+ programming.  As mentioned above, the state must be passed explicitly because
+ of the applicative nature of ACL2; indeed, it must be passed as the variable,
+ @('state'), i.e., the symbol in the @('\"ACL2\"') package whose @(tsee
+ symbol-name) is @('\"STATE\"').  This is a rather complex notion, perhaps best
+ avoided by beginning ACL2 programmers.  To learn about the ACL2 state, see
+ @(see state), which points to a topic, @(see programming-with-state), that
+ discusses many utilities for reading and writing the ACL2 state.</p>
+
+ <h3>More help</h3>
+
+ <p>The acl2-help email list is a fine place to get help with ACL2 questions,
+ including programming questions.  You can sign up by following links from the
+ <a href='http://www.cs.utexas.edu/users/moore/acl2/'>ACL2 home page</a>.
+ Moreover, that could be a good place to request or suggest improvements to
+ this documentation topic!</p>")
 
 (defxdoc introduction-to-rewrite-rules-part-1
   :parents (introduction-to-the-theorem-prover)
@@ -66247,9 +66379,9 @@ it."
  modifications.  See @(see quantifier-tutorial).</p>
 
  <p>@(tsee Defun-sk) now allows the keyword option @(':strengthen t'), which
- will generate the extra constraint that that is generated for the
- corresponding @('defchoose') event; see @(see defchoose).  Thanks to Dave
- Greve for suggesting this feature.</p>
+ will generate the extra constraint that is generated for the corresponding
+ @('defchoose') event; see @(see defchoose).  Thanks to Dave Greve for
+ suggesting this feature.</p>
 
  <p><b>BUG FIXES</b></p>
 
@@ -82500,8 +82632,8 @@ arithmetic) for libraries of @(see books) for arithmetic reasoning.</p>")
   :parents (lists alists)
   :short "See @(see pairlis$)"
   :long "<p>The Common Lisp language allows its @('pairlis') function to
- construct an alist in any order!  So we have to define our own version: See
- @(see pairlis$).</p>")
+ construct an alist without specifying a single order!  So we have to define
+ our own version: See @(see pairlis$).</p>")
 
 (defxdoc pairlis$
   :parents (lists alists acl2-built-ins)
@@ -85806,6 +85938,10 @@ arithmetic) for libraries of @(see books) for arithmetic reasoning.</p>")
  acl2-built-ins), contains as subtopics (displayed in a flat list) most of the
  topics in the @(see documentation) hierarchy that appear under this
  `programming' topic.</p>
+
+ <p>If you are already familiar with Common Lisp (or even some other Lisp
+ variant), then you may find it helpful to start with the topic, @(see
+ introduction-to-programming-in-acl2-for-those-who-know-lisp).</p>
 
  <p>Also see @(see debugging) for utilities that can aid in programming.</p>")
 
@@ -121186,7 +121322,7 @@ options"
  ``succeeds'' if @('erp') is @('nil') and @('val') is not @('nil'); otherwise
  it ``fails''.  (When we use the words ``succeed'' or ``fail'' in this
  technical sense, we'll always include them in double quotes.)  If an
- instruction ``fails,'' we say that that the failure is ``soft'' if @('erp') is
+ instruction ``fails,'' we say that the failure is ``soft'' if @('erp') is
  @('nil'); otherwise the failure is ``hard''.  The @('sequence') command gives
  the user control over how to treat ``success'' and ``failure'' when sequencing
  instructions, though we have created a number of handy macro commands for this
