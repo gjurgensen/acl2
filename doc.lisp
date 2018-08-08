@@ -2685,6 +2685,10 @@ Step 4
   document some of the more obscure functions provided by ACL2 that
   do not correspond to functions of Common Lisp.
 
+  If you are already familiar with Common Lisp (or even some other Lisp
+  variant), then you may find it helpful to start with the topic,
+  [introduction-to-programming-in-ACL2-for-those-who-know-lisp].
+
   See any documentation for Common Lisp for more details on many of
   these functions.
 
@@ -6106,7 +6110,7 @@ Subtopics
  (ADD-TO-SET-EQUAL (POINTERS)
                    "See [add-to-set].")
  (ADVANCED-FEATURES
-  (ACL2-TUTORIAL)
+  (ACL2-TUTORIAL PROGRAMMING)
   "Some advanced features of ACL2
 
   Maybe you've been using ACL2 for awhile, and you wonder if there are
@@ -45909,6 +45913,145 @@ Subtopics
   If you are reading this as part of the tutorial introduction to the
   theorem prover, use your browser's Back Button now to return to
   [introduction-to-the-theorem-prover].")
+ (INTRODUCTION-TO-PROGRAMMING-IN-ACL2-FOR-THOSE-WHO-KNOW-LISP
+  (PROGRAMMING INTRODUCTION-TO-THE-THEOREM-PROVER)
+  "Introduction to programming in ACL2 for Lisp users
+
+  The [documentation] topics [programming] and [ACL2-built-ins] are
+  starting points for a rich collection of primitives and features in
+  the ACL2 programming language.  In the present topic (below) we
+  give a succinct introduction to that language for those who are
+  already reasonably familiar with Common Lisp, or perhaps another
+  Lisp.  Follow the hyperlinks if you want to drill down; for
+  example, we mention multiple values below but say very little about
+  them, instead providing links to topics that explain their handling
+  in a little more depth.
+
+  The [documentation] for ACL2 and its [community-books] provides a
+  rich set of topics for further exploration.  This particular topic
+  is intended to serve only as a brief introduction to programming in
+  ACL2 for those who know Lisp, especially Common Lisp.
+  Supplementary reading that may interest a few readers includes ``{A
+  Precise Description of the ACL2 Logic |
+  http://www.cs.utexas.edu/users/moore/publications/km97a.pdf}''
+  (Matt Kaufmann and J Moore, April, 1998).
+
+
+Applicative Common Lisp
+
+  The ACL2 (``A Computational Logic for Applicative Common Lisp'')
+  programming language is essentially a subset of Common Lisp ---
+  albeit with some useful extensions --- that is applicative: the
+  value returned by a function depends only on its inputs, not state.
+  (There is an ACL2 notion of [state], introduced briefly below; but
+  that state must be passed as an explicit argument.)  Many
+  commonly-used functions and special forms in the applicative subset
+  of Common Lisp are also in ACL2, such as (to name just a very few)
+  [car], [cons], [nth], [append], [let], and [let*].  A few others
+  are not directly included in ACL2 because they have incomplete
+  specifications in Common Lisp, such as [pairlis]; according to the
+  Common Lisp HyperSpec: ``The new pairs may appear in the resulting
+  association list in either forward or backward order.'' Many such
+  functions tend to have close analogues in ACL2, named by
+  concatenating \"$\" to the Common Lisp name; for example, ACL2 has
+  [pairlis$], [union$], and even $(tsee random$).  See
+  [ACL2-built-ins] for a much more comprehensive list of functions,
+  macros, and special forms provided by the ACL2 programming
+  language.  In particular, a search through that documentation topic
+  for `$' will show you utilities like pairlis$ that are based on
+  related Common Lisp utilities.
+
+  In the ACL2 read-eval-print loop, you can define functions and macros
+  with [defun] and [defmacro] just as in Common Lisp, with some
+  restrictions (see for example [name]) and also some additional
+  [declare] forms.
+
+
+Data types
+
+  Only certain Lisp data types are supported for programming in ACL2:
+  numbers that are either rational numbers or complex numbers with
+  rational coefficients (see [numbers-introduction]); the
+  [characters] constructed with (code-char n) for n from 0 to 255;
+  [strings] formed from those characters; [symbols] whose
+  [symbol-name] and [symbol-package-name] are ACL2 strings; and
+  objects constructed from others using [cons].
+
+  In particular, arrays are not directly supported as an ACL2 datatype
+  (except for strings).  However, ACL2 supports an applicative notion
+  of array, which is logically an association list but has an
+  associated Lisp array that is used in single-threaded programs.
+  See [arrays].  If your code creates an array and does many more
+  reads to it than writes, then you may get significantly better
+  performance using a different sort of representation of arrays in
+  ACL2, using single-threaded objects, or stobjs; see [stobj].
+
+  Structures can be simulated in ACL2 using suitable macros.  For a
+  simple such macro that is built into ACL2, together with
+  alternatives to it, see [defrec].
+
+
+Program and logic modes
+
+  If you are using ACL2 as a programming language but you do not intend
+  to prove anything about your code, at least not at first, then you
+  might be well-served by using [program] mode.  In this mode, ACL2
+  will admit the definition if syntactic checks succeed, in
+  particular without requiring a proof of termination for recursive
+  definitions.  You can specify the mode directly in a declaration
+  (see [xargs] for how to specify :program in a [declare] form), or
+  you can set the default [defun-mode] to :program (see
+  [default-defun-mode] and see [program]).
+
+  When you are ready to reason about your functions, you can use
+  :[logic] mode instead, or you can convert a program-mode function
+  to logic-mode with [verify-termination].
+
+
+Connection to Common Lisp
+
+  Many Common Lisp functions should only be applied to certain types of
+  objects: for example, [car] should only be applied to a cons pair
+  or nil.  Every ACL2 function has a guard, which specifies the
+  intended domain of the function; see [guard].  For example, the
+  guard for car is (OR (CONSP X) (EQUAL X NIL)).  See [args] for a
+  utility that provides this and other information about a given
+  function symbol.
+
+  Beginning ACL2 programmers should probably ignore guards, at least
+  initially.  Otherwise, see [xargs] for how to specify a guard; also
+  see [verify-guards].
+
+
+Multiple values
+
+  The analogues of Common Lisp utilities multiple-value-bind and values
+  are [mv-let] and [mv], respectively.  Also see [b*] for an
+  alternative to [let*] that can be convenient in the presence of
+  multiple values.
+
+
+State
+
+  ACL2 provides a notion of state that is useful for certain kinds of
+  programming.  As mentioned above, the state must be passed
+  explicitly because of the applicative nature of ACL2; indeed, it
+  must be passed as the variable, state, i.e., the symbol in the
+  \"ACL2\" package whose [symbol-name] is \"STATE\".  This is a rather
+  complex notion, perhaps best avoided by beginning ACL2 programmers.
+  To learn about the ACL2 state, see [state], which points to a
+  topic, [programming-with-state], that discusses many utilities for
+  reading and writing the ACL2 state.
+
+
+More help
+
+  The acl2-help email list is a fine place to get help with ACL2
+  questions, including programming questions.  You can sign up by
+  following links from the {ACL2 home page |
+  http://www.cs.utexas.edu/users/moore/acl2/}.  Moreover, that could
+  be a good place to request or suggest improvements to this
+  documentation topic!")
  (INTRODUCTION-TO-REWRITE-RULES-PART-1
   (INTRODUCTION-TO-THE-THEOREM-PROVER)
   "Introduction to ACL2's notion of rewrite rules
@@ -47249,6 +47392,9 @@ Subtopics
 
   [Introduction-to-key-checkpoints]
       What questions to ask at key checkpoints
+
+  [Introduction-to-programming-in-ACL2-for-those-who-know-lisp]
+      Introduction to programming in ACL2 for Lisp users
 
   [Introduction-to-rewrite-rules-part-1]
       Introduction to ACL2's notion of rewrite rules
@@ -81820,8 +81966,8 @@ Subtopics
   "See [pairlis$]
 
   The Common Lisp language allows its pairlis function to construct an
-  alist in any order!  So we have to define our own version: See
-  [pairlis$].")
+  alist without specifying a single order!  So we have to define our
+  own version: See [pairlis$].")
  (PAIRLIS$
   (LISTS ALISTS ACL2-BUILT-INS)
   "Zipper together two lists
@@ -86027,6 +86173,10 @@ Subtopics
   [documentation] hierarchy that appear under this `programming'
   topic.
 
+  If you are already familiar with Common Lisp (or even some other Lisp
+  variant), then you may find it helpful to start with the topic,
+  [introduction-to-programming-in-ACL2-for-those-who-know-lisp].
+
   Also see [debugging] for utilities that can aid in programming.
 
 
@@ -86034,6 +86184,9 @@ Subtopics
 
   [ACL2-built-ins]
       ''Catch-all'' topic for built-in ACL2 functions
+
+  [Advanced-features]
+      Some advanced features of ACL2
 
   [Alists]
       Operations on association lists, which bind keys to values.
@@ -86098,6 +86251,9 @@ Subtopics
 
   [Hons]
       (hons x y) returns a [normed] object equal to (cons x y).
+
+  [Introduction-to-programming-in-ACL2-for-those-who-know-lisp]
+      Introduction to programming in ACL2 for Lisp users
 
   [Invariant-risk]
       Potential slowdown for [program]-mode updates to [stobj]s or
