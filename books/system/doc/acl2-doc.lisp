@@ -3218,7 +3218,7 @@
  the serial version of the waterfall, which skips printing the subgoal as a
  checkpoint.</p>
 
- <p>For those familiar with the ACL2 waterfall, we note that that the parallel
+ <p>For those familiar with the ACL2 waterfall, we note that the parallel
  version of the waterfall prints key checkpoints that are unproved in the
  following sense: a subgoal is a key checkpoint if it leads, in the current
  call of the waterfall, to a goal that is pushed for induction.</p>")
@@ -41587,10 +41587,10 @@ tables in the current Hons Space."
 
  <p>@('(Intersection$ x y)') equals a list that contains the @('member')s of
  @('x') that are also @('member')s of @('y').  More precisely, the resulting
- list is the result of deleting from @('x') those members that that are not
- members of @('y').  The optional keyword, @(':TEST'), has no effect logically,
- but provides the test (default @(tsee eql)) used for comparing members of the
- two lists.</p>
+ list is the result of deleting from @('x') those members that are not members
+ of @('y').  The optional keyword, @(':TEST'), has no effect logically, but
+ provides the test (default @(tsee eql)) used for comparing members of the two
+ lists.</p>
 
  <p>@('Intersection$') need not take exactly two arguments, though it must take
  at least one argument: @('(intersection$ x)') is @('x'), @('(intersection$ x y
@@ -66379,9 +66379,9 @@ it."
  modifications.  See @(see quantifier-tutorial).</p>
 
  <p>@(tsee Defun-sk) now allows the keyword option @(':strengthen t'), which
- will generate the extra constraint that that is generated for the
- corresponding @('defchoose') event; see @(see defchoose).  Thanks to Dave
- Greve for suggesting this feature.</p>
+ will generate the extra constraint that is generated for the corresponding
+ @('defchoose') event; see @(see defchoose).  Thanks to Dave Greve for
+ suggesting this feature.</p>
 
  <p><b>BUG FIXES</b></p>
 
@@ -121322,7 +121322,7 @@ options"
  ``succeeds'' if @('erp') is @('nil') and @('val') is not @('nil'); otherwise
  it ``fails''.  (When we use the words ``succeed'' or ``fail'' in this
  technical sense, we'll always include them in double quotes.)  If an
- instruction ``fails,'' we say that that the failure is ``soft'' if @('erp') is
+ instruction ``fails,'' we say that the failure is ``soft'' if @('erp') is
  @('nil'); otherwise the failure is ``hard''.  The @('sequence') command gives
  the user control over how to treat ``success'' and ``failure'' when sequencing
  instructions, though we have created a number of handy macro commands for this

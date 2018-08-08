@@ -5274,11 +5274,11 @@ Subtopics
   running the serial version of the waterfall, which skips printing
   the subgoal as a checkpoint.
 
-  For those familiar with the ACL2 waterfall, we note that that the
-  parallel version of the waterfall prints key checkpoints that are
-  unproved in the following sense: a subgoal is a key checkpoint if
-  it leads, in the current call of the waterfall, to a goal that is
-  pushed for induction.")
+  For those familiar with the ACL2 waterfall, we note that the parallel
+  version of the waterfall prints key checkpoints that are unproved
+  in the following sense: a subgoal is a key checkpoint if it leads,
+  in the current call of the waterfall, to a goal that is pushed for
+  induction.")
  (ACL2S (POINTERS) "See [ACL2-sedan].")
  (ACL2_AS_AN_INTERACTIVE_THEOREM_PROVER
   (PAGES_WRITTEN_ESPECIALLY_FOR_THE_TOURS)
@@ -44901,10 +44901,10 @@ Subtopics
 
   (Intersection$ x y) equals a list that contains the members of x that
   are also members of y.  More precisely, the resulting list is the
-  result of deleting from x those members that that are not members
-  of y.  The optional keyword, :TEST, has no effect logically, but
-  provides the test (default [eql]) used for comparing members of the
-  two lists.
+  result of deleting from x those members that are not members of y.
+  The optional keyword, :TEST, has no effect logically, but provides
+  the test (default [eql]) used for comparing members of the two
+  lists.
 
   Intersection$ need not take exactly two arguments, though it must
   take at least one argument: (intersection$ x) is x, (intersection$
@@ -68625,7 +68625,7 @@ Subtopics
   only very small modifications.  See [quantifier-tutorial].
 
   [Defun-sk] now allows the keyword option :strengthen t, which will
-  generate the extra constraint that that is generated for the
+  generate the extra constraint that is generated for the
   corresponding defchoose event; see [defchoose].  Thanks to Dave
   Greve for suggesting this feature.
 
@@ -121953,8 +121953,8 @@ Subtopics
   meta) ``succeeds'' if erp is nil and val is not nil; otherwise it
   ``fails''.  (When we use the words ``succeed'' or ``fail'' in this
   technical sense, we'll always include them in double quotes.)  If
-  an instruction ``fails,'' we say that that the failure is ``soft''
-  if erp is nil; otherwise the failure is ``hard''.  The sequence
+  an instruction ``fails,'' we say that the failure is ``soft'' if
+  erp is nil; otherwise the failure is ``hard''.  The sequence
   command gives the user control over how to treat ``success'' and
   ``failure'' when sequencing instructions, though we have created a
   number of handy macro commands for this purpose, notably do-all,
