@@ -42699,7 +42699,7 @@ tables in the current Hons Space."
  in the resulting association list in either forward or backward order.''  Many
  such functions tend to have close analogues in ACL2, named by concatenating
  @('\"$\"') to the Common Lisp name; for example, ACL2 has @(tsee pairlis$),
- @(tsee union$), and even $(tsee random$).  See @(see acl2-built-ins) for a
+ @(tsee union$), and even @(tsee random$).  See @(see acl2-built-ins) for a
  much more comprehensive list of functions, macros, and special forms provided
  by the ACL2 programming language.  In particular, a search through that
  documentation topic for `@('$')' will show you utilities like @('pairlis$')
