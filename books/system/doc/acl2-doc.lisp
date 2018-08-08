@@ -42723,11 +42723,14 @@ tables in the current Hons Space."
  <p>In particular, arrays are not directly supported as an ACL2
  datatype (except for strings).  However, ACL2 supports an applicative notion
  of array, which is logically an association list but has an associated Lisp
- array that is used in single-threaded programs.  See @(see arrays).  If your
- code creates an array and does many more reads to it than writes, then you may
- get significantly better performance using a different sort of representation
- of arrays in ACL2, using <i>single-threaded objects</i>, or <i>stobjs</i>; see
- @(see stobj).</p>
+ array that provides fast reads in single-threaded programs.  See @(see
+ arrays).  If your code creates an array and does many more reads to it than
+ writes, or even if there are rarely two writes to the same index (as when
+ writes are primarily to initialize the array), then ACL2 arrays may perform
+ well.  Otherwise you may get significantly better performance, avoiding the
+ consing done by writes (to build the association list), by using a different
+ sort of representation of arrays in ACL2: <i>single-threaded objects</i>, or
+ <i>stobjs</i>; see @(see stobj).</p>
 
  <p>Structures can be simulated in ACL2 using suitable macros.  For a simple
  such macro that is built into ACL2, together with alternatives to it, see
