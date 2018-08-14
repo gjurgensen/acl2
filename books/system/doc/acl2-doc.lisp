@@ -80599,8 +80599,11 @@ it."
  @(':namedp') is @('nil')), this change increases by one the indices on
  constraints for the specified function symbols, because they start at 7
  instead of 6 &mdash; @('<ev>-CONSTRAINT-7'), @('<ev>-CONSTRAINT-8'), and so
- on.  Thanks to Sol Swords for both suggesting and implementing this
- extension.</p>
+ on.  Note that if you use functional instantiation to prove a theorem about
+ one evaluator given a theorem about another evaluator, you'll need to enable
+ the new rule (i.e., @('ev-constraint-6') or, if you use option @(':namedp t'),
+ @('ev-of-nonsymbol-atom')).  Thanks to Sol Swords for both suggesting and
+ implementing this extension.</p>
 
  <h3>New Features</h3>
 
