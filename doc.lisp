@@ -45954,12 +45954,12 @@ Applicative Common Lisp
   association list in either forward or backward order.'' Many such
   functions tend to have close analogues in ACL2, named by
   concatenating \"$\" to the Common Lisp name; for example, ACL2 has
-  [pairlis$], [union$], and even $(tsee random$).  See
-  [ACL2-built-ins] for a much more comprehensive list of functions,
-  macros, and special forms provided by the ACL2 programming
-  language.  In particular, a search through that documentation topic
-  for `$' will show you utilities like pairlis$ that are based on
-  related Common Lisp utilities.
+  [pairlis$], [union$], and even [random$].  See [ACL2-built-ins] for
+  a much more comprehensive list of functions, macros, and special
+  forms provided by the ACL2 programming language.  In particular, a
+  search through that documentation topic for `$' will show you
+  utilities like pairlis$ that are based on related Common Lisp
+  utilities.
 
   In the ACL2 read-eval-print loop, you can define functions and macros
   with [defun] and [defmacro] just as in Common Lisp, with some

@@ -1,4 +1,4 @@
-; Ethereum Library -- Basics
+; XDOC Utilities
 ;
 ; Copyright (C) 2018 Kestrel Institute (http://www.kestrel.edu)
 ;
@@ -8,16 +8,14 @@
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
-(in-package "ETHEREUM")
+(in-package "ACL2")
 
-(include-book "kestrel/utilities/xdoc/defxdoc-plus" :dir :system)
-
-(include-book "bytes")
-(include-book "scalars")
+(include-book "constructors")
+(include-book "defxdoc-plus")
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
-(defxdoc+ basics
-  :parents (ethereum)
-  :short "Some basic Ethereum notions and utilities."
-  :order-subtopics t)
+(defxdoc xdoc-utilities
+  :parents (kestrel-utilities)
+  :short "Utilities for building
+          <see topic='@(url xdoc)'>XDOC</see> documentation.")
