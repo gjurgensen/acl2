@@ -79248,6 +79248,19 @@ Bug Fixes
   example in a comment in the ACL2 sources definition of the
   constant, *non-instantiable-primitives*.
 
+  Bugs have been fixed in the [tau-system] that caused unsoundness
+  (going all the way back through Version 6.0, released December,
+  2012).  The problem was with conversion of a non-strict inequality
+  with 0 to a strict inequality when the quantity is known not to be
+  0; for example, (<= x 0) was converted to (< x 0) when x was known
+  to be non-zero.  But of course, this conversion is only valid when
+  x is known to be a number.  Thanks to Yan Peng for sending an
+  example that illustrates the bug, which in its essence was the
+  ability of ACL2 to prove this formula, which for example is false
+  when x = t: (or (< x 0) (= x 0) (> x 0)).  If you encounter a
+  failure in a proof that formerly succeeded, the fix might be to add
+  a call of [ACL2-numberp] to the hypotheses of your theorem.
+
   Fixed two bugs in [apply$]: we now [disable] the
   [executable-counterpart] of good-bye-fn to prevent quitting ACL2
   entirely during a proof, and we avoid the error ``ACL2 cannot ev
