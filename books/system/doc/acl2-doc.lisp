@@ -80605,6 +80605,12 @@ it."
  @('ev-of-nonsymbol-atom')).  Thanks to Sol Swords for both suggesting and
  implementing this extension.</p>
 
+ <p>@(tsee Let)-expressions are no longer eliminated from right-hand sides of
+ @(see rewrite) rules.  See @(see rewrite).  This change improves efficiency of
+ the rewriter in some cases, by retaining subexpressions shared on the
+ right-hand side as the rewrite rule is applied.  Thanks to Eric Smith for
+ requesting this change.</p>
+
  <h3>New Features</h3>
 
  <p>The @(see summary) now shows, by default, the list of doublets @('(f g)')
@@ -80743,6 +80749,18 @@ it."
  to Eric Smith for sending an example to illustrate this bug, for suggesting
  its cause, and for permission to include that example in a comment in the ACL2
  sources definition of the constant, @('*non-instantiable-primitives*').</p>
+
+ <p>Bugs have been fixed in the @(see tau-system) that caused unsoundness
+ (going all the way back through Version  6.0, released December, 2012).  The
+ problem was with conversion of a non-strict inequality with 0 to a strict
+ inequality when the quantity is known not to be 0; for example, @('(<= x 0)')
+ was converted to @('(< x 0)') when @('x') was known to be non-zero.  But of
+ course, this conversion is only valid when @('x') is known to be a number.
+ Thanks to Yan Peng for sending an example that illustrates the bug, which in
+ its essence was the ability of ACL2 to prove this formula, which for example
+ is false when @('x = t'): @('(or (< x 0) (= x 0) (> x 0))').  If you encounter
+ a failure in a proof that formerly succeeded, the fix might be to add a call
+ of @(tsee acl2-numberp) to the hypotheses of your theorem.</p>
 
  <p>Fixed two bugs in @(tsee apply$): we now @(tsee disable) the @(see
  executable-counterpart) of @('good-bye-fn') to prevent quitting ACL2 entirely
@@ -92589,15 +92607,16 @@ arithmetic) for libraries of @(see books) for arithmetic reasoning.</p>")
  <p>Note: One @(':rewrite') rule class object might create many rewrite rules
  from the @(':')@(tsee corollary) formula.  To create the rules, we first
  translate the formula, expanding all macros (see @(see trans)) and also
- removing @(see guard-holders).  Next, we eliminate all @('lambda')s; one may
- think of this step as simply substituting away every @(tsee let), @(tsee
- let*), and @(tsee mv-let) in the formula.  We then flatten the @(tsee AND) and
+ removing @(see guard-holders).  Next, we then flatten the @(tsee AND) and
  @(tsee IMPLIES) structure of the formula; for example, if the hypothesis or
  conclusion is of the form @('(and (and term1 term2) term3)'), then we replace
  that by the ``flat'' term @('(and term1 term2 term3)').  (The latter is
  actually an abbreviation for the right-associated term @('(and term1 (and
- term2 term3))').)  The result is a conjunction of formulas, each of the
- form</p>
+ term2 term3))').)  During this flattening process, we eliminate @(tsee
+ lambda)s as necessary in order to continue flattening; one may think of this
+ step as simply substituting to eliminate @(tsee let), @(tsee let*), and @(tsee
+ mv-let) in order to expose more calls of @('implies') and @('and').  The
+ result is a conjunction of formulas, each of the form</p>
 
  @({
   (implies (and h1 ... hn) concl)
@@ -92606,10 +92625,13 @@ arithmetic) for libraries of @(see books) for arithmetic reasoning.</p>")
  <p>where no hypothesis is a conjunction and @('concl') is neither a
  conjunction nor an implication.  If necessary, the hypothesis of such a
  conjunct may be vacuous.  We then further coerce each @('concl') into the form
- @('(equiv lhs rhs)'), where @('equiv') is a known @(see equivalence) relation,
- by replacing any @('concl') not of that form by @('(iff concl t)').  A
- @('concl') of the form @('(not term)') is considered to be of the form @('(iff
- term nil)').  By these steps we reduce the given @(':')@(tsee corollary) to a
+ @('(equiv lhs rhs)'), where we continue to eliminate @('lambdas') until we
+ reach this form, and then we eliminate @('lambdas') from the first argument of
+ @('equiv') but not the second argument.  Here @('equiv') is a known @(see
+ equivalence) relation.  If we do not reach an equivalence relation, even after
+ eliminating @('lamdas'), then we replace the resulting term, @('term') by
+ @('(iff term t)'), except that we replace @('(not term)') by @('(iff term
+ nil)').  By these steps we reduce the given @(':')@(tsee corollary) to a
  sequence of conjuncts, each of which is of the form</p>
 
  @({
@@ -92617,12 +92639,16 @@ arithmetic) for libraries of @(see books) for arithmetic reasoning.</p>")
            (equiv lhs rhs))
  })
 
- <p>where @('equiv') is a known @(see equivalence) relation.  See @(see
- equivalence) for a general discussion of the introduction of new @(see
- equivalence) relations.  At this point, we check whether @('lhs') and @('rhs')
- are the same term; if so, we cause an error, since this rule will loop.  (But
- this is just a basic check; the rule could loop in other cases, for example if
- @('rhs') is an instance of @('lhs'); see @(see loop-stopper).)</p>
+ <p>where @('equiv') is a known @(see equivalence) relation and @('lhs') has no
+ @('lambda')s.  See @(see equivalence) for a general discussion of the
+ introduction of new @(see equivalence) relations.  At this point, we check
+ whether @('lhs') and @('rhs') are the same term; if so, we cause an error,
+ since this rule will loop.  (But this is just a basic check; the rule could
+ loop in other cases, for example if @('rhs') is an instance of @('lhs'); see
+ @(see loop-stopper).)</p>
+
+ <p>You can experiment by creating some rewrite rules using @(tsee defthm) and
+ then using @(':')@(tsee pr) to see how the rule was stored.</p>
 
  <p>We create a @(':rewrite') rule for each such conjunct, if possible, and
  otherwise cause an error.  It is possible to create a rewrite rule from such a
@@ -92679,7 +92705,7 @@ arithmetic) for libraries of @(see books) for arithmetic reasoning.</p>")
  rewrites those terms it looks up the <i>already rewritten</i> values of the
  bound variables.  Sometimes you may want those bindings rewritten again, e.g.,
  because the variables occur in slots that admit additional equivalence
- relations.  See <i>double-rewrite</i>.</li>
+ relations.  See @(see double-rewrite).</li>
 
  </ul>
 

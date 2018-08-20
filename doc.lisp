@@ -79108,6 +79108,12 @@ Changes to Existing Features
   ev-of-nonsymbol-atom).  Thanks to Sol Swords for both suggesting
   and implementing this extension.
 
+  [Let]-expressions are no longer eliminated from right-hand sides of
+  [rewrite] rules.  See [rewrite].  This change improves efficiency
+  of the rewriter in some cases, by retaining subexpressions shared
+  on the right-hand side as the rewrite rule is applied.  Thanks to
+  Eric Smith for requesting this change.
+
 
 New Features
 
@@ -79241,6 +79247,19 @@ Bug Fixes
   for suggesting its cause, and for permission to include that
   example in a comment in the ACL2 sources definition of the
   constant, *non-instantiable-primitives*.
+
+  Bugs have been fixed in the [tau-system] that caused unsoundness
+  (going all the way back through Version 6.0, released December,
+  2012).  The problem was with conversion of a non-strict inequality
+  with 0 to a strict inequality when the quantity is known not to be
+  0; for example, (<= x 0) was converted to (< x 0) when x was known
+  to be non-zero.  But of course, this conversion is only valid when
+  x is known to be a number.  Thanks to Yan Peng for sending an
+  example that illustrates the bug, which in its essence was the
+  ability of ACL2 to prove this formula, which for example is false
+  when x = t: (or (< x 0) (= x 0) (> x 0)).  If you encounter a
+  failure in a proof that formerly succeeded, the fix might be to add
+  a call of [ACL2-numberp] to the hypotheses of your theorem.
 
   Fixed two bugs in [apply$]: we now [disable] the
   [executable-counterpart] of good-bye-fn to prevent quitting ACL2
@@ -93776,37 +93795,46 @@ Subtopics
   Note: One :rewrite rule class object might create many rewrite rules
   from the :[corollary] formula.  To create the rules, we first
   translate the formula, expanding all macros (see [trans]) and also
-  removing [guard-holders].  Next, we eliminate all lambdas; one may
-  think of this step as simply substituting away every [let], [let*],
-  and [mv-let] in the formula.  We then flatten the [and] and
+  removing [guard-holders].  Next, we then flatten the [and] and
   [implies] structure of the formula; for example, if the hypothesis
   or conclusion is of the form (and (and term1 term2) term3), then we
   replace that by the ``flat'' term (and term1 term2 term3).  (The
   latter is actually an abbreviation for the right-associated term
-  (and term1 (and term2 term3)).)  The result is a conjunction of
-  formulas, each of the form
+  (and term1 (and term2 term3)).)  During this flattening process, we
+  eliminate [lambda]s as necessary in order to continue flattening;
+  one may think of this step as simply substituting to eliminate
+  [let], [let*], and [mv-let] in order to expose more calls of
+  implies and and.  The result is a conjunction of formulas, each of
+  the form
 
     (implies (and h1 ... hn) concl)
 
   where no hypothesis is a conjunction and concl is neither a
   conjunction nor an implication.  If necessary, the hypothesis of
   such a conjunct may be vacuous.  We then further coerce each concl
-  into the form (equiv lhs rhs), where equiv is a known [equivalence]
-  relation, by replacing any concl not of that form by (iff concl t).
-  A concl of the form (not term) is considered to be of the form (iff
-  term nil).  By these steps we reduce the given :[corollary] to a
-  sequence of conjuncts, each of which is of the form
+  into the form (equiv lhs rhs), where we continue to eliminate
+  lambdas until we reach this form, and then we eliminate lambdas
+  from the first argument of equiv but not the second argument.  Here
+  equiv is a known [equivalence] relation.  If we do not reach an
+  equivalence relation, even after eliminating lamdas, then we
+  replace the resulting term, term by (iff term t), except that we
+  replace (not term) by (iff term nil).  By these steps we reduce the
+  given :[corollary] to a sequence of conjuncts, each of which is of
+  the form
 
     (implies (and h1 ... hn)
              (equiv lhs rhs))
 
-  where equiv is a known [equivalence] relation.  See [equivalence] for
-  a general discussion of the introduction of new [equivalence]
-  relations.  At this point, we check whether lhs and rhs are the
-  same term; if so, we cause an error, since this rule will loop.
-  (But this is just a basic check; the rule could loop in other
-  cases, for example if rhs is an instance of lhs; see
+  where equiv is a known [equivalence] relation and lhs has no lambdas.
+  See [equivalence] for a general discussion of the introduction of
+  new [equivalence] relations.  At this point, we check whether lhs
+  and rhs are the same term; if so, we cause an error, since this
+  rule will loop.  (But this is just a basic check; the rule could
+  loop in other cases, for example if rhs is an instance of lhs; see
   [loop-stopper].)
+
+  You can experiment by creating some rewrite rules using [defthm] and
+  then using :[pr] to see how the rule was stored.
 
   We create a :rewrite rule for each such conjunct, if possible, and
   otherwise cause an error.  It is possible to create a rewrite rule
@@ -93865,7 +93893,7 @@ Subtopics
       values of the bound variables.  Sometimes you may want those
       bindings rewritten again, e.g., because the variables occur in
       slots that admit additional equivalence relations.  See
-      double-rewrite.
+      [double-rewrite].
 
   See [introduction-to-rewrite-rules-part-1] and see
   [introduction-to-rewrite-rules-part-2] for an extended discussion
