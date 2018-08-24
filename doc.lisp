@@ -1583,12 +1583,6 @@ Subtopics
   At the end of the tours you will have a chance to revisit them
   quickly to explore alternative paths more fully.
 
-  Finally, every page contains two icons at the bottom.  The ACL2 icon
-  leads you back to the ACL2 Home Page.  The Index icon allows you to
-  browse an alphabetical listing of all the topics in ACL2's online
-  documentation.  But both icons take you off the main route of the
-  tour.
-
   {IMAGE} (see [What_Is_ACL2{Q}])")
  (ABOUT_THE_ADMISSION_OF_RECURSIVE_DEFINITIONS
   (PAGES_WRITTEN_ESPECIALLY_FOR_THE_TOURS)
@@ -2690,6 +2684,10 @@ Step 4
   may be found as a subtopic of some other parent topic.  We do not
   document some of the more obscure functions provided by ACL2 that
   do not correspond to functions of Common Lisp.
+
+  If you are already familiar with Common Lisp (or even some other Lisp
+  variant), then you may find it helpful to start with the topic,
+  [introduction-to-programming-in-ACL2-for-those-who-know-lisp].
 
   See any documentation for Common Lisp for more details on many of
   these functions.
@@ -4470,6 +4468,11 @@ Silent loading of ACL2 customization files
 
   For an explanation of this key, see [set-register-invariant-risk].
 
+    :in-theory-redundant-okp
+
+  When this key's value is t, an [in-theory] event may be redundant.
+  See [set-in-theory-redundant-okp].
+
   Note: Unlike all other [table]s, acl2-defaults-table can affect the
   soundness of the system.  The [table] mechanism therefore enforces
   on it a restriction not imposed on other [table]s: when [table] is
@@ -5271,11 +5274,11 @@ Subtopics
   running the serial version of the waterfall, which skips printing
   the subgoal as a checkpoint.
 
-  For those familiar with the ACL2 waterfall, we note that that the
-  parallel version of the waterfall prints key checkpoints that are
-  unproved in the following sense: a subgoal is a key checkpoint if
-  it leads, in the current call of the waterfall, to a goal that is
-  pushed for induction.")
+  For those familiar with the ACL2 waterfall, we note that the parallel
+  version of the waterfall prints key checkpoints that are unproved
+  in the following sense: a subgoal is a key checkpoint if it leads,
+  in the current call of the waterfall, to a goal that is pushed for
+  induction.")
  (ACL2S (POINTERS) "See [ACL2-sedan].")
  (ACL2_AS_AN_INTERACTIVE_THEOREM_PROVER
   (PAGES_WRITTEN_ESPECIALLY_FOR_THE_TOURS)
@@ -6107,7 +6110,7 @@ Subtopics
  (ADD-TO-SET-EQUAL (POINTERS)
                    "See [add-to-set].")
  (ADVANCED-FEATURES
-  (ACL2-TUTORIAL)
+  (ACL2-TUTORIAL PROGRAMMING)
   "Some advanced features of ACL2
 
   Maybe you've been using ACL2 for awhile, and you wonder if there are
@@ -7408,10 +7411,12 @@ Subtopics
 
   The next few stops along the Walking Tour will show you
 
-     * how to use the ACL2 documentation, * what happens when the above
-    definition is submitted to ACL2, * what happens when you evaluate calls of
-    app, * what one simple theorem about app looks like, * how ACL2
-    proves the theorem, and * how that theorem can be used in another proof.
+    * how to use the ACL2 documentation,
+    * what happens when the above definition is submitted to ACL2,
+    * what happens when you evaluate calls of app,
+    * what one simple theorem about app looks like,
+    * how ACL2 proves the theorem, and
+    * how that theorem can be used in another proof.
 
   Along the way we will talk about the definitional principle, types,
   the ACL2 read-eval-print loop, and how the theorem prover works.
@@ -13393,6 +13398,7 @@ Subtopics
        (bridge \"[books]/centaur/bridge/top.lisp\")
        (build::cert.pl \"[books]/build/doc.lisp\")
        (build::cert_param \"[books]/build/doc.lisp\")
+       (cgen \"[books]/acl2s/cgen/top.lisp\")
        (std::defaggregate \"[books]/std/util/defaggregate.lisp\")
        (defconsts \"[books]/std/util/defconsts.lisp\")
        (defdata \"[books]/acl2s/defdata/top.lisp\")
@@ -19717,7 +19723,7 @@ Subtopics
       How to deal with a proof [failure] in a forcing round
 
   [Failure]
-      How to deal with a proof failure
+      How to deal with a failure to admit an event
 
   [Forward-chaining-reports]
       To see reports about the forward chaining process
@@ -22078,7 +22084,7 @@ Subtopics
   are constrained functions satisfying just the [constraint]s
   discussed below.
 
-  Ev and ev-list must satisfy [constraint]s (0)-(5) and (k) below.
+  Ev and ev-list must satisfy [constraint]s (0)-(6) and (k) below.
   When :namedp nil is supplied, the i in the generated constraint
   names are the parenthesized numbers below.  When :namedp t is
   supplied, the mnemonic names are those shown in brackets below.
@@ -22125,6 +22131,13 @@ Subtopics
                  (equal (ev-list x-lst a)
                         (cons (ev (car x-lst) a)
                               (ev-list (cdr x-lst) a))))
+
+    (6) How to ev a non-symbol atom:
+        [EV-OF-NONSYMBOL-ATOM]
+        (implies (and (not (consp x))
+                      (not (symbolp x)))
+                 (equal (ev x a)
+                        nil))
 
     (k) For each i from 1 to k, how to ev an application of gi,
         where gi is a function symbol of n arguments:
@@ -24326,21 +24339,19 @@ Subtopics
 
     (defthmd NAME TERM ...)
 
-  expands to:
+  expands to the following, except that some output is inhibited for
+  the [in-theory] event:
 
     (progn
       (defthmd NAME TERM ...)
-      (with-output
-       :off summary
-       (in-theory (disable NAME)))
+      (in-theory (disable NAME))
       (value-triple '(:defthmd NAME))).
 
-  Note that defthmd commands are never redundant (see
-  [redundant-events]).  Even if the defthm event is redundant, then
-  the [in-theory] event will still be executed.
+  Defthmd events are generally not redundant, because the generated
+  [in-theory] event is not redundant.  This default can be changed;
+  see [set-in-theory-redundant-okp].
 
-  The [summary] for the [in-theory] event is suppressed.  See [defthm]
-  for documentation of defthm.")
+  See [defthm] for documentation of defthm.")
  (DEFTHY
   (EVENTS THEORIES DEFTHEORY)
   "Define a theory (to [enable] or [disable] a set of rules)
@@ -25781,7 +25792,7 @@ Subtopics
   (DEFUN EVENTS)
   "Define a function symbol and then disable it
 
-  Use defund instead of [defun] when you want to disable a function
+  Use defund instead of [defun] when you want to [disable] a function
   immediately after its definition in :[logic] mode.  This macro has
   been provided for users who prefer working in a mode where
   functions are only enabled when explicitly directed by
@@ -25789,20 +25800,18 @@ Subtopics
 
     (defund NAME FORMALS ...)
 
-  expands to:
+  expands to the following, except that some output is inhibited for
+  the [in-theory] event:
 
     (progn
       (defun NAME FORMALS ...)
-      (with-output
-       :off summary
-       (in-theory (disable NAME)))
+      (in-theory (disable NAME))
       (value-triple '(:defund NAME))).
 
-  Only the :[definition] rule (and, for recursively defined functions,
-  the :[induction] rule) for the function are disabled.  In
+  Only the :[definition] rule and, for recursively defined functions,
+  the :[induction] rule are disabled for the function.  In
   particular, defund does not disable either the :[type-prescription]
-  or the :[executable-counterpart] rule.  Also, the [summary] for the
-  [in-theory] event is suppressed.
+  or the :[executable-counterpart] rule.
 
   If the function is defined in :[program] mode, either because the
   [default-defun-mode] is :[program] or because :mode :program has
@@ -25812,9 +25821,9 @@ Subtopics
   :mode :program is specified then defund does not generate an
   [in-theory] event.)
 
-  Note that defund commands are never redundant (see
-  [redundant-events]) when the [default-defun-mode] is :[logic],
-  because the [in-theory] event will always be executed.
+  Defund events are generally not redundant, because the generated
+  [in-theory] event is not redundant.  This default can be changed;
+  see [set-in-theory-redundant-okp].
 
   See [defun] for documentation of defun.")
  (DEFUND-INLINE
@@ -29631,17 +29640,21 @@ Subtopics
                         (CONS (EVL2 (CAR X-LST) A)
                               (EVL2-LIST (CDR X-LST) A)))))
       (DEFTHM EVL2-CONSTRAINT-6
+        (IMPLIES (AND (NOT (CONSP X))
+                      (NOT (SYMBOLP X)))
+                 (EQUAL (EVL2 X A) NIL)))
+      (DEFTHM EVL2-CONSTRAINT-7
         (IMPLIES (AND (CONSP X) (EQUAL (CAR X) 'F))
                  (EQUAL (EVL2 X A) ; changed f to f2 just below
                         (F2 (EVL2 (CADR X) A)))))
-      (DEFTHM EVL2-CONSTRAINT-7
+      (DEFTHM EVL2-CONSTRAINT-8
         (IMPLIES (AND (CONSP X) (EQUAL (CAR X) 'F2))
                  (EQUAL (EVL2 X A)
                         (F2 (EVL2 (CADR X) A)))))
-      (DEFTHM EVL2-CONSTRAINT-8
+      (DEFTHM EVL2-CONSTRAINT-9
         (IMPLIES (AND (CONSP X) (EQUAL (CAR X) 'G))
                  (EQUAL (EVL2 X A) (G))))
-      (DEFTHM EVL2-CONSTRAINT-9
+      (DEFTHM EVL2-CONSTRAINT-10
         (IMPLIES (AND (CONSP X) (EQUAL (CAR X) 'G2))
                  (EQUAL (EVL2 X A) (G2)))))
 
@@ -31654,7 +31667,26 @@ Subtopics
          :hints ((\"Goal\" :use rationalp-implies-main)))")
  (FAILURE
   (DEBUGGING)
-  "How to deal with a proof failure
+  "How to deal with a failure to admit an event
+
+  There are many reasons why an event can fail to be admitted.
+  Generally, an error message will explain the failure, sometimes
+  pointing to documentation that is specific to the relevant issue.
+  There are tools that can sometimes help: for example, to debug
+  failures of [encapsulate] or [progn] events, as well as
+  [certify-book] failures, see [redo-flat].
+
+  However, proof failures are typically not as trivial to debug as, for
+  example, syntactic errors (such as spelling errors in the name of a
+  function).  Fortunately, ACL2 offers a variety of techniques for
+  dealing with proof failures, and some are discussed below.  Also
+  see relevant subtopics of the topic, [debugging].  Some
+  frequently-used tools for proof debugging that are discussed in
+  those subtopics include [accumulated-persistence], [break-rewrite],
+  [cgen], and [proof-builder].  Also see [nil-goal] for ideas about
+  how to proceed when the prover generates a goal of NIL.
+
+  We turn now to the problem of dealing with proof failures.
 
   When ACL2 gives up it does not mean that the submitted conjecture is
   invalid, even if the last formula ACL2 printed in its proof attempt
@@ -31686,10 +31718,6 @@ Subtopics
   although this should rarely be necessary --- then you can look at
   the full proof, perhaps with the aid of certain utilities: see
   [proof-tree], see [set-gag-mode], and see [set-saved-output].
-
-  For information on a tool to help debug failures of [encapsulate] and
-  [progn] events, as well as [certify-book] failures, see
-  [redo-flat].
 
   Again, see [the-method] for a general discussion of how to prove
   theorems with ACL2, and see [introduction-to-the-theorem-prover]
@@ -36870,6 +36898,8 @@ Subtopics
     * TIME: VAL represents the corresponding field of the event summary, as
       the list (prove print proof-tree other).
     * WARNINGS: VAL is as in the corresponding field of the event summary.")
+ (GET-IN-THEORY-REDUNDANT-OKP (POINTERS)
+                              "See [set-in-theory-redundant-okp].")
  (GET-INTERNAL-TIME
   (PROGRAMMING ACL2-BUILT-INS)
   "Runtime vs. realtime in ACL2 timings
@@ -37091,7 +37121,7 @@ Subtopics
 
 A nice result of using pull requests is that all changes will be
 peer-reviewed before being committed.  Also, we sometimes call this
-method theFork and Pullmethod.
+method the Fork and Pull method.
 
 
 (A) GETTING STARTED
@@ -37202,8 +37232,9 @@ Contribute Your Changes
     git commit -a -m '<some message, with descriptive first line>'
     git push
 
-You now need to create apull request, where you request that changes from your github repository be
-accepted into the Community ACL2 repository.  To achieve this:
+You now need to create a pull request, where you request that
+changes from your github repository be accepted into the Community
+ACL2 repository.  To achieve this:
    1. Goto https://github.com/<your-github-username>/acl2.
    2. Click the Pull request button (you can search for it with your
       browser).
@@ -41600,22 +41631,23 @@ Subtopics
   ACL2 keeps track of the [command]s that you have executed that have
   extended the logic or the rule database, as by the definition of
   macros, functions, etc.  Using the facilities in this section you
-  can review the sequence of [command]s executed so far.  For
-  example, you can ask to see the most recently executed [command],
-  or the [command] 10 before that, or the [command] that introduced a
-  given function symbol.  You can also undo back through some
-  previous [command], restoring the logical [world] to what it was
-  before the given [command].
+  can review the sequence of commands executed so far.  For example,
+  you can ask to see the most recently executed command (by issuing
+  :[pc] :x), or the preceding 10 commands (by issuing :[pbt] :x-10),
+  or the command that introduced a given function symbol, fn (by
+  issuing :pc fn).  You can also undo back through some previous
+  command (see [ubt]), restoring the logical [world] to what it was
+  before the given command.
 
   The annotations printed in the margin in response to some of these
   commands (including `P', `L', `V', `D', `d', 'M', and 'm') are
   explained in the documentation for :[pc].
 
   Several technical terms are used in the documentation of the history
-  [command]s.  You must understand these terms to use the [command]s.
-  These terms are documented via :[doc] entries of their own.  See
-  [command], see [events], see [command-descriptor], and see
-  [logical-name].
+  commands.  You must understand these terms to use the commands.
+  These terms are documented with [documentation] entries of their
+  own.  See [command], see [events], see [command-descriptor], and
+  see [logical-name].
 
 
 Subtopics
@@ -42749,12 +42781,6 @@ Subtopics
   "How To Find Out about ACL2 Functions (cont)
 
   {IMAGE} (see [The_Admission_of_App])
-
-  You can always use the Index {ICON} (see [A_Tiny_Warning_Sign]) icon
-  below to find the documentation of functions.  Try it.  Click on
-  the Index icon below.  Then use the Find command of your browser to
-  find ``endp'' in that document and follow the link.  But remember
-  to come back here.
 
   The ACL2 documentation is also available in Emacs, via the ACL2-Doc
   browser (see [ACL2-Doc]) {ICON} (see [A_Tiny_Warning_Sign]),
@@ -44886,10 +44912,10 @@ Subtopics
 
   (Intersection$ x y) equals a list that contains the members of x that
   are also members of y.  More precisely, the resulting list is the
-  result of deleting from x those members that that are not members
-  of y.  The optional keyword, :TEST, has no effect logically, but
-  provides the test (default [eql]) used for comparing members of the
-  two lists.
+  result of deleting from x those members that are not members of y.
+  The optional keyword, :TEST, has no effect logically, but provides
+  the test (default [eql]) used for comparing members of the two
+  lists.
 
   Intersection$ need not take exactly two arguments, though it must
   take at least one argument: (intersection$ x) is x, (intersection$
@@ -45898,6 +45924,149 @@ Subtopics
   If you are reading this as part of the tutorial introduction to the
   theorem prover, use your browser's Back Button now to return to
   [introduction-to-the-theorem-prover].")
+ (INTRODUCTION-TO-PROGRAMMING-IN-ACL2-FOR-THOSE-WHO-KNOW-LISP
+  (PROGRAMMING INTRODUCTION-TO-THE-THEOREM-PROVER)
+  "Introduction to programming in ACL2 for Lisp users
+
+  The [documentation] topics [programming] and [ACL2-built-ins] are
+  starting points for a rich collection of primitives and features in
+  the ACL2 programming language.  In the present topic (below) we
+  give a succinct introduction to that language for those who are
+  already reasonably familiar with Common Lisp, or perhaps another
+  Lisp.  Follow the hyperlinks if you want to drill down; for
+  example, we mention multiple values below but say very little about
+  them, instead providing links to topics that explain their handling
+  in a little more depth.
+
+  The [documentation] for ACL2 and its [community-books] provides a
+  rich set of topics for further exploration.  This particular topic
+  is intended to serve only as a brief introduction to programming in
+  ACL2 for those who know Lisp, especially Common Lisp.
+  Supplementary reading that may interest a few readers includes ``{A
+  Precise Description of the ACL2 Logic |
+  http://www.cs.utexas.edu/users/moore/publications/km97a.pdf}''
+  (Matt Kaufmann and J Moore, April, 1998).
+
+
+Applicative Common Lisp
+
+  The ACL2 (``A Computational Logic for Applicative Common Lisp'')
+  programming language is essentially a subset of Common Lisp ---
+  albeit with some useful extensions --- that is applicative: the
+  value returned by a function depends only on its inputs, not state.
+  (There is an ACL2 notion of [state], introduced briefly below; but
+  that state must be passed as an explicit argument.)  Many
+  commonly-used functions and special forms in the applicative subset
+  of Common Lisp are also in ACL2, such as (to name just a very few)
+  [car], [cons], [nth], [append], [let], and [let*].  A few others
+  are not directly included in ACL2 because they have incomplete
+  specifications in Common Lisp, such as [pairlis]; according to the
+  Common Lisp HyperSpec: ``The new pairs may appear in the resulting
+  association list in either forward or backward order.'' Many such
+  functions tend to have close analogues in ACL2, named by
+  concatenating \"$\" to the Common Lisp name; for example, ACL2 has
+  [pairlis$], [union$], and even [random$].  See [ACL2-built-ins] for
+  a much more comprehensive list of functions, macros, and special
+  forms provided by the ACL2 programming language.  In particular, a
+  search through that documentation topic for `$' will show you
+  utilities like pairlis$ that are based on related Common Lisp
+  utilities.
+
+  In the ACL2 read-eval-print loop, you can define functions and macros
+  with [defun] and [defmacro] just as in Common Lisp, with some
+  restrictions (see for example [name]) and also some additional
+  [declare] forms.
+
+
+Data types
+
+  Only certain Lisp data types are supported for programming in ACL2:
+  numbers that are either rational numbers or complex numbers with
+  rational coefficients (see [numbers-introduction]); the
+  [characters] constructed with (code-char n) for n from 0 to 255;
+  [strings] formed from those characters; [symbols] whose
+  [symbol-name] and [symbol-package-name] are ACL2 strings; and
+  objects constructed from others using [cons].
+
+  In particular, arrays are not directly supported as an ACL2 datatype
+  (except for strings).  However, ACL2 supports an applicative notion
+  of array, which is logically an association list but has an
+  associated Lisp array that provides fast reads in single-threaded
+  programs.  See [arrays].  If your code creates an array and does
+  many more reads to it than writes, or even if there are rarely two
+  writes to the same index (as when writes are primarily to
+  initialize the array), then ACL2 arrays may perform well.
+  Otherwise you may get significantly better performance, avoiding
+  the consing done by writes (to build the association list), by
+  using a different sort of representation of arrays in ACL2:
+  single-threaded objects, or stobjs; see [stobj].
+
+  Structures can be simulated in ACL2 using suitable macros.  For a
+  simple such macro that is built into ACL2, together with
+  alternatives to it, see [defrec].
+
+
+Program and logic modes
+
+  If you are using ACL2 as a programming language but you do not intend
+  to prove anything about your code, at least not at first, then you
+  might be well-served by using [program] mode.  In this mode, ACL2
+  will admit the definition if syntactic checks succeed, in
+  particular without requiring a proof of termination for recursive
+  definitions.  You can specify the mode directly in a declaration
+  (see [xargs] for how to specify :program in a [declare] form), or
+  you can set the default [defun-mode] to :program (see
+  [default-defun-mode] and see [program]).
+
+  When you are ready to reason about your functions, you can use
+  :[logic] mode instead, or you can convert a program-mode function
+  to logic-mode with [verify-termination].
+
+
+Connection to Common Lisp
+
+  Many Common Lisp functions should only be applied to certain types of
+  objects: for example, [car] should only be applied to a cons pair
+  or nil.  Every ACL2 function has a guard, which specifies the
+  intended domain of the function; see [guard].  For example, the
+  guard for car is (OR (CONSP X) (EQUAL X NIL)).  See [args] for a
+  utility that provides this and other information about a given
+  function symbol.
+
+  Beginning ACL2 programmers should probably ignore guards, at least
+  initially.  Otherwise, see [xargs] for how to specify a guard; also
+  see [verify-guards].
+
+
+Multiple values
+
+  The analogues of Common Lisp utilities multiple-value-bind and values
+  are [mv-let] and [mv], respectively.  Also see [b*] for an
+  alternative to [let*] that can be convenient in the presence of
+  multiple values.
+
+
+State
+
+  ACL2 provides a notion of state that is useful for certain kinds of
+  programming.  As mentioned above, the state must be passed
+  explicitly because of the applicative nature of ACL2; indeed, it
+  must be passed as the variable, state, i.e., the symbol in the
+  \"ACL2\" package whose [symbol-name] is \"STATE\".  This is a rather
+  complex notion, perhaps best avoided by beginning ACL2 programmers.
+  To learn about the ACL2 state, see [state], which points to a
+  topic, [programming-with-state], that discusses many utilities for
+  reading and writing the ACL2 state.
+
+
+More help
+
+  The acl2-help email list is a fine place to get help with ACL2
+  questions, including programming questions.  You can sign up by
+  following links from the {ACL2 home page |
+  http://www.cs.utexas.edu/users/moore/acl2/}.  Moreover, that could
+  be a good place to request or suggest improvements to this
+  documentation topic!")
  (INTRODUCTION-TO-REWRITE-RULES-PART-1
   (INTRODUCTION-TO-THE-THEOREM-PROVER)
   "Introduction to ACL2's notion of rewrite rules
@@ -47238,6 +47407,9 @@ Subtopics
 
   [Introduction-to-key-checkpoints]
       What questions to ask at key checkpoints
+
+  [Introduction-to-programming-in-ACL2-for-those-who-know-lisp]
+      Introduction to programming in ACL2 for Lisp users
 
   [Introduction-to-rewrite-rules-part-1]
       Introduction to ACL2's notion of rewrite rules
@@ -51607,7 +51779,8 @@ Subtopics
   When integers are viewed in their two's complement representation,
   logand returns their bitwise logical `and'.  In ACL2 logand is a
   macro that expands into calls of the binary function binary-logand,
-  except that (logand) expands to -1 and (logand x) expands to x.
+  except that (logand) expands to -1 and (logand x) expands to (the
+  integer x).
 
   The [guard] for binary-logand requires its arguments to be integers.
   Logand is defined in Common Lisp.  See any Common Lisp
@@ -51617,7 +51790,9 @@ Subtopics
 
     (defmacro logand (&rest args)
               (cond ((null args) -1)
-                    ((null (cdr args)) (car args))
+                    ((null (cdr args))
+                     (cons 'the
+                           (cons 'integer (cons (car args) 'nil))))
                     (t (xxxjoin 'binary-logand args))))
 
   Function: <binary-logand>
@@ -51718,7 +51893,7 @@ Subtopics
   logeqv returns their bitwise logical equivalence.  In ACL2 logeqv
   is a macro that expands into calls of the binary function
   binary-logeqv, except that (logeqv) expands to -1 and (logeqv x)
-  expands to x.
+  expands to (the integer x).
 
   The [guard] for binary-logeqv requires its arguments to be integers.
   Logeqv is defined in Common Lisp.  See any Common Lisp
@@ -51728,7 +51903,9 @@ Subtopics
 
     (defmacro logeqv (&rest args)
               (cond ((null args) -1)
-                    ((null (cdr args)) (car args))
+                    ((null (cdr args))
+                     (cons 'the
+                           (cons 'integer (cons (car args) 'nil))))
                     (t (xxxjoin 'binary-logeqv args))))
 
   Function: <binary-logeqv>
@@ -53295,7 +53472,7 @@ Subtopics
   logior returns their bitwise logical inclusive or.  In ACL2 logior
   is a macro that expands into calls of the binary function
   binary-logior, except that (logior) expands to 0 and (logior x)
-  expands to x.
+  expands to (the integer x).
 
   The [guard] for binary-logior requires its arguments to be integers.
   Logior is defined in Common Lisp.  See any Common Lisp
@@ -53305,7 +53482,9 @@ Subtopics
 
     (defmacro logior (&rest args)
               (cond ((null args) 0)
-                    ((null (cdr args)) (car args))
+                    ((null (cdr args))
+                     (cons 'the
+                           (cons 'integer (cons (car args) 'nil))))
                     (t (xxxjoin 'binary-logior args))))
 
   Function: <binary-logior>
@@ -53424,7 +53603,7 @@ Subtopics
   logxor returns their bitwise logical exclusive or.  In ACL2 logxor
   is a macro that expands into calls of the binary function
   binary-logxor, except that (logxor) expands to 0 and (logxor x)
-  expands to x.
+  expands to (the integer x).
 
   The [guard] for binary-logxor requires its arguments to be integers.
   Logxor is defined in Common Lisp.  See any Common Lisp
@@ -53434,7 +53613,9 @@ Subtopics
 
     (defmacro logxor (&rest args)
               (cond ((null args) 0)
-                    ((null (cdr args)) (car args))
+                    ((null (cdr args))
+                     (cons 'the
+                           (cons 'integer (cons (car args) 'nil))))
                     (t (xxxjoin 'binary-logxor args))))
 
   Function: <binary-logxor>
@@ -68455,7 +68636,7 @@ Subtopics
   only very small modifications.  See [quantifier-tutorial].
 
   [Defun-sk] now allows the keyword option :strengthen t, which will
-  generate the extra constraint that that is generated for the
+  generate the extra constraint that is generated for the
   corresponding defchoose event; see [defchoose].  Thanks to Dave
   Greve for suggesting this feature.
 
@@ -68493,7 +68674,8 @@ Subtopics
   :[program] mode functions for [verify-termination] and during
   macroexpansion, we have computed a much more complete list of
   functions that need such restrictions, the value of constant
-  *primitive-program-fns-with-raw-code*.
+  *primitive-program-fns-with-raw-code*.  [This constant was renamed
+  *initial-program-fns-with-raw-code* after Version 8.0.]
 
   Modified what is printed when a proof fails, to indicate more clearly
   which event failed.
@@ -78765,13 +78947,14 @@ Changes to Existing Features
   particular the final paragraph.  Thanks to Sol Swords for
   contributing this enhancement.
 
-  The printing (untranslation) of [term]s can now print calls of [mbe],
-  [mbt], [ec-call], [cw], and [time$].  Thanks to Alessandro Coglio
-  and Eric Smith for discussions leading to some of these changes.
-  Such terms rarely occur in practice because definitional bodies are
-  stored with calls of [guard-holders] and cw expanded.  However,
-  here is an example of how they could arise.  First consider the
-  following definition.
+  The ACL2 [untranslate] function, which converts the internal
+  representation of [term]s to user-level syntax, can now return
+  calls of [mbe], [mbt], [ec-call], [cw], [time$], and [mv-let].
+  Thanks to Alessandro Coglio, Eric Smith, and Stephen Westfold for
+  discussions leading to some of these changes.  Such terms rarely
+  occur in practice because definitional bodies are stored with calls
+  of [guard-holders] and cw expanded.  However, here is an example of
+  how they could arise.  First consider the following definition.
 
     (defun g (n)
       (declare (xargs :normalize nil))
@@ -78885,6 +79068,52 @@ Changes to Existing Features
   to the new utilities, [cw-print-base-radix] and
   [cw-print-base-radix!] (see below).
 
+  The undocumented constants *primitive-program-fns-with-raw-code*,
+  *primitive-logic-fns-with-raw-code*, and
+  *primitive-macros-with-raw-code* have been renamed respectively to
+  *initial-program-fns-with-raw-code*,
+  *initial-logic-fns-with-raw-code*, and
+  *initial-macros-with-raw-code*.  Thanks to Alessandro Coglio for
+  suggesting these improved names.
+
+  The [save-exec] utility now utilizes a relative pathname in the
+  saved_acl2 script, which can allow it and a corresponding image
+  file to be moved, even across filesystems --- though if there is an
+  image file, then probably the Lisp executable must have the same
+  pathname even after the move.  Thanks to Eric Smith for suggesting
+  this capability and providing a hint for how to implement it, to
+  Sol Swords for pointing out a limitation of the initial
+  implementation, and to {this website |
+  https://serverfault.com/questions/40144/how-can-i-retrieve-the-absolute-filename-in-a-shell-script-on-mac-os-x}
+  for making that solution robust.
+
+  The [defevaluator] macro, and more generally the notion of evaluator,
+  have been changed to include a new [constraint] inserted after
+  constraints 0 through 5.  The new constraint is as follows, where
+  <ev> refers to the evaluator.
+
+    (IMPLIES (AND (NOT (CONSP X)) (NOT (SYMBOLP X)))
+             (EQUAL (<ev> X A) NIL))
+
+  This new constraint generated by [defevaluator] is named
+  <ev>-CONSTRAINT-6 unless the keyword argument :namedp t is
+  supplied, in which case it is named <ev>-OF-NONSYMBOL-ATOM.  Thus
+  by default (or if :namedp is nil), this change increases by one the
+  indices on constraints for the specified function symbols, because
+  they start at 7 instead of 6 --- <ev>-CONSTRAINT-7,
+  <ev>-CONSTRAINT-8, and so on.  Note that if you use functional
+  instantiation to prove a theorem about one evaluator given a
+  theorem about another evaluator, you'll need to enable the new rule
+  (i.e., ev-constraint-6 or, if you use option :namedp t,
+  ev-of-nonsymbol-atom).  Thanks to Sol Swords for both suggesting
+  and implementing this extension.
+
+  [Let]-expressions are no longer eliminated from right-hand sides of
+  [rewrite] rules.  See [rewrite].  This change improves efficiency
+  of the rewriter in some cases, by retaining subexpressions shared
+  on the right-hand side as the rewrite rule is applied.  Thanks to
+  Eric Smith for requesting this change.
+
 
 New Features
 
@@ -78954,6 +79183,12 @@ New Features
   print-radix.  Thanks to Eric Smith for requesting
   [cw-print-base-radix].
 
+  A new event macro, [set-in-theory-redundant-okp], allows [in-theory]
+  events to be [redundant], which prevents [defund] and [defthmd]
+  [events] from laying down [command] markers (as seen, for example,
+  using :[pbt]).  Thanks to Eric Smith for asking for a way for
+  in-theory events to be redundant.
+
 
 Heuristic and Efficiency Improvements
 
@@ -79012,6 +79247,19 @@ Bug Fixes
   for suggesting its cause, and for permission to include that
   example in a comment in the ACL2 sources definition of the
   constant, *non-instantiable-primitives*.
+
+  Bugs have been fixed in the [tau-system] that caused unsoundness
+  (going all the way back through Version 6.0, released December,
+  2012).  The problem was with conversion of a non-strict inequality
+  with 0 to a strict inequality when the quantity is known not to be
+  0; for example, (<= x 0) was converted to (< x 0) when x was known
+  to be non-zero.  But of course, this conversion is only valid when
+  x is known to be a number.  Thanks to Yan Peng for sending an
+  example that illustrates the bug, which in its essence was the
+  ability of ACL2 to prove this formula, which for example is false
+  when x = t: (or (< x 0) (= x 0) (> x 0)).  If you encounter a
+  failure in a proof that formerly succeeded, the fix might be to add
+  a call of [ACL2-numberp] to the hypotheses of your theorem.
 
   Fixed two bugs in [apply$]: we now [disable] the
   [executable-counterpart] of good-bye-fn to prevent quitting ACL2
@@ -79110,6 +79358,29 @@ Bug Fixes
   bug and to Mihir Mehta for a query leading to Keshav's
   investigation.
 
+  The previous release was supposed to include a new utility,
+  [checkpoint-summary-limit], but that was missing.  Thanks to Keshav
+  Kini for pointing this out (and supplying the expected
+  implementation).
+
+  Fixed a bug in the guard for built-in function warning1-cw, which
+  could be seen for example by evaluating the form (warning$-cw
+  'my-ctx \"The :REWRITE rule ~x0 loops forever.\" 'foo).  Thanks to
+  Keshav Kini for bringing this issue to our attention.
+
+  The definitions of the macros [logand], [logior], [logxor], and
+  [logeqv] were such that when any of these was applied to a single
+  argument, the expansion was simply that argument.  For example,
+  (logand (foo a)) expanded to (foo a).  These definitions failed to
+  reflect the fact that in Common Lisp, an error may be signaled if
+  that single argument does not evaluate to an integer.  For example,
+  the following definition was admitted: (defun f (x) (declare (xargs
+  :guard t)) (logand x)); yet a raw Lisp error was signaled when
+  attempting to evaluate (f 'x), in ACL2 built on Allegro Common
+  Lisp.  This bug has been fixed: now, when any of these four macros
+  is applied to a single argument, a, the expansion is (the integer
+  a).  Thanks to Eric Smith for bringing this bug to our attention.
+
 
 Changes at the System Level
 
@@ -79136,6 +79407,11 @@ Changes at the System Level
   Thanks to Keshav Kini for help with this issue, which has been
   resolved in ACL2 source file memoize-raw.lisp, as explained in the
   comment there about ``read-cycle-counter''.
+
+  (CCL only) Raw Lisp error messages now mention the caller.  Thanks to
+  Eric Smith for pointing out that this information wasn't being
+  provided in the ACL2 loop even though it was being provided in raw
+  Lisp.
 
 
 EMACS Support
@@ -81745,8 +82021,8 @@ Subtopics
   "See [pairlis$]
 
   The Common Lisp language allows its pairlis function to construct an
-  alist in any order!  So we have to define our own version: See
-  [pairlis$].")
+  alist without specifying a single order!  So we have to define our
+  own version: See [pairlis$].")
  (PAIRLIS$
   (LISTS ALISTS ACL2-BUILT-INS)
   "Zipper together two lists
@@ -83520,6 +83796,9 @@ Subtopics
   [Get-event]
       See [system-utilities].
 
+  [Get-in-theory-redundant-okp]
+      See [set-in-theory-redundant-okp].
+
   [Get-output-stream-string$]
       See [io].
 
@@ -83877,6 +84156,9 @@ Subtopics
   [Redefining]
       See [ld-redefinition-action].
 
+  [Redundant]
+      See [redundant-events].
+
   [Regression]
       See [books-certification].
 
@@ -84058,6 +84340,9 @@ Subtopics
       See [system-utilities].
 
   [Translate-cmp]
+      See [system-utilities].
+
+  [Translate-hints]
       See [system-utilities].
 
   [Translate1]
@@ -85943,6 +86228,10 @@ Subtopics
   [documentation] hierarchy that appear under this `programming'
   topic.
 
+  If you are already familiar with Common Lisp (or even some other Lisp
+  variant), then you may find it helpful to start with the topic,
+  [introduction-to-programming-in-ACL2-for-those-who-know-lisp].
+
   Also see [debugging] for utilities that can aid in programming.
 
 
@@ -85950,6 +86239,9 @@ Subtopics
 
   [ACL2-built-ins]
       ''Catch-all'' topic for built-in ACL2 functions
+
+  [Advanced-features]
+      Some advanced features of ACL2
 
   [Alists]
       Operations on association lists, which bind keys to values.
@@ -86014,6 +86306,9 @@ Subtopics
 
   [Hons]
       (hons x y) returns a [normed] object equal to (cons x y).
+
+  [Introduction-to-programming-in-ACL2-for-those-who-know-lisp]
+      Introduction to programming in ACL2 for Lisp users
 
   [Invariant-risk]
       Potential slowdown for [program]-mode updates to [stobj]s or
@@ -91308,6 +91603,8 @@ Subtopics
   interrupted a proof (with control-c).  However, redo-flat will not
   produce the desired result after an interrupt if you have enabled
   the debugger using (set-debugger-enable t),")
+ (REDUNDANT (POINTERS)
+            "See [redundant-events].")
  (REDUNDANT-ENCAPSULATE
   (ENCAPSULATE)
   "Redundancy of [encapsulate] [events]
@@ -91570,8 +91867,9 @@ Subtopics
   redundancy of encapsulate events is more complex, for example
   ignoring contents of [local] [events]; see [redundant-encapsulate].
 
-  An [in-theory] event is never redundant.  Note that it doesn't define
-  any name.
+  An [in-theory] event is never redundant by default, though that can
+  be changed; see [set-in-theory-redundant-okp].  Note that it
+  doesn't define any name.
 
   An [include-book] event is redundant if the book has already been
   included.
@@ -91782,7 +92080,10 @@ Subtopics
       Query the [world] on whether redundancy is being enforced
 
   [Set-enforce-redundancy]
-      Require most events to be redundant")
+      Require most events to be redundant
+
+  [Set-in-theory-redundant-okp]
+      Allow [in-theory] events to be redundant")
  (REFINEMENT
   (RULE-CLASSES)
   "Record that one equivalence relation refines another
@@ -93494,37 +93795,46 @@ Subtopics
   Note: One :rewrite rule class object might create many rewrite rules
   from the :[corollary] formula.  To create the rules, we first
   translate the formula, expanding all macros (see [trans]) and also
-  removing [guard-holders].  Next, we eliminate all lambdas; one may
-  think of this step as simply substituting away every [let], [let*],
-  and [mv-let] in the formula.  We then flatten the [and] and
+  removing [guard-holders].  Next, we then flatten the [and] and
   [implies] structure of the formula; for example, if the hypothesis
   or conclusion is of the form (and (and term1 term2) term3), then we
   replace that by the ``flat'' term (and term1 term2 term3).  (The
   latter is actually an abbreviation for the right-associated term
-  (and term1 (and term2 term3)).)  The result is a conjunction of
-  formulas, each of the form
+  (and term1 (and term2 term3)).)  During this flattening process, we
+  eliminate [lambda]s as necessary in order to continue flattening;
+  one may think of this step as simply substituting to eliminate
+  [let], [let*], and [mv-let] in order to expose more calls of
+  implies and and.  The result is a conjunction of formulas, each of
+  the form
 
     (implies (and h1 ... hn) concl)
 
   where no hypothesis is a conjunction and concl is neither a
   conjunction nor an implication.  If necessary, the hypothesis of
   such a conjunct may be vacuous.  We then further coerce each concl
-  into the form (equiv lhs rhs), where equiv is a known [equivalence]
-  relation, by replacing any concl not of that form by (iff concl t).
-  A concl of the form (not term) is considered to be of the form (iff
-  term nil).  By these steps we reduce the given :[corollary] to a
-  sequence of conjuncts, each of which is of the form
+  into the form (equiv lhs rhs), where we continue to eliminate
+  lambdas until we reach this form, and then we eliminate lambdas
+  from the first argument of equiv but not the second argument.  Here
+  equiv is a known [equivalence] relation.  If we do not reach an
+  equivalence relation, even after eliminating lamdas, then we
+  replace the resulting term, term by (iff term t), except that we
+  replace (not term) by (iff term nil).  By these steps we reduce the
+  given :[corollary] to a sequence of conjuncts, each of which is of
+  the form
 
     (implies (and h1 ... hn)
              (equiv lhs rhs))
 
-  where equiv is a known [equivalence] relation.  See [equivalence] for
-  a general discussion of the introduction of new [equivalence]
-  relations.  At this point, we check whether lhs and rhs are the
-  same term; if so, we cause an error, since this rule will loop.
-  (But this is just a basic check; the rule could loop in other
-  cases, for example if rhs is an instance of lhs; see
+  where equiv is a known [equivalence] relation and lhs has no lambdas.
+  See [equivalence] for a general discussion of the introduction of
+  new [equivalence] relations.  At this point, we check whether lhs
+  and rhs are the same term; if so, we cause an error, since this
+  rule will loop.  (But this is just a basic check; the rule could
+  loop in other cases, for example if rhs is an instance of lhs; see
   [loop-stopper].)
+
+  You can experiment by creating some rewrite rules using [defthm] and
+  then using :[pr] to see how the rule was stored.
 
   We create a :rewrite rule for each such conjunct, if possible, and
   otherwise cause an error.  It is possible to create a rewrite rule
@@ -93583,7 +93893,7 @@ Subtopics
       values of the bound variables.  Sometimes you may want those
       bindings rewritten again, e.g., because the variables occur in
       slots that admit additional equivalence relations.  See
-      double-rewrite.
+      [double-rewrite].
 
   See [introduction-to-rewrite-rules-part-1] and see
   [introduction-to-rewrite-rules-part-2] for an extended discussion
@@ -97463,6 +97773,34 @@ Example
   Note: Defun will continue to report irrelevant formals even if
   :set-ignore-ok has been set to t, unless you also use
   [set-irrelevant-formals-ok] to instruct it otherwise.")
+ (SET-IN-THEORY-REDUNDANT-OKP
+  (REDUNDANT-EVENTS)
+  "Allow [in-theory] events to be redundant
+
+  See [redundant-events] for discussion of the notion of redundant
+  events.
+
+    General Forms:
+    (set-in-theory-redundant-okp nil) ; default
+    (set-in-theory-redundant-okp t)   ; allow in-theory events to be redundant
+
+  By default, [in-theory] events are never redundant.  This behavior
+  avoids a redundancy check that could be a bit expensive, as it
+  would require computing the current theory and checking its
+  equality to the new theory.  Evaluation of the event
+  (set-in-theory-redundant-okp t) enables that redundancy check, so
+  that when an in-theory event computes a theory that is equal to the
+  current theory, then that event is redundant.
+
+  To see the current setting (i.e., the default of nil or else t after
+  evaluation of (set-in-theory-redundant-okp t)), evaluate
+  (get-in-theory-redundant-okp state).
+
+  Note: This is an event!  It does not print the usual event [summary]
+  but nevertheless changes the ACL2 logical [world] and is so
+  recorded.  Moreover, its effect is to set the
+  [ACL2-defaults-table], and hence its effect is [local] to the book
+  or [encapsulate] form containing it; see [ACL2-defaults-table].")
  (SET-INHIBIT-OUTPUT-LST
   (PROVER-OUTPUT)
   "Control output
@@ -104827,18 +105165,24 @@ Subtopics
   initial version created by the ACL2 implementors, and others will
   likely continue to add to it over time.
 
-  WARNING: Some system utilities are in :[program] mode, and for many
-  of those, [guard]s are incomplete or missing entirely.  Incorrect
-  use of such utilities can thus lead to scary (though often
-  harmless) raw Lisp errors!  Although this situation may improve
-  over time, for now users of these utilities must cope with that
-  danger just as the ACL2 implementors cope with it, which is by
+  WARNING 1.  Some system utilities are in :[program] mode, and for
+  many of those, [guard]s are incomplete or missing entirely.
+  Incorrect use of such utilities can thus lead to scary (though
+  often harmless) raw Lisp errors!  Although this situation may
+  improve over time, for now users of these utilities must cope with
+  that danger just as the ACL2 implementors cope with it, which is by
   understanding the requirements on each utility that is invoked.
   For example, if you incorrectly invoke (untranslate (cons 3 4) nil
   (w state)), where perhaps (untranslate '(cons '3 '4) nil (w state))
   was intended, then the resulting raw Lisp error is your
   responsibility for invoking untranslate on the object (3 . 4)
   instead of the term (cons '3 '4).
+
+  WARNING 2.  These utilities are subject to change.  They were
+  developed to support the ACL2 system, and as ACL2 evolves, its
+  developers claim the right to modify these functions --- even their
+  input-output [signature]s.  That said, changes to these functions
+  are likely to be quite rare.
 
   The ACL2 system comes with substantial comments.  As of Version_7.1
   (May, 2015), out of slightly under 10 MB of source code (not
@@ -105245,6 +105589,11 @@ List of a few ACL2 system utilities:
       translated [term]s, as recognized by termp.  Note that these
       functions perform macroexpansion, which checks [guard]s on
       [primitive]s; see [safe-mode].
+    * (translate-hints name-tree lst ctx wrld state): Translate a given
+      list of user-level hints, lst, to internal form.  NOTE: this
+      function returns an [error-triple], and it checks the syntax of
+      lst.  Its documentation essentially resides in a comment in
+      source function translate-hints1.
     * (untranslate term iff-flg w): see [untranslate].
     * (value x): This macro call expands to (mv nil x state).  For related
       discussion, see [error-triple].
@@ -110704,6 +111053,8 @@ Subtopics
             "See [system-utilities].")
  (TRANSLATE-CMP (POINTERS)
                 "See [system-utilities].")
+ (TRANSLATE-HINTS (POINTERS)
+                  "See [system-utilities].")
  (TRANSLATE1 (POINTERS)
              "See [system-utilities].")
  (TRANSLATE1-CMP (POINTERS)
@@ -120893,7 +121244,8 @@ Subtopics
 
   Prettyprint the the conclusion, highlighting the current term.  The
   usual user syntax is used, as with the command p (as opposed to
-  pp).  This is illustrated in the example above, where one would*not*see (equal (if x (*** (p y) ***) 'nil) (foo z)).
+  pp).  This is illustrated in the example above, where one would
+  *not* see (equal (if x (*** (p y) ***) 'nil) (foo z)).
 
   Remark (obscure): In some situations, a term of the form (if x t y)
   occurring inside the current subterm will not print as (or x y),
@@ -121661,8 +122013,8 @@ Subtopics
   meta) ``succeeds'' if erp is nil and val is not nil; otherwise it
   ``fails''.  (When we use the words ``succeed'' or ``fail'' in this
   technical sense, we'll always include them in double quotes.)  If
-  an instruction ``fails,'' we say that that the failure is ``soft''
-  if erp is nil; otherwise the failure is ``hard''.  The sequence
+  an instruction ``fails,'' we say that the failure is ``soft'' if
+  erp is nil; otherwise the failure is ``hard''.  The sequence
   command gives the user control over how to treat ``success'' and
   ``failure'' when sequencing instructions, though we have created a
   number of handy macro commands for this purpose, notably do-all,
@@ -122195,15 +122547,13 @@ Subtopics
 
   For example, if the current subterm is (append a b), then after x the
   current subterm will probably be (cons (car a) (append (cdr a) b))
-  if (consp a) and (true-listp a) are among the top-level hypotheses
-  and governors.  If there are no top-level hypotheses and governors,
-  then after x the current subterm will probably be:
+  if (consp a) is among the top-level hypotheses and governors.  If
+  there are no top-level hypotheses and governors, then after x the
+  current subterm will probably be:
 
-    (if (true-listp x)
-        (if x
-            (cons (car x) (append (cdr x) y))
-          y)
-      (apply 'binary-append (list x y))).
+    (if (consp a)
+        (cons (car a) (append (cdr a) b))
+        b).
 
     General Form:
     (X &key
