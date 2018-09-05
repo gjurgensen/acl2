@@ -19251,7 +19251,7 @@ subtree of X with T, without duplication.</p>
  @('ev-list') are constrained functions satisfying just the @(see constraint)s
  discussed below.</p>
 
- <p>@('Ev') and @('ev-list') must satisfy @(see constraint)s (0)-(6) and
+ <p>@('Ev') and @('ev-list') must satisfy @(see constraint)s (0)-(7) and
  (k) below.  When @(':namedp nil') is supplied, the <i>i</i> in the generated
  constraint names are the parenthesized numbers below.  When @(':namedp t')
  is supplied, the mnemonic names are those shown in brackets below.</p>
@@ -19304,6 +19304,14 @@ subtree of X with T, without duplication.</p>
       [EV-OF-NONSYMBOL-ATOM]
       (implies (and (not (consp x))
                     (not (symbolp x)))
+               (equal (ev x a)
+                      nil))
+
+  (7) How to ev a cons whose car is a non-symbol atom:
+      [EV-OF-BAD-FNCALL]
+      (implies (and (consp x)
+                    (not (consp (car x)))
+                    (not (symbolp (car x))))
                (equal (ev x a)
                       nil))
 
