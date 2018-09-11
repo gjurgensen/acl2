@@ -13857,11 +13857,12 @@ with any questions about building the community books.</p>")
 
  @({
   (defttag t)
-  (state-global-let*
-   ((temp-touchable-vars t set-temp-touchable-vars))
-   (progn! (f-put-global 'logic-fns-with-raw-code
-                         (cons 'my-fn (@ logic-fns-with-raw-code))
-                         state)))
+  (progn!
+   :state-global-bindings
+   ((acl2::temp-touchable-vars t acl2::set-temp-touchable-vars))
+   (f-put-global 'acl2::logic-fns-with-raw-code
+                 (cons 'my-fn (@ acl2::logic-fns-with-raw-code))
+                 state))
  })")
 
 (defxdoc comp-gcl
@@ -80343,6 +80344,14 @@ it."
 ; feedback from David Russinoff.
 
 ; Fixed a glitch in the GCL code for function our-probe-file.
+
+; Added extend-with-raw-code and its supporting function, sort-fboundps, in
+; support of community books utility include-raw.  See :doc note-8-1-books for
+; a discussion of why include-raw needed updating.
+
+; Improved the error message from redundant-predefined-error-msg, about
+; redundant definitions when there is special raw Lisp code, to provide a
+; package name.
 
   :parents (release-notes)
   :short "ACL2 Version  8.1 (xxx, 20xx) Notes"

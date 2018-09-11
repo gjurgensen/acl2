@@ -16605,11 +16605,12 @@ Subtopics
   [remove-untouchable]).
 
     (defttag t)
-    (state-global-let*
-     ((temp-touchable-vars t set-temp-touchable-vars))
-     (progn! (f-put-global 'logic-fns-with-raw-code
-                           (cons 'my-fn (@ logic-fns-with-raw-code))
-                           state)))")
+    (progn!
+     :state-global-bindings
+     ((acl2::temp-touchable-vars t acl2::set-temp-touchable-vars))
+     (f-put-global 'acl2::logic-fns-with-raw-code
+                   (cons 'my-fn (@ acl2::logic-fns-with-raw-code))
+                   state))")
  (COMP-GCL
   (COMPILATION ACL2-BUILT-INS)
   "Compile some ACL2 functions leaving .c and .h files
