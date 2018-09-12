@@ -37505,15 +37505,18 @@ current fast alists."
 
  <p>A very common hint is the @(':use') hint, which in general takes as its
  value a list of ``lemma instances'' (see @(see lemma-instance)) but which
- allows a single lemma name as a special case.  Here are two examples, one
- using a single lemma name and one using a lemma instance:</p>
+ allows a single lemma name as a special case.  In each case, a goal @('G') is
+ replaced by a new goal @('(IMPLIES P G)'), where @('P') is the theorem
+ specified by the (conjunction of the) lemma instances provided.  Here are
+ some examples.</p>
 
  @({
-  ; Attach :use hint to the top-level goal, which is named \"Goal\":
+  ; Attach :use hint to the top-level goal G, which is named \"Goal\",
+  ; replacing it by (implies P G) where P is the statement of lemma23:
   :hints ((\"Goal\" :use lemma23))
 
-  ; Equivalent to the above: use the trivial instance (i.e., with the empty
-  ; substitution of lemma23:
+  ; Equivalent to the above, using the trivial instance (i.e., with the empty
+  ; substitution) of lemma23:
   :hints ((\"Goal\" :use ((:instance lemma23))))
 
   ; Attach :use hint to the named subgoal, where the indicated lemma is used
@@ -38277,20 +38280,22 @@ current fast alists."
 
  <p>@('Value') is a @(see lemma-instance) or a true list of @(see
  lemma-instance)s, indicating that the propositions denoted by the instances be
- added as hypotheses to the specified goal.  Note that @(':use') makes the
- given instances available as ordinary hypotheses of the formula to be proved.
+ added as hypotheses to the specified goal: that is, the @(':use') hint
+ replaces a goal, @('G'), by the new goal, @('(IMPLIES P G)'), where @('P') is
+ the theorem specified by the (conjunction of the) lemma instances provided.
  The @(':instance') form of a @(see lemma-instance) permits you to instantiate
  the free variables of previously proved theorems any way you wish, even
  allowing for differences in @(see packages); see @(see lemma-instance) for
  details.  These new hypotheses participate fully in all subsequent rewriting,
  etc.  If the goal in question is in fact an instance of a previously proved
- theorem, you may wish to use @(':by') below.  Note that @(see theories) may be
- helpful when employing @(':use') hints; see @(see minimal-theory).</p>
+ theorem, you may wish to use @(':by') (documented above).  Sometimes @(see
+ theories) are helpful when employing @(':use') hints; see @(see
+ minimal-theory).</p>
 
- <p>Note that if the value is the name of a function symbol introduced by
- @(tsee defun), then the normalized (simplified) body of that definition is
- used; see @(see normalize).  This behavior differs from that provided by a
- @(':by') hint, where the original body of the definition is used.</p></dd>
+ <p>If the value is the name of a function symbol introduced by @(tsee defun),
+ then the normalized (simplified) body of that definition is used; see @(see
+ normalize).  This behavior differs from that provided by a @(':by') hint,
+ where the original body of the definition is used.</p></dd>
 
  </dl>")
 
@@ -80674,6 +80679,18 @@ it."
  right-hand side as the rewrite rule is applied.  Thanks to Eric Smith for
  requesting this change.</p>
 
+ <p>It was possible to declare a function symbol to be @(see untouchable) and
+ yet still execute it using @(tsee apply$), thus violating the spirit of
+ untouchables.  That is no longer allowed.  Here is an example of such
+ execution that was formerly permitted, but is no longer.</p>
+
+ @({
+ (include-book \"projects/apply/apply-lemmas\" :dir :system)
+ (defun$ f (x) (declare (xargs :guard t)) (cons x x))
+ (push-untouchable f t)
+ (apply$ 'f '(3))
+ })
+
  <h3>New Features</h3>
 
  <p>The @(see summary) now shows, by default, the list of doublets @('(f g)')
@@ -80945,6 +80962,18 @@ it."
  <p>Fixed @(':')@(tsee args) to avoid hard ACL2 error when applied to @('IF')
  and to provide a clearer error message for Common Lisp functions not in ACL2.
  Thanks to Eric McCarthy for sending examples to point out these issues.</p>
+
+ <p>A bug has been fixed that could cause an error when processing a legal
+ @(tsee flet) form, because the processing of a binding could interfere
+ inappropriately with the processing of a subsequent binding, as in the
+ following example.</p>
+
+ @({
+ (defun f (x) x)
+ (flet ((f (x) (cons x x))
+        (g (x) (f x))) ; processed with bad binding of stobjs-out for f
+   (g 3))
+ })
 
  <h3>Changes at the System Level</h3>
 
