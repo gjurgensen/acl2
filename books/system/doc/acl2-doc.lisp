@@ -80304,6 +80304,15 @@ it."
 
 (defxdoc note-8-1
 
+; Total number of release note items: 75, as follows.
+;   32 ; Changes to Existing Features
+;    8 ; New Features
+;    6 ; Heuristic and Efficiency Improvements
+;   24 ; Bug Fixes
+;    4 ; Changes at the System Level
+;    1 ; EMACS Support
+;    0 ; Experimental Versions
+
 ; The following comments include changes not covered in the release notes
 ; items -- for example, because they are about changes in error messages.
 
