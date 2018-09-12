@@ -42685,14 +42685,15 @@ tables in the current Hons Space."
 (defxdoc introduction-to-programming-in-acl2-for-those-who-know-lisp
   :parents (programming introduction-to-the-theorem-prover)
   :short "Introduction to programming in ACL2 for Lisp users"
-  :long "<p>The @(see documentation) topics @(see programming) and @(see
- acl2-built-ins) are starting points for a rich collection of primitives and
- features in the ACL2 programming language.  In the present topic (below) we
- give a succinct introduction to that language for those who are already
- reasonably familiar with Common Lisp, or perhaps another Lisp.  Follow the
- hyperlinks if you want to drill down; for example, we mention multiple values
- below but say very little about them, instead providing links to topics that
- explain their handling in a little more depth.</p>
+  :long "<p>The @(see documentation) topic, @(see acl2-built-ins), as well as
+ its parent topic, @(see programming), are starting points for a rich
+ collection of primitives and features in the ACL2 programming language.  In
+ the present topic (below) we give a succinct introduction to that language for
+ those who are already reasonably familiar with Common Lisp, or perhaps another
+ Lisp.  Follow the hyperlinks if you want to drill down; for example, we
+ mention multiple values below but say very little about them, instead
+ providing links to topics that explain their handling in a little more
+ depth.</p>
 
  <p>The @(tsee documentation) for ACL2 and its @(see community-books) provides
  a rich set of topics for further exploration.  This particular topic is
@@ -42719,11 +42720,13 @@ tables in the current Hons Space."
  in the resulting association list in either forward or backward order.''  Many
  such functions tend to have close analogues in ACL2, named by concatenating
  @('\"$\"') to the Common Lisp name; for example, ACL2 has @(tsee pairlis$),
- @(tsee union$), and even @(tsee random$).  See @(see acl2-built-ins) for a
- much more comprehensive list of functions, macros, and special forms provided
- by the ACL2 programming language.  In particular, a search through that
- documentation topic for `@('$')' will show you utilities like @('pairlis$')
- that are based on related Common Lisp utilities.</p>
+ @(tsee union$), and even @(tsee random$).  Yet other Common Lisp functions,
+ for example @('format'), are not available in ACL2 but have useful
+ alternatives in ACL2; for example, see @(tsee fmt).  See @(see acl2-built-ins)
+ for a much more comprehensive list of functions, macros, and special forms
+ provided by the ACL2 programming language.  In particular, a search through
+ that documentation topic for `@('$')' will show you utilities like
+ @('pairlis$') that are based on related Common Lisp utilities.</p>
 
  <p>In the ACL2 read-eval-print loop, you can define functions and macros with
  @(tsee defun) and @(tsee defmacro) just as in Common Lisp, with some
@@ -42804,11 +42807,45 @@ tables in the current Hons Space."
 
  <h3>More help</h3>
 
- <p>The acl2-help email list is a fine place to get help with ACL2 questions,
- including programming questions.  You can sign up by following links from the
- <a href='http://www.cs.utexas.edu/users/moore/acl2/'>ACL2 home page</a>.
- Moreover, that could be a good place to request or suggest improvements to
- this documentation topic!</p>")
+ <p>ACL2 does not provide @('apropos').  However, you can search the
+ documentation to find substring matches.  For example, if you type @('princ')
+ into the ``@('Jump to')'' box in the web-based manual, or if you type the
+ command @('i') [for ''index''] into the @(see acl2-doc) Emacs-based
+ documentation browser, you will find @(tsee princ$).  The ``@('Jump to')'' box
+ in the web-based manual matches on prefixes, but the @('i') command in @(see
+ acl2-doc) matches on any substring.</p>
+
+ <p>Another way for Lisp programmers to get answers to ``How do I do this in
+ ACL2'' questions is to query the acl2-help mailing list.  You can sign up via
+ a link on the <a href='http://www.cs.utexas.edu/users/moore/acl2/'>ACL2 home
+ page</a>.  Moreover, that could be a good place to request or suggest
+ improvements to this documentation topic!  Also see @(see history) for some
+ ways to query the current session.</p>
+
+ <p>Finally, here are a few specific alternatives to Common Lisp utilities.</p>
+
+ <ul>
+
+ <li>@('describe'): see @(tsee doc)</li>
+
+ <li>@('fboundp') and other utilities to provide information about functions,
+ macros, and special operators: see @(tsee args)</li>
+
+ <li>@('format'): see @(tsee fmt), which has links to related functions that
+ perform formatted printing</li>
+
+ <li>@('list-all-packages'): see @(tsee in-package); also see the description
+ of @('known-package-alist') in @(see system-utilities)</li>
+
+ <li>@('setq'): see @(tsee assign), but perhaps first look at the documentation
+ topics for @(see state) and @(see programming-with-state)</li>
+
+ <li>@('symbol-plist'): see @(tsee props), @(tsee getprop), and @(tsee
+ putprop)</li>
+
+ <li>@('with-open-file'): see @(see io)</li>
+
+ </ul>")
 
 (defxdoc introduction-to-rewrite-rules-part-1
   :parents (introduction-to-the-theorem-prover)
@@ -80353,6 +80390,9 @@ it."
 ; redundant definitions when there is special raw Lisp code, to provide a
 ; package name.
 
+; Restricted user-defined-functions-table to require the correct number of
+; formals in each value function.
+
   :parents (release-notes)
   :short "ACL2 Version  8.1 (xxx, 20xx) Notes"
   :long "<p>NOTE!  New users can ignore these release notes, because the @(see
@@ -80901,6 +80941,10 @@ it."
  when any of these four macros is applied to a single argument, @('a'), the
  expansion is @('(the integer a)').  Thanks to Eric Smith for bringing this bug
  to our attention.</p>
+
+ <p>Fixed @(':')@(tsee args) to avoid hard ACL2 error when applied to @('IF')
+ and to provide a clearer error message for Common Lisp functions not in ACL2.
+ Thanks to Eric McCarthy for sending examples to point out these issues.</p>
 
  <h3>Changes at the System Level</h3>
 
@@ -90854,8 +90898,9 @@ arithmetic) for libraries of @(see books) for arithmetic reasoning.</p>")
  <p>A @(tsee defabsstobj) is redundant if there is already an identical
  @('defabsstobj') event in the logical @(see world).</p>
 
- <p>A @(tsee defattach) event is never redundant.  Note that it doesn't define
- any name.</p>
+ <p>A @(tsee defattach) event is never redundant.  (Reasons are provided in a
+ comment in the ACL2 sources definition of defattach in the ACL2 logic.)  Note
+ that @('defattach') events do not define any names.</p>
 
  <p>A @(tsee defaxiom) or @(tsee defthm) event is redundant if there is already
  an axiom or theorem of the given name and either the two @(see events) are
@@ -122209,6 +122254,7 @@ expand function call at the current subterm, without simplifying"
 (defpointer legal-constantp system-utilities)
 (defpointer legal-variablep system-utilities)
 (defpointer let-mbe equality-variants-details)
+(defpointer lisp-programmer-introduction introduction-to-programming-in-acl2-for-those-who-know-lisp)
 (defpointer logicp system-utilities)
 (defpointer make-lambda system-utilities)
 (defpointer make-lambda-term system-utilities)

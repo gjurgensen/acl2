@@ -45937,15 +45937,15 @@ Subtopics
   (PROGRAMMING INTRODUCTION-TO-THE-THEOREM-PROVER)
   "Introduction to programming in ACL2 for Lisp users
 
-  The [documentation] topics [programming] and [ACL2-built-ins] are
-  starting points for a rich collection of primitives and features in
-  the ACL2 programming language.  In the present topic (below) we
-  give a succinct introduction to that language for those who are
-  already reasonably familiar with Common Lisp, or perhaps another
-  Lisp.  Follow the hyperlinks if you want to drill down; for
-  example, we mention multiple values below but say very little about
-  them, instead providing links to topics that explain their handling
-  in a little more depth.
+  The [documentation] topic, [ACL2-built-ins], as well as its parent
+  topic, [programming], are starting points for a rich collection of
+  primitives and features in the ACL2 programming language.  In the
+  present topic (below) we give a succinct introduction to that
+  language for those who are already reasonably familiar with Common
+  Lisp, or perhaps another Lisp.  Follow the hyperlinks if you want
+  to drill down; for example, we mention multiple values below but
+  say very little about them, instead providing links to topics that
+  explain their handling in a little more depth.
 
   The [documentation] for ACL2 and its [community-books] provides a
   rich set of topics for further exploration.  This particular topic
@@ -45974,12 +45974,14 @@ Applicative Common Lisp
   association list in either forward or backward order.'' Many such
   functions tend to have close analogues in ACL2, named by
   concatenating \"$\" to the Common Lisp name; for example, ACL2 has
-  [pairlis$], [union$], and even [random$].  See [ACL2-built-ins] for
-  a much more comprehensive list of functions, macros, and special
-  forms provided by the ACL2 programming language.  In particular, a
-  search through that documentation topic for `$' will show you
-  utilities like pairlis$ that are based on related Common Lisp
-  utilities.
+  [pairlis$], [union$], and even [random$].  Yet other Common Lisp
+  functions, for example format, are not available in ACL2 but have
+  useful alternatives in ACL2; for example, see [fmt].  See
+  [ACL2-built-ins] for a much more comprehensive list of functions,
+  macros, and special forms provided by the ACL2 programming
+  language.  In particular, a search through that documentation topic
+  for `$' will show you utilities like pairlis$ that are based on
+  related Common Lisp utilities.
 
   In the ACL2 read-eval-print loop, you can define functions and macros
   with [defun] and [defmacro] just as in Common Lisp, with some
@@ -46070,12 +46072,36 @@ State
 
 More help
 
-  The acl2-help email list is a fine place to get help with ACL2
-  questions, including programming questions.  You can sign up by
-  following links from the {ACL2 home page |
+  ACL2 does not provide apropos.  However, you can search the
+  documentation to find substring matches.  For example, if you type
+  princ into the ``Jump to'' box in the web-based manual, or if you
+  type the command i [for ''index''] into the [ACL2-doc] Emacs-based
+  documentation browser, you will find [princ$].  The ``Jump to'' box
+  in the web-based manual matches on prefixes, but the i command in
+  [ACL2-doc] matches on any substring.
+
+  Another way for Lisp programmers to get answers to ``How do I do this
+  in ACL2'' questions is to query the acl2-help mailing list.  You
+  can sign up via a link on the {ACL2 home page |
   http://www.cs.utexas.edu/users/moore/acl2/}.  Moreover, that could
   be a good place to request or suggest improvements to this
-  documentation topic!")
+  documentation topic!  Also see [history] for some ways to query the
+  current session.
+
+  Finally, here are a few specific alternatives to Common Lisp
+  utilities.
+
+    * describe: see [doc]
+    * fboundp and other utilities to provide information about functions,
+      macros, and special operators: see [args]
+    * format: see [fmt], which has links to related functions that perform
+      formatted printing
+    * list-all-packages: see [in-package]; also see the description of
+      known-package-alist in [system-utilities]
+    * setq: see [assign], but perhaps first look at the documentation
+      topics for [state] and [programming-with-state]
+    * symbol-plist: see [props], [getprop], and [putprop]
+    * with-open-file: see [io]")
  (INTRODUCTION-TO-REWRITE-RULES-PART-1
   (INTRODUCTION-TO-THE-THEOREM-PROVER)
   "Introduction to ACL2's notion of rewrite rules
@@ -51388,6 +51414,9 @@ Subtopics
 
   See also [non-linear-arithmetic] for a description of an extension to
   the linear-arithmetic procedure described here.")
+ (LISP-PROGRAMMER-INTRODUCTION
+      (POINTERS)
+      "See [introduction-to-programming-in-ACL2-for-those-who-know-lisp].")
  (LIST
   (LISTS ACL2-BUILT-INS)
   "Build a list
@@ -79393,6 +79422,11 @@ Bug Fixes
   is applied to a single argument, a, the expansion is (the integer
   a).  Thanks to Eric Smith for bringing this bug to our attention.
 
+  Fixed :[args] to avoid hard ACL2 error when applied to IF and to
+  provide a clearer error message for Common Lisp functions not in
+  ACL2.  Thanks to Eric McCarthy for sending examples to point out
+  these issues.
+
 
 Changes at the System Level
 
@@ -83909,6 +83943,9 @@ Subtopics
 
   [Let-mbe]
       See [equality-variants-details].
+
+  [Lisp-programmer-introduction]
+      See [introduction-to-programming-in-ACL2-for-those-who-know-lisp].
 
   [Logicp]
       See [system-utilities].
@@ -91780,8 +91817,9 @@ Subtopics
   A [defabsstobj] is redundant if there is already an identical
   defabsstobj event in the logical [world].
 
-  A [defattach] event is never redundant.  Note that it doesn't define
-  any name.
+  A [defattach] event is never redundant.  (Reasons are provided in a
+  comment in the ACL2 sources definition of defattach in the ACL2
+  logic.)  Note that defattach events do not define any names.
 
   A [defaxiom] or [defthm] event is redundant if there is already an
   axiom or theorem of the given name and either the two [events] are
