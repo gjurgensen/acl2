@@ -79491,7 +79491,11 @@ EMACS Support
   file.
 
 
-Experimental Versions")
+Experimental Versions
+
+  The utility [with-local-state] no longer causes an error in ACL2(p)
+  with [parallel-execution] enabled.  Thus, neither do
+  [fmt-to-string] and related utilities, which call with-local-state.")
  (NOTE1 (POINTERS) "See [note-1-1].")
  (NOTE2 (POINTERS) "See [note-1-2].")
  (NOTE3 (POINTERS) "See [note-1-3].")
@@ -87666,7 +87670,8 @@ Subtopics
       run the second
 
   [ACL2-pc::p]
-      (macro) prettyprint the current term
+      (macro) prettyprint the current term in the usual user-level
+      (untranslated) syntax
 
   [ACL2-pc::p-top]
       (macro) prettyprint the conclusion, highlighting the current term
@@ -87675,7 +87680,7 @@ Subtopics
       (macro) print the rules for a given name
 
   [ACL2-pc::pp]
-      (macro) prettyprint the current term
+      (macro) prettyprint the current term in internal (translated) form
 
   [ACL2-pc::pr]
       (macro) print the rules for a given name
@@ -87921,7 +87926,8 @@ Subtopics
       (atomic macro) move forward one argument in the enclosing term
 
   [ACL2-pc::p]
-      (macro) prettyprint the current term
+      (macro) prettyprint the current term in the usual user-level
+      (untranslated) syntax
 
   [ACL2-pc::p-top]
       (macro) prettyprint the conclusion, highlighting the current term
@@ -121288,15 +121294,16 @@ Subtopics
   the failure is soft.")
  (ACL2-PC::P
   (PROOF-BUILDER-COMMANDS PROOF-BUILDER-COMMANDS-SHORT-LIST)
-  "(macro) prettyprint the current term
+  "(macro) prettyprint the current term in the usual user-level
+  (untranslated) syntax
 
     Example and General Form:
     p
 
-  Prettyprint the current term.  The usual user syntax is used, so that
-  for example one would see (and x y) rather than (if x y 'nil).
-  (See also pp.)  Also, abbreviations are inserted where appropriate;
-  see [ACL2-pc::add-abbreviation].
+  Prettyprint the current term.  The usual user (untranslated) syntax
+  is used, so that for example one would see (and x y) rather than
+  (if x y 'nil).  (See also pp.)  Also, abbreviations are inserted
+  where appropriate; see [ACL2-pc::add-abbreviation].
 
   The ``current term'' is the entire conclusion unless dive commands
   have been given, in which case it may be a subterm of the
@@ -121344,7 +121351,7 @@ Subtopics
   subterm, consider the show-rewrites (or equivalently, sr) command.")
  (ACL2-PC::PP
   (PROOF-BUILDER-COMMANDS)
-  "(macro) prettyprint the current term
+  "(macro) prettyprint the current term in internal (translated) form
 
     Example and General Form:
     pp
