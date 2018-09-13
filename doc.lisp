@@ -16605,11 +16605,12 @@ Subtopics
   [remove-untouchable]).
 
     (defttag t)
-    (state-global-let*
-     ((temp-touchable-vars t set-temp-touchable-vars))
-     (progn! (f-put-global 'logic-fns-with-raw-code
-                           (cons 'my-fn (@ logic-fns-with-raw-code))
-                           state)))")
+    (progn!
+     :state-global-bindings
+     ((acl2::temp-touchable-vars t acl2::set-temp-touchable-vars))
+     (f-put-global 'acl2::logic-fns-with-raw-code
+                   (cons 'my-fn (@ acl2::logic-fns-with-raw-code))
+                   state))")
  (COMP-GCL
   (COMPILATION ACL2-BUILT-INS)
   "Compile some ACL2 functions leaving .c and .h files
@@ -40582,15 +40583,17 @@ Subtopics
 
   A very common hint is the :use hint, which in general takes as its
   value a list of ``lemma instances'' (see [lemma-instance]) but
-  which allows a single lemma name as a special case.  Here are two
-  examples, one using a single lemma name and one using a lemma
-  instance:
+  which allows a single lemma name as a special case.  In each case,
+  a goal G is replaced by a new goal (IMPLIES P G), where P is the
+  theorem specified by the (conjunction of the) lemma instances
+  provided.  Here are some examples.
 
-    ; Attach :use hint to the top-level goal, which is named \"Goal\":
+    ; Attach :use hint to the top-level goal G, which is named \"Goal\",
+    ; replacing it by (implies P G) where P is the statement of lemma23:
     :hints ((\"Goal\" :use lemma23))
 
-    ; Equivalent to the above: use the trivial instance (i.e., with the empty
-    ; substitution of lemma23:
+    ; Equivalent to the above, using the trivial instance (i.e., with the empty
+    ; substitution) of lemma23:
     :hints ((\"Goal\" :use ((:instance lemma23))))
 
     ; Attach :use hint to the named subgoal, where the indicated lemma is used
@@ -41354,24 +41357,25 @@ Subtopics
 
         Value is a [lemma-instance] or a true list of [lemma-instance]s,
         indicating that the propositions denoted by the instances be
-        added as hypotheses to the specified goal.  Note that :use
-        makes the given instances available as ordinary hypotheses of
-        the formula to be proved.  The :instance form of a
+        added as hypotheses to the specified goal: that is, the :use
+        hint replaces a goal, G, by the new goal, (IMPLIES P G),
+        where P is the theorem specified by the (conjunction of the)
+        lemma instances provided.  The :instance form of a
         [lemma-instance] permits you to instantiate the free
         variables of previously proved theorems any way you wish,
         even allowing for differences in [packages]; see
         [lemma-instance] for details.  These new hypotheses
         participate fully in all subsequent rewriting, etc.  If the
         goal in question is in fact an instance of a previously
-        proved theorem, you may wish to use :by below.  Note that
-        [theories] may be helpful when employing :use hints; see
-        [minimal-theory].
+        proved theorem, you may wish to use :by (documented above).
+        Sometimes [theories] are helpful when employing :use hints;
+        see [minimal-theory].
 
-        Note that if the value is the name of a function symbol introduced by
-        [defun], then the normalized (simplified) body of that
-        definition is used; see [normalize].  This behavior differs
-        from that provided by a :by hint, where the original body of
-        the definition is used.
+        If the value is the name of a function symbol introduced by [defun],
+        then the normalized (simplified) body of that definition is
+        used; see [normalize].  This behavior differs from that
+        provided by a :by hint, where the original body of the
+        definition is used.
 
 
 Subtopics
@@ -45936,15 +45940,15 @@ Subtopics
   (PROGRAMMING INTRODUCTION-TO-THE-THEOREM-PROVER)
   "Introduction to programming in ACL2 for Lisp users
 
-  The [documentation] topics [programming] and [ACL2-built-ins] are
-  starting points for a rich collection of primitives and features in
-  the ACL2 programming language.  In the present topic (below) we
-  give a succinct introduction to that language for those who are
-  already reasonably familiar with Common Lisp, or perhaps another
-  Lisp.  Follow the hyperlinks if you want to drill down; for
-  example, we mention multiple values below but say very little about
-  them, instead providing links to topics that explain their handling
-  in a little more depth.
+  The [documentation] topic, [ACL2-built-ins], as well as its parent
+  topic, [programming], are starting points for a rich collection of
+  primitives and features in the ACL2 programming language.  In the
+  present topic (below) we give a succinct introduction to that
+  language for those who are already reasonably familiar with Common
+  Lisp, or perhaps another Lisp.  Follow the hyperlinks if you want
+  to drill down; for example, we mention multiple values below but
+  say very little about them, instead providing links to topics that
+  explain their handling in a little more depth.
 
   The [documentation] for ACL2 and its [community-books] provides a
   rich set of topics for further exploration.  This particular topic
@@ -45973,12 +45977,14 @@ Applicative Common Lisp
   association list in either forward or backward order.'' Many such
   functions tend to have close analogues in ACL2, named by
   concatenating \"$\" to the Common Lisp name; for example, ACL2 has
-  [pairlis$], [union$], and even [random$].  See [ACL2-built-ins] for
-  a much more comprehensive list of functions, macros, and special
-  forms provided by the ACL2 programming language.  In particular, a
-  search through that documentation topic for `$' will show you
-  utilities like pairlis$ that are based on related Common Lisp
-  utilities.
+  [pairlis$], [union$], and even [random$].  Yet other Common Lisp
+  functions, for example format, are not available in ACL2 but have
+  useful alternatives in ACL2; for example, see [fmt].  See
+  [ACL2-built-ins] for a much more comprehensive list of functions,
+  macros, and special forms provided by the ACL2 programming
+  language.  In particular, a search through that documentation topic
+  for `$' will show you utilities like pairlis$ that are based on
+  related Common Lisp utilities.
 
   In the ACL2 read-eval-print loop, you can define functions and macros
   with [defun] and [defmacro] just as in Common Lisp, with some
@@ -46069,12 +46075,36 @@ State
 
 More help
 
-  The acl2-help email list is a fine place to get help with ACL2
-  questions, including programming questions.  You can sign up by
-  following links from the {ACL2 home page |
+  ACL2 does not provide apropos.  However, you can search the
+  documentation to find substring matches.  For example, if you type
+  princ into the ``Jump to'' box in the web-based manual, or if you
+  type the command i [for ''index''] into the [ACL2-doc] Emacs-based
+  documentation browser, you will find [princ$].  The ``Jump to'' box
+  in the web-based manual matches on prefixes, but the i command in
+  [ACL2-doc] matches on any substring.
+
+  Another way for Lisp programmers to get answers to ``How do I do this
+  in ACL2'' questions is to query the acl2-help mailing list.  You
+  can sign up via a link on the {ACL2 home page |
   http://www.cs.utexas.edu/users/moore/acl2/}.  Moreover, that could
   be a good place to request or suggest improvements to this
-  documentation topic!")
+  documentation topic!  Also see [history] for some ways to query the
+  current session.
+
+  Finally, here are a few specific alternatives to Common Lisp
+  utilities.
+
+    * describe: see [doc]
+    * fboundp and other utilities to provide information about functions,
+      macros, and special operators: see [args]
+    * format: see [fmt], which has links to related functions that perform
+      formatted printing
+    * list-all-packages: see [in-package]; also see the description of
+      known-package-alist in [system-utilities]
+    * setq: see [assign], but perhaps first look at the documentation
+      topics for [state] and [programming-with-state]
+    * symbol-plist: see [props], [getprop], and [putprop]
+    * with-open-file: see [io]")
  (INTRODUCTION-TO-REWRITE-RULES-PART-1
   (INTRODUCTION-TO-THE-THEOREM-PROVER)
   "Introduction to ACL2's notion of rewrite rules
@@ -51387,6 +51417,9 @@ Subtopics
 
   See also [non-linear-arithmetic] for a description of an extension to
   the linear-arithmetic procedure described here.")
+ (LISP-PROGRAMMER-INTRODUCTION
+      (POINTERS)
+      "See [introduction-to-programming-in-ACL2-for-those-who-know-lisp].")
  (LIST
   (LISTS ACL2-BUILT-INS)
   "Build a list
@@ -79125,6 +79158,16 @@ Changes to Existing Features
   on the right-hand side as the rewrite rule is applied.  Thanks to
   Eric Smith for requesting this change.
 
+  It was possible to declare a function symbol to be [untouchable] and
+  yet still execute it using [apply$], thus violating the spirit of
+  untouchables.  That is no longer allowed.  Here is an example of
+  such execution that was formerly permitted, but is no longer.
+
+    (include-book \"projects/apply/apply-lemmas\" :dir :system)
+    (defun$ f (x) (declare (xargs :guard t)) (cons x x))
+    (push-untouchable f t)
+    (apply$ 'f '(3))
+
 
 New Features
 
@@ -79392,6 +79435,21 @@ Bug Fixes
   is applied to a single argument, a, the expansion is (the integer
   a).  Thanks to Eric Smith for bringing this bug to our attention.
 
+  Fixed :[args] to avoid hard ACL2 error when applied to IF and to
+  provide a clearer error message for Common Lisp functions not in
+  ACL2.  Thanks to Eric McCarthy for sending examples to point out
+  these issues.
+
+  A bug has been fixed that could cause an error when processing a
+  legal [flet] form, because the processing of a binding could
+  interfere inappropriately with the processing of a subsequent
+  binding, as in the following example.
+
+    (defun f (x) x)
+    (flet ((f (x) (cons x x))
+           (g (x) (f x))) ; processed with bad binding of stobjs-out for f
+      (g 3))
+
 
 Changes at the System Level
 
@@ -79433,7 +79491,11 @@ EMACS Support
   file.
 
 
-Experimental Versions")
+Experimental Versions
+
+  The utility [with-local-state] no longer causes an error in ACL2(p)
+  with [parallel-execution] enabled.  Thus, neither do
+  [fmt-to-string] and related utilities, which call with-local-state.")
  (NOTE1 (POINTERS) "See [note-1-1].")
  (NOTE2 (POINTERS) "See [note-1-2].")
  (NOTE3 (POINTERS) "See [note-1-3].")
@@ -83909,6 +83971,9 @@ Subtopics
   [Let-mbe]
       See [equality-variants-details].
 
+  [Lisp-programmer-introduction]
+      See [introduction-to-programming-in-ACL2-for-those-who-know-lisp].
+
   [Logicp]
       See [system-utilities].
 
@@ -87605,7 +87670,8 @@ Subtopics
       run the second
 
   [ACL2-pc::p]
-      (macro) prettyprint the current term
+      (macro) prettyprint the current term in the usual user-level
+      (untranslated) syntax
 
   [ACL2-pc::p-top]
       (macro) prettyprint the conclusion, highlighting the current term
@@ -87614,7 +87680,7 @@ Subtopics
       (macro) print the rules for a given name
 
   [ACL2-pc::pp]
-      (macro) prettyprint the current term
+      (macro) prettyprint the current term in internal (translated) form
 
   [ACL2-pc::pr]
       (macro) print the rules for a given name
@@ -87860,7 +87926,8 @@ Subtopics
       (atomic macro) move forward one argument in the enclosing term
 
   [ACL2-pc::p]
-      (macro) prettyprint the current term
+      (macro) prettyprint the current term in the usual user-level
+      (untranslated) syntax
 
   [ACL2-pc::p-top]
       (macro) prettyprint the conclusion, highlighting the current term
@@ -91779,8 +91846,9 @@ Subtopics
   A [defabsstobj] is redundant if there is already an identical
   defabsstobj event in the logical [world].
 
-  A [defattach] event is never redundant.  Note that it doesn't define
-  any name.
+  A [defattach] event is never redundant.  (Reasons are provided in a
+  comment in the ACL2 sources definition of defattach in the ACL2
+  logic.)  Note that defattach events do not define any names.
 
   A [defaxiom] or [defthm] event is redundant if there is already an
   axiom or theorem of the given name and either the two [events] are
@@ -121226,15 +121294,16 @@ Subtopics
   the failure is soft.")
  (ACL2-PC::P
   (PROOF-BUILDER-COMMANDS PROOF-BUILDER-COMMANDS-SHORT-LIST)
-  "(macro) prettyprint the current term
+  "(macro) prettyprint the current term in the usual user-level
+  (untranslated) syntax
 
     Example and General Form:
     p
 
-  Prettyprint the current term.  The usual user syntax is used, so that
-  for example one would see (and x y) rather than (if x y 'nil).
-  (See also pp.)  Also, abbreviations are inserted where appropriate;
-  see [ACL2-pc::add-abbreviation].
+  Prettyprint the current term.  The usual user (untranslated) syntax
+  is used, so that for example one would see (and x y) rather than
+  (if x y 'nil).  (See also pp.)  Also, abbreviations are inserted
+  where appropriate; see [ACL2-pc::add-abbreviation].
 
   The ``current term'' is the entire conclusion unless dive commands
   have been given, in which case it may be a subterm of the
@@ -121282,7 +121351,7 @@ Subtopics
   subterm, consider the show-rewrites (or equivalently, sr) command.")
  (ACL2-PC::PP
   (PROOF-BUILDER-COMMANDS)
-  "(macro) prettyprint the current term
+  "(macro) prettyprint the current term in internal (translated) form
 
     Example and General Form:
     pp
