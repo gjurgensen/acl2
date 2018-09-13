@@ -80304,14 +80304,14 @@ it."
 
 (defxdoc note-8-1
 
-; Total number of release note items: 75, as follows.
+; Total number of release note items: 76, as follows.
 ;   32 ; Changes to Existing Features
 ;    8 ; New Features
 ;    6 ; Heuristic and Efficiency Improvements
 ;   24 ; Bug Fixes
 ;    4 ; Changes at the System Level
 ;    1 ; EMACS Support
-;    0 ; Experimental Versions
+;    1 ; Experimental Versions
 
 ; The following comments include changes not covered in the release notes
 ; items -- for example, because they are about changes in error messages.
@@ -81021,6 +81021,10 @@ it."
  modifications of ``unusual'' characters when saving a file.</p>
 
  <h3>Experimental Versions</h3>
+
+ <p>The utility @(tsee with-local-state) no longer causes an error in ACL2(p)
+ with @(see parallel-execution) enabled.  Thus, neither do @(tsee
+ fmt-to-string) and related utilities, which call @('with-local-state').</p>
 
  ")
 
@@ -120588,16 +120592,16 @@ second"
 (defxdoc acl2-pc::p
   :parents (proof-builder-commands proof-builder-commands-short-list)
   :short "(macro)
-prettyprint the current term"
+prettyprint the current term in the usual user-level (untranslated) syntax"
   :long "@({
   Example and General Form:
   p
  })
 
- <p>Prettyprint the current term.  The usual user syntax is used, so that for
- example one would see @('(and x y)') rather than @('(if x y 'nil)').  (See
- also @('pp').)  Also, abbreviations are inserted where appropriate; see
- @(see acl2-pc::add-abbreviation).</p>
+ <p>Prettyprint the current term.  The usual user (untranslated) syntax is
+ used, so that for example one would see @('(and x y)') rather than @('(if x y
+ 'nil)').  (See also @('pp').)  Also, abbreviations are inserted where
+ appropriate; see @(see acl2-pc::add-abbreviation).</p>
 
  <p>The ``current term'' is the entire conclusion unless @('dive') commands
  have been given, in which case it may be a subterm of the conclusion.</p>
@@ -120653,7 +120657,7 @@ print the rules for a given name"
 (defxdoc acl2-pc::pp
   :parents (proof-builder-commands)
   :short "(macro)
-prettyprint the current term"
+prettyprint the current term in internal (translated) form"
   :long "@({
   Example and General Form:
   pp
