@@ -71623,8 +71623,9 @@ Subtopics
 
   Many changes have been made to the distributed books, thanks to an
   active ACL2 community.  You can contribute books and obtain updates
-  between ACL2 releases by visiting the {ACL2 Books |
-  http://acl2-books.googlecode.com/} web page.
+  between ACL2 releases by visiting the ACL2 Books web page.  [Note:
+  This release note is obsolete, as it referenced the now-invalid
+  URL, http://acl2-books.googlecode.com/.]
 
   There is new Makefile support for certifying just some of the
   distributed books.  See [books-certification-classic], in
@@ -74438,9 +74439,8 @@ Subtopics
 
   The ACL2 sources are now publicly available between ACL2 releases,
   using svn; see the new ``acl2-devel'' project hosted by Google code
-  at {http://acl2-devel.googlecode.com |
-  http://acl2-devel.googlecode.com}.  Although such a copy of ACL2 is
-  likely to work well with the latest svn (trunk) revision of the
+  at http://acl2-devel.googlecode.com.  Although such a copy of ACL2
+  is likely to work well with the latest svn (trunk) revision of the
   ACL2 community books (see [community-books]), please take seriously
   the warning message printed at startup: ``The authors of ACL2
   consider svn distributions to be experimental; they may be

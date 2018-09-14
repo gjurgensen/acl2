@@ -70111,8 +70111,9 @@ it."
 
  <p>Many changes have been made to the distributed books, thanks to an active
  ACL2 community.  You can contribute books and obtain updates between ACL2
- releases by visiting the <a href='http://acl2-books.googlecode.com/'>ACL2
- Books</a> web page.</p>
+ releases by visiting the ACL2 Books web page.  [Note: This release note is
+ obsolete, as it referenced the now-invalid URL,
+ @('http://acl2-books.googlecode.com/').]</p>
 
  <p>There is new @('Makefile') support for certifying just some of the
  distributed books.  See @(see books-certification-classic), in particular
@@ -74117,19 +74118,19 @@ it."
  <p><b>CHANGES AT THE SYSTEM LEVEL</b></p>
 
  <p>The ACL2 sources are now publicly available between ACL2 releases, using
- svn; see the new ``@('acl2-devel')'' project hosted by Google code at <a
- href='http://acl2-devel.googlecode.com'>http://acl2-devel.googlecode.com</a>.
- Although such a copy of ACL2 is likely to work well with the latest svn
- (trunk) revision of the ACL2 community books (see @(see community-books)),
- please take seriously the warning message printed at startup: ``The authors of
- ACL2 consider svn distributions to be experimental; they may be incomplete,
- fragile, and unable to pass our own regression.''  That message also provides
- instructions for bug reports.  If you decide to use svn versions of either the
- community books or ACL2, then you should use both, as they tend to be kept in
- sync.  We fully expect ACL2 releases to continue from time to time, as usual.
- Thanks to Jared Davis for his efforts in setting up the new acl2-devel project
- and svn repository, and to him and David Rager for convincing us to distribute
- ACL2 sources via svn between releases.</p>
+ svn; see the new ``@('acl2-devel')'' project hosted by Google code at
+ @('http://acl2-devel.googlecode.com').  Although such a copy of ACL2 is likely
+ to work well with the latest svn (trunk) revision of the ACL2 community
+ books (see @(see community-books)), please take seriously the warning message
+ printed at startup: ``The authors of ACL2 consider svn distributions to be
+ experimental; they may be incomplete, fragile, and unable to pass our own
+ regression.''  That message also provides instructions for bug reports.  If
+ you decide to use svn versions of either the community books or ACL2, then you
+ should use both, as they tend to be kept in sync.  We fully expect ACL2
+ releases to continue from time to time, as usual.  Thanks to Jared Davis for
+ his efforts in setting up the new acl2-devel project and svn repository, and
+ to him and David Rager for convincing us to distribute ACL2 sources via svn
+ between releases.</p>
 
  <p>Thanks to a suggestion from Jared Davis, over 30 built-in functions are now
  declared to be inline in order to boost performance.  (The list may be found
