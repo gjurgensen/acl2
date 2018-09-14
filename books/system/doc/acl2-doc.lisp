@@ -80427,8 +80427,10 @@ it."
  <p>Note that only ACL2 system changes are listed below.  See also @(see
  note-8-1-books) for a summary of changes made to the ACL2 Community Books
  since ACL2 8.0, including the build system.  Also note that with each release,
- some built-in functions that were formerly in @(':')@(tsee program) mode are
- now @(see guard)-verified @(':')@(tsee logic) mode functions.</p>
+ it is typical that the value of constant @(tsee *acl2-exports*) has been
+ extended, and that some built-in functions that were formerly in @(':')@(tsee
+ program) mode are now @(see guard)-verified @(':')@(tsee logic) mode
+ functions.</p>
 
  <h3>Changes to Existing Features</h3>
 
