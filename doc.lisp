@@ -9068,7 +9068,7 @@ Subtopics
                  (t (and (atom (car lst))
                          (atom-listp (cdr lst))))))")
  (AUTO-INSTANCE (POINTERS)
-                "See defthm<w.")
+                "See [defthm<w].")
  (A_FLYING_TOUR_OF_ACL2
   (PAGES_WRITTEN_ESPECIALLY_FOR_THE_TOURS)
   "A Flying Tour of ACL2
@@ -13407,9 +13407,12 @@ Subtopics
        (defmacroq \"[books]/kestrel/utilities/defmacroq.lisp\")
        (fty::defprod \"[books]/centaur/fty/top.lisp\")
        (defpun \"[books]/misc/defpun.lisp\")
+       (defthm<w \"[books]/kestrel/utilities/auto-instance.lisp\")
        (defthmg \"[books]/tools/defthmg.lisp\")
        (getopt-demo::demo2 \"[books]/centaur/getopt/demo2.lisp\")
        (developers-guide \"[books]/system/doc/developers-guide.lisp\")
+       (developers-guide-utilities
+            \"[books]/system/doc/developers-guide.lisp\")
        (do-not-hint \"[books]/tools/do-not.lisp\")
        (easy-simplify-term \"[books]/tools/easy-simplify.lisp\")
        (er-soft+ \"[books]/kestrel/utilities/er-soft-plus.lisp\")
@@ -13433,6 +13436,7 @@ Subtopics
        (note-7-1-books \"[books]/doc/relnotes.lisp\")
        (note-7-2-books \"[books]/doc/relnotes.lisp\")
        (note-8-0-books \"[books]/doc/relnotes.lisp\")
+       (note-8-1-books \"[books]/doc/relnotes.lisp\")
        (str::numbers \"[books]/std/strings/top.lisp\")
        (oracle-timelimit \"[books]/tools/oracle-timelimit.lisp\")
        (oslib \"[books]/oslib/top-logic.lisp\")
@@ -78903,10 +78907,11 @@ Experimental Versions
   many changes could be placed in more than one category.
 
   Note that only ACL2 system changes are listed below.  See also
-  note-8-1-books for a summary of changes made to the ACL2 Community
-  Books since ACL2 8.0, including the build system.  Also note that
-  with each release, some built-in functions that were formerly in
-  :[program] mode are now [guard]-verified :[logic] mode functions.
+  [note-8-1-books] for a summary of changes made to the ACL2
+  Community Books since ACL2 8.0, including the build system.  Also
+  note that with each release, some built-in functions that were
+  formerly in :[program] mode are now [guard]-verified :[logic] mode
+  functions.
 
 
 Changes to Existing Features
@@ -83642,7 +83647,7 @@ Subtopics
       See [assoc].
 
   [Auto-instance]
-      See defthm<w.
+      See [defthm<w].
 
   [Backchain-limit-rw]
       See [hints] for information about the keyword :backchain-limit-rw.
@@ -111297,7 +111302,8 @@ Subtopics
   for example in support of the use of the [break-rewrite] utility or
   writing metafunctions.  Implementation-level information about tag
   trees may be found in the Developer's Guide; users should probably
-  not visit that topic unless they plan to become ACL2 developers.
+  not visit that topic (see [DEVELOPERS-GUIDE-UTILITIES]) unless they
+  plan to become ACL2 developers.
 
   Abstractly a tag-tree represents a list of sets, each member set
   having a name given by one of the ``tags'' (which are symbols) of
