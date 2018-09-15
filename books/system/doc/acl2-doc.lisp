@@ -80427,8 +80427,10 @@ it."
  <p>Note that only ACL2 system changes are listed below.  See also @(see
  note-8-1-books) for a summary of changes made to the ACL2 Community Books
  since ACL2 8.0, including the build system.  Also note that with each release,
- some built-in functions that were formerly in @(':')@(tsee program) mode are
- now @(see guard)-verified @(':')@(tsee logic) mode functions.</p>
+ it is typical that the value of constant @(tsee *acl2-exports*) has been
+ extended, and that some built-in functions that were formerly in @(':')@(tsee
+ program) mode are now @(see guard)-verified @(':')@(tsee logic) mode
+ functions.</p>
 
  <h3>Changes to Existing Features</h3>
 
@@ -116749,7 +116751,10 @@ for the execution of @('form')."
     (with-local-state (mv-let (eofp result state)
                               (foo2 state)
                               (mv eofp result))))
- })")
+ })
+
+ <p>Note for ACL2(p) users: When @(see parallel-execution) is enabled,
+ invocations of @('with-local-state') are surrounded by a lock.</p>")
 
 (defxdoc with-local-stobj
   :parents (stobj acl2-built-ins)
