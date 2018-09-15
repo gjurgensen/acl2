@@ -77,7 +77,7 @@ Subtopics
   [defthm], [in-theory], [xargs], [state], etc., without an acl2::
   prefix.
 
-  The constant *acl2-exports* lists 1431 symbols, including most
+  The constant *acl2-exports* lists 1445 symbols, including most
   documented ACL2 system constants, functions, and macros.  You will
   typically also want to import many symbols from Common Lisp; see
   [*common-lisp-symbols-from-main-lisp-package*].
@@ -141,7 +141,7 @@ Subtopics
        associativity-of-* associativity-of-+
        assume atom atom-listp
        atom-listp-forward-to-true-listp
-       backchain-limit
+       backchain-limit badge
        big-clock-entry big-clock-negative-p
        binary-* binary-+ binary-append
        bind-free bit bitp boole$ boolean-listp
@@ -215,15 +215,18 @@ Subtopics
        compress1 compress11
        compress2 compress21 compress211
        concatenate concrete-apply$-userfn
-       concrete-badge-userfn cond
-       cond-clausesp cond-macro conjugate cons
-       cons-equal cons-subtrees cons-with-hint
-       consp consp-assoc-equal constraint-info
-       corollary cpu-core-count ctx
-       current-package current-theory cw cw!
-       cw-gstack declare decrement-big-clock
-       defabbrev defabsstobj
-       defabsstobj-missing-events defattach
+       concrete-badge-userfn
+       cond cond-clausesp cond-macro
+       conjugate cons cons-equal cons-subtrees
+       cons-with-hint consp consp-assoc-equal
+       constraint-info corollary
+       cpu-core-count ctx current-package
+       current-theory cw cw! cw-gstack
+       cw-print-base-radix cw-print-base-radix!
+       declare decrement-big-clock
+       def-warrant defabbrev
+       defabsstobj defabsstobj-missing-events
+       defattach defattach-system
        default default-*-1 default-*-2
        default-+-1 default-+-2 default-<-1
        default-<-2 default-backchain-limit
@@ -249,12 +252,12 @@ Subtopics
        define-pc-atomic-macro define-pc-help
        define-pc-macro define-pc-meta
        define-trusted-clause-processor
-       deflabel deflock
-       defmacro defmacro-last defn defnd defpkg
-       defproxy defrec defrefinement defstobj
-       defstub deftheory deftheory-static
-       defthm defthm-std defthmd defthy defttag
-       defun defun-inline defun-notinline
+       deflabel deflock defmacro
+       defmacro-last defn defnd defpkg defproxy
+       defrec defrefinement defstobj defstub
+       deftheory deftheory-static defthm
+       defthm-std defthmd defthy defttag defun
+       defun$ defun-inline defun-notinline
        defun-nx defun-sk defun-std
        defund defund-inline defund-notinline
        defund-nx defuns defuns-std delete-assoc
@@ -302,13 +305,15 @@ Subtopics
        fms-to-string fmt fmt! fmt!-to-string
        fmt-to-comment-window fmt-to-string fmt1
        fmt1! fmt1!-to-string fmt1-to-string
+       fmx fmx!-cw fmx-cw fn-equal
        fncall-term forall force formula
        fourth function-symbolp function-theory
        gag-mode gc$ gc-strategy gc-verbose
        gcs generalize get-check-invariant-risk
        get-command-sequence
        get-enforce-redundancy get-event-data
-       get-global get-output-stream-string$
+       get-global get-in-theory-redundant-okp
+       get-output-stream-string$
        get-register-invariant-risk
        get-slow-alist-action get-timer
        get-wormhole-status getenv$ getprop
@@ -446,8 +451,9 @@ Subtopics
        ordered-symbol-alistp-forward-to-symbol-alistp
        ordered-symbol-alistp-getprops
        otherwise our-digit-char-p
-       override-hints p! pairlis$
-       pairlis2 pand pargs pbt pc pcb pcb!
+       override-hints p! pairlis$ pairlis2 pand
+       pargs partition-rest-and-keyword-args
+       pbt pc pcb pcb!
        pcs pe pe! peek-char$ pf pkg-imports
        pkg-witness pl pl2 plet plist-worldp
        plist-worldp-forward-to-assoc-eq-equal-alistp
@@ -552,10 +558,11 @@ Subtopics
        set-equalp-equal set-evisc-tuple
        set-fc-criteria set-fc-report-on-the-fly
        set-fmt-hard-right-margin
-       set-fmt-soft-right-margin
-       set-gag-mode set-gc-strategy
-       set-guard-checking set-guard-msg
-       set-ignore-ok set-inhibit-output-lst
+       set-fmt-soft-right-margin set-gag-mode
+       set-gc-strategy set-guard-checking
+       set-guard-msg set-ignore-ok
+       set-in-theory-redundant-okp
+       set-inhibit-output-lst
        set-inhibit-warnings
        set-inhibit-warnings!
        set-inhibited-summary-types
@@ -711,11 +718,11 @@ Subtopics
        update-written-files
        upper-case-p upper-case-p-char-upcase
        upper-case-p-forward-to-alpha-char-p
-       user-stobj-alist
-       user-stobj-alist1 value value-triple
-       verbose-pstack verify verify-guards
-       verify-guards+ verify-guards-formula
-       verify-termination w walkabout warning!
+       user-stobj-alist user-stobj-alist1
+       value value-triple verbose-pstack
+       verify verify-guards verify-guards+
+       verify-guards-formula verify-termination
+       w walkabout warning! warrant
        waterfall-parallelism waterfall-printing
        wet with-fast-alist with-guard-checking
        with-guard-checking-error-triple
@@ -78909,9 +78916,10 @@ Experimental Versions
   Note that only ACL2 system changes are listed below.  See also
   [note-8-1-books] for a summary of changes made to the ACL2
   Community Books since ACL2 8.0, including the build system.  Also
-  note that with each release, some built-in functions that were
-  formerly in :[program] mode are now [guard]-verified :[logic] mode
-  functions.
+  note that with each release, it is typical that the value of
+  constant [*ACL2-exports*] has been extended, and that some built-in
+  functions that were formerly in :[program] mode are now
+  [guard]-verified :[logic] mode functions.
 
 
 Changes to Existing Features
@@ -117726,7 +117734,10 @@ Subtopics
       (declare (xargs :mode :program))
       (with-local-state (mv-let (eofp result state)
                                 (foo2 state)
-                                (mv eofp result))))")
+                                (mv eofp result))))
+
+  Note for ACL2(p) users: When [parallel-execution] is enabled,
+  invocations of with-local-state are surrounded by a lock.")
  (WITH-LOCAL-STOBJ
   (STOBJ ACL2-BUILT-INS)
   "Locally bind a single-threaded object

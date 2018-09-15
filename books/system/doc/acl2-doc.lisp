@@ -116751,7 +116751,10 @@ for the execution of @('form')."
     (with-local-state (mv-let (eofp result state)
                               (foo2 state)
                               (mv eofp result))))
- })")
+ })
+
+ <p>Note for ACL2(p) users: When @(see parallel-execution) is enabled,
+ invocations of @('with-local-state') are surrounded by a lock.</p>")
 
 (defxdoc with-local-stobj
   :parents (stobj acl2-built-ins)
