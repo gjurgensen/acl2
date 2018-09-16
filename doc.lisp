@@ -79333,7 +79333,7 @@ Bug Fixes
   entirely during a proof, and we avoid the error ``ACL2 cannot ev
   the call of non-executable function ANCESTORS-CHECK...'' by
   allowing attachments to be used when checking table guards (as
-  discussed above).  Thanks to Dmitry Nadezhin for sending relayable
+  discussed above).  Thanks to Dmitry Nadezhin for sending replayable
   examples that exhibited these bugs.
 
   Fixed [guard]s for functions [enabled-runep], [enabled-numep],
@@ -79363,7 +79363,7 @@ Bug Fixes
   keyword argument is now fully eliminated.  Thanks to Eric Smith for
   pointing out this issue.
 
-  Fixed :[pso] and related utiltiies :[pso!], :[psof], and :[psog], to
+  Fixed :[pso] and related utilities :[pso!], :[psof], and :[psog], to
   avoid printing some error messages.  Thanks to Keshav Kini for
   sending us an example to bring this bug to our attention.  Also
   tweaked these utilities to avoid accumulating later event failure
@@ -79478,7 +79478,7 @@ Changes at the System Level
   [double-rewrite] was not being displayed in the online manual (back
   when & was used in the URL in the documentation string).
 
-  The \"clean\" target of \"make\" has been deprecated since ACl2 Version
+  The \"clean\" target of \"make\" has been deprecated since ACL2 Version
   7.4 (released in March, 2017). Its replacement is target
   \"clean-lite\"; or, use target \"clean-all\" (or equivalently,
   \"distclean\") if you want a more thorough cleaning.

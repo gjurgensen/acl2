@@ -80862,7 +80862,7 @@ it."
  during a proof, and we avoid the error ``ACL2 cannot ev the call of
  non-executable function ANCESTORS-CHECK...'' by allowing attachments to be
  used when checking table guards (as discussed above).  Thanks to Dmitry
- Nadezhin for sending relayable examples that exhibited these bugs.</p>
+ Nadezhin for sending replayable examples that exhibited these bugs.</p>
 
  <p>Fixed @(see guard)s for functions @(tsee enabled-runep), @(tsee
  enabled-numep), @('disabledp-fn'), and @('disabledp-fn-lst'), thus eliminating
@@ -80890,7 +80890,7 @@ it."
  argument is now fully eliminated.  Thanks to Eric Smith for pointing out this
  issue.</p>
 
- <p>Fixed @(':')@(tsee pso) and related utiltiies @(':')@(tsee pso!),
+ <p>Fixed @(':')@(tsee pso) and related utilities @(':')@(tsee pso!),
  @(':')@(tsee psof), and @(':')@(tsee psog), to avoid printing some error
  messages.  Thanks to Keshav Kini for sending us an example to bring this bug
  to our attention.  Also tweaked these utilities to avoid accumulating later
@@ -81004,7 +81004,7 @@ it."
  online manual (back when @('&') was used in the URL in the documentation
  string).</p>
 
- <p>The \"clean\" target of \"make\" has been deprecated since ACl2 Version
+ <p>The \"clean\" target of \"make\" has been deprecated since ACL2 Version
  7.4 (released in March, 2017). Its replacement is target \"clean-lite\"; or,
  use target \"clean-all\" (or equivalently, \"distclean\") if you want a more
  thorough cleaning.</p>
