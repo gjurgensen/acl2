@@ -77,7 +77,7 @@ Subtopics
   [defthm], [in-theory], [xargs], [state], etc., without an acl2::
   prefix.
 
-  The constant *acl2-exports* lists 1431 symbols, including most
+  The constant *acl2-exports* lists 1445 symbols, including most
   documented ACL2 system constants, functions, and macros.  You will
   typically also want to import many symbols from Common Lisp; see
   [*common-lisp-symbols-from-main-lisp-package*].
@@ -141,7 +141,7 @@ Subtopics
        associativity-of-* associativity-of-+
        assume atom atom-listp
        atom-listp-forward-to-true-listp
-       backchain-limit
+       backchain-limit badge
        big-clock-entry big-clock-negative-p
        binary-* binary-+ binary-append
        bind-free bit bitp boole$ boolean-listp
@@ -215,15 +215,18 @@ Subtopics
        compress1 compress11
        compress2 compress21 compress211
        concatenate concrete-apply$-userfn
-       concrete-badge-userfn cond
-       cond-clausesp cond-macro conjugate cons
-       cons-equal cons-subtrees cons-with-hint
-       consp consp-assoc-equal constraint-info
-       corollary cpu-core-count ctx
-       current-package current-theory cw cw!
-       cw-gstack declare decrement-big-clock
-       defabbrev defabsstobj
-       defabsstobj-missing-events defattach
+       concrete-badge-userfn
+       cond cond-clausesp cond-macro
+       conjugate cons cons-equal cons-subtrees
+       cons-with-hint consp consp-assoc-equal
+       constraint-info corollary
+       cpu-core-count ctx current-package
+       current-theory cw cw! cw-gstack
+       cw-print-base-radix cw-print-base-radix!
+       declare decrement-big-clock
+       def-warrant defabbrev
+       defabsstobj defabsstobj-missing-events
+       defattach defattach-system
        default default-*-1 default-*-2
        default-+-1 default-+-2 default-<-1
        default-<-2 default-backchain-limit
@@ -249,12 +252,12 @@ Subtopics
        define-pc-atomic-macro define-pc-help
        define-pc-macro define-pc-meta
        define-trusted-clause-processor
-       deflabel deflock
-       defmacro defmacro-last defn defnd defpkg
-       defproxy defrec defrefinement defstobj
-       defstub deftheory deftheory-static
-       defthm defthm-std defthmd defthy defttag
-       defun defun-inline defun-notinline
+       deflabel deflock defmacro
+       defmacro-last defn defnd defpkg defproxy
+       defrec defrefinement defstobj defstub
+       deftheory deftheory-static defthm
+       defthm-std defthmd defthy defttag defun
+       defun$ defun-inline defun-notinline
        defun-nx defun-sk defun-std
        defund defund-inline defund-notinline
        defund-nx defuns defuns-std delete-assoc
@@ -302,13 +305,15 @@ Subtopics
        fms-to-string fmt fmt! fmt!-to-string
        fmt-to-comment-window fmt-to-string fmt1
        fmt1! fmt1!-to-string fmt1-to-string
+       fmx fmx!-cw fmx-cw fn-equal
        fncall-term forall force formula
        fourth function-symbolp function-theory
        gag-mode gc$ gc-strategy gc-verbose
        gcs generalize get-check-invariant-risk
        get-command-sequence
        get-enforce-redundancy get-event-data
-       get-global get-output-stream-string$
+       get-global get-in-theory-redundant-okp
+       get-output-stream-string$
        get-register-invariant-risk
        get-slow-alist-action get-timer
        get-wormhole-status getenv$ getprop
@@ -446,8 +451,9 @@ Subtopics
        ordered-symbol-alistp-forward-to-symbol-alistp
        ordered-symbol-alistp-getprops
        otherwise our-digit-char-p
-       override-hints p! pairlis$
-       pairlis2 pand pargs pbt pc pcb pcb!
+       override-hints p! pairlis$ pairlis2 pand
+       pargs partition-rest-and-keyword-args
+       pbt pc pcb pcb!
        pcs pe pe! peek-char$ pf pkg-imports
        pkg-witness pl pl2 plet plist-worldp
        plist-worldp-forward-to-assoc-eq-equal-alistp
@@ -552,10 +558,11 @@ Subtopics
        set-equalp-equal set-evisc-tuple
        set-fc-criteria set-fc-report-on-the-fly
        set-fmt-hard-right-margin
-       set-fmt-soft-right-margin
-       set-gag-mode set-gc-strategy
-       set-guard-checking set-guard-msg
-       set-ignore-ok set-inhibit-output-lst
+       set-fmt-soft-right-margin set-gag-mode
+       set-gc-strategy set-guard-checking
+       set-guard-msg set-ignore-ok
+       set-in-theory-redundant-okp
+       set-inhibit-output-lst
        set-inhibit-warnings
        set-inhibit-warnings!
        set-inhibited-summary-types
@@ -711,11 +718,11 @@ Subtopics
        update-written-files
        upper-case-p upper-case-p-char-upcase
        upper-case-p-forward-to-alpha-char-p
-       user-stobj-alist
-       user-stobj-alist1 value value-triple
-       verbose-pstack verify verify-guards
-       verify-guards+ verify-guards-formula
-       verify-termination w walkabout warning!
+       user-stobj-alist user-stobj-alist1
+       value value-triple verbose-pstack
+       verify verify-guards verify-guards+
+       verify-guards-formula verify-termination
+       w walkabout warning! warrant
        waterfall-parallelism waterfall-printing
        wet with-fast-alist with-guard-checking
        with-guard-checking-error-triple
@@ -9068,7 +9075,7 @@ Subtopics
                  (t (and (atom (car lst))
                          (atom-listp (cdr lst))))))")
  (AUTO-INSTANCE (POINTERS)
-                "See defthm<w.")
+                "See [defthm<w].")
  (A_FLYING_TOUR_OF_ACL2
   (PAGES_WRITTEN_ESPECIALLY_FOR_THE_TOURS)
   "A Flying Tour of ACL2
@@ -13407,9 +13414,12 @@ Subtopics
        (defmacroq \"[books]/kestrel/utilities/defmacroq.lisp\")
        (fty::defprod \"[books]/centaur/fty/top.lisp\")
        (defpun \"[books]/misc/defpun.lisp\")
+       (defthm<w \"[books]/kestrel/utilities/auto-instance.lisp\")
        (defthmg \"[books]/tools/defthmg.lisp\")
        (getopt-demo::demo2 \"[books]/centaur/getopt/demo2.lisp\")
        (developers-guide \"[books]/system/doc/developers-guide.lisp\")
+       (developers-guide-utilities
+            \"[books]/system/doc/developers-guide.lisp\")
        (do-not-hint \"[books]/tools/do-not.lisp\")
        (easy-simplify-term \"[books]/tools/easy-simplify.lisp\")
        (er-soft+ \"[books]/kestrel/utilities/er-soft-plus.lisp\")
@@ -13433,6 +13443,7 @@ Subtopics
        (note-7-1-books \"[books]/doc/relnotes.lisp\")
        (note-7-2-books \"[books]/doc/relnotes.lisp\")
        (note-8-0-books \"[books]/doc/relnotes.lisp\")
+       (note-8-1-books \"[books]/doc/relnotes.lisp\")
        (str::numbers \"[books]/std/strings/top.lisp\")
        (oracle-timelimit \"[books]/tools/oracle-timelimit.lisp\")
        (oslib \"[books]/oslib/top-logic.lisp\")
@@ -71619,8 +71630,9 @@ Subtopics
 
   Many changes have been made to the distributed books, thanks to an
   active ACL2 community.  You can contribute books and obtain updates
-  between ACL2 releases by visiting the {ACL2 Books |
-  http://acl2-books.googlecode.com/} web page.
+  between ACL2 releases by visiting the ACL2 Books web page.  [Note:
+  This release note is obsolete, as it referenced the now-invalid
+  URL, http://acl2-books.googlecode.com/.]
 
   There is new Makefile support for certifying just some of the
   distributed books.  See [books-certification-classic], in
@@ -74434,9 +74446,8 @@ Subtopics
 
   The ACL2 sources are now publicly available between ACL2 releases,
   using svn; see the new ``acl2-devel'' project hosted by Google code
-  at {http://acl2-devel.googlecode.com |
-  http://acl2-devel.googlecode.com}.  Although such a copy of ACL2 is
-  likely to work well with the latest svn (trunk) revision of the
+  at http://acl2-devel.googlecode.com.  Although such a copy of ACL2
+  is likely to work well with the latest svn (trunk) revision of the
   ACL2 community books (see [community-books]), please take seriously
   the warning message printed at startup: ``The authors of ACL2
   consider svn distributions to be experimental; they may be
@@ -78903,10 +78914,12 @@ Experimental Versions
   many changes could be placed in more than one category.
 
   Note that only ACL2 system changes are listed below.  See also
-  note-8-1-books for a summary of changes made to the ACL2 Community
-  Books since ACL2 8.0, including the build system.  Also note that
-  with each release, some built-in functions that were formerly in
-  :[program] mode are now [guard]-verified :[logic] mode functions.
+  [note-8-1-books] for a summary of changes made to the ACL2
+  Community Books since ACL2 8.0, including the build system.  Also
+  note that with each release, it is typical that the value of
+  constant [*ACL2-exports*] has been extended, and that some built-in
+  functions that were formerly in :[program] mode are now
+  [guard]-verified :[logic] mode functions.
 
 
 Changes to Existing Features
@@ -79320,7 +79333,7 @@ Bug Fixes
   entirely during a proof, and we avoid the error ``ACL2 cannot ev
   the call of non-executable function ANCESTORS-CHECK...'' by
   allowing attachments to be used when checking table guards (as
-  discussed above).  Thanks to Dmitry Nadezhin for sending relayable
+  discussed above).  Thanks to Dmitry Nadezhin for sending replayable
   examples that exhibited these bugs.
 
   Fixed [guard]s for functions [enabled-runep], [enabled-numep],
@@ -79350,7 +79363,7 @@ Bug Fixes
   keyword argument is now fully eliminated.  Thanks to Eric Smith for
   pointing out this issue.
 
-  Fixed :[pso] and related utiltiies :[pso!], :[psof], and :[psog], to
+  Fixed :[pso] and related utilities :[pso!], :[psof], and :[psog], to
   avoid printing some error messages.  Thanks to Keshav Kini for
   sending us an example to bring this bug to our attention.  Also
   tweaked these utilities to avoid accumulating later event failure
@@ -79465,7 +79478,7 @@ Changes at the System Level
   [double-rewrite] was not being displayed in the online manual (back
   when & was used in the URL in the documentation string).
 
-  The \"clean\" target of \"make\" has been deprecated since ACl2 Version
+  The \"clean\" target of \"make\" has been deprecated since ACL2 Version
   7.4 (released in March, 2017). Its replacement is target
   \"clean-lite\"; or, use target \"clean-all\" (or equivalently,
   \"distclean\") if you want a more thorough cleaning.
@@ -83642,7 +83655,7 @@ Subtopics
       See [assoc].
 
   [Auto-instance]
-      See defthm<w.
+      See [defthm<w].
 
   [Backchain-limit-rw]
       See [hints] for information about the keyword :backchain-limit-rw.
@@ -111297,7 +111310,8 @@ Subtopics
   for example in support of the use of the [break-rewrite] utility or
   writing metafunctions.  Implementation-level information about tag
   trees may be found in the Developer's Guide; users should probably
-  not visit that topic unless they plan to become ACL2 developers.
+  not visit that topic (see [DEVELOPERS-GUIDE-UTILITIES]) unless they
+  plan to become ACL2 developers.
 
   Abstractly a tag-tree represents a list of sets, each member set
   having a name given by one of the ``tags'' (which are symbols) of
@@ -117720,7 +117734,10 @@ Subtopics
       (declare (xargs :mode :program))
       (with-local-state (mv-let (eofp result state)
                                 (foo2 state)
-                                (mv eofp result))))")
+                                (mv eofp result))))
+
+  Note for ACL2(p) users: When [parallel-execution] is enabled,
+  invocations of with-local-state are surrounded by a lock.")
  (WITH-LOCAL-STOBJ
   (STOBJ ACL2-BUILT-INS)
   "Locally bind a single-threaded object
