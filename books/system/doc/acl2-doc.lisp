@@ -2,8 +2,8 @@
 ;
 ; acl2-doc.lisp - Documentation for the ACL2 Theorem Prover
 ;
-; ACL2 Version 8.0 -- A Computational Logic for Applicative Common Lisp
-; Copyright (C) 2017, Regents of the University of Texas
+; ACL2 Version 8.1 -- A Computational Logic for Applicative Common Lisp
+; Copyright (C) 2018, Regents of the University of Texas
 ;
 ; This documentation was derived from the ACL2 system in October 2013, which
 ; was a descendant of ACL2 Version 1.9, Copyright (C) 1997 Computational Logic,
@@ -228,7 +228,7 @@
 ; who are looking at an older version of ACL2 will see the corresponding
 ; ACL2+Books Manual at this link.
 
-  "http://www.cs.utexas.edu/users/moore/acl2/v8-0/")
+  "http://www.cs.utexas.edu/users/moore/acl2/v8-1/")
 
 (defconst *installation-url*
 
@@ -803,7 +803,7 @@
 (defxdoc about-acl2
   :parents (acl2)
   :short "General information About ACL2"
-  :long "<p>This is @(`(:raw (@ acl2-version))`), @(see copyright) (C) 2017,
+  :long "<p>This is @(`(:raw (@ acl2-version))`), @(see copyright) (C) 2018,
  Regents of the University of Texas, authored by Matt Kaufmann and J Strother
  Moore.</p>
 
@@ -15877,7 +15877,7 @@ subtree of X with T, without duplication.</p>
  <p>@(`(:raw (@ acl2-version))`) &mdash; A Computational Logic for Applicative
  Common Lisp</p>
 
- <p>Copyright (C) 2017, Regents of the University of Texas</p>
+ <p>Copyright (C) 2018, Regents of the University of Texas</p>
 
  <p>This version of ACL2 is a descendant of ACL2 Version 1.9, Copyright (C)
  1997 Computational Logic, Inc.  See the documentation topic NOTE-2-0.</p>
@@ -80308,11 +80308,11 @@ it."
 
 (defxdoc note-8-1
 
-; Total number of release note items: 76, as follows.
+; Total number of release note items: 77, as follows.
 ;   32 ; Changes to Existing Features
 ;    8 ; New Features
 ;    6 ; Heuristic and Efficiency Improvements
-;   24 ; Bug Fixes
+;   25 ; Bug Fixes
 ;    4 ; Changes at the System Level
 ;    1 ; EMACS Support
 ;    1 ; Experimental Versions
@@ -80412,7 +80412,7 @@ it."
 ; formals in each value function.
 
   :parents (release-notes)
-  :short "ACL2 Version  8.1 (xxx, 20xx) Notes"
+  :short "ACL2 Version  8.1 (September, 2018) Notes"
   :long "<p>NOTE!  New users can ignore these release notes, because the @(see
  documentation) has been updated to reflect all changes that are recorded
  here.</p>
@@ -80990,6 +80990,10 @@ it."
    (g 3))
  })
 
+ <p>Fixed an error message saying that ``It is illegal for supporters of
+ DEFAXIOM events to receive attachments'' that failed during printing.  Thanks
+ to Nathan Guermond for sending an example to point out this bug.</p>
+
  <h3>Changes at the System Level</h3>
 
  <p>Fixed the use of `@('<a href='URL'>...</a>')' so that if @('URL') has the
@@ -81031,6 +81035,44 @@ it."
  <p>The utility @(tsee with-local-state) no longer causes an error in ACL2(p)
  with @(see parallel-execution) enabled.  Thus, neither do @(tsee
  fmt-to-string) and related utilities, which call @('with-local-state').</p>
+
+ ")
+
+(defxdoc note-8-2
+  :parents (release-notes)
+  :short "ACL2 Version  8.2 (xxx, 20xx) Notes"
+  :long "<p>NOTE!  New users can ignore these release notes, because the @(see
+ documentation) has been updated to reflect all changes that are recorded
+ here.</p>
+
+ <p>Below we roughly organize the changes to ACL2 since Version 8.1 into the
+ following categories of changes: existing features, new features, heuristic
+ and efficiency improvements, bug fixes, changes at the system level, Emacs
+ support, and experimental versions.  Each change is described in just one
+ category, though of course many changes could be placed in more than one
+ category.</p>
+
+ <p>Note that only ACL2 system changes are listed below.  See also @(see
+ note-8-2-books) for a summary of changes made to the ACL2 Community Books
+ since ACL2 8.0, including the build system.  Also note that with each release,
+ it is typical that the value of constant @(tsee *acl2-exports*) has been
+ extended, and that some built-in functions that were formerly in @(':')@(tsee
+ program) mode are now @(see guard)-verified @(':')@(tsee logic) mode
+ functions.</p>
+
+ <h3>Changes to Existing Features</h3>
+
+ <h3>New Features</h3>
+
+ <h3>Heuristic and Efficiency Improvements</h3>
+
+ <h3>Bug Fixes</h3>
+
+ <h3>Changes at the System Level</h3>
+
+ <h3>EMACS Support</h3>
+
+ <h3>Experimental Versions</h3>
 
  ")
 
@@ -103763,7 +103805,7 @@ arithmetic) for libraries of @(see books) for arithmetic reasoning.</p>")
       :hints ((\"Goal\" :in-theory (disable (:type-prescription sys-call)))))
  })
 
- <p>Through Version_7.4, running this example did indeed create file
+ <p>Through Version 7.4, running this example did indeed create file
  @('/tmp/XXX') if that file did not already exist.  Now, the @(see
  executable-counterpart) of @('sys-call') is disabled, which avoids that
  specific behavior.  Moreover: even with that executable-counterpart enabled,
