@@ -77,7 +77,7 @@ Subtopics
   [defthm], [in-theory], [xargs], [state], etc., without an acl2::
   prefix.
 
-  The constant *acl2-exports* lists 1431 symbols, including most
+  The constant *acl2-exports* lists 1445 symbols, including most
   documented ACL2 system constants, functions, and macros.  You will
   typically also want to import many symbols from Common Lisp; see
   [*common-lisp-symbols-from-main-lisp-package*].
@@ -141,7 +141,7 @@ Subtopics
        associativity-of-* associativity-of-+
        assume atom atom-listp
        atom-listp-forward-to-true-listp
-       backchain-limit
+       backchain-limit badge
        big-clock-entry big-clock-negative-p
        binary-* binary-+ binary-append
        bind-free bit bitp boole$ boolean-listp
@@ -215,15 +215,18 @@ Subtopics
        compress1 compress11
        compress2 compress21 compress211
        concatenate concrete-apply$-userfn
-       concrete-badge-userfn cond
-       cond-clausesp cond-macro conjugate cons
-       cons-equal cons-subtrees cons-with-hint
-       consp consp-assoc-equal constraint-info
-       corollary cpu-core-count ctx
-       current-package current-theory cw cw!
-       cw-gstack declare decrement-big-clock
-       defabbrev defabsstobj
-       defabsstobj-missing-events defattach
+       concrete-badge-userfn
+       cond cond-clausesp cond-macro
+       conjugate cons cons-equal cons-subtrees
+       cons-with-hint consp consp-assoc-equal
+       constraint-info corollary
+       cpu-core-count ctx current-package
+       current-theory cw cw! cw-gstack
+       cw-print-base-radix cw-print-base-radix!
+       declare decrement-big-clock
+       def-warrant defabbrev
+       defabsstobj defabsstobj-missing-events
+       defattach defattach-system
        default default-*-1 default-*-2
        default-+-1 default-+-2 default-<-1
        default-<-2 default-backchain-limit
@@ -249,12 +252,12 @@ Subtopics
        define-pc-atomic-macro define-pc-help
        define-pc-macro define-pc-meta
        define-trusted-clause-processor
-       deflabel deflock
-       defmacro defmacro-last defn defnd defpkg
-       defproxy defrec defrefinement defstobj
-       defstub deftheory deftheory-static
-       defthm defthm-std defthmd defthy defttag
-       defun defun-inline defun-notinline
+       deflabel deflock defmacro
+       defmacro-last defn defnd defpkg defproxy
+       defrec defrefinement defstobj defstub
+       deftheory deftheory-static defthm
+       defthm-std defthmd defthy defttag defun
+       defun$ defun-inline defun-notinline
        defun-nx defun-sk defun-std
        defund defund-inline defund-notinline
        defund-nx defuns defuns-std delete-assoc
@@ -302,13 +305,15 @@ Subtopics
        fms-to-string fmt fmt! fmt!-to-string
        fmt-to-comment-window fmt-to-string fmt1
        fmt1! fmt1!-to-string fmt1-to-string
+       fmx fmx!-cw fmx-cw fn-equal
        fncall-term forall force formula
        fourth function-symbolp function-theory
        gag-mode gc$ gc-strategy gc-verbose
        gcs generalize get-check-invariant-risk
        get-command-sequence
        get-enforce-redundancy get-event-data
-       get-global get-output-stream-string$
+       get-global get-in-theory-redundant-okp
+       get-output-stream-string$
        get-register-invariant-risk
        get-slow-alist-action get-timer
        get-wormhole-status getenv$ getprop
@@ -446,8 +451,9 @@ Subtopics
        ordered-symbol-alistp-forward-to-symbol-alistp
        ordered-symbol-alistp-getprops
        otherwise our-digit-char-p
-       override-hints p! pairlis$
-       pairlis2 pand pargs pbt pc pcb pcb!
+       override-hints p! pairlis$ pairlis2 pand
+       pargs partition-rest-and-keyword-args
+       pbt pc pcb pcb!
        pcs pe pe! peek-char$ pf pkg-imports
        pkg-witness pl pl2 plet plist-worldp
        plist-worldp-forward-to-assoc-eq-equal-alistp
@@ -552,10 +558,11 @@ Subtopics
        set-equalp-equal set-evisc-tuple
        set-fc-criteria set-fc-report-on-the-fly
        set-fmt-hard-right-margin
-       set-fmt-soft-right-margin
-       set-gag-mode set-gc-strategy
-       set-guard-checking set-guard-msg
-       set-ignore-ok set-inhibit-output-lst
+       set-fmt-soft-right-margin set-gag-mode
+       set-gc-strategy set-guard-checking
+       set-guard-msg set-ignore-ok
+       set-in-theory-redundant-okp
+       set-inhibit-output-lst
        set-inhibit-warnings
        set-inhibit-warnings!
        set-inhibited-summary-types
@@ -711,11 +718,11 @@ Subtopics
        update-written-files
        upper-case-p upper-case-p-char-upcase
        upper-case-p-forward-to-alpha-char-p
-       user-stobj-alist
-       user-stobj-alist1 value value-triple
-       verbose-pstack verify verify-guards
-       verify-guards+ verify-guards-formula
-       verify-termination w walkabout warning!
+       user-stobj-alist user-stobj-alist1
+       value value-triple verbose-pstack
+       verify verify-guards verify-guards+
+       verify-guards-formula verify-termination
+       w walkabout warning! warrant
        waterfall-parallelism waterfall-printing
        wet with-fast-alist with-guard-checking
        with-guard-checking-error-triple
@@ -9068,7 +9075,7 @@ Subtopics
                  (t (and (atom (car lst))
                          (atom-listp (cdr lst))))))")
  (AUTO-INSTANCE (POINTERS)
-                "See defthm<w.")
+                "See [defthm<w].")
  (A_FLYING_TOUR_OF_ACL2
   (PAGES_WRITTEN_ESPECIALLY_FOR_THE_TOURS)
   "A Flying Tour of ACL2
@@ -13407,9 +13414,12 @@ Subtopics
        (defmacroq \"[books]/kestrel/utilities/defmacroq.lisp\")
        (fty::defprod \"[books]/centaur/fty/top.lisp\")
        (defpun \"[books]/misc/defpun.lisp\")
+       (defthm<w \"[books]/kestrel/utilities/auto-instance.lisp\")
        (defthmg \"[books]/tools/defthmg.lisp\")
        (getopt-demo::demo2 \"[books]/centaur/getopt/demo2.lisp\")
        (developers-guide \"[books]/system/doc/developers-guide.lisp\")
+       (developers-guide-utilities
+            \"[books]/system/doc/developers-guide.lisp\")
        (do-not-hint \"[books]/tools/do-not.lisp\")
        (easy-simplify-term \"[books]/tools/easy-simplify.lisp\")
        (er-soft+ \"[books]/kestrel/utilities/er-soft-plus.lisp\")
@@ -13433,6 +13443,7 @@ Subtopics
        (note-7-1-books \"[books]/doc/relnotes.lisp\")
        (note-7-2-books \"[books]/doc/relnotes.lisp\")
        (note-8-0-books \"[books]/doc/relnotes.lisp\")
+       (note-8-1-books \"[books]/doc/relnotes.lisp\")
        (str::numbers \"[books]/std/strings/top.lisp\")
        (oracle-timelimit \"[books]/tools/oracle-timelimit.lisp\")
        (oslib \"[books]/oslib/top-logic.lisp\")
@@ -40583,15 +40594,17 @@ Subtopics
 
   A very common hint is the :use hint, which in general takes as its
   value a list of ``lemma instances'' (see [lemma-instance]) but
-  which allows a single lemma name as a special case.  Here are two
-  examples, one using a single lemma name and one using a lemma
-  instance:
+  which allows a single lemma name as a special case.  In each case,
+  a goal G is replaced by a new goal (IMPLIES P G), where P is the
+  theorem specified by the (conjunction of the) lemma instances
+  provided.  Here are some examples.
 
-    ; Attach :use hint to the top-level goal, which is named \"Goal\":
+    ; Attach :use hint to the top-level goal G, which is named \"Goal\",
+    ; replacing it by (implies P G) where P is the statement of lemma23:
     :hints ((\"Goal\" :use lemma23))
 
-    ; Equivalent to the above: use the trivial instance (i.e., with the empty
-    ; substitution of lemma23:
+    ; Equivalent to the above, using the trivial instance (i.e., with the empty
+    ; substitution) of lemma23:
     :hints ((\"Goal\" :use ((:instance lemma23))))
 
     ; Attach :use hint to the named subgoal, where the indicated lemma is used
@@ -41355,24 +41368,25 @@ Subtopics
 
         Value is a [lemma-instance] or a true list of [lemma-instance]s,
         indicating that the propositions denoted by the instances be
-        added as hypotheses to the specified goal.  Note that :use
-        makes the given instances available as ordinary hypotheses of
-        the formula to be proved.  The :instance form of a
+        added as hypotheses to the specified goal: that is, the :use
+        hint replaces a goal, G, by the new goal, (IMPLIES P G),
+        where P is the theorem specified by the (conjunction of the)
+        lemma instances provided.  The :instance form of a
         [lemma-instance] permits you to instantiate the free
         variables of previously proved theorems any way you wish,
         even allowing for differences in [packages]; see
         [lemma-instance] for details.  These new hypotheses
         participate fully in all subsequent rewriting, etc.  If the
         goal in question is in fact an instance of a previously
-        proved theorem, you may wish to use :by below.  Note that
-        [theories] may be helpful when employing :use hints; see
-        [minimal-theory].
+        proved theorem, you may wish to use :by (documented above).
+        Sometimes [theories] are helpful when employing :use hints;
+        see [minimal-theory].
 
-        Note that if the value is the name of a function symbol introduced by
-        [defun], then the normalized (simplified) body of that
-        definition is used; see [normalize].  This behavior differs
-        from that provided by a :by hint, where the original body of
-        the definition is used.
+        If the value is the name of a function symbol introduced by [defun],
+        then the normalized (simplified) body of that definition is
+        used; see [normalize].  This behavior differs from that
+        provided by a :by hint, where the original body of the
+        definition is used.
 
 
 Subtopics
@@ -71616,8 +71630,9 @@ Subtopics
 
   Many changes have been made to the distributed books, thanks to an
   active ACL2 community.  You can contribute books and obtain updates
-  between ACL2 releases by visiting the {ACL2 Books |
-  http://acl2-books.googlecode.com/} web page.
+  between ACL2 releases by visiting the ACL2 Books web page.  [Note:
+  This release note is obsolete, as it referenced the now-invalid
+  URL, http://acl2-books.googlecode.com/.]
 
   There is new Makefile support for certifying just some of the
   distributed books.  See [books-certification-classic], in
@@ -74431,9 +74446,8 @@ Subtopics
 
   The ACL2 sources are now publicly available between ACL2 releases,
   using svn; see the new ``acl2-devel'' project hosted by Google code
-  at {http://acl2-devel.googlecode.com |
-  http://acl2-devel.googlecode.com}.  Although such a copy of ACL2 is
-  likely to work well with the latest svn (trunk) revision of the
+  at http://acl2-devel.googlecode.com.  Although such a copy of ACL2
+  is likely to work well with the latest svn (trunk) revision of the
   ACL2 community books (see [community-books]), please take seriously
   the warning message printed at startup: ``The authors of ACL2
   consider svn distributions to be experimental; they may be
@@ -78900,10 +78914,12 @@ Experimental Versions
   many changes could be placed in more than one category.
 
   Note that only ACL2 system changes are listed below.  See also
-  note-8-1-books for a summary of changes made to the ACL2 Community
-  Books since ACL2 8.0, including the build system.  Also note that
-  with each release, some built-in functions that were formerly in
-  :[program] mode are now [guard]-verified :[logic] mode functions.
+  [note-8-1-books] for a summary of changes made to the ACL2
+  Community Books since ACL2 8.0, including the build system.  Also
+  note that with each release, it is typical that the value of
+  constant [*ACL2-exports*] has been extended, and that some built-in
+  functions that were formerly in :[program] mode are now
+  [guard]-verified :[logic] mode functions.
 
 
 Changes to Existing Features
@@ -79155,6 +79171,16 @@ Changes to Existing Features
   on the right-hand side as the rewrite rule is applied.  Thanks to
   Eric Smith for requesting this change.
 
+  It was possible to declare a function symbol to be [untouchable] and
+  yet still execute it using [apply$], thus violating the spirit of
+  untouchables.  That is no longer allowed.  Here is an example of
+  such execution that was formerly permitted, but is no longer.
+
+    (include-book \"projects/apply/apply-lemmas\" :dir :system)
+    (defun$ f (x) (declare (xargs :guard t)) (cons x x))
+    (push-untouchable f t)
+    (apply$ 'f '(3))
+
 
 New Features
 
@@ -79307,7 +79333,7 @@ Bug Fixes
   entirely during a proof, and we avoid the error ``ACL2 cannot ev
   the call of non-executable function ANCESTORS-CHECK...'' by
   allowing attachments to be used when checking table guards (as
-  discussed above).  Thanks to Dmitry Nadezhin for sending relayable
+  discussed above).  Thanks to Dmitry Nadezhin for sending replayable
   examples that exhibited these bugs.
 
   Fixed [guard]s for functions [enabled-runep], [enabled-numep],
@@ -79337,7 +79363,7 @@ Bug Fixes
   keyword argument is now fully eliminated.  Thanks to Eric Smith for
   pointing out this issue.
 
-  Fixed :[pso] and related utiltiies :[pso!], :[psof], and :[psog], to
+  Fixed :[pso] and related utilities :[pso!], :[psof], and :[psog], to
   avoid printing some error messages.  Thanks to Keshav Kini for
   sending us an example to bring this bug to our attention.  Also
   tweaked these utilities to avoid accumulating later event failure
@@ -79427,6 +79453,16 @@ Bug Fixes
   ACL2.  Thanks to Eric McCarthy for sending examples to point out
   these issues.
 
+  A bug has been fixed that could cause an error when processing a
+  legal [flet] form, because the processing of a binding could
+  interfere inappropriately with the processing of a subsequent
+  binding, as in the following example.
+
+    (defun f (x) x)
+    (flet ((f (x) (cons x x))
+           (g (x) (f x))) ; processed with bad binding of stobjs-out for f
+      (g 3))
+
 
 Changes at the System Level
 
@@ -79442,7 +79478,7 @@ Changes at the System Level
   [double-rewrite] was not being displayed in the online manual (back
   when & was used in the URL in the documentation string).
 
-  The \"clean\" target of \"make\" has been deprecated since ACl2 Version
+  The \"clean\" target of \"make\" has been deprecated since ACL2 Version
   7.4 (released in March, 2017). Its replacement is target
   \"clean-lite\"; or, use target \"clean-all\" (or equivalently,
   \"distclean\") if you want a more thorough cleaning.
@@ -79468,7 +79504,11 @@ EMACS Support
   file.
 
 
-Experimental Versions")
+Experimental Versions
+
+  The utility [with-local-state] no longer causes an error in ACL2(p)
+  with [parallel-execution] enabled.  Thus, neither do
+  [fmt-to-string] and related utilities, which call with-local-state.")
  (NOTE1 (POINTERS) "See [note-1-1].")
  (NOTE2 (POINTERS) "See [note-1-2].")
  (NOTE3 (POINTERS) "See [note-1-3].")
@@ -83615,7 +83655,7 @@ Subtopics
       See [assoc].
 
   [Auto-instance]
-      See defthm<w.
+      See [defthm<w].
 
   [Backchain-limit-rw]
       See [hints] for information about the keyword :backchain-limit-rw.
@@ -87643,7 +87683,8 @@ Subtopics
       run the second
 
   [ACL2-pc::p]
-      (macro) prettyprint the current term
+      (macro) prettyprint the current term in the usual user-level
+      (untranslated) syntax
 
   [ACL2-pc::p-top]
       (macro) prettyprint the conclusion, highlighting the current term
@@ -87652,7 +87693,7 @@ Subtopics
       (macro) print the rules for a given name
 
   [ACL2-pc::pp]
-      (macro) prettyprint the current term
+      (macro) prettyprint the current term in internal (translated) form
 
   [ACL2-pc::pr]
       (macro) print the rules for a given name
@@ -87898,7 +87939,8 @@ Subtopics
       (atomic macro) move forward one argument in the enclosing term
 
   [ACL2-pc::p]
-      (macro) prettyprint the current term
+      (macro) prettyprint the current term in the usual user-level
+      (untranslated) syntax
 
   [ACL2-pc::p-top]
       (macro) prettyprint the conclusion, highlighting the current term
@@ -111268,7 +111310,8 @@ Subtopics
   for example in support of the use of the [break-rewrite] utility or
   writing metafunctions.  Implementation-level information about tag
   trees may be found in the Developer's Guide; users should probably
-  not visit that topic unless they plan to become ACL2 developers.
+  not visit that topic (see [DEVELOPERS-GUIDE-UTILITIES]) unless they
+  plan to become ACL2 developers.
 
   Abstractly a tag-tree represents a list of sets, each member set
   having a name given by one of the ``tags'' (which are symbols) of
@@ -117691,7 +117734,10 @@ Subtopics
       (declare (xargs :mode :program))
       (with-local-state (mv-let (eofp result state)
                                 (foo2 state)
-                                (mv eofp result))))")
+                                (mv eofp result))))
+
+  Note for ACL2(p) users: When [parallel-execution] is enabled,
+  invocations of with-local-state are surrounded by a lock.")
  (WITH-LOCAL-STOBJ
   (STOBJ ACL2-BUILT-INS)
   "Locally bind a single-threaded object
@@ -121265,15 +121311,16 @@ Subtopics
   the failure is soft.")
  (ACL2-PC::P
   (PROOF-BUILDER-COMMANDS PROOF-BUILDER-COMMANDS-SHORT-LIST)
-  "(macro) prettyprint the current term
+  "(macro) prettyprint the current term in the usual user-level
+  (untranslated) syntax
 
     Example and General Form:
     p
 
-  Prettyprint the current term.  The usual user syntax is used, so that
-  for example one would see (and x y) rather than (if x y 'nil).
-  (See also pp.)  Also, abbreviations are inserted where appropriate;
-  see [ACL2-pc::add-abbreviation].
+  Prettyprint the current term.  The usual user (untranslated) syntax
+  is used, so that for example one would see (and x y) rather than
+  (if x y 'nil).  (See also pp.)  Also, abbreviations are inserted
+  where appropriate; see [ACL2-pc::add-abbreviation].
 
   The ``current term'' is the entire conclusion unless dive commands
   have been given, in which case it may be a subterm of the
@@ -121321,7 +121368,7 @@ Subtopics
   subterm, consider the show-rewrites (or equivalently, sr) command.")
  (ACL2-PC::PP
   (PROOF-BUILDER-COMMANDS)
-  "(macro) prettyprint the current term
+  "(macro) prettyprint the current term in internal (translated) form
 
     Example and General Form:
     pp

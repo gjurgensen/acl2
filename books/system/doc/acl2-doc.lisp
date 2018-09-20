@@ -152,9 +152,11 @@
     (DEFMACROQ "[books]/kestrel/utilities/defmacroq.lisp")
     (FTY::DEFPROD "[books]/centaur/fty/top.lisp")
     (DEFPUN "[books]/misc/defpun.lisp")
+    (DEFTHM<W "[books]/kestrel/utilities/auto-instance.lisp")
     (DEFTHMG "[books]/tools/defthmg.lisp")
     (GETOPT-DEMO::DEMO2 "[books]/centaur/getopt/demo2.lisp")
     (DEVELOPERS-GUIDE "[books]/system/doc/developers-guide.lisp")
+    (DEVELOPERS-GUIDE-UTILITIES "[books]/system/doc/developers-guide.lisp")
     (DO-NOT-HINT "[books]/tools/do-not.lisp")
     (EASY-SIMPLIFY-TERM "[books]/tools/easy-simplify.lisp")
     (ER-SOFT+ "[books]/kestrel/utilities/er-soft-plus.lisp")
@@ -178,6 +180,7 @@
     (NOTE-7-1-BOOKS "[books]/doc/relnotes.lisp")
     (NOTE-7-2-BOOKS "[books]/doc/relnotes.lisp")
     (NOTE-8-0-BOOKS "[books]/doc/relnotes.lisp")
+    (NOTE-8-1-BOOKS "[books]/doc/relnotes.lisp")
     (STR::NUMBERS "[books]/std/strings/top.lisp")
     (ORACLE-TIMELIMIT "[books]/tools/oracle-timelimit.lisp")
     (OSLIB "[books]/oslib/top-logic.lisp")
@@ -37505,15 +37508,18 @@ current fast alists."
 
  <p>A very common hint is the @(':use') hint, which in general takes as its
  value a list of ``lemma instances'' (see @(see lemma-instance)) but which
- allows a single lemma name as a special case.  Here are two examples, one
- using a single lemma name and one using a lemma instance:</p>
+ allows a single lemma name as a special case.  In each case, a goal @('G') is
+ replaced by a new goal @('(IMPLIES P G)'), where @('P') is the theorem
+ specified by the (conjunction of the) lemma instances provided.  Here are
+ some examples.</p>
 
  @({
-  ; Attach :use hint to the top-level goal, which is named \"Goal\":
+  ; Attach :use hint to the top-level goal G, which is named \"Goal\",
+  ; replacing it by (implies P G) where P is the statement of lemma23:
   :hints ((\"Goal\" :use lemma23))
 
-  ; Equivalent to the above: use the trivial instance (i.e., with the empty
-  ; substitution of lemma23:
+  ; Equivalent to the above, using the trivial instance (i.e., with the empty
+  ; substitution) of lemma23:
   :hints ((\"Goal\" :use ((:instance lemma23))))
 
   ; Attach :use hint to the named subgoal, where the indicated lemma is used
@@ -38277,20 +38283,22 @@ current fast alists."
 
  <p>@('Value') is a @(see lemma-instance) or a true list of @(see
  lemma-instance)s, indicating that the propositions denoted by the instances be
- added as hypotheses to the specified goal.  Note that @(':use') makes the
- given instances available as ordinary hypotheses of the formula to be proved.
+ added as hypotheses to the specified goal: that is, the @(':use') hint
+ replaces a goal, @('G'), by the new goal, @('(IMPLIES P G)'), where @('P') is
+ the theorem specified by the (conjunction of the) lemma instances provided.
  The @(':instance') form of a @(see lemma-instance) permits you to instantiate
  the free variables of previously proved theorems any way you wish, even
  allowing for differences in @(see packages); see @(see lemma-instance) for
  details.  These new hypotheses participate fully in all subsequent rewriting,
  etc.  If the goal in question is in fact an instance of a previously proved
- theorem, you may wish to use @(':by') below.  Note that @(see theories) may be
- helpful when employing @(':use') hints; see @(see minimal-theory).</p>
+ theorem, you may wish to use @(':by') (documented above).  Sometimes @(see
+ theories) are helpful when employing @(':use') hints; see @(see
+ minimal-theory).</p>
 
- <p>Note that if the value is the name of a function symbol introduced by
- @(tsee defun), then the normalized (simplified) body of that definition is
- used; see @(see normalize).  This behavior differs from that provided by a
- @(':by') hint, where the original body of the definition is used.</p></dd>
+ <p>If the value is the name of a function symbol introduced by @(tsee defun),
+ then the normalized (simplified) body of that definition is used; see @(see
+ normalize).  This behavior differs from that provided by a @(':by') hint,
+ where the original body of the definition is used.</p></dd>
 
  </dl>")
 
@@ -70103,8 +70111,9 @@ it."
 
  <p>Many changes have been made to the distributed books, thanks to an active
  ACL2 community.  You can contribute books and obtain updates between ACL2
- releases by visiting the <a href='http://acl2-books.googlecode.com/'>ACL2
- Books</a> web page.</p>
+ releases by visiting the ACL2 Books web page.  [Note: This release note is
+ obsolete, as it referenced the now-invalid URL,
+ @('http://acl2-books.googlecode.com/').]</p>
 
  <p>There is new @('Makefile') support for certifying just some of the
  distributed books.  See @(see books-certification-classic), in particular
@@ -74109,19 +74118,19 @@ it."
  <p><b>CHANGES AT THE SYSTEM LEVEL</b></p>
 
  <p>The ACL2 sources are now publicly available between ACL2 releases, using
- svn; see the new ``@('acl2-devel')'' project hosted by Google code at <a
- href='http://acl2-devel.googlecode.com'>http://acl2-devel.googlecode.com</a>.
- Although such a copy of ACL2 is likely to work well with the latest svn
- (trunk) revision of the ACL2 community books (see @(see community-books)),
- please take seriously the warning message printed at startup: ``The authors of
- ACL2 consider svn distributions to be experimental; they may be incomplete,
- fragile, and unable to pass our own regression.''  That message also provides
- instructions for bug reports.  If you decide to use svn versions of either the
- community books or ACL2, then you should use both, as they tend to be kept in
- sync.  We fully expect ACL2 releases to continue from time to time, as usual.
- Thanks to Jared Davis for his efforts in setting up the new acl2-devel project
- and svn repository, and to him and David Rager for convincing us to distribute
- ACL2 sources via svn between releases.</p>
+ svn; see the new ``@('acl2-devel')'' project hosted by Google code at
+ @('http://acl2-devel.googlecode.com').  Although such a copy of ACL2 is likely
+ to work well with the latest svn (trunk) revision of the ACL2 community
+ books (see @(see community-books)), please take seriously the warning message
+ printed at startup: ``The authors of ACL2 consider svn distributions to be
+ experimental; they may be incomplete, fragile, and unable to pass our own
+ regression.''  That message also provides instructions for bug reports.  If
+ you decide to use svn versions of either the community books or ACL2, then you
+ should use both, as they tend to be kept in sync.  We fully expect ACL2
+ releases to continue from time to time, as usual.  Thanks to Jared Davis for
+ his efforts in setting up the new acl2-devel project and svn repository, and
+ to him and David Rager for convincing us to distribute ACL2 sources via svn
+ between releases.</p>
 
  <p>Thanks to a suggestion from Jared Davis, over 30 built-in functions are now
  declared to be inline in order to boost performance.  (The list may be found
@@ -80299,6 +80308,15 @@ it."
 
 (defxdoc note-8-1
 
+; Total number of release note items: 76, as follows.
+;   32 ; Changes to Existing Features
+;    8 ; New Features
+;    6 ; Heuristic and Efficiency Improvements
+;   24 ; Bug Fixes
+;    4 ; Changes at the System Level
+;    1 ; EMACS Support
+;    1 ; Experimental Versions
+
 ; The following comments include changes not covered in the release notes
 ; items -- for example, because they are about changes in error messages.
 
@@ -80409,8 +80427,10 @@ it."
  <p>Note that only ACL2 system changes are listed below.  See also @(see
  note-8-1-books) for a summary of changes made to the ACL2 Community Books
  since ACL2 8.0, including the build system.  Also note that with each release,
- some built-in functions that were formerly in @(':')@(tsee program) mode are
- now @(see guard)-verified @(':')@(tsee logic) mode functions.</p>
+ it is typical that the value of constant @(tsee *acl2-exports*) has been
+ extended, and that some built-in functions that were formerly in @(':')@(tsee
+ program) mode are now @(see guard)-verified @(':')@(tsee logic) mode
+ functions.</p>
 
  <h3>Changes to Existing Features</h3>
 
@@ -80674,6 +80694,18 @@ it."
  right-hand side as the rewrite rule is applied.  Thanks to Eric Smith for
  requesting this change.</p>
 
+ <p>It was possible to declare a function symbol to be @(see untouchable) and
+ yet still execute it using @(tsee apply$), thus violating the spirit of
+ untouchables.  That is no longer allowed.  Here is an example of such
+ execution that was formerly permitted, but is no longer.</p>
+
+ @({
+ (include-book \"projects/apply/apply-lemmas\" :dir :system)
+ (defun$ f (x) (declare (xargs :guard t)) (cons x x))
+ (push-untouchable f t)
+ (apply$ 'f '(3))
+ })
+
  <h3>New Features</h3>
 
  <p>The @(see summary) now shows, by default, the list of doublets @('(f g)')
@@ -80830,7 +80862,7 @@ it."
  during a proof, and we avoid the error ``ACL2 cannot ev the call of
  non-executable function ANCESTORS-CHECK...'' by allowing attachments to be
  used when checking table guards (as discussed above).  Thanks to Dmitry
- Nadezhin for sending relayable examples that exhibited these bugs.</p>
+ Nadezhin for sending replayable examples that exhibited these bugs.</p>
 
  <p>Fixed @(see guard)s for functions @(tsee enabled-runep), @(tsee
  enabled-numep), @('disabledp-fn'), and @('disabledp-fn-lst'), thus eliminating
@@ -80858,7 +80890,7 @@ it."
  argument is now fully eliminated.  Thanks to Eric Smith for pointing out this
  issue.</p>
 
- <p>Fixed @(':')@(tsee pso) and related utiltiies @(':')@(tsee pso!),
+ <p>Fixed @(':')@(tsee pso) and related utilities @(':')@(tsee pso!),
  @(':')@(tsee psof), and @(':')@(tsee psog), to avoid printing some error
  messages.  Thanks to Keshav Kini for sending us an example to bring this bug
  to our attention.  Also tweaked these utilities to avoid accumulating later
@@ -80946,6 +80978,18 @@ it."
  and to provide a clearer error message for Common Lisp functions not in ACL2.
  Thanks to Eric McCarthy for sending examples to point out these issues.</p>
 
+ <p>A bug has been fixed that could cause an error when processing a legal
+ @(tsee flet) form, because the processing of a binding could interfere
+ inappropriately with the processing of a subsequent binding, as in the
+ following example.</p>
+
+ @({
+ (defun f (x) x)
+ (flet ((f (x) (cons x x))
+        (g (x) (f x))) ; processed with bad binding of stobjs-out for f
+   (g 3))
+ })
+
  <h3>Changes at the System Level</h3>
 
  <p>Fixed the use of `@('<a href='URL'>...</a>')' so that if @('URL') has the
@@ -80960,7 +81004,7 @@ it."
  online manual (back when @('&') was used in the URL in the documentation
  string).</p>
 
- <p>The \"clean\" target of \"make\" has been deprecated since ACl2 Version
+ <p>The \"clean\" target of \"make\" has been deprecated since ACL2 Version
  7.4 (released in March, 2017). Its replacement is target \"clean-lite\"; or,
  use target \"clean-all\" (or equivalently, \"distclean\") if you want a more
  thorough cleaning.</p>
@@ -80983,6 +81027,10 @@ it."
  modifications of ``unusual'' characters when saving a file.</p>
 
  <h3>Experimental Versions</h3>
+
+ <p>The utility @(tsee with-local-state) no longer causes an error in ACL2(p)
+ with @(see parallel-execution) enabled.  Thus, neither do @(tsee
+ fmt-to-string) and related utilities, which call @('with-local-state').</p>
 
  ")
 
@@ -116703,7 +116751,10 @@ for the execution of @('form')."
     (with-local-state (mv-let (eofp result state)
                               (foo2 state)
                               (mv eofp result))))
- })")
+ })
+
+ <p>Note for ACL2(p) users: When @(see parallel-execution) is enabled,
+ invocations of @('with-local-state') are surrounded by a lock.</p>")
 
 (defxdoc with-local-stobj
   :parents (stobj acl2-built-ins)
@@ -120550,16 +120601,16 @@ second"
 (defxdoc acl2-pc::p
   :parents (proof-builder-commands proof-builder-commands-short-list)
   :short "(macro)
-prettyprint the current term"
+prettyprint the current term in the usual user-level (untranslated) syntax"
   :long "@({
   Example and General Form:
   p
  })
 
- <p>Prettyprint the current term.  The usual user syntax is used, so that for
- example one would see @('(and x y)') rather than @('(if x y 'nil)').  (See
- also @('pp').)  Also, abbreviations are inserted where appropriate; see
- @(see acl2-pc::add-abbreviation).</p>
+ <p>Prettyprint the current term.  The usual user (untranslated) syntax is
+ used, so that for example one would see @('(and x y)') rather than @('(if x y
+ 'nil)').  (See also @('pp').)  Also, abbreviations are inserted where
+ appropriate; see @(see acl2-pc::add-abbreviation).</p>
 
  <p>The ``current term'' is the entire conclusion unless @('dive') commands
  have been given, in which case it may be a subterm of the conclusion.</p>
@@ -120615,7 +120666,7 @@ print the rules for a given name"
 (defxdoc acl2-pc::pp
   :parents (proof-builder-commands)
   :short "(macro)
-prettyprint the current term"
+prettyprint the current term in internal (translated) form"
   :long "@({
   Example and General Form:
   pp
