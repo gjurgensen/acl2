@@ -81072,6 +81072,9 @@ it."
 
  <h3>EMACS Support</h3>
 
+ <p>Fixed the @(see acl2-doc) browser so that it can handle topic names with
+ the single-quote (@(''')) and comma (@(',')) characters, by escaping them.</p>
+
  <h3>Experimental Versions</h3>
 
  ")
