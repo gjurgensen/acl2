@@ -79555,6 +79555,9 @@ Changes at the System Level
 
 EMACS Support
 
+  Fixed the [ACL2-doc] browser so that it can handle topic names with
+  the single-quote (') and comma (,) characters, by escaping them.
+
 
 Experimental Versions")
  (NOTE1 (POINTERS) "See [note-1-1].")
