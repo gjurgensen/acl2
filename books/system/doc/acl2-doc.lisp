@@ -104025,7 +104025,7 @@ arithmetic) for libraries of @(see books) for arithmetic reasoning.</p>")
 ; here that doesn't have an xdoc topic.
 
   :parents (programming)
-  :short "List of system-level programming utilities"
+  :short "Some programming utilities built into ACL2, many at the system level"
   :long "<p>Since the ACL2 system is written in itself, the source code defines
  many utilities that support the ACL2 implementation.  Some of these have been
  found to be useful not only to the ACL2 developers, but to those who use ACL2

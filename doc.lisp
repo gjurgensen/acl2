@@ -86522,7 +86522,7 @@ Subtopics
       System-level algorithms that users can modify with attachments
 
   [System-utilities]
-      List of system-level programming utilities
+      Some programming utilities built into ACL2, many at the system level
 
   [Time$]
       Time an evaluation
@@ -105295,7 +105295,7 @@ Subtopics
   documentation will be written to help with that process.")
  (SYSTEM-UTILITIES
   (PROGRAMMING)
-  "List of system-level programming utilities
+  "Some programming utilities built into ACL2, many at the system level
 
   Since the ACL2 system is written in itself, the source code defines
   many utilities that support the ACL2 implementation.  Some of these
