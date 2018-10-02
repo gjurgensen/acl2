@@ -81061,6 +81061,24 @@ it."
  functions.</p>
 
  <h3>Changes to Existing Features</h3>
+ <p>The built-in function @(see fix-true-list) has been superseded by the
+ function @(see list-fix) from the community books. As part of this change,
+ list-fix has been moved from the community books to the sources and renamed to
+ true-list-fix.</p>
+
+ <p>After this change, books which reason about fix-true-list can remain
+ unchanged, because a macro has been introduced to replace calls to
+ fix-true-list with calls to true-list-fix, along with a macro-alias to serve
+ the same purpose for theory expressions involving fix-true-list. The same is
+ true for books which reason about list-fix, with the function symbol
+ true-list-fix now being disabled in @('\"books/std/lists/list-fix.lisp\"')
+ and, by extension, in all books which include it. A small number of books
+ which include this book and which also reason about fix-true-list may need to
+ locally enable true-list-fix in order to certify.</p>
+
+ <p>This replacement was carried out by Mihir Mehta, with help from Matt
+ Kaufmann, after <a href='https://github.com/acl2/acl2/pull/882'>a GitHub
+ discussion</a>.</p>
 
  <h3>New Features</h3>
 
