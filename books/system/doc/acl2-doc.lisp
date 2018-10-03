@@ -29312,9 +29312,8 @@ current fast alists."
 (defxdoc fix-true-list
   :parents (lists acl2-built-ins)
   :short "Coerce to a true list"
-  :long "<p>@('Fix-true-list') is the identity function on @(tsee true-listp)
- objects.  It converts every list to a true list by dropping the final @(tsee
- cdr), and it converts every @(see atom) to @('nil').</p>
+  :long "<p>@('Fix-true-list') is really a macro which expands to a call to
+  @(tsee true-list-fix) with the same argument.</p>
 
  @(def fix-true-list)")
 
@@ -81061,6 +81060,24 @@ it."
  functions.</p>
 
  <h3>Changes to Existing Features</h3>
+ <p>The built-in function @(see fix-true-list) has been superseded by the
+ function @(see list-fix) from the community books. As part of this change,
+ list-fix has been moved from the community books to the sources and renamed to
+ true-list-fix.</p>
+
+ <p>After this change, books which reason about fix-true-list can remain
+ unchanged, because a macro has been introduced to replace calls to
+ fix-true-list with calls to true-list-fix, along with a macro-alias to serve
+ the same purpose for theory expressions involving fix-true-list. The same is
+ true for books which reason about list-fix, with the function symbol
+ true-list-fix now being disabled in @('\"books/std/lists/list-fix.lisp\"')
+ and, by extension, in all books which include it. A small number of books
+ which include this book and which also reason about fix-true-list may need to
+ locally enable true-list-fix in order to certify.</p>
+
+ <p>This replacement was carried out by Mihir Mehta, with help from Matt
+ Kaufmann, after <a href='https://github.com/acl2/acl2/pull/882'>a GitHub
+ discussion</a>.</p>
 
  <h3>New Features</h3>
 
@@ -109147,6 +109164,42 @@ arithmetic) for libraries of @(see books) for arithmetic reasoning.</p>")
  top-level macro in it for one step only.  Either an error is caused, which
  happens when the form is not a call of a macro, or the result is printed.
  Also see @(see trans), which translates the given form completely.</p>")
+
+(defxdoc true-list-fix
+  :parents (true-listp)
+  :short "@(call true-list-fix) converts @('x') into a @(see true-listp) by, if
+necessary, changing its @(see final-cdr) to @('nil')."
+  :long "<p>Many functions that processes lists follows the <b>true-list-fix
+convention</b>: whenever @('f') is given a some non-@('true-listp') @('a')
+where it expected a list, it will act as though it had been given @('(true-list-fix
+a)') instead.  As a few examples, logically,</p>
+
+<ul>
+<li>@('(endp x)') ignores the final @('cdr') of @('x'),</li>
+<li>@('(len x)') ignores the final @('cdr') of @('x'),</li>
+<li>@('(append x y)') ignores the final @('cdr') of @('x') (but not @('y'))</li>
+<li>@('(member a x)') ignores the final @('cdr') of @('x'), etc.</li>
+</ul>
+
+<p>Having a @('true-list-fix') function is often useful when writing theorems about
+how list-processing functions behave.  For example, it allows us to write
+strong, hypothesis-free theorems such as:</p>
+
+@({
+    (equal (character-listp (append x y))
+           (and (character-listp (true-list-fix x))
+                (character-listp y)))
+})
+
+<p>Indeed, @('true-list-fix') is the basis for @(see list-equiv), an extremely
+common @(see equivalence) relation.</p>
+
+<p>Efficiency note.  In practice, non nil-terminated lists are fairly rare.  As
+an optimization, @('true-list-fix') tries to avoid any consing by first checking
+whether its argument is a @(see true-listp), and, in that case, it simply
+returns its argument unchanged.</p>
+
+ @(def true-list-fix)")
 
 (defxdoc true-list-listp
   :parents (lists true-listp acl2-built-ins)
