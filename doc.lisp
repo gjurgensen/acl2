@@ -13431,6 +13431,7 @@ Subtopics
        (ihs \"[books]/ihs/ihs-doc-topic.lisp\")
        (include-raw \"[books]/tools/include-raw.lisp\")
        (install-not-normalized \"[books]/misc/install-not-normalized.lisp\")
+       (list-equiv \"[books]/std/lists/equiv.lisp\")
        (logbitp-reasoning \"[books]/centaur/bitops/equal-by-logbitp.lisp\")
        (make-flag \"[books]/tools/flag.lisp\")
        (make-termination-theorem
@@ -32495,19 +32496,13 @@ Subtopics
   (LISTS ACL2-BUILT-INS)
   "Coerce to a true list
 
-  Fix-true-list is the identity function on [true-listp] objects.  It
-  converts every list to a true list by dropping the final [cdr], and
-  it converts every [atom] to nil.
+  Fix-true-list is a macro that expands to a call of [true-list-fix]
+  with the same argument.
 
-  Function: <fix-true-list>
+  Macro: <fix-true-list>
 
-    (defun fix-true-list (x)
-           (declare (xargs :guard t))
-           (if (consp x)
-               (cons-with-hint (car x)
-                               (fix-true-list (cdr x))
-                               x)
-               nil))")
+    (defmacro fix-true-list (x)
+              (cons 'true-list-fix (cons x 'nil)))")
  (FLAMBDA-APPLICATIONP (POINTERS)
                        "See [system-utilities].")
  (FLAMBDAP (POINTERS)
@@ -79540,6 +79535,17 @@ Experimental Versions
 
 Changes to Existing Features
 
+  The built-in function [fix-true-list] is now a macro that expands to
+  a new built-in function, [true-list-fix], whose definition follows
+  the efficient definition of list-fix that was in [community-book]
+  books/std/lists/list-fix.lisp.  In that book, list-fix is now a
+  macro that expands to true-list-fix.  The use of macro-aliases (see
+  [add-macro-alias]) should generally make this change backward
+  compatible for users of list-fix.  Thanks to Mihir Mehta for taking
+  the lead on implementing these changes and to Jared Davis for
+  permission to integrate definitions and documentation from his
+  Kookamara books into the ACL2 sources.
+
 
 New Features
 
@@ -111207,6 +111213,45 @@ Subtopics
                  "See [system-utilities].")
  (TRANSLATE11 (POINTERS)
               "See [system-utilities].")
+ (TRUE-LIST-FIX
+  (TRUE-LISTP)
+  "Coerce to a true list
+
+  Many functions that process lists follows the true-list-fix
+  convention: whenever f is given a some non-[true-listp] x where it
+  expected a list, it will act as though it had been given
+  (true-list-fix x) instead.  As a few examples, logically,
+
+    * (endp x) ignores the final cdr of x
+    * (len x) ignores the final cdr of x
+    * (append x y) ignores the final cdr of x (but not y)
+    * (member a x) ignores the final cdr of x
+
+  True-list-fix is often useful when writing theorems about how
+  list-processing functions behave.  For example, it allows us to
+  write strong, hypothesis-free theorems such as:
+
+    (equal (character-listp (append x y))
+           (and (character-listp (true-list-fix x))
+                (character-listp y)))
+
+  Indeed, true-list-fix is the basis for [list-equiv], an extremely
+  common [equivalence] relation.
+
+  Efficiency note.  In practice, most lists are nil-terminated.  As an
+  optimization, true-list-fix tries to avoid any consing by first
+  checking whether its argument is a [true-listp], and, in that case,
+  it simply returns its argument unchanged.
+
+  Function: <true-list-fix>
+
+    (defun true-list-fix (x)
+           (declare (xargs :guard t))
+           (mbe :logic (if (consp x)
+                           (cons (car x) (true-list-fix (cdr x)))
+                           nil)
+                :exec (if (true-listp x)
+                          x (true-list-fix-exec x))))")
  (TRUE-LIST-LISTP
   (LISTS TRUE-LISTP ACL2-BUILT-INS)
   "Recognizer for true (proper) lists of true lists
@@ -111241,6 +111286,9 @@ right for you, see [std::strict-list-recognizers].
 
 
 Subtopics
+
+  [True-list-fix]
+      Coerce to a true list
 
   [True-list-listp]
       Recognizer for true (proper) lists of true lists")
