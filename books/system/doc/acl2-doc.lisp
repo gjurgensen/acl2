@@ -301,9 +301,9 @@
  will typically also want to import many symbols from Common Lisp; see @(see
  *common-lisp-symbols-from-main-lisp-package*).</p>
 
- <p>Those who write code using ACL2 system functions (see @(see
- system-utilities)) may wish to import symbols into their package from the
- large list @(tsee *acl2-system-exports*).</p>
+ <p>Those who write code using built-in ACL2 functions (see @(see
+ acl2-built-ins)) may wish to import symbols into their package from the large
+ list @(tsee *acl2-system-exports*).</p>
 
  @(`(:code *acl2-exports*)`)")
 
@@ -4277,6 +4277,28 @@ and @(tsee include-book)"
  </ul>
 
  ")
+
+(defxdoc alist-keys-subsetp
+  :parents (alists acl2-built-ins)
+  :short "Check that all keys of the alist belong to a given set"
+  :long "<p>The call @('(alist-keys-subsetp alist keys)') returns @('t') when
+ each key of the given alist belongs to the given list of keys; else it returns
+ @('nil').  This is Boolean-equivalent to @('(subsetp-eq (strip-cars alist)
+ keys)'), but it avoids consing up the keys of @('alist').</p>")
+
+(defxdoc alist-to-doublets
+  :parents (alists acl2-built-ins)
+  :short "Convert an alist to a list of two-element lists"
+  :long "<p>The call @(call alist-to-doublets) returns the result of replacing
+ each pair @('(x . y)') in the given alist by the two-element list @('(x y)').
+ The order is preserved, i.e., the following is a theorem.</p>
+
+ @({
+ (implies (and (natp i) (< i (len alist)))
+          (equal (nth i (alist-to-doublets alist))
+                 (let ((pair (nth i alist)))
+                   (list (car pair) (cdr pair)))))
+ })")
 
 (defxdoc alistp
   :parents (alists acl2-built-ins)
@@ -14791,6 +14813,14 @@ with any questions about building the community books.</p>")
  second component is @('y').  If @('y') is a list, then @('(cons x y)') is a
  list that has an additional element @('x') on the front.</p>")
 
+(defxdoc cons-count-bounded
+  :parents (conses acl2-built-ins)
+  :short "Count the number of conses (up to a limit)"
+  :long "<p>The call @('(cons-count-bounded x)') returns the number of cons
+ nodes in @('x') (without accounting for sharing), but truncated above by the
+ value of @('(fn-count-evg-max-val)'), which is 200,000 as of this
+ writing.</p>")
+
 (defxdoc cons-subtrees
   :parents (fast-alists acl2-built-ins)
   :short "Build a fast alist whose keys are the subtrees of X"
@@ -15964,7 +15994,7 @@ subtree of X with T, without duplication.</p>
  @(def cpu-core-count)")
 
 (defxdoc ctx
-  :parents (system-utilities)
+  :parents (errors)
   :short "Context object for error messages"
   :long "<p>Calls of @(tsee er), such as @('(er soft ctx ...)'), take a context
  argument, typically called @('ctx'), for the initial part of the message:
@@ -26804,6 +26834,15 @@ ld) and @(tsee include-book)"
  for more information.</p>
 
  @(def evenp)")
+
+(defxdoc evens
+  :parents (lists acl2-built-ins)
+  :short "The even-indexed members of a list"
+  :long "<p>The call @('(evens x)') returns the restriction of the true-list
+ @('x') to its even-indexed members (with zero-based indexing).  Note that if
+ @('x') is a list @('(k1 a1 k2 a2 ... kn an)') that satisfies the predicate
+ @(tsee keyword-value-listp), then @('(evens x)') lists the keys @('ki') of
+ @('x').</p>")
 
 (defxdoc events
   :parents (acl2)
@@ -45878,6 +45917,12 @@ tables in the current Hons Space."
  form @('t') that had been supplied by the user.  So the query returned
  immediately and the @('set-iprint') call was completed.</p>")
 
+(defxdoc keyword-listp
+  :parents (lists keywordp acl2-built-ins)
+  :short "Recognizer for true lists of keywords"
+  :long "<p>The call @('(keyword-listp x)') return @('t') when @('x') is a
+ true-list whose members are all @(see keyword)s, else returns @('nil').</p>")
+
 (defxdoc keyword-value-listp
   :parents (keywordp lists acl2-built-ins)
   :short "Recognizer for true lists whose even-position elements are keywords"
@@ -52963,6 +53008,12 @@ it."
   :long "<p>This macro is an abbreviation for @(tsee memoize-summary).
  Logically, it just returns @('nil').  Also see @(see
  protect-memoize-statistics).</p>")
+
+(defxdoc merge-sort-lexorder
+  :parents (lists acl2-built-ins)
+  :short "Sort a list"
+  :long "<p>The call @('(merge-sort-lexorder x)') sorts the true-list @('x')
+ using a non-strict total order, @(tsee lexorder), on the ACL2 universe.</p>")
 
 (defxdoc meta
   :parents (rule-classes)
@@ -81096,6 +81147,26 @@ it."
 
  <h3>Changes at the System Level</h3>
 
+ <p>The @(see documentation) topic, @(see system-utilities), is now about only
+ utilities that pertain to the ACL2 system implementation, rather than
+ arbitrary built-in utilities.  Thus, each of the following now has its own
+ topic, rather than being described in @(see system-utilities).  (Thanks to
+ Alessandro Coglio for suggesting this reorganization.)</p>
+
+ <ul>
+ <li>@(tsee alist-keys-subsetp)</li>
+ <li>@(tsee alist-to-doublets)</li>
+ <li>@(tsee cons-count-bounded)</li>
+ <li>@(tsee evens)</li>
+ <li>@(tsee keyword-listp)</li>
+ <li>@(tsee merge-sort-lexorder)</li>
+ <li>@(tsee odds)</li>
+ <li>@(tsee packn)</li>
+ <li>@(tsee packn-pos)</li>
+ <li>@(tsee pairlis-x2)</li>
+ <li>@(tsee pairlis-x1)</li>
+ </ul>
+
  <h3>EMACS Support</h3>
 
  <p>Fixed the @(see acl2-doc) browser so that it can handle topic names with
@@ -81918,6 +81989,15 @@ arithmetic) for libraries of @(see books) for arithmetic reasoning.</p>")
  more information.</p>
 
  @(def oddp)")
+
+(defxdoc odds
+  :parents (lists acl2-built-ins)
+  :short "The odd-indexed members of a list"
+  :long "<p>The call @('(odds x)') returns the restriction of the true-list
+ @('x') to its odd-indexed members (with zero-based indexing).  Note that if
+ @('x') is a list @('(k1 a1 k2 a2 ... kn an)') that satisfies the predicate
+ @(tsee keyword-value-listp), then @('(odds x)') lists the values @('ai') of
+ @('x').</p>")
 
 (defxdoc ok-if
   :parents (break-rewrite)
@@ -82865,6 +82945,22 @@ arithmetic) for libraries of @(see books) for arithmetic reasoning.</p>")
   See @(see working-with-packages) for the best practices in setting up and
   using packages.")
 
+(defxdoc packn
+  :parents (symbols acl2-built-ins)
+  :short "Build a symbol from a list"
+  :long "<p>The call @('(packn lst)') returns a symbol whose name is a
+ concatenation of string representations of the atoms in the @(tsee
+ good-atom-listp), @('lst').  The symbol's package is the package of the first
+ symbol in @('lst') whose package is not @('\"COMMON-LISP\"') if any, else
+ @('\"ACL2\"').</p>")
+
+(defxdoc packn-pos
+  :parents (symbols acl2-built-ins)
+  :short "Build a symbol in a specified package from a list"
+  :long "<p>The function @('packn-pos') behaves like @(tsee packn), except that
+ for the call @('(packn-pos lst witness)'), the returned symbol's package will
+ instead be the package of the symbol, @('witness').</p>")
+
 (defxdoc pairlis
   :parents (lists alists)
   :short "See @(see pairlis$)"
@@ -82886,6 +82982,18 @@ arithmetic) for libraries of @(see books) for arithmetic reasoning.</p>")
  lists.</p>
 
  @(def pairlis$)")
+
+(defxdoc pairlis-x1
+  :parents (lists alists acl2-built-ins)
+  :short "Cons a given element to each member of a list"
+  :long "<p>The call @('(pairlis-x1 x1 lst)') conses @('x1') onto each element
+ of the true-list, @('lst').</p>")
+
+(defxdoc pairlis-x2
+  :parents (lists alists acl2-built-ins)
+  :short "Cons each element of a list with a given element"
+  :long "<p>The call @('(pairlis-x2 lst x2)') creates an alist consing each
+ element of @('lst'), a true-list, with @('x2').</p>")
 
 (defxdoc pand
   :parents (parallel-programming acl2-built-ins)
@@ -104051,18 +104159,19 @@ arithmetic) for libraries of @(see books) for arithmetic reasoning.</p>")
 ; here that doesn't have an xdoc topic.
 
   :parents (programming)
-  :short "Some programming utilities built into ACL2, many at the system level"
+  :short "Some built-in programming utilities pertaining to the ACL2 system"
   :long "<p>Since the ACL2 system is written in itself, the source code defines
  many utilities that support the ACL2 implementation.  Some of these have been
  found to be useful not only to the ACL2 developers, but to those who use ACL2
  to perform tasks other than the traditional ones: writing and submitting
  definitions, and proving theorems about the functions defined.</p>
 
- <p>This topic provides a summary of some of those system-level utilities.  It
- is intended to be a growing document, with contributions from those in the
- community who find such utilities that benefit them.  It has already grown
- substantially from an initial version created by the ACL2 implementors, and
- others will likely continue to add to it over time.</p>
+ <p>This topic provides a summary of some of those utilities that are built
+ into the ACL2 system.  It is intended to be a growing document, with
+ contributions from those in the community who find such utilities that benefit
+ them.  It has already grown substantially from an initial version created by
+ the ACL2 implementors, and others will likely continue to add to it over
+ time.</p>
 
  <p><b>WARNING 1</b>.  Some system utilities are in @(':')@(tsee program) mode,
  and for many of those, @(see guard)s are incomplete or missing entirely.
@@ -104099,43 +104208,30 @@ arithmetic) for libraries of @(see books) for arithmetic reasoning.</p>")
  source comments, or ``Essays'', that can provide additional background.</p>
 
  <p>Also see @(see programming) and its subtopics, in particular @(see
- programming-with-state), which describes <em>many</em> system-level utilities.
- For example, a subsection of @(see programming-with-state), entitled
- ``SEQUENTIAL PROGRAMMING'', introduces handy utilities @(tsee pprogn) and
- @(tsee er-progn) along with links to their documentation.  You may also wish
- to see @(see system-attachments) for how to make a few changes to the behavior
- of ACL2.</p>
+ programming-with-state), which describes <em>many</em> built-in system
+ utilities.  For example, a subsection of @(see programming-with-state),
+ entitled ``SEQUENTIAL PROGRAMMING'', introduces handy utilities @(tsee pprogn)
+ and @(tsee er-progn) along with links to their documentation.  You may also
+ wish to see @(see system-attachments) for how to make a few changes to the
+ behavior of ACL2.</p>
 
- <p>Here is another option for finding a system utility: As ACL2 developers
- sometimes do, use @('meta-.') or @('meta-x tags-apropos') in Emacs to find
- utilities with given substrings in their names.  For example, if in Emacs you
- submit the command @('meta-x tags-apropos') and reply @('pwd') at the prompt,
- you'll find a raw Lisp function @('our-pwd') that ACL2 defines as an analogue
- to the Linux @('pwd') command; and, with @('meta-x tags-search') applied to
- @('(our-pwd'), you can see how ACL2 source code uses this utility.</p>
+ <p>Here is another option for finding a buit-in system utility: As ACL2
+ developers sometimes do, use @('meta-.') or @('meta-x tags-apropos') in Emacs
+ to find utilities with given substrings in their names.  For example, if in
+ Emacs you submit the command @('meta-x tags-apropos') and reply @('pwd') at
+ the prompt, you'll find a raw Lisp function @('our-pwd') that ACL2 defines as
+ an analogue to the Linux @('pwd') command; and, with @('meta-x tags-search')
+ applied to @('(our-pwd'), you can see how ACL2 source code uses this
+ utility.</p>
 
- <h3>List of a few ACL2 system utilities:</h3>
+ <h3>List of a few built-in system utilities</h3>
 
  <p>Every function mentioned below belongs in the constant @(tsee
- *acl2-system-exports*).</p>
+ *acl2-system-exports*).  Also see @(see acl2-built-ins) for built-in utilities
+ that are less relevant to the ACL2 system, and see @(see programming) for
+ utilities in general.</p>
 
  <ul>
-
- <li>@('(alist-keys-subsetp alist keys)'): For the given alist and list of
- symbols, return @('t') when each key of @('alist') belongs to @('keys'), else
- return @('nil').  This is Boolean-equivalent to @('(subsetp-eq (strip-cars
- alist) keys)'), but it avoids consing up the keys of @('alist').</li>
-
- <li>@('(alist-to-doublets alist)'): Return the result of replacing each pair
- @('(x . y)') in the given alist by the two-element list @('(x y)').  The order
- is preserved, i.e., the following is a theorem.</li>
-
- @({
- (implies (and (natp i) (< i (len alist)))
-          (equal (nth i (alist-to-doublets alist))
-                 (let ((pair (nth i alist)))
-                   (list (car pair) (cdr pair)))))
- })
 
  <li>@('(all-calls names term alist ans)'):  Accumulate into @('ans')
  (which typically is @('nil') at the top level) all pseudo-terms @('u/alist')
@@ -104185,10 +104281,6 @@ arithmetic) for libraries of @(see books) for arithmetic reasoning.</p>")
  <li>@('(conjoin lst)'): The conjunction of the given list of terms.</li>
 
  <li>@('(conjoin2 term1 term2)'): The conjunction of the given two terms.</li>
-
- <li>@('(cons-count-bounded x)'): The number of cons nodes in @('x') (without
- accounting for sharing), but truncated above by the value of
- @('(fn-count-evg-max-val)'), which is 200,000 as of this writing.</li>
 
  <li>@('(cons-term fn args)'): Returns a @(see term) with function symbol (or
  @(see lambda) expression) @('fn') and arguments @('args').  Some
@@ -104250,12 +104342,6 @@ arithmetic) for libraries of @(see books) for arithmetic reasoning.</p>")
  enabled structure (as discussed for @('enabled-numep'), just above).  See also
  @('enabled-numep'), which may be more efficient since @('enabled-runep') is
  defined in terms of @('enabled-numep').</li>
-
- <li>@('(evens l)'): Return the restriction of the true-list @('l') to its
- even-indexed members (with zero-based indexing).  Note that if @('x') is a
- list @('(k1 a1 k2 a2 ... kn an)') that satisfies the predicate @(tsee
- keyword-value-listp), then @('(evens x)') lists the keys @('ki') of
- @('x').</li>
 
  <li>@('(fargn x n)'): For a @(tsee pseudo-termp) @('x') that is a function
  call and for a positive integer @('n'), return the @('n')-th argument of
@@ -104384,9 +104470,6 @@ arithmetic) for libraries of @(see books) for arithmetic reasoning.</p>")
    </ul>
  </li>
 
- <li>@('(keyword-listp x)'): Return @('t') when @('x') is a true-list whose
- members are all keywords, else return @('nil').</li>
-
  <li>@('(known-package-alist state)'): Returns a list of package entries, as
  explained in the definition of @('make-package-entry') in ACL2 sources, which
  is followed by simple accessor definitions (all in file @('axioms.lisp') as of
@@ -104431,33 +104514,9 @@ arithmetic) for libraries of @(see books) for arithmetic reasoning.</p>")
  free variables that do not belong to @('formals'), because lambdas must be
  closed in ACL2.</li>
 
- <li>@('(merge-sort-lexorder l)'): Sort the list @('l') using a non-strict
- total order, @(tsee lexorder), on the ACL2 universe.</li>
-
  <li>@('(nvariablep x)'): For a @(tsee pseudo-termp) @('x'), return true iff
  @('x') is not a variable (i.e. it is a quoted constant or a function
  call).</li>
-
- <li>@('(odds l)'): Return the restriction of the true-list @('l') to its
- odd-indexed members (with zero-based indexing).  Note that if @('x') is a list
- @('(k1 a1 k2 a2 ... kn an)') that satisfies the predicate @(tsee
- keyword-value-listp), then @('(odds x)') lists the values @('ai') of
- @('x').</li>
-
- <li>@('(packn lst)'): Return a symbol.  The symbol's name is a concatenation
- of string representations of the atoms in the @(tsee good-atom-listp)
- @('lst'), and the symbol's package is the package of the first symbol in
- @('lst') whose package is not @('\"COMMON-LISP\"') if any, else
- @('\"ACL2\"').</li>
-
- <li>@('(packn-pos lst witness)'): Behaves like @('packn'), except the returned
- symbol's package will instead be the package of the symbol @('witness').</li>
-
- <li>@('(pairlis-x1 x1 lst)'): Cons @('x1') onto the front of each element of
- the the true-list, @('lst').</li>
-
- <li>@('(pairlis-x2 lst x2)'): Make an alist pairing each element of @('lst'),
- a true-list, with @('x2').</li>
 
  <li>@('(partition-rest-and-keyword-args x keys)'): @('x') should be a list of
  the form @('(a1 ... an :key1 v1 ... :keyk vk)'), where no @('ai') is a
@@ -122293,8 +122352,6 @@ expand function call at the current subterm, without simplifying"
 (defpointer add-to-set-eq add-to-set)
 (defpointer add-to-set-eql add-to-set) ; pre-v4-3 compatibility
 (defpointer add-to-set-equal add-to-set)
-(defpointer alist-keys-subsetp system-utilities)
-(defpointer alist-to-doublets system-utilities)
 (defpointer all-calls system-utilities)
 (defpointer all-vars system-utilities)
 (defpointer apropos finding-documentation)
@@ -122319,7 +122376,6 @@ expand function call at the current subterm, without simplifying"
 (defpointer community-book community-books)
 (defpointer computed-hint computed-hints)
 (defpointer conjoin system-utilities)
-(defpointer cons-count-bounded system-utilities)
 (defpointer cons-term system-utilities)
 (defpointer cons-term* system-utilities)
 (defpointer context ctx)
@@ -122338,7 +122394,6 @@ expand function call at the current subterm, without simplifying"
 (defpointer error hints t)
 (defpointer ev$ apply$)
 (defpointer ev$-list apply$)
-(defpointer evens system-utilities)
 (defpointer event events)
 (defpointer execution evaluation)
 (defpointer expand hints t)
@@ -122404,7 +122459,6 @@ expand function call at the current subterm, without simplifying"
 (defpointer iprint set-iprint)
 (defpointer iprinting set-iprint)
 (defpointer keyword keywordp)
-(defpointer keyword-listp system-utilities)
 (defpointer lambda term)
 (defpointer lambda-applicationp system-utilities)
 (defpointer lambda-body system-utilities)
@@ -122421,7 +122475,6 @@ expand function call at the current subterm, without simplifying"
 (defpointer member-eq member)
 (defpointer member-equal member)
 (defpointer memoization memoize)
-(defpointer merge-sort-lexorder system-utilities)
 (defpointer meta-extract-contextual-fact meta-extract)
 (defpointer meta-extract-formula meta-extract)
 (defpointer meta-extract-global-fact meta-extract)
@@ -122459,17 +122512,12 @@ expand function call at the current subterm, without simplifying"
 (defpointer note9 note-1-9)
 (defpointer nvariablep system-utilities)
 (defpointer observation-cw observation)
-(defpointer odds system-utilities)
 (defpointer open-input-channel io)
 (defpointer open-input-channel-p io)
 (defpointer open-output-channel io)
 (defpointer open-output-channel-p io)
 (defpointer optimize declare)
 (defpointer package packages)
-(defpointer packn system-utilities)
-(defpointer packn-pos system-utilities)
-(defpointer pairlis-x1 system-utilities)
-(defpointer pairlis-x2 system-utilities)
 (defpointer partition-rest-and-keyword-args system-utilities)
 (defpointer pe-table extend-pe-table)
 (defpointer peek-char$ io)

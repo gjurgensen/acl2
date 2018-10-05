@@ -82,8 +82,8 @@ Subtopics
   typically also want to import many symbols from Common Lisp; see
   [*common-lisp-symbols-from-main-lisp-package*].
 
-  Those who write code using ACL2 system functions (see
-  [system-utilities]) may wish to import symbols into their package
+  Those who write code using built-in ACL2 functions (see
+  [ACL2-built-ins]) may wish to import symbols into their package
   from the large list [*ACL2-system-exports*].
 
     (& &allow-other-keys &aux &body &key
@@ -2779,6 +2779,12 @@ Subtopics
   [Add-to-set]
       Add a symbol to a list
 
+  [Alist-keys-subsetp]
+      Check that all keys of the alist belong to a given set
+
+  [Alist-to-doublets]
+      Convert an alist to a list of two-element lists
+
   [Alistp]
       Recognizer for association lists
 
@@ -3064,6 +3070,9 @@ Subtopics
   [Cons]
       Pair and list constructor
 
+  [Cons-count-bounded]
+      Count the number of conses (up to a limit)
+
   [Cons-subtrees]
       Build a fast alist whose keys are the subtrees of X
 
@@ -3157,6 +3166,9 @@ Subtopics
 
   [Evenp]
       Test whether an integer is even
+
+  [Evens]
+      The even-indexed members of a list
 
   [Explode-atom]
       Convert any [atom] into a [character-listp] that contains its
@@ -3412,6 +3424,9 @@ Subtopics
   [Intersectp]
       Test whether two lists intersect
 
+  [Keyword-listp]
+      Recognizer for true lists of keywords
+
   [Keyword-value-listp]
       Recognizer for true lists whose even-position elements are keywords
 
@@ -3563,6 +3578,9 @@ Subtopics
   [Member]
       Membership predicate
 
+  [Merge-sort-lexorder]
+      Sort a list
+
   [Min]
       The smaller of two numbers
 
@@ -3678,14 +3696,29 @@ Subtopics
   [Oddp]
       Test whether an integer is odd
 
+  [Odds]
+      The odd-indexed members of a list
+
   [Open-output-channel!]
       When trust tags are needed to open output channels
 
   [Or]
       Disjunction
 
+  [Packn]
+      Build a symbol from a list
+
+  [Packn-pos]
+      Build a symbol in a specified package from a list
+
   [Pairlis$]
       Zipper together two lists
+
+  [Pairlis-x1]
+      Cons a given element to each member of a list
+
+  [Pairlis-x2]
+      Cons each element of a list with a given element
 
   [Pand]
       Parallel, Boolean version of [and]
@@ -6410,10 +6443,26 @@ Subtopics
 
   [Set-register-invariant-risk]
       Avoid [invariant-risk] checking for specified functions")
- (ALIST-KEYS-SUBSETP (POINTERS)
-                     "See [system-utilities].")
- (ALIST-TO-DOUBLETS (POINTERS)
-                    "See [system-utilities].")
+ (ALIST-KEYS-SUBSETP
+  (ALISTS ACL2-BUILT-INS)
+  "Check that all keys of the alist belong to a given set
+
+  The call (alist-keys-subsetp alist keys) returns t when each key of
+  the given alist belongs to the given list of keys; else it returns
+  nil.  This is Boolean-equivalent to (subsetp-eq (strip-cars alist)
+  keys), but it avoids consing up the keys of alist.")
+ (ALIST-TO-DOUBLETS
+  (ALISTS ACL2-BUILT-INS)
+  "Convert an alist to a list of two-element lists
+
+  The call (alist-to-doublets alist) returns the result of replacing
+  each pair (x . y) in the given alist by the two-element list (x y).
+  The order is preserved, i.e., the following is a theorem.
+
+    (implies (and (natp i) (< i (len alist)))
+             (equal (nth i (alist-to-doublets alist))
+                    (let ((pair (nth i alist)))
+                      (list (car pair) (cdr pair)))))")
  (ALISTP
   (ALISTS ACL2-BUILT-INS)
   "Recognizer for association lists
@@ -6438,6 +6487,12 @@ Subtopics
 
   [Acons]
       Constructor for association lists
+
+  [Alist-keys-subsetp]
+      Check that all keys of the alist belong to a given set
+
+  [Alist-to-doublets]
+      Convert an alist to a list of two-element lists
 
   [Alistp]
       Recognizer for association lists
@@ -6466,6 +6521,12 @@ Subtopics
 
   [Pairlis$]
       Zipper together two lists
+
+  [Pairlis-x1]
+      Cons a given element to each member of a list
+
+  [Pairlis-x2]
+      Cons each element of a list with a given element
 
   [Put-assoc]
       Modify an association list by associating a value with a key
@@ -17605,8 +17666,13 @@ Subtopics
   (cons x y) is a pair whose first component is x and second component
   is y.  If y is a list, then (cons x y) is a list that has an
   additional element x on the front.")
- (CONS-COUNT-BOUNDED (POINTERS)
-                     "See [system-utilities].")
+ (CONS-COUNT-BOUNDED
+  (CONSES ACL2-BUILT-INS)
+  "Count the number of conses (up to a limit)
+
+  The call (cons-count-bounded x) returns the number of cons nodes in x
+  (without accounting for sharing), but truncated above by the value
+  of (fn-count-evg-max-val), which is 200,000 as of this writing.")
  (CONS-SUBTREES
   (FAST-ALISTS ACL2-BUILT-INS)
   "Build a fast alist whose keys are the subtrees of X
@@ -18237,6 +18303,9 @@ Subtopics
 
   [Cons]
       Pair and list constructor
+
+  [Cons-count-bounded]
+      Count the number of conses (up to a limit)
 
   [Cons-with-hint]
       Alternative to [cons] that tries to avoid consing when a suitable
@@ -18974,7 +19043,7 @@ Subtopics
                    (declare (ignore nullp))
                    (mv val state)))")
  (CTX
-  (SYSTEM-UTILITIES)
+  (ERRORS)
   "Context object for error messages
 
   Calls of [er], such as (er soft ctx ...), take a context argument,
@@ -29110,6 +29179,9 @@ Subtopics
   [Breaks]
       Common Lisp breaks
 
+  [Ctx]
+      Context object for error messages
+
   [Er]
       Print an error message and ``cause an error''
 
@@ -29745,8 +29817,14 @@ Subtopics
     (defun evenp (x)
            (declare (xargs :guard (integerp x)))
            (integerp (* x (/ 2))))")
- (EVENS (POINTERS)
-        "See [system-utilities].")
+ (EVENS
+  (LISTS ACL2-BUILT-INS)
+  "The even-indexed members of a list
+
+  The call (evens x) returns the restriction of the true-list x to its
+  even-indexed members (with zero-based indexing).  Note that if x is
+  a list (k1 a1 k2 a2 ... kn an) that satisfies the predicate
+  [keyword-value-listp], then (evens x) lists the keys ki of x.")
  (EVENT (POINTERS) "See [events].")
  (EVENTS
   (ACL2)
@@ -49378,8 +49456,12 @@ Subtopics
   form was available immediately: the form t that had been supplied
   by the user.  So the query returned immediately and the set-iprint
   call was completed.")
- (KEYWORD-LISTP (POINTERS)
-                "See [system-utilities].")
+ (KEYWORD-LISTP
+  (LISTS KEYWORDP ACL2-BUILT-INS)
+  "Recognizer for true lists of keywords
+
+  The call (keyword-listp x) return t when x is a true-list whose
+  members are all [keyword]s, else returns nil.")
  (KEYWORD-VALUE-LISTP
   (KEYWORDP LISTS ACL2-BUILT-INS)
   "Recognizer for true lists whose even-position elements are keywords
@@ -49435,6 +49517,9 @@ Subtopics
 
 
 Subtopics
+
+  [Keyword-listp]
+      Recognizer for true lists of keywords
 
   [Keyword-value-listp]
       Recognizer for true lists whose even-position elements are keywords")
@@ -51533,6 +51618,9 @@ Subtopics
   [Eqlable-listp]
       Recognizer for a true list of objects each suitable for [eql]
 
+  [Evens]
+      The even-indexed members of a list
+
   [Fix-true-list]
       Coerce to a true list
 
@@ -51550,6 +51638,9 @@ Subtopics
 
   [Intersectp]
       Test whether two lists intersect
+
+  [Keyword-listp]
+      Recognizer for true lists of keywords
 
   [Keyword-value-listp]
       Recognizer for true lists whose even-position elements are keywords
@@ -51578,6 +51669,9 @@ Subtopics
   [Member]
       Membership predicate
 
+  [Merge-sort-lexorder]
+      Sort a list
+
   [Nat-listp]
       Recognizer for a true list of natural numbers
 
@@ -51590,11 +51684,20 @@ Subtopics
   [Nthcdr]
       Final segment of a list
 
+  [Odds]
+      The odd-indexed members of a list
+
   [Pairlis]
       See [pairlis$]
 
   [Pairlis$]
       Zipper together two lists
+
+  [Pairlis-x1]
+      Cons a given element to each member of a list
+
+  [Pairlis-x2]
+      Cons each element of a list with a given element
 
   [Pos-listp]
       Recognizer for a true list of positive integers
@@ -56803,8 +56906,12 @@ Subtopics
 
   This macro is an abbreviation for [memoize-summary].  Logically, it
   just returns nil.  Also see [protect-memoize-statistics].")
- (MERGE-SORT-LEXORDER (POINTERS)
-                      "See [system-utilities].")
+ (MERGE-SORT-LEXORDER
+  (LISTS ACL2-BUILT-INS)
+  "Sort a list
+
+  The call (merge-sort-lexorder x) sorts the true-list x using a
+  non-strict total order, [lexorder], on the ACL2 universe.")
  (META
   (RULE-CLASSES)
   "Make a :meta rule (a hand-written simplifier)
@@ -79558,6 +79665,25 @@ Bug Fixes
 
 Changes at the System Level
 
+  The [documentation] topic, [system-utilities], is now about only
+  utilities that pertain to the ACL2 system implementation, rather
+  than arbitrary built-in utilities.  Thus, each of the following now
+  has its own topic, rather than being described in
+  [system-utilities].  (Thanks to Alessandro Coglio for suggesting
+  this reorganization.)
+
+    * [alist-keys-subsetp]
+    * [alist-to-doublets]
+    * [cons-count-bounded]
+    * [evens]
+    * [keyword-listp]
+    * [merge-sort-lexorder]
+    * [odds]
+    * [packn]
+    * [packn-pos]
+    * [pairlis-x2]
+    * [pairlis-x1]
+
 
 EMACS Support
 
@@ -80764,8 +80890,14 @@ Subtopics
     (defun oddp (x)
            (declare (xargs :guard (integerp x)))
            (not (evenp x)))")
- (ODDS (POINTERS)
-       "See [system-utilities].")
+ (ODDS
+  (LISTS ACL2-BUILT-INS)
+  "The odd-indexed members of a list
+
+  The call (odds x) returns the restriction of the true-list x to its
+  odd-indexed members (with zero-based indexing).  Note that if x is
+  a list (k1 a1 k2 a2 ... kn an) that satisfies the predicate
+  [keyword-value-listp], then (odds x) lists the values ai of x.")
  (OK-IF
   (BREAK-REWRITE)
   "Conditional exit from break-rewrite
@@ -81799,10 +81931,21 @@ Subtopics
 
   [Symbol-package-name]
       The name of the package of a symbol (a string)")
- (PACKN (POINTERS)
-        "See [system-utilities].")
- (PACKN-POS (POINTERS)
-            "See [system-utilities].")
+ (PACKN
+  (SYMBOLS ACL2-BUILT-INS)
+  "Build a symbol from a list
+
+  The call (packn lst) returns a symbol whose name is a concatenation
+  of string representations of the atoms in the [good-atom-listp],
+  lst.  The symbol's package is the package of the first symbol in
+  lst whose package is not \"COMMON-LISP\" if any, else \"ACL2\".")
+ (PACKN-POS
+  (SYMBOLS ACL2-BUILT-INS)
+  "Build a symbol in a specified package from a list
+
+  The function packn-pos behaves like [packn], except that for the call
+  (packn-pos lst witness), the returned symbol's package will instead
+  be the package of the symbol, witness.")
  (PAGES_WRITTEN_ESPECIALLY_FOR_THE_TOURS
   (ACL2-TUTORIAL)
   "Pages Written Especially for the Tours
@@ -82187,10 +82330,18 @@ Subtopics
                              (t (cons (cons (car x) (car y))
                                       (pairlis$ (cdr x) (cdr y)))))
                 :exec (pairlis$-tailrec x y nil)))")
- (PAIRLIS-X1 (POINTERS)
-             "See [system-utilities].")
- (PAIRLIS-X2 (POINTERS)
-             "See [system-utilities].")
+ (PAIRLIS-X1
+  (LISTS ALISTS ACL2-BUILT-INS)
+  "Cons a given element to each member of a list
+
+  The call (pairlis-x1 x1 lst) conses x1 onto each element of the
+  true-list, lst.")
+ (PAIRLIS-X2
+  (LISTS ALISTS ACL2-BUILT-INS)
+  "Cons each element of a list with a given element
+
+  The call (pairlis-x2 lst x2) creates an alist consing each element of
+  lst, a true-list, with x2.")
  (PAND
   (PARALLEL-PROGRAMMING ACL2-BUILT-INS)
   "Parallel, Boolean version of [and]
@@ -83684,12 +83835,6 @@ Subtopics
   [Add-to-set-equal]
       See [add-to-set].
 
-  [Alist-keys-subsetp]
-      See [system-utilities].
-
-  [Alist-to-doublets]
-      See [system-utilities].
-
   [All-calls]
       See [system-utilities].
 
@@ -83762,9 +83907,6 @@ Subtopics
   [Conjoin]
       See [system-utilities].
 
-  [Cons-count-bounded]
-      See [system-utilities].
-
   [Cons-term]
       See [system-utilities].
 
@@ -83818,9 +83960,6 @@ Subtopics
 
   [Ev$-list]
       See [apply$].
-
-  [Evens]
-      See [system-utilities].
 
   [Event]
       See [events].
@@ -84017,9 +84156,6 @@ Subtopics
   [Keyword]
       See [keywordp].
 
-  [Keyword-listp]
-      See [system-utilities].
-
   [Lambda]
       See [term].
 
@@ -84067,9 +84203,6 @@ Subtopics
 
   [Memoization]
       See [memoize].
-
-  [Merge-sort-lexorder]
-      See [system-utilities].
 
   [Meta-extract-contextual-fact]
       See [meta-extract].
@@ -84182,9 +84315,6 @@ Subtopics
   [Observation-cw]
       See [observation].
 
-  [Odds]
-      See [system-utilities].
-
   [Open-input-channel]
       See [io].
 
@@ -84202,18 +84332,6 @@ Subtopics
 
   [Package]
       See [packages].
-
-  [Packn]
-      See [system-utilities].
-
-  [Packn-pos]
-      See [system-utilities].
-
-  [Pairlis-x1]
-      See [system-utilities].
-
-  [Pairlis-x2]
-      See [system-utilities].
 
   [Partition-rest-and-keyword-args]
       See [system-utilities].
@@ -86528,7 +86646,7 @@ Subtopics
       System-level algorithms that users can modify with attachments
 
   [System-utilities]
-      Some programming utilities built into ACL2, many at the system level
+      Some built-in programming utilities pertaining to the ACL2 system
 
   [Time$]
       Time an evaluation
@@ -104585,6 +104703,12 @@ Subtopics
   [Keywordp]
       Recognizer for keywords
 
+  [Packn]
+      Build a symbol from a list
+
+  [Packn-pos]
+      Build a symbol in a specified package from a list
+
   [Symbol-<]
       Less-than test for symbols
 
@@ -105301,7 +105425,7 @@ Subtopics
   documentation will be written to help with that process.")
  (SYSTEM-UTILITIES
   (PROGRAMMING)
-  "Some programming utilities built into ACL2, many at the system level
+  "Some built-in programming utilities pertaining to the ACL2 system
 
   Since the ACL2 system is written in itself, the source code defines
   many utilities that support the ACL2 implementation.  Some of these
@@ -105310,12 +105434,13 @@ Subtopics
   ones: writing and submitting definitions, and proving theorems
   about the functions defined.
 
-  This topic provides a summary of some of those system-level
-  utilities.  It is intended to be a growing document, with
-  contributions from those in the community who find such utilities
-  that benefit them.  It has already grown substantially from an
-  initial version created by the ACL2 implementors, and others will
-  likely continue to add to it over time.
+  This topic provides a summary of some of those utilities that are
+  built into the ACL2 system.  It is intended to be a growing
+  document, with contributions from those in the community who find
+  such utilities that benefit them.  It has already grown
+  substantially from an initial version created by the ACL2
+  implementors, and others will likely continue to add to it over
+  time.
 
   WARNING 1.  Some system utilities are in :[program] mode, and for
   many of those, [guard]s are incomplete or missing entirely.
@@ -105353,14 +105478,14 @@ Subtopics
   background.
 
   Also see [programming] and its subtopics, in particular
-  [programming-with-state], which describes many system-level
+  [programming-with-state], which describes many built-in system
   utilities.  For example, a subsection of [programming-with-state],
   entitled ``SEQUENTIAL PROGRAMMING'', introduces handy utilities
   [pprogn] and [er-progn] along with links to their documentation.
   You may also wish to see [system-attachments] for how to make a few
   changes to the behavior of ACL2.
 
-  Here is another option for finding a system utility: As ACL2
+  Here is another option for finding a buit-in system utility: As ACL2
   developers sometimes do, use meta-. or meta-x tags-apropos in Emacs
   to find utilities with given substrings in their names.  For
   example, if in Emacs you submit the command meta-x tags-apropos and
@@ -105370,24 +105495,12 @@ Subtopics
   source code uses this utility.
 
 
-List of a few ACL2 system utilities:
+List of a few built-in system utilities
 
   Every function mentioned below belongs in the constant
-  [*ACL2-system-exports*].
-
-    * (alist-keys-subsetp alist keys): For the given alist and list of
-      symbols, return t when each key of alist belongs to keys, else
-      return nil.  This is Boolean-equivalent to (subsetp-eq
-      (strip-cars alist) keys), but it avoids consing up the keys of
-      alist.
-    * (alist-to-doublets alist): Return the result of replacing each pair
-      (x . y) in the given alist by the two-element list (x y).  The
-      order is preserved, i.e., the following is a theorem.
-
-          (implies (and (natp i) (< i (len alist)))
-                   (equal (nth i (alist-to-doublets alist))
-                          (let ((pair (nth i alist)))
-                            (list (car pair) (cdr pair)))))
+  [*ACL2-system-exports*].  Also see [ACL2-built-ins] for built-in
+  utilities that are less relevant to the ACL2 system, and see
+  [programming] for utilities in general.
 
     * (all-calls names term alist ans): Accumulate into ans (which
       typically is nil at the top level) all pseudo-terms u/alist
@@ -105429,9 +105542,6 @@ List of a few ACL2 system utilities:
       than equal, then the unnormalized body is returned.
     * (conjoin lst): The conjunction of the given list of terms.
     * (conjoin2 term1 term2): The conjunction of the given two terms.
-    * (cons-count-bounded x): The number of cons nodes in x (without
-      accounting for sharing), but truncated above by the value of
-      (fn-count-evg-max-val), which is 200,000 as of this writing.
     * (cons-term fn args): Returns a [term] with function symbol (or
       [lambda] expression) fn and arguments args.  Some
       simplification may be done; to avoid that, use fcons-term
@@ -105484,11 +105594,6 @@ List of a few ACL2 system utilities:
       enabled structure (as discussed for enabled-numep, just above).
       See also enabled-numep, which may be more efficient since
       enabled-runep is defined in terms of enabled-numep.
-    * (evens l): Return the restriction of the true-list l to its
-      even-indexed members (with zero-based indexing).  Note that if
-      x is a list (k1 a1 k2 a2 ... kn an) that satisfies the
-      predicate [keyword-value-listp], then (evens x) lists the keys
-      ki of x.
     * (fargn x n): For a [pseudo-termp] x that is a function call and for a
       positive integer n, return the n-th argument of x, where the
       numbering of arguments starts at 1.
@@ -105583,8 +105688,6 @@ List of a few ACL2 system utilities:
         * channel --- this is the list of free variables in the body (which
           here is the fms call).
 
-    * (keyword-listp x): Return t when x is a true-list whose members are
-      all keywords, else return nil.
     * (known-package-alist state): Returns a list of package entries, as
       explained in the definition of make-package-entry in ACL2
       sources, which is followed by simple accessor definitions (all
@@ -105618,26 +105721,8 @@ List of a few ACL2 system utilities:
       actuals).  However, extra formals and corresponding actuals are
       added when body has free variables that do not belong to
       formals, because lambdas must be closed in ACL2.
-    * (merge-sort-lexorder l): Sort the list l using a non-strict total
-      order, [lexorder], on the ACL2 universe.
     * (nvariablep x): For a [pseudo-termp] x, return true iff x is not a
       variable (i.e. it is a quoted constant or a function call).
-    * (odds l): Return the restriction of the true-list l to its
-      odd-indexed members (with zero-based indexing).  Note that if x
-      is a list (k1 a1 k2 a2 ... kn an) that satisfies the predicate
-      [keyword-value-listp], then (odds x) lists the values ai of x.
-    * (packn lst): Return a symbol.  The symbol's name is a concatenation
-      of string representations of the atoms in the [good-atom-listp]
-      lst, and the symbol's package is the package of the first
-      symbol in lst whose package is not \"COMMON-LISP\" if any, else
-      \"ACL2\".
-    * (packn-pos lst witness): Behaves like packn, except the returned
-      symbol's package will instead be the package of the symbol
-      witness.
-    * (pairlis-x1 x1 lst): Cons x1 onto the front of each element of the
-      the true-list, lst.
-    * (pairlis-x2 lst x2): Make an alist pairing each element of lst, a
-      true-list, with x2.
     * (partition-rest-and-keyword-args x keys): x should be a list of the
       form (a1 ... an :key1 v1 ... :keyk vk), where no ai is a
       keyword.  The result is (mv erp rest alist), where erp is
@@ -105757,9 +105842,6 @@ Subtopics
 
   [Constraint-info]
       Obtaining the [constraint] on a function symbol
-
-  [Ctx]
-      Context object for error messages
 
   [Get-event-data]
       Obtain data stored after at the conclusion of an event
