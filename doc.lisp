@@ -8886,10 +8886,11 @@ Subtopics
   guards, then a proof obligation will be that the occurrence of test
   is never nil.
 
-  For a related utility, see [assert*].  Both assert$ and assert*
-  create a [guard] proof obligation (when used in a definition made
-  in [logic]-mode).  However, assert$ checks the assertion at
-  runtime, while assert* does not.")
+  See [assert-event] for related utilities that offer a variety of
+  features.  In particular, both [assert$] and [assert*] create a
+  [guard] proof obligation (when used in a definition made in
+  [logic]-mode).  However, assert$ checks the assertion at runtime,
+  while assert* does not.")
  (ASSERT*
   (ERRORS ACL2-BUILT-INS)
   "Create a [guard] proof obligation that given test holds
