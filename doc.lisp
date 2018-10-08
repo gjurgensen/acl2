@@ -49216,6 +49216,9 @@ Subtopics
   [Msgp]
       Recognizer for a ``message''
 
+  [Newline]
+      Print a newline to a given output channel
+
   [Observation]
       Print an observation
 
@@ -59974,6 +59977,24 @@ SECTION: Precise documentation for stobj-let
 
   This is useful for prohibiting the memoization of functions that are
   known to involve destructive functions like nreverse.")
+ (NEWLINE
+  (IO PRINC$)
+  "Print a newline to a given output channel
+
+  This function is simply a wrapper around a call to [princ$] for the
+  purpose of printing the ASCII character 0x0A, also known as a
+  newline or line feed.
+
+  Function: <newline>
+
+    (defun
+     newline (channel state)
+     (declare
+          (xargs :guard (and (state-p state)
+                             (symbolp channel)
+                             (open-output-channel-p channel
+                                                    :character state))))
+     (princ$ #\\Newline channel state))")
  (NFIX
   (NUMBERS ACL2-BUILT-INS)
   "Coerce to a natural number
@@ -85682,7 +85703,13 @@ Subtopics
          (open-output-channel-p1 channel :character state-state))
 
   See [fmt] for more sophisticated printing routines, and see [io] for
-  general information about input and output.")
+  general information about input and output.
+
+
+Subtopics
+
+  [Newline]
+      Print a newline to a given output channel")
  (PRINT-BASE-P
   (IO ACL2-BUILT-INS)
   "Recognizer for print bases that are understood by functions such as

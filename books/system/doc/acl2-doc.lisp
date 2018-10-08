@@ -56137,7 +56137,7 @@ it."
  to involve destructive functions like @('nreverse').</p>")
 
 (defxdoc newline
-  :parents (princ$)
+  :parents (io princ$)
   :short "Print a newline to a given output channel"
   :long "<p>This function is simply a wrapper around a call to @(see princ$)
   for the purpose of printing the ASCII character 0x0A, also known as a newline
