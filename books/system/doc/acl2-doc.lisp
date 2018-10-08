@@ -56136,6 +56136,15 @@ it."
  <p>This is useful for prohibiting the memoization of functions that are known
  to involve destructive functions like @('nreverse').</p>")
 
+(defxdoc newline
+  :parents (princ$)
+  :short "Print a newline to a given output channel"
+  :long "<p>This function is simply a wrapper around a call to @(see princ$)
+  for the purpose of printing the ASCII character 0x0A, also known as a newline
+  or line feed.</p>
+
+ @(def newline)")
+
 (defxdoc nfix
   :parents (numbers acl2-built-ins)
   :short "Coerce to a natural number"
