@@ -6315,10 +6315,11 @@ and @(tsee include-book)"
  then a proof obligation will be that the occurrence of @('test') is never
  @('nil').</p>
 
- <p>For a related utility, see @(see assert*).  Both @('assert$') and
- @('assert*') create a @(see guard) proof obligation (when used in a definition
- made in @(tsee logic)-mode).  However, @('assert$') checks the assertion at
- runtime, while @('assert*') does not.</p>")
+ <p>See @(see assert-event) for related utilities that offer a variety of
+ features.  In particular, both @(tsee assert$) and @(tsee assert*) create a
+ @(see guard) proof obligation (when used in a definition made in @(tsee
+ logic)-mode).  However, @('assert$') checks the assertion at runtime, while
+ @('assert*') does not.</p>")
 
 (defxdoc assert*
   :parents (errors acl2-built-ins)
