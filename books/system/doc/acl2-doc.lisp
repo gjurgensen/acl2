@@ -81155,6 +81155,9 @@ it."
 
  <h3>Bug Fixes</h3>
 
+ <p>Fixed the @(see proof-builder) command, @('dv') (see @(see acl2-pc::dv)),
+ for diving into calls of @(tsee list) and @(tsee list*).</p>
+
  <h3>Changes at the System Level</h3>
 
  <p>The @(see documentation) topic, @(see system-utilities), is now about only
@@ -81181,6 +81184,10 @@ it."
 
  <p>Fixed the @(see acl2-doc) browser so that it can handle topic names with
  the single-quote (@(''')) and comma (@(',')) characters, by escaping them.</p>
+
+ <p>Fixed Emacs support for the the @(see proof-builder) dive command (see
+ @(see acl2-pc::dive)), @('control-t control-d'), to eliminate trailing zeros,
+ since those are (and have been) disallowed by that command.</p>
 
  <h3>Experimental Versions</h3>
 
