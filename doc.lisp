@@ -3,8 +3,8 @@
 ; The contents of this file are derived from ACL2 Community Book
 ; books/system/doc/acl2-doc.lisp.
 
-; ACL2 Version 8.0 -- A Computational Logic for Applicative Common Lisp
-; Copyright (C) 2017, Regents of the University of Texas
+; ACL2 Version 8.1 -- A Computational Logic for Applicative Common Lisp
+; Copyright (C) 2018, Regents of the University of Texas
 
 ; This version of ACL2 is a descendent of ACL2 Version 1.9, Copyright
 ; (C) 1997 Computational Logic, Inc.  See the documentation topic NOTE-2-0.
@@ -77,13 +77,13 @@ Subtopics
   [defthm], [in-theory], [xargs], [state], etc., without an acl2::
   prefix.
 
-  The constant *acl2-exports* lists 1431 symbols, including most
+  The constant *acl2-exports* lists 1445 symbols, including most
   documented ACL2 system constants, functions, and macros.  You will
   typically also want to import many symbols from Common Lisp; see
   [*common-lisp-symbols-from-main-lisp-package*].
 
-  Those who write code using ACL2 system functions (see
-  [system-utilities]) may wish to import symbols into their package
+  Those who write code using built-in ACL2 functions (see
+  [ACL2-built-ins]) may wish to import symbols into their package
   from the large list [*ACL2-system-exports*].
 
     (& &allow-other-keys &aux &body &key
@@ -141,7 +141,7 @@ Subtopics
        associativity-of-* associativity-of-+
        assume atom atom-listp
        atom-listp-forward-to-true-listp
-       backchain-limit
+       backchain-limit badge
        big-clock-entry big-clock-negative-p
        binary-* binary-+ binary-append
        bind-free bit bitp boole$ boolean-listp
@@ -215,15 +215,18 @@ Subtopics
        compress1 compress11
        compress2 compress21 compress211
        concatenate concrete-apply$-userfn
-       concrete-badge-userfn cond
-       cond-clausesp cond-macro conjugate cons
-       cons-equal cons-subtrees cons-with-hint
-       consp consp-assoc-equal constraint-info
-       corollary cpu-core-count ctx
-       current-package current-theory cw cw!
-       cw-gstack declare decrement-big-clock
-       defabbrev defabsstobj
-       defabsstobj-missing-events defattach
+       concrete-badge-userfn
+       cond cond-clausesp cond-macro
+       conjugate cons cons-equal cons-subtrees
+       cons-with-hint consp consp-assoc-equal
+       constraint-info corollary
+       cpu-core-count ctx current-package
+       current-theory cw cw! cw-gstack
+       cw-print-base-radix cw-print-base-radix!
+       declare decrement-big-clock
+       def-warrant defabbrev
+       defabsstobj defabsstobj-missing-events
+       defattach defattach-system
        default default-*-1 default-*-2
        default-+-1 default-+-2 default-<-1
        default-<-2 default-backchain-limit
@@ -249,12 +252,12 @@ Subtopics
        define-pc-atomic-macro define-pc-help
        define-pc-macro define-pc-meta
        define-trusted-clause-processor
-       deflabel deflock
-       defmacro defmacro-last defn defnd defpkg
-       defproxy defrec defrefinement defstobj
-       defstub deftheory deftheory-static
-       defthm defthm-std defthmd defthy defttag
-       defun defun-inline defun-notinline
+       deflabel deflock defmacro
+       defmacro-last defn defnd defpkg defproxy
+       defrec defrefinement defstobj defstub
+       deftheory deftheory-static defthm
+       defthm-std defthmd defthy defttag defun
+       defun$ defun-inline defun-notinline
        defun-nx defun-sk defun-std
        defund defund-inline defund-notinline
        defund-nx defuns defuns-std delete-assoc
@@ -302,13 +305,15 @@ Subtopics
        fms-to-string fmt fmt! fmt!-to-string
        fmt-to-comment-window fmt-to-string fmt1
        fmt1! fmt1!-to-string fmt1-to-string
+       fmx fmx!-cw fmx-cw fn-equal
        fncall-term forall force formula
        fourth function-symbolp function-theory
        gag-mode gc$ gc-strategy gc-verbose
        gcs generalize get-check-invariant-risk
        get-command-sequence
        get-enforce-redundancy get-event-data
-       get-global get-output-stream-string$
+       get-global get-in-theory-redundant-okp
+       get-output-stream-string$
        get-register-invariant-risk
        get-slow-alist-action get-timer
        get-wormhole-status getenv$ getprop
@@ -446,8 +451,9 @@ Subtopics
        ordered-symbol-alistp-forward-to-symbol-alistp
        ordered-symbol-alistp-getprops
        otherwise our-digit-char-p
-       override-hints p! pairlis$
-       pairlis2 pand pargs pbt pc pcb pcb!
+       override-hints p! pairlis$ pairlis2 pand
+       pargs partition-rest-and-keyword-args
+       pbt pc pcb pcb!
        pcs pe pe! peek-char$ pf pkg-imports
        pkg-witness pl pl2 plet plist-worldp
        plist-worldp-forward-to-assoc-eq-equal-alistp
@@ -552,10 +558,11 @@ Subtopics
        set-equalp-equal set-evisc-tuple
        set-fc-criteria set-fc-report-on-the-fly
        set-fmt-hard-right-margin
-       set-fmt-soft-right-margin
-       set-gag-mode set-gc-strategy
-       set-guard-checking set-guard-msg
-       set-ignore-ok set-inhibit-output-lst
+       set-fmt-soft-right-margin set-gag-mode
+       set-gc-strategy set-guard-checking
+       set-guard-msg set-ignore-ok
+       set-in-theory-redundant-okp
+       set-inhibit-output-lst
        set-inhibit-warnings
        set-inhibit-warnings!
        set-inhibited-summary-types
@@ -711,11 +718,11 @@ Subtopics
        update-written-files
        upper-case-p upper-case-p-char-upcase
        upper-case-p-forward-to-alpha-char-p
-       user-stobj-alist
-       user-stobj-alist1 value value-triple
-       verbose-pstack verify verify-guards
-       verify-guards+ verify-guards-formula
-       verify-termination w walkabout warning!
+       user-stobj-alist user-stobj-alist1
+       value value-triple verbose-pstack
+       verify verify-guards verify-guards+
+       verify-guards-formula verify-termination
+       w walkabout warning! warrant
        waterfall-parallelism waterfall-printing
        wet with-fast-alist with-guard-checking
        with-guard-checking-error-triple
@@ -1494,7 +1501,7 @@ Subtopics
   (ACL2)
   "General information About ACL2
 
-  This is ACL2 Version 8.0, [copyright] (C) 2017, Regents of the
+  This is ACL2 Version 8.1, [copyright] (C) 2018, Regents of the
   University of Texas, authored by Matt Kaufmann and J Strother
   Moore.
 
@@ -2500,7 +2507,7 @@ Subtopics
   This is the ACL2 documentation.  For the ACL2+Books Manual, which
   that includes both the ACL2 documentation and the ACL2
   [community-books], see the {ACL2+Books Manual |
-  http://www.cs.utexas.edu/users/moore/acl2/v8-0/combined-manual/index.html}.
+  http://www.cs.utexas.edu/users/moore/acl2/v8-1/combined-manual/index.html}.
 
 
 Subtopics
@@ -2771,6 +2778,12 @@ Subtopics
 
   [Add-to-set]
       Add a symbol to a list
+
+  [Alist-keys-subsetp]
+      Check that all keys of the alist belong to a given set
+
+  [Alist-to-doublets]
+      Convert an alist to a list of two-element lists
 
   [Alistp]
       Recognizer for association lists
@@ -3057,6 +3070,9 @@ Subtopics
   [Cons]
       Pair and list constructor
 
+  [Cons-count-bounded]
+      Count the number of conses (up to a limit)
+
   [Cons-subtrees]
       Build a fast alist whose keys are the subtrees of X
 
@@ -3150,6 +3166,9 @@ Subtopics
 
   [Evenp]
       Test whether an integer is even
+
+  [Evens]
+      The even-indexed members of a list
 
   [Explode-atom]
       Convert any [atom] into a [character-listp] that contains its
@@ -3405,6 +3424,9 @@ Subtopics
   [Intersectp]
       Test whether two lists intersect
 
+  [Keyword-listp]
+      Recognizer for true lists of keywords
+
   [Keyword-value-listp]
       Recognizer for true lists whose even-position elements are keywords
 
@@ -3556,6 +3578,9 @@ Subtopics
   [Member]
       Membership predicate
 
+  [Merge-sort-lexorder]
+      Sort a list
+
   [Min]
       The smaller of two numbers
 
@@ -3671,14 +3696,29 @@ Subtopics
   [Oddp]
       Test whether an integer is odd
 
+  [Odds]
+      The odd-indexed members of a list
+
   [Open-output-channel!]
       When trust tags are needed to open output channels
 
   [Or]
       Disjunction
 
+  [Packn]
+      Build a symbol from a list
+
+  [Packn-pos]
+      Build a symbol in a specified package from a list
+
   [Pairlis$]
       Zipper together two lists
+
+  [Pairlis-x1]
+      Cons a given element to each member of a list
+
+  [Pairlis-x2]
+      Cons each element of a list with a given element
 
   [Pand]
       Parallel, Boolean version of [and]
@@ -4590,7 +4630,7 @@ Silent loading of ACL2 customization files
 
   As discussed elsewhere (see [documentation]), the web-based
   {ACL2+Books Manual |
-  http://www.cs.utexas.edu/users/moore/acl2/v8-0/combined-manual/index.html}
+  http://www.cs.utexas.edu/users/moore/acl2/v8-1/combined-manual/index.html}
   provides a way to browse the combined documentation for the ACL2
   system and community books.  Such documentation can also be read at
   the terminal using the :[doc] command, though documentation for
@@ -6403,10 +6443,26 @@ Subtopics
 
   [Set-register-invariant-risk]
       Avoid [invariant-risk] checking for specified functions")
- (ALIST-KEYS-SUBSETP (POINTERS)
-                     "See [system-utilities].")
- (ALIST-TO-DOUBLETS (POINTERS)
-                    "See [system-utilities].")
+ (ALIST-KEYS-SUBSETP
+  (ALISTS ACL2-BUILT-INS)
+  "Check that all keys of the alist belong to a given set
+
+  The call (alist-keys-subsetp alist keys) returns t when each key of
+  the given alist belongs to the given list of keys; else it returns
+  nil.  This is Boolean-equivalent to (subsetp-eq (strip-cars alist)
+  keys), but it avoids consing up the keys of alist.")
+ (ALIST-TO-DOUBLETS
+  (ALISTS ACL2-BUILT-INS)
+  "Convert an alist to a list of two-element lists
+
+  The call (alist-to-doublets alist) returns the result of replacing
+  each pair (x . y) in the given alist by the two-element list (x y).
+  The order is preserved, i.e., the following is a theorem.
+
+    (implies (and (natp i) (< i (len alist)))
+             (equal (nth i (alist-to-doublets alist))
+                    (let ((pair (nth i alist)))
+                      (list (car pair) (cdr pair)))))")
  (ALISTP
   (ALISTS ACL2-BUILT-INS)
   "Recognizer for association lists
@@ -6431,6 +6487,12 @@ Subtopics
 
   [Acons]
       Constructor for association lists
+
+  [Alist-keys-subsetp]
+      Check that all keys of the alist belong to a given set
+
+  [Alist-to-doublets]
+      Convert an alist to a list of two-element lists
 
   [Alistp]
       Recognizer for association lists
@@ -6459,6 +6521,12 @@ Subtopics
 
   [Pairlis$]
       Zipper together two lists
+
+  [Pairlis-x1]
+      Cons a given element to each member of a list
+
+  [Pairlis-x2]
+      Cons each element of a list with a given element
 
   [Put-assoc]
       Modify an association list by associating a value with a key
@@ -8818,10 +8886,11 @@ Subtopics
   guards, then a proof obligation will be that the occurrence of test
   is never nil.
 
-  For a related utility, see [assert*].  Both assert$ and assert*
-  create a [guard] proof obligation (when used in a definition made
-  in [logic]-mode).  However, assert$ checks the assertion at
-  runtime, while assert* does not.")
+  See [assert-event] for related utilities that offer a variety of
+  features.  In particular, both [assert$] and [assert*] create a
+  [guard] proof obligation (when used in a definition made in
+  [logic]-mode).  However, assert$ checks the assertion at runtime,
+  while assert* does not.")
  (ASSERT*
   (ERRORS ACL2-BUILT-INS)
   "Create a [guard] proof obligation that given test holds
@@ -9068,7 +9137,7 @@ Subtopics
                  (t (and (atom (car lst))
                          (atom-listp (cdr lst))))))")
  (AUTO-INSTANCE (POINTERS)
-                "See defthm<w.")
+                "See [defthm<w].")
  (A_FLYING_TOUR_OF_ACL2
   (PAGES_WRITTEN_ESPECIALLY_FOR_THE_TOURS)
   "A Flying Tour of ACL2
@@ -11618,7 +11687,7 @@ Prerequisites
 
   We assume that you have already downloaded and installed ACL2 as per
   the {ACL2 installation instructions |
-  http://www.cs.utexas.edu/users/moore/acl2/v8-0/HTML/installation/installation.html}
+  http://www.cs.utexas.edu/users/moore/acl2/v8-1/HTML/installation/installation.html}
   on the ACL2 home page.
 
   We assume you know the path to your ACL2 executable.  Typically this
@@ -11869,7 +11938,7 @@ Subtopics
 
   For more information about installing ACL2, see the {ACL2
   installation instructions |
-  http://www.cs.utexas.edu/users/moore/acl2/v8-0/HTML/installation/installation.html}.
+  http://www.cs.utexas.edu/users/moore/acl2/v8-1/HTML/installation/installation.html}.
   For information about so-called ``classic ACL2 `make'-based
   certification'', which provides support for certifying directories
   of books but may disappear in a future ACL2 release, see
@@ -13359,7 +13428,7 @@ Subtopics
   contains [documentation] only about the ACL2 system, and does not
   include documentation from the [community-books].  Please point
   your browser at the {ACL2+Books Manual |
-  http://www.cs.utexas.edu/users/moore/acl2/v8-0/combined-manual/index.html}
+  http://www.cs.utexas.edu/users/moore/acl2/v8-1/combined-manual/index.html}
   (or if browsing in [ACL2-Doc], switch to that manual with meta-0 I)
   to access the desired topic.
 
@@ -13407,9 +13476,12 @@ Subtopics
        (defmacroq \"[books]/kestrel/utilities/defmacroq.lisp\")
        (fty::defprod \"[books]/centaur/fty/top.lisp\")
        (defpun \"[books]/misc/defpun.lisp\")
+       (defthm<w \"[books]/kestrel/utilities/auto-instance.lisp\")
        (defthmg \"[books]/tools/defthmg.lisp\")
        (getopt-demo::demo2 \"[books]/centaur/getopt/demo2.lisp\")
        (developers-guide \"[books]/system/doc/developers-guide.lisp\")
+       (developers-guide-utilities
+            \"[books]/system/doc/developers-guide.lisp\")
        (do-not-hint \"[books]/tools/do-not.lisp\")
        (easy-simplify-term \"[books]/tools/easy-simplify.lisp\")
        (er-soft+ \"[books]/kestrel/utilities/er-soft-plus.lisp\")
@@ -13421,6 +13493,7 @@ Subtopics
        (ihs \"[books]/ihs/ihs-doc-topic.lisp\")
        (include-raw \"[books]/tools/include-raw.lisp\")
        (install-not-normalized \"[books]/misc/install-not-normalized.lisp\")
+       (list-equiv \"[books]/std/lists/equiv.lisp\")
        (logbitp-reasoning \"[books]/centaur/bitops/equal-by-logbitp.lisp\")
        (make-flag \"[books]/tools/flag.lisp\")
        (make-termination-theorem
@@ -13433,6 +13506,7 @@ Subtopics
        (note-7-1-books \"[books]/doc/relnotes.lisp\")
        (note-7-2-books \"[books]/doc/relnotes.lisp\")
        (note-8-0-books \"[books]/doc/relnotes.lisp\")
+       (note-8-1-books \"[books]/doc/relnotes.lisp\")
        (str::numbers \"[books]/std/strings/top.lisp\")
        (oracle-timelimit \"[books]/tools/oracle-timelimit.lisp\")
        (oslib \"[books]/oslib/top-logic.lisp\")
@@ -16605,11 +16679,12 @@ Subtopics
   [remove-untouchable]).
 
     (defttag t)
-    (state-global-let*
-     ((temp-touchable-vars t set-temp-touchable-vars))
-     (progn! (f-put-global 'logic-fns-with-raw-code
-                           (cons 'my-fn (@ logic-fns-with-raw-code))
-                           state)))")
+    (progn!
+     :state-global-bindings
+     ((acl2::temp-touchable-vars t acl2::set-temp-touchable-vars))
+     (f-put-global 'acl2::logic-fns-with-raw-code
+                   (cons 'my-fn (@ acl2::logic-fns-with-raw-code))
+                   state))")
  (COMP-GCL
   (COMPILATION ACL2-BUILT-INS)
   "Compile some ACL2 functions leaving .c and .h files
@@ -17592,8 +17667,13 @@ Subtopics
   (cons x y) is a pair whose first component is x and second component
   is y.  If y is a list, then (cons x y) is a list that has an
   additional element x on the front.")
- (CONS-COUNT-BOUNDED (POINTERS)
-                     "See [system-utilities].")
+ (CONS-COUNT-BOUNDED
+  (CONSES ACL2-BUILT-INS)
+  "Count the number of conses (up to a limit)
+
+  The call (cons-count-bounded x) returns the number of cons nodes in x
+  (without accounting for sharing), but truncated above by the value
+  of (fn-count-evg-max-val), which is 200,000 as of this writing.")
  (CONS-SUBTREES
   (FAST-ALISTS ACL2-BUILT-INS)
   "Build a fast alist whose keys are the subtrees of X
@@ -18225,6 +18305,9 @@ Subtopics
   [Cons]
       Pair and list constructor
 
+  [Cons-count-bounded]
+      Count the number of conses (up to a limit)
+
   [Cons-with-hint]
       Alternative to [cons] that tries to avoid consing when a suitable
       cons structure is provided as a hint.
@@ -18810,10 +18893,10 @@ Subtopics
   [documentation-copyright], which notes that there are many
   documentation authors.
 
-  ACL2 Version 8.0 --- A Computational Logic for Applicative Common
+  ACL2 Version 8.1 --- A Computational Logic for Applicative Common
   Lisp
 
-  Copyright (C) 2017, Regents of the University of Texas
+  Copyright (C) 2018, Regents of the University of Texas
 
   This version of ACL2 is a descendant of ACL2 Version 1.9, Copyright
   (C) 1997 Computational Logic, Inc.  See the documentation topic
@@ -18961,7 +19044,7 @@ Subtopics
                    (declare (ignore nullp))
                    (mv val state)))")
  (CTX
-  (SYSTEM-UTILITIES)
+  (ERRORS)
   "Context object for error messages
 
   Calls of [er], such as (er soft ctx ...), take a context argument,
@@ -22084,7 +22167,7 @@ Subtopics
   are constrained functions satisfying just the [constraint]s
   discussed below.
 
-  Ev and ev-list must satisfy [constraint]s (0)-(6) and (k) below.
+  Ev and ev-list must satisfy [constraint]s (0)-(7) and (k) below.
   When :namedp nil is supplied, the i in the generated constraint
   names are the parenthesized numbers below.  When :namedp t is
   supplied, the mnemonic names are those shown in brackets below.
@@ -22136,6 +22219,14 @@ Subtopics
         [EV-OF-NONSYMBOL-ATOM]
         (implies (and (not (consp x))
                       (not (symbolp x)))
+                 (equal (ev x a)
+                        nil))
+
+    (7) How to ev a cons whose car is a non-symbol atom:
+        [EV-OF-BAD-FNCALL]
+        (implies (and (consp x)
+                      (not (consp (car x)))
+                      (not (symbolp (car x))))
                  (equal (ev x a)
                         nil))
 
@@ -26606,7 +26697,7 @@ Subtopics
   defined in books.  However, most users will probably access the
   ACL2 documentation in other ways; see [documentation].  In
   particular, consider using the {ACL2+Books Manual |
-  http://www.cs.utexas.edu/users/moore/acl2/v8-0/combined-manual/index.html},
+  http://www.cs.utexas.edu/users/moore/acl2/v8-1/combined-manual/index.html},
   for topics documented in the ACL2 community [books] or in the ACL2
   system (where the latter are rearranged).
 
@@ -26648,7 +26739,7 @@ Available Documentation
     * The online version (recommended). If you expect to have an internet
       connection while using the documentation, you may prefer to use
       the online version of the {ACL2+Books Manual |
-      http://www.cs.utexas.edu/users/moore/acl2/v8-0/combined-manual/index.html}.
+      http://www.cs.utexas.edu/users/moore/acl2/v8-1/combined-manual/index.html}.
     * A local version. If you sometimes work without an internet
       connection, you can {download | download/} a local copy of any
       web-based XDOC manual using the \"down arrow\" icon at the top of
@@ -29089,6 +29180,9 @@ Subtopics
   [Breaks]
       Common Lisp breaks
 
+  [Ctx]
+      Context object for error messages
+
   [Er]
       Print an error message and ``cause an error''
 
@@ -29724,8 +29818,14 @@ Subtopics
     (defun evenp (x)
            (declare (xargs :guard (integerp x)))
            (integerp (* x (/ 2))))")
- (EVENS (POINTERS)
-        "See [system-utilities].")
+ (EVENS
+  (LISTS ACL2-BUILT-INS)
+  "The even-indexed members of a list
+
+  The call (evens x) returns the restriction of the true-list x to its
+  even-indexed members (with zero-based indexing).  Note that if x is
+  a list (k1 a1 k2 a2 ... kn an) that satisfies the predicate
+  [keyword-value-listp], then (evens x) lists the keys ki of x.")
  (EVENT (POINTERS) "See [events].")
  (EVENTS
   (ACL2)
@@ -32444,7 +32544,7 @@ Subtopics
   not included in the current ACL2 session?
 
   The [xdoc] {ACL2+Books Manual |
-  http://www.cs.utexas.edu/users/moore/acl2/v8-0/combined-manual/index.html}
+  http://www.cs.utexas.edu/users/moore/acl2/v8-1/combined-manual/index.html}
   includes documentation for both the ACL2 system and the
   [community-books].  For more information on this manual and how to
   view it, see [documentation].")
@@ -32475,19 +32575,13 @@ Subtopics
   (LISTS ACL2-BUILT-INS)
   "Coerce to a true list
 
-  Fix-true-list is the identity function on [true-listp] objects.  It
-  converts every list to a true list by dropping the final [cdr], and
-  it converts every [atom] to nil.
+  Fix-true-list is a macro that expands to a call of [true-list-fix]
+  with the same argument.
 
-  Function: <fix-true-list>
+  Macro: <fix-true-list>
 
-    (defun fix-true-list (x)
-           (declare (xargs :guard t))
-           (if (consp x)
-               (cons-with-hint (car x)
-                               (fix-true-list (cdr x))
-                               x)
-               nil))")
+    (defmacro fix-true-list (x)
+              (cons 'true-list-fix (cons x 'nil)))")
  (FLAMBDA-APPLICATIONP (POINTERS)
                        "See [system-utilities].")
  (FLAMBDAP (POINTERS)
@@ -40574,15 +40668,17 @@ Subtopics
 
   A very common hint is the :use hint, which in general takes as its
   value a list of ``lemma instances'' (see [lemma-instance]) but
-  which allows a single lemma name as a special case.  Here are two
-  examples, one using a single lemma name and one using a lemma
-  instance:
+  which allows a single lemma name as a special case.  In each case,
+  a goal G is replaced by a new goal (IMPLIES P G), where P is the
+  theorem specified by the (conjunction of the) lemma instances
+  provided.  Here are some examples.
 
-    ; Attach :use hint to the top-level goal, which is named \"Goal\":
+    ; Attach :use hint to the top-level goal G, which is named \"Goal\",
+    ; replacing it by (implies P G) where P is the statement of lemma23:
     :hints ((\"Goal\" :use lemma23))
 
-    ; Equivalent to the above: use the trivial instance (i.e., with the empty
-    ; substitution of lemma23:
+    ; Equivalent to the above, using the trivial instance (i.e., with the empty
+    ; substitution) of lemma23:
     :hints ((\"Goal\" :use ((:instance lemma23))))
 
     ; Attach :use hint to the named subgoal, where the indicated lemma is used
@@ -41346,24 +41442,25 @@ Subtopics
 
         Value is a [lemma-instance] or a true list of [lemma-instance]s,
         indicating that the propositions denoted by the instances be
-        added as hypotheses to the specified goal.  Note that :use
-        makes the given instances available as ordinary hypotheses of
-        the formula to be proved.  The :instance form of a
+        added as hypotheses to the specified goal: that is, the :use
+        hint replaces a goal, G, by the new goal, (IMPLIES P G),
+        where P is the theorem specified by the (conjunction of the)
+        lemma instances provided.  The :instance form of a
         [lemma-instance] permits you to instantiate the free
         variables of previously proved theorems any way you wish,
         even allowing for differences in [packages]; see
         [lemma-instance] for details.  These new hypotheses
         participate fully in all subsequent rewriting, etc.  If the
         goal in question is in fact an instance of a previously
-        proved theorem, you may wish to use :by below.  Note that
-        [theories] may be helpful when employing :use hints; see
-        [minimal-theory].
+        proved theorem, you may wish to use :by (documented above).
+        Sometimes [theories] are helpful when employing :use hints;
+        see [minimal-theory].
 
-        Note that if the value is the name of a function symbol introduced by
-        [defun], then the normalized (simplified) body of that
-        definition is used; see [normalize].  This behavior differs
-        from that provided by a :by hint, where the original body of
-        the definition is used.
+        If the value is the name of a function symbol introduced by [defun],
+        then the normalized (simplified) body of that definition is
+        used; see [normalize].  This behavior differs from that
+        provided by a :by hint, where the original body of the
+        definition is used.
 
 
 Subtopics
@@ -45928,15 +46025,15 @@ Subtopics
   (PROGRAMMING INTRODUCTION-TO-THE-THEOREM-PROVER)
   "Introduction to programming in ACL2 for Lisp users
 
-  The [documentation] topics [programming] and [ACL2-built-ins] are
-  starting points for a rich collection of primitives and features in
-  the ACL2 programming language.  In the present topic (below) we
-  give a succinct introduction to that language for those who are
-  already reasonably familiar with Common Lisp, or perhaps another
-  Lisp.  Follow the hyperlinks if you want to drill down; for
-  example, we mention multiple values below but say very little about
-  them, instead providing links to topics that explain their handling
-  in a little more depth.
+  The [documentation] topic, [ACL2-built-ins], as well as its parent
+  topic, [programming], are starting points for a rich collection of
+  primitives and features in the ACL2 programming language.  In the
+  present topic (below) we give a succinct introduction to that
+  language for those who are already reasonably familiar with Common
+  Lisp, or perhaps another Lisp.  Follow the hyperlinks if you want
+  to drill down; for example, we mention multiple values below but
+  say very little about them, instead providing links to topics that
+  explain their handling in a little more depth.
 
   The [documentation] for ACL2 and its [community-books] provides a
   rich set of topics for further exploration.  This particular topic
@@ -45965,12 +46062,14 @@ Applicative Common Lisp
   association list in either forward or backward order.'' Many such
   functions tend to have close analogues in ACL2, named by
   concatenating \"$\" to the Common Lisp name; for example, ACL2 has
-  [pairlis$], [union$], and even [random$].  See [ACL2-built-ins] for
-  a much more comprehensive list of functions, macros, and special
-  forms provided by the ACL2 programming language.  In particular, a
-  search through that documentation topic for `$' will show you
-  utilities like pairlis$ that are based on related Common Lisp
-  utilities.
+  [pairlis$], [union$], and even [random$].  Yet other Common Lisp
+  functions, for example format, are not available in ACL2 but have
+  useful alternatives in ACL2; for example, see [fmt].  See
+  [ACL2-built-ins] for a much more comprehensive list of functions,
+  macros, and special forms provided by the ACL2 programming
+  language.  In particular, a search through that documentation topic
+  for `$' will show you utilities like pairlis$ that are based on
+  related Common Lisp utilities.
 
   In the ACL2 read-eval-print loop, you can define functions and macros
   with [defun] and [defmacro] just as in Common Lisp, with some
@@ -46061,12 +46160,36 @@ State
 
 More help
 
-  The acl2-help email list is a fine place to get help with ACL2
-  questions, including programming questions.  You can sign up by
-  following links from the {ACL2 home page |
+  ACL2 does not provide apropos.  However, you can search the
+  documentation to find substring matches.  For example, if you type
+  princ into the ``Jump to'' box in the web-based manual, or if you
+  type the command i [for ''index''] into the [ACL2-doc] Emacs-based
+  documentation browser, you will find [princ$].  The ``Jump to'' box
+  in the web-based manual matches on prefixes, but the i command in
+  [ACL2-doc] matches on any substring.
+
+  Another way for Lisp programmers to get answers to ``How do I do this
+  in ACL2'' questions is to query the acl2-help mailing list.  You
+  can sign up via a link on the {ACL2 home page |
   http://www.cs.utexas.edu/users/moore/acl2/}.  Moreover, that could
   be a good place to request or suggest improvements to this
-  documentation topic!")
+  documentation topic!  Also see [history] for some ways to query the
+  current session.
+
+  Finally, here are a few specific alternatives to Common Lisp
+  utilities.
+
+    * describe: see [doc]
+    * fboundp and other utilities to provide information about functions,
+      macros, and special operators: see [args]
+    * format: see [fmt], which has links to related functions that perform
+      formatted printing
+    * list-all-packages: see [in-package]; also see the description of
+      known-package-alist in [system-utilities]
+    * setq: see [assign], but perhaps first look at the documentation
+      topics for [state] and [programming-with-state]
+    * symbol-plist: see [props], [getprop], and [putprop]
+    * with-open-file: see [io]")
  (INTRODUCTION-TO-REWRITE-RULES-PART-1
   (INTRODUCTION-TO-THE-THEOREM-PROVER)
   "Introduction to ACL2's notion of rewrite rules
@@ -49093,6 +49216,9 @@ Subtopics
   [Msgp]
       Recognizer for a ``message''
 
+  [Newline]
+      Print a newline to a given output channel
+
   [Observation]
       Print an observation
 
@@ -49334,8 +49460,12 @@ Subtopics
   form was available immediately: the form t that had been supplied
   by the user.  So the query returned immediately and the set-iprint
   call was completed.")
- (KEYWORD-LISTP (POINTERS)
-                "See [system-utilities].")
+ (KEYWORD-LISTP
+  (LISTS KEYWORDP ACL2-BUILT-INS)
+  "Recognizer for true lists of keywords
+
+  The call (keyword-listp x) return t when x is a true-list whose
+  members are all [keyword]s, else returns nil.")
  (KEYWORD-VALUE-LISTP
   (KEYWORDP LISTS ACL2-BUILT-INS)
   "Recognizer for true lists whose even-position elements are keywords
@@ -49391,6 +49521,9 @@ Subtopics
 
 
 Subtopics
+
+  [Keyword-listp]
+      Recognizer for true lists of keywords
 
   [Keyword-value-listp]
       Recognizer for true lists whose even-position elements are keywords")
@@ -51379,6 +51512,9 @@ Subtopics
 
   See also [non-linear-arithmetic] for a description of an extension to
   the linear-arithmetic procedure described here.")
+ (LISP-PROGRAMMER-INTRODUCTION
+      (POINTERS)
+      "See [introduction-to-programming-in-ACL2-for-those-who-know-lisp].")
  (LIST
   (LISTS ACL2-BUILT-INS)
   "Build a list
@@ -51486,6 +51622,9 @@ Subtopics
   [Eqlable-listp]
       Recognizer for a true list of objects each suitable for [eql]
 
+  [Evens]
+      The even-indexed members of a list
+
   [Fix-true-list]
       Coerce to a true list
 
@@ -51503,6 +51642,9 @@ Subtopics
 
   [Intersectp]
       Test whether two lists intersect
+
+  [Keyword-listp]
+      Recognizer for true lists of keywords
 
   [Keyword-value-listp]
       Recognizer for true lists whose even-position elements are keywords
@@ -51531,6 +51673,9 @@ Subtopics
   [Member]
       Membership predicate
 
+  [Merge-sort-lexorder]
+      Sort a list
+
   [Nat-listp]
       Recognizer for a true list of natural numbers
 
@@ -51543,11 +51688,20 @@ Subtopics
   [Nthcdr]
       Final segment of a list
 
+  [Odds]
+      The odd-indexed members of a list
+
   [Pairlis]
       See [pairlis$]
 
   [Pairlis$]
       Zipper together two lists
+
+  [Pairlis-x1]
+      Cons a given element to each member of a list
+
+  [Pairlis-x2]
+      Cons each element of a list with a given element
 
   [Pos-listp]
       Recognizer for a true list of positive integers
@@ -56756,8 +56910,12 @@ Subtopics
 
   This macro is an abbreviation for [memoize-summary].  Logically, it
   just returns nil.  Also see [protect-memoize-statistics].")
- (MERGE-SORT-LEXORDER (POINTERS)
-                      "See [system-utilities].")
+ (MERGE-SORT-LEXORDER
+  (LISTS ACL2-BUILT-INS)
+  "Sort a list
+
+  The call (merge-sort-lexorder x) sorts the true-list x using a
+  non-strict total order, [lexorder], on the ACL2 universe.")
  (META
   (RULE-CLASSES)
   "Make a :meta rule (a hand-written simplifier)
@@ -59819,6 +59977,24 @@ SECTION: Precise documentation for stobj-let
 
   This is useful for prohibiting the memoization of functions that are
   known to involve destructive functions like nreverse.")
+ (NEWLINE
+  (IO PRINC$)
+  "Print a newline to a given output channel
+
+  This function is simply a wrapper around a call to [princ$] for the
+  purpose of printing the ASCII character 0x0A, also known as a
+  newline or line feed.
+
+  Function: <newline>
+
+    (defun
+     newline (channel state)
+     (declare
+          (xargs :guard (and (state-p state)
+                             (symbolp channel)
+                             (open-output-channel-p channel
+                                                    :character state))))
+     (princ$ #\\Newline channel state))")
  (NFIX
   (NUMBERS ACL2-BUILT-INS)
   "Coerce to a natural number
@@ -71578,8 +71754,9 @@ Subtopics
 
   Many changes have been made to the distributed books, thanks to an
   active ACL2 community.  You can contribute books and obtain updates
-  between ACL2 releases by visiting the {ACL2 Books |
-  http://acl2-books.googlecode.com/} web page.
+  between ACL2 releases by visiting the ACL2 Books web page.  [Note:
+  This release note is obsolete, as it referenced the now-invalid
+  URL, http://acl2-books.googlecode.com/.]
 
   There is new Makefile support for certifying just some of the
   distributed books.  See [books-certification-classic], in
@@ -74393,9 +74570,8 @@ Subtopics
 
   The ACL2 sources are now publicly available between ACL2 releases,
   using svn; see the new ``acl2-devel'' project hosted by Google code
-  at {http://acl2-devel.googlecode.com |
-  http://acl2-devel.googlecode.com}.  Although such a copy of ACL2 is
-  likely to work well with the latest svn (trunk) revision of the
+  at http://acl2-devel.googlecode.com.  Although such a copy of ACL2
+  is likely to work well with the latest svn (trunk) revision of the
   ACL2 community books (see [community-books]), please take seriously
   the warning message printed at startup: ``The authors of ACL2
   consider svn distributions to be experimental; they may be
@@ -78848,7 +79024,7 @@ Experimental Versions
   has been set to a non-nil value in raw Lisp (see [hard-error]).")
  (NOTE-8-1
   (RELEASE-NOTES)
-  "ACL2 Version 8.1 (xxx, 20xx) Notes
+  "ACL2 Version 8.1 (September, 2018) Notes
 
   NOTE!  New users can ignore these release notes, because the
   [documentation] has been updated to reflect all changes that are
@@ -78862,10 +79038,12 @@ Experimental Versions
   many changes could be placed in more than one category.
 
   Note that only ACL2 system changes are listed below.  See also
-  note-8-1-books for a summary of changes made to the ACL2 Community
-  Books since ACL2 8.0, including the build system.  Also note that
-  with each release, some built-in functions that were formerly in
-  :[program] mode are now [guard]-verified :[logic] mode functions.
+  [note-8-1-books] for a summary of changes made to the ACL2
+  Community Books since ACL2 8.0, including the build system.  Also
+  note that with each release, it is typical that the value of
+  constant [*ACL2-exports*] has been extended, and that some built-in
+  functions that were formerly in :[program] mode are now
+  [guard]-verified :[logic] mode functions.
 
 
 Changes to Existing Features
@@ -79088,31 +79266,44 @@ Changes to Existing Features
   for making that solution robust.
 
   The [defevaluator] macro, and more generally the notion of evaluator,
-  have been changed to include a new [constraint] inserted after
-  constraints 0 through 5.  The new constraint is as follows, where
+  have been changed to include two new [constraint]s inserted after
+  constraints 0 through 5.  The new constraints are as follows, where
   <ev> refers to the evaluator.
 
     (IMPLIES (AND (NOT (CONSP X)) (NOT (SYMBOLP X)))
              (EQUAL (<ev> X A) NIL))
+    (IMPLIES (AND (CONSP X) (NOT (CONSP (CAR X))) (NOT (SYMBOLP (CAR X))))
+             (EQUAL (<ev> X A) NIL))
 
-  This new constraint generated by [defevaluator] is named
-  <ev>-CONSTRAINT-6 unless the keyword argument :namedp t is
-  supplied, in which case it is named <ev>-OF-NONSYMBOL-ATOM.  Thus
-  by default (or if :namedp is nil), this change increases by one the
-  indices on constraints for the specified function symbols, because
-  they start at 7 instead of 6 --- <ev>-CONSTRAINT-7,
-  <ev>-CONSTRAINT-8, and so on.  Note that if you use functional
-  instantiation to prove a theorem about one evaluator given a
-  theorem about another evaluator, you'll need to enable the new rule
-  (i.e., ev-constraint-6 or, if you use option :namedp t,
-  ev-of-nonsymbol-atom).  Thanks to Sol Swords for both suggesting
-  and implementing this extension.
+  These new constraints generated by [defevaluator] are named
+  <ev>-CONSTRAINT-6 and <ev>-CONSTRAINT-7 unless the keyword argument
+  :namedp t is supplied, in which case they are named
+  <ev>-OF-NONSYMBOL-ATOM and <ev>-OF-BAD-FNCALL.  Thus by default (or
+  if :namedp is nil), this change increases by one the indices on
+  constraints for the specified function symbols, because they start
+  at 8 instead of 6 --- <ev>-CONSTRAINT-8, <ev>-CONSTRAINT-9, and so
+  on.  Note that if you use functional instantiation to prove a
+  theorem about one evaluator given a theorem about another
+  evaluator, you'll need to enable the new rules (i.e.,
+  ev-constraint-6 and ev-constraint-7 or, if you use option :namedp
+  t, ev-of-nonsymbol-atom and ev-of-bad-fncall).  Thanks to Sol
+  Swords for both suggesting and implementing this extension.
 
   [Let]-expressions are no longer eliminated from right-hand sides of
   [rewrite] rules.  See [rewrite].  This change improves efficiency
   of the rewriter in some cases, by retaining subexpressions shared
   on the right-hand side as the rewrite rule is applied.  Thanks to
   Eric Smith for requesting this change.
+
+  It was possible to declare a function symbol to be [untouchable] and
+  yet still execute it using [apply$], thus violating the spirit of
+  untouchables.  That is no longer allowed.  Here is an example of
+  such execution that was formerly permitted, but is no longer.
+
+    (include-book \"projects/apply/apply-lemmas\" :dir :system)
+    (defun$ f (x) (declare (xargs :guard t)) (cons x x))
+    (push-untouchable f t)
+    (apply$ 'f '(3))
 
 
 New Features
@@ -79266,7 +79457,7 @@ Bug Fixes
   entirely during a proof, and we avoid the error ``ACL2 cannot ev
   the call of non-executable function ANCESTORS-CHECK...'' by
   allowing attachments to be used when checking table guards (as
-  discussed above).  Thanks to Dmitry Nadezhin for sending relayable
+  discussed above).  Thanks to Dmitry Nadezhin for sending replayable
   examples that exhibited these bugs.
 
   Fixed [guard]s for functions [enabled-runep], [enabled-numep],
@@ -79296,7 +79487,7 @@ Bug Fixes
   keyword argument is now fully eliminated.  Thanks to Eric Smith for
   pointing out this issue.
 
-  Fixed :[pso] and related utiltiies :[pso!], :[psof], and :[psog], to
+  Fixed :[pso] and related utilities :[pso!], :[psof], and :[psog], to
   avoid printing some error messages.  Thanks to Keshav Kini for
   sending us an example to bring this bug to our attention.  Also
   tweaked these utilities to avoid accumulating later event failure
@@ -79381,6 +79572,26 @@ Bug Fixes
   is applied to a single argument, a, the expansion is (the integer
   a).  Thanks to Eric Smith for bringing this bug to our attention.
 
+  Fixed :[args] to avoid hard ACL2 error when applied to IF and to
+  provide a clearer error message for Common Lisp functions not in
+  ACL2.  Thanks to Eric McCarthy for sending examples to point out
+  these issues.
+
+  A bug has been fixed that could cause an error when processing a
+  legal [flet] form, because the processing of a binding could
+  interfere inappropriately with the processing of a subsequent
+  binding, as in the following example.
+
+    (defun f (x) x)
+    (flet ((f (x) (cons x x))
+           (g (x) (f x))) ; processed with bad binding of stobjs-out for f
+      (g 3))
+
+  Fixed an error message saying that ``It is illegal for supporters of
+  DEFAXIOM events to receive attachments'' that failed during
+  printing.  Thanks to Nathan Guermond for sending an example to
+  point out this bug.
+
 
 Changes at the System Level
 
@@ -79396,7 +79607,7 @@ Changes at the System Level
   [double-rewrite] was not being displayed in the online manual (back
   when & was used in the URL in the documentation string).
 
-  The \"clean\" target of \"make\" has been deprecated since ACl2 Version
+  The \"clean\" target of \"make\" has been deprecated since ACL2 Version
   7.4 (released in March, 2017). Its replacement is target
   \"clean-lite\"; or, use target \"clean-all\" (or equivalently,
   \"distclean\") if you want a more thorough cleaning.
@@ -79420,6 +79631,93 @@ EMACS Support
   Thanks to Keshav Kini for suggesting this change.  This should
   avoid certain modifications of ``unusual'' characters when saving a
   file.
+
+
+Experimental Versions
+
+  The utility [with-local-state] no longer causes an error in ACL2(p)
+  with [parallel-execution] enabled.  Thus, neither do
+  [fmt-to-string] and related utilities, which call with-local-state.")
+ (NOTE-8-2
+  (RELEASE-NOTES)
+  "ACL2 Version 8.2 (xxx, 20xx) Notes
+
+  NOTE!  New users can ignore these release notes, because the
+  [documentation] has been updated to reflect all changes that are
+  recorded here.
+
+  Below we roughly organize the changes to ACL2 since Version 8.1 into
+  the following categories of changes: existing features, new
+  features, heuristic and efficiency improvements, bug fixes, changes
+  at the system level, Emacs support, and experimental versions.
+  Each change is described in just one category, though of course
+  many changes could be placed in more than one category.
+
+  Note that only ACL2 system changes are listed below.  See also
+  note-8-2-books for a summary of changes made to the ACL2 Community
+  Books since ACL2 8.0, including the build system.  Also note that
+  with each release, it is typical that the value of constant
+  [*ACL2-exports*] has been extended, and that some built-in
+  functions that were formerly in :[program] mode are now
+  [guard]-verified :[logic] mode functions.
+
+
+Changes to Existing Features
+
+  The built-in function [fix-true-list] is now a macro that expands to
+  a new built-in function, [true-list-fix], whose definition follows
+  the efficient definition of list-fix that was in [community-book]
+  books/std/lists/list-fix.lisp.  In that book, list-fix is now a
+  macro that expands to true-list-fix.  The use of macro-aliases (see
+  [add-macro-alias]) should generally make this change backward
+  compatible for users of list-fix.  Thanks to Mihir Mehta for taking
+  the lead on implementing these changes and to Jared Davis for
+  permission to integrate definitions and documentation from his
+  Kookamara books into the ACL2 sources.
+
+
+New Features
+
+
+Heuristic and Efficiency Improvements
+
+
+Bug Fixes
+
+  Fixed the [proof-builder] command, dv (see [ACL2-pc::dv]), for diving
+  into calls of [list] and [list*].
+
+
+Changes at the System Level
+
+  The [documentation] topic, [system-utilities], is now about only
+  utilities that pertain to the ACL2 system implementation, rather
+  than arbitrary built-in utilities.  Thus, each of the following now
+  has its own topic, rather than being described in
+  [system-utilities].  (Thanks to Alessandro Coglio for suggesting
+  this reorganization.)
+
+    * [alist-keys-subsetp]
+    * [alist-to-doublets]
+    * [cons-count-bounded]
+    * [evens]
+    * [keyword-listp]
+    * [merge-sort-lexorder]
+    * [odds]
+    * [packn]
+    * [packn-pos]
+    * [pairlis-x2]
+    * [pairlis-x1]
+
+
+EMACS Support
+
+  Fixed the [ACL2-doc] browser so that it can handle topic names with
+  the single-quote (') and comma (,) characters, by escaping them.
+
+  Fixed Emacs support for the the [proof-builder] dive command (see
+  [ACL2-pc::dive]), control-t control-d, to eliminate trailing zeros,
+  since those are (and have been) disallowed by that command.
 
 
 Experimental Versions")
@@ -80621,8 +80919,14 @@ Subtopics
     (defun oddp (x)
            (declare (xargs :guard (integerp x)))
            (not (evenp x)))")
- (ODDS (POINTERS)
-       "See [system-utilities].")
+ (ODDS
+  (LISTS ACL2-BUILT-INS)
+  "The odd-indexed members of a list
+
+  The call (odds x) returns the restriction of the true-list x to its
+  odd-indexed members (with zero-based indexing).  Note that if x is
+  a list (k1 a1 k2 a2 ... kn an) that satisfies the predicate
+  [keyword-value-listp], then (odds x) lists the values ai of x.")
  (OK-IF
   (BREAK-REWRITE)
   "Conditional exit from break-rewrite
@@ -81656,10 +81960,21 @@ Subtopics
 
   [Symbol-package-name]
       The name of the package of a symbol (a string)")
- (PACKN (POINTERS)
-        "See [system-utilities].")
- (PACKN-POS (POINTERS)
-            "See [system-utilities].")
+ (PACKN
+  (SYMBOLS ACL2-BUILT-INS)
+  "Build a symbol from a list
+
+  The call (packn lst) returns a symbol whose name is a concatenation
+  of string representations of the atoms in the [good-atom-listp],
+  lst.  The symbol's package is the package of the first symbol in
+  lst whose package is not \"COMMON-LISP\" if any, else \"ACL2\".")
+ (PACKN-POS
+  (SYMBOLS ACL2-BUILT-INS)
+  "Build a symbol in a specified package from a list
+
+  The function packn-pos behaves like [packn], except that for the call
+  (packn-pos lst witness), the returned symbol's package will instead
+  be the package of the symbol, witness.")
  (PAGES_WRITTEN_ESPECIALLY_FOR_THE_TOURS
   (ACL2-TUTORIAL)
   "Pages Written Especially for the Tours
@@ -82044,10 +82359,18 @@ Subtopics
                              (t (cons (cons (car x) (car y))
                                       (pairlis$ (cdr x) (cdr y)))))
                 :exec (pairlis$-tailrec x y nil)))")
- (PAIRLIS-X1 (POINTERS)
-             "See [system-utilities].")
- (PAIRLIS-X2 (POINTERS)
-             "See [system-utilities].")
+ (PAIRLIS-X1
+  (LISTS ALISTS ACL2-BUILT-INS)
+  "Cons a given element to each member of a list
+
+  The call (pairlis-x1 x1 lst) conses x1 onto each element of the
+  true-list, lst.")
+ (PAIRLIS-X2
+  (LISTS ALISTS ACL2-BUILT-INS)
+  "Cons each element of a list with a given element
+
+  The call (pairlis-x2 lst x2) creates an alist consing each element of
+  lst, a true-list, with x2.")
  (PAND
   (PARALLEL-PROGRAMMING ACL2-BUILT-INS)
   "Parallel, Boolean version of [and]
@@ -83541,12 +83864,6 @@ Subtopics
   [Add-to-set-equal]
       See [add-to-set].
 
-  [Alist-keys-subsetp]
-      See [system-utilities].
-
-  [Alist-to-doublets]
-      See [system-utilities].
-
   [All-calls]
       See [system-utilities].
 
@@ -83569,7 +83886,7 @@ Subtopics
       See [assoc].
 
   [Auto-instance]
-      See defthm<w.
+      See [defthm<w].
 
   [Backchain-limit-rw]
       See [hints] for information about the keyword :backchain-limit-rw.
@@ -83617,9 +83934,6 @@ Subtopics
       See [computed-hints].
 
   [Conjoin]
-      See [system-utilities].
-
-  [Cons-count-bounded]
       See [system-utilities].
 
   [Cons-term]
@@ -83675,9 +83989,6 @@ Subtopics
 
   [Ev$-list]
       See [apply$].
-
-  [Evens]
-      See [system-utilities].
 
   [Event]
       See [events].
@@ -83874,9 +84185,6 @@ Subtopics
   [Keyword]
       See [keywordp].
 
-  [Keyword-listp]
-      See [system-utilities].
-
   [Lambda]
       See [term].
 
@@ -83897,6 +84205,9 @@ Subtopics
 
   [Let-mbe]
       See [equality-variants-details].
+
+  [Lisp-programmer-introduction]
+      See [introduction-to-programming-in-ACL2-for-those-who-know-lisp].
 
   [Logicp]
       See [system-utilities].
@@ -83921,9 +84232,6 @@ Subtopics
 
   [Memoization]
       See [memoize].
-
-  [Merge-sort-lexorder]
-      See [system-utilities].
 
   [Meta-extract-contextual-fact]
       See [meta-extract].
@@ -84036,9 +84344,6 @@ Subtopics
   [Observation-cw]
       See [observation].
 
-  [Odds]
-      See [system-utilities].
-
   [Open-input-channel]
       See [io].
 
@@ -84056,18 +84361,6 @@ Subtopics
 
   [Package]
       See [packages].
-
-  [Packn]
-      See [system-utilities].
-
-  [Packn-pos]
-      See [system-utilities].
-
-  [Pairlis-x1]
-      See [system-utilities].
-
-  [Pairlis-x2]
-      See [system-utilities].
 
   [Partition-rest-and-keyword-args]
       See [system-utilities].
@@ -85417,7 +85710,13 @@ Subtopics
          (open-output-channel-p1 channel :character state-state))
 
   See [fmt] for more sophisticated printing routines, and see [io] for
-  general information about input and output.")
+  general information about input and output.
+
+
+Subtopics
+
+  [Newline]
+      Print a newline to a given output channel")
  (PRINT-BASE-P
   (IO ACL2-BUILT-INS)
   "Recognizer for print bases that are understood by functions such as
@@ -86382,7 +86681,7 @@ Subtopics
       System-level algorithms that users can modify with attachments
 
   [System-utilities]
-      List of system-level programming utilities
+      Some built-in programming utilities pertaining to the ACL2 system
 
   [Time$]
       Time an evaluation
@@ -87594,7 +87893,8 @@ Subtopics
       run the second
 
   [ACL2-pc::p]
-      (macro) prettyprint the current term
+      (macro) prettyprint the current term in the usual user-level
+      (untranslated) syntax
 
   [ACL2-pc::p-top]
       (macro) prettyprint the conclusion, highlighting the current term
@@ -87603,7 +87903,7 @@ Subtopics
       (macro) print the rules for a given name
 
   [ACL2-pc::pp]
-      (macro) prettyprint the current term
+      (macro) prettyprint the current term in internal (translated) form
 
   [ACL2-pc::pr]
       (macro) print the rules for a given name
@@ -87849,7 +88149,8 @@ Subtopics
       (atomic macro) move forward one argument in the enclosing term
 
   [ACL2-pc::p]
-      (macro) prettyprint the current term
+      (macro) prettyprint the current term in the usual user-level
+      (untranslated) syntax
 
   [ACL2-pc::p-top]
       (macro) prettyprint the conclusion, highlighting the current term
@@ -91768,8 +92069,9 @@ Subtopics
   A [defabsstobj] is redundant if there is already an identical
   defabsstobj event in the logical [world].
 
-  A [defattach] event is never redundant.  Note that it doesn't define
-  any name.
+  A [defattach] event is never redundant.  (Reasons are provided in a
+  comment in the ACL2 sources definition of defattach in the ACL2
+  logic.)  Note that defattach events do not define any names.
 
   A [defaxiom] or [defthm] event is redundant if there is already an
   axiom or theorem of the given name and either the two [events] are
@@ -92423,7 +92725,10 @@ Subtopics
       ACL2 Version 8.0 (December, 2017) Notes
 
   [Note-8-1]
-      ACL2 Version 8.1 (xxx, 20xx) Notes")
+      ACL2 Version 8.1 (September, 2018) Notes
+
+  [Note-8-2]
+      ACL2 Version 8.2 (xxx, 20xx) Notes")
  (REM
   (NUMBERS ACL2-BUILT-INS)
   "Remainder using [truncate]
@@ -104433,6 +104738,12 @@ Subtopics
   [Keywordp]
       Recognizer for keywords
 
+  [Packn]
+      Build a symbol from a list
+
+  [Packn-pos]
+      Build a symbol in a specified package from a list
+
   [Symbol-<]
       Less-than test for symbols
 
@@ -104932,7 +105243,7 @@ Subtopics
                 nil)
          :hints ((\"Goal\" :in-theory (disable (:type-prescription sys-call)))))
 
-  Through Version_7.4, running this example did indeed create file
+  Through Version 7.4, running this example did indeed create file
   /tmp/XXX if that file did not already exist.  Now, the
   [executable-counterpart] of sys-call is disabled, which avoids that
   specific behavior.  Moreover: even with that executable-counterpart
@@ -105149,7 +105460,7 @@ Subtopics
   documentation will be written to help with that process.")
  (SYSTEM-UTILITIES
   (PROGRAMMING)
-  "List of system-level programming utilities
+  "Some built-in programming utilities pertaining to the ACL2 system
 
   Since the ACL2 system is written in itself, the source code defines
   many utilities that support the ACL2 implementation.  Some of these
@@ -105158,12 +105469,13 @@ Subtopics
   ones: writing and submitting definitions, and proving theorems
   about the functions defined.
 
-  This topic provides a summary of some of those system-level
-  utilities.  It is intended to be a growing document, with
-  contributions from those in the community who find such utilities
-  that benefit them.  It has already grown substantially from an
-  initial version created by the ACL2 implementors, and others will
-  likely continue to add to it over time.
+  This topic provides a summary of some of those utilities that are
+  built into the ACL2 system.  It is intended to be a growing
+  document, with contributions from those in the community who find
+  such utilities that benefit them.  It has already grown
+  substantially from an initial version created by the ACL2
+  implementors, and others will likely continue to add to it over
+  time.
 
   WARNING 1.  Some system utilities are in :[program] mode, and for
   many of those, [guard]s are incomplete or missing entirely.
@@ -105201,14 +105513,14 @@ Subtopics
   background.
 
   Also see [programming] and its subtopics, in particular
-  [programming-with-state], which describes many system-level
+  [programming-with-state], which describes many built-in system
   utilities.  For example, a subsection of [programming-with-state],
   entitled ``SEQUENTIAL PROGRAMMING'', introduces handy utilities
   [pprogn] and [er-progn] along with links to their documentation.
   You may also wish to see [system-attachments] for how to make a few
   changes to the behavior of ACL2.
 
-  Here is another option for finding a system utility: As ACL2
+  Here is another option for finding a buit-in system utility: As ACL2
   developers sometimes do, use meta-. or meta-x tags-apropos in Emacs
   to find utilities with given substrings in their names.  For
   example, if in Emacs you submit the command meta-x tags-apropos and
@@ -105218,24 +105530,12 @@ Subtopics
   source code uses this utility.
 
 
-List of a few ACL2 system utilities:
+List of a few built-in system utilities
 
   Every function mentioned below belongs in the constant
-  [*ACL2-system-exports*].
-
-    * (alist-keys-subsetp alist keys): For the given alist and list of
-      symbols, return t when each key of alist belongs to keys, else
-      return nil.  This is Boolean-equivalent to (subsetp-eq
-      (strip-cars alist) keys), but it avoids consing up the keys of
-      alist.
-    * (alist-to-doublets alist): Return the result of replacing each pair
-      (x . y) in the given alist by the two-element list (x y).  The
-      order is preserved, i.e., the following is a theorem.
-
-          (implies (and (natp i) (< i (len alist)))
-                   (equal (nth i (alist-to-doublets alist))
-                          (let ((pair (nth i alist)))
-                            (list (car pair) (cdr pair)))))
+  [*ACL2-system-exports*].  Also see [ACL2-built-ins] for built-in
+  utilities that are less relevant to the ACL2 system, and see
+  [programming] for utilities in general.
 
     * (all-calls names term alist ans): Accumulate into ans (which
       typically is nil at the top level) all pseudo-terms u/alist
@@ -105277,9 +105577,6 @@ List of a few ACL2 system utilities:
       than equal, then the unnormalized body is returned.
     * (conjoin lst): The conjunction of the given list of terms.
     * (conjoin2 term1 term2): The conjunction of the given two terms.
-    * (cons-count-bounded x): The number of cons nodes in x (without
-      accounting for sharing), but truncated above by the value of
-      (fn-count-evg-max-val), which is 200,000 as of this writing.
     * (cons-term fn args): Returns a [term] with function symbol (or
       [lambda] expression) fn and arguments args.  Some
       simplification may be done; to avoid that, use fcons-term
@@ -105332,11 +105629,6 @@ List of a few ACL2 system utilities:
       enabled structure (as discussed for enabled-numep, just above).
       See also enabled-numep, which may be more efficient since
       enabled-runep is defined in terms of enabled-numep.
-    * (evens l): Return the restriction of the true-list l to its
-      even-indexed members (with zero-based indexing).  Note that if
-      x is a list (k1 a1 k2 a2 ... kn an) that satisfies the
-      predicate [keyword-value-listp], then (evens x) lists the keys
-      ki of x.
     * (fargn x n): For a [pseudo-termp] x that is a function call and for a
       positive integer n, return the n-th argument of x, where the
       numbering of arguments starts at 1.
@@ -105431,8 +105723,6 @@ List of a few ACL2 system utilities:
         * channel --- this is the list of free variables in the body (which
           here is the fms call).
 
-    * (keyword-listp x): Return t when x is a true-list whose members are
-      all keywords, else return nil.
     * (known-package-alist state): Returns a list of package entries, as
       explained in the definition of make-package-entry in ACL2
       sources, which is followed by simple accessor definitions (all
@@ -105466,26 +105756,8 @@ List of a few ACL2 system utilities:
       actuals).  However, extra formals and corresponding actuals are
       added when body has free variables that do not belong to
       formals, because lambdas must be closed in ACL2.
-    * (merge-sort-lexorder l): Sort the list l using a non-strict total
-      order, [lexorder], on the ACL2 universe.
     * (nvariablep x): For a [pseudo-termp] x, return true iff x is not a
       variable (i.e. it is a quoted constant or a function call).
-    * (odds l): Return the restriction of the true-list l to its
-      odd-indexed members (with zero-based indexing).  Note that if x
-      is a list (k1 a1 k2 a2 ... kn an) that satisfies the predicate
-      [keyword-value-listp], then (odds x) lists the values ai of x.
-    * (packn lst): Return a symbol.  The symbol's name is a concatenation
-      of string representations of the atoms in the [good-atom-listp]
-      lst, and the symbol's package is the package of the first
-      symbol in lst whose package is not \"COMMON-LISP\" if any, else
-      \"ACL2\".
-    * (packn-pos lst witness): Behaves like packn, except the returned
-      symbol's package will instead be the package of the symbol
-      witness.
-    * (pairlis-x1 x1 lst): Cons x1 onto the front of each element of the
-      the true-list, lst.
-    * (pairlis-x2 lst x2): Make an alist pairing each element of lst, a
-      true-list, with x2.
     * (partition-rest-and-keyword-args x keys): x should be a list of the
       form (a1 ... an :key1 v1 ... :keyk vk), where no ai is a
       keyword.  The result is (mv erp rest alist), where erp is
@@ -105605,9 +105877,6 @@ Subtopics
 
   [Constraint-info]
       Obtaining the [constraint] on a function symbol
-
-  [Ctx]
-      Context object for error messages
 
   [Get-event-data]
       Obtain data stored after at the conclusion of an event
@@ -111061,6 +111330,45 @@ Subtopics
                  "See [system-utilities].")
  (TRANSLATE11 (POINTERS)
               "See [system-utilities].")
+ (TRUE-LIST-FIX
+  (TRUE-LISTP)
+  "Coerce to a true list
+
+  Many functions that process lists follows the true-list-fix
+  convention: whenever f is given a some non-[true-listp] x where it
+  expected a list, it will act as though it had been given
+  (true-list-fix x) instead.  As a few examples, logically,
+
+    * (endp x) ignores the final cdr of x
+    * (len x) ignores the final cdr of x
+    * (append x y) ignores the final cdr of x (but not y)
+    * (member a x) ignores the final cdr of x
+
+  True-list-fix is often useful when writing theorems about how
+  list-processing functions behave.  For example, it allows us to
+  write strong, hypothesis-free theorems such as:
+
+    (equal (character-listp (append x y))
+           (and (character-listp (true-list-fix x))
+                (character-listp y)))
+
+  Indeed, true-list-fix is the basis for [list-equiv], an extremely
+  common [equivalence] relation.
+
+  Efficiency note.  In practice, most lists are nil-terminated.  As an
+  optimization, true-list-fix tries to avoid any consing by first
+  checking whether its argument is a [true-listp], and, in that case,
+  it simply returns its argument unchanged.
+
+  Function: <true-list-fix>
+
+    (defun true-list-fix (x)
+           (declare (xargs :guard t))
+           (mbe :logic (if (consp x)
+                           (cons (car x) (true-list-fix (cdr x)))
+                           nil)
+                :exec (if (true-listp x)
+                          x (true-list-fix-exec x))))")
  (TRUE-LIST-LISTP
   (LISTS TRUE-LISTP ACL2-BUILT-INS)
   "Recognizer for true (proper) lists of true lists
@@ -111095,6 +111403,9 @@ right for you, see [std::strict-list-recognizers].
 
 
 Subtopics
+
+  [True-list-fix]
+      Coerce to a true list
 
   [True-list-listp]
       Recognizer for true (proper) lists of true lists")
@@ -111218,7 +111529,8 @@ Subtopics
   for example in support of the use of the [break-rewrite] utility or
   writing metafunctions.  Implementation-level information about tag
   trees may be found in the Developer's Guide; users should probably
-  not visit that topic unless they plan to become ACL2 developers.
+  not visit that topic (see [DEVELOPERS-GUIDE-UTILITIES]) unless they
+  plan to become ACL2 developers.
 
   Abstractly a tag-tree represents a list of sets, each member set
   having a name given by one of the ``tags'' (which are symbols) of
@@ -117641,7 +117953,10 @@ Subtopics
       (declare (xargs :mode :program))
       (with-local-state (mv-let (eofp result state)
                                 (foo2 state)
-                                (mv eofp result))))")
+                                (mv eofp result))))
+
+  Note for ACL2(p) users: When [parallel-execution] is enabled,
+  invocations of with-local-state are surrounded by a lock.")
  (WITH-LOCAL-STOBJ
   (STOBJ ACL2-BUILT-INS)
   "Locally bind a single-threaded object
@@ -121215,15 +121530,16 @@ Subtopics
   the failure is soft.")
  (ACL2-PC::P
   (PROOF-BUILDER-COMMANDS PROOF-BUILDER-COMMANDS-SHORT-LIST)
-  "(macro) prettyprint the current term
+  "(macro) prettyprint the current term in the usual user-level
+  (untranslated) syntax
 
     Example and General Form:
     p
 
-  Prettyprint the current term.  The usual user syntax is used, so that
-  for example one would see (and x y) rather than (if x y 'nil).
-  (See also pp.)  Also, abbreviations are inserted where appropriate;
-  see [ACL2-pc::add-abbreviation].
+  Prettyprint the current term.  The usual user (untranslated) syntax
+  is used, so that for example one would see (and x y) rather than
+  (if x y 'nil).  (See also pp.)  Also, abbreviations are inserted
+  where appropriate; see [ACL2-pc::add-abbreviation].
 
   The ``current term'' is the entire conclusion unless dive commands
   have been given, in which case it may be a subterm of the
@@ -121271,7 +121587,7 @@ Subtopics
   subterm, consider the show-rewrites (or equivalently, sr) command.")
  (ACL2-PC::PP
   (PROOF-BUILDER-COMMANDS)
-  "(macro) prettyprint the current term
+  "(macro) prettyprint the current term in internal (translated) form
 
     Example and General Form:
     pp

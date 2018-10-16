@@ -2,8 +2,8 @@
 ;
 ; acl2-doc.lisp - Documentation for the ACL2 Theorem Prover
 ;
-; ACL2 Version 8.0 -- A Computational Logic for Applicative Common Lisp
-; Copyright (C) 2017, Regents of the University of Texas
+; ACL2 Version 8.1 -- A Computational Logic for Applicative Common Lisp
+; Copyright (C) 2018, Regents of the University of Texas
 ;
 ; This documentation was derived from the ACL2 system in October 2013, which
 ; was a descendant of ACL2 Version 1.9, Copyright (C) 1997 Computational Logic,
@@ -152,9 +152,11 @@
     (DEFMACROQ "[books]/kestrel/utilities/defmacroq.lisp")
     (FTY::DEFPROD "[books]/centaur/fty/top.lisp")
     (DEFPUN "[books]/misc/defpun.lisp")
+    (DEFTHM<W "[books]/kestrel/utilities/auto-instance.lisp")
     (DEFTHMG "[books]/tools/defthmg.lisp")
     (GETOPT-DEMO::DEMO2 "[books]/centaur/getopt/demo2.lisp")
     (DEVELOPERS-GUIDE "[books]/system/doc/developers-guide.lisp")
+    (DEVELOPERS-GUIDE-UTILITIES "[books]/system/doc/developers-guide.lisp")
     (DO-NOT-HINT "[books]/tools/do-not.lisp")
     (EASY-SIMPLIFY-TERM "[books]/tools/easy-simplify.lisp")
     (ER-SOFT+ "[books]/kestrel/utilities/er-soft-plus.lisp")
@@ -166,6 +168,7 @@
     (IHS "[books]/ihs/ihs-doc-topic.lisp")
     (INCLUDE-RAW "[books]/tools/include-raw.lisp")
     (INSTALL-NOT-NORMALIZED "[books]/misc/install-not-normalized.lisp")
+    (LIST-EQUIV "[books]/std/lists/equiv.lisp")
     (LOGBITP-REASONING "[books]/centaur/bitops/equal-by-logbitp.lisp")
     (MAKE-FLAG "[books]/tools/flag.lisp")
     (MAKE-TERMINATION-THEOREM
@@ -178,6 +181,7 @@
     (NOTE-7-1-BOOKS "[books]/doc/relnotes.lisp")
     (NOTE-7-2-BOOKS "[books]/doc/relnotes.lisp")
     (NOTE-8-0-BOOKS "[books]/doc/relnotes.lisp")
+    (NOTE-8-1-BOOKS "[books]/doc/relnotes.lisp")
     (STR::NUMBERS "[books]/std/strings/top.lisp")
     (ORACLE-TIMELIMIT "[books]/tools/oracle-timelimit.lisp")
     (OSLIB "[books]/oslib/top-logic.lisp")
@@ -225,7 +229,7 @@
 ; who are looking at an older version of ACL2 will see the corresponding
 ; ACL2+Books Manual at this link.
 
-  "http://www.cs.utexas.edu/users/moore/acl2/v8-0/")
+  "http://www.cs.utexas.edu/users/moore/acl2/v8-1/")
 
 (defconst *installation-url*
 
@@ -297,9 +301,9 @@
  will typically also want to import many symbols from Common Lisp; see @(see
  *common-lisp-symbols-from-main-lisp-package*).</p>
 
- <p>Those who write code using ACL2 system functions (see @(see
- system-utilities)) may wish to import symbols into their package from the
- large list @(tsee *acl2-system-exports*).</p>
+ <p>Those who write code using built-in ACL2 functions (see @(see
+ acl2-built-ins)) may wish to import symbols into their package from the large
+ list @(tsee *acl2-system-exports*).</p>
 
  @(`(:code *acl2-exports*)`)")
 
@@ -800,7 +804,7 @@
 (defxdoc about-acl2
   :parents (acl2)
   :short "General information About ACL2"
-  :long "<p>This is @(`(:raw (@ acl2-version))`), @(see copyright) (C) 2017,
+  :long "<p>This is @(`(:raw (@ acl2-version))`), @(see copyright) (C) 2018,
  Regents of the University of Texas, authored by Matt Kaufmann and J Strother
  Moore.</p>
 
@@ -4274,6 +4278,28 @@ and @(tsee include-book)"
 
  ")
 
+(defxdoc alist-keys-subsetp
+  :parents (alists acl2-built-ins)
+  :short "Check that all keys of the alist belong to a given set"
+  :long "<p>The call @('(alist-keys-subsetp alist keys)') returns @('t') when
+ each key of the given alist belongs to the given list of keys; else it returns
+ @('nil').  This is Boolean-equivalent to @('(subsetp-eq (strip-cars alist)
+ keys)'), but it avoids consing up the keys of @('alist').</p>")
+
+(defxdoc alist-to-doublets
+  :parents (alists acl2-built-ins)
+  :short "Convert an alist to a list of two-element lists"
+  :long "<p>The call @(call alist-to-doublets) returns the result of replacing
+ each pair @('(x . y)') in the given alist by the two-element list @('(x y)').
+ The order is preserved, i.e., the following is a theorem.</p>
+
+ @({
+ (implies (and (natp i) (< i (len alist)))
+          (equal (nth i (alist-to-doublets alist))
+                 (let ((pair (nth i alist)))
+                   (list (car pair) (cdr pair)))))
+ })")
+
 (defxdoc alistp
   :parents (alists acl2-built-ins)
   :short "Recognizer for association lists"
@@ -6289,10 +6315,11 @@ and @(tsee include-book)"
  then a proof obligation will be that the occurrence of @('test') is never
  @('nil').</p>
 
- <p>For a related utility, see @(see assert*).  Both @('assert$') and
- @('assert*') create a @(see guard) proof obligation (when used in a definition
- made in @(tsee logic)-mode).  However, @('assert$') checks the assertion at
- runtime, while @('assert*') does not.</p>")
+ <p>See @(see assert-event) for related utilities that offer a variety of
+ features.  In particular, both @(tsee assert$) and @(tsee assert*) create a
+ @(see guard) proof obligation (when used in a definition made in @(tsee
+ logic)-mode).  However, @('assert$') checks the assertion at runtime, while
+ @('assert*') does not.</p>")
 
 (defxdoc assert*
   :parents (errors acl2-built-ins)
@@ -13857,11 +13884,12 @@ with any questions about building the community books.</p>")
 
  @({
   (defttag t)
-  (state-global-let*
-   ((temp-touchable-vars t set-temp-touchable-vars))
-   (progn! (f-put-global 'logic-fns-with-raw-code
-                         (cons 'my-fn (@ logic-fns-with-raw-code))
-                         state)))
+  (progn!
+   :state-global-bindings
+   ((acl2::temp-touchable-vars t acl2::set-temp-touchable-vars))
+   (f-put-global 'acl2::logic-fns-with-raw-code
+                 (cons 'my-fn (@ acl2::logic-fns-with-raw-code))
+                 state))
  })")
 
 (defxdoc comp-gcl
@@ -14785,6 +14813,14 @@ with any questions about building the community books.</p>")
   :long "<p>@('(cons x y)') is a pair whose first component is @('x') and
  second component is @('y').  If @('y') is a list, then @('(cons x y)') is a
  list that has an additional element @('x') on the front.</p>")
+
+(defxdoc cons-count-bounded
+  :parents (conses acl2-built-ins)
+  :short "Count the number of conses (up to a limit)"
+  :long "<p>The call @('(cons-count-bounded x)') returns the number of cons
+ nodes in @('x') (without accounting for sharing), but truncated above by the
+ value of @('(fn-count-evg-max-val)'), which is 200,000 as of this
+ writing.</p>")
 
 (defxdoc cons-subtrees
   :parents (fast-alists acl2-built-ins)
@@ -15873,7 +15909,7 @@ subtree of X with T, without duplication.</p>
  <p>@(`(:raw (@ acl2-version))`) &mdash; A Computational Logic for Applicative
  Common Lisp</p>
 
- <p>Copyright (C) 2017, Regents of the University of Texas</p>
+ <p>Copyright (C) 2018, Regents of the University of Texas</p>
 
  <p>This version of ACL2 is a descendant of ACL2 Version 1.9, Copyright (C)
  1997 Computational Logic, Inc.  See the documentation topic NOTE-2-0.</p>
@@ -15959,7 +15995,7 @@ subtree of X with T, without duplication.</p>
  @(def cpu-core-count)")
 
 (defxdoc ctx
-  :parents (system-utilities)
+  :parents (errors)
   :short "Context object for error messages"
   :long "<p>Calls of @(tsee er), such as @('(er soft ctx ...)'), take a context
  argument, typically called @('ctx'), for the initial part of the message:
@@ -19251,7 +19287,7 @@ subtree of X with T, without duplication.</p>
  @('ev-list') are constrained functions satisfying just the @(see constraint)s
  discussed below.</p>
 
- <p>@('Ev') and @('ev-list') must satisfy @(see constraint)s (0)-(6) and
+ <p>@('Ev') and @('ev-list') must satisfy @(see constraint)s (0)-(7) and
  (k) below.  When @(':namedp nil') is supplied, the <i>i</i> in the generated
  constraint names are the parenthesized numbers below.  When @(':namedp t')
  is supplied, the mnemonic names are those shown in brackets below.</p>
@@ -19304,6 +19340,14 @@ subtree of X with T, without duplication.</p>
       [EV-OF-NONSYMBOL-ATOM]
       (implies (and (not (consp x))
                     (not (symbolp x)))
+               (equal (ev x a)
+                      nil))
+
+  (7) How to ev a cons whose car is a non-symbol atom:
+      [EV-OF-BAD-FNCALL]
+      (implies (and (consp x)
+                    (not (consp (car x)))
+                    (not (symbolp (car x))))
                (equal (ev x a)
                       nil))
 
@@ -26792,6 +26836,15 @@ ld) and @(tsee include-book)"
 
  @(def evenp)")
 
+(defxdoc evens
+  :parents (lists acl2-built-ins)
+  :short "The even-indexed members of a list"
+  :long "<p>The call @('(evens x)') returns the restriction of the true-list
+ @('x') to its even-indexed members (with zero-based indexing).  Note that if
+ @('x') is a list @('(k1 a1 k2 a2 ... kn an)') that satisfies the predicate
+ @(tsee keyword-value-listp), then @('(evens x)') lists the keys @('ki') of
+ @('x').</p>")
+
 (defxdoc events
   :parents (acl2)
   :short "Functions that extend the logic"
@@ -29300,9 +29353,8 @@ current fast alists."
 (defxdoc fix-true-list
   :parents (lists acl2-built-ins)
   :short "Coerce to a true list"
-  :long "<p>@('Fix-true-list') is the identity function on @(tsee true-listp)
- objects.  It converts every list to a true list by dropping the final @(tsee
- cdr), and it converts every @(see atom) to @('nil').</p>
+  :long "<p>@('Fix-true-list') is a macro that expands to a call of @(tsee
+  true-list-fix) with the same argument.</p>
 
  @(def fix-true-list)")
 
@@ -37496,15 +37548,18 @@ current fast alists."
 
  <p>A very common hint is the @(':use') hint, which in general takes as its
  value a list of ``lemma instances'' (see @(see lemma-instance)) but which
- allows a single lemma name as a special case.  Here are two examples, one
- using a single lemma name and one using a lemma instance:</p>
+ allows a single lemma name as a special case.  In each case, a goal @('G') is
+ replaced by a new goal @('(IMPLIES P G)'), where @('P') is the theorem
+ specified by the (conjunction of the) lemma instances provided.  Here are
+ some examples.</p>
 
  @({
-  ; Attach :use hint to the top-level goal, which is named \"Goal\":
+  ; Attach :use hint to the top-level goal G, which is named \"Goal\",
+  ; replacing it by (implies P G) where P is the statement of lemma23:
   :hints ((\"Goal\" :use lemma23))
 
-  ; Equivalent to the above: use the trivial instance (i.e., with the empty
-  ; substitution of lemma23:
+  ; Equivalent to the above, using the trivial instance (i.e., with the empty
+  ; substitution) of lemma23:
   :hints ((\"Goal\" :use ((:instance lemma23))))
 
   ; Attach :use hint to the named subgoal, where the indicated lemma is used
@@ -38268,20 +38323,22 @@ current fast alists."
 
  <p>@('Value') is a @(see lemma-instance) or a true list of @(see
  lemma-instance)s, indicating that the propositions denoted by the instances be
- added as hypotheses to the specified goal.  Note that @(':use') makes the
- given instances available as ordinary hypotheses of the formula to be proved.
+ added as hypotheses to the specified goal: that is, the @(':use') hint
+ replaces a goal, @('G'), by the new goal, @('(IMPLIES P G)'), where @('P') is
+ the theorem specified by the (conjunction of the) lemma instances provided.
  The @(':instance') form of a @(see lemma-instance) permits you to instantiate
  the free variables of previously proved theorems any way you wish, even
  allowing for differences in @(see packages); see @(see lemma-instance) for
  details.  These new hypotheses participate fully in all subsequent rewriting,
  etc.  If the goal in question is in fact an instance of a previously proved
- theorem, you may wish to use @(':by') below.  Note that @(see theories) may be
- helpful when employing @(':use') hints; see @(see minimal-theory).</p>
+ theorem, you may wish to use @(':by') (documented above).  Sometimes @(see
+ theories) are helpful when employing @(':use') hints; see @(see
+ minimal-theory).</p>
 
- <p>Note that if the value is the name of a function symbol introduced by
- @(tsee defun), then the normalized (simplified) body of that definition is
- used; see @(see normalize).  This behavior differs from that provided by a
- @(':by') hint, where the original body of the definition is used.</p></dd>
+ <p>If the value is the name of a function symbol introduced by @(tsee defun),
+ then the normalized (simplified) body of that definition is used; see @(see
+ normalize).  This behavior differs from that provided by a @(':by') hint,
+ where the original body of the definition is used.</p></dd>
 
  </dl>")
 
@@ -42676,14 +42733,15 @@ tables in the current Hons Space."
 (defxdoc introduction-to-programming-in-acl2-for-those-who-know-lisp
   :parents (programming introduction-to-the-theorem-prover)
   :short "Introduction to programming in ACL2 for Lisp users"
-  :long "<p>The @(see documentation) topics @(see programming) and @(see
- acl2-built-ins) are starting points for a rich collection of primitives and
- features in the ACL2 programming language.  In the present topic (below) we
- give a succinct introduction to that language for those who are already
- reasonably familiar with Common Lisp, or perhaps another Lisp.  Follow the
- hyperlinks if you want to drill down; for example, we mention multiple values
- below but say very little about them, instead providing links to topics that
- explain their handling in a little more depth.</p>
+  :long "<p>The @(see documentation) topic, @(see acl2-built-ins), as well as
+ its parent topic, @(see programming), are starting points for a rich
+ collection of primitives and features in the ACL2 programming language.  In
+ the present topic (below) we give a succinct introduction to that language for
+ those who are already reasonably familiar with Common Lisp, or perhaps another
+ Lisp.  Follow the hyperlinks if you want to drill down; for example, we
+ mention multiple values below but say very little about them, instead
+ providing links to topics that explain their handling in a little more
+ depth.</p>
 
  <p>The @(tsee documentation) for ACL2 and its @(see community-books) provides
  a rich set of topics for further exploration.  This particular topic is
@@ -42710,11 +42768,13 @@ tables in the current Hons Space."
  in the resulting association list in either forward or backward order.''  Many
  such functions tend to have close analogues in ACL2, named by concatenating
  @('\"$\"') to the Common Lisp name; for example, ACL2 has @(tsee pairlis$),
- @(tsee union$), and even @(tsee random$).  See @(see acl2-built-ins) for a
- much more comprehensive list of functions, macros, and special forms provided
- by the ACL2 programming language.  In particular, a search through that
- documentation topic for `@('$')' will show you utilities like @('pairlis$')
- that are based on related Common Lisp utilities.</p>
+ @(tsee union$), and even @(tsee random$).  Yet other Common Lisp functions,
+ for example @('format'), are not available in ACL2 but have useful
+ alternatives in ACL2; for example, see @(tsee fmt).  See @(see acl2-built-ins)
+ for a much more comprehensive list of functions, macros, and special forms
+ provided by the ACL2 programming language.  In particular, a search through
+ that documentation topic for `@('$')' will show you utilities like
+ @('pairlis$') that are based on related Common Lisp utilities.</p>
 
  <p>In the ACL2 read-eval-print loop, you can define functions and macros with
  @(tsee defun) and @(tsee defmacro) just as in Common Lisp, with some
@@ -42795,11 +42855,45 @@ tables in the current Hons Space."
 
  <h3>More help</h3>
 
- <p>The acl2-help email list is a fine place to get help with ACL2 questions,
- including programming questions.  You can sign up by following links from the
- <a href='http://www.cs.utexas.edu/users/moore/acl2/'>ACL2 home page</a>.
- Moreover, that could be a good place to request or suggest improvements to
- this documentation topic!</p>")
+ <p>ACL2 does not provide @('apropos').  However, you can search the
+ documentation to find substring matches.  For example, if you type @('princ')
+ into the ``@('Jump to')'' box in the web-based manual, or if you type the
+ command @('i') [for ''index''] into the @(see acl2-doc) Emacs-based
+ documentation browser, you will find @(tsee princ$).  The ``@('Jump to')'' box
+ in the web-based manual matches on prefixes, but the @('i') command in @(see
+ acl2-doc) matches on any substring.</p>
+
+ <p>Another way for Lisp programmers to get answers to ``How do I do this in
+ ACL2'' questions is to query the acl2-help mailing list.  You can sign up via
+ a link on the <a href='http://www.cs.utexas.edu/users/moore/acl2/'>ACL2 home
+ page</a>.  Moreover, that could be a good place to request or suggest
+ improvements to this documentation topic!  Also see @(see history) for some
+ ways to query the current session.</p>
+
+ <p>Finally, here are a few specific alternatives to Common Lisp utilities.</p>
+
+ <ul>
+
+ <li>@('describe'): see @(tsee doc)</li>
+
+ <li>@('fboundp') and other utilities to provide information about functions,
+ macros, and special operators: see @(tsee args)</li>
+
+ <li>@('format'): see @(tsee fmt), which has links to related functions that
+ perform formatted printing</li>
+
+ <li>@('list-all-packages'): see @(tsee in-package); also see the description
+ of @('known-package-alist') in @(see system-utilities)</li>
+
+ <li>@('setq'): see @(tsee assign), but perhaps first look at the documentation
+ topics for @(see state) and @(see programming-with-state)</li>
+
+ <li>@('symbol-plist'): see @(tsee props), @(tsee getprop), and @(tsee
+ putprop)</li>
+
+ <li>@('with-open-file'): see @(see io)</li>
+
+ </ul>")
 
 (defxdoc introduction-to-rewrite-rules-part-1
   :parents (introduction-to-the-theorem-prover)
@@ -45823,6 +45917,12 @@ tables in the current Hons Space."
  next form from the input stream.  That form was available immediately: the
  form @('t') that had been supplied by the user.  So the query returned
  immediately and the @('set-iprint') call was completed.</p>")
+
+(defxdoc keyword-listp
+  :parents (lists keywordp acl2-built-ins)
+  :short "Recognizer for true lists of keywords"
+  :long "<p>The call @('(keyword-listp x)') return @('t') when @('x') is a
+ true-list whose members are all @(see keyword)s, else returns @('nil').</p>")
 
 (defxdoc keyword-value-listp
   :parents (keywordp lists acl2-built-ins)
@@ -52910,6 +53010,12 @@ it."
  Logically, it just returns @('nil').  Also see @(see
  protect-memoize-statistics).</p>")
 
+(defxdoc merge-sort-lexorder
+  :parents (lists acl2-built-ins)
+  :short "Sort a list"
+  :long "<p>The call @('(merge-sort-lexorder x)') sorts the true-list @('x')
+ using a non-strict total order, @(tsee lexorder), on the ACL2 universe.</p>")
+
 (defxdoc meta
   :parents (rule-classes)
   :short "Make a @(':meta') rule (a hand-written simplifier)"
@@ -56029,6 +56135,15 @@ it."
 
  <p>This is useful for prohibiting the memoization of functions that are known
  to involve destructive functions like @('nreverse').</p>")
+
+(defxdoc newline
+  :parents (io princ$)
+  :short "Print a newline to a given output channel"
+  :long "<p>This function is simply a wrapper around a call to @(see princ$)
+  for the purpose of printing the ASCII character 0x0A, also known as a newline
+  or line feed.</p>
+
+ @(def newline)")
 
 (defxdoc nfix
   :parents (numbers acl2-built-ins)
@@ -70057,8 +70172,9 @@ it."
 
  <p>Many changes have been made to the distributed books, thanks to an active
  ACL2 community.  You can contribute books and obtain updates between ACL2
- releases by visiting the <a href='http://acl2-books.googlecode.com/'>ACL2
- Books</a> web page.</p>
+ releases by visiting the ACL2 Books web page.  [Note: This release note is
+ obsolete, as it referenced the now-invalid URL,
+ @('http://acl2-books.googlecode.com/').]</p>
 
  <p>There is new @('Makefile') support for certifying just some of the
  distributed books.  See @(see books-certification-classic), in particular
@@ -74063,19 +74179,19 @@ it."
  <p><b>CHANGES AT THE SYSTEM LEVEL</b></p>
 
  <p>The ACL2 sources are now publicly available between ACL2 releases, using
- svn; see the new ``@('acl2-devel')'' project hosted by Google code at <a
- href='http://acl2-devel.googlecode.com'>http://acl2-devel.googlecode.com</a>.
- Although such a copy of ACL2 is likely to work well with the latest svn
- (trunk) revision of the ACL2 community books (see @(see community-books)),
- please take seriously the warning message printed at startup: ``The authors of
- ACL2 consider svn distributions to be experimental; they may be incomplete,
- fragile, and unable to pass our own regression.''  That message also provides
- instructions for bug reports.  If you decide to use svn versions of either the
- community books or ACL2, then you should use both, as they tend to be kept in
- sync.  We fully expect ACL2 releases to continue from time to time, as usual.
- Thanks to Jared Davis for his efforts in setting up the new acl2-devel project
- and svn repository, and to him and David Rager for convincing us to distribute
- ACL2 sources via svn between releases.</p>
+ svn; see the new ``@('acl2-devel')'' project hosted by Google code at
+ @('http://acl2-devel.googlecode.com').  Although such a copy of ACL2 is likely
+ to work well with the latest svn (trunk) revision of the ACL2 community
+ books (see @(see community-books)), please take seriously the warning message
+ printed at startup: ``The authors of ACL2 consider svn distributions to be
+ experimental; they may be incomplete, fragile, and unable to pass our own
+ regression.''  That message also provides instructions for bug reports.  If
+ you decide to use svn versions of either the community books or ACL2, then you
+ should use both, as they tend to be kept in sync.  We fully expect ACL2
+ releases to continue from time to time, as usual.  Thanks to Jared Davis for
+ his efforts in setting up the new acl2-devel project and svn repository, and
+ to him and David Rager for convincing us to distribute ACL2 sources via svn
+ between releases.</p>
 
  <p>Thanks to a suggestion from Jared Davis, over 30 built-in functions are now
  declared to be inline in order to boost performance.  (The list may be found
@@ -80253,6 +80369,15 @@ it."
 
 (defxdoc note-8-1
 
+; Total number of release note items: 77, as follows.
+;   32 ; Changes to Existing Features
+;    8 ; New Features
+;    6 ; Heuristic and Efficiency Improvements
+;   25 ; Bug Fixes
+;    4 ; Changes at the System Level
+;    1 ; EMACS Support
+;    1 ; Experimental Versions
+
 ; The following comments include changes not covered in the release notes
 ; items -- for example, because they are about changes in error messages.
 
@@ -80336,8 +80461,19 @@ it."
 
 ; Fixed a glitch in the GCL code for function our-probe-file.
 
+; Added extend-with-raw-code and its supporting function, sort-fboundps, in
+; support of community books utility include-raw.  See :doc note-8-1-books for
+; a discussion of why include-raw needed updating.
+
+; Improved the error message from redundant-predefined-error-msg, about
+; redundant definitions when there is special raw Lisp code, to provide a
+; package name.
+
+; Restricted user-defined-functions-table to require the correct number of
+; formals in each value function.
+
   :parents (release-notes)
-  :short "ACL2 Version  8.1 (xxx, 20xx) Notes"
+  :short "ACL2 Version  8.1 (September, 2018) Notes"
   :long "<p>NOTE!  New users can ignore these release notes, because the @(see
  documentation) has been updated to reflect all changes that are recorded
  here.</p>
@@ -80352,8 +80488,10 @@ it."
  <p>Note that only ACL2 system changes are listed below.  See also @(see
  note-8-1-books) for a summary of changes made to the ACL2 Community Books
  since ACL2 8.0, including the build system.  Also note that with each release,
- some built-in functions that were formerly in @(':')@(tsee program) mode are
- now @(see guard)-verified @(':')@(tsee logic) mode functions.</p>
+ it is typical that the value of constant @(tsee *acl2-exports*) has been
+ extended, and that some built-in functions that were formerly in @(':')@(tsee
+ program) mode are now @(see guard)-verified @(':')@(tsee logic) mode
+ functions.</p>
 
  <h3>Changes to Existing Features</h3>
 
@@ -80584,25 +80722,31 @@ it."
  website</a> for making that solution robust.</p>
 
  <p>The @(tsee defevaluator) macro, and more generally the notion of evaluator,
- have been changed to include a new @(see constraint) inserted after
- constraints 0 through 5.  The new constraint is as follows, where @('<ev>')
+ have been changed to include two new @(see constraint)s inserted after
+ constraints 0 through 5.  The new constraints are as follows, where @('<ev>')
  refers to the evaluator.</p>
 
  @({
  (IMPLIES (AND (NOT (CONSP X)) (NOT (SYMBOLP X)))
           (EQUAL (<ev> X A) NIL))
+ (IMPLIES (AND (CONSP X) (NOT (CONSP (CAR X))) (NOT (SYMBOLP (CAR X))))
+          (EQUAL (<ev> X A) NIL))
  })
 
- <p>This new constraint generated by @(tsee defevaluator) is named
- @('<ev>-CONSTRAINT-6') unless the keyword argument @(':namedp t') is supplied,
- in which case it is named @('<ev>-OF-NONSYMBOL-ATOM').  Thus by default (or if
+ <p>These new constraints generated by @(tsee defevaluator) are named
+ @('<ev>-CONSTRAINT-6') and @('<ev>-CONSTRAINT-7')
+ unless the keyword argument @(':namedp t') is supplied,
+ in which case they are named @('<ev>-OF-NONSYMBOL-ATOM') and
+ @('<ev>-OF-BAD-FNCALL').  Thus by default (or if
  @(':namedp') is @('nil')), this change increases by one the indices on
- constraints for the specified function symbols, because they start at 7
- instead of 6 &mdash; @('<ev>-CONSTRAINT-7'), @('<ev>-CONSTRAINT-8'), and so
+ constraints for the specified function symbols, because they start at 8
+ instead of 6 &mdash; @('<ev>-CONSTRAINT-8'), @('<ev>-CONSTRAINT-9'), and so
  on.  Note that if you use functional instantiation to prove a theorem about
  one evaluator given a theorem about another evaluator, you'll need to enable
- the new rule (i.e., @('ev-constraint-6') or, if you use option @(':namedp t'),
- @('ev-of-nonsymbol-atom')).  Thanks to Sol Swords for both suggesting and
+ the new rules (i.e., @('ev-constraint-6') and @('ev-constraint-7')
+ or, if you use option @(':namedp t'),
+ @('ev-of-nonsymbol-atom') and @('ev-of-bad-fncall')).
+ Thanks to Sol Swords for both suggesting and
  implementing this extension.</p>
 
  <p>@(tsee Let)-expressions are no longer eliminated from right-hand sides of
@@ -80610,6 +80754,18 @@ it."
  the rewriter in some cases, by retaining subexpressions shared on the
  right-hand side as the rewrite rule is applied.  Thanks to Eric Smith for
  requesting this change.</p>
+
+ <p>It was possible to declare a function symbol to be @(see untouchable) and
+ yet still execute it using @(tsee apply$), thus violating the spirit of
+ untouchables.  That is no longer allowed.  Here is an example of such
+ execution that was formerly permitted, but is no longer.</p>
+
+ @({
+ (include-book \"projects/apply/apply-lemmas\" :dir :system)
+ (defun$ f (x) (declare (xargs :guard t)) (cons x x))
+ (push-untouchable f t)
+ (apply$ 'f '(3))
+ })
 
  <h3>New Features</h3>
 
@@ -80767,7 +80923,7 @@ it."
  during a proof, and we avoid the error ``ACL2 cannot ev the call of
  non-executable function ANCESTORS-CHECK...'' by allowing attachments to be
  used when checking table guards (as discussed above).  Thanks to Dmitry
- Nadezhin for sending relayable examples that exhibited these bugs.</p>
+ Nadezhin for sending replayable examples that exhibited these bugs.</p>
 
  <p>Fixed @(see guard)s for functions @(tsee enabled-runep), @(tsee
  enabled-numep), @('disabledp-fn'), and @('disabledp-fn-lst'), thus eliminating
@@ -80795,7 +80951,7 @@ it."
  argument is now fully eliminated.  Thanks to Eric Smith for pointing out this
  issue.</p>
 
- <p>Fixed @(':')@(tsee pso) and related utiltiies @(':')@(tsee pso!),
+ <p>Fixed @(':')@(tsee pso) and related utilities @(':')@(tsee pso!),
  @(':')@(tsee psof), and @(':')@(tsee psog), to avoid printing some error
  messages.  Thanks to Keshav Kini for sending us an example to bring this bug
  to our attention.  Also tweaked these utilities to avoid accumulating later
@@ -80879,6 +81035,26 @@ it."
  expansion is @('(the integer a)').  Thanks to Eric Smith for bringing this bug
  to our attention.</p>
 
+ <p>Fixed @(':')@(tsee args) to avoid hard ACL2 error when applied to @('IF')
+ and to provide a clearer error message for Common Lisp functions not in ACL2.
+ Thanks to Eric McCarthy for sending examples to point out these issues.</p>
+
+ <p>A bug has been fixed that could cause an error when processing a legal
+ @(tsee flet) form, because the processing of a binding could interfere
+ inappropriately with the processing of a subsequent binding, as in the
+ following example.</p>
+
+ @({
+ (defun f (x) x)
+ (flet ((f (x) (cons x x))
+        (g (x) (f x))) ; processed with bad binding of stobjs-out for f
+   (g 3))
+ })
+
+ <p>Fixed an error message saying that ``It is illegal for supporters of
+ DEFAXIOM events to receive attachments'' that failed during printing.  Thanks
+ to Nathan Guermond for sending an example to point out this bug.</p>
+
  <h3>Changes at the System Level</h3>
 
  <p>Fixed the use of `@('<a href='URL'>...</a>')' so that if @('URL') has the
@@ -80893,7 +81069,7 @@ it."
  online manual (back when @('&') was used in the URL in the documentation
  string).</p>
 
- <p>The \"clean\" target of \"make\" has been deprecated since ACl2 Version
+ <p>The \"clean\" target of \"make\" has been deprecated since ACL2 Version
  7.4 (released in March, 2017). Its replacement is target \"clean-lite\"; or,
  use target \"clean-all\" (or equivalently, \"distclean\") if you want a more
  thorough cleaning.</p>
@@ -80914,6 +81090,104 @@ it."
  <p>Removed setting of the buffer coding system from @('emacs/emacs-acl2.el').
  Thanks to Keshav Kini for suggesting this change.  This should avoid certain
  modifications of ``unusual'' characters when saving a file.</p>
+
+ <h3>Experimental Versions</h3>
+
+ <p>The utility @(tsee with-local-state) no longer causes an error in ACL2(p)
+ with @(see parallel-execution) enabled.  Thus, neither do @(tsee
+ fmt-to-string) and related utilities, which call @('with-local-state').</p>
+
+ ")
+
+(defxdoc note-8-2
+
+; Here is a comment, written by Mihir Mehta, with more details about the change
+; from fix-true-list to true-list-fix.  He also has noted that a relevant
+; GitHub discussion may be found at https://github.com/acl2/acl2/pull/882.
+
+;    After this change, books which reason about fix-true-list can remain
+;    unchanged, because a macro has been introduced to replace calls to
+;    fix-true-list with calls to true-list-fix, along with a macro-alias to
+;    serve the same purpose for theory expressions involving fix-true-list. The
+;    same is true for books which reason about list-fix, with the function
+;    symbol true-list-fix now being disabled in "books/std/lists/list-fix.lisp"
+;    and, by extension, in all books which include it. A small number of books
+;    which include this book and which also reason about fix-true-list may need
+;    to locally enable true-list-fix in order to certify.
+
+  :parents (release-notes)
+  :short "ACL2 Version  8.2 (xxx, 20xx) Notes"
+  :long "<p>NOTE!  New users can ignore these release notes, because the @(see
+ documentation) has been updated to reflect all changes that are recorded
+ here.</p>
+
+ <p>Below we roughly organize the changes to ACL2 since Version 8.1 into the
+ following categories of changes: existing features, new features, heuristic
+ and efficiency improvements, bug fixes, changes at the system level, Emacs
+ support, and experimental versions.  Each change is described in just one
+ category, though of course many changes could be placed in more than one
+ category.</p>
+
+ <p>Note that only ACL2 system changes are listed below.  See also @(see
+ note-8-2-books) for a summary of changes made to the ACL2 Community Books
+ since ACL2 8.0, including the build system.  Also note that with each release,
+ it is typical that the value of constant @(tsee *acl2-exports*) has been
+ extended, and that some built-in functions that were formerly in @(':')@(tsee
+ program) mode are now @(see guard)-verified @(':')@(tsee logic) mode
+ functions.</p>
+
+ <h3>Changes to Existing Features</h3>
+
+ <p>The built-in function @(tsee fix-true-list) is now a macro that expands to
+ a new built-in function, @(tsee true-list-fix), whose definition follows the
+ efficient definition of @(see list-fix) that was in @(see community-book)
+ @('books/std/lists/list-fix.lisp').  In that book, @(see list-fix) is now a
+ macro that expands to @('true-list-fix').  The use of macro-aliases (see @(see
+ add-macro-alias)) should generally make this change backward compatible for
+ users of @(tsee list-fix).  Thanks to Mihir Mehta for taking the lead on
+ implementing these changes and to Jared Davis for permission to integrate
+ definitions and documentation from his Kookamara books into the ACL2
+ sources.</p>
+
+ <h3>New Features</h3>
+
+ <h3>Heuristic and Efficiency Improvements</h3>
+
+ <h3>Bug Fixes</h3>
+
+ <p>Fixed the @(see proof-builder) command, @('dv') (see @(see acl2-pc::dv)),
+ for diving into calls of @(tsee list) and @(tsee list*).</p>
+
+ <h3>Changes at the System Level</h3>
+
+ <p>The @(see documentation) topic, @(see system-utilities), is now about only
+ utilities that pertain to the ACL2 system implementation, rather than
+ arbitrary built-in utilities.  Thus, each of the following now has its own
+ topic, rather than being described in @(see system-utilities).  (Thanks to
+ Alessandro Coglio for suggesting this reorganization.)</p>
+
+ <ul>
+ <li>@(tsee alist-keys-subsetp)</li>
+ <li>@(tsee alist-to-doublets)</li>
+ <li>@(tsee cons-count-bounded)</li>
+ <li>@(tsee evens)</li>
+ <li>@(tsee keyword-listp)</li>
+ <li>@(tsee merge-sort-lexorder)</li>
+ <li>@(tsee odds)</li>
+ <li>@(tsee packn)</li>
+ <li>@(tsee packn-pos)</li>
+ <li>@(tsee pairlis-x2)</li>
+ <li>@(tsee pairlis-x1)</li>
+ </ul>
+
+ <h3>EMACS Support</h3>
+
+ <p>Fixed the @(see acl2-doc) browser so that it can handle topic names with
+ the single-quote (@(''')) and comma (@(',')) characters, by escaping them.</p>
+
+ <p>Fixed Emacs support for the the @(see proof-builder) dive command (see
+ @(see acl2-pc::dive)), @('control-t control-d'), to eliminate trailing zeros,
+ since those are (and have been) disallowed by that command.</p>
 
  <h3>Experimental Versions</h3>
 
@@ -81732,6 +82006,15 @@ arithmetic) for libraries of @(see books) for arithmetic reasoning.</p>")
  more information.</p>
 
  @(def oddp)")
+
+(defxdoc odds
+  :parents (lists acl2-built-ins)
+  :short "The odd-indexed members of a list"
+  :long "<p>The call @('(odds x)') returns the restriction of the true-list
+ @('x') to its odd-indexed members (with zero-based indexing).  Note that if
+ @('x') is a list @('(k1 a1 k2 a2 ... kn an)') that satisfies the predicate
+ @(tsee keyword-value-listp), then @('(odds x)') lists the values @('ai') of
+ @('x').</p>")
 
 (defxdoc ok-if
   :parents (break-rewrite)
@@ -82679,6 +82962,22 @@ arithmetic) for libraries of @(see books) for arithmetic reasoning.</p>")
   See @(see working-with-packages) for the best practices in setting up and
   using packages.")
 
+(defxdoc packn
+  :parents (symbols acl2-built-ins)
+  :short "Build a symbol from a list"
+  :long "<p>The call @('(packn lst)') returns a symbol whose name is a
+ concatenation of string representations of the atoms in the @(tsee
+ good-atom-listp), @('lst').  The symbol's package is the package of the first
+ symbol in @('lst') whose package is not @('\"COMMON-LISP\"') if any, else
+ @('\"ACL2\"').</p>")
+
+(defxdoc packn-pos
+  :parents (symbols acl2-built-ins)
+  :short "Build a symbol in a specified package from a list"
+  :long "<p>The function @('packn-pos') behaves like @(tsee packn), except that
+ for the call @('(packn-pos lst witness)'), the returned symbol's package will
+ instead be the package of the symbol, @('witness').</p>")
+
 (defxdoc pairlis
   :parents (lists alists)
   :short "See @(see pairlis$)"
@@ -82700,6 +82999,18 @@ arithmetic) for libraries of @(see books) for arithmetic reasoning.</p>")
  lists.</p>
 
  @(def pairlis$)")
+
+(defxdoc pairlis-x1
+  :parents (lists alists acl2-built-ins)
+  :short "Cons a given element to each member of a list"
+  :long "<p>The call @('(pairlis-x1 x1 lst)') conses @('x1') onto each element
+ of the true-list, @('lst').</p>")
+
+(defxdoc pairlis-x2
+  :parents (lists alists acl2-built-ins)
+  :short "Cons each element of a list with a given element"
+  :long "<p>The call @('(pairlis-x2 lst x2)') creates an alist consing each
+ element of @('lst'), a true-list, with @('x2').</p>")
 
 (defxdoc pand
   :parents (parallel-programming acl2-built-ins)
@@ -90831,8 +91142,9 @@ arithmetic) for libraries of @(see books) for arithmetic reasoning.</p>")
  <p>A @(tsee defabsstobj) is redundant if there is already an identical
  @('defabsstobj') event in the logical @(see world).</p>
 
- <p>A @(tsee defattach) event is never redundant.  Note that it doesn't define
- any name.</p>
+ <p>A @(tsee defattach) event is never redundant.  (Reasons are provided in a
+ comment in the ACL2 sources definition of defattach in the ACL2 logic.)  Note
+ that @('defattach') events do not define any names.</p>
 
  <p>A @(tsee defaxiom) or @(tsee defthm) event is redundant if there is already
  an axiom or theorem of the given name and either the two @(see events) are
@@ -103647,7 +103959,7 @@ arithmetic) for libraries of @(see books) for arithmetic reasoning.</p>")
       :hints ((\"Goal\" :in-theory (disable (:type-prescription sys-call)))))
  })
 
- <p>Through Version_7.4, running this example did indeed create file
+ <p>Through Version 7.4, running this example did indeed create file
  @('/tmp/XXX') if that file did not already exist.  Now, the @(see
  executable-counterpart) of @('sys-call') is disabled, which avoids that
  specific behavior.  Moreover: even with that executable-counterpart enabled,
@@ -103864,18 +104176,19 @@ arithmetic) for libraries of @(see books) for arithmetic reasoning.</p>")
 ; here that doesn't have an xdoc topic.
 
   :parents (programming)
-  :short "List of system-level programming utilities"
+  :short "Some built-in programming utilities pertaining to the ACL2 system"
   :long "<p>Since the ACL2 system is written in itself, the source code defines
  many utilities that support the ACL2 implementation.  Some of these have been
  found to be useful not only to the ACL2 developers, but to those who use ACL2
  to perform tasks other than the traditional ones: writing and submitting
  definitions, and proving theorems about the functions defined.</p>
 
- <p>This topic provides a summary of some of those system-level utilities.  It
- is intended to be a growing document, with contributions from those in the
- community who find such utilities that benefit them.  It has already grown
- substantially from an initial version created by the ACL2 implementors, and
- others will likely continue to add to it over time.</p>
+ <p>This topic provides a summary of some of those utilities that are built
+ into the ACL2 system.  It is intended to be a growing document, with
+ contributions from those in the community who find such utilities that benefit
+ them.  It has already grown substantially from an initial version created by
+ the ACL2 implementors, and others will likely continue to add to it over
+ time.</p>
 
  <p><b>WARNING 1</b>.  Some system utilities are in @(':')@(tsee program) mode,
  and for many of those, @(see guard)s are incomplete or missing entirely.
@@ -103912,43 +104225,30 @@ arithmetic) for libraries of @(see books) for arithmetic reasoning.</p>")
  source comments, or ``Essays'', that can provide additional background.</p>
 
  <p>Also see @(see programming) and its subtopics, in particular @(see
- programming-with-state), which describes <em>many</em> system-level utilities.
- For example, a subsection of @(see programming-with-state), entitled
- ``SEQUENTIAL PROGRAMMING'', introduces handy utilities @(tsee pprogn) and
- @(tsee er-progn) along with links to their documentation.  You may also wish
- to see @(see system-attachments) for how to make a few changes to the behavior
- of ACL2.</p>
+ programming-with-state), which describes <em>many</em> built-in system
+ utilities.  For example, a subsection of @(see programming-with-state),
+ entitled ``SEQUENTIAL PROGRAMMING'', introduces handy utilities @(tsee pprogn)
+ and @(tsee er-progn) along with links to their documentation.  You may also
+ wish to see @(see system-attachments) for how to make a few changes to the
+ behavior of ACL2.</p>
 
- <p>Here is another option for finding a system utility: As ACL2 developers
- sometimes do, use @('meta-.') or @('meta-x tags-apropos') in Emacs to find
- utilities with given substrings in their names.  For example, if in Emacs you
- submit the command @('meta-x tags-apropos') and reply @('pwd') at the prompt,
- you'll find a raw Lisp function @('our-pwd') that ACL2 defines as an analogue
- to the Linux @('pwd') command; and, with @('meta-x tags-search') applied to
- @('(our-pwd'), you can see how ACL2 source code uses this utility.</p>
+ <p>Here is another option for finding a buit-in system utility: As ACL2
+ developers sometimes do, use @('meta-.') or @('meta-x tags-apropos') in Emacs
+ to find utilities with given substrings in their names.  For example, if in
+ Emacs you submit the command @('meta-x tags-apropos') and reply @('pwd') at
+ the prompt, you'll find a raw Lisp function @('our-pwd') that ACL2 defines as
+ an analogue to the Linux @('pwd') command; and, with @('meta-x tags-search')
+ applied to @('(our-pwd'), you can see how ACL2 source code uses this
+ utility.</p>
 
- <h3>List of a few ACL2 system utilities:</h3>
+ <h3>List of a few built-in system utilities</h3>
 
  <p>Every function mentioned below belongs in the constant @(tsee
- *acl2-system-exports*).</p>
+ *acl2-system-exports*).  Also see @(see acl2-built-ins) for built-in utilities
+ that are less relevant to the ACL2 system, and see @(see programming) for
+ utilities in general.</p>
 
  <ul>
-
- <li>@('(alist-keys-subsetp alist keys)'): For the given alist and list of
- symbols, return @('t') when each key of @('alist') belongs to @('keys'), else
- return @('nil').  This is Boolean-equivalent to @('(subsetp-eq (strip-cars
- alist) keys)'), but it avoids consing up the keys of @('alist').</li>
-
- <li>@('(alist-to-doublets alist)'): Return the result of replacing each pair
- @('(x . y)') in the given alist by the two-element list @('(x y)').  The order
- is preserved, i.e., the following is a theorem.</li>
-
- @({
- (implies (and (natp i) (< i (len alist)))
-          (equal (nth i (alist-to-doublets alist))
-                 (let ((pair (nth i alist)))
-                   (list (car pair) (cdr pair)))))
- })
 
  <li>@('(all-calls names term alist ans)'):  Accumulate into @('ans')
  (which typically is @('nil') at the top level) all pseudo-terms @('u/alist')
@@ -103998,10 +104298,6 @@ arithmetic) for libraries of @(see books) for arithmetic reasoning.</p>")
  <li>@('(conjoin lst)'): The conjunction of the given list of terms.</li>
 
  <li>@('(conjoin2 term1 term2)'): The conjunction of the given two terms.</li>
-
- <li>@('(cons-count-bounded x)'): The number of cons nodes in @('x') (without
- accounting for sharing), but truncated above by the value of
- @('(fn-count-evg-max-val)'), which is 200,000 as of this writing.</li>
 
  <li>@('(cons-term fn args)'): Returns a @(see term) with function symbol (or
  @(see lambda) expression) @('fn') and arguments @('args').  Some
@@ -104063,12 +104359,6 @@ arithmetic) for libraries of @(see books) for arithmetic reasoning.</p>")
  enabled structure (as discussed for @('enabled-numep'), just above).  See also
  @('enabled-numep'), which may be more efficient since @('enabled-runep') is
  defined in terms of @('enabled-numep').</li>
-
- <li>@('(evens l)'): Return the restriction of the true-list @('l') to its
- even-indexed members (with zero-based indexing).  Note that if @('x') is a
- list @('(k1 a1 k2 a2 ... kn an)') that satisfies the predicate @(tsee
- keyword-value-listp), then @('(evens x)') lists the keys @('ki') of
- @('x').</li>
 
  <li>@('(fargn x n)'): For a @(tsee pseudo-termp) @('x') that is a function
  call and for a positive integer @('n'), return the @('n')-th argument of
@@ -104197,9 +104487,6 @@ arithmetic) for libraries of @(see books) for arithmetic reasoning.</p>")
    </ul>
  </li>
 
- <li>@('(keyword-listp x)'): Return @('t') when @('x') is a true-list whose
- members are all keywords, else return @('nil').</li>
-
  <li>@('(known-package-alist state)'): Returns a list of package entries, as
  explained in the definition of @('make-package-entry') in ACL2 sources, which
  is followed by simple accessor definitions (all in file @('axioms.lisp') as of
@@ -104244,33 +104531,9 @@ arithmetic) for libraries of @(see books) for arithmetic reasoning.</p>")
  free variables that do not belong to @('formals'), because lambdas must be
  closed in ACL2.</li>
 
- <li>@('(merge-sort-lexorder l)'): Sort the list @('l') using a non-strict
- total order, @(tsee lexorder), on the ACL2 universe.</li>
-
  <li>@('(nvariablep x)'): For a @(tsee pseudo-termp) @('x'), return true iff
  @('x') is not a variable (i.e. it is a quoted constant or a function
  call).</li>
-
- <li>@('(odds l)'): Return the restriction of the true-list @('l') to its
- odd-indexed members (with zero-based indexing).  Note that if @('x') is a list
- @('(k1 a1 k2 a2 ... kn an)') that satisfies the predicate @(tsee
- keyword-value-listp), then @('(odds x)') lists the values @('ai') of
- @('x').</li>
-
- <li>@('(packn lst)'): Return a symbol.  The symbol's name is a concatenation
- of string representations of the atoms in the @(tsee good-atom-listp)
- @('lst'), and the symbol's package is the package of the first symbol in
- @('lst') whose package is not @('\"COMMON-LISP\"') if any, else
- @('\"ACL2\"').</li>
-
- <li>@('(packn-pos lst witness)'): Behaves like @('packn'), except the returned
- symbol's package will instead be the package of the symbol @('witness').</li>
-
- <li>@('(pairlis-x1 x1 lst)'): Cons @('x1') onto the front of each element of
- the the true-list, @('lst').</li>
-
- <li>@('(pairlis-x2 lst x2)'): Make an alist pairing each element of @('lst'),
- a true-list, with @('x2').</li>
 
  <li>@('(partition-rest-and-keyword-args x keys)'): @('x') should be a list of
  the form @('(a1 ... an :key1 v1 ... :keyk vk)'), where no @('ai') is a
@@ -108986,6 +109249,42 @@ arithmetic) for libraries of @(see books) for arithmetic reasoning.</p>")
  top-level macro in it for one step only.  Either an error is caused, which
  happens when the form is not a call of a macro, or the result is printed.
  Also see @(see trans), which translates the given form completely.</p>")
+
+(defxdoc true-list-fix
+  :parents (true-listp)
+  :short "Coerce to a true list"
+  :long "<p>Many functions that process lists follows the <b>true-list-fix
+ convention</b>: whenever @('f') is given a some non-@(tsee true-listp) @('x')
+ where it expected a list, it will act as though it had been given
+ @('(true-list-fix x)') instead.  As a few examples, logically,</p>
+
+ <ul>
+ <li>@('(endp x)') ignores the final @('cdr') of @('x')</li>
+ <li>@('(len x)') ignores the final @('cdr') of @('x')</li>
+ <li>@('(append x y)') ignores the final @('cdr') of @('x') (but not
+ @('y'))</li>
+ <li>@('(member a x)') ignores the final @('cdr') of @('x')</li>
+ </ul>
+
+ <p>@('True-list-fix') is often useful when writing theorems about how
+ list-processing functions behave.  For example, it allows us to write strong,
+ hypothesis-free theorems such as:</p>
+
+ @({
+     (equal (character-listp (append x y))
+            (and (character-listp (true-list-fix x))
+                 (character-listp y)))
+ })
+
+ <p>Indeed, @('true-list-fix') is the basis for @(see list-equiv), an extremely
+ common @(see equivalence) relation.</p>
+
+ <p>Efficiency note.  In practice, most lists are nil-terminated.  As an
+ optimization, @('true-list-fix') tries to avoid any consing by first checking
+ whether its argument is a @(see true-listp), and, in that case, it simply
+ returns its argument unchanged.</p>
+
+ @(def true-list-fix)")
 
 (defxdoc true-list-listp
   :parents (lists true-listp acl2-built-ins)
@@ -116635,7 +116934,10 @@ for the execution of @('form')."
     (with-local-state (mv-let (eofp result state)
                               (foo2 state)
                               (mv eofp result))))
- })")
+ })
+
+ <p>Note for ACL2(p) users: When @(see parallel-execution) is enabled,
+ invocations of @('with-local-state') are surrounded by a lock.</p>")
 
 (defxdoc with-local-stobj
   :parents (stobj acl2-built-ins)
@@ -120482,16 +120784,16 @@ second"
 (defxdoc acl2-pc::p
   :parents (proof-builder-commands proof-builder-commands-short-list)
   :short "(macro)
-prettyprint the current term"
+prettyprint the current term in the usual user-level (untranslated) syntax"
   :long "@({
   Example and General Form:
   p
  })
 
- <p>Prettyprint the current term.  The usual user syntax is used, so that for
- example one would see @('(and x y)') rather than @('(if x y 'nil)').  (See
- also @('pp').)  Also, abbreviations are inserted where appropriate; see
- @(see acl2-pc::add-abbreviation).</p>
+ <p>Prettyprint the current term.  The usual user (untranslated) syntax is
+ used, so that for example one would see @('(and x y)') rather than @('(if x y
+ 'nil)').  (See also @('pp').)  Also, abbreviations are inserted where
+ appropriate; see @(see acl2-pc::add-abbreviation).</p>
 
  <p>The ``current term'' is the entire conclusion unless @('dive') commands
  have been given, in which case it may be a subterm of the conclusion.</p>
@@ -120547,7 +120849,7 @@ print the rules for a given name"
 (defxdoc acl2-pc::pp
   :parents (proof-builder-commands)
   :short "(macro)
-prettyprint the current term"
+prettyprint the current term in internal (translated) form"
   :long "@({
   Example and General Form:
   pp
@@ -122067,8 +122369,6 @@ expand function call at the current subterm, without simplifying"
 (defpointer add-to-set-eq add-to-set)
 (defpointer add-to-set-eql add-to-set) ; pre-v4-3 compatibility
 (defpointer add-to-set-equal add-to-set)
-(defpointer alist-keys-subsetp system-utilities)
-(defpointer alist-to-doublets system-utilities)
 (defpointer all-calls system-utilities)
 (defpointer all-vars system-utilities)
 (defpointer apropos finding-documentation)
@@ -122093,7 +122393,6 @@ expand function call at the current subterm, without simplifying"
 (defpointer community-book community-books)
 (defpointer computed-hint computed-hints)
 (defpointer conjoin system-utilities)
-(defpointer cons-count-bounded system-utilities)
 (defpointer cons-term system-utilities)
 (defpointer cons-term* system-utilities)
 (defpointer context ctx)
@@ -122112,7 +122411,6 @@ expand function call at the current subterm, without simplifying"
 (defpointer error hints t)
 (defpointer ev$ apply$)
 (defpointer ev$-list apply$)
-(defpointer evens system-utilities)
 (defpointer event events)
 (defpointer execution evaluation)
 (defpointer expand hints t)
@@ -122178,7 +122476,6 @@ expand function call at the current subterm, without simplifying"
 (defpointer iprint set-iprint)
 (defpointer iprinting set-iprint)
 (defpointer keyword keywordp)
-(defpointer keyword-listp system-utilities)
 (defpointer lambda term)
 (defpointer lambda-applicationp system-utilities)
 (defpointer lambda-body system-utilities)
@@ -122186,6 +122483,7 @@ expand function call at the current subterm, without simplifying"
 (defpointer legal-constantp system-utilities)
 (defpointer legal-variablep system-utilities)
 (defpointer let-mbe equality-variants-details)
+(defpointer lisp-programmer-introduction introduction-to-programming-in-acl2-for-those-who-know-lisp)
 (defpointer logicp system-utilities)
 (defpointer make-lambda system-utilities)
 (defpointer make-lambda-term system-utilities)
@@ -122194,7 +122492,6 @@ expand function call at the current subterm, without simplifying"
 (defpointer member-eq member)
 (defpointer member-equal member)
 (defpointer memoization memoize)
-(defpointer merge-sort-lexorder system-utilities)
 (defpointer meta-extract-contextual-fact meta-extract)
 (defpointer meta-extract-formula meta-extract)
 (defpointer meta-extract-global-fact meta-extract)
@@ -122232,17 +122529,12 @@ expand function call at the current subterm, without simplifying"
 (defpointer note9 note-1-9)
 (defpointer nvariablep system-utilities)
 (defpointer observation-cw observation)
-(defpointer odds system-utilities)
 (defpointer open-input-channel io)
 (defpointer open-input-channel-p io)
 (defpointer open-output-channel io)
 (defpointer open-output-channel-p io)
 (defpointer optimize declare)
 (defpointer package packages)
-(defpointer packn system-utilities)
-(defpointer packn-pos system-utilities)
-(defpointer pairlis-x1 system-utilities)
-(defpointer pairlis-x2 system-utilities)
 (defpointer partition-rest-and-keyword-args system-utilities)
 (defpointer pe-table extend-pe-table)
 (defpointer peek-char$ io)
