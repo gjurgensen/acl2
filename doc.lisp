@@ -77,7 +77,7 @@ Subtopics
   [defthm], [in-theory], [xargs], [state], etc., without an acl2::
   prefix.
 
-  The constant *acl2-exports* lists 1445 symbols, including most
+  The constant *acl2-exports* lists 1447 symbols, including most
   documented ACL2 system constants, functions, and macros.  You will
   typically also want to import many symbols from Common Lisp; see
   [*common-lisp-symbols-from-main-lisp-package*].
@@ -364,8 +364,8 @@ Subtopics
        keywordp keywordp-forward-to-symbolp
        known-package-alist known-package-alistp
        known-package-alistp-forward-to-true-list-listp-and-alistp
-       kwote
-       kwote-lst lambda last last-prover-steps
+       kwote kwote-lst
+       lambda lambda$ last last-prover-steps
        ld ld-error-action ld-error-triples
        ld-evisc-tuple ld-keyword-aliases
        ld-missing-input-ok ld-post-eval-print
@@ -462,8 +462,8 @@ Subtopics
        position-equal position-equal-ac
        positive posp power-eval pprogn pr
        pr! preprocess prin1$ prin1-with-slashes
-       prin1-with-slashes1 princ$
-       print-base-p print-gv print-object$
+       prin1-with-slashes1 princ$ print-base-p
+       print-cl-cache print-gv print-object$
        print-object$-preserving-case
        print-object$-ser
        print-rational-as-decimal
@@ -79675,8 +79675,20 @@ Changes to Existing Features
   permission to integrate definitions and documentation from his
   Kookamara books into the ACL2 sources.
 
+  A quoted lambda object that may ultimately be passed as the
+  ``function'' for a call of [apply$] may now have a [declare] form.
+  We plan to document this new feature in detail later.  See also the
+  discussion of lambda$ below.
+
 
 New Features
+
+  A new construct, lambda$, may be used in place of lambda to be passed
+  as the ``function'' for a call of [apply$].  The syntactic
+  requirements for such uses of lambda$ are much less strict than for
+  quoted lambda objects; in particular, the body needs not be in
+  translated form (see [term]).  We plan to document this new feature
+  in detail later.
 
 
 Heuristic and Efficiency Improvements

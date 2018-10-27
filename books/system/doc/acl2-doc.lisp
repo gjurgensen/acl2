@@ -81149,7 +81149,19 @@ it."
  definitions and documentation from his Kookamara books into the ACL2
  sources.</p>
 
+ <p>A quoted lambda object that may ultimately be passed as the ``function''
+ for a call of @(tsee apply$) may now have a @(tsee declare) form.  We plan to
+ document this new feature in detail later.  See also the discussion of
+ @('lambda$') below.</p>
+
  <h3>New Features</h3>
+
+ <p>A new construct, @('lambda$'), may be used in place of @('lambda') to be
+ passed as the ``function'' for a call of @(tsee apply$).  The syntactic
+ requirements for such uses of @('lambda$') are much less strict than for
+ quoted @('lambda') objects; in particular, the body need not be in translated
+ form (see @(see term)).  We plan to document this new feature in detail
+ later.</p>
 
  <h3>Heuristic and Efficiency Improvements</h3>
 
