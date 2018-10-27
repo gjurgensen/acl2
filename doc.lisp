@@ -79686,7 +79686,7 @@ New Features
   A new construct, lambda$, may be used in place of lambda to be passed
   as the ``function'' for a call of [apply$].  The syntactic
   requirements for such uses of lambda$ are much less strict than for
-  quoted lambda objects; in particular, the body needs not be in
+  quoted lambda objects; in particular, the body need not be in
   translated form (see [term]).  We plan to document this new feature
   in detail later.
 
