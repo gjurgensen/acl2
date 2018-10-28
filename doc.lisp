@@ -78525,7 +78525,7 @@ Changes to Existing Features
   example).  We thank Eric for helpful discussions.  Changes include:
 
     * When [sys-call] is invoked during a proof (from a prover call or
-      invocation of the [proof-builder], it no longer can make a
+      invocation of the [proof-builder]), it no longer can make a
       (potentially dangerous) call to the operating system.  If such
       an invocation occurs during evaluation of a clause-processor or
       metafunction, an error will be signaled.
@@ -78703,7 +78703,7 @@ New Features
   leading to this feature.
 
   The new functions read-object-with-case and
-  print-object$-preserving-case is are variants of read-object and
+  print-object$-preserving-case are variants of read-object and
   print-object$, respectively.  The function read-object-with-case
   lets you specify that case is preserved, inverted, or converted to
   lower case or (as with read-object) to upper case.  The function
@@ -78789,7 +78789,7 @@ Bug Fixes
   conversations and by providing code and examples.
 
   A bug in the [proof-builder]'s command, rewrite (or equivalently, r;
-  see [ACL2-pc::rewrite], avoided creating necessary subgoals, which
+  see [ACL2-pc::rewrite]), avoided creating necessary subgoals, which
   can presumably be unsound.  That bad behavior could occur when the
   third (and optional) argument of that command was a non-nil value
   other than t.
@@ -79400,7 +79400,7 @@ Heuristic and Efficiency Improvements
   that illustrated the problem.
 
   The following improvements have been made for evaluating calls of the
-  form (apply$ (lambda ...) ...).
+  form (apply$ '(lambda ...) ...).
 
     * An optimization had failed to be fully in place, causing such calls
       to run slowly.  That optimization compiles and caches ``tame
@@ -79466,7 +79466,7 @@ Bug Fixes
   an example that illustrated the bug for enabled-runep.  Technical
   note: this fix was made by replacing calls of bounded-nat-alistp
   (which is no longer defined) by calls of nat-alistp (which is newly
-  defined).  We also made corresponding tweak to the definition of
+  defined).  We also made a corresponding tweak to the definition of
   enabled-numep.
 
   Warnings labeled with ``Double-rewrite'' failed to take into account
