@@ -78585,7 +78585,7 @@ Changes to Existing Features
   encountered.  For example, the following form was formerly rejected
   but is now accepted.
 
-    (defconst *c* (fms-to-string \"abc~x0\" (list (cons #0 (expt 2 4)))))
+    (defconst *c* (fms-to-string \"abc~x0\" (list (cons #\\0 (expt 2 4)))))
 
   Thanks to Eric Smith for suggesting such a change.
 
@@ -78832,7 +78832,8 @@ Bug Fixes
         (string-append-lst
          (make-list 100
                     :initial-element
-                    (coerce '(#A #B #C #D #E #F #G #H #I #J #Newline)
+                    (coerce '(#\\A #\\B #\\C #\\D #\\E #\\F
+                              #\\G #\\H #\\I #\\J #\\Newline)
                             'string))))
 
   A bug that was in the [tau-system] is illustrated by the following

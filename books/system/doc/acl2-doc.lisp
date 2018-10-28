@@ -79933,7 +79933,7 @@ it."
  function with raw Lisp code is encountered.  For example, the following form
  was formerly rejected but is now accepted.</p>
 
- @({(defconst *c* (fms-to-string \"abc~x0\" (list (cons #\0 (expt 2 4)))))})
+ @({(defconst *c* (fms-to-string \"abc~x0\" (list (cons #\\0 (expt 2 4)))))})
 
  <p>Thanks to Eric Smith for suggesting such a change.</p>
 
@@ -80176,7 +80176,8 @@ it."
      (string-append-lst
       (make-list 100
                  :initial-element
-                 (coerce '(#\A #\B #\C #\D #\E #\F #\G #\H #\I #\J #\Newline)
+                 (coerce '(#\\A #\\B #\\C #\\D #\\E #\\F
+                           #\\G #\\H #\\I #\\J #\\Newline)
                          'string))))
  })
 
