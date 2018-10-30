@@ -79700,6 +79700,16 @@ Bug Fixes
   Fixed the [proof-builder] command, dv (see [ACL2-pc::dv]), for diving
   into calls of [list] and [list*].
 
+  Eliminated a hard error labeled as ``Implementation error'' that
+  could occur when submitting a :[congruence] rule during the second
+  pass of [encapsulate] or the local incompatibility check in Step 3
+  of [certify-book].  The error occurred when the equivalence
+  relation of the rule had been defined locally, hence was missing
+  during that second pass or local incompatibility check.  Now, a
+  useful ordinary (``soft'') error occurs, with a useful message.
+  Thanks to Nathan Guermond for reporting this bug with a helpful
+  example.
+
 
 Changes at the System Level
 

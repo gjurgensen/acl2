@@ -81172,6 +81172,15 @@ it."
  <p>Fixed the @(see proof-builder) command, @('dv') (see @(see acl2-pc::dv)),
  for diving into calls of @(tsee list) and @(tsee list*).</p>
 
+ <p>Eliminated a hard error labeled as ``Implementation error'' that could
+ occur when submitting a @(':')@(tsee congruence) rule during the second pass
+ of @(tsee encapsulate) or the local incompatibility check in Step 3 of @(tsee
+ certify-book).  The error occurred when the equivalence relation of the rule
+ had been defined locally, hence was missing during that second pass or local
+ incompatibility check.  Now, a useful ordinary (``soft'') error occurs, with a
+ useful message.  Thanks to Nathan Guermond for reporting this bug with a
+ helpful example.</p>
+
  <h3>Changes at the System Level</h3>
 
  <p>The @(see documentation) topic, @(see system-utilities), is now about only
