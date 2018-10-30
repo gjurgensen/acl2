@@ -35843,7 +35843,7 @@ current fast alists."
  combinations presented below.</p>
 
  <p>Note: The default setting for guard-checking (that is, the initial value
- for @('(@ guard-checking-on)')) is @('T').</p>
+ for @(see state) global @('(@ guard-checking-on)')) is @('T').</p>
 
  <p>The table below illustrates the interaction of the @(see defun-mode) with
  the value supplied to @(tsee set-guard-checking).  The first row considers
@@ -35852,11 +35852,11 @@ current fast alists."
  values of state global @(''guard-checking-on'), as supplied to @(tsee
  set-guard-checking).  (A fifth value, @(':nowarn'), is similar to @('t') but
  suppresses warnings encountered with @('t') (as explained in those warning
- messages), and is not considered here.)  During proofs, @(tsee certify-book),
- and @(tsee include-book), @(''guard-checking-on') is set to @('nil')
- regardless of how this variable has been set in the top-level loop (see the
- ``Essay on Guard Checking'' in source file @('other-events.lisp') if you are
- interested in a rationale).</p>
+ messages), and is not considered here.)  Note that @(''guard-checking-on') is
+ set to @('nil') during proofs but is set to @('t') during @(tsee
+ certify-book), and @(tsee include-book), regardless of how this variable has
+ been set in the top-level loop (see the ``Essay on Guard Checking'' in source
+ file @('other-events.lisp') if you are interested in a rationale).</p>
 
  <p>Below this table, we make some comments about its entries, ordered by row
  and then by column.  For example, when we refer to ``b2'' we are discussing

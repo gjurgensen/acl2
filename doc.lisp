@@ -38971,7 +38971,7 @@ Subtopics
   combinations presented below.
 
   Note: The default setting for guard-checking (that is, the initial
-  value for (@ guard-checking-on)) is T.
+  value for [state] global (@ guard-checking-on)) is T.
 
   The table below illustrates the interaction of the [defun-mode] with
   the value supplied to [set-guard-checking].  The first row
@@ -38981,11 +38981,11 @@ Subtopics
   supplied to [set-guard-checking].  (A fifth value, :nowarn, is
   similar to t but suppresses warnings encountered with t (as
   explained in those warning messages), and is not considered here.)
-  During proofs, [certify-book], and [include-book],
-  'guard-checking-on is set to nil regardless of how this variable
-  has been set in the top-level loop (see the ``Essay on Guard
-  Checking'' in source file other-events.lisp if you are interested
-  in a rationale).
+  Note that 'guard-checking-on is set to nil during proofs but is set
+  to t during [certify-book], and [include-book], regardless of how
+  this variable has been set in the top-level loop (see the ``Essay
+  on Guard Checking'' in source file other-events.lisp if you are
+  interested in a rationale).
 
   Below this table, we make some comments about its entries, ordered by
   row and then by column.  For example, when we refer to ``b2'' we
