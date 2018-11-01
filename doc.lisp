@@ -77,7 +77,7 @@ Subtopics
   [defthm], [in-theory], [xargs], [state], etc., without an acl2::
   prefix.
 
-  The constant *acl2-exports* lists 1445 symbols, including most
+  The constant *acl2-exports* lists 1447 symbols, including most
   documented ACL2 system constants, functions, and macros.  You will
   typically also want to import many symbols from Common Lisp; see
   [*common-lisp-symbols-from-main-lisp-package*].
@@ -364,8 +364,8 @@ Subtopics
        keywordp keywordp-forward-to-symbolp
        known-package-alist known-package-alistp
        known-package-alistp-forward-to-true-list-listp-and-alistp
-       kwote
-       kwote-lst lambda last last-prover-steps
+       kwote kwote-lst
+       lambda lambda$ last last-prover-steps
        ld ld-error-action ld-error-triples
        ld-evisc-tuple ld-keyword-aliases
        ld-missing-input-ok ld-post-eval-print
@@ -462,8 +462,8 @@ Subtopics
        position-equal position-equal-ac
        positive posp power-eval pprogn pr
        pr! preprocess prin1$ prin1-with-slashes
-       prin1-with-slashes1 princ$
-       print-base-p print-gv print-object$
+       prin1-with-slashes1 princ$ print-base-p
+       print-cl-cache print-gv print-object$
        print-object$-preserving-case
        print-object$-ser
        print-rational-as-decimal
@@ -38971,7 +38971,7 @@ Subtopics
   combinations presented below.
 
   Note: The default setting for guard-checking (that is, the initial
-  value for (@ guard-checking-on)) is T.
+  value for [state] global (@ guard-checking-on)) is T.
 
   The table below illustrates the interaction of the [defun-mode] with
   the value supplied to [set-guard-checking].  The first row
@@ -38981,11 +38981,11 @@ Subtopics
   supplied to [set-guard-checking].  (A fifth value, :nowarn, is
   similar to t but suppresses warnings encountered with t (as
   explained in those warning messages), and is not considered here.)
-  During proofs, [certify-book], and [include-book],
-  'guard-checking-on is set to nil regardless of how this variable
-  has been set in the top-level loop (see the ``Essay on Guard
-  Checking'' in source file other-events.lisp if you are interested
-  in a rationale).
+  Note that 'guard-checking-on is set to nil during proofs but is set
+  to t during [certify-book], and [include-book], regardless of how
+  this variable has been set in the top-level loop (see the ``Essay
+  on Guard Checking'' in source file other-events.lisp if you are
+  interested in a rationale).
 
   Below this table, we make some comments about its entries, ordered by
   row and then by column.  For example, when we refer to ``b2'' we
@@ -78525,7 +78525,7 @@ Changes to Existing Features
   example).  We thank Eric for helpful discussions.  Changes include:
 
     * When [sys-call] is invoked during a proof (from a prover call or
-      invocation of the [proof-builder], it no longer can make a
+      invocation of the [proof-builder]), it no longer can make a
       (potentially dangerous) call to the operating system.  If such
       an invocation occurs during evaluation of a clause-processor or
       metafunction, an error will be signaled.
@@ -78585,7 +78585,7 @@ Changes to Existing Features
   encountered.  For example, the following form was formerly rejected
   but is now accepted.
 
-    (defconst *c* (fms-to-string \"abc~x0\" (list (cons #0 (expt 2 4)))))
+    (defconst *c* (fms-to-string \"abc~x0\" (list (cons #\\0 (expt 2 4)))))
 
   Thanks to Eric Smith for suggesting such a change.
 
@@ -78703,7 +78703,7 @@ New Features
   leading to this feature.
 
   The new functions read-object-with-case and
-  print-object$-preserving-case is are variants of read-object and
+  print-object$-preserving-case are variants of read-object and
   print-object$, respectively.  The function read-object-with-case
   lets you specify that case is preserved, inverted, or converted to
   lower case or (as with read-object) to upper case.  The function
@@ -78789,7 +78789,7 @@ Bug Fixes
   conversations and by providing code and examples.
 
   A bug in the [proof-builder]'s command, rewrite (or equivalently, r;
-  see [ACL2-pc::rewrite], avoided creating necessary subgoals, which
+  see [ACL2-pc::rewrite]), avoided creating necessary subgoals, which
   can presumably be unsound.  That bad behavior could occur when the
   third (and optional) argument of that command was a non-nil value
   other than t.
@@ -78832,7 +78832,8 @@ Bug Fixes
         (string-append-lst
          (make-list 100
                     :initial-element
-                    (coerce '(#A #B #C #D #E #F #G #H #I #J #Newline)
+                    (coerce '(#\\A #\\B #\\C #\\D #\\E #\\F
+                              #\\G #\\H #\\I #\\J #\\Newline)
                             'string))))
 
   A bug that was in the [tau-system] is illustrated by the following
@@ -79400,7 +79401,7 @@ Heuristic and Efficiency Improvements
   that illustrated the problem.
 
   The following improvements have been made for evaluating calls of the
-  form (apply$ (lambda ...) ...).
+  form (apply$ '(lambda ...) ...).
 
     * An optimization had failed to be fully in place, causing such calls
       to run slowly.  That optimization compiles and caches ``tame
@@ -79466,7 +79467,7 @@ Bug Fixes
   an example that illustrated the bug for enabled-runep.  Technical
   note: this fix was made by replacing calls of bounded-nat-alistp
   (which is no longer defined) by calls of nat-alistp (which is newly
-  defined).  We also made corresponding tweak to the definition of
+  defined).  We also made a corresponding tweak to the definition of
   enabled-numep.
 
   Warnings labeled with ``Double-rewrite'' failed to take into account
@@ -79675,14 +79676,39 @@ Changes to Existing Features
   permission to integrate definitions and documentation from his
   Kookamara books into the ACL2 sources.
 
+  A quoted lambda object that may ultimately be passed as the
+  ``function'' for a call of [apply$] may now have a [declare] form.
+  We plan to document this new feature in detail later.  See also the
+  discussion of lambda$ below.
+
 
 New Features
+
+  A new construct, lambda$, may be used in place of lambda to be passed
+  as the ``function'' for a call of [apply$].  The syntactic
+  requirements for such uses of lambda$ are much less strict than for
+  quoted lambda objects; in particular, the body need not be in
+  translated form (see [term]).  We plan to document this new feature
+  in detail later.
 
 
 Heuristic and Efficiency Improvements
 
 
 Bug Fixes
+
+  Fixed the [proof-builder] command, dv (see [ACL2-pc::dv]), for diving
+  into calls of [list] and [list*].
+
+  Eliminated a hard error labeled as ``Implementation error'' that
+  could occur when submitting a :[congruence] rule during the second
+  pass of [encapsulate] or the local incompatibility check in Step 3
+  of [certify-book].  The error occurred when the equivalence
+  relation of the rule had been defined locally, hence was missing
+  during that second pass or local incompatibility check.  Now, a
+  useful ordinary (``soft'') error occurs, with a useful message.
+  Thanks to Nathan Guermond for reporting this bug with a helpful
+  example.
 
 
 Changes at the System Level
@@ -79711,6 +79737,10 @@ EMACS Support
 
   Fixed the [ACL2-doc] browser so that it can handle topic names with
   the single-quote (') and comma (,) characters, by escaping them.
+
+  Fixed Emacs support for the the [proof-builder] dive command (see
+  [ACL2-pc::dive]), control-t control-d, to eliminate trailing zeros,
+  since those are (and have been) disallowed by that command.
 
 
 Experimental Versions")
