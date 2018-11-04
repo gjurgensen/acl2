@@ -13486,6 +13486,7 @@ Subtopics
        (easy-simplify-term \"[books]/tools/easy-simplify.lisp\")
        (er-soft+ \"[books]/kestrel/utilities/er-soft-plus.lisp\")
        (er-soft-logic \"[books]/tools/er-soft-logic.lisp\")
+       (final-cdr \"[books]/std/lists/final-cdr.lisp\")
        (fty \"[books]/centaur/fty/top.lisp\")
        (getopt \"[books]/centaur/getopt/top.lisp\")
        (gl \"[books]/centaur/gl/doc.lisp\")
@@ -32744,7 +32745,8 @@ Subtopics
 
   Floor is a Common Lisp function.  See any Common Lisp documentation
   for more information.  However, note that unlike Common Lisp, the
-  ACL2 floor function returns only a single value,
+  ACL2 floor function returns only a single value, that is, the
+  quotient of the division, while the remainder is returned by [mod].
 
   Function: <floor>
 
@@ -111358,9 +111360,10 @@ Subtopics
   "Coerce to a true list
 
   Many functions that process lists follows the true-list-fix
-  convention: whenever f is given a some non-[true-listp] x where it
-  expected a list, it will act as though it had been given
-  (true-list-fix x) instead.  As a few examples, logically,
+  convention: whenever f is given some non-[true-listp] x where it
+  expected a list, that is, some x with a non-nil [final-cdr], it
+  will act as though it had been given (true-list-fix x) instead.  As
+  a few examples, logically,
 
     * (endp x) ignores the final cdr of x
     * (len x) ignores the final cdr of x
@@ -111382,6 +111385,15 @@ Subtopics
   optimization, true-list-fix tries to avoid any consing by first
   checking whether its argument is a [true-listp], and, in that case,
   it simply returns its argument unchanged.
+
+  Function: <true-list-fix-exec>
+
+    (defun true-list-fix-exec (x)
+           (declare (xargs :guard t))
+           (if (consp x)
+               (cons (car x)
+                     (true-list-fix-exec (cdr x)))
+               nil))
 
   Function: <true-list-fix>
 

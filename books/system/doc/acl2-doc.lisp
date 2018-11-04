@@ -161,6 +161,7 @@
     (EASY-SIMPLIFY-TERM "[books]/tools/easy-simplify.lisp")
     (ER-SOFT+ "[books]/kestrel/utilities/er-soft-plus.lisp")
     (ER-SOFT-LOGIC "[books]/tools/er-soft-logic.lisp")
+    (FINAL-CDR "[books]/std/lists/final-cdr.lisp")
     (FTY "[books]/centaur/fty/top.lisp")
     (GETOPT "[books]/centaur/getopt/top.lisp")
     (GL "[books]/centaur/gl/doc.lisp")
@@ -109279,9 +109280,9 @@ arithmetic) for libraries of @(see books) for arithmetic reasoning.</p>")
   :short "Coerce to a true list"
   :long "<p>Many functions that process lists follows the <b>true-list-fix
  convention</b>: whenever @('f') is given some non-@(tsee true-listp) @('x')
- where it expected a list, that is, some x with a non-nil @(tsee final-cdr),
-  it will act as though it had been given @('(true-list-fix x)') instead.  As a
-  few examples, logically,</p>
+ where it expected a list, that is, some @('x') with a non-@('nil') @(tsee
+ final-cdr), it will act as though it had been given @('(true-list-fix x)')
+ instead.  As a few examples, logically,</p>
 
  <ul>
  <li>@('(endp x)') ignores the final @('cdr') of @('x')</li>
