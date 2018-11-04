@@ -29548,7 +29548,8 @@ current fast alists."
 
  <p>@('Floor') is a Common Lisp function.  See any Common Lisp documentation
  for more information.  However, note that unlike Common Lisp, the ACL2
- @('floor') function returns only a single value,</p>
+ @('floor') function returns only a single value, that is, the quotient of the
+ division, while the remainder is returned by @(tsee mod).</p>
 
  @(def floor)")
 
@@ -109277,9 +109278,10 @@ arithmetic) for libraries of @(see books) for arithmetic reasoning.</p>")
   :parents (true-listp)
   :short "Coerce to a true list"
   :long "<p>Many functions that process lists follows the <b>true-list-fix
- convention</b>: whenever @('f') is given a some non-@(tsee true-listp) @('x')
- where it expected a list, it will act as though it had been given
- @('(true-list-fix x)') instead.  As a few examples, logically,</p>
+ convention</b>: whenever @('f') is given some non-@(tsee true-listp) @('x')
+ where it expected a list, that is, some x with a non-nil @(tsee final-cdr),
+  it will act as though it had been given @('(true-list-fix x)') instead.  As a
+  few examples, logically,</p>
 
  <ul>
  <li>@('(endp x)') ignores the final @('cdr') of @('x')</li>
@@ -109306,6 +109308,8 @@ arithmetic) for libraries of @(see books) for arithmetic reasoning.</p>")
  optimization, @('true-list-fix') tries to avoid any consing by first checking
  whether its argument is a @(see true-listp), and, in that case, it simply
  returns its argument unchanged.</p>
+
+ @(def true-list-fix-exec)
 
  @(def true-list-fix)")
 
