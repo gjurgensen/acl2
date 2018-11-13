@@ -161,6 +161,7 @@
     (EASY-SIMPLIFY-TERM "[books]/tools/easy-simplify.lisp")
     (ER-SOFT+ "[books]/kestrel/utilities/er-soft-plus.lisp")
     (ER-SOFT-LOGIC "[books]/tools/er-soft-logic.lisp")
+    (FINAL-CDR "[books]/std/lists/final-cdr.lisp")
     (FTY "[books]/centaur/fty/top.lisp")
     (GETOPT "[books]/centaur/getopt/top.lisp")
     (GL "[books]/centaur/gl/doc.lisp")
@@ -29548,7 +29549,8 @@ current fast alists."
 
  <p>@('Floor') is a Common Lisp function.  See any Common Lisp documentation
  for more information.  However, note that unlike Common Lisp, the ACL2
- @('floor') function returns only a single value,</p>
+ @('floor') function returns only a single value, that is, the quotient of the
+ division, while the remainder is returned by @(tsee mod).</p>
 
  @(def floor)")
 
@@ -35843,7 +35845,7 @@ current fast alists."
  combinations presented below.</p>
 
  <p>Note: The default setting for guard-checking (that is, the initial value
- for @('(@ guard-checking-on)')) is @('T').</p>
+ for @(see state) global @('(@ guard-checking-on)')) is @('T').</p>
 
  <p>The table below illustrates the interaction of the @(see defun-mode) with
  the value supplied to @(tsee set-guard-checking).  The first row considers
@@ -35852,11 +35854,11 @@ current fast alists."
  values of state global @(''guard-checking-on'), as supplied to @(tsee
  set-guard-checking).  (A fifth value, @(':nowarn'), is similar to @('t') but
  suppresses warnings encountered with @('t') (as explained in those warning
- messages), and is not considered here.)  During proofs, @(tsee certify-book),
- and @(tsee include-book), @(''guard-checking-on') is set to @('nil')
- regardless of how this variable has been set in the top-level loop (see the
- ``Essay on Guard Checking'' in source file @('other-events.lisp') if you are
- interested in a rationale).</p>
+ messages), and is not considered here.)  Note that @(''guard-checking-on') is
+ set to @('nil') during proofs but is set to @('t') during @(tsee
+ certify-book), and @(tsee include-book), regardless of how this variable has
+ been set in the top-level loop (see the ``Essay on Guard Checking'' in source
+ file @('other-events.lisp') if you are interested in a rationale).</p>
 
  <p>Below this table, we make some comments about its entries, ordered by row
  and then by column.  For example, when we refer to ``b2'' we are discussing
@@ -79862,7 +79864,7 @@ it."
  <ul>
 
  <li>When @(tsee sys-call) is invoked during a proof (from a prover call or
- invocation of the @(see proof-builder), it no longer can make a (potentially
+ invocation of the @(see proof-builder)), it no longer can make a (potentially
  dangerous) call to the operating system.  If such an invocation occurs during
  evaluation of a clause-processor or metafunction, an error will be
  signaled.</li>
@@ -79933,7 +79935,7 @@ it."
  function with raw Lisp code is encountered.  For example, the following form
  was formerly rejected but is now accepted.</p>
 
- @({(defconst *c* (fms-to-string \"abc~x0\" (list (cons #\0 (expt 2 4)))))})
+ @({(defconst *c* (fms-to-string \"abc~x0\" (list (cons #\\0 (expt 2 4)))))})
 
  <p>Thanks to Eric Smith for suggesting such a change.</p>
 
@@ -80055,7 +80057,7 @@ it."
  feature.</p>
 
  <p>The new functions @('read-object-with-case') and
- @('print-object$-preserving-case') is are variants of @('read-object') and
+ @('print-object$-preserving-case') are variants of @('read-object') and
  @('print-object$'), respectively.  The function @('read-object-with-case')
  lets you specify that case is preserved, inverted, or converted to lower case
  or (as with @('read-object')) to upper case.  The function
@@ -80133,7 +80135,7 @@ it."
  providing code and examples.</p>
 
  <p>A bug in the @(see proof-builder)'s command, @('rewrite') (or equivalently,
- @('r'); see @(see acl2-pc::rewrite), avoided creating necessary subgoals,
+ @('r'); see @(see acl2-pc::rewrite)), avoided creating necessary subgoals,
  which can presumably be unsound.  That bad behavior could occur when the
  third (and optional) argument of that command was a non-@('nil') value other
  than @('t').</p>
@@ -80176,7 +80178,8 @@ it."
      (string-append-lst
       (make-list 100
                  :initial-element
-                 (coerce '(#\A #\B #\C #\D #\E #\F #\G #\H #\I #\J #\Newline)
+                 (coerce '(#\\A #\\B #\\C #\\D #\\E #\\F
+                           #\\G #\\H #\\I #\\J #\\Newline)
                          'string))))
  })
 
@@ -80865,7 +80868,7 @@ it."
  illustrated the problem.</p>
 
  <p>The following improvements have been made for evaluating calls of the form
- @('(apply$ (lambda ...) ...)').</p>
+ @('(apply$ '(lambda ...) ...)').</p>
 
  <ul>
 
@@ -80931,7 +80934,8 @@ it."
  sending an example that illustrated the bug for @('enabled-runep').  Technical
  note: this fix was made by replacing calls of @('bounded-nat-alistp') (which
  is no longer defined) by calls of @('nat-alistp') (which is newly defined).
- We also made corresponding tweak to the definition of @('enabled-numep').</p>
+ We also made a corresponding tweak to the definition of
+ @('enabled-numep').</p>
 
  <p>Warnings labeled with ``Double-rewrite'' failed to take into account
  patterned @(see congruence) rules.  This has been fixed.  Thanks to Mihir
@@ -81149,7 +81153,19 @@ it."
  definitions and documentation from his Kookamara books into the ACL2
  sources.</p>
 
+ <p>A quoted lambda object that may ultimately be passed as the ``function''
+ for a call of @(tsee apply$) may now have a @(tsee declare) form.  We plan to
+ document this new feature in detail later.  See also the discussion of
+ @('lambda$') below.</p>
+
  <h3>New Features</h3>
+
+ <p>A new construct, @('lambda$'), may be used in place of @('lambda') to be
+ passed as the ``function'' for a call of @(tsee apply$).  The syntactic
+ requirements for such uses of @('lambda$') are much less strict than for
+ quoted @('lambda') objects; in particular, the body need not be in translated
+ form (see @(see term)).  We plan to document this new feature in detail
+ later.</p>
 
  <h3>Heuristic and Efficiency Improvements</h3>
 
@@ -81157,6 +81173,15 @@ it."
 
  <p>Fixed the @(see proof-builder) command, @('dv') (see @(see acl2-pc::dv)),
  for diving into calls of @(tsee list) and @(tsee list*).</p>
+
+ <p>Eliminated a hard error labeled as ``Implementation error'' that could
+ occur when submitting a @(':')@(tsee congruence) rule during the second pass
+ of @(tsee encapsulate) or the local incompatibility check in Step 3 of @(tsee
+ certify-book).  The error occurred when the equivalence relation of the rule
+ had been defined locally, hence was missing during that second pass or local
+ incompatibility check.  Now, a useful ordinary (``soft'') error occurs, with a
+ useful message.  Thanks to Nathan Guermond for reporting this bug with a
+ helpful example.</p>
 
  <h3>Changes at the System Level</h3>
 
@@ -109254,9 +109279,10 @@ arithmetic) for libraries of @(see books) for arithmetic reasoning.</p>")
   :parents (true-listp)
   :short "Coerce to a true list"
   :long "<p>Many functions that process lists follows the <b>true-list-fix
- convention</b>: whenever @('f') is given a some non-@(tsee true-listp) @('x')
- where it expected a list, it will act as though it had been given
- @('(true-list-fix x)') instead.  As a few examples, logically,</p>
+ convention</b>: whenever @('f') is given some non-@(tsee true-listp) @('x')
+ where it expected a list, that is, some @('x') with a non-@('nil') @(tsee
+ final-cdr), it will act as though it had been given @('(true-list-fix x)')
+ instead.  As a few examples, logically,</p>
 
  <ul>
  <li>@('(endp x)') ignores the final @('cdr') of @('x')</li>
@@ -109283,6 +109309,8 @@ arithmetic) for libraries of @(see books) for arithmetic reasoning.</p>")
  optimization, @('true-list-fix') tries to avoid any consing by first checking
  whether its argument is a @(see true-listp), and, in that case, it simply
  returns its argument unchanged.</p>
+
+ @(def true-list-fix-exec)
 
  @(def true-list-fix)")
 
