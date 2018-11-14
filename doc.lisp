@@ -29470,7 +29470,7 @@ Subtopics
 Subtopics
 
   [Guard-checking-inhibited]
-      Evaluating ACL2 expressions")
+      Avoiding certain warnings when evaluating ACL2 expressions")
  (EVALUATOR-RESTRICTIONS
   (META)
   "Some restrictions on the use of evaluators in meta-level rules
@@ -37869,7 +37869,7 @@ Subtopics
       Sources of measure or guard proof obligations
 
   [Guard-checking-inhibited]
-      Evaluating ACL2 expressions
+      Avoiding certain warnings when evaluating ACL2 expressions
 
   [Guard-debug]
       Generate markers to indicate sources of [guard] proof obligations
@@ -37969,10 +37969,10 @@ Subtopics
                  "See [set-guard-checking].")
  (GUARD-CHECKING-INHIBITED
   (EVALUATION GUARD)
-  "Evaluating ACL2 expressions
+  "Avoiding certain warnings when evaluating ACL2 expressions
 
   ACL2 sometimes omits the checking of [guard]s on recursive calls of
-  functions.  This omission is signaled by a message like the one
+  functions.  This omission is signaled by a warningt like the one
   shown below.
 
     ACL2 !>(factorial 3)
@@ -37984,11 +37984,12 @@ Subtopics
     6
     ACL2 !>
 
-  More precisely, the warning is printed only when guard-checking is
-  the default, t (see [set-guard-checking]) and guards are not
-  verified for the indicated function.  No further such message is
-  printed (for any function) before the next top-level form is
-  submitted.
+  This behavior can occur for a recursively-defined [logic]-mode
+  function with a guard other than t whose guards have not been
+  verified, when [guard-checking] has its default value, t.
+  (Exceptions may occur, for example when the function is being
+  traced.)  No further such message is printed (for any function)
+  before the next top-level form is submitted.
 
   To check guards on all recursive calls:
 
@@ -46198,9 +46199,12 @@ More help
 
   Rewrite rules make ACL2 replace one term by another.  This is done by
   the rewriter, which is part of ACL2's simplifier.  The rewriter
-  sweeps through the goal formula trying all the rewrite rules it
-  knows.  Here's an example.  Just pretend that you have made a
-  rewrite rule from the formula below.
+  sweeps through the goal formula trying all the [rewrite],
+  [definition], and [meta] rules it knows, in order from the most
+  recently submitted rule to the oldest, until it finds one to apply.
+
+  Here's an example.  Just pretend that you have made a rewrite rule
+  from the formula below.
 
     (implies (and (natp i)
                   (< i (len a)))
@@ -83730,22 +83734,27 @@ Subtopics
   that apply to terms whose top function symbol is the one specified,
   specifically, rules of class :[rewrite], :[definition], :[meta],
   :[linear], :[type-prescription], :[forward-chaining], :[elim], and
-  :[induction].
+  :[induction].  For each class, rules are displayed in order from
+  the most recently submitted rule to the oldest, with two
+  exceptions: :rewrite, :definition, and :meta rules are considered
+  as one ``class'' for this purpose; and only the current (most
+  recent) :elim rule is displayed.
 
   Otherwise the argument should be a term (in user syntax, so that for
-  example macros are permitted).  In this case, :pl displays the
-  :[rewrite], :[definition], and :meta rules that rewrite the
-  specified term, followed by the applicable :[type-prescription]
-  rules.  Each rule is displayed with additional information, such as
-  the hypotheses that remain after applying some simple techniques to
-  discharge them that are likely to apply in any context.  Note that
-  for :[meta] rules, only those are displayed that meet two
-  conditions: the application of the metafunction returns a term
-  different from the input term, and if there is a hypothesis
-  metafunction then it also returns a term.  (A subtlety: In the case
-  of extended metafunctions (see [extended-metafunctions]), a trivial
-  metafunction context is used for the application of the
-  metafunction.)
+  example macros are permitted).  In this case, :pl displays rules
+  that are applicable to the given term, in order (as above, most
+  recent rule first) for each of these four cases: first :[rewrite]
+  and :[definition] rules, then :meta rules, then :[linear] rules,
+  and finally :[type-prescription] rules.  Each rule is displayed
+  with additional information, such as the hypotheses that remain
+  after applying some simple techniques to discharge them that are
+  likely to apply in any context.  Note that for :[meta] rules, only
+  those are displayed that meet two conditions: the application of
+  the metafunction returns a term different from the input term, and
+  if there is a hypothesis metafunction then it also returns a term.
+  (A subtlety: In the case of extended metafunctions (see
+  [extended-metafunctions]), a trivial metafunction context is used
+  for the application of the metafunction.)
 
   Note that some rule classes are not handled by :pl.  In particular,
   if you want to see all :[clause-processor] rules, issue the command

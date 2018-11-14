@@ -34819,9 +34819,9 @@ current fast alists."
 
 (defxdoc guard-checking-inhibited
   :parents (evaluation guard)
-  :short "Evaluating ACL2 expressions"
+  :short "Avoiding certain warnings when evaluating ACL2 expressions"
   :long "<p>ACL2 sometimes omits the checking of @(see guard)s on recursive
- calls of functions.  This omission is signaled by a message like the one shown
+ calls of functions.  This omission is signaled by a warningt like the one shown
  below.</p>
 
  @({
@@ -34835,10 +34835,12 @@ current fast alists."
  ACL2 !>
  })
 
- <p>More precisely, the warning is printed only when guard-checking is the
- default, @('t') (see @(see set-guard-checking)) and guards are not verified
- for the indicated function.  No further such message is printed (for any
- function) before the next top-level form is submitted.</p>
+ <p>This behavior can occur for a recursively-defined @(see logic)-mode
+ function with a guard other than @('t') whose guards have not been verified,
+ when @(see guard-checking) has its default value, @('t').  (Exceptions may
+ occur, for example when the function is being traced.)  No further such
+ message is printed (for any function) before the next top-level form is
+ submitted.</p>
 
  <p>To check guards on all recursive calls:</p>
 
@@ -42902,9 +42904,12 @@ tables in the current Hons Space."
   :short "Introduction to ACL2's notion of rewrite rules"
   :long "<p>Rewrite rules make ACL2 replace one term by another.  This is done
  by the rewriter, which is part of ACL2's simplifier.  The rewriter sweeps
- through the goal formula trying all the rewrite rules it knows.  Here's an
- example.  Just pretend that you have made a rewrite rule from the formula
- below.</p>
+ through the goal formula trying all the @(see rewrite), @(see definition), and
+ @(see meta) rules it knows, in order from the most recently submitted rule to
+ the oldest, until it finds one to apply.</p>
+
+ <p>Here's an example.  Just pretend that you have made a rewrite rule from the
+ formula below.</p>
 
  @({
   (implies (and (natp i)
@@ -84331,19 +84336,24 @@ arithmetic) for libraries of @(see books) for arithmetic reasoning.</p>")
  symbol is the one specified, specifically, rules of class @(':')@(tsee
  rewrite), @(':')@(tsee definition), @(':')@(tsee meta), @(':')@(tsee linear),
  @(':')@(tsee type-prescription), @(':')@(tsee forward-chaining), @(':')@(tsee
- elim), and @(':')@(tsee induction).</p>
+ elim), and @(':')@(tsee induction).  For each class, rules are displayed in
+ order from the most recently submitted rule to the oldest, with two
+ exceptions: @(':rewrite'), @(':definition'), and @(':meta') rules are
+ considered as one ``class'' for this purpose; and only the current (most
+ recent) @(':elim') rule is displayed.</p>
 
  <p>Otherwise the argument should be a term (in user syntax, so that for
- example macros are permitted).  In this case, @(':pl') displays the
- @(':')@(tsee rewrite), @(':')@(tsee definition), and @(':meta') rules that
- rewrite the specified term, followed by the applicable @(':')@(tsee
- type-prescription) rules.  Each rule is displayed with additional information,
- such as the hypotheses that remain after applying some simple techniques to
- discharge them that are likely to apply in any context.  Note that for
- @(':')@(tsee meta) rules, only those are displayed that meet two conditions:
- the application of the metafunction returns a term different from the input
- term, and if there is a hypothesis metafunction then it also returns a term.
- (A subtlety: In the case of extended metafunctions (see @(see
+ example macros are permitted).  In this case, @(':pl') displays rules that are
+ applicable to the given term, in order (as above, most recent rule first) for
+ each of these four cases: first @(':')@(tsee rewrite) and @(':')@(tsee
+ definition) rules, then @(':meta') rules, then @(':')@(tsee linear) rules, and
+ finally @(':')@(tsee type-prescription) rules.  Each rule is displayed with
+ additional information, such as the hypotheses that remain after applying some
+ simple techniques to discharge them that are likely to apply in any context.
+ Note that for @(':')@(tsee meta) rules, only those are displayed that meet two
+ conditions: the application of the metafunction returns a term different from
+ the input term, and if there is a hypothesis metafunction then it also returns
+ a term.  (A subtlety: In the case of extended metafunctions (see @(see
  extended-metafunctions)), a trivial metafunction context is used for the
  application of the metafunction.)</p>
 
