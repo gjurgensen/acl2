@@ -81163,6 +81163,10 @@ it."
  document this new feature in detail later.  See also the discussion of
  @('lambda$') below.</p>
 
+ <p>The macro @(tsee warrant) no longer causes an error for the 800+ ACL2
+ primitives that are built into the definition of @(tsee apply$).  Instead, it
+ simply avoids generating (needless) conjuncts for those primitives.</p>
+
  <h3>New Features</h3>
 
  <p>A new construct, @('lambda$'), may be used in place of @('lambda') to be

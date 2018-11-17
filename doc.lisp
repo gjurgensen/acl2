@@ -79687,6 +79687,11 @@ Changes to Existing Features
   We plan to document this new feature in detail later.  See also the
   discussion of lambda$ below.
 
+  The macro [warrant] no longer causes an error for the 800+ ACL2
+  primitives that are built into the definition of [apply$].
+  Instead, it simply avoids generating (needless) conjuncts for those
+  primitives.
+
 
 New Features
 
