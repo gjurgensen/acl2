@@ -22659,8 +22659,8 @@ Subtopics
   (deflabel L) will be included under the resulting encapsulate form.
   Thus, you will be able to undo this define-trusted-clause-processor
   with :[ubt] L.  Also, because of the criteria for redundant
-  encapsulate events (see [redundant-encapsulate]),the entire form is
-  considered redundant (skipped) if it is identical to one already
+  encapsulate events (see [redundant-encapsulate]), the entire form
+  is considered redundant (skipped) if it is identical to one already
   executed in the current ACL2 [world], with one exception: if
   :partial-theory is nil or omitted, and also :label nil is supplied
   explicitly, then the event will not be redundant.  If the event is
@@ -22676,12 +22676,16 @@ Subtopics
   the clause-processor function.  Otherwise, [local] definitions of
   those missing supporters can render the use of this
   clause-processor unsound, as discussed in the paper referenced at
-  the end of the [clause-processor] documentation topic.  Moreover,
-  ACL2 assumes for dependent clause-processors (discussed below) that
-  every function symbol constrained by the ``promised encapsulate''
-  of that event is either among those supporters or ancestral in one
-  of them (i.e. a supporter of a supporter, a supporter of one of
-  those, etc.).
+  the end of the [clause-processor] documentation topic.  Below we
+  discuss an additional reason that supporters is critical for
+  soundness, in the case of dependent clause-processors.
+
+  (Remark.  There could have been two notions of supporters: one for
+  functions whose definitions support the correctness of the
+  clause-processor function, and, in the case of dependent
+  clause-processors, one for supporters of the ``promised
+  encapsulate'' discussed below.  But for simplicity, a single
+  supporters argument serves both purposes.)
 
   Dependent clause-processors and promised encapsulates: The
   :partial-theory argument
@@ -22704,21 +22708,21 @@ Subtopics
   constraints are present implicitly in a stronger ``promised''
   encapsulate, for example by exporting the full definition.
 
-  If a trusted clause-processor is introduced with a :partial-theory
-  argument, we call it a ``dependent'' clause-processor, because its
-  correctness is dependent on the constraints implicitly introduced
-  by the :partial-theory encapsulate form.  The implicit constraints
-  should logically imply the constraints actually introduced by the
-  explicit encapsulate, but they should also be sufficient to justify
-  every possible invocation of the clause-processor in a
-  :clause-processor hint.  The user of a
-  define-trusted-clause-processor form is making a guarantee --- or,
-  is relying on a guarantee provided by the writer of that form ---
-  that in principle, there exists a so-called ``promised
-  encapsulate'': an encapsulate form with the same [signature] as the
-  :partial-theory encapsulate form associated with the trusted
-  clause-processor, but whose constraints introduced are the
-  aforementioned implicit constraints.
+  If a trusted clause-processor is introduced with a non-nil
+  :partial-theory argument, we call it a ``dependent''
+  clause-processor, because its correctness is dependent on the
+  constraints implicitly introduced by the :partial-theory
+  encapsulate form.  The implicit constraints should logically imply
+  the constraints actually introduced by the explicit encapsulate,
+  but they should also be sufficient to justify every possible
+  invocation of the clause-processor in a :clause-processor hint.
+  The user of a define-trusted-clause-processor form is making a
+  guarantee --- or, is relying on a guarantee provided by the writer
+  of that form --- that in principle, there exists a so-called
+  ``promised encapsulate'': an encapsulate form with the same
+  [signature] as the :partial-theory encapsulate form associated with
+  the trusted clause-processor, but whose constraints introduced are
+  the aforementioned implicit constraints.
 
   There are several additional requirements on a :partial-theory
   argument.  First, it must be an [encapsulate] event with non-empty
@@ -22729,6 +22733,14 @@ Subtopics
   we can think of this situation as attempting to associate more than
   one encapsulate with the functions introduced in the inner
   encapsulate.
+
+  Moreover, soundness depends on inclusion of enough function symbols
+  in the supporters argument, as follows.  Let S be the set of
+  specified supporters augmented by the set of function symbols
+  either introduced by, or in a property exported by, the
+  :partial-theory argument, which we call the ``promised
+  encapsulate''.  Then every function symbol constrained by the
+  promised encapsulate is in S.
 
   The :partial-theory event will (in essence) be executed as part of
   the evaluation of the define-trusted-clause-processor form.  Again,
@@ -22748,16 +22760,18 @@ Subtopics
   A remark on the underlying implementation
 
   You can see all of the current trusted clause-processors by issuing
-  the command (table trusted-clause-processor-table).  Those that are
-  dependent clause-processors will be associated in the resulting
-  association list with a pair whose car is the list of supporters
-  and whose cdr is t, i.e., with (supporters . t); the others will be
-  associated just with (supporters).
+  the command (table trusted-cl-proc-table).  The resulting alist
+  associates each trusted clause-processor with its supporters.
 
-  Thus, define-trusted-clause-processor is actually a macro that
-  generates (among other things) a table event for a table named
-  trusted-clause-processor-table; see [table].  You are invited to
-  use :[trans1] to see expansions of calls of this macro.
+  Note that define-trusted-clause-processor is actually a macro that
+  generates (among other things) a table event for extending
+  trusted-cl-proc-table.  You are invited to use :[trans1] to see
+  expansions of calls of this macro.  In particular, you can see that
+  the :partial-theory argument results in an encapsulate event that
+  includes a call of the form (set-unknown-constraints-supporters f1
+  ... fk), which in effect makes that call of encapsulate into a call
+  of partial-encapsulate with supporters (f1 ... fk).  See
+  [partial-encapsulate].
 
   A technique for using raw Lisp to define a trusted clause-processor
 
@@ -27923,7 +27937,7 @@ Subtopics
 
   where each [signature] is a well-formed signature, each signature
   describes a different function symbol, and each evi is an embedded
-  event form (See [embedded-event-form]).  Also see [signature], in
+  event form (see [embedded-event-form]).  Also see [signature], in
   particular for a discussion of how a signature can assign a [guard]
   to a function symbol.  There must be at least one evi.  The evi
   inside [local] special forms are called ``local'' [events] below.
@@ -28033,6 +28047,12 @@ Subtopics
   the superior encapsulate, to permit an-element to be used as a
   function symbol in thm1.
 
+  Remark on implicit [constraint]s (unknown-constraints).  See
+  [partial-encapsulate] for a related utility that allows some of the
+  constraints to be unspecified.  This is an advanced capability that
+  is useful when one installs special-purpose code, possibly in raw
+  Lisp, using a trust tag (see [defttag]).
+
   Remark for ACL2(r) (see [real]).  For ACL2(r), [encapsulate] can be
   used to introduce classical and non-classical functions, as
   determined by the signatures; see [signature].  Those marked as
@@ -28055,6 +28075,9 @@ Subtopics
 
   [Infected-constraints]
       [Defun]s affecting [constraint]s of [encapsulate]s
+
+  [Partial-encapsulate]
+      Introduce functions with some constraints unspecified
 
   [Redundant-encapsulate]
       Redundancy of [encapsulate] [events]
@@ -30027,6 +30050,9 @@ Subtopics
 
   [Name]
       Syntactic rules on logical names
+
+  [Partial-encapsulate]
+      Introduce functions with some constraints unspecified
 
   [Profile]
       Turn on profiling for one function
@@ -41022,7 +41048,7 @@ Subtopics
         You can see all current :clause-processor rules by issuing the
         command (print-clause-processor-rules), and you can see the
         names of all trusted clause-processors by issuing the command
-        (table trusted-clause-processor-table).
+        (table trusted-cl-proc-table).
 
     :do-not
 
@@ -79702,6 +79728,16 @@ New Features
   translated form (see [term]).  We plan to document this new feature
   in detail later.
 
+  A new macro, [partial-encapsulate], allows one to introduce
+  constrained functions without specifying all of the [constraint]s.
+  This functionality was already available using a trust tag, by way
+  of a rather convoluted application of
+  [define-trusted-clause-processor]; however, [partial-encapsulate]
+  may be used without a trust tag.  See [partial-encapsulate], which
+  in particular points to an example of typical usage, in
+  books/demos/partial-encapsulate.lisp.  Thanks to Sol Swords for
+  requesting such a capability.
+
 
 Heuristic and Efficiency Improvements
 
@@ -83148,6 +83184,188 @@ Subtopics
 
   See [parallelism-at-the-top-level] for restrictions on evaluating
   parallelism primitives from within the ACL2 top-level loop.")
+ (PARTIAL-ENCAPSULATE
+  (EVENTS ENCAPSULATE)
+  "Introduce functions with some constraints unspecified
+
+  See [encapsulate] for relevant background.  Partial-encapsulate is a
+  variant of encapsulate for which some of the constraints are
+  implicit.  This is an advanced capability that is useful when one
+  installs special-purpose code, possibly in raw Lisp, using a trust
+  tag (see [defttag]).
+
+
+Introduction
+
+  The syntax for partial-encapsulate is the same as the syntax of
+  encapsulate, except for the addition of an argument, supporters,
+  which is described below.
+
+    General Form:
+    (partial-encapsulate (signature ... signature)
+      (f1 ... fk) ; supporters
+      ev1
+      ...
+      evn)
+
+  where, as for encapsulate: each signature is a well-formed
+  [signature], each describing a different function symbol, and each
+  evi is an embedded event form (see [embedded-event-form]).  The
+  additional argument (shown above) is a true-list of function
+  symbols, the supporters: it is an error if any such symbol, fi, is
+  not a known function symbol at the time the partial-encapsulate
+  call is evaluated, the exception being that fi may be introduced in
+  one of the signatures.  A partial-encapsulate form must satisfy the
+  following three requirements in addition to those of the
+  corresponding encapsulate form: it must have at least one
+  signature, it must not occur within any other encapsulate or
+  partial-encapsulate form that has at least one signature, and every
+  function symbol that it introduces must be specified in one of the
+  signatures.
+
+  A call of partial-encapsulate introduces its signature functions
+  together with its exported theorems, exactly as though it had been
+  the call of encapsulate with the same signatures and events,
+  however with one difference: the partial-encapsulate logically
+  incorporates additional constraints that are not mentioned.  This
+  is discussed further below, but for now let us note that because of
+  this difference, a successful evaluation of a partial-encapsulate
+  form results in a special ``unknown-constraints'' designation for
+  the functions introduced by the signatures.  Any attempt to access
+  the constraints for those functions will thus fail.  Consider the
+  following example, which introduces f as a constrained function
+  symbol that is constrained not only by the property that f returns
+  a boolean, but also by additional, unspecified (implicit)
+  constraints.
+
+    (partial-encapsulate
+     ((f (x) t))
+     nil
+     (local (defun f (x) (declare (xargs :guard t)) (consp x)))
+     (defthm booleanp-f
+       (booleanp (f x))
+       :rule-classes :type-prescription))
+
+    (defthm symbolp-f
+      (symbolp (f y)))
+
+    (encapsulate
+     ((g (x) t))
+     (local (defun g (x) (consp x)))
+     (defthm booleanp-g (booleanp (g x))))
+
+  Then the following fails, even though it would succeed if we replace
+  partial-encapsulate by encapsulate above.  The reason is that the
+  partial-encapsulate form allows for constraints beyond just the
+  property that f is boolean.  Imagine that special code had been
+  inserted (using a trust tag) for reasoning about f when proving a
+  theorem like symbolp-f that we were now trying to functionally
+  instantiate.
+
+    ; Functional instantiation FAILS because of unknown-constraints on f
+    (defthm symbolp-g
+      (symbolp (g y))
+      :hints ((\"Goal\" :by (:functional-instance symbolp-f (f g)))))
+
+
+Supporters and corresponding encapsulate
+
+  A partial-encapsulate represents any encapsulate form that introduces
+  the same function symbols, has the same signatures, and extends the
+  constraints introduced such that every function symbol occurring in
+  at least one of the additional constraints must either be mentioned
+  in one of the evi or be among the list of supporters, (f1 ... fk).
+  We may refer to such an encapsulate form as a ``corresponding
+  encapsulate''.  The user of partial-encapsulate should keep in mind
+  such a set of additional constraints.  The supporters should thus
+  include all function symbols in the theorems exported from the
+  intended corresponding encapsulate, except that signature functions
+  are always included among the supporters whether specified or not,
+  and hence their inclusion is optional.
+
+  The list of supporters is used for generating proof obligations for a
+  :functional-instance [lemma-instance].  Specifically, the
+  supporters serve as the ``ancestors'' of the partial encapsulate's
+  signature functions, in the constraint-generation algorithm
+  described in the documentation for [constraint].  Thus, if
+  supporters are missing that occur in the intended corresponding
+  encapsulate, then functional instantiation may be unsound because
+  some proof obligations fail to be generated.  Note that in the
+  typical application described next, where the implicit constraints
+  all specify evaluation results for calls of signature functions as
+  discussed below, the specified list of supporters can simply be
+  nil.
+
+
+Applications
+
+  A trust tag (see [defttag]) is not needed for evaluation of a
+  partial-encapsulate form.  However, for a typical application of
+  partial-encapsulate --- redefinition of a constrained function in
+  raw Lisp --- a trust tag is of course necessary (see [defttag]).
+  In such a case, the corresponding encapsulate may be viewed as
+  extending the original partial-encapsulate with all theorems of the
+  form (equal (f a1 ... ak) val), ranging over all computations (f a1
+  ... ak) ever to be evaluated (a finite but potentially huge set)
+  where val is the value returned for (f a1 ... ak).  It is the
+  responsibility of the creator of such an application to ensure that
+  all evaluations satisfy the original constraints of the
+  partial-encapsulate.
+
+  Note that in this sort of application --- that is, where the implicit
+  constraints all arise from function evaluations --- the supporters
+  argument may soundly be nil, since only the signature functions are
+  involved in the implicit constraints (and those functions are
+  automatically included among the supporters, even when not
+  specified by the user).
+
+  For an example of such an application, including explanatory
+  comments, see [community-book]
+  books/demos/partial-encapsulate.lisp.
+
+  Partial-encapsulates are, in essence, also used in the implementation
+  of dependent clause-processors, where the list of supporters might
+  well be non-nil.  See [define-trusted-clause-processor].
+
+
+Implementation
+
+  This section is provided as a reference for those interested, but can
+  probably be safely skipped by most readers.
+
+  Consider the following example.
+
+    ACL2 !>:trans1 (partial-encapsulate
+                    ((f0 (x) t))
+                    (g0)
+                    (local (defun f0 (x) x))
+                    (defthm f0-prop
+                      (implies (integerp x)
+                               (integerp (f0 x)))))
+     (ENCAPSULATE ((F0 (X) T))
+                  (LOCAL (DEFUN F0 (X) X))
+                  (DEFTHM F0-PROP
+                          (IMPLIES (INTEGERP X)
+                                   (INTEGERP (F0 X))))
+                  (SET-UNKNOWN-CONSTRAINTS-SUPPORTERS G0))
+    ACL2 !>
+
+  This example illustrates that a partial-encapsulate call expands to a
+  call of encapsulate obtained by removing the supporters argument,
+  but with the following extra event inserted after given list of
+  events, where (f1 ... fk) is the specified list of supporters.
+
+    (set-unknown-constraints-supporters f1 ... fk)
+
+  The macro, set-unknown-constraints-supporters, extends a table,
+  unknown-constraints-table.  As evaluation of the
+  partial-encapsulate concludes, the world is extended so that each
+  signature function has a 'constraint-lst property indicating that
+  its constraints are unknown, but with supporters (``ancestors'', as
+  discussed above) according to that table.  This macro call can thus
+  be inserted non-[local]ly within an encapsulate, anywhere after the
+  local function definitions, to make an encapsulate behave like a
+  partial-encapsulate.")
  (PARTITION-REST-AND-KEYWORD-ARGS (POINTERS)
                                   "See [system-utilities].")
  (PATHNAME
@@ -83764,8 +83982,8 @@ Subtopics
   Note that some rule classes are not handled by :pl.  In particular,
   if you want to see all :[clause-processor] rules, issue the command
   :print-clause-processor-rules, and for trusted clause-processors,
-  (table trusted-clause-processor-table); see [clause-processor] and
-  see [define-trusted-clause-processor].")
+  (table trusted-cl-proc-table); see [clause-processor] and see
+  [define-trusted-clause-processor].")
  (PL2
   (HISTORY)
   "Print rule(s) for the given form
@@ -84706,6 +84924,9 @@ Subtopics
 
   [Union-equal]
       See [union$].
+
+  [Unknown-constraints]
+      See [partial-encapsulate].
 
   [Untranslate-preprocess]
       See [user-defined-functions-table].
@@ -113994,6 +114215,8 @@ Subtopics
   than universal-theory.  The former includes only the [enable]d
   [rune]s as of the given [logical-name], which is probably what you
   want, while the latter includes [disable]d ones as well.")
+ (UNKNOWN-CONSTRAINTS (POINTERS)
+                      "See [partial-encapsulate].")
  (UNMEMOIZE
   (MEMOIZE PROGRAMMING HONS-AND-MEMOIZATION EVENTS)
   "Turn off memoization for the specified function

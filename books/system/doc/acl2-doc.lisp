@@ -19804,7 +19804,7 @@ subtree of X with T, without duplication.</p>
  @('encapsulate') form.  Thus, you will be able to undo this
  @('define-trusted-clause-processor') with @(':')@(tsee ubt)@(' L').  Also,
  because of the criteria for redundant encapsulate events (see @(see
- REDUNDANT-ENCAPSULATE)),the entire form is considered redundant (skipped) if
+ REDUNDANT-ENCAPSULATE)), the entire form is considered redundant (skipped) if
  it is identical to one already executed in the current ACL2 @(see world), with
  one exception: if @(':partial-theory') is @('nil') or omitted, and also
  @(':label nil') is supplied explicitly, then the event will not be redundant.
@@ -19820,10 +19820,14 @@ subtree of X with T, without duplication.</p>
  function.  Otherwise, @(tsee local) definitions of those missing supporters
  can render the use of this clause-processor unsound, as discussed in the paper
  referenced at the end of the @(see clause-processor) documentation topic.
- Moreover, ACL2 assumes for dependent clause-processors (discussed below) that
- every function symbol constrained by the ``promised encapsulate'' of that
- event is either among those @('supporters') or ancestral in one of them
- (i.e. a supporter of a supporter, a supporter of one of those, etc.).</p>
+ Below we discuss an additional reason that @('supporters') is critical for
+ soundness, in the case of dependent clause-processors.</p>
+
+ <p>(Remark.  There could have been two notions of supporters: one for
+ functions whose definitions support the correctness of the clause-processor
+ function, and, in the case of dependent clause-processors, one for supporters
+ of the ``promised encapsulate'' discussed below.  But for simplicity, a single
+ @('supporters') argument serves both purposes.)</p>
 
  <p><b>Dependent clause-processors and promised encapsulates</b>: The
  @(':partial-theory') argument</p>
@@ -19845,11 +19849,11 @@ subtree of X with T, without duplication.</p>
  ``promised'' @('encapsulate'), for example by exporting the full
  definition.</p>
 
- <p>If a trusted clause-processor is introduced with a @(':partial-theory')
- argument, we call it a ``dependent'' clause-processor, because its correctness
- is dependent on the constraints implicitly introduced by the
- @(':partial-theory') @('encapsulate') form.  The implicit constraints should
- logically imply the constraints actually introduced by the explicit
+ <p>If a trusted clause-processor is introduced with a non-@('nil')
+ @(':partial-theory') argument, we call it a ``dependent'' clause-processor,
+ because its correctness is dependent on the constraints implicitly introduced
+ by the @(':partial-theory') @('encapsulate') form.  The implicit constraints
+ should logically imply the constraints actually introduced by the explicit
  @('encapsulate'), but they should also be sufficient to justify every possible
  invocation of the clause-processor in a @(':clause-processor') hint.  The user
  of a @('define-trusted-clause-processor') form is making a guarantee &mdash;
@@ -19869,6 +19873,13 @@ subtree of X with T, without duplication.</p>
  situation as attempting to associate more than one @('encapsulate') with the
  functions introduced in the inner @('encapsulate').</p>
 
+ <p>Moreover, soundness depends on inclusion of enough function symbols in the
+ @('supporters') argument, as follows.  Let @('S') be the set of specified
+ @('supporters') augmented by the set of function symbols either introduced by,
+ or in a property exported by, the @(':partial-theory') argument, which we call
+ the ``promised encapsulate''.  Then every function symbol constrained by the
+ promised encapsulate is in @('S').</p>
+
  <p>The @(':partial-theory') event will (in essence) be executed as part of the
  evaluation of the @('define-trusted-clause-processor') form.  Again, a
  critical obligation rests on the user who provides a @(':partial-theory'):
@@ -19886,16 +19897,18 @@ subtree of X with T, without duplication.</p>
  <p><b>A remark on the underlying implementation</b></p>
 
  <p>You can see all of the current trusted clause-processors by issuing the
- command @('(table trusted-clause-processor-table)').  Those that are dependent
- clause-processors will be associated in the resulting association list with a
- pair whose @('car') is the list of supporters and whose @('cdr') is @('t'),
- i.e., with @('(supporters . t)'); the others will be associated just with
- @('(supporters)').</p>
+ command @('(table trusted-cl-proc-table)').  The resulting alist associates
+ each trusted clause-processor with its supporters.</p>
 
- <p>Thus, @('define-trusted-clause-processor') is actually a macro that
- generates (among other things) a @('table') event for a table named
- @('trusted-clause-processor-table'); see @(see table).  You are invited to use
- @(':')@(tsee trans1) to see expansions of calls of this macro.</p>
+ <p>Note that @('define-trusted-clause-processor') is actually a macro that
+ generates (among other things) a @('table') event for extending
+ @('trusted-cl-proc-table').  You are invited to use @(':')@(tsee trans1) to
+ see expansions of calls of this macro.  In particular, you can see that the
+ @(':partial-theory') argument results in an @('encapsulate') event that
+ includes a call of the form @('(set-unknown-constraints-supporters f1
+ ... fk)'), which in effect makes that call of @('encapsulate') into a call of
+ @('partial-encapsulate') with supporters @('(f1 ... fk)').  See @(see
+ partial-encapsulate).</p>
 
  <p><b>A technique for using raw Lisp to define a trusted
  clause-processor</b></p>
@@ -25028,7 +25041,7 @@ ld) and @(tsee include-book)"
 
  <p>where each @(tsee signature) is a well-formed signature, each
  @('signature') describes a different function symbol, and each @('evi') is an
- embedded event form (See @(see embedded-event-form)).  Also see @(see
+ embedded event form (see @(see embedded-event-form)).  Also see @(see
  signature), in particular for a discussion of how a signature can assign a
  @(see guard) to a function symbol.  There must be at least one @('evi').  The
  @('evi') inside @(tsee local) special forms are called ``local'' @(see events)
@@ -25135,6 +25148,12 @@ ld) and @(tsee include-book)"
  itself).  Actually, between @('previous') and @('thm1') certain extensions
  were made to the @(see world) by the superior @('encapsulate'), to permit
  @('an-element') to be used as a function symbol in @('thm1').</p>
+
+ <p>Remark on implicit @(see constraint)s (unknown-constraints).  See @(see
+ partial-encapsulate) for a related utility that allows some of the constraints
+ to be unspecified.  This is an advanced capability that is useful when one
+ installs special-purpose code, possibly in raw Lisp, using a trust tag (see
+ @(see defttag)).</p>
 
  <p>Remark for ACL2(r) (see @(see real)).  For ACL2(r), @(tsee encapsulate) can
  be used to introduce classical and non-classical functions, as determined by
@@ -37904,7 +37923,7 @@ current fast alists."
  <p>You can see all current @(':clause-processor') rules by issuing the command
  @('(print-clause-processor-rules)'), and you can see the names of all trusted
  clause-processors by issuing the command @('(table
- trusted-clause-processor-table)').</p></dd>
+ trusted-cl-proc-table)').</p></dd>
 
  <dt>@(':do-not')</dt><p/>
 
@@ -81176,6 +81195,15 @@ it."
  form (see @(see term)).  We plan to document this new feature in detail
  later.</p>
 
+ <p>A new macro, @(tsee partial-encapsulate), allows one to introduce
+ constrained functions without specifying all of the @(see constraint)s.  This
+ functionality was already available using a trust tag, by way of a rather
+ convoluted application of @(tsee define-trusted-clause-processor); however,
+ @(tsee partial-encapsulate) may be used without a trust tag.  See @(see
+ partial-encapsulate), which in particular points to an example of typical
+ usage, in @('books/demos/partial-encapsulate.lisp').  Thanks to Sol Swords for
+ requesting such a capability.</p>
+
  <h3>Heuristic and Efficiency Improvements</h3>
 
  <h3>Bug Fixes</h3>
@@ -83715,6 +83743,184 @@ arithmetic) for libraries of @(see books) for arithmetic reasoning.</p>")
  <p>See @(see parallelism-at-the-top-level) for restrictions on evaluating
  parallelism primitives from within the ACL2 top-level loop.</p>")
 
+(defxdoc partial-encapsulate
+  :parents (events encapsulate)
+  :short "Introduce functions with some constraints unspecified"
+  :long "<p>See @(see encapsulate) for relevant background.
+ @('Partial-encapsulate') is a variant of @('encapsulate') for which some of
+ the constraints are implicit.  This is an advanced capability that is useful
+ when one installs special-purpose code, possibly in raw Lisp, using a trust
+ tag (see @(see defttag)).</p>
+
+ <h3>Introduction</h3>
+
+ <p>The syntax for @('partial-encapsulate') is the same as the syntax of
+ @('encapsulate'), except for the addition of an argument, @('supporters'),
+ which is described below.</p>
+
+ @({
+  General Form:
+  (partial-encapsulate (signature ... signature)
+    (f1 ... fk) ; supporters
+    ev1
+    ...
+    evn)
+ })
+
+ <p>where, as for @('encapsulate'): each @('signature') is a well-formed @(see
+ signature), each describing a different function symbol, and each @('evi') is
+ an embedded event form (see @(see embedded-event-form)).  The additional
+ argument (shown above) is a true-list of function symbols, the
+ <i>supporters</i>: it is an error if any such symbol, @('fi'), is not a known
+ function symbol at the time the @('partial-encapsulate') call is evaluated,
+ the exception being that @('fi') may be introduced in one of the signatures.
+ A @('partial-encapsulate') form must satisfy the following three requirements
+ in addition to those of the corresponding @('encapsulate') form: it must have
+ at least one signature, it must not occur within any other @('encapsulate') or
+ @('partial-encapsulate') form that has at least one signature, and every
+ function symbol that it introduces must be specified in one of the
+ signatures.</p>
+
+ <p>A call of @('partial-encapsulate') introduces its signature functions
+ together with its exported theorems, exactly as though it had been the call of
+ @('encapsulate') with the same signatures and events, however with one
+ difference: the @('partial-encapsulate') logically incorporates additional
+ constraints that are not mentioned.  This is discussed further below, but for
+ now let us note that because of this difference, a successful evaluation of a
+ @('partial-encapsulate') form results in a special ``unknown-constraints''
+ designation for the functions introduced by the signatures.  Any attempt to
+ access the constraints for those functions will thus fail.  Consider the
+ following example, which introduces @('f') as a constrained function symbol
+ that is constrained not only by the property that @('f') returns a boolean,
+ but also by additional, unspecified (implicit) constraints.</p>
+
+ @({
+ (partial-encapsulate
+  ((f (x) t))
+  nil
+  (local (defun f (x) (declare (xargs :guard t)) (consp x)))
+  (defthm booleanp-f
+    (booleanp (f x))
+    :rule-classes :type-prescription))
+
+ (defthm symbolp-f
+   (symbolp (f y)))
+
+ (encapsulate
+  ((g (x) t))
+  (local (defun g (x) (consp x)))
+  (defthm booleanp-g (booleanp (g x))))
+
+ })
+
+ <p>Then the following fails, even though it would succeed if we replace
+ @('partial-encapsulate') by @('encapsulate') above.  The reason is that the
+ partial-encapsulate form allows for constraints beyond just the property that
+ @('f') is boolean.  Imagine that special code had been inserted (using a trust
+ tag) for reasoning about @('f') when proving a theorem like @('symbolp-f')
+ that we were now trying to functionally instantiate.</p>
+
+ @({
+ ; Functional instantiation FAILS because of unknown-constraints on f
+ (defthm symbolp-g
+   (symbolp (g y))
+   :hints ((\"Goal\" :by (:functional-instance symbolp-f (f g)))))
+ })
+
+ <h3>Supporters and corresponding encapsulate</h3>
+
+ <p>A @('partial-encapsulate') represents any @('encapsulate') form that
+ introduces the same function symbols, has the same signatures, and extends the
+ constraints introduced such that every function symbol occurring in at least
+ one of the additional constraints must either be mentioned in one of the
+ @('evi') or be among the list of supporters, @('(f1 ... fk)').  We may refer
+ to such an @('encapsulate') form as a ``corresponding encapsulate''.  The user
+ of @('partial-encapsulate') should keep in mind such a set of additional
+ constraints.  The supporters should thus include all function symbols in the
+ theorems exported from the intended corresponding encapsulate, except that
+ signature functions are always included among the supporters whether specified
+ or not, and hence their inclusion is optional.</p>
+
+ <p>The list of supporters is used for generating proof obligations for a
+ @(':functional-instance') @(see lemma-instance).  Specifically, the supporters
+ serve as the ``ancestors'' of the partial encapsulate's signature functions,
+ in the constraint-generation algorithm described in the documentation for
+ @(see constraint).  Thus, if supporters are missing that occur in the intended
+ corresponding encapsulate, then functional instantiation may be unsound
+ because some proof obligations fail to be generated.  Note that in the typical
+ application described next, where the implicit constraints all specify
+ evaluation results for calls of signature functions as discussed below, the
+ specified list of supporters can simply be @('nil').</p>
+
+ <h3>Applications</h3>
+
+ <p>A trust tag (see @(see defttag)) is not needed for evaluation of a
+ partial-encapsulate form.  However, for a typical application of
+ partial-encapsulate &mdash; redefinition of a constrained function in raw Lisp
+ &mdash; a trust tag is of course necessary (see @(see defttag)).  In such a
+ case, the corresponding encapsulate may be viewed as extending the original
+ partial-encapsulate with all theorems of the form @('(equal (f a1 ... ak)
+ val)'), ranging over all computations @('(f a1 ... ak)') ever to be
+ evaluated (a finite but potentially huge set) where @('val') is the value
+ returned for @('(f a1 ... ak)').  It is the responsibility of the creator of
+ such an application to ensure that all evaluations satisfy the original
+ constraints of the partial-encapsulate.</p>
+
+ <p>Note that in this sort of application &mdash; that is, where the implicit
+ constraints all arise from function evaluations &mdash; the supporters
+ argument may soundly be @('nil'), since only the signature functions are
+ involved in the implicit constraints (and those functions are automatically
+ included among the supporters, even when not specified by the user).</p>
+
+ <p>For an example of such an application, including explanatory comments, see
+ @(see community-book) @('books/demos/partial-encapsulate.lisp').</p>
+
+ <p>Partial-encapsulates are, in essence, also used in the implementation of
+ dependent clause-processors, where the list of supporters might well be
+ non-@('nil').  See @(see define-trusted-clause-processor).</p>
+
+ <h3>Implementation</h3>
+
+ <p>This section is provided as a reference for those interested, but can
+ probably be safely skipped by most readers.</p>
+
+ <p>Consider the following example.</p>
+
+ @({
+ ACL2 !>:trans1 (partial-encapsulate
+                 ((f0 (x) t))
+                 (g0)
+                 (local (defun f0 (x) x))
+                 (defthm f0-prop
+                   (implies (integerp x)
+                            (integerp (f0 x)))))
+  (ENCAPSULATE ((F0 (X) T))
+               (LOCAL (DEFUN F0 (X) X))
+               (DEFTHM F0-PROP
+                       (IMPLIES (INTEGERP X)
+                                (INTEGERP (F0 X))))
+               (SET-UNKNOWN-CONSTRAINTS-SUPPORTERS G0))
+ ACL2 !>
+ })
+
+ <p>This example illustrates that a @('partial-encapsulate') call expands to a
+ call of @('encapsulate') obtained by removing the supporters argument, but
+ with the following extra event inserted after given list of events, where
+ @('(f1 ... fk)') is the specified list of supporters.</p>
+
+ @({
+ (set-unknown-constraints-supporters f1 ... fk)
+ })
+
+ <p>The macro, @('set-unknown-constraints-supporters'), extends a table,
+ @('unknown-constraints-table').  As evaluation of the partial-encapsulate
+ concludes, the world is extended so that each signature function has a
+ @(''constraint-lst') property indicating that its constraints are unknown, but
+ with supporters (``ancestors'', as discussed above) according to that table.
+ This macro call can thus be inserted non-@(see local)ly within an encapsulate,
+ anywhere after the local function definitions, to make an encapsulate behave
+ like a partial-encapsulate.</p>")
+
 (defxdoc pathname
   :parents (books-reference)
   :short "Introduction to filename conventions in ACL2"
@@ -84364,8 +84570,8 @@ arithmetic) for libraries of @(see books) for arithmetic reasoning.</p>")
  <p>Note that some rule classes are not handled by @(':pl').  In particular, if
  you want to see all @(':')@(tsee clause-processor) rules, issue the command
  @(':print-clause-processor-rules'), and for trusted clause-processors,
- @('(table trusted-clause-processor-table)'); see @(see clause-processor) and
- see @(see define-trusted-clause-processor).</p>")
+ @('(table trusted-cl-proc-table)'); see @(see clause-processor) and see @(see
+ define-trusted-clause-processor).</p>")
 
 (defxdoc pl2
   :parents (history)
@@ -122678,6 +122884,7 @@ expand function call at the current subterm, without simplifying"
 (defpointer undoing undo)
 (defpointer union-eq union$)
 (defpointer union-equal union$)
+(defpointer unknown-constraints partial-encapsulate)
 (defpointer untranslate-preprocess user-defined-functions-table)
 (defpointer use hints t)
 (defpointer value system-utilities)
