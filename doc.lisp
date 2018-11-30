@@ -20331,8 +20331,9 @@ Subtopics
   single-threaded object.  These stobj primitives include a
   recognizer, a creator, and other ``exported'' functions.  In
   essence, defabsstobj establishes interface functions, or
-  ``exports'', on a new stobj that is a copy of an indicated
-  ``concrete'' stobj that already exists.
+  ``exports'', on a new stobj that is a copy of an indicated stobj,
+  either conventional (introduced by [defstobj]) or abstract
+  (introduced by defabsstobj) that already exists.
 
   We begin below with an introduction to abstract [stobj]s.  We then
   explain the [defabsstobj] event by way of an example.  We conclude
@@ -20450,14 +20451,18 @@ Subtopics
   The defabsstobj event offers an opportunity to address these issues.
   It introduces a new stobj, which we call an ``abstract stobj'',
   which is associated with a corresponding ``concrete stobj''
-  introduced by an earlier [defstobj] event.  The defabsstobj event
-  specifies a logical (:LOGIC) and an executable (:EXEC) definition
-  for each primitive operation, or ``stobj primitive'', involving
-  that stobj.  As is the case for [defstobj], the logical definition
-  is what ACL2 reasons about, and is appropriate to apply to an ACL2
-  object satisfying the logical definition of the recognizer function
-  for the stobj.  The executable definition is applied in raw Lisp to
-  a live stobj, which is an array object associated with the given
+  introduced by an earlier [defstobj] or defabsstobj event.  (Thus,
+  note that the term, ``concrete'', refers to the status of being the
+  underlying stobj that supports an abstract stobj.  While a concrete
+  stobj has often been introduced with defstobj, it could also have
+  been introduced with defabsstobj.)  The defabsstobj event specifies
+  a logical (:LOGIC) and an executable (:EXEC) definition for each
+  primitive operation, or ``stobj primitive'', involving that stobj.
+  As is the case for [defstobj], the logical definition is what ACL2
+  reasons about, and is appropriate to apply to an ACL2 object
+  satisfying the logical definition of the recognizer function for
+  the stobj.  The executable definition is applied in raw Lisp to a
+  live stobj, which is an array object associated with the given
   stobj name.
 
   We can picture a sequence of updates to corresponding abstract and
@@ -20503,16 +20508,21 @@ Subtopics
   books/misc/defabsstobj-example-1.lisp and
   books/misc/defabsstobj-example-2.lisp.  In this section we outline
   the first of these.  We suggest that after you finish this
-  [documentation] topic, you read through those two books.
+  [documentation] topic, you read through those two books.  There are
+  other books books/misc/defabsstobj-example-*.lisp that may be
+  helpful to read; in particaular,
+  books/misc/defabsstobj-example-5.lisp illustrates building an
+  abstract stobj on top of another abstract stobj (as its so-called
+  ``concrete stobj'', as described below).
 
   Here is the first of two closely related defabsstobj [events] from
   the book defabsstobj-example-1.lisp, but in expanded form.  We will
-  show the abbreviated form later, which omits most of data in the
-  form that is immediately below.  Thus most of the information shown
-  here is default information.  We believe that the comments below
-  explain most or all of what you need to know in order to start
-  using defabsstobj, and that you will learn the remainder when you
-  see error messages.  For example, we do not say in the comments
+  show the abbreviated form later, which omits most of the data in
+  the form that is immediately below.  Thus most of the information
+  shown here is default information.  We believe that the comments
+  below explain most or all of what you need to know in order to
+  start using defabsstobj, and that you will learn the remainder when
+  you see error messages.  For example, we do not say in the comments
   below that every :LOGIC and :EXEC function must be
   [guard]-verified, but that is indeed a requirement.
 
@@ -20791,17 +20801,15 @@ Subtopics
 
       St is a symbol, which names the new abstract stobj.
 
-      Concrete is the name of an existing stobj that is not an abstract
-      stobj, i.e., was introduced with [defstobj] (not
-      [defabsstobj]).
-
-      Recognizer is a function spec (for the recognizer function).  The
-      valid keywords are :LOGIC and :EXEC.  The default for
-      recognizer is obtained by adding the suffix \"P\" to name.  The
-      default value for :LOGIC is formed by adding the suffix \"$AP\"
-      to recognizer; for :EXEC, by adding the suffix \"$CP\".  The
-      :EXEC function must be the recognizer for the specified
-      :CONCRETE stobj.
+      Concrete is the name of an existing stobj, which may have been
+      introduced either with [defstobj] or with defabsstobj).</p>
+      <p>@('Recognizer is a function spec (for the recognizer
+      function).  The valid keywords are :LOGIC and :EXEC.  The
+      default for recognizer is obtained by adding the suffix \"P\" to
+      name.  The default value for :LOGIC is formed by adding the
+      suffix \"$AP\" to recognizer; for :EXEC, by adding the suffix
+      \"$CP\".  The :EXEC function must be the recognizer for the
+      specified :CONCRETE stobj.
 
       Creator is a function spec (for the creator function).  The valid
       keywords are :LOGIC and :EXEC.  The default for creator is
@@ -20849,9 +20857,6 @@ Subtopics
       adding the suffix \"$A\" \"$C\", \"{CORRESPONDENCE}\", \"{GUARD-THM}\",
       or \"{PRESERVED}\".  For :PROTECT, the default is nil unless the
       defabsstobj event specifies :PROTECT-DEFAULT t.
-
-      Doc, if non-nil, is a string that can provide documentation but is
-      essentially ignored by ACL2.
 
   Not shown is the keyword, :MISSING; the effect of :missing t is to
   turn the call of defabsstobj into a corresponding call of
@@ -20925,11 +20930,12 @@ Subtopics
       concrete stobj non-atomically.  In that case, you can eliminate
       the error by providing :PROTECT t in the function spec, or by
       providing defabsstobj keyword argument :PROTECT-DEFAULT t at
-      the top level.  The above explanation is probably all you need
-      to know about :PROTECT, but just below is a more complete
-      explanation for those who desire it.  Further information is
-      also available if you need it; see [set-absstobj-debug], and
-      see the example uses of these keywords in community book
+      the top level, in order to restore the required atomicity.  The
+      above explanation is probably all you need to know about
+      :PROTECT, but just below is a more complete explanation for
+      those who desire it.  Further information is also available if
+      you need it; see [set-absstobj-debug], and see the example uses
+      of these keywords in community book
       books/misc/defabsstobj-example-2.lisp.
 
   For those who are interested, here is a more detailed discussion of
@@ -20961,8 +20967,8 @@ Subtopics
   Also unlike [defstobj], there is no :inline or :non-memoizable
   argument; :inline is essentially t, in the sense that stobj
   primitives are macros in raw Lisp; and the :non-memoizable argument
-  is derived implicitly from the value of that argument (nil by
-  default) for the corresponding concrete stobj.
+  is derived implicitly, to agree with non-memoizability of the
+  corresponding concrete stobj.
 
   Those who use [hons-enabled] features, including function memoization
   (see [memoize]), may be aware that the memo table for a function is
@@ -20976,8 +20982,7 @@ Subtopics
 Subtopics
 
   [Set-absstobj-debug]
-      Obtain debugging information upon atomicity violation for an
-      abstract stobj")
+      Get more information when atomic update fails for an abstract stobj")
  (DEFABSSTOBJ-MISSING-EVENTS
   (EVENTS)
   "Obtain the [events] needed to admit a [defabsstobj] event
@@ -79718,6 +79723,10 @@ Changes to Existing Features
   Instead, it simply avoids generating (needless) conjuncts for those
   primitives.
 
+  It is no longer illegal to supply an abstract stobj as the so-called
+  ``concrete stobj'' in a [defabsstobj] event.  Thanks to Sol Swords
+  for initiating a discussion leading to this enhancement.
+
 
 New Features
 
@@ -96482,8 +96491,7 @@ Subtopics
   related to timing and memory usage as the file is being written.")
  (SET-ABSSTOBJ-DEBUG
   (DEFABSSTOBJ)
-  "Obtain debugging information upon atomicity violation for an abstract
-  stobj
+  "Get more information when atomic update fails for an abstract stobj
 
   This [documentation] topic assumes familiarity with abstract stobjs.
   See [defabsstobj].
