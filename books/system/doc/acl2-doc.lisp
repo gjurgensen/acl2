@@ -17407,8 +17407,9 @@ subtree of X with T, without duplication.</p>
  for ``stobj primitives'' for a corresponding single-threaded object.  These
  stobj primitives include a recognizer, a creator, and other ``exported''
  functions.  In essence, @('defabsstobj') establishes interface functions, or
- ``exports'', on a new stobj that is a copy of an indicated ``concrete'' stobj
- that already exists.</p>
+ ``exports'', on a new stobj that is a copy of an indicated stobj, either
+ <i>conventional</i> (introduced by @(tsee defstobj)) or abstract (introduced
+ by @('defabsstobj')) that already exists.</p>
 
  <p>We begin below with an introduction to abstract @(see stobj)s.  We then
  explain the @(tsee defabsstobj) event by way of an example.  We conclude by
@@ -17529,14 +17530,17 @@ subtree of X with T, without duplication.</p>
  <p>The @('defabsstobj') event offers an opportunity to address these issues.
  It introduces a new stobj, which we call an ``abstract stobj'', which is
  associated with a corresponding ``concrete stobj'' introduced by an earlier
- @(tsee defstobj) event.  The @('defabsstobj') event specifies a logical
- (@(':LOGIC')) and an executable (@(':EXEC')) definition for each primitive
- operation, or ``stobj primitive'', involving that stobj.  As is the case for
- @(tsee defstobj), the logical definition is what ACL2 reasons about, and is
- appropriate to apply to an ACL2 object satisfying the logical definition of
- the recognizer function for the stobj.  The executable definition is applied
- in raw Lisp to a live stobj, which is an array object associated with the
- given stobj name.</p>
+ @(tsee defstobj) or @('defabsstobj') event.  (Thus, note that the term,
+ ``concrete'', refers to the status of being the underlying stobj that supports
+ an abstract stobj.  While a concrete stobj has often been introduced with
+ @('defstobj'), it could also have been introduced with @('defabsstobj').)  The
+ @('defabsstobj') event specifies a logical (@(':LOGIC')) and an
+ executable (@(':EXEC')) definition for each primitive operation, or ``stobj
+ primitive'', involving that stobj.  As is the case for @(tsee defstobj), the
+ logical definition is what ACL2 reasons about, and is appropriate to apply to
+ an ACL2 object satisfying the logical definition of the recognizer function
+ for the stobj.  The executable definition is applied in raw Lisp to a live
+ stobj, which is an array object associated with the given stobj name.</p>
 
  <p>We can picture a sequence of updates to corresponding abstract and concrete
  stobjs as follows.  Initially in this picture, @('st$a0') and @('st$c0') are a
@@ -17581,12 +17585,16 @@ subtree of X with T, without duplication.</p>
  stobjs, in two community books: @('books/misc/defabsstobj-example-1.lisp') and
  @('books/misc/defabsstobj-example-2.lisp').  In this section we outline the
  first of these.  We suggest that after you finish this @(see documentation)
- topic, you read through those two books.</p>
+ topic, you read through those two books.  There are other books
+ @('books/misc/defabsstobj-example-*.lisp') that may be helpful to read; in
+ particaular, @('books/misc/defabsstobj-example-5.lisp') illustrates building
+ an abstract stobj on top of another abstract stobj (as its so-called
+ ``concrete stobj'', as described below).</p>
 
  <p>Here is the first of two closely related @('defabsstobj') @(see events)
  from the book @('defabsstobj-example-1.lisp'), but in expanded form.  We will
- show the abbreviated form later, which omits most of data in the form that is
- immediately below.  Thus most of the information shown here is default
+ show the abbreviated form later, which omits most of the data in the form that
+ is immediately below.  Thus most of the information shown here is default
  information.  We believe that the comments below explain most or all of what
  you need to know in order to start using @('defabsstobj'), and that you will
  learn the remainder when you see error messages.  For example, we do not say
@@ -17886,11 +17894,12 @@ subtree of X with T, without duplication.</p>
 
  <p>We are ready to describe the arguments of @('defabsstobj').</p>
 
- <blockquote><p>@('St') is a symbol, which names the new abstract stobj.</p>
+ <blockquote>
 
- <p>@('Concrete') is the name of an existing stobj that is not an abstract
- stobj, i.e., was introduced with @(tsee defstobj) (not @(tsee
- defabsstobj)).</p>
+ <p>@('St') is a symbol, which names the new abstract stobj.</p>
+
+ <p>@('Concrete') is the name of an existing stobj, which may have been
+ introduced either with @(tsee defstobj) or with @('defabsstobj).</p>
 
  <p>@('Recognizer') is a function spec (for the recognizer function).  The
  valid keywords are @(':LOGIC') and @(':EXEC').  The default for
@@ -17945,8 +17954,7 @@ subtree of X with T, without duplication.</p>
  @('\"{PRESERVED}\"').  For @(':PROTECT'), the default is @('nil') unless the
  @('defabsstobj') event specifies @(':PROTECT-DEFAULT t').</p>
 
- <p>@('Doc'), if non-@('nil'), is a string that can provide documentation but
- is essentially ignored by ACL2.</p></blockquote>
+ </blockquote>
 
  <p>Not shown is the keyword, @(':MISSING'); the effect of @(':missing t') is
  to turn the call of @('defabsstobj') into a corresponding call of @(tsee
@@ -18017,12 +18025,12 @@ subtree of X with T, without duplication.</p>
  get an error message about it, pertaining to modifying the concrete stobj
  non-atomically.  In that case, you can eliminate the error by providing
  @(':PROTECT t') in the function spec, or by providing @('defabsstobj') keyword
- argument @(':PROTECT-DEFAULT t') at the top level.  The above explanation is
- probably all you need to know about @(':PROTECT'), but just below is a more
- complete explanation for those who desire it.  Further information is also
- available if you need it; see @(see set-absstobj-debug), and see the example
- uses of these keywords in community book
- @('books/misc/defabsstobj-example-2.lisp').</p></blockquote>
+ argument @(':PROTECT-DEFAULT t') at the top level, in order to restore the
+ required atomicity.  The above explanation is probably all you need to know
+ about @(':PROTECT'), but just below is a more complete explanation for those
+ who desire it.  Further information is also available if you need it; see
+ @(see set-absstobj-debug), and see the example uses of these keywords in
+ community book @('books/misc/defabsstobj-example-2.lisp').</p></blockquote>
 
  <p>For those who are interested, here is a more detailed discussion of
  @(':PROTECT') and @(':PROTECT-DEFAULT'), as promised above.  It applies to any
@@ -18051,9 +18059,8 @@ subtree of X with T, without duplication.</p>
  scheme described above provides a flexible way to assign names.  Also unlike
  @(tsee defstobj), there is no @(':inline') or @(':non-memoizable') argument;
  @(':inline') is essentially t, in the sense that stobj primitives are macros
- in raw Lisp; and the @(':non-memoizable') argument is derived implicitly from
- the value of that argument (@('nil') by default) for the corresponding
- concrete stobj.</p>
+ in raw Lisp; and the @(':non-memoizable') argument is derived implicitly, to
+ agree with non-memoizability of the corresponding concrete stobj.</p>
 
  <p>Those who use @(see hons-enabled) features, including function
  memoization (see @(see memoize)), may be aware that the memo table for a
@@ -81186,6 +81193,10 @@ it."
  primitives that are built into the definition of @(tsee apply$).  Instead, it
  simply avoids generating (needless) conjuncts for those primitives.</p>
 
+ <p>It is no longer illegal to supply an abstract stobj as the so-called
+ ``concrete stobj'' in a @(tsee defabsstobj) event.  Thanks to Sol Swords for
+ initiating a discussion leading to this enhancement.</p>
+
  <h3>New Features</h3>
 
  <p>A new construct, @('lambda$'), may be used in place of @('lambda') to be
@@ -95171,7 +95182,7 @@ arithmetic) for libraries of @(see books) for arithmetic reasoning.</p>")
 
 (defxdoc set-absstobj-debug
   :parents (defabsstobj)
-  :short "Obtain debugging information upon atomicity violation for an abstract stobj"
+  :short "Get more information when atomic update fails for an abstract stobj"
   :long "<p>This @(see documentation) topic assumes familiarity with abstract
  stobjs.  See @(see defabsstobj).</p>
 
