@@ -81197,6 +81197,15 @@ it."
  ``concrete stobj'' in a @(tsee defabsstobj) event.  Thanks to Sol Swords for
  initiating a discussion leading to this enhancement.</p>
 
+ <p>Calls of the function @('synp') were formerly required to result from
+ macroexpansion of @(tsee syntaxp) or @(tsee bind-free) calls, or at least
+ nearly so.  That restriction has been lifted, although the restrictions on
+ calls of @('synp'), @('syntaxp'), and @('bind-free') remain for hypotheses of
+ rules of class @(':')@(tsee rewrite), @(':')@(tsee definition), and
+ @(':')@(tsee linear), or resulting from evaluation of hypotheses of
+ @(':')@(tsee meta) rules.  Thanks to Sol Swords for requesting this change, so
+ that @(tsee defevaluator) forms can include @('synp').</p>
+
  <h3>New Features</h3>
 
  <p>A new construct, @('lambda$'), may be used in place of @('lambda') to be

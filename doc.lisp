@@ -79727,6 +79727,15 @@ Changes to Existing Features
   ``concrete stobj'' in a [defabsstobj] event.  Thanks to Sol Swords
   for initiating a discussion leading to this enhancement.
 
+  Calls of the function synp were formerly required to result from
+  macroexpansion of [syntaxp] or [bind-free] calls, or at least
+  nearly so.  That restriction has been lifted, although the
+  restrictions on calls of synp, syntaxp, and bind-free remain for
+  hypotheses of rules of class :[rewrite], :[definition], and
+  :[linear], or resulting from evaluation of hypotheses of :[meta]
+  rules.  Thanks to Sol Swords for requesting this change, so that
+  [defevaluator] forms can include synp.
+
 
 New Features
 
