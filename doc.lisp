@@ -4701,6 +4701,7 @@ Silent loading of ACL2 customization files
     <Return>      acl2-doc-go!
     g             acl2-doc-go
     h             acl2-doc-help
+    ?             acl2-doc-summary
     i             acl2-doc-index
     ,             acl2-doc-index-next
     <             acl2-doc-index-previous
@@ -4739,6 +4740,10 @@ Silent loading of ACL2 customization files
 
     h             acl2-doc-help
        Go to the ACL2-DOC topic to read about how to use the ACL2-Doc browser.
+
+    ?             acl2-doc-summary
+       Go to the ACL2-Doc-summary topic for one-line summaries of ACL2-Doc
+       browser commands.
 
     i             acl2-doc-index
        Go to the specified topic or else one containing it as a substring;
@@ -5091,6 +5096,66 @@ Silent loading of ACL2 customization files
 
               cd books
               make doc/top.cert USE_QUICKLISP=1 ACL2=acl2")
+ (ACL2-DOC-SUMMARY
+  (DOCUMENTATION)
+  "Summary of [ACL2-doc] commands
+
+  See [ACL2-doc] for information about the custom Emacs browser for
+  viewing ACL2 [documentation].  In the present topic we list the
+  commands with extremely abbreviation documentation: only a single
+  line for each.  For even briefer summaries, you can use the
+  standard Emacs command, Control-h m.
+
+    <Return>      acl2-doc-go!
+       Go to the topic occurring at the cursor position.
+    g             acl2-doc-go
+       Go to the specified topic; performs completion.
+    h             acl2-doc-help
+       Go to the ACL2-Doc topic to read about how to use the ACL2-Doc browser.
+    ?             acl2-doc-summary
+       Go to the ACL2-Doc-summary topic for one-line summaries of commands.
+    i             acl2-doc-index
+       Go to the specified topic or else one containing it as a substring.
+    ,             acl2-doc-index-next
+       Continue to the next topic for the most recent i command.
+    <             acl2-doc-index-previous
+       Return to the preceding topic for the most recent i command.
+    l             acl2-doc-last
+       Go to the last topic visited.
+    n             acl2-doc-search-next
+       Find the next occurrence for the most recent search.
+    p             acl2-doc-search-previous
+       Find the previous occurrence for the most recent search.
+    q             acl2-doc-quit
+       Quit the ACL2-Doc browser.
+    r             acl2-doc-return
+       Return to the last topic visited, popping the stack of such topics.
+    s             acl2-doc-search
+       Search for the input string (with prefix arg: under a given topic).
+    S             acl2-doc-re-search
+       Regular-expression search (with prefix arg: under a given topic).
+    t             acl2-doc-top
+       Go to the top topic.
+    u             acl2-doc-up
+       Go to the parent of the current topic.
+    w             acl2-doc-where
+       Display the topic and manual name in the minibuffer.
+    SPC           scroll-up
+       Scroll up (same as Control-v)
+    TAB           acl2-doc-tab
+       Visit the next link on the current page.
+    Control-TAB or <backtab> (which often is Shift-TAB): acl2-doc-tab-back
+       Visit the previous link on the current page.
+    D
+       Download the manual from the web; then restart ACL2-Doc.
+    H             acl2-doc-history
+       Visit the History buffer, with names of all visited topics in order.
+    I             acl2-doc-initialize
+       Restart ACL2-Doc.  With a prefix argument, choose which manual.
+    /             acl2-doc-definition
+       Find an ACL2 definition (in analogy to built-in Emacs command meta-.).
+    W             acl2-doc-where-definition
+       Find an ACL2 definition, with default from current page's topic.")
  (ACL2-HELP
   (ABOUT-ACL2)
   "The acl2-help mailing list
@@ -26822,6 +26887,9 @@ Subtopics
 
   [ACL2-doc]
       A custom Emacs browser for reading ACL2 [documentation]
+
+  [ACL2-doc-summary]
+      Summary of [ACL2-doc] commands
 
   [Args]
       args, [guard], type, [constraint], etc., of a function symbol
@@ -79806,6 +79874,10 @@ EMACS Support
   Fixed Emacs support for the the [proof-builder] dive command (see
   [ACL2-pc::dive]), control-t control-d, to eliminate trailing zeros,
   since those are (and have been) disallowed by that command.
+
+  A new [ACL2-doc] command is the question-mark character (?), which
+  goes to a page with one-line command summaries.  Thanks to Warren
+  Hunt for a request leading to this enhancement.
 
 
 Experimental Versions")
