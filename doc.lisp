@@ -15035,9 +15035,10 @@ Subtopics
   B.port is ignored when including B if B is certified.
 
   If you use [guard]s, please note certify-book is executed as though
-  (set-guard-checking nil) has been evaluated; see
-  [set-guard-checking].  If you want guards checked, consider using
-  ld instead, or in addition; see [ld].
+  (set-guard-checking t) has been evaluated; see
+  [set-guard-checking].  If you want to run with different
+  guard-checking, consider using ld instead, or in addition; see
+  [ld].
 
   For a general discussion of books, see [books].  Certify-book is akin
   to what we have historically called a ``proveall'': all the forms
@@ -43718,9 +43719,10 @@ Subtopics
   include-book places a burden on you; see [certificate].
 
   If you use [guard]s, please note include-book is executed as though
-  (set-guard-checking nil) has been evaluated; see
-  [set-guard-checking].  If you want guards checked, please see [ld]
-  and/or see [rebuild].
+  (set-guard-checking t) has been evaluated; see
+  [set-guard-checking].  If you want to run with different
+  guard-checking, consider using ld instead, or in addition; see
+  [ld].
 
   The value of :load-compiled-file controls whether a compiled file for
   the given file is loaded by include-book.  Note that this keyword
@@ -44049,7 +44051,56 @@ Subtopics
 
   The name of the rule created is (:induction name).  When that rune is
   disabled the heuristic link between pat-term and scheme-term is
-  broken.")
+  broken.
+
+
+Subtopics
+
+  [Induction-depth-limit]
+      The maximum number permitted of nested inductions
+
+  [Set-induction-depth-limit!]
+      Set the induction-depth-limit non-[local]ly")
+ (INDUCTION-DEPTH-LIMIT
+  (INDUCTION)
+  "The maximum number permitted of nested inductions
+
+  ACL2 may limit the number of levels of induction.  Consider for
+  example a subgoal with this [goal-spec]:
+
+    Subgoal *1.2.3.1.2.3.1.2.3/7'11'
+
+  This represents nine levels of induction.  By default, that is the
+  maximum permitted, since proofs rarely succeed with more than a few
+  levels of induction.  (Indeed, one is well served by relying on
+  only one level of induction, avoiding nested inductions in favor of
+  proving suitable [rewrite] rules.  See [the-method].)  Thus, if
+  ACL2 would otherwise attempt to push the subgoal indicated above
+  for later proof by induction, the overall proof would fail because
+  that would cause the maximum nesting depth of 9 to be exceeded.
+
+  To see the current limit:
+
+    (induction-depth-limit (w state))
+
+  This limit is always a natural number, with one exception: it can be
+  nil, which means that there is no limit on the nesting depth of
+  inductions.
+
+  Note that an explicit :induct hint (see [hints]) will cause an
+  induction will occur, regardless of the induction-depth-limit.  Of
+  course, if we have already reached the induction-depth-limit at the
+  point the :induct hint is applied, then any attempt to push a
+  subgoal for induction will fail (unless it too has an associated
+  :induct hint).
+
+  To change the limit, see [set-induction-depth-limit].
+
+
+Subtopics
+
+  [Set-induction-depth-limit]
+      Set the [induction-depth-limit]")
  (INFECTED-CONSTRAINTS
   (ENCAPSULATE)
   "[Defun]s affecting [constraint]s of [encapsulate]s
@@ -79804,6 +79855,10 @@ Changes to Existing Features
   rules.  Thanks to Sol Swords for requesting this change, so that
   [defevaluator] forms can include synp.
 
+  For calls of :[pso] and related utilities (:[pso!], :[psof], and
+  :[psog]), the Time reported in the summary is now the original
+  time, not time related to running :[pso].
+
 
 New Features
 
@@ -79823,6 +79878,10 @@ New Features
   in particular points to an example of typical usage, in
   books/demos/partial-encapsulate.lisp.  Thanks to Sol Swords for
   requesting such a capability.
+
+  There is now, by default, a limit of 9 on the nesting depth of
+  inductions; see [induction-depth-limit] and to modify this default,
+  see [set-induction-depth-limit].
 
 
 Heuristic and Efficiency Improvements
@@ -89812,6 +89871,9 @@ Subtopics
   single top-level form, then instead of using :pso, first evaluate
   (set-gag-mode nil).
 
+  The ``Time'' printed in the summary shows the original times for the
+  proof attempt, not the times for processing the :pso command.
+
   Also see [pso!], [psog], and [psof].")
  (PSO!
   (PROVER-OUTPUT)
@@ -98455,6 +98517,36 @@ Example
   recorded.  Moreover, its effect is to set the
   [ACL2-defaults-table], and hence its effect is [local] to the book
   or [encapsulate] form containing it; see [ACL2-defaults-table].")
+ (SET-INDUCTION-DEPTH-LIMIT
+  (INDUCTION-DEPTH-LIMIT)
+  "Set the [induction-depth-limit]
+
+    Examples:
+    (set-induction-depth-limit 3)
+    (set-induction-depth-limit nil)
+
+  Note: This is an event!  It does not print the usual event [summary]
+  but nevertheless changes the ACL2 logical [world] and is so
+  recorded.  It is [local] to the book or [encapsulate] form in which
+  it occurs; see [set-induction-depth-limit!] for a corresponding
+  non-[local] event.
+
+    General Form:
+    (set-induction-depth-limit x)
+
+  where x evaluates to a value that is a natural number or nil.  The
+  induction-depth-limit is set to that value; see
+  [induction-depth-limit].")
+ (SET-INDUCTION-DEPTH-LIMIT!
+  (INDUCTION)
+  "Set the induction-depth-limit non-[local]ly
+
+  Please see [set-induction-depth-limit], which is the same as
+  set-induction-depth-limit! except that the latter is not [local] to
+  the [encapsulate] or the book in which it occurs.  Probably
+  [set-induction-depth-limit] is to be preferred unless you have a
+  good reason for wanting to export the effect of this event outside
+  the enclosing [encapsulate] or book.")
  (SET-INHIBIT-OUTPUT-LST
   (PROVER-OUTPUT)
   "Control output

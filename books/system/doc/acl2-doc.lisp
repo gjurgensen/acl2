@@ -12486,9 +12486,9 @@ with any questions about building the community books.</p>")
  @('B.port') is ignored when including @('B') if @('B') is certified.</p>
 
  <p>If you use @(see guard)s, please note @('certify-book') is executed as
- though @('(set-guard-checking nil)') has been evaluated; see @(see
- set-guard-checking).  If you want guards checked, consider using @('ld')
- instead, or in addition; see @(see ld).</p>
+ though @('(set-guard-checking t)') has been evaluated; see @(see
+ set-guard-checking).  If you want to run with different guard-checking,
+ consider using @('ld') instead, or in addition; see @(see ld).</p>
 
  <p>For a general discussion of books, see @(see books).  @('Certify-book') is
  akin to what we have historically called a ``proveall'': all the forms in the
@@ -40351,9 +40351,9 @@ tables in the current Hons Space."
  a burden on you; see @(see certificate).</p>
 
  <p>If you use @(see guard)s, please note @('include-book') is executed as
- though @('(set-guard-checking nil)') has been evaluated; see @(see
- set-guard-checking).  If you want guards checked, please see @(see ld) and/or
- see @(see rebuild).</p>
+ though @('(set-guard-checking t)') has been evaluated; see @(see
+ set-guard-checking).  If you want to run with different guard-checking,
+ consider using @('ld') instead, or in addition; see @(see ld).</p>
 
  <p>The value of @(':load-compiled-file') controls whether a compiled file for
  the given @('file') is loaded by @('include-book').  Note that this keyword
@@ -40688,6 +40688,43 @@ tables in the current Hons Space."
  <p>The name of the rule created is @('(:induction name)').  When that rune is
  disabled the heuristic link between @('pat-term') and @('scheme-term') is
  broken.</p>")
+
+(defxdoc induction-depth-limit
+  :parents (induction)
+  :short "The maximum number permitted of nested inductions"
+  :long "<p>ACL2 may limit the number of levels of induction.  Consider for
+ example a subgoal with this @(see goal-spec):</p>
+
+ @({
+ Subgoal *1.2.3.1.2.3.1.2.3/7'11'
+ })
+
+ <p>This represents nine levels of induction.  By default, that is the maximum
+ permitted, since proofs rarely succeed with more than a few levels of
+ induction.  (Indeed, one is well served by relying on only one level of
+ induction, avoiding nested inductions in favor of proving suitable @(see
+ rewrite) rules.  See @(see the-method).)  Thus, if ACL2 would otherwise
+ attempt to push the subgoal indicated above for later proof by induction, the
+ overall proof would fail because that would cause the maximum nesting depth of
+ 9 to be exceeded.</p>
+
+ <p>To see the current limit:</p>
+
+ @({
+ (induction-depth-limit (w state))
+ })
+
+ <p>This limit is always a natural number, with one exception: it can be
+ @('nil'), which means that there is no limit on the nesting depth of
+ inductions.</p>
+
+ <p>Note that an explicit @(':induct') hint (see @(see hints)) will cause an
+ induction will occur, regardless of the induction-depth-limit.  Of course, if
+ we have already reached the induction-depth-limit at the point the
+ @(':induct') hint is applied, then any attempt to push a subgoal for induction
+ will fail (unless it too has an associated @(':induct') hint).</p>
+
+ <p>To change the limit, see @(see set-induction-depth-limit).</p>")
 
 (defxdoc infected-constraints
   :parents (encapsulate)
@@ -81223,6 +81260,8 @@ it."
 ;    which include this book and which also reason about fix-true-list may need
 ;    to locally enable true-list-fix in order to certify.
 
+; Extended the guard for print-timer and removed its skip-proofs.
+
   :parents (release-notes)
   :short "ACL2 Version  8.2 (xxx, 20xx) Notes"
   :long "<p>NOTE!  New users can ignore these release notes, because the @(see
@@ -81279,6 +81318,10 @@ it."
  @(':')@(tsee meta) rules.  Thanks to Sol Swords for requesting this change, so
  that @(tsee defevaluator) forms can include @('synp').</p>
 
+ <p>For calls of @(':')@(tsee pso) and related utilities (@(':')@(tsee pso!),
+ @(':')@(tsee psof), and @(':')@(tsee psog)), the Time reported in the summary
+ is now the original time, not time related to running @(':')@(tsee pso).</p>
+
  <h3>New Features</h3>
 
  <p>A new construct, @('lambda$'), may be used in place of @('lambda') to be
@@ -81296,6 +81339,10 @@ it."
  partial-encapsulate), which in particular points to an example of typical
  usage, in @('books/demos/partial-encapsulate.lisp').  Thanks to Sol Swords for
  requesting such a capability.</p>
+
+ <p>There is now, by default, a limit of 9 on the nesting depth of inductions;
+ see @(see induction-depth-limit) and to modify this default, see @(see
+ set-induction-depth-limit).</p>
 
  <h3>Heuristic and Efficiency Improvements</h3>
 
@@ -88899,6 +88946,9 @@ arithmetic) for libraries of @(see books) for arithmetic reasoning.</p>")
  made for the proposed theorem and one for each @(see corollary). If you want
  to see more than one proof log for a single top-level form, then instead of
  using @(':pso'), first evaluate @('(set-gag-mode nil)').</p>
+
+ <p>The ``Time'' printed in the summary shows the original times for the proof
+ attempt, not the times for processing the @(':pso') command.</p>
 
  <p>Also see @(see pso!), @(see psog), and @(see psof).</p>")
 
@@ -97239,6 +97289,40 @@ arithmetic) for libraries of @(see books) for arithmetic reasoning.</p>")
  Moreover, its effect is to set the @(tsee acl2-defaults-table), and hence its
  effect is @(tsee local) to the book or @(tsee encapsulate) form containing it;
  see @(see acl2-defaults-table).</p>")
+
+(defxdoc set-induction-depth-limit
+  :parents (induction-depth-limit)
+  :short "Set the @(see induction-depth-limit)"
+  :long "@({
+  Examples:
+  (set-induction-depth-limit 3)
+  (set-induction-depth-limit nil)
+ })
+
+ <p>Note: This is an event!  It does not print the usual event @(see summary)
+ but nevertheless changes the ACL2 logical @(see world) and is so recorded.  It
+ is @(tsee local) to the book or @(tsee encapsulate) form in which it occurs;
+ see @(see set-induction-depth-limit!) for a corresponding non-@(tsee local)
+ event.</p>
+
+ @({
+  General Form:
+  (set-induction-depth-limit x)
+ })
+
+ <p>where @('x') evaluates to a value that is a natural number or @('nil').
+ The induction-depth-limit is set to that value; see @(see
+ induction-depth-limit).</p>")
+
+(defxdoc set-induction-depth-limit!
+  :parents (induction)
+  :short "Set the induction-depth-limit non-@(tsee local)ly"
+  :long "<p>Please see @(see set-induction-depth-limit), which is the same as
+ @('set-induction-depth-limit!')  except that the latter is not @(tsee local)
+ to the @(tsee encapsulate) or the book in which it occurs.  Probably @(tsee
+ set-induction-depth-limit) is to be preferred unless you have a good reason
+ for wanting to export the effect of this event outside the enclosing @(tsee
+ encapsulate) or book.</p>")
 
 (defxdoc set-inhibit-output-lst
   :parents (prover-output)
