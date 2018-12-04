@@ -23287,15 +23287,26 @@ Subtopics
 
   This is an advanced feature that requires a trust tag.  For
   explanation, including an example, see [return-last].")
- (DEFN (DEFUN EVENTS)
-       "Definition with [guard] t
+ (DEFN
+  (DEFUN EVENTS)
+  "Definition with [guard] t
 
-  Defn is [defun] with [guard] t.")
+  Defn is [defun] with [guard] t.
+
+  defn expands to a [defun] with an added (declare (xargs :guard t)).
+  If an explicit guard is supplied to defn, it is conjoined to the
+  added t guard, according to [defun]'s treatment of multiple guard
+  declarations.")
  (DEFND
   (DEFUN EVENTS)
   "[disable]d definition with [guard] t
 
-  Defnd is [defund] with [guard] t.")
+  Defnd is [defund] with [guard] t.
+
+  defnd expands to a [defund] with an added (declare (xargs :guard t)).
+  If an explicit guard is supplied to defnd, it is conjoined to the
+  added t guard, according to [defun]'s treatment of multiple guard
+  declarations.")
  (DEFPKG
   (EVENTS PACKAGES PROGRAMMING)
   "Define a new symbol package
