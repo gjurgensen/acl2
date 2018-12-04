@@ -20410,12 +20410,22 @@ subtree of X with T, without duplication.</p>
 (defxdoc defn
   :parents (defun events)
   :short "Definition with @(see guard) @('t')"
-  :long "<p>@('Defn') is @(tsee defun) with @(see guard) @('t').</p>")
+  :long "<p>@('Defn') is @(tsee defun) with @(see guard) @('t').</p>
+
+<p>@('defn') expands to a @(tsee defun) with an added @('(declare (xargs :guard
+t))').  If an explicit guard is supplied to @('defn'), it is conjoined to the
+added @('t') guard, according to @(tsee defun)'s treatment of multiple guard
+declarations.</p>")
 
 (defxdoc defnd
   :parents (defun events)
   :short "@(see disable)d definition with @(see guard) @('t')"
-  :long "<p>@('Defnd') is @(tsee defund) with @(see guard) @('t').</p>")
+  :long "<p>@('Defnd') is @(tsee defund) with @(see guard) @('t').</p>
+
+<p>@('defnd') expands to a @(tsee defund) with an added
+@('(declare (xargs :guard t))').  If an explicit guard is supplied to
+@('defnd'), it is conjoined to the added @('t') guard, according to @(tsee
+defun)'s treatment of multiple guard declarations.</p>")
 
 (defxdoc defpkg
   :parents (events packages programming)
