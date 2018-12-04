@@ -2506,6 +2506,9 @@
  :all)') will successfully certify that book.</p>")
 
 (defxdoc acl2-doc
+
+; Warning: Keep this in sync with acl2-doc-summary.
+
   :parents (documentation)
   :short "A custom Emacs browser for reading ACL2 @(see documentation)"
   :long "<p>As discussed elsewhere (see @(see documentation)), the web-based
@@ -2591,6 +2594,7 @@
   <Return>      acl2-doc-go!
   g             acl2-doc-go
   h             acl2-doc-help
+  ?             acl2-doc-summary
   i             acl2-doc-index
   ,             acl2-doc-index-next
   <             acl2-doc-index-previous
@@ -2631,6 +2635,10 @@
 
   h             acl2-doc-help
      Go to the ACL2-DOC topic to read about how to use the ACL2-Doc browser.
+
+  ?             acl2-doc-summary
+     Go to the ACL2-Doc-summary topic for one-line summaries of ACL2-Doc
+     browser commands.
 
   i             acl2-doc-index
      Go to the specified topic or else one containing it as a substring;
@@ -3014,6 +3022,71 @@
    })</li>
 
  </ol></li></ul>")
+
+(defxdoc acl2-doc-summary
+
+; Warning: Keep this in sync with acl2-doc.
+
+  :parents (documentation)
+  :short "Summary of @(see acl2-doc) commands"
+  :long "<p>See @(see acl2-doc) for information about the custom Emacs browser
+  for viewing ACL2 @(see documentation).  In the present topic we list the
+  commands with extremely abbreviation documentation: only a single line for
+  each.  For even briefer summaries, you can use the standard Emacs command,
+  @('Control-h m').</p>
+
+ @({
+    <Return>      acl2-doc-go!
+       Go to the topic occurring at the cursor position.
+    g             acl2-doc-go
+       Go to the specified topic; performs completion.
+    h             acl2-doc-help
+       Go to the ACL2-Doc topic to read about how to use the ACL2-Doc browser.
+    ?             acl2-doc-summary
+       Go to the ACL2-Doc-summary topic for one-line summaries of commands.
+    i             acl2-doc-index
+       Go to the specified topic or else one containing it as a substring.
+    ,             acl2-doc-index-next
+       Continue to the next topic for the most recent i command.
+    <             acl2-doc-index-previous
+       Return to the preceding topic for the most recent i command.
+    l             acl2-doc-last
+       Go to the last topic visited.
+    n             acl2-doc-search-next
+       Find the next occurrence for the most recent search.
+    p             acl2-doc-search-previous
+       Find the previous occurrence for the most recent search.
+    q             acl2-doc-quit
+       Quit the ACL2-Doc browser.
+    r             acl2-doc-return
+       Return to the last topic visited, popping the stack of such topics.
+    s             acl2-doc-search
+       Search for the input string (with prefix arg: under a given topic).
+    S             acl2-doc-re-search
+       Regular-expression search (with prefix arg: under a given topic).
+    t             acl2-doc-top
+       Go to the top topic.
+    u             acl2-doc-up
+       Go to the parent of the current topic.
+    w             acl2-doc-where
+       Display the topic and manual name in the minibuffer.
+    SPC           scroll-up
+       Scroll up (same as Control-v)
+    TAB           acl2-doc-tab
+       Visit the next link on the current page.
+    Control-TAB or <backtab> (which often is Shift-TAB): acl2-doc-tab-back
+       Visit the previous link on the current page.
+    D
+       Download the manual from the web; then restart ACL2-Doc.
+    H             acl2-doc-history
+       Visit the History buffer, with names of all visited topics in order.
+    I             acl2-doc-initialize
+       Restart ACL2-Doc.  With a prefix argument, choose which manual.
+    /             acl2-doc-definition
+       Find an ACL2 definition (in analogy to built-in Emacs command meta-.).
+    W             acl2-doc-where-definition
+       Find an ACL2 definition, with default from current page's topic.
+ })")
 
 (defxdoc acl2-help
   :parents (about-acl2)
@@ -12413,9 +12486,9 @@ with any questions about building the community books.</p>")
  @('B.port') is ignored when including @('B') if @('B') is certified.</p>
 
  <p>If you use @(see guard)s, please note @('certify-book') is executed as
- though @('(set-guard-checking nil)') has been evaluated; see @(see
- set-guard-checking).  If you want guards checked, consider using @('ld')
- instead, or in addition; see @(see ld).</p>
+ though @('(set-guard-checking t)') has been evaluated; see @(see
+ set-guard-checking).  If you want to run with different guard-checking,
+ consider using @('ld') instead, or in addition; see @(see ld).</p>
 
  <p>For a general discussion of books, see @(see books).  @('Certify-book') is
  akin to what we have historically called a ``proveall'': all the forms in the
@@ -17407,8 +17480,9 @@ subtree of X with T, without duplication.</p>
  for ``stobj primitives'' for a corresponding single-threaded object.  These
  stobj primitives include a recognizer, a creator, and other ``exported''
  functions.  In essence, @('defabsstobj') establishes interface functions, or
- ``exports'', on a new stobj that is a copy of an indicated ``concrete'' stobj
- that already exists.</p>
+ ``exports'', on a new stobj that is a copy of an indicated stobj, either
+ <i>conventional</i> (introduced by @(tsee defstobj)) or abstract (introduced
+ by @('defabsstobj')) that already exists.</p>
 
  <p>We begin below with an introduction to abstract @(see stobj)s.  We then
  explain the @(tsee defabsstobj) event by way of an example.  We conclude by
@@ -17529,14 +17603,17 @@ subtree of X with T, without duplication.</p>
  <p>The @('defabsstobj') event offers an opportunity to address these issues.
  It introduces a new stobj, which we call an ``abstract stobj'', which is
  associated with a corresponding ``concrete stobj'' introduced by an earlier
- @(tsee defstobj) event.  The @('defabsstobj') event specifies a logical
- (@(':LOGIC')) and an executable (@(':EXEC')) definition for each primitive
- operation, or ``stobj primitive'', involving that stobj.  As is the case for
- @(tsee defstobj), the logical definition is what ACL2 reasons about, and is
- appropriate to apply to an ACL2 object satisfying the logical definition of
- the recognizer function for the stobj.  The executable definition is applied
- in raw Lisp to a live stobj, which is an array object associated with the
- given stobj name.</p>
+ @(tsee defstobj) or @('defabsstobj') event.  (Thus, note that the term,
+ ``concrete'', refers to the status of being the underlying stobj that supports
+ an abstract stobj.  While a concrete stobj has often been introduced with
+ @('defstobj'), it could also have been introduced with @('defabsstobj').)  The
+ @('defabsstobj') event specifies a logical (@(':LOGIC')) and an
+ executable (@(':EXEC')) definition for each primitive operation, or ``stobj
+ primitive'', involving that stobj.  As is the case for @(tsee defstobj), the
+ logical definition is what ACL2 reasons about, and is appropriate to apply to
+ an ACL2 object satisfying the logical definition of the recognizer function
+ for the stobj.  The executable definition is applied in raw Lisp to a live
+ stobj, which is an array object associated with the given stobj name.</p>
 
  <p>We can picture a sequence of updates to corresponding abstract and concrete
  stobjs as follows.  Initially in this picture, @('st$a0') and @('st$c0') are a
@@ -17581,12 +17658,16 @@ subtree of X with T, without duplication.</p>
  stobjs, in two community books: @('books/misc/defabsstobj-example-1.lisp') and
  @('books/misc/defabsstobj-example-2.lisp').  In this section we outline the
  first of these.  We suggest that after you finish this @(see documentation)
- topic, you read through those two books.</p>
+ topic, you read through those two books.  There are other books
+ @('books/misc/defabsstobj-example-*.lisp') that may be helpful to read; in
+ particaular, @('books/misc/defabsstobj-example-5.lisp') illustrates building
+ an abstract stobj on top of another abstract stobj (as its so-called
+ ``concrete stobj'', as described below).</p>
 
  <p>Here is the first of two closely related @('defabsstobj') @(see events)
  from the book @('defabsstobj-example-1.lisp'), but in expanded form.  We will
- show the abbreviated form later, which omits most of data in the form that is
- immediately below.  Thus most of the information shown here is default
+ show the abbreviated form later, which omits most of the data in the form that
+ is immediately below.  Thus most of the information shown here is default
  information.  We believe that the comments below explain most or all of what
  you need to know in order to start using @('defabsstobj'), and that you will
  learn the remainder when you see error messages.  For example, we do not say
@@ -17886,11 +17967,12 @@ subtree of X with T, without duplication.</p>
 
  <p>We are ready to describe the arguments of @('defabsstobj').</p>
 
- <blockquote><p>@('St') is a symbol, which names the new abstract stobj.</p>
+ <blockquote>
 
- <p>@('Concrete') is the name of an existing stobj that is not an abstract
- stobj, i.e., was introduced with @(tsee defstobj) (not @(tsee
- defabsstobj)).</p>
+ <p>@('St') is a symbol, which names the new abstract stobj.</p>
+
+ <p>@('Concrete') is the name of an existing stobj, which may have been
+ introduced either with @(tsee defstobj) or with @('defabsstobj).</p>
 
  <p>@('Recognizer') is a function spec (for the recognizer function).  The
  valid keywords are @(':LOGIC') and @(':EXEC').  The default for
@@ -17945,8 +18027,7 @@ subtree of X with T, without duplication.</p>
  @('\"{PRESERVED}\"').  For @(':PROTECT'), the default is @('nil') unless the
  @('defabsstobj') event specifies @(':PROTECT-DEFAULT t').</p>
 
- <p>@('Doc'), if non-@('nil'), is a string that can provide documentation but
- is essentially ignored by ACL2.</p></blockquote>
+ </blockquote>
 
  <p>Not shown is the keyword, @(':MISSING'); the effect of @(':missing t') is
  to turn the call of @('defabsstobj') into a corresponding call of @(tsee
@@ -18017,12 +18098,12 @@ subtree of X with T, without duplication.</p>
  get an error message about it, pertaining to modifying the concrete stobj
  non-atomically.  In that case, you can eliminate the error by providing
  @(':PROTECT t') in the function spec, or by providing @('defabsstobj') keyword
- argument @(':PROTECT-DEFAULT t') at the top level.  The above explanation is
- probably all you need to know about @(':PROTECT'), but just below is a more
- complete explanation for those who desire it.  Further information is also
- available if you need it; see @(see set-absstobj-debug), and see the example
- uses of these keywords in community book
- @('books/misc/defabsstobj-example-2.lisp').</p></blockquote>
+ argument @(':PROTECT-DEFAULT t') at the top level, in order to restore the
+ required atomicity.  The above explanation is probably all you need to know
+ about @(':PROTECT'), but just below is a more complete explanation for those
+ who desire it.  Further information is also available if you need it; see
+ @(see set-absstobj-debug), and see the example uses of these keywords in
+ community book @('books/misc/defabsstobj-example-2.lisp').</p></blockquote>
 
  <p>For those who are interested, here is a more detailed discussion of
  @(':PROTECT') and @(':PROTECT-DEFAULT'), as promised above.  It applies to any
@@ -18051,9 +18132,8 @@ subtree of X with T, without duplication.</p>
  scheme described above provides a flexible way to assign names.  Also unlike
  @(tsee defstobj), there is no @(':inline') or @(':non-memoizable') argument;
  @(':inline') is essentially t, in the sense that stobj primitives are macros
- in raw Lisp; and the @(':non-memoizable') argument is derived implicitly from
- the value of that argument (@('nil') by default) for the corresponding
- concrete stobj.</p>
+ in raw Lisp; and the @(':non-memoizable') argument is derived implicitly, to
+ agree with non-memoizability of the corresponding concrete stobj.</p>
 
  <p>Those who use @(see hons-enabled) features, including function
  memoization (see @(see memoize)), may be aware that the memo table for a
@@ -19804,7 +19884,7 @@ subtree of X with T, without duplication.</p>
  @('encapsulate') form.  Thus, you will be able to undo this
  @('define-trusted-clause-processor') with @(':')@(tsee ubt)@(' L').  Also,
  because of the criteria for redundant encapsulate events (see @(see
- REDUNDANT-ENCAPSULATE)),the entire form is considered redundant (skipped) if
+ REDUNDANT-ENCAPSULATE)), the entire form is considered redundant (skipped) if
  it is identical to one already executed in the current ACL2 @(see world), with
  one exception: if @(':partial-theory') is @('nil') or omitted, and also
  @(':label nil') is supplied explicitly, then the event will not be redundant.
@@ -19820,10 +19900,14 @@ subtree of X with T, without duplication.</p>
  function.  Otherwise, @(tsee local) definitions of those missing supporters
  can render the use of this clause-processor unsound, as discussed in the paper
  referenced at the end of the @(see clause-processor) documentation topic.
- Moreover, ACL2 assumes for dependent clause-processors (discussed below) that
- every function symbol constrained by the ``promised encapsulate'' of that
- event is either among those @('supporters') or ancestral in one of them
- (i.e. a supporter of a supporter, a supporter of one of those, etc.).</p>
+ Below we discuss an additional reason that @('supporters') is critical for
+ soundness, in the case of dependent clause-processors.</p>
+
+ <p>(Remark.  There could have been two notions of supporters: one for
+ functions whose definitions support the correctness of the clause-processor
+ function, and, in the case of dependent clause-processors, one for supporters
+ of the ``promised encapsulate'' discussed below.  But for simplicity, a single
+ @('supporters') argument serves both purposes.)</p>
 
  <p><b>Dependent clause-processors and promised encapsulates</b>: The
  @(':partial-theory') argument</p>
@@ -19845,11 +19929,11 @@ subtree of X with T, without duplication.</p>
  ``promised'' @('encapsulate'), for example by exporting the full
  definition.</p>
 
- <p>If a trusted clause-processor is introduced with a @(':partial-theory')
- argument, we call it a ``dependent'' clause-processor, because its correctness
- is dependent on the constraints implicitly introduced by the
- @(':partial-theory') @('encapsulate') form.  The implicit constraints should
- logically imply the constraints actually introduced by the explicit
+ <p>If a trusted clause-processor is introduced with a non-@('nil')
+ @(':partial-theory') argument, we call it a ``dependent'' clause-processor,
+ because its correctness is dependent on the constraints implicitly introduced
+ by the @(':partial-theory') @('encapsulate') form.  The implicit constraints
+ should logically imply the constraints actually introduced by the explicit
  @('encapsulate'), but they should also be sufficient to justify every possible
  invocation of the clause-processor in a @(':clause-processor') hint.  The user
  of a @('define-trusted-clause-processor') form is making a guarantee &mdash;
@@ -19869,6 +19953,13 @@ subtree of X with T, without duplication.</p>
  situation as attempting to associate more than one @('encapsulate') with the
  functions introduced in the inner @('encapsulate').</p>
 
+ <p>Moreover, soundness depends on inclusion of enough function symbols in the
+ @('supporters') argument, as follows.  Let @('S') be the set of specified
+ @('supporters') augmented by the set of function symbols either introduced by,
+ or in a property exported by, the @(':partial-theory') argument, which we call
+ the ``promised encapsulate''.  Then every function symbol constrained by the
+ promised encapsulate is in @('S').</p>
+
  <p>The @(':partial-theory') event will (in essence) be executed as part of the
  evaluation of the @('define-trusted-clause-processor') form.  Again, a
  critical obligation rests on the user who provides a @(':partial-theory'):
@@ -19886,16 +19977,18 @@ subtree of X with T, without duplication.</p>
  <p><b>A remark on the underlying implementation</b></p>
 
  <p>You can see all of the current trusted clause-processors by issuing the
- command @('(table trusted-clause-processor-table)').  Those that are dependent
- clause-processors will be associated in the resulting association list with a
- pair whose @('car') is the list of supporters and whose @('cdr') is @('t'),
- i.e., with @('(supporters . t)'); the others will be associated just with
- @('(supporters)').</p>
+ command @('(table trusted-cl-proc-table)').  The resulting alist associates
+ each trusted clause-processor with its supporters.</p>
 
- <p>Thus, @('define-trusted-clause-processor') is actually a macro that
- generates (among other things) a @('table') event for a table named
- @('trusted-clause-processor-table'); see @(see table).  You are invited to use
- @(':')@(tsee trans1) to see expansions of calls of this macro.</p>
+ <p>Note that @('define-trusted-clause-processor') is actually a macro that
+ generates (among other things) a @('table') event for extending
+ @('trusted-cl-proc-table').  You are invited to use @(':')@(tsee trans1) to
+ see expansions of calls of this macro.  In particular, you can see that the
+ @(':partial-theory') argument results in an @('encapsulate') event that
+ includes a call of the form @('(set-unknown-constraints-supporters f1
+ ... fk)'), which in effect makes that call of @('encapsulate') into a call of
+ @('partial-encapsulate') with supporters @('(f1 ... fk)').  See @(see
+ partial-encapsulate).</p>
 
  <p><b>A technique for using raw Lisp to define a trusted
  clause-processor</b></p>
@@ -25028,7 +25121,7 @@ ld) and @(tsee include-book)"
 
  <p>where each @(tsee signature) is a well-formed signature, each
  @('signature') describes a different function symbol, and each @('evi') is an
- embedded event form (See @(see embedded-event-form)).  Also see @(see
+ embedded event form (see @(see embedded-event-form)).  Also see @(see
  signature), in particular for a discussion of how a signature can assign a
  @(see guard) to a function symbol.  There must be at least one @('evi').  The
  @('evi') inside @(tsee local) special forms are called ``local'' @(see events)
@@ -25135,6 +25228,12 @@ ld) and @(tsee include-book)"
  itself).  Actually, between @('previous') and @('thm1') certain extensions
  were made to the @(see world) by the superior @('encapsulate'), to permit
  @('an-element') to be used as a function symbol in @('thm1').</p>
+
+ <p>Remark on implicit @(see constraint)s (unknown-constraints).  See @(see
+ partial-encapsulate) for a related utility that allows some of the constraints
+ to be unspecified.  This is an advanced capability that is useful when one
+ installs special-purpose code, possibly in raw Lisp, using a trust tag (see
+ @(see defttag)).</p>
 
  <p>Remark for ACL2(r) (see @(see real)).  For ACL2(r), @(tsee encapsulate) can
  be used to introduce classical and non-classical functions, as determined by
@@ -37904,7 +38003,7 @@ current fast alists."
  <p>You can see all current @(':clause-processor') rules by issuing the command
  @('(print-clause-processor-rules)'), and you can see the names of all trusted
  clause-processors by issuing the command @('(table
- trusted-clause-processor-table)').</p></dd>
+ trusted-cl-proc-table)').</p></dd>
 
  <dt>@(':do-not')</dt><p/>
 
@@ -40252,9 +40351,9 @@ tables in the current Hons Space."
  a burden on you; see @(see certificate).</p>
 
  <p>If you use @(see guard)s, please note @('include-book') is executed as
- though @('(set-guard-checking nil)') has been evaluated; see @(see
- set-guard-checking).  If you want guards checked, please see @(see ld) and/or
- see @(see rebuild).</p>
+ though @('(set-guard-checking t)') has been evaluated; see @(see
+ set-guard-checking).  If you want to run with different guard-checking,
+ consider using @('ld') instead, or in addition; see @(see ld).</p>
 
  <p>The value of @(':load-compiled-file') controls whether a compiled file for
  the given @('file') is loaded by @('include-book').  Note that this keyword
@@ -40589,6 +40688,43 @@ tables in the current Hons Space."
  <p>The name of the rule created is @('(:induction name)').  When that rune is
  disabled the heuristic link between @('pat-term') and @('scheme-term') is
  broken.</p>")
+
+(defxdoc induction-depth-limit
+  :parents (induction)
+  :short "The maximum number permitted of nested inductions"
+  :long "<p>ACL2 may limit the number of levels of induction.  Consider for
+ example a subgoal with this @(see goal-spec):</p>
+
+ @({
+ Subgoal *1.2.3.1.2.3.1.2.3/7'11'
+ })
+
+ <p>This represents nine levels of induction.  By default, that is the maximum
+ permitted, since proofs rarely succeed with more than a few levels of
+ induction.  (Indeed, one is well served by relying on only one level of
+ induction, avoiding nested inductions in favor of proving suitable @(see
+ rewrite) rules.  See @(see the-method).)  Thus, if ACL2 would otherwise
+ attempt to push the subgoal indicated above for later proof by induction, the
+ overall proof would fail because that would cause the maximum nesting depth of
+ 9 to be exceeded.</p>
+
+ <p>To see the current limit:</p>
+
+ @({
+ (induction-depth-limit (w state))
+ })
+
+ <p>This limit is always a natural number, with one exception: it can be
+ @('nil'), which means that there is no limit on the nesting depth of
+ inductions.</p>
+
+ <p>Note that an explicit @(':induct') hint (see @(see hints)) will cause an
+ induction will occur, regardless of the induction-depth-limit.  Of course, if
+ we have already reached the induction-depth-limit at the point the
+ @(':induct') hint is applied, then any attempt to push a subgoal for induction
+ will fail (unless it too has an associated @(':induct') hint).</p>
+
+ <p>To change the limit, see @(see set-induction-depth-limit).</p>")
 
 (defxdoc infected-constraints
   :parents (encapsulate)
@@ -81124,6 +81260,8 @@ it."
 ;    which include this book and which also reason about fix-true-list may need
 ;    to locally enable true-list-fix in order to certify.
 
+; Extended the guard for print-timer and removed its skip-proofs.
+
   :parents (release-notes)
   :short "ACL2 Version  8.2 (xxx, 20xx) Notes"
   :long "<p>NOTE!  New users can ignore these release notes, because the @(see
@@ -81167,6 +81305,23 @@ it."
  primitives that are built into the definition of @(tsee apply$).  Instead, it
  simply avoids generating (needless) conjuncts for those primitives.</p>
 
+ <p>It is no longer illegal to supply an abstract stobj as the so-called
+ ``concrete stobj'' in a @(tsee defabsstobj) event.  Thanks to Sol Swords for
+ initiating a discussion leading to this enhancement.</p>
+
+ <p>Calls of the function @('synp') were formerly required to result from
+ macroexpansion of @(tsee syntaxp) or @(tsee bind-free) calls, or at least
+ nearly so.  That restriction has been lifted, although the restrictions on
+ calls of @('synp'), @('syntaxp'), and @('bind-free') remain for hypotheses of
+ rules of class @(':')@(tsee rewrite), @(':')@(tsee definition), and
+ @(':')@(tsee linear), or resulting from evaluation of hypotheses of
+ @(':')@(tsee meta) rules.  Thanks to Sol Swords for requesting this change, so
+ that @(tsee defevaluator) forms can include @('synp').</p>
+
+ <p>For calls of @(':')@(tsee pso) and related utilities (@(':')@(tsee pso!),
+ @(':')@(tsee psof), and @(':')@(tsee psog)), the Time reported in the summary
+ is now the original time, not time related to running @(':')@(tsee pso).</p>
+
  <h3>New Features</h3>
 
  <p>A new construct, @('lambda$'), may be used in place of @('lambda') to be
@@ -81175,6 +81330,19 @@ it."
  quoted @('lambda') objects; in particular, the body need not be in translated
  form (see @(see term)).  We plan to document this new feature in detail
  later.</p>
+
+ <p>A new macro, @(tsee partial-encapsulate), allows one to introduce
+ constrained functions without specifying all of the @(see constraint)s.  This
+ functionality was already available using a trust tag, by way of a rather
+ convoluted application of @(tsee define-trusted-clause-processor); however,
+ @(tsee partial-encapsulate) may be used without a trust tag.  See @(see
+ partial-encapsulate), which in particular points to an example of typical
+ usage, in @('books/demos/partial-encapsulate.lisp').  Thanks to Sol Swords for
+ requesting such a capability.</p>
+
+ <p>There is now, by default, a limit of 9 on the nesting depth of inductions;
+ see @(see induction-depth-limit) and to modify this default, see @(see
+ set-induction-depth-limit).</p>
 
  <h3>Heuristic and Efficiency Improvements</h3>
 
@@ -81222,6 +81390,10 @@ it."
  <p>Fixed Emacs support for the the @(see proof-builder) dive command (see
  @(see acl2-pc::dive)), @('control-t control-d'), to eliminate trailing zeros,
  since those are (and have been) disallowed by that command.</p>
+
+ <p>A new @(tsee acl2-doc) command is the question-mark character (@('?')),
+ which goes to a page with one-line command summaries.  Thanks to Warren Hunt
+ for a request leading to this enhancement.</p>
 
  <h3>Experimental Versions</h3>
 
@@ -83715,6 +83887,184 @@ arithmetic) for libraries of @(see books) for arithmetic reasoning.</p>")
  <p>See @(see parallelism-at-the-top-level) for restrictions on evaluating
  parallelism primitives from within the ACL2 top-level loop.</p>")
 
+(defxdoc partial-encapsulate
+  :parents (events encapsulate)
+  :short "Introduce functions with some constraints unspecified"
+  :long "<p>See @(see encapsulate) for relevant background.
+ @('Partial-encapsulate') is a variant of @('encapsulate') for which some of
+ the constraints are implicit.  This is an advanced capability that is useful
+ when one installs special-purpose code, possibly in raw Lisp, using a trust
+ tag (see @(see defttag)).</p>
+
+ <h3>Introduction</h3>
+
+ <p>The syntax for @('partial-encapsulate') is the same as the syntax of
+ @('encapsulate'), except for the addition of an argument, @('supporters'),
+ which is described below.</p>
+
+ @({
+  General Form:
+  (partial-encapsulate (signature ... signature)
+    (f1 ... fk) ; supporters
+    ev1
+    ...
+    evn)
+ })
+
+ <p>where, as for @('encapsulate'): each @('signature') is a well-formed @(see
+ signature), each describing a different function symbol, and each @('evi') is
+ an embedded event form (see @(see embedded-event-form)).  The additional
+ argument (shown above) is a true-list of function symbols, the
+ <i>supporters</i>: it is an error if any such symbol, @('fi'), is not a known
+ function symbol at the time the @('partial-encapsulate') call is evaluated,
+ the exception being that @('fi') may be introduced in one of the signatures.
+ A @('partial-encapsulate') form must satisfy the following three requirements
+ in addition to those of the corresponding @('encapsulate') form: it must have
+ at least one signature, it must not occur within any other @('encapsulate') or
+ @('partial-encapsulate') form that has at least one signature, and every
+ function symbol that it introduces must be specified in one of the
+ signatures.</p>
+
+ <p>A call of @('partial-encapsulate') introduces its signature functions
+ together with its exported theorems, exactly as though it had been the call of
+ @('encapsulate') with the same signatures and events, however with one
+ difference: the @('partial-encapsulate') logically incorporates additional
+ constraints that are not mentioned.  This is discussed further below, but for
+ now let us note that because of this difference, a successful evaluation of a
+ @('partial-encapsulate') form results in a special ``unknown-constraints''
+ designation for the functions introduced by the signatures.  Any attempt to
+ access the constraints for those functions will thus fail.  Consider the
+ following example, which introduces @('f') as a constrained function symbol
+ that is constrained not only by the property that @('f') returns a boolean,
+ but also by additional, unspecified (implicit) constraints.</p>
+
+ @({
+ (partial-encapsulate
+  ((f (x) t))
+  nil
+  (local (defun f (x) (declare (xargs :guard t)) (consp x)))
+  (defthm booleanp-f
+    (booleanp (f x))
+    :rule-classes :type-prescription))
+
+ (defthm symbolp-f
+   (symbolp (f y)))
+
+ (encapsulate
+  ((g (x) t))
+  (local (defun g (x) (consp x)))
+  (defthm booleanp-g (booleanp (g x))))
+
+ })
+
+ <p>Then the following fails, even though it would succeed if we replace
+ @('partial-encapsulate') by @('encapsulate') above.  The reason is that the
+ partial-encapsulate form allows for constraints beyond just the property that
+ @('f') is boolean.  Imagine that special code had been inserted (using a trust
+ tag) for reasoning about @('f') when proving a theorem like @('symbolp-f')
+ that we were now trying to functionally instantiate.</p>
+
+ @({
+ ; Functional instantiation FAILS because of unknown-constraints on f
+ (defthm symbolp-g
+   (symbolp (g y))
+   :hints ((\"Goal\" :by (:functional-instance symbolp-f (f g)))))
+ })
+
+ <h3>Supporters and corresponding encapsulate</h3>
+
+ <p>A @('partial-encapsulate') represents any @('encapsulate') form that
+ introduces the same function symbols, has the same signatures, and extends the
+ constraints introduced such that every function symbol occurring in at least
+ one of the additional constraints must either be mentioned in one of the
+ @('evi') or be among the list of supporters, @('(f1 ... fk)').  We may refer
+ to such an @('encapsulate') form as a ``corresponding encapsulate''.  The user
+ of @('partial-encapsulate') should keep in mind such a set of additional
+ constraints.  The supporters should thus include all function symbols in the
+ theorems exported from the intended corresponding encapsulate, except that
+ signature functions are always included among the supporters whether specified
+ or not, and hence their inclusion is optional.</p>
+
+ <p>The list of supporters is used for generating proof obligations for a
+ @(':functional-instance') @(see lemma-instance).  Specifically, the supporters
+ serve as the ``ancestors'' of the partial encapsulate's signature functions,
+ in the constraint-generation algorithm described in the documentation for
+ @(see constraint).  Thus, if supporters are missing that occur in the intended
+ corresponding encapsulate, then functional instantiation may be unsound
+ because some proof obligations fail to be generated.  Note that in the typical
+ application described next, where the implicit constraints all specify
+ evaluation results for calls of signature functions as discussed below, the
+ specified list of supporters can simply be @('nil').</p>
+
+ <h3>Applications</h3>
+
+ <p>A trust tag (see @(see defttag)) is not needed for evaluation of a
+ partial-encapsulate form.  However, for a typical application of
+ partial-encapsulate &mdash; redefinition of a constrained function in raw Lisp
+ &mdash; a trust tag is of course necessary (see @(see defttag)).  In such a
+ case, the corresponding encapsulate may be viewed as extending the original
+ partial-encapsulate with all theorems of the form @('(equal (f a1 ... ak)
+ val)'), ranging over all computations @('(f a1 ... ak)') ever to be
+ evaluated (a finite but potentially huge set) where @('val') is the value
+ returned for @('(f a1 ... ak)').  It is the responsibility of the creator of
+ such an application to ensure that all evaluations satisfy the original
+ constraints of the partial-encapsulate.</p>
+
+ <p>Note that in this sort of application &mdash; that is, where the implicit
+ constraints all arise from function evaluations &mdash; the supporters
+ argument may soundly be @('nil'), since only the signature functions are
+ involved in the implicit constraints (and those functions are automatically
+ included among the supporters, even when not specified by the user).</p>
+
+ <p>For an example of such an application, including explanatory comments, see
+ @(see community-book) @('books/demos/partial-encapsulate.lisp').</p>
+
+ <p>Partial-encapsulates are, in essence, also used in the implementation of
+ dependent clause-processors, where the list of supporters might well be
+ non-@('nil').  See @(see define-trusted-clause-processor).</p>
+
+ <h3>Implementation</h3>
+
+ <p>This section is provided as a reference for those interested, but can
+ probably be safely skipped by most readers.</p>
+
+ <p>Consider the following example.</p>
+
+ @({
+ ACL2 !>:trans1 (partial-encapsulate
+                 ((f0 (x) t))
+                 (g0)
+                 (local (defun f0 (x) x))
+                 (defthm f0-prop
+                   (implies (integerp x)
+                            (integerp (f0 x)))))
+  (ENCAPSULATE ((F0 (X) T))
+               (LOCAL (DEFUN F0 (X) X))
+               (DEFTHM F0-PROP
+                       (IMPLIES (INTEGERP X)
+                                (INTEGERP (F0 X))))
+               (SET-UNKNOWN-CONSTRAINTS-SUPPORTERS G0))
+ ACL2 !>
+ })
+
+ <p>This example illustrates that a @('partial-encapsulate') call expands to a
+ call of @('encapsulate') obtained by removing the supporters argument, but
+ with the following extra event inserted after given list of events, where
+ @('(f1 ... fk)') is the specified list of supporters.</p>
+
+ @({
+ (set-unknown-constraints-supporters f1 ... fk)
+ })
+
+ <p>The macro, @('set-unknown-constraints-supporters'), extends a table,
+ @('unknown-constraints-table').  As evaluation of the partial-encapsulate
+ concludes, the world is extended so that each signature function has a
+ @(''constraint-lst') property indicating that its constraints are unknown, but
+ with supporters (``ancestors'', as discussed above) according to that table.
+ This macro call can thus be inserted non-@(see local)ly within an encapsulate,
+ anywhere after the local function definitions, to make an encapsulate behave
+ like a partial-encapsulate.</p>")
+
 (defxdoc pathname
   :parents (books-reference)
   :short "Introduction to filename conventions in ACL2"
@@ -84364,8 +84714,8 @@ arithmetic) for libraries of @(see books) for arithmetic reasoning.</p>")
  <p>Note that some rule classes are not handled by @(':pl').  In particular, if
  you want to see all @(':')@(tsee clause-processor) rules, issue the command
  @(':print-clause-processor-rules'), and for trusted clause-processors,
- @('(table trusted-clause-processor-table)'); see @(see clause-processor) and
- see @(see define-trusted-clause-processor).</p>")
+ @('(table trusted-cl-proc-table)'); see @(see clause-processor) and see @(see
+ define-trusted-clause-processor).</p>")
 
 (defxdoc pl2
   :parents (history)
@@ -88596,6 +88946,9 @@ arithmetic) for libraries of @(see books) for arithmetic reasoning.</p>")
  made for the proposed theorem and one for each @(see corollary). If you want
  to see more than one proof log for a single top-level form, then instead of
  using @(':pso'), first evaluate @('(set-gag-mode nil)').</p>
+
+ <p>The ``Time'' printed in the summary shows the original times for the proof
+ attempt, not the times for processing the @(':pso') command.</p>
 
  <p>Also see @(see pso!), @(see psog), and @(see psof).</p>")
 
@@ -94965,7 +95318,7 @@ arithmetic) for libraries of @(see books) for arithmetic reasoning.</p>")
 
 (defxdoc set-absstobj-debug
   :parents (defabsstobj)
-  :short "Obtain debugging information upon atomicity violation for an abstract stobj"
+  :short "Get more information when atomic update fails for an abstract stobj"
   :long "<p>This @(see documentation) topic assumes familiarity with abstract
  stobjs.  See @(see defabsstobj).</p>
 
@@ -96936,6 +97289,40 @@ arithmetic) for libraries of @(see books) for arithmetic reasoning.</p>")
  Moreover, its effect is to set the @(tsee acl2-defaults-table), and hence its
  effect is @(tsee local) to the book or @(tsee encapsulate) form containing it;
  see @(see acl2-defaults-table).</p>")
+
+(defxdoc set-induction-depth-limit
+  :parents (induction-depth-limit)
+  :short "Set the @(see induction-depth-limit)"
+  :long "@({
+  Examples:
+  (set-induction-depth-limit 3)
+  (set-induction-depth-limit nil)
+ })
+
+ <p>Note: This is an event!  It does not print the usual event @(see summary)
+ but nevertheless changes the ACL2 logical @(see world) and is so recorded.  It
+ is @(tsee local) to the book or @(tsee encapsulate) form in which it occurs;
+ see @(see set-induction-depth-limit!) for a corresponding non-@(tsee local)
+ event.</p>
+
+ @({
+  General Form:
+  (set-induction-depth-limit x)
+ })
+
+ <p>where @('x') evaluates to a value that is a natural number or @('nil').
+ The induction-depth-limit is set to that value; see @(see
+ induction-depth-limit).</p>")
+
+(defxdoc set-induction-depth-limit!
+  :parents (induction)
+  :short "Set the induction-depth-limit non-@(tsee local)ly"
+  :long "<p>Please see @(see set-induction-depth-limit), which is the same as
+ @('set-induction-depth-limit!')  except that the latter is not @(tsee local)
+ to the @(tsee encapsulate) or the book in which it occurs.  Probably @(tsee
+ set-induction-depth-limit) is to be preferred unless you have a good reason
+ for wanting to export the effect of this event outside the enclosing @(tsee
+ encapsulate) or book.</p>")
 
 (defxdoc set-inhibit-output-lst
   :parents (prover-output)
@@ -122678,6 +123065,7 @@ expand function call at the current subterm, without simplifying"
 (defpointer undoing undo)
 (defpointer union-eq union$)
 (defpointer union-equal union$)
+(defpointer unknown-constraints partial-encapsulate)
 (defpointer untranslate-preprocess user-defined-functions-table)
 (defpointer use hints t)
 (defpointer value system-utilities)

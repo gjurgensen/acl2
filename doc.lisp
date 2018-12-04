@@ -4701,6 +4701,7 @@ Silent loading of ACL2 customization files
     <Return>      acl2-doc-go!
     g             acl2-doc-go
     h             acl2-doc-help
+    ?             acl2-doc-summary
     i             acl2-doc-index
     ,             acl2-doc-index-next
     <             acl2-doc-index-previous
@@ -4739,6 +4740,10 @@ Silent loading of ACL2 customization files
 
     h             acl2-doc-help
        Go to the ACL2-DOC topic to read about how to use the ACL2-Doc browser.
+
+    ?             acl2-doc-summary
+       Go to the ACL2-Doc-summary topic for one-line summaries of ACL2-Doc
+       browser commands.
 
     i             acl2-doc-index
        Go to the specified topic or else one containing it as a substring;
@@ -5091,6 +5096,66 @@ Silent loading of ACL2 customization files
 
               cd books
               make doc/top.cert USE_QUICKLISP=1 ACL2=acl2")
+ (ACL2-DOC-SUMMARY
+  (DOCUMENTATION)
+  "Summary of [ACL2-doc] commands
+
+  See [ACL2-doc] for information about the custom Emacs browser for
+  viewing ACL2 [documentation].  In the present topic we list the
+  commands with extremely abbreviation documentation: only a single
+  line for each.  For even briefer summaries, you can use the
+  standard Emacs command, Control-h m.
+
+    <Return>      acl2-doc-go!
+       Go to the topic occurring at the cursor position.
+    g             acl2-doc-go
+       Go to the specified topic; performs completion.
+    h             acl2-doc-help
+       Go to the ACL2-Doc topic to read about how to use the ACL2-Doc browser.
+    ?             acl2-doc-summary
+       Go to the ACL2-Doc-summary topic for one-line summaries of commands.
+    i             acl2-doc-index
+       Go to the specified topic or else one containing it as a substring.
+    ,             acl2-doc-index-next
+       Continue to the next topic for the most recent i command.
+    <             acl2-doc-index-previous
+       Return to the preceding topic for the most recent i command.
+    l             acl2-doc-last
+       Go to the last topic visited.
+    n             acl2-doc-search-next
+       Find the next occurrence for the most recent search.
+    p             acl2-doc-search-previous
+       Find the previous occurrence for the most recent search.
+    q             acl2-doc-quit
+       Quit the ACL2-Doc browser.
+    r             acl2-doc-return
+       Return to the last topic visited, popping the stack of such topics.
+    s             acl2-doc-search
+       Search for the input string (with prefix arg: under a given topic).
+    S             acl2-doc-re-search
+       Regular-expression search (with prefix arg: under a given topic).
+    t             acl2-doc-top
+       Go to the top topic.
+    u             acl2-doc-up
+       Go to the parent of the current topic.
+    w             acl2-doc-where
+       Display the topic and manual name in the minibuffer.
+    SPC           scroll-up
+       Scroll up (same as Control-v)
+    TAB           acl2-doc-tab
+       Visit the next link on the current page.
+    Control-TAB or <backtab> (which often is Shift-TAB): acl2-doc-tab-back
+       Visit the previous link on the current page.
+    D
+       Download the manual from the web; then restart ACL2-Doc.
+    H             acl2-doc-history
+       Visit the History buffer, with names of all visited topics in order.
+    I             acl2-doc-initialize
+       Restart ACL2-Doc.  With a prefix argument, choose which manual.
+    /             acl2-doc-definition
+       Find an ACL2 definition (in analogy to built-in Emacs command meta-.).
+    W             acl2-doc-where-definition
+       Find an ACL2 definition, with default from current page's topic.")
  (ACL2-HELP
   (ABOUT-ACL2)
   "The acl2-help mailing list
@@ -14970,9 +15035,10 @@ Subtopics
   B.port is ignored when including B if B is certified.
 
   If you use [guard]s, please note certify-book is executed as though
-  (set-guard-checking nil) has been evaluated; see
-  [set-guard-checking].  If you want guards checked, consider using
-  ld instead, or in addition; see [ld].
+  (set-guard-checking t) has been evaluated; see
+  [set-guard-checking].  If you want to run with different
+  guard-checking, consider using ld instead, or in addition; see
+  [ld].
 
   For a general discussion of books, see [books].  Certify-book is akin
   to what we have historically called a ``proveall'': all the forms
@@ -20331,8 +20397,9 @@ Subtopics
   single-threaded object.  These stobj primitives include a
   recognizer, a creator, and other ``exported'' functions.  In
   essence, defabsstobj establishes interface functions, or
-  ``exports'', on a new stobj that is a copy of an indicated
-  ``concrete'' stobj that already exists.
+  ``exports'', on a new stobj that is a copy of an indicated stobj,
+  either conventional (introduced by [defstobj]) or abstract
+  (introduced by defabsstobj) that already exists.
 
   We begin below with an introduction to abstract [stobj]s.  We then
   explain the [defabsstobj] event by way of an example.  We conclude
@@ -20450,14 +20517,18 @@ Subtopics
   The defabsstobj event offers an opportunity to address these issues.
   It introduces a new stobj, which we call an ``abstract stobj'',
   which is associated with a corresponding ``concrete stobj''
-  introduced by an earlier [defstobj] event.  The defabsstobj event
-  specifies a logical (:LOGIC) and an executable (:EXEC) definition
-  for each primitive operation, or ``stobj primitive'', involving
-  that stobj.  As is the case for [defstobj], the logical definition
-  is what ACL2 reasons about, and is appropriate to apply to an ACL2
-  object satisfying the logical definition of the recognizer function
-  for the stobj.  The executable definition is applied in raw Lisp to
-  a live stobj, which is an array object associated with the given
+  introduced by an earlier [defstobj] or defabsstobj event.  (Thus,
+  note that the term, ``concrete'', refers to the status of being the
+  underlying stobj that supports an abstract stobj.  While a concrete
+  stobj has often been introduced with defstobj, it could also have
+  been introduced with defabsstobj.)  The defabsstobj event specifies
+  a logical (:LOGIC) and an executable (:EXEC) definition for each
+  primitive operation, or ``stobj primitive'', involving that stobj.
+  As is the case for [defstobj], the logical definition is what ACL2
+  reasons about, and is appropriate to apply to an ACL2 object
+  satisfying the logical definition of the recognizer function for
+  the stobj.  The executable definition is applied in raw Lisp to a
+  live stobj, which is an array object associated with the given
   stobj name.
 
   We can picture a sequence of updates to corresponding abstract and
@@ -20503,16 +20574,21 @@ Subtopics
   books/misc/defabsstobj-example-1.lisp and
   books/misc/defabsstobj-example-2.lisp.  In this section we outline
   the first of these.  We suggest that after you finish this
-  [documentation] topic, you read through those two books.
+  [documentation] topic, you read through those two books.  There are
+  other books books/misc/defabsstobj-example-*.lisp that may be
+  helpful to read; in particaular,
+  books/misc/defabsstobj-example-5.lisp illustrates building an
+  abstract stobj on top of another abstract stobj (as its so-called
+  ``concrete stobj'', as described below).
 
   Here is the first of two closely related defabsstobj [events] from
   the book defabsstobj-example-1.lisp, but in expanded form.  We will
-  show the abbreviated form later, which omits most of data in the
-  form that is immediately below.  Thus most of the information shown
-  here is default information.  We believe that the comments below
-  explain most or all of what you need to know in order to start
-  using defabsstobj, and that you will learn the remainder when you
-  see error messages.  For example, we do not say in the comments
+  show the abbreviated form later, which omits most of the data in
+  the form that is immediately below.  Thus most of the information
+  shown here is default information.  We believe that the comments
+  below explain most or all of what you need to know in order to
+  start using defabsstobj, and that you will learn the remainder when
+  you see error messages.  For example, we do not say in the comments
   below that every :LOGIC and :EXEC function must be
   [guard]-verified, but that is indeed a requirement.
 
@@ -20791,17 +20867,15 @@ Subtopics
 
       St is a symbol, which names the new abstract stobj.
 
-      Concrete is the name of an existing stobj that is not an abstract
-      stobj, i.e., was introduced with [defstobj] (not
-      [defabsstobj]).
-
-      Recognizer is a function spec (for the recognizer function).  The
-      valid keywords are :LOGIC and :EXEC.  The default for
-      recognizer is obtained by adding the suffix \"P\" to name.  The
-      default value for :LOGIC is formed by adding the suffix \"$AP\"
-      to recognizer; for :EXEC, by adding the suffix \"$CP\".  The
-      :EXEC function must be the recognizer for the specified
-      :CONCRETE stobj.
+      Concrete is the name of an existing stobj, which may have been
+      introduced either with [defstobj] or with defabsstobj).</p>
+      <p>@('Recognizer is a function spec (for the recognizer
+      function).  The valid keywords are :LOGIC and :EXEC.  The
+      default for recognizer is obtained by adding the suffix \"P\" to
+      name.  The default value for :LOGIC is formed by adding the
+      suffix \"$AP\" to recognizer; for :EXEC, by adding the suffix
+      \"$CP\".  The :EXEC function must be the recognizer for the
+      specified :CONCRETE stobj.
 
       Creator is a function spec (for the creator function).  The valid
       keywords are :LOGIC and :EXEC.  The default for creator is
@@ -20849,9 +20923,6 @@ Subtopics
       adding the suffix \"$A\" \"$C\", \"{CORRESPONDENCE}\", \"{GUARD-THM}\",
       or \"{PRESERVED}\".  For :PROTECT, the default is nil unless the
       defabsstobj event specifies :PROTECT-DEFAULT t.
-
-      Doc, if non-nil, is a string that can provide documentation but is
-      essentially ignored by ACL2.
 
   Not shown is the keyword, :MISSING; the effect of :missing t is to
   turn the call of defabsstobj into a corresponding call of
@@ -20925,11 +20996,12 @@ Subtopics
       concrete stobj non-atomically.  In that case, you can eliminate
       the error by providing :PROTECT t in the function spec, or by
       providing defabsstobj keyword argument :PROTECT-DEFAULT t at
-      the top level.  The above explanation is probably all you need
-      to know about :PROTECT, but just below is a more complete
-      explanation for those who desire it.  Further information is
-      also available if you need it; see [set-absstobj-debug], and
-      see the example uses of these keywords in community book
+      the top level, in order to restore the required atomicity.  The
+      above explanation is probably all you need to know about
+      :PROTECT, but just below is a more complete explanation for
+      those who desire it.  Further information is also available if
+      you need it; see [set-absstobj-debug], and see the example uses
+      of these keywords in community book
       books/misc/defabsstobj-example-2.lisp.
 
   For those who are interested, here is a more detailed discussion of
@@ -20961,8 +21033,8 @@ Subtopics
   Also unlike [defstobj], there is no :inline or :non-memoizable
   argument; :inline is essentially t, in the sense that stobj
   primitives are macros in raw Lisp; and the :non-memoizable argument
-  is derived implicitly from the value of that argument (nil by
-  default) for the corresponding concrete stobj.
+  is derived implicitly, to agree with non-memoizability of the
+  corresponding concrete stobj.
 
   Those who use [hons-enabled] features, including function memoization
   (see [memoize]), may be aware that the memo table for a function is
@@ -20976,8 +21048,7 @@ Subtopics
 Subtopics
 
   [Set-absstobj-debug]
-      Obtain debugging information upon atomicity violation for an
-      abstract stobj")
+      Get more information when atomic update fails for an abstract stobj")
  (DEFABSSTOBJ-MISSING-EVENTS
   (EVENTS)
   "Obtain the [events] needed to admit a [defabsstobj] event
@@ -22659,8 +22730,8 @@ Subtopics
   (deflabel L) will be included under the resulting encapsulate form.
   Thus, you will be able to undo this define-trusted-clause-processor
   with :[ubt] L.  Also, because of the criteria for redundant
-  encapsulate events (see [redundant-encapsulate]),the entire form is
-  considered redundant (skipped) if it is identical to one already
+  encapsulate events (see [redundant-encapsulate]), the entire form
+  is considered redundant (skipped) if it is identical to one already
   executed in the current ACL2 [world], with one exception: if
   :partial-theory is nil or omitted, and also :label nil is supplied
   explicitly, then the event will not be redundant.  If the event is
@@ -22676,12 +22747,16 @@ Subtopics
   the clause-processor function.  Otherwise, [local] definitions of
   those missing supporters can render the use of this
   clause-processor unsound, as discussed in the paper referenced at
-  the end of the [clause-processor] documentation topic.  Moreover,
-  ACL2 assumes for dependent clause-processors (discussed below) that
-  every function symbol constrained by the ``promised encapsulate''
-  of that event is either among those supporters or ancestral in one
-  of them (i.e. a supporter of a supporter, a supporter of one of
-  those, etc.).
+  the end of the [clause-processor] documentation topic.  Below we
+  discuss an additional reason that supporters is critical for
+  soundness, in the case of dependent clause-processors.
+
+  (Remark.  There could have been two notions of supporters: one for
+  functions whose definitions support the correctness of the
+  clause-processor function, and, in the case of dependent
+  clause-processors, one for supporters of the ``promised
+  encapsulate'' discussed below.  But for simplicity, a single
+  supporters argument serves both purposes.)
 
   Dependent clause-processors and promised encapsulates: The
   :partial-theory argument
@@ -22704,21 +22779,21 @@ Subtopics
   constraints are present implicitly in a stronger ``promised''
   encapsulate, for example by exporting the full definition.
 
-  If a trusted clause-processor is introduced with a :partial-theory
-  argument, we call it a ``dependent'' clause-processor, because its
-  correctness is dependent on the constraints implicitly introduced
-  by the :partial-theory encapsulate form.  The implicit constraints
-  should logically imply the constraints actually introduced by the
-  explicit encapsulate, but they should also be sufficient to justify
-  every possible invocation of the clause-processor in a
-  :clause-processor hint.  The user of a
-  define-trusted-clause-processor form is making a guarantee --- or,
-  is relying on a guarantee provided by the writer of that form ---
-  that in principle, there exists a so-called ``promised
-  encapsulate'': an encapsulate form with the same [signature] as the
-  :partial-theory encapsulate form associated with the trusted
-  clause-processor, but whose constraints introduced are the
-  aforementioned implicit constraints.
+  If a trusted clause-processor is introduced with a non-nil
+  :partial-theory argument, we call it a ``dependent''
+  clause-processor, because its correctness is dependent on the
+  constraints implicitly introduced by the :partial-theory
+  encapsulate form.  The implicit constraints should logically imply
+  the constraints actually introduced by the explicit encapsulate,
+  but they should also be sufficient to justify every possible
+  invocation of the clause-processor in a :clause-processor hint.
+  The user of a define-trusted-clause-processor form is making a
+  guarantee --- or, is relying on a guarantee provided by the writer
+  of that form --- that in principle, there exists a so-called
+  ``promised encapsulate'': an encapsulate form with the same
+  [signature] as the :partial-theory encapsulate form associated with
+  the trusted clause-processor, but whose constraints introduced are
+  the aforementioned implicit constraints.
 
   There are several additional requirements on a :partial-theory
   argument.  First, it must be an [encapsulate] event with non-empty
@@ -22729,6 +22804,14 @@ Subtopics
   we can think of this situation as attempting to associate more than
   one encapsulate with the functions introduced in the inner
   encapsulate.
+
+  Moreover, soundness depends on inclusion of enough function symbols
+  in the supporters argument, as follows.  Let S be the set of
+  specified supporters augmented by the set of function symbols
+  either introduced by, or in a property exported by, the
+  :partial-theory argument, which we call the ``promised
+  encapsulate''.  Then every function symbol constrained by the
+  promised encapsulate is in S.
 
   The :partial-theory event will (in essence) be executed as part of
   the evaluation of the define-trusted-clause-processor form.  Again,
@@ -22748,16 +22831,18 @@ Subtopics
   A remark on the underlying implementation
 
   You can see all of the current trusted clause-processors by issuing
-  the command (table trusted-clause-processor-table).  Those that are
-  dependent clause-processors will be associated in the resulting
-  association list with a pair whose car is the list of supporters
-  and whose cdr is t, i.e., with (supporters . t); the others will be
-  associated just with (supporters).
+  the command (table trusted-cl-proc-table).  The resulting alist
+  associates each trusted clause-processor with its supporters.
 
-  Thus, define-trusted-clause-processor is actually a macro that
-  generates (among other things) a table event for a table named
-  trusted-clause-processor-table; see [table].  You are invited to
-  use :[trans1] to see expansions of calls of this macro.
+  Note that define-trusted-clause-processor is actually a macro that
+  generates (among other things) a table event for extending
+  trusted-cl-proc-table.  You are invited to use :[trans1] to see
+  expansions of calls of this macro.  In particular, you can see that
+  the :partial-theory argument results in an encapsulate event that
+  includes a call of the form (set-unknown-constraints-supporters f1
+  ... fk), which in effect makes that call of encapsulate into a call
+  of partial-encapsulate with supporters (f1 ... fk).  See
+  [partial-encapsulate].
 
   A technique for using raw Lisp to define a trusted clause-processor
 
@@ -26804,6 +26889,9 @@ Subtopics
   [ACL2-doc]
       A custom Emacs browser for reading ACL2 [documentation]
 
+  [ACL2-doc-summary]
+      Summary of [ACL2-doc] commands
+
   [Args]
       args, [guard], type, [constraint], etc., of a function symbol
 
@@ -27923,7 +28011,7 @@ Subtopics
 
   where each [signature] is a well-formed signature, each signature
   describes a different function symbol, and each evi is an embedded
-  event form (See [embedded-event-form]).  Also see [signature], in
+  event form (see [embedded-event-form]).  Also see [signature], in
   particular for a discussion of how a signature can assign a [guard]
   to a function symbol.  There must be at least one evi.  The evi
   inside [local] special forms are called ``local'' [events] below.
@@ -28033,6 +28121,12 @@ Subtopics
   the superior encapsulate, to permit an-element to be used as a
   function symbol in thm1.
 
+  Remark on implicit [constraint]s (unknown-constraints).  See
+  [partial-encapsulate] for a related utility that allows some of the
+  constraints to be unspecified.  This is an advanced capability that
+  is useful when one installs special-purpose code, possibly in raw
+  Lisp, using a trust tag (see [defttag]).
+
   Remark for ACL2(r) (see [real]).  For ACL2(r), [encapsulate] can be
   used to introduce classical and non-classical functions, as
   determined by the signatures; see [signature].  Those marked as
@@ -28055,6 +28149,9 @@ Subtopics
 
   [Infected-constraints]
       [Defun]s affecting [constraint]s of [encapsulate]s
+
+  [Partial-encapsulate]
+      Introduce functions with some constraints unspecified
 
   [Redundant-encapsulate]
       Redundancy of [encapsulate] [events]
@@ -30027,6 +30124,9 @@ Subtopics
 
   [Name]
       Syntactic rules on logical names
+
+  [Partial-encapsulate]
+      Introduce functions with some constraints unspecified
 
   [Profile]
       Turn on profiling for one function
@@ -41022,7 +41122,7 @@ Subtopics
         You can see all current :clause-processor rules by issuing the
         command (print-clause-processor-rules), and you can see the
         names of all trusted clause-processors by issuing the command
-        (table trusted-clause-processor-table).
+        (table trusted-cl-proc-table).
 
     :do-not
 
@@ -43619,9 +43719,10 @@ Subtopics
   include-book places a burden on you; see [certificate].
 
   If you use [guard]s, please note include-book is executed as though
-  (set-guard-checking nil) has been evaluated; see
-  [set-guard-checking].  If you want guards checked, please see [ld]
-  and/or see [rebuild].
+  (set-guard-checking t) has been evaluated; see
+  [set-guard-checking].  If you want to run with different
+  guard-checking, consider using ld instead, or in addition; see
+  [ld].
 
   The value of :load-compiled-file controls whether a compiled file for
   the given file is loaded by include-book.  Note that this keyword
@@ -43950,7 +44051,56 @@ Subtopics
 
   The name of the rule created is (:induction name).  When that rune is
   disabled the heuristic link between pat-term and scheme-term is
-  broken.")
+  broken.
+
+
+Subtopics
+
+  [Induction-depth-limit]
+      The maximum number permitted of nested inductions
+
+  [Set-induction-depth-limit!]
+      Set the induction-depth-limit non-[local]ly")
+ (INDUCTION-DEPTH-LIMIT
+  (INDUCTION)
+  "The maximum number permitted of nested inductions
+
+  ACL2 may limit the number of levels of induction.  Consider for
+  example a subgoal with this [goal-spec]:
+
+    Subgoal *1.2.3.1.2.3.1.2.3/7'11'
+
+  This represents nine levels of induction.  By default, that is the
+  maximum permitted, since proofs rarely succeed with more than a few
+  levels of induction.  (Indeed, one is well served by relying on
+  only one level of induction, avoiding nested inductions in favor of
+  proving suitable [rewrite] rules.  See [the-method].)  Thus, if
+  ACL2 would otherwise attempt to push the subgoal indicated above
+  for later proof by induction, the overall proof would fail because
+  that would cause the maximum nesting depth of 9 to be exceeded.
+
+  To see the current limit:
+
+    (induction-depth-limit (w state))
+
+  This limit is always a natural number, with one exception: it can be
+  nil, which means that there is no limit on the nesting depth of
+  inductions.
+
+  Note that an explicit :induct hint (see [hints]) will cause an
+  induction will occur, regardless of the induction-depth-limit.  Of
+  course, if we have already reached the induction-depth-limit at the
+  point the :induct hint is applied, then any attempt to push a
+  subgoal for induction will fail (unless it too has an associated
+  :induct hint).
+
+  To change the limit, see [set-induction-depth-limit].
+
+
+Subtopics
+
+  [Set-induction-depth-limit]
+      Set the [induction-depth-limit]")
  (INFECTED-CONSTRAINTS
   (ENCAPSULATE)
   "[Defun]s affecting [constraint]s of [encapsulate]s
@@ -79692,6 +79842,23 @@ Changes to Existing Features
   Instead, it simply avoids generating (needless) conjuncts for those
   primitives.
 
+  It is no longer illegal to supply an abstract stobj as the so-called
+  ``concrete stobj'' in a [defabsstobj] event.  Thanks to Sol Swords
+  for initiating a discussion leading to this enhancement.
+
+  Calls of the function synp were formerly required to result from
+  macroexpansion of [syntaxp] or [bind-free] calls, or at least
+  nearly so.  That restriction has been lifted, although the
+  restrictions on calls of synp, syntaxp, and bind-free remain for
+  hypotheses of rules of class :[rewrite], :[definition], and
+  :[linear], or resulting from evaluation of hypotheses of :[meta]
+  rules.  Thanks to Sol Swords for requesting this change, so that
+  [defevaluator] forms can include synp.
+
+  For calls of :[pso] and related utilities (:[pso!], :[psof], and
+  :[psog]), the Time reported in the summary is now the original
+  time, not time related to running :[pso].
+
 
 New Features
 
@@ -79701,6 +79868,20 @@ New Features
   quoted lambda objects; in particular, the body need not be in
   translated form (see [term]).  We plan to document this new feature
   in detail later.
+
+  A new macro, [partial-encapsulate], allows one to introduce
+  constrained functions without specifying all of the [constraint]s.
+  This functionality was already available using a trust tag, by way
+  of a rather convoluted application of
+  [define-trusted-clause-processor]; however, [partial-encapsulate]
+  may be used without a trust tag.  See [partial-encapsulate], which
+  in particular points to an example of typical usage, in
+  books/demos/partial-encapsulate.lisp.  Thanks to Sol Swords for
+  requesting such a capability.
+
+  There is now, by default, a limit of 9 on the nesting depth of
+  inductions; see [induction-depth-limit] and to modify this default,
+  see [set-induction-depth-limit].
 
 
 Heuristic and Efficiency Improvements
@@ -79752,6 +79933,10 @@ EMACS Support
   Fixed Emacs support for the the [proof-builder] dive command (see
   [ACL2-pc::dive]), control-t control-d, to eliminate trailing zeros,
   since those are (and have been) disallowed by that command.
+
+  A new [ACL2-doc] command is the question-mark character (?), which
+  goes to a page with one-line command summaries.  Thanks to Warren
+  Hunt for a request leading to this enhancement.
 
 
 Experimental Versions")
@@ -83148,6 +83333,188 @@ Subtopics
 
   See [parallelism-at-the-top-level] for restrictions on evaluating
   parallelism primitives from within the ACL2 top-level loop.")
+ (PARTIAL-ENCAPSULATE
+  (EVENTS ENCAPSULATE)
+  "Introduce functions with some constraints unspecified
+
+  See [encapsulate] for relevant background.  Partial-encapsulate is a
+  variant of encapsulate for which some of the constraints are
+  implicit.  This is an advanced capability that is useful when one
+  installs special-purpose code, possibly in raw Lisp, using a trust
+  tag (see [defttag]).
+
+
+Introduction
+
+  The syntax for partial-encapsulate is the same as the syntax of
+  encapsulate, except for the addition of an argument, supporters,
+  which is described below.
+
+    General Form:
+    (partial-encapsulate (signature ... signature)
+      (f1 ... fk) ; supporters
+      ev1
+      ...
+      evn)
+
+  where, as for encapsulate: each signature is a well-formed
+  [signature], each describing a different function symbol, and each
+  evi is an embedded event form (see [embedded-event-form]).  The
+  additional argument (shown above) is a true-list of function
+  symbols, the supporters: it is an error if any such symbol, fi, is
+  not a known function symbol at the time the partial-encapsulate
+  call is evaluated, the exception being that fi may be introduced in
+  one of the signatures.  A partial-encapsulate form must satisfy the
+  following three requirements in addition to those of the
+  corresponding encapsulate form: it must have at least one
+  signature, it must not occur within any other encapsulate or
+  partial-encapsulate form that has at least one signature, and every
+  function symbol that it introduces must be specified in one of the
+  signatures.
+
+  A call of partial-encapsulate introduces its signature functions
+  together with its exported theorems, exactly as though it had been
+  the call of encapsulate with the same signatures and events,
+  however with one difference: the partial-encapsulate logically
+  incorporates additional constraints that are not mentioned.  This
+  is discussed further below, but for now let us note that because of
+  this difference, a successful evaluation of a partial-encapsulate
+  form results in a special ``unknown-constraints'' designation for
+  the functions introduced by the signatures.  Any attempt to access
+  the constraints for those functions will thus fail.  Consider the
+  following example, which introduces f as a constrained function
+  symbol that is constrained not only by the property that f returns
+  a boolean, but also by additional, unspecified (implicit)
+  constraints.
+
+    (partial-encapsulate
+     ((f (x) t))
+     nil
+     (local (defun f (x) (declare (xargs :guard t)) (consp x)))
+     (defthm booleanp-f
+       (booleanp (f x))
+       :rule-classes :type-prescription))
+
+    (defthm symbolp-f
+      (symbolp (f y)))
+
+    (encapsulate
+     ((g (x) t))
+     (local (defun g (x) (consp x)))
+     (defthm booleanp-g (booleanp (g x))))
+
+  Then the following fails, even though it would succeed if we replace
+  partial-encapsulate by encapsulate above.  The reason is that the
+  partial-encapsulate form allows for constraints beyond just the
+  property that f is boolean.  Imagine that special code had been
+  inserted (using a trust tag) for reasoning about f when proving a
+  theorem like symbolp-f that we were now trying to functionally
+  instantiate.
+
+    ; Functional instantiation FAILS because of unknown-constraints on f
+    (defthm symbolp-g
+      (symbolp (g y))
+      :hints ((\"Goal\" :by (:functional-instance symbolp-f (f g)))))
+
+
+Supporters and corresponding encapsulate
+
+  A partial-encapsulate represents any encapsulate form that introduces
+  the same function symbols, has the same signatures, and extends the
+  constraints introduced such that every function symbol occurring in
+  at least one of the additional constraints must either be mentioned
+  in one of the evi or be among the list of supporters, (f1 ... fk).
+  We may refer to such an encapsulate form as a ``corresponding
+  encapsulate''.  The user of partial-encapsulate should keep in mind
+  such a set of additional constraints.  The supporters should thus
+  include all function symbols in the theorems exported from the
+  intended corresponding encapsulate, except that signature functions
+  are always included among the supporters whether specified or not,
+  and hence their inclusion is optional.
+
+  The list of supporters is used for generating proof obligations for a
+  :functional-instance [lemma-instance].  Specifically, the
+  supporters serve as the ``ancestors'' of the partial encapsulate's
+  signature functions, in the constraint-generation algorithm
+  described in the documentation for [constraint].  Thus, if
+  supporters are missing that occur in the intended corresponding
+  encapsulate, then functional instantiation may be unsound because
+  some proof obligations fail to be generated.  Note that in the
+  typical application described next, where the implicit constraints
+  all specify evaluation results for calls of signature functions as
+  discussed below, the specified list of supporters can simply be
+  nil.
+
+
+Applications
+
+  A trust tag (see [defttag]) is not needed for evaluation of a
+  partial-encapsulate form.  However, for a typical application of
+  partial-encapsulate --- redefinition of a constrained function in
+  raw Lisp --- a trust tag is of course necessary (see [defttag]).
+  In such a case, the corresponding encapsulate may be viewed as
+  extending the original partial-encapsulate with all theorems of the
+  form (equal (f a1 ... ak) val), ranging over all computations (f a1
+  ... ak) ever to be evaluated (a finite but potentially huge set)
+  where val is the value returned for (f a1 ... ak).  It is the
+  responsibility of the creator of such an application to ensure that
+  all evaluations satisfy the original constraints of the
+  partial-encapsulate.
+
+  Note that in this sort of application --- that is, where the implicit
+  constraints all arise from function evaluations --- the supporters
+  argument may soundly be nil, since only the signature functions are
+  involved in the implicit constraints (and those functions are
+  automatically included among the supporters, even when not
+  specified by the user).
+
+  For an example of such an application, including explanatory
+  comments, see [community-book]
+  books/demos/partial-encapsulate.lisp.
+
+  Partial-encapsulates are, in essence, also used in the implementation
+  of dependent clause-processors, where the list of supporters might
+  well be non-nil.  See [define-trusted-clause-processor].
+
+
+Implementation
+
+  This section is provided as a reference for those interested, but can
+  probably be safely skipped by most readers.
+
+  Consider the following example.
+
+    ACL2 !>:trans1 (partial-encapsulate
+                    ((f0 (x) t))
+                    (g0)
+                    (local (defun f0 (x) x))
+                    (defthm f0-prop
+                      (implies (integerp x)
+                               (integerp (f0 x)))))
+     (ENCAPSULATE ((F0 (X) T))
+                  (LOCAL (DEFUN F0 (X) X))
+                  (DEFTHM F0-PROP
+                          (IMPLIES (INTEGERP X)
+                                   (INTEGERP (F0 X))))
+                  (SET-UNKNOWN-CONSTRAINTS-SUPPORTERS G0))
+    ACL2 !>
+
+  This example illustrates that a partial-encapsulate call expands to a
+  call of encapsulate obtained by removing the supporters argument,
+  but with the following extra event inserted after given list of
+  events, where (f1 ... fk) is the specified list of supporters.
+
+    (set-unknown-constraints-supporters f1 ... fk)
+
+  The macro, set-unknown-constraints-supporters, extends a table,
+  unknown-constraints-table.  As evaluation of the
+  partial-encapsulate concludes, the world is extended so that each
+  signature function has a 'constraint-lst property indicating that
+  its constraints are unknown, but with supporters (``ancestors'', as
+  discussed above) according to that table.  This macro call can thus
+  be inserted non-[local]ly within an encapsulate, anywhere after the
+  local function definitions, to make an encapsulate behave like a
+  partial-encapsulate.")
  (PARTITION-REST-AND-KEYWORD-ARGS (POINTERS)
                                   "See [system-utilities].")
  (PATHNAME
@@ -83764,8 +84131,8 @@ Subtopics
   Note that some rule classes are not handled by :pl.  In particular,
   if you want to see all :[clause-processor] rules, issue the command
   :print-clause-processor-rules, and for trusted clause-processors,
-  (table trusted-clause-processor-table); see [clause-processor] and
-  see [define-trusted-clause-processor].")
+  (table trusted-cl-proc-table); see [clause-processor] and see
+  [define-trusted-clause-processor].")
  (PL2
   (HISTORY)
   "Print rule(s) for the given form
@@ -84706,6 +85073,9 @@ Subtopics
 
   [Union-equal]
       See [union$].
+
+  [Unknown-constraints]
+      See [partial-encapsulate].
 
   [Untranslate-preprocess]
       See [user-defined-functions-table].
@@ -89500,6 +89870,9 @@ Subtopics
   [corollary]. If you want to see more than one proof log for a
   single top-level form, then instead of using :pso, first evaluate
   (set-gag-mode nil).
+
+  The ``Time'' printed in the summary shows the original times for the
+  proof attempt, not the times for processing the :pso command.
 
   Also see [pso!], [psog], and [psof].")
  (PSO!
@@ -96261,8 +96634,7 @@ Subtopics
   related to timing and memory usage as the file is being written.")
  (SET-ABSSTOBJ-DEBUG
   (DEFABSSTOBJ)
-  "Obtain debugging information upon atomicity violation for an abstract
-  stobj
+  "Get more information when atomic update fails for an abstract stobj
 
   This [documentation] topic assumes familiarity with abstract stobjs.
   See [defabsstobj].
@@ -98145,6 +98517,36 @@ Example
   recorded.  Moreover, its effect is to set the
   [ACL2-defaults-table], and hence its effect is [local] to the book
   or [encapsulate] form containing it; see [ACL2-defaults-table].")
+ (SET-INDUCTION-DEPTH-LIMIT
+  (INDUCTION-DEPTH-LIMIT)
+  "Set the [induction-depth-limit]
+
+    Examples:
+    (set-induction-depth-limit 3)
+    (set-induction-depth-limit nil)
+
+  Note: This is an event!  It does not print the usual event [summary]
+  but nevertheless changes the ACL2 logical [world] and is so
+  recorded.  It is [local] to the book or [encapsulate] form in which
+  it occurs; see [set-induction-depth-limit!] for a corresponding
+  non-[local] event.
+
+    General Form:
+    (set-induction-depth-limit x)
+
+  where x evaluates to a value that is a natural number or nil.  The
+  induction-depth-limit is set to that value; see
+  [induction-depth-limit].")
+ (SET-INDUCTION-DEPTH-LIMIT!
+  (INDUCTION)
+  "Set the induction-depth-limit non-[local]ly
+
+  Please see [set-induction-depth-limit], which is the same as
+  set-induction-depth-limit! except that the latter is not [local] to
+  the [encapsulate] or the book in which it occurs.  Probably
+  [set-induction-depth-limit] is to be preferred unless you have a
+  good reason for wanting to export the effect of this event outside
+  the enclosing [encapsulate] or book.")
  (SET-INHIBIT-OUTPUT-LST
   (PROVER-OUTPUT)
   "Control output
@@ -113994,6 +114396,8 @@ Subtopics
   than universal-theory.  The former includes only the [enable]d
   [rune]s as of the given [logical-name], which is probably what you
   want, while the latter includes [disable]d ones as well.")
+ (UNKNOWN-CONSTRAINTS (POINTERS)
+                      "See [partial-encapsulate].")
  (UNMEMOIZE
   (MEMOIZE PROGRAMMING HONS-AND-MEMOIZATION EVENTS)
   "Turn off memoization for the specified function
