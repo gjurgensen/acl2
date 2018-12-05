@@ -81272,6 +81272,9 @@ it."
 
 ; Extended the guard for print-timer and removed its skip-proofs.
 
+; Improved the error message when defun-nx is used for only some functions in a
+; mutual-recursion nest.
+
   :parents (release-notes)
   :short "ACL2 Version  8.2 (xxx, 20xx) Notes"
   :long "<p>NOTE!  New users can ignore these release notes, because the @(see
