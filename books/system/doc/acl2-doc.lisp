@@ -52339,8 +52339,7 @@ tables in the current Hons Space."
                (DEFMACRO MY-MAC
                          NIL
                          '(MAKE-EVENT '(DEFUN FOO (X) X)))
-               (RECORD-EXPANSION (MY-MAC)
-                                 (DEFUN FOO (X) X)))
+               (DEFUN FOO (X) X))
  })
 
  <p><b>Error Reporting</b></p>
@@ -52412,9 +52411,7 @@ tables in the current Hons Space."
 
  <li>If @('(RECORD-EXPANSION x1 x2)') is in an event context, then @('x1') and
  @('x2') are in event contexts.  Note: @('record-expansion') is intended for
- use only by the implementation, which imposes the additional restriction that
- @('x1') and its subsidiary @('make-event') calls (if any) must specify a
- @(':CHECK-EXPANSION') argument that is a @(see consp).</li>
+ use only by the implementation.</li>
 
  </ul>
 
@@ -52713,31 +52710,25 @@ tables in the current Hons Space."
  @('make-event') expression does not undergo any expansion (intuitively, it
  expands to itself).</p>
 
- <p>Now let us take a look at how we expand @(tsee progn) forms (@(tsee
- encapsulate) is handled similarly).</p>
+ <p>Now let us take a brief look at how we expand @(tsee progn) and @(tsee
+ encapsulate) forms.  More details are found further below (see ``Detailed
+ semantics'').</p>
 
- <p>@('(progn ... (make-event form :check-expansion nil) ...)')</p>
+ <p>@('(progn ... (make-event form ...) ...)')</p>
 
- <p>The expansion is obtained by replacing the @('make-event') form as follows.
- Let @('exp') be the expansion of @('form').  Then replace the above
- @('make-event') form, which we denote as @('F'), by @('(record-expansion F
- exp)').  Here, @('record-expansion') is a macro that returns its second
- argument.</p>
+ <p>The expansion is obtained, roughly speaking, by replacing the
+ @('make-event') form by its expansion, @('exp'), except that if
+ @(':check-expansion exp') is supplied explicitly, then no such replacement
+ takes place.</p>
 
- <p>@('(progn ... (make-event form :check-expansion t) ...)')</p>
-
- <p>The expansion is of the form @('(record-expansion F exp)') as in the
- @('nil') case above, except that this time @('exp') is <tt>(make-event form
- :check-expansion exp')</tt>, where @('exp'') is the expansion of
- @('form').</p>
-
- <p>@('(progn ... (make-event form :check-expansion exp) ...) ; exp a
- cons')</p>
-
- <p>No expansion takes place unless expansion takes place for at least one of
- the other subforms of the @('progn'), in which case each such form @('F') is
- replaced by @('(record-expansion F exp)') where @('exp') is the expansion of
- @('F').</p>
+ <p>Expansion for @('(encapsulate ... (make-event form ...) ...) is similar to
+ the case for @('progn'), except that for if the expansion of @('form') is
+ @('exp'), then what is stored is @('(record-expansion (make-event form ...)
+ exp)').  Also as for @('progn'), the exception is that when
+ @(':check-expansion exp') is supplied explicitly, no such replacement takes
+ place.  Here, @('record-expansion') is a macro that simply returns its second
+ argument, but is used for checking redundancy of @('encapsulate') forms (see
+ @(see redundant-encapsulate)).</p>
 
  <h3>Detailed semantics</h3>
 
@@ -52819,16 +52810,20 @@ tables in the current Hons Space."
  @('val') is not @('t') (thus, a @('consp')) then @('E') must equal @('val') or
  else we cause an error.</p>
 
- <p>If @('B') is either @('(progn form1 form2 ...)') or @('(encapsulate sigs
- form1 form2 ...)'), then after evaluating @('B'), the expansion of the
- original form is the result of rebuilding from @('B'), with wrappers @('W'),
- after replacing each @('formi') in @('B') for which expansion takes place by
- <tt>(record-expansion formi formi')</tt>, where @('formi'') is the expansion
- of @('formi').  Note that these expansions are determined as the @('formi')
- are evaluated in sequence (where in the case of @('encapsulate'), this
- determination occurs only during the first pass).  Except, if no expansion
- takes place for any @('formi'), then the expansion of the original form is
- itself.</p>
+ <p>If @('B') is @('(progn form1 form2 ...)') (and similarly for @(tsee
+ progn!)), and at least one @('formi') has an expansion, then the expansion of
+ the original form is obtained by replacing each @('formi') by its expansion
+ and then rebuilding the entire @('progn') call from @('B').</p>
+
+ <p>If @('B') is @('(encapsulate sigs form1 form2 ...)'), then after evaluating
+ @('B'), the expansion of the original form is the result of rebuilding from
+ @('B'), with wrappers @('W'), after replacing each @('formi') in @('B') for
+ which expansion takes place by <tt>(record-expansion formi formi')</tt>, where
+ @('formi'') is the expansion of @('formi').  Note that these expansions are
+ determined as the @('formi') are evaluated in sequence (where in the case of
+ @('encapsulate'), this determination occurs only during the first pass).
+ Except, if no expansion takes place for any @('formi'), then the expansion of
+ the original form is itself.</p>
 
  <p>Otherwise, the expansion of the original form is itself.</p>
 
@@ -52836,9 +52831,9 @@ tables in the current Hons Space."
 
  <p>Similarly to the @(tsee progn) and @(tsee encapsulate) cases above, book
  certification causes a book to be replaced by its so-called ``book
- expansion.''  There, each event @('ev') for which expansion took place during
- the proof pass of certification &mdash; say, producing @('ev'') &mdash; is
- replaced by <tt>(record-expansion ev ev')</tt>.</p>
+ expansion,'' where each event @('ev') for which expansion took place during
+ the proof pass of certification is replaced by its expansion, but with certain
+ @(tsee local) events elided.</p>
 
  <p>Implementation Note.  The book expansion is actually implemented by way of
  the @(':expansion-alist') field of its @(see certificate), which associates
@@ -82604,6 +82599,15 @@ it."
  set-induction-depth-limit).</p>
 
  <h3>Heuristic and Efficiency Improvements</h3>
+
+ <p>@(tsee Make-event) expansions have often been reduced in size.  (Technical
+ note: @('record-expansion') has been inserted only on expansions done directly
+ under @(tsee encapsulate) events, and some changes have also been made in how
+ and when @(see local) events are elided from expansions.)  The reduction in
+ total sizes of @('.cert') files for a complete (``everything'') regression was
+ 8.8%, though in some cases the reduction was substantially larger: for
+ example, the size of @('books/centaur/fty/tests/deftranssum.cert') was reduced
+ from 22,474,113 bytes to 16,910,530 bytes, a reduction of nearly 25%.</p>
 
  <h3>Bug Fixes</h3>
 
