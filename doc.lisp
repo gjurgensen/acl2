@@ -77,7 +77,7 @@ Subtopics
   [defthm], [in-theory], [xargs], [state], etc., without an acl2::
   prefix.
 
-  The constant *acl2-exports* lists 1447 symbols, including most
+  The constant *acl2-exports* lists 1469 symbols, including most
   documented ACL2 system constants, functions, and macros.  You will
   typically also want to import many symbols from Common Lisp; see
   [*common-lisp-symbols-from-main-lisp-package*].
@@ -126,8 +126,10 @@ Subtopics
        all-vars all-vars1 all-vars1-lst
        allocate-fixnum-range alpha-char-p
        alpha-char-p-forward-to-characterp
-       alphorder and and-macro
-       append apply$ aref-32-bit-integer-stack
+       alphorder
+       and and-macro append apply$ apply$-guard
+       apply$-lambda apply$-lambda-guard
+       apply$-userfn aref-32-bit-integer-stack
        aref-t-stack aref1 aref2 args
        arities-okp arity array1p array1p-cons
        array1p-forward array1p-linear
@@ -141,7 +143,7 @@ Subtopics
        associativity-of-* associativity-of-+
        assume atom atom-listp
        atom-listp-forward-to-true-listp
-       backchain-limit badge
+       backchain-limit badge badge-userfn
        big-clock-entry big-clock-negative-p
        binary-* binary-+ binary-append
        bind-free bit bitp boole$ boolean-listp
@@ -343,7 +345,8 @@ Subtopics
        in-package in-tau-intervalp
        in-theory include-book incompatible
        incompatible! increment-timer
-       induct initialize-event-user
+       induct induction-depth-limit
+       initialize-event-user
        int= integer integer-0 integer-1
        integer-abs integer-implies-rational
        integer-length integer-listp
@@ -447,12 +450,13 @@ Subtopics
        or or-macro ordered-symbol-alistp
        ordered-symbol-alistp-add-pair
        ordered-symbol-alistp-add-pair-forward
-       ordered-symbol-alistp-delete-assoc-eq
        ordered-symbol-alistp-forward-to-symbol-alistp
        ordered-symbol-alistp-getprops
+       ordered-symbol-alistp-remove1-assoc-eq
        otherwise our-digit-char-p
-       override-hints p! pairlis$ pairlis2 pand
-       pargs partition-rest-and-keyword-args
+       override-hints p! pairlis$
+       pairlis2 pand pargs partial-encapsulate
+       partition-rest-and-keyword-args
        pbt pc pcb pcb!
        pcs pe pe! peek-char$ pf pkg-imports
        pkg-witness pl pl2 plet plist-worldp
@@ -507,11 +511,13 @@ Subtopics
        readable-files-listp-forward-to-true-list-listp-and-alistp
        readable-files-p
        readable-files-p-forward-to-readable-files-listp
-       real-listp real/rationalp
-       realfix realpart realpart-complex
-       realpart-imagpart-elim rebuild
-       redef redef! redef+ redef- redo-flat
-       regenerate-tau-database rem remove
+       real-listp
+       real/rationalp realfix realpart
+       realpart-complex realpart-imagpart-elim
+       rebuild redef redef! redef+
+       redef- redo-flat regenerate-tau-database
+       rem remove remove-assoc
+       remove-assoc-eq remove-assoc-equal
        remove-binop remove-custom-keyword-hint
        remove-default-hints
        remove-default-hints!
@@ -522,9 +528,10 @@ Subtopics
        remove-invisible-fns
        remove-macro-alias remove-macro-fn
        remove-nth-alias remove-override-hints
-       remove-override-hints!
-       remove-raw-arity remove-untouchable
-       remove1 remove1-eq remove1-equal
+       remove-override-hints! remove-raw-arity
+       remove-untouchable remove1 remove1-assoc
+       remove1-assoc-eq remove1-assoc-equal
+       remove1-eq remove1-equal
        reset-fc-reporting reset-kill-ring
        reset-ld-specials reset-prehistory
        reset-print-control resize-list
@@ -562,6 +569,8 @@ Subtopics
        set-gc-strategy set-guard-checking
        set-guard-msg set-ignore-ok
        set-in-theory-redundant-okp
+       set-induction-depth-limit
+       set-induction-depth-limit!
        set-inhibit-output-lst
        set-inhibit-warnings
        set-inhibit-warnings!
@@ -658,7 +667,8 @@ Subtopics
        sublis sublis-fn sublis-fn-lst-simple
        sublis-fn-simple subseq subseq-list
        subsetp subsetp-eq subsetp-equal
-       subst substitute substitute-ac summary
+       subst substitute substitute-ac
+       suitably-tamep-listp summary
        symbol symbol-< symbol-<-asymmetric
        symbol-<-irreflexive symbol-<-transitive
        symbol-<-trichotomy symbol-alistp
@@ -672,7 +682,8 @@ Subtopics
        symbolp-intern-in-package-of-symbol synp
        syntaxp sys-call sys-call* sys-call+
        sys-call-status t t-stack t-stack-length
-       t-stack-length1 table table-alist take
+       t-stack-length1 table table-alist
+       take tamep tamep-functionp tamep-lambdap
        tau-data tau-database tau-interval-dom
        tau-interval-hi tau-interval-hi-rel
        tau-interval-lo tau-interval-lo-rel
@@ -684,10 +695,10 @@ Subtopics
        third thm time$ time-tracker
        time-tracker-tau timer-alistp
        timer-alistp-forward-to-true-list-listp-and-symbol-alistp
-       toggle-pc-macro
-       top-level trace! trace$ trace*
-       trans trans! trans1 translate-and-test
-       trichotomy true-list-listp
+       toggle-pc-macro top-level
+       trace! trace$ trace* trans trans!
+       trans1 translam translate-and-test
+       trichotomy true-list-fix true-list-listp
        true-list-listp-forward-to-true-listp
        true-list-listp-forward-to-true-listp-assoc-equal
        true-listp
@@ -724,6 +735,7 @@ Subtopics
        verify-guards-formula verify-termination
        w walkabout warning! warrant
        waterfall-parallelism waterfall-printing
+       well-formed-lambda-objectp
        wet with-fast-alist with-guard-checking
        with-guard-checking-error-triple
        with-guard-checking-event
@@ -3112,7 +3124,7 @@ Subtopics
       Return the :default from the [header] of a 1- or 2-dimensional array
 
   [Delete-assoc]
-      Remove the first pair from an association list for a given key
+      Deprecated version of [remove1-assoc]
 
   [Denominator]
       Divisor of a ratio in lowest terms
@@ -3830,11 +3842,17 @@ Subtopics
   [Remove]
       Remove all occurrences
 
+  [Remove-assoc]
+      Remove all pairs with a given key from an association list
+
   [Remove-duplicates]
       Remove duplicates from a string or a list
 
   [Remove1]
       Remove first occurrences, testing using [eql]
+
+  [Remove1-assoc]
+      Remove the first pair with a given key from an association list
 
   [Resize-list]
       List resizer in support of stobjs
@@ -6572,7 +6590,7 @@ Subtopics
       Recognizer for association lists with characters as keys
 
   [Delete-assoc]
-      Remove the first pair from an association list for a given key
+      Deprecated version of [remove1-assoc]
 
   [Eqlable-alistp]
       Recognizer for a true list of pairs whose [car]s are suitable for
@@ -6605,6 +6623,12 @@ Subtopics
 
   [Rassoc]
       Look up value in association list
+
+  [Remove-assoc]
+      Remove all pairs with a given key from an association list
+
+  [Remove1-assoc]
+      Remove the first pair with a given key from an association list
 
   [Standard-string-alistp]
       Recognizer for association lists with standard strings as keys
@@ -26864,53 +26888,10 @@ Subtopics
   [mutual-recursion] forms can be processed by the Emacs tags
   program.  See [mutual-recursion].")
  (DELETE-ASSOC
-  (ALISTS ACL2-BUILT-INS)
-  "Remove the first pair from an association list for a given key
+      (ALISTS ACL2-BUILT-INS)
+      "Deprecated version of [remove1-assoc]
 
-    General Forms:
-    (delete-assoc key alist)
-    (delete-assoc key alist :test 'eql)   ; same as above (eql as equality test)
-    (delete-assoc key alist :test 'eq)    ; same, but eq is equality test
-    (delete-assoc key alist :test 'equal) ; same, but equal is equality test
-
-  (Delete-assoc key alist) returns an alist that is the same as the
-  list alist, except that the first pair in alist with a [car] of key
-  is deleted, if there is one; otherwise alist is returned.  Note
-  that the order of the elements of alist is unchanged (though one
-  may be deleted).
-
-  The [guard] for a call of delete-assoc depends on the test.  In all
-  cases, the second argument must satisfy [alistp].  If the test is
-  [eql], then either the first argument must be suitable for [eql]
-  (see [eqlablep]) or the second argument must satisfy
-  [eqlable-alistp].  If the test is [eq], then either the first
-  argument must be a symbol or the second argument must satisfy
-  [symbol-alistp].
-
-  See [equality-variants] for a discussion of the relation between
-  delete-assoc and its variants:
-
-      (delete-assoc-eq key alist) is equivalent to (delete-assoc key alist
-      :test 'eq);
-
-      (delete-assoc-equal key alist) is equivalent to (delete-assoc key
-      alist :test 'equal).
-
-  In particular, reasoning about any of these primitives reduces to
-  reasoning about the function delete-assoc-equal.
-
-  Function: <delete-assoc-equal>
-
-    (defun delete-assoc-equal (key alist)
-           (declare (xargs :guard (alistp alist)))
-           (cond ((endp alist) nil)
-                 ((equal key (caar alist)) (cdr alist))
-                 (t (cons (car alist)
-                          (delete-assoc-equal key (cdr alist))))))")
- (DELETE-ASSOC-EQ (POINTERS)
-                  "See [delete-assoc].")
- (DELETE-ASSOC-EQUAL (POINTERS)
-                     "See [delete-assoc].")
+  See [remove1-assoc].")
  (DELETE-FILE$
   (IO)
   "Delete a file
@@ -29215,7 +29196,6 @@ Subtopics
 
     [add-to-set]
     [assoc]
-    [delete-assoc]
     [intersection$] ; (see Note below)
     [intersectp]
     [member]
@@ -29224,9 +29204,11 @@ Subtopics
     [position]
     [put-assoc]
     [rassoc]
+    [remove]
+    [remove-assoc]
     [remove-duplicates]
     [remove1]
-    [remove]
+    [remove1-assoc]
     [set-difference$] ; (see Note below)
     [subsetp]
     [union$] ; (see Note below)
@@ -56343,8 +56325,7 @@ Subtopics
                  (DEFMACRO MY-MAC
                            NIL
                            '(MAKE-EVENT '(DEFUN FOO (X) X)))
-                 (RECORD-EXPANSION (MY-MAC)
-                                   (DEFUN FOO (X) X)))
+                 (DEFUN FOO (X) X))
 
   Error Reporting
 
@@ -56399,10 +56380,7 @@ Subtopics
       (the signature list) is in an event context.
     * If (RECORD-EXPANSION x1 x2) is in an event context, then x1 and x2
       are in event contexts.  Note: record-expansion is intended for
-      use only by the implementation, which imposes the additional
-      restriction that x1 and its subsidiary make-event calls (if
-      any) must specify a :CHECK-EXPANSION argument that is a
-      [consp].
+      use only by the implementation.
 
   Low-level remark, for system implementors.  There is the one
   exception to the above restriction: a single [state-global-let*]
@@ -56694,28 +56672,25 @@ Introduction
   original make-event expression does not undergo any expansion
   (intuitively, it expands to itself).
 
-  Now let us take a look at how we expand [progn] forms ([encapsulate]
-  is handled similarly).
+  Now let us take a brief look at how we expand [progn] and
+  [encapsulate] forms.  More details are found further below (see
+  ``Detailed semantics'').
 
-  (progn ... (make-event form :check-expansion nil) ...)
+  (progn ... (make-event form ...) ...)
 
-  The expansion is obtained by replacing the make-event form as
-  follows.  Let exp be the expansion of form.  Then replace the above
-  make-event form, which we denote as F, by (record-expansion F exp).
-  Here, record-expansion is a macro that returns its second argument.
+  The expansion is obtained, roughly speaking, by replacing the
+  make-event form by its expansion, exp, except that if
+  :check-expansion exp is supplied explicitly, then no such
+  replacement takes place.
 
-  (progn ... (make-event form :check-expansion t) ...)
-
-  The expansion is of the form (record-expansion F exp) as in the nil
-  case above, except that this time exp is (make-event form
-  :check-expansion exp'), where exp' is the expansion of form.
-
-  (progn ... (make-event form :check-expansion exp) ...) ; exp a cons
-
-  No expansion takes place unless expansion takes place for at least
-  one of the other subforms of the progn, in which case each such
-  form F is replaced by (record-expansion F exp) where exp is the
-  expansion of F.
+  Expansion for (encapsulate ... (make-event form ...) ...) is similar
+  to the case for @('progn, except that for if the expansion of form
+  is exp, then what is stored is (record-expansion (make-event form
+  ...)  exp).  Also as for progn, the exception is that when
+  :check-expansion exp is supplied explicitly, no such replacement
+  takes place.  Here, record-expansion is a macro that simply returns
+  its second argument, but is used for checking redundancy of
+  encapsulate forms (see [redundant-encapsulate]).
 
 
 Detailed semantics
@@ -56800,24 +56775,29 @@ Detailed semantics
       requirement that if val is not t (thus, a consp) then E must
       equal val or else we cause an error.
 
-      If B is either (progn form1 form2 ...) or (encapsulate sigs form1
-      form2 ...), then after evaluating B, the expansion of the
-      original form is the result of rebuilding from B, with wrappers
-      W, after replacing each formi in B for which expansion takes
-      place by (record-expansion formi formi'), where formi' is the
-      expansion of formi.  Note that these expansions are determined
-      as the formi are evaluated in sequence (where in the case of
-      encapsulate, this determination occurs only during the first
-      pass).  Except, if no expansion takes place for any formi, then
-      the expansion of the original form is itself.
+      If B is (progn form1 form2 ...) (and similarly for [progn!]), and at
+      least one formi has an expansion, then the expansion of the
+      original form is obtained by replacing each formi by its
+      expansion and then rebuilding the entire progn call from B.
+
+      If B is (encapsulate sigs form1 form2 ...), then after evaluating B,
+      the expansion of the original form is the result of rebuilding
+      from B, with wrappers W, after replacing each formi in B for
+      which expansion takes place by (record-expansion formi formi'),
+      where formi' is the expansion of formi.  Note that these
+      expansions are determined as the formi are evaluated in
+      sequence (where in the case of encapsulate, this determination
+      occurs only during the first pass).  Except, if no expansion
+      takes place for any formi, then the expansion of the original
+      form is itself.
 
       Otherwise, the expansion of the original form is itself.
 
   Similarly to the [progn] and [encapsulate] cases above, book
   certification causes a book to be replaced by its so-called ``book
-  expansion.'' There, each event ev for which expansion took place
-  during the proof pass of certification --- say, producing ev' ---
-  is replaced by (record-expansion ev ev').
+  expansion,'' where each event ev for which expansion took place
+  during the proof pass of certification is replaced by its
+  expansion, but with certain [local] events elided.
 
   Implementation Note.  The book expansion is actually implemented by
   way of the :expansion-alist field of its [certificate], which
@@ -81218,6 +81198,23 @@ Changes to Existing Features
   :[psog]), the Time reported in the summary is now the original
   time, not time related to running :[pso].
 
+  The macro delete-assoc has been renamed [remove1-assoc], to reflect
+  more clearly that at most one pair is removed, and also for
+  consistency with Common Lisp nomenclature (where ``delete''
+  operations are generally destructive and ``remove'' operations are
+  not).  Moreover, other functions and macros whose name has prefix
+  \"DELETE-ASSOC\" have been similarly renamed to have prefix
+  \"REMOVE1-ASSOC\"; for example, delete-assoc-eq has been renamed
+  remove1-assoc-eq.  (The old \"DELETE-ASSOC\"-based names still exist
+  as macros --- indeed, as macro-aliases for their renamed versions
+  (see [add-macro-alias]) --- but those may be deleted in the
+  future.)  Analogous functions and macros have been introduced that
+  remove all pairs with a given key, rather than only one; see
+  [remove-assoc].  (These and related theorems formerly appeared in
+  the [community-book], books/centaur/misc/remove-assoc.lisp.)
+  Thanks to Alessandro Coglio for a query and subsequent discussion
+  leading to these changes.
+
 
 New Features
 
@@ -81243,6 +81240,16 @@ New Features
 
 
 Heuristic and Efficiency Improvements
+
+  [Make-event] expansions have often been reduced in size.  (Technical
+  note: record-expansion has been inserted only on expansions done
+  directly under [encapsulate] events, and some changes have also
+  been made in how and when [local] events are elided from
+  expansions.)  The reduction in total sizes of .cert files for a
+  complete (``everything'') regression was 8.8%, though in some cases
+  the reduction was substantially larger: for example, the size of
+  books/centaur/fty/tests/deftranssum.cert was reduced from
+  22,474,113 bytes to 16,910,530 bytes, a reduction of nearly 25%.
 
 
 Bug Fixes
@@ -85718,12 +85725,6 @@ Subtopics
   [Defined-constant]
       See [system-utilities].
 
-  [Delete-assoc-eq]
-      See [delete-assoc].
-
-  [Delete-assoc-equal]
-      See [delete-assoc].
-
   [Disjoin]
       See [system-utilities].
 
@@ -86216,6 +86217,12 @@ Subtopics
   [Regression]
       See [books-certification].
 
+  [Remove-assoc-eq]
+      See [remove-assoc].
+
+  [Remove-assoc-equal]
+      See [remove-assoc].
+
   [Remove-duplicates-eq]
       See [remove-duplicates].
 
@@ -86230,6 +86237,12 @@ Subtopics
 
   [Remove-guard-holders]
       See [guard-holders].
+
+  [Remove1-assoc-eq]
+      See [remove1-assoc].
+
+  [Remove1-assoc-equal]
+      See [remove1-assoc].
 
   [Remove1-eq]
       See [remove1].
@@ -94825,6 +94838,58 @@ Subtopics
 
   Remove is defined by Common Lisp.  See any Common Lisp documentation
   for more information.")
+ (REMOVE-ASSOC
+  (ALISTS ACL2-BUILT-INS)
+  "Remove all pairs with a given key from an association list
+
+    General Forms:
+    (remove-assoc key alist)
+    (remove-assoc key alist :test 'eql)   ; same as above (eql as equality test)
+    (remove-assoc key alist :test 'eq)    ; same, but eq is equality test
+    (remove-assoc key alist :test 'equal) ; same, but equal is equality test
+
+  (Remove-assoc key alist) returns an alist that is the same as the
+  list alist, except that all pairs in alist with a [car] of key are
+  deleted (if any; otherwise alist is returned).  Note that the order
+  of the elements of alist is unchanged (though some may be deleted).
+
+  Also see [remove1-assoc] for a similar utility that deletes only the
+  first pair in an alist with a given key, rather than all such
+  pairs.
+
+  The [guard] for a call of remove-assoc depends on the test.  In all
+  cases, the second argument must satisfy [alistp].  If the test is
+  [eql], then either the first argument must be suitable for [eql]
+  (see [eqlablep]) or the second argument must satisfy
+  [eqlable-alistp].  If the test is [eq], then either the first
+  argument must be a symbol or the second argument must satisfy
+  [symbol-alistp].
+
+  See [equality-variants] for a discussion of the relation between
+  remove-assoc and its variants:
+
+      (remove-assoc-eq key alist) is equivalent to (remove-assoc key alist
+      :test 'eq);
+
+      (remove-assoc-equal key alist) is equivalent to (remove-assoc key
+      alist :test 'equal).
+
+  In particular, reasoning about any of these primitives reduces to
+  reasoning about the function remove-assoc-equal.
+
+  Function: <remove-assoc-equal>
+
+    (defun remove-assoc-equal (x alist)
+           (declare (xargs :guard (alistp alist)))
+           (cond ((endp alist) nil)
+                 ((equal x (car (car alist)))
+                  (remove-assoc-equal x (cdr alist)))
+                 (t (cons (car alist)
+                          (remove-assoc-equal x (cdr alist))))))")
+ (REMOVE-ASSOC-EQ (POINTERS)
+                  "See [remove-assoc].")
+ (REMOVE-ASSOC-EQUAL (POINTERS)
+                     "See [remove-assoc].")
  (REMOVE-BINOP
   (MACROS)
   "Remove the association of a function name with a macro name
@@ -95201,6 +95266,57 @@ Subtopics
 
   In particular, reasoning about any of these primitives reduces to
   reasoning about the function remove1-equal.")
+ (REMOVE1-ASSOC
+  (ALISTS ACL2-BUILT-INS)
+  "Remove the first pair with a given key from an association list
+
+    General Forms:
+    (remove1-assoc key alist)
+    (remove1-assoc key alist :test 'eql)   ; same as above (eql as equality test)
+    (remove1-assoc key alist :test 'eq)    ; same, but eq is equality test
+    (remove1-assoc key alist :test 'equal) ; same, but equal is equality test
+
+  (Remove1-assoc key alist) returns an alist that is the same as the
+  list alist, except that the first pair in alist with a [car] of key
+  is deleted, if there is one; otherwise alist is returned.  Note
+  that the order of the elements of alist is unchanged (though one
+  may be deleted).
+
+  Also see [remove-assoc] for a similar utility that deletes all pairs
+  in an alist with a given key, rather than only the first such pair.
+
+  The [guard] for a call of remove1-assoc depends on the test.  In all
+  cases, the second argument must satisfy [alistp].  If the test is
+  [eql], then either the first argument must be suitable for [eql]
+  (see [eqlablep]) or the second argument must satisfy
+  [eqlable-alistp].  If the test is [eq], then either the first
+  argument must be a symbol or the second argument must satisfy
+  [symbol-alistp].
+
+  See [equality-variants] for a discussion of the relation between
+  remove1-assoc and its variants:
+
+      (remove1-assoc-eq key alist) is equivalent to (remove1-assoc key
+      alist :test 'eq);
+
+      (remove1-assoc-equal key alist) is equivalent to (remove1-assoc key
+      alist :test 'equal).
+
+  In particular, reasoning about any of these primitives reduces to
+  reasoning about the function remove1-assoc-equal.
+
+  Function: <remove1-assoc-equal>
+
+    (defun remove1-assoc-equal (key alist)
+           (declare (xargs :guard (alistp alist)))
+           (cond ((endp alist) nil)
+                 ((equal key (caar alist)) (cdr alist))
+                 (t (cons (car alist)
+                          (remove1-assoc-equal key (cdr alist))))))")
+ (REMOVE1-ASSOC-EQ (POINTERS)
+                   "See [remove1-assoc].")
+ (REMOVE1-ASSOC-EQUAL (POINTERS)
+                      "See [remove1-assoc].")
  (REMOVE1-EQ (POINTERS) "See [remove1].")
  (REMOVE1-EQUAL (POINTERS)
                 "See [remove1].")
