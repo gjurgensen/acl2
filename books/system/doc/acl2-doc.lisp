@@ -23862,42 +23862,8 @@ subtree of X with T, without duplication.</p>
 
 (defxdoc delete-assoc
   :parents (alists acl2-built-ins)
-  :short "Remove the first pair from an association list for a given key"
-  :long "@({
-  General Forms:
-  (delete-assoc key alist)
-  (delete-assoc key alist :test 'eql)   ; same as above (eql as equality test)
-  (delete-assoc key alist :test 'eq)    ; same, but eq is equality test
-  (delete-assoc key alist :test 'equal) ; same, but equal is equality test
- })
-
- <p>@('(Delete-assoc key alist)') returns an alist that is the same as the list
- @('alist'), except that the first pair in @('alist') with a @(tsee car) of
- @('key') is deleted, if there is one; otherwise @('alist') is returned.  Note
- that the order of the elements of @('alist') is unchanged (though one may be
- deleted).</p>
-
- <p>The @(see guard) for a call of @('delete-assoc') depends on the test.  In
- all cases, the second argument must satisfy @(tsee alistp).  If the test is
- @(tsee eql), then either the first argument must be suitable for @(tsee eql)
- (see @(see eqlablep)) or the second argument must satisfy @(tsee
- eqlable-alistp).  If the test is @(tsee eq), then either the first argument
- must be a symbol or the second argument must satisfy @(tsee
- symbol-alistp).</p>
-
- <p>See @(see equality-variants) for a discussion of the relation between
- @('delete-assoc') and its variants:</p>
-
- <blockquote><p>@('(delete-assoc-eq key alist)') is equivalent to
- @('(delete-assoc key alist :test 'eq)');</p>
-
- <p>@('(delete-assoc-equal key alist)') is equivalent to @('(delete-assoc key
- alist :test 'equal)').</p></blockquote>
-
- <p>In particular, reasoning about any of these primitives reduces to reasoning
- about the function @('delete-assoc-equal').</p>
-
- @(def delete-assoc-equal)")
+  :short "Deprecated version of @(see remove1-assoc)"
+  :long "<p>See @(see remove1-assoc).</p>")
 
 (defxdoc delete-file$
   :parents (io)
@@ -26136,7 +26102,6 @@ ld) and @(tsee include-book)"
  <code>
  @(tsee add-to-set)
  @(tsee assoc)
- @(tsee delete-assoc)
  @(tsee intersection$) ; (see Note below)
  @(tsee intersectp)
  @(tsee member)
@@ -26145,9 +26110,11 @@ ld) and @(tsee include-book)"
  @(tsee position)
  @(tsee put-assoc)
  @(tsee rassoc)
+ @(tsee remove)
+ @(tsee remove-assoc)
  @(tsee remove-duplicates)
  @(tsee remove1)
- @(tsee remove)
+ @(tsee remove1-assoc)
  @(tsee set-difference$) ; (see Note below)
  @(tsee subsetp)
  @(tsee union$) ; (see Note below)
@@ -82577,6 +82544,22 @@ it."
  @(':')@(tsee psof), and @(':')@(tsee psog)), the Time reported in the summary
  is now the original time, not time related to running @(':')@(tsee pso).</p>
 
+ <p>The macro @('delete-assoc') has been renamed @(tsee remove1-assoc), to
+ reflect more clearly that at most one pair is removed, and also for
+ consistency with Common Lisp nomenclature (where ``delete'' operations are
+ generally destructive and ``remove'' operations are not).  Moreover, other
+ functions and macros whose name has prefix @('\"DELETE-ASSOC\"') have been
+ similarly renamed to have prefix @('\"REMOVE1-ASSOC\"'); for example,
+ @('delete-assoc-eq') has been renamed @('remove1-assoc-eq').  (The old
+ @('\"DELETE-ASSOC\"')-based names still exist as macros &mdash; indeed, as
+ macro-aliases for their renamed versions (see @(see add-macro-alias)) &mdash;
+ but those may be deleted in the future.)  Analogous functions and macros have
+ been introduced that remove all pairs with a given key, rather than only one;
+ see @(see remove-assoc).  (These and related theorems formerly appeared in the
+ @(see community-book), @('books/centaur/misc/remove-assoc.lisp').)  Thanks to
+ Alessandro Coglio for a query and subsequent discussion leading to these
+ changes.</p>
+
  <h3>New Features</h3>
 
  <p>A new construct, @('lambda$'), may be used in place of @('lambda') to be
@@ -93598,6 +93581,47 @@ arithmetic) for libraries of @(see books) for arithmetic reasoning.</p>")
  <p>@('Remove') is defined by Common Lisp.  See any Common Lisp documentation
  for more information.</p>")
 
+(defxdoc remove-assoc
+  :parents (alists acl2-built-ins)
+  :short "Remove all pairs with a given key from an association list"
+  :long "@({
+  General Forms:
+  (remove-assoc key alist)
+  (remove-assoc key alist :test 'eql)   ; same as above (eql as equality test)
+  (remove-assoc key alist :test 'eq)    ; same, but eq is equality test
+  (remove-assoc key alist :test 'equal) ; same, but equal is equality test
+ })
+
+ <p>@('(Remove-assoc key alist)') returns an alist that is the same as the list
+ @('alist'), except that all pairs in @('alist') with a @(tsee car) of @('key')
+ are deleted (if any; otherwise @('alist') is returned).  Note that the order
+ of the elements of @('alist') is unchanged (though some may be deleted).</p>
+
+ <p>Also see @(see remove1-assoc) for a similar utility that deletes only the
+ first pair in an alist with a given key, rather than all such pairs.</p>
+
+ <p>The @(see guard) for a call of @('remove-assoc') depends on the test.  In
+ all cases, the second argument must satisfy @(tsee alistp).  If the test is
+ @(tsee eql), then either the first argument must be suitable for @(tsee eql)
+ (see @(see eqlablep)) or the second argument must satisfy @(tsee
+ eqlable-alistp).  If the test is @(tsee eq), then either the first argument
+ must be a symbol or the second argument must satisfy @(tsee
+ symbol-alistp).</p>
+
+ <p>See @(see equality-variants) for a discussion of the relation between
+ @('remove-assoc') and its variants:</p>
+
+ <blockquote><p>@('(remove-assoc-eq key alist)') is equivalent to
+ @('(remove-assoc key alist :test 'eq)');</p>
+
+ <p>@('(remove-assoc-equal key alist)') is equivalent to @('(remove-assoc key
+ alist :test 'equal)').</p></blockquote>
+
+ <p>In particular, reasoning about any of these primitives reduces to reasoning
+ about the function @('remove-assoc-equal').</p>
+
+ @(def remove-assoc-equal)")
+
 (defxdoc remove-binop
   :parents (macros)
   :short "Remove the association of a function name with a macro name"
@@ -93974,6 +93998,48 @@ arithmetic) for libraries of @(see books) for arithmetic reasoning.</p>")
 
  <p>In particular, reasoning about any of these primitives reduces to reasoning
  about the function @('remove1-equal').</p>")
+
+(defxdoc remove1-assoc
+  :parents (alists acl2-built-ins)
+  :short "Remove the first pair with a given key from an association list"
+  :long "@({
+  General Forms:
+  (remove1-assoc key alist)
+  (remove1-assoc key alist :test 'eql)   ; same as above (eql as equality test)
+  (remove1-assoc key alist :test 'eq)    ; same, but eq is equality test
+  (remove1-assoc key alist :test 'equal) ; same, but equal is equality test
+ })
+
+ <p>@('(Remove1-assoc key alist)') returns an alist that is the same as the list
+ @('alist'), except that the first pair in @('alist') with a @(tsee car) of
+ @('key') is deleted, if there is one; otherwise @('alist') is returned.  Note
+ that the order of the elements of @('alist') is unchanged (though one may be
+ deleted).</p>
+
+ <p>Also see @(see remove-assoc) for a similar utility that deletes all pairs
+ in an alist with a given key, rather than only the first such pair.</p>
+
+ <p>The @(see guard) for a call of @('remove1-assoc') depends on the test.  In
+ all cases, the second argument must satisfy @(tsee alistp).  If the test is
+ @(tsee eql), then either the first argument must be suitable for @(tsee eql)
+ (see @(see eqlablep)) or the second argument must satisfy @(tsee
+ eqlable-alistp).  If the test is @(tsee eq), then either the first argument
+ must be a symbol or the second argument must satisfy @(tsee
+ symbol-alistp).</p>
+
+ <p>See @(see equality-variants) for a discussion of the relation between
+ @('remove1-assoc') and its variants:</p>
+
+ <blockquote><p>@('(remove1-assoc-eq key alist)') is equivalent to
+ @('(remove1-assoc key alist :test 'eq)');</p>
+
+ <p>@('(remove1-assoc-equal key alist)') is equivalent to @('(remove1-assoc key
+ alist :test 'equal)').</p></blockquote>
+
+ <p>In particular, reasoning about any of these primitives reduces to reasoning
+ about the function @('remove1-assoc-equal').</p>
+
+ @(def remove1-assoc-equal)")
 
 (defxdoc reset-fc-reporting
   :parents (forward-chaining-reports)
@@ -125401,8 +125467,6 @@ expand function call at the current subterm, without simplifying"
 (defpointer default-state-vars system-utilities)
 (defpointer default-verify-guards-eagerness set-verify-guards-eagerness)
 (defpointer defined-constant system-utilities)
-(defpointer delete-assoc-eq delete-assoc)
-(defpointer delete-assoc-equal delete-assoc)
 (defpointer disjoin system-utilities)
 (defpointer disjoin2 system-utilities)
 (defpointer do-not-induct hints t)
@@ -125567,11 +125631,15 @@ expand function call at the current subterm, without simplifying"
 (defpointer redefining ld-redefinition-action)
 (defpointer redundant redundant-events)
 (defpointer regression books-certification)
+(defpointer remove-assoc-eq remove-assoc)
+(defpointer remove-assoc-equal remove-assoc)
 (defpointer remove-duplicates-eq remove-duplicates)
 (defpointer remove-duplicates-equal remove-duplicates)
 (defpointer remove-eq remove)
 (defpointer remove-equal remove)
 (defpointer remove-guard-holders guard-holders)
+(defpointer remove1-assoc-eq remove1-assoc)
+(defpointer remove1-assoc-equal remove1-assoc)
 (defpointer remove1-eq remove1)
 (defpointer remove1-equal remove1)
 (defpointer reorder hints t)
