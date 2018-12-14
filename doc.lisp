@@ -77,7 +77,7 @@ Subtopics
   [defthm], [in-theory], [xargs], [state], etc., without an acl2::
   prefix.
 
-  The constant *acl2-exports* lists 1447 symbols, including most
+  The constant *acl2-exports* lists 1469 symbols, including most
   documented ACL2 system constants, functions, and macros.  You will
   typically also want to import many symbols from Common Lisp; see
   [*common-lisp-symbols-from-main-lisp-package*].
@@ -126,8 +126,10 @@ Subtopics
        all-vars all-vars1 all-vars1-lst
        allocate-fixnum-range alpha-char-p
        alpha-char-p-forward-to-characterp
-       alphorder and and-macro
-       append apply$ aref-32-bit-integer-stack
+       alphorder
+       and and-macro append apply$ apply$-guard
+       apply$-lambda apply$-lambda-guard
+       apply$-userfn aref-32-bit-integer-stack
        aref-t-stack aref1 aref2 args
        arities-okp arity array1p array1p-cons
        array1p-forward array1p-linear
@@ -141,7 +143,7 @@ Subtopics
        associativity-of-* associativity-of-+
        assume atom atom-listp
        atom-listp-forward-to-true-listp
-       backchain-limit badge
+       backchain-limit badge badge-userfn
        big-clock-entry big-clock-negative-p
        binary-* binary-+ binary-append
        bind-free bit bitp boole$ boolean-listp
@@ -343,7 +345,8 @@ Subtopics
        in-package in-tau-intervalp
        in-theory include-book incompatible
        incompatible! increment-timer
-       induct initialize-event-user
+       induct induction-depth-limit
+       initialize-event-user
        int= integer integer-0 integer-1
        integer-abs integer-implies-rational
        integer-length integer-listp
@@ -447,12 +450,13 @@ Subtopics
        or or-macro ordered-symbol-alistp
        ordered-symbol-alistp-add-pair
        ordered-symbol-alistp-add-pair-forward
-       ordered-symbol-alistp-delete-assoc-eq
        ordered-symbol-alistp-forward-to-symbol-alistp
        ordered-symbol-alistp-getprops
+       ordered-symbol-alistp-remove1-assoc-eq
        otherwise our-digit-char-p
-       override-hints p! pairlis$ pairlis2 pand
-       pargs partition-rest-and-keyword-args
+       override-hints p! pairlis$
+       pairlis2 pand pargs partial-encapsulate
+       partition-rest-and-keyword-args
        pbt pc pcb pcb!
        pcs pe pe! peek-char$ pf pkg-imports
        pkg-witness pl pl2 plet plist-worldp
@@ -507,11 +511,13 @@ Subtopics
        readable-files-listp-forward-to-true-list-listp-and-alistp
        readable-files-p
        readable-files-p-forward-to-readable-files-listp
-       real-listp real/rationalp
-       realfix realpart realpart-complex
-       realpart-imagpart-elim rebuild
-       redef redef! redef+ redef- redo-flat
-       regenerate-tau-database rem remove
+       real-listp
+       real/rationalp realfix realpart
+       realpart-complex realpart-imagpart-elim
+       rebuild redef redef! redef+
+       redef- redo-flat regenerate-tau-database
+       rem remove remove-assoc
+       remove-assoc-eq remove-assoc-equal
        remove-binop remove-custom-keyword-hint
        remove-default-hints
        remove-default-hints!
@@ -522,9 +528,10 @@ Subtopics
        remove-invisible-fns
        remove-macro-alias remove-macro-fn
        remove-nth-alias remove-override-hints
-       remove-override-hints!
-       remove-raw-arity remove-untouchable
-       remove1 remove1-eq remove1-equal
+       remove-override-hints! remove-raw-arity
+       remove-untouchable remove1 remove1-assoc
+       remove1-assoc-eq remove1-assoc-equal
+       remove1-eq remove1-equal
        reset-fc-reporting reset-kill-ring
        reset-ld-specials reset-prehistory
        reset-print-control resize-list
@@ -562,6 +569,8 @@ Subtopics
        set-gc-strategy set-guard-checking
        set-guard-msg set-ignore-ok
        set-in-theory-redundant-okp
+       set-induction-depth-limit
+       set-induction-depth-limit!
        set-inhibit-output-lst
        set-inhibit-warnings
        set-inhibit-warnings!
@@ -658,7 +667,8 @@ Subtopics
        sublis sublis-fn sublis-fn-lst-simple
        sublis-fn-simple subseq subseq-list
        subsetp subsetp-eq subsetp-equal
-       subst substitute substitute-ac summary
+       subst substitute substitute-ac
+       suitably-tamep-listp summary
        symbol symbol-< symbol-<-asymmetric
        symbol-<-irreflexive symbol-<-transitive
        symbol-<-trichotomy symbol-alistp
@@ -672,7 +682,8 @@ Subtopics
        symbolp-intern-in-package-of-symbol synp
        syntaxp sys-call sys-call* sys-call+
        sys-call-status t t-stack t-stack-length
-       t-stack-length1 table table-alist take
+       t-stack-length1 table table-alist
+       take tamep tamep-functionp tamep-lambdap
        tau-data tau-database tau-interval-dom
        tau-interval-hi tau-interval-hi-rel
        tau-interval-lo tau-interval-lo-rel
@@ -684,10 +695,10 @@ Subtopics
        third thm time$ time-tracker
        time-tracker-tau timer-alistp
        timer-alistp-forward-to-true-list-listp-and-symbol-alistp
-       toggle-pc-macro
-       top-level trace! trace$ trace*
-       trans trans! trans1 translate-and-test
-       trichotomy true-list-listp
+       toggle-pc-macro top-level
+       trace! trace$ trace* trans trans!
+       trans1 translam translate-and-test
+       trichotomy true-list-fix true-list-listp
        true-list-listp-forward-to-true-listp
        true-list-listp-forward-to-true-listp-assoc-equal
        true-listp
@@ -724,6 +735,7 @@ Subtopics
        verify-guards-formula verify-termination
        w walkabout warning! warrant
        waterfall-parallelism waterfall-printing
+       well-formed-lambda-objectp
        wet with-fast-alist with-guard-checking
        with-guard-checking-error-triple
        with-guard-checking-event
@@ -3112,7 +3124,7 @@ Subtopics
       Return the :default from the [header] of a 1- or 2-dimensional array
 
   [Delete-assoc]
-      Remove the first pair from an association list for a given key
+      Deprecated version of [remove1-assoc]
 
   [Denominator]
       Divisor of a ratio in lowest terms
@@ -3830,11 +3842,17 @@ Subtopics
   [Remove]
       Remove all occurrences
 
+  [Remove-assoc]
+      Remove all pairs with a given key from an association list
+
   [Remove-duplicates]
       Remove duplicates from a string or a list
 
   [Remove1]
       Remove first occurrences, testing using [eql]
+
+  [Remove1-assoc]
+      Remove the first pair with a given key from an association list
 
   [Resize-list]
       List resizer in support of stobjs
@@ -6572,7 +6590,7 @@ Subtopics
       Recognizer for association lists with characters as keys
 
   [Delete-assoc]
-      Remove the first pair from an association list for a given key
+      Deprecated version of [remove1-assoc]
 
   [Eqlable-alistp]
       Recognizer for a true list of pairs whose [car]s are suitable for
@@ -6605,6 +6623,12 @@ Subtopics
 
   [Rassoc]
       Look up value in association list
+
+  [Remove-assoc]
+      Remove all pairs with a given key from an association list
+
+  [Remove1-assoc]
+      Remove the first pair with a given key from an association list
 
   [Standard-string-alistp]
       Recognizer for association lists with standard strings as keys
@@ -7600,27 +7624,147 @@ Subtopics
   (ACL2-BUILT-INS PROGRAMMING)
   "Apply an authorized function or tame lambda to arguments
 
-  See [introduction-to-apply$] for a tutorial on apply$ and related
-  concepts.  That topic cites a technical paper that gives the full
-  details.  It also includes links to some relevant books.
+  We recommend that you read the paper {``Limited Second-Order
+  Functionality in a First-Order Setting'' |
+  http://www.cs.utexas.edu/users/kaufmann/papers/apply/index.html} by
+  Matt Kaufmann and J Strother Moore for both motivation and
+  foundational details.  You might also read
+  [introduction-to-apply$]!
+
+  This documentation starts with a glossary of terms.  Then we provide
+  some examples and present the specification of apply$.  Next, we
+  deal with issues related to apply$ in definitions, stating and
+  proving theorems, guards and guard verification, and top-level
+  evaluation.  Finally we exhibit the formal definitions apply$ and
+  some related concepts.  We have sprinkled in a little tutorial
+  material for readability but have not provided much motivation for
+  some design decisions.
 
 
-Start Up
+Glossary
 
-  You are advised to:
+  Here is a brief glossary of terms used in the semantics of apply$.
+  While we provide links to the documentation of the concepts, we
+  urge you not to follow those links until you've understood the big
+  picture!
 
-    (include-book \"projects/apply/apply-lemmas\" :dir :system)
+    * apply$ -- the ACL2 function that takes two arguments, one
+      representing a function and the other listing actuals to be fed
+      to that function.  Under certain conditions, apply$ applies the
+      function to the arguments and returns the result.  Apply$ is
+      mutually recursive with [apply$-lambda], [ev$], and [ev$-list].
+      Apply$'s ``badge'' (see below) is (APPLY$-BADGE T 2 :FN NIL)
+      which means its ``authorization flag'' is T (meaning it returns
+      1 value), its arity is 2, its first argument has ``ilk'' :FN
+      and is thus treated as a ``function;'' its second argument has
+      ilk NIL and is thus treated as an ordinary object.  Initially,
+      apply$ is the only symbol in ACL2 with an ilk of :FN.
+    * [badge] -- an object associated with some function symbols telling
+      apply$ whether it is authorized to call that function, the
+      arity of the function, and the [ilk] of each argument position
+      telling apply$ how each argument is treated.  The ilks are :FN,
+      :EXPR and NIL.  The association between a function symbol and
+      its badge is manged by [warrant]s.  In proofs, apply$ must have
+      a warrant for every non-primitive function symbol to be
+      applied.  Those warrants are provided as hypotheses to the
+      theorem being proved.  Symbols without badges cannot be
+      apply$d.  Badges are generated, when possible, by
+      [def-warrant].  Not every function symbol can have a badge.
+    * compiled LAMBDA cache (or simply cache in this context) -- a cache in
+      the raw Lisp under ACL2 that supports the application of apply$
+      on well-formed, guard verified LAMBDA objects.  We include
+      ``lambda expression,'' ``LAMBDA object,'' and ``lambda$
+      expression'' -- three similar looking phrases with very
+      different meanings -- later in this Glossary.  See
+      [print-cl-cache] for some details of the cache.
+    * evaluation theory -- the logical theory in which expressions
+      submitted at the top-level of the ACL2 read-eval-print loop are
+      evaluated.  The evaluation theory is a consistent extension of
+      the proof theory, the latter being the logical theory in which
+      the ACL2 theorem prover operates.  The evaluation theory is not
+      new to apply$; it was introduced when [defattach] was added.
+      But the evaluation theory changed with the introduction of
+      apply$.  All [warrant]s introduced by def-warrant are assumed
+      in the evaluation theory but not in the proof theory.  This
+      means ACL2 can execute calls of apply$ that arise in the
+      evaluation of top-level input, but ACL2 cannot evaluate all
+      calls of apply$ that arise in proofs unless the appropriate
+      warrants are available as hypotheses.
+    * lambda expression -- an integral part of ACL2's formal term syntax,
+      lambda expressions are the way let expressions and other
+      variable-binding idioms are translated into formal terms.
+      Lambda expressions have nothing to do with apply$!  See
+      [lambda] for a discussion of three confusingly similar but
+      different concepts: lambda expressions, LAMBDA objects, and
+      lambda$ expressions.  Read carefully anytime you see the word
+      ``lambda!''
+    * LAMBDA object -- an ACL2 list constant, typically of the form (LAMBDA
+      vars body) or (LAMBDA vars dcl body) that may be used as a
+      ``function'' by apply$.  Apply$ treats any [consp] object in
+      its first argument position as though it were a LAMBDA object.
+      But it only gives sensible meanings to [tame] LAMBDA objects.
+      And only well-formed LAMBDA objects are executed efficiently.
+      But well-formed LAMBDA objects are hard to type by hand --
+      there are many constraints to keep in mind to guarantee
+      well-formedness.  See [well-formed-lambda-objectp] if you
+      really want to see all the rules.  But that is generally
+      unnecessary.  We strongly recommend not entering LAMBDA objects
+      as quoted constants, e.g., '(LAMBDA (X) (+ 1 X)) -- which is
+      actually ill-formed!  Instead, use [lambda$], as in (lambda$
+      (x) (+ 1 x)).  See also [lambda] for some clarifications.
+    * [lambda$] expression -- an ACL2 macro that allows you to enter quoted
+      well-formed LAMBDA objects into your terms by typing
+      untranslated expressions that resemble lambda expressions.  The
+      lambda$ expression (lambda$ (x) (+ 1 x)) translates into the
+      quoted LAMBDA object '(LAMBDA (X) (BINARY-+ '1 X)).  See also
+      [lambda] for some clarifications.
+    * [scion] -- a function that is ancestrally dependent on apply$,
+      sometimes (perhaps misleadingly) called a ``mapping function.''
+      An example of a scion is the function that takes a ``function''
+      and a list and maps over the list apply$ing the ``function'' to
+      every element and accumulating the results.  Any function
+      ancestrally dependent on apply$ is a scion whether or not it
+      takes a ``function'' as an argument or maps over a domain.
+    * [tame] -- the class of functions that apply$ knows about; we actually
+      talk about ``tame functions,'' ``tame LAMBDA objects,'' and
+      ``tame expressions.'' The last are expressions that are
+      evaluable by an interpreter named [ev$] that is
+      mutually-recursive with apply$.  Apply$ cannot handle all
+      defineable functions: ACL2 is first order and if apply$ were
+      able to ``handle'' certain functions the logic would be
+      inconsistent.
+    * [warrant] -- a predicate associated with some user-defined function
+      symbols that must be a hypothesis of any theorem whose proof
+      involves ``expanding'' apply$ on such symbols; the warrant
+      gives apply$ ``permission'' to expand if the arguments to which
+      the function is applied are appropriately [tame].  The warrant
+      for a function specifies the function's [badge] and how apply$
+      behaves on the function symbol.  Warrants (and badges) are
+      computed and introduced by the [def-warrant] event.  Not all
+      function symbols can be warranted.
 
-  in any session in which you plan to use or experiment with apply$.
+  You will get a much better understanding of these concepts if you
+  read the paper cited above.
 
 
-User-Defined Functions Used in This Topic
+Examples
 
   To illustrate apply$ and some related concepts we need some
   user-defined functions.  We therefore imagine that the following
-  two events have been successfully admitted.
+  events have been successfully admitted.
+
+  We strongly recommend that you include the following book in any
+  session in which you intend to use or reason about apply$.
+
+    (include-book \"projects/apply/apply-lemmas\" :dir :system)
 
     (defun$ sq (x) (* x x))
+
+    (defun$ collect (fn lst)
+      (if (endp lst)
+          nil
+          (cons (apply$ fn (list (car lst)))
+                (collect fn (cdr lst)))))
 
     (defun$ foldr (lst fn init)
       (if (endp lst)
@@ -7629,122 +7773,467 @@ User-Defined Functions Used in This Topic
                   (list (car lst)
                         (foldr (cdr lst) fn init)))))
 
+    (defun$ russell (fn x)
+      (not (apply$ fn (list x x))))
+
+  Collect and foldr might informally be called ``mapping functions''
+  because they map a given function over some domain and accumulate
+  the answers somehow.  They are useful examples of what we call
+  scions of apply$ or simply scions: functions in which apply$ is
+  ancestral, i.e., functions that call apply$ or call functions that
+  call apply$, etc.  Russell is also a scion.  See [scion] for more.
+
+  Here are some evaluations carried out at the top-level of the ACL2
+  loop after the events above.  Top-level evaluations take place in
+  ACL2's evaluation theory (see the discussion of the semantics of
+  [defattach]), which is an extension of the theory in which proofs
+  are conducted.  Put more bluntly, the following evaluations won't
+  be carried out in proofs unless you have the right hypotheses!
+
+    ACL2 !>(apply$ 'sq '(5))
+    25
+
+    ACL2 !>(collect 'sq '(1 2 3 4 5))
+    (1 4 9 16 25)
+
+    ACL2 !>(collect (lambda$ (x) (* x x)) '(1 2 3 4 5))
+    (1 4 9 16 25)
+
+    ACL2 !>(foldr '(1 2 3) 'cons '(4 5 6))
+    (1 2 3 4 5 6)
+
+    ACL2 !>(foldr '(1 2 3 4 5)
+                  (lambda$ (x y)
+                    (cons (sq x) y))
+                  nil)
+    (1 4 9 16 25)
+
+    ACL2 !>(foldr '(1 2 3 4)
+                  (lambda$ (x y) (foldr y 'cons (list x)))
+                  nil)
+    (4 3 2 1)
+
+  Apply$ doesn't always work the way you might want!
+
+    ACL2 !>(let ((x 'russell))(russell x x))
+
+    ACL2 Error in TOP-LEVEL:  The value of APPLY$-USERFN is not specified when
+    the first argument, fn, is RUSSELL, and the second argument, args,
+    is (RUSSELL RUSSELL).  Fn has badge (APPLY$-BADGE T 2 :FN NIL) and
+    args is not known to satisfy the tameness requirement of that badge.
+
+  [Apply$-userfn] is the undefined function called by apply$ when it
+  is asked to apply a user-defined function symbol instead of a
+  builtin function symbol.  The [warrant] for russell actually
+  specifies the value of (apply$-userfn 'russell ...) under the
+  [tame]ness requirements, and those requirements are violated above.
+  This is necessary to preserve the consistency of the logic.
+  Otherwise:
+
+    (russell 'russell 'russell)
+    = {by defun of russell}
+    (not (apply$ 'russell (list 'russell 'russell)))
+    =  {by the naive expectation that apply$ always ``works''}
+    (not (russell 'russell 'russell))
+    Contradiction!
+
+  Top-level evaluation of apply$ expressions raises problems not seen
+  anywhere else in ACL2's execution model: While executing
+  syntactically legal terms the evaluator can encounter undefined
+  functions or weirdly ill-formed terms not caught by the usual ACL2
+  translation mechanism.  The ACL2 translation mechanism checks the
+  well-formedness of [lambda$] expressions (and user-typed quoted
+  LAMBDA objects) that occur in positions of ilk :FN and are
+  therefore destined for apply$.  But the translation checks can be
+  defeated.  The LAMBDA object below contains a call of the undefined
+  function foo but the error is not caught at translation time; it is
+  caught only when the form executed.
+
+    ACL2 !>(apply$ `(lambda (x) (foo x)) '(5))
+
+    ACL2 Error in TOP-LEVEL:  The value of BADGE-USERFN is not specified
+    on FOO because FOO is not a known function symbol.
+
+  Note the backquote on the LAMBDA object.  This defeats the check of
+  well-formedness because the LAMBDA object is not quoted.  We could
+  have equally written
+
+    ACL2 !>(apply$ (list 'lambda '(x) (cons 'foo '(x))) '(5))
+
+  with the same result.  There is nothing unsound about this.  Apply$
+  can take any objects as arguments.  But it won't always ``behave''
+  as you might expect.  One way to explore the edge cases of apply$
+  is to execute it on ill-formed input.  In addition, some theorems
+  may require consing up a LAMBDA object in terms of objects used
+  elsewhere in the theorem.  See example theorem [3] below.
+
+  A peculiar aspect of LAMBDA objects is that they can be written as
+  legal ACL2 constants before they are well-formed LAMBDA objects,
+  e.g., by referring to undefined functions, :program mode functions,
+  unbadged functions, etc.  They are, after all, just arbitrary
+  quoted objects and any value in ACL2 can be quoted.  But an
+  ill-formed object can become well-formed if the world is
+  appropriately extended, e.g., the appropriate defuns or
+  def-warrants are made.  Perhaps worse, they can be well-formed and
+  then become ill-formed by an undo.  So at runtime apply$ has to
+  check that the function symbol or LAMBDA object is appropriate.
+  There is a sophisticated cache behind the execution machinery for
+  LAMBDA objects in the evaluation theory.
+
+  Here are some theorems that can be proved about these concepts.  The
+  last of the theorems shown below requires two lemmas, named
+  weird-little-lemma1 and weird-little-lemma2, shown in
+  books/projects/apply/report.lisp.
+
+    ; [1] SQ squares, if you have the warrant for sq!  Imagine
+    ; for a moment that we could prove @('(equal (apply$ 'SQ
+    ; (list i)) (* i i))') without the warrant hypothesis shown
+    ; below.  And imagine that we did so in an @(tsee
+    ; encapsulate)d environment in which @('sq') was locally
+    ; defined to be @('(* x x)').  Then imagine we exported the
+    ; simpler theorem out of that @('encapsulate') and defined
+    ; @('sq') to be @('(+ 1 (* x x))').  Then ACL2 would be
+    ; unsound.  Exporting a theorem requires that the theorem be
+    ; ancestrally independent of every locally defined function
+    ; and the simpler hypothetical theorem is, because the
+    ; symbol @(''SQ') is not ancestrally dependent on @('sq').
+    ; But ACL2 cannot prove the simpler theorem!  It cannot
+    ; ``open'' @('apply$') on @(''SQ') without the warrant for
+    ; @('sq') and the warrant for @('sq') is ancestrally
+    ; dependent on @('sq').  So the theorem below cannot be
+    ; exported from an environment in which @('sq') is locally
+    ; defined.  Thus warrants solve the so-called ``@('LOCAL')
+    ; problem.''
+
+    (thm (implies (warrant sq)
+                  (equal (apply$ 'SQ (list i))
+                         (* i i))))
+
+    ; [2] Collect distributes over append for any fn.
+
+    (thm (equal (collect fn (append a b))
+                (append (collect fn a)
+                        (collect fn b))))
+
+    ; [3] Foldr can be used to collect, but the collection must
+    ; be with an ``ok'' function (a tame function of one
+    ; argument).  Note the backquote on the LAMBDA.  This is
+    ; a theorem that requires us to cons up a LAMBDA object.
+
+    (thm (implies (ok-fnp fn)
+                  (equal (foldr lst
+                                `(LAMBDA (X Y) (CONS (,fn X) Y))
+                                nil)
+                         (collect fn lst))))
+
 
 Specification of APPLY$
 
-  Warning: The following documentation is pretty dense and technical.
-  It is meant as a reference guide.  However, in the interests of
-  newcomers to apply$ we have tried to make this topic self-contained
-  rather than hyperlinked to many other concepts.  We enclose the
-  first mention of each apply$-related concept in double quotes below
-  and define the concepts later in the topic.
+  We strongly recommend that you include the following book in any
+  session in which you intend to use or reason about apply$.
+
+    (include-book \"projects/apply/apply-lemmas\" :dir :system)
 
     General Form:
     (apply$ fn args)
 
-  where fn is a function symbol or lambda expression and args is a true
-  list.  In the special case that fn is known to be a ``tame''
-  function, our apply$ is just the familiar notion of function
-  application: fn, a function of arity n, is applied to the first n
-  elements of args, extending args with NILs as necessary.
+  where fn is some function symbol or LAMBDA object and args is a true
+  list.  Informally, apply$ applies the function named by the first
+  argument to the appropriate number of elements taken from the
+  second argument.  We might express this as:
 
-  If fn is a symbol with no ``badge'' (hence is not ``authorized'') or
-  is a lambda expression that is not known to be tame, an error is
-  caused.
+    Naive Specification:
+    (apply$ 'fn args) = (fn (nth 0 args) ... (nth (- n 1) args))
 
-  Note: It remains therefore to explain what apply$ returns when fn is
-  a badged, ``authorized'' function symbol that is not tame.  We call
-  such functions ``mapping functions'' and foldr above is an example.
-  Mapping functions take one or more ``functional'' arguments (to be
-  applied by apply$) or ``expressional'' arguments (to be evaluated
-  by ev$).
+  where fn is of arity n.  However, this naive specification is
+  guaranteed only if either (i) fn is a function symbol that has a
+  [badge], the authorization flag of the badge is T, and args
+  satisfies the [tame]ness requirements of the badge, or (ii) fn is a
+  well-formed LAMBDA object.  The tameness requirement is that if an
+  element of args is in an argument position of fn with ilk :FN then
+  the element must satisfies tamep-functionp and if the element is in
+  an argument position of ilk :EXPR it must satisfies tamep.  See
+  [badge] for further discussion of condition (i).  As for (ii),
+  rather than explain ``well-formed LAMBDA object'' here we encourage
+  you to write [lambda$] expressions when you want to apply$ a LAMBDA
+  object.
 
-  Note: We do not discuss ev$ here but it is, with one twist, the
-  natural notion of evaluation in this context: look up the values of
-  variables in the alist argument to ev$, return quoted constants,
-  and otherwise apply$ function symbols and lambda expressions to the
-  recursively obtained list of values obtained by evaluating the
-  actuals.  The twist is that ev$ first checks that the expression is
-  ``tame.''
+  The [ilk]s of apply$ are :FN and NIL respectively, telling us that
+  apply$ treats its first argument as a ``function'' and its second
+  as an ordinary object (never as a function).  Initially apply$ is
+  the only symbol in ACL2 with an ilk of :FN.  However as
+  [def-warrant] is used successfully on [scion]s -- functions that
+  somehow call apply$ -- other symbols can have ilk :FN too.
 
-  We assume below that fn is authorized (hence badged) but is not tame,
-  which means it has one or more formals of ``ilk'' :FN or :EXPR.
+  Apply$ has a guard, namely (apply$-guard fn args).  This is an
+  exceptionally weak guard, requiring only that args be a true-list
+  and, if fn is a cons -- which is automatically treated as a LAMBDA
+  object -- the length of args be the length of the second element of
+  fn.  We discuss guards and guard verification in a subsequent
+  section.
 
-  Let n be the arity of fn.  The value of (apply$ fn args) is the
-  result of applying the function identified by fn to the first n
-  elements of args, extending args with NILs as needed, provided the
-  successive ilks of fn are satisfied by the successive elements of
-  args as follows: the ilk :FN is satisfied only by a tame function
-  symbol or lambda expression, and the ilk :EXPR is satisfied only by
-  a tame expression.  The ilk NIL is satisfied by any object.
+  Note for Experts: Technically, apply$ treats any consp object as a
+  LAMBDA object.  But the results are as you'd naively expect only if
+  the object is a [tame] LAMBDA object.  However, we frequently write
+  as though the object must be well-formed, which is different from
+  but implies tameness.  What's going on?  The reason for this and
+  related discrepancies in the documentation is that there is a
+  tension between the logical definition of apply$ and the practical
+  business of executing it.  The former involves the existence of a
+  model, soundness, and the difficulty of proving theorems about
+  apply$.  The latter involves the Common Lisp compiler.  We want the
+  logical foundations to be simple to make it easier to reason about
+  apply$, but the compiler imposes unavoidable and complicated
+  restrictions.  The upshot is that the logical foundations assign
+  meaning to LAMBDA objects that cannot be compiled.  Applying merely
+  ``tame'' LAMBDAs is slower than applying ``well-formed'' ones.  In
+  a sense, by acting like ``tame LAMBDA objects'' and ``well-formed
+  LAMBDA objects'' are synonymous we're trying to trick you!  If you
+  ever have occasion to formally express the restrictions on apply$
+  in some theorem, use tamep-functionp.  But when you write concrete
+  LAMBDA constants, try to keep them well-formed.  We encourage this
+  by providing [lambda$] and by enforcing full blown well-formedness
+  checks -- not just tameness checks -- in translate on every quoted
+  LAMBDA object entered in a :FN slot.  And we give you ways to
+  circumvent these checks -- see
+  [gratuitous-lambda-object-restrictions] -- if you really mean to
+  supply ill-formed LAMBDA objects to :FN slots.
 
-  We define ``tame,'' ``mapping function,'' ``badge,'' ``authorized,''
-  and ``ilks'' below.
+  Badges are assigned by [def-warrant].  See [badge] for documentation
+  about how to find out whether a function has a badge and how to
+  interpret a badge.  The terms ``authorization flag'' and ``tameness
+  requirements,'' used above, are explained there too.
+
+  Intuitively, the badge of fn tells apply$ how each formal of fn is
+  used in the definition of fn and there are only three ``ilks'' of
+  use.  Ilk :FN means the formal is used exclusively as a function,
+  meaning the formal can be passed into :FN slots of other functions
+  and eventually reaches apply$, but it is never touched by other
+  ACL2 functions.  Ilk :EXPR means the formal is used exclusively as
+  an expression, meaning the formal may be passed into :EXPR slots of
+  other functions and eventually reaches [ev$], but is never
+  otherwise touched.  Finally, ilk NIL means the formal is treated as
+  an ordinary ACL2 object and, in particular, never used as either a
+  function or an expression.  The ``tameness requirement'' on each
+  actual is determined by the ilk of the corresponding formal:
+  actuals in :FN slots must satisfy tamep-functionp, actuals in :EXPR
+  slots must satisfy tamep, and there are no requirements on actuals
+  in ilk NIL slots.  For discussions of tamep-functionp and tamep see
+  the topic [tame].
+
+  Generally speaking, if you want to be able to apply$ a function you
+  should introduce it with [defun$] or a similar macro, because only
+  badged functions can be applied.  The ACL2 macro defun$ is just an
+  abbreviation for a [defun] event followed by a [def-warrant] event.
+
+  We summarize specification of apply$ with an example.  Consider
+
+    (apply$ 'foldr
+            '((1 2 3)     ; actual 1
+              cons        ; actual 2
+              (4 5 6)))   ; actual 3
+
+  The badge of foldr, computed by (badge 'foldr), is (APPLY$-BADGE T 3
+  NIL :FN NIL).  The authorization flag of that badge is T, the arity
+  is 3, and the ilks list is (NIL :FN NIL).  Thus the first and third
+  formals have ilk NIL and are treated as ordinary objects; the
+  second formal has ilk :FN and is treated as a function.  Thus, the
+  tameness requirement is that the second actual to a call of foldr
+  must satisfy tamep-functionp.  Referring to the specification
+  above, we see that the apply$ term has the ``naive specification''
+  since foldr has a badge, its authorization flag is T, and its
+  second actual, cons, satisfies tamep-functionp. That is,
+
+    (apply$ 'foldr
+            '((1 2 3)     ; actual 1
+              cons        ; actual 2
+              (4 5 6)))   ; actual 3
+    =
+    (foldr '(1 2 3) 'cons '(4 5 6))
+    =
+    '(1 2 3 4 5 6)
+
+  The first equation above is just the naive specification of apply$
+  and the second equation is just the definition of foldr.
+
+  Formals are classified by [def-warrant] when it tries to compute the
+  badge of a function.  What are the rules that lead to a formal
+  being assigned ilk :FN, for example?  What does ilk :FN actually
+  signify?
+
+  Let v be the i th formal parameter of a badged function fn.  If the
+  badge says that v has ilk :FN then we know that v  is ``used as a
+  function'' in the definition of fn , i.e., the value of v
+  eventually makes its way into the first argument of apply$.
+  Furthermore, v  is never used any other way: every place v  occurs
+  in the body it is treated as a function.  And finally, in every
+  recursive call of fn  v  is passed identically in the i th argument
+  position of every recursive call.
+
+  If the badge says that formal variable v  has ilk :EXPR then it
+  signifies analogous conditions except that instead of eventually
+  getting into the first argument of apply$ it eventually gets into
+  the first argument of ev$.  We say such formals are ``used as
+  expressions.'' [Ev$] is the natural notion of evaluation in this
+  context: look up the values of variables in the alist argument to
+  ev$, return quoted constants, and otherwise apply$ function symbols
+  and lambda objects to the recursively obtained list of values
+  returned by evaluating the actuals.  However, ev$ first checks that
+  the expression is [tamep].
+
+  If the badge says a formal v  has ilk NIL in the definition of fn
+  then v  is never used  as a function or as an expression in the
+  definition.
+
+  It is the job of [def-warrant] to analyze a definition and assign
+  ilks, if possible.  But it may not be possible!  For example,
+
+    (defun foo (x) (apply$ x (list x)))
+
+  is such a definition.  The formal x is used as a function in its
+  first occurrence but is not used as a function in its second.  Thus
+
+    (def-warrant foo)
+
+  will fail.
+
+  When successful, [def-warrant] also defines the [warrant] function
+  for the function it analyzed.  Warrants are crucial to stating and
+  proving theorems about function symbols being applied with apply$.
+  We illustrated warrants in the ``Examples'' section above and
+  discuss them further in the secion on ``Theorems Involving Apply$''
+  below.  See also [warrant].
+
+  Apply$ is a defined function in the ACL2 source code.  We exhibit its
+  definition at the end of this documentation but you may also see
+  its definition by doing
+
+    ACL2 !>:pe apply$
+
+  The definition is mutually recursive with
+
+    * [apply$-lambda]: used by apply$ to handle the case when the first
+      argument to apply$ is a LAMBDA object.
+    * [ev$]: used by apply$-lambda to evaluate the body of a LAMBDA object
+      in an environment binding the object's formal variables to the
+      actuals.
+    * [ev$-list]: used by ev$ to evaluate a list of expressions in an
+      environment binding formals to actuals.
+
+  Apply$ calls three undefined functions:
+
+    * [apply$-userfn]: used by apply$ when it is asked to apply anything
+      other than a LAMBDA object or a built-in function symbol.  In
+      the evaluation theory, we attach a function to apply$-userfn
+      that explicitly enforces the tameness requirements for each
+      user-defined function symbol that has had a badge computed by
+      [def-warrant] and, if those requirements are met, applies the
+      corresponding function.  But in the proof theory apply$-userfn
+      remains undefined.  The value of (apply$-userfn 'fn ...), and
+      thus of (apply$ 'fn ...), is specified by a special hypothesis,
+      called the ``warrant for fn.'' You can't prove anything
+      interesting about the behavior of apply$ on a user-defined
+      function symbol fn unless the warrant for fn is a governing
+      hypothesis.  We discuss warrants in [warrant].  See also
+      [def-warrant].
+    * untame-apply$: used by apply$ when it is asked to deal with a
+      situation in which tameness is violated.
+    * untame-ev$: used by ev$ when it is asked to deal with a situation in
+      which tameness is violated.
 
 
-Proving Theorems Involving APPLY$
+Definitions Involving on Apply$
 
-  The description of apply$ above deals with the behavior of apply$ in
-  ACL2's evaluation theory, e.g., what you can expect when you call
-  apply$ or mapping functions at the top-level of the ACL2 loop.  But
-  it hides some logical details that are necessary if you try to
-  prove theorems about apply$.
+  In one sense, apply$ is just an ordinary ACL2 function that takes two
+  arguments and returns one result.  Like all ACL2 functions, apply$
+  is untyped.  You can supply any two objects as arguments and the
+  axioms tell you what the result is -- though sometimes the result
+  is delivered by an undefined function.
 
-  Apply$ is defined on the ``apply$ built-ins'' (defined below).  That
-  list includes virtually every function in ACL2's initial world that
-  is in :logic mode, returns a single value, and does not traffic in
-  [stobj]s or [state].  It also includes apply$ and ev$.  All the
-  built-ins are tame except apply$ and ev$.
+  But in a deeper sense, if you want apply$ to ``behave,'' and in
+  particular if you want functions that use apply$ to ``behave,'' you
+  have to follow certain rules.  For example, ACL2 must be able to
+  determine whether a formal parameter is ``used as a function'' in a
+  given definition.  Basically, you will want every :logic mode
+  function that you define to be processed by def-warrant so that it
+  gets a badge if at all possible and at least has a chance of being
+  applied as expected by apply$.
 
-  But apply$ is undefined on user-defined functions!  Instead, the
-  definition of apply$ calls an undefined function when a
-  user-defined function symbol is to be applied.  The link between
-  apply$ and a user-defined function, fn, must be provided by a
-  hypothesis, called the warrant for fn.  The warrant for fn is
-  itself a term that calls a 0-ary function, called the warrant
-  function for fn which is named APPLY$-WARRANT-fn.  The warrant
-  function for fn is introduced by the command (def-warrant fn).  If
-  def-warrant succeeds it computes a badge for fn, it uses [defun-sk]
-  to introduce the warrant function, and it proves the key rewrite
-  rules for linking the warrant to badge and apply$.  See
-  [def-warrant].  The ACL2 evaluation theory is arranged, via
-  attachments (see [defattach]), as though every warrant were
-  implicitly assumed.
+  The macro defun$ is just an abbreviation for a defun followed by a
+  def-warrant and it is easy to imagine the other ACL2 definitional
+  idioms introduced in the ACL2 Community Books eventually being
+  extended to include a subsequent def-warrant.
 
-  There exists a model of apply$ and all of your mapping functions that
-  makes every warrant issued by def-warrant valid! This is proved in
-  the paper cited in [introduction-to-apply$].  This means that you
-  do not have to worry that theorems burdened with warrants might be
-  vacuously valid because the warrants are false.
+  So the question becomes ``What rules must a defun obey in order to be
+  processed successfully by def-warrant?'' The answer is given in the
+  documentation for [def-warrant].
 
-  Instead of writing (APPLY$-WARRANT-fn) we typically use the macro
-  form (WARRANT fn).  You may list multiple function symbols in the
-  WARRANT expression and it expands to the conjunction of the
-  individual warrants.  See [warrant].
 
-  The macro [defun$] is just an abbreviation for an ordinary [defun]
-  followed by def-warrant and is the typical way to introduce new
-  functions known to apply$.
+Theorems Involving Apply$
 
-  For example, once foldr has been admitted with defun$ as above the
-  following two rewrite rules are available:
+  Because apply$ is undefined on user-defined function symbols and
+  warrant hypotheses specify the tameness requirements and value of
+  apply$ on such symbols, you can't prove much about the application
+  of particular user-defined symbols unless you provide the
+  corresponding warrants as hypotheses.
 
-    (defthm apply$-foldr
-      (and (implies (force (warrant foldr))
-                    (equal (badge 'foldr)
-                           '(apply$-badge t 3 nil :fn nil)))
-           (implies (and (force (warrant foldr))
-                         (tamep-functionp (car (cdr args))))
-                    (equal (apply$ 'foldr args)
-                           (foldr (car args)
-                                  (car (cdr args))
-                                  (car (cdr (cdr args))))))))
+  To emphasize this point, suppose sq has been introduced with defun$
+  as shown above, then the following top-level evaluation is
+  possible:
 
-  The first tells the rewriter how to ``evaluate'' badge on 'foldr,
-  yielding the badge computed by def-warrant.  The second tells the
-  rewriter how to ``expand'' (apply$ 'foldr args) to a call of foldr
-  provided the second element of args is a tame function.  Both rules
-  [force] the warrant on foldr.
+    ACL2 !>(apply$ 'sq '(5))
+    25
+
+  You might expect to be able to prove the obvious little theorem
+
+    (thm (equal (apply$ 'sq '(5)) 25))
+
+  However, you would be wrong!  While ACL2's evaluation theory assumes
+  all warrants, the proof theory does not.  (If it did we could
+  suffer the LOCAL problem mentioned in example theorem [1] above and
+  in [introduction-to-apply$].)  Logically, there is no connection
+  between the symbol 'SQ and the user-defined function sq.  That
+  connection is established by warrant.  All the necessary warrants
+  must be explicitly provided as hypotheses by the user.
+
+  The warranted version of the little theorem above is easily proved.
+
+    (thm (implies (warrant sq) (equal (apply$ 'sq '(5)) 25)))
+
+  Here (warrant sq) is just an abbreviation for a call of the 0-ary
+  function symbol apply$-warrant-sq which is the name of the warrant
+  for sq.  Apply$-warrant-sq is introduced when (def-warrant sq)
+  completes successfully.  In particular, the following is a theorem:
+
+      (warrant sq)
+    <-->
+      (apply$-warrant-sq)
+    <-->
+      (((badge 'SQ) = '(APPLY$-BADGE T 1 . T))
+       &
+       ((apply$ 'SQ args) = (sq (car args))))
+
+  Thus, the warrant for sq specifies the value of (badge 'sq) and of
+  (apply$ 'sq ...).
+
+  If you try to prove the unwarranted version of the little theorem
+  about 'sq it fails in a forcing round with
+
+    [1]Goal
+    (APPLY$-WARRANT-SQ)
+
+  This is a clear indication that you forgot to provide the warrant.
+
+  You might worry that theorems burdened by warrants are vacuously
+  valid because it might be impossible to satisfy all the warrant
+  hypotheses.  You needn't worry about this.  There is a model of
+  apply$ and all of its scions that makes every warrant issued by
+  def-warrant valid. The proof of this is sketched in {``Limited
+  Second-Order Functionality in a First-Order Setting'' |
+  http://www.cs.utexas.edu/users/kaufmann/papers/apply/index.html} by
+  Matt Kaufmann and J Strother Moore and fully fleshed out in the
+  comment titled Essay on Admitting a Model for Apply$ and the
+  Functions that Use It in the ACL2 source file apply-raw.lisp.
 
   So there are three lessons here:
 
@@ -7752,12 +8241,15 @@ Proving Theorems Involving APPLY$
   on concrete user-defined functions, provide as additional
   hypotheses the warrants for all user-defined functions that apply$
   will encounter during the proof.  This generally means you should
-  add the hypothesis (warrant fn1 fn2 ... fnk) listing every function
-  symbol that appears inside a quoted constant destined for apply$ or
-  ev$ in your conjecture.  In particular, you should include every
-  quoted function symbol appearing in a :FN slot of apply$ or any
-  mapping function, including every function symbol appearing in the
-  body of any such lambda expression.
+  add the hypothesis (warrant fn1 fn2 ... fnk) typically listing
+  every function symbol that appears inside a quoted constant
+  destined for apply$ or ev$ in your conjecture.  In particular, you
+  should include every quoted function symbol appearing in a :FN slot
+  of apply$ or any mapping function, including every function symbol
+  appearing in the body of any LAMBDA object or lambda$ term.
+  Unfortunately, in the case of lambda$ terms, you'll need to
+  consider the translated form of the lambda$.  You can see that with
+  :[translam].
 
   Lesson 2: You need not worry that adding warrant hypotheses makes
   your theorems vacuously valid!  There is a model of apply$ and all
@@ -7770,222 +8262,299 @@ Proving Theorems Involving APPLY$
   you forget to supply a warrant but your conjecture is otherwise
   provable, ACL2's checkpoints will remind you.
 
-
-Apply$ in the Evaluation Theory versus the Proof Theory
-
-  If sq has been introduced with defun$ as shown above, then the
-  following top-level evaluation is possible:
-
-    ACL2 !>(apply$ 'sq '(5))
-    25
-
-  You might expect to be able to prove the obvious little theorem
-
-    (thm (equal (apply$ 'sq '(5)) 25))
-
-  However, you would be wrong!  While ACL2's evaluation theory
-  implicitly makes all warrants true, the evaluation theory is not
-  used for proof-time evaluation.  (If it were we could suffer the
-  LOCAL problem mentioned in [introduction-to-apply$].)  Logically,
-  there is no connection between apply$ and the user-defined function
-  sq.  That connection is established by warrant and the appropriate
-  warrants must be explicitly provided as hypotheses by the user.
-
-  The warranted version of the little theorem above is easily proved.
-
-    (thm (implies (warrant sq) (equal (apply$ 'sq '(5)) 25)))
-
-  If you try to prove the unwarranted version of the theorem it fails
-  in a forcing round with
-
-    [1]Goal
-    (APPLY$-WARRANT-SQ)
-
-  This is a clear indication that you forgot to provide the warrant.
+  These issues are discussed further in the documentation for
+  [warrant].
 
 
-Definitions of Apply$-Related Concepts
+Guards and Guard Verification
 
-  In this section we define ``tame,'' ``mapping function,'' ``badge,''
-  ``authorized,'' ``ilks'' and the apply$ ``built-in'' function
-  symbols.  Someday perhaps we'll break these out into separate
-  documentation topics, but they are so intertwined that we introduce
-  them together.
+  As noted, apply$ has a guard of (apply$-guard fn args) and is itself
+  guard verified.  The guard is weak, basically requiring that fn
+  either be a symbol or a LAMBDA object, that args be a true-list,
+  and, when fn is a LAMBDA object, the length of the list of formals
+  is equal to the length of args.  To verify the guards of a scion
+  you must make sure these properties hold of every application of
+  anything in a :FN slot.  Mainly you must make sure that every time
+  a function object is apply$d, it is applied to a list of the right
+  length.
 
-  A badge is a data structure associated with some function symbols.  A
-  badge is of the form (APPLY$-BADGE flg n . ilks), where flg is
-  Boolean, n is a natural number, and ilks is either T or a list of n
-  symbols, each of which is one of NIL, :FN, or :EXPR.
+  But guards arise in another way in connection with apply$.  How does
+  (apply$ fn args) behave when fn has guards?  The short answer is:
+  logically speaking, apply$ completely ignores guards.  Guards in
+  ACL2 are ``extra-logical.''
 
-  To see the badge, if any, of a function symbol, evaluate (badge fn)
-  at the top-level of the ACL2 loop.  For example:
+  Let's define and warrant a well-guarded version of ``square'',
 
-    ACL2 !>(badge 'CONS)
-    (APPLY$-BADGE T 2 . T)
+    (defun$ squ (n) (declare (xargs :guard (natp n))) (* n n))
 
-    ACL2 !>(badge 'APPLY$)
-    (APPLY$-BADGE T 2 :FN NIL)
+  Squ is guard verified.  Now let's consider the little conjecture:
 
-    ACL2 !>(badge 'EV$)
-    (APPLY$-BADGE T 2 :EXPR NIL)
+    (thm (implies (warrant squ) (equal (apply$ 'SQU (list x)) (* x x))))
 
-    ACL2 !>(badge 'SQ)
-    (APPLY$-BADGE T 1 . T)
+  Do we need need to require (natp x)?  We would if the logical
+  definition of apply$ checked the guard of fn before interpretting
+  it.  But it does not check.  It just behaves as specified above.
+  So, regardless of whether the guard is satisfied or not, (apply$
+  'squ (list x)) naively expands (under the warrant) to (squ x), from
+  which the rest of the proof follows.
 
-    ACL2 !>(badge 'FOLDR)
-    (APPLY$-BADGE T 3 NIL :FN NIL)
+  However, now let's do a top-level evaluation of this apply$ term:
 
-  An error is caused if badge is called at the top-level on a function
-  symbol without a badge.
+    ACL2 !>(apply$ 'SQU (list 'NAN))
 
-  If a symbol, fn, has a badge, (APPLY$-BADGE flg n . ilks) then fn is
-  a function in the current world, we call flg the authorization flag
-  of fn, n is the arity of fn, and, when ilks is not T, each
-  successive element of ilks is called the ilk of the corresponding
-  formal of fn.  Ilks T is really just an implementation shorthand
-  for a list of NILs as long as the arity of the badged function.  So
-  if the ilks field is T each formal's ilk is NIL.
+    ACL2 Error in TOP-LEVEL:  The guard for the function call
+    (SQU N), which is (NATP N), is violated by the arguments
+    in the call (SQU 'NAN).
 
-  Note: The authorization flag in a badge tells us whether the function
-  returns a single value (flg T) or multiple values (flg NIL).
+  (Remember that ACL2's evaluation theory effectively assumes all
+  warrants.)  What happened?  Apply$ expanded to (SQU 'NAN) and that
+  caused the usual guard violation, given the default configuration
+  of [set-guard-checking].
 
-  For example, the fact that (badge 'foldr) is non-nil (non-erroneous)
-  tells us that foldr is a function in the current world.  Its
-  authorization flag tells us foldr returns a single value, its arity
-  field tells us foldr has three formals, and the fact the ilks of
-  the first and last formals are NIL tells us they are treated as
-  ordinary objects.  The fact that its middle ilk is :FN tells us
-  that foldr treats its middle argument as a function object.
+  A similar guard violation error is signalled if a guarded LAMBDA
+  object is apply$ to something violating its guard.
 
-  We say fn is authorized if and only if fn is badged and its
-  authorization flag is T.
+  But now consider
 
-  The ilk of each formal of fn determines (and is determined by) how
-  the body of the function treats the corresponding formal.  Let the
-  ith formal of fn be v and suppose the ilk of v is:
+    (defun$ strange (x)
+      (declare (xargs :guard t))
+      (apply$ 'SQU (list x)))
 
-  :FN --- then v is used only as a function object.  The formal may be
-  passed to other badged functions called by fn provided it is passed
-  only into :FN slots.  It must be passed into at least one :FN slot
-  of some function, other than fn itself, called in the body of fn,
-  e.g., to APPLY$.  The formal must be passed as the ith actual in
-  every recursive call of fn itself.  The formal may not be returned
-  as the value of fn. The formal may not be otherwise inspected or
-  manipulated.
+  This succeeds and strange is now a guard verified, warranted
+  function, with a guard of T.  So what happens when we call it on a
+  non-natural?
 
-  :EXPR --- then v is used only as an expression object.  The formal
-  may be passed to other badged functions called by fn provided it is
-  passed only into :EXPR slots.  It must be passed into at least one
-  :EXPR slot of some function, other than fn itself, called in the
-  body of fn, e.g., to EV$.  The formal must be passed as the ith
-  actual in every recursive call of fn itself.  The formal may not be
-  returned as the value of fn. The formal may not be otherwise
-  inspected or manipulated.
+    ACL2 !>(strange 'NAN)
 
-  :NIL --- then v is used as an ordinary object.  The formal may be
-  passed to other badged functions into NIL slots and may be returned
-  as the value of fn.  The formal may never be passed into a :FN or
-  :EXPR slot of any call.
+    ACL2 Error in TOP-LEVEL:  The guard for the function call (SQU N),
+    which is (NATP N), is violated by the arguments in the call (SQU 'NAN).
 
-  Informally, if an object is passed into a :FN or :EXPR slot of a
-  function, then it will eventually reach an apply$ or ev$,
-  respectively --- those being the only primitive functions with :FN
-  or :EXPR slots.  Furthermore, aside from being passed around in
-  such special slots it is never touched by any function other than
-  apply$ or ev$.
+    ACL2 !>:q
 
-  Note also that it is possible to define functions for which this
-  classification of formals is impossible.  An example is
+    Exiting the ACL2 read-eval-print loop.  To re-enter, execute (LP).
+    ? (strange 'nan)
 
-    (defun bad (fn) (apply$ fn (list fn)))
+    ACL2 Error in ACL2-INTERFACE:  The guard for the function call (SQU N),
+    which is (NATP N), is violated by the arguments in the call (SQU 'NAN).
 
-  where the formal is neither purely functional nor purely ordinary.
-  Such functions cannot have badges.
+  We see that we can provoke a guard violation with strange even though
+  it is guard verified with a guard of T.  Furthermore, we get the
+  error both in the ACL2 read-eval-print loop and in the raw Lisp
+  under ACL2.
 
-  A mapping function is any badged functions whose ilks is not T, i.e.,
-  any badged function with at least one formal of ilk :FN or :EXPR.
+  This might at first violate your understanding of the link between
+  ACL2 and Common Lisp.  Naively, a guard verified ACL2 function with
+  a guard of T never causes a runtime error in Common Lisp.  But
+  that's not quite what the guarantee is.  Such a function will never
+  cause a hard Lisp error, other than possibly resource errors like
+  running out of memory or stack space.  Neither of the errors above
+  were signalled by Common Lisp.  They were ``soft'' ACL2 errors.  In
+  particular, when apply$ calls squ above, even when running in raw
+  Lisp, it actually calls the executable counterpart of squ, which
+  checks guards at runtime and executes properly under the ACL2
+  axioms.
 
-  An object is a tame function iff it is either (a) an authorized
-  symbol and its ilks is T, or (b) it is of the form (LAMBDA vars
-  body) where vars is a list of symbols and body is a tame expression
-  (see below).
+    ACL2 !>(set-guard-checking :none)
 
-  An object is a tame expression iff it is a symbol, a quoted constant,
-  the call of an authorized function symbol on the correct number of
-  suitably tame expressions (see below) with respect to the ilks of
-  the function symbol (see below), or the call of a tame lambda
-  expression on the correct number of tame expressions.
+    Turning off guard checking entirely.
 
-  A list of objects is suitably tame with respect to a list of ilks iff
-  the list is a true list with as many elements as there are ilks,
-  and when an ilk is :FN the corresponding object is a quoted tame
-  function, when an ilk is :EXPR the object is a quoted tame
-  expression, and when an ilk is NIL the object is a tame expression.
+    ACL2 >(strange 'nan)
+    0
 
-  Note in particular our use of the word ``quoted'' above when defining
-  the concept of a suitably tame list of expressions with respect to
-  some ilks.  For example, if ilks is (NIL :FN :EXPR) then this list
-  of objects:
+  The last evaluation can be explained by the fact that ACL2
+  multiplication defaults non-numbers to 0.
 
-    ((CONS X Y)
-     (QUOTE SQ)
-     (QUOTE (BINARY-+ X Y)))
+  We discuss the evaluation of ground apply$ terms in the evaluation
+  theory further below.
 
-  is suitably tame with respect to the given ilks.  That means that if
-  the function symbol FOO has those particular ilks and the above
-  list of suitably tame expressions appears as the actual expressions
-  in a call of FOO, i.e.,
 
-    (FOO (CONS X Y)
-         (QUOTE SQ)
-         (QUOTE (BINARY-+ X Y)))
+Top-Level Evaluation of Apply$
 
-  then that call of FOO is a tame expression.  This is important
-  because it means that a tame expression can have an untame function
-  symbol provided the appropriate actual expressions are quoted and
-  appropriately tame.
+  As noted, ACL2's evaluation theory implicitly assumes all warrants
+  produced by [def-warrant].  Since top-level evaluation in ACL2 is
+  conducted in the evaluation theory, ground calls of apply$ --
+  whether literally in top-level input to the ACL2 read-eval-print
+  loop or hidden inside scions called from the top-level -- can be
+  evaluated on quoted warranted function symbols and [lambda$]
+  expressions -- provided the [tame]ness restrictions are met.  This
+  is in contrast to opportunities for evaluation of ground apply$
+  expressions arising in proofs, where warrants must be explicit.
 
-  At the top-level of the ACL2 loop you can determine whether a
-  function symbol or lambda expression is tame by calling
-  tamep-functionp on it.  You can determine if an expression is tame
-  by calling tamep on it.  The notion of a suitably tame list of
-  expressions is implemented by suitably-tamep-listp but we generally
-  do not call it directly but just use tamep to see whether an
-  appropriate function call is tame.  These three concepts are
-  mutually recursive and you can see their formal definitions by :pe
-  tamep.
+  In this section we focus on calls of apply$ arising in the evaluation
+  theory.
 
-  The apply$ built-ins are the functions returned by evaluating the
-  following expression at the top-level of the ACL2 loop (assuming
-  you have defined foldr as above):
+  Evaluation of apply$ terms in the evaluation theory respects guards
+  on quoted function symbols and [lambda$] expressions (which is to
+  say, on the quoted well-formed LAMBDA objects that [lambda$]
+  produces).  So consider a call of apply$ on fn and args in the
+  evaluation theory, where fn is a badged function symbol or a
+  well-formed (and thus tame) LAMBDA object.  Here's what happens.
 
-    (foldr *badge-prim-falist*
-           '(lambda (x ac)
-              (if (car (cdr (cdr x)))
-                  (cons (car x) ac)
-                  ac))
-           '(BADGE
-             TAMEP
-             TAMEP-FUNCTIONP
-             SUITABLY-TAMEP-LISTP
-             APPLY$
-             EV$))
+  Apply$ determines whether fn's tameness restrictions are met by args.
+  If not, an error is caused.
 
-  If you attempt to apply$ any other symbol it will need to be
-  warranted.  That is, if you supply any other symbol to apply$ or
-  another mapping function, that symbol must have been processed
-  successfully by def-warrant, or equivalently, that symbol must have
-  been introduced with [defun$].  If you are proving a conjecture
-  involving such a symbol, you should include the warrant for the
-  symbol as a hypothesis to the conjecture.  If you are just
-  evaluating apply$ and other mapping functions on the symbol at the
-  top-level of the ACL2 loop, it is sufficient for def-warrant (or
-  defun$) to have succeeded, but you do not have to make explicit use
-  of the warrant since the ACL2 evaluation theory makes all warrants
-  valid.
+  If the tameness restrictions are met, apply$ determines whether fn
+  has been guard verified.  In the case of function symbols this is a
+  simple lookup on the property list of fn.  In the case of LAMBDA
+  objects it is a cache query and if the query reveals that we have
+  not yet tried to verify the guards of this LAMBDA object, apply$
+  uses tau reasoning alone (see [introduction-to-the-tau-system]) to
+  verify the guard conjectures.
+
+  Note:An important distinction between the runtime handling of
+  function symbols versus LAMBDA objects by apply$ is that function
+  symbols can only be guard verified by prior events, e.g., the
+  introductory [defun] or a subsequent verify-guards, but apply$
+  tries to verify the guards of LAMBDA objects on the fly!  The
+  reason for this distinction is that we anticipate that many LAMBDA
+  objects will not be associated with any event.  For example, an
+  ACL2 macro might generate a call of a scion on a never-before-seen
+  LAMBDA object and that LAMBDA object may only be seen by the
+  top-level evaluator.  We discuss this further in [verify-guards]
+
+  If fn is guard verified, apply$ next checks whether fn's guard holds
+  of the actuals in args.  This is done by evaluation of the compiled
+  code for the guard on args.
+
+  If the guard check of args succeeds, a compiled version of fn is
+  applied to args.  If the check fails, a guard violation is
+  signalled or else the application of fn to args is interpreted
+  under the definitional axioms of apply$ and ev$, depending on how
+  [set-guard-checking] has been configured.
+
+  Finally, if fn is not guard verified, the application of fn to args
+  is interpreted under the definitional axioms of apply$ and ev$.
+
+  We discuss the cache that supports LAMBDA application in
+  [print-cl-cache].  See also the discussion of guard verification in
+  [lambda$].  It should be noted that a LAMBDA object can also be
+  guard verified using the [verify-guards] event.
+
+
+Logical Definitions
+
+  In the following definitions, apply$-userfn is an undefined function
+  that is constrained by warrants to describe the tameness
+  requirement and behavior of apply$ on specific function symbols.
+  The functions untame-apply$ and untame-ev$ are simply undefined
+  functions for giving unspecified values when untame objects are
+  being used.
+
+  Function: <apply$>
+
+    (defun apply$ (fn args)
+           (declare (xargs :guard (apply$-guard fn args)))
+           (cond ((consp fn) (apply$-lambda fn args))
+                 ((apply$-primp fn)
+                  (apply$-prim fn args))
+                 ((eq fn 'badge) (badge (car args)))
+                 ((eq fn 'tamep) (tamep (car args)))
+                 ((eq fn 'tamep-functionp)
+                  (tamep-functionp (car args)))
+                 ((eq fn 'suitably-tamep-listp)
+                  (ec-call (suitably-tamep-listp (car args)
+                                                 (cadr args)
+                                                 (caddr args))))
+                 ((eq fn 'apply$)
+                  (if (tamep-functionp (car args))
+                      (ec-call (apply$ (car args) (cadr args)))
+                      (untame-apply$ fn args)))
+                 ((eq fn 'ev$)
+                  (if (tamep (car args))
+                      (ev$ (car args) (cadr args))
+                      (untame-apply$ fn args)))
+                 (t (apply$-userfn fn args))))
+
+  Function: <apply$-lambda>
+
+    (defun apply$-lambda (fn args)
+           (declare (xargs :guard (apply$-lambda-guard fn args)))
+           (apply$-lambda-logical fn args))
+
+  Macro: <apply$-lambda-logical>
+
+    (defmacro
+     apply$-lambda-logical (fn args)
+     (declare (xargs :guard (symbolp fn)))
+     (cons
+        'ev$
+        (cons (cons 'lambda-object-body
+                    (cons fn 'nil))
+              (cons (cons 'ec-call
+                          (cons (cons 'pairlis$
+                                      (cons (cons 'lambda-object-formals
+                                                  (cons fn 'nil))
+                                            (cons args 'nil)))
+                                'nil))
+                    'nil))))
+
+  Function: <ev$>
+
+    (defun ev$ (x a)
+           (declare (xargs :guard t))
+           (cond ((not (tamep x)) (untame-ev$ x a))
+                 ((variablep x)
+                  (ec-call (cdr (ec-call (assoc-equal x a)))))
+                 ((fquotep x) (cadr x))
+                 ((eq (car x) 'if)
+                  (if (ev$ (cadr x) a)
+                      (ev$ (caddr x) a)
+                      (ev$ (cadddr x) a)))
+                 ((eq (car x) 'apply$)
+                  (apply$ 'apply$
+                          (list (cadr (cadr x))
+                                (ev$ (caddr x) a))))
+                 ((eq (car x) 'ev$)
+                  (apply$ 'ev$
+                          (list (cadr (cadr x))
+                                (ev$ (caddr x) a))))
+                 (t (apply$ (car x) (ev$-list (cdr x) a)))))
+
+  Function: <ev$-list>
+
+    (defun ev$-list (x a)
+           (declare (xargs :guard t))
+           (cond ((atom x) nil)
+                 (t (cons (ev$ (car x) a)
+                          (ev$-list (cdr x) a)))))
+
+  Function: <apply$-guard>
+
+    (defun apply$-guard (fn args)
+           (declare (xargs :guard t))
+           (if (atom fn)
+               (true-listp args)
+               (apply$-lambda-guard fn args)))
+
+  Function: <apply$-lambda-guard>
+
+    (defun apply$-lambda-guard (fn args)
+           (declare (xargs :guard t))
+           (and (consp fn)
+                (consp (cdr fn))
+                (true-listp args)
+                (equal (len (cadr fn)) (length args))))
 
 
 Subtopics
+
+  [Apply$-guard]
+      The guard on apply$
+
+  [Apply$-lambda]
+      Used by apply$ on LAMBDA objects
+
+  [Apply$-lambda-guard]
+      The guard on apply$-lambda
+
+  [Apply$-userfn]
+      Undefined function used by apply$ on non-primitives
+
+  [Badge]
+      Information on when a function symbol can be apply$d
+
+  [Badge-userfn]
+      Undefined function used by badge on non-primitives
 
   [Def-warrant]
       Warrant a function so [apply$] can use it
@@ -7993,14 +8562,129 @@ Subtopics
   [Defun$]
       Define a function symbol and generate a warrant
 
+  [Ev$]
+      Evaluate a tame expression using apply$
+
   [Fn-equal]
       Equivalence relation on tame functions
+
+  [Gratuitous-lambda-object-restrictions]
+      Enforcement of logically unnecessary restrictions on :FN slots
+
+  [Ilk]
+      Indicator of how an argument is used
 
   [Introduction-to-apply$]
       Background knowledge on how to use [apply$], [def-warrant], etc.
 
+  [Lambda]
+      Lambda expressions, LAMBDA objects, and lambda$ expressions
+
+  [Lambda$]
+      Lambda object constructor for use with apply$
+
+  [Print-cl-cache]
+      Information about the cache supporting apply$
+
+  [Scion]
+      A function ancestrally dependent on apply$
+
+  [Tame]
+      Definitions of the various notions of tameness
+
+  [Translam]
+      Print the translation of a lambda$ expression
+
   [Warrant]
-      Giving [apply$] permission to call a user-defined function")
+      Giving [apply$] permission to call a user-defined function
+
+  [Well-formed-lambda-objectp]
+      Predicate for recognizing well-formed LAMBDA objects")
+ (APPLY$-GUARD
+  (APPLY$)
+  "The guard on apply$
+
+  The guard on (apply$ fn lst) is (apply$-guard fn lst) which is
+  extraordinarily weak.
+
+  Function: <apply$-guard>
+
+    (defun apply$-guard (fn args)
+           (declare (xargs :guard t))
+           (if (atom fn)
+               (true-listp args)
+               (apply$-lambda-guard fn args)))
+
+  where
+
+  Function: <apply$-lambda-guard>
+
+    (defun apply$-lambda-guard (fn args)
+           (declare (xargs :guard t))
+           (and (consp fn)
+                (consp (cdr fn))
+                (true-listp args)
+                (equal (len (cadr fn)) (length args))))
+
+  This guard is just strong enough to allow the definitions of the
+  functions in the apply$ clique to be guard verified.  It does not
+  guarantee that fn is tame or well-formed or that args satisfy the
+  guard of fn.  The last condition is in fact impossible to state
+  given the untyped nature of ACL2.  Thus, (apply$ fn args) has to
+  check tameness, well-formedness, guard verified, and that fn's
+  guard is satisfied by args when the apply$ is executed in the
+  evaluation theory.
+
+  The issue of guards and guard verification of definitions involving
+  apply$ is further discussed in [apply$] and in [verify-guards].")
+ (APPLY$-LAMBDA
+  (APPLY$)
+  "Used by apply$ on LAMBDA objects
+
+  When apply$ is given a consp object as its first argument it treats
+  it as a LAMBDA expression and calls this function to apply it.
+  This function evaluates the body of the object with ev$ under an
+  alist binding the formals of the object to the actuals.  See
+  [apply$] for details.")
+ (APPLY$-LAMBDA-GUARD
+  (APPLY$)
+  "The guard on apply$-lambda
+
+  The guard on (apply$-lambda fn lst) is (apply$-lambda-guard fn lst)
+  which is extraordinarily weak.
+
+  Function: <apply$-lambda-guard>
+
+    (defun apply$-lambda-guard (fn args)
+           (declare (xargs :guard t))
+           (and (consp fn)
+                (consp (cdr fn))
+                (true-listp args)
+                (equal (len (cadr fn)) (length args))))
+
+  This guard is just strong enough to allow the definitions of the
+  functions in the apply$ clique to be guard verified.  It does not
+  guarantee that fn is tame or well-formed or that args satisfy the
+  guard of fn.  The last condition is in fact impossible to state
+  given the untyped nature of ACL2.  Thus, (apply$ fn args) has to
+  check tameness, well-formedness, guard verified and that fn's guard
+  is satisfied by args when the apply$ is executed in the evaluation
+  theory.
+
+  The issue of guards and guard verification of definitions involving
+  apply$ is further discussed in [apply$] and in [verify-guards].")
+ (APPLY$-USERFN
+  (APPLY$)
+  "Undefined function used by apply$ on non-primitives
+
+  When apply$ is given a non-primitive function symbol it calls this
+  function to determine the results of applying that symbol to the
+  given arguments.  But this function is undefined.  In the proof
+  theory, its value on a given function symbol fn is specified, if at
+  all, by the [warrant] for fn which must be available as a
+  hypothesis in the formula being proved.  In the evaluation theory,
+  apply$-userfn has an attachment that makes it behave as though all
+  warrants are assumed.  See [apply$] for details.")
  (APROPOS (POINTERS)
           "See [finding-documentation].")
  (ARCHITECTURE-OF-THE-PROVER
@@ -9510,7 +10194,165 @@ Subtopics
   class (see [rule-classes]) in ACL2.")
  (BACKTRACK (POINTERS)
             "See [hints] for information about the keyword :backtrack.")
- (BADGE (POINTERS) "See [apply$].")
+ (BADGE
+  (APPLY$)
+  "Information on when a function symbol can be apply$d
+
+  General Form:
+
+    (badge fn)
+
+  The argument, fn, is expected to be a function symbol.  If fn is one
+  of about 800 ACL2 primitives (discussed below) or is a user-defined
+  function successfully processed by the event [def-warrant], the
+  result is an object, called the ``badge'' of fn, which among other
+  things specifies the [ilk] of each formal of fn.  Otherwise, an
+  error is caused.  We explain below, where we define the concepts of
+  the ``authorization flag,'' ``ilks,'' and ``tameness requirements''
+  of fn's badge.
+
+  A function symbol must have a badge in order to apply$ the symbol.
+  So if you want to be able to apply$ a function you should introduce
+  it with defun$ or a similar macro, or call [def-warrant] on the
+  function after introducing.  The ACL2 macro defun$ is just an
+  abbreviation for a [defun] event followed by a [def-warrant] event.
+  But not every function symbol can have a badge!
+
+  The complete list of badged primitives can be seen by evaluating
+
+    (append '(BADGE TAMEP TAMEP-FUNCTIONP SUITABLY-TAMEP-LISTP
+                    APPLY$ EV$)
+            (strip-cars *badge-prim-falist*))
+
+  Badge is a defined function in ACL2.  You can inspect its definition
+  with
+
+    ACL2 !>:pe badge
+
+  and see that after handling the built-in symbols it defers to the
+  undefined function [badge-userfn].  In the evaluation theory,
+  badge-userfn has an attachment that returns the badge computed by
+  def-warrant.  But in the proof theory, badge-userfn is undefined
+  and the [warrant] for fn specifies the badge of fn.  Thus, in the
+  proof theory, you cannot reason about the application of a
+  non-primitive function unless there is a warrant for the function
+  available as a hypothesis.
+
+  The rest of this documentation illustrates and explains what badges
+  mean, starting with a few examples.
+
+    ACL2 !>(badge 'cons)
+    (APPLY$-BADGE T 2 . T)
+
+    ACL2 !>(badge 'apply$)
+    (APPLY$-BADGE T 2 :FN NIL)
+
+    ACL2 !>(badge 'foldr)
+    (APPLY$-BADGE T 3 NIL :FN NIL)
+
+  The last example assumes that foldr has been defined with
+
+    (defun$ foldr (lst fn init)
+      (if (endp lst)
+          init
+          (apply$ fn
+                  (list (car lst)
+                        (foldr (cdr lst) fn init)))))
+
+  In general, badges have the form (APPLY$-BADGE flg n . ilks), where
+  flg is a Boolean, n is the arity of fn, and ilks is either T or a
+  list of n tokens.  Each token is either :FN, :EXPR, or NIL.
+
+  The badge of fn, if any, is computed when the event (def-warrant fn)
+  completes successfully.  See [def-warrant] for a sketch of the
+  algorithm used to compute badges.  Here though we are just
+  concerned with how badges impact apply$.
+
+  The flg component of a badge is the authorization flag.  The
+  authorization flag indicates whether the function returns one (flg
+  = T) or more (flg = NIL) values.  Recall that if the authorization
+  flag of fn is not T, then (apply$ 'fn args) does not meet the naive
+  specification of [apply$] because apply$ returns one result but a
+  function with authorization flag NIL returns multiple values.
+
+  The ilks of a function, fn, determines the ``tameness requirements''
+  mentioned in the specification of [apply$].  When the ilks
+  component of fn's badge is a list, it has as many elements as there
+  are formals to fn and each successive element is called the ilk of
+  the corresponding formal.  For example, given the definition of
+  foldr above and the badge shown for it, the first and third
+  formals, lst and init, each have ilk NIL and the second formal, fn,
+  has ilk :FN.  In the special case that ilks is not a list it is T
+  and we just say each formal has ilk NIL -- treating that T as a
+  suitably long list of NILs.
+
+  Each non-NIL ilk imposes a tameness requirement on (apply$ fn args).
+  If a formal has ilk :FN the corresponding element of args must
+  satisfy tamep-functionp.  If a formal has ilk :EXPR the
+  corresponding element of args must satisfy tamep.  Ilk NIL imposes
+  no requirement.  (Thus, if the ilks of fn's badge is T, as it is
+  for cons for example, there is no tameness requirement at all.)
+  See [tame] for a discussion of the various notions of tameness.
+
+  Informally, if a formal's ilk is :FN, the corresponding element of
+  args must be a tame function symbol or well-formed LAMBDA object.
+  If a formal's ilk is :EXPR, the corresponding element of args must
+  be a tame expression.
+
+  If a formal has ilk :FN then you are allowed to put a [lambda$]
+  expression in that slot.  Any quoted LAMBDA object you explicitly
+  write in such a slot must be well-formed (see
+  [well-formed-lambda-objectp]).  Well-formedness can be hard to
+  achieve in quoted hand-written LAMBDA objects; we recommend that
+  you use lambda$!  But the restrictions on what can occupy a :FN
+  slot are enforced when user input is translated into formal terms.
+  It is possible to circumvent these syntactic checks without
+  endangering soundness: axiomatically apply$ puts no restrictions on
+  its arguments, it just doesn't behave the way you might expect on
+  ill-formed LAMBDA objects.  See
+  [gratuitous-lambda-object-restrictions].
+
+  Clarification: The careful reader will note that the formal
+  requirement on a :FN argument is that it must satisfy
+  tamep-functionp.  Inspection of the definition of tamep-functionp
+  reveals that the argument must either be badged symbol with ilks T
+  or else be a tame LAMBDA object.  But in the informal description
+  above we said that it must be a ``tame function symbol or a
+  well-formed LAMBDA object.'' Well-formedness implies tameness but
+  they are not the same.  What's going on?  The reason for this and
+  related discrepancies in the documentation is that there is a
+  tension between the logical definition of apply$ and the practical
+  business of executing it.  The former involves the existence of a
+  model, soundness, and the difficulty of proving theorems about
+  apply$.  The latter involves the Common Lisp compiler.  We want the
+  logical foundations to be simple so we -- and you -- can reason
+  about apply$, but the compiler imposes unavoidable and complicated
+  restrictions.  The upshot is that the logical foundations assign
+  meaning to LAMBDA objects that cannot be compiled.  Applying merely
+  ``tame'' LAMBDAs is slower than applying ``well-formed'' ones.  In
+  a sense by acting like ``tame LAMBDA objects'' and ``well-formed
+  LAMBDA objects'' are the same thing we're trying to trick you!  If
+  you ever have occasion to formally express the restrictions on
+  apply$ in some theorem, use tamep-functionp.  But when you write
+  concrete LAMBDA constants, try to keep them well-formed.  We try to
+  encourage this by providing [lambda$], which guarantees
+  well-formedness at translate-time, and by implementing full
+  well-formedness checks -- not just tameness checks -- on quoted
+  LAMBDA objects in :FN slots.  And we give you ways to circumvent
+  these checks -- see [gratuitous-lambda-object-restrictions] -- if
+  you really mean to.")
+ (BADGE-USERFN
+  (APPLY$)
+  "Undefined function used by badge on non-primitives
+
+  When [badge] is given a non-primitive function symbol fn it calls
+  this function to determine the badge of fn.  But this function is
+  undefined.  In the proof theory, its value on a given function
+  symbol fn is specified, if at all, by the [warrant] for fn which
+  must be available as a hypothesis in the formula being proved.  In
+  the evaluation theory, badge-userfn has an attachment that makes it
+  behave as though all warrants are assumed.  See [badge] for
+  details.")
  (BASICS
   (PROGRAMMING)
   "Basic control structures for [programming] like [if] and [cond],
@@ -20110,136 +20952,116 @@ Subtopics
   (APPLY$ ACL2-BUILT-INS)
   "Warrant a function so [apply$] can use it
 
-  In the following documentation, we freely use the words ``tame,''
-  ``badge,'' ``ilk,'' and ``authorized.'' These concepts are defined
-  in the documentation for [apply$] and we assume you have read that
-  documentation.  We repeat the Getting Started advice there too:
+  Before using def-warrant or a utility like [defun$] that relies on
+  it:
 
     (include-book \"projects/apply/apply-lemmas\" :dir :system)
 
-  before using or experimenting with def-warrant.  Several lemmas in
-  that book are necessary for def-warrant to prove the theorems it
-  must prove.
+  Several lemmas in that book are necessary for def-warrant to prove
+  the theorems it must prove.
 
     General Form:
     (def-warrant fn)
 
   where fn is a defined function name.  This command analyzes the body
-  of fn to determine whether it satisfies certain syntactic
-  conditions that allow [apply$] to apply the function to arguments
-  and that allow future calls of def-warrant to analyze definitions
-  that call this fn.
+  of fn to determine whether it satisfies stringent syntactic
+  conditions that allow [apply$] to apply the function name to
+  arguments and that allow future calls of def-warrant to analyze
+  definitions that call this fn.
 
   The conditions include:
 
   (a) Fn is a defined, singly-recursive (or non-recursive) :logic mode
-  function that (if recursive) is justified with a tame measure, tame
-  domain predicate, and tame well-founded relation, and that (if
-  recursive and at least one formal has ilk :FN or :EXPR) has a
-  natural-number-valued measure and well-founded relation o<.
+  function that (if recursive) is justified with a [tame] measure
+  expression, [tame] domain predicate, and [tame] well-founded
+  relation, and that (if recursive and at least one formal has ilk
+  :FN or :EXPR) has a natural-number-valued measure and well-founded
+  relation o<.
 
   (b) Every function called in the body of fn, except fn itself,
-  already has a badge.
+  already has a [badge].  If some subfunction doesn't already have a
+  badge, def-warrant will signal an error and report the unbadged
+  function.  You will have to call def-warrant on that function --
+  and that call must succeed -- before any function using it is
+  successfully warranted.
 
-  (c) The formals can be classified into three ilks as described in the
-  definition of badges in [apply$].  Roughly put this means that
-  formals of ilk :FN are treated purely as function objects to be
-  touched only by apply$, formals of ilk :EXPR are treated as purely
-  as expression objects to be touched only by ev$, and formals of ilk
-  NIL are treated as ordinary objects and are never touched by apply$
-  or ev$.  Furthermore, every formal of ilk either :FN or :EXPR is
-  passed unchanged into the same argument position in every recursive
-  call of fn in the body.
+  (c) Each formal can be assigned one of three ilks, as follows.  By
+  the way, key to the inductive correctness of the implied algorithm
+  below is the fact that initially the only function symbol with a
+  slot of ilk :FN is apply$ and the only function with a slot of ilk
+  :EXPR is ev$.  In both functions it is the first argument slot that
+  is so distinguished.
 
-  (d) Every :FN/:EXPR slot of every function called in the body of fn
-  is occupied either by a formal of fn of the same ilk or, in the
-  case of calls of functions other than fn, a quoted tame
-  function/expression.
+  Let v  be the i th formal parameter of a defined function fn.  Then
+  the ilk of v  is :FN iff the value of v  eventually makes its way
+  into the first argument of apply$, either in the definition of fn
+  or in some function ancestral to (i.e., eventually called by) fn.
+  Another way to say this is that there is an occurrence of v  in a
+  slot of ilk :FN.  Furthermore, v  is never used any other way:
+  every place v  occurs in the body of fn  is in a slot of ilk :FN.
+  And finally, in every recursive call of fn , v  is passed
+  identically in the i th argument position of the call.  We say such
+  a v  is ``used (exclusively) as a function.''
+
+  The i th formal variable v  has ilk :EXPR under analogous conditions
+  except that instead of eventually getting into the first argument
+  of apply$ it eventually gets into the first argument of ev$.  We
+  say such a v  is ``used (exclusively) as an expression.'' Note:
+  [ev$] is the natural notion of expression evaluation in this
+  context: look up the values of variables in the alist argument to
+  ev$, return quoted constants, and otherwise apply$ function symbols
+  and LAMBDA objects to the recursively obtained list of values
+  returned by evaluating the actuals.  However, ev$ first checks that
+  the expression is [tamep].
+
+  The i th formal variable v  has ilk NIL if it never occurs in a :FN
+  slot and never occurs in an :EXPR slot.  We say such a v  is ``used
+  (exclusively) as an ordinary object.''
+
+  (d) Every :FN and :EXPR slot of every function called in the body of
+  fn is occupied either by a formal of fn of the same ilk or, in the
+  case of calls of functions other than fn, a quoted [tame] function
+  symbol or quoted tame (preferably well-formed) LAMBDA object.
 
   If these conditions are not met, an error is caused by def-warrant.
 
-  If these conditions are met, def-warrant determines the badge for fn,
-  setting the authorization flag to T if fn returns a single value
-  and NIL if it does not, setting the arity field in the badge to the
-  arity, n, of fn, and setting the ilks field to the list of ilks (or
-  to T if every formal has ilk NIL).
+  If these conditions are met, def-warrant constructs the [badge] for
+  fn, setting the authorization flag to T if fn returns a single
+  value and NIL if it does not, setting the arity field in the badge
+  to the arity, n, of fn, and setting the ilks field to the list of
+  computed ilks (or to T if every formal has ilk NIL).
 
   The authorization flag indicates whether apply$ is allowed to call
   fn.  A fn that satisfies the conditions above but returns multiple
   values cannot be called by apply$ because apply$ always returns a
-  single value.  But fn might be used in some other function that
-  also satisfies the rules and returns a single value, so that caller
-  can be authorized.  There is an example of this at the end of this
-  documentation topic.
+  single value.  But such a fn might be used as a subfunction in some
+  other function that satisfies the rules and returns a single value,
+  so that caller can be authorized.  There is an example of this at
+  the end of this documentation topic.
 
   The generated badge is stored for the future use of def-warrant.
   Furthermore, if the generated badge is authorized, def-warrant
-  generates the warrant for fn.  The name of that 0-ary function will
-  be APPLY$-WARRANT-fn and the warrant itself is a call of that
-  function, (APPLY$-WARRANT-fn).  The warrant function is defined
-  with [defun-sk] because it specifies the values returned by (apply$
-  'fn args) for all possible args.  The warrant is actually phrased
-  in terms of the two undefined functions, badge-userfn and
-  apply$-userfn, used to produce values for badge and apply$ on
-  user-defined functions.  To extend apply$ correctly, def-warrant
-  turns the ilks of fn into tameness conditions on the corresponding
-  elements of the args.
+  generates the [warrant] for fn.  The name of that 0-ary function
+  will be APPLY$-WARRANT-fn.  Calls of [apply$] on 'fn in proof
+  attempts can only be simplified if the warrant hypothesis,
+  (APPLY$-WARRANT-fn), aka ``the warrant,'' is among the hypotheses
+  of the conjecture being proved.  The warrant specifies the values
+  of both (badge 'fn) and (apply$ 'fn ...), including the tameness
+  requirements imposed on apply$.  (The warrant explicitly specifies
+  the values of [badge-userfn] and [apply$-userfn] and then
+  [def-warrant] proves rewrite rules to make calls of badge and
+  apply$ simplify accordingly.)
 
-  It is easiest to understand the above paragraph by looking at the
-  generated warrant function for foldr, whose definition is shown at
-  the top of the documentation for [apply$].
-
-    (defun-sk apply$-warrant-foldr ()
-      (forall (args)
-        (implies (tamep-functionp (cadr args))
-                 (and (equal (badge-userfn 'foldr)
-                             '(APPLY$-BADGE T 3 NIL :FN NIL))
-                      (equal (apply$-userfn 'foldr args)
-                             (foldr (car args)
-                                    (cadr args)
-                                    (caddr args))))))
-      :constrain t)
-
-  Notice that the tameness hypothesis involves the universally
-  quantified variable args, but that the first conjunct of the
-  conclusion does not mention that variable.  So we can read
-  (apply$-warrant-foldr) as equivalent to the conjunction of:
-
-    (equal (badge-userfn 'foldr)
-           '(APPLY$-BADGE T 3 NIL :FN NIL))
-
-  and
-
-    (forall (args)
-        (implies (tamep-functionp (cadr args))
-                 (equal (apply$-userfn 'foldr args)
-                        (foldr (car args)
-                               (cadr args)
-                               (caddr args)))))
-
-  The first specifies the value of the undefined function used by badge
-  to find the badge of a user-defined function.  The second specifies
-  the behavior of the undefined function used by apply$ to apply$
-  'foldr and requires that the second element of args be a tame
-  function.
-
-  Notice also that the warrant function for foldr,
-  apply$-warrant-foldr, ancestrally depends on foldr: foldr is called
-  in the defun-sk.  That is crucial to avoiding the LOCAL problem
-  noted in [introduction-to-apply$] because the warrant for every
-  non-built-in symbol apply$ed in the proof must be provided as a
-  hypothesis, which means the theorem is ancestrally dependent on
-  each of the correspondingly named functions, which means none of
-  those functions may be local to the environment from which that
-  theorem is exported.
-
-  Once def-warrant has introduced the warrant function for fn it proves
-  the rewrite rules shown in the apply$-foldr defthm event in the
-  documentation for [apply$].  Those two rules establish that the
-  warrant implies the described behavior for badge and apply$.
+  In addition, if a warrant is issued for fn, then def-warrant extends
+  ACL2's evaluation theory (but not its proof theory) so that the
+  warrant hypothesis is assumed in that theory, allowing calls of
+  badge and apply$ to be evaluated in the evaluation theory (but not
+  in the proof theory).  See [warrant] for details.
 
   Def-warrant also proves that [fn-equal] is a congruence relation for
   each :FN position of fn.
+
+  See [warrant] for details.
 
 
 An Example of an Authorized Function Calling an Unauthorized One
@@ -23287,15 +24109,26 @@ Subtopics
 
   This is an advanced feature that requires a trust tag.  For
   explanation, including an example, see [return-last].")
- (DEFN (DEFUN EVENTS)
-       "Definition with [guard] t
+ (DEFN
+  (DEFUN EVENTS)
+  "Definition with [guard] t
 
-  Defn is [defun] with [guard] t.")
+  Defn is [defun] with [guard] t.
+
+  defn expands to a [defun] with an added (declare (xargs :guard t)).
+  If an explicit guard is supplied to defn, it is conjoined to the
+  added t guard, according to [defun]'s treatment of multiple guard
+  declarations.")
  (DEFND
   (DEFUN EVENTS)
   "[disable]d definition with [guard] t
 
-  Defnd is [defund] with [guard] t.")
+  Defnd is [defund] with [guard] t.
+
+  defnd expands to a [defund] with an added (declare (xargs :guard t)).
+  If an explicit guard is supplied to defnd, it is conjoined to the
+  added t guard, according to [defun]'s treatment of multiple guard
+  declarations.")
  (DEFPKG
   (EVENTS PACKAGES PROGRAMMING)
   "Define a new symbol package
@@ -26055,53 +26888,10 @@ Subtopics
   [mutual-recursion] forms can be processed by the Emacs tags
   program.  See [mutual-recursion].")
  (DELETE-ASSOC
-  (ALISTS ACL2-BUILT-INS)
-  "Remove the first pair from an association list for a given key
+      (ALISTS ACL2-BUILT-INS)
+      "Deprecated version of [remove1-assoc]
 
-    General Forms:
-    (delete-assoc key alist)
-    (delete-assoc key alist :test 'eql)   ; same as above (eql as equality test)
-    (delete-assoc key alist :test 'eq)    ; same, but eq is equality test
-    (delete-assoc key alist :test 'equal) ; same, but equal is equality test
-
-  (Delete-assoc key alist) returns an alist that is the same as the
-  list alist, except that the first pair in alist with a [car] of key
-  is deleted, if there is one; otherwise alist is returned.  Note
-  that the order of the elements of alist is unchanged (though one
-  may be deleted).
-
-  The [guard] for a call of delete-assoc depends on the test.  In all
-  cases, the second argument must satisfy [alistp].  If the test is
-  [eql], then either the first argument must be suitable for [eql]
-  (see [eqlablep]) or the second argument must satisfy
-  [eqlable-alistp].  If the test is [eq], then either the first
-  argument must be a symbol or the second argument must satisfy
-  [symbol-alistp].
-
-  See [equality-variants] for a discussion of the relation between
-  delete-assoc and its variants:
-
-      (delete-assoc-eq key alist) is equivalent to (delete-assoc key alist
-      :test 'eq);
-
-      (delete-assoc-equal key alist) is equivalent to (delete-assoc key
-      alist :test 'equal).
-
-  In particular, reasoning about any of these primitives reduces to
-  reasoning about the function delete-assoc-equal.
-
-  Function: <delete-assoc-equal>
-
-    (defun delete-assoc-equal (key alist)
-           (declare (xargs :guard (alistp alist)))
-           (cond ((endp alist) nil)
-                 ((equal key (caar alist)) (cdr alist))
-                 (t (cons (car alist)
-                          (delete-assoc-equal key (cdr alist))))))")
- (DELETE-ASSOC-EQ (POINTERS)
-                  "See [delete-assoc].")
- (DELETE-ASSOC-EQUAL (POINTERS)
-                     "See [delete-assoc].")
+  See [remove1-assoc].")
  (DELETE-FILE$
   (IO)
   "Delete a file
@@ -28406,7 +29196,6 @@ Subtopics
 
     [add-to-set]
     [assoc]
-    [delete-assoc]
     [intersection$] ; (see Note below)
     [intersectp]
     [member]
@@ -28415,9 +29204,11 @@ Subtopics
     [position]
     [put-assoc]
     [rassoc]
+    [remove]
+    [remove-assoc]
     [remove-duplicates]
     [remove1]
-    [remove]
+    [remove1-assoc]
     [set-difference$] ; (see Note below)
     [subsetp]
     [union$] ; (see Note below)
@@ -29310,7 +30101,21 @@ Subtopics
   execute a form in Common Lisp as opposed to ACL2, exit [lp] with
   :[q], submit the desired forms to the Common Lisp read-eval-print
   loop, and reenter ACL2 with (lp).")
- (EV$ (POINTERS) "See [apply$].")
+ (EV$
+  (APPLY$)
+  "Evaluate a tame expression using apply$
+
+  When [apply$], actually [apply$-lambda], is asked to apply a LAMBDA
+  object to some arguments it calls ev$ on the body of the object and
+  an alist binding the formals of the object to the arguments.
+  Roughly put, ev$ ``works'' by looking up symbols, returning quoted
+  objects, and using apply$ to apply function symbols to the results
+  of evaluating their arguments.  Ev$ and its clique-mate ev$-list
+  are mutually-recursive with apply$.  Ev$ can only evaluate ``as
+  expected'' on [tame] expressions and requires [warrant]s, explicit
+  in the proof theory or implicit in the evaluation theory, to
+  determine [badge]s and thus tameness.  See [apply$] for details,
+  including the formal definitions of ev$ and ev$-list.")
  (EV$-LIST (POINTERS) "See [apply$].")
  (EVALUATING_APP_ON_SAMPLE_INPUT
   (PAGES_WRITTEN_ESPECIALLY_FOR_THE_TOURS)
@@ -37874,6 +38679,128 @@ Subtopics
   formal parameter in order to allow for more efficient granularity
   forms, as we have done above in the definition of
   SET::pmergesort-exec.")
+ (GRATUITOUS-LAMBDA-OBJECT-RESTRICTIONS
+  (APPLY$)
+  "Enforcement of logically unnecessary restrictions on :FN slots
+
+  When a form is submitted to the ACL2's read-eval-print loop the terms
+  in it are translated (``macroexpanded'') into ACL2's internal form,
+  in which abbreviations like (cadr x) are expanded away and
+  constants are always quoted.  See [term] for details of the
+  internal form.
+
+  But translation also enforces a logically unnecessary restriction in
+  argument positions of [ilk] :FN.  If a quoted consp object whose
+  car is the symbol LAMBDA occurs in a :FN slot, translate insists
+  that the object satisfy [well-formed-lambda-objectp].
+  Well-formedness implies tameness, so any LAMBDA object that passes
+  this translate-time test will have the ``expected behavior'' under
+  apply$.  If an quoted ill-formed ``LAMBDA-like'' object is passed
+  into a :FN slot, an error is signalled.
+
+  This is logically unnecessary because, like all ACL2 functions,
+  apply$ can be called on any objects.  Indeed, ill-formed
+  LAMBDA-like objects induce some kind of default behavior by apply$
+  and can, sometimes, deliver non-erroneous values.
+
+  But ground apply$ terms can be evaluated more quickly on well-formed
+  LAMBDA objects than on ill-formed ones.  See for example the
+  dicussion of performance in [print-cl-cache].  So this retriction
+  is really motivated by a desire to encourage the exclusive use of
+  well-formed LAMBDA objects.
+
+  Why would you want to call apply$ on ill-formed input?  The answer is
+  that you might be trying to explore the semantics of apply$ by
+  example.  Since this is a time-honored methodology, we have made it
+  possible to circumvent the translate-time check if you insist on
+  feeding an ill-formed object into a :FN slot.  Soundness is not
+  imperiled but execution may slow down.
+
+  Warning: Using an ill-formed LAMBDA object in a :FN slot in a defun
+  will make it impossible to warrant the newly defined function
+  because it will not pass the stringent tests necessary to analyze
+  its ilks.  See [def-warrant].  Basically these bypasses are
+  intended primarily for top-level input to ACL2's read-eval-print
+  loop.
+
+  There are two ways to bypass the check.  Bypass 1 is to construct the
+  object in place rather than supply a quoted constant.  This can be
+  as simple as consing a LAMBDA onto the rest of your ill-formed
+  constant.  This, of course, costs one cons at eval-time.  Bypass 2
+  is to cons the ill-formed object together in a [defconst] and then
+  use the defined constant symbol in the :FN slot.  We illustrate
+  these and other points below.
+
+    ; Here we show the error that occurs if you use an ill-formed
+    ; @('LAMBDA') object in a @(':FN') slot.
+
+    ACL2 !>(apply$ '(lambda (t) (cons t t)) '(a))
+
+    ACL2 Error in TOP-LEVEL: The second element of a well-formed
+    LAMBDA object or lambda$ term must be a true list of distinct
+    legal variable symbols and (T) is not.  See :DOC
+    gratuitous-lambda-object-restrictions for a workaround if you
+    really mean to have an ill-formed LAMBDA-like constant in your
+    code.  Note: this error occurred in the context
+    (APPLY$ '(LAMBDA (T) (CONS T T)) '(A)).
+
+    ; Bypass 1:  Cons the ill-formed object together in place.
+
+    ACL2 !>(apply$ (cons 'lambda '((t) (cons t t))) '(a))
+    (A . A)
+
+    ; Bypass 1 (more attractive but perhaps too subtle): Use
+    ; backquote.  This looks prettier, indeed, it is almost
+    ; unnoticeable!  But it does more eval-time consing.
+
+    ACL2 !>(apply$ `(lambda (t) (cons t t)) '(a))
+    (A . A)
+
+    ; Bypass 2:  Use defconst first.  No runtime consing.
+
+    ACL2 !>(defconst *my-ill-formed-lambda*
+              `(lambda (t) (cons t t)))
+    ...output elided...
+
+    ACL2 !>(apply$ *my-ill-formed-lambda* '(a))
+    (A . A)
+
+    ; You can, of course, use these bypasses when defining new
+    ; functions.
+
+    ACL2 !>(defun foo (x) (apply$ *my-ill-formed-lambda* (list x)))
+    ...successful defun output elided...
+
+    ; You can then execute the new function, possibly slowly.
+
+    ACL2 !>(foo 'b)
+    (B . B)
+
+    ; But you can't warrant the new function because def-warrant
+    ; can't determine the ilks.
+
+    ACL2 !>(def-warrant foo)
+
+    ACL2 Error in DEF-WARRANT: FOO will not be warranted because
+    a :FN slot in its body is occupied by a quoted cons object,
+    '(LAMBDA (T) (CONS T T)), that is not a well-formed,
+    fully-translated, closed ACL2 lambda object. ...
+
+    ; Thus, you can't apply$ 'foo either.
+
+    ACL2 !>(apply$ 'foo '(c))
+
+    ACL2 Error in TOP-LEVEL: The value of APPLY$-USERFN is not
+    specified on FOO because FOO has not been warranted.
+
+  By the way, :FN slots are treated differently in another way by
+  translate: [lambda$] terms are only allowed in :FN slots.  This
+  restriction is necessary for ACL2's correct operation.  Lambda$
+  expands differently in the logic than it does in the underlying
+  Common Lisp.  If lambda$ terms were allowed to occur anywhere, this
+  difference could be detected by the difference between proved
+  behavior and computed behavior and could be used to render ACL2
+  unsound.")
  (GROUND-ZERO
   (THEORIES THEORY-FUNCTIONS)
   "[enable]d rules in the [startup] theory
@@ -43401,6 +44328,39 @@ Subtopics
     (assert-event (equal (f1 3 t) nil))
 
     (assert-event (equal (f2 3 t) (cons 3 t)))")
+ (ILK
+  (APPLY$)
+  "Indicator of how an argument is used
+
+  The ilk of the ith argument of a [badge]d function symbol fn is one
+  of three tokens with the following meanings.
+
+    * :FN - the ith argument is used exclusively as a function object by
+      fn; informally this means that the argument is passed only into
+      slots of ilk :FN in the definition of fn and that on some
+      (syntactic) execution paths reaches the first argument of a
+      call of [apply$].
+    * :EXPR - the ith argument is used exclusively as a expression object
+      by fn; informally this means that the argument is passed only
+      into slots of ilk :EXPR in the definition of fn and that on
+      some (syntactic) execution paths reaches the first argument of
+      a call of [ev$].
+    * NIL - the ith argument is never used as a function or expression
+      object in the definition of fn.
+
+  See [badge] for more details.
+
+  The ilks of all the arguments of fn are stored in the [badge] of fn.
+  If each ilk of fn is NIL the [badge] stores a T as the ``list'' of
+  ilks.
+
+  The [badge] of fn is computed by a successful call of [def-warrant]
+  on fn.
+
+  Ilks are used by the various notions of [tame]ness controlling
+  whether [apply$] and [ev$] can properly interpret a quoted function
+  or expression object.")
+ (ILKS (POINTERS) "See [ilk].")
  (ILLEGAL
   (ERRORS ACL2-BUILT-INS)
   "Print an error message and stop execution
@@ -45493,16 +46453,17 @@ Subtopics
   books/projects/apply-model/.  Also see [apply$] for detailed
   documentation on apply$ that complements the introduction below, to
   be read carefully when you're ready to use apply$ in your own
-  projects.
+  projects.  We suggest that you not follow all the links in this
+  topic and instead read it linearly as you might a paper.
 
   The unreachable goal of this work is to allow the ACL2 user to pass
   `functions' as objects and to apply them.  That goal is unreachable
   because ACL2 remains a first order system.  However, we can
   identify a certain syntactic class of ordinary ACL2 objects, called
-  the `tame functions' (which are in fact not functions but are
-  merely symbols and list expressions) and we can allow functions
-  with certain tameness properties to be passed around and used as
-  functions.
+  the `[tame] functions' (which are in fact not functions but are
+  merely symbols and list expressions) and we can allow names of
+  functions with certain tameness properties to be passed around and
+  used as functions.
 
   ``Tameness'' imposes strict rules on how functional arguments are
   used.  We'll discuss it further below but tame functions are
@@ -45538,33 +46499,39 @@ Subtopics
   problem later in this doc topic.  But for that reason, the
   suppositions extending apply$ will take the form of hypotheses to
   be added to conjectures in which the behavior of apply$ on new
-  symbols is important.  These hypotheses are called ``warrants.''
+  symbols is important.  These hypotheses are called ``[warrant]s.''
 
   Warrant (Merriam-Webster): (noun) a commission or document giving
   authority to do something....
 
-  In our case, a warrant for foo gives apply$ permission to apply foo.
+  In our case, a warrant for fn gives apply$ permission to apply fn
+  under some circumstances, by asserting a universally quantified
+  conditional equality about apply$'s behavior on 'fn It also tells
+  apply$ and the [tame]ness predicates things like how many arguments
+  fn takes and how it uses them by asserting the [badge] of 'fn.  The
+  badge of fn is an ACL2 object that contains various tokens
+  interpretable by apply$ and the tameness predicates.
 
   But there is a fundamental logical problem: it is not always possible
   to satisfy such suppositions. There may be no way that apply$ could
-  handle foo.  An example of a foo for which that hypothesis is
+  handle fn.  An example of a fn for which that hypothesis is
   unsatisfiable is
 
-    (defun foo (x y) (not (apply$ x (list y y)))).
+    (defun russell (x y) (not (apply$ x (list y y)))).
 
-  This definition of foo is not recursive: it does not call itself.  So
-  this definition is admissible.  But if we had a warrant for apply$
-  and that warrant were as simple as
+  This definition of russell is not recursive: it does not call itself.
+  So this definition is admissible.  But if we had a warrant for
+  apply$ and that warrant were as simple as
 
-    (apply$ 'foo (list x y)) = (foo x y)
+    forall x,y : (apply$ 'russell (list x y)) = (russell x y)
 
   then we would have this classical problem with self-reference:
 
-    (foo 'foo 'foo)
-    =                                      {def foo}
-    (not (apply$ 'foo (list 'foo 'foo)))
-    =                                      {warrant foo}
-    (not (foo 'foo 'foo))
+    (russell 'russell 'russell)
+    =                                      {def russell}
+    (not (apply$ 'russell (list 'russell 'russell)))
+    =                                      {warrant russell}
+    (not (russell 'russell 'russell))
 
   which is contradictory.
 
@@ -45579,7 +46546,7 @@ Subtopics
 
   then the hypothesis
 
-    forall x : (apply$ 'sq (list x)) = (sq x)
+    forall x : (apply$ 'SQ (list x)) = (sq x)
 
   is satisfiable: we could have introduced sq before apply$ and then
   defined apply$ in the first place to handle that particular symbol.
@@ -45592,33 +46559,33 @@ Subtopics
   For example, consider the following function, which maps a given
   function over a list and collects the results.
 
-    (defun collect (lst fn)
+    (defun collect (fn lst)
       (if (endp lst)
           nil
           (cons (apply$ fn (list (car lst)))
-                (collect (cdr lst) fn))))
+                (collect fn (cdr lst)))))
 
-  Our definition of tameness considers (collect lst 'sq) to be a tame
+  Our definition of tameness considers (collect 'SQ lst) to be a tame
   expression, even though collect calls apply$.  The reason we can
   allow this is that in this particular call of collect the function
-  to be applied is itself tame.  But if (collect lst 'sq) is a tame
-  expression, then '(lambda (lst) (collect lst 'sq)) is a tame
+  to be applied is itself tame.  But if (collect 'SQ lst) is a tame
+  expression, then '(LAMBDA (LST) (COLLECT 'SQ LST)) is a tame
   function and thus
 
-    (collect z '(lambda (lst) (collect lst 'sq)))
+    (collect '(LAMBDA (LST) (COLLECT 'SQ LST)) z)
 
   is a tame expression.  So, for example, at the top-level of ACL2 one
   can do this:
 
-    ACL2 !>(collect '((1 2 3) (4 5 6) (7 8 9))
-                    '(lambda (lst) (collect lst 'sq)))
+    ACL2 !>(collect '(LAMBDA (LST) (COLLECT 'SQ LST))
+                    '((1 2 3) (4 5 6) (7 8 9)))
     ((1 4 9) (16 25 36) (49 64 81))
 
   Of course, this presumes we have defined sq and collect and have
   analyzed them to make sure they have the appropriate tameness
   properties.  (Note that collect is not tame, but the way it uses
   its ``functional'' argument is crucial to the tameness of (collect
-  lst 'sq).)  To use apply$ to full advantage we need to analyze
+  'SQ lst).)  To use apply$ to full advantage we need to analyze
   every relevant function definition, which has the side-effect of
   producing warrants for those functions.  We therefore have
   introduced the new command defun$, which is just an ordinary
@@ -45649,14 +46616,12 @@ Subtopics
 
   Lesson 0: Learn about apply$ by reading this tutorial introduction.
   But this tutorial mentions many undefined concepts: tameness,
-  warrants, badges, ilks.  Because these concepts are intertwined
-  with apply$ and warrants through mutual recursion, constraints,
-  rewrite rules, etc., we decided not to document each individually
-  and instead to define them all in the documentation for [apply$].
-  So please tolerate the use of undefined words here --- we'll try to
-  give you a sense of what they mean --- and remember to read the
-  documentation of [apply$] carefully when you're ready to use apply$
-  in your own projects.
+  warrants, badges, ilks.  These concepts are intertwined with apply$
+  and warrants through mutual recursion, constraints, rewrite rules,
+  etc..  So we decided not to try to define them here as we go along,
+  though the links provided do provide definitive descriptions.  So
+  please tolerate the use of undefined words here --- we'll try to
+  give you a sense of what they mean.
 
   Lesson 1: To use apply$, be sure to include the following book of
   lemmas.  These lemmas are important not just to proving theorems
@@ -45664,106 +46629,141 @@ Subtopics
 
     (include-book \"projects/apply/apply-lemmas\" :dir :system)
 
-  Lesson 2: To allow a function symbol to be passed to apply$ the
-  function must be ``warranted.'' Actually, of course, you can pass
-  anything to apply$: ACL2 is untyped and all functions are total!
-  But apply$ won't work as you expect if the argument to apply$ is
-  not warranted!  To issue warrants for sq and rev do:
+  Lesson 2: To allow apply$ to ``work'' on a function symbol the symbol
+  must be ``warranted.'' Actually, of course, you can pass anything
+  to apply$ and the axioms will reduce it to some value: ACL2 is
+  untyped and all functions are total!  But apply$ won't work as you
+  expect if the first argument to apply$ is not warranted!  To issue
+  warrants for sq and rev do:
 
     (def-warrant sq)
 
     (def-warrant rev)
 
   [Def-warrant] checks that its argument, fn, is a defined function
-  symbol that satisfies our syntactic notion of tameness.
-  Def-warrant causes an error if fn is not tame.  But if def-warrant
-  does not cause an error it produces a ``badge'' for fn that
-  describes which formals are treated as ``functions.'' Henceforth,
-  we'll say such formals are ``functional'' even though they take on
-  ordinary (first order) objects as their values.  In addition to
-  computing a badge, non-erroneous calls of def-warrant may produce a
-  ``warrant'' for fn that specifies the conditions under which apply$
-  ``works'' on the function symbol fn.
+  symbol that satisfies certain restrictions on how it uses its
+  arguments, restrictions that enable us to define the tameness
+  predicates and that allow apply$ to ``work'' without causing
+  logical contradictions.  Def-warrant causes an error if fn does not
+  obey our rules.  But if def-warrant does not cause an error it
+  produces a ``badge'' for fn that describes which formals are
+  treated as ``functions.'' Henceforth, we'll say such formals have
+  ``[ilk]'' :FN.  In addition to computing a badge, non-erroneous
+  calls of def-warrant may produce a [warrant] for fn that specifies
+  the [badge] and the conditions under which apply$ ``works'' on the
+  function symbol fn.
 
   Lesson 3: We'll say more about tameness, badges, and warrants later.
   But you might as well learn two major limitations now: (i)
-  Functions that use stobjs or STATE are not tame!  Sorry!  (ii)
-  Functions that return multiple values can be tame but not
-  warranted: tameness means they follow our syntactic rules on the
-  use of functional arguments but the absence of a warrant means they
-  cannot be applied with apply$.  The reason they cannot be applied
-  is that apply$ returns one result and so it is impossible for it to
-  return multiple values.
+  Functions that use stobjs or STATE cannot be warranted and thus
+  cannot be apply$d!  Sorry!  (ii) Some functions that return
+  multiple values can be badged but not warranted.  If the function
+  obeys our rules but just returns multiple values then a badge can
+  be produced for it, recording its signature, etc., but no warrant
+  can be produced.  Apply$ won't ``work'' on such a function because
+  apply$ always returns one result, so how could it return the
+  multiple results required in this case?  However the presence of a
+  badge allows the tameness predicates to analyze functions that call
+  the multiple-valued one and possibly issue warrants for them.
 
   Lesson 4: If you want to define a function and immediately call
   def-warrant on it you can use the handy macro defun$.  We'll use
   defun$ freely below.
 
-  Lesson 5: You can define functions that take (tame) ``functions'' as
-  arguments and apply them.  Here is a function that applies its
-  second argument to every element of its first argument and collects
-  the results.  We call functions like collect ``mapping'' functions
-  because they map over some range applying some functional argument.
+  Lesson 5: You can define functions that take warranted ``functions''
+  as arguments and apply them.  Here is a function that applies its
+  first argument to every element of its second argument and collects
+  the results.  We sometimes call functions like collect ``mapping
+  functions'' because they map another function over some range.  But
+  more often we call them [scion]s of apply$.  In ordinary English
+  usage, a ``scion'' is a descendent of an important family or
+  individual; our scions are ``descendents'' of apply$ and inherit
+  its power and restrictions.
 
-    (defun$ collect (lst fn)
+    (defun$ collect (fn lst)
       (if (endp lst)
           nil
           (cons (apply$ fn (list (car lst)))
-                (collect (cdr lst) fn))))
+                (collect fn (cdr lst)))))
+
+  In this definition, the first argument has ilk :FN because it is used
+  exclusively as a ``function:'' it reaches the first argument of
+  apply$ and is untouched otherwise.  The second argument has ilk NIL
+  and we say it's ``ordinary.'' It is never used as a function.
 
   Note: We define collect with defun$ simply because we might be in the
   habit now of using defun$.  Unless we mean to pass collect to
   apply$ or to some mapping function in the future, there is no
   reason to have a warrant for collect.  Had we defined collect with
-  the ordinary defun and realized later that we want to pass collect
-  as a functional argument, we could get a warrant for collect by
+  the ordinary defun and realized later that we want to pass 'COLLECT
+  into a slot of ilk :FN, we could get a warrant for collect by
   calling (def-warrant collect).
 
   Here's another useful mapping function:
 
-    (defun$ all (lst fn)
+    (defun$ all (fn lst)
       (if (endp lst)
           t
           (and (apply$ fn (list (car lst)))
-               (all (cdr lst) fn))))
+               (all fn (cdr lst)))))
 
-  It checks that every element of lst satisfies its functional argument
-  fn.
+  It checks that every element of lst satisfies its :FN argument fn.
 
-  Lesson 6: You can run mapping functions on warranted function
-  symbols:
+  Lesson 6: You can run scions (``mapping functions'') on warranted
+  function symbols:
 
-    ACL2 !>(collect '(1 -2 3 -4) 'sq)
+    ACL2 !>(collect 'SQ '(1 -2 3 -4))
     (1 4 9 16)
 
-    ACL2 !>(collect '((1 2 3) (4 5 6) (7 8 9)) 'rev)
+    ACL2 !>(collect 'rev '((1 2 3) (4 5 6) (7 8 9)))
     ((3 2 1) (6 5 4) (9 8 7))
 
-  Lesson 7: You can run mapping functions on (tame) lambda expressions
-  --- but those lambda expressions have to be fully translated, e.g.,
-  they cannot use macros like + or cond and must quote all constants.
-  See [term].
+  Lesson 7: You can run scions on tame LAMBDA objects --- but those
+  LAMBDA objects have to have fully translated bodies and meet other
+  restrictions so apply$ can interpret them.  You cannot use macros
+  like + or cond and must you quote all constants.  We urge you not
+  to type quoted LAMBDA objects by hand!  Instead, we provide a
+  macro, [lambda$], that allows you to write in untranslated form as
+  you would a lambda expression in ACL2.
 
-    ACL2 !>(collect '(1 -2 3 -4)
-                    '(lambda (x)
-                       (if (< x '0) (binary-* '10 x) (sq x))))
+  Lesson 8: There are three very similar looking but very different
+  notions used in this documentation: lambda expressions, LAMBDA
+  objects, and lambda$ expressions.  Read carefully!  See [lambda]
+  for some definitions and disambiguation help.
+
+    ; Don't type this:
+    ACL2 !>(collect '(LAMBDA (X)
+                       (IF (< X '0) (BINARY-* '10 X) (SQ X)))
+                    '(1 -2 3 -4))
     (1 -20 9 -40)
 
-  Lesson 8: Almost all ACL2 primitives are known to apply$.  For a
-  complete list of the built-ins, see the definition of ``apply$
-  built-ins'' in the documentation for [apply$].  You can freely use
-  these ACL2 primitives in your lambda expressions.
+    ; Type this instead!
+    ACL2 !>(collect (lambda$ (X)
+                       (if (< x 0) (* 10 x) (sq x)))
+                    '(1 -2 3 -4))
+    (1 -20 9 -40)
 
-  Lesson 9: You can prove and use theorems about mapping functions.
+  Lesson 9: Almost all ACL2 primitives are known to apply$.  For a
+  complete list of the built-ins evaluate
+
+    (append '(BADGE TAMEP TAMEP-FUNCTIONP SUITABLY-TAMEP-LISTP
+                    APPLY$ EV$)
+            (strip-cars *badge-prim-falist*))
+
+  You can freely use these ACL2 primitives with apply$ and in your
+  lambda$ expressions, without warrants.
+
+  Lesson 10: You can prove and use theorems about scions.
 
     (defthm collect-append
-      (equal (collect (append a b) fn)
-             (append (collect a fn)
-                     (collect b fn))))
+      (equal (collect fn (append a b))
+             (append (collect fn a)
+                     (collect fn b))))
 
-    (thm (equal (collect (append c d) '(lambda (x) (sq (sq x))))
-                (append (collect c '(lambda (x) (sq (sq x))))
-                        (collect d '(lambda (x) (sq (sq x)))))))
+    (thm (equal (collect (lambda$ (x) (sq (sq x)))
+                         (append c d))
+                (append (collect (lambda$ (x) (sq (sq x))) c)
+                        (collect (lambda$ (x) (sq (sq x))) d))))
 
   Notice that the lemma collect-append talks about an arbitrary fn.  It
   simply doesn't matter what apply$ does for this theorem to hold.
@@ -45771,41 +46771,41 @@ Subtopics
   anything for fn.  This is demonstrated when the thm above is
   proved: the proof is just to rewrite with collect-append.
 
-  Lesson 10: But when your theorems depend on the behavior of apply$ on
+  Lesson 11: But when your theorems depend on the behavior of apply$ on
   particular user-defined functions, you will need to provide
   hypotheses stipulating the behavior of apply$ on those values.
-  Those hypotheses are the warrants for the function symbols
-  involved.  Here is an example: If lst is a list of integers and we
-  square every element by mapping over it with sq then the result is
-  a list of naturals --- but this theorem depends on the fact that
-  (apply$ 'sq (list x)) is (sq x), which is what the warrant for sq
-  tells us.  Thus, the warrant for sq is required as a hypothesis!
+  Those hypotheses are the warrants for the (non-primitive) function
+  symbols involved.  Here is an example: If lst is a list of integers
+  and we square every element by mapping over it with sq then the
+  result is a list of naturals --- but this theorem depends on the
+  fact that (apply$ 'SQ (list x)) is (sq x), which is what the
+  warrant for sq tells us.  Thus, the warrant for sq is required as a
+  hypothesis!
 
     (defthm all-natp-collect-sq
       (implies (and (warrant sq)
-                    (all lst 'integerp))
-               (all (collect lst 'sq) 'natp)))
+                    (all 'INTEGERP lst))
+               (all 'NATP (collect 'SQ lst))))
 
-  Note that this theorem uses the mapping function all to express the
-  ideas of ``list of integers'' and ``list of naturals.'' Note also
-  that we don't need to provide warrants for integerp or natp because
-  they are ACL2 primitives and thus built into the behavior of
-  apply$.
+  Note that this theorem uses the scion all to express the ideas of
+  ``list of integers'' and ``list of naturals.'' Note also that we
+  don't need to provide warrants for integerp or natp because they
+  are ACL2 primitives and thus built into the behavior of apply$.
 
-  Lesson 11: Warrants solve ``the LOCAL problem.'' Imagine the trouble
+  Lesson 12: Warrants solve the ``LOCAL problem.'' Imagine the trouble
   we'd be in if the theorem above did not require a warrant on sq.
   We could get away with this:
 
     (encapsulate nil
       (local (defun sq (x) (* x x)))
       (defthm unwarranted-all-natp-collect-sq
-        (implies (all lst 'integerp)
-                 (all (collect lst 'sq) 'natp))))
+        (implies (all 'INTEGERP lst)
+                 (all 'NATP (collect 'SQ lst)))))
 
     (defun sq (x) (* x x x))
 
-    (thm (implies (all lst 'integerp)
-                  (all (collect lst 'sq) 'natp)))
+    (thm (implies (all 'INTEGERP lst)
+                  (all 'NATP (collect 'SQ lst))))
 
   This would be a disaster because the final thm is invalid since (sq
   -2) here is -8 and yet the thm is trivially proved by appealing to
@@ -45813,46 +46813,40 @@ Subtopics
 
   If we could prove the unwarranted theorem we could export it because
   it does not mention or depend on the function sq, it just mentions
-  the constant 'sq.  Fortunately, we cannot actually prove the
+  the constant 'SQ.  Fortunately, we cannot actually prove the
   unwarranted version of the theorem because there is no a priori
-  connection between (apply$ 'sq (list x)) and (sq x).  And if we add
+  connection between (apply$ 'SQ (list x)) and (sq x).  And if we add
   the warrant for sq to the defthm in the encapsulate we can prove
   the theorem but we cannot export it because the warrant ancestrally
   depends on locally defined function sq.
 
-  Lesson 12: While we may have given the impression that we've provided
+  Lesson 13: While we may have given the impression that we've provided
   a convenient fragment of second-order functionality in ACL2 its
   limitations will annoy you!  For example, when ACL2 tries to use
   the lemma
 
     (defthm all-natp-collect-sq
       (implies (and (warrant sq)
-                    (all lst 'integerp))
-               (all (collect lst 'sq) 'natp)))
+                    (all 'INTEGERP lst))
+               (all 'NATP (collect 'SQ lst))))
 
   it just employs its usual first-order matching algorithm.  Thus, the
   lemma won't apply to
 
-    (all (collect lst '(lambda (x) (binary-* x x))) 'natp)
+    (all 'NATP (collect (lambda$ (x) (* x x)) lst))
 
-  because the constant symbol 'sq is not the same as the constant list
-  '(lambda (x) (binary-* x x)) even though they are equivalent if
-  understood as functions.  See the discussion at [fn-equal].
+  because the constant symbol 'SQ is not the same as the constant list
+  generated by translating lambda$ expression, '(LAMBDA (X) (BINARY-*
+  X X)), even though they are equivalent if understood as functions.
+  See the discussion at [fn-equal].
 
-  Perhaps an even more common frustration is that
-
-    (all (collect lst '(lambda (x) (* x x))) 'natp)
-
-  doesn't even mean what you think it means because we accidentally
-  (but quite naturally) used the macro * inside our lambda constant.
-
-  Lesson 13: Recall Lesson 0!  Before you start to use apply$ outside
+  Lesson 14: Recall Lesson 0!  Before you start to use apply$ outside
   of this simple demo script, we advise you to read the documentation
   for apply$.
 
   An Advanced Lesson: We conclude this tutorial by defining one of the
-  most useful mapping functions and proving a couple of theorems
-  illustrating its flexibility: foldr.
+  most useful scions and proving a couple of theorems illustrating
+  its flexibility: foldr.
 
     (defun$ foldr (lst fn init)
       (if (endp lst)
@@ -45874,7 +46868,9 @@ Subtopics
              (append x y)))
 
   We do not need a warrant for cons because it is built into apply$.
-  In fact, the built-ins don't have warrants.
+  In fact, the built-ins don't have warrants but if you unnecessarily
+  list a primitive in a warrant expression, like (warrant foldr
+  cons), it just ignores the primitives that are built into apply$.
 
   By supplying a certain lambda expression we can use foldr to reverse
   its first argument:
@@ -45882,16 +46878,16 @@ Subtopics
     (defthm foldr-can-be-rev
       (implies (warrant foldr)
                (equal (foldr x
-                             '(lambda (x y)
-                                (foldr y 'cons (cons x 'nil)))
+                             (lambda$ (x y)
+                                (foldr y 'cons (cons x nil)))
                              nil)
                       (rev x))))
 
-  Note that the lambda expression calls foldr.  Because of this, we
+  Note that the lambda$ expression calls foldr.  Because of this, we
   must provide the warrant for foldr since that inner foldr will be
   applied by the outer foldr.  This illustrates an important point:
-  mapping functions can apply other mapping functions, including
-  themselves, as long as the applications are tame.")
+  scions can apply other scions, including themselves, as long as the
+  applications are tame.")
  (INTRODUCTION-TO-HINTS
   (INTRODUCTION-TO-THE-THEOREM-PROVER)
   "How to provide hints to the theorem prover
@@ -49716,7 +50712,353 @@ Subtopics
            (cond ((endp lst) nil)
                  (t (cons (kwote (car lst))
                           (kwote-lst (cdr lst))))))")
- (LAMBDA (POINTERS) "See [term].")
+ (LAMBDA
+  (TERM APPLY$)
+  "Lambda expressions, LAMBDA objects, and lambda$ expressions
+
+  The word ``lambda'' occurs in several different contexts in ACL2.
+  When we are being precise our meanings are as outlined below.
+
+    *
+        lambda expression -- This phrase is used to describe the syntactic
+        entity beginning with the symbol lambda that is allowed to
+        occupy the ``function'' position in an ACL2 [term].  Lambda
+        expressions are most often created when let expressions are
+        translated into their formal counterparts.  We provide an
+        example below.
+
+    *
+        LAMBDA object -- An ACL2 list constant interpreted as a ``function''
+        by [apply$].  LAMBDA objects may be written in terms by
+        quoting them.  However, we urge the user to introduce LAMBDA
+        objects into terms by using the built-in macro [lambda$].  We
+        provide examples below.
+
+    *
+        lambda$ expressions -- These are untranslated terms beginning with
+        the macro symbol lambda$.  They expand during translation to
+        quoted LAMBDA objects.  We provide examples below.
+
+  These three phrases are very similar but mean very different things.
+  You should read carefully when you see us talk about lambda things!
+  Unfortunately, we're not always as precise as we might be so you
+  might have to disambiguous our usage by context.  If you see places
+  in the documentation where you think we've messed up, please bring
+  them to our attention!
+
+
+About Lambda Expressions
+
+  Consider the function odd-evenp, defined with
+
+    (defun odd-evenp (x)
+      (if (zp x)
+          -1
+          (let ((ans (odd-evenp (- x 1))))
+            (* (+ ans 1) (- ans 1)))))
+
+  Distracting Aside: Can you see why we gave this function this name?
+  Hint: We might have named it ``weird evenp.''
+
+  The translated body of odd-evenp is
+
+    (if (zp x)
+        '-1
+        ((lambda (ans)
+                 (binary-* (binary-+ ans '1)
+                           (binary-+ '-1 ans)))
+         (odd-evenp (binary-+ '-1 x))))
+
+  The syntactic entity in the function position of the term in the
+  false branch, namely
+
+    (lambda (ans)
+      (binary-* (binary-+ ans '1)
+                (binary-+ '-1 ans)))
+
+  is a lambda expression.
+
+  Lambda expressions are integral to the formal representation of
+  terms.  They are the formal mechanism by which local variables are
+  introduced and thus allow repeated references to intermediate
+  results without causing recomputation.  In ACL2 they obey the rules
+  of Common Lisp.  In particular, while defining a recursive function
+  it is allowed to call the function recursively within the lambda
+  expression, e.g., to temporarily save the value of a recursive call
+  for repeated use.  (This is not illustrated by odd-evenp where the
+  recursive call is outside of the lambda expression.)  For more
+  details on the formal representation of ACL2 terms, see [term].
+
+
+About LAMBDA Objects
+
+  Prior to Version 8.0 when apply$ was introduced, ``lambda
+  expression'' was the only phrase the ACL2 developers used
+  mentioning the word ``lambda.'' Some Community Books introduced
+  various terms or objects mentioning the word but that is beyond the
+  scope of this documentation.  Because ``lambda'' occurred in no
+  other context before apply$ we are not confident that every
+  reference to what we are now calling ``lambda expressions'' were
+  called by that precise phrase in old documentation.  If you see a
+  place where we refer to these entities by another phrase, please
+  let us know!
+
+  When [apply$] was introduced, LAMBDA objects became a formally
+  supported concept in the ACL2 implementation and we started using
+  ``LAMBDA objects'' to refer to them.  A LAMBDA object is generally
+  a list, either of the form (LAMBDA vars body) or (LAMBDA vars dcl
+  body).  There are additional restrictions on vars, dcl, and body
+  that we discuss later.  But apply$ treats any consp object and
+  tries to extract those components by rudimentary pattern matching.
+  An example of a LAMBDA object is the list of length three (LAMBDA
+  (x) (BINARY-+ '1 X)).
+
+  Generally speaking when LAMBDA objects occur in translated terms they
+  are quoted, as in
+
+    (collect '(LAMBDA (X) (BINARY-+ '1 X)) lst)
+
+  To highlight the fact that these objects are constants, we try to
+  write them in UPPERCASE and typewriter font in this documentation.
+  For the same reason, we generally write ``LAMBDA object'' rather
+  than ``lambda object.''
+
+  But of course there's no difference between the symbol LAMBDA and the
+  symbol lambda.  Furthermore, LAMBDA objects need not be quoted.
+  From a logical perspective they could just be consed up because
+  they are just ordinary ACL2 list constants.  Their ``lambda''
+  status comes from being treated as functions by apply$.  So one
+  could write
+
+    (collect (list 'lambda '(x) '(binary-+ '1 x)) lst)
+
+  and we would say that the value of the term in the first argument of
+  collect is a LAMBDA object.
+
+  Beware, however, that consing up LAMBDA objects defeats the [ilk]
+  analysis in [def-warrant] and the [tame]ness analysis of apply$ and
+  hence prevents functions containing such terms from being apply$d.
+
+  According to the definitional axiom defining [apply$], any object
+  satisfying consp is treated as a LAMBDA object.  Apply$ uses
+  ``accessor'' functions to extract the ``formals'' and ``body'' of
+  the object and proceeds to [ev$] the body in an alist binding the
+  formals.  But ev$ insists that the expression object being
+  evaluated be [tame] or else assigns it a default value.  This
+  insistence on tameness is due to fundamental logical reasons;
+  otherwise, apply$ would allow us to prove NIL.  So axiomatically
+  apply$ operates as ``naively expected'' only on tamep-lambdap
+  objects.  One consequence of this, which we expect will be a minor
+  inconvenience, is that unlike ACL2's lambda expressions apply$'s
+  LAMBDA objects, when used in definitions of new functions, may not
+  include recursive calls of the function being defined because they
+  fail the tameness test.
+
+  But wait!  There's more.  Execution efficiency of apply$ imposes some
+  non-logical restrictions.  These restrictions come from ACL2's
+  execution story with respect to Common Lisp, and from the Common
+  Lisp compiler.  To execute LAMBDA objects most efficiently they
+  must be well-formed, which is a concept even stronger than
+  tameness.  Among other requirements, well-formed LAMBDA objects
+  obey the ACL2 and Common Lisp rules on variable names (not every
+  symbol is a legal variable), on the use of free variables, on the
+  body being a fully translated formal term, that the declarations,
+  if any, be meaningful to the Common Lisp compiler, etc.  You can
+  read about well-formedness in [well-formed-lambda-objectp] if you
+  want, but we don't encourage beginners to go there!
+
+  Note: Even well-formedness is not enough to guarantee execution of
+  compiled code.  The LAMBDA object must also be guard verified (see
+  [verify-guards] for a discussion) and its guard must be satisfied
+  by the arguments to which it is applied.
+
+  Note: A peculiar aspect of LAMBDA objects is that they can be written
+  as legal ACL2 constants before they are well-formed LAMBDA objects,
+  e.g., by referring to undefined functions, :program mode functions,
+  unbadged functions, etc.  They are, after all, just arbitrary
+  quoted objects and any value in ACL2 can be quoted.  An ill-formed
+  LAMBDA object can become well-formed if the world is appropriately
+  extended, e.g., the appropriate defuns or def-warrants are made.
+  Perhaps worse, they can be well-formed and then become ill-formed
+  by an undo.  So at runtime apply$ has to check that the function
+  symbol or LAMBDA object is appropriate.  There is a sophisticated
+  cache behind the execution machinery for LAMBDA objects in the
+  evaluation theory.
+
+
+About Lambda$ Expressions
+
+  Rather than force users to type well-formed LAMBDA objects as quoted
+  constants, ACL2 provides a macro allowing you to enter LAMBDA
+  objects by typing something that looks like a lambda expression but
+  which is properly translated and generates well-formed results (or
+  causes a translation error).
+
+  That macro -- which is not really a defined macro but is built into
+  ACL2's translation mechanism -- is called [lambda$] and uses of it
+  in terms are called ``lambda$ expressions.'' Lambda$ expressions
+  may only be used in argument slots of [ilk] :FN.
+
+  An example of a lambda$ expression is the first argument of collect
+  in
+
+    (collect (lambda$ (x) (+ 1 x)) lst)
+
+  That lambda$ expression translate to the quoted well-formed LAMBDA
+  object
+
+    '(LAMBDA (X) (BINARY-+ '1 X))
+
+  Note that the body is fully translated, unlike its appearance in the
+  lambda$ expression.
+
+  Lambda$ expressions never appear in a fully translated term.  All the
+  lambda$ objects will have been translated into quoted LAMBDA
+  objects.
+
+  Finally, to see how a lambda$ expression translates, see [translam].")
+ (LAMBDA$
+  (APPLY$)
+  "Lambda object constructor for use with apply$
+
+  Lambda$ is a built-in ACL2 ``macro'' that allows you to enter
+  well-formed fully-translated quoted LAMBDA objects in argument
+  positions of ilk :FN.  We urge you to use lambda$ instead of trying
+  to type quoted LAMBDA objects meant for use by apply$.  We explain
+  and document lambda$ below.
+
+  Intuitively, a quoted LAMBDA object is a quoted constant like
+
+    '(LAMBDA (X) (BINARY-+ '1 X))
+
+  e.g., a quoted constant beginning with the symbol LAMBDA and listing
+  some formal variables, possibly some declarations, and a fully
+  translated body satisfying various rules.  [Apply$] can handle
+  quoted LAMBDA objects provided they have the right basic shape and
+  all the listed formals are symbols and the bodies are [tame].  But
+  it is difficult to type fully translated bodies and, for runtime
+  efficiency, it is important that the quoted LAMBDA objects satisfy
+  additional (logically unnecessary) well-formedness restrictions
+  allowing faster guard checking and compilation.
+
+  One should strive to always enter ``well-formed LAMBDA objects.'' The
+  details of well-formedness may be found in
+  [well-formed-lambda-objectp] but our hope is that mastering those
+  details is unnecessary because ACL2 provides a built-in ``macro,''
+  lambda$, for constructing quoted well-formed LAMBDA objects.  We
+  urge you to use lambda$ instead of typing quoted LAMBDA objects!
+  That is, write (lambda$ (x) (+ 1 x)) instead of '(LAMBDA (X)
+  (BINARY-+ '1 X)).
+
+  Lambda$ terms may only appear in argument slots of ilk :FN!
+
+    Examples:
+    (lambda$ (x y) (append x (list y)))
+
+    (lambda$ (n lst str)
+             (declare (type integer n)
+                      (type string str)
+                      (ignore str)
+                      (xargs :guard (and (posp n)
+                                         (true-listp lst)
+                                         (< (- n 1) (length lst)))))
+             (nth (- n 1) lst))
+
+    General Form:
+    (lambda$ vars dcl* body)
+
+  where the lambda$ expression occurs in an argument position of ilk
+  :FN, vars is a list of distinct variable names, dcl* is zero or
+  more DECLARE forms as described below, and body is a term.  Body
+  must satisfy the same restrictions one would expect in a
+  non-recursive [defun] event with the same formals, declarations and
+  body.  In particular, body should contain no free variables other
+  than those listed in vars, must not use freely any variable
+  declared IGNOREd and must use every other variable in vars except,
+  possibly, variables listed as IGNORABLE.  Lambda$ expands to a
+  well-formed quoted LAMBDA object or else causes a translate-time
+  error.
+
+  The allowed DECLARE forms in lambda$ are type, ignore, ignorable and
+  xargs.  Furthermore, the only [xargs] keywords allowed are :guard
+  and :split-types.  The other XARGS keywords, such as :measure,
+  :hints or :guard-hints, play no role.
+
+
+About Guard Verification of Lambda Objects
+
+  Quoted LAMBDA objects, whether produced by hand (don't!) or by
+  lambda$ may have guards.  If the LAMBDA object is well-formed its
+  guard plays the same role the guard of a defined function symbol
+  plays when the object is apply$d.  If the guard can be verified to
+  imply the guards of the body (which we call guard verification),
+  and if the guard holds of the actuals to which the object is
+  applied (which we call guard checking), a compiled version of the
+  object is run.  Otherwise, depending on how [set-guard-checking]
+  has been configured, either an error is signalled or the object is
+  interpreted under the axioms defining apply$ and ev$.  Apply$
+  caches its investigations into guard verification (but not guard
+  checking) and compilation.  We discuss the cache in
+  [print-cl-cache].
+
+  When a guarded quoted LAMBDA object is used in a :FN slot of a
+  function definition, its guards are verified as part of the guard
+  verification step of defun or verify-guards.  If that guard
+  verification fails, checkpoints will be printed and you can use
+  :guard-hints or :hints in the defun or verify-guards events to
+  supply the necessary guidance.  When successful, the guard verified
+  LAMBDA objects in the defun are recorded in the cache.
+
+  But unlike defined function symbols, whose guards may be verified at
+  defun-time or at verify-guards-time, quoted LAMBDA expressions may
+  be introduced without an associated event.  For example, the user
+  may simply type
+
+    ACL2 !>(apply$ (lambda$ (x)
+                            (declare (type (satisfies natp) x))
+                            (* x x))
+                   '(5))
+
+  giving apply$ a LAMBDA object never before seen.
+
+  So apply$ must be ready to verify the guards of a quoted LAMBDA
+  object before attempting to apply it.  This is in contrast to what
+  happens when apply$ is given a quoted function symbol.  (Apply$ can
+  just look up whether a function symbol has been guard verified.)
+
+  To try to verify the guards of a quoted LAMBDA expression, apply$
+  limits itself to tau reasoning (see
+  [introduction-to-the-tau-system]).  The idea is not to spend too
+  much time making the decision as to whether compiled code can be
+  used or not.  In addition, we don't want top-level evaluation, as
+  shown in the user type-in above, to provoke full-blown theorem
+  proving.
+
+  Interpreting small quoted LAMBDA objects can be done relatively
+  quickly.  After all, when the interpreter reaches a guard verified
+  function symbol inside the LAMBDA body it runs compiled code.  It's
+  only the body itself that is interpreted.
+
+  But the tau system is pretty weak and so will be unable to verify
+  some non-trivial guard conjectures, which will mean the LAMBDA
+  object is interpreted.  If the LAMBDA object is very large or is
+  being being used often, e.g., to map over a large object and check
+  some property, you might really want to invest the time to verify
+  its guards.  This can be done with [verify-guards], which as of
+  Version 8.1 takes LAMBDA objects and lambda$ terms and updates the
+  cache.  E.g.,
+
+    (verify-guards
+      (lambda$ (x)
+               (declare (type (satisfies natp) x))
+               (* x x)))
+
+  While this functionality is available to you, deciding that you need
+  to use it is problematic.  Apply$ prints no warning that it has
+  failed to verify the guards of a LAMBDA object and is running
+  interpreted code.  However, the utility [print-cl-cache] provides
+  basic information about the cache and its documentation may help
+  you discover which LAMBDA objects in use are unverified.")
  (LAMBDA-APPLICATIONP (POINTERS)
                       "See [system-utilities].")
  (LAMBDA-BODY (POINTERS)
@@ -54983,8 +56325,7 @@ Subtopics
                  (DEFMACRO MY-MAC
                            NIL
                            '(MAKE-EVENT '(DEFUN FOO (X) X)))
-                 (RECORD-EXPANSION (MY-MAC)
-                                   (DEFUN FOO (X) X)))
+                 (DEFUN FOO (X) X))
 
   Error Reporting
 
@@ -55039,10 +56380,7 @@ Subtopics
       (the signature list) is in an event context.
     * If (RECORD-EXPANSION x1 x2) is in an event context, then x1 and x2
       are in event contexts.  Note: record-expansion is intended for
-      use only by the implementation, which imposes the additional
-      restriction that x1 and its subsidiary make-event calls (if
-      any) must specify a :CHECK-EXPANSION argument that is a
-      [consp].
+      use only by the implementation.
 
   Low-level remark, for system implementors.  There is the one
   exception to the above restriction: a single [state-global-let*]
@@ -55334,28 +56672,25 @@ Introduction
   original make-event expression does not undergo any expansion
   (intuitively, it expands to itself).
 
-  Now let us take a look at how we expand [progn] forms ([encapsulate]
-  is handled similarly).
+  Now let us take a brief look at how we expand [progn] and
+  [encapsulate] forms.  More details are found further below (see
+  ``Detailed semantics'').
 
-  (progn ... (make-event form :check-expansion nil) ...)
+  (progn ... (make-event form ...) ...)
 
-  The expansion is obtained by replacing the make-event form as
-  follows.  Let exp be the expansion of form.  Then replace the above
-  make-event form, which we denote as F, by (record-expansion F exp).
-  Here, record-expansion is a macro that returns its second argument.
+  The expansion is obtained, roughly speaking, by replacing the
+  make-event form by its expansion, exp, except that if
+  :check-expansion exp is supplied explicitly, then no such
+  replacement takes place.
 
-  (progn ... (make-event form :check-expansion t) ...)
-
-  The expansion is of the form (record-expansion F exp) as in the nil
-  case above, except that this time exp is (make-event form
-  :check-expansion exp'), where exp' is the expansion of form.
-
-  (progn ... (make-event form :check-expansion exp) ...) ; exp a cons
-
-  No expansion takes place unless expansion takes place for at least
-  one of the other subforms of the progn, in which case each such
-  form F is replaced by (record-expansion F exp) where exp is the
-  expansion of F.
+  Expansion for (encapsulate ... (make-event form ...) ...) is similar
+  to the case for @('progn, except that for if the expansion of form
+  is exp, then what is stored is (record-expansion (make-event form
+  ...)  exp).  Also as for progn, the exception is that when
+  :check-expansion exp is supplied explicitly, no such replacement
+  takes place.  Here, record-expansion is a macro that simply returns
+  its second argument, but is used for checking redundancy of
+  encapsulate forms (see [redundant-encapsulate]).
 
 
 Detailed semantics
@@ -55440,24 +56775,29 @@ Detailed semantics
       requirement that if val is not t (thus, a consp) then E must
       equal val or else we cause an error.
 
-      If B is either (progn form1 form2 ...) or (encapsulate sigs form1
-      form2 ...), then after evaluating B, the expansion of the
-      original form is the result of rebuilding from B, with wrappers
-      W, after replacing each formi in B for which expansion takes
-      place by (record-expansion formi formi'), where formi' is the
-      expansion of formi.  Note that these expansions are determined
-      as the formi are evaluated in sequence (where in the case of
-      encapsulate, this determination occurs only during the first
-      pass).  Except, if no expansion takes place for any formi, then
-      the expansion of the original form is itself.
+      If B is (progn form1 form2 ...) (and similarly for [progn!]), and at
+      least one formi has an expansion, then the expansion of the
+      original form is obtained by replacing each formi by its
+      expansion and then rebuilding the entire progn call from B.
+
+      If B is (encapsulate sigs form1 form2 ...), then after evaluating B,
+      the expansion of the original form is the result of rebuilding
+      from B, with wrappers W, after replacing each formi in B for
+      which expansion takes place by (record-expansion formi formi'),
+      where formi' is the expansion of formi.  Note that these
+      expansions are determined as the formi are evaluated in
+      sequence (where in the case of encapsulate, this determination
+      occurs only during the first pass).  Except, if no expansion
+      takes place for any formi, then the expansion of the original
+      form is itself.
 
       Otherwise, the expansion of the original form is itself.
 
   Similarly to the [progn] and [encapsulate] cases above, book
   certification causes a book to be replaced by its so-called ``book
-  expansion.'' There, each event ev for which expansion took place
-  during the proof pass of certification --- say, producing ev' ---
-  is replaced by (record-expansion ev ev').
+  expansion,'' where each event ev for which expansion took place
+  during the proof pass of certification is replaced by its
+  expansion, but with certain [local] events elided.
 
   Implementation Note.  The book expansion is actually implemented by
   way of the :expansion-alist field of its [certificate], which
@@ -79834,8 +81174,7 @@ Changes to Existing Features
 
   A quoted lambda object that may ultimately be passed as the
   ``function'' for a call of [apply$] may now have a [declare] form.
-  We plan to document this new feature in detail later.  See also the
-  discussion of lambda$ below.
+  See also the discussion of lambda$ below.
 
   The macro [warrant] no longer causes an error for the 800+ ACL2
   primitives that are built into the definition of [apply$].
@@ -79859,6 +81198,23 @@ Changes to Existing Features
   :[psog]), the Time reported in the summary is now the original
   time, not time related to running :[pso].
 
+  The macro delete-assoc has been renamed [remove1-assoc], to reflect
+  more clearly that at most one pair is removed, and also for
+  consistency with Common Lisp nomenclature (where ``delete''
+  operations are generally destructive and ``remove'' operations are
+  not).  Moreover, other functions and macros whose name has prefix
+  \"DELETE-ASSOC\" have been similarly renamed to have prefix
+  \"REMOVE1-ASSOC\"; for example, delete-assoc-eq has been renamed
+  remove1-assoc-eq.  (The old \"DELETE-ASSOC\"-based names still exist
+  as macros --- indeed, as macro-aliases for their renamed versions
+  (see [add-macro-alias]) --- but those may be deleted in the
+  future.)  Analogous functions and macros have been introduced that
+  remove all pairs with a given key, rather than only one; see
+  [remove-assoc].  (These and related theorems formerly appeared in
+  the [community-book], books/centaur/misc/remove-assoc.lisp.)
+  Thanks to Alessandro Coglio for a query and subsequent discussion
+  leading to these changes.
+
 
 New Features
 
@@ -79866,8 +81222,7 @@ New Features
   as the ``function'' for a call of [apply$].  The syntactic
   requirements for such uses of lambda$ are much less strict than for
   quoted lambda objects; in particular, the body need not be in
-  translated form (see [term]).  We plan to document this new feature
-  in detail later.
+  translated form (see [term]).
 
   A new macro, [partial-encapsulate], allows one to introduce
   constrained functions without specifying all of the [constraint]s.
@@ -79885,6 +81240,16 @@ New Features
 
 
 Heuristic and Efficiency Improvements
+
+  [Make-event] expansions have often been reduced in size.  (Technical
+  note: record-expansion has been inserted only on expansions done
+  directly under [encapsulate] events, and some changes have also
+  been made in how and when [local] events are elided from
+  expansions.)  The reduction in total sizes of .cert files for a
+  complete (``everything'') regression was 8.8%, though in some cases
+  the reduction was substantially larger: for example, the size of
+  books/centaur/fty/tests/deftranssum.cert was reduced from
+  22,474,113 bytes to 16,910,530 bytes, a reduction of nearly 25%.
 
 
 Bug Fixes
@@ -79923,6 +81288,9 @@ Changes at the System Level
     * [packn-pos]
     * [pairlis-x2]
     * [pairlis-x1]
+
+  Documentation pertaining to [apply$] and related topics has been
+  extended significantly.
 
 
 EMACS Support
@@ -84300,9 +85668,6 @@ Subtopics
   [Backtrack]
       See [hints] for information about the keyword :backtrack.
 
-  [Badge]
-      See [apply$].
-
   [Body]
       See [system-utilities].
 
@@ -84360,12 +85725,6 @@ Subtopics
   [Defined-constant]
       See [system-utilities].
 
-  [Delete-assoc-eq]
-      See [delete-assoc].
-
-  [Delete-assoc-equal]
-      See [delete-assoc].
-
   [Disjoin]
       See [system-utilities].
 
@@ -84389,9 +85748,6 @@ Subtopics
 
   [Error]
       See [hints] for information about the keyword :error.
-
-  [Ev$]
-      See [apply$].
 
   [Ev$-list]
       See [apply$].
@@ -84555,6 +85911,9 @@ Subtopics
   [Ignore]
       See [declare].
 
+  [Ilks]
+      See [ilk].
+
   [Immed-forced]
       See [splitter].
 
@@ -84590,9 +85949,6 @@ Subtopics
 
   [Keyword]
       See [keywordp].
-
-  [Lambda]
-      See [term].
 
   [Lambda-applicationp]
       See [system-utilities].
@@ -84861,6 +86217,12 @@ Subtopics
   [Regression]
       See [books-certification].
 
+  [Remove-assoc-eq]
+      See [remove-assoc].
+
+  [Remove-assoc-equal]
+      See [remove-assoc].
+
   [Remove-duplicates-eq]
       See [remove-duplicates].
 
@@ -84875,6 +86237,12 @@ Subtopics
 
   [Remove-guard-holders]
       See [guard-holders].
+
+  [Remove1-assoc-eq]
+      See [remove1-assoc].
+
+  [Remove1-assoc-equal]
+      See [remove1-assoc].
 
   [Remove1-eq]
       See [remove1].
@@ -85029,11 +86397,23 @@ Subtopics
   [Subst-var]
       See [system-utilities].
 
+  [Suitably-tamep-listp]
+      See [tame].
+
   [Symbol-class]
       See [system-utilities].
 
   [Tag-tree]
       See [ttree].
+
+  [Tamep]
+      See [tame].
+
+  [Tamep-functionp]
+      See [tame].
+
+  [Tamep-lambdap]
+      See [tame].
 
   [Translate]
       See [system-utilities].
@@ -86137,6 +87517,243 @@ Subtopics
            (declare (xargs :guard t))
            (and (member print-base '(2 8 10 16))
                 t))")
+ (PRINT-CL-CACHE
+  (APPLY$)
+  "Information about the cache supporting apply$
+
+    General Form:
+    (print-cl-cache)
+
+  Logically this function always returns NIL but it prints to the
+  comment window information about the cache that supports the
+  application of quoted LAMBDA objects by [apply$].  The name stands
+  for Print Compiled Lambda Cache.
+
+  In general there is a non-empty cache line for each LAMBDA object
+  used in a defun or seen by verify-guards or by apply$ in the
+  evaluation theory.  But the cache has a maximal size.  If a new
+  LAMBDA object is seen when the cache is full, the least recently
+  used line is re-used for the new LAMBDA object.  By default the
+  maximal cache size is 1000.  This can be changed -- with the
+  side-effect of clearing the cache -- by exiting the ACL2 loop with
+  :q and doing (setq *cl-cache* k), where k is the new maximal size.
+
+  When print-cl-cache is called it prints a block about each non-empty
+  cache line enumerated from 0, and listed in the order that the
+  cache is searched when a LAMBDA object is apply$d.  Each block
+  contains:
+
+    * :lambda-object - a fully translated LAMBDA object
+    * :status - one of four keywords with the following meanings:
+        * :GOOD - the LAMBDA object is well-formed and Common Lisp compliant
+          (``guard verified'') in the current world
+        * :BAD - the LAMBDA object is not well-formed or not Common Lisp
+          compliant (``guard verified'') in the current world, but
+          (with high probability) there is a world in which it is
+          well-formed and compliant
+        * :UGLY - the LAMBDA object is so ill-formed it can never be :GOOD in
+          any world, e.g., (LAMBDA (T) (CONS 3 . 4))
+        * :UNKNOWN - we do not know the status of this object in the current
+          world and leave it to apply$ to determine the proper status
+          the next time this object is apply$d.
+
+    * :abs-event-no - the absolute event number (in the current world) at
+      which the LAMBDA object was proved to have status :GOOD, or NIL
+      if its status is not :GOOD
+    * :extracts - some parts of the LAMBDA object sufficient to confirm
+      well-formedness.  Well-formedness must be re-confirmed if the
+      world is retracted to before the object became :GOOD
+    * :problem - One of the following values.
+        * NIL - no problem; status is :GOOD
+        * NOT-WELL-FORMED - the LAMBDA is syntactically plausible but not
+          well-formed but could, perhaps, become well-formed in a
+          suitable extension of the current world, e.g., the body
+          calls an undefined function (but perhaps it can be
+          defined), the body contains a :program mode function (but
+          perhaps that could be upgraded to :logic mode), the body
+          contains an unbadged function symbol (but perhaps
+          def-warrant could issue a warrant), etc.
+        * (GUARD-USES-NON-COMPLIANT-FNS . fns) - fns is a list of function
+          symbols used in the guard of the LAMBDA object that have
+          not yet had their guards verified.
+        * (BODY-USES-NON-COMPLIANT-FNS . fns) - fns is a list of function
+          symbols used in the body of the LAMBDA object that have not
+          yet had their guards verified.
+        * (UNPROVED-GUARD-CLAUSES . cl-set) - cl-set is the list of guard
+          conjectures -- written as clauses -- that tau was unable to
+          prove.
+        * RE-VALIDATION-INTERRUPTED - an interrupt aborted the updating of this
+          cache line
+
+    * :hits - The number of times apply$ has seen this LAMBDA object
+    * :guard-code - NIL or the string ``<code>'' indicating that the guard
+      has been compiled
+    * :lambda-code - NIL or the string ``<code>'' indicating that the
+      LAMBDA object has been compiled
+
+
+Using This Information to Speed Up LAMBDA Application
+
+  Remember: A lot of programmers spend enormous amounts of time and
+  effort optimizing code that runs adequately fast!  Do not make the
+  mistake of investing your time here unless you really have a
+  critical ACL2 top-level read-eval-print form that you know runs too
+  slowly!
+
+  If you see a LAMBDA object in the cache with :status :BAD then it is
+  being interpreted.  If you believe it can be converted to :GOOD and
+  thus compiled, and you believe you will apply$ it often enough in
+  the future to warrant trying to speed it up, then here are some
+  tips.
+
+  To be converted from :BAD to :GOOD a LAMBDA has to be both
+  well-formed and guard verified.  The cache doesn't try to verify
+  objects that are not well-formed.  So first make sure your object
+  is well-formed and then once it is make sure it is guard verified.
+
+  If the :problem is NOT-WELL-FORMED the :lambda-object does not pass
+  the [well-formed-lambda-objectp] test.  That predicate gives no
+  hint as to why, but if you call :[translam] on the :lambda-object
+  it might give you more information.  E.g.,
+
+    ACL2 !>:translam (lambda (x) (bar x))
+
+    ACL2 Error in TRANSLAM: The body of a LAMBDA object or lambda$ term
+    should be fully badged but BAR is used in (BAR X) and has no badge.
+
+  Other typical problems are that a function which was formerly in
+  :logic mode is now in :program mode because of an undo, or the
+  LAMBDA object is not [tame], as in
+
+    ACL2 !>:translam (lambda (x) (apply$ (cons x 'nil) 'sq))
+
+    ACL2 Error in TRANSLAM:  The body of a LAMBDA object or lambda$ term
+    must be tame and (APPLY$ (CONS X 'NIL) 'SQ) is not.
+
+  Here the LAMBDA is unfixable because the arguments to apply$ are in
+  the wrong order.  Typing the object correctly may fix the problem.
+
+  In any case, you may need to extend the world to convert functions to
+  :logic mode, obtain [warrant]s (or at least [badge]s for functions
+  that return multiple results), or even use a different LAMBDA
+  object.
+
+  When you think you've got a well-formed LAMBDA object, you can get
+  the cache to update itself by applying the (new?) object in the
+  (new?)  world,
+
+    ACL2 !>(apply$ '(lambda (x) (apply$ 'sq (cons x 'nil))) '(5))
+    25
+    ACL2 !>(print-cl-cache)
+
+  and see if the status is :GOOD and, if not, what the :problem is.
+
+  If the problem is one of GUARD-USES-NON-COMPLIANT-FNS,
+  BODY-USES-NON-COMPLIANT-FNS, or UNPROVED-GUARD-CLAUSES, the LAMBDA
+  object is well-formed but not guard verified.  Again, you may need
+  to further extend the world by calling [verify-guards] on the
+  listed function symbols in first two problems or call verify-guard
+  on the lambda object itself for an opportunity to supply :hints to
+  prove the guard clauses listed in the third problem.
+
+  For example, suppose we define squ with a guard of natp,
+
+    (defun$ squ (x)
+       (declare (type (satisfies natp) x))
+       (* x x))
+
+  And suppose we define nfixer to always return a natural number but in
+  such a way as its type-prescription is weak.
+
+    (defun$ nfixer (x)
+      (if (equal x (car (cons x x)))
+          (nfix x)
+          nil))
+
+  Furthermore, let's disable nfixer so the prover has no way of
+  discovering the proper type.
+
+    (in-theory (disable nfixer))
+
+  If we then
+
+    ACL2 !>(apply$ '(lambda (x) (squ (nfixer x))) '(5))
+    25
+
+  and use print-cl-cache, we see that the :problem is that NFIXER is
+  not guard verified.  So we
+
+    ACL2 !>(verify-guards nfixer)
+
+  and try the apply$ and the print-cl-cache again.  This time the
+  :problem is (UNPROVED-GUARD-CLAUSES ((NATP (NFIXER X)))).  So tau
+  couldn't prove that NFIXER returns a NATP.  We can thus
+
+    ACL2 !>(verify-guards (lambda (x) (squ (nfixer x)))
+               :hints ((\"Goal\" :in-theory (enable nfixer))))
+
+  The verify-guards should succeed.  Successful calls of verify-guards
+  on LAMBDA objects updates the cache, so we don't have to ``trick''
+  the cache into updating itself by apply$ing the lambda again.  We
+  can now just do (print-cl-cache) and see the :status is :GOOD.
+
+  Whether all this work is worth is depends on how often you're going
+  to execute this LAMBDA object!
+
+
+A Single Performance Comparison
+
+  Suppose we have defined squ and nfixer, disabled nfixer, and verified
+  the guards of nfixer as above.  Additionally, define the [scion]
+  that maps a predicate over a list and checks that the predicate
+  holds for every element.
+
+      (defun$ all (pred lst)
+             (if (endp lst)
+    	     t
+    	     (and (apply$ pred (list (car lst)))
+    		  (all pred (cdr lst)))))
+
+  and define the function that builds a list of the first n+1 naturals
+  and use it to define the misleadingly named constant *million*
+  which contains the first million and one naturals.
+
+    (defun nats-ac (n ac)
+      (if (zp n)
+          (cons 0 ac)
+          (nats-ac (- n 1) (cons n ac))))
+
+    (defconst *million* (nats-ac 1000000 nil))
+
+  Now observe that (lambda (x) (natp (squ (nfixer x)))) suffers the
+  same problem we witnessed above: tau cannot prove the guard clause
+  because nfixer is disabled.  So we can do an experiment!  How long
+  does it take to run this :BAD lambda object over the list
+  *million*?  And then, how long does it take to do it again after
+  verifying its guards and turning its status to :GOOD?
+
+    ACL2 !>(time$ (all '(lambda (x) (natp (squ (nfixer x)))) *million*))
+    ; (EV-REC *RETURN-LAST-ARG3* ...) took
+    ; 4.35 seconds realtime, 4.35 seconds runtime
+    ; (128,000,160 bytes allocated).
+    T
+
+    ACL2 !>(verify-guards (lambda (x) (natp (squ (nfixer x))))
+             :hints ((\"Goal\" :in-theory (enable nfixer))))
+
+    ...[successful but output elided]...
+
+    ACL2 !>(time$ (all '(lambda (x) (natp (squ (nfixer x)))) *million*))
+    ; (EV-REC *RETURN-LAST-ARG3* ...) took
+    ; 0.19 seconds realtime, 0.19 seconds runtime
+    ; (32,000,064 bytes allocated).
+    T
+
+  So we dramatically sped up the computation.  But we almost certainly
+  spent longer than the original 4.35 seconds debugging the problems
+  and converting the object's status to :GOOD.  So unless we're going
+  to be doing this repeatedly in the future, it probably wasn't worth
+  it!")
  (PRINT-CONTROL
   (IO)
   "Advanced controls of ACL2 printing
@@ -93221,6 +94838,58 @@ Subtopics
 
   Remove is defined by Common Lisp.  See any Common Lisp documentation
   for more information.")
+ (REMOVE-ASSOC
+  (ALISTS ACL2-BUILT-INS)
+  "Remove all pairs with a given key from an association list
+
+    General Forms:
+    (remove-assoc key alist)
+    (remove-assoc key alist :test 'eql)   ; same as above (eql as equality test)
+    (remove-assoc key alist :test 'eq)    ; same, but eq is equality test
+    (remove-assoc key alist :test 'equal) ; same, but equal is equality test
+
+  (Remove-assoc key alist) returns an alist that is the same as the
+  list alist, except that all pairs in alist with a [car] of key are
+  deleted (if any; otherwise alist is returned).  Note that the order
+  of the elements of alist is unchanged (though some may be deleted).
+
+  Also see [remove1-assoc] for a similar utility that deletes only the
+  first pair in an alist with a given key, rather than all such
+  pairs.
+
+  The [guard] for a call of remove-assoc depends on the test.  In all
+  cases, the second argument must satisfy [alistp].  If the test is
+  [eql], then either the first argument must be suitable for [eql]
+  (see [eqlablep]) or the second argument must satisfy
+  [eqlable-alistp].  If the test is [eq], then either the first
+  argument must be a symbol or the second argument must satisfy
+  [symbol-alistp].
+
+  See [equality-variants] for a discussion of the relation between
+  remove-assoc and its variants:
+
+      (remove-assoc-eq key alist) is equivalent to (remove-assoc key alist
+      :test 'eq);
+
+      (remove-assoc-equal key alist) is equivalent to (remove-assoc key
+      alist :test 'equal).
+
+  In particular, reasoning about any of these primitives reduces to
+  reasoning about the function remove-assoc-equal.
+
+  Function: <remove-assoc-equal>
+
+    (defun remove-assoc-equal (x alist)
+           (declare (xargs :guard (alistp alist)))
+           (cond ((endp alist) nil)
+                 ((equal x (car (car alist)))
+                  (remove-assoc-equal x (cdr alist)))
+                 (t (cons (car alist)
+                          (remove-assoc-equal x (cdr alist))))))")
+ (REMOVE-ASSOC-EQ (POINTERS)
+                  "See [remove-assoc].")
+ (REMOVE-ASSOC-EQUAL (POINTERS)
+                     "See [remove-assoc].")
  (REMOVE-BINOP
   (MACROS)
   "Remove the association of a function name with a macro name
@@ -93597,6 +95266,57 @@ Subtopics
 
   In particular, reasoning about any of these primitives reduces to
   reasoning about the function remove1-equal.")
+ (REMOVE1-ASSOC
+  (ALISTS ACL2-BUILT-INS)
+  "Remove the first pair with a given key from an association list
+
+    General Forms:
+    (remove1-assoc key alist)
+    (remove1-assoc key alist :test 'eql)   ; same as above (eql as equality test)
+    (remove1-assoc key alist :test 'eq)    ; same, but eq is equality test
+    (remove1-assoc key alist :test 'equal) ; same, but equal is equality test
+
+  (Remove1-assoc key alist) returns an alist that is the same as the
+  list alist, except that the first pair in alist with a [car] of key
+  is deleted, if there is one; otherwise alist is returned.  Note
+  that the order of the elements of alist is unchanged (though one
+  may be deleted).
+
+  Also see [remove-assoc] for a similar utility that deletes all pairs
+  in an alist with a given key, rather than only the first such pair.
+
+  The [guard] for a call of remove1-assoc depends on the test.  In all
+  cases, the second argument must satisfy [alistp].  If the test is
+  [eql], then either the first argument must be suitable for [eql]
+  (see [eqlablep]) or the second argument must satisfy
+  [eqlable-alistp].  If the test is [eq], then either the first
+  argument must be a symbol or the second argument must satisfy
+  [symbol-alistp].
+
+  See [equality-variants] for a discussion of the relation between
+  remove1-assoc and its variants:
+
+      (remove1-assoc-eq key alist) is equivalent to (remove1-assoc key
+      alist :test 'eq);
+
+      (remove1-assoc-equal key alist) is equivalent to (remove1-assoc key
+      alist :test 'equal).
+
+  In particular, reasoning about any of these primitives reduces to
+  reasoning about the function remove1-assoc-equal.
+
+  Function: <remove1-assoc-equal>
+
+    (defun remove1-assoc-equal (key alist)
+           (declare (xargs :guard (alistp alist)))
+           (cond ((endp alist) nil)
+                 ((equal key (caar alist)) (cdr alist))
+                 (t (cons (car alist)
+                          (remove1-assoc-equal key (cdr alist))))))")
+ (REMOVE1-ASSOC-EQ (POINTERS)
+                   "See [remove1-assoc].")
+ (REMOVE1-ASSOC-EQUAL (POINTERS)
+                      "See [remove1-assoc].")
  (REMOVE1-EQ (POINTERS) "See [remove1].")
  (REMOVE1-EQUAL (POINTERS)
                 "See [remove1].")
@@ -96334,6 +98054,72 @@ Subtopics
   options, not as runtime options.")
  (SAVING-AND-RESTORING (POINTERS)
                        "See [save-exec].")
+ (SCION
+  (APPLY$)
+  "A function ancestrally dependent on apply$
+
+  The function fn is a scion of apply$ or simply a scion if the
+  function is ancestrally dependent on apply$.  That is, fn is
+  apply$, or fn calls apply$, or calls a function that calls apply$,
+  or calls a function that calls a function that calls apply$, etc.
+
+  Meriam-Webster defines scion as ``a descendant of a wealthy,
+  aristocratic, or influential family.''
+
+  Examples of scions include apply$, collect and foldr, where the last
+  two are defined as shown below.
+
+    (defun$ collect (fn lst)
+      (if (endp lst)
+          nil
+          (cons (apply$ fn (list (car lst)))
+                (collect fn (cdr lst)))))
+
+    (defun$ foldr (lst fn init)
+      (if (endp lst)
+          init
+          (apply$ fn
+                  (list (car lst)
+                        (foldr (cdr lst) fn init)))))
+
+  Most often, scions treat one or more of their arguments as
+  ``functions,'' i.e., have at least one formal of ilk :FN.  But that
+  is not necessarily the case.  Collect-squares, as defined below,
+
+    (defun$ collect-squares (lst)
+      (collect (lambda$ (x) (* x x)) lst))
+
+  is a scion even though it does not have a formal of ilk :FN.
+  However, it calls the scion collect.
+
+  The function defined by
+
+    (defun$ collect-expr (x lst alist)
+      (if (endp lst)
+          nil
+          (cons (ev$ x (cons (cons 'v (car lst)) alist))
+                (collect-expr x (cdr lst) alist))))
+
+  is a scion because it calls ev$ which calls apply$ in the mutually
+  recursive clique that defines them both.  Note that the ilks of the
+  formals of collect-expr are :EXPR, NIL and NIL, respectively.  The
+  function collects the successive values of the expression x under
+  extensions of alist binding the variable symbol v to successive
+  elements of lst.
+
+  From time to time, we have used the term ``mapping function'' to
+  refer to scions.  But that nomenclature was misleading because it
+  suggests that the function takes a ``function'' as an argument and
+  that it maps over some explicitly given domain.
+
+  Fans of higher order logic have suggested we use the term
+  ``functional'' for our scions, or at least for those scions having
+  at least one formal of ilk :FN.  However, we have resisted that
+  suggestion because a functional takes a function as an argument and
+  is thus a higher-order entity, but ACL2 is first-order, functions
+  are never objects in ACL2, and the values of our :FN formals are
+  ordinary objects like symbols and lists that are interpreted as
+  functions.")
  (SEARCH
   (LISTS STRINGS ACL2-BUILT-INS)
   "Search for a string or list in another string or list
@@ -104994,6 +106780,8 @@ Subtopics
     (app a (app b c))
 
   The variable recursively decomposed is indicated in bold.")
+ (SUITABLY-TAMEP-LISTP (POINTERS)
+                       "See [tame].")
  (SUMMARY
   (PROVER-OUTPUT)
   "The summary printed at the conclusion of an event
@@ -106616,6 +108404,252 @@ Subtopics
   http://www.cs.utexas.edu/users/moore/acl2/workshops.html} pages and
   on the {University of Texas ACL2 Seminar page |
   http://www.cs.utexas.edu/users/moore/acl2/seminar/}.")
+ (TAME
+  (APPLY$)
+  "Definitions of the various notions of tameness
+
+  The adjective ``tame'' can be applied to four different kinds of
+  objects, LAMBDA objects, function symbols, expressions, and lists
+  of expressions.  Formally, these notions are defined mutually
+  recursively as the macro tamep-lambdap and the :logic mode
+  functions named tamep-functionp, tamep, and suitably-tamep-listp,
+  respectively.  We exhibit the formal definitions at the end of this
+  documentation.
+
+
+Definitions
+
+    *
+        tame LAMBDA object aka tamep-lambdap: An object is a tame LAMBDA
+        object if is of the form (LAMBDA vars body) or (LAMBDA vars
+        dcl body) where vars is a list of symbols and body is a tame
+        expression.  Formally, an object x is a tame LAMBDA object
+        iff (tamep-lambdap x).  Tamep-lambdap is actually a macro.
+
+    *
+        tame function aka tamep-functionp: An object is a tame function iff
+        it is either (a) a badged symbol whose authorization flag is
+        T and ilks is T, or (b) a tame LAMBDA object (see above).
+        Formally, an object x is a tame function iff (tamep-functionp
+        x).
+
+    *
+        tame expression aka tamep: An object is a tame expression iff it is a
+        symbol, a quoted constant, the call of an badged function
+        symbol on the correct number of suitably tame expressions
+        with respect to the ilks of the function symbol, or the call
+        of a tame LAMBDA expression on the correct number of tame
+        expressions.  Formally, an object x is a tame expression iff
+        (tamep x).
+
+    *
+        suitably tame with (respect to arity and ilks) aka
+        suitably-tamep-listp: A list of objects x is suitably tame
+        with respect to an arity n and a list of ilks iff x is a true
+        list of length n, and when an ilk is :FN the corresponding
+        object is a quoted tame function, when an ilk is :EXPR the
+        object is a quoted tame expression, and when an ilk is NIL
+        the object is a tame expression.  Formally, an object x is
+        suitably tame with respect to n and ilks iff
+        (suitably-tamep-listp n ilks x).
+
+  Note in particular our use of the word ``quoted'' above when defining
+  the concept of a suitably tame list of expressions.  We illustrate
+  this in a few examples below.
+
+  Intuitively, a tame expression can be built out of functions that are
+  not themselves tame, e.g., scions, by making sure that every :FN
+  slot is occupied by a quoted tame function.  Put another way, if we
+  were to trace the calls of apply$ while evaluating a tame
+  expression every branch eventually bottoms out on a call of a
+  primitive.
+
+
+Examples
+
+  We assume the following events have been processed.
+
+    (include-book \"projects/apply/apply-lemmas\" :dir :system)
+
+    (defun$ sq (x) (* x x))
+
+    (defun$ foldr (lst fn init)
+      (if (endp lst)
+          init
+          (apply$ fn
+                  (list (car lst)
+                        (foldr (cdr lst) fn init)))))
+
+  As a result, we see the following badges:
+
+    symbol           badge
+
+    CONS    (APPLY$-BADGE T 2 . T)  ; . T means all args ordinary
+    SQ      (APPLY$-BADGE T 1 . T)  ; . T means all args ordinary
+    FOLDR   (APPLY$-BADGE T 1 NIL :FN NIL)
+
+  We are going to investigate ``why'' the following expression is tame.
+
+    (foldr lst (lambda$ (x y) (foldr y 'cons (list (sq x)))) nil)
+
+  This expression uses foldr to reverse the list lst, except it squares
+  each element of the list.  E.g., if lst is (1 2 3 4) the result is
+  (16 9 4 1).
+
+  The tameness functions do not expand macros and so one should
+  endeavor to present them with fully translated terms.  So we will
+  actually look at:
+
+    (FOLDR LST
+           '(LAMBDA (X Y)
+              (FOLDR Y
+                     'CONS
+                     (CONS (SQ X) 'NIL)))
+           'NIL)
+
+  Note: The quoted LAMBDA object above is not exactly the translation
+  of the corresponding lambda$ expression! When lambda$ expressions
+  are translated they are marked in a certain way for benefit of
+  execution without changing their semantics, which is accurately
+  reflected in the quoted LAMBDA above.  See [lambda$].
+
+  The FOLDR term above illustrates that even though FOLDR is not a tame
+  function it can be used in the construction of a tame expression
+  provided, mainly, that its second argument is a quoted tame
+  function.  Indeed, the example illustrates that we can even call
+  FOLDR within the LAMBDA expression passed to another FOLDR and
+  still have a tame expression.
+
+  If we were to [trace$] the functions tamep, tamep-functionp, and
+  suitably-tamep-listp, and then call tamep on the FOLDR term above
+  we would see a tree of calls of the various tameness notions.  Here
+  are selected calls from that tree.  All of the calls return T.  We
+  discuss each of these calls below.
+
+    (TAMEP '(CONS (SQ X) 'NIL))                                    ; [1]
+
+    (SUITABLY-TAMEP-LISTP 3                                        ; [2]
+                          '(NIL :FN NIL)
+                          '(Y 'CONS (CONS (SQ X) 'NIL)))
+
+    (TAMEP '(FOLDR Y 'CONS (CONS (SQ X) 'NIL)))                    ; [3]
+
+    (TAMEP-FUNCTIONP '(LAMBDA (X Y)                                ; [4]
+                              (FOLDR Y 'CONS (CONS (SQ X) 'NIL))))
+
+    (TAMEP '(FOLDR LST                                             ; [5]
+                   '(LAMBDA (X Y)
+                            (FOLDR Y 'CONS (CONS (SQ X) 'NIL)))
+                   'NIL))
+
+  [1]: The object here, (CONS (SQ X) 'NIL), is tame because both CONS
+  and SQ are tame functions and they are applied to the correct
+  number of tame expressions.
+
+  [2]: The list of objects here, (Y 'CONS (CONS (SQ X) 'NIL)) is a
+  suitably tame list of length 3 with ilks NIL, :FN, and NIL because
+  Y and 'NIL are both tame and 'CONS is a quoted tame function, CONS.
+
+  [3]: The object here is tame because FOLDR is a badged authorized
+  function of arity 3 and its actuals are suitably tame with respect
+  to its arity and ilks as shown by example [2].
+
+  [4]: The LAMBDA object here is a tame function because it is of the
+  form (LAMBDA vars body), where vars is the list of symbols (X Y)
+  and body is the tame object shown in example [4].
+
+  [5]: The object here, a call of FOLDR, is tame because there are 3
+  actuals, the first and third are tame expressions and the second is
+  a quoted tame function as shown in Example [4].
+
+
+Logical Definitions
+
+  The various notions of tameness, tamep-functionp, tamep, and
+  suitably-tamep-listp, are defined mutually recursively as :logic
+  mode functions.  The definition employs the macro tamep-lambdap,
+  which is used by tamep-functionp to handle the LAMBDA case.
+
+  Function: <tamep-functionp>
+
+    (defun tamep-functionp (fn)
+           (declare (xargs :guard t))
+           (if (symbolp fn)
+               (let ((bdg (badge fn)))
+                    (and bdg
+                         (eq (access apply$-badge bdg :ilks) t)))
+               (and (consp fn) (tamep-lambdap fn))))
+
+  Function: <tamep>
+
+    (defun
+     tamep (x)
+     (declare (xargs :guard t))
+     (cond
+      ((atom x) (symbolp x))
+      ((eq (car x) 'quote)
+       (and (consp (cdr x)) (null (cddr x))))
+      ((symbolp (car x))
+       (let
+         ((bdg (badge (car x))))
+         (cond ((null bdg) nil)
+               ((eq (access apply$-badge bdg :ilks) t)
+                (suitably-tamep-listp (access apply$-badge bdg :arity)
+                                      nil (cdr x)))
+               (t (suitably-tamep-listp (access apply$-badge bdg :arity)
+                                        (access apply$-badge bdg :ilks)
+                                        (cdr x))))))
+      ((consp (car x))
+       (let ((fn (car x)))
+            (and (tamep-lambdap fn)
+                 (suitably-tamep-listp (length (cadr fn))
+                                       nil (cdr x)))))
+      (t nil)))
+
+  Function: <suitably-tamep-listp>
+
+    (defun
+       suitably-tamep-listp (n flags args)
+       (declare (xargs :guard (and (natp n) (true-listp flags))))
+       (cond ((zp n) (null args))
+             ((atom args) nil)
+             (t (and (let ((arg (car args)))
+                          (case (car flags)
+                                (:fn (and (consp arg)
+                                          (eq (car arg) 'quote)
+                                          (consp (cdr arg))
+                                          (null (cddr arg))
+                                          (tamep-functionp (cadr arg))))
+                                (:expr (and (consp arg)
+                                            (eq (car arg) 'quote)
+                                            (consp (cdr arg))
+                                            (null (cddr arg))
+                                            (tamep (cadr arg))))
+                                (otherwise (tamep arg))))
+                     (suitably-tamep-listp (- n 1)
+                                           (cdr flags)
+                                           (cdr args))))))
+
+  Macro: <tamep-lambdap>
+
+    (defmacro tamep-lambdap (fn)
+              (list 'let
+                    (list (list 'fn fn))
+                    '(and (lambda-object-shapep fn)
+                          (symbol-listp (lambda-object-formals fn))
+                          (tamep (lambda-object-body fn)))))
+
+  At the top-level of the ACL2 loop you can determine whether an object
+  satisfies one of these predicates by calling the appropriate formal
+  notion on the object.  But because these functions are defined in
+  terms of [badge] these notions of tameness are evaluable only in
+  the evaluation theory (where [warrant]s are implicitly assumed).
+  If you want to prove that an object is tame, you may need warrant
+  hypotheses.")
+ (TAMEP (POINTERS) "See [tame].")
+ (TAMEP-FUNCTIONP (POINTERS)
+                  "See [tame].")
+ (TAMEP-LAMBDAP (POINTERS) "See [tame].")
  (TAU-DATA
   (TAU-SYSTEM)
   "To see what tau knows about a function symbol
@@ -107479,6 +109513,9 @@ Subtopics
 
   [Kwote-lst]
       Quote an arbitrary true list of objects
+
+  [Lambda]
+      Lambda expressions, LAMBDA objects, and lambda$ expressions
 
   [Pseudo-term-listp]
       A predicate for recognizing lists of term-like s-expressions
@@ -111759,6 +113796,51 @@ Subtopics
   caused, which happens when the form is not a call of a macro, or
   the result is printed.  Also see [trans], which translates the
   given form completely.")
+ (TRANSLAM
+  (APPLY$)
+  "Print the translation of a lambda$ expression
+
+    :translam (lambda$ (x) (+ 1 x))
+    :translam (lambda (x) (+ 1 x))
+
+  This function takes a lambda$ term or an unquoted LAMBDA constant.
+  In the former case, it translates the lambda$ and prints the
+  result.  In the latter case it puts the LAMBDA in a QUOTE and
+  translates it as though it occurred in a :FN slot.  Unless an error
+  is signalled it prints the same LAMBDA object as the result.
+
+  This utility exists because you cannot write, say,
+
+    :trans (lambda$ (x) (+ 1 x))
+
+  because the trans utility assumes its argument in an ordinary (ilk
+  NIL) slot.  In such slots, lambda$ terms are disallowed and no
+  restrictions are enforced on quoted LAMBDA objects.
+
+  This utility is useful for seeing what the formal translation of a
+  lambda$ term is.  For example,
+
+    ACL2 !>:translam (lambda$ (x)
+                              (declare (type (satisfies natp) x))
+                              (* x x))
+
+  produces the quoted well-formed LAMBDA expression:
+
+    '(LAMBDA (X)
+             (DECLARE (TYPE (SATISFIES NATP) X)
+                      (XARGS :GUARD (NATP X) :SPLIT-TYPES T))
+             (RETURN-LAST 'PROGN
+                          '(LAMBDA$ (X)
+                                    (DECLARE (TYPE (SATISFIES NATP) X))
+                                    (* X X))
+                          (BINARY-* X X)))
+
+  You might now have an inkling about why we discourage you from trying
+  to enter quoted well-formed LAMBDA objects by hand!  The normal
+  form of a quoted well-formed LAMBDA object is complicated so that
+  apply$ can rapidly identify the parts, generate guard conditions,
+  compile the object, recognize objects coming from lambda$ terms,
+  etc.")
  (TRANSLATE (POINTERS)
             "See [system-utilities].")
  (TRANSLATE-CMP (POINTERS)
@@ -116362,11 +118444,19 @@ Subtopics
   ensure that during evaluation of an expression without free
   variables, no guard violation takes place.
 
-  Technical note: the first argument of verify-guards must be a
-  function symbol or the name of a [defthm] or [defaxiom] event, not
-  a macro-alias for a function symbol (see [macro-aliases-table]).
-  See [verify-guards+] for a utility that does not have this
-  restriction.
+  Technical Notes: (1) The first argument of verify-guards must be a
+  function symbol, the name of a [defthm] or [defaxiom] event, a
+  [lambda$] expression, or an unquoted well-formed LAMBDA object; it
+  must not be a macro-alias for a function symbol (see
+  [macro-aliases-table]).  See [verify-guards+] for a utility that
+  does not have this restriction.  (2) When the guards of a defined
+  function, fn, are verified verify-guards also includes the guards
+  of all the functions that are mutually recursive with fn, if any,
+  plus the guards of all the quoted well-formed LAMBDA objects used
+  by fn or any function in its mutually-recursive clique.  Guard
+  obligations for lambda$ and LAMBDA objects are not included when
+  the first argument is the name of a theorem or axiom.  Details are
+  discussed further below.
 
   Guard verification is intended to guarantee that for any call of a
   given function, if its [guard] holds for that call then the [guard]
@@ -116468,6 +118558,17 @@ Subtopics
                    :hints ((\"Goal\" :use (:instance assoc-of-app)))
                    :guard-debug t ; default = nil
                    :otf-flg t)
+    (verify-guards (lambda$ (x)
+                     (declare (xargs :guard (natp x)))
+                     (+ 1 x)))
+    (verify-guards
+      (LAMBDA (X)
+              (DECLARE (XARGS :GUARD (NATP X) :SPLIT-TYPES T))
+              (RETURN-LAST 'PROGN
+                           '(LAMBDA$ (X)
+                                     (DECLARE (XARGS :GUARD (NATP X)))
+                                     (+ 1 X))
+                           (BINARY-+ '1 X))))
 
     General Form:
     (verify-guards name
@@ -116476,15 +118577,36 @@ Subtopics
             :otf-flg      otf-flg)
 
   In the General Form above, name is the name of a :[logic] function
-  (see [defun-mode]) or of a theorem or axiom.  In the most common
-  case name is the name of a function that has not yet had its
-  [guard]s verified, each subroutine of which has had its [guard]s
-  verified.  The values [hints], [otf-flg], and [guard-debug] are as
-  described in the corresponding [documentation] entries.  The
-  keyword arguments above are all optional.  To admit this event, the
-  conjunction of the guard proof obligations must be proved.  If that
-  proof is successful, name is considered to have had its [guard]s
-  verified.
+  (see [defun-mode]) or of a theorem or axiom, or else is a [lambda$]
+  expression or a well-formed LAMBDA object (not quoted).
+
+  If name is a lambda$ expression it is translated (to a quoted
+  well-formed LAMBDA object), the formals, declaration, and body are
+  extracted, and verify-guards behaves as though name were the name
+  of some defined function with those formals, declaration, and body.
+  If name is a LAMBDA object, it is checked for well-formedness (see
+  [well-formed-lambda-objectp]), the formals, declaration, and body
+  are extracted verify-guards behaves as though name were the name of
+  some defined function with those formals, declaration, and body.
+  for lambda$.  We henceforth limit our attention to name being the
+  name of a function, theorem or axiom.
+
+  Note: Since we encourage you to use lambda$ instead of trying to type
+  quoted well-formed LAMBDA objects, you might wonder why we allow
+  verify-guards to operate on well-formed LAMBDA objects instead of
+  lambda$ expressions.  The answer is that in proof output and in
+  [print-cl-cache] output you see quoted well-formed LAMBDA objects
+  and we expect you might grab the text of such an object and submit
+  it to verify-guards.
+
+  In the most common case name is the name of a function that has not
+  yet had its [guard]s verified, each subroutine of which has had its
+  [guard]s verified.  The values [hints], [otf-flg], and
+  [guard-debug] are as described in the corresponding [documentation]
+  entries.  The keyword arguments above are all optional.  To admit
+  this event, the conjunction of the guard proof obligations must be
+  proved.  If all the guard obligations are proved, name is
+  considered to have had its [guard]s verified.
 
   See [guard-formula-utilities] for utilities that let you view the
   formula to be proved by verify-guards, but without creating an
@@ -116493,6 +118615,21 @@ Subtopics
   If name is one of several functions in a mutually recursive clique,
   verify-guards will attempt to verify the [guard]s of all of the
   functions.
+
+  If the guard or body of name include any quoted well-formed LAMBDA
+  objects, verify-guards include their proof obligations in those
+  generated for name.  Roughly speaking, the guard obligations for a
+  well-formed LAMBDA object are exactly those that would be generated
+  for a separately defined non-recursive function with the formals,
+  guard, and body of the LAMBDA object.  We discuss this further in
+  the ``Remarks on LAMBDA objects in defined functions'' below.  As a
+  non-logical side-effect of the successful verification of all the
+  proof obligations, all well-formed LAMBDA objects in the guard or
+  body of name (including name itself if it is a lambda$ expression
+  or LAMBDA object) are added to the compiled lambda cache.  This
+  will speed up the execution of name in the evaluation theory when
+  those well-formed LAMBDA objects are apply$d.  See
+  [print-cl-cache].
 
   If name is a theorem or axiom name, verify-guards verifies the guards
   of the associated formula.  When a theorem has had its guards
@@ -116630,6 +118767,94 @@ Subtopics
   to hit upon the lemma true-listp-rev.  But in many more complicated
   functions it is necessary for the user to formulate the inductively
   provable properties before [guard] verification is attempted.
+
+  Remarks on LAMBDA objects in defined functions.  The guard
+  obligations of a function, name, include the guard obligations of
+  every quoted well-formed LAMBDA object occurring in either the
+  guard or body of name.  We point this out because quoted
+  well-formed LAMBDA objects are, after all, just quoted constants
+  and no other quoted constant generates guard obligations!  Note
+  also that we collect all quoted well-formed LAMBDA objects, not
+  just the translations of [lambda$] expressions and not just objects
+  in slots of [ilk] :FN.  (We do not actually expect the user to
+  write quoted well-formed LAMBDA objects in non-:FN slots -- it
+  can't be done with lambda$ expressions -- but we collect them all
+  anyway.  If such a quoted constant is not guard verifiable, you
+  could always use so-called Bypass 1 of
+  [gratuitous-lambda-object-restrictions] and avoid quoting it.)  We
+  assume that when calls of name are executed some of those LAMBDA
+  objects may reach apply$ and be applied.  Those applications will
+  be faster if the guards for the LAMBDAs are verified too.  The
+  guard obligations of a quoted well-formed LAMBDA object are just
+  those obligations that would be generated by a defined function
+  with the same formals, guard, and body as the LAMBDA object.  Those
+  obligations are unioned with the rest of the obligations generated
+  for name and all must be proved for (verify-guards name) to be
+  successful.  If the guards of some LAMBDA object requires hints to
+  prove, the hints may be supplied to verify-guards as you would for
+  any other failing guard obligation in name.  When successfull, the
+  LAMBDA objects thus verified are added, behind the scenes, to the
+  compiled lambda cache (see [print-cl-cache]) to speed up apply$ in
+  the evaluation theory.
+
+  Since, in general, LAMBDA objects can be passed around or re-used in
+  different contexts, the guard obligations generated for a quoted
+  well-formed LAMBDA object occurring in name are entirely
+  independent of the guard on the name itself.  This is best
+  explained by example.
+
+  In the defun below, which contains a lambda$ expression in its body,
+  we assume each function has the guard shown below:
+
+    function        formals              guard
+    f                 (x)                (fp x)
+    g                 (x y)              (gp x y)
+    the lambda$       (x)                (lp x)
+    r                 (x)                (rp x)
+    s                 (x)                (sp x)
+
+  We also assume that the ilks of g are :FN and NIL.  Then the guard
+  obligations generated for
+
+    (defun f (x)
+     (declare (xargs :guard (fp x)))
+     (g (lambda$ (x)
+                 (declare (xargs :guard (lp x)))
+                 (r x))
+        (s x)))
+
+  is
+
+    (and
+     (implies (fp x) (sp x))        ; f can call s
+     (implies (fp x)                ; f can call g
+              (gp (lambda$ (x)
+                           (declare (xargs :guard (hg x)))
+                           (r x))
+                  (s x)))
+     (implies (lp x) (rp x))        ; the lambda$ can call r
+     )
+
+  Note: The actual obligation will have been generated from the fully
+  translated body of f and the lambda$ expression will have been
+  converted to a quoted well-formed LAMBDA object.  But we will refer
+  to it as a lambda$ here for clarity.
+
+  In particular note that the last conjecture, establishing that the
+  lambda$ can call r, does not have f's guard as a hypothesis.  The
+  lambda$ is being guard verified in a ``context free'' way because
+  we cannot (or at least do not) trace the hypotheses governing every
+  time it is called in g and the variable x in f and its guard is
+  unrelated to the local variable x in the lambda$.  Furthermore, if
+  apply$ ever encounters this lambda$ it will know it has been guard
+  verified (because it finds it marked as such in the cache) and it
+  may well not be under a call of f.  Be that as it may, the guard
+  obligations of the lambda$ are included in the guard obligations
+  for f.  As of ACL2 Version 8.1, the guard obligation that g can
+  call the lambda$ is checked by computation every time the lambda$
+  is apply$d.  That is, (lp x) is run on each object the lambda$ is
+  apply$d to and the compiled code for the lambda$ is run only if its
+  guard approves.
 
   Remark on computation of guard conjectures and evaluation.  When ACL2
   computes the [guard] conjecture for the body of a function, it
@@ -117229,43 +119454,378 @@ Subtopics
   The word ``warrant'' is defined in the Merriam-Webster dictionary as
   ``a commission or document giving authority to do something....''
 
-  In ACL2, a warrant for a defined function, fn, is a term that
-  effectively defines the behavior of the functions badge and
-  [apply$] when they are applied to the symbol naming the function
-  fn. That is, our warrants give badge and apply$ permission to
-  operate on fn.  A warrant for fn can only be issued if the
-  definition of fn satisfies certain properties; not every function
-  can be warranted.
+  In the ACL2 proof theory, the functions [badge] and [apply$] are
+  undefined on user-defined function symbols.  The meanings of those
+  functions can be specified by warrants.  If there is a warrant for
+  fn among the hypotheses of a theorem, (badge 'fn) and (apply$ 'fn
+  ...) can be simplified appropriately.  We think of the warrant for
+  fn giving badge and apply$ authority to expand on 'fn.  For reasons
+  of logical consistency not every fn can have a warrant.  Warrants
+  are issued, when possible, by [def-warrant].
 
-  To understand what an ACL2 ``warrant'' is see the definition of
-  ``warrant'' and the many interrelated concepts in the documentation
-  for [apply$].
+  In the ACL2 evaluation theory -- a consistent extension of the proof
+  theory -- all warrants issued by def-warrant are implicitly
+  assumed, meaning badge and apply$ can be executed on warranted
+  user-defined function symbols at the top-level of the ACL2 loop
+  without explicit mention of the warrants.  For a discussion of the
+  restrictions on when a fn can be warranted, see [def-warrant].
+  This topic discusses warrants per se, their names, their logical
+  meaning, when they must be explicitly added as hypotheses to
+  theorems, and their consistency.
 
-  To generate a warrant function (if possible) for a given defined
-  function, see [def-warrant].  The warrant for fn is the term
-  (APPLY$-WARRANT-fn), i.e., a call of the 0-ary warrant function,
-  APPLY$-WARRANT-fn.  If def-warrant approves of the definition of fn
-  it defines the warrant function for fn.  Def-warrant also proves
-  rewrite rules that characterize the behavior of (badge 'fn) and of
-  (apply$ 'fn args), the latter rule being conditional on certain
-  elements of args being tame, and both rules forcing (see [force])
-  the warrant.  See [def-warrant].
+
+Logical Definition of the Warrant of a Function
+
+  If fn has a warrant, then the warrant is the term
+  (apply$-warrant-fn), i.e., a call of the 0-ary warrant function
+  named, apply$-warrant-fn.  That warrant function name is admitted
+  to the logic when def-warrant succeeds on fn.
+
+  The warrant function for fn, introduced by (def-warrant fn), is
+  defined with [defun-sk] because the warrant must specify the values
+  returned by (apply$ 'fn args) for all possible args.  Recall that
+  [badge] and [apply$] defer to two undefined functions, badge-userfn
+  and apply$-userfn, when they are applied to user-defined function
+  symbols.  The warrant for fn is actually phrased in terms of those
+  two undefined functions.  By stipulating their values on 'fn the
+  warrant determines the values of (badge 'fn) and (apply$ 'fn ...).
+  To create the warrant function for fn, def-warrant must turn the
+  ilks of fn into tameness requirements on the corresponding elements
+  of the args to which fn will be applied by apply$.  Each :FN
+  argument must be a [tame] function and each :EXPR argument must be
+  a [tame] expression.
+
+  It is easiest to understand the above paragraph by looking at the
+  generated warrant function for foldr, whose definition is shown at
+  the top of the documentation for [apply$] and whose [badge] is
+  (APPLY$-BADGE T 3 NIL :FN NIL).  The warrant function for foldr is
+  defined as follows.
+
+    (defun-sk apply$-warrant-foldr ()
+      (forall (args)
+        (implies (tamep-functionp (cadr args))
+                 (and (equal (badge-userfn 'FOLDR)
+                             '(APPLY$-BADGE T 3 NIL :FN NIL))
+                      (equal (apply$-userfn 'FOLDR args)
+                             (foldr (car args)
+                                    (cadr args)
+                                    (caddr args))))))
+      :constrain t)
+
+  Notice that the warrant is phrased in terms of the undefined
+  functions badge-userfn and apply$-userfn.  Def-warrant will
+  ``lift'' this warrant to badge and apply$ by proving rewrite rules
+  discussed below.
+
+  Notice also that the tameness hypothesis involves the universally
+  quantified variable args, but that the first conjunct of the
+  conclusion does not mention that variable.  So we can read
+  (apply$-warrant-foldr) as equivalent to the conjunction of:
+
+    (equal (badge-userfn 'FOLDR)
+           '(APPLY$-BADGE T 3 NIL :FN NIL))
+
+  and
+
+    (forall (args)
+        (implies (tamep-functionp (cadr args))
+                 (equal (apply$-userfn 'FOLDR args)
+                        (foldr (car args)
+                               (cadr args)
+                               (caddr args)))))
+
+  The first specifies the value of the undefined function used by badge
+  to find the badge of a user-defined function.  The second specifies
+  the behavior of the undefined function used by apply$ to apply$
+  'FOLDR and requires that the second element of args be a [tame]
+  function.
+
+  Finally, notice that the warrant function for foldr,
+  apply$-warrant-foldr, ancestrally depends on foldr: foldr is called
+  in the defun-sk.  That is crucial to avoiding the LOCAL problem
+  noted in [introduction-to-apply$].  If the warrant for foldr is
+  required for a theorem's proof (which it will be if the proof
+  involves ``expanding'' (apply$ 'FOLDR ...)), then the theorem is
+  ancestrally dependent on foldr even though that function symbol may
+  not be otherwise mentioned in the theorem.  That, in turn, means
+  that foldr may not be a locally defined symbol in the environment
+  from which the theorem is exported.
+
+
+Rewrite Rules that Lift and Force the Warrant
+
+  Once def-warrant has introduced the warrant function for fn it proves
+  two rewrite rules, conjoined under the name apply$-fn, that
+  ``lifts'' the warrant from the level of the two undefined functions
+  to the level of badge and apply$.  In the case of foldr the rules
+  are:
+
+    (defthm apply$-foldr
+      (and (implies (force (apply$-warrant-foldr))
+                    (equal (badge 'FOLDR)
+                           '(APPLY$-BADGE T 3 NIL :FN NIL)))
+           (implies (and (force (apply$-warrant-foldr))
+                         (tamep-functionp (car (cdr args))))
+                    (equal (apply$ 'FOLDR args)
+                           (foldr (car args)
+                                  (car (cdr args))
+                                  (car (cdr (cdr args))))))))
+
+  Observe that these rules say that if (apply$-warrant-foldr) is
+  available, then (badge 'FOLDR) is (APPLY$-BADGE T 3 NIL :FN NIL)
+  and (apply$ 'FOLDR args) has the naively expected behavior of
+  calling foldr, provided the second element of args is a
+  tamep-functionp.  Also note that the warrant hypothesis is [force]d
+  in both rules.
+
+  The effect of these rules is if either (badge 'FOLDR) or any instance
+  of (apply$ 'FOLDR args) arises during a proof, the warrant for
+  foldr is raised and either relieved or forced.  The badge and
+  apply$ terms are simplified whether the warrant is present or not,
+  but if the warrant is not among the hypotheses and the proof is
+  otherwise successful, the warrant for foldr will show up in a
+  checkpoint.
+
+
+Determining the Necessary Warrants
+
+  There is no easy way to determine the warrants you'll need to make a
+  formula a theorem. At first this seems to be a problem that could
+  be solved with a few rules of thumb and indeed, there are a few
+  useful rules.  But they don't guarantee success.
+
+  Rule 1. One way to determine sufficient warrants for a formula to be
+  a theorem is to attempt to prove the formula without warrants and
+  see the checkpoints.  This may have to be repeated to collect
+  sufficient warrants and can be frustrating.  Furthermore, as
+  illustrated further below, it can lead to unnecessary warrants.
+
+  Most users attempt to anticipate what warrants are needed.
+
+  Rule 2. You will probably need a warrant hypothesis for every
+  user-defined function symbol mentioned in the fully translated term
+  occupying any slot of ilk :FN in the formula you're trying to
+  prove.  The two common situations are quoted user-defined function
+  symbols in such slots and [lambda$] expressions.  In the latter
+  case, you must consider every user-defined function symbol in the
+  fully translated body of the [lambda$] expression.  (If you've
+  ignored our recommendations to use lambda$ instead of hand-typed
+  quoted LAMBDA objects, you'll have to look at those too.)
+
+  But Rule 2 says ``probably need a warrant'' because whether you do or
+  not depends on what you're proving.  In the examples below, suppose
+  we have carried out these events.
+
+    (include-book \"projects/apply/apply-lemmas\" :dir :system)
+
+    (defun$ sq (x) (* x x))
+
+    (defun$ collect (fn lst)
+      (if (endp lst)
+          nil
+          (cons (apply$ fn (list (car lst)))
+                (collect fn (cdr lst)))))
+
+  No warrant is really needed to prove
+
+    (thm (equal (collect 'sq (append a b))
+                (append (collect 'sq a) (collect 'sq b))))
+
+  because it could be proved by appealing to the more general
+
+    (thm (equal (collect fn (append a b))
+                (append (collect fn a)
+                        (collect fn b))))
+
+  which makes clear that the properties of sq are totally irrelevant to
+  the proof of this formula.
+
+  But if you followed Rule 1 and just submitted
+
+    (thm (equal (collect 'sq (append a b))
+                (append (collect 'sq a)
+                        (collect 'sq b))))
+
+  the proof would fail with a checkpoint indicating that you need the
+  warrant for sq.  That happens because the :rewrite rules proved by
+  def-warrant, discussed in the previous section and named apply$-sq
+  in the case of sq, fire and force that warrant.  However, you could
+  disable that rule and get the proof without a warrant.
+
+  To further dim our hopes for a simple way to identify warrants,
+  consider
+
+    (defun$ square (i) (apply$ 'sq (list i)))
+
+  and then the proof of
+
+    (thm (equal (square i) (* i i)))
+
+  This theorem requires the warrant for sq even though 'sq is not
+  mentioned in the top-level statement of the theorem.  The problem,
+  of course, is that the mention of 'sq in a :FN slot is mentioned in
+  the definition of square.
+
+  Rule 3. You may need warrants for any symbols used in :FN slots in
+  the definitions of any function appearing in the formula.
+
+  And then of course there is usual reason you need forgotten
+  hypotheses: some lemma critical to your proof has that hypothesis.
+
+  For example, one could imagine proving
+
+    (defthm lemma
+      (implies (apply$-warrant-sq)
+               (equal (square x) (sq x))))
+
+  and then try to prove
+
+    (thm (equal (square x) (* x x))
+         :hints ((\"Goal\" :in-theory (disable square))))
+
+  hoping the lemma would reduce (square x) to (sq x) and then (sq x)
+  would expand to (* x x).  But of course, the lemma isn't applicable
+  because we can't establish its hypothesis.  The point here is that
+  another source of required warrants can be the warrant hypotheses
+  of any lemmas needed for the proof.  We could posit a ``Rule 4''
+  but what's the point?
+
+  Returning to the first thing we said in this section, there is no
+  easy sure-fire way to determine the warrants you'll need.  It just
+  depends on the functions you're manipulating, the cases explored in
+  the proof, the hypotheses of crucial lemmas, etc.  However, our
+  experience is that it's not nearly so hard as we're suggesting
+  here!
+
+  Basically you'll need a warrant for fn if the proof requires apply$
+  to behave as naively expected on 'fn or the warrant is required for
+  some lemma.  Chances are you'll know when you're depending on the
+  meaning of a quoted symbol and when you're not.  And Rule 1 will
+  eventually get you there though it may generate unnecessary warrant
+  hypotheses.
+
+  There is another piece of good news perhaps best explained by
+  example.
+
+  Imagine that you've defined and warranted your own versions of the
+  familiar list concatenation and list reverse functions under the
+  names ap and rv.
+
+    (defun$ ap (x y)
+      (if (endp x)
+          y
+          (cons (car x)
+                (ap (cdr x) y))))
+
+    (defun$ rv (x)
+      (if (endp x)
+          nil
+          (ap (rv (cdr x))
+              (list (car x)))))
+
+  What warrant(s) do you need to prove
+
+    (implies (true-listp x)
+             (equal (apply$ 'rv (list (apply$ 'rv (list x)))) x))?
+
+  You clearly need the warrant for rv.  But do you need the warrant for
+  its subfunction ap?  Some users fall into the trap of thinking they
+  do.  They think they'll need warrants for all the subfunctions of
+  any function requiring a warrant.  We fall into this trap when we
+  think all evaluation is carried out by ev$ and apply$.  Put another
+  way, if we defined
+
+    (defun$ rv1 (x)
+      (if (endp x)
+          nil
+          (apply$ 'ap
+                  (list (rv1 (cdr x))
+                        (list (car x))))))
+
+  and then tried to prove
+
+    (implies (true-listp x)
+             (equal (apply$ 'rv1 (list (apply$ 'rv1 (list x)))) x))
+
+  we would indeed need warrants for both rv1 and ap, as per Rule 3,
+  because rv1 apply$s 'ap.
+
+  But the warrant for the original rv says that (apply$ 'rv args) is
+  (unconditionally) equal to (rv (car args)).  There are no apply$s
+  left in the problem once we get to a call of the ACL2 function rv.
+  We don't need any warrants, even to evaluate a function we called
+  via apply$ unless the definition of the function itself involves
+  further apply$s.
+
+
+A Convenient Macro for Conjoining Warrants
 
   Because ``APPLY$-WARRANT-fn'' is hard to remember, we provide a macro
   for referring to the conjunction of warrant terms for a list of
   functions.
 
-      General Form:
-      (warrant fn1 fn2 ... fnk)
+    General Form:
+    (warrant fn1 fn2 ... fnk)
 
-    where each fni is the name of a defined function on which def-warrant
-    has been previously called and succeeded.  (Warrant fn1 fn2 ...
-    fnk) expands to:
+  where each fni is the name of a defined function on which def-warrant
+  has been previously called and succeeded.  (Actually, we allow the
+  fni to include certain primitive function symbols already built
+  into apply$, but for the moment we ignore the possible presence of
+  such symbols among the arguments to warrant.)  (Warrant fn1 fn2 ...
+  fnk) expands to:
 
-      (AND (APPLY$-WARRANT-fn1)
-           (APPLY$-WARRANT-fn2)
-           ...
-           (APPLY$-WARRANT-fnk))")
+    (AND (APPLY$-WARRANT-fn1)
+         (APPLY$-WARRANT-fn2)
+         ...
+         (APPLY$-WARRANT-fnk))
+
+  Because there are over 800 ACL2 primitives built into apply$, it can
+  be hard to look at a conjecture involving, say, a [lambda$] term,
+  and list all and only the function names that need warrants.  For
+  example, if the body of the lambda$ term calls logeqv it will
+  expand into binary-logeqv and the diligent user might anticipate,
+  accurately, that the ev$ of that body will involve (apply$
+  'BINARY-LOGEQV ...) and thus might suppose that binary-logeqv be
+  included among the fni listed in the warrant hypothesis.  But no
+  warrant for binary-logeqv exists, that is,
+  apply$-warrant-binary-logeqv is not defined, because binary-logeqv
+  is built into apply$.  For this reason, we do not insist that every
+  fni in warrant's argument be a function possessing a warrant.
+  Instead, the warrant macro ignores those fni built into apply$.  It
+  does cause an error if one of the fni has no warrant and is not
+  built in.
+
+
+Why Warrants Don't Render Theorems Vacuous
+
+  Adding warrants to formulas certainly restricts (weakens) the
+  resulting theorem since it is only applicable when the warrant is
+  assumed.  But an important question to ponder is whether adding
+  warrants can actually make a formula vacuously valid?  That is, can
+  a set of warrants simply be unsatisfiable so that any formula
+  having that set of warrants among its hypotheses is a theorem?  Put
+  another way, is there a model for the set of all warrants
+  introduced by [def-warrant]?
+
+  The answer is yes.  This is discussed in {``Limited Second-Order
+  Functionality in a First-Order Setting'' |
+  http://www.cs.utexas.edu/users/kaufmann/papers/apply/index.html} by
+  Matt Kaufmann and J Strother Moore.  For any set of functions
+  warranted by def-warrant it is possible to define, under the
+  standard ACL2 definitional principle, versions of those functions
+  (together with apply$, ev$, etc.) and then make attachments to the
+  undefined badge-userfn and apply$-userfn, and so that every warrant
+  is proveably equal to T.  In fact, the resultant theory is the
+  basis of ACL2's evaluation theory where all warranted functions can
+  be apply$d (under the appropriate tameness requirements) without
+  explicit mention of warrants.  The crux of the proof is admitting a
+  big mutually recursive clique containing versions of apply$ and all
+  of its [scion]s, by inventing a measure that provably decreases as
+  apply$ and the scions call eachother.  The keys to that measure's
+  existence are the restrictions imposed by [def-warrant] and
+  [tame]ness.  See the paper for a sketch of the proof and see the
+  comment titled Essay on Admitting a Model for Apply$ and the
+  Functions that Use It in the ACL2 source file apply-raw.lisp.")
  (WATERFALL (POINTERS)
             "See [hints-and-the-waterfall].")
  (WATERFALL-PARALLELISM
@@ -117306,6 +119866,216 @@ Subtopics
   waterfall
 
   See [set-waterfall-printing].")
+ (WELL-FORMED-LAMBDA-OBJECTP
+  (APPLY$)
+  "Predicate for recognizing well-formed LAMBDA objects
+
+    Example:                                    value
+    (well-formed-lambda-objectp                   T
+     '(lambda (x) (binary-+ '1 x))
+     (w state))
+
+    (well-formed-lambda-objectp                   NIL
+     '(lambda (x) (+ 1 x))
+     (w state))
+
+    (well-formed-lambda-objectp                   T
+     '(lambda (x)
+        (declare (type (satisfies natp) x)
+                 (xargs :guard (natp x)
+                        :split-types t))
+        (binary-+ '1 x))
+     (w state))
+
+    (well-formed-lambda-objectp                   NIL
+     '(lambda (x)
+        (declare (type (satisfies natp) x))
+        (binary-+ '1 x))
+     (w state))
+
+    General Form:
+    (well-formed-lambda-objectp obj wrld)
+
+  Well-formed-lambda-objectp is a :program mode function that checks
+  the well-formedness of an arbitrary ACL2 object being used as a
+  LAMBDA object by [apply$].
+
+  Before we tell you what ``well-formedness'' means in this context we
+  collect some random related facts that we consider more important
+  than its precise meaning!
+
+  Lambda$ terms always translate to quoted well-formed LAMBDA objects
+  unless translate signals an explanatory error.  Don't try to type
+  well-formed LAMBDA objects as explicitly quoted constants.  Use
+  [lambda$]!
+
+  Only well-formed LAMBDA objects can be compiled.  Use [lambda$].
+
+  But the compiled code is not necessarily always run when a
+  well-formed LAMBDA object is apply$d!  The object must additionally
+  be guard verified and its guards must be satisfied by the arguments
+  supplied by apply$.  Well-formedness does not do guard
+  verification.
+
+  The definitional axiom for [apply$] knows nothing about
+  well-formedness.  It checks that the purported LAMBDA object
+  satisfies [tamep-lambdap], which is a simpler :logic mode concept.
+  If you are writing a definition or theorem about an arbitrary
+  object to be used as a LAMBDA object by apply$, and want to
+  restrict it to the kind of objects handled as LAMBDA objects by
+  apply$, use the predicate tamep-lambdap to characterize the object.
+  (Since well-formed-lambda-objectp is in :[program] mode and
+  requires access to the world, using it in a :logic mode context
+  would involve a lot of work!)
+
+  Well-formedness implies tameness.  So if you write your LAMBDA
+  objects with lambda$ apply$ will be able to handle them. But Apply$
+  can handle more objects than the Common Lisp compiler can.  Some
+  tame LAMBDA objects can be applied faster than others.  The fast
+  ones are recognized by well-formed-lambda-objectp -- but also have
+  to be guard verified and guard checked.  Applications of ill-formed
+  but tame LAMBDA objects are evaluable, but the evaluation is done
+  more slowly.  See the performance comparison in [print-cl-cache].
+
+  We compare well-formedness to tameness at the end of this topic.
+
+  You can't call this predicate on a lambda$ term, as by
+
+    (well-formed-lambda-objectp (lambda$ (x) x) (w state))
+
+  because lambda$ can only be called in slots of ilk :FN.  Furthermore,
+  there's no point!  Lambda$ terms always translate to well-formed
+  LAMBDA objects unless an explanatory error is signalled by
+  translation.
+
+  If you want to see the translation of a lambda$ term, e.g., to copy
+  the text and modify it to produce some similar LAMBDA object, use
+  :[translam].  We sometimes do this to explore by example the
+  restrictions on well-formedness.
+
+  If you have a LAMBDA object, e.g., one printed by [print-cl-cache],
+  that you suspect is ill-formed, this function won't tell you why it
+  is ill-formed!  It will just tell you whether it's ill-formed.  If
+  you want to know why, translate the quoted LAMBDA object with
+  :[translam], which generates sometimes verbose error messages.
+
+  The global setting of set-ignore-ok has no effect on well-formedness
+  of LAMBDA objects.  IGNORE and IGNORABLE declarations inside the
+  LAMBDA are effective.
+
+      ACL2 !>(set-ignore-ok t)
+      T
+      ACL2 !>(well-formed-lambda-objectp
+              '(LAMBDA (X Y)
+                 (DECLARE (XARGS :GUARD (NATP X) :SPLIT-TYPES T))
+                 (BINARY-+ '1 X))
+              (w state))
+      NIL
+
+      ACL2 !>(well-formed-lambda-objectp
+              '(LAMBDA (X Y)
+                 (DECLARE (XARGS :GUARD (NATP X) :SPLIT-TYPES T)
+    		      (IGNORE Y))
+                 (BINARY-+ '1 X))
+              (w state))
+      T
+
+  There should be very few occasions on which you need to know what
+  this predicate checks!
+
+  That said, here are the rules enforced.
+
+  An object is a well-formed LAMBDA object iff it has one of the
+  following two forms:
+
+    (LAMBDA vars tbody)          ; ``simple''  LAMBDA object
+    (LAMBDA vars tdcl tbody)     ; ``declared'' LAMBDA object
+
+  where
+
+    *
+        vars is a list of distinct legal variable names
+
+    *
+        tdcl, if present, is a DECLARE form containing, at most, TYPE,
+        IGNORE, IGNORABLE, and XARGS keys.  The user of [lambda$] may
+        provide multiple DECLARE forms but when translated they are
+        combined into one as shown here.
+
+    *
+        If an XARGS key is present it has exactly this form (XARGS :GUARD
+        tguard :SPLIT-TYPES T), where tguard is a fully translated
+        logic mode term involving only the formal variables, vars.
+        Note that the user of [lambda$] may supply :SPLIT-TYPES NIL
+        and may do so before or after the :GUARD, and the guard term
+        need not be in translated form, but the resulting LAMBDA
+        object has the form described here.
+
+    *
+        The :GUARD specified in XARGS must include as a conjunct every TYPE
+        expression generated by any TYPE specs.  E.g., (INTEGERP x)
+        must be a conjunct of tguard if (TYPE INTEGER ... x ...) is
+        declared.  That is consistent with the :SPLIT-TYPES T setting
+        and means the guard does not need to be extended any further
+        with the TYPES.  The point of this restriction is to
+        guarantee that the guard implies the types declared to the
+        compiler.  But this is a purely syntactic check and so may at
+        times require entering silly-looking guards.  For example,
+        (declare (type rational x) (xargs :guard (integerp x)
+        :split-types t)) is ruled ill-formed because (rationalp x) is
+        not a conjunct of the guard, even though it is logically
+        implied by the guard.  So you'd have to use (declare (type
+        rational x) (xargs :guard (if (integerp x) (rationalp x)
+        'nil) :split-types t)).  Note also that the guard is a fully
+        translated conjunction, i.e., an IF, not an AND!  Order of
+        the conjuncts does not matter.
+
+        Note: The guard need not be tame (or even fully badged) because
+        guards are irrelevant to the axioms of apply$.  But guards
+        must be in :logic mode from the outset because we may have to
+        prove guard obligations on-the-fly in evaluation (we do not
+        want to try to convert functions used in the guard from from
+        :program to :logic mode while doing an evaluation of an
+        apply$).
+
+    *
+        tbody is a fully translated, [tame], :logic mode term, involving no
+        free variables and respecting the declared IGNORE and
+        IGNORABLE declarations.
+
+        Furthermore, in the case of a lambda object generated by lambda$,
+        tbody is a ``tagged'' version of the translation of the body
+        used in the lambda$ expression.  Tagging involves use of a
+        special form generated by tag-translated-lambda$-body and
+        recognized by lambda$-bodyp.  This form contains the
+        untranslated lambda$ expression as well as the translation of
+        its body.  For example, (lambda$ (x) (+ 1 x)) translates to
+        the tagged lambda object '(LAMBDA (X) (RETURN-LAST 'PROGN
+        'orig-form tbody)), where orig-form is (LAMBDA$ (X) (+ 1 X))
+        and tbody is (BINARY-+ '1 X).
+
+        It may be helpful to use :[translam] to inspect examples of the
+        translations of lambda$ expressions.
+
+
+The Differences Between Well-Formed and Merely Tame Lambda Objects
+
+  Roughly put, tame LAMBDA objects have to have one of the two basic
+  shapes described above (simple or declared), the listed formals
+  merely have to be symbols -- not necessarily variable symbols and
+  not necessarily distinct.  The declaration, if present, is
+  completely irrelevant and the body merely has to be a tame
+  expression -- not necessarily closed with respect to the formals or
+  respecting of the any IGNORE or IGNORABLE declarations.  The
+  meaning assigned to such an object when applied to some arguments
+  is just the result delivered by ev$ under an alist formed by
+  pairing the formals -- including non-variables and any duplicates
+  -- with the actuals.  If a free variable is encountered, ev$ gives
+  it the value NIL courtesy of assoc.
+
+  This behavior is implemented by compiled Common Lisp only when
+  well-formedness, guard verification, and guard checking approve of
+  the object and its application.")
  (WELL-FORMEDNESS-GUARANTEE
   (RULE-CLASSES)
   "Guarantee that a metafunction or clause-processor returns a
