@@ -6646,6 +6646,12 @@ Subtopics
       Recognizer for association lists with symbols as keys")
  (ALL-CALLS (POINTERS)
             "See [system-utilities].")
+ (ALL-FNNAMES (POINTERS)
+              "See [system-utilities].")
+ (ALL-FNNAMES-LST (POINTERS)
+                  "See [system-utilities].")
+ (ALL-FNNAMES1 (POINTERS)
+               "See [system-utilities].")
  (ALL-VARS (POINTERS)
            "See [system-utilities].")
  (ALLOCATE-FIXNUM-RANGE
@@ -18553,6 +18559,8 @@ Subtopics
   equiv1-implies-equal-fn-2, will avoid this unfortunate case.")
  (CONJOIN (POINTERS)
           "See [system-utilities].")
+ (CONJOIN2 (POINTERS)
+           "See [system-utilities].")
  (CONJUGATE
   (NUMBERS ACL2-BUILT-INS)
   "Complex number conjugate
@@ -27964,6 +27972,8 @@ Subtopics
        (iff (bar x) t)))
 
     (thm (foo (bar y)))")
+ (DUMB-NEGATE-LIT (POINTERS)
+                  "See [system-utilities].")
  (DYNAMICALLY-MONITOR-REWRITES (POINTERS)
                                "See [dmr].")
  (E/D
@@ -34373,6 +34383,8 @@ Subtopics
 
   We regard fn-equal as a reminder to us --- or a challenge to users!
   --- to find a way to handle functional equivalence in the rewriter.")
+ (FN-RUNE-NUME (POINTERS)
+               "See [system-utilities].")
  (FN-SYMB (POINTERS)
           "See [system-utilities].")
  (FNCALL-TERM (POINTERS)
@@ -50679,6 +50691,8 @@ Subtopics
 
   [Keyword-value-listp]
       Recognizer for true lists whose even-position elements are keywords")
+ (KNOWN-PACKAGE-ALIST (POINTERS)
+                      "See [system-utilities].")
  (KWOTE
   (TERM ACL2-BUILT-INS)
   "Quote an arbitrary object
@@ -81215,6 +81229,11 @@ Changes to Existing Features
   Thanks to Alessandro Coglio for a query and subsequent discussion
   leading to these changes.
 
+  The [system-utilities] all-ffn-symbs and all-ffn-symbs-lst are now
+  defined just as macro abbreviations for calls of system utility
+  all-fnnames1, thus eliminating some source code duplication.  We
+  may deprecate all-ffn-symbs and all-ffn-symbs-lst in the future.
+
 
 New Features
 
@@ -85641,6 +85660,15 @@ Subtopics
   [All-calls]
       See [system-utilities].
 
+  [All-fnnames]
+      See [system-utilities].
+
+  [All-fnnames-lst]
+      See [system-utilities].
+
+  [All-fnnames1]
+      See [system-utilities].
+
   [All-vars]
       See [system-utilities].
 
@@ -85707,6 +85735,9 @@ Subtopics
   [Conjoin]
       See [system-utilities].
 
+  [Conjoin2]
+      See [system-utilities].
+
   [Cons-term]
       See [system-utilities].
 
@@ -85733,6 +85764,9 @@ Subtopics
 
   [Do-not-induct]
       See [hints] for information about the keyword :do-not-induct.
+
+  [Dumb-negate-lit]
+      See [system-utilities].
 
   [Dynamically-monitor-rewrites]
       See [dmr].
@@ -85832,6 +85866,9 @@ Subtopics
 
   [Fmx!-cw]
       See [fmx-cw].
+
+  [Fn-rune-nume]
+      See [system-utilities].
 
   [Fn-symb]
       See [system-utilities].
@@ -85949,6 +85986,9 @@ Subtopics
 
   [Keyword]
       See [keywordp].
+
+  [Known-package-alist]
+      See [system-utilities].
 
   [Lambda-applicationp]
       See [system-utilities].
@@ -86360,6 +86400,9 @@ Subtopics
 
   [Stobj-let]
       See [nested-stobjs].
+
+  [Stobjp]
+      See [system-utilities].
 
   [Stobjs]
       See [xargs] for information about the keyword :stobjs.
@@ -105948,6 +105991,8 @@ Subtopics
   that introduces a new single-threaded object; see [defstobj].")
  (STOBJ-LET (POINTERS)
             "See [nested-stobjs].")
+ (STOBJP (POINTERS)
+         "See [system-utilities].")
  (STOBJS (POINTERS)
          "See [xargs] for information about the keyword :stobjs.")
  (STOBJS-IN (POINTERS)
@@ -107774,10 +107819,24 @@ List of a few built-in system utilities
       list, lst, of terms in place of a single term, term.
     * (all-ffn-symbs term ans): Accumulate into ans (which typically is nil
       at the top level) all function symbols called in the given
-      term.
+      term.  This may become deprecated, and is just a macro
+      expanding to a corresponding call of all-fnnames1; see
+      all-fnnames, all-fnnames-lst, and all-fnnames1, below.
     * (all-ffn-symbs-lst lst ans): Accumulate into ans (which typically is
       nil at the top level) all function symbols called in the given
-      list of terms.
+      list of terms.  This may become deprecated, and is just a macro
+      expanding to a corresponding call of all-fnnames1; see
+      all-fnnames, all-fnnames-lst, and all-fnnames1, below.
+    * (all-fnnames term): Return a list of all function symbols called in
+      the given term.  This is a macro call expanding to
+      (all-fnnames1 nil term nil).
+    * (all-fnnames-lst lst): Return a list of all function symbols called
+      in the given list of terms.  This is a macro call expanding to
+      (all-fnnames1 t lst nil).
+    * (all-fnnames1 flg x acc): Accumulate into ans the function symbols
+      called in the given term or list of terms, x, according to
+      whether flg is nil (for a term) or not nil (for a list of
+      terms), respectively.
     * (all-vars x): For a [pseudo-termp] x, return the list of variables in
       x in reverse print order of first occurrence.  For example,
       all-vars of '(f (g a b) c) is '(c b a).
@@ -107932,6 +107991,8 @@ List of a few built-in system utilities
     * (guard fn stobj-optp w): For a function symbol or lambda expression
       fn of [world] w, return its [guard]. Optimize the [stobj]
       recognizers away iff stobj-optp is true.
+    * (implicate t1 t2): For terms t1 and t2, return a term that is
+      propositionally equivalent to (implies t1 t2).
     * (io? token commentp shape vars body &key ...): This is a complex
       macro that may be most fully understood by reading the source
       code, including comments in its definition and examples of its
@@ -107961,8 +108022,6 @@ List of a few built-in system utilities
       of the existing known-package-alist.  Note that this list can
       be accessed directly from a [world], w, with: (global-val
       'known-package-alist w).
-    * (implicate t1 t2): For terms t1 and t2, return a term that is
-      propositionally equivalent to (implies t1 t2).
     * (lambda-applicationp x): For a [pseudo-termp] x, return t if it is a
       function call whose function symbol is a lambda expression,
       else return nil.

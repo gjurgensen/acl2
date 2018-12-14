@@ -82560,6 +82560,11 @@ it."
  Alessandro Coglio for a query and subsequent discussion leading to these
  changes.</p>
 
+ <p>The @(see system-utilities) @('all-ffn-symbs') and @('all-ffn-symbs-lst')
+ are now defined just as macro abbreviations for calls of system utility
+ @('all-fnnames1'), thus eliminating some source code duplication.  We may
+ deprecate @('all-ffn-symbs') and @('all-ffn-symbs-lst') in the future.</p>
+
  <h3>New Features</h3>
 
  <p>A new construct, @('lambda$'), may be used in place of @('lambda') to be
@@ -106372,12 +106377,29 @@ arithmetic) for libraries of @(see books) for arithmetic reasoning.</p>")
  @('lst'), of terms in place of a single term, @('term').</li>
 
  <li>@('(all-ffn-symbs term ans)'): Accumulate into @('ans')
- (which typically is @('nil') at the top level) all function symbols called
- in the given term.</li>
+ (which typically is @('nil') at the top level) all function symbols called in
+ the given term.  This may become deprecated, and is just a macro expanding to
+ a corresponding call of @('all-fnnames1'); see @('all-fnnames'),
+ @('all-fnnames-lst'), and @('all-fnnames1'), below.</li>
 
  <li>@('(all-ffn-symbs-lst lst ans)'): Accumulate into @('ans')
- (which typically is @('nil') at the top level) all function symbols called
- in the given list of terms.</li>
+ (which typically is @('nil') at the top level) all function symbols called in
+ the given list of terms.  This may become deprecated, and is just a macro
+ expanding to a corresponding call of @('all-fnnames1'); see @('all-fnnames'),
+ @('all-fnnames-lst'), and @('all-fnnames1'), below.</li>
+
+ <li>@('(all-fnnames term)'): Return a list of all function symbols called in
+ the given term.  This is a macro call expanding to @('(all-fnnames1 nil term
+ nil)').</li>
+
+ <li>@('(all-fnnames-lst lst)'): Return a list of all function symbols called
+ in the given list of terms.  This is a macro call expanding to
+ @('(all-fnnames1 t lst nil)').</li>
+
+ <li>@('(all-fnnames1 flg x acc)'): Accumulate into @('ans') the function
+ symbols called in the given term or list of terms, @('x'), according to
+ whether @('flg') is @('nil') (for a term) or not @('nil') (for a list of
+ terms), respectively.</li>
 
  <li>@('(all-vars x)'): For a @(tsee pseudo-termp) @('x'), return the list of
  variables in @('x') in reverse print order of first occurrence.  For example,
@@ -106571,6 +106593,9 @@ arithmetic) for libraries of @(see books) for arithmetic reasoning.</p>")
  expression @('fn') of @(see world) @('w'), return its @(see guard). Optimize
  the @(see stobj) recognizers away iff @('stobj-optp') is true.</li>
 
+ <li>@('(implicate t1 t2)'): For terms @('t1') and @('t2'), return a term that
+ is propositionally equivalent to @('(implies t1 t2)').</li>
+
  <li>@('(io? token commentp shape vars body &key ...)'): This is a complex
  macro that may be most fully understood by reading the source code, including
  comments in its definition and examples of its use.  But the following
@@ -106609,9 +106634,6 @@ arithmetic) for libraries of @(see books) for arithmetic reasoning.</p>")
  pushed on the front of the existing known-package-alist.  Note that this list
  can be accessed directly from a @(see world), @('w'), with: @('(global-val
  'known-package-alist w)').</li>
-
- <li>@('(implicate t1 t2)'): For terms @('t1') and @('t2'), return a term that
- is propositionally equivalent to @('(implies t1 t2)').</li>
 
  <li>@('(lambda-applicationp x)'): For a @(tsee pseudo-termp) @('x'), return
  @('t') if it is a function call whose function symbol is a @('lambda')
@@ -125439,6 +125461,9 @@ expand function call at the current subterm, without simplifying"
 (defpointer add-to-set-eql add-to-set) ; pre-v4-3 compatibility
 (defpointer add-to-set-equal add-to-set)
 (defpointer all-calls system-utilities)
+(defpointer all-fnnames system-utilities)
+(defpointer all-fnnames-lst system-utilities)
+(defpointer all-fnnames1 system-utilities)
 (defpointer all-vars system-utilities)
 (defpointer apropos finding-documentation)
 (defpointer arglistp system-utilities)
@@ -125461,6 +125486,7 @@ expand function call at the current subterm, without simplifying"
 (defpointer community-book community-books)
 (defpointer computed-hint computed-hints)
 (defpointer conjoin system-utilities)
+(defpointer conjoin2 system-utilities)
 (defpointer cons-term system-utilities)
 (defpointer cons-term* system-utilities)
 (defpointer context ctx)
@@ -125471,6 +125497,7 @@ expand function call at the current subterm, without simplifying"
 (defpointer disjoin2 system-utilities)
 (defpointer do-not-induct hints t)
 (defpointer dynamically-monitor-rewrites dmr)
+(defpointer dumb-negate-lit system-utilities)
 (defpointer enabled-numep system-utilities)
 (defpointer enabled-runep system-utilities)
 (defpointer er-let* programming-with-state)
@@ -125503,6 +125530,7 @@ expand function call at the current subterm, without simplifying"
 (defpointer fmt1!-to-string printing-to-strings)
 (defpointer fmt1-to-string printing-to-strings)
 (defpointer fmx!-cw fmx-cw)
+(defpointer fn-rune-nume system-utilities)
 (defpointer fn-symb system-utilities)
 (defpointer fncall-term meta-extract)
 (defpointer forced force)
@@ -125542,6 +125570,7 @@ expand function call at the current subterm, without simplifying"
 (defpointer iprint set-iprint)
 (defpointer iprinting set-iprint)
 (defpointer keyword keywordp)
+(defpointer known-package-alist system-utilities)
 (defpointer lambda-applicationp system-utilities)
 (defpointer lambda-body system-utilities)
 (defpointer lambda-formals system-utilities)
@@ -125679,6 +125708,7 @@ expand function call at the current subterm, without simplifying"
 (defpointer split-types xargs t)
 (defpointer stable-under-simplificationp computed-hints)
 (defpointer stobj-let nested-stobjs)
+(defpointer stobjp system-utilities)
 (defpointer stobjs xargs t)
 (defpointer stobjs-in system-utilities)
 (defpointer stobjs-out system-utilities)
