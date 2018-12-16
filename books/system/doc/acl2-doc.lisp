@@ -11429,17 +11429,15 @@ with any questions about building the community books.</p>")
  monitor)ed @(see rune) are undone when proceeding from that break.  Thus,
  break-rewrite lets you query the state of the rewriter and even do experiments
  involving proofs, etc., but these experiments have no effect on the ongoing
- proof attempt.  In particular:</p>
+ proof attempt.</p>
 
- <p>Note that the output from break-rewrite is sometimes abbreviated by
- default, such as for the term causing the break.  This can be controlled by
- setting the @(tsee brr-evisc-tuple); see @(see set-evisc-tuple).  Another
- option is to turn on iprinting; see @(see set-iprint).  Note that whether you
- modify iprinting either inside or outside te break-rewrite loop, and the
- effect will persist both inside and outside break-rewrite; the same is true
- for setting the @('brr-evisc-tuple'), except that inside the break-rewrite
- loop the effect will persist outside only if it is set at level 1 of
- interaction (see @(see break-rewrite)), not greater.</p>
+ <p>There are however exceptions to this loss of state when exiting a break.
+ One exception is that the effect of turning on iprinting in a break (see @(see
+ set-iprint) will persist even after exiting the break.  The other exceptions
+ pertain to setting the @(tsee brr-evisc-tuple) or invoking @(tsee monitor) or
+ @(tsee unmonitor): if these are done inside the break-rewrite loop at level 1
+ of interaction (i.e., at the top level) then their effects will persist even
+ after exiting the break.</p>
 
  <p>When you first enter break-rewrite a simple herald is printed such as:</p>
 
@@ -11870,9 +11868,10 @@ with any questions about building the community books.</p>")
 
  <p>One of the settable evisc-tuples (see @(see set-evisc-tuple)) can control
  output from @(see brr-commands): the @('brr-evisc-tuple').  Unlike most other
- evisc-tuples, you can set this evisc-tuple either outside the break-rewrite
- loop or inside it at level 1 of interaction (see @(see break-rewrite)), not
- greater; then its effect will persist both inside and outside that loop.</p>
+ evisc-tuples, if you set the @('brr-evisc-tuple') inside the break-rewrite
+ loop at level 1 of interaction (i.e., at the top level; see @(see
+ break-rewrite)), then its effect will persist even after you exit the
+ break.</p>
 
  <p>A special value, @(':default'), is legal for this evisc-tuple, and is its
  initial value.  In that case the actual evisc-tuple used during output from
@@ -55815,11 +55814,14 @@ it."
  event that generates only rules of classes other than those three.)</p>
 
  <p>When a @(see rune) is @(see monitor)ed any attempt to apply it may result
- in an interactive break in an ACL2 ``@(see wormhole) @(see state).'' There you
- will get a chance to see how the application proceeds.  See @(see
- break-rewrite) for a description of the interactive loop entered.  Whether an
+ in an interactive break in an ACL2 ``@(see wormhole) @(see state).''  There
+ you will get a chance to see how the application proceeds.  Whether an
  interactive break occurs depends on the value of the break condition
- expression associated with the @(see monitor)ed @(see rune).</p>
+ expression associated with the @(see monitor)ed @(see rune).  See @(see
+ break-rewrite) for a description of the interactive loop entered, and in
+ particular, for discussion of what happens if you monitor or unmonitor a rune
+ while inside a break (in short: the effect disappears when existing the break,
+ unless it is a top-level break).</p>
 
  <p>NOTE: Some @(':rewrite') rules are considered ``simple abbreviations''; see
  @(see simple).  These can be be monitored, but only at certain times during
@@ -115318,7 +115320,7 @@ introduction-to-the-tau-system) for more information about Tau.</dd>
  })
 
  <p>Here, @('rune') is a @(see rune) that is currently among those with break
- points installed.  This function removes the break.</p>
+ points installed.  This function removes the break.  See @(see monitor).</p>
 
  <p>Subtle point: Because you may want to unmonitor a ``@(see rune)'' that is
  no longer a @(see rune) in the current ACL2 @(see world), we don't actually
