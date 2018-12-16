@@ -11433,7 +11433,7 @@ with any questions about building the community books.</p>")
 
  <p>There are however exceptions to this loss of state when exiting a break.
  One exception is that the effect of turning on iprinting in a break (see @(see
- set-iprint) will persist even after exiting the break.  The other exceptions
+ set-iprint)) will persist even after exiting the break.  The other exceptions
  pertain to setting the @(tsee brr-evisc-tuple) or invoking @(tsee monitor) or
  @(tsee unmonitor): if these are done inside the break-rewrite loop at level 1
  of interaction (i.e., at the top level) then their effects will persist even
