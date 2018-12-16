@@ -14038,7 +14038,7 @@ Subtopics
 
   There are however exceptions to this loss of state when exiting a
   break.  One exception is that the effect of turning on iprinting in
-  a break (see [set-iprint] will persist even after exiting the
+  a break (see [set-iprint]) will persist even after exiting the
   break.  The other exceptions pertain to setting the
   [brr-evisc-tuple] or invoking [monitor] or [unmonitor]: if these
   are done inside the break-rewrite loop at level 1 of interaction
