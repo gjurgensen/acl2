@@ -98752,8 +98752,8 @@ Subtopics
   "Set the [brr-evisc-tuple]
 
   The call (set-brr-evisc-tuple e) is simply a convenient way to set
-  the [brr-evisc-tuple] directly without using the more general
-  mechanism, [set-evisc-tuple].  See [brr-evisc-tuple].")
+  the [brr-evisc-tuple] to e directly, that is, without using the
+  more general mechanism, [set-evisc-tuple].  See [brr-evisc-tuple].")
  (SET-CASE-SPLIT-LIMITATIONS
   (MISCELLANEOUS)
   "Set the [case-split-limitations]
@@ -99750,22 +99750,22 @@ Subtopics
     * :BRR --- used for output from [brr-commands] issued in the
       [break-rewrite] loop.  When the value is :DEFAULT then the
       effective value of this evisc-tuple is the :TERM evisc-tuple
-      with flg' = t) (see above) is used.  Also see @(see
-      brr-evisc-tuple).  No accessor is available to return this
-      evisc-tuple, but its effective value is displayed by evaluating
-      @(see (show-brr-evisc-tuple)).</li> <li>@(':GAG-MODE --- used
-      for printing induction schemes (and perhaps, in the future, for
-      other printing) when [gag-mode] is on.  If gag-mode is off, the
-      value used for this [evisc-tuple] is (term-evisc-tuple nil
-      state).  But if gag-mode is on (i.e., (gag-mode) evaluates to a
-      non-nil value), then with one exception, the value is an
-      evisc-tuple or nil, to be used in gag-mode for printing of
-      induction schemes and, during proofs, the ``The non-trivial
-      part of the guard conjecture''.  The exceptional value is t,
-      which indicates that in gag-mode, no printing of induction
-      schemes should be and the guard conjecture should be printed
-      using (term-evisc-tuple t state).  The accessor is
-      (gag-mode-evisc-tuple state).
+      with flg = t (see above).  Also see [brr-evisc-tuple].  No
+      accessor is available to return this evisc-tuple, but its
+      effective value is displayed by evaluating
+      (show-brr-evisc-tuple).
+    * :GAG-MODE --- used for printing induction schemes (and perhaps, in
+      the future, for other printing) when [gag-mode] is on.  If
+      gag-mode is off, the value used for this [evisc-tuple] is
+      (term-evisc-tuple nil state).  But if gag-mode is on (i.e.,
+      (gag-mode) evaluates to a non-nil value), then with one
+      exception, the value is an evisc-tuple or nil, to be used in
+      gag-mode for printing of induction schemes and, during proofs,
+      the ``The non-trivial part of the guard conjecture''.  The
+      exceptional value is t, which indicates that in gag-mode, no
+      printing of induction schemes should be and the guard
+      conjecture should be printed using (term-evisc-tuple t state).
+      The accessor is (gag-mode-evisc-tuple state).
     * :LD --- used by the ACL2 read-eval-print loop.  The accessor is
       ([ld-evisc-tuple] state).
     * :TRACE --- used for printing [trace] output.  No accessor is

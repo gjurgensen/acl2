@@ -97281,8 +97281,9 @@ arithmetic) for libraries of @(see books) for arithmetic reasoning.</p>")
   :parents (brr brr-evisc-tuple set-evisc-tuple)
   :short "Set the @(tsee brr-evisc-tuple)"
   :long "<p>The call @('(set-brr-evisc-tuple e)') is simply a convenient way to
- set the @(see brr-evisc-tuple) directly without using the more general
- mechanism, @(tsee set-evisc-tuple).  See @(see brr-evisc-tuple).</p>")
+ set the @(see brr-evisc-tuple) to @('e') directly, that is, without using the
+ more general mechanism, @(tsee set-evisc-tuple).  See @(see
+ brr-evisc-tuple).</p>")
 
 (defxdoc set-case-split-limitations
   :parents (miscellaneous)
@@ -98328,9 +98329,9 @@ arithmetic) for libraries of @(see books) for arithmetic reasoning.</p>")
  <li>@(':BRR') &mdash; used for output from @(see brr-commands) issued in the
  @(see break-rewrite) loop.  When the value is @(':DEFAULT') then the
  <i>effective value</i> of this evisc-tuple is the @(':TERM') evisc-tuple with
- @('flg' = t) (see above) is used.  Also see @(see brr-evisc-tuple).  No
- accessor is available to return this evisc-tuple, but its effective value is
- displayed by evaluating @(see (show-brr-evisc-tuple)).</li>
+ @('flg = t') (see above).  Also see @(see brr-evisc-tuple).  No accessor is
+ available to return this evisc-tuple, but its effective value is displayed by
+ evaluating @('(show-brr-evisc-tuple)').</li>
 
  <li>@(':GAG-MODE') &mdash; used for printing induction schemes (and perhaps,
  in the future, for other printing) when @(see gag-mode) is on.  If gag-mode is
