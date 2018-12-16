@@ -14038,12 +14038,14 @@ Subtopics
 
   Note that the output from break-rewrite is sometimes abbreviated by
   default, such as for the term causing the break.  This can be
-  controlled by setting the :term evisc-tuple; see [set-evisc-tuple].
-  (Another option: use iprinting.  See [set-iprint].)  But as noted
-  above, if you use set-evisc-tuple from inside the break-rewrite
-  [wormhole], its effect will disappear when you exit the break.  So
-  you might want to issue a set-evisc-tuple command from the top
-  level, outside break-rewrite.
+  controlled by setting the [brr-evisc-tuple]; see [set-evisc-tuple].
+  Another option is to turn on iprinting; see [set-iprint].  Note
+  that whether you modify iprinting either inside or outside te
+  break-rewrite loop, and the effect will persist both inside and
+  outside break-rewrite; the same is true for setting the
+  brr-evisc-tuple, except that inside the break-rewrite loop the
+  effect will persist outside only if it is set at level 1 of
+  interaction (see [break-rewrite]), not greater.
 
   When you first enter break-rewrite a simple herald is printed such
   as:
@@ -14194,7 +14196,7 @@ Subtopics
   [ok-if]).
 
   Note that when inside break-rewrite, all [history] commands, such as
-  :[pe], show the [enable]d status of rules with respect to the the
+  :[pe], show the [enable]d status of rules with respect to the
   current point in the proof attempt.  For example, if you break
   while the prover is working on Subgoal 3, and the [hints] supplied
   for the proof specify (\"Subgoal 3\" :in-theory (disable foo)) for
@@ -14534,7 +14536,19 @@ Subtopics
   incorrectly.  The moral is that you should not trust what you learn
   from brr if you have interrupted and aborted brr processing during
   the proof.  These issues do not affect the behavior or soundness of
-  the theorem prover.")
+  the theorem prover.
+
+
+Subtopics
+
+  [Brr-evisc-tuple]
+      Determines partial suppression of output from [brr-commands]
+
+  [Set-brr-evisc-tuple]
+      Set the [brr-evisc-tuple]
+
+  [Show-brr-evisc-tuple]
+      Display the [brr-evisc-tuple]")
  (BRR-COMMANDS
   (BREAK-REWRITE)
   "[Break-Rewrite] Commands
@@ -14591,6 +14605,44 @@ Subtopics
   applying the linear lemma as a list of polynomials, implicitly
   conjoined.  The leading term of each polynomial is enclosed in an
   extra set of parentheses.")
+ (BRR-EVISC-TUPLE
+  (BRR EVISC-TUPLE)
+  "Determines partial suppression of output from [brr-commands]
+
+  See [evisc-tuple] for relevant background on ``evisceration'':
+  eliding of subexpressions during printing.  Also see
+  [break-rewrite] for background on the break-rewrite loop.
+
+  One of the settable evisc-tuples (see [set-evisc-tuple]) can control
+  output from [brr-commands]: the brr-evisc-tuple.  Unlike most other
+  evisc-tuples, you can set this evisc-tuple either outside the
+  break-rewrite loop or inside it at level 1 of interaction (see
+  [break-rewrite]), not greater; then its effect will persist both
+  inside and outside that loop.
+
+  A special value, :default, is legal for this evisc-tuple, and is its
+  initial value.  In that case the actual evisc-tuple used during
+  output from [brr-commands] --- which we call the effective value of
+  the brr-evisc-tuple --- is the value of the evisc-tuple for terms.
+  See [set-evisc-tuple], in particular, the discussion of the :term
+  site for setting evisc-tuples.
+
+  You can see the effective value of the brr-evisc-tuple by evaluating
+  the form, (show-brr-evisc-tuple).  Note that this value is only
+  printed by such evaluation as a side-effect, not returned.
+  (Technical note: This is because the brr-evisc-tuple is maintained
+  entirely within the break-rewrite [wormhole].  That implementation
+  enables the persistence of this evisc-tuple within and without the
+  break-rewrite loop.)
+
+
+Subtopics
+
+  [Set-brr-evisc-tuple]
+      Set the [brr-evisc-tuple]
+
+  [Show-brr-evisc-tuple]
+      Display the [brr-evisc-tuple]")
  (BRR@
   (BREAK-REWRITE)
   "To access context sensitive information within [break-rewrite]
@@ -31158,7 +31210,13 @@ Subtopics
   function, in this case, [fms] (see [fmt]).  But ACL2 also does its
   own printing, for example during a proof attempt.  There are global
   evisc-tuples that control ACL2's printing; see [set-evisc-tuple]
-  and see [without-evisc].")
+  and see [without-evisc].
+
+
+Subtopics
+
+  [Brr-evisc-tuple]
+      Determines partial suppression of output from [brr-commands]")
  (EVISCERATE-HIDE-TERMS
   (IO)
   "To print (hide ...) as <hidden>
@@ -81257,6 +81315,10 @@ New Features
   inductions; see [induction-depth-limit] and to modify this default,
   see [set-induction-depth-limit].
 
+  A new [evisc-tuple], the [brr-evisc-tuple], controls printing inside
+  the break-rewrite loop.  See [brr-evisc-tuple] and
+  [set-evisc-tuple].
+
 
 Heuristic and Efficiency Improvements
 
@@ -98685,6 +98747,13 @@ Subtopics
     (set-bogus-mutual-recursion-ok flg)
 
   where flg is either t, nil, or :warn.")
+ (SET-BRR-EVISC-TUPLE
+  (BRR BRR-EVISC-TUPLE SET-EVISC-TUPLE)
+  "Set the [brr-evisc-tuple]
+
+  The call (set-brr-evisc-tuple e) is simply a convenient way to set
+  the [brr-evisc-tuple] directly without using the more general
+  mechanism, [set-evisc-tuple].  See [brr-evisc-tuple].")
  (SET-CASE-SPLIT-LIMITATIONS
   (MISCELLANEOUS)
   "Set the [case-split-limitations]
@@ -99604,8 +99673,8 @@ Subtopics
                                   ;   the list of legal sites (see below)
 
   where the value of :iprint is passed to [set-iprint], :sites :all
-  abbreviates :sites '(:term :ld :trace :abbrev :gag-mode), and other
-  documentation is provided below.  Note that all arguments are
+  abbreviates :sites '(:term :ld :trace :abbrev :gag-mode :brr), and
+  other documentation is provided below.  Note that all arguments are
   evaluated.
 
   See [without-evisc] for how to avoid evisceration for ACL2 output.
@@ -99623,27 +99692,46 @@ Subtopics
                                          )
                             :iprint :same ; better yet, T
                             :sites :all)
-     (:TERM :LD :TRACE :ABBREV)
+     (:TERM :LD :TRACE :ABBREV ...)
     ACL2 !>'((a b ((c d)) e f g) u v w x y)
     ((A B (#) E ...) U V W ...)
     ACL2 !>
 
   We recommend however using :iprint t so that eviscerated terms may be
-  read back in; see [set-iprint].  Indeed, the :iprint argument is
-  required as a reminder to the user to consider that issue, unless
-  iprinting has been enabled at least once.  If :sites or a required
-  :iprint argument is omitted, however, ACL2 will query the user for
-  the missing arguments rather than causing an error.
+  read back in (see [set-iprint]), as shown here:
+
+    ACL2 !>(set-evisc-tuple (evisc-tuple 3   ; print-level
+                                         4   ; print-length
+                                         nil ; alist
+                                         nil ; hiding-cars
+                                         )
+                            :iprint t
+                            :sites :all)
+
+    ACL2 Observation in SET-EVISC-TUPLE:  Iprinting has been enabled.
+     (:TERM :LD :TRACE :ABBREV . #@1#)
+    ACL2 !>(without-evisc '(:TERM :LD :TRACE :ABBREV . #@1#))
+    (:TERM :LD
+           :TRACE :ABBREV
+           :GAG-MODE :BRR)
+    ACL2 !>
+
+  Indeed, the :iprint argument is required as a reminder to the user to
+  consider that issue, unless iprinting has been enabled at least
+  once.  If :sites or a required :iprint argument is omitted,
+  however, ACL2 will query the user for the missing arguments rather
+  than causing an error.
 
   ACL2 eviscerates by default only in a few cases, primarily in
   informational messages for errors, warnings, and queries (i.e., in
-  the :EVISC case below).  Users can modify the default behavior by
-  supplying a suitable argument to set-evisc-tuple.  The argument may
-  be :default, which denotes the evisceration provided when ACL2
-  starts up.  Otherwise that argument is an evisc-tuple, which is
-  either nil (no evisceration) or as described above.  Moreover,
-  there are five evisc-tuple ``evisceration contexts'', each with its
-  own evisceration control.  The value returned by set-evisc-tuple
+  the :EVISC case below), and in response to [break-rewrite]
+  commands.  Users can modify the default behavior by supplying a
+  suitable argument to set-evisc-tuple.  The argument may be
+  :default, which denotes the evisceration provided when ACL2 starts
+  up.  Otherwise that argument is an evisc-tuple, which is either nil
+  (no evisceration) or as described above.  Moreover, there are six
+  evisc-tuple ``evisceration contexts'', each with its own
+  evisceration control.  The value returned by set-evisc-tuple
   indicates the evisceration contexts whose evisc-tuple has been set.
   The evisceration contexts are as follows, all of which use a
   default value of nil for the hiding-cars.  Accessors are also shown
@@ -99659,18 +99747,25 @@ Subtopics
       warnings, and queries.  Initially, the alist abbreviates the
       ACL2 world, print-level is 5, and print-level is 7.  The
       accessor is (abbrev-evisc-tuple state).
-    * :GAG-MODE --- used for printing induction schemes (and perhaps, in
-      the future, for other printing) when [gag-mode] is on.  If
-      gag-mode is off, the value used for this [evisc-tuple] is
-      (term-evisc-tuple nil state).  But if gag-mode is on (i.e.,
-      (gag-mode) evaluates to a non-nil value), then with one
-      exception, the value is an evisc-tuple or nil, to be used in
-      gag-mode for printing of induction schemes and, during proofs,
-      the ``The non-trivial part of the guard conjecture''.  The
-      exceptional value is t, which indicates that in gag-mode, no
-      printing of induction schemes should be and the guard
-      conjecture should be printed using (term-evisc-tuple t state).
-      The accessor is (gag-mode-evisc-tuple state).
+    * :BRR --- used for output from [brr-commands] issued in the
+      [break-rewrite] loop.  When the value is :DEFAULT then the
+      effective value of this evisc-tuple is the :TERM evisc-tuple
+      with flg' = t) (see above) is used.  Also see @(see
+      brr-evisc-tuple).  No accessor is available to return this
+      evisc-tuple, but its effective value is displayed by evaluating
+      @(see (show-brr-evisc-tuple)).</li> <li>@(':GAG-MODE --- used
+      for printing induction schemes (and perhaps, in the future, for
+      other printing) when [gag-mode] is on.  If gag-mode is off, the
+      value used for this [evisc-tuple] is (term-evisc-tuple nil
+      state).  But if gag-mode is on (i.e., (gag-mode) evaluates to a
+      non-nil value), then with one exception, the value is an
+      evisc-tuple or nil, to be used in gag-mode for printing of
+      induction schemes and, during proofs, the ``The non-trivial
+      part of the guard conjecture''.  The exceptional value is t,
+      which indicates that in gag-mode, no printing of induction
+      schemes should be and the guard conjecture should be printed
+      using (term-evisc-tuple t state).  The accessor is
+      (gag-mode-evisc-tuple state).
     * :LD --- used by the ACL2 read-eval-print loop.  The accessor is
       ([ld-evisc-tuple] state).
     * :TRACE --- used for printing [trace] output.  No accessor is
@@ -99681,9 +99776,11 @@ Subtopics
   state), where val is a legal value for set-evisc-tuple as described
   above: :default or an [evisc-tuple] (possibly nil).
 
-  Note that the [break-rewrite] commands and the interactive
-  [proof-builder] generally do their printing using the
-  term-evisc-tuple.")
+
+Subtopics
+
+  [Set-brr-evisc-tuple]
+      Set the [brr-evisc-tuple]")
  (SET-FC-CRITERIA
   (FORWARD-CHAINING-REPORTS)
   "To set the tracking criteria for forward chaining reports
@@ -103354,6 +103451,14 @@ Subtopics
     General Forms:
     (show-bodies function-symbol)
     :show-bodies function-symbol")
+ (SHOW-BRR-EVISC-TUPLE
+  (BRR BRR-EVISC-TUPLE)
+  "Display the [brr-evisc-tuple]
+
+  Evaluation of the form (show-brr-evisc-tuple) displays the effective
+  value of the brr-evisc-tuple.  Note that this value is only printed
+  by such evaluation as a side-effect, not returned.  See also
+  [brr-evisc-tuple].")
  (SHOW-CUSTOM-KEYWORD-HINT-EXPANSION
   (CUSTOM-KEYWORD-HINTS)
   "Print out custom keyword hints when they are expanded
@@ -121395,9 +121500,9 @@ The Differences Between Well-Formed and Merely Tame Lambda Objects
   vali should evaluate to one of the legal values for
   :[set-gag-mode].  If :keyi is :evisc, then vali should be a
   [keyword-value-listp], where each key is a legal keyword for the
-  :sites keyword argument of [set-evisc-tuple] other than :trace
-  (that is, a member of the list (:term :ld :abbrev :gag-mode)), and
-  each value evaluates to a legal [evisc-tuple] for that keyword.
+  :sites keyword argument of [set-evisc-tuple] other than :trace and
+  :brr (that is, a member of the list (:term :ld :abbrev :gag-mode)),
+  and each value evaluates to a legal [evisc-tuple] for that keyword.
   Otherwise :keyi is :stack, in which case vali is :push or :pop; for
   now assume that :stack is not specified (we'll return to it below).
   The result of evaluating the General Form above is to evaluate
@@ -121927,11 +122032,12 @@ Subtopics
 
   More precisely, without-evisc binds each of the term-evisc-tuple,
   ld-evisc-tuple, abbrev-evisc-tuple and gag-mode-evisc-tuple to nil
-  (see [set-evisc-tuple]).  It does not modify the trace evisc-tuple,
-  so trace output is not modified by without-evisc.  Also note that
-  calls of printing functions such as [fmt] that include explicit
-  evisc-tuples will not have those evisc-tuples overridden.  The
-  following example illustrates this point.
+  (see [set-evisc-tuple]).  It does not modify the trace or brr
+  evisc-tuples, so trace and brr output are not modified by
+  without-evisc.  Also note that calls of printing functions such as
+  [fmt] that include explicit evisc-tuples will not have those
+  evisc-tuples overridden.  The following example illustrates this
+  point.
 
     ACL2 !>(without-evisc
             (fms \"~x0~%\"
