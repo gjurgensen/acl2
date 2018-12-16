@@ -125036,7 +125036,7 @@ same as SHOW-LINEARS"
   (sls &optional rule-id enabled-only-flg)
  })
 
- <p>See @('show-linears').  NOTE: In analogy to the @('sr') abbreviation for
+ <p>See @(see acl2-pc::show-linears).  NOTE: In analogy to the @('sr') abbreviation for
  @('show-rewrites'), one might expect this command to be @('sl'); but that name
  was taken (``simplify with lemmas'') before @('sls') was implemented.</p>")
 
