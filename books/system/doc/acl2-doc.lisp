@@ -11429,15 +11429,15 @@ with any questions about building the community books.</p>")
  monitor)ed @(see rune) are undone when proceeding from that break.  Thus,
  break-rewrite lets you query the state of the rewriter and even do experiments
  involving proofs, etc., but these experiments have no effect on the ongoing
- proof attempt.  In particular:</p>
+ proof attempt.</p>
 
- <p>Note that the output from break-rewrite is sometimes abbreviated by
- default, such as for the term causing the break.  This can be controlled by
- setting the @(':term') evisc-tuple; see @(see set-evisc-tuple).  (Another
- option: use iprinting.  See @(see set-iprint).)  But as noted above, if you
- use @('set-evisc-tuple') from inside the break-rewrite @(see wormhole), its
- effect will disappear when you exit the break.  So you might want to issue a
- @('set-evisc-tuple') command from the top level, outside break-rewrite.</p>
+ <p>There are however exceptions to this loss of state when exiting a break.
+ One exception is that the effect of turning on iprinting in a break (see @(see
+ set-iprint)) will persist even after exiting the break.  The other exceptions
+ pertain to setting the @(tsee brr-evisc-tuple) or invoking @(tsee monitor) or
+ @(tsee unmonitor): if these are done inside the break-rewrite loop at level 1
+ of interaction (i.e., at the top level) then their effects will persist even
+ after exiting the break.</p>
 
  <p>When you first enter break-rewrite a simple herald is printed such as:</p>
 
@@ -11602,7 +11602,7 @@ with any questions about building the community books.</p>")
 
  <p>Note that when inside break-rewrite, all @(see history) commands, such as
  @(':')@(tsee pe), show the @(see enable)d status of rules with respect to the
- the current point in the proof attempt.  For example, if you break while the
+ current point in the proof attempt.  For example, if you break while the
  prover is working on Subgoal 3, and the @(see hints) supplied for the proof
  specify @('(\"Subgoal 3\" :in-theory (disable foo))') for some rule @('foo'),
  then @(':')@(tsee pe) will indicate that @('foo') is @(see disable)d: even
@@ -11858,6 +11858,34 @@ with any questions about building the community books.</p>")
  also does not apply, but instead, @(':poly-list') shows the result of applying
  the linear lemma as a list of polynomials, implicitly conjoined.  The leading
  term of each polynomial is enclosed in an extra set of parentheses.</p>")
+
+(defxdoc brr-evisc-tuple
+  :parents (brr evisc-tuple)
+  :short "Determines partial suppression of output from @(see brr-commands)"
+  :long "<p>See @(see evisc-tuple) for relevant background on ``evisceration'':
+ eliding of subexpressions during printing.  Also see @(see break-rewrite) for
+ background on the break-rewrite loop.</p>
+
+ <p>One of the settable evisc-tuples (see @(see set-evisc-tuple)) can control
+ output from @(see brr-commands): the @('brr-evisc-tuple').  Unlike most other
+ evisc-tuples, if you set the @('brr-evisc-tuple') inside the break-rewrite
+ loop at level 1 of interaction (i.e., at the top level; see @(see
+ break-rewrite)), then its effect will persist even after you exit the
+ break.</p>
+
+ <p>A special value, @(':default'), is legal for this evisc-tuple, and is its
+ initial value.  In that case the actual evisc-tuple used during output from
+ @(see brr-commands) &mdash; which we call the <i>effective value</i> of the
+ @('brr-evisc-tuple') &mdash; is the value of the evisc-tuple for terms.  See
+ @(see set-evisc-tuple), in particular, the discussion of the @(':term') site
+ for setting evisc-tuples.</p>
+
+ <p>You can see the effective value of the @('brr-evisc-tuple') by evaluating
+ the form, @('(show-brr-evisc-tuple)').  Note that this value is only printed
+ by such evaluation as a side-effect, not returned.  (Technical note: This is
+ because the @('brr-evisc-tuple') is maintained entirely within the
+ break-rewrite @(see wormhole).  That implementation enables the persistence of
+ this evisc-tuple within and without the break-rewrite loop.)</p>")
 
 (defxdoc brr@
   :parents (break-rewrite)
@@ -55786,11 +55814,14 @@ it."
  event that generates only rules of classes other than those three.)</p>
 
  <p>When a @(see rune) is @(see monitor)ed any attempt to apply it may result
- in an interactive break in an ACL2 ``@(see wormhole) @(see state).'' There you
- will get a chance to see how the application proceeds.  See @(see
- break-rewrite) for a description of the interactive loop entered.  Whether an
+ in an interactive break in an ACL2 ``@(see wormhole) @(see state).''  There
+ you will get a chance to see how the application proceeds.  Whether an
  interactive break occurs depends on the value of the break condition
- expression associated with the @(see monitor)ed @(see rune).</p>
+ expression associated with the @(see monitor)ed @(see rune).  See @(see
+ break-rewrite) for a description of the interactive loop entered, and in
+ particular, for discussion of what happens if you monitor or unmonitor a rune
+ while inside a break (in short: the effect disappears when existing the break,
+ unless it is a top-level break).</p>
 
  <p>NOTE: Some @(':rewrite') rules are considered ``simple abbreviations''; see
  @(see simple).  These can be be monitored, but only at certain times during
@@ -82560,6 +82591,11 @@ it."
  Alessandro Coglio for a query and subsequent discussion leading to these
  changes.</p>
 
+ <p>The @(see system-utilities) @('all-ffn-symbs') and @('all-ffn-symbs-lst')
+ are now defined just as macro abbreviations for calls of system utility
+ @('all-fnnames1'), thus eliminating some source code duplication.  We may
+ deprecate @('all-ffn-symbs') and @('all-ffn-symbs-lst') in the future.</p>
+
  <h3>New Features</h3>
 
  <p>A new construct, @('lambda$'), may be used in place of @('lambda') to be
@@ -82580,6 +82616,10 @@ it."
  <p>There is now, by default, a limit of 9 on the nesting depth of inductions;
  see @(see induction-depth-limit) and to modify this default, see @(see
  set-induction-depth-limit).</p>
+
+ <p>A new @(see evisc-tuple), the @(tsee brr-evisc-tuple), controls printing
+ inside the break-rewrite loop.  See @(see brr-evisc-tuple) and @(see
+ set-evisc-tuple).</p>
 
  <h3>Heuristic and Efficiency Improvements</h3>
 
@@ -97239,6 +97279,14 @@ arithmetic) for libraries of @(see books) for arithmetic reasoning.</p>")
 
  <p>where @('flg') is either @('t'), @('nil'), or @(':warn').</p>")
 
+(defxdoc set-brr-evisc-tuple
+  :parents (brr brr-evisc-tuple set-evisc-tuple)
+  :short "Set the @(tsee brr-evisc-tuple)"
+  :long "<p>The call @('(set-brr-evisc-tuple e)') is simply a convenient way to
+ set the @(see brr-evisc-tuple) to @('e') directly, that is, without using the
+ more general mechanism, @(tsee set-evisc-tuple).  See @(see
+ brr-evisc-tuple).</p>")
+
 (defxdoc set-case-split-limitations
   :parents (miscellaneous)
   :short "Set the @(see case-split-limitations)"
@@ -98220,31 +98268,51 @@ arithmetic) for libraries of @(see books) for arithmetic reasoning.</p>")
                                        )
                           :iprint :same ; better yet, T
                           :sites :all)
-   (:TERM :LD :TRACE :ABBREV)
+   (:TERM :LD :TRACE :ABBREV ...)
   ACL2 !>'((a b ((c d)) e f g) u v w x y)
   ((A B (#) E ...) U V W ...)
   ACL2 !>
  })
 
  <p>We recommend however using @(':iprint t') so that eviscerated terms may be
- read back in; see @(see set-iprint).  Indeed, the @(':iprint') argument is
- required as a reminder to the user to consider that issue, unless iprinting
- has been enabled at least once.  If @(':sites') or a required @(':iprint')
- argument is omitted, however, ACL2 will query the user for the missing
- arguments rather than causing an error.</p>
+ read back in (see @(see set-iprint)), as shown here:</p>
+
+ @({
+  ACL2 !>(set-evisc-tuple (evisc-tuple 3   ; print-level
+                                       4   ; print-length
+                                       nil ; alist
+                                       nil ; hiding-cars
+                                       )
+                          :iprint t
+                          :sites :all)
+
+  ACL2 Observation in SET-EVISC-TUPLE:  Iprinting has been enabled.
+   (:TERM :LD :TRACE :ABBREV . #@1#)
+  ACL2 !>(without-evisc '(:TERM :LD :TRACE :ABBREV . #@1#))
+  (:TERM :LD
+         :TRACE :ABBREV
+         :GAG-MODE :BRR)
+  ACL2 !>
+ })
+
+ <p>Indeed, the @(':iprint') argument is required as a reminder to the user to
+ consider that issue, unless iprinting has been enabled at least once.  If
+ @(':sites') or a required @(':iprint') argument is omitted, however, ACL2 will
+ query the user for the missing arguments rather than causing an error.</p>
 
  <p>ACL2 eviscerates by default only in a few cases, primarily in informational
  messages for errors, warnings, and queries (i.e., in the @(':EVISC') case
- below).  Users can modify the default behavior by supplying a suitable
- argument to @('set-evisc-tuple').  The argument may be @(':default'), which
- denotes the evisceration provided when ACL2 starts up.  Otherwise that
- argument is an evisc-tuple, which is either @('nil') (no evisceration) or as
- described above.  Moreover, there are five evisc-tuple ``evisceration
- contexts'', each with its own evisceration control.  The value returned by
- @('set-evisc-tuple') indicates the evisceration contexts whose evisc-tuple has
- been set.  The evisceration contexts are as follows, all of which use a
- default value of @('nil') for the hiding-cars.  Accessors are also shown for
- retrieving the corresponding evisc-tuple.</p>
+ below), and in response to @(see break-rewrite) commands.  Users can modify
+ the default behavior by supplying a suitable argument to @('set-evisc-tuple').
+ The argument may be @(':default'), which denotes the evisceration provided
+ when ACL2 starts up.  Otherwise that argument is an evisc-tuple, which is
+ either @('nil') (no evisceration) or as described above.  Moreover, there are
+ six evisc-tuple ``evisceration contexts'', each with its own evisceration
+ control.  The value returned by @('set-evisc-tuple') indicates the
+ evisceration contexts whose evisc-tuple has been set.  The evisceration
+ contexts are as follows, all of which use a default value of @('nil') for the
+ hiding-cars.  Accessors are also shown for retrieving the corresponding
+ evisc-tuple.</p>
 
  <ul>
 
@@ -98259,6 +98327,13 @@ arithmetic) for libraries of @(see books) for arithmetic reasoning.</p>")
  warnings, and queries.  Initially, the alist abbreviates the ACL2 @('world'),
  print-level is 5, and print-level is 7.  The accessor is
  @('(abbrev-evisc-tuple state)').</li>
+
+ <li>@(':BRR') &mdash; used for output from @(see brr-commands) issued in the
+ @(see break-rewrite) loop.  When the value is @(':DEFAULT') then the
+ <i>effective value</i> of this evisc-tuple is the @(':TERM') evisc-tuple with
+ @('flg = t') (see above).  Also see @(see brr-evisc-tuple).  No accessor is
+ available to return this evisc-tuple, but its effective value is displayed by
+ evaluating @('(show-brr-evisc-tuple)').</li>
 
  <li>@(':GAG-MODE') &mdash; used for printing induction schemes (and perhaps,
  in the future, for other printing) when @(see gag-mode) is on.  If gag-mode is
@@ -98284,10 +98359,7 @@ arithmetic) for libraries of @(see books) for arithmetic reasoning.</p>")
  <p>Each context @('ectx') also has an updater, @('(set-ectx-evisc-tuple val
  state)'), where @('val') is a legal value for @('set-evisc-tuple') as
  described above: @(':default') or an @(see evisc-tuple) (possibly
- @('nil')).</p>
-
- <p>Note that the @(see break-rewrite) commands and the interactive @(see
- proof-builder) generally do their printing using the term-evisc-tuple.</p>")
+ @('nil')).</p>")
 
 (defxdoc set-fc-criteria
   :parents (forward-chaining-reports)
@@ -102114,6 +102186,14 @@ arithmetic) for libraries of @(see books) for arithmetic reasoning.</p>")
   (show-bodies function-symbol)
   :show-bodies function-symbol
  })")
+
+(defxdoc show-brr-evisc-tuple
+  :parents (brr brr-evisc-tuple)
+  :short "Display the @(tsee brr-evisc-tuple)"
+  :long "<p>Evaluation of the form @('(show-brr-evisc-tuple)') displays the
+ effective value of the @('brr-evisc-tuple').  Note that this value is only
+ printed by such evaluation as a side-effect, not returned.  See also @(see
+ brr-evisc-tuple).</p>")
 
 (defxdoc show-custom-keyword-hint-expansion
   :parents (custom-keyword-hints)
@@ -106372,12 +106452,29 @@ arithmetic) for libraries of @(see books) for arithmetic reasoning.</p>")
  @('lst'), of terms in place of a single term, @('term').</li>
 
  <li>@('(all-ffn-symbs term ans)'): Accumulate into @('ans')
- (which typically is @('nil') at the top level) all function symbols called
- in the given term.</li>
+ (which typically is @('nil') at the top level) all function symbols called in
+ the given term.  This may become deprecated, and is just a macro expanding to
+ a corresponding call of @('all-fnnames1'); see @('all-fnnames'),
+ @('all-fnnames-lst'), and @('all-fnnames1'), below.</li>
 
  <li>@('(all-ffn-symbs-lst lst ans)'): Accumulate into @('ans')
- (which typically is @('nil') at the top level) all function symbols called
- in the given list of terms.</li>
+ (which typically is @('nil') at the top level) all function symbols called in
+ the given list of terms.  This may become deprecated, and is just a macro
+ expanding to a corresponding call of @('all-fnnames1'); see @('all-fnnames'),
+ @('all-fnnames-lst'), and @('all-fnnames1'), below.</li>
+
+ <li>@('(all-fnnames term)'): Return a list of all function symbols called in
+ the given term.  This is a macro call expanding to @('(all-fnnames1 nil term
+ nil)').</li>
+
+ <li>@('(all-fnnames-lst lst)'): Return a list of all function symbols called
+ in the given list of terms.  This is a macro call expanding to
+ @('(all-fnnames1 t lst nil)').</li>
+
+ <li>@('(all-fnnames1 flg x acc)'): Accumulate into @('ans') the function
+ symbols called in the given term or list of terms, @('x'), according to
+ whether @('flg') is @('nil') (for a term) or not @('nil') (for a list of
+ terms), respectively.</li>
 
  <li>@('(all-vars x)'): For a @(tsee pseudo-termp) @('x'), return the list of
  variables in @('x') in reverse print order of first occurrence.  For example,
@@ -106571,6 +106668,9 @@ arithmetic) for libraries of @(see books) for arithmetic reasoning.</p>")
  expression @('fn') of @(see world) @('w'), return its @(see guard). Optimize
  the @(see stobj) recognizers away iff @('stobj-optp') is true.</li>
 
+ <li>@('(implicate t1 t2)'): For terms @('t1') and @('t2'), return a term that
+ is propositionally equivalent to @('(implies t1 t2)').</li>
+
  <li>@('(io? token commentp shape vars body &key ...)'): This is a complex
  macro that may be most fully understood by reading the source code, including
  comments in its definition and examples of its use.  But the following
@@ -106609,9 +106709,6 @@ arithmetic) for libraries of @(see books) for arithmetic reasoning.</p>")
  pushed on the front of the existing known-package-alist.  Note that this list
  can be accessed directly from a @(see world), @('w'), with: @('(global-val
  'known-package-alist w)').</li>
-
- <li>@('(implicate t1 t2)'): For terms @('t1') and @('t2'), return a term that
- is propositionally equivalent to @('(implies t1 t2)').</li>
 
  <li>@('(lambda-applicationp x)'): For a @(tsee pseudo-termp) @('x'), return
  @('t') if it is a function call whose function symbol is a @('lambda')
@@ -115223,7 +115320,7 @@ introduction-to-the-tau-system) for more information about Tau.</dd>
  })
 
  <p>Here, @('rune') is a @(see rune) that is currently among those with break
- points installed.  This function removes the break.</p>
+ points installed.  This function removes the break.  See @(see monitor).</p>
 
  <p>Subtle point: Because you may want to unmonitor a ``@(see rune)'' that is
  no longer a @(see rune) in the current ACL2 @(see world), we don't actually
@@ -120171,29 +120268,29 @@ for the execution of @('form')."
  evaluate to one of the legal values for @(':')@(tsee set-gag-mode).  If
  @(':keyi') is @(':evisc'), then @('vali') should be a @(tsee
  keyword-value-listp), where each key is a legal keyword for the @(':sites')
- keyword argument of @(tsee set-evisc-tuple) other than @(':trace') (that is, a
- member of the list @(`(remove1-eq :trace *evisc-tuple-sites*)`)), and each
- value evaluates to a legal @(see evisc-tuple) for that keyword.  Otherwise
- @(':keyi') is @(':stack'), in which case @('vali') is @(':push') or @(':pop');
- for now assume that @(':stack') is not specified (we'll return to it below).
- The result of evaluating the General Form above is to evaluate @('form'), but
- in an environment where output occurs as follows.  If @(':on :all') is
- specified, then every output type is turned on except as inhibited by
- @(':off'); else if @(':off :all') is specified, then every output type is
- inhibited except as specified by @(':on'); and otherwise, the
- currently-inhibited output types are reduced as specified by @(':on') and then
- extended as specified by @(':off').  If @(':gag-mode') and/or @(':evisc') are
- specified, then before modifying how output is inhibited, @(tsee gag-mode)
- and/or the appropriate @(see evisc-tuple)s are set for the evaluation of
- @('form') as specified by the values of those keywords; see @(see
- set-gag-mode) and @(see set-evisc-tuple).  If @('summary') is among the output
- types that are turned on (not inhibited), then if @(':summary') is specified,
- the only parts of the @(see summary) to be printed will be those specified by
- the value of @(':summary').  The correspondence should be clear, except
- perhaps that @('header') refers to the line containing only the word
- @('Summary'), and @('value') refers to the value of the form printed during
- evaluation of sequences of events as for @(tsee progn) and @(tsee
- encapsulate).</p>
+ keyword argument of @(tsee set-evisc-tuple) other than @(':trace') and
+ @(':brr') (that is, a member of the list @(`(set-difference-eq
+ *evisc-tuple-sites* '(:trace :brr))`)), and each value evaluates to a legal
+ @(see evisc-tuple) for that keyword.  Otherwise @(':keyi') is @(':stack'), in
+ which case @('vali') is @(':push') or @(':pop'); for now assume that
+ @(':stack') is not specified (we'll return to it below).  The result of
+ evaluating the General Form above is to evaluate @('form'), but in an
+ environment where output occurs as follows.  If @(':on :all') is specified,
+ then every output type is turned on except as inhibited by @(':off'); else if
+ @(':off :all') is specified, then every output type is inhibited except as
+ specified by @(':on'); and otherwise, the currently-inhibited output types are
+ reduced as specified by @(':on') and then extended as specified by @(':off').
+ If @(':gag-mode') and/or @(':evisc') are specified, then before modifying how
+ output is inhibited, @(tsee gag-mode) and/or the appropriate @(see
+ evisc-tuple)s are set for the evaluation of @('form') as specified by the
+ values of those keywords; see @(see set-gag-mode) and @(see set-evisc-tuple).
+ If @('summary') is among the output types that are turned on (not inhibited),
+ then if @(':summary') is specified, the only parts of the @(see summary) to be
+ printed will be those specified by the value of @(':summary').  The
+ correspondence should be clear, except perhaps that @('header') refers to the
+ line containing only the word @('Summary'), and @('value') refers to the value
+ of the form printed during evaluation of sequences of events as for @(tsee
+ progn) and @(tsee encapsulate).</p>
 
  <p>Note that the handling of the @(':stack') argument pays no attention to the
  @(':summary') argument.</p>
@@ -120714,11 +120811,11 @@ created from the original fast alist during @('form') must be manually freed."
 
  <p>More precisely, @('without-evisc') binds each of the term-evisc-tuple,
  ld-evisc-tuple, abbrev-evisc-tuple and gag-mode-evisc-tuple to @('nil') (see
- @(see set-evisc-tuple)).  It does not modify the trace evisc-tuple, so trace
- output is not modified by @('without-evisc').  Also note that calls of
- printing functions such as @(tsee fmt) that include explicit evisc-tuples will
- not have those evisc-tuples overridden.  The following example illustrates
- this point.</p>
+ @(see set-evisc-tuple)).  It does not modify the trace or brr evisc-tuples, so
+ trace and brr output are not modified by @('without-evisc').  Also note that
+ calls of printing functions such as @(tsee fmt) that include explicit
+ evisc-tuples will not have those evisc-tuples overridden.  The following
+ example illustrates this point.</p>
 
  @({
   ACL2 !>(without-evisc
@@ -124941,7 +125038,7 @@ same as SHOW-LINEARS"
   (sls &optional rule-id enabled-only-flg)
  })
 
- <p>See @('show-linears').  NOTE: In analogy to the @('sr') abbreviation for
+ <p>See @(see acl2-pc::show-linears).  NOTE: In analogy to the @('sr') abbreviation for
  @('show-rewrites'), one might expect this command to be @('sl'); but that name
  was taken (``simplify with lemmas'') before @('sls') was implemented.</p>")
 
@@ -125439,6 +125536,9 @@ expand function call at the current subterm, without simplifying"
 (defpointer add-to-set-eql add-to-set) ; pre-v4-3 compatibility
 (defpointer add-to-set-equal add-to-set)
 (defpointer all-calls system-utilities)
+(defpointer all-fnnames system-utilities)
+(defpointer all-fnnames-lst system-utilities)
+(defpointer all-fnnames1 system-utilities)
 (defpointer all-vars system-utilities)
 (defpointer apropos finding-documentation)
 (defpointer arglistp system-utilities)
@@ -125461,6 +125561,7 @@ expand function call at the current subterm, without simplifying"
 (defpointer community-book community-books)
 (defpointer computed-hint computed-hints)
 (defpointer conjoin system-utilities)
+(defpointer conjoin2 system-utilities)
 (defpointer cons-term system-utilities)
 (defpointer cons-term* system-utilities)
 (defpointer context ctx)
@@ -125471,6 +125572,7 @@ expand function call at the current subterm, without simplifying"
 (defpointer disjoin2 system-utilities)
 (defpointer do-not-induct hints t)
 (defpointer dynamically-monitor-rewrites dmr)
+(defpointer dumb-negate-lit system-utilities)
 (defpointer enabled-numep system-utilities)
 (defpointer enabled-runep system-utilities)
 (defpointer er-let* programming-with-state)
@@ -125503,6 +125605,7 @@ expand function call at the current subterm, without simplifying"
 (defpointer fmt1!-to-string printing-to-strings)
 (defpointer fmt1-to-string printing-to-strings)
 (defpointer fmx!-cw fmx-cw)
+(defpointer fn-rune-nume system-utilities)
 (defpointer fn-symb system-utilities)
 (defpointer fncall-term meta-extract)
 (defpointer forced force)
@@ -125542,6 +125645,7 @@ expand function call at the current subterm, without simplifying"
 (defpointer iprint set-iprint)
 (defpointer iprinting set-iprint)
 (defpointer keyword keywordp)
+(defpointer known-package-alist system-utilities)
 (defpointer lambda-applicationp system-utilities)
 (defpointer lambda-body system-utilities)
 (defpointer lambda-formals system-utilities)
@@ -125679,6 +125783,7 @@ expand function call at the current subterm, without simplifying"
 (defpointer split-types xargs t)
 (defpointer stable-under-simplificationp computed-hints)
 (defpointer stobj-let nested-stobjs)
+(defpointer stobjp system-utilities)
 (defpointer stobjs xargs t)
 (defpointer stobjs-in system-utilities)
 (defpointer stobjs-out system-utilities)
