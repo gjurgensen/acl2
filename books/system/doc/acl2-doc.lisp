@@ -35217,7 +35217,7 @@ current fast alists."
 
  <li>Goto @('https://github.com/<your-github-username>/acl2').</li>
 
- <li>Click the @('Pull request') button (you can search for it with your
+ <li>Click the @('New pull request') button (you can search for it with your
  browser).</li>
 
  <li>In the drop-down box labeled \"base\" (next to the box labeled \"base
