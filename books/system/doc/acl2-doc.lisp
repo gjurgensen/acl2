@@ -82632,6 +82632,11 @@ it."
  example, the size of @('books/centaur/fty/tests/deftranssum.cert') was reduced
  from 22,474,113 bytes to 16,910,530 bytes, a reduction of nearly 25%.</p>
 
+ <p>A tweak to the rewriter can significantly speed up the use of
+ hypothesis-free @(see meta) rules on large terms.  Thanks to Mertcan Temel for
+ sending an example that motivated this change, whose time was cut from 67
+ seconds to 19 seconds.</p>
+
  <h3>Bug Fixes</h3>
 
  <p>Fixed the @(see proof-builder) command, @('dv') (see @(see acl2-pc::dv)),

@@ -38305,7 +38305,7 @@ You now need to create a pull request, where you request that
 changes from your github repository be accepted into the Community
 ACL2 repository.  To achieve this:
    1. Goto https://github.com/<your-github-username>/acl2.
-   2. Click the Pull request button (you can search for it with your
+   2. Click the New pull request button (you can search for it with your
       browser).
    3. In the drop-down box labeled \"base\" (next to the box labeled \"base
       fork\"), change the value from \"master\" to \"testing\".
@@ -81333,6 +81333,11 @@ Heuristic and Efficiency Improvements
   the reduction was substantially larger: for example, the size of
   books/centaur/fty/tests/deftranssum.cert was reduced from
   22,474,113 bytes to 16,910,530 bytes, a reduction of nearly 25%.
+
+  A tweak to the rewriter can significantly speed up the use of
+  hypothesis-free [meta] rules on large terms.  Thanks to Mertcan
+  Temel for sending an example that motivated this change, whose time
+  was cut from 67 seconds to 19 seconds.
 
 
 Bug Fixes
