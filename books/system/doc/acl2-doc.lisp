@@ -11806,41 +11806,48 @@ with any questions about building the community books.</p>")
 (defxdoc brr-commands
   :parents (break-rewrite)
   :short "@(see Break-Rewrite) Commands"
-  :long "<code>
- :a!             abort to ACL2 top-level
- :p!             pop one level (exits a top-level break-rewrite loop)
- :target         term being rewritten
- :unify-subst    substitution making :lhs equal :target
- :hyps           hypotheses of the rule
- :hyp i          ith hypothesis of the rule
- :lhs            left-hand side of rule's conclusion
- :rhs            right-hand side of rule's conclusion
- :type-alist     type assumptions governing :target
- :initial-ttree  ttree before :eval (see @(see ttree))
- :ancestors      negations of backchaining hypotheses being pursued
- :wonp           indicates whether application succeeded (after :eval)
- :rewritten-rhs  rewritten :rhs (after :eval) of a rewrite rule
- :poly-list      list of polynomials (after :eval) of a linear rule,
-                   where the leading term of each is enclosed in an extra set
-                   of parentheses
- :final-ttree    ttree after :eval (see @(see ttree))
- :failure-reason reason rule failed (after :eval)
- :path           rewriter's path from top clause to :target
- :frame i        ith frame in :path
- :top            top-most frame in :path
- :btm            bottom-most frame in :path
- :ok             exit break
- :go             exit break, printing result
- :eval           try rule and re-enter break afterwards
- :ok!            :ok but no recursive breaks
- :go!            :go but no recursive breaks
- :eval!          :eval but no recursive breaks
- :ok$ runes      :ok with runes monitored during recursion
- :go$ runes      :go with runes monitored during recursion
- :eval$ runes    :eval with runes monitored during recursion
- :help           this message
- :standard-help  :help message from ACL2 top-level
- </code>
+  :long "<p>Many commands display terms that are abbreviated (``eviscerated'')
+  by default.  These have corresponding commands with a ``+'' suffix that avoid
+  such abbreviation, as shown below; also see @(see brr-evisc-tuple).  For
+  example, the notation ``@(':ancestors[+]')'' below indicates that the
+  @(':ancestors') command may abbreviate terms but the @(':ancestors+') command
+  does not.</p>
+
+ @({
+ :a!                abort to ACL2 top-level
+ :ancestors[+]      negations of backchaining hypotheses being pursued
+ :btm[+]            bottom-most frame in :path
+ :eval              try rule and re-enter break afterwards
+ :eval!             :eval but no recursive breaks
+ :eval$ runes       :eval with runes monitored during recursion
+ :failure-reason[+] reason rule failed (after :eval)
+ :final-ttree[+]    ttree after :eval (see @(see ttree))
+ :frame[+] i        ith frame in :path
+ :go                exit break, printing result
+ :go!               :go but no recursive breaks
+ :go$ runes         :go with runes monitored during recursion
+ :help              this message
+ :hyp i             ith hypothesis of the rule
+ :hyps              hypotheses of the rule
+ :initial-ttree[+]  ttree before :eval (see @(see ttree))
+ :lhs               left-hand side of rule's conclusion
+ :ok                exit break
+ :ok!               :ok but no recursive breaks
+ :ok$ runes         :ok with runes monitored during recursion
+ :p!                pop one level (exits a top-level break-rewrite loop)
+ :path[+]           rewriter's path from top clause to :target
+ :poly-list[+]      list of polynomials (after :eval) of a linear rule,
+                      where the leading term of each is enclosed in an
+                      extra set of parentheses
+ :rewritten-rhs[+]  rewritten :rhs (after :eval) of a rewrite rule
+ :rhs               right-hand side of rule's conclusion
+ :standard-help     :help message from ACL2 top-level
+ :target[+]         term being rewritten
+ :top[+]            top-most frame in :path
+ :type-alist[+]     type assumptions governing :target
+ :unify-subst[+]    substitution making :lhs equal :target
+ :wonp              indicates whether application succeeded (after :eval)
+ })
 
  <p>@(see Break-rewrite) is just a call of the standard ACL2 read-eval-print
  loop, @(tsee ld), on a ``@(see wormhole)'' @(see state).  Thus, you may
@@ -82516,6 +82523,10 @@ it."
 ; Improved the error message when defun-nx is used for only some functions in a
 ; mutual-recursion nest.
 
+; A few minor tweaks were made in support of the change to brr-commands to have
+; eviscerate/non-eviscerate pairs.  For example, :go$ now takes an argument
+; even when supplied under brkpt2.
+
   :parents (release-notes)
   :short "ACL2 Version  8.2 (xxx, 20xx) Notes"
   :long "<p>NOTE!  New users can ignore these release notes, because the @(see
@@ -82620,6 +82631,13 @@ it."
  <p>A new @(see evisc-tuple), the @(tsee brr-evisc-tuple), controls printing
  inside the break-rewrite loop.  See @(see brr-evisc-tuple) and @(see
  set-evisc-tuple).</p>
+
+ <p>Many of the @(see brr-commands) now abbreviate (``eviscerate'') by default
+ using the new @(tsee brr-evisc-tuple) (see above), and for each for those a
+ corresponding command with suffix ``+'' print in full.  For example, such
+ commands include @(':path') and @(':path+'); see @(see brr-commands) for the
+ full list of commands.  Thanks to Stephen Westfold and others at the 2018
+ Developer's Workshop for discussing this issue.</p>
 
  <h3>Heuristic and Efficiency Improvements</h3>
 
@@ -87929,7 +87947,7 @@ arithmetic) for libraries of @(see books) for arithmetic reasoning.</p>")
  sources.</p>
 
  @({
-  (defun print-terms (terms iff-flg wrld)
+  (defun print-terms (terms iff-flg wrld evisc-tuple)
 
   ; Print untranslations of the given terms with respect to iff-flg, following
   ; each with a newline.
@@ -87941,8 +87959,10 @@ arithmetic) for libraries of @(see books) for arithmetic reasoning.</p>")
     (if (endp terms)
         terms
       (prog2$
-       (cw \"~q0\" (untranslate (car terms) iff-flg wrld))
-       (print-terms (cdr terms) iff-flg wrld))))
+       (cw \"~Y01\"
+           (untranslate (car terms) iff-flg wrld)
+           evisc-tuple)
+       (print-terms (cdr terms) iff-flg wrld evisc-tuple))))
  })")
 
 (defxdoc progn
