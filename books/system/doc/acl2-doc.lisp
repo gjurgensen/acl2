@@ -94229,6 +94229,8 @@ arithmetic) for libraries of @(see books) for arithmetic reasoning.</p>")
  body of function, @('resize-<a>') where @('<a>') is an array field of a @(see
  stobj).  See @(see stobj) and see @(see defstobj).</p>
 
+ @(def resize-list-exec)
+
  @(def resize-list)")
 
 (defxdoc rest
