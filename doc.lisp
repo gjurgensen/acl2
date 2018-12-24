@@ -81301,6 +81301,13 @@ Changes to Existing Features
   all-fnnames1, thus eliminating some source code duplication.  We
   may deprecate all-ffn-symbs and all-ffn-symbs-lst in the future.
 
+  The implementation of [verify-termination] has been improved so that
+  it no longer can generate (expand to) the form (value-triple
+  :redudant).  Redudancy is now handled for verify-termination by
+  checking redundancy of the generated [defun] form.  For an example
+  that failed before this change, see [community-book]
+  books/system/tests/verify-termination/top.lisp.
+
 
 New Features
 
@@ -81353,6 +81360,9 @@ Heuristic and Efficiency Improvements
   Temel for sending an example that motivated this change, whose time
   was cut from 67 seconds to 19 seconds.
 
+  Some small optimizations have been made for the generation of
+  executable-counterpart (so-called ``*1*'') code (see [evaluation]).
+
 
 Bug Fixes
 
@@ -81393,6 +81403,9 @@ Changes at the System Level
 
   Documentation pertaining to [apply$] and related topics has been
   extended significantly.
+
+  (GCL only) Eliminate compiler output (by setting GCL raw Lisp
+  variables *compile-verbose* and *load-verbose* to nil).
 
 
 EMACS Support
@@ -95567,6 +95580,20 @@ Subtopics
   Resize-list has a guard of t.  This function is called in the body of
   function, resize-<a> where <a> is an array field of a [stobj].  See
   [stobj] and see [defstobj].
+
+  Function: <resize-list-exec>
+
+    (defun
+     resize-list-exec
+     (lst n default-value acc)
+     (declare (xargs :guard (true-listp acc)))
+     (if (and (integerp n) (> n 0))
+         (resize-list-exec (if (atom lst) lst (cdr lst))
+                           (1- n)
+                           default-value
+                           (cons (if (atom lst) default-value (car lst))
+                                 acc))
+         (reverse acc)))
 
   Function: <resize-list>
 

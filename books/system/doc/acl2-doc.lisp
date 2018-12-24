@@ -82607,6 +82607,13 @@ it."
  @('all-fnnames1'), thus eliminating some source code duplication.  We may
  deprecate @('all-ffn-symbs') and @('all-ffn-symbs-lst') in the future.</p>
 
+ <p>The implementation of @(tsee verify-termination) has been improved so that
+ it no longer can generate (expand to) the form @('(value-triple :redudant)').
+ Redudancy is now handled for @('verify-termination') by checking redundancy of
+ the generated @(tsee defun) form.  For an example that failed before this
+ change, see @(see community-book)
+ @('books/system/tests/verify-termination/top.lisp').</p>
+
  <h3>New Features</h3>
 
  <p>A new construct, @('lambda$'), may be used in place of @('lambda') to be
@@ -82655,6 +82662,9 @@ it."
  sending an example that motivated this change, whose time was cut from 67
  seconds to 19 seconds.</p>
 
+ <p>Some small optimizations have been made for the generation of
+ executable-counterpart (so-called ``*1*'') code (see @(see evaluation)).</p>
+
  <h3>Bug Fixes</h3>
 
  <p>Fixed the @(see proof-builder) command, @('dv') (see @(see acl2-pc::dv)),
@@ -82693,6 +82703,9 @@ it."
 
  <p>Documentation pertaining to @(tsee apply$) and related topics has been
  extended significantly.</p>
+
+ <p>(GCL only) Eliminate compiler output (by setting GCL raw Lisp variables
+ @('*compile-verbose*') and @('*load-verbose*') to @('nil')).</p>
 
  <h3>EMACS Support</h3>
 
