@@ -195,6 +195,7 @@
     (PROFILE-ALL "[books]/centaur/memoize/old/profile.lisp")
     (QUICKLISP "[books]/quicklisp/top.lisp")
     (RELEASE-NOTES-BOOKS "[books]/doc/relnotes.lisp")
+    (REMOVE-HYPS "[books]/tools/remove-hyps.lisp")
     (REMOVABLE-RUNES "[books]/tools/removable-runes.lisp")
     (RUN-SCRIPT "[books]/tools/run-script.lisp")
     (SATLINK::SAT-SOLVER-OPTIONS "[books]/centaur/satlink/top.lisp")
@@ -4031,9 +4032,6 @@ and @(tsee include-book)"
  quantifier.</li>
 
  <li>See @(see DEFCHOOSE) to define a Skolem (witnessing) function.</li>
-
- <li>For efficiency consider using @('defconst-fast'); see @(see
- DEFCONST).</li>
 
  <li>See @(see SET-VERIFY-GUARDS-EAGERNESS) to specify when @(see guard)
  verification is tried by default.</li>
@@ -11806,41 +11804,48 @@ with any questions about building the community books.</p>")
 (defxdoc brr-commands
   :parents (break-rewrite)
   :short "@(see Break-Rewrite) Commands"
-  :long "<code>
- :a!             abort to ACL2 top-level
- :p!             pop one level (exits a top-level break-rewrite loop)
- :target         term being rewritten
- :unify-subst    substitution making :lhs equal :target
- :hyps           hypotheses of the rule
- :hyp i          ith hypothesis of the rule
- :lhs            left-hand side of rule's conclusion
- :rhs            right-hand side of rule's conclusion
- :type-alist     type assumptions governing :target
- :initial-ttree  ttree before :eval (see @(see ttree))
- :ancestors      negations of backchaining hypotheses being pursued
- :wonp           indicates whether application succeeded (after :eval)
- :rewritten-rhs  rewritten :rhs (after :eval) of a rewrite rule
- :poly-list      list of polynomials (after :eval) of a linear rule,
-                   where the leading term of each is enclosed in an extra set
-                   of parentheses
- :final-ttree    ttree after :eval (see @(see ttree))
- :failure-reason reason rule failed (after :eval)
- :path           rewriter's path from top clause to :target
- :frame i        ith frame in :path
- :top            top-most frame in :path
- :btm            bottom-most frame in :path
- :ok             exit break
- :go             exit break, printing result
- :eval           try rule and re-enter break afterwards
- :ok!            :ok but no recursive breaks
- :go!            :go but no recursive breaks
- :eval!          :eval but no recursive breaks
- :ok$ runes      :ok with runes monitored during recursion
- :go$ runes      :go with runes monitored during recursion
- :eval$ runes    :eval with runes monitored during recursion
- :help           this message
- :standard-help  :help message from ACL2 top-level
- </code>
+  :long "<p>Many commands display terms that are abbreviated (``eviscerated'')
+  by default.  These have corresponding commands with a ``+'' suffix that avoid
+  such abbreviation, as shown below; also see @(see brr-evisc-tuple).  For
+  example, the notation ``@(':ancestors[+]')'' below indicates that the
+  @(':ancestors') command may abbreviate terms but the @(':ancestors+') command
+  does not.</p>
+
+ @({
+ :a!                abort to ACL2 top-level
+ :ancestors[+]      negations of backchaining hypotheses being pursued
+ :btm[+]            bottom-most frame in :path
+ :eval              try rule and re-enter break afterwards
+ :eval!             :eval but no recursive breaks
+ :eval$ runes       :eval with runes monitored during recursion
+ :failure-reason[+] reason rule failed (after :eval)
+ :final-ttree[+]    ttree after :eval (see @(see ttree))
+ :frame[+] i        ith frame in :path
+ :go                exit break, printing result
+ :go!               :go but no recursive breaks
+ :go$ runes         :go with runes monitored during recursion
+ :help              this message
+ :hyp i             ith hypothesis of the rule
+ :hyps              hypotheses of the rule
+ :initial-ttree[+]  ttree before :eval (see @(see ttree))
+ :lhs               left-hand side of rule's conclusion
+ :ok                exit break
+ :ok!               :ok but no recursive breaks
+ :ok$ runes         :ok with runes monitored during recursion
+ :p!                pop one level (exits a top-level break-rewrite loop)
+ :path[+]           rewriter's path from top clause to :target
+ :poly-list[+]      list of polynomials (after :eval) of a linear rule,
+                      where the leading term of each is enclosed in an
+                      extra set of parentheses
+ :rewritten-rhs[+]  rewritten :rhs (after :eval) of a rewrite rule
+ :rhs               right-hand side of rule's conclusion
+ :standard-help     :help message from ACL2 top-level
+ :target[+]         term being rewritten
+ :top[+]            top-most frame in :path
+ :type-alist[+]     type assumptions governing :target
+ :unify-subst[+]    substitution making :lhs equal :target
+ :wonp              indicates whether application succeeded (after :eval)
+ })
 
  <p>@(see Break-rewrite) is just a call of the standard ACL2 read-eval-print
  loop, @(tsee ld), on a ``@(see wormhole)'' @(see state).  Thus, you may
@@ -25181,6 +25186,148 @@ ld) and @(tsee include-book)"
  @('nil'), since the macro-alias of @('mac') is @('foo') on the second
  pass.</p>")
 
+(defxdoc efficiency
+  :parents (debugging proof-automation programming)
+  :short "Efficiency considerations"
+  :long "<p>This topic is a grab-bag of ideas for the efficient use of ACL2,
+ including proofs and programming.  It is far from complete, and @(see tips)
+ for using ACL2 effectively may be found throughout the @(see documentation).
+ The present topic will, ideally, improve over time, both in its content and in
+ its organization.  Please contribute!</p>
+
+ <p>Here we discuss primarily time efficiency rather than space efficiency.
+ You can time forms using @(tsee time$).  That may show you that your tweaks
+ to proof scripts or function definitions don't make a noticeable difference!
+ We focus below on some techniques that have a reasonable chance of making a
+ difference.</p>
+
+ <h3>Proof efficiency</h3>
+
+ <p>Perhaps the most basic idea for carrying out proofs efficiently is to use
+ rewriting effectively; see @(see introduction-to-the-theorem-prover) and, in
+ particular, the sections on rewriting.  Here we mention just a few common ways
+ to improve the efficiency of rewriting in ACL2.</p>
+
+ <ul>
+
+ <li>Consider minimizing the number of hypotheses of a rule.  See @(see
+ remove-hyps) for a tool that can help with that.</li>
+
+ <li> Manage @(see theories) effectively.  See @(see accumulated-persistence)
+ for a way to identify rules that might best be @(see disable)d.  In
+ particular, it can be useful to disable functions whose expansions generate
+ large case splits (see @(see splitter)); otherwise, sometimes it can be useful
+ to limit case-splits with @(tsee set-case-split-limitations).</li>
+
+ <li>When many similar proofs are being performed (for example, for families of
+ similar theorems generated by macros), the tool @(see removable-runes) may be
+ helpful.</li>
+
+ </ul>
+
+ <p>Sometimes rewriting is slow for inherent algorithmic reasons.  For example,
+ if you have a binary function, @('op'), and you prove the @(see rewrite) rules
+ @('(equal (op x y) (op y x)')) and @('(equal (op x (op y z)) (op y (op x
+ z)))'), then ACL2 will use an @('n^2') algorithm to put arguments in order,
+ essentially with bubblesort, essentially in a sequence like this:</p>
+
+ @({
+ (op d (op c (op b a)))
+ (op d (op c (op a b)))
+ (op d (op a (op c b)))
+ (op d (op a (op b c)))
+ (op d (op a (op b c)))
+ (op a (op d (op b c)))
+ (op a (op b (op d c)))
+ (op a (op b (op c d)))
+ })
+
+ <p>In such a case, you may find it very helpful to create a suitable @(see
+ meta) rule or a @(see clause-processor) rule, to implement an @('n*log(n)')
+ algorithm.</p>
+
+ <p>Here are some advanced ideas that may help in speeding up slow proofs,
+ especially if very large terms are involved.</p>
+
+ @({
+ ; Turn off the rewrite cache:
+ (set-rw-cache-state nil)
+
+ ; Look for other system heuristics to defeat by evaluating
+ ; (all-attachments (w state));
+ ; here are key examples.
+ (defun constant-nil-function-arity-2 (x y)
+   (declare (xargs :mode :logic :guard t) (ignore x y))
+   nil)
+ (defattach-system too-many-ifs-post-rewrite
+   constant-nil-function-arity-2)
+ (defattach-system too-many-ifs-pre-rewrite
+   constant-nil-function-arity-2)
+ (defattach-system quick-and-dirty-srs
+   constant-nil-function-arity-2)
+
+ ; Not included above is turning off the ancestors check.  That can be
+ ; accomplished in the manner shown above, by attaching a constant-nil function
+ ; to the function, ancestors-check.  Here is a more sophisticated solution.
+ (local (include-book \"tools/trivial-ancestors-check\" :dir :system))
+ (local (use-trivial-ancestors-check))
+
+ ; The following may be helpful at the level of book certification, and are
+ ; discussed in :doc certify-book-debug:
+ (set-serialize-character-system nil)
+ (set-bad-lisp-consp-memoize nil)
+ (set-inhibit-output-lst '(proof-tree event))
+ })
+
+ <h3>Programming efficiency</h3>
+
+ <p>Ideas for efficient programming include the use of compilation for host
+ Lisps (other than CCL and SBCL, which compile automatically); see @(see comp)
+ and @(see set-compile-fns).  For @(see logic)-mode functions, verify @(see
+ guard)s if feasible; otherwise consider using @(see program)-mode wrappers
+ (see @(see program-wrapper)).  Consider writing recursive definitions using
+ tail recursion when possible.  In some cases the use of hash cons,
+ memoization, or fast alists may reduce computation time dramatically; see
+ @(see hons-and-memoization).  Single-threaded objects (see @(see stobj)),
+ @(see arrays), multiple-value return (see @(see mv) and @(see mv-let)), and
+ @(tsee mbe) are helpful programming constructs provided by ACL2 for efficient
+ execution.  Some built-in functions are constructed for efficiency; see for
+ example @(tsee cons-with-hint) to reduce consing and @(see
+ read-file-into-string) for obtaining the contents of a file quickly.</p>
+
+ <p>If you are comfortable looking at assembly code, see @(see
+ disassemble$).</p>
+
+ <p>Of course, if a programming technique or construct is useful for efficient
+ execution in Common Lisp and it is supported by ACL2, then it is useful for
+ efficient execution in ACL2.  In particular, consider using @(tsee type) @(see
+ declaration)s for numbers in place of @(tsee xargs) @(':')@(tsee guard).</p>
+
+ <h3>Miscellaneous efficiency ideas</h3>
+
+ <p>The use of @(tsee make-event) can sometimes reduce computation time; see
+ for example @(see using-tables-efficiently) and @(see defconsts).</p>
+
+ <p>You can @(see profile) functions to see where time is being spent during
+ proofs or when computing with user-defined functions.  Sometimes it is even
+ useful to profile virtually all ACL2 source functions, or even virtually all
+ user-defined functions.  That can be done as follows &mdash; also see @(see
+ profile-acl2) and @(see profile-all) &mdash; but note that when the problem is
+ slow proofs, then since the results will display time spent in various ACL2
+ prover routines, those results might not be helpful to most users.</p>
+
+ @({
+ (include-book \"centaur/memoize/old/profile\" :dir :system)
+ (profile-acl2) ; or, (profile-all) to include user-defined functions
+ [[Then run a slow form.]]
+ (memsum) ; shows where time is spent
+ })
+
+ <p>For computations and proofs that may benefit from parallel computation, you
+ could build the variant ACL2(p) of ACL2.  See @(see parallelism).</p>
+
+ ")
+
 (defxdoc eighth
   :parents (nth acl2-built-ins)
   :short "Eighth member of the list"
@@ -35217,7 +35364,7 @@ current fast alists."
 
  <li>Goto @('https://github.com/<your-github-username>/acl2').</li>
 
- <li>Click the @('Pull request') button (you can search for it with your
+ <li>Click the @('New pull request') button (you can search for it with your
  browser).</li>
 
  <li>In the drop-down box labeled \"base\" (next to the box labeled \"base
@@ -82516,6 +82663,10 @@ it."
 ; Improved the error message when defun-nx is used for only some functions in a
 ; mutual-recursion nest.
 
+; A few minor tweaks were made in support of the change to brr-commands to have
+; eviscerate/non-eviscerate pairs.  For example, :go$ now takes an argument
+; even when supplied under brkpt2.
+
   :parents (release-notes)
   :short "ACL2 Version  8.2 (xxx, 20xx) Notes"
   :long "<p>NOTE!  New users can ignore these release notes, because the @(see
@@ -82596,6 +82747,13 @@ it."
  @('all-fnnames1'), thus eliminating some source code duplication.  We may
  deprecate @('all-ffn-symbs') and @('all-ffn-symbs-lst') in the future.</p>
 
+ <p>The implementation of @(tsee verify-termination) has been improved so that
+ it no longer can generate (expand to) the form @('(value-triple :redudant)').
+ Redudancy is now handled for @('verify-termination') by checking redundancy of
+ the generated @(tsee defun) form.  For an example that failed before this
+ change, see @(see community-book)
+ @('books/system/tests/verify-termination/top.lisp').</p>
+
  <h3>New Features</h3>
 
  <p>A new construct, @('lambda$'), may be used in place of @('lambda') to be
@@ -82621,6 +82779,13 @@ it."
  inside the break-rewrite loop.  See @(see brr-evisc-tuple) and @(see
  set-evisc-tuple).</p>
 
+ <p>Many of the @(see brr-commands) now abbreviate (``eviscerate'') by default
+ using the new @(tsee brr-evisc-tuple) (see above), and for each for those a
+ corresponding command with suffix ``+'' print in full.  For example, such
+ commands include @(':path') and @(':path+'); see @(see brr-commands) for the
+ full list of commands.  Thanks to Stephen Westfold and others at the 2018
+ Developer's Workshop for discussing this issue.</p>
+
  <h3>Heuristic and Efficiency Improvements</h3>
 
  <p>@(tsee Make-event) expansions have often been reduced in size.  (Technical
@@ -82631,6 +82796,14 @@ it."
  8.8%, though in some cases the reduction was substantially larger: for
  example, the size of @('books/centaur/fty/tests/deftranssum.cert') was reduced
  from 22,474,113 bytes to 16,910,530 bytes, a reduction of nearly 25%.</p>
+
+ <p>A tweak to the rewriter can significantly speed up the use of
+ hypothesis-free @(see meta) rules on large terms.  Thanks to Mertcan Temel for
+ sending an example that motivated this change, whose time was cut from 67
+ seconds to 19 seconds.</p>
+
+ <p>Some small optimizations have been made for the generation of
+ executable-counterpart (so-called ``*1*'') code (see @(see evaluation)).</p>
 
  <h3>Bug Fixes</h3>
 
@@ -82670,6 +82843,13 @@ it."
 
  <p>Documentation pertaining to @(tsee apply$) and related topics has been
  extended significantly.</p>
+
+ <p>(GCL only) Eliminate compiler output (by setting GCL raw Lisp variables
+ @('*compile-verbose*') and @('*load-verbose*') to @('nil')).</p>
+
+ <p>A new documentation topic, @(see efficiency), suggests some ways to speed
+ up proofs and evaluation.  The ACL2 community is encouraged to extend (and
+ more generally, improve) this topic!</p>
 
  <h3>EMACS Support</h3>
 
@@ -87924,7 +88104,7 @@ arithmetic) for libraries of @(see books) for arithmetic reasoning.</p>")
  sources.</p>
 
  @({
-  (defun print-terms (terms iff-flg wrld)
+  (defun print-terms (terms iff-flg wrld evisc-tuple)
 
   ; Print untranslations of the given terms with respect to iff-flg, following
   ; each with a newline.
@@ -87936,8 +88116,10 @@ arithmetic) for libraries of @(see books) for arithmetic reasoning.</p>")
     (if (endp terms)
         terms
       (prog2$
-       (cw \"~q0\" (untranslate (car terms) iff-flg wrld))
-       (print-terms (cdr terms) iff-flg wrld))))
+       (cw \"~Y01\"
+           (untranslate (car terms) iff-flg wrld)
+           evisc-tuple)
+       (print-terms (cdr terms) iff-flg wrld evisc-tuple))))
  })")
 
 (defxdoc progn
@@ -94203,6 +94385,8 @@ arithmetic) for libraries of @(see books) for arithmetic reasoning.</p>")
  <p>@('Resize-list') has a guard of @('t').  This function is called in the
  body of function, @('resize-<a>') where @('<a>') is an array field of a @(see
  stobj).  See @(see stobj) and see @(see defstobj).</p>
+
+ @(def resize-list-exec)
 
  @(def resize-list)")
 
@@ -125565,6 +125749,7 @@ expand function call at the current subterm, without simplifying"
 (defpointer cons-term system-utilities)
 (defpointer cons-term* system-utilities)
 (defpointer context ctx)
+(defpointer declaration declare)
 (defpointer default-state-vars system-utilities)
 (defpointer default-verify-guards-eagerness set-verify-guards-eagerness)
 (defpointer defined-constant system-utilities)
