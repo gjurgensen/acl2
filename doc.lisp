@@ -81522,6 +81522,9 @@ Bug Fixes
   Thanks to Nathan Guermond for reporting this bug with a helpful
   example.
 
+  Fixed a bug in the [proof-builder] command, geneqv.  Thanks to Shilpi
+  Goel for reporting this bug with an example.
+
 
 Changes at the System Level
 

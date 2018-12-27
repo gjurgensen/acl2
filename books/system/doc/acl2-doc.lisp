@@ -82819,6 +82819,9 @@ it."
  useful message.  Thanks to Nathan Guermond for reporting this bug with a
  helpful example.</p>
 
+ <p>Fixed a bug in the @(see proof-builder) command, @('geneqv').  Thanks to
+ Shilpi Goel for reporting this bug with an example.</p>
+
  <h3>Changes at the System Level</h3>
 
  <p>The @(see documentation) topic, @(see system-utilities), is now about only
