@@ -16962,7 +16962,10 @@ Subtopics
   [state]) while the other parameters and results are not stobjs (see
   [stobj]).  Note that there need not be input stobjs in [3] ---
   i.e., k can be 0 --- and even if there are, there need not be
-  output stobjs.
+  output stobjs.  In most ways [3] and [3+] are treated similarly;
+  see [make-summary-data] for a discussion of the form of d in [3+]
+  and, more generally, for how [3+] differs from [3] by enhancing the
+  [summary].
 
     [1]  ((CL-PROC cl) => cl-list)
 
@@ -16970,9 +16973,11 @@ Subtopics
 
     [3]  ((CL-PROC cl hint st_1 ... st_k) => (mv erp cl-list st_i1 ... st_in))
 
-  We call cl-list the clauses-result.  In [3], we think of the first
-  component of the result as an error flag.  Indeed, a proof will
-  instantly abort if that error flag is not nil.
+    [3+] ((CL-PROC cl hint st_1 ... st_k) => (mv erp cl-list st_i1 ... st_in d))
+
+  We call cl-list the clauses-result.  In [3] and [3+], we think of the
+  first component of the result as an error flag.  Indeed, a proof
+  will instantly abort if that error flag is not nil.
 
   We next discuss the legal forms of :clause-processor rules, followed
   below by a discussion of :clause-processor [hints].  In the
@@ -17004,16 +17009,16 @@ Subtopics
   book books/clause-processors/basic-examples.lisp).  For cases [1]
   and [2] above, <CL-LIST> is of the form (CL-PROC CL) or (CL-PROC CL
   HINT), respectively, where in the latter case HINT is a non-stobj
-  variable distinct from the variables CL and A.  For case [3],
-  <CL-LIST> is of the form
+  variable distinct from the variables CL and A.  For cases [3] and
+  [3+], <CL-LIST> is the result of wrapping the function
+  clauses-result around a call of CL-PROC:
 
-    (clauses-result (CL-PROC CL HINT st_1 ... st_k))
+    (clauses-result (CL-PROC CL HINT ...))
 
-  where the st_i are the specific stobj names mentioned in [3].
-  Logically, clauses-result returns the [cadr] if the [car] is NIL,
-  and otherwise (for the error case) returns a list containing the
-  empty (false) clause.  So in the non-error case, clauses-result
-  picks out the second result, denoted cl-list in [3] above, and in
+  Logically, clauses-result returns the [cadr] if the [car] is NIL, and
+  otherwise (for the error case) returns a list containing the empty
+  (false) clause.  So in the non-error case, clauses-result picks out
+  the second result, denoted cl-list in [3] and [3+] above, and in
   the error case the implication above trivially holds.
 
   In the above theorem, we are asked to prove (EVL (disjoin CL) A)
@@ -17076,8 +17081,8 @@ Subtopics
     * If F is a macro with two required arguments or a function symbol with
       two arguments:
       :clause-processor (F clause nil)
-    * If F is a function symbol with inputs of the form [3] above, that is,
-      with input signature (nil nil st_1 ... st_k):
+    * If F is a function symbol with inputs of the form [3] or [3+] above,
+      that is, with input signature (nil nil st_1 ... st_k):
       :clause-processor (F clause nil st_1 ... st_k)
 
   For examples of these syntactic forms, see community book
@@ -17094,12 +17099,12 @@ Subtopics
 
   The proof also aborts when the clause-processor function returns at
   least two values and the first value returned --- the ``erp'' value
-  from case [3] above --- is not nil.  In that case, erp is used for
-  printing an error message as follows: if it is a string, then that
-  string is printed; but if it is a non-empty true list whose first
-  element is a string, then it is printed as though by (fmt ~@0 (list
-  (cons #\\0 erp)) ...) (see [fmt]).  Otherwise, a non-nil erp value
-  causes a generic error message to be printed.
+  from cases [3] and [3+] above --- is not nil.  In that case, erp is
+  used for printing an error message as follows: if it is a string,
+  then that string is printed; but if it is a non-empty true list
+  whose first element is a string, then it is printed as though by
+  (fmt ~@0 (list (cons #\\0 erp)) ...) (see [fmt]).  Otherwise, a
+  non-nil erp value causes a generic error message to be printed.
 
   If there is no error as above, but the CL-PROC call returns a clause
   list whose single element is equal to the input clause, then the
@@ -17126,6 +17131,9 @@ Subtopics
 
 
 Subtopics
+
+  [Make-summary-data]
+      Return summary data from a [clause-processor] function
 
   [Set-skip-meta-termp-checks]
       Skip output checks for [meta] functions and [clause-processor]s
@@ -57619,6 +57627,104 @@ Subtopics
     (defun make-ord (fe fco rst)
            (declare (xargs :guard (and (posp fco) (o-p fe) (o-p rst))))
            (cons (cons fe fco) rst))")
+ (MAKE-SUMMARY-DATA
+  (CLAUSE-PROCESSOR)
+  "Return summary data from a [clause-processor] function
+
+  For relevant background, see [clause-processor].  Here we discuss the
+  value d and its effect in the signature [3+] shown in that topic:
+
+    [3+] ((CL-PROC cl hint st_1 ... st_k) => (mv erp cl-list st_i1 ... st_in d))
+
+  The purpose of d is to return [summary] information, as illustrated
+  by the following (admittedly artificial) example.  Here we
+  abbreviate somewhat; the full example may be found in the
+  [community-book], books/clause-processors/basic-examples.lisp.
+
+    (defevaluator evl evl-list ...)
+
+    (defun strengthen-cl2 (cl term state)
+      (declare (xargs :stobjs state))
+      (cond ((null term) ; then no change
+             (mv nil (list cl) state nil))
+            ...
+            ((pseudo-termp term)
+             (mv nil
+                 (list (cons (list 'not term)
+                             cl)
+                       (list term))
+                 state
+                 (make-summary-data :runes '((:rewrite car-cons)
+                                             (:rewrite cdr-cons)
+                                             (:rewrite car-cons))
+                                    :use-names '(nth binary-append)
+                                    :by-names '(nthcdr)
+                                    :clause-processor-fns
+                                    '(note-fact-clause-processor))))
+            (t ..)))
+
+    (defthm correctness-of-strengthen-cl2
+      (implies (and (pseudo-term-listp cl)
+                    (alistp a)
+                    (evl (conjoin-clauses
+                          (clauses-result (strengthen-cl2 cl term state)))
+                         a))
+               (evl (disjoin cl) a))
+      :rule-classes :clause-processor)
+
+    (defthm test-strengthen-cl2
+      (equal y y)
+      :hints ((\"Goal\"
+               :instructions
+               ((:prove
+                 :hints ((\"Goal\"
+                          :clause-processor
+                          (strengthen-cl2 clause '(equal x x) state)))))))
+      :rule-classes nil)
+
+  Evaluation of the final defthm event above prints the following
+  [summary], which illustrates how the values of the four legal
+  keywords for make-summary-data naturally translate to the summary,
+  specifically, to the \"Rules\" field for the :runes keyword and to
+  the \"Hint-events\" field for the others.
+
+    Summary
+    Form:  ( DEFTHM TEST-STRENGTHEN-CL2 ...)
+    Rules: ((:FAKE-RUNE-FOR-TYPE-SET NIL)
+            (:REWRITE CAR-CONS)
+            (:REWRITE CDR-CONS))
+    Hint-events: ((:BY NTHCDR)
+                  (:CLAUSE-PROCESSOR NOTE-FACT-CLAUSE-PROCESSOR)
+                  (:CLAUSE-PROCESSOR STRENGTHEN-CL2)
+                  (:USE BINARY-APPEND)
+                  (:USE NTH))
+    Time:  0.00 seconds (prove: 0.00, print: 0.00, other: 0.00)
+
+  Note that each keyword is optional; in particular, the form
+  (make-summary-data) is legal, and it specifies nil for each of the
+  four keywords.  Moreover, it is also legal for d to be nil, which
+  is equivalent to (make-summary-data).  Thus, if d is nil or
+  (make-summary-data) then [3+] and [3] in the documentation for
+  [clause-processor] have the same effect: that is, there will be no
+  visible effect if we change such a clause-processor function (i.e.,
+  one returning empty summary data) from form [3+] to form [3] by
+  dropping the return value of d.
+
+  Duplicates are allowed in the list, for each argument of
+  make-summary-data; no duplicates will appear in the summary.  There
+  is also no need to sort elements of those lists.
+
+  Finally, note that the summary information from d not only goes into
+  the summary, but also is incorporated when extending the
+  [proof-supporters-alist] to record the dependencies of the
+  completed event.
+
+    (assert-event
+     (equal (sort-symbol-listp
+             (car (global-val 'proof-supporters-alist (w state))))
+            '(BINARY-APPEND CAR-CONS CDR-CONS
+                            NOTE-FACT-CLAUSE-PROCESSOR NTH NTHCDR
+                            STRENGTHEN-CL2 TEST-STRENGTHEN-CL2)))")
  (MAKE-TAU-INTERVAL
   (TAU-SYSTEM ACL2-BUILT-INS)
   "Make a tau interval
@@ -81451,6 +81557,16 @@ Changes to Existing Features
   that failed before this change, see [community-book]
   books/system/tests/verify-termination/top.lisp.
 
+  Improvements have been made to the [summary] printed on conclusion of
+  an event.  It had been possible to have duplicates in the
+  \"Hint-events\" field of the summary; that has been fixed.  Also, the
+  handling of :[instructions] within [hints] has changed in the
+  following two ways, to be consistent with the use of :instructions
+  at the top level (rather than within :hints).  The \"Rules\" and
+  \"Hint-events\" fields of the summaries incorporate information from
+  calls of the [proof-builder].  Also, the \"Hint-events\" field no
+  longer contains (:CLAUSE-PROCESSOR PROOF-BUILDER-CL-PROC).
+
 
 New Features
 
@@ -81484,6 +81600,10 @@ New Features
   example, such commands include :path and :path+; see [brr-commands]
   for the full list of commands.  Thanks to Stephen Westfold and
   others at the 2018 Developer's Workshop for discussing this issue.
+
+  A new signature is legal for [clause-processor]s, to support the
+  return of rules and event names to be printed in the summary.  See
+  [make-summary-data].
 
 
 Heuristic and Efficiency Improvements
@@ -81524,6 +81644,11 @@ Bug Fixes
 
   Fixed a bug in the [proof-builder] command, geneqv.  Thanks to Shilpi
   Goel for reporting this bug with an example.
+
+  It had been possible (though rare) to enter an infinite loop after
+  both tracing certain system functions (for example, pop-accp-fn)
+  and calling [accumulated-persistence].  A clean error now occurs.
+  Perhaps a future fix will avoid the error altogether.
 
 
 Changes at the System Level
