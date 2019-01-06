@@ -81567,6 +81567,11 @@ Changes to Existing Features
   calls of the [proof-builder].  Also, the \"Hint-events\" field no
   longer contains (:CLAUSE-PROCESSOR PROOF-BUILDER-CL-PROC).
 
+  A new variable, TRACE-LEVEL, may be used in calls of trace$; see
+  [trace$].  This replaces the use of the state global variable of
+  the same name, which has been eliminated, thus avoiding an error
+  involving TRACE-LEVEL that is mentioned below.
+
 
 New Features
 
@@ -81645,10 +81650,13 @@ Bug Fixes
   Fixed a bug in the [proof-builder] command, geneqv.  Thanks to Shilpi
   Goel for reporting this bug with an example.
 
-  It had been possible (though rare) to enter an infinite loop after
-  both tracing certain system functions (for example, pop-accp-fn)
-  and calling [accumulated-persistence].  A clean error now occurs.
-  Perhaps a future fix will avoid the error altogether.
+  It had been possible to enter an infinite loop after certain errors
+  involving [wormhole]s and state global variables; now, a clean
+  error occurs instead.  The specific error motivating this change
+  involved the combination of both tracing certain system functions
+  (for example, pop-accp-fn) and calling [accumulated-persistence].
+  That specific error has been eliminated by the change to [trace$]
+  involving variable TRACE-LEVEL that is mentioned in an item above.
 
 
 Changes at the System Level
@@ -113856,10 +113864,12 @@ Subtopics
   value returned, i.e., to the suitable list of values returned in
   the [mv] case and otherwise to the single value returned.  So in
   the mv case, VALUE is the same as VALUES, and otherwise VALUE is
-  (car VALUES).  Other than these variables and [state], no other
-  variable may occur in the term, whose value must be a single
-  non-[stobj] value, unless there is an active trust tag (see
-  [defttag]).
+  (car VALUES).  Finally, the variable TRACE-LEVEL will be bound to
+  the level, or depth, of tracing; that is, the number printed at
+  entry and exit (e.g., 3 in `3>' and `<3').  Other than these
+  variables and [state], no other variable may occur in the term,
+  whose value must be a single non-[stobj] value, unless there is an
+  active trust tag (see [defttag]).
 
   Now suppose fn is called.  First: If :cond is supplied and the result
   of evaluating the :cond term is nil, then no tracing is done.
@@ -113943,16 +113953,16 @@ Subtopics
     ACL2 !>(trace$
             (fact
              :entry (:fmt! (msg \"~t0Tracing ~x1 on ~x2\"
-                                (+ 3 (* 2 (@ trace-level)))
+                                (+ 3 (* 2 trace-level))
                                 traced-fn arglist))
              :exit (:fmt! (msg \"~t0From input ~x1: ~x2\"
-                               (1+ (* 2 (@ trace-level)))
+                               (1+ (* 2 trace-level))
                                (car arglist) (car values)))))
      ((FACT :ENTRY (:FMT! (MSG \"~t0Tracing ~x1 on ~x2\"
-                               (+ 3 (* 2 (@ TRACE-LEVEL)))
+                               (+ 3 (* 2 TRACE-LEVEL))
                                TRACED-FN ARGLIST))
             :EXIT (:FMT! (MSG \"~t0From input ~x1: ~x2\"
-                              (1+ (* 2 (@ TRACE-LEVEL)))
+                              (1+ (* 2 TRACE-LEVEL))
                               (CAR ARGLIST)
                               (CAR VALUES)))))
     ACL2 !>(fact 3)

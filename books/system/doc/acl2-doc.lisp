@@ -82791,6 +82791,12 @@ it."
 ;                 :use ((:termination-theorem nth))
 ;                 :in-theory (current-theory :here))))
 
+; Here is an easy way to cause the infinite loop involving trace-level in
+; Version_8.1.
+;   (accumulated-persistence t)
+;   (trace$ pop-accp-fn)
+;   (mini-proveall)
+
   :parents (release-notes)
   :short "ACL2 Version  8.2 (xxx, 20xx) Notes"
   :long "<p>NOTE!  New users can ignore these release notes, because the @(see
@@ -82888,6 +82894,11 @@ it."
  Also, the @('\"Hint-events\"') field no longer contains @('(:CLAUSE-PROCESSOR
  PROOF-BUILDER-CL-PROC)').</p>
 
+ <p>A new variable, @('TRACE-LEVEL'), may be used in calls of @('trace$'); see
+ @(see trace$).  This replaces the use of the state global variable of the same
+ name, which has been eliminated, thus avoiding an error involving
+ @('TRACE-LEVEL') that is mentioned below.</p>
+
  <h3>New Features</h3>
 
  <p>A new construct, @('lambda$'), may be used in place of @('lambda') to be
@@ -82960,10 +82971,13 @@ it."
  <p>Fixed a bug in the @(see proof-builder) command, @('geneqv').  Thanks to
  Shilpi Goel for reporting this bug with an example.</p>
 
- <p>It had been possible (though rare) to enter an infinite loop after both
- tracing certain system functions (for example, @('pop-accp-fn')) and calling
- @(tsee accumulated-persistence).  A clean error now occurs.  Perhaps a future
- fix will avoid the error altogether.</p>
+ <p>It had been possible to enter an infinite loop after certain errors
+ involving @(see wormhole)s and state global variables; now, a clean error
+ occurs instead.  The specific error motivating this change involved the
+ combination of both tracing certain system functions (for example,
+ @('pop-accp-fn')) and calling @(tsee accumulated-persistence).  That specific
+ error has been eliminated by the change to @(tsee trace$) involving variable
+ @('TRACE-LEVEL') that is mentioned in an item above.</p>
 
  <h3>Changes at the System Level</h3>
 
@@ -111525,10 +111539,12 @@ arithmetic) for libraries of @(see books) for arithmetic reasoning.</p>")
  Also for @(':exit'), we bind @('VALUE') to the logical value returned, i.e.,
  to the suitable list of values returned in the @(tsee mv) case and otherwise
  to the single value returned.  So in the @('mv') case, @('VALUE') is the same
- as @('VALUES'), and otherwise @('VALUE') is @('(car VALUES)').  Other than
- these variables and @(tsee STATE), no other variable may occur in the term,
- whose value must be a single non-@(tsee stobj) value, unless there is an
- active trust tag (see @(see defttag)).</p>
+ as @('VALUES'), and otherwise @('VALUE') is @('(car VALUES)').  Finally, the
+ variable @('TRACE-LEVEL') will be bound to the level, or depth, of tracing;
+ that is, the number printed at entry and exit (e.g., 3 in @('`3>'') and
+ @('`<3'')).  Other than these variables and @(tsee STATE), no other variable
+ may occur in the term, whose value must be a single non-@(tsee stobj) value,
+ unless there is an active trust tag (see @(see defttag)).</p>
 
  <p>Now suppose @('fn') is called.  First: If @(':cond') is supplied and the
  result of evaluating the @(':cond') term is @('nil'), then no tracing is done.
@@ -111615,16 +111631,16 @@ arithmetic) for libraries of @(see books) for arithmetic reasoning.</p>")
   ACL2 !>(trace$
           (fact
            :entry (:fmt! (msg \"~t0Tracing ~x1 on ~x2\"
-                              (+ 3 (* 2 (@ trace-level)))
+                              (+ 3 (* 2 trace-level))
                               traced-fn arglist))
            :exit (:fmt! (msg \"~t0From input ~x1: ~x2\"
-                             (1+ (* 2 (@ trace-level)))
+                             (1+ (* 2 trace-level))
                              (car arglist) (car values)))))
    ((FACT :ENTRY (:FMT! (MSG \"~t0Tracing ~x1 on ~x2\"
-                             (+ 3 (* 2 (@ TRACE-LEVEL)))
+                             (+ 3 (* 2 TRACE-LEVEL))
                              TRACED-FN ARGLIST))
           :EXIT (:FMT! (MSG \"~t0From input ~x1: ~x2\"
-                            (1+ (* 2 (@ TRACE-LEVEL)))
+                            (1+ (* 2 TRACE-LEVEL))
                             (CAR ARGLIST)
                             (CAR VALUES)))))
   ACL2 !>(fact 3)
