@@ -45274,7 +45274,7 @@ Subtopics
   inductions.
 
   Note that an explicit :induct hint (see [hints]) will cause an
-  induction will occur, regardless of the induction-depth-limit.  Of
+  induction to occur, regardless of the induction-depth-limit.  Of
   course, if we have already reached the induction-depth-limit at the
   point the :induct hint is applied, then any attempt to push a
   subgoal for induction will fail (unless it too has an associated
@@ -100787,8 +100787,8 @@ Example
   "Set the [induction-depth-limit]
 
     Examples:
-    (set-induction-depth-limit 3)
-    (set-induction-depth-limit nil)
+    (set-induction-depth-limit 3)   ;; Set the induction depth limit to 3.
+    (set-induction-depth-limit nil) ;; Remove the induction depth limit.
 
   Note: This is an event!  It does not print the usual event [summary]
   but nevertheless changes the ACL2 logical [world] and is so
