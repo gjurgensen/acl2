@@ -94732,20 +94732,22 @@ arithmetic) for libraries of @(see books) for arithmetic reasoning.</p>")
  returns whatever is returned by evaluation of the last (second) argument.</p>
 
  <p>Remark for those who use @(tsee defattach).  The binding of @('*aokp*') to
- @('t') is included for the second argument as shown when the first argument is
- of the form @('(QUOTE S)') for @('S') a symbol and the second argument is not
- a symbol or a quoted constant.  This binding allows ACL2 to use attachments in
- the second argument of @('return-last') (hence, in the first argument of
- @(tsee prog2$)), even in contexts such as proofs in which attachments are
- normally not allowed.</p>
+ @('t') is included for the second argument as shown in most cases.  That
+ binding is avoided only when the first argument is of the form @('(QUOTE S)')
+ for @('S') a macro name and the second argument is a symbol or of the form
+ @('(QUOTE X)') for any @('X').  By binding @('*aokp*') to @('t'), ACL2 is
+ permitted to use attachments when evaluating the second argument of
+ @('return-last') (hence, in the first argument of @(tsee prog2$)), even in
+ contexts such as proofs in which attachments are normally not allowed.</p>
 
  <p>In general, a form @('(return-last (quote F) X Y)') macroexpands to @('(F X
- Y)'), where @('F') is defined in raw Lisp to return its last argument.  The
- case that @('F') is @('progn') is a bit misleading, because it is so simple.
- More commonly, macroexpansion produces a call of a macro defined in raw Lisp
- that may produce side effects.  Consider for example the ACL2 utility @(tsee
- with-guard-checking), which is intended to change the @(see guard)-checking
- mode to the indicated value (see @(see with-guard-checking)).</p>
+ Y)'), where @('F') is a symbol defined in raw Lisp to return its last
+ argument.  The case that @('F') is @('progn') is a bit misleading, because it
+ is so simple.  More commonly, macroexpansion produces a call of a macro
+ defined in raw Lisp that may produce side effects.  Consider for example the
+ ACL2 utility @(tsee with-guard-checking), which is intended to change the
+ @(see guard)-checking mode to the indicated value (see @(see
+ with-guard-checking)).</p>
 
  @({
   ACL2 !>(with-guard-checking :none (car 3)) ; no guard violation
@@ -95016,11 +95018,12 @@ arithmetic) for libraries of @(see books) for arithmetic reasoning.</p>")
  <p>Calls of @('return-last') that occur in code &mdash; forms submitted in the
  top-level ACL2 loop, and definition bodies other than those marked as @(tsee
  non-executable) (see @(see defun-nx)) &mdash; have the following restriction:
- if the first argument is of the form @('(quote F)'), then @('F') must be an
- entry in @('return-last-table').  There are however four exceptions: the
- following symbols are considered to be keys of @('return-last-table') even if
- they are no longer associated with non-@('nil') values, say because of a
- @(tsee table) event with keyword @(':clear').</p>
+ if the first argument is of the form @('(quote F)') where @('F') is a
+ non-@('nil') symbol, then @('F') must be an entry in @('return-last-table').
+ There are however four exceptions: the following symbols are considered to be
+ keys of @('return-last-table') even if they are no longer associated with
+ non-@('nil') values, say because of a @(tsee table) event with keyword
+ @(':clear').</p>
 
  <blockquote><p>* @('progn'), associated with @(tsee prog2$)<br></br>
 
@@ -95034,6 +95037,13 @@ arithmetic) for libraries of @(see books) for arithmetic reasoning.</p>")
 
  <p>Note that because of its special status, it is illegal to trace
  @('return-last').</p>
+
+ <p>For any object @('x') that is not of the form @('(quote S)') where @('S')
+ is a symbol, the call @('(return-last x y z)') is legal, even in code, if
+ @('y') and @('z') are legal.  Such terms are evaluated as though @('x') is
+ @('(QUOTE PROGN)'), that is, as though they arose from a call of @(tsee
+ prog2$).  In particular, you are welcome to write terms of the form
+ @('(return-last '(<some-annotation>) y z)').</p>
 
  <p>We conclude by warning that as a user, you take responsibility for not
  compromising the soundness or error handling of ACL2 when you define a macro

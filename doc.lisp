@@ -96070,21 +96070,23 @@ Subtopics
   argument.
 
   Remark for those who use [defattach].  The binding of *aokp* to t is
-  included for the second argument as shown when the first argument
-  is of the form (QUOTE S) for S a symbol and the second argument is
-  not a symbol or a quoted constant.  This binding allows ACL2 to use
-  attachments in the second argument of return-last (hence, in the
-  first argument of [prog2$]), even in contexts such as proofs in
-  which attachments are normally not allowed.
+  included for the second argument as shown in most cases.  That
+  binding is avoided only when the first argument is of the form
+  (QUOTE S) for S a macro name and the second argument is a symbol or
+  of the form (QUOTE X) for any X.  By binding *aokp* to t, ACL2 is
+  permitted to use attachments when evaluating the second argument of
+  return-last (hence, in the first argument of [prog2$]), even in
+  contexts such as proofs in which attachments are normally not
+  allowed.
 
   In general, a form (return-last (quote F) X Y) macroexpands to (F X
-  Y), where F is defined in raw Lisp to return its last argument.
-  The case that F is progn is a bit misleading, because it is so
-  simple.  More commonly, macroexpansion produces a call of a macro
-  defined in raw Lisp that may produce side effects.  Consider for
-  example the ACL2 utility [with-guard-checking], which is intended
-  to change the [guard]-checking mode to the indicated value (see
-  [with-guard-checking]).
+  Y), where F is a symbol defined in raw Lisp to return its last
+  argument.  The case that F is progn is a bit misleading, because it
+  is so simple.  More commonly, macroexpansion produces a call of a
+  macro defined in raw Lisp that may produce side effects.  Consider
+  for example the ACL2 utility [with-guard-checking], which is
+  intended to change the [guard]-checking mode to the indicated value
+  (see [with-guard-checking]).
 
     ACL2 !>(with-guard-checking :none (car 3)) ; no guard violation
     NIL
@@ -96345,11 +96347,12 @@ Subtopics
   Calls of return-last that occur in code --- forms submitted in the
   top-level ACL2 loop, and definition bodies other than those marked
   as [non-executable] (see [defun-nx]) --- have the following
-  restriction: if the first argument is of the form (quote F), then F
-  must be an entry in return-last-table.  There are however four
-  exceptions: the following symbols are considered to be keys of
-  return-last-table even if they are no longer associated with
-  non-nil values, say because of a [table] event with keyword :clear.
+  restriction: if the first argument is of the form (quote F) where F
+  is a non-nil symbol, then F must be an entry in return-last-table.
+  There are however four exceptions: the following symbols are
+  considered to be keys of return-last-table even if they are no
+  longer associated with non-nil values, say because of a [table]
+  event with keyword :clear.
 
       * progn, associated with [prog2$]
       * mbe1-raw, associated with mbe1, a version of mbe
@@ -96359,6 +96362,13 @@ Subtopics
 
   Note that because of its special status, it is illegal to trace
   return-last.
+
+  For any object x that is not of the form (quote S) where S is a
+  symbol, the call (return-last x y z) is legal, even in code, if y
+  and z are legal.  Such terms are evaluated as though x is (QUOTE
+  PROGN), that is, as though they arose from a call of [prog2$].  In
+  particular, you are welcome to write terms of the form (return-last
+  '(<some-annotation>) y z).
 
   We conclude by warning that as a user, you take responsibility for
   not compromising the soundness or error handling of ACL2 when you
