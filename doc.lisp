@@ -26673,31 +26673,31 @@ Subtopics
   attempt to use these symbols as quantifiers.
 
   The use of [defun-nx] above, rather than [defun], disables certain
-  checks that are required for evaluation, in particular the
-  single-threaded use of [stobj]s.  However, there is a price: calls
-  of these defined functions cannot be evaluated; see [defun-nx].
-  Normally that is not a problem, since these notions involve
-  quantifiers.  But you are welcome to replace this [declare] form
-  with your own declare forms.  These may be given either as the
-  dcl_i as shown above, or (using an older notation that might some
-  day be deprecated) as a list of declare supplied as the value of
-  keyword argument :witness-dcls; or, both.  These will become the
-  declare forms in the generated [defun].  Note that if at least one
-  declare form is supplied, but none of those forms contain the form
-  (declare (xargs :non-executable t)), then the appropriate wrapper
-  for non-executable functions will not be added, i.e., [defun] will
-  be used in place of [defun-nx].
+  checks that are required for evaluation, for example in the passing
+  of multiple values.  However, there is a price: calls of these
+  defined functions cannot be evaluated; see [defun-nx].  Normally
+  that is not a problem, since these notions involve quantifiers.
+  But if you prefer that [defun] be used instead of defun-nx, you can
+  arrange that using [declare] forms.  These may be given either as
+  the dcl_i as shown above, or (using an older notation that might
+  some day be deprecated) as a list of declare forms supplied as the
+  value of keyword argument :witness-dcls; or, both.  These will
+  become the declare forms in the generated [defun].  If the [xargs]
+  [declaration] form :non-executable nil is supplied, then [defun]
+  will be used in place of [defun-nx].
 
-  [Guard] verification is handled specially for defun-sk events.
-  Unlike [defun], the value of verify-guards-eagerness is irrelevant
-  for defun-sk.  Instead, guard verification will be attempted
-  exactly when type, :guard, or :verify-guards t (or more than one of
-  these) is specified in a declaration (that is, in some dcl_i or in
-  the :witness-dcls argument).  Technical note: unless :verify-guards
-  t is specified explicitly, such guard verification is implemented
-  through a generated call of [verify-guards] after the encapsulate
-  that surrounds the definitions introduced; use :[trans1] to see the
-  expansion.
+  [Guard] verification is performed for defun-sk events under the same
+  conditions as for defun events.  (An exception, ignored here but
+  discussed in a later paragraph below, occurs when keyword argument
+  :constrain t is supplied.)  Thus, by default, guard verification
+  will be attempted exactly when at least one of type, :guard, or
+  :verify-guards t is specified in a declaration (that is, in some
+  dcl_i or in the :witness-dcls argument).  This default behavior can
+  be modified just as it is for defun; see
+  [set-verify-guards-eagerness].  Technical note: such guard
+  verification is implemented through a generated call of
+  [verify-guards] after the encapsulate that surrounds the
+  definitions introduced; use :[trans1] to see the expansion.
 
   Defun-sk is a macro implemented using [defchoose].  Hence, it should
   only be executed in [defun-mode] :[logic]; see [defun-mode] and see
@@ -26732,7 +26732,10 @@ Subtopics
   simplest way to see the effects of :constrain may be to apply
   :trans1 to your defun-sk form.  Note that constraining the function
   can make it possible to attach to it (see [defattach]) and to
-  introduce it as a [guard]-verified function.
+  introduce it as a [guard]-verified function.  Also note that when
+  :constrain t is specified: the guard of fn will automatically be t,
+  no guard verification will be performed, and fn will nevertheless
+  be a guard-verified (and constrained) function.
 
   If you want to represent nested quantifiers, you can use more than
   one defun-sk event.  For example, in order to represent
@@ -81571,6 +81574,15 @@ Changes to Existing Features
   [trace$].  This replaces the use of the state global variable of
   the same name, which has been eliminated, thus avoiding an error
   involving TRACE-LEVEL that is mentioned below.
+
+  [Defun-sk] is now sensitive to the [default-verify-guards-eagerness],
+  and guard verification is always delayed to near the end of the
+  generated event to avoid failures due to the small theory present
+  at defun time.  Thanks to Alessandro Coglio for emails on leading
+  to these improvements.  Some additional small tweaks have been made
+  to defun-sk, in particular to check that there are not two or more
+  distinct values associated with [xargs] keywords :verify-guards,
+  :non-executable, or (even if not distinct) :guard-hints.
 
 
 New Features
