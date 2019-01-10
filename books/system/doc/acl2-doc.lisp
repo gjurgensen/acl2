@@ -14089,7 +14089,9 @@ with any questions about building the community books.</p>")
  (possibly @(tsee state)) while the other parameters and results are not stobjs
  (see @(see stobj)).  Note that there need not be input stobjs in [3] &mdash;
  i.e., @('k') can be 0 &mdash; and even if there are, there need not be output
- stobjs.</p>
+ stobjs.  In most ways [3] and [3+] are treated similarly; see @(see
+ make-summary-data) for a discussion of the form of @('d') in [3+] and, more
+ generally, for how [3+] differs from [3] by enhancing the @(see summary).</p>
 
  @({
   [1]  ((CL-PROC cl) => cl-list)
@@ -14097,10 +14099,12 @@ with any questions about building the community books.</p>")
   [2]  ((CL-PROC cl hint) => cl-list)
 
   [3]  ((CL-PROC cl hint st_1 ... st_k) => (mv erp cl-list st_i1 ... st_in))
+
+  [3+] ((CL-PROC cl hint st_1 ... st_k) => (mv erp cl-list st_i1 ... st_in d))
  })
 
- <p>We call @('cl-list') the <i>clauses-result</i>.  In [3], we think of the
- first component of the result as an error flag.  Indeed, a proof will
+ <p>We call @('cl-list') the <i>clauses-result</i>.  In [3] and [3+], we think
+ of the first component of the result as an error flag.  Indeed, a proof will
  instantly abort if that error flag is not @('nil').</p>
 
  <p>We next discuss the legal forms of @(':clause-processor') rules, followed
@@ -14135,19 +14139,19 @@ with any questions about building the community books.</p>")
  @('books/clause-processors/basic-examples.lisp')).  For cases [1] and [2]
  above, @('<CL-LIST>') is of the form @('(CL-PROC CL)') or @('(CL-PROC CL
  HINT)'), respectively, where in the latter case @('HINT') is a non-stobj
- variable distinct from the variables @('CL') and @('A').  For case [3],
- @('<CL-LIST>') is of the form</p>
+ variable distinct from the variables @('CL') and @('A').  For cases [3] and
+ [3+], @('<CL-LIST>') is the result of wrapping the function
+ @('clauses-result') around a call of @('CL-PROC'):</p>
 
  @({
-  (clauses-result (CL-PROC CL HINT st_1 ... st_k))
+  (clauses-result (CL-PROC CL HINT ...))
  })
 
- <p>where the @('st_i') are the specific stobj names mentioned in [3].
- Logically, @('clauses-result') returns the @(tsee cadr) if the @(tsee car) is
- @('NIL'), and otherwise (for the error case) returns a list containing the
+ <p>Logically, @('clauses-result') returns the @(tsee cadr) if the @(tsee car)
+ is @('NIL'), and otherwise (for the error case) returns a list containing the
  empty (false) clause.  So in the non-error case, @('clauses-result') picks out
- the second result, denoted @('cl-list') in [3] above, and in the error case
- the implication above trivially holds.</p>
+ the second result, denoted @('cl-list') in [3] and [3+] above, and in the
+ error case the implication above trivially holds.</p>
 
  <p>In the above theorem, we are asked to prove @('(EVL (disjoin CL) A)')
  assuming that the conjunction of all clauses produced by the clause processor
@@ -14219,8 +14223,8 @@ with any questions about building the community books.</p>")
  two arguments:<br/>
  @(':clause-processor (F clause nil)')</li>
 
- <li>If @('F') is a function symbol with inputs of the form [3] above, that is,
- with input signature @('(nil nil st_1 ... st_k)'):<br/>
+ <li>If @('F') is a function symbol with inputs of the form [3] or [3+] above,
+ that is, with input signature @('(nil nil st_1 ... st_k)'):<br/>
  @(':clause-processor (F clause nil st_1 ... st_k)')</li>
 
  </ul>
@@ -14239,12 +14243,12 @@ with any questions about building the community books.</p>")
 
  <p>The proof also aborts when the clause-processor function returns at least
  two values and the first value returned &mdash; the ``@('erp')'' value from
- case [3] above &mdash; is not @('nil').  In that case, @('erp') is used for
- printing an error message as follows: if it is a string, then that string is
- printed; but if it is a non-empty true list whose first element is a string,
- then it is printed as though by @('(fmt ~@0 (list (cons #\\0 erp)) ...)') (see
- @(see fmt)).  Otherwise, a non-@('nil') @('erp') value causes a generic error
- message to be printed.</p>
+ cases [3] and [3+] above &mdash; is not @('nil').  In that case, @('erp') is
+ used for printing an error message as follows: if it is a string, then that
+ string is printed; but if it is a non-empty true list whose first element is a
+ string, then it is printed as though by @('(fmt ~@0 (list (cons #\\0 erp))
+ ...)') (see @(see fmt)).  Otherwise, a non-@('nil') @('erp') value causes a
+ generic error message to be printed.</p>
 
  <p>If there is no error as above, but the @('CL-PROC') call returns a clause
  list whose single element is equal to the input clause, then the hint is
@@ -23607,30 +23611,30 @@ subtree of X with T, without duplication.</p>
  these symbols as quantifiers.</p>
 
  <p>The use of @(tsee defun-nx) above, rather than @(tsee defun), disables
- certain checks that are required for evaluation, in particular the
- single-threaded use of @(tsee stobj)s.  However, there is a price: calls of
- these defined functions cannot be evaluated; see @(see defun-nx).  Normally
- that is not a problem, since these notions involve quantifiers.  But you are
- welcome to replace this @(tsee declare) form with your own @('declare') forms.
- These may be given either as the @('dcl_i') as shown above, or (using an older
- notation that might some day be deprecated) as a list of @('declare') supplied
- as the value of keyword argument @(':witness-dcls'); or, both.  These will
- become the @('declare') forms in the generated @(tsee defun).  Note that if at
- least one @('declare') form is supplied, but none of those forms contain the
- form @('(declare (xargs :non-executable t))'), then the appropriate wrapper
- for non-executable functions will not be added, i.e., @(tsee defun) will be
- used in place of @(tsee defun-nx).</p>
+ certain checks that are required for evaluation, for example in the passing of
+ multiple values.  However, there is a price: calls of these defined functions
+ cannot be evaluated; see @(see defun-nx).  Normally that is not a problem,
+ since these notions involve quantifiers.  But if you prefer that @(tsee defun)
+ be used instead of @('defun-nx'), you can arrange that using @(tsee declare)
+ forms.  These may be given either as the @('dcl_i') as shown above, or (using
+ an older notation that might some day be deprecated) as a list of @('declare')
+ forms supplied as the value of keyword argument @(':witness-dcls'); or, both.
+ These will become the @('declare') forms in the generated @(tsee defun).  If
+ the @(tsee xargs) @(see declaration) form @(':non-executable nil') is
+ supplied, then @(tsee defun) will be used in place of @(tsee defun-nx).</p>
 
- <p>@(csee Guard) verification is handled specially for @('defun-sk') events.
- Unlike @(tsee defun), the value of @('verify-guards-eagerness') is irrelevant
- for @('defun-sk').  Instead, guard verification will be attempted exactly when
- @('type'), @(':guard'), or @(':verify-guards t') (or more than one of these)
- is specified in a declaration (that is, in some @('dcl_i') or in the
- @(':witness-dcls') argument).  Technical note: unless @(':verify-guards t') is
- specified explicitly, such guard verification is implemented through a
- generated call of @(tsee verify-guards) after the @('encapsulate') that
- surrounds the definitions introduced; use @(':')@(tsee trans1) to see the
- expansion.</p>
+ <p>@(csee Guard) verification is performed for @('defun-sk') events under the
+ same conditions as for @('defun') events.  (An exception, ignored here but
+ discussed in a later paragraph below, occurs when keyword argument
+ @(':constrain t') is supplied.)  Thus, by default, guard verification will be
+ attempted exactly when at least one of @('type'), @(':guard'), or
+ @(':verify-guards t') is specified in a declaration (that is, in some
+ @('dcl_i') or in the @(':witness-dcls') argument).  This default behavior can
+ be modified just as it is for @('defun'); see @(tsee
+ set-verify-guards-eagerness).  Technical note: such guard verification is
+ implemented through a generated call of @(tsee verify-guards) after the
+ @('encapsulate') that surrounds the definitions introduced; use @(':')@(tsee
+ trans1) to see the expansion.</p>
 
  <p>@('Defun-sk') is a macro implemented using @(tsee defchoose).  Hence, it
  should only be executed in @(see defun-mode) @(':')@(tsee logic); see @(see
@@ -23666,7 +23670,10 @@ subtree of X with T, without duplication.</p>
  usual, the simplest way to see the effects of @(':constrain') may be to apply
  @(':trans1') to your @('defun-sk') form.  Note that constraining the function
  can make it possible to attach to it (see @(see defattach)) and to introduce
- it as a @(see guard)-verified function.</p>
+ it as a @(see guard)-verified function.  Also note that when @(':constrain t')
+ is specified: the guard of @('fn') will automatically be @('t'), no guard
+ verification will be performed, and @('fn') will nevertheless be a
+ guard-verified (and constrained) function.</p>
 
  <p>If you want to represent nested quantifiers, you can use more than one
  @('defun-sk') event.  For example, in order to represent</p>
@@ -41726,7 +41733,7 @@ tables in the current Hons Space."
  inductions.</p>
 
  <p>Note that an explicit @(':induct') hint (see @(see hints)) will cause an
- induction will occur, regardless of the induction-depth-limit.  Of course, if
+ induction to occur, regardless of the induction-depth-limit.  Of course, if
  we have already reached the induction-depth-limit at the point the
  @(':induct') hint is applied, then any attempt to push a subgoal for induction
  will fail (unless it too has an associated @(':induct') hint).</p>
@@ -53590,6 +53597,113 @@ it."
  the underlying representation.</p>
 
  @(def make-ord)")
+
+(defxdoc make-summary-data
+  :parents (clause-processor)
+  :short "Return summary data from a @(see clause-processor) function"
+  :long "<p>For relevant background, see @(see clause-processor).  Here we
+ discuss the value @('d') and its effect in the signature [3+] shown in that
+ topic:</p>
+
+ @({
+  [3+] ((CL-PROC cl hint st_1 ... st_k) => (mv erp cl-list st_i1 ... st_in d))
+ })
+
+ <p>The purpose of @('d') is to return @(see summary) information, as
+ illustrated by the following (admittedly artificial) example.  Here we
+ abbreviate somewhat; the full example may be found in the @(see
+ community-book), @('books/clause-processors/basic-examples.lisp').</p>
+
+ @({
+
+ (defevaluator evl evl-list ...)
+
+ (defun strengthen-cl2 (cl term state)
+   (declare (xargs :stobjs state))
+   (cond ((null term) ; then no change
+          (mv nil (list cl) state nil))
+         ...
+         ((pseudo-termp term)
+          (mv nil
+              (list (cons (list 'not term)
+                          cl)
+                    (list term))
+              state
+              (make-summary-data :runes '((:rewrite car-cons)
+                                          (:rewrite cdr-cons)
+                                          (:rewrite car-cons))
+                                 :use-names '(nth binary-append)
+                                 :by-names '(nthcdr)
+                                 :clause-processor-fns
+                                 '(note-fact-clause-processor))))
+         (t ..)))
+
+ (defthm correctness-of-strengthen-cl2
+   (implies (and (pseudo-term-listp cl)
+                 (alistp a)
+                 (evl (conjoin-clauses
+                       (clauses-result (strengthen-cl2 cl term state)))
+                      a))
+            (evl (disjoin cl) a))
+   :rule-classes :clause-processor)
+
+ (defthm test-strengthen-cl2
+   (equal y y)
+   :hints ((\"Goal\"
+            :instructions
+            ((:prove
+              :hints ((\"Goal\"
+                       :clause-processor
+                       (strengthen-cl2 clause '(equal x x) state)))))))
+   :rule-classes nil)
+ })
+
+ <p>Evaluation of the final @('defthm') event above prints the following @(see
+ summary), which illustrates how the values of the four legal keywords for
+ @('make-summary-data') naturally translate to the summary, specifically, to
+ the @('\"Rules\"') field for the @(':runes') keyword and to the
+ @('\"Hint-events\"') field for the others.</p>
+
+ @({
+ Summary
+ Form:  ( DEFTHM TEST-STRENGTHEN-CL2 ...)
+ Rules: ((:FAKE-RUNE-FOR-TYPE-SET NIL)
+         (:REWRITE CAR-CONS)
+         (:REWRITE CDR-CONS))
+ Hint-events: ((:BY NTHCDR)
+               (:CLAUSE-PROCESSOR NOTE-FACT-CLAUSE-PROCESSOR)
+               (:CLAUSE-PROCESSOR STRENGTHEN-CL2)
+               (:USE BINARY-APPEND)
+               (:USE NTH))
+ Time:  0.00 seconds (prove: 0.00, print: 0.00, other: 0.00)
+ })
+
+ <p>Note that each keyword is optional; in particular, the form
+ @('(make-summary-data)') is legal, and it specifies @('nil') for each of the
+ four keywords.  Moreover, it is also legal for @('d') to be @('nil'), which is
+ equivalent to @('(make-summary-data)').  Thus, if @('d') is @('nil') or
+ @('(make-summary-data)') then [3+] and [3] in the documentation for @(see
+ clause-processor) have the same effect: that is, there will be no visible
+ effect if we change such a clause-processor function (i.e., one returning
+ empty summary data) from form [3+] to form [3] by dropping the return value of
+ @('d').</p>
+
+ <p>Duplicates are allowed in the list, for each argument of
+ @('make-summary-data'); no duplicates will appear in the summary.  There is
+ also no need to sort elements of those lists.</p>
+
+ <p>Finally, note that the summary information from @('d') not only goes into
+ the summary, but also is incorporated when extending the @(see
+ proof-supporters-alist) to record the dependencies of the completed event.</p>
+
+ @({
+ (assert-event
+  (equal (sort-symbol-listp
+          (car (global-val 'proof-supporters-alist (w state))))
+         '(BINARY-APPEND CAR-CONS CDR-CONS
+                         NOTE-FACT-CLAUSE-PROCESSOR NTH NTHCDR
+                         STRENGTHEN-CL2 TEST-STRENGTHEN-CL2)))
+ })")
 
 (defxdoc make-tau-interval
   :parents (tau-system acl2-built-ins)
@@ -82667,6 +82781,25 @@ it."
 ; eviscerate/non-eviscerate pairs.  For example, :go$ now takes an argument
 ; even when supplied under brkpt2.
 
+; Here is an event that previously had duplicates in the "Hint-events" field of
+; the summary, but no longer does.
+;   (thm (if (consp x)
+;            (equal x (cons (car x) (cdr x)))
+;          (equal (car (append x nil)) (car x)))
+;        :hints (("Goal" :in-theory nil)
+;                ("Subgoal 2"
+;                 :use ((:instance (:termination-theorem nth) (n k)))
+;                 :in-theory (current-theory :here))
+;                ("Subgoal 1"
+;                 :use ((:termination-theorem nth))
+;                 :in-theory (current-theory :here))))
+
+; Here is an easy way to cause the infinite loop involving trace-level in
+; Version_8.1.
+;   (accumulated-persistence t)
+;   (trace$ pop-accp-fn)
+;   (mini-proveall)
+
   :parents (release-notes)
   :short "ACL2 Version  8.2 (xxx, 20xx) Notes"
   :long "<p>NOTE!  New users can ignore these release notes, because the @(see
@@ -82754,6 +82887,30 @@ it."
  change, see @(see community-book)
  @('books/system/tests/verify-termination/top.lisp').</p>
 
+ <p>Improvements have been made to the @(see summary) printed on conclusion of
+ an event.  It had been possible to have duplicates in the @('\"Hint-events\"')
+ field of the summary; that has been fixed.  Also, the handling of @(':')@(tsee
+ instructions) within @(see hints) has changed in the following two ways, to be
+ consistent with the use of @(':instructions') at the top level (rather than
+ within @(':hints')).  The @('\"Rules\"') and @('\"Hint-events\"') fields of
+ the summaries incorporate information from calls of the @(see proof-builder).
+ Also, the @('\"Hint-events\"') field no longer contains @('(:CLAUSE-PROCESSOR
+ PROOF-BUILDER-CL-PROC)').</p>
+
+ <p>A new variable, @('TRACE-LEVEL'), may be used in calls of @('trace$'); see
+ @(see trace$).  This replaces the use of the state global variable of the same
+ name, which has been eliminated, thus avoiding an error involving
+ @('TRACE-LEVEL') that is mentioned below.</p>
+
+ <p>@(tsee Defun-sk) is now sensitive to the @(see
+ default-verify-guards-eagerness), and guard verification is always delayed to
+ near the end of the generated event to avoid failures due to the small theory
+ present at @('defun') time.  Thanks to Alessandro Coglio for emails on leading
+ to these improvements.  Some additional small tweaks have been made to
+ @('defun-sk'), in particular to check that there are not two or more distinct
+ values associated with @(tsee xargs) keywords @(':verify-guards'),
+ @(':non-executable'), or (even if not distinct) @(':guard-hints').</p>
+
  <h3>New Features</h3>
 
  <p>A new construct, @('lambda$'), may be used in place of @('lambda') to be
@@ -82785,6 +82942,10 @@ it."
  commands include @(':path') and @(':path+'); see @(see brr-commands) for the
  full list of commands.  Thanks to Stephen Westfold and others at the 2018
  Developer's Workshop for discussing this issue.</p>
+
+ <p>A new signature is legal for @(tsee clause-processor)s, to support the
+ return of rules and event names to be printed in the summary.  See @(see
+ make-summary-data).</p>
 
  <h3>Heuristic and Efficiency Improvements</h3>
 
@@ -82821,6 +82982,14 @@ it."
 
  <p>Fixed a bug in the @(see proof-builder) command, @('geneqv').  Thanks to
  Shilpi Goel for reporting this bug with an example.</p>
+
+ <p>It had been possible to enter an infinite loop after certain errors
+ involving @(see wormhole)s and state global variables; now, a clean error
+ occurs instead.  The specific error motivating this change involved the
+ combination of both tracing certain system functions (for example,
+ @('pop-accp-fn')) and calling @(tsee accumulated-persistence).  That specific
+ error has been eliminated by the change to @(tsee trace$) involving variable
+ @('TRACE-LEVEL') that is mentioned in an item above.</p>
 
  <h3>Changes at the System Level</h3>
 
@@ -94563,20 +94732,22 @@ arithmetic) for libraries of @(see books) for arithmetic reasoning.</p>")
  returns whatever is returned by evaluation of the last (second) argument.</p>
 
  <p>Remark for those who use @(tsee defattach).  The binding of @('*aokp*') to
- @('t') is included for the second argument as shown when the first argument is
- of the form @('(QUOTE S)') for @('S') a symbol and the second argument is not
- a symbol or a quoted constant.  This binding allows ACL2 to use attachments in
- the second argument of @('return-last') (hence, in the first argument of
- @(tsee prog2$)), even in contexts such as proofs in which attachments are
- normally not allowed.</p>
+ @('t') is included for the second argument as shown in most cases.  That
+ binding is avoided only when the first argument is of the form @('(QUOTE S)')
+ for @('S') a macro name and the second argument is a symbol or of the form
+ @('(QUOTE X)') for any @('X').  By binding @('*aokp*') to @('t'), ACL2 is
+ permitted to use attachments when evaluating the second argument of
+ @('return-last') (hence, in the first argument of @(tsee prog2$)), even in
+ contexts such as proofs in which attachments are normally not allowed.</p>
 
  <p>In general, a form @('(return-last (quote F) X Y)') macroexpands to @('(F X
- Y)'), where @('F') is defined in raw Lisp to return its last argument.  The
- case that @('F') is @('progn') is a bit misleading, because it is so simple.
- More commonly, macroexpansion produces a call of a macro defined in raw Lisp
- that may produce side effects.  Consider for example the ACL2 utility @(tsee
- with-guard-checking), which is intended to change the @(see guard)-checking
- mode to the indicated value (see @(see with-guard-checking)).</p>
+ Y)'), where @('F') is a symbol defined in raw Lisp to return its last
+ argument.  The case that @('F') is @('progn') is a bit misleading, because it
+ is so simple.  More commonly, macroexpansion produces a call of a macro
+ defined in raw Lisp that may produce side effects.  Consider for example the
+ ACL2 utility @(tsee with-guard-checking), which is intended to change the
+ @(see guard)-checking mode to the indicated value (see @(see
+ with-guard-checking)).</p>
 
  @({
   ACL2 !>(with-guard-checking :none (car 3)) ; no guard violation
@@ -94847,11 +95018,12 @@ arithmetic) for libraries of @(see books) for arithmetic reasoning.</p>")
  <p>Calls of @('return-last') that occur in code &mdash; forms submitted in the
  top-level ACL2 loop, and definition bodies other than those marked as @(tsee
  non-executable) (see @(see defun-nx)) &mdash; have the following restriction:
- if the first argument is of the form @('(quote F)'), then @('F') must be an
- entry in @('return-last-table').  There are however four exceptions: the
- following symbols are considered to be keys of @('return-last-table') even if
- they are no longer associated with non-@('nil') values, say because of a
- @(tsee table) event with keyword @(':clear').</p>
+ if the first argument is of the form @('(quote F)') where @('F') is a
+ non-@('nil') symbol, then @('F') must be an entry in @('return-last-table').
+ There are however four exceptions: the following symbols are considered to be
+ keys of @('return-last-table') even if they are no longer associated with
+ non-@('nil') values, say because of a @(tsee table) event with keyword
+ @(':clear').</p>
 
  <blockquote><p>* @('progn'), associated with @(tsee prog2$)<br></br>
 
@@ -94865,6 +95037,13 @@ arithmetic) for libraries of @(see books) for arithmetic reasoning.</p>")
 
  <p>Note that because of its special status, it is illegal to trace
  @('return-last').</p>
+
+ <p>For any object @('x') that is not of the form @('(quote S)') where @('S')
+ is a symbol, the call @('(return-last x y z)') is legal, even in code, if
+ @('y') and @('z') are legal.  Such terms are evaluated as though @('x') is
+ @('(QUOTE PROGN)'), that is, as though they arose from a call of @(tsee
+ prog2$).  In particular, you are welcome to write terms of the form
+ @('(return-last '(<some-annotation>) y z)').</p>
 
  <p>We conclude by warning that as a user, you take responsibility for not
  compromising the soundness or error handling of ACL2 when you define a macro
@@ -99242,8 +99421,8 @@ arithmetic) for libraries of @(see books) for arithmetic reasoning.</p>")
   :short "Set the @(see induction-depth-limit)"
   :long "@({
   Examples:
-  (set-induction-depth-limit 3)
-  (set-induction-depth-limit nil)
+  (set-induction-depth-limit 3)   ;; Set the induction depth limit to 3.
+  (set-induction-depth-limit nil) ;; Remove the induction depth limit.
  })
 
  <p>Note: This is an event!  It does not print the usual event @(see summary)
@@ -111382,10 +111561,12 @@ arithmetic) for libraries of @(see books) for arithmetic reasoning.</p>")
  Also for @(':exit'), we bind @('VALUE') to the logical value returned, i.e.,
  to the suitable list of values returned in the @(tsee mv) case and otherwise
  to the single value returned.  So in the @('mv') case, @('VALUE') is the same
- as @('VALUES'), and otherwise @('VALUE') is @('(car VALUES)').  Other than
- these variables and @(tsee STATE), no other variable may occur in the term,
- whose value must be a single non-@(tsee stobj) value, unless there is an
- active trust tag (see @(see defttag)).</p>
+ as @('VALUES'), and otherwise @('VALUE') is @('(car VALUES)').  Finally, the
+ variable @('TRACE-LEVEL') will be bound to the level, or depth, of tracing;
+ that is, the number printed at entry and exit (e.g., 3 in @('`3>'') and
+ @('`<3'')).  Other than these variables and @(tsee STATE), no other variable
+ may occur in the term, whose value must be a single non-@(tsee stobj) value,
+ unless there is an active trust tag (see @(see defttag)).</p>
 
  <p>Now suppose @('fn') is called.  First: If @(':cond') is supplied and the
  result of evaluating the @(':cond') term is @('nil'), then no tracing is done.
@@ -111472,16 +111653,16 @@ arithmetic) for libraries of @(see books) for arithmetic reasoning.</p>")
   ACL2 !>(trace$
           (fact
            :entry (:fmt! (msg \"~t0Tracing ~x1 on ~x2\"
-                              (+ 3 (* 2 (@ trace-level)))
+                              (+ 3 (* 2 trace-level))
                               traced-fn arglist))
            :exit (:fmt! (msg \"~t0From input ~x1: ~x2\"
-                             (1+ (* 2 (@ trace-level)))
+                             (1+ (* 2 trace-level))
                              (car arglist) (car values)))))
    ((FACT :ENTRY (:FMT! (MSG \"~t0Tracing ~x1 on ~x2\"
-                             (+ 3 (* 2 (@ TRACE-LEVEL)))
+                             (+ 3 (* 2 TRACE-LEVEL))
                              TRACED-FN ARGLIST))
           :EXIT (:FMT! (MSG \"~t0From input ~x1: ~x2\"
-                            (1+ (* 2 (@ TRACE-LEVEL)))
+                            (1+ (* 2 TRACE-LEVEL))
                             (CAR ARGLIST)
                             (CAR VALUES)))))
   ACL2 !>(fact 3)
