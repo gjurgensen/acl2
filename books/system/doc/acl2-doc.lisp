@@ -83023,6 +83023,9 @@ it."
  up proofs and evaluation.  The ACL2 community is encouraged to extend (and
  more generally, improve) this topic!</p>
 
+ <p>(LispWorks only) Bytes allocated are now reported in LispWorks (formerly,
+ only in CCL and SBCL) by @(tsee time$) and @(tsee memsum).</p>
+
  <h3>EMACS Support</h3>
 
  <p>Fixed the @(see acl2-doc) browser so that it can handle topic names with

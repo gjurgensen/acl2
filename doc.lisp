@@ -81702,6 +81702,9 @@ Changes at the System Level
   up proofs and evaluation.  The ACL2 community is encouraged to
   extend (and more generally, improve) this topic!
 
+  (LispWorks only) Bytes allocated are now reported in LispWorks
+  (formerly, only in CCL and SBCL) by [time$] and [memsum].
+
 
 EMACS Support
 
