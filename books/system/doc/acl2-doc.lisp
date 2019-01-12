@@ -17848,7 +17848,8 @@ subtree of X with T, without duplication.</p>
 
  </dl>
 
- <p>Declarations in ACL2 may occur only where @('dcl') occurs below:</p>
+ <p>Declarations in ACL2 may occur only where @('dcl') occurs in the following
+ display (not including lambda objects, discussed later below):</p>
 
  <ul>
  <li>@('(DEFUN name args doc-string dcl ... dcl body)')</li>
@@ -17862,6 +17863,20 @@ subtree of X with T, without duplication.</p>
  expands into nested @(tsee let)s and our @('er-let*') expands into nested
  @(tsee mv-let)s) then declarations are permitted as handled by the macros
  involved.</p>
+
+ <p>Each of the cases above permits certain declarations, as follows.</p>
+
+ <ul>
+
+ <li>@('DEFUN'): @(`(cdr (assoc-eq 'defuns *acceptable-dcls-alist*))`)</li>
+ <li>@('DEFMACRO'): @(`(cdr (assoc-eq 'defmacro *acceptable-dcls-alist*))`)</li>
+ <li>@('LET'): @(`(cdr (assoc-eq 'let *acceptable-dcls-alist*))`)</li>
+ <li>@('MV-LET'): @(`(cdr (assoc-eq 'mv-let *acceptable-dcls-alist*))`)</li>
+ <li>@('FLET'): @(`(cdr (assoc-eq 'flet *acceptable-dcls-alist*))`)</li>
+ </ul>
+
+ <p>Also see @(see lambda) for discussion of lambda objects and their legal
+ @('declare') forms.</p>
 
  <p>@('Declare') is defined in Common Lisp.  See any Common Lisp documentation
  for more information.</p>")
@@ -30342,6 +30357,9 @@ current fast alists."
 ;   11
 ;   ? [RAW LISP]
 
+; See translate11-flet for an explanation of why we do not support (declare
+; (ignore (function ...))).
+
   :parents (basics acl2-built-ins)
   :short "Local binding of function symbols"
   :long "@({
@@ -30360,11 +30378,12 @@ current fast alists."
  })
 
  <p>where @('body') is a term, and each @('defi') is a definition as in @(tsee
- defun) but with the leading @('defun') symbol omitted.  See @(see defun).  If
- any @('declare-formi') are supplied, then each must be of the form @('(declare
- decl1 ... decln)'), where each @('decli') is of the form @('(inline g1
- ... gm)') or @('(notinline g1 ... gm)'), and each @('gi') is defined by some
- @('defi').</p>
+ defun) but with the leading @('defun') symbol omitted.  See @(see defun), but
+ see @(see declare) for the declarations permitted directly under the
+ @('defi').  On the other hand, regarding the @('declare-formi') (if any are
+ supplied): each must be of the form @('(declare decl1 ... decln)'), where each
+ @('decli') is of the form @('(inline g1 ... gm)') or @('(notinline g1
+ ... gm)'), and each @('gi') is defined by some @('defi').</p>
 
  <p>The only effect of the declarations is to provide advice to the host Lisp
  compiler.  The declarations are otherwise ignored by ACL2, so we mainly ignore
@@ -82965,6 +82984,15 @@ it."
 
  <p>Some small optimizations have been made for the generation of
  executable-counterpart (so-called ``*1*'') code (see @(see evaluation)).</p>
+
+ <p>It has long been the case that certain prover routines, including handling
+ of output from @(see meta) functions, transformed results into so-called
+ ``quote-normal form'', where for example the @(see term) @('(cons '3 '4)') is
+ replaced by @('(quote (3 . 4))').  Now, that transformation avoids recurring
+ inside calls of @(tsee hide).  We thank Mertcan Temel, who had a class of
+ examples that motivated this change.  One such example took 856.27 seconds of
+ `prove' time before this change, but only 270.14 seconds after this change,
+ thus eliminating 68.5% of the time.</p>
 
  <h3>Bug Fixes</h3>
 

@@ -20941,7 +20941,8 @@ Usage
       interest.  See any Common Lisp documentation for more
       information.
 
-  Declarations in ACL2 may occur only where dcl occurs below:
+  Declarations in ACL2 may occur only where dcl occurs in the following
+  display (not including lambda objects, discussed later below):
 
     * (DEFUN name args doc-string dcl ... dcl body)
     * (DEFMACRO name args doc-string dcl ... dcl body)
@@ -20953,6 +20954,17 @@ Usage
   expands into nested [let]s and our er-let* expands into nested
   [mv-let]s) then declarations are permitted as handled by the macros
   involved.
+
+  Each of the cases above permits certain declarations, as follows.
+
+    * DEFUN: (ignore ignorable irrelevant type optimize xargs)
+    * DEFMACRO: (ignore ignorable type xargs)
+    * LET: (ignore ignorable type)
+    * MV-LET: (ignore ignorable type)
+    * FLET: (ignore ignorable type)
+
+  Also see [lambda] for discussion of lambda objects and their legal
+  declare forms.
 
   Declare is defined in Common Lisp.  See any Common Lisp documentation
   for more information.
@@ -33754,10 +33766,12 @@ Subtopics
     (flet (def1 ... defk) declare-form1 .. declare-formk body)
 
   where body is a term, and each defi is a definition as in [defun] but
-  with the leading defun symbol omitted.  See [defun].  If any
-  declare-formi are supplied, then each must be of the form (declare
-  decl1 ... decln), where each decli is of the form (inline g1 ...
-  gm) or (notinline g1 ... gm), and each gi is defined by some defi.
+  with the leading defun symbol omitted.  See [defun], but see
+  [declare] for the declarations permitted directly under the defi.
+  On the other hand, regarding the declare-formi (if any are
+  supplied): each must be of the form (declare decl1 ... decln),
+  where each decli is of the form (inline g1 ... gm) or (notinline g1
+  ... gm), and each gi is defined by some defi.
 
   The only effect of the declarations is to provide advice to the host
   Lisp compiler.  The declarations are otherwise ignored by ACL2, so
@@ -81642,6 +81656,16 @@ Heuristic and Efficiency Improvements
 
   Some small optimizations have been made for the generation of
   executable-counterpart (so-called ``*1*'') code (see [evaluation]).
+
+  It has long been the case that certain prover routines, including
+  handling of output from [meta] functions, transformed results into
+  so-called ``quote-normal form'', where for example the [term] (cons
+  '3 '4) is replaced by (quote (3 . 4)).  Now, that transformation
+  avoids recurring inside calls of [hide].  We thank Mertcan Temel,
+  who had a class of examples that motivated this change.  One such
+  example took 856.27 seconds of `prove' time before this change, but
+  only 270.14 seconds after this change, thus eliminating 68.5% of
+  the time.
 
 
 Bug Fixes
