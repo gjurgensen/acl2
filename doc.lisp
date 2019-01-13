@@ -81694,6 +81694,13 @@ Bug Fixes
   That specific error has been eliminated by the change to [trace$]
   involving variable TRACE-LEVEL that is mentioned in an item above.
 
+  Fixed a bogus error produced by defchoose forms containing unused
+  variables with ignorable declarations.  Also eliminated an extra
+  warning in the case of more than one bound variable with at least
+  one of them unused, which could occur after (set-ignore-ok :warn)
+  has been evaluated.  Thanks to Sol Swords for finding these bugs
+  and for supplying code that we installed to fix them.
+
 
 Changes at the System Level
 

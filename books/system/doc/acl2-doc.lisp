@@ -83019,6 +83019,13 @@ it."
  error has been eliminated by the change to @(tsee trace$) involving variable
  @('TRACE-LEVEL') that is mentioned in an item above.</p>
 
+ <p>Fixed a bogus error produced by @('defchoose') forms containing unused
+ variables with @('ignorable') declarations.  Also eliminated an extra warning
+ in the case of more than one bound variable with at least one of them unused,
+ which could occur after @('(set-ignore-ok :warn)') has been evaluated.  Thanks
+ to Sol Swords for finding these bugs and for supplying code that we installed
+ to fix them.</p>
+
  <h3>Changes at the System Level</h3>
 
  <p>The @(see documentation) topic, @(see system-utilities), is now about only
