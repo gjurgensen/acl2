@@ -111137,7 +111137,22 @@ arithmetic) for libraries of @(see books) for arithmetic reasoning.</p>")
  if and only evaluation of the call of @('top-level-fn') caused an error, which
  normally results in no additional output.  (For details about ``caused an
  error'', see the definition of @('top-level') in the ACL2 source code, and see
- @(see ld-error-action).)</p>")
+ @(see ld-error-action).)</p>
+
+ <p>Finally, note that since @('top-level') runs a function that is defined in
+ @(':')@(tsee program) mode, it is possible for a raw lisp error to occur.
+ Here is an example.</p>
+
+ @({
+ ACL2 !>(top-level (car 3))
+
+ ***********************************************
+ ************ ABORTING from raw Lisp ***********
+ ********** (see :DOC raw-lisp-error) **********
+ Error:  The value 3 is not of the expected type LIST.
+ While executing: CAR
+ ***********************************************
+ })")
 
 (defxdoc trace
   :parents (debugging)

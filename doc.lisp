@@ -113446,7 +113446,20 @@ Subtopics
   evaluation of the call of top-level-fn caused an error, which
   normally results in no additional output.  (For details about
   ``caused an error'', see the definition of top-level in the ACL2
-  source code, and see [ld-error-action].)")
+  source code, and see [ld-error-action].)
+
+  Finally, note that since top-level runs a function that is defined in
+  :[program] mode, it is possible for a raw lisp error to occur.
+  Here is an example.
+
+    ACL2 !>(top-level (car 3))
+
+    ***********************************************
+    ************ ABORTING from raw Lisp ***********
+    ********** (see :DOC raw-lisp-error) **********
+    Error:  The value 3 is not of the expected type LIST.
+    While executing: CAR
+    ***********************************************")
  (TRACE
   (DEBUGGING)
   "Tracing functions in ACL2
