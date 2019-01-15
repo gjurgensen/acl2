@@ -82930,6 +82930,10 @@ it."
  values associated with @(tsee xargs) keywords @(':verify-guards'),
  @(':non-executable'), or (even if not distinct) @(':guard-hints').</p>
 
+ <p>The function @(tsee integer-range-p) now uses a a @(tsee type) @(see
+ declaration) in place of the @(':')@(tsee guard), which may slightly improve
+ efficiency.  Thanks to Eric Smith for suggesting this possibility.</p>
+
  <h3>New Features</h3>
 
  <p>A new construct, @('lambda$'), may be used in place of @('lambda') to be
@@ -82993,6 +82997,14 @@ it."
  examples that motivated this change.  One such example took 856.27 seconds of
  `prove' time before this change, but only 270.14 seconds after this change,
  thus eliminating 68.5% of the time.</p>
+
+ <p>Proofs involving very large terms could be slowed down by checking those
+ terms for calls of @(tsee if), in support of reporting @(see splitter)s of
+ type if-intro.  That check is now limited by avoiding subterms that are calls
+ of @(tsee hide).  Thanks to Mertcan Temel for supplying examples, one of which
+ exhibited a proof time of 302.06 seconds that was reduced to 123.57 seconds
+ with this change, and thanks to Sol Swords and Alessandro Coglio for helpful
+ comments on possible enhancements.</p>
 
  <h3>Bug Fixes</h3>
 

@@ -46085,8 +46085,7 @@ Subtopics
   Function: <integer-range-p>
 
     (defun integer-range-p (lower upper x)
-           (declare (xargs :guard (and (integerp lower)
-                                       (integerp upper))))
+           (declare (type integer lower upper))
            (and (integerp x)
                 (<= lower x)
                 (< x upper)))")
@@ -81598,6 +81597,10 @@ Changes to Existing Features
   distinct values associated with [xargs] keywords :verify-guards,
   :non-executable, or (even if not distinct) :guard-hints.
 
+  The function [integer-range-p] now uses a a [type] [declaration] in
+  place of the :[guard], which may slightly improve efficiency.
+  Thanks to Eric Smith for suggesting this possibility.
+
 
 New Features
 
@@ -81666,6 +81669,15 @@ Heuristic and Efficiency Improvements
   example took 856.27 seconds of `prove' time before this change, but
   only 270.14 seconds after this change, thus eliminating 68.5% of
   the time.
+
+  Proofs involving very large terms could be slowed down by checking
+  those terms for calls of [if], in support of reporting [splitter]s
+  of type if-intro.  That check is now limited by avoiding subterms
+  that are calls of [hide].  Thanks to Mertcan Temel for supplying
+  examples, one of which exhibited a proof time of 302.06 seconds
+  that was reduced to 123.57 seconds with this change, and thanks to
+  Sol Swords and Alessandro Coglio for helpful comments on possible
+  enhancements.
 
 
 Bug Fixes
