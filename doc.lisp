@@ -14411,6 +14411,7 @@ Subtopics
        (make-flag \"[books]/tools/flag.lisp\")
        (make-termination-theorem
             \"[books]/kestrel/utilities/make-termination-theorem.lisp\")
+       (memoized-prover-fns \"[books]/tools/memoize-prover-fns.lisp\")
        (str::natstr \"[books]/std/strings/decimal.lisp\")
        (non-parallel-book \"[books]/std/system/non-parallel-book.lisp\")
        (note-6-4-books \"[books]/doc/relnotes.lisp\")
@@ -14454,6 +14455,8 @@ Subtopics
             \"[books]/kestrel/utilities/trans-eval-error-triple.lisp\")
        (unsound-read \"[books]/std/io/unsound-read.lisp\")
        (untranslate-patterns \"[books]/misc/untranslate-patterns.lisp\")
+       (use-trivial-ancestors-check
+            \"[books]/tools/trivial-ancestors-check.lisp\")
        (build::using-extended-acl2-images \"[books]/build/doc.lisp\")
        (with-raw-mode \"[books]/hacking/hacking-xdoc.lisp\")
        (with-redef-allowed \"[books]/hacking/hacking-xdoc.lisp\")
@@ -18708,7 +18711,8 @@ Subtopics
 
   For instance, consider a function like [remove-equal], which updates
   a list by removing all copies of some element from it.  The
-  definition of remove-equal is as follows:
+  definition of remove-equal is as follows (in the logic; it has a
+  slightly different definition in raw Lisp).
 
   Function: <remove-equal>
 
@@ -18722,8 +18726,10 @@ Subtopics
 
   You can see that if l doesn't have any copies of x, this function
   will essentially make a fresh copy of the whole list x.  That could
-  waste a lot of memory when x is long.  It is easy to write a new
-  version of remove-equal that uses cons-with-hint:
+  waste a lot of memory when x is long.  The choice was made to
+  define remove-equal ``under the hood'' to call Common Lisp's
+  function, remove; but it is easy to write a new version of
+  remove-equal that uses cons-with-hint:
 
     (defun remove-equal-with-hint (x l)
       (declare (xargs :guard (true-listp l)))
@@ -28379,17 +28385,23 @@ Proof efficiency
 
   In such a case, you may find it very helpful to create a suitable
   [meta] rule or a [clause-processor] rule, to implement an n*log(n)
-  algorithm.
+  algorithm.  You may consider creating calls of [hide] to avoid
+  exploring terms that are in the expected form.  Calls of hide may
+  be removed when ready either with a suitable :expand hint or by
+  enabling a [rewrite] rule (equal (hide x) x).
 
-  Here are some advanced ideas that may help in speeding up slow
-  proofs, especially if very large terms are involved.
+  We conclude this section with ways to tweak the ACL2 system to speed
+  up slow proofs.  These can be especially useful if very large terms
+  are involved.  One simple thing to try is to turn off the rewrite
+  cache.
 
-    ; Turn off the rewrite cache:
     (set-rw-cache-state nil)
 
-    ; Look for other system heuristics to defeat by evaluating
-    ; (all-attachments (w state));
-    ; here are key examples.
+  Some system behaviors can be modified using [defattach-system],
+  typically by modifying heuristics.  You can find all system
+  attachments by evaluating (all-attachments (w state)).  Here are
+  some key examples of how to modify system behavior.
+
     (defun constant-nil-function-arity-2 (x y)
       (declare (xargs :mode :logic :guard t) (ignore x y))
       nil)
@@ -28400,14 +28412,33 @@ Proof efficiency
     (defattach-system quick-and-dirty-srs
       constant-nil-function-arity-2)
 
-    ; Not included above is turning off the ancestors check.  That can be
-    ; accomplished in the manner shown above, by attaching a constant-nil function
-    ; to the function, ancestors-check.  Here is a more sophisticated solution.
-    (local (include-book \"tools/trivial-ancestors-check\" :dir :system))
-    (local (use-trivial-ancestors-check))
+  In some cases books may provide more sophisticated uses of
+  [defattach-system] (or [defattach]).  For a key example, see
+  [use-trivial-ancestors-check].
 
-    ; The following may be helpful at the level of book certification, and are
-    ; discussed in :doc certify-book-debug:
+  Another way to speed up system functions can be by using
+  [memoization].  Here is an example from
+  books/projects/stateman/stateman22.lisp.
+
+    (memoize 'acl2::sublis-var1
+             :condition '(and (null acl2::alist)
+                              (consp acl2::form)
+                              (eq (car acl2::form) 'HIDE)))
+
+  See [memoized-prover-fns] for a convenient way to do such memoization
+  that automatically clears memoization tables after each event.
+  (Also see [clear-memoize-table] and [clear-memoize-tables], and see
+  [hons-wash] for another way to clean up after memoization.)
+  Comments in the book books/tools/memoize-prover-fns.lisp note a
+  reduction in proof time from 4200 seconds to 49 seconds for one
+  example by memoizing some system functions.  Those comments also
+  have some discussion about which system functions to consider
+  memoizing.  Perhaps ACL2 users will contribute further
+  documentation on which system functions to memoize for efficiency.
+
+  The following may be helpful at the level of book certification, and
+  are discussed in :doc certify-book-debug.
+
     (set-serialize-character-system nil)
     (set-bad-lisp-consp-memoize nil)
     (set-inhibit-output-lst '(proof-tree event))
@@ -28430,7 +28461,12 @@ Programming efficiency
   [cons-with-hint] to reduce consing and [read-file-into-string] for
   obtaining the contents of a file quickly.
 
-  If you are comfortable looking at assembly code, see [disassemble$].
+  You might find [type] [declaration]s to be useful.  In particular, if
+  your host Lisp is GCL then the use of the declarations
+  (unsigned-byte 63) or (signed-byte 64) --- or, replace these by
+  smaller positive integers --- can provide dramatic performance
+  improvements in compiled code.  You can peruse that code using
+  [disassemble$].
 
   Of course, if a programming technique or construct is useful for
   efficient execution in Common Lisp and it is supported by ACL2,
