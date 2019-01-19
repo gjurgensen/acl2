@@ -25352,11 +25352,11 @@ ld) and @(tsee include-book)"
  read-file-into-string) for obtaining the contents of a file quickly.</p>
 
  <p>You might find @(tsee type) @(see declaration)s to be useful.  In
- particular, if your host Lisp is GCL then the use of the declarations
- @('(unsigned-byte 63)') or @('(signed-byte 64)') &mdash; or, replace these by
- smaller positive integers &mdash; can provide dramatic performance
- improvements in compiled code.  You can peruse that code using @(see
- disassemble$).</p>
+ particular, if your host Lisp is GCL then the use of the declaration
+ @('(signed-byte 64)'), or any stronger declaration (e.g., @('(unsigned-byte
+ 63)'), @('(signed-byte 12)'), or @('(integer 0 100)')), can provide dramatic
+ performance improvements in compiled code.  You can peruse that code using
+ @(see disassemble$).</p>
 
  <p>Of course, if a programming technique or construct is useful for efficient
  execution in Common Lisp and it is supported by ACL2, then it is useful for
@@ -25642,6 +25642,9 @@ ld) and @(tsee include-book)"
                         (value '(value-triple nil)))
               :check-expansion t)
  })
+
+ <p>For another use of @('make-event') to create embedded event forms, see
+ @(see make-event-example-3).</p>
 
  <p>When an embedded event is executed while @(tsee ld-skip-proofsp) is
  @(''')@(tsee include-book), those parts of it inside @(tsee local) forms are
@@ -53583,6 +53586,70 @@ tables in the current Hons Space."
                   (list 'quote
                         (reverse (f-get-global 'progn+-errors state)))))))
  })")
+
+(defxdoc make-event-example-3
+  :parents (make-event)
+  :short "Using @(tsee make-event) to define @(tsee thm)"
+  :long "<p>The definition of @(tsee thm) provides a simple, yet informative,
+ example use of @('make-event').  Formerly (through ACL2 Version  8.1), this
+ was the definition of @('thm'), where @('thm-fn') provides an interface to the
+ prover.</p>
+
+ @({
+ (defmacro thm (term &key hints otf-flg)
+   (list 'thm-fn
+         (list 'quote term)
+         'state
+         (list 'quote hints)
+         (list 'quote otf-flg)))
+ })
+
+ <p>However, this version of @('thm') did not permit calls of @('thm') in @(see
+ books) or @(tsee encapsulate) forms.  To remedy that deficiency, ACL2 now
+ defines @('thm') as follows; below we explain each component of this
+ definition.</p>
+
+ @({
+ (defmacro thm (term &key hints otf-flg)
+   `(with-output :off summary :stack :push
+      (make-event (er-progn (with-output :stack :pop
+                              (thm-fn ',term
+                                      state
+                                      ',hints
+                                      ',otf-flg))
+                            (value '(value-triple :invisible)))
+                  :expansion? (value-triple :invisible)
+                  :on-behalf-of :quiet!)))
+ })
+
+ <p>The use of @(tsee with-output) avoids printing anything about
+ @('make-event') in the @(see summary) (by using @(':off summary')).  But we do
+ want a summary for the prover call itself, to see the rules used, time
+ elapsed, and so on.  By using the keyword argument @(':stack :push'), but then
+ calling @('with-output') again with argument @(':stack :pop') before calling
+ @('thm-fn'), we remove the effect of @(':off summary') before calling
+ @('thm-fn').</p>
+
+ <p>By ignoring the @('with-output') wrapper, we may view the body of the
+ @('make-event') form as follows.</p>
+
+ @({
+ (er-progn (thm-fn ...)
+           (value '(value-triple :invisible)))
+ })
+
+ <p>Evaluation of this call of @(tsee er-progn) causes @('thm-fn') to be run
+ and, if there is no error and the proof succeeds, to return the event
+ @('(value-triple :invisible)').  That event is a no-op, and it generally
+ doesn't even cause a value to be printed; see @(see ld-post-eval-print).</p>
+
+ <p>Since an error-free expansion is always @('(value-triple :invisible)'),
+ that event is specified with the @(':expansion?') keyword so that the
+ expansion is not stored, in particular in a book's @(see certificate) file.
+ See @(see make-event).</p>
+
+ <p>The use of @(':on-behalf-of :quiet!') avoids a needless, distracting error
+ message from @('make-event') when the proof fails.</p>")
 
 (defxdoc make-fast-alist
   :parents (fast-alists acl2-built-ins)
@@ -82972,6 +83039,11 @@ it."
  declaration) in place of the @(':')@(tsee guard), which may slightly improve
  efficiency.  Thanks to Eric Smith for suggesting this possibility.</p>
 
+ <p>The macro, @(tsee thm), may now be used in event contexts, in particular in
+ calls of @(tsee encapsulate) and @(tsee progn) and in @(see books).  (See
+ @(see embedded-event-form).)  Thanks to Ruben Gamboa for an email that led to
+ this change.</p>
+
  <h3>New Features</h3>
 
  <p>A new construct, @('lambda$'), may be used in place of @('lambda') to be
@@ -83110,6 +83182,10 @@ it."
 
  <p>(LispWorks only) Bytes allocated are now reported in LispWorks (formerly,
  only in CCL and SBCL) by @(tsee time$) and @(tsee memsum).</p>
+
+ <p>A new documentation topic, @(see make-event-example-3), explains the new
+ implementation of @(tsee thm), thus providing insight into several common
+ implementation techniques used with @(tsee make-event).</p>
 
  <h3>EMACS Support</h3>
 
@@ -110037,8 +110113,10 @@ arithmetic) for libraries of @(see books) for arithmetic reasoning.</p>")
               (app a (app b c))))
  })
 
- <p>Also see @(see defthm).  Unlike @(tsee defthm), @('thm') does not create an
- event; it merely causes the theorem prover to attempt a proof.</p>
+ <p>Also see @(see defthm).  Unlike @(tsee defthm), @('thm') does not store an
+ event; it merely causes the theorem prover to attempt a proof.  But like
+ @('defthm'), calls of @('thm') are legal in event contexts (see @(see
+ embedded-event-form)).</p>
 
  @({
   General Form:
@@ -110049,7 +110127,13 @@ arithmetic) for libraries of @(see books) for arithmetic reasoning.</p>")
 
  <p>where @('term') is a term alleged to be a theorem, and @(tsee hints) and
  @(tsee otf-flg) are as described in the corresponding @(see documentation)
- topics.  The keyword arguments above are both optional.</p>")
+ topics.  The keyword arguments above are both optional.  Unlike @('defthm'),
+ the @(':instructions') keyword is not legal for @('thm'); use an
+ @(':instructions') hint instead, i.e., @(':hints ((\"Goal\" :instructions
+ ...))').</p>
+
+ <p>For information on how @('thm') is implemented using @(tsee make-event),
+ see @(see make-event-example-3).</p>")
 
 (defxdoc tidbits
   :parents (acl2-tutorial)

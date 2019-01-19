@@ -28462,11 +28462,11 @@ Programming efficiency
   obtaining the contents of a file quickly.
 
   You might find [type] [declaration]s to be useful.  In particular, if
-  your host Lisp is GCL then the use of the declarations
-  (unsigned-byte 63) or (signed-byte 64) --- or, replace these by
-  smaller positive integers --- can provide dramatic performance
-  improvements in compiled code.  You can peruse that code using
-  [disassemble$].
+  your host Lisp is GCL then the use of the declaration (signed-byte
+  64), or any stronger declaration (e.g., (unsigned-byte 63),
+  (signed-byte 12), or (integer 0 100)), can provide dramatic
+  performance improvements in compiled code.  You can peruse that
+  code using [disassemble$].
 
   Of course, if a programming technique or construct is useful for
   efficient execution in Common Lisp and it is supported by ACL2,
@@ -28723,6 +28723,9 @@ Miscellaneous efficiency ideas
     (make-event (er-progn (assign x 17)
                           (value '(value-triple nil)))
                 :check-expansion t)
+
+  For another use of make-event to create embedded event forms, see
+  [make-event-example-3].
 
   When an embedded event is executed while [ld-skip-proofsp] is
   '[include-book], those parts of it inside [local] forms are
@@ -56911,7 +56914,10 @@ Subtopics
       An example use of [make-event]
 
   [Make-event-example-2]
-      An example use of [make-event]")
+      An example use of [make-event]
+
+  [Make-event-example-3]
+      Using [make-event] to define [thm]")
  (MAKE-EVENT-DETAILS
   (MAKE-EVENT)
   "Details on [make-event] expansion
@@ -57588,6 +57594,63 @@ Subtopics
                (list 'value-triple
                      (list 'quote
                            (reverse (f-get-global 'progn+-errors state)))))))")
+ (MAKE-EVENT-EXAMPLE-3
+  (MAKE-EVENT)
+  "Using [make-event] to define [thm]
+
+  The definition of [thm] provides a simple, yet informative, example
+  use of make-event.  Formerly (through ACL2 Version 8.1), this was
+  the definition of thm, where thm-fn provides an interface to the
+  prover.
+
+    (defmacro thm (term &key hints otf-flg)
+      (list 'thm-fn
+            (list 'quote term)
+            'state
+            (list 'quote hints)
+            (list 'quote otf-flg)))
+
+  However, this version of thm did not permit calls of thm in [books]
+  or [encapsulate] forms.  To remedy that deficiency, ACL2 now
+  defines thm as follows; below we explain each component of this
+  definition.
+
+    (defmacro thm (term &key hints otf-flg)
+      `(with-output :off summary :stack :push
+         (make-event (er-progn (with-output :stack :pop
+                                 (thm-fn ',term
+                                         state
+                                         ',hints
+                                         ',otf-flg))
+                               (value '(value-triple :invisible)))
+                     :expansion? (value-triple :invisible)
+                     :on-behalf-of :quiet!)))
+
+  The use of [with-output] avoids printing anything about make-event in
+  the [summary] (by using :off summary).  But we do want a summary
+  for the prover call itself, to see the rules used, time elapsed,
+  and so on.  By using the keyword argument :stack :push, but then
+  calling with-output again with argument :stack :pop before calling
+  thm-fn, we remove the effect of :off summary before calling thm-fn.
+
+  By ignoring the with-output wrapper, we may view the body of the
+  make-event form as follows.
+
+    (er-progn (thm-fn ...)
+              (value '(value-triple :invisible)))
+
+  Evaluation of this call of [er-progn] causes thm-fn to be run and, if
+  there is no error and the proof succeeds, to return the event
+  (value-triple :invisible).  That event is a no-op, and it generally
+  doesn't even cause a value to be printed; see [ld-post-eval-print].
+
+  Since an error-free expansion is always (value-triple :invisible),
+  that event is specified with the :expansion? keyword so that the
+  expansion is not stored, in particular in a book's [certificate]
+  file.  See [make-event].
+
+  The use of :on-behalf-of :quiet! avoids a needless, distracting error
+  message from make-event when the proof fails.")
  (MAKE-FAST-ALIST
   (FAST-ALISTS ACL2-BUILT-INS)
   "(make-fast-alist alist) creates a fast-alist from the input alist,
@@ -81637,6 +81700,11 @@ Changes to Existing Features
   place of the :[guard], which may slightly improve efficiency.
   Thanks to Eric Smith for suggesting this possibility.
 
+  The macro, [thm], may now be used in event contexts, in particular in
+  calls of [encapsulate] and [progn] and in [books].  (See
+  [embedded-event-form].)  Thanks to Ruben Gamboa for an email that
+  led to this change.
+
 
 New Features
 
@@ -81783,6 +81851,10 @@ Changes at the System Level
 
   (LispWorks only) Bytes allocated are now reported in LispWorks
   (formerly, only in CCL and SBCL) by [time$] and [memsum].
+
+  A new documentation topic, [make-event-example-3], explains the new
+  implementation of [thm], thus providing insight into several common
+  implementation techniques used with [make-event].
 
 
 EMACS Support
@@ -112386,8 +112458,10 @@ Subtopics
     (thm (equal (app (app a b) c)
                 (app a (app b c))))
 
-  Also see [defthm].  Unlike [defthm], thm does not create an event; it
-  merely causes the theorem prover to attempt a proof.
+  Also see [defthm].  Unlike [defthm], thm does not store an event; it
+  merely causes the theorem prover to attempt a proof.  But like
+  defthm, calls of thm are legal in event contexts (see
+  [embedded-event-form]).
 
     General Form:
     (thm term
@@ -112396,7 +112470,13 @@ Subtopics
 
   where term is a term alleged to be a theorem, and [hints] and
   [otf-flg] are as described in the corresponding [documentation]
-  topics.  The keyword arguments above are both optional.
+  topics.  The keyword arguments above are both optional.  Unlike
+  defthm, the :instructions keyword is not legal for thm; use an
+  :instructions hint instead, i.e., :hints ((\"Goal\" :instructions
+  ...)).
+
+  For information on how thm is implemented using [make-event], see
+  [make-event-example-3].
 
 
 Subtopics
