@@ -12671,13 +12671,12 @@ Certifying Additional Books
 Books that Require ACL2 Extensions
 
   Some books require experimental extensions to ACL2, such as ACL2(p)
-  (see [parallelism]) or ACL2(r) (see [real]) or their classic
-  variants, ACL2(cp) or ACL2(cr).  Other books require certain
-  additional software.
+  (see [parallelism]) or ACL2(r) (see [real]).  Other books require
+  certain additional software.
 
   The build system will automatically determine which kind of ACL2 you
-  are running (e.g., ACL2(c), ACL2(p), ACL2(r)) and, based on this,
-  may prevent incompatible books from being certified.  The output of
+  are running (ACL2, ACL2(p), or ACL2(r)) and, based on this, may
+  prevent incompatible books from being certified.  The output of
   make should explain which books are being excluded and why.
 
   These kinds of book requirements are controlled by special
@@ -12690,18 +12689,15 @@ Books that Require Quicklisp
   [bridge], require certain Common Lisp libraries.
 
   These libraries are now bundled with ACL2 via [quicklisp], so you
-  should not need to download anything extra to use them.  However,
-  since these libraries are not portable across all Lisps that can
-  run ACL2, you must explicitly enable Quicklisp by setting
-  USE_QUICKLISP=1 in your make command if you want to use them.  For
-  instance:
+  should not need to download anything extra to use them.  They are
+  enabled by default for all host Lisps except GCL, but you can avoid
+  books that depend on Quicklisp libraries by setting USE_QUICKLISP=0
+  in your make command.
 
-    make ACL2=... USE_QUICKLISP=1 doc/top.cert -j 4
-
-  Using Quicklisp should definitely work for CCL and SBCL.  We have not
-  tested it with other Lisps, but there is some chance it will work
-  with Lisps such as Allegro, Lispworks, and CMUCL.  It will almost
-  certainly not work for GCL.
+  Using Quicklisp should definitely work if the host Lisp is CCL or
+  SBCL.  There is some chance it will work with Allegro CL,
+  LispWorks, and CMUCL.  It will almost certainly not work for GCL
+  (at least as of 2018).
 
 
 Books that Require Additional Software
@@ -42835,13 +42831,21 @@ Subtopics
   Also, for examples of the sophisticated use of hints, primarily for
   experts, see community book books/hints/basic-tests.lisp.
 
-  First, we describe the ACL2 ``waterfall'', which handles each goal
-  either by replacing it with a list (possibly empty) of child goals,
-  or else by putting the goal into a ``pool'' for later proof by
-  induction.  Then, we describe how hints are handled by the
-  waterfall.
+  First, we describe the ACL2 ``waterfall''.  Then, we describe how
+  hints are handled by the waterfall.
 
   The Waterfall.
+
+  The ACL2 waterfall is the heart of the ACL2 prover.  It attempts to
+  prove a given goal and either completes the proof, fails, or
+  produces goals to be proved by induction or forcing rounds.  The
+  waterfall comprises a series of steps, such as simplification or
+  generalization, each of which attempts to replace a given goal by
+  zero or more subgoals whose provability implies provability of that
+  goal.  Note that every proof by induction starts a new trip through
+  the waterall, as does every forcing round; and these occur only
+  after all preceding trips through the waterfall are complete.  Let
+  us see in more detail how the waterfall works.
 
   Each goal considered by the ACL2 prover passes through a series of
   proof processes, called the ``waterfall processes'', as stored in
@@ -42865,28 +42869,32 @@ Subtopics
   returned to the top of the waterfall.
 
   When the simplification process is attempted unsuccessfully for a
-  goal, the goal is deemed to have ``settled down''.  In this case,
-  and if no ancestor of the goal has settled down, then the
-  ``settled-down'' process is deemed to have ``hit'' on the goal, the
-  effect being that the goal makes a new pass through all the
-  waterfall processes.  (Other processes can then notice that
-  settling down has occurred and modify their heuristics
-  accordingly.)  For example, if \"Goal\" simplifies to \"Subgoal 2\"
-  (among others), and \"Subgoal 2\" simplifies to \"Subgoal 2.3\" (among
-  others), which in turn is not further simplified, then the
-  ``settled-down'' process hits on \"Subgoal 2.3\" but not on any of
-  its children, their children, and so on.
+  goal, the goal is deemed to have ``settled down''.  This notion of
+  ``settled down'' is handled, as follows, by the next waterfall
+  process after simplification: the ``settled-down'' process.  If
+  some ancestor of the goal (possibly the goal itself) has previously
+  settled down, then the ``settled-down'' process is deemed to have
+  missed on the goal.  Otherwise it hits on the goal, the effect
+  being that the goal makes a new pass through all the waterfall
+  processes.  (Other processes can then notice that settling down has
+  occurred and modify their heuristics accordingly.)  For example,
+  suppose that \"Goal\" simplifies to \"Subgoal 2\" (among others), and
+  \"Subgoal 2\" simplifies to \"Subgoal 2.3\" (among others), which in
+  turn is not further simplified.  Then the ``settled-down'' process
+  hits on \"Subgoal 2.3\", but it does not hit not on any of its
+  children or their children (and so on), because each of those has
+  an ancestor, \"Subgoal 2.3\", that has already been marked as
+  ``settled-down''.
 
-  When simplification has missed (and thus the goal has settled down),
-  the next proof process is normally destructor elimination.
-  However, if a computed hint is suitable (in a sense described
-  below; also see [computed-hints], especially the discussion of
-  stable-under-simplificationp), then that hint is selected as
-  control is returned to the top of the waterfall.  A subtlety is
-  that in this case, if the most recent hit had been from settling
-  down, then the prover ``changes its mind'' and considers that the
-  goal has not yet settled down after all as it continues through the
-  waterfall.
+  The next proof process after settled-down is normally destructor
+  elimination.  However, if a computed hint is suitable (in a sense
+  described below; also see [computed-hints], especially the
+  discussion of stable-under-simplificationp), then that hint is
+  selected as control is returned to the top of the waterfall.  A
+  subtlety is that in this case, if the most recent hit had been from
+  settling down, then the prover ``changes its mind'' and considers
+  that the goal has not yet settled down after all as it continues
+  through the waterfall.
 
   Each time a goal is considered at the top of the waterfall, then
   before passing through the proof processes as described above, ACL2
