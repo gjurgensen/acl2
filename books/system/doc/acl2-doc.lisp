@@ -174,6 +174,7 @@
     (MAKE-FLAG "[books]/tools/flag.lisp")
     (MAKE-TERMINATION-THEOREM
      "[books]/kestrel/utilities/make-termination-theorem.lisp")
+    (MEMOIZED-PROVER-FNS "[books]/tools/memoize-prover-fns.lisp")
     (STR::NATSTR "[books]/std/strings/decimal.lisp")
     (NON-PARALLEL-BOOK "[books]/std/system/non-parallel-book.lisp")
     (NOTE-6-4-BOOKS "[books]/doc/relnotes.lisp")
@@ -215,6 +216,7 @@
     (TRANS-EVAL-STATE "[books]/kestrel/utilities/trans-eval-error-triple.lisp")
     (UNSOUND-READ "[books]/std/io/unsound-read.lisp")
     (UNTRANSLATE-PATTERNS "[books]/misc/untranslate-patterns.lisp")
+    (USE-TRIVIAL-ANCESTORS-CHECK "[books]/tools/trivial-ancestors-check.lisp")
     (BUILD::USING-EXTENDED-ACL2-IMAGES "[books]/build/doc.lisp")
     (WITH-RAW-MODE "[books]/hacking/hacking-xdoc.lisp")
     (WITH-REDEF-ALLOWED "[books]/hacking/hacking-xdoc.lisp")
@@ -15674,14 +15676,17 @@ subtree of X with T, without duplication.</p>
 
  <p>For instance, consider a function like @(tsee remove-equal), which updates
  a list by removing all copies of some element from it.  The definition of
- @('remove-equal') is as follows:</p>
+ @('remove-equal') is as follows (in the logic; it has a slightly different
+ definition in raw Lisp).</p>
 
  @(def remove-equal)
 
  <p>You can see that if @('l') doesn't have any copies of @('x'), this function
  will essentially make a fresh copy of the whole list @('x').  That could waste
- a lot of memory when @('x') is long.  It is easy to write a new version of
- @('remove-equal') that uses @('cons-with-hint'):</p>
+ a lot of memory when @('x') is long.  The choice was made to define
+ @('remove-equal') ``under the hood'' to call Common Lisp's function,
+ @('remove'); but it is easy to write a new version of @('remove-equal') that
+ uses @('cons-with-hint'):</p>
 
  @({
  (defun remove-equal-with-hint (x l)
@@ -17848,7 +17853,8 @@ subtree of X with T, without duplication.</p>
 
  </dl>
 
- <p>Declarations in ACL2 may occur only where @('dcl') occurs below:</p>
+ <p>Declarations in ACL2 may occur only where @('dcl') occurs in the following
+ display (not including lambda objects, discussed later below):</p>
 
  <ul>
  <li>@('(DEFUN name args doc-string dcl ... dcl body)')</li>
@@ -17862,6 +17868,20 @@ subtree of X with T, without duplication.</p>
  expands into nested @(tsee let)s and our @('er-let*') expands into nested
  @(tsee mv-let)s) then declarations are permitted as handled by the macros
  involved.</p>
+
+ <p>Each of the cases above permits certain declarations, as follows.</p>
+
+ <ul>
+
+ <li>@('DEFUN'): @(`(cdr (assoc-eq 'defuns *acceptable-dcls-alist*))`)</li>
+ <li>@('DEFMACRO'): @(`(cdr (assoc-eq 'defmacro *acceptable-dcls-alist*))`)</li>
+ <li>@('LET'): @(`(cdr (assoc-eq 'let *acceptable-dcls-alist*))`)</li>
+ <li>@('MV-LET'): @(`(cdr (assoc-eq 'mv-let *acceptable-dcls-alist*))`)</li>
+ <li>@('FLET'): @(`(cdr (assoc-eq 'flet *acceptable-dcls-alist*))`)</li>
+ </ul>
+
+ <p>Also see @(see lambda) for discussion of lambda objects and their legal
+ @('declare') forms.</p>
 
  <p>@('Declare') is defined in Common Lisp.  See any Common Lisp documentation
  for more information.</p>")
@@ -25251,18 +25271,25 @@ ld) and @(tsee include-book)"
 
  <p>In such a case, you may find it very helpful to create a suitable @(see
  meta) rule or a @(see clause-processor) rule, to implement an @('n*log(n)')
- algorithm.</p>
+ algorithm.  You may consider creating calls of @(tsee hide) to avoid exploring
+ terms that are in the expected form.  Calls of @('hide') may be removed when
+ ready either with a suitable @(':expand') hint or by enabling a @(see rewrite)
+ rule @('(equal (hide x) x)').</p>
 
- <p>Here are some advanced ideas that may help in speeding up slow proofs,
- especially if very large terms are involved.</p>
+ <p>We conclude this section with ways to tweak the ACL2 system to speed up
+ slow proofs.  These can be especially useful if very large terms are involved.
+ One simple thing to try is to turn off the rewrite cache.</p>
 
  @({
- ; Turn off the rewrite cache:
  (set-rw-cache-state nil)
+ })
 
- ; Look for other system heuristics to defeat by evaluating
- ; (all-attachments (w state));
- ; here are key examples.
+ <p>Some system behaviors can be modified using @(tsee defattach-system),
+ typically by modifying heuristics.  You can find all system attachments by
+ evaluating (all-attachments (w state)).  Here are some key examples of how to
+ modify system behavior.</p>
+
+ @({
  (defun constant-nil-function-arity-2 (x y)
    (declare (xargs :mode :logic :guard t) (ignore x y))
    nil)
@@ -25272,15 +25299,37 @@ ld) and @(tsee include-book)"
    constant-nil-function-arity-2)
  (defattach-system quick-and-dirty-srs
    constant-nil-function-arity-2)
+ })
 
- ; Not included above is turning off the ancestors check.  That can be
- ; accomplished in the manner shown above, by attaching a constant-nil function
- ; to the function, ancestors-check.  Here is a more sophisticated solution.
- (local (include-book \"tools/trivial-ancestors-check\" :dir :system))
- (local (use-trivial-ancestors-check))
+ <p>In some cases books may provide more sophisticated uses of @(tsee
+ defattach-system) (or @(tsee defattach)).  For a key example, see @(tsee
+ use-trivial-ancestors-check).</p>
 
- ; The following may be helpful at the level of book certification, and are
- ; discussed in :doc certify-book-debug:
+ <p>Another way to speed up system functions can be by using @(see
+ memoization).  Here is an example from
+ @('books/projects/stateman/stateman22.lisp').</p>
+
+ @({
+ (memoize 'acl2::sublis-var1
+          :condition '(and (null acl2::alist)
+                           (consp acl2::form)
+                           (eq (car acl2::form) 'HIDE)))
+ })
+
+ <p>See @(see memoized-prover-fns) for a convenient way to do such memoization
+ that automatically clears memoization tables after each event.  (Also see
+ @(see clear-memoize-table) and @(see clear-memoize-tables), and see @(see
+ hons-wash) for another way to clean up after memoization.)  Comments in the
+ book @('books/tools/memoize-prover-fns.lisp') note a reduction in proof time
+ from 4200 seconds to 49 seconds for one example by memoizing some system
+ functions.  Those comments also have some discussion about which system
+ functions to consider memoizing.  Perhaps ACL2 users will contribute further
+ documentation on which system functions to memoize for efficiency.</p>
+
+ <p>The following may be helpful at the level of book certification, and are
+ discussed in :doc certify-book-debug.</p>
+
+ @({
  (set-serialize-character-system nil)
  (set-bad-lisp-consp-memoize nil)
  (set-inhibit-output-lst '(proof-tree event))
@@ -25302,7 +25351,11 @@ ld) and @(tsee include-book)"
  example @(tsee cons-with-hint) to reduce consing and @(see
  read-file-into-string) for obtaining the contents of a file quickly.</p>
 
- <p>If you are comfortable looking at assembly code, see @(see
+ <p>You might find @(tsee type) @(see declaration)s to be useful.  In
+ particular, if your host Lisp is GCL then the use of the declarations
+ @('(unsigned-byte 63)') or @('(signed-byte 64)') &mdash; or, replace these by
+ smaller positive integers &mdash; can provide dramatic performance
+ improvements in compiled code.  You can peruse that code using @(see
  disassemble$).</p>
 
  <p>Of course, if a programming technique or construct is useful for efficient
@@ -30342,6 +30395,9 @@ current fast alists."
 ;   11
 ;   ? [RAW LISP]
 
+; See translate11-flet for an explanation of why we do not support (declare
+; (ignore (function ...))).
+
   :parents (basics acl2-built-ins)
   :short "Local binding of function symbols"
   :long "@({
@@ -30360,11 +30416,12 @@ current fast alists."
  })
 
  <p>where @('body') is a term, and each @('defi') is a definition as in @(tsee
- defun) but with the leading @('defun') symbol omitted.  See @(see defun).  If
- any @('declare-formi') are supplied, then each must be of the form @('(declare
- decl1 ... decln)'), where each @('decli') is of the form @('(inline g1
- ... gm)') or @('(notinline g1 ... gm)'), and each @('gi') is defined by some
- @('defi').</p>
+ defun) but with the leading @('defun') symbol omitted.  See @(see defun), but
+ see @(see declare) for the declarations permitted directly under the
+ @('defi').  On the other hand, regarding the @('declare-formi') (if any are
+ supplied): each must be of the form @('(declare decl1 ... decln)'), where each
+ @('decli') is of the form @('(inline g1 ... gm)') or @('(notinline g1
+ ... gm)'), and each @('gi') is defined by some @('defi').</p>
 
  <p>The only effect of the declarations is to provide advice to the host Lisp
  compiler.  The declarations are otherwise ignored by ACL2, so we mainly ignore
@@ -82911,6 +82968,10 @@ it."
  values associated with @(tsee xargs) keywords @(':verify-guards'),
  @(':non-executable'), or (even if not distinct) @(':guard-hints').</p>
 
+ <p>The function @(tsee integer-range-p) now uses a a @(tsee type) @(see
+ declaration) in place of the @(':')@(tsee guard), which may slightly improve
+ efficiency.  Thanks to Eric Smith for suggesting this possibility.</p>
+
  <h3>New Features</h3>
 
  <p>A new construct, @('lambda$'), may be used in place of @('lambda') to be
@@ -82966,6 +83027,23 @@ it."
  <p>Some small optimizations have been made for the generation of
  executable-counterpart (so-called ``*1*'') code (see @(see evaluation)).</p>
 
+ <p>It has long been the case that certain prover routines, including handling
+ of output from @(see meta) functions, transformed results into so-called
+ ``quote-normal form'', where for example the @(see term) @('(cons '3 '4)') is
+ replaced by @('(quote (3 . 4))').  Now, that transformation avoids recurring
+ inside calls of @(tsee hide).  We thank Mertcan Temel, who had a class of
+ examples that motivated this change.  One such example took 856.27 seconds of
+ `prove' time before this change, but only 270.14 seconds after this change,
+ thus eliminating 68.5% of the time.</p>
+
+ <p>Proofs involving very large terms could be slowed down by checking those
+ terms for calls of @(tsee if), in support of reporting @(see splitter)s of
+ type if-intro.  That check is now limited by avoiding subterms that are calls
+ of @(tsee hide).  Thanks to Mertcan Temel for supplying examples, one of which
+ exhibited a proof time of 302.06 seconds that was reduced to 123.57 seconds
+ with this change, and thanks to Sol Swords and Alessandro Coglio for helpful
+ comments on possible enhancements.</p>
+
  <h3>Bug Fixes</h3>
 
  <p>Fixed the @(see proof-builder) command, @('dv') (see @(see acl2-pc::dv)),
@@ -82990,6 +83068,13 @@ it."
  @('pop-accp-fn')) and calling @(tsee accumulated-persistence).  That specific
  error has been eliminated by the change to @(tsee trace$) involving variable
  @('TRACE-LEVEL') that is mentioned in an item above.</p>
+
+ <p>Fixed a bogus error produced by @('defchoose') forms containing unused
+ variables with @('ignorable') declarations.  Also eliminated an extra warning
+ in the case of more than one bound variable with at least one of them unused,
+ which could occur after @('(set-ignore-ok :warn)') has been evaluated.  Thanks
+ to Sol Swords for finding these bugs and for supplying code that we installed
+ to fix them.</p>
 
  <h3>Changes at the System Level</h3>
 
@@ -83022,6 +83107,9 @@ it."
  <p>A new documentation topic, @(see efficiency), suggests some ways to speed
  up proofs and evaluation.  The ACL2 community is encouraged to extend (and
  more generally, improve) this topic!</p>
+
+ <p>(LispWorks only) Bytes allocated are now reported in LispWorks (formerly,
+ only in CCL and SBCL) by @(tsee time$) and @(tsee memsum).</p>
 
  <h3>EMACS Support</h3>
 
@@ -111099,7 +111187,22 @@ arithmetic) for libraries of @(see books) for arithmetic reasoning.</p>")
  if and only evaluation of the call of @('top-level-fn') caused an error, which
  normally results in no additional output.  (For details about ``caused an
  error'', see the definition of @('top-level') in the ACL2 source code, and see
- @(see ld-error-action).)</p>")
+ @(see ld-error-action).)</p>
+
+ <p>Finally, note that since @('top-level') runs a function that is defined in
+ @(':')@(tsee program) mode, it is possible for a raw lisp error to occur.
+ Here is an example.</p>
+
+ @({
+ ACL2 !>(top-level (car 3))
+
+ ***********************************************
+ ************ ABORTING from raw Lisp ***********
+ ********** (see :DOC raw-lisp-error) **********
+ Error:  The value 3 is not of the expected type LIST.
+ While executing: CAR
+ ***********************************************
+ })")
 
 (defxdoc trace
   :parents (debugging)

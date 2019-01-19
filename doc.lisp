@@ -14411,6 +14411,7 @@ Subtopics
        (make-flag \"[books]/tools/flag.lisp\")
        (make-termination-theorem
             \"[books]/kestrel/utilities/make-termination-theorem.lisp\")
+       (memoized-prover-fns \"[books]/tools/memoize-prover-fns.lisp\")
        (str::natstr \"[books]/std/strings/decimal.lisp\")
        (non-parallel-book \"[books]/std/system/non-parallel-book.lisp\")
        (note-6-4-books \"[books]/doc/relnotes.lisp\")
@@ -14454,6 +14455,8 @@ Subtopics
             \"[books]/kestrel/utilities/trans-eval-error-triple.lisp\")
        (unsound-read \"[books]/std/io/unsound-read.lisp\")
        (untranslate-patterns \"[books]/misc/untranslate-patterns.lisp\")
+       (use-trivial-ancestors-check
+            \"[books]/tools/trivial-ancestors-check.lisp\")
        (build::using-extended-acl2-images \"[books]/build/doc.lisp\")
        (with-raw-mode \"[books]/hacking/hacking-xdoc.lisp\")
        (with-redef-allowed \"[books]/hacking/hacking-xdoc.lisp\")
@@ -18708,7 +18711,8 @@ Subtopics
 
   For instance, consider a function like [remove-equal], which updates
   a list by removing all copies of some element from it.  The
-  definition of remove-equal is as follows:
+  definition of remove-equal is as follows (in the logic; it has a
+  slightly different definition in raw Lisp).
 
   Function: <remove-equal>
 
@@ -18722,8 +18726,10 @@ Subtopics
 
   You can see that if l doesn't have any copies of x, this function
   will essentially make a fresh copy of the whole list x.  That could
-  waste a lot of memory when x is long.  It is easy to write a new
-  version of remove-equal that uses cons-with-hint:
+  waste a lot of memory when x is long.  The choice was made to
+  define remove-equal ``under the hood'' to call Common Lisp's
+  function, remove; but it is easy to write a new version of
+  remove-equal that uses cons-with-hint:
 
     (defun remove-equal-with-hint (x l)
       (declare (xargs :guard (true-listp l)))
@@ -20941,7 +20947,8 @@ Usage
       interest.  See any Common Lisp documentation for more
       information.
 
-  Declarations in ACL2 may occur only where dcl occurs below:
+  Declarations in ACL2 may occur only where dcl occurs in the following
+  display (not including lambda objects, discussed later below):
 
     * (DEFUN name args doc-string dcl ... dcl body)
     * (DEFMACRO name args doc-string dcl ... dcl body)
@@ -20953,6 +20960,17 @@ Usage
   expands into nested [let]s and our er-let* expands into nested
   [mv-let]s) then declarations are permitted as handled by the macros
   involved.
+
+  Each of the cases above permits certain declarations, as follows.
+
+    * DEFUN: (ignore ignorable irrelevant type optimize xargs)
+    * DEFMACRO: (ignore ignorable type xargs)
+    * LET: (ignore ignorable type)
+    * MV-LET: (ignore ignorable type)
+    * FLET: (ignore ignorable type)
+
+  Also see [lambda] for discussion of lambda objects and their legal
+  declare forms.
 
   Declare is defined in Common Lisp.  See any Common Lisp documentation
   for more information.
@@ -28367,17 +28385,23 @@ Proof efficiency
 
   In such a case, you may find it very helpful to create a suitable
   [meta] rule or a [clause-processor] rule, to implement an n*log(n)
-  algorithm.
+  algorithm.  You may consider creating calls of [hide] to avoid
+  exploring terms that are in the expected form.  Calls of hide may
+  be removed when ready either with a suitable :expand hint or by
+  enabling a [rewrite] rule (equal (hide x) x).
 
-  Here are some advanced ideas that may help in speeding up slow
-  proofs, especially if very large terms are involved.
+  We conclude this section with ways to tweak the ACL2 system to speed
+  up slow proofs.  These can be especially useful if very large terms
+  are involved.  One simple thing to try is to turn off the rewrite
+  cache.
 
-    ; Turn off the rewrite cache:
     (set-rw-cache-state nil)
 
-    ; Look for other system heuristics to defeat by evaluating
-    ; (all-attachments (w state));
-    ; here are key examples.
+  Some system behaviors can be modified using [defattach-system],
+  typically by modifying heuristics.  You can find all system
+  attachments by evaluating (all-attachments (w state)).  Here are
+  some key examples of how to modify system behavior.
+
     (defun constant-nil-function-arity-2 (x y)
       (declare (xargs :mode :logic :guard t) (ignore x y))
       nil)
@@ -28388,14 +28412,33 @@ Proof efficiency
     (defattach-system quick-and-dirty-srs
       constant-nil-function-arity-2)
 
-    ; Not included above is turning off the ancestors check.  That can be
-    ; accomplished in the manner shown above, by attaching a constant-nil function
-    ; to the function, ancestors-check.  Here is a more sophisticated solution.
-    (local (include-book \"tools/trivial-ancestors-check\" :dir :system))
-    (local (use-trivial-ancestors-check))
+  In some cases books may provide more sophisticated uses of
+  [defattach-system] (or [defattach]).  For a key example, see
+  [use-trivial-ancestors-check].
 
-    ; The following may be helpful at the level of book certification, and are
-    ; discussed in :doc certify-book-debug:
+  Another way to speed up system functions can be by using
+  [memoization].  Here is an example from
+  books/projects/stateman/stateman22.lisp.
+
+    (memoize 'acl2::sublis-var1
+             :condition '(and (null acl2::alist)
+                              (consp acl2::form)
+                              (eq (car acl2::form) 'HIDE)))
+
+  See [memoized-prover-fns] for a convenient way to do such memoization
+  that automatically clears memoization tables after each event.
+  (Also see [clear-memoize-table] and [clear-memoize-tables], and see
+  [hons-wash] for another way to clean up after memoization.)
+  Comments in the book books/tools/memoize-prover-fns.lisp note a
+  reduction in proof time from 4200 seconds to 49 seconds for one
+  example by memoizing some system functions.  Those comments also
+  have some discussion about which system functions to consider
+  memoizing.  Perhaps ACL2 users will contribute further
+  documentation on which system functions to memoize for efficiency.
+
+  The following may be helpful at the level of book certification, and
+  are discussed in :doc certify-book-debug.
+
     (set-serialize-character-system nil)
     (set-bad-lisp-consp-memoize nil)
     (set-inhibit-output-lst '(proof-tree event))
@@ -28418,7 +28461,12 @@ Programming efficiency
   [cons-with-hint] to reduce consing and [read-file-into-string] for
   obtaining the contents of a file quickly.
 
-  If you are comfortable looking at assembly code, see [disassemble$].
+  You might find [type] [declaration]s to be useful.  In particular, if
+  your host Lisp is GCL then the use of the declarations
+  (unsigned-byte 63) or (signed-byte 64) --- or, replace these by
+  smaller positive integers --- can provide dramatic performance
+  improvements in compiled code.  You can peruse that code using
+  [disassemble$].
 
   Of course, if a programming technique or construct is useful for
   efficient execution in Common Lisp and it is supported by ACL2,
@@ -33754,10 +33802,12 @@ Subtopics
     (flet (def1 ... defk) declare-form1 .. declare-formk body)
 
   where body is a term, and each defi is a definition as in [defun] but
-  with the leading defun symbol omitted.  See [defun].  If any
-  declare-formi are supplied, then each must be of the form (declare
-  decl1 ... decln), where each decli is of the form (inline g1 ...
-  gm) or (notinline g1 ... gm), and each gi is defined by some defi.
+  with the leading defun symbol omitted.  See [defun], but see
+  [declare] for the declarations permitted directly under the defi.
+  On the other hand, regarding the declare-formi (if any are
+  supplied): each must be of the form (declare decl1 ... decln),
+  where each decli is of the form (inline g1 ... gm) or (notinline g1
+  ... gm), and each gi is defined by some defi.
 
   The only effect of the declarations is to provide advice to the host
   Lisp compiler.  The declarations are otherwise ignored by ACL2, so
@@ -46071,8 +46121,7 @@ Subtopics
   Function: <integer-range-p>
 
     (defun integer-range-p (lower upper x)
-           (declare (xargs :guard (and (integerp lower)
-                                       (integerp upper))))
+           (declare (type integer lower upper))
            (and (integerp x)
                 (<= lower x)
                 (< x upper)))")
@@ -81584,6 +81633,10 @@ Changes to Existing Features
   distinct values associated with [xargs] keywords :verify-guards,
   :non-executable, or (even if not distinct) :guard-hints.
 
+  The function [integer-range-p] now uses a a [type] [declaration] in
+  place of the :[guard], which may slightly improve efficiency.
+  Thanks to Eric Smith for suggesting this possibility.
+
 
 New Features
 
@@ -81643,6 +81696,25 @@ Heuristic and Efficiency Improvements
   Some small optimizations have been made for the generation of
   executable-counterpart (so-called ``*1*'') code (see [evaluation]).
 
+  It has long been the case that certain prover routines, including
+  handling of output from [meta] functions, transformed results into
+  so-called ``quote-normal form'', where for example the [term] (cons
+  '3 '4) is replaced by (quote (3 . 4)).  Now, that transformation
+  avoids recurring inside calls of [hide].  We thank Mertcan Temel,
+  who had a class of examples that motivated this change.  One such
+  example took 856.27 seconds of `prove' time before this change, but
+  only 270.14 seconds after this change, thus eliminating 68.5% of
+  the time.
+
+  Proofs involving very large terms could be slowed down by checking
+  those terms for calls of [if], in support of reporting [splitter]s
+  of type if-intro.  That check is now limited by avoiding subterms
+  that are calls of [hide].  Thanks to Mertcan Temel for supplying
+  examples, one of which exhibited a proof time of 302.06 seconds
+  that was reduced to 123.57 seconds with this change, and thanks to
+  Sol Swords and Alessandro Coglio for helpful comments on possible
+  enhancements.
+
 
 Bug Fixes
 
@@ -81669,6 +81741,13 @@ Bug Fixes
   (for example, pop-accp-fn) and calling [accumulated-persistence].
   That specific error has been eliminated by the change to [trace$]
   involving variable TRACE-LEVEL that is mentioned in an item above.
+
+  Fixed a bogus error produced by defchoose forms containing unused
+  variables with ignorable declarations.  Also eliminated an extra
+  warning in the case of more than one bound variable with at least
+  one of them unused, which could occur after (set-ignore-ok :warn)
+  has been evaluated.  Thanks to Sol Swords for finding these bugs
+  and for supplying code that we installed to fix them.
 
 
 Changes at the System Level
@@ -81701,6 +81780,9 @@ Changes at the System Level
   A new documentation topic, [efficiency], suggests some ways to speed
   up proofs and evaluation.  The ACL2 community is encouraged to
   extend (and more generally, improve) this topic!
+
+  (LispWorks only) Bytes allocated are now reported in LispWorks
+  (formerly, only in CCL and SBCL) by [time$] and [memsum].
 
 
 EMACS Support
@@ -113412,7 +113494,20 @@ Subtopics
   evaluation of the call of top-level-fn caused an error, which
   normally results in no additional output.  (For details about
   ``caused an error'', see the definition of top-level in the ACL2
-  source code, and see [ld-error-action].)")
+  source code, and see [ld-error-action].)
+
+  Finally, note that since top-level runs a function that is defined in
+  :[program] mode, it is possible for a raw lisp error to occur.
+  Here is an example.
+
+    ACL2 !>(top-level (car 3))
+
+    ***********************************************
+    ************ ABORTING from raw Lisp ***********
+    ********** (see :DOC raw-lisp-error) **********
+    Error:  The value 3 is not of the expected type LIST.
+    While executing: CAR
+    ***********************************************")
  (TRACE
   (DEBUGGING)
   "Tracing functions in ACL2
