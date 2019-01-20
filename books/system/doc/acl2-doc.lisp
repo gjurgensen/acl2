@@ -22086,7 +22086,7 @@ subtree of X with T, without duplication.</p>
  updating array fields, where inlining reduced the time by a factor of 10 or
  more; and inlining has sped up realistic examples by a factor of at least 2.
  Inlining may get within a factor of 2 of C execution times for such contrived
- examples, and within a few percent of C execution times on realistic
+ examples, and perhaps within a few percent of C execution times on realistic
  examples.</p>
 
  <p>A drawback to inlining is that redefinition may not work as expected, much
@@ -46999,8 +46999,9 @@ tables in the current Hons Space."
  (see @(see defttag)).</p>
 
  <p>Finally, we note that the @(see std/io) library contains useful file io
- functions whose definitions illustrate some of the features described
- above.</p>")
+ functions whose definitions illustrate some of the features described above,
+ as does the definition of @(tsee write-list) in @(see community-book)
+ @('books/misc/file-io.lisp').</p>")
 
 (defxdoc irrelevant-formals
   :parents (programming)

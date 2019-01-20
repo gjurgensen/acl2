@@ -25113,8 +25113,8 @@ Subtopics
   fields, where inlining reduced the time by a factor of 10 or more;
   and inlining has sped up realistic examples by a factor of at least
   2.  Inlining may get within a factor of 2 of C execution times for
-  such contrived examples, and within a few percent of C execution
-  times on realistic examples.
+  such contrived examples, and perhaps within a few percent of C
+  execution times on realistic examples.
 
   A drawback to inlining is that redefinition may not work as expected,
   much as redefinition may not work as expected for macros: defined
@@ -50580,7 +50580,8 @@ Subtopics
 
   Finally, we note that the [std/io] library contains useful file io
   functions whose definitions illustrate some of the features
-  described above.
+  described above, as does the definition of write-list in
+  [community-book] books/misc/file-io.lisp.
 
 
 Subtopics
