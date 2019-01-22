@@ -10115,11 +10115,11 @@ want the @('rtl/rel9') library, you could run:</p>
 <h3>Books that Require ACL2 Extensions</h3>
 
 <p>Some books require experimental extensions to ACL2, such as ACL2(p) (see
-@(see parallelism)) or ACL2(r) (see @(see real)) or their classic variants,
-ACL2(cp) or ACL2(cr).  Other books require certain additional software.</p>
+@(see parallelism)) or ACL2(r) (see @(see real)).  Other books require certain
+additional software.</p>
 
 <p>The build system will automatically determine which kind of ACL2 you are
-running (e.g., ACL2(c), ACL2(p), ACL2(r)) and, based on this, may prevent
+running (ACL2, ACL2(p), or ACL2(r)) and, based on this, may prevent
 incompatible books from being certified.  The output of @('make') should
 explain which books are being excluded and why.</p>
 
@@ -10133,19 +10133,14 @@ build::cert_param) comments.</p>
 ACL2 @(see bridge), require certain Common Lisp libraries.</p>
 
 <p>These libraries are now bundled with ACL2 via @(see quicklisp), so you
-should not need to download anything extra to use them.  However, since these
-libraries are not portable across all Lisps that can run ACL2, you must
-<b>explicitly enable Quicklisp</b> by setting @('USE_QUICKLISP=1') in your
-@('make') command if you want to use them.  For instance:</p>
+should not need to download anything extra to use them.  They are enabled by
+default for all host Lisps except GCL, but you can avoid books that depend on
+Quicklisp libraries by setting @('USE_QUICKLISP=0') in your
+@('make') command.</p>
 
-@({
-    make ACL2=... USE_QUICKLISP=1 doc/top.cert -j 4
-})
-
-<p>Using Quicklisp should definitely work for CCL and SBCL.  We have not tested
-it with other Lisps, but there is some chance it will work with Lisps such as
-Allegro, Lispworks, and CMUCL.  It will almost certainly <b>not</b> work for
-GCL.</p>
+<p>Using Quicklisp should definitely work if the host Lisp is CCL or SBCL.
+There is some chance it will work with Allegro CL, LispWorks, and CMUCL.  It
+will almost certainly <b>not</b> work for GCL (at least as of 2018).</p>
 
 
 <h3>Books that Require Additional Software</h3>
@@ -22091,7 +22086,7 @@ subtree of X with T, without duplication.</p>
  updating array fields, where inlining reduced the time by a factor of 10 or
  more; and inlining has sped up realistic examples by a factor of at least 2.
  Inlining may get within a factor of 2 of C execution times for such contrived
- examples, and within a few percent of C execution times on realistic
+ examples, and perhaps within a few percent of C execution times on realistic
  examples.</p>
 
  <p>A drawback to inlining is that redefinition may not work as expected, much
@@ -25352,11 +25347,11 @@ ld) and @(tsee include-book)"
  read-file-into-string) for obtaining the contents of a file quickly.</p>
 
  <p>You might find @(tsee type) @(see declaration)s to be useful.  In
- particular, if your host Lisp is GCL then the use of the declarations
- @('(unsigned-byte 63)') or @('(signed-byte 64)') &mdash; or, replace these by
- smaller positive integers &mdash; can provide dramatic performance
- improvements in compiled code.  You can peruse that code using @(see
- disassemble$).</p>
+ particular, if your host Lisp is GCL then the use of the declaration
+ @('(signed-byte 64)'), or any stronger declaration (e.g., @('(unsigned-byte
+ 63)'), @('(signed-byte 12)'), or @('(integer 0 100)')), can provide dramatic
+ performance improvements in compiled code.  You can peruse that code using
+ @(see disassemble$).</p>
 
  <p>Of course, if a programming technique or construct is useful for efficient
  execution in Common Lisp and it is supported by ACL2, then it is useful for
@@ -25642,6 +25637,9 @@ ld) and @(tsee include-book)"
                         (value '(value-triple nil)))
               :check-expansion t)
  })
+
+ <p>For another use of @('make-event') to create embedded event forms, see
+ @(see make-event-example-3).</p>
 
  <p>When an embedded event is executed while @(tsee ld-skip-proofsp) is
  @(''')@(tsee include-book), those parts of it inside @(tsee local) forms are
@@ -39498,12 +39496,20 @@ current fast alists."
  examples of the sophisticated use of hints, primarily for experts, see
  community book @('books/hints/basic-tests.lisp').</p>
 
- <p>First, we describe the ACL2 ``waterfall'', which handles each goal either
- by replacing it with a list (possibly empty) of child goals, or else by
- putting the goal into a ``pool'' for later proof by induction.  Then, we
- describe how hints are handled by the waterfall.</p>
+ <p>First, we describe the ACL2 ``waterfall''.  Then, we describe how hints are
+ handled by the waterfall.</p>
 
  <p><b>The Waterfall.</b></p>
+
+ <p>The ACL2 <i>waterfall</i> is the heart of the ACL2 prover.  It attempts to
+ prove a given goal and either completes the proof, fails, or produces goals to
+ be proved by induction or forcing rounds.  The waterfall comprises a series of
+ <i>steps</i>, such as simplification or generalization, each of which attempts
+ to replace a given goal by zero or more subgoals whose provability implies
+ provability of that goal.  Note that every proof by induction starts a new
+ trip through the waterall, as does every forcing round; and these occur only
+ after all preceding trips through the waterfall are complete.  Let us see in
+ more detail how the waterfall works.</p>
 
  <p>Each goal considered by the ACL2 prover passes through a series of proof
  processes, called the ``waterfall processes'', as stored in the constant
@@ -39525,25 +39531,29 @@ current fast alists."
  to the top of the waterfall.</p>
 
  <p>When the simplification process is attempted unsuccessfully for a goal, the
- goal is deemed to have ``settled down''.  In this case, and if no ancestor of
- the goal has settled down, then the ``settled-down'' process is deemed to have
- ``hit'' on the goal, the effect being that the goal makes a new pass through
- all the waterfall processes.  (Other processes can then notice that settling
- down has occurred and modify their heuristics accordingly.)  For example, if
+ goal is deemed to have ``settled down''.  This notion of ``settled down'' is
+ handled, as follows, by the next waterfall process after simplification: the
+ ``settled-down'' process.  If some ancestor of the goal (possibly the goal
+ itself) has previously settled down, then the ``settled-down'' process is
+ deemed to have missed on the goal.  Otherwise it hits on the goal, the effect
+ being that the goal makes a new pass through all the waterfall
+ processes.  (Other processes can then notice that settling down has occurred
+ and modify their heuristics accordingly.)  For example, suppose that
  @('\"Goal\"') simplifies to @('\"Subgoal 2\"') (among others), and
  @('\"Subgoal 2\"') simplifies to @('\"Subgoal 2.3\"') (among others), which in
- turn is not further simplified, then the ``settled-down'' process hits on
- @('\"Subgoal 2.3\"') but not on any of its children, their children, and so
- on.</p>
+ turn is not further simplified.  Then the ``settled-down'' process hits on
+ @('\"Subgoal 2.3\"'), but it does not hit not on any of its children or their
+ children (and so on), because each of those has an ancestor, @('\"Subgoal
+ 2.3\"'), that has already been marked as ``settled-down''.</p>
 
- <p>When simplification has missed (and thus the goal has settled down), the
- next proof process is normally destructor elimination.  However, if a computed
- hint is suitable (in a sense described below; also see @(see computed-hints),
- especially the discussion of @('stable-under-simplificationp')), then that
- hint is selected as control is returned to the top of the waterfall.  A
- subtlety is that in this case, if the most recent hit had been from settling
- down, then the prover ``changes its mind'' and considers that the goal has not
- yet settled down after all as it continues through the waterfall.</p>
+ <p>The next proof process after settled-down is normally destructor
+ elimination.  However, if a computed hint is suitable (in a sense described
+ below; also see @(see computed-hints), especially the discussion of
+ @('stable-under-simplificationp')), then that hint is selected as control is
+ returned to the top of the waterfall.  A subtlety is that in this case, if the
+ most recent hit had been from settling down, then the prover ``changes its
+ mind'' and considers that the goal has not yet settled down after all as it
+ continues through the waterfall.</p>
 
  <p>Each time a goal is considered at the top of the waterfall, then before
  passing through the proof processes as described above, ACL2 searches for a
@@ -46989,8 +46999,9 @@ tables in the current Hons Space."
  (see @(see defttag)).</p>
 
  <p>Finally, we note that the @(see std/io) library contains useful file io
- functions whose definitions illustrate some of the features described
- above.</p>")
+ functions whose definitions illustrate some of the features described above,
+ as does the definition of @(tsee write-list) in @(see community-book)
+ @('books/misc/file-io.lisp').</p>")
 
 (defxdoc irrelevant-formals
   :parents (programming)
@@ -53583,6 +53594,70 @@ tables in the current Hons Space."
                   (list 'quote
                         (reverse (f-get-global 'progn+-errors state)))))))
  })")
+
+(defxdoc make-event-example-3
+  :parents (make-event)
+  :short "Using @(tsee make-event) to define @(tsee thm)"
+  :long "<p>The definition of @(tsee thm) provides a simple, yet informative,
+ example use of @('make-event').  Formerly (through ACL2 Version  8.1), this
+ was the definition of @('thm'), where @('thm-fn') provides an interface to the
+ prover.</p>
+
+ @({
+ (defmacro thm (term &key hints otf-flg)
+   (list 'thm-fn
+         (list 'quote term)
+         'state
+         (list 'quote hints)
+         (list 'quote otf-flg)))
+ })
+
+ <p>However, this version of @('thm') did not permit calls of @('thm') in @(see
+ books) or @(tsee encapsulate) forms.  To remedy that deficiency, ACL2 now
+ defines @('thm') as follows; below we explain each component of this
+ definition.</p>
+
+ @({
+ (defmacro thm (term &key hints otf-flg)
+   `(with-output :off summary :stack :push
+      (make-event (er-progn (with-output :stack :pop
+                              (thm-fn ',term
+                                      state
+                                      ',hints
+                                      ',otf-flg))
+                            (value '(value-triple :invisible)))
+                  :expansion? (value-triple :invisible)
+                  :on-behalf-of :quiet!)))
+ })
+
+ <p>The use of @(tsee with-output) avoids printing anything about
+ @('make-event') in the @(see summary) (by using @(':off summary')).  But we do
+ want a summary for the prover call itself, to see the rules used, time
+ elapsed, and so on.  By using the keyword argument @(':stack :push'), but then
+ calling @('with-output') again with argument @(':stack :pop') before calling
+ @('thm-fn'), we remove the effect of @(':off summary') before calling
+ @('thm-fn').</p>
+
+ <p>By ignoring the @('with-output') wrapper, we may view the body of the
+ @('make-event') form as follows.</p>
+
+ @({
+ (er-progn (thm-fn ...)
+           (value '(value-triple :invisible)))
+ })
+
+ <p>Evaluation of this call of @(tsee er-progn) causes @('thm-fn') to be run
+ and, if there is no error and the proof succeeds, to return the event
+ @('(value-triple :invisible)').  That event is a no-op, and it generally
+ doesn't even cause a value to be printed; see @(see ld-post-eval-print).</p>
+
+ <p>Since an error-free expansion is always @('(value-triple :invisible)'),
+ that event is specified with the @(':expansion?') keyword so that the
+ expansion is not stored, in particular in a book's @(see certificate) file.
+ See @(see make-event).</p>
+
+ <p>The use of @(':on-behalf-of :quiet!') avoids a needless, distracting error
+ message from @('make-event') when the proof fails.</p>")
 
 (defxdoc make-fast-alist
   :parents (fast-alists acl2-built-ins)
@@ -82972,6 +83047,11 @@ it."
  declaration) in place of the @(':')@(tsee guard), which may slightly improve
  efficiency.  Thanks to Eric Smith for suggesting this possibility.</p>
 
+ <p>The macro, @(tsee thm), may now be used in event contexts, in particular in
+ calls of @(tsee encapsulate) and @(tsee progn) and in @(see books).  (See
+ @(see embedded-event-form).)  Thanks to Ruben Gamboa for an email that led to
+ this change.</p>
+
  <h3>New Features</h3>
 
  <p>A new construct, @('lambda$'), may be used in place of @('lambda') to be
@@ -83110,6 +83190,10 @@ it."
 
  <p>(LispWorks only) Bytes allocated are now reported in LispWorks (formerly,
  only in CCL and SBCL) by @(tsee time$) and @(tsee memsum).</p>
+
+ <p>A new documentation topic, @(see make-event-example-3), explains the new
+ implementation of @(tsee thm), thus providing insight into several common
+ implementation techniques used with @(tsee make-event).</p>
 
  <h3>EMACS Support</h3>
 
@@ -110037,8 +110121,10 @@ arithmetic) for libraries of @(see books) for arithmetic reasoning.</p>")
               (app a (app b c))))
  })
 
- <p>Also see @(see defthm).  Unlike @(tsee defthm), @('thm') does not create an
- event; it merely causes the theorem prover to attempt a proof.</p>
+ <p>Also see @(see defthm).  Unlike @(tsee defthm), @('thm') does not store an
+ event; it merely causes the theorem prover to attempt a proof.  But like
+ @('defthm'), calls of @('thm') are legal in event contexts (see @(see
+ embedded-event-form)).</p>
 
  @({
   General Form:
@@ -110049,7 +110135,13 @@ arithmetic) for libraries of @(see books) for arithmetic reasoning.</p>")
 
  <p>where @('term') is a term alleged to be a theorem, and @(tsee hints) and
  @(tsee otf-flg) are as described in the corresponding @(see documentation)
- topics.  The keyword arguments above are both optional.</p>")
+ topics.  The keyword arguments above are both optional.  Unlike @('defthm'),
+ the @(':instructions') keyword is not legal for @('thm'); use an
+ @(':instructions') hint instead, i.e., @(':hints ((\"Goal\" :instructions
+ ...))').</p>
+
+ <p>For information on how @('thm') is implemented using @(tsee make-event),
+ see @(see make-event-example-3).</p>")
 
 (defxdoc tidbits
   :parents (acl2-tutorial)
