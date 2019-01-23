@@ -14000,6 +14000,9 @@ Subtopics
 
   To abort from inside break-rewrite at any time, execute :[a!].
 
+  Output from break-rewrite is abbreviated by default, but that can be
+  changed.  See [set-brr-evisc-tuple].
+
   For further information, see the related :[doc] topics listed below.
 
   It is possible to cause the ACL2 rewriter to [monitor] the attempted
@@ -20280,10 +20283,12 @@ Subtopics
   be either a natural number or a list of two natural numbers, the
   first less than the second; and the value of evisc-tuple should be
   an evisc-tuple (see [evisc-tuple]).  If :evisc-tuple is omitted,
-  then substructures deeper than 3 are replaced by ``#'' and those
-  longer than 4 are replaced by ``...'', and terms of the form (hide
-  ...) are printed as <hidden>.  Also see [set-iprint] for an
-  alternative to printing ``#'' and ``...''.
+  then by default, substructures deeper than 3 are replaced by ``#''
+  and those longer than 4 are replaced by ``...'', and terms of the
+  form (hide ...) are printed as <hidden>; this behavior can be
+  changed by setting the :TERM [evisc-tuple] (see [set-evisc-tuple]).
+  Also see [set-iprint] for an alternative to printing ``#'' and
+  ``...''.
 
   Stack overflows may occur, perhaps caused by looping rewrite rules.
   In some Lisps, stack overflows may manifest themselves as
@@ -60343,7 +60348,8 @@ Subtopics
   and in particular, for discussion of what happens if you monitor or
   unmonitor a rune while inside a break (in short: the effect
   disappears when existing the break, unless it is a top-level
-  break).
+  break).  Also see [set-brr-evisc-tuple] for how to see output in
+  full.
 
   NOTE: Some :rewrite rules are considered ``simple abbreviations'';
   see [simple].  These can be be monitored, but only at certain times
@@ -99275,8 +99281,8 @@ Subtopics
   (BRR BRR-EVISC-TUPLE SET-EVISC-TUPLE)
   "Set the [brr-evisc-tuple]
 
-  The call (set-brr-evisc-tuple e) is simply a convenient way to set
-  the [brr-evisc-tuple] to e directly, that is, without using the
+  The call (set-brr-evisc-tuple e state) is simply a convenient way to
+  set the [brr-evisc-tuple] to e directly, that is, without using the
   more general mechanism, [set-evisc-tuple].  See [brr-evisc-tuple].")
  (SET-CASE-SPLIT-LIMITATIONS
   (MISCELLANEOUS)
@@ -108756,10 +108762,14 @@ List of a few built-in system utilities
     * (sublis-var alist form): Substitute alist into the [term], form.
     * (subst-expr new old term): Substitute new for old in term; all are
       assumed to be [term]s.  This function provides a slightly
-      optimized version of equivalent function (subst-expr new old
+      optimized version of equivalent function (subst-expr1 new old
       term).  Also, the former causes an explicit error if old is a
       quoted constant, and neither will search strictly inside a
-      quoted subterm of old.
+      quoted subterm of old.  A more complex function (perhaps a bit
+      less likely to stay forever unchanged), subst-equiv-expr, may
+      be found in the source code; it can substitute one expression
+      for another when the two are equivalent, but not necessarily
+      equal.
     * (subst-var new old term): Substitute new for old in term; all are
       assumed to be [term]s, but moreover, old is assumed to be a
       variable.
