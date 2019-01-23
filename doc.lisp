@@ -12671,13 +12671,12 @@ Certifying Additional Books
 Books that Require ACL2 Extensions
 
   Some books require experimental extensions to ACL2, such as ACL2(p)
-  (see [parallelism]) or ACL2(r) (see [real]) or their classic
-  variants, ACL2(cp) or ACL2(cr).  Other books require certain
-  additional software.
+  (see [parallelism]) or ACL2(r) (see [real]).  Other books require
+  certain additional software.
 
   The build system will automatically determine which kind of ACL2 you
-  are running (e.g., ACL2(c), ACL2(p), ACL2(r)) and, based on this,
-  may prevent incompatible books from being certified.  The output of
+  are running (ACL2, ACL2(p), or ACL2(r)) and, based on this, may
+  prevent incompatible books from being certified.  The output of
   make should explain which books are being excluded and why.
 
   These kinds of book requirements are controlled by special
@@ -12690,18 +12689,15 @@ Books that Require Quicklisp
   [bridge], require certain Common Lisp libraries.
 
   These libraries are now bundled with ACL2 via [quicklisp], so you
-  should not need to download anything extra to use them.  However,
-  since these libraries are not portable across all Lisps that can
-  run ACL2, you must explicitly enable Quicklisp by setting
-  USE_QUICKLISP=1 in your make command if you want to use them.  For
-  instance:
+  should not need to download anything extra to use them.  They are
+  enabled by default for all host Lisps except GCL, but you can avoid
+  books that depend on Quicklisp libraries by setting USE_QUICKLISP=0
+  in your make command.
 
-    make ACL2=... USE_QUICKLISP=1 doc/top.cert -j 4
-
-  Using Quicklisp should definitely work for CCL and SBCL.  We have not
-  tested it with other Lisps, but there is some chance it will work
-  with Lisps such as Allegro, Lispworks, and CMUCL.  It will almost
-  certainly not work for GCL.
+  Using Quicklisp should definitely work if the host Lisp is CCL or
+  SBCL.  There is some chance it will work with Allegro CL,
+  LispWorks, and CMUCL.  It will almost certainly not work for GCL
+  (at least as of 2018).
 
 
 Books that Require Additional Software
@@ -14004,6 +14000,9 @@ Subtopics
 
   To abort from inside break-rewrite at any time, execute :[a!].
 
+  Output from break-rewrite is abbreviated by default, but that can be
+  changed.  See [set-brr-evisc-tuple].
+
   For further information, see the related :[doc] topics listed below.
 
   It is possible to cause the ACL2 rewriter to [monitor] the attempted
@@ -14411,6 +14410,7 @@ Subtopics
        (make-flag \"[books]/tools/flag.lisp\")
        (make-termination-theorem
             \"[books]/kestrel/utilities/make-termination-theorem.lisp\")
+       (memoized-prover-fns \"[books]/tools/memoize-prover-fns.lisp\")
        (str::natstr \"[books]/std/strings/decimal.lisp\")
        (non-parallel-book \"[books]/std/system/non-parallel-book.lisp\")
        (note-6-4-books \"[books]/doc/relnotes.lisp\")
@@ -14454,6 +14454,8 @@ Subtopics
             \"[books]/kestrel/utilities/trans-eval-error-triple.lisp\")
        (unsound-read \"[books]/std/io/unsound-read.lisp\")
        (untranslate-patterns \"[books]/misc/untranslate-patterns.lisp\")
+       (use-trivial-ancestors-check
+            \"[books]/tools/trivial-ancestors-check.lisp\")
        (build::using-extended-acl2-images \"[books]/build/doc.lisp\")
        (with-raw-mode \"[books]/hacking/hacking-xdoc.lisp\")
        (with-redef-allowed \"[books]/hacking/hacking-xdoc.lisp\")
@@ -18708,7 +18710,8 @@ Subtopics
 
   For instance, consider a function like [remove-equal], which updates
   a list by removing all copies of some element from it.  The
-  definition of remove-equal is as follows:
+  definition of remove-equal is as follows (in the logic; it has a
+  slightly different definition in raw Lisp).
 
   Function: <remove-equal>
 
@@ -18722,8 +18725,10 @@ Subtopics
 
   You can see that if l doesn't have any copies of x, this function
   will essentially make a fresh copy of the whole list x.  That could
-  waste a lot of memory when x is long.  It is easy to write a new
-  version of remove-equal that uses cons-with-hint:
+  waste a lot of memory when x is long.  The choice was made to
+  define remove-equal ``under the hood'' to call Common Lisp's
+  function, remove; but it is easy to write a new version of
+  remove-equal that uses cons-with-hint:
 
     (defun remove-equal-with-hint (x l)
       (declare (xargs :guard (true-listp l)))
@@ -20278,10 +20283,12 @@ Subtopics
   be either a natural number or a list of two natural numbers, the
   first less than the second; and the value of evisc-tuple should be
   an evisc-tuple (see [evisc-tuple]).  If :evisc-tuple is omitted,
-  then substructures deeper than 3 are replaced by ``#'' and those
-  longer than 4 are replaced by ``...'', and terms of the form (hide
-  ...) are printed as <hidden>.  Also see [set-iprint] for an
-  alternative to printing ``#'' and ``...''.
+  then by default, substructures deeper than 3 are replaced by ``#''
+  and those longer than 4 are replaced by ``...'', and terms of the
+  form (hide ...) are printed as <hidden>; this behavior can be
+  changed by setting the :TERM [evisc-tuple] (see [set-evisc-tuple]).
+  Also see [set-iprint] for an alternative to printing ``#'' and
+  ``...''.
 
   Stack overflows may occur, perhaps caused by looping rewrite rules.
   In some Lisps, stack overflows may manifest themselves as
@@ -25111,8 +25118,8 @@ Subtopics
   fields, where inlining reduced the time by a factor of 10 or more;
   and inlining has sped up realistic examples by a factor of at least
   2.  Inlining may get within a factor of 2 of C execution times for
-  such contrived examples, and within a few percent of C execution
-  times on realistic examples.
+  such contrived examples, and perhaps within a few percent of C
+  execution times on realistic examples.
 
   A drawback to inlining is that redefinition may not work as expected,
   much as redefinition may not work as expected for macros: defined
@@ -28379,17 +28386,23 @@ Proof efficiency
 
   In such a case, you may find it very helpful to create a suitable
   [meta] rule or a [clause-processor] rule, to implement an n*log(n)
-  algorithm.
+  algorithm.  You may consider creating calls of [hide] to avoid
+  exploring terms that are in the expected form.  Calls of hide may
+  be removed when ready either with a suitable :expand hint or by
+  enabling a [rewrite] rule (equal (hide x) x).
 
-  Here are some advanced ideas that may help in speeding up slow
-  proofs, especially if very large terms are involved.
+  We conclude this section with ways to tweak the ACL2 system to speed
+  up slow proofs.  These can be especially useful if very large terms
+  are involved.  One simple thing to try is to turn off the rewrite
+  cache.
 
-    ; Turn off the rewrite cache:
     (set-rw-cache-state nil)
 
-    ; Look for other system heuristics to defeat by evaluating
-    ; (all-attachments (w state));
-    ; here are key examples.
+  Some system behaviors can be modified using [defattach-system],
+  typically by modifying heuristics.  You can find all system
+  attachments by evaluating (all-attachments (w state)).  Here are
+  some key examples of how to modify system behavior.
+
     (defun constant-nil-function-arity-2 (x y)
       (declare (xargs :mode :logic :guard t) (ignore x y))
       nil)
@@ -28400,14 +28413,33 @@ Proof efficiency
     (defattach-system quick-and-dirty-srs
       constant-nil-function-arity-2)
 
-    ; Not included above is turning off the ancestors check.  That can be
-    ; accomplished in the manner shown above, by attaching a constant-nil function
-    ; to the function, ancestors-check.  Here is a more sophisticated solution.
-    (local (include-book \"tools/trivial-ancestors-check\" :dir :system))
-    (local (use-trivial-ancestors-check))
+  In some cases books may provide more sophisticated uses of
+  [defattach-system] (or [defattach]).  For a key example, see
+  [use-trivial-ancestors-check].
 
-    ; The following may be helpful at the level of book certification, and are
-    ; discussed in :doc certify-book-debug:
+  Another way to speed up system functions can be by using
+  [memoization].  Here is an example from
+  books/projects/stateman/stateman22.lisp.
+
+    (memoize 'acl2::sublis-var1
+             :condition '(and (null acl2::alist)
+                              (consp acl2::form)
+                              (eq (car acl2::form) 'HIDE)))
+
+  See [memoized-prover-fns] for a convenient way to do such memoization
+  that automatically clears memoization tables after each event.
+  (Also see [clear-memoize-table] and [clear-memoize-tables], and see
+  [hons-wash] for another way to clean up after memoization.)
+  Comments in the book books/tools/memoize-prover-fns.lisp note a
+  reduction in proof time from 4200 seconds to 49 seconds for one
+  example by memoizing some system functions.  Those comments also
+  have some discussion about which system functions to consider
+  memoizing.  Perhaps ACL2 users will contribute further
+  documentation on which system functions to memoize for efficiency.
+
+  The following may be helpful at the level of book certification, and
+  are discussed in :doc certify-book-debug.
+
     (set-serialize-character-system nil)
     (set-bad-lisp-consp-memoize nil)
     (set-inhibit-output-lst '(proof-tree event))
@@ -28430,7 +28462,12 @@ Programming efficiency
   [cons-with-hint] to reduce consing and [read-file-into-string] for
   obtaining the contents of a file quickly.
 
-  If you are comfortable looking at assembly code, see [disassemble$].
+  You might find [type] [declaration]s to be useful.  In particular, if
+  your host Lisp is GCL then the use of the declaration (signed-byte
+  64), or any stronger declaration (e.g., (unsigned-byte 63),
+  (signed-byte 12), or (integer 0 100)), can provide dramatic
+  performance improvements in compiled code.  You can peruse that
+  code using [disassemble$].
 
   Of course, if a programming technique or construct is useful for
   efficient execution in Common Lisp and it is supported by ACL2,
@@ -28687,6 +28724,9 @@ Miscellaneous efficiency ideas
     (make-event (er-progn (assign x 17)
                           (value '(value-triple nil)))
                 :check-expansion t)
+
+  For another use of make-event to create embedded event forms, see
+  [make-event-example-3].
 
   When an embedded event is executed while [ld-skip-proofsp] is
   '[include-book], those parts of it inside [local] forms are
@@ -42796,13 +42836,21 @@ Subtopics
   Also, for examples of the sophisticated use of hints, primarily for
   experts, see community book books/hints/basic-tests.lisp.
 
-  First, we describe the ACL2 ``waterfall'', which handles each goal
-  either by replacing it with a list (possibly empty) of child goals,
-  or else by putting the goal into a ``pool'' for later proof by
-  induction.  Then, we describe how hints are handled by the
-  waterfall.
+  First, we describe the ACL2 ``waterfall''.  Then, we describe how
+  hints are handled by the waterfall.
 
   The Waterfall.
+
+  The ACL2 waterfall is the heart of the ACL2 prover.  It attempts to
+  prove a given goal and either completes the proof, fails, or
+  produces goals to be proved by induction or forcing rounds.  The
+  waterfall comprises a series of steps, such as simplification or
+  generalization, each of which attempts to replace a given goal by
+  zero or more subgoals whose provability implies provability of that
+  goal.  Note that every proof by induction starts a new trip through
+  the waterall, as does every forcing round; and these occur only
+  after all preceding trips through the waterfall are complete.  Let
+  us see in more detail how the waterfall works.
 
   Each goal considered by the ACL2 prover passes through a series of
   proof processes, called the ``waterfall processes'', as stored in
@@ -42826,28 +42874,32 @@ Subtopics
   returned to the top of the waterfall.
 
   When the simplification process is attempted unsuccessfully for a
-  goal, the goal is deemed to have ``settled down''.  In this case,
-  and if no ancestor of the goal has settled down, then the
-  ``settled-down'' process is deemed to have ``hit'' on the goal, the
-  effect being that the goal makes a new pass through all the
-  waterfall processes.  (Other processes can then notice that
-  settling down has occurred and modify their heuristics
-  accordingly.)  For example, if \"Goal\" simplifies to \"Subgoal 2\"
-  (among others), and \"Subgoal 2\" simplifies to \"Subgoal 2.3\" (among
-  others), which in turn is not further simplified, then the
-  ``settled-down'' process hits on \"Subgoal 2.3\" but not on any of
-  its children, their children, and so on.
+  goal, the goal is deemed to have ``settled down''.  This notion of
+  ``settled down'' is handled, as follows, by the next waterfall
+  process after simplification: the ``settled-down'' process.  If
+  some ancestor of the goal (possibly the goal itself) has previously
+  settled down, then the ``settled-down'' process is deemed to have
+  missed on the goal.  Otherwise it hits on the goal, the effect
+  being that the goal makes a new pass through all the waterfall
+  processes.  (Other processes can then notice that settling down has
+  occurred and modify their heuristics accordingly.)  For example,
+  suppose that \"Goal\" simplifies to \"Subgoal 2\" (among others), and
+  \"Subgoal 2\" simplifies to \"Subgoal 2.3\" (among others), which in
+  turn is not further simplified.  Then the ``settled-down'' process
+  hits on \"Subgoal 2.3\", but it does not hit not on any of its
+  children or their children (and so on), because each of those has
+  an ancestor, \"Subgoal 2.3\", that has already been marked as
+  ``settled-down''.
 
-  When simplification has missed (and thus the goal has settled down),
-  the next proof process is normally destructor elimination.
-  However, if a computed hint is suitable (in a sense described
-  below; also see [computed-hints], especially the discussion of
-  stable-under-simplificationp), then that hint is selected as
-  control is returned to the top of the waterfall.  A subtlety is
-  that in this case, if the most recent hit had been from settling
-  down, then the prover ``changes its mind'' and considers that the
-  goal has not yet settled down after all as it continues through the
-  waterfall.
+  The next proof process after settled-down is normally destructor
+  elimination.  However, if a computed hint is suitable (in a sense
+  described below; also see [computed-hints], especially the
+  discussion of stable-under-simplificationp), then that hint is
+  selected as control is returned to the top of the waterfall.  A
+  subtlety is that in this case, if the most recent hit had been from
+  settling down, then the prover ``changes its mind'' and considers
+  that the goal has not yet settled down after all as it continues
+  through the waterfall.
 
   Each time a goal is considered at the top of the waterfall, then
   before passing through the proof processes as described above, ACL2
@@ -50533,7 +50585,8 @@ Subtopics
 
   Finally, we note that the [std/io] library contains useful file io
   functions whose definitions illustrate some of the features
-  described above.
+  described above, as does the definition of write-list in
+  [community-book] books/misc/file-io.lisp.
 
 
 Subtopics
@@ -56875,7 +56928,10 @@ Subtopics
       An example use of [make-event]
 
   [Make-event-example-2]
-      An example use of [make-event]")
+      An example use of [make-event]
+
+  [Make-event-example-3]
+      Using [make-event] to define [thm]")
  (MAKE-EVENT-DETAILS
   (MAKE-EVENT)
   "Details on [make-event] expansion
@@ -57552,6 +57608,63 @@ Subtopics
                (list 'value-triple
                      (list 'quote
                            (reverse (f-get-global 'progn+-errors state)))))))")
+ (MAKE-EVENT-EXAMPLE-3
+  (MAKE-EVENT)
+  "Using [make-event] to define [thm]
+
+  The definition of [thm] provides a simple, yet informative, example
+  use of make-event.  Formerly (through ACL2 Version 8.1), this was
+  the definition of thm, where thm-fn provides an interface to the
+  prover.
+
+    (defmacro thm (term &key hints otf-flg)
+      (list 'thm-fn
+            (list 'quote term)
+            'state
+            (list 'quote hints)
+            (list 'quote otf-flg)))
+
+  However, this version of thm did not permit calls of thm in [books]
+  or [encapsulate] forms.  To remedy that deficiency, ACL2 now
+  defines thm as follows; below we explain each component of this
+  definition.
+
+    (defmacro thm (term &key hints otf-flg)
+      `(with-output :off summary :stack :push
+         (make-event (er-progn (with-output :stack :pop
+                                 (thm-fn ',term
+                                         state
+                                         ',hints
+                                         ',otf-flg))
+                               (value '(value-triple :invisible)))
+                     :expansion? (value-triple :invisible)
+                     :on-behalf-of :quiet!)))
+
+  The use of [with-output] avoids printing anything about make-event in
+  the [summary] (by using :off summary).  But we do want a summary
+  for the prover call itself, to see the rules used, time elapsed,
+  and so on.  By using the keyword argument :stack :push, but then
+  calling with-output again with argument :stack :pop before calling
+  thm-fn, we remove the effect of :off summary before calling thm-fn.
+
+  By ignoring the with-output wrapper, we may view the body of the
+  make-event form as follows.
+
+    (er-progn (thm-fn ...)
+              (value '(value-triple :invisible)))
+
+  Evaluation of this call of [er-progn] causes thm-fn to be run and, if
+  there is no error and the proof succeeds, to return the event
+  (value-triple :invisible).  That event is a no-op, and it generally
+  doesn't even cause a value to be printed; see [ld-post-eval-print].
+
+  Since an error-free expansion is always (value-triple :invisible),
+  that event is specified with the :expansion? keyword so that the
+  expansion is not stored, in particular in a book's [certificate]
+  file.  See [make-event].
+
+  The use of :on-behalf-of :quiet! avoids a needless, distracting error
+  message from make-event when the proof fails.")
  (MAKE-FAST-ALIST
   (FAST-ALISTS ACL2-BUILT-INS)
   "(make-fast-alist alist) creates a fast-alist from the input alist,
@@ -60235,7 +60348,8 @@ Subtopics
   and in particular, for discussion of what happens if you monitor or
   unmonitor a rune while inside a break (in short: the effect
   disappears when existing the break, unless it is a top-level
-  break).
+  break).  Also see [set-brr-evisc-tuple] for how to see output in
+  full.
 
   NOTE: Some :rewrite rules are considered ``simple abbreviations'';
   see [simple].  These can be be monitored, but only at certain times
@@ -81601,6 +81715,11 @@ Changes to Existing Features
   place of the :[guard], which may slightly improve efficiency.
   Thanks to Eric Smith for suggesting this possibility.
 
+  The macro, [thm], may now be used in event contexts, in particular in
+  calls of [encapsulate] and [progn] and in [books].  (See
+  [embedded-event-form].)  Thanks to Ruben Gamboa for an email that
+  led to this change.
+
 
 New Features
 
@@ -81747,6 +81866,10 @@ Changes at the System Level
 
   (LispWorks only) Bytes allocated are now reported in LispWorks
   (formerly, only in CCL and SBCL) by [time$] and [memsum].
+
+  A new documentation topic, [make-event-example-3], explains the new
+  implementation of [thm], thus providing insight into several common
+  implementation techniques used with [make-event].
 
 
 EMACS Support
@@ -99158,8 +99281,8 @@ Subtopics
   (BRR BRR-EVISC-TUPLE SET-EVISC-TUPLE)
   "Set the [brr-evisc-tuple]
 
-  The call (set-brr-evisc-tuple e) is simply a convenient way to set
-  the [brr-evisc-tuple] to e directly, that is, without using the
+  The call (set-brr-evisc-tuple e state) is simply a convenient way to
+  set the [brr-evisc-tuple] to e directly, that is, without using the
   more general mechanism, [set-evisc-tuple].  See [brr-evisc-tuple].")
  (SET-CASE-SPLIT-LIMITATIONS
   (MISCELLANEOUS)
@@ -108639,10 +108762,14 @@ List of a few built-in system utilities
     * (sublis-var alist form): Substitute alist into the [term], form.
     * (subst-expr new old term): Substitute new for old in term; all are
       assumed to be [term]s.  This function provides a slightly
-      optimized version of equivalent function (subst-expr new old
+      optimized version of equivalent function (subst-expr1 new old
       term).  Also, the former causes an explicit error if old is a
       quoted constant, and neither will search strictly inside a
-      quoted subterm of old.
+      quoted subterm of old.  A more complex function (perhaps a bit
+      less likely to stay forever unchanged), subst-equiv-expr, may
+      be found in the source code; it can substitute one expression
+      for another when the two are equivalent, but not necessarily
+      equal.
     * (subst-var new old term): Substitute new for old in term; all are
       assumed to be [term]s, but moreover, old is assumed to be a
       variable.
@@ -112350,8 +112477,10 @@ Subtopics
     (thm (equal (app (app a b) c)
                 (app a (app b c))))
 
-  Also see [defthm].  Unlike [defthm], thm does not create an event; it
-  merely causes the theorem prover to attempt a proof.
+  Also see [defthm].  Unlike [defthm], thm does not store an event; it
+  merely causes the theorem prover to attempt a proof.  But like
+  defthm, calls of thm are legal in event contexts (see
+  [embedded-event-form]).
 
     General Form:
     (thm term
@@ -112360,7 +112489,13 @@ Subtopics
 
   where term is a term alleged to be a theorem, and [hints] and
   [otf-flg] are as described in the corresponding [documentation]
-  topics.  The keyword arguments above are both optional.
+  topics.  The keyword arguments above are both optional.  Unlike
+  defthm, the :instructions keyword is not legal for thm; use an
+  :instructions hint instead, i.e., :hints ((\"Goal\" :instructions
+  ...)).
+
+  For information on how thm is implemented using [make-event], see
+  [make-event-example-3].
 
 
 Subtopics
