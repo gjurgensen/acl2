@@ -11395,6 +11395,9 @@ with any questions about building the community books.</p>")
  <p>To abort from inside break-rewrite at any time, execute @(':')@(tsee
  a!).</p>
 
+ <p>Output from break-rewrite is abbreviated by default, but that can be
+ changed.  See @(see set-brr-evisc-tuple).</p>
+
  <p>For further information, see the related @(':')@(tsee doc) topics listed
  below.</p>
 
@@ -17082,11 +17085,12 @@ subtree of X with T, without duplication.</p>
  supplied, their values are evaluated.  The value of @('frames') should be
  either a natural number or a list of two natural numbers, the first less than
  the second; and the value of @('evisc-tuple') should be an evisc-tuple (see
- @(see evisc-tuple)).  If @(':evisc-tuple') is omitted, then substructures
- deeper than 3 are replaced by ``@('#')'' and those longer than 4 are replaced
- by ``@('...')'', and terms of the form @('(hide ...)') are printed as
- @('<hidden>').  Also see @(see set-iprint) for an alternative to printing
- ``@('#')'' and ``@('...')''.</p>
+ @(see evisc-tuple)).  If @(':evisc-tuple') is omitted, then by default,
+ substructures deeper than 3 are replaced by ``@('#')'' and those longer than 4
+ are replaced by ``@('...')'', and terms of the form @('(hide ...)') are
+ printed as @('<hidden>'); this behavior can be changed by setting the
+ @(':TERM') @(see evisc-tuple) (see @(see set-evisc-tuple)).  Also see @(see
+ set-iprint) for an alternative to printing ``@('#')'' and ``@('...')''.</p>
 
  <p>Stack overflows may occur, perhaps caused by looping rewrite rules.  In
  some Lisps, stack overflows may manifest themselves as segmentation faults,
@@ -56214,7 +56218,8 @@ it."
  break-rewrite) for a description of the interactive loop entered, and in
  particular, for discussion of what happens if you monitor or unmonitor a rune
  while inside a break (in short: the effect disappears when existing the break,
- unless it is a top-level break).</p>
+ unless it is a top-level break).  Also see @(see set-brr-evisc-tuple) for how
+ to see output in full.</p>
 
  <p>NOTE: Some @(':rewrite') rules are considered ``simple abbreviations''; see
  @(see simple).  These can be be monitored, but only at certain times during
@@ -82932,6 +82937,17 @@ it."
 ;   (trace$ pop-accp-fn)
 ;   (mini-proveall)
 
+; Modified check-built-in-constants and especially its subroutine
+; our-update-ht to record all definitions rather than just the latest, and
+; fns-different-wrt-acl2-loop-only, to deal more suitably with calls of the
+; macro when-pass-2 -- specifically, to cause an error when there is
+; #-acl2-loop-only code inside when-pass-2, since it will be ignored (because
+; when-pass-2 calls expand to nil in raw Lisp), presumably contrary to what was
+; intended.
+
+; Added an assertion to guarantee that ground-zero is defined where it should
+; be.
+
   :parents (release-notes)
   :short "ACL2 Version  8.2 (xxx, 20xx) Notes"
   :long "<p>NOTE!  New users can ignore these release notes, because the @(see
@@ -97820,9 +97836,9 @@ arithmetic) for libraries of @(see books) for arithmetic reasoning.</p>")
 (defxdoc set-brr-evisc-tuple
   :parents (brr brr-evisc-tuple set-evisc-tuple)
   :short "Set the @(tsee brr-evisc-tuple)"
-  :long "<p>The call @('(set-brr-evisc-tuple e)') is simply a convenient way to
- set the @(see brr-evisc-tuple) to @('e') directly, that is, without using the
- more general mechanism, @(tsee set-evisc-tuple).  See @(see
+  :long "<p>The call @('(set-brr-evisc-tuple e state)') is simply a convenient
+ way to set the @(see brr-evisc-tuple) to @('e') directly, that is, without
+ using the more general mechanism, @(tsee set-evisc-tuple).  See @(see
  brr-evisc-tuple).</p>")
 
 (defxdoc set-case-split-limitations
@@ -107378,10 +107394,13 @@ arithmetic) for libraries of @(see books) for arithmetic reasoning.</p>")
 
  <li>@('(subst-expr new old term)'): Substitute @('new') for @('old') in
  @('term'); all are assumed to be @(see term)s.  This function provides a
- slightly optimized version of equivalent function @('(subst-expr new old
+ slightly optimized version of equivalent function @('(subst-expr1 new old
  term)').  Also, the former causes an explicit error if @('old') is a quoted
  constant, and neither will search strictly inside a quoted subterm of
- @('old').</li>
+ @('old').  A more complex function (perhaps a bit less likely to stay forever
+ unchanged), @('subst-equiv-expr'), may be found in the source code; it can
+ substitute one expression for another when the two are equivalent, but not
+ necessarily equal.</li>
 
  <li>@('(subst-var new old term)'): Substitute @('new') for @('old') in
  @('term'); all are assumed to be @(see term)s, but moreover, @('old') is
