@@ -82937,6 +82937,17 @@ it."
 ;   (trace$ pop-accp-fn)
 ;   (mini-proveall)
 
+; Modified check-built-in-constants and especially its subroutine
+; our-update-ht to record all definitions rather than just the latest, and
+; fns-different-wrt-acl2-loop-only, to deal more suitably with calls of the
+; macro when-pass-2 -- specifically, to cause an error when there is
+; #-acl2-loop-only code inside when-pass-2, since it will be ignored (because
+; when-pass-2 calls expand to nil in raw Lisp), presumably contrary to what was
+; intended.
+
+; Added an assertion to guarantee that ground-zero is defined where it should
+; be.
+
   :parents (release-notes)
   :short "ACL2 Version  8.2 (xxx, 20xx) Notes"
   :long "<p>NOTE!  New users can ignore these release notes, because the @(see
