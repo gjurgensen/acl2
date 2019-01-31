@@ -82948,6 +82948,21 @@ it."
 ; Added an assertion to guarantee that ground-zero is defined where it should
 ; be.
 
+; The change to :pf to do a more complete job of printing induction formulas
+; also involved changing source functions corollary and formula to return the
+; right thing for induction rules.  Formerly, for example, (corollary
+; '(:induction nth) (w state)) and (formula '(:induction nth) nil (w state))
+; returned an untranslated term (!) with calls of :P (not a function symbol!).
+; Now, these calls return nil.  Note that if foo is the name of a theorem
+; stored as an :induction rule, then (formula '(:induction foo) nil (w state))
+; will return the formula of that theorem.  This behavior is consistent with
+; :doc lemma-instance, which says the following -- no corollary justifies
+; (:induction foo), but our generous view is that the corollary of an
+; :induction rule "justifies" the rule.
+;
+;   (2) rune, where rune is a [rune] (see [rune]) denoting the
+;   :[corollary] justifying the rule named by the [rune].
+
   :parents (release-notes)
   :short "ACL2 Version  8.2 (xxx, 20xx) Notes"
   :long "<p>NOTE!  New users can ignore these release notes, because the @(see
@@ -83067,6 +83082,10 @@ it."
  calls of @(tsee encapsulate) and @(tsee progn) and in @(see books).  (See
  @(see embedded-event-form).)  Thanks to Ruben Gamboa for an email that led to
  this change.</p>
+
+ <p>The @(':')@(tsee pf) command now does a more complete job of showing
+ induction schemes for induction rules.  (Some corresponding code cleanup has
+ also been done.)</p>
 
  <h3>New Features</h3>
 
@@ -86418,15 +86437,16 @@ arithmetic) for libraries of @(see books) for arithmetic reasoning.</p>")
   Examples:
   :pf (:definition fn) ; prints the definition of fn as an equality
   :pf fn               ; same as above
-
   :pf (:rewrite foo)   ; prints the statement of the rewrite rule foo
   :pf foo              ; same as above
+  :pf (:induction foo) ; prints the induction scheme associated with foo
  })
 
  <p>@('pf') takes one argument, an event name or a @(see rune), and prints the
  formula associated with name.  If the argument is the name of a macro
  associated with a function name by @(see macro-aliases-table), then the
- function name is used as the argument.</p>")
+ function name is used as the argument.  If the argument names an @(':')@(tsee
+ induction) rule, then the corresponding induction scheme is printed.</p>")
 
 (defxdoc pkg-imports
   :parents (packages)

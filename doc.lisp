@@ -81720,6 +81720,10 @@ Changes to Existing Features
   [embedded-event-form].)  Thanks to Ruben Gamboa for an email that
   led to this change.
 
+  The :[pf] command now does a more complete job of showing induction
+  schemes for induction rules.  (Some corresponding code cleanup has
+  also been done.)
+
 
 New Features
 
@@ -85964,14 +85968,16 @@ Implementation
     Examples:
     :pf (:definition fn) ; prints the definition of fn as an equality
     :pf fn               ; same as above
-
     :pf (:rewrite foo)   ; prints the statement of the rewrite rule foo
     :pf foo              ; same as above
+    :pf (:induction foo) ; prints the induction scheme associated with foo
 
   pf takes one argument, an event name or a [rune], and prints the
   formula associated with name.  If the argument is the name of a
   macro associated with a function name by [macro-aliases-table],
-  then the function name is used as the argument.")
+  then the function name is used as the argument.  If the argument
+  names an :[induction] rule, then the corresponding induction scheme
+  is printed.")
  (PKG-IMPORTS
   (PACKAGES)
   "List of symbols imported into a given package
