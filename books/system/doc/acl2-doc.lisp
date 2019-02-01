@@ -82948,6 +82948,21 @@ it."
 ; Added an assertion to guarantee that ground-zero is defined where it should
 ; be.
 
+; The change to :pf to do a more complete job of printing induction formulas
+; also involved changing source functions corollary and formula to return the
+; right thing for induction rules.  Formerly, for example, (corollary
+; '(:induction nth) (w state)) and (formula '(:induction nth) nil (w state))
+; returned an untranslated term (!) with calls of :P (not a function symbol!).
+; Now, these calls return nil.  Note that if foo is the name of a theorem
+; stored as an :induction rule, then (formula '(:induction foo) nil (w state))
+; will return the formula of that theorem.  This behavior is consistent with
+; :doc lemma-instance, which says the following -- no corollary justifies
+; (:induction foo), but our generous view is that the corollary of an
+; :induction rule "justifies" the rule.
+;
+;   (2) rune, where rune is a [rune] (see [rune]) denoting the
+;   :[corollary] justifying the rule named by the [rune].
+
   :parents (release-notes)
   :short "ACL2 Version  8.2 (xxx, 20xx) Notes"
   :long "<p>NOTE!  New users can ignore these release notes, because the @(see
@@ -83067,6 +83082,10 @@ it."
  calls of @(tsee encapsulate) and @(tsee progn) and in @(see books).  (See
  @(see embedded-event-form).)  Thanks to Ruben Gamboa for an email that led to
  this change.</p>
+
+ <p>The @(':')@(tsee pf) command now does a more complete job of showing
+ induction schemes for induction rules.  (Some corresponding code cleanup has
+ also been done.)</p>
 
  <h3>New Features</h3>
 
@@ -83210,6 +83229,10 @@ it."
  <p>A new documentation topic, @(see make-event-example-3), explains the new
  implementation of @(tsee thm), thus providing insight into several common
  implementation techniques used with @(tsee make-event).</p>
+
+ <p>A new documentation topic, @(see rule-classes-introduction), provides a
+ basic guide to which sorts of rules to create from your theorems.  Thanks to
+ Mihir Mehta for encouraging the development of this topic.</p>
 
  <h3>EMACS Support</h3>
 
@@ -86414,15 +86437,16 @@ arithmetic) for libraries of @(see books) for arithmetic reasoning.</p>")
   Examples:
   :pf (:definition fn) ; prints the definition of fn as an equality
   :pf fn               ; same as above
-
   :pf (:rewrite foo)   ; prints the statement of the rewrite rule foo
   :pf foo              ; same as above
+  :pf (:induction foo) ; prints the induction scheme associated with foo
  })
 
  <p>@('pf') takes one argument, an event name or a @(see rune), and prints the
  formula associated with name.  If the argument is the name of a macro
  associated with a function name by @(see macro-aliases-table), then the
- function name is used as the argument.</p>")
+ function name is used as the argument.  If the argument names an @(':')@(tsee
+ induction) rule, then the corresponding induction scheme is printed.</p>")
 
 (defxdoc pkg-imports
   :parents (packages)
@@ -95716,7 +95740,10 @@ arithmetic) for libraries of @(see books) for arithmetic reasoning.</p>")
 (defxdoc rule-classes
   :parents (acl2)
   :short "Adding rules to the database"
-  :long "@({
+  :long "<p>For an introduction to rule-classes, see @(see
+  rule-classes-introduction).</p>
+
+  @({
   Example Form (from community book finite-set-theory/total-ordering.lisp):
   (defthm <<-trichotomy
     (implies (and (ordinaryp x)
@@ -95821,8 +95848,8 @@ arithmetic) for libraries of @(see books) for arithmetic reasoning.</p>")
  rule classes are really not intended for widespread use, but rather are mainly
  for experts.</p>
 
- <p>We expect that we will write more about the question of which kind of rule
- to use.  For now: when in doubt, use a @(':')@(tsee rewrite) rule.</p>
+ <p>When in doubt, create a @(':')@(tsee rewrite) rule, which is the default.
+ See @(see rule-classes-introduction).</p>
 
  <p>@(':Rule-classes') is an optional keyword argument of the @(tsee defthm)
  (and @(tsee defaxiom)) event.  In the following, let @('name') be the name of
@@ -96047,6 +96074,84 @@ arithmetic) for libraries of @(see books) for arithmetic reasoning.</p>")
  then if the @(':')@(tsee corollary) is essentially a conjunction.  (See the
  documentation for @(see rewrite), @(see linear), or @(see forward-chaining)
  for details.)</p>")
+
+(defxdoc rule-classes-introduction
+  :parents (rule-classes)
+  :short "Selecting which kind of rule to create"
+  :long "<p>Successful ACL2 users generally direct many of their proved
+ theorems to be stored as rules, which can be applied automatically in
+ subsequent proof attempts.  See @(see rule-classes) for a detailed discussion
+ of the kinds of rules that can be created.  Here, we give a brief introduction
+ to rule-classes that may suffice for most ACL2 users.</p>
+
+ <p>The workhorse for ACL2 proof attempts is generally the application of @(see
+ rewrite) rules.  When you prove a theorem stated with @(tsee defthm), ACL2
+ stores it as a rewrite rule unless either the @(':rule-classes') keyword is
+ supplied explicitly or an error occurs because the theorem is not in a form
+ that ACL2 knows how to store as a rewrite rule.  See @(see rewrite) for an
+ introduction to rewrite rules in ACL2.  That topic also has links to useful
+ introductory material as well as a notion of @(see congruence), which allows
+ the rewriting of one term to another when the two are merely equivalent in
+ some suitable sense, but not necessarily equal.</p>
+
+ <p>Most successful ACL2 users make only sparing use of other kinds of rules
+ besides rewrite rules.  When in doubt, the default is probably best: the
+ absence of any @(':rule-classes') keyword in a @('tsee defthm') event, which
+ is equivalent to @(':rule-classes :rewrite').  Below are some suggestions for
+ when other kinds of rules might be appropriate.  Of course, you are welcome to
+ scan the @(see community-books) for examples.  One can for example find many
+ examples (apparently more than 15,000) of @(':type-prescription') rules by
+ standing in the @('books/') directory and issuing the following shell
+ command (Linux or MacOS):</p>
+
+ @({
+ time grep --include='*.l*sp' -ri ':rule-classes .*type-prescription' .
+ })
+
+ <p>Below, we sometimes speak of the ``conclusion'' of a formula.  For many
+ rule classes, this is simply the formula itself unless the formula is of the
+ form @('(implies hyp concl)'), in which case it is recursively the conclusion
+ of @('concl').  See the subtopics of @(see rule-classes) for detailed
+ documentation.</p>
+
+ <ul>
+
+ <li>If the conclusion is a call of a primitive recognizer or a compound
+ recognizer, or the negation of such &mdash; for example, @('(true-listp (f x
+ y))') &mdash; consider making a @(see type-prescription) rule.  (For relevant
+ background on recognizers, see @(see compound-recognizer), which also
+ describes how to make a rule that designates a function as a
+ compound-recognizer.)  But note that hypotheses of such a rule are
+ proved (``relieved'') by ACL2 only using @(see type-set) reasoning.  If you
+ want rewriting to be used for relieving the hypotheses, you can wrap them in
+ @(tsee force) or @(tsee case-split).</li>
+
+ <li>If the conclusion is an inequality or negated inequality, consider making
+ a @(see linear) rule, but generally only if you can identify a reasonable
+ maximal term, which very roughly is a syntactially largest term that binds all
+ the variables.  For example, the formula @('(< (f x y) (g y z))') might not
+ make a good linear rule.  For a more careful discussion of maximal terms, see
+ @(see linear).</li>
+
+ <li>If the formula is a term in normal form (not simplifiable by your rewrite
+ rules) that tends to be an expicit hypothesis in some of your theorems,
+ consider making it a @(see forward-chaining) rule.  For example, if you are
+ reasoning about a finite state machine (such as an interpreter) and your
+ theorems tend to have the hypothesis @('(good-state-p st)'), and your formula
+ is @('(good-state-p (foo st))'), then that formula is a good candidate for a
+ @(see forward-chaining) rule.</li>
+
+ <li>If the rule looks like a recursive definition @('(equal (f x1 x2 ..)
+ (... (f ...) ...))'), consider making a @(see definition) rule.</li>
+
+ <li>When you want to control the simplifier rather than just turning rules
+ (especially rewrite rules) loose on your terms, consider using @(see meta)
+ rules or @(see clause-processor) rules.</li>
+
+ </ul>
+
+ <p>There are other rule classes that can be useful.  See @(see rule-classes)
+ for a complete list.</p>")
 
 (defxdoc rule-names
   :parents (theories)
