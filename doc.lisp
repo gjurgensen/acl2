@@ -81720,6 +81720,10 @@ Changes to Existing Features
   [embedded-event-form].)  Thanks to Ruben Gamboa for an email that
   led to this change.
 
+  The :[pf] command now does a more complete job of showing induction
+  schemes for induction rules.  (Some corresponding code cleanup has
+  also been done.)
+
 
 New Features
 
@@ -81870,6 +81874,11 @@ Changes at the System Level
   A new documentation topic, [make-event-example-3], explains the new
   implementation of [thm], thus providing insight into several common
   implementation techniques used with [make-event].
+
+  A new documentation topic, [rule-classes-introduction], provides a
+  basic guide to which sorts of rules to create from your theorems.
+  Thanks to Mihir Mehta for encouraging the development of this
+  topic.
 
 
 EMACS Support
@@ -85959,14 +85968,16 @@ Implementation
     Examples:
     :pf (:definition fn) ; prints the definition of fn as an equality
     :pf fn               ; same as above
-
     :pf (:rewrite foo)   ; prints the statement of the rewrite rule foo
     :pf foo              ; same as above
+    :pf (:induction foo) ; prints the induction scheme associated with foo
 
   pf takes one argument, an event name or a [rune], and prints the
   formula associated with name.  If the argument is the name of a
   macro associated with a function name by [macro-aliases-table],
-  then the function name is used as the argument.")
+  then the function name is used as the argument.  If the argument
+  names an :[induction] rule, then the corresponding induction scheme
+  is printed.")
  (PKG-IMPORTS
   (PACKAGES)
   "List of symbols imported into a given package
@@ -97159,6 +97170,8 @@ Subtopics
   (ACL2)
   "Adding rules to the database
 
+  For an introduction to rule-classes, see [rule-classes-introduction].
+
     Example Form (from community book finite-set-theory/total-ordering.lisp):
     (defthm <<-trichotomy
       (implies (and (ordinaryp x)
@@ -97262,8 +97275,8 @@ Subtopics
   really not intended for widespread use, but rather are mainly for
   experts.
 
-  We expect that we will write more about the question of which kind of
-  rule to use.  For now: when in doubt, use a :[rewrite] rule.
+  When in doubt, create a :[rewrite] rule, which is the default.  See
+  [rule-classes-introduction].
 
   :Rule-classes is an optional keyword argument of the [defthm] (and
   [defaxiom]) event.  In the following, let name be the name of the
@@ -97565,6 +97578,9 @@ Subtopics
   [Rewrite]
       Make some :rewrite rules (possibly conditional ones)
 
+  [Rule-classes-introduction]
+      Selecting which kind of rule to create
+
   [Tau-system]
       Make a rule for the ACL2 ``type checker''
 
@@ -97583,6 +97599,79 @@ Subtopics
 
   [Well-founded-relation-rule]
       Show that a relation is well-founded on a set")
+ (RULE-CLASSES-INTRODUCTION
+  (RULE-CLASSES)
+  "Selecting which kind of rule to create
+
+  Successful ACL2 users generally direct many of their proved theorems
+  to be stored as rules, which can be applied automatically in
+  subsequent proof attempts.  See [rule-classes] for a detailed
+  discussion of the kinds of rules that can be created.  Here, we
+  give a brief introduction to rule-classes that may suffice for most
+  ACL2 users.
+
+  The workhorse for ACL2 proof attempts is generally the application of
+  [rewrite] rules.  When you prove a theorem stated with [defthm],
+  ACL2 stores it as a rewrite rule unless either the :rule-classes
+  keyword is supplied explicitly or an error occurs because the
+  theorem is not in a form that ACL2 knows how to store as a rewrite
+  rule.  See [rewrite] for an introduction to rewrite rules in ACL2.
+  That topic also has links to useful introductory material as well
+  as a notion of [congruence], which allows the rewriting of one term
+  to another when the two are merely equivalent in some suitable
+  sense, but not necessarily equal.
+
+  Most successful ACL2 users make only sparing use of other kinds of
+  rules besides rewrite rules.  When in doubt, the default is
+  probably best: the absence of any :rule-classes keyword in a tsee
+  defthm event, which is equivalent to :rule-classes :rewrite.  Below
+  are some suggestions for when other kinds of rules might be
+  appropriate.  Of course, you are welcome to scan the
+  [community-books] for examples.  One can for example find many
+  examples (apparently more than 15,000) of :type-prescription rules
+  by standing in the books/ directory and issuing the following shell
+  command (Linux or MacOS):
+
+    time grep --include='*.l*sp' -ri ':rule-classes .*type-prescription' .
+
+  Below, we sometimes speak of the ``conclusion'' of a formula.  For
+  many rule classes, this is simply the formula itself unless the
+  formula is of the form (implies hyp concl), in which case it is
+  recursively the conclusion of concl.  See the subtopics of
+  [rule-classes] for detailed documentation.
+
+    * If the conclusion is a call of a primitive recognizer or a compound
+      recognizer, or the negation of such --- for example,
+      (true-listp (f x y)) --- consider making a [type-prescription]
+      rule.  (For relevant background on recognizers, see
+      [compound-recognizer], which also describes how to make a rule
+      that designates a function as a compound-recognizer.)  But note
+      that hypotheses of such a rule are proved (``relieved'') by
+      ACL2 only using [type-set] reasoning.  If you want rewriting to
+      be used for relieving the hypotheses, you can wrap them in
+      [force] or [case-split].
+    * If the conclusion is an inequality or negated inequality, consider
+      making a [linear] rule, but generally only if you can identify
+      a reasonable maximal term, which very roughly is a syntactially
+      largest term that binds all the variables.  For example, the
+      formula (< (f x y) (g y z)) might not make a good linear rule.
+      For a more careful discussion of maximal terms, see [linear].
+    * If the formula is a term in normal form (not simplifiable by your
+      rewrite rules) that tends to be an expicit hypothesis in some
+      of your theorems, consider making it a [forward-chaining] rule.
+      For example, if you are reasoning about a finite state machine
+      (such as an interpreter) and your theorems tend to have the
+      hypothesis (good-state-p st), and your formula is (good-state-p
+      (foo st)), then that formula is a good candidate for a
+      [forward-chaining] rule.
+    * If the rule looks like a recursive definition (equal (f x1 x2 ..)
+      (... (f ...) ...)), consider making a [definition] rule.
+    * When you want to control the simplifier rather than just turning
+      rules (especially rewrite rules) loose on your terms, consider
+      using [meta] rules or [clause-processor] rules.
+
+  There are other rule classes that can be useful.  See [rule-classes]
+  for a complete list.")
  (RULE-NAMES
   (THEORIES)
   "How rules are named.
