@@ -83191,6 +83191,10 @@ it."
  to Sol Swords for finding these bugs and for supplying code that we installed
  to fix them.</p>
 
+ <p>Fixed an inefficiency in book certification due to calling @(tsee
+ fast-alist-free-on-exit) on the wrong objects.  Thanks to Sol Swords for
+ pointing out this problem.</p>
+
  <h3>Changes at the System Level</h3>
 
  <p>The @(see documentation) topic, @(see system-utilities), is now about only

@@ -81836,6 +81836,10 @@ Bug Fixes
   has been evaluated.  Thanks to Sol Swords for finding these bugs
   and for supplying code that we installed to fix them.
 
+  Fixed an inefficiency in book certification due to calling
+  [fast-alist-free-on-exit] on the wrong objects.  Thanks to Sol
+  Swords for pointing out this problem.
+
 
 Changes at the System Level
 
