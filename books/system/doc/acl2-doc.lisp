@@ -39328,9 +39328,10 @@ current fast alists."
     [Note:  A hint was supplied for our processing of the goal above.
     Thanks!]
 
-    ACL2 Warning [Use] in ( THM ...):  It is unusual to :USE an enabled
-    :REWRITE or :DEFINITION rule, so you may want to consider disabling
-    (:REWRITE CDR-CONS).
+    ACL2 Warning [Use] in ( THM ...):  It is unusual to :USE the formula
+    of an enabled :REWRITE or :DEFINITION rule, so you may want to consider
+    disabling (:REWRITE CDR-CONS) in the hint provided for Subgoal D1.
+    See :DOC using-enabled-rules.
 
     We augment the goal with the hypothesis provided by the :USE hint.
     The hypothesis can be obtained from CDR-CONS.  We are left with the
@@ -58769,9 +58770,10 @@ it."
  string ``@('Use')'' in the following message.</p>
 
  @({
-    Acl2 Warning [Use] in DEFTHM:  It is unusual to :USE an enabled
-    :REWRITE or :DEFINITION rule, so you may want to consider
-    disabling FOO.
+    ACL2 Warning [Use] in ( THM ...):  It is unusual to :USE the formula
+    of an enabled :REWRITE or :DEFINITION rule, so you may want to consider
+    disabling (:REWRITE FOO) in the hint provided for Goal.  See :DOC using-
+    enabled-rules.
  })
 
  <p>At the end of the event, just before the time is printed, all such summary
@@ -83087,6 +83089,12 @@ it."
  induction schemes for induction rules.  (Some corresponding code cleanup has
  also been done.)</p>
 
+ <p>@(see Warnings) about using @(see enable)d rules have been improved.  Now,
+ when using an @(see executable-counterpart) rule (which, admittedly, is
+ unusual; it is equivalent to using the corresponding @(see definition) rule),
+ the warning will correctly recommend disabling the definition rule instead of
+ the executable-counterpart rule.</p>
+
  <h3>New Features</h3>
 
  <p>A new construct, @('lambda$'), may be used in place of @('lambda') to be
@@ -83190,6 +83198,10 @@ it."
  which could occur after @('(set-ignore-ok :warn)') has been evaluated.  Thanks
  to Sol Swords for finding these bugs and for supplying code that we installed
  to fix them.</p>
+
+ <p>Fixed an inefficiency in book certification due to calling @(tsee
+ fast-alist-free-on-exit) on the wrong objects.  Thanks to Sol Swords for
+ pointing out this problem.</p>
 
  <h3>Changes at the System Level</h3>
 
@@ -117709,9 +117721,10 @@ introduction-to-the-tau-system) for more information about Tau.</dd>
  <p>ACL2's output includes the following warning.</p>
 
  @({
-  ACL2 Warning [Use] in ( THM ...):  It is unusual to :USE an enabled
-  :REWRITE or :DEFINITION rule, so you may want to consider disabling
-  (:REWRITE CDR-CONS) in the hint provided for Subgoal *1/1.
+  ACL2 Warning [Use] in ( THM ...):  It is unusual to :USE the formula
+  of an enabled :REWRITE or :DEFINITION rule, so you may want to consider
+  disabling (:REWRITE CDR-CONS) in the hint provided for Subgoal *1/1.
+  See :DOC using-enabled-rules.
  })
 
  <p>The warning is saying that if you leave the rewrite rule enabled, ACL2 may
