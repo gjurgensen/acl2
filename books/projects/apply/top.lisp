@@ -7,7 +7,5 @@
 
 (in-package "ACL2")
 
-; This book (apply-lemmas.lisp) has essentially been moved to base.lisp:
-; cert_param: (reloc_stub)
-
 (include-book "base")
+(include-book "loop")
