@@ -81802,6 +81802,11 @@ Bug Fixes
   [fast-alist-free-on-exit] on the wrong objects.  Thanks to Sol
   Swords for pointing out this problem.
 
+  The make TAGS command could fail to do a proper check that the etags
+  program is installed, resulting in a failure when attempting to
+  build an ACL2 executable.  This has been fixed.  Thanks to Johannes
+  Altmanninger for reporting this problem in GitHub Issue #955.
+
 
 Changes at the System Level
 

@@ -83153,6 +83153,11 @@ it."
  fast-alist-free-on-exit) on the wrong objects.  Thanks to Sol Swords for
  pointing out this problem.</p>
 
+ <p>The @('make TAGS') command could fail to do a proper check that the
+ @('etags') program is installed, resulting in a failure when attempting to
+ build an ACL2 executable.  This has been fixed.  Thanks to Johannes
+ Altmanninger for reporting this problem in GitHub Issue #955.</p>
+
  <h3>Changes at the System Level</h3>
 
  <p>The @(see documentation) topic, @(see system-utilities), is now about only
