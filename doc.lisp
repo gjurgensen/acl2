@@ -22279,12 +22279,12 @@ Miscellaneous Remarks, with discussion of possible user errors.
                                        (x t)))))
       :rule-classes nil)
 
-  To see all attachments: (all-attachments (w state)).  However, note
-  that attachments introduced with a non-nil value of :skip-checks
-  will be omitted from this list.  To obtain the attachment to a
-  function symbol FN, without the above restriction and with value
-  nil if there is no attachment to FN: (cdr (attachment-pair 'FN (w
-  state))).
+  The form (all-attachments (w state)) evaluates to the list of all
+  attachments except in two cases: [warrant]s, and attachments
+  introduced with a non-nil value of :skip-checks.  To obtain the
+  attachment to a function symbol FN, without the above restrictions
+  and with value nil if there is no attachment to FN: (cdr
+  (attachment-pair 'FN (w state))).
 
   Next we discuss the :ATTACH keyword.  There is rarely if ever a
   reason to specify :ATTACH T, but the following (admittedly
@@ -28334,8 +28334,9 @@ Proof efficiency
 
   Some system behaviors can be modified using [defattach-system],
   typically by modifying heuristics.  You can find all system
-  attachments by evaluating (all-attachments (w state)).  Here are
-  some key examples of how to modify system behavior.
+  attachments by evaluating (all-attachments (w state)), except for a
+  few exceptions (see [defattach]).  Here are some key examples of
+  how to modify system behavior.
 
     (defun constant-nil-function-arity-2 (x y)
       (declare (xargs :mode :logic :guard t) (ignore x y))

@@ -19215,11 +19215,12 @@ subtree of X with T, without duplication.</p>
     :rule-classes nil)
  })
 
- <p>To see all attachments: @('(all-attachments (w state))').  However, note
- that attachments introduced with a non-@('nil') value of @(':skip-checks')
- will be omitted from this list.  To obtain the attachment to a function symbol
- @('FN'), without the above restriction and with value @('nil') if there is no
- attachment to @('FN'): @('(cdr (attachment-pair 'FN (w state)))').</p>
+ <p>The form @('(all-attachments (w state))') evaluates to the list of all
+ attachments except in two cases: @(see warrant)s, and attachments introduced
+ with a non-@('nil') value of @(':skip-checks').  To obtain the attachment to a
+ function symbol @('FN'), without the above restrictions and with value
+ @('nil') if there is no attachment to @('FN'): @('(cdr (attachment-pair 'FN (w
+ state)))').</p>
 
  <p>Next we discuss the @(':ATTACH') keyword.  There is rarely if ever a reason
  to specify @(':ATTACH T'), but the following (admittedly contrived) example
@@ -25214,8 +25215,9 @@ ld) and @(tsee include-book)"
 
  <p>Some system behaviors can be modified using @(tsee defattach-system),
  typically by modifying heuristics.  You can find all system attachments by
- evaluating (all-attachments (w state)).  Here are some key examples of how to
- modify system behavior.</p>
+ evaluating @('(all-attachments (w state))'), except for a few exceptions (see
+ @(see defattach)).  Here are some key examples of how to modify system
+ behavior.</p>
 
  @({
  (defun constant-nil-function-arity-2 (x y)
@@ -82895,6 +82897,9 @@ it."
 ;
 ;   (2) rune, where rune is a [rune] (see [rune]) denoting the
 ;   :[corollary] justifying the rule named by the [rune].
+
+; Fixed a bug in ev-fncall-rec-logical: it was ignoring attachments to
+; warrants.
 
   :parents (release-notes)
   :short "ACL2 Version  8.2 (xxx, 20xx) Notes"
