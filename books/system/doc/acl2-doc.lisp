@@ -5159,7 +5159,7 @@ and @(tsee include-book)"
 
 (defxdoc apply$
   :parents (acl2-built-ins programming)
-  :short "Apply an authorized function or tame lambda to arguments"
+  :short "Apply a badged function or tame lambda to arguments"
 
   :long "<p>We recommend that you read the paper <a
   href='http://www.cs.utexas.edu/users/kaufmann/papers/apply/index.html'>``Limited
@@ -5189,24 +5189,25 @@ and @(tsee include-book)"
       function.  Under certain conditions, @('apply$') applies the function to
       the arguments and returns the result.  @('Apply$') is mutually recursive
       with @(tsee apply$-lambda), @(tsee ev$), and @(tsee ev$-list).
-      @('Apply$')'s ``badge'' (see below) is @('(APPLY$-BADGE T 2 :FN NIL)')
-      which means its ``authorization flag'' is T (meaning it returns 1 value),
-      its arity is 2, its first argument has ``ilk'' @(':FN') and is thus
-      treated as a ``function;'' its second argument has ilk @('NIL') and is
-      thus treated as an ordinary object.  Initially, @('apply$') is the only
-      symbol in ACL2 with an ilk of @(':FN').</li>
+      @('Apply$')'s ``badge'' (see below) is @('(APPLY$-BADGE 2 1 :FN NIL)')
+      its arity is 2, its ``out arity'' is 1 (i.e., it returns 1 result), its
+      first argument has ``ilk'' @(':FN') and is thus treated as a
+      ``function;'' its second argument has ilk @('NIL') and is thus treated as
+      an ordinary object.  Initially, @('apply$') is the only symbol in ACL2
+      with an ilk of @(':FN').</li>
 
-  <li>@(tsee badge) -- an object associated with some function symbols telling
-      @('apply$') whether it is authorized to call that function, the arity of
-      the function, and the @(see ilk) of each argument position telling
-      @('apply$') how each argument is treated.  The ilks are @(':FN'),
-      @(':EXPR') and @('NIL').  The association between a function symbol and
-      its badge is manged by @(tsee warrant)s.  In proofs, @('apply$') must
-      have a warrant for every non-primitive function symbol to be applied.
-      Those warrants are provided as hypotheses to the theorem being proved.
-      Symbols without badges cannot be @('apply$')d.  Badges are generated,
-      when possible, by @(tsee def-warrant).  Not every function symbol can
-      have a badge.</li>
+  <li>@(tsee badge) -- an object associated with some function symbols
+      indicating that @('apply$') can ``handle'' them and under what
+      conditions.  The badge of a function symbol specifies its arity, its
+      ``out arity,'' (i.e., the number of results the function returns), and
+      the @(see ilk) of each argument position telling @('apply$') how each
+      argument is treated.  The ilks are @(':FN'), @(':EXPR') and @('NIL').
+      The association between a function symbol and its badge is manged by
+      @(tsee warrant)s.  In proofs, @('apply$') must have a warrant for every
+      non-primitive function symbol to be applied.  Those warrants are provided
+      as hypotheses to the theorem being proved.  Symbols without badges cannot
+      be @('apply$')d.  Badges are generated, when possible, by @(tsee
+      defwarrant).  Not every function symbol can have a badge.</li>
 
   <li>compiled @('LAMBDA') cache (or simply <i>cache</i> in this context) -- a
       cache in the raw Lisp under ACL2 that supports the application of
@@ -5223,7 +5224,7 @@ and @(tsee include-book)"
       operates.  The evaluation theory is not new to @('apply$'); it was
       introduced when @(tsee defattach) was added.  But the evaluation theory
       changed with the introduction of @('apply$').  All @(tsee warrant)s
-      introduced by @('def-warrant') are assumed in the evaluation theory but
+      introduced by @('defwarrant') are assumed in the evaluation theory but
       not in the proof theory.  This means ACL2 can execute calls of
       @('apply$') that arise in the evaluation of top-level input, but ACL2
       cannot evaluate all calls of @('apply$') that arise in proofs unless the
@@ -5282,7 +5283,7 @@ and @(tsee include-book)"
       applied are appropriately @(see tame).  The warrant for a function
       specifies the function's @(tsee badge) and how @('apply$') behaves on the
       function symbol.  Warrants (and badges) are computed and introduced by
-      the @(tsee def-warrant) event.  Not all function symbols can be
+      the @(tsee defwarrant) event.  Not all function symbols can be
       warranted.</li>
 
   </ul>
@@ -5300,7 +5301,7 @@ and @(tsee include-book)"
   session in which you intend to use or reason about @('apply$').</b></p>
 
   @({
-  (include-book \"projects/apply/apply-lemmas\" :dir :system)
+  (include-book \"projects/apply/top\" :dir :system)
 
   (defun$ sq (x) (* x x))
 
@@ -5368,7 +5369,7 @@ and @(tsee include-book)"
 
   ACL2 Error in TOP-LEVEL:  The value of APPLY$-USERFN is not specified when
   the first argument, fn, is RUSSELL, and the second argument, args,
-  is (RUSSELL RUSSELL).  Fn has badge (APPLY$-BADGE T 2 :FN NIL) and
+  is (RUSSELL RUSSELL).  Fn has badge (APPLY$-BADGE 2 1 :FN NIL) and
   args is not known to satisfy the tameness requirement of that badge.
   })
 
@@ -5427,7 +5428,7 @@ and @(tsee include-book)"
   unbadged functions, etc.  They are, after all, just arbitrary quoted objects
   and any value in ACL2 can be quoted.  But an ill-formed object can
   <i>become</i> well-formed if the world is appropriately extended, e.g., the
-  appropriate @('defun')s or @('def-warrant')s are made.  Perhaps worse, they
+  appropriate @('defun')s or @('defwarrant')s are made.  Perhaps worse, they
   can be well-formed and then <i>become</i> ill-formed by an undo.  So at
   runtime @('apply$') has to check that the function symbol or @('LAMBDA')
   object is appropriate.  There is a sophisticated cache behind the execution
@@ -5487,7 +5488,7 @@ and @(tsee include-book)"
   session in which you intend to use or reason about @('apply$').</b></p>
 
   @({
-  (include-book \"projects/apply/apply-lemmas\" :dir :system)
+  (include-book \"projects/apply/top\" :dir :system)
   })
 
   @({
@@ -5501,28 +5502,32 @@ and @(tsee include-book)"
   argument.  We might express this as:</p>
 
   <code>
-  <b>Naive Specification:</b>
+  <b>Naive Specification (for a single-valued function):</b>
   (apply$ 'fn args) = (fn (nth 0 args) ... (nth (- n 1) args))
+
+  <b>Naive Specification (for a multi-valued function):</b>
+  (apply$ 'fn args) = (mv-list k (fn (nth 0 args) ... (nth (- n 1) args)))
   </code>
 
-  <p>where @('fn') is of arity @('n').  <b>However</b>, this naive
-  specification is guaranteed only if either (i) @('fn') is a function symbol
-  that has a @(tsee badge), the authorization flag of the badge is @('T'), and
-  @('args') satisfies the @(see tame)ness requirements of the badge, or (ii)
-  @('fn') is a well-formed @('LAMBDA') object.  The tameness requirement is
-  that if an element of @('args') is in an argument position of @('fn') with
-  ilk @(':FN') then the element must satisfies @('tamep-functionp') and if the
-  element is in an argument position of ilk @(':EXPR') it must satisfies
-  @('tamep').  See @(tsee badge) for further discussion of condition (i).  As
-  for (ii), rather than explain ``well-formed @('LAMBDA') object'' here we
-  encourage you to write @(tsee lambda$) expressions when you want to
-  @('apply$') a @('LAMBDA') object.</p>
+  <p>where @('fn') is of arity @('n') and @('k') is the ``out arity'' of
+  @('fn') (the number of returned values).  <b>However</b>, these naive
+  specifications are guaranteed only if either (i) @('fn') is a function symbol
+  that has a @(tsee badge) and @('args') satisfies the @(see tame)ness
+  requirements of the badge, or (ii) @('fn') is a well-formed @('LAMBDA')
+  object that returns 1 result.  The tameness requirement is that if an element
+  of @('args') is in an argument position of @('fn') with ilk @(':FN') then the
+  element must satisfy @('tamep-functionp') and if the element is in an
+  argument position of ilk @(':EXPR') it must satisfy @('tamep').  See @(tsee
+  badge) for further discussion of condition (i).  As for (ii), rather than
+  explain ``well-formed @('LAMBDA') object'' here we encourage you to write
+  @(tsee lambda$) expressions when you want to @('apply$') a @('LAMBDA')
+  object.</p>
 
   <p>The @(see ilk)s of @('apply$') are @(':FN') and @('NIL') respectively,
   telling us that @('apply$') treats its first argument as a ``function'' and
   its second as an ordinary object (never as a function).  Initially
   @('apply$') is the only symbol in ACL2 with an ilk of @(':FN').  However as
-  @(tsee def-warrant) is used successfully on @(see scion)s -- functions that
+  @(tsee defwarrant) is used successfully on @(see scion)s -- functions that
   somehow call @('apply$') -- other symbols can have ilk @(':FN') too.</p>
 
   <p>@('Apply$') has a guard, namely @('(apply$-guard fn args)').  This is an
@@ -5557,10 +5562,10 @@ and @(tsee include-book)"
   checks -- see @(see gratuitous-lambda-object-restrictions) -- if you really
   mean to supply ill-formed @('LAMBDA') objects to @(':FN') slots.</p>
 
-  <p>Badges are assigned by @(tsee def-warrant).  See @(tsee badge) for
+  <p>Badges are assigned by @(tsee defwarrant).  See @(tsee badge) for
   documentation about how to find out whether a function has a badge and how to
-  interpret a badge.  The terms ``authorization flag'' and ``tameness
-  requirements,'' used above, are explained there too.</p>
+  interpret a badge.  The terms ``out arity'' and ``tameness requirements,''
+  used above, are explained there too.</p>
 
   <p>Intuitively, the badge of @('fn') tells @('apply$') how each formal of
   @('fn') is used in the definition of @('fn') and there are only three
@@ -5582,7 +5587,7 @@ and @(tsee include-book)"
   <p>Generally speaking, if you want to be able to @('apply$') a function you
   should introduce it with @(tsee defun$) or a similar macro, because only
   badged functions can be applied.  The ACL2 macro @('defun$') is just an
-  abbreviation for a @(tsee defun) event followed by a @(tsee def-warrant)
+  abbreviation for a @(tsee defun) event followed by a @(tsee defwarrant)
   event.</p>
 
   <p>We summarize specification of @('apply$') with an example.  Consider</p>
@@ -5594,16 +5599,15 @@ and @(tsee include-book)"
   })
 
   <p>The badge of @('foldr'), computed by @('(badge 'foldr)'), is
-  @('(APPLY$-BADGE T 3 NIL :FN NIL)').  The authorization flag of that badge is
-  @('T'), the arity is @('3'), and the ilks list is @('(NIL :FN NIL)').  Thus
-  the first and third formals have ilk @('NIL') and are treated as
+  @('(APPLY$-BADGE 3 1 NIL :FN NIL)').  The arity is @('3'), the out arity is
+  1 (@('foldr') is single-valued) and the ilks list is @('(NIL :FN NIL)').
+  Thus the first and third formals have ilk @('NIL') and are treated as
   ordinary objects; the second formal has ilk @(':FN') and is treated as a
   function.  Thus, the tameness requirement is that the second actual to a call
   of @('foldr') must satisfy @('tamep-functionp').  Referring to the
   specification above, we see that the @('apply$') term has the ``naive
-  specification'' since @('foldr') has a badge, its authorization flag is
-  @('T'), and its second actual, @('cons'), satisfies
-  @('tamep-functionp'). That is,</p>
+  specification'' since @('foldr') has a badge, its out arity is 1, and its
+  second actual, @('cons'), satisfies @('tamep-functionp'). That is,</p>
 
   @({  (apply$ 'foldr
           '((1 2 3)     ; actual 1
@@ -5617,7 +5621,7 @@ and @(tsee include-book)"
   <p>The first equation above is just the naive specification of @('apply$')
   and the second equation is just the definition of @('foldr').</p>
 
-  <p>Formals are classified by @(tsee def-warrant) when it tries to compute the
+  <p>Formals are classified by @(tsee defwarrant) when it tries to compute the
   badge of a function.  What are the rules that lead to a formal being assigned
   ilk @(':FN'), for example?  What does ilk @(':FN') actually signify?</p>
 
@@ -5645,7 +5649,7 @@ and @(tsee include-book)"
   <i>fn </i> then <i>v </i> is <i>never used </i> as a function or as an
   expression in the definition.</p>
 
-  <p>It is the job of @(tsee def-warrant) to analyze a definition and assign
+  <p>It is the job of @(tsee defwarrant) to analyze a definition and assign
   ilks, if possible.  But it may not be possible!  For example,</p>
 
   @({(defun foo (x) (apply$ x (list x)))})
@@ -5653,11 +5657,11 @@ and @(tsee include-book)"
   <p>is such a definition.  The formal @('x') is used as a function in its first
   occurrence but is not used as a function in its second.  Thus</p>
 
-  @({(def-warrant foo)})
+  @({(defwarrant foo)})
 
   <p>will fail.</p>
 
-  <p>When successful, @(tsee def-warrant) also defines the @(tsee warrant)
+  <p>When successful, @(tsee defwarrant) also defines the @(tsee warrant)
   function for the function it analyzed.  Warrants are crucial to stating and
   proving theorems about function symbols being applied with @('apply$').  We
   illustrated warrants in the ``Examples'' section above and discuss them
@@ -5695,14 +5699,14 @@ and @(tsee include-book)"
   anything other than a @('LAMBDA') object or a built-in function symbol.  In
   the evaluation theory, we attach a function to @('apply$-userfn') that
   explicitly enforces the tameness requirements for each user-defined function
-  symbol that has had a badge computed by @(tsee def-warrant) and, if those
+  symbol that has had a badge computed by @(tsee defwarrant) and, if those
   requirements are met, applies the corresponding function.  But in the proof
   theory @('apply$-userfn') remains undefined.  The value of @('(apply$-userfn
   'fn ...)'), and thus of @('(apply$ 'fn ...)'), is specified by a special
   hypothesis, called the ``warrant for @('fn').''  You can't prove anything
   interesting about the behavior of @('apply$') on a user-defined function
   symbol @('fn') unless the warrant for @('fn') is a governing hypothesis.  We
-  discuss warrants in @(tsee warrant).  See also @(tsee def-warrant).</li>
+  discuss warrants in @(tsee warrant).  See also @(tsee defwarrant).</li>
 
   <li>@('untame-apply$'): used by @('apply$') when it is asked to deal with a
   situation in which tameness is violated.</li>
@@ -5725,17 +5729,17 @@ and @(tsee include-book)"
   to follow certain rules.  For example, ACL2 must be able to determine whether
   a formal parameter is ``used as a function'' in a given definition.
   Basically, you will want every @(':logic') mode function that you define to
-  be processed by @('def-warrant') so that it gets a badge if at all possible
+  be processed by @('defwarrant') so that it gets a badge if at all possible
   and at least has a chance of being applied as expected by @('apply$').</p>
 
   <p>The macro @('defun$') is just an abbreviation for a @('defun') followed by
-  a @('def-warrant') and it is easy to imagine the other ACL2 definitional
+  a @('defwarrant') and it is easy to imagine the other ACL2 definitional
   idioms introduced in the ACL2 Community Books eventually being extended to
-  include a subsequent @('def-warrant').</p>
+  include a subsequent @('defwarrant').</p>
 
   <p>So the question becomes ``What rules must a @('defun') obey in order to be
-  processed successfully by @('def-warrant')?''  The answer is given in the
-  documentation for @(tsee def-warrant).</p>
+  processed successfully by @('defwarrant')?''  The answer is given in the
+  documentation for @(tsee defwarrant).</p>
 
   <h3>Theorems Involving @('Apply$')</h3>
 
@@ -5771,7 +5775,7 @@ and @(tsee include-book)"
 
   <p>Here @('(warrant sq)') is just an abbreviation for a call of the 0-ary
   function symbol @('apply$-warrant-sq') which is the name of the warrant for
-  @('sq').  @('Apply$-warrant-sq') is introduced when @('(def-warrant sq)')
+  @('sq').  @('Apply$-warrant-sq') is introduced when @('(defwarrant sq)')
   completes successfully.  In particular, the following is a theorem:</p>
 
   @({
@@ -5779,7 +5783,7 @@ and @(tsee include-book)"
     <-->
       (apply$-warrant-sq)
     <-->
-      (((badge 'SQ) = '(APPLY$-BADGE T 1 . T))
+      (((badge 'SQ) = '(APPLY$-BADGE 1 1 . T))
        &
        ((apply$ 'SQ args) = (sq (car args))))
    })
@@ -5800,7 +5804,7 @@ and @(tsee include-book)"
   <p>You might worry that theorems burdened by warrants are vacuously valid
   because it might be impossible to satisfy all the warrant hypotheses.  You
   needn't worry about this.  <i>There is a model of @('apply$') and all of its
-  scions that makes every warrant issued by @('def-warrant') valid.</i> The
+  scions that makes every warrant issued by @('defwarrant') valid.</i> The
   proof of this is sketched in <a
   href='http://www.cs.utexas.edu/users/kaufmann/papers/apply/index.html'>``Limited
   Second-Order Functionality in a First-Order Setting''</a> by Matt Kaufmann
@@ -5952,7 +5956,7 @@ and @(tsee include-book)"
   <h3>Top-Level Evaluation of Apply$</h3>
 
   <p>As noted, ACL2's evaluation theory implicitly assumes all warrants
-  produced by @(tsee def-warrant).  Since top-level evaluation in ACL2 is
+  produced by @(tsee defwarrant).  Since top-level evaluation in ACL2 is
   conducted in the evaluation theory, ground calls of @('apply$') -- whether
   literally in top-level input to the ACL2 read-eval-print loop or hidden
   inside scions called from the top-level -- can be evaluated on quoted
@@ -7680,18 +7684,17 @@ and @(tsee include-book)"
 
   <p>The argument, @('fn'), is expected to be a function symbol.  If @('fn') is
   one of about 800 ACL2 primitives (discussed below) or is a user-defined
-  function successfully processed by the event @(tsee def-warrant), the result
+  function successfully processed by the event @(tsee defwarrant), the result
   is an object, called the ``badge'' of @('fn'), which among other things
   specifies the @(see ilk) of each formal of @('fn').  Otherwise, an error is
-  caused.  We explain below, where we define the concepts of the
-  ``authorization flag,'' ``ilks,'' and ``tameness requirements'' of @('fn')'s
-  badge.</p>
+  caused.  We explain below, where we define the concepts of the ``out arity,''
+  ``ilks,'' and ``tameness requirements'' of @('fn')'s badge.</p>
 
   <p>A function symbol must have a badge in order to @('apply$') the symbol.
   So if you want to be able to @('apply$') a function you should introduce it
-  with @('defun$') or a similar macro, or call @(tsee def-warrant) on the
+  with @('defun$') or a similar macro, or call @(tsee defwarrant) on the
   function after introducing.  The ACL2 macro @('defun$') is just an
-  abbreviation for a @(tsee defun) event followed by a @(tsee def-warrant)
+  abbreviation for a @(tsee defun) event followed by a @(tsee defwarrant)
   event.  But not every function symbol can have a badge!</p>
 
   <p>The complete list of badged primitives can be seen by evaluating</p>
@@ -7711,7 +7714,7 @@ and @(tsee include-book)"
   <p>and see that after handling the built-in symbols it defers to the
   undefined function @(tsee badge-userfn).  In the evaluation theory,
   @('badge-userfn') has an attachment that returns the badge computed by
-  @('def-warrant').  But in the proof theory, @('badge-userfn') is undefined
+  @('defwarrant').  But in the proof theory, @('badge-userfn') is undefined
   and the @(tsee warrant) for @('fn') specifies the badge of @('fn').  Thus, in
   the proof theory, you cannot reason about the application of a non-primitive
   function unless there is a warrant for the function available as a
@@ -7722,13 +7725,13 @@ and @(tsee include-book)"
 
   @({
   ACL2 !>(badge 'cons)
-  (APPLY$-BADGE T 2 . T)
+  (APPLY$-BADGE 2 1 . T)
 
   ACL2 !>(badge 'apply$)
-  (APPLY$-BADGE T 2 :FN NIL)
+  (APPLY$-BADGE 2 1 :FN NIL)
 
   ACL2 !>(badge 'foldr)
-  (APPLY$-BADGE T 3 NIL :FN NIL)
+  (APPLY$-BADGE 3 1 NIL :FN NIL)
   })
 
   <p>The last example assumes that @('foldr') has been defined with</p>
@@ -7742,23 +7745,15 @@ and @(tsee include-book)"
                       (foldr (cdr lst) fn init)))))
   })
 
-  <p>In general, badges have the form @('(APPLY$-BADGE flg n . ilks)'),
-  where @('flg') is a Boolean, @('n') is the arity of @('fn'), and @('ilks') is
-  either @('T') or a list of @('n') tokens.  Each token is either @(':FN'),
-  @(':EXPR'), or @('NIL').</p>
+  <p>In general, badges have the form @('(APPLY$-BADGE n k . ilks)'), where
+  @('n') is the arity of @('fn'), @('k') is the out arity (i.e., the number of
+  results returned by @('fn')) and @('ilks') is either @('T') or a list of
+  @('n') tokens.  Each token is either @(':FN'), @(':EXPR'), or @('NIL').</p>
 
-  <p>The badge of @('fn'), if any, is computed when the event @('(def-warrant fn)')
-  completes successfully.  See @(tsee def-warrant) for a sketch of the algorithm used
-  to compute badges.  Here though we are just concerned with how badges impact
-  @('apply$').</p>
-
-  <p>The @('flg') component of a badge is the <i>authorization flag</i>.  The
-  authorization flag indicates whether the function returns one (@('flg') =
-  @('T')) or more (@('flg') = @('NIL')) values.  Recall that if the
-  authorization flag of @('fn') is not @('T'), then @('(apply$ 'fn args)') does
-  not meet the naive specification of @(tsee apply$) because @('apply$')
-  returns one result but a function with authorization flag @('NIL') returns
-  multiple values.</p>
+  <p>The badge of @('fn'), if any, is computed when the event @('(defwarrant
+  fn)') completes successfully.  See @(tsee defwarrant) for a sketch of the
+  algorithm used to compute badges.  Here though we are just concerned with how
+  badges impact @('apply$').</p>
 
   <p>The @('ilks') of a function, @('fn'), determines the ``tameness
   requirements'' mentioned in the specification of @(tsee apply$).  When the
@@ -17936,181 +17931,6 @@ subtree of X with T, without duplication.</p>
  <p>ACL2 insists on the declaration to ensure that the definition is processed
  the same way no matter what the context.</p>")
 
-(defxdoc def-warrant
-  :parents (apply$ acl2-built-ins)
-  :short "Warrant a function so @(tsee apply$) can use it"
-  :long "<p>Before using @('def-warrant') or a utility like @(tsee defun$) that
-  relies on it:</p>
-
-  @({
-  (include-book \"projects/apply/apply-lemmas\" :dir :system)
-  })
-
-  <p>Several lemmas in that book are necessary for @('def-warrant') to prove
-  the theorems it must prove.</p>
-
-  @({
-  General Form:
-  (def-warrant fn)
-  })
-
-  <p>where @('fn') is a defined function name.  This command analyzes the body
-  of @('fn') to determine whether it satisfies stringent syntactic conditions
-  that allow @(tsee apply$) to apply the function name to arguments and that
-  allow future calls of @('def-warrant') to analyze definitions that call this
-  @('fn').</p>
-
-  <p>The conditions include:</p>
-
-  <p><i>(a)</i> @('Fn') is a defined, singly-recursive (or non-recursive)
-  @(':logic') mode function that (if recursive) is justified with a @(see tame)
-  measure expression, @(see tame) domain predicate, and @(see tame)
-  well-founded relation, and that (if recursive and at least one formal has ilk
-  @(':FN') or @(':EXPR')) has a natural-number-valued measure and well-founded
-  relation @('o<').</p>
-
-  <p><i>(b)</i> Every function called in the body of @('fn'), except @('fn')
-  itself, already has a @(see badge).  If some subfunction doesn't already have
-  a badge, @('def-warrant') will signal an error and report the unbadged
-  function.  You will have to call @('def-warrant') on that function -- and
-  that call must succeed -- before any function using it is successfully
-  warranted.</p>
-
-  <p><i>(c)</i> Each formal can be assigned one of three ilks, as follows.  By
-  the way, key to the inductive correctness of the implied algorithm below is
-  the fact that initially the only function symbol with a slot of ilk @(':FN')
-  is @('apply$') and the only function with a slot of ilk @(':EXPR') is
-  @('ev$').  In both functions it is the first argument slot that is so
-  distinguished.</p>
-
-  <p>Let <i>v </i> be the <i>i </i>th formal parameter of a defined function
-  <i>fn</i>.  Then the ilk of <i>v </i> is @(':FN') iff the value of <i>v </i>
-  eventually makes its way into the first argument of @('apply$'), either in
-  the definition of @('fn') or in some function ancestral to (i.e., eventually
-  called by) @('fn').  Another way to say this is that there is an occurrence
-  of <i>v </i> in a slot of ilk @(':FN').  Furthermore, <i>v </i> is never used
-  any other way: every place <i>v </i> occurs in the body of <i>fn </i> is in a
-  slot of ilk @(':FN').  And finally, in every recursive call of <i>fn </i>,
-  <i>v </i> is passed identically in the <i>i </i>th argument position of the
-  call.  We say such a <i>v </i> is ``used (exclusively) as a function.''</p>
-
-  <p>The <i>i </i>th formal variable <i>v </i> has ilk @(':EXPR') under
-  analogous conditions except that instead of eventually getting into the first
-  argument of @('apply$') it eventually gets into the first argument of
-  @('ev$').  We say such a <i>v </i> is ``used (exclusively) as an
-  expression.''  Note: @(tsee ev$) is the natural notion of expression
-  evaluation in this context: look up the values of variables in the alist
-  argument to @('ev$'), return quoted constants, and otherwise @('apply$')
-  function symbols and @('LAMBDA') objects to the recursively obtained list of
-  values returned by evaluating the actuals.  However, @('ev$') first checks
-  that the expression is @(tsee tamep).</p>
-
-  <p>The <i>i </i>th formal variable <i>v </i> has ilk @('NIL') if it never
-  occurs in a @(':FN') slot and never occurs in an @(':EXPR') slot.  We say
-  such a <i>v </i> is ``used (exclusively) as an ordinary object.''</p>
-
-  <p><i>(d)</i> Every @(':FN') and @(':EXPR') slot of every function called in
-  the body of @('fn') is occupied either by a formal of @('fn') of the same ilk
-  or, in the case of calls of functions other than @('fn'), a quoted @(see
-  tame) function symbol or quoted tame (preferably well-formed) @('LAMBDA')
-  object.</p>
-
-  <p>If these conditions are not met, an error is caused by @('def-warrant').</p>
-
-  <p>If these conditions are met, @('def-warrant') constructs the @(see badge)
-  for @('fn'), setting the authorization flag to @('T') if @('fn') returns a
-  single value and @('NIL') if it does not, setting the arity field in the
-  badge to the arity, @('n'), of @('fn'), and setting the ilks field to the
-  list of computed ilks (or to @('T') if every formal has ilk @('NIL')).</p>
-
-  <p>The authorization flag indicates whether @('apply$') is allowed to call
-  @('fn').  A @('fn') that satisfies the conditions above but returns multiple
-  values cannot be called by @('apply$') because @('apply$') always returns a
-  single value.  But such a @('fn') might be used as a subfunction in some
-  other function that satisfies the rules and returns a single value, so that
-  caller can be authorized.  There is an example of this at the end of this
-  documentation topic.</p>
-
-  <p>The generated badge is stored for the future use of @('def-warrant').
-  Furthermore, if the generated badge is authorized, @('def-warrant') generates
-  the @(tsee warrant) for @('fn').  The name of that 0-ary function will be
-  @('APPLY$-WARRANT-fn').  Calls of @(tsee apply$) on @(''fn') in proof attempts
-  can only be simplified if the warrant hypothesis,
-  @('(APPLY$-WARRANT-fn)'), <i>aka</i> ``the warrant,'' is among the hypotheses of
-  the conjecture being proved.  The warrant specifies the values of both
-  @('(badge 'fn)') and @('(apply$ 'fn ...)'), including the tameness
-  requirements imposed on @('apply$').  (The warrant explicitly specifies the
-  values of @(tsee badge-userfn) and @(tsee apply$-userfn) and then @(tsee
-  def-warrant) proves rewrite rules to make calls of @('badge') and @('apply$')
-  simplify accordingly.)</p>
-
-  <p>In addition, if a warrant is issued for @('fn'), then @('def-warrant')
-  extends ACL2's evaluation theory (but not its proof theory) so that the
-  warrant hypothesis is assumed in that theory, allowing calls of @('badge')
-  and @('apply$') to be evaluated in the evaluation theory (but not in the
-  proof theory).  See @(tsee warrant) for details.</p>
-
-  <p>@('Def-warrant') also proves that @(tsee fn-equal) is a congruence
-  relation for each @(':FN') position of @('fn').</p>
-
-  <p>See @(tsee warrant) for details.</p>
-
-  <h3>An Example of an Authorized Function Calling an Unauthorized One</h3>
-
-  <p>Recall above that @('def-warrant') sometimes refuses to generate a warrant
-  but does generate a badge so that the function can be used in other
-  definitions.  Below is a script in which we define a function that returns
-  multiple values and a second function that uses it to compute a single value.
-  We have omitted the output generated by these two ordinary @('defun')s.  We
-  then call @('def-warrant') on each and show the output, which is
-  self-explanatory.</p>
-
-  @({
-  (defun sum-and-diff (x y)
-    (mv (+ x y) (- x y)))
-
-  (defun diff-squares (x y)
-    (mv-let (sum diff)
-      (sum-and-diff x y)
-      (* sum diff)))
-
-  (def-warrant sum-and-diff)
-
-  SUM-AND-DIFF cannot be warranted because it returns multiple values, but it
-  otherwise satisfies the syntactic restrictions on warrants.  So a badge for
-  SUM-AND-DIFF has been issued -- allowing you to use SUM-AND-DIFF in other
-  functions that may be warranted -- but no warrant for SUM-AND-DIFF can be
-  issued.  The badge of SUM-AND-DIFF is (APPLY$-BADGE NIL 2 . T).
-
-  (def-warrant diff-squares)
-
-  DIFF-SQUARES is now warranted, with badge (APPLY$-BADGE T 2 . T).
-  })
-
-  <p>From the definition of ``tame function'' in the
-  documentation for @(tsee apply$) we see that @('sum-and-diff')
-  is not a tame function because it is not authorized for use by
-  @('apply$').  But @('diff-squares'), which uses
-  @('sum-and-diff'), is a tame function.</p>
-
-  <p>We cannot expect:</p>
-
-  @({(apply$ 'sum-and-diff '(3 5)) = (sum-and-diff 3 5)})
-
-  <p>because @('apply$') returns 1 value while @('sum-and-diff') returns 2.</p>
-
-  <p>Since @('diff-squares') is a tame function, @('apply$') can know how to
-  apply it.  But its warrant is needed to reason about it since
-  @('diff-squares') is not built into @('apply$').</p>
-
-  @({(defthm diff-squares-works
-      (implies (warrant diff-squares)
-               (equal (apply$ 'diff-squares (list x y))
-                      (- (expt x 2) (expt y 2)))))})
-
-  <p>By the way, an arithmetic book, e.g., \"arithmetic-5/top\" is needed to
-  prove the theorem above.</p>")
-
 (defxdoc defabbrev
   :parents (macros events programming)
   :short "A convenient form of macro definition for simple expansions"
@@ -19348,12 +19168,12 @@ subtree of X with T, without duplication.</p>
 
  <p>(Of interest only to users of @(tsee apply$).)  Special handling is applied
  when attempting to attach to a so-called <i>warrant</i>, which is produced by
- an appication of @(tsee def-warrant) (or @(tsee defun$)).  In that case it is
+ an appication of @(tsee defwarrant) (or @(tsee defun$)).  In that case it is
  legal to attach the function @('true-apply$-warrant') to the warrant, without
  any proof obligation.  This attachment is actually performed automatically by
- @('def-warrant'), so users (even users of @('apply$')) need not deal
+ @('defwarrant'), so users (even users of @('apply$')) need not deal
  explicitly with such attachments.  However, these attachments make warrants
- executable in the loop; for example, after @('(def-warrant foo)'), @('(warrant
+ executable in the loop; for example, after @('(defwarrant foo)'), @('(warrant
  foo)') will evaluate to @('t') in the loop.</p>
 
  <p>We next discuss a restriction based on a notion of a function symbol
@@ -19395,11 +19215,12 @@ subtree of X with T, without duplication.</p>
     :rule-classes nil)
  })
 
- <p>To see all attachments: @('(all-attachments (w state))').  However, note
- that attachments introduced with a non-@('nil') value of @(':skip-checks')
- will be omitted from this list.  To obtain the attachment to a function symbol
- @('FN'), without the above restriction and with value @('nil') if there is no
- attachment to @('FN'): @('(cdr (attachment-pair 'FN (w state)))').</p>
+ <p>The form @('(all-attachments (w state))') evaluates to the list of all
+ attachments except in two cases: @(see warrant)s, and attachments introduced
+ with a non-@('nil') value of @(':skip-checks').  To obtain the attachment to a
+ function symbol @('FN'), without the above restrictions and with value
+ @('nil') if there is no attachment to @('FN'): @('(cdr (attachment-pair 'FN (w
+ state)))').</p>
 
  <p>Next we discuss the @(':ATTACH') keyword.  There is rarely if ever a reason
  to specify @(':ATTACH T'), but the following (admittedly contrived) example
@@ -22974,7 +22795,7 @@ subtree of X with T, without duplication.</p>
   :parents (defun events apply$)
   :short "Define a function symbol and generate a warrant"
   :long "<p>@('Defun$') is just a macro that expands to the obvious @(tsee
-  defun) followed by @(tsee def-warrant).</p>")
+  defun) followed by @(tsee defwarrant).</p>")
 
 (defxdoc defun-inline
   :parents (defun events)
@@ -23918,6 +23739,115 @@ subtree of X with T, without duplication.</p>
  than @('defuns') because by leaving the @(tsee defun)s in place, @(tsee
  mutual-recursion) forms can be processed by the Emacs @('tags') program.  See
  @(see mutual-recursion).</p>")
+
+(defxdoc defwarrant
+  :parents (apply$ acl2-built-ins)
+  :short "Warrant a function so @(tsee apply$) can use it"
+  :long "<p>Before using @('defwarrant') or a utility like @(tsee defun$) that
+  relies on it:</p>
+
+  @({
+  (include-book \"projects/apply/top\" :dir :system)
+  })
+
+  <p>Several lemmas in that book are necessary for @('defwarrant') to prove
+  the theorems it must prove.</p>
+
+  @({
+  General Form:
+  (defwarrant fn)
+  })
+
+  <p>where @('fn') is a defined function name.  This command analyzes the body
+  of @('fn') to determine whether it satisfies stringent syntactic conditions
+  that allow @(tsee apply$) to apply the function name to arguments and that
+  allow future calls of @('defwarrant') to analyze definitions that call this
+  @('fn').</p>
+
+  <p>The conditions include:</p>
+
+  <p><i>(a)</i> @('Fn') is a defined, singly-recursive (or non-recursive)
+  @(':logic') mode function that (if recursive) is justified with a @(see tame)
+  measure expression, @(see tame) domain predicate, and @(see tame)
+  well-founded relation, and that (if recursive and at least one formal has ilk
+  @(':FN') or @(':EXPR')) has a natural-number-valued measure and well-founded
+  relation @('o<').</p>
+
+  <p><i>(b)</i> Every function called in the body of @('fn'), except @('fn')
+  itself, already has a @(see badge).  If some subfunction doesn't already have
+  a badge, @('defwarrant') will signal an error and report the unbadged
+  function.  You will have to call @('defwarrant') on that function -- and
+  that call must succeed -- before any function using it is successfully
+  warranted.</p>
+
+  <p><i>(c)</i> Each formal can be assigned one of three ilks, as follows.  By
+  the way, key to the inductive correctness of the implied algorithm below is
+  the fact that initially the only function symbol with a slot of ilk @(':FN')
+  is @('apply$') and the only function with a slot of ilk @(':EXPR') is
+  @('ev$').  In both functions it is the first argument slot that is so
+  distinguished.</p>
+
+  <p>Let <i>v </i> be the <i>i </i>th formal parameter of a defined function
+  <i>fn</i>.  Then the ilk of <i>v </i> is @(':FN') iff the value of <i>v </i>
+  eventually makes its way into the first argument of @('apply$'), either in
+  the definition of @('fn') or in some function ancestral to (i.e., eventually
+  called by) @('fn').  Another way to say this is that there is an occurrence
+  of <i>v </i> in a slot of ilk @(':FN').  Furthermore, <i>v </i> is never used
+  any other way: every place <i>v </i> occurs in the body of <i>fn </i> is in a
+  slot of ilk @(':FN').  And finally, in every recursive call of <i>fn </i>,
+  <i>v </i> is passed identically in the <i>i </i>th argument position of the
+  call.  We say such a <i>v </i> is ``used (exclusively) as a function.''</p>
+
+  <p>The <i>i </i>th formal variable <i>v </i> has ilk @(':EXPR') under
+  analogous conditions except that instead of eventually getting into the first
+  argument of @('apply$') it eventually gets into the first argument of
+  @('ev$').  We say such a <i>v </i> is ``used (exclusively) as an
+  expression.''  Note: @(tsee ev$) is the natural notion of expression
+  evaluation in this context: look up the values of variables in the alist
+  argument to @('ev$'), return quoted constants, and otherwise @('apply$')
+  function symbols and @('LAMBDA') objects to the recursively obtained list of
+  values returned by evaluating the actuals.  However, @('ev$') first checks
+  that the expression is @(tsee tamep).</p>
+
+  <p>The <i>i </i>th formal variable <i>v </i> has ilk @('NIL') if it never
+  occurs in a @(':FN') slot and never occurs in an @(':EXPR') slot.  We say
+  such a <i>v </i> is ``used (exclusively) as an ordinary object.''</p>
+
+  <p><i>(d)</i> Every @(':FN') and @(':EXPR') slot of every function called in
+  the body of @('fn') is occupied either by a formal of @('fn') of the same ilk
+  or, in the case of calls of functions other than @('fn'), a quoted @(see
+  tame) function symbol or quoted tame (preferably well-formed) @('LAMBDA')
+  object.</p>
+
+  <p>If these conditions are not met, an error is caused by @('defwarrant').</p>
+
+  <p>If these conditions are met, @('defwarrant') constructs the @(see badge)
+  for @('fn'), setting the arity and out arity appropriately and setting the
+  ilks field to the list of computed ilks (or to @('T') if every formal has ilk
+  @('NIL')).</p>
+
+  <p>The generated badge is stored for the future use of @('defwarrant').
+  Furthermore, @('defwarrant') generates the @(tsee warrant) for @('fn').  The
+  name of that 0-ary function will be @('APPLY$-WARRANT-fn').  Calls of @(tsee
+  apply$) on @(''fn') in proof attempts can only be simplified if the warrant
+  hypothesis, @('(APPLY$-WARRANT-fn)'), <i>aka</i> ``the warrant,'' is among
+  the hypotheses of the conjecture being proved.  The warrant specifies the
+  values of both @('(badge 'fn)') and @('(apply$ 'fn ...)'), including the
+  tameness requirements imposed on @('apply$').  (The warrant explicitly
+  specifies the values of @(tsee badge-userfn) and @(tsee apply$-userfn) and
+  then @(tsee defwarrant) proves rewrite rules to make calls of @('badge') and
+  @('apply$') simplify accordingly.)</p>
+
+  <p>In addition, if a warrant is issued for @('fn'), then @('defwarrant')
+  extends ACL2's evaluation theory (but not its proof theory) so that the
+  warrant hypothesis is assumed in that theory, allowing calls of @('badge')
+  and @('apply$') to be evaluated in the evaluation theory (but not in the
+  proof theory).  See @(tsee warrant) for details.</p>
+
+  <p>@('defwarrant') also proves that @(tsee fn-equal) is a congruence
+  relation for each @(':FN') position of @('fn').</p>
+
+  <p>See @(tsee warrant) for details.</p>")
 
 (defxdoc delete-assoc
   :parents (alists acl2-built-ins)
@@ -25285,8 +25215,9 @@ ld) and @(tsee include-book)"
 
  <p>Some system behaviors can be modified using @(tsee defattach-system),
  typically by modifying heuristics.  You can find all system attachments by
- evaluating (all-attachments (w state)).  Here are some key examples of how to
- modify system behavior.</p>
+ evaluating @('(all-attachments (w state))'), except for a few exceptions (see
+ @(see defattach)).  Here are some key examples of how to modify system
+ behavior.</p>
 
  @({
  (defun constant-nil-function-arity-2 (x y)
@@ -31284,13 +31215,13 @@ current fast alists."
  @('fmx-cw') if you want the output to be machine-readable.</p>")
 
 (defxdoc fn-equal
-  :parents (apply$ def-warrant)
+  :parents (apply$ defwarrant)
   :short "Equivalence relation on tame functions"
   :long "<p>@('Fn-equal') is an equivalence relation on tame functions.  It
   holds between @('fn1') and @('fn2') iff both are tame functions and
   @('(apply$ fn1 args)') is @('(apply$ fn2 args)'), for all @('args').  A
   @('defun-sk') event is used to express the universally quantified condition.
-  @(tsee Def-warrant) proves that @('fn-equal') is a congruence relation for
+  @(tsee defwarrant) proves that @('fn-equal') is a congruence relation for
   every argument position of ilk @(':FN').</p>
 
   <p>Ideally one can substitute one functional object for an equivalent one in
@@ -35785,7 +35716,7 @@ current fast alists."
   <p><i>Warning</i>: Using an ill-formed @('LAMBDA') object in a @(':FN') slot
   in a @('defun') will make it impossible to warrant the newly defined function
   because it will not pass the stringent tests necessary to analyze its ilks.
-  See @(tsee def-warrant).  Basically these bypasses are intended primarily for
+  See @(tsee defwarrant).  Basically these bypasses are intended primarily for
   top-level input to ACL2's read-eval-print loop.</p>
 
   <p>There are two ways to bypass the check.  Bypass 1 is to construct the
@@ -35842,12 +35773,12 @@ current fast alists."
   ACL2 !>(foo 'b)
   (B . B)
 
-  ; But you can't warrant the new function because def-warrant
+  ; But you can't warrant the new function because defwarrant
   ; can't determine the ilks.
 
-  ACL2 !>(def-warrant foo)
+  ACL2 !>(defwarrant foo)
 
-  ACL2 Error in DEF-WARRANT: FOO will not be warranted because
+  ACL2 Error in DEFWARRANT: FOO will not be warranted because
   a :FN slot in its body is occupied by a quoted cons object,
   '(LAMBDA (T) (CONS T T)), that is not a well-formed,
   fully-translated, closed ACL2 lambda object. ...
@@ -41109,7 +41040,7 @@ tables in the current Hons Space."
   stores a @('T') as the ``list'' of ilks.</p>
 
   <p>The @(tsee badge) of @('fn') is computed by a successful call of @(tsee
-  def-warrant) on @('fn').</p>
+  defwarrant) on @('fn').</p>
 
   <p>Ilks are used by the various notions of @(see tame)ness controlling
   whether @(tsee apply$) and @(tsee ev$) can properly interpret a quoted
@@ -43216,7 +43147,7 @@ tables in the current Hons Space."
 
  :parents (apply$)
  :short "Background knowledge on how to use @(tsee apply$), @(tsee
- def-warrant), etc."
+ defwarrant), etc."
  :long "
 
  <p>The paper <a
@@ -43373,7 +43304,7 @@ tables in the current Hons Space."
   @('apply$') to full advantage we need to analyze every relevant function
   definition, which has the side-effect of producing warrants for those
   functions.  We therefore have introduced the new command @('defun$'), which
-  is just an ordinary @(tsee defun) followed by a @(tsee def-warrant) command
+  is just an ordinary @(tsee defun) followed by a @(tsee defwarrant) command
   which analyzes definitions and sometimes produces warrants.</p>
 
   <p>We explain further via an annotated example, starting from scratch but
@@ -43414,7 +43345,7 @@ tables in the current Hons Space."
   @('apply$') but to defining functions that use @('apply$').</p>
 
   @({
-  (include-book \"projects/apply/apply-lemmas\" :dir :system)
+  (include-book \"projects/apply/top\" :dir :system)
   })
 
   <p><b>Lesson 2:</b> To allow @('apply$') to ``work'' on a function symbol the
@@ -43425,20 +43356,20 @@ tables in the current Hons Space."
   @('sq') and @('rev') do:</p>
 
   @({
-  (def-warrant sq)
+  (defwarrant sq)
 
-  (def-warrant rev)
+  (defwarrant rev)
   })
 
-  <p>@(tsee Def-warrant) checks that its argument, <i>fn</i>, is a defined
+  <p>@(tsee defwarrant) checks that its argument, <i>fn</i>, is a defined
   function symbol that satisfies certain restrictions on how it uses its
   arguments, restrictions that enable us to define the tameness predicates and
   that allow @('apply$') to ``work'' without causing logical contradictions.
-  @('Def-warrant') causes an error if <i>fn</i> does not obey our rules.  But
-  if @('def-warrant') does not cause an error it produces a ``badge'' for
+  @('defwarrant') causes an error if <i>fn</i> does not obey our rules.  But
+  if @('defwarrant') does not cause an error it produces a ``badge'' for
   <i>fn</i> that describes which formals are treated as ``functions.''
   Henceforth, we'll say such formals have ``@(see ilk)'' @(':FN').  In addition
-  to computing a badge, non-erroneous calls of @('def-warrant') may produce a
+  to computing a badge, non-erroneous calls of @('defwarrant') may produce a
   @(tsee warrant) for <i>fn</i> that specifies the @(tsee badge) and the
   conditions under which @('apply$') ``works'' on the function symbol
   <i>fn</i>.</p>
@@ -43456,7 +43387,7 @@ tables in the current Hons Space."
   multiple-valued one and possibly issue warrants for them.</p>
 
   <p><b>Lesson 4:</b> If you want to define a function and immediately call
-  @('def-warrant') on it you can use the handy macro @('defun$').  We'll use
+  @('defwarrant') on it you can use the handy macro @('defun$').  We'll use
   @('defun$') freely below.</p>
 
   <p><b>Lesson 5:</b> You can define functions that take warranted
@@ -43487,7 +43418,7 @@ tables in the current Hons Space."
   to have a warrant for @('collect').  Had we defined @('collect') with the
   ordinary @('defun') and realized later that we want to pass @(''COLLECT')
   into a slot of ilk @(':FN'), we could get a warrant for @('collect') by
-  calling @('(def-warrant collect)').</p>
+  calling @('(defwarrant collect)').</p>
 
   <p>Here's another useful mapping function:</p>
 
@@ -47370,7 +47301,7 @@ tables in the current Hons Space."
   @('collect') is a @('LAMBDA') object.</p>
 
   <p>Beware, however, that consing up @('LAMBDA') objects defeats the @(see
-  ilk) analysis in @(tsee def-warrant) and the @(see tame)ness analysis of
+  ilk) analysis in @(tsee defwarrant) and the @(see tame)ness analysis of
   @('apply$') and hence prevents functions containing such terms from being
   @('apply$')d.</p>
 
@@ -47395,10 +47326,11 @@ tables in the current Hons Space."
   is a concept even stronger than tameness.  Among other requirements,
   well-formed @('LAMBDA') objects obey the ACL2 and Common Lisp rules on
   variable names (not every symbol is a legal variable), on the use of free
-  variables, on the body being a fully translated formal term, that the
-  declarations, if any, be meaningful to the Common Lisp compiler, etc.  You
-  can read about well-formedness in @(tsee well-formed-lambda-objectp) if you
-  want, but we don't encourage beginners to go there!</p>
+  variables, on the body being a fully translated formal term returning 1
+  value, that the declarations, if any, be meaningful to the Common Lisp
+  compiler, etc.  You can read about well-formedness in @(tsee
+  well-formed-lambda-objectp) if you want, but we don't encourage beginners to
+  go there!</p>
 
   <p>Note: Even well-formedness is not enough to guarantee execution of
   compiled code.  The @('LAMBDA') object must also be guard verified (see
@@ -47412,7 +47344,7 @@ tables in the current Hons Space."
   quoted objects and any value in ACL2 can be quoted.  An ill-formed
   @('LAMBDA') object can <i>become</i> well-formed if the world is
   appropriately extended, e.g., the appropriate @('defun')s or
-  @('def-warrant')s are made.  Perhaps worse, they can be well-formed and then
+  @('defwarrant')s are made.  Perhaps worse, they can be well-formed and then
   <i>become</i> ill-formed by an undo.  So at runtime @('apply$') has to check
   that the function symbol or @('LAMBDA') object is appropriate.  There is a
   sophisticated cache behind the execution machinery for @('LAMBDA') objects in
@@ -47510,14 +47442,15 @@ tables in the current Hons Space."
 
   <p>where the @('lambda$') expression occurs in an argument position of ilk
   @(':FN'), @('vars') is a list of distinct variable names, @('dcl*') is zero
-  or more @('DECLARE') forms as described below, and @('body') is a term.
-  @('Body') must satisfy the same restrictions one would expect in a
-  non-recursive @(tsee defun) event with the same formals, declarations and
-  body.  In particular, @('body') should contain no free variables other than
-  those listed in @('vars'), must not use freely any variable declared
-  @('IGNORE')d and must use every other variable in @('vars') except, possibly,
-  variables listed as @('IGNORABLE').  @('Lambda$') expands to a well-formed
-  quoted @('LAMBDA') object or else causes a translate-time error.</p>
+  or more @('DECLARE') forms as described below, and @('body') is a term
+  returning 1 value.  @('Body') must satisfy the same restrictions one would
+  expect in a non-recursive @(tsee defun) event with the same formals,
+  declarations and body.  In particular, @('body') should contain no free
+  variables other than those listed in @('vars'), must not use freely any
+  variable declared @('IGNORE')d and must use every other variable in @('vars')
+  except, possibly, variables listed as @('IGNORABLE').  @('Lambda$') expands
+  to a well-formed quoted @('LAMBDA') object or else causes a translate-time
+  error.</p>
 
   <p>The allowed @('DECLARE') forms in @('lambda$') are @('type'), @('ignore'),
   @('ignorable') and @('xargs').  Furthermore, the only @(tsee xargs) keywords
@@ -82301,10 +82234,10 @@ it."
  extend-pe-table) out of the generated @(tsee encapsulate) form.</p>
 
  <p>(Of interest only to users of @(tsee apply$).)  When invoking @(tsee
- def-warrant) or @(tsee defun$), a so-called `@(see warrant)' is introduced.
+ defwarrant) or @(tsee defun$), a so-called `@(see warrant)' is introduced.
  Warrants are now always @(see guard)-verified, with a guard of @('t').
  Moreover, warrants are now executable in the top-level loop; for example,
- after successfully processing @('(def-warrant foo)') or @('(defun$ foo ...)'),
+ after successfully processing @('(defwarrant foo)') or @('(defun$ foo ...)'),
  @('(warrant foo)') will evaluate to @('t') in the loop.  (Note: each warrant
  has an attachment, @('true-apply$-warrant'), that always returns @('t'); see
  @(see defattach).)  Thanks to Dmitry Nadezhin for requesting these
@@ -82312,7 +82245,7 @@ it."
 
  <p>It is now required to include the system book
  @('projects/apply/apply-lemmas.lisp') before evaluating a call of @('defun$')
- or @(tsee def-warrant).  This requirement, which is enforced with an error
+ or @(tsee defwarrant).  This requirement, which is enforced with an error
  that prints the necessary @(tsee include-book) form, avoids stack overflows
  that could occur when that book is not included.</p>
 
@@ -82965,6 +82898,9 @@ it."
 ;   (2) rune, where rune is a [rune] (see [rune]) denoting the
 ;   :[corollary] justifying the rule named by the [rune].
 
+; Fixed a bug in ev-fncall-rec-logical: it was ignoring attachments to
+; warrants.
+
   :parents (release-notes)
   :short "ACL2 Version  8.2 (xxx, 20xx) Notes"
   :long "<p>NOTE!  New users can ignore these release notes, because the @(see
@@ -83095,6 +83031,10 @@ it."
  the warning will correctly recommend disabling the definition rule instead of
  the executable-counterpart rule.</p>
 
+ <p>The event formerly named @('def-warrant') is now @(tsee defwarrant).  This
+ event may now be @(see redundant); hence @(tsee defun$) may also be
+ redundant.</p>
+
  <h3>New Features</h3>
 
  <p>A new construct, @('lambda$'), may be used in place of @('lambda') to be
@@ -83130,6 +83070,21 @@ it."
  <p>A new signature is legal for @(tsee clause-processor)s, to support the
  return of rules and event names to be printed in the summary.  See @(see
  make-summary-data).</p>
+
+ <p>The new macro, @('loop$'), is an ACL2 version of the Common Lisp @('loop')
+ macro.  Documentation is forthcoming.</p>
+
+ <p>@(tsee Apply$) now handles functions that return multiple values.  This has
+ widespread ramifications.  The structure of badges has changed.  There is no
+ longer an ``authorization-flag'' and there is now an ``out-arity'' slot in the
+ badge.  See @(see badge).  Every badged function symbol now has a warrant.  If
+ @('fn') is a warranted function symbol and returns more than one result then
+ @('(apply$ 'fn ...)') returns a list of the results, just as @('fn') does in
+ the logic.  See @(tsee apply$).  The warrant of a multi-valued function is
+ just like that for a single-valued function except that @(tsee mv-list) is
+ used to coerce the output of the multi-valued function to a list.  See @(tsee
+ warrant).  All @('LAMBDA') objects and @(tsee lambda$) expressions must be
+ single-valued, but can use multi-valued functions to compute that value.</p>
 
  <h3>Heuristic and Efficiency Improvements</h3>
 
@@ -83202,6 +83157,11 @@ it."
  <p>Fixed an inefficiency in book certification due to calling @(tsee
  fast-alist-free-on-exit) on the wrong objects.  Thanks to Sol Swords for
  pointing out this problem.</p>
+
+ <p>The @('make TAGS') command could fail to do a proper check that the
+ @('etags') program is installed, resulting in a failure when attempting to
+ build an ACL2 executable.  This has been fixed.  Thanks to Johannes
+ Altmanninger for reporting this problem in GitHub Issue #955.</p>
 
  <h3>Changes at the System Level</h3>
 
@@ -87762,7 +87722,7 @@ arithmetic) for libraries of @(see books) for arithmetic reasoning.</p>")
           function (but perhaps it can be defined), the body contains a
           @(':program') mode function (but perhaps that could be upgraded to
           @(':logic') mode), the body contains an unbadged function symbol (but
-          perhaps @('def-warrant') could issue a warrant), etc.</li>
+          perhaps @('defwarrant') could issue a warrant), etc.</li>
 
       <li>@('(GUARD-USES-NON-COMPLIANT-FNS . fns)') - @('fns') is a list of
           function symbols used in the guard of the @('LAMBDA') object that
@@ -107950,10 +107910,9 @@ arithmetic) for libraries of @(see books) for arithmetic reasoning.</p>")
   actually a macro.</p></li>
 
   <li><p><b>tame function</b> aka @('tamep-functionp'): An object is a <i>tame
-  function</i> iff it is either (a) a badged symbol whose authorization flag is
-  @('T') and ilks is @('T'), or (b) a tame @('LAMBDA') object (see above).
-  Formally, an object @('x') is a tame function iff @('(tamep-functionp
-  x)').</p></li>
+  function</i> iff it is either (a) a badged symbol and ilks is @('T'), or (b)
+  a tame @('LAMBDA') object (see above).  Formally, an object @('x') is a tame
+  function iff @('(tamep-functionp x)').</p></li>
 
   <li><p><b>tame expression</b> aka @('tamep'): An object is a <i>tame
   expression</i> iff it is a symbol, a quoted constant, the call of an badged
@@ -107988,7 +107947,7 @@ arithmetic) for libraries of @(see books) for arithmetic reasoning.</p>")
   <p>We assume the following events have been processed.</p>
 
   @({
-  (include-book \"projects/apply/apply-lemmas\" :dir :system)
+  (include-book \"projects/apply/top\" :dir :system)
 
   (defun$ sq (x) (* x x))
 
@@ -108005,9 +107964,9 @@ arithmetic) for libraries of @(see books) for arithmetic reasoning.</p>")
   <code>
   symbol           badge
 
-  CONS    (APPLY$-BADGE T 2 . T)  ; . T means all args ordinary
-  SQ      (APPLY$-BADGE T 1 . T)  ; . T means all args ordinary
-  FOLDR   (APPLY$-BADGE T 1 NIL :FN NIL)
+  CONS    (APPLY$-BADGE 2 1 . T)  ; . T means all args ordinary
+  SQ      (APPLY$-BADGE 1 1 . T)  ; . T means all args ordinary
+  FOLDR   (APPLY$-BADGE 1 1 NIL :FN NIL)
   </code>
 
   <p>We are going to investigate ``why'' the following expression is tame.</p>
@@ -108078,9 +108037,9 @@ arithmetic) for libraries of @(see books) for arithmetic reasoning.</p>")
   @('NIL') because @('Y') and @(''NIL') are both tame and @(''CONS') is a
   <i>quoted</i> tame function, @('CONS').</p>
 
-  <p>@('[3]'): The object here is tame because @('FOLDR') is a badged
-  authorized function of arity 3 and its actuals are suitably tame with respect
-  to its arity and ilks as shown by example @('[2]').</p>
+  <p>@('[3]'): The object here is tame because @('FOLDR') is a badged function
+  of arity 3 and its actuals are suitably tame with respect to its arity and
+  ilks as shown by example @('[2]').</p>
 
   <p>@('[4]'): The @('LAMBDA') object here is a tame function because it is of
   the form @('(LAMBDA vars body)'), where @('vars') is the list of symbols
@@ -119115,14 +119074,14 @@ introduction-to-the-tau-system) for more information about Tau.</dd>
   can be simplified appropriately.  We think of the warrant for @('fn') giving
   @('badge') and @('apply$') authority to expand on @(''fn').  For reasons of
   logical consistency not every @('fn') can have a warrant.  Warrants are
-  issued, when possible, by @(tsee def-warrant).</p>
+  issued, when possible, by @(tsee defwarrant).</p>
 
   <p>In the ACL2 evaluation theory -- a consistent extension of the proof
-  theory -- all warrants issued by @('def-warrant') are implicitly assumed,
+  theory -- all warrants issued by @('defwarrant') are implicitly assumed,
   meaning @('badge') and @('apply$') can be executed on warranted user-defined
   function symbols at the top-level of the ACL2 loop without explicit mention
   of the warrants.  For a discussion of the restrictions on when a @('fn') can
-  be warranted, see @(tsee def-warrant).  This topic discusses warrants <i>per
+  be warranted, see @(tsee defwarrant).  This topic discusses warrants <i>per
   se</i>, their names, their logical meaning, when they must be explicitly
   added as hypotheses to theorems, and their consistency.</p>
 
@@ -119131,10 +119090,10 @@ introduction-to-the-tau-system) for more information about Tau.</dd>
   <p>If <i>fn</i> has a warrant, then the warrant is the term
   <tt>(apply$-warrant-</tt><i>fn</i><tt>)</tt>, i.e., a call of the 0-ary
   warrant function named, <tt>apply$-warrant-</tt><i>fn</i>.  That warrant
-  function name is admitted to the logic when @('def-warrant') succeeds on
+  function name is admitted to the logic when @('defwarrant') succeeds on
   @('fn').</p>
 
-  <p>The warrant function for @('fn'), introduced by @('(def-warrant fn)'), is
+  <p>The warrant function for @('fn'), introduced by @('(defwarrant fn)'), is
   defined with @(tsee defun-sk) because the warrant must specify the values
   returned by <tt>(apply$ 'fn args)</tt> <i>for all possible</i> @('args').
   Recall that @(tsee badge) and @(tsee apply$) defer to two undefined
@@ -119142,7 +119101,7 @@ introduction-to-the-tau-system) for more information about Tau.</dd>
   user-defined function symbols.  The warrant for @('fn') is actually phrased
   in terms of those two undefined functions.  By stipulating their values on
   @(''fn') the warrant determines the values of @('(badge 'fn)') and @('(apply$
-  'fn ...)').  To create the warrant function for @('fn'), @('def-warrant')
+  'fn ...)').  To create the warrant function for @('fn'), @('defwarrant')
   must turn the ilks of @('fn') into tameness requirements on the corresponding
   elements of the @('args') to which @('fn') will be applied by @('apply$').
   Each @(':FN') argument must be a @(see tame) function and each @(':EXPR')
@@ -119151,15 +119110,16 @@ introduction-to-the-tau-system) for more information about Tau.</dd>
   <p>It is easiest to understand the above paragraph by looking at the
   generated warrant function for @('foldr'), whose definition is shown at the
   top of the documentation for @(tsee apply$) and whose @(see badge) is
-  @('(APPLY$-BADGE T 3 NIL :FN NIL)').  The warrant function for @('foldr') is
-  defined as follows.</p>
+  @('(APPLY$-BADGE 3 1 NIL :FN NIL)'), indicating that @('foldr') takes 3
+  arguments of ilks @('NIL'), @(':FN'), and @('NIL'), and returns 1 result.
+  The warrant function for @('foldr') is defined as follows.</p>
 
   @({
   (defun-sk apply$-warrant-foldr ()
     (forall (args)
       (implies (tamep-functionp (cadr args))
                (and (equal (badge-userfn 'FOLDR)
-                           '(APPLY$-BADGE T 3 NIL :FN NIL))
+                           '(APPLY$-BADGE 3 1 NIL :FN NIL))
                     (equal (apply$-userfn 'FOLDR args)
                            (foldr (car args)
                                   (cadr args)
@@ -119168,7 +119128,7 @@ introduction-to-the-tau-system) for more information about Tau.</dd>
   })
 
   <p>Notice that the warrant is phrased in terms of the undefined functions
-  @('badge-userfn') and @('apply$-userfn').  @('Def-warrant') will ``lift''
+  @('badge-userfn') and @('apply$-userfn').  @('Defwarrant') will ``lift''
   this warrant to @('badge') and @('apply$') by proving rewrite rules discussed
   below.</p>
 
@@ -119179,7 +119139,7 @@ introduction-to-the-tau-system) for more information about Tau.</dd>
 
   @({
   (equal (badge-userfn 'FOLDR)
-         '(APPLY$-BADGE T 3 NIL :FN NIL))
+         '(APPLY$-BADGE 3 1 NIL :FN NIL))
   })
 
   <p>and</p>
@@ -119210,9 +119170,25 @@ introduction-to-the-tau-system) for more information about Tau.</dd>
   may not be a locally defined symbol in the environment from which the theorem
   is exported.</p>
 
+  <p>Now consider a function symbol that returns more than one result.  Suppose
+  the badge of @('add-and-subtract') is @('(APPLY$-BADGE 2 2 . T)'), meaning it
+  takes two ordinary objects and returns two results.  The function is tame and
+  so no tameness requirements are imposed on its application.  Its warrant is
+  defined</p>
+
+  @({
+  (defun-sk apply$-warrant-add-and-subtract ()
+    (forall (args)
+      (and (equal (badge-userfn 'add-and-subtract)
+                  '(APPLY$-BADGE 2 2 . T))
+           (equal (apply$ 'add-and-subtract args)
+                  (mv-list 2
+                           (add-and-subtract (car args) (cadr args)))))))
+  })
+
   <h3>Rewrite Rules that Lift and Force the Warrant</h3>
 
-  <p>Once @('def-warrant') has introduced the warrant function for <i>fn</i> it
+  <p>Once @('defwarrant') has introduced the warrant function for <i>fn</i> it
   proves two rewrite rules, conjoined under the name <tt>apply$-</tt><i>fn</i>,
   that ``lifts'' the warrant from the level of the two undefined functions to
   the level of @('badge') and @('apply$').  In the case of @('foldr') the rules
@@ -119222,7 +119198,7 @@ introduction-to-the-tau-system) for more information about Tau.</dd>
   (defthm apply$-foldr
     (and (implies (force (apply$-warrant-foldr))
                   (equal (badge 'FOLDR)
-                         '(APPLY$-BADGE T 3 NIL :FN NIL)))
+                         '(APPLY$-BADGE 3 1 NIL :FN NIL)))
          (implies (and (force (apply$-warrant-foldr))
                        (tamep-functionp (car (cdr args))))
                   (equal (apply$ 'FOLDR args)
@@ -119232,7 +119208,7 @@ introduction-to-the-tau-system) for more information about Tau.</dd>
   })
 
   <p>Observe that these rules say that if @('(apply$-warrant-foldr)') is
-  available, then @('(badge 'FOLDR)') is @('(APPLY$-BADGE T 3 NIL :FN NIL)')
+  available, then @('(badge 'FOLDR)') is @('(APPLY$-BADGE 3 1 NIL :FN NIL)')
   and @('(apply$ 'FOLDR args)') has the naively expected behavior of calling
   @('foldr'), provided the second element of @('args') is a
   @('tamep-functionp').  Also note that the warrant hypothesis is @(tsee
@@ -119275,7 +119251,7 @@ introduction-to-the-tau-system) for more information about Tau.</dd>
   carried out these events.</p>
 
   @({
-  (include-book \"projects/apply/apply-lemmas\" :dir :system)
+  (include-book \"projects/apply/top\" :dir :system)
 
   (defun$ sq (x) (* x x))
 
@@ -119314,7 +119290,7 @@ introduction-to-the-tau-system) for more information about Tau.</dd>
 
   <p>the proof would fail with a checkpoint indicating that you need the
   warrant for @('sq').  That happens because the :rewrite rules proved by
-  @('def-warrant'), discussed in the previous section and named @('apply$-sq')
+  @('defwarrant'), discussed in the previous section and named @('apply$-sq')
   in the case of @('sq'), fire and force that warrant.  However, you could
   disable that rule and get the proof without a warrant.</p>
 
@@ -119450,7 +119426,7 @@ introduction-to-the-tau-system) for more information about Tau.</dd>
   })
 
   <p>where each @('fni') is the name of a defined function on which
-  @('def-warrant') has been previously called and succeeded.  (Actually, we
+  @('defwarrant') has been previously called and succeeded.  (Actually, we
   allow the @('fni') to include certain primitive function symbols already
   built into @('apply$'), but for the moment we ignore the possible presence of
   such symbols among the arguments to @('warrant').)  @('(Warrant fn1 fn2
@@ -119486,12 +119462,12 @@ introduction-to-the-tau-system) for more information about Tau.</dd>
   formula vacuously valid?  That is, can a set of warrants simply be
   unsatisfiable so that any formula having that set of warrants among its
   hypotheses is a theorem?  Put another way, is there a model for the set of
-  all warrants introduced by @(tsee def-warrant)?</p>
+  all warrants introduced by @(tsee defwarrant)?</p>
 
   <p>The answer is yes.  This is discussed in <a
   href='http://www.cs.utexas.edu/users/kaufmann/papers/apply/index.html'>``Limited
   Second-Order Functionality in a First-Order Setting''</a> by Matt Kaufmann
-  and J Strother Moore.  For any set of functions warranted by @('def-warrant')
+  and J Strother Moore.  For any set of functions warranted by @('defwarrant')
   it is possible to <i>define</i>, under the standard ACL2 definitional
   principle, versions of those functions (together with @('apply$'), @('ev$'),
   etc.) and then make attachments to the undefined @('badge-userfn') and
@@ -119502,7 +119478,7 @@ introduction-to-the-tau-system) for more information about Tau.</dd>
   admitting a big mutually recursive clique containing versions of @('apply$')
   and all of its @(see scion)s, by inventing a measure that provably decreases
   as @('apply$') and the scions call eachother.  The keys to that measure's
-  existence are the restrictions imposed by @(tsee def-warrant) and @(see
+  existence are the restrictions imposed by @(tsee defwarrant) and @(see
   tame)ness.  See the paper for a sketch of the proof and see the comment
   titled <tt>Essay on Admitting a Model for Apply$ and the Functions that Use
   It</tt> in the ACL2 source file @('apply-raw.lisp').</p>")
