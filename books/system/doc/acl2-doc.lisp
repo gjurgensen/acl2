@@ -83211,6 +83211,11 @@ it."
  basic guide to which sorts of rules to create from your theorems.  Thanks to
  Mihir Mehta for encouraging the development of this topic.</p>
 
+ <p>(CCL only) We now use lock-free hash tables for @(see fast-alists), to work
+ around an apparently CCL bug.  Thanks to Rob Sumners and the folks at Centaur
+ for finding and analyzing this problem, proposing this fix, and doing timing
+ tests on it.</p>
+
  <h3>EMACS Support</h3>
 
  <p>Fixed the @(see acl2-doc) browser so that it can handle topic names with
@@ -111829,7 +111834,9 @@ arithmetic) for libraries of @(see books) for arithmetic reasoning.</p>")
 
  <p>@(':COND'), @(':ENTRY'), and @(':EXIT')</p>
 
- <p><b>Introduction</b>.  For each of these three options, the value is a
+ <h3>Introduction</h3>
+
+ <p>For each of these three options, the value is a
  (user-level) term, except that for @(':entry') and @(':exit') the value can be
  of the form @('(:fmt u)') or @('(:fmt! u)'), where @('u') is a user-level
  term.  We skip these two latter cases for now and return to them later.  Then
@@ -111845,23 +111852,31 @@ arithmetic) for libraries of @(see books) for arithmetic reasoning.</p>")
  VALUES)') where @('VALUES') is the list of values returned as described
  below.</p>
 
- <p><b>Available Variables</b>.  In the evaluations of the term described below
- upon a call of @('fn'), each formal parameter of the definition of @('fn')
- will be bound to the corresponding actual of the call, the variable
- @('ARGLIST') will be bound to the list of actuals, and the variable
- @('TRACED-FN') will be bound to the function being called (either @('fn') or
- its executable-counterpart function; see above).  Additionally in the case of
- @(':exit'), the variable @('VALUES') will be bound to the multiple values
- returned (thus, a one-element list if @(tsee mv) is not used in the return).
- Also for @(':exit'), we bind @('VALUE') to the logical value returned, i.e.,
- to the suitable list of values returned in the @(tsee mv) case and otherwise
- to the single value returned.  So in the @('mv') case, @('VALUE') is the same
- as @('VALUES'), and otherwise @('VALUE') is @('(car VALUES)').  Finally, the
- variable @('TRACE-LEVEL') will be bound to the level, or depth, of tracing;
- that is, the number printed at entry and exit (e.g., 3 in @('`3>'') and
- @('`<3'')).  Other than these variables and @(tsee STATE), no other variable
- may occur in the term, whose value must be a single non-@(tsee stobj) value,
- unless there is an active trust tag (see @(see defttag)).</p>
+ <h3>Available Variables</h3>
+
+ <blockquote>NOTE.  The symbols mentioned below, for example @('ARGLIST'), are
+ all in the @('\"ACL2\"') package.  If you are in another package you may need
+ an @('\"ACL2::\"') package prefix, e.g., @('ACL2::ARGLIST').</blockquote>
+
+ <p>In the evaluations of the term described below upon a call of @('fn'), each
+ formal parameter of the definition of @('fn') will be bound to the
+ corresponding actual of the call, the variable @('ARGLIST') will be bound to
+ the list of actuals, and the variable @('TRACED-FN') will be bound to the
+ function being called (either @('fn') or its executable-counterpart function;
+ see above).  Additionally in the case of @(':exit'), the variable @('VALUES')
+ will be bound to the multiple values returned (thus, a one-element list if
+ @(tsee mv) is not used in the return).  Also for @(':exit'), we bind
+ @('VALUE') to the logical value returned, i.e., to the suitable list of values
+ returned in the @(tsee mv) case and otherwise to the single value returned.
+ So in the @('mv') case, @('VALUE') is the same as @('VALUES'), and otherwise
+ @('VALUE') is @('(car VALUES)').  Finally, the variable @('TRACE-LEVEL') will
+ be bound to the level, or depth, of tracing; that is, the number printed at
+ entry and exit (e.g., 3 in @('`3>'') and @('`<3'')).  Other than these
+ variables and @(tsee STATE), no other variable may occur in the term, whose
+ value must be a single non-@(tsee stobj) value, unless there is an active
+ trust tag (see @(see defttag)).</p>
+
+ <h3>Basic Options</h3>
 
  <p>Now suppose @('fn') is called.  First: If @(':cond') is supplied and the
  result of evaluating the @(':cond') term is @('nil'), then no tracing is done.
@@ -111975,7 +111990,7 @@ arithmetic) for libraries of @(see books) for arithmetic reasoning.</p>")
   ACL2 !>
  })
 
- <p><b>ADVANCED OPTIONS</b> (alphabetical list)</p>
+ <h3>Advanced Options (alphabetical list)</h3>
 
  <p>@(':COMPILE')</p>
 
@@ -112157,7 +112172,7 @@ arithmetic) for libraries of @(see books) for arithmetic reasoning.</p>")
  <p>The legal values for @(':notinline') are @('t') (the default for other than
  the cases displayed above), @('nil'), and @(':fncall').</p>
 
- <p><b>Remarks</b>.</p>
+ <h3>Remarks</h3>
 
  <p>(1) If some of the given trace specs have errors, then @('trace$') will
  generally print error messages for those but will still process those that do
