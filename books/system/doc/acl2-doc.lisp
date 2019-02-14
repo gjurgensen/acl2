@@ -83035,6 +83035,10 @@ it."
  event may now be @(see redundant); hence @(tsee defun$) may also be
  redundant.</p>
 
+ <p>The @(':')@(tsee args) command now prints the @(see badge) and @(see
+ warrant) for a function, and it avoids printing a package prefix in the case
+ of @(see unknown-constraints).</p>
+
  <h3>New Features</h3>
 
  <p>A new construct, @('lambda$'), may be used in place of @('lambda') to be
@@ -83077,14 +83081,15 @@ it."
  <p>@(tsee Apply$) now handles functions that return multiple values.  This has
  widespread ramifications.  The structure of badges has changed.  There is no
  longer an ``authorization-flag'' and there is now an ``out-arity'' slot in the
- badge.  See @(see badge).  Every badged function symbol now has a warrant.  If
- @('fn') is a warranted function symbol and returns more than one result then
- @('(apply$ 'fn ...)') returns a list of the results, just as @('fn') does in
- the logic.  See @(tsee apply$).  The warrant of a multi-valued function is
- just like that for a single-valued function except that @(tsee mv-list) is
- used to coerce the output of the multi-valued function to a list.  See @(tsee
- warrant).  All @('LAMBDA') objects and @(tsee lambda$) expressions must be
- single-valued, but can use multi-valued functions to compute that value.</p>
+ badge.  See @(see badge).  Every badged non-primitive function symbol now has
+ a warrant.  If @('fn') is a warranted function symbol and returns more than
+ one result then @('(apply$ 'fn ...)') returns a list of the results, just as
+ @('fn') does in the logic.  See @(tsee apply$).  The warrant of a multi-valued
+ function is just like that for a single-valued function except that @(tsee
+ mv-list) is used to coerce the output of the multi-valued function to a list.
+ See @(tsee warrant).  All @('LAMBDA') objects and @(tsee lambda$) expressions
+ must be single-valued, but can use multi-valued functions to compute that
+ value.</p>
 
  <h3>Heuristic and Efficiency Improvements</h3>
 
