@@ -81670,6 +81670,10 @@ Changes to Existing Features
   The event formerly named def-warrant is now [defwarrant].  This event
   may now be [redundant]; hence [defun$] may also be redundant.
 
+  The :[args] command now prints the [badge] and [warrant] for a
+  function, and it avoids printing a package prefix in the case of
+  [unknown-constraints].
+
 
 New Features
 
@@ -81715,15 +81719,15 @@ New Features
   widespread ramifications.  The structure of badges has changed.
   There is no longer an ``authorization-flag'' and there is now an
   ``out-arity'' slot in the badge.  See [badge].  Every badged
-  function symbol now has a warrant.  If fn is a warranted function
-  symbol and returns more than one result then (apply$ 'fn ...)
-  returns a list of the results, just as fn does in the logic.  See
-  [apply$].  The warrant of a multi-valued function is just like that
-  for a single-valued function except that [mv-list] is used to
-  coerce the output of the multi-valued function to a list.  See
-  [warrant].  All LAMBDA objects and [lambda$] expressions must be
-  single-valued, but can use multi-valued functions to compute that
-  value.
+  non-primitive function symbol now has a warrant.  If fn is a
+  warranted function symbol and returns more than one result then
+  (apply$ 'fn ...) returns a list of the results, just as fn does in
+  the logic.  See [apply$].  The warrant of a multi-valued function
+  is just like that for a single-valued function except that
+  [mv-list] is used to coerce the output of the multi-valued function
+  to a list.  See [warrant].  All LAMBDA objects and [lambda$]
+  expressions must be single-valued, but can use multi-valued
+  functions to compute that value.
 
 
 Heuristic and Efficiency Improvements
