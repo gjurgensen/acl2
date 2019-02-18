@@ -81670,6 +81670,10 @@ Changes to Existing Features
   The event formerly named def-warrant is now [defwarrant].  This event
   may now be [redundant]; hence [defun$] may also be redundant.
 
+  The :[args] command now prints the [badge] and [warrant] for a
+  function, and it avoids printing a package prefix in the case of
+  [unknown-constraints].
+
 
 New Features
 
@@ -81715,15 +81719,15 @@ New Features
   widespread ramifications.  The structure of badges has changed.
   There is no longer an ``authorization-flag'' and there is now an
   ``out-arity'' slot in the badge.  See [badge].  Every badged
-  function symbol now has a warrant.  If fn is a warranted function
-  symbol and returns more than one result then (apply$ 'fn ...)
-  returns a list of the results, just as fn does in the logic.  See
-  [apply$].  The warrant of a multi-valued function is just like that
-  for a single-valued function except that [mv-list] is used to
-  coerce the output of the multi-valued function to a list.  See
-  [warrant].  All LAMBDA objects and [lambda$] expressions must be
-  single-valued, but can use multi-valued functions to compute that
-  value.
+  non-primitive function symbol now has a warrant.  If fn is a
+  warranted function symbol and returns more than one result then
+  (apply$ 'fn ...) returns a list of the results, just as fn does in
+  the logic.  See [apply$].  The warrant of a multi-valued function
+  is just like that for a single-valued function except that
+  [mv-list] is used to coerce the output of the multi-valued function
+  to a list.  See [warrant].  All LAMBDA objects and [lambda$]
+  expressions must be single-valued, but can use multi-valued
+  functions to compute that value.
 
 
 Heuristic and Efficiency Improvements
@@ -81851,6 +81855,11 @@ Changes at the System Level
   basic guide to which sorts of rules to create from your theorems.
   Thanks to Mihir Mehta for encouraging the development of this
   topic.
+
+  (CCL only) We now use lock-free hash tables for [fast-alists], to
+  work around an apparently CCL bug.  Thanks to Rob Sumners and the
+  folks at Centaur for finding and analyzing this problem, proposing
+  this fix, and doing timing tests on it.
 
 
 EMACS Support
@@ -89380,12 +89389,12 @@ Subtopics
   uppercase.
 
   Q: What does (rev '((a b c) \"Abc\" \"a\" b #\\c)) return?  A: (#\\c B \"a\"
-  \"Abc\" (A B C)).  If you thought the answer was any of these, then
-  you need to think or read more carefully:
+  \"Abc\" (A B C)).  If you thought the answer was either of these,
+  then you need to think or read more carefully:
 
     (#\\C B \"A\" \"ABC\" (A B C))
 
-    (#\\C B \"A\" \"ABC\" (C B A))
+    (#\\c B \"a\" \"Abc\" (C B A))
 
   The first wrong answer above is wrong because Lisp is ``case
   insensitive'' only for symbols, not for character objects like #\\c
@@ -114112,40 +114121,53 @@ Subtopics
 
   :COND, :ENTRY, and :EXIT
 
-  Introduction.  For each of these three options, the value is a
-  (user-level) term, except that for :entry and :exit the value can
-  be of the form (:fmt u) or (:fmt! u), where u is a user-level term.
-  We skip these two latter cases for now and return to them later.
-  Then the indicated term is evaluated as indicated in the next
-  paragraph, and if the :cond term is omitted or evaluates to
-  non-nil, then the value of the :entry term is printed on entry and
-  the value of the :exit term is printed on exit.  By default, where
-  :entry is omitted or is specified as nil, the value printed for
-  :entry is the list obtained by consing the calling function symbol
-  onto the list of actual parameters: in the notation described
-  below, this is (cons TRACED-FN ARGLIST).  Similarly, the default
-  for printing at the exit of the function call, i.e. where :exit is
-  omitted or is specified as nil, is (cons TRACED-FN VALUES) where
-  VALUES is the list of values returned as described below.
 
-  Available Variables.  In the evaluations of the term described below
-  upon a call of fn, each formal parameter of the definition of fn
-  will be bound to the corresponding actual of the call, the variable
-  ARGLIST will be bound to the list of actuals, and the variable
-  TRACED-FN will be bound to the function being called (either fn or
-  its executable-counterpart function; see above).  Additionally in
-  the case of :exit, the variable VALUES will be bound to the
-  multiple values returned (thus, a one-element list if [mv] is not
-  used in the return).  Also for :exit, we bind VALUE to the logical
-  value returned, i.e., to the suitable list of values returned in
-  the [mv] case and otherwise to the single value returned.  So in
-  the mv case, VALUE is the same as VALUES, and otherwise VALUE is
-  (car VALUES).  Finally, the variable TRACE-LEVEL will be bound to
-  the level, or depth, of tracing; that is, the number printed at
-  entry and exit (e.g., 3 in `3>' and `<3').  Other than these
-  variables and [state], no other variable may occur in the term,
-  whose value must be a single non-[stobj] value, unless there is an
-  active trust tag (see [defttag]).
+Introduction
+
+  For each of these three options, the value is a (user-level) term,
+  except that for :entry and :exit the value can be of the form (:fmt
+  u) or (:fmt! u), where u is a user-level term.  We skip these two
+  latter cases for now and return to them later.  Then the indicated
+  term is evaluated as indicated in the next paragraph, and if the
+  :cond term is omitted or evaluates to non-nil, then the value of
+  the :entry term is printed on entry and the value of the :exit term
+  is printed on exit.  By default, where :entry is omitted or is
+  specified as nil, the value printed for :entry is the list obtained
+  by consing the calling function symbol onto the list of actual
+  parameters: in the notation described below, this is (cons
+  TRACED-FN ARGLIST).  Similarly, the default for printing at the
+  exit of the function call, i.e. where :exit is omitted or is
+  specified as nil, is (cons TRACED-FN VALUES) where VALUES is the
+  list of values returned as described below.
+
+
+Available Variables
+
+    NOTE.  The symbols mentioned below, for example ARGLIST, are all in
+    the \"ACL2\" package.  If you are in another package you may need
+    an \"ACL2::\" package prefix, e.g., ACL2::ARGLIST.
+
+  In the evaluations of the term described below upon a call of fn,
+  each formal parameter of the definition of fn will be bound to the
+  corresponding actual of the call, the variable ARGLIST will be
+  bound to the list of actuals, and the variable TRACED-FN will be
+  bound to the function being called (either fn or its
+  executable-counterpart function; see above).  Additionally in the
+  case of :exit, the variable VALUES will be bound to the multiple
+  values returned (thus, a one-element list if [mv] is not used in
+  the return).  Also for :exit, we bind VALUE to the logical value
+  returned, i.e., to the suitable list of values returned in the [mv]
+  case and otherwise to the single value returned.  So in the mv
+  case, VALUE is the same as VALUES, and otherwise VALUE is (car
+  VALUES).  Finally, the variable TRACE-LEVEL will be bound to the
+  level, or depth, of tracing; that is, the number printed at entry
+  and exit (e.g., 3 in `3>' and `<3').  Other than these variables
+  and [state], no other variable may occur in the term, whose value
+  must be a single non-[stobj] value, unless there is an active trust
+  tag (see [defttag]).
+
+
+Basic Options
 
   Now suppose fn is called.  First: If :cond is supplied and the result
   of evaluating the :cond term is nil, then no tracing is done.
@@ -114255,7 +114277,8 @@ Subtopics
     6
     ACL2 !>
 
-  ADVANCED OPTIONS (alphabetical list)
+
+Advanced Options (alphabetical list)
 
   :COMPILE
 
@@ -114435,7 +114458,8 @@ Subtopics
   The legal values for :notinline are t (the default for other than the
   cases displayed above), nil, and :fncall.
 
-  Remarks.
+
+Remarks
 
   (1) If some of the given trace specs have errors, then trace$ will
   generally print error messages for those but will still process

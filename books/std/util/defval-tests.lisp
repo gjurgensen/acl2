@@ -1,5 +1,5 @@
-; ACL2 String Library
-; Copyright (C) 2009-2013 Centaur Technology
+; ACL2 Standard Library
+; Copyright (c) 2008-2015 Centaur Technology
 ;
 ; Contact:
 ;   Centaur Technology Formal Verification Group
@@ -27,17 +27,20 @@
 ;   DEALINGS IN THE SOFTWARE.
 ;
 ; Original author: Jared Davis <jared@centtech.com>
+; Contributing author: Alessandro Coglio <coglio@kestrel.edu>
 
-(in-package "STR")
-(include-book "defs")
-(include-book "centaur/fty/fty-sum-casemacro" :dir :system)
+(in-package "STD")
 
-(encapsulate ()
-  (local (include-book "pretty"))
-  (local (include-book "pretty-defs-aux"))
-  (local (include-book "std/util/defredundant" :dir :system))
+(include-book "defval")
 
-  (make-event
-   (b* ((events (std::defredundant-fn *pretty-defs* nil state)))
-     (acl2::value events))))
+(defun fib (n)
+  (declare (xargs :guard (natp n)))
+  (cond ((zp n) 1)
+        ((eql n 1) 1)
+        (t (+ (fib (- n 1)) (fib (- n 2))))))
 
+(defval *defval-example-number*
+  :parents (defval)
+  :short "Example of a constant for @(see defval)."
+  :long "<p>This number is not very important.</p>"
+  (fib 5))
