@@ -88895,12 +88895,12 @@ arithmetic) for libraries of @(see books) for arithmetic reasoning.</p>")
 
  <p><b>Q</b>: What does @('(rev '((a b c) \"Abc\" \"a\" b #\\c))') return?
  <b>A</b>: @('(#\\c B \"a\" \"Abc\" (A B C))').  If you thought the answer was
- any of these, then you need to think or read more carefully:</p>
+ either of these, then you need to think or read more carefully:</p>
 
  @({
   (#\\C B \"A\" \"ABC\" (A B C))
 
-  (#\\C B \"A\" \"ABC\" (C B A))
+  (#\\c B \"a\" \"Abc\" (C B A))
  })
 
  <p>The first wrong answer above is wrong because Lisp is ``case insensitive''
