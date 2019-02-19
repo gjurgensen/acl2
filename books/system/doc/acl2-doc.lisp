@@ -82898,8 +82898,8 @@ it."
 ;   (2) rune, where rune is a [rune] (see [rune]) denoting the
 ;   :[corollary] justifying the rule named by the [rune].
 
-; Fixed a bug in ev-fncall-rec-logical: it was ignoring attachments to
-; warrants.
+; Fixed ev-fncall-rec-logical and raw-ev-fncall-okp to deal properly with
+; attachments to warrants.
 
   :parents (release-notes)
   :short "ACL2 Version  8.2 (xxx, 20xx) Notes"
