@@ -54557,6 +54557,10 @@ it."
     - Store: always legal
  })
 
+ <p>Note that for this handling of @(':aokp'), the computation of a value
+ returned by function @(tsee apply$-userfn) or @(tsee badge-userfn) is
+ considered to have used an attachment.</p>
+
  <p>The default value for @(':stats') is essentially @('t').  (Technically,
  this can be subverted by using raw Lisp, to change the default by changing the
  values of variables @('*record-xxx*') introduced in ACL2 source file
@@ -83167,6 +83171,21 @@ it."
  @('etags') program is installed, resulting in a failure when attempting to
  build an ACL2 executable.  This has been fixed.  Thanks to Johannes
  Altmanninger for reporting this problem in GitHub Issue #955.</p>
+
+ <p>When a function that calls @(tsee apply$) (or @(tsee apply$-userfn), @(tsee
+ badge), or @(tsee badge-userfn)) has been @(see memoize)d with a non-@('nil')
+ value for argument @(':aokp'), its memo table may need to be flushed when
+ removing a @(see badge).  (Such removal typically occurs by undoing a call of
+ @(tsee defun$) or @(tsee defwarrant), perhaps because they are @(see local) to
+ an @(tsee encapsulate) event or to a book.)  However, such flushing was not
+ being done.  That has been fixed.  See new @(see community-book)
+ @('books/system/tests/apply-with-memoization.lisp') for examples.  Among the
+ changes made to the source files that are related to this fix: the ``Essay on
+ Memoization with Attachments'' has been enhanced to discuss the implementation
+ of such flushing; and functions @('concrete-apply$-userfn') and
+ @('concrete-badge$-userfn'), which are still not advertised, are now
+ introduced with @(tsee partial-encapsulate) (hence have unknown constraints)
+ and are now @(see untouchable).</p>
 
  <h3>Changes at the System Level</h3>
 
