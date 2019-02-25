@@ -83043,6 +83043,11 @@ it."
  warrant) for a function, and it avoids printing a package prefix in the case
  of @(see unknown-constraints).</p>
 
+ <p>The logical definition of @('read-file-into-string2') (in support of @(tsee
+ read-file-into-string)) has been simplified, and no longer involves @(see
+ untouchable) functions symbols.  Thanks to Mihir Mehta for a query that led to
+ this enhancement.</p>
+
  <h3>New Features</h3>
 
  <p>A new construct, @('lambda$'), may be used in place of @('lambda') to be
@@ -92798,10 +92803,7 @@ arithmetic) for libraries of @(see books) for arithmetic reasoning.</p>")
  which (as usual for functions that take @('state')) necessitates either that
  @('(set-state-ok t)') has already been evaluated, or else that a suitable
  @(':stobjs') declaration, typically @(':stobjs state'), is provided (see @(see
- xargs)).  (Technical remark: the use of @(tsee with-local-state) in the
- logical definition of key subroutine @('read-file-into-string2') does not
- require a trust tag (see @(see defttag)), because that function is defined by
- ACL2, not in a book.)</p>
+ xargs)).</p>
 
  <p>The value of the constant @('*read-file-into-string-bound*')
  (see the definition below) is a strict upper bound on the size of the string
@@ -92849,6 +92851,8 @@ arithmetic) for libraries of @(see books) for arithmetic reasoning.</p>")
  @(def read-file-into-string1)
 
  @(def *read-file-into-string-bound*)
+
+ @(def read-file-into-string2-logical)
 
  @(def read-file-into-string2)
 

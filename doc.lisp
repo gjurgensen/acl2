@@ -81674,6 +81674,11 @@ Changes to Existing Features
   function, and it avoids printing a package prefix in the case of
   [unknown-constraints].
 
+  The logical definition of read-file-into-string2 (in support of
+  [read-file-into-string]) has been simplified, and no longer
+  involves [untouchable] functions symbols.  Thanks to Mihir Mehta
+  for a query that led to this enhancement.
+
 
 New Features
 
@@ -93736,11 +93741,7 @@ Subtopics
   does take state as an argument, which (as usual for functions that
   take state) necessitates either that (set-state-ok t) has already
   been evaluated, or else that a suitable :stobjs declaration,
-  typically :stobjs state, is provided (see [xargs]).  (Technical
-  remark: the use of [with-local-state] in the logical definition of
-  key subroutine read-file-into-string2 does not require a trust tag
-  (see [defttag]), because that function is defined by ACL2, not in a
-  book.)
+  typically :stobjs state, is provided (see [xargs]).
 
   The value of the constant *read-file-into-string-bound* (see the
   definition below) is a strict upper bound on the size of the string
@@ -93810,46 +93811,47 @@ Subtopics
     (defconst *read-file-into-string-bound*
               (1- (ash 1 60)))
 
-  Function: <read-file-into-string2>
+  Function: <read-file-into-string2-logical>
 
     (defun
-     read-file-into-string2
+     read-file-into-string2-logical
      (filename start bytes state)
      (declare (xargs :stobjs state
                      :guard (and (stringp filename)
                                  (natp start)
                                  (or (null bytes) (natp bytes)))))
-     (let*
-      ((st (coerce-state-to-object state)))
+     (non-exec
       (mv-let
-       (erp val)
-       (with-local-state
-        (mv-let
-         (erp val state)
-         (let
-          ((state (coerce-object-to-state st)))
-          (mv-let
-           (chan state)
-           (open-input-channel filename
-                               :character state)
-           (cond
-            ((or (null chan) (not (state-p state)))
-             (mv nil nil state))
-            (t
-              (mv-let (val state)
+       (erp val state)
+       (mv-let
+        (chan state)
+        (open-input-channel filename
+                            :character state)
+        (cond
+           ((or (null chan) (not (state-p state)))
+            (mv nil nil state))
+           (t (mv-let (val state)
                       (read-file-into-string1
                            chan
                            state nil *read-file-into-string-bound*)
                       (pprogn (ec-call (close-input-channel chan state))
-                              (mv nil val state)))))))
-         (mv erp
-             (and (stringp val)
-                  (<= start (length val))
-                  (subseq val start
-                          (if bytes (min (+ start bytes) (length val))
-                              (length val)))))))
-       (declare (ignore erp))
-       val)))
+                              (mv nil val state))))))
+       (declare (ignore erp state))
+       (and (stringp val)
+            (<= start (length val))
+            (subseq val start
+                    (if bytes (min (+ start bytes) (length val))
+                        (length val)))))))
+
+  Function: <read-file-into-string2>
+
+    (defun read-file-into-string2
+           (filename start bytes state)
+           (declare (xargs :stobjs state
+                           :guard (and (stringp filename)
+                                       (natp start)
+                                       (or (null bytes) (natp bytes)))))
+           (read-file-into-string2-logical filename start bytes state))
 
   Macro: <read-file-into-string>
 
