@@ -51479,6 +51479,31 @@ tables in the current Hons Space."
  @(def logxor)
  @(def binary-logxor)")
 
+(defxdoc loop$
+  :parents (acl2-built-ins programming)
+  :short "Iteration with an analogue of the Common Lisp @('loop') macro"
+  :long "<p>This documentation is currently little more than a stub.  We expect
+ to provide more complete documentation for @('loop$') before the next ACL2
+ release.  In brief: @('Loop$') is an ACL2 version of the Common Lisp @('loop')
+ macro.</p>
+
+ <p>In the meantime, you can see @(see community-books)
+ @('books/system/tests/loop-tests.lisp') and
+ @('books/system/tests/apply-in-proofs.lisp') for numerous examples.</p>
+
+ <p>When a term is a call of @('loop$'), is to be evaluated at the top level or
+ during a proof, and is a ground term (has no free variables), then that term
+ is translated to a call involving so-called ``loop$ scions'' before it is
+ evaluated.  For example, after evaluating @('(defun$ f (x) (cons x x))'), such
+ an attempt to evaluate @('(loop$ for x in '(a b c) collect (f x))')
+ essentially becomes an evaluation of the following call of the loop$ scion,
+ @('collect$').</p>
+
+ @({
+ (COLLECT$ '(LAMBDA (X) (F X))
+           '(A B C))
+ })")
+
 (defxdoc loop-stopper
   :parents (rewrite)
   :short "Limit application of permutative rewrite rules"
@@ -83048,6 +83073,11 @@ it."
  untouchable) functions symbols.  Thanks to Mihir Mehta for a query that led to
  this enhancement.</p>
 
+ <p>The rewriter can now evaluate ground terms that involve calls of @(tsee
+ apply$) or @(tsee badge) on user-defined function symbols.  Note that
+ correctness of such an evaluation depends on the truth of corresponding
+ warrants, which will be forced if not known.</p>
+
  <h3>New Features</h3>
 
  <p>A new construct, @('lambda$'), may be used in place of @('lambda') to be
@@ -83084,8 +83114,8 @@ it."
  return of rules and event names to be printed in the summary.  See @(see
  make-summary-data).</p>
 
- <p>The new macro, @('loop$'), is an ACL2 version of the Common Lisp @('loop')
- macro.  Documentation is forthcoming.</p>
+ <p>A new macro, @(tsee loop$), is an ACL2 version of the Common Lisp @('loop')
+ macro.</p>
 
  <p>@(tsee Apply$) now handles functions that return multiple values.  This has
  widespread ramifications.  The structure of badges has changed.  There is no
