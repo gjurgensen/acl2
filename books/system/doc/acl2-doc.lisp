@@ -83217,8 +83217,9 @@ it."
  @('books/system/tests/apply-with-memoization.lisp') for examples.  Among the
  changes made to the source files that are related to this fix: the ``Essay on
  Memoization with Attachments'' has been enhanced to discuss the implementation
- of such flushing; and functions @('concrete-apply$-userfn') and
- @('concrete-badge$-userfn'), which are still not advertised, are now
+ of such flushing; and functions @('doppelganger-apply$-userfn') and
+ @('doppelganger-badge$-userfn') (formerly called @('concrete-apply$-userfn')
+ and @('concrete-badge$-userfn')), which are still not advertised, are now
  introduced with @(tsee partial-encapsulate) (hence have unknown constraints)
  and are now @(see untouchable).</p>
 
