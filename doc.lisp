@@ -214,10 +214,8 @@ Subtopics
        complex-definition complex-equal
        complex-implies1 complex-rationalp
        complex/complex-rationalp
-       compress1 compress11
-       compress2 compress21 compress211
-       concatenate concrete-apply$-userfn
-       concrete-badge-userfn
+       compress1 compress11 compress2
+       compress21 compress211 concatenate
        cond cond-clausesp cond-macro
        conjugate cons cons-equal cons-subtrees
        cons-with-hint consp consp-assoc-equal
@@ -267,9 +265,11 @@ Subtopics
        delete-include-book-dir!
        denominator digit-char-p digit-to-char
        dimensions disable disable-forcing
-       disable-immediate-force-modep disabledp
-       disassemble$ distributivity dmr-start
-       dmr-stop doc doc! docs double-rewrite
+       disable-immediate-force-modep
+       disabledp disassemble$
+       distributivity dmr-start dmr-stop
+       doc doc! docs doppelganger-apply$-userfn
+       doppelganger-badge-userfn double-rewrite
        duplicates e/d e0-ord-< e0-ordinalp
        ec-call eighth eliminate-destructors
        eliminate-irrelevance
@@ -3544,6 +3544,9 @@ Subtopics
 
   [Logxor]
       Bitwise logical exclusive or of zero or more integers
+
+  [Loop$]
+      Iteration with an analogue of the Common Lisp loop macro
 
   [Lower-case-p]
       Recognizer for lower case characters
@@ -55508,6 +55511,29 @@ Subtopics
     (defun binary-logxor (i j)
            (declare (xargs :guard (and (integerp i) (integerp j))))
            (lognot (logeqv i j)))")
+ (LOOP$
+  (ACL2-BUILT-INS PROGRAMMING)
+  "Iteration with an analogue of the Common Lisp loop macro
+
+  This documentation is currently little more than a stub.  We expect
+  to provide more complete documentation for loop$ before the next
+  ACL2 release.  In brief: Loop$ is an ACL2 version of the Common
+  Lisp loop macro.
+
+  In the meantime, you can see [community-books]
+  books/system/tests/loop-tests.lisp and
+  books/system/tests/apply-in-proofs.lisp for numerous examples.
+
+  When a term is a call of loop$, is to be evaluated at the top level
+  or during a proof, and is a ground term (has no free variables),
+  then that term is translated to a call involving so-called ``loop$
+  scions'' before it is evaluated.  For example, after evaluating
+  (defun$ f (x) (cons x x)), such an attempt to evaluate (loop$ for x
+  in '(a b c) collect (f x)) essentially becomes an evaluation of the
+  following call of the loop$ scion, collect$.
+
+    (COLLECT$ '(LAMBDA (X) (F X))
+              '(A B C))")
  (LOOP-STOPPER
   (REWRITE)
   "Limit application of permutative rewrite rules
@@ -58583,6 +58609,10 @@ Subtopics
     aokp=t: ``Impure'', i.e., values may depend on attachments
     - Fetch: only legal when attachments are allowed (e.g., not during proofs)
     - Store: always legal
+
+  Note that for this handling of :aokp, the computation of a value
+  returned by function [apply$-userfn] or [badge-userfn] is
+  considered to have used an attachment.
 
   The default value for :stats is essentially t.  (Technically, this
   can be subverted by using raw Lisp, to change the default by
@@ -81679,6 +81709,11 @@ Changes to Existing Features
   involves [untouchable] functions symbols.  Thanks to Mihir Mehta
   for a query that led to this enhancement.
 
+  The rewriter can now evaluate ground terms that involve calls of
+  [apply$] or [badge] on user-defined function symbols.  Note that
+  correctness of such an evaluation depends on the truth of
+  corresponding warrants, which will be forced if not known.
+
 
 New Features
 
@@ -81717,8 +81752,8 @@ New Features
   return of rules and event names to be printed in the summary.  See
   [make-summary-data].
 
-  The new macro, loop$, is an ACL2 version of the Common Lisp loop
-  macro.  Documentation is forthcoming.
+  A new macro, [loop$], is an ACL2 version of the Common Lisp loop
+  macro.
 
   [Apply$] now handles functions that return multiple values.  This has
   widespread ramifications.  The structure of badges has changed.
@@ -81816,6 +81851,23 @@ Bug Fixes
   program is installed, resulting in a failure when attempting to
   build an ACL2 executable.  This has been fixed.  Thanks to Johannes
   Altmanninger for reporting this problem in GitHub Issue #955.
+
+  When a function that calls [apply$] (or [apply$-userfn], [badge], or
+  [badge-userfn]) has been [memoize]d with a non-nil value for
+  argument :aokp, its memo table may need to be flushed when removing
+  a [badge].  (Such removal typically occurs by undoing a call of
+  [defun$] or [defwarrant], perhaps because they are [local] to an
+  [encapsulate] event or to a book.)  However, such flushing was not
+  being done.  That has been fixed.  See new [community-book]
+  books/system/tests/apply-with-memoization.lisp for examples.  Among
+  the changes made to the source files that are related to this fix:
+  the ``Essay on Memoization with Attachments'' has been enhanced to
+  discuss the implementation of such flushing; and functions
+  doppelganger-apply$-userfn and doppelganger-badge$-userfn (formerly
+  called concrete-apply$-userfn and concrete-badge$-userfn), which
+  are still not advertised, are now introduced with
+  [partial-encapsulate] (hence have unknown constraints) and are now
+  [untouchable].
 
 
 Changes at the System Level
@@ -89255,6 +89307,9 @@ Subtopics
 
   [Lists]
       Lists of objects, the classic Lisp data structure.
+
+  [Loop$]
+      Iteration with an analogue of the Common Lisp loop macro
 
   [Mbe]
       Attach code for execution
