@@ -51479,6 +51479,31 @@ tables in the current Hons Space."
  @(def logxor)
  @(def binary-logxor)")
 
+(defxdoc loop$
+  :parents (acl2-built-ins programming)
+  :short "Iteration with an analogue of the Common Lisp @('loop') macro"
+  :long "<p>This documentation is currently little more than a stub.  We expect
+ to provide more complete documentation for @('loop$') before the next ACL2
+ release.  In brief: @('Loop$') is an ACL2 version of the Common Lisp @('loop')
+ macro.</p>
+
+ <p>In the meantime, you can see @(see community-books)
+ @('books/system/tests/loop-tests.lisp') and
+ @('books/system/tests/apply-in-proofs.lisp') for numerous examples.</p>
+
+ <p>When a term is a call of @('loop$'), is to be evaluated at the top level or
+ during a proof, and is a ground term (has no free variables), then that term
+ is translated to a call involving so-called ``loop$ scions'' before it is
+ evaluated.  For example, after evaluating @('(defun$ f (x) (cons x x))'), such
+ an attempt to evaluate @('(loop$ for x in '(a b c) collect (f x))')
+ essentially becomes an evaluation of the following call of the loop$ scion,
+ @('collect$').</p>
+
+ @({
+ (COLLECT$ '(LAMBDA (X) (F X))
+           '(A B C))
+ })")
+
 (defxdoc loop-stopper
   :parents (rewrite)
   :short "Limit application of permutative rewrite rules"
@@ -54556,6 +54581,10 @@ it."
     - Fetch: only legal when attachments are allowed (e.g., not during proofs)
     - Store: always legal
  })
+
+ <p>Note that for this handling of @(':aokp'), the computation of a value
+ returned by function @(tsee apply$-userfn) or @(tsee badge-userfn) is
+ considered to have used an attachment.</p>
 
  <p>The default value for @(':stats') is essentially @('t').  (Technically,
  this can be subverted by using raw Lisp, to change the default by changing the
@@ -82898,8 +82927,8 @@ it."
 ;   (2) rune, where rune is a [rune] (see [rune]) denoting the
 ;   :[corollary] justifying the rule named by the [rune].
 
-; Fixed a bug in ev-fncall-rec-logical: it was ignoring attachments to
-; warrants.
+; Fixed ev-fncall-rec-logical and raw-ev-fncall-okp to deal properly with
+; attachments to warrants.
 
   :parents (release-notes)
   :short "ACL2 Version  8.2 (xxx, 20xx) Notes"
@@ -83044,6 +83073,11 @@ it."
  untouchable) functions symbols.  Thanks to Mihir Mehta for a query that led to
  this enhancement.</p>
 
+ <p>The rewriter can now evaluate ground terms that involve calls of @(tsee
+ apply$) or @(tsee badge) on user-defined function symbols.  Note that
+ correctness of such an evaluation depends on the truth of corresponding
+ warrants, which will be forced if not known.</p>
+
  <h3>New Features</h3>
 
  <p>A new construct, @('lambda$'), may be used in place of @('lambda') to be
@@ -83080,8 +83114,8 @@ it."
  return of rules and event names to be printed in the summary.  See @(see
  make-summary-data).</p>
 
- <p>The new macro, @('loop$'), is an ACL2 version of the Common Lisp @('loop')
- macro.  Documentation is forthcoming.</p>
+ <p>A new macro, @(tsee loop$), is an ACL2 version of the Common Lisp @('loop')
+ macro.</p>
 
  <p>@(tsee Apply$) now handles functions that return multiple values.  This has
  widespread ramifications.  The structure of badges has changed.  There is no
@@ -83172,6 +83206,22 @@ it."
  @('etags') program is installed, resulting in a failure when attempting to
  build an ACL2 executable.  This has been fixed.  Thanks to Johannes
  Altmanninger for reporting this problem in GitHub Issue #955.</p>
+
+ <p>When a function that calls @(tsee apply$) (or @(tsee apply$-userfn), @(tsee
+ badge), or @(tsee badge-userfn)) has been @(see memoize)d with a non-@('nil')
+ value for argument @(':aokp'), its memo table may need to be flushed when
+ removing a @(see badge).  (Such removal typically occurs by undoing a call of
+ @(tsee defun$) or @(tsee defwarrant), perhaps because they are @(see local) to
+ an @(tsee encapsulate) event or to a book.)  However, such flushing was not
+ being done.  That has been fixed.  See new @(see community-book)
+ @('books/system/tests/apply-with-memoization.lisp') for examples.  Among the
+ changes made to the source files that are related to this fix: the ``Essay on
+ Memoization with Attachments'' has been enhanced to discuss the implementation
+ of such flushing; and functions @('doppelganger-apply$-userfn') and
+ @('doppelganger-badge$-userfn') (formerly called @('concrete-apply$-userfn')
+ and @('concrete-badge$-userfn')), which are still not advertised, are now
+ introduced with @(tsee partial-encapsulate) (hence have unknown constraints)
+ and are now @(see untouchable).</p>
 
  <h3>Changes at the System Level</h3>
 
