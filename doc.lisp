@@ -40704,7 +40704,9 @@ Subtopics
 
   The process of removing guard-holders includes the transformations
   below.  That process is also applied to each argument of a function
-  call and to the bodies of [lambda] expressions (see [term]).
+  call and to the bodies of [lambda] expressions (see [term]),
+  including quoted lambda expressions that appear in an argument
+  position with [ilk] :FN (see [apply$]).
 
     (return-last term0 term1 term2)  ==>  term2
 

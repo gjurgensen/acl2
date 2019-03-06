@@ -37400,7 +37400,9 @@ current fast alists."
 
  <p>The process of removing guard-holders includes the transformations below.
  That process is also applied to each argument of a function call and to the
- bodies of @(see lambda) expressions (see @(see term)).</p>
+ bodies of @(see lambda) expressions (see @(see term)), including quoted lambda
+ expressions that appear in an argument position with @(see ilk) @(':FN') (see
+ @(see apply$)).</p>
 
  @({
  (return-last term0 term1 term2)  ==>  term2
