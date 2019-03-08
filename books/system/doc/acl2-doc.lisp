@@ -83228,7 +83228,7 @@ it."
  <p>The @(see proof-builder) numeric ``diving'' commands @('1'), @('2'),
  @('3'), etc. &mdash; and more generally, the @('dv') command &mdash; were
  broken when the current subterm is of the form @('(if 't .. ..)').  This has
- been fixed.</p>
+ been fixed.  Thanks to Keonho Lee for reporting this bug.</p>
 
  <h3>Changes at the System Level</h3>
 
