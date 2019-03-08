@@ -174,6 +174,7 @@
     (MAKE-FLAG "[books]/tools/flag.lisp")
     (MAKE-TERMINATION-THEOREM
      "[books]/kestrel/utilities/make-termination-theorem.lisp")
+    (MEMOIZED-PROVER-FNS "[books]/tools/memoize-prover-fns.lisp")
     (STR::NATSTR "[books]/std/strings/decimal.lisp")
     (NON-PARALLEL-BOOK "[books]/std/system/non-parallel-book.lisp")
     (NOTE-6-4-BOOKS "[books]/doc/relnotes.lisp")
@@ -195,6 +196,7 @@
     (PROFILE-ALL "[books]/centaur/memoize/old/profile.lisp")
     (QUICKLISP "[books]/quicklisp/top.lisp")
     (RELEASE-NOTES-BOOKS "[books]/doc/relnotes.lisp")
+    (REMOVE-HYPS "[books]/tools/remove-hyps.lisp")
     (REMOVABLE-RUNES "[books]/tools/removable-runes.lisp")
     (RUN-SCRIPT "[books]/tools/run-script.lisp")
     (SATLINK::SAT-SOLVER-OPTIONS "[books]/centaur/satlink/top.lisp")
@@ -214,6 +216,7 @@
     (TRANS-EVAL-STATE "[books]/kestrel/utilities/trans-eval-error-triple.lisp")
     (UNSOUND-READ "[books]/std/io/unsound-read.lisp")
     (UNTRANSLATE-PATTERNS "[books]/misc/untranslate-patterns.lisp")
+    (USE-TRIVIAL-ANCESTORS-CHECK "[books]/tools/trivial-ancestors-check.lisp")
     (BUILD::USING-EXTENDED-ACL2-IMAGES "[books]/build/doc.lisp")
     (WITH-RAW-MODE "[books]/hacking/hacking-xdoc.lisp")
     (WITH-REDEF-ALLOWED "[books]/hacking/hacking-xdoc.lisp")
@@ -4032,9 +4035,6 @@ and @(tsee include-book)"
 
  <li>See @(see DEFCHOOSE) to define a Skolem (witnessing) function.</li>
 
- <li>For efficiency consider using @('defconst-fast'); see @(see
- DEFCONST).</li>
-
  <li>See @(see SET-VERIFY-GUARDS-EAGERNESS) to specify when @(see guard)
  verification is tried by default.</li>
 
@@ -5159,7 +5159,7 @@ and @(tsee include-book)"
 
 (defxdoc apply$
   :parents (acl2-built-ins programming)
-  :short "Apply an authorized function or tame lambda to arguments"
+  :short "Apply a badged function or tame lambda to arguments"
 
   :long "<p>We recommend that you read the paper <a
   href='http://www.cs.utexas.edu/users/kaufmann/papers/apply/index.html'>``Limited
@@ -5189,24 +5189,25 @@ and @(tsee include-book)"
       function.  Under certain conditions, @('apply$') applies the function to
       the arguments and returns the result.  @('Apply$') is mutually recursive
       with @(tsee apply$-lambda), @(tsee ev$), and @(tsee ev$-list).
-      @('Apply$')'s ``badge'' (see below) is @('(APPLY$-BADGE T 2 :FN NIL)')
-      which means its ``authorization flag'' is T (meaning it returns 1 value),
-      its arity is 2, its first argument has ``ilk'' @(':FN') and is thus
-      treated as a ``function;'' its second argument has ilk @('NIL') and is
-      thus treated as an ordinary object.  Initially, @('apply$') is the only
-      symbol in ACL2 with an ilk of @(':FN').</li>
+      @('Apply$')'s ``badge'' (see below) is @('(APPLY$-BADGE 2 1 :FN NIL)')
+      its arity is 2, its ``out arity'' is 1 (i.e., it returns 1 result), its
+      first argument has ``ilk'' @(':FN') and is thus treated as a
+      ``function;'' its second argument has ilk @('NIL') and is thus treated as
+      an ordinary object.  Initially, @('apply$') is the only symbol in ACL2
+      with an ilk of @(':FN').</li>
 
-  <li>@(tsee badge) -- an object associated with some function symbols telling
-      @('apply$') whether it is authorized to call that function, the arity of
-      the function, and the @(see ilk) of each argument position telling
-      @('apply$') how each argument is treated.  The ilks are @(':FN'),
-      @(':EXPR') and @('NIL').  The association between a function symbol and
-      its badge is manged by @(tsee warrant)s.  In proofs, @('apply$') must
-      have a warrant for every non-primitive function symbol to be applied.
-      Those warrants are provided as hypotheses to the theorem being proved.
-      Symbols without badges cannot be @('apply$')d.  Badges are generated,
-      when possible, by @(tsee def-warrant).  Not every function symbol can
-      have a badge.</li>
+  <li>@(tsee badge) -- an object associated with some function symbols
+      indicating that @('apply$') can ``handle'' them and under what
+      conditions.  The badge of a function symbol specifies its arity, its
+      ``out arity,'' (i.e., the number of results the function returns), and
+      the @(see ilk) of each argument position telling @('apply$') how each
+      argument is treated.  The ilks are @(':FN'), @(':EXPR') and @('NIL').
+      The association between a function symbol and its badge is manged by
+      @(tsee warrant)s.  In proofs, @('apply$') must have a warrant for every
+      non-primitive function symbol to be applied.  Those warrants are provided
+      as hypotheses to the theorem being proved.  Symbols without badges cannot
+      be @('apply$')d.  Badges are generated, when possible, by @(tsee
+      defwarrant).  Not every function symbol can have a badge.</li>
 
   <li>compiled @('LAMBDA') cache (or simply <i>cache</i> in this context) -- a
       cache in the raw Lisp under ACL2 that supports the application of
@@ -5223,7 +5224,7 @@ and @(tsee include-book)"
       operates.  The evaluation theory is not new to @('apply$'); it was
       introduced when @(tsee defattach) was added.  But the evaluation theory
       changed with the introduction of @('apply$').  All @(tsee warrant)s
-      introduced by @('def-warrant') are assumed in the evaluation theory but
+      introduced by @('defwarrant') are assumed in the evaluation theory but
       not in the proof theory.  This means ACL2 can execute calls of
       @('apply$') that arise in the evaluation of top-level input, but ACL2
       cannot evaluate all calls of @('apply$') that arise in proofs unless the
@@ -5282,7 +5283,7 @@ and @(tsee include-book)"
       applied are appropriately @(see tame).  The warrant for a function
       specifies the function's @(tsee badge) and how @('apply$') behaves on the
       function symbol.  Warrants (and badges) are computed and introduced by
-      the @(tsee def-warrant) event.  Not all function symbols can be
+      the @(tsee defwarrant) event.  Not all function symbols can be
       warranted.</li>
 
   </ul>
@@ -5300,7 +5301,7 @@ and @(tsee include-book)"
   session in which you intend to use or reason about @('apply$').</b></p>
 
   @({
-  (include-book \"projects/apply/apply-lemmas\" :dir :system)
+  (include-book \"projects/apply/top\" :dir :system)
 
   (defun$ sq (x) (* x x))
 
@@ -5368,7 +5369,7 @@ and @(tsee include-book)"
 
   ACL2 Error in TOP-LEVEL:  The value of APPLY$-USERFN is not specified when
   the first argument, fn, is RUSSELL, and the second argument, args,
-  is (RUSSELL RUSSELL).  Fn has badge (APPLY$-BADGE T 2 :FN NIL) and
+  is (RUSSELL RUSSELL).  Fn has badge (APPLY$-BADGE 2 1 :FN NIL) and
   args is not known to satisfy the tameness requirement of that badge.
   })
 
@@ -5427,7 +5428,7 @@ and @(tsee include-book)"
   unbadged functions, etc.  They are, after all, just arbitrary quoted objects
   and any value in ACL2 can be quoted.  But an ill-formed object can
   <i>become</i> well-formed if the world is appropriately extended, e.g., the
-  appropriate @('defun')s or @('def-warrant')s are made.  Perhaps worse, they
+  appropriate @('defun')s or @('defwarrant')s are made.  Perhaps worse, they
   can be well-formed and then <i>become</i> ill-formed by an undo.  So at
   runtime @('apply$') has to check that the function symbol or @('LAMBDA')
   object is appropriate.  There is a sophisticated cache behind the execution
@@ -5487,7 +5488,7 @@ and @(tsee include-book)"
   session in which you intend to use or reason about @('apply$').</b></p>
 
   @({
-  (include-book \"projects/apply/apply-lemmas\" :dir :system)
+  (include-book \"projects/apply/top\" :dir :system)
   })
 
   @({
@@ -5501,28 +5502,32 @@ and @(tsee include-book)"
   argument.  We might express this as:</p>
 
   <code>
-  <b>Naive Specification:</b>
+  <b>Naive Specification (for a single-valued function):</b>
   (apply$ 'fn args) = (fn (nth 0 args) ... (nth (- n 1) args))
+
+  <b>Naive Specification (for a multi-valued function):</b>
+  (apply$ 'fn args) = (mv-list k (fn (nth 0 args) ... (nth (- n 1) args)))
   </code>
 
-  <p>where @('fn') is of arity @('n').  <b>However</b>, this naive
-  specification is guaranteed only if either (i) @('fn') is a function symbol
-  that has a @(tsee badge), the authorization flag of the badge is @('T'), and
-  @('args') satisfies the @(see tame)ness requirements of the badge, or (ii)
-  @('fn') is a well-formed @('LAMBDA') object.  The tameness requirement is
-  that if an element of @('args') is in an argument position of @('fn') with
-  ilk @(':FN') then the element must satisfies @('tamep-functionp') and if the
-  element is in an argument position of ilk @(':EXPR') it must satisfies
-  @('tamep').  See @(tsee badge) for further discussion of condition (i).  As
-  for (ii), rather than explain ``well-formed @('LAMBDA') object'' here we
-  encourage you to write @(tsee lambda$) expressions when you want to
-  @('apply$') a @('LAMBDA') object.</p>
+  <p>where @('fn') is of arity @('n') and @('k') is the ``out arity'' of
+  @('fn') (the number of returned values).  <b>However</b>, these naive
+  specifications are guaranteed only if either (i) @('fn') is a function symbol
+  that has a @(tsee badge) and @('args') satisfies the @(see tame)ness
+  requirements of the badge, or (ii) @('fn') is a well-formed @('LAMBDA')
+  object that returns 1 result.  The tameness requirement is that if an element
+  of @('args') is in an argument position of @('fn') with ilk @(':FN') then the
+  element must satisfy @('tamep-functionp') and if the element is in an
+  argument position of ilk @(':EXPR') it must satisfy @('tamep').  See @(tsee
+  badge) for further discussion of condition (i).  As for (ii), rather than
+  explain ``well-formed @('LAMBDA') object'' here we encourage you to write
+  @(tsee lambda$) expressions when you want to @('apply$') a @('LAMBDA')
+  object.</p>
 
   <p>The @(see ilk)s of @('apply$') are @(':FN') and @('NIL') respectively,
   telling us that @('apply$') treats its first argument as a ``function'' and
   its second as an ordinary object (never as a function).  Initially
   @('apply$') is the only symbol in ACL2 with an ilk of @(':FN').  However as
-  @(tsee def-warrant) is used successfully on @(see scion)s -- functions that
+  @(tsee defwarrant) is used successfully on @(see scion)s -- functions that
   somehow call @('apply$') -- other symbols can have ilk @(':FN') too.</p>
 
   <p>@('Apply$') has a guard, namely @('(apply$-guard fn args)').  This is an
@@ -5557,10 +5562,10 @@ and @(tsee include-book)"
   checks -- see @(see gratuitous-lambda-object-restrictions) -- if you really
   mean to supply ill-formed @('LAMBDA') objects to @(':FN') slots.</p>
 
-  <p>Badges are assigned by @(tsee def-warrant).  See @(tsee badge) for
+  <p>Badges are assigned by @(tsee defwarrant).  See @(tsee badge) for
   documentation about how to find out whether a function has a badge and how to
-  interpret a badge.  The terms ``authorization flag'' and ``tameness
-  requirements,'' used above, are explained there too.</p>
+  interpret a badge.  The terms ``out arity'' and ``tameness requirements,''
+  used above, are explained there too.</p>
 
   <p>Intuitively, the badge of @('fn') tells @('apply$') how each formal of
   @('fn') is used in the definition of @('fn') and there are only three
@@ -5582,7 +5587,7 @@ and @(tsee include-book)"
   <p>Generally speaking, if you want to be able to @('apply$') a function you
   should introduce it with @(tsee defun$) or a similar macro, because only
   badged functions can be applied.  The ACL2 macro @('defun$') is just an
-  abbreviation for a @(tsee defun) event followed by a @(tsee def-warrant)
+  abbreviation for a @(tsee defun) event followed by a @(tsee defwarrant)
   event.</p>
 
   <p>We summarize specification of @('apply$') with an example.  Consider</p>
@@ -5594,16 +5599,15 @@ and @(tsee include-book)"
   })
 
   <p>The badge of @('foldr'), computed by @('(badge 'foldr)'), is
-  @('(APPLY$-BADGE T 3 NIL :FN NIL)').  The authorization flag of that badge is
-  @('T'), the arity is @('3'), and the ilks list is @('(NIL :FN NIL)').  Thus
-  the first and third formals have ilk @('NIL') and are treated as
+  @('(APPLY$-BADGE 3 1 NIL :FN NIL)').  The arity is @('3'), the out arity is
+  1 (@('foldr') is single-valued) and the ilks list is @('(NIL :FN NIL)').
+  Thus the first and third formals have ilk @('NIL') and are treated as
   ordinary objects; the second formal has ilk @(':FN') and is treated as a
   function.  Thus, the tameness requirement is that the second actual to a call
   of @('foldr') must satisfy @('tamep-functionp').  Referring to the
   specification above, we see that the @('apply$') term has the ``naive
-  specification'' since @('foldr') has a badge, its authorization flag is
-  @('T'), and its second actual, @('cons'), satisfies
-  @('tamep-functionp'). That is,</p>
+  specification'' since @('foldr') has a badge, its out arity is 1, and its
+  second actual, @('cons'), satisfies @('tamep-functionp'). That is,</p>
 
   @({  (apply$ 'foldr
           '((1 2 3)     ; actual 1
@@ -5617,7 +5621,7 @@ and @(tsee include-book)"
   <p>The first equation above is just the naive specification of @('apply$')
   and the second equation is just the definition of @('foldr').</p>
 
-  <p>Formals are classified by @(tsee def-warrant) when it tries to compute the
+  <p>Formals are classified by @(tsee defwarrant) when it tries to compute the
   badge of a function.  What are the rules that lead to a formal being assigned
   ilk @(':FN'), for example?  What does ilk @(':FN') actually signify?</p>
 
@@ -5645,7 +5649,7 @@ and @(tsee include-book)"
   <i>fn </i> then <i>v </i> is <i>never used </i> as a function or as an
   expression in the definition.</p>
 
-  <p>It is the job of @(tsee def-warrant) to analyze a definition and assign
+  <p>It is the job of @(tsee defwarrant) to analyze a definition and assign
   ilks, if possible.  But it may not be possible!  For example,</p>
 
   @({(defun foo (x) (apply$ x (list x)))})
@@ -5653,11 +5657,11 @@ and @(tsee include-book)"
   <p>is such a definition.  The formal @('x') is used as a function in its first
   occurrence but is not used as a function in its second.  Thus</p>
 
-  @({(def-warrant foo)})
+  @({(defwarrant foo)})
 
   <p>will fail.</p>
 
-  <p>When successful, @(tsee def-warrant) also defines the @(tsee warrant)
+  <p>When successful, @(tsee defwarrant) also defines the @(tsee warrant)
   function for the function it analyzed.  Warrants are crucial to stating and
   proving theorems about function symbols being applied with @('apply$').  We
   illustrated warrants in the ``Examples'' section above and discuss them
@@ -5695,14 +5699,14 @@ and @(tsee include-book)"
   anything other than a @('LAMBDA') object or a built-in function symbol.  In
   the evaluation theory, we attach a function to @('apply$-userfn') that
   explicitly enforces the tameness requirements for each user-defined function
-  symbol that has had a badge computed by @(tsee def-warrant) and, if those
+  symbol that has had a badge computed by @(tsee defwarrant) and, if those
   requirements are met, applies the corresponding function.  But in the proof
   theory @('apply$-userfn') remains undefined.  The value of @('(apply$-userfn
   'fn ...)'), and thus of @('(apply$ 'fn ...)'), is specified by a special
   hypothesis, called the ``warrant for @('fn').''  You can't prove anything
   interesting about the behavior of @('apply$') on a user-defined function
   symbol @('fn') unless the warrant for @('fn') is a governing hypothesis.  We
-  discuss warrants in @(tsee warrant).  See also @(tsee def-warrant).</li>
+  discuss warrants in @(tsee warrant).  See also @(tsee defwarrant).</li>
 
   <li>@('untame-apply$'): used by @('apply$') when it is asked to deal with a
   situation in which tameness is violated.</li>
@@ -5725,17 +5729,17 @@ and @(tsee include-book)"
   to follow certain rules.  For example, ACL2 must be able to determine whether
   a formal parameter is ``used as a function'' in a given definition.
   Basically, you will want every @(':logic') mode function that you define to
-  be processed by @('def-warrant') so that it gets a badge if at all possible
+  be processed by @('defwarrant') so that it gets a badge if at all possible
   and at least has a chance of being applied as expected by @('apply$').</p>
 
   <p>The macro @('defun$') is just an abbreviation for a @('defun') followed by
-  a @('def-warrant') and it is easy to imagine the other ACL2 definitional
+  a @('defwarrant') and it is easy to imagine the other ACL2 definitional
   idioms introduced in the ACL2 Community Books eventually being extended to
-  include a subsequent @('def-warrant').</p>
+  include a subsequent @('defwarrant').</p>
 
   <p>So the question becomes ``What rules must a @('defun') obey in order to be
-  processed successfully by @('def-warrant')?''  The answer is given in the
-  documentation for @(tsee def-warrant).</p>
+  processed successfully by @('defwarrant')?''  The answer is given in the
+  documentation for @(tsee defwarrant).</p>
 
   <h3>Theorems Involving @('Apply$')</h3>
 
@@ -5771,7 +5775,7 @@ and @(tsee include-book)"
 
   <p>Here @('(warrant sq)') is just an abbreviation for a call of the 0-ary
   function symbol @('apply$-warrant-sq') which is the name of the warrant for
-  @('sq').  @('Apply$-warrant-sq') is introduced when @('(def-warrant sq)')
+  @('sq').  @('Apply$-warrant-sq') is introduced when @('(defwarrant sq)')
   completes successfully.  In particular, the following is a theorem:</p>
 
   @({
@@ -5779,7 +5783,7 @@ and @(tsee include-book)"
     <-->
       (apply$-warrant-sq)
     <-->
-      (((badge 'SQ) = '(APPLY$-BADGE T 1 . T))
+      (((badge 'SQ) = '(APPLY$-BADGE 1 1 . T))
        &
        ((apply$ 'SQ args) = (sq (car args))))
    })
@@ -5800,7 +5804,7 @@ and @(tsee include-book)"
   <p>You might worry that theorems burdened by warrants are vacuously valid
   because it might be impossible to satisfy all the warrant hypotheses.  You
   needn't worry about this.  <i>There is a model of @('apply$') and all of its
-  scions that makes every warrant issued by @('def-warrant') valid.</i> The
+  scions that makes every warrant issued by @('defwarrant') valid.</i> The
   proof of this is sketched in <a
   href='http://www.cs.utexas.edu/users/kaufmann/papers/apply/index.html'>``Limited
   Second-Order Functionality in a First-Order Setting''</a> by Matt Kaufmann
@@ -5952,7 +5956,7 @@ and @(tsee include-book)"
   <h3>Top-Level Evaluation of Apply$</h3>
 
   <p>As noted, ACL2's evaluation theory implicitly assumes all warrants
-  produced by @(tsee def-warrant).  Since top-level evaluation in ACL2 is
+  produced by @(tsee defwarrant).  Since top-level evaluation in ACL2 is
   conducted in the evaluation theory, ground calls of @('apply$') -- whether
   literally in top-level input to the ACL2 read-eval-print loop or hidden
   inside scions called from the top-level -- can be evaluated on quoted
@@ -7680,18 +7684,17 @@ and @(tsee include-book)"
 
   <p>The argument, @('fn'), is expected to be a function symbol.  If @('fn') is
   one of about 800 ACL2 primitives (discussed below) or is a user-defined
-  function successfully processed by the event @(tsee def-warrant), the result
+  function successfully processed by the event @(tsee defwarrant), the result
   is an object, called the ``badge'' of @('fn'), which among other things
   specifies the @(see ilk) of each formal of @('fn').  Otherwise, an error is
-  caused.  We explain below, where we define the concepts of the
-  ``authorization flag,'' ``ilks,'' and ``tameness requirements'' of @('fn')'s
-  badge.</p>
+  caused.  We explain below, where we define the concepts of the ``out arity,''
+  ``ilks,'' and ``tameness requirements'' of @('fn')'s badge.</p>
 
   <p>A function symbol must have a badge in order to @('apply$') the symbol.
   So if you want to be able to @('apply$') a function you should introduce it
-  with @('defun$') or a similar macro, or call @(tsee def-warrant) on the
+  with @('defun$') or a similar macro, or call @(tsee defwarrant) on the
   function after introducing.  The ACL2 macro @('defun$') is just an
-  abbreviation for a @(tsee defun) event followed by a @(tsee def-warrant)
+  abbreviation for a @(tsee defun) event followed by a @(tsee defwarrant)
   event.  But not every function symbol can have a badge!</p>
 
   <p>The complete list of badged primitives can be seen by evaluating</p>
@@ -7711,7 +7714,7 @@ and @(tsee include-book)"
   <p>and see that after handling the built-in symbols it defers to the
   undefined function @(tsee badge-userfn).  In the evaluation theory,
   @('badge-userfn') has an attachment that returns the badge computed by
-  @('def-warrant').  But in the proof theory, @('badge-userfn') is undefined
+  @('defwarrant').  But in the proof theory, @('badge-userfn') is undefined
   and the @(tsee warrant) for @('fn') specifies the badge of @('fn').  Thus, in
   the proof theory, you cannot reason about the application of a non-primitive
   function unless there is a warrant for the function available as a
@@ -7722,13 +7725,13 @@ and @(tsee include-book)"
 
   @({
   ACL2 !>(badge 'cons)
-  (APPLY$-BADGE T 2 . T)
+  (APPLY$-BADGE 2 1 . T)
 
   ACL2 !>(badge 'apply$)
-  (APPLY$-BADGE T 2 :FN NIL)
+  (APPLY$-BADGE 2 1 :FN NIL)
 
   ACL2 !>(badge 'foldr)
-  (APPLY$-BADGE T 3 NIL :FN NIL)
+  (APPLY$-BADGE 3 1 NIL :FN NIL)
   })
 
   <p>The last example assumes that @('foldr') has been defined with</p>
@@ -7742,23 +7745,15 @@ and @(tsee include-book)"
                       (foldr (cdr lst) fn init)))))
   })
 
-  <p>In general, badges have the form @('(APPLY$-BADGE flg n . ilks)'),
-  where @('flg') is a Boolean, @('n') is the arity of @('fn'), and @('ilks') is
-  either @('T') or a list of @('n') tokens.  Each token is either @(':FN'),
-  @(':EXPR'), or @('NIL').</p>
+  <p>In general, badges have the form @('(APPLY$-BADGE n k . ilks)'), where
+  @('n') is the arity of @('fn'), @('k') is the out arity (i.e., the number of
+  results returned by @('fn')) and @('ilks') is either @('T') or a list of
+  @('n') tokens.  Each token is either @(':FN'), @(':EXPR'), or @('NIL').</p>
 
-  <p>The badge of @('fn'), if any, is computed when the event @('(def-warrant fn)')
-  completes successfully.  See @(tsee def-warrant) for a sketch of the algorithm used
-  to compute badges.  Here though we are just concerned with how badges impact
-  @('apply$').</p>
-
-  <p>The @('flg') component of a badge is the <i>authorization flag</i>.  The
-  authorization flag indicates whether the function returns one (@('flg') =
-  @('T')) or more (@('flg') = @('NIL')) values.  Recall that if the
-  authorization flag of @('fn') is not @('T'), then @('(apply$ 'fn args)') does
-  not meet the naive specification of @(tsee apply$) because @('apply$')
-  returns one result but a function with authorization flag @('NIL') returns
-  multiple values.</p>
+  <p>The badge of @('fn'), if any, is computed when the event @('(defwarrant
+  fn)') completes successfully.  See @(tsee defwarrant) for a sketch of the
+  algorithm used to compute badges.  Here though we are just concerned with how
+  badges impact @('apply$').</p>
 
   <p>The @('ilks') of a function, @('fn'), determines the ``tameness
   requirements'' mentioned in the specification of @(tsee apply$).  When the
@@ -10115,11 +10110,11 @@ want the @('rtl/rel9') library, you could run:</p>
 <h3>Books that Require ACL2 Extensions</h3>
 
 <p>Some books require experimental extensions to ACL2, such as ACL2(p) (see
-@(see parallelism)) or ACL2(r) (see @(see real)) or their classic variants,
-ACL2(cp) or ACL2(cr).  Other books require certain additional software.</p>
+@(see parallelism)) or ACL2(r) (see @(see real)).  Other books require certain
+additional software.</p>
 
 <p>The build system will automatically determine which kind of ACL2 you are
-running (e.g., ACL2(c), ACL2(p), ACL2(r)) and, based on this, may prevent
+running (ACL2, ACL2(p), or ACL2(r)) and, based on this, may prevent
 incompatible books from being certified.  The output of @('make') should
 explain which books are being excluded and why.</p>
 
@@ -10133,19 +10128,14 @@ build::cert_param) comments.</p>
 ACL2 @(see bridge), require certain Common Lisp libraries.</p>
 
 <p>These libraries are now bundled with ACL2 via @(see quicklisp), so you
-should not need to download anything extra to use them.  However, since these
-libraries are not portable across all Lisps that can run ACL2, you must
-<b>explicitly enable Quicklisp</b> by setting @('USE_QUICKLISP=1') in your
-@('make') command if you want to use them.  For instance:</p>
+should not need to download anything extra to use them.  They are enabled by
+default for all host Lisps except GCL, but you can avoid books that depend on
+Quicklisp libraries by setting @('USE_QUICKLISP=0') in your
+@('make') command.</p>
 
-@({
-    make ACL2=... USE_QUICKLISP=1 doc/top.cert -j 4
-})
-
-<p>Using Quicklisp should definitely work for CCL and SBCL.  We have not tested
-it with other Lisps, but there is some chance it will work with Lisps such as
-Allegro, Lispworks, and CMUCL.  It will almost certainly <b>not</b> work for
-GCL.</p>
+<p>Using Quicklisp should definitely work if the host Lisp is CCL or SBCL.
+There is some chance it will work with Allegro CL, LispWorks, and CMUCL.  It
+will almost certainly <b>not</b> work for GCL (at least as of 2018).</p>
 
 
 <h3>Books that Require Additional Software</h3>
@@ -11400,6 +11390,9 @@ with any questions about building the community books.</p>")
  <p>To abort from inside break-rewrite at any time, execute @(':')@(tsee
  a!).</p>
 
+ <p>Output from break-rewrite is abbreviated by default, but that can be
+ changed.  See @(see set-brr-evisc-tuple).</p>
+
  <p>For further information, see the related @(':')@(tsee doc) topics listed
  below.</p>
 
@@ -11806,41 +11799,48 @@ with any questions about building the community books.</p>")
 (defxdoc brr-commands
   :parents (break-rewrite)
   :short "@(see Break-Rewrite) Commands"
-  :long "<code>
- :a!             abort to ACL2 top-level
- :p!             pop one level (exits a top-level break-rewrite loop)
- :target         term being rewritten
- :unify-subst    substitution making :lhs equal :target
- :hyps           hypotheses of the rule
- :hyp i          ith hypothesis of the rule
- :lhs            left-hand side of rule's conclusion
- :rhs            right-hand side of rule's conclusion
- :type-alist     type assumptions governing :target
- :initial-ttree  ttree before :eval (see @(see ttree))
- :ancestors      negations of backchaining hypotheses being pursued
- :wonp           indicates whether application succeeded (after :eval)
- :rewritten-rhs  rewritten :rhs (after :eval) of a rewrite rule
- :poly-list      list of polynomials (after :eval) of a linear rule,
-                   where the leading term of each is enclosed in an extra set
-                   of parentheses
- :final-ttree    ttree after :eval (see @(see ttree))
- :failure-reason reason rule failed (after :eval)
- :path           rewriter's path from top clause to :target
- :frame i        ith frame in :path
- :top            top-most frame in :path
- :btm            bottom-most frame in :path
- :ok             exit break
- :go             exit break, printing result
- :eval           try rule and re-enter break afterwards
- :ok!            :ok but no recursive breaks
- :go!            :go but no recursive breaks
- :eval!          :eval but no recursive breaks
- :ok$ runes      :ok with runes monitored during recursion
- :go$ runes      :go with runes monitored during recursion
- :eval$ runes    :eval with runes monitored during recursion
- :help           this message
- :standard-help  :help message from ACL2 top-level
- </code>
+  :long "<p>Many commands display terms that are abbreviated (``eviscerated'')
+  by default.  These have corresponding commands with a ``+'' suffix that avoid
+  such abbreviation, as shown below; also see @(see brr-evisc-tuple).  For
+  example, the notation ``@(':ancestors[+]')'' below indicates that the
+  @(':ancestors') command may abbreviate terms but the @(':ancestors+') command
+  does not.</p>
+
+ @({
+ :a!                abort to ACL2 top-level
+ :ancestors[+]      negations of backchaining hypotheses being pursued
+ :btm[+]            bottom-most frame in :path
+ :eval              try rule and re-enter break afterwards
+ :eval!             :eval but no recursive breaks
+ :eval$ runes       :eval with runes monitored during recursion
+ :failure-reason[+] reason rule failed (after :eval)
+ :final-ttree[+]    ttree after :eval (see @(see ttree))
+ :frame[+] i        ith frame in :path
+ :go                exit break, printing result
+ :go!               :go but no recursive breaks
+ :go$ runes         :go with runes monitored during recursion
+ :help              this message
+ :hyp i             ith hypothesis of the rule
+ :hyps              hypotheses of the rule
+ :initial-ttree[+]  ttree before :eval (see @(see ttree))
+ :lhs               left-hand side of rule's conclusion
+ :ok                exit break
+ :ok!               :ok but no recursive breaks
+ :ok$ runes         :ok with runes monitored during recursion
+ :p!                pop one level (exits a top-level break-rewrite loop)
+ :path[+]           rewriter's path from top clause to :target
+ :poly-list[+]      list of polynomials (after :eval) of a linear rule,
+                      where the leading term of each is enclosed in an
+                      extra set of parentheses
+ :rewritten-rhs[+]  rewritten :rhs (after :eval) of a rewrite rule
+ :rhs               right-hand side of rule's conclusion
+ :standard-help     :help message from ACL2 top-level
+ :target[+]         term being rewritten
+ :top[+]            top-most frame in :path
+ :type-alist[+]     type assumptions governing :target
+ :unify-subst[+]    substitution making :lhs equal :target
+ :wonp              indicates whether application succeeded (after :eval)
+ })
 
  <p>@(see Break-rewrite) is just a call of the standard ACL2 read-eval-print
  loop, @(tsee ld), on a ``@(see wormhole)'' @(see state).  Thus, you may
@@ -14084,7 +14084,9 @@ with any questions about building the community books.</p>")
  (possibly @(tsee state)) while the other parameters and results are not stobjs
  (see @(see stobj)).  Note that there need not be input stobjs in [3] &mdash;
  i.e., @('k') can be 0 &mdash; and even if there are, there need not be output
- stobjs.</p>
+ stobjs.  In most ways [3] and [3+] are treated similarly; see @(see
+ make-summary-data) for a discussion of the form of @('d') in [3+] and, more
+ generally, for how [3+] differs from [3] by enhancing the @(see summary).</p>
 
  @({
   [1]  ((CL-PROC cl) => cl-list)
@@ -14092,10 +14094,12 @@ with any questions about building the community books.</p>")
   [2]  ((CL-PROC cl hint) => cl-list)
 
   [3]  ((CL-PROC cl hint st_1 ... st_k) => (mv erp cl-list st_i1 ... st_in))
+
+  [3+] ((CL-PROC cl hint st_1 ... st_k) => (mv erp cl-list st_i1 ... st_in d))
  })
 
- <p>We call @('cl-list') the <i>clauses-result</i>.  In [3], we think of the
- first component of the result as an error flag.  Indeed, a proof will
+ <p>We call @('cl-list') the <i>clauses-result</i>.  In [3] and [3+], we think
+ of the first component of the result as an error flag.  Indeed, a proof will
  instantly abort if that error flag is not @('nil').</p>
 
  <p>We next discuss the legal forms of @(':clause-processor') rules, followed
@@ -14130,19 +14134,19 @@ with any questions about building the community books.</p>")
  @('books/clause-processors/basic-examples.lisp')).  For cases [1] and [2]
  above, @('<CL-LIST>') is of the form @('(CL-PROC CL)') or @('(CL-PROC CL
  HINT)'), respectively, where in the latter case @('HINT') is a non-stobj
- variable distinct from the variables @('CL') and @('A').  For case [3],
- @('<CL-LIST>') is of the form</p>
+ variable distinct from the variables @('CL') and @('A').  For cases [3] and
+ [3+], @('<CL-LIST>') is the result of wrapping the function
+ @('clauses-result') around a call of @('CL-PROC'):</p>
 
  @({
-  (clauses-result (CL-PROC CL HINT st_1 ... st_k))
+  (clauses-result (CL-PROC CL HINT ...))
  })
 
- <p>where the @('st_i') are the specific stobj names mentioned in [3].
- Logically, @('clauses-result') returns the @(tsee cadr) if the @(tsee car) is
- @('NIL'), and otherwise (for the error case) returns a list containing the
+ <p>Logically, @('clauses-result') returns the @(tsee cadr) if the @(tsee car)
+ is @('NIL'), and otherwise (for the error case) returns a list containing the
  empty (false) clause.  So in the non-error case, @('clauses-result') picks out
- the second result, denoted @('cl-list') in [3] above, and in the error case
- the implication above trivially holds.</p>
+ the second result, denoted @('cl-list') in [3] and [3+] above, and in the
+ error case the implication above trivially holds.</p>
 
  <p>In the above theorem, we are asked to prove @('(EVL (disjoin CL) A)')
  assuming that the conjunction of all clauses produced by the clause processor
@@ -14214,8 +14218,8 @@ with any questions about building the community books.</p>")
  two arguments:<br/>
  @(':clause-processor (F clause nil)')</li>
 
- <li>If @('F') is a function symbol with inputs of the form [3] above, that is,
- with input signature @('(nil nil st_1 ... st_k)'):<br/>
+ <li>If @('F') is a function symbol with inputs of the form [3] or [3+] above,
+ that is, with input signature @('(nil nil st_1 ... st_k)'):<br/>
  @(':clause-processor (F clause nil st_1 ... st_k)')</li>
 
  </ul>
@@ -14234,12 +14238,12 @@ with any questions about building the community books.</p>")
 
  <p>The proof also aborts when the clause-processor function returns at least
  two values and the first value returned &mdash; the ``@('erp')'' value from
- case [3] above &mdash; is not @('nil').  In that case, @('erp') is used for
- printing an error message as follows: if it is a string, then that string is
- printed; but if it is a non-empty true list whose first element is a string,
- then it is printed as though by @('(fmt ~@0 (list (cons #\\0 erp)) ...)') (see
- @(see fmt)).  Otherwise, a non-@('nil') @('erp') value causes a generic error
- message to be printed.</p>
+ cases [3] and [3+] above &mdash; is not @('nil').  In that case, @('erp') is
+ used for printing an error message as follows: if it is a string, then that
+ string is printed; but if it is a non-empty true list whose first element is a
+ string, then it is printed as though by @('(fmt ~@0 (list (cons #\\0 erp))
+ ...)') (see @(see fmt)).  Otherwise, a non-@('nil') @('erp') value causes a
+ generic error message to be printed.</p>
 
  <p>If there is no error as above, but the @('CL-PROC') call returns a clause
  list whose single element is equal to the input clause, then the hint is
@@ -15665,14 +15669,17 @@ subtree of X with T, without duplication.</p>
 
  <p>For instance, consider a function like @(tsee remove-equal), which updates
  a list by removing all copies of some element from it.  The definition of
- @('remove-equal') is as follows:</p>
+ @('remove-equal') is as follows (in the logic; it has a slightly different
+ definition in raw Lisp).</p>
 
  @(def remove-equal)
 
  <p>You can see that if @('l') doesn't have any copies of @('x'), this function
  will essentially make a fresh copy of the whole list @('x').  That could waste
- a lot of memory when @('x') is long.  It is easy to write a new version of
- @('remove-equal') that uses @('cons-with-hint'):</p>
+ a lot of memory when @('x') is long.  The choice was made to define
+ @('remove-equal') ``under the hood'' to call Common Lisp's function,
+ @('remove'); but it is easy to write a new version of @('remove-equal') that
+ uses @('cons-with-hint'):</p>
 
  @({
  (defun remove-equal-with-hint (x l)
@@ -17073,11 +17080,12 @@ subtree of X with T, without duplication.</p>
  supplied, their values are evaluated.  The value of @('frames') should be
  either a natural number or a list of two natural numbers, the first less than
  the second; and the value of @('evisc-tuple') should be an evisc-tuple (see
- @(see evisc-tuple)).  If @(':evisc-tuple') is omitted, then substructures
- deeper than 3 are replaced by ``@('#')'' and those longer than 4 are replaced
- by ``@('...')'', and terms of the form @('(hide ...)') are printed as
- @('<hidden>').  Also see @(see set-iprint) for an alternative to printing
- ``@('#')'' and ``@('...')''.</p>
+ @(see evisc-tuple)).  If @(':evisc-tuple') is omitted, then by default,
+ substructures deeper than 3 are replaced by ``@('#')'' and those longer than 4
+ are replaced by ``@('...')'', and terms of the form @('(hide ...)') are
+ printed as @('<hidden>'); this behavior can be changed by setting the
+ @(':TERM') @(see evisc-tuple) (see @(see set-evisc-tuple)).  Also see @(see
+ set-iprint) for an alternative to printing ``@('#')'' and ``@('...')''.</p>
 
  <p>Stack overflows may occur, perhaps caused by looping rewrite rules.  In
  some Lisps, stack overflows may manifest themselves as segmentation faults,
@@ -17839,7 +17847,8 @@ subtree of X with T, without duplication.</p>
 
  </dl>
 
- <p>Declarations in ACL2 may occur only where @('dcl') occurs below:</p>
+ <p>Declarations in ACL2 may occur only where @('dcl') occurs in the following
+ display (not including lambda objects, discussed later below):</p>
 
  <ul>
  <li>@('(DEFUN name args doc-string dcl ... dcl body)')</li>
@@ -17853,6 +17862,20 @@ subtree of X with T, without duplication.</p>
  expands into nested @(tsee let)s and our @('er-let*') expands into nested
  @(tsee mv-let)s) then declarations are permitted as handled by the macros
  involved.</p>
+
+ <p>Each of the cases above permits certain declarations, as follows.</p>
+
+ <ul>
+
+ <li>@('DEFUN'): @(`(cdr (assoc-eq 'defuns *acceptable-dcls-alist*))`)</li>
+ <li>@('DEFMACRO'): @(`(cdr (assoc-eq 'defmacro *acceptable-dcls-alist*))`)</li>
+ <li>@('LET'): @(`(cdr (assoc-eq 'let *acceptable-dcls-alist*))`)</li>
+ <li>@('MV-LET'): @(`(cdr (assoc-eq 'mv-let *acceptable-dcls-alist*))`)</li>
+ <li>@('FLET'): @(`(cdr (assoc-eq 'flet *acceptable-dcls-alist*))`)</li>
+ </ul>
+
+ <p>Also see @(see lambda) for discussion of lambda objects and their legal
+ @('declare') forms.</p>
 
  <p>@('Declare') is defined in Common Lisp.  See any Common Lisp documentation
  for more information.</p>")
@@ -17907,181 +17930,6 @@ subtree of X with T, without duplication.</p>
 
  <p>ACL2 insists on the declaration to ensure that the definition is processed
  the same way no matter what the context.</p>")
-
-(defxdoc def-warrant
-  :parents (apply$ acl2-built-ins)
-  :short "Warrant a function so @(tsee apply$) can use it"
-  :long "<p>Before using @('def-warrant') or a utility like @(tsee defun$) that
-  relies on it:</p>
-
-  @({
-  (include-book \"projects/apply/apply-lemmas\" :dir :system)
-  })
-
-  <p>Several lemmas in that book are necessary for @('def-warrant') to prove
-  the theorems it must prove.</p>
-
-  @({
-  General Form:
-  (def-warrant fn)
-  })
-
-  <p>where @('fn') is a defined function name.  This command analyzes the body
-  of @('fn') to determine whether it satisfies stringent syntactic conditions
-  that allow @(tsee apply$) to apply the function name to arguments and that
-  allow future calls of @('def-warrant') to analyze definitions that call this
-  @('fn').</p>
-
-  <p>The conditions include:</p>
-
-  <p><i>(a)</i> @('Fn') is a defined, singly-recursive (or non-recursive)
-  @(':logic') mode function that (if recursive) is justified with a @(see tame)
-  measure expression, @(see tame) domain predicate, and @(see tame)
-  well-founded relation, and that (if recursive and at least one formal has ilk
-  @(':FN') or @(':EXPR')) has a natural-number-valued measure and well-founded
-  relation @('o<').</p>
-
-  <p><i>(b)</i> Every function called in the body of @('fn'), except @('fn')
-  itself, already has a @(see badge).  If some subfunction doesn't already have
-  a badge, @('def-warrant') will signal an error and report the unbadged
-  function.  You will have to call @('def-warrant') on that function -- and
-  that call must succeed -- before any function using it is successfully
-  warranted.</p>
-
-  <p><i>(c)</i> Each formal can be assigned one of three ilks, as follows.  By
-  the way, key to the inductive correctness of the implied algorithm below is
-  the fact that initially the only function symbol with a slot of ilk @(':FN')
-  is @('apply$') and the only function with a slot of ilk @(':EXPR') is
-  @('ev$').  In both functions it is the first argument slot that is so
-  distinguished.</p>
-
-  <p>Let <i>v </i> be the <i>i </i>th formal parameter of a defined function
-  <i>fn</i>.  Then the ilk of <i>v </i> is @(':FN') iff the value of <i>v </i>
-  eventually makes its way into the first argument of @('apply$'), either in
-  the definition of @('fn') or in some function ancestral to (i.e., eventually
-  called by) @('fn').  Another way to say this is that there is an occurrence
-  of <i>v </i> in a slot of ilk @(':FN').  Furthermore, <i>v </i> is never used
-  any other way: every place <i>v </i> occurs in the body of <i>fn </i> is in a
-  slot of ilk @(':FN').  And finally, in every recursive call of <i>fn </i>,
-  <i>v </i> is passed identically in the <i>i </i>th argument position of the
-  call.  We say such a <i>v </i> is ``used (exclusively) as a function.''</p>
-
-  <p>The <i>i </i>th formal variable <i>v </i> has ilk @(':EXPR') under
-  analogous conditions except that instead of eventually getting into the first
-  argument of @('apply$') it eventually gets into the first argument of
-  @('ev$').  We say such a <i>v </i> is ``used (exclusively) as an
-  expression.''  Note: @(tsee ev$) is the natural notion of expression
-  evaluation in this context: look up the values of variables in the alist
-  argument to @('ev$'), return quoted constants, and otherwise @('apply$')
-  function symbols and @('LAMBDA') objects to the recursively obtained list of
-  values returned by evaluating the actuals.  However, @('ev$') first checks
-  that the expression is @(tsee tamep).</p>
-
-  <p>The <i>i </i>th formal variable <i>v </i> has ilk @('NIL') if it never
-  occurs in a @(':FN') slot and never occurs in an @(':EXPR') slot.  We say
-  such a <i>v </i> is ``used (exclusively) as an ordinary object.''</p>
-
-  <p><i>(d)</i> Every @(':FN') and @(':EXPR') slot of every function called in
-  the body of @('fn') is occupied either by a formal of @('fn') of the same ilk
-  or, in the case of calls of functions other than @('fn'), a quoted @(see
-  tame) function symbol or quoted tame (preferably well-formed) @('LAMBDA')
-  object.</p>
-
-  <p>If these conditions are not met, an error is caused by @('def-warrant').</p>
-
-  <p>If these conditions are met, @('def-warrant') constructs the @(see badge)
-  for @('fn'), setting the authorization flag to @('T') if @('fn') returns a
-  single value and @('NIL') if it does not, setting the arity field in the
-  badge to the arity, @('n'), of @('fn'), and setting the ilks field to the
-  list of computed ilks (or to @('T') if every formal has ilk @('NIL')).</p>
-
-  <p>The authorization flag indicates whether @('apply$') is allowed to call
-  @('fn').  A @('fn') that satisfies the conditions above but returns multiple
-  values cannot be called by @('apply$') because @('apply$') always returns a
-  single value.  But such a @('fn') might be used as a subfunction in some
-  other function that satisfies the rules and returns a single value, so that
-  caller can be authorized.  There is an example of this at the end of this
-  documentation topic.</p>
-
-  <p>The generated badge is stored for the future use of @('def-warrant').
-  Furthermore, if the generated badge is authorized, @('def-warrant') generates
-  the @(tsee warrant) for @('fn').  The name of that 0-ary function will be
-  @('APPLY$-WARRANT-fn').  Calls of @(tsee apply$) on @(''fn') in proof attempts
-  can only be simplified if the warrant hypothesis,
-  @('(APPLY$-WARRANT-fn)'), <i>aka</i> ``the warrant,'' is among the hypotheses of
-  the conjecture being proved.  The warrant specifies the values of both
-  @('(badge 'fn)') and @('(apply$ 'fn ...)'), including the tameness
-  requirements imposed on @('apply$').  (The warrant explicitly specifies the
-  values of @(tsee badge-userfn) and @(tsee apply$-userfn) and then @(tsee
-  def-warrant) proves rewrite rules to make calls of @('badge') and @('apply$')
-  simplify accordingly.)</p>
-
-  <p>In addition, if a warrant is issued for @('fn'), then @('def-warrant')
-  extends ACL2's evaluation theory (but not its proof theory) so that the
-  warrant hypothesis is assumed in that theory, allowing calls of @('badge')
-  and @('apply$') to be evaluated in the evaluation theory (but not in the
-  proof theory).  See @(tsee warrant) for details.</p>
-
-  <p>@('Def-warrant') also proves that @(tsee fn-equal) is a congruence
-  relation for each @(':FN') position of @('fn').</p>
-
-  <p>See @(tsee warrant) for details.</p>
-
-  <h3>An Example of an Authorized Function Calling an Unauthorized One</h3>
-
-  <p>Recall above that @('def-warrant') sometimes refuses to generate a warrant
-  but does generate a badge so that the function can be used in other
-  definitions.  Below is a script in which we define a function that returns
-  multiple values and a second function that uses it to compute a single value.
-  We have omitted the output generated by these two ordinary @('defun')s.  We
-  then call @('def-warrant') on each and show the output, which is
-  self-explanatory.</p>
-
-  @({
-  (defun sum-and-diff (x y)
-    (mv (+ x y) (- x y)))
-
-  (defun diff-squares (x y)
-    (mv-let (sum diff)
-      (sum-and-diff x y)
-      (* sum diff)))
-
-  (def-warrant sum-and-diff)
-
-  SUM-AND-DIFF cannot be warranted because it returns multiple values, but it
-  otherwise satisfies the syntactic restrictions on warrants.  So a badge for
-  SUM-AND-DIFF has been issued -- allowing you to use SUM-AND-DIFF in other
-  functions that may be warranted -- but no warrant for SUM-AND-DIFF can be
-  issued.  The badge of SUM-AND-DIFF is (APPLY$-BADGE NIL 2 . T).
-
-  (def-warrant diff-squares)
-
-  DIFF-SQUARES is now warranted, with badge (APPLY$-BADGE T 2 . T).
-  })
-
-  <p>From the definition of ``tame function'' in the
-  documentation for @(tsee apply$) we see that @('sum-and-diff')
-  is not a tame function because it is not authorized for use by
-  @('apply$').  But @('diff-squares'), which uses
-  @('sum-and-diff'), is a tame function.</p>
-
-  <p>We cannot expect:</p>
-
-  @({(apply$ 'sum-and-diff '(3 5)) = (sum-and-diff 3 5)})
-
-  <p>because @('apply$') returns 1 value while @('sum-and-diff') returns 2.</p>
-
-  <p>Since @('diff-squares') is a tame function, @('apply$') can know how to
-  apply it.  But its warrant is needed to reason about it since
-  @('diff-squares') is not built into @('apply$').</p>
-
-  @({(defthm diff-squares-works
-      (implies (warrant diff-squares)
-               (equal (apply$ 'diff-squares (list x y))
-                      (- (expt x 2) (expt y 2)))))})
-
-  <p>By the way, an arithmetic book, e.g., \"arithmetic-5/top\" is needed to
-  prove the theorem above.</p>")
 
 (defxdoc defabbrev
   :parents (macros events programming)
@@ -19320,12 +19168,12 @@ subtree of X with T, without duplication.</p>
 
  <p>(Of interest only to users of @(tsee apply$).)  Special handling is applied
  when attempting to attach to a so-called <i>warrant</i>, which is produced by
- an appication of @(tsee def-warrant) (or @(tsee defun$)).  In that case it is
+ an appication of @(tsee defwarrant) (or @(tsee defun$)).  In that case it is
  legal to attach the function @('true-apply$-warrant') to the warrant, without
  any proof obligation.  This attachment is actually performed automatically by
- @('def-warrant'), so users (even users of @('apply$')) need not deal
+ @('defwarrant'), so users (even users of @('apply$')) need not deal
  explicitly with such attachments.  However, these attachments make warrants
- executable in the loop; for example, after @('(def-warrant foo)'), @('(warrant
+ executable in the loop; for example, after @('(defwarrant foo)'), @('(warrant
  foo)') will evaluate to @('t') in the loop.</p>
 
  <p>We next discuss a restriction based on a notion of a function symbol
@@ -19367,11 +19215,12 @@ subtree of X with T, without duplication.</p>
     :rule-classes nil)
  })
 
- <p>To see all attachments: @('(all-attachments (w state))').  However, note
- that attachments introduced with a non-@('nil') value of @(':skip-checks')
- will be omitted from this list.  To obtain the attachment to a function symbol
- @('FN'), without the above restriction and with value @('nil') if there is no
- attachment to @('FN'): @('(cdr (attachment-pair 'FN (w state)))').</p>
+ <p>The form @('(all-attachments (w state))') evaluates to the list of all
+ attachments except in two cases: @(see warrant)s, and attachments introduced
+ with a non-@('nil') value of @(':skip-checks').  To obtain the attachment to a
+ function symbol @('FN'), without the above restrictions and with value
+ @('nil') if there is no attachment to @('FN'): @('(cdr (attachment-pair 'FN (w
+ state)))').</p>
 
  <p>Next we discuss the @(':ATTACH') keyword.  There is rarely if ever a reason
  to specify @(':ATTACH T'), but the following (admittedly contrived) example
@@ -22062,7 +21911,7 @@ subtree of X with T, without duplication.</p>
  updating array fields, where inlining reduced the time by a factor of 10 or
  more; and inlining has sped up realistic examples by a factor of at least 2.
  Inlining may get within a factor of 2 of C execution times for such contrived
- examples, and within a few percent of C execution times on realistic
+ examples, and perhaps within a few percent of C execution times on realistic
  examples.</p>
 
  <p>A drawback to inlining is that redefinition may not work as expected, much
@@ -22946,7 +22795,7 @@ subtree of X with T, without duplication.</p>
   :parents (defun events apply$)
   :short "Define a function symbol and generate a warrant"
   :long "<p>@('Defun$') is just a macro that expands to the obvious @(tsee
-  defun) followed by @(tsee def-warrant).</p>")
+  defun) followed by @(tsee defwarrant).</p>")
 
 (defxdoc defun-inline
   :parents (defun events)
@@ -23602,30 +23451,30 @@ subtree of X with T, without duplication.</p>
  these symbols as quantifiers.</p>
 
  <p>The use of @(tsee defun-nx) above, rather than @(tsee defun), disables
- certain checks that are required for evaluation, in particular the
- single-threaded use of @(tsee stobj)s.  However, there is a price: calls of
- these defined functions cannot be evaluated; see @(see defun-nx).  Normally
- that is not a problem, since these notions involve quantifiers.  But you are
- welcome to replace this @(tsee declare) form with your own @('declare') forms.
- These may be given either as the @('dcl_i') as shown above, or (using an older
- notation that might some day be deprecated) as a list of @('declare') supplied
- as the value of keyword argument @(':witness-dcls'); or, both.  These will
- become the @('declare') forms in the generated @(tsee defun).  Note that if at
- least one @('declare') form is supplied, but none of those forms contain the
- form @('(declare (xargs :non-executable t))'), then the appropriate wrapper
- for non-executable functions will not be added, i.e., @(tsee defun) will be
- used in place of @(tsee defun-nx).</p>
+ certain checks that are required for evaluation, for example in the passing of
+ multiple values.  However, there is a price: calls of these defined functions
+ cannot be evaluated; see @(see defun-nx).  Normally that is not a problem,
+ since these notions involve quantifiers.  But if you prefer that @(tsee defun)
+ be used instead of @('defun-nx'), you can arrange that using @(tsee declare)
+ forms.  These may be given either as the @('dcl_i') as shown above, or (using
+ an older notation that might some day be deprecated) as a list of @('declare')
+ forms supplied as the value of keyword argument @(':witness-dcls'); or, both.
+ These will become the @('declare') forms in the generated @(tsee defun).  If
+ the @(tsee xargs) @(see declaration) form @(':non-executable nil') is
+ supplied, then @(tsee defun) will be used in place of @(tsee defun-nx).</p>
 
- <p>@(csee Guard) verification is handled specially for @('defun-sk') events.
- Unlike @(tsee defun), the value of @('verify-guards-eagerness') is irrelevant
- for @('defun-sk').  Instead, guard verification will be attempted exactly when
- @('type'), @(':guard'), or @(':verify-guards t') (or more than one of these)
- is specified in a declaration (that is, in some @('dcl_i') or in the
- @(':witness-dcls') argument).  Technical note: unless @(':verify-guards t') is
- specified explicitly, such guard verification is implemented through a
- generated call of @(tsee verify-guards) after the @('encapsulate') that
- surrounds the definitions introduced; use @(':')@(tsee trans1) to see the
- expansion.</p>
+ <p>@(csee Guard) verification is performed for @('defun-sk') events under the
+ same conditions as for @('defun') events.  (An exception, ignored here but
+ discussed in a later paragraph below, occurs when keyword argument
+ @(':constrain t') is supplied.)  Thus, by default, guard verification will be
+ attempted exactly when at least one of @('type'), @(':guard'), or
+ @(':verify-guards t') is specified in a declaration (that is, in some
+ @('dcl_i') or in the @(':witness-dcls') argument).  This default behavior can
+ be modified just as it is for @('defun'); see @(tsee
+ set-verify-guards-eagerness).  Technical note: such guard verification is
+ implemented through a generated call of @(tsee verify-guards) after the
+ @('encapsulate') that surrounds the definitions introduced; use @(':')@(tsee
+ trans1) to see the expansion.</p>
 
  <p>@('Defun-sk') is a macro implemented using @(tsee defchoose).  Hence, it
  should only be executed in @(see defun-mode) @(':')@(tsee logic); see @(see
@@ -23661,7 +23510,10 @@ subtree of X with T, without duplication.</p>
  usual, the simplest way to see the effects of @(':constrain') may be to apply
  @(':trans1') to your @('defun-sk') form.  Note that constraining the function
  can make it possible to attach to it (see @(see defattach)) and to introduce
- it as a @(see guard)-verified function.</p>
+ it as a @(see guard)-verified function.  Also note that when @(':constrain t')
+ is specified: the guard of @('fn') will automatically be @('t'), no guard
+ verification will be performed, and @('fn') will nevertheless be a
+ guard-verified (and constrained) function.</p>
 
  <p>If you want to represent nested quantifiers, you can use more than one
  @('defun-sk') event.  For example, in order to represent</p>
@@ -23887,6 +23739,115 @@ subtree of X with T, without duplication.</p>
  than @('defuns') because by leaving the @(tsee defun)s in place, @(tsee
  mutual-recursion) forms can be processed by the Emacs @('tags') program.  See
  @(see mutual-recursion).</p>")
+
+(defxdoc defwarrant
+  :parents (apply$ acl2-built-ins)
+  :short "Warrant a function so @(tsee apply$) can use it"
+  :long "<p>Before using @('defwarrant') or a utility like @(tsee defun$) that
+  relies on it:</p>
+
+  @({
+  (include-book \"projects/apply/top\" :dir :system)
+  })
+
+  <p>Several lemmas in that book are necessary for @('defwarrant') to prove
+  the theorems it must prove.</p>
+
+  @({
+  General Form:
+  (defwarrant fn)
+  })
+
+  <p>where @('fn') is a defined function name.  This command analyzes the body
+  of @('fn') to determine whether it satisfies stringent syntactic conditions
+  that allow @(tsee apply$) to apply the function name to arguments and that
+  allow future calls of @('defwarrant') to analyze definitions that call this
+  @('fn').</p>
+
+  <p>The conditions include:</p>
+
+  <p><i>(a)</i> @('Fn') is a defined, singly-recursive (or non-recursive)
+  @(':logic') mode function that (if recursive) is justified with a @(see tame)
+  measure expression, @(see tame) domain predicate, and @(see tame)
+  well-founded relation, and that (if recursive and at least one formal has ilk
+  @(':FN') or @(':EXPR')) has a natural-number-valued measure and well-founded
+  relation @('o<').</p>
+
+  <p><i>(b)</i> Every function called in the body of @('fn'), except @('fn')
+  itself, already has a @(see badge).  If some subfunction doesn't already have
+  a badge, @('defwarrant') will signal an error and report the unbadged
+  function.  You will have to call @('defwarrant') on that function -- and
+  that call must succeed -- before any function using it is successfully
+  warranted.</p>
+
+  <p><i>(c)</i> Each formal can be assigned one of three ilks, as follows.  By
+  the way, key to the inductive correctness of the implied algorithm below is
+  the fact that initially the only function symbol with a slot of ilk @(':FN')
+  is @('apply$') and the only function with a slot of ilk @(':EXPR') is
+  @('ev$').  In both functions it is the first argument slot that is so
+  distinguished.</p>
+
+  <p>Let <i>v </i> be the <i>i </i>th formal parameter of a defined function
+  <i>fn</i>.  Then the ilk of <i>v </i> is @(':FN') iff the value of <i>v </i>
+  eventually makes its way into the first argument of @('apply$'), either in
+  the definition of @('fn') or in some function ancestral to (i.e., eventually
+  called by) @('fn').  Another way to say this is that there is an occurrence
+  of <i>v </i> in a slot of ilk @(':FN').  Furthermore, <i>v </i> is never used
+  any other way: every place <i>v </i> occurs in the body of <i>fn </i> is in a
+  slot of ilk @(':FN').  And finally, in every recursive call of <i>fn </i>,
+  <i>v </i> is passed identically in the <i>i </i>th argument position of the
+  call.  We say such a <i>v </i> is ``used (exclusively) as a function.''</p>
+
+  <p>The <i>i </i>th formal variable <i>v </i> has ilk @(':EXPR') under
+  analogous conditions except that instead of eventually getting into the first
+  argument of @('apply$') it eventually gets into the first argument of
+  @('ev$').  We say such a <i>v </i> is ``used (exclusively) as an
+  expression.''  Note: @(tsee ev$) is the natural notion of expression
+  evaluation in this context: look up the values of variables in the alist
+  argument to @('ev$'), return quoted constants, and otherwise @('apply$')
+  function symbols and @('LAMBDA') objects to the recursively obtained list of
+  values returned by evaluating the actuals.  However, @('ev$') first checks
+  that the expression is @(tsee tamep).</p>
+
+  <p>The <i>i </i>th formal variable <i>v </i> has ilk @('NIL') if it never
+  occurs in a @(':FN') slot and never occurs in an @(':EXPR') slot.  We say
+  such a <i>v </i> is ``used (exclusively) as an ordinary object.''</p>
+
+  <p><i>(d)</i> Every @(':FN') and @(':EXPR') slot of every function called in
+  the body of @('fn') is occupied either by a formal of @('fn') of the same ilk
+  or, in the case of calls of functions other than @('fn'), a quoted @(see
+  tame) function symbol or quoted tame (preferably well-formed) @('LAMBDA')
+  object.</p>
+
+  <p>If these conditions are not met, an error is caused by @('defwarrant').</p>
+
+  <p>If these conditions are met, @('defwarrant') constructs the @(see badge)
+  for @('fn'), setting the arity and out arity appropriately and setting the
+  ilks field to the list of computed ilks (or to @('T') if every formal has ilk
+  @('NIL')).</p>
+
+  <p>The generated badge is stored for the future use of @('defwarrant').
+  Furthermore, @('defwarrant') generates the @(tsee warrant) for @('fn').  The
+  name of that 0-ary function will be @('APPLY$-WARRANT-fn').  Calls of @(tsee
+  apply$) on @(''fn') in proof attempts can only be simplified if the warrant
+  hypothesis, @('(APPLY$-WARRANT-fn)'), <i>aka</i> ``the warrant,'' is among
+  the hypotheses of the conjecture being proved.  The warrant specifies the
+  values of both @('(badge 'fn)') and @('(apply$ 'fn ...)'), including the
+  tameness requirements imposed on @('apply$').  (The warrant explicitly
+  specifies the values of @(tsee badge-userfn) and @(tsee apply$-userfn) and
+  then @(tsee defwarrant) proves rewrite rules to make calls of @('badge') and
+  @('apply$') simplify accordingly.)</p>
+
+  <p>In addition, if a warrant is issued for @('fn'), then @('defwarrant')
+  extends ACL2's evaluation theory (but not its proof theory) so that the
+  warrant hypothesis is assumed in that theory, allowing calls of @('badge')
+  and @('apply$') to be evaluated in the evaluation theory (but not in the
+  proof theory).  See @(tsee warrant) for details.</p>
+
+  <p>@('defwarrant') also proves that @(tsee fn-equal) is a congruence
+  relation for each @(':FN') position of @('fn').</p>
+
+  <p>See @(tsee warrant) for details.</p>")
 
 (defxdoc delete-assoc
   :parents (alists acl2-built-ins)
@@ -25181,6 +25142,182 @@ ld) and @(tsee include-book)"
  @('nil'), since the macro-alias of @('mac') is @('foo') on the second
  pass.</p>")
 
+(defxdoc efficiency
+  :parents (debugging proof-automation programming)
+  :short "Efficiency considerations"
+  :long "<p>This topic is a grab-bag of ideas for the efficient use of ACL2,
+ including proofs and programming.  It is far from complete, and @(see tips)
+ for using ACL2 effectively may be found throughout the @(see documentation).
+ The present topic will, ideally, improve over time, both in its content and in
+ its organization.  Please contribute!</p>
+
+ <p>Here we discuss primarily time efficiency rather than space efficiency.
+ You can time forms using @(tsee time$).  That may show you that your tweaks
+ to proof scripts or function definitions don't make a noticeable difference!
+ We focus below on some techniques that have a reasonable chance of making a
+ difference.</p>
+
+ <h3>Proof efficiency</h3>
+
+ <p>Perhaps the most basic idea for carrying out proofs efficiently is to use
+ rewriting effectively; see @(see introduction-to-the-theorem-prover) and, in
+ particular, the sections on rewriting.  Here we mention just a few common ways
+ to improve the efficiency of rewriting in ACL2.</p>
+
+ <ul>
+
+ <li>Consider minimizing the number of hypotheses of a rule.  See @(see
+ remove-hyps) for a tool that can help with that.</li>
+
+ <li> Manage @(see theories) effectively.  See @(see accumulated-persistence)
+ for a way to identify rules that might best be @(see disable)d.  In
+ particular, it can be useful to disable functions whose expansions generate
+ large case splits (see @(see splitter)); otherwise, sometimes it can be useful
+ to limit case-splits with @(tsee set-case-split-limitations).</li>
+
+ <li>When many similar proofs are being performed (for example, for families of
+ similar theorems generated by macros), the tool @(see removable-runes) may be
+ helpful.</li>
+
+ </ul>
+
+ <p>Sometimes rewriting is slow for inherent algorithmic reasons.  For example,
+ if you have a binary function, @('op'), and you prove the @(see rewrite) rules
+ @('(equal (op x y) (op y x)')) and @('(equal (op x (op y z)) (op y (op x
+ z)))'), then ACL2 will use an @('n^2') algorithm to put arguments in order,
+ essentially with bubblesort, essentially in a sequence like this:</p>
+
+ @({
+ (op d (op c (op b a)))
+ (op d (op c (op a b)))
+ (op d (op a (op c b)))
+ (op d (op a (op b c)))
+ (op d (op a (op b c)))
+ (op a (op d (op b c)))
+ (op a (op b (op d c)))
+ (op a (op b (op c d)))
+ })
+
+ <p>In such a case, you may find it very helpful to create a suitable @(see
+ meta) rule or a @(see clause-processor) rule, to implement an @('n*log(n)')
+ algorithm.  You may consider creating calls of @(tsee hide) to avoid exploring
+ terms that are in the expected form.  Calls of @('hide') may be removed when
+ ready either with a suitable @(':expand') hint or by enabling a @(see rewrite)
+ rule @('(equal (hide x) x)').</p>
+
+ <p>We conclude this section with ways to tweak the ACL2 system to speed up
+ slow proofs.  These can be especially useful if very large terms are involved.
+ One simple thing to try is to turn off the rewrite cache.</p>
+
+ @({
+ (set-rw-cache-state nil)
+ })
+
+ <p>Some system behaviors can be modified using @(tsee defattach-system),
+ typically by modifying heuristics.  You can find all system attachments by
+ evaluating @('(all-attachments (w state))'), except for a few exceptions (see
+ @(see defattach)).  Here are some key examples of how to modify system
+ behavior.</p>
+
+ @({
+ (defun constant-nil-function-arity-2 (x y)
+   (declare (xargs :mode :logic :guard t) (ignore x y))
+   nil)
+ (defattach-system too-many-ifs-post-rewrite
+   constant-nil-function-arity-2)
+ (defattach-system too-many-ifs-pre-rewrite
+   constant-nil-function-arity-2)
+ (defattach-system quick-and-dirty-srs
+   constant-nil-function-arity-2)
+ })
+
+ <p>In some cases books may provide more sophisticated uses of @(tsee
+ defattach-system) (or @(tsee defattach)).  For a key example, see @(tsee
+ use-trivial-ancestors-check).</p>
+
+ <p>Another way to speed up system functions can be by using @(see
+ memoization).  Here is an example from
+ @('books/projects/stateman/stateman22.lisp').</p>
+
+ @({
+ (memoize 'acl2::sublis-var1
+          :condition '(and (null acl2::alist)
+                           (consp acl2::form)
+                           (eq (car acl2::form) 'HIDE)))
+ })
+
+ <p>See @(see memoized-prover-fns) for a convenient way to do such memoization
+ that automatically clears memoization tables after each event.  (Also see
+ @(see clear-memoize-table) and @(see clear-memoize-tables), and see @(see
+ hons-wash) for another way to clean up after memoization.)  Comments in the
+ book @('books/tools/memoize-prover-fns.lisp') note a reduction in proof time
+ from 4200 seconds to 49 seconds for one example by memoizing some system
+ functions.  Those comments also have some discussion about which system
+ functions to consider memoizing.  Perhaps ACL2 users will contribute further
+ documentation on which system functions to memoize for efficiency.</p>
+
+ <p>The following may be helpful at the level of book certification, and are
+ discussed in :doc certify-book-debug.</p>
+
+ @({
+ (set-serialize-character-system nil)
+ (set-bad-lisp-consp-memoize nil)
+ (set-inhibit-output-lst '(proof-tree event))
+ })
+
+ <h3>Programming efficiency</h3>
+
+ <p>Ideas for efficient programming include the use of compilation for host
+ Lisps (other than CCL and SBCL, which compile automatically); see @(see comp)
+ and @(see set-compile-fns).  For @(see logic)-mode functions, verify @(see
+ guard)s if feasible; otherwise consider using @(see program)-mode wrappers
+ (see @(see program-wrapper)).  Consider writing recursive definitions using
+ tail recursion when possible.  In some cases the use of hash cons,
+ memoization, or fast alists may reduce computation time dramatically; see
+ @(see hons-and-memoization).  Single-threaded objects (see @(see stobj)),
+ @(see arrays), multiple-value return (see @(see mv) and @(see mv-let)), and
+ @(tsee mbe) are helpful programming constructs provided by ACL2 for efficient
+ execution.  Some built-in functions are constructed for efficiency; see for
+ example @(tsee cons-with-hint) to reduce consing and @(see
+ read-file-into-string) for obtaining the contents of a file quickly.</p>
+
+ <p>You might find @(tsee type) @(see declaration)s to be useful.  In
+ particular, if your host Lisp is GCL then the use of the declaration
+ @('(signed-byte 64)'), or any stronger declaration (e.g., @('(unsigned-byte
+ 63)'), @('(signed-byte 12)'), or @('(integer 0 100)')), can provide dramatic
+ performance improvements in compiled code.  You can peruse that code using
+ @(see disassemble$).</p>
+
+ <p>Of course, if a programming technique or construct is useful for efficient
+ execution in Common Lisp and it is supported by ACL2, then it is useful for
+ efficient execution in ACL2.  In particular, consider using @(tsee type) @(see
+ declaration)s for numbers in place of @(tsee xargs) @(':')@(tsee guard).</p>
+
+ <h3>Miscellaneous efficiency ideas</h3>
+
+ <p>The use of @(tsee make-event) can sometimes reduce computation time; see
+ for example @(see using-tables-efficiently) and @(see defconsts).</p>
+
+ <p>You can @(see profile) functions to see where time is being spent during
+ proofs or when computing with user-defined functions.  Sometimes it is even
+ useful to profile virtually all ACL2 source functions, or even virtually all
+ user-defined functions.  That can be done as follows &mdash; also see @(see
+ profile-acl2) and @(see profile-all) &mdash; but note that when the problem is
+ slow proofs, then since the results will display time spent in various ACL2
+ prover routines, those results might not be helpful to most users.</p>
+
+ @({
+ (include-book \"centaur/memoize/old/profile\" :dir :system)
+ (profile-acl2) ; or, (profile-all) to include user-defined functions
+ [[Then run a slow form.]]
+ (memsum) ; shows where time is spent
+ })
+
+ <p>For computations and proofs that may benefit from parallel computation, you
+ could build the variant ACL2(p) of ACL2.  See @(see parallelism).</p>
+
+ ")
+
 (defxdoc eighth
   :parents (nth acl2-built-ins)
   :short "Eighth member of the list"
@@ -25435,6 +25572,9 @@ ld) and @(tsee include-book)"
                         (value '(value-triple nil)))
               :check-expansion t)
  })
+
+ <p>For another use of @('make-event') to create embedded event forms, see
+ @(see make-event-example-3).</p>
 
  <p>When an embedded event is executed while @(tsee ld-skip-proofsp) is
  @(''')@(tsee include-book), those parts of it inside @(tsee local) forms are
@@ -30188,6 +30328,9 @@ current fast alists."
 ;   11
 ;   ? [RAW LISP]
 
+; See translate11-flet for an explanation of why we do not support (declare
+; (ignore (function ...))).
+
   :parents (basics acl2-built-ins)
   :short "Local binding of function symbols"
   :long "@({
@@ -30206,11 +30349,12 @@ current fast alists."
  })
 
  <p>where @('body') is a term, and each @('defi') is a definition as in @(tsee
- defun) but with the leading @('defun') symbol omitted.  See @(see defun).  If
- any @('declare-formi') are supplied, then each must be of the form @('(declare
- decl1 ... decln)'), where each @('decli') is of the form @('(inline g1
- ... gm)') or @('(notinline g1 ... gm)'), and each @('gi') is defined by some
- @('defi').</p>
+ defun) but with the leading @('defun') symbol omitted.  See @(see defun), but
+ see @(see declare) for the declarations permitted directly under the
+ @('defi').  On the other hand, regarding the @('declare-formi') (if any are
+ supplied): each must be of the form @('(declare decl1 ... decln)'), where each
+ @('decli') is of the form @('(inline g1 ... gm)') or @('(notinline g1
+ ... gm)'), and each @('gi') is defined by some @('defi').</p>
 
  <p>The only effect of the declarations is to provide advice to the host Lisp
  compiler.  The declarations are otherwise ignored by ACL2, so we mainly ignore
@@ -31071,13 +31215,13 @@ current fast alists."
  @('fmx-cw') if you want the output to be machine-readable.</p>")
 
 (defxdoc fn-equal
-  :parents (apply$ def-warrant)
+  :parents (apply$ defwarrant)
   :short "Equivalence relation on tame functions"
   :long "<p>@('Fn-equal') is an equivalence relation on tame functions.  It
   holds between @('fn1') and @('fn2') iff both are tame functions and
   @('(apply$ fn1 args)') is @('(apply$ fn2 args)'), for all @('args').  A
   @('defun-sk') event is used to express the universally quantified condition.
-  @(tsee Def-warrant) proves that @('fn-equal') is a congruence relation for
+  @(tsee defwarrant) proves that @('fn-equal') is a congruence relation for
   every argument position of ilk @(':FN').</p>
 
   <p>Ideally one can substitute one functional object for an equivalent one in
@@ -35217,7 +35361,7 @@ current fast alists."
 
  <li>Goto @('https://github.com/<your-github-username>/acl2').</li>
 
- <li>Click the @('Pull request') button (you can search for it with your
+ <li>Click the @('New pull request') button (you can search for it with your
  browser).</li>
 
  <li>In the drop-down box labeled \"base\" (next to the box labeled \"base
@@ -35572,7 +35716,7 @@ current fast alists."
   <p><i>Warning</i>: Using an ill-formed @('LAMBDA') object in a @(':FN') slot
   in a @('defun') will make it impossible to warrant the newly defined function
   because it will not pass the stringent tests necessary to analyze its ilks.
-  See @(tsee def-warrant).  Basically these bypasses are intended primarily for
+  See @(tsee defwarrant).  Basically these bypasses are intended primarily for
   top-level input to ACL2's read-eval-print loop.</p>
 
   <p>There are two ways to bypass the check.  Bypass 1 is to construct the
@@ -35629,12 +35773,12 @@ current fast alists."
   ACL2 !>(foo 'b)
   (B . B)
 
-  ; But you can't warrant the new function because def-warrant
+  ; But you can't warrant the new function because defwarrant
   ; can't determine the ilks.
 
-  ACL2 !>(def-warrant foo)
+  ACL2 !>(defwarrant foo)
 
-  ACL2 Error in DEF-WARRANT: FOO will not be warranted because
+  ACL2 Error in DEFWARRANT: FOO will not be warranted because
   a :FN slot in its body is occupied by a quoted cons object,
   '(LAMBDA (T) (CONS T T)), that is not a well-formed,
   fully-translated, closed ACL2 lambda object. ...
@@ -37256,7 +37400,9 @@ current fast alists."
 
  <p>The process of removing guard-holders includes the transformations below.
  That process is also applied to each argument of a function call and to the
- bodies of @(see lambda) expressions (see @(see term)).</p>
+ bodies of @(see lambda) expressions (see @(see term)), including quoted lambda
+ expressions that appear in an argument position with @(see ilk) @(':FN') (see
+ @(see apply$)).</p>
 
  @({
  (return-last term0 term1 term2)  ==>  term2
@@ -39115,9 +39261,10 @@ current fast alists."
     [Note:  A hint was supplied for our processing of the goal above.
     Thanks!]
 
-    ACL2 Warning [Use] in ( THM ...):  It is unusual to :USE an enabled
-    :REWRITE or :DEFINITION rule, so you may want to consider disabling
-    (:REWRITE CDR-CONS).
+    ACL2 Warning [Use] in ( THM ...):  It is unusual to :USE the formula
+    of an enabled :REWRITE or :DEFINITION rule, so you may want to consider
+    disabling (:REWRITE CDR-CONS) in the hint provided for Subgoal D1.
+    See :DOC using-enabled-rules.
 
     We augment the goal with the hypothesis provided by the :USE hint.
     The hypothesis can be obtained from CDR-CONS.  We are left with the
@@ -39287,12 +39434,20 @@ current fast alists."
  examples of the sophisticated use of hints, primarily for experts, see
  community book @('books/hints/basic-tests.lisp').</p>
 
- <p>First, we describe the ACL2 ``waterfall'', which handles each goal either
- by replacing it with a list (possibly empty) of child goals, or else by
- putting the goal into a ``pool'' for later proof by induction.  Then, we
- describe how hints are handled by the waterfall.</p>
+ <p>First, we describe the ACL2 ``waterfall''.  Then, we describe how hints are
+ handled by the waterfall.</p>
 
  <p><b>The Waterfall.</b></p>
+
+ <p>The ACL2 <i>waterfall</i> is the heart of the ACL2 prover.  It attempts to
+ prove a given goal and either completes the proof, fails, or produces goals to
+ be proved by induction or forcing rounds.  The waterfall comprises a series of
+ <i>steps</i>, such as simplification or generalization, each of which attempts
+ to replace a given goal by zero or more subgoals whose provability implies
+ provability of that goal.  Note that every proof by induction starts a new
+ trip through the waterall, as does every forcing round; and these occur only
+ after all preceding trips through the waterfall are complete.  Let us see in
+ more detail how the waterfall works.</p>
 
  <p>Each goal considered by the ACL2 prover passes through a series of proof
  processes, called the ``waterfall processes'', as stored in the constant
@@ -39314,25 +39469,29 @@ current fast alists."
  to the top of the waterfall.</p>
 
  <p>When the simplification process is attempted unsuccessfully for a goal, the
- goal is deemed to have ``settled down''.  In this case, and if no ancestor of
- the goal has settled down, then the ``settled-down'' process is deemed to have
- ``hit'' on the goal, the effect being that the goal makes a new pass through
- all the waterfall processes.  (Other processes can then notice that settling
- down has occurred and modify their heuristics accordingly.)  For example, if
+ goal is deemed to have ``settled down''.  This notion of ``settled down'' is
+ handled, as follows, by the next waterfall process after simplification: the
+ ``settled-down'' process.  If some ancestor of the goal (possibly the goal
+ itself) has previously settled down, then the ``settled-down'' process is
+ deemed to have missed on the goal.  Otherwise it hits on the goal, the effect
+ being that the goal makes a new pass through all the waterfall
+ processes.  (Other processes can then notice that settling down has occurred
+ and modify their heuristics accordingly.)  For example, suppose that
  @('\"Goal\"') simplifies to @('\"Subgoal 2\"') (among others), and
  @('\"Subgoal 2\"') simplifies to @('\"Subgoal 2.3\"') (among others), which in
- turn is not further simplified, then the ``settled-down'' process hits on
- @('\"Subgoal 2.3\"') but not on any of its children, their children, and so
- on.</p>
+ turn is not further simplified.  Then the ``settled-down'' process hits on
+ @('\"Subgoal 2.3\"'), but it does not hit not on any of its children or their
+ children (and so on), because each of those has an ancestor, @('\"Subgoal
+ 2.3\"'), that has already been marked as ``settled-down''.</p>
 
- <p>When simplification has missed (and thus the goal has settled down), the
- next proof process is normally destructor elimination.  However, if a computed
- hint is suitable (in a sense described below; also see @(see computed-hints),
- especially the discussion of @('stable-under-simplificationp')), then that
- hint is selected as control is returned to the top of the waterfall.  A
- subtlety is that in this case, if the most recent hit had been from settling
- down, then the prover ``changes its mind'' and considers that the goal has not
- yet settled down after all as it continues through the waterfall.</p>
+ <p>The next proof process after settled-down is normally destructor
+ elimination.  However, if a computed hint is suitable (in a sense described
+ below; also see @(see computed-hints), especially the discussion of
+ @('stable-under-simplificationp')), then that hint is selected as control is
+ returned to the top of the waterfall.  A subtlety is that in this case, if the
+ most recent hit had been from settling down, then the prover ``changes its
+ mind'' and considers that the goal has not yet settled down after all as it
+ continues through the waterfall.</p>
 
  <p>Each time a goal is considered at the top of the waterfall, then before
  passing through the proof processes as described above, ACL2 searches for a
@@ -40883,7 +41042,7 @@ tables in the current Hons Space."
   stores a @('T') as the ``list'' of ilks.</p>
 
   <p>The @(tsee badge) of @('fn') is computed by a successful call of @(tsee
-  def-warrant) on @('fn').</p>
+  defwarrant) on @('fn').</p>
 
   <p>Ilks are used by the various notions of @(see tame)ness controlling
   whether @(tsee apply$) and @(tsee ev$) can properly interpret a quoted
@@ -41579,7 +41738,7 @@ tables in the current Hons Space."
  inductions.</p>
 
  <p>Note that an explicit @(':induct') hint (see @(see hints)) will cause an
- induction will occur, regardless of the induction-depth-limit.  Of course, if
+ induction to occur, regardless of the induction-depth-limit.  Of course, if
  we have already reached the induction-depth-limit at the point the
  @(':induct') hint is applied, then any attempt to push a subgoal for induction
  will fail (unless it too has an associated @(':induct') hint).</p>
@@ -42990,7 +43149,7 @@ tables in the current Hons Space."
 
  :parents (apply$)
  :short "Background knowledge on how to use @(tsee apply$), @(tsee
- def-warrant), etc."
+ defwarrant), etc."
  :long "
 
  <p>The paper <a
@@ -43147,7 +43306,7 @@ tables in the current Hons Space."
   @('apply$') to full advantage we need to analyze every relevant function
   definition, which has the side-effect of producing warrants for those
   functions.  We therefore have introduced the new command @('defun$'), which
-  is just an ordinary @(tsee defun) followed by a @(tsee def-warrant) command
+  is just an ordinary @(tsee defun) followed by a @(tsee defwarrant) command
   which analyzes definitions and sometimes produces warrants.</p>
 
   <p>We explain further via an annotated example, starting from scratch but
@@ -43188,7 +43347,7 @@ tables in the current Hons Space."
   @('apply$') but to defining functions that use @('apply$').</p>
 
   @({
-  (include-book \"projects/apply/apply-lemmas\" :dir :system)
+  (include-book \"projects/apply/top\" :dir :system)
   })
 
   <p><b>Lesson 2:</b> To allow @('apply$') to ``work'' on a function symbol the
@@ -43199,20 +43358,20 @@ tables in the current Hons Space."
   @('sq') and @('rev') do:</p>
 
   @({
-  (def-warrant sq)
+  (defwarrant sq)
 
-  (def-warrant rev)
+  (defwarrant rev)
   })
 
-  <p>@(tsee Def-warrant) checks that its argument, <i>fn</i>, is a defined
+  <p>@(tsee defwarrant) checks that its argument, <i>fn</i>, is a defined
   function symbol that satisfies certain restrictions on how it uses its
   arguments, restrictions that enable us to define the tameness predicates and
   that allow @('apply$') to ``work'' without causing logical contradictions.
-  @('Def-warrant') causes an error if <i>fn</i> does not obey our rules.  But
-  if @('def-warrant') does not cause an error it produces a ``badge'' for
+  @('defwarrant') causes an error if <i>fn</i> does not obey our rules.  But
+  if @('defwarrant') does not cause an error it produces a ``badge'' for
   <i>fn</i> that describes which formals are treated as ``functions.''
   Henceforth, we'll say such formals have ``@(see ilk)'' @(':FN').  In addition
-  to computing a badge, non-erroneous calls of @('def-warrant') may produce a
+  to computing a badge, non-erroneous calls of @('defwarrant') may produce a
   @(tsee warrant) for <i>fn</i> that specifies the @(tsee badge) and the
   conditions under which @('apply$') ``works'' on the function symbol
   <i>fn</i>.</p>
@@ -43230,7 +43389,7 @@ tables in the current Hons Space."
   multiple-valued one and possibly issue warrants for them.</p>
 
   <p><b>Lesson 4:</b> If you want to define a function and immediately call
-  @('def-warrant') on it you can use the handy macro @('defun$').  We'll use
+  @('defwarrant') on it you can use the handy macro @('defun$').  We'll use
   @('defun$') freely below.</p>
 
   <p><b>Lesson 5:</b> You can define functions that take warranted
@@ -43261,7 +43420,7 @@ tables in the current Hons Space."
   to have a warrant for @('collect').  Had we defined @('collect') with the
   ordinary @('defun') and realized later that we want to pass @(''COLLECT')
   into a slot of ilk @(':FN'), we could get a warrant for @('collect') by
-  calling @('(def-warrant collect)').</p>
+  calling @('(defwarrant collect)').</p>
 
   <p>Here's another useful mapping function:</p>
 
@@ -46778,8 +46937,9 @@ tables in the current Hons Space."
  (see @(see defttag)).</p>
 
  <p>Finally, we note that the @(see std/io) library contains useful file io
- functions whose definitions illustrate some of the features described
- above.</p>")
+ functions whose definitions illustrate some of the features described above,
+ as does the definition of @(tsee write-list) in @(see community-book)
+ @('books/misc/file-io.lisp').</p>")
 
 (defxdoc irrelevant-formals
   :parents (programming)
@@ -47143,7 +47303,7 @@ tables in the current Hons Space."
   @('collect') is a @('LAMBDA') object.</p>
 
   <p>Beware, however, that consing up @('LAMBDA') objects defeats the @(see
-  ilk) analysis in @(tsee def-warrant) and the @(see tame)ness analysis of
+  ilk) analysis in @(tsee defwarrant) and the @(see tame)ness analysis of
   @('apply$') and hence prevents functions containing such terms from being
   @('apply$')d.</p>
 
@@ -47168,10 +47328,11 @@ tables in the current Hons Space."
   is a concept even stronger than tameness.  Among other requirements,
   well-formed @('LAMBDA') objects obey the ACL2 and Common Lisp rules on
   variable names (not every symbol is a legal variable), on the use of free
-  variables, on the body being a fully translated formal term, that the
-  declarations, if any, be meaningful to the Common Lisp compiler, etc.  You
-  can read about well-formedness in @(tsee well-formed-lambda-objectp) if you
-  want, but we don't encourage beginners to go there!</p>
+  variables, on the body being a fully translated formal term returning 1
+  value, that the declarations, if any, be meaningful to the Common Lisp
+  compiler, etc.  You can read about well-formedness in @(tsee
+  well-formed-lambda-objectp) if you want, but we don't encourage beginners to
+  go there!</p>
 
   <p>Note: Even well-formedness is not enough to guarantee execution of
   compiled code.  The @('LAMBDA') object must also be guard verified (see
@@ -47185,7 +47346,7 @@ tables in the current Hons Space."
   quoted objects and any value in ACL2 can be quoted.  An ill-formed
   @('LAMBDA') object can <i>become</i> well-formed if the world is
   appropriately extended, e.g., the appropriate @('defun')s or
-  @('def-warrant')s are made.  Perhaps worse, they can be well-formed and then
+  @('defwarrant')s are made.  Perhaps worse, they can be well-formed and then
   <i>become</i> ill-formed by an undo.  So at runtime @('apply$') has to check
   that the function symbol or @('LAMBDA') object is appropriate.  There is a
   sophisticated cache behind the execution machinery for @('LAMBDA') objects in
@@ -47283,14 +47444,15 @@ tables in the current Hons Space."
 
   <p>where the @('lambda$') expression occurs in an argument position of ilk
   @(':FN'), @('vars') is a list of distinct variable names, @('dcl*') is zero
-  or more @('DECLARE') forms as described below, and @('body') is a term.
-  @('Body') must satisfy the same restrictions one would expect in a
-  non-recursive @(tsee defun) event with the same formals, declarations and
-  body.  In particular, @('body') should contain no free variables other than
-  those listed in @('vars'), must not use freely any variable declared
-  @('IGNORE')d and must use every other variable in @('vars') except, possibly,
-  variables listed as @('IGNORABLE').  @('Lambda$') expands to a well-formed
-  quoted @('LAMBDA') object or else causes a translate-time error.</p>
+  or more @('DECLARE') forms as described below, and @('body') is a term
+  returning 1 value.  @('Body') must satisfy the same restrictions one would
+  expect in a non-recursive @(tsee defun) event with the same formals,
+  declarations and body.  In particular, @('body') should contain no free
+  variables other than those listed in @('vars'), must not use freely any
+  variable declared @('IGNORE')d and must use every other variable in @('vars')
+  except, possibly, variables listed as @('IGNORABLE').  @('Lambda$') expands
+  to a well-formed quoted @('LAMBDA') object or else causes a translate-time
+  error.</p>
 
   <p>The allowed @('DECLARE') forms in @('lambda$') are @('type'), @('ignore'),
   @('ignorable') and @('xargs').  Furthermore, the only @(tsee xargs) keywords
@@ -51319,6 +51481,31 @@ tables in the current Hons Space."
  @(def logxor)
  @(def binary-logxor)")
 
+(defxdoc loop$
+  :parents (acl2-built-ins programming)
+  :short "Iteration with an analogue of the Common Lisp @('loop') macro"
+  :long "<p>This documentation is currently little more than a stub.  We expect
+ to provide more complete documentation for @('loop$') before the next ACL2
+ release.  In brief: @('Loop$') is an ACL2 version of the Common Lisp @('loop')
+ macro.</p>
+
+ <p>In the meantime, you can see @(see community-books)
+ @('books/system/tests/loop-tests.lisp') and
+ @('books/system/tests/apply-in-proofs.lisp') for numerous examples.</p>
+
+ <p>When a term is a call of @('loop$'), is to be evaluated at the top level or
+ during a proof, and is a ground term (has no free variables), then that term
+ is translated to a call involving so-called ``loop$ scions'' before it is
+ evaluated.  For example, after evaluating @('(defun$ f (x) (cons x x))'), such
+ an attempt to evaluate @('(loop$ for x in '(a b c) collect (f x))')
+ essentially becomes an evaluation of the following call of the loop$ scion,
+ @('collect$').</p>
+
+ @({
+ (COLLECT$ '(LAMBDA (X) (F X))
+           '(A B C))
+ })")
+
 (defxdoc loop-stopper
   :parents (rewrite)
   :short "Limit application of permutative rewrite rules"
@@ -53373,6 +53560,70 @@ tables in the current Hons Space."
                         (reverse (f-get-global 'progn+-errors state)))))))
  })")
 
+(defxdoc make-event-example-3
+  :parents (make-event)
+  :short "Using @(tsee make-event) to define @(tsee thm)"
+  :long "<p>The definition of @(tsee thm) provides a simple, yet informative,
+ example use of @('make-event').  Formerly (through ACL2 Version  8.1), this
+ was the definition of @('thm'), where @('thm-fn') provides an interface to the
+ prover.</p>
+
+ @({
+ (defmacro thm (term &key hints otf-flg)
+   (list 'thm-fn
+         (list 'quote term)
+         'state
+         (list 'quote hints)
+         (list 'quote otf-flg)))
+ })
+
+ <p>However, this version of @('thm') did not permit calls of @('thm') in @(see
+ books) or @(tsee encapsulate) forms.  To remedy that deficiency, ACL2 now
+ defines @('thm') as follows; below we explain each component of this
+ definition.</p>
+
+ @({
+ (defmacro thm (term &key hints otf-flg)
+   `(with-output :off summary :stack :push
+      (make-event (er-progn (with-output :stack :pop
+                              (thm-fn ',term
+                                      state
+                                      ',hints
+                                      ',otf-flg))
+                            (value '(value-triple :invisible)))
+                  :expansion? (value-triple :invisible)
+                  :on-behalf-of :quiet!)))
+ })
+
+ <p>The use of @(tsee with-output) avoids printing anything about
+ @('make-event') in the @(see summary) (by using @(':off summary')).  But we do
+ want a summary for the prover call itself, to see the rules used, time
+ elapsed, and so on.  By using the keyword argument @(':stack :push'), but then
+ calling @('with-output') again with argument @(':stack :pop') before calling
+ @('thm-fn'), we remove the effect of @(':off summary') before calling
+ @('thm-fn').</p>
+
+ <p>By ignoring the @('with-output') wrapper, we may view the body of the
+ @('make-event') form as follows.</p>
+
+ @({
+ (er-progn (thm-fn ...)
+           (value '(value-triple :invisible)))
+ })
+
+ <p>Evaluation of this call of @(tsee er-progn) causes @('thm-fn') to be run
+ and, if there is no error and the proof succeeds, to return the event
+ @('(value-triple :invisible)').  That event is a no-op, and it generally
+ doesn't even cause a value to be printed; see @(see ld-post-eval-print).</p>
+
+ <p>Since an error-free expansion is always @('(value-triple :invisible)'),
+ that event is specified with the @(':expansion?') keyword so that the
+ expansion is not stored, in particular in a book's @(see certificate) file.
+ See @(see make-event).</p>
+
+ <p>The use of @(':on-behalf-of :quiet!') avoids a needless, distracting error
+ message from @('make-event') when the proof fails.</p>")
+
 (defxdoc make-fast-alist
   :parents (fast-alists acl2-built-ins)
   :short "@('(make-fast-alist alist)') creates a fast-alist from the input
@@ -53443,6 +53694,113 @@ it."
  the underlying representation.</p>
 
  @(def make-ord)")
+
+(defxdoc make-summary-data
+  :parents (clause-processor)
+  :short "Return summary data from a @(see clause-processor) function"
+  :long "<p>For relevant background, see @(see clause-processor).  Here we
+ discuss the value @('d') and its effect in the signature [3+] shown in that
+ topic:</p>
+
+ @({
+  [3+] ((CL-PROC cl hint st_1 ... st_k) => (mv erp cl-list st_i1 ... st_in d))
+ })
+
+ <p>The purpose of @('d') is to return @(see summary) information, as
+ illustrated by the following (admittedly artificial) example.  Here we
+ abbreviate somewhat; the full example may be found in the @(see
+ community-book), @('books/clause-processors/basic-examples.lisp').</p>
+
+ @({
+
+ (defevaluator evl evl-list ...)
+
+ (defun strengthen-cl2 (cl term state)
+   (declare (xargs :stobjs state))
+   (cond ((null term) ; then no change
+          (mv nil (list cl) state nil))
+         ...
+         ((pseudo-termp term)
+          (mv nil
+              (list (cons (list 'not term)
+                          cl)
+                    (list term))
+              state
+              (make-summary-data :runes '((:rewrite car-cons)
+                                          (:rewrite cdr-cons)
+                                          (:rewrite car-cons))
+                                 :use-names '(nth binary-append)
+                                 :by-names '(nthcdr)
+                                 :clause-processor-fns
+                                 '(note-fact-clause-processor))))
+         (t ..)))
+
+ (defthm correctness-of-strengthen-cl2
+   (implies (and (pseudo-term-listp cl)
+                 (alistp a)
+                 (evl (conjoin-clauses
+                       (clauses-result (strengthen-cl2 cl term state)))
+                      a))
+            (evl (disjoin cl) a))
+   :rule-classes :clause-processor)
+
+ (defthm test-strengthen-cl2
+   (equal y y)
+   :hints ((\"Goal\"
+            :instructions
+            ((:prove
+              :hints ((\"Goal\"
+                       :clause-processor
+                       (strengthen-cl2 clause '(equal x x) state)))))))
+   :rule-classes nil)
+ })
+
+ <p>Evaluation of the final @('defthm') event above prints the following @(see
+ summary), which illustrates how the values of the four legal keywords for
+ @('make-summary-data') naturally translate to the summary, specifically, to
+ the @('\"Rules\"') field for the @(':runes') keyword and to the
+ @('\"Hint-events\"') field for the others.</p>
+
+ @({
+ Summary
+ Form:  ( DEFTHM TEST-STRENGTHEN-CL2 ...)
+ Rules: ((:FAKE-RUNE-FOR-TYPE-SET NIL)
+         (:REWRITE CAR-CONS)
+         (:REWRITE CDR-CONS))
+ Hint-events: ((:BY NTHCDR)
+               (:CLAUSE-PROCESSOR NOTE-FACT-CLAUSE-PROCESSOR)
+               (:CLAUSE-PROCESSOR STRENGTHEN-CL2)
+               (:USE BINARY-APPEND)
+               (:USE NTH))
+ Time:  0.00 seconds (prove: 0.00, print: 0.00, other: 0.00)
+ })
+
+ <p>Note that each keyword is optional; in particular, the form
+ @('(make-summary-data)') is legal, and it specifies @('nil') for each of the
+ four keywords.  Moreover, it is also legal for @('d') to be @('nil'), which is
+ equivalent to @('(make-summary-data)').  Thus, if @('d') is @('nil') or
+ @('(make-summary-data)') then [3+] and [3] in the documentation for @(see
+ clause-processor) have the same effect: that is, there will be no visible
+ effect if we change such a clause-processor function (i.e., one returning
+ empty summary data) from form [3+] to form [3] by dropping the return value of
+ @('d').</p>
+
+ <p>Duplicates are allowed in the list, for each argument of
+ @('make-summary-data'); no duplicates will appear in the summary.  There is
+ also no need to sort elements of those lists.</p>
+
+ <p>Finally, note that the summary information from @('d') not only goes into
+ the summary, but also is incorporated when extending the @(see
+ proof-supporters-alist) to record the dependencies of the completed event.</p>
+
+ @({
+ (assert-event
+  (equal (sort-symbol-listp
+          (car (global-val 'proof-supporters-alist (w state))))
+         '(BINARY-APPEND CAR-CONS CDR-CONS
+                         NOTE-FACT-CLAUSE-PROCESSOR NTH NTHCDR
+                         STRENGTHEN-CL2 TEST-STRENGTHEN-CL2)))
+ })")
 
 (defxdoc make-tau-interval
   :parents (tau-system acl2-built-ins)
@@ -54225,6 +54583,10 @@ it."
     - Fetch: only legal when attachments are allowed (e.g., not during proofs)
     - Store: always legal
  })
+
+ <p>Note that for this handling of @(':aokp'), the computation of a value
+ returned by function @(tsee apply$-userfn) or @(tsee badge-userfn) is
+ considered to have used an attachment.</p>
 
  <p>The default value for @(':stats') is essentially @('t').  (Technically,
  this can be subverted by using raw Lisp, to change the default by changing the
@@ -55821,7 +56183,8 @@ it."
  break-rewrite) for a description of the interactive loop entered, and in
  particular, for discussion of what happens if you monitor or unmonitor a rune
  while inside a break (in short: the effect disappears when existing the break,
- unless it is a top-level break).</p>
+ unless it is a top-level break).  Also see @(see set-brr-evisc-tuple) for how
+ to see output in full.</p>
 
  <p>NOTE: Some @(':rewrite') rules are considered ``simple abbreviations''; see
  @(see simple).  These can be be monitored, but only at certain times during
@@ -58371,9 +58734,10 @@ it."
  string ``@('Use')'' in the following message.</p>
 
  @({
-    Acl2 Warning [Use] in DEFTHM:  It is unusual to :USE an enabled
-    :REWRITE or :DEFINITION rule, so you may want to consider
-    disabling FOO.
+    ACL2 Warning [Use] in ( THM ...):  It is unusual to :USE the formula
+    of an enabled :REWRITE or :DEFINITION rule, so you may want to consider
+    disabling (:REWRITE FOO) in the hint provided for Goal.  See :DOC using-
+    enabled-rules.
  })
 
  <p>At the end of the event, just before the time is printed, all such summary
@@ -81901,10 +82265,10 @@ it."
  extend-pe-table) out of the generated @(tsee encapsulate) form.</p>
 
  <p>(Of interest only to users of @(tsee apply$).)  When invoking @(tsee
- def-warrant) or @(tsee defun$), a so-called `@(see warrant)' is introduced.
+ defwarrant) or @(tsee defun$), a so-called `@(see warrant)' is introduced.
  Warrants are now always @(see guard)-verified, with a guard of @('t').
  Moreover, warrants are now executable in the top-level loop; for example,
- after successfully processing @('(def-warrant foo)') or @('(defun$ foo ...)'),
+ after successfully processing @('(defwarrant foo)') or @('(defun$ foo ...)'),
  @('(warrant foo)') will evaluate to @('t') in the loop.  (Note: each warrant
  has an attachment, @('true-apply$-warrant'), that always returns @('t'); see
  @(see defattach).)  Thanks to Dmitry Nadezhin for requesting these
@@ -81912,7 +82276,7 @@ it."
 
  <p>It is now required to include the system book
  @('projects/apply/apply-lemmas.lisp') before evaluating a call of @('defun$')
- or @(tsee def-warrant).  This requirement, which is enforced with an error
+ or @(tsee defwarrant).  This requirement, which is enforced with an error
  that prints the necessary @(tsee include-book) form, avoids stack overflows
  that could occur when that book is not included.</p>
 
@@ -82516,6 +82880,58 @@ it."
 ; Improved the error message when defun-nx is used for only some functions in a
 ; mutual-recursion nest.
 
+; A few minor tweaks were made in support of the change to brr-commands to have
+; eviscerate/non-eviscerate pairs.  For example, :go$ now takes an argument
+; even when supplied under brkpt2.
+
+; Here is an event that previously had duplicates in the "Hint-events" field of
+; the summary, but no longer does.
+;   (thm (if (consp x)
+;            (equal x (cons (car x) (cdr x)))
+;          (equal (car (append x nil)) (car x)))
+;        :hints (("Goal" :in-theory nil)
+;                ("Subgoal 2"
+;                 :use ((:instance (:termination-theorem nth) (n k)))
+;                 :in-theory (current-theory :here))
+;                ("Subgoal 1"
+;                 :use ((:termination-theorem nth))
+;                 :in-theory (current-theory :here))))
+
+; Here is an easy way to cause the infinite loop involving trace-level in
+; Version_8.1.
+;   (accumulated-persistence t)
+;   (trace$ pop-accp-fn)
+;   (mini-proveall)
+
+; Modified check-built-in-constants and especially its subroutine
+; our-update-ht to record all definitions rather than just the latest, and
+; fns-different-wrt-acl2-loop-only, to deal more suitably with calls of the
+; macro when-pass-2 -- specifically, to cause an error when there is
+; #-acl2-loop-only code inside when-pass-2, since it will be ignored (because
+; when-pass-2 calls expand to nil in raw Lisp), presumably contrary to what was
+; intended.
+
+; Added an assertion to guarantee that ground-zero is defined where it should
+; be.
+
+; The change to :pf to do a more complete job of printing induction formulas
+; also involved changing source functions corollary and formula to return the
+; right thing for induction rules.  Formerly, for example, (corollary
+; '(:induction nth) (w state)) and (formula '(:induction nth) nil (w state))
+; returned an untranslated term (!) with calls of :P (not a function symbol!).
+; Now, these calls return nil.  Note that if foo is the name of a theorem
+; stored as an :induction rule, then (formula '(:induction foo) nil (w state))
+; will return the formula of that theorem.  This behavior is consistent with
+; :doc lemma-instance, which says the following -- no corollary justifies
+; (:induction foo), but our generous view is that the corollary of an
+; :induction rule "justifies" the rule.
+;
+;   (2) rune, where rune is a [rune] (see [rune]) denoting the
+;   :[corollary] justifying the rule named by the [rune].
+
+; Fixed ev-fncall-rec-logical and raw-ev-fncall-okp to deal properly with
+; attachments to warrants.
+
   :parents (release-notes)
   :short "ACL2 Version  8.2 (xxx, 20xx) Notes"
   :long "<p>NOTE!  New users can ignore these release notes, because the @(see
@@ -82596,6 +83012,74 @@ it."
  @('all-fnnames1'), thus eliminating some source code duplication.  We may
  deprecate @('all-ffn-symbs') and @('all-ffn-symbs-lst') in the future.</p>
 
+ <p>The implementation of @(tsee verify-termination) has been improved so that
+ it no longer can generate (expand to) the form @('(value-triple :redudant)').
+ Redudancy is now handled for @('verify-termination') by checking redundancy of
+ the generated @(tsee defun) form.  For an example that failed before this
+ change, see @(see community-book)
+ @('books/system/tests/verify-termination/top.lisp').</p>
+
+ <p>Improvements have been made to the @(see summary) printed on conclusion of
+ an event.  It had been possible to have duplicates in the @('\"Hint-events\"')
+ field of the summary; that has been fixed.  Also, the handling of @(':')@(tsee
+ instructions) within @(see hints) has changed in the following two ways, to be
+ consistent with the use of @(':instructions') at the top level (rather than
+ within @(':hints')).  The @('\"Rules\"') and @('\"Hint-events\"') fields of
+ the summaries incorporate information from calls of the @(see proof-builder).
+ Also, the @('\"Hint-events\"') field no longer contains @('(:CLAUSE-PROCESSOR
+ PROOF-BUILDER-CL-PROC)').</p>
+
+ <p>A new variable, @('TRACE-LEVEL'), may be used in calls of @('trace$'); see
+ @(see trace$).  This replaces the use of the state global variable of the same
+ name, which has been eliminated, thus avoiding an error involving
+ @('TRACE-LEVEL') that is mentioned below.</p>
+
+ <p>@(tsee Defun-sk) is now sensitive to the @(see
+ default-verify-guards-eagerness), and guard verification is always delayed to
+ near the end of the generated event to avoid failures due to the small theory
+ present at @('defun') time.  Thanks to Alessandro Coglio for emails on leading
+ to these improvements.  Some additional small tweaks have been made to
+ @('defun-sk'), in particular to check that there are not two or more distinct
+ values associated with @(tsee xargs) keywords @(':verify-guards'),
+ @(':non-executable'), or (even if not distinct) @(':guard-hints').</p>
+
+ <p>The function @(tsee integer-range-p) now uses a a @(tsee type) @(see
+ declaration) in place of the @(':')@(tsee guard), which may slightly improve
+ efficiency.  Thanks to Eric Smith for suggesting this possibility.</p>
+
+ <p>The macro, @(tsee thm), may now be used in event contexts, in particular in
+ calls of @(tsee encapsulate) and @(tsee progn) and in @(see books).  (See
+ @(see embedded-event-form).)  Thanks to Ruben Gamboa for an email that led to
+ this change.</p>
+
+ <p>The @(':')@(tsee pf) command now does a more complete job of showing
+ induction schemes for induction rules.  (Some corresponding code cleanup has
+ also been done.)</p>
+
+ <p>@(see Warnings) about using @(see enable)d rules have been improved.  Now,
+ when using an @(see executable-counterpart) rule (which, admittedly, is
+ unusual; it is equivalent to using the corresponding @(see definition) rule),
+ the warning will correctly recommend disabling the definition rule instead of
+ the executable-counterpart rule.</p>
+
+ <p>The event formerly named @('def-warrant') is now @(tsee defwarrant).  This
+ event may now be @(see redundant); hence @(tsee defun$) may also be
+ redundant.</p>
+
+ <p>The @(':')@(tsee args) command now prints the @(see badge) and @(see
+ warrant) for a function, and it avoids printing a package prefix in the case
+ of @(see unknown-constraints).</p>
+
+ <p>The logical definition of @('read-file-into-string2') (in support of @(tsee
+ read-file-into-string)) has been simplified, and no longer involves @(see
+ untouchable) functions symbols.  Thanks to Mihir Mehta for a query that led to
+ this enhancement.</p>
+
+ <p>The rewriter can now evaluate ground terms that involve calls of @(tsee
+ apply$) or @(tsee badge) on user-defined function symbols.  Note that
+ correctness of such an evaluation depends on the truth of corresponding
+ warrants, which will be forced if not known.</p>
+
  <h3>New Features</h3>
 
  <p>A new construct, @('lambda$'), may be used in place of @('lambda') to be
@@ -82621,6 +83105,33 @@ it."
  inside the break-rewrite loop.  See @(see brr-evisc-tuple) and @(see
  set-evisc-tuple).</p>
 
+ <p>Many of the @(see brr-commands) now abbreviate (``eviscerate'') by default
+ using the new @(tsee brr-evisc-tuple) (see above), and for each for those a
+ corresponding command with suffix ``+'' print in full.  For example, such
+ commands include @(':path') and @(':path+'); see @(see brr-commands) for the
+ full list of commands.  Thanks to Stephen Westfold and others at the 2018
+ Developer's Workshop for discussing this issue.</p>
+
+ <p>A new signature is legal for @(tsee clause-processor)s, to support the
+ return of rules and event names to be printed in the summary.  See @(see
+ make-summary-data).</p>
+
+ <p>A new macro, @(tsee loop$), is an ACL2 version of the Common Lisp @('loop')
+ macro.</p>
+
+ <p>@(tsee Apply$) now handles functions that return multiple values.  This has
+ widespread ramifications.  The structure of badges has changed.  There is no
+ longer an ``authorization-flag'' and there is now an ``out-arity'' slot in the
+ badge.  See @(see badge).  Every badged non-primitive function symbol now has
+ a warrant.  If @('fn') is a warranted function symbol and returns more than
+ one result then @('(apply$ 'fn ...)') returns a list of the results, just as
+ @('fn') does in the logic.  See @(tsee apply$).  The warrant of a multi-valued
+ function is just like that for a single-valued function except that @(tsee
+ mv-list) is used to coerce the output of the multi-valued function to a list.
+ See @(tsee warrant).  All @('LAMBDA') objects and @(tsee lambda$) expressions
+ must be single-valued, but can use multi-valued functions to compute that
+ value.</p>
+
  <h3>Heuristic and Efficiency Improvements</h3>
 
  <p>@(tsee Make-event) expansions have often been reduced in size.  (Technical
@@ -82631,6 +83142,31 @@ it."
  8.8%, though in some cases the reduction was substantially larger: for
  example, the size of @('books/centaur/fty/tests/deftranssum.cert') was reduced
  from 22,474,113 bytes to 16,910,530 bytes, a reduction of nearly 25%.</p>
+
+ <p>A tweak to the rewriter can significantly speed up the use of
+ hypothesis-free @(see meta) rules on large terms.  Thanks to Mertcan Temel for
+ sending an example that motivated this change, whose time was cut from 67
+ seconds to 19 seconds.</p>
+
+ <p>Some small optimizations have been made for the generation of
+ executable-counterpart (so-called ``*1*'') code (see @(see evaluation)).</p>
+
+ <p>It has long been the case that certain prover routines, including handling
+ of output from @(see meta) functions, transformed results into so-called
+ ``quote-normal form'', where for example the @(see term) @('(cons '3 '4)') is
+ replaced by @('(quote (3 . 4))').  Now, that transformation avoids recurring
+ inside calls of @(tsee hide).  We thank Mertcan Temel, who had a class of
+ examples that motivated this change.  One such example took 856.27 seconds of
+ `prove' time before this change, but only 270.14 seconds after this change,
+ thus eliminating 68.5% of the time.</p>
+
+ <p>Proofs involving very large terms could be slowed down by checking those
+ terms for calls of @(tsee if), in support of reporting @(see splitter)s of
+ type if-intro.  That check is now limited by avoiding subterms that are calls
+ of @(tsee hide).  Thanks to Mertcan Temel for supplying examples, one of which
+ exhibited a proof time of 302.06 seconds that was reduced to 123.57 seconds
+ with this change, and thanks to Sol Swords and Alessandro Coglio for helpful
+ comments on possible enhancements.</p>
 
  <h3>Bug Fixes</h3>
 
@@ -82645,6 +83181,54 @@ it."
  incompatibility check.  Now, a useful ordinary (``soft'') error occurs, with a
  useful message.  Thanks to Nathan Guermond for reporting this bug with a
  helpful example.</p>
+
+ <p>Fixed a bug in the @(see proof-builder) command, @('geneqv').  Thanks to
+ Shilpi Goel for reporting this bug with an example.</p>
+
+ <p>It had been possible to enter an infinite loop after certain errors
+ involving @(see wormhole)s and state global variables; now, a clean error
+ occurs instead.  The specific error motivating this change involved the
+ combination of both tracing certain system functions (for example,
+ @('pop-accp-fn')) and calling @(tsee accumulated-persistence).  That specific
+ error has been eliminated by the change to @(tsee trace$) involving variable
+ @('TRACE-LEVEL') that is mentioned in an item above.</p>
+
+ <p>Fixed a bogus error produced by @('defchoose') forms containing unused
+ variables with @('ignorable') declarations.  Also eliminated an extra warning
+ in the case of more than one bound variable with at least one of them unused,
+ which could occur after @('(set-ignore-ok :warn)') has been evaluated.  Thanks
+ to Sol Swords for finding these bugs and for supplying code that we installed
+ to fix them.</p>
+
+ <p>Fixed an inefficiency in book certification due to calling @(tsee
+ fast-alist-free-on-exit) on the wrong objects.  Thanks to Sol Swords for
+ pointing out this problem.</p>
+
+ <p>The @('make TAGS') command could fail to do a proper check that the
+ @('etags') program is installed, resulting in a failure when attempting to
+ build an ACL2 executable.  This has been fixed.  Thanks to Johannes
+ Altmanninger for reporting this problem in GitHub Issue #955.</p>
+
+ <p>When a function that calls @(tsee apply$) (or @(tsee apply$-userfn), @(tsee
+ badge), or @(tsee badge-userfn)) has been @(see memoize)d with a non-@('nil')
+ value for argument @(':aokp'), its memo table may need to be flushed when
+ removing a @(see badge).  (Such removal typically occurs by undoing a call of
+ @(tsee defun$) or @(tsee defwarrant), perhaps because they are @(see local) to
+ an @(tsee encapsulate) event or to a book.)  However, such flushing was not
+ being done.  That has been fixed.  See new @(see community-book)
+ @('books/system/tests/apply-with-memoization.lisp') for examples.  Among the
+ changes made to the source files that are related to this fix: the ``Essay on
+ Memoization with Attachments'' has been enhanced to discuss the implementation
+ of such flushing; and functions @('doppelganger-apply$-userfn') and
+ @('doppelganger-badge$-userfn') (formerly called @('concrete-apply$-userfn')
+ and @('concrete-badge$-userfn')), which are still not advertised, are now
+ introduced with @(tsee partial-encapsulate) (hence have unknown constraints)
+ and are now @(see untouchable).</p>
+
+ <p>The @(see proof-builder) numeric ``diving'' commands @('1'), @('2'),
+ @('3'), etc. &mdash; and more generally, the @('dv') command &mdash; were
+ broken when the current subterm is of the form @('(if 't .. ..)').  This has
+ been fixed.  Thanks to Keonho Lee for reporting this bug.</p>
 
  <h3>Changes at the System Level</h3>
 
@@ -82670,6 +83254,29 @@ it."
 
  <p>Documentation pertaining to @(tsee apply$) and related topics has been
  extended significantly.</p>
+
+ <p>(GCL only) Eliminate compiler output (by setting GCL raw Lisp variables
+ @('*compile-verbose*') and @('*load-verbose*') to @('nil')).</p>
+
+ <p>A new documentation topic, @(see efficiency), suggests some ways to speed
+ up proofs and evaluation.  The ACL2 community is encouraged to extend (and
+ more generally, improve) this topic!</p>
+
+ <p>(LispWorks only) Bytes allocated are now reported in LispWorks (formerly,
+ only in CCL and SBCL) by @(tsee time$) and @(tsee memsum).</p>
+
+ <p>A new documentation topic, @(see make-event-example-3), explains the new
+ implementation of @(tsee thm), thus providing insight into several common
+ implementation techniques used with @(tsee make-event).</p>
+
+ <p>A new documentation topic, @(see rule-classes-introduction), provides a
+ basic guide to which sorts of rules to create from your theorems.  Thanks to
+ Mihir Mehta for encouraging the development of this topic.</p>
+
+ <p>(CCL only) We now use lock-free hash tables for @(see fast-alists), to work
+ around an apparently CCL bug.  Thanks to Rob Sumners and the folks at Centaur
+ for finding and analyzing this problem, proposing this fix, and doing timing
+ tests on it.</p>
 
  <h3>EMACS Support</h3>
 
@@ -85874,15 +86481,16 @@ arithmetic) for libraries of @(see books) for arithmetic reasoning.</p>")
   Examples:
   :pf (:definition fn) ; prints the definition of fn as an equality
   :pf fn               ; same as above
-
   :pf (:rewrite foo)   ; prints the statement of the rewrite rule foo
   :pf foo              ; same as above
+  :pf (:induction foo) ; prints the induction scheme associated with foo
  })
 
  <p>@('pf') takes one argument, an event name or a @(see rune), and prints the
  formula associated with name.  If the argument is the name of a macro
  associated with a function name by @(see macro-aliases-table), then the
- function name is used as the argument.</p>")
+ function name is used as the argument.  If the argument names an @(':')@(tsee
+ induction) rule, then the corresponding induction scheme is printed.</p>")
 
 (defxdoc pkg-imports
   :parents (packages)
@@ -87186,7 +87794,7 @@ arithmetic) for libraries of @(see books) for arithmetic reasoning.</p>")
           function (but perhaps it can be defined), the body contains a
           @(':program') mode function (but perhaps that could be upgraded to
           @(':logic') mode), the body contains an unbadged function symbol (but
-          perhaps @('def-warrant') could issue a warrant), etc.</li>
+          perhaps @('defwarrant') could issue a warrant), etc.</li>
 
       <li>@('(GUARD-USES-NON-COMPLIANT-FNS . fns)') - @('fns') is a list of
           function symbols used in the guard of the @('LAMBDA') object that
@@ -87924,7 +88532,7 @@ arithmetic) for libraries of @(see books) for arithmetic reasoning.</p>")
  sources.</p>
 
  @({
-  (defun print-terms (terms iff-flg wrld)
+  (defun print-terms (terms iff-flg wrld evisc-tuple)
 
   ; Print untranslations of the given terms with respect to iff-flg, following
   ; each with a newline.
@@ -87936,8 +88544,10 @@ arithmetic) for libraries of @(see books) for arithmetic reasoning.</p>")
     (if (endp terms)
         terms
       (prog2$
-       (cw \"~q0\" (untranslate (car terms) iff-flg wrld))
-       (print-terms (cdr terms) iff-flg wrld))))
+       (cw \"~Y01\"
+           (untranslate (car terms) iff-flg wrld)
+           evisc-tuple)
+       (print-terms (cdr terms) iff-flg wrld evisc-tuple))))
  })")
 
 (defxdoc progn
@@ -88347,12 +88957,12 @@ arithmetic) for libraries of @(see books) for arithmetic reasoning.</p>")
 
  <p><b>Q</b>: What does @('(rev '((a b c) \"Abc\" \"a\" b #\\c))') return?
  <b>A</b>: @('(#\\c B \"a\" \"Abc\" (A B C))').  If you thought the answer was
- any of these, then you need to think or read more carefully:</p>
+ either of these, then you need to think or read more carefully:</p>
 
  @({
   (#\\C B \"A\" \"ABC\" (A B C))
 
-  (#\\C B \"A\" \"ABC\" (C B A))
+  (#\\c B \"a\" \"Abc\" (C B A))
  })
 
  <p>The first wrong answer above is wrong because Lisp is ``case insensitive''
@@ -92231,10 +92841,7 @@ arithmetic) for libraries of @(see books) for arithmetic reasoning.</p>")
  which (as usual for functions that take @('state')) necessitates either that
  @('(set-state-ok t)') has already been evaluated, or else that a suitable
  @(':stobjs') declaration, typically @(':stobjs state'), is provided (see @(see
- xargs)).  (Technical remark: the use of @(tsee with-local-state) in the
- logical definition of key subroutine @('read-file-into-string2') does not
- require a trust tag (see @(see defttag)), because that function is defined by
- ACL2, not in a book.)</p>
+ xargs)).</p>
 
  <p>The value of the constant @('*read-file-into-string-bound*')
  (see the definition below) is a strict upper bound on the size of the string
@@ -92282,6 +92889,8 @@ arithmetic) for libraries of @(see books) for arithmetic reasoning.</p>")
  @(def read-file-into-string1)
 
  @(def *read-file-into-string-bound*)
+
+ @(def read-file-into-string2-logical)
 
  @(def read-file-into-string2)
 
@@ -94204,6 +94813,8 @@ arithmetic) for libraries of @(see books) for arithmetic reasoning.</p>")
  body of function, @('resize-<a>') where @('<a>') is an array field of a @(see
  stobj).  See @(see stobj) and see @(see defstobj).</p>
 
+ @(def resize-list-exec)
+
  @(def resize-list)")
 
 (defxdoc rest
@@ -94376,20 +94987,22 @@ arithmetic) for libraries of @(see books) for arithmetic reasoning.</p>")
  returns whatever is returned by evaluation of the last (second) argument.</p>
 
  <p>Remark for those who use @(tsee defattach).  The binding of @('*aokp*') to
- @('t') is included for the second argument as shown when the first argument is
- of the form @('(QUOTE S)') for @('S') a symbol and the second argument is not
- a symbol or a quoted constant.  This binding allows ACL2 to use attachments in
- the second argument of @('return-last') (hence, in the first argument of
- @(tsee prog2$)), even in contexts such as proofs in which attachments are
- normally not allowed.</p>
+ @('t') is included for the second argument as shown in most cases.  That
+ binding is avoided only when the first argument is of the form @('(QUOTE S)')
+ for @('S') a macro name and the second argument is a symbol or of the form
+ @('(QUOTE X)') for any @('X').  By binding @('*aokp*') to @('t'), ACL2 is
+ permitted to use attachments when evaluating the second argument of
+ @('return-last') (hence, in the first argument of @(tsee prog2$)), even in
+ contexts such as proofs in which attachments are normally not allowed.</p>
 
  <p>In general, a form @('(return-last (quote F) X Y)') macroexpands to @('(F X
- Y)'), where @('F') is defined in raw Lisp to return its last argument.  The
- case that @('F') is @('progn') is a bit misleading, because it is so simple.
- More commonly, macroexpansion produces a call of a macro defined in raw Lisp
- that may produce side effects.  Consider for example the ACL2 utility @(tsee
- with-guard-checking), which is intended to change the @(see guard)-checking
- mode to the indicated value (see @(see with-guard-checking)).</p>
+ Y)'), where @('F') is a symbol defined in raw Lisp to return its last
+ argument.  The case that @('F') is @('progn') is a bit misleading, because it
+ is so simple.  More commonly, macroexpansion produces a call of a macro
+ defined in raw Lisp that may produce side effects.  Consider for example the
+ ACL2 utility @(tsee with-guard-checking), which is intended to change the
+ @(see guard)-checking mode to the indicated value (see @(see
+ with-guard-checking)).</p>
 
  @({
   ACL2 !>(with-guard-checking :none (car 3)) ; no guard violation
@@ -94660,11 +95273,12 @@ arithmetic) for libraries of @(see books) for arithmetic reasoning.</p>")
  <p>Calls of @('return-last') that occur in code &mdash; forms submitted in the
  top-level ACL2 loop, and definition bodies other than those marked as @(tsee
  non-executable) (see @(see defun-nx)) &mdash; have the following restriction:
- if the first argument is of the form @('(quote F)'), then @('F') must be an
- entry in @('return-last-table').  There are however four exceptions: the
- following symbols are considered to be keys of @('return-last-table') even if
- they are no longer associated with non-@('nil') values, say because of a
- @(tsee table) event with keyword @(':clear').</p>
+ if the first argument is of the form @('(quote F)') where @('F') is a
+ non-@('nil') symbol, then @('F') must be an entry in @('return-last-table').
+ There are however four exceptions: the following symbols are considered to be
+ keys of @('return-last-table') even if they are no longer associated with
+ non-@('nil') values, say because of a @(tsee table) event with keyword
+ @(':clear').</p>
 
  <blockquote><p>* @('progn'), associated with @(tsee prog2$)<br></br>
 
@@ -94678,6 +95292,13 @@ arithmetic) for libraries of @(see books) for arithmetic reasoning.</p>")
 
  <p>Note that because of its special status, it is illegal to trace
  @('return-last').</p>
+
+ <p>For any object @('x') that is not of the form @('(quote S)') where @('S')
+ is a symbol, the call @('(return-last x y z)') is legal, even in code, if
+ @('y') and @('z') are legal.  Such terms are evaluated as though @('x') is
+ @('(QUOTE PROGN)'), that is, as though they arose from a call of @(tsee
+ prog2$).  In particular, you are welcome to write terms of the form
+ @('(return-last '(<some-annotation>) y z)').</p>
 
  <p>We conclude by warning that as a user, you take responsibility for not
  compromising the soundness or error handling of ACL2 when you define a macro
@@ -95162,7 +95783,10 @@ arithmetic) for libraries of @(see books) for arithmetic reasoning.</p>")
 (defxdoc rule-classes
   :parents (acl2)
   :short "Adding rules to the database"
-  :long "@({
+  :long "<p>For an introduction to rule-classes, see @(see
+  rule-classes-introduction).</p>
+
+  @({
   Example Form (from community book finite-set-theory/total-ordering.lisp):
   (defthm <<-trichotomy
     (implies (and (ordinaryp x)
@@ -95267,8 +95891,8 @@ arithmetic) for libraries of @(see books) for arithmetic reasoning.</p>")
  rule classes are really not intended for widespread use, but rather are mainly
  for experts.</p>
 
- <p>We expect that we will write more about the question of which kind of rule
- to use.  For now: when in doubt, use a @(':')@(tsee rewrite) rule.</p>
+ <p>When in doubt, create a @(':')@(tsee rewrite) rule, which is the default.
+ See @(see rule-classes-introduction).</p>
 
  <p>@(':Rule-classes') is an optional keyword argument of the @(tsee defthm)
  (and @(tsee defaxiom)) event.  In the following, let @('name') be the name of
@@ -95493,6 +96117,84 @@ arithmetic) for libraries of @(see books) for arithmetic reasoning.</p>")
  then if the @(':')@(tsee corollary) is essentially a conjunction.  (See the
  documentation for @(see rewrite), @(see linear), or @(see forward-chaining)
  for details.)</p>")
+
+(defxdoc rule-classes-introduction
+  :parents (rule-classes)
+  :short "Selecting which kind of rule to create"
+  :long "<p>Successful ACL2 users generally direct many of their proved
+ theorems to be stored as rules, which can be applied automatically in
+ subsequent proof attempts.  See @(see rule-classes) for a detailed discussion
+ of the kinds of rules that can be created.  Here, we give a brief introduction
+ to rule-classes that may suffice for most ACL2 users.</p>
+
+ <p>The workhorse for ACL2 proof attempts is generally the application of @(see
+ rewrite) rules.  When you prove a theorem stated with @(tsee defthm), ACL2
+ stores it as a rewrite rule unless either the @(':rule-classes') keyword is
+ supplied explicitly or an error occurs because the theorem is not in a form
+ that ACL2 knows how to store as a rewrite rule.  See @(see rewrite) for an
+ introduction to rewrite rules in ACL2.  That topic also has links to useful
+ introductory material as well as a notion of @(see congruence), which allows
+ the rewriting of one term to another when the two are merely equivalent in
+ some suitable sense, but not necessarily equal.</p>
+
+ <p>Most successful ACL2 users make only sparing use of other kinds of rules
+ besides rewrite rules.  When in doubt, the default is probably best: the
+ absence of any @(':rule-classes') keyword in a @('tsee defthm') event, which
+ is equivalent to @(':rule-classes :rewrite').  Below are some suggestions for
+ when other kinds of rules might be appropriate.  Of course, you are welcome to
+ scan the @(see community-books) for examples.  One can for example find many
+ examples (apparently more than 15,000) of @(':type-prescription') rules by
+ standing in the @('books/') directory and issuing the following shell
+ command (Linux or MacOS):</p>
+
+ @({
+ time grep --include='*.l*sp' -ri ':rule-classes .*type-prescription' .
+ })
+
+ <p>Below, we sometimes speak of the ``conclusion'' of a formula.  For many
+ rule classes, this is simply the formula itself unless the formula is of the
+ form @('(implies hyp concl)'), in which case it is recursively the conclusion
+ of @('concl').  See the subtopics of @(see rule-classes) for detailed
+ documentation.</p>
+
+ <ul>
+
+ <li>If the conclusion is a call of a primitive recognizer or a compound
+ recognizer, or the negation of such &mdash; for example, @('(true-listp (f x
+ y))') &mdash; consider making a @(see type-prescription) rule.  (For relevant
+ background on recognizers, see @(see compound-recognizer), which also
+ describes how to make a rule that designates a function as a
+ compound-recognizer.)  But note that hypotheses of such a rule are
+ proved (``relieved'') by ACL2 only using @(see type-set) reasoning.  If you
+ want rewriting to be used for relieving the hypotheses, you can wrap them in
+ @(tsee force) or @(tsee case-split).</li>
+
+ <li>If the conclusion is an inequality or negated inequality, consider making
+ a @(see linear) rule, but generally only if you can identify a reasonable
+ maximal term, which very roughly is a syntactially largest term that binds all
+ the variables.  For example, the formula @('(< (f x y) (g y z))') might not
+ make a good linear rule.  For a more careful discussion of maximal terms, see
+ @(see linear).</li>
+
+ <li>If the formula is a term in normal form (not simplifiable by your rewrite
+ rules) that tends to be an expicit hypothesis in some of your theorems,
+ consider making it a @(see forward-chaining) rule.  For example, if you are
+ reasoning about a finite state machine (such as an interpreter) and your
+ theorems tend to have the hypothesis @('(good-state-p st)'), and your formula
+ is @('(good-state-p (foo st))'), then that formula is a good candidate for a
+ @(see forward-chaining) rule.</li>
+
+ <li>If the rule looks like a recursive definition @('(equal (f x1 x2 ..)
+ (... (f ...) ...))'), consider making a @(see definition) rule.</li>
+
+ <li>When you want to control the simplifier rather than just turning rules
+ (especially rewrite rules) loose on your terms, consider using @(see meta)
+ rules or @(see clause-processor) rules.</li>
+
+ </ul>
+
+ <p>There are other rule classes that can be useful.  See @(see rule-classes)
+ for a complete list.</p>")
 
 (defxdoc rule-names
   :parents (theories)
@@ -97282,9 +97984,9 @@ arithmetic) for libraries of @(see books) for arithmetic reasoning.</p>")
 (defxdoc set-brr-evisc-tuple
   :parents (brr brr-evisc-tuple set-evisc-tuple)
   :short "Set the @(tsee brr-evisc-tuple)"
-  :long "<p>The call @('(set-brr-evisc-tuple e)') is simply a convenient way to
- set the @(see brr-evisc-tuple) to @('e') directly, that is, without using the
- more general mechanism, @(tsee set-evisc-tuple).  See @(see
+  :long "<p>The call @('(set-brr-evisc-tuple e state)') is simply a convenient
+ way to set the @(see brr-evisc-tuple) to @('e') directly, that is, without
+ using the more general mechanism, @(tsee set-evisc-tuple).  See @(see
  brr-evisc-tuple).</p>")
 
 (defxdoc set-case-split-limitations
@@ -99055,8 +99757,8 @@ arithmetic) for libraries of @(see books) for arithmetic reasoning.</p>")
   :short "Set the @(see induction-depth-limit)"
   :long "@({
   Examples:
-  (set-induction-depth-limit 3)
-  (set-induction-depth-limit nil)
+  (set-induction-depth-limit 3)   ;; Set the induction depth limit to 3.
+  (set-induction-depth-limit nil) ;; Remove the induction depth limit.
  })
 
  <p>Note: This is an event!  It does not print the usual event @(see summary)
@@ -106840,10 +107542,13 @@ arithmetic) for libraries of @(see books) for arithmetic reasoning.</p>")
 
  <li>@('(subst-expr new old term)'): Substitute @('new') for @('old') in
  @('term'); all are assumed to be @(see term)s.  This function provides a
- slightly optimized version of equivalent function @('(subst-expr new old
+ slightly optimized version of equivalent function @('(subst-expr1 new old
  term)').  Also, the former causes an explicit error if @('old') is a quoted
  constant, and neither will search strictly inside a quoted subterm of
- @('old').</li>
+ @('old').  A more complex function (perhaps a bit less likely to stay forever
+ unchanged), @('subst-equiv-expr'), may be found in the source code; it can
+ substitute one expression for another when the two are equivalent, but not
+ necessarily equal.</li>
 
  <li>@('(subst-var new old term)'): Substitute @('new') for @('old') in
  @('term'); all are assumed to be @(see term)s, but moreover, @('old') is
@@ -107276,10 +107981,9 @@ arithmetic) for libraries of @(see books) for arithmetic reasoning.</p>")
   actually a macro.</p></li>
 
   <li><p><b>tame function</b> aka @('tamep-functionp'): An object is a <i>tame
-  function</i> iff it is either (a) a badged symbol whose authorization flag is
-  @('T') and ilks is @('T'), or (b) a tame @('LAMBDA') object (see above).
-  Formally, an object @('x') is a tame function iff @('(tamep-functionp
-  x)').</p></li>
+  function</i> iff it is either (a) a badged symbol and ilks is @('T'), or (b)
+  a tame @('LAMBDA') object (see above).  Formally, an object @('x') is a tame
+  function iff @('(tamep-functionp x)').</p></li>
 
   <li><p><b>tame expression</b> aka @('tamep'): An object is a <i>tame
   expression</i> iff it is a symbol, a quoted constant, the call of an badged
@@ -107314,7 +108018,7 @@ arithmetic) for libraries of @(see books) for arithmetic reasoning.</p>")
   <p>We assume the following events have been processed.</p>
 
   @({
-  (include-book \"projects/apply/apply-lemmas\" :dir :system)
+  (include-book \"projects/apply/top\" :dir :system)
 
   (defun$ sq (x) (* x x))
 
@@ -107331,9 +108035,9 @@ arithmetic) for libraries of @(see books) for arithmetic reasoning.</p>")
   <code>
   symbol           badge
 
-  CONS    (APPLY$-BADGE T 2 . T)  ; . T means all args ordinary
-  SQ      (APPLY$-BADGE T 1 . T)  ; . T means all args ordinary
-  FOLDR   (APPLY$-BADGE T 1 NIL :FN NIL)
+  CONS    (APPLY$-BADGE 2 1 . T)  ; . T means all args ordinary
+  SQ      (APPLY$-BADGE 1 1 . T)  ; . T means all args ordinary
+  FOLDR   (APPLY$-BADGE 1 1 NIL :FN NIL)
   </code>
 
   <p>We are going to investigate ``why'' the following expression is tame.</p>
@@ -107404,9 +108108,9 @@ arithmetic) for libraries of @(see books) for arithmetic reasoning.</p>")
   @('NIL') because @('Y') and @(''NIL') are both tame and @(''CONS') is a
   <i>quoted</i> tame function, @('CONS').</p>
 
-  <p>@('[3]'): The object here is tame because @('FOLDR') is a badged
-  authorized function of arity 3 and its actuals are suitably tame with respect
-  to its arity and ilks as shown by example @('[2]').</p>
+  <p>@('[3]'): The object here is tame because @('FOLDR') is a badged function
+  of arity 3 and its actuals are suitably tame with respect to its arity and
+  ilks as shown by example @('[2]').</p>
 
   <p>@('[4]'): The @('LAMBDA') object here is a tame function because it is of
   the form @('(LAMBDA vars body)'), where @('vars') is the list of symbols
@@ -109583,8 +110287,10 @@ arithmetic) for libraries of @(see books) for arithmetic reasoning.</p>")
               (app a (app b c))))
  })
 
- <p>Also see @(see defthm).  Unlike @(tsee defthm), @('thm') does not create an
- event; it merely causes the theorem prover to attempt a proof.</p>
+ <p>Also see @(see defthm).  Unlike @(tsee defthm), @('thm') does not store an
+ event; it merely causes the theorem prover to attempt a proof.  But like
+ @('defthm'), calls of @('thm') are legal in event contexts (see @(see
+ embedded-event-form)).</p>
 
  @({
   General Form:
@@ -109595,7 +110301,13 @@ arithmetic) for libraries of @(see books) for arithmetic reasoning.</p>")
 
  <p>where @('term') is a term alleged to be a theorem, and @(tsee hints) and
  @(tsee otf-flg) are as described in the corresponding @(see documentation)
- topics.  The keyword arguments above are both optional.</p>")
+ topics.  The keyword arguments above are both optional.  Unlike @('defthm'),
+ the @(':instructions') keyword is not legal for @('thm'); use an
+ @(':instructions') hint instead, i.e., @(':hints ((\"Goal\" :instructions
+ ...))').</p>
+
+ <p>For information on how @('thm') is implemented using @(tsee make-event),
+ see @(see make-event-example-3).</p>")
 
 (defxdoc tidbits
   :parents (acl2-tutorial)
@@ -110733,7 +111445,22 @@ arithmetic) for libraries of @(see books) for arithmetic reasoning.</p>")
  if and only evaluation of the call of @('top-level-fn') caused an error, which
  normally results in no additional output.  (For details about ``caused an
  error'', see the definition of @('top-level') in the ACL2 source code, and see
- @(see ld-error-action).)</p>")
+ @(see ld-error-action).)</p>
+
+ <p>Finally, note that since @('top-level') runs a function that is defined in
+ @(':')@(tsee program) mode, it is possible for a raw lisp error to occur.
+ Here is an example.</p>
+
+ @({
+ ACL2 !>(top-level (car 3))
+
+ ***********************************************
+ ************ ABORTING from raw Lisp ***********
+ ********** (see :DOC raw-lisp-error) **********
+ Error:  The value 3 is not of the expected type LIST.
+ While executing: CAR
+ ***********************************************
+ })")
 
 (defxdoc trace
   :parents (debugging)
@@ -111168,7 +111895,9 @@ arithmetic) for libraries of @(see books) for arithmetic reasoning.</p>")
 
  <p>@(':COND'), @(':ENTRY'), and @(':EXIT')</p>
 
- <p><b>Introduction</b>.  For each of these three options, the value is a
+ <h3>Introduction</h3>
+
+ <p>For each of these three options, the value is a
  (user-level) term, except that for @(':entry') and @(':exit') the value can be
  of the form @('(:fmt u)') or @('(:fmt! u)'), where @('u') is a user-level
  term.  We skip these two latter cases for now and return to them later.  Then
@@ -111184,21 +111913,31 @@ arithmetic) for libraries of @(see books) for arithmetic reasoning.</p>")
  VALUES)') where @('VALUES') is the list of values returned as described
  below.</p>
 
- <p><b>Available Variables</b>.  In the evaluations of the term described below
- upon a call of @('fn'), each formal parameter of the definition of @('fn')
- will be bound to the corresponding actual of the call, the variable
- @('ARGLIST') will be bound to the list of actuals, and the variable
- @('TRACED-FN') will be bound to the function being called (either @('fn') or
- its executable-counterpart function; see above).  Additionally in the case of
- @(':exit'), the variable @('VALUES') will be bound to the multiple values
- returned (thus, a one-element list if @(tsee mv) is not used in the return).
- Also for @(':exit'), we bind @('VALUE') to the logical value returned, i.e.,
- to the suitable list of values returned in the @(tsee mv) case and otherwise
- to the single value returned.  So in the @('mv') case, @('VALUE') is the same
- as @('VALUES'), and otherwise @('VALUE') is @('(car VALUES)').  Other than
- these variables and @(tsee STATE), no other variable may occur in the term,
- whose value must be a single non-@(tsee stobj) value, unless there is an
- active trust tag (see @(see defttag)).</p>
+ <h3>Available Variables</h3>
+
+ <blockquote>NOTE.  The symbols mentioned below, for example @('ARGLIST'), are
+ all in the @('\"ACL2\"') package.  If you are in another package you may need
+ an @('\"ACL2::\"') package prefix, e.g., @('ACL2::ARGLIST').</blockquote>
+
+ <p>In the evaluations of the term described below upon a call of @('fn'), each
+ formal parameter of the definition of @('fn') will be bound to the
+ corresponding actual of the call, the variable @('ARGLIST') will be bound to
+ the list of actuals, and the variable @('TRACED-FN') will be bound to the
+ function being called (either @('fn') or its executable-counterpart function;
+ see above).  Additionally in the case of @(':exit'), the variable @('VALUES')
+ will be bound to the multiple values returned (thus, a one-element list if
+ @(tsee mv) is not used in the return).  Also for @(':exit'), we bind
+ @('VALUE') to the logical value returned, i.e., to the suitable list of values
+ returned in the @(tsee mv) case and otherwise to the single value returned.
+ So in the @('mv') case, @('VALUE') is the same as @('VALUES'), and otherwise
+ @('VALUE') is @('(car VALUES)').  Finally, the variable @('TRACE-LEVEL') will
+ be bound to the level, or depth, of tracing; that is, the number printed at
+ entry and exit (e.g., 3 in @('`3>'') and @('`<3'')).  Other than these
+ variables and @(tsee STATE), no other variable may occur in the term, whose
+ value must be a single non-@(tsee stobj) value, unless there is an active
+ trust tag (see @(see defttag)).</p>
+
+ <h3>Basic Options</h3>
 
  <p>Now suppose @('fn') is called.  First: If @(':cond') is supplied and the
  result of evaluating the @(':cond') term is @('nil'), then no tracing is done.
@@ -111285,16 +112024,16 @@ arithmetic) for libraries of @(see books) for arithmetic reasoning.</p>")
   ACL2 !>(trace$
           (fact
            :entry (:fmt! (msg \"~t0Tracing ~x1 on ~x2\"
-                              (+ 3 (* 2 (@ trace-level)))
+                              (+ 3 (* 2 trace-level))
                               traced-fn arglist))
            :exit (:fmt! (msg \"~t0From input ~x1: ~x2\"
-                             (1+ (* 2 (@ trace-level)))
+                             (1+ (* 2 trace-level))
                              (car arglist) (car values)))))
    ((FACT :ENTRY (:FMT! (MSG \"~t0Tracing ~x1 on ~x2\"
-                             (+ 3 (* 2 (@ TRACE-LEVEL)))
+                             (+ 3 (* 2 TRACE-LEVEL))
                              TRACED-FN ARGLIST))
           :EXIT (:FMT! (MSG \"~t0From input ~x1: ~x2\"
-                            (1+ (* 2 (@ TRACE-LEVEL)))
+                            (1+ (* 2 TRACE-LEVEL))
                             (CAR ARGLIST)
                             (CAR VALUES)))))
   ACL2 !>(fact 3)
@@ -111312,7 +112051,7 @@ arithmetic) for libraries of @(see books) for arithmetic reasoning.</p>")
   ACL2 !>
  })
 
- <p><b>ADVANCED OPTIONS</b> (alphabetical list)</p>
+ <h3>Advanced Options (alphabetical list)</h3>
 
  <p>@(':COMPILE')</p>
 
@@ -111494,7 +112233,7 @@ arithmetic) for libraries of @(see books) for arithmetic reasoning.</p>")
  <p>The legal values for @(':notinline') are @('t') (the default for other than
  the cases displayed above), @('nil'), and @(':fncall').</p>
 
- <p><b>Remarks</b>.</p>
+ <h3>Remarks</h3>
 
  <p>(1) If some of the given trace specs have errors, then @('trace$') will
  generally print error messages for those but will still process those that do
@@ -117022,9 +117761,10 @@ introduction-to-the-tau-system) for more information about Tau.</dd>
  <p>ACL2's output includes the following warning.</p>
 
  @({
-  ACL2 Warning [Use] in ( THM ...):  It is unusual to :USE an enabled
-  :REWRITE or :DEFINITION rule, so you may want to consider disabling
-  (:REWRITE CDR-CONS) in the hint provided for Subgoal *1/1.
+  ACL2 Warning [Use] in ( THM ...):  It is unusual to :USE the formula
+  of an enabled :REWRITE or :DEFINITION rule, so you may want to consider
+  disabling (:REWRITE CDR-CONS) in the hint provided for Subgoal *1/1.
+  See :DOC using-enabled-rules.
  })
 
  <p>The warning is saying that if you leave the rewrite rule enabled, ACL2 may
@@ -118415,14 +119155,14 @@ introduction-to-the-tau-system) for more information about Tau.</dd>
   can be simplified appropriately.  We think of the warrant for @('fn') giving
   @('badge') and @('apply$') authority to expand on @(''fn').  For reasons of
   logical consistency not every @('fn') can have a warrant.  Warrants are
-  issued, when possible, by @(tsee def-warrant).</p>
+  issued, when possible, by @(tsee defwarrant).</p>
 
   <p>In the ACL2 evaluation theory -- a consistent extension of the proof
-  theory -- all warrants issued by @('def-warrant') are implicitly assumed,
+  theory -- all warrants issued by @('defwarrant') are implicitly assumed,
   meaning @('badge') and @('apply$') can be executed on warranted user-defined
   function symbols at the top-level of the ACL2 loop without explicit mention
   of the warrants.  For a discussion of the restrictions on when a @('fn') can
-  be warranted, see @(tsee def-warrant).  This topic discusses warrants <i>per
+  be warranted, see @(tsee defwarrant).  This topic discusses warrants <i>per
   se</i>, their names, their logical meaning, when they must be explicitly
   added as hypotheses to theorems, and their consistency.</p>
 
@@ -118431,10 +119171,10 @@ introduction-to-the-tau-system) for more information about Tau.</dd>
   <p>If <i>fn</i> has a warrant, then the warrant is the term
   <tt>(apply$-warrant-</tt><i>fn</i><tt>)</tt>, i.e., a call of the 0-ary
   warrant function named, <tt>apply$-warrant-</tt><i>fn</i>.  That warrant
-  function name is admitted to the logic when @('def-warrant') succeeds on
+  function name is admitted to the logic when @('defwarrant') succeeds on
   @('fn').</p>
 
-  <p>The warrant function for @('fn'), introduced by @('(def-warrant fn)'), is
+  <p>The warrant function for @('fn'), introduced by @('(defwarrant fn)'), is
   defined with @(tsee defun-sk) because the warrant must specify the values
   returned by <tt>(apply$ 'fn args)</tt> <i>for all possible</i> @('args').
   Recall that @(tsee badge) and @(tsee apply$) defer to two undefined
@@ -118442,7 +119182,7 @@ introduction-to-the-tau-system) for more information about Tau.</dd>
   user-defined function symbols.  The warrant for @('fn') is actually phrased
   in terms of those two undefined functions.  By stipulating their values on
   @(''fn') the warrant determines the values of @('(badge 'fn)') and @('(apply$
-  'fn ...)').  To create the warrant function for @('fn'), @('def-warrant')
+  'fn ...)').  To create the warrant function for @('fn'), @('defwarrant')
   must turn the ilks of @('fn') into tameness requirements on the corresponding
   elements of the @('args') to which @('fn') will be applied by @('apply$').
   Each @(':FN') argument must be a @(see tame) function and each @(':EXPR')
@@ -118451,15 +119191,16 @@ introduction-to-the-tau-system) for more information about Tau.</dd>
   <p>It is easiest to understand the above paragraph by looking at the
   generated warrant function for @('foldr'), whose definition is shown at the
   top of the documentation for @(tsee apply$) and whose @(see badge) is
-  @('(APPLY$-BADGE T 3 NIL :FN NIL)').  The warrant function for @('foldr') is
-  defined as follows.</p>
+  @('(APPLY$-BADGE 3 1 NIL :FN NIL)'), indicating that @('foldr') takes 3
+  arguments of ilks @('NIL'), @(':FN'), and @('NIL'), and returns 1 result.
+  The warrant function for @('foldr') is defined as follows.</p>
 
   @({
   (defun-sk apply$-warrant-foldr ()
     (forall (args)
       (implies (tamep-functionp (cadr args))
                (and (equal (badge-userfn 'FOLDR)
-                           '(APPLY$-BADGE T 3 NIL :FN NIL))
+                           '(APPLY$-BADGE 3 1 NIL :FN NIL))
                     (equal (apply$-userfn 'FOLDR args)
                            (foldr (car args)
                                   (cadr args)
@@ -118468,7 +119209,7 @@ introduction-to-the-tau-system) for more information about Tau.</dd>
   })
 
   <p>Notice that the warrant is phrased in terms of the undefined functions
-  @('badge-userfn') and @('apply$-userfn').  @('Def-warrant') will ``lift''
+  @('badge-userfn') and @('apply$-userfn').  @('Defwarrant') will ``lift''
   this warrant to @('badge') and @('apply$') by proving rewrite rules discussed
   below.</p>
 
@@ -118479,7 +119220,7 @@ introduction-to-the-tau-system) for more information about Tau.</dd>
 
   @({
   (equal (badge-userfn 'FOLDR)
-         '(APPLY$-BADGE T 3 NIL :FN NIL))
+         '(APPLY$-BADGE 3 1 NIL :FN NIL))
   })
 
   <p>and</p>
@@ -118510,9 +119251,25 @@ introduction-to-the-tau-system) for more information about Tau.</dd>
   may not be a locally defined symbol in the environment from which the theorem
   is exported.</p>
 
+  <p>Now consider a function symbol that returns more than one result.  Suppose
+  the badge of @('add-and-subtract') is @('(APPLY$-BADGE 2 2 . T)'), meaning it
+  takes two ordinary objects and returns two results.  The function is tame and
+  so no tameness requirements are imposed on its application.  Its warrant is
+  defined</p>
+
+  @({
+  (defun-sk apply$-warrant-add-and-subtract ()
+    (forall (args)
+      (and (equal (badge-userfn 'add-and-subtract)
+                  '(APPLY$-BADGE 2 2 . T))
+           (equal (apply$ 'add-and-subtract args)
+                  (mv-list 2
+                           (add-and-subtract (car args) (cadr args)))))))
+  })
+
   <h3>Rewrite Rules that Lift and Force the Warrant</h3>
 
-  <p>Once @('def-warrant') has introduced the warrant function for <i>fn</i> it
+  <p>Once @('defwarrant') has introduced the warrant function for <i>fn</i> it
   proves two rewrite rules, conjoined under the name <tt>apply$-</tt><i>fn</i>,
   that ``lifts'' the warrant from the level of the two undefined functions to
   the level of @('badge') and @('apply$').  In the case of @('foldr') the rules
@@ -118522,7 +119279,7 @@ introduction-to-the-tau-system) for more information about Tau.</dd>
   (defthm apply$-foldr
     (and (implies (force (apply$-warrant-foldr))
                   (equal (badge 'FOLDR)
-                         '(APPLY$-BADGE T 3 NIL :FN NIL)))
+                         '(APPLY$-BADGE 3 1 NIL :FN NIL)))
          (implies (and (force (apply$-warrant-foldr))
                        (tamep-functionp (car (cdr args))))
                   (equal (apply$ 'FOLDR args)
@@ -118532,7 +119289,7 @@ introduction-to-the-tau-system) for more information about Tau.</dd>
   })
 
   <p>Observe that these rules say that if @('(apply$-warrant-foldr)') is
-  available, then @('(badge 'FOLDR)') is @('(APPLY$-BADGE T 3 NIL :FN NIL)')
+  available, then @('(badge 'FOLDR)') is @('(APPLY$-BADGE 3 1 NIL :FN NIL)')
   and @('(apply$ 'FOLDR args)') has the naively expected behavior of calling
   @('foldr'), provided the second element of @('args') is a
   @('tamep-functionp').  Also note that the warrant hypothesis is @(tsee
@@ -118575,7 +119332,7 @@ introduction-to-the-tau-system) for more information about Tau.</dd>
   carried out these events.</p>
 
   @({
-  (include-book \"projects/apply/apply-lemmas\" :dir :system)
+  (include-book \"projects/apply/top\" :dir :system)
 
   (defun$ sq (x) (* x x))
 
@@ -118614,7 +119371,7 @@ introduction-to-the-tau-system) for more information about Tau.</dd>
 
   <p>the proof would fail with a checkpoint indicating that you need the
   warrant for @('sq').  That happens because the :rewrite rules proved by
-  @('def-warrant'), discussed in the previous section and named @('apply$-sq')
+  @('defwarrant'), discussed in the previous section and named @('apply$-sq')
   in the case of @('sq'), fire and force that warrant.  However, you could
   disable that rule and get the proof without a warrant.</p>
 
@@ -118750,7 +119507,7 @@ introduction-to-the-tau-system) for more information about Tau.</dd>
   })
 
   <p>where each @('fni') is the name of a defined function on which
-  @('def-warrant') has been previously called and succeeded.  (Actually, we
+  @('defwarrant') has been previously called and succeeded.  (Actually, we
   allow the @('fni') to include certain primitive function symbols already
   built into @('apply$'), but for the moment we ignore the possible presence of
   such symbols among the arguments to @('warrant').)  @('(Warrant fn1 fn2
@@ -118786,12 +119543,12 @@ introduction-to-the-tau-system) for more information about Tau.</dd>
   formula vacuously valid?  That is, can a set of warrants simply be
   unsatisfiable so that any formula having that set of warrants among its
   hypotheses is a theorem?  Put another way, is there a model for the set of
-  all warrants introduced by @(tsee def-warrant)?</p>
+  all warrants introduced by @(tsee defwarrant)?</p>
 
   <p>The answer is yes.  This is discussed in <a
   href='http://www.cs.utexas.edu/users/kaufmann/papers/apply/index.html'>``Limited
   Second-Order Functionality in a First-Order Setting''</a> by Matt Kaufmann
-  and J Strother Moore.  For any set of functions warranted by @('def-warrant')
+  and J Strother Moore.  For any set of functions warranted by @('defwarrant')
   it is possible to <i>define</i>, under the standard ACL2 definitional
   principle, versions of those functions (together with @('apply$'), @('ev$'),
   etc.) and then make attachments to the undefined @('badge-userfn') and
@@ -118802,7 +119559,7 @@ introduction-to-the-tau-system) for more information about Tau.</dd>
   admitting a big mutually recursive clique containing versions of @('apply$')
   and all of its @(see scion)s, by inventing a measure that provably decreases
   as @('apply$') and the scions call eachother.  The keys to that measure's
-  existence are the restrictions imposed by @(tsee def-warrant) and @(see
+  existence are the restrictions imposed by @(tsee defwarrant) and @(see
   tame)ness.  See the paper for a sketch of the proof and see the comment
   titled <tt>Essay on Admitting a Model for Apply$ and the Functions that Use
   It</tt> in the ACL2 source file @('apply-raw.lisp').</p>")
@@ -125565,6 +126322,7 @@ expand function call at the current subterm, without simplifying"
 (defpointer cons-term system-utilities)
 (defpointer cons-term* system-utilities)
 (defpointer context ctx)
+(defpointer declaration declare)
 (defpointer default-state-vars system-utilities)
 (defpointer default-verify-guards-eagerness set-verify-guards-eagerness)
 (defpointer defined-constant system-utilities)
