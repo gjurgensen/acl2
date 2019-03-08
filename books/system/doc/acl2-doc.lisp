@@ -83225,6 +83225,11 @@ it."
  introduced with @(tsee partial-encapsulate) (hence have unknown constraints)
  and are now @(see untouchable).</p>
 
+ <p>The @(see proof-builder) numeric ``diving'' commands @('1'), @('2'),
+ @('3'), etc. &mdash; and more generally, the @('dv') command &mdash; were
+ broken when the current subterm is of the form @('(if 't .. ..)').  This has
+ been fixed.</p>
+
  <h3>Changes at the System Level</h3>
 
  <p>The @(see documentation) topic, @(see system-utilities), is now about only

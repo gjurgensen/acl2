@@ -81871,6 +81871,10 @@ Bug Fixes
   [partial-encapsulate] (hence have unknown constraints) and are now
   [untouchable].
 
+  The [proof-builder] numeric ``diving'' commands 1, 2, 3, etc. --- and
+  more generally, the dv command --- were broken when the current
+  subterm is of the form (if 't .. ..).  This has been fixed.
+
 
 Changes at the System Level
 
