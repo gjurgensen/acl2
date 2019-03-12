@@ -37400,7 +37400,9 @@ current fast alists."
 
  <p>The process of removing guard-holders includes the transformations below.
  That process is also applied to each argument of a function call and to the
- bodies of @(see lambda) expressions (see @(see term)).</p>
+ bodies of @(see lambda) expressions (see @(see term)), including quoted lambda
+ expressions that appear in an argument position with @(see ilk) @(':FN') (see
+ @(see apply$)).</p>
 
  @({
  (return-last term0 term1 term2)  ==>  term2
@@ -83222,6 +83224,11 @@ it."
  and @('concrete-badge$-userfn')), which are still not advertised, are now
  introduced with @(tsee partial-encapsulate) (hence have unknown constraints)
  and are now @(see untouchable).</p>
+
+ <p>The @(see proof-builder) numeric ``diving'' commands @('1'), @('2'),
+ @('3'), etc. &mdash; and more generally, the @('dv') command &mdash; were
+ broken when the current subterm is of the form @('(if 't .. ..)').  This has
+ been fixed.  Thanks to Keonho Lee for reporting this bug.</p>
 
  <h3>Changes at the System Level</h3>
 
