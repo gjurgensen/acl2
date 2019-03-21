@@ -82932,6 +82932,11 @@ it."
 ; Fixed ev-fncall-rec-logical and raw-ev-fncall-okp to deal properly with
 ; attachments to warrants.
 
+; Improved ev-fncall-rec-logical by accounting for partial-encapsulate functions.
+
+; Improved efficiency of remove-assumption-entries-from-type-alist by using
+; cons-with-hint.
+
   :parents (release-notes)
   :short "ACL2 Version  8.2 (xxx, 20xx) Notes"
   :long "<p>NOTE!  New users can ignore these release notes, because the @(see
