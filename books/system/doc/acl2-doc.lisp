@@ -39084,30 +39084,34 @@ current fast alists."
  the @(':expand') hint are expanded when they are encountered by the simplifier
  while working on the specified goal or any of its subgoals.  (There is no
  separate ``expand'' process.)  We permit @('value') to be a single such term
- instead of a singleton list.  <b>Remarks</b>: (1) Allowed are ``terms'' of the
- form @('(:free (var1 var2 ...  varn) pattern)') where the indicated variables
- are distinct and @('pattern') is a term.  Such ``terms'' indicate that we
- consider the indicated variables to be instantiatable, in the following sense:
- whenever the simplifier encounters a term that can be obtained from
- @('pattern') by instantiating the variables @('(var1 var2 ...  varn)'), then
- it expands that term.  (2) Also allowed are ``terms'' of the form @('(:with
- name term)'), where @('name') is a function symbol, a macro name that denotes
- a function symbol (see @(see macro-aliases-table)), or a @(see rune).  The
- corresponding rule of class @(':rewrite'), which is often a @(see definition)
- rule but need not be, is then used in place of the current body for the
- function symbol of @('term'); see @(see show-bodies) and see @(see set-body).
- If the rule is of the form @('(implies hyp (equiv lhs rhs))'), then after
- matching @('lhs') to the current term in a context that is maintaining
- equivalence relation @('equiv'), ACL2 will replace the current term with
- @('(if hyp rhs (hide term))'), or just @('rhs') if the rule is just @('(equal
- lhs rhs)').  (3) A combination of both @(':free') and @(':with'), as described
- above, is legal.  (4) The term @(':LAMBDAS') is treated specially.  It denotes
- the list of all lambda applications (i.e., @(tsee let) expressions)
- encountered during the proof.  Conceptually, this use of @(':LAMBDAS') tells
- ACL2 to treat lambda applications as a notation for substitutions, rather than
- as function calls whose opening is subject to the ACL2 rewriter's
- heuristics (specifically, not allowing lambda applications to open when they
- introduce ``too many'' if terms).</p></dd>
+ instead of a singleton list.  <b>Remarks</b>: (0) The term @('(fn t1 ... tn)')
+ is expanded by substituting, into the body of @('fn'), the terms @('ti') for
+ the respective formals of @('fn').  Note that by default, a @(':definition')
+ rule for @('fn') replaces the body of @('fn'); see @(see definition).  (1)
+ Allowed are ``terms'' of the form @('(:free (var1 var2 ...  varn) pattern)')
+ where the indicated variables are distinct and @('pattern') is a term.  Such
+ ``terms'' indicate that we consider the indicated variables to be
+ instantiatable, in the following sense: whenever the simplifier encounters a
+ term that can be obtained from @('pattern') by instantiating the variables
+ @('(var1 var2 ...  varn)'), then it expands that term.  (2) Also allowed are
+ ``terms'' of the form @('(:with name term)'), where @('name') is a function
+ symbol, a macro name that denotes a function symbol (see @(see
+ macro-aliases-table)), or a @(see rune).  The corresponding rule of class
+ @(':rewrite'), which is often a @(see definition) rule but need not be, is
+ then used in place of the current body for the function symbol of @('term');
+ see @(see show-bodies) and see @(see set-body).  If the rule is of the form
+ @('(implies hyp (equiv lhs rhs))'), then after matching @('lhs') to the
+ current term in a context that is maintaining equivalence relation @('equiv'),
+ ACL2 will replace the current term with @('(if hyp rhs (hide term))'), or just
+ @('rhs') if the rule is just @('(equal lhs rhs)').  (3) A combination of both
+ @(':free') and @(':with'), as described above, is legal.  (4) The term
+ @(':LAMBDAS') is treated specially.  It denotes the list of all lambda
+ applications (i.e., @(tsee let) expressions) encountered during the proof.
+ Conceptually, this use of @(':LAMBDAS') tells ACL2 to treat lambda
+ applications as a notation for substitutions, rather than as function calls
+ whose opening is subject to the ACL2 rewriter's heuristics (specifically, not
+ allowing lambda applications to open when they introduce ``too many'' if
+ terms).</p></dd>
 
  <dt>@(':hands-off')</dt><p/>
 
