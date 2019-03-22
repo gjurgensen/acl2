@@ -42376,24 +42376,24 @@ Subtopics
         encountered by the simplifier while working on the specified
         goal or any of its subgoals.  (There is no separate
         ``expand'' process.)  We permit value to be a single such
-        term instead of a singleton list.  Remarks: (0) The term (fn
-        t1 ... tn) is expanded by substituting, into the body of fn,
-        the terms ti for the respective formals of fn.  Note that by
-        default, a :definition rule for fn replaces the body of fn;
-        see [definition].  (1) Allowed are ``terms'' of the form
-        (:free (var1 var2 ...  varn) pattern) where the indicated
-        variables are distinct and pattern is a term.  Such ``terms''
-        indicate that we consider the indicated variables to be
-        instantiatable, in the following sense: whenever the
-        simplifier encounters a term that can be obtained from
-        pattern by instantiating the variables (var1 var2 ...  varn),
-        then it expands that term.  (2) Also allowed are ``terms'' of
-        the form (:with name term), where name is a function symbol,
-        a macro name that denotes a function symbol (see
-        [macro-aliases-table]), or a [rune].  The corresponding rule
-        of class :rewrite, which is often a [definition] rule but
-        need not be, is then used in place of the current body for
-        the function symbol of term; see [show-bodies] and see
+        term instead of a singleton list.  Remarks: (0) Note that in
+        the event that a :definition rule has been admitted for fn,
+        then by default, the body b is determined by the (most
+        recently admitted such) rule rather than the original
+        definition of fn; see [definition].  (1) Allowed are
+        ``terms'' of the form (:free (var1 var2 ...  varn) pattern)
+        where the indicated variables are distinct and pattern is a
+        term.  Such ``terms'' indicate that we consider the indicated
+        variables to be instantiatable, in the following sense:
+        whenever the simplifier encounters a term that can be
+        obtained from pattern by instantiating the variables (var1
+        var2 ...  varn), then it expands that term.  (2) Also allowed
+        are ``terms'' of the form (:with name term), where name is a
+        function symbol, a macro name that denotes a function symbol
+        (see [macro-aliases-table]), or a [rune].  The corresponding
+        rule of class :rewrite, which is often a [definition] rule
+        but need not be, is then used in place of the current body
+        for the function symbol of term; see [show-bodies] and see
         [set-body].  If the rule is of the form (implies hyp (equiv
         lhs rhs)), then after matching lhs to the current term in a
         context that is maintaining equivalence relation equiv, ACL2
