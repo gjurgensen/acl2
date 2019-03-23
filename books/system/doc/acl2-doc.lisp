@@ -82940,6 +82940,13 @@ it."
 ; Improved efficiency of remove-assumption-entries-from-type-alist by using
 ; cons-with-hint.
 
+; At one time we included the following item, but it has been undone.  See
+; hl-initialize-faltable-table.
+;   <p>(CCL only) We now use lock-free hash tables for @(see fast-alists), to
+;   work around an apparently CCL bug.  Thanks to Rob Sumners and the folks at
+;   Centaur for finding and analyzing this problem, proposing this fix, and
+;   doing timing tests on it.</p>
+
   :parents (release-notes)
   :short "ACL2 Version  8.2 (xxx, 20xx) Notes"
   :long "<p>NOTE!  New users can ignore these release notes, because the @(see
@@ -83280,11 +83287,6 @@ it."
  <p>A new documentation topic, @(see rule-classes-introduction), provides a
  basic guide to which sorts of rules to create from your theorems.  Thanks to
  Mihir Mehta for encouraging the development of this topic.</p>
-
- <p>(CCL only) We now use lock-free hash tables for @(see fast-alists), to work
- around an apparently CCL bug.  Thanks to Rob Sumners and the folks at Centaur
- for finding and analyzing this problem, proposing this fix, and doing timing
- tests on it.</p>
 
  <h3>EMACS Support</h3>
 

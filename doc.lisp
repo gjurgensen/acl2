@@ -81924,11 +81924,6 @@ Changes at the System Level
   Thanks to Mihir Mehta for encouraging the development of this
   topic.
 
-  (CCL only) We now use lock-free hash tables for [fast-alists], to
-  work around an apparently CCL bug.  Thanks to Rob Sumners and the
-  folks at Centaur for finding and analyzing this problem, proposing
-  this fix, and doing timing tests on it.
-
 
 EMACS Support
 
