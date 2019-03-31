@@ -82933,7 +82933,7 @@ it."
 ;   :[corollary] justifying the rule named by the [rune].
 
 ; Fixed ev-fncall-rec-logical and raw-ev-fncall-okp to deal properly with
-; attachments to warrants.
+; attachments to warrants and with :attach nil.
 
 ; Improved ev-fncall-rec-logical by accounting for partial-encapsulate functions.
 
