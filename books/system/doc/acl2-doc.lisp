@@ -137,7 +137,7 @@
     (ARITHMETIC "[books]/doc/more-topics.lisp")
     (ARITHMETIC-1 "[books]/arithmetic/top.lisp")
     (ARITHMETIC/NATP-POSP "[books]/arithmetic/natp-posp.lisp")
-    (ARITY+ "[books]/kestrel/utilities/world-queries.lisp")
+    (ARITY+ "[books]/kestrel/utilities/system/world-queries.lisp")
     (ASSERT! "[books]/misc/assert.lisp")
     (B* "[books]/std/util/bstar.lisp")
     (BRIDGE "[books]/centaur/bridge/top.lisp")
@@ -54212,14 +54212,14 @@ it."
 (defxdoc measure
 
 ; This topic is appropriately redefined by (define measure ...) in
-; books/kestrel/utilities/world-queries.lisp:
+; books/kestrel/utilities/system/world-queries.lisp:
 
   :parents (xargs)
   :short "Declare a measure for a @(tsee defun)"
   :long "<p>See @(see xargs) for discussion of how to use the @(':measure')
  keyword to specify a measure for a definition.  A related utility,
  @('measure'), may be found in the @(see community-books), file
- @('kestrel/utilities/world-queries.lisp').</p>")
+ @('kestrel/utilities/system/world-queries.lisp').</p>")
 
 (defxdoc measure-debug
   :parents (measure debugging)
@@ -80077,7 +80077,7 @@ it."
 
 ; Renamed :doc topic well-founded-relation to well-founded-relation-rule, to
 ; accommodate the form (define well-founded-relation ...)  in
-; books/kestrel/utilities/world-queries.lisp.
+; books/kestrel/utilities/system/world-queries.lisp.
 
 ; We added to :doc redundant-encapsulate to add discussion of redefinition.
 ; Also, we tweaked a redundancy message for encapsulate so that it says "might
@@ -96402,8 +96402,9 @@ arithmetic) for libraries of @(see books) for arithmetic reasoning.</p>")
 
  <p>To see the ruler-extenders of an existing function symbol, @('fn'), in a
  logical @(see world), @('wrld'), evaluate @('(ruler-extenders 'fn wrld)')
- after @('(include-book \"kestrel/utilities/world-queries\" :dir :system)').  For
- example, evaluation of @('(ruler-extenders 'fn (w state))') provides the
+ after @('(include-book
+ \"kestrel/utilities/system/world-queries\" :dir :system)').  For example,
+ evaluation of @('(ruler-extenders 'fn (w state))') provides the
  ruler-extenders of @('fn') in the current logical world.</p>
 
  <p>Below we describe the notion of ruler-extenders in detail, as well as how
@@ -120067,14 +120068,14 @@ introduction-to-the-tau-system) for more information about Tau.</dd>
 (defxdoc well-founded-relation
 
 ; This topic is appropriately redefined by (define well-founded-relation ...)
-; in books/kestrel/utilities/world-queries.lisp.
+; in books/kestrel/utilities/system/world-queries.lisp.
 
   :parents (rule-classes)
   :short "Show that a relation is well-founded on a set"
   :long "<p>See @(see well-founded-relation-rule) for discussion of
  well-founded relations in ACL2.  A related utility,
  @('well-founded-relation'), may be found in the @(see community-books), file
- @('kestrel/utilities/world-queries.lisp').</p>")
+ @('kestrel/utilities/system/world-queries.lisp').</p>")
 
 (defxdoc well-founded-relation-rule
   :parents (rule-classes)
