@@ -14374,7 +14374,7 @@ Subtopics
        (arithmetic \"[books]/doc/more-topics.lisp\")
        (arithmetic-1 \"[books]/arithmetic/top.lisp\")
        (arithmetic/natp-posp \"[books]/arithmetic/natp-posp.lisp\")
-       (arity+ \"[books]/kestrel/utilities/world-queries.lisp\")
+       (arity+ \"[books]/kestrel/utilities/system/world-queries.lisp\")
        (assert! \"[books]/misc/assert.lisp\")
        (b* \"[books]/std/util/bstar.lisp\")
        (bridge \"[books]/centaur/bridge/top.lisp\")
@@ -58231,7 +58231,7 @@ Subtopics
   See [xargs] for discussion of how to use the :measure keyword to
   specify a measure for a definition.  A related utility, measure,
   may be found in the [community-books], file
-  kestrel/utilities/world-queries.lisp.
+  kestrel/utilities/system/world-queries.lisp.
 
 
 Subtopics
@@ -97895,9 +97895,10 @@ Subtopics
 
   To see the ruler-extenders of an existing function symbol, fn, in a
   logical [world], wrld, evaluate (ruler-extenders 'fn wrld) after
-  (include-book \"kestrel/utilities/world-queries\" :dir :system).  For
-  example, evaluation of (ruler-extenders 'fn (w state)) provides the
-  ruler-extenders of fn in the current logical world.
+  (include-book \"kestrel/utilities/system/world-queries\" :dir
+  :system).  For example, evaluation of (ruler-extenders 'fn (w
+  state)) provides the ruler-extenders of fn in the current logical
+  world.
 
   Below we describe the notion of ruler-extenders in detail, as well as
   how to set its default using set-ruler-extenders.
@@ -121219,7 +121220,7 @@ The Differences Between Well-Formed and Merely Tame Lambda Objects
   See [well-founded-relation-rule] for discussion of well-founded
   relations in ACL2.  A related utility, well-founded-relation, may
   be found in the [community-books], file
-  kestrel/utilities/world-queries.lisp.")
+  kestrel/utilities/system/world-queries.lisp.")
  (WELL-FOUNDED-RELATION-RULE
   (RULE-CLASSES)
   "Show that a relation is well-founded on a set
