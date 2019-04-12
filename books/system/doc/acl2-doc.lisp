@@ -5256,9 +5256,13 @@ and @(tsee include-book)"
   <li>@(tsee lambda$) expression -- an ACL2 macro that allows you to enter
       quoted well-formed @('LAMBDA') objects into your terms by typing
       untranslated expressions that resemble lambda expressions.  The
-      @('lambda$') expression @('(lambda$ (x) (+ 1 x))') translates into the
-      quoted @('LAMBDA') object @(''(LAMBDA (X) (BINARY-+ '1 X))').  See also
-      @(see lambda) for some clarifications.</li>
+      @('lambda$') expression @('(lambda$ (x) (+ 1 x))') essentially translates
+      into the quoted @('LAMBDA') object @(''(LAMBDA (X) (BINARY-+ '1 X))').
+      We say ``essentially'' because @('lambda$') always inserts a
+      @('(DECLARE (IGNORABLE v1 ... vn))') listing every formal and tags the
+      body with a @(tsee RETURN-LAST) form that indicates it came from a
+      translated @('lambda$'). See also @(see lambda) for some
+      clarifications.</li>
 
   <li>@(tsee scion) -- a function that is ancestrally dependent on @('apply$'),
       sometimes (perhaps misleadingly) called a ``mapping function.''  An
@@ -47375,15 +47379,20 @@ tables in the current Hons Space."
   (collect (lambda$ (x) (+ 1 x)) lst)
   })
 
-  <p>That @('lambda$') expression translate to the quoted well-formed
-  @('LAMBDA') object</p>
+  <p>That @('lambda$') expression essentially translates to the quoted
+  well-formed @('LAMBDA') object</p>
 
   @({
   '(LAMBDA (X) (BINARY-+ '1 X))
   })
 
   <p>Note that the body is fully translated, unlike its appearance in the
-  @('lambda$') expression.</p>
+  @('lambda$') expression.  We say ``essentially'' because @('lambda$') always
+  add a @('(DECLARE (IGNORABLE v1 ... vn))') that includes every formal.  In
+  addition, except when translating in theorems, @('lambda$') tags the
+  translated body with a @(tsee RETURN-LAST) expression to indicate it came
+  from a @('lambda$').  Despite these differences, the meaning of the
+  translated @('lambda$') is the simple quoted @('LAMBDA') object shown.</p>
 
   <p>@('Lambda$') expressions never appear in a fully translated term.  All the
   @('lambda$') objects will have been translated into quoted @('LAMBDA')
@@ -47435,7 +47444,6 @@ tables in the current Hons Space."
   (lambda$ (n lst str)
            (declare (type integer n)
                     (type string str)
-                    (ignore str)
                     (xargs :guard (and (posp n)
                                        (true-listp lst)
                                        (&lt; (- n 1) (length lst)))))
@@ -47451,17 +47459,16 @@ tables in the current Hons Space."
   returning 1 value.  @('Body') must satisfy the same restrictions one would
   expect in a non-recursive @(tsee defun) event with the same formals,
   declarations and body.  In particular, @('body') should contain no free
-  variables other than those listed in @('vars'), must not use freely any
-  variable declared @('IGNORE')d and must use every other variable in @('vars')
-  except, possibly, variables listed as @('IGNORABLE').  @('Lambda$') expands
-  to a well-formed quoted @('LAMBDA') object or else causes a translate-time
-  error.</p>
+  variables other than those listed in @('vars').  @('Lambda$') always adds a
+  declaration that every formal is ignorable and, hence, we prohibit you from
+  adding @('ignore') or @('ignorable') declarations in the @('lambda$')
+  expression itself.  @('Lambda$') expands to a well-formed quoted @('LAMBDA')
+  object or else causes a translate-time error.</p>
 
-  <p>The allowed @('DECLARE') forms in @('lambda$') are @('type'), @('ignore'),
-  @('ignorable') and @('xargs').  Furthermore, the only @(tsee xargs) keywords
-  allowed are @(':guard') and @(':split-types').  The other @('XARGS')
-  keywords, such as @(':measure'), @(':hints') or @(':guard-hints'), play no
-  role.</p>
+  <p>The allowed @('DECLARE') forms in @('lambda$') are @('type') and
+  @('xargs').  Furthermore, the only @(tsee xargs) keywords allowed are
+  @(':guard') and @(':split-types').  The other @('XARGS') keywords, such as
+  @(':measure'), @(':hints') or @(':guard-hints'), play no role.</p>
 
   <h3>About Guard Verification of Lambda Objects</h3>
 
@@ -51487,27 +51494,683 @@ tables in the current Hons Space."
 (defxdoc loop$
   :parents (acl2-built-ins programming)
   :short "Iteration with an analogue of the Common Lisp @('loop') macro"
-  :long "<p>This documentation is currently little more than a stub.  We expect
- to provide more complete documentation for @('loop$') before the next ACL2
- release.  In brief: @('Loop$') is an ACL2 version of the Common Lisp @('loop')
- macro.</p>
+  :long "<p>@('Loop$') is the ACL2 analogue of the Common Lisp's iteration
+  primitive, @('loop').  This documentation assumes the reader has at least a
+  passing familiarity with @('loop').</p>
 
- <p>In the meantime, you can see @(see community-books)
- @('books/system/tests/loop-tests.lisp') and
- @('books/system/tests/apply-in-proofs.lisp') for numerous examples.</p>
+  <p><b>Warning:</b> @('Loop$') implements only a small part of the
+  functionality of @('loop').  Aside from the simple fact that @('loop$')
+  allows a small subset of the syntax of @('loop'), the main restriction is
+  that the subexpressions of the @('loop$') statement that are evaluated
+  repeatedly must be @(see tame)!  These expressions include the @('until')
+  test, the @('when') test, and the @('loop$') body.  For example, this means
+  that @('loop$') does not allow iterations involving @(tsee state) or @(see
+  stobj)s.</p>
 
- <p>When a term is a call of @('loop$'), is to be evaluated at the top level or
- during a proof, and is a ground term (has no free variables), then that term
- is translated to a call involving so-called ``loop$ scions'' before it is
- evaluated.  For example, after evaluating @('(defun$ f (x) (cons x x))'), such
- an attempt to evaluate @('(loop$ for x in '(a b c) collect (f x))')
- essentially becomes an evaluation of the following call of the loop$ scion,
- @('collect$').</p>
+  <h3>Informal Introduction</h3>
 
- @({
- (COLLECT$ '(LAMBDA (X) (F X))
-           '(A B C))
- })")
+  <p>ACL2's @('loop$') is considerably more restricted than Common Lisp's but
+  when an ACL2 @('loop$') statement is translated without error it has the same
+  meaning as the corresponding Common Lisp @('loop').  (Note: @('loop$') allows
+  @(':guard') declarations in certain places and these are ignored by Common
+  Lisp.)</p>
+
+  <p>We give some examples of legal @('loop$') statements below.  We deal with
+  guards and guard verification later in this topic.</p>
+
+  @({
+  ACL2 !>(loop$ for x in '(1 2 3) sum (* x x))
+  14
+  ACL2 !>(loop$ for x in '(1 2 3) collect (* x x))
+  (1 4 9)
+  ACL2 !>(loop$ for x on '(1 2 3) collect x)
+  ((1 2 3) (2 3) (3))
+  ACL2 !>(loop$ for x from -10 to 10 by 2 collect x)
+  (-10 -8 -6 -4 -2 0 2 4 6 8 10)
+  ACL2 !>(loop$ for i from 1 to 10
+                as  x in '(a b c d e f g)
+                collect (cons i x))
+  ((1 . A)
+   (2 . B)
+   (3 . C)
+   (4 . D)
+   (5 . E)
+   (6 . F)
+   (7 . G))
+  ACL2 !>(loop$ for i from 1 to 10
+                as  x in '(a b c d e f g)
+                until (> i 6)
+                collect (cons i x))
+  ((1 . A)
+   (2 . B)
+   (3 . C)
+   (4 . D)
+   (5 . E)
+   (6 . F))
+  ACL2 !>(loop$ for i from 1 to 10
+                as  x in '(a b c d e f g)
+                until (> i 6)
+                when (evenp i)
+                collect (cons i x))
+  ((2 . B) (4 . D) (6 . F))
+  })
+
+  <p>@('Loop$') statements execute fastest when they are guard verified.  But
+  the @('until'), @('when'), and @('loop$') body raise interesting guard
+  verification problems because they are executed for many different values of
+  the iteration variables.  It may be necessary to provide type information or
+  even stronger invariants to verify their guards.  We now provide a few
+  examples illustrating the handling of guards in @('loop$').</p>
+
+  <p>The first example below is an acceptable @('loop$') statement but cannot
+  be guard verified, as would be necessary if it appeared in a @(tsee defun)
+  that was to be guard verified.  The problem is that @('(+ 1 x)') requires
+  @('x') to be numeric and, in general, we don't know anything about the value
+  of @('x') here.  (Actually, because the target range is just a constant
+  below, we could deduce information about each value @('x') takes on, but we
+  don't.)  The second example can be guard verified and has the advantage of
+  being standard Common Lisp so compilers might optimize the handing of @('(+ 1
+  x)').  The third example can also be guard verified but since the @(':guard')
+  derective used here is ignored by Common Lisp it does not inform the
+  compiler, so this example might execute more slowly than the previous one.
+  The last example shows the syntax and use of the ACL2-specific addition to
+  @('loop$'): the @(':guard') directive protecting, in this case, the
+  @('loop$') body.  @(':Guard') is useful when you wish to add more guard
+  information than can be expressed with the Common Lisp @('of-type')
+  directive.  The @('of-type') and @(':guard') directives are conjoined to form
+  the actual guard protecting the @('loop$') body.</p>
+
+  @({
+  ACL2 !>(loop$ for x in '(1 2 3) collect (+ 1 x))
+  (2 3 4)
+  ACL2 !>(loop$ for x of-type integer in '(1 2 3) collect (+ 1 x))
+  (2 3 4)
+  ACL2 !>(loop$ for x in '(1 2 3) collect :guard (integerp x) (+ 1 x))
+  (2 3 4)
+  ACL2 !>(let ((max 10))
+          (loop$ for x of-type integer in '(1 2 3) 
+                 collect :guard (and (integerp max) (< x max)) (- max x)))
+  (9 8 7)
+  })
+
+  <p>The guard on the @('(- max x)') above is @('(and (integerp x) (integerp
+  max) (< x max))') and the compiler is informed that @('x') is an integer by
+  the @('of-type').</p>
+
+  <p>As of ACL2 Version 8.2, the only allowed iteration clauses are @('in'),
+  where the variable ranges over the elements of the given true list, @('on'),
+  where the variable ranges over the tails of the given true-list, and
+  @('from/to/by') where the variable ranges over the integers between two
+  bounds, stepping by a positive integer increment (or by 1 if no @('by')
+  clause is provided.)</p>
+
+  <p>You may have as many iteration clauses as you wish, connected with
+  @('as').  Each must introduce a unique iteration variable and that variable
+  may be optionally followed by an @('of-type') @(tsee type-spec)
+  specification.  @('Of-type') is a Common Lisp feature that allows the
+  compiler to optimize operations on the variable in question.  An
+  example is</p>
+
+  @({
+  (loop$ for v of-type (and integer (not (satisfies zerop)))
+               from 1 to 100
+         sum (/ 1 v))
+  })
+
+  <p>After all of the iteration clauses, you may have a termination test,
+  signaled by @('until'), and/or a conditional test signaled by @('when').  If
+  both are provided, the @('until') test must come first.  Iteration stops when
+  the @('until') test is satisfied.  The conditional test determines whether
+  the loop body is executed for the current value of the iteration
+  variables.</p>
+
+  <p>Between the @('until') symbol and the expression to be tested, and between
+  the @('when') symbol and its expression, you may include a @(':guard')
+  clause.  This is useful if guard verification requires an invariant relating
+  multiple iteration variables.  And example of a guarded @('until') clause is</p>
+
+  @({
+  (loop$ for u in lst1 as v in lst2
+         until :guard (invariantp u v) (test u v)
+         collect (body u v))
+  })
+
+  <p>ACL2 Version 8.2 supports only four operators, @('sum'), @('collect'),
+  @('always') and @('append').  We anticipate adding other Common Lisp
+  operators eventually.</p>
+
+  <p>Between the operator, e.g., @('sum') or @('collect'), and the
+  @('loop$') body you may include a @(':guard') clause as in</p>
+
+  @({
+  (loop$ for u in lst1 as v in lst2
+         collect :guard (invariantp u v) (body u v))
+  })
+
+  <p>This is sometimes necessary in the verification of the guards for the
+  @('loop$') body because Common Lisp's @('of-type') clauses do not permit you
+  to relate one variable to another.</p>
+
+  <h3>General Form</h3>
+
+  <p>The syntax of Common Lisp @('loop') statements is extremely complicated.
+  Rather than try to write the abstract syntax of ACL2's @('loop$') statements
+  in the same formal style, we take a different approach, which is workable
+  because @('loop$') allows fewer options.</p>
+
+  <p>First we introduce the syntax of a ``target clause,'' a ``type-spec,'' and
+  the ``operators.''  Then we describe the most elaborate form of a @('loop$')
+  statement in terms of these elements and ordinary ACL2 terms.  Every legal
+  @('loop$') statement can be produced by omitting certain optional elements
+  from the most elaborate @('loop$') form.  So we conclude the syntactic
+  description of @('loop$') by listing the elements that can be omitted.</p>
+
+  <p>A <i>target clause</i> has one of four forms</p>
+
+  <ul>
+  <li>@('IN') <i>list-expr</i></li>
+
+  <li>@('ON') <i>list-expr</i></li>
+
+  <li>@('FROM') <i>lo-expr</i> @('TO') <i>hi-expr</i></li>
+
+  <li>@('FROM') <i>lo-expr</i> @('TO') <i>hi-expr</i> @('BY') <i>step-expr</i></li>
+
+  </ul>
+
+  <p>where <i>list-expr</i> is a term (which is expected to evaluate to a true
+  list), <i>lo-expr</i> and <i>hi-expr</i> are terms (which are expected to
+  evaluate to integers), and <i>step-expr</i> is a term (which is expected to
+  evaluate to a positive integer).</p>
+
+  <p>The legal <i>type-specs</i> are listed in @(tsee type-spec).</p>
+
+  <p>The legal <i>operators</i> are @('SUM'), @('COLLECT'), @('ALWAYS'), and
+  @('APPEND').</p>
+
+  <p>The most elaborate @('loop$') statement is of the form</p>
+
+  &nbsp; &nbsp; &nbsp; &nbsp; @('(LOOP$ FOR ')<i>v1</i>@(' OF-TYPE ')<i>spec1
+  target1</i><br/> &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;
+  &nbsp; &nbsp; &nbsp; &nbsp; @('AS ') &nbsp; <i>v2</i>@(' OF-TYPE ')<i>spec2
+  target2</i><br/> &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;
+  &nbsp; &nbsp; &nbsp; &nbsp; ...<br/> &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;
+  &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; @('AS ') &nbsp; <i>vn</i>@('
+  OF-TYPE ')<i>specn targetn</i><br/> &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;
+  &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; @('UNTIL :GUARD ')<i>guard1
+  until-expr</i><br/> &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;
+  &nbsp; &nbsp; &nbsp; &nbsp; @('WHEN ') &nbsp; @(':GUARD ')<i>guard2
+  when-expr</i>&nbsp; &nbsp; &nbsp; &nbsp; ; Note the @('ALWAYS') Exception
+  below!<br/> &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;
+  &nbsp; &nbsp; &nbsp; <i>op</i>@(' :GUARD ')<i>guard3
+  body-expr</i>@(')')<br/>
+
+
+  <p>where each <i>vi</i> &nbsp; is a legal variable symbol and they are all
+  distinct, each <i>type-speci</i> &nbsp; is a @(tsee type-spec), each
+  <i>targeti</i> &nbsp; is a target clause, each <i>guardi</i>,
+  <i>until-expr</i>, and <i>when-expr</i> &nbsp; is a term, <i>op</i> &nbsp; is
+  an operator, and <i>body-expr</i> &nbsp; is a term.  Furthermore,
+  <i>until-expr</i>, <i>when-expr</i>, and <i>body-expr</i> &nbsp; must be
+  @(see tame)!</p>
+
+  <p><i>The @('ALWAYS') Exception:</i> Common Lisp prohibits loops with both a
+  @('WHEN') clause and an @('ALWAYS') operator.  If you are tempted to use
+  @('WHEN') <i>p</i> with @('ALWAYS') <i>q</i> we recommend you write
+  @('ALWAYS') @('(implies ')<i>p q</i>@(')').</p>
+
+  <p>The following elements may be omitted.</p>
+
+  <ul>
+  <li>any line beginning with @('AS'), @('UNTIL') or @('WHEN'),</li>
+
+  <li>any @('OF-TYPE') <i>speci</i>, and</li>
+
+  <li>any @(':GUARD') <i>guardi</i>.</li>
+
+  </ul>
+
+  <p>We give names to certain classes of the syntactic entities above.  The
+  <i>v1</i>, ..., <i>vn</i> are called the <i>iteration variables</i>.  The
+  <i>spec1</i>, ..., <i>specn</i> are called <i>type specs</i>, each corresponds to
+  a certain iteration variable, and each gives rise to a <i>type term</i> about
+  its variable in the sense that ``@('X OF-TYPE (SATISFIES NATP)')'' gives rise
+  to the type term @('(NATP X)') and ``@('I OF-TYPE INTEGER')'' gives rise to
+  the type term @('(INTEGERP I)').  The terms involved in the target
+  expressions, e.g., the <i>list-expr</i> in ``@('IN') <i>list-expr</i>'' and
+  ``@('ON') <i>list-expr</i>'' and the <i>lo-expr</i>, <i>hi-expr</i> and
+  optional <i>step-expr</i> in the ``@('FROM') <i>lo-expr</i> @('TO')
+  <i>hi-expr</i> @('BY') <i>step-expr</i>'' targets are called <i>target
+  terms</i>.  Finally, the <i>until-expr</i>, <i>when-expr</i>, and
+  <i>body-expr</i> are called <i>iterative forms</i>.</p>
+
+  <p>We distinguish the target terms from the iterative forms because they are
+  handled very differently at evaluation time.  When a @('loop$') is evaluated,
+  the target terms are evaluated just once.  But the iterative forms are
+  evaluated multiple times as the iteration variables range over the values of
+  the targets.</p>
+
+  <p>A @('loop$') statement with just one iteration variable and in which the
+  iterative forms mention no free variable other than the iteration variable
+  is called a <i>simple @('loop$')</i>.  An example of a simple loop is</p>
+
+  @({
+  (loop$ for x in lst when (evenp x) collect (+ 1 (sq x)))
+  })
+
+  <p>A @('loop$') statement called a <i>fancy @('loop$')</i> if it is not
+  simple.  Both of the following @('loop$')s are fancy.</p>
+
+  @({
+  (loop$ for x in xlst as y on ylst collect (expr x y))
+
+  (loop$ for x in xlst collect (expr x z))
+  })
+
+  <p>The first is fancy because it has two iteration variables.  The second is
+  fancy because the body freely uses the variable @('z') which is not the
+  iteration variable.</p>
+
+  <h3>Semantics</h3>
+
+  <p>@('Loop$') expressions are translated into calls of @(see scion)s, with
+  the @('until') and @('when') clauses translated into preprocessors of the
+  targets.  But which scions are used depend on whether the loop is simple or
+  fancy.  Recall that a fancy loop is one that has either or both of the
+  following characteristics: (a) there is one or more @('as') clauses,
+  and/or (b) one of the iterative forms (the @('until'), @('when') or loop body
+  expression) refers to variables other than an iteration variable.  If the
+  @('loop$') statement is simple, the simple scions are used; otherwise the
+  fancy scions are used.</p>
+
+  @({
+   loop$
+   syntax              simple          fancy
+   symbol              scion           scion
+   ______________________________________________
+   sum                 sum$            sum$+
+   collect             collect$        collect$+
+   always              always$         always$+
+   append              append$         append$+
+   until               until$          until$+
+   when                when$           when$+
+   })
+
+  <p>We deal with simple @('loop$')s first.</p>
+
+  <h4>Semantics of Simple Loop$s</h4>
+
+  <p>For example, the simple @('loop$')</p>
+  @({
+  (loop$ for x in lst collect (+ 1 (sq x)))
+  })
+  <p>translates to (a term equivalent to)</p>
+
+  @({
+  (collect$ (lambda$ (x)
+                     (declare (ignorable x))
+                     (+ 1 (sq x)))
+            lst).
+  })
+
+  <p><b>Note:</b> The actual translation is tagged with various markers that
+  play a role in evaluation but which are logically irrelevant and which are
+  removed during proof.  In this discussion we will not display the marked-up
+  translations but logically equivalent terms instead.  You can see the actual
+  translations for yourself with @(tsee trans).</p>
+
+  <p>In the translation the target term, @('lst'), appears as an ordinary
+  subterm of the translation.  But the iterative form, @('(+ 1 (sq x))'),
+  becomes the body of a @(tsee lambda$) expression, which means its translation
+  becomes a component of a quoted @('LAMBDA') object.  When the @('collect$')
+  is evaluated, the target term is evaluated once but the iterative form is
+  evaluated once for each element of the value of the target.</p>
+
+  <p>@('Until') and @('when') clauses are handled by preprocessing the target.
+  E.g.,</p>
+
+  @({
+  (loop$ for x in lst
+         until (> x 100)
+         when (evenp x)
+         collect (+ 1 (sq x)))
+  })
+
+  <p>becomes</p>
+
+  @({
+  (collect$ (lambda$ (x)
+                     (declare (ignorable x))
+                     (+ 1 (sq x)))
+            (when$ (lambda$ (x)
+                            (declare (ignorable x))
+                            (evenp x))
+                   (until$ (lambda$ (x)
+                                    (declare (ignorable x))
+                                    (> x 100))
+                           lst)))
+  })
+
+  <p>So from a logical perspective, the presence of an @('until') and/or
+  @('when') clause in a @('collect') iteration over @('lst') ``copies'' the
+  target value.  The @('until$') copies @('lst') until encountering the first
+  element on which its functional argument is true.  The @('when$') then copies
+  that (shortened?) target, keeping only the elements that satisfy its
+  functional argument.  Finally, the @('collect$') then applies its functional
+  argument and collects all the values.</p>
+
+  <p>@('ON') and @('FROM/TO/BY') targets are handled by listing all the
+  elements in the given target.  For example,</p>
+
+  @({
+  (loop$ for x on lst collect (expr x))
+  })
+
+  <p>which maps @('x') over successive tails of @('lst') and collects the value
+  of @('expr') has the logical meaning</p>
+
+  @({
+  (collect$ (lambda$ (x) (expr x))
+            (tails lst))
+  })
+
+  <p>where, for example, @('(tails '(1 2 3))') is @('((1 2 3) (2 3) (3))').</p>
+
+  <p>Spiritually similarly,</p>
+  @({
+  (loop$ for i from 1 to max by step collect (expr x))
+  })
+
+  <p>becomes</p>
+
+  @({
+  (collect$ (lambda$ (x) (expr x))
+            (from-to-by 1 max step))
+  })
+
+  <p>where, for example, @('(from-to-by 1 10 2)') is @('(1 3 5 7 9)').</p>
+
+  <p>Similar translations are done for the other operators, e.g., @('sum') and
+  @('always').  The advantage of this translation style is that it allows
+  compositional reasoning.  We discuss this further below.</p>
+
+  <h4>Semantics of Fancy Loop$s</h4>
+
+  <p>An example of a fancy @('loop$') is</p>
+
+  @({
+  (loop$ for x in xlst as y in ylst collect (expr x y z))
+  })
+
+  <p>This loop exhibits both characteristics (a) and (b): it has an @('as')
+  clause and the variable @('z') appears in the loop body.  Either
+  characteristic is sufficient to classify the loop as fancy.  So fancy scions
+  are used.  Its semantic counterpart, i.e., its translation, is</p>
+
+  @({
+  (collect$+
+   (lambda$ (loop$-gvars loop$-ivars)
+            (declare (xargs :guard (and (true-listp loop$-gvars)
+                                        (equal (len loop$-gvars) 1)
+                                        (true-listp loop$-ivars)
+                                        (equal (len loop$-ivars) 2))))
+            (let ((z (car loop$-gvars))
+                  (x (car loop$-ivars))
+                  (y (car (cdr loop$-ivars))))
+              (declare (ignorable x y))
+              (expr x y z)))
+   (list z)
+   (loop$-as (list xlst ylst)))
+   })
+
+  <p>Before we show the definition of @('collect$+') note that the arguments
+  above to @('collect$+') are (i) a @('lambda$') expression that handles the
+  evaluation of the iterative form, in this case @('(expr x y z)'), where
+  @('x') and @('y') are iteration variables and @('z') is a ``global'' variable
+  not among the iteration variables; (ii) the list of values of the ``global''
+  variables, in this case the list containing @('z'); and (iii) a target list
+  constructed by @('loop$-as') from the various targets provided in the
+  @('loop$'), in this case @('xlst') and @('ylst'), supplying values for
+  iteration variables @('x') and @('y') respectively.  For example,
+  @('(loop$-as (list '(a b c d e) '(1 2 3)))') is @('((a 1) (b 2) (c 3))').
+  These tuples contain successive corresponding values of @('x') and
+  @('y').</p>
+
+  <p>The definition of @('collect$+') is essentially</p>
+  @({
+  (defun collect$+ (fn loop$-gvars lst)
+    (if (endp lst)
+        nil
+        (cons (apply$ fn (list loop$-gvars (car lst)))
+              (collect$+ fn loop$-gvars (cdr lst)))))
+  })
+
+  <p>We have omitted the guard and an @('MBE') form that makes it run more
+  efficiently.  All the fancy @('loop$') scions are defined analogously.</p>
+
+  <p>Inspection of the @('lambda$') expression above reveals that it takes a a
+  list of global variable values and a list of iteration variable values,
+  unpacks them with a @('let') that binds the global variables, here just
+  @('z'), to their values and binds the iteration variables, here @('x') and
+  @('y'), to the corresponding pair of values from the target, and then
+  evaluates the @('loop$') body, @('(expr x y z)').</p>
+
+  <p>The names of the formals for the @('lambda$') expressions generated by
+  @('loop$') statements are always @('loop$-gvars') and @('loop$-ivars'), for
+  ``@('loop$') global variables'' and ``@('loop$') iteration variables.''</p>
+
+  <p>@('Until') and @('when') clauses in a fancy @('loop$') are handled exactly
+  as they are in simple @('loop$')s, except that the fancy scions are used
+  since the target list is a list of tuples of iteration variable values and
+  the @('until') and @('when') forms may refer to global variables.</p>
+
+  <h4>Special Guard Conjectures for LOOP$</h4>
+
+  <p>All of the simple @('loop$') scions have the same guard, namely</p>
+
+  @({
+  (AND (APPLY$-GUARD FN '(NIL))
+       (TRUE-LISTP LST)),
+  })
+
+  <p>and all the fancy @('loop$') scions have the same guard, namely</p>
+
+  @({
+  (AND (APPLY$-GUARD FN '(NIL NIL))
+       (TRUE-LISTP LOOP$-GVARS)
+       (TRUE-LIST-LISTP LST)).
+  })
+
+  <p>In addition to the normal guard conjectures that would be generated by
+  calls of these scions, ACL2 generates some special guard conjectures because
+  the normal guard conjectures are insufficient to guarantee the error-free
+  execution of the corresponding Common Lisp @('loop') statements.</p>
+
+  <p>For example, the logical meaning of</p>
+
+  @({
+  (defun foo (lst)
+    (declare (xargs :guard (and (warrant expr) (foo-guardp lst))))
+    (loop$ for x of-type (satisfies spec) on lst sum (expr x)))
+  })
+
+  <p>is</p>
+
+  @({
+  (defun foo (lst)
+    (declare (xargs :guard (foo-guardp lst)))
+    (sum$ (lambda$ (x)
+                   (declare (type (satisfies spec) x))
+                   (expr x))
+          (tails lst))).
+  })
+
+  <p>Prior to the provision for special guards, the normal guard conjectures
+  generated for @('foo') would be</p>
+
+  @({
+  (and (implies (foo-guardp lst)                                 ; [1]
+                (apply$-guard
+                 (lambda$ (x)
+                   (declare (type (satisfies spec) x))
+                   (expr x))
+                 '(nil)))
+       (implies (foo-guardp lst)                                 ; [2]
+                (true-listp (tails lst)))
+       (implies (foo-guardp lst)                                 ; [3]
+                (true-listp lst))
+       (implies (spec x) (expr-guardp x)))                       ; [4]
+  })
+
+  <p>Conjectures [1] and [2] stem from the guard for @('sum$') and establish
+  that the guard for @('foo') implies that @('sum$') is passed a function
+  object of one argument and a true-list.  Conjecture [3] establishes the guard
+  of @('tails').  And conjecture [4] establishes that the guard on the
+  @('lambda$') implies the guard of its body.</p>
+
+  <p>But consider the @('loop') generated by the @('loop$') in the raw Lisp
+  definition of @('foo'),</p>
+
+  @({
+  (loop for x of-type (satisfies spec) on lst sum (expr x)).
+  })
+
+  <p>For this @('loop') to execute without error we need to know that [5] every
+  non-empty tail of @('lst') satisfies @('spec'), [6] that for every tail,
+  @('x'), of @('lst'), @('(expr x)') returns a number, and [7] that @('nil')
+  satisfies @('spec').  The last is somewhat surprising but inspection of
+  Common Lisp reveals that even though @('(expr x)') is never called on the
+  empty tail of @('lst'), implementations running with high safety settings
+  check that the empty list satisfies @('spec').</p>
+
+  <p>So when ACL2's guard verification process encounters a @('sum$') like that
+  in the logical @('defun') of @('foo'), it generates three additional guard
+  conjectures</p>
+
+  @({
+       (implies (and (foo-guardp lst)                            ; [5]
+                     (member-equal newv (tails lst)))
+                (spec newv))
+
+       (implies (and (foo-guardp lst)                            ; [6]
+                     (member-equal newv (tails lst)))
+                (acl2-numberp
+                 (apply$ (lambda$ (x)
+                           (declare (type (satisfies spec) x))
+                           (expr x))
+                         (list newv))))
+
+       (implies (foo-guardp lst)                                 ; [7]
+                (spec nil))
+  })
+
+  <p>In general, you may notice that ACL2 generates such ``special'' guard
+  conjectures for all calls of @('loop$') scions, whether or not they stemmed
+  from uses of @('loop$').  @('FROM/TO/BY') targets require that the bounds and
+  step all satisfy the @('of-type') specification, and the @('append') operator
+  requires that the loop body generate a @(tsee true-listp) (instead of an
+  @(tsee acl2-numberp) as required by the @('sum') operator.</p>
+
+  <h4>The Compromise Between Reasoning and Efficiency</h4>
+
+  <p>The translation of @('loop$') statements into formal terms reflects a
+  compromise between facilitating compositional reasoning and efficient
+  execution.</p>
+
+  <p>One sign of that compromise is our use of scions to handle @('until') and @('when')
+  clauses.  As noted above, by translating</p>
+
+  @({
+  (loop$ for x in lst until ... when ... collect ...)
+  })
+
+  <p>into</p>
+
+  @({
+  (collect$ ... (when$ ... (until$ ... lst)))
+  })
+
+  <p>we're forcing the evaluation of the formal semantics to copy the target
+  twice before collecting.  But it gives us the ability to reason
+  compositionally about @('collect$'), @('when$'), and @('until$').  We could
+  have defined a version of @('collect$') that took three @('lambda$')
+  expressions, one to terminate the collection, one to filter for the elements
+  we're interested in, and one to transform those elements into the values we
+  wish to collect.  This would avoid copying upon evaluation but make it more
+  difficult to reason.</p>
+
+  <p>Another example of compositionality is to consider a simple @('loop$')
+  over the @('in') target @('(append a b)').  There are 8 different ways you
+  can do a simple @('collect') over an @('(append a b)') target,</p>
+
+  @({
+  (loop$ for x in (append a b) collect (expr x))
+  (loop$ for x on (append a b) collect (expr x))
+  (loop$ for x in (append a b) until (stop x) collect (expr x))
+  (loop$ for x on (append a b) until (stop x) collect (expr x))
+  (loop$ for x in (append a b) when (test x) collect (expr x))
+  (loop$ for x on (append a b) when (test x) collect (expr x))
+  (loop$ for x in (append a b) until (stop x) when (test x)
+         collect (expr x))
+  (loop$ for x on (append a b) until (stop x) when (test x)
+         collect (expr x))
+  })
+
+  <p>Similarly, there are 8 ways to @('sum') over an @('(append a b)') target,
+  8 ways to @('append') over an @('(append a b)'), and 4 ways to @('always')
+  over an @('(append a b)') target.  Thus, there are 28 different simple
+  @('loop$')s over @('(append a b)').  And you can arrange to distribute the
+  @('loop$') over the @('(append a b)') with just six rewrite rules.</p>
+
+  @({
+  (equal (collect$ fn (append a b))
+         (append (collect$ fn a)
+                 (collect$ fn b)))
+
+  (equal (sum$ fn (append a b))
+         (+ (sum$ fn a)
+            (sum$ fn b)))
+
+  (equal (always$ fn (append a b))
+         (and (always$ fn a)
+              (always$ fn b)))
+
+  (equal (append$ fn (append a b))
+         (append (append$ fn a)
+                 (append$ fn b)))
+
+  (equal (until$ fn (append a b))
+         (if (exists$ fn a)
+             (until$ fn a)
+             (append a (until$ fn b))))
+
+  (equal (when$ fn (append a b))
+         (append (when$ fn a)
+                 (when$ fn b)))
+
+  })
+
+  <p>But to deal with fancy @('loop$') you need six more rewrite rules, one for
+  each fancy @('loop$') scion.  But every simple @('loop$') can be expressed by
+  an appropriate use of fancy scions.  We chose to break compositionality here
+  because we think simple @('loop$')s are most common and wanted to keep their
+  semantics simple.  I.e., we compromised.</p>
+
+  <p>By the way, if you want the prover to convert every simple scion to its
+  fancy counterpart you could prove rewrite rules like that below.</p>
+
+  @({
+  (defthm convert-collect$-to-collect$+
+    (implies (ok-fnp fn)
+             (equal (collect$ fn lst)
+                    (collect$+ `(lambda (loop$-gvars loop$-ivars)
+                                  (,fn (car loop$-ivars)))
+                               nil
+                               (loop$-as (list lst)))))
+    :hints ((\"[1]Goal\"
+             :expand ((tamep (cons fn '(x)))
+                      (tamep (cons fn '((car loop$-ivars))))))))
+  })")
 
 (defxdoc loop-stopper
   :parents (rewrite)
@@ -112434,7 +113097,8 @@ arithmetic) for libraries of @(see books) for arithmetic reasoning.</p>")
   @({
   '(LAMBDA (X)
            (DECLARE (TYPE (SATISFIES NATP) X)
-                    (XARGS :GUARD (NATP X) :SPLIT-TYPES T))
+                    (XARGS :GUARD (NATP X) :SPLIT-TYPES T)
+                    (IGNORABLE X))
            (RETURN-LAST 'PROGN
                         '(LAMBDA$ (X)
                                   (DECLARE (TYPE (SATISFIES NATP) X))
