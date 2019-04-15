@@ -7724,9 +7724,13 @@ Glossary
     * [lambda$] expression -- an ACL2 macro that allows you to enter quoted
       well-formed LAMBDA objects into your terms by typing
       untranslated expressions that resemble lambda expressions.  The
-      lambda$ expression (lambda$ (x) (+ 1 x)) translates into the
-      quoted LAMBDA object '(LAMBDA (X) (BINARY-+ '1 X)).  See also
-      [lambda] for some clarifications.
+      lambda$ expression (lambda$ (x) (+ 1 x)) essentially translates
+      into the quoted LAMBDA object '(LAMBDA (X) (BINARY-+ '1 X)).
+      We say ``essentially'' because lambda$ always inserts a
+      (DECLARE (IGNORABLE v1 ... vn)) listing every formal and tags
+      the body with a [return-last] form that indicates it came from
+      a translated lambda$. See also [lambda] for some
+      clarifications.
     * [scion] -- a function that is ancestrally dependent on apply$,
       sometimes (perhaps misleadingly) called a ``mapping function.''
       An example of a scion is the function that takes a ``function''
@@ -51146,13 +51150,18 @@ About Lambda$ Expressions
 
     (collect (lambda$ (x) (+ 1 x)) lst)
 
-  That lambda$ expression translate to the quoted well-formed LAMBDA
-  object
+  That lambda$ expression essentially translates to the quoted
+  well-formed LAMBDA object
 
     '(LAMBDA (X) (BINARY-+ '1 X))
 
   Note that the body is fully translated, unlike its appearance in the
-  lambda$ expression.
+  lambda$ expression.  We say ``essentially'' because lambda$ always
+  add a (DECLARE (IGNORABLE v1 ... vn)) that includes every formal.
+  In addition, except when translating in theorems, lambda$ tags the
+  translated body with a [return-last] expression to indicate it came
+  from a lambda$.  Despite these differences, the meaning of the
+  translated lambda$ is the simple quoted LAMBDA object shown.
 
   Lambda$ expressions never appear in a fully translated term.  All the
   lambda$ objects will have been translated into quoted LAMBDA
@@ -51200,7 +51209,6 @@ About Lambda$ Expressions
     (lambda$ (n lst str)
              (declare (type integer n)
                       (type string str)
-                      (ignore str)
                       (xargs :guard (and (posp n)
                                          (true-listp lst)
                                          (< (- n 1) (length lst)))))
@@ -51215,16 +51223,16 @@ About Lambda$ Expressions
   1 value.  Body must satisfy the same restrictions one would expect
   in a non-recursive [defun] event with the same formals,
   declarations and body.  In particular, body should contain no free
-  variables other than those listed in vars, must not use freely any
-  variable declared IGNOREd and must use every other variable in vars
-  except, possibly, variables listed as IGNORABLE.  Lambda$ expands
-  to a well-formed quoted LAMBDA object or else causes a
-  translate-time error.
+  variables other than those listed in vars.  Lambda$ always adds a
+  declaration that every formal is ignorable and, hence, we prohibit
+  you from adding ignore or ignorable declarations in the lambda$
+  expression itself.  Lambda$ expands to a well-formed quoted LAMBDA
+  object or else causes a translate-time error.
 
-  The allowed DECLARE forms in lambda$ are type, ignore, ignorable and
-  xargs.  Furthermore, the only [xargs] keywords allowed are :guard
-  and :split-types.  The other XARGS keywords, such as :measure,
-  :hints or :guard-hints, play no role.
+  The allowed DECLARE forms in lambda$ are type and xargs.
+  Furthermore, the only [xargs] keywords allowed are :guard and
+  :split-types.  The other XARGS keywords, such as :measure, :hints
+  or :guard-hints, play no role.
 
 
 About Guard Verification of Lambda Objects
@@ -55521,25 +55529,610 @@ Subtopics
   (ACL2-BUILT-INS PROGRAMMING)
   "Iteration with an analogue of the Common Lisp loop macro
 
-  This documentation is currently little more than a stub.  We expect
-  to provide more complete documentation for loop$ before the next
-  ACL2 release.  In brief: Loop$ is an ACL2 version of the Common
-  Lisp loop macro.
+  Loop$ is the ACL2 analogue of the Common Lisp's iteration primitive,
+  loop.  This documentation assumes the reader has at least a passing
+  familiarity with loop.
 
-  In the meantime, you can see [community-books]
-  books/system/tests/loop-tests.lisp and
-  books/system/tests/apply-in-proofs.lisp for numerous examples.
+  Warning: Loop$ implements only a small part of the functionality of
+  loop.  Aside from the simple fact that loop$ allows a small subset
+  of the syntax of loop, the main restriction is that the
+  subexpressions of the loop$ statement that are evaluated repeatedly
+  must be [tame]!  These expressions include the until test, the when
+  test, and the loop$ body.  For example, this means that loop$ does
+  not allow iterations involving [state] or [stobj]s.
 
-  When a term is a call of loop$, is to be evaluated at the top level
-  or during a proof, and is a ground term (has no free variables),
-  then that term is translated to a call involving so-called ``loop$
-  scions'' before it is evaluated.  For example, after evaluating
-  (defun$ f (x) (cons x x)), such an attempt to evaluate (loop$ for x
-  in '(a b c) collect (f x)) essentially becomes an evaluation of the
-  following call of the loop$ scion, collect$.
 
-    (COLLECT$ '(LAMBDA (X) (F X))
-              '(A B C))")
+Informal Introduction
+
+  ACL2's loop$ is considerably more restricted than Common Lisp's but
+  when an ACL2 loop$ statement is translated without error it has the
+  same meaning as the corresponding Common Lisp loop.  (Note: loop$
+  allows :guard declarations in certain places and these are ignored
+  by Common Lisp.)
+
+  We give some examples of legal loop$ statements below.  We deal with
+  guards and guard verification later in this topic.
+
+    ACL2 !>(loop$ for x in '(1 2 3) sum (* x x))
+    14
+    ACL2 !>(loop$ for x in '(1 2 3) collect (* x x))
+    (1 4 9)
+    ACL2 !>(loop$ for x on '(1 2 3) collect x)
+    ((1 2 3) (2 3) (3))
+    ACL2 !>(loop$ for x from -10 to 10 by 2 collect x)
+    (-10 -8 -6 -4 -2 0 2 4 6 8 10)
+    ACL2 !>(loop$ for i from 1 to 10
+                  as  x in '(a b c d e f g)
+                  collect (cons i x))
+    ((1 . A)
+     (2 . B)
+     (3 . C)
+     (4 . D)
+     (5 . E)
+     (6 . F)
+     (7 . G))
+    ACL2 !>(loop$ for i from 1 to 10
+                  as  x in '(a b c d e f g)
+                  until (> i 6)
+                  collect (cons i x))
+    ((1 . A)
+     (2 . B)
+     (3 . C)
+     (4 . D)
+     (5 . E)
+     (6 . F))
+    ACL2 !>(loop$ for i from 1 to 10
+                  as  x in '(a b c d e f g)
+                  until (> i 6)
+                  when (evenp i)
+                  collect (cons i x))
+    ((2 . B) (4 . D) (6 . F))
+
+  Loop$ statements execute fastest when they are guard verified.  But
+  the until, when, and loop$ body raise interesting guard
+  verification problems because they are executed for many different
+  values of the iteration variables.  It may be necessary to provide
+  type information or even stronger invariants to verify their
+  guards.  We now provide a few examples illustrating the handling of
+  guards in loop$.
+
+  The first example below is an acceptable loop$ statement but cannot
+  be guard verified, as would be necessary if it appeared in a
+  [defun] that was to be guard verified.  The problem is that (+ 1 x)
+  requires x to be numeric and, in general, we don't know anything
+  about the value of x here.  (Actually, because the target range is
+  just a constant below, we could deduce information about each value
+  x takes on, but we don't.)  The second example can be guard
+  verified and has the advantage of being standard Common Lisp so
+  compilers might optimize the handing of (+ 1 x).  The third example
+  can also be guard verified but since the :guard derective used here
+  is ignored by Common Lisp it does not inform the compiler, so this
+  example might execute more slowly than the previous one.  The last
+  example shows the syntax and use of the ACL2-specific addition to
+  loop$: the :guard directive protecting, in this case, the loop$
+  body.  :Guard is useful when you wish to add more guard information
+  than can be expressed with the Common Lisp of-type directive.  The
+  of-type and :guard directives are conjoined to form the actual
+  guard protecting the loop$ body.
+
+    ACL2 !>(loop$ for x in '(1 2 3) collect (+ 1 x))
+    (2 3 4)
+    ACL2 !>(loop$ for x of-type integer in '(1 2 3) collect (+ 1 x))
+    (2 3 4)
+    ACL2 !>(loop$ for x in '(1 2 3) collect :guard (integerp x) (+ 1 x))
+    (2 3 4)
+    ACL2 !>(let ((max 10))
+            (loop$ for x of-type integer in '(1 2 3)
+                   collect :guard (and (integerp max) (< x max)) (- max x)))
+    (9 8 7)
+
+  The guard on the (- max x) above is (and (integerp x) (integerp max)
+  (< x max)) and the compiler is informed that x is an integer by the
+  of-type.
+
+  As of ACL2 Version 8.2, the only allowed iteration clauses are in,
+  where the variable ranges over the elements of the given true list,
+  on, where the variable ranges over the tails of the given
+  true-list, and from/to/by where the variable ranges over the
+  integers between two bounds, stepping by a positive integer
+  increment (or by 1 if no by clause is provided.)
+
+  You may have as many iteration clauses as you wish, connected with
+  as.  Each must introduce a unique iteration variable and that
+  variable may be optionally followed by an of-type [type-spec]
+  specification.  Of-type is a Common Lisp feature that allows the
+  compiler to optimize operations on the variable in question.  An
+  example is
+
+    (loop$ for v of-type (and integer (not (satisfies zerop)))
+                 from 1 to 100
+           sum (/ 1 v))
+
+  After all of the iteration clauses, you may have a termination test,
+  signaled by until, and/or a conditional test signaled by when.  If
+  both are provided, the until test must come first.  Iteration stops
+  when the until test is satisfied.  The conditional test determines
+  whether the loop body is executed for the current value of the
+  iteration variables.
+
+  Between the until symbol and the expression to be tested, and between
+  the when symbol and its expression, you may include a :guard
+  clause.  This is useful if guard verification requires an invariant
+  relating multiple iteration variables.  And example of a guarded
+  until clause is
+
+    (loop$ for u in lst1 as v in lst2
+           until :guard (invariantp u v) (test u v)
+           collect (body u v))
+
+  ACL2 Version 8.2 supports only four operators, sum, collect, always
+  and append.  We anticipate adding other Common Lisp operators
+  eventually.
+
+  Between the operator, e.g., sum or collect, and the loop$ body you
+  may include a :guard clause as in
+
+    (loop$ for u in lst1 as v in lst2
+           collect :guard (invariantp u v) (body u v))
+
+  This is sometimes necessary in the verification of the guards for the
+  loop$ body because Common Lisp's of-type clauses do not permit you
+  to relate one variable to another.
+
+
+General Form
+
+  The syntax of Common Lisp loop statements is extremely complicated.
+  Rather than try to write the abstract syntax of ACL2's loop$
+  statements in the same formal style, we take a different approach,
+  which is workable because loop$ allows fewer options.
+
+  First we introduce the syntax of a ``target clause,'' a
+  ``type-spec,'' and the ``operators.'' Then we describe the most
+  elaborate form of a loop$ statement in terms of these elements and
+  ordinary ACL2 terms.  Every legal loop$ statement can be produced
+  by omitting certain optional elements from the most elaborate loop$
+  form.  So we conclude the syntactic description of loop$ by listing
+  the elements that can be omitted.
+
+  A target clause has one of four forms
+
+    * IN list-expr
+    * ON list-expr
+    * FROM lo-expr TO hi-expr
+    * FROM lo-expr TO hi-expr BY step-expr
+
+  where list-expr is a term (which is expected to evaluate to a true
+  list), lo-expr and hi-expr are terms (which are expected to
+  evaluate to integers), and step-expr is a term (which is expected
+  to evaluate to a positive integer).
+
+  The legal type-specs are listed in [type-spec].
+
+  The legal operators are SUM, COLLECT, ALWAYS, and APPEND.
+
+  The most elaborate loop$ statement is of the form
+
+(LOOP$ FOR v1 OF-TYPE spec1 target1
+AS    v2 OF-TYPE spec2 target2
+...
+AS    vn OF-TYPE specn targetn
+UNTIL :GUARD guard1 until-expr
+WHEN    :GUARD guard2 when-expr        ;
+Note the ALWAYS Exception below!
+op :GUARD guard3 body-expr)
+  where each vi   is a legal variable symbol and they are all distinct,
+  each type-speci   is a [type-spec], each targeti   is a target
+  clause, each guardi, until-expr, and when-expr   is a term, op   is
+  an operator, and body-expr   is a term.  Furthermore, until-expr,
+  when-expr, and body-expr   must be [tame]!
+
+  The ALWAYS Exception: Common Lisp prohibits loops with both a WHEN
+  clause and an ALWAYS operator.  If you are tempted to use WHEN p
+  with ALWAYS q we recommend you write ALWAYS (implies p q).
+
+  The following elements may be omitted.
+
+    * any line beginning with AS, UNTIL or WHEN,
+    * any OF-TYPE speci, and
+    * any :GUARD guardi.
+
+  We give names to certain classes of the syntactic entities above.
+  The v1, ..., vn are called the iteration variables.  The spec1,
+  ..., specn are called type specs, each corresponds to a certain
+  iteration variable, and each gives rise to a type term about its
+  variable in the sense that ``X OF-TYPE (SATISFIES NATP)'' gives
+  rise to the type term (NATP X) and ``I OF-TYPE INTEGER'' gives rise
+  to the type term (INTEGERP I).  The terms involved in the target
+  expressions, e.g., the list-expr in ``IN list-expr'' and ``ON
+  list-expr'' and the lo-expr, hi-expr and optional step-expr in the
+  ``FROM lo-expr TO hi-expr BY step-expr'' targets are called target
+  terms.  Finally, the until-expr, when-expr, and body-expr are
+  called iterative forms.
+
+  We distinguish the target terms from the iterative forms because they
+  are handled very differently at evaluation time.  When a loop$ is
+  evaluated, the target terms are evaluated just once.  But the
+  iterative forms are evaluated multiple times as the iteration
+  variables range over the values of the targets.
+
+  A loop$ statement with just one iteration variable and in which the
+  iterative forms mention no free variable other than the iteration
+  variable is called a simple loop$.  An example of a simple loop is
+
+    (loop$ for x in lst when (evenp x) collect (+ 1 (sq x)))
+
+  A loop$ statement called a fancy loop$ if it is not simple.  Both of
+  the following loop$s are fancy.
+
+    (loop$ for x in xlst as y on ylst collect (expr x y))
+
+    (loop$ for x in xlst collect (expr x z))
+
+  The first is fancy because it has two iteration variables.  The
+  second is fancy because the body freely uses the variable z which
+  is not the iteration variable.
+
+
+Semantics
+
+  Loop$ expressions are translated into calls of [scion]s, with the
+  until and when clauses translated into preprocessors of the
+  targets.  But which scions are used depend on whether the loop is
+  simple or fancy.  Recall that a fancy loop is one that has either
+  or both of the following characteristics: (a) there is one or more
+  as clauses, and/or (b) one of the iterative forms (the until, when
+  or loop body expression) refers to variables other than an
+  iteration variable.  If the loop$ statement is simple, the simple
+  scions are used; otherwise the fancy scions are used.
+
+    loop$
+    syntax              simple          fancy
+    symbol              scion           scion
+    ______________________________________________
+    sum                 sum$            sum$+
+    collect             collect$        collect$+
+    always              always$         always$+
+    append              append$         append$+
+    until               until$          until$+
+    when                when$           when$+
+
+  We deal with simple loop$s first.
+
+  Semantics of Simple Loop$s
+
+  For example, the simple loop$
+
+    (loop$ for x in lst collect (+ 1 (sq x)))
+
+  translates to (a term equivalent to)
+
+    (collect$ (lambda$ (x)
+                       (declare (ignorable x))
+                       (+ 1 (sq x)))
+              lst).
+
+  Note: The actual translation is tagged with various markers that play
+  a role in evaluation but which are logically irrelevant and which
+  are removed during proof.  In this discussion we will not display
+  the marked-up translations but logically equivalent terms instead.
+  You can see the actual translations for yourself with [trans].
+
+  In the translation the target term, lst, appears as an ordinary
+  subterm of the translation.  But the iterative form, (+ 1 (sq x)),
+  becomes the body of a [lambda$] expression, which means its
+  translation becomes a component of a quoted LAMBDA object.  When
+  the collect$ is evaluated, the target term is evaluated once but
+  the iterative form is evaluated once for each element of the value
+  of the target.
+
+  Until and when clauses are handled by preprocessing the target.
+  E.g.,
+
+    (loop$ for x in lst
+           until (> x 100)
+           when (evenp x)
+           collect (+ 1 (sq x)))
+
+  becomes
+
+    (collect$ (lambda$ (x)
+                       (declare (ignorable x))
+                       (+ 1 (sq x)))
+              (when$ (lambda$ (x)
+                              (declare (ignorable x))
+                              (evenp x))
+                     (until$ (lambda$ (x)
+                                      (declare (ignorable x))
+                                      (> x 100))
+                             lst)))
+
+  So from a logical perspective, the presence of an until and/or when
+  clause in a collect iteration over lst ``copies'' the target value.
+  The until$ copies lst until encountering the first element on which
+  its functional argument is true.  The when$ then copies that
+  (shortened?) target, keeping only the elements that satisfy its
+  functional argument.  Finally, the collect$ then applies its
+  functional argument and collects all the values.
+
+  ON and FROM/TO/BY targets are handled by listing all the elements in
+  the given target.  For example,
+
+    (loop$ for x on lst collect (expr x))
+
+  which maps x over successive tails of lst and collects the value of
+  expr has the logical meaning
+
+    (collect$ (lambda$ (x) (expr x))
+              (tails lst))
+
+  where, for example, (tails '(1 2 3)) is ((1 2 3) (2 3) (3)).
+
+  Spiritually similarly,
+
+    (loop$ for i from 1 to max by step collect (expr x))
+
+  becomes
+
+    (collect$ (lambda$ (x) (expr x))
+              (from-to-by 1 max step))
+
+  where, for example, (from-to-by 1 10 2) is (1 3 5 7 9).
+
+  Similar translations are done for the other operators, e.g., sum and
+  always.  The advantage of this translation style is that it allows
+  compositional reasoning.  We discuss this further below.
+
+  Semantics of Fancy Loop$s
+
+  An example of a fancy loop$ is
+
+    (loop$ for x in xlst as y in ylst collect (expr x y z))
+
+  This loop exhibits both characteristics (a) and (b): it has an as
+  clause and the variable z appears in the loop body.  Either
+  characteristic is sufficient to classify the loop as fancy.  So
+  fancy scions are used.  Its semantic counterpart, i.e., its
+  translation, is
+
+    (collect$+
+     (lambda$ (loop$-gvars loop$-ivars)
+              (declare (xargs :guard (and (true-listp loop$-gvars)
+                                          (equal (len loop$-gvars) 1)
+                                          (true-listp loop$-ivars)
+                                          (equal (len loop$-ivars) 2))))
+              (let ((z (car loop$-gvars))
+                    (x (car loop$-ivars))
+                    (y (car (cdr loop$-ivars))))
+                (declare (ignorable x y))
+                (expr x y z)))
+     (list z)
+     (loop$-as (list xlst ylst)))
+
+  Before we show the definition of collect$+ note that the arguments
+  above to collect$+ are (i) a lambda$ expression that handles the
+  evaluation of the iterative form, in this case (expr x y z), where
+  x and y are iteration variables and z is a ``global'' variable not
+  among the iteration variables; (ii) the list of values of the
+  ``global'' variables, in this case the list containing z; and (iii)
+  a target list constructed by loop$-as from the various targets
+  provided in the loop$, in this case xlst and ylst, supplying values
+  for iteration variables x and y respectively.  For example,
+  (loop$-as (list '(a b c d e) '(1 2 3))) is ((a 1) (b 2) (c 3)).
+  These tuples contain successive corresponding values of x and y.
+
+  The definition of collect$+ is essentially
+
+    (defun collect$+ (fn loop$-gvars lst)
+      (if (endp lst)
+          nil
+          (cons (apply$ fn (list loop$-gvars (car lst)))
+                (collect$+ fn loop$-gvars (cdr lst)))))
+
+  We have omitted the guard and an MBE form that makes it run more
+  efficiently.  All the fancy loop$ scions are defined analogously.
+
+  Inspection of the lambda$ expression above reveals that it takes a a
+  list of global variable values and a list of iteration variable
+  values, unpacks them with a let that binds the global variables,
+  here just z, to their values and binds the iteration variables,
+  here x and y, to the corresponding pair of values from the target,
+  and then evaluates the loop$ body, (expr x y z).
+
+  The names of the formals for the lambda$ expressions generated by
+  loop$ statements are always loop$-gvars and loop$-ivars, for
+  ``loop$ global variables'' and ``loop$ iteration variables.''
+
+  Until and when clauses in a fancy loop$ are handled exactly as they
+  are in simple loop$s, except that the fancy scions are used since
+  the target list is a list of tuples of iteration variable values
+  and the until and when forms may refer to global variables.
+
+  Special Guard Conjectures for LOOP$
+
+  All of the simple loop$ scions have the same guard, namely
+
+    (AND (APPLY$-GUARD FN '(NIL))
+         (TRUE-LISTP LST)),
+
+  and all the fancy loop$ scions have the same guard, namely
+
+    (AND (APPLY$-GUARD FN '(NIL NIL))
+         (TRUE-LISTP LOOP$-GVARS)
+         (TRUE-LIST-LISTP LST)).
+
+  In addition to the normal guard conjectures that would be generated
+  by calls of these scions, ACL2 generates some special guard
+  conjectures because the normal guard conjectures are insufficient
+  to guarantee the error-free execution of the corresponding Common
+  Lisp loop statements.
+
+  For example, the logical meaning of
+
+    (defun foo (lst)
+      (declare (xargs :guard (and (warrant expr) (foo-guardp lst))))
+      (loop$ for x of-type (satisfies spec) on lst sum (expr x)))
+
+  is
+
+    (defun foo (lst)
+      (declare (xargs :guard (foo-guardp lst)))
+      (sum$ (lambda$ (x)
+                     (declare (type (satisfies spec) x))
+                     (expr x))
+            (tails lst))).
+
+  Prior to the provision for special guards, the normal guard
+  conjectures generated for foo would be
+
+    (and (implies (foo-guardp lst)                                 ; [1]
+                  (apply$-guard
+                   (lambda$ (x)
+                     (declare (type (satisfies spec) x))
+                     (expr x))
+                   '(nil)))
+         (implies (foo-guardp lst)                                 ; [2]
+                  (true-listp (tails lst)))
+         (implies (foo-guardp lst)                                 ; [3]
+                  (true-listp lst))
+         (implies (spec x) (expr-guardp x)))                       ; [4]
+
+  Conjectures [1] and [2] stem from the guard for sum$ and establish
+  that the guard for foo implies that sum$ is passed a function
+  object of one argument and a true-list.  Conjecture [3] establishes
+  the guard of tails.  And conjecture [4] establishes that the guard
+  on the lambda$ implies the guard of its body.
+
+  But consider the loop generated by the loop$ in the raw Lisp
+  definition of foo,
+
+    (loop for x of-type (satisfies spec) on lst sum (expr x)).
+
+  For this loop to execute without error we need to know that [5] every
+  non-empty tail of lst satisfies spec, [6] that for every tail, x,
+  of lst, (expr x) returns a number, and [7] that nil satisfies spec.
+  The last is somewhat surprising but inspection of Common Lisp
+  reveals that even though (expr x) is never called on the empty tail
+  of lst, implementations running with high safety settings check
+  that the empty list satisfies spec.
+
+  So when ACL2's guard verification process encounters a sum$ like that
+  in the logical defun of foo, it generates three additional guard
+  conjectures
+
+    (implies (and (foo-guardp lst)                            ; [5]
+                  (member-equal newv (tails lst)))
+             (spec newv))
+
+    (implies (and (foo-guardp lst)                            ; [6]
+                  (member-equal newv (tails lst)))
+             (acl2-numberp
+              (apply$ (lambda$ (x)
+                        (declare (type (satisfies spec) x))
+                        (expr x))
+                      (list newv))))
+
+    (implies (foo-guardp lst)                                 ; [7]
+             (spec nil))
+
+  In general, you may notice that ACL2 generates such ``special'' guard
+  conjectures for all calls of loop$ scions, whether or not they
+  stemmed from uses of loop$.  FROM/TO/BY targets require that the
+  bounds and step all satisfy the of-type specification, and the
+  append operator requires that the loop body generate a [true-listp]
+  (instead of an [ACL2-numberp] as required by the sum operator.
+
+  The Compromise Between Reasoning and Efficiency
+
+  The translation of loop$ statements into formal terms reflects a
+  compromise between facilitating compositional reasoning and
+  efficient execution.
+
+  One sign of that compromise is our use of scions to handle until and
+  when clauses.  As noted above, by translating
+
+    (loop$ for x in lst until ... when ... collect ...)
+
+  into
+
+    (collect$ ... (when$ ... (until$ ... lst)))
+
+  we're forcing the evaluation of the formal semantics to copy the
+  target twice before collecting.  But it gives us the ability to
+  reason compositionally about collect$, when$, and until$.  We could
+  have defined a version of collect$ that took three lambda$
+  expressions, one to terminate the collection, one to filter for the
+  elements we're interested in, and one to transform those elements
+  into the values we wish to collect.  This would avoid copying upon
+  evaluation but make it more difficult to reason.
+
+  Another example of compositionality is to consider a simple loop$
+  over the in target (append a b).  There are 8 different ways you
+  can do a simple collect over an (append a b) target,
+
+    (loop$ for x in (append a b) collect (expr x))
+    (loop$ for x on (append a b) collect (expr x))
+    (loop$ for x in (append a b) until (stop x) collect (expr x))
+    (loop$ for x on (append a b) until (stop x) collect (expr x))
+    (loop$ for x in (append a b) when (test x) collect (expr x))
+    (loop$ for x on (append a b) when (test x) collect (expr x))
+    (loop$ for x in (append a b) until (stop x) when (test x)
+           collect (expr x))
+    (loop$ for x on (append a b) until (stop x) when (test x)
+           collect (expr x))
+
+  Similarly, there are 8 ways to sum over an (append a b) target, 8
+  ways to append over an (append a b), and 4 ways to always over an
+  (append a b) target.  Thus, there are 28 different simple loop$s
+  over (append a b).  And you can arrange to distribute the loop$
+  over the (append a b) with just six rewrite rules.
+
+    (equal (collect$ fn (append a b))
+           (append (collect$ fn a)
+                   (collect$ fn b)))
+
+    (equal (sum$ fn (append a b))
+           (+ (sum$ fn a)
+              (sum$ fn b)))
+
+    (equal (always$ fn (append a b))
+           (and (always$ fn a)
+                (always$ fn b)))
+
+    (equal (append$ fn (append a b))
+           (append (append$ fn a)
+                   (append$ fn b)))
+
+    (equal (until$ fn (append a b))
+           (if (exists$ fn a)
+               (until$ fn a)
+               (append a (until$ fn b))))
+
+    (equal (when$ fn (append a b))
+           (append (when$ fn a)
+                   (when$ fn b)))
+
+  But to deal with fancy loop$ you need six more rewrite rules, one for
+  each fancy loop$ scion.  But every simple loop$ can be expressed by
+  an appropriate use of fancy scions.  We chose to break
+  compositionality here because we think simple loop$s are most
+  common and wanted to keep their semantics simple.  I.e., we
+  compromised.
+
+  By the way, if you want the prover to convert every simple scion to
+  its fancy counterpart you could prove rewrite rules like that
+  below.
+
+    (defthm convert-collect$-to-collect$+
+      (implies (ok-fnp fn)
+               (equal (collect$ fn lst)
+                      (collect$+ `(lambda (loop$-gvars loop$-ivars)
+                                    (,fn (car loop$-ivars)))
+                                 nil
+                                 (loop$-as (list lst)))))
+      :hints ((\"[1]Goal\"
+               :expand ((tamep (cons fn '(x)))
+                        (tamep (cons fn '((car loop$-ivars))))))))")
  (LOOP-STOPPER
   (REWRITE)
   "Limit application of permutative rewrite rules
@@ -114697,7 +115290,8 @@ Subtopics
 
     '(LAMBDA (X)
              (DECLARE (TYPE (SATISFIES NATP) X)
-                      (XARGS :GUARD (NATP X) :SPLIT-TYPES T))
+                      (XARGS :GUARD (NATP X) :SPLIT-TYPES T)
+                      (IGNORABLE X))
              (RETURN-LAST 'PROGN
                           '(LAMBDA$ (X)
                                     (DECLARE (TYPE (SATISFIES NATP) X))
