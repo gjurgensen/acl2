@@ -83758,6 +83758,12 @@ it."
  correctness of such an evaluation depends on the truth of corresponding
  warrants, which will be forced if not known.</p>
 
+ <p>The built-in function take has now been given a recursive definition,
+ exactly along the lines of take-redefinition from the community
+ books. take-redefinition is retained for compatibility with existing books,
+ and the :exec definition of take still makes use of first-n-ac as before for
+ execution efficiency.</p>
+
  <h3>New Features</h3>
 
  <p>A new construct, @('lambda$'), may be used in place of @('lambda') to be
