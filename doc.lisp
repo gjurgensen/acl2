@@ -82411,6 +82411,14 @@ Heuristic and Efficiency Improvements
 
 Bug Fixes
 
+  Fixed a bug, probably a soundness bug (though we haven't tried to
+  prove nil by exploiting it).  The bug is in the computation of the
+  ``immediate-canonical-ancestors'' of a function symbol, which is
+  used in the implementations of [memoization] and [defattach], as
+  well as in interactions between attachments and both [defaxiom]
+  events and :[meta] rules.  Thanks to Sol Swords for pointing out
+  this bug and presenting a helpful example.
+
   Fixed the [proof-builder] command, dv (see [ACL2-pc::dv]), for diving
   into calls of [list] and [list*].
 
