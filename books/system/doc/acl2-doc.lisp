@@ -83848,6 +83848,14 @@ it."
 
  <h3>Bug Fixes</h3>
 
+ <p>Fixed a bug, probably a soundness bug (though we haven't tried to prove
+ @('nil') by exploiting it).  The bug is in the computation of the
+ ``immediate-canonical-ancestors'' of a function symbol, which is used in the
+ implementations of @(see memoization) and @(tsee defattach), as well as in
+ interactions between attachments and both @(tsee defaxiom) events and
+ @(':')@(tsee meta) rules.  Thanks to Sol Swords for pointing out this bug and
+ presenting a helpful example.</p>
+
  <p>Fixed the @(see proof-builder) command, @('dv') (see @(see acl2-pc::dv)),
  for diving into calls of @(tsee list) and @(tsee list*).</p>
 
