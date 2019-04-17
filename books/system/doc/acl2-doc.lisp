@@ -51588,7 +51588,7 @@ tables in the current Hons Space."
   ACL2 !>(loop$ for x in '(1 2 3) collect :guard (integerp x) (+ 1 x))
   (2 3 4)
   ACL2 !>(let ((max 10))
-          (loop$ for x of-type integer in '(1 2 3) 
+          (loop$ for x of-type integer in '(1 2 3)
                  collect :guard (and (integerp max) (< x max)) (- max x)))
   (9 8 7)
   })
@@ -83757,6 +83757,14 @@ it."
  apply$) or @(tsee badge) on user-defined function symbols.  Note that
  correctness of such an evaluation depends on the truth of corresponding
  warrants, which will be forced if not known.</p>
+
+ <p>The built-in function @(tsee take) now has a recursive definition, exactly
+ along the lines of the theorem @('take-redefinition') from the community book
+ @('books/std/lists/take.lisp') (written by Jared Davis), which is retained for
+ compatibility with existing books.  The definition of @('take') uses @(tsee
+ mbe), where the @(':exec') component calls @('first-n-ac') as before for
+ execution efficiency.  We thank Mihir Mehta for providing this enhancement,
+ including updates to the books.</p>
 
  <h3>New Features</h3>
 
