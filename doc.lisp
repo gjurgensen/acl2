@@ -82313,6 +82313,14 @@ Changes to Existing Features
   correctness of such an evaluation depends on the truth of
   corresponding warrants, which will be forced if not known.
 
+  The built-in function [take] now has a recursive definition, exactly
+  along the lines of the theorem take-redefinition from the community
+  book books/std/lists/take.lisp (written by Jared Davis), which is
+  retained for compatibility with existing books.  The definition of
+  take uses [mbe], where the :exec component calls first-n-ac as
+  before for execution efficiency.  We thank Mihir Mehta for
+  providing this enhancement, including updates to the books.
+
 
 New Features
 
@@ -109787,7 +109795,10 @@ Subtopics
            (declare (xargs :guard (and (integerp n)
                                        (not (< n 0))
                                        (true-listp l))))
-           (first-n-ac n l nil))")
+           (mbe :logic (if (zp n)
+                           nil
+                           (cons (car l) (take (1- n) (cdr l))))
+                :exec (first-n-ac n l nil)))")
  (TALKS
   (ACL2-TUTORIAL)
   "Some talks about ACL2
