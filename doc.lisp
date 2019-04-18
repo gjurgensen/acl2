@@ -55713,14 +55713,15 @@ General Form
 
   The most elaborate loop$ statement is of the form
 
-(LOOP$ FOR v1 OF-TYPE spec1 target1
-AS    v2 OF-TYPE spec2 target2
-...
-AS    vn OF-TYPE specn targetn
-UNTIL :GUARD guard1 until-expr
-WHEN    :GUARD guard2 when-expr        ;
-Note the ALWAYS Exception below!
-op :GUARD guard3 body-expr)
+  (LOOP$ FOR v1 OF-TYPE spec1 target1
+  AS    v2 OF-TYPE spec2 target2
+  ...
+  AS    vn OF-TYPE specn targetn
+  UNTIL :GUARD guard1 until-expr
+  WHEN    :GUARD guard2 when-expr
+  ; Note the ALWAYS Exception below!
+  op :GUARD guard3 body-expr)
+
   where each vi   is a legal variable symbol and they are all distinct,
   each type-speci   is a [type-spec], each targeti   is a target
   clause, each guardi, until-expr, and when-expr   is a term, op   is
@@ -55932,7 +55933,7 @@ Semantics
   We have omitted the guard and an MBE form that makes it run more
   efficiently.  All the fancy loop$ scions are defined analogously.
 
-  Inspection of the lambda$ expression above reveals that it takes a a
+  Inspection of the lambda$ expression above reveals that it takes a
   list of global variable values and a list of iteration variable
   values, unpacks them with a let that binds the global variables,
   here just z, to their values and binds the iteration variables,
@@ -58255,6 +58256,8 @@ Subtopics
   the alist.)")
  (MAKE-LAMBDA (POINTERS)
               "See [system-utilities].")
+ (MAKE-LAMBDA-APPLICATION (POINTERS)
+                          "See [system-utilities].")
  (MAKE-LAMBDA-TERM (POINTERS)
                    "See [system-utilities].")
  (MAKE-LIST
@@ -87244,6 +87247,9 @@ Subtopics
   [Make-lambda]
       See [system-utilities].
 
+  [Make-lambda-application]
+      See [system-utilities].
+
   [Make-lambda-term]
       See [system-utilities].
 
@@ -109417,11 +109423,20 @@ List of a few built-in system utilities
       symbol-class, below.)
     * (make-lambda args body): Return the lambda expression with formal
       parameters args and body body.
+    * (make-lambda-application formals body actuals): Return the lambda
+      application that is essentially ((lambda formals body) .
+      actuals).  However, extra formals and corresponding actuals are
+      added when body has free variables that do not belong to
+      formals, because lambdas must be closed in ACL2.  A similar
+      function is make-lambda-term, but that one does not drop unused
+      formals, while make-lambda-application does drop them.
     * (make-lambda-term formals actuals body): Return the lambda
       application that is essentially ((lambda formals body) .
       actuals).  However, extra formals and corresponding actuals are
       added when body has free variables that do not belong to
-      formals, because lambdas must be closed in ACL2.
+      formals, because lambdas must be closed in ACL2.  A similar
+      function is make-lambda-application, but that one drops unused
+      formals, while make-lambda-term does not.
     * (nvariablep x): For a [pseudo-termp] x, return true iff x is not a
       variable (i.e. it is a quoted constant or a function call).
     * (partition-rest-and-keyword-args x keys): x should be a list of the

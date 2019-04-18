@@ -51690,7 +51690,7 @@ tables in the current Hons Space."
 
   <p>The most elaborate @('loop$') statement is of the form</p>
 
-  &nbsp; &nbsp; &nbsp; &nbsp; @('(LOOP$ FOR ')<i>v1</i>@(' OF-TYPE ')<i>spec1
+  <p>&nbsp; &nbsp; &nbsp; &nbsp; @('(LOOP$ FOR ')<i>v1</i>@(' OF-TYPE ')<i>spec1
   target1</i><br/> &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;
   &nbsp; &nbsp; &nbsp; &nbsp; @('AS ') &nbsp; <i>v2</i>@(' OF-TYPE ')<i>spec2
   target2</i><br/> &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;
@@ -51700,11 +51700,11 @@ tables in the current Hons Space."
   &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; @('UNTIL :GUARD ')<i>guard1
   until-expr</i><br/> &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;
   &nbsp; &nbsp; &nbsp; &nbsp; @('WHEN ') &nbsp; @(':GUARD ')<i>guard2
-  when-expr</i>&nbsp; &nbsp; &nbsp; &nbsp; ; Note the @('ALWAYS') Exception
+  when-expr</i><br/> &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;
+  &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; ; Note the @('ALWAYS') Exception
   below!<br/> &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;
   &nbsp; &nbsp; &nbsp; <i>op</i>@(' :GUARD ')<i>guard3
-  body-expr</i>@(')')<br/>
-
+  body-expr</i>@(')')<br/></p>
 
   <p>where each <i>vi</i> &nbsp; is a legal variable symbol and they are all
   distinct, each <i>type-speci</i> &nbsp; is a @(tsee type-spec), each
@@ -51948,7 +51948,7 @@ tables in the current Hons Space."
   <p>We have omitted the guard and an @('MBE') form that makes it run more
   efficiently.  All the fancy @('loop$') scions are defined analogously.</p>
 
-  <p>Inspection of the @('lambda$') expression above reveals that it takes a a
+  <p>Inspection of the @('lambda$') expression above reveals that it takes a
   list of global variable values and a list of iteration variable values,
   unpacks them with a @('let') that binds the global variables, here just
   @('z'), to their values and binds the iteration variables, here @('x') and
@@ -108128,11 +108128,20 @@ arithmetic) for libraries of @(see books) for arithmetic reasoning.</p>")
  <li>@('(make-lambda args body)'): Return the @('lambda') expression with
  formal parameters @('args') and body @('body').</li>
 
+ <li>@('(make-lambda-application formals body actuals)'): Return the
+ @('lambda') application that is essentially @('((lambda formals body)
+ . actuals)').  However, extra formals and corresponding actuals are added when
+ @('body') has free variables that do not belong to @('formals'), because
+ lambdas must be closed in ACL2.  A similar function is @('make-lambda-term'),
+ but that one does not drop unused formals, while @('make-lambda-application')
+ does drop them.</li>
+
  <li>@('(make-lambda-term formals actuals body)'): Return the @('lambda')
  application that is essentially @('((lambda formals body) . actuals)').
  However, extra formals and corresponding actuals are added when @('body') has
  free variables that do not belong to @('formals'), because lambdas must be
- closed in ACL2.</li>
+ closed in ACL2.  A similar function is @('make-lambda-application'), but that
+ one drops unused formals, while @('make-lambda-term') does not.</li>
 
  <li>@('(nvariablep x)'): For a @(tsee pseudo-termp) @('x'), return true iff
  @('x') is not a variable (i.e. it is a quoted constant or a function
@@ -127104,6 +127113,7 @@ expand function call at the current subterm, without simplifying"
 (defpointer lisp-programmer-introduction introduction-to-programming-in-acl2-for-those-who-know-lisp)
 (defpointer logicp system-utilities)
 (defpointer make-lambda system-utilities)
+(defpointer make-lambda-application system-utilities)
 (defpointer make-lambda-term system-utilities)
 (defpointer match-free free-variables)
 (defpointer measure-theorem termination-theorem)
