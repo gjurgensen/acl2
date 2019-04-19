@@ -7844,8 +7844,11 @@ and @(tsee include-book)"
 (defxdoc bdd
   :parents (acl2)
   :short "Ordered binary decision diagrams with rewriting"
-  :long "<p>Ordered binary decision diagrams (OBDDs, often simply called BDDs)
- are a technique, originally published by Randy Bryant, for the efficient
+  :long "<p>Note.  The ACL2 bdd capability has been essentially superseded by
+ GL; see @(see gl).</p>
+
+ <p>Ordered binary decision diagrams (OBDDs, often simply called BDDs) are a
+ technique, originally published by Randy Bryant, for the efficient
  simplification of Boolean expressions.  In ACL2 we combine this technique with
  rewriting to handle arbitrary ACL2 terms that can represent not only Boolean
  values, but non-Boolean values as well.  In particular, we provide a setting
@@ -115060,16 +115063,17 @@ introduction-to-the-tau-system) for more information about Tau.</dd>
  encode every subset, @('s'), of the actual primitive types by the nonnegative
  integer whose ith bit is on precisely if @('s') contains the ith actual
  primitive type.  The type-sets written as the complement of @('s') are encoded
- as the @('twos-complement') of the encoding of @('s').  Those type-sets are
- thus negative integers.  The bit positions assigned to the actual primitive
- types are enumerated from @('0') in the same order as the types are listed in
- @('*actual-primitive-types*').  At the concrete level, a type-set is an
- integer between @('*min-type-set*') and @('*max-type-set*'), inclusive.</p>
+ as the two's-complement bitwise @('`not'') of the encoding of @('s').  Those
+ type-sets are thus negative integers.  The bit positions assigned to the
+ actual primitive types are enumerated from @('0') in the same order as the
+ types are listed in @('*actual-primitive-types*').  At the concrete level, a
+ type-set is an integer between @('*min-type-set*') and @('*max-type-set*'),
+ inclusive.</p>
 
  <p>For example, @('*ts-nil*') has bit position @('7').  The type-set
  containing just @('*ts-nil*') is thus represented by @('128').  If a term has
  type-set @('128') then the term is always equal to @('nil').  The type-set
- containing everything but @('*ts-nil*') is the twos-complement of @('128'),
+ containing everything but @('*ts-nil*') is the bitwise @('`not'') of @('128'),
  which is @('-129').  If a term has type-set @('-129'), it is never equal to
  @('nil').  By ``always'' and ``never'' we mean under all, or under no,
  assignments to the variables, respectively.</p>
