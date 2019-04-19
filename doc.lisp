@@ -82201,14 +82201,25 @@ Changes to Existing Features
   permission to integrate definitions and documentation from his
   Kookamara books into the ACL2 sources.
 
-  A quoted lambda object that may ultimately be passed as the
-  ``function'' for a call of [apply$] may now have a [declare] form.
-  See also the discussion of lambda$ below.
+  Made some improvements pertaining to [apply$]:
 
-  The macro [warrant] no longer causes an error for the 800+ ACL2
-  primitives that are built into the definition of [apply$].
-  Instead, it simply avoids generating (needless) conjuncts for those
-  primitives.
+    * A quoted lambda object that may ultimately be passed as the
+      ``function'' for a call of [apply$] may now have a [declare]
+      form.  See also the discussion of lambda$ below.
+    * The macro [warrant] no longer causes an error for the 800+ ACL2
+      primitives that are built into the definition of [apply$].
+      Instead, it simply avoids generating (needless) conjuncts for
+      those primitives.
+    * The rewriter can now evaluate ground terms that involve calls of
+      [apply$] or [badge] on user-defined function symbols.  Note
+      that correctness of such an evaluation depends on the truth of
+      corresponding warrants, which will be [force]d if not known.
+        The event formerly named def-warrant is now [defwarrant].  This event
+        may now be [redundant]; hence [defun$] may also be redundant.
+
+        The :[args] command now prints the [badge] and [warrant] for a
+        function, and it avoids printing a package prefix in the case
+        of [unknown-constraints].
 
   It is no longer illegal to supply an abstract stobj as the so-called
   ``concrete stobj'' in a [defabsstobj] event.  Thanks to Sol Swords
@@ -82251,7 +82262,7 @@ Changes to Existing Features
 
   The implementation of [verify-termination] has been improved so that
   it no longer can generate (expand to) the form (value-triple
-  :redudant).  Redudancy is now handled for verify-termination by
+  :redundant).  Redundancy is now handled for verify-termination by
   checking redundancy of the generated [defun] form.  For an example
   that failed before this change, see [community-book]
   books/system/tests/verify-termination/top.lisp.
@@ -82280,7 +82291,7 @@ Changes to Existing Features
   distinct values associated with [xargs] keywords :verify-guards,
   :non-executable, or (even if not distinct) :guard-hints.
 
-  The function [integer-range-p] now uses a a [type] [declaration] in
+  The function [integer-range-p] now uses a [type] [declaration] in
   place of the :[guard], which may slightly improve efficiency.
   Thanks to Eric Smith for suggesting this possibility.
 
@@ -82299,22 +82310,10 @@ Changes to Existing Features
   rule), the warning will correctly recommend disabling the
   definition rule instead of the executable-counterpart rule.
 
-  The event formerly named def-warrant is now [defwarrant].  This event
-  may now be [redundant]; hence [defun$] may also be redundant.
-
-  The :[args] command now prints the [badge] and [warrant] for a
-  function, and it avoids printing a package prefix in the case of
-  [unknown-constraints].
-
   The logical definition of read-file-into-string2 (in support of
   [read-file-into-string]) has been simplified, and no longer
   involves [untouchable] functions symbols.  Thanks to Mihir Mehta
   for a query that led to this enhancement.
-
-  The rewriter can now evaluate ground terms that involve calls of
-  [apply$] or [badge] on user-defined function symbols.  Note that
-  correctness of such an evaluation depends on the truth of
-  corresponding warrants, which will be forced if not known.
 
   The built-in function [take] now has a recursive definition, exactly
   along the lines of the theorem take-redefinition from the community
@@ -82326,6 +82325,9 @@ Changes to Existing Features
 
 
 New Features
+
+  A new macro, [loop$], is an ACL2 version of the Common Lisp loop
+  macro.
 
   A new construct, lambda$, may be used in place of lambda to be passed
   as the ``function'' for a call of [apply$].  The syntactic
@@ -82361,9 +82363,6 @@ New Features
   A new signature is legal for [clause-processor]s, to support the
   return of rules and event names to be printed in the summary.  See
   [make-summary-data].
-
-  A new macro, [loop$], is an ACL2 version of the Common Lisp loop
-  macro.
 
   [Apply$] now handles functions that return multiple values.  This has
   widespread ramifications.  The structure of badges has changed.
@@ -82430,8 +82429,16 @@ Bug Fixes
   events and :[meta] rules.  Thanks to Sol Swords for pointing out
   this bug and presenting a helpful example.
 
-  Fixed the [proof-builder] command, dv (see [ACL2-pc::dv]), for diving
-  into calls of [list] and [list*].
+  Fixed three [proof-builder] bugs:
+
+    * Fixed the proof-builder command, dv (see [ACL2-pc::dv]), for diving
+      into calls of [list] and [list*].
+    * Fixed a bug in the proof-builder command, geneqv.  Thanks to Shilpi
+      Goel for reporting this bug with an example.
+    * The proof-builder numeric ``diving'' commands 1, 2, 3, etc. --- and
+      more generally, the dv command --- were broken when the current
+      subterm is of the form (if 't .. ..).  This has been fixed.
+      Thanks to Keonho Lee for reporting this bug.
 
   Eliminated a hard error labeled as ``Implementation error'' that
   could occur when submitting a :[congruence] rule during the second
@@ -82442,9 +82449,6 @@ Bug Fixes
   useful ordinary (``soft'') error occurs, with a useful message.
   Thanks to Nathan Guermond for reporting this bug with a helpful
   example.
-
-  Fixed a bug in the [proof-builder] command, geneqv.  Thanks to Shilpi
-  Goel for reporting this bug with an example.
 
   It had been possible to enter an infinite loop after certain errors
   involving [wormhole]s and state global variables; now, a clean
@@ -82487,11 +82491,6 @@ Bug Fixes
   [partial-encapsulate] (hence have unknown constraints) and are now
   [untouchable].
 
-  The [proof-builder] numeric ``diving'' commands 1, 2, 3, etc. --- and
-  more generally, the dv command --- were broken when the current
-  subterm is of the form (if 't .. ..).  This has been fixed.  Thanks
-  to Keonho Lee for reporting this bug.
-
 
 Changes at the System Level
 
@@ -82517,7 +82516,7 @@ Changes at the System Level
   Documentation pertaining to [apply$] and related topics has been
   extended significantly.
 
-  (GCL only) Eliminate compiler output (by setting GCL raw Lisp
+  (GCL only) Eliminated compiler output (by setting GCL raw Lisp
   variables *compile-verbose* and *load-verbose* to nil).
 
   A new documentation topic, [efficiency], suggests some ways to speed

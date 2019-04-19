@@ -83644,13 +83644,32 @@ it."
  definitions and documentation from his Kookamara books into the ACL2
  sources.</p>
 
- <p>A quoted lambda object that may ultimately be passed as the ``function''
- for a call of @(tsee apply$) may now have a @(tsee declare) form.  See also
- the discussion of @('lambda$') below.</p>
+ <p>Made some improvements pertaining to @(tsee apply$):</p>
 
- <p>The macro @(tsee warrant) no longer causes an error for the 800+ ACL2
+ <ul>
+
+ <li>A quoted lambda object that may ultimately be passed as the ``function''
+ for a call of @(tsee apply$) may now have a @(tsee declare) form.  See also
+ the discussion of @('lambda$') below.</li>
+
+ <li>The macro @(tsee warrant) no longer causes an error for the 800+ ACL2
  primitives that are built into the definition of @(tsee apply$).  Instead, it
- simply avoids generating (needless) conjuncts for those primitives.</p>
+ simply avoids generating (needless) conjuncts for those primitives.</li>
+
+ <li>The rewriter can now evaluate ground terms that involve calls of @(tsee
+ apply$) or @(tsee badge) on user-defined function symbols.  Note that
+ correctness of such an evaluation depends on the truth of corresponding
+ warrants, which will be @(see force)d if not known.</li>
+
+ <p>The event formerly named @('def-warrant') is now @(tsee defwarrant).  This
+ event may now be @(see redundant); hence @(tsee defun$) may also be
+ redundant.</p>
+
+ <p>The @(':')@(tsee args) command now prints the @(see badge) and @(see
+ warrant) for a function, and it avoids printing a package prefix in the case
+ of @(see unknown-constraints).</p>
+
+ </ul>
 
  <p>It is no longer illegal to supply an abstract stobj as the so-called
  ``concrete stobj'' in a @(tsee defabsstobj) event.  Thanks to Sol Swords for
@@ -83691,9 +83710,9 @@ it."
  deprecate @('all-ffn-symbs') and @('all-ffn-symbs-lst') in the future.</p>
 
  <p>The implementation of @(tsee verify-termination) has been improved so that
- it no longer can generate (expand to) the form @('(value-triple :redudant)').
- Redudancy is now handled for @('verify-termination') by checking redundancy of
- the generated @(tsee defun) form.  For an example that failed before this
+ it no longer can generate (expand to) the form @('(value-triple :redundant)').
+ Redundancy is now handled for @('verify-termination') by checking redundancy
+ of the generated @(tsee defun) form.  For an example that failed before this
  change, see @(see community-book)
  @('books/system/tests/verify-termination/top.lisp').</p>
 
@@ -83721,7 +83740,7 @@ it."
  values associated with @(tsee xargs) keywords @(':verify-guards'),
  @(':non-executable'), or (even if not distinct) @(':guard-hints').</p>
 
- <p>The function @(tsee integer-range-p) now uses a a @(tsee type) @(see
+ <p>The function @(tsee integer-range-p) now uses a @(tsee type) @(see
  declaration) in place of the @(':')@(tsee guard), which may slightly improve
  efficiency.  Thanks to Eric Smith for suggesting this possibility.</p>
 
@@ -83740,23 +83759,10 @@ it."
  the warning will correctly recommend disabling the definition rule instead of
  the executable-counterpart rule.</p>
 
- <p>The event formerly named @('def-warrant') is now @(tsee defwarrant).  This
- event may now be @(see redundant); hence @(tsee defun$) may also be
- redundant.</p>
-
- <p>The @(':')@(tsee args) command now prints the @(see badge) and @(see
- warrant) for a function, and it avoids printing a package prefix in the case
- of @(see unknown-constraints).</p>
-
  <p>The logical definition of @('read-file-into-string2') (in support of @(tsee
  read-file-into-string)) has been simplified, and no longer involves @(see
  untouchable) functions symbols.  Thanks to Mihir Mehta for a query that led to
  this enhancement.</p>
-
- <p>The rewriter can now evaluate ground terms that involve calls of @(tsee
- apply$) or @(tsee badge) on user-defined function symbols.  Note that
- correctness of such an evaluation depends on the truth of corresponding
- warrants, which will be forced if not known.</p>
 
  <p>The built-in function @(tsee take) now has a recursive definition, exactly
  along the lines of the theorem @('take-redefinition') from the community book
@@ -83767,6 +83773,9 @@ it."
  including updates to the books.</p>
 
  <h3>New Features</h3>
+
+ <p>A new macro, @(tsee loop$), is an ACL2 version of the Common Lisp @('loop')
+ macro.</p>
 
  <p>A new construct, @('lambda$'), may be used in place of @('lambda') to be
  passed as the ``function'' for a call of @(tsee apply$).  The syntactic
@@ -83801,9 +83810,6 @@ it."
  <p>A new signature is legal for @(tsee clause-processor)s, to support the
  return of rules and event names to be printed in the summary.  See @(see
  make-summary-data).</p>
-
- <p>A new macro, @(tsee loop$), is an ACL2 version of the Common Lisp @('loop')
- macro.</p>
 
  <p>@(tsee Apply$) now handles functions that return multiple values.  This has
  widespread ramifications.  The structure of badges has changed.  There is no
@@ -83864,8 +83870,22 @@ it."
  @(':')@(tsee meta) rules.  Thanks to Sol Swords for pointing out this bug and
  presenting a helpful example.</p>
 
- <p>Fixed the @(see proof-builder) command, @('dv') (see @(see acl2-pc::dv)),
- for diving into calls of @(tsee list) and @(tsee list*).</p>
+ <p>Fixed three @(see proof-builder) bugs:</p>
+
+ <ul>
+
+ <li>Fixed the proof-builder command, @('dv') (see @(see acl2-pc::dv)),
+ for diving into calls of @(tsee list) and @(tsee list*).</li>
+
+ <li>Fixed a bug in the proof-builder command, @('geneqv').  Thanks to Shilpi
+ Goel for reporting this bug with an example.</li>
+
+ <li>The proof-builder numeric ``diving'' commands @('1'), @('2'), @('3'),
+ etc. &mdash; and more generally, the @('dv') command &mdash; were broken when
+ the current subterm is of the form @('(if 't .. ..)').  This has been fixed.
+ Thanks to Keonho Lee for reporting this bug.</li>
+
+ </ul>
 
  <p>Eliminated a hard error labeled as ``Implementation error'' that could
  occur when submitting a @(':')@(tsee congruence) rule during the second pass
@@ -83875,9 +83895,6 @@ it."
  incompatibility check.  Now, a useful ordinary (``soft'') error occurs, with a
  useful message.  Thanks to Nathan Guermond for reporting this bug with a
  helpful example.</p>
-
- <p>Fixed a bug in the @(see proof-builder) command, @('geneqv').  Thanks to
- Shilpi Goel for reporting this bug with an example.</p>
 
  <p>It had been possible to enter an infinite loop after certain errors
  involving @(see wormhole)s and state global variables; now, a clean error
@@ -83919,11 +83936,6 @@ it."
  introduced with @(tsee partial-encapsulate) (hence have unknown constraints)
  and are now @(see untouchable).</p>
 
- <p>The @(see proof-builder) numeric ``diving'' commands @('1'), @('2'),
- @('3'), etc. &mdash; and more generally, the @('dv') command &mdash; were
- broken when the current subterm is of the form @('(if 't .. ..)').  This has
- been fixed.  Thanks to Keonho Lee for reporting this bug.</p>
-
  <h3>Changes at the System Level</h3>
 
  <p>The @(see documentation) topic, @(see system-utilities), is now about only
@@ -83949,7 +83961,7 @@ it."
  <p>Documentation pertaining to @(tsee apply$) and related topics has been
  extended significantly.</p>
 
- <p>(GCL only) Eliminate compiler output (by setting GCL raw Lisp variables
+ <p>(GCL only) Eliminated compiler output (by setting GCL raw Lisp variables
  @('*compile-verbose*') and @('*load-verbose*') to @('nil')).</p>
 
  <p>A new documentation topic, @(see efficiency), suggests some ways to speed
