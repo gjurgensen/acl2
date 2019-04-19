@@ -56118,8 +56118,12 @@ it."
  <p>CASE @('obj') = @('(list :lemma FN N)'):</p>
 
  <p>Assume @('N') is a natural number; otherwise, treat @('N') as 0.  Then
- @('(meta-extract-global-fact obj state)') is equal to the formula @('(nth
- N (getpropc FN 'lemmas nil (w state)))') if @('N') is in range, else @('*t*').
+ @('(meta-extract-global-fact obj state)') is equal to the term naturally
+ constructed from the @('rewrite-rule') record structure @('(nth N (getpropc FN
+ 'lemmas nil (w state)))') if @('N') is in range, else @('*t*').
+ (The ACL2 source function @('rewrite-rule-term') does this construction of a
+ term from a @('rewrite-rule') record structure.  It has a guard of @('t') but
+ is not executable; an executable version is @('rewrite-rule-term-exec').)
  Thus, if @('FN') is a function symbol with more than @('N') associated lemmas
  &mdash; ``associated'' in the sense of being either a @(':')@(tsee definition)
  rule for @('FN') or a @(':')@(tsee rewrite) rule for @('FN') whose left-hand
@@ -83612,6 +83616,9 @@ it."
 ;   work around an apparently CCL bug.  Thanks to Rob Sumners and the folks at
 ;   Centaur for finding and analyzing this problem, proposing this fix, and
 ;   doing timing tests on it.</p>
+
+; The function rewrite-rule-term-exec is an executable version of
+; rewrite-rule-term, which is now executable.
 
   :parents (release-notes)
   :short "ACL2 Version  8.2 (xxx, 20xx) Notes"
