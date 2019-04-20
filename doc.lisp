@@ -113350,9 +113350,12 @@ Subtopics
   (PROGRAMMING ACL2-BUILT-INS)
   "Time an evaluation
 
-  Semantically, (time$ x ...) equals x.  However, its evaluation may
-  write timing output to the trace output (which is usually the
-  terminal), as explained further below.
+  Semantically, (time$ x ...) equals x.  However, its evaluation writes
+  timing output to the trace output (which is usually the terminal),
+  as explained further below.
+
+  Note: Some of the functionality below is available only for certain
+  host Common Lisp implementations.
 
     Examples:
 
@@ -120495,8 +120498,8 @@ Subtopics
                      --acl2 `pwd`/../saved_acl2d system/top.cert) \\
             >& make-devel-regression.log&
 
-      The last of these commands should take well under 2 minutes on a
-      decent machine.  You can of course check on it as follows.
+      The last of these commands should run much more quickly than a
+      normal regression.  You can of course check on it as follows.
 
           tail make-devel-regression.log
 

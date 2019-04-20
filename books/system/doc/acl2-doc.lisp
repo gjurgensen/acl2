@@ -111113,8 +111113,11 @@ arithmetic) for libraries of @(see books) for arithmetic reasoning.</p>")
   :parents (programming acl2-built-ins)
   :short "Time an evaluation"
   :long "<p>Semantically, @('(time$ x ...)') equals @('x').  However, its
- evaluation may write timing output to the trace output (which is usually the
+ evaluation writes timing output to the trace output (which is usually the
  terminal), as explained further below.</p>
+
+ <p>Note: Some of the functionality below is available only for certain host
+ Common Lisp implementations.</p>
 
  @({
   Examples:
@@ -119389,8 +119392,8 @@ introduction-to-the-tau-system) for more information about Tau.</dd>
    >& make-devel-regression.log&
  })
 
- The last of these commands should take well under 2 minutes on a decent
- machine.  You can of course check on it as follows.
+ The last of these commands should run much more quickly than a normal
+ regression.  You can of course check on it as follows.
 
  @({
  tail make-devel-regression.log
