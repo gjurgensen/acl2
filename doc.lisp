@@ -60137,15 +60137,15 @@ Subtopics
       (nth N (getpropc FN 'lemmas nil (w state))) if N is in range,
       else *t*.  (The ACL2 source function rewrite-rule-term does
       this construction of a term from a rewrite-rule record
-      structure.  It has a guard of t but is not executable; an
-      executable version is rewrite-rule-term-exec.)  Thus, if FN is
-      a function symbol with more than N associated lemmas ---
-      ``associated'' in the sense of being either a :[definition]
-      rule for FN or a :[rewrite] rule for FN whose left-hand side
-      has a top function symbol of FN --- then when state is the
-      actual ACL2 ``live'' [state] object, (meta-extract-global-fact
-      obj state) evaluates to the Nth such lemma (with zero-based
-      indexing).
+      structure.  It has a guard of t; a version that may execute
+      more quickly but has a less trivial guard is
+      rewrite-rule-term-exec.)  Thus, if FN is a function symbol with
+      more than N associated lemmas --- ``associated'' in the sense
+      of being either a :[definition] rule for FN or a :[rewrite]
+      rule for FN whose left-hand side has a top function symbol of
+      FN --- then when state is the actual ACL2 ``live'' [state]
+      object, (meta-extract-global-fact obj state) evaluates to the
+      Nth such lemma (with zero-based indexing).
 
       CASE obj = (list :fncall FN ARGLIST):
 
