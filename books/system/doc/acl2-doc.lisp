@@ -83621,6 +83621,14 @@ it."
 ; The function rewrite-rule-term-exec is an executable version of
 ; rewrite-rule-term, which is now executable.
 
+; Fixed a bug in source function disc-tree that was evident in a guard
+; violation from subsumption-replacement-loop in the following example.
+;   (assign safe-mode t)
+;   (trace$ disc-tree)
+;   (subsumption-replacement-loop '(((integerp i)) ((integerp k))
+;                                   ((integerp j)) ((< '0 k)))
+;                                 nil nil)
+
   :parents (release-notes)
   :short "ACL2 Version  8.2 (xxx, 20xx) Notes"
   :long "<p>NOTE!  New users can ignore these release notes, because the @(see
