@@ -12621,6 +12621,11 @@ Prerequisites
   The instructions below are suitable for ACL2 and all of its
   experimental extensions, e.g., ACL2(p) and ACL2(r).
 
+  It may be preferable to avoid being logged in as root, since
+  developers do not test as root and at least one community book
+  (books/oslib/tests/copy.lisp) has failed to certify when logged in
+  as root.
+
 
 A Basic Build
 
