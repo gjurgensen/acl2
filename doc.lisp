@@ -10448,6 +10448,9 @@ Subtopics
   (ACL2)
   "Ordered binary decision diagrams with rewriting
 
+  Note.  The ACL2 bdd capability has been essentially superseded by GL;
+  see [gl].
+
   Ordered binary decision diagrams (OBDDs, often simply called BDDs)
   are a technique, originally published by Randy Bryant, for the
   efficient simplification of Boolean expressions.  In ACL2 we
@@ -12617,6 +12620,11 @@ Prerequisites
 
   The instructions below are suitable for ACL2 and all of its
   experimental extensions, e.g., ACL2(p) and ACL2(r).
+
+  It may be preferable to avoid being logged in as root, since
+  developers do not test as root and at least one community book
+  (books/oslib/tests/copy.lisp) has failed to certify when logged in
+  as root.
 
 
 A Basic Build
@@ -55713,14 +55721,15 @@ General Form
 
   The most elaborate loop$ statement is of the form
 
-(LOOP$ FOR v1 OF-TYPE spec1 target1
-AS    v2 OF-TYPE spec2 target2
-...
-AS    vn OF-TYPE specn targetn
-UNTIL :GUARD guard1 until-expr
-WHEN    :GUARD guard2 when-expr        ;
-Note the ALWAYS Exception below!
-op :GUARD guard3 body-expr)
+  (LOOP$ FOR v1 OF-TYPE spec1 target1
+  AS    v2 OF-TYPE spec2 target2
+  ...
+  AS    vn OF-TYPE specn targetn
+  UNTIL :GUARD guard1 until-expr
+  WHEN    :GUARD guard2 when-expr
+  ; Note the ALWAYS Exception below!
+  op :GUARD guard3 body-expr)
+
   where each vi   is a legal variable symbol and they are all distinct,
   each type-speci   is a [type-spec], each targeti   is a target
   clause, each guardi, until-expr, and when-expr   is a term, op   is
@@ -55932,7 +55941,7 @@ Semantics
   We have omitted the guard and an MBE form that makes it run more
   efficiently.  All the fancy loop$ scions are defined analogously.
 
-  Inspection of the lambda$ expression above reveals that it takes a a
+  Inspection of the lambda$ expression above reveals that it takes a
   list of global variable values and a list of iteration variable
   values, unpacks them with a let that binds the global variables,
   here just z, to their values and binds the iteration variables,
@@ -58255,6 +58264,8 @@ Subtopics
   the alist.)")
  (MAKE-LAMBDA (POINTERS)
               "See [system-utilities].")
+ (MAKE-LAMBDA-APPLICATION (POINTERS)
+                          "See [system-utilities].")
  (MAKE-LAMBDA-TERM (POINTERS)
                    "See [system-utilities].")
  (MAKE-LIST
@@ -60126,15 +60137,20 @@ Subtopics
       CASE obj = (list :lemma FN N):
 
       Assume N is a natural number; otherwise, treat N as 0.  Then
-      (meta-extract-global-fact obj state) is equal to the formula
+      (meta-extract-global-fact obj state) is equal to the term
+      naturally constructed from the rewrite-rule record structure
       (nth N (getpropc FN 'lemmas nil (w state))) if N is in range,
-      else *t*.  Thus, if FN is a function symbol with more than N
-      associated lemmas --- ``associated'' in the sense of being
-      either a :[definition] rule for FN or a :[rewrite] rule for FN
-      whose left-hand side has a top function symbol of FN --- then
-      when state is the actual ACL2 ``live'' [state] object,
-      (meta-extract-global-fact obj state) evaluates to the Nth such
-      lemma (with zero-based indexing).
+      else *t*.  (The ACL2 source function rewrite-rule-term does
+      this construction of a term from a rewrite-rule record
+      structure.  It has a guard of t; a version that may execute
+      more quickly but has a less trivial guard is
+      rewrite-rule-term-exec.)  Thus, if FN is a function symbol with
+      more than N associated lemmas --- ``associated'' in the sense
+      of being either a :[definition] rule for FN or a :[rewrite]
+      rule for FN whose left-hand side has a top function symbol of
+      FN --- then when state is the actual ACL2 ``live'' [state]
+      object, (meta-extract-global-fact obj state) evaluates to the
+      Nth such lemma (with zero-based indexing).
 
       CASE obj = (list :fncall FN ARGLIST):
 
@@ -82198,14 +82214,25 @@ Changes to Existing Features
   permission to integrate definitions and documentation from his
   Kookamara books into the ACL2 sources.
 
-  A quoted lambda object that may ultimately be passed as the
-  ``function'' for a call of [apply$] may now have a [declare] form.
-  See also the discussion of lambda$ below.
+  Made some improvements pertaining to [apply$]:
 
-  The macro [warrant] no longer causes an error for the 800+ ACL2
-  primitives that are built into the definition of [apply$].
-  Instead, it simply avoids generating (needless) conjuncts for those
-  primitives.
+    * A quoted lambda object that may ultimately be passed as the
+      ``function'' for a call of [apply$] may now have a [declare]
+      form.  See also the discussion of lambda$ below.
+    * The macro [warrant] no longer causes an error for the 800+ ACL2
+      primitives that are built into the definition of [apply$].
+      Instead, it simply avoids generating (needless) conjuncts for
+      those primitives.
+    * The rewriter can now evaluate ground terms that involve calls of
+      [apply$] or [badge] on user-defined function symbols.  Note
+      that correctness of such an evaluation depends on the truth of
+      corresponding warrants, which will be [force]d if not known.
+        The event formerly named def-warrant is now [defwarrant].  This event
+        may now be [redundant]; hence [defun$] may also be redundant.
+
+        The :[args] command now prints the [badge] and [warrant] for a
+        function, and it avoids printing a package prefix in the case
+        of [unknown-constraints].
 
   It is no longer illegal to supply an abstract stobj as the so-called
   ``concrete stobj'' in a [defabsstobj] event.  Thanks to Sol Swords
@@ -82248,7 +82275,7 @@ Changes to Existing Features
 
   The implementation of [verify-termination] has been improved so that
   it no longer can generate (expand to) the form (value-triple
-  :redudant).  Redudancy is now handled for verify-termination by
+  :redundant).  Redundancy is now handled for verify-termination by
   checking redundancy of the generated [defun] form.  For an example
   that failed before this change, see [community-book]
   books/system/tests/verify-termination/top.lisp.
@@ -82277,7 +82304,7 @@ Changes to Existing Features
   distinct values associated with [xargs] keywords :verify-guards,
   :non-executable, or (even if not distinct) :guard-hints.
 
-  The function [integer-range-p] now uses a a [type] [declaration] in
+  The function [integer-range-p] now uses a [type] [declaration] in
   place of the :[guard], which may slightly improve efficiency.
   Thanks to Eric Smith for suggesting this possibility.
 
@@ -82296,25 +82323,24 @@ Changes to Existing Features
   rule), the warning will correctly recommend disabling the
   definition rule instead of the executable-counterpart rule.
 
-  The event formerly named def-warrant is now [defwarrant].  This event
-  may now be [redundant]; hence [defun$] may also be redundant.
-
-  The :[args] command now prints the [badge] and [warrant] for a
-  function, and it avoids printing a package prefix in the case of
-  [unknown-constraints].
-
   The logical definition of read-file-into-string2 (in support of
   [read-file-into-string]) has been simplified, and no longer
   involves [untouchable] functions symbols.  Thanks to Mihir Mehta
   for a query that led to this enhancement.
 
-  The rewriter can now evaluate ground terms that involve calls of
-  [apply$] or [badge] on user-defined function symbols.  Note that
-  correctness of such an evaluation depends on the truth of
-  corresponding warrants, which will be forced if not known.
+  The built-in function [take] now has a recursive definition, exactly
+  along the lines of the theorem take-redefinition from the community
+  book books/std/lists/take.lisp (written by Jared Davis), which is
+  retained for compatibility with existing books.  The definition of
+  take uses [mbe], where the :exec component calls first-n-ac as
+  before for execution efficiency.  We thank Mihir Mehta for
+  providing this enhancement, including updates to the books.
 
 
 New Features
+
+  A new macro, [loop$], is an ACL2 version of the Common Lisp loop
+  macro.
 
   A new construct, lambda$, may be used in place of lambda to be passed
   as the ``function'' for a call of [apply$].  The syntactic
@@ -82350,9 +82376,6 @@ New Features
   A new signature is legal for [clause-processor]s, to support the
   return of rules and event names to be printed in the summary.  See
   [make-summary-data].
-
-  A new macro, [loop$], is an ACL2 version of the Common Lisp loop
-  macro.
 
   [Apply$] now handles functions that return multiple values.  This has
   widespread ramifications.  The structure of badges has changed.
@@ -82411,8 +82434,24 @@ Heuristic and Efficiency Improvements
 
 Bug Fixes
 
-  Fixed the [proof-builder] command, dv (see [ACL2-pc::dv]), for diving
-  into calls of [list] and [list*].
+  Fixed a bug, probably a soundness bug (though we haven't tried to
+  prove nil by exploiting it).  The bug is in the computation of the
+  ``immediate-canonical-ancestors'' of a function symbol, which is
+  used in the implementations of [memoization] and [defattach], as
+  well as in interactions between attachments and both [defaxiom]
+  events and :[meta] rules.  Thanks to Sol Swords for pointing out
+  this bug and presenting a helpful example.
+
+  Fixed three [proof-builder] bugs:
+
+    * Fixed the proof-builder command, dv (see [ACL2-pc::dv]), for diving
+      into calls of [list] and [list*].
+    * Fixed a bug in the proof-builder command, geneqv.  Thanks to Shilpi
+      Goel for reporting this bug with an example.
+    * The proof-builder numeric ``diving'' commands 1, 2, 3, etc. --- and
+      more generally, the dv command --- were broken when the current
+      subterm is of the form (if 't .. ..).  This has been fixed.
+      Thanks to Keonho Lee for reporting this bug.
 
   Eliminated a hard error labeled as ``Implementation error'' that
   could occur when submitting a :[congruence] rule during the second
@@ -82423,9 +82462,6 @@ Bug Fixes
   useful ordinary (``soft'') error occurs, with a useful message.
   Thanks to Nathan Guermond for reporting this bug with a helpful
   example.
-
-  Fixed a bug in the [proof-builder] command, geneqv.  Thanks to Shilpi
-  Goel for reporting this bug with an example.
 
   It had been possible to enter an infinite loop after certain errors
   involving [wormhole]s and state global variables; now, a clean
@@ -82468,11 +82504,6 @@ Bug Fixes
   [partial-encapsulate] (hence have unknown constraints) and are now
   [untouchable].
 
-  The [proof-builder] numeric ``diving'' commands 1, 2, 3, etc. --- and
-  more generally, the dv command --- were broken when the current
-  subterm is of the form (if 't .. ..).  This has been fixed.  Thanks
-  to Keonho Lee for reporting this bug.
-
 
 Changes at the System Level
 
@@ -82498,7 +82529,7 @@ Changes at the System Level
   Documentation pertaining to [apply$] and related topics has been
   extended significantly.
 
-  (GCL only) Eliminate compiler output (by setting GCL raw Lisp
+  (GCL only) Eliminated compiler output (by setting GCL raw Lisp
   variables *compile-verbose* and *load-verbose* to nil).
 
   A new documentation topic, [efficiency], suggests some ways to speed
@@ -87226,6 +87257,9 @@ Subtopics
       See [system-utilities].
 
   [Make-lambda]
+      See [system-utilities].
+
+  [Make-lambda-application]
       See [system-utilities].
 
   [Make-lambda-term]
@@ -109401,11 +109435,20 @@ List of a few built-in system utilities
       symbol-class, below.)
     * (make-lambda args body): Return the lambda expression with formal
       parameters args and body body.
+    * (make-lambda-application formals body actuals): Return the lambda
+      application that is essentially ((lambda formals body) .
+      actuals).  However, extra formals and corresponding actuals are
+      added when body has free variables that do not belong to
+      formals, because lambdas must be closed in ACL2.  A similar
+      function is make-lambda-term, but that one does not drop unused
+      formals, while make-lambda-application does drop them.
     * (make-lambda-term formals actuals body): Return the lambda
       application that is essentially ((lambda formals body) .
       actuals).  However, extra formals and corresponding actuals are
       added when body has free variables that do not belong to
-      formals, because lambdas must be closed in ACL2.
+      formals, because lambdas must be closed in ACL2.  A similar
+      function is make-lambda-application, but that one drops unused
+      formals, while make-lambda-term does not.
     * (nvariablep x): For a [pseudo-termp] x, return true iff x is not a
       variable (i.e. it is a quoted constant or a function call).
     * (partition-rest-and-keyword-args x keys): x should be a list of the
@@ -109779,7 +109822,10 @@ Subtopics
            (declare (xargs :guard (and (integerp n)
                                        (not (< n 0))
                                        (true-listp l))))
-           (first-n-ac n l nil))")
+           (mbe :logic (if (zp n)
+                           nil
+                           (cons (car l) (take (1- n) (cdr l))))
+                :exec (first-n-ac n l nil)))")
  (TALKS
   (ACL2-TUTORIAL)
   "Some talks about ACL2
@@ -113309,9 +113355,12 @@ Subtopics
   (PROGRAMMING ACL2-BUILT-INS)
   "Time an evaluation
 
-  Semantically, (time$ x ...) equals x.  However, its evaluation may
-  write timing output to the trace output (which is usually the
-  terminal), as explained further below.
+  Semantically, (time$ x ...) equals x.  However, its evaluation writes
+  timing output to the trace output (which is usually the terminal),
+  as explained further below.
+
+  Note: Some of the functionality below is available only for certain
+  host Common Lisp implementations.
 
     Examples:
 
@@ -117194,18 +117243,18 @@ Subtopics
   can encode every subset, s, of the actual primitive types by the
   nonnegative integer whose ith bit is on precisely if s contains the
   ith actual primitive type.  The type-sets written as the complement
-  of s are encoded as the twos-complement of the encoding of s.
-  Those type-sets are thus negative integers.  The bit positions
-  assigned to the actual primitive types are enumerated from 0 in the
-  same order as the types are listed in *actual-primitive-types*.  At
-  the concrete level, a type-set is an integer between *min-type-set*
-  and *max-type-set*, inclusive.
+  of s are encoded as the two's-complement bitwise `not' of the
+  encoding of s.  Those type-sets are thus negative integers.  The
+  bit positions assigned to the actual primitive types are enumerated
+  from 0 in the same order as the types are listed in
+  *actual-primitive-types*.  At the concrete level, a type-set is an
+  integer between *min-type-set* and *max-type-set*, inclusive.
 
   For example, *ts-nil* has bit position 7.  The type-set containing
   just *ts-nil* is thus represented by 128.  If a term has type-set
   128 then the term is always equal to nil.  The type-set containing
-  everything but *ts-nil* is the twos-complement of 128, which is
-  -129.  If a term has type-set -129, it is never equal to nil.  By
+  everything but *ts-nil* is the bitwise `not' of 128, which is -129.
+  If a term has type-set -129, it is never equal to nil.  By
   ``always'' and ``never'' we mean under all, or under no,
   assignments to the variables, respectively.
 
@@ -120454,8 +120503,8 @@ Subtopics
                      --acl2 `pwd`/../saved_acl2d system/top.cert) \\
             >& make-devel-regression.log&
 
-      The last of these commands should take well under 2 minutes on a
-      decent machine.  You can of course check on it as follows.
+      The last of these commands should run much more quickly than a
+      normal regression.  You can of course check on it as follows.
 
           tail make-devel-regression.log
 
