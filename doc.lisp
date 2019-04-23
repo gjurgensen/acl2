@@ -82548,6 +82548,11 @@ Changes at the System Level
   Thanks to Mihir Mehta for encouraging the development of this
   topic.
 
+  Fixed ``make STATS'' (which is invoked by ``make DOC'') to generate a
+  result file doc/acl2-code-size.txt that gives accurate statistics
+  on code size on Linux.  (The relevant grep commands in file
+  doc/create-acl2-code-size needed the -a option on Linux.)
+
 
 EMACS Support
 

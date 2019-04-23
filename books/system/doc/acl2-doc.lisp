@@ -84002,6 +84002,11 @@ it."
  basic guide to which sorts of rules to create from your theorems.  Thanks to
  Mihir Mehta for encouraging the development of this topic.</p>
 
+ <p>Fixed ``@('make STATS')'' (which is invoked by ``@('make DOC')'') to
+ generate a result file @('doc/acl2-code-size.txt') that gives accurate
+ statistics on code size on Linux.  (The relevant @('grep') commands in file
+ @('doc/create-acl2-code-size') needed the @('-a') option on Linux.)</p>
+
  <h3>EMACS Support</h3>
 
  <p>Fixed the @(see acl2-doc) browser so that it can handle topic names with
