@@ -12844,40 +12844,88 @@ with any questions about building the community books.</p>")
  include the same book twice, not recognizing the second one as
  redundant.</p>")
 
-(defxdoc ccl-updates
+(defxdoc ccl-installation
   :parents (hons-and-memoization)
   :short "Updating Clozure Common Lisp (CCL)"
-  :long "<p>Those who use ACL2 built on CCL, especially those who make
- compute-intensive use of ACL2's @(see hons-enabled) features, are advised to
- to stay plugged into the ``trunk'' or ``bleeding edge'' of CCL development.
- This is very easy to do by typing a few commands to a shell, for example
- standing above the target directory as follows, provided one has @('svn')
- working.</p>
+  :long "<p>For those who use ACL2 built on CCL as the host Common Lisp
+ implementation, it has been common practice to use the latest GitHub version
+ of CCL.  Here are instructions for how to build CCL on Linux, with comments on
+ how to adapt them to Mac (Darwin).  They might be a bit more convenient for
+ ACL2 users than those on the ``<a
+ href='https://ccl.clozure.com/install.html'>Installing Clozure CL</a>''
+ page.</p>
+
+ <p>First fetch CCL from GitHub as follows.  (You may prefer to use ``@('git
+ pull')'' if you previously did this step.  In that case you probably won't
+ want to do the optional renaming of the directory, mentioned below.)</p>
 
  @({
-   For linux:
+ # Obtain a ccl distribution in a fresh directory:
+ mkdir temp
+ cd temp
+ git clone https://github.com/Clozure/ccl
+ # Optionally rename that directory as suggested below, after
+ # executing the following three commands.
+ cd ccl
+ git rev-parse HEAD
+ cd ../../
+ # Optionally change directory name, and then go back to ccl directory:
+ # You'll want the last 10 hex digits to match those of the
+ # output from the ``git rev-parse HEAD'' command above: do
+ # that twice here and once further below.
+ mv temp 2017-12-07-6be8298fe5
+ cd 2017-12-07-6be8298fe5/ccl
+ })
 
-     rm -rf ccl
-     svn co http://svn.clozure.com/publicsvn/openmcl/trunk/linuxx8664/ccl
+ <p>Next fetch a development snapshot.  The version below is current as of this
+ writing (late April, 2019), but see <a
+ href='https://github.com/Clozure/ccl/releases/'>https://github.com/Clozure/ccl/releases/</a>
+ for the latest snapshots.</p>
 
-   For an x86 Macintosh running the Darwin OS:
+ @({
+ # If you are on a Mac, skip this wget command and see just below.
+ wget https://github.com/Clozure/ccl/releases/download/v1.12-dev.5/linuxx86.tar.gz
+ # On a Mac, do this instead:
+ # curl --location https://github.com/Clozure/ccl/releases/download/v1.12-dev.5/darwinx86.tar.gz > darwinx86.tar.gz
+ # Now untar.  NOTE: This is for Linux.
+ # For a Mac: tar xfz darwinx86.tar.gz
+ tar xfz linuxx86.tar.gz
+ })
 
-     svn co http://svn.clozure.com/publicsvn/openmcl/trunk/darwinx8664/ccl
+ <p>Now rebuild the kernel.</p>
 
-   To keep up to date, you may find it sufficient to do:
+ @({
+ # (On a Mac, replace the next command with: ./dx86cl64)
+ ./lx86cl64
+ # This welcomes you, e.g.:
+ #   Clozure Common Lisp Version 1.12-dev (v1.12-dev.5) LinuxX8664
+ # Now submit this command:
+ ? (rebuild-ccl :full t)
+ # After it returns, quit:
+ ? (quit)
+ # Now, back at the shell, rebuild the kernel again just to be safe:
+ # For a Mac: ./dx86cl64
+ ./lx86cl64
+ ? (rebuild-ccl :full t)
+ ? (quit)
+ })
 
-     cd ccl
-     svn update
+ <p>Create an executable script like the following.  Be sure to change the
+ name (shown as ``2017-12-07-6be8298fe5'' above) to match the name change
+ already made above.</p>
 
-   Whether obtaining a fresh CCL or just updating, finally issue these
-   commands.
+ @({
+ #!/bin/sh
 
-     ./lx86cl64
-     (rebuild-ccl :full t)
-     (quit)
-     ./lx86cl64
-     (rebuild-ccl :full t)
-     (quit)
+ export CCL_DEFAULT_DIRECTORY=/projects/acl2/lisps/ccl/2017-12-07-6be8298fe5/ccl
+ ${CCL_DEFAULT_DIRECTORY}/scripts/ccl64 \"$@\"
+ </pre>
+ })
+
+ <p>Finally, ensure that your script is executable, e.g.:</p>
+
+ @({
+ chmod +x my-script
  })")
 
 (defxdoc cdaaar
@@ -84007,6 +84055,13 @@ it."
  statistics on code size on Linux.  (The relevant @('grep') commands in file
  @('doc/create-acl2-code-size') needed the @('-a') option on Linux.)</p>
 
+ <p>Updated the CCL installation instructions formerly at :DOC ccl-updates.
+ The topic is now @(see ccl-installation).  This now replaces the installation
+ instructions file @('installation/ccl.html'); thus, the ACL2 community is now
+ welcome to improve these instructions.  Thanks to Eric Smith for discussion
+ that led to this change and to Keshav Kini and Alessandro Coglio for helpful
+ feedback.</p>
+
  <h3>EMACS Support</h3>
 
  <p>Fixed the @(see acl2-doc) browser so that it can handle topic names with
@@ -127053,6 +127108,7 @@ expand function call at the current subterm, without simplifying"
 (defpointer book-makefiles books-certification)
 (defpointer by hints t)
 (defpointer cases hints t)
+(defpointer ccl-updates ccl-installation) ; ccl-updates is the traditional name
 (defpointer certify-book-failure certify-book-debug)
 (defpointer certifying-books books-certification)
 (defpointer check-invariant-risk set-check-invariant-risk)
