@@ -82270,12 +82270,13 @@ Changes to Existing Features
       [apply$] or [badge] on user-defined function symbols.  Note
       that correctness of such an evaluation depends on the truth of
       corresponding warrants, which will be [force]d if not known.
-        The event formerly named def-warrant is now [defwarrant].  This event
-        may now be [redundant]; hence [defun$] may also be redundant.
-
-        The :[args] command now prints the [badge] and [warrant] for a
-        function, and it avoids printing a package prefix in the case
-        of [unknown-constraints].
+    * The event formerly named def-warrant is now [defwarrant].  This event
+      may now be [redundant]; hence [defun$] may also be redundant.
+    * The :[args] command now prints the [badge] and [warrant] for a
+      function, and it avoids printing a package prefix in the case
+      of [unknown-constraints].
+    * The optimization for caching ``tame compliant'' lambdas, introduced
+      in the preceding release (see [note-8-1]), has been improved.
 
   It is no longer illegal to supply an abstract stobj as the so-called
   ``concrete stobj'' in a [defabsstobj] event.  Thanks to Sol Swords

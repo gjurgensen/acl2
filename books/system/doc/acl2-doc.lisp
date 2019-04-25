@@ -83681,6 +83681,14 @@ it."
 ;                                   ((integerp j)) ((< '0 k)))
 ;                                 nil nil)
 
+; ACL2(p) built on CCL could occasionally hang during proofs because of
+; contention by two threads when reading terminal input.  We have attempted to
+; make this less likely now by using ccl::with-terminal-input.  We thank Michał
+; Herda for diagnosing this problem and David Rager for helpful discussions.
+; Unfortunately, we still see a hang in community book
+; books/std/osets/under-set-equiv.lisp (and there may be problems for other
+; books).
+
   :parents (release-notes)
   :short "ACL2 Version  8.2 (xxx, 20xx) Notes"
   :long "<p>NOTE!  New users can ignore these release notes, because the @(see
@@ -83732,13 +83740,16 @@ it."
  correctness of such an evaluation depends on the truth of corresponding
  warrants, which will be @(see force)d if not known.</li>
 
- <p>The event formerly named @('def-warrant') is now @(tsee defwarrant).  This
+ <li>The event formerly named @('def-warrant') is now @(tsee defwarrant).  This
  event may now be @(see redundant); hence @(tsee defun$) may also be
- redundant.</p>
+ redundant.</li>
 
- <p>The @(':')@(tsee args) command now prints the @(see badge) and @(see
+ <li>The @(':')@(tsee args) command now prints the @(see badge) and @(see
  warrant) for a function, and it avoids printing a package prefix in the case
- of @(see unknown-constraints).</p>
+ of @(see unknown-constraints).</li>
+
+ <li>The optimization for caching ``tame compliant'' lambdas, introduced in the
+ preceding release (see @(see note-8-1)), has been improved.</li>
 
  </ul>
 
