@@ -52044,7 +52044,7 @@ tables in the current Hons Space."
 
   @({
   (defun foo (lst)
-    (declare (xargs :guard (and (warrant expr) (foo-guardp lst))))
+    (declare (xargs :guard (foo-guardp lst)))
     (loop$ for x of-type (satisfies spec) on lst sum (expr x)))
   })
 
@@ -52102,11 +52102,13 @@ tables in the current Hons Space."
   conjectures</p>
 
   @({
-       (implies (and (foo-guardp lst)                            ; [5]
+       (implies (and (warrant ...) ; see below                   ; [5]
+                     (foo-guardp lst)
                      (member-equal newv (tails lst)))
                 (spec newv))
 
-       (implies (and (foo-guardp lst)                            ; [6]
+       (implies (and (warrant ...) ; see below                   ; [6]
+                     (foo-guardp lst)
                      (member-equal newv (tails lst)))
                 (acl2-numberp
                  (apply$ (lambda$ (x)
@@ -52117,6 +52119,11 @@ tables in the current Hons Space."
        (implies (foo-guardp lst)                                 ; [7]
                 (spec nil))
   })
+
+  <p>Above, each hypothesis @('(warrant ...)') assumes a @(see warrant) for
+  each function symbol that ACL2 determines might ultimately be the first
+  argument of a call of @(tsee apply$) when evaluating the scion call, in this
+  case, @('sum$').</p>
 
   <p>In general, you may notice that ACL2 generates such ``special'' guard
   conjectures for all calls of @('loop$') scions, whether or not they stemmed

@@ -56021,7 +56021,7 @@ Semantics
   For example, the logical meaning of
 
     (defun foo (lst)
-      (declare (xargs :guard (and (warrant expr) (foo-guardp lst))))
+      (declare (xargs :guard (foo-guardp lst)))
       (loop$ for x of-type (satisfies spec) on lst sum (expr x)))
 
   is
@@ -56071,11 +56071,13 @@ Semantics
   in the logical defun of foo, it generates three additional guard
   conjectures
 
-    (implies (and (foo-guardp lst)                            ; [5]
+    (implies (and (warrant ...) ; see below                   ; [5]
+                  (foo-guardp lst)
                   (member-equal newv (tails lst)))
              (spec newv))
 
-    (implies (and (foo-guardp lst)                            ; [6]
+    (implies (and (warrant ...) ; see below                   ; [6]
+                  (foo-guardp lst)
                   (member-equal newv (tails lst)))
              (acl2-numberp
               (apply$ (lambda$ (x)
@@ -56085,6 +56087,11 @@ Semantics
 
     (implies (foo-guardp lst)                                 ; [7]
              (spec nil))
+
+  Above, each hypothesis (warrant ...) assumes a [warrant] for each
+  function symbol that ACL2 determines might ultimately be the first
+  argument of a call of [apply$] when evaluating the scion call, in
+  this case, sum$.
 
   In general, you may notice that ACL2 generates such ``special'' guard
   conjectures for all calls of loop$ scions, whether or not they
