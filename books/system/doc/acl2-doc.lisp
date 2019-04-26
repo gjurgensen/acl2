@@ -12919,7 +12919,6 @@ with any questions about building the community books.</p>")
 
  export CCL_DEFAULT_DIRECTORY=/projects/acl2/lisps/ccl/2017-12-07-6be8298fe5/ccl
  ${CCL_DEFAULT_DIRECTORY}/scripts/ccl64 \"$@\"
- </pre>
  })
 
  <p>Finally, ensure that your script is executable, e.g.:</p>
