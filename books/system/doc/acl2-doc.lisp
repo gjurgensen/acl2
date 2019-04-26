@@ -83682,12 +83682,14 @@ it."
 ;                                 nil nil)
 
 ; ACL2(p) built on CCL could occasionally hang during proofs because of
-; contention by two threads when reading terminal input.  We have attempted to
-; make this less likely now by using ccl::with-terminal-input.  We thank Michał
-; Herda for diagnosing this problem and David Rager for helpful discussions.
-; Unfortunately, we still see a hang in community book
+; contention by two threads when reading terminal input.  We attempted to make
+; this less likely by using ccl::with-terminal-input.  We thank Michał Herda
+; for diagnosing this problem and David Rager for helpful discussions.
+; Unfortunately, this change caused a repeatable hang in community book
 ; books/std/osets/under-set-equiv.lisp (and there may be problems for other
-; books).
+; books).  We have left the macro our-with-terminal-input in place, documenting
+; our current (lack of) understanding, but it is the identity macro at this
+; point.
 
   :parents (release-notes)
   :short "ACL2 Version  8.2 (xxx, 20xx) Notes"
