@@ -55655,7 +55655,7 @@ Informal Introduction
   x takes on, but we don't.)  The second example can be guard
   verified and has the advantage of being standard Common Lisp so
   compilers might optimize the handing of (+ 1 x).  The third example
-  can also be guard verified but since the :guard derective used here
+  can also be guard verified but since the :guard directive used here
   is ignored by Common Lisp it does not inform the compiler, so this
   example might execute more slowly than the previous one.  The last
   example shows the syntax and use of the ACL2-specific addition to
@@ -55934,6 +55934,36 @@ Semantics
   always.  The advantage of this translation style is that it allows
   compositional reasoning.  We discuss this further below.
 
+  The following example illustrates basic guard proof obligations, in
+  particular showing that when tests do not help when verifying
+  guards for the loop bodies.  (Until tests do not help, either.)
+
+    (include-book \"projects/apply/top\" :dir :system)
+    (defun$ sq (n)
+      (declare (xargs :guard (natp n)))
+      (* n n))
+    (defun foo (lst)
+      (declare (xargs :guard (nat-listp lst)))
+      (loop$ for x of-type (satisfies nat-listp) on lst
+             when (consp x)
+             sum (sq (car x))))
+
+  The summary says that a goal of NIL was generated.  Using :[pso] we
+  can see that the NIL goal came from:
+
+    Subgoal 1
+    (IMPLIES (NAT-LISTP X) (NATP (CAR X))).
+
+  The problem is that the guard proof obligation for the loop body (sq
+  (car x)) does not pay attention to the when clause.  The following
+  modification, which adds a :guard directive, solves the problem.
+
+    (defun foo (lst)
+      (declare (xargs :guard (nat-listp lst)))
+      (loop$ for x of-type (satisfies nat-listp) on lst
+             when (consp x)
+             sum :guard (consp x) (sq (car x))))
+
   Semantics of Fancy Loop$s
 
   An example of a fancy loop$ is
@@ -56098,7 +56128,7 @@ Semantics
   stemmed from uses of loop$.  FROM/TO/BY targets require that the
   bounds and step all satisfy the of-type specification, and the
   append operator requires that the loop body generate a [true-listp]
-  (instead of an [ACL2-numberp] as required by the sum operator.
+  (instead of an [ACL2-numberp] as required by the sum operator).
 
   The Compromise Between Reasoning and Efficiency
 
