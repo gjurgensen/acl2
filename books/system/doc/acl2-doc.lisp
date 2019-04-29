@@ -35909,8 +35909,12 @@ current fast alists."
  may be simplified before it is returned, by using a form of ``subsumption'' to
  eliminate redundancy and by deleting tautologies as well as instances of @(see
  built-in-clause) rules that come with ACL2.  The @('simp-p') argument should
- be @('nil') to avoid such simplification; that is, use @('(gthm 'FN
- nil)').</p>
+ be @('nil') to avoid such simplification; that is, use @('(gthm 'FN nil)').
+ The @('simp-p') argument bears some resemblance to the @(':guard-simplify')
+ option to @(see verify-guards), but note that somewhat less simplification is
+ done by @('gthm') when @('simp-p') is @('T') than is done when generating
+ guard obligations with @(see verify-guards) when @(':guard-simplify') is
+ @('T').</p>
 
  <p>Note that the result from evaluating @('(gthm x simp-p guard-debug)') is an
  <i>untranslated</i> term, that is, a user-level term; see @(see termp).  The
@@ -37626,8 +37630,8 @@ current fast alists."
   (guard-obligation '(if (consp x) (foo (car x)) t) nil nil 'my-function state)
 
   General Forms:
-  (guard-obligation name rrp guard-debug ctx state)
-  (guard-obligation term rrp guard-debug ctx state)
+  (guard-obligation name rrp guard-debug guard-simplify ctx state)
+  (guard-obligation term rrp guard-debug guard-simplify ctx state)
  })
 
  <p>where the first argument is either the name of a function or theorem or is
@@ -37635,7 +37639,9 @@ current fast alists."
  redundant p'') is non-@('nil') when it is permissible to return a value of
  @(''redundant') in the first (name) case (and is irrelevant in the term case);
  @('guard-debug') is typically @('nil') but may be @('t') (see @(see
- guard-debug)); @('ctx') is a context (typically, a symbol used in error and
+ guard-debug)); @('guard-simplify') is typically @('t') but may be @('nil')
+ (see @(see verify-guards)),
+ @('ctx') is a context (typically, a symbol used in error and
  warning messages); and @(tsee state) references the ACL2 @(see state).</p>
 
  <p>If you want to obtain the formula but you don't care about the so-called
@@ -37643,7 +37649,7 @@ current fast alists."
 
  @({
   (mv-let (erp val)
-          (guard-obligation x nil guard-debug 'top-level state)
+          (guard-obligation x nil guard-debug guard-simplify 'top-level state)
           (if erp
              ( .. code for handling error case, e.g., name is undefined .. )
             (let ((cl-set (cadr val))) ; to be proved for guard verification
@@ -37652,7 +37658,8 @@ current fast alists."
                    a disjunction .. ))))
  })
 
- <p>The form @('(guard-obligation x rrp guard-debug ctx state)') evaluates to a
+ <p>The form @('(guard-obligation x rrp guard-debug guard-simplify ctx state)')
+ evaluates to a
  pair @('(mv erp val)'), where @('erp') is @('nil') unless there is an
  error.  (Actually, this is a context-message pair; see the source code's
  ``Essay on Context-message Pairs''for relevant information.)  Suppose @('erp')
@@ -119019,6 +119026,7 @@ introduction-to-the-tau-system) for more information about Tau.</dd>
   (verify-guards flatten
                  :hints ((\"Goal\" :use (:instance assoc-of-app)))
                  :guard-debug t ; default = nil
+                 :guard-simplify nil ; default = t
                  :otf-flg t)
   (verify-guards (lambda$ (x)
                    (declare (xargs :guard (natp x)))
@@ -119035,7 +119043,8 @@ introduction-to-the-tau-system) for more information about Tau.</dd>
   General Form:
   (verify-guards name
           :hints        hints
-          :guard-debug  t ; typically t, but any value is legal
+          :guard-debug  nil    ; default is nil, but any value is legal
+          :guard-simplify t    ; default is t, may be set to nil
           :otf-flg      otf-flg)
  })
 
@@ -119069,7 +119078,9 @@ introduction-to-the-tau-system) for more information about Tau.</dd>
  entries.  The keyword arguments above are all optional.  To admit this event,
  the conjunction of the guard proof obligations must be proved.  If all the
  guard obligations are proved, @('name') is considered to have had its @(see
- guard)s verified.</p>
+ guard)s verified.  The @(':guard-simplify') option controls certain
+ simplifications that may be applied to the guard conjecture while generating
+ the initial goal; setting it to @('nil') skips these simplifications.</p>
 
  <p>See @(see guard-formula-utilities) for utilities that let you view the
  formula to be proved by @('verify-guards'), but without creating an event.</p>
@@ -119515,12 +119526,14 @@ introduction-to-the-tau-system) for more information about Tau.</dd>
   Example Forms:
   (verify-guards-formula foo)
   (verify-guards-formula foo :guard-debug t)
+  (verify-guards-formula foo :guard-debug t :guard-simplify nil)
   (verify-guards-formula foo :rrp t :otf-flg dont-care :xyz whatever)
   (verify-guards-formula (+ (foo x) (bar y)) :guard-debug t)
  })
 
  <p>@('Verify-guards-formula') allows all keywords, but only pays attention to
- @(':guard-debug'), which has the same effect as in @(tsee verify-guards) (see
+ @(':guard-debug') and @(':guard-simplify'), which have the same effect as in
+ @(tsee verify-guards) (see
  @(see guard-debug)), and to @(':rrp'), described below.  Apply
  @('verify-guards-formula') to a name just as you would use @(tsee
  verify-guards), but when you only want the output that shows the guard proof
@@ -123355,6 +123368,7 @@ created from the original fast alist during @('form') must be manually freed."
  @({
   (declare (xargs :guard (symbolp x)
                   :guard-debug t
+                  :guard-simplify nil
                   :guard-hints ((\"Goal\" :in-theory (theory batch1)))
                   :hints ((\"Goal\" :in-theory (theory batch1)))
                   :measure (- i j)
@@ -123404,6 +123418,13 @@ created from the original fast alist during @('form') must be manually freed."
  @('Value'): hints (see @(see hints)), to be used during the @(see guard)
  verification proofs as opposed to the termination proofs of the @(tsee
  defun).</p>
+
+ <p>@(':guard-simplify)<br></br>
+
+ @('Value'): @('t') by default, else directs ACL2 to skip certain
+ simplifications that ACL2 typically applies while generating the guard
+ proof obligation.  This has the same effect as the corresponding keyword 
+ argument to @(see verify-guards).</p>
 
  <p>@(':')@(tsee hints)<br></br>
 
