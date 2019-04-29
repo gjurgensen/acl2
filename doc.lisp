@@ -92955,6 +92955,9 @@ Subtopics
 
   ev-fncall: evaluating a function on explicit arguments
 
+  ev-fncall+: evaluating a function on explicit arguments while
+  assuming that [warrant] hypotheses are true
+
   ev-fncall-meta: evaluating a metafunction
 
   forward-chain: building a context for the current goal using

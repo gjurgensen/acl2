@@ -92055,6 +92055,9 @@ arithmetic) for libraries of @(see books) for arithmetic reasoning.</p>")
 
  <p>@('ev-fncall'): evaluating a function on explicit arguments</p>
 
+ <p>@('ev-fncall+'): evaluating a function on explicit arguments while assuming
+ that @(see warrant) hypotheses are true</p>
+
  <p>@('ev-fncall-meta'): evaluating a metafunction</p>
 
  <p>@('forward-chain'): building a context for the current goal using @(tsee
