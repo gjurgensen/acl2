@@ -83630,6 +83630,15 @@ it."
 
 (defxdoc note-8-2
 
+; Total number of release note items: 57, as follows.
+;   22 ; Changes to Existing Features
+;    8 ; New Features
+;    5 ; Heuristic and Efficiency Improvements
+;   10 ; Bug Fixes
+;    9 ; Changes at the System Level
+;    3 ; EMACS Support
+;    0 ; Experimental Versions
+
 ; Here is a comment, written by Mihir Mehta, with more details about the change
 ; from fix-true-list to true-list-fix.  He also has noted that a relevant
 ; GitHub discussion may be found at https://github.com/acl2/acl2/pull/882.
