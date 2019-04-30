@@ -83630,12 +83630,12 @@ it."
 
 (defxdoc note-8-2
 
-; Total number of release note items: 57, as follows.
+; Total number of release note items: 58, as follows.
 ;   22 ; Changes to Existing Features
 ;    8 ; New Features
 ;    5 ; Heuristic and Efficiency Improvements
 ;   10 ; Bug Fixes
-;    9 ; Changes at the System Level
+;   10 ; Changes at the System Level
 ;    3 ; EMACS Support
 ;    0 ; Experimental Versions
 
@@ -84130,6 +84130,12 @@ it."
  welcome to improve these instructions.  Thanks to Eric Smith for discussion
  that led to this change and to Keshav Kini and Alessandro Coglio for helpful
  feedback.</p>
+
+ <p>The makefile target @('certify-books') has been deprecated in both
+ @('GNUmakefile') and @('books/GNUmakefile').  Thanks to the acl2-books email
+ list (in particular we got feedback from Alessandro Coglio, Shilpi Goel, David
+ Rager, Eric Smith, and Sol Swords, all helpful) for working through this
+ issue.</p>
 
  <h3>EMACS Support</h3>
 
@@ -121357,6 +121363,45 @@ introduction-to-the-tau-system) for more information about Tau.</dd>
  unmonitored all runes is therefore strongly advised to carry this information
  out of the wormhole and to do @(':')@(tsee brr) @('nil') in the external state
  when the next opportunity arises.</p>")
+
+(defxdoc windows-installation
+  :parents (break-rewrite)
+  :short "Installing ACL2 on Windows"
+  :long "<p>Windows users will probably want to do one of the following to
+ install and run ACL2 on their systems.  Thanks to David Rager for his help
+ with this topic.</p>
+
+ <ul>
+
+ <li>Fetch the ACL2 Sedan (ACL2s) &mdash; see @(see acl2-sedan) &mdash; which
+ is an extension and distribution of ACL2 integrated with the Eclipse IDE.  If
+ you wish to use ACL2s without the Eclipse front-end, see <a
+ href='http://www.cs.utexas.edu/users/moore/acl2/current/HTML/installation/obtaining-and-installing.html#Shortcut-acl2s'>the
+ information about ACL2s in the installation instructions</a>, which explains
+ how to obtain and use a pre-built ACL2 binary for Windows, Linux, or Mac.</li>
+
+ <li>Use a Virtual Machine platform, such as VMware Player (free for
+ non-commercial use) or Oracle Virtualbox (free even for commercial
+ use) to install Linux, and then follow the normal installation
+ instructions to install ACL2.  As of 2014, at least a couple of our
+ power users are very happy with this solution, as it provides
+ first-class access to utilities relevant to maintaining the ACL2
+ system and books (like GNU Make and perl).</li>
+
+ <li>Set up <a
+ href='https://en.wikipedia.org/wiki/Windows_Subsystem_for_Linux'>Windows
+ Subsystem for Linux</a> on a 64-bit version of Windows 10 (or later, once
+ available).  Within that subsystem, follow the setup and installation
+ instructions for ACL2.  (You might be the first to test this, but it will
+ likely work.)</li>
+
+ </ul>
+
+ <p>You are welcome to <a
+ href='http://www.cs.utexas.edu/users/moore/acl2/v3-6/distrib/windows/'>obtain
+ a Windows installer for a previous ACL2 release</a>, which mimics some of
+ Linux and provides Emacs.  Updated ACL2 binaries have been successfully
+ installed in such an environment.</p>")
 
 (defxdoc with-fast-alist
   :parents (fast-alists acl2-built-ins)
