@@ -12902,17 +12902,16 @@ Subtopics
   particular, is useful in case you encounter problems to report.
 
   If you fetched the community books using git, then you will have a
-  directory books/workshops/ that is not necessary for certifying the
-  other books.  If you want to skip certification of the books under
-  books/workshops/, use target `certify-books' instead of target
-  `regression', for example as follows.
+  directories such books/workshops/ that is not necessary for
+  certifying the most widely-included books.  You can certify just
+  such books as follows.
 
-    (time nice make certify-books) >& make-certify-books.log
+    (time nice make basic) >& make-basic.log
 
-  Whether you use target `regression' or target `certify-books', then
-  for each book foo.lisp whose certification is attempted, a file
-  foo.cert.out in the same directory will contain the output from the
-  book's certification attempt.
+  Whether you use target `regression' or target `basic', then for each
+  book foo.lisp whose certification is attempted, a file foo.cert.out
+  in the same directory will contain the output from the book's
+  certification attempt.
 
   A regression run may take a few hours, but if you have a
   multiprocessing computer, you can speed it up by certifying some
@@ -12947,13 +12946,9 @@ Subtopics
 
     make clean-books
 
-  If you want to cause such deletion and then do a regression, simply
-  replace the `regression' or `certify-books' target by
-  `regression-fresh' or `certify-books-fresh', respectively, for
-  example as follows.  follows.
-
-    make -j 4 regression-fresh
-    make -j 4 certify-books-fresh
+  Alternatively, if you want to cause such deletion and then do a
+  regression, simply replace the `regression' target by
+  `regression-fresh.
 
   If however you only want to clean up generated files residing under a
   given directory (or its subdirectories, and recursively), you can
@@ -14298,7 +14293,10 @@ Subtopics
       To stop monitoring a rule name
 
   [Why-brr]
-      An explanation of why ACL2 has an explicit [brr] mode")
+      An explanation of why ACL2 has an explicit [brr] mode
+
+  [Windows-installation]
+      Installing ACL2 on Windows")
  (BREAKS
   (ERRORS)
   "Common Lisp breaks
@@ -82641,6 +82639,12 @@ Changes at the System Level
   change and to Keshav Kini and Alessandro Coglio for helpful
   feedback.
 
+  The makefile target certify-books has been deprecated in both
+  GNUmakefile and books/GNUmakefile.  Thanks to the acl2-books email
+  list (in particular we got feedback from Alessandro Coglio, Shilpi
+  Goel, David Rager, Eric Smith, and Sol Swords, all helpful) for
+  working through this issue.
+
 
 EMACS Support
 
@@ -122461,6 +122465,42 @@ The Differences Between Well-Formed and Merely Tame Lambda Objects
   strongly advised to carry this information out of the wormhole and
   to do :[brr] nil in the external state when the next opportunity
   arises.")
+ (WINDOWS-INSTALLATION
+  (BREAK-REWRITE)
+  "Installing ACL2 on Windows
+
+  Windows users will probably want to do one of the following to
+  install and run ACL2 on their systems.  Thanks to David Rager for
+  his help with this topic.
+
+    * Fetch the ACL2 Sedan (ACL2s) --- see [ACL2-sedan] --- which is an
+      extension and distribution of ACL2 integrated with the Eclipse
+      IDE.  If you wish to use ACL2s without the Eclipse front-end,
+      see {the information about ACL2s in the installation
+      instructions |
+      http://www.cs.utexas.edu/users/moore/acl2/current/HTML/installation/obtaining-and-installing.html#Shortcut-acl2s},
+      which explains how to obtain and use a pre-built ACL2 binary
+      for Windows, Linux, or Mac.
+    * Use a Virtual Machine platform, such as VMware Player (free for
+      non-commercial use) or Oracle Virtualbox (free even for
+      commercial use) to install Linux, and then follow the normal
+      installation instructions to install ACL2.  As of 2014, at
+      least a couple of our power users are very happy with this
+      solution, as it provides first-class access to utilities
+      relevant to maintaining the ACL2 system and books (like GNU
+      Make and perl).
+    * Set up {Windows Subsystem for Linux |
+      https://en.wikipedia.org/wiki/Windows_Subsystem_for_Linux} on a
+      64-bit version of Windows 10 (or later, once available).
+      Within that subsystem, follow the setup and installation
+      instructions for ACL2.  (You might be the first to test this,
+      but it will likely work.)
+
+  You are welcome to {obtain a Windows installer for a previous ACL2
+  release |
+  http://www.cs.utexas.edu/users/moore/acl2/v3-6/distrib/windows/},
+  which mimics some of Linux and provides Emacs.  Updated ACL2
+  binaries have been successfully installed in such an environment.")
  (WITH-FAST-ALIST
   (FAST-ALISTS ACL2-BUILT-INS)
   "(with-fast-alist name form) causes name to be a fast alist for the

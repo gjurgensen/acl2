@@ -10341,17 +10341,16 @@ with any questions about building the community books.</p>")
  particular, is useful in case you encounter problems to report.</p>
 
  <p>If you fetched the community books using git, then you will have a
- directory @('books/workshops/') that is not necessary for certifying the other
- books.  If you want to skip certification of the books under
- @('books/workshops/'), use target `@('certify-books')' instead of target
- `@('regression')', for example as follows.</p>
+ directories such @('books/workshops/') that is not necessary for certifying
+ the most widely-included books.  You can certify just such books as
+ follows.</p>
 
  @({
-  (time nice make certify-books) >& make-certify-books.log
+  (time nice make basic) >& make-basic.log
  })
 
- <p>Whether you use target `@('regression')' or target `@('certify-books')',
- then for each book @('foo.lisp') whose certification is attempted, a file
+ <p>Whether you use target `@('regression')' or target `@('basic')', then for
+ each book @('foo.lisp') whose certification is attempted, a file
  @('foo.cert.out') in the same directory will contain the output from the
  book's certification attempt.</p>
 
@@ -10393,15 +10392,8 @@ with any questions about building the community books.</p>")
   make clean-books
  })
 
- <p>If you want to cause such deletion and then do a regression, simply replace
- the `@('regression')' or `@('certify-books')' target by
- `@('regression-fresh')' or `@('certify-books-fresh')', respectively, for
- example as follows.  follows.</p>
-
- @({
-  make -j 4 regression-fresh
-  make -j 4 certify-books-fresh
- })
+ <p>Alternatively, if you want to cause such deletion and then do a regression,
+ simply replace the `@('regression')' target by `@('regression-fresh').</p>
 
  <p>If however you only want to clean up generated files residing under a given
  directory (or its subdirectories, and recursively), you can issue the
