@@ -83743,6 +83743,10 @@ it."
 ; our current (lack of) understanding, but it is the identity macro at this
 ; point.
 
+; ACL2-doc will now print an additional message when it starts up the first
+; time in the current session, saying: "NOTE: Type D to download the latest
+; version."  Thanks to Mertcan Temel for a discussion leading to this change.
+
   :parents (release-notes)
   :short "ACL2 Version  8.2 (xxx, 20xx) Notes"
   :long "<p>NOTE!  New users can ignore these release notes, because the @(see
