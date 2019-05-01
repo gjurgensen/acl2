@@ -55932,9 +55932,10 @@ Semantics
   always.  The advantage of this translation style is that it allows
   compositional reasoning.  We discuss this further below.
 
-  The following example illustrates basic guard proof obligations, in
-  particular showing that when tests do not help when verifying
-  guards for the loop bodies.  (Until tests do not help, either.)
+  The following example illustrates basic [guard] proof obligations, in
+  particular showing that when clauses do not help with verifying
+  guards for the loop bodies.  (Similarly, until clauses do not help
+  either.)
 
     (include-book \"projects/apply/top\" :dir :system)
     (defun$ sq (n)
@@ -55946,21 +55947,53 @@ Semantics
              when (consp x)
              sum (sq (car x))))
 
-  The summary says that a goal of NIL was generated.  Using :[pso] we
-  can see that the NIL goal came from:
+  Guard verification fails, and the summary says that a goal of NIL was
+  generated.  Using :[pso] we can see that the NIL goal came from:
 
     Subgoal 1
     (IMPLIES (NAT-LISTP X) (NATP (CAR X))).
 
-  The problem is that the guard proof obligation for the loop body (sq
-  (car x)) does not pay attention to the when clause.  The following
-  modification, which adds a :guard directive, solves the problem.
+  Let's see what is going on by looking at the following abbreviated
+  translation of the loop$ expression.
+
+    (sum$ '(lambda (x)
+             (declare (type (satisfies nat-listp) x)
+                      (xargs :guard (nat-listp x)
+                             :split-types t)
+                      (ignorable x))
+             (sq (car x)))
+          (when$ '(lambda ...) (tails lst)))
+
+  We see that the [scion], sum$, is trying to apply a [lambda] object
+  that can cause sq to be applied to (car x) when x is nil.  But (sq
+  nil) is a guard violation, since sq expects its argument to be a
+  natural number.  The following modification, which adds a :guard
+  directive, solves the problem.
 
     (defun foo (lst)
       (declare (xargs :guard (nat-listp lst)))
       (loop$ for x of-type (satisfies nat-listp) on lst
              when (consp x)
              sum :guard (consp x) (sq (car x))))
+
+  Indeed, the abbreviated translation now shows that the application
+  (sq (car x)) is protected by a suitable guard.
+
+    (sum$ '(lambda (x)
+             (declare (type (satisfies nat-listp) x)
+                      (xargs :guard (if (nat-listp x) (consp x) 'nil)
+                             :split-types t)
+                      (ignorable x))
+             (sq (car x)))
+          (when$ '(lambda ...) (tails lst)))
+
+  Naively we might have expected that the guard proof obligation for
+  the loop$ body (sq (car x)) could assume the when clause, but that
+  expectation would be wrong.  The [lambda] object must be
+  guard-verifiable on its own (in particular because the
+  implementation stores guard-verified lambda objects for evaluation
+  in raw Lisp, which may take place in other contexts where we don't
+  have the when clause).
 
   Semantics of Fancy Loop$s
 
@@ -56116,10 +56149,10 @@ Semantics
     (implies (foo-guardp lst)                                 ; [7]
              (spec nil))
 
-  Above, each hypothesis (warrant ...) assumes a [warrant] for each
-  function symbol that ACL2 determines might ultimately be the first
-  argument of a call of [apply$] when evaluating the scion call, in
-  this case, sum$.
+  Notice the addition of hypotheses above of the form (warrant ...).
+  ACL2 adds such [warrant] hypotheses for function symbols that might
+  be [apply$]ed during evaluation of a scion call (in this case,
+  sum$).
 
   In general, you may notice that ACL2 generates such ``special'' guard
   conjectures for all calls of loop$ scions, whether or not they
