@@ -127842,3 +127842,4 @@ Subtopics
   Also see [ACL2-pc::x], which performs simplification."))
 
 )
+
