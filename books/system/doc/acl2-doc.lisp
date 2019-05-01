@@ -10341,17 +10341,16 @@ with any questions about building the community books.</p>")
  particular, is useful in case you encounter problems to report.</p>
 
  <p>If you fetched the community books using git, then you will have a
- directory @('books/workshops/') that is not necessary for certifying the other
- books.  If you want to skip certification of the books under
- @('books/workshops/'), use target `@('certify-books')' instead of target
- `@('regression')', for example as follows.</p>
+ directories such @('books/workshops/') that is not necessary for certifying
+ the most widely-included books.  You can certify just such books as
+ follows.</p>
 
  @({
-  (time nice make certify-books) >& make-certify-books.log
+  (time nice make basic) >& make-basic.log
  })
 
- <p>Whether you use target `@('regression')' or target `@('certify-books')',
- then for each book @('foo.lisp') whose certification is attempted, a file
+ <p>Whether you use target `@('regression')' or target `@('basic')', then for
+ each book @('foo.lisp') whose certification is attempted, a file
  @('foo.cert.out') in the same directory will contain the output from the
  book's certification attempt.</p>
 
@@ -10393,15 +10392,8 @@ with any questions about building the community books.</p>")
   make clean-books
  })
 
- <p>If you want to cause such deletion and then do a regression, simply replace
- the `@('regression')' or `@('certify-books')' target by
- `@('regression-fresh')' or `@('certify-books-fresh')', respectively, for
- example as follows.  follows.</p>
-
- @({
-  make -j 4 regression-fresh
-  make -j 4 certify-books-fresh
- })
+ <p>Alternatively, if you want to cause such deletion and then do a regression,
+ simply replace the `@('regression')' target by `@('regression-fresh').</p>
 
  <p>If however you only want to clean up generated files residing under a given
  directory (or its subdirectories, and recursively), you can issue the
@@ -51948,9 +51940,9 @@ tables in the current Hons Space."
   @('always').  The advantage of this translation style is that it allows
   compositional reasoning.  We discuss this further below.</p>
 
-  <p>The following example illustrates basic guard proof obligations, in
-  particular showing that @('when') tests do not help when verifying guards for
-  the loop bodies.  (@('Until') tests do not help, either.)</p>
+  <p>The following example illustrates basic @(see guard) proof obligations, in
+  particular showing that @('when') clauses do not help with verifying guards
+  for the loop bodies.  (Similarly, @('until') clauses do not help either.)</p>
 
   @({
   (include-book \"projects/apply/top\" :dir :system)
@@ -51964,18 +51956,33 @@ tables in the current Hons Space."
            sum (sq (car x))))
   })
 
-  <p>The summary says that a goal of @('NIL') was generated.  Using
-  @(':')@(tsee pso) we can see that the @('NIL') goal came from:</p>
+  <p>Guard verification fails, and the summary says that a goal of @('NIL') was
+  generated.  Using @(':')@(tsee pso) we can see that the @('NIL') goal came
+  from:</p>
 
   @({
   Subgoal 1
   (IMPLIES (NAT-LISTP X) (NATP (CAR X))).
   })
 
-  <p>The problem is that the guard proof obligation for the loop body
-  @('(sq (car x))') does not pay attention to the @('when') clause.  The
-  following modification, which adds a @(':guard') directive, solves the
-  problem.</p>
+  <p>Let's see what is going on by looking at the following abbreviated
+  translation of the @('loop$') expression.</p>
+
+  @({
+  (sum$ '(lambda (x)
+           (declare (type (satisfies nat-listp) x)
+                    (xargs :guard (nat-listp x)
+                           :split-types t)
+                    (ignorable x))
+           (sq (car x)))
+        (when$ '(lambda ...) (tails lst)))
+  })
+
+  <p>We see that the @(see scion), @('sum$'), is trying to apply a @(tsee
+  lambda) object that can cause @('sq') to be applied to @('(car x)') when
+  @('x') is @('nil').  But @('(sq nil)') is a guard violation, since @('sq')
+  expects its argument to be a natural number.  The following modification,
+  which adds a @(':guard') directive, solves the problem.</p>
 
   @({
   (defun foo (lst)
@@ -51984,6 +51991,26 @@ tables in the current Hons Space."
            when (consp x)
            sum :guard (consp x) (sq (car x))))
   })
+
+  <p>Indeed, the abbreviated translation now shows that the application
+  @('(sq (car x))') is protected by a suitable guard.</p>
+
+  @({
+  (sum$ '(lambda (x)
+           (declare (type (satisfies nat-listp) x)
+                    (xargs :guard (if (nat-listp x) (consp x) 'nil)
+                           :split-types t)
+                    (ignorable x))
+           (sq (car x)))
+        (when$ '(lambda ...) (tails lst)))
+  })
+
+  <p>Naively we might have expected that the guard proof obligation for the
+  @('loop$') body @('(sq (car x))') could assume the @('when') clause, but that
+  expectation would be wrong.  The @(tsee lambda) object must be
+  guard-verifiable on its own (in particular because the implementation stores
+  guard-verified @('lambda') objects for evaluation in raw Lisp, which may take
+  place in other contexts where we don't have the @('when') clause).</p>
 
   <h4>Semantics of Fancy Loop$s</h4>
 
@@ -52157,10 +52184,10 @@ tables in the current Hons Space."
                 (spec nil))
   })
 
-  <p>Above, each hypothesis @('(warrant ...)') assumes a @(see warrant) for
-  each function symbol that ACL2 determines might ultimately be the first
-  argument of a call of @(tsee apply$) when evaluating the scion call, in this
-  case, @('sum$').</p>
+  <p>Notice the addition of hypotheses above of the form @('(warrant ...)').
+  ACL2 adds such <i>@(see warrant) hypotheses</i> for function symbols that
+  might be @(tsee apply$)ed during evaluation of a scion call (in this case,
+  @('sum$')).</p>
 
   <p>In general, you may notice that ACL2 generates such ``special'' guard
   conjectures for all calls of @('loop$') scions, whether or not they stemmed
@@ -83630,6 +83657,15 @@ it."
 
 (defxdoc note-8-2
 
+; Total number of release note items: 59, as follows.
+;   22 ; Changes to Existing Features
+;    8 ; New Features
+;    5 ; Heuristic and Efficiency Improvements
+;   10 ; Bug Fixes
+;   11 ; Changes at the System Level
+;    3 ; EMACS Support
+;    0 ; Experimental Versions
+
 ; Here is a comment, written by Mihir Mehta, with more details about the change
 ; from fix-true-list to true-list-fix.  He also has noted that a relevant
 ; GitHub discussion may be found at https://github.com/acl2/acl2/pull/882.
@@ -83733,6 +83769,10 @@ it."
 ; books).  We have left the macro our-with-terminal-input in place, documenting
 ; our current (lack of) understanding, but it is the identity macro at this
 ; point.
+
+; ACL2-doc will now print an additional message when it starts up the first
+; time in the current session, saying: "NOTE: Type D to download the latest
+; version."  Thanks to Mertcan Temel for a discussion leading to this change.
 
   :parents (release-notes)
   :short "ACL2 Version  8.2 (xxx, 20xx) Notes"
@@ -84117,6 +84157,15 @@ it."
  welcome to improve these instructions.  Thanks to Eric Smith for discussion
  that led to this change and to Keshav Kini and Alessandro Coglio for helpful
  feedback.</p>
+
+ <p>The makefile target @('certify-books') has been deprecated in both
+ @('GNUmakefile') and @('books/GNUmakefile').  Thanks to the acl2-books email
+ list (in particular we got feedback from Alessandro Coglio, Shilpi Goel, David
+ Rager, Eric Smith, and Sol Swords, all helpful) for working through this
+ issue.</p>
+
+ <p>A message is now printed at when loading file @('~/acl2-init.lsp') at
+ startup.</p>
 
  <h3>EMACS Support</h3>
 
@@ -92045,6 +92094,9 @@ arithmetic) for libraries of @(see books) for arithmetic reasoning.</p>")
  <p>@('clausify'): splitting a goal into subgoals</p>
 
  <p>@('ev-fncall'): evaluating a function on explicit arguments</p>
+
+ <p>@('ev-fncall+'): evaluating a function on explicit arguments while assuming
+ that @(see warrant) hypotheses are true</p>
 
  <p>@('ev-fncall-meta'): evaluating a metafunction</p>
 
@@ -121341,6 +121393,45 @@ introduction-to-the-tau-system) for more information about Tau.</dd>
  unmonitored all runes is therefore strongly advised to carry this information
  out of the wormhole and to do @(':')@(tsee brr) @('nil') in the external state
  when the next opportunity arises.</p>")
+
+(defxdoc windows-installation
+  :parents (break-rewrite)
+  :short "Installing ACL2 on Windows"
+  :long "<p>Windows users will probably want to do one of the following to
+ install and run ACL2 on their systems.  Thanks to David Rager for his help
+ with this topic.</p>
+
+ <ul>
+
+ <li>Fetch the ACL2 Sedan (ACL2s) &mdash; see @(see acl2-sedan) &mdash; which
+ is an extension and distribution of ACL2 integrated with the Eclipse IDE.  If
+ you wish to use ACL2s without the Eclipse front-end, see <a
+ href='http://www.cs.utexas.edu/users/moore/acl2/current/HTML/installation/obtaining-and-installing.html#Shortcut-acl2s'>the
+ information about ACL2s in the installation instructions</a>, which explains
+ how to obtain and use a pre-built ACL2 binary for Windows, Linux, or Mac.</li>
+
+ <li>Use a Virtual Machine platform, such as VMware Player (free for
+ non-commercial use) or Oracle Virtualbox (free even for commercial
+ use) to install Linux, and then follow the normal installation
+ instructions to install ACL2.  As of 2014, at least a couple of our
+ power users are very happy with this solution, as it provides
+ first-class access to utilities relevant to maintaining the ACL2
+ system and books (like GNU Make and perl).</li>
+
+ <li>Set up <a
+ href='https://en.wikipedia.org/wiki/Windows_Subsystem_for_Linux'>Windows
+ Subsystem for Linux</a> on a 64-bit version of Windows 10 (or later, once
+ available).  Within that subsystem, follow the setup and installation
+ instructions for ACL2.  (You might be the first to test this, but it will
+ likely work.)</li>
+
+ </ul>
+
+ <p>You are welcome to <a
+ href='http://www.cs.utexas.edu/users/moore/acl2/v3-6/distrib/windows/'>obtain
+ a Windows installer for a previous ACL2 release</a>, which mimics some of
+ Linux and provides Emacs.  Updated ACL2 binaries have been successfully
+ installed in such an environment.</p>")
 
 (defxdoc with-fast-alist
   :parents (fast-alists acl2-built-ins)
