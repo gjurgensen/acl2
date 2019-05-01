@@ -82678,6 +82678,9 @@ Changes at the System Level
   Goel, David Rager, Eric Smith, and Sol Swords, all helpful) for
   working through this issue.
 
+  A message is now printed at when loading file ~/acl2-init.lsp at
+  startup.
+
 
 EMACS Support
 

@@ -83657,12 +83657,12 @@ it."
 
 (defxdoc note-8-2
 
-; Total number of release note items: 58, as follows.
+; Total number of release note items: 59, as follows.
 ;   22 ; Changes to Existing Features
 ;    8 ; New Features
 ;    5 ; Heuristic and Efficiency Improvements
 ;   10 ; Bug Fixes
-;   10 ; Changes at the System Level
+;   11 ; Changes at the System Level
 ;    3 ; EMACS Support
 ;    0 ; Experimental Versions
 
@@ -84163,6 +84163,9 @@ it."
  list (in particular we got feedback from Alessandro Coglio, Shilpi Goel, David
  Rager, Eric Smith, and Sol Swords, all helpful) for working through this
  issue.</p>
+
+ <p>A message is now printed at when loading file @('~/acl2-init.lsp') at
+ startup.</p>
 
  <h3>EMACS Support</h3>
 
