@@ -44,6 +44,9 @@
 
 (defconst *acl2-broken-links-alist*
 
+; To update the value of this constant, especially when preparing for an ACL2
+; release, see file acl2-doc-broken-links.lsp in this directory.
+
 ; The value of this constant is an alist whose keys are the XDOC topics
 ; referenced in the ACL2-only manual that are not in the ACL2-only manual
 ; (i.e. that are in the Books part of the ACL2+Books manual).  Each key in this
@@ -54,80 +57,6 @@
 ; So in practice, if you link to an ACL2+Books topic that is not in the
 ; ACL2-only manual, just add an entry following the pattern below.  It would be
 ; best if you keep it sorted by the SYMBOL-NAME of the CAR.
-
-; The remaining long comment can generally be ignored except at release time,
-; as a final check.
-
-; The following long comment shows how to create this value.  It would be good
-; to re-create it on occasion, or better yet, to automate a check that the
-; value is up-to-date.
-
-#||
- (include-book ; break line to avoid confusing dependency scanner
-  "system/doc/acl2-doc" :dir :system)
-
- (make-event
- ; This make-event form is adapted from acl2-doc-wrap.lisp.
-
-  ;; This constant is used in acl2-manual.lisp to ensure that we are only
-  ;; writing the topics from this file.  Because of our use of make-event,
-  ;; this will be written into the .cert file.
-  (let ((topics (xdoc::get-xdoc-table (w state))))
-    `(defconst *acl2-sources-xdoc-topics-prelim*
-       ',topics)))
-
- (include-book ; break line to avoid confusing dependency scanner
-  "xdoc/importance" :dir :system)
-
- (set-state-ok t)
- (program)
-
- (make-event
-  (mv-let
-   (names state)
-   #!xdoc(mv-let
-          (xtopics state)
-          (xtopics-from-topics acl2::*acl2-sources-xdoc-topics-prelim* state)
-          (let* ((links-fal (make-links-fal xtopics))
-                 (keys-fal  (make-fast-alist
-                             (pairlis$ (make-keys (xtopiclist->names xtopics))
-                                       nil)))
-                 (broken (find-broken-links links-fal keys-fal)))
-            (mv (strip-cars broken) state)))
-   (value `(defconst *acl2-broken-links-mangled-names* ',names))))
-
- (defun topic-source-alist (keys all-topics)
-   (cond ((endp all-topics) nil)
-         (t (let* ((topic (car all-topics))
-                   (name (cdr (assoc-eq :name topic)))
-                   (key (xdoc::make-key name)))
-              (cond ((member-equal key keys)
-                     (cons (list name (cdr (assoc-eq :from topic)))
-                           (topic-source-alist keys (cdr all-topics))))
-                    (t (topic-source-alist keys (cdr all-topics))))))))
-
- ; WARNING: Unless doc/top.lisp is certified, the following will build manual/
- ; under the current directory and will also build
- ; books/system/doc/rendered-doc-combined.lsp!  (Presumably that could be
- ; avoided with a little effort.)  Something like the following could work
- ; instead of the following include-book, but we would need to define more
- ; packages than just those in books/doc/top.acl2:
- ; (serialize-read "/Users/kaufmann/acl2/devel/books/centaur/xdoc.sao")
- (include-book ; break line to avoid confusing dependency scanner
-  "doc/top" :dir :system)
-
- (defun acl2-broken-links-alist (state)
-   (merge-sort-lexorder
-    (topic-source-alist *acl2-broken-links-mangled-names*
-                        (xdoc::get-xdoc-table (w state)))))
-
- ; Finally, compare the value, V, of the following to what is below.  But note
- ; that V may contain some entries with value "Current Interactive Session",
- ; which should be replaced with a more appropriate string, e.g., the file
- ; found by going to the entry's topic in the online combined manual.
- (acl2-broken-links-alist state)
-
-||#
 
   '((*ACL2-SYSTEM-EXPORTS* "[books]/system/acl2-system-exports.lisp")
     (<< "[books]/misc/total-order.lisp")
@@ -154,6 +83,7 @@
     (DEFPUN "[books]/misc/defpun.lisp")
     (DEFTHM<W "[books]/kestrel/utilities/auto-instance.lisp")
     (DEFTHMG "[books]/tools/defthmg.lisp")
+    (DEFXDOC "[books]/xdoc/topics.lisp")
     (GETOPT-DEMO::DEMO2 "[books]/centaur/getopt/demo2.lisp")
     (DEVELOPERS-GUIDE "[books]/system/doc/developers-guide.lisp")
     (DEVELOPERS-GUIDE-UTILITIES "[books]/system/doc/developers-guide.lisp")
@@ -170,6 +100,7 @@
     (INCLUDE-RAW "[books]/tools/include-raw.lisp")
     (INSTALL-NOT-NORMALIZED "[books]/misc/install-not-normalized.lisp")
     (LIST-EQUIV "[books]/std/lists/equiv.lisp")
+    (LIST-FIX "[books]/std/lists/list-fix.lisp")
     (LOGBITP-REASONING "[books]/centaur/bitops/equal-by-logbitp.lisp")
     (MAKE-FLAG "[books]/tools/flag.lisp")
     (MAKE-TERMINATION-THEOREM
@@ -184,6 +115,7 @@
     (NOTE-7-2-BOOKS "[books]/doc/relnotes.lisp")
     (NOTE-8-0-BOOKS "[books]/doc/relnotes.lisp")
     (NOTE-8-1-BOOKS "[books]/doc/relnotes.lisp")
+    (NOTE-8-2-BOOKS "[books]/doc/relnotes.lisp")
     (STR::NUMBERS "[books]/std/strings/top.lisp")
     (ORACLE-TIMELIMIT "[books]/tools/oracle-timelimit.lisp")
     (OSLIB "[books]/oslib/top-logic.lisp")
@@ -196,8 +128,8 @@
     (PROFILE-ALL "[books]/centaur/memoize/old/profile.lisp")
     (QUICKLISP "[books]/quicklisp/top.lisp")
     (RELEASE-NOTES-BOOKS "[books]/doc/relnotes.lisp")
-    (REMOVE-HYPS "[books]/tools/remove-hyps.lisp")
     (REMOVABLE-RUNES "[books]/tools/removable-runes.lisp")
+    (REMOVE-HYPS "[books]/tools/remove-hyps.lisp")
     (RUN-SCRIPT "[books]/tools/run-script.lisp")
     (SATLINK::SAT-SOLVER-OPTIONS "[books]/centaur/satlink/top.lisp")
     (SATLINK "[books]/centaur/satlink/top.lisp")
@@ -222,6 +154,7 @@
     (WITH-REDEF-ALLOWED "[books]/hacking/hacking-xdoc.lisp")
     (WITH-TIMEOUT "[books]/acl2s/cgen/with-timeout.lisp")
     (WORKING-WITH-PACKAGES "[books]/doc/practices.lisp")
+    (WRITE-LIST "[books]/misc/file-io.lisp")
     (XDOC "[books]/xdoc/topics.lisp")))
 
 (defconst *acl2-url*

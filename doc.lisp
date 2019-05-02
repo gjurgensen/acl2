@@ -14401,6 +14401,7 @@ Subtopics
        (defpun \"[books]/misc/defpun.lisp\")
        (defthm<w \"[books]/kestrel/utilities/auto-instance.lisp\")
        (defthmg \"[books]/tools/defthmg.lisp\")
+       (defxdoc \"[books]/xdoc/topics.lisp\")
        (getopt-demo::demo2 \"[books]/centaur/getopt/demo2.lisp\")
        (developers-guide \"[books]/system/doc/developers-guide.lisp\")
        (developers-guide-utilities
@@ -14418,6 +14419,7 @@ Subtopics
        (include-raw \"[books]/tools/include-raw.lisp\")
        (install-not-normalized \"[books]/misc/install-not-normalized.lisp\")
        (list-equiv \"[books]/std/lists/equiv.lisp\")
+       (list-fix \"[books]/std/lists/list-fix.lisp\")
        (logbitp-reasoning \"[books]/centaur/bitops/equal-by-logbitp.lisp\")
        (make-flag \"[books]/tools/flag.lisp\")
        (make-termination-theorem
@@ -14432,6 +14434,7 @@ Subtopics
        (note-7-2-books \"[books]/doc/relnotes.lisp\")
        (note-8-0-books \"[books]/doc/relnotes.lisp\")
        (note-8-1-books \"[books]/doc/relnotes.lisp\")
+       (note-8-2-books \"[books]/doc/relnotes.lisp\")
        (str::numbers \"[books]/std/strings/top.lisp\")
        (oracle-timelimit \"[books]/tools/oracle-timelimit.lisp\")
        (oslib \"[books]/oslib/top-logic.lisp\")
@@ -14444,8 +14447,8 @@ Subtopics
        (profile-all \"[books]/centaur/memoize/old/profile.lisp\")
        (quicklisp \"[books]/quicklisp/top.lisp\")
        (release-notes-books \"[books]/doc/relnotes.lisp\")
-       (remove-hyps \"[books]/tools/remove-hyps.lisp\")
        (removable-runes \"[books]/tools/removable-runes.lisp\")
+       (remove-hyps \"[books]/tools/remove-hyps.lisp\")
        (run-script \"[books]/tools/run-script.lisp\")
        (satlink::sat-solver-options \"[books]/centaur/satlink/top.lisp\")
        (satlink \"[books]/centaur/satlink/top.lisp\")
@@ -14473,6 +14476,7 @@ Subtopics
        (with-redef-allowed \"[books]/hacking/hacking-xdoc.lisp\")
        (with-timeout \"[books]/acl2s/cgen/with-timeout.lisp\")
        (working-with-packages \"[books]/doc/practices.lisp\")
+       (write-list \"[books]/misc/file-io.lisp\")
        (xdoc \"[books]/xdoc/topics.lisp\"))")
  (BRR
   (BREAK-REWRITE)
@@ -50581,7 +50585,7 @@ Subtopics
 
   Finally, we note that the [std/io] library contains useful file io
   functions whose definitions illustrate some of the features
-  described above, as does the definition of write-list in
+  described above, as does the definition of [write-list] in
   [community-book] books/misc/file-io.lisp.
 
 
@@ -82303,10 +82307,10 @@ Experimental Versions
   many changes could be placed in more than one category.
 
   Note that only ACL2 system changes are listed below.  See also
-  note-8-2-books for a summary of changes made to the ACL2 Community
-  Books since ACL2 8.0, including the build system.  Also note that
-  with each release, it is typical that the value of constant
-  [*ACL2-exports*] has been extended, and that some built-in
+  [note-8-2-books] for a summary of changes made to the ACL2
+  Community Books since ACL2 8.0, including the build system.  Also
+  note that with each release, it is typical that the value of
+  constant [*ACL2-exports*] has been extended, and that some built-in
   functions that were formerly in :[program] mode are now
   [guard]-verified :[logic] mode functions.
 
@@ -82315,13 +82319,13 @@ Changes to Existing Features
 
   The built-in function [fix-true-list] is now a macro that expands to
   a new built-in function, [true-list-fix], whose definition follows
-  the efficient definition of list-fix that was in [community-book]
-  books/std/lists/list-fix.lisp.  In that book, list-fix is now a
+  the efficient definition of [list-fix] that was in [community-book]
+  books/std/lists/list-fix.lisp.  In that book, [list-fix] is now a
   macro that expands to true-list-fix.  The use of macro-aliases (see
   [add-macro-alias]) should generally make this change backward
-  compatible for users of list-fix.  Thanks to Mihir Mehta for taking
-  the lead on implementing these changes and to Jared Davis for
-  permission to integrate definitions and documentation from his
+  compatible for users of [list-fix].  Thanks to Mihir Mehta for
+  taking the lead on implementing these changes and to Jared Davis
+  for permission to integrate definitions and documentation from his
   Kookamara books into the ACL2 sources.
 
   Made some improvements pertaining to [apply$]:
@@ -127842,4 +127846,3 @@ Subtopics
   Also see [ACL2-pc::x], which performs simplification."))
 
 )
-
