@@ -83865,12 +83865,12 @@ it."
  this enhancement.</p>
 
  <p>The built-in function @(tsee take) now has a recursive definition, exactly
- along the lines of the theorem @('take-redefinition') from the community book
- @('books/std/lists/take.lisp') (written by Jared Davis), which is retained for
- compatibility with existing books.  The definition of @('take') uses @(tsee
- mbe), where the @(':exec') component calls @('first-n-ac') as before for
- execution efficiency.  We thank Mihir Mehta for providing this enhancement,
- including updates to the books.</p>
+ along the lines of the old theorem @('take-redefinition') from the community
+ book @('books/std/lists/take.lisp') (written by Jared Davis); this theorem has
+ now been removed.  The definition of @('take') uses @(tsee mbe), where the
+ @(':exec') component calls @('first-n-ac') as before for execution efficiency.
+ We thank Mihir Mehta for providing this enhancement, including updates to the
+ books.</p>
 
  <h3>New Features</h3>
 
