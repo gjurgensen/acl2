@@ -82444,12 +82444,12 @@ Changes to Existing Features
   for a query that led to this enhancement.
 
   The built-in function [take] now has a recursive definition, exactly
-  along the lines of the theorem take-redefinition from the community
-  book books/std/lists/take.lisp (written by Jared Davis), which is
-  retained for compatibility with existing books.  The definition of
-  take uses [mbe], where the :exec component calls first-n-ac as
-  before for execution efficiency.  We thank Mihir Mehta for
-  providing this enhancement, including updates to the books.
+  along the lines of the old theorem take-redefinition from the
+  community book books/std/lists/take.lisp (written by Jared Davis);
+  this theorem has now been removed.  The definition of take uses
+  [mbe], where the :exec component calls first-n-ac as before for
+  execution efficiency.  We thank Mihir Mehta for providing this
+  enhancement, including updates to the books.
 
 
 New Features
