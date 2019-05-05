@@ -2,8 +2,8 @@
 ;
 ; acl2-doc.lisp - Documentation for the ACL2 Theorem Prover
 ;
-; ACL2 Version 8.1 -- A Computational Logic for Applicative Common Lisp
-; Copyright (C) 2018, Regents of the University of Texas
+; ACL2 Version 8.2 -- A Computational Logic for Applicative Common Lisp
+; Copyright (C) 2019, Regents of the University of Texas
 ;
 ; This documentation was derived from the ACL2 system in October 2013, which
 ; was a descendant of ACL2 Version 1.9, Copyright (C) 1997 Computational Logic,
@@ -166,7 +166,7 @@
 ; who are looking at an older version of ACL2 will see the corresponding
 ; ACL2+Books Manual at this link.
 
-  "http://www.cs.utexas.edu/users/moore/acl2/v8-1/")
+  "http://www.cs.utexas.edu/users/moore/acl2/v8-2/")
 
 (defconst *installation-url*
 
@@ -741,7 +741,7 @@
 (defxdoc about-acl2
   :parents (acl2)
   :short "General information About ACL2"
-  :long "<p>This is @(`(:raw (@ acl2-version))`), @(see copyright) (C) 2018,
+  :long "<p>This is @(`(:raw (@ acl2-version))`), @(see copyright) (C) 2019,
  Regents of the University of Texas, authored by Matt Kaufmann and J Strother
  Moore.</p>
 
@@ -16705,7 +16705,7 @@ subtree of X with T, without duplication.</p>
  <p>@(`(:raw (@ acl2-version))`) &mdash; A Computational Logic for Applicative
  Common Lisp</p>
 
- <p>Copyright (C) 2018, Regents of the University of Texas</p>
+ <p>Copyright (C) 2019, Regents of the University of Texas</p>
 
  <p>This version of ACL2 is a descendant of ACL2 Version 1.9, Copyright (C)
  1997 Computational Logic, Inc.  See the documentation topic NOTE-2-0.</p>
@@ -83708,7 +83708,7 @@ it."
 ; version."  Thanks to Mertcan Temel for a discussion leading to this change.
 
   :parents (release-notes)
-  :short "ACL2 Version  8.2 (xxx, 20xx) Notes"
+  :short "ACL2 Version  8.2 (May, 2019) Notes"
   :long "<p>NOTE!  New users can ignore these release notes, because the @(see
  documentation) has been updated to reflect all changes that are recorded
  here.</p>
@@ -127176,6 +127176,10 @@ expand function call at the current subterm, without simplifying"
 (defpointer all-fnnames-lst system-utilities)
 (defpointer all-fnnames1 system-utilities)
 (defpointer all-vars system-utilities)
+(defpointer always$ loop$)
+(defpointer always$+ loop$)
+(defpointer append$ loop$)
+(defpointer append$+ loop$)
 (defpointer apropos finding-documentation)
 (defpointer arglistp system-utilities)
 (defpointer array arrays)
@@ -127454,12 +127458,16 @@ expand function call at the current subterm, without simplifying"
 (defpointer union-eq union$)
 (defpointer union-equal union$)
 (defpointer unknown-constraints partial-encapsulate)
+(defpointer until$ loop$)
+(defpointer until$+ loop$)
 (defpointer untranslate-preprocess user-defined-functions-table)
 (defpointer use hints t)
 (defpointer value system-utilities)
 (defpointer variablep system-utilities)
 (defpointer verify-guards-eagerness set-verify-guards-eagerness)
 (defpointer waterfall hints-and-the-waterfall)
+(defpointer when$ loop$)
+(defpointer when$+ loop$)
 (defpointer with-output! with-output)
 (defpointer write-byte$ io)
 

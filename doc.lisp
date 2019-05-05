@@ -3,8 +3,8 @@
 ; The contents of this file are derived from ACL2 Community Book
 ; books/system/doc/acl2-doc.lisp.
 
-; ACL2 Version 8.1 -- A Computational Logic for Applicative Common Lisp
-; Copyright (C) 2018, Regents of the University of Texas
+; ACL2 Version 8.2 -- A Computational Logic for Applicative Common Lisp
+; Copyright (C) 2019, Regents of the University of Texas
 
 ; This version of ACL2 is a descendent of ACL2 Version 1.9, Copyright
 ; (C) 1997 Computational Logic, Inc.  See the documentation topic NOTE-2-0.
@@ -77,7 +77,7 @@ Subtopics
   [defthm], [in-theory], [xargs], [state], etc., without an acl2::
   prefix.
 
-  The constant *acl2-exports* lists 1469 symbols, including most
+  The constant *acl2-exports* lists 1482 symbols, including most
   documented ACL2 system constants, functions, and macros.  You will
   typically also want to import many symbols from Common Lisp; see
   [*common-lisp-symbols-from-main-lisp-package*].
@@ -127,7 +127,8 @@ Subtopics
        allocate-fixnum-range alpha-char-p
        alpha-char-p-forward-to-characterp
        alphorder
-       and and-macro append apply$ apply$-guard
+       always$ always$+ and and-macro append
+       append$ append$+ apply$ apply$-guard
        apply$-lambda apply$-lambda-guard
        apply$-userfn aref-32-bit-integer-stack
        aref-t-stack aref1 aref2 args
@@ -153,9 +154,10 @@ Subtopics
        booleanp-compound-recognizer
        bounded-integer-alistp
        bounded-integer-alistp-forward-to-eqlable-alistp
-       bounded-integer-alistp2 boundp-global
-       boundp-global1 break$ break-on-error
-       brr brr@ build-state1 butlast
+       bounded-integer-alistp2
+       boundp-global boundp-global1 break$
+       break-on-error brr brr-evisc-tuple
+       brr@ build-state1 butlast
        caaaar caaadr caaar caadar caaddr
        caadr caar cadaar cadadr cadar caddar
        cadddr caddr cadr canonical-pathname
@@ -384,8 +386,8 @@ Subtopics
        logeqv logic logic-fns-list-listp
        logic-fns-listp logic-fnsp
        logic-term-list-listp logic-term-listp
-       logic-termp logior lognand lognor
-       lognot logorc1 logorc2 logtest logxor
+       logic-termp logior lognand lognor lognot
+       logorc1 logorc2 logtest logxor loop$
        lower-case-p lower-case-p-char-downcase
        lower-case-p-forward-to-alpha-char-p
        lowest-terms lp
@@ -393,11 +395,11 @@ Subtopics
        main-timer main-timer-type-prescription
        make make-character-list
        make-character-list-make-character-list
-       make-event
-       make-fast-alist make-fmt-bindings
-       make-input-channel make-list
-       make-list-ac make-mv-nths make-ord
-       make-output-channel make-tau-interval
+       make-event make-fast-alist
+       make-fmt-bindings make-input-channel
+       make-list make-list-ac make-mv-nths
+       make-ord make-output-channel
+       make-summary-data make-tau-interval
        make-var-lst make-var-lst1
        make-wormhole-status makunbound-global
        max maximum-length may-need-slashes
@@ -548,6 +550,7 @@ Subtopics
        set-body set-bogus-defun-hints-ok
        set-bogus-measure-ok
        set-bogus-mutual-recursion-ok
+       set-brr-evisc-tuple
        set-case-split-limitations
        set-cbd set-check-invariant-risk
        set-checkpoint-summary-limit
@@ -622,9 +625,9 @@ Subtopics
        set-well-founded-relation
        set-wormhole-data
        set-wormhole-entry-code
-       set-write-acl2x setenv$ seventh
-       sgetprop show-accumulated-persistence
-       show-bdd show-bodies
+       set-write-acl2x setenv$ seventh sgetprop
+       show-accumulated-persistence show-bdd
+       show-bodies show-brr-evisc-tuple
        show-custom-keyword-hint-expansion
        show-fc-criteria
        shrink-32-bit-integer-stack
@@ -706,13 +709,13 @@ Subtopics
        ttag ttags-seen tthm type typed-io-listp
        typed-io-listp-forward-to-true-listp
        typespec-check u ubt ubt! ubt-prehistory
-       ubt? ubu ubu! ubu? unary--
-       unary-/ unary-function-symbol-listp
-       unicity-of-0 unicity-of-1 union$
-       union-eq union-equal union-theories
-       universal-theory unmemoize
-       unmonitor unquote unsave unsigned-byte
-       unsigned-byte-p untrace$ untrans-table
+       ubt? ubu ubu! ubu? unary-- unary-/
+       unary-function-symbol-listp unicity-of-0
+       unicity-of-1 union$ union-eq union-equal
+       union-theories universal-theory
+       unmemoize unmonitor unquote
+       unsave unsigned-byte unsigned-byte-p
+       until$ until$+ untrace$ untrans-table
        untranslate update-32-bit-integer-stack
        update-acl2-oracle
        update-acl2-oracle-preserves-state-p1
@@ -735,7 +738,8 @@ Subtopics
        w walkabout warning! warrant
        waterfall-parallelism waterfall-printing
        well-formed-lambda-objectp
-       wet with-fast-alist with-guard-checking
+       wet when$ when$+
+       with-fast-alist with-guard-checking
        with-guard-checking-error-triple
        with-guard-checking-event
        with-live-state
@@ -1512,7 +1516,7 @@ Subtopics
   (ACL2)
   "General information About ACL2
 
-  This is ACL2 Version 8.1, [copyright] (C) 2018, Regents of the
+  This is ACL2 Version 8.2, [copyright] (C) 2019, Regents of the
   University of Texas, authored by Matt Kaufmann and J Strother
   Moore.
 
@@ -2518,7 +2522,7 @@ Subtopics
   This is the ACL2 documentation.  For the ACL2+Books Manual, which
   that includes both the ACL2 documentation and the ACL2
   [community-books], see the {ACL2+Books Manual |
-  http://www.cs.utexas.edu/users/moore/acl2/v8-1/combined-manual/index.html}.
+  http://www.cs.utexas.edu/users/moore/acl2/v8-2/combined-manual/index.html}.
 
 
 Subtopics
@@ -4650,7 +4654,7 @@ Silent loading of ACL2 customization files
 
   As discussed elsewhere (see [documentation]), the web-based
   {ACL2+Books Manual |
-  http://www.cs.utexas.edu/users/moore/acl2/v8-1/combined-manual/index.html}
+  http://www.cs.utexas.edu/users/moore/acl2/v8-2/combined-manual/index.html}
   provides a way to browse the combined documentation for the ACL2
   system and community books.  Such documentation can also be read at
   the terminal using the :[doc] command, though documentation for
@@ -7354,6 +7358,8 @@ Subtopics
 
   We now recommend that you visit [documentation] on additional
   examples.  See [annotated-ACL2-scripts].")
+ (ALWAYS$ (POINTERS) "See [loop$].")
+ (ALWAYS$+ (POINTERS) "See [loop$].")
  (ANALYZING_COMMON_LISP_MODELS
   (PAGES_WRITTEN_ESPECIALLY_FOR_THE_TOURS)
   "Analyzing Common Lisp Models
@@ -7627,6 +7633,8 @@ Subtopics
 
   [Binary-append]
       [concatenate] two lists")
+ (APPEND$ (POINTERS) "See [loop$].")
+ (APPEND$+ (POINTERS) "See [loop$].")
  (APPLY$
   (ACL2-BUILT-INS PROGRAMMING)
   "Apply a badged function or tame lambda to arguments
@@ -12608,7 +12616,7 @@ Prerequisites
 
   We assume that you have already downloaded and installed ACL2 as per
   the {ACL2 installation instructions |
-  http://www.cs.utexas.edu/users/moore/acl2/v8-1/HTML/installation/installation.html}
+  http://www.cs.utexas.edu/users/moore/acl2/v8-2/HTML/installation/installation.html}
   on the ACL2 home page.
 
   We assume you know the path to your ACL2 executable.  Typically this
@@ -12860,7 +12868,7 @@ Subtopics
 
   For more information about installing ACL2, see the {ACL2
   installation instructions |
-  http://www.cs.utexas.edu/users/moore/acl2/v8-1/HTML/installation/installation.html}.
+  http://www.cs.utexas.edu/users/moore/acl2/v8-2/HTML/installation/installation.html}.
   For information about so-called ``classic ACL2 `make'-based
   certification'', which provides support for certifying directories
   of books but may disappear in a future ACL2 release, see
@@ -14351,7 +14359,7 @@ Subtopics
   contains [documentation] only about the ACL2 system, and does not
   include documentation from the [community-books].  Please point
   your browser at the {ACL2+Books Manual |
-  http://www.cs.utexas.edu/users/moore/acl2/v8-1/combined-manual/index.html}
+  http://www.cs.utexas.edu/users/moore/acl2/v8-2/combined-manual/index.html}
   (or if browsing in [ACL2-Doc], switch to that manual with meta-0 I)
   to access the desired topic.
 
@@ -19938,10 +19946,10 @@ Subtopics
   [documentation-copyright], which notes that there are many
   documentation authors.
 
-  ACL2 Version 8.1 --- A Computational Logic for Applicative Common
+  ACL2 Version 8.2 --- A Computational Logic for Applicative Common
   Lisp
 
-  Copyright (C) 2018, Regents of the University of Texas
+  Copyright (C) 2019, Regents of the University of Texas
 
   This version of ACL2 is a descendant of ACL2 Version 1.9, Copyright
   (C) 1997 Computational Logic, Inc.  See the documentation topic
@@ -27666,7 +27674,7 @@ Subtopics
   defined in books.  However, most users will probably access the
   ACL2 documentation in other ways; see [documentation].  In
   particular, consider using the {ACL2+Books Manual |
-  http://www.cs.utexas.edu/users/moore/acl2/v8-1/combined-manual/index.html},
+  http://www.cs.utexas.edu/users/moore/acl2/v8-2/combined-manual/index.html},
   for topics documented in the ACL2 community [books] or in the ACL2
   system (where the latter are rearranged).
 
@@ -27708,7 +27716,7 @@ Available Documentation
     * The online version (recommended). If you expect to have an internet
       connection while using the documentation, you may prefer to use
       the online version of the {ACL2+Books Manual |
-      http://www.cs.utexas.edu/users/moore/acl2/v8-1/combined-manual/index.html}.
+      http://www.cs.utexas.edu/users/moore/acl2/v8-2/combined-manual/index.html}.
     * A local version. If you sometimes work without an internet
       connection, you can {download | download/} a local copy of any
       web-based XDOC manual using the \"down arrow\" icon at the top of
@@ -33723,7 +33731,7 @@ Subtopics
   not included in the current ACL2 session?
 
   The [xdoc] {ACL2+Books Manual |
-  http://www.cs.utexas.edu/users/moore/acl2/v8-1/combined-manual/index.html}
+  http://www.cs.utexas.edu/users/moore/acl2/v8-2/combined-manual/index.html}
   includes documentation for both the ACL2 system and the
   [community-books].  For more information on this manual and how to
   view it, see [documentation].")
@@ -82293,7 +82301,7 @@ Experimental Versions
   [fmt-to-string] and related utilities, which call with-local-state.")
  (NOTE-8-2
   (RELEASE-NOTES)
-  "ACL2 Version 8.2 (xxx, 20xx) Notes
+  "ACL2 Version 8.2 (May, 2019) Notes
 
   NOTE!  New users can ignore these release notes, because the
   [documentation] has been updated to reflect all changes that are
@@ -87048,6 +87056,18 @@ Subtopics
   [All-vars]
       See [system-utilities].
 
+  [Always$]
+      See [loop$].
+
+  [Always$+]
+      See [loop$].
+
+  [Append$]
+      See [loop$].
+
+  [Append$+]
+      See [loop$].
+
   [Apropos]
       See [finding-documentation].
 
@@ -87885,6 +87905,12 @@ Subtopics
   [Unknown-constraints]
       See [partial-encapsulate].
 
+  [Until$]
+      See [loop$].
+
+  [Until$+]
+      See [loop$].
+
   [Untranslate-preprocess]
       See [user-defined-functions-table].
 
@@ -87902,6 +87928,12 @@ Subtopics
 
   [Waterfall]
       See [hints-and-the-waterfall].
+
+  [When$]
+      See [loop$].
+
+  [When$+]
+      See [loop$].
 
   [With-output!]
       See [with-output].
@@ -96193,7 +96225,7 @@ Subtopics
       ACL2 Version 8.1 (September, 2018) Notes
 
   [Note-8-2]
-      ACL2 Version 8.2 (xxx, 20xx) Notes")
+      ACL2 Version 8.2 (May, 2019) Notes")
  (REM
   (NUMBERS ACL2-BUILT-INS)
   "Remainder using [truncate]
@@ -118418,6 +118450,8 @@ Subtopics
 
   Profiling may cause proofs to hang when waterfall-parallelism is
   enabled (GitHub Issue #638).")
+ (UNTIL$ (POINTERS) "See [loop$].")
+ (UNTIL$+ (POINTERS) "See [loop$].")
  (UNTOUCHABLE
   (DEFTTAG)
   "Function symbols and state globals that cannot be referenced
@@ -122449,6 +122483,8 @@ The Differences Between Well-Formed and Merely Tame Lambda Objects
   responsibility.
 
   {IMAGE} (see [How_Long_Does_It_Take_to_Become_an_Effective_User{Q}])")
+ (WHEN$ (POINTERS) "See [loop$].")
+ (WHEN$+ (POINTERS) "See [loop$].")
  (WHY-BRR
   (BREAK-REWRITE)
   "An explanation of why ACL2 has an explicit [brr] mode
