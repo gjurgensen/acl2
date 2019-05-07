@@ -82316,7 +82316,7 @@ Experimental Versions
 
   Note that only ACL2 system changes are listed below.  See also
   [note-8-2-books] for a summary of changes made to the ACL2
-  Community Books since ACL2 8.0, including the build system.  Also
+  Community Books since ACL2 8.1, including the build system.  Also
   note that with each release, it is typical that the value of
   constant [*ACL2-exports*] has been extended, and that some built-in
   functions that were formerly in :[program] mode are now
@@ -82706,6 +82706,49 @@ EMACS Support
   A new [ACL2-doc] command is the question-mark character (?), which
   goes to a page with one-line command summaries.  Thanks to Warren
   Hunt for a request leading to this enhancement.
+
+
+Experimental Versions")
+ (NOTE-8-3
+  (RELEASE-NOTES)
+  "ACL2 Version 8.3 (xxx, 20xx) Notes
+
+  NOTE!  New users can ignore these release notes, because the
+  [documentation] has been updated to reflect all changes that are
+  recorded here.
+
+  Below we roughly organize the changes to ACL2 since Version 8.2 into
+  the following categories of changes: existing features, new
+  features, heuristic and efficiency improvements, bug fixes, changes
+  at the system level, Emacs support, and experimental versions.
+  Each change is described in just one category, though of course
+  many changes could be placed in more than one category.
+
+  Note that only ACL2 system changes are listed below.  See also
+  note-8-3-books for a summary of changes made to the ACL2 Community
+  Books since ACL2 8.2, including the build system.  Also note that
+  with each release, it is typical that the value of constant
+  [*ACL2-exports*] has been extended, and that some built-in
+  functions that were formerly in :[program] mode are now
+  [guard]-verified :[logic] mode functions.
+
+
+Changes to Existing Features
+
+
+New Features
+
+
+Heuristic and Efficiency Improvements
+
+
+Bug Fixes
+
+
+Changes at the System Level
+
+
+EMACS Support
 
 
 Experimental Versions")
@@ -96225,7 +96268,10 @@ Subtopics
       ACL2 Version 8.1 (September, 2018) Notes
 
   [Note-8-2]
-      ACL2 Version 8.2 (May, 2019) Notes")
+      ACL2 Version 8.2 (May, 2019) Notes
+
+  [Note-8-3]
+      ACL2 Version 8.3 (xxx, 20xx) Notes")
  (REM
   (NUMBERS ACL2-BUILT-INS)
   "Remainder using [truncate]
