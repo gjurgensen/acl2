@@ -35911,10 +35911,10 @@ current fast alists."
  built-in-clause) rules that come with ACL2.  The @('simp-p') argument should
  be @('nil') to avoid such simplification; that is, use @('(gthm 'FN nil)').
  The @('simp-p') argument bears some resemblance to the @(':guard-simplify')
- option to @(see verify-guards), but note that somewhat less simplification is
- done by @('gthm') when @('simp-p') is @('T') than is done when generating
- guard obligations with @(see verify-guards) when @(':guard-simplify') is
- @('T').</p>
+ option to @(tsee verify-guards); but somewhat less simplification is done by
+ @('gthm') with @('simp-p = T') than is done when generating guard
+ obligations (by @(tsee defun) or @(tsee verify-guards)) with
+ @(':guard-simplify = T').</p>
 
  <p>Note that the result from evaluating @('(gthm x simp-p guard-debug)') is an
  <i>untranslated</i> term, that is, a user-level term; see @(see termp).  The
@@ -37626,8 +37626,8 @@ current fast alists."
 
  @({
   Example Forms:
-  (guard-obligation 'foo nil t 'top-level state)
-  (guard-obligation '(if (consp x) (foo (car x)) t) nil nil 'my-function state)
+  (guard-obligation 'foo nil t t 'top-level state)
+  (guard-obligation '(if (consp x) (foo (car x)) t) nil nil t 'my-fn state)
 
   General Forms:
   (guard-obligation name rrp guard-debug guard-simplify ctx state)
@@ -37640,9 +37640,9 @@ current fast alists."
  @(''redundant') in the first (name) case (and is irrelevant in the term case);
  @('guard-debug') is typically @('nil') but may be @('t') (see @(see
  guard-debug)); @('guard-simplify') is typically @('t') but may be @('nil')
- (see @(see verify-guards)),
- @('ctx') is a context (typically, a symbol used in error and
- warning messages); and @(tsee state) references the ACL2 @(see state).</p>
+ (see @(see verify-guards)); @('ctx') is a context (typically, a symbol used in
+ error and warning messages); and @(tsee state) references the ACL2 @(see
+ state).</p>
 
  <p>If you want to obtain the formula but you don't care about the so-called
  ``tag tree'':</p>
@@ -37659,9 +37659,8 @@ current fast alists."
  })
 
  <p>The form @('(guard-obligation x rrp guard-debug guard-simplify ctx state)')
- evaluates to a
- pair @('(mv erp val)'), where @('erp') is @('nil') unless there is an
- error.  (Actually, this is a context-message pair; see the source code's
+ evaluates to a pair @('(mv erp val)'), where @('erp') is @('nil') unless there
+ is an error.  (Actually, this is a context-message pair; see the source code's
  ``Essay on Context-message Pairs''for relevant information.)  Suppose @('erp')
  is @('nil').  Then @('val') is the keyword @(':redundant') if the
  corresponding @(tsee verify-guards) event would be redundant and @('rrp') is
@@ -119042,10 +119041,10 @@ introduction-to-the-tau-system) for more information about Tau.</dd>
 
   General Form:
   (verify-guards name
-          :hints        hints
-          :guard-debug  nil    ; default is nil, but any value is legal
-          :guard-simplify t    ; default is t, may be set to nil
-          :otf-flg      otf-flg)
+          :hints          hints
+          :guard-debug    gdbg   ; default is nil, but any value is legal
+          :guard-simplify gsmp ; default is t, may be set to nil
+          :otf-flg        otf-flg)
  })
 
  <p>In the General Form above, @('name') is the name of a @(':')@(tsee logic)
@@ -119080,7 +119079,8 @@ introduction-to-the-tau-system) for more information about Tau.</dd>
  guard obligations are proved, @('name') is considered to have had its @(see
  guard)s verified.  The @(':guard-simplify') option controls certain
  simplifications that may be applied to the guard conjecture while generating
- the initial goal; setting it to @('nil') skips these simplifications.</p>
+ the initial goal; setting it to @('nil') skips all simplifications that depend
+ on the set of currently @(see enable)d rules.</p>
 
  <p>See @(see guard-formula-utilities) for utilities that let you view the
  formula to be proved by @('verify-guards'), but without creating an event.</p>
@@ -119533,13 +119533,12 @@ introduction-to-the-tau-system) for more information about Tau.</dd>
 
  <p>@('Verify-guards-formula') allows all keywords, but only pays attention to
  @(':guard-debug') and @(':guard-simplify'), which have the same effect as in
- @(tsee verify-guards) (see
- @(see guard-debug)), and to @(':rrp'), described below.  Apply
- @('verify-guards-formula') to a name just as you would use @(tsee
- verify-guards), but when you only want the output that shows the guard proof
- obligation, without attempting a proof or creating an event.  If the first
- argument is not a symbol, then it is treated as the body of a @(tsee defthm)
- event for which you want the guard proof obligation.</p>
+ @(tsee verify-guards) (see @(see guard-debug)), and to @(':rrp'), described
+ below.  Apply @('verify-guards-formula') to a name just as you would use
+ @(tsee verify-guards), but when you only want the output that shows the guard
+ proof obligation, without attempting a proof or creating an event.  If the
+ first argument is not a symbol, then it is treated as the body of a @(tsee
+ defthm) event for which you want the guard proof obligation.</p>
 
  <p>The @(':rrp') argument (``return redundant p'') is @('nil') by default.  If
  its value is not @('nil'), then in the case that the first argument is a
@@ -123424,7 +123423,7 @@ created from the original fast alist during @('form') must be manually freed."
  @('Value'): @('t') by default, else directs ACL2 to skip certain
  simplifications that ACL2 typically applies while generating the guard
  proof obligation.  This has the same effect as the corresponding keyword 
- argument to @(see verify-guards).</p>
+ argument to @(tsee verify-guards).</p>
 
  <p>@(':')@(tsee hints)<br></br>
 
