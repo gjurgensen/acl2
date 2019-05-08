@@ -84149,6 +84149,14 @@ it."
 
  <h3>New Features</h3>
 
+ <p>A new @(tsee xargs) keyword, @(':guard-simplify') (default @('t')),
+ controls certain simplifications that may be applied to the guard conjecture
+ while generating the initial goal.  Setting it to @('nil') skips all
+ simplifications that depend on the set of currently @(see enable)d rules.  See
+ @(see verify-guards).  Thanks to Sol Swords for designing this feature and
+ providing its implementation, along with documentation and corressponding
+ adjustments to the community books.</p>
+
  <h3>Heuristic and Efficiency Improvements</h3>
 
  <h3>Bug Fixes</h3>

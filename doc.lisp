@@ -39134,7 +39134,11 @@ Subtopics
   ``subsumption'' to eliminate redundancy and by deleting tautologies
   as well as instances of [built-in-clause] rules that come with
   ACL2.  The simp-p argument should be nil to avoid such
-  simplification; that is, use (gthm 'FN nil).
+  simplification; that is, use (gthm 'FN nil).  The simp-p argument
+  bears some resemblance to the :guard-simplify option to
+  [verify-guards]; but somewhat less simplification is done by gthm
+  with simp-p = T than is done when generating guard obligations (by
+  [defun] or [verify-guards]) with :guard-simplify = T.
 
   Note that the result from evaluating (gthm x simp-p guard-debug) is
   an untranslated term, that is, a user-level term; see [termp].  The
@@ -40932,19 +40936,20 @@ Subtopics
   see [guard-formula-utilities] for related utilities.
 
     Example Forms:
-    (guard-obligation 'foo nil t 'top-level state)
-    (guard-obligation '(if (consp x) (foo (car x)) t) nil nil 'my-function state)
+    (guard-obligation 'foo nil t t 'top-level state)
+    (guard-obligation '(if (consp x) (foo (car x)) t) nil nil t 'my-fn state)
 
     General Forms:
-    (guard-obligation name rrp guard-debug ctx state)
-    (guard-obligation term rrp guard-debug ctx state)
+    (guard-obligation name rrp guard-debug guard-simplify ctx state)
+    (guard-obligation term rrp guard-debug guard-simplify ctx state)
 
   where the first argument is either the name of a function or theorem
   or is a non-variable term that may be in untranslated form; rrp
   (``return redundant p'') is non-nil when it is permissible to
   return a value of 'redundant in the first (name) case (and is
   irrelevant in the term case); guard-debug is typically nil but may
-  be t (see [guard-debug]); ctx is a context (typically, a symbol
+  be t (see [guard-debug]); guard-simplify is typically t but may be
+  nil (see [verify-guards]); ctx is a context (typically, a symbol
   used in error and warning messages); and [state] references the
   ACL2 [state].
 
@@ -40952,7 +40957,7 @@ Subtopics
   so-called ``tag tree'':
 
     (mv-let (erp val)
-            (guard-obligation x nil guard-debug 'top-level state)
+            (guard-obligation x nil guard-debug guard-simplify 'top-level state)
             (if erp
                ( .. code for handling error case, e.g., name is undefined .. )
               (let ((cl-set (cadr val))) ; to be proved for guard verification
@@ -40960,22 +40965,22 @@ Subtopics
                      implicitly conjoined, each of which is viewed as
                      a disjunction .. ))))
 
-  The form (guard-obligation x rrp guard-debug ctx state) evaluates to
-  a pair (mv erp val), where erp is nil unless there is an error.
-  (Actually, this is a context-message pair; see the source code's
-  ``Essay on Context-message Pairs''for relevant information.)
-  Suppose erp is nil.  Then val is the keyword :redundant if the
-  corresponding [verify-guards] event would be redundant and rrp is
-  not nil; see [redundant-events].  Otherwise, val is a tuple (list*
-  names cl-set ttree), where: names is (cons :term xt) if x is not a
-  variable, where xt is the translated form of x; and otherwise is a
-  list containing x along with, if x is defined in a
-  mutual-recursion, any other functions defined in the same
-  [mutual-recursion] nest; cl-set is a list of lists of terms, viewed
-  as a conjunction of clauses (each viewed (as a disjunction); and
-  ttree is an assumption-free tag-tree that justifies cl-set.  (The
-  notion of ``tag-tree'' may probably be ignored except for system
-  developers.)
+  The form (guard-obligation x rrp guard-debug guard-simplify ctx
+  state) evaluates to a pair (mv erp val), where erp is nil unless
+  there is an error.  (Actually, this is a context-message pair; see
+  the source code's ``Essay on Context-message Pairs''for relevant
+  information.)  Suppose erp is nil.  Then val is the keyword
+  :redundant if the corresponding [verify-guards] event would be
+  redundant and rrp is not nil; see [redundant-events].  Otherwise,
+  val is a tuple (list* names cl-set ttree), where: names is (cons
+  :term xt) if x is not a variable, where xt is the translated form
+  of x; and otherwise is a list containing x along with, if x is
+  defined in a mutual-recursion, any other functions defined in the
+  same [mutual-recursion] nest; cl-set is a list of lists of terms,
+  viewed as a conjunction of clauses (each viewed (as a disjunction);
+  and ttree is an assumption-free tag-tree that justifies cl-set.
+  (The notion of ``tag-tree'' may probably be ignored except for
+  system developers.)
 
   Guard-obligation is typically used for function names or non-variable
   terms, but as for [verify-guards], it may also be applied to
@@ -82738,6 +82743,15 @@ Changes to Existing Features
 
 New Features
 
+  A new [xargs] keyword, :guard-simplify (default t), controls certain
+  simplifications that may be applied to the guard conjecture while
+  generating the initial goal.  Setting it to nil skips all
+  simplifications that depend on the set of currently [enable]d
+  rules.  See [verify-guards].  Thanks to Sol Swords for designing
+  this feature and providing its implementation, along with
+  documentation and corressponding adjustments to the community
+  books.
+
 
 Heuristic and Efficiency Improvements
 
@@ -120293,6 +120307,7 @@ Subtopics
     (verify-guards flatten
                    :hints ((\"Goal\" :use (:instance assoc-of-app)))
                    :guard-debug t ; default = nil
+                   :guard-simplify nil ; default = t
                    :otf-flg t)
     (verify-guards (lambda$ (x)
                      (declare (xargs :guard (natp x)))
@@ -120308,9 +120323,10 @@ Subtopics
 
     General Form:
     (verify-guards name
-            :hints        hints
-            :guard-debug  t ; typically t, but any value is legal
-            :otf-flg      otf-flg)
+            :hints          hints
+            :guard-debug    gdbg   ; default is nil, but any value is legal
+            :guard-simplify gsmp ; default is t, may be set to nil
+            :otf-flg        otf-flg)
 
   In the General Form above, name is the name of a :[logic] function
   (see [defun-mode]) or of a theorem or axiom, or else is a [lambda$]
@@ -120342,7 +120358,11 @@ Subtopics
   entries.  The keyword arguments above are all optional.  To admit
   this event, the conjunction of the guard proof obligations must be
   proved.  If all the guard obligations are proved, name is
-  considered to have had its [guard]s verified.
+  considered to have had its [guard]s verified.  The :guard-simplify
+  option controls certain simplifications that may be applied to the
+  guard conjecture while generating the initial goal; setting it to
+  nil skips all simplifications that depend on the set of currently
+  [enable]d rules.
 
   See [guard-formula-utilities] for utilities that let you view the
   formula to be proved by verify-guards, but without creating an
@@ -120765,13 +120785,14 @@ Subtopics
     Example Forms:
     (verify-guards-formula foo)
     (verify-guards-formula foo :guard-debug t)
+    (verify-guards-formula foo :guard-debug t :guard-simplify nil)
     (verify-guards-formula foo :rrp t :otf-flg dont-care :xyz whatever)
     (verify-guards-formula (+ (foo x) (bar y)) :guard-debug t)
 
   Verify-guards-formula allows all keywords, but only pays attention to
-  :guard-debug, which has the same effect as in [verify-guards] (see
-  [guard-debug]), and to :rrp, described below.  Apply
-  verify-guards-formula to a name just as you would use
+  :guard-debug and :guard-simplify, which have the same effect as in
+  [verify-guards] (see [guard-debug]), and to :rrp, described below.
+  Apply verify-guards-formula to a name just as you would use
   [verify-guards], but when you only want the output that shows the
   guard proof obligation, without attempting a proof or creating an
   event.  If the first argument is not a symbol, then it is treated
@@ -124564,6 +124585,7 @@ Subtopics
 
     (declare (xargs :guard (symbolp x)
                     :guard-debug t
+                    :guard-simplify nil
                     :guard-hints ((\"Goal\" :in-theory (theory batch1)))
                     :hints ((\"Goal\" :in-theory (theory batch1)))
                     :measure (- i j)
@@ -124611,6 +124633,11 @@ Subtopics
   Value: hints (see [hints]), to be used during the [guard]
   verification proofs as opposed to the termination proofs of the
   [defun].
+
+  :guard-simplify)<br></br> @('Value: t by default, else directs ACL2
+  to skip certain simplifications that ACL2 typically applies while
+  generating the guard proof obligation.  This has the same effect as
+  the corresponding keyword argument to [verify-guards].
 
   :[hints]
   Value: hints (see [hints]), to be used during the termination proofs
