@@ -82758,6 +82758,13 @@ Heuristic and Efficiency Improvements
 
 Bug Fixes
 
+  As noted in the documentation for [lemma-instance], ACL2 may avoid
+  proving some constraints required for [functional-instantiation]
+  that were previously proved.  There was such support even in the
+  case that the previous proof was done on behalf of a [defattach]
+  event, but that support has been made more complete (by keeping
+  more functional substitutions in canonical form).
+
 
 Changes at the System Level
 

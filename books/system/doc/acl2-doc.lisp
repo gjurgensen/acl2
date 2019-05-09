@@ -84161,6 +84161,13 @@ it."
 
  <h3>Bug Fixes</h3>
 
+ <p>As noted in the documentation for @(see lemma-instance), ACL2 may avoid
+ proving some constraints required for @(see functional-instantiation) that
+ were previously proved.  There was such support even in the case that the
+ previous proof was done on behalf of a @(tsee defattach) event, but that
+ support has been made more complete (by keeping more functional substitutions
+ in canonical form).</p>
+
  <h3>Changes at the System Level</h3>
 
  <h3>EMACS Support</h3>
