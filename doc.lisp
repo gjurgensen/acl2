@@ -82765,6 +82765,10 @@ Bug Fixes
   event, but that support has been made more complete (by keeping
   more functional substitutions in canonical form).
 
+  A hard Lisp error has been fixed that could occur (probably only
+  rarely) after adding rules of class :[definition] that introduce
+  recursion.
+
 
 Changes at the System Level
 

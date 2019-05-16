@@ -84168,6 +84168,10 @@ it."
  support has been made more complete (by keeping more functional substitutions
  in canonical form).</p>
 
+ <p>A hard Lisp error has been fixed that could occur (probably only rarely)
+ after adding rules of class @(':')@(tsee definition) that introduce
+ recursion.</p>
+
  <h3>Changes at the System Level</h3>
 
  <h3>EMACS Support</h3>
@@ -123555,7 +123559,7 @@ created from the original fast alist during @('form') must be manually freed."
 
  @('Value'): @('t') by default, else directs ACL2 to skip certain
  simplifications that ACL2 typically applies while generating the guard
- proof obligation.  This has the same effect as the corresponding keyword 
+ proof obligation.  This has the same effect as the corresponding keyword
  argument to @(tsee verify-guards).</p>
 
  <p>@(':')@(tsee hints)<br></br>
