@@ -27426,12 +27426,13 @@ ld) and @(tsee include-book)"
  @(':meta') rules, but the discussion applies equally to @(':clause-processor')
  rules.</p>
 
- <p>In a nutshell, we require that a rule's evaluator does not support other
- functions in the rule, and we require that the evaluator not be introduced
- under a non-trivial encapsulate.  We also require that no function has an
- attachment (see @(see defattach)) that is both ancestral in the evaluator and
- also ancestral in the meta or clause-processor functions.  We explain these
- restrictions in detail below.</p>
+ <p>In a nutshell, we require that a rule's evaluator does not support any
+ @(see meta-extract) functions in the rule or any @(tsee defaxiom) events, and
+ we require that the evaluator not be introduced under a non-trivial
+ encapsulate.  We also require that no function has an attachment (see @(see
+ defattach)) that is both ancestral in the evaluator and also ancestral in the
+ meta or clause-processor functions.  We explain these restrictions in detail
+ below.</p>
 
  <p>An argument given elsewhere (see @(see meta), in particular ``Aside for the
  logic-minded'') explains that the correctness argument for applying
@@ -27445,15 +27446,11 @@ ld) and @(tsee include-book)"
  defined recursively as follows: a function symbol supports a formula if either
  it occurs in that formula, or else it supports the definition or constraint
  for some function symbol that occurs in that formula.  Moreover, we require
- that neither the evaluator function nor its list version support the
- definition or constraint for any other function symbol occurring in the
- proposed @(':meta') theorem.</p>
+ that neither the evaluator function nor its list version support @(see
+ meta-extract) functions if they are used in the proposed @(':meta')
+ theorem.</p>
 
- <p>We also require that the evaluator does not support the formula of a
- @(':meta') rule's metafunction (nor, if there is one, hypothesis metafunction)
- or of a @(':clause-processor') rule's clause-processor function.  This
- requirement, along with with the analogous requirement for @(tsee defaxiom)
- @(see events) stated above, are necessary in order to carry out the functional
+ <p>These requirements are necessary in order to carry out the functional
  instantiation argument alluded to above, as follows (where the reader may find
  it useful to have some familiarity with the paper ``Structured Theory
  Development for a Mechanized Logic'' (Journal of Automated Reasoning 26, no. 2
@@ -84146,6 +84143,15 @@ it."
  functions.</p>
 
  <h3>Changes to Existing Features</h3>
+
+ <p>It is now permitted for an evaluator to be ancestral in a metafunction or
+ clause-processor.  See @(see evaluator-restrictions), or see the source code
+ comment ``Essay on Correctness of Meta Reasoning'', for discussion of the
+ remaining restrictions.  Thanks to Sol Swords for requesting this improvement
+ and for many helpful discussions.  Moreover, he found a bug in a proof in the
+ above Essay, which has been been fixed; he made a key observation that led to
+ completion of that fix.  Also thanks to Rob Sumners for helpful
+ discussions.</p>
 
  <h3>New Features</h3>
 
