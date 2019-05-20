@@ -3,8 +3,8 @@
 ; The contents of this file are derived from ACL2 Community Book
 ; books/system/doc/acl2-doc.lisp.
 
-; ACL2 Version 8.1 -- A Computational Logic for Applicative Common Lisp
-; Copyright (C) 2018, Regents of the University of Texas
+; ACL2 Version 8.2 -- A Computational Logic for Applicative Common Lisp
+; Copyright (C) 2019, Regents of the University of Texas
 
 ; This version of ACL2 is a descendent of ACL2 Version 1.9, Copyright
 ; (C) 1997 Computational Logic, Inc.  See the documentation topic NOTE-2-0.
@@ -77,7 +77,7 @@ Subtopics
   [defthm], [in-theory], [xargs], [state], etc., without an acl2::
   prefix.
 
-  The constant *acl2-exports* lists 1469 symbols, including most
+  The constant *acl2-exports* lists 1482 symbols, including most
   documented ACL2 system constants, functions, and macros.  You will
   typically also want to import many symbols from Common Lisp; see
   [*common-lisp-symbols-from-main-lisp-package*].
@@ -127,7 +127,8 @@ Subtopics
        allocate-fixnum-range alpha-char-p
        alpha-char-p-forward-to-characterp
        alphorder
-       and and-macro append apply$ apply$-guard
+       always$ always$+ and and-macro append
+       append$ append$+ apply$ apply$-guard
        apply$-lambda apply$-lambda-guard
        apply$-userfn aref-32-bit-integer-stack
        aref-t-stack aref1 aref2 args
@@ -153,9 +154,10 @@ Subtopics
        booleanp-compound-recognizer
        bounded-integer-alistp
        bounded-integer-alistp-forward-to-eqlable-alistp
-       bounded-integer-alistp2 boundp-global
-       boundp-global1 break$ break-on-error
-       brr brr@ build-state1 butlast
+       bounded-integer-alistp2
+       boundp-global boundp-global1 break$
+       break-on-error brr brr-evisc-tuple
+       brr@ build-state1 butlast
        caaaar caaadr caaar caadar caaddr
        caadr caar cadaar cadadr cadar caddar
        cadddr caddr cadr canonical-pathname
@@ -384,8 +386,8 @@ Subtopics
        logeqv logic logic-fns-list-listp
        logic-fns-listp logic-fnsp
        logic-term-list-listp logic-term-listp
-       logic-termp logior lognand lognor
-       lognot logorc1 logorc2 logtest logxor
+       logic-termp logior lognand lognor lognot
+       logorc1 logorc2 logtest logxor loop$
        lower-case-p lower-case-p-char-downcase
        lower-case-p-forward-to-alpha-char-p
        lowest-terms lp
@@ -393,11 +395,11 @@ Subtopics
        main-timer main-timer-type-prescription
        make make-character-list
        make-character-list-make-character-list
-       make-event
-       make-fast-alist make-fmt-bindings
-       make-input-channel make-list
-       make-list-ac make-mv-nths make-ord
-       make-output-channel make-tau-interval
+       make-event make-fast-alist
+       make-fmt-bindings make-input-channel
+       make-list make-list-ac make-mv-nths
+       make-ord make-output-channel
+       make-summary-data make-tau-interval
        make-var-lst make-var-lst1
        make-wormhole-status makunbound-global
        max maximum-length may-need-slashes
@@ -548,6 +550,7 @@ Subtopics
        set-body set-bogus-defun-hints-ok
        set-bogus-measure-ok
        set-bogus-mutual-recursion-ok
+       set-brr-evisc-tuple
        set-case-split-limitations
        set-cbd set-check-invariant-risk
        set-checkpoint-summary-limit
@@ -622,9 +625,9 @@ Subtopics
        set-well-founded-relation
        set-wormhole-data
        set-wormhole-entry-code
-       set-write-acl2x setenv$ seventh
-       sgetprop show-accumulated-persistence
-       show-bdd show-bodies
+       set-write-acl2x setenv$ seventh sgetprop
+       show-accumulated-persistence show-bdd
+       show-bodies show-brr-evisc-tuple
        show-custom-keyword-hint-expansion
        show-fc-criteria
        shrink-32-bit-integer-stack
@@ -706,13 +709,13 @@ Subtopics
        ttag ttags-seen tthm type typed-io-listp
        typed-io-listp-forward-to-true-listp
        typespec-check u ubt ubt! ubt-prehistory
-       ubt? ubu ubu! ubu? unary--
-       unary-/ unary-function-symbol-listp
-       unicity-of-0 unicity-of-1 union$
-       union-eq union-equal union-theories
-       universal-theory unmemoize
-       unmonitor unquote unsave unsigned-byte
-       unsigned-byte-p untrace$ untrans-table
+       ubt? ubu ubu! ubu? unary-- unary-/
+       unary-function-symbol-listp unicity-of-0
+       unicity-of-1 union$ union-eq union-equal
+       union-theories universal-theory
+       unmemoize unmonitor unquote
+       unsave unsigned-byte unsigned-byte-p
+       until$ until$+ untrace$ untrans-table
        untranslate update-32-bit-integer-stack
        update-acl2-oracle
        update-acl2-oracle-preserves-state-p1
@@ -735,7 +738,8 @@ Subtopics
        w walkabout warning! warrant
        waterfall-parallelism waterfall-printing
        well-formed-lambda-objectp
-       wet with-fast-alist with-guard-checking
+       wet when$ when$+
+       with-fast-alist with-guard-checking
        with-guard-checking-error-triple
        with-guard-checking-event
        with-live-state
@@ -1512,7 +1516,7 @@ Subtopics
   (ACL2)
   "General information About ACL2
 
-  This is ACL2 Version 8.1, [copyright] (C) 2018, Regents of the
+  This is ACL2 Version 8.2, [copyright] (C) 2019, Regents of the
   University of Texas, authored by Matt Kaufmann and J Strother
   Moore.
 
@@ -2518,7 +2522,7 @@ Subtopics
   This is the ACL2 documentation.  For the ACL2+Books Manual, which
   that includes both the ACL2 documentation and the ACL2
   [community-books], see the {ACL2+Books Manual |
-  http://www.cs.utexas.edu/users/moore/acl2/v8-1/combined-manual/index.html}.
+  http://www.cs.utexas.edu/users/moore/acl2/v8-2/combined-manual/index.html}.
 
 
 Subtopics
@@ -4650,7 +4654,7 @@ Silent loading of ACL2 customization files
 
   As discussed elsewhere (see [documentation]), the web-based
   {ACL2+Books Manual |
-  http://www.cs.utexas.edu/users/moore/acl2/v8-1/combined-manual/index.html}
+  http://www.cs.utexas.edu/users/moore/acl2/v8-2/combined-manual/index.html}
   provides a way to browse the combined documentation for the ACL2
   system and community books.  Such documentation can also be read at
   the terminal using the :[doc] command, though documentation for
@@ -7354,6 +7358,8 @@ Subtopics
 
   We now recommend that you visit [documentation] on additional
   examples.  See [annotated-ACL2-scripts].")
+ (ALWAYS$ (POINTERS) "See [loop$].")
+ (ALWAYS$+ (POINTERS) "See [loop$].")
  (ANALYZING_COMMON_LISP_MODELS
   (PAGES_WRITTEN_ESPECIALLY_FOR_THE_TOURS)
   "Analyzing Common Lisp Models
@@ -7627,6 +7633,8 @@ Subtopics
 
   [Binary-append]
       [concatenate] two lists")
+ (APPEND$ (POINTERS) "See [loop$].")
+ (APPEND$+ (POINTERS) "See [loop$].")
  (APPLY$
   (ACL2-BUILT-INS PROGRAMMING)
   "Apply a badged function or tame lambda to arguments
@@ -12608,7 +12616,7 @@ Prerequisites
 
   We assume that you have already downloaded and installed ACL2 as per
   the {ACL2 installation instructions |
-  http://www.cs.utexas.edu/users/moore/acl2/v8-1/HTML/installation/installation.html}
+  http://www.cs.utexas.edu/users/moore/acl2/v8-2/HTML/installation/installation.html}
   on the ACL2 home page.
 
   We assume you know the path to your ACL2 executable.  Typically this
@@ -12860,7 +12868,7 @@ Subtopics
 
   For more information about installing ACL2, see the {ACL2
   installation instructions |
-  http://www.cs.utexas.edu/users/moore/acl2/v8-1/HTML/installation/installation.html}.
+  http://www.cs.utexas.edu/users/moore/acl2/v8-2/HTML/installation/installation.html}.
   For information about so-called ``classic ACL2 `make'-based
   certification'', which provides support for certifying directories
   of books but may disappear in a future ACL2 release, see
@@ -12902,17 +12910,16 @@ Subtopics
   particular, is useful in case you encounter problems to report.
 
   If you fetched the community books using git, then you will have a
-  directory books/workshops/ that is not necessary for certifying the
-  other books.  If you want to skip certification of the books under
-  books/workshops/, use target `certify-books' instead of target
-  `regression', for example as follows.
+  directories such books/workshops/ that is not necessary for
+  certifying the most widely-included books.  You can certify just
+  such books as follows.
 
-    (time nice make certify-books) >& make-certify-books.log
+    (time nice make basic) >& make-basic.log
 
-  Whether you use target `regression' or target `certify-books', then
-  for each book foo.lisp whose certification is attempted, a file
-  foo.cert.out in the same directory will contain the output from the
-  book's certification attempt.
+  Whether you use target `regression' or target `basic', then for each
+  book foo.lisp whose certification is attempted, a file foo.cert.out
+  in the same directory will contain the output from the book's
+  certification attempt.
 
   A regression run may take a few hours, but if you have a
   multiprocessing computer, you can speed it up by certifying some
@@ -12947,13 +12954,9 @@ Subtopics
 
     make clean-books
 
-  If you want to cause such deletion and then do a regression, simply
-  replace the `regression' or `certify-books' target by
-  `regression-fresh' or `certify-books-fresh', respectively, for
-  example as follows.  follows.
-
-    make -j 4 regression-fresh
-    make -j 4 certify-books-fresh
+  Alternatively, if you want to cause such deletion and then do a
+  regression, simply replace the `regression' target by
+  `regression-fresh.
 
   If however you only want to clean up generated files residing under a
   given directory (or its subdirectories, and recursively), you can
@@ -14298,7 +14301,10 @@ Subtopics
       To stop monitoring a rule name
 
   [Why-brr]
-      An explanation of why ACL2 has an explicit [brr] mode")
+      An explanation of why ACL2 has an explicit [brr] mode
+
+  [Windows-installation]
+      Installing ACL2 on Windows")
  (BREAKS
   (ERRORS)
   "Common Lisp breaks
@@ -14353,7 +14359,7 @@ Subtopics
   contains [documentation] only about the ACL2 system, and does not
   include documentation from the [community-books].  Please point
   your browser at the {ACL2+Books Manual |
-  http://www.cs.utexas.edu/users/moore/acl2/v8-1/combined-manual/index.html}
+  http://www.cs.utexas.edu/users/moore/acl2/v8-2/combined-manual/index.html}
   (or if browsing in [ACL2-Doc], switch to that manual with meta-0 I)
   to access the desired topic.
 
@@ -14403,6 +14409,7 @@ Subtopics
        (defpun \"[books]/misc/defpun.lisp\")
        (defthm<w \"[books]/kestrel/utilities/auto-instance.lisp\")
        (defthmg \"[books]/tools/defthmg.lisp\")
+       (defxdoc \"[books]/xdoc/topics.lisp\")
        (getopt-demo::demo2 \"[books]/centaur/getopt/demo2.lisp\")
        (developers-guide \"[books]/system/doc/developers-guide.lisp\")
        (developers-guide-utilities
@@ -14420,6 +14427,7 @@ Subtopics
        (include-raw \"[books]/tools/include-raw.lisp\")
        (install-not-normalized \"[books]/misc/install-not-normalized.lisp\")
        (list-equiv \"[books]/std/lists/equiv.lisp\")
+       (list-fix \"[books]/std/lists/list-fix.lisp\")
        (logbitp-reasoning \"[books]/centaur/bitops/equal-by-logbitp.lisp\")
        (make-flag \"[books]/tools/flag.lisp\")
        (make-termination-theorem
@@ -14434,6 +14442,7 @@ Subtopics
        (note-7-2-books \"[books]/doc/relnotes.lisp\")
        (note-8-0-books \"[books]/doc/relnotes.lisp\")
        (note-8-1-books \"[books]/doc/relnotes.lisp\")
+       (note-8-2-books \"[books]/doc/relnotes.lisp\")
        (str::numbers \"[books]/std/strings/top.lisp\")
        (oracle-timelimit \"[books]/tools/oracle-timelimit.lisp\")
        (oslib \"[books]/oslib/top-logic.lisp\")
@@ -14446,8 +14455,8 @@ Subtopics
        (profile-all \"[books]/centaur/memoize/old/profile.lisp\")
        (quicklisp \"[books]/quicklisp/top.lisp\")
        (release-notes-books \"[books]/doc/relnotes.lisp\")
-       (remove-hyps \"[books]/tools/remove-hyps.lisp\")
        (removable-runes \"[books]/tools/removable-runes.lisp\")
+       (remove-hyps \"[books]/tools/remove-hyps.lisp\")
        (run-script \"[books]/tools/run-script.lisp\")
        (satlink::sat-solver-options \"[books]/centaur/satlink/top.lisp\")
        (satlink \"[books]/centaur/satlink/top.lisp\")
@@ -14475,6 +14484,7 @@ Subtopics
        (with-redef-allowed \"[books]/hacking/hacking-xdoc.lisp\")
        (with-timeout \"[books]/acl2s/cgen/with-timeout.lisp\")
        (working-with-packages \"[books]/doc/practices.lisp\")
+       (write-list \"[books]/misc/file-io.lisp\")
        (xdoc \"[books]/xdoc/topics.lisp\"))")
  (BRR
   (BREAK-REWRITE)
@@ -15625,7 +15635,6 @@ Subtopics
 
     export CCL_DEFAULT_DIRECTORY=/projects/acl2/lisps/ccl/2017-12-07-6be8298fe5/ccl
     ${CCL_DEFAULT_DIRECTORY}/scripts/ccl64 \"$@\"
-    </pre>
 
   Finally, ensure that your script is executable, e.g.:
 
@@ -19937,10 +19946,10 @@ Subtopics
   [documentation-copyright], which notes that there are many
   documentation authors.
 
-  ACL2 Version 8.1 --- A Computational Logic for Applicative Common
+  ACL2 Version 8.2 --- A Computational Logic for Applicative Common
   Lisp
 
-  Copyright (C) 2018, Regents of the University of Texas
+  Copyright (C) 2019, Regents of the University of Texas
 
   This version of ACL2 is a descendant of ACL2 Version 1.9, Copyright
   (C) 1997 Computational Logic, Inc.  See the documentation topic
@@ -27665,7 +27674,7 @@ Subtopics
   defined in books.  However, most users will probably access the
   ACL2 documentation in other ways; see [documentation].  In
   particular, consider using the {ACL2+Books Manual |
-  http://www.cs.utexas.edu/users/moore/acl2/v8-1/combined-manual/index.html},
+  http://www.cs.utexas.edu/users/moore/acl2/v8-2/combined-manual/index.html},
   for topics documented in the ACL2 community [books] or in the ACL2
   system (where the latter are rearranged).
 
@@ -27707,7 +27716,7 @@ Available Documentation
     * The online version (recommended). If you expect to have an internet
       connection while using the documentation, you may prefer to use
       the online version of the {ACL2+Books Manual |
-      http://www.cs.utexas.edu/users/moore/acl2/v8-1/combined-manual/index.html}.
+      http://www.cs.utexas.edu/users/moore/acl2/v8-2/combined-manual/index.html}.
     * A local version. If you sometimes work without an internet
       connection, you can {download | download/} a local copy of any
       web-based XDOC manual using the \"down arrow\" icon at the top of
@@ -30653,12 +30662,12 @@ Subtopics
   :clause-processor rules.
 
   In a nutshell, we require that a rule's evaluator does not support
-  other functions in the rule, and we require that the evaluator not
-  be introduced under a non-trivial encapsulate.  We also require
-  that no function has an attachment (see [defattach]) that is both
-  ancestral in the evaluator and also ancestral in the meta or
-  clause-processor functions.  We explain these restrictions in
-  detail below.
+  any [meta-extract] functions in the rule or any [defaxiom] events,
+  and we require that the evaluator not be introduced under a
+  non-trivial encapsulate.  We also require that no function has an
+  attachment (see [defattach]) that is both ancestral in the
+  evaluator and also ancestral in the meta or clause-processor
+  functions.  We explain these restrictions in detail below.
 
   An argument given elsewhere (see [meta], in particular ``Aside for
   the logic-minded'') explains that the correctness argument for
@@ -30674,26 +30683,20 @@ Subtopics
   a formula if either it occurs in that formula, or else it supports
   the definition or constraint for some function symbol that occurs
   in that formula.  Moreover, we require that neither the evaluator
-  function nor its list version support the definition or constraint
-  for any other function symbol occurring in the proposed :meta
-  theorem.
+  function nor its list version support [meta-extract] functions if
+  they are used in the proposed :meta theorem.
 
-  We also require that the evaluator does not support the formula of a
-  :meta rule's metafunction (nor, if there is one, hypothesis
-  metafunction) or of a :clause-processor rule's clause-processor
-  function.  This requirement, along with with the analogous
-  requirement for [defaxiom] [events] stated above, are necessary in
-  order to carry out the functional instantiation argument alluded to
-  above, as follows (where the reader may find it useful to have some
-  familiarity with the paper ``Structured Theory Development for a
-  Mechanized Logic'' (Journal of Automated Reasoning 26, no. 2
-  (2001), pages 161-203).  By the usual conservativity argument, we
-  know that the rule follows logically from the axiomatic events for
-  its supporters.  This remains true if we functionally instantiate
-  the evaluator with one corresponding to all the functions symbols
-  of the current session, since none of the definitions of supporters
-  of defaxioms or metafunctions are hit by that functional
-  substitution.
+  These requirements are necessary in order to carry out the functional
+  instantiation argument alluded to above, as follows (where the
+  reader may find it useful to have some familiarity with the paper
+  ``Structured Theory Development for a Mechanized Logic'' (Journal
+  of Automated Reasoning 26, no. 2 (2001), pages 161-203).  By the
+  usual conservativity argument, we know that the rule follows
+  logically from the axiomatic events for its supporters.  This
+  remains true if we functionally instantiate the evaluator with one
+  corresponding to all the functions symbols of the current session,
+  since none of the definitions of supporters of defaxioms or
+  metafunctions are hit by that functional substitution.
 
   Notice though that the argument above depends on knowing that the
   rule is not itself an axiom about the evaluator!  Therefore, we
@@ -33722,7 +33725,7 @@ Subtopics
   not included in the current ACL2 session?
 
   The [xdoc] {ACL2+Books Manual |
-  http://www.cs.utexas.edu/users/moore/acl2/v8-1/combined-manual/index.html}
+  http://www.cs.utexas.edu/users/moore/acl2/v8-2/combined-manual/index.html}
   includes documentation for both the ACL2 system and the
   [community-books].  For more information on this manual and how to
   view it, see [documentation].")
@@ -39125,7 +39128,11 @@ Subtopics
   ``subsumption'' to eliminate redundancy and by deleting tautologies
   as well as instances of [built-in-clause] rules that come with
   ACL2.  The simp-p argument should be nil to avoid such
-  simplification; that is, use (gthm 'FN nil).
+  simplification; that is, use (gthm 'FN nil).  The simp-p argument
+  bears some resemblance to the :guard-simplify option to
+  [verify-guards]; but somewhat less simplification is done by gthm
+  with simp-p = T than is done when generating guard obligations (by
+  [defun] or [verify-guards]) with :guard-simplify = T.
 
   Note that the result from evaluating (gthm x simp-p guard-debug) is
   an untranslated term, that is, a user-level term; see [termp].  The
@@ -40923,19 +40930,20 @@ Subtopics
   see [guard-formula-utilities] for related utilities.
 
     Example Forms:
-    (guard-obligation 'foo nil t 'top-level state)
-    (guard-obligation '(if (consp x) (foo (car x)) t) nil nil 'my-function state)
+    (guard-obligation 'foo nil t t 'top-level state)
+    (guard-obligation '(if (consp x) (foo (car x)) t) nil nil t 'my-fn state)
 
     General Forms:
-    (guard-obligation name rrp guard-debug ctx state)
-    (guard-obligation term rrp guard-debug ctx state)
+    (guard-obligation name rrp guard-debug guard-simplify ctx state)
+    (guard-obligation term rrp guard-debug guard-simplify ctx state)
 
   where the first argument is either the name of a function or theorem
   or is a non-variable term that may be in untranslated form; rrp
   (``return redundant p'') is non-nil when it is permissible to
   return a value of 'redundant in the first (name) case (and is
   irrelevant in the term case); guard-debug is typically nil but may
-  be t (see [guard-debug]); ctx is a context (typically, a symbol
+  be t (see [guard-debug]); guard-simplify is typically t but may be
+  nil (see [verify-guards]); ctx is a context (typically, a symbol
   used in error and warning messages); and [state] references the
   ACL2 [state].
 
@@ -40943,7 +40951,7 @@ Subtopics
   so-called ``tag tree'':
 
     (mv-let (erp val)
-            (guard-obligation x nil guard-debug 'top-level state)
+            (guard-obligation x nil guard-debug guard-simplify 'top-level state)
             (if erp
                ( .. code for handling error case, e.g., name is undefined .. )
               (let ((cl-set (cadr val))) ; to be proved for guard verification
@@ -40951,22 +40959,22 @@ Subtopics
                      implicitly conjoined, each of which is viewed as
                      a disjunction .. ))))
 
-  The form (guard-obligation x rrp guard-debug ctx state) evaluates to
-  a pair (mv erp val), where erp is nil unless there is an error.
-  (Actually, this is a context-message pair; see the source code's
-  ``Essay on Context-message Pairs''for relevant information.)
-  Suppose erp is nil.  Then val is the keyword :redundant if the
-  corresponding [verify-guards] event would be redundant and rrp is
-  not nil; see [redundant-events].  Otherwise, val is a tuple (list*
-  names cl-set ttree), where: names is (cons :term xt) if x is not a
-  variable, where xt is the translated form of x; and otherwise is a
-  list containing x along with, if x is defined in a
-  mutual-recursion, any other functions defined in the same
-  [mutual-recursion] nest; cl-set is a list of lists of terms, viewed
-  as a conjunction of clauses (each viewed (as a disjunction); and
-  ttree is an assumption-free tag-tree that justifies cl-set.  (The
-  notion of ``tag-tree'' may probably be ignored except for system
-  developers.)
+  The form (guard-obligation x rrp guard-debug guard-simplify ctx
+  state) evaluates to a pair (mv erp val), where erp is nil unless
+  there is an error.  (Actually, this is a context-message pair; see
+  the source code's ``Essay on Context-message Pairs''for relevant
+  information.)  Suppose erp is nil.  Then val is the keyword
+  :redundant if the corresponding [verify-guards] event would be
+  redundant and rrp is not nil; see [redundant-events].  Otherwise,
+  val is a tuple (list* names cl-set ttree), where: names is (cons
+  :term xt) if x is not a variable, where xt is the translated form
+  of x; and otherwise is a list containing x along with, if x is
+  defined in a mutual-recursion, any other functions defined in the
+  same [mutual-recursion] nest; cl-set is a list of lists of terms,
+  viewed as a conjunction of clauses (each viewed (as a disjunction);
+  and ttree is an assumption-free tag-tree that justifies cl-set.
+  (The notion of ``tag-tree'' may probably be ignored except for
+  system developers.)
 
   Guard-obligation is typically used for function names or non-variable
   terms, but as for [verify-guards], it may also be applied to
@@ -50584,7 +50592,7 @@ Subtopics
 
   Finally, we note that the [std/io] library contains useful file io
   functions whose definitions illustrate some of the features
-  described above, as does the definition of write-list in
+  described above, as does the definition of [write-list] in
   [community-book] books/misc/file-io.lisp.
 
 
@@ -55656,7 +55664,7 @@ Informal Introduction
   x takes on, but we don't.)  The second example can be guard
   verified and has the advantage of being standard Common Lisp so
   compilers might optimize the handing of (+ 1 x).  The third example
-  can also be guard verified but since the :guard derective used here
+  can also be guard verified but since the :guard directive used here
   is ignored by Common Lisp it does not inform the compiler, so this
   example might execute more slowly than the previous one.  The last
   example shows the syntax and use of the ACL2-specific addition to
@@ -55935,6 +55943,69 @@ Semantics
   always.  The advantage of this translation style is that it allows
   compositional reasoning.  We discuss this further below.
 
+  The following example illustrates basic [guard] proof obligations, in
+  particular showing that when clauses do not help with verifying
+  guards for the loop bodies.  (Similarly, until clauses do not help
+  either.)
+
+    (include-book \"projects/apply/top\" :dir :system)
+    (defun$ sq (n)
+      (declare (xargs :guard (natp n)))
+      (* n n))
+    (defun foo (lst)
+      (declare (xargs :guard (nat-listp lst)))
+      (loop$ for x of-type (satisfies nat-listp) on lst
+             when (consp x)
+             sum (sq (car x))))
+
+  Guard verification fails, and the summary says that a goal of NIL was
+  generated.  Using :[pso] we can see that the NIL goal came from:
+
+    Subgoal 1
+    (IMPLIES (NAT-LISTP X) (NATP (CAR X))).
+
+  Let's see what is going on by looking at the following abbreviated
+  translation of the loop$ expression.
+
+    (sum$ '(lambda (x)
+             (declare (type (satisfies nat-listp) x)
+                      (xargs :guard (nat-listp x)
+                             :split-types t)
+                      (ignorable x))
+             (sq (car x)))
+          (when$ '(lambda ...) (tails lst)))
+
+  We see that the [scion], sum$, is trying to apply a [lambda] object
+  that can cause sq to be applied to (car x) when x is nil.  But (sq
+  nil) is a guard violation, since sq expects its argument to be a
+  natural number.  The following modification, which adds a :guard
+  directive, solves the problem.
+
+    (defun foo (lst)
+      (declare (xargs :guard (nat-listp lst)))
+      (loop$ for x of-type (satisfies nat-listp) on lst
+             when (consp x)
+             sum :guard (consp x) (sq (car x))))
+
+  Indeed, the abbreviated translation now shows that the application
+  (sq (car x)) is protected by a suitable guard.
+
+    (sum$ '(lambda (x)
+             (declare (type (satisfies nat-listp) x)
+                      (xargs :guard (if (nat-listp x) (consp x) 'nil)
+                             :split-types t)
+                      (ignorable x))
+             (sq (car x)))
+          (when$ '(lambda ...) (tails lst)))
+
+  Naively we might have expected that the guard proof obligation for
+  the loop$ body (sq (car x)) could assume the when clause, but that
+  expectation would be wrong.  The [lambda] object must be
+  guard-verifiable on its own (in particular because the
+  implementation stores guard-verified lambda objects for evaluation
+  in raw Lisp, which may take place in other contexts where we don't
+  have the when clause).
+
   Semantics of Fancy Loop$s
 
   An example of a fancy loop$ is
@@ -56022,7 +56093,7 @@ Semantics
   For example, the logical meaning of
 
     (defun foo (lst)
-      (declare (xargs :guard (and (warrant expr) (foo-guardp lst))))
+      (declare (xargs :guard (foo-guardp lst)))
       (loop$ for x of-type (satisfies spec) on lst sum (expr x)))
 
   is
@@ -56072,11 +56143,13 @@ Semantics
   in the logical defun of foo, it generates three additional guard
   conjectures
 
-    (implies (and (foo-guardp lst)                            ; [5]
+    (implies (and (warrant ...) ; see below                   ; [5]
+                  (foo-guardp lst)
                   (member-equal newv (tails lst)))
              (spec newv))
 
-    (implies (and (foo-guardp lst)                            ; [6]
+    (implies (and (warrant ...) ; see below                   ; [6]
+                  (foo-guardp lst)
                   (member-equal newv (tails lst)))
              (acl2-numberp
               (apply$ (lambda$ (x)
@@ -56087,12 +56160,17 @@ Semantics
     (implies (foo-guardp lst)                                 ; [7]
              (spec nil))
 
+  Notice the addition of hypotheses above of the form (warrant ...).
+  ACL2 adds such [warrant] hypotheses for function symbols that might
+  be [apply$]ed during evaluation of a scion call (in this case,
+  sum$).
+
   In general, you may notice that ACL2 generates such ``special'' guard
   conjectures for all calls of loop$ scions, whether or not they
   stemmed from uses of loop$.  FROM/TO/BY targets require that the
   bounds and step all satisfy the of-type specification, and the
   append operator requires that the loop body generate a [true-listp]
-  (instead of an [ACL2-numberp] as required by the sum operator.
+  (instead of an [ACL2-numberp] as required by the sum operator).
 
   The Compromise Between Reasoning and Efficiency
 
@@ -82222,7 +82300,7 @@ Experimental Versions
   [fmt-to-string] and related utilities, which call with-local-state.")
  (NOTE-8-2
   (RELEASE-NOTES)
-  "ACL2 Version 8.2 (xxx, 20xx) Notes
+  "ACL2 Version 8.2 (May, 2019) Notes
 
   NOTE!  New users can ignore these release notes, because the
   [documentation] has been updated to reflect all changes that are
@@ -82236,10 +82314,10 @@ Experimental Versions
   many changes could be placed in more than one category.
 
   Note that only ACL2 system changes are listed below.  See also
-  note-8-2-books for a summary of changes made to the ACL2 Community
-  Books since ACL2 8.0, including the build system.  Also note that
-  with each release, it is typical that the value of constant
-  [*ACL2-exports*] has been extended, and that some built-in
+  [note-8-2-books] for a summary of changes made to the ACL2
+  Community Books since ACL2 8.1, including the build system.  Also
+  note that with each release, it is typical that the value of
+  constant [*ACL2-exports*] has been extended, and that some built-in
   functions that were formerly in :[program] mode are now
   [guard]-verified :[logic] mode functions.
 
@@ -82248,13 +82326,13 @@ Changes to Existing Features
 
   The built-in function [fix-true-list] is now a macro that expands to
   a new built-in function, [true-list-fix], whose definition follows
-  the efficient definition of list-fix that was in [community-book]
-  books/std/lists/list-fix.lisp.  In that book, list-fix is now a
+  the efficient definition of [list-fix] that was in [community-book]
+  books/std/lists/list-fix.lisp.  In that book, [list-fix] is now a
   macro that expands to true-list-fix.  The use of macro-aliases (see
   [add-macro-alias]) should generally make this change backward
-  compatible for users of list-fix.  Thanks to Mihir Mehta for taking
-  the lead on implementing these changes and to Jared Davis for
-  permission to integrate definitions and documentation from his
+  compatible for users of [list-fix].  Thanks to Mihir Mehta for
+  taking the lead on implementing these changes and to Jared Davis
+  for permission to integrate definitions and documentation from his
   Kookamara books into the ACL2 sources.
 
   Made some improvements pertaining to [apply$]:
@@ -82373,12 +82451,12 @@ Changes to Existing Features
   for a query that led to this enhancement.
 
   The built-in function [take] now has a recursive definition, exactly
-  along the lines of the theorem take-redefinition from the community
-  book books/std/lists/take.lisp (written by Jared Davis), which is
-  retained for compatibility with existing books.  The definition of
-  take uses [mbe], where the :exec component calls first-n-ac as
-  before for execution efficiency.  We thank Mihir Mehta for
-  providing this enhancement, including updates to the books.
+  along the lines of the old theorem take-redefinition from the
+  community book books/std/lists/take.lisp (written by Jared Davis);
+  this theorem has now been removed.  The definition of take uses
+  [mbe], where the :exec component calls first-n-ac as before for
+  execution efficiency.  We thank Mihir Mehta for providing this
+  enhancement, including updates to the books.
 
 
 New Features
@@ -82605,6 +82683,15 @@ Changes at the System Level
   change and to Keshav Kini and Alessandro Coglio for helpful
   feedback.
 
+  The makefile target certify-books has been deprecated in both
+  GNUmakefile and books/GNUmakefile.  Thanks to the acl2-books email
+  list (in particular we got feedback from Alessandro Coglio, Shilpi
+  Goel, David Rager, Eric Smith, and Sol Swords, all helpful) for
+  working through this issue.
+
+  A message is now printed at when loading file ~/acl2-init.lsp at
+  startup.
+
 
 EMACS Support
 
@@ -82618,6 +82705,79 @@ EMACS Support
   A new [ACL2-doc] command is the question-mark character (?), which
   goes to a page with one-line command summaries.  Thanks to Warren
   Hunt for a request leading to this enhancement.
+
+
+Experimental Versions")
+ (NOTE-8-3
+  (RELEASE-NOTES)
+  "ACL2 Version 8.3 (xxx, 20xx) Notes
+
+  NOTE!  New users can ignore these release notes, because the
+  [documentation] has been updated to reflect all changes that are
+  recorded here.
+
+  Below we roughly organize the changes to ACL2 since Version 8.2 into
+  the following categories of changes: existing features, new
+  features, heuristic and efficiency improvements, bug fixes, changes
+  at the system level, Emacs support, and experimental versions.
+  Each change is described in just one category, though of course
+  many changes could be placed in more than one category.
+
+  Note that only ACL2 system changes are listed below.  See also
+  note-8-3-books for a summary of changes made to the ACL2 Community
+  Books since ACL2 8.2, including the build system.  Also note that
+  with each release, it is typical that the value of constant
+  [*ACL2-exports*] has been extended, and that some built-in
+  functions that were formerly in :[program] mode are now
+  [guard]-verified :[logic] mode functions.
+
+
+Changes to Existing Features
+
+  It is now permitted for an evaluator to be ancestral in a
+  metafunction or clause-processor.  See [evaluator-restrictions], or
+  see the source code comment ``Essay on Correctness of Meta
+  Reasoning'', for discussion of the remaining restrictions.  Thanks
+  to Sol Swords for requesting this improvement and for many helpful
+  discussions.  Moreover, he found a bug in a proof in the above
+  Essay, which has been been fixed; he made a key observation that
+  led to completion of that fix.  Also thanks to Rob Sumners for
+  helpful discussions.
+
+
+New Features
+
+  A new [xargs] keyword, :guard-simplify (default t), controls certain
+  simplifications that may be applied to the guard conjecture while
+  generating the initial goal.  Setting it to nil skips all
+  simplifications that depend on the set of currently [enable]d
+  rules.  See [verify-guards].  Thanks to Sol Swords for designing
+  this feature and providing its implementation, along with
+  documentation and corressponding adjustments to the community
+  books.
+
+
+Heuristic and Efficiency Improvements
+
+
+Bug Fixes
+
+  As noted in the documentation for [lemma-instance], ACL2 may avoid
+  proving some constraints required for [functional-instantiation]
+  that were previously proved.  There was such support even in the
+  case that the previous proof was done on behalf of a [defattach]
+  event, but that support has been made more complete (by keeping
+  more functional substitutions in canonical form).
+
+  A hard Lisp error has been fixed that could occur (probably only
+  rarely) after adding rules of class :[definition] that introduce
+  recursion.
+
+
+Changes at the System Level
+
+
+EMACS Support
 
 
 Experimental Versions")
@@ -86968,6 +87128,18 @@ Subtopics
   [All-vars]
       See [system-utilities].
 
+  [Always$]
+      See [loop$].
+
+  [Always$+]
+      See [loop$].
+
+  [Append$]
+      See [loop$].
+
+  [Append$+]
+      See [loop$].
+
   [Apropos]
       See [finding-documentation].
 
@@ -87805,6 +87977,12 @@ Subtopics
   [Unknown-constraints]
       See [partial-encapsulate].
 
+  [Until$]
+      See [loop$].
+
+  [Until$+]
+      See [loop$].
+
   [Untranslate-preprocess]
       See [user-defined-functions-table].
 
@@ -87822,6 +88000,12 @@ Subtopics
 
   [Waterfall]
       See [hints-and-the-waterfall].
+
+  [When$]
+      See [loop$].
+
+  [When$+]
+      See [loop$].
 
   [With-output!]
       See [with-output].
@@ -92919,6 +93103,9 @@ Subtopics
 
   ev-fncall: evaluating a function on explicit arguments
 
+  ev-fncall+: evaluating a function on explicit arguments while
+  assuming that [warrant] hypotheses are true
+
   ev-fncall-meta: evaluating a metafunction
 
   forward-chain: building a context for the current goal using
@@ -96110,7 +96297,10 @@ Subtopics
       ACL2 Version 8.1 (September, 2018) Notes
 
   [Note-8-2]
-      ACL2 Version 8.2 (xxx, 20xx) Notes")
+      ACL2 Version 8.2 (May, 2019) Notes
+
+  [Note-8-3]
+      ACL2 Version 8.3 (xxx, 20xx) Notes")
  (REM
   (NUMBERS ACL2-BUILT-INS)
   "Remainder using [truncate]
@@ -118335,6 +118525,8 @@ Subtopics
 
   Profiling may cause proofs to hang when waterfall-parallelism is
   enabled (GitHub Issue #638).")
+ (UNTIL$ (POINTERS) "See [loop$].")
+ (UNTIL$+ (POINTERS) "See [loop$].")
  (UNTOUCHABLE
   (DEFTTAG)
   "Function symbols and state globals that cannot be referenced
@@ -120130,6 +120322,7 @@ Subtopics
     (verify-guards flatten
                    :hints ((\"Goal\" :use (:instance assoc-of-app)))
                    :guard-debug t ; default = nil
+                   :guard-simplify nil ; default = t
                    :otf-flg t)
     (verify-guards (lambda$ (x)
                      (declare (xargs :guard (natp x)))
@@ -120145,9 +120338,10 @@ Subtopics
 
     General Form:
     (verify-guards name
-            :hints        hints
-            :guard-debug  t ; typically t, but any value is legal
-            :otf-flg      otf-flg)
+            :hints          hints
+            :guard-debug    gdbg   ; default is nil, but any value is legal
+            :guard-simplify gsmp ; default is t, may be set to nil
+            :otf-flg        otf-flg)
 
   In the General Form above, name is the name of a :[logic] function
   (see [defun-mode]) or of a theorem or axiom, or else is a [lambda$]
@@ -120179,7 +120373,11 @@ Subtopics
   entries.  The keyword arguments above are all optional.  To admit
   this event, the conjunction of the guard proof obligations must be
   proved.  If all the guard obligations are proved, name is
-  considered to have had its [guard]s verified.
+  considered to have had its [guard]s verified.  The :guard-simplify
+  option controls certain simplifications that may be applied to the
+  guard conjecture while generating the initial goal; setting it to
+  nil skips all simplifications that depend on the set of currently
+  [enable]d rules.
 
   See [guard-formula-utilities] for utilities that let you view the
   formula to be proved by verify-guards, but without creating an
@@ -120602,13 +120800,14 @@ Subtopics
     Example Forms:
     (verify-guards-formula foo)
     (verify-guards-formula foo :guard-debug t)
+    (verify-guards-formula foo :guard-debug t :guard-simplify nil)
     (verify-guards-formula foo :rrp t :otf-flg dont-care :xyz whatever)
     (verify-guards-formula (+ (foo x) (bar y)) :guard-debug t)
 
   Verify-guards-formula allows all keywords, but only pays attention to
-  :guard-debug, which has the same effect as in [verify-guards] (see
-  [guard-debug]), and to :rrp, described below.  Apply
-  verify-guards-formula to a name just as you would use
+  :guard-debug and :guard-simplify, which have the same effect as in
+  [verify-guards] (see [guard-debug]), and to :rrp, described below.
+  Apply verify-guards-formula to a name just as you would use
   [verify-guards], but when you only want the output that shows the
   guard proof obligation, without attempting a proof or creating an
   event.  If the first argument is not a symbol, then it is treated
@@ -122366,6 +122565,8 @@ The Differences Between Well-Formed and Merely Tame Lambda Objects
   responsibility.
 
   {IMAGE} (see [How_Long_Does_It_Take_to_Become_an_Effective_User{Q}])")
+ (WHEN$ (POINTERS) "See [loop$].")
+ (WHEN$+ (POINTERS) "See [loop$].")
  (WHY-BRR
   (BREAK-REWRITE)
   "An explanation of why ACL2 has an explicit [brr] mode
@@ -122422,6 +122623,42 @@ The Differences Between Well-Formed and Merely Tame Lambda Objects
   strongly advised to carry this information out of the wormhole and
   to do :[brr] nil in the external state when the next opportunity
   arises.")
+ (WINDOWS-INSTALLATION
+  (BREAK-REWRITE)
+  "Installing ACL2 on Windows
+
+  Windows users will probably want to do one of the following to
+  install and run ACL2 on their systems.  Thanks to David Rager for
+  his help with this topic.
+
+    * Fetch the ACL2 Sedan (ACL2s) --- see [ACL2-sedan] --- which is an
+      extension and distribution of ACL2 integrated with the Eclipse
+      IDE.  If you wish to use ACL2s without the Eclipse front-end,
+      see {the information about ACL2s in the installation
+      instructions |
+      http://www.cs.utexas.edu/users/moore/acl2/current/HTML/installation/obtaining-and-installing.html#Shortcut-acl2s},
+      which explains how to obtain and use a pre-built ACL2 binary
+      for Windows, Linux, or Mac.
+    * Use a Virtual Machine platform, such as VMware Player (free for
+      non-commercial use) or Oracle Virtualbox (free even for
+      commercial use) to install Linux, and then follow the normal
+      installation instructions to install ACL2.  As of 2014, at
+      least a couple of our power users are very happy with this
+      solution, as it provides first-class access to utilities
+      relevant to maintaining the ACL2 system and books (like GNU
+      Make and perl).
+    * Set up {Windows Subsystem for Linux |
+      https://en.wikipedia.org/wiki/Windows_Subsystem_for_Linux} on a
+      64-bit version of Windows 10 (or later, once available).
+      Within that subsystem, follow the setup and installation
+      instructions for ACL2.  (You might be the first to test this,
+      but it will likely work.)
+
+  You are welcome to {obtain a Windows installer for a previous ACL2
+  release |
+  http://www.cs.utexas.edu/users/moore/acl2/v3-6/distrib/windows/},
+  which mimics some of Linux and provides Emacs.  Updated ACL2
+  binaries have been successfully installed in such an environment.")
  (WITH-FAST-ALIST
   (FAST-ALISTS ACL2-BUILT-INS)
   "(with-fast-alist name form) causes name to be a fast alist for the
@@ -124363,6 +124600,7 @@ Subtopics
 
     (declare (xargs :guard (symbolp x)
                     :guard-debug t
+                    :guard-simplify nil
                     :guard-hints ((\"Goal\" :in-theory (theory batch1)))
                     :hints ((\"Goal\" :in-theory (theory batch1)))
                     :measure (- i j)
@@ -124410,6 +124648,11 @@ Subtopics
   Value: hints (see [hints]), to be used during the [guard]
   verification proofs as opposed to the termination proofs of the
   [defun].
+
+  :guard-simplify)<br></br> @('Value: t by default, else directs ACL2
+  to skip certain simplifications that ACL2 typically applies while
+  generating the guard proof obligation.  This has the same effect as
+  the corresponding keyword argument to [verify-guards].
 
   :[hints]
   Value: hints (see [hints]), to be used during the termination proofs

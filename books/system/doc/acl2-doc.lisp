@@ -2,8 +2,8 @@
 ;
 ; acl2-doc.lisp - Documentation for the ACL2 Theorem Prover
 ;
-; ACL2 Version 8.1 -- A Computational Logic for Applicative Common Lisp
-; Copyright (C) 2018, Regents of the University of Texas
+; ACL2 Version 8.2 -- A Computational Logic for Applicative Common Lisp
+; Copyright (C) 2019, Regents of the University of Texas
 ;
 ; This documentation was derived from the ACL2 system in October 2013, which
 ; was a descendant of ACL2 Version 1.9, Copyright (C) 1997 Computational Logic,
@@ -44,6 +44,9 @@
 
 (defconst *acl2-broken-links-alist*
 
+; To update the value of this constant, especially when preparing for an ACL2
+; release, see file acl2-doc-broken-links.lsp in this directory.
+
 ; The value of this constant is an alist whose keys are the XDOC topics
 ; referenced in the ACL2-only manual that are not in the ACL2-only manual
 ; (i.e. that are in the Books part of the ACL2+Books manual).  Each key in this
@@ -54,80 +57,6 @@
 ; So in practice, if you link to an ACL2+Books topic that is not in the
 ; ACL2-only manual, just add an entry following the pattern below.  It would be
 ; best if you keep it sorted by the SYMBOL-NAME of the CAR.
-
-; The remaining long comment can generally be ignored except at release time,
-; as a final check.
-
-; The following long comment shows how to create this value.  It would be good
-; to re-create it on occasion, or better yet, to automate a check that the
-; value is up-to-date.
-
-#||
- (include-book ; break line to avoid confusing dependency scanner
-  "system/doc/acl2-doc" :dir :system)
-
- (make-event
- ; This make-event form is adapted from acl2-doc-wrap.lisp.
-
-  ;; This constant is used in acl2-manual.lisp to ensure that we are only
-  ;; writing the topics from this file.  Because of our use of make-event,
-  ;; this will be written into the .cert file.
-  (let ((topics (xdoc::get-xdoc-table (w state))))
-    `(defconst *acl2-sources-xdoc-topics-prelim*
-       ',topics)))
-
- (include-book ; break line to avoid confusing dependency scanner
-  "xdoc/importance" :dir :system)
-
- (set-state-ok t)
- (program)
-
- (make-event
-  (mv-let
-   (names state)
-   #!xdoc(mv-let
-          (xtopics state)
-          (xtopics-from-topics acl2::*acl2-sources-xdoc-topics-prelim* state)
-          (let* ((links-fal (make-links-fal xtopics))
-                 (keys-fal  (make-fast-alist
-                             (pairlis$ (make-keys (xtopiclist->names xtopics))
-                                       nil)))
-                 (broken (find-broken-links links-fal keys-fal)))
-            (mv (strip-cars broken) state)))
-   (value `(defconst *acl2-broken-links-mangled-names* ',names))))
-
- (defun topic-source-alist (keys all-topics)
-   (cond ((endp all-topics) nil)
-         (t (let* ((topic (car all-topics))
-                   (name (cdr (assoc-eq :name topic)))
-                   (key (xdoc::make-key name)))
-              (cond ((member-equal key keys)
-                     (cons (list name (cdr (assoc-eq :from topic)))
-                           (topic-source-alist keys (cdr all-topics))))
-                    (t (topic-source-alist keys (cdr all-topics))))))))
-
- ; WARNING: Unless doc/top.lisp is certified, the following will build manual/
- ; under the current directory and will also build
- ; books/system/doc/rendered-doc-combined.lsp!  (Presumably that could be
- ; avoided with a little effort.)  Something like the following could work
- ; instead of the following include-book, but we would need to define more
- ; packages than just those in books/doc/top.acl2:
- ; (serialize-read "/Users/kaufmann/acl2/devel/books/centaur/xdoc.sao")
- (include-book ; break line to avoid confusing dependency scanner
-  "doc/top" :dir :system)
-
- (defun acl2-broken-links-alist (state)
-   (merge-sort-lexorder
-    (topic-source-alist *acl2-broken-links-mangled-names*
-                        (xdoc::get-xdoc-table (w state)))))
-
- ; Finally, compare the value, V, of the following to what is below.  But note
- ; that V may contain some entries with value "Current Interactive Session",
- ; which should be replaced with a more appropriate string, e.g., the file
- ; found by going to the entry's topic in the online combined manual.
- (acl2-broken-links-alist state)
-
-||#
 
   '((*ACL2-SYSTEM-EXPORTS* "[books]/system/acl2-system-exports.lisp")
     (<< "[books]/misc/total-order.lisp")
@@ -154,6 +83,7 @@
     (DEFPUN "[books]/misc/defpun.lisp")
     (DEFTHM<W "[books]/kestrel/utilities/auto-instance.lisp")
     (DEFTHMG "[books]/tools/defthmg.lisp")
+    (DEFXDOC "[books]/xdoc/topics.lisp")
     (GETOPT-DEMO::DEMO2 "[books]/centaur/getopt/demo2.lisp")
     (DEVELOPERS-GUIDE "[books]/system/doc/developers-guide.lisp")
     (DEVELOPERS-GUIDE-UTILITIES "[books]/system/doc/developers-guide.lisp")
@@ -170,6 +100,7 @@
     (INCLUDE-RAW "[books]/tools/include-raw.lisp")
     (INSTALL-NOT-NORMALIZED "[books]/misc/install-not-normalized.lisp")
     (LIST-EQUIV "[books]/std/lists/equiv.lisp")
+    (LIST-FIX "[books]/std/lists/list-fix.lisp")
     (LOGBITP-REASONING "[books]/centaur/bitops/equal-by-logbitp.lisp")
     (MAKE-FLAG "[books]/tools/flag.lisp")
     (MAKE-TERMINATION-THEOREM
@@ -184,6 +115,7 @@
     (NOTE-7-2-BOOKS "[books]/doc/relnotes.lisp")
     (NOTE-8-0-BOOKS "[books]/doc/relnotes.lisp")
     (NOTE-8-1-BOOKS "[books]/doc/relnotes.lisp")
+    (NOTE-8-2-BOOKS "[books]/doc/relnotes.lisp")
     (STR::NUMBERS "[books]/std/strings/top.lisp")
     (ORACLE-TIMELIMIT "[books]/tools/oracle-timelimit.lisp")
     (OSLIB "[books]/oslib/top-logic.lisp")
@@ -196,8 +128,8 @@
     (PROFILE-ALL "[books]/centaur/memoize/old/profile.lisp")
     (QUICKLISP "[books]/quicklisp/top.lisp")
     (RELEASE-NOTES-BOOKS "[books]/doc/relnotes.lisp")
-    (REMOVE-HYPS "[books]/tools/remove-hyps.lisp")
     (REMOVABLE-RUNES "[books]/tools/removable-runes.lisp")
+    (REMOVE-HYPS "[books]/tools/remove-hyps.lisp")
     (RUN-SCRIPT "[books]/tools/run-script.lisp")
     (SATLINK::SAT-SOLVER-OPTIONS "[books]/centaur/satlink/top.lisp")
     (SATLINK "[books]/centaur/satlink/top.lisp")
@@ -222,6 +154,7 @@
     (WITH-REDEF-ALLOWED "[books]/hacking/hacking-xdoc.lisp")
     (WITH-TIMEOUT "[books]/acl2s/cgen/with-timeout.lisp")
     (WORKING-WITH-PACKAGES "[books]/doc/practices.lisp")
+    (WRITE-LIST "[books]/misc/file-io.lisp")
     (XDOC "[books]/xdoc/topics.lisp")))
 
 (defconst *acl2-url*
@@ -233,7 +166,7 @@
 ; who are looking at an older version of ACL2 will see the corresponding
 ; ACL2+Books Manual at this link.
 
-  "http://www.cs.utexas.edu/users/moore/acl2/v8-1/")
+  "http://www.cs.utexas.edu/users/moore/acl2/v8-2/")
 
 (defconst *installation-url*
 
@@ -808,7 +741,7 @@
 (defxdoc about-acl2
   :parents (acl2)
   :short "General information About ACL2"
-  :long "<p>This is @(`(:raw (@ acl2-version))`), @(see copyright) (C) 2018,
+  :long "<p>This is @(`(:raw (@ acl2-version))`), @(see copyright) (C) 2019,
  Regents of the University of Texas, authored by Matt Kaufmann and J Strother
  Moore.</p>
 
@@ -10341,17 +10274,16 @@ with any questions about building the community books.</p>")
  particular, is useful in case you encounter problems to report.</p>
 
  <p>If you fetched the community books using git, then you will have a
- directory @('books/workshops/') that is not necessary for certifying the other
- books.  If you want to skip certification of the books under
- @('books/workshops/'), use target `@('certify-books')' instead of target
- `@('regression')', for example as follows.</p>
+ directories such @('books/workshops/') that is not necessary for certifying
+ the most widely-included books.  You can certify just such books as
+ follows.</p>
 
  @({
-  (time nice make certify-books) >& make-certify-books.log
+  (time nice make basic) >& make-basic.log
  })
 
- <p>Whether you use target `@('regression')' or target `@('certify-books')',
- then for each book @('foo.lisp') whose certification is attempted, a file
+ <p>Whether you use target `@('regression')' or target `@('basic')', then for
+ each book @('foo.lisp') whose certification is attempted, a file
  @('foo.cert.out') in the same directory will contain the output from the
  book's certification attempt.</p>
 
@@ -10393,15 +10325,8 @@ with any questions about building the community books.</p>")
   make clean-books
  })
 
- <p>If you want to cause such deletion and then do a regression, simply replace
- the `@('regression')' or `@('certify-books')' target by
- `@('regression-fresh')' or `@('certify-books-fresh')', respectively, for
- example as follows.  follows.</p>
-
- @({
-  make -j 4 regression-fresh
-  make -j 4 certify-books-fresh
- })
+ <p>Alternatively, if you want to cause such deletion and then do a regression,
+ simply replace the `@('regression')' target by `@('regression-fresh').</p>
 
  <p>If however you only want to clean up generated files residing under a given
  directory (or its subdirectories, and recursively), you can issue the
@@ -16780,7 +16705,7 @@ subtree of X with T, without duplication.</p>
  <p>@(`(:raw (@ acl2-version))`) &mdash; A Computational Logic for Applicative
  Common Lisp</p>
 
- <p>Copyright (C) 2018, Regents of the University of Texas</p>
+ <p>Copyright (C) 2019, Regents of the University of Texas</p>
 
  <p>This version of ACL2 is a descendant of ACL2 Version 1.9, Copyright (C)
  1997 Computational Logic, Inc.  See the documentation topic NOTE-2-0.</p>
@@ -27501,12 +27426,13 @@ ld) and @(tsee include-book)"
  @(':meta') rules, but the discussion applies equally to @(':clause-processor')
  rules.</p>
 
- <p>In a nutshell, we require that a rule's evaluator does not support other
- functions in the rule, and we require that the evaluator not be introduced
- under a non-trivial encapsulate.  We also require that no function has an
- attachment (see @(see defattach)) that is both ancestral in the evaluator and
- also ancestral in the meta or clause-processor functions.  We explain these
- restrictions in detail below.</p>
+ <p>In a nutshell, we require that a rule's evaluator does not support any
+ @(see meta-extract) functions in the rule or any @(tsee defaxiom) events, and
+ we require that the evaluator not be introduced under a non-trivial
+ encapsulate.  We also require that no function has an attachment (see @(see
+ defattach)) that is both ancestral in the evaluator and also ancestral in the
+ meta or clause-processor functions.  We explain these restrictions in detail
+ below.</p>
 
  <p>An argument given elsewhere (see @(see meta), in particular ``Aside for the
  logic-minded'') explains that the correctness argument for applying
@@ -27520,15 +27446,11 @@ ld) and @(tsee include-book)"
  defined recursively as follows: a function symbol supports a formula if either
  it occurs in that formula, or else it supports the definition or constraint
  for some function symbol that occurs in that formula.  Moreover, we require
- that neither the evaluator function nor its list version support the
- definition or constraint for any other function symbol occurring in the
- proposed @(':meta') theorem.</p>
+ that neither the evaluator function nor its list version support @(see
+ meta-extract) functions if they are used in the proposed @(':meta')
+ theorem.</p>
 
- <p>We also require that the evaluator does not support the formula of a
- @(':meta') rule's metafunction (nor, if there is one, hypothesis metafunction)
- or of a @(':clause-processor') rule's clause-processor function.  This
- requirement, along with with the analogous requirement for @(tsee defaxiom)
- @(see events) stated above, are necessary in order to carry out the functional
+ <p>These requirements are necessary in order to carry out the functional
  instantiation argument alluded to above, as follows (where the reader may find
  it useful to have some familiarity with the paper ``Structured Theory
  Development for a Mechanized Logic'' (Journal of Automated Reasoning 26, no. 2
@@ -35908,8 +35830,12 @@ current fast alists."
  may be simplified before it is returned, by using a form of ``subsumption'' to
  eliminate redundancy and by deleting tautologies as well as instances of @(see
  built-in-clause) rules that come with ACL2.  The @('simp-p') argument should
- be @('nil') to avoid such simplification; that is, use @('(gthm 'FN
- nil)').</p>
+ be @('nil') to avoid such simplification; that is, use @('(gthm 'FN nil)').
+ The @('simp-p') argument bears some resemblance to the @(':guard-simplify')
+ option to @(tsee verify-guards); but somewhat less simplification is done by
+ @('gthm') with @('simp-p = T') than is done when generating guard
+ obligations (by @(tsee defun) or @(tsee verify-guards)) with
+ @(':guard-simplify = T').</p>
 
  <p>Note that the result from evaluating @('(gthm x simp-p guard-debug)') is an
  <i>untranslated</i> term, that is, a user-level term; see @(see termp).  The
@@ -37621,12 +37547,12 @@ current fast alists."
 
  @({
   Example Forms:
-  (guard-obligation 'foo nil t 'top-level state)
-  (guard-obligation '(if (consp x) (foo (car x)) t) nil nil 'my-function state)
+  (guard-obligation 'foo nil t t 'top-level state)
+  (guard-obligation '(if (consp x) (foo (car x)) t) nil nil t 'my-fn state)
 
   General Forms:
-  (guard-obligation name rrp guard-debug ctx state)
-  (guard-obligation term rrp guard-debug ctx state)
+  (guard-obligation name rrp guard-debug guard-simplify ctx state)
+  (guard-obligation term rrp guard-debug guard-simplify ctx state)
  })
 
  <p>where the first argument is either the name of a function or theorem or is
@@ -37634,15 +37560,17 @@ current fast alists."
  redundant p'') is non-@('nil') when it is permissible to return a value of
  @(''redundant') in the first (name) case (and is irrelevant in the term case);
  @('guard-debug') is typically @('nil') but may be @('t') (see @(see
- guard-debug)); @('ctx') is a context (typically, a symbol used in error and
- warning messages); and @(tsee state) references the ACL2 @(see state).</p>
+ guard-debug)); @('guard-simplify') is typically @('t') but may be @('nil')
+ (see @(see verify-guards)); @('ctx') is a context (typically, a symbol used in
+ error and warning messages); and @(tsee state) references the ACL2 @(see
+ state).</p>
 
  <p>If you want to obtain the formula but you don't care about the so-called
  ``tag tree'':</p>
 
  @({
   (mv-let (erp val)
-          (guard-obligation x nil guard-debug 'top-level state)
+          (guard-obligation x nil guard-debug guard-simplify 'top-level state)
           (if erp
              ( .. code for handling error case, e.g., name is undefined .. )
             (let ((cl-set (cadr val))) ; to be proved for guard verification
@@ -37651,9 +37579,9 @@ current fast alists."
                    a disjunction .. ))))
  })
 
- <p>The form @('(guard-obligation x rrp guard-debug ctx state)') evaluates to a
- pair @('(mv erp val)'), where @('erp') is @('nil') unless there is an
- error.  (Actually, this is a context-message pair; see the source code's
+ <p>The form @('(guard-obligation x rrp guard-debug guard-simplify ctx state)')
+ evaluates to a pair @('(mv erp val)'), where @('erp') is @('nil') unless there
+ is an error.  (Actually, this is a context-message pair; see the source code's
  ``Essay on Context-message Pairs''for relevant information.)  Suppose @('erp')
  is @('nil').  Then @('val') is the keyword @(':redundant') if the
  corresponding @(tsee verify-guards) event would be redundant and @('rrp') is
@@ -51625,7 +51553,7 @@ tables in the current Hons Space."
   don't.)  The second example can be guard verified and has the advantage of
   being standard Common Lisp so compilers might optimize the handing of @('(+ 1
   x)').  The third example can also be guard verified but since the @(':guard')
-  derective used here is ignored by Common Lisp it does not inform the
+  directive used here is ignored by Common Lisp it does not inform the
   compiler, so this example might execute more slowly than the previous one.
   The last example shows the syntax and use of the ACL2-specific addition to
   @('loop$'): the @(':guard') directive protecting, in this case, the
@@ -51948,6 +51876,78 @@ tables in the current Hons Space."
   @('always').  The advantage of this translation style is that it allows
   compositional reasoning.  We discuss this further below.</p>
 
+  <p>The following example illustrates basic @(see guard) proof obligations, in
+  particular showing that @('when') clauses do not help with verifying guards
+  for the loop bodies.  (Similarly, @('until') clauses do not help either.)</p>
+
+  @({
+  (include-book \"projects/apply/top\" :dir :system)
+  (defun$ sq (n)
+    (declare (xargs :guard (natp n)))
+    (* n n))
+  (defun foo (lst)
+    (declare (xargs :guard (nat-listp lst)))
+    (loop$ for x of-type (satisfies nat-listp) on lst
+           when (consp x)
+           sum (sq (car x))))
+  })
+
+  <p>Guard verification fails, and the summary says that a goal of @('NIL') was
+  generated.  Using @(':')@(tsee pso) we can see that the @('NIL') goal came
+  from:</p>
+
+  @({
+  Subgoal 1
+  (IMPLIES (NAT-LISTP X) (NATP (CAR X))).
+  })
+
+  <p>Let's see what is going on by looking at the following abbreviated
+  translation of the @('loop$') expression.</p>
+
+  @({
+  (sum$ '(lambda (x)
+           (declare (type (satisfies nat-listp) x)
+                    (xargs :guard (nat-listp x)
+                           :split-types t)
+                    (ignorable x))
+           (sq (car x)))
+        (when$ '(lambda ...) (tails lst)))
+  })
+
+  <p>We see that the @(see scion), @('sum$'), is trying to apply a @(tsee
+  lambda) object that can cause @('sq') to be applied to @('(car x)') when
+  @('x') is @('nil').  But @('(sq nil)') is a guard violation, since @('sq')
+  expects its argument to be a natural number.  The following modification,
+  which adds a @(':guard') directive, solves the problem.</p>
+
+  @({
+  (defun foo (lst)
+    (declare (xargs :guard (nat-listp lst)))
+    (loop$ for x of-type (satisfies nat-listp) on lst
+           when (consp x)
+           sum :guard (consp x) (sq (car x))))
+  })
+
+  <p>Indeed, the abbreviated translation now shows that the application
+  @('(sq (car x))') is protected by a suitable guard.</p>
+
+  @({
+  (sum$ '(lambda (x)
+           (declare (type (satisfies nat-listp) x)
+                    (xargs :guard (if (nat-listp x) (consp x) 'nil)
+                           :split-types t)
+                    (ignorable x))
+           (sq (car x)))
+        (when$ '(lambda ...) (tails lst)))
+  })
+
+  <p>Naively we might have expected that the guard proof obligation for the
+  @('loop$') body @('(sq (car x))') could assume the @('when') clause, but that
+  expectation would be wrong.  The @(tsee lambda) object must be
+  guard-verifiable on its own (in particular because the implementation stores
+  guard-verified @('lambda') objects for evaluation in raw Lisp, which may take
+  place in other contexts where we don't have the @('when') clause).</p>
+
   <h4>Semantics of Fancy Loop$s</h4>
 
   <p>An example of a fancy @('loop$') is</p>
@@ -52044,7 +52044,7 @@ tables in the current Hons Space."
 
   @({
   (defun foo (lst)
-    (declare (xargs :guard (and (warrant expr) (foo-guardp lst))))
+    (declare (xargs :guard (foo-guardp lst)))
     (loop$ for x of-type (satisfies spec) on lst sum (expr x)))
   })
 
@@ -52102,11 +52102,13 @@ tables in the current Hons Space."
   conjectures</p>
 
   @({
-       (implies (and (foo-guardp lst)                            ; [5]
+       (implies (and (warrant ...) ; see below                   ; [5]
+                     (foo-guardp lst)
                      (member-equal newv (tails lst)))
                 (spec newv))
 
-       (implies (and (foo-guardp lst)                            ; [6]
+       (implies (and (warrant ...) ; see below                   ; [6]
+                     (foo-guardp lst)
                      (member-equal newv (tails lst)))
                 (acl2-numberp
                  (apply$ (lambda$ (x)
@@ -52118,12 +52120,17 @@ tables in the current Hons Space."
                 (spec nil))
   })
 
+  <p>Notice the addition of hypotheses above of the form @('(warrant ...)').
+  ACL2 adds such <i>@(see warrant) hypotheses</i> for function symbols that
+  might be @(tsee apply$)ed during evaluation of a scion call (in this case,
+  @('sum$')).</p>
+
   <p>In general, you may notice that ACL2 generates such ``special'' guard
   conjectures for all calls of @('loop$') scions, whether or not they stemmed
   from uses of @('loop$').  @('FROM/TO/BY') targets require that the bounds and
   step all satisfy the @('of-type') specification, and the @('append') operator
   requires that the loop body generate a @(tsee true-listp) (instead of an
-  @(tsee acl2-numberp) as required by the @('sum') operator.</p>
+  @(tsee acl2-numberp) as required by the @('sum') operator).</p>
 
   <h4>The Compromise Between Reasoning and Efficiency</h4>
 
@@ -83586,6 +83593,15 @@ it."
 
 (defxdoc note-8-2
 
+; Total number of release note items: 59, as follows.
+;   22 ; Changes to Existing Features
+;    8 ; New Features
+;    5 ; Heuristic and Efficiency Improvements
+;   10 ; Bug Fixes
+;   11 ; Changes at the System Level
+;    3 ; EMACS Support
+;    0 ; Experimental Versions
+
 ; Here is a comment, written by Mihir Mehta, with more details about the change
 ; from fix-true-list to true-list-fix.  He also has noted that a relevant
 ; GitHub discussion may be found at https://github.com/acl2/acl2/pull/882.
@@ -83690,8 +83706,12 @@ it."
 ; our current (lack of) understanding, but it is the identity macro at this
 ; point.
 
+; ACL2-doc will now print an additional message when it starts up the first
+; time in the current session, saying: "NOTE: Type D to download the latest
+; version."  Thanks to Mertcan Temel for a discussion leading to this change.
+
   :parents (release-notes)
-  :short "ACL2 Version  8.2 (xxx, 20xx) Notes"
+  :short "ACL2 Version  8.2 (May, 2019) Notes"
   :long "<p>NOTE!  New users can ignore these release notes, because the @(see
  documentation) has been updated to reflect all changes that are recorded
  here.</p>
@@ -83705,7 +83725,7 @@ it."
 
  <p>Note that only ACL2 system changes are listed below.  See also @(see
  note-8-2-books) for a summary of changes made to the ACL2 Community Books
- since ACL2 8.0, including the build system.  Also note that with each release,
+ since ACL2 8.1, including the build system.  Also note that with each release,
  it is typical that the value of constant @(tsee *acl2-exports*) has been
  extended, and that some built-in functions that were formerly in @(':')@(tsee
  program) mode are now @(see guard)-verified @(':')@(tsee logic) mode
@@ -83848,12 +83868,12 @@ it."
  this enhancement.</p>
 
  <p>The built-in function @(tsee take) now has a recursive definition, exactly
- along the lines of the theorem @('take-redefinition') from the community book
- @('books/std/lists/take.lisp') (written by Jared Davis), which is retained for
- compatibility with existing books.  The definition of @('take') uses @(tsee
- mbe), where the @(':exec') component calls @('first-n-ac') as before for
- execution efficiency.  We thank Mihir Mehta for providing this enhancement,
- including updates to the books.</p>
+ along the lines of the old theorem @('take-redefinition') from the community
+ book @('books/std/lists/take.lisp') (written by Jared Davis); this theorem has
+ now been removed.  The definition of @('take') uses @(tsee mbe), where the
+ @(':exec') component calls @('first-n-ac') as before for execution efficiency.
+ We thank Mihir Mehta for providing this enhancement, including updates to the
+ books.</p>
 
  <h3>New Features</h3>
 
@@ -84074,6 +84094,15 @@ it."
  that led to this change and to Keshav Kini and Alessandro Coglio for helpful
  feedback.</p>
 
+ <p>The makefile target @('certify-books') has been deprecated in both
+ @('GNUmakefile') and @('books/GNUmakefile').  Thanks to the acl2-books email
+ list (in particular we got feedback from Alessandro Coglio, Shilpi Goel, David
+ Rager, Eric Smith, and Sol Swords, all helpful) for working through this
+ issue.</p>
+
+ <p>A message is now printed at when loading file @('~/acl2-init.lsp') at
+ startup.</p>
+
  <h3>EMACS Support</h3>
 
  <p>Fixed the @(see acl2-doc) browser so that it can handle topic names with
@@ -84086,6 +84115,72 @@ it."
  <p>A new @(tsee acl2-doc) command is the question-mark character (@('?')),
  which goes to a page with one-line command summaries.  Thanks to Warren Hunt
  for a request leading to this enhancement.</p>
+
+ <h3>Experimental Versions</h3>
+
+ ")
+
+(defxdoc note-8-3
+  :parents (release-notes)
+  :short "ACL2 Version  8.3 (xxx, 20xx) Notes"
+  :long "<p>NOTE!  New users can ignore these release notes, because the @(see
+ documentation) has been updated to reflect all changes that are recorded
+ here.</p>
+
+ <p>Below we roughly organize the changes to ACL2 since Version 8.2 into the
+ following categories of changes: existing features, new features, heuristic
+ and efficiency improvements, bug fixes, changes at the system level, Emacs
+ support, and experimental versions.  Each change is described in just one
+ category, though of course many changes could be placed in more than one
+ category.</p>
+
+ <p>Note that only ACL2 system changes are listed below.  See also @(see
+ note-8-3-books) for a summary of changes made to the ACL2 Community Books
+ since ACL2 8.2, including the build system.  Also note that with each release,
+ it is typical that the value of constant @(tsee *acl2-exports*) has been
+ extended, and that some built-in functions that were formerly in @(':')@(tsee
+ program) mode are now @(see guard)-verified @(':')@(tsee logic) mode
+ functions.</p>
+
+ <h3>Changes to Existing Features</h3>
+
+ <p>It is now permitted for an evaluator to be ancestral in a metafunction or
+ clause-processor.  See @(see evaluator-restrictions), or see the source code
+ comment ``Essay on Correctness of Meta Reasoning'', for discussion of the
+ remaining restrictions.  Thanks to Sol Swords for requesting this improvement
+ and for many helpful discussions.  Moreover, he found a bug in a proof in the
+ above Essay, which has been been fixed; he made a key observation that led to
+ completion of that fix.  Also thanks to Rob Sumners for helpful
+ discussions.</p>
+
+ <h3>New Features</h3>
+
+ <p>A new @(tsee xargs) keyword, @(':guard-simplify') (default @('t')),
+ controls certain simplifications that may be applied to the guard conjecture
+ while generating the initial goal.  Setting it to @('nil') skips all
+ simplifications that depend on the set of currently @(see enable)d rules.  See
+ @(see verify-guards).  Thanks to Sol Swords for designing this feature and
+ providing its implementation, along with documentation and corressponding
+ adjustments to the community books.</p>
+
+ <h3>Heuristic and Efficiency Improvements</h3>
+
+ <h3>Bug Fixes</h3>
+
+ <p>As noted in the documentation for @(see lemma-instance), ACL2 may avoid
+ proving some constraints required for @(see functional-instantiation) that
+ were previously proved.  There was such support even in the case that the
+ previous proof was done on behalf of a @(tsee defattach) event, but that
+ support has been made more complete (by keeping more functional substitutions
+ in canonical form).</p>
+
+ <p>A hard Lisp error has been fixed that could occur (probably only rarely)
+ after adding rules of class @(':')@(tsee definition) that introduce
+ recursion.</p>
+
+ <h3>Changes at the System Level</h3>
+
+ <h3>EMACS Support</h3>
 
  <h3>Experimental Versions</h3>
 
@@ -92001,6 +92096,9 @@ arithmetic) for libraries of @(see books) for arithmetic reasoning.</p>")
  <p>@('clausify'): splitting a goal into subgoals</p>
 
  <p>@('ev-fncall'): evaluating a function on explicit arguments</p>
+
+ <p>@('ev-fncall+'): evaluating a function on explicit arguments while assuming
+ that @(see warrant) hypotheses are true</p>
 
  <p>@('ev-fncall-meta'): evaluating a metafunction</p>
 
@@ -119031,6 +119129,7 @@ introduction-to-the-tau-system) for more information about Tau.</dd>
   (verify-guards flatten
                  :hints ((\"Goal\" :use (:instance assoc-of-app)))
                  :guard-debug t ; default = nil
+                 :guard-simplify nil ; default = t
                  :otf-flg t)
   (verify-guards (lambda$ (x)
                    (declare (xargs :guard (natp x)))
@@ -119046,9 +119145,10 @@ introduction-to-the-tau-system) for more information about Tau.</dd>
 
   General Form:
   (verify-guards name
-          :hints        hints
-          :guard-debug  t ; typically t, but any value is legal
-          :otf-flg      otf-flg)
+          :hints          hints
+          :guard-debug    gdbg   ; default is nil, but any value is legal
+          :guard-simplify gsmp ; default is t, may be set to nil
+          :otf-flg        otf-flg)
  })
 
  <p>In the General Form above, @('name') is the name of a @(':')@(tsee logic)
@@ -119081,7 +119181,10 @@ introduction-to-the-tau-system) for more information about Tau.</dd>
  entries.  The keyword arguments above are all optional.  To admit this event,
  the conjunction of the guard proof obligations must be proved.  If all the
  guard obligations are proved, @('name') is considered to have had its @(see
- guard)s verified.</p>
+ guard)s verified.  The @(':guard-simplify') option controls certain
+ simplifications that may be applied to the guard conjecture while generating
+ the initial goal; setting it to @('nil') skips all simplifications that depend
+ on the set of currently @(see enable)d rules.</p>
 
  <p>See @(see guard-formula-utilities) for utilities that let you view the
  formula to be proved by @('verify-guards'), but without creating an event.</p>
@@ -119527,18 +119630,19 @@ introduction-to-the-tau-system) for more information about Tau.</dd>
   Example Forms:
   (verify-guards-formula foo)
   (verify-guards-formula foo :guard-debug t)
+  (verify-guards-formula foo :guard-debug t :guard-simplify nil)
   (verify-guards-formula foo :rrp t :otf-flg dont-care :xyz whatever)
   (verify-guards-formula (+ (foo x) (bar y)) :guard-debug t)
  })
 
  <p>@('Verify-guards-formula') allows all keywords, but only pays attention to
- @(':guard-debug'), which has the same effect as in @(tsee verify-guards) (see
- @(see guard-debug)), and to @(':rrp'), described below.  Apply
- @('verify-guards-formula') to a name just as you would use @(tsee
- verify-guards), but when you only want the output that shows the guard proof
- obligation, without attempting a proof or creating an event.  If the first
- argument is not a symbol, then it is treated as the body of a @(tsee defthm)
- event for which you want the guard proof obligation.</p>
+ @(':guard-debug') and @(':guard-simplify'), which have the same effect as in
+ @(tsee verify-guards) (see @(see guard-debug)), and to @(':rrp'), described
+ below.  Apply @('verify-guards-formula') to a name just as you would use
+ @(tsee verify-guards), but when you only want the output that shows the guard
+ proof obligation, without attempting a proof or creating an event.  If the
+ first argument is not a symbol, then it is treated as the body of a @(tsee
+ defthm) event for which you want the guard proof obligation.</p>
 
  <p>The @(':rrp') argument (``return redundant p'') is @('nil') by default.  If
  its value is not @('nil'), then in the case that the first argument is a
@@ -121297,6 +121401,45 @@ introduction-to-the-tau-system) for more information about Tau.</dd>
  unmonitored all runes is therefore strongly advised to carry this information
  out of the wormhole and to do @(':')@(tsee brr) @('nil') in the external state
  when the next opportunity arises.</p>")
+
+(defxdoc windows-installation
+  :parents (break-rewrite)
+  :short "Installing ACL2 on Windows"
+  :long "<p>Windows users will probably want to do one of the following to
+ install and run ACL2 on their systems.  Thanks to David Rager for his help
+ with this topic.</p>
+
+ <ul>
+
+ <li>Fetch the ACL2 Sedan (ACL2s) &mdash; see @(see acl2-sedan) &mdash; which
+ is an extension and distribution of ACL2 integrated with the Eclipse IDE.  If
+ you wish to use ACL2s without the Eclipse front-end, see <a
+ href='http://www.cs.utexas.edu/users/moore/acl2/current/HTML/installation/obtaining-and-installing.html#Shortcut-acl2s'>the
+ information about ACL2s in the installation instructions</a>, which explains
+ how to obtain and use a pre-built ACL2 binary for Windows, Linux, or Mac.</li>
+
+ <li>Use a Virtual Machine platform, such as VMware Player (free for
+ non-commercial use) or Oracle Virtualbox (free even for commercial
+ use) to install Linux, and then follow the normal installation
+ instructions to install ACL2.  As of 2014, at least a couple of our
+ power users are very happy with this solution, as it provides
+ first-class access to utilities relevant to maintaining the ACL2
+ system and books (like GNU Make and perl).</li>
+
+ <li>Set up <a
+ href='https://en.wikipedia.org/wiki/Windows_Subsystem_for_Linux'>Windows
+ Subsystem for Linux</a> on a 64-bit version of Windows 10 (or later, once
+ available).  Within that subsystem, follow the setup and installation
+ instructions for ACL2.  (You might be the first to test this, but it will
+ likely work.)</li>
+
+ </ul>
+
+ <p>You are welcome to <a
+ href='http://www.cs.utexas.edu/users/moore/acl2/v3-6/distrib/windows/'>obtain
+ a Windows installer for a previous ACL2 release</a>, which mimics some of
+ Linux and provides Emacs.  Updated ACL2 binaries have been successfully
+ installed in such an environment.</p>")
 
 (defxdoc with-fast-alist
   :parents (fast-alists acl2-built-ins)
@@ -123367,6 +123510,7 @@ created from the original fast alist during @('form') must be manually freed."
  @({
   (declare (xargs :guard (symbolp x)
                   :guard-debug t
+                  :guard-simplify nil
                   :guard-hints ((\"Goal\" :in-theory (theory batch1)))
                   :hints ((\"Goal\" :in-theory (theory batch1)))
                   :measure (- i j)
@@ -123416,6 +123560,13 @@ created from the original fast alist during @('form') must be manually freed."
  @('Value'): hints (see @(see hints)), to be used during the @(see guard)
  verification proofs as opposed to the termination proofs of the @(tsee
  defun).</p>
+
+ <p>@(':guard-simplify)<br></br>
+
+ @('Value'): @('t') by default, else directs ACL2 to skip certain
+ simplifications that ACL2 typically applies while generating the guard
+ proof obligation.  This has the same effect as the corresponding keyword
+ argument to @(tsee verify-guards).</p>
 
  <p>@(':')@(tsee hints)<br></br>
 
@@ -127108,6 +127259,10 @@ expand function call at the current subterm, without simplifying"
 (defpointer all-fnnames-lst system-utilities)
 (defpointer all-fnnames1 system-utilities)
 (defpointer all-vars system-utilities)
+(defpointer always$ loop$)
+(defpointer always$+ loop$)
+(defpointer append$ loop$)
+(defpointer append$+ loop$)
 (defpointer apropos finding-documentation)
 (defpointer arglistp system-utilities)
 (defpointer array arrays)
@@ -127386,12 +127541,16 @@ expand function call at the current subterm, without simplifying"
 (defpointer union-eq union$)
 (defpointer union-equal union$)
 (defpointer unknown-constraints partial-encapsulate)
+(defpointer until$ loop$)
+(defpointer until$+ loop$)
 (defpointer untranslate-preprocess user-defined-functions-table)
 (defpointer use hints t)
 (defpointer value system-utilities)
 (defpointer variablep system-utilities)
 (defpointer verify-guards-eagerness set-verify-guards-eagerness)
 (defpointer waterfall hints-and-the-waterfall)
+(defpointer when$ loop$)
+(defpointer when$+ loop$)
 (defpointer with-output! with-output)
 (defpointer write-byte$ io)
 
