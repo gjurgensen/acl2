@@ -84160,7 +84160,7 @@ it."
  while generating the initial goal.  Setting it to @('nil') skips all
  simplifications that depend on the set of currently @(see enable)d rules.  See
  @(see verify-guards).  Thanks to Sol Swords for designing this feature and
- providing its implementation, along with documentation and corressponding
+ providing its implementation, along with documentation and corresponding
  adjustments to the community books.</p>
 
  <h3>Heuristic and Efficiency Improvements</h3>
