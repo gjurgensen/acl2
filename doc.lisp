@@ -82753,8 +82753,7 @@ New Features
   simplifications that depend on the set of currently [enable]d
   rules.  See [verify-guards].  Thanks to Sol Swords for designing
   this feature and providing its implementation, along with
-  documentation and corressponding adjustments to the community
-  books.
+  documentation and corresponding adjustments to the community books.
 
 
 Heuristic and Efficiency Improvements
