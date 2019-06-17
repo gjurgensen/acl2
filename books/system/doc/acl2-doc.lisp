@@ -110031,7 +110031,7 @@ arithmetic) for libraries of @(see books) for arithmetic reasoning.</p>")
  always move the constants into the left-most tips.  Thus,</p>
 
  @({
-  (+ x 3 (car (reverse klst)) (dx i j)) ,
+  (+ x 3 (dx i j) (car (reverse klst))) ,
  })
 
  <p>which in translated form is</p>
