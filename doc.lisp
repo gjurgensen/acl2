@@ -111385,7 +111385,7 @@ Subtopics
   application of some function will always move the constants into
   the left-most tips.  Thus,
 
-    (+ x 3 (car (reverse klst)) (dx i j)) ,
+    (+ x 3 (dx i j) (car (reverse klst))) ,
 
   which in translated form is
 
