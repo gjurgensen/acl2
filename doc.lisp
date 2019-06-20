@@ -25082,46 +25082,44 @@ Subtopics
     Examples:
     ACL2 !>(defstub subr1 (* * state) => (mv * state))
     ACL2 !>(defstub add-hash (* * hashtable) => hashtable)
+    ACL2 !>(defstub inv (*) => * :formals (x) :guard (fieldp x))
 
     General Form:
-    (defstub name (args-sig) => output-sig)
+    (defstub name (inputs) => outputs :kwd1 val1 ... :kwdn valn)
 
-  Name must be a new function symbol, and args-sig and output-sig must
-  be values such that ((name . args-sig) => output-sig) would be a
-  valid [signature].
+  Name must be a new function symbol, and inputs, outputs, :kwdi, and
+  vali must be such that ((name . inputs) => outputs :kwd1 val1 ...
+  :kwdn valn) is a valid [signature].
 
   Note that while the defstub syntax resembles a [signature], it is
-  different; for example, name occurs outside the parentheses
-  containing args-sig, and keyword arguments for specifying guards
-  and formal argument names are not supported.  However, see the
-  ``Old Style'' heading below for an alternative syntax which does
-  allow you to name the formals.
+  different: name occurs outside the parentheses containing inputs.
 
   A defstub macro call expands into an [encapsulate] event (see
   [encapsulate]).  Thus, no axioms are available about name but it
   may be used wherever a function of the given signature is
-  permitted.  Exception: if output-sig is of the form (mv ...), then
-  a :[type-prescription] rule is introduced stating that name returns
-  a value satisfying [true-listp].
+  permitted.  Exception: if outputs is of the form (mv ...), then a
+  :[type-prescription] rule is introduced stating that name returns a
+  value satisfying [true-listp].
 
   Old Style:
 
     Old Style General Form:
-    (defstub name formals output)
+    (defstub name inputs outputs :kwd1 val1 ... :kwdn valn)
 
-  where name is a new function symbol, formals is its list of formal
-  parameters, and output is either a symbol (indicating that the
+  where name is a new function symbol, inputs is its list of formal
+  parameters, and outputs is either a symbol (indicating that the
   function returns one result) or a term of the form (mv s1 ... sn),
   where each si is a symbol (indicating that the function returns n
-  results).  Whether and where the symbol [state] occurs in formals
-  and output indicates how the function handles [state].  It should
-  be the case that (name formals output) is in fact an old-style
-  signature (see [signature]).
+  results).  Whether and where the symbol [state] occurs in inputs
+  and outputs indicates how the function handles [state].  It should
+  be the case that (name inputs outputs :kwd1 val1 ... :kwdn valn) is
+  in fact an old-style signature (see [signature]).  In particular, a
+  :kwdi may be :stobjs, to indicate which inputs and outputs are
+  stobjs; but state does not need to be included, since it is
+  automatically treated as the state stobj).
 
-  Note that with the old style notation it is impossible to stub-out a
-  function that uses any single-threaded object other than state.
-  The old style is preserved for compatibility with earlier versions
-  of ACL2.")
+  The old style is preserved for compatibility with earlier versions of
+  ACL2.")
  (DEFTHEORY
   (EVENTS THEORIES)
   "Define a theory (to [enable] or [disable] a set of rules)
@@ -82754,6 +82752,11 @@ New Features
   rules.  See [verify-guards].  Thanks to Sol Swords for designing
   this feature and providing its implementation, along with
   documentation and corresponding adjustments to the community books.
+
+  Now [defstub] accepts the same keywords as [encapsulate], both for
+  the new-style signatures and for the old-style signatures.  Thanks
+  to Alessandro Coglio for suggesting and implementing this
+  enhancement.
 
 
 Heuristic and Efficiency Improvements
