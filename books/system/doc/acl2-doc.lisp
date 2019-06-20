@@ -21993,20 +21993,20 @@ subtree of X with T, without duplication.</p>
 
  @({
   Old Style General Form:
-  (defstub name inputs output :kwd1 val1 ... :kwdn valn)
+  (defstub name inputs outputs :kwd1 val1 ... :kwdn valn)
  })
 
- <p>where @('name') is a new function symbol, @('inputs') is its list of
- formal parameters, and @('output') is either a symbol (indicating that the
- function returns one result) or a term of the form @('(mv s1 ... sn)'), where
- each @('si') is a symbol (indicating that the function returns @('n')
- results).  Whether and where the symbol @(tsee state) occurs in @('inputs')
- and @('output') indicates how the function handles @(see state).  It should be
- the case that @('(name inputs output :kwd1 val1 ... :kwdn valn)')
- is in fact an old-style signature (see @(see signature)).  In particular,
- a @(':kwdi') may be @(':stobjs'), to indicate which inputs and outputs are
- stobjs; but @('state') does not need to be included, since it is automatically
- treated as the state stobj).</p>
+ <p>where @('name') is a new function symbol, @('inputs') is its list of formal
+ parameters, and @('outputs') is either a symbol (indicating that the function
+ returns one result) or a term of the form @('(mv s1 ... sn)'), where each
+ @('si') is a symbol (indicating that the function returns @('n') results).
+ Whether and where the symbol @(tsee state) occurs in @('inputs') and
+ @('outputs') indicates how the function handles @(see state).  It should be
+ the case that @('(name inputs outputs :kwd1 val1 ... :kwdn valn)') is in fact
+ an old-style signature (see @(see signature)).  In particular, a @(':kwdi')
+ may be @(':stobjs'), to indicate which inputs and outputs are stobjs; but
+ @('state') does not need to be included, since it is automatically treated as
+ the state stobj).</p>
 
  <p>The old style is preserved for compatibility with earlier versions of
  ACL2.</p>")
@@ -84165,7 +84165,8 @@ it."
  adjustments to the community books.</p>
 
  <p>Now @(tsee defstub) accepts the same keywords as @(tsee encapsulate), both
- for the new-style signatures and for the old-style signatures.</p>
+ for the new-style signatures and for the old-style signatures.  Thanks to
+ Alessandro Coglio for suggesting and implementing this enhancement.</p>
 
  <h3>Heuristic and Efficiency Improvements</h3>
 
