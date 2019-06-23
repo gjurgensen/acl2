@@ -1207,14 +1207,15 @@
 (defxdoc accumulated-persistence-subtleties
   :parents (accumulated-persistence)
   :short "Some subtle aspects of the counting done by @(tsee accumulated-persistence)"
-  :long "<p>In this topic we cover the overcounting of ``useful'' and of
- recursive @(see rune) application attempts, and we describe how ``useless''
- @(see rune) application attempts can actually be critical for a proof's
- success.</p>
+  :long "<p>In this topic we cover the overcounting of ``useful'' @(see rune)
+ application attempts, and we describe how ``useless'' rune application
+ attempts can actually be critical for a proof's success.  We conclude with a
+ few words about counting frames when there are nested (recursive) applications
+ of a rune.</p>
 
- <p><i>Overcounting of ``useful'' and of recursive rune application
- attempts.</i> Not every @(see rune) application may be necessary for a proof's
- success.  Consider for example:</p>
+ <p><i>Overcounting of ``useful'' rune application attempts.</i> Not every
+ @(see rune) application may be necessary for a proof's success.  Consider for
+ example:</p>
 
  @({
   (thm (equal (car (cons a (cdr (cons b x))))
@@ -1233,28 +1234,6 @@
  application to be ``useful'', for simplicity of the implementation.  Moreover,
  our counting of these rules is such that a single rule may be counted more
  than once.</p>
-
- <p>Next we show how recursive rule applications are overcounted.  Consider the
- following example.</p>
-
- @({
-  (defun mem (a x)
-    (if (atom x)
-        nil
-      (or (equal a (car x)) (mem a (cdr x)))))
- })
-
- <p>Now suppose we consider the sequence of theorems @('(mem a (list a))'),
- @('(mem a (list 1 a))'), @('(mem a (list 1 2 a))'), @('(mem a (list 1 2 3
- a))'), and so on.  We will see that the @(':frames') reported for each
- increases quadratically, even though the @(':tries') increases linearly; so in
- this case the @(':tries') statistics are more appropriate.  Each time the
- definition of @('mem') is applied, a new stack frame is pushed (see @(see
- accumulated-persistence)), and all subsequent applications of that definition
- are accumulated into the @(':frames') count for that stack frame.  The final
- @(':frames') count will be the sum of the counts for those individual frames,
- which form a linear sequence whose sum is therefore quadratic in the number of
- applications of the definition of @('mem').</p>
 
  <p><i>How ``useless'' attempts can be critical for a proof's success.</i> The
  command @('(accumulated-persistence :useless'))] will list rules that did not
@@ -1339,7 +1318,34 @@
  rule R that is needed in part of the proof but is ``bad'' in a second part,
  and that some other, ``useless'' rule prevents the application of R in that
  second part.  The example above suggests that disabling this ``useless'' rule
- can allow the second application of R, thus preventing the proof.</p>")
+ can allow the second application of R, thus preventing the proof.</p>
+
+ <p>Finally we discuss accumulation into frame counts in the case of a nested
+ (recursive) application of a rule: that is, the case that during the
+ application of a rule, the rule is applied again &mdash; in particular, while
+ relieving a hypothesis or rewriting the right-hand side from the original rule
+ application.  Recall that the implementation of @(see accumulated-persistence)
+ keeps a stack of @(see rune)s currently being applied; thus, we are
+ considering here the case that a rune is pushed onto a stack on which it
+ already resides.  In that case, we count tries as usual but we avoid
+ accumulating until we reach the outermost (topmost) application of that rune.
+
+ Consider the following example.</p>
+
+ @({
+  (defun mem (a x)
+    (if (atom x)
+        nil
+      (or (equal a (car x)) (mem a (cdr x)))))
+ })
+
+ <p>Now suppose we consider the theorem @('(mem a (list 1 2 3 a))').  Each time
+ the definition of @('mem') is applied, a new stack frame is pushed.  We avoid
+ accumulating into the @(':frames') count for that stack frame unless it is the
+ topmost stack frame for that definition.  Otherwise the final @(':frames')
+ count would be the sum of the counts for those individual frames, which form a
+ linear sequence whose sum would therefore be quadratic in the number of
+ applications of the definition of @('mem').</p>")
 
 (defxdoc acknowledgments
   :parents (about-acl2)
@@ -84153,6 +84159,11 @@ it."
  above Essay, which has been been fixed; he made a key observation that led to
  completion of that fix.  Also thanks to Rob Sumners for helpful
  discussions.</p>
+
+ <p>The @(see accumulated-persistence) utility no longer overcounts accumulated
+ frames due to nested (recursive) rule applications.  Although that shortcoming
+ was documented, it was unfortunate and we thank Sol Swords for an email that
+ nudged us into making this improvement and provided helpful insight.</p>
 
  <h3>New Features</h3>
 
