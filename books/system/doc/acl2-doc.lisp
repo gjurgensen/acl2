@@ -84163,7 +84163,13 @@ it."
  <p>The @(see accumulated-persistence) utility no longer overcounts accumulated
  frames due to nested (recursive) rule applications.  Although that shortcoming
  was documented, it was unfortunate and we thank Sol Swords for an email that
- nudged us into making this improvement and provided helpful insight.</p>
+ nudged us into making this improvement and provided helpful insight, and Eric
+ Smith for suggesting this improvement more than 10 years ago (!).</p>
+
+ <p>In a (new-style) signature, any symbol whose @(tsee symbol-name) is
+ @('\"*\"') now designates a non-@(see stobj) argument.  Formerly, only the
+ symbol @('*') in the @('\"ACL2\"') package could be used in that way.  Thanks
+ to Jared Davis for suggesting (in 2007!) that we consider such a change.</p>
 
  <h3>New Features</h3>
 
