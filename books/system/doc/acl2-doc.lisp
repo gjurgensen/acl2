@@ -84200,6 +84200,17 @@ it."
  after adding rules of class @(':')@(tsee definition) that introduce
  recursion.</p>
 
+ <p>The function @(tsee meta-extract-formula) could return a non-trivial
+ value (i.e., not @(''T')) when applied to a @(see program)-mode function.  We
+ thank Sol Swords for reporting this bug with a proof of @('nil') that
+ exploited it.  This soundness bug has been fixed.  That work led us to fix the
+ following related bugs (which could also be soundness bugs, though we have not
+ checked).  First, the function @(tsee fncall-term) could similarly return a
+ non-trivial value when applied to a program-mode function.  Second, the
+ utility @(tsee mfc-rw), as well as other such @('mfc-xx') utilities in support
+ of @(see extended-metafunctions) and @(tsee meta-extract-contextual-fact),
+ could be called on terms containing program-mode function symbols.</p>
+
  <h3>Changes at the System Level</h3>
 
  <h3>EMACS Support</h3>
