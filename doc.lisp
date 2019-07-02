@@ -28377,13 +28377,12 @@ Proof efficiency
   example, if you have a binary function, op, and you prove the
   [rewrite] rules (equal (op x y) (op y x)) and (equal (op x (op y
   z)) (op y (op x z))), then ACL2 will use an n^2 algorithm to put
-  arguments in order, essentially with bubblesort, essentially in a
-  sequence like this:
+  arguments in order, essentially with bubblesort, in a sequence like
+  this:
 
     (op d (op c (op b a)))
     (op d (op c (op a b)))
     (op d (op a (op c b)))
-    (op d (op a (op b c)))
     (op d (op a (op b c)))
     (op a (op d (op b c)))
     (op a (op b (op d c)))
