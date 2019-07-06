@@ -44919,7 +44919,7 @@ tables in the current Hons Space."
  executable-counterpart)@(' tau-system)').  If any tau reasoning is used in a
  proof, the rune @('(:')@(tsee executable-counterpart)@(' tau-system)') is
  reported in the @(see summary).  For a complete list of all the runes in the
- tau database, evaluate @('(global-val 'tau-runes (w state))').  Any of these
+ tau database, evaluate @('(get-tau-runes (w state))').  Any of these
  associated theorems could have been used.</p>
 
  <p>These design criteria are not always achieved!  For example, the tau
@@ -84186,6 +84186,12 @@ it."
 
  <h3>Heuristic and Efficiency Improvements</h3>
 
+ <p>ACL2 keeps a complete list of all the runes in the tau database (see @(see
+ introduction-to-the-tau-system)).  Formerly this list was duplicate-free, but
+ that is no longer the case.  As a result we have seen some faster performance;
+ in particular, this change has cut 17% from the time to include the community
+ book, @('\"centaur/sv/top\"').</p>
+
  <h3>Bug Fixes</h3>
 
  <p>As noted in the documentation for @(see lemma-instance), ACL2 may avoid
@@ -109098,8 +109104,7 @@ arithmetic) for libraries of @(see books) for arithmetic reasoning.</p>")
  conjunction is @('T').)</p>
 
  <p>If you wish to see a long list of all the runes from which some tau
- information has been gleaned, evaluate @('(global-val 'tau-runes (w
- state))').</p>")
+ information has been gleaned, evaluate @('(get-tau-runes (w state))').</p>")
 
 (defxdoc tau-database
   :parents (tau-system history)

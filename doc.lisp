@@ -48455,8 +48455,8 @@ More help
   (:[executable-counterpart] tau-system).  If any tau reasoning is
   used in a proof, the rune (:[executable-counterpart] tau-system) is
   reported in the [summary].  For a complete list of all the runes in
-  the tau database, evaluate (global-val 'tau-runes (w state)).  Any
-  of these associated theorems could have been used.
+  the tau database, evaluate (get-tau-runes (w state)).  Any of these
+  associated theorems could have been used.
 
   These design criteria are not always achieved!  For example, the tau
   system's ``greediness'' can be turned off (see
@@ -82778,6 +82778,13 @@ New Features
 
 Heuristic and Efficiency Improvements
 
+  ACL2 keeps a complete list of all the runes in the tau database (see
+  [introduction-to-the-tau-system]).  Formerly this list was
+  duplicate-free, but that is no longer the case.  As a result we
+  have seen some faster performance; in particular, this change has
+  cut 17% from the time to include the community book,
+  \"centaur/sv/top\".
+
 
 Bug Fixes
 
@@ -110419,8 +110426,7 @@ Logical Definitions
   rules and the empty conjunction is T.)
 
   If you wish to see a long list of all the runes from which some tau
-  information has been gleaned, evaluate (global-val 'tau-runes (w
-  state)).")
+  information has been gleaned, evaluate (get-tau-runes (w state)).")
  (TAU-DATABASE
   (TAU-SYSTEM HISTORY)
   "To see the tau database as a (very large) object
