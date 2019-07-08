@@ -82785,6 +82785,8 @@ Heuristic and Efficiency Improvements
   cut 17% from the time to include the community book,
   \"centaur/sv/top\".
 
+  Made slight efficiency improvement for [table] update (:put) events.
+
 
 Bug Fixes
 

@@ -84192,6 +84192,9 @@ it."
  in particular, this change has cut 17% from the time to include the community
  book, @('\"centaur/sv/top\"').</p>
 
+ <p>Made slight efficiency improvement for @(see table) update (@(':put'))
+ events.</p>
+
  <h3>Bug Fixes</h3>
 
  <p>As noted in the documentation for @(see lemma-instance), ACL2 may avoid
