@@ -1,78 +1,80 @@
-; ACL2 Version 8.2 -- A Computational Logic for Applicative Common Lisp
-; Copyright (C) 2019, Regents of the University of Texas
+; Copyright (C) 2019, ForrestHunt, Inc.
+; Written by Matt Kaufmann and J Moore
+; License: A 3-clause BSD license.  See the LICENSE file distributed with ACL2.
 
-; This version of ACL2 is a descendent of ACL2 Version 1.9, Copyright
-; (C) 1997 Computational Logic, Inc.  See the documentation topic NOTE-2-0.
+; See the README file on this directory for an important note concerning the
+; weak compatibility of this model with ACL2 Version_8.2 definitions.
 
-; This program is free software; you can redistribute it and/or modify
-; it under the terms of the LICENSE file distributed with ACL2.
-
-; This program is distributed in the hope that it will be useful,
-; but WITHOUT ANY WARRANTY; without even the implied warranty of
-; MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-; LICENSE for more details.
-
-; Written by:  Matt Kaufmann               and J Strother Moore
-; email:       Kaufmann@cs.utexas.edu      and Moore@cs.utexas.edu
-; Department of Computer Science
-; University of Texas at Austin
-; Austin, TX 78712 U.S.A.
-
-; Many thanks to ForrestHunt, Inc. for supporting the preponderance of this
-; work, and for permission to include it here.
-
-; The Constraints on apply$
-
-; See the Essay on the APPLY$ Integration in apply-prim.lisp for an overview.
+; The Constraints for the General-Purpose APPLY*
 
 ; This file builds on top of apply-prim.lisp and introduces the the four apply$
 ; stubs: BADGE-USERFN, APPLY$-USERFN, UNTAME-APPLY$ and UNTAME-EV$ and
 ; initializes the table in which we record the badges of user-defined
 ; functions.
 
+; This file is used as the portcullis for the ``general-purpose'' version of
+; the apply.lisp book.  (We also develop a portcullis for a special-purpose
+; version in which the stubs are defined to be the doppelgangers of their
+; respective constrained functions as of the end of a particular user-book.
+; See script.lsp.)
+
 ; The definition of apply$ in apply.lisp relies on the stubs BADGE-USERFN and
 ; APPLY$-USERFN to access information about and to apply user defined
 ; functions, e.g., mapping functions, like SUMLIST, defined by the user with
-; defun$.  (The other two stubs just denote ``undefined'' values, e.g., used
-; when an untame function is applied.)  The ``badge'' of a function describes
-; how it uses its formals.  Badges report the arity of the symbol and the
-; ``ilks'' of its formals (tokens indicating whether the value of the formal is
-; treated as an as ordinary objects, a function, or an expression).
-
-; The ``warrant'' of a symbol fn is a 0-ary predicate named APPLY$-WARRANT-fn,
+; defun$.  (The other two stubs just denote ``undefined'' values, e.g., when an
+; untame function is applied.)  The ``badge'' of a function describes how it
+; uses its formals, e.g., the first argument of SUMLIST is an ordinary object
+; but the second argument of SUMLIST is supposed to be a tame function symbol.
+; There are no axioms connecting symbols to the functions they denote or to the
+; badges of those functions.  Instead, defun$ introduces a ``warrant'' which
+; must be included in the governing hypotheses of any theorem whose proof
+; involves reasoning about the meaning of APPLY$ on that particular function
+; symbol.  The warrant of fn is a 0-ary predicate named apply$-warrant-fn,
 ; which specifies the badge of 'fn and the conditions under which (apply$ 'fn
 ; args) = (fn (car args) ... (cad...r args)).  Warrants solve the ``Local
-; Problem.''
+; Problem.''  We claim that for any given user book certified on top of
+; apply.lisp we could attach defined functions to badge-userfn and
+; apply$-userfn so that all the warrants are valid in the resulting evaluation
+; theory.  We demonstrate this for a particular book named user-book.lisp.  See
+; script.lsp.  This claim assures the user that theorems about apply$
+; (encumbered with warrants) are ``meaningful'' by which we mean they are not
+; vacuous due to the falsity of their warrants.
 
-; We prove in the paper, ``Limited Second Order Functionality in a First Order
-; Setting'', that for any certified user book we could attach defined functions
-; to badge-userfn and apply$-userfn so that all the warrants are valid in the
-; resulting evaluation theory.  This is illustrated in the Foundations group
-; for two different ``user books'' under the subdirectories ex1/ and ex2/.
-; This claim assures the user that theorems about apply$ (encumbered with
-; warrants) are ``meaningful'' by which we mean they are not vacuous due to the
-; falsity of their warrants.
+; See the apply book for details.
 
-(in-package "ACL2")
+; WARNING: The apply book sets up and maintains two data structures used to
+; associate badges with primitive and nonprimitive function symbols.  These
+; tables are used in the analysis of newly defined functions to make sure that
+; they respect the badges of all their subroutines.  Our claim above, about
+; making warrants valid, can be made false if the user messes with these data
+; structures, e.g., changes the badge of a user-defined function from that
+; computed and stored by defun$.  This doesn't make the system unsound.  But it
+; may make theorems encumbered with warrants vacuously valid.  If and when the
+; apply$ work becomes part of ACL2, these data structures must be protected
+; from the user!  The easiest way to do that would add a new property, e.g.,
+; BADGE, to the logical world and store each symbol's badge (if any) there.
 
-; Note: This entire file is processed only in pass 2.  We might be able to
-; loosen that and process these events more generally.  But there is no point:
-; the functions introduced here, e.g., badge-userfn and apply$-userfn, are used
-; in the definitions of badge and apply$.  But those definitions use
-; apply$-primp and apply$-prim, from apply-prim.lisp, which are only defined in
-; pass 2.  So there's really no point in introducing badge-userfn and
-; apply$-userfn any earlier.
-
-(when-pass-2
+(in-package "MODAPP")
+(include-book "apply-prim")
 
 ; -----------------------------------------------------------------
 ; Handling the Primitives
 
-; Reminder: The apply-prim book defines the constant *badge-prim-falist* which
-; is a fast-alist with entries of the form (fn . (APPLY$-BADGE arity out-arity
-; . T)).  One should not hons-acons anything onto this object because that
-; would steal the hash table out from under the current value and slow down
-; apply$-primp and badge-prim which use hons-get to access this constant.
+; Reminders and Warnings: The apply-prim.lisp book, included below,
+; defines APPLY$-PRIMP, BADGE-PRIM, and APPLY$-PRIM in :logic mode.  These
+; functions are used to access information about and apply primitives like CAR
+; and BINARY-+.  The first two are guard verified but APPLY$-PRIM cannot be
+; guard verified because it may well violate guards, e.g., (apply$-prim 'CAR
+; (list 7)).  To use apply$-prim in a guard verified setting (as we do in
+; apply.lisp) we call it inside ec-call.  We also know via badge-prim-type that
+; when (apply$-primp fn) is true then (apply$-badgep (badge-prim fn)) and
+; (cdddr (badge-prim fn))=t.
+
+; The apply-prim book also defines the constant *badge-prim-falist* which is a
+; fast-alist with entries of the form (fn . (APPLY$-BADGE flg arity . T)).  One
+; should not hons-acons anything onto this object because that would steal the
+; hash table out from under the current value and slow down apply$-primp and
+; badge-prim which use hons-get to access this constant.
 
 ; -----------------------------------------------------------------
 ; BADGE-USERFN and APPLY$-USERFN
@@ -83,22 +85,31 @@
 
 ; Badge-userfn is constrained to return nil or an apply$-badge.  The latter are
 ; non-cheap records with token name APPLY$-BADGE and accessors :arity,
-; :out-arity, and :ilks.  The existence of a badge means the function is is
-; stobj- and state-free, and treats its arguments as described by the ilks of
-; the badge.  Arity is the arity of fn, out-arity is the number of values it
-; returns, and ilks indicates how the arguments are used.  Most generally, ilks
-; is a list, as long as the formals, of flags NIL, :FN, and/or :EXPR,
-; indicating that the corresponding formal is used in a ``vanilla''
-; (conventional) way, as a function only inspected by APPLY$, or as an
-; expression only inspected by EV$.  If the ilks is a list (c_1 ... c_arity),
-; we say c_i is the ``ilk'' of the ith argument.  We make a special case of
-; when all the formals are ordinary, i.e., when each ilk is NIL.  We denote
-; this with ilks = T.  (This is admittedly a bit confusing, ``T is an
-; abbreviation for a list of NILs.'')
+; :out-arity, and :ilks.  We know the associated function, fn, takes :arity
+; args and returns :out-arity results, and is stobj- and state-free, and treats
+; its arguments as described by the ilks of the badge.  Ilks indicates how the
+; arguments are used.  Most generally, ilks is a list, as long as the formals,
+; of flags NIL, :FN, and/or :EXPR, indicating that the corresponding formal is
+; used in a ``vanilla'' (conventional) way, as a function only inspected by
+; APPLY$, or as an expression only inspected by EV$.  If the ilks is a list
+; (c_1 ... c_arity), we say c_i is the ``ilk'' of the ith argument.  We make a
+; special case of when all the formals are ordinary, i.e., when each ilk is
+; NIL.  We denote this with ilks = T.  (This is admittedly a bit confusing, ``T
+; is an abbreviation for a list of NILs.'')
 
 ; The reason we impose any constraint on the shape of the object returned by
 ; badge-userfn is so that we can verify guards for tamep and apply$ without
 ; having to check these facts about the badge returned.
+
+(defmacro apply$-badge-arity (x)
+
+; Warning: Keep this in sync with apply$-badge, above.
+
+; Essentially, this expands to (access apply$-badge x :arity).  However, that
+; form may not be suitable for use in rules, because it further expands to a
+; lambda application.
+
+  `(cadr ,x))
 
 (encapsulate
   ((badge-userfn (fn) t))
@@ -232,6 +243,10 @@
     (APPLY$ . ,*apply$-badge*)
     (EV$ . ,*ev$-badge*)))
 
+(table badge-table
+       :badge-userfn-structure
+       nil)
+
 ; Badges versus Warrants
 
 ; Warrant (Merriam-Webster)
@@ -268,4 +283,5 @@
 ; a warrant.  The warrant for fn, if it exists, is named APPLY$-WARRANT-fn and
 ; takes 0 arguments.
 
-)
+
+
