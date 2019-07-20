@@ -84294,6 +84294,12 @@ it."
  after adding rules of class @(':')@(tsee definition) that introduce
  recursion.</p>
 
+ <p>Eliminated an error occurring when attempting to compute the guard proof
+ obligation for a constrained function, in particular, when using the
+ @(':')@(tsee gthm) utility on such a function (also see @(see guard-theorem)).
+ Thanks to Alessandro Coglio for pointing out this bug and for noting that
+ @('t') could be a reasonable result for the guard theorem in such cases.</p>
+
  <h3>Changes at the System Level</h3>
 
  <h3>EMACS Support</h3>

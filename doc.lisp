@@ -82892,6 +82892,13 @@ Bug Fixes
   rarely) after adding rules of class :[definition] that introduce
   recursion.
 
+  Eliminated an error occurring when attempting to compute the guard
+  proof obligation for a constrained function, in particular, when
+  using the :[gthm] utility on such a function (also see
+  [guard-theorem]).  Thanks to Alessandro Coglio for pointing out
+  this bug and for noting that t could be a reasonable result for the
+  guard theorem in such cases.
+
 
 Changes at the System Level
 
