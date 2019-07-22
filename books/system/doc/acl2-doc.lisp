@@ -84256,6 +84256,11 @@ it."
  is possible to warrant some functions that use local @(see stobj)s as long as
  they don't call @(tsee apply$).  See @(see defwarrant).</p>
 
+ <p>The function @(tsee symbol-name-lst) is now a @(see guard)-verified @(see
+ logic)-mode function (formerly it was a @(see program)-mode function).  Thanks
+ to Alessandro Coglio for suggesting that it might be good to document this
+ function, which led us to this change (and to its being documented).</p>
+
  <h3>New Features</h3>
 
  <p>A new @(tsee xargs) keyword, @(':guard-simplify') (default @('t')),
@@ -107295,6 +107300,14 @@ arithmetic) for libraries of @(see books) for arithmetic reasoning.</p>")
  @({
   (symbolp x)
  })")
+
+(defxdoc symbol-name-lst
+  :parents (symbols acl2-built-ins)
+  :short "Lift @(tsee symbol-name) to lists"
+  :long "<p>This function returns the list of @(tsee symbol-name)s of a given
+ list of symbols.</p>
+
+ @(def symbol-name-lst)")
 
 (defxdoc symbol-package-name
   :parents (symbols packages acl2-built-ins)
