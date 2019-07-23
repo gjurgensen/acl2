@@ -3130,7 +3130,7 @@ Subtopics
       Return the :default from the [header] of a 1- or 2-dimensional array
 
   [Defwarrant]
-      Warrant a function so [apply$] can use it
+      Issue a warrant for a function so [apply$] can use it
 
   [Delete-assoc]
       Deprecated version of [remove1-assoc]
@@ -4025,6 +4025,9 @@ Subtopics
 
   [Symbol-name]
       The name of a symbol (a string)
+
+  [Symbol-name-lst]
+      Lift [symbol-name] to lists
 
   [Symbol-package-name]
       The name of the package of a symbol (a string)
@@ -7787,11 +7790,11 @@ Examples
 
     (defun$ sq (x) (* x x))
 
-    (defun$ collect (fn lst)
+    (defun$ collect$ (fn lst)
       (if (endp lst)
           nil
           (cons (apply$ fn (list (car lst)))
-                (collect fn (cdr lst)))))
+                (collect$ fn (cdr lst)))))
 
     (defun$ foldr (lst fn init)
       (if (endp lst)
@@ -7803,7 +7806,10 @@ Examples
     (defun$ russell (fn x)
       (not (apply$ fn (list x x))))
 
-  Collect and foldr might informally be called ``mapping functions''
+  Note: Collect$ is pre-defined in ACL2 because it is part of the
+  support for the [loop$] statement.
+
+  Collect$ and foldr might informally be called ``mapping functions''
   because they map a given function over some domain and accumulate
   the answers somehow.  They are useful examples of what we call
   scions of apply$ or simply scions: functions in which apply$ is
@@ -7820,10 +7826,10 @@ Examples
     ACL2 !>(apply$ 'sq '(5))
     25
 
-    ACL2 !>(collect 'sq '(1 2 3 4 5))
+    ACL2 !>(collect$ 'sq '(1 2 3 4 5))
     (1 4 9 16 25)
 
-    ACL2 !>(collect (lambda$ (x) (* x x)) '(1 2 3 4 5))
+    ACL2 !>(collect$ (lambda$ (x) (* x x)) '(1 2 3 4 5))
     (1 4 9 16 25)
 
     ACL2 !>(foldr '(1 2 3) 'cons '(4 5 6))
@@ -7936,13 +7942,13 @@ Examples
                   (equal (apply$ 'SQ (list i))
                          (* i i))))
 
-    ; [2] Collect distributes over append for any fn.
+    ; [2] Collect$ distributes over append for any fn.
 
-    (thm (equal (collect fn (append a b))
-                (append (collect fn a)
-                        (collect fn b))))
+    (thm (equal (collect$ fn (append a b))
+                (append (collect$ fn a)
+                        (collect$ fn b))))
 
-    ; [3] Foldr can be used to collect, but the collection must
+    ; [3] Foldr can be used to collect$, but the collection must
     ; be with an ``ok'' function (a tame function of one
     ; argument).  Note the backquote on the LAMBDA.  This is
     ; a theorem that requires us to cons up a LAMBDA object.
@@ -7951,7 +7957,7 @@ Examples
                   (equal (foldr lst
                                 `(LAMBDA (X Y) (CONS (,fn X) Y))
                                 nil)
-                         (collect fn lst))))
+                         (collect$ fn lst))))
 
 
 Specification of APPLY$
@@ -8591,7 +8597,7 @@ Subtopics
       Define a function symbol and generate a warrant
 
   [Defwarrant]
-      Warrant a function so [apply$] can use it
+      Issue a warrant for a function so [apply$] can use it
 
   [Ev$]
       Evaluate a tame expression using apply$
@@ -8879,10 +8885,10 @@ Subtopics
     :args assoc-eq
 
   Args takes one argument, a symbol which must be the name of a
-  function or macro, and prints out the formal parameters, the
-  [guard] expression, the output [signature], the deduced type, the
-  [constraint] (if any), and whether [documentation] about the symbol
-  is available via :[doc].")
+  function or macro, and prints out some information about it
+  including the formal parameters, the [guard] expression, the output
+  [signature], the deduced type, the [constraint] (if any), and its
+  [badge] and [warrant], if any.")
  (ARITIES-OKP
   (ACL2-BUILT-INS)
   "check the arities of given function symbols
@@ -26885,7 +26891,7 @@ Subtopics
   program.  See [mutual-recursion].")
  (DEFWARRANT
   (APPLY$ ACL2-BUILT-INS)
-  "Warrant a function so [apply$] can use it
+  "Issue a warrant for a function so [apply$] can use it
 
   Before using defwarrant or a utility like [defun$] that relies on it:
 
@@ -26898,33 +26904,144 @@ Subtopics
     (defwarrant fn)
 
   where fn is a defined function name.  This command analyzes the body
-  of fn to determine whether it satisfies stringent syntactic
-  conditions that allow [apply$] to apply the function name to
-  arguments and that allow future calls of defwarrant to analyze
-  definitions that call this fn.
+  of fn to determine whether it satisfies certain stringent syntactic
+  conditions.
 
-  The conditions include:
+  Basic conditions include that fn is in :[logic]-mode, does not have
+  [state] or any [stobj] in its signature, and that its justification
+  (i.e., the measure, well-founded relation, and domain predicate
+  used to admit fn) be expressible without any reference to [apply$],
+  [ev$], or [apply$-userfn].
 
-  (a) Fn is a defined, singly-recursive (or non-recursive) :logic mode
-  function that (if recursive) is justified with a [tame] measure
-  expression, [tame] domain predicate, and [tame] well-founded
-  relation, and that (if recursive and at least one formal has ilk
-  :FN or :EXPR) has a natural-number-valued measure and well-founded
-  relation o<.
+  Defwarrant imposes some additional conditions on fn, but exactly what
+  those conditions are depends on a certain ``reachability'' test.
+  Roughly speaking the test is whether apply$ is reachable from fn
+  but the test is broader than that and we clarify the test further
+  below.
 
-  (b) Every function called in the body of fn, except fn itself,
-  already has a [badge].  If some subfunction doesn't already have a
+  If the reachability test succeeds --- colloquially, if fn depends on
+  apply$ --- then defwarrant imposes the following additional
+  conditions in order to issue a warrant.
+
+  (a) If fn is recursive it must not be part of a mutually recursive
+  clique and its measure must be of type [natp] or be a lexicographic
+  combination of natural numbers as defined by the llist function in
+  the Community Books at books/ordinals/.
+
+  (b) Every function called in the body of fn, except fn itself, must
+  already have a [badge].  If some subfunction doesn't already have a
   badge, defwarrant will signal an error and report the unbadged
-  function.  You will have to call defwarrant on that function -- and
-  that call must succeed -- before any function using it is
+  function.  You will have to call defwarrant on that function ---
+  and that call must succeed --- before any function using it is
   successfully warranted.
 
-  (c) Each formal can be assigned one of three ilks, as follows.  By
-  the way, key to the inductive correctness of the implied algorithm
-  below is the fact that initially the only function symbol with a
-  slot of ilk :FN is apply$ and the only function with a slot of ilk
-  :EXPR is ev$.  In both functions it is the first argument slot that
-  is so distinguished.
+  (c) It must be possible for each formal of fn to be assigned one of
+  three [ilk]s, :FN, :EXPR, or NIL, as described below.  The basic
+  idea is that a formal can be assigned ilk :FN (or ilk :EXPR) iff it
+  is sometimes passed into a :FN (or :EXPR) slot in the body of fn
+  and is never passed into any other kind of slot.  A formal can be
+  be assigned ilk NIL iff it is never passed into a slot of ilk :FN
+  or :EXPR, i.e., if it is used as an ``ordinary'' object.  We are
+  more precise below.
+
+  (d) Every :FN and :EXPR slot of every function called in the body of
+  fn is occupied either by a formal of fn of the same ilk or, in the
+  case of calls of functions other than fn, a quoted [tame] function
+  symbol or quoted tame (preferably well-formed) LAMBDA object.
+
+  This completes the list of additional restrictions imposed by
+  defwarrant on functions from which apply$ can be reached.
+
+  If the reachability test fails --- colloquially, if fn does not
+  depend on apply$ --- then defwarrant just checks that fn does not
+  call any of a few functions that apply$ is prohibited from running.
+  Among those blacklisted functions are [sys-call] and other
+  functions requiring a trust tag.  For a list of the blacklisted
+  functions see the value of *blacklisted-apply$-fns*.
+
+  Note that the restrictions imposed on functions from which apply$
+  cannot be reached are comparatively generous.  If fn does not
+  depend on apply$ then fn can be warranted despite (a) being defined
+  mutually recursively or with an arbitrary ordinal measure, or (b)
+  calling unbadged or unbadgeable functions --- including for
+  example, functions that use local [stobj]s (see
+  [with-local-stobj]s).
+
+  Regardless of whether apply$ is reachable or not, if the requisite
+  conditions are not met, defwarrant causes an error.
+
+  If the requisite conditions are met, defwarrant constructs the
+  [badge] for fn, setting the arity and out arity appropriately and
+  setting the ilks field to the list of computed ilks (or to T if
+  every formal has ilk NIL).  The generated badge is stored for the
+  future use of defwarrant.
+
+  Furthermore, defwarrant generates the [warrant] for fn.  The name of
+  that 0-ary function will be APPLY$-WARRANT-fn.  Calls of [apply$]
+  on 'fn in proof attempts can only be simplified if the warrant
+  hypothesis, (APPLY$-WARRANT-fn), aka ``the warrant,'' is among the
+  hypotheses of the conjecture being proved.  The warrant specifies
+  the values of both (badge 'fn) and (apply$ 'fn ...), including the
+  tameness requirements imposed on apply$.  (The warrant explicitly
+  specifies the values of [badge-userfn] and [apply$-userfn] and then
+  [defwarrant] proves rewrite rules to make calls of badge and apply$
+  simplify accordingly.)
+
+  In addition, if a warrant is issued for fn, then defwarrant extends
+  ACL2's evaluation theory (but not its proof theory) so that the
+  warrant hypothesis is assumed in that theory, allowing calls of
+  badge and apply$ to be evaluated in the evaluation theory (but not
+  in the proof theory).  See [warrant] for details.
+
+  Defwarrant also proves that [fn-equal] is a congruence relation for
+  each :FN position of fn.
+
+
+The ``Reachability'' Test
+
+  We now clarify the test that we colloquially described above as
+  whether apply$ is reachable from fn.  The actual test is whether
+  apply$-userfn is ancestral in fn.  That is, does fn call
+  apply$-userfn, or a function that calls apply$-userfn, or a
+  function that calls a function that calls apply$-userfn, etc.
+
+  Since the only system functions that call apply$-userfn are apply$,
+  ev$, and [warrant]s, and since it is very unusual for a
+  user-defined function to call directly apply$-userfn, ev$, or
+  warrants, we think of this test colloquially as whether apply$ is
+  ancestral in fn.
+
+  The test affects the metatheoretical model of apply$ and the onerous
+  conditions imposed when the apply$ is reachable from fn are crucial
+  to soundness.  If apply$ is reachable, then in the metatheoretic
+  model of apply$, fn is introduced in a mutually recursive clique
+  with apply$ itself (they call each other) and the termination
+  argument is delicate and depends on function objects not changing
+  as they are passed around.  If apply$ isn't reachable, fn can be
+  introduced in the model before apply$.  These considerations are
+  unimportant to the user --- the metatheoretic model is a
+  mathematical abstraction that establishes the soundness of apply$
+  and is not part of the implementation.
+
+
+How Ilks Are Assigned
+
+  If a formal variable (or its slot among the actuals) has an ilk of
+  :FN then the variable is ``used as a function'' in the sense that
+  it might eventually reach the first argument of a call of apply$
+  and is never passed into an ``ordinary'' slot like those for cons.
+  Similarly, an ilk of :EXPR means the variable is ``used as an
+  expression'' and may eventually reach the first argument of ev$.
+  An ilk of NIL means the variable is never used as a function or an
+  expression.  The correctness of this algorithm is crucial to the
+  termination argument justifying the definition of apply$ in the
+  metatheoretic model.
+
+  The key to the inductive correctness of the algorithm implicity
+  described below is the fact that initially the only function symbol
+  with a slot of ilk :FN is apply$ and the only function with a slot
+  of ilk :EXPR is ev$.  In both functions it is the first argument
+  slot that is so distinguished.
 
   Let v  be the i th formal parameter of a defined function fn.  Then
   the ilk of v  is :FN iff the value of v  eventually makes its way
@@ -26951,41 +27068,6 @@ Subtopics
   The i th formal variable v  has ilk NIL if it never occurs in a :FN
   slot and never occurs in an :EXPR slot.  We say such a v  is ``used
   (exclusively) as an ordinary object.''
-
-  (d) Every :FN and :EXPR slot of every function called in the body of
-  fn is occupied either by a formal of fn of the same ilk or, in the
-  case of calls of functions other than fn, a quoted [tame] function
-  symbol or quoted tame (preferably well-formed) LAMBDA object.
-
-  If these conditions are not met, an error is caused by defwarrant.
-
-  If these conditions are met, defwarrant constructs the [badge] for
-  fn, setting the arity and out arity appropriately and setting the
-  ilks field to the list of computed ilks (or to T if every formal
-  has ilk NIL).
-
-  The generated badge is stored for the future use of defwarrant.
-  Furthermore, defwarrant generates the [warrant] for fn.  The name
-  of that 0-ary function will be APPLY$-WARRANT-fn.  Calls of
-  [apply$] on 'fn in proof attempts can only be simplified if the
-  warrant hypothesis, (APPLY$-WARRANT-fn), aka ``the warrant,'' is
-  among the hypotheses of the conjecture being proved.  The warrant
-  specifies the values of both (badge 'fn) and (apply$ 'fn ...),
-  including the tameness requirements imposed on apply$.  (The
-  warrant explicitly specifies the values of [badge-userfn] and
-  [apply$-userfn] and then [defwarrant] proves rewrite rules to make
-  calls of badge and apply$ simplify accordingly.)
-
-  In addition, if a warrant is issued for fn, then defwarrant extends
-  ACL2's evaluation theory (but not its proof theory) so that the
-  warrant hypothesis is assumed in that theory, allowing calls of
-  badge and apply$ to be evaluated in the evaluation theory (but not
-  in the proof theory).  See [warrant] for details.
-
-  defwarrant also proves that [fn-equal] is a congruence relation for
-  each :FN position of fn.
-
-  See [warrant] for details.
 
 
 Subtopics
@@ -28377,13 +28459,12 @@ Proof efficiency
   example, if you have a binary function, op, and you prove the
   [rewrite] rules (equal (op x y) (op y x)) and (equal (op x (op y
   z)) (op y (op x z))), then ACL2 will use an n^2 algorithm to put
-  arguments in order, essentially with bubblesort, essentially in a
-  sequence like this:
+  arguments in order, essentially with bubblesort, in a sequence like
+  this:
 
     (op d (op c (op b a)))
     (op d (op c (op a b)))
     (op d (op a (op c b)))
-    (op d (op a (op b c)))
     (op d (op a (op b c)))
     (op a (op d (op b c)))
     (op a (op b (op d c)))
@@ -34645,9 +34726,9 @@ Subtopics
 
   Ideally one can substitute one functional object for an equivalent
   one in functional positions.  For example, fn-equal holds between
-  '(lambda (x) x) and 'IDENTITY, so one would hold that (collect lst
-  '(lambda (x) x)) could be rewritten to (collect lst 'identity)
-  since the second argument of collect (as defined in the
+  '(LAMBDA (X) X) and 'IDENTITY, so one would hold that (collect$
+  '(LAMBDA (X) X) lst) could be rewritten to (collect$ 'IDENTITY lst)
+  since the first argument of collect$ (as defined in the
   [introduction-to-apply$]) has ilk :FN.  Unfortunately, because
   these are quoted constants, ACL2's rewriter will not rewrite one to
   the other!
@@ -46864,32 +46945,32 @@ Subtopics
   For example, consider the following function, which maps a given
   function over a list and collects the results.
 
-    (defun collect (fn lst)
+    (defun collect$ (fn lst)
       (if (endp lst)
           nil
           (cons (apply$ fn (list (car lst)))
-                (collect fn (cdr lst)))))
+                (collect$ fn (cdr lst)))))
 
-  Our definition of tameness considers (collect 'SQ lst) to be a tame
-  expression, even though collect calls apply$.  The reason we can
-  allow this is that in this particular call of collect the function
-  to be applied is itself tame.  But if (collect 'SQ lst) is a tame
-  expression, then '(LAMBDA (LST) (COLLECT 'SQ LST)) is a tame
+  Our definition of tameness considers (collect$ 'SQ lst) to be a tame
+  expression, even though collect$ calls apply$.  The reason we can
+  allow this is that in this particular call of collect$ the function
+  to be applied is itself tame.  But if (collect$ 'SQ lst) is a tame
+  expression, then '(LAMBDA (LST) (COLLECT$ 'SQ LST)) is a tame
   function and thus
 
-    (collect '(LAMBDA (LST) (COLLECT 'SQ LST)) z)
+    (collect$ '(LAMBDA (LST) (COLLECT$ 'SQ LST)) z)
 
   is a tame expression.  So, for example, at the top-level of ACL2 one
   can do this:
 
-    ACL2 !>(collect '(LAMBDA (LST) (COLLECT 'SQ LST))
-                    '((1 2 3) (4 5 6) (7 8 9)))
+    ACL2 !>(collect$ '(LAMBDA (LST) (COLLECT$ 'SQ LST))
+                     '((1 2 3) (4 5 6) (7 8 9)))
     ((1 4 9) (16 25 36) (49 64 81))
 
-  Of course, this presumes we have defined sq and collect and have
+  Of course, this presumes we have defined sq and collect$ and have
   analyzed them to make sure they have the appropriate tameness
-  properties.  (Note that collect is not tame, but the way it uses
-  its ``functional'' argument is crucial to the tameness of (collect
+  properties.  (Note that collect$ is not tame, but the way it uses
+  its ``functional'' argument is crucial to the tameness of (collect$
   'SQ lst).)  To use apply$ to full advantage we need to analyze
   every relevant function definition, which has the side-effect of
   producing warrants for those functions.  We therefore have
@@ -46959,17 +47040,18 @@ Subtopics
   function symbol fn.
 
   Lesson 3: We'll say more about tameness, badges, and warrants later.
-  But you might as well learn two major limitations now: (i)
-  Functions that use stobjs or STATE cannot be warranted and thus
-  cannot be apply$d!  Sorry!  (ii) Some functions that return
-  multiple values can be badged but not warranted.  If the function
-  obeys our rules but just returns multiple values then a badge can
-  be produced for it, recording its signature, etc., but no warrant
-  can be produced.  Apply$ won't ``work'' on such a function because
-  apply$ always returns one result, so how could it return the
-  multiple results required in this case?  However the presence of a
-  badge allows the tameness predicates to analyze functions that call
-  the multiple-valued one and possibly issue warrants for them.
+  But you might as well learn four major limitations of apply$: (i)
+  Apply$ does not take [state] or [stobj] arguments and so cannot
+  call any function that takes STATE or stobj arguments.  (ii) Apply$
+  cannot call a function whose measure, well-founded relation, or
+  domain predicate depends on apply$. (iii) Apply$ cannot call a
+  function that itself uses apply$ unless that function's measure is
+  a natural number or a lexicographic combination of naturals formed
+  with llist as defined in the Community Books at books/ordinals/.
+  (iv) Apply$ cannot call a function that itself uses apply$ if that
+  function was defined mutually recursively.  Another way of saying
+  all this is that defwarrant will cause an error if you try to
+  warrant a function violating (i), (ii), (iii) or (iv).
 
   Lesson 4: If you want to define a function and immediately call
   defwarrant on it you can use the handy macro defun$.  We'll use
@@ -46978,49 +47060,52 @@ Subtopics
   Lesson 5: You can define functions that take warranted ``functions''
   as arguments and apply them.  Here is a function that applies its
   first argument to every element of its second argument and collects
-  the results.  We sometimes call functions like collect ``mapping
+  the results.  We sometimes call functions like collect$ ``mapping
   functions'' because they map another function over some range.  But
   more often we call them [scion]s of apply$.  In ordinary English
   usage, a ``scion'' is a descendent of an important family or
   individual; our scions are ``descendents'' of apply$ and inherit
   its power and restrictions.
 
-    (defun$ collect (fn lst)
+    (defun$ collect$ (fn lst)
       (if (endp lst)
           nil
           (cons (apply$ fn (list (car lst)))
-                (collect fn (cdr lst)))))
+                (collect$ fn (cdr lst)))))
 
   In this definition, the first argument has ilk :FN because it is used
   exclusively as a ``function:'' it reaches the first argument of
   apply$ and is untouched otherwise.  The second argument has ilk NIL
   and we say it's ``ordinary.'' It is never used as a function.
 
-  Note: We define collect with defun$ simply because we might be in the
-  habit now of using defun$.  Unless we mean to pass collect to
+  Note: We define collect$ with defun$ simply because we might be in
+  the habit now of using defun$.  Unless we mean to pass collect$ to
   apply$ or to some mapping function in the future, there is no
-  reason to have a warrant for collect.  Had we defined collect with
-  the ordinary defun and realized later that we want to pass 'COLLECT
-  into a slot of ilk :FN, we could get a warrant for collect by
-  calling (defwarrant collect).
+  reason to have a warrant for collect$.  Had we defined collect$
+  with the ordinary defun and realized later that we want to pass
+  'COLLECT$ into a slot of ilk :FN, we could get a warrant for
+  collect$ by calling (defwarrant collect$).
 
   Here's another useful mapping function:
 
-    (defun$ all (fn lst)
+    (defun$ always$ (fn lst)
       (if (endp lst)
           t
           (and (apply$ fn (list (car lst)))
-               (all fn (cdr lst)))))
+               (always$ fn (cdr lst)))))
 
   It checks that every element of lst satisfies its :FN argument fn.
+
+  By the way, both collect$ and always$ are pre-defined in ACL2 because
+  they are part of the support for the [loop$] statment.
 
   Lesson 6: You can run scions (``mapping functions'') on warranted
   function symbols:
 
-    ACL2 !>(collect 'SQ '(1 -2 3 -4))
+    ACL2 !>(collect$ 'SQ '(1 -2 3 -4))
     (1 4 9 16)
 
-    ACL2 !>(collect 'rev '((1 2 3) (4 5 6) (7 8 9)))
+    ACL2 !>(collect$ 'rev '((1 2 3) (4 5 6) (7 8 9)))
     ((3 2 1) (6 5 4) (9 8 7))
 
   Lesson 7: You can run scions on tame LAMBDA objects --- but those
@@ -47037,15 +47122,15 @@ Subtopics
   for some definitions and disambiguation help.
 
     ; Don't type this:
-    ACL2 !>(collect '(LAMBDA (X)
-                       (IF (< X '0) (BINARY-* '10 X) (SQ X)))
-                    '(1 -2 3 -4))
+    ACL2 !>(collect$ '(LAMBDA (X)
+                              (IF (< X '0) (BINARY-* '10 X) (SQ X)))
+                     '(1 -2 3 -4))
     (1 -20 9 -40)
 
     ; Type this instead!
-    ACL2 !>(collect (lambda$ (X)
-                       (if (< x 0) (* 10 x) (sq x)))
-                    '(1 -2 3 -4))
+    ACL2 !>(collect$ (lambda$ (X)
+                              (if (< x 0) (* 10 x) (sq x)))
+                     '(1 -2 3 -4))
     (1 -20 9 -40)
 
   Lesson 9: Almost all ACL2 primitives are known to apply$.  For a
@@ -47060,21 +47145,21 @@ Subtopics
 
   Lesson 10: You can prove and use theorems about scions.
 
-    (defthm collect-append
-      (equal (collect fn (append a b))
-             (append (collect fn a)
-                     (collect fn b))))
+    (defthm collect$-append
+      (equal (collect$ fn (append a b))
+             (append (collect$ fn a)
+                     (collect$ fn b))))
 
-    (thm (equal (collect (lambda$ (x) (sq (sq x)))
-                         (append c d))
-                (append (collect (lambda$ (x) (sq (sq x))) c)
-                        (collect (lambda$ (x) (sq (sq x))) d))))
+    (thm (equal (collect$ (lambda$ (x) (sq (sq x)))
+                          (append c d))
+                (append (collect$ (lambda$ (x) (sq (sq x))) c)
+                        (collect$ (lambda$ (x) (sq (sq x))) d))))
 
-  Notice that the lemma collect-append talks about an arbitrary fn.  It
-  simply doesn't matter what apply$ does for this theorem to hold.
-  Once collect-append has been proved can be instantiated with
+  Notice that the lemma collect$-append talks about an arbitrary fn.
+  It simply doesn't matter what apply$ does for this theorem to hold.
+  Once collect$-append has been proved can be instantiated with
   anything for fn.  This is demonstrated when the thm above is
-  proved: the proof is just to rewrite with collect-append.
+  proved: the proof is just to rewrite with collect$-append.
 
   Lesson 11: But when your theorems depend on the behavior of apply$ on
   particular user-defined functions, you will need to provide
@@ -47087,12 +47172,12 @@ Subtopics
   warrant for sq tells us.  Thus, the warrant for sq is required as a
   hypothesis!
 
-    (defthm all-natp-collect-sq
+    (defthm all-natp-collect$-sq
       (implies (and (warrant sq)
-                    (all 'INTEGERP lst))
-               (all 'NATP (collect 'SQ lst))))
+                    (always$ 'INTEGERP lst))
+               (always$ 'NATP (collect$ 'SQ lst))))
 
-  Note that this theorem uses the scion all to express the ideas of
+  Note that this theorem uses the scion always$ to express the ideas of
   ``list of integers'' and ``list of naturals.'' Note also that we
   don't need to provide warrants for integerp or natp because they
   are ACL2 primitives and thus built into the behavior of apply$.
@@ -47103,14 +47188,14 @@ Subtopics
 
     (encapsulate nil
       (local (defun sq (x) (* x x)))
-      (defthm unwarranted-all-natp-collect-sq
-        (implies (all 'INTEGERP lst)
-                 (all 'NATP (collect 'SQ lst)))))
+      (defthm unwarranted-all-natp-collect$-sq
+        (implies (always$ 'INTEGERP lst)
+                 (always$ 'NATP (collect$ 'SQ lst)))))
 
     (defun sq (x) (* x x x))
 
-    (thm (implies (all 'INTEGERP lst)
-                  (all 'NATP (collect 'SQ lst))))
+    (thm (implies (always$ 'INTEGERP lst)
+                  (always$ 'NATP (collect$ 'SQ lst))))
 
   This would be a disaster because the final thm is invalid since (sq
   -2) here is -8 and yet the thm is trivially proved by appealing to
@@ -47130,15 +47215,15 @@ Subtopics
   limitations will annoy you!  For example, when ACL2 tries to use
   the lemma
 
-    (defthm all-natp-collect-sq
+    (defthm all-natp-collect$-sq
       (implies (and (warrant sq)
-                    (all 'INTEGERP lst))
-               (all 'NATP (collect 'SQ lst))))
+                    (always$ 'INTEGERP lst))
+               (always$ 'NATP (collect$ 'SQ lst))))
 
   it just employs its usual first-order matching algorithm.  Thus, the
   lemma won't apply to
 
-    (all 'NATP (collect (lambda$ (x) (* x x)) lst))
+    (always$ 'NATP (collect$ (lambda$ (x) (* x x)) lst))
 
   because the constant symbol 'SQ is not the same as the constant list
   generated by translating lambda$ expression, '(LAMBDA (X) (BINARY-*
@@ -48456,8 +48541,8 @@ More help
   (:[executable-counterpart] tau-system).  If any tau reasoning is
   used in a proof, the rune (:[executable-counterpart] tau-system) is
   reported in the [summary].  For a complete list of all the runes in
-  the tau database, evaluate (global-val 'tau-runes (w state)).  Any
-  of these associated theorems could have been used.
+  the tau database, evaluate (get-tau-runes (w state)).  Any of these
+  associated theorems could have been used.
 
   These design criteria are not always achieved!  For example, the tau
   system's ``greediness'' can be turned off (see
@@ -51124,7 +51209,7 @@ About LAMBDA Objects
   Generally speaking when LAMBDA objects occur in translated terms they
   are quoted, as in
 
-    (collect '(LAMBDA (X) (BINARY-+ '1 X)) lst)
+    (collect$ '(LAMBDA (X) (BINARY-+ '1 X)) lst)
 
   To highlight the fact that these objects are constants, we try to
   write them in UPPERCASE and typewriter font in this documentation.
@@ -51138,10 +51223,10 @@ About LAMBDA Objects
   status comes from being treated as functions by apply$.  So one
   could write
 
-    (collect (list 'lambda '(x) '(binary-+ '1 x)) lst)
+    (collect$ (list 'lambda '(x) '(binary-+ '1 x)) lst)
 
   and we would say that the value of the term in the first argument of
-  collect is a LAMBDA object.
+  collect$ is a LAMBDA object.
 
   Beware, however, that consing up LAMBDA objects defeats the [ilk]
   analysis in [defwarrant] and the [tame]ness analysis of apply$ and
@@ -51208,10 +51293,10 @@ About Lambda$ Expressions
   in terms are called ``lambda$ expressions.'' Lambda$ expressions
   may only be used in argument slots of [ilk] :FN.
 
-  An example of a lambda$ expression is the first argument of collect
+  An example of a lambda$ expression is the first argument of collect$
   in
 
-    (collect (lambda$ (x) (+ 1 x)) lst)
+    (collect$ (lambda$ (x) (+ 1 x)) lst)
 
   That lambda$ expression essentially translates to the quoted
   well-formed LAMBDA object
@@ -82760,6 +82845,20 @@ Changes to Existing Features
   the \"ACL2\" package could be used in that way.  Thanks to Jared
   Davis for suggesting (in 2007!) that we consider such a change.
 
+  More functions can now be given [warrant]s.  In particular: the
+  requirement of a natural number measure for recursive definitions
+  has been relaxed to allow lexicographic combinations of natural
+  numbers as defined by the llist function in the Community Books at
+  books/ordinals/, and it is possible to warrant some functions that
+  use local [stobj]s as long as they don't call [apply$].  See
+  [defwarrant].
+
+  The function [symbol-name-lst] is now a [guard]-verified [logic]-mode
+  function (formerly it was a [program]-mode function).  Thanks to
+  Alessandro Coglio for suggesting that it might be good to document
+  this function, which led us to this change (and to its being
+  documented).
+
 
 New Features
 
@@ -82779,6 +82878,15 @@ New Features
 
 Heuristic and Efficiency Improvements
 
+  ACL2 keeps a complete list of all the runes in the tau database (see
+  [introduction-to-the-tau-system]).  Formerly this list was
+  duplicate-free, but that is no longer the case.  As a result we
+  have seen some faster performance; in particular, this change has
+  cut 17% from the time to include the community book,
+  \"centaur/sv/top\".
+
+  Made slight efficiency improvement for [table] update (:put) events.
+
 
 Bug Fixes
 
@@ -82792,6 +82900,13 @@ Bug Fixes
   A hard Lisp error has been fixed that could occur (probably only
   rarely) after adding rules of class :[definition] that introduce
   recursion.
+
+  Eliminated an error occurring when attempting to compute the guard
+  proof obligation for a constrained function, in particular, when
+  using the :[gthm] utility on such a function (also see
+  [guard-theorem]).  Thanks to Alessandro Coglio for pointing out
+  this bug and for noting that t could be a reasonable result for the
+  guard theorem in such cases.
 
 
 Changes at the System Level
@@ -89260,11 +89375,11 @@ A Single Performance Comparison
   that maps a predicate over a list and checks that the predicate
   holds for every element.
 
-      (defun$ all (pred lst)
+      (defun$ always$ (pred lst)
              (if (endp lst)
     	     t
     	     (and (apply$ pred (list (car lst)))
-    		  (all pred (cdr lst)))))
+    		  (always$ pred (cdr lst)))))
 
   and define the function that builds a list of the first n+1 naturals
   and use it to define the misleadingly named constant *million*
@@ -89284,7 +89399,7 @@ A Single Performance Comparison
   *million*?  And then, how long does it take to do it again after
   verifying its guards and turning its status to :GOOD?
 
-    ACL2 !>(time$ (all '(lambda (x) (natp (squ (nfixer x)))) *million*))
+    ACL2 !>(time$ (always$ '(lambda (x) (natp (squ (nfixer x)))) *million*))
     ; (EV-REC *RETURN-LAST-ARG3* ...) took
     ; 4.35 seconds realtime, 4.35 seconds runtime
     ; (128,000,160 bytes allocated).
@@ -89295,7 +89410,7 @@ A Single Performance Comparison
 
     ...[successful but output elided]...
 
-    ACL2 !>(time$ (all '(lambda (x) (natp (squ (nfixer x)))) *million*))
+    ACL2 !>(time$ (always$ '(lambda (x) (natp (squ (nfixer x)))) *million*))
     ; (EV-REC *RETURN-LAST-ARG3* ...) took
     ; 0.19 seconds realtime, 0.19 seconds runtime
     ; (32,000,064 bytes allocated).
@@ -99732,14 +99847,14 @@ Subtopics
   Meriam-Webster defines scion as ``a descendant of a wealthy,
   aristocratic, or influential family.''
 
-  Examples of scions include apply$, collect and foldr, where the last
+  Examples of scions include apply$, collect$ and foldr, where the last
   two are defined as shown below.
 
-    (defun$ collect (fn lst)
+    (defun$ collect$ (fn lst)
       (if (endp lst)
           nil
           (cons (apply$ fn (list (car lst)))
-                (collect fn (cdr lst)))))
+                (collect$ fn (cdr lst)))))
 
     (defun$ foldr (lst fn init)
       (if (endp lst)
@@ -99748,27 +99863,30 @@ Subtopics
                   (list (car lst)
                         (foldr (cdr lst) fn init)))))
 
+  Note: Collect$, which is part of the support for the [loop$]
+  statement, is pre-defined in ACL2 but foldr is not.
+
   Most often, scions treat one or more of their arguments as
   ``functions,'' i.e., have at least one formal of ilk :FN.  But that
-  is not necessarily the case.  Collect-squares, as defined below,
+  is not necessarily the case.  Collect$-squares, as defined below,
 
-    (defun$ collect-squares (lst)
-      (collect (lambda$ (x) (* x x)) lst))
+    (defun$ collect$-squares (lst)
+      (collect$ (lambda$ (x) (* x x)) lst))
 
   is a scion even though it does not have a formal of ilk :FN.
-  However, it calls the scion collect.
+  However, it calls the scion collect$.
 
   The function defined by
 
-    (defun$ collect-expr (x lst alist)
+    (defun$ collect$-expr (x lst alist)
       (if (endp lst)
           nil
           (cons (ev$ x (cons (cons 'v (car lst)) alist))
-                (collect-expr x (cdr lst) alist))))
+                (collect$-expr x (cdr lst) alist))))
 
   is a scion because it calls ev$ which calls apply$ in the mutually
   recursive clique that defines them both.  Note that the ilks of the
-  formals of collect-expr are :EXPR, NIL and NIL, respectively.  The
+  formals of collect$-expr are :EXPR, NIL and NIL, respectively.  The
   function collects the successive values of the expression x under
   extensions of alist binding the variable symbol v to successive
   elements of lst.
@@ -108598,6 +108716,20 @@ Subtopics
   [Guard] for (symbol-name x):
 
     (symbolp x)")
+ (SYMBOL-NAME-LST
+  (SYMBOLS ACL2-BUILT-INS)
+  "Lift [symbol-name] to lists
+
+  This function returns the list of [symbol-name]s of a given list of
+  symbols.
+
+  Function: <symbol-name-lst>
+
+    (defun symbol-name-lst (lst)
+           (declare (xargs :guard (symbol-listp lst)))
+           (cond ((endp lst) nil)
+                 (t (cons (symbol-name (car lst))
+                          (symbol-name-lst (cdr lst))))))")
  (SYMBOL-PACKAGE-NAME
   (SYMBOLS PACKAGES ACL2-BUILT-INS)
   "The name of the package of a symbol (a string)
@@ -108692,6 +108824,9 @@ Subtopics
 
   [Symbol-name]
       The name of a symbol (a string)
+
+  [Symbol-name-lst]
+      Lift [symbol-name] to lists
 
   [Symbol-package-name]
       The name of the package of a symbol (a string)
@@ -110420,8 +110555,7 @@ Logical Definitions
   rules and the empty conjunction is T.)
 
   If you wish to see a long list of all the runes from which some tau
-  information has been gleaned, evaluate (global-val 'tau-runes (w
-  state)).")
+  information has been gleaned, evaluate (get-tau-runes (w state)).")
  (TAU-DATABASE
   (TAU-SYSTEM HISTORY)
   "To see the tau database as a (very large) object
@@ -121427,31 +121561,31 @@ Determining the Necessary Warrants
 
     (defun$ sq (x) (* x x))
 
-    (defun$ collect (fn lst)
+    (defun$ collect$ (fn lst)
       (if (endp lst)
           nil
           (cons (apply$ fn (list (car lst)))
-                (collect fn (cdr lst)))))
+                (collect$ fn (cdr lst)))))
 
   No warrant is really needed to prove
 
-    (thm (equal (collect 'sq (append a b))
-                (append (collect 'sq a) (collect 'sq b))))
+    (thm (equal (collect$ 'sq (append a b))
+                (append (collect$ 'sq a) (collect$ 'sq b))))
 
   because it could be proved by appealing to the more general
 
-    (thm (equal (collect fn (append a b))
-                (append (collect fn a)
-                        (collect fn b))))
+    (thm (equal (collect$ fn (append a b))
+                (append (collect$ fn a)
+                        (collect$ fn b))))
 
   which makes clear that the properties of sq are totally irrelevant to
   the proof of this formula.
 
   But if you followed Rule 1 and just submitted
 
-    (thm (equal (collect 'sq (append a b))
-                (append (collect 'sq a)
-                        (collect 'sq b))))
+    (thm (equal (collect$ 'sq (append a b))
+                (append (collect$ 'sq a)
+                        (collect$ 'sq b))))
 
   the proof would fail with a checkpoint indicating that you need the
   warrant for sq.  That happens because the :rewrite rules proved by
