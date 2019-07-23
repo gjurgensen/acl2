@@ -4026,6 +4026,9 @@ Subtopics
   [Symbol-name]
       The name of a symbol (a string)
 
+  [Symbol-name-lst]
+      Lift [symbol-name] to lists
+
   [Symbol-package-name]
       The name of the package of a symbol (a string)
 
@@ -82850,6 +82853,12 @@ Changes to Existing Features
   use local [stobj]s as long as they don't call [apply$].  See
   [defwarrant].
 
+  The function [symbol-name-lst] is now a [guard]-verified [logic]-mode
+  function (formerly it was a [program]-mode function).  Thanks to
+  Alessandro Coglio for suggesting that it might be good to document
+  this function, which led us to this change (and to its being
+  documented).
+
 
 New Features
 
@@ -82891,6 +82900,13 @@ Bug Fixes
   A hard Lisp error has been fixed that could occur (probably only
   rarely) after adding rules of class :[definition] that introduce
   recursion.
+
+  Eliminated an error occurring when attempting to compute the guard
+  proof obligation for a constrained function, in particular, when
+  using the :[gthm] utility on such a function (also see
+  [guard-theorem]).  Thanks to Alessandro Coglio for pointing out
+  this bug and for noting that t could be a reasonable result for the
+  guard theorem in such cases.
 
 
 Changes at the System Level
@@ -108700,6 +108716,20 @@ Subtopics
   [Guard] for (symbol-name x):
 
     (symbolp x)")
+ (SYMBOL-NAME-LST
+  (SYMBOLS ACL2-BUILT-INS)
+  "Lift [symbol-name] to lists
+
+  This function returns the list of [symbol-name]s of a given list of
+  symbols.
+
+  Function: <symbol-name-lst>
+
+    (defun symbol-name-lst (lst)
+           (declare (xargs :guard (symbol-listp lst)))
+           (cond ((endp lst) nil)
+                 (t (cons (symbol-name (car lst))
+                          (symbol-name-lst (cdr lst))))))")
  (SYMBOL-PACKAGE-NAME
   (SYMBOLS PACKAGES ACL2-BUILT-INS)
   "The name of the package of a symbol (a string)
@@ -108794,6 +108824,9 @@ Subtopics
 
   [Symbol-name]
       The name of a symbol (a string)
+
+  [Symbol-name-lst]
+      Lift [symbol-name] to lists
 
   [Symbol-package-name]
       The name of the package of a symbol (a string)

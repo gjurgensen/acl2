@@ -84256,6 +84256,11 @@ it."
  is possible to warrant some functions that use local @(see stobj)s as long as
  they don't call @(tsee apply$).  See @(see defwarrant).</p>
 
+ <p>The function @(tsee symbol-name-lst) is now a @(see guard)-verified @(see
+ logic)-mode function (formerly it was a @(see program)-mode function).  Thanks
+ to Alessandro Coglio for suggesting that it might be good to document this
+ function, which led us to this change (and to its being documented).</p>
+
  <h3>New Features</h3>
 
  <p>A new @(tsee xargs) keyword, @(':guard-simplify') (default @('t')),
@@ -84293,6 +84298,23 @@ it."
  <p>A hard Lisp error has been fixed that could occur (probably only rarely)
  after adding rules of class @(':')@(tsee definition) that introduce
  recursion.</p>
+
+ <p>The function @(tsee meta-extract-formula) could return a non-trivial
+ value (i.e., not @(''T')) when applied to a @(see program)-mode function.  We
+ thank Sol Swords for reporting this bug with a proof of @('nil') that
+ exploited it.  This soundness bug has been fixed.  That work led us to fix the
+ following related bugs (which could also be soundness bugs, though we have not
+ checked).  First, the function @(tsee fncall-term) could similarly return a
+ non-trivial value when applied to a program-mode function.  Second, the
+ utility @(tsee mfc-rw), as well as other such @('mfc-xx') utilities in support
+ of @(see extended-metafunctions) and @(tsee meta-extract-contextual-fact),
+ could be called on terms containing program-mode function symbols.</p>
+
+ <p>Eliminated an error occurring when attempting to compute the guard proof
+ obligation for a constrained function, in particular, when using the
+ @(':')@(tsee gthm) utility on such a function (also see @(see guard-theorem)).
+ Thanks to Alessandro Coglio for pointing out this bug and for noting that
+ @('t') could be a reasonable result for the guard theorem in such cases.</p>
 
  <h3>Changes at the System Level</h3>
 
@@ -107289,6 +107311,14 @@ arithmetic) for libraries of @(see books) for arithmetic reasoning.</p>")
  @({
   (symbolp x)
  })")
+
+(defxdoc symbol-name-lst
+  :parents (symbols acl2-built-ins)
+  :short "Lift @(tsee symbol-name) to lists"
+  :long "<p>This function returns the list of @(tsee symbol-name)s of a given
+ list of symbols.</p>
+
+ @(def symbol-name-lst)")
 
 (defxdoc symbol-package-name
   :parents (symbols packages acl2-built-ins)
