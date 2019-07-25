@@ -82901,12 +82901,27 @@ Bug Fixes
   rarely) after adding rules of class :[definition] that introduce
   recursion.
 
+  The function [meta-extract-formula] could return a non-trivial value
+  (i.e., not 'T) when applied to a [program]-mode function.  We thank
+  Sol Swords for reporting this bug with a proof of nil that
+  exploited it.  This soundness bug has been fixed.  That work led us
+  to fix the following related bugs (which could also be soundness
+  bugs, though we have not checked).  First, the function
+  [fncall-term] could similarly return a non-trivial value when
+  applied to a program-mode function.  Second, the utility [mfc-rw],
+  as well as other such mfc-xx utilities in support of
+  [extended-metafunctions] and [meta-extract-contextual-fact], could
+  be called on terms containing program-mode function symbols.
+
   Eliminated an error occurring when attempting to compute the guard
   proof obligation for a constrained function, in particular, when
   using the :[gthm] utility on such a function (also see
   [guard-theorem]).  Thanks to Alessandro Coglio for pointing out
   this bug and for noting that t could be a reasonable result for the
   guard theorem in such cases.
+
+  Fixed ACL2 raw Lisp error caused by [add-default-hints!].  Thanks to
+  Pete Manolios for debugging this problem.
 
 
 Changes at the System Level

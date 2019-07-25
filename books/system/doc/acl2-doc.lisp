@@ -84316,6 +84316,9 @@ it."
  Thanks to Alessandro Coglio for pointing out this bug and for noting that
  @('t') could be a reasonable result for the guard theorem in such cases.</p>
 
+ <p>Fixed ACL2 raw Lisp error caused by @(see add-default-hints!).  Thanks to
+ Pete Manolios for debugging this problem.</p>
+
  <h3>Changes at the System Level</h3>
 
  <h3>EMACS Support</h3>
