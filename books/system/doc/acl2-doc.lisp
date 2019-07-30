@@ -84261,6 +84261,16 @@ it."
  to Alessandro Coglio for suggesting that it might be good to document this
  function, which led us to this change (and to its being documented).</p>
 
+ <p>The pattern language for the macro, @(tsee case-match), now includes the
+ case @('(quote~ sym)'), where @('sym') is a symbol and this case matches any
+ symbol whose @(tsee symbol-name) is @('(symbol-name sym)').</p>
+
+ <p>The following symbols, when used in special syntactic roles in the macro
+ @(tsee loop$), may be in any package: @('for'), @('in'), @('on'), @('from'),
+ @('to'), @('by'), @('of-type'), @('when'), @('until'), @('sum'), @('collect'),
+ @('always'), and @('append').  Thanks to Mertcan Temel for requesting this
+ enhancement.</p>
+
  <h3>New Features</h3>
 
  <p>A new @(tsee xargs) keyword, @(':guard-simplify') (default @('t')),

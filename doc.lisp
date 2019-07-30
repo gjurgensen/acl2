@@ -82859,6 +82859,15 @@ Changes to Existing Features
   this function, which led us to this change (and to its being
   documented).
 
+  The pattern language for the macro, [case-match], now includes the
+  case (quote~ sym), where sym is a symbol and this case matches any
+  symbol whose [symbol-name] is (symbol-name sym).
+
+  The following symbols, when used in special syntactic roles in the
+  macro [loop$], may be in any package: for, in, on, from, to, by,
+  of-type, when, until, sum, collect, always, and append.  Thanks to
+  Mertcan Temel for requesting this enhancement.
+
 
 New Features
 
