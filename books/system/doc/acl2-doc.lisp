@@ -123734,7 +123734,7 @@ created from the original fast alist during @('form') must be manually freed."
  verification proofs as opposed to the termination proofs of the @(tsee
  defun).</p>
 
- <p>@(':guard-simplify)<br></br>
+ <p>@(':guard-simplify')<br></br>
 
  @('Value'): @('t') by default, else directs ACL2 to skip certain
  simplifications that ACL2 typically applies while generating the guard
