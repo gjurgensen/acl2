@@ -124837,10 +124837,11 @@ Subtopics
   verification proofs as opposed to the termination proofs of the
   [defun].
 
-  :guard-simplify)<br></br> @('Value: t by default, else directs ACL2
-  to skip certain simplifications that ACL2 typically applies while
-  generating the guard proof obligation.  This has the same effect as
-  the corresponding keyword argument to [verify-guards].
+  :guard-simplify
+  Value: t by default, else directs ACL2 to skip certain
+  simplifications that ACL2 typically applies while generating the
+  guard proof obligation.  This has the same effect as the
+  corresponding keyword argument to [verify-guards].
 
   :[hints]
   Value: hints (see [hints]), to be used during the termination proofs
