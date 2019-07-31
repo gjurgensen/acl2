@@ -12457,7 +12457,9 @@ with any questions about building the community books.</p>")
   !sym            where sym is a symbol that is already bound in the
                     context of the case-match, matches only the
                     current binding of sym.
-  'obj            Matches only itself.
+  'obj            Matches only itself.  This is the same as (QUOTE obj).
+  (QUOTE~ sym)    where sym is a symbol, is like (QUOTE sym) except it
+                    matches any symbol with the same symbol-name as sym.
  })
 
  <p>Some examples are shown below.</p>
@@ -51706,6 +51708,11 @@ tables in the current Hons Space."
   @('always') and @('append').  We anticipate adding other Common Lisp
   operators eventually.</p>
 
+  <p>The special symbols noted above, sometimes called ``@('loop$') keywords'',
+  may be in any package.  These are @('FOR'), @('IN'), @('ON'), @('FROM'),
+  @('TO'), @('BY'), @('OF-TYPE'), @('WHEN'), @('UNTIL'), @('SUM'),
+  @('COLLECT'), @('ALWAYS'), and @('APPEND').</p>
+
   <p>Between the operator, e.g., @('sum') or @('collect'), and the
   @('loop$') body you may include a @(':guard') clause as in</p>
 
@@ -51796,6 +51803,11 @@ tables in the current Hons Space."
   <li>any @(':GUARD') <i>guardi</i>.</li>
 
   </ul>
+
+  <p>As noted above, the @('loop$') keywords (as used above) may be in any
+  package.  These are @('FOR'), @('IN'), @('ON'), @('FROM'), @('TO'), @('BY'),
+  @('OF-TYPE'), @('WHEN'), @('UNTIL'), @('SUM'), @('COLLECT'), @('ALWAYS'), and
+  @('APPEND').</p>
 
   <p>We give names to certain classes of the syntactic entities above.  The
   <i>v1</i>, ..., <i>vn</i> are called the <i>iteration variables</i>.  The
@@ -84260,6 +84272,16 @@ it."
  logic)-mode function (formerly it was a @(see program)-mode function).  Thanks
  to Alessandro Coglio for suggesting that it might be good to document this
  function, which led us to this change (and to its being documented).</p>
+
+ <p>The pattern language for the macro, @(tsee case-match), now includes the
+ case @('(quote~ sym)'), where @('sym') is a symbol and this case matches any
+ symbol whose @(tsee symbol-name) is @('(symbol-name sym)').</p>
+
+ <p>The following symbols, when used in special syntactic roles in the macro
+ @(tsee loop$), may be in any package: @('for'), @('in'), @('on'), @('from'),
+ @('to'), @('by'), @('of-type'), @('when'), @('until'), @('sum'), @('collect'),
+ @('always'), and @('append').  Thanks to Mertcan Temel for requesting this
+ enhancement.</p>
 
  <h3>New Features</h3>
 
@@ -123712,7 +123734,7 @@ created from the original fast alist during @('form') must be manually freed."
  verification proofs as opposed to the termination proofs of the @(tsee
  defun).</p>
 
- <p>@(':guard-simplify)<br></br>
+ <p>@(':guard-simplify')<br></br>
 
  @('Value'): @('t') by default, else directs ACL2 to skip certain
  simplifications that ACL2 typically applies while generating the guard
