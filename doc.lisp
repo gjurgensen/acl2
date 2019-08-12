@@ -3587,6 +3587,9 @@ Subtopics
   [Maximum-length]
       Return the :maximum-length from the [header] of an array
 
+  [Maybe-flush-and-compress1]
+      Compress a one-dimensional array only if necessary
+
   [Mbe]
       Attach code for execution
 
@@ -9473,6 +9476,9 @@ Subtopics
 
   [Maximum-length]
       Return the :maximum-length from the [header] of an array
+
+  [Maybe-flush-and-compress1]
+      Compress a one-dimensional array only if necessary
 
   [Slow-array-warning]
       A warning or error issued when [arrays] are used inefficiently")
@@ -58768,6 +58774,14 @@ Subtopics
          maximum-length (name l)
          (declare (xargs :guard (or (array1p name l) (array2p name l))))
          (cadr (assoc-keyword :maximum-length (cdr (header name l)))))")
+ (MAYBE-FLUSH-AND-COMPRESS1
+  (ARRAYS ACL2-BUILT-INS)
+  "Compress a one-dimensional array only if necessary
+
+  The call (maybe-flush-and-compress1 name ar) is equivalent to the
+  first calling (flush-compress name) and then (compress1 name ar),
+  except that both operations are skipped (and ar is returned) if ar,
+  which has name name, is already compressed.")
  (MBE
   (GUARD PROGRAMMING ACL2-BUILT-INS)
   "Attach code for execution
@@ -82894,6 +82908,10 @@ New Features
   to Alessandro Coglio for suggesting and implementing this
   enhancement.
 
+  New function (maybe-flush-and-compress1 name ar) calls
+  (flush-compress name) and then returns (compress1 name ar), except
+  that all this is skipped if the given array is already compressed.
+
 
 Heuristic and Efficiency Improvements
 
@@ -82905,6 +82923,10 @@ Heuristic and Efficiency Improvements
   \"centaur/sv/top\".
 
   Made slight efficiency improvement for [table] update (:put) events.
+
+  Improved efficiency of the maintenance of [stobj]-related arrays (the
+  so-called stobj accessor arrays) by using the new function,
+  [maybe-flush-and-compress1].
 
 
 Bug Fixes
