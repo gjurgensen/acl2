@@ -54745,6 +54745,14 @@ it."
 
  @(def maximum-length)")
 
+(defxdoc maybe-flush-and-compress1
+  :parents (arrays acl2-built-ins)
+  :short "Compress a one-dimensional array only if necessary"
+  :long "<p>The call @('(maybe-flush-and-compress1 name ar)') is equivalent to
+ the first calling @('(flush-compress name)') and then @('(compress1 name
+ ar)'), except that both operations are skipped (and @('ar') is returned) if
+ @('ar'), which has name @('name'), is already compressed.</p>")
+
 (defxdoc mbe
   :parents (guard programming acl2-built-ins)
   :short "Attach code for execution"
@@ -84218,6 +84226,10 @@ it."
  ")
 
 (defxdoc note-8-3
+
+; Used new function maybe-flush-and-compress1 to clean up code in
+; recompress-global-enabled-structure.
+
   :parents (release-notes)
   :short "ACL2 Version  8.3 (xxx, 20xx) Notes"
   :long "<p>NOTE!  New users can ignore these release notes, because the @(see
@@ -84297,6 +84309,10 @@ it."
  for the new-style signatures and for the old-style signatures.  Thanks to
  Alessandro Coglio for suggesting and implementing this enhancement.</p>
 
+ <p>New function @('(maybe-flush-and-compress1 name ar)') calls
+ @('(flush-compress name)') and then returns @('(compress1 name ar)'), except
+ that all this is skipped if the given array is already compressed.</p>
+
  <h3>Heuristic and Efficiency Improvements</h3>
 
  <p>ACL2 keeps a complete list of all the runes in the tau database (see @(see
@@ -84307,6 +84323,10 @@ it."
 
  <p>Made slight efficiency improvement for @(see table) update (@(':put'))
  events.</p>
+
+ <p>Improved efficiency of the maintenance of @(see stobj)-related arrays (the
+ so-called stobj accessor arrays) by using the new function, @(tsee
+ maybe-flush-and-compress1).</p>
 
  <h3>Bug Fixes</h3>
 
