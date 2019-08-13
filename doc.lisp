@@ -82964,6 +82964,12 @@ Bug Fixes
   Fixed ACL2 raw Lisp error caused by [add-default-hints!].  Thanks to
   Pete Manolios for debugging this problem.
 
+  Fixed a bug in the [proof-builder] command apply-linear (and its
+  abbreviation, al), which was making it impossible to save an event
+  after an interactive session that includes such a command.  Thanks
+  to Mihir Mehta for bringing this bug to our attention and sending
+  an example.
+
 
 Changes at the System Level
 
