@@ -125298,10 +125298,11 @@ exit after possibly saving the state"
  state)') into @('(mv t val state)') would never cause an exit from the
  interactive loop.</p>
 
- <p>If the proof is not complete, then @('(exit event-name ...)') will not
- cause an exit from the interactive loop.  However, in that case it will print
- out the original user-supplied goal (the one that was supplied with the call
- to @('verify')) and the current list of instructions.</p>")
+ <p>If the proof is not complete, then neither @('(exit event-name ...)') nor
+ @('(exit t)') will cause an exit from the interactive loop.  However, in
+ that case either one will print out the original user-supplied goal (the one
+ that was supplied with the call to @('verify')) and the current list of
+ instructions.</p>")
 
 (defxdoc acl2-pc::expand
   :parents (proof-builder-commands proof-builder-commands-short-list)
