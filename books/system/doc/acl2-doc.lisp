@@ -87299,7 +87299,7 @@ arithmetic) for libraries of @(see books) for arithmetic reasoning.</p>")
  })
 
  <p>@('Pc') always prints a space first, followed by four (possibly blank)
- @(see characters) (``LVd'' above) explained below.  Then @('pc') prints the
+ characters (``LVd'' above) explained below.  Then @('pc') prints the
  @(see command) number, a number uniquely identifying the @(see command)'s
  position in the sequence of @(see command)s since the beginning of the user's
  session.  Finally, the @(see command) itself is printed.</p>
@@ -87320,7 +87320,7 @@ arithmetic) for libraries of @(see books) for arithmetic reasoning.</p>")
           127 (DEFUN LATEST (X) X)
  })
 
- <p>Here, the two slash @(see characters) in the first column are intended to
+ <p>Here, the two slash characters in the first column are intended to
  suggest a bracket delimiting @(see command)s 52 through 54.  The last @(see
  command) printed by @(tsee pcs) is always the most recent @(see command),
  i.e., the @(see command) at @(':here'), and is separated from the rest of the
@@ -87346,13 +87346,13 @@ arithmetic) for libraries of @(see books) for arithmetic reasoning.</p>")
  intended to suggest a tree branch indicating that the event is inferior to
  (and part of) the @(see command).</p>
 
- <p>The mysterious @(see characters) sometimes preceding a @(see command) have
+ <p>The mysterious characters sometimes preceding a @(see command) have
  the following interpretations.  The first two have to do with the function
  symbols introduced by the @(see command) and are blank if no symbols were
  introduced.</p>
 
  <p>At any time we can classify our function symbols into disjoint sets, which
- we will here name with @(see characters).  The ``@('P')'' functions are those
+ we will here name with characters.  The ``@('P')'' functions are those
  in @(':')@(tsee program) mode.  The ``@('L')'' functions are those in
  @(':')@(tsee logic) mode whose @(see guard)s have not been verified.  The
  ``@('V')'' functions are those in @(':')@(tsee logic) mode whose @(see guard)s
@@ -87510,12 +87510,14 @@ arithmetic) for libraries of @(see books) for arithmetic reasoning.</p>")
  corresponding to the name, doing so in full unless the @(see ld-evisc-tuple)
  is non-nil, in which case it abbreviates using that evisc-tuple; see @(see
  evisc-tuple).  @('Pe') also sketches the @(see command) responsible for that
- event if the @(see command) is different from the event itself.  See @(see pc)
- for a description of the format used to display a @(see command).  To remind
+ event if the @(see command) is different from the event itself.  To remind
  you that the event is inferior to the @(see command), i.e., you can only undo
  the entire @(see command), not just the event, the event is indented slightly
  from the @(see command) and a slash (meant to suggest a tree branch) connects
  them.</p>
+
+ <p>See @(see pc) for a description of the format used to display a @(see
+ command).</p>
 
  <p>If the given logical name corresponds to more than one event, then @(':pe')
  will print the above information for every such event.  Here is an example of
