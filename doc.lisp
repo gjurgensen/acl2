@@ -86799,7 +86799,7 @@ Implementation
      LVd     52 (DEFUN FOO (X) X)
 
   Pc always prints a space first, followed by four (possibly blank)
-  [characters] (``LVd'' above) explained below.  Then pc prints the
+  characters (``LVd'' above) explained below.  Then pc prints the
   [command] number, a number uniquely identifying the [command]'s
   position in the sequence of [command]s since the beginning of the
   user's session.  Finally, the [command] itself is printed.
@@ -86817,7 +86817,7 @@ Implementation
               : ...
             127 (DEFUN LATEST (X) X)
 
-  Here, the two slash [characters] in the first column are intended to
+  Here, the two slash characters in the first column are intended to
   suggest a bracket delimiting [command]s 52 through 54.  The last
   [command] printed by [pcs] is always the most recent [command],
   i.e., the [command] at :here, and is separated from the rest of the
@@ -86841,13 +86841,13 @@ Implementation
   intended to suggest a tree branch indicating that the event is
   inferior to (and part of) the [command].
 
-  The mysterious [characters] sometimes preceding a [command] have the
+  The mysterious characters sometimes preceding a [command] have the
   following interpretations.  The first two have to do with the
   function symbols introduced by the [command] and are blank if no
   symbols were introduced.
 
   At any time we can classify our function symbols into disjoint sets,
-  which we will here name with [characters].  The ``P'' functions are
+  which we will here name with characters.  The ``P'' functions are
   those in :[program] mode.  The ``L'' functions are those in
   :[logic] mode whose [guard]s have not been verified.  The ``V''
   functions are those in :[logic] mode whose [guard]s have been
@@ -86994,12 +86994,12 @@ Implementation
   [ld-evisc-tuple] is non-nil, in which case it abbreviates using
   that evisc-tuple; see [evisc-tuple].  Pe also sketches the
   [command] responsible for that event if the [command] is different
-  from the event itself.  See [pc] for a description of the format
-  used to display a [command].  To remind you that the event is
-  inferior to the [command], i.e., you can only undo the entire
-  [command], not just the event, the event is indented slightly from
-  the [command] and a slash (meant to suggest a tree branch) connects
-  them.
+  from the event itself.  To remind you that the event is inferior to
+  the [command], i.e., you can only undo the entire [command], not
+  just the event, the event is indented slightly from the [command]
+  and a slash (meant to suggest a tree branch) connects them.
+
+  See [pc] for a description of the format used to display a [command].
 
   If the given logical name corresponds to more than one event, then
   :pe will print the above information for every such event.  Here is
@@ -126302,11 +126302,11 @@ Subtopics
   triple (mv erp val state) into (mv t val state) would never cause
   an exit from the interactive loop.
 
-  If the proof is not complete, then (exit event-name ...) will not
-  cause an exit from the interactive loop.  However, in that case it
-  will print out the original user-supplied goal (the one that was
-  supplied with the call to verify) and the current list of
-  instructions.")
+  If the proof is not complete, then neither (exit event-name ...) nor
+  (exit t) will cause an exit from the interactive loop.  However, in
+  that case either one will print out the original user-supplied goal
+  (the one that was supplied with the call to verify) and the current
+  list of instructions.")
  (ACL2-PC::EXPAND
   (PROOF-BUILDER-COMMANDS PROOF-BUILDER-COMMANDS-SHORT-LIST)
   "(primitive) expand the current function call without simplification
