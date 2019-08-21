@@ -126915,15 +126915,17 @@ Subtopics
   Example and General Form: print-all-concs
 
   Prints all the conclusions of goals that remain to be proved, in a
-  pleasant format.  Also see [ACL2-pc::print-all-goals].")
+  pleasant format, ordered as by the command, [ACL2-pc::goals].  Also
+  see [ACL2-pc::print-all-goals].")
  (ACL2-PC::PRINT-ALL-GOALS
   (PROOF-BUILDER-COMMANDS)
   "(macro) print all the (as yet unproved) goals
 
   Example and General Form: print-all-goals
 
-  Prints all the goals that remain to be proved, in a pleasant format.
-  Also see [ACL2-pc::print-all-concs].")
+  Prints all the goals that remain to be proved, in a pleasant format,
+  ordered as by the command, [ACL2-pc::goals].  Also see
+  [ACL2-pc::print-all-concs].")
  (ACL2-PC::PRINT-MAIN
   (PROOF-BUILDER-COMMANDS)
   "(macro) print the original goal

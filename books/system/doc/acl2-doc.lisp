@@ -125999,7 +125999,8 @@ print all the conclusions of (as yet unproved) goals"
   :long "<p>Example and General Form: print-all-concs</p>
 
  <p>Prints all the conclusions of goals that remain to be proved, in a pleasant
- format.  Also see @(see acl2-pc::print-all-goals).</p>")
+ format, ordered as by the command, @(tsee acl2-pc::goals).  Also see @(see
+ acl2-pc::print-all-goals).</p>")
 
 (defxdoc acl2-pc::print-all-goals
   :parents (proof-builder-commands)
@@ -126007,8 +126008,9 @@ print all the conclusions of (as yet unproved) goals"
 print all the (as yet unproved) goals"
   :long "<p>Example and General Form: print-all-goals</p>
 
- <p>Prints all the goals that remain to be proved, in a pleasant format.  Also
- see @(see acl2-pc::print-all-concs).</p>")
+ <p>Prints all the goals that remain to be proved, in a pleasant format,
+ ordered as by the command, @(tsee acl2-pc::goals).  Also see @(see
+ acl2-pc::print-all-concs).</p>")
 
 (defxdoc acl2-pc::print-main
   :parents (proof-builder-commands)
