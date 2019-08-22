@@ -84366,6 +84366,11 @@ it."
  an interactive session that includes such a command.  Thanks to Mihir Mehta
  for bringing this bug to our attention and sending an example.</p>
 
+ <p>Fixed a bug in @(tsee defun-sk), which was generating a @(tsee
+ verify-guards) or @('verify-guards?') event with @(':guard-hints') instead of
+ @(':hints').  Thanks to Alessandro Coglio for reporting this bug and providing
+ the fix.</p>
+
  <h3>Changes at the System Level</h3>
 
  <h3>EMACS Support</h3>

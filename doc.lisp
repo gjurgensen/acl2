@@ -82970,6 +82970,10 @@ Bug Fixes
   to Mihir Mehta for bringing this bug to our attention and sending
   an example.
 
+  Fixed a bug in [defun-sk], which was generating a [verify-guards] or
+  verify-guards? event with :guard-hints instead of :hints.  Thanks
+  to Alessandro Coglio for reporting this bug and providing the fix.
+
 
 Changes at the System Level
 
