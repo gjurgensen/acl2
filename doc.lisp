@@ -82980,6 +82980,8 @@ Changes at the System Level
 
 EMACS Support
 
+  The command `Ctl-t p' now works in Emacs 25.
+
 
 Experimental Versions")
  (NOTE1 (POINTERS) "See [note-1-1].")
