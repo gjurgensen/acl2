@@ -84375,6 +84375,8 @@ it."
 
  <h3>EMACS Support</h3>
 
+ <p>The command `@('Ctl-t p')' now works in Emacs 25.</p>
+
  <h3>Experimental Versions</h3>
 
  ")
