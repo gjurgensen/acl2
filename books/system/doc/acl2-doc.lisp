@@ -52963,7 +52963,7 @@ tables in the current Hons Space."
  <p>We begin with an introduction, which focuses on examples and introduces the
  key notion of ``expansion phase''.</p>
 
- <p><b>Introduction</b></p>
+ <h3>Introduction</h3>
 
  <p>@('Make-event') is particularly useful for those who program using the ACL2
  @(tsee state); see @(see programming-with-state).  That is because the
@@ -53093,7 +53093,7 @@ tables in the current Hons Space."
  <p>The expansion phase can be used for computation that has side effects,
  generally by modifying state.  Here is a modification of the above example
  that does not change the ACL2 world at all, but instead saves the length of the
- world into a state global variable.</p>
+ world into a state global variable (see @(see assign)).</p>
 
  @({
   (make-event
@@ -53158,7 +53158,7 @@ tables in the current Hons Space."
    :check-expansion t)
  })
 
- <p><b>Detailed Documentation</b></p>
+ <h3>Detailed Documentation</h3>
 
  @({
   Examples:
@@ -53348,7 +53348,7 @@ tables in the current Hons Space."
                (DEFUN FOO (X) X))
  })
 
- <p><b>Error Reporting</b></p>
+ <h3>Error Reporting</h3>
 
  <p>Suppose that expansion produces a soft error as described above.  That is,
  suppose that the argument of a @('make-event') call evaluates to a multiple
@@ -53359,7 +53359,7 @@ tables in the current Hons Space."
  other non-@('nil') value of @('erp') causes a generic error message to be
  printed.</p>
 
- <p><b>Restriction to Event Contexts</b></p>
+ <h3>Restriction to Event Contexts</h3>
 
  <p>A @('make-event') call must occur either at the top level, or during
  @('make-event') expansion, or as an argument of an event constructor.  We
@@ -53438,15 +53438,16 @@ tables in the current Hons Space."
  <p>Also see @(see remove-untouchable) for an interesting use of this
  exception.</p>
 
- <p><b>Examples Illustrating How to Access State</b></p>
+ <h3>Examples Illustrating How to Access State</h3>
 
  <p>You can modify the ACL2 @(see state) by doing your state-changing
  computation during the expansion phase, before expansion returns the event
- that is submitted.  Here are some examples.</p>
+ that is submitted.  Let us look at some examples and then consider a
+ restriction for many built-in state globals.</p>
 
- <p>First consider the following.  Notice that expansion modifies state global
- @('my-global') during @('make-event') expansion, and then expansion returns a
- @(tsee defun) event to be evaluated.</p>
+ <p>First consider the following.  Notice that expansion modifies a state
+ global, @('my-global'), during @('make-event') expansion (see @(see assign));
+ and then, expansion returns a @(tsee defun) event to be evaluated.</p>
 
  @({
   (make-event
@@ -53510,11 +53511,61 @@ tables in the current Hons Space."
     ACL2 !>
  })
 
- <p>By the way, most built-in @(see state) globals revert after expansion.  But
- your own global (like @('my-global') above) can be set during expansion, and
- the new value will persist.</p>
+ <p>Many built-in @(see state) globals revert after expansion.  If your own
+ state global (like @('my-global') above) can be set during expansion, then the
+ new value will persist.  But that persistence will fail for many state
+ globals, specifically, those that are stored in the list,
+ @('*protected-system-state-globals*').  We advice users <b>not</b> to assume
+ that system state modifications, such as the state of guard-checking, will
+ persist after executing a @('make-event') form.</p>
 
- <p><b>Advanced Expansion Control</b></p>
+ <p>That advice may suffice for most users.  But if you want to understand the
+ point above more deeply, then consider the following example.</p>
+
+ @({
+ (make-event
+  (er-progn (set-guard-checking :none) ; sets state global 'guard-checking-on
+            (assign my-global (car 3))
+            (value (list 'value-triple (@ my-global)))))
+ })
+
+ <p>This @('make-event') form succeeds and afterwards, the value of @('(@
+ my-global)') is @('nil'), which of course is the value expected after the call
+ above of @(tsee assign).  However, the value of @('(@ guard-checking-on)')
+ after executing this @('make-event') form is @('t'), not @(':none').  That is
+ because the symbol @('guard-checking-on') belongs to the list of symbols
+ stored in the constant, @('*protected-system-state-globals*'), and thus the
+ value of the state global @('guard-checking-on') is reverted to its initial
+ value (which was assume here is the default, @('t')) after the @('make-event')
+ form completes execution.</p>
+
+ <p><b>Remarks on @('*Protected-system-state-globals*') for advanced
+ users.</b></p>
+
+ <ul>
+
+ <li>The constant @('*protected-system-state-globals*') is defined to include
+ all built-in state globals, <i>except</i> for those that the ACL2 implementors
+ have decided can safely retain values set during @('make-event') expansion.
+ If you find state globals that you would like to be added to this list of
+ exceptions, please contact the ACL2 implementors.  Note for example that it
+ would not be safe to allow @('guard-checking-on') as an exception, since ACL2
+ relies on the persistence of this state global's value after each event
+ (for explanation, see the Essay on Guard Checking in the ACL2 sources).</li>
+
+ <li>As noted in a comment in the example above, the macro @(tsee
+ set-guard-checking) sets the state global, @(''guard-checking-on').  A natural
+ question is how one might know this.  For most ACL2 users (one might say,
+ traditional ACL2 users), it should suffice simply not to expect system state
+ modifications (like the state of guard-checking) to persist after executing a
+ @('make-event') form.  For system implementors, one however needs to work with
+ the ACL2 system by looking at the definition of the utility &mdash; in this
+ example, @('set-guard-checking') &mdash; or at the least, get a sense of its
+ expansion by using macroexpansion (for example see @(see trans1)).</li>
+
+ </ul>
+
+ <h3>Advanced Expansion Control</h3>
 
  <p>We conclude this @(see documentation) section by discussing three kinds of
  additional control over @('make-event') expansion.  These are all illustrated
