@@ -84346,6 +84346,18 @@ it."
  @('always'), and @('append').  Thanks to Mertcan Temel for requesting this
  enhancement.</p>
 
+ <p>@(':Expand') @(see hints) now act more reliably for @(see
+ equality-variants), by expanding away @(see guard-holders).  Thanks to Sol
+ Swords for supplying this enhancement and sending the following example that
+ works now but formerly failed:</p>
+
+ @({
+ (defthm member-of-cons
+   (equal (member x (cons x y)) (cons x y))
+   :hints((\"Goal\" :in-theory (disable member)
+           :expand ((member x (cons x y))))))
+ })
+
  <h3>New Features</h3>
 
  <p>A new @(tsee xargs) keyword, @(':guard-simplify') (default @('t')),

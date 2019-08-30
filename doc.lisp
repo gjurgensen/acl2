@@ -82948,6 +82948,16 @@ Changes to Existing Features
   of-type, when, until, sum, collect, always, and append.  Thanks to
   Mertcan Temel for requesting this enhancement.
 
+  :Expand [hints] now act more reliably for [equality-variants], by
+  expanding away [guard-holders].  Thanks to Sol Swords for supplying
+  this enhancement and sending the following example that works now
+  but formerly failed:
+
+    (defthm member-of-cons
+      (equal (member x (cons x y)) (cons x y))
+      :hints((\"Goal\" :in-theory (disable member)
+              :expand ((member x (cons x y))))))
+
 
 New Features
 
