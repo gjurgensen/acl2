@@ -31679,9 +31679,14 @@ current fast alists."
  <p>As a rule of thumb, if a conclusion like @('(p1 A)') is expected to be
  widely needed, it is better to derive it via forward chaining because then it
  is available ``for free'' during the rewriting after paying the one-time cost
- of forward chaining.  Alternatively, if @('(p1 A)') is a rather special
- hypothesis of key importance to only a few rewrite rules, it is best to derive
- it only when needed.  Thus forward chaining is pro-active and backward
+ of forward chaining.  Forward chaining may, indeed, be indispensable in a
+ scenario with @(tsee free-variables), such as when @('(p1 A)') is necessary to
+ bind the free variable @('x') to @('A') to prove the 0-arity predicate @('p2')
+ via the rule @('(implies (p1 x) (p2))').</p>
+
+ <p> Alternatively, if @('(p1 A)') is a rather special hypothesis of key
+ importance to only a few rewrite rules, it is best to derive it only when
+ needed through backchaining.  Thus forward chaining is pro-active and backward
  chaining (rewriting) is reactive.</p>
 
  <p><i>Syntactic Restrictions</i></p>
