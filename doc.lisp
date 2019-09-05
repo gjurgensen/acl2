@@ -35165,9 +35165,29 @@ Subtopics
   because then it is available ``for free'' during the rewriting
   after paying the one-time cost of forward chaining.  Alternatively,
   if (p1 A) is a rather special hypothesis of key importance to only
-  a few rewrite rules, it is best to derive it only when needed.
-  Thus forward chaining is pro-active and backward chaining
-  (rewriting) is reactive.
+  a few rewrite rules, it is best to derive it only when needed
+  through backchaining.  Thus forward chaining is pro-active and
+  backward chaining (rewriting) is reactive.
+
+  The following example illustrates that forward chaining may be
+  indispensable in a scenario with [free-variables], whose handling
+  is quite weak with rewrite rules.
+
+    (defstub p0 (x) t)
+    (defstub p1 (x) t)
+    (defstub p2 (y) t)
+    (defaxiom p0-implies-p1
+      (implies (p0 x)
+               (p1 x))
+      :rule-classes :forward-chaining)
+    (defaxiom p1-implies-p2
+      (implies (p1 x)
+               (p2 y)))
+    ; ACL2 proves the following, but only because p0-implies-p1 is a
+    ; :forward-chaining rule.  If p0-implies-p1 is instead a :rewrite
+    ; rule, then the proof fails for the following event.
+    (thm (implies (p0 x)
+                  (p2 y)))
 
   Syntactic Restrictions
 

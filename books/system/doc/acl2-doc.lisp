@@ -31679,15 +31679,32 @@ current fast alists."
  <p>As a rule of thumb, if a conclusion like @('(p1 A)') is expected to be
  widely needed, it is better to derive it via forward chaining because then it
  is available ``for free'' during the rewriting after paying the one-time cost
- of forward chaining.  Forward chaining may, indeed, be indispensable in a
- scenario with @(tsee free-variables), such as when @('(p1 A)') is necessary to
- bind the free variable @('x') to @('A') to prove the 0-arity predicate @('p2')
- via the rule @('(implies (p1 x) (p2))').</p>
+ of forward chaining.  Alternatively, if @('(p1 A)') is a rather special
+ hypothesis of key importance to only a few rewrite rules, it is best to derive
+ it only when needed through backchaining.  Thus forward chaining is pro-active
+ and backward chaining (rewriting) is reactive.</p>
 
- <p> Alternatively, if @('(p1 A)') is a rather special hypothesis of key
- importance to only a few rewrite rules, it is best to derive it only when
- needed through backchaining.  Thus forward chaining is pro-active and backward
- chaining (rewriting) is reactive.</p>
+ <p>The following example illustrates that forward chaining may be
+ indispensable in a scenario with @(see free-variables), whose handling is
+ quite weak with rewrite rules.</p>
+
+ @({
+ (defstub p0 (x) t)
+ (defstub p1 (x) t)
+ (defstub p2 (y) t)
+ (defaxiom p0-implies-p1
+   (implies (p0 x)
+            (p1 x))
+   :rule-classes :forward-chaining)
+ (defaxiom p1-implies-p2
+   (implies (p1 x)
+            (p2 y)))
+ ; ACL2 proves the following, but only because p0-implies-p1 is a
+ ; :forward-chaining rule.  If p0-implies-p1 is instead a :rewrite
+ ; rule, then the proof fails for the following event.
+ (thm (implies (p0 x)
+               (p2 y)))
+ })
 
  <p><i>Syntactic Restrictions</i></p>
 
