@@ -83063,6 +83063,12 @@ Bug Fixes
 
 Changes at the System Level
 
+  The makefile target certify-books has been removed from GNUmakefile
+  and books/GNUmakefile.  It was deprecated in the preceding release,
+  where we thanked the acl2-books email list (in particular we got
+  feedback from Alessandro Coglio, Shilpi Goel, David Rager, Eric
+  Smith, and Sol Swords, all helpful) for working through this issue.
+
 
 EMACS Support
 
