@@ -84414,8 +84414,9 @@ it."
  maybe-flush-and-compress1).</p>
 
  <p>Improved the speed of @(see theory) updates by avoiding repeated length
- computations.  As a result, we have seen about a 5% reduction in the time for
- executing the form, @('(include-book \"centaur/sv/top\" :dir :system)').</p>
+ computations.  As a result, we have seen about a 5% time reduction on MacOS,
+ and between 3% and 4% on Linux, in the time for executing the form,
+ @('(include-book \"centaur/sv/top\" :dir :system)').</p>
 
  <h3>Bug Fixes</h3>
 
