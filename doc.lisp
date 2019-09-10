@@ -83014,6 +83014,11 @@ Heuristic and Efficiency Improvements
   so-called stobj accessor arrays) by using the new function,
   [maybe-flush-and-compress1].
 
+  Improved the speed of [theory] updates by avoiding repeated length
+  computations.  As a result, we have seen about a 5% time reduction
+  on MacOS, and between 3% and 4% on Linux, in the time for executing
+  the form, (include-book \"centaur/sv/top\" :dir :system).
+
 
 Bug Fixes
 
