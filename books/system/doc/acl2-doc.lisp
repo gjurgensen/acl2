@@ -19723,23 +19723,31 @@ subtree of X with T, without duplication.</p>
  @({
   General Form:
   (defcong equiv1 equiv2 term k
+    :package package
+    :event-name event-name
     :rule-classes rule-classes
     :instructions instructions
     :hints hints
-    :otf-flg otf-flg
-    :event-name event-name
-    :doc doc)
+    :otf-flg otf-flg)
  })
 
  <p>where @('equiv1') and @('equiv2') are known @(see equivalence) relations;
  @('term') is a call of a function @('fn'), other than @('if'), on the correct
  number of distinct variable arguments, @('(fn x1 ... xn)'); @('k') is a
- positive integer less than or equal to the arity of @('fn'); and other
- arguments are as specified in the documentation for @(tsee defthm).  The
- @('defcong') macro expands into a call of @(tsee defthm).  The name of the
- @(tsee defthm) event is @('equiv1-implies-equiv2-fn-k') unless an
- @(':event-name') keyword argument is supplied for the name.  The term of the
- theorem is</p>
+ positive integer less than or equal to the arity of @('fn'); @('package'), if
+ supplied, is one of @(':current'), @(':equiv1'), @(':equiv2'), @(':function')
+ or @(':legacy'); @('event-name'), if supplied, is a symbol and other arguments
+ are as specified in the documentation for @(tsee defthm).  The @('defcong')
+ macro expands into a call of @(tsee defthm).  The name of the @(tsee defthm)
+ event is @('equiv1-implies-equiv2-fn-k'), unless an @(':event-name') keyword
+ argument is supplied for the name, in which case @('event-name') is 
+ used.  The @('package') of symbols generated, such as variables and
+ @(tsee defthm) names, is determined by the @('package') argument: if it is not
+ supplied or its value is @(':current'), then the @(tsee current-package) is
+ used; if its value is @(':equiv1') or @(':legacy'), then the package of
+ @(':equiv1') is used; if its value is @(':equiv2'), then the package of
+ @(':equiv2') is used; if its value is @(':function'), then the package of
+ @('fn') is used.  The term of the theorem is</p>
 
  @({
   (implies (equiv1 xk yk)
@@ -19840,24 +19848,31 @@ subtree of X with T, without duplication.</p>
 
  @({
   General Form:
-  (defequiv fn
+  (defequiv equiv
+    :package package
+    :event-name event-name
     :rule-classes rule-classes
     :instructions instructions
     :hints hints
-    :otf-flg otf-flg
-    :event-name event-name)
+    :otf-flg otf-flg)
  })
 
- <p>where @('fn') is a function symbol of arity 2, @('event-name'), if
- supplied, is a symbol, and all other arguments are as specified in the
- documentation for @(tsee defthm).  The @('defequiv') macro expands into a call
- of @('defthm').  The name of the @('defthm') is @('fn-is-an-equivalence'),
- unless @('event-name') is supplied, in which case @('event-name') is the name
- used.  The term generated for the @('defthm') event states that @('fn') is
- Boolean, reflexive, symmetric, and transitive.  The rule-class
- @(':equivalence') is added to the @(see rule-classes) specified, if it is not
- already there.  All other arguments to the generated @('defthm') form are as
- specified by the other keyword arguments above.</p>")
+ <p>where @('equiv') is a function symbol of arity 2; @('package'), if
+ supplied, is one of @(':current'), @(':equiv') or @(':legacy');
+ @('event-name'), if supplied, is a symbol and all other arguments are as
+ specified in the documentation for @(tsee defthm).  The @('defequiv') macro
+ expands into a call of @(tsee defthm).  The name of the @(tsee defthm) is
+ @('equiv-is-an-equivalence'), unless an @(':event-name') keyword argument is
+ supplied for the name, in which case @('event-name') is used.  The
+ @('package') of symbols generated, such as variables and @(tsee defthm)
+ names, is determined by the @('package') argument: if it is not supplied or
+ its value is @(':current'), then the @(tsee current-package) is used; if its
+ value is @(':equiv') or @(':legacy'), then the package of @(':equiv') is used.
+ All other arguments to the generated @(tsee defthm) form are as specified by the
+ other keyword arguments above. The rule-class @(':')@(tsee equivalence) is added to
+ the @(see rule-classes) specified, if it is not already there. The term
+ generated for the @(tsee defthm) event states that @('equiv') is Boolean,
+ reflexive, symmetric and transitive. </p>")
 
 (defxdoc defevaluator
   :parents (events)
@@ -21496,24 +21511,31 @@ subtree of X with T, without duplication.</p>
  @({
   General Form:
   (defrefinement equiv1 equiv2
+    :package package
+    :event-name event-name
     :rule-classes rule-classes
     :instructions instructions
     :hints hints
-    :otf-flg otf-flg
-    :event-name event-name
-    :doc doc)
+    :otf-flg otf-flg)
  })
 
- <p>where @('equiv1') and @('equiv2') are known @(see equivalence) relations,
- @('event-name'), if supplied, is a symbol and all other arguments are as
- specified in the documentation for @(tsee defthm).  The @('defrefinement')
- macro expands into a call of @('defthm').  The name supplied is
- @('equiv1-refines-equiv2'), unless @('event-name') is supplied, in which case
- it is used as the name.  The term supplied states that @('equiv1') refines
- @('equiv2').  The rule-class @(':refinement') is added to the
- @('rule-classes') specified, if it is not already there.  All other arguments
- to the generated @('defthm') form are as specified by the other keyword
- arguments above.</p>")
+ <p>where @('equiv1') and @('equiv2') are known @(see equivalence) relations;
+  @('package'), if supplied, is one of @(':current'), @(':equiv1'),
+  @(':equiv2') or @(':legacy'); @('event-name'), if supplied, is a symbol and
+  all other arguments are as specified in the documentation for @(tsee defthm).
+  The @('defrefinement') macro expands into a call of @(tsee defthm).  The name
+  of the @(tsee defthm) event is @('equiv1-refines-equiv2'), unless an
+  @(':event-name') keyword argument is supplied for the name, in which case
+  @('event-name') is used.  The @('package') of symbols generated, such as
+  variables and @(tsee defthm) names, is determined by the @('package')
+  argument: if it is not supplied or its value is @(':current'), then the
+  @(tsee current-package) is used; if its value is @(':equiv1') or
+  @(':legacy'), then the package of @(':equiv1') is used; if its value is
+  @(':equiv2'), then the package of @(':equiv2') is used. The rule-class
+  @(':')@(tsee refinement) is added to the @(tsee rule-classes) specified, if it
+  is not already there.  All other arguments to the generated @(tsee defthm) form
+  are as specified by the other keyword arguments above. The term generated for
+  the @(tsee defthm) event states that @('equiv1') refines @('equiv2'). </p>")
 
 (defxdoc defstobj
   :parents (events stobj)
@@ -84379,6 +84401,41 @@ it."
    :hints((\"Goal\" :in-theory (disable member)
            :expand ((member x (cons x y))))))
  })
+
+ <p>Utilities in ACL2 and the books should conform to the following principle:
+ generated symbols should be in the @(tsee current-package). This is the ACL2
+ version of the general principle enforced by almost all programming languages:
+ names introduced are, by default, in the current namespace. Since this is a
+ new ACL2 principle, we do not claim that ACL2 currently adheres to
+ it. However, unless there is a compelling reason, future utilities in ACL2 and
+ the distributed books should respect this principle. Also, we may update
+ utilities in ACL2 so that they conform to this principle. We have done this
+ for @(tsee defequiv), @(tsee defrefinement) and @(tsee defcong), as outlined
+ in the next note.  Conforming to this principle requires using @(tsee
+ make-event) in a top level form to determine the @(tsee current-package) from
+ @(tsee state) and then passing this package to functions that generate
+ symbols. The section @('Symbol generation utilities') of the file
+ @('defthm.lisp') contains functions, macros and theorems that are useful for
+ generating symbols.  The code was adapted from similar code in @(tsee ACL2s);
+ see the book @('acl2s/utilities.lisp') which includes even more such
+ utilities. To see an example of a utility that generates symbols in the
+ current package, see @('books/acl2s/defunc.lisp'), which contains the @(tsee
+ acl2s::defunc) utility. Other examples include @(tsee defequiv), @(tsee
+ defrefinement) and @(tsee defcong) in @('defthm.lisp').  </p>
+
+ <p>The macros @(tsee defequiv), @(tsee defrefinement) and @(tsee defcong) now
+ conform to the above principle that utilities should generate symbols in the
+ @(tsee current-package). All of these macros now have a @(':package') keyword
+ argument whose default value is @(':current'); with this value the macros
+ conform to the above principle. To get the previous behavior, use the
+ @(':legacy') value. This may be the easiest way to deal with @(tsee
+ books-certification) failures. Note that we already updated all the current
+ books in the ACL2 distribution to fix @(tsee books-certification) failures;
+ this mostly consisted of replacing symbols such as @('acl2::x-equiv') with
+ @('x-equiv'), but we also used the @(':legacy') option to deal with macros
+ that generate @(tsee defcong) forms. We also removed the @(':doc') keyword
+ argument from these macros, as using it would leads to an error. See the
+ documentation for these macros for more information.  </p>
 
  <h3>New Features</h3>
 
