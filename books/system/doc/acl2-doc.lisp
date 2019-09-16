@@ -13573,12 +13573,12 @@ with any questions about building the community books.</p>")
 
  <p>In order to help guarantee the portability of files (including @(see
  books)), ACL2 installs a common character encoding for reading files, often
- known as iso-8859-1 or latin-1.  For some host Lisps this character encoding
+ known as ISO-8859-1 or Latin-1.  For some host Lisps this character encoding
  is also used for reading from the terminal; but, sadly, this may not hold for
  all host Lisps, and may not even be possible for some of them.</p>
 
  <p>The use of the above encoding could in principle cause problems if one's
- editor produces files using an encoding other than iso-8859-1, at least if one
+ editor produces files using an encoding other than ISO-8859-1, at least if one
  uses non-standard characters.  In particular, the default Emacs buffer
  encoding may be utf-8.  If your file has non-standard characters, then in
  Emacs you can evaluate the form</p>
@@ -74878,12 +74878,12 @@ it."
  Thanks to Jared Davis for helpful correspondence that led us to make these
  improvements.</p>
 
- <p>The character encoding for reading from files has been fixed at iso-8859-1.
+ <p>The character encoding for reading from files has been fixed at ISO-8859-1.
  See @(see character-encoding).  Thanks to Jared Davis for bringing this
  portability issue to our attention (as this change arose in order to deal with
  a change in the default character encoding for the host Lisp, CCL), and
  pointing us in the right direction for dealing with it.  In many cases, the
- character encoding for reading from the terminal is also iso-8859-1; but this
+ character encoding for reading from the terminal is also ISO-8859-1; but this
  is not guaranteed.  In particular, when the host Lisp is SBCL this may not be
  the case.</p>
 
