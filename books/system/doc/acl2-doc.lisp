@@ -13671,7 +13671,7 @@ with any questions about building the community books.</p>")
 
  <p>Again, in each of these cases the next character must be from among the set
  of ``terminating characters'' described in the single-character case.  Our
- implementation is consistent with IS0-8859, even though we don't provide
+ implementation is consistent with ISO-8859-1, even though we don't provide
  @('#\\') syntax for entering characters other than that described above.</p>
 
  <p>Finally, we note that it is our intention that any object printed by ACL2's
