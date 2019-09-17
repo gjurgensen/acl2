@@ -16481,14 +16481,14 @@ Subtopics
 
   In order to help guarantee the portability of files (including
   [books]), ACL2 installs a common character encoding for reading
-  files, often known as iso-8859-1 or latin-1.  For some host Lisps
+  files, often known as ISO-8859-1 or Latin-1.  For some host Lisps
   this character encoding is also used for reading from the terminal;
   but, sadly, this may not hold for all host Lisps, and may not even
   be possible for some of them.
 
   The use of the above encoding could in principle cause problems if
   one's editor produces files using an encoding other than
-  iso-8859-1, at least if one uses non-standard characters.  In
+  ISO-8859-1, at least if one uses non-standard characters.  In
   particular, the default Emacs buffer encoding may be utf-8.  If
   your file has non-standard characters, then in Emacs you can
   evaluate the form
@@ -16579,7 +16579,7 @@ Subtopics
   Again, in each of these cases the next character must be from among
   the set of ``terminating characters'' described in the
   single-character case.  Our implementation is consistent with
-  IS0-8859, even though we don't provide #\\ syntax for entering
+  ISO-8859-1, even though we don't provide #\\ syntax for entering
   characters other than that described above.
 
   Finally, we note that it is our intention that any object printed by
@@ -76133,12 +76133,12 @@ Subtopics
   us to make these improvements.
 
   The character encoding for reading from files has been fixed at
-  iso-8859-1.  See [character-encoding].  Thanks to Jared Davis for
+  ISO-8859-1.  See [character-encoding].  Thanks to Jared Davis for
   bringing this portability issue to our attention (as this change
   arose in order to deal with a change in the default character
   encoding for the host Lisp, CCL), and pointing us in the right
   direction for dealing with it.  In many cases, the character
-  encoding for reading from the terminal is also iso-8859-1; but this
+  encoding for reading from the terminal is also ISO-8859-1; but this
   is not guaranteed.  In particular, when the host Lisp is SBCL this
   may not be the case.
 
