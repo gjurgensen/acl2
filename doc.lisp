@@ -83107,6 +83107,14 @@ Bug Fixes
   verify-guards? event with :guard-hints instead of :hints.  Thanks
   to Alessandro Coglio for reporting this bug and providing the fix.
 
+  The use of :stack :pop in the macro [with-output] failed to restore
+  [gag-mode] properly.  For example, the use of (with-output :stack
+  :push :gag-mode nil (with-output :stack :pop <form>)) failed to run
+  <form> with the existing value for gag-mode (default: :goals).
+  Thanks to Mihir Mehta for a query that led us to make this fix.
+  Technical note: state global inhibit-output-lst-stack is now a list
+  of pairs (inhibit-output-lst . gag-mode); see [with-output].
+
 
 Changes at the System Level
 
@@ -123632,12 +123640,13 @@ The Differences Between Well-Formed and Merely Tame Lambda Objects
   for advanced users.  After :gag-mode and :evisc are handled (if
   present) but before :on or :off is handled, the value of :stack is
   handled as follows.  If the value is :push, then [state] global
-  inhibit-output-lst-stack is modified by pushing the value of
-  [state] global inhibit-output-lst onto the value of [state] global
-  inhibit-output-lst-stack, which is nil at the top level.  If the
-  value is :pop, then [state] global inhibit-output-lst-stack is
-  modified only if non-nil, in which case its top element is popped
-  and becomes the value of of [state] global inhibit-output-lst.
+  inhibit-output-lst-stack is modified by pushing the cons of the
+  values of [state] globals inhibit-output-lst and gag-mode onto the
+  value of [state] global inhibit-output-lst-stack, which is nil at
+  the top level.  If the value is :pop, then [state] global
+  inhibit-output-lst-stack is modified only if non-nil, in which case
+  its top element is popped and provides the values of [state]
+  globals inhibit-output-lst and gag-mode.
 
   Warning: With-output has no effect in raw Lisp (other than to expand
   to the provided form argument), and hence is disallowed in function

@@ -1,4 +1,4 @@
-; Std/basic - Basic definitions
+; Standard Strings Library
 ;
 ; Copyright (C) 2019 Kestrel Institute (http://www.kestrel.edu)
 ;
@@ -8,22 +8,22 @@
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
-(in-package "ACL2")
+(in-package "STR")
 
-(include-book "symbol-package-name-lst")
+(include-book "strtok-bang")
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
-(defxdoc std/basic-extensions
-  :parents (std-extensions std/basic)
+(defxdoc std/strings-extensions
+  :parents (acl2::std-extensions std/strings)
   :short
   (xdoc::topstring "Extensions of "
-                   (xdoc::seetopic "std/basic" "Std/basic")
+                   (xdoc::seetopic "std/strings" "Std/strings")
                    " in the "
-                   (xdoc::seetopic "kestrel-books" "Kestrel Books")
+                   (xdoc::seetopic "acl2::kestrel-books" "Kestrel Books")
                    ".")
   :long
   (xdoc::topstring
    (xdoc::p
-    "These extensions could be moved under @('[books]/std/basic')
+    "These extensions could be moved under @('[books]/std/strings')
      at some point.")))
