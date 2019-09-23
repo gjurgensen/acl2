@@ -84501,6 +84501,14 @@ it."
  @(':hints').  Thanks to Alessandro Coglio for reporting this bug and providing
  the fix.</p>
 
+ <p>The use of @(':stack :pop') in the macro @(tsee with-output) failed to
+ restore @(see gag-mode) properly.  For example, the use of
+ @('(with-output :stack :push :gag-mode nil (with-output :stack :pop <form>))')
+ failed to run @('<form>') with the existing value for gag-mode (default:
+ @(':goals')).  Thanks to Mihir Mehta for a query that led us to make this
+ fix.  Technical note: state global @('inhibit-output-lst-stack') is now a list
+ of pairs @('(inhibit-output-lst . gag-mode)'); see @(see with-output).</p>
+
  <h3>Changes at the System Level</h3>
 
  <p>The makefile target @('certify-books') has been removed from
@@ -122433,12 +122441,13 @@ for the execution of @('form')."
  advanced users.  After @(':gag-mode') and @(':evisc') are handled (if present)
  but before @(':on') or @(':off') is handled, the value of @(':stack') is
  handled as follows.  If the value is @(':push'), then @(see state) global
- @('inhibit-output-lst-stack') is modified by pushing the value of @(see state)
- global @('inhibit-output-lst') onto the value of @(see state) global
- @('inhibit-output-lst-stack'), which is @('nil') at the top level.  If the
- value is @(':pop'), then @(see state) global @('inhibit-output-lst-stack') is
- modified only if non-@('nil'), in which case its top element is popped and
- becomes the value of of @(see state) global @('inhibit-output-lst').</p>
+ @('inhibit-output-lst-stack') is modified by pushing the cons of the values of
+ @(see state) globals @('inhibit-output-lst') and @('gag-mode') onto the value
+ of @(see state) global @('inhibit-output-lst-stack'), which is @('nil') at the
+ top level.  If the value is @(':pop'), then @(see state) global
+ @('inhibit-output-lst-stack') is modified only if non-@('nil'), in which case
+ its top element is popped and provides the values of @(see state) globals
+ @('inhibit-output-lst') and @('gag-mode').</p>
 
  <p>Warning: @('With-output') has no effect in raw Lisp (other than to expand
  to the provided @('form') argument), and hence is disallowed in function
