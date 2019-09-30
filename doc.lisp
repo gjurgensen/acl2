@@ -52698,10 +52698,15 @@ Subtopics
   These additional values are not intended for use by the user, but
   no barriers to their use have been erected.
 
+  User-defined tools may temporarily modify the global setting of
+  ld-skip-proofsp; for example, see [remove-hyps].
+
   We close by reminding the user that ACL2 is potentially unsound if
-  ld-skip-proofsp is ever set by the user.  We provide access to it
-  simply to allow experimentation and rapid reconstruction of lost or
-  modified logical [world]s.")
+  ld-skip-proofsp is set by the user.  Indeed, direct setting of
+  ld-skip-proofsp is illegal within a book (except during
+  [make-event] expansion).  We provide access to it simply to allow
+  experimentation and rapid reconstruction of lost or modified
+  logical [world]s.")
  (LD-VERBOSE
   (LD)
   "Determines whether [ld] prints ``ACL2 Loading ...''
@@ -83060,6 +83065,13 @@ Heuristic and Efficiency Improvements
   computations.  As a result, we have seen about a 5% time reduction
   on MacOS, and between 3% and 4% on Linux, for executing the form,
   (include-book \"centaur/sv/top\" :dir :system).
+
+  The definition of the macro [ec-call] has been tweaked to speed up
+  compilation in some cases when the host Lisp is SBCL.  In
+  particular, for admitting the definition of apply$-prim in
+  [community-book] books/projects/apply-model-2/apply-prim.lisp with
+  host Lisp SBCL, we have seen the time decrease from 1294.33 seconds
+  to 8 seconds.
 
 
 Bug Fixes
