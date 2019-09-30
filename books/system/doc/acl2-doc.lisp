@@ -84463,6 +84463,12 @@ it."
  and between 3% and 4% on Linux, for executing the form, @('(include-book
  \"centaur/sv/top\" :dir :system)').</p>
 
+ <p>The definition of the macro @(tsee ec-call) has been tweaked to speed up
+ compilation in some cases when the host Lisp is SBCL.  In particular, for
+ admitting the definition of @('apply$-prim') in @(see community-book)
+ @('books/projects/apply-model-2/apply-prim.lisp') with host Lisp SBCL, we have
+ seen the time decrease from 1294.33 seconds to 8 seconds.</p>
+
  <h3>Bug Fixes</h3>
 
  <p>As noted in the documentation for @(see lemma-instance), ACL2 may avoid

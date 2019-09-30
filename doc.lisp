@@ -83066,6 +83066,13 @@ Heuristic and Efficiency Improvements
   on MacOS, and between 3% and 4% on Linux, for executing the form,
   (include-book \"centaur/sv/top\" :dir :system).
 
+  The definition of the macro [ec-call] has been tweaked to speed up
+  compilation in some cases when the host Lisp is SBCL.  In
+  particular, for admitting the definition of apply$-prim in
+  [community-book] books/projects/apply-model-2/apply-prim.lisp with
+  host Lisp SBCL, we have seen the time decrease from 1294.33 seconds
+  to 8 seconds.
+
 
 Bug Fixes
 
