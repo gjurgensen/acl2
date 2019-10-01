@@ -10,16 +10,18 @@
 
 (in-package "ACL2")
 
-(include-book "macro-symbolp")
-
-(include-book "std/util/deflist" :dir :system)
+(include-book "theorem-symbolp")
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
-(std::deflist macro-symbol-listp (x wrld)
+(define theorem-namep (x (wrld plist-worldp))
+  :returns (yes/no booleanp)
   :parents (std/system/event-name-queries)
-  :short "Lift @(tsee macro-symbolp) to lists."
-  :guard (and (symbol-listp x)
-              (plist-worldp wrld))
-  (macro-symbolp x wrld)
-  :true-listp t)
+  :short "Recognize symbols that name theorems."
+  :long
+  (xdoc::topstring-p
+   "This function is enabled because it is meant as an abbreviation.
+    Thus, theorems triggered by this function should be generally avoided.")
+  (and (symbolp x)
+       (theorem-symbolp x wrld))
+  :enabled t)

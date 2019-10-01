@@ -10,28 +10,23 @@
 
 (in-package "ACL2")
 
-(include-book "termfnp")
+(include-book "theorem-namep")
 
 (include-book "misc/assert" :dir :system)
 (include-book "misc/eval" :dir :system)
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
-(assert! (not (termfnp "cons" (w state))))
+(assert! (theorem-namep 'car-cdr-elim (w state)))
 
-(assert! (not (termfnp 'fffffffff (w state))))
+(assert! (not (theorem-namep 'cons (w state))))
 
-(assert! (termfnp 'cons (w state)))
-
-(assert! (termfnp 'len (w state)))
-
-(assert! (not (termfnp 'car-cdr-elim (w state))))
+(assert! (not (theorem-namep 'aaaaaaaaa (w state))))
 
 (must-succeed*
- (defun h (x) x)
- (assert! (termfnp 'h (w state))))
+ (defthm th (acl2-numberp (+ x y)))
+ (assert! (theorem-namep 'th (w state))))
 
-(assert!
- (termfnp '(lambda (x y) (binary-+ x (len (cons '3 'nil)))) (w state)))
+(assert! (not (theorem-namep 8 (w state))))
 
-(assert! (not (termfnp '(lambda (x) (fffff x)) (w state))))
+(assert! (not (theorem-namep "car-cdr-elim" (w state))))

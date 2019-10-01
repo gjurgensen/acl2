@@ -15,20 +15,14 @@
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
-(define macro-symbolp ((sym symbolp) (wrld plist-worldp))
+(define function-namep (x (wrld plist-worldp))
   :returns (yes/no booleanp)
   :parents (std/system/event-name-queries)
-  :short "Check if a symbol names a macro,
-          i.e. it has a @('macro-args') property."
+  :short "Recognize symbols that name functions."
   :long
   (xdoc::topstring-p
-   "This function is named in analogy to
-    the @(tsee function-symbolp) built-in system utility.")
-  (not (eq (getpropc sym 'macro-args t wrld) t))
-  ///
-
-  (defthm macro-symbolp-forward-to-symbolp
-    (implies (and (macro-symbolp fn wrld)
-                  (plist-worldp wrld))
-             (symbolp fn))
-    :rule-classes :forward-chaining))
+   "This function is enabled because it is meant as an abbreviation.
+    Theorems triggered by this function should be generally avoided.")
+  (and (symbolp x)
+       (function-symbolp x wrld))
+  :enabled t)

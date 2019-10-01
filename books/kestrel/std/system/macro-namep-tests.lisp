@@ -10,28 +10,23 @@
 
 (in-package "ACL2")
 
-(include-book "termfnp")
+(include-book "macro-namep")
 
 (include-book "misc/assert" :dir :system)
 (include-book "misc/eval" :dir :system)
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
-(assert! (not (termfnp "cons" (w state))))
+(assert! (macro-namep 'append (w state)))
 
-(assert! (not (termfnp 'fffffffff (w state))))
+(assert! (not (macro-namep 'cons (w state))))
 
-(assert! (termfnp 'cons (w state)))
-
-(assert! (termfnp 'len (w state)))
-
-(assert! (not (termfnp 'car-cdr-elim (w state))))
+(assert! (not (macro-namep 'aaaaaaaaaa (w state))))
 
 (must-succeed*
- (defun h (x) x)
- (assert! (termfnp 'h (w state))))
+ (defmacro m (x) `(list ,x))
+ (assert! (macro-namep 'm (w state))))
 
-(assert!
- (termfnp '(lambda (x y) (binary-+ x (len (cons '3 'nil)))) (w state)))
+(assert! (not (macro-namep 5/3 (w state))))
 
-(assert! (not (termfnp '(lambda (x) (fffff x)) (w state))))
+(assert! (not (macro-namep "append" (w state))))
