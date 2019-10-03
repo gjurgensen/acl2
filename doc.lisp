@@ -30310,7 +30310,7 @@ Subtopics
   [error-triple] of the form (mv erp val state).  The first such
   form, if any, that evaluates to such a triple where erp is not nil
   yields the error triple returned by the er-progn.  If there is no
-  such form, then the last form returns the value of the er-progn
+  such form, then the er-progn form returns the value of the last
   form.
 
     General Form:
@@ -33852,6 +33852,7 @@ Subtopics
   See any Common Lisp documentation for details.")
  (FIRST-KEYWORD (POINTERS)
                 "See [system-utilities].")
+ (FIRST-N-AC (POINTERS) "See [take].")
  (FIX
   (NUMBERS ACL2-BUILT-INS)
   "Coerce to a number
@@ -58625,6 +58626,8 @@ Subtopics
            (cond ((zp n) ac)
                  (t (make-list-ac (1- n)
                                   val (cons val ac)))))")
+ (MAKE-LIST-AC (POINTERS)
+               "See [make-list].")
  (MAKE-ORD
   (ORDINALS ACL2-BUILT-INS)
   "A constructor for ordinals.
@@ -87714,6 +87717,9 @@ Subtopics
   [First-keyword]
       See [system-utilities].
 
+  [First-n-ac]
+      See [take].
+
   [Flambda-applicationp]
       See [system-utilities].
 
@@ -87896,6 +87902,9 @@ Subtopics
 
   [Make-lambda-term]
       See [system-utilities].
+
+  [Make-list-ac]
+      See [make-list].
 
   [Match-free]
       See [free-variables].
@@ -110485,6 +110494,16 @@ Subtopics
 
   The [guard] for (take n l) is that n is a nonnegative integer and l
   is a true list.
+
+  Function: <first-n-ac>
+
+    (defun first-n-ac (i l ac)
+           (declare (type (integer 0 *) i)
+                    (xargs :guard (and (true-listp l) (true-listp ac))))
+           (cond ((zp i) (revappend ac nil))
+                 (t (first-n-ac (1- i)
+                                (cdr l)
+                                (cons (car l) ac)))))
 
   Function: <take>
 
