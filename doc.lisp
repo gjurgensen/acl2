@@ -83073,6 +83073,14 @@ Heuristic and Efficiency Improvements
   host Lisp SBCL, we have seen the time decrease from 1294.33 seconds
   to 8 seconds.
 
+  A heuristic for ``lazy'' rewriting of calls of mv-nth has been made
+  much more efficient in some cases.  Thanks to Sol Swords for
+  investigating performance issues leading him to implement such a
+  change, and for making modifications to [community-books] so that
+  they continue to certify after the change.  Those interested in
+  implementation details may start with source function
+  simplifiable-mv-nth1.
+
 
 Bug Fixes
 
