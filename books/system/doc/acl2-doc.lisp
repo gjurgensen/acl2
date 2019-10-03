@@ -27121,7 +27121,7 @@ ld) and @(tsee include-book)"
  error-triple) of the form @('(mv erp val state)').  The first such form, if
  any, that evaluates to such a triple where @('erp') is not @('nil') yields the
  error triple returned by the @('er-progn').  If there is no such form, then
- the last form returns the value of the @('er-progn') form.</p>
+ the @('er-progn') form returns the value of the last form.</p>
 
  @({
   General Form:
@@ -109194,6 +109194,8 @@ arithmetic) for libraries of @(see books) for arithmetic reasoning.</p>")
  <p>The @(see guard) for @('(take n l)') is that @('n') is a nonnegative
  integer and @('l') is a true list.</p>
 
+ @(def first-n-ac)
+
  @(def take)")
 
 (defxdoc talks
@@ -127719,6 +127721,7 @@ expand function call at the current subterm, without simplifying"
 (defpointer ffnnamep system-utilities)
 (defpointer ffnnamep-lst system-utilities)
 (defpointer first-keyword system-utilities)
+(defpointer first-n-ac take)
 (defpointer flambda-applicationp system-utilities)
 (defpointer flambdap system-utilities)
 (defpointer fms!-to-string printing-to-strings)
@@ -127780,6 +127783,7 @@ expand function call at the current subterm, without simplifying"
 (defpointer make-lambda system-utilities)
 (defpointer make-lambda-application system-utilities)
 (defpointer make-lambda-term system-utilities)
+(defpointer make-list-ac make-list)
 (defpointer match-free free-variables)
 (defpointer measure-theorem termination-theorem)
 (defpointer member-eq member)
