@@ -109187,6 +109187,8 @@ arithmetic) for libraries of @(see books) for arithmetic reasoning.</p>")
  <p>The @(see guard) for @('(take n l)') is that @('n') is a nonnegative
  integer and @('l') is a true list.</p>
 
+ @(def first-n-ac)
+
  @(def take)")
 
 (defxdoc talks
