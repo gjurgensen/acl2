@@ -49515,6 +49515,10 @@ Subtopics
   each element of a list and to prove that it returns a subset of the
   list with no duplications.
 
+  (Is this all that one might want to prove?  It is a good idea to
+  think about that question, for any application; an answer for this
+  example is at the end of this topic.)
+
   Hint: We recommend that you read this hint to align your function
   names with our solution, to make comparisons easier.  Our answer is
   shown in see [introductory-challenge-problem-4-answer].  In that
@@ -49557,7 +49561,15 @@ Subtopics
   [introductory-challenge-problem-4-answer].
 
   Then, use your browser's Back Button to return to
-  [introductory-challenges].")
+  [introductory-challenges].
+
+  We conclude this topic by returning to the question posed earlier
+  above: Is this all that one might want to prove?  Notice that we
+  didn't prove that every element of the given list is indeed an
+  element of the returned list, which could be formalized as follows.
+
+    (thm
+      (subsetp x (collect-once x)))")
  (INTRODUCTORY-CHALLENGE-PROBLEM-4-ANSWER
   (INTRODUCTION-TO-THE-THEOREM-PROVER)
   "Answer to challenge problem 4 for the new user of ACL2

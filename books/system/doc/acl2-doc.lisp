@@ -45804,6 +45804,10 @@ tables in the current Hons Space."
  element of a list and to prove that it returns a subset of the list with no
  duplications.</p>
 
+ <p>(Is this all that one might want to prove?  It is a good idea to think
+ about that question, for any application; an answer for this example is at the
+ end of this topic.)</p>
+
  <p><b>Hint</b>: We recommend that you read this hint to align your function
  names with our solution, to make comparisons easier.  Our answer is shown in
  see @(see introductory-challenge-problem-4-answer).  In that page you'll see a
@@ -45849,7 +45853,17 @@ tables in the current Hons Space."
  introductory-challenge-problem-4-answer).</p>
 
  <p>Then, use your browser's <b>Back Button</b> to return to @(see
- introductory-challenges).</p>")
+ introductory-challenges).</p>
+
+ <p>We conclude this topic by returning to the question posed earlier above: Is
+ this all that one might want to prove?  Notice that we didn't prove that every
+ element of the given list is indeed an element of the returned list, which
+ could be formalized as follows.</p>
+
+ @({
+  (thm
+    (subsetp x (collect-once x)))
+ })")
 
 (defxdoc introductory-challenge-problem-4-answer
   :parents (introduction-to-the-theorem-prover)
