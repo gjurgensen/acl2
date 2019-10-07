@@ -28184,6 +28184,10 @@ Subtopics
     (thm (foo (bar y)))")
  (DUMB-NEGATE-LIT (POINTERS)
                   "See [system-utilities].")
+ (DUMB-OCCUR (POINTERS)
+             "See [system-utilities].")
+ (DUMB-OCCUR-VAR (POINTERS)
+                 "See [system-utilities].")
  (DYNAMICALLY-MONITOR-REWRITES (POINTERS)
                                "See [dmr].")
  (E/D
@@ -87657,6 +87661,12 @@ Subtopics
   [Dumb-negate-lit]
       See [system-utilities].
 
+  [Dumb-occur]
+      See [system-utilities].
+
+  [Dumb-occur-var]
+      See [system-utilities].
+
   [Dynamically-monitor-rewrites]
       See [dmr].
 
@@ -109992,6 +110002,12 @@ List of a few built-in system utilities
     * (disjoin2 term1 term2): The disjunction of the given two terms.
     * (dumb-negate-lit t1): For the given [term] t1, return a term that is
       propositionally equivalent to (not t1).
+    * (dumb-occur x y): Return t if the term x occurs free in the term y,
+      but without looking for x inside of quoted constants; else,
+      returns nil.
+    * (dumb-occur-var x y): Return t if the variable x occurs free in the
+      term y, else nil.  This is the same as dumb-occur, but
+      optimized for the case that x is a variable.
     * (enabled-numep nume ens wrld): Return true iff the given nume
       (numeric representation of a [rune]) in the [world], wrld, is
       [enable]d with respect to the given enabled structure, ens.

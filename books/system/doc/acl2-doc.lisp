@@ -108563,6 +108563,14 @@ arithmetic) for libraries of @(see books) for arithmetic reasoning.</p>")
  <li>@('(dumb-negate-lit t1)'): For the given @(see term) @('t1'), return a
  term that is propositionally equivalent to @('(not t1)').</li>
 
+ <li>@('(dumb-occur x y)'): Return @('t') if the term @('x') occurs free in the
+ term @('y'), but without looking for @('x') inside of quoted constants; else,
+ returns @('nil').</li>
+
+ <li>@('(dumb-occur-var x y)'): Return @('t') if the variable @('x') occurs
+ free in the term @('y'), else @('nil').  This is the same as @('dumb-occur'),
+ but optimized for the case that @('x') is a variable.</li>
+
  <li>@('(enabled-numep nume ens wrld)'): Return true iff the given
  nume (numeric representation of a @(see rune)) in the @(see world), @('wrld'),
  is @(see enable)d with respect to the given enabled structure, @('ens').
@@ -127712,6 +127720,8 @@ expand function call at the current subterm, without simplifying"
 (defpointer do-not-induct hints t)
 (defpointer dynamically-monitor-rewrites dmr)
 (defpointer dumb-negate-lit system-utilities)
+(defpointer dumb-occur system-utilities)
+(defpointer dumb-occur-var system-utilities)
 (defpointer enabled-numep system-utilities)
 (defpointer enabled-runep system-utilities)
 (defpointer er-let* programming-with-state)
