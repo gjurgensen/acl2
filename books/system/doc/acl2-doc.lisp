@@ -84439,6 +84439,16 @@ it."
  changes, and for providing not only implementations but also modifications to
  the @(see community-books).</p>
 
+ <p>The translation of a term @('(and t u0)') is @('(if 't u1 'nil)'), where
+ @('u1') is the translation of @('u0').  That term, @('(if 't u1 'nil)'), is
+ now generally displayed to the user (``@(see untranslate)d'') as @('(and t
+ u0)'), but formerly it was displayed as @('u0'), which could be confusing.
+ Thanks to Stephen Westfold, who sent an example showing how, when using the
+ @(see proof-builder)'s @('REWRITE') command to replace a subterm @('a0') by
+ @('t') in a term @('(and a b)') could lead to confusion, since the resulting
+ @('(and t b)') was printed only as @('b').  Note:  For Boolean contexts, the
+ analogous change was also made for terms @('(and u0 t)').</p>
+
  <h3>New Features</h3>
 
  <p>A new @(tsee xargs) keyword, @(':guard-simplify') (default @('t')),
