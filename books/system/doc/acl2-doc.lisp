@@ -84551,6 +84551,12 @@ it."
  fix.  Technical note: state global @('inhibit-output-lst-stack') is now a list
  of pairs @('(inhibit-output-lst . gag-mode)'); see @(see with-output).</p>
 
+ <p>The @(see proof-builder)'s @('DV') command was broken for expressions of
+ the form @('(if t term1 term2)'); for example, @('(verify (if t x y))')
+ followed by @('1'), @('2'), or @('3') caused a raw Lisp error.  Thanks to
+ Stephen Westfold for bringing this bug to our attention and pointing out the
+ fix.</p>
+
  <h3>Changes at the System Level</h3>
 
  <p>The makefile target @('certify-books') has been removed from
