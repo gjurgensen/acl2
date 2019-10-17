@@ -12129,8 +12129,8 @@ with any questions about building the community books.</p>")
   :parents (lists acl2-built-ins)
   :short "All but a final segment of a list"
   :long "<p>@('(Butlast l n)') is the list obtained by removing the last @('n')
- elements from the true list @('l').  The following is a theorem
- (though it takes some effort, including lemmas, to get ACL2 to prove it).</p>
+ elements from the true list @('l').  The following are theorems
+ (though it takes some effort, including lemmas, to prove them in ACL2).</p>
 
  @({
   (implies (and (integerp n)
@@ -12140,6 +12140,8 @@ with any questions about building the community books.</p>")
                   (if (< n (length l))
                       (- (length l) n)
                     0)))
+
+  (equal (len (butlast l n)) (nfix (- (len l) (nfix n)))))
  })
 
  <p>For related functions, see @(see take) and see @(see nthcdr).</p>
