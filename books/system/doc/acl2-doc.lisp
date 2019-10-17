@@ -109208,8 +109208,7 @@ arithmetic) for libraries of @(see books) for arithmetic reasoning.</p>")
   :long "<p>For any natural number @('n') not exceeding the length of @('l'),
  @('(take n l)') collects the first @('n') elements of the list @('l').</p>
 
- <p>The following is a theorem (though it takes some effort, including lemmas,
- to get ACL2 to prove it):</p>
+ <p>The following is a theorem:</p>
 
  @({
   (equal (length (take n l)) (nfix n))
