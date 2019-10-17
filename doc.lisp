@@ -14971,8 +14971,7 @@ Subtopics
   "All but a final segment of a list
 
   (Butlast l n) is the list obtained by removing the last n elements
-  from the true list l.  The following is a theorem (though it takes
-  some effort, including lemmas, to get ACL2 to prove it).
+  from the true list l.  The following are theorems.
 
     (implies (and (integerp n)
                   (<= 0 n)
@@ -14981,6 +14980,8 @@ Subtopics
                     (if (< n (length l))
                         (- (length l) n)
                       0)))
+
+    (equal (len (butlast l n)) (nfix (- (len l) (nfix n)))))
 
   For related functions, see [take] and see [nthcdr].
 
@@ -110518,8 +110519,7 @@ Subtopics
   For any natural number n not exceeding the length of l, (take n l)
   collects the first n elements of the list l.
 
-  The following is a theorem (though it takes some effort, including
-  lemmas, to get ACL2 to prove it):
+  The following is a theorem:
 
     (equal (length (take n l)) (nfix n))
 
