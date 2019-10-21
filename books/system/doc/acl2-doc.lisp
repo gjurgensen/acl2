@@ -109217,7 +109217,8 @@ arithmetic) for libraries of @(see books) for arithmetic reasoning.</p>")
 
  <p>If @('n') is an integer greater than the length of @('l'), then @('take')
  pads the list with the appropriate number of @('nil') elements.  Thus, the
- following is also a theorem.</p>
+ following is also a theorem (though it takes some effort, including lemmas, to
+ get ACL2 to prove it).</p>
 
  @({
   (implies (and (integerp n)
