@@ -84345,6 +84345,10 @@ it."
 ; Used new function maybe-flush-and-compress1 to clean up code in
 ; recompress-global-enabled-structure.
 
+; Eliminated special variables *the-live-st* for stobjs, st.
+
+; Made trivial efficiency tweak to output-type-for-declare-form-rec.
+
   :parents (release-notes)
   :short "ACL2 Version  8.3 (xxx, 20xx) Notes"
   :long "<p>NOTE!  New users can ignore these release notes, because the @(see
