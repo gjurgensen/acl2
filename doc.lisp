@@ -14971,8 +14971,7 @@ Subtopics
   "All but a final segment of a list
 
   (Butlast l n) is the list obtained by removing the last n elements
-  from the true list l.  The following is a theorem (though it takes
-  some effort, including lemmas, to get ACL2 to prove it).
+  from the true list l.  The following are theorems.
 
     (implies (and (integerp n)
                   (<= 0 n)
@@ -14981,6 +14980,8 @@ Subtopics
                     (if (< n (length l))
                         (- (length l) n)
                       0)))
+
+    (equal (len (butlast l n)) (nfix (- (len l) (nfix n)))))
 
   For related functions, see [take] and see [nthcdr].
 
@@ -28184,6 +28185,10 @@ Subtopics
     (thm (foo (bar y)))")
  (DUMB-NEGATE-LIT (POINTERS)
                   "See [system-utilities].")
+ (DUMB-OCCUR (POINTERS)
+             "See [system-utilities].")
+ (DUMB-OCCUR-VAR (POINTERS)
+                 "See [system-utilities].")
  (DYNAMICALLY-MONITOR-REWRITES (POINTERS)
                                "See [dmr].")
  (E/D
@@ -30310,7 +30315,7 @@ Subtopics
   [error-triple] of the form (mv erp val state).  The first such
   form, if any, that evaluates to such a triple where erp is not nil
   yields the error triple returned by the er-progn.  If there is no
-  such form, then the last form returns the value of the er-progn
+  such form, then the er-progn form returns the value of the last
   form.
 
     General Form:
@@ -33852,6 +33857,7 @@ Subtopics
   See any Common Lisp documentation for details.")
  (FIRST-KEYWORD (POINTERS)
                 "See [system-utilities].")
+ (FIRST-N-AC (POINTERS) "See [take].")
  (FIX
   (NUMBERS ACL2-BUILT-INS)
   "Coerce to a number
@@ -49514,6 +49520,10 @@ Subtopics
   each element of a list and to prove that it returns a subset of the
   list with no duplications.
 
+  (Is this all that one might want to prove?  It is a good idea to
+  think about that question, for any application; an answer for this
+  example is at the end of this topic.)
+
   Hint: We recommend that you read this hint to align your function
   names with our solution, to make comparisons easier.  Our answer is
   shown in see [introductory-challenge-problem-4-answer].  In that
@@ -49556,7 +49566,15 @@ Subtopics
   [introductory-challenge-problem-4-answer].
 
   Then, use your browser's Back Button to return to
-  [introductory-challenges].")
+  [introductory-challenges].
+
+  We conclude this topic by returning to the question posed earlier
+  above: Is this all that one might want to prove?  Notice that we
+  didn't prove that every element of the given list is indeed an
+  element of the returned list, which could be formalized as follows.
+
+    (thm
+      (subsetp x (collect-once x)))")
  (INTRODUCTORY-CHALLENGE-PROBLEM-4-ANSWER
   (INTRODUCTION-TO-THE-THEOREM-PROVER)
   "Answer to challenge problem 4 for the new user of ACL2
@@ -58625,6 +58643,8 @@ Subtopics
            (cond ((zp n) ac)
                  (t (make-list-ac (1- n)
                                   val (cons val ac)))))")
+ (MAKE-LIST-AC (POINTERS)
+               "See [make-list].")
  (MAKE-ORD
   (ORDINALS ACL2-BUILT-INS)
   "A constructor for ordinals.
@@ -83025,6 +83045,16 @@ Changes to Existing Features
   changes, and for providing not only implementations but also
   modifications to the [community-books].
 
+  The translation of a term (and t u0) is (if 't u1 'nil), where u1 is
+  the translation of u0.  That term, (if 't u1 'nil), is now
+  generally displayed to the user (``[untranslate]d'') as (and t u0),
+  but formerly it was displayed as u0, which could be confusing.
+  Thanks to Stephen Westfold, who sent an example showing how, when
+  using the [proof-builder]'s REWRITE command to replace a subterm a0
+  by t in a term (and a b) could lead to confusion, since the
+  resulting (and t b) was printed only as b.  Note: For Boolean
+  contexts, the analogous change was also made for terms (and u0 t).
+
 
 New Features
 
@@ -83072,6 +83102,14 @@ Heuristic and Efficiency Improvements
   [community-book] books/projects/apply-model-2/apply-prim.lisp with
   host Lisp SBCL, we have seen the time decrease from 1294.33 seconds
   to 8 seconds.
+
+  A heuristic for ``lazy'' rewriting of calls of mv-nth has been made
+  much more efficient in some cases.  Thanks to Sol Swords for
+  investigating performance issues leading him to implement such a
+  change, and for making modifications to [community-books] so that
+  they continue to certify after the change.  Those interested in
+  implementation details may start with source function
+  simplifiable-mv-nth1.
 
 
 Bug Fixes
@@ -83126,6 +83164,11 @@ Bug Fixes
   Thanks to Mihir Mehta for a query that led us to make this fix.
   Technical note: state global inhibit-output-lst-stack is now a list
   of pairs (inhibit-output-lst . gag-mode); see [with-output].
+
+  The [proof-builder]'s DV command was broken for expressions of the
+  form (if t term1 term2); for example, (verify (if t x y)) followed
+  by 1, 2, or 3 caused a raw Lisp error.  Thanks to Stephen Westfold
+  for bringing this bug to our attention and pointing out the fix.
 
 
 Changes at the System Level
@@ -87634,6 +87677,12 @@ Subtopics
   [Dumb-negate-lit]
       See [system-utilities].
 
+  [Dumb-occur]
+      See [system-utilities].
+
+  [Dumb-occur-var]
+      See [system-utilities].
+
   [Dynamically-monitor-rewrites]
       See [dmr].
 
@@ -87705,6 +87754,9 @@ Subtopics
 
   [First-keyword]
       See [system-utilities].
+
+  [First-n-ac]
+      See [take].
 
   [Flambda-applicationp]
       See [system-utilities].
@@ -87888,6 +87940,9 @@ Subtopics
 
   [Make-lambda-term]
       See [system-utilities].
+
+  [Make-list-ac]
+      See [make-list].
 
   [Match-free]
       See [free-variables].
@@ -109963,6 +110018,12 @@ List of a few built-in system utilities
     * (disjoin2 term1 term2): The disjunction of the given two terms.
     * (dumb-negate-lit t1): For the given [term] t1, return a term that is
       propositionally equivalent to (not t1).
+    * (dumb-occur x y): Return t if the term x occurs free in the term y,
+      but without looking for x inside of quoted constants; else,
+      returns nil.
+    * (dumb-occur-var x y): Return t if the variable x occurs free in the
+      term y, else nil.  This is the same as dumb-occur, but
+      optimized for the case that x is a variable.
     * (enabled-numep nume ens wrld): Return true iff the given nume
       (numeric representation of a [rune]) in the [world], wrld, is
       [enable]d with respect to the given enabled structure, ens.
@@ -110458,8 +110519,7 @@ Subtopics
   For any natural number n not exceeding the length of l, (take n l)
   collects the first n elements of the list l.
 
-  The following is a theorem (though it takes some effort, including
-  lemmas, to get ACL2 to prove it):
+  The following is a theorem:
 
     (equal (length (take n l)) (nfix n))
 
@@ -110477,6 +110537,16 @@ Subtopics
 
   The [guard] for (take n l) is that n is a nonnegative integer and l
   is a true list.
+
+  Function: <first-n-ac>
+
+    (defun first-n-ac (i l ac)
+           (declare (type (integer 0 *) i)
+                    (xargs :guard (and (true-listp l) (true-listp ac))))
+           (cond ((zp i) (revappend ac nil))
+                 (t (first-n-ac (1- i)
+                                (cdr l)
+                                (cons (car l) ac)))))
 
   Function: <take>
 

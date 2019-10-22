@@ -12129,8 +12129,7 @@ with any questions about building the community books.</p>")
   :parents (lists acl2-built-ins)
   :short "All but a final segment of a list"
   :long "<p>@('(Butlast l n)') is the list obtained by removing the last @('n')
- elements from the true list @('l').  The following is a theorem
- (though it takes some effort, including lemmas, to get ACL2 to prove it).</p>
+ elements from the true list @('l').  The following are theorems.</p>
 
  @({
   (implies (and (integerp n)
@@ -12140,6 +12139,8 @@ with any questions about building the community books.</p>")
                   (if (< n (length l))
                       (- (length l) n)
                     0)))
+
+  (equal (len (butlast l n)) (nfix (- (len l) (nfix n)))))
  })
 
  <p>For related functions, see @(see take) and see @(see nthcdr).</p>
@@ -27121,7 +27122,7 @@ ld) and @(tsee include-book)"
  error-triple) of the form @('(mv erp val state)').  The first such form, if
  any, that evaluates to such a triple where @('erp') is not @('nil') yields the
  error triple returned by the @('er-progn').  If there is no such form, then
- the last form returns the value of the @('er-progn') form.</p>
+ the @('er-progn') form returns the value of the last form.</p>
 
  @({
   General Form:
@@ -45804,6 +45805,10 @@ tables in the current Hons Space."
  element of a list and to prove that it returns a subset of the list with no
  duplications.</p>
 
+ <p>(Is this all that one might want to prove?  It is a good idea to think
+ about that question, for any application; an answer for this example is at the
+ end of this topic.)</p>
+
  <p><b>Hint</b>: We recommend that you read this hint to align your function
  names with our solution, to make comparisons easier.  Our answer is shown in
  see @(see introductory-challenge-problem-4-answer).  In that page you'll see a
@@ -45849,7 +45854,17 @@ tables in the current Hons Space."
  introductory-challenge-problem-4-answer).</p>
 
  <p>Then, use your browser's <b>Back Button</b> to return to @(see
- introductory-challenges).</p>")
+ introductory-challenges).</p>
+
+ <p>We conclude this topic by returning to the question posed earlier above: Is
+ this all that one might want to prove?  Notice that we didn't prove that every
+ element of the given list is indeed an element of the returned list, which
+ could be formalized as follows.</p>
+
+ @({
+  (thm
+    (subsetp x (collect-once x)))
+ })")
 
 (defxdoc introductory-challenge-problem-4-answer
   :parents (introduction-to-the-theorem-prover)
@@ -84425,6 +84440,16 @@ it."
  changes, and for providing not only implementations but also modifications to
  the @(see community-books).</p>
 
+ <p>The translation of a term @('(and t u0)') is @('(if 't u1 'nil)'), where
+ @('u1') is the translation of @('u0').  That term, @('(if 't u1 'nil)'), is
+ now generally displayed to the user (``@(see untranslate)d'') as @('(and t
+ u0)'), but formerly it was displayed as @('u0'), which could be confusing.
+ Thanks to Stephen Westfold, who sent an example showing how, when using the
+ @(see proof-builder)'s @('REWRITE') command to replace a subterm @('a0') by
+ @('t') in a term @('(and a b)') could lead to confusion, since the resulting
+ @('(and t b)') was printed only as @('b').  Note:  For Boolean contexts, the
+ analogous change was also made for terms @('(and u0 t)').</p>
+
  <h3>New Features</h3>
 
  <p>A new @(tsee xargs) keyword, @(':guard-simplify') (default @('t')),
@@ -84468,6 +84493,13 @@ it."
  admitting the definition of @('apply$-prim') in @(see community-book)
  @('books/projects/apply-model-2/apply-prim.lisp') with host Lisp SBCL, we have
  seen the time decrease from 1294.33 seconds to 8 seconds.</p>
+
+ <p>A heuristic for ``lazy'' rewriting of calls of @('mv-nth') has been made
+ much more efficient in some cases.  Thanks to Sol Swords for investigating
+ performance issues leading him to implement such a change, and for making
+ modifications to @(see community-books) so that they continue to certify after
+ the change.  Those interested in implementation details may start with source
+ function @('simplifiable-mv-nth1').</p>
 
  <h3>Bug Fixes</h3>
 
@@ -84519,6 +84551,12 @@ it."
  @(':goals')).  Thanks to Mihir Mehta for a query that led us to make this
  fix.  Technical note: state global @('inhibit-output-lst-stack') is now a list
  of pairs @('(inhibit-output-lst . gag-mode)'); see @(see with-output).</p>
+
+ <p>The @(see proof-builder)'s @('DV') command was broken for expressions of
+ the form @('(if t term1 term2)'); for example, @('(verify (if t x y))')
+ followed by @('1'), @('2'), or @('3') caused a raw Lisp error.  Thanks to
+ Stephen Westfold for bringing this bug to our attention and pointing out the
+ fix.</p>
 
  <h3>Changes at the System Level</h3>
 
@@ -108542,6 +108580,14 @@ arithmetic) for libraries of @(see books) for arithmetic reasoning.</p>")
  <li>@('(dumb-negate-lit t1)'): For the given @(see term) @('t1'), return a
  term that is propositionally equivalent to @('(not t1)').</li>
 
+ <li>@('(dumb-occur x y)'): Return @('t') if the term @('x') occurs free in the
+ term @('y'), but without looking for @('x') inside of quoted constants; else,
+ returns @('nil').</li>
+
+ <li>@('(dumb-occur-var x y)'): Return @('t') if the variable @('x') occurs
+ free in the term @('y'), else @('nil').  This is the same as @('dumb-occur'),
+ but optimized for the case that @('x') is a variable.</li>
+
  <li>@('(enabled-numep nume ens wrld)'): Return true iff the given
  nume (numeric representation of a @(see rune)) in the @(see world), @('wrld'),
  is @(see enable)d with respect to the given enabled structure, @('ens').
@@ -109163,8 +109209,7 @@ arithmetic) for libraries of @(see books) for arithmetic reasoning.</p>")
   :long "<p>For any natural number @('n') not exceeding the length of @('l'),
  @('(take n l)') collects the first @('n') elements of the list @('l').</p>
 
- <p>The following is a theorem (though it takes some effort, including lemmas,
- to get ACL2 to prove it):</p>
+ <p>The following is a theorem:</p>
 
  @({
   (equal (length (take n l)) (nfix n))
@@ -109186,6 +109231,8 @@ arithmetic) for libraries of @(see books) for arithmetic reasoning.</p>")
 
  <p>The @(see guard) for @('(take n l)') is that @('n') is a nonnegative
  integer and @('l') is a true list.</p>
+
+ @(def first-n-ac)
 
  @(def take)")
 
@@ -127689,6 +127736,8 @@ expand function call at the current subterm, without simplifying"
 (defpointer do-not-induct hints t)
 (defpointer dynamically-monitor-rewrites dmr)
 (defpointer dumb-negate-lit system-utilities)
+(defpointer dumb-occur system-utilities)
+(defpointer dumb-occur-var system-utilities)
 (defpointer enabled-numep system-utilities)
 (defpointer enabled-runep system-utilities)
 (defpointer er-let* programming-with-state)
@@ -127712,6 +127761,7 @@ expand function call at the current subterm, without simplifying"
 (defpointer ffnnamep system-utilities)
 (defpointer ffnnamep-lst system-utilities)
 (defpointer first-keyword system-utilities)
+(defpointer first-n-ac take)
 (defpointer flambda-applicationp system-utilities)
 (defpointer flambdap system-utilities)
 (defpointer fms!-to-string printing-to-strings)
@@ -127773,6 +127823,7 @@ expand function call at the current subterm, without simplifying"
 (defpointer make-lambda system-utilities)
 (defpointer make-lambda-application system-utilities)
 (defpointer make-lambda-term system-utilities)
+(defpointer make-list-ac make-list)
 (defpointer match-free free-variables)
 (defpointer measure-theorem termination-theorem)
 (defpointer member-eq member)
