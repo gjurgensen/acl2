@@ -90378,8 +90378,8 @@ Subtopics
 
   Finally, we point out a pitfall of progn! related to [stobj]s.  The
   following book can cause a hard Lisp error, depending on the host
-  Common Lisp, when certified with a non-nil value for compile-flg
-  (see [certify-book]).
+  Common Lisp and whether certifying or including it, when certified
+  with a non-nil value for compile-flg (see [certify-book]).
 
     (in-package \"ACL2\")
     (defstobj st fld)
@@ -90391,7 +90391,9 @@ Subtopics
   replaced with the following two forms.
 
     (include-book \"hacking/hacker\" :dir :system)
-    (with-raw-mode (update-fld 3 *the-live-st*))")
+    (with-raw-mode
+     (let ((live-st (cdr (assoc-eq 'st *user-stobj-alist*))))
+       (update-fld 3 live-st)))")
  (PROGN$
   (BASICS ACL2-BUILT-INS)
   "Execute a sequence of forms and return the value of the last one
