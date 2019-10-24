@@ -90033,8 +90033,8 @@ arithmetic) for libraries of @(see books) for arithmetic reasoning.</p>")
 
  <p>Finally, we point out a pitfall of @('progn!') related to @(see stobj)s.
  The following book can cause a hard Lisp error, depending on the host Common
- Lisp, when certified with a non-@('nil') value for @('compile-flg') (see @(see
- certify-book)).</p>
+ Lisp and whether certifying or including it, when certified with a
+ non-@('nil') value for @('compile-flg') (see @(see certify-book)).</p>
 
  @({
   (in-package \"ACL2\")
@@ -90049,7 +90049,9 @@ arithmetic) for libraries of @(see books) for arithmetic reasoning.</p>")
 
  @({
   (include-book \"hacking/hacker\" :dir :system)
-  (with-raw-mode (update-fld 3 *the-live-st*))
+  (with-raw-mode
+   (let ((live-st (cdr (assoc-eq 'st *user-stobj-alist*))))
+     (update-fld 3 live-st)))
  })")
 
 (defxdoc progn$
