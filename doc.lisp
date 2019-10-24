@@ -4017,6 +4017,9 @@ Subtopics
   [Substitute]
       Substitute into a string or a list, using [eql] as test
 
+  [Swap-stobjs]
+      Swap two congruent [stobj]s
+
   [Symbol-<]
       Less-than test for symbols
 
@@ -83075,6 +83078,14 @@ New Features
   (flush-compress name) and then returns (compress1 name ar), except
   that all this is skipped if the given array is already compressed.
 
+  A new utility, [swap-stobjs], does what its name suggests: it swaps
+  [stobj]s.  Thus, if st1 and st2 are stobjs then after returning
+  from execution of a call (swap-stobjs st1 st2) of swap-stobjs, the
+  global value of stobj st1 will be the old value of st2 and the
+  global value of stobj st2 will be the old value of st1.  See
+  [swap-stobjs].  Thanks to Sol Swords for requesting this feature
+  and for helpful discussions about it.
+
 
 Heuristic and Efficiency Improvements
 
@@ -107211,6 +107222,9 @@ Subtopics
   [Stobj-example-3]
       Another example of a single-threaded object
 
+  [Swap-stobjs]
+      Swap two congruent [stobj]s
+
   [Update-nth-array]
       Update a stobj array
 
@@ -108960,6 +108974,50 @@ Subtopics
 
   [Checkpoint-summary-limit]
       Control printing of key checkpoints upon a proof's failure")
+ (SWAP-STOBJS
+  (STOBJ ACL2-BUILT-INS)
+  "Swap two congruent [stobj]s
+
+  See [stobj] for relevant background on single-threaded objects.
+
+  The macro call (swap-stobjs st1 st2) is allowed exactly when st1 and
+  st2 are congruent [stobj]s.  The logical meaning is simply to
+  return the two stobjs in reverse order, (list st2 st1):
+
+  Macro: <swap-stobjs>
+
+    (defmacro swap-stobjs (x y)
+              (cons 'mv (cons y (cons x 'nil))))
+
+  However, for purposes of tracking single-threadedness, the result (mv
+  st2 st1) of (swap-stobjs st1 st2) is treated as a list of new
+  values for the stobjs st1 and st2, respectively.  That is, after
+  this call of swap-stobjs, the new value of stobj st1 is considered
+  to be the old value of st2, and the new value of stobj st2 is
+  considered to be the old value of st1.  This is illustrated by the
+  following example.
+
+    (defstobj st1 fld1)
+    (defstobj st2 fld2 :congruent-to st1)
+    (defstobj st3 fld3 :congruent-to st1)
+    (defun foo (st1 st2)
+      (declare (xargs :stobjs (st1 st2)))
+      (swap-stobjs st1 st2))
+    ; Initialize:
+    (update-fld1 3 st1)
+    (update-fld2 4 st2)
+    ; Swap:
+    (foo st1 st2)
+    ; Check that the swap took place:
+    (assert-event (equal (fld2 st2) 3))
+    (assert-event (equal (fld1 st1) 4))
+
+  The example above is essentially the first of several that may be
+  found in the [community-book], books/system/tests/swap-stobjs.lisp.
+  Those examples illustrate that swap-stobjs has the expected effect
+  even when stobjs are involved that are bound by [with-local-stobj]
+  or [stobj-let].  It also explains subtle interaction with
+  [trans-eval].")
  (SYMBOL-<
   (SYMBOLS ACL2-BUILT-INS)
   "Less-than test for symbols
@@ -110525,7 +110583,8 @@ Subtopics
 
   If n is an integer greater than the length of l, then take pads the
   list with the appropriate number of nil elements.  Thus, the
-  following is also a theorem.
+  following is also a theorem (though it takes some effort, including
+  lemmas, to get ACL2 to prove it).
 
     (implies (and (integerp n)
                   (true-listp l)
