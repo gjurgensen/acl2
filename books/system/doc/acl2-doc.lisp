@@ -84345,6 +84345,21 @@ it."
 ; Used new function maybe-flush-and-compress1 to clean up code in
 ; recompress-global-enabled-structure.
 
+; Eliminated special variables *the-live-st* for stobjs, st.
+
+; Made trivial efficiency tweak to output-type-for-declare-form-rec.
+
+; As noted in :doc nested-stobjs, "The bindings always bind distinct names to
+; child stobjs of a unique parent stobj".  The logical implementation of
+; stobj-let, function stobj-let-fn, had used LET to bind those distinct names;
+; however, the raw Lisp implementation of stobj-let, function stobj-let-fn-raw,
+; had used LET*.  Now both use LET*.  Also, the functions stobj-let-fn and
+; stobj-let-fn-raw have been tweaked so that it's easier to keep them in sync.
+; This was all done in the process of modifying stobj-let to work with the new
+; utility, swap-stobjs.  Formerly, stobj-let-fn-raw skipped unnecessary updates
+; of child fields of the parent stobj, but those are necessary now in case some
+; fields have been subjected to swap-stobjs.
+
   :parents (release-notes)
   :short "ACL2 Version  8.3 (xxx, 20xx) Notes"
   :long "<p>NOTE!  New users can ignore these release notes, because the @(see
@@ -84467,6 +84482,14 @@ it."
  <p>New function @('(maybe-flush-and-compress1 name ar)') calls
  @('(flush-compress name)') and then returns @('(compress1 name ar)'), except
  that all this is skipped if the given array is already compressed.</p>
+
+ <p>A new utility, @(tsee swap-stobjs), does what its name suggests: it swaps
+ @(see stobj)s.  Thus, if @('st1') and @('st2') are stobjs then after returning
+ from execution of a call @('(swap-stobjs st1 st2)') of @('swap-stobjs'), the
+ global value of stobj @('st1') will be the old value of @('st2') and the
+ global value of stobj @('st2') will be the old value of @('st1').  See @(see
+ swap-stobjs).  Thanks to Sol Swords for requesting this feature and for
+ helpful discussions about it.</p>
 
  <h3>Heuristic and Efficiency Improvements</h3>
 
@@ -90010,8 +90033,8 @@ arithmetic) for libraries of @(see books) for arithmetic reasoning.</p>")
 
  <p>Finally, we point out a pitfall of @('progn!') related to @(see stobj)s.
  The following book can cause a hard Lisp error, depending on the host Common
- Lisp, when certified with a non-@('nil') value for @('compile-flg') (see @(see
- certify-book)).</p>
+ Lisp and whether certifying or including it, when certified with a
+ non-@('nil') value for @('compile-flg') (see @(see certify-book)).</p>
 
  @({
   (in-package \"ACL2\")
@@ -90026,7 +90049,9 @@ arithmetic) for libraries of @(see books) for arithmetic reasoning.</p>")
 
  @({
   (include-book \"hacking/hacker\" :dir :system)
-  (with-raw-mode (update-fld 3 *the-live-st*))
+  (with-raw-mode
+   (let ((live-st (cdr (assoc-eq 'st *user-stobj-alist*))))
+     (update-fld 3 live-st)))
  })")
 
 (defxdoc progn$
@@ -107539,6 +107564,49 @@ arithmetic) for libraries of @(see books) for arithmetic reasoning.</p>")
 
  </ul>")
 
+(defxdoc swap-stobjs
+  :parents (stobj acl2-built-ins)
+  :short "Swap two congruent @(see stobj)s"
+  :long "<p>See @(see stobj) for relevant background on single-threaded
+ objects.</p>
+
+ <p>The macro call @('(swap-stobjs st1 st2)') is allowed exactly when @('st1')
+ and @('st2') are congruent @(see stobj)s.  The logical meaning is simply to
+ return the two stobjs in reverse order, @('(list st2 st1)'):</p>
+
+ @(def swap-stobjs)
+
+ <p>However, for purposes of tracking single-threadedness, the result @('(mv
+ st2 st1)') of @('(swap-stobjs st1 st2)') is treated as a list of new values
+ for the stobjs @('st1') and @('st2'), respectively.  That is, after this call
+ of @('swap-stobjs'), the new value of stobj @('st1') is considered to be the
+ old value of @('st2'), and the new value of stobj @('st2') is considered to be
+ the old value of @('st1').  This is illustrated by the following example.</p>
+
+ @({
+ (defstobj st1 fld1)
+ (defstobj st2 fld2 :congruent-to st1)
+ (defstobj st3 fld3 :congruent-to st1)
+ (defun foo (st1 st2)
+   (declare (xargs :stobjs (st1 st2)))
+   (swap-stobjs st1 st2))
+ ; Initialize:
+ (update-fld1 3 st1)
+ (update-fld2 4 st2)
+ ; Swap:
+ (foo st1 st2)
+ ; Check that the swap took place:
+ (assert-event (equal (fld2 st2) 3))
+ (assert-event (equal (fld1 st1) 4))
+ })
+
+ <p>The example above is essentially the first of several that may be found in
+ the @(see community-book), @('books/system/tests/swap-stobjs.lisp').  Those
+ examples illustrate that @('swap-stobjs') has the expected effect even when
+ stobjs are involved that are bound by @(tsee with-local-stobj) or @(tsee
+ stobj-let).  It also explains subtle interaction with @(tsee
+ trans-eval).</p>")
+
 (defxdoc symbol-<
   :parents (symbols acl2-built-ins)
   :short "Less-than test for symbols"
@@ -109217,7 +109285,8 @@ arithmetic) for libraries of @(see books) for arithmetic reasoning.</p>")
 
  <p>If @('n') is an integer greater than the length of @('l'), then @('take')
  pads the list with the appropriate number of @('nil') elements.  Thus, the
- following is also a theorem.</p>
+ following is also a theorem (though it takes some effort, including lemmas, to
+ get ACL2 to prove it).</p>
 
  @({
   (implies (and (integerp n)
