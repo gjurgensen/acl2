@@ -84465,6 +84465,16 @@ it."
  @('(and t b)') was printed only as @('b').  Note:  For Boolean contexts, the
  analogous change was also made for terms @('(and u0 t)').</p>
 
+ <p>It no longer causes an error to call @(tsee trans-eval) on an expression
+ that references a locally-bound @(tsee stobj), that is, one bound by @(tsee
+ with-local-stobj) or @(tsee stobj-let).  The user is responsible for
+ understanding that when calling @('trans-eval'), all stobj variables in the
+ supplied expression refer to globally-bound stobjs, that is, stobjs stored in
+ the @('user-stobj-alist') field of the ACL2 @(tsee state).  See the new
+ documentation topic, @(see trans-eval-and-locally-bound-stobjs), for relevant
+ discussion.  Thanks to Sol Swords for suggesting this change and convincing us
+ of its suitability.</p>
+
  <h3>New Features</h3>
 
  <p>A new @(tsee xargs) keyword, @(':guard-simplify') (default @('t')),
@@ -113778,7 +113788,161 @@ arithmetic) for libraries of @(see books) for arithmetic reasoning.</p>")
  ACL2 !>
  })
 
- <p>To avoid such warnings, see @(see user-stobjs-modified-warnings).</p>")
+ <p>To understand and perhaps avoid such warnings, see @(see
+ user-stobjs-modified-warnings) and especially, see @(see
+ trans-eval-and-locally-bound-stobjs) for discussion of how @('trans-eval')
+ modifies global stobj values, not locally-bound stobjs.</p>")
+
+(defxdoc trans-eval-and-locally-bound-stobjs
+
+; The two examples in the second section below are maintained in
+; books/system/tests/local-stobj.lisp.
+
+  :parents (trans-eval)
+  :short "@(tsee Trans-eval) deals in global @(see stobj)s."
+  :long "<p>This topic assumes familiarity with the relatively advanced
+ utility, @(tsee trans-eval).  We begin with a review of @(see stobj)s and
+ evaluation before addressing the point of this documentation topic, which is
+ how @('trans-eval') behaves under a locally bound stobj.  (Additional relevant
+ discussion may be found in @(see user-stobjs-modified-warnings).)</p>
+
+ <h3>Review of @(see stobj)s and @(tsee trans-eval)</h3>
+
+ <p>By way of review, suppose that you evaluate the following forms in the
+ top-level ACL2 loop.</p>
+
+ @({
+ (defstobj st fld)
+ (fld st)
+ })
+
+ <p>Note that in the expression, @('(fld st)'), @('st') has the syntax of a
+ global variable.  But what really happens is that @(tsee trans-eval) is called
+ &mdash; or more accurately its variant, @(tsee trans-eval-default-warning), is
+ called &mdash; on the expression.  (We generally consider all such variants to
+ be the same as @('trans-eval') for purposes of this documentation topic.)
+ Here we see @('trans-eval') in action.</p>
+
+ @({
+ ACL2 !>(trace$ trans-eval-default-warning)
+  ((TRANS-EVAL-DEFAULT-WARNING))
+ ACL2 !>(fld st)
+ 1> (TRANS-EVAL-DEFAULT-WARNING (FLD ST)
+                                TOP-LEVEL |*the-live-state*| T)
+ <1 (TRANS-EVAL-DEFAULT-WARNING NIL ((NIL))
+                                |*the-live-state*|)
+ NIL
+ ACL2 !>
+ })
+
+ <p>This call of @('trans-eval') (or more accurately,
+ @('trans-eval-default-warning')) invokes an ACL2 evaluator @('(ev form alist
+ state ...)'), by calling it on the form @('(fld st)') and an alist that binds
+ the variable @('st') to its value in the @('user-stobj-alist') component of
+ the ACL2 @(see state).  We may refer to this value as the ``global value of''
+ @('st').</p>
+
+ <p>We can of course update this stobj.</p>
+
+ @({
+ ACL2 !>(update-fld 3 st)
+ 1> (TRANS-EVAL-DEFAULT-WARNING (UPDATE-FLD 3 ST)
+                                TOP-LEVEL |*the-live-state*| T)
+ <1 (TRANS-EVAL-DEFAULT-WARNING NIL ((ST) . REPLACED-ST)
+                                |*the-live-state*|)
+ <st>
+ ACL2 !>(fld st) ; check that the update occurred
+ 1> (TRANS-EVAL-DEFAULT-WARNING (FLD ST)
+                                TOP-LEVEL |*the-live-state*| T)
+ <1 (TRANS-EVAL-DEFAULT-WARNING NIL ((NIL) . 3)
+                                |*the-live-state*|)
+ 3
+ ACL2 !>
+ })
+
+ <p>We see above that the global value of @('st') was indeed updated by
+ evaluating the @('update-fld') call.  That is: the value of @('st') in the
+ @('user-stobj-alist') of the ACL2 @(tsee state) was updated by calling @(tsee
+ trans-eval) on the expression, @('(update-fld 3 st)').</p>
+
+ <h3>@(tsee Trans-eval) and locally-bound @(see stobjs)</h3>
+
+ <p>A stobj may be locally bound by @(tsee stobj-let) or @(tsee
+ with-local-stobj).  But @(tsee trans-eval) ignores such local bindings!  The
+ following example illustrates this point.</p>
+
+ @({
+
+ (defstobj st fld)
+
+ (defun f (x state)
+   (declare (xargs :stobjs state :mode :program))
+   (with-local-stobj
+     st
+     (mv-let (state local-fld st)
+       (mv-let (erp val state)
+         (trans-eval `(update-fld ',x st) 'f state nil)
+         (declare (ignore erp val))
+         (mv state (fld st) st))
+       (mv state local-fld))))
+
+ ; The following returns (<state> NIL).  Thus, the return value of local-fld
+ ; indicated above, which is the value of the fld of the locally-bound st, is
+ ; nil: trans-eval did not update the locally-bound stobj!
+ (f 3 state)
+
+ ; On the other hand the global stobj, st, was indeed updated by the call of f
+ ; just above.
+ (assert-event (equal (fld st) 3))
+ })
+
+ <p>Here is another such example, this time using @(see nested-stobjs) instead
+ of @(tsee with-local-stobj).</p>
+
+ @({
+ (defstobj sub1 sub1-fld1)
+ (defstobj top1 (top1-fld :type sub1))
+
+ (defun g (x top1 state)
+   (declare (xargs :stobjs (top1 state) :mode :program))
+   (stobj-let
+    ((sub1 (top1-fld top1))) ; bindings
+    (sub1 state)             ; producer variables
+    (mv-let (erp val state)  ; producer
+
+ ; NOTE: The reference to sub1 inside the following trans-eval call is actually
+ ; a reference to the global sub1 from the user-stobj-alist, not to the sub1
+ ; bound by stobj-let above.  Thus, this trans-eval call updates the global
+ ; stobj, sub1, not the locally bound sub1 that is a field of top1.
+
+            (trans-eval `(update-sub1-fld1 ',x sub1) 'g state t)
+            (declare (ignore erp val))
+            (mv sub1 state))
+    (mv top1 state)          ; consumer
+   ))
+
+ (g 7 top1 state)
+ ; The global stobj, sub1, has been updated by the call of g just above.
+ (assert-event (equal (sub1-fld1 sub1) 7))
+
+ (g 8 top1 state)
+ ; The global stobj, sub1, has been updated by the call of g just above.
+ (assert-event (equal (sub1-fld1 sub1) 8))
+
+ ; Obtain the sub1 field of top1.
+ (defun get-sub1-of-top1 (top1)
+   (declare (xargs :stobjs top1 :mode :program))
+   (stobj-let
+    ((sub1 (top1-fld top1)))  ; bindings
+    (val)                     ; producer variable
+    (sub1-fld1 sub1)          ; producer
+    val                       ; consumer
+   ))
+
+ ; The calls of g above did not update the locally bound sub1.
+ ; That is, they did not update the sub1 field of top1.
+ (assert-event (equal (get-sub1-of-top1 top1) nil))
+ })")
 
 (defxdoc trans1
   :parents (macros)
@@ -118006,6 +118170,11 @@ introduction-to-the-tau-system) for more information about Tau.</dd>
  is issuing those warnings, but the ``context'' on the first line of the
  warning &mdash; @('FOO'), above &mdash; may give a clue.</p>
 
+ <p>The warning is intended to indicate that a global @(see stobj) has been
+ modified even though that stobj was accessed indirectly, through the ACL2
+ @(see state).  See @(see trans-eval-and-locally-bound-stobjs) for discussion
+ of this point.</p>
+
  <p>The remainder of this topic is directed at tool writers.  It discusses how
  to write tools that avoid producing such warnings, and the advisability (or
  not) of doing so.  For background on @('trans-eval'), see @(see
@@ -118036,11 +118205,11 @@ introduction-to-the-tau-system) for more information about Tau.</dd>
  only modification to @('st') before returning is by the form @('(update-fld 3
  st)').  So the final value of @('(fld st)') ``should'' be 3; yet, it is 4, not
  3!  One can explain this phenomenon by saying that user-defined stobjs reside
- in the ACL2 state, and indeed that is logically the case; see @(see state), in
- particular the discussion there of the field @('user-stobj-alist') of the
- state.  Nevertheless, the first return value of 4, above, can very reasonably
- be considered a violation of single-threadedness.  ACL2 acknowledges this
- concern by printing the warning displayed above.</p>
+ globally in the ACL2 state, and indeed that is logically the case; see @(see
+ state), in particular the discussion there of the field @('user-stobj-alist')
+ of the state.  Nevertheless, the first return value of 4, above, can very
+ reasonably be considered a violation of single-threadedness.  ACL2
+ acknowledges this concern by printing the warning displayed above.</p>
 
  <p>In general, such a warning is printed whenever the @('stobjs-out') returned
  in the @('car') of the value, as discussed above, contains a user-defined
@@ -128039,6 +128208,8 @@ expand function call at the current subterm, without simplifying"
 (defpointer tamep tame)
 (defpointer tamep-functionp tame)
 (defpointer tamep-lambdap tame)
+(defpointer trans-eval-default-warning user-stobjs-modified-warnings)
+(defpointer trans-eval-no-warning user-stobjs-modified-warnings)
 (defpointer translate system-utilities)
 (defpointer translate-hints system-utilities)
 (defpointer translate1 system-utilities)
