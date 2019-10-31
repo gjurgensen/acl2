@@ -16774,6 +16774,20 @@ subtree of X with T, without duplication.</p>
 
  @(def count)")
 
+(defxdoc count-keys
+  :parents (stobj acl2-built-ins)
+  :short "Count the number of keys in association list"
+  :long "<p>@('(Count-keys al)') returns the number of distinct keys in an
+ association list.</p>
+
+ <p>@('Count-keys') has a guard of @('t').  This function is called in the body
+ of function, @('<h>-count') where @('<h>') is a hash-table field of a @(see
+ stobj).  See @(see defstobj).</p>
+
+ @(def hons-remove-assoc)
+
+ @(def count-keys)")
+
 (defxdoc cpu-core-count
   :parents (parallelism acl2-built-ins)
   :short "The number of cpu cores"
@@ -21556,9 +21570,10 @@ subtree of X with T, without duplication.</p>
                  :initially 0)
             (p-c :type (unsigned-byte 31)
                  :initially 555)
-            halt                  ; = (halt :type t :initially nil)
+            halt   ; = (halt :type t :initially nil)
             (mem :type (array (unsigned-byte 31) (*mem-size*))
-                 :initially 0 :resizable t))
+                 :initially 0 :resizable t)
+            (ht  :type (hash-table eq 70)))
 
   General Form:
   (defstobj name
@@ -21571,10 +21586,11 @@ subtree of X with T, without duplication.</p>
             :non-memoizable nm-flg)
  })
 
- <p>where @('name') is a new symbol, each @('fieldi') is a symbol, each
+ <p>where @('name') is a new symbol; each @('fieldi') is a symbol; each
  @('typei') is either a type-indicator (a @(tsee type-spec) or @(see stobj)
- name) or of the form @('(ARRAY type-indicator max)'), each @('vali') is an
- object satisfying @('typei'), and each @('bi') is @('t') or @('nil').  Each
+ name), of the form @('(ARRAY type-indicator max)'), or of the form
+ @('(HASH-TABLE test)') or @('(HASH-TABLE test size)'); each @('vali') is an
+ object satisfying @('typei'); and each @('bi') is @('t') or @('nil').  Each
  pair @(':initially vali') and @(':resizable bi') may be omitted; more on this
  below.  The @(':renaming alist') argument is optional and allows the user to
  override the default function names introduced by this event.  The @(':inline
@@ -21593,10 +21609,12 @@ subtree of X with T, without duplication.</p>
 
  <p>The effect of this event is to introduce a new single-threaded object
  (i.e., a ``@(see stobj)''), named @('name'), and the associated recognizers,
- creator, accessors, updaters, constants, and, for fields of @('ARRAY') type,
- length and resize functions.</p>
+ creator, accessors, updaters, constants.  For fields of @('ARRAY') type, this
+ event also introduces length and resize functions.  For fields of
+ @('HASH-TABLE') type, this event also introduces boundp, get?, remove, count,
+ clear, and initialization functions.</p>
 
- <p><i>The Single-Threaded Object Introduced</i></p>
+ <h3>The Single-Threaded Object Introduced</h3>
 
  <p>The @('defstobj') event effectively introduces a new global variable, named
  @('name'), which has as its initial logical value a list of @('k') elements,
@@ -21605,30 +21623,42 @@ subtree of X with T, without duplication.</p>
  @(':type') of a field is @('(ARRAY type-indicator (max))') then @('max') is a
  non-negative integer or a symbol introduced by @(tsee defconst)) whose value
  is a non-negative integer, and the corresponding element of the stobj is
- initially of length specified by @('max').</p>
+ initially of length specified by @('max').  If the @(':type') of a field is
+ @('(HASH-TABLE test)') or @('(HASH-TABLE test size)'), then @('test') is one
+ of the symbols @('EQ'), @('EQL'), @('HONS-EQUAL'), or @('EQUAL') and
+ @('size'), if supplied, is a positive integer.  In that case the test is
+ applied when looking up keys, where @(tsee hons-copy) is first applied to the
+ key in the @('HONS-EQUAL') case; and the size is a hint to the host Lisp for
+ the initial size of the associated hash table in raw Lisp.</p>
 
- <p>Whether the value @(':type') is of the form @('(ARRAY type-indicator
- (max))') or, otherwise, just @('type-indicator'), then @('type-indicator') is
- typically a type-spec; see @(see type-spec).  However, @('type-indicator') can
- also be the name of a stobj that was previously introduced (by @('defstobj')
- or @(tsee defabsstobj)).  We ignore this ``nested stobj'' case below; see
- @(see nested-stobjs) for a discussion of stobjs within stobjs.</p>
+ <p>If the value of @(':type') is of the form @('(ARRAY type-indicator
+ (max))') or just @('type-indicator'), then @('type-indicator') is typically a
+ type-spec; see @(see type-spec).  However, @('type-indicator') can also be the
+ name of a stobj that was previously introduced (by @('defstobj') or @(tsee
+ defabsstobj)).  We ignore this ``nested stobj'' case below; see @(see
+ nested-stobjs) for a discussion of stobjs within stobjs.  Note that
+ @('HASH-TABLE') types do not specify a type indicator; thus, a hash-table
+ field cannot contain stobjs as values.</p>
 
  <p>The keyword value @(':initially val') specifies the initial value of a
  field, except for the case of a @(':type') @('(ARRAY type-indicator (max))'),
- in which case @('val') is the initial value of the corresponding array.</p>
+ in which case @('val') is the initial value of the corresponding array.  Note
+ that the @(':initially') field is ignored for @('HASH-TABLE') types, since
+ hash tables are initially empty.</p>
 
  <p>Note that the actual representation of the stobj in the underlying Lisp may
  be quite different; see @(see stobj-example-2).  For the moment we focus
- entirely on the logical aspects of the object.</p>
+ primarily on the logical aspects of the object.</p>
 
  <p>In addition, the @('defstobj') event introduces functions for recognizing
  and creating the stobj and for recognizing, accessing, and updating its
  fields.  For fields of @('ARRAY') type, length and resize functions are also
- introduced.  Constants are introduced that correspond to the accessor
+ introduced.  For fields of @('HASH-TABLE') type, this event also introduces
+ boundp, get?, remove, count, clear, and initialization functions, as discussed
+ below.  Constants are introduced that correspond to the accessor
  functions.</p>
 
- <p><i>Restrictions on the Field Descriptions in Defstobj</i></p>
+ <h3>Restrictions on the Field Descriptions in Defstobj</h3>
 
  <p>Each field descriptor is of the form:</p>
 
@@ -21642,15 +21672,17 @@ subtree of X with T, without duplication.</p>
  (unrestricted) and the initial value defaults to @('nil').</p>
 
  <p>Each @('typei') must be either a @(tsee type-spec) or else a list of the
- form @('(ARRAY type-spec (max))').  (Again, we are ignoring the case of nested
- stobjs, discussed elsewhere; see @(see nested-stobjs).)  The latter forms are
- said to be ``array types.''  Examples of legal @('typei') are:</p>
+ form @('(ARRAY type-spec (max))'), @('(HASH-TABLE test)'), or @('(HASH-TABLE
+ test size)').  (Again, we are ignoring the case of nested stobjs, discussed
+ elsewhere; see @(see nested-stobjs).)  The latter forms are said to be ``array
+ types'' and ``hash-table types.''  Examples of legal @('typei') are:</p>
 
  @({
   (INTEGER 0 31)
   (SIGNED-BYTE 31)
   (ARRAY (SIGNED-BYTE 31) (16))
   (ARRAY (SIGNED-BYTE 31) (*c*)) ; where *c* has a non-negative integer value
+  (HASH-TABLE HONS-EQUAL 70)
  })
 
  <p>The @('typei') describes the objects which are expected to occupy the given
@@ -21658,7 +21690,10 @@ subtree of X with T, without duplication.</p>
  precise below about what we mean by ``expected.''  We first present the
  restrictions on @('typei') and @('vali').</p>
 
- <p>Non-Array Types</p>
+ <h3>Scalar Types</h3>
+
+ <p>We first discuss types that are neither array types nor hash-table types.
+ We call these ``scalar types.''</p>
 
  <p>When @('typei') is a @(tsee type-spec) it restricts the contents, @('x'),
  of @('fieldi') according to the ``meaning'' formula given in the table for
@@ -21695,13 +21730,13 @@ subtree of X with T, without duplication.</p>
  element is the symbol @('quote') and whose second element is a list containing
  the symbols @('saturday') and @('sunday').</p>
 
- <p>Array Types</p>
+ <h3>Array Types</h3>
 
  <p>When @('typei') is of the form @('(ARRAY type-spec (max))'), the field is
  supposed to be a list of items, initially of length specified by @('max'),
  each of which satisfies the indicated @('type-spec').  @('Max') must be a
  non-negative integer or a defined constant evaluating to a non-negative
- integer. Thus, each of</p>
+ integer.  Thus, each of</p>
 
  @({
   (ARRAY (SIGNED-BYTE 31) (16))
@@ -21743,7 +21778,55 @@ subtree of X with T, without duplication.</p>
  <p>Array resizing is relatively slow, so we recommend using it somewhat
  sparingly.</p>
 
- <p><i>The Default Function Names</i></p>
+ <h3>Hash-table Types</h3>
+
+ <p>When @('typei') is of the form @('(HASH-TABLE test size)'), where @('size')
+ is optional, the field is logically an association list, initially empty.
+ Under the hood in raw Lisp, however, there is a corresponding hash table that
+ represents the same association of keys with values as does the association
+ list.  Each key should be comparable with arbitrary objects using the
+ specified @('test'): thus if @('test') is @(tsee EQUAL) then there is no
+ restriction on keys; if @('test') is @(tsee EQ) or @(tsee EQL) then the keys
+ must be symbols or satisfy @(tsee eqlablep), respectively; and if @('test') is
+ @(tsee HONS-EQUAL) then there is no restriction on keys, but each proposed key
+ is @(tsee hons)ed in raw Lisp before it is used (whether for access or update)
+ and before it is put into the underlying hash table.  The @('size'), if
+ supplied, is a positive integer that may be used by the host Lisp as a hint
+ for how to size the associated hash table in raw Lisp.</p>
+
+ <p>A hash-table field is associated not only with a recognizer, an accesor,
+ and an updater, but also with the following functions, whose final argument is
+ the stobj name but that may also take a key or, in the case of the ``init''
+ function, three other arguments, as follows:</p>
+
+ <ul>
+
+ <li>a ``boundp'' function to check whether a given key is bound;</li>
+
+ <li>a ``get?'' function that, for a given key, returns two values @('(mv val
+ boundp)'), where: if the given key is bound then @('val') is its value and
+ @('boundp') is @('t'), else @('val') and @('boundp') are both @('nil');</li>
+
+ <li>a ``remove'' function for removing a given key;</li>
+
+ <li>a ``count'' function that returns the number of (distinct) keys;</li>
+
+ <li>a ``clear'' function that creates a new empty hash table (and logically,
+ the empty alist);</li>
+
+ <li>an ``init'' function that takes a given size, rehash-size, and
+ rehash-threshold (and the stobj name) and creates a new empty hash table (and
+ logically, the empty alist) by passing these parameters to the raw Lisp
+ function, @('(make-hash-table)'), that creates a hash table.</li>
+
+ </ul>
+
+ <p>The clear and init functions both use the @('size') argument, if supplied,
+ of the type of the field supplied in the @('defstobj') event.  If no @('size')
+ argument was supplied in that type, then the size of the hash table depends on
+ the host Lisp.</p>
+
+ <h3>The Default Function Names</h3>
 
  <p>To recap, in</p>
 
@@ -21766,7 +21849,7 @@ subtree of X with T, without duplication.</p>
  accessor function, for example, takes the stobj and returns the indicated
  component; the updater takes a new component value and the stobj and return a
  new stobj with the component replaced by the new value.  But that summary is
- inaccurate for array fields.</p>
+ inaccurate for array and hash-table fields.</p>
 
  <p>The accessor function for an array field does not take the stobj and return
  the indicated component array, which is a list of length specified by
@@ -21775,24 +21858,41 @@ subtree of X with T, without duplication.</p>
  an array field takes an index, a new value, and the stobj, and returns a new
  stobj with the indicated element replaced by the new value.</p>
 
+ <p>The accessor and updater functions for a hash-table field are analogous to
+ those for array fields.  Thus, the accessor takes an additional key argument
+ and returns the associated value, or nil if the key is not bound.  The updater
+ function takes a key, a new value, and the stobj, and returns a new stobj with
+ the indicated element replaced by the new value.</p>
+
  <p>These functions &mdash; the recognizer, accessor, and updater, and also
- length and resize functions in the case of array fields &mdash; have ``default
- names.''  The default names depend on the field name, @('fieldi'), and on
- whether the field is an array field or not.  For clarity, suppose @('fieldi')
- is named @('c'). The default names are shown below in calls, which also
- indicate the arities of the functions.  In the expressions, we use @('x') as
- the object to be recognized by field recognizers, @('i') as an array index,
- @('v') as the ``new value'' to be installed by an updater, @('k') as the ``new
- size'' to be set by a resizer, and @('name') as
- the single-threaded object.</p>
+ length and resize functions in the case of array fields, and boundp, get?,
+ remove, count, clear, and init functions in the case of hash-table fields
+ &mdash; have ``default names.''  The default names depend on the field name,
+ @('fieldi'), and on whether the field is an array field, a hash-table field,
+ or neither (i.e., a scalar field).  For clarity, suppose @('fieldi') is named
+ @('c'). The default names are shown below in calls, which also indicate the
+ arities of the functions.  In the expressions, we use @('x') as the object to
+ be recognized by field recognizers, @('i') as an array index or the size of a
+ resized array, @('k') as a key (for the logical association list or raw-Lisp
+ hash table associated with the field), @('v') as the ``new value'' to be
+ installed by an updater, and @('name') as the single-threaded object.</p>
 
  @({
-                   non-array field        array field
-  recognizer         (cP x)                (cP x)
-  accessor           (c name)              (cI i name)
-  updater            (UPDATE-c v name)     (UPDATE-cI i v name)
-  length                                   (c-LENGTH name)
-  resize                                   (RESIZE-c k name)
+              scalar field        array field          hash-table field
+  recognizer  (cP x)              (cP x)               (cP x)
+  accessor    (c name)            (cI i name)          (c-get k name)
+  updater     (UPDATE-c v name)   (UPDATE-cI i v name) (c-put k v name)
+  length                          (c-LENGTH name)
+  resize                          (RESIZE-c i name)
+  boundp                                               (c-boundp k name)
+  get?                                                 (c-get? k name)
+  remove                                               (c-rem k name)
+  count                                                (c-count name)
+  clear                                                (c-clear name)
+  init                                                 (c-init ht-size
+                                                               rehash-size
+                                                               rehash-threshold
+                                                               name)
  })
 
  <p>Finally, a recognizer and a creator for the entire single-threaded object
@@ -21811,31 +21911,54 @@ subtree of X with T, without duplication.</p>
  @({
   (DEFSTOBJ $S
     (X :TYPE INTEGER :INITIALLY 0)
-    (A :TYPE (ARRAY (INTEGER 0 9) (3)) :INITIALLY 9))
+    (A :TYPE (ARRAY (INTEGER 0 9) (3)) :INITIALLY 9)
+    (H :TYPE (HASH-TABLE EQ)))
  })
 
- <p>introduces a stobj named @('$S').  The stobj has two fields, @('X') and
- @('A').  The @('A') field is an array.  The @('X') field contains an integer
- and is initially 0.  The @('A') field contains a list of integers, each
- between 0 and 9, inclusively.  Initially, each of the three elements of the
- @('A') field is 9.</p>
+ <p>introduces a stobj named @('$S').  The stobj has three fields: @('X'),
+ @('A'), and @('H').  The @('A') field is an array and the the @('A') field is
+ a hash table.  The @('X') field contains an integer and is initially 0.  The
+ @('A') field contains a list of integers, each between 0 and 9, inclusive.
+ Initially, each of the three elements of the @('A') field is 9.</p>
 
  <p>This event introduces the following sequence of definitions:</p>
 
  @({
   (DEFUN XP (X) ...)               ; recognizer for X field
   (DEFUN AP (X) ...)               ; recognizer of A field
+  (DEFUN HP (X) ...)               ; recognizer of H field
   (DEFUN $SP ($S) ...)             ; top-level recognizer for stobj $S
   (DEFUN CREATE-$S () ...)         ; creator for stobj $S
   (DEFUN X ($S) ...)               ; accessor for X field
   (DEFUN UPDATE-X (V $S) ...)      ; updater for X field
   (DEFUN A-LENGTH ($S) ...)        ; length of A field
-  (DEFUN RESIZE-A (K $S) ...)      ; resizer for A field
+  (DEFUN RESIZE-A (I $S) ...)      ; resizer for A field
   (DEFUN AI (I $S) ...)            ; accessor for A field at index I
   (DEFUN UPDATE-AI (I V $S) ...)   ; updater for A field at index I
+  (DEFUN H-GET (K $S) ...)         ; accessor for H field at key K
+  (DEFUN H-PUT (K V $S) ...)       ; updater for H field at key K
+  (DEFUN H-BOUNDP (K $S) ...)      ; t if key k is bound in H, else nil
+  (DEFUN H-GET? (K $S) ...)        ; (mv val t) if key is bound in H to val;
+                                   ;   (mv nil nil) if key is not bound in H
+  (DEFUN H-REM (K $S) ...)         ; remove key K from field H
+  (DEFUN H-COUNT ($S) ...)         ; the number of (distinct) keys in field H
+  (DEFUN H-CLEAR ($S) ...)         ; empty the hash table for field H
+  (DEFUN H-INIT (HT-SIZE REHASH-SIZE REHASH-THRESHOLD $S) ...)
+                                   ; replace the hash table for field H with
+                                   ;   with a new, empty hash table with the
+                                   ;   given hints as described below
  })
 
- <p><i>Avoiding the Default Function Names</i></p>
+ <p>For the last of these, the values of @('HT-SIZE'), @('REHASH-SIZE'), and
+ @('REHASH-THRESHOLD') are passed to the @(':size'), @(':rehash-size'), and
+ @(':reash-threshold') arguments (respectively) of a call of
+ @('make-hash-table) in raw Lisp.  The @(':test') argument of this function is
+ the one specified in the @(':type') specified in the @('defstobj') event for
+ the field, in this case @('EQ') from the type @('(HASH-TABLE EQ)'); note
+ however that if the @(':type') specifies the test @('(HASH-TABLE
+ HONS-EQUAL)'), then the @(':test') is @('EQL').</p>
+
+ <h3>Avoiding the Default Function Names</h3>
 
  <p>If you do not like the default names listed above you may use the optional
  @(':renaming') alist to substitute names of your own choosing.  Each element
@@ -21874,7 +21997,7 @@ subtree of X with T, without duplication.</p>
  <p>Use of the @(':renaming') alist may be necessary to avoid name clashes
  between the default names and and pre-existing function symbols.</p>
 
- <p><i>Constants</i></p>
+ <h3>Constants</h3>
 
  <p>@('Defstobj') events also introduce constant definitions (see @(see
  defconst)).  One constant is introduced for each accessor function by
@@ -21896,7 +22019,7 @@ subtree of X with T, without duplication.</p>
  *c* st)').  Also see @(see term), in particular the discussion there of
  untranslated terms, and see @(see nth-aliases-table).</p>
 
- <p><i>Inspecting the Effects of a Defstobj</i></p>
+ <h3>Inspecting the Effects of a Defstobj</h3>
 
  <p>Because the stobj functions are introduced as ``sub-events'' of the
  @('defstobj') the history commands @(':')@(tsee pe) and @(':')@(tsee pc) will
@@ -21918,29 +22041,33 @@ subtree of X with T, without duplication.</p>
  executed @('defstobj').  Note that a redundant @('defstobj') does not reset
  the @(see stobj) fields to their initial values.</p>
 
- <p><i>Inlining and Performance</i></p>
+ <h3>Performance</h3>
 
- <p>The @(':inline') keyword argument controls whether or not accessor,
- updater, and length functions are inlined (as macros under the hood, in raw
- Lisp).  If @(':inline t') is provided then these are inlined; otherwise they
- are not.  The advantage of inlining is potentially better performance; there
- have been contrived examples, doing essentially nothing except accessing and
- updating array fields, where inlining reduced the time by a factor of 10 or
- more; and inlining has sped up realistic examples by a factor of at least 2.
- Inlining may get within a factor of 2 of C execution times for such contrived
- examples, and perhaps within a few percent of C execution times on realistic
- examples.</p>
+ <p>The @(':inline') keyword argument controls whether or not the functions
+ introduced are inlined (as macros under the hood, in raw Lisp), with the
+ exception of the resize function.  If @(':inline t') is provided then these
+ are inlined; otherwise they are not.  The advantage of inlining is potentially
+ better performance; there have been contrived examples, doing essentially
+ nothing except accessing and updating array fields, where inlining reduced the
+ time by a factor of 10 or more; and inlining has sped up realistic examples by
+ a factor of at least 2.  Inlining may get within a factor of 2 of C execution
+ times for such contrived examples, and perhaps within a few percent of C
+ execution times on realistic examples.</p>
 
  <p>A drawback to inlining is that redefinition may not work as expected, much
  as redefinition may not work as expected for macros: defined functions that
- call a macro, or inlined stobj function, will not see a subsequent
+ call a macro, or an inlined stobj function, will not see a subsequent
  redefinition of the macro or inlined function.  Another drawback to inlining
  is that because inlined functions are implemented as macros in raw Lisp,
  tracing (see @(see trace$)) will not show their calls.  These drawbacks are
  avoided by default, but the user who is not concerned about them is advised to
  specify @(':inline t').</p>
 
- <p><i>Specifying Congruent Stobjs</i></p>
+ <p>It can also improve performance to specify @(':non-memoizable t'), which
+ disallows memoization but therefore avoids the cost of certain ``flushing''
+ operations.</p>
+
+ <h3>Specifying Congruent Stobjs</h3>
 
  <p>Two stobjs are may be considered to be ``congruent'' if they have the same
  structure, that is, their @('defstobj') events are identical when ignoring
@@ -84475,6 +84602,15 @@ it."
  discussion.  Thanks to Sol Swords for suggesting this change and convincing us
  of its suitability.</p>
 
+ <p>The @(tsee defstobj) event now supports @(see stobj)s with fields that are
+ hash tables in raw Lisp but are represented logically as association lists.
+ Thanks to Sol Swords for providing not only the design but also the
+ implementation, which was moved from community book
+ @('books/add-ons/hash-stobjs.lisp') into the ACL2 sources (with small
+ modifications to both the new code and existing code).  That book still
+ provides lemmas that may be helpful for reasoning about hash-table fields, as
+ well as some tests.  See also @(tsee defstobj).</p>
+
  <h3>New Features</h3>
 
  <p>A new @(tsee xargs) keyword, @(':guard-simplify') (default @('t')),
@@ -96147,7 +96283,7 @@ arithmetic) for libraries of @(see books) for arithmetic reasoning.</p>")
 
 (defxdoc resize-list
   :parents (stobj acl2-built-ins)
-  :short "List resizer in support of stobjs"
+  :short "List resizer in support of @(see stobj)s"
   :long "<p>@('(Resize-list lst n default-value)') takes a list, @('lst'), and
  a desired length, @('n'), for the result list, as well as a @('default-value')
  to use for the extra elements if @('n') is greater than the length of
@@ -96155,7 +96291,7 @@ arithmetic) for libraries of @(see books) for arithmetic reasoning.</p>")
 
  <p>@('Resize-list') has a guard of @('t').  This function is called in the
  body of function, @('resize-<a>') where @('<a>') is an array field of a @(see
- stobj).  See @(see stobj) and see @(see defstobj).</p>
+ stobj).  See @(see defstobj).</p>
 
  @(def resize-list-exec)
 
