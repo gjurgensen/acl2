@@ -24985,7 +24985,7 @@ Hash-table Types
       rehash-threshold (and the stobj name) and creates a new empty
       hash table (and logically, the empty alist) by passing these
       parameters to the raw Lisp function, (make-hash-table), that
-      creates a hash table.
+      creates a hash table.
 
   The clear and init functions both use the size argument, if supplied,
   of the type of the field supplied in the defstobj event.  If no

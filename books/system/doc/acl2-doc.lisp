@@ -21817,7 +21817,7 @@ subtree of X with T, without duplication.</p>
  <li>an ``init'' function that takes a given size, rehash-size, and
  rehash-threshold (and the stobj name) and creates a new empty hash table (and
  logically, the empty alist) by passing these parameters to the raw Lisp
- function, @('(make-hash-table)'), that creates a hash table.</li>
+ function, @('(make-hash-table)'), that creates a hash table.</li>
 
  </ul>
 
