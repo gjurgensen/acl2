@@ -12790,7 +12790,7 @@ with any questions about building the community books.</p>")
  how to adapt them to Mac (Darwin).  They might be a bit more convenient for
  ACL2 users than those on the ``<a
  href='https://ccl.clozure.com/install.html'>Installing Clozure CL</a>''
- page.</p>
+ page.  Note: Linux users may need to install @('m4').</p>
 
  <p>First fetch CCL from GitHub as follows.  (You may prefer to use ``@('git
  pull')'' if you previously did this step.  In that case you probably won't

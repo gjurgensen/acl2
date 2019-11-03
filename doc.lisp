@@ -15602,7 +15602,7 @@ Subtopics
   on Linux, with comments on how to adapt them to Mac (Darwin).  They
   might be a bit more convenient for ACL2 users than those on the
   ``{Installing Clozure CL | https://ccl.clozure.com/install.html}''
-  page.
+  page.  Note: Linux users may need to install m4.
 
   First fetch CCL from GitHub as follows.  (You may prefer to use ``git
   pull'' if you previously did this step.  In that case you probably
