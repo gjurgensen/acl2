@@ -84685,12 +84685,13 @@ it."
  function @('simplifiable-mv-nth1').</p>
 
  <p>The raw Lisp representation of @(see stobj)s has been improved to avoid
- some indirection.  Specifically, a typed scalar field (array or hash table) is
- no longer wrapped in a one-element array, and a single field that is
- non-scalar is the entire stobj.  Thanks to Warren Hunt and Sol Swords for
- suggesting these changes.  Technical note: in the course of making these
- changes, a bug was exposed in source function @('raw-ev-fncall'); that has
- been fixed.</p>
+ some indirection in two ways: a scalar field (one that is not an array or hash
+ table) with non-trivial type had been wrapped in a one-element array, but no
+ longer; and if there is only one field, and it is an array or hash table, then
+ that field is the entire stobj.  (The first change is however avoided when the
+ host Lisp is GCL.)  Thanks to Warren Hunt and Sol Swords for suggesting these
+ changes.  Technical note: in the course of making these changes, a bug was
+ exposed in source function @('raw-ev-fncall'); that has been fixed.</p>
 
  <h3>Bug Fixes</h3>
 
@@ -118469,7 +118470,7 @@ introduction-to-the-tau-system) for more information about Tau.</dd>
 
  @({
  (defstobj st2 (ar :type (array t (10)) :resizable t))
- 
+
  (defun foo2 (st2 state)
    (declare (xargs :stobjs (st2 state)
                    :mode :program))
