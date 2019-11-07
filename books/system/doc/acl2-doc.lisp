@@ -18085,8 +18085,10 @@ subtree of X with T, without duplication.</p>
  when the prover reasons about the function, and an executable definition,
  which is used in raw Lisp.  In the logic, @('stp') recognizes objects that
  have the requisite fields.  In raw Lisp, there is a ``live stobj'', which is
- an array object whose fields correspond to those specified by the @(tsee
- defstobj) event, implemented as Lisp arrays.</p>
+ typically an array object whose fields correspond to those specified by the
+ @(tsee defstobj) event.  (If there is a single stobj field that is an array or
+ hash-table field, then that field is the entire stobj in raw Lisp; but we
+ ignore that case below.)</p>
 
  <p>Here are the logical definition and the executable definition,
  respectively, that are introduced for the field accessor, @('fld'), introduced
@@ -18181,7 +18183,7 @@ subtree of X with T, without duplication.</p>
  logical definition is what ACL2 reasons about, and is appropriate to apply to
  an ACL2 object satisfying the logical definition of the recognizer function
  for the stobj.  The executable definition is applied in raw Lisp to a live
- stobj, which is an array object associated with the given stobj name.</p>
+ stobj (as discussed above).</p>
 
  <p>We can picture a sequence of updates to corresponding abstract and concrete
  stobjs as follows.  Initially in this picture, @('st$a0') and @('st$c0') are a
@@ -18692,7 +18694,9 @@ subtree of X with T, without duplication.</p>
  efficiently &mdash; though perhaps with negligible efficiency loss if the
  @(':EXEC') function is not trivial.  Community books
  @('books/misc/defabsstobj-example-3.lisp') and
- @('books/misc/defabsstobj-example-4.lisp') provide related information.</p>
+ @('books/misc/defabsstobj-example-4.lisp') provide related information.  Also
+ see @(see set-absstobj-debug) for a potentially dangerous way to eliminate
+ that inefficiency using argument @(':ignore').</p>
 
  <p>We conclude with some remarks.</p>
 
@@ -84599,8 +84603,10 @@ it."
  supplied expression refer to globally-bound stobjs, that is, stobjs stored in
  the @('user-stobj-alist') field of the ACL2 @(tsee state).  See the new
  documentation topic, @(see trans-eval-and-locally-bound-stobjs), for relevant
- discussion.  Thanks to Sol Swords for suggesting this change and convincing us
- of its suitability.</p>
+ discussion.  (Another topic, @(see user-stobjs-modified-warnings), may also be
+ helpful for understanding the interaction of @('trans-eval') with stobjs.)
+ Thanks to Sol Swords for suggesting this change and convincing us of its
+ suitability.</p>
 
  <p>The @(tsee defstobj) event now supports @(see stobj)s with fields that are
  hash tables in raw Lisp but are represented logically as association lists.
@@ -84637,6 +84643,14 @@ it."
  swap-stobjs).  Thanks to Sol Swords for requesting this feature and for
  helpful discussions about it.</p>
 
+ <p>By invoking @('(set-absstobj-debug :ignore)'), which requires an active
+ trust tag (see @(see defttag)), one can defeat invariance checks for abstract
+ stobj fields that otherwise are protected by specifying @(':protect t') (or by
+ using the @(':protect-default') keyword to get that effect).  See @(see
+ defabsstobj).  Thanks to Sol Swords for suggesting consideration of adding
+ some such capability.  In a few preliminary tests we found an average drop of
+ about 3.5% in the time it took to run the tests.</p>
+
  <h3>Heuristic and Efficiency Improvements</h3>
 
  <p>ACL2 keeps a complete list of all the runes in the tau database (see @(see
@@ -84669,6 +84683,14 @@ it."
  modifications to @(see community-books) so that they continue to certify after
  the change.  Those interested in implementation details may start with source
  function @('simplifiable-mv-nth1').</p>
+
+ <p>The raw Lisp representation of @(see stobj)s has been improved to avoid
+ some indirection.  Specifically, a typed scalar field (array or hash table) is
+ no longer wrapped in a one-element array, and a single field that is
+ non-scalar is the entire stobj.  Thanks to Warren Hunt and Sol Swords for
+ suggesting these changes.  Technical note: in the course of making these
+ changes, a bug was exposed in source function @('raw-ev-fncall'); that has
+ been fixed.</p>
 
  <h3>Bug Fixes</h3>
 
@@ -99245,8 +99267,22 @@ arithmetic) for libraries of @(see books) for arithmetic reasoning.</p>")
   YOUR OWN RISK.
  })
 
- <p>The use of @('(set-absstobj-debug t)') will make this error message more
- informative, as follows, at the cost of slower execution &mdash; but in
+ <p>Advanced users who are willing to risk unsound invariance violations to get
+ a bit more speed may submit the following when there is an active trust
+ tag (see @(see defttag)).</p>
+
+ @({
+ (set-absstobj-debug :ignore)
+ })
+
+ <p>The rest of the session will then avoid the error message above because it
+ avoids the abstract stobj invariance checking discussed belowq.  BUT WITHOUT
+ THIS CHECKING, YOUR SESSION COULD BE CORRUPTED!  The discussion below assumes
+ that you are not using the special argument @(':ignore') for
+ @('set-absstobj-debug').</p>
+
+ <p>The use of @('(set-absstobj-debug t)') will make the error message above
+ more informative, as follows, at the cost of slower execution &mdash; but in
  practice, the slowdown may be negligible (more on that below).</p>
 
  @({
@@ -99272,6 +99308,7 @@ arithmetic) for libraries of @(see books) for arithmetic reasoning.</p>")
                       :on-skip-proofs t) ; as above, but even in include-book
   (set-absstobj-debug t :event-p nil)    ; returns one value, not error triple
   (set-absstobj-debug nil)               ; avoid extra debug info (default)
+  (set-absstobj-debug :ignore)           ; possibly unsound! -- see above
 
   General Form:
   (set-absstobj-debug val
@@ -113924,8 +113961,10 @@ arithmetic) for libraries of @(see books) for arithmetic reasoning.</p>")
  ACL2 !>
  })
 
- <p>To understand and perhaps avoid such warnings, see @(see
- user-stobjs-modified-warnings) and especially, see @(see
+ <p>These warnings indicate a potentially serious violation of applicative
+ semantics when one is also updating user-defined stobjs outside calls of
+ @('trans-eval')!  To understand and perhaps avoid such warnings, see @(see
+ user-stobjs-modified-warnings).  Also see @(see
  trans-eval-and-locally-bound-stobjs) for discussion of how @('trans-eval')
  modifies global stobj values, not locally-bound stobjs.</p>")
 
@@ -113934,81 +113973,18 @@ arithmetic) for libraries of @(see books) for arithmetic reasoning.</p>")
 ; The two examples in the second section below are maintained in
 ; books/system/tests/local-stobj.lisp.
 
-  :parents (trans-eval)
+  :parents (trans-eval stobj)
   :short "@(tsee Trans-eval) deals in global @(see stobj)s."
   :long "<p>This topic assumes familiarity with the relatively advanced
- utility, @(tsee trans-eval).  We begin with a review of @(see stobj)s and
- evaluation before addressing the point of this documentation topic, which is
- how @('trans-eval') behaves under a locally bound stobj.  (Additional relevant
- discussion may be found in @(see user-stobjs-modified-warnings).)</p>
-
- <h3>Review of @(see stobj)s and @(tsee trans-eval)</h3>
-
- <p>By way of review, suppose that you evaluate the following forms in the
- top-level ACL2 loop.</p>
-
- @({
- (defstobj st fld)
- (fld st)
- })
-
- <p>Note that in the expression, @('(fld st)'), @('st') has the syntax of a
- global variable.  But what really happens is that @(tsee trans-eval) is called
- &mdash; or more accurately its variant, @(tsee trans-eval-default-warning), is
- called &mdash; on the expression.  (We generally consider all such variants to
- be the same as @('trans-eval') for purposes of this documentation topic.)
- Here we see @('trans-eval') in action.</p>
-
- @({
- ACL2 !>(trace$ trans-eval-default-warning)
-  ((TRANS-EVAL-DEFAULT-WARNING))
- ACL2 !>(fld st)
- 1> (TRANS-EVAL-DEFAULT-WARNING (FLD ST)
-                                TOP-LEVEL |*the-live-state*| T)
- <1 (TRANS-EVAL-DEFAULT-WARNING NIL ((NIL))
-                                |*the-live-state*|)
- NIL
- ACL2 !>
- })
-
- <p>This call of @('trans-eval') (or more accurately,
- @('trans-eval-default-warning')) invokes an ACL2 evaluator @('(ev form alist
- state ...)'), by calling it on the form @('(fld st)') and an alist that binds
- the variable @('st') to its value in the @('user-stobj-alist') component of
- the ACL2 @(see state).  We may refer to this value as the ``global value of''
- @('st').</p>
-
- <p>We can of course update this stobj.</p>
-
- @({
- ACL2 !>(update-fld 3 st)
- 1> (TRANS-EVAL-DEFAULT-WARNING (UPDATE-FLD 3 ST)
-                                TOP-LEVEL |*the-live-state*| T)
- <1 (TRANS-EVAL-DEFAULT-WARNING NIL ((ST) . REPLACED-ST)
-                                |*the-live-state*|)
- <st>
- ACL2 !>(fld st) ; check that the update occurred
- 1> (TRANS-EVAL-DEFAULT-WARNING (FLD ST)
-                                TOP-LEVEL |*the-live-state*| T)
- <1 (TRANS-EVAL-DEFAULT-WARNING NIL ((NIL) . 3)
-                                |*the-live-state*|)
- 3
- ACL2 !>
- })
-
- <p>We see above that the global value of @('st') was indeed updated by
- evaluating the @('update-fld') call.  That is: the value of @('st') in the
- @('user-stobj-alist') of the ACL2 @(tsee state) was updated by calling @(tsee
- trans-eval) on the expression, @('(update-fld 3 st)').</p>
-
- <h3>@(tsee Trans-eval) and locally-bound @(see stobjs)</h3>
+ utility, @(tsee trans-eval).  In particular, see @(see trans-eval-and-stobjs)
+ for relevant background.  It may also be helpful to see @(see
+ user-stobjs-modified-warnings).</p>
 
  <p>A stobj may be locally bound by @(tsee stobj-let) or @(tsee
  with-local-stobj).  But @(tsee trans-eval) ignores such local bindings!  The
  following example illustrates this point.</p>
 
  @({
-
  (defstobj st fld)
 
  (defun f (x state)
@@ -114079,6 +114055,78 @@ arithmetic) for libraries of @(see books) for arithmetic reasoning.</p>")
  ; That is, they did not update the sub1 field of top1.
  (assert-event (equal (get-sub1-of-top1 top1) nil))
  })")
+
+(defxdoc trans-eval-and-stobjs
+  :parents (trans-eval stobj)
+  :short "How user-defined @(see stobj)s are handled by @(tsee trans-eval)"
+  :long "<p>See @(see trans-eval) for basic background on the relatively
+ advanced system utility, @('trans-eval').  In this topic we discuss how
+ @('trans-eval') handles user-defined @(see stobj)s.</p>
+
+ <p>A field of the ACL2 @(see state), the @('user-stobj-alist'), is an
+ association list (alist) that maps each user-defined @(see stobj) name to its
+ current value.  @('Trans-eval') evaluates with respect to this alist, so that
+ any time a variable (which must be a stobj name) is to be evaluated, its value
+ is looked up in that alist.</p>
+
+ <p>For example, suppose that you evaluate the following forms in the top-level
+ ACL2 loop.</p>
+
+ @({
+ (defstobj st fld)
+ (fld st)
+ })
+
+ <p>To evaluate the expression, @('(fld st)'), ACL2 calls @(tsee trans-eval)
+ &mdash; or more accurately its variant, @(tsee trans-eval-default-warning)
+ &mdash; on that expression.  (We generally consider all such variants to be
+ the same as @('trans-eval') for purposes of this documentation topic.)
+ Although @('st') has the syntax of a global variable, it is bound in the
+ @('user-stobj-alist').  Here we see @('trans-eval') in action.</p>
+
+ @({
+ ACL2 !>(trace$ trans-eval-default-warning)
+  ((TRANS-EVAL-DEFAULT-WARNING))
+ ACL2 !>(fld st)
+ 1> (TRANS-EVAL-DEFAULT-WARNING (FLD ST)
+                                TOP-LEVEL |*the-live-state*| T)
+ <1 (TRANS-EVAL-DEFAULT-WARNING NIL ((NIL))
+                                |*the-live-state*|)
+ NIL
+ ACL2 !>
+ })
+
+ <p>This call of @('trans-eval') (or more accurately,
+ @('trans-eval-default-warning')) invokes an ACL2 evaluator @('(ev form alist
+ state ...)'), by calling it on the form @('(fld st)') and an alist that binds
+ the variable @('st') to its value in the @('user-stobj-alist') component of
+ the ACL2 @(see state).  We may refer to this value as the ``global value of''
+ @('st').</p>
+
+ <p>We can of course update this stobj.</p>
+
+ @({
+ ACL2 !>(update-fld 3 st)
+ 1> (TRANS-EVAL-DEFAULT-WARNING (UPDATE-FLD 3 ST)
+                                TOP-LEVEL |*the-live-state*| T)
+ <1 (TRANS-EVAL-DEFAULT-WARNING NIL ((ST) . REPLACED-ST)
+                                |*the-live-state*|)
+ <st>
+ ACL2 !>(fld st) ; check that the update occurred
+ 1> (TRANS-EVAL-DEFAULT-WARNING (FLD ST)
+                                TOP-LEVEL |*the-live-state*| T)
+ <1 (TRANS-EVAL-DEFAULT-WARNING NIL ((NIL) . 3)
+                                |*the-live-state*|)
+ 3
+ ACL2 !>
+ })
+
+ <p>We see above that the global value of @('st') was indeed updated by
+ evaluating the @('update-fld') call.  That is: the value of @('st') in the
+ @('user-stobj-alist') of the ACL2 @(tsee state) was updated by calling @(tsee
+ trans-eval) on the expression, @('(update-fld 3 st)').  More generally: as
+ @('trans-eval') returns, it updates the @('user-stobj-alist') of the ACL2
+ @(see state) according to all stobj values that have been returned.</p>")
 
 (defxdoc trans1
   :parents (macros)
@@ -118283,40 +118331,41 @@ introduction-to-the-tau-system) for more information about Tau.</dd>
  @('*A*').</p>")
 
 (defxdoc user-stobjs-modified-warnings
-  :parents (trans-eval)
-  :short "Warnings of single-threadedness violations"
+  :parents (trans-eval stobj)
+  :short "Interactions of @(tsee trans-eval) with @(see stobj)s that violate
+ applicative semantics"
   :long "<p>The utility, @(tsee trans-eval), may be called to evaluate
  arbitrary ACL2 forms.  It can thus be useful for writers of tools.  This topic
- discusses warnings that may be issued by @('trans-eval'), for example as
- follows.</p>
+ discusses certain @(see warnings) that may be issued by @('trans-eval') for
+ @(see stobj) updates that may violate applicative semantics.  Also see @(see
+ trans-eval-and-locally-bound-stobjs) for how @('trans-eval') relates to
+ updates of locally bound stobjs.</p>
+
+ <p>Please see @(see trans-eval) and @(see trans-eval-and-stobjs) for relevant
+ background.</p>
+
+ <p>Consider the following log.</p>
 
  @({
  ACL2 !>(foo st state)
 
  ACL2 Warning [User-stobjs-modified] in FOO:  A call of the ACL2 evaluator
  on the term (UPDATE-FLD '4 ST) has modified the user stobj ST.  See
- :DOC user-stobjs-modified-warning.
+ :DOC user-stobjs-modified-warnings.
 
  (4 <state> <st>)
  ACL2 !>
  })
 
- <p>If you see such a warning, it is probably caused by a utility that you are
+ <p>The warning is intended to indicate that a @(see stobj) has been modified
+ even though that stobj was accessed indirectly, through the ACL2 @(see state).
+ If you see such a warning, it is probably caused by a utility that you are
  invoking.  At this time there are no special tools for identifying which tool
  is issuing those warnings, but the ``context'' on the first line of the
  warning &mdash; @('FOO'), above &mdash; may give a clue.</p>
 
- <p>The warning is intended to indicate that a global @(see stobj) has been
- modified even though that stobj was accessed indirectly, through the ACL2
- @(see state).  See @(see trans-eval-and-locally-bound-stobjs) for discussion
- of this point.</p>
-
- <p>The remainder of this topic is directed at tool writers.  It discusses how
- to write tools that avoid producing such warnings, and the advisability (or
- not) of doing so.  For background on @('trans-eval'), see @(see
- trans-eval).</p>
-
- <p>The following example illustrates the issue.</p>
+ <p>Below we discuss the following events, which were evaluated before
+ producing the log above.</p>
 
  @({
  (defstobj st fld)
@@ -118332,20 +118381,37 @@ introduction-to-the-tau-system) for more information about Tau.</dd>
  })
 
  <p>After submitting these two forms, we can submit to ACL2 the form @('(foo st
- state)') to produce the log displayed above.</p>
+ state)') to produce the log displayed near the top of this topic.  That log is
+ actually very surprising if you think about it, since the @('trans-eval') call
+ in the definition of @('foo') modifies only the @('state') parameter, not the
+ @('st') parameter, and yet the value @('st') has changed: @('(fld st)') has
+ changed from 3 to 4, while evaluating code in which @('st') does not occur
+ free!  Let us discuss this point further.</p>
 
- <p>Consider the definition of @('foo').  Now @('trans-eval') returns an @(see
- error-triple), say @('(mv erp val state)'), where @('erp') and @('val') are
- ordinary (non-@(see stobj)) values.  In particular, @('trans-eval') does not
- return the user-defined stobj, @('st').  It ``should'' follow, then, that the
- only modification to @('st') before returning is by the form @('(update-fld 3
- st)').  So the final value of @('(fld st)') ``should'' be 3; yet, it is 4, not
- 3!  One can explain this phenomenon by saying that user-defined stobjs reside
- globally in the ACL2 state, and indeed that is logically the case; see @(see
- state), in particular the discussion there of the field @('user-stobj-alist')
- of the state.  Nevertheless, the first return value of 4, above, can very
- reasonably be considered a violation of single-threadedness.  ACL2
- acknowledges this concern by printing the warning displayed above.</p>
+ <p>First consider the definition of @('foo').  Now @('trans-eval') returns an
+ @(see error-triple), say @('(mv erp val state)'), where @('erp') and @('val')
+ are ordinary (non-@(see stobj)) values.  In particular, @('trans-eval') does
+ not return the user-defined stobj, @('st').  It ``should'' follow, then, that
+ the only modification to @('st') before returning is by the form
+ @('(update-fld 3 st)').  So the final value of @('(fld st)') ``should'' be 3;
+ yet, it is 4, not 3!  So the first return value of 4, above, can very
+ reasonably be considered to violate applicative semantics.  ACL2 acknowledges
+ this concern &mdash; that is, the concern that an operation (i.e., @('fld'))
+ now gives a different result on an object (i.e., @('st')) that ``should'' not
+ have changed, thus violating normal applicative semantics &mdash; by printing
+ the warning displayed above.</p>
+
+ <p>To see how this can happen, consider that in raw Lisp the stobj, @('st'),
+ is actually a one-element array whose unique value is @('(fld st)').  The
+ @('trans-eval') call in @('foo') replaces that element, in this case 3, with a
+ new value, in this case 4.  It does this <i>destructively</i>: the memory
+ location of @('st') is not changed.  Thus, evaluation of @('(fld st)') after
+ the @('trans-eval') call now returns the new array element, which is 4.</p>
+
+ <p>Worse yet, there are similar cases where there is <i>no</i> such violation
+ of applicative semantics!  We return to this point later below.  First we
+ provide some additional discussion of such warnings, as well as observations
+ for tool writers who want to eliminate the warnings.</p>
 
  <p>In general, such a warning is printed whenever the @('stobjs-out') returned
  in the @('car') of the value, as discussed above, contains a user-defined
@@ -118355,14 +118421,19 @@ introduction-to-the-tau-system) for more information about Tau.</dd>
  functions; @('trans-eval') will never be in @(':')@(tsee logic) mode, and
  therefore, neither will its callers.  Nevertheless, even without proving
  @('nil') one might reasonably be frustrated by this sort of violation of
- single-threaded behavior of stobjs.  The warning is, at least, an
- acknowledgement of this situation.</p>
+ applicative semantics.  The warning is, at least, an acknowledgement of this
+ situation.</p>
 
- <p>That said, there may be cases in which you want to write a tool that calls
+ <p>We next discuss how to write tools that avoid producing such warnings, and
+ the advisability (or not) of doing so.</p>
+
+ <p>There may be cases in which you want to write a tool that calls
  @('trans-eval') and modifies user-defined stobjs, but you don't want the users
- of your tool to see the warning.  Think carefully about whether you really
- don't want them to see the warning!  After all, they may be relying on
- single-threaded semantics, even with @(':program')-mode functions.</p>
+ of your tool to see the warning, perhaps because you are convinced that no
+ stobj parameter is modified indirectly using @('trans-eval').  Think carefully
+ about whether you really don't want them to see the warning!  After all, they
+ may be relying on normal applicative semantics, even with @(':program')-mode
+ functions.</p>
 
  <p>If indeed you want to avoid warnings, you can call the function
  @('trans-eval-no-warning') exactly as you call @('trans-eval').  For example,
@@ -118380,13 +118451,99 @@ introduction-to-the-tau-system) for more information about Tau.</dd>
  @('ld-read-eval-print'), which evaluates on behalf of the top-level loop, and
  in some functions that support @(see events), such as those supporting the
  proof-builder.  But for user-level code it may be more appropriate to call
- @('trans-eval') so that single-threadedness violations are reported.  These
- warnings are unimportant in the top-level loop, because one expects stobjs to
- be updated by evaluation.  End of Remark.</p>
+ @('trans-eval') so that violations of applicative semantics are reported.
+ These warnings are unimportant for the top-level calls of @('trans-eval') that
+ implement the ACL2 read-eval-print loop, because one expects stobjs to be
+ updated by evaluation.  End of Remark.</p>
 
  <p>For @(see trans-eval) and @('trans-eval-default-warning'), the normal way
  of inhibiting warnings is supported: @('(set-inhibit-warnings
- \"User-stobjs-modified\")').</p>")
+ \"User-stobjs-modified\")').</p>
+
+ <p>We now elaborate on a point made briefly above, that there are cases where
+ the usual violation of applicative semantics does not take place.  This
+ happens when the underlying raw Lisp stobj is actually replaced, which happens
+ when there is a single stobj field that is either an array being resized or a
+ hash table being initialized (with the ``clear'' or ``init'' function); see
+ @(see defstobj).  Consider the following example.</p>
+
+ @({
+ (defstobj st2 (ar :type (array t (10)) :resizable t))
+ 
+ (defun foo2 (st2 state)
+   (declare (xargs :stobjs (st2 state)
+                   :mode :program))
+   (let ((st2 (update-ari 3 'old st2)))
+     (mv-let (erp val state)
+       (trans-eval '(let ((st2 (resize-ar 20 st2)))
+                      (update-ari 3 'new st2))
+                   'foo state nil)
+       (declare (ignore erp val))
+       (mv (ari 3 st2) state st2))))
+ })
+
+ <p>After submitting these forms, evaluation of the form @('(foo2 st2 state)')
+ produces @('(OLD <state> <st2>)').  But based on the first example, @('foo'),
+ we might expect that destructive modification of @('st2') would result instead
+ in @('(NEW <state> <st2>)').  Indeed, if the first argument of @('trans-eval')
+ in the definition of @('foo2') is instead @('(update-ari 3 'new st2))'), then
+ the result is @('(NEW <state> <st2>)').  So why do we get the OLD result using
+ the definition of @('foo2') displayed above?</p>
+
+ <p>The reason is that when a stobj has a single field, and that field is an
+ array or hash table, then in raw Lisp the stobj <i>is</i> exactly that field.
+ When we call @('resize-ar'), the entire array is rebuilt, and thus the stobj
+ is at a new memory location.  To be precise: After the resizing, then the
+ value of @('st2') in the @('user-stobj-alist') of the ACL2 state is a new
+ stobj: the actual parameter @('st2') of @('foo2') is not destructively
+ modified.  Thus, normal applicative semantics apply: the final value of
+ @('(fld st2)') is independent of the replacement of @('st2') in the
+ @('user-stobj-alist') hence is still 3 (from the first update).</p>
+
+ <p>We close with a more realistic example.
+ (It is based on our experience modifying the definition of the macro,
+ @('local-test'), in @(see community-book)
+ @('books/system/tests/nested-stobj-tests.lisp'), when we changed ACL2 so that
+ the stobj is the entire array field when there is only that one field.)  The
+ @(tsee make-event) call below fails, because the resizing operation replaces
+ the stobj in the global @('user-stobj-alist') of the ACL2 @(see state), but
+ the @(tsee assert-event) call still references the original stobj.  This
+ failure is thus exactly as expected for an applicative semantics.  However, it
+ fails only because the resize operation is not destructive: it replaces the
+ entire stobj.</p>
+
+ @({
+ (defstobj st3 (ar3 :type (array t (10)) :resizable t))
+
+ ; Fails (see discussion above):
+ (make-event
+  (er-progn (trans-eval '(let ((st3 (resize-ar3 30 st3)))
+                           (update-ar3i 24 'done st3))
+                        'top
+                        state t)
+            (assert-event (equal (ar3i 24 st3) 'done)
+                          :on-skip-proofs t)
+            (value '(value-triple :success))))
+
+ ; Passes because by now, the user-stobj-alist has been updated by
+ ; the top-level call of trans-eval to implement the ACL2
+ ; read-eval-print loop:
+ (assert-event (equal (ar3i 24 st3) 'done))
+
+ ; The following version passes because we avoid assert-event.
+ ; Instead, the second trans-eval call below references the value of
+ ; st3 in the user-stobj-alist that was produced by the first
+ ; trans-eval call below.
+ (make-event
+  (er-progn (trans-eval '(let ((st3 (resize-ar3 40 st3)))
+                           (update-ar3i 34 'new st3))
+                        'top state t)
+            (trans-eval '(if (equal (ar3i 34 st3) 'new)
+                             (value nil)
+                           (er soft 'top \"Failed!\"))
+                        'top state t)
+            (value '(value-triple :success))))
+ })")
 
 (defxdoc using-computed-hints
   :parents (computed-hints hints)
