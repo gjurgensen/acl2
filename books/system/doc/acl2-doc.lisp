@@ -1429,12 +1429,15 @@
  <p>Mike Smith helped develop the Emacs portion of the implementation of proof
  trees.</p>
 
- <p>Bill Schelter made some enhancements to akcl (now gcl) that helped to
+ <p>ACL2 depends on the availability of robust Common Lisp implementations, so
+ we are grateful to the developers of those implementations.  Early in ACL2's
+ history, Bill Schelter made some enhancements to AKCL (now GCL) that helped to
  enhance ACL2 performance in that Common Lisp implementation, and more
  generally, responded helpfully to our bug reports.  Camm Maguire has since
- provided wonderful gcl support, and has created a Debian package for ACL2
- built on GCL.  We are also grateful to developers of other Common Lisp
- implementations.</p>
+ provided wonderful GCL support, and has created a Debian package for ACL2
+ built on GCL.  Gary Byers and R. Matthew Emerson have continually improved
+ Clozure Common Lisp (CCL), often based on feedback from the ACL2 community.
+ We are also grateful to developers of other Common Lisp implementations.</p>
 
  <p>Kent Pitman helped in our interaction with the ANSI Common Lisp
  standardization committee, X3J13.</p>
@@ -1472,6 +1475,16 @@
  Jared Davis and Sol Swords made further contributions.  We thank them all for
  this work, most of which has been incorporated into ACL2; see @(see
  hons-and-memoization).</p>
+
+<p>Other contributions to the ACL2 system continue to be made by members of the
+ ACL2 community.  In particular, following the first Developers Workshop in
+ May, 2017 through the time of this writing in November, 2019, such
+ contributors include Alessandro Coglio, Keshav Kini, Mihir Mehta, Pete
+ Manolios, and especially Sol Swords, while Eric Smith and many others have
+ suggested changes that we have implemented, often by providing helpful
+ examples.  The @(see release-notes) detail such contributions as well as many
+ suggestions from the community for improvements that we ultimately
+ implemented.</p>
 
  <p>We also thank the contributors to the ACL2 workshops for some suggested
  improvements and for the extensive collection of publicly distributed
@@ -84491,6 +84504,8 @@ it."
 ; of child fields of the parent stobj, but those are necessary now in case some
 ; fields have been subjected to swap-stobjs.
 
+; Updated :doc acknowledgments.
+
   :parents (release-notes)
   :short "ACL2 Version  8.3 (xxx, 20xx) Notes"
   :long "<p>NOTE!  New users can ignore these release notes, because the @(see
@@ -84749,6 +84764,13 @@ it."
  followed by @('1'), @('2'), or @('3') caused a raw Lisp error.  Thanks to
  Stephen Westfold for bringing this bug to our attention and pointing out the
  fix.</p>
+
+ <p>We fixed a bug in the implementation of @(tsee encapsulate) that could
+ cause a hard ACL2 error (``Unexpected expansion-alist ... for second pass of
+ encapsulate'').  Thanks to Pete Manolios for sending an example that exhibited
+ this bug.  (A slightly simplified version of his example may be found in
+ a comment in the definition of function @('encapsulate-pass-2'), ACL2 source
+ file @('other-events.lisp').)</p>
 
  <h3>Changes at the System Level</h3>
 

@@ -2434,11 +2434,16 @@ Subtopics
   Mike Smith helped develop the Emacs portion of the implementation of
   proof trees.
 
-  Bill Schelter made some enhancements to akcl (now gcl) that helped to
-  enhance ACL2 performance in that Common Lisp implementation, and
-  more generally, responded helpfully to our bug reports.  Camm
-  Maguire has since provided wonderful gcl support, and has created a
-  Debian package for ACL2 built on GCL.  We are also grateful to
+  ACL2 depends on the availability of robust Common Lisp
+  implementations, so we are grateful to the developers of those
+  implementations.  Early in ACL2's history, Bill Schelter made some
+  enhancements to AKCL (now GCL) that helped to enhance ACL2
+  performance in that Common Lisp implementation, and more generally,
+  responded helpfully to our bug reports.  Camm Maguire has since
+  provided wonderful GCL support, and has created a Debian package
+  for ACL2 built on GCL.  Gary Byers and R. Matthew Emerson have
+  continually improved Clozure Common Lisp (CCL), often based on
+  feedback from the ACL2 community.  We are also grateful to
   developers of other Common Lisp implementations.
 
   Kent Pitman helped in our interaction with the ANSI Common Lisp
@@ -2479,6 +2484,17 @@ Subtopics
   computed results.  Subsequently, Jared Davis and Sol Swords made
   further contributions.  We thank them all for this work, most of
   which has been incorporated into ACL2; see [hons-and-memoization].
+
+  Other contributions to the ACL2 system continue to be made by members
+  of the ACL2 community.  In particular, following the first
+  Developers Workshop in May, 2017 through the time of this writing
+  in November, 2019, such contributors include Alessandro Coglio,
+  Keshav Kini, Mihir Mehta, Pete Manolios, and especially Sol Swords,
+  while Eric Smith and many others have suggested changes that we
+  have implemented, often by providing helpful examples.  The
+  [release-notes] detail such contributions as well as many
+  suggestions from the community for improvements that we ultimately
+  implemented.
 
   We also thank the contributors to the ACL2 workshops for some
   suggested improvements and for the extensive collection of publicly
@@ -83387,6 +83403,13 @@ Bug Fixes
   form (if t term1 term2); for example, (verify (if t x y)) followed
   by 1, 2, or 3 caused a raw Lisp error.  Thanks to Stephen Westfold
   for bringing this bug to our attention and pointing out the fix.
+
+  We fixed a bug in the implementation of [encapsulate] that could
+  cause a hard ACL2 error (``Unexpected expansion-alist ... for
+  second pass of encapsulate'').  Thanks to Pete Manolios for sending
+  an example that exhibited this bug.  (A slightly simplified version
+  of his example may be found in a comment in the definition of
+  function encapsulate-pass-2, ACL2 source file other-events.lisp.)
 
 
 Changes at the System Level
