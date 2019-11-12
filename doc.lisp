@@ -77,7 +77,7 @@ Subtopics
   [defthm], [in-theory], [xargs], [state], etc., without an acl2::
   prefix.
 
-  The constant *acl2-exports* lists 1482 symbols, including most
+  The constant *acl2-exports* lists 1491 symbols, including most
   documented ACL2 system constants, functions, and macros.  You will
   typically also want to import many symbols from Common Lisp; see
   [*common-lisp-symbols-from-main-lisp-package*].
@@ -221,7 +221,7 @@ Subtopics
        cond cond-clausesp cond-macro
        conjugate cons cons-equal cons-subtrees
        cons-with-hint consp consp-assoc-equal
-       constraint-info corollary
+       constraint-info corollary count-keys
        cpu-core-count ctx current-package
        current-theory cw cw! cw-gstack
        cw-print-base-radix cw-print-base-radix!
@@ -271,7 +271,8 @@ Subtopics
        disabledp disassemble$
        distributivity dmr-start dmr-stop
        doc doc! docs doppelganger-apply$-userfn
-       doppelganger-badge-userfn double-rewrite
+       doppelganger-badge-userfn
+       double-rewrite dumb-occur dumb-occur-var
        duplicates e/d e0-ord-< e0-ordinalp
        ec-call eighth eliminate-destructors
        eliminate-irrelevance
@@ -403,6 +404,7 @@ Subtopics
        make-var-lst make-var-lst1
        make-wormhole-status makunbound-global
        max maximum-length may-need-slashes
+       maybe-flush-and-compress1
        mbe mbt mbt* member member-eq
        member-equal member-symbol-name
        memoize memoize-summary
@@ -670,7 +672,7 @@ Subtopics
        sublis-fn-simple subseq subseq-list
        subsetp subsetp-eq subsetp-equal
        subst substitute substitute-ac
-       suitably-tamep-listp summary
+       suitably-tamep-listp summary swap-stobjs
        symbol symbol-< symbol-<-asymmetric
        symbol-<-irreflexive symbol-<-transitive
        symbol-<-trichotomy symbol-alistp
@@ -680,6 +682,7 @@ Subtopics
        symbol-listp-forward-to-true-listp
        symbol-name
        symbol-name-intern-in-package-of-symbol
+       symbol-name-lst
        symbol-package-name symbolp
        symbolp-intern-in-package-of-symbol synp
        syntaxp sys-call sys-call* sys-call+
@@ -699,6 +702,8 @@ Subtopics
        timer-alistp-forward-to-true-list-listp-and-symbol-alistp
        toggle-pc-macro top-level
        trace! trace$ trace* trans trans!
+       trans-eval trans-eval-default-warning
+       trans-eval-no-warning
        trans1 translam translate-and-test
        trichotomy true-list-fix true-list-listp
        true-list-listp-forward-to-true-listp
@@ -2429,11 +2434,16 @@ Subtopics
   Mike Smith helped develop the Emacs portion of the implementation of
   proof trees.
 
-  Bill Schelter made some enhancements to akcl (now gcl) that helped to
-  enhance ACL2 performance in that Common Lisp implementation, and
-  more generally, responded helpfully to our bug reports.  Camm
-  Maguire has since provided wonderful gcl support, and has created a
-  Debian package for ACL2 built on GCL.  We are also grateful to
+  ACL2 depends on the availability of robust Common Lisp
+  implementations, so we are grateful to the developers of those
+  implementations.  Early in ACL2's history, Bill Schelter made some
+  enhancements to AKCL (now GCL) that helped to enhance ACL2
+  performance in that Common Lisp implementation, and more generally,
+  responded helpfully to our bug reports.  Camm Maguire has since
+  provided wonderful GCL support, and has created a Debian package
+  for ACL2 built on GCL.  Gary Byers and R. Matthew Emerson have
+  continually improved Clozure Common Lisp (CCL), often based on
+  feedback from the ACL2 community.  We are also grateful to
   developers of other Common Lisp implementations.
 
   Kent Pitman helped in our interaction with the ANSI Common Lisp
@@ -2474,6 +2484,17 @@ Subtopics
   computed results.  Subsequently, Jared Davis and Sol Swords made
   further contributions.  We thank them all for this work, most of
   which has been incorporated into ACL2; see [hons-and-memoization].
+
+  Other contributions to the ACL2 system continue to be made by members
+  of the ACL2 community.  In particular, following the first
+  Developers Workshop in May, 2017 through the time of this writing
+  in November, 2019, such contributors include Alessandro Coglio,
+  Keshav Kini, Mihir Mehta, Pete Manolios, and especially Sol Swords,
+  while Eric Smith and many others have suggested changes that we
+  have implemented, often by providing helpful examples.  The
+  [release-notes] detail such contributions as well as many
+  suggestions from the community for improvements that we ultimately
+  implemented.
 
   We also thank the contributors to the ACL2 workshops for some
   suggested improvements and for the extensive collection of publicly
@@ -21304,9 +21325,11 @@ Subtopics
   is used when the prover reasons about the function, and an
   executable definition, which is used in raw Lisp.  In the logic,
   stp recognizes objects that have the requisite fields.  In raw
-  Lisp, there is a ``live stobj'', which is an array object whose
-  fields correspond to those specified by the [defstobj] event,
-  implemented as Lisp arrays.
+  Lisp, there is a ``live stobj'', which is typically an array object
+  whose fields correspond to those specified by the [defstobj] event.
+  (If there is a single stobj field that is an array or hash-table
+  field, then that field is the entire stobj in raw Lisp; but we
+  ignore that case below.)
 
   Here are the logical definition and the executable definition,
   respectively, that are introduced for the field accessor, fld,
@@ -21400,8 +21423,7 @@ Subtopics
   reasons about, and is appropriate to apply to an ACL2 object
   satisfying the logical definition of the recognizer function for
   the stobj.  The executable definition is applied in raw Lisp to a
-  live stobj, which is an array object associated with the given
-  stobj name.
+  live stobj (as discussed above).
 
   We can picture a sequence of updates to corresponding abstract and
   concrete stobjs as follows.  Initially in this picture, st$a0 and
@@ -21897,6 +21919,8 @@ Subtopics
   negligible efficiency loss if the :EXEC function is not trivial.
   Community books books/misc/defabsstobj-example-3.lisp and
   books/misc/defabsstobj-example-4.lisp provide related information.
+  Also see [set-absstobj-debug] for a potentially dangerous way to
+  eliminate that inefficiency using argument :ignore.
 
   We conclude with some remarks.
 
@@ -83223,8 +83247,10 @@ Changes to Existing Features
   stobjs stored in the user-stobj-alist field of the ACL2 [state].
   See the new documentation topic,
   [trans-eval-and-locally-bound-stobjs], for relevant discussion.
-  Thanks to Sol Swords for suggesting this change and convincing us
-  of its suitability.
+  (Another topic, [user-stobjs-modified-warnings], may also be
+  helpful for understanding the interaction of trans-eval with
+  stobjs.)  Thanks to Sol Swords for suggesting this change and
+  convincing us of its suitability.
 
   The [defstobj] event now supports [stobj]s with fields that are hash
   tables in raw Lisp but are represented logically as association
@@ -83263,6 +83289,15 @@ New Features
   [swap-stobjs].  Thanks to Sol Swords for requesting this feature
   and for helpful discussions about it.
 
+  By invoking (set-absstobj-debug :ignore), which requires an active
+  trust tag (see [defttag]), one can defeat invariance checks for
+  abstract stobj fields that otherwise are protected by specifying
+  :protect t (or by using the :protect-default keyword to get that
+  effect).  See [defabsstobj].  Thanks to Sol Swords for suggesting
+  consideration of adding some such capability.  In a few preliminary
+  tests we found an average drop of about 3.5% in the time it took to
+  run the tests.
+
 
 Heuristic and Efficiency Improvements
 
@@ -83298,6 +83333,17 @@ Heuristic and Efficiency Improvements
   they continue to certify after the change.  Those interested in
   implementation details may start with source function
   simplifiable-mv-nth1.
+
+  The raw Lisp representation of [stobj]s has been improved to avoid
+  some indirection in two ways: a scalar field (one that is not an
+  array or hash table) with non-trivial type had been wrapped in a
+  one-element array, but no longer; and if there is only one field,
+  and it is an array or hash table, then that field is the entire
+  stobj.  (The first change is however avoided when the host Lisp is
+  GCL.)  Thanks to Warren Hunt and Sol Swords for suggesting these
+  changes.  Technical note: in the course of making these changes, a
+  bug was exposed in source function raw-ev-fncall; that has been
+  fixed.
 
 
 Bug Fixes
@@ -83357,6 +83403,13 @@ Bug Fixes
   form (if t term1 term2); for example, (verify (if t x y)) followed
   by 1, 2, or 3 caused a raw Lisp error.  Thanks to Stephen Westfold
   for bringing this bug to our attention and pointing out the fix.
+
+  We fixed a bug in the implementation of [encapsulate] that could
+  cause a hard ACL2 error (``Unexpected expansion-alist ... for
+  second pass of encapsulate'').  Thanks to Pete Manolios for sending
+  an example that exhibited this bug.  (A slightly simplified version
+  of his example may be found in a comment in the definition of
+  function encapsulate-pass-2, ACL2 source file other-events.lisp.)
 
 
 Changes at the System Level
@@ -100724,9 +100777,22 @@ Subtopics
     for an abstract stobj!  See :DOC set-absstobj-debug, and PROCEED AT
     YOUR OWN RISK.
 
-  The use of (set-absstobj-debug t) will make this error message more
-  informative, as follows, at the cost of slower execution --- but in
-  practice, the slowdown may be negligible (more on that below).
+  Advanced users who are willing to risk unsound invariance violations
+  to get a bit more speed may submit the following when there is an
+  active trust tag (see [defttag]).
+
+    (set-absstobj-debug :ignore)
+
+  The rest of the session will then avoid the error message above
+  because it avoids the abstract stobj invariance checking discussed
+  belowq.  BUT WITHOUT THIS CHECKING, YOUR SESSION COULD BE
+  CORRUPTED!  The discussion below assumes that you are not using the
+  special argument :ignore for set-absstobj-debug.
+
+  The use of (set-absstobj-debug t) will make the error message above
+  more informative, as follows, at the cost of slower execution ---
+  but in practice, the slowdown may be negligible (more on that
+  below).
 
     ACL2 Error in CHK-ABSSTOBJ-INVARIANTS:  Possible invariance violation
     for an abstract stobj!  See :DOC set-absstobj-debug, and PROCEED AT
@@ -100749,6 +100815,7 @@ Subtopics
                         :on-skip-proofs t) ; as above, but even in include-book
     (set-absstobj-debug t :event-p nil)    ; returns one value, not error triple
     (set-absstobj-debug nil)               ; avoid extra debug info (default)
+    (set-absstobj-debug :ignore)           ; possibly unsound! -- see above
 
     General Form:
     (set-absstobj-debug val
@@ -107413,8 +107480,18 @@ Subtopics
   [Swap-stobjs]
       Swap two congruent [stobj]s
 
+  [Trans-eval-and-locally-bound-stobjs]
+      [Trans-eval] deals in global [stobj]s.
+
+  [Trans-eval-and-stobjs]
+      How user-defined [stobj]s are handled by [trans-eval]
+
   [Update-nth-array]
       Update a stobj array
+
+  [User-stobjs-modified-warnings]
+      Interactions of [trans-eval] with [stobj]s that violate applicative
+      semantics
 
   [With-local-state]
       Locally bind state
@@ -116264,8 +116341,10 @@ Remarks
     (4 <state> <st>)
     ACL2 !>
 
-  To understand and perhaps avoid such warnings, see
-  [user-stobjs-modified-warnings] and especially, see
+  These warnings indicate a potentially serious violation of
+  applicative semantics when one is also updating user-defined stobjs
+  outside calls of trans-eval!  To understand and perhaps avoid such
+  warnings, see [user-stobjs-modified-warnings].  Also see
   [trans-eval-and-locally-bound-stobjs] for discussion of how
   trans-eval modifies global stobj values, not locally-bound stobjs.
 
@@ -116275,75 +116354,20 @@ Subtopics
   [Trans-eval-and-locally-bound-stobjs]
       [Trans-eval] deals in global [stobj]s.
 
+  [Trans-eval-and-stobjs]
+      How user-defined [stobj]s are handled by [trans-eval]
+
   [User-stobjs-modified-warnings]
-      Warnings of single-threadedness violations")
+      Interactions of [trans-eval] with [stobj]s that violate applicative
+      semantics")
  (TRANS-EVAL-AND-LOCALLY-BOUND-STOBJS
-  (TRANS-EVAL)
+  (TRANS-EVAL STOBJ)
   "[Trans-eval] deals in global [stobj]s.
 
   This topic assumes familiarity with the relatively advanced utility,
-  [trans-eval].  We begin with a review of [stobj]s and evaluation
-  before addressing the point of this documentation topic, which is
-  how trans-eval behaves under a locally bound stobj.  (Additional
-  relevant discussion may be found in
-  [user-stobjs-modified-warnings].)
-
-
-Review of [stobj]s and [trans-eval]
-
-  By way of review, suppose that you evaluate the following forms in
-  the top-level ACL2 loop.
-
-    (defstobj st fld)
-    (fld st)
-
-  Note that in the expression, (fld st), st has the syntax of a global
-  variable.  But what really happens is that [trans-eval] is called
-  --- or more accurately its variant, [trans-eval-default-warning],
-  is called --- on the expression.  (We generally consider all such
-  variants to be the same as trans-eval for purposes of this
-  documentation topic.)  Here we see trans-eval in action.
-
-    ACL2 !>(trace$ trans-eval-default-warning)
-     ((TRANS-EVAL-DEFAULT-WARNING))
-    ACL2 !>(fld st)
-    1> (TRANS-EVAL-DEFAULT-WARNING (FLD ST)
-                                   TOP-LEVEL |*the-live-state*| T)
-    <1 (TRANS-EVAL-DEFAULT-WARNING NIL ((NIL))
-                                   |*the-live-state*|)
-    NIL
-    ACL2 !>
-
-  This call of trans-eval (or more accurately,
-  trans-eval-default-warning) invokes an ACL2 evaluator (ev form
-  alist state ...), by calling it on the form (fld st) and an alist
-  that binds the variable st to its value in the user-stobj-alist
-  component of the ACL2 [state].  We may refer to this value as the
-  ``global value of'' st.
-
-  We can of course update this stobj.
-
-    ACL2 !>(update-fld 3 st)
-    1> (TRANS-EVAL-DEFAULT-WARNING (UPDATE-FLD 3 ST)
-                                   TOP-LEVEL |*the-live-state*| T)
-    <1 (TRANS-EVAL-DEFAULT-WARNING NIL ((ST) . REPLACED-ST)
-                                   |*the-live-state*|)
-    <st>
-    ACL2 !>(fld st) ; check that the update occurred
-    1> (TRANS-EVAL-DEFAULT-WARNING (FLD ST)
-                                   TOP-LEVEL |*the-live-state*| T)
-    <1 (TRANS-EVAL-DEFAULT-WARNING NIL ((NIL) . 3)
-                                   |*the-live-state*|)
-    3
-    ACL2 !>
-
-  We see above that the global value of st was indeed updated by
-  evaluating the update-fld call.  That is: the value of st in the
-  user-stobj-alist of the ACL2 [state] was updated by calling
-  [trans-eval] on the expression, (update-fld 3 st).
-
-
-[Trans-eval] and locally-bound [stobjs]
+  [trans-eval].  In particular, see [trans-eval-and-stobjs] for
+  relevant background.  It may also be helpful to see
+  [user-stobjs-modified-warnings].
 
   A stobj may be locally bound by [stobj-let] or [with-local-stobj].
   But [trans-eval] ignores such local bindings!  The following
@@ -116416,6 +116440,72 @@ Review of [stobj]s and [trans-eval]
     ; The calls of g above did not update the locally bound sub1.
     ; That is, they did not update the sub1 field of top1.
     (assert-event (equal (get-sub1-of-top1 top1) nil))")
+ (TRANS-EVAL-AND-STOBJS
+  (TRANS-EVAL STOBJ)
+  "How user-defined [stobj]s are handled by [trans-eval]
+
+  See [trans-eval] for basic background on the relatively advanced
+  system utility, trans-eval.  In this topic we discuss how
+  trans-eval handles user-defined [stobj]s.
+
+  A field of the ACL2 [state], the user-stobj-alist, is an association
+  list (alist) that maps each user-defined [stobj] name to its
+  current value.  Trans-eval evaluates with respect to this alist, so
+  that any time a variable (which must be a stobj name) is to be
+  evaluated, its value is looked up in that alist.
+
+  For example, suppose that you evaluate the following forms in the
+  top-level ACL2 loop.
+
+    (defstobj st fld)
+    (fld st)
+
+  To evaluate the expression, (fld st), ACL2 calls [trans-eval] --- or
+  more accurately its variant, [trans-eval-default-warning] --- on
+  that expression.  (We generally consider all such variants to be
+  the same as trans-eval for purposes of this documentation topic.)
+  Although st has the syntax of a global variable, it is bound in the
+  user-stobj-alist.  Here we see trans-eval in action.
+
+    ACL2 !>(trace$ trans-eval-default-warning)
+     ((TRANS-EVAL-DEFAULT-WARNING))
+    ACL2 !>(fld st)
+    1> (TRANS-EVAL-DEFAULT-WARNING (FLD ST)
+                                   TOP-LEVEL |*the-live-state*| T)
+    <1 (TRANS-EVAL-DEFAULT-WARNING NIL ((NIL))
+                                   |*the-live-state*|)
+    NIL
+    ACL2 !>
+
+  This call of trans-eval (or more accurately,
+  trans-eval-default-warning) invokes an ACL2 evaluator (ev form
+  alist state ...), by calling it on the form (fld st) and an alist
+  that binds the variable st to its value in the user-stobj-alist
+  component of the ACL2 [state].  We may refer to this value as the
+  ``global value of'' st.
+
+  We can of course update this stobj.
+
+    ACL2 !>(update-fld 3 st)
+    1> (TRANS-EVAL-DEFAULT-WARNING (UPDATE-FLD 3 ST)
+                                   TOP-LEVEL |*the-live-state*| T)
+    <1 (TRANS-EVAL-DEFAULT-WARNING NIL ((ST) . REPLACED-ST)
+                                   |*the-live-state*|)
+    <st>
+    ACL2 !>(fld st) ; check that the update occurred
+    1> (TRANS-EVAL-DEFAULT-WARNING (FLD ST)
+                                   TOP-LEVEL |*the-live-state*| T)
+    <1 (TRANS-EVAL-DEFAULT-WARNING NIL ((NIL) . 3)
+                                   |*the-live-state*|)
+    3
+    ACL2 !>
+
+  We see above that the global value of st was indeed updated by
+  evaluating the update-fld call.  That is: the value of st in the
+  user-stobj-alist of the ACL2 [state] was updated by calling
+  [trans-eval] on the expression, (update-fld 3 st).  More generally:
+  as trans-eval returns, it updates the user-stobj-alist of the ACL2
+  [state] according to all stobj values that have been returned.")
  (TRANS-EVAL-DEFAULT-WARNING (POINTERS)
                              "See [user-stobjs-modified-warnings].")
  (TRANS-EVAL-NO-WARNING (POINTERS)
@@ -119679,40 +119769,41 @@ Subtopics
   will replace it with *a*, and the usual untranslation routine will
   print this as *A*.")
  (USER-STOBJS-MODIFIED-WARNINGS
-  (TRANS-EVAL)
-  "Warnings of single-threadedness violations
+  (TRANS-EVAL STOBJ)
+  "Interactions of [trans-eval] with [stobj]s that violate applicative
+  semantics
 
   The utility, [trans-eval], may be called to evaluate arbitrary ACL2
   forms.  It can thus be useful for writers of tools.  This topic
-  discusses warnings that may be issued by trans-eval, for example as
-  follows.
+  discusses certain [warnings] that may be issued by trans-eval for
+  [stobj] updates that may violate applicative semantics.  Also see
+  [trans-eval-and-locally-bound-stobjs] for how trans-eval relates to
+  updates of locally bound stobjs.
+
+  Please see [trans-eval] and [trans-eval-and-stobjs] for relevant
+  background.
+
+  Consider the following log.
 
     ACL2 !>(foo st state)
 
     ACL2 Warning [User-stobjs-modified] in FOO:  A call of the ACL2 evaluator
     on the term (UPDATE-FLD '4 ST) has modified the user stobj ST.  See
-    :DOC user-stobjs-modified-warning.
+    :DOC user-stobjs-modified-warnings.
 
     (4 <state> <st>)
     ACL2 !>
 
-  If you see such a warning, it is probably caused by a utility that
-  you are invoking.  At this time there are no special tools for
-  identifying which tool is issuing those warnings, but the
+  The warning is intended to indicate that a [stobj] has been modified
+  even though that stobj was accessed indirectly, through the ACL2
+  [state].  If you see such a warning, it is probably caused by a
+  utility that you are invoking.  At this time there are no special
+  tools for identifying which tool is issuing those warnings, but the
   ``context'' on the first line of the warning --- FOO, above --- may
   give a clue.
 
-  The warning is intended to indicate that a global [stobj] has been
-  modified even though that stobj was accessed indirectly, through
-  the ACL2 [state].  See [trans-eval-and-locally-bound-stobjs] for
-  discussion of this point.
-
-  The remainder of this topic is directed at tool writers.  It
-  discusses how to write tools that avoid producing such warnings,
-  and the advisability (or not) of doing so.  For background on
-  trans-eval, see [trans-eval].
-
-  The following example illustrates the issue.
+  Below we discuss the following events, which were evaluated before
+  producing the log above.
 
     (defstobj st fld)
 
@@ -119726,21 +119817,39 @@ Subtopics
           (mv (fld st) state st))))
 
   After submitting these two forms, we can submit to ACL2 the form (foo
-  st state) to produce the log displayed above.
+  st state) to produce the log displayed near the top of this topic.
+  That log is actually very surprising if you think about it, since
+  the trans-eval call in the definition of foo modifies only the
+  state parameter, not the st parameter, and yet the value st has
+  changed: (fld st) has changed from 3 to 4, while evaluating code in
+  which st does not occur free!  Let us discuss this point further.
 
-  Consider the definition of foo.  Now trans-eval returns an
+  First consider the definition of foo.  Now trans-eval returns an
   [error-triple], say (mv erp val state), where erp and val are
   ordinary (non-[stobj]) values.  In particular, trans-eval does not
   return the user-defined stobj, st.  It ``should'' follow, then,
   that the only modification to st before returning is by the form
   (update-fld 3 st).  So the final value of (fld st) ``should'' be 3;
-  yet, it is 4, not 3!  One can explain this phenomenon by saying
-  that user-defined stobjs reside globally in the ACL2 state, and
-  indeed that is logically the case; see [state], in particular the
-  discussion there of the field user-stobj-alist of the state.
-  Nevertheless, the first return value of 4, above, can very
-  reasonably be considered a violation of single-threadedness.  ACL2
-  acknowledges this concern by printing the warning displayed above.
+  yet, it is 4, not 3!  So the first return value of 4, above, can
+  very reasonably be considered to violate applicative semantics.
+  ACL2 acknowledges this concern --- that is, the concern that an
+  operation (i.e., fld) now gives a different result on an object
+  (i.e., st) that ``should'' not have changed, thus violating normal
+  applicative semantics --- by printing the warning displayed above.
+
+  To see how this can happen, consider that in raw Lisp the stobj, st,
+  is actually a one-element array whose unique value is (fld st).
+  The trans-eval call in foo replaces that element, in this case 3,
+  with a new value, in this case 4.  It does this destructively: the
+  memory location of st is not changed.  Thus, evaluation of (fld st)
+  after the trans-eval call now returns the new array element, which
+  is 4.
+
+  Worse yet, there are similar cases where there is no such violation
+  of applicative semantics!  We return to this point later below.
+  First we provide some additional discussion of such warnings, as
+  well as observations for tool writers who want to eliminate the
+  warnings.
 
   In general, such a warning is printed whenever the stobjs-out
   returned in the car of the value, as discussed above, contains a
@@ -119750,15 +119859,19 @@ Subtopics
   functions; trans-eval will never be in :[logic] mode, and
   therefore, neither will its callers.  Nevertheless, even without
   proving nil one might reasonably be frustrated by this sort of
-  violation of single-threaded behavior of stobjs.  The warning is,
-  at least, an acknowledgement of this situation.
+  violation of applicative semantics.  The warning is, at least, an
+  acknowledgement of this situation.
 
-  That said, there may be cases in which you want to write a tool that
-  calls trans-eval and modifies user-defined stobjs, but you don't
-  want the users of your tool to see the warning.  Think carefully
-  about whether you really don't want them to see the warning!  After
-  all, they may be relying on single-threaded semantics, even with
-  :program-mode functions.
+  We next discuss how to write tools that avoid producing such
+  warnings, and the advisability (or not) of doing so.
+
+  There may be cases in which you want to write a tool that calls
+  trans-eval and modifies user-defined stobjs, but you don't want the
+  users of your tool to see the warning, perhaps because you are
+  convinced that no stobj parameter is modified indirectly using
+  trans-eval.  Think carefully about whether you really don't want
+  them to see the warning!  After all, they may be relying on normal
+  applicative semantics, even with :program-mode functions.
 
   If indeed you want to avoid warnings, you can call the function
   trans-eval-no-warning exactly as you call trans-eval.  For example,
@@ -119776,14 +119889,98 @@ Subtopics
   ld-read-eval-print, which evaluates on behalf of the top-level
   loop, and in some functions that support [events], such as those
   supporting the proof-builder.  But for user-level code it may be
-  more appropriate to call trans-eval so that single-threadedness
-  violations are reported.  These warnings are unimportant in the
-  top-level loop, because one expects stobjs to be updated by
+  more appropriate to call trans-eval so that violations of
+  applicative semantics are reported.  These warnings are unimportant
+  for the top-level calls of trans-eval that implement the ACL2
+  read-eval-print loop, because one expects stobjs to be updated by
   evaluation.  End of Remark.
 
   For [trans-eval] and trans-eval-default-warning, the normal way of
   inhibiting warnings is supported: (set-inhibit-warnings
-  \"User-stobjs-modified\").")
+  \"User-stobjs-modified\").
+
+  We now elaborate on a point made briefly above, that there are cases
+  where the usual violation of applicative semantics does not take
+  place.  This happens when the underlying raw Lisp stobj is actually
+  replaced, which happens when there is a single stobj field that is
+  either an array being resized or a hash table being initialized
+  (with the ``clear'' or ``init'' function); see [defstobj].
+  Consider the following example.
+
+    (defstobj st2 (ar :type (array t (10)) :resizable t))
+
+    (defun foo2 (st2 state)
+      (declare (xargs :stobjs (st2 state)
+                      :mode :program))
+      (let ((st2 (update-ari 3 'old st2)))
+        (mv-let (erp val state)
+          (trans-eval '(let ((st2 (resize-ar 20 st2)))
+                         (update-ari 3 'new st2))
+                      'foo state nil)
+          (declare (ignore erp val))
+          (mv (ari 3 st2) state st2))))
+
+  After submitting these forms, evaluation of the form (foo2 st2 state)
+  produces (OLD <state> <st2>).  But based on the first example, foo,
+  we might expect that destructive modification of st2 would result
+  instead in (NEW <state> <st2>).  Indeed, if the first argument of
+  trans-eval in the definition of foo2 is instead (update-ari 3 'new
+  st2)), then the result is (NEW <state> <st2>).  So why do we get
+  the OLD result using the definition of foo2 displayed above?
+
+  The reason is that when a stobj has a single field, and that field is
+  an array or hash table, then in raw Lisp the stobj is exactly that
+  field.  When we call resize-ar, the entire array is rebuilt, and
+  thus the stobj is at a new memory location.  To be precise: After
+  the resizing, then the value of st2 in the user-stobj-alist of the
+  ACL2 state is a new stobj: the actual parameter st2 of foo2 is not
+  destructively modified.  Thus, normal applicative semantics apply:
+  the final value of (fld st2) is independent of the replacement of
+  st2 in the user-stobj-alist hence is still 3 (from the first
+  update).
+
+  We close with a more realistic example.  (It is based on our
+  experience modifying the definition of the macro, local-test, in
+  [community-book] books/system/tests/nested-stobj-tests.lisp, when
+  we changed ACL2 so that the stobj is the entire array field when
+  there is only that one field.)  The [make-event] call below fails,
+  because the resizing operation replaces the stobj in the global
+  user-stobj-alist of the ACL2 [state], but the [assert-event] call
+  still references the original stobj.  This failure is thus exactly
+  as expected for an applicative semantics.  However, it fails only
+  because the resize operation is not destructive: it replaces the
+  entire stobj.
+
+    (defstobj st3 (ar3 :type (array t (10)) :resizable t))
+
+    ; Fails (see discussion above):
+    (make-event
+     (er-progn (trans-eval '(let ((st3 (resize-ar3 30 st3)))
+                              (update-ar3i 24 'done st3))
+                           'top
+                           state t)
+               (assert-event (equal (ar3i 24 st3) 'done)
+                             :on-skip-proofs t)
+               (value '(value-triple :success))))
+
+    ; Passes because by now, the user-stobj-alist has been updated by
+    ; the top-level call of trans-eval to implement the ACL2
+    ; read-eval-print loop:
+    (assert-event (equal (ar3i 24 st3) 'done))
+
+    ; The following version passes because we avoid assert-event.
+    ; Instead, the second trans-eval call below references the value of
+    ; st3 in the user-stobj-alist that was produced by the first
+    ; trans-eval call below.
+    (make-event
+     (er-progn (trans-eval '(let ((st3 (resize-ar3 40 st3)))
+                              (update-ar3i 34 'new st3))
+                           'top state t)
+               (trans-eval '(if (equal (ar3i 34 st3) 'new)
+                                (value nil)
+                              (er soft 'top \"Failed!\"))
+                           'top state t)
+               (value '(value-triple :success))))")
  (USING-COMPUTED-HINTS
   (COMPUTED-HINTS HINTS)
   "How to use computed hints

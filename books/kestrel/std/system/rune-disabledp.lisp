@@ -11,16 +11,13 @@
 (in-package "ACL2")
 
 (include-book "std/util/define" :dir :system)
-(include-book "xdoc/constructors" :dir :system)
+(include-book "system/kestrel" :dir :system)
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
-(define guard-verified-p ((fn/thm symbolp) (wrld plist-worldp))
+(define rune-disabledp ((rune (runep rune (w state))) state)
   :returns (yes/no booleanp)
-  :parents (std/system/function-queries std/system/theorem-queries)
-  :short "Check if a named function or theorem is @(tsee guard)-verified."
-  :long
-  (xdoc::topstring-p
-   "See @(tsee guard-verified-p+) for
-    a logic-friendly variant of this utility.")
-  (eq (symbol-class fn/thm wrld) :common-lisp-compliant))
+  :verify-guards nil
+  :parents (std/system)
+  :short "Check if a @(see rune) is disabled."
+  (if (member-equal rune (disabledp (cadr rune))) t nil))
