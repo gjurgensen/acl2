@@ -6000,7 +6000,7 @@ Subtopics
 
   where top-fn is a function symbol and the unary-fni are unary
   function symbols, or more generally, these are all macro aliases
-  for function symbols (see [macro-aliases-table]).
+  for such function symbols (see [macro-aliases-table]).
 
   For more information see [invisible-fns-table].  Also see
   [set-invisible-fns-table], which explains how to set the entire
@@ -83269,6 +83269,13 @@ Changes to Existing Features
   still provides lemmas that may be helpful for reasoning about
   hash-table fields, as well as some tests.  See also [defstobj].
 
+  Added suitable [guard]s, with custom error messages, to
+  [add-invisible-fns] and to [remove-invisible-fns].  Also removed
+  confusing messages for each in the case of redundancy.  Thanks to
+  Pete Manolios for pointing us to a bug in the documentation for the
+  latter (which we have fixed), which led us to the addition of
+  guards.
+
 
 New Features
 
@@ -97306,8 +97313,8 @@ Subtopics
   "Make some unary functions no longer invisible
 
     Examples:
-    (remove-invisible-fns (binary-+ unary-- foo)
-    (remove-invisible-fns (+ unary-- foo)
+    (remove-invisible-fns binary-+ unary-- foo)
+    (remove-invisible-fns + unary-- foo)
 
   The setting above has makes unary functions [unary--] and foo no
   longer ``invisible'' for the purposes of applying permutative
@@ -97318,7 +97325,7 @@ Subtopics
 
   where top-fn is a function symbol and the unary-fni are unary
   function symbols, or more generally, these are all macro aliases
-  for function symbols (see [macro-aliases-table]).
+  for such function symbols (see [macro-aliases-table]).
 
   See [add-invisible-fns] and also see [invisible-fns-table] and see
   [set-invisible-fns-table].")

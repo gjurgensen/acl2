@@ -3593,7 +3593,8 @@ and @(tsee include-book)"
 
 (defxdoc add-invisible-fns
   :parents (loop-stopper)
-  :short "Make some unary functions invisible to the @(see loop-stopper) algorithm"
+  :short "Make some unary functions invisible to the @(see loop-stopper)
+ algorithm"
   :long "@({
   Examples:
   (add-invisible-fns binary-+ unary-- foo)
@@ -3612,8 +3613,8 @@ and @(tsee include-book)"
  })
 
  <p>where @('top-fn') is a function symbol and the @('unary-fni') are unary
- function symbols, or more generally, these are all macro aliases for function
- symbols (see @(see macro-aliases-table)).</p>
+ function symbols, or more generally, these are all macro aliases for such
+ function symbols (see @(see macro-aliases-table)).</p>
 
  <p>For more information see @(see invisible-fns-table).  Also see @(see
  set-invisible-fns-table), which explains how to set the entire table in a
@@ -84648,6 +84649,12 @@ it."
  provides lemmas that may be helpful for reasoning about hash-table fields, as
  well as some tests.  See also @(tsee defstobj).</p>
 
+ <p>Added suitable @(see guard)s, with custom error messages, to @(tsee
+ add-invisible-fns) and to @(tsee remove-invisible-fns).  Also removed
+ confusing messages for each in the case of redundancy.  Thanks to Pete
+ Manolios for pointing us to a bug in the documentation for the latter (which
+ we have fixed), which led us to the addition of guards.</p>
+
  <h3>New Features</h3>
 
  <p>A new @(tsee xargs) keyword, @(':guard-simplify') (default @('t')),
@@ -95971,8 +95978,8 @@ arithmetic) for libraries of @(see books) for arithmetic reasoning.</p>")
   :short "Make some unary functions no longer invisible"
   :long "@({
   Examples:
-  (remove-invisible-fns (binary-+ unary-- foo)
-  (remove-invisible-fns (+ unary-- foo)
+  (remove-invisible-fns binary-+ unary-- foo)
+  (remove-invisible-fns + unary-- foo)
  })
 
  <p>The setting above has makes unary functions @(tsee unary--) and @('foo') no
@@ -95985,8 +95992,8 @@ arithmetic) for libraries of @(see books) for arithmetic reasoning.</p>")
  })
 
  <p>where @('top-fn') is a function symbol and the @('unary-fni') are unary
- function symbols, or more generally, these are all macro aliases for function
- symbols (see @(see macro-aliases-table)).</p>
+ function symbols, or more generally, these are all macro aliases for such
+ function symbols (see @(see macro-aliases-table)).</p>
 
  <p>See @(see add-invisible-fns) and also see @(see invisible-fns-table) and
  see @(see set-invisible-fns-table).</p>")
