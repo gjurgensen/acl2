@@ -6000,7 +6000,7 @@ Subtopics
 
   where top-fn is a function symbol and the unary-fni are unary
   function symbols, or more generally, these are all macro aliases
-  for function symbols (see [macro-aliases-table]).
+  for such function symbols (see [macro-aliases-table]).
 
   For more information see [invisible-fns-table].  Also see
   [set-invisible-fns-table], which explains how to set the entire
@@ -59689,10 +59689,18 @@ Subtopics
   (see [verify-termination]).  To turn off memoization, see
   [unmemoize].
 
-  Memoize is illegal for a function if its arguments include [state] or
-  if it returns any [stobj]s.  A stobj can be an input of a memoized
-  function, but in that case, the memoization table for that stobj
-  will be cleared every time that stobj is updated.
+  Memoize is illegal for a function if its arguments include [state];
+  if it returns any [stobj]s; if it has been excluded by
+  [never-memoize]; or if it is excluded because it is ``special'' in
+  the sense that it is in the \"COMMON-LISP\" [package], it has no
+  fixed output signature (i.e., it is [if] or [return-last]), it has
+  associated raw-Lisp code, or it is used in the implementation of
+  [hons-and-memoization].  A constrained function (typically, one
+  that is introduced in the signature of an [encapsulate] event)
+  cannot be memoized; in that case, one may wish to memoize its
+  caller or attachment (see [defattach]).  A stobj can be an input of
+  a memoized function, but in that case, the memoization table for
+  that stobj will be cleared every time that stobj is updated.
 
   By default, memoize does not store results when any attachments have
   been used (see [defattach]).  However, such results are stored when
@@ -83261,6 +83269,13 @@ Changes to Existing Features
   still provides lemmas that may be helpful for reasoning about
   hash-table fields, as well as some tests.  See also [defstobj].
 
+  Added suitable [guard]s, with custom error messages, to
+  [add-invisible-fns] and to [remove-invisible-fns].  Also removed
+  confusing messages for each in the case of redundancy.  Thanks to
+  Pete Manolios for pointing us to a bug in the documentation for the
+  latter (which we have fixed), which led us to the addition of
+  guards.
+
 
 New Features
 
@@ -83410,6 +83425,18 @@ Bug Fixes
   an example that exhibited this bug.  (A slightly simplified version
   of his example may be found in a comment in the definition of
   function encapsulate-pass-2, ACL2 source file other-events.lisp.)
+
+  [Defstobj] now provides a suitable error message, instead of an
+  implementation error, when new names are duplicated after renaming.
+  Here are examples that now have improved error messages.
+
+    (defstobj st x :renaming ((create-st x)))
+    (defstobj st fld :renaming ((fld create-st)))
+    (defstobj st fld1 fld2 :renaming ((fld1 fld) (fld2 fld)))
+
+  We fixed an obscure error message when attempting to [memoize] either
+  IF or RETURN-LAST, and we improved the [memoize] documentation to
+  mention these and other restrictions on what can be memoized.
 
 
 Changes at the System Level
@@ -89934,11 +89961,11 @@ A Single Performance Comparison
   that maps a predicate over a list and checks that the predicate
   holds for every element.
 
-      (defun$ always$ (pred lst)
-             (if (endp lst)
-    	     t
-    	     (and (apply$ pred (list (car lst)))
-    		  (always$ pred (cdr lst)))))
+    (defun$ always$ (pred lst)
+           (if (endp lst)
+               t
+               (and (apply$ pred (list (car lst)))
+                    (always$ pred (cdr lst)))))
 
   and define the function that builds a list of the first n+1 naturals
   and use it to define the misleadingly named constant *million*
@@ -97286,8 +97313,8 @@ Subtopics
   "Make some unary functions no longer invisible
 
     Examples:
-    (remove-invisible-fns (binary-+ unary-- foo)
-    (remove-invisible-fns (+ unary-- foo)
+    (remove-invisible-fns binary-+ unary-- foo)
+    (remove-invisible-fns + unary-- foo)
 
   The setting above has makes unary functions [unary--] and foo no
   longer ``invisible'' for the purposes of applying permutative
@@ -97298,7 +97325,7 @@ Subtopics
 
   where top-fn is a function symbol and the unary-fni are unary
   function symbols, or more generally, these are all macro aliases
-  for function symbols (see [macro-aliases-table]).
+  for such function symbols (see [macro-aliases-table]).
 
   See [add-invisible-fns] and also see [invisible-fns-table] and see
   [set-invisible-fns-table].")
@@ -122829,22 +122856,22 @@ Why Warrants Don't Render Theorems Vacuous
   of LAMBDA objects.  IGNORE and IGNORABLE declarations inside the
   LAMBDA are effective.
 
-      ACL2 !>(set-ignore-ok t)
-      T
-      ACL2 !>(well-formed-lambda-objectp
-              '(LAMBDA (X Y)
-                 (DECLARE (XARGS :GUARD (NATP X) :SPLIT-TYPES T))
-                 (BINARY-+ '1 X))
-              (w state))
-      NIL
+    ACL2 !>(set-ignore-ok t)
+    T
+    ACL2 !>(well-formed-lambda-objectp
+            '(LAMBDA (X Y)
+               (DECLARE (XARGS :GUARD (NATP X) :SPLIT-TYPES T))
+               (BINARY-+ '1 X))
+            (w state))
+    NIL
 
-      ACL2 !>(well-formed-lambda-objectp
-              '(LAMBDA (X Y)
-                 (DECLARE (XARGS :GUARD (NATP X) :SPLIT-TYPES T)
-    		      (IGNORE Y))
-                 (BINARY-+ '1 X))
-              (w state))
-      T
+    ACL2 !>(well-formed-lambda-objectp
+            '(LAMBDA (X Y)
+               (DECLARE (XARGS :GUARD (NATP X) :SPLIT-TYPES T)
+                        (IGNORE Y))
+               (BINARY-+ '1 X))
+            (w state))
+    T
 
   There should be very few occasions on which you need to know what
   this predicate checks!
