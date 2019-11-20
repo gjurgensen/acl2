@@ -3593,7 +3593,8 @@ and @(tsee include-book)"
 
 (defxdoc add-invisible-fns
   :parents (loop-stopper)
-  :short "Make some unary functions invisible to the @(see loop-stopper) algorithm"
+  :short "Make some unary functions invisible to the @(see loop-stopper)
+ algorithm"
   :long "@({
   Examples:
   (add-invisible-fns binary-+ unary-- foo)
@@ -3612,8 +3613,8 @@ and @(tsee include-book)"
  })
 
  <p>where @('top-fn') is a function symbol and the @('unary-fni') are unary
- function symbols, or more generally, these are all macro aliases for function
- symbols (see @(see macro-aliases-table)).</p>
+ function symbols, or more generally, these are all macro aliases for such
+ function symbols (see @(see macro-aliases-table)).</p>
 
  <p>For more information see @(see invisible-fns-table).  Also see @(see
  set-invisible-fns-table), which explains how to set the entire table in a
@@ -55603,9 +55604,17 @@ it."
  memoization, see @(see unmemoize).</p>
 
  <p>@('Memoize') is illegal for a function if its arguments include @(tsee
- state) or if it returns any @(see stobj)s.  A stobj can be an input of a
- memoized function, but in that case, the memoization table for that stobj will
- be cleared every time that stobj is updated.</p>
+ state); if it returns any @(see stobj)s; if it has been excluded by @(tsee
+ never-memoize); or if it is excluded because it is ``special'' in the sense
+ that it is in the @('\"COMMON-LISP\"') @(see package), it has no fixed output
+ signature (i.e., it is @(tsee IF) or @(tsee RETURN-LAST)), it has associated
+ raw-Lisp code, or it is used in the implementation of @(see
+ hons-and-memoization).  A constrained function (typically, one that is
+ introduced in the signature of an @(tsee encapsulate) event) cannot be
+ memoized; in that case, one may wish to memoize its caller or attachment (see
+ @(see defattach)).  A stobj can be an input of a memoized function, but in
+ that case, the memoization table for that stobj will be cleared every time
+ that stobj is updated.</p>
 
  <p>By default, @('memoize') does not store results when any attachments have
  been used (see @(see defattach)).  However, such results are stored when
@@ -84506,6 +84515,14 @@ it."
 
 ; Updated :doc acknowledgments.
 
+; Added defstobj-fn to *initial-program-fns-with-raw-code*, as per comment in
+; the definition of defstobj-fn.
+
+; Fixed a typo in the error message produced when guard-obligation is applied
+; to a formula that "has the wrong syntactic form for evaluation".
+
+; Deleted the definition of chk-acceptable-verify-guards-formula (dead code).
+
   :parents (release-notes)
   :short "ACL2 Version  8.3 (xxx, 20xx) Notes"
   :long "<p>NOTE!  New users can ignore these release notes, because the @(see
@@ -84631,6 +84648,12 @@ it."
  modifications to both the new code and existing code).  That book still
  provides lemmas that may be helpful for reasoning about hash-table fields, as
  well as some tests.  See also @(tsee defstobj).</p>
+
+ <p>Added suitable @(see guard)s, with custom error messages, to @(tsee
+ add-invisible-fns) and to @(tsee remove-invisible-fns).  Also removed
+ confusing messages for each in the case of redundancy.  Thanks to Pete
+ Manolios for pointing us to a bug in the documentation for the latter (which
+ we have fixed), which led us to the addition of guards.</p>
 
  <h3>New Features</h3>
 
@@ -84771,6 +84794,20 @@ it."
  this bug.  (A slightly simplified version of his example may be found in
  a comment in the definition of function @('encapsulate-pass-2'), ACL2 source
  file @('other-events.lisp').)</p>
+
+ <p>@(tsee Defstobj) now provides a suitable error message, instead of an
+ implementation error, when new names are duplicated after renaming.  Here are
+ examples that now have improved error messages.</p>
+
+ @({
+ (defstobj st x :renaming ((create-st x)))
+ (defstobj st fld :renaming ((fld create-st)))
+ (defstobj st fld1 fld2 :renaming ((fld1 fld) (fld2 fld)))
+ })
+
+ <p>We fixed an obscure error message when attempting to @(see memoize) either
+ @('IF') or @('RETURN-LAST'), and we improved the @(see memoize) documentation
+ to mention these and other restrictions on what can be memoized.</p>
 
  <h3>Changes at the System Level</h3>
 
@@ -89481,10 +89518,9 @@ arithmetic) for libraries of @(see books) for arithmetic reasoning.</p>")
   @({
   (defun$ always$ (pred lst)
          (if (endp lst)
-	     t
-	     (and (apply$ pred (list (car lst)))
-		  (always$ pred (cdr lst)))))
-
+             t
+             (and (apply$ pred (list (car lst)))
+                  (always$ pred (cdr lst)))))
   })
 
   <p>and define the function that builds a list of the first @('n+1') naturals
@@ -95942,8 +95978,8 @@ arithmetic) for libraries of @(see books) for arithmetic reasoning.</p>")
   :short "Make some unary functions no longer invisible"
   :long "@({
   Examples:
-  (remove-invisible-fns (binary-+ unary-- foo)
-  (remove-invisible-fns (+ unary-- foo)
+  (remove-invisible-fns binary-+ unary-- foo)
+  (remove-invisible-fns + unary-- foo)
  })
 
  <p>The setting above has makes unary functions @(tsee unary--) and @('foo') no
@@ -95956,8 +95992,8 @@ arithmetic) for libraries of @(see books) for arithmetic reasoning.</p>")
  })
 
  <p>where @('top-fn') is a function symbol and the @('unary-fni') are unary
- function symbols, or more generally, these are all macro aliases for function
- symbols (see @(see macro-aliases-table)).</p>
+ function symbols, or more generally, these are all macro aliases for such
+ function symbols (see @(see macro-aliases-table)).</p>
 
  <p>See @(see add-invisible-fns) and also see @(see invisible-fns-table) and
  see @(see set-invisible-fns-table).</p>")
@@ -121619,7 +121655,7 @@ introduction-to-the-tau-system) for more information about Tau.</dd>
   ACL2 !>(well-formed-lambda-objectp
           '(LAMBDA (X Y)
              (DECLARE (XARGS :GUARD (NATP X) :SPLIT-TYPES T)
-		      (IGNORE Y))
+                      (IGNORE Y))
              (BINARY-+ '1 X))
           (w state))
   T
