@@ -14735,7 +14735,8 @@ Subtopics
   queries that are more at a user level.  In particular, keywords
   marked below with * probably require an implementor's knowledge of
   the system to use effectively.  They are supported but not well
-  documented.  More is said on this topic following the table.
+  documented.  More is said on this topic following the table.  For
+  background on the notion of ``translated'' term, see [term].
 
     :symbol             (brr@ :symbol)
     -------             ---------------------
