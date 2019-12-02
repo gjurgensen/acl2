@@ -14735,7 +14735,8 @@ Subtopics
   queries that are more at a user level.  In particular, keywords
   marked below with * probably require an implementor's knowledge of
   the system to use effectively.  They are supported but not well
-  documented.  More is said on this topic following the table.
+  documented.  More is said on this topic following the table.  For
+  background on the notion of ``translated'' term, see [term].
 
     :symbol             (brr@ :symbol)
     -------             ---------------------
@@ -83360,6 +83361,15 @@ Heuristic and Efficiency Improvements
   bug was exposed in source function raw-ev-fncall; that has been
   fixed.
 
+  Reduced the computation and consing for [theory] management, which
+  might reduce time by a percent or two when including some books.
+  (Technical note.  The idea was to expand the cases in which the use
+  of [compress1] is replaced by more efficient code.  That code is
+  specific to enabled structures and may be found in ACL2 source
+  function update-enabled-structure-array.  We also arranged, in
+  load-theory-into-enabled-structure, to double the array size when
+  that exceeds the expansion by a minimal suitable multiple of 500.)
+
 
 Bug Fixes
 
@@ -83437,6 +83447,13 @@ Bug Fixes
   We fixed an obscure error message when attempting to [memoize] either
   IF or RETURN-LAST, and we improved the [memoize] documentation to
   mention these and other restrictions on what can be memoized.
+
+  Fixed erroneous [type] declarations in array copying functions.
+  (Technical notes.  (1) It's not clear that these bugs have ever had
+  any effect.  (2) Those source code functions have been renamed by
+  dropping their \"stobj-\" prefixes from stobj-copy-array-xxx, now
+  that one of them has application to other than stobjs, in new code
+  mentioned above for enabled structures.)
 
 
 Changes at the System Level
