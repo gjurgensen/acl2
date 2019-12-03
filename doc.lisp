@@ -54305,9 +54305,7 @@ Subtopics
     (defun logic-fnsp (term wrld)
            (declare (xargs :guard (and (plist-worldp wrld)
                                        (pseudo-termp term))))
-           (cond ((mbe :logic (atom term)
-                       :exec (variablep term))
-                  t)
+           (cond ((variablep term) t)
                  ((fquotep term) t)
                  ((flambdap (ffn-symb term))
                   (and (logic-fnsp (lambda-body (ffn-symb term))
@@ -83369,6 +83367,11 @@ Heuristic and Efficiency Improvements
   function update-enabled-structure-array.  We also arranged, in
   load-theory-into-enabled-structure, to double the array size when
   that exceeds the expansion by a minimal suitable multiple of 500.)
+
+  Changed how [compound-recognizer] rules are stored in the logical
+  [world] (per function symbol, rather than in a single alist), which
+  a few experiments suggest might reduce time by a couple percent or
+  so.
 
 
 Bug Fixes
