@@ -84524,6 +84524,10 @@ it."
 
 ; Deleted the definition of chk-acceptable-verify-guards-formula (dead code).
 
+; Eliminated an mbe call in the definition of logic-fnsp whose :logic and :exec
+; were the same after macroexpansion.  Thanks to Alessandro Coglio for noticing
+; this oddity.
+
   :parents (release-notes)
   :short "ACL2 Version  8.3 (xxx, 20xx) Notes"
   :long "<p>NOTE!  New users can ignore these release notes, because the @(see
@@ -84740,6 +84744,10 @@ it."
  @('update-enabled-structure-array').  We also arranged, in
  @('load-theory-into-enabled-structure'), to double the array size when that
  exceeds the expansion by a minimal suitable multiple of 500.)</p>
+
+ <p>Changed how @(see compound-recognizer) rules are stored in the logical
+ @(see world) (per function symbol, rather than in a single alist), which a few
+ experiments suggest might reduce time by a couple percent or so.</p>
 
  <h3>Bug Fixes</h3>
 
