@@ -83373,6 +83373,13 @@ Heuristic and Efficiency Improvements
   a few experiments suggest might reduce time by a couple percent or
   so.
 
+  A tweak was made to how properties are ordered when stored in the
+  ACL2 logical [world], which experiments show provides small
+  speed-ups.  (Technical note: the change is to constant
+  *current-acl2-world-key-ordering*, and also, functions
+  [symbol-class] and [logicp] avoid calling [getprop] for the symbol,
+  cons.)
+
 
 Bug Fixes
 
