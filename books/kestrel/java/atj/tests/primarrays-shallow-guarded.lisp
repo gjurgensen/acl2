@@ -10,26 +10,20 @@
 
 (in-package "ACL2")
 
-(include-book "fibonacci")
-
-(include-book "../types-for-built-ins")
+(include-book "primarrays")
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
-; Specialize the input and output types of the Fibonacci function.
+; Specialize the input and output types of the tested functions.
 
-(java::def-atj-main-function-type fib (:ainteger) :ainteger)
-
-(java::def-atj-main-function-type fib-tail
-                                  (:ainteger :ainteger :ainteger) :ainteger)
+(java::def-atj-main-function-type read-from-array (:jint[] :jint :jint) :jint)
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
-; Generate Java code for the Fibonacci function, with testing code.
+; Generate Java code for the tested functions.
+; The automatic generation of tests is not supported yet.
 
-(java::atj fib
-           fib-tail
+(java::atj read-from-array
            :deep nil
            :guards t
-           :java-class "FibonacciShallowGuarded"
-           :tests *fib-tests*)
+           :java-class "PrimarraysShallowGuarded")

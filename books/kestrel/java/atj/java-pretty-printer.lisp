@@ -10,7 +10,7 @@
 
 (in-package "JAVA")
 
-(include-book "abstract-syntax")
+(include-book "java-abstract-syntax")
 
 (include-book "kestrel/utilities/messages" :dir :system)
 (include-book "kestrel/utilities/strings/hexchars" :dir :system)
@@ -22,7 +22,7 @@
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
-(defxdoc+ atj-pretty-printer
+(defxdoc+ atj-java-pretty-printer
   :parents (atj-implementation)
   :short "A pretty-printer for the abstract syntax of Java,
           for ATJ's implementation."
@@ -659,7 +659,7 @@
                                      (print-jexpr-list
                                       expr.init (jexpr-rank-expression))))
                 :array (msg "~@0[~@1]"
-                            (print-jexpr expr.array (jexpr-rank-primary))
+                            (print-jexpr expr.array (jexpr-rank-postfix))
                             (print-jexpr expr.index (jexpr-rank-expression)))
                 :newclass (msg "new ~@0(~@1)"
                                (print-jtype expr.type)

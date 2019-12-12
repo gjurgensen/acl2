@@ -84528,6 +84528,10 @@ it."
 ; were the same after macroexpansion.  Thanks to Alessandro Coglio for noticing
 ; this oddity.
 
+; Significantly sped up function update-fgetprop-stats, which is defined in a
+; comment and was used in the enhancement to *current-acl2-world-key-ordering*
+; described below.
+
   :parents (release-notes)
   :short "ACL2 Version  8.3 (xxx, 20xx) Notes"
   :long "<p>NOTE!  New users can ignore these release notes, because the @(see
@@ -84748,6 +84752,13 @@ it."
  <p>Changed how @(see compound-recognizer) rules are stored in the logical
  @(see world) (per function symbol, rather than in a single alist), which a few
  experiments suggest might reduce time by a couple percent or so.</p>
+
+ <p>A tweak was made to how properties are ordered when stored in the ACL2
+ logical @(see world), which experiments show provides small speed-ups.
+ (Technical note: the change is to constant
+ @('*current-acl2-world-key-ordering*'), and also, functions @(tsee
+ symbol-class) and @(tsee logicp) avoid calling @(tsee getprop) for the symbol,
+ @('cons').)</p>
 
  <h3>Bug Fixes</h3>
 
