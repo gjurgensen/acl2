@@ -31303,7 +31303,21 @@ Subtopics
   The call (evens x) returns the restriction of the true-list x to its
   even-indexed members (with zero-based indexing).  Note that if x is
   a list (k1 a1 k2 a2 ... kn an) that satisfies the predicate
-  [keyword-value-listp], then (evens x) lists the keys ki of x.")
+  [keyword-value-listp], then (evens x) lists the keys ki of x.
+  Thus, the following is a theorem.
+
+    (thm (iff (keyword-value-listp l)
+              (and (true-listp l)
+                   (evenp (len l))
+                   (keyword-listp (evens l))))
+         :hints ((\"Goal\" :induct (keyword-value-listp l))))
+
+  Function: <evens>
+
+    (defun evens (l)
+           (declare (xargs :guard (true-listp l)))
+           (cond ((endp l) nil)
+                 (t (cons (car l) (evens (cddr l))))))")
  (EVENT (POINTERS) "See [events].")
  (EVENTS
   (ACL2)
@@ -84705,7 +84719,13 @@ Subtopics
   The call (odds x) returns the restriction of the true-list x to its
   odd-indexed members (with zero-based indexing).  Note that if x is
   a list (k1 a1 k2 a2 ... kn an) that satisfies the predicate
-  [keyword-value-listp], then (odds x) lists the values ai of x.")
+  [keyword-value-listp], then (odds x) lists the values ai of x.
+
+  Function: <odds>
+
+    (defun odds (l)
+           (declare (xargs :guard (true-listp l)))
+           (evens (cdr l)))")
  (OK-IF
   (BREAK-REWRITE)
   "Conditional exit from break-rewrite

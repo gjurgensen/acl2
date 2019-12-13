@@ -28017,13 +28017,14 @@ ld) and @(tsee include-book)"
  @('x') to its even-indexed members (with zero-based indexing).  Note that if
  @('x') is a list @('(k1 a1 k2 a2 ... kn an)') that satisfies the predicate
  @(tsee keyword-value-listp), then @('(evens x)') lists the keys @('ki') of
- @('x'). Thus, the following is a theorem.</p>
+ @('x').  Thus, the following is a theorem.</p>
 
  @({
   (thm (iff (keyword-value-listp l)
             (and (true-listp l)
                  (evenp (len l))
-                 (keyword-listp (evens l)))))
+                 (keyword-listp (evens l))))
+       :hints ((\"Goal\" :induct (keyword-value-listp l))))
  })
 
  @(def evens)")
