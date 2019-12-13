@@ -28017,7 +28017,16 @@ ld) and @(tsee include-book)"
  @('x') to its even-indexed members (with zero-based indexing).  Note that if
  @('x') is a list @('(k1 a1 k2 a2 ... kn an)') that satisfies the predicate
  @(tsee keyword-value-listp), then @('(evens x)') lists the keys @('ki') of
- @('x').</p>")
+ @('x'). Thus, the following is a theorem.</p>
+
+ @({
+  (thm (iff (keyword-value-listp l)
+            (and (true-listp l)
+                 (evenp (len l))
+                 (keyword-listp (evens l)))))
+ })
+
+ @(def evens)")
 
 (defxdoc events
   :parents (acl2)
@@ -85682,7 +85691,9 @@ arithmetic) for libraries of @(see books) for arithmetic reasoning.</p>")
  @('x') to its odd-indexed members (with zero-based indexing).  Note that if
  @('x') is a list @('(k1 a1 k2 a2 ... kn an)') that satisfies the predicate
  @(tsee keyword-value-listp), then @('(odds x)') lists the values @('ai') of
- @('x').</p>")
+ @('x').</p>
+
+ @(def odds)")
 
 (defxdoc ok-if
   :parents (break-rewrite)
