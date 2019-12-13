@@ -84720,7 +84720,22 @@ it."
 
  <p>Improved efficiency of the maintenance of @(see stobj)-related arrays (the
  so-called stobj accessor arrays) by using the new function, @(tsee
- maybe-flush-and-compress1).</p>
+ maybe-flush-and-compress1).  That code is related to printing stobj field
+ accesses using field names rather than indices.  (For background on printing
+ untranslated terms, see @(see term).)  For example, after evaluating
+ the form @('(defstobj st fld)'), the form</p>
+
+ @({
+ (thm (equal (fld st) xxx)
+      :hints ((\"Goal\" :in-theory (disable nth))))
+ })
+
+ <p>produces the (untranslated) goal @('(EQUAL (NTH *FLD* ST) XXX)') rather
+ than @('(EQUAL (NTH 0 ST) XXX)').  A further change has been to reduce the
+ frequency of ensuring that those @(see arrays) are up-to-date.  (Technical
+ note: this latter change is to source function @('update-wrld-structures'),
+ which has an explanatory comment, including an example of a 2.6% time
+ reduction.)</p>
 
  <p>Improved the speed of @(see theory) updates by avoiding repeated length
  computations.  As a result, we have seen about a 5% time reduction on MacOS,
