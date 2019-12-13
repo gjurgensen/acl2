@@ -28017,7 +28017,16 @@ ld) and @(tsee include-book)"
  @('x') to its even-indexed members (with zero-based indexing).  Note that if
  @('x') is a list @('(k1 a1 k2 a2 ... kn an)') that satisfies the predicate
  @(tsee keyword-value-listp), then @('(evens x)') lists the keys @('ki') of
- @('x').</p>")
+ @('x'). Thus, the following is a theorem.</p>
+
+ @({
+  (thm (iff (keyword-value-listp l)
+            (and (true-listp l)
+                 (evenp (len l))
+                 (keyword-listp (evens l)))))
+ })
+
+ @(def evens)")
 
 (defxdoc events
   :parents (acl2)
@@ -84711,7 +84720,22 @@ it."
 
  <p>Improved efficiency of the maintenance of @(see stobj)-related arrays (the
  so-called stobj accessor arrays) by using the new function, @(tsee
- maybe-flush-and-compress1).</p>
+ maybe-flush-and-compress1).  That code is related to printing stobj field
+ accesses using field names rather than indices.  (For background on printing
+ untranslated terms, see @(see term).)  For example, after evaluating
+ the form @('(defstobj st fld)'), the form</p>
+
+ @({
+ (thm (equal (fld st) xxx)
+      :hints ((\"Goal\" :in-theory (disable nth))))
+ })
+
+ <p>produces the (untranslated) goal @('(EQUAL (NTH *FLD* ST) XXX)') rather
+ than @('(EQUAL (NTH 0 ST) XXX)').  A further change has been to reduce the
+ frequency of ensuring that those @(see arrays) are up-to-date.  (Technical
+ note: this latter change is to source function @('update-wrld-structures'),
+ which has an explanatory comment, including an example of a 2.6% time
+ reduction.)</p>
 
  <p>Improved the speed of @(see theory) updates by avoiding repeated length
  computations.  As a result, we have seen about a 5% time reduction on MacOS,
@@ -84852,6 +84876,12 @@ it."
  preceding release, where we thanked the acl2-books email list (in particular
  we got feedback from Alessandro Coglio, Shilpi Goel, David Rager, Eric Smith,
  and Sol Swords, all helpful) for working through this issue.</p>
+
+ <p>The keyword @(':ACL2') is now a member of the Lisp global, @('*features*'),
+ which allows other programs to use read-time conditionals @('#+acl2') /
+ @('#-acl2') to indicate the presence or absence of ACL2.  Thanks to Andrew
+ Walter for suggesting that this might be useful, for example for Quicklisp
+ code.</p>
 
  <h3>EMACS Support</h3>
 
@@ -85682,7 +85712,9 @@ arithmetic) for libraries of @(see books) for arithmetic reasoning.</p>")
  @('x') to its odd-indexed members (with zero-based indexing).  Note that if
  @('x') is a list @('(k1 a1 k2 a2 ... kn an)') that satisfies the predicate
  @(tsee keyword-value-listp), then @('(odds x)') lists the values @('ai') of
- @('x').</p>")
+ @('x').</p>
+
+ @(def odds)")
 
 (defxdoc ok-if
   :parents (break-rewrite)
