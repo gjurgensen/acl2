@@ -84868,6 +84868,12 @@ it."
  we got feedback from Alessandro Coglio, Shilpi Goel, David Rager, Eric Smith,
  and Sol Swords, all helpful) for working through this issue.</p>
 
+ <p>The keyword @(':ACL2') is now a member of the Lisp global, @('*features*'),
+ which allows other programs to use read-time conditionals @('#+acl2') /
+ @('#-acl2') to indicate the presence or absence of ACL2.  Thanks to Andrew
+ Walter for suggesting that this might be useful, for example for Quicklisp
+ code.</p>
+
  <h3>EMACS Support</h3>
 
  <p>The command `@('Ctl-t p')' now works in Emacs 25.</p>
