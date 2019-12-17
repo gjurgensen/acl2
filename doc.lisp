@@ -31303,7 +31303,21 @@ Subtopics
   The call (evens x) returns the restriction of the true-list x to its
   even-indexed members (with zero-based indexing).  Note that if x is
   a list (k1 a1 k2 a2 ... kn an) that satisfies the predicate
-  [keyword-value-listp], then (evens x) lists the keys ki of x.")
+  [keyword-value-listp], then (evens x) lists the keys ki of x.
+  Thus, the following is a theorem.
+
+    (thm (iff (keyword-value-listp l)
+              (and (true-listp l)
+                   (evenp (len l))
+                   (keyword-listp (evens l))))
+         :hints ((\"Goal\" :induct (keyword-value-listp l))))
+
+  Function: <evens>
+
+    (defun evens (l)
+           (declare (xargs :guard (true-listp l)))
+           (cond ((endp l) nil)
+                 (t (cons (car l) (evens (cddr l))))))")
  (EVENT (POINTERS) "See [events].")
  (EVENTS
   (ACL2)
@@ -83326,7 +83340,20 @@ Heuristic and Efficiency Improvements
 
   Improved efficiency of the maintenance of [stobj]-related arrays (the
   so-called stobj accessor arrays) by using the new function,
-  [maybe-flush-and-compress1].
+  [maybe-flush-and-compress1].  That code is related to printing
+  stobj field accesses using field names rather than indices.  (For
+  background on printing untranslated terms, see [term].)  For
+  example, after evaluating the form (defstobj st fld), the form
+
+    (thm (equal (fld st) xxx)
+         :hints ((\"Goal\" :in-theory (disable nth))))
+
+  produces the (untranslated) goal (EQUAL (NTH *FLD* ST) XXX) rather
+  than (EQUAL (NTH 0 ST) XXX).  A further change has been to reduce
+  the frequency of ensuring that those [arrays] are up-to-date.
+  (Technical note: this latter change is to source function
+  update-wrld-structures, which has an explanatory comment, including
+  an example of a 2.6% time reduction.)
 
   Improved the speed of [theory] updates by avoiding repeated length
   computations.  As a result, we have seen about a 5% time reduction
@@ -83372,6 +83399,17 @@ Heuristic and Efficiency Improvements
   [world] (per function symbol, rather than in a single alist), which
   a few experiments suggest might reduce time by a couple percent or
   so.
+
+  A tweak was made to how properties are ordered when stored in the
+  ACL2 logical [world], which experiments show provides small
+  speed-ups.  (Technical note: the change is to constant
+  *current-acl2-world-key-ordering*, and also, functions
+  [symbol-class] and [logicp] avoid calling [getprop] for the symbol,
+  cons.)
+
+  ACL2 now avoids [summary] calculations during [include-book].  We
+  have seen this change cut more than 9% of the time for the event
+  (include-book \"centaur/sv/top\" :dir :system).
 
 
 Bug Fixes
@@ -83466,6 +83504,12 @@ Changes at the System Level
   where we thanked the acl2-books email list (in particular we got
   feedback from Alessandro Coglio, Shilpi Goel, David Rager, Eric
   Smith, and Sol Swords, all helpful) for working through this issue.
+
+  The keyword :ACL2 is now a member of the Lisp global, *features*,
+  which allows other programs to use read-time conditionals #+acl2 /
+  #-acl2 to indicate the presence or absence of ACL2.  Thanks to
+  Andrew Walter for suggesting that this might be useful, for example
+  for Quicklisp code.
 
 
 EMACS Support
@@ -84679,7 +84723,13 @@ Subtopics
   The call (odds x) returns the restriction of the true-list x to its
   odd-indexed members (with zero-based indexing).  Note that if x is
   a list (k1 a1 k2 a2 ... kn an) that satisfies the predicate
-  [keyword-value-listp], then (odds x) lists the values ai of x.")
+  [keyword-value-listp], then (odds x) lists the values ai of x.
+
+  Function: <odds>
+
+    (defun odds (l)
+           (declare (xargs :guard (true-listp l)))
+           (evens (cdr l)))")
  (OK-IF
   (BREAK-REWRITE)
   "Conditional exit from break-rewrite
