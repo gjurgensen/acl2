@@ -84785,6 +84785,10 @@ it."
  symbol-class) and @(tsee logicp) avoid calling @(tsee getprop) for the symbol,
  @('cons').)</p>
 
+ <p>ACL2 now avoids @(see summary) calculations during @(tsee include-book).
+ We have seen this change cut more than 9% of the time for the event
+ @('(include-book \"centaur/sv/top\" :dir :system)').</p>
+
  <h3>Bug Fixes</h3>
 
  <p>As noted in the documentation for @(see lemma-instance), ACL2 may avoid

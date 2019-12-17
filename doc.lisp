@@ -83407,6 +83407,10 @@ Heuristic and Efficiency Improvements
   [symbol-class] and [logicp] avoid calling [getprop] for the symbol,
   cons.)
 
+  ACL2 now avoids [summary] calculations during [include-book].  We
+  have seen this change cut more than 9% of the time for the event
+  (include-book \"centaur/sv/top\" :dir :system).
+
 
 Bug Fixes
 
