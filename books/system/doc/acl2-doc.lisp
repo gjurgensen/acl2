@@ -107371,7 +107371,8 @@ arithmetic) for libraries of @(see books) for arithmetic reasoning.</p>")
   :long "<p>@('String-append') takes two arguments, which are both strings (if
  the @(see guard) is to be met), and returns a string obtained by concatenating
  together the @(see characters) in the first string followed by those in the
- second.  Also see @(see concatenate), noting that the macro call</p>
+ second.  For a related macro that can take an arbitrary number of string
+ arguments, see @(see concatenate), noting that the macro call</p>
 
  @({
   (concatenate 'string str1 str2).
