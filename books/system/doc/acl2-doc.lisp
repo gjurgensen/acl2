@@ -1236,7 +1236,7 @@
  than once.</p>
 
  <p><i>How ``useless'' attempts can be critical for a proof's success.</i> The
- command @('(accumulated-persistence :useless'))] will list rules that did not
+ command @('(accumulated-persistence :useless')) will list rules that did not
  contribute directly to the proof (see @(see accumulated-persistence), in
  particular the discussion of ``useless'' there).  However, a ``useless'' rule
  can on rare occasions be critical to the success of a proof.  In the following
@@ -21010,6 +21010,48 @@ subtree of X with T, without duplication.</p>
   :long "<p>This is an advanced feature that requires a trust tag.  For
  explanation, including an example, see @(see return-last).</p>")
 
+(defxdoc defmacro-untouchable
+  :parents (macros events programming defmacro)
+  :short "Define an ``untouchable'' macro"
+  :long "<p>Strictly speaking, macros cannot be untouchable the way functions
+ are untouchable; see @(see push-untouchable).  However, one can define a macro
+ that is, in effect, untouchable, by using @('defmacro-untouchable') to
+ introduce a trivial untouchable function into the definition.  Consider for
+ example the following definition.</p>
+
+ @({
+ (defmacro-untouchable mac (x)
+   (list 'consp x))
+ })
+
+ <p>Let's look at the single-step macroexpansion of a call of the newly-defined
+ macro, @('mac').</p>
+
+ @({
+ ACL2 !>:trans1 (mac (f a))
+  (PROG2$ (UNTOUCHABLE-MARKER 'MAC)
+          (CONSP (F A)))
+ ACL2 !>
+ })
+
+ <p>We see that this expansion is just as if we had used @(tsee defmacro)
+ instead of @('defmacro-untouchable'), except that a @(tsee prog2$) wrapper
+ lays down a call of @('untouchable-marker'), which is a built-in untouchable
+ function.  In effect, that call makes the macro, @('mac'), untouchable.</p>
+
+ <p>Of course, you are welcome to write your own variant of
+ @('defmacro-untouchable'), introducing your own untouchable function.  The
+ result would presumably be roughly equivalent to using
+ @('defmacro-untouchable'); but using @('defmacro-untouchable') has two
+ advantages.  One advantage is that calls of a macro introduced with
+ @('defmacro-untouchable') should have no Lisp execution overhead caused by the
+ use of @(tsee prog2$) or @('untouchable-marker'), because of special handling
+ provided by ACL2 for such calls of @('prog2$') as well as inlining of
+ @('untouchable-marker').  The other advantage is that an attempt to use the
+ resulting macro without an active trust tag will generally give a more helpful
+ error message, mentioning the prior use of @('defmacro-untouchable') as the
+ source of the error.</p>")
+
 (defxdoc defn
   :parents (defun events)
   :short "Definition with @(see guard) @('t')"
@@ -22563,17 +22605,18 @@ subtree of X with T, without duplication.</p>
  <p><b>Active ttags.</b> Suppose @('tag-name') is a non-@('nil') symbol.  Then
  @('(defttag :tag-name)') sets @(':tag-name') to be the (unique) ``active
  ttag.''  There must be an active ttag in order for there to be any mention of
- certain function and macro symbols, including @(tsee sys-call); evaluate the
- form @('(strip-cars *ttag-fns-and-macros*)') to see the full list of such
- symbols.  On the other hand, @('(defttag nil)') removes the active ttag, if
- any; there is then no active ttag.  The scope of a @('defttag') form in a book
- being certified or included is limited to subsequent forms in the same book
- before the next @('defttag') (if any) in that book.  Similarly, if a
- @('defttag') form is evaluated in the top-level loop, then its effect is
- limited to subsequent forms in the top-level loop before the next @('defttag')
- in the top-level loop (if any).  Moreover, @(tsee certify-book) is illegal
- when a ttag is active; of course, in such a circumstance one can execute
- @('(defttag nil)') in order to allow book certification.</p>
+ certain function, including @(tsee sys-call); evaluate the form @('(strip-cars
+ *ttag-fns*)') to see the full list of such symbols.  The macro @(tsee progn!)
+ similarly requires an active ttag.  On the other hand, @('(defttag nil)')
+ removes the active ttag, if any; there is then no active ttag.  The scope of a
+ @('defttag') form in a book being certified or included is limited to
+ subsequent forms in the same book before the next @('defttag') (if any) in
+ that book.  Similarly, if a @('defttag') form is evaluated in the top-level
+ loop, then its effect is limited to subsequent forms in the top-level loop
+ before the next @('defttag') in the top-level loop (if any).  Moreover, @(tsee
+ certify-book) is illegal when a ttag is active; of course, in such a
+ circumstance one can execute @('(defttag nil)') in order to allow book
+ certification.</p>
 
  <p><b>Ttag notes and the ``certifier.''</b> When a @('defttag') is executed
  with an argument other than @('nil'), output is printed, starting on a fresh
@@ -84542,6 +84585,35 @@ it."
 ; comment and was used in the enhancement to *current-acl2-world-key-ordering*
 ; described below.
 
+; The constant *ttag-fns-and-macros* has been renamed to *ttag-fns*.  It
+; formerly contained a single macro name, progn!, which is no longer in that
+; list but is instead now handled on its own in translate11.  This change was
+; inspired by the removal of the notion of untouchable macro; like that change,
+; it supports the memoization of translate in .cert files, which misses the
+; opportunity to make such checks on macros.
+
+; The function bind-macro-args-keys was very slightly tweaked to improve
+; efficiency.
+
+; The following example illustrates the point made below regarding "the alleged
+; support for untouchable macros was already incomplete".  Consider the
+; following book, say, foo.lisp:
+
+;   (in-package "ACL2")
+;   (defmacro mac (x) x)
+;   (mac (make-event '(defun foo (x) x)))
+;   (defun bar (x) (foo x))
+
+; After certifying foo.lisp, one could (and still can) start a new ACL2
+; session, evaluate (push-untouchable 'mac t), and then include foo.lisp
+; without error.  The reason is that foo.cert stores an expansion-alist that
+; eliminates the call of mac, above:
+
+;   :EXPANSION-ALIST ((2 DEFUN FOO (X) X))
+
+; Indeed, after replacing the call of mac with (mac (defun foo (x) x)), then it
+; was indeed an error to include foo.lisp after (push-untouchable 'mac t).
+
   :parents (release-notes)
   :short "ACL2 Version  8.3 (xxx, 20xx) Notes"
   :long "<p>NOTE!  New users can ignore these release notes, because the @(see
@@ -84674,6 +84746,24 @@ it."
  Manolios for pointing us to a bug in the documentation for the latter (which
  we have fixed), which led us to the addition of guards.</p>
 
+ <p>The notion of <i>untouchable</i> macro is no longer directly supported.
+ Specifically: the form @('(push-untouchable SYM t)') is now illegal if
+ @('SYM') is already the name of a macro; and after this call of @(tsee
+ push-untouchable) it is illegal to define @('SYM') as a macro.  However, a
+ macro can be made effectively untouchable by defining it with the new utility,
+ @(tsee defmacro-untouchable).  Note that the alleged support for untouchable
+ macros was already incomplete, as explained in an example in the form
+ @('(deflabel note-8-3 ...)') in @(see community-book)
+ @('books/system/doc/acl2-doc.lisp').</p>
+
+ <p>The @(see event) macro, @(tsee thm), is now treated like @(tsee defthm) in
+ the following way: if keyword @(':hints') is supplied, then the hints are
+ checked syntactically when skipping proofs (see @(see ld-skip-proofsp)) except
+ during @(tsee include-book) or the second pass of @(tsee encapsulate).  For
+ example, evaluation of the form @('(thm (equal x x) :hints bad-hints)') now
+ causes an error after evaluating @('(set-ld-skip-proofsp t state)'), while
+ before this change, it did not.</p>
+
  <h3>New Features</h3>
 
  <p>A new @(tsee xargs) keyword, @(':guard-simplify') (default @('t')),
@@ -84788,6 +84878,10 @@ it."
  <p>ACL2 now avoids @(see summary) calculations during @(tsee include-book).
  We have seen this change cut more than 9% of the time for the event
  @('(include-book \"centaur/sv/top\" :dir :system)').</p>
+
+ <p>We now avoid translation of @(tsee default-hints) for termination proofs
+ during @(tsee include-book).  We have seen this change cut more than 4% of the
+ time for the event @('(include-book \"centaur/sv/top\" :dir :system)').</p>
 
  <h3>Bug Fixes</h3>
 
@@ -93114,9 +93208,10 @@ arithmetic) for libraries of @(see books) for arithmetic reasoning.</p>")
 (defxdoc push-untouchable
   :parents (defttag)
   :short "Add name or list of names to the list of untouchable symbols"
-  :long "<p>Untouchables are functions or macros that cannot be called, as well
- as @(see state) global variables (see @(see programming-with-state)) that
- cannot be modified or unbound.</p>
+  :long "<p>Untouchables are functions that cannot be called, as well as @(see
+ state) global variables (see @(see programming-with-state)) that cannot be
+ modified or unbound.  Macros can also be untouchable in some sense; see @(see
+ push-untouchable).</p>
 
  @({
   Examples:
@@ -93142,15 +93237,21 @@ arithmetic) for libraries of @(see books) for arithmetic reasoning.</p>")
  clause processor and the metatheorem or clause processor has a @(':')@(tsee
  well-formedness-guarantee) then @('g') may not be made untouchable.</p>
 
+ <p>As noted above, macros may not be made directly untouchable; the macro
+ @(tsee defmacro-untouchable) is provided for that purpose.  Thus, it is an
+ error to evaluate @('(push-untouchable F t)') if @('F') is already a macro
+ name, and it is also an error to define @('F') as a macro when @('F') has been
+ made an untouchable function using @('(push-untouchable F t)').</p>
+
  <p>When a symbol is on the untouchables list it is syntactically illegal for
- any event to call a function or macro of that name, if @('fn-p') is
- non-@('nil'), or to change the value of a state global variable of that name,
- if @('fn-p') is @('nil').  Thus, the effect of pushing a function symbol,
- @('name'), onto untouchables is to prevent any future event from using that
- symbol as a function or macro, or as a state global variable (according to
- @('fn-p')).  This is generally done to ``fence off'' some primitive function
- symbol from ``users'' after the developer has used the symbol freely in the
- development of some higher level mechanism.</p>
+ any event to call a function of that name, if @('fn-p') is non-@('nil'), or to
+ change the value of a state global variable of that name, if @('fn-p') is
+ @('nil').  Thus, the effect of pushing a function symbol, @('name'), onto
+ untouchables is to prevent any future event from using that symbol as a
+ function, or as a state global variable (according to @('fn-p')).  This is
+ generally done to ``fence off'' some primitive function symbol from ``users''
+ after the developer has used the symbol freely in the development of some
+ higher level mechanism.</p>
 
  <p>Also see @(see remove-untouchable).</p>")
 
@@ -96165,9 +96266,9 @@ arithmetic) for libraries of @(see books) for arithmetic reasoning.</p>")
 (defxdoc remove-untouchable
   :parents (defttag)
   :short "Remove names from lists of untouchable symbols"
-  :long "<p>Untouchables are functions or macros that cannot be called, as well
- as @(see state) global variables (see @(see programming-with-state)) that
- cannot be modified or unbound.</p>
+  :long "<p>Untouchables are functions that cannot be called or as @(see state)
+ global variables (see @(see programming-with-state)) that cannot be modified
+ or unbound.</p>
 
  @({
   Example Forms:
@@ -103237,7 +103338,7 @@ arithmetic) for libraries of @(see books) for arithmetic reasoning.</p>")
  term or clause-list cannot contain any calls of ``forbidden'' function
  symbols: ones that would be illegal when submitting a theorem.  These include
  function symbols that are <i>untouchable</i> (see @(see remove-untouchable))
- as well as those that are keys of the alist @('*ttag-fns-and-macros*').</p>
+ as well as those that are keys of the alist @('*ttag-fns*').</p>
 
  <p>These two checks &mdash; that the results are terms and that they contain
  no calls of forbidden function symbols &mdash; can be expensive for large
@@ -118203,10 +118304,11 @@ introduction-to-the-tau-system) for more information about Tau.</dd>
 (defxdoc untouchable
   :parents (defttag)
   :short "Function symbols and state globals that cannot be referenced"
-  :long "<p>Untouchables are functions or macros that cannot be called, as well
- as @(see state) global variables (see @(see programming-with-state)) that
- cannot be modified or unbound.  To add or remove untouchables, see @(see
- push-untouchable) and see @(see remove-untouchable).</p>")
+  :long "<p>Untouchables are functions that cannot be called, as well as @(see
+ state) global variables (see @(see programming-with-state)) that cannot be
+ modified or unbound.  To add or remove untouchables, see @(see
+ push-untouchable) and see @(see remove-untouchable).  Macros can be made
+ effectively untouchable as well; see @(see defmacro-untouchable).</p>")
 
 (defxdoc untrace$
   :parents (trace)
@@ -122780,9 +122882,10 @@ for the execution of @('form')."
   :parents (programming-with-state acl2-built-ins)
   :short "Allow a reference to @('state') in raw Lisp"
   :long "<p>The macro @('with-live-state') is an advanced feature that very few
- users will need (basically, only system hackers).  Indeed, it is untouchable;
- see @(see remove-untouchable) for how to enable calling @('with-live-state')
- in the ACL2 loop.</p>
+ users will need (basically, only system hackers).  Indeed, it is essentially
+ @(see untouchable), defined with @(tsee defmacro-untouchable); @(see
+ remove-untouchable) for how to enable calling @('with-live-state') in the ACL2
+ loop.</p>
 
  @({
   Example Form:
@@ -128650,6 +128753,7 @@ expand function call at the current subterm, without simplifying"
 (defpointer unknown-constraints partial-encapsulate)
 (defpointer until$ loop$)
 (defpointer until$+ loop$)
+(defpointer untouchable-marker defmacro-untouchable)
 (defpointer untranslate-preprocess user-defined-functions-table)
 (defpointer use hints t)
 (defpointer value system-utilities)
