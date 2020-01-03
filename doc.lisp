@@ -2258,8 +2258,8 @@ Subtopics
   may be counted more than once.
 
   How ``useless'' attempts can be critical for a proof's success. The
-  command (accumulated-persistence :useless)] will list rules that
-  did not contribute directly to the proof (see
+  command (accumulated-persistence :useless) will list rules that did
+  not contribute directly to the proof (see
   [accumulated-persistence], in particular the discussion of
   ``useless'' there).  However, a ``useless'' rule can on rare
   occasions be critical to the success of a proof.  In the following
@@ -24193,13 +24193,59 @@ Subtopics
   single-threaded objects (see [stobj]) or variables not among the
   macro's arguments.  See the git example above.  For a related
   utility that does have access to the ACL2 [state], see
-  [make-event].")
+  [make-event].
+
+
+Subtopics
+
+  [Defmacro-untouchable]
+      Define an ``untouchable'' macro")
  (DEFMACRO-LAST
   (EVENTS)
   "Define a macro that returns its last argument, but with side effects
 
   This is an advanced feature that requires a trust tag.  For
   explanation, including an example, see [return-last].")
+ (DEFMACRO-UNTOUCHABLE
+  (MACROS EVENTS PROGRAMMING DEFMACRO)
+  "Define an ``untouchable'' macro
+
+  Strictly speaking, macros cannot be untouchable the way functions are
+  untouchable; see [push-untouchable].  However, one can define a
+  macro that is, in effect, untouchable, by using
+  defmacro-untouchable to introduce a trivial untouchable function
+  into the definition.  Consider for example the following
+  definition.
+
+    (defmacro-untouchable mac (x)
+      (list 'consp x))
+
+  Let's look at the single-step macroexpansion of a call of the
+  newly-defined macro, mac.
+
+    ACL2 !>:trans1 (mac (f a))
+     (PROG2$ (UNTOUCHABLE-MARKER 'MAC)
+             (CONSP (F A)))
+    ACL2 !>
+
+  We see that this expansion is just as if we had used [defmacro]
+  instead of defmacro-untouchable, except that a [prog2$] wrapper
+  lays down a call of untouchable-marker, which is a built-in
+  untouchable function.  In effect, that call makes the macro, mac,
+  untouchable.
+
+  Of course, you are welcome to write your own variant of
+  defmacro-untouchable, introducing your own untouchable function.
+  The result would presumably be roughly equivalent to using
+  defmacro-untouchable; but using defmacro-untouchable has two
+  advantages.  One advantage is that calls of a macro introduced with
+  defmacro-untouchable should have no Lisp execution overhead caused
+  by the use of [prog2$] or untouchable-marker, because of special
+  handling provided by ACL2 for such calls of prog2$ as well as
+  inlining of untouchable-marker.  The other advantage is that an
+  attempt to use the resulting macro without an active trust tag will
+  generally give a more helpful error message, mentioning the prior
+  use of defmacro-untouchable as the source of the error.")
  (DEFN
   (DEFUN EVENTS)
   "Definition with [guard] t
@@ -25708,18 +25754,19 @@ Subtopics
   Active ttags. Suppose tag-name is a non-nil symbol.  Then (defttag
   :tag-name) sets :tag-name to be the (unique) ``active ttag.'' There
   must be an active ttag in order for there to be any mention of
-  certain function and macro symbols, including [sys-call]; evaluate
-  the form (strip-cars *ttag-fns-and-macros*) to see the full list of
-  such symbols.  On the other hand, (defttag nil) removes the active
-  ttag, if any; there is then no active ttag.  The scope of a defttag
-  form in a book being certified or included is limited to subsequent
-  forms in the same book before the next defttag (if any) in that
-  book.  Similarly, if a defttag form is evaluated in the top-level
-  loop, then its effect is limited to subsequent forms in the
-  top-level loop before the next defttag in the top-level loop (if
-  any).  Moreover, [certify-book] is illegal when a ttag is active;
-  of course, in such a circumstance one can execute (defttag nil) in
-  order to allow book certification.
+  certain function, including [sys-call]; evaluate the form
+  (strip-cars *ttag-fns*) to see the full list of such symbols.  The
+  macro [progn!] similarly requires an active ttag.  On the other
+  hand, (defttag nil) removes the active ttag, if any; there is then
+  no active ttag.  The scope of a defttag form in a book being
+  certified or included is limited to subsequent forms in the same
+  book before the next defttag (if any) in that book.  Similarly, if
+  a defttag form is evaluated in the top-level loop, then its effect
+  is limited to subsequent forms in the top-level loop before the
+  next defttag in the top-level loop (if any).  Moreover,
+  [certify-book] is illegal when a ttag is active; of course, in such
+  a circumstance one can execute (defttag nil) in order to allow book
+  certification.
 
   Ttag notes and the ``certifier.'' When a defttag is executed with an
   argument other than nil, output is printed, starting on a fresh
@@ -31408,6 +31455,9 @@ Subtopics
 
   [Defmacro-last]
       Define a macro that returns its last argument, but with side effects
+
+  [Defmacro-untouchable]
+      Define an ``untouchable'' macro
 
   [Defn]
       Definition with [guard] t
@@ -57111,6 +57161,9 @@ Subtopics
 
   [Defmacro]
       Define a macro
+
+  [Defmacro-untouchable]
+      Define an ``untouchable'' macro
 
   [Macro-aliases-table]
       A [table] used to associate function names with macro names
@@ -83289,6 +83342,25 @@ Changes to Existing Features
   latter (which we have fixed), which led us to the addition of
   guards.
 
+  The notion of untouchable macro is no longer directly supported.
+  Specifically: the form (push-untouchable SYM t) is now illegal if
+  SYM is already the name of a macro; and after this call of
+  [push-untouchable] it is illegal to define SYM as a macro.
+  However, a macro can be made effectively untouchable by defining it
+  with the new utility, [defmacro-untouchable].  Note that the
+  alleged support for untouchable macros was already incomplete, as
+  explained in an example in the form (deflabel note-8-3 ...) in
+  [community-book] books/system/doc/acl2-doc.lisp.
+
+  The [event] macro, [thm], is now treated like [defthm] in the
+  following way: if keyword :hints is supplied, then the hints are
+  checked syntactically when skipping proofs (see [ld-skip-proofsp])
+  except during [include-book] or the second pass of [encapsulate].
+  For example, evaluation of the form (thm (equal x x) :hints
+  bad-hints) now causes an error after evaluating
+  (set-ld-skip-proofsp t state), while before this change, it did
+  not.
+
 
 New Features
 
@@ -83406,6 +83478,15 @@ Heuristic and Efficiency Improvements
   *current-acl2-world-key-ordering*, and also, functions
   [symbol-class] and [logicp] avoid calling [getprop] for the symbol,
   cons.)
+
+  ACL2 now avoids [summary] calculations during [include-book].  We
+  have seen this change cut more than 9% of the time for the event
+  (include-book \"centaur/sv/top\" :dir :system).
+
+  We now avoid translation of [default-hints] for termination proofs
+  during [include-book].  We have seen this change cut more than 4%
+  of the time for the event (include-book \"centaur/sv/top\" :dir
+  :system).
 
 
 Bug Fixes
@@ -88770,6 +88851,9 @@ Subtopics
   [Until$+]
       See [loop$].
 
+  [Untouchable-marker]
+      See [defmacro-untouchable].
+
   [Untranslate-preprocess]
       See [user-defined-functions-table].
 
@@ -90927,6 +91011,9 @@ Subtopics
 
   [Defmacro]
       Define a macro
+
+  [Defmacro-untouchable]
+      Define an ``untouchable'' macro
 
   [Defpkg]
       Define a new symbol package
@@ -94160,9 +94247,10 @@ Subtopics
   (DEFTTAG)
   "Add name or list of names to the list of untouchable symbols
 
-  Untouchables are functions or macros that cannot be called, as well
-  as [state] global variables (see [programming-with-state]) that
-  cannot be modified or unbound.
+  Untouchables are functions that cannot be called, as well as [state]
+  global variables (see [programming-with-state]) that cannot be
+  modified or unbound.  Macros can also be untouchable in some sense;
+  see [push-untouchable].
 
     Examples:
     (push-untouchable my-var nil)
@@ -94188,16 +94276,21 @@ Subtopics
   clause processor has a :[well-formedness-guarantee] then g may not
   be made untouchable.
 
+  As noted above, macros may not be made directly untouchable; the
+  macro [defmacro-untouchable] is provided for that purpose.  Thus,
+  it is an error to evaluate (push-untouchable F t) if F is already a
+  macro name, and it is also an error to define F as a macro when F
+  has been made an untouchable function using (push-untouchable F t).
+
   When a symbol is on the untouchables list it is syntactically illegal
-  for any event to call a function or macro of that name, if fn-p is
-  non-nil, or to change the value of a state global variable of that
-  name, if fn-p is nil.  Thus, the effect of pushing a function
-  symbol, name, onto untouchables is to prevent any future event from
-  using that symbol as a function or macro, or as a state global
-  variable (according to fn-p).  This is generally done to ``fence
-  off'' some primitive function symbol from ``users'' after the
-  developer has used the symbol freely in the development of some
-  higher level mechanism.
+  for any event to call a function of that name, if fn-p is non-nil,
+  or to change the value of a state global variable of that name, if
+  fn-p is nil.  Thus, the effect of pushing a function symbol, name,
+  onto untouchables is to prevent any future event from using that
+  symbol as a function, or as a state global variable (according to
+  fn-p).  This is generally done to ``fence off'' some primitive
+  function symbol from ``users'' after the developer has used the
+  symbol freely in the development of some higher level mechanism.
 
   Also see [remove-untouchable].")
  (PUT-ASSOC
@@ -97482,9 +97575,9 @@ Subtopics
   (DEFTTAG)
   "Remove names from lists of untouchable symbols
 
-  Untouchables are functions or macros that cannot be called, as well
-  as [state] global variables (see [programming-with-state]) that
-  cannot be modified or unbound.
+  Untouchables are functions that cannot be called or as [state] global
+  variables (see [programming-with-state]) that cannot be modified or
+  unbound.
 
     Example Forms:
     (remove-untouchable my-var nil) ; then state global my-var is not untouchable
@@ -104560,7 +104653,7 @@ Subtopics
   ``forbidden'' function symbols: ones that would be illegal when
   submitting a theorem.  These include function symbols that are
   untouchable (see [remove-untouchable]) as well as those that are
-  keys of the alist *ttag-fns-and-macros*.
+  keys of the alist *ttag-fns*.
 
   These two checks --- that the results are terms and that they contain
   no calls of forbidden function symbols --- can be expensive for
@@ -119591,10 +119684,13 @@ Subtopics
   (DEFTTAG)
   "Function symbols and state globals that cannot be referenced
 
-  Untouchables are functions or macros that cannot be called, as well
-  as [state] global variables (see [programming-with-state]) that
-  cannot be modified or unbound.  To add or remove untouchables, see
-  [push-untouchable] and see [remove-untouchable].")
+  Untouchables are functions that cannot be called, as well as [state]
+  global variables (see [programming-with-state]) that cannot be
+  modified or unbound.  To add or remove untouchables, see
+  [push-untouchable] and see [remove-untouchable].  Macros can be
+  made effectively untouchable as well; see [defmacro-untouchable].")
+ (UNTOUCHABLE-MARKER (POINTERS)
+                     "See [defmacro-untouchable].")
  (UNTRACE$
   (TRACE)
   "Untrace functions
@@ -124058,8 +124154,9 @@ The Differences Between Well-Formed and Merely Tame Lambda Objects
 
   The macro with-live-state is an advanced feature that very few users
   will need (basically, only system hackers).  Indeed, it is
-  untouchable; see [remove-untouchable] for how to enable calling
-  with-live-state in the ACL2 loop.
+  essentially [untouchable], defined with [defmacro-untouchable];
+  [remove-untouchable] for how to enable calling with-live-state in
+  the ACL2 loop.
 
     Example Form:
     (with-live-state (assign y 3))
