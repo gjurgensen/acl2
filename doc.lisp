@@ -108615,7 +108615,8 @@ Subtopics
   String-append takes two arguments, which are both strings (if the
   [guard] is to be met), and returns a string obtained by
   concatenating together the [characters] in the first string
-  followed by those in the second.  Also see [concatenate], noting
+  followed by those in the second.  For a related macro that can take
+  an arbitrary number of string arguments, see [concatenate], noting
   that the macro call
 
     (concatenate 'string str1 str2).
