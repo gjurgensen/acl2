@@ -33597,9 +33597,13 @@ Subtopics
 
   Also see [fast-alist-free-on-exit].
 
-  Because there is no automatic mechanism for freeing the hash tables
-  used in fast alists, to avoid memory leaks you should manually free
-  any alists that will no longer be used.  You may find
+  When the host Lisp is CCL or SBCL, the associated hash table may be
+  freed up automatically by the garbage collector when the
+  corresponding alist is no longer referenced.  (To trigger garbage
+  collection manually, see [gc$].)  But for Lisp implementations
+  other than CCL and SBCL this is not the case so, to avoid memory
+  leaks, you should use fast-alist-free to free up associated hash
+  tables that will no longer be used.  You may find
   [fast-alist-summary] useful in tracking down alists that were not
   properly freed.
 
@@ -108615,7 +108619,8 @@ Subtopics
   String-append takes two arguments, which are both strings (if the
   [guard] is to be met), and returns a string obtained by
   concatenating together the [characters] in the first string
-  followed by those in the second.  Also see [concatenate], noting
+  followed by those in the second.  For a related macro that can take
+  an arbitrary number of string arguments, see [concatenate], noting
   that the macro call
 
     (concatenate 'string str1 str2).

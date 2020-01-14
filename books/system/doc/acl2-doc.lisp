@@ -30165,10 +30165,14 @@ with a fast alist."
 
  <p>Also see @(see fast-alist-free-on-exit).</p>
 
- <p>Because there is no automatic mechanism for freeing the hash tables used in
- fast alists, to avoid memory leaks you should manually free any alists that
- will no longer be used.  You may find @(tsee fast-alist-summary) useful in
- tracking down alists that were not properly freed.</p>
+ <p>When the host Lisp is CCL or SBCL, the associated hash table may be freed
+ up automatically by the garbage collector when the corresponding alist is no
+ longer referenced.  (To trigger garbage collection manually, see @(see gc$).)
+ But for Lisp implementations other than CCL and SBCL this is not the case so,
+ to avoid memory leaks, you should use @('fast-alist-free') to free up
+ associated hash tables that will no longer be used.  You may find @(tsee
+ fast-alist-summary) useful in tracking down alists that were not properly
+ freed.</p>
 
  <p>It is safe to call @('fast-alist-free') on any argument, including fast
  alists that have already been freed and objects which are not alists at
