@@ -2643,8 +2643,8 @@ Step 1
 
   Build a suitable ACL2 image by starting ACL2 and then executing the
   following forms.  In particular, these define a macro, try-thm,
-  that causes ACL2 to exit with with an exit status indicating
-  success or failure of a proof attempt.
+  that causes ACL2 to exit with an exit status indicating success or
+  failure of a proof attempt.
 
     (include-book \"arithmetic-5/top\" :dir :system)
     (defmacro try-thm (&rest args)
@@ -90564,7 +90564,7 @@ Subtopics
 
     Example:
     (profile 'fn)       ; keep count of the calls of fn
-    (profile 'fn        ; as above, with with some memoize options
+    (profile 'fn        ; as above, with some memoize options
              :trace t
              :forget t)
     (memsum) ; report statistics on calls of memoized functions (e.g., fn)
