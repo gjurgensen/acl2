@@ -84618,6 +84618,12 @@ it."
 ; Indeed, after replacing the call of mac with (mac (defun foo (x) x)), then it
 ; was indeed an error to include foo.lisp after (push-untouchable 'mac t).
 
+; We tweaked function translate11, primarily to simplify the code a bit.  The
+; change combines two very similar COND clauses into one, and it avoids the
+; need to keep in sync with the function, primitive-event-macros.  Also, it
+; uses hons-get, which might improve efficiency a bit though the improvement
+; seems to be negligible.
+
   :parents (release-notes)
   :short "ACL2 Version  8.3 (xxx, 20xx) Notes"
   :long "<p>NOTE!  New users can ignore these release notes, because the @(see
