@@ -2643,8 +2643,8 @@ Step 1
 
   Build a suitable ACL2 image by starting ACL2 and then executing the
   following forms.  In particular, these define a macro, try-thm,
-  that causes ACL2 to exit with with an exit status indicating
-  success or failure of a proof attempt.
+  that causes ACL2 to exit with an exit status indicating success or
+  failure of a proof attempt.
 
     (include-book \"arithmetic-5/top\" :dir :system)
     (defmacro try-thm (&rest args)
@@ -33597,9 +33597,13 @@ Subtopics
 
   Also see [fast-alist-free-on-exit].
 
-  Because there is no automatic mechanism for freeing the hash tables
-  used in fast alists, to avoid memory leaks you should manually free
-  any alists that will no longer be used.  You may find
+  When the host Lisp is CCL or SBCL, the associated hash table may be
+  freed up automatically by the garbage collector when the
+  corresponding alist is no longer referenced.  (To trigger garbage
+  collection manually, see [gc$].)  But for Lisp implementations
+  other than CCL and SBCL this is not the case so, to avoid memory
+  leaks, you should use fast-alist-free to free up associated hash
+  tables that will no longer be used.  You may find
   [fast-alist-summary] useful in tracking down alists that were not
   properly freed.
 
@@ -90560,7 +90564,7 @@ Subtopics
 
     Example:
     (profile 'fn)       ; keep count of the calls of fn
-    (profile 'fn        ; as above, with with some memoize options
+    (profile 'fn        ; as above, with some memoize options
              :trace t
              :forget t)
     (memsum) ; report statistics on calls of memoized functions (e.g., fn)
