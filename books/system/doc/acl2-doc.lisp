@@ -84624,6 +84624,12 @@ it."
 ; uses hons-get, which might improve efficiency a bit though the improvement
 ; seems to be negligible.
 
+; For cert-data, we cleaned up some comments and improved some function names,
+; in anticipation of allowing other cert-data keys beyond :type-prescription
+; and :pass1, which is now called :pass1-saved.  Also freed fast alists from
+; cert-data that weren't being freed by include-book except (sort of by
+; accident, because of weak hash tables) when the host Lisp is CCL or SBCL.
+
   :parents (release-notes)
   :short "ACL2 Version  8.3 (xxx, 20xx) Notes"
   :long "<p>NOTE!  New users can ignore these release notes, because the @(see
