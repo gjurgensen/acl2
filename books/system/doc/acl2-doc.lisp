@@ -120834,13 +120834,13 @@ introduction-to-the-tau-system) for more information about Tau.</dd>
   :parents (guard-formula-utilities)
   :short "View the guard proof obligation, without proving it"
   :long "<p>See @(see verify-guards) and see @(see guard) for a discussion of
- guards.  This utility provides output showing the guard proof obligation as
- printed by @('verify-guards'), but without then carrying out a proof attempt.
- If you simply want the guard proof obligation for a definition
- (without the prover's output), use @(see gthm).  Note that @('gthm') has an
- option to avoid the simplification that is normally performed when generating
- the guard proof obligation.  For more about related utilities, see @(see
- guard-formula-utilities).</p>
+ guards.  This utility, which does not evaluate its argument, provides output
+ showing the guard proof obligation as printed by @('verify-guards'), but
+ without then carrying out a proof attempt.  If you simply want the guard proof
+ obligation for a definition (without the prover's output), use @(see gthm).
+ Note that @('gthm') has an option to avoid the simplification that is normally
+ performed when generating the guard proof obligation.  For more about related
+ utilities, see @(see guard-formula-utilities).</p>
 
  @({
   Example Forms:
