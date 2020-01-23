@@ -1796,8 +1796,8 @@
 
  <p>Build a suitable ACL2 image by starting ACL2 and then executing the
  following forms.  In particular, these define a macro, @('try-thm'), that
- causes ACL2 to exit with with an exit status indicating success or failure of
- a proof attempt.</p>
+ causes ACL2 to exit with an exit status indicating success or failure of a
+ proof attempt.</p>
 
  @({
   (include-book \"arithmetic-5/top\" :dir :system)
@@ -30165,10 +30165,14 @@ with a fast alist."
 
  <p>Also see @(see fast-alist-free-on-exit).</p>
 
- <p>Because there is no automatic mechanism for freeing the hash tables used in
- fast alists, to avoid memory leaks you should manually free any alists that
- will no longer be used.  You may find @(tsee fast-alist-summary) useful in
- tracking down alists that were not properly freed.</p>
+ <p>When the host Lisp is CCL or SBCL, the associated hash table may be freed
+ up automatically by the garbage collector when the corresponding alist is no
+ longer referenced.  (To trigger garbage collection manually, see @(see gc$).)
+ But for Lisp implementations other than CCL and SBCL this is not the case so,
+ to avoid memory leaks, you should use @('fast-alist-free') to free up
+ associated hash tables that will no longer be used.  You may find @(tsee
+ fast-alist-summary) useful in tracking down alists that were not properly
+ freed.</p>
 
  <p>It is safe to call @('fast-alist-free') on any argument, including fast
  alists that have already been freed and objects which are not alists at
@@ -84614,6 +84618,18 @@ it."
 ; Indeed, after replacing the call of mac with (mac (defun foo (x) x)), then it
 ; was indeed an error to include foo.lisp after (push-untouchable 'mac t).
 
+; We tweaked function translate11, primarily to simplify the code a bit.  The
+; change combines two very similar COND clauses into one, and it avoids the
+; need to keep in sync with the function, primitive-event-macros.  Also, it
+; uses hons-get, which might improve efficiency a bit though the improvement
+; seems to be negligible.
+
+; For cert-data, we cleaned up some comments and improved some function names,
+; in anticipation of allowing other cert-data keys beyond :type-prescription
+; and :pass1, which is now called :pass1-saved.  Also freed fast alists from
+; cert-data that weren't being freed by include-book except (sort of by
+; accident, because of weak hash tables) when the host Lisp is CCL or SBCL.
+
   :parents (release-notes)
   :short "ACL2 Version  8.3 (xxx, 20xx) Notes"
   :long "<p>NOTE!  New users can ignore these release notes, because the @(see
@@ -90181,7 +90197,7 @@ arithmetic) for libraries of @(see books) for arithmetic reasoning.</p>")
  @({
   Example:
   (profile 'fn)       ; keep count of the calls of fn
-  (profile 'fn        ; as above, with with some memoize options
+  (profile 'fn        ; as above, with some memoize options
            :trace t
            :forget t)
   (memsum) ; report statistics on calls of memoized functions (e.g., fn)
@@ -120818,13 +120834,13 @@ introduction-to-the-tau-system) for more information about Tau.</dd>
   :parents (guard-formula-utilities)
   :short "View the guard proof obligation, without proving it"
   :long "<p>See @(see verify-guards) and see @(see guard) for a discussion of
- guards.  This utility provides output showing the guard proof obligation as
- printed by @('verify-guards'), but without then carrying out a proof attempt.
- If you simply want the guard proof obligation for a definition
- (without the prover's output), use @(see gthm).  Note that @('gthm') has an
- option to avoid the simplification that is normally performed when generating
- the guard proof obligation.  For more about related utilities, see @(see
- guard-formula-utilities).</p>
+ guards.  This utility, which does not evaluate its argument, provides output
+ showing the guard proof obligation as printed by @('verify-guards'), but
+ without then carrying out a proof attempt.  If you simply want the guard proof
+ obligation for a definition (without the prover's output), use @(see gthm).
+ Note that @('gthm') has an option to avoid the simplification that is normally
+ performed when generating the guard proof obligation.  For more about related
+ utilities, see @(see guard-formula-utilities).</p>
 
  @({
   Example Forms:

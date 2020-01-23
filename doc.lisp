@@ -2643,8 +2643,8 @@ Step 1
 
   Build a suitable ACL2 image by starting ACL2 and then executing the
   following forms.  In particular, these define a macro, try-thm,
-  that causes ACL2 to exit with with an exit status indicating
-  success or failure of a proof attempt.
+  that causes ACL2 to exit with an exit status indicating success or
+  failure of a proof attempt.
 
     (include-book \"arithmetic-5/top\" :dir :system)
     (defmacro try-thm (&rest args)
@@ -33597,9 +33597,13 @@ Subtopics
 
   Also see [fast-alist-free-on-exit].
 
-  Because there is no automatic mechanism for freeing the hash tables
-  used in fast alists, to avoid memory leaks you should manually free
-  any alists that will no longer be used.  You may find
+  When the host Lisp is CCL or SBCL, the associated hash table may be
+  freed up automatically by the garbage collector when the
+  corresponding alist is no longer referenced.  (To trigger garbage
+  collection manually, see [gc$].)  But for Lisp implementations
+  other than CCL and SBCL this is not the case so, to avoid memory
+  leaks, you should use fast-alist-free to free up associated hash
+  tables that will no longer be used.  You may find
   [fast-alist-summary] useful in tracking down alists that were not
   properly freed.
 
@@ -90560,7 +90564,7 @@ Subtopics
 
     Example:
     (profile 'fn)       ; keep count of the calls of fn
-    (profile 'fn        ; as above, with with some memoize options
+    (profile 'fn        ; as above, with some memoize options
              :trace t
              :forget t)
     (memsum) ; report statistics on calls of memoized functions (e.g., fn)
@@ -108615,7 +108619,8 @@ Subtopics
   String-append takes two arguments, which are both strings (if the
   [guard] is to be met), and returns a string obtained by
   concatenating together the [characters] in the first string
-  followed by those in the second.  Also see [concatenate], noting
+  followed by those in the second.  For a related macro that can take
+  an arbitrary number of string arguments, see [concatenate], noting
   that the macro call
 
     (concatenate 'string str1 str2).
@@ -122057,13 +122062,14 @@ Subtopics
   "View the guard proof obligation, without proving it
 
   See [verify-guards] and see [guard] for a discussion of guards.  This
-  utility provides output showing the guard proof obligation as
-  printed by verify-guards, but without then carrying out a proof
-  attempt.  If you simply want the guard proof obligation for a
-  definition (without the prover's output), use [gthm].  Note that
-  gthm has an option to avoid the simplification that is normally
-  performed when generating the guard proof obligation.  For more
-  about related utilities, see [guard-formula-utilities].
+  utility, which does not evaluate its argument, provides output
+  showing the guard proof obligation as printed by verify-guards, but
+  without then carrying out a proof attempt.  If you simply want the
+  guard proof obligation for a definition (without the prover's
+  output), use [gthm].  Note that gthm has an option to avoid the
+  simplification that is normally performed when generating the guard
+  proof obligation.  For more about related utilities, see
+  [guard-formula-utilities].
 
     Example Forms:
     (verify-guards-formula foo)
