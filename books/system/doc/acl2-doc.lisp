@@ -84618,6 +84618,18 @@ it."
 ; Indeed, after replacing the call of mac with (mac (defun foo (x) x)), then it
 ; was indeed an error to include foo.lisp after (push-untouchable 'mac t).
 
+; We tweaked function translate11, primarily to simplify the code a bit.  The
+; change combines two very similar COND clauses into one, and it avoids the
+; need to keep in sync with the function, primitive-event-macros.  Also, it
+; uses hons-get, which might improve efficiency a bit though the improvement
+; seems to be negligible.
+
+; For cert-data, we cleaned up some comments and improved some function names,
+; in anticipation of allowing other cert-data keys beyond :type-prescription
+; and :pass1, which is now called :pass1-saved.  Also freed fast alists from
+; cert-data that weren't being freed by include-book except (sort of by
+; accident, because of weak hash tables) when the host Lisp is CCL or SBCL.
+
   :parents (release-notes)
   :short "ACL2 Version  8.3 (xxx, 20xx) Notes"
   :long "<p>NOTE!  New users can ignore these release notes, because the @(see
@@ -120822,13 +120834,13 @@ introduction-to-the-tau-system) for more information about Tau.</dd>
   :parents (guard-formula-utilities)
   :short "View the guard proof obligation, without proving it"
   :long "<p>See @(see verify-guards) and see @(see guard) for a discussion of
- guards.  This utility provides output showing the guard proof obligation as
- printed by @('verify-guards'), but without then carrying out a proof attempt.
- If you simply want the guard proof obligation for a definition
- (without the prover's output), use @(see gthm).  Note that @('gthm') has an
- option to avoid the simplification that is normally performed when generating
- the guard proof obligation.  For more about related utilities, see @(see
- guard-formula-utilities).</p>
+ guards.  This utility, which does not evaluate its argument, provides output
+ showing the guard proof obligation as printed by @('verify-guards'), but
+ without then carrying out a proof attempt.  If you simply want the guard proof
+ obligation for a definition (without the prover's output), use @(see gthm).
+ Note that @('gthm') has an option to avoid the simplification that is normally
+ performed when generating the guard proof obligation.  For more about related
+ utilities, see @(see guard-formula-utilities).</p>
 
  @({
   Example Forms:
