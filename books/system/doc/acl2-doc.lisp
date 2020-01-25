@@ -84984,6 +84984,11 @@ it."
  them has application to other than stobjs, in new code mentioned above for
  enabled structures.)</p>
 
+ <p>Fixed translations of uses the @(see type-spec), @('standard-char'), into
+ @(see term)s.  For example, the following definition failed but now
+ succeeds:<br/>
+ @('(defun foo (x) (declare (type standard-char x)) (cons 3 x))').</p>
+
  <h3>Changes at the System Level</h3>
 
  <p>The makefile target @('certify-books') has been removed from
@@ -105861,6 +105866,15 @@ arithmetic) for libraries of @(see books) for arithmetic reasoning.</p>")
  documentation for more information.</p>
 
  @(def standard-char-p)")
+
+(defxdoc standard-char-p+
+  :parents (standard-char-p characters acl2-built-ins)
+  :short "Recognizer for standard characters whose guard is @('t')"
+  :long "<p>Logically @('standard-char-p+') is the same as @(tsee
+ standard-char-p).  However, @('standard-char-p+') has a guard of @('t'), while
+ @('standard-char-p') is guarded by @(tsee characterp).</p>
+
+ @(def standard-char-p+)")
 
 (defxdoc standard-co
   :parents (io acl2-built-ins)
