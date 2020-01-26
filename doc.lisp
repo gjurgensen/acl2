@@ -83583,8 +83583,8 @@ Bug Fixes
   that one of them has application to other than stobjs, in new code
   mentioned above for enabled structures.)
 
-  Fixed translations of uses the [type-spec], standard-char, into
-  [term]s.  For example, the following definition failed but now
+  Fixed the process of translating the [type-spec], standard-char, into
+  a [term].  For example, the following definition failed but now
   succeeds:
   (defun foo (x) (declare (type standard-char x)) (cons 3 x)).
 

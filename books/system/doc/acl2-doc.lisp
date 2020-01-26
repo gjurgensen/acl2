@@ -84984,10 +84984,10 @@ it."
  them has application to other than stobjs, in new code mentioned above for
  enabled structures.)</p>
 
- <p>Fixed translations of uses the @(see type-spec), @('standard-char'), into
- @(see term)s.  For example, the following definition failed but now
- succeeds:<br/>
- @('(defun foo (x) (declare (type standard-char x)) (cons 3 x))').</p>
+ <p>Fixed the process of translating the @(see type-spec), @('standard-char'),
+ into a @(see term).  For example, the following definition failed but now
+ succeeds:<br/> @('(defun foo (x) (declare (type standard-char x)) (cons 3
+ x))').</p>
 
  <h3>Changes at the System Level</h3>
 
