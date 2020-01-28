@@ -3975,6 +3975,9 @@ Subtopics
   [Standard-char-p]
       Recognizer for standard characters
 
+  [Standard-char-p+]
+      Recognizer for standard characters whose guard is t
+
   [Standard-co]
       The character output channel to which [ld] prints
 
@@ -16688,6 +16691,9 @@ Subtopics
 
   [Standard-char-p]
       Recognizer for standard characters
+
+  [Standard-char-p+]
+      Recognizer for standard characters whose guard is t
 
   [Upper-case-p]
       Recognizer for upper case characters")
@@ -83577,6 +83583,11 @@ Bug Fixes
   that one of them has application to other than stobjs, in new code
   mentioned above for enabled structures.)
 
+  Fixed the process of translating the [type-spec], standard-char, into
+  a [term].  For example, the following definition failed but now
+  succeeds:
+  (defun foo (x) (declare (type standard-char x)) (cons 3 x)).
+
 
 Changes at the System Level
 
@@ -107080,7 +107091,27 @@ Subtopics
 
     (defun standard-char-p (x)
            (declare (xargs :guard (characterp x)))
-           (if (member x *standard-chars*) t nil))")
+           (if (member x *standard-chars*) t nil))
+
+
+Subtopics
+
+  [Standard-char-p+]
+      Recognizer for standard characters whose guard is t")
+ (STANDARD-CHAR-P+
+  (STANDARD-CHAR-P CHARACTERS ACL2-BUILT-INS)
+  "Recognizer for standard characters whose guard is t
+
+  Logically standard-char-p+ is the same as [standard-char-p].
+  However, standard-char-p+ has a guard of t, while standard-char-p
+  is guarded by [characterp].
+
+  Function: <standard-char-p+>
+
+    (defun standard-char-p+ (x)
+           (declare (xargs :guard t))
+           (and (characterp x)
+                (standard-char-p x)))")
  (STANDARD-CO
   (IO ACL2-BUILT-INS)
   "The character output channel to which [ld] prints
