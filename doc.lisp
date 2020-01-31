@@ -13063,7 +13063,7 @@ Subtopics
   `make'-level parallelism (in this case specifying four parallel
   processes).
 
-    ACL2_PCERT=t cert.pl -j 4 `find . -name '*.lisp'`
+    cert.pl --pcert-all -j 4 `find . -name '*.lisp'`
 
   Note that with this approach, unlike classic ACL2 `make'-based
   certification (see [books-certification-classic], out-of-date .cert
@@ -83498,6 +83498,15 @@ Heuristic and Efficiency Improvements
   of the time for the event (include-book \"centaur/sv/top\" :dir
   :system).
 
+  ACL2 now saves, in [certificate] files, the translated bodies of
+  [defun] and [defthm] [events].  (See [term] for a discussion of
+  translated terms.)  This can speed up [include-book]; for example,
+  we have measured approximately a 3% reduction in time for the
+  event, (include-book \"centaur/sv/top\" :dir :system), but with a
+  space trade-off of about 41% more bytes allocated.  (Implementation
+  note: the relevant algorithms and code are discussed in an expanded
+  version of the Essay on Cert-data in the ACL2 source code.)
+
 
 Bug Fixes
 
@@ -93503,7 +93512,7 @@ Subtopics
   To invoke provisional certification, see [books-certification].  For
   example, you could issue the following command.
 
-    ACL2_PCERT=t cert.pl -j 4 `find . -name '*.lisp'`
+    cert.pl --pcert-all -j 4 `find . -name '*.lisp'`
 
   Alternatively, see [books-certification-classic] for a discussion of
   classic ACL2 `make'-based certification (which may disappear in a
