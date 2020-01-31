@@ -92453,7 +92453,7 @@ arithmetic) for libraries of @(see books) for arithmetic reasoning.</p>")
  example, you could issue the following command.</p>
 
  @({
-  ACL2_PCERT=t cert.pl -j 4 `find . -name '*.lisp'`
+  cert.pl --pcert-all -j 4 `find . -name '*.lisp'`
  })
 
  <p>Alternatively, see @(see books-certification-classic) for a discussion of
