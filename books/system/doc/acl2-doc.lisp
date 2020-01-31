@@ -10414,7 +10414,7 @@ with any questions about building the community books.</p>")
  parallelism (in this case specifying four parallel processes).</p>
 
  @({
-  ACL2_PCERT=t cert.pl -j 4 `find . -name '*.lisp'`
+  cert.pl --pcert-all -j 4 `find . -name '*.lisp'`
  })
 
  <p>Note that with this approach, unlike classic ACL2 `make'-based
