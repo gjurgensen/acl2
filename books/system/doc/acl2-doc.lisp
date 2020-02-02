@@ -10414,7 +10414,7 @@ with any questions about building the community books.</p>")
  parallelism (in this case specifying four parallel processes).</p>
 
  @({
-  ACL2_PCERT=t cert.pl -j 4 `find . -name '*.lisp'`
+  cert.pl --pcert-all -j 4 `find . -name '*.lisp'`
  })
 
  <p>Note that with this approach, unlike classic ACL2 `make'-based
@@ -84899,6 +84899,15 @@ it."
  during @(tsee include-book).  We have seen this change cut more than 4% of the
  time for the event @('(include-book \"centaur/sv/top\" :dir :system)').</p>
 
+ <p>ACL2 now saves, in @(see certificate) files, the translated bodies of
+ @(tsee defun) and @(tsee defthm) @(see events).  (See @(see term) for a
+ discussion of translated terms.)  This can speed up @(tsee include-book); for
+ example, we have measured approximately a 3% reduction in time for the event,
+ @('(include-book \"centaur/sv/top\" :dir :system)'), but with a space
+ trade-off of about 41% more bytes allocated.  (Implementation note: the
+ relevant algorithms and code are discussed in an expanded version of the Essay
+ on Cert-data in the ACL2 source code.)</p>
+
  <h3>Bug Fixes</h3>
 
  <p>As noted in the documentation for @(see lemma-instance), ACL2 may avoid
@@ -92453,7 +92462,7 @@ arithmetic) for libraries of @(see books) for arithmetic reasoning.</p>")
  example, you could issue the following command.</p>
 
  @({
-  ACL2_PCERT=t cert.pl -j 4 `find . -name '*.lisp'`
+  cert.pl --pcert-all -j 4 `find . -name '*.lisp'`
  })
 
  <p>Alternatively, see @(see books-certification-classic) for a discussion of
