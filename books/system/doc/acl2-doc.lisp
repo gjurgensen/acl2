@@ -109402,6 +109402,10 @@ arithmetic) for libraries of @(see books) for arithmetic reasoning.</p>")
  <li>@('(sublis-var alist form)'): Substitute @('alist') into the @(see term),
  @('form').</li>
 
+ <li>@('(subsequencep lst1 lst2)'): Determine whether the list lst1 is a
+ subsequence of the list lst2, although not necessarily a proper
+ subsequence.</li>
+
  <li>@('(subst-expr new old term)'): Substitute @('new') for @('old') in
  @('term'); all are assumed to be @(see term)s.  This function provides a
  slightly optimized version of equivalent function @('(subst-expr1 new old
@@ -128766,6 +128770,7 @@ expand function call at the current subterm, without simplifying"
 (defpointer sublis-fn-lst-simple system-utilities)
 (defpointer sublis-fn-simple system-utilities)
 (defpointer sublis-var system-utilities)
+(defpointer subsequencep system-utilities)
 (defpointer subsetp-eq subsetp)
 (defpointer subsetp-equal subsetp)
 (defpointer subst-expr system-utilities)
