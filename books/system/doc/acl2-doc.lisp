@@ -128770,7 +128770,7 @@ expand function call at the current subterm, without simplifying"
 (defpointer sublis-fn-lst-simple system-utilities)
 (defpointer sublis-fn-simple system-utilities)
 (defpointer sublis-var system-utilities)
-(defpointer subsequencep subsetp)
+(defpointer subsequencep system-utilities)
 (defpointer subsetp-eq subsetp)
 (defpointer subsetp-equal subsetp)
 (defpointer subst-expr system-utilities)
