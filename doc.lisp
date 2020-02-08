@@ -33806,7 +33806,7 @@ Subtopics
       it.
 
   [Slow-alist-warning]
-      Warnings issued when [fast-alists] are used inefficiently
+      Warnings/errors issued when [fast-alists] are used inefficiently
 
   [With-fast-alist]
       (with-fast-alist name form) causes name to be a fast alist for the
@@ -83371,6 +83371,9 @@ Changes to Existing Features
   (set-ld-skip-proofsp t state), while before this change, it did
   not.
 
+  The default slow-alist-action (see [slow-alist-warning]) is now
+  :break instead of warning.
+
 
 New Features
 
@@ -88789,6 +88792,9 @@ Subtopics
       See [system-utilities].
 
   [Sublis-var]
+      See [system-utilities].
+
+  [Subsequencep]
       See [system-utilities].
 
   [Subsetp-eq]
@@ -106309,11 +106315,15 @@ Subtopics
            nil)")
  (SLOW-ALIST-WARNING
   (FAST-ALISTS)
-  "Warnings issued when [fast-alists] are used inefficiently
+  "Warnings/errors issued when [fast-alists] are used inefficiently
 
   Obtaining hash-table performance from [hons-get] requires one to
   follow a certain discipline.  If this discipline is violated, you
-  may see the following \"slow alist warning\".
+  may see the following message, which by default is followed by a
+  Lisp break.  (The Lisp break may be ignored by continuing in the
+  host Common Lisp, for example using :go if the host Lisp is CCL.
+  Or, it may be aborted, often using :q, again depending on the host
+  Lisp.)
 
     *****************************************************************
     Fast alist discipline violated in HONS-ACONS.
@@ -106326,11 +106336,11 @@ Subtopics
   gethash.
 
   You can control whether or not you get a warning and, if so, whether
-  or not a break (an error from which you can continue) ensues.  For
-  instance:
+  or not a break (again: an error from which you can continue)
+  ensues.  For instance:
 
-    (set-slow-alist-action :warning)  ; warn on slow access (default)
-    (set-slow-alist-action :break)    ; warn and also call break$
+    (set-slow-alist-action :break)    ; warn and also call break$ (default)
+    (set-slow-alist-action :warning)  ; warn on slow access
     (set-slow-alist-action nil)       ; do not warn or break
 
   The above forms expand to [table] [events], so they can be embedded
@@ -106352,15 +106362,15 @@ Subtopics
     ; no longer associated with (@ a).
     (assign b (hons-acons 'fn2 2 (@ a)))
 
-    ; (B2) Fast alist warning: discipline is violated because (@ a) no longer
-    ; has a backing hash-table.
+    ; (B2) Fast alist warning (with a Lisp break, by default): discipline is
+    ; violated because (@ a) no longer has a backing hash-table.
     (assign b (hons-acons 'fn2 2 (@ a)))
 
-    ; (C1) Fast alist warning: discipline is violated because (@ b) does not
+    ; (C1) Fast alist warning/break: discipline is violated because (@ b) does not
     ; have a backing hash-table.
     (assign c (hons-acons 'fn3 3 (@ b)))
 
-    ; (C2) Fast alist warning: discipline is violated because (@ b) does not
+    ; (C2) Fast alist warning/break: discipline is violated because (@ b) does not
     ; have a backing hash-table.
     (assign c (hons-acons 'fn3 3 (@ b)))
 
@@ -106376,8 +106386,9 @@ Subtopics
   pass.  With a little reflection you can see the connection between
   the two sequences of events above: encapsulate A makes assignments
   analogous to A1 (in its first pass) and A2 (in its second pass);
-  similarly for B, B1, B2 and for C, C1, C2.  Thus, we get slow alist
-  warnings on the second pass of B and on both passes of C.
+  similarly for B, B1, B2 and for C, C1, C2.  Thus, we get a slow
+  alist warning/break on the second pass of B and on both passes of
+  C.
 
   The simplest way to fix this problem is to call [make-fast-alist],
   which is essentially a no-op when its argument is already a fast
@@ -106387,15 +106398,15 @@ Subtopics
     (encapsulate nil (defconst *b* (make-fast-alist (hons-acons 'fn2 2 *a*))))
     (encapsulate nil (defconst *c* (make-fast-alist (hons-acons 'fn3 3 *b*))))
 
-  We still see warnings in pass 2 of the second and third encapsulates,
-  created by calls of [hons-acons] exactly as before.  However, the
-  results of those two calls are converted to fast alists by
-  make-fast-alist; so after each encapsulate, the value of the
-  defined constant is indeed a fast alist.  A problem still persists:
-  the second and third [defconst] event each steal the fast-alist
-  value of the previous defconst.  That's a problem that we won't try
-  to solve here; we will just focus on how to ensure that the value
-  of *c* is a fast alist.
+  We still see the warning/break in pass 2 of the second and third
+  encapsulates, created by calls of [hons-acons] exactly as before.
+  However, the results of those two calls are converted to fast
+  alists by make-fast-alist; so after each encapsulate, the value of
+  the defined constant is indeed a fast alist.  A problem still
+  persists: the second and third [defconst] event each steal the
+  fast-alist value of the previous defconst.  That's a problem that
+  we won't try to solve here; we will just focus on how to ensure
+  that the value of *c* is a fast alist.
 
   The following alternate solution has the advantage of avoiding the
   expense of reconstituting the fast alist during pass 2 of each of
@@ -109125,6 +109136,8 @@ Subtopics
                                   start (or end (length seq)))
                      'string)
              (subseq-list seq start (or end (length seq)))))")
+ (SUBSEQUENCEP (POINTERS)
+               "See [system-utilities].")
  (SUBSETP
   (LISTS ACL2-BUILT-INS)
   "Test if every [member] of one list is a [member] of the other
@@ -110807,6 +110820,9 @@ List of a few built-in system utilities
       applying sublis-fn-simple to alist and each such term.  See the
       description of sublis-fn-simple, above.
     * (sublis-var alist form): Substitute alist into the [term], form.
+    * (subsequencep lst1 lst2): Determine whether the list lst1 is a
+      subsequence of the list lst2, although not necessarily a proper
+      subsequence.
     * (subst-expr new old term): Substitute new for old in term; all are
       assumed to be [term]s.  This function provides a slightly
       optimized version of equivalent function (subst-expr1 new old
