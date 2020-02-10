@@ -84780,6 +84780,9 @@ it."
  causes an error after evaluating @('(set-ld-skip-proofsp t state)'), while
  before this change, it did not.</p>
 
+ <p>The default slow-alist-action (see @(see slow-alist-warning)) is now
+ @(':break') instead of warning.</p>
+
  <h3>New Features</h3>
 
  <p>A new @(tsee xargs) keyword, @(':guard-simplify') (default @('t')),
@@ -105063,10 +105066,13 @@ arithmetic) for libraries of @(see books) for arithmetic reasoning.</p>")
 
 (defxdoc slow-alist-warning
   :parents (fast-alists)
-  :short "Warnings issued when @(tsee fast-alists) are used inefficiently"
+  :short "Warnings/errors issued when @(tsee fast-alists) are used inefficiently"
   :long "<p>Obtaining hash-table performance from @(tsee hons-get) requires one
  to follow a certain discipline.  If this discipline is violated, you may see
- the following \"slow alist warning\".</p>
+ the following message, which by default is followed by a Lisp break.  (The Lisp
+ break may be ignored by continuing in the host Common Lisp, for example using
+ @(':go') if the host Lisp is CCL.  Or, it may be aborted, often using @(':q'),
+ again depending on the host Lisp.)</p>
 
  @({
  *****************************************************************
@@ -105080,11 +105086,12 @@ arithmetic) for libraries of @(see books) for arithmetic reasoning.</p>")
  carried out with @(tsee hons-assoc-equal) instead of @('gethash').</p>
 
  <p>You can control whether or not you get a warning and, if so, whether or not
- a break (an error from which you can continue) ensues.  For instance:</p>
+ a break (again: an error from which you can continue) ensues.  For
+ instance:</p>
 
  @({
-   (set-slow-alist-action :warning)  ; warn on slow access (default)
-   (set-slow-alist-action :break)    ; warn and also call break$
+   (set-slow-alist-action :break)    ; warn and also call break$ (default)
+   (set-slow-alist-action :warning)  ; warn on slow access
    (set-slow-alist-action nil)       ; do not warn or break
  })
 
@@ -105108,15 +105115,15 @@ arithmetic) for libraries of @(see books) for arithmetic reasoning.</p>")
  ; no longer associated with (@ a).
  (assign b (hons-acons 'fn2 2 (@ a)))
 
- ; (B2) Fast alist warning: discipline is violated because (@ a) no longer
- ; has a backing hash-table.
+ ; (B2) Fast alist warning (with a Lisp break, by default): discipline is
+ ; violated because (@ a) no longer has a backing hash-table.
  (assign b (hons-acons 'fn2 2 (@ a)))
 
- ; (C1) Fast alist warning: discipline is violated because (@ b) does not
+ ; (C1) Fast alist warning/break: discipline is violated because (@ b) does not
  ; have a backing hash-table.
  (assign c (hons-acons 'fn3 3 (@ b)))
 
- ; (C2) Fast alist warning: discipline is violated because (@ b) does not
+ ; (C2) Fast alist warning/break: discipline is violated because (@ b) does not
  ; have a backing hash-table.
  (assign c (hons-acons 'fn3 3 (@ b)))
  })
@@ -105135,8 +105142,8 @@ arithmetic) for libraries of @(see books) for arithmetic reasoning.</p>")
  second pass.  With a little reflection you can see the connection between the
  two sequences of events above: @('encapsulate') A makes assignments analogous
  to A1 (in its first pass) and A2 (in its second pass); similarly for B, B1, B2
- and for C, C1, C2.  Thus, we get slow alist warnings on the second pass of B
- and on both passes of C.</p>
+ and for C, C1, C2.  Thus, we get a slow alist warning/break on the second pass
+ of B and on both passes of C.</p>
 
  <p>The simplest way to fix this problem is to call @(tsee make-fast-alist),
  which is essentially a no-op when its argument is already a fast alist.</p>
@@ -105147,9 +105154,9 @@ arithmetic) for libraries of @(see books) for arithmetic reasoning.</p>")
  (encapsulate nil (defconst *c* (make-fast-alist (hons-acons 'fn3 3 *b*))))
  })
 
- <p>We still see warnings in pass 2 of the second and third encapsulates,
- created by calls of @(tsee hons-acons) exactly as before.  However, the
- results of those two calls are converted to fast alists by
+ <p>We still see the warning/break in pass 2 of the second and third
+ encapsulates, created by calls of @(tsee hons-acons) exactly as before.
+ However, the results of those two calls are converted to fast alists by
  @('make-fast-alist'); so after each @('encapsulate'), the value of the defined
  constant is indeed a fast alist.  A problem still persists: the second and
  third @(tsee defconst) event each steal the fast-alist value of the previous
@@ -109401,6 +109408,10 @@ arithmetic) for libraries of @(see books) for arithmetic reasoning.</p>")
 
  <li>@('(sublis-var alist form)'): Substitute @('alist') into the @(see term),
  @('form').</li>
+
+ <li>@('(subsequencep lst1 lst2)'): Determine whether the list lst1 is a
+ subsequence of the list lst2, although not necessarily a proper
+ subsequence.</li>
 
  <li>@('(subst-expr new old term)'): Substitute @('new') for @('old') in
  @('term'); all are assumed to be @(see term)s.  This function provides a
@@ -128766,6 +128777,7 @@ expand function call at the current subterm, without simplifying"
 (defpointer sublis-fn-lst-simple system-utilities)
 (defpointer sublis-fn-simple system-utilities)
 (defpointer sublis-var system-utilities)
+(defpointer subsequencep system-utilities)
 (defpointer subsetp-eq subsetp)
 (defpointer subsetp-equal subsetp)
 (defpointer subst-expr system-utilities)
