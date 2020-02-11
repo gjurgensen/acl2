@@ -85027,6 +85027,10 @@ it."
 
  <p>The command `@('Ctl-t p')' now works in Emacs 25.</p>
 
+ <p>The @(see acl2-doc) browser for ACL2+books documentation can be extended
+ with a new command, @('U'), to open a URL (or in some cases, a file) in a
+ browser.  See file @('emacs/acl2-doc-open-url.el') for more information.</p>
+
  <h3>Experimental Versions</h3>
 
  ")
