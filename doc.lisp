@@ -83510,6 +83510,15 @@ Heuristic and Efficiency Improvements
   note: the relevant algorithms and code are discussed in an expanded
   version of the Essay on Cert-data in the ACL2 source code.)
 
+  Some stack overflows may be avoided by a change to a built-in system
+  function, cons-count-bounded-ac, so that it is now tail recursive
+  as it CDRs the list, rather than as it takes the CAR.  Thanks to
+  Shilpi Goel for reporting the problem with an example and to Sol
+  Swords for suggesting this fix.  That example exhibited a second
+  stack overflow, due to a built-in memoized system function that is
+  no longer called when computing a call of the built-in system
+  function, pkg-names.
+
 
 Bug Fixes
 
