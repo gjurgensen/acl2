@@ -84630,6 +84630,8 @@ it."
 ; cert-data that weren't being freed by include-book except (sort of by
 ; accident, because of weak hash tables) when the host Lisp is CCL or SBCL.
 
+; Tweaked cons-count-bounded-ac, following suggestions by Sol Swords.
+
   :parents (release-notes)
   :short "ACL2 Version  8.3 (xxx, 20xx) Notes"
   :long "<p>NOTE!  New users can ignore these release notes, because the @(see
