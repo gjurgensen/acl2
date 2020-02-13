@@ -41867,27 +41867,27 @@ tables in the current Hons Space."
  })
 
  <p>In ACL2, as in Nqthm, the functions in a conjecture ``suggest'' the
- inductions considered by the system.  Because every recursive function must be
- admitted with a justification in terms of a measure that decreases in a
- well-founded way on a given set of ``controlling'' arguments, every recursive
- function suggests a dual induction scheme that ``unwinds'' the function from a
- given application.</p>
+ inductions considered by the system.  Because every recursively defined
+ function must be admitted with a justification in terms of a measure that
+ decreases in a well-founded way on a given set of ``controlling'' arguments,
+ every recursive definition suggests a dual induction scheme that ``unwinds''
+ the function from a given application.</p>
 
  <p>For example, since @(tsee append) (actually @(tsee binary-append), but
  we'll ignore the distinction here) decomposes its first argument by successive
- @(tsee cdr)s as long as it is a non-@('nil') true list, the induction scheme
- suggested by @('(append x y)') has a base case supposing @('x') to be either
- not a true list or to be @('nil') and then has an induction step in which the
- induction hypothesis is obtained by replacing @('x') by @('(cdr x)').  This
- substitution decreases the same measure used to justify the definition of
- @(tsee append).  Observe that an induction scheme is suggested by a recursive
- function application only if the controlling actuals are distinct variables, a
- condition that is sufficient to ensure that the ``substitution'' used to
- create the induction hypothesis is indeed a substitution and that it drives
- down a certain measure.  In particular, @('(append (foo x) y)') does not
- suggest an induction unwinding @(tsee append) because the induction scheme
- suggested by @('(append x y)') requires that we substitute @('(cdr x)') for
- @('x') and we cannot do that if @('x') is not a variable symbol.</p>
+ @(tsee cdr)s as long as it is a cons, the induction scheme suggested by
+ @('(append x y)') has a base case supposing @('x') to be an atom (i.e., not a
+ cons) and then has an induction step in which the induction hypothesis is
+ obtained by replacing @('x') by @('(cdr x)').  This substitution decreases the
+ same measure used to justify the definition of @(tsee append).  Observe that
+ an induction scheme is suggested by a recursive function application only if
+ the controlling actuals are distinct variables, a condition that is sufficient
+ to ensure that the ``substitution'' used to create the induction hypothesis is
+ indeed a substitution and that it drives down a certain measure.  In
+ particular, @('(append (foo x) y)') does not suggest an induction unwinding
+ @(tsee append) because the induction scheme suggested by @('(append x y)')
+ requires that we substitute @('(cdr x)') for @('x') and we cannot do that if
+ @('x') is not a variable symbol.</p>
 
  <p>Once ACL2 has collected together all the suggested induction schemes it
  massages them in various ways, combining some to simultaneously unwind certain
@@ -41904,9 +41904,10 @@ tables in the current Hons Space."
  fn)'), for each admitted recursive function, @('fn').  It is this rule that
  links applications of @('fn') to the induction scheme it suggests.  Disabling
  @('(:induction fn)') will prevent @('fn') from suggesting the induction scheme
- derived from its recursive definition.  It is possible for the user to create
- additional @(':induction') rules by using the @(':induction') rule class in
- @(tsee defthm).</p>
+ derived from its recursive definition (with an exception for induction schemes
+ by way of user-defined induction rules, as discussed at the end below).  It is
+ possible for the user to create additional @(':induction') rules by using the
+ @(':induction') rule class in @(tsee defthm).</p>
 
  <p>Technically we are ``overloading'' @(tsee defthm) by using it in the
  creation of @(':induction') rules because no theorem need be proved to set up
@@ -41943,8 +41944,14 @@ tables in the current Hons Space."
  is created and the rule ``suggests'' the induction, if any, suggested by that
  term.  (Analysis of that term may further involve induction rules, though the
  applied rule is removed from consideration during that further analysis, in
- order to avoid looping.)  If @('rec-fn') is recursive, then the suggestion is
- the one that unwinds that recursion.</p>
+ order to avoid looping.)  If @('rec-fn') has a recursive definition, then the
+ the definition's dual induction scheme is suggested (i.e., unwinding the
+ function).</p>
+
+ <p>(Remark.  Unlike @(':induct') @(see hints), the @(':scheme') of an
+ @(':induction') rule only introduces induction schemes based on the top-level
+ function symbol of the indicated term, not of any of its subterms.  End of
+ Remark.)</p>
 
  <p>Consider, for example, the example given above,</p>
 
@@ -42023,9 +42030,19 @@ tables in the current Hons Space."
                                :scheme scheme-term)))
  })
 
- <p>The name of the rule created is @('(:induction name)').  When that rune is
- disabled the heuristic link between @('pat-term') and @('scheme-term') is
- broken.</p>")
+ <p>The name of the rule created is @('(:induction name)').  When that @(see
+ rune) is @(see disable)d the heuristic link between @('pat-term') and
+ @('scheme-term') is broken.</p>
+
+ <p>Note that if @('fn') is defined recursively and @('(:induction fn)') is
+ @(see disable)d, then normally the induction scheme for @('fn') will not be
+ available during a proof.  However, the induction scheme for @('fn') is
+ available, even if it is disabled, when it is indicated by application of a
+ user-defined @(':induction') rule.  So for the @(':induction') rule above,
+ @('recursion-by-sub2-induction-rule'): even if @('(:induction
+ recursion-by-sub2)') is disabled, nevertheless the induction scheme for
+ @('recursion-by-sub2') will be available to apply to the instantiated
+ @(':scheme-term').</p>")
 
 (defxdoc induction-depth-limit
   :parents (induction)
@@ -84784,6 +84801,15 @@ it."
 
  <p>The default slow-alist-action (see @(see slow-alist-warning)) is now
  @(':break') instead of warning.</p>
+
+ <p>For a user-defined @(':')@(tsee induction) rule to be applied, it is no
+ longer required for the induction scheme associated with a recursive
+ definition to be enabled.  For an example of the effect of this change, see
+ the @(see community-book),
+ @('books/system/tests/induction-rule-with-disabled-scheme.lisp').  Thanks to
+ Pete Manolios for reporting this issue, including the sending of the events in
+ that book.  Also see @(see induction) (as that documentation has been
+ updated).</p>
 
  <h3>New Features</h3>
 
