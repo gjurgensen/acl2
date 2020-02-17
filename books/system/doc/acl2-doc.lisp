@@ -84811,6 +84811,10 @@ it."
  that book.  Also see @(see induction) (as that documentation has been
  updated).</p>
 
+ <p>An undocumented kind of @(see fake-rune) is no longer reported by @(tsee
+ show-accumulated-persistence).  Thanks to Eric Smith for bringing this issue
+ to our attention.</p>
+
  <h3>New Features</h3>
 
  <p>A new @(tsee xargs) keyword, @(':guard-simplify') (default @('t')),
