@@ -3975,6 +3975,9 @@ Subtopics
   [Standard-char-p]
       Recognizer for standard characters
 
+  [Standard-char-p+]
+      Recognizer for standard characters whose guard is t
+
   [Standard-co]
       The character output channel to which [ld] prints
 
@@ -13060,7 +13063,7 @@ Subtopics
   `make'-level parallelism (in this case specifying four parallel
   processes).
 
-    ACL2_PCERT=t cert.pl -j 4 `find . -name '*.lisp'`
+    cert.pl --pcert-all -j 4 `find . -name '*.lisp'`
 
   Note that with this approach, unlike classic ACL2 `make'-based
   certification (see [books-certification-classic], out-of-date .cert
@@ -16688,6 +16691,9 @@ Subtopics
 
   [Standard-char-p]
       Recognizer for standard characters
+
+  [Standard-char-p+]
+      Recognizer for standard characters whose guard is t
 
   [Upper-case-p]
       Recognizer for upper case characters")
@@ -33800,7 +33806,7 @@ Subtopics
       it.
 
   [Slow-alist-warning]
-      Warnings issued when [fast-alists] are used inefficiently
+      Warnings/errors issued when [fast-alists] are used inefficiently
 
   [With-fast-alist]
       (with-fast-alist name form) causes name to be a fast alist for the
@@ -45554,30 +45560,29 @@ Subtopics
                                  :scheme (recursion-by-sub2 i))))
 
   In ACL2, as in Nqthm, the functions in a conjecture ``suggest'' the
-  inductions considered by the system.  Because every recursive
-  function must be admitted with a justification in terms of a
-  measure that decreases in a well-founded way on a given set of
-  ``controlling'' arguments, every recursive function suggests a dual
-  induction scheme that ``unwinds'' the function from a given
+  inductions considered by the system.  Because every recursively
+  defined function must be admitted with a justification in terms of
+  a measure that decreases in a well-founded way on a given set of
+  ``controlling'' arguments, every recursive definition suggests a
+  dual induction scheme that ``unwinds'' the function from a given
   application.
 
   For example, since [append] (actually [binary-append], but we'll
   ignore the distinction here) decomposes its first argument by
-  successive [cdr]s as long as it is a non-nil true list, the
-  induction scheme suggested by (append x y) has a base case
-  supposing x to be either not a true list or to be nil and then has
-  an induction step in which the induction hypothesis is obtained by
-  replacing x by (cdr x).  This substitution decreases the same
-  measure used to justify the definition of [append].  Observe that
-  an induction scheme is suggested by a recursive function
-  application only if the controlling actuals are distinct variables,
-  a condition that is sufficient to ensure that the ``substitution''
-  used to create the induction hypothesis is indeed a substitution
-  and that it drives down a certain measure.  In particular, (append
-  (foo x) y) does not suggest an induction unwinding [append] because
-  the induction scheme suggested by (append x y) requires that we
-  substitute (cdr x) for x and we cannot do that if x is not a
-  variable symbol.
+  successive [cdr]s as long as it is a cons, the induction scheme
+  suggested by (append x y) has a base case supposing x to be an atom
+  (i.e., not a cons) and then has an induction step in which the
+  induction hypothesis is obtained by replacing x by (cdr x).  This
+  substitution decreases the same measure used to justify the
+  definition of [append].  Observe that an induction scheme is
+  suggested by a recursive function application only if the
+  controlling actuals are distinct variables, a condition that is
+  sufficient to ensure that the ``substitution'' used to create the
+  induction hypothesis is indeed a substitution and that it drives
+  down a certain measure.  In particular, (append (foo x) y) does not
+  suggest an induction unwinding [append] because the induction
+  scheme suggested by (append x y) requires that we substitute (cdr
+  x) for x and we cannot do that if x is not a variable symbol.
 
   Once ACL2 has collected together all the suggested induction schemes
   it massages them in various ways, combining some to simultaneously
@@ -45596,8 +45601,10 @@ Subtopics
   It is this rule that links applications of fn to the induction
   scheme it suggests.  Disabling (:induction fn) will prevent fn from
   suggesting the induction scheme derived from its recursive
-  definition.  It is possible for the user to create additional
-  :induction rules by using the :induction rule class in [defthm].
+  definition (with an exception for induction schemes by way of
+  user-defined induction rules, as discussed at the end below).  It
+  is possible for the user to create additional :induction rules by
+  using the :induction rule class in [defthm].
 
   Technically we are ``overloading'' [defthm] by using it in the
   creation of :induction rules because no theorem need be proved to
@@ -45634,8 +45641,14 @@ Subtopics
   induction, if any, suggested by that term.  (Analysis of that term
   may further involve induction rules, though the applied rule is
   removed from consideration during that further analysis, in order
-  to avoid looping.)  If rec-fn is recursive, then the suggestion is
-  the one that unwinds that recursion.
+  to avoid looping.)  If rec-fn has a recursive definition, then the
+  the definition's dual induction scheme is suggested (i.e.,
+  unwinding the function).
+
+  (Remark.  Unlike :induct [hints], the :scheme of an :induction rule
+  only introduces induction schemes based on the top-level function
+  symbol of the indicated term, not of any of its subterms.  End of
+  Remark.)
 
   Consider, for example, the example given above,
 
@@ -45706,9 +45719,19 @@ Subtopics
                                  :condition cond-term
                                  :scheme scheme-term)))
 
-  The name of the rule created is (:induction name).  When that rune is
-  disabled the heuristic link between pat-term and scheme-term is
-  broken.
+  The name of the rule created is (:induction name).  When that [rune]
+  is [disable]d the heuristic link between pat-term and scheme-term
+  is broken.
+
+  Note that if fn is defined recursively and (:induction fn) is
+  [disable]d, then normally the induction scheme for fn will not be
+  available during a proof.  However, the induction scheme for fn is
+  available, even if it is disabled, when it is indicated by
+  application of a user-defined :induction rule.  So for the
+  :induction rule above, recursion-by-sub2-induction-rule: even if
+  (:induction recursion-by-sub2) is disabled, nevertheless the
+  induction scheme for recursion-by-sub2 will be available to apply
+  to the instantiated :scheme-term.
 
 
 Subtopics
@@ -83365,6 +83388,22 @@ Changes to Existing Features
   (set-ld-skip-proofsp t state), while before this change, it did
   not.
 
+  The default slow-alist-action (see [slow-alist-warning]) is now
+  :break instead of warning.
+
+  For a user-defined :[induction] rule to be applied, it is no longer
+  required for the induction scheme associated with a recursive
+  definition to be enabled.  For an example of the effect of this
+  change, see the [community-book],
+  books/system/tests/induction-rule-with-disabled-scheme.lisp.
+  Thanks to Pete Manolios for reporting this issue, including the
+  sending of the events in that book.  Also see [induction] (as that
+  documentation has been updated).
+
+  An undocumented kind of [fake-rune] is no longer reported by
+  [show-accumulated-persistence].  Thanks to Eric Smith for bringing
+  this issue to our attention.
+
 
 New Features
 
@@ -83492,6 +83531,24 @@ Heuristic and Efficiency Improvements
   of the time for the event (include-book \"centaur/sv/top\" :dir
   :system).
 
+  ACL2 now saves, in [certificate] files, the translated bodies of
+  [defun] and [defthm] [events].  (See [term] for a discussion of
+  translated terms.)  This can speed up [include-book]; for example,
+  we have measured approximately a 3% reduction in time for the
+  event, (include-book \"centaur/sv/top\" :dir :system), but with a
+  space trade-off of about 41% more bytes allocated.  (Implementation
+  note: the relevant algorithms and code are discussed in an expanded
+  version of the Essay on Cert-data in the ACL2 source code.)
+
+  Some stack overflows may be avoided by a change to a built-in system
+  function, cons-count-bounded-ac, so that it is now tail recursive
+  as it CDRs the list, rather than as it takes the CAR.  Thanks to
+  Shilpi Goel for reporting the problem with an example and to Sol
+  Swords for suggesting this fix.  That example exhibited a second
+  stack overflow, due to a built-in memoized system function that is
+  no longer called when computing a call of the built-in system
+  function, pkg-names.
+
 
 Bug Fixes
 
@@ -83577,6 +83634,16 @@ Bug Fixes
   that one of them has application to other than stobjs, in new code
   mentioned above for enabled structures.)
 
+  Fixed the process of translating the [type-spec], standard-char, into
+  a [term].  For example, the following definition failed but now
+  succeeds:
+  (defun foo (x) (declare (type standard-char x)) (cons 3 x)).
+
+  Fixed a bug that could cause the wrong [stobj] to be displayed by
+  [print-gv], when congruent stobjs with a single bit-array field are
+  involved.  See a comment in ACL2 source function
+  apply-user-stobj-alist-or-kwote for an example of this bug.
+
 
 Changes at the System Level
 
@@ -83596,6 +83663,11 @@ Changes at the System Level
 EMACS Support
 
   The command `Ctl-t p' now works in Emacs 25.
+
+  The [ACL2-doc] browser for ACL2+books documentation can be extended
+  with a new command, U, to open a URL (or in some cases, a file) in
+  a browser.  See file emacs/acl2-doc-open-url.el for more
+  information.
 
 
 Experimental Versions")
@@ -88771,6 +88843,9 @@ Subtopics
   [Sublis-var]
       See [system-utilities].
 
+  [Subsequencep]
+      See [system-utilities].
+
   [Subsetp-eq]
       See [subsetp].
 
@@ -93492,7 +93567,7 @@ Subtopics
   To invoke provisional certification, see [books-certification].  For
   example, you could issue the following command.
 
-    ACL2_PCERT=t cert.pl -j 4 `find . -name '*.lisp'`
+    cert.pl --pcert-all -j 4 `find . -name '*.lisp'`
 
   Alternatively, see [books-certification-classic] for a discussion of
   classic ACL2 `make'-based certification (which may disappear in a
@@ -106289,11 +106364,15 @@ Subtopics
            nil)")
  (SLOW-ALIST-WARNING
   (FAST-ALISTS)
-  "Warnings issued when [fast-alists] are used inefficiently
+  "Warnings/errors issued when [fast-alists] are used inefficiently
 
   Obtaining hash-table performance from [hons-get] requires one to
   follow a certain discipline.  If this discipline is violated, you
-  may see the following \"slow alist warning\".
+  may see the following message, which by default is followed by a
+  Lisp break.  (The Lisp break may be ignored by continuing in the
+  host Common Lisp, for example using :go if the host Lisp is CCL.
+  Or, it may be aborted, often using :q, again depending on the host
+  Lisp.)
 
     *****************************************************************
     Fast alist discipline violated in HONS-ACONS.
@@ -106306,11 +106385,11 @@ Subtopics
   gethash.
 
   You can control whether or not you get a warning and, if so, whether
-  or not a break (an error from which you can continue) ensues.  For
-  instance:
+  or not a break (again: an error from which you can continue)
+  ensues.  For instance:
 
-    (set-slow-alist-action :warning)  ; warn on slow access (default)
-    (set-slow-alist-action :break)    ; warn and also call break$
+    (set-slow-alist-action :break)    ; warn and also call break$ (default)
+    (set-slow-alist-action :warning)  ; warn on slow access
     (set-slow-alist-action nil)       ; do not warn or break
 
   The above forms expand to [table] [events], so they can be embedded
@@ -106332,15 +106411,15 @@ Subtopics
     ; no longer associated with (@ a).
     (assign b (hons-acons 'fn2 2 (@ a)))
 
-    ; (B2) Fast alist warning: discipline is violated because (@ a) no longer
-    ; has a backing hash-table.
+    ; (B2) Fast alist warning (with a Lisp break, by default): discipline is
+    ; violated because (@ a) no longer has a backing hash-table.
     (assign b (hons-acons 'fn2 2 (@ a)))
 
-    ; (C1) Fast alist warning: discipline is violated because (@ b) does not
+    ; (C1) Fast alist warning/break: discipline is violated because (@ b) does not
     ; have a backing hash-table.
     (assign c (hons-acons 'fn3 3 (@ b)))
 
-    ; (C2) Fast alist warning: discipline is violated because (@ b) does not
+    ; (C2) Fast alist warning/break: discipline is violated because (@ b) does not
     ; have a backing hash-table.
     (assign c (hons-acons 'fn3 3 (@ b)))
 
@@ -106356,8 +106435,9 @@ Subtopics
   pass.  With a little reflection you can see the connection between
   the two sequences of events above: encapsulate A makes assignments
   analogous to A1 (in its first pass) and A2 (in its second pass);
-  similarly for B, B1, B2 and for C, C1, C2.  Thus, we get slow alist
-  warnings on the second pass of B and on both passes of C.
+  similarly for B, B1, B2 and for C, C1, C2.  Thus, we get a slow
+  alist warning/break on the second pass of B and on both passes of
+  C.
 
   The simplest way to fix this problem is to call [make-fast-alist],
   which is essentially a no-op when its argument is already a fast
@@ -106367,15 +106447,15 @@ Subtopics
     (encapsulate nil (defconst *b* (make-fast-alist (hons-acons 'fn2 2 *a*))))
     (encapsulate nil (defconst *c* (make-fast-alist (hons-acons 'fn3 3 *b*))))
 
-  We still see warnings in pass 2 of the second and third encapsulates,
-  created by calls of [hons-acons] exactly as before.  However, the
-  results of those two calls are converted to fast alists by
-  make-fast-alist; so after each encapsulate, the value of the
-  defined constant is indeed a fast alist.  A problem still persists:
-  the second and third [defconst] event each steal the fast-alist
-  value of the previous defconst.  That's a problem that we won't try
-  to solve here; we will just focus on how to ensure that the value
-  of *c* is a fast alist.
+  We still see the warning/break in pass 2 of the second and third
+  encapsulates, created by calls of [hons-acons] exactly as before.
+  However, the results of those two calls are converted to fast
+  alists by make-fast-alist; so after each encapsulate, the value of
+  the defined constant is indeed a fast alist.  A problem still
+  persists: the second and third [defconst] event each steal the
+  fast-alist value of the previous defconst.  That's a problem that
+  we won't try to solve here; we will just focus on how to ensure
+  that the value of *c* is a fast alist.
 
   The following alternate solution has the advantage of avoiding the
   expense of reconstituting the fast alist during pass 2 of each of
@@ -107080,7 +107160,27 @@ Subtopics
 
     (defun standard-char-p (x)
            (declare (xargs :guard (characterp x)))
-           (if (member x *standard-chars*) t nil))")
+           (if (member x *standard-chars*) t nil))
+
+
+Subtopics
+
+  [Standard-char-p+]
+      Recognizer for standard characters whose guard is t")
+ (STANDARD-CHAR-P+
+  (STANDARD-CHAR-P CHARACTERS ACL2-BUILT-INS)
+  "Recognizer for standard characters whose guard is t
+
+  Logically standard-char-p+ is the same as [standard-char-p].
+  However, standard-char-p+ has a guard of t, while standard-char-p
+  is guarded by [characterp].
+
+  Function: <standard-char-p+>
+
+    (defun standard-char-p+ (x)
+           (declare (xargs :guard t))
+           (and (characterp x)
+                (standard-char-p x)))")
  (STANDARD-CO
   (IO ACL2-BUILT-INS)
   "The character output channel to which [ld] prints
@@ -109085,6 +109185,8 @@ Subtopics
                                   start (or end (length seq)))
                      'string)
              (subseq-list seq start (or end (length seq)))))")
+ (SUBSEQUENCEP (POINTERS)
+               "See [system-utilities].")
  (SUBSETP
   (LISTS ACL2-BUILT-INS)
   "Test if every [member] of one list is a [member] of the other
@@ -110767,6 +110869,9 @@ List of a few built-in system utilities
       applying sublis-fn-simple to alist and each such term.  See the
       description of sublis-fn-simple, above.
     * (sublis-var alist form): Substitute alist into the [term], form.
+    * (subsequencep lst1 lst2): Determine whether the list lst1 is a
+      subsequence of the list lst2, although not necessarily a proper
+      subsequence.
     * (subst-expr new old term): Substitute new for old in term; all are
       assumed to be [term]s.  This function provides a slightly
       optimized version of equivalent function (subst-expr1 new old
