@@ -84649,6 +84649,11 @@ it."
 
 ; Tweaked cons-count-bounded-ac, following suggestions by Sol Swords.
 
+; Avoided a hack using EQ to clean up system function raw-ev-fncall.  (We were
+; relying on the fact that two live stobjs st1 and st2 never satisfy EQ; yet
+; their list versions could actually satisfy the logical definition of EQ,
+; i.e., equality.)  Thanks to Sol Swords for encouraging this change.
+
   :parents (release-notes)
   :short "ACL2 Version  8.3 (xxx, 20xx) Notes"
   :long "<p>NOTE!  New users can ignore these release notes, because the @(see
@@ -84810,6 +84815,10 @@ it."
  Pete Manolios for reporting this issue, including the sending of the events in
  that book.  Also see @(see induction) (as that documentation has been
  updated).</p>
+
+ <p>An undocumented kind of @(see fake-rune) is no longer reported by @(tsee
+ show-accumulated-persistence).  Thanks to Eric Smith for bringing this issue
+ to our attention.</p>
 
  <h3>New Features</h3>
 
@@ -85036,6 +85045,11 @@ it."
  into a @(see term).  For example, the following definition failed but now
  succeeds:<br/> @('(defun foo (x) (declare (type standard-char x)) (cons 3
  x))').</p>
+
+ <p>Fixed a bug that could cause the wrong @(see stobj) to be displayed by
+ @(tsee print-gv), when congruent stobjs with a single bit-array field are
+ involved.  See a comment in ACL2 source function
+ @('apply-user-stobj-alist-or-kwote') for an example of this bug.</p>
 
  <h3>Changes at the System Level</h3>
 

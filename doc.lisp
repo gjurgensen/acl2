@@ -83400,6 +83400,10 @@ Changes to Existing Features
   sending of the events in that book.  Also see [induction] (as that
   documentation has been updated).
 
+  An undocumented kind of [fake-rune] is no longer reported by
+  [show-accumulated-persistence].  Thanks to Eric Smith for bringing
+  this issue to our attention.
+
 
 New Features
 
@@ -83634,6 +83638,11 @@ Bug Fixes
   a [term].  For example, the following definition failed but now
   succeeds:
   (defun foo (x) (declare (type standard-char x)) (cons 3 x)).
+
+  Fixed a bug that could cause the wrong [stobj] to be displayed by
+  [print-gv], when congruent stobjs with a single bit-array field are
+  involved.  See a comment in ACL2 source function
+  apply-user-stobj-alist-or-kwote for an example of this bug.
 
 
 Changes at the System Level
