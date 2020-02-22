@@ -83538,7 +83538,9 @@ Heuristic and Efficiency Improvements
   event, (include-book \"centaur/sv/top\" :dir :system), but with a
   space trade-off of about 41% more bytes allocated.  (Implementation
   note: the relevant algorithms and code are discussed in an expanded
-  version of the Essay on Cert-data in the ACL2 source code.)
+  version of the Essay on Cert-data in the ACL2 source code.)  Thanks
+  to Eric Smith for pointing out a bug (which we then fixed) in a
+  preliminary implementation of this feature.
 
   Some stack overflows may be avoided by a change to a built-in system
   function, cons-count-bounded-ac, so that it is now tail recursive
@@ -83643,6 +83645,14 @@ Bug Fixes
   [print-gv], when congruent stobjs with a single bit-array field are
   involved.  See a comment in ACL2 source function
   apply-user-stobj-alist-or-kwote for an example of this bug.
+
+  When including a book that is uncertified because of a stale
+  [certificate] file, ACL2 was inappropriately using information
+  about [type-prescription] rules (specifically, those computed by
+  the system at definition time) that was stored in that certificate.
+  This has been fixed, thanks to a bug report from Eric Smith about a
+  related feature mentioned above, on saving translated bodies in
+  certificate files.
 
 
 Changes at the System Level
