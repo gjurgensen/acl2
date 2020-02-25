@@ -83652,7 +83652,9 @@ Bug Fixes
   the system at definition time) that was stored in that certificate.
   This has been fixed, thanks to a bug report from Eric Smith about a
   related feature mentioned above, on saving translated bodies in
-  certificate files.
+  certificate files.  Moreover, the relevant system function,
+  include-book-fn1, has been modified to do a better job of ignoring
+  certificate files of uncertified books.
 
 
 Changes at the System Level
