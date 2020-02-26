@@ -109069,6 +109069,19 @@ arithmetic) for libraries of @(see books) for arithmetic reasoning.</p>")
 
  <ul>
 
+ <li>@('(add-suffix sym str)'): Extend a symbol @('sym') with a suffix
+ expressed as a string @('str').  The resulting symbol is in the same package
+ as the original symbol.  For instance, @('(add-suffix 'abc \"DEF\")') results
+ in the symbol @('\'abcdef'), in the same package as @('\'abc').  See @(tsee
+ add-suffix-to-fn) for a variant that may be more appropriate for generating
+ new function names.</li>
+
+ <li>@('(add-suffix-to-fn sym suffix)'): Variant of @(tsee add-suffix) that
+ puts the new symbol in the @('\"ACL2\"') package when @('sym') is in the
+ @('\"COMMON-LISP\"') package.  New function symbols cannot be in the
+ @('\"COMMON-LISP\"') package; thus, this utility may be appropriate when
+ generating new function names.</li>
+
  <li>@('(all-calls names term alist ans)'):  Accumulate into @('ans')
  (which typically is @('nil') at the top level) all pseudo-terms @('u/alist')
  such that for some @('f') in the list, @('names'), @('u') is a subterm of the
@@ -128577,6 +128590,8 @@ expand function call at the current subterm, without simplifying"
 (defpointer acl2s acl2-sedan)
 (defpointer add-ld-keyword-alias ld-keyword-aliases)
 (defpointer add-ld-keyword-alias! ld-keyword-aliases)
+(defpointer add-suffix system-utilities)
+(defpointer add-suffix-to-fn system-utilities)
 (defpointer add-to-set-eq add-to-set)
 (defpointer add-to-set-eql add-to-set) ; pre-v4-3 compatibility
 (defpointer add-to-set-equal add-to-set)
