@@ -84958,6 +84958,12 @@ it."
  memoized system function that is no longer called when computing a call of the
  built-in system function, @('pkg-names').</p>
 
+ <p>The second pass of @(tsee encapsulate) now uses @(see fast-alists) when
+ calculating new triples in the logical @(see world) (in ACL2 system function
+ @('new-trips').  We have seen this change result in cutting the time by 4.7%
+ and the bytes allocated by 34% for including the community book,
+ @('\"centaur/sv/top\"').</p>
+
  <h3>Bug Fixes</h3>
 
  <p>As noted in the documentation for @(see lemma-instance), ACL2 may avoid

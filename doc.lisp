@@ -83551,6 +83551,12 @@ Heuristic and Efficiency Improvements
   no longer called when computing a call of the built-in system
   function, pkg-names.
 
+  The second pass of [encapsulate] now uses [fast-alists] when
+  calculating new triples in the logical [world] (in ACL2 system
+  function new-trips.  We have seen this change result in cutting the
+  time by 4.7% and the bytes allocated by 34% for including the
+  community book, \"centaur/sv/top\".
+
 
 Bug Fixes
 
