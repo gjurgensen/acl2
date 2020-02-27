@@ -84946,7 +84946,9 @@ it."
  @('(include-book \"centaur/sv/top\" :dir :system)'), but with a space
  trade-off of about 41% more bytes allocated.  (Implementation note: the
  relevant algorithms and code are discussed in an expanded version of the Essay
- on Cert-data in the ACL2 source code.)</p>
+ on Cert-data in the ACL2 source code.)  Thanks to Eric Smith for pointing out
+ a bug (which we then fixed) in a preliminary implementation of this
+ feature.</p>
 
  <p>Some stack overflows may be avoided by a change to a built-in system
  function, @('cons-count-bounded-ac'), so that it is now tail recursive as it
@@ -84955,6 +84957,12 @@ it."
  fix.  That example exhibited a second stack overflow, due to a built-in
  memoized system function that is no longer called when computing a call of the
  built-in system function, @('pkg-names').</p>
+
+ <p>The second pass of @(tsee encapsulate) now uses @(see fast-alists) when
+ calculating new triples in the logical @(see world) (in ACL2 system function
+ @('new-trips').  We have seen this change result in cutting the time by 4.7%
+ and the bytes allocated by 34% for including the community book,
+ @('\"centaur/sv/top\"').</p>
 
  <h3>Bug Fixes</h3>
 
@@ -85050,6 +85058,15 @@ it."
  @(tsee print-gv), when congruent stobjs with a single bit-array field are
  involved.  See a comment in ACL2 source function
  @('apply-user-stobj-alist-or-kwote') for an example of this bug.</p>
+
+ <p>When including a book that is uncertified because of a stale @(see
+ certificate) file, ACL2 was inappropriately using information about @(see
+ type-prescription) rules (specifically, those computed by the system at
+ definition time) that was stored in that certificate.  This has been fixed,
+ thanks to a bug report from Eric Smith about a related feature mentioned
+ above, on saving translated bodies in certificate files.  Moreover, the
+ relevant system function, @('include-book-fn1'), has been modified to do a
+ better job of ignoring certificate files of uncertified books.</p>
 
  <h3>Changes at the System Level</h3>
 
@@ -109052,6 +109069,19 @@ arithmetic) for libraries of @(see books) for arithmetic reasoning.</p>")
 
  <ul>
 
+ <li>@('(add-suffix sym str)'): Extend a symbol @('sym') with a suffix
+ expressed as a string @('str').  The resulting symbol is in the same package
+ as the original symbol.  For instance, @('(add-suffix 'abc \"DEF\")') results
+ in the symbol @('\'abcdef'), in the same package as @('\'abc').  See @(tsee
+ add-suffix-to-fn) for a variant that may be more appropriate for generating
+ new function names.</li>
+
+ <li>@('(add-suffix-to-fn sym suffix)'): Variant of @(tsee add-suffix) that
+ puts the new symbol in the @('\"ACL2\"') package when @('sym') is in the
+ @('\"COMMON-LISP\"') package.  New function symbols cannot be in the
+ @('\"COMMON-LISP\"') package; thus, this utility may be appropriate when
+ generating new function names.</li>
+
  <li>@('(all-calls names term alist ans)'):  Accumulate into @('ans')
  (which typically is @('nil') at the top level) all pseudo-terms @('u/alist')
  such that for some @('f') in the list, @('names'), @('u') is a subterm of the
@@ -128560,6 +128590,8 @@ expand function call at the current subterm, without simplifying"
 (defpointer acl2s acl2-sedan)
 (defpointer add-ld-keyword-alias ld-keyword-aliases)
 (defpointer add-ld-keyword-alias! ld-keyword-aliases)
+(defpointer add-suffix system-utilities)
+(defpointer add-suffix-to-fn system-utilities)
 (defpointer add-to-set-eq add-to-set)
 (defpointer add-to-set-eql add-to-set) ; pre-v4-3 compatibility
 (defpointer add-to-set-equal add-to-set)
