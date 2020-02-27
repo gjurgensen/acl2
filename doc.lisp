@@ -6239,6 +6239,10 @@ Subtopics
   The current arity assignments can be seen by evaluating (@
   raw-arity-alist).  See [remove-raw-arity] for how to undo a call of
   add-raw-arity.")
+ (ADD-SUFFIX (POINTERS)
+             "See [system-utilities].")
+ (ADD-SUFFIX-TO-FN (POINTERS)
+                   "See [system-utilities].")
  (ADD-TO-SET
   (LISTS SYMBOLS ACL2-BUILT-INS)
   "Add a symbol to a list
@@ -83551,6 +83555,12 @@ Heuristic and Efficiency Improvements
   no longer called when computing a call of the built-in system
   function, pkg-names.
 
+  The second pass of [encapsulate] now uses [fast-alists] when
+  calculating new triples in the logical [world] (in ACL2 system
+  function new-trips.  We have seen this change result in cutting the
+  time by 4.7% and the bytes allocated by 34% for including the
+  community book, \"centaur/sv/top\".
+
 
 Bug Fixes
 
@@ -83652,7 +83662,9 @@ Bug Fixes
   the system at definition time) that was stored in that certificate.
   This has been fixed, thanks to a bug report from Eric Smith about a
   related feature mentioned above, on saving translated bodies in
-  certificate files.
+  certificate files.  Moreover, the relevant system function,
+  include-book-fn1, has been modified to do a better job of ignoring
+  certificate files of uncertified books.
 
 
 Changes at the System Level
@@ -88039,6 +88051,12 @@ Subtopics
 
   [Add-ld-keyword-alias!]
       See [ld-keyword-aliases].
+
+  [Add-suffix]
+      See [system-utilities].
+
+  [Add-suffix-to-fn]
+      See [system-utilities].
 
   [Add-to-set-eq]
       See [add-to-set].
@@ -110550,6 +110568,17 @@ List of a few built-in system utilities
   utilities that are less relevant to the ACL2 system, and see
   [programming] for utilities in general.
 
+    * (add-suffix sym str): Extend a symbol sym with a suffix expressed as
+      a string str.  The resulting symbol is in the same package as
+      the original symbol.  For instance, (add-suffix 'abc \"DEF\")
+      results in the symbol 'abcdef, in the same package as 'abc.
+      See [add-suffix-to-fn] for a variant that may be more
+      appropriate for generating new function names.
+    * (add-suffix-to-fn sym suffix): Variant of [add-suffix] that puts the
+      new symbol in the \"ACL2\" package when sym is in the
+      \"COMMON-LISP\" package.  New function symbols cannot be in the
+      \"COMMON-LISP\" package; thus, this utility may be appropriate
+      when generating new function names.
     * (all-calls names term alist ans): Accumulate into ans (which
       typically is nil at the top level) all pseudo-terms u/alist
       such that for some f in the list, names, u is a subterm of the
