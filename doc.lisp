@@ -110578,7 +110578,7 @@ List of a few built-in system utilities
       new symbol in the \"ACL2\" package when sym is in the
       \"COMMON-LISP\" package.  New function symbols cannot be in the
       \"COMMON-LISP\" package; thus, this utility may be appropriate
-      when generating new function names.
+      when generating new function names from old ones.
     * (all-calls names term alist ans): Accumulate into ans (which
       typically is nil at the top level) all pseudo-terms u/alist
       such that for some f in the list, names, u is a subterm of the

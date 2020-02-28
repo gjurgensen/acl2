@@ -109080,7 +109080,7 @@ arithmetic) for libraries of @(see books) for arithmetic reasoning.</p>")
  puts the new symbol in the @('\"ACL2\"') package when @('sym') is in the
  @('\"COMMON-LISP\"') package.  New function symbols cannot be in the
  @('\"COMMON-LISP\"') package; thus, this utility may be appropriate when
- generating new function names.</li>
+ generating new function names from old ones.</li>
 
  <li>@('(all-calls names term alist ans)'):  Accumulate into @('ans')
  (which typically is @('nil') at the top level) all pseudo-terms @('u/alist')
