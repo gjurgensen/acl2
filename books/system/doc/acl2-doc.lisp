@@ -22577,13 +22577,14 @@ subtree of X with T, without duplication.</p>
  associated with potentially unsafe evaluation.  For example, calls of @(tsee
  sys-call) are illegal unless there is an active trust tag.  An active trust
  tag can be installed using a @('defttag') event.  If one introduces an active
- ttag and then writes definitions with calls @(tsee sys-call), presumably in a
- defensibly ``safe'' way, then responsibility for those calls is attributed to
- that ttag.  This attribution (or blame!) is at the level of @(see books); a
- book's @(see certificate) contains a list of ttags that are active in that
- book, or in a book that is included (possibly @(see local)ly), or in a book
- included in a book that is included (either inclusion being potentially @(see
- local)), and so on.  We explain all this in more detail below.</p>
+ ttag and then writes definitions that contain calls of @(tsee sys-call),
+ presumably in a defensibly ``safe'' way, then responsibility for those calls
+ is attributed to that ttag.  This attribution (or blame!) is at the level of
+ @(see books); a book's @(see certificate) contains a list of ttags that are
+ active in that book, or in a book that is included (possibly @(see local)ly),
+ or in a book included in a book that is included (either inclusion being
+ potentially @(see local)), and so on.  We explain all this in more detail
+ below.</p>
 
  <p>@('(Defttag :tag-name)') is essentially equivalent to</p>
 
@@ -22659,9 +22660,9 @@ subtree of X with T, without duplication.</p>
  <p><b>Allowed ttags when certifying and including books.</b> A @('defttag')
  form may not be evaluated unless its argument is a so-called ``allowed'' ttag.
  All ttags are allowed in the interactive top-level loop.  However, during
- @(tsee certify-book) and @(tsee include-book), the set of allowed ttags is
+ @(tsee certify-book) and @(tsee include-book), the set of allowed ttags may be
  restricted according to the @(':ttags') keyword argument.  If this argument is
- omitted then no ttag is allowed, so a @('defttag') call will fail during book
+ @('nil') then no ttag is allowed, so a @('defttag') call will fail during book
  certification or inclusion in this case.  This restriction applies even to
  @('defttag') forms already evaluated in the so-called certification @(see
  world) at the time @(tsee certify-book) is called.  But note that @('(defttag
