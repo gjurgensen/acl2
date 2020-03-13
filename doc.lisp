@@ -14535,6 +14535,7 @@ Subtopics
        (with-raw-mode \"[books]/hacking/hacking-xdoc.lisp\")
        (with-redef-allowed \"[books]/hacking/hacking-xdoc.lisp\")
        (with-timeout \"[books]/acl2s/cgen/with-timeout.lisp\")
+       (without-subsumption \"[books]/tools/without-subsumption.lisp\")
        (working-with-packages \"[books]/doc/practices.lisp\")
        (write-list \"[books]/misc/file-io.lisp\")
        (xdoc \"[books]/xdoc/topics.lisp\"))")
@@ -95340,9 +95341,8 @@ Subtopics
   help if you are sufficiently desperate, such as defining your own
   IF function to use in place of the built-in IF.
 
-  If you do find an example for which the above two events provide
-  significant benefit, we (the ACL2 implementors) would be interested
-  in hearing about it.
+  For an example of where this capability has proven useful, see
+  [without-subsumption].
 
   To turn the heuristic back on:
 

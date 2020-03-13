@@ -153,6 +153,7 @@
     (WITH-RAW-MODE "[books]/hacking/hacking-xdoc.lisp")
     (WITH-REDEF-ALLOWED "[books]/hacking/hacking-xdoc.lisp")
     (WITH-TIMEOUT "[books]/acl2s/cgen/with-timeout.lisp")
+    (WITHOUT-SUBSUMPTION "[books]/tools/without-subsumption.lisp")
     (WORKING-WITH-PACKAGES "[books]/doc/practices.lisp")
     (WRITE-LIST "[books]/misc/file-io.lisp")
     (XDOC "[books]/xdoc/topics.lisp")))
@@ -94396,9 +94397,8 @@ arithmetic) for libraries of @(see books) for arithmetic reasoning.</p>")
  defining your own @('IF') function to use in place of the built-in
  @('IF').</p>
 
- <p>If you do find an example for which the above two events provide
- significant benefit, we (the ACL2 implementors) would be interested in hearing
- about it.</p>
+ <p>For an example of where this capability has proven useful, see
+ @(see without-subsumption).</p>
 
  <p>To turn the heuristic back on:</p>
 
