@@ -130,6 +130,7 @@
     (RELEASE-NOTES-BOOKS "[books]/doc/relnotes.lisp")
     (REMOVABLE-RUNES "[books]/tools/removable-runes.lisp")
     (REMOVE-HYPS "[books]/tools/remove-hyps.lisp")
+    (REWRITE-EQUIV-HINT "[books]/coi/util/rewrite-equiv.lisp")
     (RUN-SCRIPT "[books]/tools/run-script.lisp")
     (SATLINK::SAT-SOLVER-OPTIONS "[books]/centaur/satlink/top.lisp")
     (SATLINK "[books]/centaur/satlink/top.lisp")
@@ -38880,6 +38881,30 @@ current fast alists."
  @('hide') terms.</p>
 
  @(def hide)")
+
+(defxdoc rewrite-equiv
+  :parents (rewrite)
+  :short "Force ACL2 to perform substitution using a stylized equivalence hypothesis"
+  :long "<p>@('Rewrite-equiv') is actually the @(see identity) function:
+ @('(rewrite-equiv x) = x') for all @('x').  However, a term of the form
+ @('(hide (rewrite-equiv (equiv x y)))') appearing in the hypothesis induces
+ ACL2 to aggressively substitute @('y') for @('x') when @('equiv') is an @(see
+ equivalence) relation (including @('equal')) and @('x') appears in a context
+ in which @('equiv') is being maintained.</p>
+
+ <p>Equivalence relations appearing in the hypothesis are not generally used by
+ ACL2 to perform substitutions except under special circumstances, such as when
+ one argument is a symbol or a constant or during the fertilzation stage of the
+ @(see waterfall) process. A stylized @('rewrite-equiv') expression of the form
+ @('(hide (rewrite-equiv (equiv x y)))') can be used to override this default
+ behavior.  Care should be taken in using @('rewrite-equiv'), however, because
+ it can easily result in rewrite loops.</p>
+
+ <p>For an example of a clause-processor that leverages @('Rewrite-equiv') to
+ induce substitution using equivalence relations appearing in the hypothesis,
+ see @(see rewrite-equiv-hint)</p>
+
+")
 
 (defxdoc hints
   :parents (miscellaneous)
