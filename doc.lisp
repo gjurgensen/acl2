@@ -14509,6 +14509,7 @@ Subtopics
        (release-notes-books \"[books]/doc/relnotes.lisp\")
        (removable-runes \"[books]/tools/removable-runes.lisp\")
        (remove-hyps \"[books]/tools/remove-hyps.lisp\")
+       (rewrite-equiv-hint \"[books]/coi/util/rewrite-equiv.lisp\")
        (run-script \"[books]/tools/run-script.lisp\")
        (satlink::sat-solver-options \"[books]/centaur/satlink/top.lisp\")
        (satlink \"[books]/centaur/satlink/top.lisp\")
@@ -98920,6 +98921,10 @@ Subtopics
   [Loop-stopper]
       Limit application of permutative rewrite rules
 
+  [Rewrite-equiv]
+      Force ACL2 to perform substitution using a stylized [equivalence]
+      hypothesis
+
   [Rewrite-stack-limit]
       Limiting the stack depth of the ACL2 rewriter
 
@@ -98936,6 +98941,30 @@ Subtopics
       Attach a heuristic filter on a rule")
  (REWRITE-CACHE (POINTERS)
                 "See [set-rw-cache-state].")
+ (REWRITE-EQUIV
+  (REWRITE)
+  "Force ACL2 to perform substitution using a stylized [equivalence]
+  hypothesis
+
+  Rewrite-equiv is actually the [identity] function: (rewrite-equiv x)
+  = x for all x.  However, a term of the form (hide (rewrite-equiv
+  (equiv x y))) appearing in the hypothesis induces ACL2 to
+  aggressively substitute y for x when equiv is an [equivalence]
+  relation (including equal) and x appears in a context in which
+  equiv is being maintained.
+
+  Equivalence relations appearing in the hypothesis are not generally
+  used by ACL2 to perform substitutions except under special
+  circumstances, such as when one argument is a symbol or a constant
+  or during the fertilization stage of the [waterfall] process. A
+  stylized rewrite-equiv expression of the form (hide (rewrite-equiv
+  (equiv x y))) can be used to override this default behavior.  Care
+  should be taken in using rewrite-equiv, however, because it can
+  easily result in rewrite loops.
+
+  For an example of a [clause-processor] that leverages Rewrite-equiv
+  to induce substitution using equivalence relations appearing in the
+  hypothesis, see [rewrite-equiv-hint].")
  (REWRITE-STACK-LIMIT
   (REWRITE)
   "Limiting the stack depth of the ACL2 rewriter
