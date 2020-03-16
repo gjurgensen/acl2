@@ -84657,6 +84657,29 @@ it."
 ; their list versions could actually satisfy the logical definition of EQ,
 ; i.e., equality.)  Thanks to Sol Swords for encouraging this change.
 
+; The speed-up in computing guard proof obligations was accomplished by
+; changing the following two aspects of that computation.  First, in
+; guard-clauses-for-fn1 we no longer do ground term evaluation "eagerly" on the
+; body of the function, since those ground terms might not contribute to the
+; guard proof obligation (for example, if it is the empty list of clauses).
+; Second, in guard-clauses+, although we continue to do ground term evaluation
+; on the guard clauses that are initially generated, we do so using a new
+; version of eval-ground-subexpressions1-lst-lst that uses a simple custom
+; memoization, as do its supporting functions eval-ground-subexpressions1 and
+; eval-ground-subexpressions1-lst.  This second part is necessary because now
+; that we do not evaluate ground subexpressions in the body, a subterm of the
+; body of the form (if tst tbr fbr) may generate two occurrences of the ground
+; subexpression, tst, in the guard clauses that are initially generated.  As a
+; final note: we considered simply eliminating evaluation of ground terms when
+; generating guard proof obligations.  That would have the advantage of letting
+; the user manage those computations as is normally done during proofs, rather
+; than before generating the main Goal for the guard proof (which cannot be
+; controlled with :guard-hints).  But such a major change seemed to have the
+; potential to cause major book disruption, if not in the community books then
+; in proprietary books.  Note that the change we made has the potential to
+; speed up evaluation of ground expressions in linear arithmetic and forward
+; chaining.
+
   :parents (release-notes)
   :short "ACL2 Version  8.3 (xxx, 20xx) Notes"
   :long "<p>NOTE!  New users can ignore these release notes, because the @(see
@@ -84966,6 +84989,11 @@ it."
  @('new-trips').  We have seen this change result in cutting the time by 4.7%
  and the bytes allocated by 34% for including the community book,
  @('\"centaur/sv/top\"').</p>
+
+ <p>Computation of the @(see guard) proof obligation has been sped up in some
+ cases involving evaluation of ground terms (terms without free variables).
+ Thanks to Warren Hunt for sending us an example that prompted us to make this
+ change.</p>
 
  <h3>Bug Fixes</h3>
 

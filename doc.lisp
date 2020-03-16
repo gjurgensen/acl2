@@ -83563,6 +83563,11 @@ Heuristic and Efficiency Improvements
   time by 4.7% and the bytes allocated by 34% for including the
   community book, \"centaur/sv/top\".
 
+  Computation of the [guard] proof obligation has been sped up in some
+  cases involving evaluation of ground terms (terms without free
+  variables).  Thanks to Warren Hunt for sending us an example that
+  prompted us to make this change.
+
 
 Bug Fixes
 
