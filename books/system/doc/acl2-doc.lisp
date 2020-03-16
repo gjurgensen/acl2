@@ -130,6 +130,7 @@
     (RELEASE-NOTES-BOOKS "[books]/doc/relnotes.lisp")
     (REMOVABLE-RUNES "[books]/tools/removable-runes.lisp")
     (REMOVE-HYPS "[books]/tools/remove-hyps.lisp")
+    (REWRITE-EQUIV-HINT "[books]/coi/util/rewrite-equiv.lisp")
     (RUN-SCRIPT "[books]/tools/run-script.lisp")
     (SATLINK::SAT-SOLVER-OPTIONS "[books]/centaur/satlink/top.lisp")
     (SATLINK "[books]/centaur/satlink/top.lisp")
@@ -153,6 +154,7 @@
     (WITH-RAW-MODE "[books]/hacking/hacking-xdoc.lisp")
     (WITH-REDEF-ALLOWED "[books]/hacking/hacking-xdoc.lisp")
     (WITH-TIMEOUT "[books]/acl2s/cgen/with-timeout.lisp")
+    (WITHOUT-SUBSUMPTION "[books]/tools/without-subsumption.lisp")
     (WORKING-WITH-PACKAGES "[books]/doc/practices.lisp")
     (WRITE-LIST "[books]/misc/file-io.lisp")
     (XDOC "[books]/xdoc/topics.lisp")))
@@ -84655,6 +84657,29 @@ it."
 ; their list versions could actually satisfy the logical definition of EQ,
 ; i.e., equality.)  Thanks to Sol Swords for encouraging this change.
 
+; The speed-up in computing guard proof obligations was accomplished by
+; changing the following two aspects of that computation.  First, in
+; guard-clauses-for-fn1 we no longer do ground term evaluation "eagerly" on the
+; body of the function, since those ground terms might not contribute to the
+; guard proof obligation (for example, if it is the empty list of clauses).
+; Second, in guard-clauses+, although we continue to do ground term evaluation
+; on the guard clauses that are initially generated, we do so using a new
+; version of eval-ground-subexpressions1-lst-lst that uses a simple custom
+; memoization, as do its supporting functions eval-ground-subexpressions1 and
+; eval-ground-subexpressions1-lst.  This second part is necessary because now
+; that we do not evaluate ground subexpressions in the body, a subterm of the
+; body of the form (if tst tbr fbr) may generate two occurrences of the ground
+; subexpression, tst, in the guard clauses that are initially generated.  As a
+; final note: we considered simply eliminating evaluation of ground terms when
+; generating guard proof obligations.  That would have the advantage of letting
+; the user manage those computations as is normally done during proofs, rather
+; than before generating the main Goal for the guard proof (which cannot be
+; controlled with :guard-hints).  But such a major change seemed to have the
+; potential to cause major book disruption, if not in the community books then
+; in proprietary books.  Note that the change we made has the potential to
+; speed up evaluation of ground expressions in linear arithmetic and forward
+; chaining.
+
   :parents (release-notes)
   :short "ACL2 Version  8.3 (xxx, 20xx) Notes"
   :long "<p>NOTE!  New users can ignore these release notes, because the @(see
@@ -84964,6 +84989,11 @@ it."
  @('new-trips').  We have seen this change result in cutting the time by 4.7%
  and the bytes allocated by 34% for including the community book,
  @('\"centaur/sv/top\"').</p>
+
+ <p>Computation of the @(see guard) proof obligation has been sped up in some
+ cases involving evaluation of ground terms (terms without free variables).
+ Thanks to Warren Hunt for sending us an example that prompted us to make this
+ change.</p>
 
  <h3>Bug Fixes</h3>
 
@@ -94396,9 +94426,8 @@ arithmetic) for libraries of @(see books) for arithmetic reasoning.</p>")
  defining your own @('IF') function to use in place of the built-in
  @('IF').</p>
 
- <p>If you do find an example for which the above two events provide
- significant benefit, we (the ACL2 implementors) would be interested in hearing
- about it.</p>
+ <p>For an example of where this capability has proven useful, see
+ @(see without-subsumption).</p>
 
  <p>To turn the heuristic back on:</p>
 
@@ -97533,6 +97562,29 @@ arithmetic) for libraries of @(see books) for arithmetic reasoning.</p>")
  <p>See @(see introduction-to-rewrite-rules-part-1) and see @(see
  introduction-to-rewrite-rules-part-2) for an extended discussion of how to
  create effective rewrite rules.</p>")
+
+(defxdoc rewrite-equiv
+  :parents (rewrite)
+  :short "Force ACL2 to perform substitution using a stylized @(see
+ equivalence) hypothesis"
+  :long "<p>@('Rewrite-equiv') is actually the @(see identity) function:
+ @('(rewrite-equiv x) = x') for all @('x').  However, a term of the form
+ @('(hide (rewrite-equiv (equiv x y)))') appearing in the hypothesis induces
+ ACL2 to aggressively substitute @('y') for @('x') when @('equiv') is an @(see
+ equivalence) relation (including @('equal')) and @('x') appears in a context
+ in which @('equiv') is being maintained.</p>
+
+ <p>Equivalence relations appearing in the hypothesis are not generally used by
+ ACL2 to perform substitutions except under special circumstances, such as when
+ one argument is a symbol or a constant or during the fertilization stage of
+ the @(see waterfall) process. A stylized @('rewrite-equiv') expression of the
+ form @('(hide (rewrite-equiv (equiv x y)))') can be used to override this
+ default behavior.  Care should be taken in using @('rewrite-equiv'), however,
+ because it can easily result in rewrite loops.</p>
+
+ <p>For an example of a @(see clause-processor) that leverages
+ @('Rewrite-equiv') to induce substitution using equivalence relations
+ appearing in the hypothesis, see @(see rewrite-equiv-hint).</p>")
 
 (defxdoc rewrite-stack-limit
   :parents (rewrite)
