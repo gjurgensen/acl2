@@ -95348,7 +95348,9 @@ Subtopics
   IF function to use in place of the built-in IF.
 
   For an example of where this capability has proven useful, see
-  [without-subsumption].
+  [without-subsumption].  That tool uses [set-case-split-limitations]
+  as well, since that is another way to control the prover's handling
+  of propositional logic.
 
   To turn the heuristic back on:
 

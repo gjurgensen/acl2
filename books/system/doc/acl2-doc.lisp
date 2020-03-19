@@ -94427,7 +94427,9 @@ arithmetic) for libraries of @(see books) for arithmetic reasoning.</p>")
  @('IF').</p>
 
  <p>For an example of where this capability has proven useful, see
- @(see without-subsumption).</p>
+ @(see without-subsumption).  That tool uses @(tsee set-case-split-limitations)
+ as well, since that is another way to control the prover's handling of
+ propositional logic.</p>
 
  <p>To turn the heuristic back on:</p>
 
