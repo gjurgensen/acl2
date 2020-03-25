@@ -84970,7 +84970,9 @@ it."
  @(tsee hide) around a term that fails to evaluate because of an attempt to
  call a constrained function.  Now, that call incorporates a comment saying
  which constrained function is responsible for the failure.  See @(see
- comment).</p>
+ comment).  Thanks to Rob Sumners (in 2003), Francisco J. Martin-Mateos (in
+ 2004), and Anna Slobodova (in 2005), perhaps among others, for discussions
+ leading to this enhancement.</p>
 
  <h3>New Features</h3>
 
