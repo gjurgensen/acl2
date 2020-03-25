@@ -14542,6 +14542,91 @@ with any questions about building the community books.</p>")
  discussion of how to save an ACL2 executable that avoids passing command-line
  arguments to the host Lisp, see @(see save-exec).</p>")
 
+(defxdoc comment
+  :parents (hide acl2-built-ins)
+  :short "Variant of @(tsee prog2$) to help debug evaluation failures during
+ proofs"
+  :long "<p>Semantically, @('(comment x y)') equals @('y'); the value of @('x')
+ is ignored.  Thus @('comment') is much like @(tsee prog2$).  However, when you
+ see a call of @('comment') in ACL2 proof output, it will likely be under a
+ call of @(tsee hide), with information that may be helpful in understanding
+ why the call of @('hide') was inserted.  Consider the following example.</p>
+
+ @({
+ (defstub f (x) t)
+ (defun g (x) (cons (f x) x))
+ (defun h (x) (cons x (cdr (g x))))
+ (thm (equal (h 3) '(3 . 3)))
+ })
+
+ <p>The proof attempt fails for the @(tsee thm) call, indicating the checkpoint
+ shown below.</p>
+
+ @({
+ *** Key checkpoint at the top level: ***
+
+ Goal'
+ (EQUAL (HIDE (COMMENT \"Called constrained function F\" (H 3)))
+        '(3 . 3))
+ })
+
+ <p>The first argument of @('equal') is logically just @('(h 3)').  But the
+ @('comment') and @('hide') wrappers are telling us that evaluation of @('(h
+ 3)') failed because it led to a call of the constrained function @('f').  It
+ is easy to see why in this case, by looking at the definitions, where @('h')
+ calls @('g'), which calls @('f').  But more complicated such failures may be
+ difficult to understand without such information.  In very complicated cases,
+ one might even want to use the Lisp debugger after designating a @(tsee
+ break$) call using @(tsee trace$), like this (here, shown using host Lisp
+ CCL).</p>
+
+ @({
+ ACL2 !>(trace$ (f :entry (break$)))
+  ((F :ENTRY (BREAK$)))
+ ACL2 !>(thm (equal (h 3) '(3 . 3)))
+
+ > Break: Break
+ > While executing: BREAK$, in process listener(1).
+ > Type :GO to continue, :POP to abort, :R for a list of available restarts.
+ > If continued: Return from BREAK.
+ > Type :? for other options.
+ 1 > :b ; user input to get backtrace
+  (262932A0) : 0 (BREAK$) 157
+  (262932F0) : 1 (F 3) 141
+  (26293338) : 2 (FUNCALL #'#<(:INTERNAL ACL2_*1*_ACL2::G ACL2_*1*_ACL2::G)> 3) 37
+  (26293350) : 3 (FUNCALL #'#<(:INTERNAL ACL2_*1*_ACL2::H ACL2_*1*_ACL2::H)> 3) 37
+  (26293368) : 4 (RAW-EV-FNCALL H (3) NIL NIL [[.. output elided ..]]
+ })
+
+ <p>This output from Lisp is quite low-level, but reading from the bottom up
+ provides the following sequence of events.</p>
+
+ <ul>
+
+ <li>4. Call @('h') with argument list @('(3)').</li>
+
+ <li>3. Call the @(see executable-counterpart) of @('h').</li>
+
+ <li>2. Call the @(see executable-counterpart) of @('g').</li>
+
+ <li>1. Attempt to call the constrained function, @('f').</li>
+
+ </ul>
+
+ <p>An easy way to avoid this proof failure is to avoid execution of calls of
+ @('h') and @('g'), as follows.</p>
+
+ @({
+ (thm (equal (h 3) '(3 . 3))
+      :hints ((\"Goal\" :in-theory (disable (:e g) (:e h)))))
+ })
+
+ <p>(It actually suffices to disable only @('(:e h)'), but the workings of the
+ ACL2 rewriter are out of scope here.)</p>
+
+ <p>Also see @(see hide) for further discussion of how to avoid such proof
+ failures.</p>")
+
 (defxdoc common-lisp
   :parents (about-acl2)
   :short "Relation to Common Lisp, including deviations from the spec"
@@ -28803,13 +28888,15 @@ ld) and @(tsee include-book)"
  executable-counterparts of functions, see @(see evaluation).</p>
 
  @({
-  Examples:
+  Example:
   (:executable-counterpart length)
  })
 
- <p>which may be abbreviated in @(see theories) as</p>
+ <p>which may be abbreviated in @(see theory) expressions in either of the
+ following two ways (see @(see rune)).</p>
 
  @({
+  (:e length)
   (length)
  })
 
@@ -37743,7 +37830,17 @@ current fast alists."
  <p>Because of how @(tsee mbe) and @(tsee ec-call) are defined in terms of
  @(tsee return-last), the expressions @('(mbe :logic l :exec e)') and
  @('(ec-call (f t1 ... tk))') are effectively transformed by removing guard
- holders into @('l') and @('(f t1 ... tk)'), respectively.</p>")
+ holders into @('l') and @('(f t1 ... tk)'), respectively.</p>
+
+ <p>Note that by default, guard-holders are not removed inside calls of @(tsee
+ hide).  You can however cause them to be removed inside such calls after all,
+ as was the case through Version  8.2, as follows.</p>
+
+ @({
+ (defattach-system ; generates (local (defattach ...))
+   remove-guard-holders-blocked-by-hide-p
+   constant-nil-function-arity-0)
+ })")
 
 (defxdoc guard-introduction
   :parents (guard)
@@ -38793,7 +38890,9 @@ current fast alists."
  apply @('hide') to an equality after substituting it into the rest of the
  goal, if that goal (or a subgoal of it) fails to be proved.</p>
 
- <p>@('Hide') terms are also ignored by the induction heuristics.</p>
+ <p>@('Hide') terms are generally ignored not only by the rewriter but by other
+ ACL2 procedures, including the induction heuristics and (by default) removal
+ of @(see guard-holders).</p>
 
  <p>Sometimes the ACL2 simplifier inserts @('hide') terms into a proof attempt
  out of the blue, as it were.  Why and what can you do about it?  Suppose you
@@ -38807,26 +38906,39 @@ current fast alists."
         t))
  })
 
- <p>Suppose the term @('(another-fn 'a 'b 'c)') arises in a proof.  Since the
- arguments are all constants, ACL2 will try to reduce such a term to a constant
+ <p>Suppose the term @('(another-fn 1 2 3)') arises in a proof.  Since the
+ arguments are all constants, ACL2 may try to reduce such a term to a constant
  by executing the definition of @('another-fn').  However, after a possibly
  extensive computation (because of @('big-hairy-test')) the execution fails
  because of the unevaluable call of @('constrained-fn').  To avoid subsequent
- attempts to evaluate the term, ACL2 embeds it in a @('hide') expression, i.e.,
- rewrites it to @('(hide (another-fn 'a 'b 'c))').</p>
+ attempts to evaluate the term, ACL2 embeds it in a @('hide') expression.
+ Typically that expression will use a call of @(tsee comment), where
+ @('(comment x y)') is logically just @('y'), to tell you the problematic
+ constrained function, in this case by rewriting the original expression
+ to:</p>
+
+ @({
+ (hide (comment \"Called constrained function CONSTRAINED-FN\"
+                (another-fn 1 2 3))).
+ })
 
  <p>You might think this rarely occurs since all the arguments of
  @('another-fn') must be constants.  You would be right except for one special
  case: if @('another-fn') takes no arguments, i.e., is a constant function,
- then every call of it fits this case.  Thus, if you define a function of no
- arguments in terms of a constrained function, you will often see
- @('(another-fn)') rewrite to @('(hide (another-fn))').</p>
+ then every call of it fits this case.  Thus, if you define a function @('f')
+ of no arguments in terms of a constrained function @('g'), you may
+ often see @('(f)') rewrite to:</p>
 
- <p>We do not hide the term if the executable-counterpart of the function is
- disabled &mdash; because we do not try to evaluate it in the first place.
- Thus, to prevent the insertion of a @('hide') term into the proof attempt, you
- can globally disable the executable-counterpart of the offending defined
- function, e.g.,</p>
+ @({
+ (hide (comment \"Called constrained function G\"
+                (f))).
+ })
+
+ <p>We do not hide the term if the @(see executable-counterpart) of the
+ function is @(see disable)d &mdash; because we do not try to evaluate it in
+ the first place.  Thus, to prevent the insertion of a @('hide') term into the
+ proof attempt, you can globally disable the executable-counterpart of the
+ offending defined function, e.g.,</p>
 
  @({
   (in-theory (disable (:executable-counterpart another-fn))).
@@ -38840,10 +38952,10 @@ current fast alists."
  example, suppose that in the proof of some theorem, thm, it is necessary to
  leave the executable-counterpart of @('another-fn') enabled but that the call
  @('(another-fn 1 2 3)') arises in the proof and cannot be computed.  Thus the
- proof attempt will introduce the term @('(hide (another-fn 1 2 3))').  Suppose
- that you can show that @('(another-fn 1 2 3)') is @('(constrained-fn 1 2 3)')
- and that such a step is necessary to the proof.  Unfortunately, proving the
- rewrite rule</p>
+ proof attempt will introduce the term @('(hide (comment \"..\" (another-fn 1 2
+ 3)))') mentioned above.  Suppose that you can show that @('(another-fn 1 2
+ 3)') is @('(constrained-fn 1 2 3)') and that such a step is necessary to the
+ proof.  Unfortunately, proving the rewrite rule</p>
 
  @({
   (defthm thm-helper
@@ -38855,23 +38967,26 @@ current fast alists."
 
  @({
   (defthm thm-helper
-    (equal (hide (another-fn 1 2 3)) (constrained-fn 1 2 3)))
+    (equal (hide (comment \"Called constrained function CONSTRAINED-FN\"
+                          (another-fn 1 2 3)))
+           (constrained-fn 1 2 3)))
  })
 
  <p>would be applied in the proof of thm and is the rule you should prove.</p>
 
  <p>Now to prove @('thm-helper') you need to use the two ``tricks'' which have
  already been discussed.  First, to eliminate the @('hide') term in the proof
- of @('thm-helper') you should include the hint @(':expand') @('(hide
- (another-fn 1 2 3))').  Second, to prevent the @('hide') term from being
- reintroduced when the system tries and fails to evaluate @('(another-fn 1 2
- 3)') you should include the hint @(':in-theory') @('(disable
- (:executable-counterpart another-fn))').  Thus, @('thm-helper') will actually
- be:</p>
+ of @('thm-helper') you should include a hint to @(':expand') that term.
+ Second, to prevent the @('hide') term from being reintroduced when the system
+ tries and fails to evaluate @('(another-fn 1 2 3)') you should include the
+ hint @(':in-theory') @('(disable (:executable-counterpart another-fn))').
+ Thus, @('thm-helper') will actually be:</p>
 
  @({
   (defthm thm-helper
-    (equal (hide (another-fn 1 2 3)) (constrained-fn 1 2 3))
+    (equal (hide (comment \"Called constrained function CONSTRAINED-FN\"
+                          (another-fn 1 2 3)))
+           (constrained-fn 1 2 3))
     :hints
     ((\"Goal\" :expand (hide (another-fn 1 2 3))
              :in-theory (disable (:executable-counterpart another-fn)))))
@@ -84845,6 +84960,17 @@ it."
  <p>An undocumented kind of @(see fake-rune) is no longer reported by @(tsee
  show-accumulated-persistence).  Thanks to Eric Smith for bringing this issue
  to our attention.</p>
+
+ <p>The algorithm for removing @(see guard-holders) has been modified to avoid
+ diving into calls of @(tsee hide).  However, it is possible to obtain the
+ former behavior; see @(see guard-holders).</p>
+
+ <p>Since its earliest years, ACL2 uses evaluation to simplify ground
+ terms (terms with no free variables).  ACL2 would sometimes generate a call of
+ @(tsee hide) around a term that fails to evaluate because of an attempt to
+ call a constrained function.  Now, that call incorporates a comment saying
+ which constrained function is responsible for the failure.  See @(see
+ comment).</p>
 
  <h3>New Features</h3>
 
