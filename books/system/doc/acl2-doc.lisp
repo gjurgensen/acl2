@@ -38915,11 +38915,12 @@ current fast alists."
  Typically that expression will use a call of @(tsee comment), where
  @('(comment x y)') is logically just @('y'), to tell you the problematic
  constrained function, in this case by rewriting the original expression
- to:</p>
+ to the following.  (Near the end of this topic we discuss how to avoid the
+ call of @('comment').)</p>
 
  @({
  (hide (comment \"Called constrained function CONSTRAINED-FN\"
-                (another-fn 1 2 3))).
+                (another-fn 1 2 3)))
  })
 
  <p>You might think this rarely occurs since all the arguments of
@@ -38988,12 +38989,37 @@ current fast alists."
                           (another-fn 1 2 3)))
            (constrained-fn 1 2 3))
     :hints
-    ((\"Goal\" :expand (hide (another-fn 1 2 3))
+    ((\"Goal\" :expand
+             (hide (comment \"Called constrained function CONSTRAINED-FN\"
+                            (another-fn 1 2 3)))
              :in-theory (disable (:executable-counterpart another-fn)))))
  })
 
  <p>See @(see eviscerate-hide-terms) for how to affect the printing of
  @('hide') terms.</p>
+
+ <p>Finally, note that you can avoid the generation of @(tsee comment) calls
+ inside the generated call of @('hide'), as was the case through ACL2 Version
+ 8.2, as follows.</p>
+
+ @({
+ (defattach-system ; generates (local (defattach ...))
+   hide-with-comment-p
+   constant-nil-function-arity-0)
+ })
+
+ <p>After evaluation of this event, our running example @('(another-fn 1 2 3)')
+ would generate @('(hide (another-fn 1 2 3))') rather than a term of the
+ form @('(hide (comment \"...\" (another-fn 1 2 3)))').</p>
+
+ <p>In some cases such backward compatibility might also be achieved as
+ follows; also see @(see guard-holders).</p>
+
+ @({
+ (defattach-system ; generates (local (defattach ...))
+   remove-guard-holders-blocked-by-hide-p
+   constant-nil-function-arity-0)
+ })
 
  @(def hide)")
 
@@ -84970,7 +84996,11 @@ it."
  @(tsee hide) around a term that fails to evaluate because of an attempt to
  call a constrained function.  Now, that call incorporates a comment saying
  which constrained function is responsible for the failure.  See @(see
- comment).</p>
+ comment).  Also see @(see hide) for how to fix proof failures caused by this
+ new behavior by using @(':expand') @(see hints) or even by turning off this
+ new behavior using @(tsee defattach).  Thanks to Rob Sumners (in 2003),
+ Francisco J. Martin-Mateos (in 2004), and Anna Slobodova (in 2005), perhaps
+ among others, for discussions leading to this enhancement.</p>
 
  <h3>New Features</h3>
 

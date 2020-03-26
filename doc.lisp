@@ -83520,7 +83520,10 @@ Changes to Existing Features
   generate a call of [hide] around a term that fails to evaluate
   because of an attempt to call a constrained function.  Now, that
   call incorporates a comment saying which constrained function is
-  responsible for the failure.  See [comment].
+  responsible for the failure.  See [comment].  Thanks to Rob Sumners
+  (in 2003), Francisco J. Martin-Mateos (in 2004), and Anna Slobodova
+  (in 2005), perhaps among others, for discussions leading to this
+  enhancement.
 
 
 New Features
