@@ -42352,10 +42352,11 @@ Subtopics
   ACL2 embeds it in a hide expression.  Typically that expression
   will use a call of [comment], where (comment x y) is logically just
   y, to tell you the problematic constrained function, in this case
-  by rewriting the original expression to:
+  by rewriting the original expression to the following.  (Near the
+  end of this topic we discuss how to avoid the call of comment.)
 
     (hide (comment \"Called constrained function CONSTRAINED-FN\"
-                   (another-fn 1 2 3))).
+                   (another-fn 1 2 3)))
 
   You might think this rarely occurs since all the arguments of
   another-fn must be constants.  You would be right except for one
@@ -42417,11 +42418,32 @@ Subtopics
                             (another-fn 1 2 3)))
              (constrained-fn 1 2 3))
       :hints
-      ((\"Goal\" :expand (hide (another-fn 1 2 3))
+      ((\"Goal\" :expand
+               (hide (comment \"Called constrained function CONSTRAINED-FN\"
+                              (another-fn 1 2 3)))
                :in-theory (disable (:executable-counterpart another-fn)))))
 
   See [eviscerate-hide-terms] for how to affect the printing of hide
   terms.
+
+  Finally, note that you can avoid the generation of [comment] calls
+  inside the generated call of hide, as was the case through ACL2
+  Version 8.2, as follows.
+
+    (defattach-system ; generates (local (defattach ...))
+      hide-with-comment-p
+      constant-nil-function-arity-0)
+
+  After evaluation of this event, our running example (another-fn 1 2
+  3) would generate (hide (another-fn 1 2 3)) rather than a term of
+  the form (hide (comment \"...\" (another-fn 1 2 3))).
+
+  In some cases such backward compatibility might also be achieved as
+  follows; also see [guard-holders].
+
+    (defattach-system ; generates (local (defattach ...))
+      remove-guard-holders-blocked-by-hide-p
+      constant-nil-function-arity-0)
 
   Function: <hide>
 
@@ -83520,10 +83542,12 @@ Changes to Existing Features
   generate a call of [hide] around a term that fails to evaluate
   because of an attempt to call a constrained function.  Now, that
   call incorporates a comment saying which constrained function is
-  responsible for the failure.  See [comment].  Thanks to Rob Sumners
-  (in 2003), Francisco J. Martin-Mateos (in 2004), and Anna Slobodova
-  (in 2005), perhaps among others, for discussions leading to this
-  enhancement.
+  responsible for the failure.  See [comment].  Also see [hide] for
+  how to fix proof failures caused by this new behavior by using
+  :expand [hints] or even by turning off this new behavior using
+  [defattach].  Thanks to Rob Sumners (in 2003), Francisco J.
+  Martin-Mateos (in 2004), and Anna Slobodova (in 2005), perhaps
+  among others, for discussions leading to this enhancement.
 
 
 New Features
