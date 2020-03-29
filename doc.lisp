@@ -77,7 +77,7 @@ Subtopics
   [defthm], [in-theory], [xargs], [state], etc., without an acl2::
   prefix.
 
-  The constant *acl2-exports* lists 1491 symbols, including most
+  The constant *acl2-exports* lists 1501 symbols, including most
   documented ACL2 system constants, functions, and macros.  You will
   typically also want to import many symbols from Common Lisp; see
   [*common-lisp-symbols-from-main-lisp-package*].
@@ -119,6 +119,7 @@ Subtopics
        add-override-hints add-override-hints!
        add-pair add-pair-preserves-all-boundp
        add-raw-arity
+       add-suffix add-suffix-to-fn
        add-timers add-to-set add-to-set-eq
        add-to-set-eql add-to-set-equal
        alistp alistp-forward-to-true-listp
@@ -194,7 +195,7 @@ Subtopics
        code-char-char-code-is-identity
        code-char-type coerce coerce-inverse-1
        coerce-inverse-2 coerce-object-to-state
-       coerce-state-to-object
+       coerce-state-to-object comment
        community-books commutativity-of-*
        commutativity-of-+ comp completion-of-*
        completion-of-+ completion-of-<
@@ -253,7 +254,8 @@ Subtopics
        define-pc-atomic-macro define-pc-help
        define-pc-macro define-pc-meta
        define-trusted-clause-processor
-       deflabel deflock defmacro defmacro-last
+       deflabel deflock defmacro
+       defmacro-last defmacro-untouchable
        defn defnd defpkg defproxy defrec
        defrefinement defstobj defstub deftheory
        deftheory-static defthm defthm-std
@@ -539,9 +541,10 @@ Subtopics
        reset-ld-specials reset-prehistory
        reset-print-control resize-list
        rest restore-memoization-settings
-       retract-world retrieve
-       return-last return-last-table revappend
-       reverse revert-world rewrite-stack-limit
+       retract-world
+       retrieve return-last return-last-table
+       revappend reverse revert-world
+       rewrite-equiv rewrite-stack-limit
        rfix round rw-cache satisfies
        save-and-clear-memoization-settings
        save-exec search second serialize-read
@@ -641,7 +644,8 @@ Subtopics
        standard-char standard-char-listp
        standard-char-listp-append
        standard-char-listp-forward-to-character-listp
-       standard-char-p standard-char-p-nth
+       standard-char-p
+       standard-char-p+ standard-char-p-nth
        standard-co standard-oi
        standard-part standard-string-alistp
        standard-string-alistp-forward-to-alistp
@@ -667,9 +671,9 @@ Subtopics
        string<-l-trichotomy
        string<= string> string>=
        stringp stringp-symbol-package-name
-       strip-cars strip-cdrs
-       sublis sublis-fn sublis-fn-lst-simple
-       sublis-fn-simple subseq subseq-list
+       strip-cars strip-cdrs sublis sublis-fn
+       sublis-fn-lst-simple sublis-fn-simple
+       subseq subseq-list subsequencep
        subsetp subsetp-eq subsetp-equal
        subst substitute substitute-ac
        suitably-tamep-listp summary swap-stobjs
@@ -694,10 +698,10 @@ Subtopics
        tau-interval-lo tau-interval-lo-rel
        tau-intervalp tau-status tau-system
        tenth term-list-listp term-listp
-       term-order termination-theorem
-       termp the the-check the-fixnum
-       the-fixnum! theory theory-invariant
-       third thm time$ time-tracker
+       term-order termination-theorem termp
+       the the-check the-fixnum the-fixnum!
+       theory theory-invariant thereis$
+       thereis$+ third thm time$ time-tracker
        time-tracker-tau timer-alistp
        timer-alistp-forward-to-true-list-listp-and-symbol-alistp
        toggle-pc-macro top-level
@@ -720,7 +724,8 @@ Subtopics
        union-theories universal-theory
        unmemoize unmonitor unquote
        unsave unsigned-byte unsigned-byte-p
-       until$ until$+ untrace$ untrans-table
+       until$ until$+ untouchable-marker
+       untrace$ untrans-table
        untranslate update-32-bit-integer-stack
        update-acl2-oracle
        update-acl2-oracle-preserves-state-p1
@@ -8342,6 +8347,35 @@ Theorems Involving Apply$
   These issues are discussed further in the documentation for
   [warrant].
 
+  An unfortunate implication of the need for warrants is highlighted
+  during the proofs of measure conjectures while admitting new
+  definitions.  Consider
+
+    (defun$ my-cdr (x) (cdr x))
+
+    (defun$ my-len (x)
+      (if (endp x)
+          0
+          (+ 1 (my-len (apply$ 'my-cdr (list x))))))
+
+  The definition of my-len fails!  The reason is that without the
+  warrant for my-cdr we cannot prove that the measure decreases in
+  the recursion above.  Unfortunately, there is no way to provide a
+  warrant in a definition.  At the moment we advise users to avoid
+  the use of apply$ -- and functions that use apply$ -- in
+  ``termination-critical'' roles.  By that we mean do not use apply$
+  if its properties are important to proofs of your measure
+  conjectures.  This is easy advice to implement in the case of
+  my-len, i.e., replace the recursive call above by (my-len (my-cdr
+  x)).  However, in more sophisticated definitions, e.g., where a
+  [loop$] is being used in recursive calls and the loop$ calls
+  user-defined functions in its body, following this advice means
+  replacing that loop$s by a recursive function.  That is unfortunate
+  since the whole point of loop$ is to avoid the introduction of such
+  functions!  We hope to address this limitation in the future, e.g.,
+  by making the definition of my-len above be conditional on the
+  warrant for my-cdr.
+
 
 Guards and Guard Verification
 
@@ -8443,6 +8477,13 @@ Guards and Guard Verification
 
   We discuss the evaluation of ground apply$ terms in the evaluation
   theory further below.
+
+  When the guard conjectures of a function are proved all necessary
+  warrants are assumed.  This is unlike what happens when the measure
+  conjectures are proved.  The reason we can assume warrants during
+  guard verification is that guard verification is relevant in the
+  evaluation theory, where attachments are allowed and all warrants
+  have true attachments.
 
 
 Top-Level Evaluation of Apply$
@@ -23526,6 +23567,84 @@ Subtopics
   have been verified for final-def, then guards hold for subsequent
   evaluation of exec-body, and in particular for recursive calls of
   fn, which can thus continue to be viewed as calls using local=def.")
+ (DEFINDUCTOR
+  (LOOP$-RECURSION)
+  "Create an induction scheme for a loop$-recursive function
+
+  Definductor is a utility provided as part of the community book
+  projects/apply/top, which should be included in any session dealing
+  with [apply$], [loop$], or [loop$-recursion].  (Definductor fn)
+  attempts to create an induction scheme appropriate for the
+  previously defined loop$-recursive function fn and prove an
+  :[induction] rule so that certains calls of fn suggest that
+  induction.
+
+  Warning: Definductor currently handles a very small class of
+  loop$-recursive functions and may produce unhelpful error messages
+  when given a function name outside of that class!  We hope to
+  improve it and this documentation as we all get more experience
+  with loop$s and loop$-recursion.
+
+    Examples:
+    (definductor copy-nat-tree)
+
+    (definductor copy-nat-tree
+                 :measure (my-measure x)
+                 :hints ((\"Goal\" :use ...)))
+
+    General Form:
+    (definductor name &key measure rel ruler-extenders hints)
+
+  where name is the name of a previously admitted loop$-recursive
+  function satisfying the restrictions listed below.  When successful
+  it defines a function named name-INDUCTOR that suggests an
+  induction scheme that is supposedly appropriate for name, admits it
+  with a silent proof of its measure theorems, and then proves an
+  :induction rule to associate that scheme with calls of name.  When
+  omitted, the optional keyword arguments measure, rel, and
+  ruler-extenders default to the measure, well-founded relation, and
+  ruler-extender settings used in the admittance of name.  The
+  keyword argument hints defaults to nil.
+
+
+Restrictions
+
+  The given function, name, must satisfy the following restrictions.
+  Note: Because we anticipate this utility being further developed in
+  the near future this list may not correspond to the latest
+  implementation!
+
+    * Name must be a symbol naming a previously admitted loop$-recursive
+      function.
+    * Every recursive loop$ in the body of name -- that is, every loop$
+      that calls name recursively in the when, until, or body clauses
+      of the loop$ -- must have as its target(s) distinct measured
+      variables or cdr-nests around such variables.
+    * Every recursive loop$ must use IN-iteration, not ON- or
+      FROM/TO/BY-iteration.
+
+  While definductor can handle loop$ containing multiple AS clauses
+  (with targets as described above), it cannot handle loop$ such as
+
+    (loop$ for v in (target x) ...)
+    (loop$ for v on x ...)
+    (loop$ for i from 1 to max ...)
+
+  To see the inductor function generated, type :pe name-INDUCTOR.  To
+  see examples of the use of definductor inspect the book
+  projects/apply/definductor-tests.lisp.  To see the definition of
+  definductor, see projects/apply/definductor.lisp.
+
+  Suggestions for improvements are welcome!  We know of many, including
+  allowing the user to specify a different name for the inductor
+  function, improving the error messages, printing out the generated
+  defun in the event of failure to admit it, and trying to expand the
+  class of loop$-recursive functions that can be successfully
+  handled.  We have not yet even looked at inductions for ON loop$s
+  and FROM/TO/BY loop$s, so that might be easy.  Induction for loop$s
+  over arbtrary target expressions may be infeasible!  We just need
+  more examples of loop$-recursive functions and successful
+  (hand-written) induction hints for them.")
  (DEFINE-PC-HELP
   (PROOF-BUILDER)
   "Define a macro command whose purpose is to print something
@@ -26212,6 +26331,7 @@ Subtopics
       (declare (ignore a b c)
                (type integer i j)
                (xargs :guard (symbolp x)
+                      :loop$-recursion t
                       :measure (- i j)
                       :ruler-extenders :basic
                       :well-founded-relation my-wfr
@@ -47548,7 +47668,7 @@ Subtopics
   'COLLECT$ into a slot of ilk :FN, we could get a warrant for
   collect$ by calling (defwarrant collect$).
 
-  Here's another useful mapping function:
+  Here's another useful scion (``mapping function''):
 
     (defun$ always$ (fn lst)
       (if (endp lst)
@@ -56164,7 +56284,13 @@ Subtopics
   subexpressions of the loop$ statement that are evaluated repeatedly
   must be [tame]!  These expressions include the until test, the when
   test, and the loop$ body.  For example, this means that loop$ does
-  not allow iterations involving [state] or [stobj]s.
+  not allow iterations involving [state] or [stobj]s.  Further
+  restrictions are enforced for [defun]'d functions in which
+  recursive calls appear in loop$ bodies.  We mention that only in
+  passing in this documentation topic.  It is discussed more fully in
+  [loop$-recursion].  We recommend that users unfamiliar with loop$
+  acquaint themselves with the material below, before wading into
+  loop$-recursion!
 
 
 Informal Introduction
@@ -56290,13 +56416,13 @@ Informal Introduction
            until :guard (invariantp u v) (test u v)
            collect (body u v))
 
-  ACL2 Version 8.2 supports only four operators, sum, collect, always
-  and append.  We anticipate adding other Common Lisp operators
-  eventually.
+  ACL2 Version 8.2 supports only five operators, sum, collect, always,
+  thereis and append.  We anticipate adding other Common Lisp
+  operators eventually.
 
   The special symbols noted above, sometimes called ``loop$ keywords'',
   may be in any package.  These are FOR, IN, ON, FROM, TO, BY,
-  OF-TYPE, WHEN, UNTIL, SUM, COLLECT, ALWAYS, and APPEND.
+  OF-TYPE, WHEN, UNTIL, SUM, COLLECT, ALWAYS, THEREIS, and APPEND.
 
   Between the operator, e.g., sum or collect, and the loop$ body you
   may include a :guard clause as in
@@ -56307,6 +56433,15 @@ Informal Introduction
   This is sometimes necessary in the verification of the guards for the
   loop$ body because Common Lisp's of-type clauses do not permit you
   to relate one variable to another.
+
+  Important Reminder: Recall that apply$ and thus loop$ are unspecified
+  in the absence of warrants for the relevant user-defined function
+  symbols.  In the documentation for [apply$], we illustrated how a
+  simple defun was inadmissible because the measure theorem cannot be
+  proved without a warrant and warrants cannot be assumed during the
+  proofs of the measure conjectures.  The same issue arises if loop$
+  involving user-defined functions are involved critically in measure
+  conjectures.  We hope to address this issue in the future.
 
 
 General Form
@@ -56338,7 +56473,7 @@ General Form
 
   The legal type-specs are listed in [type-spec].
 
-  The legal operators are SUM, COLLECT, ALWAYS, and APPEND.
+  The legal operators are SUM, COLLECT, ALWAYS, THEREIS, and APPEND.
 
   The most elaborate loop$ statement is of the form
 
@@ -56348,7 +56483,7 @@ General Form
   AS    vn OF-TYPE specn targetn
   UNTIL :GUARD guard1 until-expr
   WHEN    :GUARD guard2 when-expr
-  ; Note the ALWAYS Exception below!
+  ; Note the ALWAYS/THEREIS Exceptions below!
   op :GUARD guard3 body-expr)
 
   where each vi   is a legal variable symbol and they are all distinct,
@@ -56357,9 +56492,10 @@ General Form
   an operator, and body-expr   is a term.  Furthermore, until-expr,
   when-expr, and body-expr   must be [tame]!
 
-  The ALWAYS Exception: Common Lisp prohibits loops with both a WHEN
-  clause and an ALWAYS operator.  If you are tempted to use WHEN p
-  with ALWAYS q we recommend you write ALWAYS (implies p q).
+  The ALWAYS/THEREIS Exception: Common Lisp prohibits loops with both a
+  WHEN clause and either an ALWAYS or a THEREIS operator.  For
+  example, if you are tempted to use WHEN p with ALWAYS q we
+  recommend you write ALWAYS (implies p q).
 
   The following elements may be omitted.
 
@@ -56369,7 +56505,7 @@ General Form
 
   As noted above, the loop$ keywords (as used above) may be in any
   package.  These are FOR, IN, ON, FROM, TO, BY, OF-TYPE, WHEN,
-  UNTIL, SUM, COLLECT, ALWAYS, and APPEND.
+  UNTIL, SUM, COLLECT, ALWAYS, THEREIS, and APPEND.
 
   We give names to certain classes of the syntactic entities above.
   The v1, ..., vn are called the iteration variables.  The spec1,
@@ -56427,6 +56563,7 @@ Semantics
     sum                 sum$            sum$+
     collect             collect$        collect$+
     always              always$         always$+
+    thereis             thereis$        thereis$+
     append              append$         append$+
     until               until$          until$+
     when                when$           when$+
@@ -56520,7 +56657,10 @@ Semantics
   The following example illustrates basic [guard] proof obligations, in
   particular showing that when clauses do not help with verifying
   guards for the loop bodies.  (Similarly, until clauses do not help
-  either.)
+  either.)  The basic problem is that ACL2 requires that [lambda]
+  objects be guard veriable in isolation, not confined to the context
+  in which a particular lambda object appears.  Consider the
+  following.
 
     (include-book \"projects/apply/top\" :dir :system)
     (defun$ sq (n)
@@ -56532,8 +56672,9 @@ Semantics
              when (consp x)
              sum (sq (car x))))
 
-  Guard verification fails, and the summary says that a goal of NIL was
-  generated.  Using :[pso] we can see that the NIL goal came from:
+  Guard verification fails for foo.  The summary says that a goal of
+  NIL was generated.  Using :[pso] we can see that the NIL goal came
+  from:
 
     Subgoal 1
     (IMPLIES (NAT-LISTP X) (NATP (CAR X))).
@@ -56549,20 +56690,25 @@ Semantics
              (sq (car x)))
           (when$ '(lambda ...) (tails lst)))
 
-  We see that the [scion], sum$, is trying to apply a [lambda] object
-  that can cause sq to be applied to (car x) when x is nil.  But (sq
-  nil) is a guard violation, since sq expects its argument to be a
-  natural number.  The following modification, which adds a :guard
-  directive, solves the problem.
+  Notice that the lambda object supplied to sum$ cannot be guard
+  verified in isolation: nil satisfies the :guard and (car nil)
+  violates the guard of sq.  The following modification, which adds a
+  :guard directive after the sum op keyword, solves the problem.
 
     (defun foo (lst)
       (declare (xargs :guard (nat-listp lst)))
       (loop$ for x of-type (satisfies nat-listp) on lst
              when (consp x)
-             sum :guard (consp x) (sq (car x))))
+             sum :guard (consp x)  ; note new :guard
+             (sq (car x))))
 
-  Indeed, the abbreviated translation now shows that the application
-  (sq (car x)) is protected by a suitable guard.
+  This new :guard may feel redundant, coming as it does after the when
+  (consp x) clause.  But it is necessary given the compositional
+  semantics.
+
+  The abbreviated translation of the defun above shows that the
+  application (sq (car x)) is protected by a suitable guard in the
+  lambda object.
 
     (sum$ '(lambda (x)
              (declare (type (satisfies nat-listp) x)
@@ -56574,11 +56720,12 @@ Semantics
 
   Naively we might have expected that the guard proof obligation for
   the loop$ body (sq (car x)) could assume the when clause, but that
-  expectation would be wrong.  The [lambda] object must be
-  guard-verifiable on its own (in particular because the
-  implementation stores guard-verified lambda objects for evaluation
-  in raw Lisp, which may take place in other contexts where we don't
-  have the when clause).
+  expectation would be wrong because of the compositional semantics
+  we use and the fact that [lambda] object must be guard-verifiable
+  on their own.  The reason for the latter requirement is that our
+  implementation caches guard-verified lambda objects for evaluation
+  in raw Lisp, which may take place in other contexts different from
+  that in which the lambda first appeared.
 
   Semantics of Fancy Loop$s
 
@@ -56647,6 +56794,33 @@ Semantics
 
   Special Guard Conjectures for LOOP$
 
+  Since every loop$ expands to a call of a loop$ scion on a lambda
+  object and a target, one would expect that guard verification would
+  generate the guard conjectures for that scion and target.  Indeed,
+  it does.  In particular, the lambda object must have the correct
+  number of formals (which is guaranteed by translation) and the
+  target must be a true-listp.
+
+  But in addition to the expected guard conjectures, we generate some
+  special ones for the terms produced by translating loop$
+  statements.  We discuss the reasons in the next section, but here
+  we just state what the special conjectures are.  We limit ourselves
+  to a simple loop$.  Fancy loop$ generalize in the obvious way.  The
+  three classes of ``special guard conjectures'' for loop$ statements
+  are:
+
+  First, every element (or tail, in the case of ON loop$s) satisfies
+  the type-spec, if any.  Note that in the case of ON loop$s every
+  tail, including the empty one, must satisfy the type-spec.
+
+  Second, the type-spec, if any, implies the guards of the loop$ body.
+
+  Third, the loop$ body produces a value acceptable to the loop$
+  operator, e.g., the body of SUM loop$ produces a number and the
+  body of an APPEND loop$ produces a true list.
+
+  Discussion of Why LOOP$s Have Special Guards
+
   All of the simple loop$ scions have the same guard, namely
 
     (AND (APPLY$-GUARD FN '(NIL))
@@ -56700,7 +56874,7 @@ Semantics
   the guard of tails.  And conjecture [4] establishes that the guard
   on the lambda$ implies the guard of its body.
 
-  But consider the loop generated by the loop$ in the raw Lisp
+  But consider the raw Lisp loop generated by the loop$ in the raw Lisp
   definition of foo,
 
     (loop for x of-type (satisfies spec) on lst sum (expr x)).
@@ -56786,10 +56960,10 @@ Semantics
            collect (expr x))
 
   Similarly, there are 8 ways to sum over an (append a b) target, 8
-  ways to append over an (append a b), and 4 ways to always over an
-  (append a b) target.  Thus, there are 28 different simple loop$s
-  over (append a b).  And you can arrange to distribute the loop$
-  over the (append a b) with just six rewrite rules.
+  ways to append over an (append a b), and 4 ways each to always or
+  thereis over an (append a b) target.  Thus, there are 32 different
+  simple loop$s over (append a b).  And you can arrange to distribute
+  the loop$ over the (append a b) with just seven rewrite rules.
 
     (equal (collect$ fn (append a b))
            (append (collect$ fn a)
@@ -56802,6 +56976,10 @@ Semantics
     (equal (always$ fn (append a b))
            (and (always$ fn a)
                 (always$ fn b)))
+
+    (equal (thereis$ fn (append a b))
+           (or (thereis$ fn a)
+               (thereis$ fn b)))
 
     (equal (append$ fn (append a b))
            (append (append$ fn a)
@@ -56816,9 +56994,13 @@ Semantics
            (append (when$ fn a)
                    (when$ fn b)))
 
-  But to deal with fancy loop$ you need six more rewrite rules, one for
-  each fancy loop$ scion.  But every simple loop$ can be expressed by
-  an appropriate use of fancy scions.  We chose to break
+  Thus, you can reason about when and until clauses without having to
+  consider how they are used in the superior loop$ statement.
+
+  To deal with fancy loop$ you need seven more rewrite rules, one for
+  each fancy loop$ scion.  But since every simple loop$ can be
+  expressed by an appropriate use of fancy scions, we could have
+  translated every loop$ to fancy scions.  We chose to break
   compositionality here because we think simple loop$s are most
   common and wanted to keep their semantics simple.  I.e., we
   compromised.
@@ -56836,7 +57018,357 @@ Semantics
                                  (loop$-as (list lst)))))
       :hints ((\"[1]Goal\"
                :expand ((tamep (cons fn '(x)))
-                        (tamep (cons fn '((car loop$-ivars))))))))")
+                        (tamep (cons fn '((car loop$-ivars))))))))
+
+
+Subtopics
+
+  [Loop$-recursion]
+      Defining functions that recur from within loop$ statements
+
+  [Loop$-recursion-induction]
+      Advice on inductive theorems about [loop$]-recursive functions")
+ (LOOP$-RECURSION
+  (LOOP$)
+  "Defining functions that recur from within loop$ statements
+
+
+Examples
+
+    (defun$ nat-treep (x)
+      (declare (xargs :loop$-recursion t
+                      :measure (acl2-count x)))
+      (cond
+       ((atom x) (natp x))
+       (t (and (true-listp x)
+               (eq (car x) 'NATS)
+               (loop$ for e in (cdr x) always (nat-treep e))))))
+
+    (defun$ copy-nat-tree (x)
+      (declare (xargs :loop$-recursion t
+                      :measure (acl2-count x)))
+      (cond
+       ((atom x)
+        (if (natp x)
+            (if (equal x 0)
+                0
+                (+ 1 (copy-nat-tree (- x 1))))
+            x))
+       (t (cons 'nats
+                (loop$ for e in (cdr x) collect (copy-nat-tree e))))))
+
+  Notice that nat-treep and copy-nat-tree each contain a simple [loop$]
+  in which the function being defined is called recursively.
+  Copy-nat-tree is a little more complicated than nat-treep because
+  copy-nat-tree also contains a recursive call outside of any loop$.
+  Notice also that both events specify the [xargs] :loop$-recursion t
+  and explicitly provide a :measure.  The usual other xargs are
+  optional but :loop$-recursion t is required if recursion is used
+  inside a loop$ and the measure must be made explicit.
+
+  Warning: Even though the functions defined above are recursive, ACL2
+  does not generate induction schemes for them!  If you want to do
+  inductive proofs about loop$-recursive functions you must provide a
+  suitable [induction] hint.  In addition, to be provable by
+  induction, theorems about loop$-recursive functions must be
+  suitably general.  This topic is discussed further in
+  [loop$-recursion-induction].
+
+
+Restrictions
+
+  If a function being defined exhibits recursion from within a [loop$]
+  body or within the when or until clauses of a loop$ in a [defun] of
+  fn, then the defun must include an [xargs] declaration with
+  :loop$-recursion t.  In addition,
+
+    * the xargs declaration must include an explicit :measure,
+    * fn must not be part of a [mutual-recursion] clique,
+    * every formal of fn must be ``ordinary,'' e.g., not of [ilk] :FN or
+      :EXPR,
+    * fn must return a single value,
+    * fn must be [tame], which implies it may not take or return [state] or
+      [stobj]s,
+    * every quoted [lambda] object in the body of fn must be well-formed
+      (see [well-formed-lambda-objectp]), which implies that every
+      such lambda object is tame and every function symbol, including
+      fn, used in each must have a [badge],
+    * every quoted lambda object in the body of fn that calls fn
+      recursively must occur as the first argument of a loop$ scion
+      and not in some arbitrary scion,
+    * there is at least one recursive call of fn inside a quoted lambda
+      object which means that the loop$-recursion t declaration was
+      actually necessary, and
+    * the necessary measure conjectures (see below) must be proved.
+
+  These restrictions make a little more sense if you reflect on what
+  has to be done to check and admit a loop$-recursive function.
+  First, we assume that most ACL2 functions are not loop$-recursive.
+  So to keep defun-processing as fast as possible, we require you to
+  declare when you are using loop$ recursion.  That declaration
+  triggers additional checks.
+
+  But before checks can begin, we have to translate the body of fn and
+  since loop$s translate into calls of loop$ scions on quoted lambdas
+  and those must be tame, and since some of those lambdas involve
+  calls of fn, we must assign a badge to fn even before we have
+  translated its body.  We assign a badge that declares fn to take
+  the appropriate number of ordinary inputs, to return one result,
+  and be tame.  We check those requirements after fn has been
+  admitted.
+
+  Because the measure guessing heuristics of ACL2 do not look for calls
+  inside of quoted lambdas, the measure must be explicitly declared
+  even if it acl2-count.
+
+  To find every recursive call in a quoted lambda object those objects
+  must all be well-formed.  If such an object occurs as the first
+  argument of a loop$ scion then we know it is only applied to
+  elements of the loop$ scion's target.  Given that, we can
+  investigate whether the recursive calls in the lambda object are on
+  smaller things.  But if a recursive call were to occur in a quoted
+  lambda object that was passed to some other kind of scion, we have
+  no way to know (without extensive analysis) to what it might be
+  applied.
+
+  Some of these restrictions could be lifted with more analysis and
+  coding.  For example, we could change the specification for the
+  :loop$-recursion xargs keyword so that instead of taking on a
+  Boolean value it takes on a badge.  Then we could tentatively
+  assign that badge to fn before processing and check it afterwards.
+  Our current thinking is to ask users to live with these
+  restrictions and let us see whether loop$-recursion is useful
+  (almost certainly it will be), whether the community can develop
+  proof techniques and tools to reason about them as effectively as
+  we reason about conventional recursive functions (we're
+  optimistic), and whether investing time in lifting some of these
+  restrictions is worth it given all the other ways we could improve
+  ACL2.
+
+
+Measure Conjectures
+
+  Measure conjectures must be generated for the recursive calls inside
+  loop$ bodies.  (We also generate conjectures for the recursive
+  calls the other loop$-expression components, e.g., the when clause,
+  exactly analogously, but we speak of the loop$ body only below.  We
+  also focus on simple loop$s here but the conjectures decribed
+  generalize to fancy loop$s.)  Given a recursive call inside the
+  body of a loop$ with iteration variable v, we first generate a new
+  variable symbol, v'.  Certain terms, e.g., tests and arguments to
+  recursive calls, will be extracted from within the body and used in
+  the measure conjecture.  We rename v to v' in these terms to
+  distinguish occurrences of v outside the loop$ from those inside.
+  The measure conjecture requires us to prove that the given measure
+  decreases, as usual.  But the ruling tests are those ruling the
+  loop$, conjoined with the hypothesis that v' is a member of the
+  target, conjoined with the (renamed) tests from inside the body
+  ruling the recursive call.
+
+  Below is an example.  We show only the measure conjectures generated
+  from inside the loop$ because there are two recursive calls in the
+  loop$ body.
+
+    (defun$ fn (v)
+      (declare (xargs :loop$-recursion t
+                      :measure (acl2-count x)))
+      (cond
+       ((natp v)
+        ...)
+       ((true-listp v)
+        (loop$ for v in (target v) sum
+               (if (and (integerp v) (< v 0))
+                   (fn (- v))
+                   (fn v))))
+       (t ...)))
+
+  Note that v used both as the formal of fn and as the iterative
+  variable of the loop$.  In the measure conjectures below, the
+  iterative variable has been renamed to nv0.  Two measure
+  conjectures are generated from within the loop$:
+
+    (implies (and (not (natp v))
+                  (true-listp v)
+                  (member-equal nv0 (target v))
+                  (and (integerp nv0) (< nv0 0)))
+             (o< (acl2-count (- nv0))
+                 (acl2-count v)))
+
+    (implies (and (not (natp v))
+                  (true-listp v)
+                  (member-equal nv0 (target v))
+                  (not (and (integerp nv0) (< nv0 0))))
+             (o< (acl2-count nv0) (acl2-count v)))
+
+  Note that these conjectures require that when fn is called from
+  within the loop$ the argument is smaller than the initial value of
+  the formal.  Notice also that there is no a priori restriction on
+  the size of (target v).  However, because of the way fn is used
+  inside this particular example loop$, there are restrictions on the
+  size of the elements of (target v).  These conjectures, along with
+  those generated from calls outside the loop$ are sufficient to
+  guarantee that fn always terminates.
+
+  Note: Careful readers might note that the way we handle measure
+  conjectures for loop$s differs from the way we handle guard
+  conjectures for loop$s.  In [loop$] we explained that loop$s are
+  translated into calls of loop$ [scion]s on quoted [lambda] objects
+  and that the guard conjectures for the lambda are insensitive to
+  the context in which the object appeared.  But the measure
+  conjectures are sensitive to the context: tests from outside the
+  loop$ are present in the measure conjectures.  This is deliberate.
+  Guard conjectures are context insensitive because the
+  implementation caches compiled lambda objects without remembering
+  the contexts in which they first occurred.  Thus, a lambda object
+  generated by a loop$ may be called on anything and we cannot
+  guarantee that the input guard to the lambda object will be
+  satisfied.  But we can guarantee that the computation carried out
+  by the lambda will terminate! The lambda object generated for fn
+  above terminates no matter what it is called on -- even if called
+  on elements not in (target v) -- because fn terminates.
+
+  Finally, recall that loop$-recursive functions do not automatically
+  suggest induction schemes and that special care must be taken when
+  formulating inductively provable conjectures about them.  See
+  [loop$-recursion-induction].
+
+
+Subtopics
+
+  [Definductor]
+      Create an induction scheme for a loop$-recursive function")
+ (LOOP$-RECURSION-INDUCTION
+  (LOOP$)
+  "Advice on inductive theorems about [loop$]-recursive functions
+
+  Warning: This documentation topic is fairly preliminary because we do
+  not have a lot of experience yet with [apply$], [loop$], and
+  [loop$-recursion].  We assume here that readers are familiar with
+  the topics cited above.
+
+
+Definductor
+
+  The principles sketched here are illustrated concretely in the
+  tutorial community book projects/apply/copy-nat-tree.lisp.  As
+  noted in that book, the inductions are hinted manually so the
+  reader can see from first principles what is involved.  However, in
+  the book projects/apply/top we provide a utility that sometimes
+  automates the creation of the inductive hint function and
+  associates it with the given loop$-recursive function.  See
+  [definductor].  The examples worked manually in copy-nat-tree.lisp
+  are recapitulated towards the end of
+  projects/apply/definductor-tests.lisp, without the manually
+  provided hints.
+
+
+Some Basic Principles for Inductive Proofs about Loop$-Recursive
+Functions
+
+  If ACL2 did not have loop$, functions defined in terms of
+  loop$-recursion would have to be defined with [mutual-recursion].
+  Reconsider the example presented in [loop$-recursion].
+
+    (defun$ nat-treep (x)
+      (declare (xargs :loop$-recursion t
+                      :measure (acl2-count x)))
+      (cond
+       ((atom x) (natp x))
+       (t (and (true-listp x)
+               (eq (car x) 'NATS)
+               (loop$ for e in (cdr x) always (nat-treep e))))))
+
+    (defun$ copy-nat-tree (x)
+      (declare (xargs :loop$-recursion t
+                      :measure (acl2-count x)))
+      (cond
+       ((atom x)
+        (if (natp x)
+            (if (equal x 0)
+                0
+                (+ 1 (copy-nat-tree (- x 1))))
+            x))
+       (t (cons 'nats
+                (loop$ for e in (cdr x) collect (copy-nat-tree e))))))
+
+  Without loop$ the latter function would have to be defined this way.
+  We name it mr-copy-nat-tree, where the ``mr'' reminds us this is
+  part of a mutually recursive clique.
+
+    (mutual-recursion
+     (defun mr-copy-nat-tree (x)
+       (cond
+        ((atom x)
+         (if (natp x)
+             (if (equal x 0)
+                 0
+                 (+ 1 (mr-copy-nat-tree (- x 1))))
+             x))
+        (t (cons 'nats
+                 (mr-copy-nat-tree-list (cdr x))))))
+
+     (defun mr-copy-nat-tree-list (x)
+       (cond
+        ((endp x) nil)
+        (t (cons (mr-copy-nat-tree (car x))
+                 (mr-copy-nat-tree-list (cdr x)))))))
+
+  Note that we define mr-copy-nat-tree by copying the definition of
+  copy-nat-tree (renaming recursive calls appropriately) but
+  replacing the use of loop$ in copy-nat-tree with a call of a
+  mutually-recursive function here called mr-copy-nat-tree-list.  We
+  call mr-copy-nat-tree-list the ``list counterpart'' of
+  mr-copy-nat-tree.  However, in general there may be more than just
+  two functions in the clique and so we refer generically to
+  mr-copy-nat-tree-list as a ``co-member'' of the clique.
+
+  How would you prove theorems about mr-copy-nat-tree?  Four principles
+  are known to most ACL2 users of mutual-recursion.  These principles
+  apply to loop$-recursive functions as well as to mutually recursive
+  ones.  We state them here in terms of both kinds of definitions.
+
+    * While simple recursive functions suggest ``appropriate'' inductions,
+      mutually recursive functions and loop$-recursive functions do
+      not.  If you want to prove a theorem about such functions you
+      have to arrange some kind of induction hint.
+    * You can't generally prove an isolated theorem about a single member
+      of a mutually recursive clique or a loop$-recursive function.
+      Instead, you must state a conjecture about every member of the
+      clique, conjoin all those theorems together, and prove them
+      inductively all at once.  Applied to proving a theorem about
+      mr-copy-nat-tree this advice means we must conjoin the theorem
+      about that function with ``the same'' theorem about
+      mr-copy-nat-tree-list, and more generally with theorems about
+      every co-member of the clique.  Of course, what we mean by
+      ``the same'' theorem about different members of the clique
+      depends on what each member contributes to the overall
+      computation.  Applied to the loop$-recursive function
+      copy-nat-tree this advice means we must simultaneously prove a
+      theorem about every loop$ in the function.
+    * Inductively provable theorems must be sufficiently general.  When
+      dealing with a mutually recursive clique, each conjunct must
+      address itself to the ``general'' call of the co-member in
+      question, e.g., to (mr-copy-nat-tree-list x) not to the
+      specific call inside mr-copy-nat-tree, which is
+      (mr-copy-nat-tree-list (cdr x)).  When dealing with a
+      loop$-recursive function, each conjunct must address itself to
+      the general target, not to specific target in the loop$
+      recursive function.  In the case of the loop$-recursive
+      function copy-nat-tree we need a conjunct about (loop$ for e in
+      x collect (copy-nat-tree e)), not about (loop$ for e in (cdr x)
+      collect (copy-nat-tree e)).
+    * Finally, the induction scheme used must provide an inductive
+      hypothesis about every recursive call of every co-member of the
+      clique or, in the case of loop$-recursion, about every
+      recursive unwinding of each loop$.
+
+  Remember: Because loop$-recursive functions call themselves
+  recursively with apply$, any theorem about a loop$ recursive
+  function must almost certainly include a warrant hypothesis for
+  that function!
+
+  We illustrate these principles in the community book
+  projects/apply/copy-nat-list.lisp.")
  (LOOP-STOPPER
   (REWRITE)
   "Limit application of permutative rewrite rules
@@ -83440,6 +83972,9 @@ Changes to Existing Features
       :hints((\"Goal\" :in-theory (disable member)
               :expand ((member x (cons x y))))))
 
+  An analogous improvement has been made for :by, :use, and :hands-off
+  hints.
+
   The macros [defequiv], [defrefinement], and [defcong] now conform to
   the following principle discussed in a new [documentation] topic,
   [packages-for-generated-symbols]: ideally, utilities generate
@@ -83585,6 +84120,13 @@ New Features
   consideration of adding some such capability.  In a few preliminary
   tests we found an average drop of about 3.5% in the time it took to
   run the tests.
+
+  It is now permitted to define functions in which recursive calls
+  occur from inside [loop$] statements.  See [loop$-recursion].  Such
+  functions do not automatically suggest induction schemes.
+  Furthermore, care must be taken when formulating inductively
+  provable theorems about such functions.  See
+  [loop$-recursion-induction] and [definductor].
 
 
 Heuristic and Efficiency Improvements
@@ -89049,6 +89591,12 @@ Subtopics
 
   [Tamep-lambdap]
       See [tame].
+
+  [Thereis$]
+      See [loop$].
+
+  [Thereis$+]
+      See [loop$].
 
   [Trans-eval-default-warning]
       See [user-stobjs-modified-warnings].
@@ -113973,6 +114521,8 @@ Subtopics
   [defthm], [in-theory], [encapsulate], and [include-book], except
   for events executed on behalf of an [include-book] or the second
   pass of an [encapsulate].")
+ (THEREIS$ (POINTERS) "See [loop$].")
+ (THEREIS$+ (POINTERS) "See [loop$].")
  (THE_ADMISSION_OF_APP
   (PAGES_WRITTEN_ESPECIALLY_FOR_THE_TOURS)
   "The Admission of App
@@ -126198,6 +126748,7 @@ Subtopics
                     :guard-simplify nil
                     :guard-hints ((\"Goal\" :in-theory (theory batch1)))
                     :hints ((\"Goal\" :in-theory (theory batch1)))
+                    :loop$-recursion t
                     :measure (- i j)
                     :measure-debug t
                     :mode :logic
@@ -126253,6 +126804,12 @@ Subtopics
   :[hints]
   Value: hints (see [hints]), to be used during the termination proofs
   as opposed to the [guard] verification proofs of the [defun].
+
+  :)@(tsee loop$-recursion)<br></br> Value: this flag must be set to
+  @('t or nil; nil is the default.  The flag must be t if and only if
+  the function being defined calls itself recursively from within a
+  [loop$] body or within a when or until clause.  See
+  [loop$-recursion].
 
   :measure
   Value is a term involving only the formals of the function being
