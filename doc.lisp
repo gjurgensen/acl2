@@ -41368,8 +41368,8 @@ Subtopics
   The process of removing guard-holders includes the transformations
   below.  That process is also applied to each argument of a function
   call and to the bodies of [lambda] expressions (see [term]),
-  including quoted lambda expressions that appear in an argument
-  position with [ilk] :FN (see [apply$]).
+  usually including quoted lambda expressions that appear in an
+  argument position with [ilk] :FN (see [apply$]).
 
     (return-last term0 term1 term2)  ==>  term2
 
@@ -57087,6 +57087,9 @@ Restrictions
     * every formal of fn must be ``ordinary,'' e.g., not of [ilk] :FN or
       :EXPR,
     * fn must return a single value,
+    * fn's measure must be of type [natp] or be a lexicographic combination
+      of natural numbers as defined by the llist function in the
+      Community Books at books/ordinals/,
     * fn must be [tame], which implies it may not take or return [state] or
       [stobj]s,
     * every quoted [lambda] object in the body of fn must be well-formed

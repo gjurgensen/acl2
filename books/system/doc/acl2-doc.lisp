@@ -37927,9 +37927,9 @@ current fast alists."
 
  <p>The process of removing guard-holders includes the transformations below.
  That process is also applied to each argument of a function call and to the
- bodies of @(see lambda) expressions (see @(see term)), including quoted lambda
- expressions that appear in an argument position with @(see ilk) @(':FN') (see
- @(see apply$)).</p>
+ bodies of @(see lambda) expressions (see @(see term)), usually including
+ quoted lambda expressions that appear in an argument position with @(see ilk)
+ @(':FN') (see @(see apply$)).</p>
 
  @({
  (return-last term0 term1 term2)  ==>  term2
@@ -53005,6 +53005,10 @@ tables in the current Hons Space."
   @(':FN') or @(':EXPR'),</li>
 
   <li><i>fn</i> must return a single value,</li>
+
+  <li><i>fn</i>'s measure must be of type @(tsee natp) or be a lexicographic
+  combination of natural numbers as defined by the @('llist') function in the
+  Community Books at @('books/ordinals/'),</li>
 
   <li><i>fn</i> must be @(tsee tame), which implies it may not take or
   return @(tsee state) or @(tsee stobj)s,</li>
@@ -85353,6 +85357,9 @@ it."
 ; in proprietary books.  Note that the change we made has the potential to
 ; speed up evaluation of ground expressions in linear arithmetic and forward
 ; chaining.
+
+; Fixed a typo in a free-variables :brr message.  Thanks to Mihir Mehta for
+; noticing the typo and supplying a patch.
 
   :parents (release-notes)
   :short "ACL2 Version  8.3 (xxx, 20xx) Notes"
