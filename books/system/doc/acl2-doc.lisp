@@ -52706,7 +52706,7 @@ tables in the current Hons Space."
   special conjectures are.  We limit ourselves to a simple @('loop$').  Fancy
   @('loop$') generalize in the obvious way.  The three classes of ``special
   guard conjectures'' for @('loop$') statements are:</p>
-  
+
   <p>First, every element (or tail, in the case of @('ON') @('loop$')s)
   satisfies the type-spec, if any.  Note that in the case of @('ON')
   @('loop$')s <i>every</i> tail, including the empty one, must satisfy the
@@ -85515,7 +85515,8 @@ it."
  before this change, it did not.</p>
 
  <p>The default slow-alist-action (see @(see slow-alist-warning)) is now
- @(':break') instead of warning.</p>
+ @(':break') instead of @(':warning') in ACL2.  (It remains @(':warning') in
+ ACL2(p); see @(see unsupported-waterfall-parallelism-features).)</p>
 
  <p>For a user-defined @(':')@(tsee induction) rule to be applied, it is no
  longer required for the induction scheme associated with a recursive
@@ -119194,7 +119195,14 @@ introduction-to-the-tau-system) for more information about Tau.</dd>
  unsupported when waterfall-parallelism is enabled.</p>
 
  <p>Profiling may cause proofs to hang when waterfall-parallelism is enabled
- (GitHub Issue #638).</p>")
+ (GitHub Issue #638).</p>
+
+ <p>You may occasionally see a @('\"Fast alist discipline\"') violation, even
+ when using @(tsee hons-get) appropriately, when @(see waterfall-parallelism)
+ is enabled.  It should generally be fine simply to ignore this warning, though
+ performance may not be what one would expect when using a @(see fast-alist).
+ Alternatively, you can use @('(set-slow-alist-action nil)') to eliminate this
+ warning entirely; see @(see slow-alist-warning).</p>")
 
 (defxdoc untouchable
   :parents (defttag)
