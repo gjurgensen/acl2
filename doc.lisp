@@ -84056,7 +84056,8 @@ Changes to Existing Features
   not.
 
   The default slow-alist-action (see [slow-alist-warning]) is now
-  :break instead of warning.
+  :break instead of :warning in ACL2.  (It remains :warning in
+  ACL2(p); see [unsupported-waterfall-parallelism-features].)
 
   For a user-defined :[induction] rule to be applied, it is no longer
   required for the induction scheme associated with a recursive
@@ -120554,7 +120555,15 @@ Subtopics
   unsupported when waterfall-parallelism is enabled.
 
   Profiling may cause proofs to hang when waterfall-parallelism is
-  enabled (GitHub Issue #638).")
+  enabled (GitHub Issue #638).
+
+  You may occasionally see a \"Fast alist discipline\" violation, even
+  when using [hons-get] appropriately, when [waterfall-parallelism]
+  is enabled.  It should generally be fine simply to ignore this
+  warning, though performance may not be what one would expect when
+  using a [fast-alist].  Alternatively, you can use
+  (set-slow-alist-action nil) to eliminate this warning entirely; see
+  [slow-alist-warning].")
  (UNTIL$ (POINTERS) "See [loop$].")
  (UNTIL$+ (POINTERS) "See [loop$].")
  (UNTOUCHABLE
