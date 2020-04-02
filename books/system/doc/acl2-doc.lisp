@@ -24495,7 +24495,7 @@ ld) and @(tsee include-book)"
   :short "Deletes names from current theory"
   :long "@({
   Example:
-  (disable fact (fact) associativity-of-app)
+  (disable fact (:e fact) associativity-of-app)
 
   General Form:
   (disable name1 name2 ... namek)
@@ -25357,7 +25357,7 @@ ld) and @(tsee include-book)"
 
  @({
   Examples:
-  (e/d (lemma1 lemma2))          ; equivalent to (enable lemma1 lemma2)
+  (e/d (lemma1 (:e fn)))         ; equivalent to (enable lemma1 (:e fn))
   (e/d () (lemma))               ; equivalent to (disable lemma)
   (e/d (lemma1) (lemma2 lemma3)) ; Enable lemma1 then disable lemma2, lemma3.
   (e/d () (lemma1) (lemma2))     ; Disable lemma1 then enable lemma2.
@@ -26165,7 +26165,7 @@ ld) and @(tsee include-book)"
   :short "Adds names to current theory"
   :long "@({
   Example:
-  (enable fact (fact) associativity-of-app)
+  (enable fact (:e fact) associativity-of-app)
 
   General Form:
   (enable name1 name2 ... namek)
@@ -119197,12 +119197,11 @@ introduction-to-the-tau-system) for more information about Tau.</dd>
  <p>Profiling may cause proofs to hang when waterfall-parallelism is enabled
  (GitHub Issue #638).</p>
 
- <p>You may occasionally see a @('\"Fast alist discipline\"') violation, even
- when using @(tsee hons-get) appropriately, when @(see waterfall-parallelism)
- is enabled.  It should generally be fine simply to ignore this warning, though
- performance may not be what one would expect when using a @(see fast-alist).
- Alternatively, you can use @('(set-slow-alist-action nil)') to eliminate this
- warning entirely; see @(see slow-alist-warning).</p>")
+ <p>During proofs with @(see waterfall-parallelism) enabled, you may see
+ @('\"Fast alist discipline\"') violations, even when using @(tsee hons-get)
+ appropriately.  This can happen because only the main thread supports the use
+ of hash-tables by @('hons-get').  You can use @('(set-slow-alist-action nil)')
+ to eliminate this warning entirely; see @(see slow-alist-warning).</p>")
 
 (defxdoc untouchable
   :parents (defttag)
