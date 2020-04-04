@@ -24495,7 +24495,7 @@ ld) and @(tsee include-book)"
   :short "Deletes names from current theory"
   :long "@({
   Example:
-  (disable fact (fact) associativity-of-app)
+  (disable fact (:e fact) associativity-of-app)
 
   General Form:
   (disable name1 name2 ... namek)
@@ -25357,7 +25357,7 @@ ld) and @(tsee include-book)"
 
  @({
   Examples:
-  (e/d (lemma1 lemma2))          ; equivalent to (enable lemma1 lemma2)
+  (e/d (lemma1 (:e fn)))         ; equivalent to (enable lemma1 (:e fn))
   (e/d () (lemma))               ; equivalent to (disable lemma)
   (e/d (lemma1) (lemma2 lemma3)) ; Enable lemma1 then disable lemma2, lemma3.
   (e/d () (lemma1) (lemma2))     ; Disable lemma1 then enable lemma2.
@@ -26165,7 +26165,7 @@ ld) and @(tsee include-book)"
   :short "Adds names to current theory"
   :long "@({
   Example:
-  (enable fact (fact) associativity-of-app)
+  (enable fact (:e fact) associativity-of-app)
 
   General Form:
   (enable name1 name2 ... namek)
@@ -52706,7 +52706,7 @@ tables in the current Hons Space."
   special conjectures are.  We limit ourselves to a simple @('loop$').  Fancy
   @('loop$') generalize in the obvious way.  The three classes of ``special
   guard conjectures'' for @('loop$') statements are:</p>
-  
+
   <p>First, every element (or tail, in the case of @('ON') @('loop$')s)
   satisfies the type-spec, if any.  Note that in the case of @('ON')
   @('loop$')s <i>every</i> tail, including the empty one, must satisfy the
@@ -85515,7 +85515,8 @@ it."
  before this change, it did not.</p>
 
  <p>The default slow-alist-action (see @(see slow-alist-warning)) is now
- @(':break') instead of warning.</p>
+ @(':break') instead of @(':warning') in ACL2.  (It remains @(':warning') in
+ ACL2(p); see @(see unsupported-waterfall-parallelism-features).)</p>
 
  <p>For a user-defined @(':')@(tsee induction) rule to be applied, it is no
  longer required for the induction scheme associated with a recursive
@@ -85584,6 +85585,10 @@ it."
  do not automatically suggest induction schemes.  Furthermore, care must be
  taken when formulating inductively provable theorems about such functions.
  See @(see loop$-recursion-induction) and @(tsee definductor).</p>
+
+ <p>You can now change the second line in the startup banner for a GitHub
+ version of ACL2 obtained between releases.  See @(see startup-banner).  Thanks
+ to Andrew Walter for requesting this enhancement.</p>
 
  <h3>Heuristic and Efficiency Improvements</h3>
 
@@ -99758,11 +99763,12 @@ arithmetic) for libraries of @(see books) for arithmetic reasoning.</p>")
   Examples:
 
   ; Save an executable script named my-saved_acl2, with the indicated message
-  ; added to the start-up banner:
+  ; added below the words \"MODIFICATION NOTICE\" under the start-up banner:
   (save-exec \"my-saved_acl2\"
              \"This saved image includes Version 7 of Project Foo.\")
 
-  ; Same as above, but instead with a generic comment in the start-up banner:
+  ; Same as above, but instead with a generic comment under the modification
+  ; notice:
   (save-exec \"my-saved_acl2\" nil)
 
   ; Arrange that the generated script passes the indicated arguments to be
@@ -106893,6 +106899,51 @@ arithmetic) for libraries of @(see books) for arithmetic reasoning.</p>")
  <p>Continue with the @(see documentation) for @(see annotated-acl2-scripts) to
  see a simple but illustrative example in the use of ACL2 for reasoning about
  functions.</p>")
+
+(defxdoc startup-banner
+  :parents (interfacing-tools)
+  :short "Modifying the ACL2 startup banner"
+  :long "<p>When you start up an ACL2 executable built from sources obtained
+  from GitHub between ACL2 releases, you'll typically see a startup banner like
+  this:</p>
+
+ @({
+  +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+  + WARNING: This is NOT an ACL2 release; it is a development snapshot. +
+  + (git commit hash: 6bab5ea7c616e013c3e28c55cd5ebe1431a1d7cd)         +
+  + On rare occasions development snapshots may be incomplete, fragile, +
+  + or unable to pass the usual regression tests.                       +
+  +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+ })
+
+ <p>The second line of that banner can be modified by setting environment
+ variable @('ACL2_SNAPSHOT_INFO') to a non-empty string before saving the
+ executable.  The value of that variable will be placed into the banner, for
+ example as follows if that value is @('\"This is my private
+ executable.\"').</p>
+
+ @({
+  +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+  + WARNING: This is NOT an ACL2 release; it is a development snapshot. +
+  + (Note from the environment when this executable was saved:          +
+  +  This is my private executable.)                                    +
+  + On rare occasions development snapshots may be incomplete, fragile, +
+  + or unable to pass the usual regression tests.                       +
+  +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+ })
+
+ <p>An exception is the special value, @('\"none\"'), which is treated as
+ case-insensitive (so it can similarly be @('\"None\"'), @('\"NONE\"'), etc.).
+ In that case, the second line is omitted entirely, for example as follows.</p>
+
+ @({
+  +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+  + WARNING: This is NOT an ACL2 release; it is a development snapshot. +
+  +                                                                     +
+  + On rare occasions development snapshots may be incomplete, fragile, +
+  + or unable to pass the usual regression tests.                       +
+  +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+ })")
 
 (defxdoc state
   :parents (programming)
@@ -119041,7 +119092,15 @@ introduction-to-the-tau-system) for more information about Tau.</dd>
  LispWorks implementations are likely less robust than the CCL
  implementation.</p>
 
- <p>The @(tsee time-tracker) utility is a no-op for ACL2(p).</p>")
+ <p>The @(tsee time-tracker) utility is a no-op for ACL2(p).</p>
+
+ <p>When executing calls of @(tsee hons-get) in parallel, you may see messages
+ about @('\"Fast alist discipline\"') violations.  This can happen because each
+ thread uses its own underlying hash-table for fast access by @('hons-get'),
+ but typical top-level calls of @(tsee hons-acons) and @(tsee make-fast-alist)
+ only affect that main thread's hash-table.  You can use
+ @('(set-slow-alist-action nil)') to eliminate this warning entirely; see @(see
+ slow-alist-warning).</p>")
 
 (defxdoc unsupported-waterfall-parallelism-features
 
@@ -119194,7 +119253,15 @@ introduction-to-the-tau-system) for more information about Tau.</dd>
  unsupported when waterfall-parallelism is enabled.</p>
 
  <p>Profiling may cause proofs to hang when waterfall-parallelism is enabled
- (GitHub Issue #638).</p>")
+ (GitHub Issue #638).</p>
+
+ <p>During proofs with @(see waterfall-parallelism) enabled, you may see
+ messages about @('\"Fast alist discipline\"') violations, even when using
+ @(tsee hons-get) appropriately.  This can happen because each thread uses its
+ own underlying hash-table for fast access by @('hons-get'), but typical
+ top-level calls of @(tsee hons-acons) and @(tsee make-fast-alist) only affect
+ that main thread's hash-table.  You can use @('(set-slow-alist-action nil)')
+ to eliminate this warning entirely; see @(see slow-alist-warning).</p>")
 
 (defxdoc untouchable
   :parents (defttag)

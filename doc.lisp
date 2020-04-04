@@ -27802,7 +27802,7 @@ Subtopics
   "Deletes names from current theory
 
     Example:
-    (disable fact (fact) associativity-of-app)
+    (disable fact (:e fact) associativity-of-app)
 
     General Form:
     (disable name1 name2 ... namek)
@@ -28637,7 +28637,7 @@ Subtopics
   For related utilities, see [enable] and see [disable].
 
     Examples:
-    (e/d (lemma1 lemma2))          ; equivalent to (enable lemma1 lemma2)
+    (e/d (lemma1 (:e fn)))         ; equivalent to (enable lemma1 (:e fn))
     (e/d () (lemma))               ; equivalent to (disable lemma)
     (e/d (lemma1) (lemma2 lemma3)) ; Enable lemma1 then disable lemma2, lemma3.
     (e/d () (lemma1) (lemma2))     ; Disable lemma1 then enable lemma2.
@@ -29378,7 +29378,7 @@ Miscellaneous efficiency ideas
   "Adds names to current theory
 
     Example:
-    (enable fact (fact) associativity-of-app)
+    (enable fact (:e fact) associativity-of-app)
 
     General Form:
     (enable name1 name2 ... namek)
@@ -84056,7 +84056,8 @@ Changes to Existing Features
   not.
 
   The default slow-alist-action (see [slow-alist-warning]) is now
-  :break instead of warning.
+  :break instead of :warning in ACL2.  (It remains :warning in
+  ACL2(p); see [unsupported-waterfall-parallelism-features].)
 
   For a user-defined :[induction] rule to be applied, it is no longer
   required for the induction scheme associated with a recursive
@@ -120554,7 +120555,14 @@ Subtopics
   unsupported when waterfall-parallelism is enabled.
 
   Profiling may cause proofs to hang when waterfall-parallelism is
-  enabled (GitHub Issue #638).")
+  enabled (GitHub Issue #638).
+
+  During proofs with [waterfall-parallelism] enabled, you may see \"Fast
+  alist discipline\" violations, even when using [hons-get]
+  appropriately.  This can happen because only the main thread
+  supports the use of hash-tables by hons-get.  You can use
+  (set-slow-alist-action nil) to eliminate this warning entirely; see
+  [slow-alist-warning].")
  (UNTIL$ (POINTERS) "See [loop$].")
  (UNTIL$+ (POINTERS) "See [loop$].")
  (UNTOUCHABLE
