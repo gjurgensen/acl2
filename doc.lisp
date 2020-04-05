@@ -46971,6 +46971,9 @@ Subtopics
   [Save-exec]
       Save an executable image and a wrapper script
 
+  [Startup-banner]
+      Modifying the ACL2 startup banner
+
   [Sys-call]
       Make a system call to the host operating system")
  (INTERN
@@ -84132,6 +84135,10 @@ New Features
   provable theorems about such functions.  See
   [loop$-recursion-induction] and [definductor].
 
+  You can now change the second line in the startup banner for a GitHub
+  version of ACL2 obtained between releases.  See [startup-banner].
+  Thanks to Andrew Walter for requesting this enhancement.
+
 
 Heuristic and Efficiency Improvements
 
@@ -101125,11 +101132,12 @@ Subtopics
     Examples:
 
     ; Save an executable script named my-saved_acl2, with the indicated message
-    ; added to the start-up banner:
+    ; added below the words \"MODIFICATION NOTICE\" under the start-up banner:
     (save-exec \"my-saved_acl2\"
                \"This saved image includes Version 7 of Project Foo.\")
 
-    ; Same as above, but instead with a generic comment in the start-up banner:
+    ; Same as above, but instead with a generic comment under the modification
+    ; notice:
     (save-exec \"my-saved_acl2\" nil)
 
     ; Arrange that the generated script passes the indicated arguments to be
@@ -108102,6 +108110,46 @@ Subtopics
   Continue with the [documentation] for [annotated-ACL2-scripts] to see
   a simple but illustrative example in the use of ACL2 for reasoning
   about functions.")
+ (STARTUP-BANNER
+  (INTERFACING-TOOLS)
+  "Modifying the ACL2 startup banner
+
+  When you start up an ACL2 executable built from sources obtained from
+  GitHub between ACL2 releases, you'll typically see a startup banner
+  like this:
+
+    +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+    + WARNING: This is NOT an ACL2 release; it is a development snapshot. +
+    + (git commit hash: 6bab5ea7c616e013c3e28c55cd5ebe1431a1d7cd)         +
+    + On rare occasions development snapshots may be incomplete, fragile, +
+    + or unable to pass the usual regression tests.                       +
+    +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+  The second line of that banner can be modified by setting environment
+  variable ACL2_SNAPSHOT_INFO to a non-empty string before saving the
+  executable.  The value of that variable will be placed into the
+  banner, for example as follows if that value is \"This is my private
+  executable.\".
+
+    +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+    + WARNING: This is NOT an ACL2 release; it is a development snapshot. +
+    + (Note from the environment when this executable was saved:          +
+    +  This is my private executable.)                                    +
+    + On rare occasions development snapshots may be incomplete, fragile, +
+    + or unable to pass the usual regression tests.                       +
+    +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+  An exception is the special value, \"none\", which is treated as
+  case-insensitive (so it can similarly be \"None\", \"NONE\", etc.).  In
+  that case, the second line is omitted entirely, for example as
+  follows.
+
+    +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+    + WARNING: This is NOT an ACL2 release; it is a development snapshot. +
+    +                                                                     +
+    + On rare occasions development snapshots may be incomplete, fragile, +
+    + or unable to pass the usual regression tests.                       +
+    +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++")
  (STATE
   (PROGRAMMING)
   "The von Neumannesque ACL2 state object
@@ -120408,7 +120456,15 @@ Subtopics
   use, the SBCL and LispWorks implementations are likely less robust
   than the CCL implementation.
 
-  The [time-tracker] utility is a no-op for ACL2(p).")
+  The [time-tracker] utility is a no-op for ACL2(p).
+
+  When executing calls of [hons-get] in parallel, you may see messages
+  about \"Fast alist discipline\" violations.  This can happen because
+  each thread uses its own underlying hash-table for fast access by
+  hons-get, but typical top-level calls of [hons-acons] and
+  [make-fast-alist] only affect that main thread's hash-table.  You
+  can use (set-slow-alist-action nil) to eliminate this warning
+  entirely; see [slow-alist-warning].")
  (UNSUPPORTED-WATERFALL-PARALLELISM-FEATURES
   (PARALLEL-PROOF)
   "Proof features not supported with waterfall-parallelism enabled
@@ -120557,10 +120613,12 @@ Subtopics
   Profiling may cause proofs to hang when waterfall-parallelism is
   enabled (GitHub Issue #638).
 
-  During proofs with [waterfall-parallelism] enabled, you may see \"Fast
-  alist discipline\" violations, even when using [hons-get]
-  appropriately.  This can happen because only the main thread
-  supports the use of hash-tables by hons-get.  You can use
+  During proofs with [waterfall-parallelism] enabled, you may see
+  messages about \"Fast alist discipline\" violations, even when using
+  [hons-get] appropriately.  This can happen because each thread uses
+  its own underlying hash-table for fast access by hons-get, but
+  typical top-level calls of [hons-acons] and [make-fast-alist] only
+  affect that main thread's hash-table.  You can use
   (set-slow-alist-action nil) to eliminate this warning entirely; see
   [slow-alist-warning].")
  (UNTIL$ (POINTERS) "See [loop$].")
