@@ -5804,6 +5804,35 @@ and @(tsee include-book)"
   <p>These issues are discussed further in the documentation for @(tsee
   warrant).</p>
 
+  <p>An unfortunate implication of the need for warrants is highlighted during
+  the proofs of measure conjectures while admitting new definitions.
+  Consider</p>
+
+  @({
+  (defun$ my-cdr (x) (cdr x))
+
+  (defun$ my-len (x)
+    (if (endp x)
+        0
+        (+ 1 (my-len (apply$ 'my-cdr (list x))))))
+  })
+
+  <p>The definition of @('my-len') fails!  The reason is that without the
+  warrant for @('my-cdr') we cannot prove that the measure decreases in the
+  recursion above.  Unfortunately, there is no way to provide a warrant in a
+  definition.  At the moment we advise users to avoid the use of @('apply$') --
+  and functions that use @('apply$') -- in ``termination-critical'' roles.  By
+  that we mean do not use @('apply$') if its properties are important to proofs
+  of your measure conjectures.  This is easy advice to implement in the case of
+  @('my-len'), i.e., replace the recursive call above by @('(my-len (my-cdr
+  x))').  However, in more sophisticated definitions, e.g., where a @(tsee
+  loop$) is being used in recursive calls and the @('loop$') calls user-defined
+  functions in its body, following this advice means replacing that @('loop$')s
+  by a recursive function.  That is unfortunate since the whole point of
+  @('loop$') is to avoid the introduction of such functions!  We hope to
+  address this limitation in the future, e.g., by making the definition of
+  @('my-len') above be conditional on the warrant for @('my-cdr').</p>
+
   <h3>Guards and Guard Verification</h3>
 
   <p>As noted, @('apply$') has a guard of @('(apply$-guard fn args)') and is
@@ -5914,6 +5943,12 @@ and @(tsee include-book)"
 
   <p>We discuss the evaluation of ground @('apply$') terms in the evaluation
   theory further below.</p>
+
+  <p>When the guard conjectures of a function are proved all necessary warrants
+  are assumed.  This is unlike what happens when the measure conjectures are
+  proved.  The reason we can assume warrants during guard verification is that
+  guard verification is relevant in the evaluation theory, where attachments
+  are allowed and all warrants have true attachments.</p>
 
   <h3>Top-Level Evaluation of Apply$</h3>
 
@@ -14542,6 +14577,91 @@ with any questions about building the community books.</p>")
  discussion of how to save an ACL2 executable that avoids passing command-line
  arguments to the host Lisp, see @(see save-exec).</p>")
 
+(defxdoc comment
+  :parents (hide acl2-built-ins)
+  :short "Variant of @(tsee prog2$) to help debug evaluation failures during
+ proofs"
+  :long "<p>Semantically, @('(comment x y)') equals @('y'); the value of @('x')
+ is ignored.  Thus @('comment') is much like @(tsee prog2$).  However, when you
+ see a call of @('comment') in ACL2 proof output, it will likely be under a
+ call of @(tsee hide), with information that may be helpful in understanding
+ why the call of @('hide') was inserted.  Consider the following example.</p>
+
+ @({
+ (defstub f (x) t)
+ (defun g (x) (cons (f x) x))
+ (defun h (x) (cons x (cdr (g x))))
+ (thm (equal (h 3) '(3 . 3)))
+ })
+
+ <p>The proof attempt fails for the @(tsee thm) call, indicating the checkpoint
+ shown below.</p>
+
+ @({
+ *** Key checkpoint at the top level: ***
+
+ Goal'
+ (EQUAL (HIDE (COMMENT \"Called constrained function F\" (H 3)))
+        '(3 . 3))
+ })
+
+ <p>The first argument of @('equal') is logically just @('(h 3)').  But the
+ @('comment') and @('hide') wrappers are telling us that evaluation of @('(h
+ 3)') failed because it led to a call of the constrained function @('f').  It
+ is easy to see why in this case, by looking at the definitions, where @('h')
+ calls @('g'), which calls @('f').  But more complicated such failures may be
+ difficult to understand without such information.  In very complicated cases,
+ one might even want to use the Lisp debugger after designating a @(tsee
+ break$) call using @(tsee trace$), like this (here, shown using host Lisp
+ CCL).</p>
+
+ @({
+ ACL2 !>(trace$ (f :entry (break$)))
+  ((F :ENTRY (BREAK$)))
+ ACL2 !>(thm (equal (h 3) '(3 . 3)))
+
+ > Break: Break
+ > While executing: BREAK$, in process listener(1).
+ > Type :GO to continue, :POP to abort, :R for a list of available restarts.
+ > If continued: Return from BREAK.
+ > Type :? for other options.
+ 1 > :b ; user input to get backtrace
+  (262932A0) : 0 (BREAK$) 157
+  (262932F0) : 1 (F 3) 141
+  (26293338) : 2 (FUNCALL #'#<(:INTERNAL ACL2_*1*_ACL2::G ACL2_*1*_ACL2::G)> 3) 37
+  (26293350) : 3 (FUNCALL #'#<(:INTERNAL ACL2_*1*_ACL2::H ACL2_*1*_ACL2::H)> 3) 37
+  (26293368) : 4 (RAW-EV-FNCALL H (3) NIL NIL [[.. output elided ..]]
+ })
+
+ <p>This output from Lisp is quite low-level, but reading from the bottom up
+ provides the following sequence of events.</p>
+
+ <ul>
+
+ <li>4. Call @('h') with argument list @('(3)').</li>
+
+ <li>3. Call the @(see executable-counterpart) of @('h').</li>
+
+ <li>2. Call the @(see executable-counterpart) of @('g').</li>
+
+ <li>1. Attempt to call the constrained function, @('f').</li>
+
+ </ul>
+
+ <p>An easy way to avoid this proof failure is to avoid execution of calls of
+ @('h') and @('g'), as follows.</p>
+
+ @({
+ (thm (equal (h 3) '(3 . 3))
+      :hints ((\"Goal\" :in-theory (disable (:e g) (:e h)))))
+ })
+
+ <p>(It actually suffices to disable only @('(:e h)'), but the workings of the
+ ACL2 rewriter are out of scope here.)</p>
+
+ <p>Also see @(see hide) for further discussion of how to avoid such proof
+ failures.</p>")
+
 (defxdoc common-lisp
   :parents (about-acl2)
   :short "Relation to Common Lisp, including deviations from the spec"
@@ -20281,6 +20401,93 @@ subtree of X with T, without duplication.</p>
  @('exec-body'), and in particular for recursive calls of @('fn'), which can
  thus continue to be viewed as calls using @('local=def').</p>")
 
+(defxdoc definductor
+  :parents (loop$-recursion)
+  :short "Create an induction scheme for a @('loop$')-recursive function"
+  :long "<p>@('Definductor') is a utility provided as part of the community
+  book @('projects/apply/top'), which should be included in any session dealing
+  with @(tsee apply$), @(tsee loop$), or @(tsee loop$-recursion).
+  @('(Definductor fn)') attempts to create an induction scheme appropriate for
+  the previously defined @('loop$')-recursive function @('fn') and prove an
+  @(':')@(tsee induction) rule so that certains calls of @('fn') suggest that
+  induction.</p>
+
+  <p><b>Warning:</b> @('Definductor') currently handles a very small class of
+  @('loop$')-recursive functions and may produce unhelpful error messages when
+  given a function name outside of that class!  We hope to improve it and this
+  documentation as we all get more experience with @('loop$')s and
+  @('loop$')-recursion.</p>
+
+  @({
+  Examples:
+  (definductor copy-nat-tree)
+
+  (definductor copy-nat-tree
+               :measure (my-measure x)
+               :hints ((\"Goal\" :use ...)))
+
+  General Form:
+  (definductor name &key measure well-founded-relation ruler-extenders hints)
+  })
+
+  <p>where @('name') is the name of a previously admitted @('loop$')-recursive
+  function satisfying the restrictions listed below.  When successful it
+  defines a function named @('name-INDUCTOR') that suggests an induction scheme
+  that is supposedly appropriate for @('name'), admits it with a silent proof
+  of its measure theorems, and then proves an @(':')@('induction') rule to
+  associate that scheme with calls of @('name').  When omitted, the optional
+  keyword arguments @('measure'), @('well-founded-relation'), and
+  @('ruler-extenders') default to the measure, well-founded relation, and
+  ruler-extender settings used in the admittance of @('name').  The keyword
+  argument @('hints') defaults to @('nil').</p>
+
+  <h3>Restrictions</h3>
+
+  <p>The given function, @('name'), must satisfy the following restrictions.
+  <b>Note:</b> Because we anticipate this utility being further developed in the
+  near future this list may not correspond to the latest implementation!</p>
+
+  <ul>
+
+  <li>@('Name') must be a symbol naming a previously admitted @('loop$')-recursive
+  function.</li>
+
+  <li>Every recursive @('loop$') in the body of @('name') -- that is, every
+  @('loop$') that calls @('name') recursively in the @('when'), @('until'), or
+  @('body') clauses of the @('loop$') -- must have as its target(s) distinct
+  measured variables or @('cdr')-nests around such variables.</li>
+
+  <li>Every recursive @('loop$') must use @('IN')-iteration, not @('ON')- or
+  @('FROM/TO/BY')-iteration.</li>
+
+  </ul>
+
+  <p>While @('definductor') can handle @('loop$') containing multiple @('AS')
+  clauses (with targets as described above), it cannot handle @('loop$') such
+  as</p>
+
+  @({
+  (loop$ for v in (target x) ...)
+  (loop$ for v on x ...)
+  (loop$ for i from 1 to max ...)
+  })
+
+  <p>To see the inductor function generated, type @(':pe name-INDUCTOR').  To
+  see examples of the use of @('definductor') inspect the book
+  @('projects/apply/definductor-tests.lisp').  To see the definition of
+  @('definductor'), see @('projects/apply/definductor.lisp').</p>
+
+  <p>Suggestions for improvements are welcome!  We know of many, including
+  allowing the user to specify a different name for the inductor function,
+  improving the error messages, printing out the generated @('defun') in the
+  event of failure to admit it, and trying to expand the class of
+  @('loop$')-recursive functions that can be successfully handled.  We have not
+  yet even looked at inductions for @('ON') @('loop$')s and @('FROM/TO/BY')
+  @('loop$')s, so that might be easy.  Induction for @('loop$')s over arbtrary
+  target expressions may be infeasible!  We just need more examples of
+  @('loop$')-recursive functions and successful (hand-written) induction hints
+  for them.</p>")
+
 (defxdoc define-pc-help
   :parents (proof-builder)
   :short "Define a macro command whose purpose is to print something"
@@ -22971,6 +23178,7 @@ subtree of X with T, without duplication.</p>
     (declare (ignore a b c)
              (type integer i j)
              (xargs :guard (symbolp x)
+                    :loop$-recursion t
                     :measure (- i j)
                     :ruler-extenders :basic
                     :well-founded-relation my-wfr
@@ -24287,7 +24495,7 @@ ld) and @(tsee include-book)"
   :short "Deletes names from current theory"
   :long "@({
   Example:
-  (disable fact (fact) associativity-of-app)
+  (disable fact (:e fact) associativity-of-app)
 
   General Form:
   (disable name1 name2 ... namek)
@@ -25149,7 +25357,7 @@ ld) and @(tsee include-book)"
 
  @({
   Examples:
-  (e/d (lemma1 lemma2))          ; equivalent to (enable lemma1 lemma2)
+  (e/d (lemma1 (:e fn)))         ; equivalent to (enable lemma1 (:e fn))
   (e/d () (lemma))               ; equivalent to (disable lemma)
   (e/d (lemma1) (lemma2 lemma3)) ; Enable lemma1 then disable lemma2, lemma3.
   (e/d () (lemma1) (lemma2))     ; Disable lemma1 then enable lemma2.
@@ -25957,7 +26165,7 @@ ld) and @(tsee include-book)"
   :short "Adds names to current theory"
   :long "@({
   Example:
-  (enable fact (fact) associativity-of-app)
+  (enable fact (:e fact) associativity-of-app)
 
   General Form:
   (enable name1 name2 ... namek)
@@ -28803,13 +29011,15 @@ ld) and @(tsee include-book)"
  executable-counterparts of functions, see @(see evaluation).</p>
 
  @({
-  Examples:
+  Example:
   (:executable-counterpart length)
  })
 
- <p>which may be abbreviated in @(see theories) as</p>
+ <p>which may be abbreviated in @(see theory) expressions in either of the
+ following two ways (see @(see rune)).</p>
 
  @({
+  (:e length)
   (length)
  })
 
@@ -37717,9 +37927,9 @@ current fast alists."
 
  <p>The process of removing guard-holders includes the transformations below.
  That process is also applied to each argument of a function call and to the
- bodies of @(see lambda) expressions (see @(see term)), including quoted lambda
- expressions that appear in an argument position with @(see ilk) @(':FN') (see
- @(see apply$)).</p>
+ bodies of @(see lambda) expressions (see @(see term)), usually including
+ quoted lambda expressions that appear in an argument position with @(see ilk)
+ @(':FN') (see @(see apply$)).</p>
 
  @({
  (return-last term0 term1 term2)  ==>  term2
@@ -37743,7 +37953,17 @@ current fast alists."
  <p>Because of how @(tsee mbe) and @(tsee ec-call) are defined in terms of
  @(tsee return-last), the expressions @('(mbe :logic l :exec e)') and
  @('(ec-call (f t1 ... tk))') are effectively transformed by removing guard
- holders into @('l') and @('(f t1 ... tk)'), respectively.</p>")
+ holders into @('l') and @('(f t1 ... tk)'), respectively.</p>
+
+ <p>Note that by default, guard-holders are not removed inside calls of @(tsee
+ hide).  You can however cause them to be removed inside such calls after all,
+ as was the case through Version  8.2, as follows.</p>
+
+ @({
+ (defattach-system ; generates (local (defattach ...))
+   remove-guard-holders-blocked-by-hide-p
+   constant-nil-function-arity-0)
+ })")
 
 (defxdoc guard-introduction
   :parents (guard)
@@ -38793,7 +39013,9 @@ current fast alists."
  apply @('hide') to an equality after substituting it into the rest of the
  goal, if that goal (or a subgoal of it) fails to be proved.</p>
 
- <p>@('Hide') terms are also ignored by the induction heuristics.</p>
+ <p>@('Hide') terms are generally ignored not only by the rewriter but by other
+ ACL2 procedures, including the induction heuristics and (by default) removal
+ of @(see guard-holders).</p>
 
  <p>Sometimes the ACL2 simplifier inserts @('hide') terms into a proof attempt
  out of the blue, as it were.  Why and what can you do about it?  Suppose you
@@ -38807,26 +39029,40 @@ current fast alists."
         t))
  })
 
- <p>Suppose the term @('(another-fn 'a 'b 'c)') arises in a proof.  Since the
- arguments are all constants, ACL2 will try to reduce such a term to a constant
+ <p>Suppose the term @('(another-fn 1 2 3)') arises in a proof.  Since the
+ arguments are all constants, ACL2 may try to reduce such a term to a constant
  by executing the definition of @('another-fn').  However, after a possibly
  extensive computation (because of @('big-hairy-test')) the execution fails
  because of the unevaluable call of @('constrained-fn').  To avoid subsequent
- attempts to evaluate the term, ACL2 embeds it in a @('hide') expression, i.e.,
- rewrites it to @('(hide (another-fn 'a 'b 'c))').</p>
+ attempts to evaluate the term, ACL2 embeds it in a @('hide') expression.
+ Typically that expression will use a call of @(tsee comment), where
+ @('(comment x y)') is logically just @('y'), to tell you the problematic
+ constrained function, in this case by rewriting the original expression
+ to the following.  (Near the end of this topic we discuss how to avoid the
+ call of @('comment').)</p>
+
+ @({
+ (hide (comment \"Called constrained function CONSTRAINED-FN\"
+                (another-fn 1 2 3)))
+ })
 
  <p>You might think this rarely occurs since all the arguments of
  @('another-fn') must be constants.  You would be right except for one special
  case: if @('another-fn') takes no arguments, i.e., is a constant function,
- then every call of it fits this case.  Thus, if you define a function of no
- arguments in terms of a constrained function, you will often see
- @('(another-fn)') rewrite to @('(hide (another-fn))').</p>
+ then every call of it fits this case.  Thus, if you define a function @('f')
+ of no arguments in terms of a constrained function @('g'), you may
+ often see @('(f)') rewrite to:</p>
 
- <p>We do not hide the term if the executable-counterpart of the function is
- disabled &mdash; because we do not try to evaluate it in the first place.
- Thus, to prevent the insertion of a @('hide') term into the proof attempt, you
- can globally disable the executable-counterpart of the offending defined
- function, e.g.,</p>
+ @({
+ (hide (comment \"Called constrained function G\"
+                (f))).
+ })
+
+ <p>We do not hide the term if the @(see executable-counterpart) of the
+ function is @(see disable)d &mdash; because we do not try to evaluate it in
+ the first place.  Thus, to prevent the insertion of a @('hide') term into the
+ proof attempt, you can globally disable the executable-counterpart of the
+ offending defined function, e.g.,</p>
 
  @({
   (in-theory (disable (:executable-counterpart another-fn))).
@@ -38840,10 +39076,10 @@ current fast alists."
  example, suppose that in the proof of some theorem, thm, it is necessary to
  leave the executable-counterpart of @('another-fn') enabled but that the call
  @('(another-fn 1 2 3)') arises in the proof and cannot be computed.  Thus the
- proof attempt will introduce the term @('(hide (another-fn 1 2 3))').  Suppose
- that you can show that @('(another-fn 1 2 3)') is @('(constrained-fn 1 2 3)')
- and that such a step is necessary to the proof.  Unfortunately, proving the
- rewrite rule</p>
+ proof attempt will introduce the term @('(hide (comment \"..\" (another-fn 1 2
+ 3)))') mentioned above.  Suppose that you can show that @('(another-fn 1 2
+ 3)') is @('(constrained-fn 1 2 3)') and that such a step is necessary to the
+ proof.  Unfortunately, proving the rewrite rule</p>
 
  @({
   (defthm thm-helper
@@ -38855,30 +39091,58 @@ current fast alists."
 
  @({
   (defthm thm-helper
-    (equal (hide (another-fn 1 2 3)) (constrained-fn 1 2 3)))
+    (equal (hide (comment \"Called constrained function CONSTRAINED-FN\"
+                          (another-fn 1 2 3)))
+           (constrained-fn 1 2 3)))
  })
 
  <p>would be applied in the proof of thm and is the rule you should prove.</p>
 
  <p>Now to prove @('thm-helper') you need to use the two ``tricks'' which have
  already been discussed.  First, to eliminate the @('hide') term in the proof
- of @('thm-helper') you should include the hint @(':expand') @('(hide
- (another-fn 1 2 3))').  Second, to prevent the @('hide') term from being
- reintroduced when the system tries and fails to evaluate @('(another-fn 1 2
- 3)') you should include the hint @(':in-theory') @('(disable
- (:executable-counterpart another-fn))').  Thus, @('thm-helper') will actually
- be:</p>
+ of @('thm-helper') you should include a hint to @(':expand') that term.
+ Second, to prevent the @('hide') term from being reintroduced when the system
+ tries and fails to evaluate @('(another-fn 1 2 3)') you should include the
+ hint @(':in-theory') @('(disable (:executable-counterpart another-fn))').
+ Thus, @('thm-helper') will actually be:</p>
 
  @({
   (defthm thm-helper
-    (equal (hide (another-fn 1 2 3)) (constrained-fn 1 2 3))
+    (equal (hide (comment \"Called constrained function CONSTRAINED-FN\"
+                          (another-fn 1 2 3)))
+           (constrained-fn 1 2 3))
     :hints
-    ((\"Goal\" :expand (hide (another-fn 1 2 3))
+    ((\"Goal\" :expand
+             (hide (comment \"Called constrained function CONSTRAINED-FN\"
+                            (another-fn 1 2 3)))
              :in-theory (disable (:executable-counterpart another-fn)))))
  })
 
  <p>See @(see eviscerate-hide-terms) for how to affect the printing of
  @('hide') terms.</p>
+
+ <p>Finally, note that you can avoid the generation of @(tsee comment) calls
+ inside the generated call of @('hide'), as was the case through ACL2 Version
+ 8.2, as follows.</p>
+
+ @({
+ (defattach-system ; generates (local (defattach ...))
+   hide-with-comment-p
+   constant-nil-function-arity-0)
+ })
+
+ <p>After evaluation of this event, our running example @('(another-fn 1 2 3)')
+ would generate @('(hide (another-fn 1 2 3))') rather than a term of the
+ form @('(hide (comment \"...\" (another-fn 1 2 3)))').</p>
+
+ <p>In some cases such backward compatibility might also be achieved as
+ follows; also see @(see guard-holders).</p>
+
+ @({
+ (defattach-system ; generates (local (defattach ...))
+   remove-guard-holders-blocked-by-hide-p
+   constant-nil-function-arity-0)
+ })
 
  @(def hide)")
 
@@ -43763,7 +44027,7 @@ tables in the current Hons Space."
   into a slot of ilk @(':FN'), we could get a warrant for @('collect$') by
   calling @('(defwarrant collect$)').</p>
 
-  <p>Here's another useful mapping function:</p>
+  <p>Here's another useful scion (``mapping function''):</p>
 
   @({
   (defun$ always$ (fn lst)
@@ -51861,7 +52125,12 @@ tables in the current Hons Space."
   repeatedly must be @(see tame)!  These expressions include the @('until')
   test, the @('when') test, and the @('loop$') body.  For example, this means
   that @('loop$') does not allow iterations involving @(tsee state) or @(see
-  stobj)s.</p>
+  stobj)s.  Further restrictions are enforced for @(tsee defun)'d functions in
+  which recursive calls appear in @('loop$') bodies.  We mention that only in
+  passing in this documentation topic.  It is discussed more fully in @(tsee
+  loop$-recursion).  We recommend that users unfamiliar with @('loop$')
+  acquaint themselves with the material below, before wading into
+  @('loop$-recursion')!</p>
 
   <h3>Informal Introduction</h3>
 
@@ -51991,14 +52260,14 @@ tables in the current Hons Space."
          collect (body u v))
   })
 
-  <p>ACL2 Version 8.2 supports only four operators, @('sum'), @('collect'),
-  @('always') and @('append').  We anticipate adding other Common Lisp
-  operators eventually.</p>
+  <p>ACL2 Version 8.2 supports only five operators, @('sum'), @('collect'),
+  @('always'), @('thereis') and @('append').  We anticipate adding other Common
+  Lisp operators eventually.</p>
 
   <p>The special symbols noted above, sometimes called ``@('loop$') keywords'',
   may be in any package.  These are @('FOR'), @('IN'), @('ON'), @('FROM'),
   @('TO'), @('BY'), @('OF-TYPE'), @('WHEN'), @('UNTIL'), @('SUM'),
-  @('COLLECT'), @('ALWAYS'), and @('APPEND').</p>
+  @('COLLECT'), @('ALWAYS'), @('THEREIS'), and @('APPEND').</p>
 
   <p>Between the operator, e.g., @('sum') or @('collect'), and the
   @('loop$') body you may include a @(':guard') clause as in</p>
@@ -52011,6 +52280,15 @@ tables in the current Hons Space."
   <p>This is sometimes necessary in the verification of the guards for the
   @('loop$') body because Common Lisp's @('of-type') clauses do not permit you
   to relate one variable to another.</p>
+
+  <p><b>Important Reminder:</b> Recall that @('apply$') and thus @('loop$') are
+  unspecified in the absence of warrants for the relevant user-defined function
+  symbols.  In the documentation for @(tsee apply$), we illustrated how a
+  simple @('defun') was inadmissible because the measure theorem cannot be
+  proved without a warrant and warrants cannot be assumed during the proofs of
+  the measure conjectures.  The same issue arises if @('loop$') involving
+  user-defined functions are involved critically in measure conjectures.  We
+  hope to address this issue in the future.</p>
 
   <h3>General Form</h3>
 
@@ -52046,8 +52324,8 @@ tables in the current Hons Space."
 
   <p>The legal <i>type-specs</i> are listed in @(tsee type-spec).</p>
 
-  <p>The legal <i>operators</i> are @('SUM'), @('COLLECT'), @('ALWAYS'), and
-  @('APPEND').</p>
+  <p>The legal <i>operators</i> are @('SUM'), @('COLLECT'), @('ALWAYS'),
+  @('THEREIS'), and @('APPEND').</p>
 
   <p>The most elaborate @('loop$') statement is of the form</p>
 
@@ -52062,7 +52340,7 @@ tables in the current Hons Space."
   until-expr</i><br/> &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;
   &nbsp; &nbsp; &nbsp; &nbsp; @('WHEN ') &nbsp; @(':GUARD ')<i>guard2
   when-expr</i><br/> &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;
-  &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; ; Note the @('ALWAYS') Exception
+  &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; ; Note the @('ALWAYS')/@('THEREIS') Exceptions
   below!<br/> &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;
   &nbsp; &nbsp; &nbsp; <i>op</i>@(' :GUARD ')<i>guard3
   body-expr</i>@(')')<br/></p>
@@ -52075,10 +52353,11 @@ tables in the current Hons Space."
   <i>until-expr</i>, <i>when-expr</i>, and <i>body-expr</i> &nbsp; must be
   @(see tame)!</p>
 
-  <p><i>The @('ALWAYS') Exception:</i> Common Lisp prohibits loops with both a
-  @('WHEN') clause and an @('ALWAYS') operator.  If you are tempted to use
-  @('WHEN') <i>p</i> with @('ALWAYS') <i>q</i> we recommend you write
-  @('ALWAYS') @('(implies ')<i>p q</i>@(')').</p>
+  <p><i>The @('ALWAYS')/@('THEREIS') Exception:</i> Common Lisp prohibits loops
+  with both a @('WHEN') clause and either an @('ALWAYS') or a @('THEREIS')
+  operator.  For example, if you are tempted to use @('WHEN') <i>p</i> with
+  @('ALWAYS') <i>q</i> we recommend you write @('ALWAYS') @('(implies ')<i>p
+  q</i>@(')').</p>
 
   <p>The following elements may be omitted.</p>
 
@@ -52093,8 +52372,8 @@ tables in the current Hons Space."
 
   <p>As noted above, the @('loop$') keywords (as used above) may be in any
   package.  These are @('FOR'), @('IN'), @('ON'), @('FROM'), @('TO'), @('BY'),
-  @('OF-TYPE'), @('WHEN'), @('UNTIL'), @('SUM'), @('COLLECT'), @('ALWAYS'), and
-  @('APPEND').</p>
+  @('OF-TYPE'), @('WHEN'), @('UNTIL'), @('SUM'), @('COLLECT'), @('ALWAYS'),
+  @('THEREIS'), and @('APPEND').</p>
 
   <p>We give names to certain classes of the syntactic entities above.  The
   <i>v1</i>, ..., <i>vn</i> are called the <i>iteration variables</i>.  The
@@ -52157,6 +52436,7 @@ tables in the current Hons Space."
    sum                 sum$            sum$+
    collect             collect$        collect$+
    always              always$         always$+
+   thereis             thereis$        thereis$+
    append              append$         append$+
    until               until$          until$+
    when                when$           when$+
@@ -52262,7 +52542,10 @@ tables in the current Hons Space."
 
   <p>The following example illustrates basic @(see guard) proof obligations, in
   particular showing that @('when') clauses do not help with verifying guards
-  for the loop bodies.  (Similarly, @('until') clauses do not help either.)</p>
+  for the loop bodies.  (Similarly, @('until') clauses do not help either.)
+  The basic problem is that ACL2 requires that @(tsee lambda) objects be guard
+  veriable in isolation, not confined to the context in which a particular
+  @('lambda') object appears.  Consider the following.</p>
 
   @({
   (include-book \"projects/apply/top\" :dir :system)
@@ -52276,9 +52559,9 @@ tables in the current Hons Space."
            sum (sq (car x))))
   })
 
-  <p>Guard verification fails, and the summary says that a goal of @('NIL') was
-  generated.  Using @(':')@(tsee pso) we can see that the @('NIL') goal came
-  from:</p>
+  <p>Guard verification fails for @('foo').  The summary says that a goal of
+  @('NIL') was generated.  Using @(':')@(tsee pso) we can see that the @('NIL')
+  goal came from:</p>
 
   @({
   Subgoal 1
@@ -52298,22 +52581,27 @@ tables in the current Hons Space."
         (when$ '(lambda ...) (tails lst)))
   })
 
-  <p>We see that the @(see scion), @('sum$'), is trying to apply a @(tsee
-  lambda) object that can cause @('sq') to be applied to @('(car x)') when
-  @('x') is @('nil').  But @('(sq nil)') is a guard violation, since @('sq')
-  expects its argument to be a natural number.  The following modification,
-  which adds a @(':guard') directive, solves the problem.</p>
+  <p>Notice that the @('lambda') object supplied to @('sum$') cannot be guard
+  verified in isolation: @('nil') satisfies the @(':guard') and @('(car nil)')
+  violates the guard of @('sq').  The following modification, which adds a
+  @(':guard') directive after the @('sum') op keyword, solves the problem.</p>
 
   @({
   (defun foo (lst)
     (declare (xargs :guard (nat-listp lst)))
     (loop$ for x of-type (satisfies nat-listp) on lst
            when (consp x)
-           sum :guard (consp x) (sq (car x))))
+           sum :guard (consp x)  ; note new :guard
+           (sq (car x))))
   })
 
-  <p>Indeed, the abbreviated translation now shows that the application
-  @('(sq (car x))') is protected by a suitable guard.</p>
+  <p>This new @(':guard') may feel redundant, coming as it does after the
+  @('when (consp x)') clause.  But it is necessary given the compositional
+  semantics.</p>
+
+  <p>The abbreviated translation of the @('defun') above shows that the
+  application @('(sq (car x))') is protected by a suitable guard in the
+  @('lambda') object.</p>
 
   @({
   (sum$ '(lambda (x)
@@ -52327,10 +52615,12 @@ tables in the current Hons Space."
 
   <p>Naively we might have expected that the guard proof obligation for the
   @('loop$') body @('(sq (car x))') could assume the @('when') clause, but that
-  expectation would be wrong.  The @(tsee lambda) object must be
-  guard-verifiable on its own (in particular because the implementation stores
+  expectation would be wrong because of the compositional semantics we use and
+  the fact that @(tsee lambda) object must be guard-verifiable on their own.
+  The reason for the latter requirement is that our implementation caches
   guard-verified @('lambda') objects for evaluation in raw Lisp, which may take
-  place in other contexts where we don't have the @('when') clause).</p>
+  place in other contexts different from that in which the @('lambda') first
+  appeared.</p>
 
   <h4>Semantics of Fancy Loop$s</h4>
 
@@ -52404,6 +52694,33 @@ tables in the current Hons Space."
 
   <h4>Special Guard Conjectures for LOOP$</h4>
 
+  <p>Since every @('loop$') expands to a call of a @('loop$') scion on a lambda
+  object and a target, one would expect that guard verification would generate
+  the guard conjectures for that scion and target.  Indeed, it does.  In
+  particular, the lambda object must have the correct number of formals (which
+  is guaranteed by translation) and the target must be a true-listp.</p>
+
+  <p>But in addition to the expected guard conjectures, we generate some
+  special ones for the terms produced by translating @('loop$') statements.  We
+  discuss the reasons in the next section, but here we just state what the
+  special conjectures are.  We limit ourselves to a simple @('loop$').  Fancy
+  @('loop$') generalize in the obvious way.  The three classes of ``special
+  guard conjectures'' for @('loop$') statements are:</p>
+
+  <p>First, every element (or tail, in the case of @('ON') @('loop$')s)
+  satisfies the type-spec, if any.  Note that in the case of @('ON')
+  @('loop$')s <i>every</i> tail, including the empty one, must satisfy the
+  type-spec.</p>
+
+  <p>Second, the type-spec, if any, implies the guards of the @('loop$')
+  body.</p>
+
+  <p>Third, the @('loop$') body produces a value acceptable to the @('loop$')
+  operator, e.g., the body of @('SUM') @('loop$') produces a number and
+  the body of an @('APPEND') @('loop$') produces a true list.</p>
+
+  <h4>Discussion of Why LOOP$s Have Special Guards</h4>
+
   <p>All of the simple @('loop$') scions have the same guard, namely</p>
 
   @({
@@ -52466,8 +52783,8 @@ tables in the current Hons Space."
   of @('tails').  And conjecture [4] establishes that the guard on the
   @('lambda$') implies the guard of its body.</p>
 
-  <p>But consider the @('loop') generated by the @('loop$') in the raw Lisp
-  definition of @('foo'),</p>
+  <p>But consider the raw Lisp @('loop') generated by the @('loop$') in the raw
+  Lisp definition of @('foo'),</p>
 
   @({
   (loop for x of-type (satisfies spec) on lst sum (expr x)).
@@ -52562,10 +52879,11 @@ tables in the current Hons Space."
   })
 
   <p>Similarly, there are 8 ways to @('sum') over an @('(append a b)') target,
-  8 ways to @('append') over an @('(append a b)'), and 4 ways to @('always')
-  over an @('(append a b)') target.  Thus, there are 28 different simple
-  @('loop$')s over @('(append a b)').  And you can arrange to distribute the
-  @('loop$') over the @('(append a b)') with just six rewrite rules.</p>
+  8 ways to @('append') over an @('(append a b)'), and 4 ways each to
+  @('always') or @('thereis') over an @('(append a b)') target.  Thus, there
+  are 32 different simple @('loop$')s over @('(append a b)').  And you can
+  arrange to distribute the @('loop$') over the @('(append a b)') with just
+  seven rewrite rules.</p>
 
   @({
   (equal (collect$ fn (append a b))
@@ -52579,6 +52897,10 @@ tables in the current Hons Space."
   (equal (always$ fn (append a b))
          (and (always$ fn a)
               (always$ fn b)))
+
+  (equal (thereis$ fn (append a b))
+         (or (thereis$ fn a)
+             (thereis$ fn b)))
 
   (equal (append$ fn (append a b))
          (append (append$ fn a)
@@ -52595,9 +52917,13 @@ tables in the current Hons Space."
 
   })
 
-  <p>But to deal with fancy @('loop$') you need six more rewrite rules, one for
-  each fancy @('loop$') scion.  But every simple @('loop$') can be expressed by
-  an appropriate use of fancy scions.  We chose to break compositionality here
+  <p>Thus, you can reason about @('when') and @('until') clauses without having
+  to consider how they are used in the superior @('loop$') statement.</p>
+
+  <p>To deal with fancy @('loop$') you need seven more rewrite rules, one for
+  each fancy @('loop$') scion.  But since every simple @('loop$') can be
+  expressed by an appropriate use of fancy scions, we could have translated
+  every @('loop$') to fancy scions.  We chose to break compositionality here
   because we think simple @('loop$')s are most common and wanted to keep their
   semantics simple.  I.e., we compromised.</p>
 
@@ -52616,6 +52942,358 @@ tables in the current Hons Space."
              :expand ((tamep (cons fn '(x)))
                       (tamep (cons fn '((car loop$-ivars))))))))
   })")
+
+(defxdoc loop$-recursion
+  :parents (loop$)
+  :short "Defining functions that recur from within @('loop$') statements"
+  :long "<h3>Examples</h3>
+  @({
+  (defun$ nat-treep (x)
+    (declare (xargs :loop$-recursion t
+                    :measure (acl2-count x)))
+    (cond
+     ((atom x) (natp x))
+     (t (and (true-listp x)
+             (eq (car x) 'NATS)
+             (loop$ for e in (cdr x) always (nat-treep e))))))
+
+  (defun$ copy-nat-tree (x)
+    (declare (xargs :loop$-recursion t
+                    :measure (acl2-count x)))
+    (cond
+     ((atom x)
+      (if (natp x)
+          (if (equal x 0)
+              0
+              (+ 1 (copy-nat-tree (- x 1))))
+          x))
+     (t (cons 'nats
+              (loop$ for e in (cdr x) collect (copy-nat-tree e))))))
+  })
+
+  <p>Notice that @('nat-treep') and @('copy-nat-tree') each contain a simple
+  @(tsee loop$) in which the function being defined is called recursively.
+  @('Copy-nat-tree') is a little more complicated than @('nat-treep') because
+  @('copy-nat-tree') also contains a recursive call outside of any
+  @('loop$').  Notice also that both events specify the @(tsee xargs)
+  @(':loop$-recursion t') and explicitly provide a @(':measure').  The usual
+  other @('xargs') are optional but @(':loop$-recursion t') is required if
+  recursion is used inside a @('loop$') and the measure must be made
+  explicit.</p>
+
+  <p><b>Warning:</b> Even though the functions defined above are recursive,
+  ACL2 does not generate induction schemes for them!  If you want to do
+  inductive proofs about @('loop$')-recursive functions you must provide a
+  suitable @(tsee induction) hint.  In addition, to be provable by induction,
+  theorems about @('loop$')-recursive functions must be suitably general.  This
+  topic is discussed further in @(see loop$-recursion-induction).</p>
+
+  <h3>Restrictions</h3>
+
+  <p>If a function being defined exhibits recursion from within a @(tsee loop$)
+  body or within the @('when') or @('until') clauses of a @('loop$') in a
+  @(tsee defun) of <i>fn</i>, then the @('defun') must include an @(tsee xargs)
+  declaration with @(':loop$-recursion t').  In addition,</p>
+
+  <ul>
+
+  <li>the @('xargs') declaration must include an explicit @(':measure'),</li>
+
+  <li><i>fn</i> must not be part of a @(tsee mutual-recursion) clique,</li>
+
+  <li>every formal of <i>fn</i> must be ``ordinary,'' e.g., not of @(tsee ilk)
+  @(':FN') or @(':EXPR'),</li>
+
+  <li><i>fn</i> must return a single value,</li>
+
+  <li><i>fn</i>'s measure must be of type @(tsee natp) or be a lexicographic
+  combination of natural numbers as defined by the @('llist') function in the
+  Community Books at @('books/ordinals/'),</li>
+
+  <li><i>fn</i> must be @(tsee tame), which implies it may not take or
+  return @(tsee state) or @(tsee stobj)s,</li>
+
+  <li>every quoted @(tsee lambda) object in the body of <i>fn</i> must be
+  well-formed (see @(tsee well-formed-lambda-objectp)), which implies that
+  every such @('lambda') object is tame and every function symbol, including
+  <i>fn</i>, used in each must have a @(tsee badge),</li>
+
+  <li>every quoted @('lambda') object in the body of <i>fn</i> that calls
+  <i>fn</i> recursively must occur as the first argument of a @('loop$') scion
+  and <i>not</i> in some arbitrary scion,</li>
+
+  <li>there is at least one recursive call of <i>fn</i> inside a quoted
+  @('lambda') object which means that the @('loop$-recursion t') declaration
+  was actually necessary, and</li>
+
+  <li>the necessary measure conjectures (see below) must be proved.</li>
+
+  </ul>
+
+  <p>These restrictions make a little more sense if you reflect on what has to
+  be done to check and admit a @('loop$')-recursive function.  First, we assume
+  that most ACL2 functions are not @('loop$')-recursive.  So to keep
+  @('defun')-processing as fast as possible, we require you to declare when you
+  are using @('loop$') recursion.  That declaration triggers additional
+  checks.</p>
+
+  <p>But before checks can begin, we have to translate the body of <i>fn</i>
+  and since @('loop$')s translate into calls of @('loop$') scions on quoted
+  @('lambda')s and those must be tame, and since some of those @('lambda')s
+  involve calls of <i>fn</i>, we must assign a badge to <i>fn</i> even before
+  we have translated its body.  We assign a badge that declares <i>fn</i> to
+  take the appropriate number of ordinary inputs, to return one result, and be
+  tame.  We check those requirements after <i>fn</i> has been admitted.</p>
+
+  <p>Because the measure guessing heuristics of ACL2 do not look for calls
+  inside of quoted @('lambda')s, the measure must be explicitly declared even
+  if it @('acl2-count').</p>
+
+  <p>To find every recursive call in a quoted @('lambda') object those objects
+  must all be well-formed.  If such an object occurs as the first argument of a
+  @('loop$') scion then we know it is only applied to elements of the
+  @('loop$') scion's target.  Given that, we can investigate whether the
+  recursive calls in the @('lambda') object are on smaller things.  But if a
+  recursive call were to occur in a quoted @('lambda') object that was passed
+  to some other kind of scion, we have no way to know (without extensive
+  analysis) to what it might be applied.</p>
+
+  <p>Some of these restrictions could be lifted with more analysis and coding.
+  For example, we could change the specification for the @(':loop$-recursion')
+  @('xargs') keyword so that instead of taking on a Boolean value it takes on a
+  badge.  Then we could tentatively assign that badge to <i>fn</i> before
+  processing and check it afterwards.  Our current thinking is to ask users to
+  live with these restrictions and let us see whether @('loop$')-recursion is
+  useful (almost certainly it will be), whether the community can develop proof
+  techniques and tools to reason about them as effectively as we reason about
+  conventional recursive functions (we're optimistic), and whether investing
+  time in lifting some of these restrictions is worth it given all the other
+  ways we could improve ACL2.</p>
+
+  <h3>Measure Conjectures</h3>
+
+  <p>Measure conjectures must be generated for the recursive calls inside
+  @('loop$') bodies.  (We also generate conjectures for the recursive calls the
+  other @('loop$')-expression components, e.g., the @('when') clause, exactly
+  analogously, but we speak of the @('loop$') body only below.  We also focus
+  on simple @('loop$')s here but the conjectures decribed generalize to fancy
+  @('loop$')s.)  Given a recursive call inside the body of a @('loop$') with
+  iteration variable <i>v</i>, we first generate a new variable symbol,
+  <i>v'</i>.  Certain terms, e.g., tests and arguments to recursive calls, will
+  be extracted from within the body and used in the measure conjecture.  We
+  rename <i>v</i> to <i>v'</i> in these terms to distinguish occurrences of
+  <i>v</i> outside the @('loop$') from those inside.  The measure conjecture
+  requires us to prove that the given measure decreases, as usual.  But the
+  ruling tests are those ruling the @('loop$'), conjoined with the hypothesis
+  that <i>v'</i> is a member of the target, conjoined with the (renamed) tests
+  from inside the body ruling the recursive call.</p>
+
+  <p>Below is an example.  We show only the measure conjectures generated from
+  inside the @('loop$') because there are two recursive calls in the @('loop$')
+  body.</p>
+
+  @({
+  (defun$ fn (v)
+    (declare (xargs :loop$-recursion t
+                    :measure (acl2-count x)))
+    (cond
+     ((natp v)
+      ...)
+     ((true-listp v)
+      (loop$ for v in (target v) sum
+             (if (and (integerp v) (< v 0))
+                 (fn (- v))
+                 (fn v))))
+     (t ...)))
+  })
+
+  <p>Note that @('v') used both as the formal of @('fn') and as the iterative
+  variable of the @('loop$').  In the measure conjectures below, the iterative
+  variable has been renamed to @('nv0').  Two measure conjectures are generated
+  from within the @('loop$'):</p>
+
+  @({
+  (implies (and (not (natp v))
+                (true-listp v)
+                (member-equal nv0 (target v))
+                (and (integerp nv0) (< nv0 0)))
+           (o< (acl2-count (- nv0))
+               (acl2-count v)))
+
+  (implies (and (not (natp v))
+                (true-listp v)
+                (member-equal nv0 (target v))
+                (not (and (integerp nv0) (< nv0 0))))
+           (o< (acl2-count nv0) (acl2-count v)))
+  })
+
+  <p>Note that these conjectures require that when @('fn') is called from
+  within the @('loop$') the argument is smaller than the initial value of the
+  formal.  Notice also that there is no <i>a priori</i> restriction on the size
+  of @('(target v)').  However, because of the way @('fn') is used inside this
+  particular example @('loop$'), there are restrictions on the size of the
+  elements of @('(target v)').  These conjectures, along with those generated
+  from calls outside the @('loop$') are sufficient to guarantee that @('fn')
+  always terminates.</p>
+
+  <p><b>Note:</b> Careful readers might note that the way we handle measure
+  conjectures for @('loop$')s differs from the way we handle guard conjectures
+  for @('loop$')s.  In @(tsee loop$) we explained that @('loop$')s are
+  translated into calls of @('loop$') @(tsee scion)s on quoted @(tsee lambda)
+  objects and that the guard conjectures for the @('lambda') are insensitive to
+  the context in which the object appeared.  But the measure conjectures are
+  sensitive to the context: tests from outside the @('loop$') are present in
+  the measure conjectures.  This is deliberate.  Guard conjectures are context
+  insensitive because the implementation caches compiled @('lambda') objects
+  without remembering the contexts in which they first occurred.  Thus, a
+  @('lambda') object generated by a @('loop$') may be called on anything and we
+  cannot guarantee that the input guard to the @('lambda') object will be
+  satisfied.  <i>But we can guarantee that the computation carried out by the
+  @('lambda') will terminate!</i> The @('lambda') object generated for @('fn')
+  above terminates no matter what it is called on -- even if called on elements
+  not in @('(target v)') -- because @('fn') terminates.</p>
+
+  <p>Finally, recall that @('loop$')-recursive functions do not automatically
+  suggest induction schemes and that special care must be taken when
+  formulating inductively provable conjectures about them.  See @(see
+  loop$-recursion-induction).</p>")
+
+(defxdoc loop$-recursion-induction
+  :parents (loop$)
+  :short "Advice on inductive theorems about @(tsee loop$)-recursive functions"
+
+  :long "<p><b>Warning:</b> This documentation topic is fairly preliminary
+  because we do not have a lot of experience yet with @(tsee apply$), @(tsee
+  loop$), and @(tsee loop$-recursion).  We assume here that readers are familiar
+  with the topics cited above.</p>
+
+  <h3>Definductor</h3>
+
+  <p>The principles sketched here are illustrated concretely in the tutorial
+  community book @('projects/apply/copy-nat-tree.lisp').  As noted in
+  that book, the inductions are hinted manually so the reader can see from
+  first principles what is involved.  However, in the book
+  @('projects/apply/top') we provide a utility that sometimes automates
+  the creation of the inductive hint function and associates it with the given
+  @('loop$')-recursive function.  See @(tsee definductor).  The examples worked
+  manually in @('copy-nat-tree.lisp') are recapitulated towards the end of
+  @('projects/apply/definductor-tests.lisp'), without the manually
+  provided hints.</p>
+
+  <h3>Some Basic Principles for Inductive Proofs about @('Loop$')-Recursive Functions</h3>
+
+  <p>If ACL2 did not have @('loop$'), functions defined in terms of
+  @('loop$')-recursion would have to be defined with @(tsee mutual-recursion).
+  Reconsider the example presented in @(tsee loop$-recursion).</p>
+
+  @({
+  (defun$ nat-treep (x)
+    (declare (xargs :loop$-recursion t
+                    :measure (acl2-count x)))
+    (cond
+     ((atom x) (natp x))
+     (t (and (true-listp x)
+             (eq (car x) 'NATS)
+             (loop$ for e in (cdr x) always (nat-treep e))))))
+
+  (defun$ copy-nat-tree (x)
+    (declare (xargs :loop$-recursion t
+                    :measure (acl2-count x)))
+    (cond
+     ((atom x)
+      (if (natp x)
+          (if (equal x 0)
+              0
+              (+ 1 (copy-nat-tree (- x 1))))
+          x))
+     (t (cons 'nats
+              (loop$ for e in (cdr x) collect (copy-nat-tree e))))))
+  })
+
+  <p>Without @('loop$') the latter function would have to be defined this way.
+  We name it @('mr-copy-nat-tree'), where the ``@('mr')'' reminds us this is
+  part of a mutually recursive clique.</p>
+
+  @({
+  (mutual-recursion
+   (defun mr-copy-nat-tree (x)
+     (cond
+      ((atom x)
+       (if (natp x)
+           (if (equal x 0)
+               0
+               (+ 1 (mr-copy-nat-tree (- x 1))))
+           x))
+      (t (cons 'nats
+               (mr-copy-nat-tree-list (cdr x))))))
+
+   (defun mr-copy-nat-tree-list (x)
+     (cond
+      ((endp x) nil)
+      (t (cons (mr-copy-nat-tree (car x))
+               (mr-copy-nat-tree-list (cdr x)))))))
+  })
+
+  <p>Note that we define @('mr-copy-nat-tree') by copying the definition of
+  @('copy-nat-tree') (renaming recursive calls appropriately) but replacing the
+  use of @('loop$') in @('copy-nat-tree') with a call of a mutually-recursive
+  function here called @('mr-copy-nat-tree-list').  We call
+  @('mr-copy-nat-tree-list') the ``list counterpart'' of @('mr-copy-nat-tree').
+  However, in general there may be more than just two functions in the clique
+  and so we refer generically to @('mr-copy-nat-tree-list') as a ``co-member''
+  of the clique.</p>
+
+  <p>How would you prove theorems about @('mr-copy-nat-tree')?  Four principles
+  are known to most ACL2 users of @('mutual-recursion').  These principles
+  apply to @('loop$')-recursive functions as well as to mutually recursive
+  ones.  We state them here in terms of both kinds of definitions.</p>
+
+  <ul>
+
+  <li>While simple recursive functions suggest ``appropriate'' inductions,
+  mutually recursive functions and @('loop$')-recursive functions do not.  If
+  you want to prove a theorem about such functions you have to arrange some
+  kind of induction hint.</li>
+
+  <li>You can't generally prove an isolated theorem about a single member of a
+  mutually recursive clique or a @('loop$')-recursive function.  Instead, you
+  must state a conjecture about every member of the clique, conjoin all those
+  theorems together, and prove them inductively all at once.  Applied to
+  proving a theorem about @('mr-copy-nat-tree') this advice means we must
+  conjoin the theorem about that function with ``the same'' theorem about
+  @('mr-copy-nat-tree-list'), and more generally with theorems about every
+  co-member of the clique.  Of course, what we mean by ``the same'' theorem
+  about different members of the clique depends on what each member contributes
+  to the overall computation.  Applied to the @('loop$')-recursive function
+  @('copy-nat-tree') this advice means we must simultaneously prove a theorem
+  about every @('loop$') in the function.</li>
+
+  <li>Inductively provable theorems must be sufficiently general.  When dealing
+  with a mutually recursive clique, each conjunct must address itself to the
+  ``general'' call of the co-member in question, e.g., to
+  @('(mr-copy-nat-tree-list x)') not to the specific call inside
+  @('mr-copy-nat-tree'), which is @('(mr-copy-nat-tree-list (cdr x))').  When
+  dealing with a @('loop$')-recursive function, each conjunct must address
+  itself to the general target, not to specific target in the @('loop$')
+  recursive function.  In the case of the @('loop$')-recursive function
+  @('copy-nat-tree') we need a conjunct about @('(loop$ for e in x
+  collect (copy-nat-tree e))'), not about @('(loop$ for e in (cdr x)
+  collect (copy-nat-tree e))').</li>
+
+  <li>Finally, the induction scheme used must provide an inductive hypothesis
+  about every recursive call of every co-member of the clique or, in the case
+  of @('loop$')-recursion, about every recursive unwinding of each
+  @('loop$').</li>
+
+  </ul>
+
+  <p><b>Remember:</b> Because @('loop$')-recursive functions call themselves
+  recursively with @('apply$'), any theorem about a @('loop$') recursive
+  function must almost certainly include a warrant hypothesis for that
+  function!</p>
+
+  <p>We illustrate these principles in the community book
+  @('projects/apply/copy-nat-list.lisp').</p>")
 
 (defxdoc loop-stopper
   :parents (rewrite)
@@ -84573,6 +85251,15 @@ it."
 
 (defxdoc note-8-3
 
+; Total number of release note items: 68, as follows.
+;   25 ; Changes to Existing Features
+;    7 ; New Features
+;   16 ; Heuristic and Efficiency Improvements
+;   16 ; Bug Fixes
+;    2 ; Changes at the System Level
+;    2 ; EMACS Support
+;    0 ; Experimental Versions
+
 ; Used new function maybe-flush-and-compress1 to clean up code in
 ; recompress-global-enabled-structure.
 
@@ -84680,8 +85367,11 @@ it."
 ; speed up evaluation of ground expressions in linear arithmetic and forward
 ; chaining.
 
+; Fixed a typo in a free-variables :brr message.  Thanks to Mihir Mehta for
+; noticing the typo and supplying a patch.
+
   :parents (release-notes)
-  :short "ACL2 Version  8.3 (xxx, 20xx) Notes"
+  :short "ACL2 Version  8.3 (April, 2020) Notes"
   :long "<p>NOTE!  New users can ignore these release notes, because the @(see
  documentation) has been updated to reflect all changes that are recorded
  here.</p>
@@ -84757,6 +85447,9 @@ it."
            :expand ((member x (cons x y))))))
  })
 
+ <p>An analogous improvement has been made for @(':by'), @(':use'), and
+ @(':hands-off') hints.</p>
+
  <p>The macros @(tsee defequiv), @(tsee defrefinement), and @(tsee defcong) now
  conform to the following principle discussed in a new @(see documentation)
  topic, @(see packages-for-generated-symbols): ideally, utilities generate
@@ -84831,7 +85524,8 @@ it."
  before this change, it did not.</p>
 
  <p>The default slow-alist-action (see @(see slow-alist-warning)) is now
- @(':break') instead of warning.</p>
+ @(':break') instead of @(':warning') in ACL2.  (It remains @(':warning') in
+ ACL2(p); see @(see unsupported-waterfall-parallelism-features).)</p>
 
  <p>For a user-defined @(':')@(tsee induction) rule to be applied, it is no
  longer required for the induction scheme associated with a recursive
@@ -84845,6 +85539,46 @@ it."
  <p>An undocumented kind of @(see fake-rune) is no longer reported by @(tsee
  show-accumulated-persistence).  Thanks to Eric Smith for bringing this issue
  to our attention.</p>
+
+ <p>The algorithm for removing @(see guard-holders) has been modified to avoid
+ diving into calls of @(tsee hide).  However, it is possible to obtain the
+ former behavior; see @(see guard-holders).</p>
+
+ <p>Since its earliest years, ACL2 uses evaluation to simplify ground
+ terms (terms with no free variables).  ACL2 would sometimes generate a call of
+ @(tsee hide) around a term that fails to evaluate because of an attempt to
+ call a constrained function.  Now, that call incorporates a comment saying
+ which constrained function is responsible for the failure.  See @(see
+ comment).  Also see @(see hide) for how to fix proof failures caused by this
+ new behavior by using @(':expand') @(see hints) or even by turning off this
+ new behavior using @(tsee defattach).  Thanks to Rob Sumners (in 2003),
+ Francisco J. Martin-Mateos (in 2004), and Anna Slobodova (in 2005), perhaps
+ among others, for discussions leading to this enhancement.</p>
+
+ <p>Both @(':')@(tsee puff) and @(':')@(tsee puff*) have been made more
+ robust.  Related changes include:</p>
+
+ <ul>
+
+ <li>A new table, @('puff-included-books'), generally prevents the same book
+ from being puffed more than once.</li>
+
+ <li>Book directories are tracked more carefully, which can prevent
+ errors.</li>
+
+ <li>We no longer allow @(':puff*') to puff non-trivial @(tsee encapsulate)
+ events.  (For a technical discussion of reasons for this change, see comments
+ in function @('puffed-command-sequence') in ACL2 source file
+ @('ld.lisp').)</li>
+
+ <li>Changes to the @(tsee acl2-defaults-table) no longer persist outside the
+ scope of a puffed @('encapsulate') event.</li>
+
+ <li>A @(tsee theory-invariant) event no longer
+ stores the event @('(in-theory (current-theory :here))') in
+ the @(see world).</li>
+
+ </ul>
 
  <h3>New Features</h3>
 
@@ -84879,6 +85613,16 @@ it."
  defabsstobj).  Thanks to Sol Swords for suggesting consideration of adding
  some such capability.  In a few preliminary tests we found an average drop of
  about 3.5% in the time it took to run the tests.</p>
+
+ <p>It is now permitted to define functions in which recursive calls occur from
+ inside @(tsee loop$) statements.  See @(tsee loop$-recursion).  Such functions
+ do not automatically suggest induction schemes.  Furthermore, care must be
+ taken when formulating inductively provable theorems about such functions.
+ See @(see loop$-recursion-induction) and @(tsee definductor).</p>
+
+ <p>You can now change the second line in the startup banner for a GitHub
+ version of ACL2 obtained between releases.  See @(see startup-banner).  Thanks
+ to Andrew Walter for requesting this enhancement.</p>
 
  <h3>Heuristic and Efficiency Improvements</h3>
 
@@ -93124,8 +93868,9 @@ arithmetic) for libraries of @(see books) for arithmetic reasoning.</p>")
  certify-book) is disallowed until such events have been undone (see @(see
  ubt)).</p>
 
- <p>A ``puffable'' @(see command) is an @(tsee encapsulate) @(see command), an
- @(tsee include-book) command, or any command other than those consisting of a
+ <p>Other than the few exceptions noted later below, a ``puffable'' @(see
+ command) is an @(tsee encapsulate), @(tsee include-book), or @(tsee
+ certify-book) @(see command), or any command other than those consisting of a
  single primitive event.  For example, since @(tsee defun) is a primitive
  event, a @(tsee defun) command is not puffable.  But a macro form that expands
  into one or more @(see events) is puffable.  The only primitive events that
@@ -93197,24 +93942,89 @@ arithmetic) for libraries of @(see books) for arithmetic reasoning.</p>")
  local) @(see command)s are executed.  Note that this will replace constrained
  functions by their witnesses.</p>
 
- <p>Here are some details and small exceptions.</p>
+ <p>Here are some details and a few exceptions.</p>
 
  <ul>
 
- <li>An @(tsee encapsulate) command generated by the macro @(tsee
- define-trusted-clause-processor) is not puffable.</li>
+ <li>An @(tsee encapsulate) command that generates @(see unknown-constraints),
+ such as one generated by the macro @(tsee define-trusted-clause-processor), is
+ not puffable.</li>
+
+ <li>When an @(tsee encapsulate) has a non-empty @(see signature), it is not
+ puffable if the `puff' command issued is @(':')@(tsee puff*), rather than
+ @(':')@('puff').  That is because puffing may fail in this case, as discussed
+ immediately below, and it may be annoying to deal with the failure, for
+ example if @(':puff*') takes a long time to run.</li>
+
+ <li>An attempt to puff may fail for an @(tsee encapsulate) with a non-empty
+ @(see signature) that contains at least one use of @(tsee make-event) and also
+ comes from a certified book.  The reason is that local definitions may be
+ elided.  Here is an example of such a book.
+
+ @({
+ (in-package \"ACL2\")
+
+ (encapsulate
+   ((f (x) t))
+   (make-event '(local (defun f (x) (cons x x))))
+   (defthm f-prop (consp (f x))))
+ })
+
+ If we first certify this book, then we include it in a new ACL2 session, and
+ next we issue the command @(':puff 1'), then we can see that the local
+ definition in our @('encapsulate') event has been elided:
+
+ @({
+ ACL2 !>:pcb! 1
+            1  (ENCAPSULATE
+                    ((F (X) T))
+                    (RECORD-EXPANSION
+                         (MAKE-EVENT '(LOCAL (DEFUN F (X) (CONS X X))))
+                         (LOCAL (VALUE-TRIPLE :ELIDED)))
+                    (DEFTHM F-PROP (CONSP (F X))))
+                (DEFTHM F-PROP (CONSP (F X)))
+ ACL2 !>
+ })
+
+ Now an attempt to execute the command, @(':puff 1'), causes an error because
+ @('f') lacks a definition.
+
+ @({
+ ACL2 !>:puff 1
+
+
+ ACL2 Error in ( DEFTHM F-PROP ...):  The symbol F (in package \"ACL2\")
+ has neither a function nor macro definition in ACL2.  Please define
+ it.  See :DOC near-misses.  Note:  this error occurred in the context
+ (F X).
+
+ ACL2 !>
+ })</li>
+
+ <li>Similarly, a @(tsee local) event that involves @(tsee make-event)
+ expansion may be elided when the event is from a book whose @(tsee
+ include-book) form has been puffed.  This will result in an error if the
+ elided event is necessary to support later events in the @('puff') of the
+ command.  Here is an example, where the attempt to puff an @('include-book')
+ for this book will fail, giving an error for @('( DEFUN G ...)') stating that
+ the symbol @('F') has not been defined.
+
+ @({
+ (in-package \"ACL2\")
+ (make-event '(local (defun f (x) x)))
+ (local (defun g (x) (f x)))
+ })</li>
 
  <li>An attempt to @('puff') an @(tsee include-book) command may fail for a
- book that has been modified, as describe late in this documentation
+ book that has been modified, as described later in this documentation
  topic.</li>
 
  <li>The @('puff') of an an @(tsee include-book) command for an uncertified
  book will simply expose the contents of the book.  However, if the book is
  certified then the @('puff') will replace each event by its @(tsee make-event)
- expansion.  Moreover, any such expansion that is @(tsee local) will be
- ignored; similarly for local @('make-event') expansions in @(tsee encapsulate)
- commands.  This will result in an error if the elided event is necessary to
- support later events in the @('puff') of the command.</li>
+ expansion.  Also, ACL2 considers that (certified) book to have been included;
+ future attempts to include that book will be considered to be @(see
+ redundant).</li>
 
  </ul>
 
@@ -93265,18 +94075,22 @@ arithmetic) for libraries of @(see books) for arithmetic reasoning.</p>")
  })
 
  <p>where @('cd') is a @(see command) descriptor (see @(see
- command-descriptor)) for a ``puffable'' @(see command).  See @(see puff) for
- the definition of ``puffable'' and for a description of the basic act of
- ``puffing'' a @(see command).  In particular, see @(see puff) for a discussion
- of a sense in which @('puff'), and hence @('puff*'), should be viewed as a
- hack.  @('Puff*') is just the recursive application of @(see puff).
- @('Puff*') prints the region @(see puff)ed, using @(tsee pcs).</p>
+ command-descriptor)).  See @(see puff) for the definition of ``puffable'' and
+ for a description of the basic act of ``puffing'' a @(see command).
+ @('Puff*') is just the recursive application of @(see puff): it puffs not only
+ the indicated command, but all of the commands thus generated, and recursively
+ until none of the resulting commands can be puffed.  As noted in the
+ documentation for @(see puff), @(':puff') should be viewed as a sort of hack;
+ hence so should @('puff*').  @('Puff*') prints the region @(see puff)ed, using
+ @(tsee pcs).</p>
 
- <p>To @(see puff) a @(see command) is to replace it by its immediate
+ <p>Thus, to @(see puff) a @(see command) is to replace it by its immediate
  subevents, each of which is executed as a @(see command).  To @('puff*') a
  @(see command) is to replace the @(see command) by each of its immediate
  subevents and then to @('puff*') each of the puffable @(see command)s among
- the newly introduced ones.</p>
+ the newly introduced ones.  NOTE: because one call of @(':puff*') may give rise
+ to many calls of @(':puff'), it can take considerable time for a call of
+ @(':puff*') to complete when many books are involved.</p>
 
  <p>For example, suppose @('\"ab\"') is a book containing the following</p>
 
@@ -93335,10 +94149,15 @@ arithmetic) for libraries of @(see books) for arithmetic reasoning.</p>")
  the starting @(see state), are not affected (except that their @(see command)
  numbers grow as a result of the splicing in of earlier @(see command)s).</p>
 
- <p>If there is an error during execution of @('puff*'), then the logical @(see
- world) is reverted to its value before that execution, unless the optional
- Boolean second argument is @('t'), in which case the result is preserved from
- the successful @(':puff') commands executed before the erroneous one.</p>")
+ <p>@(':Puff*') may cause an error, for example because of a name conflict
+ caused by two different local lemmas with the same name, or because a @(tsee
+ local) event in a book has been elided (see @(see puff)).  By default, the
+ logical @(see world) is reverted to its value before that execution of
+ @('puff*').  However, if the optional Boolean second argument is @('t'), then
+ the world is preserved from the successful @(':puff') commands executed before
+ the failed one.  That behavior can help with debugging, since both the warning
+ message and the return value tell you which command could not be puffed
+ successfully.</p>")
 
 (defxdoc push-untouchable
   :parents (defttag)
@@ -94427,7 +95246,9 @@ arithmetic) for libraries of @(see books) for arithmetic reasoning.</p>")
  @('IF').</p>
 
  <p>For an example of where this capability has proven useful, see
- @(see without-subsumption).</p>
+ @(see without-subsumption).  That tool uses @(tsee set-case-split-limitations)
+ as well, since that is another way to control the prover's handling of
+ propositional logic.</p>
 
  <p>To turn the heuristic back on:</p>
 
@@ -99051,11 +99872,12 @@ arithmetic) for libraries of @(see books) for arithmetic reasoning.</p>")
   Examples:
 
   ; Save an executable script named my-saved_acl2, with the indicated message
-  ; added to the start-up banner:
+  ; added below the words \"MODIFICATION NOTICE\" under the start-up banner:
   (save-exec \"my-saved_acl2\"
              \"This saved image includes Version 7 of Project Foo.\")
 
-  ; Same as above, but instead with a generic comment in the start-up banner:
+  ; Same as above, but instead with a generic comment under the modification
+  ; notice:
   (save-exec \"my-saved_acl2\" nil)
 
   ; Arrange that the generated script passes the indicated arguments to be
@@ -106186,6 +107008,51 @@ arithmetic) for libraries of @(see books) for arithmetic reasoning.</p>")
  <p>Continue with the @(see documentation) for @(see annotated-acl2-scripts) to
  see a simple but illustrative example in the use of ACL2 for reasoning about
  functions.</p>")
+
+(defxdoc startup-banner
+  :parents (interfacing-tools)
+  :short "Modifying the ACL2 startup banner"
+  :long "<p>When you start up an ACL2 executable built from sources obtained
+  from GitHub between ACL2 releases, you'll typically see a startup banner like
+  this:</p>
+
+ @({
+  +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+  + WARNING: This is NOT an ACL2 release; it is a development snapshot. +
+  + (git commit hash: 6bab5ea7c616e013c3e28c55cd5ebe1431a1d7cd)         +
+  + On rare occasions development snapshots may be incomplete, fragile, +
+  + or unable to pass the usual regression tests.                       +
+  +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+ })
+
+ <p>The second line of that banner can be modified by setting environment
+ variable @('ACL2_SNAPSHOT_INFO') to a non-empty string before saving the
+ executable.  The value of that variable will be placed into the banner, for
+ example as follows if that value is @('\"This is my private
+ executable.\"').</p>
+
+ @({
+  +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+  + WARNING: This is NOT an ACL2 release; it is a development snapshot. +
+  + (Note from the environment when this executable was saved:          +
+  +  This is my private executable.)                                    +
+  + On rare occasions development snapshots may be incomplete, fragile, +
+  + or unable to pass the usual regression tests.                       +
+  +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+ })
+
+ <p>An exception is the special value, @('\"none\"'), which is treated as
+ case-insensitive (so it can similarly be @('\"None\"'), @('\"NONE\"'), etc.).
+ In that case, the second line is omitted entirely, for example as follows.</p>
+
+ @({
+  +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+  + WARNING: This is NOT an ACL2 release; it is a development snapshot. +
+  +                                                                     +
+  + On rare occasions development snapshots may be incomplete, fragile, +
+  + or unable to pass the usual regression tests.                       +
+  +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+ })")
 
 (defxdoc state
   :parents (programming)
@@ -118334,7 +119201,15 @@ introduction-to-the-tau-system) for more information about Tau.</dd>
  LispWorks implementations are likely less robust than the CCL
  implementation.</p>
 
- <p>The @(tsee time-tracker) utility is a no-op for ACL2(p).</p>")
+ <p>The @(tsee time-tracker) utility is a no-op for ACL2(p).</p>
+
+ <p>When executing calls of @(tsee hons-get) in parallel, you may see messages
+ about @('\"Fast alist discipline\"') violations.  This can happen because each
+ thread uses its own underlying hash-table for fast access by @('hons-get'),
+ but typical top-level calls of @(tsee hons-acons) and @(tsee make-fast-alist)
+ only affect that main thread's hash-table.  You can use
+ @('(set-slow-alist-action nil)') to eliminate this warning entirely; see @(see
+ slow-alist-warning).</p>")
 
 (defxdoc unsupported-waterfall-parallelism-features
 
@@ -118487,7 +119362,15 @@ introduction-to-the-tau-system) for more information about Tau.</dd>
  unsupported when waterfall-parallelism is enabled.</p>
 
  <p>Profiling may cause proofs to hang when waterfall-parallelism is enabled
- (GitHub Issue #638).</p>")
+ (GitHub Issue #638).</p>
+
+ <p>During proofs with @(see waterfall-parallelism) enabled, you may see
+ messages about @('\"Fast alist discipline\"') violations, even when using
+ @(tsee hons-get) appropriately.  This can happen because each thread uses its
+ own underlying hash-table for fast access by @('hons-get'), but typical
+ top-level calls of @(tsee hons-acons) and @(tsee make-fast-alist) only affect
+ that main thread's hash-table.  You can use @('(set-slow-alist-action nil)')
+ to eliminate this warning entirely; see @(see slow-alist-warning).</p>")
 
 (defxdoc untouchable
   :parents (defttag)
@@ -124902,6 +125785,7 @@ created from the original fast alist during @('form') must be manually freed."
                   :guard-simplify nil
                   :guard-hints ((\"Goal\" :in-theory (theory batch1)))
                   :hints ((\"Goal\" :in-theory (theory batch1)))
+                  :loop$-recursion t
                   :measure (- i j)
                   :measure-debug t
                   :mode :logic
@@ -124961,6 +125845,13 @@ created from the original fast alist during @('form') must be manually freed."
 
  Value: hints (see @(see hints)), to be used during the termination proofs as
  opposed to the @(see guard) verification proofs of the @(tsee defun).</p>
+
+ <p>@(':)@(tsee loop$-recursion)<br></br>
+
+ Value: this flag must be set to @('t') or @('nil'); @('nil') is the default.
+ The flag must be @('t') if and only if the function being defined calls itself
+ recursively from within a @(tsee loop$) body or within a @('when') or
+ @('until') clause.  See @(see loop$-recursion).</p>
 
  <p>@(':measure')<br></br>
 
@@ -128927,6 +129818,8 @@ expand function call at the current subterm, without simplifying"
 (defpointer tamep tame)
 (defpointer tamep-functionp tame)
 (defpointer tamep-lambdap tame)
+(defpointer thereis$ loop$)
+(defpointer thereis$+ loop$)
 (defpointer trans-eval-default-warning user-stobjs-modified-warnings)
 (defpointer trans-eval-no-warning user-stobjs-modified-warnings)
 (defpointer translate system-utilities)
