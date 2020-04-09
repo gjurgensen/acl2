@@ -20427,7 +20427,7 @@ subtree of X with T, without duplication.</p>
                :hints ((\"Goal\" :use ...)))
 
   General Form:
-  (definductor name &key measure rel ruler-extenders hints)
+  (definductor name &key measure well-founded-relation ruler-extenders hints)
   })
 
   <p>where @('name') is the name of a previously admitted @('loop$')-recursive
@@ -20436,10 +20436,10 @@ subtree of X with T, without duplication.</p>
   that is supposedly appropriate for @('name'), admits it with a silent proof
   of its measure theorems, and then proves an @(':')@('induction') rule to
   associate that scheme with calls of @('name').  When omitted, the optional
-  keyword arguments @('measure'), @('rel'), and @('ruler-extenders') default to
-  the measure, well-founded relation, and ruler-extender settings used in the
-  admittance of @('name').  The keyword argument @('hints') defaults to
-  @('nil').</p>
+  keyword arguments @('measure'), @('well-founded-relation'), and
+  @('ruler-extenders') default to the measure, well-founded relation, and
+  ruler-extender settings used in the admittance of @('name').  The keyword
+  argument @('hints') defaults to @('nil').</p>
 
   <h3>Restrictions</h3>
 
@@ -85251,6 +85251,15 @@ it."
 
 (defxdoc note-8-3
 
+; Total number of release note items: 68, as follows.
+;   25 ; Changes to Existing Features
+;    7 ; New Features
+;   16 ; Heuristic and Efficiency Improvements
+;   16 ; Bug Fixes
+;    2 ; Changes at the System Level
+;    2 ; EMACS Support
+;    0 ; Experimental Versions
+
 ; Used new function maybe-flush-and-compress1 to clean up code in
 ; recompress-global-enabled-structure.
 
@@ -85362,7 +85371,7 @@ it."
 ; noticing the typo and supplying a patch.
 
   :parents (release-notes)
-  :short "ACL2 Version  8.3 (xxx, 20xx) Notes"
+  :short "ACL2 Version  8.3 (April, 2020) Notes"
   :long "<p>NOTE!  New users can ignore these release notes, because the @(see
  documentation) has been updated to reflect all changes that are recorded
  here.</p>
