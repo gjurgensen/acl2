@@ -23593,7 +23593,7 @@ Subtopics
                  :hints ((\"Goal\" :use ...)))
 
     General Form:
-    (definductor name &key measure rel ruler-extenders hints)
+    (definductor name &key measure well-founded-relation ruler-extenders hints)
 
   where name is the name of a previously admitted loop$-recursive
   function satisfying the restrictions listed below.  When successful
@@ -23601,10 +23601,10 @@ Subtopics
   induction scheme that is supposedly appropriate for name, admits it
   with a silent proof of its measure theorems, and then proves an
   :induction rule to associate that scheme with calls of name.  When
-  omitted, the optional keyword arguments measure, rel, and
-  ruler-extenders default to the measure, well-founded relation, and
-  ruler-extender settings used in the admittance of name.  The
-  keyword argument hints defaults to nil.
+  omitted, the optional keyword arguments measure,
+  well-founded-relation, and ruler-extenders default to the measure,
+  well-founded relation, and ruler-extender settings used in the
+  admittance of name.  The keyword argument hints defaults to nil.
 
 
 Restrictions
@@ -83899,7 +83899,7 @@ EMACS Support
 Experimental Versions")
  (NOTE-8-3
   (RELEASE-NOTES)
-  "ACL2 Version 8.3 (xxx, 20xx) Notes
+  "ACL2 Version 8.3 (April, 2020) Notes
 
   NOTE!  New users can ignore these release notes, because the
   [documentation] has been updated to reflect all changes that are
@@ -98075,7 +98075,7 @@ Subtopics
       ACL2 Version 8.2 (May, 2019) Notes
 
   [Note-8-3]
-      ACL2 Version 8.3 (xxx, 20xx) Notes")
+      ACL2 Version 8.3 (April, 2020) Notes")
  (REM
   (NUMBERS ACL2-BUILT-INS)
   "Remainder using [truncate]
