@@ -12881,7 +12881,16 @@ with any questions about building the community books.</p>")
  tar xfz linuxx86.tar.gz
  })
 
- <p>Now rebuild the kernel.</p>
+ <p>Rebuild the lisp kernel by hand before trying to rebuild the lisp.
+ (Note: This step was formerly unnecessary and might become unnecessary again.
+ If you skip it, then consider replacing :clean by :full below.)</p>
+
+ @({
+ cd lisp-kernel/linuxx8664; make clean; make
+ cd -
+ })
+
+ <p>Finish up:</p>
 
  @({
  # (On a Mac, replace the next command with: ./dx86cl64)
@@ -12889,13 +12898,13 @@ with any questions about building the community books.</p>")
  # This welcomes you, e.g.:
  #   Clozure Common Lisp Version 1.12-dev (v1.12-dev.5) LinuxX8664
  # Now submit this command:
- ? (rebuild-ccl :full t)
+ ? (rebuild-ccl :clean t)
  # After it returns, quit:
  ? (quit)
  # Now, back at the shell, rebuild the kernel again just to be safe:
  # For a Mac: ./dx86cl64
  ./lx86cl64
- ? (rebuild-ccl :full t)
+ ? (rebuild-ccl :clean t)
  ? (quit)
  })
 

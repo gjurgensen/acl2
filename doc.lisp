@@ -15713,20 +15713,28 @@ Subtopics
     # For a Mac: tar xfz darwinx86.tar.gz
     tar xfz linuxx86.tar.gz
 
-  Now rebuild the kernel.
+  Rebuild the lisp kernel by hand before trying to rebuild the lisp.
+  (Note: This step was formerly unnecessary and might become
+  unnecessary again.  If you skip it, then consider replacing :clean
+  by :full below.)
+
+    cd lisp-kernel/linuxx8664; make clean; make
+    cd -
+
+  Finish up:
 
     # (On a Mac, replace the next command with: ./dx86cl64)
     ./lx86cl64
     # This welcomes you, e.g.:
     #   Clozure Common Lisp Version 1.12-dev (v1.12-dev.5) LinuxX8664
     # Now submit this command:
-    ? (rebuild-ccl :full t)
+    ? (rebuild-ccl :clean t)
     # After it returns, quit:
     ? (quit)
     # Now, back at the shell, rebuild the kernel again just to be safe:
     # For a Mac: ./dx86cl64
     ./lx86cl64
-    ? (rebuild-ccl :full t)
+    ? (rebuild-ccl :clean t)
     ? (quit)
 
   Create an executable script like the following.  Be sure to change
