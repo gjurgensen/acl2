@@ -14488,8 +14488,8 @@ Subtopics
        (arithmetic \"[books]/doc/more-topics.lisp\")
        (arithmetic-1 \"[books]/arithmetic/top.lisp\")
        (arithmetic/natp-posp \"[books]/arithmetic/natp-posp.lisp\")
-       (arity+ \"[books]/kestrel/utilities/system/world-queries.lisp\")
-       (assert! \"[books]/misc/assert.lisp\")
+       (arity+ \"[books]/kestrel/std/system/arity-plus.lisp\")
+       (assert! \"[books]/std/testing/assert-bang.lisp\")
        (b* \"[books]/std/util/bstar.lisp\")
        (bridge \"[books]/centaur/bridge/top.lisp\")
        (build::cert.pl \"[books]/build/doc.lisp\")
@@ -14505,6 +14505,7 @@ Subtopics
        (defpun \"[books]/misc/defpun.lisp\")
        (defthm<w \"[books]/kestrel/utilities/auto-instance.lisp\")
        (defthmg \"[books]/tools/defthmg.lisp\")
+       (acl2s::defunc \"[books]/acl2s/defunc.lisp\")
        (defxdoc \"[books]/xdoc/topics.lisp\")
        (getopt-demo::demo2 \"[books]/centaur/getopt/demo2.lisp\")
        (developers-guide \"[books]/system/doc/developers-guide.lisp\")
@@ -14539,6 +14540,7 @@ Subtopics
        (note-8-0-books \"[books]/doc/relnotes.lisp\")
        (note-8-1-books \"[books]/doc/relnotes.lisp\")
        (note-8-2-books \"[books]/doc/relnotes.lisp\")
+       (note-8-3-books \"[books]/doc/relnotes.lisp\")
        (str::numbers \"[books]/std/strings/top.lisp\")
        (oracle-timelimit \"[books]/tools/oracle-timelimit.lisp\")
        (oslib \"[books]/oslib/top-logic.lisp\")
@@ -83921,10 +83923,10 @@ Experimental Versions")
   many changes could be placed in more than one category.
 
   Note that only ACL2 system changes are listed below.  See also
-  note-8-3-books for a summary of changes made to the ACL2 Community
-  Books since ACL2 8.2, including the build system.  Also note that
-  with each release, it is typical that the value of constant
-  [*ACL2-exports*] has been extended, and that some built-in
+  [note-8-3-books] for a summary of changes made to the ACL2
+  Community Books since ACL2 8.2, including the build system.  Also
+  note that with each release, it is typical that the value of
+  constant [*ACL2-exports*] has been extended, and that some built-in
   functions that were formerly in :[program] mode are now
   [guard]-verified :[logic] mode functions.
 
@@ -86689,7 +86691,7 @@ Subtopics
   acl2s/utilities.lisp which includes even more such utilities.  To
   see an example of a utility that generates symbols in the current
   package, see books/acl2s/defunc.lisp, which contains the
-  ACL2s::defunc utility.  Other examples include [defequiv],
+  [ACL2s::defunc] utility.  Other examples include [defequiv],
   [defrefinement] and [defcong] in defthm.lisp.")
  (PACKN
   (SYMBOLS ACL2-BUILT-INS)
