@@ -83975,8 +83975,8 @@ Changes to Existing Features
 
   The following symbols, when used in special syntactic roles in the
   macro [loop$], may be in any package: for, in, on, from, to, by,
-  of-type, when, until, sum, collect, always, and append.  Thanks to
-  Mertcan Temel for requesting this enhancement.
+  of-type, when, until, sum, collect, always, thereis, and append.
+  Thanks to Mertcan Temel for requesting this enhancement.
 
   :Expand [hints] now act more reliably for [equality-variants], by
   expanding away [guard-holders].  Thanks to Sol Swords for supplying
