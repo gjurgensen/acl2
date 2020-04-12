@@ -6964,8 +6964,8 @@ and @(tsee include-book)"
   :long "<p>@('Assert-event') provides a way to check that the value of an
  expression is not @('nil'), causing an error otherwise.  For a similar utility
  see the macro @(tsee assert!) defined in @(see community-books) file
- @('books/misc/assert.lisp').  Here we compare the two, highlighting some key
- differences.</p>
+ @('books/std/testing/assert.lisp').  Here we compare the two, highlighting
+ some key differences.</p>
 
  <ul>
 
@@ -54172,7 +54172,7 @@ tables in the current Hons Space."
  community books directory @('books/make-event/').  You may even find it
  helpful, in order to understand @('make-event'), to do so before continuing to
  read this documentation.  You may also find it useful to browse community book
- @('books/misc/eval.lisp'), which contains definitions of macros
+ @('books/std/testing/eval.lisp'), which contains definitions of macros
  @('must-succeed') and @('must-fail') that are useful for testing and are used
  in many books in the @('books/make-event/') directory, especially
  @('eval-tests.lisp').  Another example, @('books/make-event/defrule.lisp'),
@@ -96305,7 +96305,7 @@ arithmetic) for libraries of @(see books) for arithmetic reasoning.</p>")
  redundant, since it is executed in a world that contains no trace of the first
  @('encapsulate') event.</p>
 
- <p>Also see community books @('misc/eval.lisp'),
+ <p>Also see community books @('std/testing/eval.lisp'),
  @('make-event/eval-check.lisp'), and @('make-event/eval-tests.lisp') for more
  ways to test in books.</p>
 
