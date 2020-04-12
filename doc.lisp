@@ -9791,8 +9791,8 @@ Subtopics
   Assert-event provides a way to check that the value of an expression
   is not nil, causing an error otherwise.  For a similar utility see
   the macro [assert!] defined in [community-books] file
-  books/misc/assert.lisp.  Here we compare the two, highlighting some
-  key differences.
+  books/std/testing/assert.lisp.  Here we compare the two,
+  highlighting some key differences.
 
     * Both assert! and assert-event evaluate using the current
       [guard]-checking status (e.g., see [with-guard-checking]).
@@ -15681,6 +15681,10 @@ Subtopics
   ``{Installing Clozure CL | https://ccl.clozure.com/install.html}''
   page.  Note: Linux users may need to install m4.
 
+  Remark. The instructions immediately below should generally suffice.
+  But if you would like additional information on CCL installation
+  and implementation, see [ccl-installation-extra].
+
   First fetch CCL from GitHub as follows.  (You may prefer to use ``git
   pull'' if you previously did this step.  In that case you probably
   won't want to do the optional renaming of the directory, mentioned
@@ -15748,9 +15752,206 @@ Subtopics
     export CCL_DEFAULT_DIRECTORY=/projects/acl2/lisps/ccl/2017-12-07-6be8298fe5/ccl
     ${CCL_DEFAULT_DIRECTORY}/scripts/ccl64 \"$@\"
 
-  Finally, ensure that your script is executable, e.g.:
+  Now ensure that your script is executable, e.g.:
 
-    chmod +x my-script")
+    chmod +x my-script
+
+  You're done!  (Note however that certification of [books] that use
+  [Quicklisp] may require openssl to be installed if it is not
+  already on your system.)
+
+
+Subtopics
+
+  [Ccl-installation-extra]
+      Clozure Common Lisp (CCL) installation and implementation details")
+ (CCL-INSTALLATION-EXTRA
+  (CCL-INSTALLATION)
+  "Clozure Common Lisp (CCL) installation and implementation details
+
+  This topic, contributed by Warren A. Hunt, Jr., extends the basic
+  information given in [ccl-installation].  It may be useful to some,
+  especially those who use ACL2 in ways that particularly stress
+  memory.  Another resource may be found on {this page |
+  https://github.com/Clozure/ccl/releases/}.
+
+  Below we provide instructions to build CCL on FreeBSD and MacOS;
+  building on Linux will be similar.  Before providing the build
+  instructions, we mention a few facts about CCL's implementation.
+
+  CCL's implementation can't expand stack space automatically.  The
+  sizes of various stacks are set at thread creation time.  Most
+  programs don't need very big stacks.  The CCL default value and
+  temp stack sizes may be too small for compute-intensive
+  applications.
+
+  The various stack sizes are set when creating a thread with code in
+  CCL::MAKE-PROCESS and CCL::PROCESS-RUN-FUNCTION, and they set the
+  three stack sizes of the initial listener thread that is created
+  when CCL starts.
+
+  The value stack is used for data in deeply-nested lisp recursion.
+  ACL2 can benefit from an increase in the size of the value stack.
+
+  The temp stack is used for dynamic-extent objects.  This might need
+  need to be larger than the default.
+
+  The control stack is used to run C and binary code; it would be
+  surprising to need to increase its size.
+
+  If only one or two threads are needed, giant (e.g., 4 GB) stacks can
+  be OK, but with many threads large stacks use lots of memory.
+  Below are the stacks along with their current (April, 2020) default
+  sizes.
+
+    ccl::*default-control-stack-size*                    ;; default 2^21
+    ccl::*initial-listener-default-control-stack-size*   ;; default 2^21
+
+    ccl::*default-value-stack-size*                      ;; default 2^21
+    ccl::*initial-listener-default-value-stack-size*     ;; default 2^21
+
+    ccl::*initial-listener-default-temp-stack-size*      ;; default 2^20
+    ccl::*default-temp-stack-size*                       ;; default 2^20
+
+  If we are running on a 32-bit platform, we set the stack sizes
+  modestly.  If we are on a 64-bit platform, we set the stack sizes
+  to much larger values.  See the later discussion about
+  ``configure-ccl.lisp'' below to see how to alter (increase) stack
+  sizes.
+
+
+MacOS Build Instructions:
+
+    git clone https://github.com/Clozure/ccl.git ccl-dev
+    curl -L -O https://github.com/Clozure/ccl/releases/download/v1.12-dev.5/darwinx86.tar.gz
+    cd ccl-dev ; tar xf ../darwinx86.tar.gz
+
+  Rebuild C-based, Lisp kernel
+
+  To rebuild the Lisp-code part of the kernel, do...
+
+    cd lisp-kernel/darwinx8664 ; make ; cd ../..
+
+  Unlike for FreeBSD and Linux, we exclude ``:full t'' from the
+  ``rebuild-ccl'' command just below Matt Emerson (a CCL expert)
+  writes:
+
+      After looking at your log, I was able to duplicate the problem
+      myself.  For some reason I do not understand, it appears that
+      on Catalina, removing the running lisp kernel binary causes
+      run-program to break (trying to run external programs gets
+      signal 9).  This surprises me very much.
+
+      One of the effects of running (rebuild-ccl :full t), is that it first
+      does a \"make clean\" in the lisp kernel directory, and then does
+      a regular make.  This has worked for years, and I do not know
+      why it has stopped working.
+
+  To avoid this, rebuild the lisp with (rebuild-ccl :clean t) instead.
+  Do not specify ``:full t''.  Since you have already built the lisp
+  kernel, you gain nothing from ``:full t'' doing it again.  So, once
+  the C-based, Lisp kernel is built, then do:
+
+    echo \"(in-package :ccl) (rebuild-ccl :verbose t :clean t)\" | \\
+          ./dx86cl64 -n |& tee ./ccl-build-compile.log
+
+  Matt Emerson suggests that one re-build again.  We asked Matt a
+  long-simmering question: we have been told that it is a good idea
+  to compile CCL twice.  Is that so that the CCL compiler produced by
+  pass one on the target system is used to compile the CCL system
+  that will be used (on the target system)?  Or, is compiling twice
+  some silly myth?  Matt Emerson responded:
+
+      It's not entirely mythic.  Some rare changes do need the lisp to be
+      rebuilt twice for bootstrapping purposes, but usually it isn't
+      required.
+
+  Thus, we recommend you re-build (compile) the Lisp code again.
+
+    echo \"(in-package :ccl) (rebuild-ccl :verbose t :clean t)\" | \\
+          ./dx86cl64 -n |& tee ./ccl-build-compile-2.log
+
+  Finally, one may specialize the final image by:
+
+    cat configure-ccl.lisp | ./dx86cl64 -n |& tee ~/ccl-build-specialize.log
+
+  where ``configure-ccl.lisp'' (not supplied) contains whatever CCL
+  specialization commands you wish to have in the version of CCL you
+  use for ACL2 or other work.  See the end of this note for an
+  example of ``configure-ccl.lisp''.
+
+
+FreeBSD Build Instructions:
+
+  The FreeBSD build instructions are similar to the MacOS build
+  instruction, but the names are changed appropriately.
+
+    git clone https://github.com/Clozure/ccl.git ccl-dev
+    curl -L -O https://github.com/Clozure/ccl/releases/download/v1.12-dev.5/freebsd12-x8664.tar.gz
+    cd ccl-dev
+    tar xf ../freebsd12-x8664.tar.gz
+
+  Rebuild C-based Lisp kernel
+
+    cd lisp-kernel/freebsdx8664 ; make ; cd ../..
+
+  To rebuild the Lisp-code part of the kernel, do...
+
+    echo \"(in-package :ccl) (rebuild-ccl :full t :verbose t :clean t)\" | \\
+          ./fx86cl64 -n |& tee ./ccl-build-compile.log
+
+  FreeBSD is OK with the ``:full t'' flag, which as of MacOS 10.15
+  breaks (but used to work on earlier versions of MacOS).  So, this
+  option persists on the FreeBSD build.
+
+  Matt Emerson recommends building the Lisp code a second time; see the
+  ``MacOS Build Instructions'' above for his rationale.
+
+    echo \"(in-package :ccl) (rebuild-ccl :full t :verbose t :clean t)\" | \\
+          ./fx86cl64 -n |& tee ./ccl-build-compile-2.log
+
+  Finally, one may specialize the final image by:
+
+    cat ~/a/scripts/configure-ccl.lisp | ./fx86cl64 -n |& tee ~/ccl-build-specialize.log
+
+  where ``configure-ccl.lisp'' (not supplied) contains whatever CCL
+  specialization commands you wish to have in the version of CCL you
+  use for ACL2 or other work.
+
+
+configure-ccl.lisp
+
+  Sample ``configure-ccl.lisp'' file for 64-bit implementation:
+
+    (progn
+      ;; Parameters to configure CCL for use on FreeBSD and MacOS
+
+      (in-package :ccl)
+
+      ;; Enlarge stack sizes
+      (setq *default-value-stack-size*                    (expt 2 28))
+      (setq *initial-listener-value-stack-size*           (expt 2 28))
+
+      (setq *default-temp-stack-size*                     (expt 2 24))
+      (setq *initial-listener-temp-stack-size*            (expt 2 24))
+
+      (setq *default-control-stack-size*                  (expt 2 24))
+      (setq *initial-listener-default-control-stack-size* (expt 2 24))
+
+      ;; For CCL double precision
+      (setf *read-default-float-format* 'double-float)
+
+      ;; Make DEFUN save the source code for later recovery via
+      ;; FUNCTION-LAMBDA-EXPRESSION.
+      (setq *save-definitions* t)
+      (setq *fasl-save-definitions* t)
+
+      ;; Make GC verbose; see ACL2 documentation topic GC-VERBOSE.
+      (gc-verbose t t)
+
+      ;; Dump executable heap image; see ACL2 documentation topic SAVE-EXEC.
+      (save-exec *heap-image-name* \"Modification string to print at startup\")
+      )")
  (CCL-UPDATES (POINTERS)
               "See [ccl-installation].")
  (CDAAAR
@@ -58289,15 +58490,15 @@ Detailed Documentation
   community books directory books/make-event/.  You may even find it
   helpful, in order to understand make-event, to do so before
   continuing to read this documentation.  You may also find it useful
-  to browse community book books/misc/eval.lisp, which contains
-  definitions of macros must-succeed and must-fail that are useful
-  for testing and are used in many books in the books/make-event/
-  directory, especially eval-tests.lisp.  Another example,
-  books/make-event/defrule.lisp, shows how to use macros whose calls
-  expand to make-event forms, which in turn can generate [events].
-  For more examples, see file books/make-event/Readme.lsp.  Other
-  than the examples, the explanations here should suffice for most
-  users.  If you want explanations of subtler details, see
+  to browse community book books/std/testing/eval.lisp, which
+  contains definitions of macros must-succeed and must-fail that are
+  useful for testing and are used in many books in the
+  books/make-event/ directory, especially eval-tests.lisp.  Another
+  example, books/make-event/defrule.lisp, shows how to use macros
+  whose calls expand to make-event forms, which in turn can generate
+  [events].  For more examples, see file books/make-event/Readme.lsp.
+  Other than the examples, the explanations here should suffice for
+  most users.  If you want explanations of subtler details, see
   [make-event-details].
 
   Note that make-event is generally legal only where an embedded event
@@ -97320,8 +97521,9 @@ Subtopics
   is not redundant, since it is executed in a world that contains no
   trace of the first encapsulate event.
 
-  Also see community books misc/eval.lisp, make-event/eval-check.lisp,
-  and make-event/eval-tests.lisp for more ways to test in books.
+  Also see community books std/testing/eval.lisp,
+  make-event/eval-check.lisp, and make-event/eval-tests.lisp for more
+  ways to test in books.
 
   Here are detailed criteria for redundancy of [encapsulate] [events].
   First, based on a heuristic (but rather thorough) check, the
