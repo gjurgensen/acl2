@@ -15671,7 +15671,7 @@ Subtopics
   second one as redundant.")
  (CCL-INSTALLATION
   (HONS-AND-MEMOIZATION)
-  "Updating Clozure Common Lisp (CCL)
+  "Installing Clozure Common Lisp (CCL)
 
   For those who use ACL2 built on CCL as the host Common Lisp
   implementation, it has been common practice to use the latest
@@ -44363,7 +44363,7 @@ Subtopics
 Subtopics
 
   [Ccl-installation]
-      Updating Clozure Common Lisp (CCL)
+      Installing Clozure Common Lisp (CCL)
 
   [Fast-alists]
       Alists with hidden hash tables for faster execution

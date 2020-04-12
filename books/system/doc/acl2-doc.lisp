@@ -12837,7 +12837,7 @@ with any questions about building the community books.</p>")
 
 (defxdoc ccl-installation
   :parents (hons-and-memoization)
-  :short "Updating Clozure Common Lisp (CCL)"
+  :short "Installing Clozure Common Lisp (CCL)"
   :long "<p>For those who use ACL2 built on CCL as the host Common Lisp
  implementation, it has been common practice to use the latest GitHub version
  of CCL.  Here are instructions for how to build CCL on Linux, with comments on
