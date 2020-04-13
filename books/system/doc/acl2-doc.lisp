@@ -30400,8 +30400,8 @@ ld) and @(tsee include-book)"
  have occurred before a proof by induction has begun.  If you need more
  information than is provided by the key checkpoints &mdash; although this
  should rarely be necessary &mdash; then you can look at the full proof,
- perhaps with the aid of certain utilities: see @(see proof-tree), see @(see
- set-gag-mode), and see @(see set-saved-output).</p>
+ perhaps with the aid of certain utilities: see @(see pso), @(see
+ set-gag-mode), and @(see proof-tree).</p>
 
  <p>Again, see @(see the-method) for a general discussion of how to prove
  theorems with ACL2, and see @(see introduction-to-the-theorem-prover) for a
@@ -66060,7 +66060,7 @@ it."
  <p>A mechanism has been added for saving output.  In particular, you can now
  call @(tsee ld) on a file with output turned off, for efficiency, and yet when
  a proof fails you can then display the proof attempt for the failed (last)
- event.  See @(see set-saved-output).  Another new command &mdash; see @(see
+ event.  See set-saved-output.  Another new command &mdash; see @(see
  set-print-clause-ids) &mdash; causes subgoal numbers to be printed during
  proof attempts when output is inhibited.</p>
 
@@ -67644,8 +67644,8 @@ it."
  match the checks made when including a certified book.  Thanks to Eric Smith
  for suggesting this change.</p>
 
- <p>Fixed a bug in @(':')@(tsee pso) (see @(see set-saved-output)) that caused
- an error when printing the time summary.</p>
+ <p>Fixed a bug in @(':')@(tsee pso) (see set-saved-output) that caused an
+ error when printing the time summary.</p>
 
  <p>Made fixes to avoid potential hard Lisp errors caused by the use of
  @(':')@(tsee program) mode functions.  The fix was to use a ``safe mode,''
@@ -69532,7 +69532,7 @@ it."
  subgoals are to be considered first.  Thanks to Sandip Ray for putting forward
  this idea.</p>
 
- <p>Enhanced @(tsee set-saved-output) by supporting a second argument of
+ <p>Enhanced @('set-saved-output') by supporting a second argument of
  @(':same'), which avoids changing which output is inhibited.</p>
 
  <p>Added macros @('thm?') and @('not-thm?') to distributed book
@@ -69812,13 +69812,13 @@ it."
  read-eval-print loop (see @(see lp)) had already persisted from the original
  to newly-saved image.  Thanks to Jared Davis for suggesting this change.</p>
 
- <p>Changed @(tsee make-event) expansion so that changes to @(tsee
- set-saved-output), @(tsee set-print-clause-ids),
- @('set-fmt-soft-right-margin'), and @('set-fmt-hard-right-margin') will
- persist after being evaluated during @('make-event') expansion.
- (Specifically, @('*protected-system-state-globals*') has been modified; see
- @(see make-event-details).)  Thanks to Jared Davis for bringing this issue to
- our attention.</p>
+ <p>Changed @(tsee make-event) expansion so that changes to @(tsee gag-mode),
+ @(tsee set-print-clause-ids), @('set-fmt-soft-right-margin'), and
+ @('set-fmt-hard-right-margin') will persist after being evaluated during
+ @('make-event') expansion.  (Specifically,
+ @('*protected-system-state-globals*') has been modified; see @(see
+ make-event-details).)  Thanks to Jared Davis for bringing this issue to our
+ attention.</p>
 
  <p>Output from the @(see proof-builder) is now always enabled when invoking
  @(tsee verify), even if it is globally inhibited (see @(see
@@ -70995,10 +70995,10 @@ it."
  except @('proof-tree') output when turning off gag-mode.  Now, @(tsee
  set-gag-mode) only inhibits or enables proof (@('PROVE')) output, according to
  whether gag-mode is being turned on or off (respectively).  The related
- utility @(tsee set-saved-output) has also been modified, basically to
- eliminate @(':all') as a first argument and to allow @('t') and @(':all') as
- second arguments, for inhibiting prover output or virtually all output,
- respectively (see @(see set-saved-output)).</p></blockquote>
+ utility @('set-saved-output') has also been modified, basically to eliminate
+ @(':all') as a first argument and to allow @('t') and @(':all') as second
+ arguments, for inhibiting prover output or virtually all output,
+ respectively (see set-saved-output).</p></blockquote>
 
  <p>A @(tsee defstub) event @(see signature) specifying output of the form
  @('(mv ...)') now introduces a @(':')@(tsee type-prescription) rule asserting
@@ -85484,7 +85484,7 @@ it."
 ;   25 ; Changes to Existing Features
 ;    7 ; New Features
 ;   16 ; Heuristic and Efficiency Improvements
-;   16 ; Bug Fixes
+;   17 ; Bug Fixes
 ;    2 ; Changes at the System Level
 ;    2 ; EMACS Support
 ;    0 ; Experimental Versions
@@ -86071,6 +86071,11 @@ it."
  above, on saving translated bodies in certificate files.  Moreover, the
  relevant system function, @('include-book-fn1'), has been modified to do a
  better job of ignoring certificate files of uncertified books.</p>
+
+ <p>The utility @('set-saved-output') has been badly broken for years, but
+ without complaints (other than from one of us shortly before the release),
+ suggesting that it hasn't been directly called by users.  So we have
+ eliminated it.</p>
 
  <h3>Changes at the System Level</h3>
 
@@ -93889,7 +93894,7 @@ arithmetic) for libraries of @(see books) for arithmetic reasoning.</p>")
   :short "Show the most recently saved output"
   :long "<p>Evaluate @(':pso') in order to print output that was generated in
  an environment where output was being saved, as in @(see gag-mode), which is
- active when ACL2 is invoked.  See @(see set-saved-output) for details.</p>
+ active when ACL2 is invoked.  Also see @(see gag-mode).</p>
 
  @({
  Example Forms:
@@ -93966,7 +93971,8 @@ arithmetic) for libraries of @(see books) for arithmetic reasoning.</p>")
  <p>The ``Time'' printed in the summary shows the original times for the proof
  attempt, not the times for processing the @(':pso') command.</p>
 
- <p>Also see @(see pso!), @(see psog), and @(see psof).</p>")
+ <p>Also see @(see pso!), @(see psog), @(see psof), @(see set-gag-mode), @(see
+ set-inhibit-output-lst), and @(see set-print-clause-ids).</p>")
 
 (defxdoc pso!
   :parents (prover-output)
@@ -102213,10 +102219,7 @@ arithmetic) for libraries of @(see books) for arithmetic reasoning.</p>")
  see the full proof output after an attempt made with gag-mode.  This can be
  done provided proof output is not inhibited (see @(see
  set-inhibit-output-lst)) during the proof attempt; see @(see pso) and see
- @(see pso!).  Since @('set-gag-mode') takes responsibility for the saving of
- output, related utility @(tsee set-saved-output) is disabled when gag-mode is
- active.  Also note that calling @('set-gag-mode') erases the currently saved
- output, if any.</p>
+ @(see pso!).</p>
 
  <p>You may notice that gag-mode tends to print relatively little information
  about goals pushed for proof by sub-induction &mdash; i.e., a proof of *i.j,
@@ -104426,66 +104429,6 @@ arithmetic) for libraries of @(see books) for arithmetic reasoning.</p>")
   :long "<p>Please see @(see set-rw-cache-state), which is the same as
  @('set-rw-cache-state!')  except that the latter is not @(tsee local) to the
  @(tsee encapsulate) or the book in which it occurs.</p>")
-
-(defxdoc set-saved-output
-  :parents (set-gag-mode)
-  :short "Save proof output for later display with @(':')@(tsee pso) or
-  @(':')@(tsee pso!)"
-  :long "@({
-  Examples:
-  (set-saved-output t t)    ; save proof output for later, but inhibit it now
-  (set-saved-output t :all) ; save proof output for later, but inhibit all
-                            ;   output (except WARNING!, for critical warnings,
-                            ;   and ERROR, unless these are already inhibited)
-  :set-saved-output t :all  ; same as the line above
-  (set-saved-output t nil)  ; save proof output for later, but print it now too
-  (set-saved-output nil t)  ; do not save proof output, and inhibit it
-  (set-saved-output nil nil); do not save proof output or inhibit output
-  (set-saved-output nil :same), (set-saved-output t :same)
-                            ; save proof output or not, as indicated, but do
-                            ;   not change which output is inhibited
-  (set-saved-output nil :normal)
-                            ; the behavior when ACL2 first starts up: do not
-                            ;   save output, and only inhibit proof-tree output
-  (set-saved-output t '(warning observation proof-tree prove))
-                            ; save proof output for later, and inhibit the
-                            ;   indicated kinds of output
-
-  General Form:
-  (set-saved-output save-flg inhibit-flg)
- })
-
- <p>Parameter @('save-flg') is @('t') to cause output to be saved for later
- display using @('pso') or @('pso!'); see @(see pso) and see @(see pso!), and
- see the documentation for interactive @(see proof-builder) commands of the
- same names.  Set @('save-flg') to @('nil') to turn off this feature; except,
- it always stays on in proof-builder sessions entered with @(tsee verify).  The
- other argument, @('inhibit-flg'), controls whether output should be inhibited
- when it is created (normally, during a proof attempt).  So a common
- combination is to set both arguments to @('t'), to indicate that output should
- be suppressed for now but saved for printing with @(tsee pso) or @(tsee pso!).
- The examples above give a good summary of the functionality for the second
- argument.</p>
-
- <p>Saved output is cleared at every top-level prover call, including such
- calls made by: @(see events) (e.g., @(tsee defthm) and @(tsee defun)), @(tsee
- thm), and @(see proof-builder) commands that invoke the prover.  A single
- event can make more than one top-level prover call, for example: in the case
- of @(tsee defun), one call made for termination and another for guard
- verification; and in the case of @(tsee defthm), one call made for the
- proposed theorem and one for each @(see corollary).  If you want to see more
- than one proof log for a single top-level form, first evaluate
- @('(set-gag-mode nil)').  Note that interactive @(see proof-builder) commands,
- that is, from a proof-builder session entered with @(tsee verify), are always
- run with output saved.</p>
-
- <p>Also see @(see set-gag-mode); and see @(see set-print-clause-ids), which
- causes subgoal numbers to be printed during proof attempts when output is
- inhibited.</p>
-
- <p>See @(see set-inhibit-output-lst) if you want to inhibit certain output
- from the prover but not other output (e.g., not the @(see summary)), and you
- don't want to save any output.</p>")
 
 (defxdoc set-serialize-character-system
   :parents (serialize)
@@ -128437,12 +128380,10 @@ print the most recent proof attempt from inside the proof-builder"
  })
 
  <p>Print the most recent proof attempt from inside the interactive
- proof-builder assuming you are in @(tsee gag-mode) or have saved output (see
- @(see set-saved-output)).  This includes all calls to the prover, including
- for example @(see proof-builder) commands @('induct'), @('split'), and
- @('bash'), in addition to @('prove').  So for example, you can follow
- @('(quiet prove)') with @('pso') to see the proof, including @(see proof-tree)
- output, if it failed.</p>
+ proof-builder.  This includes prover calls, including for example @(see
+ proof-builder) commands @('induct'), @('split'), and @('bash'), in addition to
+ @('prove').  So for example, you can follow @('(quiet prove)') with @('pso')
+ to see the proof, including @(see proof-tree) output, if it failed.</p>
 
  <p>Related @(see proof-builder) commands are @('psog') and @('pso!'); see @(see
  acl2-pc::psog) and @(see acl2-pc::pso!).</p>")
@@ -128457,12 +128398,10 @@ print the most recent proof attempt from inside the proof-builder"
  })
 
  <p>Print the most recent proof attempt from inside the interactive
- proof-builder, including @(see proof-tree) output, assuming you are in @(tsee
- gag-mode) or have saved output (see @(see set-saved-output)).  This includes
- all calls to the prover, including for example @(see proof-builder) commands
- @('induct'), @('split'), and @('bash'), in addition to @('prove').  So for
- example, you can follow @('(quiet prove)') with @('pso!') to see the proof,
- including @(see proof-tree) output, if it failed.</p>
+ proof-builder.  This includes prover calls, including for example @(see
+ proof-builder) commands @('induct'), @('split'), and @('bash'), in addition to
+ @('prove').  So for example, you can follow @('(quiet prove)') with @('pso!')
+ to see the proof, including @(see proof-tree) output, if it failed.</p>
 
  <p>Related @(see proof-builder) commands are @('pso') and @('psog'); see @(see
  acl2-pc::pso) and @(see acl2-pc::psog).</p>")
@@ -128477,11 +128416,10 @@ print the most recent proof attempt from inside the proof-builder"
  })
 
  <p>Print the most recent proof attempt from inside the interactive
- proof-builder, including goal names, assuming you are in @(tsee gag-mode) or
- have saved output (see @(see set-saved-output)).  This includes all calls to
- the prover, including for example @(see proof-builder) commands @('induct'),
- @('split'), and @('bash'), in addition to @('prove').  So for example, you can
- follow @('(quiet prove)') with @('psog') to see the proof, including @(see
+ proof-builder, including goal names.  This includes prover calls, including
+ for example @(see proof-builder) commands @('induct'), @('split'), and
+ @('bash'), in addition to @('prove').  So for example, you can follow
+ @('(quiet prove)') with @('psog') to see the proof, including @(see
  proof-tree) output, if it failed.</p>
 
  <p>Related @(see proof-builder) commands are @('pso') and @('pso!'); see @(see

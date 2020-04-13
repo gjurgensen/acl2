@@ -33785,7 +33785,7 @@ Subtopics
   need more information than is provided by the key checkpoints ---
   although this should rarely be necessary --- then you can look at
   the full proof, perhaps with the aid of certain utilities: see
-  [proof-tree], see [set-gag-mode], and see [set-saved-output].
+  [pso], [set-gag-mode], and [proof-tree].
 
   Again, see [the-method] for a general discussion of how to prove
   theorems with ACL2, and see [introduction-to-the-theorem-prover]
@@ -69718,7 +69718,7 @@ Table of Contents
   A mechanism has been added for saving output.  In particular, you can
   now call [ld] on a file with output turned off, for efficiency, and
   yet when a proof fails you can then display the proof attempt for
-  the failed (last) event.  See [set-saved-output].  Another new
+  the failed (last) event.  See set-saved-output.  Another new
   command --- see [set-print-clause-ids] --- causes subgoal numbers
   to be printed during proof attempts when output is inhibited.
 
@@ -71016,7 +71016,7 @@ Subtopics
   to match the checks made when including a certified book.  Thanks
   to Eric Smith for suggesting this change.
 
-  Fixed a bug in :[pso] (see [set-saved-output]) that caused an error
+  Fixed a bug in :[pso] (see set-saved-output) that caused an error
   when printing the time summary.
 
   Made fixes to avoid potential hard Lisp errors caused by the use of
@@ -72254,7 +72254,7 @@ Subtopics
   are to be considered first.  Thanks to Sandip Ray for putting
   forward this idea.
 
-  Enhanced [set-saved-output] by supporting a second argument of :same,
+  Enhanced set-saved-output by supporting a second argument of :same,
   which avoids changing which output is inhibited.
 
   Added macros thm? and not-thm? to distributed book
@@ -72531,7 +72531,7 @@ Subtopics
   had already persisted from the original to newly-saved image.
   Thanks to Jared Davis for suggesting this change.
 
-  Changed [make-event] expansion so that changes to [set-saved-output],
+  Changed [make-event] expansion so that changes to [gag-mode],
   [set-print-clause-ids], set-fmt-soft-right-margin, and
   set-fmt-hard-right-margin will persist after being evaluated during
   make-event expansion.  (Specifically,
@@ -73297,10 +73297,10 @@ Subtopics
       off gag-mode.  Now, [set-gag-mode] only inhibits or enables
       proof (PROVE) output, according to whether gag-mode is being
       turned on or off (respectively).  The related utility
-      [set-saved-output] has also been modified, basically to
-      eliminate :all as a first argument and to allow t and :all as
-      second arguments, for inhibiting prover output or virtually all
-      output, respectively (see [set-saved-output]).
+      set-saved-output has also been modified, basically to eliminate
+      :all as a first argument and to allow t and :all as second
+      arguments, for inhibiting prover output or virtually all
+      output, respectively (see set-saved-output).
 
   A [defstub] event [signature] specifying output of the form (mv ...)
   now introduces a :[type-prescription] rule asserting that the new
@@ -84592,6 +84592,11 @@ Bug Fixes
   include-book-fn1, has been modified to do a better job of ignoring
   certificate files of uncertified books.
 
+  The utility set-saved-output has been badly broken for years, but
+  without complaints (other than from one of us shortly before the
+  release), suggesting that it hasn't been directly called by users.
+  So we have eliminated it.
+
 
 Changes at the System Level
 
@@ -94873,8 +94878,7 @@ Subtopics
 
   Evaluate :pso in order to print output that was generated in an
   environment where output was being saved, as in [gag-mode], which
-  is active when ACL2 is invoked.  See [set-saved-output] for
-  details.
+  is active when ACL2 is invoked.  Also see [gag-mode].
 
     Example Forms:
 
@@ -94946,7 +94950,8 @@ Subtopics
   The ``Time'' printed in the summary shows the original times for the
   proof attempt, not the times for processing the :pso command.
 
-  Also see [pso!], [psog], and [psof].")
+  Also see [pso!], [psog], [psof], [set-gag-mode],
+  [set-inhibit-output-lst], and [set-print-clause-ids].")
  (PSO!
   (PROVER-OUTPUT)
   "Show the most recently saved output, including [proof-tree] output
@@ -103538,11 +103543,7 @@ Subtopics
   helpful.  But on occasion you may want to see the full proof output
   after an attempt made with gag-mode.  This can be done provided
   proof output is not inhibited (see [set-inhibit-output-lst]) during
-  the proof attempt; see [pso] and see [pso!].  Since set-gag-mode
-  takes responsibility for the saving of output, related utility
-  [set-saved-output] is disabled when gag-mode is active.  Also note
-  that calling set-gag-mode erases the currently saved output, if
-  any.
+  the proof attempt; see [pso] and see [pso!].
 
   You may notice that gag-mode tends to print relatively little
   information about goals pushed for proof by sub-induction --- i.e.,
@@ -103588,10 +103589,7 @@ Subtopics
       Control printing of key checkpoints upon a proof's failure
 
   [Set-checkpoint-summary-limit]
-      Control printing of key checkpoints upon a proof's failure
-
-  [Set-saved-output]
-      Save proof output for later display with :[pso] or :[pso!]")
+      Control printing of key checkpoints upon a proof's failure")
  (SET-GC-STRATEGY
   (MISCELLANEOUS ACL2-BUILT-INS)
   "Set the garbage collection strategy (CCL only)
@@ -105673,63 +105671,6 @@ Subtopics
   Please see [set-rw-cache-state], which is the same as
   set-rw-cache-state! except that the latter is not [local] to the
   [encapsulate] or the book in which it occurs.")
- (SET-SAVED-OUTPUT
-  (SET-GAG-MODE)
-  "Save proof output for later display with :[pso] or :[pso!]
-
-    Examples:
-    (set-saved-output t t)    ; save proof output for later, but inhibit it now
-    (set-saved-output t :all) ; save proof output for later, but inhibit all
-                              ;   output (except WARNING!, for critical warnings,
-                              ;   and ERROR, unless these are already inhibited)
-    :set-saved-output t :all  ; same as the line above
-    (set-saved-output t nil)  ; save proof output for later, but print it now too
-    (set-saved-output nil t)  ; do not save proof output, and inhibit it
-    (set-saved-output nil nil); do not save proof output or inhibit output
-    (set-saved-output nil :same), (set-saved-output t :same)
-                              ; save proof output or not, as indicated, but do
-                              ;   not change which output is inhibited
-    (set-saved-output nil :normal)
-                              ; the behavior when ACL2 first starts up: do not
-                              ;   save output, and only inhibit proof-tree output
-    (set-saved-output t '(warning observation proof-tree prove))
-                              ; save proof output for later, and inhibit the
-                              ;   indicated kinds of output
-
-    General Form:
-    (set-saved-output save-flg inhibit-flg)
-
-  Parameter save-flg is t to cause output to be saved for later display
-  using pso or pso!; see [pso] and see [pso!], and see the
-  documentation for interactive [proof-builder] commands of the same
-  names.  Set save-flg to nil to turn off this feature; except, it
-  always stays on in proof-builder sessions entered with [verify].
-  The other argument, inhibit-flg, controls whether output should be
-  inhibited when it is created (normally, during a proof attempt).
-  So a common combination is to set both arguments to t, to indicate
-  that output should be suppressed for now but saved for printing
-  with [pso] or [pso!].  The examples above give a good summary of
-  the functionality for the second argument.
-
-  Saved output is cleared at every top-level prover call, including
-  such calls made by: [events] (e.g., [defthm] and [defun]), [thm],
-  and [proof-builder] commands that invoke the prover.  A single
-  event can make more than one top-level prover call, for example: in
-  the case of [defun], one call made for termination and another for
-  guard verification; and in the case of [defthm], one call made for
-  the proposed theorem and one for each [corollary].  If you want to
-  see more than one proof log for a single top-level form, first
-  evaluate (set-gag-mode nil).  Note that interactive [proof-builder]
-  commands, that is, from a proof-builder session entered with
-  [verify], are always run with output saved.
-
-  Also see [set-gag-mode]; and see [set-print-clause-ids], which causes
-  subgoal numbers to be printed during proof attempts when output is
-  inhibited.
-
-  See [set-inhibit-output-lst] if you want to inhibit certain output
-  from the prover but not other output (e.g., not the [summary]), and
-  you don't want to save any output.")
  (SET-SERIALIZE-CHARACTER (POINTERS)
                           "See [with-serialize-character].")
  (SET-SERIALIZE-CHARACTER-SYSTEM
@@ -129323,12 +129264,10 @@ Subtopics
     pso
 
   Print the most recent proof attempt from inside the interactive
-  proof-builder assuming you are in [gag-mode] or have saved output
-  (see [set-saved-output]).  This includes all calls to the prover,
-  including for example [proof-builder] commands induct, split, and
-  bash, in addition to prove.  So for example, you can follow (quiet
-  prove) with pso to see the proof, including [proof-tree] output, if
-  it failed.
+  proof-builder.  This includes prover calls, including for example
+  [proof-builder] commands induct, split, and bash, in addition to
+  prove.  So for example, you can follow (quiet prove) with pso to
+  see the proof, including [proof-tree] output, if it failed.
 
   Related [proof-builder] commands are psog and pso!; see
   [ACL2-pc::psog] and [ACL2-pc::pso!].")
@@ -129341,9 +129280,7 @@ Subtopics
     pso!
 
   Print the most recent proof attempt from inside the interactive
-  proof-builder, including [proof-tree] output, assuming you are in
-  [gag-mode] or have saved output (see [set-saved-output]).  This
-  includes all calls to the prover, including for example
+  proof-builder.  This includes prover calls, including for example
   [proof-builder] commands induct, split, and bash, in addition to
   prove.  So for example, you can follow (quiet prove) with pso! to
   see the proof, including [proof-tree] output, if it failed.
@@ -129359,12 +129296,11 @@ Subtopics
     psog
 
   Print the most recent proof attempt from inside the interactive
-  proof-builder, including goal names, assuming you are in [gag-mode]
-  or have saved output (see [set-saved-output]).  This includes all
-  calls to the prover, including for example [proof-builder] commands
-  induct, split, and bash, in addition to prove.  So for example, you
-  can follow (quiet prove) with psog to see the proof, including
-  [proof-tree] output, if it failed.
+  proof-builder, including goal names.  This includes prover calls,
+  including for example [proof-builder] commands induct, split, and
+  bash, in addition to prove.  So for example, you can follow (quiet
+  prove) with psog to see the proof, including [proof-tree] output,
+  if it failed.
 
   Related [proof-builder] commands are pso and pso!; see [ACL2-pc::pso]
   and [ACL2-pc::pso!].")
