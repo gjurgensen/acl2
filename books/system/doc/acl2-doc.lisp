@@ -66,8 +66,8 @@
     (ARITHMETIC "[books]/doc/more-topics.lisp")
     (ARITHMETIC-1 "[books]/arithmetic/top.lisp")
     (ARITHMETIC/NATP-POSP "[books]/arithmetic/natp-posp.lisp")
-    (ARITY+ "[books]/kestrel/utilities/system/world-queries.lisp")
-    (ASSERT! "[books]/misc/assert.lisp")
+    (ARITY+ "[books]/kestrel/std/system/arity-plus.lisp")
+    (ASSERT! "[books]/std/testing/assert-bang.lisp")
     (B* "[books]/std/util/bstar.lisp")
     (BRIDGE "[books]/centaur/bridge/top.lisp")
     (BUILD::CERT.PL "[books]/build/doc.lisp")
@@ -83,6 +83,7 @@
     (DEFPUN "[books]/misc/defpun.lisp")
     (DEFTHM<W "[books]/kestrel/utilities/auto-instance.lisp")
     (DEFTHMG "[books]/tools/defthmg.lisp")
+    (ACL2S::DEFUNC "[books]/acl2s/defunc.lisp")
     (DEFXDOC "[books]/xdoc/topics.lisp")
     (GETOPT-DEMO::DEMO2 "[books]/centaur/getopt/demo2.lisp")
     (DEVELOPERS-GUIDE "[books]/system/doc/developers-guide.lisp")
@@ -116,6 +117,7 @@
     (NOTE-8-0-BOOKS "[books]/doc/relnotes.lisp")
     (NOTE-8-1-BOOKS "[books]/doc/relnotes.lisp")
     (NOTE-8-2-BOOKS "[books]/doc/relnotes.lisp")
+    (NOTE-8-3-BOOKS "[books]/doc/relnotes.lisp")
     (STR::NUMBERS "[books]/std/strings/top.lisp")
     (ORACLE-TIMELIMIT "[books]/tools/oracle-timelimit.lisp")
     (OSLIB "[books]/oslib/top-logic.lisp")
@@ -6962,8 +6964,8 @@ and @(tsee include-book)"
   :long "<p>@('Assert-event') provides a way to check that the value of an
  expression is not @('nil'), causing an error otherwise.  For a similar utility
  see the macro @(tsee assert!) defined in @(see community-books) file
- @('books/misc/assert.lisp').  Here we compare the two, highlighting some key
- differences.</p>
+ @('books/std/testing/assert.lisp').  Here we compare the two, highlighting
+ some key differences.</p>
 
  <ul>
 
@@ -12835,7 +12837,7 @@ with any questions about building the community books.</p>")
 
 (defxdoc ccl-installation
   :parents (hons-and-memoization)
-  :short "Updating Clozure Common Lisp (CCL)"
+  :short "Installing Clozure Common Lisp (CCL)"
   :long "<p>For those who use ACL2 built on CCL as the host Common Lisp
  implementation, it has been common practice to use the latest GitHub version
  of CCL.  Here are instructions for how to build CCL on Linux, with comments on
@@ -12843,6 +12845,10 @@ with any questions about building the community books.</p>")
  ACL2 users than those on the ``<a
  href='https://ccl.clozure.com/install.html'>Installing Clozure CL</a>''
  page.  Note: Linux users may need to install @('m4').</p>
+
+ <p>Remark. The instructions immediately below should generally suffice.  But
+ if you would like additional information on CCL installation and
+ implementation, see @(see ccl-installation-extra).</p>
 
  <p>First fetch CCL from GitHub as follows.  (You may prefer to use ``@('git
  pull')'' if you previously did this step.  In that case you probably won't
@@ -12919,10 +12925,224 @@ with any questions about building the community books.</p>")
  ${CCL_DEFAULT_DIRECTORY}/scripts/ccl64 \"$@\"
  })
 
- <p>Finally, ensure that your script is executable, e.g.:</p>
+ <p>Now ensure that your script is executable, e.g.:</p>
 
  @({
  chmod +x my-script
+ })
+
+ <p>You're done!  (Note however that certification of @(see books) that use
+ @(see Quicklisp) may require @('openssl') to be installed if it is not already
+ on your system.)</p>")
+
+(defxdoc ccl-installation-extra
+  :parents (ccl-installation)
+  :short "Clozure Common Lisp (CCL) installation and implementation details"
+  :long "<p>This topic, contributed by Warren A. Hunt, Jr., extends the basic
+ information given in @(see ccl-installation).  It may be useful to some,
+ especially those who use ACL2 in ways that particularly stress memory.
+ Another resource may be found on <a
+ href='https://github.com/Clozure/ccl/releases/'>this page</a>.</p>
+
+ <p>Below we provide instructions to build CCL on FreeBSD and MacOS; building
+ on Linux will be similar.  Before providing the build instructions, we mention
+ a few facts about CCL's implementation.</p>
+
+ <p>CCL's implementation can't expand stack space automatically.  The sizes of
+ various stacks are set at thread creation time.  Most programs don't need very
+ big stacks.  The CCL default value and temp stack sizes may be too small for
+ compute-intensive applications.</p>
+
+ <p>The various stack sizes are set when creating a thread with code in
+ @('CCL::MAKE-PROCESS') and @('CCL::PROCESS-RUN-FUNCTION'), and they set the
+ three stack sizes of the initial listener thread that is created when CCL
+ starts.</p>
+
+ <p>The value stack is used for data in deeply-nested lisp recursion.  ACL2 can
+ benefit from an increase in the size of the value stack.</p>
+
+ <p>The temp stack is used for dynamic-extent objects.  This might need need to
+ be larger than the default.</p>
+
+ <p>The control stack is used to run C and binary code; it would be surprising
+ to need to increase its size.</p>
+
+ <p>If only one or two threads are needed, giant (e.g., 4 GB) stacks can
+ be OK, but with many threads large stacks use lots of memory.  Below
+ are the stacks along with their current (April, 2020) default sizes.</p>
+
+  @({
+  ccl::*default-control-stack-size*                    ;; default 2^21
+  ccl::*initial-listener-default-control-stack-size*   ;; default 2^21
+
+  ccl::*default-value-stack-size*                      ;; default 2^21
+  ccl::*initial-listener-default-value-stack-size*     ;; default 2^21
+
+  ccl::*initial-listener-default-temp-stack-size*      ;; default 2^20
+  ccl::*default-temp-stack-size*                       ;; default 2^20
+  })
+
+ <p>If we are running on a 32-bit platform, we set the stack sizes modestly.
+ If we are on a 64-bit platform, we set the stack sizes to much larger
+ values.  See the later discussion about ``configure-ccl.lisp'' below to
+ see how to alter (increase) stack sizes.</p>
+
+ <h3>MacOS Build Instructions:</h3>
+
+ @({
+ git clone https://github.com/Clozure/ccl.git ccl-dev
+ curl -L -O https://github.com/Clozure/ccl/releases/download/v1.12-dev.5/darwinx86.tar.gz
+ cd ccl-dev ; tar xf ../darwinx86.tar.gz
+ })
+
+ <p>Rebuild C-based, Lisp kernel</p>
+
+ <p>To rebuild the Lisp-code part of the kernel, do...</p>
+
+ @({
+ cd lisp-kernel/darwinx8664 ; make ; cd ../..
+ })
+
+ <p>Unlike for FreeBSD and Linux, we exclude ``:full t'' from the
+ ``rebuild-ccl'' command just below Matt Emerson (a CCL expert) writes:</p>
+
+ <blockquote>
+
+ <p>After looking at your log, I was able to duplicate the problem myself.
+ For some reason I do not understand, it appears that on Catalina,
+ removing the running lisp kernel binary causes run-program to break
+ (trying to run external programs gets signal 9).  This surprises me
+ very much.</p>
+
+ <p>One of the effects of running (rebuild-ccl :full t), is that it first does
+ a \"make clean\" in the lisp kernel directory, and then does a regular make.
+ This has worked for years, and I do not know why it has stopped working.</p>
+
+ </blockquote>
+
+ <p>To avoid this, rebuild the lisp with (rebuild-ccl :clean t) instead.  Do
+ not specify ``@(':full t')''.  Since you have already built the lisp kernel,
+ you gain nothing from ``@(':full t')'' doing it again.  So, once the C-based,
+ Lisp kernel is built, then do:</p>
+
+ @({
+ echo \"(in-package :ccl) (rebuild-ccl :verbose t :clean t)\" | \\
+       ./dx86cl64 -n |& tee ./ccl-build-compile.log
+ })
+
+ <p>Matt Emerson suggests that one re-build again.  We asked Matt a
+ long-simmering question: we have been told that it is a good idea to compile
+ CCL twice.  Is that so that the CCL compiler produced by pass one on the
+ target system is used to compile the CCL system that will be used (on the
+ target system)?  Or, is compiling twice some silly myth?  Matt Emerson
+ responded:</p>
+
+ <blockquote>
+
+ <p>It's not entirely mythic.  Some rare changes do need the lisp to be rebuilt
+ twice for bootstrapping purposes, but usually it isn't required.</p>
+
+ </blockquote>
+
+ <p>Thus, we recommend you re-build (compile) the Lisp code again.</p>
+
+ @({
+ echo \"(in-package :ccl) (rebuild-ccl :verbose t :clean t)\" | \\
+       ./dx86cl64 -n |& tee ./ccl-build-compile-2.log
+ })
+
+ <p>Finally, one may specialize the final image by:</p>
+
+ @({
+ cat configure-ccl.lisp | ./dx86cl64 -n |& tee ~/ccl-build-specialize.log
+ })
+
+ <p>where ``configure-ccl.lisp'' (not supplied) contains whatever CCL
+ specialization commands you wish to have in the version of CCL you use for
+ ACL2 or other work.  See the end of this note for an example of
+ ``configure-ccl.lisp''.</p>
+
+ <h3>FreeBSD Build Instructions:</h3>
+
+ <p>The FreeBSD build instructions are similar to the MacOS build instruction,
+ but the names are changed appropriately.</p>
+
+ @({
+ git clone https://github.com/Clozure/ccl.git ccl-dev
+ curl -L -O https://github.com/Clozure/ccl/releases/download/v1.12-dev.5/freebsd12-x8664.tar.gz
+ cd ccl-dev
+ tar xf ../freebsd12-x8664.tar.gz
+ })
+
+ <p>Rebuild C-based Lisp kernel</p>
+
+ @({
+ cd lisp-kernel/freebsdx8664 ; make ; cd ../..
+ })
+
+ <p>To rebuild the Lisp-code part of the kernel, do...</p>
+
+ @({
+ echo \"(in-package :ccl) (rebuild-ccl :full t :verbose t :clean t)\" | \\
+       ./fx86cl64 -n |& tee ./ccl-build-compile.log
+ })
+
+ <p>FreeBSD is OK with the ``:full t'' flag, which as of MacOS 10.15
+ breaks (but used to work on earlier versions of MacOS).  So, this
+ option persists on the FreeBSD build.</p>
+
+ <p>Matt Emerson recommends building the Lisp code a second time; see
+ the ``MacOS Build Instructions'' above for his rationale.</p>
+
+ @({
+ echo \"(in-package :ccl) (rebuild-ccl :full t :verbose t :clean t)\" | \\
+       ./fx86cl64 -n |& tee ./ccl-build-compile-2.log
+ })
+
+ <p>Finally, one may specialize the final image by:</p>
+
+ @({
+ cat ~/a/scripts/configure-ccl.lisp | ./fx86cl64 -n |& tee ~/ccl-build-specialize.log
+ })
+
+ <p>where ``configure-ccl.lisp'' (not supplied) contains whatever CCL
+ specialization commands you wish to have in the version of CCL you use for
+ ACL2 or other work.</p>
+
+ <code><h3>configure-ccl.lisp</h3></code>
+
+ <p>Sample ``configure-ccl.lisp'' file for 64-bit implementation:</p>
+
+ @({
+ (progn
+   ;; Parameters to configure CCL for use on FreeBSD and MacOS
+
+   (in-package :ccl)
+
+   ;; Enlarge stack sizes
+   (setq *default-value-stack-size*                    (expt 2 28))
+   (setq *initial-listener-value-stack-size*           (expt 2 28))
+
+   (setq *default-temp-stack-size*                     (expt 2 24))
+   (setq *initial-listener-temp-stack-size*            (expt 2 24))
+
+   (setq *default-control-stack-size*                  (expt 2 24))
+   (setq *initial-listener-default-control-stack-size* (expt 2 24))
+
+   ;; For CCL double precision
+   (setf *read-default-float-format* 'double-float)
+
+   ;; Make DEFUN save the source code for later recovery via
+   ;; FUNCTION-LAMBDA-EXPRESSION.
+   (setq *save-definitions* t)
+   (setq *fasl-save-definitions* t)
+
+   ;; Make GC verbose; see ACL2 documentation topic GC-VERBOSE.
+   (gc-verbose t t)
+
+   ;; Dump executable heap image; see ACL2 documentation topic SAVE-EXEC.
+   (save-exec *heap-image-name* \"Modification string to print at startup\")
+   )
  })")
 
 (defxdoc cdaaar
@@ -30180,8 +30400,8 @@ ld) and @(tsee include-book)"
  have occurred before a proof by induction has begun.  If you need more
  information than is provided by the key checkpoints &mdash; although this
  should rarely be necessary &mdash; then you can look at the full proof,
- perhaps with the aid of certain utilities: see @(see proof-tree), see @(see
- set-gag-mode), and see @(see set-saved-output).</p>
+ perhaps with the aid of certain utilities: see @(see pso), @(see
+ set-gag-mode), and @(see proof-tree).</p>
 
  <p>Again, see @(see the-method) for a general discussion of how to prove
  theorems with ACL2, and see @(see introduction-to-the-theorem-prover) for a
@@ -54170,7 +54390,7 @@ tables in the current Hons Space."
  community books directory @('books/make-event/').  You may even find it
  helpful, in order to understand @('make-event'), to do so before continuing to
  read this documentation.  You may also find it useful to browse community book
- @('books/misc/eval.lisp'), which contains definitions of macros
+ @('books/std/testing/eval.lisp'), which contains definitions of macros
  @('must-succeed') and @('must-fail') that are useful for testing and are used
  in many books in the @('books/make-event/') directory, especially
  @('eval-tests.lisp').  Another example, @('books/make-event/defrule.lisp'),
@@ -65840,7 +66060,7 @@ it."
  <p>A mechanism has been added for saving output.  In particular, you can now
  call @(tsee ld) on a file with output turned off, for efficiency, and yet when
  a proof fails you can then display the proof attempt for the failed (last)
- event.  See @(see set-saved-output).  Another new command &mdash; see @(see
+ event.  See set-saved-output.  Another new command &mdash; see @(see
  set-print-clause-ids) &mdash; causes subgoal numbers to be printed during
  proof attempts when output is inhibited.</p>
 
@@ -67424,8 +67644,8 @@ it."
  match the checks made when including a certified book.  Thanks to Eric Smith
  for suggesting this change.</p>
 
- <p>Fixed a bug in @(':')@(tsee pso) (see @(see set-saved-output)) that caused
- an error when printing the time summary.</p>
+ <p>Fixed a bug in @(':')@(tsee pso) (see set-saved-output) that caused an
+ error when printing the time summary.</p>
 
  <p>Made fixes to avoid potential hard Lisp errors caused by the use of
  @(':')@(tsee program) mode functions.  The fix was to use a ``safe mode,''
@@ -69312,7 +69532,7 @@ it."
  subgoals are to be considered first.  Thanks to Sandip Ray for putting forward
  this idea.</p>
 
- <p>Enhanced @(tsee set-saved-output) by supporting a second argument of
+ <p>Enhanced @('set-saved-output') by supporting a second argument of
  @(':same'), which avoids changing which output is inhibited.</p>
 
  <p>Added macros @('thm?') and @('not-thm?') to distributed book
@@ -69592,13 +69812,13 @@ it."
  read-eval-print loop (see @(see lp)) had already persisted from the original
  to newly-saved image.  Thanks to Jared Davis for suggesting this change.</p>
 
- <p>Changed @(tsee make-event) expansion so that changes to @(tsee
- set-saved-output), @(tsee set-print-clause-ids),
- @('set-fmt-soft-right-margin'), and @('set-fmt-hard-right-margin') will
- persist after being evaluated during @('make-event') expansion.
- (Specifically, @('*protected-system-state-globals*') has been modified; see
- @(see make-event-details).)  Thanks to Jared Davis for bringing this issue to
- our attention.</p>
+ <p>Changed @(tsee make-event) expansion so that changes to @(tsee gag-mode),
+ @(tsee set-print-clause-ids), @('set-fmt-soft-right-margin'), and
+ @('set-fmt-hard-right-margin') will persist after being evaluated during
+ @('make-event') expansion.  (Specifically,
+ @('*protected-system-state-globals*') has been modified; see @(see
+ make-event-details).)  Thanks to Jared Davis for bringing this issue to our
+ attention.</p>
 
  <p>Output from the @(see proof-builder) is now always enabled when invoking
  @(tsee verify), even if it is globally inhibited (see @(see
@@ -70775,10 +70995,10 @@ it."
  except @('proof-tree') output when turning off gag-mode.  Now, @(tsee
  set-gag-mode) only inhibits or enables proof (@('PROVE')) output, according to
  whether gag-mode is being turned on or off (respectively).  The related
- utility @(tsee set-saved-output) has also been modified, basically to
- eliminate @(':all') as a first argument and to allow @('t') and @(':all') as
- second arguments, for inhibiting prover output or virtually all output,
- respectively (see @(see set-saved-output)).</p></blockquote>
+ utility @('set-saved-output') has also been modified, basically to eliminate
+ @(':all') as a first argument and to allow @('t') and @(':all') as second
+ arguments, for inhibiting prover output or virtually all output,
+ respectively (see set-saved-output).</p></blockquote>
 
  <p>A @(tsee defstub) event @(see signature) specifying output of the form
  @('(mv ...)') now introduces a @(':')@(tsee type-prescription) rule asserting
@@ -85264,7 +85484,7 @@ it."
 ;   25 ; Changes to Existing Features
 ;    7 ; New Features
 ;   16 ; Heuristic and Efficiency Improvements
-;   16 ; Bug Fixes
+;   17 ; Bug Fixes
 ;    2 ; Changes at the System Level
 ;    2 ; EMACS Support
 ;    0 ; Experimental Versions
@@ -85441,8 +85661,8 @@ it."
  <p>The following symbols, when used in special syntactic roles in the macro
  @(tsee loop$), may be in any package: @('for'), @('in'), @('on'), @('from'),
  @('to'), @('by'), @('of-type'), @('when'), @('until'), @('sum'), @('collect'),
- @('always'), and @('append').  Thanks to Mertcan Temel for requesting this
- enhancement.</p>
+ @('always'), @('thereis'), and @('append').  Thanks to Mertcan Temel for
+ requesting this enhancement.</p>
 
  <p>@(':Expand') @(see hints) now act more reliably for @(see
  equality-variants), by expanding away @(see guard-holders).  Thanks to Sol
@@ -85851,6 +86071,11 @@ it."
  above, on saving translated bodies in certificate files.  Moreover, the
  relevant system function, @('include-book-fn1'), has been modified to do a
  better job of ignoring certificate files of uncertified books.</p>
+
+ <p>The utility @('set-saved-output') has been badly broken for years, but
+ without complaints (other than from one of us shortly before the release),
+ suggesting that it hasn't been directly called by users.  So we have
+ eliminated it.</p>
 
  <h3>Changes at the System Level</h3>
 
@@ -93669,7 +93894,7 @@ arithmetic) for libraries of @(see books) for arithmetic reasoning.</p>")
   :short "Show the most recently saved output"
   :long "<p>Evaluate @(':pso') in order to print output that was generated in
  an environment where output was being saved, as in @(see gag-mode), which is
- active when ACL2 is invoked.  See @(see set-saved-output) for details.</p>
+ active when ACL2 is invoked.  Also see @(see gag-mode).</p>
 
  @({
  Example Forms:
@@ -93746,7 +93971,8 @@ arithmetic) for libraries of @(see books) for arithmetic reasoning.</p>")
  <p>The ``Time'' printed in the summary shows the original times for the proof
  attempt, not the times for processing the @(':pso') command.</p>
 
- <p>Also see @(see pso!), @(see psog), and @(see psof).</p>")
+ <p>Also see @(see pso!), @(see psog), @(see psof), @(see set-gag-mode), @(see
+ set-inhibit-output-lst), and @(see set-print-clause-ids).</p>")
 
 (defxdoc pso!
   :parents (prover-output)
@@ -96303,7 +96529,7 @@ arithmetic) for libraries of @(see books) for arithmetic reasoning.</p>")
  redundant, since it is executed in a world that contains no trace of the first
  @('encapsulate') event.</p>
 
- <p>Also see community books @('misc/eval.lisp'),
+ <p>Also see community books @('std/testing/eval.lisp'),
  @('make-event/eval-check.lisp'), and @('make-event/eval-tests.lisp') for more
  ways to test in books.</p>
 
@@ -101993,10 +102219,7 @@ arithmetic) for libraries of @(see books) for arithmetic reasoning.</p>")
  see the full proof output after an attempt made with gag-mode.  This can be
  done provided proof output is not inhibited (see @(see
  set-inhibit-output-lst)) during the proof attempt; see @(see pso) and see
- @(see pso!).  Since @('set-gag-mode') takes responsibility for the saving of
- output, related utility @(tsee set-saved-output) is disabled when gag-mode is
- active.  Also note that calling @('set-gag-mode') erases the currently saved
- output, if any.</p>
+ @(see pso!).</p>
 
  <p>You may notice that gag-mode tends to print relatively little information
  about goals pushed for proof by sub-induction &mdash; i.e., a proof of *i.j,
@@ -104206,66 +104429,6 @@ arithmetic) for libraries of @(see books) for arithmetic reasoning.</p>")
   :long "<p>Please see @(see set-rw-cache-state), which is the same as
  @('set-rw-cache-state!')  except that the latter is not @(tsee local) to the
  @(tsee encapsulate) or the book in which it occurs.</p>")
-
-(defxdoc set-saved-output
-  :parents (set-gag-mode)
-  :short "Save proof output for later display with @(':')@(tsee pso) or
-  @(':')@(tsee pso!)"
-  :long "@({
-  Examples:
-  (set-saved-output t t)    ; save proof output for later, but inhibit it now
-  (set-saved-output t :all) ; save proof output for later, but inhibit all
-                            ;   output (except WARNING!, for critical warnings,
-                            ;   and ERROR, unless these are already inhibited)
-  :set-saved-output t :all  ; same as the line above
-  (set-saved-output t nil)  ; save proof output for later, but print it now too
-  (set-saved-output nil t)  ; do not save proof output, and inhibit it
-  (set-saved-output nil nil); do not save proof output or inhibit output
-  (set-saved-output nil :same), (set-saved-output t :same)
-                            ; save proof output or not, as indicated, but do
-                            ;   not change which output is inhibited
-  (set-saved-output nil :normal)
-                            ; the behavior when ACL2 first starts up: do not
-                            ;   save output, and only inhibit proof-tree output
-  (set-saved-output t '(warning observation proof-tree prove))
-                            ; save proof output for later, and inhibit the
-                            ;   indicated kinds of output
-
-  General Form:
-  (set-saved-output save-flg inhibit-flg)
- })
-
- <p>Parameter @('save-flg') is @('t') to cause output to be saved for later
- display using @('pso') or @('pso!'); see @(see pso) and see @(see pso!), and
- see the documentation for interactive @(see proof-builder) commands of the
- same names.  Set @('save-flg') to @('nil') to turn off this feature; except,
- it always stays on in proof-builder sessions entered with @(tsee verify).  The
- other argument, @('inhibit-flg'), controls whether output should be inhibited
- when it is created (normally, during a proof attempt).  So a common
- combination is to set both arguments to @('t'), to indicate that output should
- be suppressed for now but saved for printing with @(tsee pso) or @(tsee pso!).
- The examples above give a good summary of the functionality for the second
- argument.</p>
-
- <p>Saved output is cleared at every top-level prover call, including such
- calls made by: @(see events) (e.g., @(tsee defthm) and @(tsee defun)), @(tsee
- thm), and @(see proof-builder) commands that invoke the prover.  A single
- event can make more than one top-level prover call, for example: in the case
- of @(tsee defun), one call made for termination and another for guard
- verification; and in the case of @(tsee defthm), one call made for the
- proposed theorem and one for each @(see corollary).  If you want to see more
- than one proof log for a single top-level form, first evaluate
- @('(set-gag-mode nil)').  Note that interactive @(see proof-builder) commands,
- that is, from a proof-builder session entered with @(tsee verify), are always
- run with output saved.</p>
-
- <p>Also see @(see set-gag-mode); and see @(see set-print-clause-ids), which
- causes subgoal numbers to be printed during proof attempts when output is
- inhibited.</p>
-
- <p>See @(see set-inhibit-output-lst) if you want to inhibit certain output
- from the prover but not other output (e.g., not the @(see summary)), and you
- don't want to save any output.</p>")
 
 (defxdoc set-serialize-character-system
   :parents (serialize)
@@ -128217,12 +128380,10 @@ print the most recent proof attempt from inside the proof-builder"
  })
 
  <p>Print the most recent proof attempt from inside the interactive
- proof-builder assuming you are in @(tsee gag-mode) or have saved output (see
- @(see set-saved-output)).  This includes all calls to the prover, including
- for example @(see proof-builder) commands @('induct'), @('split'), and
- @('bash'), in addition to @('prove').  So for example, you can follow
- @('(quiet prove)') with @('pso') to see the proof, including @(see proof-tree)
- output, if it failed.</p>
+ proof-builder.  This includes prover calls, including for example @(see
+ proof-builder) commands @('induct'), @('split'), and @('bash'), in addition to
+ @('prove').  So for example, you can follow @('(quiet prove)') with @('pso')
+ to see the proof, including @(see proof-tree) output, if it failed.</p>
 
  <p>Related @(see proof-builder) commands are @('psog') and @('pso!'); see @(see
  acl2-pc::psog) and @(see acl2-pc::pso!).</p>")
@@ -128237,12 +128398,10 @@ print the most recent proof attempt from inside the proof-builder"
  })
 
  <p>Print the most recent proof attempt from inside the interactive
- proof-builder, including @(see proof-tree) output, assuming you are in @(tsee
- gag-mode) or have saved output (see @(see set-saved-output)).  This includes
- all calls to the prover, including for example @(see proof-builder) commands
- @('induct'), @('split'), and @('bash'), in addition to @('prove').  So for
- example, you can follow @('(quiet prove)') with @('pso!') to see the proof,
- including @(see proof-tree) output, if it failed.</p>
+ proof-builder.  This includes prover calls, including for example @(see
+ proof-builder) commands @('induct'), @('split'), and @('bash'), in addition to
+ @('prove').  So for example, you can follow @('(quiet prove)') with @('pso!')
+ to see the proof, including @(see proof-tree) output, if it failed.</p>
 
  <p>Related @(see proof-builder) commands are @('pso') and @('psog'); see @(see
  acl2-pc::pso) and @(see acl2-pc::psog).</p>")
@@ -128257,11 +128416,10 @@ print the most recent proof attempt from inside the proof-builder"
  })
 
  <p>Print the most recent proof attempt from inside the interactive
- proof-builder, including goal names, assuming you are in @(tsee gag-mode) or
- have saved output (see @(see set-saved-output)).  This includes all calls to
- the prover, including for example @(see proof-builder) commands @('induct'),
- @('split'), and @('bash'), in addition to @('prove').  So for example, you can
- follow @('(quiet prove)') with @('psog') to see the proof, including @(see
+ proof-builder, including goal names.  This includes prover calls, including
+ for example @(see proof-builder) commands @('induct'), @('split'), and
+ @('bash'), in addition to @('prove').  So for example, you can follow
+ @('(quiet prove)') with @('psog') to see the proof, including @(see
  proof-tree) output, if it failed.</p>
 
  <p>Related @(see proof-builder) commands are @('pso') and @('pso!'); see @(see
