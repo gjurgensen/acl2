@@ -2,8 +2,8 @@
 ;
 ; acl2-doc.lisp - Documentation for the ACL2 Theorem Prover
 ;
-; ACL2 Version 8.2 -- A Computational Logic for Applicative Common Lisp
-; Copyright (C) 2019, Regents of the University of Texas
+; ACL2 Version 8.3 -- A Computational Logic for Applicative Common Lisp
+; Copyright (C) 2020, Regents of the University of Texas
 ;
 ; This documentation was derived from the ACL2 system in October 2013, which
 ; was a descendant of ACL2 Version 1.9, Copyright (C) 1997 Computational Logic,
@@ -170,7 +170,7 @@
 ; who are looking at an older version of ACL2 will see the corresponding
 ; ACL2+Books Manual at this link.
 
-  "http://www.cs.utexas.edu/users/moore/acl2/v8-2/")
+  "http://www.cs.utexas.edu/users/moore/acl2/v8-3/")
 
 (defconst *installation-url*
 
@@ -745,7 +745,7 @@
 (defxdoc about-acl2
   :parents (acl2)
   :short "General information About ACL2"
-  :long "<p>This is @(`(:raw (@ acl2-version))`), @(see copyright) (C) 2019,
+  :long "<p>This is @(`(:raw (@ acl2-version))`), @(see copyright) (C) 2020,
  Regents of the University of Texas, authored by Matt Kaufmann and J Strother
  Moore.</p>
 
@@ -17083,7 +17083,7 @@ subtree of X with T, without duplication.</p>
  <p>@(`(:raw (@ acl2-version))`) &mdash; A Computational Logic for Applicative
  Common Lisp</p>
 
- <p>Copyright (C) 2019, Regents of the University of Texas</p>
+ <p>Copyright (C) 2020, Regents of the University of Texas</p>
 
  <p>This version of ACL2 is a descendant of ACL2 Version 1.9, Copyright (C)
  1997 Computational Logic, Inc.  See the documentation topic NOTE-2-0.</p>
@@ -86098,6 +86098,44 @@ it."
  <p>The @(see acl2-doc) browser for ACL2+books documentation can be extended
  with a new command, @('U'), to open a URL (or in some cases, a file) in a
  browser.  See file @('emacs/acl2-doc-open-url.el') for more information.</p>
+
+ <h3>Experimental Versions</h3>
+
+ ")
+
+(defxdoc note-8-4
+  :parents (release-notes)
+  :short "ACL2 Version  8.4 (xxx, 20xx) Notes"
+  :long "<p>NOTE!  New users can ignore these release notes, because the @(see
+ documentation) has been updated to reflect all changes that are recorded
+ here.</p>
+
+ <p>Below we roughly organize the changes to ACL2 since Version 8.3 into the
+ following categories of changes: existing features, new features, heuristic
+ and efficiency improvements, bug fixes, changes at the system level, Emacs
+ support, and experimental versions.  Each change is described in just one
+ category, though of course many changes could be placed in more than one
+ category.</p>
+
+ <p>Note that only ACL2 system changes are listed below.  See also @(see
+ note-8-4-books) for a summary of changes made to the ACL2 Community Books
+ since ACL2 8.3, including the build system.  Also note that with each release,
+ it is typical that the value of constant @(tsee *acl2-exports*) has been
+ extended, and that some built-in functions that were formerly in @(':')@(tsee
+ program) mode are now @(see guard)-verified @(':')@(tsee logic) mode
+ functions.</p>
+
+ <h3>Changes to Existing Features</h3>
+
+ <h3>New Features</h3>
+
+ <h3>Heuristic and Efficiency Improvements</h3>
+
+ <h3>Bug Fixes</h3>
+
+ <h3>Changes at the System Level</h3>
+
+ <h3>EMACS Support</h3>
 
  <h3>Experimental Versions</h3>
 
