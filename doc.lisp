@@ -15675,11 +15675,13 @@ Subtopics
 
   For those who use ACL2 built on CCL as the host Common Lisp
   implementation, it has been common practice to use the latest
-  GitHub version of CCL.  Here are instructions for how to build CCL
-  on Linux, with comments on how to adapt them to Mac (Darwin).  They
-  might be a bit more convenient for ACL2 users than those on the
-  ``{Installing Clozure CL | https://ccl.clozure.com/install.html}''
-  page.  Note: Linux users may need to install m4.
+  GitHub version of CCL.  Below are self-contained instructions for
+  how to build CCL on Linux, with comments on how to adapt them to
+  Mac (Darwin).  You may prefer instead to look at the {CCL Releases
+  | https://github.com/Clozure/ccl/releases} page, using the text
+  below only as needed (e.g., for Linux-specific information or for
+  discussion of CCL_DEFAULT_DIRECTORY).  Note: Linux users may need
+  to install m4.
 
   Remark. The instructions immediately below should generally suffice.
   But if you would like additional information on CCL installation
