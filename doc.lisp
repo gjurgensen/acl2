@@ -3,8 +3,8 @@
 ; The contents of this file are derived from ACL2 Community Book
 ; books/system/doc/acl2-doc.lisp.
 
-; ACL2 Version 8.2 -- A Computational Logic for Applicative Common Lisp
-; Copyright (C) 2019, Regents of the University of Texas
+; ACL2 Version 8.3 -- A Computational Logic for Applicative Common Lisp
+; Copyright (C) 2020, Regents of the University of Texas
 
 ; This version of ACL2 is a descendent of ACL2 Version 1.9, Copyright
 ; (C) 1997 Computational Logic, Inc.  See the documentation topic NOTE-2-0.
@@ -77,7 +77,7 @@ Subtopics
   [defthm], [in-theory], [xargs], [state], etc., without an acl2::
   prefix.
 
-  The constant *acl2-exports* lists 1501 symbols, including most
+  The constant *acl2-exports* lists 1500 symbols, including most
   documented ACL2 system constants, functions, and macros.  You will
   typically also want to import many symbols from Common Lisp; see
   [*common-lisp-symbols-from-main-lisp-package*].
@@ -611,7 +611,7 @@ Subtopics
        set-rewrite-stack-limit
        set-ruler-extenders
        set-rw-cache-state set-rw-cache-state!
-       set-saved-output set-serialize-character
+       set-serialize-character
        set-serialize-character-system
        set-skip-meta-termp-checks
        set-skip-meta-termp-checks!
@@ -1526,7 +1526,7 @@ Subtopics
   (ACL2)
   "General information About ACL2
 
-  This is ACL2 Version 8.2, [copyright] (C) 2019, Regents of the
+  This is ACL2 Version 8.3, [copyright] (C) 2020, Regents of the
   University of Texas, authored by Matt Kaufmann and J Strother
   Moore.
 
@@ -2554,7 +2554,7 @@ Subtopics
   This is the ACL2 documentation.  For the ACL2+Books Manual, which
   that includes both the ACL2 documentation and the ACL2
   [community-books], see the {ACL2+Books Manual |
-  http://www.cs.utexas.edu/users/moore/acl2/v8-2/combined-manual/index.html}.
+  http://www.cs.utexas.edu/users/moore/acl2/v8-3/combined-manual/index.html}.
 
 
 Subtopics
@@ -4704,7 +4704,7 @@ Silent loading of ACL2 customization files
 
   As discussed elsewhere (see [documentation]), the web-based
   {ACL2+Books Manual |
-  http://www.cs.utexas.edu/users/moore/acl2/v8-2/combined-manual/index.html}
+  http://www.cs.utexas.edu/users/moore/acl2/v8-3/combined-manual/index.html}
   provides a way to browse the combined documentation for the ACL2
   system and community books.  Such documentation can also be read at
   the terminal using the :[doc] command, though documentation for
@@ -9791,8 +9791,8 @@ Subtopics
   Assert-event provides a way to check that the value of an expression
   is not nil, causing an error otherwise.  For a similar utility see
   the macro [assert!] defined in [community-books] file
-  books/misc/assert.lisp.  Here we compare the two, highlighting some
-  key differences.
+  books/std/testing/assert.lisp.  Here we compare the two,
+  highlighting some key differences.
 
     * Both assert! and assert-event evaluate using the current
       [guard]-checking status (e.g., see [with-guard-checking]).
@@ -12712,7 +12712,7 @@ Prerequisites
 
   We assume that you have already downloaded and installed ACL2 as per
   the {ACL2 installation instructions |
-  http://www.cs.utexas.edu/users/moore/acl2/v8-2/HTML/installation/installation.html}
+  http://www.cs.utexas.edu/users/moore/acl2/v8-3/HTML/installation/installation.html}
   on the ACL2 home page.
 
   We assume you know the path to your ACL2 executable.  Typically this
@@ -12964,7 +12964,7 @@ Subtopics
 
   For more information about installing ACL2, see the {ACL2
   installation instructions |
-  http://www.cs.utexas.edu/users/moore/acl2/v8-2/HTML/installation/installation.html}.
+  http://www.cs.utexas.edu/users/moore/acl2/v8-3/HTML/installation/installation.html}.
   For information about so-called ``classic ACL2 `make'-based
   certification'', which provides support for certifying directories
   of books but may disappear in a future ACL2 release, see
@@ -14455,7 +14455,7 @@ Subtopics
   contains [documentation] only about the ACL2 system, and does not
   include documentation from the [community-books].  Please point
   your browser at the {ACL2+Books Manual |
-  http://www.cs.utexas.edu/users/moore/acl2/v8-2/combined-manual/index.html}
+  http://www.cs.utexas.edu/users/moore/acl2/v8-3/combined-manual/index.html}
   (or if browsing in [ACL2-Doc], switch to that manual with meta-0 I)
   to access the desired topic.
 
@@ -14488,8 +14488,8 @@ Subtopics
        (arithmetic \"[books]/doc/more-topics.lisp\")
        (arithmetic-1 \"[books]/arithmetic/top.lisp\")
        (arithmetic/natp-posp \"[books]/arithmetic/natp-posp.lisp\")
-       (arity+ \"[books]/kestrel/utilities/system/world-queries.lisp\")
-       (assert! \"[books]/misc/assert.lisp\")
+       (arity+ \"[books]/kestrel/std/system/arity-plus.lisp\")
+       (assert! \"[books]/std/testing/assert-bang.lisp\")
        (b* \"[books]/std/util/bstar.lisp\")
        (bridge \"[books]/centaur/bridge/top.lisp\")
        (build::cert.pl \"[books]/build/doc.lisp\")
@@ -14505,6 +14505,7 @@ Subtopics
        (defpun \"[books]/misc/defpun.lisp\")
        (defthm<w \"[books]/kestrel/utilities/auto-instance.lisp\")
        (defthmg \"[books]/tools/defthmg.lisp\")
+       (acl2s::defunc \"[books]/acl2s/defunc.lisp\")
        (defxdoc \"[books]/xdoc/topics.lisp\")
        (getopt-demo::demo2 \"[books]/centaur/getopt/demo2.lisp\")
        (developers-guide \"[books]/system/doc/developers-guide.lisp\")
@@ -14539,6 +14540,7 @@ Subtopics
        (note-8-0-books \"[books]/doc/relnotes.lisp\")
        (note-8-1-books \"[books]/doc/relnotes.lisp\")
        (note-8-2-books \"[books]/doc/relnotes.lisp\")
+       (note-8-3-books \"[books]/doc/relnotes.lisp\")
        (str::numbers \"[books]/std/strings/top.lisp\")
        (oracle-timelimit \"[books]/tools/oracle-timelimit.lisp\")
        (oslib \"[books]/oslib/top-logic.lisp\")
@@ -15669,15 +15671,21 @@ Subtopics
   second one as redundant.")
  (CCL-INSTALLATION
   (HONS-AND-MEMOIZATION)
-  "Updating Clozure Common Lisp (CCL)
+  "Installing Clozure Common Lisp (CCL)
 
   For those who use ACL2 built on CCL as the host Common Lisp
   implementation, it has been common practice to use the latest
-  GitHub version of CCL.  Here are instructions for how to build CCL
-  on Linux, with comments on how to adapt them to Mac (Darwin).  They
-  might be a bit more convenient for ACL2 users than those on the
-  ``{Installing Clozure CL | https://ccl.clozure.com/install.html}''
-  page.  Note: Linux users may need to install m4.
+  GitHub version of CCL.  Below are self-contained instructions for
+  how to build CCL on Linux, with comments on how to adapt them to
+  Mac (Darwin).  You may prefer instead to look at the {CCL Releases
+  | https://github.com/Clozure/ccl/releases} page, using the text
+  below only as needed (e.g., for Linux-specific information or for
+  discussion of CCL_DEFAULT_DIRECTORY).  Note: Linux users may need
+  to install m4.
+
+  Remark. The instructions immediately below should generally suffice.
+  But if you would like additional information on CCL installation
+  and implementation, see [ccl-installation-extra].
 
   First fetch CCL from GitHub as follows.  (You may prefer to use ``git
   pull'' if you previously did this step.  In that case you probably
@@ -15713,20 +15721,28 @@ Subtopics
     # For a Mac: tar xfz darwinx86.tar.gz
     tar xfz linuxx86.tar.gz
 
-  Now rebuild the kernel.
+  Rebuild the lisp kernel by hand before trying to rebuild the lisp.
+  (Note: This step was formerly unnecessary and might become
+  unnecessary again.  If you skip it, then consider replacing :clean
+  by :full below.)
+
+    cd lisp-kernel/linuxx8664; make clean; make
+    cd -
+
+  Finish up:
 
     # (On a Mac, replace the next command with: ./dx86cl64)
     ./lx86cl64
     # This welcomes you, e.g.:
     #   Clozure Common Lisp Version 1.12-dev (v1.12-dev.5) LinuxX8664
     # Now submit this command:
-    ? (rebuild-ccl :full t)
+    ? (rebuild-ccl :clean t)
     # After it returns, quit:
     ? (quit)
     # Now, back at the shell, rebuild the kernel again just to be safe:
     # For a Mac: ./dx86cl64
     ./lx86cl64
-    ? (rebuild-ccl :full t)
+    ? (rebuild-ccl :clean t)
     ? (quit)
 
   Create an executable script like the following.  Be sure to change
@@ -15738,9 +15754,206 @@ Subtopics
     export CCL_DEFAULT_DIRECTORY=/projects/acl2/lisps/ccl/2017-12-07-6be8298fe5/ccl
     ${CCL_DEFAULT_DIRECTORY}/scripts/ccl64 \"$@\"
 
-  Finally, ensure that your script is executable, e.g.:
+  Now ensure that your script is executable, e.g.:
 
-    chmod +x my-script")
+    chmod +x my-script
+
+  You're done!  (Note however that certification of [books] that use
+  [Quicklisp] may require openssl to be installed if it is not
+  already on your system.)
+
+
+Subtopics
+
+  [Ccl-installation-extra]
+      Clozure Common Lisp (CCL) installation and implementation details")
+ (CCL-INSTALLATION-EXTRA
+  (CCL-INSTALLATION)
+  "Clozure Common Lisp (CCL) installation and implementation details
+
+  This topic, contributed by Warren A. Hunt, Jr., extends the basic
+  information given in [ccl-installation].  It may be useful to some,
+  especially those who use ACL2 in ways that particularly stress
+  memory.  Another resource may be found on {this page |
+  https://github.com/Clozure/ccl/releases/}.
+
+  Below we provide instructions to build CCL on FreeBSD and MacOS;
+  building on Linux will be similar.  Before providing the build
+  instructions, we mention a few facts about CCL's implementation.
+
+  CCL's implementation can't expand stack space automatically.  The
+  sizes of various stacks are set at thread creation time.  Most
+  programs don't need very big stacks.  The CCL default value and
+  temp stack sizes may be too small for compute-intensive
+  applications.
+
+  The various stack sizes are set when creating a thread with code in
+  CCL::MAKE-PROCESS and CCL::PROCESS-RUN-FUNCTION, and they set the
+  three stack sizes of the initial listener thread that is created
+  when CCL starts.
+
+  The value stack is used for data in deeply-nested lisp recursion.
+  ACL2 can benefit from an increase in the size of the value stack.
+
+  The temp stack is used for dynamic-extent objects.  This might need
+  need to be larger than the default.
+
+  The control stack is used to run C and binary code; it would be
+  surprising to need to increase its size.
+
+  If only one or two threads are needed, giant (e.g., 4 GB) stacks can
+  be OK, but with many threads large stacks use lots of memory.
+  Below are the stacks along with their current (April, 2020) default
+  sizes.
+
+    ccl::*default-control-stack-size*                    ;; default 2^21
+    ccl::*initial-listener-default-control-stack-size*   ;; default 2^21
+
+    ccl::*default-value-stack-size*                      ;; default 2^21
+    ccl::*initial-listener-default-value-stack-size*     ;; default 2^21
+
+    ccl::*initial-listener-default-temp-stack-size*      ;; default 2^20
+    ccl::*default-temp-stack-size*                       ;; default 2^20
+
+  If we are running on a 32-bit platform, we set the stack sizes
+  modestly.  If we are on a 64-bit platform, we set the stack sizes
+  to much larger values.  See the later discussion about
+  ``configure-ccl.lisp'' below to see how to alter (increase) stack
+  sizes.
+
+
+MacOS Build Instructions:
+
+    git clone https://github.com/Clozure/ccl.git ccl-dev
+    curl -L -O https://github.com/Clozure/ccl/releases/download/v1.12-dev.5/darwinx86.tar.gz
+    cd ccl-dev ; tar xf ../darwinx86.tar.gz
+
+  Rebuild C-based, Lisp kernel
+
+  To rebuild the Lisp-code part of the kernel, do...
+
+    cd lisp-kernel/darwinx8664 ; make ; cd ../..
+
+  Unlike for FreeBSD and Linux, we exclude ``:full t'' from the
+  ``rebuild-ccl'' command just below Matt Emerson (a CCL expert)
+  writes:
+
+      After looking at your log, I was able to duplicate the problem
+      myself.  For some reason I do not understand, it appears that
+      on Catalina, removing the running lisp kernel binary causes
+      run-program to break (trying to run external programs gets
+      signal 9).  This surprises me very much.
+
+      One of the effects of running (rebuild-ccl :full t), is that it first
+      does a \"make clean\" in the lisp kernel directory, and then does
+      a regular make.  This has worked for years, and I do not know
+      why it has stopped working.
+
+  To avoid this, rebuild the lisp with (rebuild-ccl :clean t) instead.
+  Do not specify ``:full t''.  Since you have already built the lisp
+  kernel, you gain nothing from ``:full t'' doing it again.  So, once
+  the C-based, Lisp kernel is built, then do:
+
+    echo \"(in-package :ccl) (rebuild-ccl :verbose t :clean t)\" | \\
+          ./dx86cl64 -n |& tee ./ccl-build-compile.log
+
+  Matt Emerson suggests that one re-build again.  We asked Matt a
+  long-simmering question: we have been told that it is a good idea
+  to compile CCL twice.  Is that so that the CCL compiler produced by
+  pass one on the target system is used to compile the CCL system
+  that will be used (on the target system)?  Or, is compiling twice
+  some silly myth?  Matt Emerson responded:
+
+      It's not entirely mythic.  Some rare changes do need the lisp to be
+      rebuilt twice for bootstrapping purposes, but usually it isn't
+      required.
+
+  Thus, we recommend you re-build (compile) the Lisp code again.
+
+    echo \"(in-package :ccl) (rebuild-ccl :verbose t :clean t)\" | \\
+          ./dx86cl64 -n |& tee ./ccl-build-compile-2.log
+
+  Finally, one may specialize the final image by:
+
+    cat configure-ccl.lisp | ./dx86cl64 -n |& tee ~/ccl-build-specialize.log
+
+  where ``configure-ccl.lisp'' (not supplied) contains whatever CCL
+  specialization commands you wish to have in the version of CCL you
+  use for ACL2 or other work.  See the end of this note for an
+  example of ``configure-ccl.lisp''.
+
+
+FreeBSD Build Instructions:
+
+  The FreeBSD build instructions are similar to the MacOS build
+  instruction, but the names are changed appropriately.
+
+    git clone https://github.com/Clozure/ccl.git ccl-dev
+    curl -L -O https://github.com/Clozure/ccl/releases/download/v1.12-dev.5/freebsd12-x8664.tar.gz
+    cd ccl-dev
+    tar xf ../freebsd12-x8664.tar.gz
+
+  Rebuild C-based Lisp kernel
+
+    cd lisp-kernel/freebsdx8664 ; make ; cd ../..
+
+  To rebuild the Lisp-code part of the kernel, do...
+
+    echo \"(in-package :ccl) (rebuild-ccl :full t :verbose t :clean t)\" | \\
+          ./fx86cl64 -n |& tee ./ccl-build-compile.log
+
+  FreeBSD is OK with the ``:full t'' flag, which as of MacOS 10.15
+  breaks (but used to work on earlier versions of MacOS).  So, this
+  option persists on the FreeBSD build.
+
+  Matt Emerson recommends building the Lisp code a second time; see the
+  ``MacOS Build Instructions'' above for his rationale.
+
+    echo \"(in-package :ccl) (rebuild-ccl :full t :verbose t :clean t)\" | \\
+          ./fx86cl64 -n |& tee ./ccl-build-compile-2.log
+
+  Finally, one may specialize the final image by:
+
+    cat ~/a/scripts/configure-ccl.lisp | ./fx86cl64 -n |& tee ~/ccl-build-specialize.log
+
+  where ``configure-ccl.lisp'' (not supplied) contains whatever CCL
+  specialization commands you wish to have in the version of CCL you
+  use for ACL2 or other work.
+
+
+configure-ccl.lisp
+
+  Sample ``configure-ccl.lisp'' file for 64-bit implementation:
+
+    (progn
+      ;; Parameters to configure CCL for use on FreeBSD and MacOS
+
+      (in-package :ccl)
+
+      ;; Enlarge stack sizes
+      (setq *default-value-stack-size*                    (expt 2 28))
+      (setq *initial-listener-value-stack-size*           (expt 2 28))
+
+      (setq *default-temp-stack-size*                     (expt 2 24))
+      (setq *initial-listener-temp-stack-size*            (expt 2 24))
+
+      (setq *default-control-stack-size*                  (expt 2 24))
+      (setq *initial-listener-default-control-stack-size* (expt 2 24))
+
+      ;; For CCL double precision
+      (setf *read-default-float-format* 'double-float)
+
+      ;; Make DEFUN save the source code for later recovery via
+      ;; FUNCTION-LAMBDA-EXPRESSION.
+      (setq *save-definitions* t)
+      (setq *fasl-save-definitions* t)
+
+      ;; Make GC verbose; see ACL2 documentation topic GC-VERBOSE.
+      (gc-verbose t t)
+
+      ;; Dump executable heap image; see ACL2 documentation topic SAVE-EXEC.
+      (save-exec *heap-image-name* \"Modification string to print at startup\")
+      )")
  (CCL-UPDATES (POINTERS)
               "See [ccl-installation].")
  (CDAAAR
@@ -20120,10 +20333,10 @@ Subtopics
   [documentation-copyright], which notes that there are many
   documentation authors.
 
-  ACL2 Version 8.2 --- A Computational Logic for Applicative Common
+  ACL2 Version 8.3 --- A Computational Logic for Applicative Common
   Lisp
 
-  Copyright (C) 2019, Regents of the University of Texas
+  Copyright (C) 2020, Regents of the University of Texas
 
   This version of ACL2 is a descendant of ACL2 Version 1.9, Copyright
   (C) 1997 Computational Logic, Inc.  See the documentation topic
@@ -23593,7 +23806,7 @@ Subtopics
                  :hints ((\"Goal\" :use ...)))
 
     General Form:
-    (definductor name &key measure rel ruler-extenders hints)
+    (definductor name &key measure well-founded-relation ruler-extenders hints)
 
   where name is the name of a previously admitted loop$-recursive
   function satisfying the restrictions listed below.  When successful
@@ -23601,10 +23814,10 @@ Subtopics
   induction scheme that is supposedly appropriate for name, admits it
   with a silent proof of its measure theorems, and then proves an
   :induction rule to associate that scheme with calls of name.  When
-  omitted, the optional keyword arguments measure, rel, and
-  ruler-extenders default to the measure, well-founded relation, and
-  ruler-extender settings used in the admittance of name.  The
-  keyword argument hints defaults to nil.
+  omitted, the optional keyword arguments measure,
+  well-founded-relation, and ruler-extenders default to the measure,
+  well-founded relation, and ruler-extender settings used in the
+  admittance of name.  The keyword argument hints defaults to nil.
 
 
 Restrictions
@@ -28228,7 +28441,7 @@ Subtopics
   defined in books.  However, most users will probably access the
   ACL2 documentation in other ways; see [documentation].  In
   particular, consider using the {ACL2+Books Manual |
-  http://www.cs.utexas.edu/users/moore/acl2/v8-2/combined-manual/index.html},
+  http://www.cs.utexas.edu/users/moore/acl2/v8-3/combined-manual/index.html},
   for topics documented in the ACL2 community [books] or in the ACL2
   system (where the latter are rearranged).
 
@@ -28270,7 +28483,7 @@ Available Documentation
     * The online version (recommended). If you expect to have an internet
       connection while using the documentation, you may prefer to use
       the online version of the {ACL2+Books Manual |
-      http://www.cs.utexas.edu/users/moore/acl2/v8-2/combined-manual/index.html}.
+      http://www.cs.utexas.edu/users/moore/acl2/v8-3/combined-manual/index.html}.
     * A local version. If you sometimes work without an internet
       connection, you can {download | download/} a local copy of any
       web-based XDOC manual using the \"down arrow\" icon at the top of
@@ -33574,7 +33787,7 @@ Subtopics
   need more information than is provided by the key checkpoints ---
   although this should rarely be necessary --- then you can look at
   the full proof, perhaps with the aid of certain utilities: see
-  [proof-tree], see [set-gag-mode], and see [set-saved-output].
+  [pso], [set-gag-mode], and [proof-tree].
 
   Again, see [the-method] for a general discussion of how to prove
   theorems with ACL2, and see [introduction-to-the-theorem-prover]
@@ -34305,7 +34518,7 @@ Subtopics
   not included in the current ACL2 session?
 
   The [xdoc] {ACL2+Books Manual |
-  http://www.cs.utexas.edu/users/moore/acl2/v8-2/combined-manual/index.html}
+  http://www.cs.utexas.edu/users/moore/acl2/v8-3/combined-manual/index.html}
   includes documentation for both the ACL2 system and the
   [community-books].  For more information on this manual and how to
   view it, see [documentation].")
@@ -44353,7 +44566,7 @@ Subtopics
 Subtopics
 
   [Ccl-installation]
-      Updating Clozure Common Lisp (CCL)
+      Installing Clozure Common Lisp (CCL)
 
   [Fast-alists]
       Alists with hidden hash tables for faster execution
@@ -58279,15 +58492,15 @@ Detailed Documentation
   community books directory books/make-event/.  You may even find it
   helpful, in order to understand make-event, to do so before
   continuing to read this documentation.  You may also find it useful
-  to browse community book books/misc/eval.lisp, which contains
-  definitions of macros must-succeed and must-fail that are useful
-  for testing and are used in many books in the books/make-event/
-  directory, especially eval-tests.lisp.  Another example,
-  books/make-event/defrule.lisp, shows how to use macros whose calls
-  expand to make-event forms, which in turn can generate [events].
-  For more examples, see file books/make-event/Readme.lsp.  Other
-  than the examples, the explanations here should suffice for most
-  users.  If you want explanations of subtler details, see
+  to browse community book books/std/testing/eval.lisp, which
+  contains definitions of macros must-succeed and must-fail that are
+  useful for testing and are used in many books in the
+  books/make-event/ directory, especially eval-tests.lisp.  Another
+  example, books/make-event/defrule.lisp, shows how to use macros
+  whose calls expand to make-event forms, which in turn can generate
+  [events].  For more examples, see file books/make-event/Readme.lsp.
+  Other than the examples, the explanations here should suffice for
+  most users.  If you want explanations of subtler details, see
   [make-event-details].
 
   Note that make-event is generally legal only where an embedded event
@@ -69507,7 +69720,7 @@ Table of Contents
   A mechanism has been added for saving output.  In particular, you can
   now call [ld] on a file with output turned off, for efficiency, and
   yet when a proof fails you can then display the proof attempt for
-  the failed (last) event.  See [set-saved-output].  Another new
+  the failed (last) event.  See set-saved-output.  Another new
   command --- see [set-print-clause-ids] --- causes subgoal numbers
   to be printed during proof attempts when output is inhibited.
 
@@ -70805,7 +71018,7 @@ Subtopics
   to match the checks made when including a certified book.  Thanks
   to Eric Smith for suggesting this change.
 
-  Fixed a bug in :[pso] (see [set-saved-output]) that caused an error
+  Fixed a bug in :[pso] (see set-saved-output) that caused an error
   when printing the time summary.
 
   Made fixes to avoid potential hard Lisp errors caused by the use of
@@ -72043,7 +72256,7 @@ Subtopics
   are to be considered first.  Thanks to Sandip Ray for putting
   forward this idea.
 
-  Enhanced [set-saved-output] by supporting a second argument of :same,
+  Enhanced set-saved-output by supporting a second argument of :same,
   which avoids changing which output is inhibited.
 
   Added macros thm? and not-thm? to distributed book
@@ -72320,7 +72533,7 @@ Subtopics
   had already persisted from the original to newly-saved image.
   Thanks to Jared Davis for suggesting this change.
 
-  Changed [make-event] expansion so that changes to [set-saved-output],
+  Changed [make-event] expansion so that changes to [gag-mode],
   [set-print-clause-ids], set-fmt-soft-right-margin, and
   set-fmt-hard-right-margin will persist after being evaluated during
   make-event expansion.  (Specifically,
@@ -73086,10 +73299,10 @@ Subtopics
       off gag-mode.  Now, [set-gag-mode] only inhibits or enables
       proof (PROVE) output, according to whether gag-mode is being
       turned on or off (respectively).  The related utility
-      [set-saved-output] has also been modified, basically to
-      eliminate :all as a first argument and to allow t and :all as
-      second arguments, for inhibiting prover output or virtually all
-      output, respectively (see [set-saved-output]).
+      set-saved-output has also been modified, basically to eliminate
+      :all as a first argument and to allow t and :all as second
+      arguments, for inhibiting prover output or virtually all
+      output, respectively (see set-saved-output).
 
   A [defstub] event [signature] specifying output of the form (mv ...)
   now introduces a :[type-prescription] rule asserting that the new
@@ -83899,7 +84112,7 @@ EMACS Support
 Experimental Versions")
  (NOTE-8-3
   (RELEASE-NOTES)
-  "ACL2 Version 8.3 (xxx, 20xx) Notes
+  "ACL2 Version 8.3 (April, 2020) Notes
 
   NOTE!  New users can ignore these release notes, because the
   [documentation] has been updated to reflect all changes that are
@@ -83913,10 +84126,10 @@ Experimental Versions")
   many changes could be placed in more than one category.
 
   Note that only ACL2 system changes are listed below.  See also
-  note-8-3-books for a summary of changes made to the ACL2 Community
-  Books since ACL2 8.2, including the build system.  Also note that
-  with each release, it is typical that the value of constant
-  [*ACL2-exports*] has been extended, and that some built-in
+  [note-8-3-books] for a summary of changes made to the ACL2
+  Community Books since ACL2 8.2, including the build system.  Also
+  note that with each release, it is typical that the value of
+  constant [*ACL2-exports*] has been extended, and that some built-in
   functions that were formerly in :[program] mode are now
   [guard]-verified :[logic] mode functions.
 
@@ -83965,8 +84178,8 @@ Changes to Existing Features
 
   The following symbols, when used in special syntactic roles in the
   macro [loop$], may be in any package: for, in, on, from, to, by,
-  of-type, when, until, sum, collect, always, and append.  Thanks to
-  Mertcan Temel for requesting this enhancement.
+  of-type, when, until, sum, collect, always, thereis, and append.
+  Thanks to Mertcan Temel for requesting this enhancement.
 
   :Expand [hints] now act more reliably for [equality-variants], by
   expanding away [guard-holders].  Thanks to Sol Swords for supplying
@@ -84381,6 +84594,11 @@ Bug Fixes
   include-book-fn1, has been modified to do a better job of ignoring
   certificate files of uncertified books.
 
+  The utility set-saved-output has been badly broken for years, but
+  without complaints (other than from one of us shortly before the
+  release), suggesting that it hasn't been directly called by users.
+  So we have eliminated it.
+
 
 Changes at the System Level
 
@@ -84405,6 +84623,54 @@ EMACS Support
   with a new command, U, to open a URL (or in some cases, a file) in
   a browser.  See file emacs/acl2-doc-open-url.el for more
   information.
+
+
+Experimental Versions")
+ (NOTE-8-4
+  (RELEASE-NOTES)
+  "ACL2 Version 8.4 (xxx, 20xx) Notes
+
+  NOTE!  New users can ignore these release notes, because the
+  [documentation] has been updated to reflect all changes that are
+  recorded here.
+
+  Below we roughly organize the changes to ACL2 since Version 8.3 into
+  the following categories of changes: existing features, new
+  features, heuristic and efficiency improvements, bug fixes, changes
+  at the system level, Emacs support, and experimental versions.
+  Each change is described in just one category, though of course
+  many changes could be placed in more than one category.
+
+  Note that only ACL2 system changes are listed below.  See also
+  note-8-4-books for a summary of changes made to the ACL2 Community
+  Books since ACL2 8.3, including the build system.  Also note that
+  with each release, it is typical that the value of constant
+  [*ACL2-exports*] has been extended, and that some built-in
+  functions that were formerly in :[program] mode are now
+  [guard]-verified :[logic] mode functions.
+
+
+Changes to Existing Features
+
+
+New Features
+
+
+Heuristic and Efficiency Improvements
+
+
+Bug Fixes
+
+  Fixed a bug that was preventing use of the RDTSC hardware instruction
+  in SBCL on most x86-based platforms, and possibly erroneously
+  attempting to make use of that instruction on some other platforms.
+  Thanks to Keshav Kini for a query that led to this fix.
+
+
+Changes at the System Level
+
+
+EMACS Support
 
 
 Experimental Versions")
@@ -86681,7 +86947,7 @@ Subtopics
   acl2s/utilities.lisp which includes even more such utilities.  To
   see an example of a utility that generates symbols in the current
   package, see books/acl2s/defunc.lisp, which contains the
-  ACL2s::defunc utility.  Other examples include [defequiv],
+  [ACL2s::defunc] utility.  Other examples include [defequiv],
   [defrefinement] and [defcong] in defthm.lisp.")
  (PACKN
   (SYMBOLS ACL2-BUILT-INS)
@@ -94662,8 +94928,7 @@ Subtopics
 
   Evaluate :pso in order to print output that was generated in an
   environment where output was being saved, as in [gag-mode], which
-  is active when ACL2 is invoked.  See [set-saved-output] for
-  details.
+  is active when ACL2 is invoked.  Also see [gag-mode].
 
     Example Forms:
 
@@ -94735,7 +95000,8 @@ Subtopics
   The ``Time'' printed in the summary shows the original times for the
   proof attempt, not the times for processing the :pso command.
 
-  Also see [pso!], [psog], and [psof].")
+  Also see [pso!], [psog], [psof], [set-gag-mode],
+  [set-inhibit-output-lst], and [set-print-clause-ids].")
  (PSO!
   (PROVER-OUTPUT)
   "Show the most recently saved output, including [proof-tree] output
@@ -97310,8 +97576,9 @@ Subtopics
   is not redundant, since it is executed in a world that contains no
   trace of the first encapsulate event.
 
-  Also see community books misc/eval.lisp, make-event/eval-check.lisp,
-  and make-event/eval-tests.lisp for more ways to test in books.
+  Also see community books std/testing/eval.lisp,
+  make-event/eval-check.lisp, and make-event/eval-tests.lisp for more
+  ways to test in books.
 
   Here are detailed criteria for redundancy of [encapsulate] [events].
   First, based on a heuristic (but rather thorough) check, the
@@ -98075,7 +98342,10 @@ Subtopics
       ACL2 Version 8.2 (May, 2019) Notes
 
   [Note-8-3]
-      ACL2 Version 8.3 (xxx, 20xx) Notes")
+      ACL2 Version 8.3 (April, 2020) Notes
+
+  [Note-8-4]
+      ACL2 Version 8.4 (xxx, 20xx) Notes")
  (REM
   (NUMBERS ACL2-BUILT-INS)
   "Remainder using [truncate]
@@ -103326,11 +103596,7 @@ Subtopics
   helpful.  But on occasion you may want to see the full proof output
   after an attempt made with gag-mode.  This can be done provided
   proof output is not inhibited (see [set-inhibit-output-lst]) during
-  the proof attempt; see [pso] and see [pso!].  Since set-gag-mode
-  takes responsibility for the saving of output, related utility
-  [set-saved-output] is disabled when gag-mode is active.  Also note
-  that calling set-gag-mode erases the currently saved output, if
-  any.
+  the proof attempt; see [pso] and see [pso!].
 
   You may notice that gag-mode tends to print relatively little
   information about goals pushed for proof by sub-induction --- i.e.,
@@ -103376,10 +103642,7 @@ Subtopics
       Control printing of key checkpoints upon a proof's failure
 
   [Set-checkpoint-summary-limit]
-      Control printing of key checkpoints upon a proof's failure
-
-  [Set-saved-output]
-      Save proof output for later display with :[pso] or :[pso!]")
+      Control printing of key checkpoints upon a proof's failure")
  (SET-GC-STRATEGY
   (MISCELLANEOUS ACL2-BUILT-INS)
   "Set the garbage collection strategy (CCL only)
@@ -103915,10 +104178,11 @@ Example
     (set-inhibit-warnings string1 string2 ...)
 
   where each string is considered without regard to case.  This macro
-  is equivalent to (local (table inhibit-warnings-table nil 'lst
-  :clear)), where lst is the list of strings supplied.  This macro is
-  an event (see [table]), but no output results from a
-  set-inhibit-warnings event.
+  is is essentially (local (table inhibit-warnings-table nil 'alist
+  :clear)), where alist pairs each supplied string with nil: that is,
+  alist is (pairlis$ lst nil) where lst is the list of strings
+  supplied.  This macro is an event (see [table]), but no output
+  results from a set-inhibit-warnings event.
 
   ACL2 prints warnings that may, from time to time, seem excessive to
   experienced users.  Each warning is ``labeled'' with a string
@@ -105461,63 +105725,6 @@ Subtopics
   Please see [set-rw-cache-state], which is the same as
   set-rw-cache-state! except that the latter is not [local] to the
   [encapsulate] or the book in which it occurs.")
- (SET-SAVED-OUTPUT
-  (SET-GAG-MODE)
-  "Save proof output for later display with :[pso] or :[pso!]
-
-    Examples:
-    (set-saved-output t t)    ; save proof output for later, but inhibit it now
-    (set-saved-output t :all) ; save proof output for later, but inhibit all
-                              ;   output (except WARNING!, for critical warnings,
-                              ;   and ERROR, unless these are already inhibited)
-    :set-saved-output t :all  ; same as the line above
-    (set-saved-output t nil)  ; save proof output for later, but print it now too
-    (set-saved-output nil t)  ; do not save proof output, and inhibit it
-    (set-saved-output nil nil); do not save proof output or inhibit output
-    (set-saved-output nil :same), (set-saved-output t :same)
-                              ; save proof output or not, as indicated, but do
-                              ;   not change which output is inhibited
-    (set-saved-output nil :normal)
-                              ; the behavior when ACL2 first starts up: do not
-                              ;   save output, and only inhibit proof-tree output
-    (set-saved-output t '(warning observation proof-tree prove))
-                              ; save proof output for later, and inhibit the
-                              ;   indicated kinds of output
-
-    General Form:
-    (set-saved-output save-flg inhibit-flg)
-
-  Parameter save-flg is t to cause output to be saved for later display
-  using pso or pso!; see [pso] and see [pso!], and see the
-  documentation for interactive [proof-builder] commands of the same
-  names.  Set save-flg to nil to turn off this feature; except, it
-  always stays on in proof-builder sessions entered with [verify].
-  The other argument, inhibit-flg, controls whether output should be
-  inhibited when it is created (normally, during a proof attempt).
-  So a common combination is to set both arguments to t, to indicate
-  that output should be suppressed for now but saved for printing
-  with [pso] or [pso!].  The examples above give a good summary of
-  the functionality for the second argument.
-
-  Saved output is cleared at every top-level prover call, including
-  such calls made by: [events] (e.g., [defthm] and [defun]), [thm],
-  and [proof-builder] commands that invoke the prover.  A single
-  event can make more than one top-level prover call, for example: in
-  the case of [defun], one call made for termination and another for
-  guard verification; and in the case of [defthm], one call made for
-  the proposed theorem and one for each [corollary].  If you want to
-  see more than one proof log for a single top-level form, first
-  evaluate (set-gag-mode nil).  Note that interactive [proof-builder]
-  commands, that is, from a proof-builder session entered with
-  [verify], are always run with output saved.
-
-  Also see [set-gag-mode]; and see [set-print-clause-ids], which causes
-  subgoal numbers to be printed during proof attempts when output is
-  inhibited.
-
-  See [set-inhibit-output-lst] if you want to inhibit certain output
-  from the prover but not other output (e.g., not the [summary]), and
-  you don't want to save any output.")
  (SET-SERIALIZE-CHARACTER (POINTERS)
                           "See [with-serialize-character].")
  (SET-SERIALIZE-CHARACTER-SYSTEM
@@ -129111,12 +129318,10 @@ Subtopics
     pso
 
   Print the most recent proof attempt from inside the interactive
-  proof-builder assuming you are in [gag-mode] or have saved output
-  (see [set-saved-output]).  This includes all calls to the prover,
-  including for example [proof-builder] commands induct, split, and
-  bash, in addition to prove.  So for example, you can follow (quiet
-  prove) with pso to see the proof, including [proof-tree] output, if
-  it failed.
+  proof-builder.  This includes prover calls, including for example
+  [proof-builder] commands induct, split, and bash, in addition to
+  prove.  So for example, you can follow (quiet prove) with pso to
+  see the proof, including [proof-tree] output, if it failed.
 
   Related [proof-builder] commands are psog and pso!; see
   [ACL2-pc::psog] and [ACL2-pc::pso!].")
@@ -129129,9 +129334,7 @@ Subtopics
     pso!
 
   Print the most recent proof attempt from inside the interactive
-  proof-builder, including [proof-tree] output, assuming you are in
-  [gag-mode] or have saved output (see [set-saved-output]).  This
-  includes all calls to the prover, including for example
+  proof-builder.  This includes prover calls, including for example
   [proof-builder] commands induct, split, and bash, in addition to
   prove.  So for example, you can follow (quiet prove) with pso! to
   see the proof, including [proof-tree] output, if it failed.
@@ -129147,12 +129350,11 @@ Subtopics
     psog
 
   Print the most recent proof attempt from inside the interactive
-  proof-builder, including goal names, assuming you are in [gag-mode]
-  or have saved output (see [set-saved-output]).  This includes all
-  calls to the prover, including for example [proof-builder] commands
-  induct, split, and bash, in addition to prove.  So for example, you
-  can follow (quiet prove) with psog to see the proof, including
-  [proof-tree] output, if it failed.
+  proof-builder, including goal names.  This includes prover calls,
+  including for example [proof-builder] commands induct, split, and
+  bash, in addition to prove.  So for example, you can follow (quiet
+  prove) with psog to see the proof, including [proof-tree] output,
+  if it failed.
 
   Related [proof-builder] commands are pso and pso!; see [ACL2-pc::pso]
   and [ACL2-pc::pso!].")
