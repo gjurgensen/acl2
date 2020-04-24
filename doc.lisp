@@ -84661,6 +84661,11 @@ Heuristic and Efficiency Improvements
 
 Bug Fixes
 
+  Fixed a bug that was preventing use of the RDTSC hardware instruction
+  in SBCL on most x86-based platforms, and possibly erroneously
+  attempting to make use of that instruction on some other platforms.
+  Thanks to Keshav Kini for a query that led to this fix.
+
 
 Changes at the System Level
 
