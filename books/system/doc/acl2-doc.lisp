@@ -102880,11 +102880,12 @@ arithmetic) for libraries of @(see books) for arithmetic reasoning.</p>")
   (set-inhibit-warnings string1 string2 ...)
  })
 
- <p>where each string is considered without regard to case.  This macro is
- equivalent to @('(local (table inhibit-warnings-table nil 'lst :clear))'),
- where @('lst') is the list of strings supplied.  This macro is an event (see
- @(see table)), but no output results from a @('set-inhibit-warnings')
- event.</p>
+ <p>where each string is considered without regard to case.  This macro is is
+ essentially @('(local (table inhibit-warnings-table nil 'alist :clear))'),
+ where @('alist') pairs each supplied string with @('nil'): that is, @('alist')
+ is @('(pairlis$ lst nil)') where @('lst') is the list of strings supplied.
+ This macro is an event (see @(see table)), but no output results from a
+ @('set-inhibit-warnings') event.</p>
 
  <p>ACL2 prints warnings that may, from time to time, seem excessive to
  experienced users.  Each warning is ``labeled'' with a string identifying the

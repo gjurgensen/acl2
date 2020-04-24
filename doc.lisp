@@ -104178,10 +104178,11 @@ Example
     (set-inhibit-warnings string1 string2 ...)
 
   where each string is considered without regard to case.  This macro
-  is equivalent to (local (table inhibit-warnings-table nil 'lst
-  :clear)), where lst is the list of strings supplied.  This macro is
-  an event (see [table]), but no output results from a
-  set-inhibit-warnings event.
+  is is essentially (local (table inhibit-warnings-table nil 'alist
+  :clear)), where alist pairs each supplied string with nil: that is,
+  alist is (pairlis$ lst nil) where lst is the list of strings
+  supplied.  This macro is an event (see [table]), but no output
+  results from a set-inhibit-warnings event.
 
   ACL2 prints warnings that may, from time to time, seem excessive to
   experienced users.  Each warning is ``labeled'' with a string
