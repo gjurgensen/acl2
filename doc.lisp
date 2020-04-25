@@ -90313,8 +90313,8 @@ Subtopics
   but it is useful to see [linear] to learn about maximal terms
   (which, as one might guess, are stored under ``Max-term'').
 
-  Currently, this function does not print congruence rules or
-  equivalence rules.
+  Currently, this function does not print congruence rules, equivalence
+  rules, or refinement rules.
 
   The expert user might also wish to use [find-rules-of-rune].  See
   [find-rules-of-rune].")
