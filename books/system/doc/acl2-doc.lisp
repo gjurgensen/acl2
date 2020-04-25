@@ -89889,7 +89889,7 @@ arithmetic) for libraries of @(see books) for arithmetic reasoning.</p>")
  terms (which, as one might guess, are stored under ``Max-term'').</p>
 
  <p>Currently, this function does not print congruence rules, equivalence
- rules, induction rules, or refinement rules.</p>
+ rules, or refinement rules.</p>
 
  <p>The expert user might also wish to use @(tsee find-rules-of-rune).  See
  @(see find-rules-of-rune).</p>")
