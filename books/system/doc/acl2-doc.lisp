@@ -86134,6 +86134,11 @@ it."
 
  <h3>Bug Fixes</h3>
 
+ <p>Fixed a bug that was preventing use of the RDTSC hardware instruction in
+ SBCL on most x86-based platforms, and possibly erroneously attempting to make
+ use of that instruction on some other platforms.  Thanks to Keshav Kini for a
+ query that led to this fix.</p>
+
  <h3>Changes at the System Level</h3>
 
  <h3>EMACS Support</h3>
@@ -89883,8 +89888,8 @@ arithmetic) for libraries of @(see books) for arithmetic reasoning.</p>")
  self-explanatory, but it is useful to see @(see linear) to learn about maximal
  terms (which, as one might guess, are stored under ``Max-term'').</p>
 
- <p>Currently, this function does not print congruence rules or equivalence
- rules.</p>
+ <p>Currently, this function does not print congruence rules, equivalence
+ rules, or refinement rules.</p>
 
  <p>The expert user might also wish to use @(tsee find-rules-of-rune).  See
  @(see find-rules-of-rune).</p>")
@@ -102875,11 +102880,12 @@ arithmetic) for libraries of @(see books) for arithmetic reasoning.</p>")
   (set-inhibit-warnings string1 string2 ...)
  })
 
- <p>where each string is considered without regard to case.  This macro is
- equivalent to @('(local (table inhibit-warnings-table nil 'lst :clear))'),
- where @('lst') is the list of strings supplied.  This macro is an event (see
- @(see table)), but no output results from a @('set-inhibit-warnings')
- event.</p>
+ <p>where each string is considered without regard to case.  This macro is is
+ essentially @('(local (table inhibit-warnings-table nil 'alist :clear))'),
+ where @('alist') pairs each supplied string with @('nil'): that is, @('alist')
+ is @('(pairlis$ lst nil)') where @('lst') is the list of strings supplied.
+ This macro is an event (see @(see table)), but no output results from a
+ @('set-inhibit-warnings') event.</p>
 
  <p>ACL2 prints warnings that may, from time to time, seem excessive to
  experienced users.  Each warning is ``labeled'' with a string identifying the
