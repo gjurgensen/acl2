@@ -14831,7 +14831,8 @@ with any questions about building the community books.</p>")
  *** Key checkpoint at the top level: ***
 
  Goal'
- (EQUAL (HIDE (COMMENT \"Called constrained function F\" (H 3)))
+ (EQUAL (HIDE (COMMENT \"Failed attempt to call constrained function F\"
+                       (H 3)))
         '(3 . 3))
  })
 
@@ -14888,6 +14889,11 @@ with any questions about building the community books.</p>")
 
  <p>(It actually suffices to disable only @('(:e h)'), but the workings of the
  ACL2 rewriter are out of scope here.)</p>
+
+ <p>Note that if the offending function is @(see non-executable) rather than
+ constrained, in particular if that function is defined using @(tsee defun-nx),
+ then in the first argument of comment you will see ``non-executable'' instead
+ of ``constrained''.</p>
 
  <p>Also see @(see hide) for further discussion of how to avoid such proof
  failures.</p>")
@@ -39272,7 +39278,7 @@ current fast alists."
  call of @('comment').)</p>
 
  @({
- (hide (comment \"Called constrained function CONSTRAINED-FN\"
+ (hide (comment \"Failed attempt to call constrained function CONSTRAINED-FN\"
                 (another-fn 1 2 3)))
  })
 
@@ -39284,7 +39290,7 @@ current fast alists."
  often see @('(f)') rewrite to:</p>
 
  @({
- (hide (comment \"Called constrained function G\"
+ (hide (comment \"Failed attempt to call constrained function G\"
                 (f))).
  })
 
@@ -39321,7 +39327,7 @@ current fast alists."
 
  @({
   (defthm thm-helper
-    (equal (hide (comment \"Called constrained function CONSTRAINED-FN\"
+    (equal (hide (comment \"Failed attempt to call constrained function CONSTRAINED-FN\"
                           (another-fn 1 2 3)))
            (constrained-fn 1 2 3)))
  })
@@ -39338,12 +39344,12 @@ current fast alists."
 
  @({
   (defthm thm-helper
-    (equal (hide (comment \"Called constrained function CONSTRAINED-FN\"
+    (equal (hide (comment \"Failed attempt to call constrained function CONSTRAINED-FN\"
                           (another-fn 1 2 3)))
            (constrained-fn 1 2 3))
     :hints
     ((\"Goal\" :expand
-             (hide (comment \"Called constrained function CONSTRAINED-FN\"
+             (hide (comment \"Failed attempt to call constrained function CONSTRAINED-FN\"
                             (another-fn 1 2 3)))
              :in-theory (disable (:executable-counterpart another-fn)))))
  })
@@ -86127,6 +86133,10 @@ it."
  functions.</p>
 
  <h3>Changes to Existing Features</h3>
+
+ <p>For calls of the form @('(HIDE (COMMENT \"...\" ...))'), the string is a
+ bit more descriptive.  See @(see comment) and see @(see hide).  Thanks to Mark
+ Greenstreet for helpful discussions leading to this change.</p>
 
  <h3>New Features</h3>
 

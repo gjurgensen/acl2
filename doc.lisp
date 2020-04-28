@@ -17791,7 +17791,8 @@ Subtopics
     *** Key checkpoint at the top level: ***
 
     Goal'
-    (EQUAL (HIDE (COMMENT \"Called constrained function F\" (H 3)))
+    (EQUAL (HIDE (COMMENT \"Failed attempt to call constrained function F\"
+                          (H 3)))
            '(3 . 3))
 
   The first argument of equal is logically just (h 3).  But the comment
@@ -17836,6 +17837,11 @@ Subtopics
 
   (It actually suffices to disable only (:e h), but the workings of the
   ACL2 rewriter are out of scope here.)
+
+  Note that if the offending function is [non-executable] rather than
+  constrained, in particular if that function is defined using
+  [defun-nx], then in the first argument of comment you will see
+  ``non-executable'' instead of ``constrained''.
 
   Also see [hide] for further discussion of how to avoid such proof
   failures.")
@@ -42688,7 +42694,7 @@ Subtopics
   by rewriting the original expression to the following.  (Near the
   end of this topic we discuss how to avoid the call of comment.)
 
-    (hide (comment \"Called constrained function CONSTRAINED-FN\"
+    (hide (comment \"Failed attempt to call constrained function CONSTRAINED-FN\"
                    (another-fn 1 2 3)))
 
   You might think this rarely occurs since all the arguments of
@@ -42698,7 +42704,7 @@ Subtopics
   define a function f of no arguments in terms of a constrained
   function g, you may often see (f) rewrite to:
 
-    (hide (comment \"Called constrained function G\"
+    (hide (comment \"Failed attempt to call constrained function G\"
                    (f))).
 
   We do not hide the term if the [executable-counterpart] of the
@@ -42731,7 +42737,7 @@ Subtopics
   inside the hide.  However,
 
     (defthm thm-helper
-      (equal (hide (comment \"Called constrained function CONSTRAINED-FN\"
+      (equal (hide (comment \"Failed attempt to call constrained function CONSTRAINED-FN\"
                             (another-fn 1 2 3)))
              (constrained-fn 1 2 3)))
 
@@ -42747,12 +42753,12 @@ Subtopics
   another-fn)).  Thus, thm-helper will actually be:
 
     (defthm thm-helper
-      (equal (hide (comment \"Called constrained function CONSTRAINED-FN\"
+      (equal (hide (comment \"Failed attempt to call constrained function CONSTRAINED-FN\"
                             (another-fn 1 2 3)))
              (constrained-fn 1 2 3))
       :hints
       ((\"Goal\" :expand
-               (hide (comment \"Called constrained function CONSTRAINED-FN\"
+               (hide (comment \"Failed attempt to call constrained function CONSTRAINED-FN\"
                               (another-fn 1 2 3)))
                :in-theory (disable (:executable-counterpart another-fn)))))
 
@@ -84651,6 +84657,10 @@ Experimental Versions")
 
 
 Changes to Existing Features
+
+  For calls of the form (HIDE (COMMENT \"...\" ...)), the string is a bit
+  more descriptive.  See [comment] and see [hide].  Thanks to Mark
+  Greenstreet for helpful discussions leading to this change.
 
 
 New Features
