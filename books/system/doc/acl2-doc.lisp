@@ -40202,7 +40202,25 @@ current fast alists."
  })
 
  <p>which in turn simplifies to @('(< 1 x)'), a hypothesis in the present
- theorem.</p></dd>
+ theorem.</p>
+
+ <p>Here is another example, illustrating the use of :restrict to handle
+ free variables (in this case, a single free variable y) without the verbosity
+ of a :use hint.</p>
+
+ @({
+  (skip-proofs (defthm subsetp-trans
+                 (implies (and (subsetp x y) (subsetp y z)) (subsetp x z))))
+  (defstub p (*) => *)
+  (defstub q (*) => *)
+  (defstub r (*) => *)
+
+  (defaxiom subsetp-p-q (subsetp (p x) (q x)))
+  (defaxiom subsetp-q-r (subsetp (q x) (r x)))
+  (thm (subsetp (p x) (r x))
+       :hints ((\"Goal\" :restrict ((subsetp-trans ((y (q x))))))))
+ })
+ </dd>
 
  <dt>@(':rw-cache-state')</dt><p/>
 
