@@ -40204,9 +40204,9 @@ current fast alists."
  <p>which in turn simplifies to @('(< 1 x)'), a hypothesis in the present
  theorem.</p>
 
- <p>Here is another example, illustrating the use of :restrict to handle
- free variables (in this case, a single free variable y) without the verbosity
- of a :use hint.</p>
+ <p>Here is another example, supplied by Mihir Mehta, illustrating the use of
+ @(':restrict') to handle free variables (in this case, a single free variable
+ @('y')) without the verbosity of a @(':use') hint.</p>
 
  @({
   (skip-proofs (defthm subsetp-trans
