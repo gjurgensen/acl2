@@ -43537,12 +43537,18 @@ Subtopics
 
     :restrict
 
-        Warning: This is a sophisticated hint, suggested by Bishop Brock,
-        that is intended for advanced users.  In particular,
-        :restrict hints are ignored by the preprocessor, so you might
-        find it useful to give the hint :do-not '(preprocess) when
-        using any :restrict hints, at least if the rules in question
-        are abbreviations (see [simple]).
+        This hint, originally suggested by Bishop Brock, sometimes allows
+        rules with free variables (see [free-variables]) to be
+        applied successfully by the rewriter, thus avoiding the
+        clutter, case-splitting, and theory management (disabling)
+        that can occur with :use hints.
+
+        Warning: This is a sophisticated hint that may be most appropriate
+        for experienced ACL2 users.  In particular, :restrict hints
+        are ignored by the preprocessor, so you might find it useful
+        to give the hint :do-not '(preprocess) when using any
+        :restrict hints, at least if the rules in question are
+        abbreviations (see [simple]).
 
         Value is an association list.  Its members are of the form (x subst1
         subst2 ...), where: x is either (1) a [rune] whose [car] is
@@ -43575,10 +43581,21 @@ Subtopics
         actually appearing in the goals, not to the variables
         appearing in the rule being restricted.
 
-        Here is an example, supplied by Bishop Brock.  Suppose that the
-        database includes the following rewrite rule, which is
-        probably kept [disable]d.  (We ignore the question of how to
-        prove this rule.)
+        The following example, supplied by Mihir Mehta, illustrates the use
+        of :restrict to handle free variables (in this case, a single
+        free variable y).  The call of [thm] below fails without the
+        indicated :restrict hint.
+
+          (defthm subsetp-trans
+            (implies (and (subsetp x y) (subsetp y z)) (subsetp x z)))
+          (defthm subsetp-evens (subsetp-equal (evens l) l))
+          (thm (subsetp (evens (evens l)) l)
+               :hints ((\"Goal\" :restrict ((subsetp-trans ((y (evens l))))))))
+
+        Here is another example, this one supplied by Bishop Brock.  Suppose
+        that the database includes the following rewrite rule, which
+        is probably kept [disable]d.  (We ignore the question of how
+        to prove this rule.)
 
           cancel-<-*$free:
           (implies (and (rationalp x)

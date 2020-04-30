@@ -40124,11 +40124,16 @@ current fast alists."
 
  <dt>@(':restrict')</dt><p/>
 
- <dd><p>Warning: This is a sophisticated hint, suggested by Bishop Brock, that
- is intended for advanced users.  In particular, @(':restrict') hints are
- ignored by the preprocessor, so you might find it useful to give the hint
- @(':do-not '(preprocess)') when using any @(':restrict') hints, at least if
- the rules in question are abbreviations (see @(see simple)).</p>
+ <dd><p>This hint, originally suggested by Bishop Brock, sometimes allows rules
+ with free variables (see @(see free-variables)) to be applied successfully by
+ the rewriter, thus avoiding the clutter, case-splitting, and theory management
+ (disabling) that can occur with @(':use') hints.</p>
+
+ <p>Warning: This is a sophisticated hint that may be most appropriate for
+ experienced ACL2 users.  In particular, @(':restrict') hints are ignored by
+ the preprocessor, so you might find it useful to give the hint @(':do-not
+ '(preprocess)') when using any @(':restrict') hints, at least if the rules in
+ question are abbreviations (see @(see simple)).</p>
 
  <p>@('Value') is an association list.  Its members are of the form @('(x
  subst1 subst2 ...)'), where: @('x') is either (1) a @(see rune) whose @(tsee
@@ -40158,9 +40163,22 @@ current fast alists."
  actually appearing in the goals, not to the variables appearing in the rule
  being restricted.</p>
 
- <p>Here is an example, supplied by Bishop Brock.  Suppose that the database
- includes the following rewrite rule, which is probably kept @(see disable)d.
- (We ignore the question of how to prove this rule.)</p>
+ <p>The following example, supplied by Mihir Mehta, illustrates the use of
+ @(':restrict') to handle free variables (in this case, a single free variable
+ @('y')).  The call of @(tsee thm) below fails without the indicated
+ @(':restrict') hint.</p>
+
+ @({
+  (defthm subsetp-trans
+    (implies (and (subsetp x y) (subsetp y z)) (subsetp x z)))
+  (defthm subsetp-evens (subsetp-equal (evens l) l))
+  (thm (subsetp (evens (evens l)) l)
+       :hints ((\"Goal\" :restrict ((subsetp-trans ((y (evens l))))))))
+ })
+
+ <p>Here is another example, this one supplied by Bishop Brock.  Suppose that
+ the database includes the following rewrite rule, which is probably kept @(see
+ disable)d.  (We ignore the question of how to prove this rule.)</p>
 
  @({
   cancel-<-*$free:
@@ -40202,25 +40220,7 @@ current fast alists."
  })
 
  <p>which in turn simplifies to @('(< 1 x)'), a hypothesis in the present
- theorem.</p>
-
- <p>Here is another example, supplied by Mihir Mehta, illustrating the use of
- @(':restrict') to handle free variables (in this case, a single free variable
- @('y')) without the verbosity of a @(':use') hint.</p>
-
- @({
-  (skip-proofs (defthm subsetp-trans
-                 (implies (and (subsetp x y) (subsetp y z)) (subsetp x z))))
-  (defstub p (*) => *)
-  (defstub q (*) => *)
-  (defstub r (*) => *)
-
-  (defaxiom subsetp-p-q (subsetp (p x) (q x)))
-  (defaxiom subsetp-q-r (subsetp (q x) (r x)))
-  (thm (subsetp (p x) (r x))
-       :hints ((\"Goal\" :restrict ((subsetp-trans ((y (q x))))))))
- })
- </dd>
+ theorem.</p></dd>
 
  <dt>@(':rw-cache-state')</dt><p/>
 
