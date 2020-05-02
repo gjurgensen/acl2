@@ -27044,13 +27044,16 @@ Subtopics
 
     (defun-nx name (x1 ... xk) ... body)
 
-  expands to the following form.
+  generates the following definition.
 
     (defun name (x1 ... xk)
       (declare (xargs :non-executable t :mode :logic))
       ...
       (prog2$ (throw-nonexec-error 'name (list x1 ... xk))
               body))
+
+  Moreover, the [executable-counterpart] [rune] for name is [disable]d
+  by this event.
 
   Note that because of the insertion of the above call of
   throw-nonexec-error, no formal is ignored when using defun-nx.
@@ -27069,9 +27072,9 @@ Subtopics
   [declare] form; defun-nx will still lay down its own such
   declaration, but ACL2 can tolerate the duplication.
 
-  Note that defund-nx is also available.  It has an effect identical to
-  that of defun-nx except that as with [defund], it leaves the
-  function disabled.
+  Note that defund-nx is also available.  It is essentially identical
+  to defun-nx except that as with [defund], defund-nx leaves the
+  definition [rune] disabled for the new function symbol.
 
   If you use guards (see [guard]), please be aware that even though
   syntactic restrictions are relaxed for defun-nx, guard verification
@@ -27545,9 +27548,11 @@ Subtopics
   (DEFUN EVENTS)
   "Define a disabled non-executable function symbol
 
-  Use defund-nx instead of defun-nx when you want to [disable] a
-  function immediately after its definition in :[logic] mode.  See
-  [defun-nx] and see [defund].")
+  Use defund-nx instead of [defun-nx] when you want to [disable] the
+  definition of a function symbol immediately after defining it in
+  :[logic] mode.  In all other respects, defund-nx has the same
+  behavior as defun-nx; See [defun-nx] for details.  Also see
+  [defund].")
  (DEFUNS
   (MUTUAL-RECURSION)
   "An alternative to [mutual-recursion]
@@ -84678,6 +84683,18 @@ Changes to Existing Features
   For calls of the form (HIDE (COMMENT \"...\" ...)), the string is a bit
   more descriptive.  See [comment] and see [hide].  Thanks to Mark
   Greenstreet for helpful discussions leading to this change.
+
+  The [events] [defun-nx] and [defund-nx] now [disable] the
+  [executable-counterpart] [rune] for the new function symbol.  Thus,
+  after either of these introduces function symbol f, the ACL2
+  rewriter will no longer attempt to simplify a call of f on concrete
+  arguments by using evaluation (unless of course that
+  executable-counterpart is enabled first).  Thanks to Mark
+  Greenstreet for an email leading to this change.  The
+  implementation of this change also fixes a bug: when the
+  [default-defun-mode] is program mode, [defund-nx] now [disable]s
+  the definition [rune] for the new function, but that was not
+  previously the case.
 
 
 New Features

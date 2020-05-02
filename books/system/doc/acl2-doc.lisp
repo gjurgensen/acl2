@@ -23846,7 +23846,7 @@ subtree of X with T, without duplication.</p>
   (defun-nx name (x1 ... xk) ... body)
  })
 
- <p>expands to the following form.</p>
+ <p>generates the following definition.</p>
 
  @({
   (defun name (x1 ... xk)
@@ -23855,6 +23855,9 @@ subtree of X with T, without duplication.</p>
     (prog2$ (throw-nonexec-error 'name (list x1 ... xk))
             body))
  })
+
+ <p>Moreover, the @(see executable-counterpart) @(see rune) for @('name') is
+ @(see disable)d by this event.</p>
 
  <p>Note that because of the insertion of the above call of
  @('throw-nonexec-error'), no formal is ignored when using @('defun-nx').</p>
@@ -23872,9 +23875,9 @@ subtree of X with T, without duplication.</p>
  @(tsee declare) form; @('defun-nx') will still lay down its own such
  declaration, but ACL2 can tolerate the duplication.</p>
 
- <p>Note that @('defund-nx') is also available.  It has an effect identical to
- that of @('defun-nx') except that as with @(tsee defund), it leaves the
- function disabled.</p>
+ <p>Note that @('defund-nx') is also available.  It is essentially identical to
+ @('defun-nx') except that as with @(tsee defund), @('defund-nx') leaves the
+ definition @(see rune) disabled for the new function symbol.</p>
 
  <p>If you use guards (see @(see guard)), please be aware that even though
  syntactic restrictions are relaxed for @('defun-nx'), guard verification
@@ -24358,9 +24361,11 @@ subtree of X with T, without duplication.</p>
 (defxdoc defund-nx
   :parents (defun events)
   :short "Define a disabled non-executable function symbol"
-  :long "<p>Use @('defund-nx') instead of @('defun-nx') when you want to @(see
-  disable) a function immediately after its definition in @(':')@(tsee logic)
-  mode.  See @(see defun-nx) and see @(see defund).</p>")
+  :long "<p>Use @('defund-nx') instead of @(tsee defun-nx) when you want to
+ @(see disable) the definition of a function symbol immediately after defining
+ it in @(':')@(tsee logic) mode.  In all other respects, @('defund-nx') has the
+ same behavior as @('defun-nx'); See @(see defun-nx) for details.  Also see
+ @(see defund).</p>")
 
 (defxdoc defuns
   :parents (mutual-recursion)
@@ -86155,6 +86160,17 @@ it."
  <p>For calls of the form @('(HIDE (COMMENT \"...\" ...))'), the string is a
  bit more descriptive.  See @(see comment) and see @(see hide).  Thanks to Mark
  Greenstreet for helpful discussions leading to this change.</p>
+
+ <p>The @(see events) @(tsee defun-nx) and @(tsee defund-nx) now @(see disable)
+ the @(see executable-counterpart) @(see rune) for the new function symbol.
+ Thus, after either of these introduces function symbol @('f'), the ACL2
+ rewriter will no longer attempt to simplify a call of @('f') on concrete
+ arguments by using evaluation (unless of course that executable-counterpart is
+ enabled first).  Thanks to Mark Greenstreet for an email leading to this
+ change.  The implementation of this change also fixes a bug: when the @(see
+ default-defun-mode) is program mode, @(tsee defund-nx) now @(see disable)s the
+ definition @(see rune) for the new function, but that was not previously the
+ case.</p>
 
  <h3>New Features</h3>
 
