@@ -89794,7 +89794,8 @@ arithmetic) for libraries of @(see books) for arithmetic reasoning.</p>")
  for more information.</p>
 
  @(def position-equal)
- @(def position-equal-ac)")
+ @(def position-equal-ac)
+ @(def position-ac)")
 
 (defxdoc posp
   :parents (numbers acl2-built-ins)
