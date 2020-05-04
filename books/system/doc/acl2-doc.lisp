@@ -39254,6 +39254,12 @@ current fast alists."
  apply @('hide') to an equality after substituting it into the rest of the
  goal, if that goal (or a subgoal of it) fails to be proved.</p>
 
+ <p>Another common case, described below, is when @('hide') is added by the
+ simplifier because an attempted execution of the term failed.  In this case,
+ an @(':expand') hint as described above will have no effect because the
+ execution will just fail again; the @('hide') will be re-inserted; and the
+ hapless user will find themselves questioning their own sanity.</p>
+
  <p>@('Hide') terms are generally ignored not only by the rewriter but by other
  ACL2 procedures, including the induction heuristics and (by default) removal
  of @(see guard-holders).</p>
@@ -89821,7 +89827,8 @@ arithmetic) for libraries of @(see books) for arithmetic reasoning.</p>")
  for more information.</p>
 
  @(def position-equal)
- @(def position-equal-ac)")
+ @(def position-equal-ac)
+ @(def position-ac)")
 
 (defxdoc posp
   :parents (numbers acl2-built-ins)
