@@ -86176,6 +86176,33 @@ it."
 
  <h3>Heuristic and Efficiency Improvements</h3>
 
+ <p>We changed the lightweight ``preprocess'' simplifier for ``@(see simple)''
+ rules in the prover's @(see waterfall), in the case that the term is the
+ application of a defined function symbol to constant (quoted) arguments.  As
+ before, if the @(see executable-counterpart) rule for that function symbol is
+ @(see enable)d, then the call is evaluated in Lisp; and if that evaluation
+ fails (typically because a constrained function is called), then an attempt is
+ made to rewrite the term by applying a @(see simple) rule.  The change is for
+ how failure is handled, that is, in the case that evaluation fails and the
+ term is not rewritten.  Formerly, the term was surrounded by a call of @(tsee
+ hide).  Now, that is only done by the main rewriter, not by the ``preprocess''
+ simplifier.  Thanks to Eric Smith for a communication on the acl2-help list,
+ on a thread started by Mark Greenstreet, that led us towards making this
+ change.  Mark's failed proof now succeeds after this change, but here is a
+ simpler example.  Formerly, the commented-out @(':do-not') hint was required
+ for the proof of the @(tsee thm) call below to succeed, because the definition
+ of @('g') is not simple and hence the ``preprocess'' simplifier replaced @('(g
+ 3)') by a term @('(hide (comment ...) (g 3))') before the rewriter could apply
+ the definition of @('g').</p>
+
+ @({
+ (defstub f (x) t)
+ (defun g (x) (cons x (f x)))
+ (thm (equal (car (g 3)) 3)
+      ;; :hints ((\"Goal\" :do-not '(preprocess)))
+      )
+ })
+
  <h3>Bug Fixes</h3>
 
  <p>Fixed a bug that was preventing use of the RDTSC hardware instruction in
