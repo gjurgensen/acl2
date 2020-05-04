@@ -39254,6 +39254,12 @@ current fast alists."
  apply @('hide') to an equality after substituting it into the rest of the
  goal, if that goal (or a subgoal of it) fails to be proved.</p>
 
+<p>Another common case described below is when hide is added by the simplifier
+   because an attempted execution of the term failed.  In this case, an
+   @(':expand') hint as described above will have no effect because the
+   execution will just fail again; the @('hide') will be re-inserted; and the
+   hapless user will find themselves questioning their own sanity.</p>
+
  <p>@('Hide') terms are generally ignored not only by the rewriter but by other
  ACL2 procedures, including the induction heuristics and (by default) removal
  of @(see guard-holders).</p>
@@ -86175,6 +86181,33 @@ it."
  <h3>New Features</h3>
 
  <h3>Heuristic and Efficiency Improvements</h3>
+
+ <p>We changed the lightweight ``preprocess'' simplifier for ``@(see simple)''
+ rules in the prover's @(see waterfall), in the case that the term is the
+ application of a defined function symbol to constant (quoted) arguments.  As
+ before, if the @(see executable-counterpart) rule for that function symbol is
+ @(see enable)d, then the call is evaluated in Lisp; and if that evaluation
+ fails (typically because a constrained function is called), then an attempt is
+ made to rewrite the term by applying a @(see simple) rule.  The change is for
+ how failure is handled, that is, in the case that evaluation fails and the
+ term is not rewritten.  Formerly, the term was surrounded by a call of @(tsee
+ hide).  Now, that is only done by the main rewriter, not by the ``preprocess''
+ simplifier.  Thanks to Eric Smith for a communication on the acl2-help list,
+ on a thread started by Mark Greenstreet, that led us towards making this
+ change.  Mark's failed proof now succeeds after this change, but here is a
+ simpler example.  Formerly, the commented-out @(':do-not') hint was required
+ for the proof of the @(tsee thm) call below to succeed, because the definition
+ of @('g') is not simple and hence the ``preprocess'' simplifier replaced @('(g
+ 3)') by a term @('(hide (comment ...) (g 3))') before the rewriter could apply
+ the definition of @('g').</p>
+
+ @({
+ (defstub f (x) t)
+ (defun g (x) (cons x (f x)))
+ (thm (equal (car (g 3)) 3)
+      ;; :hints ((\"Goal\" :do-not '(preprocess)))
+      )
+ })
 
  <h3>Bug Fixes</h3>
 
