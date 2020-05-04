@@ -42673,6 +42673,13 @@ Subtopics
   rest of the goal, if that goal (or a subgoal of it) fails to be
   proved.
 
+  Another common case, described below, is when hide is added by the
+  simplifier because an attempted execution of the term failed.  In
+  this case, an :expand hint as described above will have no effect
+  because the execution will just fail again; the hide will be
+  re-inserted; and the hapless user will find themselves questioning
+  their own sanity.
+
   Hide terms are generally ignored not only by the rewriter but by
   other ACL2 procedures, including the induction heuristics and (by
   default) removal of [guard-holders].
@@ -90238,7 +90245,52 @@ Subtopics
            (cond ((endp lst) nil)
                  ((equal item (car lst)) acc)
                  (t (position-equal-ac item (cdr lst)
-                                       (1+ acc)))))")
+                                       (1+ acc)))))
+
+  Macro: <position-ac>
+
+    (defmacro
+     position-ac
+     (item lst acc &key (test ''eql))
+     (declare (xargs :guard (or (equal test ''eq)
+                                (equal test ''eql)
+                                (equal test ''equal))))
+     (cond
+      ((equal test ''eq)
+       (cons
+        'let-mbe
+        (cons
+            (cons (cons 'item (cons item 'nil))
+                  (cons (cons 'lst (cons lst 'nil))
+                        (cons (cons 'acc (cons acc 'nil))
+                              'nil)))
+            (cons ':logic
+                  (cons (cons 'position-equal-ac
+                              (cons 'item (cons 'lst 'nil)))
+                        (cons ':exec
+                              (cons (cons 'position-ac-eq-exec
+                                          (cons 'item (cons 'lst 'nil)))
+                                    'nil)))))))
+      ((equal test ''eql)
+       (cons
+        'let-mbe
+        (cons
+         (cons (cons 'item (cons item 'nil))
+               (cons (cons 'lst (cons lst 'nil))
+                     (cons (cons 'acc (cons acc 'nil))
+                           'nil)))
+         (cons
+            ':logic
+            (cons (cons 'position-equal-ac
+                        (cons 'item
+                              (cons 'lst (cons 'acc 'nil))))
+                  (cons ':exec
+                        (cons (cons 'position-ac-eql-exec
+                                    (cons 'item
+                                          (cons 'lst (cons 'acc 'nil))))
+                              'nil)))))))
+      (t (cons 'position-equal-ac
+               (cons item (cons lst 'nil))))))")
  (POSITION-EQ (POINTERS)
               "See [position].")
  (POSITION-EQUAL (POINTERS)
