@@ -15675,11 +15675,13 @@ Subtopics
 
   For those who use ACL2 built on CCL as the host Common Lisp
   implementation, it has been common practice to use the latest
-  GitHub version of CCL.  Here are instructions for how to build CCL
-  on Linux, with comments on how to adapt them to Mac (Darwin).  They
-  might be a bit more convenient for ACL2 users than those on the
-  ``{Installing Clozure CL | https://ccl.clozure.com/install.html}''
-  page.  Note: Linux users may need to install m4.
+  GitHub version of CCL.  Below are self-contained instructions for
+  how to build CCL on Linux, with comments on how to adapt them to
+  Mac (Darwin).  You may prefer instead to look at the {CCL Releases
+  | https://github.com/Clozure/ccl/releases} page, using the text
+  below only as needed (e.g., for Linux-specific information or for
+  discussion of CCL_DEFAULT_DIRECTORY).  Note: Linux users may need
+  to install m4.
 
   Remark. The instructions immediately below should generally suffice.
   But if you would like additional information on CCL installation
@@ -17789,7 +17791,8 @@ Subtopics
     *** Key checkpoint at the top level: ***
 
     Goal'
-    (EQUAL (HIDE (COMMENT \"Called constrained function F\" (H 3)))
+    (EQUAL (HIDE (COMMENT \"Failed attempt to call constrained function F\"
+                          (H 3)))
            '(3 . 3))
 
   The first argument of equal is logically just (h 3).  But the comment
@@ -17834,6 +17837,11 @@ Subtopics
 
   (It actually suffices to disable only (:e h), but the workings of the
   ACL2 rewriter are out of scope here.)
+
+  Note that if the offending function is [non-executable] rather than
+  constrained, in particular if that function is defined using
+  [defun-nx], then in the first argument of comment you will see
+  ``non-executable'' instead of ``constrained''.
 
   Also see [hide] for further discussion of how to avoid such proof
   failures.")
@@ -27036,13 +27044,16 @@ Subtopics
 
     (defun-nx name (x1 ... xk) ... body)
 
-  expands to the following form.
+  generates the following definition.
 
     (defun name (x1 ... xk)
       (declare (xargs :non-executable t :mode :logic))
       ...
       (prog2$ (throw-nonexec-error 'name (list x1 ... xk))
               body))
+
+  Moreover, the [executable-counterpart] [rune] for name is [disable]d
+  by this event.
 
   Note that because of the insertion of the above call of
   throw-nonexec-error, no formal is ignored when using defun-nx.
@@ -27061,9 +27072,9 @@ Subtopics
   [declare] form; defun-nx will still lay down its own such
   declaration, but ACL2 can tolerate the duplication.
 
-  Note that defund-nx is also available.  It has an effect identical to
-  that of defun-nx except that as with [defund], it leaves the
-  function disabled.
+  Note that defund-nx is also available.  It is essentially identical
+  to defun-nx except that as with [defund], defund-nx leaves the
+  definition [rune] disabled for the new function symbol.
 
   If you use guards (see [guard]), please be aware that even though
   syntactic restrictions are relaxed for defun-nx, guard verification
@@ -27537,9 +27548,11 @@ Subtopics
   (DEFUN EVENTS)
   "Define a disabled non-executable function symbol
 
-  Use defund-nx instead of defun-nx when you want to [disable] a
-  function immediately after its definition in :[logic] mode.  See
-  [defun-nx] and see [defund].")
+  Use defund-nx instead of [defun-nx] when you want to [disable] the
+  definition of a function symbol immediately after defining it in
+  :[logic] mode.  In all other respects, defund-nx has the same
+  behavior as defun-nx; See [defun-nx] for details.  Also see
+  [defund].")
  (DEFUNS
   (MUTUAL-RECURSION)
   "An alternative to [mutual-recursion]
@@ -42660,6 +42673,13 @@ Subtopics
   rest of the goal, if that goal (or a subgoal of it) fails to be
   proved.
 
+  Another common case, described below, is when hide is added by the
+  simplifier because an attempted execution of the term failed.  In
+  this case, an :expand hint as described above will have no effect
+  because the execution will just fail again; the hide will be
+  re-inserted; and the hapless user will find themselves questioning
+  their own sanity.
+
   Hide terms are generally ignored not only by the rewriter but by
   other ACL2 procedures, including the induction heuristics and (by
   default) removal of [guard-holders].
@@ -42686,7 +42706,7 @@ Subtopics
   by rewriting the original expression to the following.  (Near the
   end of this topic we discuss how to avoid the call of comment.)
 
-    (hide (comment \"Called constrained function CONSTRAINED-FN\"
+    (hide (comment \"Failed attempt to call constrained function CONSTRAINED-FN\"
                    (another-fn 1 2 3)))
 
   You might think this rarely occurs since all the arguments of
@@ -42696,7 +42716,7 @@ Subtopics
   define a function f of no arguments in terms of a constrained
   function g, you may often see (f) rewrite to:
 
-    (hide (comment \"Called constrained function G\"
+    (hide (comment \"Failed attempt to call constrained function G\"
                    (f))).
 
   We do not hide the term if the [executable-counterpart] of the
@@ -42729,7 +42749,7 @@ Subtopics
   inside the hide.  However,
 
     (defthm thm-helper
-      (equal (hide (comment \"Called constrained function CONSTRAINED-FN\"
+      (equal (hide (comment \"Failed attempt to call constrained function CONSTRAINED-FN\"
                             (another-fn 1 2 3)))
              (constrained-fn 1 2 3)))
 
@@ -42745,12 +42765,12 @@ Subtopics
   another-fn)).  Thus, thm-helper will actually be:
 
     (defthm thm-helper
-      (equal (hide (comment \"Called constrained function CONSTRAINED-FN\"
+      (equal (hide (comment \"Failed attempt to call constrained function CONSTRAINED-FN\"
                             (another-fn 1 2 3)))
              (constrained-fn 1 2 3))
       :hints
       ((\"Goal\" :expand
-               (hide (comment \"Called constrained function CONSTRAINED-FN\"
+               (hide (comment \"Failed attempt to call constrained function CONSTRAINED-FN\"
                               (another-fn 1 2 3)))
                :in-theory (disable (:executable-counterpart another-fn)))))
 
@@ -43529,12 +43549,18 @@ Subtopics
 
     :restrict
 
-        Warning: This is a sophisticated hint, suggested by Bishop Brock,
-        that is intended for advanced users.  In particular,
-        :restrict hints are ignored by the preprocessor, so you might
-        find it useful to give the hint :do-not '(preprocess) when
-        using any :restrict hints, at least if the rules in question
-        are abbreviations (see [simple]).
+        This hint, originally suggested by Bishop Brock, sometimes allows
+        rules with free variables (see [free-variables]) to be
+        applied successfully by the rewriter, thus avoiding the
+        clutter, case-splitting, and theory management (disabling)
+        that can occur with :use hints.
+
+        Warning: This is a sophisticated hint that may be most appropriate
+        for experienced ACL2 users.  In particular, :restrict hints
+        are ignored by the preprocessor, so you might find it useful
+        to give the hint :do-not '(preprocess) when using any
+        :restrict hints, at least if the rules in question are
+        abbreviations (see [simple]).
 
         Value is an association list.  Its members are of the form (x subst1
         subst2 ...), where: x is either (1) a [rune] whose [car] is
@@ -43567,10 +43593,21 @@ Subtopics
         actually appearing in the goals, not to the variables
         appearing in the rule being restricted.
 
-        Here is an example, supplied by Bishop Brock.  Suppose that the
-        database includes the following rewrite rule, which is
-        probably kept [disable]d.  (We ignore the question of how to
-        prove this rule.)
+        The following example, supplied by Mihir Mehta, illustrates the use
+        of :restrict to handle free variables (in this case, a single
+        free variable y).  The call of [thm] below fails without the
+        indicated :restrict hint.
+
+          (defthm subsetp-trans
+            (implies (and (subsetp x y) (subsetp y z)) (subsetp x z)))
+          (defthm subsetp-evens (subsetp-equal (evens l) l))
+          (thm (subsetp (evens (evens l)) l)
+               :hints ((\"Goal\" :restrict ((subsetp-trans ((y (evens l))))))))
+
+        Here is another example, this one supplied by Bishop Brock.  Suppose
+        that the database includes the following rewrite rule, which
+        is probably kept [disable]d.  (We ignore the question of how
+        to prove this rule.)
 
           cancel-<-*$free:
           (implies (and (rationalp x)
@@ -84650,14 +84687,62 @@ Experimental Versions")
 
 Changes to Existing Features
 
+  For calls of the form (HIDE (COMMENT \"...\" ...)), the string is a bit
+  more descriptive.  See [comment] and see [hide].  Thanks to Mark
+  Greenstreet for helpful discussions leading to this change.
+
+  The [events] [defun-nx] and [defund-nx] now [disable] the
+  [executable-counterpart] [rune] for the new function symbol.  Thus,
+  after either of these introduces function symbol f, the ACL2
+  rewriter will no longer attempt to simplify a call of f on concrete
+  arguments by using evaluation (unless of course that
+  executable-counterpart is enabled first).  Thanks to Mark
+  Greenstreet for an email leading to this change.  The
+  implementation of this change also fixes a bug: when the
+  [default-defun-mode] is program mode, [defund-nx] now [disable]s
+  the definition [rune] for the new function, but that was not
+  previously the case.
+
 
 New Features
 
 
 Heuristic and Efficiency Improvements
 
+  We changed the lightweight ``preprocess'' simplifier for ``[simple]''
+  rules in the prover's [waterfall], in the case that the term is the
+  application of a defined function symbol to constant (quoted)
+  arguments.  As before, if the [executable-counterpart] rule for
+  that function symbol is [enable]d, then the call is evaluated in
+  Lisp; and if that evaluation fails (typically because a constrained
+  function is called), then an attempt is made to rewrite the term by
+  applying a [simple] rule.  The change is for how failure is
+  handled, that is, in the case that evaluation fails and the term is
+  not rewritten.  Formerly, the term was surrounded by a call of
+  [hide].  Now, that is only done by the main rewriter, not by the
+  ``preprocess'' simplifier.  Thanks to Eric Smith for a
+  communication on the acl2-help list, on a thread started by Mark
+  Greenstreet, that led us towards making this change.  Mark's failed
+  proof now succeeds after this change, but here is a simpler
+  example.  Formerly, the commented-out :do-not hint was required for
+  the proof of the [thm] call below to succeed, because the
+  definition of g is not simple and hence the ``preprocess''
+  simplifier replaced (g 3) by a term (hide (comment ...) (g 3))
+  before the rewriter could apply the definition of g.
+
+    (defstub f (x) t)
+    (defun g (x) (cons x (f x)))
+    (thm (equal (car (g 3)) 3)
+         ;; :hints ((\"Goal\" :do-not '(preprocess)))
+         )
+
 
 Bug Fixes
+
+  Fixed a bug that was preventing use of the RDTSC hardware instruction
+  in SBCL on most x86-based platforms, and possibly erroneously
+  attempting to make use of that instruction on some other platforms.
+  Thanks to Keshav Kini for a query that led to this fix.
 
 
 Changes at the System Level
@@ -90160,7 +90245,52 @@ Subtopics
            (cond ((endp lst) nil)
                  ((equal item (car lst)) acc)
                  (t (position-equal-ac item (cdr lst)
-                                       (1+ acc)))))")
+                                       (1+ acc)))))
+
+  Macro: <position-ac>
+
+    (defmacro
+     position-ac
+     (item lst acc &key (test ''eql))
+     (declare (xargs :guard (or (equal test ''eq)
+                                (equal test ''eql)
+                                (equal test ''equal))))
+     (cond
+      ((equal test ''eq)
+       (cons
+        'let-mbe
+        (cons
+            (cons (cons 'item (cons item 'nil))
+                  (cons (cons 'lst (cons lst 'nil))
+                        (cons (cons 'acc (cons acc 'nil))
+                              'nil)))
+            (cons ':logic
+                  (cons (cons 'position-equal-ac
+                              (cons 'item (cons 'lst 'nil)))
+                        (cons ':exec
+                              (cons (cons 'position-ac-eq-exec
+                                          (cons 'item (cons 'lst 'nil)))
+                                    'nil)))))))
+      ((equal test ''eql)
+       (cons
+        'let-mbe
+        (cons
+         (cons (cons 'item (cons item 'nil))
+               (cons (cons 'lst (cons lst 'nil))
+                     (cons (cons 'acc (cons acc 'nil))
+                           'nil)))
+         (cons
+            ':logic
+            (cons (cons 'position-equal-ac
+                        (cons 'item
+                              (cons 'lst (cons 'acc 'nil))))
+                  (cons ':exec
+                        (cons (cons 'position-ac-eql-exec
+                                    (cons 'item
+                                          (cons 'lst (cons 'acc 'nil))))
+                              'nil)))))))
+      (t (cons 'position-equal-ac
+               (cons item (cons lst 'nil))))))")
  (POSITION-EQ (POINTERS)
               "See [position].")
  (POSITION-EQUAL (POINTERS)
@@ -90306,8 +90436,8 @@ Subtopics
   but it is useful to see [linear] to learn about maximal terms
   (which, as one might guess, are stored under ``Max-term'').
 
-  Currently, this function does not print congruence rules or
-  equivalence rules.
+  Currently, this function does not print congruence rules, equivalence
+  rules, or refinement rules.
 
   The expert user might also wish to use [find-rules-of-rune].  See
   [find-rules-of-rune].")
@@ -104171,10 +104301,11 @@ Example
     (set-inhibit-warnings string1 string2 ...)
 
   where each string is considered without regard to case.  This macro
-  is equivalent to (local (table inhibit-warnings-table nil 'lst
-  :clear)), where lst is the list of strings supplied.  This macro is
-  an event (see [table]), but no output results from a
-  set-inhibit-warnings event.
+  is is essentially (local (table inhibit-warnings-table nil 'alist
+  :clear)), where alist pairs each supplied string with nil: that is,
+  alist is (pairlis$ lst nil) where lst is the list of strings
+  supplied.  This macro is an event (see [table]), but no output
+  results from a set-inhibit-warnings event.
 
   ACL2 prints warnings that may, from time to time, seem excessive to
   experienced users.  Each warning is ``labeled'' with a string
