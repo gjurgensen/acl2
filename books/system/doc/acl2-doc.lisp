@@ -86194,6 +86194,11 @@ it."
  definition @(see rune) for the new function, but that was not previously the
  case.</p>
 
+ <p>Functions @('position-ac-eq-exec'), @('position-ac-eql-exec'), and
+ @('position-equal-ac'), which all support the macro, @(tsee position), now fix
+ their accumulator argument.  Thanks to Mihir Mehta for supplying these
+ changes, for the purpose of avoiding @(tsee acl2-numberp) type hypotheses.</p>
+
  <h3>New Features</h3>
 
  <h3>Heuristic and Efficiency Improvements</h3>

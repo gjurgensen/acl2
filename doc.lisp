@@ -84707,6 +84707,12 @@ Changes to Existing Features
   the definition [rune] for the new function, but that was not
   previously the case.
 
+  Functions position-ac-eq-exec, position-ac-eql-exec, and
+  position-equal-ac, which all support the macro, [position], now fix
+  their accumulator argument.  Thanks to Mihir Mehta for supplying
+  these changes, for the purpose of avoiding [ACL2-numberp] type
+  hypotheses.
+
 
 New Features
 
@@ -90247,7 +90253,8 @@ Subtopics
            (declare (xargs :guard (and (true-listp lst)
                                        (acl2-numberp acc))))
            (cond ((endp lst) nil)
-                 ((equal item (car lst)) acc)
+                 ((equal item (car lst))
+                  (mbe :exec acc :logic (fix acc)))
                  (t (position-equal-ac item (cdr lst)
                                        (1+ acc)))))
 
