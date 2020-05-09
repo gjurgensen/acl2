@@ -488,7 +488,12 @@
  })
 
  <p>Notice that like all arithmetic functions, @('<') treats non-numeric inputs
- as @('0').</p>
+ as @('0'). Thus, the following are theorems.</p>
+
+ @({
+  (thm (equal (< (fix x) y) (< x y)))
+  (thm (equal (< x (fix y)) (< x y)))
+ })
 
  <p>This function has the usual meaning on the rational numbers, but is
  extended to the complex rational numbers using the lexicographic order: first
@@ -8647,7 +8652,12 @@ and @(tsee include-book)"
  })
 
  <p>Notice that like all arithmetic functions, @('binary-+') treats non-numeric
- inputs as @('0').</p>
+ inputs as @('0'). Thus, the following are theorems.</p>
+
+ @({
+  (thm (equal (+ (fix x) y) (+ x y)))
+  (thm (equal (+ x (fix y)) (+ x y)))
+ })
 
  <p>Calls of the macro @(tsee +) expand to calls of @('binary-+'); see @(see
  +).</p>")
@@ -89847,6 +89857,7 @@ arithmetic) for libraries of @(see books) for arithmetic reasoning.</p>")
  <p>@('Position') is defined by Common Lisp.  See any Common Lisp documentation
  for more information.</p>
 
+ @(def position)
  @(def position-equal)
  @(def position-equal-ac)
  @(def position-ac)")
