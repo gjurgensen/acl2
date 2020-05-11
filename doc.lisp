@@ -35606,6 +35606,35 @@ Subtopics
   ``punted'' the forced hypothesis to the rewriter, which established
   it.
 
+  The discussion above may give the impression that a forcing round
+  only takes place because of a failure to relieve a forced
+  hypothesis.  A notable exception, however, is due to
+  [linear-arithmetic].  Consider the following example:
+
+    (implies (not (equal 0 x))
+             (or (< 0 x) (< x 0)))
+
+  This is not a theorem; in particular, it fails when x is nil.  What
+  is missing is the hypothesis, (acl2-numberp x).  If you try to
+  prove the displayed formula above and you look at the proof using
+  :[pso], you'll see the following.
+
+    But forced simplification reduces this to T, using the :executable-
+    counterpart of FORCE and linear arithmetic.
+
+  Thus, no specific rule created this forcing round (see also
+  [forcing-round]).  Rather, ACL2 was able to prove the goal using
+  linear arithmetic, but it needed to force the assumption that x is
+  a number.  This is clear when we look at output for the forcing
+  round:
+
+    [1]Goal, below, will focus on
+    (ACL2-NUMBERP X),
+    which was forced in
+     Goal'
+      by the linearization of
+      (EQUAL 0 X).
+
   Finally, we should mention that the rewriter is never willing to
   force when there is an [if] term present in the goal being
   simplified.  Since [and] terms and [or] terms are merely
