@@ -32126,6 +32126,40 @@ current fast alists."
  this happen?  The type system ``punted'' the forced hypothesis to the
  rewriter, which established it.</p>
 
+ <p>The discussion above may give the impression that a forcing round only
+ takes place because of a failure to relieve a forced hypothesis.  A notable
+ exception, however, is due to @(see linear-arithmetic).  Consider the
+ following example:</p>
+
+ @({
+ (implies (not (equal 0 x))
+          (or (< 0 x) (< x 0)))
+ })
+
+ <p>This is not a theorem; in particular, it fails when @('x') is @('nil').
+ What is missing is the hypothesis, @('(acl2-numberp x)').  If you try to prove
+ the displayed formula above and you look at the proof using @(':')@(tsee pso),
+ you'll see the following.</p>
+
+ @({
+ But forced simplification reduces this to T, using the :executable-
+ counterpart of FORCE and linear arithmetic.
+ })
+
+ <p>Thus, no specific rule created this forcing round (see also @(see
+ forcing-round)).  Rather, ACL2 was able to prove the goal using linear
+ arithmetic, but it needed to force the assumption that @('x') is a number.
+ This is clear when we look at output for the forcing round:</p>
+
+ @({
+ [1]Goal, below, will focus on
+ (ACL2-NUMBERP X),
+ which was forced in
+  Goal'
+   by the linearization of
+   (EQUAL 0 X).
+ })
+
  <p>Finally, we should mention that the rewriter is never willing to force when
  there is an @(tsee if) term present in the goal being simplified.  Since
  @(tsee and) terms and @(tsee or) terms are merely abbreviations for @(tsee if)
@@ -86165,6 +86199,11 @@ it."
 ; an equivalence relation.  Thanks to Mihir Mehta for sending an example that
 ; led to this improvement.  Also avoided a raw Lisp error for EQUIV when the
 ; alleged equivalence relation is supplied as an atom that is not a symbol.
+
+; Cleaned up source function tilde-@-assumnotes-phrase-lst-gag-mode by removing
+; an obsolete case having to do with forcing guards.  We noticed this case as
+; we added to :doc force to explain forcing by linearization (thanks to Mihir
+; Mehta for a query leading to that :doc improvement).
 
   :parents (release-notes)
   :short "ACL2 Version  8.4 (xxx, 20xx) Notes"
