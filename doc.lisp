@@ -1406,7 +1406,10 @@ Subtopics
     (and (rationalp x) (rationalp y))
 
   Notice that like all arithmetic functions, < treats non-numeric
-  inputs as 0.
+  inputs as 0. Thus, the following are theorems.
+
+    (thm (equal (< (fix x) y) (< x y)))
+    (thm (equal (< x (fix y)) (< x y)))
 
   This function has the usual meaning on the rational numbers, but is
   extended to the complex rational numbers using the lexicographic
@@ -11356,7 +11359,10 @@ Subtopics
     (and (acl2-numberp x) (acl2-numberp y))
 
   Notice that like all arithmetic functions, binary-+ treats
-  non-numeric inputs as 0.
+  non-numeric inputs as 0. Thus, the following are theorems.
+
+    (thm (equal (+ (fix x) y) (+ x y)))
+    (thm (equal (+ x (fix y)) (+ x y)))
 
   Calls of the macro [+] expand to calls of binary-+; see [+].")
  (BINARY-APPEND
@@ -90267,6 +90273,41 @@ Subtopics
 
   Position is defined by Common Lisp.  See any Common Lisp
   documentation for more information.
+
+  Macro: <position>
+
+    (defmacro
+     position (x seq &key (test ''eql))
+     (declare (xargs :guard (or (equal test ''eq)
+                                (equal test ''eql)
+                                (equal test ''equal))))
+     (cond
+      ((equal test ''eq)
+       (cons
+         'let-mbe
+         (cons (cons (cons 'x (cons x 'nil))
+                     (cons (cons 'seq (cons seq 'nil)) 'nil))
+               (cons ':logic
+                     (cons (cons 'position-equal
+                                 (cons 'x (cons 'seq 'nil)))
+                           (cons ':exec
+                                 (cons (cons 'position-eq-exec
+                                             (cons 'x (cons 'seq 'nil)))
+                                       'nil)))))))
+      ((equal test ''eql)
+       (cons
+         'let-mbe
+         (cons (cons (cons 'x (cons x 'nil))
+                     (cons (cons 'seq (cons seq 'nil)) 'nil))
+               (cons ':logic
+                     (cons (cons 'position-equal
+                                 (cons 'x (cons 'seq 'nil)))
+                           (cons ':exec
+                                 (cons (cons 'position-eql-exec
+                                             (cons 'x (cons 'seq 'nil)))
+                                       'nil)))))))
+      (t (cons 'position-equal
+               (cons x (cons seq 'nil))))))
 
   Function: <position-equal>
 
