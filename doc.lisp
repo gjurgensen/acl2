@@ -1406,7 +1406,10 @@ Subtopics
     (and (rationalp x) (rationalp y))
 
   Notice that like all arithmetic functions, < treats non-numeric
-  inputs as 0.
+  inputs as 0. Thus, the following are theorems.
+
+    (thm (equal (< (fix x) y) (< x y)))
+    (thm (equal (< x (fix y)) (< x y)))
 
   This function has the usual meaning on the rational numbers, but is
   extended to the complex rational numbers using the lexicographic
@@ -11356,7 +11359,10 @@ Subtopics
     (and (acl2-numberp x) (acl2-numberp y))
 
   Notice that like all arithmetic functions, binary-+ treats
-  non-numeric inputs as 0.
+  non-numeric inputs as 0. Thus, the following are theorems.
+
+    (thm (equal (+ (fix x) y) (+ x y)))
+    (thm (equal (+ x (fix y)) (+ x y)))
 
   Calls of the macro [+] expand to calls of binary-+; see [+].")
  (BINARY-APPEND
@@ -14635,23 +14641,23 @@ Subtopics
   Why not just test whether there are monitored runes?  If you care
   about the answers, see [why-brr].
 
-  BRR Mode and Console Interrupts: If the system is operating in brr
-  mode and you break into raw Lisp (as by causing a console interrupt
-  or happening upon a signaled Lisp error; see [breaks]), you can
-  return to the ACL2 top-level, outside any brr environment, by
-  executing ([abort!]).  Otherwise, the normal way to quit from such
-  a break (for example :q in GCL, :reset in Allegro CL, and q in CMU
-  CL) will return to the innermost ACL2 read-eval-print loop, which
-  may or may not be the top-level of your ACL2 session!  In
-  particular, if the break happens to occur while ACL2 is within the
-  brr environment (in which it is preparing to read [brr-commands]),
-  the abort will merely return to that brr environment.  Upon exiting
-  that environment, normal theorem proving is continued (and the brr
-  environment may be entered again in response to subsequent
-  monitored rule applications).  Before returning to the brr
-  environment, ACL2 ``cleans up'' from the interrupted brr
-  processing.  However, it is not possible (given the current
-  implementation) to clean up perfectly.  This may have two
+  BRR Mode, Console Interrupts, and Subsidiary Prover Calls: If the
+  system is operating in brr mode and you break into raw Lisp (as by
+  causing a console interrupt or happening upon a signaled Lisp
+  error; see [breaks]), you can return to the ACL2 top-level, outside
+  any brr environment, by executing ([abort!]).  Otherwise, the
+  normal way to quit from such a break (for example :q in GCL, :reset
+  in Allegro CL, and q in CMU CL) will return to the innermost ACL2
+  read-eval-print loop, which may or may not be the top-level of your
+  ACL2 session!  In particular, if the break happens to occur while
+  ACL2 is within the brr environment (in which it is preparing to
+  read [brr-commands]), the abort will merely return to that brr
+  environment.  Upon exiting that environment, normal theorem proving
+  is continued (and the brr environment may be entered again in
+  response to subsequent monitored rule applications).  Before
+  returning to the brr environment, ACL2 ``cleans up'' from the
+  interrupted brr processing.  However, it is not possible (given the
+  current implementation) to clean up perfectly.  This may have two
   side-effects.  First, the system may occasionally print the
   self-explanatory ``Cryptic BRR Message 1'' (or 2), informing you
   that the system has attempted to recover from an aborted brr
@@ -14659,8 +14665,12 @@ Subtopics
   in that proof will be erroneous because the cleanup was done
   incorrectly.  The moral is that you should not trust what you learn
   from brr if you have interrupted and aborted brr processing during
-  the proof.  These issues do not affect the behavior or soundness of
-  the theorem prover.
+  the proof.  Such ``clean up'' may also occur when you call the
+  prover from within the brr environment (for example using [defthm]
+  or [thm], or even [defun] or any other [event] that invoke the
+  prover), unless you invoke :brr nil before making that call.  These
+  issues do not affect the behavior or soundness of the theorem
+  prover.
 
 
 Subtopics
@@ -35601,6 +35611,35 @@ Subtopics
   reports no forcing.  How can this happen?  The type system
   ``punted'' the forced hypothesis to the rewriter, which established
   it.
+
+  The discussion above may give the impression that a forcing round
+  only takes place because of a failure to relieve a forced
+  hypothesis.  A notable exception, however, is due to
+  [linear-arithmetic].  Consider the following example:
+
+    (implies (not (equal 0 x))
+             (or (< 0 x) (< x 0)))
+
+  This is not a theorem; in particular, it fails when x is nil.  What
+  is missing is the hypothesis, (acl2-numberp x).  If you try to
+  prove the displayed formula above and you look at the proof using
+  :[pso], you'll see the following.
+
+    But forced simplification reduces this to T, using the :executable-
+    counterpart of FORCE and linear arithmetic.
+
+  Thus, no specific rule created this forcing round (see also
+  [forcing-round]).  Rather, ACL2 was able to prove the goal using
+  linear arithmetic, but it needed to force the assumption that x is
+  a number.  This is clear when we look at output for the forcing
+  round:
+
+    [1]Goal, below, will focus on
+    (ACL2-NUMBERP X),
+    which was forced in
+     Goal'
+      by the linearization of
+      (EQUAL 0 X).
 
   Finally, we should mention that the rewriter is never willing to
   force when there is an [if] term present in the goal being
@@ -84703,6 +84742,12 @@ Changes to Existing Features
   the definition [rune] for the new function, but that was not
   previously the case.
 
+  Functions position-ac-eq-exec, position-ac-eql-exec, and
+  position-equal-ac, which all support the macro, [position], now fix
+  their accumulator argument.  Thanks to Mihir Mehta for supplying
+  these changes, for the purpose of avoiding [ACL2-numberp] type
+  hypotheses.
+
 
 New Features
 
@@ -90229,6 +90274,41 @@ Subtopics
   Position is defined by Common Lisp.  See any Common Lisp
   documentation for more information.
 
+  Macro: <position>
+
+    (defmacro
+     position (x seq &key (test ''eql))
+     (declare (xargs :guard (or (equal test ''eq)
+                                (equal test ''eql)
+                                (equal test ''equal))))
+     (cond
+      ((equal test ''eq)
+       (cons
+         'let-mbe
+         (cons (cons (cons 'x (cons x 'nil))
+                     (cons (cons 'seq (cons seq 'nil)) 'nil))
+               (cons ':logic
+                     (cons (cons 'position-equal
+                                 (cons 'x (cons 'seq 'nil)))
+                           (cons ':exec
+                                 (cons (cons 'position-eq-exec
+                                             (cons 'x (cons 'seq 'nil)))
+                                       'nil)))))))
+      ((equal test ''eql)
+       (cons
+         'let-mbe
+         (cons (cons (cons 'x (cons x 'nil))
+                     (cons (cons 'seq (cons seq 'nil)) 'nil))
+               (cons ':logic
+                     (cons (cons 'position-equal
+                                 (cons 'x (cons 'seq 'nil)))
+                           (cons ':exec
+                                 (cons (cons 'position-eql-exec
+                                             (cons 'x (cons 'seq 'nil)))
+                                       'nil)))))))
+      (t (cons 'position-equal
+               (cons x (cons seq 'nil))))))
+
   Function: <position-equal>
 
     (defun position-equal (item lst)
@@ -90243,7 +90323,8 @@ Subtopics
            (declare (xargs :guard (and (true-listp lst)
                                        (acl2-numberp acc))))
            (cond ((endp lst) nil)
-                 ((equal item (car lst)) acc)
+                 ((equal item (car lst))
+                  (mbe :exec acc :logic (fix acc)))
                  (t (position-equal-ac item (cdr lst)
                                        (1+ acc)))))
 
@@ -123379,7 +123460,8 @@ Subtopics
           make clean-books ACL2=`pwd`/saved_acl2d
           cd books
           (time nice ./build/cert.pl -j 8 \\
-                     --acl2 `pwd`/../saved_acl2d system/top.cert) \\
+                     --acl2 `pwd`/../saved_acl2d \\
+                     system/top.cert system/apply/loop-scions.cert) \\
             >& make-devel-regression.log&
 
       The last of these commands should run much more quickly than a
