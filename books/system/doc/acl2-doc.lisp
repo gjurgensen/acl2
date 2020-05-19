@@ -11769,30 +11769,33 @@ with any questions about building the community books.</p>")
  whether there are monitored runes?  If you care about the answers, see @(see
  why-brr).</p>
 
- <p>BRR Mode and Console Interrupts: If the system is operating in @('brr')
- mode and you break into raw Lisp (as by causing a console interrupt or
- happening upon a signaled Lisp error; see @(see breaks)), you can return to
- the ACL2 top-level, outside any @('brr') environment, by executing
- @('(')@(tsee abort!)@(')').  Otherwise, the normal way to quit from such a
- break (for example @(':q') in GCL, @(':reset') in Allegro CL, and @('q') in
- CMU CL) will return to the innermost ACL2 read-eval-print loop, which may or
- may not be the top-level of your ACL2 session!  In particular, if the break
- happens to occur while ACL2 is within the @('brr') environment (in which it is
- preparing to read @(tsee brr-commands)), the abort will merely return to that
- @('brr') environment.  Upon exiting that environment, normal theorem proving
- is continued (and the @('brr') environment may be entered again in response to
- subsequent monitored rule applications).  Before returning to the @('brr')
- environment, ACL2 ``cleans up'' from the interrupted @('brr') processing.
- However, it is not possible (given the current implementation) to clean up
- perfectly.  This may have two side-effects.  First, the system may
- occasionally print the self-explanatory ``Cryptic BRR Message 1'' (or 2),
- informing you that the system has attempted to recover from an aborted
- @('brr') environment.  Second, it is possible that subsequent @('brr')
- behavior in that proof will be erroneous because the cleanup was done
+ <p>BRR Mode, Console Interrupts, and Subsidiary Prover Calls: If the system is
+ operating in @('brr') mode and you break into raw Lisp (as by causing a
+ console interrupt or happening upon a signaled Lisp error; see @(see breaks)),
+ you can return to the ACL2 top-level, outside any @('brr') environment, by
+ executing @('(')@(tsee abort!)@(')').  Otherwise, the normal way to quit from
+ such a break (for example @(':q') in GCL, @(':reset') in Allegro CL, and
+ @('q') in CMU CL) will return to the innermost ACL2 read-eval-print loop,
+ which may or may not be the top-level of your ACL2 session!  In particular, if
+ the break happens to occur while ACL2 is within the @('brr') environment (in
+ which it is preparing to read @(tsee brr-commands)), the abort will merely
+ return to that @('brr') environment.  Upon exiting that environment, normal
+ theorem proving is continued (and the @('brr') environment may be entered
+ again in response to subsequent monitored rule applications).  Before
+ returning to the @('brr') environment, ACL2 ``cleans up'' from the interrupted
+ @('brr') processing.  However, it is not possible (given the current
+ implementation) to clean up perfectly.  This may have two side-effects.
+ First, the system may occasionally print the self-explanatory ``Cryptic BRR
+ Message 1'' (or 2), informing you that the system has attempted to recover
+ from an aborted @('brr') environment.  Second, it is possible that subsequent
+ @('brr') behavior in that proof will be erroneous because the cleanup was done
  incorrectly.  The moral is that you should not trust what you learn from
  @('brr') if you have interrupted and aborted @('brr') processing during the
- proof.  These issues do not affect the behavior or soundness of the theorem
- prover.</p>")
+ proof.  Such ``clean up'' may also occur when you call the prover from within
+ the @('brr') environment (for example using @(tsee defthm) or @(tsee thm), or
+ even @(tsee defun) or any other @(see event) that invoke the prover), unless
+ you invoke @(':brr nil') before making that call.  These issues do not affect
+ the behavior or soundness of the theorem prover.</p>")
 
 (defxdoc brr-commands
   :parents (break-rewrite)
@@ -32112,6 +32115,40 @@ current fast alists."
  hypothesis.  The system then applies the rule but reports no forcing.  How can
  this happen?  The type system ``punted'' the forced hypothesis to the
  rewriter, which established it.</p>
+
+ <p>The discussion above may give the impression that a forcing round only
+ takes place because of a failure to relieve a forced hypothesis.  A notable
+ exception, however, is due to @(see linear-arithmetic).  Consider the
+ following example:</p>
+
+ @({
+ (implies (not (equal 0 x))
+          (or (< 0 x) (< x 0)))
+ })
+
+ <p>This is not a theorem; in particular, it fails when @('x') is @('nil').
+ What is missing is the hypothesis, @('(acl2-numberp x)').  If you try to prove
+ the displayed formula above and you look at the proof using @(':')@(tsee pso),
+ you'll see the following.</p>
+
+ @({
+ But forced simplification reduces this to T, using the :executable-
+ counterpart of FORCE and linear arithmetic.
+ })
+
+ <p>Thus, no specific rule created this forcing round (see also @(see
+ forcing-round)).  Rather, ACL2 was able to prove the goal using linear
+ arithmetic, but it needed to force the assumption that @('x') is a number.
+ This is clear when we look at output for the forcing round:</p>
+
+ @({
+ [1]Goal, below, will focus on
+ (ACL2-NUMBERP X),
+ which was forced in
+  Goal'
+   by the linearization of
+   (EQUAL 0 X).
+ })
 
  <p>Finally, we should mention that the rewriter is never willing to force when
  there is an @(tsee if) term present in the goal being simplified.  Since
@@ -86140,6 +86177,24 @@ it."
  ")
 
 (defxdoc note-8-4
+
+; Any ``Cryptic BRR Message'' printed by the prover now acknowledges that the
+; issue may be due to an invocation of the prover from within BRR.  (We do not
+; recall BRR being designed to behave well in this case.)  :DOC brr has been
+; updated accordingly.  Thanks to Mihir Mehta for sending an example that led
+; to this improvement.
+
+; Improved the error messages from the proof-builder EQUIV and = commands in
+; the case that the alleged equivalence relation is actually a macro alias for
+; an equivalence relation.  Thanks to Mihir Mehta for sending an example that
+; led to this improvement.  Also avoided a raw Lisp error for EQUIV when the
+; alleged equivalence relation is supplied as an atom that is not a symbol.
+
+; Cleaned up source function tilde-@-assumnotes-phrase-lst-gag-mode by removing
+; an obsolete case having to do with forcing guards.  We noticed this case as
+; we added to :doc force to explain forcing by linearization (thanks to Mihir
+; Mehta for a query leading to that :doc improvement).
+
   :parents (release-notes)
   :short "ACL2 Version  8.4 (xxx, 20xx) Notes"
   :long "<p>NOTE!  New users can ignore these release notes, because the @(see
@@ -86177,6 +86232,11 @@ it."
  default-defun-mode) is program mode, @(tsee defund-nx) now @(see disable)s the
  definition @(see rune) for the new function, but that was not previously the
  case.</p>
+
+ <p>Functions @('position-ac-eq-exec'), @('position-ac-eql-exec'), and
+ @('position-equal-ac'), which all support the macro, @(tsee position), now fix
+ their accumulator argument.  Thanks to Mihir Mehta for supplying these
+ changes, for the purpose of avoiding @(tsee acl2-numberp) type hypotheses.</p>
 
  <h3>New Features</h3>
 
@@ -122141,7 +122201,8 @@ introduction-to-the-tau-system) for more information about Tau.</dd>
  make clean-books ACL2=`pwd`/saved_acl2d
  cd books
  (time nice ./build/cert.pl -j 8 \\
-            --acl2 `pwd`/../saved_acl2d system/top.cert) \\
+            --acl2 `pwd`/../saved_acl2d \\
+            system/top.cert system/apply/loop-scions.cert) \\
    >& make-devel-regression.log&
  })
 
