@@ -86205,6 +86205,9 @@ it."
 ; we added to :doc force to explain forcing by linearization (thanks to Mihir
 ; Mehta for a query leading to that :doc improvement).
 
+; Changed termination tests for merge-term-order and merge-sort-term-order to
+; use endp instead of null.
+
   :parents (release-notes)
   :short "ACL2 Version  8.4 (xxx, 20xx) Notes"
   :long "<p>NOTE!  New users can ignore these release notes, because the @(see
