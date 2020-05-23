@@ -23355,13 +23355,11 @@ Subtopics
     (defconst *len-my-digits* (the unsigned-byte (length *my-digits*)))
 
     General Form:
-    (defconst name term doc-string)
+    (defconst name term)
 
-  where name is a symbol beginning and ending with the character *,
+  where name is a symbol beginning and ending with the character * and
   term is a variable-free term that is evaluated to determine the
-  value of the constant, and doc-string, if non-nil, is an optional
-  string that can provide documentation but is essentially ignored by
-  ACL2.
+  value of the constant.
 
   When a constant symbol is used as a [term], ACL2 replaces it by its
   value; see [term].
@@ -84747,6 +84745,11 @@ Changes to Existing Features
   their accumulator argument.  Thanks to Mihir Mehta for supplying
   these changes, for the purpose of avoiding [ACL2-numberp] type
   hypotheses.
+
+  The macro [defconst] no longer accepts an optional documentation
+  string (which was already being ignored).  Thanks to Eric Smith and
+  Alessandro Coglio for suggesting this change, which avoids
+  potential confusion; consider for example (defconst *c* () \"abc\").
 
 
 New Features

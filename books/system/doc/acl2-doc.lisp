@@ -20188,13 +20188,12 @@ subtree of X with T, without duplication.</p>
   (defconst *len-my-digits* (the unsigned-byte (length *my-digits*)))
 
   General Form:
-  (defconst name term doc-string)
+  (defconst name term)
  })
 
- <p>where @('name') is a symbol beginning and ending with the character @('*'),
- @('term') is a variable-free term that is evaluated to determine the value of
- the constant, and @('doc-string'), if non-@('nil'), is an optional string that
- can provide documentation but is essentially ignored by ACL2.</p>
+ <p>where @('name') is a symbol beginning and ending with the character @('*')
+ and @('term') is a variable-free term that is evaluated to determine the value
+ of the constant.</p>
 
  <p>When a constant symbol is used as a @(see term), ACL2 replaces it by its
  value; see @(see term).</p>
@@ -86205,6 +86204,9 @@ it."
 ; we added to :doc force to explain forcing by linearization (thanks to Mihir
 ; Mehta for a query leading to that :doc improvement).
 
+; Changed termination tests for merge-term-order and merge-sort-term-order to
+; use endp instead of null.
+
   :parents (release-notes)
   :short "ACL2 Version  8.4 (xxx, 20xx) Notes"
   :long "<p>NOTE!  New users can ignore these release notes, because the @(see
@@ -86247,6 +86249,11 @@ it."
  @('position-equal-ac'), which all support the macro, @(tsee position), now fix
  their accumulator argument.  Thanks to Mihir Mehta for supplying these
  changes, for the purpose of avoiding @(tsee acl2-numberp) type hypotheses.</p>
+
+ <p>The macro @(tsee defconst) no longer accepts an optional documentation
+ string (which was already being ignored).  Thanks to Eric Smith and Alessandro
+ Coglio for suggesting this change, which avoids potential confusion; consider
+ for example @('(defconst *c* () \"abc\")').</p>
 
  <h3>New Features</h3>
 
