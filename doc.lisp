@@ -1825,7 +1825,7 @@ Subtopics
     (accumulated-persistence nil)            ; Deactivate.
 
     (accumulated-persistence-oops)           ; Undo the clearing effect of
-                                             ; (accumulated-persistence nil).
+                                             ; (accumulated-persistence t).
 
     Advanced forms:
     (show-accumulated-persistence :frames-s) ; The `s', `f', and `a' suffixes
@@ -1876,9 +1876,10 @@ Subtopics
   [dmr].
 
   Accumulated persistence tracking can be turned on or off.  It is
-  generally off.  When on, proofs may take perhaps 50% more time than
-  otherwise!  But some useful numbers are collected.  When it is
-  turned on, by
+  generally off.  When on, proofs may take a little more time than
+  otherwise.  (We measured approximately 11% more time in a so-called
+  ``everything'' regression run in May 2020.)  But some useful
+  numbers are collected.  When it is turned on, by
 
     ACL2 !>(accumulated-persistence t)
 
@@ -1942,6 +1943,13 @@ Subtopics
   tried as well as its persistence.  The ratio between the two is the
   average amount of work done on behalf of the rule each time it is
   tried.
+
+  We do not claim that tracking of runes for accumulated-persistence is
+  perfect.  In practice, we believe it is quite reliable with the
+  exception of [congruence] runes and, in some cases
+  [executable-counterpart] runes. (For the latter, details are in a
+  comment in the ACL2 source definition of function
+  print-useless-runes.)
 
   When the accumulated persistence totals are displayed by the function
   show-accumulated-persistence we sort them so that the most
@@ -2035,6 +2043,9 @@ Subtopics
 
   In summary: categorization of :frames as ``useful'' or ``useless'' is
   based on whether they support ``useful'' or ``useless'' :tries.
+
+  See [useless-runes] for a way to speed up proofs by automatically
+  turning off useless rules.
 
   Note that a [rune] with high accumulated persistence may not actually
   be the ``culprit.'' For example, suppose rune1 is reported to have
@@ -2231,7 +2242,10 @@ Subtopics
       [accumulated-persistence]
 
   [Dmr]
-      Dynamically monitor rewrites and other prover activity")
+      Dynamically monitor rewrites and other prover activity
+
+  [Useless-runes]
+      Speed up proofs by disabling useless [rune]s")
  (ACCUMULATED-PERSISTENCE-OOPS (POINTERS)
                                "See [accumulated-persistence].")
  (ACCUMULATED-PERSISTENCE-SUBTLETIES
@@ -16212,6 +16226,10 @@ Subtopics
     (certify-book \"my-arith\" t)        ; ... from world of old certificate
     (certify-book \"my-arith\" 0 nil :acl2x t)
                                        ; ... writing or reading a .acl2x file
+    (certify-book \"my-arith\" 0 t :useless-runes :write)
+                                       ; ... write file to speed up future proofs
+    (certify-book \"my-arith\" 0 t :useless-runes :read)
+                                       ; ... read file to speed up future proofs
 
     General Form:
     (certify-book book-name
@@ -16224,17 +16242,21 @@ Subtopics
                   :ttagsx ttags           ; [default nil]
                   :pcert pcert            ; [default nil]
                   :write-port t/nil       ; [default t unless pcert is non-nil]
+                  :useless-runes :write/:read/:read?/n/-n/nil
+                                          ; (-100 < n < 0 or 0 < n <= 100)
+                                          ; [default nil]
                   )
 
   where book-name is a book name (see [book-name]), k is used to
   indicate your approval of the ``certification [world],'' and
   compile-flg can control whether the book is to be compiled.  The
-  defaults for compile-flg, skip-proofs-okp, acl2x, write-port, and
-  pcert can be affected by environment variables.  All of these
-  arguments are described in detail below, except for :pcert.  (We
-  assume below that the value of :pcert is nil (and environment
-  variable ACL2_PCERT_ARG is unset or the empty string).  For a
-  discussion of this argument, see [provisional-certification].)
+  defaults for compile-flg, skip-proofs-okp, acl2x, write-port,
+  pcert, and :useless-runes can be affected by environment variables.
+  All of these arguments are described in detail below, except for
+  :pcert and :useless-runes: see [provisional-certification] and
+  [useless-runes], respectively, for the effects of these two
+  arguments and their corresponding environment variables, as we
+  ignore those effects in the present topic.
 
   Certification occurs in some logical [world], called the
   ``certification [world].'' That [world] must contain the [defpkg]s
@@ -16326,7 +16348,7 @@ Subtopics
   B.port is written by certification process.  This file contains all
   of the [portcullis] [command]s for B, i.e., all user commands
   present in the ACL2 logical [world] at the time certify-book is
-  called.  if B.lisp later becomes uncertified, say because [events]
+  called.  If B.lisp later becomes uncertified, say because [events]
   from that file or an included book have been edited, then
   (include-book \"B\") will consult B.port to evaluate forms in that
   file before evaluating the events in B.lisp.  On the other hand,
@@ -16442,7 +16464,10 @@ Subtopics
       A variant of [certify-book]
 
   [Certify-book-debug]
-      Some possible ways to work around [certify-book] failures")
+      Some possible ways to work around [certify-book] failures
+
+  [Useless-runes]
+      Speed up proofs by disabling useless [rune]s")
  (CERTIFY-BOOK!
   (CERTIFY-BOOK)
   "A variant of [certify-book]
@@ -84754,6 +84779,10 @@ Changes to Existing Features
 
 New Features
 
+  A new option for [certify-book], :useless-runes, makes it possible to
+  speed up repeated certification of a book, sometimes substantially.
+  See [useless-runes].
+
 
 Heuristic and Efficiency Improvements
 
@@ -84791,6 +84820,25 @@ Bug Fixes
   in SBCL on most x86-based platforms, and possibly erroneously
   attempting to make use of that instruction on some other platforms.
   Thanks to Keshav Kini for a query that led to this fix.
+
+  The use of [apply$] on calls of [if] no longer cause raw Lisp errors.
+  (The same is true for calls of the subroutine apply$-prim of
+  apply$.)  For example, these calls now evaluate without error:
+  (apply$ 'if '(nil nil nil)) and (apply$-prim 'if '(nil nil nil)).
+
+  We made the following fixes to the [accumulated-persistence] utility.
+
+    * Applications of [type-prescription] rules that were erroneously
+      labeled as ``useless'' are now appropriatedly labeled as
+      ``useful''.
+    * The documentation for [accumulated-persistence] now correctly states
+      that the form (accumulated-persistence-oops) undoes the
+      clearing effect of (accumulated-persistence t), rather than of
+      (accumulated-persistence nil).
+    * Uses of [definition] rules because of :[expand] hints, either
+      expicitly given by the user or generated by ACL2's heuristics
+      for doing induction, were not being recorded by
+      [accumulated-persistence].  They are now.
 
 
 Changes at the System Level
@@ -121315,6 +121363,208 @@ Subtopics
                 t))")
  (USE (POINTERS)
       "See [hints] for information about the keyword :use.")
+ (USELESS-RUNES
+  (CERTIFY-BOOK ACCUMULATED-PERSISTENCE)
+  "Speed up proofs by disabling useless [rune]s
+
+  This topic documents the :useless-runes option for [certify-book],
+  which makes it possible to speed up repeated certification of a
+  book.
+
+
+Introduction
+
+  For a given [event], the so-called ``useless'' rules are those that
+  do not contribute to the progress of any proof supporting that
+  event.  For more background see [accumulated-persistence], which is
+  typically used for finding rules to [disable] during proofs.  The
+  feature described in the present topic provides automation for the
+  discovery and effective disabling of useless rules.
+
+  To use the :useless-runes option of [certify-book], first certify
+  your book --- say, foo.lisp --- by supplying option :useless-runes
+  :write.  This creates a file foo@useless-runes.lsp that associates
+  names of [defthm], [defun], and [verify-guards] [events] with sets
+  of ``useless'' [rune]s'': rule names (``runes'') not contributing
+  to the progress of the proof.  Then, future certifications can use
+  option :useless-runes :read (also some variations of that,
+  discussed below) which, during evaluation of an event, will
+  effectively [disable] rules associated with that event in file
+  foo@useless-runes.lsp.
+
+  Environment variable ACL2_USELESS_RUNES can take value \"write\" or
+  \"read\" be used in place of the :useless-runes option :read or
+  :write (respectively) of certify-book.  This is discussed below.
+
+
+Detailed Documentation
+
+  Again, the :useless-runes option of [certify-book] provides a way to
+  automate discovery and, in future certifications, disabling of
+  useless runes (as described above), which can speed up proofs.
+  Information about useless runes is communicated using a file, which
+  we call the ``@useless-runes.lsp file'', whose name is obtained by
+  adding the suffix \"@useless-runes.lsp\" to the book name.  For
+  example, if the book's filename is \"foo.lisp\" then the
+  corresponding @useless-runes.lsp file is named
+  \"foo@useless-runes.lsp\".
+
+  The following table summarizes the legal values for the option
+  :useless-runes; further explanation follows.
+
+    :write   ; Write the @useless-runes.lsp file to speed up future proofs.
+    :read or ; Read the @useless-runes.lsp file to speed up proofs;
+    :read?   ;   file must exist for :read, but need not exist for :read?.
+    N, -N    ; N is a positive integer not exceeding 100.  Then |N|% of the rules
+             ;   indicated by the @useless-runes.lsp file are to be kept disabled.
+             ;   The @useless-runes.lsp file needs to exist for N but not for -N.
+    nil      ; Certify without reading or writing the @useless-runes.lsp file.
+
+  Notice in particular that :useless-runes 100 is equivalent to
+  :useless-runes :read, while :useless-runes -100 is equivalent to
+  :useless-runes :read?.
+
+  When certify-book is supplied with option :useless-runes :write, the
+  result is to write out a corresponding @useless-runes.lsp file.
+  Each top-level entry of this file has the form
+
+    (name (frames-1 tries-1 rune-1)
+          (frames-2 tries-2 rune-2)
+          ...
+          (frames-k tries-k rune-k))
+
+  where name is the name of a [defthm], [defun], or [verify-guards]
+  event, and each tuple (frames-i tries-i rune-i) indicates the
+  number of frames and tries for rune-i recorded for the proofs done
+  on behalf of that event.  ACL2 claims that none of the indicated
+  rules contributed to the progress of the proof.  See
+  [accumulated-persistence], but also see
+  [accumulated-persistence-subtleties] for some limitations.  These
+  top-level entries are listed in order of event in the book, from
+  top to bottom.  Because of [local] [events], the same name may
+  appear more than once.
+
+  When certify-book is supplied with option :useless-runes :read or
+  :useless-runes :read?, then book certification takes advantage of
+  the existing @useless-runes.lsp file, if it exists.  If that file
+  does not exist, an error is caused when the option value is :read
+  but the option is simply ignored when the option value is :read?.
+
+  The value of :useless-runes may also be a non-zero integer between
+  -100 and 100, inclusive.  The absolute value of this number is the
+  percentage of the runes associated with the current event that are
+  to be effectively kept [disable]d, starting with the useless rune
+  with the highest number of frames built (see
+  [accumulated-persistence]).  For example, if the value is 20 then
+  1/5 of the runes associated with the current event in the
+  @useless-runes.lsp file are to be kept disabled; so if the relevant
+  top-level form in that file is
+
+    (name (frames-1 tries-1 rune-1)
+          (frames-2 tries-2 rune-2)
+          (frames-2 tries-2 rune-3)
+          (frames-2 tries-2 rune-4)
+          (frames-2 tries-2 rune-5)
+          (frames-2 tries-2 rune-6)
+          (frames-k tries-k rune-7))
+
+  then 1/5 of the 7 runes are to be disabled, so since the first
+  integer greater than or equal to 7/5 is 2, the runes rune-1 and
+  rune-2 will be kept disabled.  Note again that the value 100 for
+  :useless-runes gives the same behavior as the value :read, and the
+  value -100 gives the same behavior as the value :read?.
+
+  The :useless-runes option of certify-book need not be given
+  explicitly.  Suppose that the environment variable
+  ACL2_USELESS_RUNES has a non-empty value.  Then that value
+  implicitly invokes the :useless-runes option as indicated by the
+  following table, which shows how that environment variable value
+  corresponds to a value for the :useless-runes option.
+
+    ACL2_USELESS_RUNES value          :useless-runes value
+    ------------------------          --------------------
+
+    WRITE (case insensitive)          :write
+    READ (case insensitive)           :read
+    READ? (case insensitive)          :read?
+    i, ij, -i, -ij, 100, -100         corresponding integer, which cannot be 0
+      (i and j are base-10 digits)
+
+  Important.  If a :useless-runes value is supplied explicitly (even
+  nil) and a non-empty value is also specified for environment
+  variable ACL2_USELESS_RUNES, then the environment variable takes
+  priority if its value is \"WRITE\" (case insensitive), but otherwise
+  the certify-book option :useless-runes takes priority.
+
+  If you want certification to avoid reading the book's
+  @useless-runes.lsp file even when this environment variable has a
+  non-empty value that specifies reading, call certify-book with
+  option :useless-runes nil.
+
+  A reason for allowing integer values, rather than only :read and
+  :read?, is that the disabling of useless runes can cause a proof to
+  fail.  Although this is probably uncommon, it can happen, for
+  example because an otherwise useless rule rewrites the hypothesis
+  of rule R to something that can not be proved by rewriting, thus
+  blocking the use of rule R; but with the useless rule disabled, R
+  is successfully applied, sending the proof in a direction that
+  leads to failure.  This problem may disappear when using only a
+  portion of the useless rules.  See also
+  [accumulated-persistence-subtleties].
+
+  Note that when using the @useless-runes.lsp file for a given event's
+  proofs, then the appropriate rules are effectively [disable]d not
+  only at the top level, but also whenever [hints] are supplied.  So
+  if an :[in-theory] hint specifies a [theory] that includes rule R,
+  but rule R is specified for disabling for the current event by the
+  @useless-runes.lsp file, then R will be removed from the theory
+  before installing that hint.  In particular, even the hint
+  :in-theory (enable R) will not enable R in this case.
+
+  Finally, we remark that the @useless-runes.lsp file is somewhat
+  robust in the following sense.  Suppose that rule R is specified in
+  that file, but at the time the @useless-runes.lsp is read, rule R
+  has been removed from one's books.  Then the inclusion of R as a
+  useless rule will simply be ignored, rather than causing an error.
+
+
+Subtleties
+
+  The @useless-runes.lsp files do not contain any
+  :[executable-counterpart] runes, because there are many places that
+  ACL2 does not track such runes for [accumulated-persistence].
+  (Details are in a comment in the ACL2 source definition of function
+  print-useless-runes.)
+
+  On rare occasions, when using the :read option or related values that
+  specify reading from an appropriate @useless-runes.lsp file, the
+  [package] of a rune's name might not be known to ACL2 at read time.
+  In that case, that rune will be ignored.
+
+  Because of [local] [events], more than one event may be associated
+  with a name in a given @useless-runes.lsp file.  When using the
+  :read option or related values that specify reading from an
+  appropriate @useless-runes.lsp file, ACL2 considers entries for a
+  given name from top to bottom in the @useless-runes.lsp file,
+  attempting to match them to [defthm], [defun], and [verify-guards]
+  events from top to bottom in the book.
+
+
+Performance
+
+  In ``everything'' testing of all of the [community-books] during (not
+  quite complete) development of this capability, we found that
+  writing the @useless-runes.lsp files (by setting the environment
+  variable ACL2_USELESS_RUNES to \"write\") caused an 11% slowdown from
+  the normal time, but a fresh such test when reading the
+  @useless-runes.lsp files by setting the environment variable
+  ACL2_USELESS_RUNES to \"25\" cut 24% from the normal time.  Books
+  varied considerably, however.  For example, after finding a
+  specific time reduction that was particularly significant, we
+  re-certified on standalone runs (i.e., on an otherwise unloaded
+  machine) and found that the time was reduced from 17 minutes and
+  1.9 seconds down to 34.93 seconds, thus eliminating 96.6% of the
+  time.")
  (USER-DEFINED-FUNCTIONS-TABLE
   (MACROS)
   "An advanced [table] used to replace certain system functions
