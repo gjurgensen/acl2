@@ -86318,7 +86318,8 @@ it."
  <p>Fixed a bug that was preventing use of the RDTSC hardware instruction in
  SBCL on most x86-based platforms, and possibly erroneously attempting to make
  use of that instruction on some other platforms.  Thanks to Keshav Kini for a
- query that led to this fix.</p>
+ query that led to this fix.  Also restricted RDTSC to x86-based platforms,
+ thanks to a suggestion by Curtis Dunham, to enable Arm builds of ACL2.</p>
 
  <p>The use of @(tsee apply$) on calls of @(tsee if) no longer cause raw Lisp
  errors.  (The same is true for calls of the subroutine @('apply$-prim') of
