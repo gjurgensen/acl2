@@ -40361,7 +40361,7 @@ current fast alists."
  <i>steps</i>, such as simplification or generalization, each of which attempts
  to replace a given goal by zero or more subgoals whose provability implies
  provability of that goal.  Note that every proof by induction starts a new
- trip through the waterall, as does every forcing round; and these occur only
+ trip through the waterfall, as does every forcing round; and these occur only
  after all preceding trips through the waterfall are complete.  Let us see in
  more detail how the waterfall works.</p>
 
@@ -130463,6 +130463,7 @@ expand function call at the current subterm, without simplifying"
 (defpointer tamep-lambdap tame)
 (defpointer thereis$ loop$)
 (defpointer thereis$+ loop$)
+(defpointer too-many-ifs efficiency)
 (defpointer trans-eval-default-warning user-stobjs-modified-warnings)
 (defpointer trans-eval-no-warning user-stobjs-modified-warnings)
 (defpointer translate system-utilities)
