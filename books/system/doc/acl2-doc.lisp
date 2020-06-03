@@ -40361,7 +40361,7 @@ current fast alists."
  <i>steps</i>, such as simplification or generalization, each of which attempts
  to replace a given goal by zero or more subgoals whose provability implies
  provability of that goal.  Note that every proof by induction starts a new
- trip through the waterall, as does every forcing round; and these occur only
+ trip through the waterfall, as does every forcing round; and these occur only
  after all preceding trips through the waterfall are complete.  Let us see in
  more detail how the waterfall works.</p>
 
