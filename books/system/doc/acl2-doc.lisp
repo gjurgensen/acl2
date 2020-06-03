@@ -130463,6 +130463,7 @@ expand function call at the current subterm, without simplifying"
 (defpointer tamep-lambdap tame)
 (defpointer thereis$ loop$)
 (defpointer thereis$+ loop$)
+(defpointer too-many-ifs efficiency)
 (defpointer trans-eval-default-warning user-stobjs-modified-warnings)
 (defpointer trans-eval-no-warning user-stobjs-modified-warnings)
 (defpointer translate system-utilities)
