@@ -43815,7 +43815,7 @@ Subtopics
   generalization, each of which attempts to replace a given goal by
   zero or more subgoals whose provability implies provability of that
   goal.  Note that every proof by induction starts a new trip through
-  the waterall, as does every forcing round; and these occur only
+  the waterfall, as does every forcing round; and these occur only
   after all preceding trips through the waterfall are complete.  Let
   us see in more detail how the waterfall works.
 
@@ -90067,6 +90067,9 @@ Subtopics
   [Thereis$+]
       See [loop$].
 
+  [Too-many-ifs]
+      See [efficiency].
+
   [Trans-eval-default-warning]
       See [user-stobjs-modified-warnings].
 
@@ -117017,6 +117020,8 @@ Subtopics
   ordinary one, and vice-versa.  However, if new-tp is supplied and
   not nil, then it should be the new type (the symbol macro or
   atomic-macro, in any package), or else there is no change.")
+ (TOO-MANY-IFS (POINTERS)
+               "See [efficiency].")
  (TOP-LEVEL
   (MISCELLANEOUS)
   "Evaluate a top-level form as a function body
