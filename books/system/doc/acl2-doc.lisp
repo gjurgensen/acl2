@@ -40361,7 +40361,7 @@ current fast alists."
  <i>steps</i>, such as simplification or generalization, each of which attempts
  to replace a given goal by zero or more subgoals whose provability implies
  provability of that goal.  Note that every proof by induction starts a new
- trip through the waterall, as does every forcing round; and these occur only
+ trip through the waterfall, as does every forcing round; and these occur only
  after all preceding trips through the waterfall are complete.  Let us see in
  more detail how the waterfall works.</p>
 
@@ -86318,7 +86318,8 @@ it."
  <p>Fixed a bug that was preventing use of the RDTSC hardware instruction in
  SBCL on most x86-based platforms, and possibly erroneously attempting to make
  use of that instruction on some other platforms.  Thanks to Keshav Kini for a
- query that led to this fix.</p>
+ query that led to this fix.  Also restricted RDTSC to x86-based platforms,
+ thanks to a suggestion by Curtis Dunham, to enable Arm builds of ACL2.</p>
 
  <p>The use of @(tsee apply$) on calls of @(tsee if) no longer cause raw Lisp
  errors.  (The same is true for calls of the subroutine @('apply$-prim') of
@@ -130462,6 +130463,7 @@ expand function call at the current subterm, without simplifying"
 (defpointer tamep-lambdap tame)
 (defpointer thereis$ loop$)
 (defpointer thereis$+ loop$)
+(defpointer too-many-ifs efficiency)
 (defpointer trans-eval-default-warning user-stobjs-modified-warnings)
 (defpointer trans-eval-no-warning user-stobjs-modified-warnings)
 (defpointer translate system-utilities)

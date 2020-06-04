@@ -43815,7 +43815,7 @@ Subtopics
   generalization, each of which attempts to replace a given goal by
   zero or more subgoals whose provability implies provability of that
   goal.  Note that every proof by induction starts a new trip through
-  the waterall, as does every forcing round; and these occur only
+  the waterfall, as does every forcing round; and these occur only
   after all preceding trips through the waterfall are complete.  Let
   us see in more detail how the waterfall works.
 
@@ -84819,7 +84819,9 @@ Bug Fixes
   Fixed a bug that was preventing use of the RDTSC hardware instruction
   in SBCL on most x86-based platforms, and possibly erroneously
   attempting to make use of that instruction on some other platforms.
-  Thanks to Keshav Kini for a query that led to this fix.
+  Thanks to Keshav Kini for a query that led to this fix.  Also
+  restricted RDTSC to x86-based platforms, thanks to a suggestion by
+  Curtis Dunham, to enable Arm builds of ACL2.
 
   The use of [apply$] on calls of [if] no longer cause raw Lisp errors.
   (The same is true for calls of the subroutine apply$-prim of
@@ -90064,6 +90066,9 @@ Subtopics
 
   [Thereis$+]
       See [loop$].
+
+  [Too-many-ifs]
+      See [efficiency].
 
   [Trans-eval-default-warning]
       See [user-stobjs-modified-warnings].
@@ -117015,6 +117020,8 @@ Subtopics
   ordinary one, and vice-versa.  However, if new-tp is supplied and
   not nil, then it should be the new type (the symbol macro or
   atomic-macro, in any package), or else there is no change.")
+ (TOO-MANY-IFS (POINTERS)
+               "See [efficiency].")
  (TOP-LEVEL
   (MISCELLANEOUS)
   "Evaluate a top-level form as a function body
