@@ -20779,10 +20779,9 @@ Subtopics
   (IO ACL2-BUILT-INS)
   "Print to the comment window
 
-  This is the same as [cw], except that [cw] inserts backslash (\\)
-  characters when forced to print past the right margin, in order to
-  make the output a bit clearer in that case.  Use cw! instead if you
-  want to be able to read the forms back in.")
+  This is nearly the same as [cw], but cw! avoids inserting backslash
+  (\\) characters when forced to print past the right margin.  Use cw!
+  if you want to be able to read the forms back in.")
  (CW-GSTACK
   (BREAK-REWRITE DEBUGGING)
   "Debug a rewriting loop or stack overflow
@@ -20889,11 +20888,10 @@ Subtopics
   (IO ACL2-BUILT-INS)
   "Print to the comment window in a given print-base
 
-  This is the same as [cw-print-base-radix], except that
-  [cw-print-base-radix] inserts backslash (\\) characters when forced
-  to print past the right margin, in order to make the output a bit
-  clearer in that case.  Use cw-print-base-radix! instead if you want
-  to be able to read the forms back in.")
+  This is nearly the same as [cw-print-base-radix], but
+  cw-print-base-radix! avoids inserting backslash (\\) characters when
+  forced to print past the right margin.  Use cw-print-base-radix! if
+  you want to be able to read the forms back in.")
  (DEAD-EVENTS
   (DEBUGGING)
   "Using proof supporters to identify dead code and unused theorems
@@ -34930,11 +34928,9 @@ Subtopics
   (IO ACL2-BUILT-INS)
   "(fms! str alist co-channel state evisc) => state
 
-  This function is nearly identical to fms; see [fms].  The only
-  difference is that fms may insert backslash (\\) characters when
-  forced to print past the right margin in order to make the output a
-  bit clearer in that case.  Use fms! instead if you want to be able
-  to read the forms back in.")
+  This function is nearly the same as [fms], but fms! avoids inserting
+  backslash (\\) characters when forced to print past the right
+  margin.  Use fms! if you want to be able to read the forms back in.")
  (FMS!-TO-STRING (POINTERS)
                  "See [printing-to-strings].")
  (FMS-TO-STRING (POINTERS)
@@ -35372,11 +35368,9 @@ Subtopics
   (IO ACL2-BUILT-INS)
   "(fmt! str alist co-channel state evisc) => state
 
-  This function is nearly identical to fmt; see [fmt].  The only
-  difference is that fmt may insert backslash (\\) characters when
-  forced to print past the right margin in order to make the output a
-  bit clearer in that case.  Use fmt! instead if you want to be able
-  to read the forms back in.")
+  This function is nearly the same as [fmt], but fmt! avoids inserting
+  backslash (\\) characters when forced to print past the right
+  margin.  Use fmt! if you want to be able to read the forms back in.")
  (FMT!-TO-STRING (POINTERS)
                  "See [printing-to-strings].")
  (FMT-TO-COMMENT-WINDOW
@@ -35416,11 +35410,10 @@ Subtopics
   (IO ACL2-BUILT-INS)
   "(fmt1! str alist col channel state evisc) => (mv col state)
 
-  This function is nearly identical to fmt1; see [fmt1].  The only
-  difference is that fmt1 may insert backslash (\\) characters when
-  forced to print past the right margin in order to make the output a
-  bit clearer in that case.  Use fmt1! instead if you want to be able
-  to read the forms back in.")
+  This function is nearly the same as [fmt1], but fmt1! avoids
+  inserting backslash (\\) characters when forced to print past the
+  right margin.  Use fmt1! if you want to be able to read the forms
+  back in.")
  (FMT1!-TO-STRING (POINTERS)
                   "See [printing-to-strings].")
  (FMT1-TO-STRING (POINTERS)
