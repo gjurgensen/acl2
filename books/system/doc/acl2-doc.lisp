@@ -17461,10 +17461,9 @@ subtree of X with T, without duplication.</p>
 (defxdoc cw!
   :parents (io acl2-built-ins)
   :short "Print to the comment window"
-  :long "<p>This is the same as @(tsee cw), except that @(tsee cw) inserts
- backslash (\\) characters when forced to print past the right margin, in order
- to make the output a bit clearer in that case.  Use @('cw!') instead if you
- want to be able to read the forms back in.</p>")
+  :long "<p>This is nearly the same as @(tsee cw), but @('cw!') avoids
+ inserting backslash (\\) characters when forced to print past the right
+ margin.  Use @('cw!') if you want to be able to read the forms back in.</p>")
 
 (defxdoc cw-gstack
   :parents (break-rewrite debugging)
@@ -17571,11 +17570,10 @@ subtree of X with T, without duplication.</p>
 (defxdoc cw-print-base-radix!
   :parents (io acl2-built-ins)
   :short "Print to the comment window in a given print-base"
-  :long "<p>This is the same as @(tsee cw-print-base-radix), except that @(tsee
- cw-print-base-radix) inserts backslash (\\) characters when forced to print
- past the right margin, in order to make the output a bit clearer in that case.
- Use @('cw-print-base-radix!')  instead if you want to be able to read the
- forms back in.</p>")
+  :long "<p>This is nearly the same as @(tsee cw-print-base-radix), but
+  @('cw-print-base-radix!') avoids inserting backslash (\\) characters when
+  forced to print past the right margin.  Use @('cw-print-base-radix!')  if you
+  want to be able to read the forms back in.</p>")
 
 (defxdoc |Common Lisp|
   :parents (|Pages Written Especially for the Tours|)
@@ -31419,11 +31417,9 @@ current fast alists."
 (defxdoc fms!
   :parents (io acl2-built-ins)
   :short "@('(fms! str alist co-channel state evisc) => state')"
-  :long "<p>This function is nearly identical to @('fms'); see @(see fms).  The
- only difference is that @('fms') may insert backslash (\\) characters when
- forced to print past the right margin in order to make the output a bit
- clearer in that case.  Use @('fms!') instead if you want to be able to read
- the forms back in.</p>")
+  :long "<p>This function is nearly the same as @(tsee fms), but @('fms!')
+ avoids inserting backslash (\\) characters when forced to print past the right
+ margin.  Use @('fms!') if you want to be able to read the forms back in.</p>")
 
 (defxdoc fmt
   :parents (io acl2-built-ins)
@@ -31896,11 +31892,9 @@ current fast alists."
 (defxdoc fmt!
   :parents (io acl2-built-ins)
   :short "@('(fmt! str alist co-channel state evisc) => state')"
-  :long "<p>This function is nearly identical to @('fmt'); see @(see fmt).  The
- only difference is that @('fmt') may insert backslash (\\) characters when
- forced to print past the right margin in order to make the output a bit
- clearer in that case.  Use @('fmt!') instead if you want to be able to read
- the forms back in.</p>")
+  :long "<p>This function is nearly the same as @(tsee fmt), but @('fmt!')
+ avoids inserting backslash (\\) characters when forced to print past the right
+ margin.  Use @('fmt!') if you want to be able to read the forms back in.</p>")
 
 (defxdoc fmt-to-comment-window
   :parents (io acl2-built-ins)
@@ -31939,11 +31933,10 @@ current fast alists."
 (defxdoc fmt1!
   :parents (io acl2-built-ins)
   :short "@('(fmt1! str alist col channel state evisc) => (mv col state)')"
-  :long "<p>This function is nearly identical to @('fmt1'); see @(see fmt1).
- The only difference is that @('fmt1') may insert backslash (\\) characters
- when forced to print past the right margin in order to make the output a bit
- clearer in that case.  Use @('fmt1!') instead if you want to be able to read
- the forms back in.</p>")
+  :long "<p>This function is nearly the same as @(tsee fmt1), but @('fmt1!')
+ avoids inserting backslash (\\) characters when forced to print past the right
+ margin.  Use @('fmt1!') if you want to be able to read the forms back
+ in.</p>")
 
 (defxdoc fmx
   :parents (io acl2-built-ins)
