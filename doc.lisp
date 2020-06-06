@@ -84835,11 +84835,22 @@ Bug Fixes
       for doing induction, were not being recorded by
       [accumulated-persistence].  They are now.
 
+  Fixed a bug that was causing books to be included as ``uncertified''
+  after their certification stored checksums (see [book-hash]).
+  Thanks to Keshav Kini for reporting this bug.
+
 
 Changes at the System Level
 
 
 EMACS Support
+
+  The [ACL2-doc] search commands (`s' and `S') were seen to use all
+  available memory on a linux system, during the process of
+  initializing the acl2-doc-search buffer that is used for doing the
+  searching.  That problem has been solved: that buffer is now loaded
+  from a file that is built by the manual-building process and is
+  downloaded by the acl2-doc `D' command.
 
 
 Experimental Versions")
