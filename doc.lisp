@@ -84847,7 +84847,7 @@ EMACS Support
 
   The [ACL2-doc] search commands (`s' and `S') were seen to use all
   available memory on a linux system, during the process of
-  initializinga the acl2-doc-search buffer that is used for doing the
+  initializing the acl2-doc-search buffer that is used for doing the
   searching.  That problem has been solved: that buffer is now loaded
   from a file that is built by the manual-building process and is
   downloaded by the acl2-doc `D' command.

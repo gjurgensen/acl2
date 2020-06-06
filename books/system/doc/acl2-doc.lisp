@@ -86348,11 +86348,11 @@ it."
  <h3>EMACS Support</h3>
 
  <p>The @(see acl2-doc) search commands (`@('s')' and `@('S')') were seen to
- use all available memory on a linux system, during the process of
- initializinga the @('acl2-doc-search') buffer that is used for doing the
- searching.  That problem has been solved: that buffer is now loaded from a
- file that is built by the manual-building process and is downloaded by the
- acl2-doc `@('D')' command.</p>
+ use all available memory on a linux system, during the process of initializing
+ the @('acl2-doc-search') buffer that is used for doing the searching.  That
+ problem has been solved: that buffer is now loaded from a file that is built
+ by the manual-building process and is downloaded by the acl2-doc `@('D')'
+ command.</p>
 
  <h3>Experimental Versions</h3>
 
