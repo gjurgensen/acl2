@@ -77,7 +77,7 @@ Subtopics
   [defthm], [in-theory], [xargs], [state], etc., without an acl2::
   prefix.
 
-  The constant *acl2-exports* lists 1500 symbols, including most
+  The constant *acl2-exports* lists 1501 symbols, including most
   documented ACL2 system constants, functions, and macros.  You will
   typically also want to import many symbols from Common Lisp; see
   [*common-lisp-symbols-from-main-lisp-package*].
@@ -487,8 +487,8 @@ Subtopics
        put-assoc put-assoc-eq put-assoc-eql
        put-assoc-equal put-global putprop
        quick-and-dirty-subsumption-replacement-step
-       quit quote
-       quotep r-eqlable-alistp r-symbol-alistp
+       quit quote quotep
+       quote~ r-eqlable-alistp r-symbol-alistp
        random$ rassoc rassoc-eq rassoc-equal
        ratio rational rational-implies1
        rational-implies2 rational-listp
@@ -15379,7 +15379,8 @@ Subtopics
     &               Matches anything and is not bound.  Repeated
                       occurrences of & in a pattern may match different
                       structures.
-    nil, t, *sym*   These symbols cannot be bound and match only their
+    nil, t, *sym*, :sym
+                    These symbols cannot be bound and match only their
                       global values.
     !sym            where sym is a symbol that is already bound in the
                       context of the case-match, matches only the
@@ -15387,6 +15388,7 @@ Subtopics
     'obj            Matches only itself.  This is the same as (QUOTE obj).
     (QUOTE~ sym)    where sym is a symbol, is like (QUOTE sym) except it
                       matches any symbol with the same symbol-name as sym.
+                      Note that QUOTE~ is in the \"ACL2\" package.
 
   Some examples are shown below.
 
@@ -17813,7 +17815,24 @@ Subtopics
   Thus comment is much like [prog2$].  However, when you see a call
   of comment in ACL2 proof output, it will likely be under a call of
   [hide], with information that may be helpful in understanding why
-  the call of hide was inserted.  Consider the following example.
+  the call of hide was inserted.  Below we illustrate the various
+  ways in which ACL2 may replace a term tm by (hide (comment \"...\"
+  tm)).  (On occasion you will simply see (hide tm); such cases are
+  not discussed here.)
+
+  Also see [hide] for further discussion of how to avoid such proof
+  failures, and for how to keep the prover from inserting a comment
+  call under a call of [hide].
+
+
+Evaluation during proofs
+
+  Forms:
+
+    (HIDE (COMMENT \"Failed attempt to call constrained function <fn>\" <term>))
+    (HIDE (COMMENT \"Failed attempt to call non-executable function <fn>\" <term>))
+
+  Consider the following example.
 
     (defstub f (x) t)
     (defun g (x) (cons (f x) x))
@@ -17878,8 +17897,107 @@ Subtopics
   [defun-nx], then in the first argument of comment you will see
   ``non-executable'' instead of ``constrained''.
 
-  Also see [hide] for further discussion of how to avoid such proof
-  failures.")
+
+Evaluation during building a term
+
+  Form:
+
+    (HIDE
+     (COMMENT
+      \"Failed attempt (when building a term) to call constrained function <fn>\"
+      <term>))
+
+  Consider how ACL2 approaches the proof of the non-theorem below.
+
+    (defstub foo (x) t)
+    (defund bar (x) (foo x))
+    (thm (implies (equal x 3) (equal (bar x) yyy)))
+
+  The prover attacks the [thm] event by substituting the constant '3
+  for x.  But the prover attempts to evaluate (bar 3) when doing that
+  substitution, and the evaluation fails because bar calls the
+  undefined function foo.  The checkpoint is as follows.
+
+    (EQUAL
+     (HIDE
+      (COMMENT
+         \"Failed attempt (when building a term) to call constrained function FOO\"
+         (BAR 3)))
+     YYY)
+
+
+Evaluation during building a term
+
+  Form:
+
+    (HIDE (COMMENT \"Unable to expand using the rule <name>\"
+                   <term>))
+
+  Consider how ACL2 approaches the proof for the second event below.
+
+    (defthm nth-open (implies (and (consp x) (posp n))
+                              (equal (nth n x) (nth (1- n) (cdr x))))
+      :rule-classes ((:definition :controller-alist ((nth t t)) :install-body t)))
+    (thm (equal (nth i y) zzz)
+         :hints ((\"Goal\" :expand (nth i y) :do-not-induct t)))
+
+  The checkpoint is as follows.  What happened is that the rule
+  nth-open had a hypothesis that was false when the rule's was
+  attempted for the term (nth i y).
+
+    (IMPLIES (NOT (CONSP Y))
+             (EQUAL (HIDE (COMMENT \"Unable to expand using the rule NTH-OPEN\"
+                                   (NTH I Y)))
+                    ZZZ))
+
+
+Failure due to missing or disabled warrants
+
+  Forms:
+
+    (HIDE (COMMENT \"Call failed because the rule apply$-<fn> is disabled\"
+          <term>))
+    (HIDE (COMMENT \"Call failed because the warrant for <fn> is false\"
+          <term>))
+
+  These forms may appear when an attempt to evaluate a call of [apply$]
+  fails because a necessary [warrant] is either [disable]d or known,
+  in the present context, to be false.  In the following example, the
+  attempt to simplify the call of apply$ in the theorem ultimately
+  leads to an attempt to evaluate a call of [ev$], which ultimately
+  fails because it leads to a call to evaluate (apply$ 'bar '(3))
+  bar.  That call causes an error because the warrant is unavailable,
+  because the rule apply$-bar is disabled, hence cannot rewrite a
+  term (apply$ 'bar args) to (bar (car args)).
+
+    (include-book \"projects/apply/top\" :dir :system)
+    (defun$ bar (x) x)
+    (thm (implies (warrant bar)
+                  (equal (apply$ '(lambda (y) (bar y)) '(3)) 3))
+         :hints ((\"Goal\" :in-theory (disable apply$-bar ev$))))
+
+  The checkpoint in the proof for the thm just above is as follows.
+
+    (IMPLIES
+      (APPLY$-WARRANT-BAR)
+      (EQUAL (HIDE (COMMENT \"Call failed because the rule APPLY$-BAR is disabled\"
+                            (EV$ '(BAR Y) '((Y . 3)))))
+             3))
+
+  Similarly, if we instead submit the following event, we see the other
+  such message, about a false warrant.
+
+    (thm (implies (not (warrant bar))
+                  (equal (apply$ '(lambda (y) (bar y)) '(3)) 3))
+         :hints ((\"Goal\" :in-theory (disable ev$))))
+
+  Here is the resulting checkpoint.
+
+    (IMPLIES
+     (NOT (APPLY$-WARRANT-BAR))
+     (EQUAL (HIDE (COMMENT \"Call failed because the warrant for BAR is false\"
+                           (EV$ '(BAR Y) '((Y . 3)))))
+            3))")
  (COMMON-LISP
   (ABOUT-ACL2)
   "Relation to Common Lisp, including deviations from the spec
@@ -42755,11 +42873,12 @@ Subtopics
   after a possibly extensive computation (because of big-hairy-test)
   the execution fails because of the unevaluable call of
   constrained-fn.  To avoid subsequent attempts to evaluate the term,
-  ACL2 embeds it in a hide expression.  Typically that expression
-  will use a call of [comment], where (comment x y) is logically just
-  y, to tell you the problematic constrained function, in this case
-  by rewriting the original expression to the following.  (Near the
-  end of this topic we discuss how to avoid the call of comment.)
+  ACL2 embeds it in a hide expression.  Often that expression will
+  use a call of [comment], where (comment x y) is logically just y,
+  to tell you the problematic constrained function, in this case by
+  rewriting the original expression to the following; see [comment].
+  (Near the end of this topic we discuss how to avoid the call of
+  comment.)
 
     (hide (comment \"Failed attempt to call constrained function CONSTRAINED-FN\"
                    (another-fn 1 2 3)))
@@ -84768,6 +84887,37 @@ Changes to Existing Features
   string (which was already being ignored).  Thanks to Eric Smith and
   Alessandro Coglio for suggesting this change, which avoids
   potential confusion; consider for example (defconst *c* () \"abc\").
+
+  Two improvements have been made in support of the [case-match] macro.
+  (1) The built-in constant [*ACL2-exports*] now includes the \"ACL2\"
+  package symbol, quotep~.  (2) The built-in function
+  symbol-name-equal is now a [guard]-verified :(tsee logic) mode
+  function.  Thanks to Stephen Westfold for email leading to these
+  changes: for (1), pointing out that the special role of quotep~ for
+  the [case-match] macro applies only to that \"ACL2\" package symbol,
+  not to other symbols with the same name; and for (2), pointing out
+  that the expansion of a case-match call that invokes quotep~ for
+  matching was introducing :(tsee program) mode code.
+
+  A call of [comment] is more often inserted when the prover inserts a
+  call of [hide].  See [comment] for a discussion of such ways in
+  which comment is used.
+
+  When a [rewrite] rule's conclusion is of the form (equiv term1 term2)
+  where equiv is a known [equivalence] relation, ACL2 generally
+  creates the rule to rewrite an instance of term1 to the
+  corresponding instance of term2, in a context where it is
+  sufficient to preserve equiv.  However, if that rule is illegal,
+  for example because it would rewrite a variable, then the rule is
+  effectively treated as (equal (equiv term1 term2) t).  This
+  behavior is not new, but now an explanatory [observation] is
+  printed when this happens, as for foo in the following example.
+  Thanks to Mihir Mehta for suggesting such an enhancement.
+
+    (defun my-equiv (x y) (equal x y))
+    (defequiv my-equiv)
+    (in-theory (disable my-equiv)) ; optional (avoids warnings for the next form)
+    (defthm foo (my-equiv x (car (cons x x))))
 
 
 New Features
