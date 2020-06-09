@@ -86489,6 +86489,10 @@ it."
 
  <h3>Bug Fixes</h3>
 
+ <p>The mechanism for tracking @(see warrant)s needed during a proof had a bug,
+ which might be a soundness bug if one uses @(tsee apply$) or @(tsee loop$).
+ That bug has been fixed.</p>
+
  <p>Fixed a bug that was preventing use of the RDTSC hardware instruction in
  SBCL on most x86-based platforms, and possibly erroneously attempting to make
  use of that instruction on some other platforms.  Thanks to Keshav Kini for a
