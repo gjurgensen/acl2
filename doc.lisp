@@ -84959,6 +84959,10 @@ Heuristic and Efficiency Improvements
 
 Bug Fixes
 
+  The mechanism for tracking [warrant]s needed during a proof had a
+  bug, which might be a soundness bug if one uses [apply$] or
+  [loop$].  That bug has been fixed.
+
   Fixed a bug that was preventing use of the RDTSC hardware instruction
   in SBCL on most x86-based platforms, and possibly erroneously
   attempting to make use of that instruction on some other platforms.
