@@ -86528,6 +86528,11 @@ it."
  their certification stored checksums (see @(see book-hash)).  Thanks to Keshav
  Kini for reporting this bug.</p>
 
+ <p>ACL2 could occasionally simplify subterms of a call of @(tsee hide) even
+ without any applicable rules or @(':expand') @(see hints).  (Technical note:
+ the problematic source function was @('normalize').)  We considered this to be
+ a bug, so it has been fixed.</p>
+
  <h3>Changes at the System Level</h3>
 
  <h3>EMACS Support</h3>

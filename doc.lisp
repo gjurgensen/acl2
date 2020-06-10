@@ -84993,6 +84993,11 @@ Bug Fixes
   after their certification stored checksums (see [book-hash]).
   Thanks to Keshav Kini for reporting this bug.
 
+  ACL2 could occasionally simplify subterms of a call of [hide] even
+  without any applicable rules or :expand [hints].  (Technical note:
+  the problematic source function was normalize.)  We considered this
+  to be a bug, so it has been fixed.
+
 
 Changes at the System Level
 
