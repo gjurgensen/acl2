@@ -488,7 +488,12 @@
  })
 
  <p>Notice that like all arithmetic functions, @('<') treats non-numeric inputs
- as @('0').</p>
+ as @('0'). Thus, the following are theorems.</p>
+
+ @({
+  (thm (equal (< (fix x) y) (< x y)))
+  (thm (equal (< x (fix y)) (< x y)))
+ })
 
  <p>This function has the usual meaning on the rational numbers, but is
  extended to the complex rational numbers using the lexicographic order: first
@@ -807,7 +812,7 @@
   (accumulated-persistence nil)            ; Deactivate.
 
   (accumulated-persistence-oops)           ; Undo the clearing effect of
-                                           ; (accumulated-persistence nil).
+                                           ; (accumulated-persistence t).
 
   Advanced forms:
   (show-accumulated-persistence :frames-s) ; The `s', `f', and `a' suffixes
@@ -857,8 +862,10 @@
  dmr).</p>
 
  <p>Accumulated persistence tracking can be turned on or off.  It is generally
- off.  When on, proofs may take perhaps 50% more time than otherwise!  But some
- useful numbers are collected.  When it is turned on, by</p>
+ off.  When on, proofs may take a little more time than otherwise.  (We
+ measured approximately 11% more time in a so-called ``everything'' regression
+ run in May 2020.)  But some useful numbers are collected.  When it is turned
+ on, by</p>
 
  @({
   ACL2 !>(accumulated-persistence t)
@@ -919,6 +926,12 @@
  keep track of the number of times each rule is tried as well as its
  persistence.  The ratio between the two is the average amount of work done on
  behalf of the rule each time it is tried.</p>
+
+ <p>We do not claim that tracking of runes for accumulated-persistence is
+ perfect.  In practice, we believe it is quite reliable with the exception of
+ @(see congruence) runes and, in some cases @(see executable-counterpart)
+ runes. (For the latter, details are in a comment in the ACL2 source definition
+ of function @('print-useless-runes').)</p>
 
  <p>When the accumulated persistence totals are displayed by the function
  @('show-accumulated-persistence') we sort them so that the most expensive
@@ -1019,6 +1032,9 @@
 
  <p>In summary: categorization of @(':frames') as ``useful'' or ``useless'' is
  based on whether they support ``useful'' or ``useless'' @(':tries').</p>
+
+ <p>See @(see useless-runes) for a way to speed up proofs by automatically
+ turning off useless rules.</p>
 
  <p>Note that a @(see rune) with high accumulated persistence may not actually
  be the ``culprit.''  For example, suppose @('rune1') is reported to have a
@@ -8647,7 +8663,12 @@ and @(tsee include-book)"
  })
 
  <p>Notice that like all arithmetic functions, @('binary-+') treats non-numeric
- inputs as @('0').</p>
+ inputs as @('0'). Thus, the following are theorems.</p>
+
+ @({
+  (thm (equal (+ (fix x) y) (+ x y)))
+  (thm (equal (+ x (fix y)) (+ x y)))
+ })
 
  <p>Calls of the macro @(tsee +) expand to calls of @('binary-+'); see @(see
  +).</p>")
@@ -12510,7 +12531,8 @@ with any questions about building the community books.</p>")
   &               Matches anything and is not bound.  Repeated
                     occurrences of & in a pattern may match different
                     structures.
-  nil, t, *sym*   These symbols cannot be bound and match only their
+  nil, t, *sym*, :sym
+                  These symbols cannot be bound and match only their
                     global values.
   !sym            where sym is a symbol that is already bound in the
                     context of the case-match, matches only the
@@ -12518,6 +12540,7 @@ with any questions about building the community books.</p>")
   'obj            Matches only itself.  This is the same as (QUOTE obj).
   (QUOTE~ sym)    where sym is a symbol, is like (QUOTE sym) except it
                     matches any symbol with the same symbol-name as sym.
+                    Note that QUOTE~ is in the \"ACL2\" package.
  })
 
  <p>Some examples are shown below.</p>
@@ -13379,6 +13402,10 @@ with any questions about building the community books.</p>")
   (certify-book \"my-arith\" t)        ; ... from world of old certificate
   (certify-book \"my-arith\" 0 nil :acl2x t)
                                      ; ... writing or reading a .acl2x file
+  (certify-book \"my-arith\" 0 t :useless-runes :write)
+                                     ; ... write file to speed up future proofs
+  (certify-book \"my-arith\" 0 t :useless-runes :read)
+                                     ; ... read file to speed up future proofs
 
   General Form:
   (certify-book book-name
@@ -13391,18 +13418,22 @@ with any questions about building the community books.</p>")
                 :ttagsx ttags           ; [default nil]
                 :pcert pcert            ; [default nil]
                 :write-port t/nil       ; [default t unless pcert is non-nil]
+                :useless-runes :write/:read/:read?/n/-n/nil
+                                        ; (-100 < n < 0 or 0 < n <= 100)
+                                        ; [default nil]
                 )
  })
 
  <p>where @('book-name') is a book name (see @(see book-name)), @('k') is used
  to indicate your approval of the ``certification @(see world),'' and
  @('compile-flg') can control whether the book is to be compiled.  The defaults
- for @('compile-flg'), @('skip-proofs-okp'), @('acl2x'), @('write-port'), and
- @('pcert') can be affected by environment variables.  All of these arguments
- are described in detail below, except for @(':pcert').  (We assume below that
- the value of @(':pcert') is @('nil') (and environment variable
- @('ACL2_PCERT_ARG') is unset or the empty string).  For a discussion of this
- argument, see @(see provisional-certification).)</p>
+ for @('compile-flg'), @('skip-proofs-okp'), @('acl2x'), @('write-port'),
+ @('pcert'), and @(':useless-runes') can be affected by environment variables.
+ All of these arguments are described in detail below, except for @(':pcert')
+ and @(':useless-runes'): see @(see provisional-certification) and @(see
+ useless-runes), respectively, for the effects of these two arguments and their
+ corresponding environment variables, as we ignore those effects in the present
+ topic.</p>
 
  <p>Certification occurs in some logical @(see world), called the
  ``certification @(see world).''  That @(see world) must contain the @(tsee
@@ -13491,7 +13522,7 @@ with any questions about building the community books.</p>")
  @(':write-port'), a file @('B.port') is written by certification process.
  This file contains all of the @(see portcullis) @(see command)s for @('B'),
  i.e., all user commands present in the ACL2 logical @(see world) at the time
- @('certify-book') is called.  if @('B.lisp') later becomes uncertified, say
+ @('certify-book') is called.  If @('B.lisp') later becomes uncertified, say
  because @(see events) from that file or an included book have been edited,
  then @('(include-book \"B\")') will consult @('B.port') to evaluate forms in
  that file before evaluating the events in @('B.lisp').  On the other hand,
@@ -14818,7 +14849,25 @@ with any questions about building the community books.</p>")
  is ignored.  Thus @('comment') is much like @(tsee prog2$).  However, when you
  see a call of @('comment') in ACL2 proof output, it will likely be under a
  call of @(tsee hide), with information that may be helpful in understanding
- why the call of @('hide') was inserted.  Consider the following example.</p>
+ why the call of @('hide') was inserted.  Below we illustrate the various ways
+ in which ACL2 may replace a term @('tm') by @('(hide (comment \"...\"
+ tm))').  (On occasion you will simply see @('(hide tm)'); such cases are not
+ discussed here.)</p>
+
+ <p>Also see @(see hide) for further discussion of how to avoid such proof
+ failures, and for how to keep the prover from inserting a @('comment') call
+ under a call of @(tsee hide).</p>
+
+ <h3>Evaluation during proofs</h3>
+
+ <p>Forms:</p>
+
+ @({
+ (HIDE (COMMENT \"Failed attempt to call constrained function <fn>\" <term>))
+ (HIDE (COMMENT \"Failed attempt to call non-executable function <fn>\" <term>))
+ })
+
+ <p>Consider the following example.</p>
 
  @({
  (defstub f (x) t)
@@ -14898,8 +14947,126 @@ with any questions about building the community books.</p>")
  then in the first argument of comment you will see ``non-executable'' instead
  of ``constrained''.</p>
 
- <p>Also see @(see hide) for further discussion of how to avoid such proof
- failures.</p>")
+ <h3>Evaluation during building a term</h3>
+
+ <p>Form:</p>
+
+ @({
+ (HIDE
+  (COMMENT
+   \"Failed attempt (when building a term) to call constrained function <fn>\"
+   <term>))
+ })
+
+ <p>Consider how ACL2 approaches the proof of the non-theorem below.</p>
+
+ @({
+ (defstub foo (x) t)
+ (defund bar (x) (foo x))
+ (thm (implies (equal x 3) (equal (bar x) yyy)))
+ })
+
+ <p>The prover attacks the @(tsee thm) event by substituting the constant
+ @(''3') for @('x').  But the prover attempts to evaluate @('(bar 3)') when
+ doing that substitution, and the evaluation fails because @('bar') calls the
+ undefined function @('foo').  The checkpoint is as follows.</p>
+
+ @({
+ (EQUAL
+  (HIDE
+   (COMMENT
+      \"Failed attempt (when building a term) to call constrained function FOO\"
+      (BAR 3)))
+  YYY)
+ })
+
+ <h3>Evaluation during building a term</h3>
+
+ <p>Form:</p>
+
+ @({
+ (HIDE (COMMENT \"Unable to expand using the rule <name>\"
+                <term>))
+ })
+
+ <p>Consider how ACL2 approaches the proof for the second event below.</p>
+
+ @({
+ (defthm nth-open (implies (and (consp x) (posp n))
+                           (equal (nth n x) (nth (1- n) (cdr x))))
+   :rule-classes ((:definition :controller-alist ((nth t t)) :install-body t)))
+ (thm (equal (nth i y) zzz)
+      :hints ((\"Goal\" :expand (nth i y) :do-not-induct t)))
+ })
+
+ <p>The checkpoint is as follows.  What happened is that the rule @('nth-open')
+ had a hypothesis that was false when the rule's was attempted for the term
+ @('(nth i y)').</p>
+
+ @({
+ (IMPLIES (NOT (CONSP Y))
+          (EQUAL (HIDE (COMMENT \"Unable to expand using the rule NTH-OPEN\"
+                                (NTH I Y)))
+                 ZZZ))
+ })
+
+ <h3>Failure due to missing or disabled warrants</h3>
+
+ <p>Forms:</p>
+
+ @({
+ (HIDE (COMMENT \"Call failed because the rule apply$-<fn> is disabled\"
+       <term>))
+ (HIDE (COMMENT \"Call failed because the warrant for <fn> is false\"
+       <term>))
+ })
+
+ <p>These forms may appear when an attempt to evaluate a call of @(tsee apply$)
+ fails because a necessary @(see warrant) is either @(see disable)d or known,
+ in the present context, to be false.  In the following example, the attempt to
+ simplify the call of @('apply$') in the theorem ultimately leads to an attempt
+ to evaluate a call of @(tsee ev$), which ultimately fails because it leads to
+ a call to evaluate @('(apply$ 'bar '(3))') @('bar').  That call causes an
+ error because the warrant is unavailable, because the rule @('apply$-bar') is
+ disabled, hence cannot rewrite a term @('(apply$ 'bar args)') to @('(bar (car
+ args))').</p>
+
+ @({
+ (include-book \"projects/apply/top\" :dir :system)
+ (defun$ bar (x) x)
+ (thm (implies (warrant bar)
+               (equal (apply$ '(lambda (y) (bar y)) '(3)) 3))
+      :hints ((\"Goal\" :in-theory (disable apply$-bar ev$))))
+ })
+
+ <p>The checkpoint in the proof for the @('thm') just above is as follows.</p>
+
+ @({
+ (IMPLIES
+   (APPLY$-WARRANT-BAR)
+   (EQUAL (HIDE (COMMENT \"Call failed because the rule APPLY$-BAR is disabled\"
+                         (EV$ '(BAR Y) '((Y . 3)))))
+          3))
+ })
+
+ <p>Similarly, if we instead submit the following event, we see the other such
+ message, about a false warrant.</p>
+
+ @({
+ (thm (implies (not (warrant bar))
+               (equal (apply$ '(lambda (y) (bar y)) '(3)) 3))
+      :hints ((\"Goal\" :in-theory (disable ev$))))
+ })
+
+ <p>Here is the resulting checkpoint.</p>
+
+ @({
+ (IMPLIES
+  (NOT (APPLY$-WARRANT-BAR))
+  (EQUAL (HIDE (COMMENT \"Call failed because the warrant for BAR is false\"
+                        (EV$ '(BAR Y) '((Y . 3)))))
+         3))
+ })")
 
 (defxdoc common-lisp
   :parents (about-acl2)
@@ -17432,10 +17599,9 @@ subtree of X with T, without duplication.</p>
 (defxdoc cw!
   :parents (io acl2-built-ins)
   :short "Print to the comment window"
-  :long "<p>This is the same as @(tsee cw), except that @(tsee cw) inserts
- backslash (\\) characters when forced to print past the right margin, in order
- to make the output a bit clearer in that case.  Use @('cw!') instead if you
- want to be able to read the forms back in.</p>")
+  :long "<p>This is nearly the same as @(tsee cw), but @('cw!') avoids
+ inserting backslash (\\) characters when forced to print past the right
+ margin.  Use @('cw!') if you want to be able to read the forms back in.</p>")
 
 (defxdoc cw-gstack
   :parents (break-rewrite debugging)
@@ -17542,11 +17708,10 @@ subtree of X with T, without duplication.</p>
 (defxdoc cw-print-base-radix!
   :parents (io acl2-built-ins)
   :short "Print to the comment window in a given print-base"
-  :long "<p>This is the same as @(tsee cw-print-base-radix), except that @(tsee
- cw-print-base-radix) inserts backslash (\\) characters when forced to print
- past the right margin, in order to make the output a bit clearer in that case.
- Use @('cw-print-base-radix!')  instead if you want to be able to read the
- forms back in.</p>")
+  :long "<p>This is nearly the same as @(tsee cw-print-base-radix), but
+  @('cw-print-base-radix!') avoids inserting backslash (\\) characters when
+  forced to print past the right margin.  Use @('cw-print-base-radix!')  if you
+  want to be able to read the forms back in.</p>")
 
 (defxdoc |Common Lisp|
   :parents (|Pages Written Especially for the Tours|)
@@ -20178,13 +20343,12 @@ subtree of X with T, without duplication.</p>
   (defconst *len-my-digits* (the unsigned-byte (length *my-digits*)))
 
   General Form:
-  (defconst name term doc-string)
+  (defconst name term)
  })
 
- <p>where @('name') is a symbol beginning and ending with the character @('*'),
- @('term') is a variable-free term that is evaluated to determine the value of
- the constant, and @('doc-string'), if non-@('nil'), is an optional string that
- can provide documentation but is essentially ignored by ACL2.</p>
+ <p>where @('name') is a symbol beginning and ending with the character @('*')
+ and @('term') is a variable-free term that is evaluated to determine the value
+ of the constant.</p>
 
  <p>When a constant symbol is used as a @(see term), ACL2 replaces it by its
  value; see @(see term).</p>
@@ -31391,11 +31555,9 @@ current fast alists."
 (defxdoc fms!
   :parents (io acl2-built-ins)
   :short "@('(fms! str alist co-channel state evisc) => state')"
-  :long "<p>This function is nearly identical to @('fms'); see @(see fms).  The
- only difference is that @('fms') may insert backslash (\\) characters when
- forced to print past the right margin in order to make the output a bit
- clearer in that case.  Use @('fms!') instead if you want to be able to read
- the forms back in.</p>")
+  :long "<p>This function is nearly the same as @(tsee fms), but @('fms!')
+ avoids inserting backslash (\\) characters when forced to print past the right
+ margin.  Use @('fms!') if you want to be able to read the forms back in.</p>")
 
 (defxdoc fmt
   :parents (io acl2-built-ins)
@@ -31868,11 +32030,9 @@ current fast alists."
 (defxdoc fmt!
   :parents (io acl2-built-ins)
   :short "@('(fmt! str alist co-channel state evisc) => state')"
-  :long "<p>This function is nearly identical to @('fmt'); see @(see fmt).  The
- only difference is that @('fmt') may insert backslash (\\) characters when
- forced to print past the right margin in order to make the output a bit
- clearer in that case.  Use @('fmt!') instead if you want to be able to read
- the forms back in.</p>")
+  :long "<p>This function is nearly the same as @(tsee fmt), but @('fmt!')
+ avoids inserting backslash (\\) characters when forced to print past the right
+ margin.  Use @('fmt!') if you want to be able to read the forms back in.</p>")
 
 (defxdoc fmt-to-comment-window
   :parents (io acl2-built-ins)
@@ -31911,11 +32071,10 @@ current fast alists."
 (defxdoc fmt1!
   :parents (io acl2-built-ins)
   :short "@('(fmt1! str alist col channel state evisc) => (mv col state)')"
-  :long "<p>This function is nearly identical to @('fmt1'); see @(see fmt1).
- The only difference is that @('fmt1') may insert backslash (\\) characters
- when forced to print past the right margin in order to make the output a bit
- clearer in that case.  Use @('fmt1!') instead if you want to be able to read
- the forms back in.</p>")
+  :long "<p>This function is nearly the same as @(tsee fmt1), but @('fmt1!')
+ avoids inserting backslash (\\) characters when forced to print past the right
+ margin.  Use @('fmt1!') if you want to be able to read the forms back
+ in.</p>")
 
 (defxdoc fmx
   :parents (io acl2-built-ins)
@@ -39319,10 +39478,10 @@ current fast alists."
  extensive computation (because of @('big-hairy-test')) the execution fails
  because of the unevaluable call of @('constrained-fn').  To avoid subsequent
  attempts to evaluate the term, ACL2 embeds it in a @('hide') expression.
- Typically that expression will use a call of @(tsee comment), where
- @('(comment x y)') is logically just @('y'), to tell you the problematic
- constrained function, in this case by rewriting the original expression
- to the following.  (Near the end of this topic we discuss how to avoid the
+ Often that expression will use a call of @(tsee comment), where @('(comment x
+ y)') is logically just @('y'), to tell you the problematic constrained
+ function, in this case by rewriting the original expression to the following;
+ see @(see comment).  (Near the end of this topic we discuss how to avoid the
  call of @('comment').)</p>
 
  @({
@@ -40333,7 +40492,7 @@ current fast alists."
  <i>steps</i>, such as simplification or generalization, each of which attempts
  to replace a given goal by zero or more subgoals whose provability implies
  provability of that goal.  Note that every proof by induction starts a new
- trip through the waterall, as does every forcing round; and these occur only
+ trip through the waterfall, as does every forcing round; and these occur only
  after all preceding trips through the waterfall are complete.  Let us see in
  more detail how the waterfall works.</p>
 
@@ -86195,6 +86354,23 @@ it."
 ; we added to :doc force to explain forcing by linearization (thanks to Mihir
 ; Mehta for a query leading to that :doc improvement).
 
+; Changed termination tests for merge-term-order and merge-sort-term-order to
+; use endp instead of null.
+
+; Among the code changes was the introduction of macro
+; error-free-triple-to-state, which converts an error-triple to state but
+; includes a check that the error component is nil.
+
+; In support of the enhanced use of hide-with-comment to create terms of the
+; form (hide (comment "..." term)), the error triple (mv erp val state)
+; returned by function push-warrants has been changed.  Now, if erp is non-nil
+; then instead of being t, it communicates useful information; see
+; push-warrants.
+
+; ACL2 function interpret-term-as-rewrite-rule now has an extra argument, ctx,
+; that controls whether or not the new observation is printed (see the item
+; below about rewrite rules that ignore a known equivalence relation).
+
   :parents (release-notes)
   :short "ACL2 Version  8.4 (xxx, 20xx) Notes"
   :long "<p>NOTE!  New users can ignore these release notes, because the @(see
@@ -86238,7 +86414,49 @@ it."
  their accumulator argument.  Thanks to Mihir Mehta for supplying these
  changes, for the purpose of avoiding @(tsee acl2-numberp) type hypotheses.</p>
 
+ <p>The macro @(tsee defconst) no longer accepts an optional documentation
+ string (which was already being ignored).  Thanks to Eric Smith and Alessandro
+ Coglio for suggesting this change, which avoids potential confusion; consider
+ for example @('(defconst *c* () \"abc\")').</p>
+
+ <p>Two improvements have been made in support of the @(tsee case-match) macro.
+ (1) The built-in constant @(tsee *acl2-exports*) now includes the
+ @('\"ACL2\"') package symbol, @('quotep~').  (2) The built-in function
+ @('symbol-name-equal') is now a @(see guard)-verified @(':')(tsee logic) mode
+ function.  Thanks to Stephen Westfold for email leading to these changes:
+ for (1), pointing out that the special role of @('quotep~') for the @(tsee
+ case-match) macro applies only to that @('\"ACL2\"') package symbol, not to
+ other symbols with the same name; and for (2), pointing out that the expansion
+ of a @('case-match') call that invokes @('quotep~') for matching was
+ introducing @(':')(tsee program) mode code.</p>
+
+ <p>A call of @(tsee comment) is more often inserted when the prover inserts a
+ call of @(tsee hide).  See @(see comment) for a discussion of such ways in
+ which @('comment') is used.</p>
+
+ <p>When a @(see rewrite) rule's conclusion is of the form @('(equiv term1
+ term2)') where @('equiv') is a known @(see equivalence) relation, ACL2
+ generally creates the rule to rewrite an instance of @('term1') to the
+ corresponding instance of @('term2'), in a context where it is sufficient to
+ preserve @('equiv').  However, if that rule is illegal, for example because it
+ would rewrite a variable, then the rule is effectively treated as @('(equal
+ (equiv term1 term2) t)').  This behavior is not new, but now an explanatory
+ @(see observation) is printed when this happens, as for @('foo') in the
+ following example.  Thanks to Mihir Mehta for suggesting such an
+ enhancement.</p>
+
+ @({
+ (defun my-equiv (x y) (equal x y))
+ (defequiv my-equiv)
+ (in-theory (disable my-equiv)) ; optional (avoids warnings for the next form)
+ (defthm foo (my-equiv x (car (cons x x))))
+ })
+
  <h3>New Features</h3>
+
+ <p>A new option for @(tsee certify-book), @(':useless-runes'), makes it
+ possible to speed up repeated certification of a book, sometimes
+ substantially.  See @(see useless-runes).</p>
 
  <h3>Heuristic and Efficiency Improvements</h3>
 
@@ -86271,14 +86489,60 @@ it."
 
  <h3>Bug Fixes</h3>
 
+ <p>The mechanism for tracking @(see warrant)s needed during a proof had a bug,
+ which might be a soundness bug if one uses @(tsee apply$) or @(tsee loop$).
+ That bug has been fixed.</p>
+
  <p>Fixed a bug that was preventing use of the RDTSC hardware instruction in
  SBCL on most x86-based platforms, and possibly erroneously attempting to make
  use of that instruction on some other platforms.  Thanks to Keshav Kini for a
- query that led to this fix.</p>
+ query that led to this fix.  Also restricted RDTSC to x86-based platforms,
+ thanks to a suggestion by Curtis Dunham, to enable Arm builds of ACL2.</p>
+
+ <p>The use of @(tsee apply$) on calls of @(tsee if) no longer cause raw Lisp
+ errors.  (The same is true for calls of the subroutine @('apply$-prim') of
+ @('apply$').)  For example, these calls now evaluate without error: @('(apply$
+ 'if '(nil nil nil))') and @('(apply$-prim 'if '(nil nil nil))').</p>
+
+ <p>We made the following fixes to the @(tsee accumulated-persistence)
+ utility.</p>
+
+ <ul>
+
+ <li>Applications of @(see type-prescription) rules that were erroneously
+ labeled as ``useless'' are now appropriatedly labeled as ``useful''.</li>
+
+ <li>The documentation for @(tsee accumulated-persistence) now correctly states
+ that the form @('(accumulated-persistence-oops)') undoes the clearing effect
+ of @('(accumulated-persistence t)'), rather than of
+ @('(accumulated-persistence nil)').</li>
+
+ <li>Uses of @(see definition) rules because of @(':')@(tsee expand) hints,
+ either expicitly given by the user or generated by ACL2's heuristics for doing
+ induction, were not being recorded by @(tsee accumulated-persistence).  They
+ are now.</li>
+
+ </ul>
+
+ <p>Fixed a bug that was causing books to be included as ``uncertified'' after
+ their certification stored checksums (see @(see book-hash)).  Thanks to Keshav
+ Kini for reporting this bug.</p>
+
+ <p>ACL2 could occasionally simplify subterms of a call of @(tsee hide) even
+ without any applicable rules or @(':expand') @(see hints).  (Technical note:
+ the problematic source function was @('normalize').)  We considered this to be
+ a bug, so it has been fixed.</p>
 
  <h3>Changes at the System Level</h3>
 
  <h3>EMACS Support</h3>
+
+ <p>The @(see acl2-doc) search commands (`@('s')' and `@('S')') were seen to
+ use all available memory on a linux system, during the process of initializing
+ the @('acl2-doc-search') buffer that is used for doing the searching.  That
+ problem has been solved: that buffer is now loaded from a file that is built
+ by the manual-building process and is downloaded by the acl2-doc `@('D')'
+ command.</p>
 
  <h3>Experimental Versions</h3>
 
@@ -89886,6 +90150,7 @@ arithmetic) for libraries of @(see books) for arithmetic reasoning.</p>")
  <p>@('Position') is defined by Common Lisp.  See any Common Lisp documentation
  for more information.</p>
 
+ @(def position)
  @(def position-equal)
  @(def position-equal-ac)
  @(def position-ac)")
@@ -119901,6 +120166,227 @@ introduction-to-the-tau-system) for more information about Tau.</dd>
 
  @(def upper-case-p)")
 
+(defxdoc useless-runes
+
+; The following is worth mentioning, but probably not worth cluttering up this
+; :doc; so we put this in a comment.
+
+; The following, from :doc accumulated-persistence-subtleties, explains why we
+; take the approach of effectively disabling useless runes from a prior proof
+; attempt, rather than to enable the reported runes.
+
+;   Remark. The example above suggests a surprising fact: on rare
+;   occasions, a proof may fail when you give an :[in-theory] hint
+;   consisting of exactly the [rune]s reported in a proof that
+;   succeeds.  For, imagine a rule R that is needed in part of the
+;   .....
+
+; Also relevant is the lack of complete tracking of executable-counterpart
+; runes (see print-useless-runes) and congruence runes.
+
+; Of course, a nice thing about disabling useless runes rather than restricting
+; to summary runes is that we can increase the chances of success: just use
+; :useless-runes n for 0 < n < 100 to subtract only a subset of the useless
+; runes, to allow the proof to succeed when :useless-runes :read makes it fail.
+
+  :parents (certify-book accumulated-persistence)
+  :short "Speed up proofs by disabling useless @(see rune)s"
+  :long "<p>This topic documents the @(':useless-runes') option for @(tsee
+ certify-book), which makes it possible to speed up repeated certification of a
+ book.</p>
+
+ <h3>Introduction</h3>
+
+ <p>For a given @(see event), the so-called ``useless'' rules are those that do
+ not contribute to the progress of any proof supporting that event.  For more
+ background see @(see accumulated-persistence), which is typically used for
+ finding rules to @(see disable) during proofs.  The feature described in the
+ present topic provides automation for the discovery and effective disabling of
+ useless rules.</p>
+
+ <p>To use the @(':useless-runes') option of @(tsee certify-book), first
+ certify your book &mdash; say, @('foo.lisp') &mdash; by supplying option
+ @(':useless-runes :write').  This creates a file @('foo@useless-runes.lsp')
+ that associates names of @(tsee defthm), @(tsee defun), and @(tsee
+ verify-guards) @(see events) with sets of ``useless'' @(see rune)s'': rule
+ names (``runes'') not contributing to the progress of the proof.  Then, future
+ certifications can use option @(':useless-runes :read') (also some variations
+ of that, discussed below) which, during evaluation of an event, will
+ effectively @(see disable) rules associated with that event in file
+ @('foo@useless-runes.lsp').</p>
+
+ <p>Environment variable @('ACL2_USELESS_RUNES') can take value @('\"write\"')
+ or @('\"read\"') be used in place of the @(':useless-runes') option @(':read')
+ or @(':write') (respectively) of @('certify-book').  This is discussed
+ below.</p>
+
+ <h3>Detailed Documentation</h3>
+
+ <p>Again, the @(':useless-runes') option of @(tsee certify-book) provides a
+ way to automate discovery and, in future certifications, disabling of useless
+ runes (as described above), which can speed up proofs.  Information about
+ useless runes is communicated using a file, which we call the
+ ``@useless-runes.lsp file'', whose name is obtained by adding the suffix
+ @('\"@useless-runes.lsp\"') to the book name.  For example, if the book's
+ filename is @('\"foo.lisp\"') then the corresponding @useless-runes.lsp file
+ is named @('\"foo@useless-runes.lsp\"').</p>
+
+ <p>The following table summarizes the legal values for the option
+ @(':useless-runes'); further explanation follows.</p>
+
+ @({
+ :write   ; Write the @useless-runes.lsp file to speed up future proofs.
+ :read or ; Read the @useless-runes.lsp file to speed up proofs;
+ :read?   ;   file must exist for :read, but need not exist for :read?.
+ N, -N    ; N is a positive integer not exceeding 100.  Then |N|% of the rules
+          ;   indicated by the @useless-runes.lsp file are to be kept disabled.
+          ;   The @useless-runes.lsp file needs to exist for N but not for -N.
+ nil      ; Certify without reading or writing the @useless-runes.lsp file.
+ })
+
+ <p>Notice in particular that @(':useless-runes 100') is equivalent to
+ @(':useless-runes :read'), while @(':useless-runes -100') is equivalent to
+ @(':useless-runes :read?').</p>
+
+ <p>When @('certify-book') is supplied with option @(':useless-runes :write'),
+ the result is to write out a corresponding @useless-runes.lsp file.  Each
+ top-level entry of this file has the form</p>
+
+ @({
+ (name (frames-1 tries-1 rune-1)
+       (frames-2 tries-2 rune-2)
+       ...
+       (frames-k tries-k rune-k))
+ })
+
+ <p>where @('name') is the name of a @(tsee defthm), @(tsee defun), or @(tsee
+ verify-guards) event, and each tuple @('(frames-i tries-i rune-i)') indicates
+ the number of frames and tries for @('rune-i') recorded for the proofs done on
+ behalf of that event.  ACL2 claims that none of the indicated rules
+ contributed to the progress of the proof.  See @(see accumulated-persistence),
+ but also see @(see accumulated-persistence-subtleties) for some limitations.
+ These top-level entries are listed in order of event in the book, from top to
+ bottom.  Because of @(see local) @(see events), the same name may appear more
+ than once.</p>
+
+ <p>When @('certify-book') is supplied with option @(':useless-runes :read') or
+ @(':useless-runes :read?'), then book certification takes advantage of the
+ existing @useless-runes.lsp file, if it exists.  If that file does not exist,
+ an error is caused when the option value is @(':read') but the option is
+ simply ignored when the option value is @(':read?').</p>
+
+ <p>The value of @(':useless-runes') may also be a non-zero integer between
+ -100 and 100, inclusive.  The absolute value of this number is the percentage
+ of the runes associated with the current event that are to be effectively kept
+ @(see disable)d, starting with the useless rune with the highest number of
+ frames built (see @(see accumulated-persistence)).  For example, if the value
+ is 20 then 1/5 of the runes associated with the current event in the
+ @useless-runes.lsp file are to be kept disabled; so if the relevant top-level
+ form in that file is</p>
+
+  @({
+ (name (frames-1 tries-1 rune-1)
+       (frames-2 tries-2 rune-2)
+       (frames-2 tries-2 rune-3)
+       (frames-2 tries-2 rune-4)
+       (frames-2 tries-2 rune-5)
+       (frames-2 tries-2 rune-6)
+       (frames-k tries-k rune-7))
+ })
+
+ <p>then 1/5 of the 7 runes are to be disabled, so since the first integer
+ greater than or equal to 7/5 is 2, the runes @('rune-1') and @('rune-2') will
+ be kept disabled.  Note again that the value @('100') for @(':useless-runes')
+ gives the same behavior as the value @(':read'), and the value @('-100') gives
+ the same behavior as the value @(':read?').</p>
+
+ <p>The @(':useless-runes') option of @('certify-book') need not be given
+ explicitly.  Suppose that the environment variable @('ACL2_USELESS_RUNES') has
+ a non-empty value.  Then that value implicitly invokes the @(':useless-runes')
+ option as indicated by the following table, which shows how that environment
+ variable value corresponds to a value for the @(':useless-runes') option.</p>
+
+ @({
+ ACL2_USELESS_RUNES value          :useless-runes value
+ ------------------------          --------------------
+
+ WRITE (case insensitive)          :write
+ READ (case insensitive)           :read
+ READ? (case insensitive)          :read?
+ i, ij, -i, -ij, 100, -100         corresponding integer, which cannot be 0
+   (i and j are base-10 digits)
+ })
+
+ <p><b>Important</b>.  If a @(':useless-runes') value is supplied
+ explicitly (even @('nil')) and a non-empty value is also specified for
+ environment variable @('ACL2_USELESS_RUNES'), then the environment variable
+ takes priority if its value is @('\"WRITE\"') (case insensitive), but
+ otherwise the @('certify-book') option @(':useless-runes') takes priority.</p>
+
+ <p>If you want certification to avoid reading the book's @useless-runes.lsp
+ file even when this environment variable has a non-empty value that specifies
+ reading, call @('certify-book') with option @(':useless-runes nil').</p>
+
+ <p>A reason for allowing integer values, rather than only @(':read') and
+ @(':read?'), is that the disabling of useless runes can cause a proof to fail.
+ Although this is probably uncommon, it can happen, for example because an
+ otherwise useless rule rewrites the hypothesis of rule R to something that can
+ not be proved by rewriting, thus blocking the use of rule R; but with the
+ useless rule disabled, R is successfully applied, sending the proof in a
+ direction that leads to failure.  This problem may disappear when using only a
+ portion of the useless rules.  See also @(see
+ accumulated-persistence-subtleties).</p>
+
+ <p>Note that when using the @useless-runes.lsp file for a given event's
+ proofs, then the appropriate rules are effectively @(see disable)d not only at
+ the top level, but also whenever @(see hints) are supplied.  So if an
+ @(':')@(tsee in-theory) hint specifies a @(see theory) that includes rule R,
+ but rule R is specified for disabling for the current event by the
+ @useless-runes.lsp file, then R will be removed from the theory before
+ installing that hint.  In particular, even the hint @(':in-theory (enable
+ ')R@(')') will not enable R in this case.</p>
+
+ <p>Finally, we remark that the @useless-runes.lsp file is somewhat robust in
+ the following sense.  Suppose that rule R is specified in that file, but at
+ the time the @useless-runes.lsp is read, rule R has been removed from one's
+ books.  Then the inclusion of R as a useless rule will simply be ignored,
+ rather than causing an error.</p>
+
+ <h3>Subtleties</h3>
+
+ <p>The @useless-runes.lsp files do not contain any @(':')@(tsee
+ executable-counterpart) runes, because there are many places that ACL2 does
+ not track such runes for @(tsee accumulated-persistence).
+ (Details are in a comment in the ACL2 source definition of function
+ @('print-useless-runes').)</p>
+
+ <p>On rare occasions, when using the @(':read') option or related values that
+ specify reading from an appropriate @useless-runes.lsp file, the @(see
+ package) of a rune's name might not be known to ACL2 at read time.  In that
+ case, that rune will be ignored.</p>
+
+ <p>Because of @(see local) @(see events), more than one event may be
+ associated with a name in a given @useless-runes.lsp file.  When using the
+ @(':read') option or related values that specify reading from an appropriate
+ @useless-runes.lsp file, ACL2 considers entries for a given name from top to
+ bottom in the @useless-runes.lsp file, attempting to match them to @(tsee
+ defthm), @(tsee defun), and @(tsee verify-guards) events from top to bottom in
+ the book.</p>
+
+ <h3>Performance</h3>
+
+ <p>In ``everything'' testing of all of the @(see community-books) during
+ (not quite complete) development of this capability, we found that writing the
+ @useless-runes.lsp files (by setting the environment variable
+ @('ACL2_USELESS_RUNES') to @('\"write\"')) caused an 11% slowdown from the
+ normal time, but a fresh such test when reading the @useless-runes.lsp files
+ by setting the environment variable @('ACL2_USELESS_RUNES') to @('\"25\"') cut
+ 24% from the normal time.  Books varied considerably, however.  For example,
+ after finding a specific time reduction that was particularly significant, we
+ re-certified on standalone runs (i.e., on an otherwise unloaded machine) and
+ found that the time was reduced from 17 minutes and 1.9 seconds down to 34.93
+ seconds, thus eliminating 96.6% of the time.</p>")
+
 (defxdoc user-defined-functions-table
   :parents (macros)
   :short "An advanced @(see table) used to replace certain system functions"
@@ -130171,6 +130657,7 @@ expand function call at the current subterm, without simplifying"
 (defpointer tamep-lambdap tame)
 (defpointer thereis$ loop$)
 (defpointer thereis$+ loop$)
+(defpointer too-many-ifs efficiency)
 (defpointer trans-eval-default-warning user-stobjs-modified-warnings)
 (defpointer trans-eval-no-warning user-stobjs-modified-warnings)
 (defpointer translate system-utilities)
