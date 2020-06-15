@@ -22256,7 +22256,8 @@ subtree of X with T, without duplication.</p>
             :renaming alist
             :inline flg
             :congruent-to old-stobj-name
-            :non-memoizable nm-flg)
+            :non-memoizable nm-flg
+            :non-executable ne-flg)
  })
 
  <p>where @('name') is a new symbol; each @('fieldi') is a symbol; each
@@ -22272,11 +22273,13 @@ subtree of X with T, without duplication.</p>
  macros under the hood (which has the effect of inlining the function calls).
  The optional @(':congruent-to old-stobj-name') argument specifies an existing
  stobj with exactly the same structure, and is discussed below.  The optional
- @(':non-memoizable nm-flg') Boolean argument is ignored when @('nm-flg') is
- @('nil'); otherwise, it instructs ACL2 to lay down faster code for functions
- that return the new stobj but disallows @(see memoization) of any function
- that takes the new stobj as an argument.  We describe further restrictions on
- the @('fieldi'), @('typei'), @('vali'), and on @('alist') below.  We recommend
+ @(':non-memoizable nm-flg') and @(':non-executable ne-flg') Boolean arguments
+ are ignored when @('nm-flg') and @('ne-flg') are @('nil'), but otherwise: the
+ former instructs ACL2 to lay down faster code for functions that return the
+ new stobj but disallows @(see memoization) of any function that takes the new
+ stobj as an argument; and the latter avoids actually creating the
+ stobj (details follow later below).  We describe further restrictions on the
+ @('fieldi'), @('typei'), @('vali'), and on @('alist') below.  We recommend
  that you read about single-threaded objects (stobjs) in ACL2 before
  proceeding; see @(see stobj).</p>
 
@@ -22289,20 +22292,26 @@ subtree of X with T, without duplication.</p>
 
  <h3>The Single-Threaded Object Introduced</h3>
 
- <p>The @('defstobj') event effectively introduces a new global variable, named
- @('name'), which has as its initial logical value a list of @('k') elements,
- where @('k') is the number of ``field descriptors'' provided.  The elements
- are listed in the same order in which the field descriptors appear.  If the
- @(':type') of a field is @('(ARRAY type-indicator (max))') then @('max') is a
- non-negative integer or a symbol introduced by @(tsee defconst)) whose value
- is a non-negative integer, and the corresponding element of the stobj is
- initially of length specified by @('max').  If the @(':type') of a field is
- @('(HASH-TABLE test)') or @('(HASH-TABLE test size)'), then @('test') is one
- of the symbols @('EQ'), @('EQL'), @('HONS-EQUAL'), or @('EQUAL') and
- @('size'), if supplied, is a positive integer.  In that case the test is
- applied when looking up keys, where @(tsee hons-copy) is first applied to the
- key in the @('HONS-EQUAL') case; and the size is a hint to the host Lisp for
- the initial size of the associated hash table in raw Lisp.</p>
+ <p>The @('defstobj') event effectively introduces a new ``live stobj'' object,
+ named @('name'), which has as its initial logical value a list of @('k')
+ elements, where @('k') is the number of ``field descriptors'' provided.  This
+ object has mutable updates: that is, the object is actually modified in place,
+ rather than copied.  This is only possible because of syntactic restrictions
+ enforced by ACL2 when programming with stobjs, so that after modifying a
+ stobj, its old versions are no longer accessible.</p>
+
+ <p>The elements are listed in the same order in which the field descriptors
+ appear.  If the @(':type') of a field is @('(ARRAY type-indicator (max))')
+ then @('max') is a non-negative integer or a symbol introduced by @(tsee
+ defconst)) whose value is a non-negative integer, and the corresponding
+ element of the stobj is initially of length specified by @('max').  If the
+ @(':type') of a field is @('(HASH-TABLE test)') or @('(HASH-TABLE test
+ size)'), then @('test') is one of the symbols @('EQ'), @('EQL'),
+ @('HONS-EQUAL'), or @('EQUAL') and @('size'), if supplied, is a positive
+ integer.  In that case the test is applied when looking up keys, where @(tsee
+ hons-copy) is first applied to the key in the @('HONS-EQUAL') case; and the
+ size is a hint to the host Lisp for the initial size of the associated hash
+ table in raw Lisp.</p>
 
  <p>If the value of @(':type') is of the form @('(ARRAY type-indicator
  (max))') or just @('type-indicator'), then @('type-indicator') is typically a
@@ -22709,10 +22718,10 @@ subtree of X with T, without duplication.</p>
 
  <p><i>immediately after</i> the @('defstobj') event has been processed.</p>
 
- <p>A @('defstobj') is considered redundant only if the name, field
- descriptors, renaming alist, and inline flag are identical to a previously
- executed @('defstobj').  Note that a redundant @('defstobj') does not reset
- the @(see stobj) fields to their initial values.</p>
+ <p>A @('defstobj') is considered redundant only if it is syntactically
+ identical to a previously executed @('defstobj').  Note that a redundant
+ @('defstobj') does not reset the @(see stobj) fields to their initial
+ values.</p>
 
  <h3>Performance</h3>
 
@@ -22793,7 +22802,22 @@ subtree of X with T, without duplication.</p>
   the context (F ST1 ST1 ST1).
 
   ACL2 !>
- })")
+ })
+
+ <h3>Specifying Non-executable Stobjs</h3>
+
+ <p>As noted above, if keyword argument @(':non-executable t') is specified
+ then the stobj is not created.  More precisely, the ``live'', mutable stobj is
+ not created.  So why use this keyword argument?  Perhaps you would like to do
+ your computation on several stobjs that are all congruent to a given stobj,
+ @('st').  Then by using @(':non-executable t') to introduce @('st'), you avoid
+ allocating memory for @('st') that you never intend to use.  Similarly, you
+ can avoid allocating such memory when your intended use of @('st') is only as
+ a local stobj (see @(see with-local-stobj)) or as the type of a stobj field of
+ another stobj.</p>
+
+ <p>When @(':non-executable t') is specified, it is illegal to supply a
+ @(':congruent-to') argument.</p>")
 
 (defxdoc defstub
   :parents (events)
@@ -86458,6 +86482,11 @@ it."
  possible to speed up repeated certification of a book, sometimes
  substantially.  See @(see useless-runes).</p>
 
+ <p>A new keyword for @(tsee defstobj), @(':non-executable'), can be given
+ value @('t') to skip memory allocation for the new @(see stobj), by avoiding
+ creation of a ``live'' (mutable) stobj.  See @(see defstobj).  Thanks to
+ Warren Hunt for encouraging development of this feature.</p>
+
  <h3>Heuristic and Efficiency Improvements</h3>
 
  <p>We changed the lightweight ``preprocess'' simplifier for ``@(see simple)''
@@ -86532,6 +86561,30 @@ it."
  without any applicable rules or @(':expand') @(see hints).  (Technical note:
  the problematic source function was @('normalize').)  We considered this to be
  a bug, so it has been fixed.</p>
+
+ <p>The notion of redundancy for @(tsee defstobj) @(see events) was too weak,
+ as evidenced by the following example.  Consider the following book, named
+ @('\"bug.lisp\"').</p>
+
+ @({
+ (in-package \"ACL2\")
+ (defstobj st fld)
+ (defun foo (st) (declare (xargs :stobjs st)) (fld st))
+ })
+
+ <p>After certifying this book, a raw Lisp error could occur after evaluating
+ the following forms, because the compiled definition of @('foo') from
+ including the book referenced a function, @('fld'), which is now a macro.</p>
+
+ @({
+ (defstobj st fld :inline t)
+ (include-book \"bug\") ; The defstobj event in this book is redundant here.
+ (foo st)
+ })
+
+ <p>The bug has been fixed by requiring a redundant @(tsee defstobj) event to
+ be syntactically identical to the pre-existing corresponding @(tsee defstobj)
+ event.</p>
 
  <h3>Changes at the System Level</h3>
 
@@ -97085,8 +97138,8 @@ arithmetic) for libraries of @(see books) for arithmetic reasoning.</p>")
  documentation for details, since below we only discuss ACL2 @(see events) that
  are built into ACL2.</p>
 
- <p>A @(tsee defabsstobj) is redundant if there is already an identical
- @('defabsstobj') event in the logical @(see world).</p>
+ <p>A @(tsee defstobj) or @(tsee defabsstobj) is redundant if there is already
+ an identical such event in the logical @(see world).</p>
 
  <p>A @(tsee defattach) event is never redundant.  (Reasons are provided in a
  comment in the ACL2 sources definition of defattach in the ACL2 logic.)  Note
@@ -97116,11 +97169,6 @@ arithmetic) for libraries of @(see books) for arithmetic reasoning.</p>")
 
  <p>A @(tsee defpkg) event is redundant if a package of the same name with
  exactly the same imports has been defined.</p>
-
- <p>A @(tsee defstobj) event is redundant if there is already a @('defstobj')
- event with the same name that has exactly the same field descriptors (see
- @(see defstobj)), in the same order, and with the same @(':renaming') value if
- @(':renaming') is supplied for either event.</p>
 
  <p>A @(tsee defthm) event is redundant according to the criteria given above
  in the discussion of @('defaxiom').</p>
@@ -110795,6 +110843,10 @@ arithmetic) for libraries of @(see books) for arithmetic reasoning.</p>")
  <li>@('(ffnnamep-lst fn lst)'): Returns @('t') when the function @('fn')
  (possibly a @(see lambda) expression) is used as a function in a member of the
  list @('lst') of @(tsee pseudo-termp)s; else returns @('nil').</li>
+
+ <li>@('(fix-pkg pkg)'): Returns @('pkg'), which should be @('nil') or a
+ non-empty string, with one exception: if @('pkg') is
+ @(`*main-lisp-package-name*`) then @('\"ACL2\"') is returned.</li>
 
  <li>@('(flambda-applicationp x)'): For a @(tsee pseudo-termp) @('x') that is
  not a variable, return @('t') if it is a function call whose function symbol
@@ -130446,6 +130498,7 @@ expand function call at the current subterm, without simplifying"
 (defpointer ffnnamep-lst system-utilities)
 (defpointer first-keyword system-utilities)
 (defpointer first-n-ac take)
+(defpointer fix-pkg system-utilities)
 (defpointer flambda-applicationp system-utilities)
 (defpointer flambdap system-utilities)
 (defpointer fms!-to-string printing-to-strings)

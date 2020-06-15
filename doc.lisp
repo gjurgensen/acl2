@@ -77,7 +77,7 @@ Subtopics
   [defthm], [in-theory], [xargs], [state], etc., without an acl2::
   prefix.
 
-  The constant *acl2-exports* lists 1501 symbols, including most
+  The constant *acl2-exports* lists 1502 symbols, including most
   documented ACL2 system constants, functions, and macros.  You will
   typically also want to import many symbols from Common Lisp; see
   [*common-lisp-symbols-from-main-lisp-package*].
@@ -303,8 +303,9 @@ Subtopics
        fast-alist-summary fc-report fertilize
        fgetprop fifth file-clock file-clock-p
        file-clock-p-forward-to-integerp
-       file-length$ file-write-date$
-       finalize-event-user first first-n-ac fix
+       file-length$
+       file-write-date$ finalize-event-user
+       first first-n-ac fix fix-pkg
        fix-true-list flet floor flush-compress
        flush-hons-get-hash-table-link
        fms fms! fms!-to-string
@@ -25398,7 +25399,8 @@ Subtopics
               :renaming alist
               :inline flg
               :congruent-to old-stobj-name
-              :non-memoizable nm-flg)
+              :non-memoizable nm-flg
+              :non-executable ne-flg)
 
   where name is a new symbol; each fieldi is a symbol; each typei is
   either a type-indicator (a [type-spec] or [stobj] name), of the
@@ -25414,10 +25416,12 @@ Subtopics
   function calls).  The optional :congruent-to old-stobj-name
   argument specifies an existing stobj with exactly the same
   structure, and is discussed below.  The optional :non-memoizable
-  nm-flg Boolean argument is ignored when nm-flg is nil; otherwise,
-  it instructs ACL2 to lay down faster code for functions that return
-  the new stobj but disallows [memoization] of any function that
-  takes the new stobj as an argument.  We describe further
+  nm-flg and :non-executable ne-flg Boolean arguments are ignored
+  when nm-flg and ne-flg are nil, but otherwise: the former instructs
+  ACL2 to lay down faster code for functions that return the new
+  stobj but disallows [memoization] of any function that takes the
+  new stobj as an argument; and the latter avoids actually creating
+  the stobj (details follow later below).  We describe further
   restrictions on the fieldi, typei, vali, and on alist below.  We
   recommend that you read about single-threaded objects (stobjs) in
   ACL2 before proceeding; see [stobj].
@@ -25432,9 +25436,15 @@ Subtopics
 
 The Single-Threaded Object Introduced
 
-  The defstobj event effectively introduces a new global variable,
-  named name, which has as its initial logical value a list of k
-  elements, where k is the number of ``field descriptors'' provided.
+  The defstobj event effectively introduces a new ``live stobj''
+  object, named name, which has as its initial logical value a list
+  of k elements, where k is the number of ``field descriptors''
+  provided.  This object has mutable updates: that is, the object is
+  actually modified in place, rather than copied.  This is only
+  possible because of syntactic restrictions enforced by ACL2 when
+  programming with stobjs, so that after modifying a stobj, its old
+  versions are no longer accessible.
+
   The elements are listed in the same order in which the field
   descriptors appear.  If the :type of a field is (ARRAY
   type-indicator (max)) then max is a non-negative integer or a
@@ -25834,10 +25844,9 @@ Inspecting the Effects of a Defstobj
 
   immediately after the defstobj event has been processed.
 
-  A defstobj is considered redundant only if the name, field
-  descriptors, renaming alist, and inline flag are identical to a
-  previously executed defstobj.  Note that a redundant defstobj does
-  not reset the [stobj] fields to their initial values.
+  A defstobj is considered redundant only if it is syntactically
+  identical to a previously executed defstobj.  Note that a redundant
+  defstobj does not reset the [stobj] fields to their initial values.
 
 
 Performance
@@ -25920,7 +25929,24 @@ Specifying Congruent Stobjs
     the discussion of congruent stobjs.  Note:  this error occurred in
     the context (F ST1 ST1 ST1).
 
-    ACL2 !>")
+    ACL2 !>
+
+
+Specifying Non-executable Stobjs
+
+  As noted above, if keyword argument :non-executable t is specified
+  then the stobj is not created.  More precisely, the ``live'',
+  mutable stobj is not created.  So why use this keyword argument?
+  Perhaps you would like to do your computation on several stobjs
+  that are all congruent to a given stobj, st.  Then by using
+  :non-executable t to introduce st, you avoid allocating memory for
+  st that you never intend to use.  Similarly, you can avoid
+  allocating such memory when your intended use of st is only as a
+  local stobj (see [with-local-stobj]) or as the type of a stobj
+  field of another stobj.
+
+  When :non-executable t is specified, it is illegal to supply a
+  :congruent-to argument.")
  (DEFSTUB
   (EVENTS)
   "Stub-out a function symbol
@@ -34706,6 +34732,8 @@ Subtopics
     (defun fix (x)
            (declare (xargs :guard t))
            (if (acl2-numberp x) x 0))")
+ (FIX-PKG (POINTERS)
+          "See [system-utilities].")
  (FIX-TRUE-LIST
   (LISTS ACL2-BUILT-INS)
   "Coerce to a true list
@@ -84926,6 +84954,11 @@ New Features
   speed up repeated certification of a book, sometimes substantially.
   See [useless-runes].
 
+  A new keyword for [defstobj], :non-executable, can be given value t
+  to skip memory allocation for the new [stobj], by avoiding creation
+  of a ``live'' (mutable) stobj.  See [defstobj].  Thanks to Warren
+  Hunt for encouraging development of this feature.
+
 
 Heuristic and Efficiency Improvements
 
@@ -84997,6 +85030,27 @@ Bug Fixes
   without any applicable rules or :expand [hints].  (Technical note:
   the problematic source function was normalize.)  We considered this
   to be a bug, so it has been fixed.
+
+  The notion of redundancy for [defstobj] [events] was too weak, as
+  evidenced by the following example.  Consider the following book,
+  named \"bug.lisp\".
+
+    (in-package \"ACL2\")
+    (defstobj st fld)
+    (defun foo (st) (declare (xargs :stobjs st)) (fld st))
+
+  After certifying this book, a raw Lisp error could occur after
+  evaluating the following forms, because the compiled definition of
+  foo from including the book referenced a function, fld, which is
+  now a macro.
+
+    (defstobj st fld :inline t)
+    (include-book \"bug\") ; The defstobj event in this book is redundant here.
+    (foo st)
+
+  The bug has been fixed by requiring a redundant [defstobj] event to
+  be syntactically identical to the pre-existing corresponding
+  [defstobj] event.
 
 
 Changes at the System Level
@@ -89596,6 +89650,9 @@ Subtopics
 
   [First-n-ac]
       See [take].
+
+  [Fix-pkg]
+      See [system-utilities].
 
   [Flambda-applicationp]
       See [system-utilities].
@@ -98100,8 +98157,8 @@ Subtopics
   redundancy; see their documentation for details, since below we
   only discuss ACL2 [events] that are built into ACL2.
 
-  A [defabsstobj] is redundant if there is already an identical
-  defabsstobj event in the logical [world].
+  A [defstobj] or [defabsstobj] is redundant if there is already an
+  identical such event in the logical [world].
 
   A [defattach] event is never redundant.  (Reasons are provided in a
   comment in the ACL2 sources definition of defattach in the ACL2
@@ -98131,11 +98188,6 @@ Subtopics
 
   A [defpkg] event is redundant if a package of the same name with
   exactly the same imports has been defined.
-
-  A [defstobj] event is redundant if there is already a defstobj event
-  with the same name that has exactly the same field descriptors (see
-  [defstobj]), in the same order, and with the same :renaming value
-  if :renaming is supplied for either event.
 
   A [defthm] event is redundant according to the criteria given above
   in the discussion of defaxiom.
@@ -112206,6 +112258,9 @@ List of a few built-in system utilities
     * (ffnnamep-lst fn lst): Returns t when the function fn (possibly a
       [lambda] expression) is used as a function in a member of the
       list lst of [pseudo-termp]s; else returns nil.
+    * (fix-pkg pkg): Returns pkg, which should be nil or a non-empty
+      string, with one exception: if pkg is \"COMMON-LISP\" then \"ACL2\"
+      is returned.
     * (flambda-applicationp x): For a [pseudo-termp] x that is not a
       variable, return t if it is a function call whose function
       symbol is a lambda expression, else return nil.
