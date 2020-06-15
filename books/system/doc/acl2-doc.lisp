@@ -13724,7 +13724,7 @@ with any questions about building the community books.</p>")
  <p>See @(see defrec) for more information.</p>")
 
 (defxdoc char
-  :parents (characters acl2-built-ins)
+  :parents (strings characters acl2-built-ins)
   :short "The @(see nth) element (zero-based) of a string"
   :long "<p>@('(Char s n)') is the @('n')th element of @('s'), zero-based.  If
  @('n') is greater than or equal to the length of @('s'), then @('char')
