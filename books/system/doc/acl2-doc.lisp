@@ -86588,6 +86588,10 @@ it."
 
  <h3>Changes at the System Level</h3>
 
+ <p>(SBCL only) Filenames are now read as ASCII (specifically, ISO-8859-1) when
+ the host Lisp is SBCL, which formerly was not the case.  Thanks to Stephen
+ Westfold for suggesting this change.</p>
+
  <h3>EMACS Support</h3>
 
  <p>The @(see acl2-doc) search commands (`@('s')' and `@('S')') were seen to

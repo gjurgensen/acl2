@@ -85055,6 +85055,10 @@ Bug Fixes
 
 Changes at the System Level
 
+  (SBCL only) Filenames are now read as ASCII (specifically,
+  ISO-8859-1) when the host Lisp is SBCL, which formerly was not the
+  case.  Thanks to Stephen Westfold for suggesting this change.
+
 
 EMACS Support
 
