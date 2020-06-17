@@ -16558,7 +16558,7 @@ Subtopics
 
   See [defrec] for more information.")
  (CHAR
-  (CHARACTERS ACL2-BUILT-INS)
+  (STRINGS CHARACTERS ACL2-BUILT-INS)
   "The [nth] element (zero-based) of a string
 
   (Char s n) is the nth element of s, zero-based.  If n is greater than
@@ -110494,6 +110494,9 @@ Subtopics
 
 
 Subtopics
+
+  [Char]
+      The [nth] element (zero-based) of a string
 
   [Coerce]
       Coerce a character list to a string and a string to a list
