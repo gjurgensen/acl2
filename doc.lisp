@@ -85059,6 +85059,16 @@ Changes at the System Level
   ISO-8859-1) when the host Lisp is SBCL, which formerly was not the
   case.  Thanks to Stephen Westfold for suggesting this change.
 
+  ACL2 can once again be built on CMU Common Lisp (CMUCL) (though we
+  have only done minimal testing).  The problem turned out to be with
+  ACL2, not CMUCL: low-level Lisp code in the ACL2 sources was
+  destructively modifying a quoted constant.  (For implementation
+  details, see *fncall-cache* in source file translate.lisp.)  The
+  bug was discovered when considering modification of the build
+  process to compile ACL2 source files when the host Lisp is SBCL.
+  Thanks to Stas Boukarev for pointing us in the right direction to
+  debug this error.
+
 
 EMACS Support
 

@@ -86395,6 +86395,10 @@ it."
 ; that controls whether or not the new observation is printed (see the item
 ; below about rewrite rules that ignore a known equivalence relation).
 
+; We changed Lisp variable *inside-absstobj-update* so that it is no longer
+; initialized with a constant.  This seemed potentially important given the
+; item below about destructively modifying a quoted constant in *fncall-cache*.
+
   :parents (release-notes)
   :short "ACL2 Version  8.4 (xxx, 20xx) Notes"
   :long "<p>NOTE!  New users can ignore these release notes, because the @(see
@@ -86591,6 +86595,15 @@ it."
  <p>(SBCL only) Filenames are now read as ASCII (specifically, ISO-8859-1) when
  the host Lisp is SBCL, which formerly was not the case.  Thanks to Stephen
  Westfold for suggesting this change.</p>
+
+ <p>ACL2 can once again be built on CMU Common Lisp (CMUCL) (though we have
+ only done minimal testing).  The problem turned out to be with ACL2, not
+ CMUCL: low-level Lisp code in the ACL2 sources was destructively modifying a
+ quoted constant.  (For implementation details, see @('*fncall-cache*') in
+ source file @('translate.lisp').)  The bug was discovered when considering
+ modification of the build process to compile ACL2 source files when the host
+ Lisp is SBCL.  Thanks to Stas Boukarev for pointing us in the right direction
+ to debug this error.</p>
 
  <h3>EMACS Support</h3>
 
