@@ -86520,6 +86520,16 @@ it."
       )
  })
 
+ <p>The ACL2 rewriter has a ``being-openedp'' heuristic that prevents loops, by
+ saving a stack based on what is currently being rewritten.  This can prevent
+ the use of a @(see definition) or @(see rewrite) rule.  Now the heuristic is
+ turned off when the term's function symbol has a non-recursive definition and
+ simplification has just settled down (see @(see hints-and-the-waterfall)).  To
+ restore the old behavior, i.e., to use the heuristic in all cases &mdash; thus
+ providing backward compatibility when a proof fails &mdash; evaluate the form:
+ @('(defattach-system being-openedp-limited-for-nonrec
+ constant-nil-function-arity-0)').</p>
+
  <h3>Bug Fixes</h3>
 
  <p>The mechanism for tracking @(see warrant)s needed during a proof had a bug,

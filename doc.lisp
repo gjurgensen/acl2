@@ -84989,6 +84989,17 @@ Heuristic and Efficiency Improvements
          ;; :hints ((\"Goal\" :do-not '(preprocess)))
          )
 
+  The ACL2 rewriter has a ``being-openedp'' heuristic that prevents
+  loops, by saving a stack based on what is currently being
+  rewritten.  This can prevent the use of a [definition] or [rewrite]
+  rule.  Now the heuristic is turned off when the term's function
+  symbol has a non-recursive definition and simplification has just
+  settled down (see [hints-and-the-waterfall]).  To restore the old
+  behavior, i.e., to use the heuristic in all cases --- thus
+  providing backward compatibility when a proof fails --- evaluate
+  the form: (defattach-system being-openedp-limited-for-nonrec
+  constant-nil-function-arity-0).
+
 
 Bug Fixes
 
