@@ -120289,15 +120289,22 @@ introduction-to-the-tau-system) for more information about Tau.</dd>
  that associates names of @(tsee defthm), @(tsee defun), and @(tsee
  verify-guards) @(see events) with sets of ``useless'' @(see rune)s'': rule
  names (``runes'') not contributing to the progress of the proof.  Then, future
- certifications can use option @(':useless-runes :read') (also some variations
- of that, discussed below) which, during evaluation of an event, will
- effectively @(see disable) rules associated with that event in file
- @('foo@useless-runes.lsp').</p>
+ certifications can use option @(':useless-runes :read') &mdash; or some
+ limited variations of @(':read') using numeric values, as discussed below)
+ &mdash; which, during evaluation of an event, will effectively @(see disable)
+ rules associated with that event in file @('foo@useless-runes.lsp').</p>
 
- <p>Environment variable @('ACL2_USELESS_RUNES') can take value @('\"write\"')
- or @('\"read\"') be used in place of the @(':useless-runes') option @(':read')
- or @(':write') (respectively) of @('certify-book').  This is discussed
- below.</p>
+ <p>Environment variable @('ACL2_USELESS_RUNES') can take the value
+ @('\"write\"') or @('\"read\"') to be used in place of the @(':useless-runes')
+ option @(':read') or @(':write') (respectively) of @('certify-book').
+ @('ACL2_USELESS_RUNES') can also take on the numeric values permitted for the
+ @(':useless-runes') option of @(tsee certify-book).  This is all discussed
+ below.  Note that by default, certification of the @(see community-books), as
+ laid out in documentation topic @(see books-certification), is performed with
+ @('ACL2_USELESS_RUNES=-25'), which for each book @('foo.lisp') causes part of
+ the corresponding @('foo@useless-runes.lsp'), if it exists, to be
+ consulted (as described below).  This default behavior is only for ACL2, not
+ ACL2(r) (see @(see real)) or ACL2(p) (see @(see parallelism)).</p>
 
  <h3>Detailed Documentation</h3>
 
