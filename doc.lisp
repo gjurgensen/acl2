@@ -121640,14 +121640,22 @@ Introduction
   names of [defthm], [defun], and [verify-guards] [events] with sets
   of ``useless'' [rune]s'': rule names (``runes'') not contributing
   to the progress of the proof.  Then, future certifications can use
-  option :useless-runes :read (also some variations of that,
-  discussed below) which, during evaluation of an event, will
-  effectively [disable] rules associated with that event in file
-  foo@useless-runes.lsp.
+  option :useless-runes :read --- or some limited variations of :read
+  using numeric values, as discussed below) --- which, during
+  evaluation of an event, will effectively [disable] rules associated
+  with that event in file foo@useless-runes.lsp.
 
-  Environment variable ACL2_USELESS_RUNES can take value \"write\" or
-  \"read\" be used in place of the :useless-runes option :read or
-  :write (respectively) of certify-book.  This is discussed below.
+  Environment variable ACL2_USELESS_RUNES can take the value \"write\" or
+  \"read\" to be used in place of the :useless-runes option :read or
+  :write (respectively) of certify-book.  ACL2_USELESS_RUNES can also
+  take on the numeric values permitted for the :useless-runes option
+  of [certify-book].  This is all discussed below.  Note that by
+  default, certification of the [community-books], as laid out in
+  documentation topic [books-certification], is performed with
+  ACL2_USELESS_RUNES=-25, which for each book foo.lisp causes part of
+  the corresponding foo@useless-runes.lsp, if it exists, to be
+  consulted (as described below).  This default behavior is only for
+  ACL2, not ACL2(r) (see [real]) or ACL2(p) (see [parallelism]).
 
 
 Detailed Documentation
