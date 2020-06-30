@@ -12728,6 +12728,9 @@ Subtopics
   Unusual books that create output in the log file should not produce
   the string ** except upon failure.
 
+  By default, make commands for certifying books take advantage of
+  files *@useless-runes.lsp.  See [useless-runes].
+
 
 Prerequisites
 

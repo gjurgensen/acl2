@@ -10051,6 +10051,9 @@ fgrep -a '**' make-regression.log
 <p>Unusual books that create output in the log file should not produce the
 string @('**') except upon failure.</p>
 
+<p>By default, @('make') commands for certifying books take advantage of files
+@('*@useless-runes.lsp').  See @(see useless-runes).</p>
+
 <h3>Prerequisites</h3>
 
 <p>We assume that you have already downloaded and installed ACL2 as per the <a
