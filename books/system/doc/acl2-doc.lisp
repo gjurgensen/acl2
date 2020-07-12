@@ -19891,7 +19891,9 @@ subtree of X with T, without duplication.</p>
  intended to affect such behavior, the argument @(':system-ok t') may be given
  directly to @('defattach'), without a surrounding use of @('local').</p>
 
- <p>See @(see system-attachments) for discussion of system attachments.</p>")
+ <p>See @(see system-attachments) for discussion of system attachments.  Also
+ see @(see efficiency) for how to use attachments to modify the prover's
+ behavior.</p>")
 
 (defxdoc default
   :parents (arrays acl2-built-ins)
@@ -26136,11 +26138,14 @@ ld) and @(tsee include-book)"
  (set-rw-cache-state nil)
  })
 
- <p>Some system behaviors can be modified using @(tsee defattach-system),
- typically by modifying heuristics.  You can find all system attachments by
- evaluating @('(all-attachments (w state))'), except for a few exceptions (see
- @(see defattach)).  Here are some key examples of how to modify system
- behavior.</p>
+ <p>Some system behaviors can be modified using @(tsee defattach-system)
+ &mdash; also see @(see system-attachments) &mdash; typically by modifying
+ heuristics.  You can find all attachments by evaluating @('(all-attachments (w
+ state))') and all built-in such attachments by evaluating @('(global-val
+ 'attachments-at-ground-zero (w state))'), except for a few exceptions (see
+ @(see defattach)).  For most of these, however, you will need to consult the
+ ACL2 source files for relevant information.  Here are some key examples of how
+ to modify system behavior.</p>
 
  @({
  (defun constant-nil-function-arity-2 (x y)
@@ -28649,9 +28654,10 @@ ld) and @(tsee include-book)"
 
  <p>Finally, we also require that no function has an attachment (see @(see
  defattach)) that is both ancestral in the evaluator and also ancestral in the
- meta or clause-processor functions.  (If you don't use @(tsee defattach) then
- you can ignore this condition.)  Without this restriction, the following
- events prove @('nil').</p>
+ meta or clause-processor functions.  (If you don't use @(tsee defattach) or
+ @(tsee apply$) &mdash; more specifically, @(see warrant)s &mdash; then you can
+ ignore this condition.)  Without this restriction, the following events prove
+ @('nil').</p>
 
  @({
   (in-package \"ACL2\")
@@ -28680,6 +28686,57 @@ ld) and @(tsee include-book)"
                            f-is-nil
                            (f (lambda () t))))))
     :rule-classes nil)
+ })
+
+ <p>Here is an example that doesn't use @(tsee defattach) explicitly, but uses
+ @(see warrant)s, which essentially have attachments so that every call of a
+ warrant evaluates to @('T').  As for the preceding example, these events
+ succeed if we remove the restriction stated above about common ancestors of
+ the evaluator and the meta or clause-processor function.</p>
+
+ @({
+ (in-package \"ACL2\")
+
+ (include-book \"projects/apply/top\" :dir :system)
+
+ (defevaluator evl evl-list
+   ((apply$ fn args)))
+
+ (encapsulate
+   ()
+   (local (defun$ f () (declare (xargs :guard t)) t))
+   (local (defun my-meta-fn (x)
+            (if (and (equal x '(apply$ 'f 'nil))
+                     (apply$-warrant-f))
+                *t*
+              x)))
+   (local (defthm my-meta-fn-correct
+            (equal (evl x a)
+                   (evl (my-meta-fn x) a))
+            :rule-classes ((:meta :trigger-fns (apply$)))))
+   (defthm unwarranted-fact-about-quote-f
+     (equal (apply$ 'f nil) t)
+     :rule-classes nil))
+
+ (defun$ f () nil)
+
+ (defthm apply$-warrant-f-false
+   (not (apply$-warrant-f))
+   :hints ((\"Goal\" :use unwarranted-fact-about-quote-f))
+   :rule-classes nil)
+
+ ; But apply$-warrant-f is a function with no non-trivial constraint.
+
+ (defthm contradiction
+   nil
+   :hints
+   ((\"Goal\"
+     :use (:functional-instance
+           apply$-warrant-f-false
+           (apply$-warrant-f (lambda () t))
+           (apply$-userfn (lambda (fn args) nil))
+           (badge-userfn (lambda (fn) '(APPLY$-BADGE 0 1 . T))))))
+   :rule-classes nil)
  })
 
  <p>To see why this restriction is sufficient, see a comment in the ACL2 source
@@ -49422,8 +49479,11 @@ tables in the current Hons Space."
  function name, @('fn'), such that @('(fn channel state)') will print the
  desired @(see prompt) to @('channel') in @(tsee state) and return @('(mv col
  state)'), where @('col') is the number of @(see characters) output (on the
- last line output).  You may define your own @(see prompt) printing
- function.</p>
+ last line output).  You may define your own @(see prompt) printing function,
+ @('fn'), and install it with @('(set-ld-prompt 'fn state)').  However, a trust
+ tag must be active (see @(see defttag)) when you set @('ld-prompt') to other
+ than @('t') or @('nil') (with one exception: the function @('brr-prompt'),
+ which prints the prompt in the @(see break-rewrite) loop).</p>
 
  <p>If you supply an inappropriate @(see prompt) function, i.e., one that
  causes an error or does not return the correct number and type of results, the
@@ -86483,6 +86543,11 @@ it."
  (defthm foo (my-equiv x (car (cons x x))))
  })
 
+ <p>A trust tag (see @(see defttag)) is now required to set the @(see
+ ld-prompt) to a non-Boolean value, other than the @(see brr) prompt, since
+ that can cause printing of the prompt to modify state in rather arbitrary
+ ways.</p>
+
  <h3>New Features</h3>
 
  <p>A new option for @(tsee certify-book), @(':useless-runes'), makes it
@@ -110570,10 +110635,10 @@ arithmetic) for libraries of @(see books) for arithmetic reasoning.</p>")
   :short "System-level algorithms that users can modify with attachments"
   :long "<p>For background on attachments, see @(see defattach).</p>
 
- <p>If you evaluate the form @('(all-attachments (w state))') immediately after
- starting ACL2, you will see a list of pairs of the form @('(f . g)'), where
- @('f') is a constrained system utility and @('g') is its attachment.  Here is
- one such pair.</p>
+ <p>If you evaluate the form @('(global-val 'attachments-at-ground-zero (w
+ state))'), you will see a list of pairs of the form @('(f . g)'), where @('f')
+ is a built-in constrained utility and @('g') is its attachment.  Here is one
+ such pair.</p>
 
  @({
  (ASSUME-TRUE-FALSE-AGGRESSIVE-P . CONSTANT-NIL-FUNCTION-ARITY-0)
@@ -110605,7 +110670,10 @@ arithmetic) for libraries of @(see books) for arithmetic reasoning.</p>")
  comfortable as ``system programmers'', as they peruse the ACL2 source code and
  its comments in order to see how to modify system behavior with attachments.
  Perhaps more user-level documentation will be written to help with that
- process.</p>")
+ process.</p>
+
+ <p>Also see @(see efficiency) for more about using attachments to modify the
+ prover's behavior.</p>")
 
 (defxdoc system-utilities
 
@@ -123668,7 +123736,7 @@ introduction-to-the-tau-system) for more information about Tau.</dd>
   it is possible to <i>define</i>, under the standard ACL2 definitional
   principle, versions of those functions (together with @('apply$'), @('ev$'),
   etc.) and then make attachments to the undefined @('badge-userfn') and
-  @('apply$-userfn'), and so that every warrant is proveably equal to @('T').
+  @('apply$-userfn'), and so that every warrant is provably equal to @('T').
   In fact, the resultant theory is the basis of ACL2's evaluation theory where
   all warranted functions can be @('apply$')d (under the appropriate tameness
   requirements) without explicit mention of warrants.  The crux of the proof is
@@ -130541,6 +130609,8 @@ expand function call at the current subterm, without simplifying"
 (defpointer fms!-to-string printing-to-strings)
 (defpointer fms-to-string printing-to-strings)
 (defpointer fmt!-to-string printing-to-strings)
+(defpointer fmt-hard-right-margin set-fmt-hard-right-margin)
+(defpointer fmt-soft-right-margin set-fmt-hard-right-margin) ; yes, not -soft-
 (defpointer fmt-to-string printing-to-strings)
 (defpointer fmt1!-to-string printing-to-strings)
 (defpointer fmt1-to-string printing-to-strings)

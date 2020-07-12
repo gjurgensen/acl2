@@ -23049,7 +23049,9 @@ Subtopics
   the argument :system-ok t may be given directly to defattach,
   without a surrounding use of local.
 
-  See [system-attachments] for discussion of system attachments.")
+  See [system-attachments] for discussion of system attachments.  Also
+  see [efficiency] for how to use attachments to modify the prover's
+  behavior.")
  (DEFAULT
   (ARRAYS ACL2-BUILT-INS)
   "Return the :default from the [header] of a 1- or 2-dimensional array
@@ -29358,11 +29360,15 @@ Proof efficiency
 
     (set-rw-cache-state nil)
 
-  Some system behaviors can be modified using [defattach-system],
-  typically by modifying heuristics.  You can find all system
-  attachments by evaluating (all-attachments (w state)), except for a
-  few exceptions (see [defattach]).  Here are some key examples of
-  how to modify system behavior.
+  Some system behaviors can be modified using [defattach-system] ---
+  also see [system-attachments] --- typically by modifying
+  heuristics.  You can find all attachments by evaluating
+  (all-attachments (w state)) and all built-in such attachments by
+  evaluating (global-val 'attachments-at-ground-zero (w state)),
+  except for a few exceptions (see [defattach]).  For most of these,
+  however, you will need to consult the ACL2 source files for
+  relevant information.  Here are some key examples of how to modify
+  system behavior.
 
     (defun constant-nil-function-arity-2 (x y)
       (declare (xargs :mode :logic :guard t) (ignore x y))
@@ -31899,8 +31905,9 @@ Subtopics
   Finally, we also require that no function has an attachment (see
   [defattach]) that is both ancestral in the evaluator and also
   ancestral in the meta or clause-processor functions.  (If you don't
-  use [defattach] then you can ignore this condition.)  Without this
-  restriction, the following events prove nil.
+  use [defattach] or [apply$] --- more specifically, [warrant]s ---
+  then you can ignore this condition.)  Without this restriction, the
+  following events prove nil.
 
     (in-package \"ACL2\")
     (defstub f () t)
@@ -31927,6 +31934,56 @@ Subtopics
       :hints ((\"Goal\" :use ((:functional-instance
                              f-is-nil
                              (f (lambda () t))))))
+      :rule-classes nil)
+
+  Here is an example that doesn't use [defattach] explicitly, but uses
+  [warrant]s, which essentially have attachments so that every call
+  of a warrant evaluates to T.  As for the preceding example, these
+  events succeed if we remove the restriction stated above about
+  common ancestors of the evaluator and the meta or clause-processor
+  function.
+
+    (in-package \"ACL2\")
+
+    (include-book \"projects/apply/top\" :dir :system)
+
+    (defevaluator evl evl-list
+      ((apply$ fn args)))
+
+    (encapsulate
+      ()
+      (local (defun$ f () (declare (xargs :guard t)) t))
+      (local (defun my-meta-fn (x)
+               (if (and (equal x '(apply$ 'f 'nil))
+                        (apply$-warrant-f))
+                   *t*
+                 x)))
+      (local (defthm my-meta-fn-correct
+               (equal (evl x a)
+                      (evl (my-meta-fn x) a))
+               :rule-classes ((:meta :trigger-fns (apply$)))))
+      (defthm unwarranted-fact-about-quote-f
+        (equal (apply$ 'f nil) t)
+        :rule-classes nil))
+
+    (defun$ f () nil)
+
+    (defthm apply$-warrant-f-false
+      (not (apply$-warrant-f))
+      :hints ((\"Goal\" :use unwarranted-fact-about-quote-f))
+      :rule-classes nil)
+
+    ; But apply$-warrant-f is a function with no non-trivial constraint.
+
+    (defthm contradiction
+      nil
+      :hints
+      ((\"Goal\"
+        :use (:functional-instance
+              apply$-warrant-f-false
+              (apply$-warrant-f (lambda () t))
+              (apply$-userfn (lambda (fn args) nil))
+              (badge-userfn (lambda (fn) '(APPLY$-BADGE 0 1 . T))))))
       :rule-classes nil)
 
   To see why this restriction is sufficient, see a comment in the ACL2
@@ -35522,6 +35579,10 @@ Subtopics
   margin.  Use fmt! if you want to be able to read the forms back in.")
  (FMT!-TO-STRING (POINTERS)
                  "See [printing-to-strings].")
+ (FMT-HARD-RIGHT-MARGIN (POINTERS)
+                        "See [set-fmt-hard-right-margin].")
+ (FMT-SOFT-RIGHT-MARGIN (POINTERS)
+                        "See [set-fmt-hard-right-margin].")
  (FMT-TO-COMMENT-WINDOW
   (IO ACL2-BUILT-INS)
   "Print to the comment window
@@ -53352,7 +53413,11 @@ Subtopics
   fn, such that (fn channel state) will print the desired [prompt] to
   channel in [state] and return (mv col state), where col is the
   number of [characters] output (on the last line output).  You may
-  define your own [prompt] printing function.
+  define your own [prompt] printing function, fn, and install it with
+  (set-ld-prompt 'fn state).  However, a trust tag must be active
+  (see [defttag]) when you set ld-prompt to other than t or nil (with
+  one exception: the function brr-prompt, which prints the prompt in
+  the [break-rewrite] loop).
 
   If you supply an inappropriate [prompt] function, i.e., one that
   causes an error or does not return the correct number and type of
@@ -84950,6 +85015,11 @@ Changes to Existing Features
     (in-theory (disable my-equiv)) ; optional (avoids warnings for the next form)
     (defthm foo (my-equiv x (car (cons x x))))
 
+  A trust tag (see [defttag]) is now required to set the [ld-prompt] to
+  a non-Boolean value, other than the [brr] prompt, since that can
+  cause printing of the prompt to modify state in rather arbitrary
+  ways.
+
 
 New Features
 
@@ -89696,6 +89766,12 @@ Subtopics
 
   [Fmt!-to-string]
       See [printing-to-strings].
+
+  [Fmt-hard-right-margin]
+      See [set-fmt-hard-right-margin].
+
+  [Fmt-soft-right-margin]
+      See [set-fmt-hard-right-margin].
 
   [Fmt-to-string]
       See [printing-to-strings].
@@ -112015,10 +112091,10 @@ Subtopics
 
   For background on attachments, see [defattach].
 
-  If you evaluate the form (all-attachments (w state)) immediately
-  after starting ACL2, you will see a list of pairs of the form (f .
-  g), where f is a constrained system utility and g is its
-  attachment.  Here is one such pair.
+  If you evaluate the form (global-val 'attachments-at-ground-zero (w
+  state)), you will see a list of pairs of the form (f . g), where f
+  is a built-in constrained utility and g is its attachment.  Here is
+  one such pair.
 
     (ASSUME-TRUE-FALSE-AGGRESSIVE-P . CONSTANT-NIL-FUNCTION-ARITY-0)
 
@@ -112056,7 +112132,10 @@ Subtopics
   attachments to be comfortable as ``system programmers'', as they
   peruse the ACL2 source code and its comments in order to see how to
   modify system behavior with attachments.  Perhaps more user-level
-  documentation will be written to help with that process.")
+  documentation will be written to help with that process.
+
+  Also see [efficiency] for more about using attachments to modify the
+  prover's behavior.")
  (SYSTEM-UTILITIES
   (PROGRAMMING)
   "Some built-in programming utilities pertaining to the ACL2 system
@@ -124823,9 +124902,9 @@ Why Warrants Don't Render Theorems Vacuous
   standard ACL2 definitional principle, versions of those functions
   (together with apply$, ev$, etc.) and then make attachments to the
   undefined badge-userfn and apply$-userfn, and so that every warrant
-  is proveably equal to T.  In fact, the resultant theory is the
-  basis of ACL2's evaluation theory where all warranted functions can
-  be apply$d (under the appropriate tameness requirements) without
+  is provably equal to T.  In fact, the resultant theory is the basis
+  of ACL2's evaluation theory where all warranted functions can be
+  apply$d (under the appropriate tameness requirements) without
   explicit mention of warrants.  The crux of the proof is admitting a
   big mutually recursive clique containing versions of apply$ and all
   of its [scion]s, by inventing a measure that provably decreases as
