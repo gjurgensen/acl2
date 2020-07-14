@@ -126310,7 +126310,8 @@ The Differences Between Well-Formed and Merely Tame Lambda Objects
   (STOBJ ACL2-BUILT-INS)
   "Locally bind a single-threaded object
 
-  See [stobj] for an introduction to single-threaded objects.
+  See [stobj] for an introduction to single-threaded objects.  Also see
+  [defstobj] for additional background.
 
     Example Form:
     (with-local-stobj
@@ -126329,25 +126330,31 @@ The Differences Between Well-Formed and Merely Tame Lambda Objects
             result)
 
   However, ACL2 expects you to use with-local-stobj, not its expansion.
-  More precisely, stobj creator functions are not allowed except
-  (implicitly) via with-local-stobj and in logic-only situations
-  (like theorems and hints).  Moreover, neither with-local-stobj nor
-  its expansions are legal when typed directly at the top-level loop.
-  See [top-level] for a way to use with-local-stobj in the top-level
-  loop.
+  More precisely, stobj creator functions are only allowed via
+  with-local-stobj or in logic-only situations (like theorems and
+  hints).  Moreover, neither with-local-stobj nor its expansions are
+  legal when typed directly at the top-level loop.  See [top-level]
+  for a way to use with-local-stobj in the top-level loop.
 
     General Forms:
     (with-local-stobj stobj-name mv-let-form)
     (with-local-stobj stobj-name mv-let-form creator-name)
 
   where stobj-name is the name of a [stobj], mv-let-form is a call of
-  [mv-let] that binds stobj-name but does not return stobj-name, and
-  if creator-name is supplied then it should be the name of the
-  creator function for stobj-name; see [defstobj].  For the example
-  form above, its expansion would use creator-name, if supplied, in
-  place of create-st.  Note that stobj-name must not be [state] (the
-  ACL2 state), except in special situations probably of interest only
-  to system developers; see [with-local-state].
+  [mv-let] that binds stobj-name but does not return stobj-name ---
+  in fact, if mv-let-form is (mv-let (...)  ... body), then body does
+  not even reference stobj-name --- and if creator-name is supplied
+  then it should be the name of the creator function for stobj-name.
+  For the example form above, its expansion would use creator-name,
+  if supplied, in place of create-st.  Note that stobj-name must not
+  be [state] (the ACL2 state), except in special situations probably
+  of interest only to system developers; see [with-local-state].
+
+  Note that if a stobj ST is bound upon beginning evaluation of a form
+  (with-local-stobj ST ...), then the value of ST is the same
+  immediately before evaluating that form as it is immediately after
+  that evaluation.  In other words, only a local version of ST is
+  modified inside that with-local-stobj form.
 
   With-local-stobj can be useful when a stobj is used to memoize
   intermediate results during a computation, yet it is desired not to

@@ -125088,7 +125088,7 @@ for the execution of @('form')."
   :parents (stobj acl2-built-ins)
   :short "Locally bind a single-threaded object"
   :long "<p>See @(see stobj) for an introduction to single-threaded
-  objects.</p>
+  objects.  Also see @(see defstobj) for additional background.</p>
 
  @({
   Example Form:
@@ -125111,11 +125111,11 @@ for the execution of @('form')."
  })
 
  <p>However, ACL2 expects you to use @('with-local-stobj'), not its expansion.
- More precisely, stobj creator functions are not allowed except (implicitly)
- via @('with-local-stobj') and in logic-only situations (like theorems and
- hints).  Moreover, neither @('with-local-stobj') nor its expansions are legal
- when typed directly at the top-level loop.  See @(see top-level) for a way to
- use @('with-local-stobj') in the top-level loop.</p>
+ More precisely, stobj creator functions are only allowed via
+ @('with-local-stobj') or in logic-only situations (like theorems and hints).
+ Moreover, neither @('with-local-stobj') nor its expansions are legal when
+ typed directly at the top-level loop.  See @(see top-level) for a way to use
+ @('with-local-stobj') in the top-level loop.</p>
 
  @({
   General Forms:
@@ -125125,12 +125125,20 @@ for the execution of @('form')."
 
  <p>where @('stobj-name') is the name of a @(see stobj), @('mv-let-form') is a
  call of @(tsee mv-let) that binds @('stobj-name') but does not return
- @('stobj-name'), and if @('creator-name') is supplied then it should be the
- name of the creator function for @('stobj-name'); see @(see defstobj).  For
- the example form above, its expansion would use @('creator-name'), if
- supplied, in place of @('create-st').  Note that @('stobj-name') must not be
- @(tsee state) (the ACL2 state), except in special situations probably of
- interest only to system developers; see @(see with-local-state).</p>
+ @('stobj-name') &mdash; in fact, if @('mv-let-form') is @('(mv-let (...)
+ ... body)'), then @('body') does not even reference @('stobj-name') &mdash;
+ and if @('creator-name') is supplied then it should be the name of the creator
+ function for @('stobj-name').  For the example form above, its expansion would
+ use @('creator-name'), if supplied, in place of @('create-st').  Note that
+ @('stobj-name') must not be @(tsee state) (the ACL2 state), except in special
+ situations probably of interest only to system developers; see @(see
+ with-local-state).</p>
+
+ <p>Note that if a stobj @('ST') is bound upon beginning evaluation of a form
+ @('(with-local-stobj ST ...)'), then the value of @('ST') is the same
+ immediately before evaluating that form as it is immediately after that
+ evaluation.  In other words, only a local version of @('ST') is modified
+ inside that @('with-local-stobj') form.</p>
 
  <p>@('With-local-stobj') can be useful when a stobj is used to memoize
  intermediate results during a computation, yet it is desired not to make the
