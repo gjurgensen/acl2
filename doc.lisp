@@ -25409,7 +25409,7 @@ Subtopics
 
   where name is a new symbol; each fieldi is a symbol; each typei is
   either a type-indicator (a [type-spec] or [stobj] name), of the
-  form (ARRAY type-indicator max), or of the form (HASH-TABLE test)
+  form (ARRAY type-indicator (max)), or of the form (HASH-TABLE test)
   or (HASH-TABLE test size); each vali is an object satisfying typei;
   and each bi is t or nil.  Each pair :initially vali and :resizable
   bi may be omitted; more on this below.  The :renaming alist
