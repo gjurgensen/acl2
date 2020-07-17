@@ -57587,10 +57587,13 @@ Examples
   optional but :loop$-recursion t is required if recursion is used
   inside a loop$ and the measure must be made explicit.
 
+  Some examples of loop$-recursive definitions may be found in the book
+  projects/apply/loop-recursion-examples.lisp.
+
   Warning: Even though the functions defined above are recursive, ACL2
   does not generate induction schemes for them!  If you want to do
   inductive proofs about loop$-recursive functions you must provide a
-  suitable [induction] hint.  In addition, to be provable by
+  suitable :induction hint.  In addition, to be provable by
   induction, theorems about loop$-recursive functions must be
   suitably general.  This topic is discussed further in
   [loop$-recursion-induction].
@@ -57783,7 +57786,10 @@ Definductor
   [definductor].  The examples worked manually in copy-nat-tree.lisp
   are recapitulated towards the end of
   projects/apply/definductor-tests.lisp, without the manually
-  provided hints.
+  provided hints.  In addition, the book
+  projects/apply/loop-recursion-examples.lisp gives some other
+  examples of loop$-recursive functions and inductive theorems about
+  them.
 
 
 Some Basic Principles for Inductive Proofs about Loop$-Recursive
@@ -95106,6 +95112,9 @@ Subtopics
   [Summary]
       The summary printed at the conclusion of an event
 
+  [Toggle-inhibit-warning]
+      Add or delete a warning string from the inhibit-warnings-table
+
   [Warnings]
       Warnings emitted by the ACL2 proof process
 
@@ -100559,6 +100568,9 @@ Subtopics
       Force ACL2 to perform substitution using a stylized [equivalence]
       hypothesis
 
+  [Rewrite-lambda-object]
+      rewriting lambda objects in :FN slots
+
   [Rewrite-stack-limit]
       Limiting the stack depth of the ACL2 rewriter
 
@@ -100599,6 +100611,126 @@ Subtopics
   For an example of a [clause-processor] that leverages Rewrite-equiv
   to induce substitution using equivalence relations appearing in the
   hypothesis, see [rewrite-equiv-hint].")
+ (REWRITE-LAMBDA-OBJECT
+  (REWRITE)
+  "rewriting lambda objects in :FN slots
+
+  [Lambda] objects are quoted constants passed to [scion]s and applied
+  as functions by [apply$].  The ACL2 rewriter rewrites the bodies of
+  quoted lambda objects when they occur in slots of [ilk] :FN.
+  However, there are restrictions on which lambda objects are
+  rewritten, restrictions on the techniques available to the rewriter
+  during the rewriting of lambda bodies, and restrictions controlling
+  whether the rewritten object replaces the original object or is is
+  ignored.  We explain below.
+
+
+When Rewriting of lambda Objects Is Attempted
+
+  The rewriter attempts to rewrite the body of a quoted lambda constant
+  provided
+
+    * (a) it occurs in a :FN position of a call of a [scion] and
+    * (b) the lambda object is well-formed (see
+      [well-formed-lambda-objectp]).
+
+  Condition (b) implies the body of the lambda is in fact a well-formed
+  ACL2 term (so the rewriter can explore it), that it is [tame] (so
+  apply$ ``behaves'' as expected on it provided warrants are
+  available), and that every variable symbol occurring freely in the
+  body is among the formals of the lambda object (so the rewriting
+  can occur in a different scope).
+
+
+Restrictions During Rewriting of a Lambda Body
+
+  The rewriter is restricted in two ways when rewriting lambda bodies.
+
+  First, warrant hypotheses in the goal clause are the only contextual
+  information ``imported'' from the goal clause and made available
+  while rewriting a lambda body.  That means type information about
+  variables and other terms is forgotten, as are any linear
+  arithmetic relationships.  The reason is simple: the variables in
+  the body are in a different scope than the variables outside the
+  lambda object.  Put another way, we do not know, in general, to
+  what the lambda object will eventually be applied and so, in ACL2's
+  untyped logic, we know nothing about its formal variables.
+  (Actually, we not only ``import'' the warrants from the goal
+  clause, we import every ground hypothesis governing the lambda
+  object's occurrence.  But practically speaking that means we only
+  import warrant hypotheses.  A more sophisticated handling of
+  contextual information can be imagined.  For example, if the lambda
+  object occurs as the first argument of a [loop$] scion, like
+  collect$ or sum$, then the rewriter could perhaps extract type
+  information from the target and import that information.  For
+  example, perhaps every element of the target is a number.  In that
+  case, since we know the lambda object in a loop$ scion call is only
+  applied to elements of that list, we would then be allowed to
+  assume the corresponding formal of the lambda object is a number.
+  But that more sophisticated handling of contextual information has
+  not been implemented.)
+
+  Second, recursive functions are never opened when rewriting lambda
+  bodies.  For example, if (len (cons e x)) occurs in a lambda body,
+  you might expect it to be simplified to (+ 1 (len x)), because that
+  is what generally happens to that term when occurrences outside
+  lambda objects are rewritten.  ACL2 normally controls the expansion
+  of recursive functions by reference to terms that already occur
+  within the current goal.  But the lambda object effectively shares
+  no variables with the surrounding goal and those heuristics are
+  inapplicable.  Preliminary experiments with allowing expansions of
+  recursive functions inside lambda objects have produced
+  unsatisfactory results such as runaway expansions.  So at the
+  moment we allow no recursive expansions.
+
+  The ACL2 implementors hope to address both of the above problems in
+  eventual future releases.
+
+
+What Happens After Rewriting a Lambda Body
+
+  Upon rewriting the body, b, of (lambda(v1...vn)b) to produce b' the
+  decision must be made as to whether to return the lambda with the
+  rewritten body, (lambda(v1...vn)b'), or to ignore the rewrite and
+  return the original (unrewritten) object.  ACL2 ignores the rewrite
+  and returns the original lambda object if any of the following
+  three cases obtains:
+
+    * (a) b' contains variables other than the lambda formals v1,...,vn,
+    * (b) b' is not tame, or
+    * (c) some function symbol appearing in b' has no warrant hypothesis in
+      the goal clause but forcing is disabled (see [force]).
+
+  In all cases, the rewriter prints a \"rewrite-lambda-object\" warning
+  when the rewritten body is different from the original one but the
+  rewrite is rejected.  The warning message displays the before and
+  after lambda objects, lists the rewrite rules used, and explains
+  which of the three conditions above was violated.
+
+  Condition (a) can arise if a rewrite rule introduces a free variable;
+  disabling that rewrite rule is recommended.  Condition (b) can
+  arise if some rewrite rule introduces a function symbol that has
+  not been warranted; disabling that rule can often solve that
+  problem but perhaps a better response is to use [defwarrant] to
+  issue a warrant for the offending function symbol and then supply
+  that warrant as a hypothesis to the goal; the latter response is
+  perhaps better because it means all the ``usual'' rewriting is
+  done, normalizing terms as expected.  Condition (c) arises when
+  forcing has been disabled and the offending function symbol's
+  warrant is not among the hypotheses; enabling forcing or adding the
+  warrant as a hypothesis is recommended.
+
+  The warning message noted above can become annoying.  It can be
+  inhibited with (toggle-inhibit-warning \"Rewrite-lambda-object\").
+
+  Be advised that if the \"rewrite-lambda-object\" warning has been
+  inhibited (by you or some book included in your session) and then,
+  when looking at, say, the checkpoints in a failed proof, you see a
+  lambda object that you expected to be simplified but was not, you
+  may think rewriting was not attempted for it, for some reason, when
+  in fact it was attempted but rejected.  You can
+  (toggle-inhibit-warning \"Rewrite-lambda-object\") and replay the
+  proof attempt to see (all) the rejected lambda object rewrites.")
  (REWRITE-STACK-LIMIT
   (REWRITE)
   "Limiting the stack depth of the ACL2 rewriter
@@ -104785,7 +104917,10 @@ Example
   evaluating the following form: (table-alist 'inhibit-warnings-table
   (w state)).  Of course, if warnings are inhibited overall --- see
   [set-inhibit-output-lst] --- then this value is entirely
-  irrelevant.")
+  irrelevant.
+
+  See [toggle-inhibit-warning] for a way to add or remove a single
+  warning string.")
  (SET-INHIBIT-WARNINGS!
   (PROVER-OUTPUT)
   "Control warnings non-[local]ly
@@ -117331,6 +117466,23 @@ Subtopics
   generalization, and elimination of irrelevance).  For example, you
   don't need to worry about prover output that mentions ``type
   reasoning'' or ``abbreviations,'' for example.")
+ (TOGGLE-INHIBIT-WARNING
+  (PROVER-OUTPUT)
+  "Add or delete a warning string from the inhibit-warnings-table
+
+    General Form:
+    (toggle-inhibit-warning string)
+
+  where string is the name of some warning like \"Subsume\", \"Non-rec\" or
+  \"Rewrite-lambda-object\".
+
+  Note: This is an event!  It does not print the usual event [summary]
+  but nevertheless changes the ACL2 logical [world] and is so
+  recorded.
+
+  The given string is added to the list of inhibited warnings if it is
+  not there already and is deleted from the list if it is there.
+  Case is unimportant in string.  See [set-inhibit-warnings].")
  (TOGGLE-PC-MACRO
   (PROOF-BUILDER)
   "Change an ordinary macro command to an atomic macro, or vice-versa
@@ -124518,7 +124670,7 @@ Subtopics
 
   The prover can emit many warnings when processing [events].  See
   [set-inhibit-warnings] and see [set-inhibit-output-lst] for how to
-  disable and enable them.")
+  disable and enable them.  See also [toggle-inhibit-warning].")
  (WARRANT
   (APPLY$)
   "Giving [apply$] permission to call a user-defined function

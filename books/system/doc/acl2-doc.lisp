@@ -53529,10 +53529,13 @@ tables in the current Hons Space."
   recursion is used inside a @('loop$') and the measure must be made
   explicit.</p>
 
+  <p>Some examples of @('loop$')-recursive definitions may be found in the book
+  @('projects/apply/loop-recursion-examples.lisp').</p>
+
   <p><b>Warning:</b> Even though the functions defined above are recursive,
   ACL2 does not generate induction schemes for them!  If you want to do
   inductive proofs about @('loop$')-recursive functions you must provide a
-  suitable @(tsee induction) hint.  In addition, to be provable by induction,
+  suitable @(':induction') hint.  In addition, to be provable by induction,
   theorems about @('loop$')-recursive functions must be suitably general.  This
   topic is discussed further in @(see loop$-recursion-induction).</p>
 
@@ -53718,15 +53721,17 @@ tables in the current Hons Space."
   <h3>Definductor</h3>
 
   <p>The principles sketched here are illustrated concretely in the tutorial
-  community book @('projects/apply/copy-nat-tree.lisp').  As noted in
-  that book, the inductions are hinted manually so the reader can see from
-  first principles what is involved.  However, in the book
-  @('projects/apply/top') we provide a utility that sometimes automates
-  the creation of the inductive hint function and associates it with the given
-  @('loop$')-recursive function.  See @(tsee definductor).  The examples worked
-  manually in @('copy-nat-tree.lisp') are recapitulated towards the end of
-  @('projects/apply/definductor-tests.lisp'), without the manually
-  provided hints.</p>
+  community book @('projects/apply/copy-nat-tree.lisp').  As noted in that
+  book, the inductions are hinted manually so the reader can see from first
+  principles what is involved.  However, in the book @('projects/apply/top') we
+  provide a utility that sometimes automates the creation of the inductive hint
+  function and associates it with the given @('loop$')-recursive function.  See
+  @(tsee definductor).  The examples worked manually in @('copy-nat-tree.lisp')
+  are recapitulated towards the end of
+  @('projects/apply/definductor-tests.lisp'), without the manually provided
+  hints.  In addition, the book
+  @('projects/apply/loop-recursion-examples.lisp') gives some other examples of
+  loop$-recursive functions and inductive theorems about them.</p>
 
   <h3>Some Basic Principles for Inductive Proofs about @('Loop$')-Recursive Functions</h3>
 
@@ -99232,6 +99237,131 @@ arithmetic) for libraries of @(see books) for arithmetic reasoning.</p>")
  @('Rewrite-equiv') to induce substitution using equivalence relations
  appearing in the hypothesis, see @(see rewrite-equiv-hint).</p>")
 
+(defxdoc rewrite-lambda-object
+  :parents (rewrite)
+  :short "rewriting lambda objects in :FN slots"
+  :long "<p>@(tsee Lambda) objects are quoted constants passed to @(see scion)s
+  and applied as functions by @(tsee apply$).  The ACL2 rewriter rewrites the
+  bodies of quoted @('lambda') objects when they occur in slots of @(see ilk)
+  @(':FN').  However, there are restrictions on which lambda objects are
+  rewritten, restrictions on the techniques available to the rewriter during
+  the rewriting of @('lambda') bodies, and restrictions controlling whether the
+  rewritten object replaces the original object or is is ignored.  We explain
+  below.</p>
+
+  <h3>When Rewriting of @('lambda') Objects Is Attempted</h3> 
+
+  <p>The rewriter attempts to rewrite the body of a quoted @('lambda') constant
+  provided</p>
+
+  <ul>
+  <li>(a) it occurs in a @(':FN') position of a call of a @(see scion) and</li>
+
+  <li>(b) the @('lambda') object is well-formed (see @(tsee
+  well-formed-lambda-objectp)).</li>
+
+  </ul>
+
+  <p>Condition (b) implies the body of the @('lambda') is in fact a well-formed
+  ACL2 term (so the rewriter can explore it), that it is @(see tame) (so
+  @('apply$') ``behaves'' as expected on it provided warrants are available),
+  and that every variable symbol occurring freely in the body is among the
+  formals of the @('lambda') object (so the rewriting can occur in a different
+  scope).</p>
+
+  <h3>Restrictions During Rewriting of a @('Lambda') Body</h3>
+
+  <p>The rewriter is restricted in two ways when rewriting @('lambda')
+  bodies.</p>
+
+  <p>First, warrant hypotheses in the goal clause are the only contextual
+  information ``imported'' from the goal clause and made available while
+  rewriting a @('lambda') body.  That means type information about variables
+  and other terms is forgotten, as are any linear arithmetic relationships.
+  The reason is simple: the variables in the body are in a different scope than
+  the variables outside the @('lambda') object.  Put another way, we do not
+  know, in general, to what the @('lambda') object will eventually be applied
+  and so, in ACL2's untyped logic, we know nothing about its formal variables.
+
+  (Actually, we not only ``import'' the warrants from the goal clause, we
+  import every ground hypothesis governing the @('lambda') object's occurrence.
+  But practically speaking that means we only import warrant hypotheses.  A
+  more sophisticated handling of contextual information can be imagined.  For
+  example, if the @('lambda') object occurs as the first argument of a @(tsee
+  loop$) scion, like @('collect$') or @('sum$'), then the rewriter could
+  perhaps extract type information from the target and import that information.
+  For example, perhaps every element of the target is a number.  In that case,
+  since we know the @('lambda') object in a @('loop$') scion call is only
+  applied to elements of that list, we would then be allowed to assume the
+  corresponding formal of the @('lambda') object is a number.  But that more
+  sophisticated handling of contextual information has not been
+  implemented.)</p>
+
+  <p>Second, recursive functions are never opened when rewriting @('lambda')
+  bodies.  For example, if @('(len (cons e x))') occurs in a @('lambda') body,
+  you might expect it to be simplified to @('(+ 1 (len x))'), because that is
+  what generally happens to that term when occurrences outside @('lambda')
+  objects are rewritten.  ACL2 normally controls the expansion of recursive
+  functions by reference to terms that already occur within the current goal.
+  But the @('lambda') object effectively shares no variables with the
+  surrounding goal and those heuristics are inapplicable.  Preliminary
+  experiments with allowing expansions of recursive functions inside
+  @('lambda') objects have produced unsatisfactory results such as runaway
+  expansions.  So at the moment we allow no recursive expansions.</p>
+
+  <p>The ACL2 implementors hope to address both of the above problems in
+  eventual future releases.</p>
+
+  <h3>What Happens After Rewriting a @('Lambda') Body</h3>
+
+  <p>Upon rewriting the body, <i>b</i>, of
+  @('(lambda(')<i>v1...vn</i>@(')')<i>b</i>@(')') to produce <i>b'</i> the
+  decision must be made as to whether to return the @('lambda') with the
+  rewritten body, @('(lambda(')<i>v1...vn</i>@(')')<i>b'</i>@(')'), or to
+  ignore the rewrite and return the original (unrewritten) object.  ACL2
+  ignores the rewrite and returns the original @('lambda') object if any of the
+  following three cases obtains:</p>
+
+  <ul>
+  <li>(a) <i>b'</i> contains variables other than
+  the @('lambda') formals <i>v1,...,vn</i>,</li>
+
+  <li>(b) <i>b'</i> is not tame, or</li>
+
+  <li>(c) some function symbol appearing in <i>b'</i> has no warrant
+  hypothesis in the goal clause but forcing is disabled (see @(tsee force)).</li>
+  </ul>
+
+  <p>In all cases, the rewriter prints a @('\"rewrite-lambda-object\"') warning
+  when the rewritten body is different from the original one but the rewrite is
+  rejected.  The warning message displays the before and after @('lambda')
+  objects, lists the rewrite rules used, and explains which of the three
+  conditions above was violated.</p>
+
+  <p>Condition (a) can arise if a rewrite rule introduces a free variable;
+  disabling that rewrite rule is recommended.  Condition (b) can arise if some
+  rewrite rule introduces a function symbol that has not been warranted;
+  disabling that rule can often solve that problem but perhaps a better
+  response is to use @(tsee defwarrant) to issue a warrant for the offending
+  function symbol and then supply that warrant as a hypothesis to the goal; the
+  latter response is perhaps better because it means all the ``usual''
+  rewriting is done, normalizing terms as expected.  Condition (c) arises when
+  forcing has been disabled and the offending function symbol's warrant is not
+  among the hypotheses; enabling forcing or adding the warrant as a hypothesis
+  is recommended.</p>
+
+  <p>The warning message noted above can become annoying.  It can be inhibited
+  with @('(toggle-inhibit-warning \"Rewrite-lambda-object\")').</p>
+
+  <p>Be advised that if the @('\"rewrite-lambda-object\"') warning has been
+  inhibited (by you or some book included in your session) and then, when
+  looking at, say, the checkpoints in a failed proof, you see a @('lambda')
+  object that you expected to be simplified but was not, you may think
+  rewriting was not attempted for it, for some reason, when in fact it was
+  attempted but rejected.  You can @('(toggle-inhibit-warning
+  \"Rewrite-lambda-object\")') and replay the proof attempt to see (all) the
+  rejected @('lambda') object rewrites.</p>")
+
 (defxdoc rewrite-stack-limit
   :parents (rewrite)
   :short "Limiting the stack depth of the ACL2 rewriter"
@@ -103456,7 +103586,10 @@ arithmetic) for libraries of @(see books) for arithmetic reasoning.</p>")
  irrelevant.)  One way to get that value is to get the result from evaluating
  the following form: @('(table-alist 'inhibit-warnings-table (w state))').  Of
  course, if warnings are inhibited overall &mdash; see @(see
- set-inhibit-output-lst) &mdash; then this value is entirely irrelevant.</p>")
+ set-inhibit-output-lst) &mdash; then this value is entirely irrelevant.</p>
+
+ <p>See @(tsee toggle-inhibit-warning) for a way to add or remove a single
+ warning string.</p>")
 
 (defxdoc set-inhibit-warnings!
   :parents (prover-output)
@@ -115013,6 +115146,25 @@ arithmetic) for libraries of @(see books) for arithmetic reasoning.</p>")
  example, you don't need to worry about prover output that mentions ``type
  reasoning'' or ``abbreviations,'' for example.</p>")
 
+(defxdoc toggle-inhibit-warning
+  :parents (prover-output)
+  :short "Add or delete a warning string from the @('inhibit-warnings-table')"
+  :long "@({
+  General Form:
+  (toggle-inhibit-warning string)
+  })
+
+  <p>where @('string') is the name of some warning like @('\"Subsume\"'),
+  @('\"Non-rec\"') or @('\"Rewrite-lambda-object\"').</p>
+
+  <p>Note: This is an event!  It does not print the usual event @(see summary)
+  but nevertheless changes the ACL2 logical @(see world) and is so
+  recorded.</p>
+
+  <p>The given string is added to the list of inhibited warnings if it is not
+  there already and is deleted from the list if it is there.  Case is
+  unimportant in @('string').  See @(tsee set-inhibit-warnings).</p>")
+
 (defxdoc toggle-pc-macro
   :parents (proof-builder)
   :short "Change an ordinary macro command to an atomic macro, or vice-versa"
@@ -123324,7 +123476,7 @@ introduction-to-the-tau-system) for more information about Tau.</dd>
   :short "Warnings emitted by the ACL2 proof process"
   :long "<p>The prover can emit many warnings when processing @(see events).
  See @(see set-inhibit-warnings) and see @(see set-inhibit-output-lst) for how
- to disable and enable them.</p>")
+ to disable and enable them.  See also @(tsee toggle-inhibit-warning).</p>")
 
 (defxdoc warrant
   :parents (apply$)
