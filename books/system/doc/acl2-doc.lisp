@@ -86553,6 +86553,11 @@ it."
  that can cause printing of the prompt to modify state in rather arbitrary
  ways.</p>
 
+ <p>Improved translation of function calls, especially those that involve
+ congruent @(see stobj)s, including better error messages, much improved code
+ comments, and simplified code.  Thanks to Sol Swords for sending an example
+ with a misleading error message.</p>
+
  <h3>New Features</h3>
 
  <p>A new option for @(tsee certify-book), @(':useless-runes'), makes it
@@ -91631,8 +91636,12 @@ arithmetic) for libraries of @(see books) for arithmetic reasoning.</p>")
 
  <p>Again, the user can change these defaults; see @(see
  set-print-gv-defaults).  For example, one might wish to evaluate
- @('(set-print-gv-defaults :substitute 20) so that @(tsee flet) is used only
+ @('(set-print-gv-defaults :substitute 20)') so that @(tsee flet) is used only
  when that avoids certain duplicated large terms, as discussed just above.</p>
+
+ <p>Note that the output from @('print-gv') always goes to the terminal.
+ (Specifically, the output goes to the value of the constant @(tsee
+ *standard-co*).)</p>
 
  <p>To see how one might use @('print-gv'), consider the following
  definition.</p>

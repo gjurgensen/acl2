@@ -85026,6 +85026,11 @@ Changes to Existing Features
   cause printing of the prompt to modify state in rather arbitrary
   ways.
 
+  Improved translation of function calls, especially those that involve
+  congruent [stobj]s, including better error messages, much improved
+  code comments, and simplified code.  Thanks to Sol Swords for
+  sending an example with a misleading error message.
+
 
 New Features
 
@@ -91993,10 +91998,15 @@ A Single Performance Comparison
 
   Again, the user can change these defaults; see
   [set-print-gv-defaults].  For example, one might wish to evaluate
-  (set-print-gv-defaults :substitute 20) so that @(tsee flet) is used
-  only when that avoids certain duplicated large terms, as discussed
-  just above.</p> <p>To see how one might use @('print-gv, consider
-  the following definition.
+  (set-print-gv-defaults :substitute 20) so that [flet] is used only
+  when that avoids certain duplicated large terms, as discussed just
+  above.
+
+  Note that the output from print-gv always goes to the terminal.
+  (Specifically, the output goes to the value of the constant
+  [*standard-co*].)
+
+  To see how one might use print-gv, consider the following definition.
 
     (defun foo (x)
       (declare (xargs :guard (and (integerp x)
