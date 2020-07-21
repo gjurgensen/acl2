@@ -17690,6 +17690,8 @@ Subtopics
   for (coerce '(#\\a #\\b #\\c) 'string), where even more pedantically,
   '(#\\a #\\b #\\c) is an abbreviation for (cons '#\\a (cons '#\\b (cons
   '#\\c 'nil))).")
+ (COLLECT$ (POINTERS) "See [loop$].")
+ (COLLECT$+ (POINTERS) "See [loop$].")
  (COMMAND
   (HISTORY)
   "Forms you type at the top-level, but...
@@ -43157,7 +43159,9 @@ Subtopics
 
   ACL2 also provides ``custom keyword'' hints (see
   [custom-keyword-hints]) and even more general ``computed hints''
-  for the advanced user (see [computed-hints]).
+  for the advanced user (see [computed-hints]).  Not documented in
+  this topic are such hints implemented in books; for an example of
+  so-called :consider hints, see consideration.
 
   Only the first hint applicable to a goal, as specified in the
   user-supplied list of :hints followed by the default hints (see
@@ -85043,6 +85047,15 @@ New Features
   of a ``live'' (mutable) stobj.  See [defstobj].  Thanks to Warren
   Hunt for encouraging development of this feature.
 
+  The rewriter now rewrites the bodies of certain quoted [lambda]
+  objects.  However, some restrictions apply.  See
+  [rewrite-lambda-object].  In addition some new lemmas and a new
+  metafunction have been added to the book projects/apply/top, which
+  users are still encouraged to include in sessions dealing with
+  [apply$].  The new metafunction is named relink-fancy-scion and can
+  also cause lambda objects to be transformed.  See the discussion of
+  that metafunction in [rewrite-lambda-object].
+
 
 Heuristic and Efficiency Improvements
 
@@ -89634,6 +89647,12 @@ Subtopics
   [Close-output-channel]
       See [io].
 
+  [Collect$]
+      See [loop$].
+
+  [Collect$+]
+      See [loop$].
+
   [Community-book]
       See [community-books].
 
@@ -90380,6 +90399,12 @@ Subtopics
 
   [Suitably-tamep-listp]
       See [tame].
+
+  [Sum$]
+      See [loop$].
+
+  [Sum$+]
+      See [loop$].
 
   [Symbol-class]
       See [system-utilities].
@@ -100740,7 +100765,62 @@ What Happens After Rewriting a Lambda Body
   may think rewriting was not attempted for it, for some reason, when
   in fact it was attempted but rejected.  You can
   (toggle-inhibit-warning \"Rewrite-lambda-object\") and replay the
-  proof attempt to see (all) the rejected lambda object rewrites.")
+  proof attempt to see (all) the rejected lambda object rewrites.
+
+
+A Possible Confusion
+
+  A metafunction that is included in the book projects/apply/top can
+  also cause quoted lambda objects to be rewritten.  This
+  metafunction, called relink-fancy-scion, is called on certain calls
+  of the fancy loop$ scions, e.g., calls of [always$+], [collect$+],
+  [sum$+], etc.  The goal of that metafunction is to keep the list of
+  ``global variables'' in some normal form.
+
+  For example,consider the term
+
+    (collect$+ (quote
+                (lambda (loop$-gvars loop$-ivars)
+                  (cons (car loop$-gvars)
+                        (cons (car (cdr loop$-gvars))
+                              (cons (car loop$-ivars) 'nil)))))
+               (list a b)
+               target)
+
+  which is (essentially) the translation of (loop$ for e in target
+  collect (list a b e)).  Suppose that in some case of a proof about
+  this term the hypothesis (equal a b) governs this term.  The term
+  would thus become
+
+    (collect$+ (quote
+                (lambda (loop$-gvars loop$-ivars)
+                  (cons (car loop$-gvars)
+                        (cons (car (cdr loop$-gvars))
+                              (cons (car loop$-ivars) 'nil)))))
+               (list a a)
+               target)
+
+  Relink-fancy-scion will rewrite that term to
+
+    (collect$+ (quote
+                (lambda (loop$-gvars loop$-ivars)
+                  (cons (car loop$-gvars)
+                        (cons (car loop$-gvars)
+                              (cons (car loop$-ivars) 'nil)))))
+               (list a)
+               target)
+
+  which eliminates the duplicate entry in the list of globals and, as a
+  necessary side effect, also replaces the body of the lambda object
+  to eliminate the term (car (cdr loop$-gvars)).
+
+  The application of the metafunction relink-fancy-scion can easily but
+  mistakenly be attributed to the rewriting of lambda objects but it
+  is not!  The metafunction is applied to the whole collect$ term
+  (and calls of every other fancy scion), not just the lambda object.
+
+  If you want to avoid this normalization of the globals, disable the
+  [rune] (:meta relink-fancy-scion-correct).")
  (REWRITE-STACK-LIMIT
   (REWRITE)
   "Limiting the stack depth of the ACL2 rewriter
@@ -111312,6 +111392,8 @@ Subtopics
   The variable recursively decomposed is indicated in bold.")
  (SUITABLY-TAMEP-LISTP (POINTERS)
                        "See [tame].")
+ (SUM$ (POINTERS) "See [loop$].")
+ (SUM$+ (POINTERS) "See [loop$].")
  (SUMMARY
   (PROVER-OUTPUT)
   "The summary printed at the conclusion of an event

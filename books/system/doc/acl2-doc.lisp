@@ -39760,7 +39760,9 @@ current fast alists."
 
  <p>ACL2 also provides ``custom keyword'' hints (see @(see
  custom-keyword-hints)) and even more general ``computed hints'' for the
- advanced user (see @(see computed-hints)).</p>
+ advanced user (see @(see computed-hints)).  Not documented in this topic are
+ such hints implemented in books; for an example of so-called @(':consider')
+ hints, see @(see consideration).</p>
 
  <p>Only the first hint applicable to a goal, as specified in the user-supplied
  list of @(':hints') followed by the default hints (see @(see
@@ -86569,6 +86571,15 @@ it."
  creation of a ``live'' (mutable) stobj.  See @(see defstobj).  Thanks to
  Warren Hunt for encouraging development of this feature.</p>
 
+ <p>The rewriter now rewrites the bodies of certain quoted @(see lambda)
+ objects.  However, some restrictions apply.  See @(see rewrite-lambda-object).
+ In addition some new lemmas and a new metafunction have been added to the book
+ @('projects/apply/top'), which users are still encouraged to include in
+ sessions dealing with @(tsee apply$).  The new metafunction is named
+ @('relink-fancy-scion') and can also cause @('lambda') objects to be
+ transformed.  See the discussion of that metafunction in @(see
+ rewrite-lambda-object).</p>
+
  <h3>Heuristic and Efficiency Improvements</h3>
 
  <p>We changed the lightweight ``preprocess'' simplifier for ``@(see simple)''
@@ -99258,7 +99269,7 @@ arithmetic) for libraries of @(see books) for arithmetic reasoning.</p>")
   rewritten object replaces the original object or is is ignored.  We explain
   below.</p>
 
-  <h3>When Rewriting of @('lambda') Objects Is Attempted</h3> 
+  <h3>When Rewriting of @('lambda') Objects Is Attempted</h3>
 
   <p>The rewriter attempts to rewrite the body of a quoted @('lambda') constant
   provided</p>
@@ -99369,7 +99380,67 @@ arithmetic) for libraries of @(see books) for arithmetic reasoning.</p>")
   rewriting was not attempted for it, for some reason, when in fact it was
   attempted but rejected.  You can @('(toggle-inhibit-warning
   \"Rewrite-lambda-object\")') and replay the proof attempt to see (all) the
-  rejected @('lambda') object rewrites.</p>")
+  rejected @('lambda') object rewrites.</p>
+
+  <h3>A Possible Confusion</h3>
+
+  <p>A metafunction that is included in the book @('projects/apply/top') can
+  also cause quoted @('lambda') objects to be rewritten.  This metafunction,
+  called @('relink-fancy-scion'), is called on certain calls of the fancy
+  @('loop$') scions, e.g., calls of @(tsee always$+), @(tsee collect$+), @(tsee
+  sum$+), etc.  The goal of that metafunction is to keep the list of ``global
+  variables'' in some normal form.</p>
+
+  <p>For example,consider the term</p>
+
+  @({
+  (collect$+ (quote
+              (lambda (loop$-gvars loop$-ivars)
+                (cons (car loop$-gvars)
+                      (cons (car (cdr loop$-gvars))
+                            (cons (car loop$-ivars) 'nil)))))
+             (list a b)
+             target)
+  })
+
+  <p>which is (essentially) the translation of @('(loop$ for e in target
+  collect (list a b e))').  Suppose that in some case of a proof about this
+  term the hypothesis @('(equal a b)') governs this term.  The term would thus
+  become</p>
+
+  @({
+  (collect$+ (quote
+              (lambda (loop$-gvars loop$-ivars)
+                (cons (car loop$-gvars)
+                      (cons (car (cdr loop$-gvars))
+                            (cons (car loop$-ivars) 'nil)))))
+             (list a a)
+             target)
+  })
+
+  <p>@('Relink-fancy-scion') will rewrite that term to</p>
+
+  @({
+  (collect$+ (quote
+              (lambda (loop$-gvars loop$-ivars)
+                (cons (car loop$-gvars)
+                      (cons (car loop$-gvars)
+                            (cons (car loop$-ivars) 'nil)))))
+             (list a)
+             target)
+  })
+
+  <p>which eliminates the duplicate entry in the list of globals and, as a
+  necessary side effect, also replaces the body of the lambda object to
+  eliminate the term @('(car (cdr loop$-gvars))').</p>
+
+  <p>The application of the metafunction @('relink-fancy-scion') can easily but
+  mistakenly be attributed to the rewriting of @('lambda') objects but it is not!
+  The metafunction is applied to the whole @('collect$') term (and calls of every
+  other fancy scion), not just the @('lambda') object.</p>
+
+  <p>If you want to avoid this normalization of the globals, disable the @(see
+  rune) @('(:meta relink-fancy-scion-correct)').</p>")
 
 (defxdoc rewrite-stack-limit
   :parents (rewrite)
@@ -130730,6 +130801,8 @@ expand function call at the current subterm, without simplifying"
 (defpointer close-input-channel io)
 (defpointer close-output-channel io)
 (defpointer check-sum checksum)
+(defpointer collect$ loop$)
+(defpointer collect$+ loop$)
 (defpointer community-book community-books)
 (defpointer computed-hint computed-hints)
 (defpointer conjoin system-utilities)
@@ -130979,6 +131052,8 @@ expand function call at the current subterm, without simplifying"
 (defpointer subst-expr system-utilities)
 (defpointer subst-var system-utilities)
 (defpointer suitably-tamep-listp tame)
+(defpointer sum$ loop$)
+(defpointer sum$+ loop$)
 (defpointer symbol-class system-utilities)
 (defpointer tag-tree ttree)
 (defpointer tamep tame)
