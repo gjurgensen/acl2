@@ -73,6 +73,7 @@
     (BUILD::CERT.PL "[books]/build/doc.lisp")
     (BUILD::CERT_PARAM "[books]/build/doc.lisp")
     (CGEN "[books]/acl2s/cgen/top.lisp")
+    (CONSIDERATION "[books]/hints/consider-hint.lisp")
     (STD::DEFAGGREGATE "[books]/std/util/defaggregate.lisp")
     (DEFCONSTS "[books]/std/util/defconsts.lisp")
     (DEFDATA "[books]/acl2s/defdata/top.lisp")
@@ -86468,6 +86469,9 @@ it."
 ; We changed Lisp variable *inside-absstobj-update* so that it is no longer
 ; initialized with a constant.  This seemed potentially important given the
 ; item below about destructively modifying a quoted constant in *fncall-cache*.
+
+; Added comments and checks regarding *blacklisted-apply$-fns*, and removed
+; HIDE from that list.
 
   :parents (release-notes)
   :short "ACL2 Version  8.4 (xxx, 20xx) Notes"
