@@ -14519,6 +14519,7 @@ Subtopics
        (build::cert.pl \"[books]/build/doc.lisp\")
        (build::cert_param \"[books]/build/doc.lisp\")
        (cgen \"[books]/acl2s/cgen/top.lisp\")
+       (consideration \"[books]/hints/consider-hint.lisp\")
        (std::defaggregate \"[books]/std/util/defaggregate.lisp\")
        (defconsts \"[books]/std/util/defconsts.lisp\")
        (defdata \"[books]/acl2s/defdata/top.lisp\")
@@ -43161,7 +43162,7 @@ Subtopics
   [custom-keyword-hints]) and even more general ``computed hints''
   for the advanced user (see [computed-hints]).  Not documented in
   this topic are such hints implemented in books; for an example of
-  so-called :consider hints, see consideration.
+  so-called :consider hints, see [consideration].
 
   Only the first hint applicable to a goal, as specified in the
   user-supplied list of :hints followed by the default hints (see
