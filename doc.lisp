@@ -85161,6 +85161,10 @@ Bug Fixes
   be syntactically identical to the pre-existing corresponding
   [defstobj] event.
 
+  A raw Lisp error would occur when the value of an :[instructions]
+  hint is not a true (null-terminated) list.  ACL2 now produces an
+  informative error message in that case.
+
 
 Changes at the System Level
 

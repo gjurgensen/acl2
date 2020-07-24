@@ -86693,6 +86693,10 @@ it."
  be syntactically identical to the pre-existing corresponding @(tsee defstobj)
  event.</p>
 
+ <p>A raw Lisp error would occur when the value of an @(':')@(tsee
+ instructions) hint is not a true (null-terminated) list.  ACL2 now produces an
+ informative error message in that case.</p>
+
  <h3>Changes at the System Level</h3>
 
  <p>(SBCL only) Filenames are now read as ASCII (specifically, ISO-8859-1) when
