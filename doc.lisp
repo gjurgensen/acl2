@@ -14520,6 +14520,7 @@ Subtopics
        (build::cert_param \"[books]/build/doc.lisp\")
        (cgen \"[books]/acl2s/cgen/top.lisp\")
        (consideration \"[books]/hints/consider-hint.lisp\")
+       (build::custom-certify-book-commands \"[books]/build/doc.lisp\")
        (std::defaggregate \"[books]/std/util/defaggregate.lisp\")
        (defconsts \"[books]/std/util/defconsts.lisp\")
        (defdata \"[books]/acl2s/defdata/top.lisp\")
@@ -122034,7 +122035,8 @@ Detailed Documentation
   [accumulated-persistence-subtleties] for some limitations.  These
   top-level entries are listed in order of event in the book, from
   top to bottom.  Because of [local] [events], the same name may
-  appear more than once.
+  appear more than once; we say more about this in the ``Subtleties''
+  section, below.
 
   When certify-book is supplied with option :useless-runes :read or
   :useless-runes :read?, then book certification takes advantage of
@@ -122140,6 +122142,25 @@ Subtleties
   given name from top to bottom in the @useless-runes.lsp file,
   attempting to match them to [defthm], [defun], and [verify-guards]
   events from top to bottom in the book.
+
+  As suggested by discussions above, a @useless-runes.lsp file is
+  intended not to cause proof failures, even if it is older than the
+  corresponding book or even older than other books containing runes
+  that are listed in that @useless-runes.lsp file.  That said, an
+  out-of-date @useless-runes.lsp might cause proofs to fail.  In
+  particular, imagine that there are several lemmas in the
+  corresponding book all with the same name (and thus all [local] to
+  an [encapsulate] event except perhaps the last), and one of those
+  lemmas other than the last is deleted from the book.  Then
+  references to the later such lemmas will be wrong in the
+  @useless-runes.lsp file.  If you run into this problem, then either
+  regenerate the @useless-runes.lsp file (e.g., by setting
+  environment variable ACL2_USELESS_RUNES to \"write\"), or give
+  distinct names to your book's lemmas, or even consider adding a
+  line like the following to a suitable .acl2 file (see
+  [build::custom-certify-book-commands]).
+
+    ; cert-flags: ? t :useless-runes nil
 
 
 Performance

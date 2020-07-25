@@ -74,6 +74,7 @@
     (BUILD::CERT_PARAM "[books]/build/doc.lisp")
     (CGEN "[books]/acl2s/cgen/top.lisp")
     (CONSIDERATION "[books]/hints/consider-hint.lisp")
+    (BUILD::CUSTOM-CERTIFY-BOOK-COMMANDS "[books]/build/doc.lisp")
     (STD::DEFAGGREGATE "[books]/std/util/defaggregate.lisp")
     (DEFCONSTS "[books]/std/util/defconsts.lisp")
     (DEFDATA "[books]/acl2s/defdata/top.lisp")
@@ -120664,7 +120665,7 @@ introduction-to-the-tau-system) for more information about Tau.</dd>
  but also see @(see accumulated-persistence-subtleties) for some limitations.
  These top-level entries are listed in order of event in the book, from top to
  bottom.  Because of @(see local) @(see events), the same name may appear more
- than once.</p>
+ than once; we say more about this in the ``Subtleties'' section, below.</p>
 
  <p>When @('certify-book') is supplied with option @(':useless-runes :read') or
  @(':useless-runes :read?'), then book certification takes advantage of the
@@ -120769,6 +120770,25 @@ introduction-to-the-tau-system) for more information about Tau.</dd>
  bottom in the @useless-runes.lsp file, attempting to match them to @(tsee
  defthm), @(tsee defun), and @(tsee verify-guards) events from top to bottom in
  the book.</p>
+
+ <p>As suggested by discussions above, a @useless-runes.lsp file is intended
+ not to cause proof failures, even if it is older than the corresponding book
+ or even older than other books containing runes that are listed in that
+ @useless-runes.lsp file.  That said, an out-of-date @useless-runes.lsp might
+ cause proofs to fail.  In particular, imagine that there are several lemmas in
+ the corresponding book all with the same name (and thus all @(see local) to an
+ @(tsee encapsulate) event except perhaps the last), and one of those lemmas
+ other than the last is deleted from the book.  Then references to the later
+ such lemmas will be wrong in the @useless-runes.lsp file.  If you run into
+ this problem, then either regenerate the @useless-runes.lsp file (e.g., by
+ setting environment variable @('ACL2_USELESS_RUNES') to @('\"write\"')), or
+ give distinct names to your book's lemmas, or even consider adding a line like
+ the following to a suitable @('.acl2') file (see @(see
+ build::custom-certify-book-commands)).</p>
+
+ @({
+ ; cert-flags: ? t :useless-runes nil
+ })
 
  <h3>Performance</h3>
 
