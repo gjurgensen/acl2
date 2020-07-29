@@ -12728,6 +12728,9 @@ Subtopics
   Unusual books that create output in the log file should not produce
   the string ** except upon failure.
 
+  By default, make commands for certifying books take advantage of
+  files *@useless-runes.lsp.  See [useless-runes].
+
 
 Prerequisites
 
@@ -14516,6 +14519,8 @@ Subtopics
        (build::cert.pl \"[books]/build/doc.lisp\")
        (build::cert_param \"[books]/build/doc.lisp\")
        (cgen \"[books]/acl2s/cgen/top.lisp\")
+       (consideration \"[books]/hints/consider-hint.lisp\")
+       (build::custom-certify-book-commands \"[books]/build/doc.lisp\")
        (std::defaggregate \"[books]/std/util/defaggregate.lisp\")
        (defconsts \"[books]/std/util/defconsts.lisp\")
        (defdata \"[books]/acl2s/defdata/top.lisp\")
@@ -16558,7 +16563,7 @@ Subtopics
 
   See [defrec] for more information.")
  (CHAR
-  (CHARACTERS ACL2-BUILT-INS)
+  (STRINGS CHARACTERS ACL2-BUILT-INS)
   "The [nth] element (zero-based) of a string
 
   (Char s n) is the nth element of s, zero-based.  If n is greater than
@@ -17687,6 +17692,8 @@ Subtopics
   for (coerce '(#\\a #\\b #\\c) 'string), where even more pedantically,
   '(#\\a #\\b #\\c) is an abbreviation for (cons '#\\a (cons '#\\b (cons
   '#\\c 'nil))).")
+ (COLLECT$ (POINTERS) "See [loop$].")
+ (COLLECT$+ (POINTERS) "See [loop$].")
  (COMMAND
   (HISTORY)
   "Forms you type at the top-level, but...
@@ -23046,7 +23053,9 @@ Subtopics
   the argument :system-ok t may be given directly to defattach,
   without a surrounding use of local.
 
-  See [system-attachments] for discussion of system attachments.")
+  See [system-attachments] for discussion of system attachments.  Also
+  see [efficiency] for how to use attachments to modify the prover's
+  behavior.")
  (DEFAULT
   (ARRAYS ACL2-BUILT-INS)
   "Return the :default from the [header] of a 1- or 2-dimensional array
@@ -25404,7 +25413,7 @@ Subtopics
 
   where name is a new symbol; each fieldi is a symbol; each typei is
   either a type-indicator (a [type-spec] or [stobj] name), of the
-  form (ARRAY type-indicator max), or of the form (HASH-TABLE test)
+  form (ARRAY type-indicator (max)), or of the form (HASH-TABLE test)
   or (HASH-TABLE test size); each vali is an object satisfying typei;
   and each bi is t or nil.  Each pair :initially vali and :resizable
   bi may be omitted; more on this below.  The :renaming alist
@@ -29355,11 +29364,15 @@ Proof efficiency
 
     (set-rw-cache-state nil)
 
-  Some system behaviors can be modified using [defattach-system],
-  typically by modifying heuristics.  You can find all system
-  attachments by evaluating (all-attachments (w state)), except for a
-  few exceptions (see [defattach]).  Here are some key examples of
-  how to modify system behavior.
+  Some system behaviors can be modified using [defattach-system] ---
+  also see [system-attachments] --- typically by modifying
+  heuristics.  You can find all attachments by evaluating
+  (all-attachments (w state)) and all built-in such attachments by
+  evaluating (global-val 'attachments-at-ground-zero (w state)),
+  except for a few exceptions (see [defattach]).  For most of these,
+  however, you will need to consult the ACL2 source files for
+  relevant information.  Here are some key examples of how to modify
+  system behavior.
 
     (defun constant-nil-function-arity-2 (x y)
       (declare (xargs :mode :logic :guard t) (ignore x y))
@@ -31896,8 +31909,9 @@ Subtopics
   Finally, we also require that no function has an attachment (see
   [defattach]) that is both ancestral in the evaluator and also
   ancestral in the meta or clause-processor functions.  (If you don't
-  use [defattach] then you can ignore this condition.)  Without this
-  restriction, the following events prove nil.
+  use [defattach] or [apply$] --- more specifically, [warrant]s ---
+  then you can ignore this condition.)  Without this restriction, the
+  following events prove nil.
 
     (in-package \"ACL2\")
     (defstub f () t)
@@ -31924,6 +31938,56 @@ Subtopics
       :hints ((\"Goal\" :use ((:functional-instance
                              f-is-nil
                              (f (lambda () t))))))
+      :rule-classes nil)
+
+  Here is an example that doesn't use [defattach] explicitly, but uses
+  [warrant]s, which essentially have attachments so that every call
+  of a warrant evaluates to T.  As for the preceding example, these
+  events succeed if we remove the restriction stated above about
+  common ancestors of the evaluator and the meta or clause-processor
+  function.
+
+    (in-package \"ACL2\")
+
+    (include-book \"projects/apply/top\" :dir :system)
+
+    (defevaluator evl evl-list
+      ((apply$ fn args)))
+
+    (encapsulate
+      ()
+      (local (defun$ f () (declare (xargs :guard t)) t))
+      (local (defun my-meta-fn (x)
+               (if (and (equal x '(apply$ 'f 'nil))
+                        (apply$-warrant-f))
+                   *t*
+                 x)))
+      (local (defthm my-meta-fn-correct
+               (equal (evl x a)
+                      (evl (my-meta-fn x) a))
+               :rule-classes ((:meta :trigger-fns (apply$)))))
+      (defthm unwarranted-fact-about-quote-f
+        (equal (apply$ 'f nil) t)
+        :rule-classes nil))
+
+    (defun$ f () nil)
+
+    (defthm apply$-warrant-f-false
+      (not (apply$-warrant-f))
+      :hints ((\"Goal\" :use unwarranted-fact-about-quote-f))
+      :rule-classes nil)
+
+    ; But apply$-warrant-f is a function with no non-trivial constraint.
+
+    (defthm contradiction
+      nil
+      :hints
+      ((\"Goal\"
+        :use (:functional-instance
+              apply$-warrant-f-false
+              (apply$-warrant-f (lambda () t))
+              (apply$-userfn (lambda (fn args) nil))
+              (badge-userfn (lambda (fn) '(APPLY$-BADGE 0 1 . T))))))
       :rule-classes nil)
 
   To see why this restriction is sufficient, see a comment in the ACL2
@@ -35519,6 +35583,10 @@ Subtopics
   margin.  Use fmt! if you want to be able to read the forms back in.")
  (FMT!-TO-STRING (POINTERS)
                  "See [printing-to-strings].")
+ (FMT-HARD-RIGHT-MARGIN (POINTERS)
+                        "See [set-fmt-hard-right-margin].")
+ (FMT-SOFT-RIGHT-MARGIN (POINTERS)
+                        "See [set-fmt-hard-right-margin].")
  (FMT-TO-COMMENT-WINDOW
   (IO ACL2-BUILT-INS)
   "Print to the comment window
@@ -43093,7 +43161,9 @@ Subtopics
 
   ACL2 also provides ``custom keyword'' hints (see
   [custom-keyword-hints]) and even more general ``computed hints''
-  for the advanced user (see [computed-hints]).
+  for the advanced user (see [computed-hints]).  Not documented in
+  this topic are such hints implemented in books; for an example of
+  so-called :consider hints, see [consideration].
 
   Only the first hint applicable to a goal, as specified in the
   user-supplied list of :hints followed by the default hints (see
@@ -53349,7 +53419,11 @@ Subtopics
   fn, such that (fn channel state) will print the desired [prompt] to
   channel in [state] and return (mv col state), where col is the
   number of [characters] output (on the last line output).  You may
-  define your own [prompt] printing function.
+  define your own [prompt] printing function, fn, and install it with
+  (set-ld-prompt 'fn state).  However, a trust tag must be active
+  (see [defttag]) when you set ld-prompt to other than t or nil (with
+  one exception: the function brr-prompt, which prints the prompt in
+  the [break-rewrite] loop).
 
   If you supply an inappropriate [prompt] function, i.e., one that
   causes an error or does not return the correct number and type of
@@ -57519,10 +57593,13 @@ Examples
   optional but :loop$-recursion t is required if recursion is used
   inside a loop$ and the measure must be made explicit.
 
+  Some examples of loop$-recursive definitions may be found in the book
+  projects/apply/loop-recursion-examples.lisp.
+
   Warning: Even though the functions defined above are recursive, ACL2
   does not generate induction schemes for them!  If you want to do
   inductive proofs about loop$-recursive functions you must provide a
-  suitable [induction] hint.  In addition, to be provable by
+  suitable :induction hint.  In addition, to be provable by
   induction, theorems about loop$-recursive functions must be
   suitably general.  This topic is discussed further in
   [loop$-recursion-induction].
@@ -57715,7 +57792,10 @@ Definductor
   [definductor].  The examples worked manually in copy-nat-tree.lisp
   are recapitulated towards the end of
   projects/apply/definductor-tests.lisp, without the manually
-  provided hints.
+  provided hints.  In addition, the book
+  projects/apply/loop-recursion-examples.lisp gives some other
+  examples of loop$-recursive functions and inductive theorems about
+  them.
 
 
 Some Basic Principles for Inductive Proofs about Loop$-Recursive
@@ -84947,6 +85027,16 @@ Changes to Existing Features
     (in-theory (disable my-equiv)) ; optional (avoids warnings for the next form)
     (defthm foo (my-equiv x (car (cons x x))))
 
+  A trust tag (see [defttag]) is now required to set the [ld-prompt] to
+  a non-Boolean value, other than the [brr] prompt, since that can
+  cause printing of the prompt to modify state in rather arbitrary
+  ways.
+
+  Improved translation of function calls, especially those that involve
+  congruent [stobj]s, including better error messages, much improved
+  code comments, and simplified code.  Thanks to Sol Swords for
+  sending an example with a misleading error message.
+
 
 New Features
 
@@ -84958,6 +85048,15 @@ New Features
   to skip memory allocation for the new [stobj], by avoiding creation
   of a ``live'' (mutable) stobj.  See [defstobj].  Thanks to Warren
   Hunt for encouraging development of this feature.
+
+  The rewriter now rewrites the bodies of certain quoted [lambda]
+  objects.  However, some restrictions apply.  See
+  [rewrite-lambda-object].  In addition some new lemmas and a new
+  metafunction have been added to the book projects/apply/top, which
+  users are still encouraged to include in sessions dealing with
+  [apply$].  The new metafunction is named relink-fancy-scion and can
+  also cause lambda objects to be transformed.  See the discussion of
+  that metafunction in [rewrite-lambda-object].
 
 
 Heuristic and Efficiency Improvements
@@ -84988,6 +85087,17 @@ Heuristic and Efficiency Improvements
     (thm (equal (car (g 3)) 3)
          ;; :hints ((\"Goal\" :do-not '(preprocess)))
          )
+
+  The ACL2 rewriter has a ``being-openedp'' heuristic that prevents
+  loops, by saving a stack based on what is currently being
+  rewritten.  This can prevent the use of a [definition] or [rewrite]
+  rule.  Now the heuristic is turned off when the term's function
+  symbol has a non-recursive definition and simplification has just
+  settled down (see [hints-and-the-waterfall]).  To restore the old
+  behavior, i.e., to use the heuristic in all cases --- thus
+  providing backward compatibility when a proof fails --- evaluate
+  the form: (defattach-system being-openedp-limited-for-nonrec
+  constant-nil-function-arity-0).
 
 
 Bug Fixes
@@ -85052,12 +85162,26 @@ Bug Fixes
   be syntactically identical to the pre-existing corresponding
   [defstobj] event.
 
+  A raw Lisp error would occur when the value of an :[instructions]
+  hint is not a true (null-terminated) list.  ACL2 now produces an
+  informative error message in that case.
+
 
 Changes at the System Level
 
   (SBCL only) Filenames are now read as ASCII (specifically,
   ISO-8859-1) when the host Lisp is SBCL, which formerly was not the
   case.  Thanks to Stephen Westfold for suggesting this change.
+
+  ACL2 can once again be built on CMU Common Lisp (CMUCL) (though we
+  have only done minimal testing).  The problem turned out to be with
+  ACL2, not CMUCL: low-level Lisp code in the ACL2 sources was
+  destructively modifying a quoted constant.  (For implementation
+  details, see *fncall-cache* in source file translate.lisp.)  The
+  bug was discovered when considering modification of the build
+  process to compile ACL2 source files when the host Lisp is SBCL.
+  Thanks to Stas Boukarev for pointing us in the right direction to
+  debug this error.
 
 
 EMACS Support
@@ -88037,7 +88161,7 @@ Subtopics
   Lisp (SBCL), and Lispworks, SBCL and Lispworks both currently
   sometimes experience problems when evaluating the ACL2 proof
   process (the ``waterfall'') in parallel.  Therefore, CCL is the
-  recommend Lisp for anyone that wants to use parallelism and isn't
+  recommended Lisp for anyone that wants to use parallelism and isn't
   working on fixing those problems.
 
 
@@ -89529,6 +89653,12 @@ Subtopics
   [Close-output-channel]
       See [io].
 
+  [Collect$]
+      See [loop$].
+
+  [Collect$+]
+      See [loop$].
+
   [Community-book]
       See [community-books].
 
@@ -89672,6 +89802,12 @@ Subtopics
 
   [Fmt!-to-string]
       See [printing-to-strings].
+
+  [Fmt-hard-right-margin]
+      See [set-fmt-hard-right-margin].
+
+  [Fmt-soft-right-margin]
+      See [set-fmt-hard-right-margin].
 
   [Fmt-to-string]
       See [printing-to-strings].
@@ -90269,6 +90405,12 @@ Subtopics
 
   [Suitably-tamep-listp]
       See [tame].
+
+  [Sum$]
+      See [loop$].
+
+  [Sum$+]
+      See [loop$].
 
   [Symbol-class]
       See [system-utilities].
@@ -91887,10 +92029,15 @@ A Single Performance Comparison
 
   Again, the user can change these defaults; see
   [set-print-gv-defaults].  For example, one might wish to evaluate
-  (set-print-gv-defaults :substitute 20) so that @(tsee flet) is used
-  only when that avoids certain duplicated large terms, as discussed
-  just above.</p> <p>To see how one might use @('print-gv, consider
-  the following definition.
+  (set-print-gv-defaults :substitute 20) so that [flet] is used only
+  when that avoids certain duplicated large terms, as discussed just
+  above.
+
+  Note that the output from print-gv always goes to the terminal.
+  (Specifically, the output goes to the value of the constant
+  [*standard-co*].)
+
+  To see how one might use print-gv, consider the following definition.
 
     (defun foo (x)
       (declare (xargs :guard (and (integerp x)
@@ -95005,6 +95152,9 @@ Subtopics
 
   [Summary]
       The summary printed at the conclusion of an event
+
+  [Toggle-inhibit-warning]
+      Add or delete a warning string from the inhibit-warnings-table
 
   [Warnings]
       Warnings emitted by the ACL2 proof process
@@ -100459,6 +100609,9 @@ Subtopics
       Force ACL2 to perform substitution using a stylized [equivalence]
       hypothesis
 
+  [Rewrite-lambda-object]
+      rewriting lambda objects in :FN slots
+
   [Rewrite-stack-limit]
       Limiting the stack depth of the ACL2 rewriter
 
@@ -100499,6 +100652,181 @@ Subtopics
   For an example of a [clause-processor] that leverages Rewrite-equiv
   to induce substitution using equivalence relations appearing in the
   hypothesis, see [rewrite-equiv-hint].")
+ (REWRITE-LAMBDA-OBJECT
+  (REWRITE)
+  "rewriting lambda objects in :FN slots
+
+  [Lambda] objects are quoted constants passed to [scion]s and applied
+  as functions by [apply$].  The ACL2 rewriter rewrites the bodies of
+  quoted lambda objects when they occur in slots of [ilk] :FN.
+  However, there are restrictions on which lambda objects are
+  rewritten, restrictions on the techniques available to the rewriter
+  during the rewriting of lambda bodies, and restrictions controlling
+  whether the rewritten object replaces the original object or is is
+  ignored.  We explain below.
+
+
+When Rewriting of lambda Objects Is Attempted
+
+  The rewriter attempts to rewrite the body of a quoted lambda constant
+  provided
+
+    * (a) it occurs in a :FN position of a call of a [scion] and
+    * (b) the lambda object is well-formed (see
+      [well-formed-lambda-objectp]).
+
+  Condition (b) implies the body of the lambda is in fact a well-formed
+  ACL2 term (so the rewriter can explore it), that it is [tame] (so
+  apply$ ``behaves'' as expected on it provided warrants are
+  available), and that every variable symbol occurring freely in the
+  body is among the formals of the lambda object (so the rewriting
+  can occur in a different scope).
+
+
+Restrictions During Rewriting of a Lambda Body
+
+  The rewriter is restricted in two ways when rewriting lambda bodies.
+
+  First, warrant hypotheses in the goal clause are the only contextual
+  information ``imported'' from the goal clause and made available
+  while rewriting a lambda body.  That means type information about
+  variables and other terms is forgotten, as are any linear
+  arithmetic relationships.  The reason is simple: the variables in
+  the body are in a different scope than the variables outside the
+  lambda object.  Put another way, we do not know, in general, to
+  what the lambda object will eventually be applied and so, in ACL2's
+  untyped logic, we know nothing about its formal variables.
+  (Actually, we not only ``import'' the warrants from the goal
+  clause, we import every ground hypothesis governing the lambda
+  object's occurrence.  But practically speaking that means we only
+  import warrant hypotheses.  A more sophisticated handling of
+  contextual information can be imagined.  For example, if the lambda
+  object occurs as the first argument of a [loop$] scion, like
+  collect$ or sum$, then the rewriter could perhaps extract type
+  information from the target and import that information.  For
+  example, perhaps every element of the target is a number.  In that
+  case, since we know the lambda object in a loop$ scion call is only
+  applied to elements of that list, we would then be allowed to
+  assume the corresponding formal of the lambda object is a number.
+  But that more sophisticated handling of contextual information has
+  not been implemented.)
+
+  Second, recursive functions are never opened when rewriting lambda
+  bodies.  For example, if (len (cons e x)) occurs in a lambda body,
+  you might expect it to be simplified to (+ 1 (len x)), because that
+  is what generally happens to that term when occurrences outside
+  lambda objects are rewritten.  ACL2 normally controls the expansion
+  of recursive functions by reference to terms that already occur
+  within the current goal.  But the lambda object effectively shares
+  no variables with the surrounding goal and those heuristics are
+  inapplicable.  Preliminary experiments with allowing expansions of
+  recursive functions inside lambda objects have produced
+  unsatisfactory results such as runaway expansions.  So at the
+  moment we allow no recursive expansions.
+
+  The ACL2 implementors hope to address both of the above problems in
+  eventual future releases.
+
+
+What Happens After Rewriting a Lambda Body
+
+  Upon rewriting the body, b, of (lambda(v1...vn)b) to produce b' the
+  decision must be made as to whether to return the lambda with the
+  rewritten body, (lambda(v1...vn)b'), or to ignore the rewrite and
+  return the original (unrewritten) object.  ACL2 ignores the rewrite
+  and returns the original lambda object if any of the following
+  three cases obtains:
+
+    * (a) b' contains variables other than the lambda formals v1,...,vn,
+    * (b) b' is not tame, or
+    * (c) some function symbol appearing in b' has no warrant hypothesis in
+      the goal clause but forcing is disabled (see [force]).
+
+  In all cases, the rewriter prints a \"rewrite-lambda-object\" warning
+  when the rewritten body is different from the original one but the
+  rewrite is rejected.  The warning message displays the before and
+  after lambda objects, lists the rewrite rules used, and explains
+  which of the three conditions above was violated.
+
+  Condition (a) can arise if a rewrite rule introduces a free variable;
+  disabling that rewrite rule is recommended.  Condition (b) can
+  arise if some rewrite rule introduces a function symbol that has
+  not been warranted; disabling that rule can often solve that
+  problem but perhaps a better response is to use [defwarrant] to
+  issue a warrant for the offending function symbol and then supply
+  that warrant as a hypothesis to the goal; the latter response is
+  perhaps better because it means all the ``usual'' rewriting is
+  done, normalizing terms as expected.  Condition (c) arises when
+  forcing has been disabled and the offending function symbol's
+  warrant is not among the hypotheses; enabling forcing or adding the
+  warrant as a hypothesis is recommended.
+
+  The warning message noted above can become annoying.  It can be
+  inhibited with (toggle-inhibit-warning \"Rewrite-lambda-object\").
+
+  Be advised that if the \"rewrite-lambda-object\" warning has been
+  inhibited (by you or some book included in your session) and then,
+  when looking at, say, the checkpoints in a failed proof, you see a
+  lambda object that you expected to be simplified but was not, you
+  may think rewriting was not attempted for it, for some reason, when
+  in fact it was attempted but rejected.  You can
+  (toggle-inhibit-warning \"Rewrite-lambda-object\") and replay the
+  proof attempt to see (all) the rejected lambda object rewrites.
+
+
+A Possible Confusion
+
+  A metafunction that is included in the book projects/apply/top can
+  also cause quoted lambda objects to be rewritten.  This
+  metafunction, called relink-fancy-scion, is called on certain calls
+  of the fancy loop$ scions, e.g., calls of [always$+], [collect$+],
+  [sum$+], etc.  The goal of that metafunction is to keep the list of
+  ``global variables'' in some normal form.
+
+  For example,consider the term
+
+    (collect$+ (quote
+                (lambda (loop$-gvars loop$-ivars)
+                  (cons (car loop$-gvars)
+                        (cons (car (cdr loop$-gvars))
+                              (cons (car loop$-ivars) 'nil)))))
+               (list a b)
+               target)
+
+  which is (essentially) the translation of (loop$ for e in target
+  collect (list a b e)).  Suppose that in some case of a proof about
+  this term the hypothesis (equal a b) governs this term.  The term
+  would thus become
+
+    (collect$+ (quote
+                (lambda (loop$-gvars loop$-ivars)
+                  (cons (car loop$-gvars)
+                        (cons (car (cdr loop$-gvars))
+                              (cons (car loop$-ivars) 'nil)))))
+               (list a a)
+               target)
+
+  Relink-fancy-scion will rewrite that term to
+
+    (collect$+ (quote
+                (lambda (loop$-gvars loop$-ivars)
+                  (cons (car loop$-gvars)
+                        (cons (car loop$-gvars)
+                              (cons (car loop$-ivars) 'nil)))))
+               (list a)
+               target)
+
+  which eliminates the duplicate entry in the list of globals and, as a
+  necessary side effect, also replaces the body of the lambda object
+  to eliminate the term (car (cdr loop$-gvars)).
+
+  The application of the metafunction relink-fancy-scion can easily but
+  mistakenly be attributed to the rewriting of lambda objects but it
+  is not!  The metafunction is applied to the whole collect$ term
+  (and calls of every other fancy scion), not just the lambda object.
+
+  If you want to avoid this normalization of the globals, disable the
+  [rune] (:meta relink-fancy-scion-correct).")
  (REWRITE-STACK-LIMIT
   (REWRITE)
   "Limiting the stack depth of the ACL2 rewriter
@@ -104685,7 +105013,10 @@ Example
   evaluating the following form: (table-alist 'inhibit-warnings-table
   (w state)).  Of course, if warnings are inhibited overall --- see
   [set-inhibit-output-lst] --- then this value is entirely
-  irrelevant.")
+  irrelevant.
+
+  See [toggle-inhibit-warning] for a way to add or remove a single
+  warning string.")
  (SET-INHIBIT-WARNINGS!
   (PROVER-OUTPUT)
   "Control warnings non-[local]ly
@@ -110495,6 +110826,9 @@ Subtopics
 
 Subtopics
 
+  [Char]
+      The [nth] element (zero-based) of a string
+
   [Coerce]
       Coerce a character list to a string and a string to a list
 
@@ -111064,6 +111398,8 @@ Subtopics
   The variable recursively decomposed is indicated in bold.")
  (SUITABLY-TAMEP-LISTP (POINTERS)
                        "See [tame].")
+ (SUM$ (POINTERS) "See [loop$].")
+ (SUM$+ (POINTERS) "See [loop$].")
  (SUMMARY
   (PROVER-OUTPUT)
   "The summary printed at the conclusion of an event
@@ -111988,10 +112324,10 @@ Subtopics
 
   For background on attachments, see [defattach].
 
-  If you evaluate the form (all-attachments (w state)) immediately
-  after starting ACL2, you will see a list of pairs of the form (f .
-  g), where f is a constrained system utility and g is its
-  attachment.  Here is one such pair.
+  If you evaluate the form (global-val 'attachments-at-ground-zero (w
+  state)), you will see a list of pairs of the form (f . g), where f
+  is a built-in constrained utility and g is its attachment.  Here is
+  one such pair.
 
     (ASSUME-TRUE-FALSE-AGGRESSIVE-P . CONSTANT-NIL-FUNCTION-ARITY-0)
 
@@ -112029,7 +112365,10 @@ Subtopics
   attachments to be comfortable as ``system programmers'', as they
   peruse the ACL2 source code and its comments in order to see how to
   modify system behavior with attachments.  Perhaps more user-level
-  documentation will be written to help with that process.")
+  documentation will be written to help with that process.
+
+  Also see [efficiency] for more about using attachments to modify the
+  prover's behavior.")
  (SYSTEM-UTILITIES
   (PROGRAMMING)
   "Some built-in programming utilities pertaining to the ACL2 system
@@ -117225,6 +117564,23 @@ Subtopics
   generalization, and elimination of irrelevance).  For example, you
   don't need to worry about prover output that mentions ``type
   reasoning'' or ``abbreviations,'' for example.")
+ (TOGGLE-INHIBIT-WARNING
+  (PROVER-OUTPUT)
+  "Add or delete a warning string from the inhibit-warnings-table
+
+    General Form:
+    (toggle-inhibit-warning string)
+
+  where string is the name of some warning like \"Subsume\", \"Non-rec\" or
+  \"Rewrite-lambda-object\".
+
+  Note: This is an event!  It does not print the usual event [summary]
+  but nevertheless changes the ACL2 logical [world] and is so
+  recorded.
+
+  The given string is added to the list of inhibited warnings if it is
+  not there already and is deleted from the list if it is there.
+  Case is unimportant in string.  See [set-inhibit-warnings].")
  (TOGGLE-PC-MACRO
   (PROOF-BUILDER)
   "Change an ordinary macro command to an atomic macro, or vice-versa
@@ -121616,14 +121972,22 @@ Introduction
   names of [defthm], [defun], and [verify-guards] [events] with sets
   of ``useless'' [rune]s'': rule names (``runes'') not contributing
   to the progress of the proof.  Then, future certifications can use
-  option :useless-runes :read (also some variations of that,
-  discussed below) which, during evaluation of an event, will
-  effectively [disable] rules associated with that event in file
-  foo@useless-runes.lsp.
+  option :useless-runes :read --- or some limited variations of :read
+  using numeric values, as discussed below) --- which, during
+  evaluation of an event, will effectively [disable] rules associated
+  with that event in file foo@useless-runes.lsp.
 
-  Environment variable ACL2_USELESS_RUNES can take value \"write\" or
-  \"read\" be used in place of the :useless-runes option :read or
-  :write (respectively) of certify-book.  This is discussed below.
+  Environment variable ACL2_USELESS_RUNES can take the value \"write\" or
+  \"read\" to be used in place of the :useless-runes option :read or
+  :write (respectively) of certify-book.  ACL2_USELESS_RUNES can also
+  take on the numeric values permitted for the :useless-runes option
+  of [certify-book].  This is all discussed below.  Note that by
+  default, certification of the [community-books], as laid out in
+  documentation topic [books-certification], is performed with
+  ACL2_USELESS_RUNES=-25, which for each book foo.lisp causes part of
+  the corresponding foo@useless-runes.lsp, if it exists, to be
+  consulted (as described below).  This default behavior is only for
+  ACL2, not ACL2(r) (see [real]) or ACL2(p) (see [parallelism]).
 
 
 Detailed Documentation
@@ -121671,7 +122035,8 @@ Detailed Documentation
   [accumulated-persistence-subtleties] for some limitations.  These
   top-level entries are listed in order of event in the book, from
   top to bottom.  Because of [local] [events], the same name may
-  appear more than once.
+  appear more than once; we say more about this in the ``Subtleties''
+  section, below.
 
   When certify-book is supplied with option :useless-runes :read or
   :useless-runes :read?, then book certification takes advantage of
@@ -121777,6 +122142,25 @@ Subtleties
   given name from top to bottom in the @useless-runes.lsp file,
   attempting to match them to [defthm], [defun], and [verify-guards]
   events from top to bottom in the book.
+
+  As suggested by discussions above, a @useless-runes.lsp file is
+  intended not to cause proof failures, even if it is older than the
+  corresponding book or even older than other books containing runes
+  that are listed in that @useless-runes.lsp file.  That said, an
+  out-of-date @useless-runes.lsp might cause proofs to fail.  In
+  particular, imagine that there are several lemmas in the
+  corresponding book all with the same name (and thus all [local] to
+  an [encapsulate] event except perhaps the last), and one of those
+  lemmas other than the last is deleted from the book.  Then
+  references to the later such lemmas will be wrong in the
+  @useless-runes.lsp file.  If you run into this problem, then either
+  regenerate the @useless-runes.lsp file (e.g., by setting
+  environment variable ACL2_USELESS_RUNES to \"write\"), or give
+  distinct names to your book's lemmas, or even consider adding a
+  line like the following to a suitable .acl2 file (see
+  [build::custom-certify-book-commands]).
+
+    ; cert-flags: ? t :useless-runes nil
 
 
 Performance
@@ -124404,7 +124788,7 @@ Subtopics
 
   The prover can emit many warnings when processing [events].  See
   [set-inhibit-warnings] and see [set-inhibit-output-lst] for how to
-  disable and enable them.")
+  disable and enable them.  See also [toggle-inhibit-warning].")
  (WARRANT
   (APPLY$)
   "Giving [apply$] permission to call a user-defined function
@@ -124788,9 +125172,9 @@ Why Warrants Don't Render Theorems Vacuous
   standard ACL2 definitional principle, versions of those functions
   (together with apply$, ev$, etc.) and then make attachments to the
   undefined badge-userfn and apply$-userfn, and so that every warrant
-  is proveably equal to T.  In fact, the resultant theory is the
-  basis of ACL2's evaluation theory where all warranted functions can
-  be apply$d (under the appropriate tameness requirements) without
+  is provably equal to T.  In fact, the resultant theory is the basis
+  of ACL2's evaluation theory where all warranted functions can be
+  apply$d (under the appropriate tameness requirements) without
   explicit mention of warrants.  The crux of the proof is admitting a
   big mutually recursive clique containing versions of apply$ and all
   of its [scion]s, by inventing a measure that provably decreases as
@@ -126196,7 +126580,8 @@ The Differences Between Well-Formed and Merely Tame Lambda Objects
   (STOBJ ACL2-BUILT-INS)
   "Locally bind a single-threaded object
 
-  See [stobj] for an introduction to single-threaded objects.
+  See [stobj] for an introduction to single-threaded objects.  Also see
+  [defstobj] for additional background.
 
     Example Form:
     (with-local-stobj
@@ -126215,25 +126600,31 @@ The Differences Between Well-Formed and Merely Tame Lambda Objects
             result)
 
   However, ACL2 expects you to use with-local-stobj, not its expansion.
-  More precisely, stobj creator functions are not allowed except
-  (implicitly) via with-local-stobj and in logic-only situations
-  (like theorems and hints).  Moreover, neither with-local-stobj nor
-  its expansions are legal when typed directly at the top-level loop.
-  See [top-level] for a way to use with-local-stobj in the top-level
-  loop.
+  More precisely, stobj creator functions are only allowed via
+  with-local-stobj or in logic-only situations (like theorems and
+  hints).  Moreover, neither with-local-stobj nor its expansions are
+  legal when typed directly at the top-level loop.  See [top-level]
+  for a way to use with-local-stobj in the top-level loop.
 
     General Forms:
     (with-local-stobj stobj-name mv-let-form)
     (with-local-stobj stobj-name mv-let-form creator-name)
 
   where stobj-name is the name of a [stobj], mv-let-form is a call of
-  [mv-let] that binds stobj-name but does not return stobj-name, and
-  if creator-name is supplied then it should be the name of the
-  creator function for stobj-name; see [defstobj].  For the example
-  form above, its expansion would use creator-name, if supplied, in
-  place of create-st.  Note that stobj-name must not be [state] (the
-  ACL2 state), except in special situations probably of interest only
-  to system developers; see [with-local-state].
+  [mv-let] that binds stobj-name but does not return stobj-name ---
+  in fact, if mv-let-form is (mv-let (...)  ... body), then body does
+  not even reference stobj-name --- and if creator-name is supplied
+  then it should be the name of the creator function for stobj-name.
+  For the example form above, its expansion would use creator-name,
+  if supplied, in place of create-st.  Note that stobj-name must not
+  be [state] (the ACL2 state), except in special situations probably
+  of interest only to system developers; see [with-local-state].
+
+  Note that if a stobj ST is bound upon beginning evaluation of a form
+  (with-local-stobj ST ...), then the value of ST is the same
+  immediately before evaluating that form as it is immediately after
+  that evaluation.  In other words, only a local version of ST is
+  modified inside that with-local-stobj form.
 
   With-local-stobj can be useful when a stobj is used to memoize
   intermediate results during a computation, yet it is desired not to
