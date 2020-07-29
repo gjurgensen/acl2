@@ -88161,7 +88161,7 @@ Subtopics
   Lisp (SBCL), and Lispworks, SBCL and Lispworks both currently
   sometimes experience problems when evaluating the ACL2 proof
   process (the ``waterfall'') in parallel.  Therefore, CCL is the
-  recommend Lisp for anyone that wants to use parallelism and isn't
+  recommended Lisp for anyone that wants to use parallelism and isn't
   working on fixing those problems.
 
 

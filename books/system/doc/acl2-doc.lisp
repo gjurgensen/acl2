@@ -88791,7 +88791,7 @@ arithmetic) for libraries of @(see books) for arithmetic reasoning.</p>")
  <p>While we aim to support Clozure Common Lisp (CCL), Steel Bank Common Lisp
  (SBCL), and Lispworks, SBCL and Lispworks both currently sometimes experience
  problems when evaluating the ACL2 proof process (the ``waterfall'') in
- parallel.  Therefore, CCL is the recommend Lisp for anyone that wants to use
+ parallel.  Therefore, CCL is the recommended Lisp for anyone that wants to use
  parallelism and isn't working on fixing those problems.</p>")
 
 (defxdoc parallelism-at-the-top-level
