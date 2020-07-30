@@ -85194,7 +85194,11 @@ EMACS Support
   downloaded by the acl2-doc `D' command.
 
 
-Experimental Versions")
+Experimental Versions
+
+  ACL2(p) now runs much more reliably on host Lisp SBCL (by taking
+  advantage of a locking mechanism provided by SBCL).  Thanks to
+  David Rager for providing this improvement.")
  (NOTE1 (POINTERS) "See [note-1-1].")
  (NOTE2 (POINTERS) "See [note-1-2].")
  (NOTE3 (POINTERS) "See [note-1-3].")
@@ -88161,7 +88165,7 @@ Subtopics
   Lisp (SBCL), and Lispworks, SBCL and Lispworks both currently
   sometimes experience problems when evaluating the ACL2 proof
   process (the ``waterfall'') in parallel.  Therefore, CCL is the
-  recommended Lisp for anyone that wants to use parallelism and isn't
+  recommend Lisp for anyone that wants to use parallelism and isn't
   working on fixing those problems.
 
 

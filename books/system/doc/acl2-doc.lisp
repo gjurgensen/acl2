@@ -88792,9 +88792,11 @@ arithmetic) for libraries of @(see books) for arithmetic reasoning.</p>")
  required for proofs about such models both by making use of parallel
  evaluation and by dispatching proof subgoals in parallel.</p>
 
- <p>ACL2(p) can be built on any of three host Lisps: CCL, SBCL, and Lispworks.
- However, Lispworks both currently sometimes experience problems when
- evaluating the ACL2 proof process (the ``waterfall'') in parallel.</p>")
+ <p>While we aim to support Clozure Common Lisp (CCL), Steel Bank Common Lisp
+ (SBCL), and Lispworks, SBCL and Lispworks both currently sometimes experience
+ problems when evaluating the ACL2 proof process (the ``waterfall'') in
+ parallel.  Therefore, CCL is the recommend Lisp for anyone that wants to use
+ parallelism and isn't working on fixing those problems.</p>")
 
 (defxdoc parallelism-at-the-top-level
   :parents (parallel-programming)
