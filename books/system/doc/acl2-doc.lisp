@@ -10219,9 +10219,9 @@ That said, it is easy to do: just run @('make all'), e.g.,</p>
     $ make ACL2=/path/to/acl2-sources/saved_acl2 -j 2 all
 })
 
-<p>This actually still skips a few books that are very slow.  If you
-<i>really</i> need to certify absolutely everything, you can run @('make
-everything'), but this will likely add hours to your build!</p>
+<p>This includes a few books that are quite slow to certify.  You can
+exclude those by replacing ``@('all')'' by ``@('regression')'' in the
+command above.</p>
 
 
 <h3>Cleaning Up</h3>
