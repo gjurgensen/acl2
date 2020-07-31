@@ -12887,9 +12887,9 @@ A Full Build
     $ cd /path/to/acl2-sources/books
     $ make ACL2=/path/to/acl2-sources/saved_acl2 -j 2 all
 
-  This actually still skips a few books that are very slow.  If you
-  really need to certify absolutely everything, you can run make
-  everything, but this will likely add hours to your build!
+  This includes a few books that are quite slow to certify.  You can
+  exclude those by replacing ``all'' by ``regression'' in the command
+  above.
 
 
 Cleaning Up
