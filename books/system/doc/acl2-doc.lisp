@@ -130817,6 +130817,7 @@ expand function call at the current subterm, without simplifying"
 (defpointer apropos finding-documentation)
 (defpointer arglistp system-utilities)
 (defpointer array arrays)
+(defpointer assertions errors)
 (defpointer assoc-eq assoc)
 (defpointer assoc-equal assoc)
 (defpointer auto-instance defthm<w)

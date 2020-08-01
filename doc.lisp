@@ -9868,6 +9868,7 @@ Subtopics
   mode,'' guarantees that assert-event forms are evaluated in the
   logic without ill-guarded calls of :[program]-mode functions while
   certifying a book.")
+ (ASSERTIONS (POINTERS) "See [errors].")
  (ASSIGN
   (PROGRAMMING-WITH-STATE ACL2-BUILT-INS)
   "Assign to a global variable in [state]
@@ -89608,6 +89609,9 @@ Subtopics
 
   [Array]
       See [arrays].
+
+  [Assertions]
+      See [errors].
 
   [Assoc-eq]
       See [assoc].
