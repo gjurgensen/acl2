@@ -59417,7 +59417,10 @@ it."
  use @('mv-nth') to access the corresponding list by using @('mv-list'),
  writing @('(mv-nth n (mv-list k EXPR))') for suitable @('k'), where
  @('mv-list') converts a multiple value result into the corresponding list; see
- @(see mv-list).</p>")
+ @(see mv-list).</p>
+
+ <p>@('Mv-nth') is given some special treatment by the prover.  To control that
+ behavior see @(see theories-and-primitives).</p>")
 
 (defxdoc mv?
   :parents (mv acl2-built-ins)
@@ -86592,6 +86595,12 @@ it."
  add or delete a warning string from the @('inhibit-warnings-table'), rather
  than setting that entire table as is done by @(tsee set-inhibit-warnings).</p>
 
+ <p>It is now possible to instruct the prover to respect requests to @(see
+ disable) the @(see definition) of the primitive, @(tsee mv-nth), rather than
+ continuing to expand that definition.  See @(see theories-and-primitives), in
+ particular the note for advanced users at the end of that topic.  Thanks to
+ Alessandro Coglio for requesting this feature.</p>
+
  <h3>Heuristic and Efficiency Improvements</h3>
 
  <p>We changed the lightweight ``preprocess'' simplifier for ``@(see simple)''
@@ -112683,11 +112692,12 @@ arithmetic) for libraries of @(see books) for arithmetic reasoning.</p>")
  </code>
 
  <p>Rules of this form just tell the tau system that the user-defined function
- @('nth-alt') is synonymous with the ACL2 primitive function @('mv-nth').
- Because ACL2's rewriter gives special handling to @('mv-nth'), users sometimes
- define their own versions of that function so they can disable them and
- control rewriting better.  By revealing to the tau system that such a synonym
- has been introduced you allow Signature rules of Form 2 to be used.</p>")
+ @('nth-alt') is synonymous with the ACL2 primitive function @(tsee mv-nth).
+ Because ACL2's rewriter gives special handling to @('mv-nth') by default,
+ users sometimes define their own versions of that function so they can disable
+ them and control rewriting better.  By revealing to the tau system that such a
+ synonym has been introduced you allow Signature rules of Form 2 to be
+ used.</p>")
 
 (defxdoc tenth
   :parents (nth acl2-built-ins)
@@ -113827,17 +113837,19 @@ arithmetic) for libraries of @(see books) for arithmetic reasoning.</p>")
  example as follows.</p>
 
  @({
- ACL2 !>(in-theory (disable mv-nth))
+ ACL2 !>(in-theory (disable mv-nth iff length))
 
  ACL2 Warning [Theory] in ( IN-THEORY (DISABLE ...)):  The :DEFINITION
- rule for the built-in function MV-NTH is disabled by the theory expression
- (DISABLE MV-NTH), but some expansions of its calls may still occur.
- See :DOC theories-and-primitives.
+ rules for the built-in functions MV-NTH and IFF are disabled by the
+ theory expression (DISABLE MV-NTH IFF LENGTH), but some expansions
+ of their calls may still occur.  See :DOC theories-and-primitives.
  })
 
- <p>This warning is telling us that the indicated built-in functions are
- given certain special handling, hence their calls may be expanded even when
- their definitions are disabled.</p>
+ <p>This warning is telling us that the built-in functions @(tsee mv-nth) and
+ @(tsee iff) are given certain special handling, hence their calls may be
+ expanded even when their definitions are disabled.  This behavior applies to
+ the functions in the list obtained by evaluating the constant,
+ @('*definition-minimal-theory*').</p>
 
  <p>These warnings can be eliminated by turning off all theory warnings (see
  @(see set-inhibit-warnings)) or even turning off all warnings (see @(see
@@ -113863,7 +113875,7 @@ arithmetic) for libraries of @(see books) for arithmetic reasoning.</p>")
  Rules: ((:DEFINITION MV-NTH)
          (:FAKE-RUNE-FOR-TYPE-SET NIL))
  Time:  0.00 seconds (prove: 0.00, print: 0.00, other: 0.00)
- Prover steps counted:  19
+ Prover steps counted:  18
 
  Proof succeeded.
  ACL2 !>
@@ -113883,10 +113895,9 @@ arithmetic) for libraries of @(see books) for arithmetic reasoning.</p>")
  ACL2 !>(in-theory (disable (:e symbolp)))
 
  ACL2 Warning [Theory] in ( IN-THEORY (DISABLE ...)):  The :EXECUTABLE-
- COUNTERPART rule for SYMBOLP is disabled by the theory expression
- (DISABLE (:E SYMBOLP)), but because this built-in function is given
- certain special handling, some evaluations of its calls may still occur.
- See :DOC theories-and-primitives.
+ COUNTERPART rule for the built-in function SYMBOLP is disabled by the
+ theory expression (DISABLE (:E SYMBOLP)), but some evaluations of its
+ calls may still occur.  See :DOC theories-and-primitives.
 
 
  Summary
@@ -113894,7 +113905,7 @@ arithmetic) for libraries of @(see books) for arithmetic reasoning.</p>")
  Rules: NIL
  Warnings:  Theory
  Time:  0.01 seconds (prove: 0.00, print: 0.00, other: 0.01)
-  (:NUMBER-OF-ENABLED-RUNES 3233)
+  (:NUMBER-OF-ENABLED-RUNES 4268)
  ACL2 !>(thm (symbolp 'a))
 
  Q.E.D.
@@ -113913,17 +113924,17 @@ arithmetic) for libraries of @(see books) for arithmetic reasoning.</p>")
  been disabled, yet these rules may be applied in some cases nonetheless,
  because of special-purpose prover code for handling calls of that function.
  The built-in function symbols with such @(see definition) rules or @(see
- executable-counterpart) rules are those in the following two lists,
- respectively.</p>
+ executable-counterpart) rules are those in the following two lists, which are
+ the respective values of built-in constants @('*definition-minimal-theory*')
+ and @('*built-in-executable-counterparts*').</p>
 
  @(def *definition-minimal-theory*)
 
  @(def *built-in-executable-counterparts*)
 
- <p>Finally we discuss a third class of warnings.  This final class of warnings
- pertains to @(see primitive)s that do not have definitions, such as @('cons').
- Here is an example of such a warning, for the event @('(in-theory (disable
- cons))').</p>
+ <p>A third class of warnings pertains to @(see primitive)s that do not have
+ definitions, such as @('cons').  Here is an example of such a warning, for the
+ event @('(in-theory (disable cons))').</p>
 
  @({
  ACL2 Warning [Theory] in ( IN-THEORY (DISABLE ...)):  There is no effect
@@ -113955,7 +113966,24 @@ arithmetic) for libraries of @(see books) for arithmetic reasoning.</p>")
  <p>There is another case in which there is no warning: if all definitions of
  primitives transition from disabled to enabled, or vice-versa.  For example,
  such a transition occurs for consecutive events @('(in-theory (current-theory
- 'ground-zero))') and @('(in-theory (theory 'minimal-theory))').</p>")
+ 'ground-zero))') and @('(in-theory (theory 'minimal-theory))').</p>
+
+ <p>We conclude with a note for advanced users only.  You can eliminate all
+ special treatment discussed above for expanding the definition of @(tsee
+ mv-nth) (but not for any of the other primitives listed above) by evaluating
+ the following form (also see @(see defattach-system)).</p>
+
+ @({
+ (defattach-system simplifiable-mv-nth-p constant-nil-function-arity-0)
+ })
+
+ <p>That said, this is probably only useful for very specific cases of
+ ``system-level'' programming.  You can restore the default behavior as
+ follows.</p>
+
+ @({
+ (defattach-system simplifiable-mv-nth-p constant-t-function-arity-0)
+ })")
 
 (defxdoc theory
   :parents (theories theory-functions)
