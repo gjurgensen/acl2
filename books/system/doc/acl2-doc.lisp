@@ -86512,10 +86512,13 @@ it."
  definition @(see rune) for the new function, but that was not previously the
  case.</p>
 
- <p>Functions @('position-ac-eq-exec'), @('position-ac-eql-exec'), and
- @('position-equal-ac'), which all support the macro, @(tsee position), now fix
- their accumulator argument.  Thanks to Mihir Mehta for supplying these
- changes, for the purpose of avoiding @(tsee acl2-numberp) type hypotheses.</p>
+ <p>Some built-in functions supporting the macro, @(tsee position), now @(tsee
+ fix) (coerce) their accumulator argument to a natural number.  Thanks to Mihir
+ Mehta for supplying the initial such changes, for the purpose of avoiding
+ numeric type hypotheses.  After that, thanks to email correspondence from
+ Warren Hunt, we added built-in @(':')@(tsee type-prescription) rules for those
+ same functions so that ACL2 @(see type-set) reasoning infers that
+ @('position') always returns either @('nil') or a natural number.</p>
 
  <p>The macro @(tsee defconst) no longer accepts an optional documentation
  string (which was already being ignored).  Thanks to Eric Smith and Alessandro
@@ -86584,6 +86587,10 @@ it."
  @('relink-fancy-scion') and can also cause @('lambda') objects to be
  transformed.  See the discussion of that metafunction in @(see
  rewrite-lambda-object).</p>
+
+ <p>Added @(tsee toggle-inhibit-warning) and @(tsee toggle-inhibit-warning!) to
+ add or delete a warning string from the @('inhibit-warnings-table'), rather
+ than setting that entire table as is done by @(tsee set-inhibit-warnings).</p>
 
  <h3>Heuristic and Efficiency Improvements</h3>
 
@@ -115251,12 +115258,25 @@ arithmetic) for libraries of @(see books) for arithmetic reasoning.</p>")
   @('\"Non-rec\"') or @('\"Rewrite-lambda-object\"').</p>
 
   <p>Note: This is an event!  It does not print the usual event @(see summary)
-  but nevertheless changes the ACL2 logical @(see world) and is so
-  recorded.</p>
+  but nevertheless changes the ACL2 logical @(see world) and is so recorded.
+  It is @(tsee local) to the book or @(tsee encapsulate) form in which it
+  occurs; see @(see toggle-inhibit-warning!) for a corresponding non-@(tsee
+  local) event.  Indeed, @('(toggle-inhibit-warning str)') is equivalent to
+  @('(local (toggle-inhibit-warning! str))').</p>
 
   <p>The given string is added to the list of inhibited warnings if it is not
   there already and is deleted from the list if it is there.  Case is
   unimportant in @('string').  See @(tsee set-inhibit-warnings).</p>")
+
+(defxdoc toggle-inhibit-warning!
+  :parents (prover-output)
+  :short "Toggle an @('inhibit-warnings-table') entry non-@(tsee local)ly"
+  :long "<p>Please see @(see toggle-inhibit-warning), which is the same as
+ @('toggle-inhibit-warning!') except that the latter is not @(tsee local) to
+ the @(tsee encapsulate) or the book in which it occurs.  Probably @(see
+ toggle-inhibit-warning!) is to be preferred unless you have a good reason for
+ wanting to export the effect of this event outside the enclosing @(tsee
+ encapsulate) or book.</p>")
 
 (defxdoc toggle-pc-macro
   :parents (proof-builder)

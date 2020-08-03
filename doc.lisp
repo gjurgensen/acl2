@@ -84986,11 +84986,14 @@ Changes to Existing Features
   the definition [rune] for the new function, but that was not
   previously the case.
 
-  Functions position-ac-eq-exec, position-ac-eql-exec, and
-  position-equal-ac, which all support the macro, [position], now fix
-  their accumulator argument.  Thanks to Mihir Mehta for supplying
-  these changes, for the purpose of avoiding [ACL2-numberp] type
-  hypotheses.
+  Some built-in functions supporting the macro, [position], now [fix]
+  (coerce) their accumulator argument to a natural number.  Thanks to
+  Mihir Mehta for supplying the initial such changes, for the purpose
+  of avoiding numeric type hypotheses.  After that, thanks to email
+  correspondence from Warren Hunt, we added built-in
+  :[type-prescription] rules for those same functions so that ACL2
+  [type-set] reasoning infers that position always returns either nil
+  or a natural number.
 
   The macro [defconst] no longer accepts an optional documentation
   string (which was already being ignored).  Thanks to Eric Smith and
@@ -85058,6 +85061,11 @@ New Features
   [apply$].  The new metafunction is named relink-fancy-scion and can
   also cause lambda objects to be transformed.  See the discussion of
   that metafunction in [rewrite-lambda-object].
+
+  Added [toggle-inhibit-warning] and [toggle-inhibit-warning!] to add
+  or delete a warning string from the inhibit-warnings-table, rather
+  than setting that entire table as is done by
+  [set-inhibit-warnings].
 
 
 Heuristic and Efficiency Improvements
@@ -95163,6 +95171,9 @@ Subtopics
 
   [Toggle-inhibit-warning]
       Add or delete a warning string from the inhibit-warnings-table
+
+  [Toggle-inhibit-warning!]
+      Toggle an inhibit-warnings-table entry non-[local]ly
 
   [Warnings]
       Warnings emitted by the ACL2 proof process
@@ -117584,11 +117595,24 @@ Subtopics
 
   Note: This is an event!  It does not print the usual event [summary]
   but nevertheless changes the ACL2 logical [world] and is so
-  recorded.
+  recorded.  It is [local] to the book or [encapsulate] form in which
+  it occurs; see [toggle-inhibit-warning!] for a corresponding
+  non-[local] event.  Indeed, (toggle-inhibit-warning str) is
+  equivalent to (local (toggle-inhibit-warning! str)).
 
   The given string is added to the list of inhibited warnings if it is
   not there already and is deleted from the list if it is there.
   Case is unimportant in string.  See [set-inhibit-warnings].")
+ (TOGGLE-INHIBIT-WARNING!
+  (PROVER-OUTPUT)
+  "Toggle an inhibit-warnings-table entry non-[local]ly
+
+  Please see [toggle-inhibit-warning], which is the same as
+  toggle-inhibit-warning! except that the latter is not [local] to
+  the [encapsulate] or the book in which it occurs.  Probably
+  [toggle-inhibit-warning!] is to be preferred unless you have a good
+  reason for wanting to export the effect of this event outside the
+  enclosing [encapsulate] or book.")
  (TOGGLE-PC-MACRO
   (PROOF-BUILDER)
   "Change an ordinary macro command to an atomic macro, or vice-versa
