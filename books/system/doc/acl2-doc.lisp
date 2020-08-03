@@ -115302,7 +115302,7 @@ arithmetic) for libraries of @(see books) for arithmetic reasoning.</p>")
   :long "<p>Please see @(see toggle-inhibit-warning), which is the same as
  @('toggle-inhibit-warning!') except that the latter is not @(tsee local) to
  the @(tsee encapsulate) or the book in which it occurs.  Probably @(see
- toggle-inhibit-warning!) is to be preferred unless you have a good reason for
+ toggle-inhibit-warning) is to be preferred unless you have a good reason for
  wanting to export the effect of this event outside the enclosing @(tsee
  encapsulate) or book.</p>")
 

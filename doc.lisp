@@ -117635,7 +117635,7 @@ Subtopics
   Please see [toggle-inhibit-warning], which is the same as
   toggle-inhibit-warning! except that the latter is not [local] to
   the [encapsulate] or the book in which it occurs.  Probably
-  [toggle-inhibit-warning!] is to be preferred unless you have a good
+  [toggle-inhibit-warning] is to be preferred unless you have a good
   reason for wanting to export the effect of this event outside the
   enclosing [encapsulate] or book.")
  (TOGGLE-PC-MACRO
