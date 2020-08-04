@@ -9868,6 +9868,7 @@ Subtopics
   mode,'' guarantees that assert-event forms are evaluated in the
   logic without ill-guarded calls of :[program]-mode functions while
   certifying a book.")
+ (ASSERTIONS (POINTERS) "See [errors].")
  (ASSIGN
   (PROGRAMMING-WITH-STATE ACL2-BUILT-INS)
   "Assign to a global variable in [state]
@@ -12887,9 +12888,9 @@ A Full Build
     $ cd /path/to/acl2-sources/books
     $ make ACL2=/path/to/acl2-sources/saved_acl2 -j 2 all
 
-  This actually still skips a few books that are very slow.  If you
-  really need to certify absolutely everything, you can run make
-  everything, but this will likely add hours to your build!
+  This includes a few books that are quite slow to certify.  You can
+  exclude those by replacing ``all'' by ``regression'' in the command
+  above.
 
 
 Cleaning Up
@@ -63582,7 +63583,10 @@ Subtopics
   use mv-nth to access the corresponding list by using mv-list,
   writing (mv-nth n (mv-list k EXPR)) for suitable k, where mv-list
   converts a multiple value result into the corresponding list; see
-  [mv-list].")
+  [mv-list].
+
+  Mv-nth is given some special treatment by the prover.  To control
+  that behavior see [theories-and-primitives].")
  (MV?
   (MV ACL2-BUILT-INS)
   "Return one or more values
@@ -84985,11 +84989,14 @@ Changes to Existing Features
   the definition [rune] for the new function, but that was not
   previously the case.
 
-  Functions position-ac-eq-exec, position-ac-eql-exec, and
-  position-equal-ac, which all support the macro, [position], now fix
-  their accumulator argument.  Thanks to Mihir Mehta for supplying
-  these changes, for the purpose of avoiding [ACL2-numberp] type
-  hypotheses.
+  Some built-in functions supporting the macro, [position], now [fix]
+  (coerce) their accumulator argument to a natural number.  Thanks to
+  Mihir Mehta for supplying the initial such changes, for the purpose
+  of avoiding numeric type hypotheses.  After that, thanks to email
+  correspondence from Warren Hunt, we added built-in
+  :[type-prescription] rules for those same functions so that ACL2
+  [type-set] reasoning infers that position always returns either nil
+  or a natural number.
 
   The macro [defconst] no longer accepts an optional documentation
   string (which was already being ignored).  Thanks to Eric Smith and
@@ -85057,6 +85064,18 @@ New Features
   [apply$].  The new metafunction is named relink-fancy-scion and can
   also cause lambda objects to be transformed.  See the discussion of
   that metafunction in [rewrite-lambda-object].
+
+  Added [toggle-inhibit-warning] and [toggle-inhibit-warning!] to add
+  or delete a warning string from the inhibit-warnings-table, rather
+  than setting that entire table as is done by
+  [set-inhibit-warnings].
+
+  It is now possible to instruct the prover to respect requests to
+  [disable] the [definition] of the primitive, [mv-nth], rather than
+  continuing to expand that definition.  See
+  [theories-and-primitives], in particular the note for advanced
+  users at the end of that topic.  Thanks to Alessandro Coglio for
+  requesting this feature.
 
 
 Heuristic and Efficiency Improvements
@@ -85194,7 +85213,11 @@ EMACS Support
   downloaded by the acl2-doc `D' command.
 
 
-Experimental Versions")
+Experimental Versions
+
+  ACL2(p) now runs much more reliably on host Lisp SBCL (by taking
+  advantage of a locking mechanism provided by SBCL).  Thanks to
+  David Rager for providing this improvement.")
  (NOTE1 (POINTERS) "See [note-1-1].")
  (NOTE2 (POINTERS) "See [note-1-2].")
  (NOTE3 (POINTERS) "See [note-1-3].")
@@ -88161,7 +88184,7 @@ Subtopics
   Lisp (SBCL), and Lispworks, SBCL and Lispworks both currently
   sometimes experience problems when evaluating the ACL2 proof
   process (the ``waterfall'') in parallel.  Therefore, CCL is the
-  recommended Lisp for anyone that wants to use parallelism and isn't
+  recommend Lisp for anyone that wants to use parallelism and isn't
   working on fixing those problems.
 
 
@@ -89604,6 +89627,9 @@ Subtopics
 
   [Array]
       See [arrays].
+
+  [Assertions]
+      See [errors].
 
   [Assoc-eq]
       See [assoc].
@@ -95155,6 +95181,9 @@ Subtopics
 
   [Toggle-inhibit-warning]
       Add or delete a warning string from the inhibit-warnings-table
+
+  [Toggle-inhibit-warning!]
+      Toggle an inhibit-warnings-table entry non-[local]ly
 
   [Warnings]
       Warnings emitted by the ACL2 proof process
@@ -114002,11 +114031,11 @@ Logical Definitions
 
   Rules of this form just tell the tau system that the user-defined
   function nth-alt is synonymous with the ACL2 primitive function
-  mv-nth.  Because ACL2's rewriter gives special handling to mv-nth,
-  users sometimes define their own versions of that function so they
-  can disable them and control rewriting better.  By revealing to the
-  tau system that such a synonym has been introduced you allow
-  Signature rules of Form 2 to be used.
+  [mv-nth].  Because ACL2's rewriter gives special handling to mv-nth
+  by default, users sometimes define their own versions of that
+  function so they can disable them and control rewriting better.  By
+  revealing to the tau system that such a synonym has been introduced
+  you allow Signature rules of Form 2 to be used.
 
 
 Subtopics
@@ -115320,16 +115349,18 @@ Subtopics
   When you [disable] the [definition] or [executable-counterpart] of a
   built-in function, you may see a warning, for example as follows.
 
-    ACL2 !>(in-theory (disable mv-nth))
+    ACL2 !>(in-theory (disable mv-nth iff length))
 
     ACL2 Warning [Theory] in ( IN-THEORY (DISABLE ...)):  The :DEFINITION
-    rule for the built-in function MV-NTH is disabled by the theory expression
-    (DISABLE MV-NTH), but some expansions of its calls may still occur.
-    See :DOC theories-and-primitives.
+    rules for the built-in functions MV-NTH and IFF are disabled by the
+    theory expression (DISABLE MV-NTH IFF LENGTH), but some expansions
+    of their calls may still occur.  See :DOC theories-and-primitives.
 
-  This warning is telling us that the indicated built-in functions are
-  given certain special handling, hence their calls may be expanded
-  even when their definitions are disabled.
+  This warning is telling us that the built-in functions [mv-nth] and
+  [iff] are given certain special handling, hence their calls may be
+  expanded even when their definitions are disabled.  This behavior
+  applies to the functions in the list obtained by evaluating the
+  constant, *definition-minimal-theory*.
 
   These warnings can be eliminated by turning off all theory warnings
   (see [set-inhibit-warnings]) or even turning off all warnings (see
@@ -115353,7 +115384,7 @@ Subtopics
     Rules: ((:DEFINITION MV-NTH)
             (:FAKE-RUNE-FOR-TYPE-SET NIL))
     Time:  0.00 seconds (prove: 0.00, print: 0.00, other: 0.00)
-    Prover steps counted:  19
+    Prover steps counted:  18
 
     Proof succeeded.
     ACL2 !>
@@ -115372,10 +115403,9 @@ Subtopics
     ACL2 !>(in-theory (disable (:e symbolp)))
 
     ACL2 Warning [Theory] in ( IN-THEORY (DISABLE ...)):  The :EXECUTABLE-
-    COUNTERPART rule for SYMBOLP is disabled by the theory expression
-    (DISABLE (:E SYMBOLP)), but because this built-in function is given
-    certain special handling, some evaluations of its calls may still occur.
-    See :DOC theories-and-primitives.
+    COUNTERPART rule for the built-in function SYMBOLP is disabled by the
+    theory expression (DISABLE (:E SYMBOLP)), but some evaluations of its
+    calls may still occur.  See :DOC theories-and-primitives.
 
 
     Summary
@@ -115383,7 +115413,7 @@ Subtopics
     Rules: NIL
     Warnings:  Theory
     Time:  0.01 seconds (prove: 0.00, print: 0.00, other: 0.01)
-     (:NUMBER-OF-ENABLED-RUNES 3233)
+     (:NUMBER-OF-ENABLED-RUNES 4268)
     ACL2 !>(thm (symbolp 'a))
 
     Q.E.D.
@@ -115402,7 +115432,9 @@ Subtopics
   nonetheless, because of special-purpose prover code for handling
   calls of that function.  The built-in function symbols with such
   [definition] rules or [executable-counterpart] rules are those in
-  the following two lists, respectively.
+  the following two lists, which are the respective values of
+  built-in constants *definition-minimal-theory* and
+  *built-in-executable-counterparts*.
 
   Definition: <*definition-minimal-theory*>
 
@@ -115423,10 +115455,9 @@ Subtopics
                              rationalp realpart stringp symbol-name
                              symbol-package-name symbolp not))
 
-  Finally we discuss a third class of warnings.  This final class of
-  warnings pertains to [primitive]s that do not have definitions,
-  such as cons.  Here is an example of such a warning, for the event
-  (in-theory (disable cons)).
+  A third class of warnings pertains to [primitive]s that do not have
+  definitions, such as cons.  Here is an example of such a warning,
+  for the event (in-theory (disable cons)).
 
     ACL2 Warning [Theory] in ( IN-THEORY (DISABLE ...)):  There is no effect
     from disabling or enabling :DEFINITION rules for primitive functions
@@ -115455,7 +115486,20 @@ Subtopics
   definitions of primitives transition from disabled to enabled, or
   vice-versa.  For example, such a transition occurs for consecutive
   events (in-theory (current-theory 'ground-zero)) and (in-theory
-  (theory 'minimal-theory)).")
+  (theory 'minimal-theory)).
+
+  We conclude with a note for advanced users only.  You can eliminate
+  all special treatment discussed above for expanding the definition
+  of [mv-nth] (but not for any of the other primitives listed above)
+  by evaluating the following form (also see [defattach-system]).
+
+    (defattach-system simplifiable-mv-nth-p constant-nil-function-arity-0)
+
+  That said, this is probably only useful for very specific cases of
+  ``system-level'' programming.  You can restore the default behavior
+  as follows.
+
+    (defattach-system simplifiable-mv-nth-p constant-t-function-arity-0)")
  (THEORY
   (THEORIES THEORY-FUNCTIONS)
   "Retrieve named theory
@@ -117576,11 +117620,24 @@ Subtopics
 
   Note: This is an event!  It does not print the usual event [summary]
   but nevertheless changes the ACL2 logical [world] and is so
-  recorded.
+  recorded.  It is [local] to the book or [encapsulate] form in which
+  it occurs; see [toggle-inhibit-warning!] for a corresponding
+  non-[local] event.  Indeed, (toggle-inhibit-warning str) is
+  equivalent to (local (toggle-inhibit-warning! str)).
 
   The given string is added to the list of inhibited warnings if it is
   not there already and is deleted from the list if it is there.
   Case is unimportant in string.  See [set-inhibit-warnings].")
+ (TOGGLE-INHIBIT-WARNING!
+  (PROVER-OUTPUT)
+  "Toggle an inhibit-warnings-table entry non-[local]ly
+
+  Please see [toggle-inhibit-warning], which is the same as
+  toggle-inhibit-warning! except that the latter is not [local] to
+  the [encapsulate] or the book in which it occurs.  Probably
+  [toggle-inhibit-warning] is to be preferred unless you have a good
+  reason for wanting to export the effect of this event outside the
+  enclosing [encapsulate] or book.")
  (TOGGLE-PC-MACRO
   (PROOF-BUILDER)
   "Change an ordinary macro command to an atomic macro, or vice-versa

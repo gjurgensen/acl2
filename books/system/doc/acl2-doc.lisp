@@ -10219,9 +10219,9 @@ That said, it is easy to do: just run @('make all'), e.g.,</p>
     $ make ACL2=/path/to/acl2-sources/saved_acl2 -j 2 all
 })
 
-<p>This actually still skips a few books that are very slow.  If you
-<i>really</i> need to certify absolutely everything, you can run @('make
-everything'), but this will likely add hours to your build!</p>
+<p>This includes a few books that are quite slow to certify.  You can
+exclude those by replacing ``@('all')'' by ``@('regression')'' in the
+command above.</p>
 
 
 <h3>Cleaning Up</h3>
@@ -59417,7 +59417,10 @@ it."
  use @('mv-nth') to access the corresponding list by using @('mv-list'),
  writing @('(mv-nth n (mv-list k EXPR))') for suitable @('k'), where
  @('mv-list') converts a multiple value result into the corresponding list; see
- @(see mv-list).</p>")
+ @(see mv-list).</p>
+
+ <p>@('Mv-nth') is given some special treatment by the prover.  To control that
+ behavior see @(see theories-and-primitives).</p>")
 
 (defxdoc mv?
   :parents (mv acl2-built-ins)
@@ -86512,10 +86515,13 @@ it."
  definition @(see rune) for the new function, but that was not previously the
  case.</p>
 
- <p>Functions @('position-ac-eq-exec'), @('position-ac-eql-exec'), and
- @('position-equal-ac'), which all support the macro, @(tsee position), now fix
- their accumulator argument.  Thanks to Mihir Mehta for supplying these
- changes, for the purpose of avoiding @(tsee acl2-numberp) type hypotheses.</p>
+ <p>Some built-in functions supporting the macro, @(tsee position), now @(tsee
+ fix) (coerce) their accumulator argument to a natural number.  Thanks to Mihir
+ Mehta for supplying the initial such changes, for the purpose of avoiding
+ numeric type hypotheses.  After that, thanks to email correspondence from
+ Warren Hunt, we added built-in @(':')@(tsee type-prescription) rules for those
+ same functions so that ACL2 @(see type-set) reasoning infers that
+ @('position') always returns either @('nil') or a natural number.</p>
 
  <p>The macro @(tsee defconst) no longer accepts an optional documentation
  string (which was already being ignored).  Thanks to Eric Smith and Alessandro
@@ -86584,6 +86590,16 @@ it."
  @('relink-fancy-scion') and can also cause @('lambda') objects to be
  transformed.  See the discussion of that metafunction in @(see
  rewrite-lambda-object).</p>
+
+ <p>Added @(tsee toggle-inhibit-warning) and @(tsee toggle-inhibit-warning!) to
+ add or delete a warning string from the @('inhibit-warnings-table'), rather
+ than setting that entire table as is done by @(tsee set-inhibit-warnings).</p>
+
+ <p>It is now possible to instruct the prover to respect requests to @(see
+ disable) the @(see definition) of the primitive, @(tsee mv-nth), rather than
+ continuing to expand that definition.  See @(see theories-and-primitives), in
+ particular the note for advanced users at the end of that topic.  Thanks to
+ Alessandro Coglio for requesting this feature.</p>
 
  <h3>Heuristic and Efficiency Improvements</h3>
 
@@ -86723,6 +86739,10 @@ it."
  command.</p>
 
  <h3>Experimental Versions</h3>
+
+ <p>ACL2(p) now runs much more reliably on host Lisp SBCL (by taking advantage
+ of a locking mechanism provided by SBCL).  Thanks to David Rager for providing
+ this improvement.</p>
 
  ")
 
@@ -88791,7 +88811,7 @@ arithmetic) for libraries of @(see books) for arithmetic reasoning.</p>")
  <p>While we aim to support Clozure Common Lisp (CCL), Steel Bank Common Lisp
  (SBCL), and Lispworks, SBCL and Lispworks both currently sometimes experience
  problems when evaluating the ACL2 proof process (the ``waterfall'') in
- parallel.  Therefore, CCL is the recommended Lisp for anyone that wants to use
+ parallel.  Therefore, CCL is the recommend Lisp for anyone that wants to use
  parallelism and isn't working on fixing those problems.</p>")
 
 (defxdoc parallelism-at-the-top-level
@@ -112672,11 +112692,12 @@ arithmetic) for libraries of @(see books) for arithmetic reasoning.</p>")
  </code>
 
  <p>Rules of this form just tell the tau system that the user-defined function
- @('nth-alt') is synonymous with the ACL2 primitive function @('mv-nth').
- Because ACL2's rewriter gives special handling to @('mv-nth'), users sometimes
- define their own versions of that function so they can disable them and
- control rewriting better.  By revealing to the tau system that such a synonym
- has been introduced you allow Signature rules of Form 2 to be used.</p>")
+ @('nth-alt') is synonymous with the ACL2 primitive function @(tsee mv-nth).
+ Because ACL2's rewriter gives special handling to @('mv-nth') by default,
+ users sometimes define their own versions of that function so they can disable
+ them and control rewriting better.  By revealing to the tau system that such a
+ synonym has been introduced you allow Signature rules of Form 2 to be
+ used.</p>")
 
 (defxdoc tenth
   :parents (nth acl2-built-ins)
@@ -113816,17 +113837,19 @@ arithmetic) for libraries of @(see books) for arithmetic reasoning.</p>")
  example as follows.</p>
 
  @({
- ACL2 !>(in-theory (disable mv-nth))
+ ACL2 !>(in-theory (disable mv-nth iff length))
 
  ACL2 Warning [Theory] in ( IN-THEORY (DISABLE ...)):  The :DEFINITION
- rule for the built-in function MV-NTH is disabled by the theory expression
- (DISABLE MV-NTH), but some expansions of its calls may still occur.
- See :DOC theories-and-primitives.
+ rules for the built-in functions MV-NTH and IFF are disabled by the
+ theory expression (DISABLE MV-NTH IFF LENGTH), but some expansions
+ of their calls may still occur.  See :DOC theories-and-primitives.
  })
 
- <p>This warning is telling us that the indicated built-in functions are
- given certain special handling, hence their calls may be expanded even when
- their definitions are disabled.</p>
+ <p>This warning is telling us that the built-in functions @(tsee mv-nth) and
+ @(tsee iff) are given certain special handling, hence their calls may be
+ expanded even when their definitions are disabled.  This behavior applies to
+ the functions in the list obtained by evaluating the constant,
+ @('*definition-minimal-theory*').</p>
 
  <p>These warnings can be eliminated by turning off all theory warnings (see
  @(see set-inhibit-warnings)) or even turning off all warnings (see @(see
@@ -113852,7 +113875,7 @@ arithmetic) for libraries of @(see books) for arithmetic reasoning.</p>")
  Rules: ((:DEFINITION MV-NTH)
          (:FAKE-RUNE-FOR-TYPE-SET NIL))
  Time:  0.00 seconds (prove: 0.00, print: 0.00, other: 0.00)
- Prover steps counted:  19
+ Prover steps counted:  18
 
  Proof succeeded.
  ACL2 !>
@@ -113872,10 +113895,9 @@ arithmetic) for libraries of @(see books) for arithmetic reasoning.</p>")
  ACL2 !>(in-theory (disable (:e symbolp)))
 
  ACL2 Warning [Theory] in ( IN-THEORY (DISABLE ...)):  The :EXECUTABLE-
- COUNTERPART rule for SYMBOLP is disabled by the theory expression
- (DISABLE (:E SYMBOLP)), but because this built-in function is given
- certain special handling, some evaluations of its calls may still occur.
- See :DOC theories-and-primitives.
+ COUNTERPART rule for the built-in function SYMBOLP is disabled by the
+ theory expression (DISABLE (:E SYMBOLP)), but some evaluations of its
+ calls may still occur.  See :DOC theories-and-primitives.
 
 
  Summary
@@ -113883,7 +113905,7 @@ arithmetic) for libraries of @(see books) for arithmetic reasoning.</p>")
  Rules: NIL
  Warnings:  Theory
  Time:  0.01 seconds (prove: 0.00, print: 0.00, other: 0.01)
-  (:NUMBER-OF-ENABLED-RUNES 3233)
+  (:NUMBER-OF-ENABLED-RUNES 4268)
  ACL2 !>(thm (symbolp 'a))
 
  Q.E.D.
@@ -113902,17 +113924,17 @@ arithmetic) for libraries of @(see books) for arithmetic reasoning.</p>")
  been disabled, yet these rules may be applied in some cases nonetheless,
  because of special-purpose prover code for handling calls of that function.
  The built-in function symbols with such @(see definition) rules or @(see
- executable-counterpart) rules are those in the following two lists,
- respectively.</p>
+ executable-counterpart) rules are those in the following two lists, which are
+ the respective values of built-in constants @('*definition-minimal-theory*')
+ and @('*built-in-executable-counterparts*').</p>
 
  @(def *definition-minimal-theory*)
 
  @(def *built-in-executable-counterparts*)
 
- <p>Finally we discuss a third class of warnings.  This final class of warnings
- pertains to @(see primitive)s that do not have definitions, such as @('cons').
- Here is an example of such a warning, for the event @('(in-theory (disable
- cons))').</p>
+ <p>A third class of warnings pertains to @(see primitive)s that do not have
+ definitions, such as @('cons').  Here is an example of such a warning, for the
+ event @('(in-theory (disable cons))').</p>
 
  @({
  ACL2 Warning [Theory] in ( IN-THEORY (DISABLE ...)):  There is no effect
@@ -113944,7 +113966,24 @@ arithmetic) for libraries of @(see books) for arithmetic reasoning.</p>")
  <p>There is another case in which there is no warning: if all definitions of
  primitives transition from disabled to enabled, or vice-versa.  For example,
  such a transition occurs for consecutive events @('(in-theory (current-theory
- 'ground-zero))') and @('(in-theory (theory 'minimal-theory))').</p>")
+ 'ground-zero))') and @('(in-theory (theory 'minimal-theory))').</p>
+
+ <p>We conclude with a note for advanced users only.  You can eliminate all
+ special treatment discussed above for expanding the definition of @(tsee
+ mv-nth) (but not for any of the other primitives listed above) by evaluating
+ the following form (also see @(see defattach-system)).</p>
+
+ @({
+ (defattach-system simplifiable-mv-nth-p constant-nil-function-arity-0)
+ })
+
+ <p>That said, this is probably only useful for very specific cases of
+ ``system-level'' programming.  You can restore the default behavior as
+ follows.</p>
+
+ @({
+ (defattach-system simplifiable-mv-nth-p constant-t-function-arity-0)
+ })")
 
 (defxdoc theory
   :parents (theories theory-functions)
@@ -115247,12 +115286,25 @@ arithmetic) for libraries of @(see books) for arithmetic reasoning.</p>")
   @('\"Non-rec\"') or @('\"Rewrite-lambda-object\"').</p>
 
   <p>Note: This is an event!  It does not print the usual event @(see summary)
-  but nevertheless changes the ACL2 logical @(see world) and is so
-  recorded.</p>
+  but nevertheless changes the ACL2 logical @(see world) and is so recorded.
+  It is @(tsee local) to the book or @(tsee encapsulate) form in which it
+  occurs; see @(see toggle-inhibit-warning!) for a corresponding non-@(tsee
+  local) event.  Indeed, @('(toggle-inhibit-warning str)') is equivalent to
+  @('(local (toggle-inhibit-warning! str))').</p>
 
   <p>The given string is added to the list of inhibited warnings if it is not
   there already and is deleted from the list if it is there.  Case is
   unimportant in @('string').  See @(tsee set-inhibit-warnings).</p>")
+
+(defxdoc toggle-inhibit-warning!
+  :parents (prover-output)
+  :short "Toggle an @('inhibit-warnings-table') entry non-@(tsee local)ly"
+  :long "<p>Please see @(see toggle-inhibit-warning), which is the same as
+ @('toggle-inhibit-warning!') except that the latter is not @(tsee local) to
+ the @(tsee encapsulate) or the book in which it occurs.  Probably @(see
+ toggle-inhibit-warning) is to be preferred unless you have a good reason for
+ wanting to export the effect of this event outside the enclosing @(tsee
+ encapsulate) or book.</p>")
 
 (defxdoc toggle-pc-macro
   :parents (proof-builder)
@@ -130813,6 +130865,7 @@ expand function call at the current subterm, without simplifying"
 (defpointer apropos finding-documentation)
 (defpointer arglistp system-utilities)
 (defpointer array arrays)
+(defpointer assertions errors)
 (defpointer assoc-eq assoc)
 (defpointer assoc-equal assoc)
 (defpointer auto-instance defthm<w)
