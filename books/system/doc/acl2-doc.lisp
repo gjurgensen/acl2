@@ -86477,6 +86477,18 @@ it."
 ; Added comments and checks regarding *blacklisted-apply$-fns*, and removed
 ; HIDE from that list.
 
+; Made small changes to source function defuns-fn1 to avoid putting some
+; irrelevant tuples into the world of the form (LOOP$-ALIST GLOBAL-VALUE ...)
+; and (LAMBDA$-ALIST GLOBAL-VALUE ...).
+
+; Improved save-exec to handle pathnames starting with "~/".
+
+; Extended without-interrupts to be effective for CMUCL and Allegro CL.
+
+; Deleted the (essentially) duplicated definition of
+; unwind-protect-disable-interrupts-during-cleanup in
+; futures-raw.lisp.
+
   :parents (release-notes)
   :short "ACL2 Version  8.4 (xxx, 20xx) Notes"
   :long "<p>NOTE!  New users can ignore these release notes, because the @(see
@@ -86639,6 +86651,23 @@ it."
  providing backward compatibility when a proof fails &mdash; evaluate the form:
  @('(defattach-system being-openedp-limited-for-nonrec
  constant-nil-function-arity-0)').</p>
+
+ <p>When a command executed in a logical @(see world), @('w'), is interrupted,
+ the world is reverted to @('w').  That reversion process could be very slow if
+ the interrupt was taken during the installation of the new world, as indicated
+ by the messages:</p>
+
+ @({
+ Flushing current installed world.
+ Reversing the new world.
+ Installing the new world.
+ })
+
+ <p>That process has been sped up significantly.  Moreover, the new process
+ avoids a bug reported by Eric Smith, who we thank for sending an example of
+ how the process was interacting badly with @(tsee reset-prehistory).  Code
+ implementing that interaction was introduced in Version  4.0 to speed up the
+ process; that code has been eliminated, as it is no longer necessary.</p>
 
  <h3>Bug Fixes</h3>
 

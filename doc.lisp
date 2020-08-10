@@ -85118,6 +85118,22 @@ Heuristic and Efficiency Improvements
   the form: (defattach-system being-openedp-limited-for-nonrec
   constant-nil-function-arity-0).
 
+  When a command executed in a logical [world], w, is interrupted, the
+  world is reverted to w.  That reversion process could be very slow
+  if the interrupt was taken during the installation of the new
+  world, as indicated by the messages:
+
+    Flushing current installed world.
+    Reversing the new world.
+    Installing the new world.
+
+  That process has been sped up significantly.  Moreover, the new
+  process avoids a bug reported by Eric Smith, who we thank for
+  sending an example of how the process was interacting badly with
+  [reset-prehistory].  Code implementing that interaction was
+  introduced in Version 4.0 to speed up the process; that code has
+  been eliminated, as it is no longer necessary.
+
 
 Bug Fixes
 
