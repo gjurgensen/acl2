@@ -86489,6 +86489,9 @@ it."
 ; unwind-protect-disable-interrupts-during-cleanup in
 ; futures-raw.lisp.
 
+; Improved the error when attempting to build ACL2 on a non-ANSI Lisp.  Thanks
+; to John R. Strohm for a query leading to this improvement.
+
   :parents (release-notes)
   :short "ACL2 Version  8.4 (xxx, 20xx) Notes"
   :long "<p>NOTE!  New users can ignore these release notes, because the @(see
