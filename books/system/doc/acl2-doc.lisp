@@ -86773,6 +86773,12 @@ it."
  of a locking mechanism provided by SBCL).  Thanks to David Rager for providing
  this improvement.</p>
 
+ <p>In ACL2(p), @(tsee set-waterfall-parallelism) no longer causes an error
+ when there are @(tsee override-hints) if the argument is the existing value of
+ the @(see state) global, @(''waterfall-parallelism'), or upon a transition of
+ @(see waterfall-parallelism) to @('nil').  Thanks to David Rager for raising
+ this issue (see GitHub Issue #1171) and discussing its resolution.</p>
+
  ")
 
 (defxdoc nqthm-to-acl2

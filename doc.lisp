@@ -85233,7 +85233,14 @@ Experimental Versions
 
   ACL2(p) now runs much more reliably on host Lisp SBCL (by taking
   advantage of a locking mechanism provided by SBCL).  Thanks to
-  David Rager for providing this improvement.")
+  David Rager for providing this improvement.
+
+  In ACL2(p), [set-waterfall-parallelism] no longer causes an error
+  when there are [override-hints] if the argument is the existing
+  value of the [state] global, 'waterfall-parallelism, or upon a
+  transition of [waterfall-parallelism] to nil.  Thanks to David
+  Rager for raising this issue (see GitHub Issue #1171) and
+  discussing its resolution.")
  (NOTE1 (POINTERS) "See [note-1-1].")
  (NOTE2 (POINTERS) "See [note-1-2].")
  (NOTE3 (POINTERS) "See [note-1-3].")
