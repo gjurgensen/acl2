@@ -85228,6 +85228,12 @@ EMACS Support
   from a file that is built by the manual-building process and is
   downloaded by the acl2-doc `D' command.
 
+  Highlighting in lisp-mode (inside Emacs) has been improved, both by
+  recognizing more keywords and by highlighting of some new
+  arguments, in particular the first argument of defthm.  Thanks to
+  Vivek Ramanathan, both for pointing out the defthm issue and for
+  suggesting code that was incorporated into the changes.
+
 
 Experimental Versions
 

@@ -86770,6 +86770,12 @@ it."
  by the manual-building process and is downloaded by the acl2-doc `@('D')'
  command.</p>
 
+ <p>Highlighting in lisp-mode (inside Emacs) has been improved, both by
+ recognizing more keywords and by highlighting of some new arguments, in
+ particular the first argument of @('defthm').  Thanks to Vivek Ramanathan,
+ both for pointing out the @('defthm') issue and for suggesting code that was
+ incorporated into the changes.</p>
+
  <h3>Experimental Versions</h3>
 
  <p>ACL2(p) now runs much more reliably on host Lisp SBCL (by taking advantage
