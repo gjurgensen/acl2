@@ -56835,6 +56835,7 @@ it."
            :aokp         t/nil        ; optional (default nil)
            :stats        t/nil        ; optional (default t)
            :ideal-okp    t/:warn/nil  ; optional (default nil)
+           :total        ; see :DOC memoize-partial
            :verbose      t/nil        ; optional (default t)
            )
  })
@@ -57155,6 +57156,25 @@ it."
  not @('nil'), then it must be @('t'), which causes all memoization done for a
  top-level call of @('fn') to be forgotten when that top-level call
  exits.</p>")
+
+(defxdoc memoize-partial
+  :parents (memoize)
+  :short "@(tsee Memoize) the total, limited (`clocked') versions of functions"
+  :long "<p>Documentation will be written soon.  For examples, see @(see
+ community-book) file @('books/demos/memoize-partial-input.lsp').  This macro
+ handles @(tsee mutual-recursion) where, as the above example file illustrates,
+ the function symbols must be supplied using the same order in which they are
+ defined in the @('mutual-recursion').</p>
+
+ <p>If you happen to be interested in the theoretical foundations, see the
+ comment in the ACL2 sources labeled ``Essay on Memoization with Partial
+ Functions (Memoize-partial)''.</p>
+
+ <p>Remark.  This is actually a macro that generates a @(tsee table) event
+ followed by @(tsee memoize) events that use the @(':total') option.  However,
+ we strongly recommend that you do not try to invoke those @('table') and
+ @('memoize') events directly; in particular, errors might be more difficult to
+ debug that way.</p>")
 
 (defxdoc memoize-summary
   :parents (memoize)
@@ -86477,6 +86497,25 @@ it."
 ; Added comments and checks regarding *blacklisted-apply$-fns*, and removed
 ; HIDE from that list.
 
+; Made small changes to source function defuns-fn1 to avoid putting some
+; irrelevant tuples into the world of the form (LOOP$-ALIST GLOBAL-VALUE ...)
+; and (LAMBDA$-ALIST GLOBAL-VALUE ...).
+
+; Improved save-exec to handle pathnames starting with "~/".
+
+; Extended without-interrupts to be effective for CMUCL and Allegro CL.
+
+; Deleted the (essentially) duplicated definition of
+; unwind-protect-disable-interrupts-during-cleanup in
+; futures-raw.lisp.
+
+; Improved the error when attempting to build ACL2 on a non-ANSI Lisp.  Thanks
+; to John R. Strohm for a query leading to this improvement.
+
+; We now avoid a raw Lisp error when calling table directly to memoize
+; a function, when the value is not a symbol-alist, as in:
+; (table memoize-table 'foo 3).
+
   :parents (release-notes)
   :short "ACL2 Version  8.4 (xxx, 20xx) Notes"
   :long "<p>NOTE!  New users can ignore these release notes, because the @(see
@@ -86601,6 +86640,14 @@ it."
  particular the note for advanced users at the end of that topic.  Thanks to
  Alessandro Coglio for requesting this feature.</p>
 
+ <p>A new utility, @(tsee memoize-partial), allows memoization for functions
+ that were made admitted by adding a formal parameter that decreases on each
+ recursive call (sometimes called a ``limit'' or a ``clock'').  Normally that
+ extra parameter can severely impede the utility of memoization; however, the
+ function actually executed does not have that extra parameter.  This allows
+ for more memoization hits.  Thanks to Mertcan Temel for an inquiry leading to
+ this enhancement, and for helpful discussions.</p>
+
  <h3>Heuristic and Efficiency Improvements</h3>
 
  <p>We changed the lightweight ``preprocess'' simplifier for ``@(see simple)''
@@ -86639,6 +86686,23 @@ it."
  providing backward compatibility when a proof fails &mdash; evaluate the form:
  @('(defattach-system being-openedp-limited-for-nonrec
  constant-nil-function-arity-0)').</p>
+
+ <p>When a command executed in a logical @(see world), @('w'), is interrupted,
+ the world is reverted to @('w').  That reversion process could be very slow if
+ the interrupt was taken during the installation of the new world, as indicated
+ by the messages:</p>
+
+ @({
+ Flushing current installed world.
+ Reversing the new world.
+ Installing the new world.
+ })
+
+ <p>That process has been sped up significantly.  Moreover, the new process
+ avoids a bug reported by Eric Smith, who we thank for sending an example of
+ how the process was interacting badly with @(tsee reset-prehistory).  Code
+ implementing that interaction was introduced in Version  4.0 to speed up the
+ process; that code has been eliminated, as it is no longer necessary.</p>
 
  <h3>Bug Fixes</h3>
 
@@ -86738,11 +86802,23 @@ it."
  by the manual-building process and is downloaded by the acl2-doc `@('D')'
  command.</p>
 
+ <p>Highlighting in lisp-mode (inside Emacs) has been improved, both by
+ recognizing more keywords and by highlighting of some new arguments, in
+ particular the first argument of @('defthm').  Thanks to Vivek Ramanathan,
+ both for pointing out the @('defthm') issue and for suggesting code that was
+ incorporated into the changes.</p>
+
  <h3>Experimental Versions</h3>
 
  <p>ACL2(p) now runs much more reliably on host Lisp SBCL (by taking advantage
  of a locking mechanism provided by SBCL).  Thanks to David Rager for providing
  this improvement.</p>
+
+ <p>In ACL2(p), @(tsee set-waterfall-parallelism) no longer causes an error
+ when there are @(tsee override-hints) if the argument is the existing value of
+ the @(see state) global, @(''waterfall-parallelism'), or upon a transition of
+ @(see waterfall-parallelism) to @('nil').  Thanks to David Rager for raising
+ this issue (see GitHub Issue #1171) and discussing its resolution.</p>
 
  ")
 
@@ -118093,14 +118169,14 @@ introduction-to-the-tau-system) for more information about Tau.</dd>
      (characterp (nth n lst)))
     :rule-classes ((:type-prescription :typed-term (nth n lst))))
 
-  (defthm demodulize-type-for-quote-value  ; (Demodulize a lst 'value ans) is
-    (implies                               ; either a nonnegative integer or
-     (and (atom a)                         ; of the same type as ans, provided
-          (true-listp lst)                 ; the hyps can be established by type
-          (member-equal a lst))            ; reasoning
+  (defthm demodulize-type-for-quote-value  ; (Demodulize a lst 'value ans) is ;
+    (implies                               ; either a nonnegative integer or ;
+     (and (atom a)                         ; of the same type as ans, provided ;
+          (true-listp lst)                 ; the hyps can be established by type ;
+          (member-equal a lst))            ; reasoning ;
      (or (and (integerp (demodulize a lst 'value ans))
               (>= (demodulize a lst 'value ans) 0))
-       (equal (demodulize a lst 'value ans) ans)))
+         (equal (demodulize a lst 'value ans) ans)))
     :rule-classes :type-prescription)
  })
 

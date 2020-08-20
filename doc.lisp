@@ -60896,6 +60896,7 @@ Subtopics
              :aokp         t/nil        ; optional (default nil)
              :stats        t/nil        ; optional (default t)
              :ideal-okp    t/:warn/nil  ; optional (default nil)
+             :total        ; see :DOC memoize-partial
              :verbose      t/nil        ; optional (default t)
              )
 
@@ -61232,6 +61233,9 @@ Subtopics
   [Clear-memoize-tables]
       Forget values remembered for all the memoized functions
 
+  [Memoize-partial]
+      [Memoize] the total, limited (`clocked') versions of functions
+
   [Memoize-summary]
       Display all collected profiling and memoization info
 
@@ -61255,6 +61259,25 @@ Subtopics
 
   [Unmemoize]
       Turn off memoization for the specified function")
+ (MEMOIZE-PARTIAL
+  (MEMOIZE)
+  "[Memoize] the total, limited (`clocked') versions of functions
+
+  Documentation will be written soon.  For examples, see
+  [community-book] file books/demos/memoize-partial-input.lsp.  This
+  macro handles [mutual-recursion] where, as the above example file
+  illustrates, the function symbols must be supplied using the same
+  order in which they are defined in the mutual-recursion.
+
+  If you happen to be interested in the theoretical foundations, see
+  the comment in the ACL2 sources labeled ``Essay on Memoization with
+  Partial Functions (Memoize-partial)''.
+
+  Remark.  This is actually a macro that generates a [table] event
+  followed by [memoize] events that use the :total option.  However,
+  we strongly recommend that you do not try to invoke those table and
+  memoize events directly; in particular, errors might be more
+  difficult to debug that way.")
  (MEMOIZE-SUMMARY
   (MEMOIZE)
   "Display all collected profiling and memoization info
@@ -85077,6 +85100,15 @@ New Features
   users at the end of that topic.  Thanks to Alessandro Coglio for
   requesting this feature.
 
+  A new utility, [memoize-partial], allows memoization for functions
+  that were made admitted by adding a formal parameter that decreases
+  on each recursive call (sometimes called a ``limit'' or a
+  ``clock'').  Normally that extra parameter can severely impede the
+  utility of memoization; however, the function actually executed
+  does not have that extra parameter.  This allows for more
+  memoization hits.  Thanks to Mertcan Temel for an inquiry leading
+  to this enhancement, and for helpful discussions.
+
 
 Heuristic and Efficiency Improvements
 
@@ -85117,6 +85149,22 @@ Heuristic and Efficiency Improvements
   providing backward compatibility when a proof fails --- evaluate
   the form: (defattach-system being-openedp-limited-for-nonrec
   constant-nil-function-arity-0).
+
+  When a command executed in a logical [world], w, is interrupted, the
+  world is reverted to w.  That reversion process could be very slow
+  if the interrupt was taken during the installation of the new
+  world, as indicated by the messages:
+
+    Flushing current installed world.
+    Reversing the new world.
+    Installing the new world.
+
+  That process has been sped up significantly.  Moreover, the new
+  process avoids a bug reported by Eric Smith, who we thank for
+  sending an example of how the process was interacting badly with
+  [reset-prehistory].  Code implementing that interaction was
+  introduced in Version 4.0 to speed up the process; that code has
+  been eliminated, as it is no longer necessary.
 
 
 Bug Fixes
@@ -85212,12 +85260,25 @@ EMACS Support
   from a file that is built by the manual-building process and is
   downloaded by the acl2-doc `D' command.
 
+  Highlighting in lisp-mode (inside Emacs) has been improved, both by
+  recognizing more keywords and by highlighting of some new
+  arguments, in particular the first argument of defthm.  Thanks to
+  Vivek Ramanathan, both for pointing out the defthm issue and for
+  suggesting code that was incorporated into the changes.
+
 
 Experimental Versions
 
   ACL2(p) now runs much more reliably on host Lisp SBCL (by taking
   advantage of a locking mechanism provided by SBCL).  Thanks to
-  David Rager for providing this improvement.")
+  David Rager for providing this improvement.
+
+  In ACL2(p), [set-waterfall-parallelism] no longer causes an error
+  when there are [override-hints] if the argument is the existing
+  value of the [state] global, 'waterfall-parallelism, or upon a
+  transition of [waterfall-parallelism] to nil.  Thanks to David
+  Rager for raising this issue (see GitHub Issue #1171) and
+  discussing its resolution.")
  (NOTE1 (POINTERS) "See [note-1-1].")
  (NOTE2 (POINTERS) "See [note-1-2].")
  (NOTE3 (POINTERS) "See [note-1-3].")
@@ -120386,14 +120447,14 @@ Subtopics
        (characterp (nth n lst)))
       :rule-classes ((:type-prescription :typed-term (nth n lst))))
 
-    (defthm demodulize-type-for-quote-value  ; (Demodulize a lst 'value ans) is
-      (implies                               ; either a nonnegative integer or
-       (and (atom a)                         ; of the same type as ans, provided
-            (true-listp lst)                 ; the hyps can be established by type
-            (member-equal a lst))            ; reasoning
+    (defthm demodulize-type-for-quote-value  ; (Demodulize a lst 'value ans) is ;
+      (implies                               ; either a nonnegative integer or ;
+       (and (atom a)                         ; of the same type as ans, provided ;
+            (true-listp lst)                 ; the hyps can be established by type ;
+            (member-equal a lst))            ; reasoning ;
        (or (and (integerp (demodulize a lst 'value ans))
                 (>= (demodulize a lst 'value ans) 0))
-         (equal (demodulize a lst 'value ans) ans)))
+           (equal (demodulize a lst 'value ans) ans)))
       :rule-classes :type-prescription)
 
   To specify the term whose type (see [type-set]) is described by the
