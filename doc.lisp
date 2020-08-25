@@ -23597,13 +23597,13 @@ Subtopics
   event-name is used.  The package of symbols generated, such as
   variables and [defthm] names, is determined by the package
   argument: if it is not supplied or its value is :current, then the
-  [current-package] is used; if its value is :equiv or :legacy, then
-  the package of :equiv is used.  All other arguments to the
-  generated [defthm] form are as specified by the other keyword
-  arguments above.  The rule-class :[equivalence] is added to the
-  [rule-classes] specified, if it is not already there.  The term
-  generated for the [defthm] event states that equiv is Boolean,
-  reflexive, symmetric, and transitive.")
+  [current-package] is used; if its value is :equiv or :legacy (which
+  are treated identically), then the package of :equiv is used.  All
+  other arguments to the generated [defthm] form are as specified by
+  the other keyword arguments above.  The rule-class :[equivalence]
+  is added to the [rule-classes] specified, if it is not already
+  there.  The term generated for the [defthm] event states that equiv
+  is Boolean, reflexive, symmetric, and transitive.")
  (DEFEVALUATOR
   (EVENTS)
   "Introduce an evaluator function
@@ -85320,6 +85320,22 @@ Changes at the System Level
   you will see that a more general capability is actually available
   for evaluating forms before the build begins.  Thanks to Eric Smith
   for correspondence leading to this enhancement.
+
+  Starting with ACL2 Version 7.0, the availability of hash consing (see
+  [hons]) and the other features described in [hons-and-memoization]
+  have been part of a default ACL2 build; meanwhile, support for
+  ``classic'' ACL2 has essentially been discontinued.  These features
+  require a certain Lisp action (implementation note: pushing :hons
+  onto *features*) that had been done during the ACL2 build by the
+  `make' process (with code in GNUmakefile).  Now that action is
+  taken unconditionally in the ACL2 source code.  Thanks to Petter
+  Gustad for reporting an error when attempting to build ACL2 without
+  using `make'; this change should fix that bug.  With this change
+  you can no longer attempt to build ``classic'' ACL2(c) without
+  editing ACL2 source file init.lisp; environment variable ACL2_HONS
+  no longer has any effect.  (On a related technical note: An obscure
+  feature :memoize-hack seems not to be used anywhere, and has been
+  eliminated.)
 
 
 EMACS Support
