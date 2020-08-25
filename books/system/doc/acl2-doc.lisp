@@ -30416,6 +30416,25 @@ ld) and @(tsee include-book)"
  <p><see topic='@(url |The Associativity of App|)'><img
  src='res/tours/walking.gif'></img></see></p>")
 
+(defxdoc f-boundp-global
+  :parents (programming-with-state acl2-built-ins)
+  :short "Check whether a global variable in @(tsee state) has a value"
+  :long "@({
+  Examples:
+  (f-boundp-global 'y state)
+
+  General Form:
+  (f-boundp-global s state)
+ })
+
+ <p>where @('s') evaluates to a symbol.  Note that this executes more
+ efficiently when @('s') is a constant of the form @(''sym').</p>
+
+ <p>This value returned is @('t') or @('nil') according to whether a value is
+ assigned to the given symbol in the ACL2 @(see state).  Also see related
+ utilities @(tsee f-get-global), @(tsee f-put-global), and @(tsee
+ makunbound-global).</p>")
+
 (defxdoc f-get-global
   :parents (programming-with-state acl2-built-ins)
   :short "Get the value of a global variable in @(tsee state)"
@@ -56273,6 +56292,25 @@ it."
  That problem is avoided by passing @('whs = nil').  For an example of this use
  of @('nil') in the ACL2 source code, see source function
  @('save-ev-fncall-guard-er').</p>")
+
+(defxdoc makunbound-global
+  :parents (programming-with-state acl2-built-ins)
+  :short "Remove the value assigned to a global variable in @(tsee state)"
+  :long "@({
+  Examples:
+  (makunbound-global 'y state)
+
+  General Form:
+  (makunbound-global s state)
+ })
+
+ <p>where @('s') evaluates to a symbol.</p>
+
+ <p>This value returned is the result of modifying the ACL2 @(see state) so
+ that the given symbol does not have a value.  This function thus acts as a
+ no-op if the symbol does not have a value in the given state.  Also see
+ related utilities @(tsee f-get-global), @(tsee f-put-global), and @(tsee
+ f-boundp-global).</p>")
 
 (defxdoc managing-acl2-packages
   :parents (packages)
@@ -86516,6 +86554,9 @@ it."
 ; a function, when the value is not a symbol-alist, as in:
 ; (table memoize-table 'foo 3).
 
+; F-boundp-global and makunbound-global are now documented.  Thanks to Eric
+; Smith for the request.
+
   :parents (release-notes)
   :short "ACL2 Version  8.4 (xxx, 20xx) Notes"
   :long "<p>NOTE!  New users can ignore these release notes, because the @(see
@@ -86609,6 +86650,15 @@ it."
  congruent @(see stobj)s, including better error messages, much improved code
  comments, and simplified code.  Thanks to Sol Swords for sending an example
  with a misleading error message.</p>
+
+ <p>The error message has been improved when a @(':')@(tsee linear) rule is
+ illegal due to simplification of its conclusion to a constant by ground
+ evaluation.  Thanks to Eric Smith for suggesting such an improvement.</p>
+
+ <p>It is no longer an error to repeat a @(tsee defun-sk) event after removing
+ the @(see xargs) @(see declaration), @(':guard t'); the latter is now
+ essentially redundant.  Thanks to Alessandro Coglio for reporting this
+ issue.</p>
 
  <h3>New Features</h3>
 
@@ -86778,6 +86828,27 @@ it."
  instructions) hint is not a true (null-terminated) list.  ACL2 now produces an
  informative error message in that case.</p>
 
+ <p>Improved @(':')@('print-gv') to do its computation in the ACL2 @(see world)
+ in which the @(see guard) violation took place.  See @(see print-gv); in
+ particular, that topic concludes with a discussion of this issue.  Thanks to
+ Eric Smith for reporting this issue along with a simple example.</p>
+
+ <p>The following @(tsee defun-sk) bugs were fixed.</p>
+
+ <ul>
+
+ <li>The @(see guard) was being ignored (that is, treated as @('t')) when
+ @(':constrained t') was specified in a @('defun-sk') event.  Thanks to
+ Alessandro Coglio for reporting this bug.</li>
+
+ <li>@(tsee Defun-sk) could fail when the formal parameters include @(see
+ stobj)s or @('state').</li>
+
+ <li>@(tsee Defun-sk) provided no direct way to allow formals to be ignored.
+ Now, @('ignorable') @(see declaration)s are permitted.</li>
+
+ </ul>
+
  <h3>Changes at the System Level</h3>
 
  <p>(SBCL only) Filenames are now read as ASCII (specifically, ISO-8859-1) when
@@ -86792,6 +86863,14 @@ it."
  modification of the build process to compile ACL2 source files when the host
  Lisp is SBCL.  Thanks to Stas Boukarev for pointing us in the right direction
  to debug this error.</p>
+
+ <p>There is now a way to save the untranslated bodies of built-in @(':')@(tsee
+ program) mode functions.  WARNING: This is not officially supported!  But it
+ may be useful for tools such as a linter.  See @('GNUmakefile'): search there
+ for @(':acl2-save-unnormalized-bodies'), where you will see that a more
+ general capability is actually available for evaluating forms before the build
+ begins.  Thanks to Eric Smith for correspondence leading to this
+ enhancement.</p>
 
  <h3>EMACS Support</h3>
 
@@ -91725,20 +91804,22 @@ arithmetic) for libraries of @(see books) for arithmetic reasoning.</p>")
  following effects and system defaults, but note that the defaults can be
  changed by the user; see @(see set-print-gv-defaults).</p>
 
- <p>The @(':conjunct') argument is @('nil') by default, indicating that a form
+ <ul>
+
+ <li>The @(':conjunct') argument is @('nil') by default, indicating that a form
  is to be displayed whose evaluation represents the @(see guard) evaluation
  that produced @('nil').  A value of @('t') indicates that ACL2 should parse
  the guard into conjuncts, and display the conjunct that actually evaluated to
  @('nil').  It does this by evaluating each conjunct in turn until one produces
- a result of @('nil').</p>
+ a result of @('nil').</li>
 
- <p>The @(':evisc-tuple') argument should be an @(see evisc-tuple).  Its
+ <li>The @(':evisc-tuple') argument should be an @(see evisc-tuple).  Its
  default is the value of the expression @('(print-gv-evisc-tuple)'), which
  specifies hiding only the ACL2 logical @(see world), so that the symbol
  @('<world>') is printed instead of the actual world.  See @(see evisc-tuple)
- for a discussion of evisc-tuples.</p>
+ for a discussion of evisc-tuples.</li>
 
- <p>The @(':substitute') argument is @('nil') by default, indicating that the
+ <li>The @(':substitute') argument is @('nil') by default, indicating that the
  displayed form uses @(tsee flet), which avoids duplicate occurrences of actual
  parameters.  A value of @('t') indicates that ACL2 should instead substitute
  those actuals into the guard.  Otherwise the value should be a natural number
@@ -91748,16 +91829,34 @@ arithmetic) for libraries of @(see books) for arithmetic reasoning.</p>")
  @('flet')) applies when some variable in the guard or (if @(':conjunct t') is
  specified) conjunct has at least two occurrences, and corresponds to an actual
  parameter with at least @('n') conses.  Note that the number of conses is
- counted in the ``translated'' term (guard or conjunct); see @(see term).</p>
+ counted in the ``translated'' term (guard or conjunct); see @(see term).</li>
+
+ </ul>
 
  <p>Again, the user can change these defaults; see @(see
  set-print-gv-defaults).  For example, one might wish to evaluate
  @('(set-print-gv-defaults :substitute 20)') so that @(tsee flet) is used only
  when that avoids certain duplicated large terms, as discussed just above.</p>
 
- <p>Note that the output from @('print-gv') always goes to the terminal.
+ <p><b>Remarks</b></p>
+
+ <ul>
+
+ <li>(1) @('Print-gv') starts by temporarily replacing the current installed
+ ACL2 @(see world) with the world that was installed at the time the guard
+ violation took place.  The current world is re-installed when @('print-gv')
+ returns.  We illustrate this point with an example at the end of this
+ topic.</li>
+
+ <li>(2) The output from @('print-gv') always goes to the terminal.
  (Specifically, the output goes to the value of the constant @(tsee
- *standard-co*).)</p>
+ *standard-co*).)</li>
+
+ <li>(3) While @('print-gv') is a utility for debugging @(see guard)
+ violations, see @(see guard-debug) for a different sort of utility, which
+ assists in debugging failed proofs arising from guard verification.</li>
+
+ </ul>
 
  <p>To see how one might use @('print-gv'), consider the following
  definition.</p>
@@ -91843,18 +91942,6 @@ arithmetic) for libraries of @(see books) for arithmetic reasoning.</p>")
  <p>The @('NIL') results show that the second and fourth conjuncts of the guard
  were false in our particular case.</p>
 
- <p>The following hack will give you access in raw Lisp to the form printed by
- @('(print-gv)').  After a guard violation, just submit the following form to
- raw Lisp.</p>
-
- @({
-  (print-gv1 (wormhole-data (cdr (assoc 'ev-fncall-guard-er-wormhole
-                                        *wormhole-status-alist*)))
-             nil ; conjunct
-             nil ; substitute
-             'top state)
- })
-
  <p>If you use local @(see stobj)s (see @(see with-local-stobj)) or stobj
  fields of stobjs, you may need to edit the output of @('print-gv') in order to
  evaluate it.  Consider the following example.</p>
@@ -91931,9 +92018,31 @@ arithmetic) for libraries of @(see books) for arithmetic reasoning.</p>")
   ACL2 !>
  })
 
- <p>Finally, we note that while @('print-gv') is a utility for debugging guard
- violations, in contrast, see @(see guard-debug) for a utility to assist in
- debugging failed proofs arising from guard verification.</p>")
+ <p>We conclude with an example that illustrates point (1) above, regarding the
+ installation of the @(see world) that was in place at the time the guard
+ violation took place.  In the following, the @(tsee progn) call fails when the
+ form @('(foo 3)') causes a guard violation.</p>
+
+ @({
+ (progn (defn g (x) (consp x))
+        (defun foo (x) (declare (xargs :guard (g x))) (car x))
+        (value-triple (foo 3)))
+ })
+
+ <p>We can then issue @('print-gv'):</p>
+
+ @({
+ ACL2 !>:print-gv
+
+ (FLET ((FOO{GUARD} (X) (DECLARE (IGNORABLE X)) (G X))) (FOO{GUARD} 3))
+
+ ACL2 !>
+ })
+
+ <p>However, if you try to evaluate this form, you will get an error because
+ the function @('g') is not currently defined.  This problem can be solved by
+ preceding @(':print-gv') with @(':redo-flat'), to re-run the events up to the
+ one that failed; see @(see redo-flat).</p>")
 
 (defxdoc printing-to-strings
   :parents (io)
@@ -131246,6 +131355,7 @@ expand function call at the current subterm, without simplifying"
 (defpointer when$ loop$)
 (defpointer when$+ loop$)
 (defpointer with-output! with-output)
+(defpointer with-prover-step-limit! with-prover-step-limit)
 (defpointer write-byte$ io)
 
 #||

@@ -3252,6 +3252,9 @@ Subtopics
   [Expt]
       Exponential function
 
+  [F-boundp-global]
+      Check whether a global variable in [state] has a value
+
   [F-get-global]
       Get the value of a global variable in [state]
 
@@ -3630,6 +3633,9 @@ Subtopics
 
   [Make-tau-interval]
       Make a tau interval
+
+  [Makunbound-global]
+      Remove the value assigned to a global variable in [state]
 
   [Max]
       The larger of two numbers
@@ -33789,6 +33795,22 @@ Subtopics
   and see [measure-debug] for a discussion of this function, which is
   useful for debugging failures from attempts to prove measure
   conjectures or to verify [guard]s.")
+ (F-BOUNDP-GLOBAL
+  (PROGRAMMING-WITH-STATE ACL2-BUILT-INS)
+  "Check whether a global variable in [state] has a value
+
+    Examples:
+    (f-boundp-global 'y state)
+
+    General Form:
+    (f-boundp-global s state)
+
+  where s evaluates to a symbol.  Note that this executes more
+  efficiently when s is a constant of the form 'sym.
+
+  This value returned is t or nil according to whether a value is
+  assigned to the given symbol in the ACL2 [state].  Also see related
+  utilities [f-get-global], [f-put-global], and [makunbound-global].")
  (F-GET-GLOBAL
   (PROGRAMMING-WITH-STATE ACL2-BUILT-INS)
   "Get the value of a global variable in [state]
@@ -60319,6 +60341,23 @@ Subtopics
   problem is avoided by passing whs = nil.  For an example of this
   use of nil in the ACL2 source code, see source function
   save-ev-fncall-guard-er.")
+ (MAKUNBOUND-GLOBAL
+  (PROGRAMMING-WITH-STATE ACL2-BUILT-INS)
+  "Remove the value assigned to a global variable in [state]
+
+    Examples:
+    (makunbound-global 'y state)
+
+    General Form:
+    (makunbound-global s state)
+
+  where s evaluates to a symbol.
+
+  This value returned is the result of modifying the ACL2 [state] so
+  that the given symbol does not have a value.  This function thus
+  acts as a no-op if the symbol does not have a value in the given
+  state.  Also see related utilities [f-get-global], [f-put-global],
+  and [f-boundp-global].")
  (MANAGING-ACL2-PACKAGES
   (PACKAGES)
   "User-contributed documentation on packages
@@ -85067,6 +85106,15 @@ Changes to Existing Features
   code comments, and simplified code.  Thanks to Sol Swords for
   sending an example with a misleading error message.
 
+  The error message has been improved when a :[linear] rule is illegal
+  due to simplification of its conclusion to a constant by ground
+  evaluation.  Thanks to Eric Smith for suggesting such an
+  improvement.
+
+  It is no longer an error to repeat a [defun-sk] event after removing
+  the [xargs] [declaration], :guard t; the latter is now essentially
+  redundant.  Thanks to Alessandro Coglio for reporting this issue.
+
 
 New Features
 
@@ -85233,6 +85281,21 @@ Bug Fixes
   hint is not a true (null-terminated) list.  ACL2 now produces an
   informative error message in that case.
 
+  Improved :print-gv to do its computation in the ACL2 [world] in which
+  the [guard] violation took place.  See [print-gv]; in particular,
+  that topic concludes with a discussion of this issue.  Thanks to
+  Eric Smith for reporting this issue along with a simple example.
+
+  The following [defun-sk] bugs were fixed.
+
+    * The [guard] was being ignored (that is, treated as t) when
+      :constrained t was specified in a defun-sk event.  Thanks to
+      Alessandro Coglio for reporting this bug.
+    * [Defun-sk] could fail when the formal parameters include [stobj]s or
+      state.
+    * [Defun-sk] provided no direct way to allow formals to be ignored.
+      Now, ignorable [declaration]s are permitted.
+
 
 Changes at the System Level
 
@@ -85249,6 +85312,14 @@ Changes at the System Level
   process to compile ACL2 source files when the host Lisp is SBCL.
   Thanks to Stas Boukarev for pointing us in the right direction to
   debug this error.
+
+  There is now a way to save the untranslated bodies of built-in
+  :[program] mode functions.  WARNING: This is not officially
+  supported!  But it may be useful for tools such as a linter.  See
+  GNUmakefile: search there for :acl2-save-unnormalized-bodies, where
+  you will see that a more general capability is actually available
+  for evaluating forms before the build begins.  Thanks to Eric Smith
+  for correspondence leading to this enhancement.
 
 
 EMACS Support
@@ -90607,6 +90678,9 @@ Subtopics
   [With-output!]
       See [with-output].
 
+  [With-prover-step-limit!]
+      See [with-prover-step-limit].
+
   [Write-byte$]
       See [io].")
  (POPPING_OUT_OF_AN_INDUCTIVE_PROOF
@@ -92088,31 +92162,30 @@ A Single Performance Comparison
   following effects and system defaults, but note that the defaults
   can be changed by the user; see [set-print-gv-defaults].
 
-  The :conjunct argument is nil by default, indicating that a form is
-  to be displayed whose evaluation represents the [guard] evaluation
-  that produced nil.  A value of t indicates that ACL2 should parse
-  the guard into conjuncts, and display the conjunct that actually
-  evaluated to nil.  It does this by evaluating each conjunct in turn
-  until one produces a result of nil.
-
-  The :evisc-tuple argument should be an [evisc-tuple].  Its default is
-  the value of the expression (print-gv-evisc-tuple), which specifies
-  hiding only the ACL2 logical [world], so that the symbol <world> is
-  printed instead of the actual world.  See [evisc-tuple] for a
-  discussion of evisc-tuples.
-
-  The :substitute argument is nil by default, indicating that the
-  displayed form uses [flet], which avoids duplicate occurrences of
-  actual parameters.  A value of t indicates that ACL2 should instead
-  substitute those actuals into the guard.  Otherwise the value
-  should be a natural number n, which behaves the same as nil except
-  when large duplicated terms are to be avoided in the precise sense
-  below, in which case the behavior is the same as t, that is, flet
-  is used.  The latter case (using flet) applies when some variable
-  in the guard or (if :conjunct t is specified) conjunct has at least
-  two occurrences, and corresponds to an actual parameter with at
-  least n conses.  Note that the number of conses is counted in the
-  ``translated'' term (guard or conjunct); see [term].
+    * The :conjunct argument is nil by default, indicating that a form is
+      to be displayed whose evaluation represents the [guard]
+      evaluation that produced nil.  A value of t indicates that ACL2
+      should parse the guard into conjuncts, and display the conjunct
+      that actually evaluated to nil.  It does this by evaluating
+      each conjunct in turn until one produces a result of nil.
+    * The :evisc-tuple argument should be an [evisc-tuple].  Its default is
+      the value of the expression (print-gv-evisc-tuple), which
+      specifies hiding only the ACL2 logical [world], so that the
+      symbol <world> is printed instead of the actual world.  See
+      [evisc-tuple] for a discussion of evisc-tuples.
+    * The :substitute argument is nil by default, indicating that the
+      displayed form uses [flet], which avoids duplicate occurrences
+      of actual parameters.  A value of t indicates that ACL2 should
+      instead substitute those actuals into the guard.  Otherwise the
+      value should be a natural number n, which behaves the same as
+      nil except when large duplicated terms are to be avoided in the
+      precise sense below, in which case the behavior is the same as
+      t, that is, flet is used.  The latter case (using flet) applies
+      when some variable in the guard or (if :conjunct t is
+      specified) conjunct has at least two occurrences, and
+      corresponds to an actual parameter with at least n conses.
+      Note that the number of conses is counted in the ``translated''
+      term (guard or conjunct); see [term].
 
   Again, the user can change these defaults; see
   [set-print-gv-defaults].  For example, one might wish to evaluate
@@ -92120,9 +92193,19 @@ A Single Performance Comparison
   when that avoids certain duplicated large terms, as discussed just
   above.
 
-  Note that the output from print-gv always goes to the terminal.
-  (Specifically, the output goes to the value of the constant
-  [*standard-co*].)
+  Remarks
+
+    * (1) Print-gv starts by temporarily replacing the current installed
+      ACL2 [world] with the world that was installed at the time the
+      guard violation took place.  The current world is re-installed
+      when print-gv returns.  We illustrate this point with an
+      example at the end of this topic.
+    * (2) The output from print-gv always goes to the terminal.
+      (Specifically, the output goes to the value of the constant
+      [*standard-co*].)
+    * (3) While print-gv is a utility for debugging [guard] violations, see
+      [guard-debug] for a different sort of utility, which assists in
+      debugging failed proofs arising from guard verification.
 
   To see how one might use print-gv, consider the following definition.
 
@@ -92198,16 +92281,6 @@ A Single Performance Comparison
   The NIL results show that the second and fourth conjuncts of the
   guard were false in our particular case.
 
-  The following hack will give you access in raw Lisp to the form
-  printed by (print-gv).  After a guard violation, just submit the
-  following form to raw Lisp.
-
-    (print-gv1 (wormhole-data (cdr (assoc 'ev-fncall-guard-er-wormhole
-                                          *wormhole-status-alist*)))
-               nil ; conjunct
-               nil ; substitute
-               'top state)
-
   If you use local [stobj]s (see [with-local-stobj]) or stobj fields of
   stobjs, you may need to edit the output of print-gv in order to
   evaluate it.  Consider the following example.
@@ -92276,9 +92349,27 @@ A Single Performance Comparison
     T
     ACL2 !>
 
-  Finally, we note that while print-gv is a utility for debugging guard
-  violations, in contrast, see [guard-debug] for a utility to assist
-  in debugging failed proofs arising from guard verification.
+  We conclude with an example that illustrates point (1) above,
+  regarding the installation of the [world] that was in place at the
+  time the guard violation took place.  In the following, the [progn]
+  call fails when the form (foo 3) causes a guard violation.
+
+    (progn (defn g (x) (consp x))
+           (defun foo (x) (declare (xargs :guard (g x))) (car x))
+           (value-triple (foo 3)))
+
+  We can then issue print-gv:
+
+    ACL2 !>:print-gv
+
+    (FLET ((FOO{GUARD} (X) (DECLARE (IGNORABLE X)) (G X))) (FOO{GUARD} 3))
+
+    ACL2 !>
+
+  However, if you try to evaluate this form, you will get an error
+  because the function g is not currently defined.  This problem can
+  be solved by preceding :print-gv with :redo-flat, to re-run the
+  events up to the one that failed; see [redo-flat].
 
 
 Subtopics
@@ -93821,6 +93912,9 @@ Subtopics
   [Error-triple]
       A common ACL2 programming idiom
 
+  [F-boundp-global]
+      Check whether a global variable in [state] has a value
+
   [F-get-global]
       Get the value of a global variable in [state]
 
@@ -93832,6 +93926,9 @@ Subtopics
 
   [Last-prover-steps]
       The number of prover steps most recently taken
+
+  [Makunbound-global]
+      Remove the value assigned to a global variable in [state]
 
   [Pprogn]
       Evaluate a sequence of forms that return [state]
@@ -127206,6 +127303,8 @@ Subtopics
 
   [Last-prover-steps]
       The number of prover steps most recently taken")
+ (WITH-PROVER-STEP-LIMIT! (POINTERS)
+                          "See [with-prover-step-limit].")
  (WITH-PROVER-TIME-LIMIT
   (MISCELLANEOUS)
   "Limit the time for proofs
