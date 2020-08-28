@@ -86557,6 +86557,9 @@ it."
 ; F-boundp-global and makunbound-global are now documented.  Thanks to Eric
 ; Smith for the request.
 
+; Eliminated raw Lisp error when first argument of memoize is not a symbol,
+; e.g., (memoize '(a b)).
+
   :parents (release-notes)
   :short "ACL2 Version  8.4 (xxx, 20xx) Notes"
   :long "<p>NOTE!  New users can ignore these release notes, because the @(see
