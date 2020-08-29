@@ -86660,8 +86660,10 @@ it."
 
  <p>It is no longer an error to repeat a @(tsee defun-sk) event after removing
  the @(see xargs) @(see declaration), @(':guard t'); the latter is now
- essentially redundant.  Thanks to Alessandro Coglio for reporting this
- issue.</p>
+ essentially redundant.  It is similarly no longer an error to repeat a
+ @('defun-sk') event by adding or removing keyword @(':guard-hints') in an
+ @('xargs') declaration.  Thanks to Alessandro Coglio for reporting these
+ issues.</p>
 
  <h3>New Features</h3>
 
