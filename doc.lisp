@@ -85112,11 +85112,11 @@ Changes to Existing Features
   improvement.
 
   It is no longer an error to repeat a [defun-sk] event after removing
-  the [xargs] [declaration], :guard t; the latter is now essentially
-  redundant.  It is similarly no longer an error to repeat a defun-sk
-  event by adding or removing keyword :guard-hints in an xargs
-  declaration.  Thanks to Alessandro Coglio for reporting these
-  issues.
+  or adding the [xargs] [declaration], :guard t; the latter is now
+  essentially redundant.  It is similarly no longer an error to
+  repeat a defun-sk event by adding, removing, or changing keyword
+  :guard-hints in an xargs declaration.  Thanks to Alessandro Coglio
+  for reporting these issues.
 
 
 New Features
