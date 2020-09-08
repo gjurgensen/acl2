@@ -14588,6 +14588,7 @@ Subtopics
        (release-notes-books \"[books]/doc/relnotes.lisp\")
        (removable-runes \"[books]/tools/removable-runes.lisp\")
        (remove-hyps \"[books]/tools/remove-hyps.lisp\")
+       (rewrite$ \"[books]/tools/rewrite-dollar.lisp\")
        (rewrite-equiv-hint \"[books]/coi/util/rewrite-equiv.lisp\")
        (run-script \"[books]/tools/run-script.lisp\")
        (satlink::sat-solver-options \"[books]/centaur/satlink/top.lisp\")
@@ -100633,7 +100634,9 @@ Subtopics
   general discussion of how rewriting works in ACL2 and some guidance
   on how to construct effective rewrite rules, see
   [introduction-to-rewrite-rules-part-1] and then see
-  [introduction-to-rewrite-rules-part-2].
+  [introduction-to-rewrite-rules-part-2].  If you want flexible,
+  convenient interface to the ACL2 rewriter that can be called
+  programmatically, see [rewrite$].
 
     Examples:
 
