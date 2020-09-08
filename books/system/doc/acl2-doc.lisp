@@ -134,6 +134,7 @@
     (RELEASE-NOTES-BOOKS "[books]/doc/relnotes.lisp")
     (REMOVABLE-RUNES "[books]/tools/removable-runes.lisp")
     (REMOVE-HYPS "[books]/tools/remove-hyps.lisp")
+    (REWRITE$ "[books]/tools/rewrite-dollar.lisp")
     (REWRITE-EQUIV-HINT "[books]/coi/util/rewrite-equiv.lisp")
     (RUN-SCRIPT "[books]/tools/run-script.lisp")
     (SATLINK::SAT-SOLVER-OPTIONS "[books]/centaur/satlink/top.lisp")
@@ -99314,7 +99315,9 @@ arithmetic) for libraries of @(see books) for arithmetic reasoning.</p>")
  general discussion of how rewriting works in ACL2 and some guidance on how to
  construct effective rewrite rules, see @(see
  introduction-to-rewrite-rules-part-1) and then see @(see
- introduction-to-rewrite-rules-part-2).</p>
+ introduction-to-rewrite-rules-part-2).  If you want flexible, convenient
+ interface to the ACL2 rewriter that can be called programmatically, see @(see
+ rewrite$).</p>
 
  @({
   Examples:
