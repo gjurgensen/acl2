@@ -85341,6 +85341,12 @@ Changes at the System Level
   feature :memoize-hack seems not to be used anywhere, and has been
   eliminated.)
 
+  (SBCL only) Handling in ACL2 of the SBCL ``read-cycle-counter'' has
+  been modified to reflect its handling in recent SBCL versions
+  (starting around late 2018 or early 2019).  This avoids an ACL2
+  build error on some platforms.  Thanks to John R. Strohm for
+  reporting such a problem (on a Raspberry Pi).
+
 
 EMACS Support
 

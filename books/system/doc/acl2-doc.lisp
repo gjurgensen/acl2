@@ -86893,6 +86893,11 @@ it."
  obscure feature @(':memoize-hack') seems not to be used anywhere, and has been
  eliminated.)</p>
 
+ <p>(SBCL only) Handling in ACL2 of the SBCL ``read-cycle-counter'' has been
+ modified to reflect its handling in recent SBCL versions (starting around late
+ 2018 or early 2019).  This avoids an ACL2 build error on some platforms.
+ Thanks to John R. Strohm for reporting such a problem (on a Raspberry Pi).</p>
+
  <h3>EMACS Support</h3>
 
  <p>The @(see acl2-doc) search commands (`@('s')' and `@('S')') were seen to
