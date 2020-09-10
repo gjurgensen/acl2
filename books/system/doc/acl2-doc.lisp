@@ -52690,6 +52690,13 @@ tables in the current Hons Space."
   primitive, @('loop').  This documentation assumes the reader has at least a
   passing familiarity with @('loop').</p>
 
+  <p><b>Note:</b> Before using @('loop$'), it is a good idea to include the
+  same book as is typically included when using @(tsee apply$), as follows.</p>
+
+  @({
+  (include-book \"projects/apply/top\" :dir :system)
+  })
+
   <p><b>Warning:</b> @('Loop$') implements only a small part of the
   functionality of @('loop').  Aside from the simple fact that @('loop$')
   allows a small subset of the syntax of @('loop'), the main restriction is
