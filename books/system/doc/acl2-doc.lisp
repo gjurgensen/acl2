@@ -18912,18 +18912,18 @@ subtree of X with T, without duplication.</p>
  returns the required formulas in translated form.)  Although the
  @('defabsstobj') event will fail if the required lemmas have not been proved,
  first it will print the @(tsee defthm) forms that must be admitted in order to
- complete submission of the @('defabsstobj') event.  (Note that although the
- those theorems are stated exactly in the form expected by the system, you are
+ complete submission of the @('defabsstobj') event.  (Note that although those
+ theorems are stated exactly in the form expected by the system, you are
  welcome to supply whatever @(':')@(tsee rule-classes) you prefer, even though
  the system creates @(':rule-classes nil') by default.)</p>
 
- <p>The detailed theory explaining the need for these lemmas may be found in a
- comment in ACL2 source file @('other-events.lisp'), in a comment entitled
- ``Essay on the Correctness of Abstract Stobjs''.  Here, we give an informal
- sense of the importance of these lemmas as we present examples of them.
- Fundamental is the notion of evaluation in the logic versus evaluation using
- live stobjs, where one imagines tracking the current value of each abstract
- stobj during each of these two evaluations.</p>
+ <p>The detailed theory explaining the need for these lemmas may be found in
+ ACL2 source file @('other-events.lisp'), in a comment entitled ``Essay on the
+ Correctness of Abstract Stobjs''.  Here, we give an informal sense of the
+ importance of these lemmas as we present examples of them.  Fundamental is the
+ notion of evaluation in the logic versus evaluation using live stobjs, where
+ one imagines tracking the current value of each abstract stobj during each of
+ these two evaluations.</p>
 
  <p>We start with the @(':CORRESPONDENCE') lemmas.  These guarantee that
  evaluation in the logic agrees with evaluation using live stobjs, in the sense
@@ -19089,7 +19089,7 @@ subtree of X with T, without duplication.</p>
  <p>@('St') is a symbol, which names the new abstract stobj.</p>
 
  <p>@('Concrete') is the name of an existing stobj, which may have been
- introduced either with @(tsee defstobj) or with @('defabsstobj).</p>
+ introduced either with @(tsee defstobj) or with @('defabsstobj').</p>
 
  <p>@('Recognizer') is a function spec (for the recognizer function).  The
  valid keywords are @(':LOGIC') and @(':EXEC').  The default for
