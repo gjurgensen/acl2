@@ -56830,6 +56830,11 @@ Subtopics
   loop.  This documentation assumes the reader has at least a passing
   familiarity with loop.
 
+  Note: Before using loop$, it is a good idea to include the same book
+  as is typically included when using [apply$], as follows.
+
+    (include-book \"projects/apply/top\" :dir :system)
+
   Warning: Loop$ implements only a small part of the functionality of
   loop.  Aside from the simple fact that loop$ allows a small subset
   of the syntax of loop, the main restriction is that the
