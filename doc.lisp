@@ -14588,6 +14588,7 @@ Subtopics
        (release-notes-books \"[books]/doc/relnotes.lisp\")
        (removable-runes \"[books]/tools/removable-runes.lisp\")
        (remove-hyps \"[books]/tools/remove-hyps.lisp\")
+       (rewrite$ \"[books]/tools/rewrite-dollar.lisp\")
        (rewrite-equiv-hint \"[books]/coi/util/rewrite-equiv.lisp\")
        (run-script \"[books]/tools/run-script.lisp\")
        (satlink::sat-solver-options \"[books]/centaur/satlink/top.lisp\")
@@ -22109,19 +22110,19 @@ Subtopics
   form.)  Although the defabsstobj event will fail if the required
   lemmas have not been proved, first it will print the [defthm] forms
   that must be admitted in order to complete submission of the
-  defabsstobj event.  (Note that although the those theorems are
-  stated exactly in the form expected by the system, you are welcome
-  to supply whatever :[rule-classes] you prefer, even though the
-  system creates :rule-classes nil by default.)
+  defabsstobj event.  (Note that although those theorems are stated
+  exactly in the form expected by the system, you are welcome to
+  supply whatever :[rule-classes] you prefer, even though the system
+  creates :rule-classes nil by default.)
 
   The detailed theory explaining the need for these lemmas may be found
-  in a comment in ACL2 source file other-events.lisp, in a comment
-  entitled ``Essay on the Correctness of Abstract Stobjs''.  Here, we
-  give an informal sense of the importance of these lemmas as we
-  present examples of them.  Fundamental is the notion of evaluation
-  in the logic versus evaluation using live stobjs, where one
-  imagines tracking the current value of each abstract stobj during
-  each of these two evaluations.
+  in ACL2 source file other-events.lisp, in a comment entitled
+  ``Essay on the Correctness of Abstract Stobjs''.  Here, we give an
+  informal sense of the importance of these lemmas as we present
+  examples of them.  Fundamental is the notion of evaluation in the
+  logic versus evaluation using live stobjs, where one imagines
+  tracking the current value of each abstract stobj during each of
+  these two evaluations.
 
   We start with the :CORRESPONDENCE lemmas.  These guarantee that
   evaluation in the logic agrees with evaluation using live stobjs,
@@ -22273,14 +22274,15 @@ Subtopics
       St is a symbol, which names the new abstract stobj.
 
       Concrete is the name of an existing stobj, which may have been
-      introduced either with [defstobj] or with defabsstobj).</p>
-      <p>@('Recognizer is a function spec (for the recognizer
-      function).  The valid keywords are :LOGIC and :EXEC.  The
-      default for recognizer is obtained by adding the suffix \"P\" to
-      name.  The default value for :LOGIC is formed by adding the
-      suffix \"$AP\" to recognizer; for :EXEC, by adding the suffix
-      \"$CP\".  The :EXEC function must be the recognizer for the
-      specified :CONCRETE stobj.
+      introduced either with [defstobj] or with defabsstobj.
+
+      Recognizer is a function spec (for the recognizer function).  The
+      valid keywords are :LOGIC and :EXEC.  The default for
+      recognizer is obtained by adding the suffix \"P\" to name.  The
+      default value for :LOGIC is formed by adding the suffix \"$AP\"
+      to recognizer; for :EXEC, by adding the suffix \"$CP\".  The
+      :EXEC function must be the recognizer for the specified
+      :CONCRETE stobj.
 
       Creator is a function spec (for the creator function).  The valid
       keywords are :LOGIC and :EXEC.  The default for creator is
@@ -85340,6 +85342,12 @@ Changes at the System Level
   feature :memoize-hack seems not to be used anywhere, and has been
   eliminated.)
 
+  (SBCL only) Handling in ACL2 of the SBCL ``read-cycle-counter'' has
+  been modified to reflect its handling in recent SBCL versions
+  (starting around late 2018 or early 2019).  This avoids an ACL2
+  build error on some platforms.  Thanks to John R. Strohm for
+  reporting such a problem (on a Raspberry Pi).
+
 
 EMACS Support
 
@@ -100633,7 +100641,9 @@ Subtopics
   general discussion of how rewriting works in ACL2 and some guidance
   on how to construct effective rewrite rules, see
   [introduction-to-rewrite-rules-part-1] and then see
-  [introduction-to-rewrite-rules-part-2].
+  [introduction-to-rewrite-rules-part-2].  If you want flexible,
+  convenient interface to the ACL2 rewriter that can be called
+  programmatically, see [rewrite$].
 
     Examples:
 
