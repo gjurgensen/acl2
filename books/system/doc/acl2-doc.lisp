@@ -22642,7 +22642,7 @@ subtree of X with T, without duplication.</p>
  <p>For the last of these, the values of @('HT-SIZE'), @('REHASH-SIZE'), and
  @('REHASH-THRESHOLD') are passed to the @(':size'), @(':rehash-size'), and
  @(':reash-threshold') arguments (respectively) of a call of
- @('make-hash-table) in raw Lisp.  The @(':test') argument of this function is
+ @('make-hash-table') in raw Lisp.  The @(':test') argument of this function is
  the one specified in the @(':type') specified in the @('defstobj') event for
  the field, in this case @('EQ') from the type @('(HASH-TABLE EQ)'); note
  however that if the @(':type') specifies the test @('(HASH-TABLE
@@ -32538,7 +32538,7 @@ current fast alists."
 
  <p>When ACL2 is given a @(':use') or @(':by') hint, it looks for the @(see
  term) stored in the ACL2 logical @(see world) that is associated with the name
- given in the hint, which is a symbol or a @(see rune).  (See (@see
+ given in the hint, which is a symbol or a @(see rune).  (See @(see
  lemma-instance).)  The utility used to find that term is @('formula'), which
  ACL2 invokes as follows.</p>
 
@@ -41295,7 +41295,7 @@ clears out the underlying Hons Space."
  discipline.</li>
 
  <li>(For ACL2(p) users only; see @(see parallelism)) If parallel execution is
- enabled (see (@see set-parallel-execution)), as it is by default in ACL2(p),
+ enabled (see @(see set-parallel-execution)), as it is by default in ACL2(p),
  then @('hons-clear') may be a no-op (other than to print a warning), in order
  to avoid thread-unsafe behavior.  (However, In CCL you are unlikely to see
  this restriction unless you are running more than one thread.)  To get around
@@ -41311,7 +41311,7 @@ clears out the underlying Hons Space."
   :short "A version of @(tsee hons-clear) for @(see parallel) execution"
   :long "<p>This function is only of interest to ACL2(p) users; see @(see
  parallelism), because for ACL2 it suffices to use @(tsee hons-clear).
- However, if parallel execution is enabled (see (@see set-parallel-execution)),
+ However, if parallel execution is enabled (see @(see set-parallel-execution)),
  as it is by default in ACL2(p), then @('hons-clear') may be a no-op (other
  than to print a warning), in order to avoid thread-unsafe behavior.  If you
  are not concerned about thread safety, for example when you want to call
@@ -41618,7 +41618,7 @@ tables in the current Hons Space."
  discipline.</li>
 
  <li>(For ACL2(p) users only; see @(see parallelism)) If parallel execution is
- enabled (see (@see set-parallel-execution)), as it is by default in ACL2(p),
+ enabled (see @(see set-parallel-execution)), as it is by default in ACL2(p),
  then @('hons-wash') may be a no-op (other than to print a warning), in order
  to avoid thread-unsafe behavior.  (However, In CCL you are unlikely to see
  this restriction unless you are running more than one thread.)  To get around
@@ -41634,7 +41634,7 @@ tables in the current Hons Space."
   :short "A version of @(tsee hons-wash) for @(see parallel) execution"
   :long "<p>This function is only of interest to ACL2(p) users; see @(see
  parallelism), because for ACL2 it suffices to use @(tsee hons-wash).  However,
- if parallel execution is enabled (see (@see set-parallel-execution)), as it is
+ if parallel execution is enabled (see @(see set-parallel-execution)), as it is
  by default in ACL2(p), then @('hons-wash') may be a no-op (other than to print
  a warning), in order to avoid thread-unsafe behavior.  If you are not
  concerned about thread safety, for example when you want to call
@@ -81472,7 +81472,7 @@ it."
  <h3>Experimental Versions</h3>
 
  <p>(For ACL2(p) users only; see @(see parallelism)) If parallel execution is
- enabled (see (@see set-parallel-execution)), as it is by default in ACL2(p),
+ enabled (see @(see set-parallel-execution)), as it is by default in ACL2(p),
  then @('hons-wash') and @('hons-clear') may be no-ops (other than to print a
  warning), in order to avoid thread-unsafe behavior.  (However, In CCL you are
  unlikely to see this restriction unless you are running more than one thread.)
@@ -81811,7 +81811,7 @@ it."
 
  <p>Suitable @(see warnings) are now printed when attempting to @(see monitor)
  @(see simple) rules of class @(':')@(tsee definition).  These had only been
- printed for simple rules of class @(':')(tsee rewrite), because of potential
+ printed for simple rules of class @(':')@(tsee rewrite), because of potential
  inefficiency in computing for such warnings in the case of large @(tsee
  mutual-recursion) @(see events), but that problem has been addressed in the
  ACL2 source code using @(see fast-alists).</p>
@@ -86622,13 +86622,13 @@ it."
  <p>Two improvements have been made in support of the @(tsee case-match) macro.
  (1) The built-in constant @(tsee *acl2-exports*) now includes the
  @('\"ACL2\"') package symbol, @('quotep~').  (2) The built-in function
- @('symbol-name-equal') is now a @(see guard)-verified @(':')(tsee logic) mode
+ @('symbol-name-equal') is now a @(see guard)-verified @(':')@(tsee logic) mode
  function.  Thanks to Stephen Westfold for email leading to these changes:
  for (1), pointing out that the special role of @('quotep~') for the @(tsee
  case-match) macro applies only to that @('\"ACL2\"') package symbol, not to
  other symbols with the same name; and for (2), pointing out that the expansion
  of a @('case-match') call that invokes @('quotep~') for matching was
- introducing @(':')(tsee program) mode code.</p>
+ introducing @(':')@(tsee program) mode code.</p>
 
  <p>A call of @(tsee comment) is more often inserted when the prover inserts a
  call of @(tsee hide).  See @(see comment) for a discussion of such ways in
@@ -115934,7 +115934,7 @@ arithmetic) for libraries of @(see books) for arithmetic reasoning.</p>")
  <p>The following log then illustrates tracing of these two functions.  Notice
  that before @(see guard)s have been verified, the ``executable-counterpart
  functions'' are called but the corresponding submitted functions are
- not (see (@see evaluation) for relevant background); but after guard
+ not (see @(see evaluation) for relevant background); but after guard
  verification of @('f'), the submitted function for @('f') is indeed called.
  (See @(see guard) and see @(see guard-evaluation-examples-log).)</p>
 
@@ -116415,7 +116415,7 @@ arithmetic) for libraries of @(see books) for arithmetic reasoning.</p>")
  @('trace$').</p>
 
  <p>(4) For a @(see wormhole) such as the @(see break-rewrite) loop, all calls
- of @('trace$') and $(tsee untrace$) inside that wormhole are undone upon exit
+ of @('trace$') and @(tsee untrace$) inside that wormhole are undone upon exit
  from the wormhole.  In particular, if you trace or untrace a function during a
  @(tsee brr) break, then effects of that trace or untrace will disappear when
  you proceed using a keyword such as @(':eval') or @(':go').</p>")
@@ -118505,7 +118505,7 @@ introduction-to-the-tau-system) for more information about Tau.</dd>
  ALISTP,'' and the corresponding @(see rune) @('(:TYPE-PRESCRIPTION ALISTP)')
  in the list of rules printed in the @(see summary).  These are telling us that
  ACL2 used the indicated rule during the process of computing a
- (@see type-prescription) rule for @('f').</p>
+ @(see type-prescription) rule for @('f').</p>
 
  <p>Now suppose that in a different session we instead proceed as follows.</p>
 
@@ -127385,7 +127385,7 @@ created from the original fast alist during @('form') must be manually freed."
  Value: hints (see @(see hints)), to be used during the termination proofs as
  opposed to the @(see guard) verification proofs of the @(tsee defun).</p>
 
- <p>@(':)@(tsee loop$-recursion)<br></br>
+ <p>@(':')@(tsee loop$-recursion)<br></br>
 
  Value: this flag must be set to @('t') or @('nil'); @('nil') is the default.
  The flag must be @('t') if and only if the function being defined calls itself
