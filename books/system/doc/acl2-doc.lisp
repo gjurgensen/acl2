@@ -86568,6 +86568,11 @@ it."
 ; Eliminated raw Lisp error when first argument of memoize is not a symbol,
 ; e.g., (memoize '(a b)).
 
+; Improved proof-builder message that could occur when backchaining to a false
+; FORCE or CASE-SPLIT hypothesis (after resume-suspended-assumption-rewriting
+; call in pc-single-step-primitive).  Thanks to Mihir Mehta for feedback
+; leading to this improvement.
+
   :parents (release-notes)
   :short "ACL2 Version  8.4 (xxx, 20xx) Notes"
   :long "<p>NOTE!  New users can ignore these release notes, because the @(see

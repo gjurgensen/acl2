@@ -25783,11 +25783,11 @@ The Default Function Names
   For the last of these, the values of HT-SIZE, REHASH-SIZE, and
   REHASH-THRESHOLD are passed to the :size, :rehash-size, and
   :reash-threshold arguments (respectively) of a call of
-  make-hash-table) in raw Lisp.  The @(':test argument of this
-  function is the one specified in the :type specified in the
-  defstobj event for the field, in this case EQ from the type
-  (HASH-TABLE EQ); note however that if the :type specifies the test
-  (HASH-TABLE HONS-EQUAL), then the :test is EQL.
+  make-hash-table in raw Lisp.  The :test argument of this function
+  is the one specified in the :type specified in the defstobj event
+  for the field, in this case EQ from the type (HASH-TABLE EQ); note
+  however that if the :type specifies the test (HASH-TABLE
+  HONS-EQUAL), then the :test is EQL.
 
 
 Avoiding the Default Function Names
@@ -36053,8 +36053,8 @@ Subtopics
 
   When ACL2 is given a :use or :by hint, it looks for the [term] stored
   in the ACL2 logical [world] that is associated with the name given
-  in the hint, which is a symbol or a [rune].  (See (@see
-  lemma-instance).)  The utility used to find that term is formula,
+  in the hint, which is a symbol or a [rune].  (See
+  [lemma-instance].)  The utility used to find that term is formula,
   which ACL2 invokes as follows.
 
     (formula x t wrld)   ; for :use hints
@@ -44968,13 +44968,13 @@ Subtopics
       un-normed, which might lead to less efficient re-norming and/or
       violations of the fast-alist discipline.
     * (For ACL2(p) users only; see [parallelism]) If parallel execution is
-      enabled (see (@see set-parallel-execution)), as it is by
-      default in ACL2(p), then hons-clear may be a no-op (other than
-      to print a warning), in order to avoid thread-unsafe behavior.
-      (However, In CCL you are unlikely to see this restriction
-      unless you are running more than one thread.)  To get around
-      this restriction, you can instead use [hons-clear!], which
-      however requires a [trust-tag].
+      enabled (see [set-parallel-execution]), as it is by default in
+      ACL2(p), then hons-clear may be a no-op (other than to print a
+      warning), in order to avoid thread-unsafe behavior.  (However,
+      In CCL you are unlikely to see this restriction unless you are
+      running more than one thread.)  To get around this restriction,
+      you can instead use [hons-clear!], which however requires a
+      [trust-tag].
 
   Function: <hons-clear>
 
@@ -44988,8 +44988,8 @@ Subtopics
 
   This function is only of interest to ACL2(p) users; see
   [parallelism], because for ACL2 it suffices to use [hons-clear].
-  However, if parallel execution is enabled (see (@see
-  set-parallel-execution)), as it is by default in ACL2(p), then
+  However, if parallel execution is enabled (see
+  [set-parallel-execution]), as it is by default in ACL2(p), then
   hons-clear may be a no-op (other than to print a warning), in order
   to avoid thread-unsafe behavior.  If you are not concerned about
   thread safety, for example when you want to call hons-clear
@@ -45327,13 +45327,13 @@ Subtopics
       un-normed, which might lead to less efficient re-norming and/or
       violations of the fast-alist discipline.
     * (For ACL2(p) users only; see [parallelism]) If parallel execution is
-      enabled (see (@see set-parallel-execution)), as it is by
-      default in ACL2(p), then hons-wash may be a no-op (other than
-      to print a warning), in order to avoid thread-unsafe behavior.
-      (However, In CCL you are unlikely to see this restriction
-      unless you are running more than one thread.)  To get around
-      this restriction, you can instead use [hons-wash!], which
-      however requires a [trust-tag].
+      enabled (see [set-parallel-execution]), as it is by default in
+      ACL2(p), then hons-wash may be a no-op (other than to print a
+      warning), in order to avoid thread-unsafe behavior.  (However,
+      In CCL you are unlikely to see this restriction unless you are
+      running more than one thread.)  To get around this restriction,
+      you can instead use [hons-wash!], which however requires a
+      [trust-tag].
 
   Function: <hons-wash>
 
@@ -45345,8 +45345,8 @@ Subtopics
 
   This function is only of interest to ACL2(p) users; see
   [parallelism], because for ACL2 it suffices to use [hons-wash].
-  However, if parallel execution is enabled (see (@see
-  set-parallel-execution)), as it is by default in ACL2(p), then
+  However, if parallel execution is enabled (see
+  [set-parallel-execution]), as it is by default in ACL2(p), then
   hons-wash may be a no-op (other than to print a warning), in order
   to avoid thread-unsafe behavior.  If you are not concerned about
   thread safety, for example when you want to call hons-wash directly
@@ -81070,7 +81070,7 @@ EMACS Support
 Experimental Versions
 
   (For ACL2(p) users only; see [parallelism]) If parallel execution is
-  enabled (see (@see set-parallel-execution)), as it is by default in
+  enabled (see [set-parallel-execution]), as it is by default in
   ACL2(p), then hons-wash and hons-clear may be no-ops (other than to
   print a warning), in order to avoid thread-unsafe behavior.
   (However, In CCL you are unlikely to see this restriction unless
@@ -81214,7 +81214,7 @@ Changes to Existing Features
 
   Suitable [warnings] are now printed when attempting to [monitor]
   [simple] rules of class :[definition].  These had only been printed
-  for simple rules of class :(tsee rewrite), because of potential
+  for simple rules of class :[rewrite], because of potential
   inefficiency in computing for such warnings in the case of large
   [mutual-recursion] [events], but that problem has been addressed in
   the ACL2 source code using [fast-alists].
@@ -85075,13 +85075,13 @@ Changes to Existing Features
   Two improvements have been made in support of the [case-match] macro.
   (1) The built-in constant [*ACL2-exports*] now includes the \"ACL2\"
   package symbol, quotep~.  (2) The built-in function
-  symbol-name-equal is now a [guard]-verified :(tsee logic) mode
-  function.  Thanks to Stephen Westfold for email leading to these
-  changes: for (1), pointing out that the special role of quotep~ for
-  the [case-match] macro applies only to that \"ACL2\" package symbol,
-  not to other symbols with the same name; and for (2), pointing out
-  that the expansion of a case-match call that invokes quotep~ for
-  matching was introducing :(tsee program) mode code.
+  symbol-name-equal is now a [guard]-verified :[logic] mode function.
+  Thanks to Stephen Westfold for email leading to these changes: for
+  (1), pointing out that the special role of quotep~ for the
+  [case-match] macro applies only to that \"ACL2\" package symbol, not
+  to other symbols with the same name; and for (2), pointing out that
+  the expansion of a case-match call that invokes quotep~ for
+  matching was introducing :[program] mode code.
 
   A call of [comment] is more often inserted when the prover inserts a
   call of [hide].  See [comment] for a discussion of such ways in
@@ -118253,8 +118253,8 @@ Subtopics
   The following log then illustrates tracing of these two functions.
   Notice that before [guard]s have been verified, the
   ``executable-counterpart functions'' are called but the
-  corresponding submitted functions are not (see (@see evaluation)
-  for relevant background); but after guard verification of f, the
+  corresponding submitted functions are not (see [evaluation] for
+  relevant background); but after guard verification of f, the
   submitted function for f is indeed called.  (See [guard] and see
   [guard-evaluation-examples-log].)
 
@@ -118727,8 +118727,8 @@ Remarks
   their code installed by trace$.
 
   (4) For a [wormhole] such as the [break-rewrite] loop, all calls of
-  trace$ and $(tsee untrace$) inside that wormhole are undone upon
-  exit from the wormhole.  In particular, if you trace or untrace a
+  trace$ and [untrace$] inside that wormhole are undone upon exit
+  from the wormhole.  In particular, if you trace or untrace a
   function during a [brr] break, then effects of that trace or
   untrace will disappear when you proceed using a keyword such as
   :eval or :go.")
@@ -120780,7 +120780,7 @@ Subtopics
   rule ALISTP,'' and the corresponding [rune] (:TYPE-PRESCRIPTION
   ALISTP) in the list of rules printed in the [summary].  These are
   telling us that ACL2 used the indicated rule during the process of
-  computing a (@see type-prescription) rule for f.
+  computing a [type-prescription] rule for f.
 
   Now suppose that in a different session we instead proceed as
   follows.
@@ -128490,11 +128490,11 @@ Subtopics
   Value: hints (see [hints]), to be used during the termination proofs
   as opposed to the [guard] verification proofs of the [defun].
 
-  :)@(tsee loop$-recursion)<br></br> Value: this flag must be set to
-  @('t or nil; nil is the default.  The flag must be t if and only if
-  the function being defined calls itself recursively from within a
-  [loop$] body or within a when or until clause.  See
-  [loop$-recursion].
+  :[loop$-recursion]
+  Value: this flag must be set to t or nil; nil is the default.  The
+  flag must be t if and only if the function being defined calls
+  itself recursively from within a [loop$] body or within a when or
+  until clause.  See [loop$-recursion].
 
   :measure
   Value is a term involving only the formals of the function being
