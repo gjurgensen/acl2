@@ -101645,9 +101645,9 @@ Subtopics
 
   Most successful ACL2 users make only sparing use of other kinds of
   rules besides rewrite rules.  When in doubt, the default is
-  probably best: the absence of any :rule-classes keyword in a tsee
-  defthm event, which is equivalent to :rule-classes :rewrite.  Below
-  are some suggestions for when other kinds of rules might be
+  probably best: the absence of any :rule-classes keyword in a
+  [defthm] event, which is equivalent to :rule-classes :rewrite.
+  Below are some suggestions for when other kinds of rules might be
   appropriate.  Of course, you are welcome to scan the
   [community-books] for examples.  One can for example find many
   examples (apparently more than 15,000) of :type-prescription rules
