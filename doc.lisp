@@ -77,7 +77,7 @@ Subtopics
   [defthm], [in-theory], [xargs], [state], etc., without an acl2::
   prefix.
 
-  The constant *acl2-exports* lists 1502 symbols, including most
+  The constant *acl2-exports* lists 1513 symbols, including most
   documented ACL2 system constants, functions, and macros.  You will
   typically also want to import many symbols from Common Lisp; see
   [*common-lisp-symbols-from-main-lisp-package*].
@@ -195,7 +195,8 @@ Subtopics
        code-char-char-code-is-identity
        code-char-type coerce coerce-inverse-1
        coerce-inverse-2 coerce-object-to-state
-       coerce-state-to-object comment
+       coerce-state-to-object
+       collect$ collect$+ comment
        community-books commutativity-of-*
        commutativity-of-+ comp completion-of-*
        completion-of-+ completion-of-<
@@ -294,8 +295,9 @@ Subtopics
        explode-nonnegative-integer expt
        expt-type-prescription-non-zero-base
        extend-32-bit-integer-stack
-       extend-pe-table extend-t-stack
-       extend-world extra-info f-get-global
+       extend-pe-table
+       extend-t-stack extend-world
+       extra-info f-boundp-global f-get-global
        f-put-global fast-alist-clean
        fast-alist-clean! fast-alist-fork
        fast-alist-fork! fast-alist-free
@@ -307,9 +309,10 @@ Subtopics
        file-write-date$ finalize-event-user
        first first-n-ac fix fix-pkg
        fix-true-list flet floor flush-compress
-       flush-hons-get-hash-table-link
-       fms fms! fms!-to-string
-       fms-to-string fmt fmt! fmt!-to-string
+       flush-hons-get-hash-table-link fms fms!
+       fms!-to-string fms-to-string fmt fmt!
+       fmt!-to-string fmt-hard-right-margin
+       fmt-soft-right-margin
        fmt-to-comment-window fmt-to-string fmt1
        fmt1! fmt1!-to-string fmt1-to-string
        fmx fmx!-cw fmx-cw fn-equal
@@ -410,7 +413,7 @@ Subtopics
        maybe-flush-and-compress1
        mbe mbt mbt* member member-eq
        member-equal member-symbol-name
-       memoize memoize-summary
+       memoize memoize-partial memoize-summary
        memsum meta-extract-contextual-fact
        meta-extract-formula
        meta-extract-global-fact
@@ -545,7 +548,8 @@ Subtopics
        retract-world
        retrieve return-last return-last-table
        revappend reverse revert-world
-       rewrite-equiv rewrite-stack-limit
+       rewrite-equiv rewrite-quoted-constant
+       rewrite-stack-limit
        rfix round rw-cache satisfies
        save-and-clear-memoization-settings
        save-exec search second serialize-read
@@ -672,12 +676,13 @@ Subtopics
        string<-l-trichotomy
        string<= string> string>=
        stringp stringp-symbol-package-name
-       strip-cars strip-cdrs sublis sublis-fn
-       sublis-fn-lst-simple sublis-fn-simple
-       subseq subseq-list subsequencep
-       subsetp subsetp-eq subsetp-equal
-       subst substitute substitute-ac
-       suitably-tamep-listp summary swap-stobjs
+       strip-cars strip-cdrs
+       sublis sublis-fn sublis-fn-lst-simple
+       sublis-fn-simple subseq subseq-list
+       subsequencep subsetp subsetp-eq
+       subsetp-equal subst substitute
+       substitute-ac suitably-tamep-listp
+       sum$ sum$+ summary swap-stobjs
        symbol symbol-< symbol-<-asymmetric
        symbol-<-irreflexive symbol-<-transitive
        symbol-<-trichotomy symbol-alistp
@@ -705,6 +710,8 @@ Subtopics
        thereis$+ third thm time$ time-tracker
        time-tracker-tau timer-alistp
        timer-alistp-forward-to-true-list-listp-and-symbol-alistp
+       toggle-inhibit-warning
+       toggle-inhibit-warning!
        toggle-pc-macro top-level
        trace! trace$ trace* trans trans!
        trans-eval trans-eval-default-warning
@@ -14729,7 +14736,7 @@ Subtopics
     :eval!             :eval but no recursive breaks
     :eval$ runes       :eval with runes monitored during recursion
     :failure-reason[+] reason rule failed (after :eval)
-    :final-ttree[+]    ttree after :eval (see @(see ttree))
+    :final-ttree[+]    ttree after :eval (see :DOC ttree)
     :frame[+] i        ith frame in :path
     :go                exit break, printing result
     :go!               :go but no recursive breaks
@@ -14737,8 +14744,10 @@ Subtopics
     :help              this message
     :hyp i             ith hypothesis of the rule
     :hyps              hypotheses of the rule
-    :initial-ttree[+]  ttree before :eval (see @(see ttree))
-    :lhs               left-hand side of rule's conclusion
+    :initial-ttree[+]  ttree before :eval (see :DOC ttree)
+    :lhs               left-hand side of rule's conclusion (or, in the case
+                         of :rewrite-quoted-constant rules of form [2], the
+                         right-hand side!)
     :ok                exit break
     :ok!               :ok but no recursive breaks
     :ok$ runes         :ok with runes monitored during recursion
@@ -14748,13 +14757,18 @@ Subtopics
                          where the leading term of each is enclosed in an
                          extra set of parentheses
     :rewritten-rhs[+]  rewritten :rhs (after :eval) of a rewrite rule
-    :rhs               right-hand side of rule's conclusion
+    :rhs               right-hand side of rule's conclusion (or, in the case
+                         of :rewrite-quoted-constant rules of form [2], the
+                         left-hand side!)
     :standard-help     :help message from ACL2 top-level
     :target[+]         term being rewritten
     :top[+]            top-most frame in :path
     :type-alist[+]     type assumptions governing :target
     :unify-subst[+]    substitution making :lhs equal :target
     :wonp              indicates whether application succeeded (after :eval)
+
+  See the discussion of form [2] :[rewrite-quoted-constant] rules for
+  an explanation of the swapped meanings of ``:lhs'' and ``:rhs.''
 
   [Break-rewrite] is just a call of the standard ACL2 read-eval-print
   loop, [ld], on a ``[wormhole]'' [state].  Thus, you may execute
@@ -48862,6 +48876,11 @@ More help
  (INTRODUCTION-TO-REWRITE-RULES-PART-1
   (INTRODUCTION-TO-THE-THEOREM-PROVER)
   "Introduction to ACL2's notion of rewrite rules
+
+  This topic is an introduction to rewrite rules in ACL2 and is
+  intended for the newcomer to ACL2.  The slightly more experienced
+  user might benefit from reading [random-remarks-on-rewriting]
+  instead.
 
   Rewrite rules make ACL2 replace one term by another.  This is done by
   the rewriter, which is part of ACL2's simplifier.  The rewriter
@@ -85167,6 +85186,11 @@ New Features
   memoization hits.  Thanks to Mertcan Temel for an inquiry leading
   to this enhancement, and for helpful discussions.
 
+  A new rule-class (see [rule-classes]) has been added, named
+  :[rewrite-quoted-constant].  Rules in this class can cause the
+  rewriter to replace one quoted constant by an equivalent one under
+  a given [equivalence] relation.  See [rewrite-quoted-constant].
+
 
 Heuristic and Efficiency Improvements
 
@@ -89571,42 +89595,92 @@ Implementation
   "Print the rules for the given name or term
 
     Examples:
-    :pl foo     ; prints rules that rewrite some call of foo
-    :pl (+ x y) ; prints rules that rewrite (+ x y)
+    :pl foo        ; prints rules that rewrite some call of foo
+    :pl quote      ; prints rules that rewrite quoted constants
+    :pl (+ x y)    ; prints rules that rewrite (+ x y)
+    :pl '(4 1 2 3) ; prints rules that rewrite '(4 1 2 3)
 
   Also see [pl2], which restricts output to rules that you specify for
   a given term.
 
   Pl takes one argument, which should be a symbol or a term.
 
-  First suppose that the argument is a symbol.  Then it should be
-  either a function symbol or else a macro alias for a function
-  symbol (see [macro-aliases-table]), which is treated as the
-  corresponding function symbol.  In this case :pl displays rules
-  that apply to terms whose top function symbol is the one specified,
-  specifically, rules of class :[rewrite], :[definition], :[meta],
-  :[linear], :[type-prescription], :[forward-chaining], :[elim], and
-  :[induction].  For each class, rules are displayed in order from
-  the most recently submitted rule to the oldest, with two
+  First suppose that the argument is a symbol.  Then it should be the
+  symbol quote, a function symbol, or else a macro alias for a
+  function symbol (see [macro-aliases-table]), which is treated as
+  the corresponding function symbol.  When the argument to pl is
+  quote, pl displays the rules that rewrite quoted constants, i.e.,
+  the :[rewrite-quoted-constant] rules.  Otherwise, :pl displays
+  rules that apply to terms whose top function symbol is the one
+  specified, specifically, rules of class :[rewrite], :[definition],
+  :[meta], :[linear], :[type-prescription], :[forward-chaining],
+  :[elim], and :[induction].  For each class, rules are displayed in
+  order from the most recently submitted rule to the oldest, with two
   exceptions: :rewrite, :definition, and :meta rules are considered
   as one ``class'' for this purpose; and only the current (most
   recent) :elim rule is displayed.
 
   Otherwise the argument should be a term (in user syntax, so that for
   example macros are permitted).  In this case, :pl displays rules
-  that are applicable to the given term, in order (as above, most
-  recent rule first) for each of these four cases: first :[rewrite]
-  and :[definition] rules, then :meta rules, then :[linear] rules,
-  and finally :[type-prescription] rules.  Each rule is displayed
-  with additional information, such as the hypotheses that remain
-  after applying some simple techniques to discharge them that are
-  likely to apply in any context.  Note that for :[meta] rules, only
-  those are displayed that meet two conditions: the application of
-  the metafunction returns a term different from the input term, and
-  if there is a hypothesis metafunction then it also returns a term.
-  (A subtlety: In the case of extended metafunctions (see
-  [extended-metafunctions]), a trivial metafunction context is used
-  for the application of the metafunction.)
+  that are (possibly) applicable to the given term, in order (as
+  above, most recent rule first) for each of these four cases: first
+  :[rewrite-quoted-constant], :[rewrite] and :[definition] rules,
+  then :meta rules, then :[linear] rules, and finally
+  :[type-prescription] rules.  Each rule is displayed with additional
+  information, such as the hypotheses that remain after applying some
+  simple techniques to discharge them that are likely to apply in any
+  context.
+
+  It is important to remember that rules displayed as ``applicable'' by
+  pl may in fact not be used because of logical requirements, like
+  failure to relieve the hypotheses in the context in which the
+  target occurs, or because of heuristics such as those controlled by
+  the :[loop-stopper].
+
+  A reminder of this can sometimes be seen in the output of pl.  For
+  example, if the list of un-discharged hypotheses contains nil then
+  the hypotheses of this instance the rule are known, by trivial
+  means, to be unsatisfiable.
+
+  Similarly, :[rewrite-quoted-constant] rules of form [2] are not
+  actually applied unless a certain computation produces a quoted
+  constant.  For example,
+
+    ACL2 !>(include-book \"demos/rewrite-quoted-constant-examples\" :dir :system)
+
+  includes a form [2] rule, named form-2-rule, which will rewrite any
+  quoted constant occurring a position admitting set-equalp as a
+  congruence.  The rule will apply the function drop-dups-and-sort to
+  the constant and replace the constant by the result --- if the
+  result is a quoted constant.  That function coerces the constant to
+  a [true-listp], drops duplicate elements, and sorts the list.
+  Thus, '(3 1 1 2 . 77) in a set-equalp occurrence would be rewritten
+  to '(1 2 3).  However, that replacement is only made if
+  (drop-dups-and-sort '(3 1 1 2 . 77)) is rewritten to a quoted
+  constant.
+
+    ACL2 !>:pl '(3 1 1 2 . 77)
+
+  will include an entry for form-2-rule, but the entry reads:
+
+    New term: (DROP-DUPS-AND-SORT '(3 1 1 2 . 77))
+    Hypotheses: <none>
+    Equiv: SET-EQUALP
+    Substitution: ((LST '(3 1 1 2 . 77)))
+    WARNING:  The new term above is only used if it rewrites to a quoted
+    constant!
+
+  How might the replacement not be made?  One way is if
+  drop-dups-and-sort and its [executable-counterpart] are both
+  disabled and there are no :rewrite rules about that function.
+
+  Note that for :[meta] rules, only those are displayed that meet two
+  conditions: the application of the metafunction returns a term
+  different from the input term, and if there is a hypothesis
+  metafunction then it also returns a term.  (A subtlety: In the case
+  of extended metafunctions (see [extended-metafunctions]), a trivial
+  metafunction context is used for the application of the
+  metafunction.)
 
   Note that some rule classes are not handled by :pl.  In particular,
   if you want to see all :[clause-processor] rules, issue the command
@@ -97339,6 +97413,257 @@ Subtopics
                               val)
                              (t 0))
                        state)))")
+ (RANDOM-REMARKS-ON-REWRITING
+  (REWRITE REWRITE-QUOTED-CONSTANT)
+  "Some basic facts about the ACL2 rewriter
+
+  The ACL2 rewriter is technically part of the simplifier, but in this
+  documentation we often conflate the two and say things like ``the
+  conclusion simplifies to T'' when in fact we should say ``the
+  conclusion rewrites to T during simplification'' In addition, both
+  the simplifier and the rewriter are enormously complicated and
+  contain so many heuristics that users are not often helped by
+  studying the details.  For example, the rewriter takes 18 arguments
+  (some of which are bundles of more rarely used arguments) and is
+  part of a mutually recursive clique containing 50 functions as of
+  Version 8.3, including the linear (and non-linear) arithmetic
+  semi-decision procedures.  The rewriter and its clique consume
+  about 6500 lines of code.
+
+  But to understand how :[rewrite], :[rewrite-quoted-constant],
+  :[linear], :[congruence], :forward-chaining and other rules behave,
+  the user has to have a fairly weak model of the simplifier and
+  rewriter, so we sketch that here.
+
+  In ACL2, the goals you see printed in proof output are represented
+  internally as clauses.  A clause in our sense is a list of terms
+  and the meaning of a clause is the ACL2 disjunction of those terms
+  where a term p is considered ``false'' if ``p = nil'' and is true
+  otherwise.  The elements of a clause are called ``literals,'' even
+  though they are just terms.  For example the goal (IMPLIES (AND p
+  q) r) is internally represented as the clause ((NOT p) (NOT q) r).
+  The literals of that clause are the terms (NOT p), (NOT q), and r.
+
+  The job of the simplifier is to simplify a clause, returning a set of
+  clauses whose conjunction is propositionally equivalent to the
+  input clause.  The most desirable output set is the empty set,
+  because the conjunction over the empty set is T, which means the
+  goal clause was proved.  For related discussions, see
+  [hints-and-the-waterfall], where we discuss how repeated
+  simplifications are performed.
+
+  Note that if you are trying to simplify the clause (lit1 lit2 ...
+  litk) and you manage to rewrite, say, the liti to T, then the
+  clause is true.  Furthermore, when rewriting a literal of a clause
+  you may assume all the other literals false because if one were
+  true the clause would be true.  Finally, when you rewrite a literal
+  you are justified in replacing it with one that is propositional
+  equivalent, since the literals are disjoined.
+
+  The simplifier works by first generating several data structures,
+  here called the ``context,'' which codify governing assumptions
+  available for the rewriting of each literal.  These data structures
+  include the [type-alist] and [linear-arithmetic] data base.  They
+  are built using various rules derived from previously proved
+  lemmas, including :[type-prescription], :[forward-chaining], and
+  :[linear] rules.  It then calls the rewriter successively on each
+  literal passing it the appropriate context and stipulating that the
+  result of the rewriting must be propositionally equivalent to the
+  input.  The rewriter returns a suitable term.  If the result is the
+  unchanged, the simplifier just moves on to the next literal.  If
+  the result contains no IF-expressions, the simplifier just replaces
+  the old literal with the new one.  But if the new term contains
+  IF-expressions, the simplifier splits them out into a set of clause
+  segments, i.e., if the literal simplifies to (IF a b c), then the
+  simplifier gets two new clause segments, ((NOT a) b) and (a c), and
+  then it splices each segment into the goal clause where the literal
+  was, producing a set of new clauses, and then resumes rewriting
+  literals in each new clause.  Heuristics try to prevent excessive
+  case splitting, e.g., see [case-split-limitations].
+
+  The job of the rewriter is to take a term, some context, and an
+  equivalence relation, and return a ``simpler'' term that is
+  equivalent to the input term under the assumptions in the context.
+
+  The rewriter works by exploring the term, possibly changing the
+  context and the equivalence relation as appropriate for the
+  subterms it rewrites.
+
+    * If the term is a variable, the rewriter just returns it (unless the
+      context tells it something interesting about that variable,
+      such as that the variable is equal to nil).  Sometimes you
+      might wish that the value of a bound variable be rewritten,
+      usually because the value found on the alist was rewritten
+      under a different equivalence relation than the variable is now
+      being used.  See double-rewrite.
+    * If the term is a quoted constant, the rewriter tries to apply
+      :[rewrite-quoted-constant] rules to that constant.
+    * If the term is (IF a b c), it rewrites the test, a, under the
+      equivalence relation IFF to get some (possibly) new term, a'.
+      If a' is nil or is obviously different from nil (like T), the
+      rewriter replaces the IF-term by b or c, appropriately, and
+      rewrites that.  If on the other hand, the rewriter can't decide
+      whether a' is nil or not, it rewrites b to b' in an extended
+      context in which a' is assumed non-nil and rewrites c to c' in
+      an extended context in which a' is nil.  In rewriting both
+      branches it preserves the outer equivalence relation -- the one
+      to be maintained while rewriting the IF-term.  Then the
+      rewriter returns (IF a' b' c').
+    * If the term is a call of an arithmetic inequality, like (< a b), the
+      rewriter rewrites a and b and then considers whether the
+      context allows it deduce the truth or falsity of the inequality
+      using a [linear-arithmetic] decision procedure.  The decision
+      procedure, which is complete for linear inequalities over the
+      rationals, uses heuristics to decide many integer cases, to
+      select the order in which inequalities are combined to
+      eliminate variables, and to handle some [non-linear-arithmetic]
+      problems.
+    * If the term is a call of a function symbol, fn, on some argument
+      terms, a1, ..., an, the rewriter rewrites each argument, ai to
+      ai'.  For each argument the rewriter uses known :[congruence]
+      rules to determine which equivalence relations can be used to
+      rewrite terms in that argument position so as to maintain the
+      outer equivalence.  Then, having transformed (fn a1 ... an) to
+      (fn a1' ... an') the rewriter tries to apply :[rewrite] rules
+      to that transformed term, called the ``target.''.
+    * Among the rewrite rules generally available for (fn a1' ... an') is
+      the definition of fn itself.  The rewriter considers
+      ``expanding'' the call, i.e., replacing it by the body of fn
+      after substituting the ai' for the formal variables, if the
+      definition is [enable]d, and then rewriting that.  But
+      heuristics are used to prevent the indefinite expansion of
+      recursive definitions.
+
+  For an elementary tutorial on the application of a :rewrite rule to a
+  target term, see [introduction-to-rewrite-rules-part-1] and
+  [introduction-to-rewrite-rules-part-2].  Those topics also lead to
+  documentation on how to design effective rules.  But just to
+  summarize very briefly, we offer the following.
+
+  :Rewrite rules take the general form
+
+    (implies (and hyp1 ... hypk) (equiv lhs rhs))
+
+  where equiv is a known [equivalence] relation.  Recall that the
+  rewriter has a target term to rewrite in some context and is
+  required to return a term that is equivalent modulo a given
+  equivalence relation, here called the ``outer'' equivalence.
+  Furthermore, if the target term is a function application, e.g.,
+  (fn a1' ... an'), the argument subterms have already been
+  rewritten.
+
+  If the rule in question is enabled and its equiv refines the outer
+  equivalence, the rewriter tries to match lhs with the target.  By
+  ``match'' we mean it tries to find a substition for the variables
+  in lhs that make the instantiated lhs identical to the target.  We
+  discuss matching further below.  Second, having found a suitable
+  substitution, tries to ``relieve'' the hypotheses, as discussed
+  below.  If successful, that means each hypi, when instantiated with
+  the substitution, is non-nil.  Third, if all the hypotheses are
+  relieved, the target is ``replaced'' by the result of rewriting rhs
+  under the substitution.  We discuss that step more below too.
+
+  Matching: Technically, ACL2 uses a restriction of ordinary
+  first-order unification -- the restriction being that only
+  variables in the pattern (here the lhs of the rule) may be
+  instantiated.  Thus, the pattern (G x (H x)) matches (G (M A B) (H
+  (M A B))) by binding x to (M A B).  It does not match (G (M A B) (H
+  (M A A))) even though those two terms ``unify'' by binding x to (M
+  A A) and B to A.  Our pattern matcher is the function one-way-unify
+  in our source code.
+
+  However, our pattern matcher knows some things about the structure of
+  quoted constants.  For example, the pattern (CONS x y) matches the
+  quoted constant '(A B C), by binding x to 'A and y to '(B C).  This
+  can be seen by running one-way-unify on those two terms:
+
+    ACL2 !>(one-way-unify '(cons x y) ''(A B C))
+    (T ((Y QUOTE (B C)) (X QUOTE A)))
+
+  Note the quote marks in our input.  Since one-way-unify expects both
+  of its arguments to be fully translated formal terms, we have to
+  quote every constant we write here.  And since the arguments to
+  one-way-unify are evaluated before the function is called, we have
+  to quote the two terms.  We see that one-way-unify returns two
+  results.  The first is T, meaning that a suitable substitution was
+  found.  The second is the substitution.  Lisp's abbreviation
+  convention for printed ``dotted pairs,'' its ``quote convention,''
+  its convention of reading symbols in uppercase, and our convention
+  here of writing terms (and variables) in lower case but constants
+  in upper case, all conspire to make the substitution a little hard
+  to read for novices.  Another way to display the exact same
+  substitution is:
+
+    ((y . '(B C)) (x . 'A))
+
+  i.e., x is bound to 'A and y is bound to (B C).
+
+  Below are some other examples, but we've re-displayed the
+  substitutions.
+
+    ACL2 !>(one-way-unify '(coerce x 'string) ''\"Hello!\")
+    (T ((x . (#H #e #l #l #o #!))))
+    ACL2 !>(one-way-unify '(intern-in-package-of-symbol x y) ''ACL2::TEMP)
+    (T ((y . 'TEMP) (x . '\"TEMP\")))
+    ACL2 !>(one-way-unify '(binary-+ '3 x) ''7)
+    (T ((X . '4)))
+    ACL2 !>(one-way-unify '(unary-- x) ''-7)
+    (T ((X QUOTE 7)))
+    ACL2 !>(one-way-unify '(unary-- x) ''7)
+    (NIL NIL)
+    ACL2 !>(one-way-unify '(binary-* '2 y) ''8)
+    (T ((Y QUOTE 4)))
+    ACL2 !>(one-way-unify '(binary-* x y) ''8)
+    (NIL NIL)
+
+  Note that the pattern matching algorithm is incomplete on quoted
+  constants!  For example, it fails to match (unary-- x) with '7 even
+  though (unary-- '-7) is '7.  It similarly fails to match (binary-*
+  x y) with '8 even though (binary-* '33 '8/33) is 8; indeed, there
+  are in infinite number of suitable substitutions for this case, but
+  one-way-unify is designed to return at most one so as to limit the
+  applicability of rewrite rules to ``reasonable'' cases.
+
+  Relieving the Hypotheses: The hypotheses of a rewrite rule are
+  relieved one at a time starting with the left-most one.  The basic
+  strategy is just to rewrite each hypothesis, assuming the current
+  context and if IFF equivalence relation.  If the result comes back
+  non-NIL the hypothesis is equivalent to T in the current context.
+  But there are various special considerations.
+
+    * Free variables: It is possible that a hypothesis contains variables
+      that are not bound by the substitution generated by the match.
+      We call these ``free variables'' and the system tries to bind
+      them to make the instantiated hypothesis appear among the
+      contextual assumptions.  New bindings are accumulated as
+      hypotheses are relieved.  It is possible to find multiple
+      successful substitutions, some possibly filtered out by
+      subsequent hypotheses.  See free-variables and the
+      documentation topics it cites.
+    * Pragmas: It is possible to mark a hypothesis so that it is
+      temporarily assumed true so that the rewrite rule can be
+      applied.  This essentially spawns another subgoal to prove the
+      hypothesis and thus brings the full power of the prover (not
+      just the rewriter) to bear on the hypothesis.  See [force] and
+      [case-split].  It is also possible to include hypotheses that
+      are logically always true but which cause the attempt to apply
+      the rule to fail if a certain user-specified compuation so
+      indicates.  This can be used to restrict the application of a
+      rule to certain syntactic situations.  See syntaxp.
+
+  Replacement: Before the target is replaced by the rewritten rhs, a
+  heuristic check is made to prevent certain trivial forms of rewrite
+  loops.  See [loop-stopper].  Otherwise, if the hypotheses are
+  relieved (or assumed), the rewriter rewrites rhs under the
+  substitution generated by the match and the hypotheses.  It then
+  makes certain heuristic checks to decide if replacing the target by
+  this new term is a ``good idea'' in the opinion of the ACL2
+  implementors.  The two main checks are designed to avoid runaway
+  expansion of recursive functions (see [definition]), and
+  introducing ``too many [if]s'' (see [too-many-ifs].  The latter
+  check is used to prevent unmanageable case explosions.  (In
+  general, the number of cases rises exponentially with the number of
+  IFs.)")
  (RASSOC
   (ALISTS ACL2-BUILT-INS)
   "Look up value in association list
@@ -100646,7 +100971,7 @@ Subtopics
   general discussion of how rewriting works in ACL2 and some guidance
   on how to construct effective rewrite rules, see
   [introduction-to-rewrite-rules-part-1] and then see
-  [introduction-to-rewrite-rules-part-2].  If you want flexible,
+  [introduction-to-rewrite-rules-part-2].  If you want a flexible,
   convenient interface to the ACL2 rewriter that can be called
   programmatically, see [rewrite$].
 
@@ -100763,23 +101088,28 @@ Subtopics
   ACL2's rewriting process has some optimizations, including the
   following.
 
+    * The suggestion, above, that the rewriter looks through the goal
+      clause for ``any instance of the lhs'' is not quite true.
+      :Rewrite rules are never applied to quoted constants or any
+      term inside a call of [hide].  If you want to rewrite a quoted
+      constant use a :[rewrite-quoted-constant] rule.
     * The notion of ``a substitution that makes lhs equal to the target
       term'' is a bit more generous than the most straightforward
       such notion.  Suppose for example that lhs is (f (+ 3 x)) and
       the target term is (f (+ 3 (g y)).  (Aside: ACL2 deals in
       so-called translated terms, so since + is a macro, lhs and term
-      would actually be (f (binary-+ '3 x)) and (f (+ '3 (g y))); we
-      will ignore this distinction, but if you want more information,
-      see [term].)  Then of course, that substitution binds x to (g
-      y).  But now suppose that instead the target term is (f 10).
-      You may be surprised to learn that the substitution binding x
-      to 7 makes (f (+ 3 x)) equal to (f 10); for example, the
-      rewrite rule (equal (f (+ x 3)) (h x))) would rewrite (f 10) to
-      (h 7).  This would also be the case if lhs were instead (f (+ x
-      3)).  This sort of optimization occurs when the new constant
-      has [ACL2-count] no greater than the old constant.  There are
-      similar optimizations for *, /, -, strings, symbols, and conses
-      (for details see ACL2 source function
+      would actually be (f (binary-+ '3 x)) and (f (binary-+ '3 (g
+      y))); we will ignore this distinction, but if you want more
+      information, see [term].)  Then of course, that substitution
+      binds x to (g y).  But now suppose that instead the target term
+      is (f 10).  You may be surprised to learn that the substitution
+      binding x to 7 makes (f (+ 3 x)) equal to (f 10); for example,
+      the rewrite rule (equal (f (+ x 3)) (h x))) would rewrite (f
+      10) to (h 7).  This would also be the case if lhs were instead
+      (f (+ x 3)).  This sort of optimization occurs when the new
+      constant has [ACL2-count] no greater than the old constant.
+      There are similar optimizations for *, /, -, strings, symbols,
+      and conses (for details see ACL2 source function
       one-way-unify1-quotep-subproblems).
     * When a term t1 is rewritten to a new term t2, the rewriter is then
       immediately applied to t2.  On rare occasions you may find that
@@ -100825,6 +101155,9 @@ Subtopics
 
   [Loop-stopper]
       Limit application of permutative rewrite rules
+
+  [Random-remarks-on-rewriting]
+      Some basic facts about the ACL2 rewriter
 
   [Rewrite-equiv]
       Force ACL2 to perform substitution using a stylized [equivalence]
@@ -101048,6 +101381,234 @@ A Possible Confusion
 
   If you want to avoid this normalization of the globals, disable the
   [rune] (:meta relink-fancy-scion-correct).")
+ (REWRITE-QUOTED-CONSTANT
+  (RULE-CLASSES)
+  "Make a rule to rewrite a quoted constant
+
+  See [rule-classes] for a general discussion of rule classes,
+  including how they are used to build rules from formulas and a
+  discussion of the various keywords in a rule class description.
+
+  Note: It is helpful to know some basic facts about the ACL2 rewriter;
+  see [random-remarks-on-rewriting].
+
+    Example Forms:
+    (defthm lambda-id
+      (fn-equal '(lambda (x) x) 'identity)
+      :rule-classes :rewrite-quoted-constant)
+
+    (defthm set-normalizer
+      (set-equal (drop-duplicates-and-sort x) x)
+      :rule-classes :rewrite-quoted-constant)
+
+    (defthm lambda-id-generalized
+      (implies (symbolp v)
+               (fn-equal (list 'lambda (list v) v)
+                         'identity))
+      :rule-classes :rewrite-quoted-constant)
+
+  To be accepted with rule-class :rewrite-quoted-constant a conjecture
+  must have one of the following three
+
+    General Forms:
+
+    (IMPLIES hyps (equiv 'const1 'const2))        ; [1]
+
+    (IMPLIES hyps (equiv (fn var) var))           ; [2]
+
+    (IMPLIES hyps (equiv (constructor ...) rhs))  ; [3]
+
+  where
+
+    * hyps is a term (typically a conjunction) and may include [force] and
+      [syntaxp] hypotheses with the usual semantics,
+    * equiv is a known [equivalence] relation and, in the case of [1] and
+      [2], equiv is not EQUAL,
+    * var, in form [2], is a variable symbol, and
+    * constructor, in form [3], is an explicit value ``constructor''
+      function symbol listed in *one-way-unify1-implicit-fns*.  The
+      list just mentioned includes cons, which can be used to match
+      non-empty list constants, coerce, which can match string
+      constants, intern-in-package-of-symbol, which can match symbol
+      constants, and binary-+ and certain other arithmetic primitives
+      which can match numeric constants.  See
+      [random-remarks-on-rewriting] for some examples.
+
+  The function, fn, in a form [2] rule is called the ``normalizer.'' We
+  explain this terminology as we discuss how such rules are used.
+
+  The :rewrite-quoted-constant rule-class is permitted to specify a
+  :corollary and/or a :loop-stopper, with the usual syntax and
+  meaning.  See :[rule-classes].  Note that for forms [1] and [2]
+  above a :loop-stopper is probably irrelevant as the forms do not
+  usually contain multiple variable symbols.
+
+  Once a :rewrite-quoted-constant rule is proved and stored, the
+  rewriter behaves as follows.  When a quoted constant is encountered
+  as the target term to be rewritten, the rewriter considers each
+  enabled :rewrite-quoted-constant rule (most-recent first), looking
+  for those whose equiv refines (see :[refinement]) the equivalence
+  relation being maintained by the rewriter for the given occurrence
+  of the target.  The rewriter tries to apply each such rule in turn
+  (as described below) and replaces the target by the rewritten
+  result of the first applicable rule.
+
+  A rule applies if the ``pattern'' (see below) in the conclusion
+  ``matches'' the quoted constant and the hyps can be relieved in the
+  usual sense, including the treatment of free variables, pragmatic
+  directives like [force] and [syntaxp], and heuristics such as those
+  controlled by any :[loop-stopper] options in the rule-class or
+  :restrict [hints].  If these conditions are met, the quoted
+  constant is replaced by the ``result.'' But the exact meanings of
+  ``pattern,'' ``match'' and ``result'' here is a little different
+  than their meanings for ordinary :rewrite rules and depend on which
+  of the three forms is being applied.
+
+    * A form [1] rule, whose conclusion is (equiv 'const1 'const2), has
+      'const1 as its pattern and that pattern matches the target
+      constant 'const only when const1 is exactly const.  The result
+      is 'const2.  Note that it is impossible to prove a form [1]
+      rule whose equivalence is equal unless the two constants are
+      identical, so we disallow that case.
+    * A form [2] rule, whose conclusion is (equiv (fn var) var), is most
+      easily understood by swapping the roles of left- and right-hand
+      sides of its conclusion.  Its pattern is the right-hand side,
+      var, and its result is derived from the left-hand side, (fn
+      var).  The reason we use the form shown here is so that the
+      same conjecture might also be used as an ordinary :rewrite rule
+      without forcing the user to type a :corollary with the sides
+      swapped.  Since form [2] rules have a variable as the pattern
+      they will match any quoted constant, 'const, by binding var to
+      'const.  The result is the quoted constant, if any, obtained by
+      rewriting (fn var) under that binding of var.  If that rewrite
+      does not result in a constant, no replacement is made, i.e., it
+      is as though the rule did not match.  Note that it is pointless
+      to prove a form [2] rule whose equivalence is equal because it
+      would replace a quoted constant by itself, so we disallow that
+      equivalence.
+      Intuitively, fn is a function that normalizes every member of the
+      equiv equivalence class: given a constant that is a member of
+      the class it returns its ``normal'' form.  That is why we call
+      fn the ``normalizer'' for equiv.  However, you do not have to
+      prove anything like normality or canonicality; you just have to
+      prove that fn returns a member of the class.  Having several
+      different normalizers is possible but it is best if only one is
+      enabled at a time.
+      When var is bound to a constant, the rewriter will first try to
+      reduce (fn var) to a constant by simple evaluation.  If that
+      fails, it tries using lemmas.  If the normalizer or one of its
+      subfunctions is disabled or is non-executable or has a disabled
+      executable counterpart the attempt to simply evaluate (fn var)
+      (under the assignment of 'const to var) may fail.  That is why
+      full-blown rewriting of (fn var) is tried instead.  It might
+      happen that evaluation fails but lemmas produce a constant.
+      The fact that form [2] rules are used ``backwards,'' with the roles
+      of the left- and right-hand sides swapped, has some
+      ramifications worth noting. First, you can also classify the
+      same formula as a :rewrite rule (but of course as such it won't
+      rewrite quoted constants); as a :rewrite rule it rewrites
+      instances of (fn var) to the corresponding instance of var.
+      Second, when a :rewrite-quoted-constant rule is added, the new
+      rule is compared to old rules for subsumption and warning
+      messages are generated; however form [2] rules are omitted from
+      this subsumption check because their patterns match every
+      constant (in the equivalence class).  Third, if you inspect a
+      form [2] rule with [pr], it reports the actual syntax typed,
+      e.g., the ``Lhs'' is (fn var) and the ``Rhs'' is var.  But, if
+      you :[monitor] a form [2] rule and then interact with the
+      resulting [break-rewrite] you will see that the [brr-commands]
+      :lhs and :rhs report the swapped results.  That is, in the
+      break, :lhs will be var and :rhs will be (fn var).  This is
+      different from the display by pr because pr reports the actual
+      syntax but interactive breaks report how the rule is being
+      used.  We think the interactive user, out of long habit, will
+      type :lhs to see the pattern being matched and we did not think
+      it wise to add a special command just to see the pattern in a
+      form [2] rule.  Fourth, if a form [2] rule is mentioned in the
+      report by [pl] the ``New term'' is reported to be (fn 'const),
+      however replacement of 'const occurs only if (fn 'const)
+      reduces to a quoted constant by rewriting.
+    * A form [3] rule, whose conclusion is (equiv (constructor ...)  rhs),
+      matches the constant 'const provided 'const is an instance of
+      (constructor ...) under some variable substitution s.  We
+      illustrate cases where quoted constants are instances of
+      ``constructor'' terms below and in
+      [random-remarks-on-rewriting].  Note that form [3] rules allow
+      the equivalence relation to be equal.  Use of equal here could
+      cause looping rewrites if the rhs reduces to a constant.  But
+      we allow it because, as noted below, such a rule will also
+      permit you to rewrite a quoted constant into an equivalent term
+      that is not a quoted constant.
+
+  It is important to realize that form [1] and form [3] rules only
+  apply to the top-level of a quoted constant.  We discuss this at
+  length because it can cause some confusion.  The examples below are
+  drawn from the community book
+  books/demos/rewrite-quoted-constant-examples.  That book introduces
+  set-equalp as an equivalence relation and proves various
+  :rewrite-quoted-constant rules to rearrange the quoted constants
+  occurring in set-equalp contexts.  Assume all the quoted constants
+  mentioned below occur in set-equalp contexts.
+
+  The form [1] rule (set-equalp 77 nil) will not cause '(1 2 3 . 77) to
+  rewrite to '(1 2 3).  Because ACL2 applications frequently involve
+  huge quoted list constants, we believe that making the rewriter
+  explore them down to the tips would be prohibitively expensive.
+
+  However, form [2] rules, of the general form (implies hyps (equiv (fn
+  var) var)), allow you to do a root-and-branch exploration of every
+  quoted constant occuring in a given equiv context and compute the
+  replacement constant with the normalizer.
+
+  For example, the rewrite-quoted-constants-examples book cited above
+  defines the normalizer (drop-dups-and-sort var) to coerce its
+  argument to a [true-listp], eliminate duplicate elements, and sort
+  the remaining elements.  It then proves the form [2] rule
+  (set-equalp (drop-dups-and-sort var) var).  Now consider how this
+  rule is used when the rewriter encounters '(3 1 1 2 . 77) in a
+  set-equalp context.  First, var is bound to 'const.  Then, the
+  rewriter tries to relieve the instantiated hypotheses of the rule,
+  if any.  The example rule here has no hypotheses.  But you can
+  provide some and perhaps use them to prevent calling the normalizer
+  on this particular constant.  Since var is bound to the constant
+  'const such hypotheses can usually just be computed.  Supposing the
+  hypotheses are relieved, the rewriter then rewrites
+  (drop-dups-and-sort 'const).  Under the most common circumstance,
+  this just causes your normalizer function, here drop-dups-and-sort,
+  to execute on the given constant.  (If you have verified the guard
+  of the normalizer and 'const satisfies the guard, then the
+  execution is in the underlying raw Common Lisp.)  In the most
+  common circumstance, the function will return an explicit constant.
+  If that returned value is indeed a constant (and different from
+  'const), the rewriter replaces this occurrence of 'const by the
+  returned value.  Otherwise the rule does not apply.
+
+  As noted earlier, form [3] rules are only applied at the top-level of
+  a quoted constant.  For example, the rule (set-equalp (cons x y)
+  (my-cons x y)) will not cause '(1 2 3) to rewrite to (my-cons 1
+  (my-cons 2 (my-cons 3 nil))) in set-equalp contexts.  Instead, it
+  would produce (my-cons 1 '(2 3)).
+
+  But since the rewriter will eventually be called on that term, and
+  since that term contains another top-level quoted constant, namely
+  '(2 3), you might expect the rule to eventually be used to replace
+  '(2 3) by (my-cons 2 '(3)).  Indeed, that is what happens -- if you
+  have proved that set-equalp is a [congruence] for the second
+  argument of my-cons, maintaining set-equalp.  However, for
+  technical reasons explained in comments in the book
+  rewrite-quoted-constant-examples, each rewrite occurs in a separate
+  simplification step.  So turning '(1 2 3) into (my-cons 1 (my-cons
+  2 (my-cons 3 nil))) requires three simplification steps.  If the
+  rule in question were (set-equalp (cons x y) (cons x
+  (double-rewrite y))) it would happen in one simplification step.
+  See double-rewrite and the examples in the book
+  rewrite-quoted-constant-examples.
+
+
+Subtopics
+
+  [Random-remarks-on-rewriting]
+      Some basic facts about the ACL2 rewriter")
  (REWRITE-STACK-LIMIT
   (REWRITE)
   "Limiting the stack depth of the ACL2 rewriter
@@ -101221,11 +101782,11 @@ Subtopics
   of rule class names or, more generally, rule class objects, which
   name the kind of rule to build and optionally specify various
   attributes of the desired rule.  The rule class names are
-  :[rewrite], :[built-in-clause], :[clause-processor],
-  :[compound-recognizer], :[congruence], :[definition], :[elim],
-  :[equivalence], :[forward-chaining], :[generalize], :[induction],
-  :[linear], :[meta], :[refinement], :[tau-system],
-  :[type-prescription], :[type-set-inverter], and
+  :[rewrite], :[rewrite-quoted-constant], :[built-in-clause],
+  :[clause-processor], :[compound-recognizer], :[congruence],
+  :[definition], :[elim], :[equivalence], :[forward-chaining],
+  :[generalize], :[induction], :[linear], :[meta], :[refinement],
+  :[tau-system], :[type-prescription], :[type-set-inverter], and
   :well-founded-relation (see [well-founded-relation-rule]).  Some
   classes require the user-specification of certain class-specific
   attributes.  Each class of rule affects the theorem prover's
@@ -101256,6 +101817,7 @@ Subtopics
       :CONTROLLER-ALIST alist      ; provided :class = :DEFINITION
       :INSTALL-BODY directive      ; provided :class = :DEFINITION
       :LOOP-STOPPER alist          ; provided :class = :REWRITE
+                                           or :class = :REWRITE-QUOTED-CONSTANT
       :PATTERN term                ; provided :class = :INDUCTION (!)
       :CONDITION term              ; provided :class = :INDUCTION
       :SCHEME term                 ; provided :class = :INDUCTION (!)
@@ -101455,20 +102017,21 @@ Subtopics
       terms (if hyps body (hide (f term1 ... termk))).
 
       :[Loop-stopper] --- this field may only be supplied if the class is
-      :[rewrite].  Its value must be a list of entries each
-      consisting of two variables followed by a (possibly empty) list
-      of function symbols, for example ((x y binary-+) (u v foo
-      bar)).  It will be used to restrict application of rewrite
-      rules by requiring that the list of instances of the second
-      variables must be ``smaller'' than the list of instances of the
-      first variables in a sense related to the corresponding
-      functions listed; see [loop-stopper].  The list as a whole is
-      allowed to be nil, indicating that no such restriction shall be
-      made.  Note that any such entry that contains a variable not
-      being instantiated, i.e., not occurring on the left side of the
-      rewrite rule, will be ignored.  However, for simplicity we
-      merely require that every variable mentioned should appear
-      somewhere in the corresponding :[corollary] formula.
+      :[rewrite] or :[rewrite-quoted-constant].  Its value must be a
+      list of entries each consisting of two variables followed by a
+      (possibly empty) list of function symbols, for example ((x y
+      binary-+) (u v foo bar)).  It will be used to restrict
+      application of rewrite rules by requiring that the list of
+      instances of the second variables must be ``smaller'' than the
+      list of instances of the first variables in a sense related to
+      the corresponding functions listed; see [loop-stopper].  The
+      list as a whole is allowed to be nil, indicating that no such
+      restriction shall be made.  Note that any such entry that
+      contains a variable not being instantiated, i.e., not occurring
+      on the left side of the rewrite rule, will be ignored.
+      However, for simplicity we merely require that every variable
+      mentioned should appear somewhere in the corresponding
+      :[corollary] formula.
 
       :Pattern, :Condition, :Scheme --- the first and last of these fields
       must (and may only) be supplied if the class is :[induction].
@@ -101599,6 +102162,9 @@ Subtopics
 
   [Rewrite]
       Make some :rewrite rules (possibly conditional ones)
+
+  [Rewrite-quoted-constant]
+      Make a rule to rewrite a quoted constant
 
   [Rule-classes-introduction]
       Selecting which kind of rule to create
