@@ -61299,7 +61299,7 @@ Subtopics
       Forget values remembered for all the memoized functions
 
   [Memoize-partial]
-      [Memoize] the total, limited (`clocked') versions of functions
+      [Memoize] a partial version of a limited (`clocked') function
 
   [Memoize-summary]
       Display all collected profiling and memoization info
@@ -61326,23 +61326,425 @@ Subtopics
       Turn off memoization for the specified function")
  (MEMOIZE-PARTIAL
   (MEMOIZE)
-  "[Memoize] the total, limited (`clocked') versions of functions
+  "[Memoize] a partial version of a limited (`clocked') function
 
-  Documentation will be written soon.  For examples, see
-  [community-book] file books/demos/memoize-partial-input.lsp.  This
-  macro handles [mutual-recursion] where, as the above example file
-  illustrates, the function symbols must be supplied using the same
-  order in which they are defined in the mutual-recursion.
+  See [memoize] for relevant background.  Here we describe a utility
+  that supports effective memoization for functions that have been
+  introduced by [defun], as follows, under certain restrictions.
 
-  If you happen to be interested in the theoretical foundations, see
-  the comment in the ACL2 sources labeled ``Essay on Memoization with
-  Partial Functions (Memoize-partial)''.
+    (defun fn-limit (x1 ... xn limit)
+      (declare ...) ; optional, as usual for defun ; ;
+      (if (zp limit)
+          <base>
+        (let ((limit (1- limit)))
+          <body>)))
 
-  Remark.  This is actually a macro that generates a [table] event
-  followed by [memoize] events that use the :total option.  However,
-  we strongly recommend that you do not try to invoke those table and
-  memoize events directly; in particular, errors might be more
-  difficult to debug that way.")
+  Here fn-limit represents a function symbol and (x1 ... xn limit)
+  denotes a non-empty list of formal parameters, where we call the
+  final formal (here, shown as limit) the ``limit variable''.  <Base>
+  is any syntactically legal expression, but <body> is restricted as
+  follows: the occurrences of the limit variable are exactly as the
+  final parameter in each recursive call of fn.  More precisely, that
+  restriction must hold after <body> is converted to a translated
+  term (see [term]).  In other words, the translation of <body> must
+  have the property that the limit variable only occurs in recursive
+  calls, and in those calls it occurs exactly as the final argument
+  and not in any other arguments.
+
+  Such use of a ``limit'' argument to obtain termination is an old
+  trick that pre-dates ACL2.  Such ``limited'' functions have
+  traditionally often been called ``clocked'' functions.  In this
+  documentation we refer to such a function as a ``total'' function,
+  because the limit argument guarantees that its evaluation
+  terminates.  We will be generating a corresponding ``partial''
+  function that avoids the limit argument, and hence might not
+  terminate --- but when it does, it computes the desired value, and
+  uses memoization to do so, which can speed up computation.
+
+  We organize the rest of this topic as follows: General Form, Basic
+  Example, Example with Mutual Recursion, Detailed Documentation, and
+  Optional Technical Remarks.
+
+
+General Form:
+
+    (memoize-partial fn+ ; see below
+                     :kwd1 val1 ... :kwdn valn)
+
+  where the supplied :kwdi and vali are valid keywords and values for
+  [memoize].  In the simplest case, fn+ is a symbol.  Later below,
+  after providing an example, we give more complete documentation,
+  including discussion of [mutual-recursion] and the general case for
+  fn+.  None of the arguments is evaluated.
+
+
+Basic Example
+
+  The following example from [community-book] file
+  books/demos/memoize-partial-input.lsp illustrates the use of
+  [memoize-partial].  Consider the {Collatz Conjecture |
+  https://en.wikipedia.org/wiki/Collatz_conjecture}, sometimes known
+  as the 3n+1 problem.  For any positive integer n, compute a new
+  integer as n/2 if n is even, else as 3*n+1.  The Collatz conjecture
+  states that this process eventually reaches 1.  Since this is an
+  open problem, we can't realistically hope to prove termination, so
+  we may code the above algorithm by using a limit argument, as
+  follows.  This function returns, unless the limit is reached, the
+  number of steps required for the computation to terminate (reach
+  1).
+
+    (defun collatz-limit (n limit)
+      (declare (xargs :guard (and (natp n)
+                                  (natp limit))
+                      :measure (acl2-count limit)))
+      (if (zp limit)
+          (prog2$ (er hard? 'collatz-limit
+                      \"Limit exceeded!\")
+                  0)
+        (let ((limit (1- limit)))
+          (if (int= n 1)
+              0
+            (1+ (collatz-limit (if (evenp n)
+                                   (floor n 2)
+                                 (1+ (* 3 n)))
+                               limit))))))
+
+  A moment's reflection suggests that if this algorithm terminates,
+  then there are no cycles, so memoization from a single call will be
+  useless.  However, memoization can be useful if we make distinct
+  calls.  But memoization might not be very useful even then, because
+  after we save the result of a call (collatz-limit n0 limit0), a
+  later call on n0 might be with a different limit, say,
+  (collatz-limit n0 limit1).  So we prefer to memoize using the
+  corresponding partial function, without a limit argument.  We can
+  do that as follows.
+
+    (memoize-partial collatz)
+
+  Under the hood this generates, essentially, the following Common Lisp
+  definition, which is to be memoized.
+
+    (defun collatz (n)
+      (if (int= n 1)
+          0
+        (1+ (collatz (if (evenp n)
+                         (floor n 2)
+                       (1+ (* 3 n)))))))
+
+  Since the limit argument has disappeared, memoization is now more
+  effective.  But how can one define collatz in the ACL2 logic?  The
+  memoize-partial call shown above actually generates the following
+  events, which define collatz to capture the notion of the
+  ``eventual stable value, as limit goes to infinity, of (collatz n
+  limit)''.  It probably is not important to read these events unless
+  one plans to reason about collatz, and even then one might be able
+  to complete proofs without reading these events.
+
+    (DEFCHOOSE COLLATZ-LIMIT-CHANGE (LARGE)
+      (N LIMIT)
+      (AND (NATP LARGE)
+           (<= LIMIT LARGE)
+           (NOT (EQUAL (COLLATZ-LIMIT N LIMIT)
+                       (COLLATZ-LIMIT N LARGE)))))
+    (DEFCHOOSE COLLATZ-LIMIT-STABLE (LIMIT)
+      (N)
+      (AND (NATP LIMIT)
+           (EQUAL (COLLATZ-LIMIT N LIMIT)
+                  (COLLATZ-LIMIT N (COLLATZ-LIMIT-CHANGE N LIMIT)))))
+    (DEFUN COLLATZ (N)
+      (DECLARE (XARGS :GUARD (LET ((LIMIT 0))
+                                  (DECLARE (IGNORABLE LIMIT))
+                                  (AND (NATP N) (NATP LIMIT)))))
+      (COLLATZ-LIMIT N (NFIX (COLLATZ-LIMIT-STABLE N))))
+
+  The upshot is a logical definition of (collatz n) as the eventual
+  value (if any), as limit increases without bound, of (collatz n
+  limit) --- together with an installed Common Lisp definition that
+  is actually executed and, moreover, is memoized.
+
+  We note that the call (memoize-partial collatz) also generates a
+  [table] event as well as the form (MEMOIZE 'COLLATZ :TOTAL
+  'COLLATZ-LIMIT).  However, these details are best ignored by the
+  user; we do not expect those events to be generated by hand, and in
+  particular it is probably inadvisable to use the :TOTAL keyword of
+  [memoize] other than indirectly using memoize-partial.  Failure to
+  heed this advice could make failures more difficult to debug.
+
+  See [community-book] file books/demos/memoize-partial-input.lsp for
+  an application of this use of memoize-partial, to compute the total
+  number of steps required (without accounting for memoization) to
+  run the Collatz algorithm to completion on the first n positive
+  integers.
+
+
+Example with Mutual Recursion
+
+  The following example, also from [community-book] file
+  books/demos/memoize-partial-input.lsp, illustrates the use of
+  memoize-partial on functions that have been defined using
+  [mutual-recursion].  (The suffix ``-bdd'' below is intended to
+  denote ``bounded'', to suggest what the ``-limit'' suffix suggested
+  in the first example.)
+
+    (mutual-recursion
+     (defun evenlp-bdd (x bound)
+       (declare (xargs :guard (natp bound)))
+       (if (zp bound)
+           'ouch
+         (let ((bound (1- bound)))
+           (if (consp x) (oddlp-bdd (cdr x) bound) t))))
+     (defun oddlp-bdd (x bound)
+       (declare (xargs :guard (natp bound)))
+       (if (zp bound)
+           'ouch
+         (let ((bound (1- bound)))
+           (if (consp x) (evenlp-bdd (cdr x) bound) nil)))))
+
+    (memoize-partial ((evenlp evenlp-bdd) (oddlp oddlp-bdd)))
+
+  Notice that this time the argument of memoize-partial is a list of
+  tuples.  Each tuple is a list with two elements: the name of the
+  partial function to be defined, followed by the corresponding total
+  (limited) function that has already been defined.  Indeed, the
+  preceding example abbreviates (memoize-partial ((collatz
+  collatz-limit))).  Such abbreviations are discussed in the Detailed
+  Documentation section below.
+
+  Recall that in the first example, the memoize-partial call defined
+  functions collatz-limit-change and collatz-limit-stable using
+  [defchoose], and then function collatz using [defun].  In the
+  present example such a trio of functions is introduced for each of
+  the functions defined in the corresponding mutual-recursion ---
+  equivalently, for each of the tuples supplied to memoize-partial.
+
+    (DEFCHOOSE EVENLP-BDD-CHANGE (LARGE)
+      (X BOUND)
+      (AND (NATP LARGE)
+           (<= BOUND LARGE)
+           (NOT (EQUAL (EVENLP-BDD X BOUND)
+                       (EVENLP-BDD X LARGE)))))
+    (DEFCHOOSE EVENLP-BDD-STABLE (BOUND)
+      (X)
+      (AND (NATP BOUND)
+           (EQUAL (EVENLP-BDD X BOUND)
+                  (EVENLP-BDD X (EVENLP-BDD-CHANGE X BOUND)))))
+    (DEFUN EVENLP (X)
+      (DECLARE (XARGS :GUARD (LET ((BOUND 0))
+                                  (DECLARE (IGNORABLE BOUND))
+                                  (NATP BOUND))))
+      (EVENLP-BDD X (NFIX (EVENLP-BDD-STABLE X))))
+    (DEFCHOOSE ODDLP-BDD-CHANGE (LARGE)
+      (X BOUND)
+      (AND (NATP LARGE)
+           (<= BOUND LARGE)
+           (NOT (EQUAL (ODDLP-BDD X BOUND)
+                       (ODDLP-BDD X LARGE)))))
+    (DEFCHOOSE ODDLP-BDD-STABLE (BOUND)
+      (X)
+      (AND (NATP BOUND)
+           (EQUAL (ODDLP-BDD X BOUND)
+                  (ODDLP-BDD X (ODDLP-BDD-CHANGE X BOUND)))))
+    (DEFUN ODDLP (X)
+      (DECLARE (XARGS :GUARD (LET ((BOUND 0))
+                                  (DECLARE (IGNORABLE BOUND))
+                                  (NATP BOUND))))
+      (ODDLP-BDD X (NFIX (ODDLP-BDD-STABLE X))))
+
+  The corresponding Common Lisp functions, to be executed for
+  [guard]-verified calls of evenlp and oddlp, are defined as one
+  might expect, in analogy to the Common Lisp definition in the first
+  example.  Moreover, they are memoized.  Here are (again,
+  essentially) the Common Lisp definitions of evenlp and oddlp.
+
+    (DEFUN EVENLP (X)
+      (IF (CONSP X)
+          (ODDLP (CDR X))
+          T))
+    (DEFUN ODDLP (X)
+      (DECLARE (IGNORABLE X))
+      (IF (CONSP X)
+          (EVENLP (CDR X))
+          NIL))
+
+
+Detailed Documentation
+
+  Recall the General Form
+
+    (memoize-partial fn+ ; see below
+                     :kwd1 val1 ... :kwdn valn)
+
+  where the supplied :kwdi and vali represent keyword options to be
+  used for a generated call of [memoize].  We discuss later below how
+  fn+ specifies either a recursively-defined function symbol or a
+  sequence of function symbols defined by mutual-recursion --- all
+  [guard]-verified.  We call the final formal parameter, which must
+  be the same for each function symbol defined in the
+  mutual-recursion case, the ``limit variable''.  The translated body
+  (see [term] regarding the notion of ``translated'') of each of
+  these function symbols must be of the following form, or of the
+  corresponding form using [cond] in place of [if], where here limit
+  denotes the limit variable.
+
+    (if (zp limit)
+        <base>
+      (let ((limit (1- limit)))
+        <body>))
+
+  Moreover, each limit variable occurring in <body> must occur as the
+  final argument of a call of the defined function --- in the mutual
+  recursion case, of the functions defined by the mutual-recursion
+  --- and conversely, each such call must have the limit variable as
+  its final argument.
+
+  Let us refer to each specified function as the ``total'' function.  A
+  succesful invocation admits a sequence of three definitions for
+  each total function, which we call the ``changed'', ``stable'', and
+  ``partial'' function.  Here are those three definitions, where
+  ``...'' denotes the formals of the partial function (that is, the
+  formals of the total function other than the final formal, which is
+  the limit variable).  We write LIMIT below to denote the limit
+  variable.  Note that LARGE is replaced by a fresh variable when
+  necessary, to avoid duplicating an existing formal.
+
+    (DEFCHOOSE <changed> (LARGE)
+      (... LIMIT)
+      (AND (NATP LARGE)
+           (<= LIMIT LARGE)
+           (NOT (EQUAL (<total> ... LIMIT)
+                       (<total> ... LARGE)))))
+    (DEFCHOOSE <stable> (LIMIT)
+      (...)
+      (AND (NATP LIMIT)
+           (EQUAL (<total> ... LIMIT)
+                  (<total> ... (<change> ... LIMIT)))))
+    (DEFUN <partial> (...)
+      (DECLARE (XARGS :GUARD (LET ((LIMIT 0))
+                                  (DECLARE (IGNORABLE LIMIT))
+                                  <guard_of_total>)))
+      (<total> ... (NFIX (<stable> ...))))
+
+  Under the hood, however, a Common Lisp definition is installed for
+  <partial> that avoids the limit variable, essentially by
+  eliminating it in <body> to produce a corresponding term, <body'>,
+  with the following result.  (Low-level details about exactly what
+  is generated are discussed in the Optional Technical Remarks below,
+  but should probably be ignored by most users.)
+
+    (defun <partial> (...)
+      <body'>
+
+  We turn now to the first argument of memoize-partial, denoted fn+
+  above, with discussion of its legal forms and its relation to the
+  other (keyword) arguments of memoize-partial.  The most flexible
+  form for fn+ is a list of tuples, where each tuple is of the
+  following form and the keyword arguments are optional and in any
+  order.
+
+    (<partial> <total>
+     :change <change>
+     :stable <stable>
+     :kwd1 val1 ... :kwdn valn)
+
+  The symbols <partial>, <total>, <change>, and <stable> are as
+  discussed above, and the arguments :kwd1 val1 ... :kwdn valn are as
+  supplied to [memoize].  There should be a single tuple in the
+  singly recursive case.  In the case that the partial functions were
+  defined by a mutual-recursion defining functions f1, ..., fn, then
+  the <partial> components of the tuples (their [car]s) must also be
+  f1, ..., fn.
+
+  The keyword/value pairs of the tuple are optional.  The default for
+  <change> is obtained by adding the suffix \"-CHANGE\" to <total>, to
+  create a symbol in the same package as that of <total>; similarly
+  for <stable> and the suffix \"-STABLE\".  The <total> function is
+  defined as described above, with an under-the-hood Common Lisp
+  definition also as described above, and [memoize]d.  The memoize
+  call uses the keywords supplied in the tuple other than :change and
+  :stable.  For any memoize keywords not specified in the tuple, the
+  keywords specified at the top level of the memoize-partial call ---
+  that is, the keyword arguments (if any) following the first
+  argument (that is, following fn+) --- are also used in that
+  generated memoize call.
+
+  There are some abbreviations allowed for fn+, as follows.
+
+    * A symbol fn for fn+ abbreviates the list (fn), which is an
+      abbreviation as noted below.
+    * If fn+ is a list (t1 ... tk), then each ti that is a symbol, say fn,
+      abbreviates the tuple (fn fn-limit), where fn-limit is obtained
+      by adding the suffix \"-LIMIT\" to fn, to create a symbol in the
+      same package as that of fn.
+
+  Consider our first example, (memoize-partial collatz).  In this case
+  fn+ is collatz.  By the first rule above, this abbreviates
+  (collatz), which the second rule says is an abbreviation for
+  (collatz collatz-limit).  The default values are computed to treat
+  this as the following tuple.
+
+    (collatz collatz-limit
+             :change collatz-limit-change
+             :stable collatz-limit-stable)
+
+  Note that the keyword value :condition nil for memoize can be used to
+  install executable definitions without actually saving values,
+  essentially by merely profiling (except that unlike [profile] the
+  recursive calls are also affected by the memoize call).  See the
+  example involving ``worse-than'' functions in community book
+  books/demos/memoize-partial-input.lsp.
+
+  We conclude this section by discussing restrictions pertaining to
+  [stobj]s.  Recall that memoization is illegal (other than
+  profiling) for functions that return a stobj or have the ACL2
+  [state] as an input.  Those same restrictions apply to
+  memoize-partial.  However, it is legal for the given (``total'')
+  functions to have user-defined stobjs as inputs, as long as they
+  are not returned.  In that case, the generated definition of the
+  partial function will be made with a call of [non-exec] wrapped
+  around the body.
+
+
+Optional Technical Remarks.
+
+  Warning: These are technical remarks that are completely optional.
+
+  Our general remark is to invite readers who want to dive below the
+  user level, including implementation and foundational issues, to
+  read the comment entitled ``Essay on Memoization with Partial
+  Functions (Memoize-partial)'' in ACL2 source file
+  other-events.lisp.
+
+  Our more specific remark concerns generated Common Lisp definitions.
+  Recall that in the Basic Example above, we say that the Common Lisp
+  definition of collatz is essentially as follows.
+
+    (defun collatz (n)
+      (if (int= n 1)
+          0
+        (1+ (collatz (if (evenp n)
+                         (floor n 2)
+                       (1+ (* 3 n)))))))
+
+  We say ``essentially'' because the actual Common Lisp definition of
+  collatz is a bit different, as follows.
+
+    (DEFUN COLLATZ (N)
+      (DECLARE (IGNORABLE N))
+      (FLET ((COLLATZ-LIMIT (N LIMIT)
+                            (DECLARE (IGNORE LIMIT))
+                            (COLLATZ N)))
+            (DECLARE (INLINE COLLATZ-LIMIT))
+            (LET ((LIMIT 0))
+                 (DECLARE (IGNORABLE LIMIT))
+                 (IF (INT= N 1)
+                     0
+                     (1+ (COLLATZ-LIMIT
+                          (IF (EVENP N) (FLOOR N 2) (1+ (* 3 N)))
+                          LIMIT))))))
+
+  A little reflection will conclude that these two definitions are
+  equivalent.  The latter, however, avoids a macroexpansion issue
+  discussed in the aforementioned Essay.")
  (MEMOIZE-SUMMARY
   (MEMOIZE)
   "Display all collected profiling and memoization info
