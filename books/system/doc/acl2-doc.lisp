@@ -57583,7 +57583,7 @@ it."
  symbol, say @('fn'), abbreviates the tuple @('(fn fn-limit)'), where
  @('fn-limit') is obtained by adding the suffix @('\"-LIMIT\"') to @('fn'), to
  create a symbol in the same package as that of @('fn').</li>
- 
+
  </ul>
 
  <p>Consider our first example, @('(memoize-partial collatz)').  In this case
@@ -87313,6 +87313,15 @@ it."
 
  </ul>
 
+ <p>For Lisps that do not compile on the fly (that is, Lisps other than CCL and
+ SBCL), evaluation of @(':comp t') effectively unmemoized functions that were
+ not already compiled.  This has been fixed.</p>
+
+ <p>When a @(see stobj) hash-table's ``init'' function was called with size 0,
+ an error could occur for host Lisp GCL, complaining that size 0 is not allowed
+ for hash-tables.  This has been fixed by using size 1 instead of 0 in this
+ case.</p>
+
  <h3>Changes at the System Level</h3>
 
  <p>(SBCL only) Filenames are now read as ASCII (specifically, ISO-8859-1) when
@@ -90724,7 +90733,10 @@ arithmetic) for libraries of @(see books) for arithmetic reasoning.</p>")
  rules, then @(':meta') rules, then @(':')@(tsee linear) rules, and finally
  @(':')@(tsee type-prescription) rules.  Each rule is displayed with additional
  information, such as the hypotheses that remain after applying some simple
- techniques to discharge them that are likely to apply in any context.</p>
+ techniques to discharge them that are likely to apply in any context.  (Those
+ techniques include @(see type-set) reasoning, @(see forward-chaining), and
+ some attempts to deal with @(see free-variables) including handling of binding
+ hypotheses, @(tsee syntaxp) and @(tsee bind-free).)</p>
 
  <p>It is important to remember that rules displayed as ``applicable'' by
  @('pl') may in fact not be used because of logical requirements, like
@@ -96988,8 +97000,8 @@ arithmetic) for libraries of @(see books) for arithmetic reasoning.</p>")
   and the equivalence relation as appropriate for the subterms it rewrites.</p>
 
   <ul>
- 
-  <li>If the term is a variable, the rewriter just returns it (unless the   
+
+  <li>If the term is a variable, the rewriter just returns it (unless the
   context tells it something interesting about that variable, such as that the
   variable is equal to @('nil')).  Sometimes you might wish that the value of a
   bound variable be rewritten, usually because the value found on the alist was
