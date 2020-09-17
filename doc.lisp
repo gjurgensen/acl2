@@ -90040,7 +90040,10 @@ Implementation
   :[type-prescription] rules.  Each rule is displayed with additional
   information, such as the hypotheses that remain after applying some
   simple techniques to discharge them that are likely to apply in any
-  context.
+  context.  (Those techniques include [type-set] reasoning,
+  [forward-chaining], and some attempts to deal with [free-variables]
+  including handling of binding hypotheses, [syntaxp] and
+  [bind-free].)
 
   It is important to remember that rules displayed as ``applicable'' by
   pl may in fact not be used because of logical requirements, like

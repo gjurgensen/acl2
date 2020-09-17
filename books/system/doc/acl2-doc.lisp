@@ -90733,7 +90733,10 @@ arithmetic) for libraries of @(see books) for arithmetic reasoning.</p>")
  rules, then @(':meta') rules, then @(':')@(tsee linear) rules, and finally
  @(':')@(tsee type-prescription) rules.  Each rule is displayed with additional
  information, such as the hypotheses that remain after applying some simple
- techniques to discharge them that are likely to apply in any context.</p>
+ techniques to discharge them that are likely to apply in any context.  (Those
+ techniques include @(see type-set) reasoning, @(see forward-chaining), and
+ some attempts to deal with @(see free-variables) including handling of binding
+ hypotheses, @(tsee syntaxp) and @(tsee bind-free).)</p>
 
  <p>It is important to remember that rules displayed as ``applicable'' by
  @('pl') may in fact not be used because of logical requirements, like
