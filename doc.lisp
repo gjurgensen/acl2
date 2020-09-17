@@ -85732,6 +85732,15 @@ Bug Fixes
     * [Defun-sk] provided no direct way to allow formals to be ignored.
       Now, ignorable [declaration]s are permitted.
 
+  For Lisps that do not compile on the fly (that is, Lisps other than
+  CCL and SBCL), evaluation of :comp t effectively unmemoized
+  functions that were not already compiled.  This has been fixed.
+
+  When a [stobj] hash-table's ``init'' function was called with size 0,
+  an error could occur for host Lisp GCL, complaining that size 0 is
+  not allowed for hash-tables.  This has been fixed by using size 1
+  instead of 0 in this case.
+
 
 Changes at the System Level
 
