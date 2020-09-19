@@ -87014,6 +87014,11 @@ it."
 ; call in pc-single-step-primitive).  Thanks to Mihir Mehta for feedback
 ; leading to this improvement.
 
+; Fixed an apparent bug in the proof-builder instruction show-rewrites (sr) and
+; thus also presumably in the command, :pl.  The bug occurred when printing
+; "Additional bindings".  It's not clear whether this was a bug in Version_8.3.
+; Thanks to Mihir Mehta for pointing out this bug with an example.
+
   :parents (release-notes)
   :short "ACL2 Version  8.4 (xxx, 20xx) Notes"
   :long "<p>NOTE!  New users can ignore these release notes, because the @(see
