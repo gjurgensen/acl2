@@ -78713,9 +78713,10 @@ Subtopics
     (strip-cars (cdr (assoc-equal \"system/top\" *system-verify-guards-alist*)))
 
   for the list of functions checked to be guard-verifiable in the
-  community books.  Thanks to those who have contributed to this
-  effort, as shown in file headers in directory system/ of the
-  community books.
+  community books.  (NOTE added after Version_8.3: The form is now
+  (strip-cars *system-verify-guards-alist*).)  Thanks to those who
+  have contributed to this effort, as shown in file headers in
+  directory system/ of the community books.
 
   The macro [defund] now avoids an error when :mode :program has been
   specified in an [xargs] form of a [declare] form, for example:
@@ -82444,8 +82445,7 @@ Changes to Existing Features
   for a request leading to this enhancement.  (If you are interested
   in implementation-level information about the mechanism tying books
   to verification of termination and guards for built-in functions,
-  see comments in source-code constant *system-verify-guards-alist*,
-  source file boot-strap-pass-2.lisp.)
+  see comments in source-code constant *system-verify-guards-alist*.)
 
   The utilities [print-gv] and [set-print-gv-defaults] now accept a
   natural number for the keyword argument, :substitute, so that only
@@ -82466,7 +82466,7 @@ Changes to Existing Features
   logical-namep, macro-args, stobjs-out, termify-clause-set,
   throw-nonexec-error-p, and throw-nonexec-error-p1.  For a complete
   list, compare the old and new values of constant
-  *system-verify-guards-alist* in source file boot-strap-pass-2.lisp.
+  *system-verify-guards-alist*.
 
   It had been necessary to evaluate (set-state-ok t) in order to call
   [verify-termination] on a :[program] mode function that takes
@@ -85545,6 +85545,12 @@ Changes to Existing Features
   repeat a defun-sk event by adding, removing, or changing keyword
   :guard-hints in an xargs declaration.  Thanks to Alessandro Coglio
   for reporting these issues.
+
+  The set of [apply$] primitives has been expanded.  These are built-in
+  function symbols that do not need a [warrant] when reasoning about
+  the application of apply$ to them or using them in [loop$].  Thanks
+  to Alessandro Coglio for noting that some built-in :[logic]-mode
+  functions do not have warrants, in particular, [sublis-var].
 
 
 New Features
@@ -125536,9 +125542,8 @@ Subtopics
   The steps above can be done without touching the ACL2 source files.
 
   Now it is time to modify the constant *system-verify-guards-alist*,
-  which associates a distributed book name with a list of functions
-  whose guard-verification is proved by including that book.  Follow
-  the steps below.
+  which specifies functions whose guard-verification is proved by
+  including that book.  Follow the steps below.
 
    1. Build a so-called ``devel'' copy in which the functions in
       *system-verify-guards-alist* remain in :program mode.  For
@@ -125556,7 +125561,7 @@ Subtopics
           cd books
           (time nice ./build/cert.pl -j 8 \\
                      --acl2 `pwd`/../saved_acl2d \\
-                     system/top.cert system/apply/loop-scions.cert) \\
+                     system/devel-check) \\
             >& make-devel-regression.log&
 
       The last of these commands should run much more quickly than a
@@ -125575,8 +125580,6 @@ Subtopics
 
       You should see output like the following.
 
-          (chk-new-verified-guards 0) ...
-          (chk-new-verified-guards 1) ...
           SUCCESS for chk-new-verified-guards
           SUCCESS for check-system-events
           SUCCESS for devel-check
@@ -125711,10 +125714,9 @@ Subtopics
   [guard]-verified.  To see which built-in functions have already
   received such treatment, see community books directory
   books/system/; or, evaluate the constant
-  *system-verify-guards-alist*, each of whose entries associates the
-  name of a community book with a list of functions whose
-  guard-verification is proved by including that book.  See the above
-  URL for more details.
+  *system-verify-guards-alist*, which specifies a list of functions
+  whose guard-verification is proved by including that book.  See the
+  above URL for more details.
 
   Note that if fn1 is already in :[logic] mode, then the
   verify-termination call has no effect.  It is generally considered
