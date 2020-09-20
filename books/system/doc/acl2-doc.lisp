@@ -77814,8 +77814,10 @@ it."
  })
 
  <p>for the list of functions checked to be guard-verifiable in the community
- books.  Thanks to those who have contributed to this effort, as shown in file
- headers in directory @('system/') of the community books.</p>
+ books.  (NOTE added after Version_8.3: The form is now @('(strip-cars
+ *system-verify-guards-alist*)').)  Thanks to those who have contributed to
+ this effort, as shown in file headers in directory @('system/') of the
+ community books.</p>
 
  <p>The macro @(tsee defund) now avoids an error when @(':mode :program') has
  been specified in an @(tsee xargs) form of a @(tsee declare) form, for
@@ -83435,8 +83437,7 @@ it."
  request leading to this enhancement.  (If you are interested in
  implementation-level information about the mechanism tying books to
  verification of termination and guards for built-in functions, see comments in
- source-code constant @('*system-verify-guards-alist*'), source file
- @('boot-strap-pass-2.lisp').)</p>
+ source-code constant @('*system-verify-guards-alist*').)</p>
 
  <p>The utilities @(tsee print-gv) and @(tsee set-print-gv-defaults) now accept
  a natural number for the keyword argument, @(':substitute'), so that only
@@ -83457,8 +83458,7 @@ it."
  @('macro-args'), @('stobjs-out'), @('termify-clause-set'),
  @('throw-nonexec-error-p'), and @('throw-nonexec-error-p1').  For a complete
  list, compare the old and new values of constant
- @('*system-verify-guards-alist*') in source file
- @('boot-strap-pass-2.lisp').</p>
+ @('*system-verify-guards-alist*').</p>
 
  <p>It had been necessary to evaluate @('(set-state-ok t)') in order to call
  @(tsee verify-termination) on a @(':')@(tsee program) mode function that takes
@@ -87123,6 +87123,12 @@ it."
  @('defun-sk') event by adding, removing, or changing keyword @(':guard-hints')
  in an @('xargs') declaration.  Thanks to Alessandro Coglio for reporting these
  issues.</p>
+
+ <p>The set of @(tsee apply$) primitives has been expanded.  These are built-in
+ function symbols that do not need a @(see warrant) when reasoning about the
+ application of @('apply$') to them or using them in @(tsee loop$).  Thanks to
+ Alessandro Coglio for noting that some built-in @(':')@(tsee logic)-mode
+ functions do not have warrants, in particular, @(tsee sublis-var).</p>
 
  <h3>New Features</h3>
 
@@ -124381,10 +124387,9 @@ introduction-to-the-tau-system) for more information about Tau.</dd>
 
  <p>The steps above can be done without touching the ACL2 source files.</p>
 
- <p>Now it is time to modify the constant *system-verify-guards-alist*, which
- associates a distributed book name with a list of functions whose
- guard-verification is proved by including that book.  Follow the steps
- below.</p>
+ <p>Now it is time to modify the constant @('*system-verify-guards-alist*'),
+ which specifies functions whose guard-verification is proved by including that
+ book.  Follow the steps below.</p>
 
  <ol>
 
@@ -124407,7 +124412,7 @@ introduction-to-the-tau-system) for more information about Tau.</dd>
  cd books
  (time nice ./build/cert.pl -j 8 \\
             --acl2 `pwd`/../saved_acl2d \\
-            system/top.cert system/apply/loop-scions.cert) \\
+            system/devel-check) \\
    >& make-devel-regression.log&
  })
 
@@ -124434,8 +124439,6 @@ introduction-to-the-tau-system) for more information about Tau.</dd>
  You should see output like the following.
 
  @({
- (chk-new-verified-guards 0) ...
- (chk-new-verified-guards 1) ...
  SUCCESS for chk-new-verified-guards
  SUCCESS for check-system-events
  SUCCESS for devel-check
@@ -124580,10 +124583,9 @@ introduction-to-the-tau-system) for more information about Tau.</dd>
  @(see events), perhaps resulting in more system functions being built-in as
  @(see guard)-verified.  To see which built-in functions have already received
  such treatment, see community books directory @('books/system/'); or, evaluate
- the constant @('*system-verify-guards-alist*'), each of whose entries
- associates the name of a community book with a list of functions whose
- guard-verification is proved by including that book.  See the above URL for
- more details.</p>
+ the constant @('*system-verify-guards-alist*'), which specifies a list of
+ functions whose guard-verification is proved by including that book.  See the
+ above URL for more details.</p>
 
  <p>Note that if @('fn1') is already in @(':')@(tsee logic) mode, then the
  @('verify-termination') call has no effect.  It is generally considered to be
