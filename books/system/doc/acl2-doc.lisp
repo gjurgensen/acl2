@@ -12920,16 +12920,17 @@ with any questions about building the community books.</p>")
 
  @({
  # If you are on a Mac, skip this wget command and see just below.
- wget https://github.com/Clozure/ccl/releases/download/v1.12-dev.5/linuxx86.tar.gz
+ wget https://github.com/Clozure/ccl/releases/download/v1.12/linuxx86.tar.gz
  # On a Mac, do this instead:
- # curl --location https://github.com/Clozure/ccl/releases/download/v1.12-dev.5/darwinx86.tar.gz > darwinx86.tar.gz
+ # curl --location https://github.com/Clozure/ccl/releases/download/v1.12/darwinx86.tar.gz > darwinx86.tar.gz
  # Now untar.  NOTE: This is for Linux.
  # For a Mac: tar xfz darwinx86.tar.gz
  tar xfz linuxx86.tar.gz
  })
 
  <p>Rebuild the lisp kernel by hand before trying to rebuild the lisp.
- (Note: This step was formerly unnecessary and might become unnecessary again.
+ (Note: This step was formerly unnecessary and might become unnecessary again,
+ but as of Sept. 2020 it seems to be necessary on MacOS Cataline (10.15).
  If you skip it, then consider replacing :clean by :full below.)</p>
 
  @({
