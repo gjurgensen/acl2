@@ -87023,6 +87023,9 @@ it."
 ; Modified the-string! to print using ~x instead of ~s, in case the argument is
 ; not printable with ~s.  Thanks to Eric Smith for pointing out this bug.
 
+; Removed some obsolete GCL allocation code.  Thanks to Camm Maguire for the
+; suggestion.
+
   :parents (release-notes)
   :short "ACL2 Version  8.4 (xxx, 20xx) Notes"
   :long "<p>NOTE!  New users can ignore these release notes, because the @(see
