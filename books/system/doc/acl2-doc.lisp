@@ -43984,7 +43984,7 @@ tables in the current Hons Space."
 
 (defxdoc intersection$
   :parents (lists acl2-built-ins)
-  :short "Elements of one list that are not elements of another"
+  :short "Elements common to the given lists"
   :long "@({
   General Forms:
   (intersection$ l1 l2 ... lk)
