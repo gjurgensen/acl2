@@ -85795,6 +85795,10 @@ Changes at the System Level
   build error on some platforms.  Thanks to John R. Strohm for
   reporting such a problem (on a Raspberry Pi).
 
+  (SBCL only) Increased the number of special variables that can be
+  created, which allowed community book
+  books/kestrel/apt/schemalg-template-proofs.lisp to certify.
+
 
 EMACS Support
 

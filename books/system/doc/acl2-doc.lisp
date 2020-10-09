@@ -87383,6 +87383,10 @@ it."
  2018 or early 2019).  This avoids an ACL2 build error on some platforms.
  Thanks to John R. Strohm for reporting such a problem (on a Raspberry Pi).</p>
 
+ <p>(SBCL only) Increased the number of special variables that can be created,
+ which allowed community book
+ @('books/kestrel/apt/schemalg-template-proofs.lisp') to certify.</p>
+
  <h3>EMACS Support</h3>
 
  <p>The @(see acl2-doc) search commands (`@('s')' and `@('S')') were seen to
