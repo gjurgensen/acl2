@@ -3500,7 +3500,7 @@ Subtopics
       Create a symbol with a given name
 
   [Intersection$]
-      Elements of one list that are not elements of another
+      Elements common to the given lists
 
   [Intersectp]
       Test whether two lists intersect
@@ -47643,7 +47643,7 @@ Subtopics
     (intern-in-package-of-symbol \"car\" w) is MY-PKG::|car|")
  (INTERSECTION$
   (LISTS ACL2-BUILT-INS)
-  "Elements of one list that are not elements of another
+  "Elements common to the given lists
 
     General Forms:
     (intersection$ l1 l2 ... lk)
@@ -54705,7 +54705,7 @@ Subtopics
       Recognizer for a true list of integers
 
   [Intersection$]
-      Elements of one list that are not elements of another
+      Elements common to the given lists
 
   [Intersectp]
       Test whether two lists intersect
@@ -85794,6 +85794,10 @@ Changes at the System Level
   (starting around late 2018 or early 2019).  This avoids an ACL2
   build error on some platforms.  Thanks to John R. Strohm for
   reporting such a problem (on a Raspberry Pi).
+
+  (SBCL only) Increased the number of special variables that can be
+  created, which allowed community book
+  books/kestrel/apt/schemalg-template-proofs.lisp to certify.
 
 
 EMACS Support

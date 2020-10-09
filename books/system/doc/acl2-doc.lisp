@@ -43984,7 +43984,7 @@ tables in the current Hons Space."
 
 (defxdoc intersection$
   :parents (lists acl2-built-ins)
-  :short "Elements of one list that are not elements of another"
+  :short "Elements common to the given lists"
   :long "@({
   General Forms:
   (intersection$ l1 l2 ... lk)
@@ -87382,6 +87382,10 @@ it."
  modified to reflect its handling in recent SBCL versions (starting around late
  2018 or early 2019).  This avoids an ACL2 build error on some platforms.
  Thanks to John R. Strohm for reporting such a problem (on a Raspberry Pi).</p>
+
+ <p>(SBCL only) Increased the number of special variables that can be created,
+ which allowed community book
+ @('books/kestrel/apt/schemalg-template-proofs.lisp') to certify.</p>
 
  <h3>EMACS Support</h3>
 
