@@ -14582,6 +14582,7 @@ Subtopics
        (note-8-2-books \"[books]/doc/relnotes.lisp\")
        (note-8-3-books \"[books]/doc/relnotes.lisp\")
        (str::numbers \"[books]/std/strings/top.lisp\")
+       (open-trace-file! \"[books]/tools/open-trace-file-bang.lisp\")
        (oracle-timelimit \"[books]/tools/oracle-timelimit.lisp\")
        (oslib \"[books]/oslib/top-logic.lisp\")
        (patbind-the \"[books]/std/util/bstar.lisp\")
@@ -85553,6 +85554,8 @@ Changes to Existing Features
   to Alessandro Coglio for noting that some built-in :[logic]-mode
   functions do not have warrants, in particular, [sublis-var].
 
+  Improved [defwarrant] to be a no-op for [apply$] primitives.
+
 
 New Features
 
@@ -87310,7 +87313,11 @@ Subtopics
   Output from [trace$] normally goes to the screen, i.e.,
   [standard-co].  But it can be redirected to a file as shown above.
   See [close-trace-file] for how to send trace output back to the
-  screen.")
+  screen.
+
+  Open-trace-file does not work as would reasonably be expected during
+  [make-event] expansion.  Use open-trace-file! instead within
+  make-event.")
  (OPTIMIZE (POINTERS) "See [declare].")
  (OR
   (BASICS ACL2-BUILT-INS)
