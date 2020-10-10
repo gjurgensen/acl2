@@ -123331,11 +123331,11 @@ Detailed Documentation
     i, ij, -i, -ij, 100, -100         corresponding integer, which cannot be 0
       (i and j are base-10 digits)
 
-  Important.  If a :useless-runes value is supplied explicitly (even
-  nil) and a non-empty value is also specified for environment
-  variable ACL2_USELESS_RUNES, then the environment variable takes
-  priority if its value is \"WRITE\" (case insensitive), but otherwise
-  the certify-book option :useless-runes takes priority.
+  Important.  An explicitly supplied :useless-runes value normally
+  takes priority over the value of environment variable
+  ACL2_USELESS_RUNES.  However, the environment variable takes
+  priority if its (case insensitive) value is \"WRITE\" provided
+  :useless-runes nil is not supplied explicitly.
 
   If you want certification to avoid reading the book's
   @useless-runes.lsp file even when this environment variable has a
