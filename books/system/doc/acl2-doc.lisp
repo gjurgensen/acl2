@@ -12920,16 +12920,17 @@ with any questions about building the community books.</p>")
 
  @({
  # If you are on a Mac, skip this wget command and see just below.
- wget https://github.com/Clozure/ccl/releases/download/v1.12-dev.5/linuxx86.tar.gz
+ wget https://github.com/Clozure/ccl/releases/download/v1.12/linuxx86.tar.gz
  # On a Mac, do this instead:
- # curl --location https://github.com/Clozure/ccl/releases/download/v1.12-dev.5/darwinx86.tar.gz > darwinx86.tar.gz
+ # curl --location https://github.com/Clozure/ccl/releases/download/v1.12/darwinx86.tar.gz > darwinx86.tar.gz
  # Now untar.  NOTE: This is for Linux.
  # For a Mac: tar xfz darwinx86.tar.gz
  tar xfz linuxx86.tar.gz
  })
 
  <p>Rebuild the lisp kernel by hand before trying to rebuild the lisp.
- (Note: This step was formerly unnecessary and might become unnecessary again.
+ (Note: This step was formerly unnecessary and might become unnecessary again,
+ but as of Sept. 2020 it seems to be necessary on MacOS Cataline (10.15).
  If you skip it, then consider replacing :clean by :full below.)</p>
 
  @({
@@ -43983,7 +43984,7 @@ tables in the current Hons Space."
 
 (defxdoc intersection$
   :parents (lists acl2-built-ins)
-  :short "Elements of one list that are not elements of another"
+  :short "Elements common to the given lists"
   :long "@({
   General Forms:
   (intersection$ l1 l2 ... lk)
@@ -87019,6 +87020,12 @@ it."
 ; "Additional bindings".  It's not clear whether this was a bug in Version_8.3.
 ; Thanks to Mihir Mehta for pointing out this bug with an example.
 
+; Modified the-string! to print using ~x instead of ~s, in case the argument is
+; not printable with ~s.  Thanks to Eric Smith for pointing out this bug.
+
+; Removed some obsolete GCL allocation code.  Thanks to Camm Maguire for the
+; suggestion.
+
   :parents (release-notes)
   :short "ACL2 Version  8.4 (xxx, 20xx) Notes"
   :long "<p>NOTE!  New users can ignore these release notes, because the @(see
@@ -87375,6 +87382,10 @@ it."
  modified to reflect its handling in recent SBCL versions (starting around late
  2018 or early 2019).  This avoids an ACL2 build error on some platforms.
  Thanks to John R. Strohm for reporting such a problem (on a Raspberry Pi).</p>
+
+ <p>(SBCL only) Increased the number of special variables that can be created,
+ which allowed community book
+ @('books/kestrel/apt/schemalg-template-proofs.lisp') to certify.</p>
 
  <h3>EMACS Support</h3>
 

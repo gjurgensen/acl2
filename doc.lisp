@@ -3500,7 +3500,7 @@ Subtopics
       Create a symbol with a given name
 
   [Intersection$]
-      Elements of one list that are not elements of another
+      Elements common to the given lists
 
   [Intersectp]
       Test whether two lists intersect
@@ -15768,17 +15768,18 @@ Subtopics
   https://github.com/Clozure/ccl/releases/} for the latest snapshots.
 
     # If you are on a Mac, skip this wget command and see just below.
-    wget https://github.com/Clozure/ccl/releases/download/v1.12-dev.5/linuxx86.tar.gz
+    wget https://github.com/Clozure/ccl/releases/download/v1.12/linuxx86.tar.gz
     # On a Mac, do this instead:
-    # curl --location https://github.com/Clozure/ccl/releases/download/v1.12-dev.5/darwinx86.tar.gz > darwinx86.tar.gz
+    # curl --location https://github.com/Clozure/ccl/releases/download/v1.12/darwinx86.tar.gz > darwinx86.tar.gz
     # Now untar.  NOTE: This is for Linux.
     # For a Mac: tar xfz darwinx86.tar.gz
     tar xfz linuxx86.tar.gz
 
   Rebuild the lisp kernel by hand before trying to rebuild the lisp.
   (Note: This step was formerly unnecessary and might become
-  unnecessary again.  If you skip it, then consider replacing :clean
-  by :full below.)
+  unnecessary again, but as of Sept. 2020 it seems to be necessary on
+  MacOS Cataline (10.15).  If you skip it, then consider replacing
+  :clean by :full below.)
 
     cd lisp-kernel/linuxx8664; make clean; make
     cd -
@@ -47642,7 +47643,7 @@ Subtopics
     (intern-in-package-of-symbol \"car\" w) is MY-PKG::|car|")
  (INTERSECTION$
   (LISTS ACL2-BUILT-INS)
-  "Elements of one list that are not elements of another
+  "Elements common to the given lists
 
     General Forms:
     (intersection$ l1 l2 ... lk)
@@ -54704,7 +54705,7 @@ Subtopics
       Recognizer for a true list of integers
 
   [Intersection$]
-      Elements of one list that are not elements of another
+      Elements common to the given lists
 
   [Intersectp]
       Test whether two lists intersect
@@ -85793,6 +85794,10 @@ Changes at the System Level
   (starting around late 2018 or early 2019).  This avoids an ACL2
   build error on some platforms.  Thanks to John R. Strohm for
   reporting such a problem (on a Raspberry Pi).
+
+  (SBCL only) Increased the number of special variables that can be
+  created, which allowed community book
+  books/kestrel/apt/schemalg-template-proofs.lisp to certify.
 
 
 EMACS Support
