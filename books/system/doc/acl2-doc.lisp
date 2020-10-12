@@ -121,6 +121,7 @@
     (NOTE-8-2-BOOKS "[books]/doc/relnotes.lisp")
     (NOTE-8-3-BOOKS "[books]/doc/relnotes.lisp")
     (STR::NUMBERS "[books]/std/strings/top.lisp")
+    (OPEN-TRACE-FILE! "[books]/tools/open-trace-file-bang.lisp")
     (ORACLE-TIMELIMIT "[books]/tools/oracle-timelimit.lisp")
     (OSLIB "[books]/oslib/top-logic.lisp")
     (PATBIND-THE "[books]/std/util/bstar.lisp")
@@ -87026,6 +87027,16 @@ it."
 ; Removed some obsolete GCL allocation code.  Thanks to Camm Maguire for the
 ; suggestion.
 
+; Removed an unnecessary argument (specifically, pt) from ACL2 source function
+; rewrite-clause-type-alist, since the only call of rewrite-clause-type-alist
+; s by rewrite-clause and pt was the same as the :pt field in the local-rcnst
+; passed there to rewrite-clause-type-alist,.
+
+; Tweaked an error message when the :check-expansion or :expansion? argument of
+; ~ make-event would normally be a consp (source function
+; chk-embedded-event-form).  Thanks to Mihir Mehta for feedback leading to this
+; change.
+
   :parents (release-notes)
   :short "ACL2 Version  8.4 (xxx, 20xx) Notes"
   :long "<p>NOTE!  New users can ignore these release notes, because the @(see
@@ -87136,6 +87147,9 @@ it."
  application of @('apply$') to them or using them in @(tsee loop$).  Thanks to
  Alessandro Coglio for noting that some built-in @(':')@(tsee logic)-mode
  functions do not have warrants, in particular, @(tsee sublis-var).</p>
+
+ <p>Improved @(tsee defwarrant) to be a no-op for @(tsee apply$)
+ primitives.</p>
 
  <h3>New Features</h3>
 
@@ -88508,7 +88522,11 @@ arithmetic) for libraries of @(see books) for arithmetic reasoning.</p>")
 
  <p>Output from @(tsee trace$) normally goes to the screen, i.e., @(tsee
  standard-co).  But it can be redirected to a file as shown above.  See @(see
- close-trace-file) for how to send trace output back to the screen.</p>")
+ close-trace-file) for how to send trace output back to the screen.</p>
+
+ <p>@('Open-trace-file') does not work as would reasonably be expected during
+ @(tsee make-event) expansion.  Use @('open-trace-file!') instead within
+ @('make-event').</p>")
 
 (defxdoc or
   :parents (basics acl2-built-ins)
@@ -122034,11 +122052,11 @@ introduction-to-the-tau-system) for more information about Tau.</dd>
    (i and j are base-10 digits)
  })
 
- <p><b>Important</b>.  If a @(':useless-runes') value is supplied
- explicitly (even @('nil')) and a non-empty value is also specified for
- environment variable @('ACL2_USELESS_RUNES'), then the environment variable
- takes priority if its value is @('\"WRITE\"') (case insensitive), but
- otherwise the @('certify-book') option @(':useless-runes') takes priority.</p>
+ <p><b>Important</b>.  An explicitly supplied @(':useless-runes') value
+ normally takes priority over the value of environment variable
+ @('ACL2_USELESS_RUNES').  However, the environment variable takes priority if
+ its (case insensitive) value is @('\"WRITE\"') provided @(':useless-runes
+ nil') is not supplied explicitly.</p>
 
  <p>If you want certification to avoid reading the book's @useless-runes.lsp
  file even when this environment variable has a non-empty value that specifies

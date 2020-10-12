@@ -14582,6 +14582,7 @@ Subtopics
        (note-8-2-books \"[books]/doc/relnotes.lisp\")
        (note-8-3-books \"[books]/doc/relnotes.lisp\")
        (str::numbers \"[books]/std/strings/top.lisp\")
+       (open-trace-file! \"[books]/tools/open-trace-file-bang.lisp\")
        (oracle-timelimit \"[books]/tools/oracle-timelimit.lisp\")
        (oslib \"[books]/oslib/top-logic.lisp\")
        (patbind-the \"[books]/std/util/bstar.lisp\")
@@ -85553,6 +85554,8 @@ Changes to Existing Features
   to Alessandro Coglio for noting that some built-in :[logic]-mode
   functions do not have warrants, in particular, [sublis-var].
 
+  Improved [defwarrant] to be a no-op for [apply$] primitives.
+
 
 New Features
 
@@ -87310,7 +87313,11 @@ Subtopics
   Output from [trace$] normally goes to the screen, i.e.,
   [standard-co].  But it can be redirected to a file as shown above.
   See [close-trace-file] for how to send trace output back to the
-  screen.")
+  screen.
+
+  Open-trace-file does not work as would reasonably be expected during
+  [make-event] expansion.  Use open-trace-file! instead within
+  make-event.")
  (OPTIMIZE (POINTERS) "See [declare].")
  (OR
   (BASICS ACL2-BUILT-INS)
@@ -123324,11 +123331,11 @@ Detailed Documentation
     i, ij, -i, -ij, 100, -100         corresponding integer, which cannot be 0
       (i and j are base-10 digits)
 
-  Important.  If a :useless-runes value is supplied explicitly (even
-  nil) and a non-empty value is also specified for environment
-  variable ACL2_USELESS_RUNES, then the environment variable takes
-  priority if its value is \"WRITE\" (case insensitive), but otherwise
-  the certify-book option :useless-runes takes priority.
+  Important.  An explicitly supplied :useless-runes value normally
+  takes priority over the value of environment variable
+  ACL2_USELESS_RUNES.  However, the environment variable takes
+  priority if its (case insensitive) value is \"WRITE\" provided
+  :useless-runes nil is not supplied explicitly.
 
   If you want certification to avoid reading the book's
   @useless-runes.lsp file even when this environment variable has a
