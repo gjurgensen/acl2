@@ -87194,7 +87194,7 @@ it."
  rewriter to replace one quoted constant by an equivalent one under a given
  @(see equivalence) relation.  See @(see rewrite-quoted-constant).</p>
 
- <p>The @(tsee loop$) parser produces more informative error messages on 
+ <p>The @(tsee loop$) parser produces more informative error messages on
  ill-formed @('loop$') statements.</p>
 
  <h3>Heuristic and Efficiency Improvements</h3>
