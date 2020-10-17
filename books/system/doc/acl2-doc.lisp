@@ -87194,6 +87194,9 @@ it."
  rewriter to replace one quoted constant by an equivalent one under a given
  @(see equivalence) relation.  See @(see rewrite-quoted-constant).</p>
 
+ <p>The @(tsee loop$) parser produces more informative error messages on 
+ ill-formed @('loop$') statements.</p>
+
  <h3>Heuristic and Efficiency Improvements</h3>
 
  <p>We changed the lightweight ``preprocess'' simplifier for ``@(see simple)''
@@ -87251,6 +87254,11 @@ it."
  process; that code has been eliminated, as it is no longer necessary.</p>
 
  <h3>Bug Fixes</h3>
+
+ <p>A soundness bug, present since @(tsee loop$) was introduced, was fixed. The
+ bug was manifested when the keyword @(':guard') was used as the @('loop$')
+ body, as in @('(loop$ for v in lst collect :guard)').  (Note: It's not clear
+ that this bug could be used to prove @('nil').)</p>
 
  <p>The mechanism for tracking @(see warrant)s needed during a proof had a bug,
  which might be a soundness bug if one uses @(tsee apply$) or @(tsee loop$).
