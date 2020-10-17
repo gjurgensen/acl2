@@ -85603,6 +85603,9 @@ New Features
   rewriter to replace one quoted constant by an equivalent one under
   a given [equivalence] relation.  See [rewrite-quoted-constant].
 
+  The [loop$] parser produces more informative error messages on
+  ill-formed loop$ statements.
+
 
 Heuristic and Efficiency Improvements
 
@@ -85662,6 +85665,11 @@ Heuristic and Efficiency Improvements
 
 
 Bug Fixes
+
+  A soundness bug, present since [loop$] was introduced, was fixed. The
+  bug was manifested when the keyword :guard was used as the loop$
+  body, as in (loop$ for v in lst collect :guard).  (Note: It's not
+  clear that this bug could be used to prove nil.)
 
   The mechanism for tracking [warrant]s needed during a proof had a
   bug, which might be a soundness bug if one uses [apply$] or
