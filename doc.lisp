@@ -85759,6 +85759,23 @@ Bug Fixes
   not allowed for hash-tables.  This has been fixed by using size 1
   instead of 0 in this case.
 
+  Reporting by [break-rewrite] has been fixed for cases when failure is
+  due to a hypothesis with a [backchain-limit] of 0.  There were
+  actually two such bugs: one due to improper handling of [linear]
+  rules (which might have occurred even for other backchain-limits
+  besides 0), and one due to the erroneous assumption that
+  backchaining has only just begun at the point of failure.  Thanks
+  to Mihir Mehta for sending an example that exhibited both bugs.  A
+  discussion of the second bug, including a simple example, may be
+  found in a comment in the ACL2 source function,
+  tilde-@-failure-reason-phrase1-backchain-limit.
+
+  :OR [hints] that contain a single list (which satisfies
+  [keyword-value-listp]) were being mishandled.  This has been fixed.
+  Thanks to Dave Greve who sent an example [defthm] event specifying
+  :hints ((\"Goal\" :or ((:in-theory (e/d () ()) :nonlinearp t)))),
+  which formerly caused a Lisp error.
+
 
 Changes at the System Level
 
