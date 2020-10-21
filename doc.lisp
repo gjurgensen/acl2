@@ -14582,6 +14582,7 @@ Subtopics
        (note-8-2-books \"[books]/doc/relnotes.lisp\")
        (note-8-3-books \"[books]/doc/relnotes.lisp\")
        (str::numbers \"[books]/std/strings/top.lisp\")
+       (open-trace-file! \"[books]/tools/open-trace-file-bang.lisp\")
        (oracle-timelimit \"[books]/tools/oracle-timelimit.lisp\")
        (oslib \"[books]/oslib/top-logic.lisp\")
        (patbind-the \"[books]/std/util/bstar.lisp\")
@@ -85553,6 +85554,8 @@ Changes to Existing Features
   to Alessandro Coglio for noting that some built-in :[logic]-mode
   functions do not have warrants, in particular, [sublis-var].
 
+  Improved [defwarrant] to be a no-op for [apply$] primitives.
+
 
 New Features
 
@@ -85599,6 +85602,9 @@ New Features
   :[rewrite-quoted-constant].  Rules in this class can cause the
   rewriter to replace one quoted constant by an equivalent one under
   a given [equivalence] relation.  See [rewrite-quoted-constant].
+
+  The [loop$] parser produces more informative error messages on
+  ill-formed loop$ statements.
 
 
 Heuristic and Efficiency Improvements
@@ -85659,6 +85665,11 @@ Heuristic and Efficiency Improvements
 
 
 Bug Fixes
+
+  A soundness bug, present since [loop$] was introduced, was fixed. The
+  bug was manifested when the keyword :guard was used as the loop$
+  body, as in (loop$ for v in lst collect :guard).  (Note: It's not
+  clear that this bug could be used to prove nil.)
 
   The mechanism for tracking [warrant]s needed during a proof had a
   bug, which might be a soundness bug if one uses [apply$] or
@@ -85747,6 +85758,23 @@ Bug Fixes
   an error could occur for host Lisp GCL, complaining that size 0 is
   not allowed for hash-tables.  This has been fixed by using size 1
   instead of 0 in this case.
+
+  Reporting by [break-rewrite] has been fixed for cases when failure is
+  due to a hypothesis with a [backchain-limit] of 0.  There were
+  actually two such bugs: one due to improper handling of [linear]
+  rules (which might have occurred even for other backchain-limits
+  besides 0), and one due to the erroneous assumption that
+  backchaining has only just begun at the point of failure.  Thanks
+  to Mihir Mehta for sending an example that exhibited both bugs.  A
+  discussion of the second bug, including a simple example, may be
+  found in a comment in the ACL2 source function,
+  tilde-@-failure-reason-phrase1-backchain-limit.
+
+  :OR [hints] that contain a single list (which satisfies
+  [keyword-value-listp]) were being mishandled.  This has been fixed.
+  Thanks to Dave Greve who sent an example [defthm] event specifying
+  :hints ((\"Goal\" :or ((:in-theory (e/d () ()) :nonlinearp t)))),
+  which formerly caused a Lisp error.
 
 
 Changes at the System Level
@@ -87310,7 +87338,11 @@ Subtopics
   Output from [trace$] normally goes to the screen, i.e.,
   [standard-co].  But it can be redirected to a file as shown above.
   See [close-trace-file] for how to send trace output back to the
-  screen.")
+  screen.
+
+  Open-trace-file does not work as would reasonably be expected during
+  [make-event] expansion.  Use open-trace-file! instead within
+  make-event.")
  (OPTIMIZE (POINTERS) "See [declare].")
  (OR
   (BASICS ACL2-BUILT-INS)
@@ -123324,11 +123356,11 @@ Detailed Documentation
     i, ij, -i, -ij, 100, -100         corresponding integer, which cannot be 0
       (i and j are base-10 digits)
 
-  Important.  If a :useless-runes value is supplied explicitly (even
-  nil) and a non-empty value is also specified for environment
-  variable ACL2_USELESS_RUNES, then the environment variable takes
-  priority if its value is \"WRITE\" (case insensitive), but otherwise
-  the certify-book option :useless-runes takes priority.
+  Important.  An explicitly supplied :useless-runes value normally
+  takes priority over the value of environment variable
+  ACL2_USELESS_RUNES.  However, the environment variable takes
+  priority if its (case insensitive) value is \"WRITE\" provided
+  :useless-runes nil is not supplied explicitly.
 
   If you want certification to avoid reading the book's
   @useless-runes.lsp file even when this environment variable has a

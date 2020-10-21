@@ -121,6 +121,7 @@
     (NOTE-8-2-BOOKS "[books]/doc/relnotes.lisp")
     (NOTE-8-3-BOOKS "[books]/doc/relnotes.lisp")
     (STR::NUMBERS "[books]/std/strings/top.lisp")
+    (OPEN-TRACE-FILE! "[books]/tools/open-trace-file-bang.lisp")
     (ORACLE-TIMELIMIT "[books]/tools/oracle-timelimit.lisp")
     (OSLIB "[books]/oslib/top-logic.lisp")
     (PATBIND-THE "[books]/std/util/bstar.lisp")
@@ -87026,6 +87027,16 @@ it."
 ; Removed some obsolete GCL allocation code.  Thanks to Camm Maguire for the
 ; suggestion.
 
+; Removed an unnecessary argument (specifically, pt) from ACL2 source function
+; rewrite-clause-type-alist, since the only call of rewrite-clause-type-alist
+; s by rewrite-clause and pt was the same as the :pt field in the local-rcnst
+; passed there to rewrite-clause-type-alist,.
+
+; Tweaked an error message when the :check-expansion or :expansion? argument of
+; ~ make-event would normally be a consp (source function
+; chk-embedded-event-form).  Thanks to Mihir Mehta for feedback leading to this
+; change.
+
   :parents (release-notes)
   :short "ACL2 Version  8.4 (xxx, 20xx) Notes"
   :long "<p>NOTE!  New users can ignore these release notes, because the @(see
@@ -87137,6 +87148,9 @@ it."
  Alessandro Coglio for noting that some built-in @(':')@(tsee logic)-mode
  functions do not have warrants, in particular, @(tsee sublis-var).</p>
 
+ <p>Improved @(tsee defwarrant) to be a no-op for @(tsee apply$)
+ primitives.</p>
+
  <h3>New Features</h3>
 
  <p>A new option for @(tsee certify-book), @(':useless-runes'), makes it
@@ -87179,6 +87193,9 @@ it."
  @(':')@(tsee rewrite-quoted-constant).  Rules in this class can cause the
  rewriter to replace one quoted constant by an equivalent one under a given
  @(see equivalence) relation.  See @(see rewrite-quoted-constant).</p>
+
+ <p>The @(tsee loop$) parser produces more informative error messages on
+ ill-formed @('loop$') statements.</p>
 
  <h3>Heuristic and Efficiency Improvements</h3>
 
@@ -87237,6 +87254,11 @@ it."
  process; that code has been eliminated, as it is no longer necessary.</p>
 
  <h3>Bug Fixes</h3>
+
+ <p>A soundness bug, present since @(tsee loop$) was introduced, was fixed. The
+ bug was manifested when the keyword @(':guard') was used as the @('loop$')
+ body, as in @('(loop$ for v in lst collect :guard)').  (Note: It's not clear
+ that this bug could be used to prove @('nil').)</p>
 
  <p>The mechanism for tracking @(see warrant)s needed during a proof had a bug,
  which might be a soundness bug if one uses @(tsee apply$) or @(tsee loop$).
@@ -87339,6 +87361,22 @@ it."
  an error could occur for host Lisp GCL, complaining that size 0 is not allowed
  for hash-tables.  This has been fixed by using size 1 instead of 0 in this
  case.</p>
+
+ <p>Reporting by @(see break-rewrite) has been fixed for cases when failure is
+ due to a hypothesis with a @(see backchain-limit) of 0.  There were actually
+ two such bugs: one due to improper handling of @(see linear) rules (which
+ might have occurred even for other backchain-limits besides 0), and one due to
+ the erroneous assumption that backchaining has only just begun at the point of
+ failure.  Thanks to Mihir Mehta for sending an example that exhibited both
+ bugs.  A discussion of the second bug, including a simple example, may be
+ found in a comment in the ACL2 source function,
+ @('tilde-@-failure-reason-phrase1-backchain-limit').</p>
+
+ <p>@(':OR') @(see hints) that contain a single list (which satisfies @(tsee
+ keyword-value-listp)) were being mishandled.  This has been fixed.  Thanks to
+ Dave Greve who sent an example @(tsee defthm) event specifying
+ @(':hints ((\"Goal\" :or ((:in-theory (e/d () ()) :nonlinearp t))))'), which
+ formerly caused a Lisp error.</p>
 
  <h3>Changes at the System Level</h3>
 
@@ -88508,7 +88546,11 @@ arithmetic) for libraries of @(see books) for arithmetic reasoning.</p>")
 
  <p>Output from @(tsee trace$) normally goes to the screen, i.e., @(tsee
  standard-co).  But it can be redirected to a file as shown above.  See @(see
- close-trace-file) for how to send trace output back to the screen.</p>")
+ close-trace-file) for how to send trace output back to the screen.</p>
+
+ <p>@('Open-trace-file') does not work as would reasonably be expected during
+ @(tsee make-event) expansion.  Use @('open-trace-file!') instead within
+ @('make-event').</p>")
 
 (defxdoc or
   :parents (basics acl2-built-ins)
@@ -122034,11 +122076,11 @@ introduction-to-the-tau-system) for more information about Tau.</dd>
    (i and j are base-10 digits)
  })
 
- <p><b>Important</b>.  If a @(':useless-runes') value is supplied
- explicitly (even @('nil')) and a non-empty value is also specified for
- environment variable @('ACL2_USELESS_RUNES'), then the environment variable
- takes priority if its value is @('\"WRITE\"') (case insensitive), but
- otherwise the @('certify-book') option @(':useless-runes') takes priority.</p>
+ <p><b>Important</b>.  An explicitly supplied @(':useless-runes') value
+ normally takes priority over the value of environment variable
+ @('ACL2_USELESS_RUNES').  However, the environment variable takes priority if
+ its (case insensitive) value is @('\"WRITE\"') provided @(':useless-runes
+ nil') is not supplied explicitly.</p>
 
  <p>If you want certification to avoid reading the book's @useless-runes.lsp
  file even when this environment variable has a non-empty value that specifies
