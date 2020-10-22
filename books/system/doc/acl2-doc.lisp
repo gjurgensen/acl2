@@ -87151,6 +87151,11 @@ it."
  <p>Improved @(tsee defwarrant) to be a no-op for @(tsee apply$)
  primitives.</p>
 
+ <p>ACL2 now points out when specious simplification takes place; see @(see
+ specious-simplification).  Formerly this was the case only with @(see
+ gag-mode) turned off.  Thanks to Mihir Mehta for a query that led to this
+ enhancement.</p>
+
  <h3>New Features</h3>
 
  <p>A new option for @(tsee certify-book), @(':useless-runes'), makes it
@@ -108828,8 +108833,8 @@ arithmetic) for libraries of @(see books) for arithmetic reasoning.</p>")
  simplifies to itself or to a set including itself.  Such simplifications are
  said to be ``specious'' and are ignored in the sense that the theorem prover
  acts as though no simplification were possible and tries the next available
- proof technique.  Specious simplifications are almost always caused by
- forcing.</p>
+ proof technique.  Specious simplifications are almost always caused by the use
+ of @(tsee force) or @(tsee case-split).</p>
 
  <p>The simplification of a formula proceeds primarily by the local application
  of @(':')@(tsee rewrite), @(':')@(tsee type-prescription), and other rules to
@@ -108911,9 +108916,19 @@ arithmetic) for libraries of @(see books) for arithmetic reasoning.</p>")
  the others and thus make progress.</p>
 
  <p>When specious simplifications are a problem it might be helpful to @(see
- disable) all forcing (including @(see case-split)s) and resubmit the formula
- to observe whether forcing is involved in the loop or not.  See @(see force).
- The commands</p>
+ disable) rules involved in forcing (including case-splits; see @(see force)
+ and see @(see case-split)).  For the example above we see the following
+ output; and in fact, a hint to disable @('BAD') will avoid the specious
+ simplification (although the proof will still fail).
+
+ @({
+ Splitter note (see :DOC splitter) for Goal (0 subgoals).
+   case-split: ((:REWRITE BAD))
+ })
+
+ A more drastic possibility is to disable all forcing (including @(see
+ case-split)s) and resubmit the formula to observe whether forcing is involved
+ in the loop or not.  The commands</p>
 
  @({
   ACL2 !>:disable-forcing

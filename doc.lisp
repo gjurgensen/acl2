@@ -85556,6 +85556,11 @@ Changes to Existing Features
 
   Improved [defwarrant] to be a no-op for [apply$] primitives.
 
+  ACL2 now points out when specious simplification takes place; see
+  [specious-simplification].  Formerly this was the case only with
+  [gag-mode] turned off.  Thanks to Mihir Mehta for a query that led
+  to this enhancement.
+
 
 New Features
 
@@ -109942,7 +109947,8 @@ Subtopics
   simplifications are said to be ``specious'' and are ignored in the
   sense that the theorem prover acts as though no simplification were
   possible and tries the next available proof technique.  Specious
-  simplifications are almost always caused by forcing.
+  simplifications are almost always caused by the use of [force] or
+  [case-split].
 
   The simplification of a formula proceeds primarily by the local
   application of :[rewrite], :[type-prescription], and other rules to
@@ -110024,9 +110030,17 @@ Subtopics
   apply all the others and thus make progress.
 
   When specious simplifications are a problem it might be helpful to
-  [disable] all forcing (including [case-split]s) and resubmit the
-  formula to observe whether forcing is involved in the loop or not.
-  See [force].  The commands
+  [disable] rules involved in forcing (including case-splits; see
+  [force] and see [case-split]).  For the example above we see the
+  following output; and in fact, a hint to disable BAD will avoid the
+  specious simplification (although the proof will still fail).
+
+      Splitter note (see :DOC splitter) for Goal (0 subgoals).
+        case-split: ((:REWRITE BAD))
+
+  A more drastic possibility is to disable all forcing (including
+  [case-split]s) and resubmit the formula to observe whether forcing
+  is involved in the loop or not.  The commands
 
     ACL2 !>:disable-forcing
     and
