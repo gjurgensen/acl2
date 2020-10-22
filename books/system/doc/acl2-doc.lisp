@@ -40178,10 +40178,36 @@ current fast alists."
  to prove, each with a name based on the value of the @(':do-not-induct') hint
  that caused that subgoal to be skipped.</p>
 
- <p>Remarks.  (1) A @(':do-not-induct') hint is ignored for any goal on which
- an @(':induct') hint is supplied.  (2) For an advanced example of the use of
- value @(':otf') for @(':do-not-induct') combined with @(see override-hints),
- see community book @('books/hints/basic-tests.lisp').</p></dd>
+ <p><b>Remarks.</b></p>
+
+ <p>(1) An @(':induct') hint is applied to a goal even if a @(':do-not-induct')
+ hint is in effect for that goal.  Consider the following examples.</p>
+
+ @({
+ (thm (equal (append (append x y) z) (append x y z))
+      :hints ((\"Goal\" :induct t :do-not-induct t)))
+
+ (thm (and (equal (append (append x y) z) (append x y z))
+           (equal (append (append u v) w) (append u v w)))
+      :hints ((\"Goal\" :do-not-induct t)
+              (\"Subgoal 2\" :induct t)))
+ })
+
+ <p>In the first of these, the @(':do-not-induct') hint has no effect on the
+ proof; instead, the @(':induct') hint forces an induction that allows the
+ proof to succeed (without any sub-inductions).  The second of these
+ illustrates that even though @(':do-not-induct') can stop sub-inductions, its
+ effect is overridden by @(':induct').  For the proof of that second example,
+ ACL2 immediately splits into two subgoals.  Then in spite of the top-level
+ @(':do-not-induct') hint, the proof is allowed to proceed past Subgoal 2,
+ which requires induction, because of the hint @(':induct t').  However, the
+ proof halts after Subgoal 1 because of the @(':do-not-induct') hint that has
+ been established ``above'' it, at @('\"Goal\"').  (For more about the way
+ hints are processed, see @(see hints-and-the-waterfall).)</p>
+
+ <p>(2) For an advanced example of the use of value @(':otf') for
+ @(':do-not-induct') combined with @(see override-hints), see community book
+ @('books/hints/basic-tests.lisp').</p></dd>
 
  <dt>@(':error')</dt><p/>
 
