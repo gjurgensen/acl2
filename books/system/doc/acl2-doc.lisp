@@ -112544,6 +112544,12 @@ arithmetic) for libraries of @(see books) for arithmetic reasoning.</p>")
 
  <li>@('(flambdap fn)'): True when @('fn') is a @('lambda') expression.</li>
 
+ <li>@('(flatten-ands-in-lit term)'): Returns a list of terms whose conjunction
+ is equivalent to the given term (which satisfies @(tsee pseudo-termp)),
+ obtained by flattening its conjunctive structure.  For example,
+ @('(flatten-ands-in-lit '(if (if x y 'nil) z 'nil))') is the list @('(x y
+ z)').</li>
+
  <li>@('(fn-rune-nume fn nflg xflg wrld)'): For a function symbol @('fn'),
  return either the @(see rune) (case @('nflg') = @('nil')) or nume (numeric
  representation of a rune) (case @('nflg') = @('t')) associated with either
@@ -132275,6 +132281,7 @@ expand function call at the current subterm, without simplifying"
 (defpointer fix-pkg system-utilities)
 (defpointer flambda-applicationp system-utilities)
 (defpointer flambdap system-utilities)
+(defpointer flatten-ands-in-lit system-utilities)
 (defpointer fms!-to-string printing-to-strings)
 (defpointer fms-to-string printing-to-strings)
 (defpointer fmt!-to-string printing-to-strings)

@@ -34854,6 +34854,8 @@ Subtopics
                        "See [system-utilities].")
  (FLAMBDAP (POINTERS)
            "See [system-utilities].")
+ (FLATTEN-ANDS-IN-LIT (POINTERS)
+                      "See [system-utilities].")
  (FLAWED_INDUCTION_CANDIDATES_IN_APP_EXAMPLE
   (PAGES_WRITTEN_ESPECIALLY_FOR_THE_TOURS)
   "Flawed Induction Candidates in App Example
@@ -90546,6 +90548,9 @@ Subtopics
   [Flambdap]
       See [system-utilities].
 
+  [Flatten-ands-in-lit]
+      See [system-utilities].
+
   [Fms!-to-string]
       See [printing-to-strings].
 
@@ -113892,6 +113897,11 @@ List of a few built-in system utilities
       variable, return t if it is a function call whose function
       symbol is a lambda expression, else return nil.
     * (flambdap fn): True when fn is a lambda expression.
+    * (flatten-ands-in-lit term): Returns a list of terms whose conjunction
+      is equivalent to the given term (which satisfies
+      [pseudo-termp]), obtained by flattening its conjunctive
+      structure.  For example, (flatten-ands-in-lit '(if (if x y
+      'nil) z 'nil)) is the list (x y z).
     * (fn-rune-nume fn nflg xflg wrld): For a function symbol fn, return
       either the [rune] (case nflg = nil) or nume (numeric
       representation of a rune) (case nflg = t) associated with
