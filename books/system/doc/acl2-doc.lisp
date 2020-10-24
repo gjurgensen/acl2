@@ -87409,6 +87409,10 @@ it."
  @(':hints ((\"Goal\" :or ((:in-theory (e/d () ()) :nonlinearp t))))'), which
  formerly caused a Lisp error.</p>
 
+ <p>Fixed a bug in tracking the @(see cbd) that could cause failures of @(tsee
+ include-book) in raw-mode.  Thanks to Warren Hunt for a query leading to this
+ fix.</p>
+
  <h3>Changes at the System Level</h3>
 
  <p>(SBCL only) Filenames are now read as ASCII (specifically, ISO-8859-1) when
