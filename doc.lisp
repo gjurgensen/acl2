@@ -85809,6 +85809,10 @@ Bug Fixes
   :hints ((\"Goal\" :or ((:in-theory (e/d () ()) :nonlinearp t)))),
   which formerly caused a Lisp error.
 
+  Fixed a bug in tracking the [cbd] that could cause failures of
+  [include-book] in raw-mode.  Thanks to Warren Hunt for a query
+  leading to this fix.
+
 
 Changes at the System Level
 
