@@ -40178,10 +40178,36 @@ current fast alists."
  to prove, each with a name based on the value of the @(':do-not-induct') hint
  that caused that subgoal to be skipped.</p>
 
- <p>Remarks.  (1) A @(':do-not-induct') hint is ignored for any goal on which
- an @(':induct') hint is supplied.  (2) For an advanced example of the use of
- value @(':otf') for @(':do-not-induct') combined with @(see override-hints),
- see community book @('books/hints/basic-tests.lisp').</p></dd>
+ <p><b>Remarks.</b></p>
+
+ <p>(1) An @(':induct') hint is applied to a goal even if a @(':do-not-induct')
+ hint is in effect for that goal.  Consider the following examples.</p>
+
+ @({
+ (thm (equal (append (append x y) z) (append x y z))
+      :hints ((\"Goal\" :induct t :do-not-induct t)))
+
+ (thm (and (equal (append (append x y) z) (append x y z))
+           (equal (append (append u v) w) (append u v w)))
+      :hints ((\"Goal\" :do-not-induct t)
+              (\"Subgoal 2\" :induct t)))
+ })
+
+ <p>In the first of these, the @(':do-not-induct') hint has no effect on the
+ proof; instead, the @(':induct') hint forces an induction that allows the
+ proof to succeed (without any sub-inductions).  The second of these
+ illustrates that even though @(':do-not-induct') can stop sub-inductions, its
+ effect is overridden by @(':induct').  For the proof of that second example,
+ ACL2 immediately splits into two subgoals.  Then in spite of the top-level
+ @(':do-not-induct') hint, the proof is allowed to proceed past Subgoal 2,
+ which requires induction, because of the hint @(':induct t').  However, the
+ proof halts after Subgoal 1 because of the @(':do-not-induct') hint that has
+ been established ``above'' it, at @('\"Goal\"').  (For more about the way
+ hints are processed, see @(see hints-and-the-waterfall).)</p>
+
+ <p>(2) For an advanced example of the use of value @(':otf') for
+ @(':do-not-induct') combined with @(see override-hints), see community book
+ @('books/hints/basic-tests.lisp').</p></dd>
 
  <dt>@(':error')</dt><p/>
 
@@ -87151,6 +87177,11 @@ it."
  <p>Improved @(tsee defwarrant) to be a no-op for @(tsee apply$)
  primitives.</p>
 
+ <p>ACL2 now points out when specious simplification takes place; see @(see
+ specious-simplification).  Formerly this was the case only with @(see
+ gag-mode) turned off.  Thanks to Mihir Mehta for a query that led to this
+ enhancement.</p>
+
  <h3>New Features</h3>
 
  <p>A new option for @(tsee certify-book), @(':useless-runes'), makes it
@@ -87193,6 +87224,9 @@ it."
  @(':')@(tsee rewrite-quoted-constant).  Rules in this class can cause the
  rewriter to replace one quoted constant by an equivalent one under a given
  @(see equivalence) relation.  See @(see rewrite-quoted-constant).</p>
+
+ <p>The @(tsee loop$) parser produces more informative error messages on
+ ill-formed @('loop$') statements.</p>
 
  <h3>Heuristic and Efficiency Improvements</h3>
 
@@ -87251,6 +87285,11 @@ it."
  process; that code has been eliminated, as it is no longer necessary.</p>
 
  <h3>Bug Fixes</h3>
+
+ <p>A soundness bug, present since @(tsee loop$) was introduced, was fixed. The
+ bug was manifested when the keyword @(':guard') was used as the @('loop$')
+ body, as in @('(loop$ for v in lst collect :guard)').  (Note: It's not clear
+ that this bug could be used to prove @('nil').)</p>
 
  <p>The mechanism for tracking @(see warrant)s needed during a proof had a bug,
  which might be a soundness bug if one uses @(tsee apply$) or @(tsee loop$).
@@ -87353,6 +87392,26 @@ it."
  an error could occur for host Lisp GCL, complaining that size 0 is not allowed
  for hash-tables.  This has been fixed by using size 1 instead of 0 in this
  case.</p>
+
+ <p>Reporting by @(see break-rewrite) has been fixed for cases when failure is
+ due to a hypothesis with a @(see backchain-limit) of 0.  There were actually
+ two such bugs: one due to improper handling of @(see linear) rules (which
+ might have occurred even for other backchain-limits besides 0), and one due to
+ the erroneous assumption that backchaining has only just begun at the point of
+ failure.  Thanks to Mihir Mehta for sending an example that exhibited both
+ bugs.  A discussion of the second bug, including a simple example, may be
+ found in a comment in the ACL2 source function,
+ @('tilde-@-failure-reason-phrase1-backchain-limit').</p>
+
+ <p>@(':OR') @(see hints) that contain a single list (which satisfies @(tsee
+ keyword-value-listp)) were being mishandled.  This has been fixed.  Thanks to
+ Dave Greve who sent an example @(tsee defthm) event specifying
+ @(':hints ((\"Goal\" :or ((:in-theory (e/d () ()) :nonlinearp t))))'), which
+ formerly caused a Lisp error.</p>
+
+ <p>Fixed a bug in tracking the @(see cbd) that could cause failures of @(tsee
+ include-book) in raw-mode.  Thanks to Warren Hunt for a query leading to this
+ fix.</p>
 
  <h3>Changes at the System Level</h3>
 
@@ -108804,8 +108863,8 @@ arithmetic) for libraries of @(see books) for arithmetic reasoning.</p>")
  simplifies to itself or to a set including itself.  Such simplifications are
  said to be ``specious'' and are ignored in the sense that the theorem prover
  acts as though no simplification were possible and tries the next available
- proof technique.  Specious simplifications are almost always caused by
- forcing.</p>
+ proof technique.  Specious simplifications are almost always caused by the use
+ of @(tsee force) or @(tsee case-split).</p>
 
  <p>The simplification of a formula proceeds primarily by the local application
  of @(':')@(tsee rewrite), @(':')@(tsee type-prescription), and other rules to
@@ -108887,9 +108946,19 @@ arithmetic) for libraries of @(see books) for arithmetic reasoning.</p>")
  the others and thus make progress.</p>
 
  <p>When specious simplifications are a problem it might be helpful to @(see
- disable) all forcing (including @(see case-split)s) and resubmit the formula
- to observe whether forcing is involved in the loop or not.  See @(see force).
- The commands</p>
+ disable) rules involved in forcing (including case-splits; see @(see force)
+ and see @(see case-split)).  For the example above we see the following
+ output; and in fact, a hint to disable @('BAD') will avoid the specious
+ simplification (although the proof will still fail).
+
+ @({
+ Splitter note (see :DOC splitter) for Goal (0 subgoals).
+   case-split: ((:REWRITE BAD))
+ })
+
+ A more drastic possibility is to disable all forcing (including @(see
+ case-split)s) and resubmit the formula to observe whether forcing is involved
+ in the loop or not.  The commands</p>
 
  @({
   ACL2 !>:disable-forcing
@@ -112478,6 +112547,12 @@ arithmetic) for libraries of @(see books) for arithmetic reasoning.</p>")
  is a @('lambda') expression, else return @('nil').</li>
 
  <li>@('(flambdap fn)'): True when @('fn') is a @('lambda') expression.</li>
+
+ <li>@('(flatten-ands-in-lit term)'): Returns a list of terms whose conjunction
+ is equivalent to the given term (which satisfies @(tsee pseudo-termp)),
+ obtained by flattening its conjunctive structure.  For example,
+ @('(flatten-ands-in-lit '(if (if x y 'nil) z 'nil))') is the list @('(x y
+ z)').</li>
 
  <li>@('(fn-rune-nume fn nflg xflg wrld)'): For a function symbol @('fn'),
  return either the @(see rune) (case @('nflg') = @('nil')) or nume (numeric
@@ -132210,6 +132285,7 @@ expand function call at the current subterm, without simplifying"
 (defpointer fix-pkg system-utilities)
 (defpointer flambda-applicationp system-utilities)
 (defpointer flambdap system-utilities)
+(defpointer flatten-ands-in-lit system-utilities)
 (defpointer fms!-to-string printing-to-strings)
 (defpointer fms-to-string printing-to-strings)
 (defpointer fmt!-to-string printing-to-strings)
