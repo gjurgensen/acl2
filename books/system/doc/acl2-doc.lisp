@@ -90370,8 +90370,9 @@ arithmetic) for libraries of @(see books) for arithmetic reasoning.</p>")
 
  <p>Patterned congruence rules are used primarily during the process of
  <i>rewriting</i>.  In particular, unlike classic congruence rules, they are
- <i>not</i> used to do equality substitution at the goal level.  The simplest
- way to understand this point may be with the following trivial example.</p>
+ <i>not</i> used to do equality substitution at the goal level or in @(see
+ proof-builder) commands such as @('=') and @('equiv').  The simplest way to
+ understand this point may be with the following trivial example.</p>
 
  @({
  (defstub foo (x y z) t)
@@ -129010,12 +129011,15 @@ attempt an equality (or equivalence) substitution"
  <p>Actually, @('keyword-args') is either a single non-keyword or is a list of
  the form @('((kw-1 x-1) ... (kw-n x-n))'), where each @('kw-i') is one of the
  keywords @(':equiv'), @(':otf-flg'), @(':hints').  Here @(':equiv') defaults
- to @('equal') if the argument is not supplied or is @('nil'), and otherwise
- should be the name of an ACL2 equivalence relation.  @(':Otf-flg') and
- @(':hints') give directives to the prover, as explained above; also see @(see
- acl2-pc::prove).  However, no prover call is made if @(':hints') is a
- non-@('nil') atom or if @('keyword-args') is a single non-keyword (more on
- this below).</p>
+ to @('equal') if the argument is not supplied or is @('nil'); if it is not
+ @('equal') (either explicitly or by default), then it should be the name of an
+ ACL2 @(see equivalence) relation, and substitution will only take place at
+ subterm occurrences for which the @(':equiv') is among the @(see equivalence)
+ relations being maintained without the use of @(see patterned-congruence)s.
+ @(':Otf-flg') and @(':hints') give directives to the prover, as explained
+ above; also see @(see acl2-pc::prove).  However, no prover call is made if
+ @(':hints') is a non-@('nil') atom or if @('keyword-args') is a single
+ non-keyword (more on this below).</p>
 
  <p><i>Remarks on defaults</i></p>
 
@@ -129950,13 +129954,17 @@ attempt an equality (or congruence-based) substitution"
   (equiv old new &optional relation)
  })
 
- <p>Substitute new for old everywhere inside the current subterm, provided that
- either (relation old new) or (relation new old) is among the top-level
- hypotheses or the governors (possibly by way of backchaining and/or
- refinement; see below).  If relation is @('nil') or is not supplied, then it
- defaults to @('equal').  Also see @('acl2-pc::=') for a much more flexible
- command.  Note that the @('equiv') command fails if no substitution is actually
- made.</p>
+ <p>Substitute @('new') for @('old') everywhere inside the current subterm,
+ provided that either @('(relation old new)') or @('(relation new old)') is
+ among the top-level hypotheses or the governors (possibly by way of
+ backchaining and/or refinement; see below).  If @('relation') is @('nil') or
+ is not supplied, then it defaults to @('equal').  If @('relation') is not
+ @('equal') (either explicitly or by default), then substitution of @('new')
+ for @('old') will only take place at occurrences for which @('relation') is
+ among the @(see equivalence) relations being maintained without the use of
+ @(see patterned-congruence)s.  Also see @('acl2-pc::=') for a much more
+ flexible command.  Note that the @('equiv') command fails if no substitution
+ is actually made.</p>
 
  <p><b>Remark:</b> No substitution takes place inside explicit values.  So for
  example, the instruction @('(equiv 3 x)') will cause @('3') to be replaced by
