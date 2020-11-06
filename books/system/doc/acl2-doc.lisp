@@ -87063,6 +87063,10 @@ it."
 ; chk-embedded-event-form).  Thanks to Mihir Mehta for feedback leading to this
 ; change.
 
+; (Allegro CL only) Eliminated a compiler warning during the build for function
+; from-to-by-ac, about unreachable code, by moving #+allegro code to
+; with-warnings-suppressed from with-more-warnings-suppressed.
+
   :parents (release-notes)
   :short "ACL2 Version  8.4 (xxx, 20xx) Notes"
   :long "<p>NOTE!  New users can ignore these release notes, because the @(see
@@ -112397,9 +112401,10 @@ arithmetic) for libraries of @(see books) for arithmetic reasoning.</p>")
  whether @('flg') is @('nil') (for a term) or not @('nil') (for a list of
  terms), respectively.</li>
 
- <li>@('(all-vars x)'): For a @(tsee pseudo-termp) @('x'), return the list of
- variables in @('x') in reverse print order of first occurrence.  For example,
- @('all-vars') of @(''(f (g a b) c)') is @(''(c b a)').</li>
+ <li>@('(all-vars x)'): For a @(tsee pseudo-termp) @('x'), return a
+ duplicate-free list of all variables in @('x'), in reverse print order of
+ first occurrence.  For example, @('all-vars') of @(''(f (g a b) c)') is @(''(c
+ b a)').</li>
 
  <li>@('(arglistp lst)'): Return true iff @('lst') is a @('nil')-terminated
  list of distinct, legal variable names, usable as the formal argument
