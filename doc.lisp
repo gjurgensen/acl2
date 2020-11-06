@@ -113778,9 +113778,9 @@ List of a few built-in system utilities
       called in the given term or list of terms, x, according to
       whether flg is nil (for a term) or not nil (for a list of
       terms), respectively.
-    * (all-vars x): For a [pseudo-termp] x, return the list of variables in
-      x in reverse print order of first occurrence.  For example,
-      all-vars of '(f (g a b) c) is '(c b a).
+    * (all-vars x): For a [pseudo-termp] x, return a duplicate-free list of
+      all variables in x, in reverse print order of first occurrence.
+      For example, all-vars of '(f (g a b) c) is '(c b a).
     * (arglistp lst): Return true iff lst is a nil-terminated list of
       distinct, legal variable names, usable as the formal argument
       list (hence the name of this utility) of a function.
