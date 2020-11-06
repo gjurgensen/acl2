@@ -1,4 +1,4 @@
-; Java Library
+; Error Checking Library
 ;
 ; Copyright (C) 2020 Kestrel Institute (http://www.kestrel.edu)
 ;
@@ -10,15 +10,14 @@
 
 (in-package "ACL2")
 
-(include-book "multivalue")
+(include-book "def-error-checker")
 
-(include-book "../atj" :ttags (:open-output-channel! :oslib :quicklisp :quicklisp.osicat))
+(include-book "kestrel/std/system/function-namep" :dir :system)
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
-(java::atj add-sub
-           diff-types
-           :deep t
-           :guards nil
-           :java-class "MultivalueDeepUnguarded"
-           :tests *tests*)
+(def-error-checker ensure-function-is-logic-mode
+  ((fn (function-namep fn (w state)) "Function to check."))
+  :short "Cause an error if a function is in program mode."
+  :body (((logicp fn (w state))
+          "~@0 must be in logic mode." description)))
