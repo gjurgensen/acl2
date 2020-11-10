@@ -26412,8 +26412,8 @@ ld) and @(tsee include-book)"
 (defxdoc emacs
   :parents (acl2-tutorial)
   :short "Emacs support for ACL2"
-  :long "<p>Many successful ACL2 users run in an shell under the Emacs editor.
- If you do so, then you may wish to load the distributed file
+  :long "<p>Many successful ACL2 users run the theorem prover in a shell under
+  the Emacs editor. If you do so, then you may wish to load the distributed file
  @('emacs/emacs-acl2.el').  The file begins with considerable comments
  describing what it offers.  It is intended to work both with GNU Emacs and
  XEmacs.</p>
