@@ -26412,11 +26412,10 @@ ld) and @(tsee include-book)"
 (defxdoc emacs
   :parents (acl2-tutorial)
   :short "Emacs support for ACL2"
-  :long "<p>Many successful ACL2 users run in an shell under the Emacs editor.
- If you do so, then you may wish to load the distributed file
- @('emacs/emacs-acl2.el').  The file begins with considerable comments
- describing what it offers.  It is intended to work both with GNU Emacs and
- XEmacs.</p>
+  :long "<p>Many successful users of ACL2 run it in a shell under the Emacs
+  editor.  If you do so, then you may wish to load the distributed file
+  @('emacs/emacs-acl2.el').  The file begins with considerable comments
+  describing what it offers.</p>
 
  <p>In particular, the above file provides the ACL2-Doc browser, a convenient
  tool for viewing, in Emacs, documentation for both the ACL2 system and the
@@ -87063,6 +87062,10 @@ it."
 ; chk-embedded-event-form).  Thanks to Mihir Mehta for feedback leading to this
 ; change.
 
+; (Allegro CL only) Eliminated a compiler warning during the build for function
+; from-to-by-ac, about unreachable code, by moving #+allegro code to
+; with-warnings-suppressed from with-more-warnings-suppressed.
+
   :parents (release-notes)
   :short "ACL2 Version  8.4 (xxx, 20xx) Notes"
   :long "<p>NOTE!  New users can ignore these release notes, because the @(see
@@ -90370,8 +90373,9 @@ arithmetic) for libraries of @(see books) for arithmetic reasoning.</p>")
 
  <p>Patterned congruence rules are used primarily during the process of
  <i>rewriting</i>.  In particular, unlike classic congruence rules, they are
- <i>not</i> used to do equality substitution at the goal level.  The simplest
- way to understand this point may be with the following trivial example.</p>
+ <i>not</i> used to do equality substitution at the goal level or in @(see
+ proof-builder) commands such as @('=') and @('equiv').  The simplest way to
+ understand this point may be with the following trivial example.</p>
 
  @({
  (defstub foo (x y z) t)
@@ -112396,9 +112400,10 @@ arithmetic) for libraries of @(see books) for arithmetic reasoning.</p>")
  whether @('flg') is @('nil') (for a term) or not @('nil') (for a list of
  terms), respectively.</li>
 
- <li>@('(all-vars x)'): For a @(tsee pseudo-termp) @('x'), return the list of
- variables in @('x') in reverse print order of first occurrence.  For example,
- @('all-vars') of @(''(f (g a b) c)') is @(''(c b a)').</li>
+ <li>@('(all-vars x)'): For a @(tsee pseudo-termp) @('x'), return a
+ duplicate-free list of all variables in @('x'), in reverse print order of
+ first occurrence.  For example, @('all-vars') of @(''(f (g a b) c)') is @(''(c
+ b a)').</li>
 
  <li>@('(arglistp lst)'): Return true iff @('lst') is a @('nil')-terminated
  list of distinct, legal variable names, usable as the formal argument
@@ -129010,12 +129015,15 @@ attempt an equality (or equivalence) substitution"
  <p>Actually, @('keyword-args') is either a single non-keyword or is a list of
  the form @('((kw-1 x-1) ... (kw-n x-n))'), where each @('kw-i') is one of the
  keywords @(':equiv'), @(':otf-flg'), @(':hints').  Here @(':equiv') defaults
- to @('equal') if the argument is not supplied or is @('nil'), and otherwise
- should be the name of an ACL2 equivalence relation.  @(':Otf-flg') and
- @(':hints') give directives to the prover, as explained above; also see @(see
- acl2-pc::prove).  However, no prover call is made if @(':hints') is a
- non-@('nil') atom or if @('keyword-args') is a single non-keyword (more on
- this below).</p>
+ to @('equal') if the argument is not supplied or is @('nil'); if it is not
+ @('equal') (either explicitly or by default), then it should be the name of an
+ ACL2 @(see equivalence) relation, and substitution will only take place at
+ subterm occurrences for which the @(':equiv') is among the @(see equivalence)
+ relations being maintained without the use of @(see patterned-congruence)s.
+ @(':Otf-flg') and @(':hints') give directives to the prover, as explained
+ above; also see @(see acl2-pc::prove).  However, no prover call is made if
+ @(':hints') is a non-@('nil') atom or if @('keyword-args') is a single
+ non-keyword (more on this below).</p>
 
  <p><i>Remarks on defaults</i></p>
 
@@ -129950,13 +129958,17 @@ attempt an equality (or congruence-based) substitution"
   (equiv old new &optional relation)
  })
 
- <p>Substitute new for old everywhere inside the current subterm, provided that
- either (relation old new) or (relation new old) is among the top-level
- hypotheses or the governors (possibly by way of backchaining and/or
- refinement; see below).  If relation is @('nil') or is not supplied, then it
- defaults to @('equal').  Also see @('acl2-pc::=') for a much more flexible
- command.  Note that the @('equiv') command fails if no substitution is actually
- made.</p>
+ <p>Substitute @('new') for @('old') everywhere inside the current subterm,
+ provided that either @('(relation old new)') or @('(relation new old)') is
+ among the top-level hypotheses or the governors (possibly by way of
+ backchaining and/or refinement; see below).  If @('relation') is @('nil') or
+ is not supplied, then it defaults to @('equal').  If @('relation') is not
+ @('equal') (either explicitly or by default), then substitution of @('new')
+ for @('old') will only take place at occurrences for which @('relation') is
+ among the @(see equivalence) relations being maintained without the use of
+ @(see patterned-congruence)s.  Also see @('acl2-pc::=') for a much more
+ flexible command.  Note that the @('equiv') command fails if no substitution
+ is actually made.</p>
 
  <p><b>Remark:</b> No substitution takes place inside explicit values.  So for
  example, the instruction @('(equiv 3 x)') will cause @('3') to be replaced by
