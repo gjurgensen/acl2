@@ -29645,11 +29645,10 @@ Miscellaneous efficiency ideas
   (ACL2-TUTORIAL)
   "Emacs support for ACL2
 
-  Many successful ACL2 users run in an shell under the Emacs editor.
-  If you do so, then you may wish to load the distributed file
-  emacs/emacs-acl2.el.  The file begins with considerable comments
-  describing what it offers.  It is intended to work both with GNU
-  Emacs and XEmacs.
+  Many successful users of ACL2 run it in a shell under the Emacs
+  editor.  If you do so, then you may wish to load the distributed
+  file emacs/emacs-acl2.el.  The file begins with considerable
+  comments describing what it offers.
 
   In particular, the above file provides the ACL2-Doc browser, a
   convenient tool for viewing, in Emacs, documentation for both the
