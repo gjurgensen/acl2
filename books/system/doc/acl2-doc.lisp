@@ -26412,11 +26412,10 @@ ld) and @(tsee include-book)"
 (defxdoc emacs
   :parents (acl2-tutorial)
   :short "Emacs support for ACL2"
-  :long "<p>Many successful ACL2 users run in an shell under the Emacs editor.
- If you do so, then you may wish to load the distributed file
- @('emacs/emacs-acl2.el').  The file begins with considerable comments
- describing what it offers.  It is intended to work both with GNU Emacs and
- XEmacs.</p>
+  :long "<p>Many successful users of ACL2 run it in a shell under the Emacs
+  editor.  If you do so, then you may wish to load the distributed file
+  @('emacs/emacs-acl2.el').  The file begins with considerable comments
+  describing what it offers.</p>
 
  <p>In particular, the above file provides the ACL2-Doc browser, a convenient
  tool for viewing, in Emacs, documentation for both the ACL2 system and the
@@ -87416,6 +87415,12 @@ it."
  <p>Fixed a bug in tracking the @(see cbd) that could cause failures of @(tsee
  include-book) in raw-mode.  Thanks to Warren Hunt for a query leading to this
  fix.</p>
+
+ <p>Fixed a bug that was preventing some deep @(see patterned-congruence) rules
+ for being applied.  This could occur when on the left-hand side, the outermost
+ function symbol is the same as the next function symbol going in towards the
+ variable that differs on the right-hand side.  Thanks to Mihir Mehta for
+ reporting this bug and including a replayable example.</p>
 
  <h3>Changes at the System Level</h3>
 
