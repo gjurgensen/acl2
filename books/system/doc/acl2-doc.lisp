@@ -17736,8 +17736,6 @@ subtree of X with T, without duplication.</p>
  |An Example Common Lisp Function Definition|)'><img
  src='res/tours/walking.gif'></img></see></p>
 
- <p><img src='res/tours/common-lisp.gif'></img></p>
-
  <p>The logic of ACL2 is based on Common Lisp.</p>
 
  <p>Common Lisp is the standard list processing programming language.  It is
@@ -17785,9 +17783,7 @@ subtree of X with T, without duplication.</p>
 (defxdoc |Common Lisp as a Modeling Language|
   :parents (|Pages Written Especially for the Tours|)
   :short "Common Lisp as a Modeling Language"
-  :long "<p><img src='res/tours/common-lisp.gif'></img></p>
-
- <p>In ACL2 we have adopted Common Lisp as the basis of our modeling language.
+  :long "<p>In ACL2 we have adopted Common Lisp as the basis of our modeling language.
  If you have already read our brief note on Common Lisp and recall the example
  of @('app'), please proceed.  Otherwise click <see topic='@(url
  |Common Lisp|)'>here</see> for an exceedingly brief introduction to Common
