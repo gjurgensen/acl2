@@ -85819,6 +85819,35 @@ Bug Fixes
   right-hand side.  Thanks to Mihir Mehta for reporting this bug and
   including a replayable example.
 
+  Fixed several issues with [fmt] (and related printing utilities)
+  pertaining to linebreaks.  These include the following, many of
+  which are illustrated in a new file,
+  system/tests/fmt-tests-input.lsp (search there for ``2020'').
+
+    * A space past the [fmt-soft-right-margin] now results in a linebreak
+      even in the case of tilde-space (`~ ').
+    * As before, for puctuation after a tilde-x (`~x') directive, ACL2
+      avoids printing in column 0 after a linebreak.  This desirable
+      behavior now extends to the case that `~x' is inside a
+      tilde-atsign (`~@') directive.  For example, after
+      (set-fmt-hard-right-margin 10 state) try either (fmx \"~@0.\"
+      (msg \"~x0\" '(ab de gh))) or (fmx \"~#0~[~x0~/~x0~].\" '(ab de
+      gh)).
+    * Spaces are respected after tilde-y (`~y') directives.  For example,
+      (cw \"~y0 A~%\" 3 4) now prints the letter A in column 2 rather
+      than column 0.  Thanks to Eric Smith and Alessandro Coglio for
+      suggesting this change.
+    * An extra character is sometimes permitted before deciding that a
+      tilde-x (`~x') directive causes a linebreak.
+    * Tilde directives that cause no printing are often ignored when
+      deciding whether to keep a punctuation mark with a
+      pretty-printed expression.  For example, when setting both
+      right margins (soft and hard) to 10, the following no longer
+      prints a comma in column 0: (fmx \"~x0~@1, more~%\" 'aaaaaaaaaa
+      \"\").
+    * Fixed a [double-rewrite] warning, which was breaking the word ``is''.
+      Thanks to Mihir Mehta for pointing this out.
+
 
 Changes at the System Level
 
@@ -105610,9 +105639,10 @@ Subtopics
   [Fmt] and related functions can insert linebreaks when lines get too
   long.  A linebreak is inserted at an aesthetically appropriate
   point once the column exceeds the value of (@
-  fmt-soft-right-margin).  If however the column exceeds the value of
-  (@ fmt-hard-right-margin), then a linebreak is soon inserted.  Such
-  a ``hard'' linebreak follows the insertion of a backslash (\\)
+  fmt-soft-right-margin).  ACL2 may also insert a linebreak
+  (sometimes in an unaesthetic place) to prevent printing in a column
+  that equals or exceeds the value of (@ fmt-hard-right-margin).
+  Such a ``hard'' linebreak follows the insertion of a backslash (\\)
   character unless [fmt!], [fms!], or [fmt1!] is used, or state
   global write-for-read is true.")
  (SET-FMT-SOFT-RIGHT-MARGIN
