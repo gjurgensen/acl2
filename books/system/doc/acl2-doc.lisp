@@ -87422,6 +87422,42 @@ it."
  variable that differs on the right-hand side.  Thanks to Mihir Mehta for
  reporting this bug and including a replayable example.</p>
 
+ <p>Fixed several issues with @(tsee fmt) (and related printing utilities)
+ pertaining to linebreaks.  These include the following, many of which are
+ illustrated in a new file, @('system/tests/fmt-tests-input.lsp') (search there
+ for ``2020'').</p>
+
+ <ul>
+
+ <li>A space past the @(tsee fmt-soft-right-margin) now results in a linebreak
+ even in the case of tilde-space (`@('~ ')').</li>
+
+ <li>As before, for puctuation after a tilde-x (`@('~x')') directive, ACL2
+ avoids printing in column 0 after a linebreak.  This desirable behavior now
+ extends to the case that `@('~x')' is inside a tilde-atsign (`@('~@')')
+ directive.  For example, after @('(set-fmt-hard-right-margin 10 state)') try
+ either @('(fmx \"~@0.\" (msg \"~x0\" '(ab de gh)))') or (fmx
+ \"~#0~[~x0~/~x0~].\" '(ab de gh)).</li>
+
+ <li>Spaces are respected after tilde-y (`@('~y')') directives.  For example,
+ @('(cw \"~y0 A~%\" 3 4)') now prints the letter @('A') in column 2 rather than
+ column 0.  Thanks to Eric Smith and Alessandro Coglio for suggesting this
+ change.</li>
+
+ <li>An extra character is sometimes permitted before deciding that a tilde-x
+ (`@('~x')') directive causes a linebreak.</li>
+
+ <li>Tilde directives that cause no printing are often ignored when deciding
+ whether to keep a punctuation mark with a pretty-printed expression.  For
+ example, when setting both right margins (soft and hard) to 10, the following
+ no longer prints a comma in column 0: @('(fmx \"~x0~@1, more~%\"
+ 'aaaaaaaaaa \"\")').</li>
+
+ <li>Fixed a @(tsee double-rewrite) warning, which was breaking the word
+ ``is''.  Thanks to Mihir Mehta for pointing this out.</li>
+
+ </ul>
+
  <h3>Changes at the System Level</h3>
 
  <p>(SBCL only) Filenames are now read as ASCII (specifically, ISO-8859-1) when
@@ -104317,11 +104353,12 @@ arithmetic) for libraries of @(see books) for arithmetic reasoning.</p>")
 
  <p>@(tsee Fmt) and related functions can insert linebreaks when lines get too
  long.  A linebreak is inserted at an aesthetically appropriate point once the
- column exceeds the value of @('(@ fmt-soft-right-margin)').  If however the
- column exceeds the value of @('(@ fmt-hard-right-margin)'), then a linebreak
- is soon inserted.  Such a ``hard'' linebreak follows the insertion of a
- backslash (@('\\')) character unless @(tsee fmt!), @(tsee fms!), or @(tsee
- fmt1!) is used, or state global @('write-for-read') is true.</p>")
+ column exceeds the value of @('(@ fmt-soft-right-margin)').  ACL2 may also
+ insert a linebreak (sometimes in an unaesthetic place) to prevent printing in
+ a column that equals or exceeds the value of @('(@ fmt-hard-right-margin)').
+ Such a ``hard'' linebreak follows the insertion of a backslash (@('\\'))
+ character unless @(tsee fmt!), @(tsee fms!), or @(tsee fmt1!) is used, or
+ state global @('write-for-read') is true.</p>")
 
 (defxdoc set-fmt-soft-right-margin
   :parents (io acl2-built-ins)
@@ -112039,20 +112076,41 @@ arithmetic) for libraries of @(see books) for arithmetic reasoning.</p>")
 
  <p>The first argument of @('sys-call') is a command for the host operating
  system, and the second argument is a list of strings that are the arguments
- for that command.  In GCL and perhaps some other lisps, you can put the
- arguments with the command; but this is not the case, for example, in Allegro
- CL running on Linux.</p>
+ for that command.</p>
 
- <p>The use of @(tsee prog2$) above is optional, but illustrates how to get the
- return status.  See @(see sys-call-status).  @('Sys-call') itself always
- returns @('nil').</p>
+ <p>The use of @(tsee prog2$) in the second example form above is optional, but
+ illustrates how to get the return status.  See @(see sys-call-status).
+ @('Sys-call') itself always returns @('nil').</p>
+
+ <p><b>WARNING</b>: The details of how @('sys-call') works can vary among
+ different host Lisp implementations!  Consider for example wildcard expansion,
+ such as when executing the form @('(sys-call \"ls\" '(\"*.lisp\"))').  For
+ ACL2 built on Allegro CL, CCL, CMUCL, GCL, or SBCL, we have seen this result
+ in an error message such as @('\"No such file or directory\"'), even though
+ file of with names of the form @('*.lisp') are present in the current
+ directory; but for ACL2 built on LispWorks, a list of such filenames is
+ printed.  For another example, in GCL and perhaps some other lisps, you can
+ put the arguments with the command; but this is not the case, for example, in
+ Allegro CL running on Linux.</p>
+
+ <p>More generally, we note that @('sys-call') does not provide some features
+ that one may expect of a shell.  We mentioned wildcard expansion above; other
+ sorts of shell expansion may also not be supported, such as @('~/').
+ @('Sys-call') also does not directly support output redirection.  If you want
+ to run a program, @('P'), and redirect its output, one option is to create a
+ wrapper script, @('W') to call instead.  Thus @('W') might be a shell script
+ containing the line:</p>
+
+ @({
+  P $* >& foo.out
+ })
 
  <p>For related utilities, see @(see sys-call*) and @(see sys-call+).  Both of
  those utilities return a suitable status (rather than requiring a separate
  call of a separate function, @(tsee sys-call-status), as described later
  below).  Also, @('sys-call+') returns the command's output, but (like
  @('sys-call')) @('sys-call*') does not.  An important distinction is that both
- @('sys-call+') and @('sys-call*') make their calls to the operating system
+ @('sys-call+') and @('sys-call*') can make their calls to the operating system
  during proofs, unlike @('sys-call') as we now explain.</p>
 
  <p>@('Sys-call') does not invoke the operating system when it is invoked
@@ -112084,11 +112142,11 @@ arithmetic) for libraries of @(see books) for arithmetic reasoning.</p>")
  <p>This function logically returns @('nil').  However, it makes the indicated
  call to the host operating system, as described above (not during a proof),
  using a function supplied ``under the hood'' by the underlying Lisp system.
- This is an advanced feature that requires a trust tag (see below).  Host lisps
- differ on their handling of @('sys-call'); see the raw Lisp definition of ACL2
- source function @('system-call') for details, including exactly what
- underlying Lisp function is invoked.  You can then look at that host lisp's
- manual for details about that underlying function.</p>
+ This is an advanced feature that requires a trust tag (see below).  As noted
+ above, host lisps differ on their handling of @('sys-call'); see the raw Lisp
+ definition of ACL2 source function @('system-call') for details, including
+ exactly the underlying Lisp code that is invoked.  You can then look at that
+ host lisp's manual for details about that underlying function.</p>
 
  <p>On occasions where one wishes to obtain the numeric status returned by the
  host operating system (or more precisely, by the Lisp function under the hood
@@ -112128,17 +112186,6 @@ arithmetic) for libraries of @(see books) for arithmetic reasoning.</p>")
   (:AKCL-SET-MV)
 
   ACL2>
- })
-
- <p>Finally, we note that @('sys-call') does not provide some features that one
- may expect of a shell.  In particular, @('sys-call') does not generally
- support shell expansion of its arguments (such as @('~/')).  It also does not
- directly support output redirection.  If you want to run a program, @('P'),
- and redirect its output, one option is to create a wrapper script, @('W') to
- call instead.  Thus @('W') might be a shell script containing the line:</p>
-
- @({
-  P $* >& foo.out
  })")
 
 (defxdoc sys-call*
