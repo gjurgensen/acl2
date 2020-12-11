@@ -28863,7 +28863,7 @@ ld) and @(tsee include-book)"
  @({
   (defconst *abc* '(1 2 3 4 5 6 7 8))
   (table evisc-table *abc*
-    (concatenate 'string \"#,\" (symbol-name '*abc*)))
+    (concatenate 'string \"#.\" (symbol-name '*abc*)))
  })
 
  <p>Then the constant @('*abc*') is printed as follows &mdash; very helpful if
@@ -28872,16 +28872,16 @@ ld) and @(tsee include-book)"
 
  @({
   ACL2 !>*abc*
-  #,*ABC*
+  #.*ABC*
   ACL2 !>
  })
 
- <p>What's more, the ACL2 reader will replace @('#,*C*'), where @('*C*') is
+ <p>What's more, the ACL2 reader will replace @('#.*C*'), where @('*C*') is
  defined by @(tsee defconst), by its value, regardless of @('evisc-table'); see
  @(see sharp-dot-reader).  Continuing with the example above, we have:</p>
 
  @({
-  ACL2 !>(cdr (quote #,*ABC*))
+  ACL2 !>(cdr (quote #.*ABC*))
   (2 3 4 5 6 7 8)
   ACL2 !>
  })
@@ -28906,7 +28906,7 @@ ld) and @(tsee include-book)"
   Warnings:  None
   Time:  0.00 seconds (prove: 0.00, print: 0.00, other: 0.00)
    FOO::*A*
-  ACL2 !>(table evisc-table foo::*a* \"#,foo::*a*\")
+  ACL2 !>(table evisc-table foo::*a* \"#.foo::*a*\")
 
   Summary
   Form:  ( TABLE EVISC-TABLE ...)
@@ -28915,10 +28915,10 @@ ld) and @(tsee include-book)"
   Time:  0.00 seconds (prove: 0.00, print: 0.00, other: 0.00)
    EVISC-TABLE
   ACL2 !>foo::*a*
-  #,foo::*a*
-  ACL2 !>'#,foo::*a*
-  #,foo::*a*
-  ACL2 !>(cdr '#,foo::*a*)
+  #.foo::*a*
+  ACL2 !>'#.foo::*a*
+  #.foo::*a*
+  ACL2 !>(cdr '#.foo::*a*)
   (2 3)
   ACL2 !>
  })
@@ -28947,9 +28947,14 @@ ld) and @(tsee include-book)"
 
  @({
   ACL2 !>|*BaR*|
-  #,|*BaR*|
+  #.|*BaR*|
   ACL2 !>
- })")
+ })
+
+ <p>The examples above illulstrate how the @('evisc-table') is used when
+ printing evaluation results.  More generally, that @(see table) is used when
+ @(tsee fmt) (or a related function such as @(tsee fms)) prints an object using
+ @('~x') @('~X'), @('~y'), @('~Y'), @('~f'), or @('~F').</p>")
 
 (defxdoc evisc-tuple
   :parents (io)
@@ -87179,6 +87184,12 @@ it."
  <p>ACL2 now points out when specious simplification takes place; see @(see
  specious-simplification).  Formerly this was the case only with @(see
  gag-mode) turned off.  Thanks to Mihir Mehta for a query that led to this
+ enhancement.</p>
+
+ <p>ACL2 now uses the @(tsee evisc-table) for @(tsee fmt) directives @('~f')
+ and @('~F').  Previously it used that @(see table) only for directives
+ @('~x'), @('~y'), @('~X'), and @('~Y') (and deprecated directives @('~p')
+ etc.; see @(see fmt)).  Thanks to Eric Smith for a query leading to this
  enhancement.</p>
 
  <h3>New Features</h3>

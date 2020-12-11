@@ -18092,8 +18092,6 @@ Subtopics
 
   {IMAGE} (see [An_Example_Common_Lisp_Function_Definition])
 
-  {IMAGE}
-
   The logic of ACL2 is based on Common Lisp.
 
   Common Lisp is the standard list processing programming language.  It
@@ -18137,8 +18135,6 @@ Subtopics
  (COMMON_LISP_AS_A_MODELING_LANGUAGE
   (PAGES_WRITTEN_ESPECIALLY_FOR_THE_TOURS)
   "Common Lisp as a Modeling Language
-
-  {IMAGE}
 
   In ACL2 we have adopted Common Lisp as the basis of our modeling
   language.  If you have already read our brief note on Common Lisp
@@ -32358,21 +32354,21 @@ Subtopics
 
     (defconst *abc* '(1 2 3 4 5 6 7 8))
     (table evisc-table *abc*
-      (concatenate 'string \"#,\" (symbol-name '*abc*)))
+      (concatenate 'string \"#.\" (symbol-name '*abc*)))
 
   Then the constant *abc* is printed as follows --- very helpful if its
   associated structure is significantly larger than the 8-element
   list of numbers shown above!
 
     ACL2 !>*abc*
-    #,*ABC*
+    #.*ABC*
     ACL2 !>
 
-  What's more, the ACL2 reader will replace #,*C*, where *C* is defined
+  What's more, the ACL2 reader will replace #.*C*, where *C* is defined
   by [defconst], by its value, regardless of evisc-table; see
   [sharp-dot-reader].  Continuing with the example above, we have:
 
-    ACL2 !>(cdr (quote #,*ABC*))
+    ACL2 !>(cdr (quote #.*ABC*))
     (2 3 4 5 6 7 8)
     ACL2 !>
 
@@ -32395,7 +32391,7 @@ Subtopics
     Warnings:  None
     Time:  0.00 seconds (prove: 0.00, print: 0.00, other: 0.00)
      FOO::*A*
-    ACL2 !>(table evisc-table foo::*a* \"#,foo::*a*\")
+    ACL2 !>(table evisc-table foo::*a* \"#.foo::*a*\")
 
     Summary
     Form:  ( TABLE EVISC-TABLE ...)
@@ -32404,10 +32400,10 @@ Subtopics
     Time:  0.00 seconds (prove: 0.00, print: 0.00, other: 0.00)
      EVISC-TABLE
     ACL2 !>foo::*a*
-    #,foo::*a*
-    ACL2 !>'#,foo::*a*
-    #,foo::*a*
-    ACL2 !>(cdr '#,foo::*a*)
+    #.foo::*a*
+    ACL2 !>'#.foo::*a*
+    #.foo::*a*
+    ACL2 !>(cdr '#.foo::*a*)
     (2 3)
     ACL2 !>
 
@@ -32430,8 +32426,13 @@ Subtopics
   Then:
 
     ACL2 !>|*BaR*|
-    #,|*BaR*|
-    ACL2 !>")
+    #.|*BaR*|
+    ACL2 !>
+
+  The examples above illulstrate how the evisc-table is used when
+  printing evaluation results.  More generally, that [table] is used
+  when [fmt] (or a related function such as [fms]) prints an object
+  using ~x ~X, ~y, ~Y, ~f, or ~F.")
  (EVISC-TUPLE
   (IO)
   "Control suppression of details when printing
@@ -85587,6 +85588,11 @@ Changes to Existing Features
   [specious-simplification].  Formerly this was the case only with
   [gag-mode] turned off.  Thanks to Mihir Mehta for a query that led
   to this enhancement.
+
+  ACL2 now uses the [evisc-table] for [fmt] directives ~f and ~F.
+  Previously it used that [table] only for directives ~x, ~y, ~X, and
+  ~Y (and deprecated directives ~p etc.; see [fmt]).  Thanks to Eric
+  Smith for a query leading to this enhancement.
 
 
 New Features
