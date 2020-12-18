@@ -87424,7 +87424,7 @@ it."
  fix.</p>
 
  <p>Fixed a bug that was preventing some deep @(see patterned-congruence) rules
- for being applied.  This could occur when on the left-hand side, the outermost
+ from being applied.  This could occur when on the left-hand side, the outermost
  function symbol is the same as the next function symbol going in towards the
  variable that differs on the right-hand side.  Thanks to Mihir Mehta for
  reporting this bug and including a replayable example.</p>
