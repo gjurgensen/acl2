@@ -18778,12 +18778,12 @@ subtree of X with T, without duplication.</p>
  <p><b>EXAMPLE</b></p>
 
  <p>We present examples, with detailed comments intended to explain abstract
- stobjs, in two community books: @('books/misc/defabsstobj-example-1.lisp') and
- @('books/misc/defabsstobj-example-2.lisp').  In this section we outline the
- first of these.  We suggest that after you finish this @(see documentation)
- topic, you read through those two books.  There are other books
- @('books/misc/defabsstobj-example-*.lisp') that may be helpful to read; in
- particaular, @('books/misc/defabsstobj-example-5.lisp') illustrates building
+ stobjs, in two community books: @('books/demos/defabsstobj-example-1.lisp')
+ and @('books/demos/defabsstobj-example-2.lisp').  In this section we outline
+ the first of these.  We suggest that after you finish this @(see
+ documentation) topic, you read through those two books.  There are other books
+ @('books/dmeos/defabsstobj-example-*.lisp') that may be helpful to read; in
+ particaular, @('books/demos/defabsstobj-example-5.lisp') illustrates building
  an abstract stobj on top of another abstract stobj (as its so-called
  ``concrete stobj'', as described below).</p>
 
@@ -19226,7 +19226,7 @@ subtree of X with T, without duplication.</p>
  about @(':PROTECT'), but just below is a more complete explanation for those
  who desire it.  Further information is also available if you need it; see
  @(see set-absstobj-debug), and see the example uses of these keywords in
- community book @('books/misc/defabsstobj-example-2.lisp').</p></blockquote>
+ community book @('books/demos/defabsstobj-example-2.lisp').</p></blockquote>
 
  <p>For those who are interested, here is a more detailed discussion of
  @(':PROTECT') and @(':PROTECT-DEFAULT'), as promised above.  It applies to any
@@ -19246,8 +19246,8 @@ subtree of X with T, without duplication.</p>
  @(':PROTECT') is @('t'), the generated raw Lisp code runs slightly less
  efficiently &mdash; though perhaps with negligible efficiency loss if the
  @(':EXEC') function is not trivial.  Community books
- @('books/misc/defabsstobj-example-3.lisp') and
- @('books/misc/defabsstobj-example-4.lisp') provide related information.  Also
+ @('books/demos/defabsstobj-example-3.lisp') and
+ @('books/demos/defabsstobj-example-4.lisp') provide related information.  Also
  see @(see set-absstobj-debug) for a potentially dangerous way to eliminate
  that inefficiency using argument @(':ignore').</p>
 
@@ -42262,6 +42262,38 @@ tables in the current Hons Space."
 
  @(def illegal)")
 
+(defxdoc illegal-state
+  :parents (release-notes)
+  :short "Illegal ACL2 state"
+  :long "<p>See @(see set-absstobj-debug) for background on invariance
+ violations for abstract @(see stobj)s.  In short, they may occur when
+ execution does not complete for certain atomic operations.</p>
+
+ <p>Such violations cause the following error message to be printed.</p>
+
+ @({
+ ACL2 Error in CHK-ABSSTOBJ-INVARIANTS:  Possible invariance violation
+ for an abstract stobj!
+ **PROCEED AT YOUR OWN RISK.**
+ To proceed, evaluate the following form.
+ :CONTINUE-FROM-ILLEGAL-STATE
+ See :DOC set-absstobj-debug.
+ })
+
+ <p>At this point, the only way to get ACL2 to evaluate further input is to
+ submit the form @(':CONTINUE-FROM-ILLEGAL-STATE'), as noted above &mdash; or
+ more generally, the form it actually represents,
+ @('(CONTINUE-FROM-ILLEGAL-STATE)'), which may need to be written as
+ @('(ACL2::CONTINUE-FROM-ILLEGAL-STATE)') if the @(tsee current-package) is
+ other than @('\"ACL2\"').  There is actually one exception: @(':q') is
+ accepted, to pop out of the current call of @(tsee ld).</p>
+
+ <p>To get a bit more information from the error message displayed above, see
+ @(see set-absstobj-debug).</p>
+
+ <p>Technical note.  An illegal-state is entered when ACL2 sets the @('ld')
+ special, @(tsee ld-pre-eval-print), to the value @(':illegal-state').</p>")
+
 (defxdoc imagpart
   :parents (numbers acl2-built-ins)
   :short "Imaginary part of a complex number"
@@ -49459,8 +49491,10 @@ tables in the current Hons Space."
  The accessor is @('(ld-pre-eval-filter state)') and the updater is
  @('(set-ld-pre-eval-filter val state)').  @('Ld-pre-eval-filter') must be
  either @(':all'), @(':query'), or a new name that could be defined (e.g., by
- @(tsee defun) or @(tsee defconst)).  The initial value of
- @('ld-pre-eval-filter') is @(':all').</p>
+ @(tsee defun) or @(tsee defconst)).  (There is actually a value that may on
+ rare occasions be set by the ACL2 system, @(':illegal-state'); we ignore that
+ value here, but the curious reader is welcome to see @(see illegal-state).)
+ The initial value of @('ld-pre-eval-filter') is @(':all').</p>
 
  <p>The general-purpose ACL2 read-eval-print loop, @(tsee ld), reads forms from
  @(tsee standard-oi), evaluates them and prints the result to @(tsee
@@ -87067,6 +87101,9 @@ it."
 ; from-to-by-ac, about unreachable code, by moving #+allegro code to
 ; with-warnings-suppressed from with-more-warnings-suppressed.
 
+; Duplicates are now removed in the build error report for :ideal mode
+; functions.
+
   :parents (release-notes)
   :short "ACL2 Version  8.4 (xxx, 20xx) Notes"
   :long "<p>NOTE!  New users can ignore these release notes, because the @(see
@@ -87191,6 +87228,11 @@ it."
  @('~x'), @('~y'), @('~X'), and @('~Y') (and deprecated directives @('~p')
  etc.; see @(see fmt)).  Thanks to Eric Smith for a query leading to this
  enhancement.</p>
+
+ <p>Reporting has been improved when encountering possible invariance
+ violations for abstract @(see stobj)s.  Now, when that happens an
+ ``illegal-state'' is entered, as indicated by the prompt, and instructions are
+ printed for how to proceed at your own risk.  See @(see illegal-state).</p>
 
  <h3>New Features</h3>
 
@@ -102931,13 +102973,16 @@ arithmetic) for libraries of @(see books) for arithmetic reasoning.</p>")
   :long "<p>This @(see documentation) topic assumes familiarity with abstract
  stobjs.  See @(see defabsstobj).</p>
 
- <p>Below we explain what is meant by an error message such as the
- following.</p>
+ <p>Below we explain what is meant by the following error message, and how to
+ add information to the end of it.</p>
 
  @({
-  ACL2 Error in CHK-ABSSTOBJ-INVARIANTS:  Possible invariance violation
-  for an abstract stobj!  See :DOC set-absstobj-debug, and PROCEED AT
-  YOUR OWN RISK.
+ ACL2 Error in CHK-ABSSTOBJ-INVARIANTS:  Possible invariance violation
+ for an abstract stobj!
+ **PROCEED AT YOUR OWN RISK.**
+ To proceed, evaluate the following form.
+ :CONTINUE-FROM-ILLEGAL-STATE
+ See :DOC set-absstobj-debug.
  })
 
  <p>Advanced users who are willing to risk unsound invariance violations to get
@@ -102955,46 +103000,41 @@ arithmetic) for libraries of @(see books) for arithmetic reasoning.</p>")
  @('set-absstobj-debug').</p>
 
  <p>The use of @('(set-absstobj-debug t)') will make the error message above
- more informative, as follows, at the cost of slower execution &mdash; but in
- practice, the slowdown may be negligible (more on that below).</p>
+ more informative, for example as follows, at the cost of slower execution
+ &mdash; but in practice, the slowdown may be negligible (more on that
+ below).  Below, only the last two lines are new.</p>
 
  @({
-  ACL2 Error in CHK-ABSSTOBJ-INVARIANTS:  Possible invariance violation
-  for an abstract stobj!  See :DOC set-absstobj-debug, and PROCEED AT
-  YOUR OWN RISK.  Evaluation was aborted under a call of abstract stobj
-  export UPDATE-FLD-NIL-BAD.
+ ACL2 Error in CHK-ABSSTOBJ-INVARIANTS:  Possible invariance violation
+ for an abstract stobj!
+ **PROCEED AT YOUR OWN RISK.**
+ To proceed, evaluate the following form.
+ :CONTINUE-FROM-ILLEGAL-STATE
+ See :DOC set-absstobj-debug.
+ Evaluation was aborted under a call of abstract stobj export 
+ UPDATE-FLD-NIL-BAD.
  })
 
  <p>You may be best off starting a new ACL2 session if you see one of the
  errors above.  But you can continue at your own risk.  With a trust tag (see
  @(see defttag)), you can even fool ACL2 into thinking nothing is wrong, and
  perhaps you can fix up the abstract stobj so that indeed, nothing really is
- wrong.  See the community book @('books/misc/defabsstobj-example-4.lisp') for
- how to do that.  That book also documents the @(':always') keyword and a
- special value for the first argument, @(':RESET').</p>
+ wrong.  See the @(see community-books) file
+ @('books/demos/defabsstobj-example-4-input.lsp') for how to do that.
+ (The corresponding output file @('books/demos/defabsstobj-example-4-log.txt')
+ may also be informative.)</p>
 
  @({
   Examples:
   (set-absstobj-debug t)                 ; obtain extra debug info, as above
-  (set-absstobj-debug t :event-p t)      ; same as above
-  (set-absstobj-debug t
-                      :on-skip-proofs t) ; as above, but even in include-book
-  (set-absstobj-debug t :event-p nil)    ; returns one value, not error triple
   (set-absstobj-debug nil)               ; avoid extra debug info (default)
   (set-absstobj-debug :ignore)           ; possibly unsound! -- see above
 
   General Form:
-  (set-absstobj-debug val
-                      :event-p        event-p        ; default t
-                      :always         always         ; default nil
-                      :on-skip-proofs on-skip-proofs ; default nil
-                      )
+  (set-absstobj-debug val)
  })
 
- <p>where the keyword arguments are optional with defaults as indicated above,
- and all supplied arguments are evaluated except for @('on-skip-proofsp'),
- which must be Boolean (if supplied).  Keyword arguments are discussed at the
- end of this topic.</p>
+ <p>where @('val') is evaluated.</p>
 
  <p>Recall (see @(see defabsstobj)) that for any exported function whose
  @(':EXEC') function might (according to ACL2's heuristics) modify the concrete
@@ -103007,16 +103047,8 @@ arithmetic) for libraries of @(see books) for arithmetic reasoning.</p>")
  information, as in the example displayed earlier in this documentation
  topic.</p>
 
- <p>Finally we document the keyword arguments, other than @(':ALWAYS'), which
- is discussed in a book as mentioned above.  When the value of @(':EVENT-P') is
- true, which it is by default, the call of @('set-absstobj-debug') will expand
- to an event.  That event is a call of @(tsee value-triple).  In that case,
- @(':ON-SKIP-PROOFS') is passed to that call so that @('set-absstobj-debug')
- has an effect even when proofs are being skipped, as during @(tsee
- include-book).  That behavior is the default; that is, @(':ON-SKIP-PROOFS') is
- @('nil') by default.  Also see @(see value-triple).  The value of keyword
- @(':ON-SKIP-PROOFS') must always be either @('t') or @('nil'), but other than
- that, it is ignored when @('EVENT-P') is @('nil').</p>")
+ <p>Calls of @('set-absstobj-debug') are legal event forms (e.g., for @(see
+ books)).</p>")
 
 (defxdoc set-backchain-limit
   :parents (backchain-limit)

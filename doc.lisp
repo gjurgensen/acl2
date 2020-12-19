@@ -21989,13 +21989,13 @@ Subtopics
 
   We present examples, with detailed comments intended to explain
   abstract stobjs, in two community books:
-  books/misc/defabsstobj-example-1.lisp and
-  books/misc/defabsstobj-example-2.lisp.  In this section we outline
+  books/demos/defabsstobj-example-1.lisp and
+  books/demos/defabsstobj-example-2.lisp.  In this section we outline
   the first of these.  We suggest that after you finish this
   [documentation] topic, you read through those two books.  There are
-  other books books/misc/defabsstobj-example-*.lisp that may be
+  other books books/dmeos/defabsstobj-example-*.lisp that may be
   helpful to read; in particaular,
-  books/misc/defabsstobj-example-5.lisp illustrates building an
+  books/demos/defabsstobj-example-5.lisp illustrates building an
   abstract stobj on top of another abstract stobj (as its so-called
   ``concrete stobj'', as described below).
 
@@ -22421,7 +22421,7 @@ Subtopics
       those who desire it.  Further information is also available if
       you need it; see [set-absstobj-debug], and see the example uses
       of these keywords in community book
-      books/misc/defabsstobj-example-2.lisp.
+      books/demos/defabsstobj-example-2.lisp.
 
   For those who are interested, here is a more detailed discussion of
   :PROTECT and :PROTECT-DEFAULT, as promised above.  It applies to
@@ -22442,8 +22442,8 @@ Subtopics
   However, beware that when :PROTECT is t, the generated raw Lisp
   code runs slightly less efficiently --- though perhaps with
   negligible efficiency loss if the :EXEC function is not trivial.
-  Community books books/misc/defabsstobj-example-3.lisp and
-  books/misc/defabsstobj-example-4.lisp provide related information.
+  Community books books/demos/defabsstobj-example-3.lisp and
+  books/demos/defabsstobj-example-4.lisp provide related information.
   Also see [set-absstobj-debug] for a potentially dangerous way to
   eliminate that inefficiency using argument :ignore.
 
@@ -45929,6 +45929,36 @@ Subtopics
     (defun illegal (ctx str alist)
            (declare (xargs :guard (hard-error ctx str alist)))
            (hard-error ctx str alist))")
+ (ILLEGAL-STATE
+  (RELEASE-NOTES)
+  "Illegal ACL2 state
+
+  See [set-absstobj-debug] for background on invariance violations for
+  abstract [stobj]s.  In short, they may occur when execution does
+  not complete for certain atomic operations.
+
+  Such violations cause the following error message to be printed.
+
+    ACL2 Error in CHK-ABSSTOBJ-INVARIANTS:  Possible invariance violation
+    for an abstract stobj!
+    **PROCEED AT YOUR OWN RISK.**
+    To proceed, evaluate the following form.
+    :CONTINUE-FROM-ILLEGAL-STATE
+    See :DOC set-absstobj-debug.
+
+  At this point, the only way to get ACL2 to evaluate further input is
+  to submit the form :CONTINUE-FROM-ILLEGAL-STATE, as noted above ---
+  or more generally, the form it actually represents,
+  (CONTINUE-FROM-ILLEGAL-STATE), which may need to be written as
+  (ACL2::CONTINUE-FROM-ILLEGAL-STATE) if the [current-package] is
+  other than \"ACL2\".  There is actually one exception: :q is
+  accepted, to pop out of the current call of [ld].
+
+  To get a bit more information from the error message displayed above,
+  see [set-absstobj-debug].
+
+  Technical note.  An illegal-state is entered when ACL2 sets the ld
+  special, [ld-pre-eval-print], to the value :illegal-state.")
  (IMAGPART
   (NUMBERS ACL2-BUILT-INS)
   "Imaginary part of a complex number
@@ -53410,8 +53440,10 @@ Subtopics
   (ld-pre-eval-filter state) and the updater is
   (set-ld-pre-eval-filter val state).  Ld-pre-eval-filter must be
   either :all, :query, or a new name that could be defined (e.g., by
-  [defun] or [defconst]).  The initial value of ld-pre-eval-filter is
-  :all.
+  [defun] or [defconst]).  (There is actually a value that may on
+  rare occasions be set by the ACL2 system, :illegal-state; we ignore
+  that value here, but the curious reader is welcome to see
+  [illegal-state].)  The initial value of ld-pre-eval-filter is :all.
 
   The general-purpose ACL2 read-eval-print loop, [ld], reads forms from
   [standard-oi], evaluates them and prints the result to
@@ -85594,6 +85626,12 @@ Changes to Existing Features
   ~Y (and deprecated directives ~p etc.; see [fmt]).  Thanks to Eric
   Smith for a query leading to this enhancement.
 
+  Reporting has been improved when encountering possible invariance
+  violations for abstract [stobj]s.  Now, when that happens an
+  ``illegal-state'' is entered, as indicated by the prompt, and
+  instructions are printed for how to proceed at your own risk.  See
+  [illegal-state].
+
 
 New Features
 
@@ -85819,7 +85857,7 @@ Bug Fixes
   leading to this fix.
 
   Fixed a bug that was preventing some deep [patterned-congruence]
-  rules for being applied.  This could occur when on the left-hand
+  rules from being applied.  This could occur when on the left-hand
   side, the outermost function symbol is the same as the next
   function symbol going in towards the variable that differs on the
   right-hand side.  Thanks to Mihir Mehta for reporting this bug and
@@ -99833,6 +99871,9 @@ Subtopics
 
 Subtopics
 
+  [Illegal-state]
+      Illegal ACL2 state
+
   [Note-1-1]
       Acl2 Version 1.1 Notes
 
@@ -104280,12 +104321,15 @@ Subtopics
   This [documentation] topic assumes familiarity with abstract stobjs.
   See [defabsstobj].
 
-  Below we explain what is meant by an error message such as the
-  following.
+  Below we explain what is meant by the following error message, and
+  how to add information to the end of it.
 
     ACL2 Error in CHK-ABSSTOBJ-INVARIANTS:  Possible invariance violation
-    for an abstract stobj!  See :DOC set-absstobj-debug, and PROCEED AT
-    YOUR OWN RISK.
+    for an abstract stobj!
+    **PROCEED AT YOUR OWN RISK.**
+    To proceed, evaluate the following form.
+    :CONTINUE-FROM-ILLEGAL-STATE
+    See :DOC set-absstobj-debug.
 
   Advanced users who are willing to risk unsound invariance violations
   to get a bit more speed may submit the following when there is an
@@ -104300,44 +104344,37 @@ Subtopics
   special argument :ignore for set-absstobj-debug.
 
   The use of (set-absstobj-debug t) will make the error message above
-  more informative, as follows, at the cost of slower execution ---
-  but in practice, the slowdown may be negligible (more on that
-  below).
+  more informative, for example as follows, at the cost of slower
+  execution --- but in practice, the slowdown may be negligible (more
+  on that below).  Below, only the last two lines are new.
 
     ACL2 Error in CHK-ABSSTOBJ-INVARIANTS:  Possible invariance violation
-    for an abstract stobj!  See :DOC set-absstobj-debug, and PROCEED AT
-    YOUR OWN RISK.  Evaluation was aborted under a call of abstract stobj
-    export UPDATE-FLD-NIL-BAD.
+    for an abstract stobj!
+    **PROCEED AT YOUR OWN RISK.**
+    To proceed, evaluate the following form.
+    :CONTINUE-FROM-ILLEGAL-STATE
+    See :DOC set-absstobj-debug.
+    Evaluation was aborted under a call of abstract stobj export
+    UPDATE-FLD-NIL-BAD.
 
   You may be best off starting a new ACL2 session if you see one of the
   errors above.  But you can continue at your own risk.  With a trust
   tag (see [defttag]), you can even fool ACL2 into thinking nothing
   is wrong, and perhaps you can fix up the abstract stobj so that
-  indeed, nothing really is wrong.  See the community book
-  books/misc/defabsstobj-example-4.lisp for how to do that.  That
-  book also documents the :always keyword and a special value for the
-  first argument, :RESET.
+  indeed, nothing really is wrong.  See the [community-books] file
+  books/demos/defabsstobj-example-4-input.lsp for how to do that.
+  (The corresponding output file
+  books/demos/defabsstobj-example-4-log.txt may also be informative.)
 
     Examples:
     (set-absstobj-debug t)                 ; obtain extra debug info, as above
-    (set-absstobj-debug t :event-p t)      ; same as above
-    (set-absstobj-debug t
-                        :on-skip-proofs t) ; as above, but even in include-book
-    (set-absstobj-debug t :event-p nil)    ; returns one value, not error triple
     (set-absstobj-debug nil)               ; avoid extra debug info (default)
     (set-absstobj-debug :ignore)           ; possibly unsound! -- see above
 
     General Form:
-    (set-absstobj-debug val
-                        :event-p        event-p        ; default t
-                        :always         always         ; default nil
-                        :on-skip-proofs on-skip-proofs ; default nil
-                        )
+    (set-absstobj-debug val)
 
-  where the keyword arguments are optional with defaults as indicated
-  above, and all supplied arguments are evaluated except for
-  on-skip-proofsp, which must be Boolean (if supplied).  Keyword
-  arguments are discussed at the end of this topic.
+  where val is evaluated.
 
   Recall (see [defabsstobj]) that for any exported function whose :EXEC
   function might (according to ACL2's heuristics) modify the concrete
@@ -104350,17 +104387,8 @@ Subtopics
   Subsequent such errors will provide additional information, as in
   the example displayed earlier in this documentation topic.
 
-  Finally we document the keyword arguments, other than :ALWAYS, which
-  is discussed in a book as mentioned above.  When the value of
-  :EVENT-P is true, which it is by default, the call of
-  set-absstobj-debug will expand to an event.  That event is a call
-  of [value-triple].  In that case, :ON-SKIP-PROOFS is passed to that
-  call so that set-absstobj-debug has an effect even when proofs are
-  being skipped, as during [include-book].  That behavior is the
-  default; that is, :ON-SKIP-PROOFS is nil by default.  Also see
-  [value-triple].  The value of keyword :ON-SKIP-PROOFS must always
-  be either t or nil, but other than that, it is ignored when EVENT-P
-  is nil.")
+  Calls of set-absstobj-debug are legal event forms (e.g., for
+  [books]).")
  (SET-ACCUMULATED-PERSISTENCE (POINTERS)
                               "See [accumulated-persistence].")
  (SET-BACKCHAIN-LIMIT

@@ -94,31 +94,6 @@
             (update-fld-nil-good)
             (update-fld-nil-bad :protect t)))
 
-(defmacro restore-state ()
-
-; With a trust tag, we cheat to restore the state.  Upon request we may provide
-; a utility, to be executed without a trust tag, that restores the abstract
-; stobj to its initial value and resets the state to a non-error state.
-
-  `(progn
-     (defttag :restore-state)
-     (remove-untouchable illegal-to-certify-message nil)
-     (local (value-triple
-
-; We use a special value for the first argument of set-absstobj-debug, namely
-; :reset, in order to reset the part of the state that indicates an invariance
-; violation for the abstract stobj, as though an error had not occurred.  That
-; value requires an active trust tag and also requires :always to be true.
-
-             (set-absstobj-debug :reset
-                                 :event-p nil
-                                 :always t)))
-     (make-event (er-progn (assign illegal-to-certify-message nil)
-                           (trans-eval '(update-fld-nil-good st) 'top state t)
-                           (value '(value-triple nil))))
-     (push-untouchable illegal-to-certify-message nil)
-     (defttag nil)))
-
 (make-event
  (mv-let
   (erp val state)
@@ -133,32 +108,85 @@
   (declare (ignore erp val))
   (value '(value-triple :irrelevant-value))))
 
+; Error: illegal state
+(+ 3 4)
+
+:continue-from-illegal-state
+
+; No longer an error
+(+ 3 4)
+
 ; An error now occurs when LDing this file.  Reset the state, but first, let's
 ; check that we are in a bad state: even though (st$ap st) is always intended
 ; to hold, and hence logically (fld st) = (fld$a st) = nil, nevertheless (fld
 ; st) computes to t.
 (assert-event (equal (fld st) t))
-(restore-state)
+
+; Retore the state:
+(make-event
+ (mv-let
+  (erp val state)
+  (trans-eval '(update-fld-nil-good st) 'top state t)
+  (declare (ignore erp val))
+  (value '(value-triple :irrelevant-value))))
+
 (assert-event (equal (fld st) nil))
 
 ; Let's set things up to get a more informative error message:
 (local (set-absstobj-debug t))
 
+; Again:
 (make-event
  (mv-let
   (erp val state)
   (trans-eval '(update-fld-nil-bad st) 'top state t)
-
-; The above causes the following error:
-
-;   ACL2 Error in CHK-ABSSTOBJ-INVARIANTS:  Possible invariance violation
-;   for an abstract stobj!  See :DOC set-absstobj-debug, and PROCEED AT
-;   YOUR OWN RISK.  Evaluation was aborted under a call of abstract stobj
-;   export UPDATE-FLD-NIL-BAD.
-
   (declare (ignore erp val))
   (value '(value-triple :irrelevant-value))))
 
-; Restore the state at the end, so that this book will certify (with a trust
-; tag).
-(restore-state)
+(continue-from-illegal-state)
+
+;;;;;; !! new
+
+(with-output
+  :off :all
+  (defevaluator evl evl-list
+    ((equal x y))))
+
+(defun simple-cl-proc (cl term st)
+  (declare (xargs :stobjs st)
+           (ignore term))
+  (let ((st (update-fld-nil-bad st)))
+    (mv nil (list cl) st)))
+
+(defthm correctness-of-simple-cl-proc
+  (implies (and (pseudo-term-listp cl)
+                (alistp a)
+                (evl (conjoin-clauses
+                      (clauses-result (simple-cl-proc cl term st)))
+                     a))
+           (evl (disjoin cl) a))
+  :rule-classes :clause-processor)
+
+(include-book "std/testing/must-fail" :dir :system)
+
+(must-fail
+ (thm (equal x x)
+      :hints (("Goal" :clause-processor simple-cl-proc))))
+
+(continue-from-illegal-state)
+
+(thm (equal x x)
+     :hints (("Goal"
+              :instructions ((cl-proc :function simple-cl-proc :hint nil)))))
+
+(continue-from-illegal-state)
+
+; Use a trust tag to avoid certification failure.
+
+(defttag :bogus-cert)
+(remove-untouchable illegal-to-certify-message nil)
+(make-event (pprogn (f-put-global 'illegal-to-certify-message nil state)
+                    (value '(value-triple :certification-made-ok))))
+(defttag nil)
+
+(value-triple "Completed")
