@@ -42797,6 +42797,12 @@ tables in the current Hons Space."
  massages them in various ways, combining some to simultaneously unwind certain
  cliques of functions and vetoing others because they ``flaw'' others.  We do
  not further discuss the induction heuristics here; the interested reader
+ should see @(see induction-heuristics).</p>
+
+ <p>Once ACL2 has collected together all the suggested induction schemes it
+ massages them in various ways, combining some to simultaneously unwind certain
+ cliques of functions and vetoing others because they ``flaw'' others.  We do
+ not further discuss the induction heuristics here; the interested reader
  should see Chapter XIV of A Computational Logic (Boyer and Moore, Academic
  Press, 1979) which represents a fairly complete description of the induction
  heuristics of ACL2.</p>
@@ -42984,6 +42990,25 @@ tables in the current Hons Space."
  will fail (unless it too has an associated @(':induct') hint).</p>
 
  <p>To change the limit, see @(see set-induction-depth-limit).</p>")
+
+(defxdoc induction-heuristics
+  :parents (rule-classes)
+  :short "How ACL2 selects induction schemes"
+  :long "<p>This topic is for those curious about induction heuristics in ACL2.
+ It is not necessary to understand those heuristics to be able to use ACL2
+ successfully.</p>
+
+ <p>ACL2's heuristics for generating an induction scheme for a conjecture are
+ very similar to Nqthm's and can trace their roots all the way back to the
+ Edinburgh Pure Lisp Theorem Prover, the first prover to support induction in a
+ general setting.</p>
+
+ <p>For a detailed description of how ACL2 generates induction schemes see <a
+ href='http://www.cs.utexas.edu/users/moore/publications/acl2-induction-heuristics.pdf'>``ACL2
+ Induction Heuristics.''</a> That paper is intended for a general audience
+ familiar with induction but not necessarily familiar with theorem provers or
+ ACL2.  However, it can also serve as a guided tour through that part of the
+ ACL2 source code that creates and selects induction schemes.</p>")
 
 (defxdoc infected-constraints
   :parents (encapsulate)
@@ -103011,7 +103036,7 @@ arithmetic) for libraries of @(see books) for arithmetic reasoning.</p>")
  To proceed, evaluate the following form.
  :CONTINUE-FROM-ILLEGAL-STATE
  See :DOC set-absstobj-debug.
- Evaluation was aborted under a call of abstract stobj export 
+ Evaluation was aborted under a call of abstract stobj export
  UPDATE-FLD-NIL-BAD.
  })
 

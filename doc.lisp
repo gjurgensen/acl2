@@ -46456,6 +46456,13 @@ Subtopics
   it massages them in various ways, combining some to simultaneously
   unwind certain cliques of functions and vetoing others because they
   ``flaw'' others.  We do not further discuss the induction
+  heuristics here; the interested reader should see
+  [induction-heuristics].
+
+  Once ACL2 has collected together all the suggested induction schemes
+  it massages them in various ways, combining some to simultaneously
+  unwind certain cliques of functions and vetoing others because they
+  ``flaw'' others.  We do not further discuss the induction
   heuristics here; the interested reader should see Chapter XIV of A
   Computational Logic (Boyer and Moore, Academic Press, 1979) which
   represents a fairly complete description of the induction
@@ -46649,6 +46656,27 @@ Subtopics
 
   [Set-induction-depth-limit]
       Set the [induction-depth-limit]")
+ (INDUCTION-HEURISTICS
+  (RULE-CLASSES)
+  "How ACL2 selects induction schemes
+
+  This topic is for those curious about induction heuristics in ACL2.
+  It is not necessary to understand those heuristics to be able to
+  use ACL2 successfully.
+
+  ACL2's heuristics for generating an induction scheme for a conjecture
+  are very similar to Nqthm's and can trace their roots all the way
+  back to the Edinburgh Pure Lisp Theorem Prover, the first prover to
+  support induction in a general setting.
+
+  For a detailed description of how ACL2 generates induction schemes
+  see {``ACL2 Induction Heuristics.'' |
+  http://www.cs.utexas.edu/users/moore/publications/acl2-induction-heuristics.pdf}
+  That paper is intended for a general audience familiar with
+  induction but not necessarily familiar with theorem provers or
+  ACL2.  However, it can also serve as a guided tour through that
+  part of the ACL2 source code that creates and selects induction
+  schemes.")
  (INFECTED-CONSTRAINTS
   (ENCAPSULATE)
   "[Defun]s affecting [constraint]s of [encapsulate]s
@@ -102726,6 +102754,9 @@ Subtopics
 
   [Induction]
       Make a rule that suggests a certain induction
+
+  [Induction-heuristics]
+      How ACL2 selects induction schemes
 
   [Linear]
       Make some arithmetic inequality rules
