@@ -46459,15 +46459,6 @@ Subtopics
   heuristics here; the interested reader should see
   [induction-heuristics].
 
-  Once ACL2 has collected together all the suggested induction schemes
-  it massages them in various ways, combining some to simultaneously
-  unwind certain cliques of functions and vetoing others because they
-  ``flaw'' others.  We do not further discuss the induction
-  heuristics here; the interested reader should see Chapter XIV of A
-  Computational Logic (Boyer and Moore, Academic Press, 1979) which
-  represents a fairly complete description of the induction
-  heuristics of ACL2.
-
   However, unlike Nqthm, ACL2 provides a means by which the user can
   elaborate the rules under which function applications suggest
   induction schemes.  Such rules are called :induction rules.  The
