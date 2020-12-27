@@ -61158,11 +61158,6 @@ Subtopics
   a wrapper function that just calls fn, and memoizing the wrapper
   instead of fn.
 
-  If :trace has a non-nil value, then memoize also traces in a
-  traditional Lisp style.  If :trace has value notinline or
-  notinline, then a corresponding declaration is added at the
-  beginning of the new definition of fn.
-
   A non-nil value for :commutative can be supplied if fn is a binary
   function in :logic mode.  Suppose that the memoize event is
   successful, and consider a subsequent call of fn for which some
