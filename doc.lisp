@@ -18092,8 +18092,6 @@ Subtopics
 
   {IMAGE} (see [An_Example_Common_Lisp_Function_Definition])
 
-  {IMAGE}
-
   The logic of ACL2 is based on Common Lisp.
 
   Common Lisp is the standard list processing programming language.  It
@@ -18137,8 +18135,6 @@ Subtopics
  (COMMON_LISP_AS_A_MODELING_LANGUAGE
   (PAGES_WRITTEN_ESPECIALLY_FOR_THE_TOURS)
   "Common Lisp as a Modeling Language
-
-  {IMAGE}
 
   In ACL2 we have adopted Common Lisp as the basis of our modeling
   language.  If you have already read our brief note on Common Lisp
@@ -21993,13 +21989,13 @@ Subtopics
 
   We present examples, with detailed comments intended to explain
   abstract stobjs, in two community books:
-  books/misc/defabsstobj-example-1.lisp and
-  books/misc/defabsstobj-example-2.lisp.  In this section we outline
+  books/demos/defabsstobj-example-1.lisp and
+  books/demos/defabsstobj-example-2.lisp.  In this section we outline
   the first of these.  We suggest that after you finish this
   [documentation] topic, you read through those two books.  There are
-  other books books/misc/defabsstobj-example-*.lisp that may be
+  other books books/dmeos/defabsstobj-example-*.lisp that may be
   helpful to read; in particaular,
-  books/misc/defabsstobj-example-5.lisp illustrates building an
+  books/demos/defabsstobj-example-5.lisp illustrates building an
   abstract stobj on top of another abstract stobj (as its so-called
   ``concrete stobj'', as described below).
 
@@ -22425,7 +22421,7 @@ Subtopics
       those who desire it.  Further information is also available if
       you need it; see [set-absstobj-debug], and see the example uses
       of these keywords in community book
-      books/misc/defabsstobj-example-2.lisp.
+      books/demos/defabsstobj-example-2.lisp.
 
   For those who are interested, here is a more detailed discussion of
   :PROTECT and :PROTECT-DEFAULT, as promised above.  It applies to
@@ -22446,8 +22442,8 @@ Subtopics
   However, beware that when :PROTECT is t, the generated raw Lisp
   code runs slightly less efficiently --- though perhaps with
   negligible efficiency loss if the :EXEC function is not trivial.
-  Community books books/misc/defabsstobj-example-3.lisp and
-  books/misc/defabsstobj-example-4.lisp provide related information.
+  Community books books/demos/defabsstobj-example-3.lisp and
+  books/demos/defabsstobj-example-4.lisp provide related information.
   Also see [set-absstobj-debug] for a potentially dangerous way to
   eliminate that inefficiency using argument :ignore.
 
@@ -29645,11 +29641,10 @@ Miscellaneous efficiency ideas
   (ACL2-TUTORIAL)
   "Emacs support for ACL2
 
-  Many successful ACL2 users run in an shell under the Emacs editor.
-  If you do so, then you may wish to load the distributed file
-  emacs/emacs-acl2.el.  The file begins with considerable comments
-  describing what it offers.  It is intended to work both with GNU
-  Emacs and XEmacs.
+  Many successful users of ACL2 run it in a shell under the Emacs
+  editor.  If you do so, then you may wish to load the distributed
+  file emacs/emacs-acl2.el.  The file begins with considerable
+  comments describing what it offers.
 
   In particular, the above file provides the ACL2-Doc browser, a
   convenient tool for viewing, in Emacs, documentation for both the
@@ -32359,21 +32354,21 @@ Subtopics
 
     (defconst *abc* '(1 2 3 4 5 6 7 8))
     (table evisc-table *abc*
-      (concatenate 'string \"#,\" (symbol-name '*abc*)))
+      (concatenate 'string \"#.\" (symbol-name '*abc*)))
 
   Then the constant *abc* is printed as follows --- very helpful if its
   associated structure is significantly larger than the 8-element
   list of numbers shown above!
 
     ACL2 !>*abc*
-    #,*ABC*
+    #.*ABC*
     ACL2 !>
 
-  What's more, the ACL2 reader will replace #,*C*, where *C* is defined
+  What's more, the ACL2 reader will replace #.*C*, where *C* is defined
   by [defconst], by its value, regardless of evisc-table; see
   [sharp-dot-reader].  Continuing with the example above, we have:
 
-    ACL2 !>(cdr (quote #,*ABC*))
+    ACL2 !>(cdr (quote #.*ABC*))
     (2 3 4 5 6 7 8)
     ACL2 !>
 
@@ -32396,7 +32391,7 @@ Subtopics
     Warnings:  None
     Time:  0.00 seconds (prove: 0.00, print: 0.00, other: 0.00)
      FOO::*A*
-    ACL2 !>(table evisc-table foo::*a* \"#,foo::*a*\")
+    ACL2 !>(table evisc-table foo::*a* \"#.foo::*a*\")
 
     Summary
     Form:  ( TABLE EVISC-TABLE ...)
@@ -32405,10 +32400,10 @@ Subtopics
     Time:  0.00 seconds (prove: 0.00, print: 0.00, other: 0.00)
      EVISC-TABLE
     ACL2 !>foo::*a*
-    #,foo::*a*
-    ACL2 !>'#,foo::*a*
-    #,foo::*a*
-    ACL2 !>(cdr '#,foo::*a*)
+    #.foo::*a*
+    ACL2 !>'#.foo::*a*
+    #.foo::*a*
+    ACL2 !>(cdr '#.foo::*a*)
     (2 3)
     ACL2 !>
 
@@ -32431,8 +32426,13 @@ Subtopics
   Then:
 
     ACL2 !>|*BaR*|
-    #,|*BaR*|
-    ACL2 !>")
+    #.|*BaR*|
+    ACL2 !>
+
+  The examples above illulstrate how the evisc-table is used when
+  printing evaluation results.  More generally, that [table] is used
+  when [fmt] (or a related function such as [fms]) prints an object
+  using ~x ~X, ~y, ~Y, ~f, or ~F.")
  (EVISC-TUPLE
   (IO)
   "Control suppression of details when printing
@@ -34854,6 +34854,8 @@ Subtopics
                        "See [system-utilities].")
  (FLAMBDAP (POINTERS)
            "See [system-utilities].")
+ (FLATTEN-ANDS-IN-LIT (POINTERS)
+                      "See [system-utilities].")
  (FLAWED_INDUCTION_CANDIDATES_IN_APP_EXAMPLE
   (PAGES_WRITTEN_ESPECIALLY_FOR_THE_TOURS)
   "Flawed Induction Candidates in App Example
@@ -43585,11 +43587,37 @@ Subtopics
         with a name based on the value of the :do-not-induct hint
         that caused that subgoal to be skipped.
 
-        Remarks.  (1) A :do-not-induct hint is ignored for any goal on which
-        an :induct hint is supplied.  (2) For an advanced example of
-        the use of value :otf for :do-not-induct combined with
-        [override-hints], see community book
-        books/hints/basic-tests.lisp.
+        Remarks.
+
+        (1) An :induct hint is applied to a goal even if a :do-not-induct
+        hint is in effect for that goal.  Consider the following
+        examples.
+
+          (thm (equal (append (append x y) z) (append x y z))
+               :hints ((\"Goal\" :induct t :do-not-induct t)))
+
+          (thm (and (equal (append (append x y) z) (append x y z))
+                    (equal (append (append u v) w) (append u v w)))
+               :hints ((\"Goal\" :do-not-induct t)
+                       (\"Subgoal 2\" :induct t)))
+
+        In the first of these, the :do-not-induct hint has no effect on the
+        proof; instead, the :induct hint forces an induction that
+        allows the proof to succeed (without any sub-inductions).
+        The second of these illustrates that even though
+        :do-not-induct can stop sub-inductions, its effect is
+        overridden by :induct.  For the proof of that second example,
+        ACL2 immediately splits into two subgoals.  Then in spite of
+        the top-level :do-not-induct hint, the proof is allowed to
+        proceed past Subgoal 2, which requires induction, because of
+        the hint :induct t.  However, the proof halts after Subgoal 1
+        because of the :do-not-induct hint that has been established
+        ``above'' it, at \"Goal\".  (For more about the way hints are
+        processed, see [hints-and-the-waterfall].)
+
+        (2) For an advanced example of the use of value :otf for
+        :do-not-induct combined with [override-hints], see community
+        book books/hints/basic-tests.lisp.
 
     :error
 
@@ -45901,6 +45929,36 @@ Subtopics
     (defun illegal (ctx str alist)
            (declare (xargs :guard (hard-error ctx str alist)))
            (hard-error ctx str alist))")
+ (ILLEGAL-STATE
+  (RELEASE-NOTES)
+  "Illegal ACL2 state
+
+  See [set-absstobj-debug] for background on invariance violations for
+  abstract [stobj]s.  In short, they may occur when execution does
+  not complete for certain atomic operations.
+
+  Such violations cause the following error message to be printed.
+
+    ACL2 Error in CHK-ABSSTOBJ-INVARIANTS:  Possible invariance violation
+    for an abstract stobj!
+    **PROCEED AT YOUR OWN RISK.**
+    To proceed, evaluate the following form.
+    :CONTINUE-FROM-ILLEGAL-STATE
+    See :DOC set-absstobj-debug.
+
+  At this point, the only way to get ACL2 to evaluate further input is
+  to submit the form :CONTINUE-FROM-ILLEGAL-STATE, as noted above ---
+  or more generally, the form it actually represents,
+  (CONTINUE-FROM-ILLEGAL-STATE), which may need to be written as
+  (ACL2::CONTINUE-FROM-ILLEGAL-STATE) if the [current-package] is
+  other than \"ACL2\".  There is actually one exception: :q is
+  accepted, to pop out of the current call of [ld].
+
+  To get a bit more information from the error message displayed above,
+  see [set-absstobj-debug].
+
+  Technical note.  An illegal-state is entered when ACL2 sets the ld
+  special, [ld-pre-eval-print], to the value :illegal-state.")
  (IMAGPART
   (NUMBERS ACL2-BUILT-INS)
   "Imaginary part of a complex number
@@ -46398,10 +46456,8 @@ Subtopics
   it massages them in various ways, combining some to simultaneously
   unwind certain cliques of functions and vetoing others because they
   ``flaw'' others.  We do not further discuss the induction
-  heuristics here; the interested reader should see Chapter XIV of A
-  Computational Logic (Boyer and Moore, Academic Press, 1979) which
-  represents a fairly complete description of the induction
-  heuristics of ACL2.
+  heuristics here; the interested reader should see
+  [induction-heuristics].
 
   However, unlike Nqthm, ACL2 provides a means by which the user can
   elaborate the rules under which function applications suggest
@@ -46591,6 +46647,27 @@ Subtopics
 
   [Set-induction-depth-limit]
       Set the [induction-depth-limit]")
+ (INDUCTION-HEURISTICS
+  (RULE-CLASSES)
+  "How ACL2 selects induction schemes
+
+  This topic is for those curious about induction heuristics in ACL2.
+  It is not necessary to understand those heuristics to be able to
+  use ACL2 successfully.
+
+  ACL2's heuristics for generating an induction scheme for a conjecture
+  are very similar to Nqthm's and can trace their roots all the way
+  back to the Edinburgh Pure Lisp Theorem Prover, the first prover to
+  support induction in a general setting.
+
+  For a detailed description of how ACL2 generates induction schemes
+  see {``ACL2 Induction Heuristics.'' |
+  http://www.cs.utexas.edu/users/moore/publications/acl2-induction-heuristics.pdf}
+  That paper is intended for a general audience familiar with
+  induction but not necessarily familiar with theorem provers or
+  ACL2.  However, it can also serve as a guided tour through that
+  part of the ACL2 source code that creates and selects induction
+  schemes.")
  (INFECTED-CONSTRAINTS
   (ENCAPSULATE)
   "[Defun]s affecting [constraint]s of [encapsulate]s
@@ -53382,8 +53459,10 @@ Subtopics
   (ld-pre-eval-filter state) and the updater is
   (set-ld-pre-eval-filter val state).  Ld-pre-eval-filter must be
   either :all, :query, or a new name that could be defined (e.g., by
-  [defun] or [defconst]).  The initial value of ld-pre-eval-filter is
-  :all.
+  [defun] or [defconst]).  (There is actually a value that may on
+  rare occasions be set by the ACL2 system, :illegal-state; we ignore
+  that value here, but the curious reader is welcome to see
+  [illegal-state].)  The initial value of ld-pre-eval-filter is :all.
 
   The general-purpose ACL2 read-eval-print loop, [ld], reads forms from
   [standard-oi], evaluates them and prints the result to
@@ -61078,11 +61157,6 @@ Subtopics
   done at the top level.  Using :recursive nil is similar to writing
   a wrapper function that just calls fn, and memoizing the wrapper
   instead of fn.
-
-  If :trace has a non-nil value, then memoize also traces in a
-  traditional Lisp style.  If :trace has value notinline or
-  notinline, then a corresponding declaration is added at the
-  beginning of the new definition of fn.
 
   A non-nil value for :commutative can be supplied if fn is a binary
   function in :logic mode.  Suppose that the memoize event is
@@ -85561,6 +85635,17 @@ Changes to Existing Features
   [gag-mode] turned off.  Thanks to Mihir Mehta for a query that led
   to this enhancement.
 
+  ACL2 now uses the [evisc-table] for [fmt] directives ~f and ~F.
+  Previously it used that [table] only for directives ~x, ~y, ~X, and
+  ~Y (and deprecated directives ~p etc.; see [fmt]).  Thanks to Eric
+  Smith for a query leading to this enhancement.
+
+  Reporting has been improved when encountering possible invariance
+  violations for abstract [stobj]s.  Now, when that happens an
+  ``illegal-state'' is entered, as indicated by the prompt, and
+  instructions are printed for how to proceed at your own risk.  See
+  [illegal-state].
+
 
 New Features
 
@@ -85780,6 +85865,46 @@ Bug Fixes
   Thanks to Dave Greve who sent an example [defthm] event specifying
   :hints ((\"Goal\" :or ((:in-theory (e/d () ()) :nonlinearp t)))),
   which formerly caused a Lisp error.
+
+  Fixed a bug in tracking the [cbd] that could cause failures of
+  [include-book] in raw-mode.  Thanks to Warren Hunt for a query
+  leading to this fix.
+
+  Fixed a bug that was preventing some deep [patterned-congruence]
+  rules from being applied.  This could occur when on the left-hand
+  side, the outermost function symbol is the same as the next
+  function symbol going in towards the variable that differs on the
+  right-hand side.  Thanks to Mihir Mehta for reporting this bug and
+  including a replayable example.
+
+  Fixed several issues with [fmt] (and related printing utilities)
+  pertaining to linebreaks.  These include the following, many of
+  which are illustrated in a new file,
+  system/tests/fmt-tests-input.lsp (search there for ``2020'').
+
+    * A space past the [fmt-soft-right-margin] now results in a linebreak
+      even in the case of tilde-space (`~ ').
+    * As before, for puctuation after a tilde-x (`~x') directive, ACL2
+      avoids printing in column 0 after a linebreak.  This desirable
+      behavior now extends to the case that `~x' is inside a
+      tilde-atsign (`~@') directive.  For example, after
+      (set-fmt-hard-right-margin 10 state) try either (fmx \"~@0.\"
+      (msg \"~x0\" '(ab de gh))) or (fmx \"~#0~[~x0~/~x0~].\" '(ab de
+      gh)).
+    * Spaces are respected after tilde-y (`~y') directives.  For example,
+      (cw \"~y0 A~%\" 3 4) now prints the letter A in column 2 rather
+      than column 0.  Thanks to Eric Smith and Alessandro Coglio for
+      suggesting this change.
+    * An extra character is sometimes permitted before deciding that a
+      tilde-x (`~x') directive causes a linebreak.
+    * Tilde directives that cause no printing are often ignored when
+      deciding whether to keep a punctuation mark with a
+      pretty-printed expression.  For example, when setting both
+      right margins (soft and hard) to 10, the following no longer
+      prints a comma in column 0: (fmx \"~x0~@1, more~%\" 'aaaaaaaaaa
+      \"\").
+    * Fixed a [double-rewrite] warning, which was breaking the word ``is''.
+      Thanks to Mihir Mehta for pointing this out.
 
 
 Changes at the System Level
@@ -89655,9 +89780,9 @@ Implementation
 
   Patterned congruence rules are used primarily during the process of
   rewriting.  In particular, unlike classic congruence rules, they
-  are not used to do equality substitution at the goal level.  The
-  simplest way to understand this point may be with the following
-  trivial example.
+  are not used to do equality substitution at the goal level or in
+  [proof-builder] commands such as = and equiv.  The simplest way to
+  understand this point may be with the following trivial example.
 
     (defstub foo (x y z) t)
 
@@ -90518,6 +90643,9 @@ Subtopics
       See [system-utilities].
 
   [Flambdap]
+      See [system-utilities].
+
+  [Flatten-ands-in-lit]
       See [system-utilities].
 
   [Fms!-to-string]
@@ -99757,6 +99885,9 @@ Subtopics
 
 Subtopics
 
+  [Illegal-state]
+      Illegal ACL2 state
+
   [Note-1-1]
       Acl2 Version 1.1 Notes
 
@@ -102610,6 +102741,9 @@ Subtopics
   [Induction]
       Make a rule that suggests a certain induction
 
+  [Induction-heuristics]
+      How ACL2 selects induction schemes
+
   [Linear]
       Make some arithmetic inequality rules
 
@@ -104204,12 +104338,15 @@ Subtopics
   This [documentation] topic assumes familiarity with abstract stobjs.
   See [defabsstobj].
 
-  Below we explain what is meant by an error message such as the
-  following.
+  Below we explain what is meant by the following error message, and
+  how to add information to the end of it.
 
     ACL2 Error in CHK-ABSSTOBJ-INVARIANTS:  Possible invariance violation
-    for an abstract stobj!  See :DOC set-absstobj-debug, and PROCEED AT
-    YOUR OWN RISK.
+    for an abstract stobj!
+    **PROCEED AT YOUR OWN RISK.**
+    To proceed, evaluate the following form.
+    :CONTINUE-FROM-ILLEGAL-STATE
+    See :DOC set-absstobj-debug.
 
   Advanced users who are willing to risk unsound invariance violations
   to get a bit more speed may submit the following when there is an
@@ -104224,44 +104361,37 @@ Subtopics
   special argument :ignore for set-absstobj-debug.
 
   The use of (set-absstobj-debug t) will make the error message above
-  more informative, as follows, at the cost of slower execution ---
-  but in practice, the slowdown may be negligible (more on that
-  below).
+  more informative, for example as follows, at the cost of slower
+  execution --- but in practice, the slowdown may be negligible (more
+  on that below).  Below, only the last two lines are new.
 
     ACL2 Error in CHK-ABSSTOBJ-INVARIANTS:  Possible invariance violation
-    for an abstract stobj!  See :DOC set-absstobj-debug, and PROCEED AT
-    YOUR OWN RISK.  Evaluation was aborted under a call of abstract stobj
-    export UPDATE-FLD-NIL-BAD.
+    for an abstract stobj!
+    **PROCEED AT YOUR OWN RISK.**
+    To proceed, evaluate the following form.
+    :CONTINUE-FROM-ILLEGAL-STATE
+    See :DOC set-absstobj-debug.
+    Evaluation was aborted under a call of abstract stobj export
+    UPDATE-FLD-NIL-BAD.
 
   You may be best off starting a new ACL2 session if you see one of the
   errors above.  But you can continue at your own risk.  With a trust
   tag (see [defttag]), you can even fool ACL2 into thinking nothing
   is wrong, and perhaps you can fix up the abstract stobj so that
-  indeed, nothing really is wrong.  See the community book
-  books/misc/defabsstobj-example-4.lisp for how to do that.  That
-  book also documents the :always keyword and a special value for the
-  first argument, :RESET.
+  indeed, nothing really is wrong.  See the [community-books] file
+  books/demos/defabsstobj-example-4-input.lsp for how to do that.
+  (The corresponding output file
+  books/demos/defabsstobj-example-4-log.txt may also be informative.)
 
     Examples:
     (set-absstobj-debug t)                 ; obtain extra debug info, as above
-    (set-absstobj-debug t :event-p t)      ; same as above
-    (set-absstobj-debug t
-                        :on-skip-proofs t) ; as above, but even in include-book
-    (set-absstobj-debug t :event-p nil)    ; returns one value, not error triple
     (set-absstobj-debug nil)               ; avoid extra debug info (default)
     (set-absstobj-debug :ignore)           ; possibly unsound! -- see above
 
     General Form:
-    (set-absstobj-debug val
-                        :event-p        event-p        ; default t
-                        :always         always         ; default nil
-                        :on-skip-proofs on-skip-proofs ; default nil
-                        )
+    (set-absstobj-debug val)
 
-  where the keyword arguments are optional with defaults as indicated
-  above, and all supplied arguments are evaluated except for
-  on-skip-proofsp, which must be Boolean (if supplied).  Keyword
-  arguments are discussed at the end of this topic.
+  where val is evaluated.
 
   Recall (see [defabsstobj]) that for any exported function whose :EXEC
   function might (according to ACL2's heuristics) modify the concrete
@@ -104274,17 +104404,8 @@ Subtopics
   Subsequent such errors will provide additional information, as in
   the example displayed earlier in this documentation topic.
 
-  Finally we document the keyword arguments, other than :ALWAYS, which
-  is discussed in a book as mentioned above.  When the value of
-  :EVENT-P is true, which it is by default, the call of
-  set-absstobj-debug will expand to an event.  That event is a call
-  of [value-triple].  In that case, :ON-SKIP-PROOFS is passed to that
-  call so that set-absstobj-debug has an effect even when proofs are
-  being skipped, as during [include-book].  That behavior is the
-  default; that is, :ON-SKIP-PROOFS is nil by default.  Also see
-  [value-triple].  The value of keyword :ON-SKIP-PROOFS must always
-  be either t or nil, but other than that, it is ignored when EVENT-P
-  is nil.")
+  Calls of set-absstobj-debug are legal event forms (e.g., for
+  [books]).")
  (SET-ACCUMULATED-PERSISTENCE (POINTERS)
                               "See [accumulated-persistence].")
  (SET-BACKCHAIN-LIMIT
@@ -105569,9 +105690,10 @@ Subtopics
   [Fmt] and related functions can insert linebreaks when lines get too
   long.  A linebreak is inserted at an aesthetically appropriate
   point once the column exceeds the value of (@
-  fmt-soft-right-margin).  If however the column exceeds the value of
-  (@ fmt-hard-right-margin), then a linebreak is soon inserted.  Such
-  a ``hard'' linebreak follows the insertion of a backslash (\\)
+  fmt-soft-right-margin).  ACL2 may also insert a linebreak
+  (sometimes in an unaesthetic place) to prevent printing in a column
+  that equals or exceeds the value of (@ fmt-hard-right-margin).
+  Such a ``hard'' linebreak follows the insertion of a backslash (\\)
   character unless [fmt!], [fms!], or [fmt1!] is used, or state
   global write-for-read is true.")
  (SET-FMT-SOFT-RIGHT-MARGIN
@@ -113381,22 +113503,42 @@ Subtopics
 
   The first argument of sys-call is a command for the host operating
   system, and the second argument is a list of strings that are the
-  arguments for that command.  In GCL and perhaps some other lisps,
-  you can put the arguments with the command; but this is not the
-  case, for example, in Allegro CL running on Linux.
+  arguments for that command.
 
-  The use of [prog2$] above is optional, but illustrates how to get the
-  return status.  See [sys-call-status].  Sys-call itself always
-  returns nil.
+  The use of [prog2$] in the second example form above is optional, but
+  illustrates how to get the return status.  See [sys-call-status].
+  Sys-call itself always returns nil.
+
+  WARNING: The details of how sys-call works can vary among different
+  host Lisp implementations!  Consider for example wildcard
+  expansion, such as when executing the form (sys-call \"ls\"
+  '(\"*.lisp\")).  For ACL2 built on Allegro CL, CCL, CMUCL, GCL, or
+  SBCL, we have seen this result in an error message such as \"No such
+  file or directory\", even though file of with names of the form
+  *.lisp are present in the current directory; but for ACL2 built on
+  LispWorks, a list of such filenames is printed.  For another
+  example, in GCL and perhaps some other lisps, you can put the
+  arguments with the command; but this is not the case, for example,
+  in Allegro CL running on Linux.
+
+  More generally, we note that sys-call does not provide some features
+  that one may expect of a shell.  We mentioned wildcard expansion
+  above; other sorts of shell expansion may also not be supported,
+  such as ~/.  Sys-call also does not directly support output
+  redirection.  If you want to run a program, P, and redirect its
+  output, one option is to create a wrapper script, W to call
+  instead.  Thus W might be a shell script containing the line:
+
+    P $* >& foo.out
 
   For related utilities, see [sys-call*] and [sys-call+].  Both of
   those utilities return a suitable status (rather than requiring a
   separate call of a separate function, [sys-call-status], as
   described later below).  Also, sys-call+ returns the command's
   output, but (like sys-call) sys-call* does not.  An important
-  distinction is that both sys-call+ and sys-call* make their calls
-  to the operating system during proofs, unlike sys-call as we now
-  explain.
+  distinction is that both sys-call+ and sys-call* can make their
+  calls to the operating system during proofs, unlike sys-call as we
+  now explain.
 
   Sys-call does not invoke the operating system when it is invoked
   inside the theorem prover or [proof-builder].  The following
@@ -113425,11 +113567,11 @@ Subtopics
   call to the host operating system, as described above (not during a
   proof), using a function supplied ``under the hood'' by the
   underlying Lisp system.  This is an advanced feature that requires
-  a trust tag (see below).  Host lisps differ on their handling of
-  sys-call; see the raw Lisp definition of ACL2 source function
-  system-call for details, including exactly what underlying Lisp
-  function is invoked.  You can then look at that host lisp's manual
-  for details about that underlying function.
+  a trust tag (see below).  As noted above, host lisps differ on
+  their handling of sys-call; see the raw Lisp definition of ACL2
+  source function system-call for details, including exactly the
+  underlying Lisp code that is invoked.  You can then look at that
+  host lisp's manual for details about that underlying function.
 
   On occasions where one wishes to obtain the numeric status returned
   by the host operating system (or more precisely, by the Lisp
@@ -113469,16 +113611,6 @@ Subtopics
     (:AKCL-SET-MV)
 
     ACL2>
-
-  Finally, we note that sys-call does not provide some features that
-  one may expect of a shell.  In particular, sys-call does not
-  generally support shell expansion of its arguments (such as ~/).
-  It also does not directly support output redirection.  If you want
-  to run a program, P, and redirect its output, one option is to
-  create a wrapper script, W to call instead.  Thus W might be a
-  shell script containing the line:
-
-    P $* >& foo.out
 
 
 Subtopics
@@ -113743,9 +113875,9 @@ List of a few built-in system utilities
       called in the given term or list of terms, x, according to
       whether flg is nil (for a term) or not nil (for a list of
       terms), respectively.
-    * (all-vars x): For a [pseudo-termp] x, return the list of variables in
-      x in reverse print order of first occurrence.  For example,
-      all-vars of '(f (g a b) c) is '(c b a).
+    * (all-vars x): For a [pseudo-termp] x, return a duplicate-free list of
+      all variables in x, in reverse print order of first occurrence.
+      For example, all-vars of '(f (g a b) c) is '(c b a).
     * (arglistp lst): Return true iff lst is a nil-terminated list of
       distinct, legal variable names, usable as the formal argument
       list (hence the name of this utility) of a function.
@@ -113866,6 +113998,11 @@ List of a few built-in system utilities
       variable, return t if it is a function call whose function
       symbol is a lambda expression, else return nil.
     * (flambdap fn): True when fn is a lambda expression.
+    * (flatten-ands-in-lit term): Returns a list of terms whose conjunction
+      is equivalent to the given term (which satisfies
+      [pseudo-termp]), obtained by flattening its conjunctive
+      structure.  For example, (flatten-ands-in-lit '(if (if x y
+      'nil) z 'nil)) is the list (x y z).
     * (fn-rune-nume fn nflg xflg wrld): For a function symbol fn, return
       either the [rune] (case nflg = nil) or nume (numeric
       representation of a rune) (case nflg = t) associated with
@@ -130013,12 +130150,15 @@ Subtopics
   Actually, keyword-args is either a single non-keyword or is a list of
   the form ((kw-1 x-1) ... (kw-n x-n)), where each kw-i is one of the
   keywords :equiv, :otf-flg, :hints.  Here :equiv defaults to equal
-  if the argument is not supplied or is nil, and otherwise should be
-  the name of an ACL2 equivalence relation.  :Otf-flg and :hints give
-  directives to the prover, as explained above; also see
-  [ACL2-pc::prove].  However, no prover call is made if :hints is a
-  non-nil atom or if keyword-args is a single non-keyword (more on
-  this below).
+  if the argument is not supplied or is nil; if it is not equal
+  (either explicitly or by default), then it should be the name of an
+  ACL2 [equivalence] relation, and substitution will only take place
+  at subterm occurrences for which the :equiv is among the
+  [equivalence] relations being maintained without the use of
+  [patterned-congruence]s.  :Otf-flg and :hints give directives to
+  the prover, as explained above; also see [ACL2-pc::prove].
+  However, no prover call is made if :hints is a non-nil atom or if
+  keyword-args is a single non-keyword (more on this below).
 
   Remarks on defaults
 
@@ -130861,9 +131001,13 @@ Subtopics
   provided that either (relation old new) or (relation new old) is
   among the top-level hypotheses or the governors (possibly by way of
   backchaining and/or refinement; see below).  If relation is nil or
-  is not supplied, then it defaults to equal.  Also see acl2-pc::=
-  for a much more flexible command.  Note that the equiv command
-  fails if no substitution is actually made.
+  is not supplied, then it defaults to equal.  If relation is not
+  equal (either explicitly or by default), then substitution of new
+  for old will only take place at occurrences for which relation is
+  among the [equivalence] relations being maintained without the use
+  of [patterned-congruence]s.  Also see acl2-pc::= for a much more
+  flexible command.  Note that the equiv command fails if no
+  substitution is actually made.
 
   Remark: No substitution takes place inside explicit values.  So for
   example, the instruction (equiv 3 x) will cause 3 to be replaced by
