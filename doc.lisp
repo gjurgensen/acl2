@@ -14618,6 +14618,7 @@ Subtopics
             \"[books]/kestrel/utilities/trans-eval-error-triple.lisp\")
        (unsound-read \"[books]/std/io/unsound-read.lisp\")
        (untranslate-patterns \"[books]/misc/untranslate-patterns.lisp\")
+       (use-io-pairs \"[books]/kestrel/utilities/use-io-pairs.lisp\")
        (use-trivial-ancestors-check
             \"[books]/tools/trivial-ancestors-check.lisp\")
        (build::using-extended-acl2-images \"[books]/build/doc.lisp\")
@@ -41876,6 +41877,9 @@ Subtopics
   [Guard-theorem]
       Use a previously-proved [guard] theorem
 
+  [Verify-guard-implication]
+      [Guard] implication for [memoize] keyword :invoke
+
   [Verify-guards-formula]
       View the guard proof obligation, without proving it")
  (GUARD-HINTS (POINTERS)
@@ -61029,19 +61033,20 @@ Subtopics
 
     General Form:
     (memoize fn                         ; memoizes fn and returns fn
-             :condition    condition    ; optional (default t)
+             :aokp         t/nil        ; optional (default nil)
+             :commutative  t/lemma-name ; optional (default nil)
+             :condition    condition    ; optional (default t (unless :invoke))
              :condition-fn condition-fn ; optional
+             :forget       t/nil        ; optional (default nil)
              :hints        hints        ; optional, for verifying the
                                         ;   guards of condition-fn
+             :ideal-okp    t/:warn/nil  ; optional (default nil)
+             :invoke       nil/fn       ; optional (default nil)
+             :memo-table-init-size size ; optional (default *mht-default-size*)
              :otf-flg      otf-flg      ; optional, for verifying the
                                         ;   guards of condition-fn
              :recursive    t/nil        ; optional (default t)
-             :commutative  t/lemma-name ; optional (default nil)
-             :forget       t/nil        ; optional (default nil)
-             :memo-table-init-size size ; optional (default *mht-default-size*)
-             :aokp         t/nil        ; optional (default nil)
-             :stats        t/nil        ; optional (default t)
-             :ideal-okp    t/:warn/nil  ; optional (default nil)
+             :stats        t/nil        ; optional (default t (unless :invoke))
              :total        ; see :DOC memoize-partial
              :verbose      t/nil        ; optional (default t)
              )
@@ -61150,6 +61155,38 @@ Subtopics
 
   We conclude with by documenting keyword parameters not discussed
   above.
+
+  Keyword parameter :invoke is nil by default, but its value can be a
+  symbol, g.  Examples may be found in [community-books] file
+  demos/memoize-invoke-input.lsp; for a tool built on this capability
+  that supports evaluation using proved input-output pairs for a
+  function, see [use-io-pairs].  The effect of :invoke g is to
+  replace every call of fn by a call of g.  However, there are some
+  restrictions.  The function symbol fn must be in :logic mode, and
+  the symbol g must be a [guard]-verified :[logic]-mode function
+  symbol with the same [signature] as that of fn.  There is the
+  following proof obligation: there must be a theorem in the current
+  ACL2 [world] stating the equality of calls of fn and g on a
+  duplicate-free argument list; for example, if the formals list of
+  fn is (x1 ... xn), then the theorem could be (equal (fn x1 .... xn)
+  (g x1 ... xn)).  If ACL2 finds no such theorem, it will print a
+  [defthm] event that you may wish to submit.  Next we describe a
+  potential second proof obligation, which will similarly be printed
+  if it is not met.  Let guard-fn be the [guard] for fn, and let
+  guard-g be the result of substituting the formals of fn for the
+  formals of g in the guard for g.  If guard-fn tautologically
+  implies guard-g (for example, the two are equal or guard-g is 'T),
+  then there is no further proof obligation.  Otherwise, there must
+  be a theorem in the current ACL2 [world] of the form (implies
+  guard-fn guard-g).  See [verify-guard-implication] for a utility
+  that makes it wasy for you to prove such a theorem.  Finally,
+  contrary to the usual defaults, the values of keyword :recursive,
+  :condition and :stats default to nil.  Indeed, it is an error to
+  specify a non-nil value for :recursive.  The alternate defaults of
+  nil for :condition and :stats can avoid memoization overhead when
+  one simply wishes to call g in place of fn; you may override those
+  defaults if you actually want to save computed values and use
+  (memsum) to see statistics.
 
   Keyword parameter :recursive is t by default, which means that
   recursive calls of fn will be memoized just as ``top-level'' calls
@@ -61399,7 +61436,10 @@ Subtopics
       Turn off or on memoization of raw Lisp function bad-lisp-consp
 
   [Unmemoize]
-      Turn off memoization for the specified function")
+      Turn off memoization for the specified function
+
+  [Verify-guard-implication]
+      [Guard] implication for [memoize] keyword :invoke")
  (MEMOIZE-PARTIAL
   (MEMOIZE)
   "[Memoize] a partial version of a limited (`clocked') function
@@ -85646,6 +85686,10 @@ Changes to Existing Features
   instructions are printed for how to proceed at your own risk.  See
   [illegal-state].
 
+  A [table]'s guard may now reference the ACL2 [state].  Thus, it may
+  now be a term involving (at most) the variables WORLD, ENS, and
+  STATE.
+
 
 New Features
 
@@ -85695,6 +85739,17 @@ New Features
 
   The [loop$] parser produces more informative error messages on
   ill-formed loop$ statements.
+
+  A new [memoize] keyword, :invoke, supports the replacement of calls
+  of one function by another.  In that sense it is similar to
+  [defattach]; the difference is that with (memoize f :invoke g), it
+  is necessary first to prove the equality of f and g; therefore,
+  ACL2 will compute of f by calling g even during proofs.  In
+  particular, the tool [use-io-pairs] is built on top of this
+  capability; it allows evaluating a function call by fast lookup of
+  a verified input-output pair.  Thanks to Eric McCarthy, Alessandro
+  Coglio, and Eric Smith for requesting the latter capability and
+  providing helpful feedback.
 
 
 Heuristic and Efficiency Improvements
@@ -114383,13 +114438,14 @@ Subtopics
 
   Provided the named table is empty and has not yet been assigned a
   :guard and term (which is not evaluated) is a term that mentions at
-  most the variables KEY, VAL, WORLD, and ENS, this event sets the
-  :guard of the named table to term.  Whenever a subsequent :put
+  most the variables KEY, VAL, WORLD, ENS, and STATE, this event sets
+  the :guard of the named table to term.  Whenever a subsequent :put
   occurs, term will be evaluated with KEY bound to the key argument
   of the :put, VAL bound to the val argument of the :put, WORLD bound
-  to the then current [world], and ENS bound to the enabled structure
-  representing the current theory.  An error will be caused by the
-  :put if the result of the evaluation is nil.
+  to the then current [world], ENS bound to the enabled structure
+  representing the current theory, and STATE bound to the ACL2
+  [state].  An error will be caused by the :put if the result of the
+  evaluation is nil.
 
   Note that it is not allowed to change the :guard on a table once it
   has been explicitly set.  Before the :guard is explicitly set, it
@@ -125184,6 +125240,33 @@ Subtopics
   and other ways to help with later proofs, and (2) to make the
   proofs less brittle, that is, more likely to survive when there are
   small changes to earlier events.")
+ (VERIFY-GUARD-IMPLICATION
+  (MEMOIZE GUARD-FORMULA-UTILITIES)
+  "[Guard] implication for [memoize] keyword :invoke
+
+    Examples:
+    (verify-guard-implication f g)
+    (verify-guard-implication f g
+                              :hints ((\"Goal\" :in-theory (enable nth))))
+
+    General Form:
+    (verify-guard-implication fn1 fn2 &key hints otf-flg)
+
+  where none of the arguments is evaluated.  This macro creates a
+  [defthm] event with :[rule-classes] nil, using :hints and :otf-flg
+  if provided.  The formula of that event is generally an implication
+  formed from the guards of the two functions, but might be T, as we
+  now describe.
+
+  Let guard-fn1 be the [guard] for fn1, and let guard-fn2 be the result
+  of substituting the formals of fn1 for the formals of fn2 in the
+  guard for fn2.  If guard-fn1 tautologically implies guard-fn2 (for
+  example, the two are equal or guard-fn2 is 'T), then the formula of
+  the generated event is T.  Otherwise, the formula is (IMPLIES
+  guard-fn1 guard-fn2).
+
+  Note that the formula might be unpleasant for a human to read, since
+  guard-fn1 and guard-fn2 are translated terms (see [term]).")
  (VERIFY-GUARDS
   (EVENTS GUARD)
   "Verify the [guard]s of a function
