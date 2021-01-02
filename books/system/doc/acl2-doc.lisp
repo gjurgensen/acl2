@@ -87335,11 +87335,11 @@ it."
  calls of one function by another.  In that sense it is similar to @(tsee
  defattach); the difference is that with @('(memoize f :invoke g)'), it is
  necessary first to prove the equality of @('f') and @('g'); therefore, ACL2
- will compute of @('f') by calling @('g') even during proofs.  In particular,
- the tool @(see use-io-pairs) is built on top of this capability; it allows
- evaluating a function call by fast lookup of a verified input-output pair.
- Thanks to Eric McCarthy, Alessandro Coglio, and Eric Smith for requesting the
- latter capability and providing helpful feedback.</p>
+ will compute calls of @('f') by calling @('g') even during proofs.  In
+ particular, the tool @(see use-io-pairs) is built on top of this capability;
+ it allows evaluating a function call by fast lookup of a verified input-output
+ pair.  Thanks to Eric McCarthy, Alessandro Coglio, and Eric Smith for
+ requesting the latter capability and providing helpful feedback.</p>
 
  <h3>Heuristic and Efficiency Improvements</h3>
 

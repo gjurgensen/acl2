@@ -85744,7 +85744,7 @@ New Features
   of one function by another.  In that sense it is similar to
   [defattach]; the difference is that with (memoize f :invoke g), it
   is necessary first to prove the equality of f and g; therefore,
-  ACL2 will compute of f by calling g even during proofs.  In
+  ACL2 will compute calls of f by calling g even during proofs.  In
   particular, the tool [use-io-pairs] is built on top of this
   capability; it allows evaluating a function call by fast lookup of
   a verified input-output pair.  Thanks to Eric McCarthy, Alessandro
