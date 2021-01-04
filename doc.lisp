@@ -85961,6 +85961,13 @@ Bug Fixes
     * Fixed a [double-rewrite] warning, which was breaking the word ``is''.
       Thanks to Mihir Mehta for pointing this out.
 
+  After setting [state] global trace-co, for example with (f-put-global
+  'trace-co (@ standard-co) state) (say, after setting standard-co to
+  an open output channel), printing of the trace level such as ``1>''
+  and ``<1'' will now go to that channel.  Formerly, this could fail
+  after setting trace-co directly rather than using
+  [open-trace-file].
+
 
 Changes at the System Level
 
