@@ -87568,6 +87568,13 @@ it."
 
  </ul>
 
+ <p>After setting @(see state) global @('trace-co'), for example with
+ @('(f-put-global 'trace-co (@ standard-co) state)') (say, after setting
+ standard-co to an open output channel), printing of the trace level such as
+ ``@('1>')'' and ``@('<1')'' will now go to that channel.  Formerly, this could
+ fail after setting @('trace-co') directly rather than using @(tsee
+ open-trace-file).</p>
+
  <h3>Changes at the System Level</h3>
 
  <p>(SBCL only) Filenames are now read as ASCII (specifically, ISO-8859-1) when
