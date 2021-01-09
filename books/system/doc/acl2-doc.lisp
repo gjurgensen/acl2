@@ -60,6 +60,7 @@
 
   '((*ACL2-SYSTEM-EXPORTS* "[books]/system/acl2-system-exports.lisp")
     (<< "[books]/misc/total-order.lisp")
+    (ADD-IO-PAIRS "[books]/std/util/add-io-pairs.lisp")
     (APPEND-WITHOUT-GUARD "[books]/std/lists/flatten.lisp")
     (OSLIB::ARGV "[books]/oslib/argv-logic.lisp")
     (ARITH-EQUIVS "[books]/std/basic/arith-equiv-defs.lisp")
@@ -155,7 +156,6 @@
     (TRANS-EVAL-STATE "[books]/kestrel/utilities/trans-eval-error-triple.lisp")
     (UNSOUND-READ "[books]/std/io/unsound-read.lisp")
     (UNTRANSLATE-PATTERNS "[books]/misc/untranslate-patterns.lisp")
-    (USE-IO-PAIRS "[books]/kestrel/utilities/use-io-pairs.lisp")
     (USE-TRIVIAL-ANCESTORS-CHECK "[books]/tools/trivial-ancestors-check.lisp")
     (BUILD::USING-EXTENDED-ACL2-IMAGES "[books]/build/doc.lisp")
     (WITH-RAW-MODE "[books]/hacking/hacking-xdoc.lisp")
@@ -57083,7 +57083,7 @@ it."
  a symbol, @('g').  Examples may be found in @(see community-books) file
  @('demos/memoize-invoke-input.lsp'); for a tool built on this capability that
  supports evaluation using proved input-output pairs for a function, see @(see
- use-io-pairs).  The effect of @(':invoke g') is to replace every call of
+ add-io-pairs).  The effect of @(':invoke g') is to replace every call of
  @('fn') by a call of @('g').  However, there are some restrictions.  The
  function symbol @('fn') must be in @(':logic') mode, and the symbol @('g')
  must be a @(see guard)-verified @(':')@(tsee logic)-mode function symbol with
@@ -87336,7 +87336,7 @@ it."
  defattach); the difference is that with @('(memoize f :invoke g)'), it is
  necessary first to prove the equality of @('f') and @('g'); therefore, ACL2
  will compute calls of @('f') by calling @('g') even during proofs.  In
- particular, the tool @(see use-io-pairs) is built on top of this capability;
+ particular, the tool @(see add-io-pairs) is built on top of this capability;
  it allows evaluating a function call by fast lookup of a verified input-output
  pair.  Thanks to Eric McCarthy, Alessandro Coglio, and Eric Smith for
  requesting the latter capability and providing helpful feedback.</p>

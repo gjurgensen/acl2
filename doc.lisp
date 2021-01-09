@@ -14520,6 +14520,7 @@ Subtopics
 
       ((*acl2-system-exports* \"[books]/system/acl2-system-exports.lisp\")
        (<< \"[books]/misc/total-order.lisp\")
+       (add-io-pairs \"[books]/std/util/add-io-pairs.lisp\")
        (append-without-guard \"[books]/std/lists/flatten.lisp\")
        (oslib::argv \"[books]/oslib/argv-logic.lisp\")
        (arith-equivs \"[books]/std/basic/arith-equiv-defs.lisp\")
@@ -14618,7 +14619,6 @@ Subtopics
             \"[books]/kestrel/utilities/trans-eval-error-triple.lisp\")
        (unsound-read \"[books]/std/io/unsound-read.lisp\")
        (untranslate-patterns \"[books]/misc/untranslate-patterns.lisp\")
-       (use-io-pairs \"[books]/kestrel/utilities/use-io-pairs.lisp\")
        (use-trivial-ancestors-check
             \"[books]/tools/trivial-ancestors-check.lisp\")
        (build::using-extended-acl2-images \"[books]/build/doc.lisp\")
@@ -61160,7 +61160,7 @@ Subtopics
   symbol, g.  Examples may be found in [community-books] file
   demos/memoize-invoke-input.lsp; for a tool built on this capability
   that supports evaluation using proved input-output pairs for a
-  function, see [use-io-pairs].  The effect of :invoke g is to
+  function, see [add-io-pairs].  The effect of :invoke g is to
   replace every call of fn by a call of g.  However, there are some
   restrictions.  The function symbol fn must be in :logic mode, and
   the symbol g must be a [guard]-verified :[logic]-mode function
@@ -85745,7 +85745,7 @@ New Features
   [defattach]; the difference is that with (memoize f :invoke g), it
   is necessary first to prove the equality of f and g; therefore,
   ACL2 will compute calls of f by calling g even during proofs.  In
-  particular, the tool [use-io-pairs] is built on top of this
+  particular, the tool [add-io-pairs] is built on top of this
   capability; it allows evaluating a function call by fast lookup of
   a verified input-output pair.  Thanks to Eric McCarthy, Alessandro
   Coglio, and Eric Smith for requesting the latter capability and
