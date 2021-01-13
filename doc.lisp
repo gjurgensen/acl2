@@ -85695,7 +85695,9 @@ New Features
 
   A new option for [certify-book], :useless-runes, makes it possible to
   speed up repeated certification of a book, sometimes substantially.
-  See [useless-runes].
+  See [useless-runes].  Thanks to Sol Swords for reporting a bug (in
+  ACL2 source function read-file-iterate-safe) and supplying a fix,
+  which we have incorporated.
 
   A new keyword for [defstobj], :non-executable, can be given value t
   to skip memory allocation for the new [stobj], by avoiding creation

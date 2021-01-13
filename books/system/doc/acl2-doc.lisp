@@ -87289,7 +87289,9 @@ it."
 
  <p>A new option for @(tsee certify-book), @(':useless-runes'), makes it
  possible to speed up repeated certification of a book, sometimes
- substantially.  See @(see useless-runes).</p>
+ substantially.  See @(see useless-runes).  Thanks to Sol Swords for reporting
+ a bug (in ACL2 source function @('read-file-iterate-safe')) and supplying a
+ fix, which we have incorporated.</p>
 
  <p>A new keyword for @(tsee defstobj), @(':non-executable'), can be given
  value @('t') to skip memory allocation for the new @(see stobj), by avoiding
