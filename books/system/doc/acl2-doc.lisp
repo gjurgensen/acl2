@@ -60,6 +60,7 @@
 
   '((*ACL2-SYSTEM-EXPORTS* "[books]/system/acl2-system-exports.lisp")
     (<< "[books]/misc/total-order.lisp")
+    (ADD-IO-PAIRS "[books]/std/util/add-io-pairs.lisp")
     (APPEND-WITHOUT-GUARD "[books]/std/lists/flatten.lisp")
     (OSLIB::ARGV "[books]/oslib/argv-logic.lisp")
     (ARITH-EQUIVS "[books]/std/basic/arith-equiv-defs.lisp")
@@ -56959,19 +56960,20 @@ it."
 
   General Form:
   (memoize fn                         ; memoizes fn and returns fn
-           :condition    condition    ; optional (default t)
+           :aokp         t/nil        ; optional (default nil)
+           :commutative  t/lemma-name ; optional (default nil)
+           :condition    condition    ; optional (default t (unless :invoke))
            :condition-fn condition-fn ; optional
+           :forget       t/nil        ; optional (default nil)
            :hints        hints        ; optional, for verifying the
                                       ;   guards of condition-fn
+           :ideal-okp    t/:warn/nil  ; optional (default nil)
+           :invoke       nil/fn       ; optional (default nil)
+           :memo-table-init-size size ; optional (default *mht-default-size*)
            :otf-flg      otf-flg      ; optional, for verifying the
                                       ;   guards of condition-fn
            :recursive    t/nil        ; optional (default t)
-           :commutative  t/lemma-name ; optional (default nil)
-           :forget       t/nil        ; optional (default nil)
-           :memo-table-init-size size ; optional (default *mht-default-size*)
-           :aokp         t/nil        ; optional (default nil)
-           :stats        t/nil        ; optional (default t)
-           :ideal-okp    t/:warn/nil  ; optional (default nil)
+           :stats        t/nil        ; optional (default t (unless :invoke))
            :total        ; see :DOC memoize-partial
            :verbose      t/nil        ; optional (default t)
            )
@@ -57076,6 +57078,37 @@ it."
  used in that case.</p>
 
  <p>We conclude with by documenting keyword parameters not discussed above.</p>
+
+ <p>Keyword parameter @(':invoke') is @('nil') by default, but its value can be
+ a symbol, @('g').  Examples may be found in @(see community-books) file
+ @('demos/memoize-invoke-input.lsp'); for a tool built on this capability that
+ supports evaluation using proved input-output pairs for a function, see @(see
+ add-io-pairs).  The effect of @(':invoke g') is to replace every call of
+ @('fn') by a call of @('g').  However, there are some restrictions.  The
+ function symbol @('fn') must be in @(':logic') mode, and the symbol @('g')
+ must be a @(see guard)-verified @(':')@(tsee logic)-mode function symbol with
+ the same @(see signature) as that of @('fn').  There is the following proof
+ obligation: there must be a theorem in the current ACL2 @(see world) stating
+ the equality of calls of @('fn') and @('g') on a duplicate-free argument list;
+ for example, if the formals list of @('fn') is @('(x1 ... xn)'), then the
+ theorem could be @('(equal (fn x1 .... xn) (g x1 ... xn))').  If ACL2 finds no
+ such theorem, it will print a @(tsee defthm) event that you may wish to
+ submit.  Next we describe a potential second proof obligation, which will
+ similarly be printed if it is not met.  Let @('guard-fn') be the @(see guard)
+ for @('fn'), and let @('guard-g') be the result of substituting the formals of
+ @('fn') for the formals of @('g') in the guard for @('g').  If @('guard-fn')
+ tautologically implies @('guard-g') (for example, the two are equal or
+ @('guard-g') is @(''T')), then there is no further proof obligation.
+ Otherwise, there must be a theorem in the current ACL2 @(see world) of the
+ form @('(implies guard-fn guard-g)').  See @(see verify-guard-implication) for
+ a utility that makes it wasy for you to prove such a theorem.  Finally,
+ contrary to the usual defaults, the values of keyword @(':recursive'),
+ @(':condition') and @(':stats') default to @('nil').  Indeed, it is an error
+ to specify a non-nil value for @(':recursive').  The alternate defaults of
+ @('nil') for @(':condition') and @(':stats') can avoid memoization overhead
+ when one simply wishes to call @('g') in place of @('fn'); you may override
+ those defaults if you actually want to save computed values and use
+ @('(memsum)') to see statistics.</p>
 
  <p>Keyword parameter @(':recursive') is @('t') by default, which means that
  recursive calls of @('fn') will be memoized just as ``top-level'' calls of
@@ -87116,6 +87149,8 @@ it."
 ; Duplicates are now removed in the build error report for :ideal mode
 ; functions.
 
+; Fargn1 is now in :logic mode (and guard-verified).
+
   :parents (release-notes)
   :short "ACL2 Version  8.4 (xxx, 20xx) Notes"
   :long "<p>NOTE!  New users can ignore these release notes, because the @(see
@@ -87246,11 +87281,17 @@ it."
  ``illegal-state'' is entered, as indicated by the prompt, and instructions are
  printed for how to proceed at your own risk.  See @(see illegal-state).</p>
 
+ <p>A @(tsee table)'s guard may now reference the ACL2 @(see state).  Thus, it
+ may now be a term involving (at most) the variables @('WORLD'), @('ENS'), and
+ @('STATE').</p>
+
  <h3>New Features</h3>
 
  <p>A new option for @(tsee certify-book), @(':useless-runes'), makes it
  possible to speed up repeated certification of a book, sometimes
- substantially.  See @(see useless-runes).</p>
+ substantially.  See @(see useless-runes).  Thanks to Sol Swords for reporting
+ a bug (in ACL2 source function @('read-file-iterate-safe')) and supplying a
+ fix, which we have incorporated.</p>
 
  <p>A new keyword for @(tsee defstobj), @(':non-executable'), can be given
  value @('t') to skip memory allocation for the new @(see stobj), by avoiding
@@ -87291,6 +87332,16 @@ it."
 
  <p>The @(tsee loop$) parser produces more informative error messages on
  ill-formed @('loop$') statements.</p>
+
+ <p>A new @(tsee memoize) keyword, @(':invoke'), supports the replacement of
+ calls of one function by another.  In that sense it is similar to @(tsee
+ defattach); the difference is that with @('(memoize f :invoke g)'), it is
+ necessary first to prove the equality of @('f') and @('g'); therefore, ACL2
+ will compute calls of @('f') by calling @('g') even during proofs.  In
+ particular, the tool @(see add-io-pairs) is built on top of this capability;
+ it allows evaluating a function call by fast lookup of a verified input-output
+ pair.  Thanks to Eric McCarthy, Alessandro Coglio, and Eric Smith for
+ requesting the latter capability and providing helpful feedback.</p>
 
  <h3>Heuristic and Efficiency Improvements</h3>
 
@@ -87518,6 +87569,13 @@ it."
  ``is''.  Thanks to Mihir Mehta for pointing this out.</li>
 
  </ul>
+
+ <p>After setting @(see state) global @('trace-co'), for example with
+ @('(f-put-global 'trace-co (@ standard-co) state)') (say, after setting
+ standard-co to an open output channel), printing of the trace level such as
+ ``@('1>')'' and ``@('<1')'' will now go to that channel.  Formerly, this could
+ fail after setting @('trace-co') directly rather than using @(tsee
+ open-trace-file).</p>
 
  <h3>Changes at the System Level</h3>
 
@@ -113169,13 +113227,14 @@ arithmetic) for libraries of @(see books) for arithmetic reasoning.</p>")
 
  <p>Provided the named table is empty and has not yet been assigned a
  @(':guard') and @('term') (which is not evaluated) is a term that mentions at
- most the variables @('KEY'), @('VAL'), @('WORLD'), and @('ENS'), this event
- sets the @(':guard') of the named table to @('term').  Whenever a subsequent
- @(':put') occurs, @('term') will be evaluated with @('KEY') bound to the key
- argument of the @(':put'), @('VAL') bound to the @('val') argument of the
- @(':put'), @('WORLD') bound to the then current @(see world), and @('ENS')
- bound to the enabled structure representing the current theory.  An error will
- be caused by the @(':put') if the result of the evaluation is @('nil').</p>
+ most the variables @('KEY'), @('VAL'), @('WORLD'), @('ENS'), and @('STATE'),
+ this event sets the @(':guard') of the named table to @('term').  Whenever a
+ subsequent @(':put') occurs, @('term') will be evaluated with @('KEY') bound
+ to the key argument of the @(':put'), @('VAL') bound to the @('val') argument
+ of the @(':put'), @('WORLD') bound to the then current @(see world), @('ENS')
+ bound to the enabled structure representing the current theory, and @('STATE')
+ bound to the ACL2 @(see state).  An error will be caused by the @(':put') if
+ the result of the evaluation is @('nil').</p>
 
  <p>Note that it is not allowed to change the @(':guard') on a table once it
  has been explicitly set.  Before the @(':guard') is explicitly set, it is
@@ -124043,6 +124102,36 @@ introduction-to-the-tau-system) for more information about Tau.</dd>
  and other ways to help with later proofs, and (2) to make the proofs less
  brittle, that is, more likely to survive when there are small changes to
  earlier events.</p>")
+
+(defxdoc verify-guard-implication
+  :parents (memoize guard-formula-utilities)
+  :short "@(csee Guard) implication for @(tsee memoize) keyword @(':invoke')"
+  :long "@({
+ Examples:
+ (verify-guard-implication f g)
+ (verify-guard-implication f g
+                           :hints ((\"Goal\" :in-theory (enable nth))))
+
+ General Form:
+ (verify-guard-implication fn1 fn2 &key hints otf-flg)
+ })
+
+ <p>where none of the arguments is evaluated.  This macro creates a @(tsee
+ defthm) event with @(':')@(tsee rule-classes) @('nil'), using @(':hints') and
+ @(':otf-flg') if provided.  The formula of that event is generally an
+ implication formed from the guards of the two functions, but might be @('T'),
+ as we now describe.</p>
+
+ <p>Let @('guard-fn1') be the @(see guard) for @('fn1'), and let @('guard-fn2')
+ be the result of substituting the formals of @('fn1') for the formals of
+ @('fn2') in the guard for @('fn2').  If @('guard-fn1') tautologically implies
+ @('guard-fn2') (for example, the two are equal or @('guard-fn2') is @(''T')),
+ then the formula of the generated event is @('T').  Otherwise, the formula is
+ @('(IMPLIES guard-fn1 guard-fn2)').</p>
+
+ <p>Note that the formula might be unpleasant for a human to read, since
+ @('guard-fn1') and @('guard-fn2') are translated terms (see @(see
+ term)).</p>")
 
 (defxdoc verify-guards
   :parents (events guard)
