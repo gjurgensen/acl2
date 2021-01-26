@@ -12932,7 +12932,7 @@ with any questions about building the community books.</p>")
 
  <p>Rebuild the lisp kernel by hand before trying to rebuild the lisp.
  (Note: This step was formerly unnecessary and might become unnecessary again,
- but as of Sept. 2020 it seems to be necessary on MacOS Cataline (10.15).
+ but as of Sept. 2020 it seems to be necessary on MacOS Catalina (10.15).
  If you skip it, then consider replacing :clean by :full below.)</p>
 
  @({
