@@ -87151,6 +87151,9 @@ it."
 
 ; Fargn1 is now in :logic mode (and guard-verified).
 
+; Tweaked our-with-standard-io-syntax for SBCL to support the fix for builds
+; using relative pathnames for the LISP environment variable.
+
   :parents (release-notes)
   :short "ACL2 Version  8.4 (xxx, 20xx) Notes"
   :long "<p>NOTE!  New users can ignore these release notes, because the @(see
@@ -87626,6 +87629,11 @@ it."
  <p>(SBCL only) Increased the number of special variables that can be created,
  which allowed community book
  @('books/kestrel/apt/schemalg-template-proofs.lisp') to certify.</p>
+
+ <p>Fixed builds that use a relative pathname for the LISP environment
+ variable (for host Lisps CCL, SBCL, Allegro CL, and CMUCL; GCL and LispWorks
+ didn't seem to have this problem).  Thanks to Mihir Mehta for bringing this
+ issue to our attention.</p>
 
  <h3>EMACS Support</h3>
 

@@ -86024,6 +86024,11 @@ Changes at the System Level
   created, which allowed community book
   books/kestrel/apt/schemalg-template-proofs.lisp to certify.
 
+  Fixed builds that use a relative pathname for the LISP environment
+  variable (for host Lisps CCL, SBCL, Allegro CL, and CMUCL; GCL and
+  LispWorks didn't seem to have this problem).  Thanks to Mihir Mehta
+  for bringing this issue to our attention.
+
 
 EMACS Support
 
