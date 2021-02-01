@@ -87285,6 +87285,9 @@ it."
  may now be a term involving (at most) the variables @('WORLD'), @('ENS'), and
  @('STATE').</p>
 
+ <p>It is now always redundant to @(tsee unmemoize) a function symbol that is
+ not currently @(see memoize)d.  See @(see redundant-events).</p>
+
  <h3>New Features</h3>
 
  <p>A new option for @(tsee certify-book), @(':useless-runes'), makes it
@@ -98053,8 +98056,8 @@ arithmetic) for libraries of @(see books) for arithmetic reasoning.</p>")
  the default @(see defun-mode) to @(':')@(tsee program), and invokes @(tsee
  set-state-ok) with value @('t').  It also introduces @('(defttag :redef+)'),
  so that redefinition of system functions will be permitted; see @(see
- defttag).  Finally, it removes as untouchable (see @(see push-untouchable))
- all variables and functions.</p>
+ defttag).  It also removes as untouchable (see @(see push-untouchable)) all
+ variables and functions.</p>
 
  <p>WARNING: This command is potentially unsafe and even unsound!  For a
  relevant warning about redefinition, see @(see ld-redefinition-action).
@@ -98064,10 +98067,36 @@ arithmetic) for libraries of @(see books) for arithmetic reasoning.</p>")
  because they are untouchable.  To avoid this problem, insert the form
  @('(')@(tsee redef-)@(')') into your book after @('(redef+)').</p>
 
- <p>To see the code for @('redef+'), evaluate @(':trans1 (redef+)').  This
- @(see command) is intended for those who are modifying ACL2 source code
- definitions.  Thus, note that even system functions can be redefined with a
- mere warning.  Be careful!</p>")
+ <p>Note that undoing a @(':redef+') command, say with @(':')@(tsee u), only
+ undoes the effects of @(':redef+') on the ACL2 @(see world); it does
+ <i>not</i> undo the other effects on the ACL2 @(see state).  The best way to
+ undo the effects of @(':redef+') is generally to execute @(':')@(tsee redef-).
+ To understand this point we look at the code for @('redef+').  The output
+ below has been edited to put world-changing parts in lower case.</p>
+
+ @({
+ ACL2 !>:trans1 (redef+)
+  (WITH-OUTPUT
+       :OFF (SUMMARY EVENT)
+       (PROGN (defttag :redef+)
+              (PROGN! (SET-LD-REDEFINITION-ACTION '(:WARN! . :OVERWRITE)
+                                                  STATE)
+                      (program)
+                      (SET-TEMP-TOUCHABLE-VARS T STATE)
+                      (SET-TEMP-TOUCHABLE-FNS T STATE)
+                      (F-PUT-GLOBAL 'REDUNDANT-WITH-RAW-CODE-OKP
+                                    T STATE)
+                      (set-state-ok t))))
+ ACL2 !>
+ })
+
+ <p>In particular, we see that redefinition remains active after undoing.  In
+ general, it is therefore best to execute @(':redef-') before undoing
+ @(':redef+').</p>
+
+ <p>This @(see command) was introduced to support modification of ACL2 source
+ code definitions.  Thus, note that even system functions can be redefined with
+ a mere warning.  Be careful!</p>")
 
 (defxdoc redef-
   :parents (ld)
@@ -98691,7 +98720,17 @@ arithmetic) for libraries of @(see books) for arithmetic reasoning.</p>")
  <p>A @(tsee table) event not define any name.  It is redundant when it sets
  the value already associated with a key of the table, or when it sets an
  entire table (using keyword @(':clear')) to its existing value; see @(see
- table).</p>
+ table).  Setting a non-existent key to @('nil') is not redundant, with the
+ exception discussed next.</p>
+
+ <p>@(csee Memoization) is carried out using a @(see table),
+ @('memoize-table'), that may associate a function symbol with @('nil') when it
+ is not memoized.  It is redundant to @(tsee unmemoize) a currently-unmemoized
+ function symbol, thus associating it with @('nil') in the @('memoize-table')
+ &mdash; even if that function symbol is not already a key of that table (this
+ is the exception noted in the preceding paragraph).  It is redundant to @(tsee
+ memoize) a function when the function is already identically memoized, that
+ is, when the corresponding @(tsee table) event is redundant.</p>
 
  <p>A @(tsee verify-guards) event is redundant if the function has already had
  its @(see guard)s verified.</p>

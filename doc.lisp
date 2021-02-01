@@ -85690,6 +85690,9 @@ Changes to Existing Features
   now be a term involving (at most) the variables WORLD, ENS, and
   STATE.
 
+  It is now always redundant to [unmemoize] a function symbol that is
+  not currently [memoize]d.  See [redundant-events].
+
 
 New Features
 
@@ -99036,8 +99039,8 @@ Subtopics
   sets the default [defun-mode] to :[program], and invokes
   [set-state-ok] with value t.  It also introduces (defttag :redef+),
   so that redefinition of system functions will be permitted; see
-  [defttag].  Finally, it removes as untouchable (see
-  [push-untouchable]) all variables and functions.
+  [defttag].  It also removes as untouchable (see [push-untouchable])
+  all variables and functions.
 
   WARNING: This command is potentially unsafe and even unsound!  For a
   relevant warning about redefinition, see [ld-redefinition-action].
@@ -99048,9 +99051,33 @@ Subtopics
   avoid this problem, insert the form ([redef-]) into your book after
   (redef+).
 
-  To see the code for redef+, evaluate :trans1 (redef+).  This
-  [command] is intended for those who are modifying ACL2 source code
-  definitions.  Thus, note that even system functions can be
+  Note that undoing a :redef+ command, say with :[u], only undoes the
+  effects of :redef+ on the ACL2 [world]; it does not undo the other
+  effects on the ACL2 [state].  The best way to undo the effects of
+  :redef+ is generally to execute :[redef-].  To understand this
+  point we look at the code for redef+.  The output below has been
+  edited to put world-changing parts in lower case.
+
+    ACL2 !>:trans1 (redef+)
+     (WITH-OUTPUT
+          :OFF (SUMMARY EVENT)
+          (PROGN (defttag :redef+)
+                 (PROGN! (SET-LD-REDEFINITION-ACTION '(:WARN! . :OVERWRITE)
+                                                     STATE)
+                         (program)
+                         (SET-TEMP-TOUCHABLE-VARS T STATE)
+                         (SET-TEMP-TOUCHABLE-FNS T STATE)
+                         (F-PUT-GLOBAL 'REDUNDANT-WITH-RAW-CODE-OKP
+                                       T STATE)
+                         (set-state-ok t))))
+    ACL2 !>
+
+  In particular, we see that redefinition remains active after undoing.
+  In general, it is therefore best to execute :redef- before undoing
+  :redef+.
+
+  This [command] was introduced to support modification of ACL2 source
+  code definitions.  Thus, note that even system functions can be
   redefined with a mere warning.  Be careful!")
  (REDEF-
   (LD)
@@ -99645,7 +99672,18 @@ Subtopics
   A [table] event not define any name.  It is redundant when it sets
   the value already associated with a key of the table, or when it
   sets an entire table (using keyword :clear) to its existing value;
-  see [table].
+  see [table].  Setting a non-existent key to nil is not redundant,
+  with the exception discussed next.
+
+  [Memoization] is carried out using a [table], memoize-table, that may
+  associate a function symbol with nil when it is not memoized.  It
+  is redundant to [unmemoize] a currently-unmemoized function symbol,
+  thus associating it with nil in the memoize-table --- even if that
+  function symbol is not already a key of that table (this is the
+  exception noted in the preceding paragraph).  It is redundant to
+  [memoize] a function when the function is already identically
+  memoized, that is, when the corresponding [table] event is
+  redundant.
 
   A [verify-guards] event is redundant if the function has already had
   its [guard]s verified.
