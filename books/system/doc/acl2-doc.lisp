@@ -14997,7 +14997,7 @@ with any questions about building the community books.</p>")
   YYY)
  })
 
- <h3>Evaluation during building a term</h3>
+ <h3>Failure to expand using a rule</h3>
 
  <p>Form:</p>
 
@@ -15017,7 +15017,7 @@ with any questions about building the community books.</p>")
  })
 
  <p>The checkpoint is as follows.  What happened is that the rule @('nth-open')
- had a hypothesis that was false when the rule's was attempted for the term
+ had a hypothesis that was false when the rule was attempted for the term
  @('(nth i y)').</p>
 
  @({
@@ -15027,26 +15027,28 @@ with any questions about building the community books.</p>")
                  ZZZ))
  })
 
- <h3>Failure due to missing or disabled warrants</h3>
+ <h3>Failure due to disabled or missing warrants</h3>
 
  <p>Forms:</p>
 
  @({
  (HIDE (COMMENT \"Call failed because the rule apply$-<fn> is disabled\"
        <term>))
- (HIDE (COMMENT \"Call failed because the warrant for <fn> is false\"
+ (HIDE (COMMENT \"Call failed because the warrant for <fn> is not known to be true\"
        <term>))
  })
 
- <p>These forms may appear when an attempt to evaluate a call of @(tsee apply$)
- fails because a necessary @(see warrant) is either @(see disable)d or known,
- in the present context, to be false.  In the following example, the attempt to
- simplify the call of @('apply$') in the theorem ultimately leads to an attempt
- to evaluate a call of @(tsee ev$), which ultimately fails because it leads to
- a call to evaluate @('(apply$ 'bar '(3))') @('bar').  That call causes an
- error because the warrant is unavailable, because the rule @('apply$-bar') is
- disabled, hence cannot rewrite a term @('(apply$ 'bar args)') to @('(bar (car
- args))').</p>
+ <p>The first of these forms may appear when an attempt to evaluate a call of
+ @(tsee apply$) fails because a necessary @(see warrant) is disable)d.  The
+ second form may appear when the warrant is not known to be true in the present
+ context, either because it is known to be false or because it cannot be
+ assumed true because forcing is @(see disable)d.  In the following example,
+ the attempt to simplify the call of @('apply$') in the theorem ultimately
+ leads to an attempt to evaluate a call of @(tsee ev$), which ultimately fails
+ because it leads to a call to evaluate @('(apply$ 'bar '(3))') @('bar').  That
+ call causes an error because the warrant is unavailable, because the rule
+ @('apply$-bar') is disabled, hence cannot rewrite a term @('(apply$ 'bar
+ args)') to @('(bar (car args))').</p>
 
  @({
  (include-book \"projects/apply/top\" :dir :system)
@@ -15067,7 +15069,7 @@ with any questions about building the community books.</p>")
  })
 
  <p>Similarly, if we instead submit the following event, we see the other such
- message, about a false warrant.</p>
+ message, in this case about a false warrant.</p>
 
  @({
  (thm (implies (not (warrant bar))
@@ -15080,9 +15082,41 @@ with any questions about building the community books.</p>")
  @({
  (IMPLIES
   (NOT (APPLY$-WARRANT-BAR))
-  (EQUAL (HIDE (COMMENT \"Call failed because the warrant for BAR is false\"
+  (EQUAL (HIDE (COMMENT \"Call failed because the warrant for BAR is not known to be true\"
                         (EV$ '(BAR Y) '((Y . 3)))))
          3))
+ })
+
+ <p>Our final example illustrates a failure due to forcing being disabled.  The
+ use of @(tsee loop$) in the definition of @('bar') expands to create a call of
+ @(tsee ev$), which cannot be simplified during the proof of the @(tsee thm)
+ below because the necessary warrant hypothesis is missing and cannot be
+ forced, since forcing is disabled (see also @(see disable-forcing)).</p>
+
+ @({
+ (defun$ hello (x)
+    (declare (xargs :guard t))
+    (list 'hi x))
+
+ (defun bar (lst)
+    (declare (xargs :guard (true-listp lst)))
+    (loop$ for name in lst collect (hello name))))
+
+ (thm (equal (bar '(john))
+             '((hi john)))
+      :hints ((\"Goal\" :in-theory (disable (:e force)))))
+ })
+
+ <p>Here is the resulting checkpoint.</p>
+
+ @({
+ (EQUAL
+  (HIDE
+      (COMMENT
+           \"Call failed because the warrant for HELLO is not known to be true\"
+           (EV$ '(HELLO LOOP$-IVAR)
+                '((LOOP$-IVAR . JOHN)))))
+  '(HI JOHN))
  })")
 
 (defxdoc common-lisp

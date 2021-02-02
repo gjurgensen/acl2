@@ -17959,7 +17959,7 @@ Evaluation during building a term
      YYY)
 
 
-Evaluation during building a term
+Failure to expand using a rule
 
   Form:
 
@@ -17975,7 +17975,7 @@ Evaluation during building a term
          :hints ((\"Goal\" :expand (nth i y) :do-not-induct t)))
 
   The checkpoint is as follows.  What happened is that the rule
-  nth-open had a hypothesis that was false when the rule's was
+  nth-open had a hypothesis that was false when the rule was
   attempted for the term (nth i y).
 
     (IMPLIES (NOT (CONSP Y))
@@ -17984,24 +17984,27 @@ Evaluation during building a term
                     ZZZ))
 
 
-Failure due to missing or disabled warrants
+Failure due to disabled or missing warrants
 
   Forms:
 
     (HIDE (COMMENT \"Call failed because the rule apply$-<fn> is disabled\"
           <term>))
-    (HIDE (COMMENT \"Call failed because the warrant for <fn> is false\"
+    (HIDE (COMMENT \"Call failed because the warrant for <fn> is not known to be true\"
           <term>))
 
-  These forms may appear when an attempt to evaluate a call of [apply$]
-  fails because a necessary [warrant] is either [disable]d or known,
-  in the present context, to be false.  In the following example, the
-  attempt to simplify the call of apply$ in the theorem ultimately
-  leads to an attempt to evaluate a call of [ev$], which ultimately
-  fails because it leads to a call to evaluate (apply$ 'bar '(3))
-  bar.  That call causes an error because the warrant is unavailable,
-  because the rule apply$-bar is disabled, hence cannot rewrite a
-  term (apply$ 'bar args) to (bar (car args)).
+  The first of these forms may appear when an attempt to evaluate a
+  call of [apply$] fails because a necessary [warrant] is disable)d.
+  The second form may appear when the warrant is not known to be true
+  in the present context, either because it is known to be false or
+  because it cannot be assumed true because forcing is [disable]d.
+  In the following example, the attempt to simplify the call of
+  apply$ in the theorem ultimately leads to an attempt to evaluate a
+  call of [ev$], which ultimately fails because it leads to a call to
+  evaluate (apply$ 'bar '(3)) bar.  That call causes an error because
+  the warrant is unavailable, because the rule apply$-bar is
+  disabled, hence cannot rewrite a term (apply$ 'bar args) to (bar
+  (car args)).
 
     (include-book \"projects/apply/top\" :dir :system)
     (defun$ bar (x) x)
@@ -18018,7 +18021,7 @@ Failure due to missing or disabled warrants
              3))
 
   Similarly, if we instead submit the following event, we see the other
-  such message, about a false warrant.
+  such message, in this case about a false warrant.
 
     (thm (implies (not (warrant bar))
                   (equal (apply$ '(lambda (y) (bar y)) '(3)) 3))
@@ -18028,9 +18031,38 @@ Failure due to missing or disabled warrants
 
     (IMPLIES
      (NOT (APPLY$-WARRANT-BAR))
-     (EQUAL (HIDE (COMMENT \"Call failed because the warrant for BAR is false\"
+     (EQUAL (HIDE (COMMENT \"Call failed because the warrant for BAR is not known to be true\"
                            (EV$ '(BAR Y) '((Y . 3)))))
-            3))")
+            3))
+
+  Our final example illustrates a failure due to forcing being
+  disabled.  The use of [loop$] in the definition of bar expands to
+  create a call of [ev$], which cannot be simplified during the proof
+  of the [thm] below because the necessary warrant hypothesis is
+  missing and cannot be forced, since forcing is disabled (see also
+  [disable-forcing]).
+
+    (defun$ hello (x)
+       (declare (xargs :guard t))
+       (list 'hi x))
+
+    (defun bar (lst)
+       (declare (xargs :guard (true-listp lst)))
+       (loop$ for name in lst collect (hello name))))
+
+    (thm (equal (bar '(john))
+                '((hi john)))
+         :hints ((\"Goal\" :in-theory (disable (:e force)))))
+
+  Here is the resulting checkpoint.
+
+    (EQUAL
+     (HIDE
+         (COMMENT
+              \"Call failed because the warrant for HELLO is not known to be true\"
+              (EV$ '(HELLO LOOP$-IVAR)
+                   '((LOOP$-IVAR . JOHN)))))
+     '(HI JOHN))")
  (COMMON-LISP
   (ABOUT-ACL2)
   "Relation to Common Lisp, including deviations from the spec
