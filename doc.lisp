@@ -15780,7 +15780,7 @@ Subtopics
   Rebuild the lisp kernel by hand before trying to rebuild the lisp.
   (Note: This step was formerly unnecessary and might become
   unnecessary again, but as of Sept. 2020 it seems to be necessary on
-  MacOS Cataline (10.15).  If you skip it, then consider replacing
+  MacOS Catalina (10.15).  If you skip it, then consider replacing
   :clean by :full below.)
 
     cd lisp-kernel/linuxx8664; make clean; make
@@ -17959,7 +17959,7 @@ Evaluation during building a term
      YYY)
 
 
-Evaluation during building a term
+Failure to expand using a rule
 
   Form:
 
@@ -17975,7 +17975,7 @@ Evaluation during building a term
          :hints ((\"Goal\" :expand (nth i y) :do-not-induct t)))
 
   The checkpoint is as follows.  What happened is that the rule
-  nth-open had a hypothesis that was false when the rule's was
+  nth-open had a hypothesis that was false when the rule was
   attempted for the term (nth i y).
 
     (IMPLIES (NOT (CONSP Y))
@@ -17984,24 +17984,27 @@ Evaluation during building a term
                     ZZZ))
 
 
-Failure due to missing or disabled warrants
+Failure due to disabled or missing warrants
 
   Forms:
 
     (HIDE (COMMENT \"Call failed because the rule apply$-<fn> is disabled\"
           <term>))
-    (HIDE (COMMENT \"Call failed because the warrant for <fn> is false\"
+    (HIDE (COMMENT \"Call failed because the warrant for <fn> is not known to be true\"
           <term>))
 
-  These forms may appear when an attempt to evaluate a call of [apply$]
-  fails because a necessary [warrant] is either [disable]d or known,
-  in the present context, to be false.  In the following example, the
-  attempt to simplify the call of apply$ in the theorem ultimately
-  leads to an attempt to evaluate a call of [ev$], which ultimately
-  fails because it leads to a call to evaluate (apply$ 'bar '(3))
-  bar.  That call causes an error because the warrant is unavailable,
-  because the rule apply$-bar is disabled, hence cannot rewrite a
-  term (apply$ 'bar args) to (bar (car args)).
+  The first of these forms may appear when an attempt to evaluate a
+  call of [apply$] fails because a necessary [warrant] is disable)d.
+  The second form may appear when the warrant is not known to be true
+  in the present context, either because it is known to be false or
+  because it cannot be assumed true because forcing is [disable]d.
+  In the following example, the attempt to simplify the call of
+  apply$ in the theorem ultimately leads to an attempt to evaluate a
+  call of [ev$], which ultimately fails because it leads to a call to
+  evaluate (apply$ 'bar '(3)) bar.  That call causes an error because
+  the warrant is unavailable, because the rule apply$-bar is
+  disabled, hence cannot rewrite a term (apply$ 'bar args) to (bar
+  (car args)).
 
     (include-book \"projects/apply/top\" :dir :system)
     (defun$ bar (x) x)
@@ -18018,7 +18021,7 @@ Failure due to missing or disabled warrants
              3))
 
   Similarly, if we instead submit the following event, we see the other
-  such message, about a false warrant.
+  such message, in this case about a false warrant.
 
     (thm (implies (not (warrant bar))
                   (equal (apply$ '(lambda (y) (bar y)) '(3)) 3))
@@ -18028,9 +18031,38 @@ Failure due to missing or disabled warrants
 
     (IMPLIES
      (NOT (APPLY$-WARRANT-BAR))
-     (EQUAL (HIDE (COMMENT \"Call failed because the warrant for BAR is false\"
+     (EQUAL (HIDE (COMMENT \"Call failed because the warrant for BAR is not known to be true\"
                            (EV$ '(BAR Y) '((Y . 3)))))
-            3))")
+            3))
+
+  Our final example illustrates a failure due to forcing being
+  disabled.  The use of [loop$] in the definition of bar expands to
+  create a call of [ev$], which cannot be simplified during the proof
+  of the [thm] below because the necessary warrant hypothesis is
+  missing and cannot be forced, since forcing is disabled (see also
+  [disable-forcing]).
+
+    (defun$ hello (x)
+       (declare (xargs :guard t))
+       (list 'hi x))
+
+    (defun bar (lst)
+       (declare (xargs :guard (true-listp lst)))
+       (loop$ for name in lst collect (hello name))))
+
+    (thm (equal (bar '(john))
+                '((hi john)))
+         :hints ((\"Goal\" :in-theory (disable (:e force)))))
+
+  Here is the resulting checkpoint.
+
+    (EQUAL
+     (HIDE
+         (COMMENT
+              \"Call failed because the warrant for HELLO is not known to be true\"
+              (EV$ '(HELLO LOOP$-IVAR)
+                   '((LOOP$-IVAR . JOHN)))))
+     '(HI JOHN))")
  (COMMON-LISP
   (ABOUT-ACL2)
   "Relation to Common Lisp, including deviations from the spec
@@ -85690,6 +85722,9 @@ Changes to Existing Features
   now be a term involving (at most) the variables WORLD, ENS, and
   STATE.
 
+  It is now always redundant to [unmemoize] a function symbol that is
+  not currently [memoize]d.  See [redundant-events].
+
 
 New Features
 
@@ -86020,6 +86055,11 @@ Changes at the System Level
   (SBCL only) Increased the number of special variables that can be
   created, which allowed community book
   books/kestrel/apt/schemalg-template-proofs.lisp to certify.
+
+  Fixed builds that use a relative pathname for the LISP environment
+  variable (for host Lisps CCL, SBCL, Allegro CL, and CMUCL; GCL and
+  LispWorks didn't seem to have this problem).  Thanks to Mihir Mehta
+  for bringing this issue to our attention.
 
 
 EMACS Support
@@ -99036,8 +99076,8 @@ Subtopics
   sets the default [defun-mode] to :[program], and invokes
   [set-state-ok] with value t.  It also introduces (defttag :redef+),
   so that redefinition of system functions will be permitted; see
-  [defttag].  Finally, it removes as untouchable (see
-  [push-untouchable]) all variables and functions.
+  [defttag].  It also removes as untouchable (see [push-untouchable])
+  all variables and functions.
 
   WARNING: This command is potentially unsafe and even unsound!  For a
   relevant warning about redefinition, see [ld-redefinition-action].
@@ -99048,9 +99088,33 @@ Subtopics
   avoid this problem, insert the form ([redef-]) into your book after
   (redef+).
 
-  To see the code for redef+, evaluate :trans1 (redef+).  This
-  [command] is intended for those who are modifying ACL2 source code
-  definitions.  Thus, note that even system functions can be
+  Note that undoing a :redef+ command, say with :[u], only undoes the
+  effects of :redef+ on the ACL2 [world]; it does not undo the other
+  effects on the ACL2 [state].  The best way to undo the effects of
+  :redef+ is generally to execute :[redef-].  To understand this
+  point we look at the code for redef+.  The output below has been
+  edited to put world-changing parts in lower case.
+
+    ACL2 !>:trans1 (redef+)
+     (WITH-OUTPUT
+          :OFF (SUMMARY EVENT)
+          (PROGN (defttag :redef+)
+                 (PROGN! (SET-LD-REDEFINITION-ACTION '(:WARN! . :OVERWRITE)
+                                                     STATE)
+                         (program)
+                         (SET-TEMP-TOUCHABLE-VARS T STATE)
+                         (SET-TEMP-TOUCHABLE-FNS T STATE)
+                         (F-PUT-GLOBAL 'REDUNDANT-WITH-RAW-CODE-OKP
+                                       T STATE)
+                         (set-state-ok t))))
+    ACL2 !>
+
+  In particular, we see that redefinition remains active after undoing.
+  In general, it is therefore best to execute :redef- before undoing
+  :redef+.
+
+  This [command] was introduced to support modification of ACL2 source
+  code definitions.  Thus, note that even system functions can be
   redefined with a mere warning.  Be careful!")
  (REDEF-
   (LD)
@@ -99645,7 +99709,18 @@ Subtopics
   A [table] event not define any name.  It is redundant when it sets
   the value already associated with a key of the table, or when it
   sets an entire table (using keyword :clear) to its existing value;
-  see [table].
+  see [table].  Setting a non-existent key to nil is not redundant,
+  with the exception discussed next.
+
+  [Memoization] is carried out using a [table], memoize-table, that may
+  associate a function symbol with nil when it is not memoized.  It
+  is redundant to [unmemoize] a currently-unmemoized function symbol,
+  thus associating it with nil in the memoize-table --- even if that
+  function symbol is not already a key of that table (this is the
+  exception noted in the preceding paragraph).  It is redundant to
+  [memoize] a function when the function is already identically
+  memoized, that is, when the corresponding [table] event is
+  redundant.
 
   A [verify-guards] event is redundant if the function has already had
   its [guard]s verified.

@@ -12932,7 +12932,7 @@ with any questions about building the community books.</p>")
 
  <p>Rebuild the lisp kernel by hand before trying to rebuild the lisp.
  (Note: This step was formerly unnecessary and might become unnecessary again,
- but as of Sept. 2020 it seems to be necessary on MacOS Cataline (10.15).
+ but as of Sept. 2020 it seems to be necessary on MacOS Catalina (10.15).
  If you skip it, then consider replacing :clean by :full below.)</p>
 
  @({
@@ -14997,7 +14997,7 @@ with any questions about building the community books.</p>")
   YYY)
  })
 
- <h3>Evaluation during building a term</h3>
+ <h3>Failure to expand using a rule</h3>
 
  <p>Form:</p>
 
@@ -15017,7 +15017,7 @@ with any questions about building the community books.</p>")
  })
 
  <p>The checkpoint is as follows.  What happened is that the rule @('nth-open')
- had a hypothesis that was false when the rule's was attempted for the term
+ had a hypothesis that was false when the rule was attempted for the term
  @('(nth i y)').</p>
 
  @({
@@ -15027,26 +15027,28 @@ with any questions about building the community books.</p>")
                  ZZZ))
  })
 
- <h3>Failure due to missing or disabled warrants</h3>
+ <h3>Failure due to disabled or missing warrants</h3>
 
  <p>Forms:</p>
 
  @({
  (HIDE (COMMENT \"Call failed because the rule apply$-<fn> is disabled\"
        <term>))
- (HIDE (COMMENT \"Call failed because the warrant for <fn> is false\"
+ (HIDE (COMMENT \"Call failed because the warrant for <fn> is not known to be true\"
        <term>))
  })
 
- <p>These forms may appear when an attempt to evaluate a call of @(tsee apply$)
- fails because a necessary @(see warrant) is either @(see disable)d or known,
- in the present context, to be false.  In the following example, the attempt to
- simplify the call of @('apply$') in the theorem ultimately leads to an attempt
- to evaluate a call of @(tsee ev$), which ultimately fails because it leads to
- a call to evaluate @('(apply$ 'bar '(3))') @('bar').  That call causes an
- error because the warrant is unavailable, because the rule @('apply$-bar') is
- disabled, hence cannot rewrite a term @('(apply$ 'bar args)') to @('(bar (car
- args))').</p>
+ <p>The first of these forms may appear when an attempt to evaluate a call of
+ @(tsee apply$) fails because a necessary @(see warrant) is disable)d.  The
+ second form may appear when the warrant is not known to be true in the present
+ context, either because it is known to be false or because it cannot be
+ assumed true because forcing is @(see disable)d.  In the following example,
+ the attempt to simplify the call of @('apply$') in the theorem ultimately
+ leads to an attempt to evaluate a call of @(tsee ev$), which ultimately fails
+ because it leads to a call to evaluate @('(apply$ 'bar '(3))') @('bar').  That
+ call causes an error because the warrant is unavailable, because the rule
+ @('apply$-bar') is disabled, hence cannot rewrite a term @('(apply$ 'bar
+ args)') to @('(bar (car args))').</p>
 
  @({
  (include-book \"projects/apply/top\" :dir :system)
@@ -15067,7 +15069,7 @@ with any questions about building the community books.</p>")
  })
 
  <p>Similarly, if we instead submit the following event, we see the other such
- message, about a false warrant.</p>
+ message, in this case about a false warrant.</p>
 
  @({
  (thm (implies (not (warrant bar))
@@ -15080,9 +15082,41 @@ with any questions about building the community books.</p>")
  @({
  (IMPLIES
   (NOT (APPLY$-WARRANT-BAR))
-  (EQUAL (HIDE (COMMENT \"Call failed because the warrant for BAR is false\"
+  (EQUAL (HIDE (COMMENT \"Call failed because the warrant for BAR is not known to be true\"
                         (EV$ '(BAR Y) '((Y . 3)))))
          3))
+ })
+
+ <p>Our final example illustrates a failure due to forcing being disabled.  The
+ use of @(tsee loop$) in the definition of @('bar') expands to create a call of
+ @(tsee ev$), which cannot be simplified during the proof of the @(tsee thm)
+ below because the necessary warrant hypothesis is missing and cannot be
+ forced, since forcing is disabled (see also @(see disable-forcing)).</p>
+
+ @({
+ (defun$ hello (x)
+    (declare (xargs :guard t))
+    (list 'hi x))
+
+ (defun bar (lst)
+    (declare (xargs :guard (true-listp lst)))
+    (loop$ for name in lst collect (hello name))))
+
+ (thm (equal (bar '(john))
+             '((hi john)))
+      :hints ((\"Goal\" :in-theory (disable (:e force)))))
+ })
+
+ <p>Here is the resulting checkpoint.</p>
+
+ @({
+ (EQUAL
+  (HIDE
+      (COMMENT
+           \"Call failed because the warrant for HELLO is not known to be true\"
+           (EV$ '(HELLO LOOP$-IVAR)
+                '((LOOP$-IVAR . JOHN)))))
+  '(HI JOHN))
  })")
 
 (defxdoc common-lisp
@@ -87151,6 +87185,9 @@ it."
 
 ; Fargn1 is now in :logic mode (and guard-verified).
 
+; Tweaked our-with-standard-io-syntax for SBCL to support the fix for builds
+; using relative pathnames for the LISP environment variable.
+
   :parents (release-notes)
   :short "ACL2 Version  8.4 (xxx, 20xx) Notes"
   :long "<p>NOTE!  New users can ignore these release notes, because the @(see
@@ -87284,6 +87321,9 @@ it."
  <p>A @(tsee table)'s guard may now reference the ACL2 @(see state).  Thus, it
  may now be a term involving (at most) the variables @('WORLD'), @('ENS'), and
  @('STATE').</p>
+
+ <p>It is now always redundant to @(tsee unmemoize) a function symbol that is
+ not currently @(see memoize)d.  See @(see redundant-events).</p>
 
  <h3>New Features</h3>
 
@@ -87623,6 +87663,11 @@ it."
  <p>(SBCL only) Increased the number of special variables that can be created,
  which allowed community book
  @('books/kestrel/apt/schemalg-template-proofs.lisp') to certify.</p>
+
+ <p>Fixed builds that use a relative pathname for the LISP environment
+ variable (for host Lisps CCL, SBCL, Allegro CL, and CMUCL; GCL and LispWorks
+ didn't seem to have this problem).  Thanks to Mihir Mehta for bringing this
+ issue to our attention.</p>
 
  <h3>EMACS Support</h3>
 
@@ -98053,8 +98098,8 @@ arithmetic) for libraries of @(see books) for arithmetic reasoning.</p>")
  the default @(see defun-mode) to @(':')@(tsee program), and invokes @(tsee
  set-state-ok) with value @('t').  It also introduces @('(defttag :redef+)'),
  so that redefinition of system functions will be permitted; see @(see
- defttag).  Finally, it removes as untouchable (see @(see push-untouchable))
- all variables and functions.</p>
+ defttag).  It also removes as untouchable (see @(see push-untouchable)) all
+ variables and functions.</p>
 
  <p>WARNING: This command is potentially unsafe and even unsound!  For a
  relevant warning about redefinition, see @(see ld-redefinition-action).
@@ -98064,10 +98109,36 @@ arithmetic) for libraries of @(see books) for arithmetic reasoning.</p>")
  because they are untouchable.  To avoid this problem, insert the form
  @('(')@(tsee redef-)@(')') into your book after @('(redef+)').</p>
 
- <p>To see the code for @('redef+'), evaluate @(':trans1 (redef+)').  This
- @(see command) is intended for those who are modifying ACL2 source code
- definitions.  Thus, note that even system functions can be redefined with a
- mere warning.  Be careful!</p>")
+ <p>Note that undoing a @(':redef+') command, say with @(':')@(tsee u), only
+ undoes the effects of @(':redef+') on the ACL2 @(see world); it does
+ <i>not</i> undo the other effects on the ACL2 @(see state).  The best way to
+ undo the effects of @(':redef+') is generally to execute @(':')@(tsee redef-).
+ To understand this point we look at the code for @('redef+').  The output
+ below has been edited to put world-changing parts in lower case.</p>
+
+ @({
+ ACL2 !>:trans1 (redef+)
+  (WITH-OUTPUT
+       :OFF (SUMMARY EVENT)
+       (PROGN (defttag :redef+)
+              (PROGN! (SET-LD-REDEFINITION-ACTION '(:WARN! . :OVERWRITE)
+                                                  STATE)
+                      (program)
+                      (SET-TEMP-TOUCHABLE-VARS T STATE)
+                      (SET-TEMP-TOUCHABLE-FNS T STATE)
+                      (F-PUT-GLOBAL 'REDUNDANT-WITH-RAW-CODE-OKP
+                                    T STATE)
+                      (set-state-ok t))))
+ ACL2 !>
+ })
+
+ <p>In particular, we see that redefinition remains active after undoing.  In
+ general, it is therefore best to execute @(':redef-') before undoing
+ @(':redef+').</p>
+
+ <p>This @(see command) was introduced to support modification of ACL2 source
+ code definitions.  Thus, note that even system functions can be redefined with
+ a mere warning.  Be careful!</p>")
 
 (defxdoc redef-
   :parents (ld)
@@ -98691,7 +98762,17 @@ arithmetic) for libraries of @(see books) for arithmetic reasoning.</p>")
  <p>A @(tsee table) event not define any name.  It is redundant when it sets
  the value already associated with a key of the table, or when it sets an
  entire table (using keyword @(':clear')) to its existing value; see @(see
- table).</p>
+ table).  Setting a non-existent key to @('nil') is not redundant, with the
+ exception discussed next.</p>
+
+ <p>@(csee Memoization) is carried out using a @(see table),
+ @('memoize-table'), that may associate a function symbol with @('nil') when it
+ is not memoized.  It is redundant to @(tsee unmemoize) a currently-unmemoized
+ function symbol, thus associating it with @('nil') in the @('memoize-table')
+ &mdash; even if that function symbol is not already a key of that table (this
+ is the exception noted in the preceding paragraph).  It is redundant to @(tsee
+ memoize) a function when the function is already identically memoized, that
+ is, when the corresponding @(tsee table) event is redundant.</p>
 
  <p>A @(tsee verify-guards) event is redundant if the function has already had
  its @(see guard)s verified.</p>
