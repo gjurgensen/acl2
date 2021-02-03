@@ -3,8 +3,8 @@
 ; The contents of this file are derived from ACL2 Community Book
 ; books/system/doc/acl2-doc.lisp.
 
-; ACL2 Version 8.2 -- A Computational Logic for Applicative Common Lisp
-; Copyright (C) 2019, Regents of the University of Texas
+; ACL2 Version 8.3 -- A Computational Logic for Applicative Common Lisp
+; Copyright (C) 2020, Regents of the University of Texas
 
 ; This version of ACL2 is a descendent of ACL2 Version 1.9, Copyright
 ; (C) 1997 Computational Logic, Inc.  See the documentation topic NOTE-2-0.
@@ -77,7 +77,7 @@ Subtopics
   [defthm], [in-theory], [xargs], [state], etc., without an acl2::
   prefix.
 
-  The constant *acl2-exports* lists 1501 symbols, including most
+  The constant *acl2-exports* lists 1513 symbols, including most
   documented ACL2 system constants, functions, and macros.  You will
   typically also want to import many symbols from Common Lisp; see
   [*common-lisp-symbols-from-main-lisp-package*].
@@ -195,7 +195,8 @@ Subtopics
        code-char-char-code-is-identity
        code-char-type coerce coerce-inverse-1
        coerce-inverse-2 coerce-object-to-state
-       coerce-state-to-object comment
+       coerce-state-to-object
+       collect$ collect$+ comment
        community-books commutativity-of-*
        commutativity-of-+ comp completion-of-*
        completion-of-+ completion-of-<
@@ -294,8 +295,9 @@ Subtopics
        explode-nonnegative-integer expt
        expt-type-prescription-non-zero-base
        extend-32-bit-integer-stack
-       extend-pe-table extend-t-stack
-       extend-world extra-info f-get-global
+       extend-pe-table
+       extend-t-stack extend-world
+       extra-info f-boundp-global f-get-global
        f-put-global fast-alist-clean
        fast-alist-clean! fast-alist-fork
        fast-alist-fork! fast-alist-free
@@ -303,12 +305,14 @@ Subtopics
        fast-alist-summary fc-report fertilize
        fgetprop fifth file-clock file-clock-p
        file-clock-p-forward-to-integerp
-       file-length$ file-write-date$
-       finalize-event-user first first-n-ac fix
+       file-length$
+       file-write-date$ finalize-event-user
+       first first-n-ac fix fix-pkg
        fix-true-list flet floor flush-compress
-       flush-hons-get-hash-table-link
-       fms fms! fms!-to-string
-       fms-to-string fmt fmt! fmt!-to-string
+       flush-hons-get-hash-table-link fms fms!
+       fms!-to-string fms-to-string fmt fmt!
+       fmt!-to-string fmt-hard-right-margin
+       fmt-soft-right-margin
        fmt-to-comment-window fmt-to-string fmt1
        fmt1! fmt1!-to-string fmt1-to-string
        fmx fmx!-cw fmx-cw fn-equal
@@ -409,7 +413,7 @@ Subtopics
        maybe-flush-and-compress1
        mbe mbt mbt* member member-eq
        member-equal member-symbol-name
-       memoize memoize-summary
+       memoize memoize-partial memoize-summary
        memsum meta-extract-contextual-fact
        meta-extract-formula
        meta-extract-global-fact
@@ -487,8 +491,8 @@ Subtopics
        put-assoc put-assoc-eq put-assoc-eql
        put-assoc-equal put-global putprop
        quick-and-dirty-subsumption-replacement-step
-       quit quote
-       quotep r-eqlable-alistp r-symbol-alistp
+       quit quote quotep
+       quote~ r-eqlable-alistp r-symbol-alistp
        random$ rassoc rassoc-eq rassoc-equal
        ratio rational rational-implies1
        rational-implies2 rational-listp
@@ -544,7 +548,8 @@ Subtopics
        retract-world
        retrieve return-last return-last-table
        revappend reverse revert-world
-       rewrite-equiv rewrite-stack-limit
+       rewrite-equiv rewrite-quoted-constant
+       rewrite-stack-limit
        rfix round rw-cache satisfies
        save-and-clear-memoization-settings
        save-exec search second serialize-read
@@ -611,7 +616,7 @@ Subtopics
        set-rewrite-stack-limit
        set-ruler-extenders
        set-rw-cache-state set-rw-cache-state!
-       set-saved-output set-serialize-character
+       set-serialize-character
        set-serialize-character-system
        set-skip-meta-termp-checks
        set-skip-meta-termp-checks!
@@ -671,12 +676,13 @@ Subtopics
        string<-l-trichotomy
        string<= string> string>=
        stringp stringp-symbol-package-name
-       strip-cars strip-cdrs sublis sublis-fn
-       sublis-fn-lst-simple sublis-fn-simple
-       subseq subseq-list subsequencep
-       subsetp subsetp-eq subsetp-equal
-       subst substitute substitute-ac
-       suitably-tamep-listp summary swap-stobjs
+       strip-cars strip-cdrs
+       sublis sublis-fn sublis-fn-lst-simple
+       sublis-fn-simple subseq subseq-list
+       subsequencep subsetp subsetp-eq
+       subsetp-equal subst substitute
+       substitute-ac suitably-tamep-listp
+       sum$ sum$+ summary swap-stobjs
        symbol symbol-< symbol-<-asymmetric
        symbol-<-irreflexive symbol-<-transitive
        symbol-<-trichotomy symbol-alistp
@@ -704,6 +710,8 @@ Subtopics
        thereis$+ third thm time$ time-tracker
        time-tracker-tau timer-alistp
        timer-alistp-forward-to-true-list-listp-and-symbol-alistp
+       toggle-inhibit-warning
+       toggle-inhibit-warning!
        toggle-pc-macro top-level
        trace! trace$ trace* trans trans!
        trans-eval trans-eval-default-warning
@@ -1406,7 +1414,10 @@ Subtopics
     (and (rationalp x) (rationalp y))
 
   Notice that like all arithmetic functions, < treats non-numeric
-  inputs as 0.
+  inputs as 0. Thus, the following are theorems.
+
+    (thm (equal (< (fix x) y) (< x y)))
+    (thm (equal (< x (fix y)) (< x y)))
 
   This function has the usual meaning on the rational numbers, but is
   extended to the complex rational numbers using the lexicographic
@@ -1526,7 +1537,7 @@ Subtopics
   (ACL2)
   "General information About ACL2
 
-  This is ACL2 Version 8.2, [copyright] (C) 2019, Regents of the
+  This is ACL2 Version 8.3, [copyright] (C) 2020, Regents of the
   University of Texas, authored by Matt Kaufmann and J Strother
   Moore.
 
@@ -1822,7 +1833,7 @@ Subtopics
     (accumulated-persistence nil)            ; Deactivate.
 
     (accumulated-persistence-oops)           ; Undo the clearing effect of
-                                             ; (accumulated-persistence nil).
+                                             ; (accumulated-persistence t).
 
     Advanced forms:
     (show-accumulated-persistence :frames-s) ; The `s', `f', and `a' suffixes
@@ -1873,9 +1884,10 @@ Subtopics
   [dmr].
 
   Accumulated persistence tracking can be turned on or off.  It is
-  generally off.  When on, proofs may take perhaps 50% more time than
-  otherwise!  But some useful numbers are collected.  When it is
-  turned on, by
+  generally off.  When on, proofs may take a little more time than
+  otherwise.  (We measured approximately 11% more time in a so-called
+  ``everything'' regression run in May 2020.)  But some useful
+  numbers are collected.  When it is turned on, by
 
     ACL2 !>(accumulated-persistence t)
 
@@ -1939,6 +1951,13 @@ Subtopics
   tried as well as its persistence.  The ratio between the two is the
   average amount of work done on behalf of the rule each time it is
   tried.
+
+  We do not claim that tracking of runes for accumulated-persistence is
+  perfect.  In practice, we believe it is quite reliable with the
+  exception of [congruence] runes and, in some cases
+  [executable-counterpart] runes. (For the latter, details are in a
+  comment in the ACL2 source definition of function
+  print-useless-runes.)
 
   When the accumulated persistence totals are displayed by the function
   show-accumulated-persistence we sort them so that the most
@@ -2032,6 +2051,9 @@ Subtopics
 
   In summary: categorization of :frames as ``useful'' or ``useless'' is
   based on whether they support ``useful'' or ``useless'' :tries.
+
+  See [useless-runes] for a way to speed up proofs by automatically
+  turning off useless rules.
 
   Note that a [rune] with high accumulated persistence may not actually
   be the ``culprit.'' For example, suppose rune1 is reported to have
@@ -2228,7 +2250,10 @@ Subtopics
       [accumulated-persistence]
 
   [Dmr]
-      Dynamically monitor rewrites and other prover activity")
+      Dynamically monitor rewrites and other prover activity
+
+  [Useless-runes]
+      Speed up proofs by disabling useless [rune]s")
  (ACCUMULATED-PERSISTENCE-OOPS (POINTERS)
                                "See [accumulated-persistence].")
  (ACCUMULATED-PERSISTENCE-SUBTLETIES
@@ -2554,7 +2579,7 @@ Subtopics
   This is the ACL2 documentation.  For the ACL2+Books Manual, which
   that includes both the ACL2 documentation and the ACL2
   [community-books], see the {ACL2+Books Manual |
-  http://www.cs.utexas.edu/users/moore/acl2/v8-2/combined-manual/index.html}.
+  http://www.cs.utexas.edu/users/moore/acl2/v8-3/combined-manual/index.html}.
 
 
 Subtopics
@@ -3234,6 +3259,9 @@ Subtopics
   [Expt]
       Exponential function
 
+  [F-boundp-global]
+      Check whether a global variable in [state] has a value
+
   [F-get-global]
       Get the value of a global variable in [state]
 
@@ -3472,7 +3500,7 @@ Subtopics
       Create a symbol with a given name
 
   [Intersection$]
-      Elements of one list that are not elements of another
+      Elements common to the given lists
 
   [Intersectp]
       Test whether two lists intersect
@@ -3612,6 +3640,9 @@ Subtopics
 
   [Make-tau-interval]
       Make a tau interval
+
+  [Makunbound-global]
+      Remove the value assigned to a global variable in [state]
 
   [Max]
       The larger of two numbers
@@ -4704,7 +4735,7 @@ Silent loading of ACL2 customization files
 
   As discussed elsewhere (see [documentation]), the web-based
   {ACL2+Books Manual |
-  http://www.cs.utexas.edu/users/moore/acl2/v8-2/combined-manual/index.html}
+  http://www.cs.utexas.edu/users/moore/acl2/v8-3/combined-manual/index.html}
   provides a way to browse the combined documentation for the ACL2
   system and community books.  Such documentation can also be read at
   the terminal using the :[doc] command, though documentation for
@@ -9791,8 +9822,8 @@ Subtopics
   Assert-event provides a way to check that the value of an expression
   is not nil, causing an error otherwise.  For a similar utility see
   the macro [assert!] defined in [community-books] file
-  books/misc/assert.lisp.  Here we compare the two, highlighting some
-  key differences.
+  books/std/testing/assert.lisp.  Here we compare the two,
+  highlighting some key differences.
 
     * Both assert! and assert-event evaluate using the current
       [guard]-checking status (e.g., see [with-guard-checking]).
@@ -9850,6 +9881,7 @@ Subtopics
   mode,'' guarantees that assert-event forms are evaluated in the
   logic without ill-guarded calls of :[program]-mode functions while
   certifying a book.")
+ (ASSERTIONS (POINTERS) "See [errors].")
  (ASSIGN
   (PROGRAMMING-WITH-STATE ACL2-BUILT-INS)
   "Assign to a global variable in [state]
@@ -11356,7 +11388,10 @@ Subtopics
     (and (acl2-numberp x) (acl2-numberp y))
 
   Notice that like all arithmetic functions, binary-+ treats
-  non-numeric inputs as 0.
+  non-numeric inputs as 0. Thus, the following are theorems.
+
+    (thm (equal (+ (fix x) y) (+ x y)))
+    (thm (equal (+ x (fix y)) (+ x y)))
 
   Calls of the macro [+] expand to calls of binary-+; see [+].")
  (BINARY-APPEND
@@ -12707,12 +12742,15 @@ Subtopics
   Unusual books that create output in the log file should not produce
   the string ** except upon failure.
 
+  By default, make commands for certifying books take advantage of
+  files *@useless-runes.lsp.  See [useless-runes].
+
 
 Prerequisites
 
   We assume that you have already downloaded and installed ACL2 as per
   the {ACL2 installation instructions |
-  http://www.cs.utexas.edu/users/moore/acl2/v8-2/HTML/installation/installation.html}
+  http://www.cs.utexas.edu/users/moore/acl2/v8-3/HTML/installation/installation.html}
   on the ACL2 home page.
 
   We assume you know the path to your ACL2 executable.  Typically this
@@ -12863,9 +12901,9 @@ A Full Build
     $ cd /path/to/acl2-sources/books
     $ make ACL2=/path/to/acl2-sources/saved_acl2 -j 2 all
 
-  This actually still skips a few books that are very slow.  If you
-  really need to certify absolutely everything, you can run make
-  everything, but this will likely add hours to your build!
+  This includes a few books that are quite slow to certify.  You can
+  exclude those by replacing ``all'' by ``regression'' in the command
+  above.
 
 
 Cleaning Up
@@ -12964,7 +13002,7 @@ Subtopics
 
   For more information about installing ACL2, see the {ACL2
   installation instructions |
-  http://www.cs.utexas.edu/users/moore/acl2/v8-2/HTML/installation/installation.html}.
+  http://www.cs.utexas.edu/users/moore/acl2/v8-3/HTML/installation/installation.html}.
   For information about so-called ``classic ACL2 `make'-based
   certification'', which provides support for certifying directories
   of books but may disappear in a future ACL2 release, see
@@ -14455,7 +14493,7 @@ Subtopics
   contains [documentation] only about the ACL2 system, and does not
   include documentation from the [community-books].  Please point
   your browser at the {ACL2+Books Manual |
-  http://www.cs.utexas.edu/users/moore/acl2/v8-2/combined-manual/index.html}
+  http://www.cs.utexas.edu/users/moore/acl2/v8-3/combined-manual/index.html}
   (or if browsing in [ACL2-Doc], switch to that manual with meta-0 I)
   to access the desired topic.
 
@@ -14482,19 +14520,22 @@ Subtopics
 
       ((*acl2-system-exports* \"[books]/system/acl2-system-exports.lisp\")
        (<< \"[books]/misc/total-order.lisp\")
+       (add-io-pairs \"[books]/std/util/add-io-pairs.lisp\")
        (append-without-guard \"[books]/std/lists/flatten.lisp\")
        (oslib::argv \"[books]/oslib/argv-logic.lisp\")
        (arith-equivs \"[books]/std/basic/arith-equiv-defs.lisp\")
        (arithmetic \"[books]/doc/more-topics.lisp\")
        (arithmetic-1 \"[books]/arithmetic/top.lisp\")
        (arithmetic/natp-posp \"[books]/arithmetic/natp-posp.lisp\")
-       (arity+ \"[books]/kestrel/utilities/system/world-queries.lisp\")
-       (assert! \"[books]/misc/assert.lisp\")
+       (arity+ \"[books]/kestrel/std/system/arity-plus.lisp\")
+       (assert! \"[books]/std/testing/assert-bang.lisp\")
        (b* \"[books]/std/util/bstar.lisp\")
        (bridge \"[books]/centaur/bridge/top.lisp\")
        (build::cert.pl \"[books]/build/doc.lisp\")
        (build::cert_param \"[books]/build/doc.lisp\")
        (cgen \"[books]/acl2s/cgen/top.lisp\")
+       (consideration \"[books]/hints/consider-hint.lisp\")
+       (build::custom-certify-book-commands \"[books]/build/doc.lisp\")
        (std::defaggregate \"[books]/std/util/defaggregate.lisp\")
        (defconsts \"[books]/std/util/defconsts.lisp\")
        (defdata \"[books]/acl2s/defdata/top.lisp\")
@@ -14505,6 +14546,7 @@ Subtopics
        (defpun \"[books]/misc/defpun.lisp\")
        (defthm<w \"[books]/kestrel/utilities/auto-instance.lisp\")
        (defthmg \"[books]/tools/defthmg.lisp\")
+       (acl2s::defunc \"[books]/acl2s/defunc.lisp\")
        (defxdoc \"[books]/xdoc/topics.lisp\")
        (getopt-demo::demo2 \"[books]/centaur/getopt/demo2.lisp\")
        (developers-guide \"[books]/system/doc/developers-guide.lisp\")
@@ -14539,7 +14581,9 @@ Subtopics
        (note-8-0-books \"[books]/doc/relnotes.lisp\")
        (note-8-1-books \"[books]/doc/relnotes.lisp\")
        (note-8-2-books \"[books]/doc/relnotes.lisp\")
+       (note-8-3-books \"[books]/doc/relnotes.lisp\")
        (str::numbers \"[books]/std/strings/top.lisp\")
+       (open-trace-file! \"[books]/tools/open-trace-file-bang.lisp\")
        (oracle-timelimit \"[books]/tools/oracle-timelimit.lisp\")
        (oslib \"[books]/oslib/top-logic.lisp\")
        (patbind-the \"[books]/std/util/bstar.lisp\")
@@ -14553,6 +14597,7 @@ Subtopics
        (release-notes-books \"[books]/doc/relnotes.lisp\")
        (removable-runes \"[books]/tools/removable-runes.lisp\")
        (remove-hyps \"[books]/tools/remove-hyps.lisp\")
+       (rewrite$ \"[books]/tools/rewrite-dollar.lisp\")
        (rewrite-equiv-hint \"[books]/coi/util/rewrite-equiv.lisp\")
        (run-script \"[books]/tools/run-script.lisp\")
        (satlink::sat-solver-options \"[books]/centaur/satlink/top.lisp\")
@@ -14633,23 +14678,23 @@ Subtopics
   Why not just test whether there are monitored runes?  If you care
   about the answers, see [why-brr].
 
-  BRR Mode and Console Interrupts: If the system is operating in brr
-  mode and you break into raw Lisp (as by causing a console interrupt
-  or happening upon a signaled Lisp error; see [breaks]), you can
-  return to the ACL2 top-level, outside any brr environment, by
-  executing ([abort!]).  Otherwise, the normal way to quit from such
-  a break (for example :q in GCL, :reset in Allegro CL, and q in CMU
-  CL) will return to the innermost ACL2 read-eval-print loop, which
-  may or may not be the top-level of your ACL2 session!  In
-  particular, if the break happens to occur while ACL2 is within the
-  brr environment (in which it is preparing to read [brr-commands]),
-  the abort will merely return to that brr environment.  Upon exiting
-  that environment, normal theorem proving is continued (and the brr
-  environment may be entered again in response to subsequent
-  monitored rule applications).  Before returning to the brr
-  environment, ACL2 ``cleans up'' from the interrupted brr
-  processing.  However, it is not possible (given the current
-  implementation) to clean up perfectly.  This may have two
+  BRR Mode, Console Interrupts, and Subsidiary Prover Calls: If the
+  system is operating in brr mode and you break into raw Lisp (as by
+  causing a console interrupt or happening upon a signaled Lisp
+  error; see [breaks]), you can return to the ACL2 top-level, outside
+  any brr environment, by executing ([abort!]).  Otherwise, the
+  normal way to quit from such a break (for example :q in GCL, :reset
+  in Allegro CL, and q in CMU CL) will return to the innermost ACL2
+  read-eval-print loop, which may or may not be the top-level of your
+  ACL2 session!  In particular, if the break happens to occur while
+  ACL2 is within the brr environment (in which it is preparing to
+  read [brr-commands]), the abort will merely return to that brr
+  environment.  Upon exiting that environment, normal theorem proving
+  is continued (and the brr environment may be entered again in
+  response to subsequent monitored rule applications).  Before
+  returning to the brr environment, ACL2 ``cleans up'' from the
+  interrupted brr processing.  However, it is not possible (given the
+  current implementation) to clean up perfectly.  This may have two
   side-effects.  First, the system may occasionally print the
   self-explanatory ``Cryptic BRR Message 1'' (or 2), informing you
   that the system has attempted to recover from an aborted brr
@@ -14657,8 +14702,12 @@ Subtopics
   in that proof will be erroneous because the cleanup was done
   incorrectly.  The moral is that you should not trust what you learn
   from brr if you have interrupted and aborted brr processing during
-  the proof.  These issues do not affect the behavior or soundness of
-  the theorem prover.
+  the proof.  Such ``clean up'' may also occur when you call the
+  prover from within the brr environment (for example using [defthm]
+  or [thm], or even [defun] or any other [event] that invoke the
+  prover), unless you invoke :brr nil before making that call.  These
+  issues do not affect the behavior or soundness of the theorem
+  prover.
 
 
 Subtopics
@@ -14689,7 +14738,7 @@ Subtopics
     :eval!             :eval but no recursive breaks
     :eval$ runes       :eval with runes monitored during recursion
     :failure-reason[+] reason rule failed (after :eval)
-    :final-ttree[+]    ttree after :eval (see @(see ttree))
+    :final-ttree[+]    ttree after :eval (see :DOC ttree)
     :frame[+] i        ith frame in :path
     :go                exit break, printing result
     :go!               :go but no recursive breaks
@@ -14697,8 +14746,10 @@ Subtopics
     :help              this message
     :hyp i             ith hypothesis of the rule
     :hyps              hypotheses of the rule
-    :initial-ttree[+]  ttree before :eval (see @(see ttree))
-    :lhs               left-hand side of rule's conclusion
+    :initial-ttree[+]  ttree before :eval (see :DOC ttree)
+    :lhs               left-hand side of rule's conclusion (or, in the case
+                         of :rewrite-quoted-constant rules of form [2], the
+                         right-hand side!)
     :ok                exit break
     :ok!               :ok but no recursive breaks
     :ok$ runes         :ok with runes monitored during recursion
@@ -14708,13 +14759,18 @@ Subtopics
                          where the leading term of each is enclosed in an
                          extra set of parentheses
     :rewritten-rhs[+]  rewritten :rhs (after :eval) of a rewrite rule
-    :rhs               right-hand side of rule's conclusion
+    :rhs               right-hand side of rule's conclusion (or, in the case
+                         of :rewrite-quoted-constant rules of form [2], the
+                         left-hand side!)
     :standard-help     :help message from ACL2 top-level
     :target[+]         term being rewritten
     :top[+]            top-most frame in :path
     :type-alist[+]     type assumptions governing :target
     :unify-subst[+]    substitution making :lhs equal :target
     :wonp              indicates whether application succeeded (after :eval)
+
+  See the discussion of form [2] :[rewrite-quoted-constant] rules for
+  an explanation of the swapped meanings of ``:lhs'' and ``:rhs.''
 
   [Break-rewrite] is just a call of the standard ACL2 read-eval-print
   loop, [ld], on a ``[wormhole]'' [state].  Thus, you may execute
@@ -15353,7 +15409,8 @@ Subtopics
     &               Matches anything and is not bound.  Repeated
                       occurrences of & in a pattern may match different
                       structures.
-    nil, t, *sym*   These symbols cannot be bound and match only their
+    nil, t, *sym*, :sym
+                    These symbols cannot be bound and match only their
                       global values.
     !sym            where sym is a symbol that is already bound in the
                       context of the case-match, matches only the
@@ -15361,6 +15418,7 @@ Subtopics
     'obj            Matches only itself.  This is the same as (QUOTE obj).
     (QUOTE~ sym)    where sym is a symbol, is like (QUOTE sym) except it
                       matches any symbol with the same symbol-name as sym.
+                      Note that QUOTE~ is in the \"ACL2\" package.
 
   Some examples are shown below.
 
@@ -15669,15 +15727,21 @@ Subtopics
   second one as redundant.")
  (CCL-INSTALLATION
   (HONS-AND-MEMOIZATION)
-  "Updating Clozure Common Lisp (CCL)
+  "Installing Clozure Common Lisp (CCL)
 
   For those who use ACL2 built on CCL as the host Common Lisp
   implementation, it has been common practice to use the latest
-  GitHub version of CCL.  Here are instructions for how to build CCL
-  on Linux, with comments on how to adapt them to Mac (Darwin).  They
-  might be a bit more convenient for ACL2 users than those on the
-  ``{Installing Clozure CL | https://ccl.clozure.com/install.html}''
-  page.  Note: Linux users may need to install m4.
+  GitHub version of CCL.  Below are self-contained instructions for
+  how to build CCL on Linux, with comments on how to adapt them to
+  Mac (Darwin).  You may prefer instead to look at the {CCL Releases
+  | https://github.com/Clozure/ccl/releases} page, using the text
+  below only as needed (e.g., for Linux-specific information or for
+  discussion of CCL_DEFAULT_DIRECTORY).  Note: Linux users may need
+  to install m4.
+
+  Remark. The instructions immediately below should generally suffice.
+  But if you would like additional information on CCL installation
+  and implementation, see [ccl-installation-extra].
 
   First fetch CCL from GitHub as follows.  (You may prefer to use ``git
   pull'' if you previously did this step.  In that case you probably
@@ -15706,27 +15770,36 @@ Subtopics
   https://github.com/Clozure/ccl/releases/} for the latest snapshots.
 
     # If you are on a Mac, skip this wget command and see just below.
-    wget https://github.com/Clozure/ccl/releases/download/v1.12-dev.5/linuxx86.tar.gz
+    wget https://github.com/Clozure/ccl/releases/download/v1.12/linuxx86.tar.gz
     # On a Mac, do this instead:
-    # curl --location https://github.com/Clozure/ccl/releases/download/v1.12-dev.5/darwinx86.tar.gz > darwinx86.tar.gz
+    # curl --location https://github.com/Clozure/ccl/releases/download/v1.12/darwinx86.tar.gz > darwinx86.tar.gz
     # Now untar.  NOTE: This is for Linux.
     # For a Mac: tar xfz darwinx86.tar.gz
     tar xfz linuxx86.tar.gz
 
-  Now rebuild the kernel.
+  Rebuild the lisp kernel by hand before trying to rebuild the lisp.
+  (Note: This step was formerly unnecessary and might become
+  unnecessary again, but as of Sept. 2020 it seems to be necessary on
+  MacOS Catalina (10.15).  If you skip it, then consider replacing
+  :clean by :full below.)
+
+    cd lisp-kernel/linuxx8664; make clean; make
+    cd -
+
+  Finish up:
 
     # (On a Mac, replace the next command with: ./dx86cl64)
     ./lx86cl64
     # This welcomes you, e.g.:
     #   Clozure Common Lisp Version 1.12-dev (v1.12-dev.5) LinuxX8664
     # Now submit this command:
-    ? (rebuild-ccl :full t)
+    ? (rebuild-ccl :clean t)
     # After it returns, quit:
     ? (quit)
     # Now, back at the shell, rebuild the kernel again just to be safe:
     # For a Mac: ./dx86cl64
     ./lx86cl64
-    ? (rebuild-ccl :full t)
+    ? (rebuild-ccl :clean t)
     ? (quit)
 
   Create an executable script like the following.  Be sure to change
@@ -15738,9 +15811,206 @@ Subtopics
     export CCL_DEFAULT_DIRECTORY=/projects/acl2/lisps/ccl/2017-12-07-6be8298fe5/ccl
     ${CCL_DEFAULT_DIRECTORY}/scripts/ccl64 \"$@\"
 
-  Finally, ensure that your script is executable, e.g.:
+  Now ensure that your script is executable, e.g.:
 
-    chmod +x my-script")
+    chmod +x my-script
+
+  You're done!  (Note however that certification of [books] that use
+  [Quicklisp] may require openssl to be installed if it is not
+  already on your system.)
+
+
+Subtopics
+
+  [Ccl-installation-extra]
+      Clozure Common Lisp (CCL) installation and implementation details")
+ (CCL-INSTALLATION-EXTRA
+  (CCL-INSTALLATION)
+  "Clozure Common Lisp (CCL) installation and implementation details
+
+  This topic, contributed by Warren A. Hunt, Jr., extends the basic
+  information given in [ccl-installation].  It may be useful to some,
+  especially those who use ACL2 in ways that particularly stress
+  memory.  Another resource may be found on {this page |
+  https://github.com/Clozure/ccl/releases/}.
+
+  Below we provide instructions to build CCL on FreeBSD and MacOS;
+  building on Linux will be similar.  Before providing the build
+  instructions, we mention a few facts about CCL's implementation.
+
+  CCL's implementation can't expand stack space automatically.  The
+  sizes of various stacks are set at thread creation time.  Most
+  programs don't need very big stacks.  The CCL default value and
+  temp stack sizes may be too small for compute-intensive
+  applications.
+
+  The various stack sizes are set when creating a thread with code in
+  CCL::MAKE-PROCESS and CCL::PROCESS-RUN-FUNCTION, and they set the
+  three stack sizes of the initial listener thread that is created
+  when CCL starts.
+
+  The value stack is used for data in deeply-nested lisp recursion.
+  ACL2 can benefit from an increase in the size of the value stack.
+
+  The temp stack is used for dynamic-extent objects.  This might need
+  need to be larger than the default.
+
+  The control stack is used to run C and binary code; it would be
+  surprising to need to increase its size.
+
+  If only one or two threads are needed, giant (e.g., 4 GB) stacks can
+  be OK, but with many threads large stacks use lots of memory.
+  Below are the stacks along with their current (April, 2020) default
+  sizes.
+
+    ccl::*default-control-stack-size*                    ;; default 2^21
+    ccl::*initial-listener-default-control-stack-size*   ;; default 2^21
+
+    ccl::*default-value-stack-size*                      ;; default 2^21
+    ccl::*initial-listener-default-value-stack-size*     ;; default 2^21
+
+    ccl::*initial-listener-default-temp-stack-size*      ;; default 2^20
+    ccl::*default-temp-stack-size*                       ;; default 2^20
+
+  If we are running on a 32-bit platform, we set the stack sizes
+  modestly.  If we are on a 64-bit platform, we set the stack sizes
+  to much larger values.  See the later discussion about
+  ``configure-ccl.lisp'' below to see how to alter (increase) stack
+  sizes.
+
+
+MacOS Build Instructions:
+
+    git clone https://github.com/Clozure/ccl.git ccl-dev
+    curl -L -O https://github.com/Clozure/ccl/releases/download/v1.12-dev.5/darwinx86.tar.gz
+    cd ccl-dev ; tar xf ../darwinx86.tar.gz
+
+  Rebuild C-based, Lisp kernel
+
+  To rebuild the Lisp-code part of the kernel, do...
+
+    cd lisp-kernel/darwinx8664 ; make ; cd ../..
+
+  Unlike for FreeBSD and Linux, we exclude ``:full t'' from the
+  ``rebuild-ccl'' command just below Matt Emerson (a CCL expert)
+  writes:
+
+      After looking at your log, I was able to duplicate the problem
+      myself.  For some reason I do not understand, it appears that
+      on Catalina, removing the running lisp kernel binary causes
+      run-program to break (trying to run external programs gets
+      signal 9).  This surprises me very much.
+
+      One of the effects of running (rebuild-ccl :full t), is that it first
+      does a \"make clean\" in the lisp kernel directory, and then does
+      a regular make.  This has worked for years, and I do not know
+      why it has stopped working.
+
+  To avoid this, rebuild the lisp with (rebuild-ccl :clean t) instead.
+  Do not specify ``:full t''.  Since you have already built the lisp
+  kernel, you gain nothing from ``:full t'' doing it again.  So, once
+  the C-based, Lisp kernel is built, then do:
+
+    echo \"(in-package :ccl) (rebuild-ccl :verbose t :clean t)\" | \\
+          ./dx86cl64 -n |& tee ./ccl-build-compile.log
+
+  Matt Emerson suggests that one re-build again.  We asked Matt a
+  long-simmering question: we have been told that it is a good idea
+  to compile CCL twice.  Is that so that the CCL compiler produced by
+  pass one on the target system is used to compile the CCL system
+  that will be used (on the target system)?  Or, is compiling twice
+  some silly myth?  Matt Emerson responded:
+
+      It's not entirely mythic.  Some rare changes do need the lisp to be
+      rebuilt twice for bootstrapping purposes, but usually it isn't
+      required.
+
+  Thus, we recommend you re-build (compile) the Lisp code again.
+
+    echo \"(in-package :ccl) (rebuild-ccl :verbose t :clean t)\" | \\
+          ./dx86cl64 -n |& tee ./ccl-build-compile-2.log
+
+  Finally, one may specialize the final image by:
+
+    cat configure-ccl.lisp | ./dx86cl64 -n |& tee ~/ccl-build-specialize.log
+
+  where ``configure-ccl.lisp'' (not supplied) contains whatever CCL
+  specialization commands you wish to have in the version of CCL you
+  use for ACL2 or other work.  See the end of this note for an
+  example of ``configure-ccl.lisp''.
+
+
+FreeBSD Build Instructions:
+
+  The FreeBSD build instructions are similar to the MacOS build
+  instruction, but the names are changed appropriately.
+
+    git clone https://github.com/Clozure/ccl.git ccl-dev
+    curl -L -O https://github.com/Clozure/ccl/releases/download/v1.12-dev.5/freebsd12-x8664.tar.gz
+    cd ccl-dev
+    tar xf ../freebsd12-x8664.tar.gz
+
+  Rebuild C-based Lisp kernel
+
+    cd lisp-kernel/freebsdx8664 ; make ; cd ../..
+
+  To rebuild the Lisp-code part of the kernel, do...
+
+    echo \"(in-package :ccl) (rebuild-ccl :full t :verbose t :clean t)\" | \\
+          ./fx86cl64 -n |& tee ./ccl-build-compile.log
+
+  FreeBSD is OK with the ``:full t'' flag, which as of MacOS 10.15
+  breaks (but used to work on earlier versions of MacOS).  So, this
+  option persists on the FreeBSD build.
+
+  Matt Emerson recommends building the Lisp code a second time; see the
+  ``MacOS Build Instructions'' above for his rationale.
+
+    echo \"(in-package :ccl) (rebuild-ccl :full t :verbose t :clean t)\" | \\
+          ./fx86cl64 -n |& tee ./ccl-build-compile-2.log
+
+  Finally, one may specialize the final image by:
+
+    cat ~/a/scripts/configure-ccl.lisp | ./fx86cl64 -n |& tee ~/ccl-build-specialize.log
+
+  where ``configure-ccl.lisp'' (not supplied) contains whatever CCL
+  specialization commands you wish to have in the version of CCL you
+  use for ACL2 or other work.
+
+
+configure-ccl.lisp
+
+  Sample ``configure-ccl.lisp'' file for 64-bit implementation:
+
+    (progn
+      ;; Parameters to configure CCL for use on FreeBSD and MacOS
+
+      (in-package :ccl)
+
+      ;; Enlarge stack sizes
+      (setq *default-value-stack-size*                    (expt 2 28))
+      (setq *initial-listener-value-stack-size*           (expt 2 28))
+
+      (setq *default-temp-stack-size*                     (expt 2 24))
+      (setq *initial-listener-temp-stack-size*            (expt 2 24))
+
+      (setq *default-control-stack-size*                  (expt 2 24))
+      (setq *initial-listener-default-control-stack-size* (expt 2 24))
+
+      ;; For CCL double precision
+      (setf *read-default-float-format* 'double-float)
+
+      ;; Make DEFUN save the source code for later recovery via
+      ;; FUNCTION-LAMBDA-EXPRESSION.
+      (setq *save-definitions* t)
+      (setq *fasl-save-definitions* t)
+
+      ;; Make GC verbose; see ACL2 documentation topic GC-VERBOSE.
+      (gc-verbose t t)
+
+      ;; Dump executable heap image; see ACL2 documentation topic SAVE-EXEC.
+      (save-exec *heap-image-name* \"Modification string to print at startup\")
+      )")
  (CCL-UPDATES (POINTERS)
               "See [ccl-installation].")
  (CDAAAR
@@ -15989,6 +16259,10 @@ Subtopics
     (certify-book \"my-arith\" t)        ; ... from world of old certificate
     (certify-book \"my-arith\" 0 nil :acl2x t)
                                        ; ... writing or reading a .acl2x file
+    (certify-book \"my-arith\" 0 t :useless-runes :write)
+                                       ; ... write file to speed up future proofs
+    (certify-book \"my-arith\" 0 t :useless-runes :read)
+                                       ; ... read file to speed up future proofs
 
     General Form:
     (certify-book book-name
@@ -16001,17 +16275,21 @@ Subtopics
                   :ttagsx ttags           ; [default nil]
                   :pcert pcert            ; [default nil]
                   :write-port t/nil       ; [default t unless pcert is non-nil]
+                  :useless-runes :write/:read/:read?/n/-n/nil
+                                          ; (-100 < n < 0 or 0 < n <= 100)
+                                          ; [default nil]
                   )
 
   where book-name is a book name (see [book-name]), k is used to
   indicate your approval of the ``certification [world],'' and
   compile-flg can control whether the book is to be compiled.  The
-  defaults for compile-flg, skip-proofs-okp, acl2x, write-port, and
-  pcert can be affected by environment variables.  All of these
-  arguments are described in detail below, except for :pcert.  (We
-  assume below that the value of :pcert is nil (and environment
-  variable ACL2_PCERT_ARG is unset or the empty string).  For a
-  discussion of this argument, see [provisional-certification].)
+  defaults for compile-flg, skip-proofs-okp, acl2x, write-port,
+  pcert, and :useless-runes can be affected by environment variables.
+  All of these arguments are described in detail below, except for
+  :pcert and :useless-runes: see [provisional-certification] and
+  [useless-runes], respectively, for the effects of these two
+  arguments and their corresponding environment variables, as we
+  ignore those effects in the present topic.
 
   Certification occurs in some logical [world], called the
   ``certification [world].'' That [world] must contain the [defpkg]s
@@ -16103,7 +16381,7 @@ Subtopics
   B.port is written by certification process.  This file contains all
   of the [portcullis] [command]s for B, i.e., all user commands
   present in the ACL2 logical [world] at the time certify-book is
-  called.  if B.lisp later becomes uncertified, say because [events]
+  called.  If B.lisp later becomes uncertified, say because [events]
   from that file or an included book have been edited, then
   (include-book \"B\") will consult B.port to evaluate forms in that
   file before evaluating the events in B.lisp.  On the other hand,
@@ -16219,7 +16497,10 @@ Subtopics
       A variant of [certify-book]
 
   [Certify-book-debug]
-      Some possible ways to work around [certify-book] failures")
+      Some possible ways to work around [certify-book] failures
+
+  [Useless-runes]
+      Speed up proofs by disabling useless [rune]s")
  (CERTIFY-BOOK!
   (CERTIFY-BOOK)
   "A variant of [certify-book]
@@ -16307,7 +16588,7 @@ Subtopics
 
   See [defrec] for more information.")
  (CHAR
-  (CHARACTERS ACL2-BUILT-INS)
+  (STRINGS CHARACTERS ACL2-BUILT-INS)
   "The [nth] element (zero-based) of a string
 
   (Char s n) is the nth element of s, zero-based.  If n is greater than
@@ -17436,6 +17717,8 @@ Subtopics
   for (coerce '(#\\a #\\b #\\c) 'string), where even more pedantically,
   '(#\\a #\\b #\\c) is an abbreviation for (cons '#\\a (cons '#\\b (cons
   '#\\c 'nil))).")
+ (COLLECT$ (POINTERS) "See [loop$].")
+ (COLLECT$+ (POINTERS) "See [loop$].")
  (COMMAND
   (HISTORY)
   "Forms you type at the top-level, but...
@@ -17565,7 +17848,24 @@ Subtopics
   Thus comment is much like [prog2$].  However, when you see a call
   of comment in ACL2 proof output, it will likely be under a call of
   [hide], with information that may be helpful in understanding why
-  the call of hide was inserted.  Consider the following example.
+  the call of hide was inserted.  Below we illustrate the various
+  ways in which ACL2 may replace a term tm by (hide (comment \"...\"
+  tm)).  (On occasion you will simply see (hide tm); such cases are
+  not discussed here.)
+
+  Also see [hide] for further discussion of how to avoid such proof
+  failures, and for how to keep the prover from inserting a comment
+  call under a call of [hide].
+
+
+Evaluation during proofs
+
+  Forms:
+
+    (HIDE (COMMENT \"Failed attempt to call constrained function <fn>\" <term>))
+    (HIDE (COMMENT \"Failed attempt to call non-executable function <fn>\" <term>))
+
+  Consider the following example.
 
     (defstub f (x) t)
     (defun g (x) (cons (f x) x))
@@ -17578,7 +17878,8 @@ Subtopics
     *** Key checkpoint at the top level: ***
 
     Goal'
-    (EQUAL (HIDE (COMMENT \"Called constrained function F\" (H 3)))
+    (EQUAL (HIDE (COMMENT \"Failed attempt to call constrained function F\"
+                          (H 3)))
            '(3 . 3))
 
   The first argument of equal is logically just (h 3).  But the comment
@@ -17624,8 +17925,144 @@ Subtopics
   (It actually suffices to disable only (:e h), but the workings of the
   ACL2 rewriter are out of scope here.)
 
-  Also see [hide] for further discussion of how to avoid such proof
-  failures.")
+  Note that if the offending function is [non-executable] rather than
+  constrained, in particular if that function is defined using
+  [defun-nx], then in the first argument of comment you will see
+  ``non-executable'' instead of ``constrained''.
+
+
+Evaluation during building a term
+
+  Form:
+
+    (HIDE
+     (COMMENT
+      \"Failed attempt (when building a term) to call constrained function <fn>\"
+      <term>))
+
+  Consider how ACL2 approaches the proof of the non-theorem below.
+
+    (defstub foo (x) t)
+    (defund bar (x) (foo x))
+    (thm (implies (equal x 3) (equal (bar x) yyy)))
+
+  The prover attacks the [thm] event by substituting the constant '3
+  for x.  But the prover attempts to evaluate (bar 3) when doing that
+  substitution, and the evaluation fails because bar calls the
+  undefined function foo.  The checkpoint is as follows.
+
+    (EQUAL
+     (HIDE
+      (COMMENT
+         \"Failed attempt (when building a term) to call constrained function FOO\"
+         (BAR 3)))
+     YYY)
+
+
+Failure to expand using a rule
+
+  Form:
+
+    (HIDE (COMMENT \"Unable to expand using the rule <name>\"
+                   <term>))
+
+  Consider how ACL2 approaches the proof for the second event below.
+
+    (defthm nth-open (implies (and (consp x) (posp n))
+                              (equal (nth n x) (nth (1- n) (cdr x))))
+      :rule-classes ((:definition :controller-alist ((nth t t)) :install-body t)))
+    (thm (equal (nth i y) zzz)
+         :hints ((\"Goal\" :expand (nth i y) :do-not-induct t)))
+
+  The checkpoint is as follows.  What happened is that the rule
+  nth-open had a hypothesis that was false when the rule was
+  attempted for the term (nth i y).
+
+    (IMPLIES (NOT (CONSP Y))
+             (EQUAL (HIDE (COMMENT \"Unable to expand using the rule NTH-OPEN\"
+                                   (NTH I Y)))
+                    ZZZ))
+
+
+Failure due to disabled or missing warrants
+
+  Forms:
+
+    (HIDE (COMMENT \"Call failed because the rule apply$-<fn> is disabled\"
+          <term>))
+    (HIDE (COMMENT \"Call failed because the warrant for <fn> is not known to be true\"
+          <term>))
+
+  The first of these forms may appear when an attempt to evaluate a
+  call of [apply$] fails because a necessary [warrant] is disable)d.
+  The second form may appear when the warrant is not known to be true
+  in the present context, either because it is known to be false or
+  because it cannot be assumed true because forcing is [disable]d.
+  In the following example, the attempt to simplify the call of
+  apply$ in the theorem ultimately leads to an attempt to evaluate a
+  call of [ev$], which ultimately fails because it leads to a call to
+  evaluate (apply$ 'bar '(3)) bar.  That call causes an error because
+  the warrant is unavailable, because the rule apply$-bar is
+  disabled, hence cannot rewrite a term (apply$ 'bar args) to (bar
+  (car args)).
+
+    (include-book \"projects/apply/top\" :dir :system)
+    (defun$ bar (x) x)
+    (thm (implies (warrant bar)
+                  (equal (apply$ '(lambda (y) (bar y)) '(3)) 3))
+         :hints ((\"Goal\" :in-theory (disable apply$-bar ev$))))
+
+  The checkpoint in the proof for the thm just above is as follows.
+
+    (IMPLIES
+      (APPLY$-WARRANT-BAR)
+      (EQUAL (HIDE (COMMENT \"Call failed because the rule APPLY$-BAR is disabled\"
+                            (EV$ '(BAR Y) '((Y . 3)))))
+             3))
+
+  Similarly, if we instead submit the following event, we see the other
+  such message, in this case about a false warrant.
+
+    (thm (implies (not (warrant bar))
+                  (equal (apply$ '(lambda (y) (bar y)) '(3)) 3))
+         :hints ((\"Goal\" :in-theory (disable ev$))))
+
+  Here is the resulting checkpoint.
+
+    (IMPLIES
+     (NOT (APPLY$-WARRANT-BAR))
+     (EQUAL (HIDE (COMMENT \"Call failed because the warrant for BAR is not known to be true\"
+                           (EV$ '(BAR Y) '((Y . 3)))))
+            3))
+
+  Our final example illustrates a failure due to forcing being
+  disabled.  The use of [loop$] in the definition of bar expands to
+  create a call of [ev$], which cannot be simplified during the proof
+  of the [thm] below because the necessary warrant hypothesis is
+  missing and cannot be forced, since forcing is disabled (see also
+  [disable-forcing]).
+
+    (defun$ hello (x)
+       (declare (xargs :guard t))
+       (list 'hi x))
+
+    (defun bar (lst)
+       (declare (xargs :guard (true-listp lst)))
+       (loop$ for name in lst collect (hello name))))
+
+    (thm (equal (bar '(john))
+                '((hi john)))
+         :hints ((\"Goal\" :in-theory (disable (:e force)))))
+
+  Here is the resulting checkpoint.
+
+    (EQUAL
+     (HIDE
+         (COMMENT
+              \"Call failed because the warrant for HELLO is not known to be true\"
+              (EV$ '(HELLO LOOP$-IVAR)
+                   '((LOOP$-IVAR . JOHN)))))
+     '(HI JOHN))")
  (COMMON-LISP
   (ABOUT-ACL2)
   "Relation to Common Lisp, including deviations from the spec
@@ -17688,8 +18125,6 @@ Subtopics
 
   {IMAGE} (see [An_Example_Common_Lisp_Function_Definition])
 
-  {IMAGE}
-
   The logic of ACL2 is based on Common Lisp.
 
   Common Lisp is the standard list processing programming language.  It
@@ -17733,8 +18168,6 @@ Subtopics
  (COMMON_LISP_AS_A_MODELING_LANGUAGE
   (PAGES_WRITTEN_ESPECIALLY_FOR_THE_TOURS)
   "Common Lisp as a Modeling Language
-
-  {IMAGE}
 
   In ACL2 we have adopted Common Lisp as the basis of our modeling
   language.  If you have already read our brief note on Common Lisp
@@ -20120,10 +20553,10 @@ Subtopics
   [documentation-copyright], which notes that there are many
   documentation authors.
 
-  ACL2 Version 8.2 --- A Computational Logic for Applicative Common
+  ACL2 Version 8.3 --- A Computational Logic for Applicative Common
   Lisp
 
-  Copyright (C) 2019, Regents of the University of Texas
+  Copyright (C) 2020, Regents of the University of Texas
 
   This version of ACL2 is a descendant of ACL2 Version 1.9, Copyright
   (C) 1997 Computational Logic, Inc.  See the documentation topic
@@ -20525,10 +20958,9 @@ Subtopics
   (IO ACL2-BUILT-INS)
   "Print to the comment window
 
-  This is the same as [cw], except that [cw] inserts backslash (\\)
-  characters when forced to print past the right margin, in order to
-  make the output a bit clearer in that case.  Use cw! instead if you
-  want to be able to read the forms back in.")
+  This is nearly the same as [cw], but cw! avoids inserting backslash
+  (\\) characters when forced to print past the right margin.  Use cw!
+  if you want to be able to read the forms back in.")
  (CW-GSTACK
   (BREAK-REWRITE DEBUGGING)
   "Debug a rewriting loop or stack overflow
@@ -20635,11 +21067,10 @@ Subtopics
   (IO ACL2-BUILT-INS)
   "Print to the comment window in a given print-base
 
-  This is the same as [cw-print-base-radix], except that
-  [cw-print-base-radix] inserts backslash (\\) characters when forced
-  to print past the right margin, in order to make the output a bit
-  clearer in that case.  Use cw-print-base-radix! instead if you want
-  to be able to read the forms back in.")
+  This is nearly the same as [cw-print-base-radix], but
+  cw-print-base-radix! avoids inserting backslash (\\) characters when
+  forced to print past the right margin.  Use cw-print-base-radix! if
+  you want to be able to read the forms back in.")
  (DEAD-EVENTS
   (DEBUGGING)
   "Using proof supporters to identify dead code and unused theorems
@@ -21591,13 +22022,13 @@ Subtopics
 
   We present examples, with detailed comments intended to explain
   abstract stobjs, in two community books:
-  books/misc/defabsstobj-example-1.lisp and
-  books/misc/defabsstobj-example-2.lisp.  In this section we outline
+  books/demos/defabsstobj-example-1.lisp and
+  books/demos/defabsstobj-example-2.lisp.  In this section we outline
   the first of these.  We suggest that after you finish this
   [documentation] topic, you read through those two books.  There are
-  other books books/misc/defabsstobj-example-*.lisp that may be
+  other books books/dmeos/defabsstobj-example-*.lisp that may be
   helpful to read; in particaular,
-  books/misc/defabsstobj-example-5.lisp illustrates building an
+  books/demos/defabsstobj-example-5.lisp illustrates building an
   abstract stobj on top of another abstract stobj (as its so-called
   ``concrete stobj'', as described below).
 
@@ -21724,19 +22155,19 @@ Subtopics
   form.)  Although the defabsstobj event will fail if the required
   lemmas have not been proved, first it will print the [defthm] forms
   that must be admitted in order to complete submission of the
-  defabsstobj event.  (Note that although the those theorems are
-  stated exactly in the form expected by the system, you are welcome
-  to supply whatever :[rule-classes] you prefer, even though the
-  system creates :rule-classes nil by default.)
+  defabsstobj event.  (Note that although those theorems are stated
+  exactly in the form expected by the system, you are welcome to
+  supply whatever :[rule-classes] you prefer, even though the system
+  creates :rule-classes nil by default.)
 
   The detailed theory explaining the need for these lemmas may be found
-  in a comment in ACL2 source file other-events.lisp, in a comment
-  entitled ``Essay on the Correctness of Abstract Stobjs''.  Here, we
-  give an informal sense of the importance of these lemmas as we
-  present examples of them.  Fundamental is the notion of evaluation
-  in the logic versus evaluation using live stobjs, where one
-  imagines tracking the current value of each abstract stobj during
-  each of these two evaluations.
+  in ACL2 source file other-events.lisp, in a comment entitled
+  ``Essay on the Correctness of Abstract Stobjs''.  Here, we give an
+  informal sense of the importance of these lemmas as we present
+  examples of them.  Fundamental is the notion of evaluation in the
+  logic versus evaluation using live stobjs, where one imagines
+  tracking the current value of each abstract stobj during each of
+  these two evaluations.
 
   We start with the :CORRESPONDENCE lemmas.  These guarantee that
   evaluation in the logic agrees with evaluation using live stobjs,
@@ -21888,14 +22319,15 @@ Subtopics
       St is a symbol, which names the new abstract stobj.
 
       Concrete is the name of an existing stobj, which may have been
-      introduced either with [defstobj] or with defabsstobj).</p>
-      <p>@('Recognizer is a function spec (for the recognizer
-      function).  The valid keywords are :LOGIC and :EXEC.  The
-      default for recognizer is obtained by adding the suffix \"P\" to
-      name.  The default value for :LOGIC is formed by adding the
-      suffix \"$AP\" to recognizer; for :EXEC, by adding the suffix
-      \"$CP\".  The :EXEC function must be the recognizer for the
-      specified :CONCRETE stobj.
+      introduced either with [defstobj] or with defabsstobj.
+
+      Recognizer is a function spec (for the recognizer function).  The
+      valid keywords are :LOGIC and :EXEC.  The default for
+      recognizer is obtained by adding the suffix \"P\" to name.  The
+      default value for :LOGIC is formed by adding the suffix \"$AP\"
+      to recognizer; for :EXEC, by adding the suffix \"$CP\".  The
+      :EXEC function must be the recognizer for the specified
+      :CONCRETE stobj.
 
       Creator is a function spec (for the creator function).  The valid
       keywords are :LOGIC and :EXEC.  The default for creator is
@@ -22022,7 +22454,7 @@ Subtopics
       those who desire it.  Further information is also available if
       you need it; see [set-absstobj-debug], and see the example uses
       of these keywords in community book
-      books/misc/defabsstobj-example-2.lisp.
+      books/demos/defabsstobj-example-2.lisp.
 
   For those who are interested, here is a more detailed discussion of
   :PROTECT and :PROTECT-DEFAULT, as promised above.  It applies to
@@ -22043,8 +22475,8 @@ Subtopics
   However, beware that when :PROTECT is t, the generated raw Lisp
   code runs slightly less efficiently --- though perhaps with
   negligible efficiency loss if the :EXEC function is not trivial.
-  Community books books/misc/defabsstobj-example-3.lisp and
-  books/misc/defabsstobj-example-4.lisp provide related information.
+  Community books books/demos/defabsstobj-example-3.lisp and
+  books/demos/defabsstobj-example-4.lisp provide related information.
   Also see [set-absstobj-debug] for a potentially dangerous way to
   eliminate that inefficiency using argument :ignore.
 
@@ -22675,7 +23107,9 @@ Subtopics
   the argument :system-ok t may be given directly to defattach,
   without a surrounding use of local.
 
-  See [system-attachments] for discussion of system attachments.")
+  See [system-attachments] for discussion of system attachments.  Also
+  see [efficiency] for how to use attachments to modify the prover's
+  behavior.")
  (DEFAULT
   (ARRAYS ACL2-BUILT-INS)
   "Return the :default from the [header] of a 1- or 2-dimensional array
@@ -23126,13 +23560,11 @@ Subtopics
     (defconst *len-my-digits* (the unsigned-byte (length *my-digits*)))
 
     General Form:
-    (defconst name term doc-string)
+    (defconst name term)
 
-  where name is a symbol beginning and ending with the character *,
+  where name is a symbol beginning and ending with the character * and
   term is a variable-free term that is evaluated to determine the
-  value of the constant, and doc-string, if non-nil, is an optional
-  string that can provide documentation but is essentially ignored by
-  ACL2.
+  value of the constant.
 
   When a constant symbol is used as a [term], ACL2 replaces it by its
   value; see [term].
@@ -23212,13 +23644,13 @@ Subtopics
   event-name is used.  The package of symbols generated, such as
   variables and [defthm] names, is determined by the package
   argument: if it is not supplied or its value is :current, then the
-  [current-package] is used; if its value is :equiv or :legacy, then
-  the package of :equiv is used.  All other arguments to the
-  generated [defthm] form are as specified by the other keyword
-  arguments above.  The rule-class :[equivalence] is added to the
-  [rule-classes] specified, if it is not already there.  The term
-  generated for the [defthm] event states that equiv is Boolean,
-  reflexive, symmetric, and transitive.")
+  [current-package] is used; if its value is :equiv or :legacy (which
+  are treated identically), then the package of :equiv is used.  All
+  other arguments to the generated [defthm] form are as specified by
+  the other keyword arguments above.  The rule-class :[equivalence]
+  is added to the [rule-classes] specified, if it is not already
+  there.  The term generated for the [defthm] event states that equiv
+  is Boolean, reflexive, symmetric, and transitive.")
  (DEFEVALUATOR
   (EVENTS)
   "Introduce an evaluator function
@@ -23593,7 +24025,7 @@ Subtopics
                  :hints ((\"Goal\" :use ...)))
 
     General Form:
-    (definductor name &key measure rel ruler-extenders hints)
+    (definductor name &key measure well-founded-relation ruler-extenders hints)
 
   where name is the name of a previously admitted loop$-recursive
   function satisfying the restrictions listed below.  When successful
@@ -23601,10 +24033,10 @@ Subtopics
   induction scheme that is supposedly appropriate for name, admits it
   with a silent proof of its measure theorems, and then proves an
   :induction rule to associate that scheme with calls of name.  When
-  omitted, the optional keyword arguments measure, rel, and
-  ruler-extenders default to the measure, well-founded relation, and
-  ruler-extender settings used in the admittance of name.  The
-  keyword argument hints defaults to nil.
+  omitted, the optional keyword arguments measure,
+  well-founded-relation, and ruler-extenders default to the measure,
+  well-founded relation, and ruler-extender settings used in the
+  admittance of name.  The keyword argument hints defaults to nil.
 
 
 Restrictions
@@ -25030,11 +25462,12 @@ Subtopics
               :renaming alist
               :inline flg
               :congruent-to old-stobj-name
-              :non-memoizable nm-flg)
+              :non-memoizable nm-flg
+              :non-executable ne-flg)
 
   where name is a new symbol; each fieldi is a symbol; each typei is
   either a type-indicator (a [type-spec] or [stobj] name), of the
-  form (ARRAY type-indicator max), or of the form (HASH-TABLE test)
+  form (ARRAY type-indicator (max)), or of the form (HASH-TABLE test)
   or (HASH-TABLE test size); each vali is an object satisfying typei;
   and each bi is t or nil.  Each pair :initially vali and :resizable
   bi may be omitted; more on this below.  The :renaming alist
@@ -25046,10 +25479,12 @@ Subtopics
   function calls).  The optional :congruent-to old-stobj-name
   argument specifies an existing stobj with exactly the same
   structure, and is discussed below.  The optional :non-memoizable
-  nm-flg Boolean argument is ignored when nm-flg is nil; otherwise,
-  it instructs ACL2 to lay down faster code for functions that return
-  the new stobj but disallows [memoization] of any function that
-  takes the new stobj as an argument.  We describe further
+  nm-flg and :non-executable ne-flg Boolean arguments are ignored
+  when nm-flg and ne-flg are nil, but otherwise: the former instructs
+  ACL2 to lay down faster code for functions that return the new
+  stobj but disallows [memoization] of any function that takes the
+  new stobj as an argument; and the latter avoids actually creating
+  the stobj (details follow later below).  We describe further
   restrictions on the fieldi, typei, vali, and on alist below.  We
   recommend that you read about single-threaded objects (stobjs) in
   ACL2 before proceeding; see [stobj].
@@ -25064,9 +25499,15 @@ Subtopics
 
 The Single-Threaded Object Introduced
 
-  The defstobj event effectively introduces a new global variable,
-  named name, which has as its initial logical value a list of k
-  elements, where k is the number of ``field descriptors'' provided.
+  The defstobj event effectively introduces a new ``live stobj''
+  object, named name, which has as its initial logical value a list
+  of k elements, where k is the number of ``field descriptors''
+  provided.  This object has mutable updates: that is, the object is
+  actually modified in place, rather than copied.  This is only
+  possible because of syntactic restrictions enforced by ACL2 when
+  programming with stobjs, so that after modifying a stobj, its old
+  versions are no longer accessible.
+
   The elements are listed in the same order in which the field
   descriptors appear.  If the :type of a field is (ARRAY
   type-indicator (max)) then max is a non-negative integer or a
@@ -25387,11 +25828,11 @@ The Default Function Names
   For the last of these, the values of HT-SIZE, REHASH-SIZE, and
   REHASH-THRESHOLD are passed to the :size, :rehash-size, and
   :reash-threshold arguments (respectively) of a call of
-  make-hash-table) in raw Lisp.  The @(':test argument of this
-  function is the one specified in the :type specified in the
-  defstobj event for the field, in this case EQ from the type
-  (HASH-TABLE EQ); note however that if the :type specifies the test
-  (HASH-TABLE HONS-EQUAL), then the :test is EQL.
+  make-hash-table in raw Lisp.  The :test argument of this function
+  is the one specified in the :type specified in the defstobj event
+  for the field, in this case EQ from the type (HASH-TABLE EQ); note
+  however that if the :type specifies the test (HASH-TABLE
+  HONS-EQUAL), then the :test is EQL.
 
 
 Avoiding the Default Function Names
@@ -25466,10 +25907,9 @@ Inspecting the Effects of a Defstobj
 
   immediately after the defstobj event has been processed.
 
-  A defstobj is considered redundant only if the name, field
-  descriptors, renaming alist, and inline flag are identical to a
-  previously executed defstobj.  Note that a redundant defstobj does
-  not reset the [stobj] fields to their initial values.
+  A defstobj is considered redundant only if it is syntactically
+  identical to a previously executed defstobj.  Note that a redundant
+  defstobj does not reset the [stobj] fields to their initial values.
 
 
 Performance
@@ -25552,7 +25992,24 @@ Specifying Congruent Stobjs
     the discussion of congruent stobjs.  Note:  this error occurred in
     the context (F ST1 ST1 ST1).
 
-    ACL2 !>")
+    ACL2 !>
+
+
+Specifying Non-executable Stobjs
+
+  As noted above, if keyword argument :non-executable t is specified
+  then the stobj is not created.  More precisely, the ``live'',
+  mutable stobj is not created.  So why use this keyword argument?
+  Perhaps you would like to do your computation on several stobjs
+  that are all congruent to a given stobj, st.  Then by using
+  :non-executable t to introduce st, you avoid allocating memory for
+  st that you never intend to use.  Similarly, you can avoid
+  allocating such memory when your intended use of st is only as a
+  local stobj (see [with-local-stobj]) or as the type of a stobj
+  field of another stobj.
+
+  When :non-executable t is specified, it is illegal to supply a
+  :congruent-to argument.")
  (DEFSTUB
   (EVENTS)
   "Stub-out a function symbol
@@ -26825,13 +27282,16 @@ Subtopics
 
     (defun-nx name (x1 ... xk) ... body)
 
-  expands to the following form.
+  generates the following definition.
 
     (defun name (x1 ... xk)
       (declare (xargs :non-executable t :mode :logic))
       ...
       (prog2$ (throw-nonexec-error 'name (list x1 ... xk))
               body))
+
+  Moreover, the [executable-counterpart] [rune] for name is [disable]d
+  by this event.
 
   Note that because of the insertion of the above call of
   throw-nonexec-error, no formal is ignored when using defun-nx.
@@ -26850,9 +27310,9 @@ Subtopics
   [declare] form; defun-nx will still lay down its own such
   declaration, but ACL2 can tolerate the duplication.
 
-  Note that defund-nx is also available.  It has an effect identical to
-  that of defun-nx except that as with [defund], it leaves the
-  function disabled.
+  Note that defund-nx is also available.  It is essentially identical
+  to defun-nx except that as with [defund], defund-nx leaves the
+  definition [rune] disabled for the new function symbol.
 
   If you use guards (see [guard]), please be aware that even though
   syntactic restrictions are relaxed for defun-nx, guard verification
@@ -27326,9 +27786,11 @@ Subtopics
   (DEFUN EVENTS)
   "Define a disabled non-executable function symbol
 
-  Use defund-nx instead of defun-nx when you want to [disable] a
-  function immediately after its definition in :[logic] mode.  See
-  [defun-nx] and see [defund].")
+  Use defund-nx instead of [defun-nx] when you want to [disable] the
+  definition of a function symbol immediately after defining it in
+  :[logic] mode.  In all other respects, defund-nx has the same
+  behavior as defun-nx; See [defun-nx] for details.  Also see
+  [defund].")
  (DEFUNS
   (MUTUAL-RECURSION)
   "An alternative to [mutual-recursion]
@@ -28228,7 +28690,7 @@ Subtopics
   defined in books.  However, most users will probably access the
   ACL2 documentation in other ways; see [documentation].  In
   particular, consider using the {ACL2+Books Manual |
-  http://www.cs.utexas.edu/users/moore/acl2/v8-2/combined-manual/index.html},
+  http://www.cs.utexas.edu/users/moore/acl2/v8-3/combined-manual/index.html},
   for topics documented in the ACL2 community [books] or in the ACL2
   system (where the latter are rearranged).
 
@@ -28270,7 +28732,7 @@ Available Documentation
     * The online version (recommended). If you expect to have an internet
       connection while using the documentation, you may prefer to use
       the online version of the {ACL2+Books Manual |
-      http://www.cs.utexas.edu/users/moore/acl2/v8-2/combined-manual/index.html}.
+      http://www.cs.utexas.edu/users/moore/acl2/v8-3/combined-manual/index.html}.
     * A local version. If you sometimes work without an internet
       connection, you can {download | download/} a local copy of any
       web-based XDOC manual using the \"down arrow\" icon at the top of
@@ -28956,11 +29418,15 @@ Proof efficiency
 
     (set-rw-cache-state nil)
 
-  Some system behaviors can be modified using [defattach-system],
-  typically by modifying heuristics.  You can find all system
-  attachments by evaluating (all-attachments (w state)), except for a
-  few exceptions (see [defattach]).  Here are some key examples of
-  how to modify system behavior.
+  Some system behaviors can be modified using [defattach-system] ---
+  also see [system-attachments] --- typically by modifying
+  heuristics.  You can find all attachments by evaluating
+  (all-attachments (w state)) and all built-in such attachments by
+  evaluating (global-val 'attachments-at-ground-zero (w state)),
+  except for a few exceptions (see [defattach]).  For most of these,
+  however, you will need to consult the ACL2 source files for
+  relevant information.  Here are some key examples of how to modify
+  system behavior.
 
     (defun constant-nil-function-arity-2 (x y)
       (declare (xargs :mode :logic :guard t) (ignore x y))
@@ -29208,11 +29674,10 @@ Miscellaneous efficiency ideas
   (ACL2-TUTORIAL)
   "Emacs support for ACL2
 
-  Many successful ACL2 users run in an shell under the Emacs editor.
-  If you do so, then you may wish to load the distributed file
-  emacs/emacs-acl2.el.  The file begins with considerable comments
-  describing what it offers.  It is intended to work both with GNU
-  Emacs and XEmacs.
+  Many successful users of ACL2 run it in a shell under the Emacs
+  editor.  If you do so, then you may wish to load the distributed
+  file emacs/emacs-acl2.el.  The file begins with considerable
+  comments describing what it offers.
 
   In particular, the above file provides the ACL2-Doc browser, a
   convenient tool for viewing, in Emacs, documentation for both the
@@ -31497,8 +31962,9 @@ Subtopics
   Finally, we also require that no function has an attachment (see
   [defattach]) that is both ancestral in the evaluator and also
   ancestral in the meta or clause-processor functions.  (If you don't
-  use [defattach] then you can ignore this condition.)  Without this
-  restriction, the following events prove nil.
+  use [defattach] or [apply$] --- more specifically, [warrant]s ---
+  then you can ignore this condition.)  Without this restriction, the
+  following events prove nil.
 
     (in-package \"ACL2\")
     (defstub f () t)
@@ -31525,6 +31991,56 @@ Subtopics
       :hints ((\"Goal\" :use ((:functional-instance
                              f-is-nil
                              (f (lambda () t))))))
+      :rule-classes nil)
+
+  Here is an example that doesn't use [defattach] explicitly, but uses
+  [warrant]s, which essentially have attachments so that every call
+  of a warrant evaluates to T.  As for the preceding example, these
+  events succeed if we remove the restriction stated above about
+  common ancestors of the evaluator and the meta or clause-processor
+  function.
+
+    (in-package \"ACL2\")
+
+    (include-book \"projects/apply/top\" :dir :system)
+
+    (defevaluator evl evl-list
+      ((apply$ fn args)))
+
+    (encapsulate
+      ()
+      (local (defun$ f () (declare (xargs :guard t)) t))
+      (local (defun my-meta-fn (x)
+               (if (and (equal x '(apply$ 'f 'nil))
+                        (apply$-warrant-f))
+                   *t*
+                 x)))
+      (local (defthm my-meta-fn-correct
+               (equal (evl x a)
+                      (evl (my-meta-fn x) a))
+               :rule-classes ((:meta :trigger-fns (apply$)))))
+      (defthm unwarranted-fact-about-quote-f
+        (equal (apply$ 'f nil) t)
+        :rule-classes nil))
+
+    (defun$ f () nil)
+
+    (defthm apply$-warrant-f-false
+      (not (apply$-warrant-f))
+      :hints ((\"Goal\" :use unwarranted-fact-about-quote-f))
+      :rule-classes nil)
+
+    ; But apply$-warrant-f is a function with no non-trivial constraint.
+
+    (defthm contradiction
+      nil
+      :hints
+      ((\"Goal\"
+        :use (:functional-instance
+              apply$-warrant-f-false
+              (apply$-warrant-f (lambda () t))
+              (apply$-userfn (lambda (fn args) nil))
+              (badge-userfn (lambda (fn) '(APPLY$-BADGE 0 1 . T))))))
       :rule-classes nil)
 
   To see why this restriction is sufficient, see a comment in the ACL2
@@ -31871,21 +32387,21 @@ Subtopics
 
     (defconst *abc* '(1 2 3 4 5 6 7 8))
     (table evisc-table *abc*
-      (concatenate 'string \"#,\" (symbol-name '*abc*)))
+      (concatenate 'string \"#.\" (symbol-name '*abc*)))
 
   Then the constant *abc* is printed as follows --- very helpful if its
   associated structure is significantly larger than the 8-element
   list of numbers shown above!
 
     ACL2 !>*abc*
-    #,*ABC*
+    #.*ABC*
     ACL2 !>
 
-  What's more, the ACL2 reader will replace #,*C*, where *C* is defined
+  What's more, the ACL2 reader will replace #.*C*, where *C* is defined
   by [defconst], by its value, regardless of evisc-table; see
   [sharp-dot-reader].  Continuing with the example above, we have:
 
-    ACL2 !>(cdr (quote #,*ABC*))
+    ACL2 !>(cdr (quote #.*ABC*))
     (2 3 4 5 6 7 8)
     ACL2 !>
 
@@ -31908,7 +32424,7 @@ Subtopics
     Warnings:  None
     Time:  0.00 seconds (prove: 0.00, print: 0.00, other: 0.00)
      FOO::*A*
-    ACL2 !>(table evisc-table foo::*a* \"#,foo::*a*\")
+    ACL2 !>(table evisc-table foo::*a* \"#.foo::*a*\")
 
     Summary
     Form:  ( TABLE EVISC-TABLE ...)
@@ -31917,10 +32433,10 @@ Subtopics
     Time:  0.00 seconds (prove: 0.00, print: 0.00, other: 0.00)
      EVISC-TABLE
     ACL2 !>foo::*a*
-    #,foo::*a*
-    ACL2 !>'#,foo::*a*
-    #,foo::*a*
-    ACL2 !>(cdr '#,foo::*a*)
+    #.foo::*a*
+    ACL2 !>'#.foo::*a*
+    #.foo::*a*
+    ACL2 !>(cdr '#.foo::*a*)
     (2 3)
     ACL2 !>
 
@@ -31943,8 +32459,13 @@ Subtopics
   Then:
 
     ACL2 !>|*BaR*|
-    #,|*BaR*|
-    ACL2 !>")
+    #.|*BaR*|
+    ACL2 !>
+
+  The examples above illulstrate how the evisc-table is used when
+  printing evaluation results.  More generally, that [table] is used
+  when [fmt] (or a related function such as [fms]) prints an object
+  using ~x ~X, ~y, ~Y, ~f, or ~F.")
  (EVISC-TUPLE
   (IO)
   "Control suppression of details when printing
@@ -33325,6 +33846,22 @@ Subtopics
   and see [measure-debug] for a discussion of this function, which is
   useful for debugging failures from attempts to prove measure
   conjectures or to verify [guard]s.")
+ (F-BOUNDP-GLOBAL
+  (PROGRAMMING-WITH-STATE ACL2-BUILT-INS)
+  "Check whether a global variable in [state] has a value
+
+    Examples:
+    (f-boundp-global 'y state)
+
+    General Form:
+    (f-boundp-global s state)
+
+  where s evaluates to a symbol.  Note that this executes more
+  efficiently when s is a constant of the form 'sym.
+
+  This value returned is t or nil according to whether a value is
+  assigned to the given symbol in the ACL2 [state].  Also see related
+  utilities [f-get-global], [f-put-global], and [makunbound-global].")
  (F-GET-GLOBAL
   (PROGRAMMING-WITH-STATE ACL2-BUILT-INS)
   "Get the value of a global variable in [state]
@@ -33574,7 +34111,7 @@ Subtopics
   need more information than is provided by the key checkpoints ---
   although this should rarely be necessary --- then you can look at
   the full proof, perhaps with the aid of certain utilities: see
-  [proof-tree], see [set-gag-mode], and see [set-saved-output].
+  [pso], [set-gag-mode], and [proof-tree].
 
   Again, see [the-method] for a general discussion of how to prove
   theorems with ACL2, and see [introduction-to-the-theorem-prover]
@@ -34305,7 +34842,7 @@ Subtopics
   not included in the current ACL2 session?
 
   The [xdoc] {ACL2+Books Manual |
-  http://www.cs.utexas.edu/users/moore/acl2/v8-2/combined-manual/index.html}
+  http://www.cs.utexas.edu/users/moore/acl2/v8-3/combined-manual/index.html}
   includes documentation for both the ACL2 system and the
   [community-books].  For more information on this manual and how to
   view it, see [documentation].")
@@ -34333,6 +34870,8 @@ Subtopics
     (defun fix (x)
            (declare (xargs :guard t))
            (if (acl2-numberp x) x 0))")
+ (FIX-PKG (POINTERS)
+          "See [system-utilities].")
  (FIX-TRUE-LIST
   (LISTS ACL2-BUILT-INS)
   "Coerce to a true list
@@ -34348,6 +34887,8 @@ Subtopics
                        "See [system-utilities].")
  (FLAMBDAP (POINTERS)
            "See [system-utilities].")
+ (FLATTEN-ANDS-IN-LIT (POINTERS)
+                      "See [system-utilities].")
  (FLAWED_INDUCTION_CANDIDATES_IN_APP_EXAMPLE
   (PAGES_WRITTEN_ESPECIALLY_FOR_THE_TOURS)
   "Flawed Induction Candidates in App Example
@@ -34673,11 +35214,9 @@ Subtopics
   (IO ACL2-BUILT-INS)
   "(fms! str alist co-channel state evisc) => state
 
-  This function is nearly identical to fms; see [fms].  The only
-  difference is that fms may insert backslash (\\) characters when
-  forced to print past the right margin in order to make the output a
-  bit clearer in that case.  Use fms! instead if you want to be able
-  to read the forms back in.")
+  This function is nearly the same as [fms], but fms! avoids inserting
+  backslash (\\) characters when forced to print past the right
+  margin.  Use fms! if you want to be able to read the forms back in.")
  (FMS!-TO-STRING (POINTERS)
                  "See [printing-to-strings].")
  (FMS-TO-STRING (POINTERS)
@@ -35115,13 +35654,15 @@ Subtopics
   (IO ACL2-BUILT-INS)
   "(fmt! str alist co-channel state evisc) => state
 
-  This function is nearly identical to fmt; see [fmt].  The only
-  difference is that fmt may insert backslash (\\) characters when
-  forced to print past the right margin in order to make the output a
-  bit clearer in that case.  Use fmt! instead if you want to be able
-  to read the forms back in.")
+  This function is nearly the same as [fmt], but fmt! avoids inserting
+  backslash (\\) characters when forced to print past the right
+  margin.  Use fmt! if you want to be able to read the forms back in.")
  (FMT!-TO-STRING (POINTERS)
                  "See [printing-to-strings].")
+ (FMT-HARD-RIGHT-MARGIN (POINTERS)
+                        "See [set-fmt-hard-right-margin].")
+ (FMT-SOFT-RIGHT-MARGIN (POINTERS)
+                        "See [set-fmt-hard-right-margin].")
  (FMT-TO-COMMENT-WINDOW
   (IO ACL2-BUILT-INS)
   "Print to the comment window
@@ -35159,11 +35700,10 @@ Subtopics
   (IO ACL2-BUILT-INS)
   "(fmt1! str alist col channel state evisc) => (mv col state)
 
-  This function is nearly identical to fmt1; see [fmt1].  The only
-  difference is that fmt1 may insert backslash (\\) characters when
-  forced to print past the right margin in order to make the output a
-  bit clearer in that case.  Use fmt1! instead if you want to be able
-  to read the forms back in.")
+  This function is nearly the same as [fmt1], but fmt1! avoids
+  inserting backslash (\\) characters when forced to print past the
+  right margin.  Use fmt1! if you want to be able to read the forms
+  back in.")
  (FMT1!-TO-STRING (POINTERS)
                   "See [printing-to-strings].")
  (FMT1-TO-STRING (POINTERS)
@@ -35378,6 +35918,35 @@ Subtopics
   ``punted'' the forced hypothesis to the rewriter, which established
   it.
 
+  The discussion above may give the impression that a forcing round
+  only takes place because of a failure to relieve a forced
+  hypothesis.  A notable exception, however, is due to
+  [linear-arithmetic].  Consider the following example:
+
+    (implies (not (equal 0 x))
+             (or (< 0 x) (< x 0)))
+
+  This is not a theorem; in particular, it fails when x is nil.  What
+  is missing is the hypothesis, (acl2-numberp x).  If you try to
+  prove the displayed formula above and you look at the proof using
+  :[pso], you'll see the following.
+
+    But forced simplification reduces this to T, using the :executable-
+    counterpart of FORCE and linear arithmetic.
+
+  Thus, no specific rule created this forcing round (see also
+  [forcing-round]).  Rather, ACL2 was able to prove the goal using
+  linear arithmetic, but it needed to force the assumption that x is
+  a number.  This is clear when we look at output for the forcing
+  round:
+
+    [1]Goal, below, will focus on
+    (ACL2-NUMBERP X),
+    which was forced in
+     Goal'
+      by the linearization of
+      (EQUAL 0 X).
+
   Finally, we should mention that the rewriter is never willing to
   force when there is an [if] term present in the goal being
   simplified.  Since [and] terms and [or] terms are merely
@@ -35535,8 +36104,8 @@ Subtopics
 
   When ACL2 is given a :use or :by hint, it looks for the [term] stored
   in the ACL2 logical [world] that is associated with the name given
-  in the hint, which is a symbol or a [rune].  (See (@see
-  lemma-instance).)  The utility used to find that term is formula,
+  in the hint, which is a symbol or a [rune].  (See
+  [lemma-instance].)  The utility used to find that term is formula,
   which ACL2 invokes as follows.
 
     (formula x t wrld)   ; for :use hints
@@ -41340,6 +41909,9 @@ Subtopics
   [Guard-theorem]
       Use a previously-proved [guard] theorem
 
+  [Verify-guard-implication]
+      [Guard] implication for [memoize] keyword :invoke
+
   [Verify-guards-formula]
       View the guard proof obligation, without proving it")
  (GUARD-HINTS (POINTERS)
@@ -42449,6 +43021,13 @@ Subtopics
   rest of the goal, if that goal (or a subgoal of it) fails to be
   proved.
 
+  Another common case, described below, is when hide is added by the
+  simplifier because an attempted execution of the term failed.  In
+  this case, an :expand hint as described above will have no effect
+  because the execution will just fail again; the hide will be
+  re-inserted; and the hapless user will find themselves questioning
+  their own sanity.
+
   Hide terms are generally ignored not only by the rewriter but by
   other ACL2 procedures, including the induction heuristics and (by
   default) removal of [guard-holders].
@@ -42469,13 +43048,14 @@ Subtopics
   after a possibly extensive computation (because of big-hairy-test)
   the execution fails because of the unevaluable call of
   constrained-fn.  To avoid subsequent attempts to evaluate the term,
-  ACL2 embeds it in a hide expression.  Typically that expression
-  will use a call of [comment], where (comment x y) is logically just
-  y, to tell you the problematic constrained function, in this case
-  by rewriting the original expression to the following.  (Near the
-  end of this topic we discuss how to avoid the call of comment.)
+  ACL2 embeds it in a hide expression.  Often that expression will
+  use a call of [comment], where (comment x y) is logically just y,
+  to tell you the problematic constrained function, in this case by
+  rewriting the original expression to the following; see [comment].
+  (Near the end of this topic we discuss how to avoid the call of
+  comment.)
 
-    (hide (comment \"Called constrained function CONSTRAINED-FN\"
+    (hide (comment \"Failed attempt to call constrained function CONSTRAINED-FN\"
                    (another-fn 1 2 3)))
 
   You might think this rarely occurs since all the arguments of
@@ -42485,7 +43065,7 @@ Subtopics
   define a function f of no arguments in terms of a constrained
   function g, you may often see (f) rewrite to:
 
-    (hide (comment \"Called constrained function G\"
+    (hide (comment \"Failed attempt to call constrained function G\"
                    (f))).
 
   We do not hide the term if the [executable-counterpart] of the
@@ -42518,7 +43098,7 @@ Subtopics
   inside the hide.  However,
 
     (defthm thm-helper
-      (equal (hide (comment \"Called constrained function CONSTRAINED-FN\"
+      (equal (hide (comment \"Failed attempt to call constrained function CONSTRAINED-FN\"
                             (another-fn 1 2 3)))
              (constrained-fn 1 2 3)))
 
@@ -42534,12 +43114,12 @@ Subtopics
   another-fn)).  Thus, thm-helper will actually be:
 
     (defthm thm-helper
-      (equal (hide (comment \"Called constrained function CONSTRAINED-FN\"
+      (equal (hide (comment \"Failed attempt to call constrained function CONSTRAINED-FN\"
                             (another-fn 1 2 3)))
              (constrained-fn 1 2 3))
       :hints
       ((\"Goal\" :expand
-               (hide (comment \"Called constrained function CONSTRAINED-FN\"
+               (hide (comment \"Failed attempt to call constrained function CONSTRAINED-FN\"
                               (another-fn 1 2 3)))
                :in-theory (disable (:executable-counterpart another-fn)))))
 
@@ -42660,7 +43240,9 @@ Subtopics
 
   ACL2 also provides ``custom keyword'' hints (see
   [custom-keyword-hints]) and even more general ``computed hints''
-  for the advanced user (see [computed-hints]).
+  for the advanced user (see [computed-hints]).  Not documented in
+  this topic are such hints implemented in books; for an example of
+  so-called :consider hints, see [consideration].
 
   Only the first hint applicable to a goal, as specified in the
   user-supplied list of :hints followed by the default hints (see
@@ -43041,11 +43623,37 @@ Subtopics
         with a name based on the value of the :do-not-induct hint
         that caused that subgoal to be skipped.
 
-        Remarks.  (1) A :do-not-induct hint is ignored for any goal on which
-        an :induct hint is supplied.  (2) For an advanced example of
-        the use of value :otf for :do-not-induct combined with
-        [override-hints], see community book
-        books/hints/basic-tests.lisp.
+        Remarks.
+
+        (1) An :induct hint is applied to a goal even if a :do-not-induct
+        hint is in effect for that goal.  Consider the following
+        examples.
+
+          (thm (equal (append (append x y) z) (append x y z))
+               :hints ((\"Goal\" :induct t :do-not-induct t)))
+
+          (thm (and (equal (append (append x y) z) (append x y z))
+                    (equal (append (append u v) w) (append u v w)))
+               :hints ((\"Goal\" :do-not-induct t)
+                       (\"Subgoal 2\" :induct t)))
+
+        In the first of these, the :do-not-induct hint has no effect on the
+        proof; instead, the :induct hint forces an induction that
+        allows the proof to succeed (without any sub-inductions).
+        The second of these illustrates that even though
+        :do-not-induct can stop sub-inductions, its effect is
+        overridden by :induct.  For the proof of that second example,
+        ACL2 immediately splits into two subgoals.  Then in spite of
+        the top-level :do-not-induct hint, the proof is allowed to
+        proceed past Subgoal 2, which requires induction, because of
+        the hint :induct t.  However, the proof halts after Subgoal 1
+        because of the :do-not-induct hint that has been established
+        ``above'' it, at \"Goal\".  (For more about the way hints are
+        processed, see [hints-and-the-waterfall].)
+
+        (2) For an advanced example of the use of value :otf for
+        :do-not-induct combined with [override-hints], see community
+        book books/hints/basic-tests.lisp.
 
     :error
 
@@ -43318,12 +43926,18 @@ Subtopics
 
     :restrict
 
-        Warning: This is a sophisticated hint, suggested by Bishop Brock,
-        that is intended for advanced users.  In particular,
-        :restrict hints are ignored by the preprocessor, so you might
-        find it useful to give the hint :do-not '(preprocess) when
-        using any :restrict hints, at least if the rules in question
-        are abbreviations (see [simple]).
+        This hint, originally suggested by Bishop Brock, sometimes allows
+        rules with free variables (see [free-variables]) to be
+        applied successfully by the rewriter, thus avoiding the
+        clutter, case-splitting, and theory management (disabling)
+        that can occur with :use hints.
+
+        Warning: This is a sophisticated hint that may be most appropriate
+        for experienced ACL2 users.  In particular, :restrict hints
+        are ignored by the preprocessor, so you might find it useful
+        to give the hint :do-not '(preprocess) when using any
+        :restrict hints, at least if the rules in question are
+        abbreviations (see [simple]).
 
         Value is an association list.  Its members are of the form (x subst1
         subst2 ...), where: x is either (1) a [rune] whose [car] is
@@ -43356,10 +43970,21 @@ Subtopics
         actually appearing in the goals, not to the variables
         appearing in the rule being restricted.
 
-        Here is an example, supplied by Bishop Brock.  Suppose that the
-        database includes the following rewrite rule, which is
-        probably kept [disable]d.  (We ignore the question of how to
-        prove this rule.)
+        The following example, supplied by Mihir Mehta, illustrates the use
+        of :restrict to handle free variables (in this case, a single
+        free variable y).  The call of [thm] below fails without the
+        indicated :restrict hint.
+
+          (defthm subsetp-trans
+            (implies (and (subsetp x y) (subsetp y z)) (subsetp x z)))
+          (defthm subsetp-evens (subsetp-equal (evens l) l))
+          (thm (subsetp (evens (evens l)) l)
+               :hints ((\"Goal\" :restrict ((subsetp-trans ((y (evens l))))))))
+
+        Here is another example, this one supplied by Bishop Brock.  Suppose
+        that the database includes the following rewrite rule, which
+        is probably kept [disable]d.  (We ignore the question of how
+        to prove this rule.)
 
           cancel-<-*$free:
           (implies (and (rationalp x)
@@ -43505,7 +44130,7 @@ Subtopics
   generalization, each of which attempts to replace a given goal by
   zero or more subgoals whose provability implies provability of that
   goal.  Note that every proof by induction starts a new trip through
-  the waterall, as does every forcing round; and these occur only
+  the waterfall, as does every forcing round; and these occur only
   after all preceding trips through the waterfall are complete.  Let
   us see in more detail how the waterfall works.
 
@@ -44353,7 +44978,7 @@ Subtopics
 Subtopics
 
   [Ccl-installation]
-      Updating Clozure Common Lisp (CCL)
+      Installing Clozure Common Lisp (CCL)
 
   [Fast-alists]
       Alists with hidden hash tables for faster execution
@@ -44423,13 +45048,13 @@ Subtopics
       un-normed, which might lead to less efficient re-norming and/or
       violations of the fast-alist discipline.
     * (For ACL2(p) users only; see [parallelism]) If parallel execution is
-      enabled (see (@see set-parallel-execution)), as it is by
-      default in ACL2(p), then hons-clear may be a no-op (other than
-      to print a warning), in order to avoid thread-unsafe behavior.
-      (However, In CCL you are unlikely to see this restriction
-      unless you are running more than one thread.)  To get around
-      this restriction, you can instead use [hons-clear!], which
-      however requires a [trust-tag].
+      enabled (see [set-parallel-execution]), as it is by default in
+      ACL2(p), then hons-clear may be a no-op (other than to print a
+      warning), in order to avoid thread-unsafe behavior.  (However,
+      In CCL you are unlikely to see this restriction unless you are
+      running more than one thread.)  To get around this restriction,
+      you can instead use [hons-clear!], which however requires a
+      [trust-tag].
 
   Function: <hons-clear>
 
@@ -44443,8 +45068,8 @@ Subtopics
 
   This function is only of interest to ACL2(p) users; see
   [parallelism], because for ACL2 it suffices to use [hons-clear].
-  However, if parallel execution is enabled (see (@see
-  set-parallel-execution)), as it is by default in ACL2(p), then
+  However, if parallel execution is enabled (see
+  [set-parallel-execution]), as it is by default in ACL2(p), then
   hons-clear may be a no-op (other than to print a warning), in order
   to avoid thread-unsafe behavior.  If you are not concerned about
   thread safety, for example when you want to call hons-clear
@@ -44782,13 +45407,13 @@ Subtopics
       un-normed, which might lead to less efficient re-norming and/or
       violations of the fast-alist discipline.
     * (For ACL2(p) users only; see [parallelism]) If parallel execution is
-      enabled (see (@see set-parallel-execution)), as it is by
-      default in ACL2(p), then hons-wash may be a no-op (other than
-      to print a warning), in order to avoid thread-unsafe behavior.
-      (However, In CCL you are unlikely to see this restriction
-      unless you are running more than one thread.)  To get around
-      this restriction, you can instead use [hons-wash!], which
-      however requires a [trust-tag].
+      enabled (see [set-parallel-execution]), as it is by default in
+      ACL2(p), then hons-wash may be a no-op (other than to print a
+      warning), in order to avoid thread-unsafe behavior.  (However,
+      In CCL you are unlikely to see this restriction unless you are
+      running more than one thread.)  To get around this restriction,
+      you can instead use [hons-wash!], which however requires a
+      [trust-tag].
 
   Function: <hons-wash>
 
@@ -44800,8 +45425,8 @@ Subtopics
 
   This function is only of interest to ACL2(p) users; see
   [parallelism], because for ACL2 it suffices to use [hons-wash].
-  However, if parallel execution is enabled (see (@see
-  set-parallel-execution)), as it is by default in ACL2(p), then
+  However, if parallel execution is enabled (see
+  [set-parallel-execution]), as it is by default in ACL2(p), then
   hons-wash may be a no-op (other than to print a warning), in order
   to avoid thread-unsafe behavior.  If you are not concerned about
   thread safety, for example when you want to call hons-wash directly
@@ -45340,6 +45965,36 @@ Subtopics
     (defun illegal (ctx str alist)
            (declare (xargs :guard (hard-error ctx str alist)))
            (hard-error ctx str alist))")
+ (ILLEGAL-STATE
+  (RELEASE-NOTES)
+  "Illegal ACL2 state
+
+  See [set-absstobj-debug] for background on invariance violations for
+  abstract [stobj]s.  In short, they may occur when execution does
+  not complete for certain atomic operations.
+
+  Such violations cause the following error message to be printed.
+
+    ACL2 Error in CHK-ABSSTOBJ-INVARIANTS:  Possible invariance violation
+    for an abstract stobj!
+    **PROCEED AT YOUR OWN RISK.**
+    To proceed, evaluate the following form.
+    :CONTINUE-FROM-ILLEGAL-STATE
+    See :DOC set-absstobj-debug.
+
+  At this point, the only way to get ACL2 to evaluate further input is
+  to submit the form :CONTINUE-FROM-ILLEGAL-STATE, as noted above ---
+  or more generally, the form it actually represents,
+  (CONTINUE-FROM-ILLEGAL-STATE), which may need to be written as
+  (ACL2::CONTINUE-FROM-ILLEGAL-STATE) if the [current-package] is
+  other than \"ACL2\".  There is actually one exception: :q is
+  accepted, to pop out of the current call of [ld].
+
+  To get a bit more information from the error message displayed above,
+  see [set-absstobj-debug].
+
+  Technical note.  An illegal-state is entered when ACL2 sets the ld
+  special, [ld-pre-eval-print], to the value :illegal-state.")
  (IMAGPART
   (NUMBERS ACL2-BUILT-INS)
   "Imaginary part of a complex number
@@ -45837,10 +46492,8 @@ Subtopics
   it massages them in various ways, combining some to simultaneously
   unwind certain cliques of functions and vetoing others because they
   ``flaw'' others.  We do not further discuss the induction
-  heuristics here; the interested reader should see Chapter XIV of A
-  Computational Logic (Boyer and Moore, Academic Press, 1979) which
-  represents a fairly complete description of the induction
-  heuristics of ACL2.
+  heuristics here; the interested reader should see
+  [induction-heuristics].
 
   However, unlike Nqthm, ACL2 provides a means by which the user can
   elaborate the rules under which function applications suggest
@@ -46030,6 +46683,27 @@ Subtopics
 
   [Set-induction-depth-limit]
       Set the [induction-depth-limit]")
+ (INDUCTION-HEURISTICS
+  (RULE-CLASSES)
+  "How ACL2 selects induction schemes
+
+  This topic is for those curious about induction heuristics in ACL2.
+  It is not necessary to understand those heuristics to be able to
+  use ACL2 successfully.
+
+  ACL2's heuristics for generating an induction scheme for a conjecture
+  are very similar to Nqthm's and can trace their roots all the way
+  back to the Edinburgh Pure Lisp Theorem Prover, the first prover to
+  support induction in a general setting.
+
+  For a detailed description of how ACL2 generates induction schemes
+  see {``ACL2 Induction Heuristics.'' |
+  http://www.cs.utexas.edu/users/moore/publications/acl2-induction-heuristics.pdf}
+  That paper is intended for a general audience familiar with
+  induction but not necessarily familiar with theorem provers or
+  ACL2.  However, it can also serve as a guided tour through that
+  part of the ACL2 source code that creates and selects induction
+  schemes.")
  (INFECTED-CONSTRAINTS
   (ENCAPSULATE)
   "[Defun]s affecting [constraint]s of [encapsulate]s
@@ -46971,6 +47645,9 @@ Subtopics
   [Save-exec]
       Save an executable image and a wrapper script
 
+  [Startup-banner]
+      Modifying the ACL2 startup banner
+
   [Sys-call]
       Make a system call to the host operating system")
  (INTERN
@@ -47080,7 +47757,7 @@ Subtopics
     (intern-in-package-of-symbol \"car\" w) is MY-PKG::|car|")
  (INTERSECTION$
   (LISTS ACL2-BUILT-INS)
-  "Elements of one list that are not elements of another
+  "Elements common to the given lists
 
     General Forms:
     (intersection$ l1 l2 ... lk)
@@ -48314,6 +48991,11 @@ More help
  (INTRODUCTION-TO-REWRITE-RULES-PART-1
   (INTRODUCTION-TO-THE-THEOREM-PROVER)
   "Introduction to ACL2's notion of rewrite rules
+
+  This topic is an introduction to rewrite rules in ACL2 and is
+  intended for the newcomer to ACL2.  The slightly more experienced
+  user might benefit from reading [random-remarks-on-rewriting]
+  instead.
 
   Rewrite rules make ACL2 replace one term by another.  This is done by
   the rewriter, which is part of ACL2's simplifier.  The rewriter
@@ -52813,8 +53495,10 @@ Subtopics
   (ld-pre-eval-filter state) and the updater is
   (set-ld-pre-eval-filter val state).  Ld-pre-eval-filter must be
   either :all, :query, or a new name that could be defined (e.g., by
-  [defun] or [defconst]).  The initial value of ld-pre-eval-filter is
-  :all.
+  [defun] or [defconst]).  (There is actually a value that may on
+  rare occasions be set by the ACL2 system, :illegal-state; we ignore
+  that value here, but the curious reader is welcome to see
+  [illegal-state].)  The initial value of ld-pre-eval-filter is :all.
 
   The general-purpose ACL2 read-eval-print loop, [ld], reads forms from
   [standard-oi], evaluates them and prints the result to
@@ -52896,7 +53580,11 @@ Subtopics
   fn, such that (fn channel state) will print the desired [prompt] to
   channel in [state] and return (mv col state), where col is the
   number of [characters] output (on the last line output).  You may
-  define your own [prompt] printing function.
+  define your own [prompt] printing function, fn, and install it with
+  (set-ld-prompt 'fn state).  However, a trust tag must be active
+  (see [defttag]) when you set ld-prompt to other than t or nil (with
+  one exception: the function brr-prompt, which prints the prompt in
+  the [break-rewrite] loop).
 
   If you supply an inappropriate [prompt] function, i.e., one that
   causes an error or does not return the correct number and type of
@@ -54133,7 +54821,7 @@ Subtopics
       Recognizer for a true list of integers
 
   [Intersection$]
-      Elements of one list that are not elements of another
+      Elements common to the given lists
 
   [Intersectp]
       Test whether two lists intersect
@@ -56278,6 +56966,11 @@ Subtopics
   loop.  This documentation assumes the reader has at least a passing
   familiarity with loop.
 
+  Note: Before using loop$, it is a good idea to include the same book
+  as is typically included when using [apply$], as follows.
+
+    (include-book \"projects/apply/top\" :dir :system)
+
   Warning: Loop$ implements only a small part of the functionality of
   loop.  Aside from the simple fact that loop$ allows a small subset
   of the syntax of loop, the main restriction is that the
@@ -57066,10 +57759,13 @@ Examples
   optional but :loop$-recursion t is required if recursion is used
   inside a loop$ and the measure must be made explicit.
 
+  Some examples of loop$-recursive definitions may be found in the book
+  projects/apply/loop-recursion-examples.lisp.
+
   Warning: Even though the functions defined above are recursive, ACL2
   does not generate induction schemes for them!  If you want to do
   inductive proofs about loop$-recursive functions you must provide a
-  suitable [induction] hint.  In addition, to be provable by
+  suitable :induction hint.  In addition, to be provable by
   induction, theorems about loop$-recursive functions must be
   suitably general.  This topic is discussed further in
   [loop$-recursion-induction].
@@ -57262,7 +57958,10 @@ Definductor
   [definductor].  The examples worked manually in copy-nat-tree.lisp
   are recapitulated towards the end of
   projects/apply/definductor-tests.lisp, without the manually
-  provided hints.
+  provided hints.  In addition, the book
+  projects/apply/loop-recursion-examples.lisp gives some other
+  examples of loop$-recursive functions and inductive theorems about
+  them.
 
 
 Some Basic Principles for Inductive Proofs about Loop$-Recursive
@@ -58276,15 +58975,15 @@ Detailed Documentation
   community books directory books/make-event/.  You may even find it
   helpful, in order to understand make-event, to do so before
   continuing to read this documentation.  You may also find it useful
-  to browse community book books/misc/eval.lisp, which contains
-  definitions of macros must-succeed and must-fail that are useful
-  for testing and are used in many books in the books/make-event/
-  directory, especially eval-tests.lisp.  Another example,
-  books/make-event/defrule.lisp, shows how to use macros whose calls
-  expand to make-event forms, which in turn can generate [events].
-  For more examples, see file books/make-event/Readme.lsp.  Other
-  than the examples, the explanations here should suffice for most
-  users.  If you want explanations of subtler details, see
+  to browse community book books/std/testing/eval.lisp, which
+  contains definitions of macros must-succeed and must-fail that are
+  useful for testing and are used in many books in the
+  books/make-event/ directory, especially eval-tests.lisp.  Another
+  example, books/make-event/defrule.lisp, shows how to use macros
+  whose calls expand to make-event forms, which in turn can generate
+  [events].  For more examples, see file books/make-event/Readme.lsp.
+  Other than the examples, the explanations here should suffice for
+  most users.  If you want explanations of subtler details, see
   [make-event-details].
 
   Note that make-event is generally legal only where an embedded event
@@ -59785,6 +60484,23 @@ Subtopics
   problem is avoided by passing whs = nil.  For an example of this
   use of nil in the ACL2 source code, see source function
   save-ev-fncall-guard-er.")
+ (MAKUNBOUND-GLOBAL
+  (PROGRAMMING-WITH-STATE ACL2-BUILT-INS)
+  "Remove the value assigned to a global variable in [state]
+
+    Examples:
+    (makunbound-global 'y state)
+
+    General Form:
+    (makunbound-global s state)
+
+  where s evaluates to a symbol.
+
+  This value returned is the result of modifying the ACL2 [state] so
+  that the given symbol does not have a value.  This function thus
+  acts as a no-op if the symbol does not have a value in the given
+  state.  Also see related utilities [f-get-global], [f-put-global],
+  and [f-boundp-global].")
  (MANAGING-ACL2-PACKAGES
   (PACKAGES)
   "User-contributed documentation on packages
@@ -60349,19 +61065,21 @@ Subtopics
 
     General Form:
     (memoize fn                         ; memoizes fn and returns fn
-             :condition    condition    ; optional (default t)
+             :aokp         t/nil        ; optional (default nil)
+             :commutative  t/lemma-name ; optional (default nil)
+             :condition    condition    ; optional (default t (unless :invoke))
              :condition-fn condition-fn ; optional
+             :forget       t/nil        ; optional (default nil)
              :hints        hints        ; optional, for verifying the
                                         ;   guards of condition-fn
+             :ideal-okp    t/:warn/nil  ; optional (default nil)
+             :invoke       nil/fn       ; optional (default nil)
+             :memo-table-init-size size ; optional (default *mht-default-size*)
              :otf-flg      otf-flg      ; optional, for verifying the
                                         ;   guards of condition-fn
              :recursive    t/nil        ; optional (default t)
-             :commutative  t/lemma-name ; optional (default nil)
-             :forget       t/nil        ; optional (default nil)
-             :memo-table-init-size size ; optional (default *mht-default-size*)
-             :aokp         t/nil        ; optional (default nil)
-             :stats        t/nil        ; optional (default t)
-             :ideal-okp    t/:warn/nil  ; optional (default nil)
+             :stats        t/nil        ; optional (default t (unless :invoke))
+             :total        ; see :DOC memoize-partial
              :verbose      t/nil        ; optional (default t)
              )
 
@@ -60470,17 +61188,44 @@ Subtopics
   We conclude with by documenting keyword parameters not discussed
   above.
 
+  Keyword parameter :invoke is nil by default, but its value can be a
+  symbol, g.  Examples may be found in [community-books] file
+  demos/memoize-invoke-input.lsp; for a tool built on this capability
+  that supports evaluation using proved input-output pairs for a
+  function, see [add-io-pairs].  The effect of :invoke g is to
+  replace every call of fn by a call of g.  However, there are some
+  restrictions.  The function symbol fn must be in :logic mode, and
+  the symbol g must be a [guard]-verified :[logic]-mode function
+  symbol with the same [signature] as that of fn.  There is the
+  following proof obligation: there must be a theorem in the current
+  ACL2 [world] stating the equality of calls of fn and g on a
+  duplicate-free argument list; for example, if the formals list of
+  fn is (x1 ... xn), then the theorem could be (equal (fn x1 .... xn)
+  (g x1 ... xn)).  If ACL2 finds no such theorem, it will print a
+  [defthm] event that you may wish to submit.  Next we describe a
+  potential second proof obligation, which will similarly be printed
+  if it is not met.  Let guard-fn be the [guard] for fn, and let
+  guard-g be the result of substituting the formals of fn for the
+  formals of g in the guard for g.  If guard-fn tautologically
+  implies guard-g (for example, the two are equal or guard-g is 'T),
+  then there is no further proof obligation.  Otherwise, there must
+  be a theorem in the current ACL2 [world] of the form (implies
+  guard-fn guard-g).  See [verify-guard-implication] for a utility
+  that makes it wasy for you to prove such a theorem.  Finally,
+  contrary to the usual defaults, the values of keyword :recursive,
+  :condition and :stats default to nil.  Indeed, it is an error to
+  specify a non-nil value for :recursive.  The alternate defaults of
+  nil for :condition and :stats can avoid memoization overhead when
+  one simply wishes to call g in place of fn; you may override those
+  defaults if you actually want to save computed values and use
+  (memsum) to see statistics.
+
   Keyword parameter :recursive is t by default, which means that
   recursive calls of fn will be memoized just as ``top-level'' calls
   of fn.  When :recursive is instead set to nil, memoization is only
   done at the top level.  Using :recursive nil is similar to writing
   a wrapper function that just calls fn, and memoizing the wrapper
   instead of fn.
-
-  If :trace has a non-nil value, then memoize also traces in a
-  traditional Lisp style.  If :trace has value notinline or
-  notinline, then a corresponding declaration is added at the
-  beginning of the new definition of fn.
 
   A non-nil value for :commutative can be supplied if fn is a binary
   function in :logic mode.  Suppose that the memoize event is
@@ -60698,6 +61443,9 @@ Subtopics
   [Clear-memoize-tables]
       Forget values remembered for all the memoized functions
 
+  [Memoize-partial]
+      [Memoize] a partial version of a limited (`clocked') function
+
   [Memoize-summary]
       Display all collected profiling and memoization info
 
@@ -60720,7 +61468,431 @@ Subtopics
       Turn off or on memoization of raw Lisp function bad-lisp-consp
 
   [Unmemoize]
-      Turn off memoization for the specified function")
+      Turn off memoization for the specified function
+
+  [Verify-guard-implication]
+      [Guard] implication for [memoize] keyword :invoke")
+ (MEMOIZE-PARTIAL
+  (MEMOIZE)
+  "[Memoize] a partial version of a limited (`clocked') function
+
+  See [memoize] for relevant background.  Here we describe a utility
+  that supports effective memoization for functions that have been
+  introduced by [defun], as follows, under certain restrictions.
+
+    (defun fn-limit (x1 ... xn limit)
+      (declare ...) ; optional, as usual for defun ; ;
+      (if (zp limit)
+          <base>
+        (let ((limit (1- limit)))
+          <body>)))
+
+  Here fn-limit represents a function symbol and (x1 ... xn limit)
+  denotes a non-empty list of formal parameters, where we call the
+  final formal (here, shown as limit) the ``limit variable''.  <Base>
+  is any syntactically legal expression, but <body> is restricted as
+  follows: the occurrences of the limit variable are exactly as the
+  final parameter in each recursive call of fn.  More precisely, that
+  restriction must hold after <body> is converted to a translated
+  term (see [term]).  In other words, the translation of <body> must
+  have the property that the limit variable only occurs in recursive
+  calls, and in those calls it occurs exactly as the final argument
+  and not in any other arguments.
+
+  Such use of a ``limit'' argument to obtain termination is an old
+  trick that pre-dates ACL2.  Such ``limited'' functions have
+  traditionally often been called ``clocked'' functions.  In this
+  documentation we refer to such a function as a ``total'' function,
+  because the limit argument guarantees that its evaluation
+  terminates.  We will be generating a corresponding ``partial''
+  function that avoids the limit argument, and hence might not
+  terminate --- but when it does, it computes the desired value, and
+  uses memoization to do so, which can speed up computation.
+
+  We organize the rest of this topic as follows: General Form, Basic
+  Example, Example with Mutual Recursion, Detailed Documentation, and
+  Optional Technical Remarks.
+
+
+General Form:
+
+    (memoize-partial fn+ ; see below
+                     :kwd1 val1 ... :kwdn valn)
+
+  where the supplied :kwdi and vali are valid keywords and values for
+  [memoize].  In the simplest case, fn+ is a symbol.  Later below,
+  after providing an example, we give more complete documentation,
+  including discussion of [mutual-recursion] and the general case for
+  fn+.  None of the arguments is evaluated.
+
+
+Basic Example
+
+  The following example from [community-book] file
+  books/demos/memoize-partial-input.lsp illustrates the use of
+  [memoize-partial].  Consider the {Collatz Conjecture |
+  https://en.wikipedia.org/wiki/Collatz_conjecture}, sometimes known
+  as the 3n+1 problem.  For any positive integer n, compute a new
+  integer as n/2 if n is even, else as 3*n+1.  The Collatz conjecture
+  states that this process eventually reaches 1.  Since this is an
+  open problem, we can't realistically hope to prove termination, so
+  we may code the above algorithm by using a limit argument, as
+  follows.  This function returns, unless the limit is reached, the
+  number of steps required for the computation to terminate (reach
+  1).
+
+    (defun collatz-limit (n limit)
+      (declare (xargs :guard (and (natp n)
+                                  (natp limit))
+                      :measure (acl2-count limit)))
+      (if (zp limit)
+          (prog2$ (er hard? 'collatz-limit
+                      \"Limit exceeded!\")
+                  0)
+        (let ((limit (1- limit)))
+          (if (int= n 1)
+              0
+            (1+ (collatz-limit (if (evenp n)
+                                   (floor n 2)
+                                 (1+ (* 3 n)))
+                               limit))))))
+
+  A moment's reflection suggests that if this algorithm terminates,
+  then there are no cycles, so memoization from a single call will be
+  useless.  However, memoization can be useful if we make distinct
+  calls.  But memoization might not be very useful even then, because
+  after we save the result of a call (collatz-limit n0 limit0), a
+  later call on n0 might be with a different limit, say,
+  (collatz-limit n0 limit1).  So we prefer to memoize using the
+  corresponding partial function, without a limit argument.  We can
+  do that as follows.
+
+    (memoize-partial collatz)
+
+  Under the hood this generates, essentially, the following Common Lisp
+  definition, which is to be memoized.
+
+    (defun collatz (n)
+      (if (int= n 1)
+          0
+        (1+ (collatz (if (evenp n)
+                         (floor n 2)
+                       (1+ (* 3 n)))))))
+
+  Since the limit argument has disappeared, memoization is now more
+  effective.  But how can one define collatz in the ACL2 logic?  The
+  memoize-partial call shown above actually generates the following
+  events, which define collatz to capture the notion of the
+  ``eventual stable value, as limit goes to infinity, of (collatz n
+  limit)''.  It probably is not important to read these events unless
+  one plans to reason about collatz, and even then one might be able
+  to complete proofs without reading these events.
+
+    (DEFCHOOSE COLLATZ-LIMIT-CHANGE (LARGE)
+      (N LIMIT)
+      (AND (NATP LARGE)
+           (<= LIMIT LARGE)
+           (NOT (EQUAL (COLLATZ-LIMIT N LIMIT)
+                       (COLLATZ-LIMIT N LARGE)))))
+    (DEFCHOOSE COLLATZ-LIMIT-STABLE (LIMIT)
+      (N)
+      (AND (NATP LIMIT)
+           (EQUAL (COLLATZ-LIMIT N LIMIT)
+                  (COLLATZ-LIMIT N (COLLATZ-LIMIT-CHANGE N LIMIT)))))
+    (DEFUN COLLATZ (N)
+      (DECLARE (XARGS :GUARD (LET ((LIMIT 0))
+                                  (DECLARE (IGNORABLE LIMIT))
+                                  (AND (NATP N) (NATP LIMIT)))))
+      (COLLATZ-LIMIT N (NFIX (COLLATZ-LIMIT-STABLE N))))
+
+  The upshot is a logical definition of (collatz n) as the eventual
+  value (if any), as limit increases without bound, of (collatz n
+  limit) --- together with an installed Common Lisp definition that
+  is actually executed and, moreover, is memoized.
+
+  We note that the call (memoize-partial collatz) also generates a
+  [table] event as well as the form (MEMOIZE 'COLLATZ :TOTAL
+  'COLLATZ-LIMIT).  However, these details are best ignored by the
+  user; we do not expect those events to be generated by hand, and in
+  particular it is probably inadvisable to use the :TOTAL keyword of
+  [memoize] other than indirectly using memoize-partial.  Failure to
+  heed this advice could make failures more difficult to debug.
+
+  See [community-book] file books/demos/memoize-partial-input.lsp for
+  an application of this use of memoize-partial, to compute the total
+  number of steps required (without accounting for memoization) to
+  run the Collatz algorithm to completion on the first n positive
+  integers.
+
+
+Example with Mutual Recursion
+
+  The following example, also from [community-book] file
+  books/demos/memoize-partial-input.lsp, illustrates the use of
+  memoize-partial on functions that have been defined using
+  [mutual-recursion].  (The suffix ``-bdd'' below is intended to
+  denote ``bounded'', to suggest what the ``-limit'' suffix suggested
+  in the first example.)
+
+    (mutual-recursion
+     (defun evenlp-bdd (x bound)
+       (declare (xargs :guard (natp bound)))
+       (if (zp bound)
+           'ouch
+         (let ((bound (1- bound)))
+           (if (consp x) (oddlp-bdd (cdr x) bound) t))))
+     (defun oddlp-bdd (x bound)
+       (declare (xargs :guard (natp bound)))
+       (if (zp bound)
+           'ouch
+         (let ((bound (1- bound)))
+           (if (consp x) (evenlp-bdd (cdr x) bound) nil)))))
+
+    (memoize-partial ((evenlp evenlp-bdd) (oddlp oddlp-bdd)))
+
+  Notice that this time the argument of memoize-partial is a list of
+  tuples.  Each tuple is a list with two elements: the name of the
+  partial function to be defined, followed by the corresponding total
+  (limited) function that has already been defined.  Indeed, the
+  preceding example abbreviates (memoize-partial ((collatz
+  collatz-limit))).  Such abbreviations are discussed in the Detailed
+  Documentation section below.
+
+  Recall that in the first example, the memoize-partial call defined
+  functions collatz-limit-change and collatz-limit-stable using
+  [defchoose], and then function collatz using [defun].  In the
+  present example such a trio of functions is introduced for each of
+  the functions defined in the corresponding mutual-recursion ---
+  equivalently, for each of the tuples supplied to memoize-partial.
+
+    (DEFCHOOSE EVENLP-BDD-CHANGE (LARGE)
+      (X BOUND)
+      (AND (NATP LARGE)
+           (<= BOUND LARGE)
+           (NOT (EQUAL (EVENLP-BDD X BOUND)
+                       (EVENLP-BDD X LARGE)))))
+    (DEFCHOOSE EVENLP-BDD-STABLE (BOUND)
+      (X)
+      (AND (NATP BOUND)
+           (EQUAL (EVENLP-BDD X BOUND)
+                  (EVENLP-BDD X (EVENLP-BDD-CHANGE X BOUND)))))
+    (DEFUN EVENLP (X)
+      (DECLARE (XARGS :GUARD (LET ((BOUND 0))
+                                  (DECLARE (IGNORABLE BOUND))
+                                  (NATP BOUND))))
+      (EVENLP-BDD X (NFIX (EVENLP-BDD-STABLE X))))
+    (DEFCHOOSE ODDLP-BDD-CHANGE (LARGE)
+      (X BOUND)
+      (AND (NATP LARGE)
+           (<= BOUND LARGE)
+           (NOT (EQUAL (ODDLP-BDD X BOUND)
+                       (ODDLP-BDD X LARGE)))))
+    (DEFCHOOSE ODDLP-BDD-STABLE (BOUND)
+      (X)
+      (AND (NATP BOUND)
+           (EQUAL (ODDLP-BDD X BOUND)
+                  (ODDLP-BDD X (ODDLP-BDD-CHANGE X BOUND)))))
+    (DEFUN ODDLP (X)
+      (DECLARE (XARGS :GUARD (LET ((BOUND 0))
+                                  (DECLARE (IGNORABLE BOUND))
+                                  (NATP BOUND))))
+      (ODDLP-BDD X (NFIX (ODDLP-BDD-STABLE X))))
+
+  The corresponding Common Lisp functions, to be executed for
+  [guard]-verified calls of evenlp and oddlp, are defined as one
+  might expect, in analogy to the Common Lisp definition in the first
+  example.  Moreover, they are memoized.  Here are (again,
+  essentially) the Common Lisp definitions of evenlp and oddlp.
+
+    (DEFUN EVENLP (X)
+      (IF (CONSP X)
+          (ODDLP (CDR X))
+          T))
+    (DEFUN ODDLP (X)
+      (DECLARE (IGNORABLE X))
+      (IF (CONSP X)
+          (EVENLP (CDR X))
+          NIL))
+
+
+Detailed Documentation
+
+  Recall the General Form
+
+    (memoize-partial fn+ ; see below
+                     :kwd1 val1 ... :kwdn valn)
+
+  where the supplied :kwdi and vali represent keyword options to be
+  used for a generated call of [memoize].  We discuss later below how
+  fn+ specifies either a recursively-defined function symbol or a
+  sequence of function symbols defined by mutual-recursion --- all
+  [guard]-verified.  We call the final formal parameter, which must
+  be the same for each function symbol defined in the
+  mutual-recursion case, the ``limit variable''.  The translated body
+  (see [term] regarding the notion of ``translated'') of each of
+  these function symbols must be of the following form, or of the
+  corresponding form using [cond] in place of [if], where here limit
+  denotes the limit variable.
+
+    (if (zp limit)
+        <base>
+      (let ((limit (1- limit)))
+        <body>))
+
+  Moreover, each limit variable occurring in <body> must occur as the
+  final argument of a call of the defined function --- in the mutual
+  recursion case, of the functions defined by the mutual-recursion
+  --- and conversely, each such call must have the limit variable as
+  its final argument.
+
+  Let us refer to each specified function as the ``total'' function.  A
+  succesful invocation admits a sequence of three definitions for
+  each total function, which we call the ``changed'', ``stable'', and
+  ``partial'' function.  Here are those three definitions, where
+  ``...'' denotes the formals of the partial function (that is, the
+  formals of the total function other than the final formal, which is
+  the limit variable).  We write LIMIT below to denote the limit
+  variable.  Note that LARGE is replaced by a fresh variable when
+  necessary, to avoid duplicating an existing formal.
+
+    (DEFCHOOSE <changed> (LARGE)
+      (... LIMIT)
+      (AND (NATP LARGE)
+           (<= LIMIT LARGE)
+           (NOT (EQUAL (<total> ... LIMIT)
+                       (<total> ... LARGE)))))
+    (DEFCHOOSE <stable> (LIMIT)
+      (...)
+      (AND (NATP LIMIT)
+           (EQUAL (<total> ... LIMIT)
+                  (<total> ... (<change> ... LIMIT)))))
+    (DEFUN <partial> (...)
+      (DECLARE (XARGS :GUARD (LET ((LIMIT 0))
+                                  (DECLARE (IGNORABLE LIMIT))
+                                  <guard_of_total>)))
+      (<total> ... (NFIX (<stable> ...))))
+
+  Under the hood, however, a Common Lisp definition is installed for
+  <partial> that avoids the limit variable, essentially by
+  eliminating it in <body> to produce a corresponding term, <body'>,
+  with the following result.  (Low-level details about exactly what
+  is generated are discussed in the Optional Technical Remarks below,
+  but should probably be ignored by most users.)
+
+    (defun <partial> (...)
+      <body'>
+
+  We turn now to the first argument of memoize-partial, denoted fn+
+  above, with discussion of its legal forms and its relation to the
+  other (keyword) arguments of memoize-partial.  The most flexible
+  form for fn+ is a list of tuples, where each tuple is of the
+  following form and the keyword arguments are optional and in any
+  order.
+
+    (<partial> <total>
+     :change <change>
+     :stable <stable>
+     :kwd1 val1 ... :kwdn valn)
+
+  The symbols <partial>, <total>, <change>, and <stable> are as
+  discussed above, and the arguments :kwd1 val1 ... :kwdn valn are as
+  supplied to [memoize].  There should be a single tuple in the
+  singly recursive case.  In the case that the partial functions were
+  defined by a mutual-recursion defining functions f1, ..., fn, then
+  the <partial> components of the tuples (their [car]s) must also be
+  f1, ..., fn.
+
+  The keyword/value pairs of the tuple are optional.  The default for
+  <change> is obtained by adding the suffix \"-CHANGE\" to <total>, to
+  create a symbol in the same package as that of <total>; similarly
+  for <stable> and the suffix \"-STABLE\".  The <total> function is
+  defined as described above, with an under-the-hood Common Lisp
+  definition also as described above, and [memoize]d.  The memoize
+  call uses the keywords supplied in the tuple other than :change and
+  :stable.  For any memoize keywords not specified in the tuple, the
+  keywords specified at the top level of the memoize-partial call ---
+  that is, the keyword arguments (if any) following the first
+  argument (that is, following fn+) --- are also used in that
+  generated memoize call.
+
+  There are some abbreviations allowed for fn+, as follows.
+
+    * A symbol fn for fn+ abbreviates the list (fn), which is an
+      abbreviation as noted below.
+    * If fn+ is a list (t1 ... tk), then each ti that is a symbol, say fn,
+      abbreviates the tuple (fn fn-limit), where fn-limit is obtained
+      by adding the suffix \"-LIMIT\" to fn, to create a symbol in the
+      same package as that of fn.
+
+  Consider our first example, (memoize-partial collatz).  In this case
+  fn+ is collatz.  By the first rule above, this abbreviates
+  (collatz), which the second rule says is an abbreviation for
+  (collatz collatz-limit).  The default values are computed to treat
+  this as the following tuple.
+
+    (collatz collatz-limit
+             :change collatz-limit-change
+             :stable collatz-limit-stable)
+
+  Note that the keyword value :condition nil for memoize can be used to
+  install executable definitions without actually saving values,
+  essentially by merely profiling (except that unlike [profile] the
+  recursive calls are also affected by the memoize call).  See the
+  example involving ``worse-than'' functions in community book
+  books/demos/memoize-partial-input.lsp.
+
+  We conclude this section by discussing restrictions pertaining to
+  [stobj]s.  Recall that memoization is illegal (other than
+  profiling) for functions that return a stobj or have the ACL2
+  [state] as an input.  Those same restrictions apply to
+  memoize-partial.  However, it is legal for the given (``total'')
+  functions to have user-defined stobjs as inputs, as long as they
+  are not returned.  In that case, the generated definition of the
+  partial function will be made with a call of [non-exec] wrapped
+  around the body.
+
+
+Optional Technical Remarks.
+
+  Warning: These are technical remarks that are completely optional.
+
+  Our general remark is to invite readers who want to dive below the
+  user level, including implementation and foundational issues, to
+  read the comment entitled ``Essay on Memoization with Partial
+  Functions (Memoize-partial)'' in ACL2 source file
+  other-events.lisp.
+
+  Our more specific remark concerns generated Common Lisp definitions.
+  Recall that in the Basic Example above, we say that the Common Lisp
+  definition of collatz is essentially as follows.
+
+    (defun collatz (n)
+      (if (int= n 1)
+          0
+        (1+ (collatz (if (evenp n)
+                         (floor n 2)
+                       (1+ (* 3 n)))))))
+
+  We say ``essentially'' because the actual Common Lisp definition of
+  collatz is a bit different, as follows.
+
+    (DEFUN COLLATZ (N)
+      (DECLARE (IGNORABLE N))
+      (FLET ((COLLATZ-LIMIT (N LIMIT)
+                            (DECLARE (IGNORE LIMIT))
+                            (COLLATZ N)))
+            (DECLARE (INLINE COLLATZ-LIMIT))
+            (LET ((LIMIT 0))
+                 (DECLARE (IGNORABLE LIMIT))
+                 (IF (INT= N 1)
+                     0
+                     (1+ (COLLATZ-LIMIT
+                          (IF (EVENP N) (FLOOR N 2) (1+ (* 3 N)))
+                          LIMIT))))))
+
+  A little reflection will conclude that these two definitions are
+  equivalent.  The latter, however, avoids a macroexpansion issue
+  discussed in the aforementioned Essay.")
  (MEMOIZE-SUMMARY
   (MEMOIZE)
   "Display all collected profiling and memoization info
@@ -63049,7 +64221,10 @@ Subtopics
   use mv-nth to access the corresponding list by using mv-list,
   writing (mv-nth n (mv-list k EXPR)) for suitable k, where mv-list
   converts a multiple value result into the corresponding list; see
-  [mv-list].")
+  [mv-list].
+
+  Mv-nth is given some special treatment by the prover.  To control
+  that behavior see [theories-and-primitives].")
  (MV?
   (MV ACL2-BUILT-INS)
   "Return one or more values
@@ -69504,7 +70679,7 @@ Table of Contents
   A mechanism has been added for saving output.  In particular, you can
   now call [ld] on a file with output turned off, for efficiency, and
   yet when a proof fails you can then display the proof attempt for
-  the failed (last) event.  See [set-saved-output].  Another new
+  the failed (last) event.  See set-saved-output.  Another new
   command --- see [set-print-clause-ids] --- causes subgoal numbers
   to be printed during proof attempts when output is inhibited.
 
@@ -70802,7 +71977,7 @@ Subtopics
   to match the checks made when including a certified book.  Thanks
   to Eric Smith for suggesting this change.
 
-  Fixed a bug in :[pso] (see [set-saved-output]) that caused an error
+  Fixed a bug in :[pso] (see set-saved-output) that caused an error
   when printing the time summary.
 
   Made fixes to avoid potential hard Lisp errors caused by the use of
@@ -72040,7 +73215,7 @@ Subtopics
   are to be considered first.  Thanks to Sandip Ray for putting
   forward this idea.
 
-  Enhanced [set-saved-output] by supporting a second argument of :same,
+  Enhanced set-saved-output by supporting a second argument of :same,
   which avoids changing which output is inhibited.
 
   Added macros thm? and not-thm? to distributed book
@@ -72317,7 +73492,7 @@ Subtopics
   had already persisted from the original to newly-saved image.
   Thanks to Jared Davis for suggesting this change.
 
-  Changed [make-event] expansion so that changes to [set-saved-output],
+  Changed [make-event] expansion so that changes to [gag-mode],
   [set-print-clause-ids], set-fmt-soft-right-margin, and
   set-fmt-hard-right-margin will persist after being evaluated during
   make-event expansion.  (Specifically,
@@ -73083,10 +74258,10 @@ Subtopics
       off gag-mode.  Now, [set-gag-mode] only inhibits or enables
       proof (PROVE) output, according to whether gag-mode is being
       turned on or off (respectively).  The related utility
-      [set-saved-output] has also been modified, basically to
-      eliminate :all as a first argument and to allow t and :all as
-      second arguments, for inhibiting prover output or virtually all
-      output, respectively (see [set-saved-output]).
+      set-saved-output has also been modified, basically to eliminate
+      :all as a first argument and to allow t and :all as second
+      arguments, for inhibiting prover output or virtually all
+      output, respectively (see set-saved-output).
 
   A [defstub] event [signature] specifying output of the form (mv ...)
   now introduces a :[type-prescription] rule asserting that the new
@@ -77686,9 +78861,10 @@ Subtopics
     (strip-cars (cdr (assoc-equal \"system/top\" *system-verify-guards-alist*)))
 
   for the list of functions checked to be guard-verifiable in the
-  community books.  Thanks to those who have contributed to this
-  effort, as shown in file headers in directory system/ of the
-  community books.
+  community books.  (NOTE added after Version_8.3: The form is now
+  (strip-cars *system-verify-guards-alist*).)  Thanks to those who
+  have contributed to this effort, as shown in file headers in
+  directory system/ of the community books.
 
   The macro [defund] now avoids an error when :mode :program has been
   specified in an [xargs] form of a [declare] form, for example:
@@ -80464,7 +81640,7 @@ EMACS Support
 Experimental Versions
 
   (For ACL2(p) users only; see [parallelism]) If parallel execution is
-  enabled (see (@see set-parallel-execution)), as it is by default in
+  enabled (see [set-parallel-execution]), as it is by default in
   ACL2(p), then hons-wash and hons-clear may be no-ops (other than to
   print a warning), in order to avoid thread-unsafe behavior.
   (However, In CCL you are unlikely to see this restriction unless
@@ -80608,7 +81784,7 @@ Changes to Existing Features
 
   Suitable [warnings] are now printed when attempting to [monitor]
   [simple] rules of class :[definition].  These had only been printed
-  for simple rules of class :(tsee rewrite), because of potential
+  for simple rules of class :[rewrite], because of potential
   inefficiency in computing for such warnings in the case of large
   [mutual-recursion] [events], but that problem has been addressed in
   the ACL2 source code using [fast-alists].
@@ -81417,8 +82593,7 @@ Changes to Existing Features
   for a request leading to this enhancement.  (If you are interested
   in implementation-level information about the mechanism tying books
   to verification of termination and guards for built-in functions,
-  see comments in source-code constant *system-verify-guards-alist*,
-  source file boot-strap-pass-2.lisp.)
+  see comments in source-code constant *system-verify-guards-alist*.)
 
   The utilities [print-gv] and [set-print-gv-defaults] now accept a
   natural number for the keyword argument, :substitute, so that only
@@ -81439,7 +82614,7 @@ Changes to Existing Features
   logical-namep, macro-args, stobjs-out, termify-clause-set,
   throw-nonexec-error-p, and throw-nonexec-error-p1.  For a complete
   list, compare the old and new values of constant
-  *system-verify-guards-alist* in source file boot-strap-pass-2.lisp.
+  *system-verify-guards-alist*.
 
   It had been necessary to evaluate (set-state-ok t) in order to call
   [verify-termination] on a :[program] mode function that takes
@@ -83896,7 +85071,7 @@ EMACS Support
 Experimental Versions")
  (NOTE-8-3
   (RELEASE-NOTES)
-  "ACL2 Version 8.3 (xxx, 20xx) Notes
+  "ACL2 Version 8.3 (April, 2020) Notes
 
   NOTE!  New users can ignore these release notes, because the
   [documentation] has been updated to reflect all changes that are
@@ -83910,10 +85085,10 @@ Experimental Versions")
   many changes could be placed in more than one category.
 
   Note that only ACL2 system changes are listed below.  See also
-  note-8-3-books for a summary of changes made to the ACL2 Community
-  Books since ACL2 8.2, including the build system.  Also note that
-  with each release, it is typical that the value of constant
-  [*ACL2-exports*] has been extended, and that some built-in
+  [note-8-3-books] for a summary of changes made to the ACL2
+  Community Books since ACL2 8.2, including the build system.  Also
+  note that with each release, it is typical that the value of
+  constant [*ACL2-exports*] has been extended, and that some built-in
   functions that were formerly in :[program] mode are now
   [guard]-verified :[logic] mode functions.
 
@@ -83962,8 +85137,8 @@ Changes to Existing Features
 
   The following symbols, when used in special syntactic roles in the
   macro [loop$], may be in any package: for, in, on, from, to, by,
-  of-type, when, until, sum, collect, always, and append.  Thanks to
-  Mertcan Temel for requesting this enhancement.
+  of-type, when, until, sum, collect, always, thereis, and append.
+  Thanks to Mertcan Temel for requesting this enhancement.
 
   :Expand [hints] now act more reliably for [equality-variants], by
   expanding away [guard-holders].  Thanks to Sol Swords for supplying
@@ -84088,6 +85263,22 @@ Changes to Existing Features
   Martin-Mateos (in 2004), and Anna Slobodova (in 2005), perhaps
   among others, for discussions leading to this enhancement.
 
+  Both :[puff] and :[puff*] have been made more robust.  Related
+  changes include:
+
+    * A new table, puff-included-books, generally prevents the same book
+      from being puffed more than once.
+    * Book directories are tracked more carefully, which can prevent
+      errors.
+    * We no longer allow :puff* to puff non-trivial [encapsulate] events.
+      (For a technical discussion of reasons for this change, see
+      comments in function puffed-command-sequence in ACL2 source
+      file ld.lisp.)
+    * Changes to the [ACL2-defaults-table] no longer persist outside the
+      scope of a puffed encapsulate event.
+    * A [theory-invariant] event no longer stores the event (in-theory
+      (current-theory :here)) in the [world].
+
 
 New Features
 
@@ -84131,6 +85322,10 @@ New Features
   Furthermore, care must be taken when formulating inductively
   provable theorems about such functions.  See
   [loop$-recursion-induction] and [definductor].
+
+  You can now change the second line in the startup banner for a GitHub
+  version of ACL2 obtained between releases.  See [startup-banner].
+  Thanks to Andrew Walter for requesting this enhancement.
 
 
 Heuristic and Efficiency Improvements
@@ -84358,6 +85553,11 @@ Bug Fixes
   include-book-fn1, has been modified to do a better job of ignoring
   certificate files of uncertified books.
 
+  The utility set-saved-output has been badly broken for years, but
+  without complaints (other than from one of us shortly before the
+  release), suggesting that it hasn't been directly called by users.
+  So we have eliminated it.
+
 
 Changes at the System Level
 
@@ -84385,6 +85585,511 @@ EMACS Support
 
 
 Experimental Versions")
+ (NOTE-8-4
+  (RELEASE-NOTES)
+  "ACL2 Version 8.4 (xxx, 20xx) Notes
+
+  NOTE!  New users can ignore these release notes, because the
+  [documentation] has been updated to reflect all changes that are
+  recorded here.
+
+  Below we roughly organize the changes to ACL2 since Version 8.3 into
+  the following categories of changes: existing features, new
+  features, heuristic and efficiency improvements, bug fixes, changes
+  at the system level, Emacs support, and experimental versions.
+  Each change is described in just one category, though of course
+  many changes could be placed in more than one category.
+
+  Note that only ACL2 system changes are listed below.  See also
+  note-8-4-books for a summary of changes made to the ACL2 Community
+  Books since ACL2 8.3, including the build system.  Also note that
+  with each release, it is typical that the value of constant
+  [*ACL2-exports*] has been extended, and that some built-in
+  functions that were formerly in :[program] mode are now
+  [guard]-verified :[logic] mode functions.
+
+
+Changes to Existing Features
+
+  For calls of the form (HIDE (COMMENT \"...\" ...)), the string is a bit
+  more descriptive.  See [comment] and see [hide].  Thanks to Mark
+  Greenstreet for helpful discussions leading to this change.
+
+  The [events] [defun-nx] and [defund-nx] now [disable] the
+  [executable-counterpart] [rune] for the new function symbol.  Thus,
+  after either of these introduces function symbol f, the ACL2
+  rewriter will no longer attempt to simplify a call of f on concrete
+  arguments by using evaluation (unless of course that
+  executable-counterpart is enabled first).  Thanks to Mark
+  Greenstreet for an email leading to this change.  The
+  implementation of this change also fixes a bug: when the
+  [default-defun-mode] is program mode, [defund-nx] now [disable]s
+  the definition [rune] for the new function, but that was not
+  previously the case.
+
+  Some built-in functions supporting the macro, [position], now [fix]
+  (coerce) their accumulator argument to a natural number.  Thanks to
+  Mihir Mehta for supplying the initial such changes, for the purpose
+  of avoiding numeric type hypotheses.  After that, thanks to email
+  correspondence from Warren Hunt, we added built-in
+  :[type-prescription] rules for those same functions so that ACL2
+  [type-set] reasoning infers that position always returns either nil
+  or a natural number.
+
+  The macro [defconst] no longer accepts an optional documentation
+  string (which was already being ignored).  Thanks to Eric Smith and
+  Alessandro Coglio for suggesting this change, which avoids
+  potential confusion; consider for example (defconst *c* () \"abc\").
+
+  Two improvements have been made in support of the [case-match] macro.
+  (1) The built-in constant [*ACL2-exports*] now includes the \"ACL2\"
+  package symbol, quotep~.  (2) The built-in function
+  symbol-name-equal is now a [guard]-verified :[logic] mode function.
+  Thanks to Stephen Westfold for email leading to these changes: for
+  (1), pointing out that the special role of quotep~ for the
+  [case-match] macro applies only to that \"ACL2\" package symbol, not
+  to other symbols with the same name; and for (2), pointing out that
+  the expansion of a case-match call that invokes quotep~ for
+  matching was introducing :[program] mode code.
+
+  A call of [comment] is more often inserted when the prover inserts a
+  call of [hide].  See [comment] for a discussion of such ways in
+  which comment is used.
+
+  When a [rewrite] rule's conclusion is of the form (equiv term1 term2)
+  where equiv is a known [equivalence] relation, ACL2 generally
+  creates the rule to rewrite an instance of term1 to the
+  corresponding instance of term2, in a context where it is
+  sufficient to preserve equiv.  However, if that rule is illegal,
+  for example because it would rewrite a variable, then the rule is
+  effectively treated as (equal (equiv term1 term2) t).  This
+  behavior is not new, but now an explanatory [observation] is
+  printed when this happens, as for foo in the following example.
+  Thanks to Mihir Mehta for suggesting such an enhancement.
+
+    (defun my-equiv (x y) (equal x y))
+    (defequiv my-equiv)
+    (in-theory (disable my-equiv)) ; optional (avoids warnings for the next form)
+    (defthm foo (my-equiv x (car (cons x x))))
+
+  A trust tag (see [defttag]) is now required to set the [ld-prompt] to
+  a non-Boolean value, other than the [brr] prompt, since that can
+  cause printing of the prompt to modify state in rather arbitrary
+  ways.
+
+  Improved translation of function calls, especially those that involve
+  congruent [stobj]s, including better error messages, much improved
+  code comments, and simplified code.  Thanks to Sol Swords for
+  sending an example with a misleading error message.
+
+  The error message has been improved when a :[linear] rule is illegal
+  due to simplification of its conclusion to a constant by ground
+  evaluation.  Thanks to Eric Smith for suggesting such an
+  improvement.
+
+  It is no longer an error to repeat a [defun-sk] event after removing
+  or adding the [xargs] [declaration], :guard t; the latter is now
+  essentially redundant.  It is similarly no longer an error to
+  repeat a defun-sk event by adding, removing, or changing keyword
+  :guard-hints in an xargs declaration.  Thanks to Alessandro Coglio
+  for reporting these issues.
+
+  The set of [apply$] primitives has been expanded.  These are built-in
+  function symbols that do not need a [warrant] when reasoning about
+  the application of apply$ to them or using them in [loop$].  Thanks
+  to Alessandro Coglio for noting that some built-in :[logic]-mode
+  functions do not have warrants, in particular, [sublis-var].
+
+  Improved [defwarrant] to be a no-op for [apply$] primitives.
+
+  ACL2 now points out when specious simplification takes place; see
+  [specious-simplification].  Formerly this was the case only with
+  [gag-mode] turned off.  Thanks to Mihir Mehta for a query that led
+  to this enhancement.
+
+  ACL2 now uses the [evisc-table] for [fmt] directives ~f and ~F.
+  Previously it used that [table] only for directives ~x, ~y, ~X, and
+  ~Y (and deprecated directives ~p etc.; see [fmt]).  Thanks to Eric
+  Smith for a query leading to this enhancement.
+
+  Reporting has been improved when encountering possible invariance
+  violations for abstract [stobj]s.  Now, when that happens an
+  ``illegal-state'' is entered, as indicated by the prompt, and
+  instructions are printed for how to proceed at your own risk.  See
+  [illegal-state].
+
+  A [table]'s guard may now reference the ACL2 [state].  Thus, it may
+  now be a term involving (at most) the variables WORLD, ENS, and
+  STATE.
+
+  It is now always redundant to [unmemoize] a function symbol that is
+  not currently [memoize]d.  See [redundant-events].
+
+
+New Features
+
+  A new option for [certify-book], :useless-runes, makes it possible to
+  speed up repeated certification of a book, sometimes substantially.
+  See [useless-runes].  Thanks to Sol Swords for reporting a bug (in
+  ACL2 source function read-file-iterate-safe) and supplying a fix,
+  which we have incorporated.
+
+  A new keyword for [defstobj], :non-executable, can be given value t
+  to skip memory allocation for the new [stobj], by avoiding creation
+  of a ``live'' (mutable) stobj.  See [defstobj].  Thanks to Warren
+  Hunt for encouraging development of this feature.
+
+  The rewriter now rewrites the bodies of certain quoted [lambda]
+  objects.  However, some restrictions apply.  See
+  [rewrite-lambda-object].  In addition some new lemmas and a new
+  metafunction have been added to the book projects/apply/top, which
+  users are still encouraged to include in sessions dealing with
+  [apply$].  The new metafunction is named relink-fancy-scion and can
+  also cause lambda objects to be transformed.  See the discussion of
+  that metafunction in [rewrite-lambda-object].
+
+  Added [toggle-inhibit-warning] and [toggle-inhibit-warning!] to add
+  or delete a warning string from the inhibit-warnings-table, rather
+  than setting that entire table as is done by
+  [set-inhibit-warnings].
+
+  It is now possible to instruct the prover to respect requests to
+  [disable] the [definition] of the primitive, [mv-nth], rather than
+  continuing to expand that definition.  See
+  [theories-and-primitives], in particular the note for advanced
+  users at the end of that topic.  Thanks to Alessandro Coglio for
+  requesting this feature.
+
+  A new utility, [memoize-partial], allows memoization for functions
+  that were made admitted by adding a formal parameter that decreases
+  on each recursive call (sometimes called a ``limit'' or a
+  ``clock'').  Normally that extra parameter can severely impede the
+  utility of memoization; however, the function actually executed
+  does not have that extra parameter.  This allows for more
+  memoization hits.  Thanks to Mertcan Temel for an inquiry leading
+  to this enhancement, and for helpful discussions.
+
+  A new rule-class (see [rule-classes]) has been added, named
+  :[rewrite-quoted-constant].  Rules in this class can cause the
+  rewriter to replace one quoted constant by an equivalent one under
+  a given [equivalence] relation.  See [rewrite-quoted-constant].
+
+  The [loop$] parser produces more informative error messages on
+  ill-formed loop$ statements.
+
+  A new [memoize] keyword, :invoke, supports the replacement of calls
+  of one function by another.  In that sense it is similar to
+  [defattach]; the difference is that with (memoize f :invoke g), it
+  is necessary first to prove the equality of f and g; therefore,
+  ACL2 will compute calls of f by calling g even during proofs.  In
+  particular, the tool [add-io-pairs] is built on top of this
+  capability; it allows evaluating a function call by fast lookup of
+  a verified input-output pair.  Thanks to Eric McCarthy, Alessandro
+  Coglio, and Eric Smith for requesting the latter capability and
+  providing helpful feedback.
+
+
+Heuristic and Efficiency Improvements
+
+  We changed the lightweight ``preprocess'' simplifier for ``[simple]''
+  rules in the prover's [waterfall], in the case that the term is the
+  application of a defined function symbol to constant (quoted)
+  arguments.  As before, if the [executable-counterpart] rule for
+  that function symbol is [enable]d, then the call is evaluated in
+  Lisp; and if that evaluation fails (typically because a constrained
+  function is called), then an attempt is made to rewrite the term by
+  applying a [simple] rule.  The change is for how failure is
+  handled, that is, in the case that evaluation fails and the term is
+  not rewritten.  Formerly, the term was surrounded by a call of
+  [hide].  Now, that is only done by the main rewriter, not by the
+  ``preprocess'' simplifier.  Thanks to Eric Smith for a
+  communication on the acl2-help list, on a thread started by Mark
+  Greenstreet, that led us towards making this change.  Mark's failed
+  proof now succeeds after this change, but here is a simpler
+  example.  Formerly, the commented-out :do-not hint was required for
+  the proof of the [thm] call below to succeed, because the
+  definition of g is not simple and hence the ``preprocess''
+  simplifier replaced (g 3) by a term (hide (comment ...) (g 3))
+  before the rewriter could apply the definition of g.
+
+    (defstub f (x) t)
+    (defun g (x) (cons x (f x)))
+    (thm (equal (car (g 3)) 3)
+         ;; :hints ((\"Goal\" :do-not '(preprocess)))
+         )
+
+  The ACL2 rewriter has a ``being-openedp'' heuristic that prevents
+  loops, by saving a stack based on what is currently being
+  rewritten.  This can prevent the use of a [definition] or [rewrite]
+  rule.  Now the heuristic is turned off when the term's function
+  symbol has a non-recursive definition and simplification has just
+  settled down (see [hints-and-the-waterfall]).  To restore the old
+  behavior, i.e., to use the heuristic in all cases --- thus
+  providing backward compatibility when a proof fails --- evaluate
+  the form: (defattach-system being-openedp-limited-for-nonrec
+  constant-nil-function-arity-0).
+
+  When a command executed in a logical [world], w, is interrupted, the
+  world is reverted to w.  That reversion process could be very slow
+  if the interrupt was taken during the installation of the new
+  world, as indicated by the messages:
+
+    Flushing current installed world.
+    Reversing the new world.
+    Installing the new world.
+
+  That process has been sped up significantly.  Moreover, the new
+  process avoids a bug reported by Eric Smith, who we thank for
+  sending an example of how the process was interacting badly with
+  [reset-prehistory].  Code implementing that interaction was
+  introduced in Version 4.0 to speed up the process; that code has
+  been eliminated, as it is no longer necessary.
+
+
+Bug Fixes
+
+  A soundness bug, present since [loop$] was introduced, was fixed. The
+  bug was manifested when the keyword :guard was used as the loop$
+  body, as in (loop$ for v in lst collect :guard).  (Note: It's not
+  clear that this bug could be used to prove nil.)
+
+  The mechanism for tracking [warrant]s needed during a proof had a
+  bug, which might be a soundness bug if one uses [apply$] or
+  [loop$].  That bug has been fixed.
+
+  Fixed a bug that was preventing use of the RDTSC hardware instruction
+  in SBCL on most x86-based platforms, and possibly erroneously
+  attempting to make use of that instruction on some other platforms.
+  Thanks to Keshav Kini for a query that led to this fix.  Also
+  restricted RDTSC to x86-based platforms, thanks to a suggestion by
+  Curtis Dunham, to enable Arm builds of ACL2.
+
+  The use of [apply$] on calls of [if] no longer cause raw Lisp errors.
+  (The same is true for calls of the subroutine apply$-prim of
+  apply$.)  For example, these calls now evaluate without error:
+  (apply$ 'if '(nil nil nil)) and (apply$-prim 'if '(nil nil nil)).
+
+  We made the following fixes to the [accumulated-persistence] utility.
+
+    * Applications of [type-prescription] rules that were erroneously
+      labeled as ``useless'' are now appropriatedly labeled as
+      ``useful''.
+    * The documentation for [accumulated-persistence] now correctly states
+      that the form (accumulated-persistence-oops) undoes the
+      clearing effect of (accumulated-persistence t), rather than of
+      (accumulated-persistence nil).
+    * Uses of [definition] rules because of :[expand] hints, either
+      expicitly given by the user or generated by ACL2's heuristics
+      for doing induction, were not being recorded by
+      [accumulated-persistence].  They are now.
+
+  Fixed a bug that was causing books to be included as ``uncertified''
+  after their certification stored checksums (see [book-hash]).
+  Thanks to Keshav Kini for reporting this bug.
+
+  ACL2 could occasionally simplify subterms of a call of [hide] even
+  without any applicable rules or :expand [hints].  (Technical note:
+  the problematic source function was normalize.)  We considered this
+  to be a bug, so it has been fixed.
+
+  The notion of redundancy for [defstobj] [events] was too weak, as
+  evidenced by the following example.  Consider the following book,
+  named \"bug.lisp\".
+
+    (in-package \"ACL2\")
+    (defstobj st fld)
+    (defun foo (st) (declare (xargs :stobjs st)) (fld st))
+
+  After certifying this book, a raw Lisp error could occur after
+  evaluating the following forms, because the compiled definition of
+  foo from including the book referenced a function, fld, which is
+  now a macro.
+
+    (defstobj st fld :inline t)
+    (include-book \"bug\") ; The defstobj event in this book is redundant here.
+    (foo st)
+
+  The bug has been fixed by requiring a redundant [defstobj] event to
+  be syntactically identical to the pre-existing corresponding
+  [defstobj] event.
+
+  A raw Lisp error would occur when the value of an :[instructions]
+  hint is not a true (null-terminated) list.  ACL2 now produces an
+  informative error message in that case.
+
+  Improved :print-gv to do its computation in the ACL2 [world] in which
+  the [guard] violation took place.  See [print-gv]; in particular,
+  that topic concludes with a discussion of this issue.  Thanks to
+  Eric Smith for reporting this issue along with a simple example.
+
+  The following [defun-sk] bugs were fixed.
+
+    * The [guard] was being ignored (that is, treated as t) when
+      :constrained t was specified in a defun-sk event.  Thanks to
+      Alessandro Coglio for reporting this bug.
+    * [Defun-sk] could fail when the formal parameters include [stobj]s or
+      state.
+    * [Defun-sk] provided no direct way to allow formals to be ignored.
+      Now, ignorable [declaration]s are permitted.
+
+  For Lisps that do not compile on the fly (that is, Lisps other than
+  CCL and SBCL), evaluation of :comp t effectively unmemoized
+  functions that were not already compiled.  This has been fixed.
+
+  When a [stobj] hash-table's ``init'' function was called with size 0,
+  an error could occur for host Lisp GCL, complaining that size 0 is
+  not allowed for hash-tables.  This has been fixed by using size 1
+  instead of 0 in this case.
+
+  Reporting by [break-rewrite] has been fixed for cases when failure is
+  due to a hypothesis with a [backchain-limit] of 0.  There were
+  actually two such bugs: one due to improper handling of [linear]
+  rules (which might have occurred even for other backchain-limits
+  besides 0), and one due to the erroneous assumption that
+  backchaining has only just begun at the point of failure.  Thanks
+  to Mihir Mehta for sending an example that exhibited both bugs.  A
+  discussion of the second bug, including a simple example, may be
+  found in a comment in the ACL2 source function,
+  tilde-@-failure-reason-phrase1-backchain-limit.
+
+  :OR [hints] that contain a single list (which satisfies
+  [keyword-value-listp]) were being mishandled.  This has been fixed.
+  Thanks to Dave Greve who sent an example [defthm] event specifying
+  :hints ((\"Goal\" :or ((:in-theory (e/d () ()) :nonlinearp t)))),
+  which formerly caused a Lisp error.
+
+  Fixed a bug in tracking the [cbd] that could cause failures of
+  [include-book] in raw-mode.  Thanks to Warren Hunt for a query
+  leading to this fix.
+
+  Fixed a bug that was preventing some deep [patterned-congruence]
+  rules from being applied.  This could occur when on the left-hand
+  side, the outermost function symbol is the same as the next
+  function symbol going in towards the variable that differs on the
+  right-hand side.  Thanks to Mihir Mehta for reporting this bug and
+  including a replayable example.
+
+  Fixed several issues with [fmt] (and related printing utilities)
+  pertaining to linebreaks.  These include the following, many of
+  which are illustrated in a new file,
+  system/tests/fmt-tests-input.lsp (search there for ``2020'').
+
+    * A space past the [fmt-soft-right-margin] now results in a linebreak
+      even in the case of tilde-space (`~ ').
+    * As before, for puctuation after a tilde-x (`~x') directive, ACL2
+      avoids printing in column 0 after a linebreak.  This desirable
+      behavior now extends to the case that `~x' is inside a
+      tilde-atsign (`~@') directive.  For example, after
+      (set-fmt-hard-right-margin 10 state) try either (fmx \"~@0.\"
+      (msg \"~x0\" '(ab de gh))) or (fmx \"~#0~[~x0~/~x0~].\" '(ab de
+      gh)).
+    * Spaces are respected after tilde-y (`~y') directives.  For example,
+      (cw \"~y0 A~%\" 3 4) now prints the letter A in column 2 rather
+      than column 0.  Thanks to Eric Smith and Alessandro Coglio for
+      suggesting this change.
+    * An extra character is sometimes permitted before deciding that a
+      tilde-x (`~x') directive causes a linebreak.
+    * Tilde directives that cause no printing are often ignored when
+      deciding whether to keep a punctuation mark with a
+      pretty-printed expression.  For example, when setting both
+      right margins (soft and hard) to 10, the following no longer
+      prints a comma in column 0: (fmx \"~x0~@1, more~%\" 'aaaaaaaaaa
+      \"\").
+    * Fixed a [double-rewrite] warning, which was breaking the word ``is''.
+      Thanks to Mihir Mehta for pointing this out.
+
+  After setting [state] global trace-co, for example with (f-put-global
+  'trace-co (@ standard-co) state) (say, after setting standard-co to
+  an open output channel), printing of the trace level such as ``1>''
+  and ``<1'' will now go to that channel.  Formerly, this could fail
+  after setting trace-co directly rather than using
+  [open-trace-file].
+
+
+Changes at the System Level
+
+  (SBCL only) Filenames are now read as ASCII (specifically,
+  ISO-8859-1) when the host Lisp is SBCL, which formerly was not the
+  case.  Thanks to Stephen Westfold for suggesting this change.
+
+  ACL2 can once again be built on CMU Common Lisp (CMUCL) (though we
+  have only done minimal testing).  The problem turned out to be with
+  ACL2, not CMUCL: low-level Lisp code in the ACL2 sources was
+  destructively modifying a quoted constant.  (For implementation
+  details, see *fncall-cache* in source file translate.lisp.)  The
+  bug was discovered when considering modification of the build
+  process to compile ACL2 source files when the host Lisp is SBCL.
+  Thanks to Stas Boukarev for pointing us in the right direction to
+  debug this error.
+
+  There is now a way to save the untranslated bodies of built-in
+  :[program] mode functions.  WARNING: This is not officially
+  supported!  But it may be useful for tools such as a linter.  See
+  GNUmakefile: search there for :acl2-save-unnormalized-bodies, where
+  you will see that a more general capability is actually available
+  for evaluating forms before the build begins.  Thanks to Eric Smith
+  for correspondence leading to this enhancement.
+
+  Starting with ACL2 Version 7.0, the availability of hash consing (see
+  [hons]) and the other features described in [hons-and-memoization]
+  have been part of a default ACL2 build; meanwhile, support for
+  ``classic'' ACL2 has essentially been discontinued.  These features
+  require a certain Lisp action (implementation note: pushing :hons
+  onto *features*) that had been done during the ACL2 build by the
+  `make' process (with code in GNUmakefile).  Now that action is
+  taken unconditionally in the ACL2 source code.  Thanks to Petter
+  Gustad for reporting an error when attempting to build ACL2 without
+  using `make'; this change should fix that bug.  With this change
+  you can no longer attempt to build ``classic'' ACL2(c) without
+  editing ACL2 source file init.lisp; environment variable ACL2_HONS
+  no longer has any effect.  (On a related technical note: An obscure
+  feature :memoize-hack seems not to be used anywhere, and has been
+  eliminated.)
+
+  (SBCL only) Handling in ACL2 of the SBCL ``read-cycle-counter'' has
+  been modified to reflect its handling in recent SBCL versions
+  (starting around late 2018 or early 2019).  This avoids an ACL2
+  build error on some platforms.  Thanks to John R. Strohm for
+  reporting such a problem (on a Raspberry Pi).
+
+  (SBCL only) Increased the number of special variables that can be
+  created, which allowed community book
+  books/kestrel/apt/schemalg-template-proofs.lisp to certify.
+
+  Fixed builds that use a relative pathname for the LISP environment
+  variable (for host Lisps CCL, SBCL, Allegro CL, and CMUCL; GCL and
+  LispWorks didn't seem to have this problem).  Thanks to Mihir Mehta
+  for bringing this issue to our attention.
+
+
+EMACS Support
+
+  The [ACL2-doc] search commands (`s' and `S') were seen to use all
+  available memory on a linux system, during the process of
+  initializing the acl2-doc-search buffer that is used for doing the
+  searching.  That problem has been solved: that buffer is now loaded
+  from a file that is built by the manual-building process and is
+  downloaded by the acl2-doc `D' command.
+
+  Highlighting in lisp-mode (inside Emacs) has been improved, both by
+  recognizing more keywords and by highlighting of some new
+  arguments, in particular the first argument of defthm.  Thanks to
+  Vivek Ramanathan, both for pointing out the defthm issue and for
+  suggesting code that was incorporated into the changes.
+
+
+Experimental Versions
+
+  ACL2(p) now runs much more reliably on host Lisp SBCL (by taking
+  advantage of a locking mechanism provided by SBCL).  Thanks to
+  David Rager for providing this improvement.
+
+  In ACL2(p), [set-waterfall-parallelism] no longer causes an error
+  when there are [override-hints] if the argument is the existing
+  value of the [state] global, 'waterfall-parallelism, or upon a
+  transition of [waterfall-parallelism] to nil.  Thanks to David
+  Rager for raising this issue (see GitHub Issue #1171) and
+  discussing its resolution.")
  (NOTE1 (POINTERS) "See [note-1-1].")
  (NOTE2 (POINTERS) "See [note-1-2].")
  (NOTE3 (POINTERS) "See [note-1-3].")
@@ -85867,7 +87572,11 @@ Subtopics
   Output from [trace$] normally goes to the screen, i.e.,
   [standard-co].  But it can be redirected to a file as shown above.
   See [close-trace-file] for how to send trace output back to the
-  screen.")
+  screen.
+
+  Open-trace-file does not work as would reasonably be expected during
+  [make-event] expansion.  Use open-trace-file! instead within
+  make-event.")
  (OPTIMIZE (POINTERS) "See [declare].")
  (OR
   (BASICS ACL2-BUILT-INS)
@@ -86658,7 +88367,7 @@ Subtopics
   acl2s/utilities.lisp which includes even more such utilities.  To
   see an example of a utility that generates symbols in the current
   package, see books/acl2s/defunc.lisp, which contains the
-  ACL2s::defunc utility.  Other examples include [defequiv],
+  [ACL2s::defunc] utility.  Other examples include [defequiv],
   [defrefinement] and [defcong] in defthm.lisp.")
  (PACKN
   (SYMBOLS ACL2-BUILT-INS)
@@ -88175,9 +89884,9 @@ Implementation
 
   Patterned congruence rules are used primarily during the process of
   rewriting.  In particular, unlike classic congruence rules, they
-  are not used to do equality substitution at the goal level.  The
-  simplest way to understand this point may be with the following
-  trivial example.
+  are not used to do equality substitution at the goal level or in
+  [proof-builder] commands such as = and equiv.  The simplest way to
+  understand this point may be with the following trivial example.
 
     (defstub foo (x y z) t)
 
@@ -88574,42 +90283,95 @@ Implementation
   "Print the rules for the given name or term
 
     Examples:
-    :pl foo     ; prints rules that rewrite some call of foo
-    :pl (+ x y) ; prints rules that rewrite (+ x y)
+    :pl foo        ; prints rules that rewrite some call of foo
+    :pl quote      ; prints rules that rewrite quoted constants
+    :pl (+ x y)    ; prints rules that rewrite (+ x y)
+    :pl '(4 1 2 3) ; prints rules that rewrite '(4 1 2 3)
 
   Also see [pl2], which restricts output to rules that you specify for
   a given term.
 
   Pl takes one argument, which should be a symbol or a term.
 
-  First suppose that the argument is a symbol.  Then it should be
-  either a function symbol or else a macro alias for a function
-  symbol (see [macro-aliases-table]), which is treated as the
-  corresponding function symbol.  In this case :pl displays rules
-  that apply to terms whose top function symbol is the one specified,
-  specifically, rules of class :[rewrite], :[definition], :[meta],
-  :[linear], :[type-prescription], :[forward-chaining], :[elim], and
-  :[induction].  For each class, rules are displayed in order from
-  the most recently submitted rule to the oldest, with two
+  First suppose that the argument is a symbol.  Then it should be the
+  symbol quote, a function symbol, or else a macro alias for a
+  function symbol (see [macro-aliases-table]), which is treated as
+  the corresponding function symbol.  When the argument to pl is
+  quote, pl displays the rules that rewrite quoted constants, i.e.,
+  the :[rewrite-quoted-constant] rules.  Otherwise, :pl displays
+  rules that apply to terms whose top function symbol is the one
+  specified, specifically, rules of class :[rewrite], :[definition],
+  :[meta], :[linear], :[type-prescription], :[forward-chaining],
+  :[elim], and :[induction].  For each class, rules are displayed in
+  order from the most recently submitted rule to the oldest, with two
   exceptions: :rewrite, :definition, and :meta rules are considered
   as one ``class'' for this purpose; and only the current (most
   recent) :elim rule is displayed.
 
   Otherwise the argument should be a term (in user syntax, so that for
   example macros are permitted).  In this case, :pl displays rules
-  that are applicable to the given term, in order (as above, most
-  recent rule first) for each of these four cases: first :[rewrite]
-  and :[definition] rules, then :meta rules, then :[linear] rules,
-  and finally :[type-prescription] rules.  Each rule is displayed
-  with additional information, such as the hypotheses that remain
-  after applying some simple techniques to discharge them that are
-  likely to apply in any context.  Note that for :[meta] rules, only
-  those are displayed that meet two conditions: the application of
-  the metafunction returns a term different from the input term, and
-  if there is a hypothesis metafunction then it also returns a term.
-  (A subtlety: In the case of extended metafunctions (see
-  [extended-metafunctions]), a trivial metafunction context is used
-  for the application of the metafunction.)
+  that are (possibly) applicable to the given term, in order (as
+  above, most recent rule first) for each of these four cases: first
+  :[rewrite-quoted-constant], :[rewrite] and :[definition] rules,
+  then :meta rules, then :[linear] rules, and finally
+  :[type-prescription] rules.  Each rule is displayed with additional
+  information, such as the hypotheses that remain after applying some
+  simple techniques to discharge them that are likely to apply in any
+  context.  (Those techniques include [type-set] reasoning,
+  [forward-chaining], and some attempts to deal with [free-variables]
+  including handling of binding hypotheses, [syntaxp] and
+  [bind-free].)
+
+  It is important to remember that rules displayed as ``applicable'' by
+  pl may in fact not be used because of logical requirements, like
+  failure to relieve the hypotheses in the context in which the
+  target occurs, or because of heuristics such as those controlled by
+  the :[loop-stopper].
+
+  A reminder of this can sometimes be seen in the output of pl.  For
+  example, if the list of un-discharged hypotheses contains nil then
+  the hypotheses of this instance the rule are known, by trivial
+  means, to be unsatisfiable.
+
+  Similarly, :[rewrite-quoted-constant] rules of form [2] are not
+  actually applied unless a certain computation produces a quoted
+  constant.  For example,
+
+    ACL2 !>(include-book \"demos/rewrite-quoted-constant-examples\" :dir :system)
+
+  includes a form [2] rule, named form-2-rule, which will rewrite any
+  quoted constant occurring a position admitting set-equalp as a
+  congruence.  The rule will apply the function drop-dups-and-sort to
+  the constant and replace the constant by the result --- if the
+  result is a quoted constant.  That function coerces the constant to
+  a [true-listp], drops duplicate elements, and sorts the list.
+  Thus, '(3 1 1 2 . 77) in a set-equalp occurrence would be rewritten
+  to '(1 2 3).  However, that replacement is only made if
+  (drop-dups-and-sort '(3 1 1 2 . 77)) is rewritten to a quoted
+  constant.
+
+    ACL2 !>:pl '(3 1 1 2 . 77)
+
+  will include an entry for form-2-rule, but the entry reads:
+
+    New term: (DROP-DUPS-AND-SORT '(3 1 1 2 . 77))
+    Hypotheses: <none>
+    Equiv: SET-EQUALP
+    Substitution: ((LST '(3 1 1 2 . 77)))
+    WARNING:  The new term above is only used if it rewrites to a quoted
+    constant!
+
+  How might the replacement not be made?  One way is if
+  drop-dups-and-sort and its [executable-counterpart] are both
+  disabled and there are no :rewrite rules about that function.
+
+  Note that for :[meta] rules, only those are displayed that meet two
+  conditions: the application of the metafunction returns a term
+  different from the input term, and if there is a hypothesis
+  metafunction then it also returns a term.  (A subtlety: In the case
+  of extended metafunctions (see [extended-metafunctions]), a trivial
+  metafunction context is used for the application of the
+  metafunction.)
 
   Note that some rule classes are not handled by :pl.  In particular,
   if you want to see all :[clause-processor] rules, issue the command
@@ -88795,6 +90557,9 @@ Subtopics
   [Array]
       See [arrays].
 
+  [Assertions]
+      See [errors].
+
   [Assoc-eq]
       See [assoc].
 
@@ -88842,6 +90607,12 @@ Subtopics
 
   [Close-output-channel]
       See [io].
+
+  [Collect$]
+      See [loop$].
+
+  [Collect$+]
+      See [loop$].
 
   [Community-book]
       See [community-books].
@@ -88969,10 +90740,16 @@ Subtopics
   [First-n-ac]
       See [take].
 
+  [Fix-pkg]
+      See [system-utilities].
+
   [Flambda-applicationp]
       See [system-utilities].
 
   [Flambdap]
+      See [system-utilities].
+
+  [Flatten-ands-in-lit]
       See [system-utilities].
 
   [Fms!-to-string]
@@ -88983,6 +90760,12 @@ Subtopics
 
   [Fmt!-to-string]
       See [printing-to-strings].
+
+  [Fmt-hard-right-margin]
+      See [set-fmt-hard-right-margin].
+
+  [Fmt-soft-right-margin]
+      See [set-fmt-hard-right-margin].
 
   [Fmt-to-string]
       See [printing-to-strings].
@@ -89581,6 +91364,12 @@ Subtopics
   [Suitably-tamep-listp]
       See [tame].
 
+  [Sum$]
+      See [loop$].
+
+  [Sum$+]
+      See [loop$].
+
   [Symbol-class]
       See [system-utilities].
 
@@ -89601,6 +91390,9 @@ Subtopics
 
   [Thereis$+]
       See [loop$].
+
+  [Too-many-ifs]
+      See [efficiency].
 
   [Trans-eval-default-warning]
       See [user-stobjs-modified-warnings].
@@ -89685,6 +91477,9 @@ Subtopics
 
   [With-output!]
       See [with-output].
+
+  [With-prover-step-limit!]
+      See [with-prover-step-limit].
 
   [Write-byte$]
       See [io].")
@@ -89862,6 +91657,41 @@ Subtopics
   Position is defined by Common Lisp.  See any Common Lisp
   documentation for more information.
 
+  Macro: <position>
+
+    (defmacro
+     position (x seq &key (test ''eql))
+     (declare (xargs :guard (or (equal test ''eq)
+                                (equal test ''eql)
+                                (equal test ''equal))))
+     (cond
+      ((equal test ''eq)
+       (cons
+         'let-mbe
+         (cons (cons (cons 'x (cons x 'nil))
+                     (cons (cons 'seq (cons seq 'nil)) 'nil))
+               (cons ':logic
+                     (cons (cons 'position-equal
+                                 (cons 'x (cons 'seq 'nil)))
+                           (cons ':exec
+                                 (cons (cons 'position-eq-exec
+                                             (cons 'x (cons 'seq 'nil)))
+                                       'nil)))))))
+      ((equal test ''eql)
+       (cons
+         'let-mbe
+         (cons (cons (cons 'x (cons x 'nil))
+                     (cons (cons 'seq (cons seq 'nil)) 'nil))
+               (cons ':logic
+                     (cons (cons 'position-equal
+                                 (cons 'x (cons 'seq 'nil)))
+                           (cons ':exec
+                                 (cons (cons 'position-eql-exec
+                                             (cons 'x (cons 'seq 'nil)))
+                                       'nil)))))))
+      (t (cons 'position-equal
+               (cons x (cons seq 'nil))))))
+
   Function: <position-equal>
 
     (defun position-equal (item lst)
@@ -89876,9 +91706,55 @@ Subtopics
            (declare (xargs :guard (and (true-listp lst)
                                        (acl2-numberp acc))))
            (cond ((endp lst) nil)
-                 ((equal item (car lst)) acc)
+                 ((equal item (car lst))
+                  (mbe :exec acc :logic (fix acc)))
                  (t (position-equal-ac item (cdr lst)
-                                       (1+ acc)))))")
+                                       (1+ acc)))))
+
+  Macro: <position-ac>
+
+    (defmacro
+     position-ac
+     (item lst acc &key (test ''eql))
+     (declare (xargs :guard (or (equal test ''eq)
+                                (equal test ''eql)
+                                (equal test ''equal))))
+     (cond
+      ((equal test ''eq)
+       (cons
+        'let-mbe
+        (cons
+            (cons (cons 'item (cons item 'nil))
+                  (cons (cons 'lst (cons lst 'nil))
+                        (cons (cons 'acc (cons acc 'nil))
+                              'nil)))
+            (cons ':logic
+                  (cons (cons 'position-equal-ac
+                              (cons 'item (cons 'lst 'nil)))
+                        (cons ':exec
+                              (cons (cons 'position-ac-eq-exec
+                                          (cons 'item (cons 'lst 'nil)))
+                                    'nil)))))))
+      ((equal test ''eql)
+       (cons
+        'let-mbe
+        (cons
+         (cons (cons 'item (cons item 'nil))
+               (cons (cons 'lst (cons lst 'nil))
+                     (cons (cons 'acc (cons acc 'nil))
+                           'nil)))
+         (cons
+            ':logic
+            (cons (cons 'position-equal-ac
+                        (cons 'item
+                              (cons 'lst (cons 'acc 'nil))))
+                  (cons ':exec
+                        (cons (cons 'position-ac-eql-exec
+                                    (cons 'item
+                                          (cons 'lst (cons 'acc 'nil))))
+                              'nil)))))))
+      (t (cons 'position-equal-ac
+               (cons item (cons lst 'nil))))))")
  (POSITION-EQ (POINTERS)
               "See [position].")
  (POSITION-EQUAL (POINTERS)
@@ -90024,8 +91900,8 @@ Subtopics
   but it is useful to see [linear] to learn about maximal terms
   (which, as one might guess, are stored under ``Max-term'').
 
-  Currently, this function does not print congruence rules or
-  equivalence rules.
+  Currently, this function does not print congruence rules, equivalence
+  rules, or refinement rules.
 
   The expert user might also wish to use [find-rules-of-rune].  See
   [find-rules-of-rune].")
@@ -91086,38 +92962,52 @@ A Single Performance Comparison
   following effects and system defaults, but note that the defaults
   can be changed by the user; see [set-print-gv-defaults].
 
-  The :conjunct argument is nil by default, indicating that a form is
-  to be displayed whose evaluation represents the [guard] evaluation
-  that produced nil.  A value of t indicates that ACL2 should parse
-  the guard into conjuncts, and display the conjunct that actually
-  evaluated to nil.  It does this by evaluating each conjunct in turn
-  until one produces a result of nil.
-
-  The :evisc-tuple argument should be an [evisc-tuple].  Its default is
-  the value of the expression (print-gv-evisc-tuple), which specifies
-  hiding only the ACL2 logical [world], so that the symbol <world> is
-  printed instead of the actual world.  See [evisc-tuple] for a
-  discussion of evisc-tuples.
-
-  The :substitute argument is nil by default, indicating that the
-  displayed form uses [flet], which avoids duplicate occurrences of
-  actual parameters.  A value of t indicates that ACL2 should instead
-  substitute those actuals into the guard.  Otherwise the value
-  should be a natural number n, which behaves the same as nil except
-  when large duplicated terms are to be avoided in the precise sense
-  below, in which case the behavior is the same as t, that is, flet
-  is used.  The latter case (using flet) applies when some variable
-  in the guard or (if :conjunct t is specified) conjunct has at least
-  two occurrences, and corresponds to an actual parameter with at
-  least n conses.  Note that the number of conses is counted in the
-  ``translated'' term (guard or conjunct); see [term].
+    * The :conjunct argument is nil by default, indicating that a form is
+      to be displayed whose evaluation represents the [guard]
+      evaluation that produced nil.  A value of t indicates that ACL2
+      should parse the guard into conjuncts, and display the conjunct
+      that actually evaluated to nil.  It does this by evaluating
+      each conjunct in turn until one produces a result of nil.
+    * The :evisc-tuple argument should be an [evisc-tuple].  Its default is
+      the value of the expression (print-gv-evisc-tuple), which
+      specifies hiding only the ACL2 logical [world], so that the
+      symbol <world> is printed instead of the actual world.  See
+      [evisc-tuple] for a discussion of evisc-tuples.
+    * The :substitute argument is nil by default, indicating that the
+      displayed form uses [flet], which avoids duplicate occurrences
+      of actual parameters.  A value of t indicates that ACL2 should
+      instead substitute those actuals into the guard.  Otherwise the
+      value should be a natural number n, which behaves the same as
+      nil except when large duplicated terms are to be avoided in the
+      precise sense below, in which case the behavior is the same as
+      t, that is, flet is used.  The latter case (using flet) applies
+      when some variable in the guard or (if :conjunct t is
+      specified) conjunct has at least two occurrences, and
+      corresponds to an actual parameter with at least n conses.
+      Note that the number of conses is counted in the ``translated''
+      term (guard or conjunct); see [term].
 
   Again, the user can change these defaults; see
   [set-print-gv-defaults].  For example, one might wish to evaluate
-  (set-print-gv-defaults :substitute 20) so that @(tsee flet) is used
-  only when that avoids certain duplicated large terms, as discussed
-  just above.</p> <p>To see how one might use @('print-gv, consider
-  the following definition.
+  (set-print-gv-defaults :substitute 20) so that [flet] is used only
+  when that avoids certain duplicated large terms, as discussed just
+  above.
+
+  Remarks
+
+    * (1) Print-gv starts by temporarily replacing the current installed
+      ACL2 [world] with the world that was installed at the time the
+      guard violation took place.  The current world is re-installed
+      when print-gv returns.  We illustrate this point with an
+      example at the end of this topic.
+    * (2) The output from print-gv always goes to the terminal.
+      (Specifically, the output goes to the value of the constant
+      [*standard-co*].)
+    * (3) While print-gv is a utility for debugging [guard] violations, see
+      [guard-debug] for a different sort of utility, which assists in
+      debugging failed proofs arising from guard verification.
+
+  To see how one might use print-gv, consider the following definition.
 
     (defun foo (x)
       (declare (xargs :guard (and (integerp x)
@@ -91191,16 +93081,6 @@ A Single Performance Comparison
   The NIL results show that the second and fourth conjuncts of the
   guard were false in our particular case.
 
-  The following hack will give you access in raw Lisp to the form
-  printed by (print-gv).  After a guard violation, just submit the
-  following form to raw Lisp.
-
-    (print-gv1 (wormhole-data (cdr (assoc 'ev-fncall-guard-er-wormhole
-                                          *wormhole-status-alist*)))
-               nil ; conjunct
-               nil ; substitute
-               'top state)
-
   If you use local [stobj]s (see [with-local-stobj]) or stobj fields of
   stobjs, you may need to edit the output of print-gv in order to
   evaluate it.  Consider the following example.
@@ -91269,9 +93149,27 @@ A Single Performance Comparison
     T
     ACL2 !>
 
-  Finally, we note that while print-gv is a utility for debugging guard
-  violations, in contrast, see [guard-debug] for a utility to assist
-  in debugging failed proofs arising from guard verification.
+  We conclude with an example that illustrates point (1) above,
+  regarding the installation of the [world] that was in place at the
+  time the guard violation took place.  In the following, the [progn]
+  call fails when the form (foo 3) causes a guard violation.
+
+    (progn (defn g (x) (consp x))
+           (defun foo (x) (declare (xargs :guard (g x))) (car x))
+           (value-triple (foo 3)))
+
+  We can then issue print-gv:
+
+    ACL2 !>:print-gv
+
+    (FLET ((FOO{GUARD} (X) (DECLARE (IGNORABLE X)) (G X))) (FOO{GUARD} 3))
+
+    ACL2 !>
+
+  However, if you try to evaluate this form, you will get an error
+  because the function g is not currently defined.  This problem can
+  be solved by preceding :print-gv with :redo-flat, to re-run the
+  events up to the one that failed; see [redo-flat].
 
 
 Subtopics
@@ -92814,6 +94712,9 @@ Subtopics
   [Error-triple]
       A common ACL2 programming idiom
 
+  [F-boundp-global]
+      Check whether a global variable in [state] has a value
+
   [F-get-global]
       Get the value of a global variable in [state]
 
@@ -92825,6 +94726,9 @@ Subtopics
 
   [Last-prover-steps]
       The number of prover steps most recently taken
+
+  [Makunbound-global]
+      Remove the value assigned to a global variable in [state]
 
   [Pprogn]
       Evaluate a sequence of forms that return [state]
@@ -94233,6 +96137,12 @@ Subtopics
   [Summary]
       The summary printed at the conclusion of an event
 
+  [Toggle-inhibit-warning]
+      Add or delete a warning string from the inhibit-warnings-table
+
+  [Toggle-inhibit-warning!]
+      Toggle an inhibit-warnings-table entry non-[local]ly
+
   [Warnings]
       Warnings emitted by the ACL2 proof process
 
@@ -94639,8 +96549,7 @@ Subtopics
 
   Evaluate :pso in order to print output that was generated in an
   environment where output was being saved, as in [gag-mode], which
-  is active when ACL2 is invoked.  See [set-saved-output] for
-  details.
+  is active when ACL2 is invoked.  Also see [gag-mode].
 
     Example Forms:
 
@@ -94712,7 +96621,8 @@ Subtopics
   The ``Time'' printed in the summary shows the original times for the
   proof attempt, not the times for processing the :pso command.
 
-  Also see [pso!], [psog], and [psof].")
+  Also see [pso!], [psog], [psof], [set-gag-mode],
+  [set-inhibit-output-lst], and [set-print-clause-ids].")
  (PSO!
   (PROVER-OUTPUT)
   "Show the most recently saved output, including [proof-tree] output
@@ -94844,19 +96754,19 @@ Subtopics
   thus [certify-book] is disallowed until such events have been
   undone (see [ubt]).
 
-  A ``puffable'' [command] is an [encapsulate] [command], an
-  [include-book] command, or any command other than those consisting
-  of a single primitive event.  For example, since [defun] is a
-  primitive event, a [defun] command is not puffable.  But a macro
-  form that expands into one or more [events] is puffable.  The only
-  primitive events that are puffable are calls of [encapsulate] or
-  [include-book].  In this sense, [make-event] is not considered
-  primitive --- that is, it can be puffed --- and moreover, an
-  immediate subevent that is a call of make-event is generally
-  replaced by its expansion (see [make-event]).  A puffable [command]
-  contains (interesting) subevents, namely, the events in the body of
-  the [encapsulate], in the file of the book included, or in the
-  [command] block.
+  Other than the few exceptions noted later below, a ``puffable''
+  [command] is an [encapsulate], [include-book], or [certify-book]
+  [command], or any command other than those consisting of a single
+  primitive event.  For example, since [defun] is a primitive event,
+  a [defun] command is not puffable.  But a macro form that expands
+  into one or more [events] is puffable.  The only primitive events
+  that are puffable are calls of [encapsulate] or [include-book].  In
+  this sense, [make-event] is not considered primitive --- that is,
+  it can be puffed --- and moreover, an immediate subevent that is a
+  call of make-event is generally replaced by its expansion (see
+  [make-event]).  A puffable [command] contains (interesting)
+  subevents, namely, the events in the body of the [encapsulate], in
+  the file of the book included, or in the [command] block.
 
   The puff [command] ``lifts'' the immediate subevents of the indicated
   [command] so that they become [command]s themselves.  The [command]
@@ -94920,21 +96830,77 @@ Subtopics
   [command]s are executed.  Note that this will replace constrained
   functions by their witnesses.
 
-  Here are some details and small exceptions.
+  Here are some details and a few exceptions.
 
-    * An [encapsulate] command generated by the macro
-      [define-trusted-clause-processor] is not puffable.
+    * An [encapsulate] command that generates [unknown-constraints], such
+      as one generated by the macro
+      [define-trusted-clause-processor], is not puffable.
+    * When an [encapsulate] has a non-empty [signature], it is not puffable
+      if the `puff' command issued is :[puff*], rather than :puff.
+      That is because puffing may fail in this case, as discussed
+      immediately below, and it may be annoying to deal with the
+      failure, for example if :puff* takes a long time to run.
+    * An attempt to puff may fail for an [encapsulate] with a non-empty
+      [signature] that contains at least one use of [make-event] and
+      also comes from a certified book.  The reason is that local
+      definitions may be elided.  Here is an example of such a book.
+
+          (in-package \"ACL2\")
+
+          (encapsulate
+            ((f (x) t))
+            (make-event '(local (defun f (x) (cons x x))))
+            (defthm f-prop (consp (f x))))
+
+      If we first certify this book, then we include it in a new ACL2
+      session, and next we issue the command :puff 1, then we can see
+      that the local definition in our encapsulate event has been
+      elided:
+
+          ACL2 !>:pcb! 1
+                     1  (ENCAPSULATE
+                             ((F (X) T))
+                             (RECORD-EXPANSION
+                                  (MAKE-EVENT '(LOCAL (DEFUN F (X) (CONS X X))))
+                                  (LOCAL (VALUE-TRIPLE :ELIDED)))
+                             (DEFTHM F-PROP (CONSP (F X))))
+                         (DEFTHM F-PROP (CONSP (F X)))
+          ACL2 !>
+
+      Now an attempt to execute the command, :puff 1, causes an error
+      because f lacks a definition.
+
+          ACL2 !>:puff 1
+
+
+          ACL2 Error in ( DEFTHM F-PROP ...):  The symbol F (in package \"ACL2\")
+          has neither a function nor macro definition in ACL2.  Please define
+          it.  See :DOC near-misses.  Note:  this error occurred in the context
+          (F X).
+
+          ACL2 !>
+
+    * Similarly, a [local] event that involves [make-event] expansion may
+      be elided when the event is from a book whose [include-book]
+      form has been puffed.  This will result in an error if the
+      elided event is necessary to support later events in the puff
+      of the command.  Here is an example, where the attempt to puff
+      an include-book for this book will fail, giving an error for (
+      DEFUN G ...) stating that the symbol F has not been defined.
+
+          (in-package \"ACL2\")
+          (make-event '(local (defun f (x) x)))
+          (local (defun g (x) (f x)))
+
     * An attempt to puff an [include-book] command may fail for a book that
-      has been modified, as describe late in this documentation
+      has been modified, as described later in this documentation
       topic.
     * The puff of an an [include-book] command for an uncertified book will
       simply expose the contents of the book.  However, if the book
       is certified then the puff will replace each event by its
-      [make-event] expansion.  Moreover, any such expansion that is
-      [local] will be ignored; similarly for local make-event
-      expansions in [encapsulate] commands.  This will result in an
-      error if the elided event is necessary to support later events
-      in the puff of the command.
+      [make-event] expansion.  Also, ACL2 considers that (certified)
+      book to have been included; future attempts to include that
+      book will be considered to be [redundant].
 
   Finally, we note that it is an error to puff in the presence of
   [include-book] [events] for certified books that have been altered
@@ -94981,19 +96947,23 @@ Subtopics
     (puff* 'cd) ; argument can be any expression evaluating to cd
     (puff* 'cd b) ; where b is t or nil
 
-  where cd is a [command] descriptor (see [command-descriptor]) for a
-  ``puffable'' [command].  See [puff] for the definition of
-  ``puffable'' and for a description of the basic act of ``puffing''
-  a [command].  In particular, see [puff] for a discussion of a sense
-  in which puff, and hence puff*, should be viewed as a hack.  Puff*
-  is just the recursive application of [puff].  Puff* prints the
-  region [puff]ed, using [pcs].
+  where cd is a [command] descriptor (see [command-descriptor]).  See
+  [puff] for the definition of ``puffable'' and for a description of
+  the basic act of ``puffing'' a [command].  Puff* is just the
+  recursive application of [puff]: it puffs not only the indicated
+  command, but all of the commands thus generated, and recursively
+  until none of the resulting commands can be puffed.  As noted in
+  the documentation for [puff], :puff should be viewed as a sort of
+  hack; hence so should puff*.  Puff* prints the region [puff]ed,
+  using [pcs].
 
-  To [puff] a [command] is to replace it by its immediate subevents,
-  each of which is executed as a [command].  To puff* a [command] is
-  to replace the [command] by each of its immediate subevents and
-  then to puff* each of the puffable [command]s among the newly
-  introduced ones.
+  Thus, to [puff] a [command] is to replace it by its immediate
+  subevents, each of which is executed as a [command].  To puff* a
+  [command] is to replace the [command] by each of its immediate
+  subevents and then to puff* each of the puffable [command]s among
+  the newly introduced ones.  NOTE: because one call of :puff* may
+  give rise to many calls of :puff, it can take considerable time for
+  a call of :puff* to complete when many books are involved.
 
   For example, suppose \"ab\" is a book containing the following
 
@@ -95043,11 +97013,15 @@ Subtopics
   the starting [state], are not affected (except that their [command]
   numbers grow as a result of the splicing in of earlier [command]s).
 
-  If there is an error during execution of puff*, then the logical
-  [world] is reverted to its value before that execution, unless the
-  optional Boolean second argument is t, in which case the result is
-  preserved from the successful :puff commands executed before the
-  erroneous one.")
+  :Puff* may cause an error, for example because of a name conflict
+  caused by two different local lemmas with the same name, or because
+  a [local] event in a book has been elided (see [puff]).  By
+  default, the logical [world] is reverted to its value before that
+  execution of puff*.  However, if the optional Boolean second
+  argument is t, then the world is preserved from the successful
+  :puff commands executed before the failed one.  That behavior can
+  help with debugging, since both the warning message and the return
+  value tell you which command could not be puffed successfully.")
  (PUSH-UNTOUCHABLE
   (DEFTTAG)
   "Add name or list of names to the list of untouchable symbols
@@ -96133,6 +98107,257 @@ Subtopics
                               val)
                              (t 0))
                        state)))")
+ (RANDOM-REMARKS-ON-REWRITING
+  (REWRITE REWRITE-QUOTED-CONSTANT)
+  "Some basic facts about the ACL2 rewriter
+
+  The ACL2 rewriter is technically part of the simplifier, but in this
+  documentation we often conflate the two and say things like ``the
+  conclusion simplifies to T'' when in fact we should say ``the
+  conclusion rewrites to T during simplification'' In addition, both
+  the simplifier and the rewriter are enormously complicated and
+  contain so many heuristics that users are not often helped by
+  studying the details.  For example, the rewriter takes 18 arguments
+  (some of which are bundles of more rarely used arguments) and is
+  part of a mutually recursive clique containing 50 functions as of
+  Version 8.3, including the linear (and non-linear) arithmetic
+  semi-decision procedures.  The rewriter and its clique consume
+  about 6500 lines of code.
+
+  But to understand how :[rewrite], :[rewrite-quoted-constant],
+  :[linear], :[congruence], :forward-chaining and other rules behave,
+  the user has to have a fairly weak model of the simplifier and
+  rewriter, so we sketch that here.
+
+  In ACL2, the goals you see printed in proof output are represented
+  internally as clauses.  A clause in our sense is a list of terms
+  and the meaning of a clause is the ACL2 disjunction of those terms
+  where a term p is considered ``false'' if ``p = nil'' and is true
+  otherwise.  The elements of a clause are called ``literals,'' even
+  though they are just terms.  For example the goal (IMPLIES (AND p
+  q) r) is internally represented as the clause ((NOT p) (NOT q) r).
+  The literals of that clause are the terms (NOT p), (NOT q), and r.
+
+  The job of the simplifier is to simplify a clause, returning a set of
+  clauses whose conjunction is propositionally equivalent to the
+  input clause.  The most desirable output set is the empty set,
+  because the conjunction over the empty set is T, which means the
+  goal clause was proved.  For related discussions, see
+  [hints-and-the-waterfall], where we discuss how repeated
+  simplifications are performed.
+
+  Note that if you are trying to simplify the clause (lit1 lit2 ...
+  litk) and you manage to rewrite, say, the liti to T, then the
+  clause is true.  Furthermore, when rewriting a literal of a clause
+  you may assume all the other literals false because if one were
+  true the clause would be true.  Finally, when you rewrite a literal
+  you are justified in replacing it with one that is propositional
+  equivalent, since the literals are disjoined.
+
+  The simplifier works by first generating several data structures,
+  here called the ``context,'' which codify governing assumptions
+  available for the rewriting of each literal.  These data structures
+  include the [type-alist] and [linear-arithmetic] data base.  They
+  are built using various rules derived from previously proved
+  lemmas, including :[type-prescription], :[forward-chaining], and
+  :[linear] rules.  It then calls the rewriter successively on each
+  literal passing it the appropriate context and stipulating that the
+  result of the rewriting must be propositionally equivalent to the
+  input.  The rewriter returns a suitable term.  If the result is the
+  unchanged, the simplifier just moves on to the next literal.  If
+  the result contains no IF-expressions, the simplifier just replaces
+  the old literal with the new one.  But if the new term contains
+  IF-expressions, the simplifier splits them out into a set of clause
+  segments, i.e., if the literal simplifies to (IF a b c), then the
+  simplifier gets two new clause segments, ((NOT a) b) and (a c), and
+  then it splices each segment into the goal clause where the literal
+  was, producing a set of new clauses, and then resumes rewriting
+  literals in each new clause.  Heuristics try to prevent excessive
+  case splitting, e.g., see [case-split-limitations].
+
+  The job of the rewriter is to take a term, some context, and an
+  equivalence relation, and return a ``simpler'' term that is
+  equivalent to the input term under the assumptions in the context.
+
+  The rewriter works by exploring the term, possibly changing the
+  context and the equivalence relation as appropriate for the
+  subterms it rewrites.
+
+    * If the term is a variable, the rewriter just returns it (unless the
+      context tells it something interesting about that variable,
+      such as that the variable is equal to nil).  Sometimes you
+      might wish that the value of a bound variable be rewritten,
+      usually because the value found on the alist was rewritten
+      under a different equivalence relation than the variable is now
+      being used.  See double-rewrite.
+    * If the term is a quoted constant, the rewriter tries to apply
+      :[rewrite-quoted-constant] rules to that constant.
+    * If the term is (IF a b c), it rewrites the test, a, under the
+      equivalence relation IFF to get some (possibly) new term, a'.
+      If a' is nil or is obviously different from nil (like T), the
+      rewriter replaces the IF-term by b or c, appropriately, and
+      rewrites that.  If on the other hand, the rewriter can't decide
+      whether a' is nil or not, it rewrites b to b' in an extended
+      context in which a' is assumed non-nil and rewrites c to c' in
+      an extended context in which a' is nil.  In rewriting both
+      branches it preserves the outer equivalence relation -- the one
+      to be maintained while rewriting the IF-term.  Then the
+      rewriter returns (IF a' b' c').
+    * If the term is a call of an arithmetic inequality, like (< a b), the
+      rewriter rewrites a and b and then considers whether the
+      context allows it deduce the truth or falsity of the inequality
+      using a [linear-arithmetic] decision procedure.  The decision
+      procedure, which is complete for linear inequalities over the
+      rationals, uses heuristics to decide many integer cases, to
+      select the order in which inequalities are combined to
+      eliminate variables, and to handle some [non-linear-arithmetic]
+      problems.
+    * If the term is a call of a function symbol, fn, on some argument
+      terms, a1, ..., an, the rewriter rewrites each argument, ai to
+      ai'.  For each argument the rewriter uses known :[congruence]
+      rules to determine which equivalence relations can be used to
+      rewrite terms in that argument position so as to maintain the
+      outer equivalence.  Then, having transformed (fn a1 ... an) to
+      (fn a1' ... an') the rewriter tries to apply :[rewrite] rules
+      to that transformed term, called the ``target.''.
+    * Among the rewrite rules generally available for (fn a1' ... an') is
+      the definition of fn itself.  The rewriter considers
+      ``expanding'' the call, i.e., replacing it by the body of fn
+      after substituting the ai' for the formal variables, if the
+      definition is [enable]d, and then rewriting that.  But
+      heuristics are used to prevent the indefinite expansion of
+      recursive definitions.
+
+  For an elementary tutorial on the application of a :rewrite rule to a
+  target term, see [introduction-to-rewrite-rules-part-1] and
+  [introduction-to-rewrite-rules-part-2].  Those topics also lead to
+  documentation on how to design effective rules.  But just to
+  summarize very briefly, we offer the following.
+
+  :Rewrite rules take the general form
+
+    (implies (and hyp1 ... hypk) (equiv lhs rhs))
+
+  where equiv is a known [equivalence] relation.  Recall that the
+  rewriter has a target term to rewrite in some context and is
+  required to return a term that is equivalent modulo a given
+  equivalence relation, here called the ``outer'' equivalence.
+  Furthermore, if the target term is a function application, e.g.,
+  (fn a1' ... an'), the argument subterms have already been
+  rewritten.
+
+  If the rule in question is enabled and its equiv refines the outer
+  equivalence, the rewriter tries to match lhs with the target.  By
+  ``match'' we mean it tries to find a substition for the variables
+  in lhs that make the instantiated lhs identical to the target.  We
+  discuss matching further below.  Second, having found a suitable
+  substitution, tries to ``relieve'' the hypotheses, as discussed
+  below.  If successful, that means each hypi, when instantiated with
+  the substitution, is non-nil.  Third, if all the hypotheses are
+  relieved, the target is ``replaced'' by the result of rewriting rhs
+  under the substitution.  We discuss that step more below too.
+
+  Matching: Technically, ACL2 uses a restriction of ordinary
+  first-order unification -- the restriction being that only
+  variables in the pattern (here the lhs of the rule) may be
+  instantiated.  Thus, the pattern (G x (H x)) matches (G (M A B) (H
+  (M A B))) by binding x to (M A B).  It does not match (G (M A B) (H
+  (M A A))) even though those two terms ``unify'' by binding x to (M
+  A A) and B to A.  Our pattern matcher is the function one-way-unify
+  in our source code.
+
+  However, our pattern matcher knows some things about the structure of
+  quoted constants.  For example, the pattern (CONS x y) matches the
+  quoted constant '(A B C), by binding x to 'A and y to '(B C).  This
+  can be seen by running one-way-unify on those two terms:
+
+    ACL2 !>(one-way-unify '(cons x y) ''(A B C))
+    (T ((Y QUOTE (B C)) (X QUOTE A)))
+
+  Note the quote marks in our input.  Since one-way-unify expects both
+  of its arguments to be fully translated formal terms, we have to
+  quote every constant we write here.  And since the arguments to
+  one-way-unify are evaluated before the function is called, we have
+  to quote the two terms.  We see that one-way-unify returns two
+  results.  The first is T, meaning that a suitable substitution was
+  found.  The second is the substitution.  Lisp's abbreviation
+  convention for printed ``dotted pairs,'' its ``quote convention,''
+  its convention of reading symbols in uppercase, and our convention
+  here of writing terms (and variables) in lower case but constants
+  in upper case, all conspire to make the substitution a little hard
+  to read for novices.  Another way to display the exact same
+  substitution is:
+
+    ((y . '(B C)) (x . 'A))
+
+  i.e., x is bound to 'A and y is bound to (B C).
+
+  Below are some other examples, but we've re-displayed the
+  substitutions.
+
+    ACL2 !>(one-way-unify '(coerce x 'string) ''\"Hello!\")
+    (T ((x . (#H #e #l #l #o #!))))
+    ACL2 !>(one-way-unify '(intern-in-package-of-symbol x y) ''ACL2::TEMP)
+    (T ((y . 'TEMP) (x . '\"TEMP\")))
+    ACL2 !>(one-way-unify '(binary-+ '3 x) ''7)
+    (T ((X . '4)))
+    ACL2 !>(one-way-unify '(unary-- x) ''-7)
+    (T ((X QUOTE 7)))
+    ACL2 !>(one-way-unify '(unary-- x) ''7)
+    (NIL NIL)
+    ACL2 !>(one-way-unify '(binary-* '2 y) ''8)
+    (T ((Y QUOTE 4)))
+    ACL2 !>(one-way-unify '(binary-* x y) ''8)
+    (NIL NIL)
+
+  Note that the pattern matching algorithm is incomplete on quoted
+  constants!  For example, it fails to match (unary-- x) with '7 even
+  though (unary-- '-7) is '7.  It similarly fails to match (binary-*
+  x y) with '8 even though (binary-* '33 '8/33) is 8; indeed, there
+  are in infinite number of suitable substitutions for this case, but
+  one-way-unify is designed to return at most one so as to limit the
+  applicability of rewrite rules to ``reasonable'' cases.
+
+  Relieving the Hypotheses: The hypotheses of a rewrite rule are
+  relieved one at a time starting with the left-most one.  The basic
+  strategy is just to rewrite each hypothesis, assuming the current
+  context and if IFF equivalence relation.  If the result comes back
+  non-NIL the hypothesis is equivalent to T in the current context.
+  But there are various special considerations.
+
+    * Free variables: It is possible that a hypothesis contains variables
+      that are not bound by the substitution generated by the match.
+      We call these ``free variables'' and the system tries to bind
+      them to make the instantiated hypothesis appear among the
+      contextual assumptions.  New bindings are accumulated as
+      hypotheses are relieved.  It is possible to find multiple
+      successful substitutions, some possibly filtered out by
+      subsequent hypotheses.  See free-variables and the
+      documentation topics it cites.
+    * Pragmas: It is possible to mark a hypothesis so that it is
+      temporarily assumed true so that the rewrite rule can be
+      applied.  This essentially spawns another subgoal to prove the
+      hypothesis and thus brings the full power of the prover (not
+      just the rewriter) to bear on the hypothesis.  See [force] and
+      [case-split].  It is also possible to include hypotheses that
+      are logically always true but which cause the attempt to apply
+      the rule to fail if a certain user-specified compuation so
+      indicates.  This can be used to restrict the application of a
+      rule to certain syntactic situations.  See syntaxp.
+
+  Replacement: Before the target is replaced by the rewritten rhs, a
+  heuristic check is made to prevent certain trivial forms of rewrite
+  loops.  See [loop-stopper].  Otherwise, if the hypotheses are
+  relieved (or assumed), the rewriter rewrites rhs under the
+  substitution generated by the match and the hypotheses.  It then
+  makes certain heuristic checks to decide if replacing the target by
+  this new term is a ``good idea'' in the opinion of the ACL2
+  implementors.  The two main checks are designed to avoid runaway
+  expansion of recursive functions (see [definition]), and
+  introducing ``too many [if]s'' (see [too-many-ifs].  The latter
+  check is used to prevent unmanageable case explosions.  (In
+  general, the number of cases rises exponentially with the number of
+  IFs.)")
  (RASSOC
   (ALISTS ACL2-BUILT-INS)
   "Look up value in association list
@@ -96851,8 +99076,8 @@ Subtopics
   sets the default [defun-mode] to :[program], and invokes
   [set-state-ok] with value t.  It also introduces (defttag :redef+),
   so that redefinition of system functions will be permitted; see
-  [defttag].  Finally, it removes as untouchable (see
-  [push-untouchable]) all variables and functions.
+  [defttag].  It also removes as untouchable (see [push-untouchable])
+  all variables and functions.
 
   WARNING: This command is potentially unsafe and even unsound!  For a
   relevant warning about redefinition, see [ld-redefinition-action].
@@ -96863,9 +99088,33 @@ Subtopics
   avoid this problem, insert the form ([redef-]) into your book after
   (redef+).
 
-  To see the code for redef+, evaluate :trans1 (redef+).  This
-  [command] is intended for those who are modifying ACL2 source code
-  definitions.  Thus, note that even system functions can be
+  Note that undoing a :redef+ command, say with :[u], only undoes the
+  effects of :redef+ on the ACL2 [world]; it does not undo the other
+  effects on the ACL2 [state].  The best way to undo the effects of
+  :redef+ is generally to execute :[redef-].  To understand this
+  point we look at the code for redef+.  The output below has been
+  edited to put world-changing parts in lower case.
+
+    ACL2 !>:trans1 (redef+)
+     (WITH-OUTPUT
+          :OFF (SUMMARY EVENT)
+          (PROGN (defttag :redef+)
+                 (PROGN! (SET-LD-REDEFINITION-ACTION '(:WARN! . :OVERWRITE)
+                                                     STATE)
+                         (program)
+                         (SET-TEMP-TOUCHABLE-VARS T STATE)
+                         (SET-TEMP-TOUCHABLE-FNS T STATE)
+                         (F-PUT-GLOBAL 'REDUNDANT-WITH-RAW-CODE-OKP
+                                       T STATE)
+                         (set-state-ok t))))
+    ACL2 !>
+
+  In particular, we see that redefinition remains active after undoing.
+  In general, it is therefore best to execute :redef- before undoing
+  :redef+.
+
+  This [command] was introduced to support modification of ACL2 source
+  code definitions.  Thus, note that even system functions can be
   redefined with a mere warning.  Be careful!")
  (REDEF-
   (LD)
@@ -97223,8 +99472,9 @@ Subtopics
   is not redundant, since it is executed in a world that contains no
   trace of the first encapsulate event.
 
-  Also see community books misc/eval.lisp, make-event/eval-check.lisp,
-  and make-event/eval-tests.lisp for more ways to test in books.
+  Also see community books std/testing/eval.lisp,
+  make-event/eval-check.lisp, and make-event/eval-tests.lisp for more
+  ways to test in books.
 
   Here are detailed criteria for redundancy of [encapsulate] [events].
   First, based on a heuristic (but rather thorough) check, the
@@ -97323,8 +99573,8 @@ Subtopics
   redundancy; see their documentation for details, since below we
   only discuss ACL2 [events] that are built into ACL2.
 
-  A [defabsstobj] is redundant if there is already an identical
-  defabsstobj event in the logical [world].
+  A [defstobj] or [defabsstobj] is redundant if there is already an
+  identical such event in the logical [world].
 
   A [defattach] event is never redundant.  (Reasons are provided in a
   comment in the ACL2 sources definition of defattach in the ACL2
@@ -97354,11 +99604,6 @@ Subtopics
 
   A [defpkg] event is redundant if a package of the same name with
   exactly the same imports has been defined.
-
-  A [defstobj] event is redundant if there is already a defstobj event
-  with the same name that has exactly the same field descriptors (see
-  [defstobj]), in the same order, and with the same :renaming value
-  if :renaming is supplied for either event.
 
   A [defthm] event is redundant according to the criteria given above
   in the discussion of defaxiom.
@@ -97464,7 +99709,18 @@ Subtopics
   A [table] event not define any name.  It is redundant when it sets
   the value already associated with a key of the table, or when it
   sets an entire table (using keyword :clear) to its existing value;
-  see [table].
+  see [table].  Setting a non-existent key to nil is not redundant,
+  with the exception discussed next.
+
+  [Memoization] is carried out using a [table], memoize-table, that may
+  associate a function symbol with nil when it is not memoized.  It
+  is redundant to [unmemoize] a currently-unmemoized function symbol,
+  thus associating it with nil in the memoize-table --- even if that
+  function symbol is not already a key of that table (this is the
+  exception noted in the preceding paragraph).  It is redundant to
+  [memoize] a function when the function is already identically
+  memoized, that is, when the corresponding [table] event is
+  redundant.
 
   A [verify-guards] event is redundant if the function has already had
   its [guard]s verified.
@@ -97768,6 +100024,9 @@ Subtopics
 
 Subtopics
 
+  [Illegal-state]
+      Illegal ACL2 state
+
   [Note-1-1]
       Acl2 Version 1.1 Notes
 
@@ -97988,7 +100247,10 @@ Subtopics
       ACL2 Version 8.2 (May, 2019) Notes
 
   [Note-8-3]
-      ACL2 Version 8.3 (xxx, 20xx) Notes")
+      ACL2 Version 8.3 (April, 2020) Notes
+
+  [Note-8-4]
+      ACL2 Version 8.4 (xxx, 20xx) Notes")
  (REM
   (NUMBERS ACL2-BUILT-INS)
   "Remainder using [truncate]
@@ -99441,7 +101703,9 @@ Subtopics
   general discussion of how rewriting works in ACL2 and some guidance
   on how to construct effective rewrite rules, see
   [introduction-to-rewrite-rules-part-1] and then see
-  [introduction-to-rewrite-rules-part-2].
+  [introduction-to-rewrite-rules-part-2].  If you want a flexible,
+  convenient interface to the ACL2 rewriter that can be called
+  programmatically, see [rewrite$].
 
     Examples:
 
@@ -99556,23 +101820,28 @@ Subtopics
   ACL2's rewriting process has some optimizations, including the
   following.
 
+    * The suggestion, above, that the rewriter looks through the goal
+      clause for ``any instance of the lhs'' is not quite true.
+      :Rewrite rules are never applied to quoted constants or any
+      term inside a call of [hide].  If you want to rewrite a quoted
+      constant use a :[rewrite-quoted-constant] rule.
     * The notion of ``a substitution that makes lhs equal to the target
       term'' is a bit more generous than the most straightforward
       such notion.  Suppose for example that lhs is (f (+ 3 x)) and
       the target term is (f (+ 3 (g y)).  (Aside: ACL2 deals in
       so-called translated terms, so since + is a macro, lhs and term
-      would actually be (f (binary-+ '3 x)) and (f (+ '3 (g y))); we
-      will ignore this distinction, but if you want more information,
-      see [term].)  Then of course, that substitution binds x to (g
-      y).  But now suppose that instead the target term is (f 10).
-      You may be surprised to learn that the substitution binding x
-      to 7 makes (f (+ 3 x)) equal to (f 10); for example, the
-      rewrite rule (equal (f (+ x 3)) (h x))) would rewrite (f 10) to
-      (h 7).  This would also be the case if lhs were instead (f (+ x
-      3)).  This sort of optimization occurs when the new constant
-      has [ACL2-count] no greater than the old constant.  There are
-      similar optimizations for *, /, -, strings, symbols, and conses
-      (for details see ACL2 source function
+      would actually be (f (binary-+ '3 x)) and (f (binary-+ '3 (g
+      y))); we will ignore this distinction, but if you want more
+      information, see [term].)  Then of course, that substitution
+      binds x to (g y).  But now suppose that instead the target term
+      is (f 10).  You may be surprised to learn that the substitution
+      binding x to 7 makes (f (+ 3 x)) equal to (f 10); for example,
+      the rewrite rule (equal (f (+ x 3)) (h x))) would rewrite (f
+      10) to (h 7).  This would also be the case if lhs were instead
+      (f (+ x 3)).  This sort of optimization occurs when the new
+      constant has [ACL2-count] no greater than the old constant.
+      There are similar optimizations for *, /, -, strings, symbols,
+      and conses (for details see ACL2 source function
       one-way-unify1-quotep-subproblems).
     * When a term t1 is rewritten to a new term t2, the rewriter is then
       immediately applied to t2.  On rare occasions you may find that
@@ -99619,9 +101888,15 @@ Subtopics
   [Loop-stopper]
       Limit application of permutative rewrite rules
 
+  [Random-remarks-on-rewriting]
+      Some basic facts about the ACL2 rewriter
+
   [Rewrite-equiv]
       Force ACL2 to perform substitution using a stylized [equivalence]
       hypothesis
+
+  [Rewrite-lambda-object]
+      rewriting lambda objects in :FN slots
 
   [Rewrite-stack-limit]
       Limiting the stack depth of the ACL2 rewriter
@@ -99663,6 +101938,409 @@ Subtopics
   For an example of a [clause-processor] that leverages Rewrite-equiv
   to induce substitution using equivalence relations appearing in the
   hypothesis, see [rewrite-equiv-hint].")
+ (REWRITE-LAMBDA-OBJECT
+  (REWRITE)
+  "rewriting lambda objects in :FN slots
+
+  [Lambda] objects are quoted constants passed to [scion]s and applied
+  as functions by [apply$].  The ACL2 rewriter rewrites the bodies of
+  quoted lambda objects when they occur in slots of [ilk] :FN.
+  However, there are restrictions on which lambda objects are
+  rewritten, restrictions on the techniques available to the rewriter
+  during the rewriting of lambda bodies, and restrictions controlling
+  whether the rewritten object replaces the original object or is is
+  ignored.  We explain below.
+
+
+When Rewriting of lambda Objects Is Attempted
+
+  The rewriter attempts to rewrite the body of a quoted lambda constant
+  provided
+
+    * (a) it occurs in a :FN position of a call of a [scion] and
+    * (b) the lambda object is well-formed (see
+      [well-formed-lambda-objectp]).
+
+  Condition (b) implies the body of the lambda is in fact a well-formed
+  ACL2 term (so the rewriter can explore it), that it is [tame] (so
+  apply$ ``behaves'' as expected on it provided warrants are
+  available), and that every variable symbol occurring freely in the
+  body is among the formals of the lambda object (so the rewriting
+  can occur in a different scope).
+
+
+Restrictions During Rewriting of a Lambda Body
+
+  The rewriter is restricted in two ways when rewriting lambda bodies.
+
+  First, warrant hypotheses in the goal clause are the only contextual
+  information ``imported'' from the goal clause and made available
+  while rewriting a lambda body.  That means type information about
+  variables and other terms is forgotten, as are any linear
+  arithmetic relationships.  The reason is simple: the variables in
+  the body are in a different scope than the variables outside the
+  lambda object.  Put another way, we do not know, in general, to
+  what the lambda object will eventually be applied and so, in ACL2's
+  untyped logic, we know nothing about its formal variables.
+  (Actually, we not only ``import'' the warrants from the goal
+  clause, we import every ground hypothesis governing the lambda
+  object's occurrence.  But practically speaking that means we only
+  import warrant hypotheses.  A more sophisticated handling of
+  contextual information can be imagined.  For example, if the lambda
+  object occurs as the first argument of a [loop$] scion, like
+  collect$ or sum$, then the rewriter could perhaps extract type
+  information from the target and import that information.  For
+  example, perhaps every element of the target is a number.  In that
+  case, since we know the lambda object in a loop$ scion call is only
+  applied to elements of that list, we would then be allowed to
+  assume the corresponding formal of the lambda object is a number.
+  But that more sophisticated handling of contextual information has
+  not been implemented.)
+
+  Second, recursive functions are never opened when rewriting lambda
+  bodies.  For example, if (len (cons e x)) occurs in a lambda body,
+  you might expect it to be simplified to (+ 1 (len x)), because that
+  is what generally happens to that term when occurrences outside
+  lambda objects are rewritten.  ACL2 normally controls the expansion
+  of recursive functions by reference to terms that already occur
+  within the current goal.  But the lambda object effectively shares
+  no variables with the surrounding goal and those heuristics are
+  inapplicable.  Preliminary experiments with allowing expansions of
+  recursive functions inside lambda objects have produced
+  unsatisfactory results such as runaway expansions.  So at the
+  moment we allow no recursive expansions.
+
+  The ACL2 implementors hope to address both of the above problems in
+  eventual future releases.
+
+
+What Happens After Rewriting a Lambda Body
+
+  Upon rewriting the body, b, of (lambda(v1...vn)b) to produce b' the
+  decision must be made as to whether to return the lambda with the
+  rewritten body, (lambda(v1...vn)b'), or to ignore the rewrite and
+  return the original (unrewritten) object.  ACL2 ignores the rewrite
+  and returns the original lambda object if any of the following
+  three cases obtains:
+
+    * (a) b' contains variables other than the lambda formals v1,...,vn,
+    * (b) b' is not tame, or
+    * (c) some function symbol appearing in b' has no warrant hypothesis in
+      the goal clause but forcing is disabled (see [force]).
+
+  In all cases, the rewriter prints a \"rewrite-lambda-object\" warning
+  when the rewritten body is different from the original one but the
+  rewrite is rejected.  The warning message displays the before and
+  after lambda objects, lists the rewrite rules used, and explains
+  which of the three conditions above was violated.
+
+  Condition (a) can arise if a rewrite rule introduces a free variable;
+  disabling that rewrite rule is recommended.  Condition (b) can
+  arise if some rewrite rule introduces a function symbol that has
+  not been warranted; disabling that rule can often solve that
+  problem but perhaps a better response is to use [defwarrant] to
+  issue a warrant for the offending function symbol and then supply
+  that warrant as a hypothesis to the goal; the latter response is
+  perhaps better because it means all the ``usual'' rewriting is
+  done, normalizing terms as expected.  Condition (c) arises when
+  forcing has been disabled and the offending function symbol's
+  warrant is not among the hypotheses; enabling forcing or adding the
+  warrant as a hypothesis is recommended.
+
+  The warning message noted above can become annoying.  It can be
+  inhibited with (toggle-inhibit-warning \"Rewrite-lambda-object\").
+
+  Be advised that if the \"rewrite-lambda-object\" warning has been
+  inhibited (by you or some book included in your session) and then,
+  when looking at, say, the checkpoints in a failed proof, you see a
+  lambda object that you expected to be simplified but was not, you
+  may think rewriting was not attempted for it, for some reason, when
+  in fact it was attempted but rejected.  You can
+  (toggle-inhibit-warning \"Rewrite-lambda-object\") and replay the
+  proof attempt to see (all) the rejected lambda object rewrites.
+
+
+A Possible Confusion
+
+  A metafunction that is included in the book projects/apply/top can
+  also cause quoted lambda objects to be rewritten.  This
+  metafunction, called relink-fancy-scion, is called on certain calls
+  of the fancy loop$ scions, e.g., calls of [always$+], [collect$+],
+  [sum$+], etc.  The goal of that metafunction is to keep the list of
+  ``global variables'' in some normal form.
+
+  For example,consider the term
+
+    (collect$+ (quote
+                (lambda (loop$-gvars loop$-ivars)
+                  (cons (car loop$-gvars)
+                        (cons (car (cdr loop$-gvars))
+                              (cons (car loop$-ivars) 'nil)))))
+               (list a b)
+               target)
+
+  which is (essentially) the translation of (loop$ for e in target
+  collect (list a b e)).  Suppose that in some case of a proof about
+  this term the hypothesis (equal a b) governs this term.  The term
+  would thus become
+
+    (collect$+ (quote
+                (lambda (loop$-gvars loop$-ivars)
+                  (cons (car loop$-gvars)
+                        (cons (car (cdr loop$-gvars))
+                              (cons (car loop$-ivars) 'nil)))))
+               (list a a)
+               target)
+
+  Relink-fancy-scion will rewrite that term to
+
+    (collect$+ (quote
+                (lambda (loop$-gvars loop$-ivars)
+                  (cons (car loop$-gvars)
+                        (cons (car loop$-gvars)
+                              (cons (car loop$-ivars) 'nil)))))
+               (list a)
+               target)
+
+  which eliminates the duplicate entry in the list of globals and, as a
+  necessary side effect, also replaces the body of the lambda object
+  to eliminate the term (car (cdr loop$-gvars)).
+
+  The application of the metafunction relink-fancy-scion can easily but
+  mistakenly be attributed to the rewriting of lambda objects but it
+  is not!  The metafunction is applied to the whole collect$ term
+  (and calls of every other fancy scion), not just the lambda object.
+
+  If you want to avoid this normalization of the globals, disable the
+  [rune] (:meta relink-fancy-scion-correct).")
+ (REWRITE-QUOTED-CONSTANT
+  (RULE-CLASSES)
+  "Make a rule to rewrite a quoted constant
+
+  See [rule-classes] for a general discussion of rule classes,
+  including how they are used to build rules from formulas and a
+  discussion of the various keywords in a rule class description.
+
+  Note: It is helpful to know some basic facts about the ACL2 rewriter;
+  see [random-remarks-on-rewriting].
+
+    Example Forms:
+    (defthm lambda-id
+      (fn-equal '(lambda (x) x) 'identity)
+      :rule-classes :rewrite-quoted-constant)
+
+    (defthm set-normalizer
+      (set-equal (drop-duplicates-and-sort x) x)
+      :rule-classes :rewrite-quoted-constant)
+
+    (defthm lambda-id-generalized
+      (implies (symbolp v)
+               (fn-equal (list 'lambda (list v) v)
+                         'identity))
+      :rule-classes :rewrite-quoted-constant)
+
+  To be accepted with rule-class :rewrite-quoted-constant a conjecture
+  must have one of the following three
+
+    General Forms:
+
+    (IMPLIES hyps (equiv 'const1 'const2))        ; [1]
+
+    (IMPLIES hyps (equiv (fn var) var))           ; [2]
+
+    (IMPLIES hyps (equiv (constructor ...) rhs))  ; [3]
+
+  where
+
+    * hyps is a term (typically a conjunction) and may include [force] and
+      [syntaxp] hypotheses with the usual semantics,
+    * equiv is a known [equivalence] relation and, in the case of [1] and
+      [2], equiv is not EQUAL,
+    * var, in form [2], is a variable symbol, and
+    * constructor, in form [3], is an explicit value ``constructor''
+      function symbol listed in *one-way-unify1-implicit-fns*.  The
+      list just mentioned includes cons, which can be used to match
+      non-empty list constants, coerce, which can match string
+      constants, intern-in-package-of-symbol, which can match symbol
+      constants, and binary-+ and certain other arithmetic primitives
+      which can match numeric constants.  See
+      [random-remarks-on-rewriting] for some examples.
+
+  The function, fn, in a form [2] rule is called the ``normalizer.'' We
+  explain this terminology as we discuss how such rules are used.
+
+  The :rewrite-quoted-constant rule-class is permitted to specify a
+  :corollary and/or a :loop-stopper, with the usual syntax and
+  meaning.  See :[rule-classes].  Note that for forms [1] and [2]
+  above a :loop-stopper is probably irrelevant as the forms do not
+  usually contain multiple variable symbols.
+
+  Once a :rewrite-quoted-constant rule is proved and stored, the
+  rewriter behaves as follows.  When a quoted constant is encountered
+  as the target term to be rewritten, the rewriter considers each
+  enabled :rewrite-quoted-constant rule (most-recent first), looking
+  for those whose equiv refines (see :[refinement]) the equivalence
+  relation being maintained by the rewriter for the given occurrence
+  of the target.  The rewriter tries to apply each such rule in turn
+  (as described below) and replaces the target by the rewritten
+  result of the first applicable rule.
+
+  A rule applies if the ``pattern'' (see below) in the conclusion
+  ``matches'' the quoted constant and the hyps can be relieved in the
+  usual sense, including the treatment of free variables, pragmatic
+  directives like [force] and [syntaxp], and heuristics such as those
+  controlled by any :[loop-stopper] options in the rule-class or
+  :restrict [hints].  If these conditions are met, the quoted
+  constant is replaced by the ``result.'' But the exact meanings of
+  ``pattern,'' ``match'' and ``result'' here is a little different
+  than their meanings for ordinary :rewrite rules and depend on which
+  of the three forms is being applied.
+
+    * A form [1] rule, whose conclusion is (equiv 'const1 'const2), has
+      'const1 as its pattern and that pattern matches the target
+      constant 'const only when const1 is exactly const.  The result
+      is 'const2.  Note that it is impossible to prove a form [1]
+      rule whose equivalence is equal unless the two constants are
+      identical, so we disallow that case.
+    * A form [2] rule, whose conclusion is (equiv (fn var) var), is most
+      easily understood by swapping the roles of left- and right-hand
+      sides of its conclusion.  Its pattern is the right-hand side,
+      var, and its result is derived from the left-hand side, (fn
+      var).  The reason we use the form shown here is so that the
+      same conjecture might also be used as an ordinary :rewrite rule
+      without forcing the user to type a :corollary with the sides
+      swapped.  Since form [2] rules have a variable as the pattern
+      they will match any quoted constant, 'const, by binding var to
+      'const.  The result is the quoted constant, if any, obtained by
+      rewriting (fn var) under that binding of var.  If that rewrite
+      does not result in a constant, no replacement is made, i.e., it
+      is as though the rule did not match.  Note that it is pointless
+      to prove a form [2] rule whose equivalence is equal because it
+      would replace a quoted constant by itself, so we disallow that
+      equivalence.
+      Intuitively, fn is a function that normalizes every member of the
+      equiv equivalence class: given a constant that is a member of
+      the class it returns its ``normal'' form.  That is why we call
+      fn the ``normalizer'' for equiv.  However, you do not have to
+      prove anything like normality or canonicality; you just have to
+      prove that fn returns a member of the class.  Having several
+      different normalizers is possible but it is best if only one is
+      enabled at a time.
+      When var is bound to a constant, the rewriter will first try to
+      reduce (fn var) to a constant by simple evaluation.  If that
+      fails, it tries using lemmas.  If the normalizer or one of its
+      subfunctions is disabled or is non-executable or has a disabled
+      executable counterpart the attempt to simply evaluate (fn var)
+      (under the assignment of 'const to var) may fail.  That is why
+      full-blown rewriting of (fn var) is tried instead.  It might
+      happen that evaluation fails but lemmas produce a constant.
+      The fact that form [2] rules are used ``backwards,'' with the roles
+      of the left- and right-hand sides swapped, has some
+      ramifications worth noting. First, you can also classify the
+      same formula as a :rewrite rule (but of course as such it won't
+      rewrite quoted constants); as a :rewrite rule it rewrites
+      instances of (fn var) to the corresponding instance of var.
+      Second, when a :rewrite-quoted-constant rule is added, the new
+      rule is compared to old rules for subsumption and warning
+      messages are generated; however form [2] rules are omitted from
+      this subsumption check because their patterns match every
+      constant (in the equivalence class).  Third, if you inspect a
+      form [2] rule with [pr], it reports the actual syntax typed,
+      e.g., the ``Lhs'' is (fn var) and the ``Rhs'' is var.  But, if
+      you :[monitor] a form [2] rule and then interact with the
+      resulting [break-rewrite] you will see that the [brr-commands]
+      :lhs and :rhs report the swapped results.  That is, in the
+      break, :lhs will be var and :rhs will be (fn var).  This is
+      different from the display by pr because pr reports the actual
+      syntax but interactive breaks report how the rule is being
+      used.  We think the interactive user, out of long habit, will
+      type :lhs to see the pattern being matched and we did not think
+      it wise to add a special command just to see the pattern in a
+      form [2] rule.  Fourth, if a form [2] rule is mentioned in the
+      report by [pl] the ``New term'' is reported to be (fn 'const),
+      however replacement of 'const occurs only if (fn 'const)
+      reduces to a quoted constant by rewriting.
+    * A form [3] rule, whose conclusion is (equiv (constructor ...)  rhs),
+      matches the constant 'const provided 'const is an instance of
+      (constructor ...) under some variable substitution s.  We
+      illustrate cases where quoted constants are instances of
+      ``constructor'' terms below and in
+      [random-remarks-on-rewriting].  Note that form [3] rules allow
+      the equivalence relation to be equal.  Use of equal here could
+      cause looping rewrites if the rhs reduces to a constant.  But
+      we allow it because, as noted below, such a rule will also
+      permit you to rewrite a quoted constant into an equivalent term
+      that is not a quoted constant.
+
+  It is important to realize that form [1] and form [3] rules only
+  apply to the top-level of a quoted constant.  We discuss this at
+  length because it can cause some confusion.  The examples below are
+  drawn from the community book
+  books/demos/rewrite-quoted-constant-examples.  That book introduces
+  set-equalp as an equivalence relation and proves various
+  :rewrite-quoted-constant rules to rearrange the quoted constants
+  occurring in set-equalp contexts.  Assume all the quoted constants
+  mentioned below occur in set-equalp contexts.
+
+  The form [1] rule (set-equalp 77 nil) will not cause '(1 2 3 . 77) to
+  rewrite to '(1 2 3).  Because ACL2 applications frequently involve
+  huge quoted list constants, we believe that making the rewriter
+  explore them down to the tips would be prohibitively expensive.
+
+  However, form [2] rules, of the general form (implies hyps (equiv (fn
+  var) var)), allow you to do a root-and-branch exploration of every
+  quoted constant occuring in a given equiv context and compute the
+  replacement constant with the normalizer.
+
+  For example, the rewrite-quoted-constants-examples book cited above
+  defines the normalizer (drop-dups-and-sort var) to coerce its
+  argument to a [true-listp], eliminate duplicate elements, and sort
+  the remaining elements.  It then proves the form [2] rule
+  (set-equalp (drop-dups-and-sort var) var).  Now consider how this
+  rule is used when the rewriter encounters '(3 1 1 2 . 77) in a
+  set-equalp context.  First, var is bound to 'const.  Then, the
+  rewriter tries to relieve the instantiated hypotheses of the rule,
+  if any.  The example rule here has no hypotheses.  But you can
+  provide some and perhaps use them to prevent calling the normalizer
+  on this particular constant.  Since var is bound to the constant
+  'const such hypotheses can usually just be computed.  Supposing the
+  hypotheses are relieved, the rewriter then rewrites
+  (drop-dups-and-sort 'const).  Under the most common circumstance,
+  this just causes your normalizer function, here drop-dups-and-sort,
+  to execute on the given constant.  (If you have verified the guard
+  of the normalizer and 'const satisfies the guard, then the
+  execution is in the underlying raw Common Lisp.)  In the most
+  common circumstance, the function will return an explicit constant.
+  If that returned value is indeed a constant (and different from
+  'const), the rewriter replaces this occurrence of 'const by the
+  returned value.  Otherwise the rule does not apply.
+
+  As noted earlier, form [3] rules are only applied at the top-level of
+  a quoted constant.  For example, the rule (set-equalp (cons x y)
+  (my-cons x y)) will not cause '(1 2 3) to rewrite to (my-cons 1
+  (my-cons 2 (my-cons 3 nil))) in set-equalp contexts.  Instead, it
+  would produce (my-cons 1 '(2 3)).
+
+  But since the rewriter will eventually be called on that term, and
+  since that term contains another top-level quoted constant, namely
+  '(2 3), you might expect the rule to eventually be used to replace
+  '(2 3) by (my-cons 2 '(3)).  Indeed, that is what happens -- if you
+  have proved that set-equalp is a [congruence] for the second
+  argument of my-cons, maintaining set-equalp.  However, for
+  technical reasons explained in comments in the book
+  rewrite-quoted-constant-examples, each rewrite occurs in a separate
+  simplification step.  So turning '(1 2 3) into (my-cons 1 (my-cons
+  2 (my-cons 3 nil))) requires three simplification steps.  If the
+  rule in question were (set-equalp (cons x y) (cons x
+  (double-rewrite y))) it would happen in one simplification step.
+  See double-rewrite and the examples in the book
+  rewrite-quoted-constant-examples.
+
+
+Subtopics
+
+  [Random-remarks-on-rewriting]
+      Some basic facts about the ACL2 rewriter")
  (REWRITE-STACK-LIMIT
   (REWRITE)
   "Limiting the stack depth of the ACL2 rewriter
@@ -99836,11 +102514,11 @@ Subtopics
   of rule class names or, more generally, rule class objects, which
   name the kind of rule to build and optionally specify various
   attributes of the desired rule.  The rule class names are
-  :[rewrite], :[built-in-clause], :[clause-processor],
-  :[compound-recognizer], :[congruence], :[definition], :[elim],
-  :[equivalence], :[forward-chaining], :[generalize], :[induction],
-  :[linear], :[meta], :[refinement], :[tau-system],
-  :[type-prescription], :[type-set-inverter], and
+  :[rewrite], :[rewrite-quoted-constant], :[built-in-clause],
+  :[clause-processor], :[compound-recognizer], :[congruence],
+  :[definition], :[elim], :[equivalence], :[forward-chaining],
+  :[generalize], :[induction], :[linear], :[meta], :[refinement],
+  :[tau-system], :[type-prescription], :[type-set-inverter], and
   :well-founded-relation (see [well-founded-relation-rule]).  Some
   classes require the user-specification of certain class-specific
   attributes.  Each class of rule affects the theorem prover's
@@ -99871,6 +102549,7 @@ Subtopics
       :CONTROLLER-ALIST alist      ; provided :class = :DEFINITION
       :INSTALL-BODY directive      ; provided :class = :DEFINITION
       :LOOP-STOPPER alist          ; provided :class = :REWRITE
+                                           or :class = :REWRITE-QUOTED-CONSTANT
       :PATTERN term                ; provided :class = :INDUCTION (!)
       :CONDITION term              ; provided :class = :INDUCTION
       :SCHEME term                 ; provided :class = :INDUCTION (!)
@@ -100070,20 +102749,21 @@ Subtopics
       terms (if hyps body (hide (f term1 ... termk))).
 
       :[Loop-stopper] --- this field may only be supplied if the class is
-      :[rewrite].  Its value must be a list of entries each
-      consisting of two variables followed by a (possibly empty) list
-      of function symbols, for example ((x y binary-+) (u v foo
-      bar)).  It will be used to restrict application of rewrite
-      rules by requiring that the list of instances of the second
-      variables must be ``smaller'' than the list of instances of the
-      first variables in a sense related to the corresponding
-      functions listed; see [loop-stopper].  The list as a whole is
-      allowed to be nil, indicating that no such restriction shall be
-      made.  Note that any such entry that contains a variable not
-      being instantiated, i.e., not occurring on the left side of the
-      rewrite rule, will be ignored.  However, for simplicity we
-      merely require that every variable mentioned should appear
-      somewhere in the corresponding :[corollary] formula.
+      :[rewrite] or :[rewrite-quoted-constant].  Its value must be a
+      list of entries each consisting of two variables followed by a
+      (possibly empty) list of function symbols, for example ((x y
+      binary-+) (u v foo bar)).  It will be used to restrict
+      application of rewrite rules by requiring that the list of
+      instances of the second variables must be ``smaller'' than the
+      list of instances of the first variables in a sense related to
+      the corresponding functions listed; see [loop-stopper].  The
+      list as a whole is allowed to be nil, indicating that no such
+      restriction shall be made.  Note that any such entry that
+      contains a variable not being instantiated, i.e., not occurring
+      on the left side of the rewrite rule, will be ignored.
+      However, for simplicity we merely require that every variable
+      mentioned should appear somewhere in the corresponding
+      :[corollary] formula.
 
       :Pattern, :Condition, :Scheme --- the first and last of these fields
       must (and may only) be supplied if the class is :[induction].
@@ -100200,6 +102880,9 @@ Subtopics
   [Induction]
       Make a rule that suggests a certain induction
 
+  [Induction-heuristics]
+      How ACL2 selects induction schemes
+
   [Linear]
       Make some arithmetic inequality rules
 
@@ -100214,6 +102897,9 @@ Subtopics
 
   [Rewrite]
       Make some :rewrite rules (possibly conditional ones)
+
+  [Rewrite-quoted-constant]
+      Make a rule to rewrite a quoted constant
 
   [Rule-classes-introduction]
       Selecting which kind of rule to create
@@ -100260,9 +102946,9 @@ Subtopics
 
   Most successful ACL2 users make only sparing use of other kinds of
   rules besides rewrite rules.  When in doubt, the default is
-  probably best: the absence of any :rule-classes keyword in a tsee
-  defthm event, which is equivalent to :rule-classes :rewrite.  Below
-  are some suggestions for when other kinds of rules might be
+  probably best: the absence of any :rule-classes keyword in a
+  [defthm] event, which is equivalent to :rule-classes :rewrite.
+  Below are some suggestions for when other kinds of rules might be
   appropriate.  Of course, you are welcome to scan the
   [community-books] for examples.  One can for example find many
   examples (apparently more than 15,000) of :type-prescription rules
@@ -101125,11 +103811,12 @@ Subtopics
     Examples:
 
     ; Save an executable script named my-saved_acl2, with the indicated message
-    ; added to the start-up banner:
+    ; added below the words \"MODIFICATION NOTICE\" under the start-up banner:
     (save-exec \"my-saved_acl2\"
                \"This saved image includes Version 7 of Project Foo.\")
 
-    ; Same as above, but instead with a generic comment in the start-up banner:
+    ; Same as above, but instead with a generic comment under the modification
+    ; notice:
     (save-exec \"my-saved_acl2\" nil)
 
     ; Arrange that the generated script passes the indicated arguments to be
@@ -101790,12 +104477,15 @@ Subtopics
   This [documentation] topic assumes familiarity with abstract stobjs.
   See [defabsstobj].
 
-  Below we explain what is meant by an error message such as the
-  following.
+  Below we explain what is meant by the following error message, and
+  how to add information to the end of it.
 
     ACL2 Error in CHK-ABSSTOBJ-INVARIANTS:  Possible invariance violation
-    for an abstract stobj!  See :DOC set-absstobj-debug, and PROCEED AT
-    YOUR OWN RISK.
+    for an abstract stobj!
+    **PROCEED AT YOUR OWN RISK.**
+    To proceed, evaluate the following form.
+    :CONTINUE-FROM-ILLEGAL-STATE
+    See :DOC set-absstobj-debug.
 
   Advanced users who are willing to risk unsound invariance violations
   to get a bit more speed may submit the following when there is an
@@ -101810,44 +104500,37 @@ Subtopics
   special argument :ignore for set-absstobj-debug.
 
   The use of (set-absstobj-debug t) will make the error message above
-  more informative, as follows, at the cost of slower execution ---
-  but in practice, the slowdown may be negligible (more on that
-  below).
+  more informative, for example as follows, at the cost of slower
+  execution --- but in practice, the slowdown may be negligible (more
+  on that below).  Below, only the last two lines are new.
 
     ACL2 Error in CHK-ABSSTOBJ-INVARIANTS:  Possible invariance violation
-    for an abstract stobj!  See :DOC set-absstobj-debug, and PROCEED AT
-    YOUR OWN RISK.  Evaluation was aborted under a call of abstract stobj
-    export UPDATE-FLD-NIL-BAD.
+    for an abstract stobj!
+    **PROCEED AT YOUR OWN RISK.**
+    To proceed, evaluate the following form.
+    :CONTINUE-FROM-ILLEGAL-STATE
+    See :DOC set-absstobj-debug.
+    Evaluation was aborted under a call of abstract stobj export
+    UPDATE-FLD-NIL-BAD.
 
   You may be best off starting a new ACL2 session if you see one of the
   errors above.  But you can continue at your own risk.  With a trust
   tag (see [defttag]), you can even fool ACL2 into thinking nothing
   is wrong, and perhaps you can fix up the abstract stobj so that
-  indeed, nothing really is wrong.  See the community book
-  books/misc/defabsstobj-example-4.lisp for how to do that.  That
-  book also documents the :always keyword and a special value for the
-  first argument, :RESET.
+  indeed, nothing really is wrong.  See the [community-books] file
+  books/demos/defabsstobj-example-4-input.lsp for how to do that.
+  (The corresponding output file
+  books/demos/defabsstobj-example-4-log.txt may also be informative.)
 
     Examples:
     (set-absstobj-debug t)                 ; obtain extra debug info, as above
-    (set-absstobj-debug t :event-p t)      ; same as above
-    (set-absstobj-debug t
-                        :on-skip-proofs t) ; as above, but even in include-book
-    (set-absstobj-debug t :event-p nil)    ; returns one value, not error triple
     (set-absstobj-debug nil)               ; avoid extra debug info (default)
     (set-absstobj-debug :ignore)           ; possibly unsound! -- see above
 
     General Form:
-    (set-absstobj-debug val
-                        :event-p        event-p        ; default t
-                        :always         always         ; default nil
-                        :on-skip-proofs on-skip-proofs ; default nil
-                        )
+    (set-absstobj-debug val)
 
-  where the keyword arguments are optional with defaults as indicated
-  above, and all supplied arguments are evaluated except for
-  on-skip-proofsp, which must be Boolean (if supplied).  Keyword
-  arguments are discussed at the end of this topic.
+  where val is evaluated.
 
   Recall (see [defabsstobj]) that for any exported function whose :EXEC
   function might (according to ACL2's heuristics) modify the concrete
@@ -101860,17 +104543,8 @@ Subtopics
   Subsequent such errors will provide additional information, as in
   the example displayed earlier in this documentation topic.
 
-  Finally we document the keyword arguments, other than :ALWAYS, which
-  is discussed in a book as mentioned above.  When the value of
-  :EVENT-P is true, which it is by default, the call of
-  set-absstobj-debug will expand to an event.  That event is a call
-  of [value-triple].  In that case, :ON-SKIP-PROOFS is passed to that
-  call so that set-absstobj-debug has an effect even when proofs are
-  being skipped, as during [include-book].  That behavior is the
-  default; that is, :ON-SKIP-PROOFS is nil by default.  Also see
-  [value-triple].  The value of keyword :ON-SKIP-PROOFS must always
-  be either t or nil, but other than that, it is ignored when EVENT-P
-  is nil.")
+  Calls of set-absstobj-debug are legal event forms (e.g., for
+  [books]).")
  (SET-ACCUMULATED-PERSISTENCE (POINTERS)
                               "See [accumulated-persistence].")
  (SET-BACKCHAIN-LIMIT
@@ -103155,9 +105829,10 @@ Subtopics
   [Fmt] and related functions can insert linebreaks when lines get too
   long.  A linebreak is inserted at an aesthetically appropriate
   point once the column exceeds the value of (@
-  fmt-soft-right-margin).  If however the column exceeds the value of
-  (@ fmt-hard-right-margin), then a linebreak is soon inserted.  Such
-  a ``hard'' linebreak follows the insertion of a backslash (\\)
+  fmt-soft-right-margin).  ACL2 may also insert a linebreak
+  (sometimes in an unaesthetic place) to prevent printing in a column
+  that equals or exceeds the value of (@ fmt-hard-right-margin).
+  Such a ``hard'' linebreak follows the insertion of a backslash (\\)
   character unless [fmt!], [fms!], or [fmt1!] is used, or state
   global write-for-read is true.")
  (SET-FMT-SOFT-RIGHT-MARGIN
@@ -103238,11 +105913,7 @@ Subtopics
   helpful.  But on occasion you may want to see the full proof output
   after an attempt made with gag-mode.  This can be done provided
   proof output is not inhibited (see [set-inhibit-output-lst]) during
-  the proof attempt; see [pso] and see [pso!].  Since set-gag-mode
-  takes responsibility for the saving of output, related utility
-  [set-saved-output] is disabled when gag-mode is active.  Also note
-  that calling set-gag-mode erases the currently saved output, if
-  any.
+  the proof attempt; see [pso] and see [pso!].
 
   You may notice that gag-mode tends to print relatively little
   information about goals pushed for proof by sub-induction --- i.e.,
@@ -103288,10 +105959,7 @@ Subtopics
       Control printing of key checkpoints upon a proof's failure
 
   [Set-checkpoint-summary-limit]
-      Control printing of key checkpoints upon a proof's failure
-
-  [Set-saved-output]
-      Save proof output for later display with :[pso] or :[pso!]")
+      Control printing of key checkpoints upon a proof's failure")
  (SET-GC-STRATEGY
   (MISCELLANEOUS ACL2-BUILT-INS)
   "Set the garbage collection strategy (CCL only)
@@ -103827,10 +106495,11 @@ Example
     (set-inhibit-warnings string1 string2 ...)
 
   where each string is considered without regard to case.  This macro
-  is equivalent to (local (table inhibit-warnings-table nil 'lst
-  :clear)), where lst is the list of strings supplied.  This macro is
-  an event (see [table]), but no output results from a
-  set-inhibit-warnings event.
+  is is essentially (local (table inhibit-warnings-table nil 'alist
+  :clear)), where alist pairs each supplied string with nil: that is,
+  alist is (pairlis$ lst nil) where lst is the list of strings
+  supplied.  This macro is an event (see [table]), but no output
+  results from a set-inhibit-warnings event.
 
   ACL2 prints warnings that may, from time to time, seem excessive to
   experienced users.  Each warning is ``labeled'' with a string
@@ -103854,7 +106523,10 @@ Example
   evaluating the following form: (table-alist 'inhibit-warnings-table
   (w state)).  Of course, if warnings are inhibited overall --- see
   [set-inhibit-output-lst] --- then this value is entirely
-  irrelevant.")
+  irrelevant.
+
+  See [toggle-inhibit-warning] for a way to add or remove a single
+  warning string.")
  (SET-INHIBIT-WARNINGS!
   (PROVER-OUTPUT)
   "Control warnings non-[local]ly
@@ -105373,63 +108045,6 @@ Subtopics
   Please see [set-rw-cache-state], which is the same as
   set-rw-cache-state! except that the latter is not [local] to the
   [encapsulate] or the book in which it occurs.")
- (SET-SAVED-OUTPUT
-  (SET-GAG-MODE)
-  "Save proof output for later display with :[pso] or :[pso!]
-
-    Examples:
-    (set-saved-output t t)    ; save proof output for later, but inhibit it now
-    (set-saved-output t :all) ; save proof output for later, but inhibit all
-                              ;   output (except WARNING!, for critical warnings,
-                              ;   and ERROR, unless these are already inhibited)
-    :set-saved-output t :all  ; same as the line above
-    (set-saved-output t nil)  ; save proof output for later, but print it now too
-    (set-saved-output nil t)  ; do not save proof output, and inhibit it
-    (set-saved-output nil nil); do not save proof output or inhibit output
-    (set-saved-output nil :same), (set-saved-output t :same)
-                              ; save proof output or not, as indicated, but do
-                              ;   not change which output is inhibited
-    (set-saved-output nil :normal)
-                              ; the behavior when ACL2 first starts up: do not
-                              ;   save output, and only inhibit proof-tree output
-    (set-saved-output t '(warning observation proof-tree prove))
-                              ; save proof output for later, and inhibit the
-                              ;   indicated kinds of output
-
-    General Form:
-    (set-saved-output save-flg inhibit-flg)
-
-  Parameter save-flg is t to cause output to be saved for later display
-  using pso or pso!; see [pso] and see [pso!], and see the
-  documentation for interactive [proof-builder] commands of the same
-  names.  Set save-flg to nil to turn off this feature; except, it
-  always stays on in proof-builder sessions entered with [verify].
-  The other argument, inhibit-flg, controls whether output should be
-  inhibited when it is created (normally, during a proof attempt).
-  So a common combination is to set both arguments to t, to indicate
-  that output should be suppressed for now but saved for printing
-  with [pso] or [pso!].  The examples above give a good summary of
-  the functionality for the second argument.
-
-  Saved output is cleared at every top-level prover call, including
-  such calls made by: [events] (e.g., [defthm] and [defun]), [thm],
-  and [proof-builder] commands that invoke the prover.  A single
-  event can make more than one top-level prover call, for example: in
-  the case of [defun], one call made for termination and another for
-  guard verification; and in the case of [defthm], one call made for
-  the proposed theorem and one for each [corollary].  If you want to
-  see more than one proof log for a single top-level form, first
-  evaluate (set-gag-mode nil).  Note that interactive [proof-builder]
-  commands, that is, from a proof-builder session entered with
-  [verify], are always run with output saved.
-
-  Also see [set-gag-mode]; and see [set-print-clause-ids], which causes
-  subgoal numbers to be printed during proof attempts when output is
-  inhibited.
-
-  See [set-inhibit-output-lst] if you want to inhibit certain output
-  from the prover but not other output (e.g., not the [summary]), and
-  you don't want to save any output.")
  (SET-SERIALIZE-CHARACTER (POINTERS)
                           "See [with-serialize-character].")
  (SET-SERIALIZE-CHARACTER-SYSTEM
@@ -107593,7 +110208,8 @@ Subtopics
   simplifications are said to be ``specious'' and are ignored in the
   sense that the theorem prover acts as though no simplification were
   possible and tries the next available proof technique.  Specious
-  simplifications are almost always caused by forcing.
+  simplifications are almost always caused by the use of [force] or
+  [case-split].
 
   The simplification of a formula proceeds primarily by the local
   application of :[rewrite], :[type-prescription], and other rules to
@@ -107675,9 +110291,17 @@ Subtopics
   apply all the others and thus make progress.
 
   When specious simplifications are a problem it might be helpful to
-  [disable] all forcing (including [case-split]s) and resubmit the
-  formula to observe whether forcing is involved in the loop or not.
-  See [force].  The commands
+  [disable] rules involved in forcing (including case-splits; see
+  [force] and see [case-split]).  For the example above we see the
+  following output; and in fact, a hint to disable BAD will avoid the
+  specious simplification (although the proof will still fail).
+
+      Splitter note (see :DOC splitter) for Goal (0 subgoals).
+        case-split: ((:REWRITE BAD))
+
+  A more drastic possibility is to disable all forcing (including
+  [case-split]s) and resubmit the formula to observe whether forcing
+  is involved in the loop or not.  The commands
 
     ACL2 !>:disable-forcing
     and
@@ -108102,6 +110726,46 @@ Subtopics
   Continue with the [documentation] for [annotated-ACL2-scripts] to see
   a simple but illustrative example in the use of ACL2 for reasoning
   about functions.")
+ (STARTUP-BANNER
+  (INTERFACING-TOOLS)
+  "Modifying the ACL2 startup banner
+
+  When you start up an ACL2 executable built from sources obtained from
+  GitHub between ACL2 releases, you'll typically see a startup banner
+  like this:
+
+    +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+    + WARNING: This is NOT an ACL2 release; it is a development snapshot. +
+    + (git commit hash: 6bab5ea7c616e013c3e28c55cd5ebe1431a1d7cd)         +
+    + On rare occasions development snapshots may be incomplete, fragile, +
+    + or unable to pass the usual regression tests.                       +
+    +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+  The second line of that banner can be modified by setting environment
+  variable ACL2_SNAPSHOT_INFO to a non-empty string before saving the
+  executable.  The value of that variable will be placed into the
+  banner, for example as follows if that value is \"This is my private
+  executable.\".
+
+    +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+    + WARNING: This is NOT an ACL2 release; it is a development snapshot. +
+    + (Note from the environment when this executable was saved:          +
+    +  This is my private executable.)                                    +
+    + On rare occasions development snapshots may be incomplete, fragile, +
+    + or unable to pass the usual regression tests.                       +
+    +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+  An exception is the special value, \"none\", which is treated as
+  case-insensitive (so it can similarly be \"None\", \"NONE\", etc.).  In
+  that case, the second line is omitted entirely, for example as
+  follows.
+
+    +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+    + WARNING: This is NOT an ACL2 release; it is a development snapshot. +
+    +                                                                     +
+    + On rare occasions development snapshots may be incomplete, fragile, +
+    + or unable to pass the usual regression tests.                       +
+    +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++")
  (STATE
   (PROGRAMMING)
   "The von Neumannesque ACL2 state object
@@ -109681,6 +112345,9 @@ Subtopics
 
 Subtopics
 
+  [Char]
+      The [nth] element (zero-based) of a string
+
   [Coerce]
       Coerce a character list to a string and a string to a list
 
@@ -110250,6 +112917,8 @@ Subtopics
   The variable recursively decomposed is indicated in bold.")
  (SUITABLY-TAMEP-LISTP (POINTERS)
                        "See [tame].")
+ (SUM$ (POINTERS) "See [loop$].")
+ (SUM$+ (POINTERS) "See [loop$].")
  (SUMMARY
   (PROVER-OUTPUT)
   "The summary printed at the conclusion of an event
@@ -110973,22 +113642,42 @@ Subtopics
 
   The first argument of sys-call is a command for the host operating
   system, and the second argument is a list of strings that are the
-  arguments for that command.  In GCL and perhaps some other lisps,
-  you can put the arguments with the command; but this is not the
-  case, for example, in Allegro CL running on Linux.
+  arguments for that command.
 
-  The use of [prog2$] above is optional, but illustrates how to get the
-  return status.  See [sys-call-status].  Sys-call itself always
-  returns nil.
+  The use of [prog2$] in the second example form above is optional, but
+  illustrates how to get the return status.  See [sys-call-status].
+  Sys-call itself always returns nil.
+
+  WARNING: The details of how sys-call works can vary among different
+  host Lisp implementations!  Consider for example wildcard
+  expansion, such as when executing the form (sys-call \"ls\"
+  '(\"*.lisp\")).  For ACL2 built on Allegro CL, CCL, CMUCL, GCL, or
+  SBCL, we have seen this result in an error message such as \"No such
+  file or directory\", even though file of with names of the form
+  *.lisp are present in the current directory; but for ACL2 built on
+  LispWorks, a list of such filenames is printed.  For another
+  example, in GCL and perhaps some other lisps, you can put the
+  arguments with the command; but this is not the case, for example,
+  in Allegro CL running on Linux.
+
+  More generally, we note that sys-call does not provide some features
+  that one may expect of a shell.  We mentioned wildcard expansion
+  above; other sorts of shell expansion may also not be supported,
+  such as ~/.  Sys-call also does not directly support output
+  redirection.  If you want to run a program, P, and redirect its
+  output, one option is to create a wrapper script, W to call
+  instead.  Thus W might be a shell script containing the line:
+
+    P $* >& foo.out
 
   For related utilities, see [sys-call*] and [sys-call+].  Both of
   those utilities return a suitable status (rather than requiring a
   separate call of a separate function, [sys-call-status], as
   described later below).  Also, sys-call+ returns the command's
   output, but (like sys-call) sys-call* does not.  An important
-  distinction is that both sys-call+ and sys-call* make their calls
-  to the operating system during proofs, unlike sys-call as we now
-  explain.
+  distinction is that both sys-call+ and sys-call* can make their
+  calls to the operating system during proofs, unlike sys-call as we
+  now explain.
 
   Sys-call does not invoke the operating system when it is invoked
   inside the theorem prover or [proof-builder].  The following
@@ -111017,11 +113706,11 @@ Subtopics
   call to the host operating system, as described above (not during a
   proof), using a function supplied ``under the hood'' by the
   underlying Lisp system.  This is an advanced feature that requires
-  a trust tag (see below).  Host lisps differ on their handling of
-  sys-call; see the raw Lisp definition of ACL2 source function
-  system-call for details, including exactly what underlying Lisp
-  function is invoked.  You can then look at that host lisp's manual
-  for details about that underlying function.
+  a trust tag (see below).  As noted above, host lisps differ on
+  their handling of sys-call; see the raw Lisp definition of ACL2
+  source function system-call for details, including exactly the
+  underlying Lisp code that is invoked.  You can then look at that
+  host lisp's manual for details about that underlying function.
 
   On occasions where one wishes to obtain the numeric status returned
   by the host operating system (or more precisely, by the Lisp
@@ -111061,16 +113750,6 @@ Subtopics
     (:AKCL-SET-MV)
 
     ACL2>
-
-  Finally, we note that sys-call does not provide some features that
-  one may expect of a shell.  In particular, sys-call does not
-  generally support shell expansion of its arguments (such as ~/).
-  It also does not directly support output redirection.  If you want
-  to run a program, P, and redirect its output, one option is to
-  create a wrapper script, W to call instead.  Thus W might be a
-  shell script containing the line:
-
-    P $* >& foo.out
 
 
 Subtopics
@@ -111174,10 +113853,10 @@ Subtopics
 
   For background on attachments, see [defattach].
 
-  If you evaluate the form (all-attachments (w state)) immediately
-  after starting ACL2, you will see a list of pairs of the form (f .
-  g), where f is a constrained system utility and g is its
-  attachment.  Here is one such pair.
+  If you evaluate the form (global-val 'attachments-at-ground-zero (w
+  state)), you will see a list of pairs of the form (f . g), where f
+  is a built-in constrained utility and g is its attachment.  Here is
+  one such pair.
 
     (ASSUME-TRUE-FALSE-AGGRESSIVE-P . CONSTANT-NIL-FUNCTION-ARITY-0)
 
@@ -111215,7 +113894,10 @@ Subtopics
   attachments to be comfortable as ``system programmers'', as they
   peruse the ACL2 source code and its comments in order to see how to
   modify system behavior with attachments.  Perhaps more user-level
-  documentation will be written to help with that process.")
+  documentation will be written to help with that process.
+
+  Also see [efficiency] for more about using attachments to modify the
+  prover's behavior.")
  (SYSTEM-UTILITIES
   (PROGRAMMING)
   "Some built-in programming utilities pertaining to the ACL2 system
@@ -111332,9 +114014,9 @@ List of a few built-in system utilities
       called in the given term or list of terms, x, according to
       whether flg is nil (for a term) or not nil (for a list of
       terms), respectively.
-    * (all-vars x): For a [pseudo-termp] x, return the list of variables in
-      x in reverse print order of first occurrence.  For example,
-      all-vars of '(f (g a b) c) is '(c b a).
+    * (all-vars x): For a [pseudo-termp] x, return a duplicate-free list of
+      all variables in x, in reverse print order of first occurrence.
+      For example, all-vars of '(f (g a b) c) is '(c b a).
     * (arglistp lst): Return true iff lst is a nil-terminated list of
       distinct, legal variable names, usable as the formal argument
       list (hence the name of this utility) of a function.
@@ -111448,10 +114130,18 @@ List of a few built-in system utilities
     * (ffnnamep-lst fn lst): Returns t when the function fn (possibly a
       [lambda] expression) is used as a function in a member of the
       list lst of [pseudo-termp]s; else returns nil.
+    * (fix-pkg pkg): Returns pkg, which should be nil or a non-empty
+      string, with one exception: if pkg is \"COMMON-LISP\" then \"ACL2\"
+      is returned.
     * (flambda-applicationp x): For a [pseudo-termp] x that is not a
       variable, return t if it is a function call whose function
       symbol is a lambda expression, else return nil.
     * (flambdap fn): True when fn is a lambda expression.
+    * (flatten-ands-in-lit term): Returns a list of terms whose conjunction
+      is equivalent to the given term (which satisfies
+      [pseudo-termp]), obtained by flattening its conjunctive
+      structure.  For example, (flatten-ands-in-lit '(if (if x y
+      'nil) z 'nil)) is the list (x y z).
     * (fn-rune-nume fn nflg xflg wrld): For a function symbol fn, return
       either the [rune] (case nflg = nil) or nume (numeric
       representation of a rune) (case nflg = t) associated with
@@ -111832,13 +114522,14 @@ Subtopics
 
   Provided the named table is empty and has not yet been assigned a
   :guard and term (which is not evaluated) is a term that mentions at
-  most the variables KEY, VAL, WORLD, and ENS, this event sets the
-  :guard of the named table to term.  Whenever a subsequent :put
+  most the variables KEY, VAL, WORLD, ENS, and STATE, this event sets
+  the :guard of the named table to term.  Whenever a subsequent :put
   occurs, term will be evaluated with KEY bound to the key argument
   of the :put, VAL bound to the val argument of the :put, WORLD bound
-  to the then current [world], and ENS bound to the enabled structure
-  representing the current theory.  An error will be caused by the
-  :put if the result of the evaluation is nil.
+  to the then current [world], ENS bound to the enabled structure
+  representing the current theory, and STATE bound to the ACL2
+  [state].  An error will be caused by the :put if the result of the
+  evaluation is nil.
 
   Note that it is not allowed to change the :guard on a table once it
   has been explicitly set.  Before the :guard is explicitly set, it
@@ -112846,11 +115537,11 @@ Logical Definitions
 
   Rules of this form just tell the tau system that the user-defined
   function nth-alt is synonymous with the ACL2 primitive function
-  mv-nth.  Because ACL2's rewriter gives special handling to mv-nth,
-  users sometimes define their own versions of that function so they
-  can disable them and control rewriting better.  By revealing to the
-  tau system that such a synonym has been introduced you allow
-  Signature rules of Form 2 to be used.
+  [mv-nth].  Because ACL2's rewriter gives special handling to mv-nth
+  by default, users sometimes define their own versions of that
+  function so they can disable them and control rewriting better.  By
+  revealing to the tau system that such a synonym has been introduced
+  you allow Signature rules of Form 2 to be used.
 
 
 Subtopics
@@ -114164,16 +116855,18 @@ Subtopics
   When you [disable] the [definition] or [executable-counterpart] of a
   built-in function, you may see a warning, for example as follows.
 
-    ACL2 !>(in-theory (disable mv-nth))
+    ACL2 !>(in-theory (disable mv-nth iff length))
 
     ACL2 Warning [Theory] in ( IN-THEORY (DISABLE ...)):  The :DEFINITION
-    rule for the built-in function MV-NTH is disabled by the theory expression
-    (DISABLE MV-NTH), but some expansions of its calls may still occur.
-    See :DOC theories-and-primitives.
+    rules for the built-in functions MV-NTH and IFF are disabled by the
+    theory expression (DISABLE MV-NTH IFF LENGTH), but some expansions
+    of their calls may still occur.  See :DOC theories-and-primitives.
 
-  This warning is telling us that the indicated built-in functions are
-  given certain special handling, hence their calls may be expanded
-  even when their definitions are disabled.
+  This warning is telling us that the built-in functions [mv-nth] and
+  [iff] are given certain special handling, hence their calls may be
+  expanded even when their definitions are disabled.  This behavior
+  applies to the functions in the list obtained by evaluating the
+  constant, *definition-minimal-theory*.
 
   These warnings can be eliminated by turning off all theory warnings
   (see [set-inhibit-warnings]) or even turning off all warnings (see
@@ -114197,7 +116890,7 @@ Subtopics
     Rules: ((:DEFINITION MV-NTH)
             (:FAKE-RUNE-FOR-TYPE-SET NIL))
     Time:  0.00 seconds (prove: 0.00, print: 0.00, other: 0.00)
-    Prover steps counted:  19
+    Prover steps counted:  18
 
     Proof succeeded.
     ACL2 !>
@@ -114216,10 +116909,9 @@ Subtopics
     ACL2 !>(in-theory (disable (:e symbolp)))
 
     ACL2 Warning [Theory] in ( IN-THEORY (DISABLE ...)):  The :EXECUTABLE-
-    COUNTERPART rule for SYMBOLP is disabled by the theory expression
-    (DISABLE (:E SYMBOLP)), but because this built-in function is given
-    certain special handling, some evaluations of its calls may still occur.
-    See :DOC theories-and-primitives.
+    COUNTERPART rule for the built-in function SYMBOLP is disabled by the
+    theory expression (DISABLE (:E SYMBOLP)), but some evaluations of its
+    calls may still occur.  See :DOC theories-and-primitives.
 
 
     Summary
@@ -114227,7 +116919,7 @@ Subtopics
     Rules: NIL
     Warnings:  Theory
     Time:  0.01 seconds (prove: 0.00, print: 0.00, other: 0.01)
-     (:NUMBER-OF-ENABLED-RUNES 3233)
+     (:NUMBER-OF-ENABLED-RUNES 4268)
     ACL2 !>(thm (symbolp 'a))
 
     Q.E.D.
@@ -114246,7 +116938,9 @@ Subtopics
   nonetheless, because of special-purpose prover code for handling
   calls of that function.  The built-in function symbols with such
   [definition] rules or [executable-counterpart] rules are those in
-  the following two lists, respectively.
+  the following two lists, which are the respective values of
+  built-in constants *definition-minimal-theory* and
+  *built-in-executable-counterparts*.
 
   Definition: <*definition-minimal-theory*>
 
@@ -114267,10 +116961,9 @@ Subtopics
                              rationalp realpart stringp symbol-name
                              symbol-package-name symbolp not))
 
-  Finally we discuss a third class of warnings.  This final class of
-  warnings pertains to [primitive]s that do not have definitions,
-  such as cons.  Here is an example of such a warning, for the event
-  (in-theory (disable cons)).
+  A third class of warnings pertains to [primitive]s that do not have
+  definitions, such as cons.  Here is an example of such a warning,
+  for the event (in-theory (disable cons)).
 
     ACL2 Warning [Theory] in ( IN-THEORY (DISABLE ...)):  There is no effect
     from disabling or enabling :DEFINITION rules for primitive functions
@@ -114299,7 +116992,20 @@ Subtopics
   definitions of primitives transition from disabled to enabled, or
   vice-versa.  For example, such a transition occurs for consecutive
   events (in-theory (current-theory 'ground-zero)) and (in-theory
-  (theory 'minimal-theory)).")
+  (theory 'minimal-theory)).
+
+  We conclude with a note for advanced users only.  You can eliminate
+  all special treatment discussed above for expanding the definition
+  of [mv-nth] (but not for any of the other primitives listed above)
+  by evaluating the following form (also see [defattach-system]).
+
+    (defattach-system simplifiable-mv-nth-p constant-nil-function-arity-0)
+
+  That said, this is probably only useful for very specific cases of
+  ``system-level'' programming.  You can restore the default behavior
+  as follows.
+
+    (defattach-system simplifiable-mv-nth-p constant-t-function-arity-0)")
  (THEORY
   (THEORIES THEORY-FUNCTIONS)
   "Retrieve named theory
@@ -116408,6 +119114,36 @@ Subtopics
   generalization, and elimination of irrelevance).  For example, you
   don't need to worry about prover output that mentions ``type
   reasoning'' or ``abbreviations,'' for example.")
+ (TOGGLE-INHIBIT-WARNING
+  (PROVER-OUTPUT)
+  "Add or delete a warning string from the inhibit-warnings-table
+
+    General Form:
+    (toggle-inhibit-warning string)
+
+  where string is the name of some warning like \"Subsume\", \"Non-rec\" or
+  \"Rewrite-lambda-object\".
+
+  Note: This is an event!  It does not print the usual event [summary]
+  but nevertheless changes the ACL2 logical [world] and is so
+  recorded.  It is [local] to the book or [encapsulate] form in which
+  it occurs; see [toggle-inhibit-warning!] for a corresponding
+  non-[local] event.  Indeed, (toggle-inhibit-warning str) is
+  equivalent to (local (toggle-inhibit-warning! str)).
+
+  The given string is added to the list of inhibited warnings if it is
+  not there already and is deleted from the list if it is there.
+  Case is unimportant in string.  See [set-inhibit-warnings].")
+ (TOGGLE-INHIBIT-WARNING!
+  (PROVER-OUTPUT)
+  "Toggle an inhibit-warnings-table entry non-[local]ly
+
+  Please see [toggle-inhibit-warning], which is the same as
+  toggle-inhibit-warning! except that the latter is not [local] to
+  the [encapsulate] or the book in which it occurs.  Probably
+  [toggle-inhibit-warning] is to be preferred unless you have a good
+  reason for wanting to export the effect of this event outside the
+  enclosing [encapsulate] or book.")
  (TOGGLE-PC-MACRO
   (PROOF-BUILDER)
   "Change an ordinary macro command to an atomic macro, or vice-versa
@@ -116425,6 +119161,8 @@ Subtopics
   ordinary one, and vice-versa.  However, if new-tp is supplied and
   not nil, then it should be the new type (the symbol macro or
   atomic-macro, in any package), or else there is no change.")
+ (TOO-MANY-IFS (POINTERS)
+               "See [efficiency].")
  (TOP-LEVEL
   (MISCELLANEOUS)
   "Evaluate a top-level form as a function body
@@ -116829,8 +119567,8 @@ Subtopics
   The following log then illustrates tracing of these two functions.
   Notice that before [guard]s have been verified, the
   ``executable-counterpart functions'' are called but the
-  corresponding submitted functions are not (see (@see evaluation)
-  for relevant background); but after guard verification of f, the
+  corresponding submitted functions are not (see [evaluation] for
+  relevant background); but after guard verification of f, the
   submitted function for f is indeed called.  (See [guard] and see
   [guard-evaluation-examples-log].)
 
@@ -117303,8 +120041,8 @@ Remarks
   their code installed by trace$.
 
   (4) For a [wormhole] such as the [break-rewrite] loop, all calls of
-  trace$ and $(tsee untrace$) inside that wormhole are undone upon
-  exit from the wormhole.  In particular, if you trace or untrace a
+  trace$ and [untrace$] inside that wormhole are undone upon exit
+  from the wormhole.  In particular, if you trace or untrace a
   function during a [brr] break, then effects of that trace or
   untrace will disappear when you proceed using a keyword such as
   :eval or :go.")
@@ -119154,14 +121892,14 @@ Subtopics
        (characterp (nth n lst)))
       :rule-classes ((:type-prescription :typed-term (nth n lst))))
 
-    (defthm demodulize-type-for-quote-value  ; (Demodulize a lst 'value ans) is
-      (implies                               ; either a nonnegative integer or
-       (and (atom a)                         ; of the same type as ans, provided
-            (true-listp lst)                 ; the hyps can be established by type
-            (member-equal a lst))            ; reasoning
+    (defthm demodulize-type-for-quote-value  ; (Demodulize a lst 'value ans) is ;
+      (implies                               ; either a nonnegative integer or ;
+       (and (atom a)                         ; of the same type as ans, provided ;
+            (true-listp lst)                 ; the hyps can be established by type ;
+            (member-equal a lst))            ; reasoning ;
        (or (and (integerp (demodulize a lst 'value ans))
                 (>= (demodulize a lst 'value ans) 0))
-         (equal (demodulize a lst 'value ans) ans)))
+           (equal (demodulize a lst 'value ans) ans)))
       :rule-classes :type-prescription)
 
   To specify the term whose type (see [type-set]) is described by the
@@ -119356,7 +122094,7 @@ Subtopics
   rule ALISTP,'' and the corresponding [rune] (:TYPE-PRESCRIPTION
   ALISTP) in the list of rules printed in the [summary].  These are
   telling us that ACL2 used the indicated rule during the process of
-  computing a (@see type-prescription) rule for f.
+  computing a [type-prescription] rule for f.
 
   Now suppose that in a different session we instead proceed as
   follows.
@@ -120408,7 +123146,15 @@ Subtopics
   use, the SBCL and LispWorks implementations are likely less robust
   than the CCL implementation.
 
-  The [time-tracker] utility is a no-op for ACL2(p).")
+  The [time-tracker] utility is a no-op for ACL2(p).
+
+  When executing calls of [hons-get] in parallel, you may see messages
+  about \"Fast alist discipline\" violations.  This can happen because
+  each thread uses its own underlying hash-table for fast access by
+  hons-get, but typical top-level calls of [hons-acons] and
+  [make-fast-alist] only affect that main thread's hash-table.  You
+  can use (set-slow-alist-action nil) to eliminate this warning
+  entirely; see [slow-alist-warning].")
  (UNSUPPORTED-WATERFALL-PARALLELISM-FEATURES
   (PARALLEL-PROOF)
   "Proof features not supported with waterfall-parallelism enabled
@@ -120557,10 +123303,12 @@ Subtopics
   Profiling may cause proofs to hang when waterfall-parallelism is
   enabled (GitHub Issue #638).
 
-  During proofs with [waterfall-parallelism] enabled, you may see \"Fast
-  alist discipline\" violations, even when using [hons-get]
-  appropriately.  This can happen because only the main thread
-  supports the use of hash-tables by hons-get.  You can use
+  During proofs with [waterfall-parallelism] enabled, you may see
+  messages about \"Fast alist discipline\" violations, even when using
+  [hons-get] appropriately.  This can happen because each thread uses
+  its own underlying hash-table for fast access by hons-get, but
+  typical top-level calls of [hons-acons] and [make-fast-alist] only
+  affect that main thread's hash-table.  You can use
   (set-slow-alist-action nil) to eliminate this warning entirely; see
   [slow-alist-warning].")
  (UNTIL$ (POINTERS) "See [loop$].")
@@ -120763,6 +123511,236 @@ Subtopics
                 t))")
  (USE (POINTERS)
       "See [hints] for information about the keyword :use.")
+ (USELESS-RUNES
+  (CERTIFY-BOOK ACCUMULATED-PERSISTENCE)
+  "Speed up proofs by disabling useless [rune]s
+
+  This topic documents the :useless-runes option for [certify-book],
+  which makes it possible to speed up repeated certification of a
+  book.
+
+
+Introduction
+
+  For a given [event], the so-called ``useless'' rules are those that
+  do not contribute to the progress of any proof supporting that
+  event.  For more background see [accumulated-persistence], which is
+  typically used for finding rules to [disable] during proofs.  The
+  feature described in the present topic provides automation for the
+  discovery and effective disabling of useless rules.
+
+  To use the :useless-runes option of [certify-book], first certify
+  your book --- say, foo.lisp --- by supplying option :useless-runes
+  :write.  This creates a file foo@useless-runes.lsp that associates
+  names of [defthm], [defun], and [verify-guards] [events] with sets
+  of ``useless'' [rune]s'': rule names (``runes'') not contributing
+  to the progress of the proof.  Then, future certifications can use
+  option :useless-runes :read --- or some limited variations of :read
+  using numeric values, as discussed below) --- which, during
+  evaluation of an event, will effectively [disable] rules associated
+  with that event in file foo@useless-runes.lsp.
+
+  Environment variable ACL2_USELESS_RUNES can take the value \"write\" or
+  \"read\" to be used in place of the :useless-runes option :read or
+  :write (respectively) of certify-book.  ACL2_USELESS_RUNES can also
+  take on the numeric values permitted for the :useless-runes option
+  of [certify-book].  This is all discussed below.  Note that by
+  default, certification of the [community-books], as laid out in
+  documentation topic [books-certification], is performed with
+  ACL2_USELESS_RUNES=-25, which for each book foo.lisp causes part of
+  the corresponding foo@useless-runes.lsp, if it exists, to be
+  consulted (as described below).  This default behavior is only for
+  ACL2, not ACL2(r) (see [real]) or ACL2(p) (see [parallelism]).
+
+
+Detailed Documentation
+
+  Again, the :useless-runes option of [certify-book] provides a way to
+  automate discovery and, in future certifications, disabling of
+  useless runes (as described above), which can speed up proofs.
+  Information about useless runes is communicated using a file, which
+  we call the ``@useless-runes.lsp file'', whose name is obtained by
+  adding the suffix \"@useless-runes.lsp\" to the book name.  For
+  example, if the book's filename is \"foo.lisp\" then the
+  corresponding @useless-runes.lsp file is named
+  \"foo@useless-runes.lsp\".
+
+  The following table summarizes the legal values for the option
+  :useless-runes; further explanation follows.
+
+    :write   ; Write the @useless-runes.lsp file to speed up future proofs.
+    :read or ; Read the @useless-runes.lsp file to speed up proofs;
+    :read?   ;   file must exist for :read, but need not exist for :read?.
+    N, -N    ; N is a positive integer not exceeding 100.  Then |N|% of the rules
+             ;   indicated by the @useless-runes.lsp file are to be kept disabled.
+             ;   The @useless-runes.lsp file needs to exist for N but not for -N.
+    nil      ; Certify without reading or writing the @useless-runes.lsp file.
+
+  Notice in particular that :useless-runes 100 is equivalent to
+  :useless-runes :read, while :useless-runes -100 is equivalent to
+  :useless-runes :read?.
+
+  When certify-book is supplied with option :useless-runes :write, the
+  result is to write out a corresponding @useless-runes.lsp file.
+  Each top-level entry of this file has the form
+
+    (name (frames-1 tries-1 rune-1)
+          (frames-2 tries-2 rune-2)
+          ...
+          (frames-k tries-k rune-k))
+
+  where name is the name of a [defthm], [defun], or [verify-guards]
+  event, and each tuple (frames-i tries-i rune-i) indicates the
+  number of frames and tries for rune-i recorded for the proofs done
+  on behalf of that event.  ACL2 claims that none of the indicated
+  rules contributed to the progress of the proof.  See
+  [accumulated-persistence], but also see
+  [accumulated-persistence-subtleties] for some limitations.  These
+  top-level entries are listed in order of event in the book, from
+  top to bottom.  Because of [local] [events], the same name may
+  appear more than once; we say more about this in the ``Subtleties''
+  section, below.
+
+  When certify-book is supplied with option :useless-runes :read or
+  :useless-runes :read?, then book certification takes advantage of
+  the existing @useless-runes.lsp file, if it exists.  If that file
+  does not exist, an error is caused when the option value is :read
+  but the option is simply ignored when the option value is :read?.
+
+  The value of :useless-runes may also be a non-zero integer between
+  -100 and 100, inclusive.  The absolute value of this number is the
+  percentage of the runes associated with the current event that are
+  to be effectively kept [disable]d, starting with the useless rune
+  with the highest number of frames built (see
+  [accumulated-persistence]).  For example, if the value is 20 then
+  1/5 of the runes associated with the current event in the
+  @useless-runes.lsp file are to be kept disabled; so if the relevant
+  top-level form in that file is
+
+    (name (frames-1 tries-1 rune-1)
+          (frames-2 tries-2 rune-2)
+          (frames-2 tries-2 rune-3)
+          (frames-2 tries-2 rune-4)
+          (frames-2 tries-2 rune-5)
+          (frames-2 tries-2 rune-6)
+          (frames-k tries-k rune-7))
+
+  then 1/5 of the 7 runes are to be disabled, so since the first
+  integer greater than or equal to 7/5 is 2, the runes rune-1 and
+  rune-2 will be kept disabled.  Note again that the value 100 for
+  :useless-runes gives the same behavior as the value :read, and the
+  value -100 gives the same behavior as the value :read?.
+
+  The :useless-runes option of certify-book need not be given
+  explicitly.  Suppose that the environment variable
+  ACL2_USELESS_RUNES has a non-empty value.  Then that value
+  implicitly invokes the :useless-runes option as indicated by the
+  following table, which shows how that environment variable value
+  corresponds to a value for the :useless-runes option.
+
+    ACL2_USELESS_RUNES value          :useless-runes value
+    ------------------------          --------------------
+
+    WRITE (case insensitive)          :write
+    READ (case insensitive)           :read
+    READ? (case insensitive)          :read?
+    i, ij, -i, -ij, 100, -100         corresponding integer, which cannot be 0
+      (i and j are base-10 digits)
+
+  Important.  An explicitly supplied :useless-runes value normally
+  takes priority over the value of environment variable
+  ACL2_USELESS_RUNES.  However, the environment variable takes
+  priority if its (case insensitive) value is \"WRITE\" provided
+  :useless-runes nil is not supplied explicitly.
+
+  If you want certification to avoid reading the book's
+  @useless-runes.lsp file even when this environment variable has a
+  non-empty value that specifies reading, call certify-book with
+  option :useless-runes nil.
+
+  A reason for allowing integer values, rather than only :read and
+  :read?, is that the disabling of useless runes can cause a proof to
+  fail.  Although this is probably uncommon, it can happen, for
+  example because an otherwise useless rule rewrites the hypothesis
+  of rule R to something that can not be proved by rewriting, thus
+  blocking the use of rule R; but with the useless rule disabled, R
+  is successfully applied, sending the proof in a direction that
+  leads to failure.  This problem may disappear when using only a
+  portion of the useless rules.  See also
+  [accumulated-persistence-subtleties].
+
+  Note that when using the @useless-runes.lsp file for a given event's
+  proofs, then the appropriate rules are effectively [disable]d not
+  only at the top level, but also whenever [hints] are supplied.  So
+  if an :[in-theory] hint specifies a [theory] that includes rule R,
+  but rule R is specified for disabling for the current event by the
+  @useless-runes.lsp file, then R will be removed from the theory
+  before installing that hint.  In particular, even the hint
+  :in-theory (enable R) will not enable R in this case.
+
+  Finally, we remark that the @useless-runes.lsp file is somewhat
+  robust in the following sense.  Suppose that rule R is specified in
+  that file, but at the time the @useless-runes.lsp is read, rule R
+  has been removed from one's books.  Then the inclusion of R as a
+  useless rule will simply be ignored, rather than causing an error.
+
+
+Subtleties
+
+  The @useless-runes.lsp files do not contain any
+  :[executable-counterpart] runes, because there are many places that
+  ACL2 does not track such runes for [accumulated-persistence].
+  (Details are in a comment in the ACL2 source definition of function
+  print-useless-runes.)
+
+  On rare occasions, when using the :read option or related values that
+  specify reading from an appropriate @useless-runes.lsp file, the
+  [package] of a rune's name might not be known to ACL2 at read time.
+  In that case, that rune will be ignored.
+
+  Because of [local] [events], more than one event may be associated
+  with a name in a given @useless-runes.lsp file.  When using the
+  :read option or related values that specify reading from an
+  appropriate @useless-runes.lsp file, ACL2 considers entries for a
+  given name from top to bottom in the @useless-runes.lsp file,
+  attempting to match them to [defthm], [defun], and [verify-guards]
+  events from top to bottom in the book.
+
+  As suggested by discussions above, a @useless-runes.lsp file is
+  intended not to cause proof failures, even if it is older than the
+  corresponding book or even older than other books containing runes
+  that are listed in that @useless-runes.lsp file.  That said, an
+  out-of-date @useless-runes.lsp might cause proofs to fail.  In
+  particular, imagine that there are several lemmas in the
+  corresponding book all with the same name (and thus all [local] to
+  an [encapsulate] event except perhaps the last), and one of those
+  lemmas other than the last is deleted from the book.  Then
+  references to the later such lemmas will be wrong in the
+  @useless-runes.lsp file.  If you run into this problem, then either
+  regenerate the @useless-runes.lsp file (e.g., by setting
+  environment variable ACL2_USELESS_RUNES to \"write\"), or give
+  distinct names to your book's lemmas, or even consider adding a
+  line like the following to a suitable .acl2 file (see
+  [build::custom-certify-book-commands]).
+
+    ; cert-flags: ? t :useless-runes nil
+
+
+Performance
+
+  In ``everything'' testing of all of the [community-books] during (not
+  quite complete) development of this capability, we found that
+  writing the @useless-runes.lsp files (by setting the environment
+  variable ACL2_USELESS_RUNES to \"write\") caused an 11% slowdown from
+  the normal time, but a fresh such test when reading the
+  @useless-runes.lsp files by setting the environment variable
+  ACL2_USELESS_RUNES to \"25\" cut 24% from the normal time.  Books
+  varied considerably, however.  For example, after finding a
+  specific time reduction that was particularly significant, we
+  re-certified on standalone runs (i.e., on an otherwise unloaded
+  machine) and found that the time was reduced from 17 minutes and
+  1.9 seconds down to 34.93 seconds, thus eliminating 96.6% of the
+  time.")
  (USER-DEFINED-FUNCTIONS-TABLE
   (MACROS)
   "An advanced [table] used to replace certain system functions
@@ -122346,6 +125324,33 @@ Subtopics
   and other ways to help with later proofs, and (2) to make the
   proofs less brittle, that is, more likely to survive when there are
   small changes to earlier events.")
+ (VERIFY-GUARD-IMPLICATION
+  (MEMOIZE GUARD-FORMULA-UTILITIES)
+  "[Guard] implication for [memoize] keyword :invoke
+
+    Examples:
+    (verify-guard-implication f g)
+    (verify-guard-implication f g
+                              :hints ((\"Goal\" :in-theory (enable nth))))
+
+    General Form:
+    (verify-guard-implication fn1 fn2 &key hints otf-flg)
+
+  where none of the arguments is evaluated.  This macro creates a
+  [defthm] event with :[rule-classes] nil, using :hints and :otf-flg
+  if provided.  The formula of that event is generally an implication
+  formed from the guards of the two functions, but might be T, as we
+  now describe.
+
+  Let guard-fn1 be the [guard] for fn1, and let guard-fn2 be the result
+  of substituting the formals of fn1 for the formals of fn2 in the
+  guard for fn2.  If guard-fn1 tautologically implies guard-fn2 (for
+  example, the two are equal or guard-fn2 is 'T), then the formula of
+  the generated event is T.  Otherwise, the formula is (IMPLIES
+  guard-fn1 guard-fn2).
+
+  Note that the formula might be unpleasant for a human to read, since
+  guard-fn1 and guard-fn2 are translated terms (see [term]).")
  (VERIFY-GUARDS
   (EVENTS GUARD)
   "Verify the [guard]s of a function
@@ -122892,9 +125897,8 @@ Subtopics
   The steps above can be done without touching the ACL2 source files.
 
   Now it is time to modify the constant *system-verify-guards-alist*,
-  which associates a distributed book name with a list of functions
-  whose guard-verification is proved by including that book.  Follow
-  the steps below.
+  which specifies functions whose guard-verification is proved by
+  including that book.  Follow the steps below.
 
    1. Build a so-called ``devel'' copy in which the functions in
       *system-verify-guards-alist* remain in :program mode.  For
@@ -122911,7 +125915,8 @@ Subtopics
           make clean-books ACL2=`pwd`/saved_acl2d
           cd books
           (time nice ./build/cert.pl -j 8 \\
-                     --acl2 `pwd`/../saved_acl2d system/top.cert) \\
+                     --acl2 `pwd`/../saved_acl2d \\
+                     system/devel-check) \\
             >& make-devel-regression.log&
 
       The last of these commands should run much more quickly than a
@@ -122930,8 +125935,6 @@ Subtopics
 
       You should see output like the following.
 
-          (chk-new-verified-guards 0) ...
-          (chk-new-verified-guards 1) ...
           SUCCESS for chk-new-verified-guards
           SUCCESS for check-system-events
           SUCCESS for devel-check
@@ -123066,10 +126069,9 @@ Subtopics
   [guard]-verified.  To see which built-in functions have already
   received such treatment, see community books directory
   books/system/; or, evaluate the constant
-  *system-verify-guards-alist*, each of whose entries associates the
-  name of a community book with a list of functions whose
-  guard-verification is proved by including that book.  See the above
-  URL for more details.
+  *system-verify-guards-alist*, which specifies a list of functions
+  whose guard-verification is proved by including that book.  See the
+  above URL for more details.
 
   Note that if fn1 is already in :[logic] mode, then the
   verify-termination call has no effect.  It is generally considered
@@ -123372,7 +126374,7 @@ Subtopics
 
   The prover can emit many warnings when processing [events].  See
   [set-inhibit-warnings] and see [set-inhibit-output-lst] for how to
-  disable and enable them.")
+  disable and enable them.  See also [toggle-inhibit-warning].")
  (WARRANT
   (APPLY$)
   "Giving [apply$] permission to call a user-defined function
@@ -123756,9 +126758,9 @@ Why Warrants Don't Render Theorems Vacuous
   standard ACL2 definitional principle, versions of those functions
   (together with apply$, ev$, etc.) and then make attachments to the
   undefined badge-userfn and apply$-userfn, and so that every warrant
-  is proveably equal to T.  In fact, the resultant theory is the
-  basis of ACL2's evaluation theory where all warranted functions can
-  be apply$d (under the appropriate tameness requirements) without
+  is provably equal to T.  In fact, the resultant theory is the basis
+  of ACL2's evaluation theory where all warranted functions can be
+  apply$d (under the appropriate tameness requirements) without
   explicit mention of warrants.  The crux of the proof is admitting a
   big mutually recursive clique containing versions of apply$ and all
   of its [scion]s, by inventing a measure that provably decreases as
@@ -125164,7 +128166,8 @@ The Differences Between Well-Formed and Merely Tame Lambda Objects
   (STOBJ ACL2-BUILT-INS)
   "Locally bind a single-threaded object
 
-  See [stobj] for an introduction to single-threaded objects.
+  See [stobj] for an introduction to single-threaded objects.  Also see
+  [defstobj] for additional background.
 
     Example Form:
     (with-local-stobj
@@ -125183,25 +128186,31 @@ The Differences Between Well-Formed and Merely Tame Lambda Objects
             result)
 
   However, ACL2 expects you to use with-local-stobj, not its expansion.
-  More precisely, stobj creator functions are not allowed except
-  (implicitly) via with-local-stobj and in logic-only situations
-  (like theorems and hints).  Moreover, neither with-local-stobj nor
-  its expansions are legal when typed directly at the top-level loop.
-  See [top-level] for a way to use with-local-stobj in the top-level
-  loop.
+  More precisely, stobj creator functions are only allowed via
+  with-local-stobj or in logic-only situations (like theorems and
+  hints).  Moreover, neither with-local-stobj nor its expansions are
+  legal when typed directly at the top-level loop.  See [top-level]
+  for a way to use with-local-stobj in the top-level loop.
 
     General Forms:
     (with-local-stobj stobj-name mv-let-form)
     (with-local-stobj stobj-name mv-let-form creator-name)
 
   where stobj-name is the name of a [stobj], mv-let-form is a call of
-  [mv-let] that binds stobj-name but does not return stobj-name, and
-  if creator-name is supplied then it should be the name of the
-  creator function for stobj-name; see [defstobj].  For the example
-  form above, its expansion would use creator-name, if supplied, in
-  place of create-st.  Note that stobj-name must not be [state] (the
-  ACL2 state), except in special situations probably of interest only
-  to system developers; see [with-local-state].
+  [mv-let] that binds stobj-name but does not return stobj-name ---
+  in fact, if mv-let-form is (mv-let (...)  ... body), then body does
+  not even reference stobj-name --- and if creator-name is supplied
+  then it should be the name of the creator function for stobj-name.
+  For the example form above, its expansion would use creator-name,
+  if supplied, in place of create-st.  Note that stobj-name must not
+  be [state] (the ACL2 state), except in special situations probably
+  of interest only to system developers; see [with-local-state].
+
+  Note that if a stobj ST is bound upon beginning evaluation of a form
+  (with-local-stobj ST ...), then the value of ST is the same
+  immediately before evaluating that form as it is immediately after
+  that evaluation.  In other words, only a local version of ST is
+  modified inside that with-local-stobj form.
 
   With-local-stobj can be useful when a stobj is used to memoize
   intermediate results during a computation, yet it is desired not to
@@ -125665,6 +128674,8 @@ Subtopics
 
   [Last-prover-steps]
       The number of prover steps most recently taken")
+ (WITH-PROVER-STEP-LIMIT! (POINTERS)
+                          "See [with-prover-step-limit].")
  (WITH-PROVER-TIME-LIMIT
   (MISCELLANEOUS)
   "Limit the time for proofs
@@ -126816,11 +129827,11 @@ Subtopics
   Value: hints (see [hints]), to be used during the termination proofs
   as opposed to the [guard] verification proofs of the [defun].
 
-  :)@(tsee loop$-recursion)<br></br> Value: this flag must be set to
-  @('t or nil; nil is the default.  The flag must be t if and only if
-  the function being defined calls itself recursively from within a
-  [loop$] body or within a when or until clause.  See
-  [loop$-recursion].
+  :[loop$-recursion]
+  Value: this flag must be set to t or nil; nil is the default.  The
+  flag must be t if and only if the function being defined calls
+  itself recursively from within a [loop$] body or within a when or
+  until clause.  See [loop$-recursion].
 
   :measure
   Value is a term involving only the formals of the function being
@@ -127306,12 +130317,15 @@ Subtopics
   Actually, keyword-args is either a single non-keyword or is a list of
   the form ((kw-1 x-1) ... (kw-n x-n)), where each kw-i is one of the
   keywords :equiv, :otf-flg, :hints.  Here :equiv defaults to equal
-  if the argument is not supplied or is nil, and otherwise should be
-  the name of an ACL2 equivalence relation.  :Otf-flg and :hints give
-  directives to the prover, as explained above; also see
-  [ACL2-pc::prove].  However, no prover call is made if :hints is a
-  non-nil atom or if keyword-args is a single non-keyword (more on
-  this below).
+  if the argument is not supplied or is nil; if it is not equal
+  (either explicitly or by default), then it should be the name of an
+  ACL2 [equivalence] relation, and substitution will only take place
+  at subterm occurrences for which the :equiv is among the
+  [equivalence] relations being maintained without the use of
+  [patterned-congruence]s.  :Otf-flg and :hints give directives to
+  the prover, as explained above; also see [ACL2-pc::prove].
+  However, no prover call is made if :hints is a non-nil atom or if
+  keyword-args is a single non-keyword (more on this below).
 
   Remarks on defaults
 
@@ -128154,9 +131168,13 @@ Subtopics
   provided that either (relation old new) or (relation new old) is
   among the top-level hypotheses or the governors (possibly by way of
   backchaining and/or refinement; see below).  If relation is nil or
-  is not supplied, then it defaults to equal.  Also see acl2-pc::=
-  for a much more flexible command.  Note that the equiv command
-  fails if no substitution is actually made.
+  is not supplied, then it defaults to equal.  If relation is not
+  equal (either explicitly or by default), then substitution of new
+  for old will only take place at occurrences for which relation is
+  among the [equivalence] relations being maintained without the use
+  of [patterned-congruence]s.  Also see acl2-pc::= for a much more
+  flexible command.  Note that the equiv command fails if no
+  substitution is actually made.
 
   Remark: No substitution takes place inside explicit values.  So for
   example, the instruction (equiv 3 x) will cause 3 to be replaced by
@@ -128973,12 +131991,10 @@ Subtopics
     pso
 
   Print the most recent proof attempt from inside the interactive
-  proof-builder assuming you are in [gag-mode] or have saved output
-  (see [set-saved-output]).  This includes all calls to the prover,
-  including for example [proof-builder] commands induct, split, and
-  bash, in addition to prove.  So for example, you can follow (quiet
-  prove) with pso to see the proof, including [proof-tree] output, if
-  it failed.
+  proof-builder.  This includes prover calls, including for example
+  [proof-builder] commands induct, split, and bash, in addition to
+  prove.  So for example, you can follow (quiet prove) with pso to
+  see the proof, including [proof-tree] output, if it failed.
 
   Related [proof-builder] commands are psog and pso!; see
   [ACL2-pc::psog] and [ACL2-pc::pso!].")
@@ -128991,9 +132007,7 @@ Subtopics
     pso!
 
   Print the most recent proof attempt from inside the interactive
-  proof-builder, including [proof-tree] output, assuming you are in
-  [gag-mode] or have saved output (see [set-saved-output]).  This
-  includes all calls to the prover, including for example
+  proof-builder.  This includes prover calls, including for example
   [proof-builder] commands induct, split, and bash, in addition to
   prove.  So for example, you can follow (quiet prove) with pso! to
   see the proof, including [proof-tree] output, if it failed.
@@ -129009,12 +132023,11 @@ Subtopics
     psog
 
   Print the most recent proof attempt from inside the interactive
-  proof-builder, including goal names, assuming you are in [gag-mode]
-  or have saved output (see [set-saved-output]).  This includes all
-  calls to the prover, including for example [proof-builder] commands
-  induct, split, and bash, in addition to prove.  So for example, you
-  can follow (quiet prove) with psog to see the proof, including
-  [proof-tree] output, if it failed.
+  proof-builder, including goal names.  This includes prover calls,
+  including for example [proof-builder] commands induct, split, and
+  bash, in addition to prove.  So for example, you can follow (quiet
+  prove) with psog to see the proof, including [proof-tree] output,
+  if it failed.
 
   Related [proof-builder] commands are pso and pso!; see [ACL2-pc::pso]
   and [ACL2-pc::pso!].")
