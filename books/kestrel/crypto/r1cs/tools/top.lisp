@@ -1,4 +1,4 @@
-; Top book for R1CS library
+; Top book for R1CS tools dir
 ;
 ; Copyright (C) 2020-2021 Kestrel Institute
 ;
@@ -10,6 +10,6 @@
 
 (in-package "R1CS")
 
-(include-book "sparse/top")
-(include-book "gadgets/top")
-(include-book "tools/top") ;brings in skip-proofs
+(include-book "lift-r1cs") ;brings in skip-proofs
+(include-book "lift-r1cs-new")
+(include-book "axe-prover-r1cs")
