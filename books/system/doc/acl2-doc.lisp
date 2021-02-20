@@ -100914,7 +100914,7 @@ arithmetic) for libraries of @(see books) for arithmetic reasoning.</p>")
   controlled by any @(':')@(tsee loop-stopper) options in the rule-class or
   @(':')@('restrict') @(see hints).  If these conditions are met, the quoted
   constant is replaced by the ``result.''  But the exact meanings of
-  ``pattern,'' ``match'' and ``result'' here is a little different than their
+  ``pattern,'' ``match'' and ``result'', here, are a little different from their
   meanings for ordinary @(':rewrite') rules and depend on which of the three
   forms is being applied.</p>
 
