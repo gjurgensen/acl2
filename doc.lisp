@@ -85725,6 +85725,14 @@ Changes to Existing Features
   It is now always redundant to [unmemoize] a function symbol that is
   not currently [memoize]d.  See [redundant-events].
 
+  The ``basic'' ruler-extenders (see [rulers]) now include not only the
+  symbols [return-last] and [mv-list] but also the symbol [if].  As
+  before, the termination analysis always continues through the true
+  and false branches of IF calls; but now, by default, it also
+  continues through the first argument of an IF call.  Thanks to Eric
+  Smith for suggesting this improvement and testing it on some
+  proprietary books.
+
 
 New Features
 
@@ -103155,9 +103163,13 @@ Subtopics
              1)))
 
   As a convenience, ACL2 allows the symbol :lambdas in place of
-  (:lambdas), and in fact the former will also include the two basic
-  ruler-extenders: [return-last] (which comes from macroexpansion of
-  calls of [prog2$], [ec-call], and others) and [mv-list].
+  (:lambdas), and in fact the former will also include the three
+  basic ruler-extenders: [return-last], which comes from
+  macroexpansion of calls of [prog2$], [ec-call], and others;
+  [mv-list]; and [if], which affects termination analysis through the
+  first argument of calls of IF (it continues through the true and
+  false branches of these calls even without IF being among the
+  ruler-extenders).
 
   IMPORTANT REMARKS.  (1) Notice that the argument to
   set-ruler-extenders is evaluated, but the argument to
@@ -103399,8 +103411,8 @@ Subtopics
   evaluates to a list, does not necessarily include the default
   ruler-extenders --- i.e., those included for the argument, :basic
   --- which are the elements of the list constant
-  *basic-ruler-extenders*, namely [return-last] and [mv-list].  You
-  may, of course, include these explicitly in your list argument.
+  *basic-ruler-extenders*, namely [return-last] [mv-list], and [if].
+  You may, of course, include these explicitly in your list argument.
 
   We conclude our discussion by noting that the set of ruler-extenders
   can affect the induction scheme that is stored with a recursive
