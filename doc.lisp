@@ -102149,7 +102149,7 @@ A Possible Confusion
       :rule-classes :rewrite-quoted-constant)
 
     (defthm set-normalizer
-      (set-equal (drop-duplicates-and-sort x) x)
+      (set-equalp (drop-duplicates-and-sort x) x)
       :rule-classes :rewrite-quoted-constant)
 
     (defthm lambda-id-generalized
@@ -102211,8 +102211,8 @@ A Possible Confusion
   controlled by any :[loop-stopper] options in the rule-class or
   :restrict [hints].  If these conditions are met, the quoted
   constant is replaced by the ``result.'' But the exact meanings of
-  ``pattern,'' ``match'' and ``result'' here is a little different
-  than their meanings for ordinary :rewrite rules and depend on which
+  ``pattern,'' ``match'' and ``result'', here, are a little different
+  from their meanings for ordinary :rewrite rules and depend on which
   of the three forms is being applied.
 
     * A form [1] rule, whose conclusion is (equiv 'const1 'const2), has
