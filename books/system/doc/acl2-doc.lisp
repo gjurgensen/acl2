@@ -23545,10 +23545,10 @@ subtree of X with T, without duplication.</p>
  predicate @('mp') such that @('rel') is well-founded on objects satisfying
  @('mp'), the measure term @('m') must always produce something satisfying
  @('mp'), and the measure term must decrease according to @('rel') in each
- recursive call, under the hypothesis that all the tests governing the call are
- satisfied.  By the meaning of well-foundedness, we know there are no
- infinitely descending chains of successively @('rel')-smaller @('mp')-objects.
- Thus, the recursion must terminate.</p>
+ recursive call, under the hypothesis that all the tests ruling the call are
+ satisfied (see @(see rulers)).  By the meaning of well-foundedness, we know
+ there are no infinitely descending chains of successively @('rel')-smaller
+ @('mp')-objects.  Thus, the recursion must terminate.</p>
 
  <p>The only primitive well-founded relation in ACL2 is @(tsee o<) (see @(see
  o<)), which is known to be well-founded on the @(tsee o-p)s (see @(see o-p)).
@@ -87624,6 +87624,15 @@ it."
  fail after setting @('trace-co') directly rather than using @(tsee
  open-trace-file).</p>
 
+ <p>There are improvements to @(tsee certify-book) and @(tsee include-book),
+ which pertain to the loading of compiled files by @('include-book') before
+ events in the book are processed.  That process supports preservation of @(see
+ hons)es and @(see fast-alists), and reporting of ``stolen'' alists (see for
+ example @(see with-stolen-alist)).  Relevant tests, with implementation-level
+ comments, may be found in the new @(see community-books) directory,
+ @('books/system/tests/early-load-of-compiled/').  Thanks to Sol Swords for
+ helpful discussions.</p>
+
  <h3>Changes at the System Level</h3>
 
  <p>(SBCL only) Filenames are now read as ASCII (specifically, ISO-8859-1) when
@@ -101603,10 +101612,10 @@ arithmetic) for libraries of @(see books) for arithmetic reasoning.</p>")
  we know that @('(cdr x)') is ``smaller'' than @('x') if @('(consp x)') is
  true.  (By default, ACL2's notion of ``smaller'' is ordinary natural-number
  @('<'), and the argument @('x') is measured by applying function
- @('acl2-count') to @('x').)  However, that termination analysis does not
- consider @(tsee IF) tests, like @('(consp x)') above, when they occur under
- calls of functions other than @('IF'), such as @('CONS') in the case
- above.</p>
+ @('acl2-count') to @('x').)  However, by default that termination analysis
+ does not consider @(tsee IF) tests, like @('(consp x)') above, when they occur
+ under calls of functions other than @('IF'), such as @('CONS') in the case
+ above; it considers only rulers, as we now discuss.</p>
 
  <p>In the example above, we say that the term @('(consp x)') <i>governs</i>
  the recursive call @('(f (cdr x))') shown above, but does not <i>rule</i> that
@@ -101615,13 +101624,34 @@ arithmetic) for libraries of @(see books) for arithmetic reasoning.</p>")
  that must be true in order for evaluation to reach that subterm; however, the
  set of <i>rulers</i> of the occurrence only includes, at least by default,
  those tests and their negations from the top-level @('IF') structure of the
- term.  It is the rulers of a recursive call that affect its role in the
- termination and induction analysis for a function.</p>
+ term &mdash; that is, tests and their negations that are collected by walking
+ through the true and false branches of @('IF') calls, starting at the top.
+ Consider for example the following term, where @('foo') is assumed to be a
+ function symbol.</p>
 
- <p>One way to overcome this problem is to ``lift'' the @('IF') test to the top
- level, as follows, so that now @('(consp x)') is a ruler of the recursive
- call, and not merely a governor (though it remains a governor as well, of
- course).</p>
+ @({
+ (if a
+     (if (if b c d) e f)
+   (if g
+       (foo (if h i j))
+     k))
+ })
+
+ <p>For the occurrence of @('c') in that term, the only ruler is @('a'); but
+ both @('a') and @('b') are governors.  For the occurrence of @('i'), @('(not
+ a)') and @('g') are the only rulers; but its governors are @('(not a)'),
+ @('g'), and @('h').</p>
+
+ <p>We have seen that for a subterm occurrence in a term, every ruler is a
+ governor but not necessarily vice-versa.  It is the rulers of a recursive call
+ that affect its role in the termination and induction analysis for a
+ function.</p>
+
+ <p>One way to overcome the discrepancy between rulers and governors is to
+ ``lift'' the @('IF') test to the top level.  We can apply that technique to
+ the @('defun') of @('f') above, so that now @('(consp x)') is a ruler of the
+ recursive call, and not merely a governor (though it remains a governor as
+ well, of course).</p>
 
  @({
     (defun f (x)

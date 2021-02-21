@@ -26683,10 +26683,11 @@ Subtopics
   predicate mp such that rel is well-founded on objects satisfying
   mp, the measure term m must always produce something satisfying mp,
   and the measure term must decrease according to rel in each
-  recursive call, under the hypothesis that all the tests governing
-  the call are satisfied.  By the meaning of well-foundedness, we
-  know there are no infinitely descending chains of successively
-  rel-smaller mp-objects.  Thus, the recursion must terminate.
+  recursive call, under the hypothesis that all the tests ruling the
+  call are satisfied (see [rulers]).  By the meaning of
+  well-foundedness, we know there are no infinitely descending chains
+  of successively rel-smaller mp-objects.  Thus, the recursion must
+  terminate.
 
   The only primitive well-founded relation in ACL2 is [o<] (see [o<]),
   which is known to be well-founded on the [o-p]s (see [o-p]).  For
@@ -86013,6 +86014,16 @@ Bug Fixes
   after setting trace-co directly rather than using
   [open-trace-file].
 
+  There are improvements to [certify-book] and [include-book], which
+  pertain to the loading of compiled files by include-book before
+  events in the book are processed.  That process supports
+  preservation of [hons]es and [fast-alists], and reporting of
+  ``stolen'' alists (see for example [with-stolen-alist]).  Relevant
+  tests, with implementation-level comments, may be found in the new
+  [community-books] directory,
+  books/system/tests/early-load-of-compiled/.  Thanks to Sol Swords
+  for helpful discussions.
+
 
 Changes at the System Level
 
@@ -103036,10 +103047,10 @@ Subtopics
   since we know that (cdr x) is ``smaller'' than x if (consp x) is
   true.  (By default, ACL2's notion of ``smaller'' is ordinary
   natural-number <, and the argument x is measured by applying
-  function acl2-count to x.)  However, that termination analysis does
-  not consider [if] tests, like (consp x) above, when they occur
-  under calls of functions other than IF, such as CONS in the case
-  above.
+  function acl2-count to x.)  However, by default that termination
+  analysis does not consider [if] tests, like (consp x) above, when
+  they occur under calls of functions other than IF, such as CONS in
+  the case above; it considers only rulers, as we now discuss.
 
   In the example above, we say that the term (consp x) governs the
   recursive call (f (cdr x)) shown above, but does not rule that
@@ -103048,14 +103059,31 @@ Subtopics
   their negations that must be true in order for evaluation to reach
   that subterm; however, the set of rulers of the occurrence only
   includes, at least by default, those tests and their negations from
-  the top-level IF structure of the term.  It is the rulers of a
+  the top-level IF structure of the term --- that is, tests and their
+  negations that are collected by walking through the true and false
+  branches of IF calls, starting at the top.  Consider for example
+  the following term, where foo is assumed to be a function symbol.
+
+    (if a
+        (if (if b c d) e f)
+      (if g
+          (foo (if h i j))
+        k))
+
+  For the occurrence of c in that term, the only ruler is a; but both a
+  and b are governors.  For the occurrence of i, (not a) and g are
+  the only rulers; but its governors are (not a), g, and h.
+
+  We have seen that for a subterm occurrence in a term, every ruler is
+  a governor but not necessarily vice-versa.  It is the rulers of a
   recursive call that affect its role in the termination and
   induction analysis for a function.
 
-  One way to overcome this problem is to ``lift'' the IF test to the
-  top level, as follows, so that now (consp x) is a ruler of the
-  recursive call, and not merely a governor (though it remains a
-  governor as well, of course).
+  One way to overcome the discrepancy between rulers and governors is
+  to ``lift'' the IF test to the top level.  We can apply that
+  technique to the defun of f above, so that now (consp x) is a ruler
+  of the recursive call, and not merely a governor (though it remains
+  a governor as well, of course).
 
     (defun f (x)
       (if (consp x)
