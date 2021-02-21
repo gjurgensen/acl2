@@ -100844,7 +100844,7 @@ arithmetic) for libraries of @(see books) for arithmetic reasoning.</p>")
     :rule-classes :rewrite-quoted-constant)
 
   (defthm set-normalizer
-    (set-equal (drop-duplicates-and-sort x) x)
+    (set-equalp (drop-duplicates-and-sort x) x)
     :rule-classes :rewrite-quoted-constant)
 
   (defthm lambda-id-generalized
