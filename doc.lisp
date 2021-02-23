@@ -26683,10 +26683,11 @@ Subtopics
   predicate mp such that rel is well-founded on objects satisfying
   mp, the measure term m must always produce something satisfying mp,
   and the measure term must decrease according to rel in each
-  recursive call, under the hypothesis that all the tests governing
-  the call are satisfied.  By the meaning of well-foundedness, we
-  know there are no infinitely descending chains of successively
-  rel-smaller mp-objects.  Thus, the recursion must terminate.
+  recursive call, under the hypothesis that all the tests ruling the
+  call are satisfied (see [rulers]).  By the meaning of
+  well-foundedness, we know there are no infinitely descending chains
+  of successively rel-smaller mp-objects.  Thus, the recursion must
+  terminate.
 
   The only primitive well-founded relation in ACL2 is [o<] (see [o<]),
   which is known to be well-founded on the [o-p]s (see [o-p]).  For
@@ -85725,6 +85726,14 @@ Changes to Existing Features
   It is now always redundant to [unmemoize] a function symbol that is
   not currently [memoize]d.  See [redundant-events].
 
+  The ``basic'' ruler-extenders (see [rulers]) now include not only the
+  symbols [return-last] and [mv-list] but also the symbol [if].  As
+  before, the termination analysis always continues through the true
+  and false branches of IF calls; but now, by default, it also
+  continues through the first argument of an IF call.  Thanks to Eric
+  Smith for suggesting this improvement and testing it on some
+  proprietary books.
+
 
 New Features
 
@@ -86004,6 +86013,16 @@ Bug Fixes
   and ``<1'' will now go to that channel.  Formerly, this could fail
   after setting trace-co directly rather than using
   [open-trace-file].
+
+  There are improvements to [certify-book] and [include-book], which
+  pertain to the loading of compiled files by include-book before
+  events in the book are processed.  That process supports
+  preservation of [hons]es and [fast-alists], and reporting of
+  ``stolen'' alists (see for example [with-stolen-alist]).  Relevant
+  tests, with implementation-level comments, may be found in the new
+  [community-books] directory,
+  books/system/tests/early-load-of-compiled/.  Thanks to Sol Swords
+  for helpful discussions.
 
 
 Changes at the System Level
@@ -102130,7 +102149,7 @@ A Possible Confusion
       :rule-classes :rewrite-quoted-constant)
 
     (defthm set-normalizer
-      (set-equal (drop-duplicates-and-sort x) x)
+      (set-equalp (drop-duplicates-and-sort x) x)
       :rule-classes :rewrite-quoted-constant)
 
     (defthm lambda-id-generalized
@@ -102192,8 +102211,8 @@ A Possible Confusion
   controlled by any :[loop-stopper] options in the rule-class or
   :restrict [hints].  If these conditions are met, the quoted
   constant is replaced by the ``result.'' But the exact meanings of
-  ``pattern,'' ``match'' and ``result'' here is a little different
-  than their meanings for ordinary :rewrite rules and depend on which
+  ``pattern,'' ``match'' and ``result'', here, are a little different
+  from their meanings for ordinary :rewrite rules and depend on which
   of the three forms is being applied.
 
     * A form [1] rule, whose conclusion is (equiv 'const1 'const2), has
@@ -103028,10 +103047,10 @@ Subtopics
   since we know that (cdr x) is ``smaller'' than x if (consp x) is
   true.  (By default, ACL2's notion of ``smaller'' is ordinary
   natural-number <, and the argument x is measured by applying
-  function acl2-count to x.)  However, that termination analysis does
-  not consider [if] tests, like (consp x) above, when they occur
-  under calls of functions other than IF, such as CONS in the case
-  above.
+  function acl2-count to x.)  However, by default that termination
+  analysis does not consider [if] tests, like (consp x) above, when
+  they occur under calls of functions other than IF, such as CONS in
+  the case above; it considers only rulers, as we now discuss.
 
   In the example above, we say that the term (consp x) governs the
   recursive call (f (cdr x)) shown above, but does not rule that
@@ -103040,14 +103059,31 @@ Subtopics
   their negations that must be true in order for evaluation to reach
   that subterm; however, the set of rulers of the occurrence only
   includes, at least by default, those tests and their negations from
-  the top-level IF structure of the term.  It is the rulers of a
+  the top-level IF structure of the term --- that is, tests and their
+  negations that are collected by walking through the true and false
+  branches of IF calls, starting at the top.  Consider for example
+  the following term, where foo is assumed to be a function symbol.
+
+    (if a
+        (if (if b c d) e f)
+      (if g
+          (foo (if h i j))
+        k))
+
+  For the occurrence of c in that term, the only ruler is a; but both a
+  and b are governors.  For the occurrence of i, (not a) and g are
+  the only rulers; but its governors are (not a), g, and h.
+
+  We have seen that for a subterm occurrence in a term, every ruler is
+  a governor but not necessarily vice-versa.  It is the rulers of a
   recursive call that affect its role in the termination and
   induction analysis for a function.
 
-  One way to overcome this problem is to ``lift'' the IF test to the
-  top level, as follows, so that now (consp x) is a ruler of the
-  recursive call, and not merely a governor (though it remains a
-  governor as well, of course).
+  One way to overcome the discrepancy between rulers and governors is
+  to ``lift'' the IF test to the top level.  We can apply that
+  technique to the defun of f above, so that now (consp x) is a ruler
+  of the recursive call, and not merely a governor (though it remains
+  a governor as well, of course).
 
     (defun f (x)
       (if (consp x)
@@ -103155,9 +103191,13 @@ Subtopics
              1)))
 
   As a convenience, ACL2 allows the symbol :lambdas in place of
-  (:lambdas), and in fact the former will also include the two basic
-  ruler-extenders: [return-last] (which comes from macroexpansion of
-  calls of [prog2$], [ec-call], and others) and [mv-list].
+  (:lambdas), and in fact the former will also include the three
+  basic ruler-extenders: [return-last], which comes from
+  macroexpansion of calls of [prog2$], [ec-call], and others;
+  [mv-list]; and [if], which affects termination analysis through the
+  first argument of calls of IF (it continues through the true and
+  false branches of these calls even without IF being among the
+  ruler-extenders).
 
   IMPORTANT REMARKS.  (1) Notice that the argument to
   set-ruler-extenders is evaluated, but the argument to
@@ -103399,8 +103439,8 @@ Subtopics
   evaluates to a list, does not necessarily include the default
   ruler-extenders --- i.e., those included for the argument, :basic
   --- which are the elements of the list constant
-  *basic-ruler-extenders*, namely [return-last] and [mv-list].  You
-  may, of course, include these explicitly in your list argument.
+  *basic-ruler-extenders*, namely [return-last] [mv-list], and [if].
+  You may, of course, include these explicitly in your list argument.
 
   We conclude our discussion by noting that the set of ruler-extenders
   can affect the induction scheme that is stored with a recursive

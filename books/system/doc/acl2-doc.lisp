@@ -23545,10 +23545,10 @@ subtree of X with T, without duplication.</p>
  predicate @('mp') such that @('rel') is well-founded on objects satisfying
  @('mp'), the measure term @('m') must always produce something satisfying
  @('mp'), and the measure term must decrease according to @('rel') in each
- recursive call, under the hypothesis that all the tests governing the call are
- satisfied.  By the meaning of well-foundedness, we know there are no
- infinitely descending chains of successively @('rel')-smaller @('mp')-objects.
- Thus, the recursion must terminate.</p>
+ recursive call, under the hypothesis that all the tests ruling the call are
+ satisfied (see @(see rulers)).  By the meaning of well-foundedness, we know
+ there are no infinitely descending chains of successively @('rel')-smaller
+ @('mp')-objects.  Thus, the recursion must terminate.</p>
 
  <p>The only primitive well-founded relation in ACL2 is @(tsee o<) (see @(see
  o<)), which is known to be well-founded on the @(tsee o-p)s (see @(see o-p)).
@@ -87325,6 +87325,13 @@ it."
  <p>It is now always redundant to @(tsee unmemoize) a function symbol that is
  not currently @(see memoize)d.  See @(see redundant-events).</p>
 
+ <p>The ``basic'' ruler-extenders (see @(see rulers)) now include not only the
+ symbols @(tsee return-last) and @(tsee mv-list) but also the symbol @(tsee
+ if).  As before, the termination analysis always continues through the true
+ and false branches of @('IF') calls; but now, by default, it also continues
+ through the first argument of an @('IF') call.  Thanks to Eric Smith for
+ suggesting this improvement and testing it on some proprietary books.</p>
+
  <h3>New Features</h3>
 
  <p>A new option for @(tsee certify-book), @(':useless-runes'), makes it
@@ -87616,6 +87623,15 @@ it."
  ``@('1>')'' and ``@('<1')'' will now go to that channel.  Formerly, this could
  fail after setting @('trace-co') directly rather than using @(tsee
  open-trace-file).</p>
+
+ <p>There are improvements to @(tsee certify-book) and @(tsee include-book),
+ which pertain to the loading of compiled files by @('include-book') before
+ events in the book are processed.  That process supports preservation of @(see
+ hons)es and @(see fast-alists), and reporting of ``stolen'' alists (see for
+ example @(see with-stolen-alist)).  Relevant tests, with implementation-level
+ comments, may be found in the new @(see community-books) directory,
+ @('books/system/tests/early-load-of-compiled/').  Thanks to Sol Swords for
+ helpful discussions.</p>
 
  <h3>Changes at the System Level</h3>
 
@@ -100837,7 +100853,7 @@ arithmetic) for libraries of @(see books) for arithmetic reasoning.</p>")
     :rule-classes :rewrite-quoted-constant)
 
   (defthm set-normalizer
-    (set-equal (drop-duplicates-and-sort x) x)
+    (set-equalp (drop-duplicates-and-sort x) x)
     :rule-classes :rewrite-quoted-constant)
 
   (defthm lambda-id-generalized
@@ -100907,7 +100923,7 @@ arithmetic) for libraries of @(see books) for arithmetic reasoning.</p>")
   controlled by any @(':')@(tsee loop-stopper) options in the rule-class or
   @(':')@('restrict') @(see hints).  If these conditions are met, the quoted
   constant is replaced by the ``result.''  But the exact meanings of
-  ``pattern,'' ``match'' and ``result'' here is a little different than their
+  ``pattern,'' ``match'' and ``result'', here, are a little different from their
   meanings for ordinary @(':rewrite') rules and depend on which of the three
   forms is being applied.</p>
 
@@ -101596,10 +101612,10 @@ arithmetic) for libraries of @(see books) for arithmetic reasoning.</p>")
  we know that @('(cdr x)') is ``smaller'' than @('x') if @('(consp x)') is
  true.  (By default, ACL2's notion of ``smaller'' is ordinary natural-number
  @('<'), and the argument @('x') is measured by applying function
- @('acl2-count') to @('x').)  However, that termination analysis does not
- consider @(tsee IF) tests, like @('(consp x)') above, when they occur under
- calls of functions other than @('IF'), such as @('CONS') in the case
- above.</p>
+ @('acl2-count') to @('x').)  However, by default that termination analysis
+ does not consider @(tsee IF) tests, like @('(consp x)') above, when they occur
+ under calls of functions other than @('IF'), such as @('CONS') in the case
+ above; it considers only rulers, as we now discuss.</p>
 
  <p>In the example above, we say that the term @('(consp x)') <i>governs</i>
  the recursive call @('(f (cdr x))') shown above, but does not <i>rule</i> that
@@ -101608,13 +101624,34 @@ arithmetic) for libraries of @(see books) for arithmetic reasoning.</p>")
  that must be true in order for evaluation to reach that subterm; however, the
  set of <i>rulers</i> of the occurrence only includes, at least by default,
  those tests and their negations from the top-level @('IF') structure of the
- term.  It is the rulers of a recursive call that affect its role in the
- termination and induction analysis for a function.</p>
+ term &mdash; that is, tests and their negations that are collected by walking
+ through the true and false branches of @('IF') calls, starting at the top.
+ Consider for example the following term, where @('foo') is assumed to be a
+ function symbol.</p>
 
- <p>One way to overcome this problem is to ``lift'' the @('IF') test to the top
- level, as follows, so that now @('(consp x)') is a ruler of the recursive
- call, and not merely a governor (though it remains a governor as well, of
- course).</p>
+ @({
+ (if a
+     (if (if b c d) e f)
+   (if g
+       (foo (if h i j))
+     k))
+ })
+
+ <p>For the occurrence of @('c') in that term, the only ruler is @('a'); but
+ both @('a') and @('b') are governors.  For the occurrence of @('i'), @('(not
+ a)') and @('g') are the only rulers; but its governors are @('(not a)'),
+ @('g'), and @('h').</p>
+
+ <p>We have seen that for a subterm occurrence in a term, every ruler is a
+ governor but not necessarily vice-versa.  It is the rulers of a recursive call
+ that affect its role in the termination and induction analysis for a
+ function.</p>
+
+ <p>One way to overcome the discrepancy between rulers and governors is to
+ ``lift'' the @('IF') test to the top level.  We can apply that technique to
+ the @('defun') of @('f') above, so that now @('(consp x)') is a ruler of the
+ recursive call, and not merely a governor (though it remains a governor as
+ well, of course).</p>
 
  @({
     (defun f (x)
@@ -101741,9 +101778,12 @@ arithmetic) for libraries of @(see books) for arithmetic reasoning.</p>")
  })
 
  <p>As a convenience, ACL2 allows the symbol @(':lambdas') in place of
- @('(:lambdas)'), and in fact the former will also include the two basic
- ruler-extenders: @(tsee RETURN-LAST) (which comes from macroexpansion of calls
- of @(tsee PROG2$), @(tsee EC-CALL), and others) and @(tsee MV-LIST).</p>
+ @('(:lambdas)'), and in fact the former will also include the three basic
+ ruler-extenders: @(tsee RETURN-LAST), which comes from macroexpansion of calls
+ of @(tsee PROG2$), @(tsee EC-CALL), and others; @(tsee MV-LIST); and @(tsee
+ IF), which affects termination analysis through the first argument of calls of
+ @('IF') (it continues through the true and false branches of these calls even
+ without @('IF') being among the ruler-extenders).</p>
 
  <p>IMPORTANT REMARKS.  (1) Notice that the argument to
  @('set-ruler-extenders') is evaluated, but the argument to
@@ -102013,8 +102053,8 @@ arithmetic) for libraries of @(see books) for arithmetic reasoning.</p>")
  evaluates to a list, does not necessarily include the default ruler-extenders
  &mdash; i.e., those included for the argument, @(':basic') &mdash; which are
  the elements of the list constant @('*basic-ruler-extenders*'), namely @(tsee
- return-last) and @(tsee mv-list).  You may, of course, include these
- explicitly in your list argument.</p>
+ RETURN-LAST) @(tsee MV-LIST), and @(tsee IF).  You may, of course, include
+ these explicitly in your list argument.</p>
 
  <p>We conclude our discussion by noting that the set of ruler-extenders can
  affect the induction scheme that is stored with a recursive definition.  The
