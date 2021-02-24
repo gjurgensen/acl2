@@ -102307,9 +102307,10 @@ A Possible Confusion
   explore them down to the tips would be prohibitively expensive.
 
   However, form [2] rules, of the general form (implies hyps (equiv (fn
-  var) var)), allow you to do a root-and-branch exploration of every
-  quoted constant occuring in a given equiv context and compute the
-  replacement constant with the normalizer.
+  var) var)), allow the normalizer to be applied to every quoted
+  constant occuring in a suitable equiv context.  The normalizer can
+  then do a root-and-branch exploration of the constant to compute
+  its replacement.
 
   For example, the rewrite-quoted-constants-examples book cited above
   defines the normalizer (drop-dups-and-sort var) to coerce its
