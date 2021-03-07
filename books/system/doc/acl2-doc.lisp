@@ -112679,7 +112679,7 @@ arithmetic) for libraries of @(see books) for arithmetic reasoning.</p>")
  in the given list of terms.  This is a macro call expanding to
  @('(all-fnnames1 t lst nil)').</li>
 
- <li>@('(all-fnnames1 flg x acc)'): Accumulate into @('ans') the function
+ <li>@('(all-fnnames1 flg x acc)'): Accumulate into @('acc') the function
  symbols called in the given term or list of terms, @('x'), according to
  whether @('flg') is @('nil') (for a term) or not @('nil') (for a list of
  terms), respectively.</li>
