@@ -50334,7 +50334,9 @@ tables in the current Hons Space."
  involving only variables bound in the environment containing the @('let'), and
  @('body') is a term involving only the @('vari') plus the variables bound in
  the environment containing the @('let').  Each @('vari') must be used in
- @('body') or else @(see declare)d ignored.</p>
+ @('body') or else @(see declare)d ignored.  In ACL2 the only @(tsee declare)
+forms allowed for a @('let') form are  @('ignore'), @('ignorable'), and
+@('type').  See @(see declare).</p>
 
  <p>A @('let') form is evaluated by first evaluating each of the @('termi'),
  obtaining for each a @('vali').  Then, each @('vari') is bound to the
@@ -50391,10 +50393,10 @@ tables in the current Hons Space."
  })
 
  <p>Thus, the @('termi') are evaluated successively and after each evaluation
- the corresponding @('vali') is bound to the value of @('termi').  The second
+ the corresponding @('vari') is bound to the value of @('termi').  The second
  @(tsee let*) is similarly expanded, except that each for each @('vari') that
  is among the @('(x1 ... xm)'), the form @('(declare (ignore vari))') is
- inserted immediately after @('(vari termi)').</p>
+ inserted immediately after @('((vari termi))').</p>
 
  <p>Each @('(vari termi)') pair in a @('let') or @(tsee let*) form is called a
  ``binding'' of @('vari') and the @('vari') are called the ``local variables''
