@@ -54301,7 +54301,9 @@ Introduction
   only variables bound in the environment containing the let, and
   body is a term involving only the vari plus the variables bound in
   the environment containing the let.  Each vari must be used in body
-  or else [declare]d ignored.
+  or else [declare]d ignored.  In ACL2 the only [declare] forms
+  allowed for a let form are ignore, ignorable, and type.  See
+  [declare].
 
   A let form is evaluated by first evaluating each of the termi,
   obtaining for each a vali.  Then, each vari is bound to the
@@ -54350,10 +54352,10 @@ Introduction
      (let ((varn termn)) body)...)
 
   Thus, the termi are evaluated successively and after each evaluation
-  the corresponding vali is bound to the value of termi.  The second
+  the corresponding vari is bound to the value of termi.  The second
   [let*] is similarly expanded, except that each for each vari that
   is among the (x1 ... xm), the form (declare (ignore vari)) is
-  inserted immediately after (vari termi).
+  inserted immediately after ((vari termi)).
 
   Each (vari termi) pair in a let or [let*] form is called a
   ``binding'' of vari and the vari are called the ``local variables''
