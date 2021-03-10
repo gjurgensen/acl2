@@ -85864,6 +85864,15 @@ Bug Fixes
   body, as in (loop$ for v in lst collect :guard).  (Note: It's not
   clear that this bug could be used to prove nil.)
 
+  A soundness bug was fixed by changing [defabsstobj] to avoid using
+  [mbe] in the definitions generated for the logic.  The problem was
+  that the :logic and :exec forms are not actually equal (they
+  correspond, in the sense of the correspondence predicate), and this
+  can be exploited by using a :[guard-theorem] [lemma-instance].  For
+  an example proof of nil in Version 8.3, see a comment about a
+  defabsstobj bug in the form (defxdoc note-8-4 ...) in file
+  books/system/doc/acl2-doc.lisp.
+
   The mechanism for tracking [warrant]s needed during a proof had a
   bug, which might be a soundness bug if one uses [apply$] or
   [loop$].  That bug has been fixed.

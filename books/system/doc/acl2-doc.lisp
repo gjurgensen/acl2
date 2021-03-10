@@ -87190,6 +87190,58 @@ it."
 ; Tweaked our-with-standard-io-syntax for SBCL to support the fix for builds
 ; using relative pathnames for the LISP environment variable.
 
+; Here is a proof of nil that exploits the defabsstobj bug involving mbe that
+; is discussed in the release notes below.  This book was certifiable in ACL2
+; Version  8.3.
+
+;   (in-package "ACL2")
+;
+;   (defstobj st$c fld)
+;
+;   (defun st$ap (st)
+;     (declare (ignore st)
+;              (xargs :guard t))
+;     t)
+;
+;   (defun val$a (st)
+;     (declare (xargs :guard t))
+;     st)
+;
+;   (defun create-st$a ()
+;     (declare (xargs :guard t))
+;     nil)
+;
+;   (defun st$corr (st$c st$a)
+;     (declare (xargs :stobjs st$c))
+;     (equal (fld st$c) st$a))
+;
+;   (DEFTHM CREATE-ST{CORRESPONDENCE}
+;           (ST$CORR (CREATE-ST$C) (CREATE-ST$A))
+;           :RULE-CLASSES NIL)
+;
+;   (DEFTHM CREATE-ST{PRESERVED}
+;           (ST$AP (CREATE-ST$A))
+;           :RULE-CLASSES NIL)
+;
+;   (DEFTHM VAL{CORRESPONDENCE}
+;           (IMPLIES (ST$CORR ST$C ST)
+;                    (EQUAL (FLD ST$C) (VAL$A ST)))
+;           :RULE-CLASSES NIL)
+;
+;   (DEFABSSTOBJ ST
+;     :EXPORTS ((val :logic val$a :EXEC fld)))
+;
+;   (defthm bad-lemma
+;     (equal (st$ap st) (st$cp st))
+;     :hints (("Goal" :by (:guard-theorem stp)))
+;     :rule-classes nil)
+;
+;   (defthm bad
+;     nil
+;     :hints (("Goal" :use ((:instance bad-lemma
+;                                      (st nil)))))
+;     :rule-classes nil)
+
   :parents (release-notes)
   :short "ACL2 Version  8.4 (xxx, 20xx) Notes"
   :long "<p>NOTE!  New users can ignore these release notes, because the @(see
@@ -87454,6 +87506,15 @@ it."
  bug was manifested when the keyword @(':guard') was used as the @('loop$')
  body, as in @('(loop$ for v in lst collect :guard)').  (Note: It's not clear
  that this bug could be used to prove @('nil').)</p>
+
+ <p>A soundness bug was fixed by changing @(tsee defabsstobj) to avoid using
+ @(tsee mbe) in the definitions generated for the logic.  The problem was that
+ the @(':logic') and @(':exec') forms are not actually equal (they correspond,
+ in the sense of the correspondence predicate), and this can be exploited by
+ using a @(':')@(tsee guard-theorem) @(see lemma-instance).  For an example
+ proof of @('nil') in Version 8.3, see a comment about a @('defabsstobj') bug
+ in the form @('(defxdoc note-8-4 ...)') in file
+ @('books/system/doc/acl2-doc.lisp').</p>
 
  <p>The mechanism for tracking @(see warrant)s needed during a proof had a bug,
  which might be a soundness bug if one uses @(tsee apply$) or @(tsee loop$).
