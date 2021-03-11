@@ -97059,7 +97059,7 @@ Subtopics
   Untouchables are functions that cannot be called, as well as [state]
   global variables (see [programming-with-state]) that cannot be
   modified or unbound.  Macros can also be untouchable in some sense;
-  see [push-untouchable].
+  see [defmacro-untouchable].
 
     Examples:
     (push-untouchable my-var nil)
