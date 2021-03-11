@@ -87242,6 +87242,10 @@ it."
 ;                                      (st nil)))))
 ;     :rule-classes nil)
 
+; Added a missing fmt argument in termination-theorem, which fixes a bug
+; evidenced by submitting: :tthm apply$.  Thanks to Eric Smith for reporting
+; this bug and supplying the fix.
+
   :parents (release-notes)
   :short "ACL2 Version  8.4 (xxx, 20xx) Notes"
   :long "<p>NOTE!  New users can ignore these release notes, because the @(see
@@ -96172,7 +96176,7 @@ arithmetic) for libraries of @(see books) for arithmetic reasoning.</p>")
   :long "<p>Untouchables are functions that cannot be called, as well as @(see
  state) global variables (see @(see programming-with-state)) that cannot be
  modified or unbound.  Macros can also be untouchable in some sense; see @(see
- push-untouchable).</p>
+ defmacro-untouchable).</p>
 
  @({
   Examples:
