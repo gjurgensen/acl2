@@ -87390,6 +87390,11 @@ it."
  through the first argument of an @('IF') call.  Thanks to Eric Smith for
  suggesting this improvement and testing it on some proprietary books.</p>
 
+ <p>When supplying @('state') as an argument to @(tsee defun-nx) (or @(tsee
+ defund-nx), it is no longer necessary to declare @('state') as a @(see stobj)
+ or use @(tsee set-state-ok).  Thanks to Eric Smith for suggesting the
+ possibility of this change.</p>
+
  <h3>New Features</h3>
 
  <p>A new option for @(tsee certify-book), @(':useless-runes'), makes it
@@ -87699,6 +87704,15 @@ it."
  comments, may be found in the new @(see community-books) directory,
  @('books/system/tests/early-load-of-compiled/').  Thanks to Sol Swords for
  helpful discussions.</p>
+
+ <p>Improved a utility that builds sets of clauses, which improves the
+ reliability of using a @(see lemma-instance) of the form @('(:guard-theorem
+ <name> nil)').  Thanks to Eric Smith for reporting this problem with a simple
+ example, and to Dave Greve for following up with a related example; both now
+ work as one would expect.</p>
+
+ <p>Fixed printing of the ACL2 @(see state) in error messages, specifically
+ when executing a non-executable function.</p>
 
  <h3>Changes at the System Level</h3>
 
