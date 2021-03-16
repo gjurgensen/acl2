@@ -24058,13 +24058,14 @@ subtree of X with T, without duplication.</p>
   :long "@({
   Example:
 
-  (set-state-ok t)
   (defun-nx foo (x state)
+    (declare (xargs :guard t))
     (mv-let (a b c)
             (cons x state)
             (list a b c b a)))
   ; Note ``ill-formed'' call of foo just below.
   (defun bar (state y)
+    (declare (xargs :stobjs state))
     (foo state y))
  })
 
@@ -24096,8 +24097,13 @@ subtree of X with T, without duplication.</p>
             body))
  })
 
- <p>Moreover, the @(see executable-counterpart) @(see rune) for @('name') is
- @(see disable)d by this event.</p>
+ <p>But @('defun-nx') does two other things.  Before executing the @('defun')
+ form displayed above, ACL2 arranges that @('state') is allowed as a formal
+ parameter, by first introducing @('(set-state-ok t)') in a way that is @(see
+ local) to the generated event.  After executing the @('defun'), the @(see
+ executable-counterpart) @(see rune) for @('name') is @(see disable)d.  You can
+ evaluate @(':trans1 (defun-nx ...)') for your @('defun-nx') form to see its
+ single-step macroexpansion.</p>
 
  <p>Note that because of the insertion of the above call of
  @('throw-nonexec-error'), no formal is ignored when using @('defun-nx').</p>
@@ -24115,8 +24121,8 @@ subtree of X with T, without duplication.</p>
  @(tsee declare) form; @('defun-nx') will still lay down its own such
  declaration, but ACL2 can tolerate the duplication.</p>
 
- <p>Note that @('defund-nx') is also available.  It is essentially identical to
- @('defun-nx') except that as with @(tsee defund), @('defund-nx') leaves the
+ <p>Note that @(tsee defund-nx) is also available.  It is essentially identical
+ to @('defun-nx') except that as with @(tsee defund), @('defund-nx') leaves the
  definition @(see rune) disabled for the new function symbol.</p>
 
  <p>If you use guards (see @(see guard)), please be aware that even though
