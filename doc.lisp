@@ -65530,7 +65530,9 @@ Subtopics
 
     * propagation upward of if tests;
     * potential simplification with [type-set] reasoning; and
-    * the expansion of calls of a few built-in functions (like [implies]).
+    * the expansion of calls of a few built-in functions like [implies]
+      (the full list is the value of the constant,
+      *expandable-boot-strap-non-rec-fns*).
 
   We have seen an example where [type-set] reasoning can be expensive.
   So when ACL2 normalizes [definition] bodies and [guard]s, it
@@ -114096,22 +114098,23 @@ List of a few built-in system utilities
       [world] w, return the number of its formal parameters.
     * (body fn normalp w): Fn should either be a :[logic]-mode function
       symbol of [world] w or a lambda expression.  If fn is a symbol
-      and normalp is nil, then return the body of its original
-      definition.  If fn is a lambda expression, return its body.  We
-      now discuss the remaining case, where fn is a :[logic]-mode
-      function symbol and normalp is true.  In the usual case that no
-      [definition] rule has been introduced for fn with a non-nil
-      value of :install-body (which is the default), return the
-      [normalize]d body from the defun form that introduced fn, or
-      nil if fn was not introduced with defun (as with [encapsulate],
-      [defstub], or [defchoose]) --- except that in the case that
-      :normalize nil was specified in that defun form (see [xargs]),
-      return the unnormalized body.  The remaining case is that at
-      least one [definition] rule for fn has been installed.  In that
-      case, the latest such rule provides the body (see source
-      function latest-body for how hypotheses are handled), with one
-      exception: if the equivalence relation for that rule is other
-      than equal, then the unnormalized body is returned.
+      and normalp is nil, then return the body (translated but
+      unnormalized) of its original definition.  If fn is a lambda
+      expression, return its body.  We now discuss the remaining
+      case, where fn is a :[logic]-mode function symbol and normalp
+      is true.  In the usual case that no [definition] rule has been
+      introduced for fn with a non-nil value of :install-body (which
+      is the default), return the [normalize]d body from the defun
+      form that introduced fn, or nil if fn was not introduced with
+      defun (as with [encapsulate], [defstub], or [defchoose]) ---
+      except that in the case that :normalize nil was specified in
+      that defun form (see [xargs]), return the unnormalized body.
+      The remaining case is that at least one [definition] rule for
+      fn has been installed.  In that case, the latest such rule
+      provides the body (see source function latest-body for how
+      hypotheses are handled), with one exception: if the equivalence
+      relation for that rule is other than equal, then the
+      unnormalized body is returned.
     * (conjoin lst): The conjunction of the given list of terms.
     * (conjoin2 term1 term2): The conjunction of the given two terms.
     * (cons-term fn args): Returns a [term] with function symbol (or
