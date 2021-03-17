@@ -113182,7 +113182,7 @@ arithmetic) for libraries of @(see books) for arithmetic reasoning.</p>")
 
  <li>@('(symbol-class name w)'): For a function symbol, @('name'), of the ACL2
  @(see world) @('w'), return @(':program') if @('name') is in @(':')@(tsee
- program) mode, @(':common-lisp-compliant') is @('name') is @(see
+ program) mode, @(':common-lisp-compliant') if @('name') is @(see
  guard)-verified, and otherwise, @(':ideal').  If @('name') is the name of a
  theorem (more specifically, has a @(''theorem') property; see @(see getprop)),
  return @(':ideal') unless the theorem is guard-verified, in which case return
@@ -115239,7 +115239,7 @@ arithmetic) for libraries of @(see books) for arithmetic reasoning.</p>")
  <h3>Relation to Guards</h3>
 
  <p>To justify that type declarations are correct, @('the') is integrated into
- ACL2's @(see guard) mechanism.  When a call of @('(the TYPE EXPR)') in the
+ ACL2's @(see guard) mechanism.  A call of @('(the TYPE EXPR)') in the
  body of a function definition generates a guard proof obligation that the
  type, @('TYPE'), holds for the value of the expression, @('EXPR').  Consider
  the following example.</p>
