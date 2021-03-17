@@ -27258,13 +27258,14 @@ Subtopics
 
     Example:
 
-    (set-state-ok t)
     (defun-nx foo (x state)
+      (declare (xargs :guard t))
       (mv-let (a b c)
               (cons x state)
               (list a b c b a)))
     ; Note ``ill-formed'' call of foo just below.
     (defun bar (state y)
+      (declare (xargs :stobjs state))
       (foo state y))
 
   The macro defun-nx introduces definitions using the [defun] macro,
@@ -27291,8 +27292,13 @@ Subtopics
       (prog2$ (throw-nonexec-error 'name (list x1 ... xk))
               body))
 
-  Moreover, the [executable-counterpart] [rune] for name is [disable]d
-  by this event.
+  But defun-nx does two other things.  Before executing the defun form
+  displayed above, ACL2 arranges that state is allowed as a formal
+  parameter, by first introducing (set-state-ok t) in a way that is
+  [local] to the generated event.  After executing the defun, the
+  [executable-counterpart] [rune] for name is [disable]d.  You can
+  evaluate :trans1 (defun-nx ...) for your defun-nx form to see its
+  single-step macroexpansion.
 
   Note that because of the insertion of the above call of
   throw-nonexec-error, no formal is ignored when using defun-nx.
@@ -27311,7 +27317,7 @@ Subtopics
   [declare] form; defun-nx will still lay down its own such
   declaration, but ACL2 can tolerate the duplication.
 
-  Note that defund-nx is also available.  It is essentially identical
+  Note that [defund-nx] is also available.  It is essentially identical
   to defun-nx except that as with [defund], defund-nx leaves the
   definition [rune] disabled for the new function symbol.
 
@@ -65524,7 +65530,9 @@ Subtopics
 
     * propagation upward of if tests;
     * potential simplification with [type-set] reasoning; and
-    * the expansion of calls of a few built-in functions (like [implies]).
+    * the expansion of calls of a few built-in functions like [implies]
+      (the full list is the value of the constant,
+      *expandable-boot-strap-non-rec-fns*).
 
   We have seen an example where [type-set] reasoning can be expensive.
   So when ACL2 normalizes [definition] bodies and [guard]s, it
@@ -85736,6 +85744,11 @@ Changes to Existing Features
   Smith for suggesting this improvement and testing it on some
   proprietary books.
 
+  When supplying state as an argument to [defun-nx] (or [defund-nx], it
+  is no longer necessary to declare state as a [stobj] or use
+  [set-state-ok].  Thanks to Eric Smith for suggesting the
+  possibility of this change.
+
 
 New Features
 
@@ -86034,6 +86047,15 @@ Bug Fixes
   [community-books] directory,
   books/system/tests/early-load-of-compiled/.  Thanks to Sol Swords
   for helpful discussions.
+
+  Improved a utility that builds sets of clauses, which improves the
+  reliability of using a [lemma-instance] of the form (:guard-theorem
+  <name> nil).  Thanks to Eric Smith for reporting this problem with
+  a simple example, and to Dave Greve for following up with a related
+  example; both now work as one would expect.
+
+  Fixed printing of the ACL2 [state] in error messages, specifically
+  when executing a non-executable function.
 
 
 Changes at the System Level
@@ -114076,22 +114098,23 @@ List of a few built-in system utilities
       [world] w, return the number of its formal parameters.
     * (body fn normalp w): Fn should either be a :[logic]-mode function
       symbol of [world] w or a lambda expression.  If fn is a symbol
-      and normalp is nil, then return the body of its original
-      definition.  If fn is a lambda expression, return its body.  We
-      now discuss the remaining case, where fn is a :[logic]-mode
-      function symbol and normalp is true.  In the usual case that no
-      [definition] rule has been introduced for fn with a non-nil
-      value of :install-body (which is the default), return the
-      [normalize]d body from the defun form that introduced fn, or
-      nil if fn was not introduced with defun (as with [encapsulate],
-      [defstub], or [defchoose]) --- except that in the case that
-      :normalize nil was specified in that defun form (see [xargs]),
-      return the unnormalized body.  The remaining case is that at
-      least one [definition] rule for fn has been installed.  In that
-      case, the latest such rule provides the body (see source
-      function latest-body for how hypotheses are handled), with one
-      exception: if the equivalence relation for that rule is other
-      than equal, then the unnormalized body is returned.
+      and normalp is nil, then return the body (translated but
+      unnormalized) of its original definition.  If fn is a lambda
+      expression, return its body.  We now discuss the remaining
+      case, where fn is a :[logic]-mode function symbol and normalp
+      is true.  In the usual case that no [definition] rule has been
+      introduced for fn with a non-nil value of :install-body (which
+      is the default), return the [normalize]d body from the defun
+      form that introduced fn, or nil if fn was not introduced with
+      defun (as with [encapsulate], [defstub], or [defchoose]) ---
+      except that in the case that :normalize nil was specified in
+      that defun form (see [xargs]), return the unnormalized body.
+      The remaining case is that at least one [definition] rule for
+      fn has been installed.  In that case, the latest such rule
+      provides the body (see source function latest-body for how
+      hypotheses are handled), with one exception: if the equivalence
+      relation for that rule is other than equal, then the
+      unnormalized body is returned.
     * (conjoin lst): The conjunction of the given list of terms.
     * (conjoin2 term1 term2): The conjunction of the given two terms.
     * (cons-term fn args): Returns a [term] with function symbol (or

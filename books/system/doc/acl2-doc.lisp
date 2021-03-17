@@ -24058,13 +24058,14 @@ subtree of X with T, without duplication.</p>
   :long "@({
   Example:
 
-  (set-state-ok t)
   (defun-nx foo (x state)
+    (declare (xargs :guard t))
     (mv-let (a b c)
             (cons x state)
             (list a b c b a)))
   ; Note ``ill-formed'' call of foo just below.
   (defun bar (state y)
+    (declare (xargs :stobjs state))
     (foo state y))
  })
 
@@ -24096,8 +24097,13 @@ subtree of X with T, without duplication.</p>
             body))
  })
 
- <p>Moreover, the @(see executable-counterpart) @(see rune) for @('name') is
- @(see disable)d by this event.</p>
+ <p>But @('defun-nx') does two other things.  Before executing the @('defun')
+ form displayed above, ACL2 arranges that @('state') is allowed as a formal
+ parameter, by first introducing @('(set-state-ok t)') in a way that is @(see
+ local) to the generated event.  After executing the @('defun'), the @(see
+ executable-counterpart) @(see rune) for @('name') is @(see disable)d.  You can
+ evaluate @(':trans1 (defun-nx ...)') for your @('defun-nx') form to see its
+ single-step macroexpansion.</p>
 
  <p>Note that because of the insertion of the above call of
  @('throw-nonexec-error'), no formal is ignored when using @('defun-nx').</p>
@@ -24115,8 +24121,8 @@ subtree of X with T, without duplication.</p>
  @(tsee declare) form; @('defun-nx') will still lay down its own such
  declaration, but ACL2 can tolerate the duplication.</p>
 
- <p>Note that @('defund-nx') is also available.  It is essentially identical to
- @('defun-nx') except that as with @(tsee defund), @('defund-nx') leaves the
+ <p>Note that @(tsee defund-nx) is also available.  It is essentially identical
+ to @('defun-nx') except that as with @(tsee defund), @('defund-nx') leaves the
  definition @(see rune) disabled for the new function symbol.</p>
 
  <p>If you use guards (see @(see guard)), please be aware that even though
@@ -61451,8 +61457,9 @@ it."
 
  <li>potential simplification with @(see type-set) reasoning; and</li>
 
- <li>the expansion of calls of a few built-in functions (like @(tsee
- implies)).</li>
+ <li>the expansion of calls of a few built-in functions like @(tsee
+ implies) (the full list is the value of the constant,
+ @('*expandable-boot-strap-non-rec-fns*')).</li>
 
  </ul>
 
@@ -112780,21 +112787,21 @@ arithmetic) for libraries of @(see books) for arithmetic reasoning.</p>")
  <li>@('(body fn normalp w)'): @('Fn') should either be a @(':')@(tsee
  logic)-mode function symbol of @(see world) @('w') or a @('lambda')
  expression.  If @('fn') is a symbol and @('normalp') is @('nil'), then return
- the body of its original definition.  If @('fn') is a @('lambda') expression,
- return its body.  We now discuss the remaining case, where @('fn') is a
- @(':')@(tsee logic)-mode function symbol and @('normalp') is true.  In the
- usual case that no @(see definition) rule has been introduced for @('fn') with
- a non-@('nil') value of @(':install-body') (which is the default), return the
- @(see normalize)d body from the @('defun') form that introduced @('fn'), or
- @('nil') if @('fn') was not introduced with @('defun') (as with @(tsee
- encapsulate), @(tsee defstub), or @(tsee defchoose)) &mdash; except that in
- the case that @(':normalize nil') was specified in that @('defun') form (see
- @(see xargs)), return the unnormalized body.  The remaining case is that at
- least one @(see definition) rule for @('fn') has been installed.  In that
- case, the latest such rule provides the body (see source function
- @('latest-body') for how hypotheses are handled), with one exception: if the
- equivalence relation for that rule is other than @('equal'), then the
- unnormalized body is returned.</li>
+ the body (translated but unnormalized) of its original definition.  If @('fn')
+ is a @('lambda') expression, return its body.  We now discuss the remaining
+ case, where @('fn') is a @(':')@(tsee logic)-mode function symbol and
+ @('normalp') is true.  In the usual case that no @(see definition) rule has
+ been introduced for @('fn') with a non-@('nil') value of
+ @(':install-body') (which is the default), return the @(see normalize)d body
+ from the @('defun') form that introduced @('fn'), or @('nil') if @('fn') was
+ not introduced with @('defun') (as with @(tsee encapsulate), @(tsee defstub),
+ or @(tsee defchoose)) &mdash; except that in the case that @(':normalize nil')
+ was specified in that @('defun') form (see @(see xargs)), return the
+ unnormalized body.  The remaining case is that at least one @(see definition)
+ rule for @('fn') has been installed.  In that case, the latest such rule
+ provides the body (see source function @('latest-body') for how hypotheses are
+ handled), with one exception: if the equivalence relation for that rule is
+ other than @('equal'), then the unnormalized body is returned.</li>
 
  <li>@('(conjoin lst)'): The conjunction of the given list of terms.</li>
 
@@ -113175,7 +113182,7 @@ arithmetic) for libraries of @(see books) for arithmetic reasoning.</p>")
 
  <li>@('(symbol-class name w)'): For a function symbol, @('name'), of the ACL2
  @(see world) @('w'), return @(':program') if @('name') is in @(':')@(tsee
- program) mode, @(':common-lisp-compliant') is @('name') is @(see
+ program) mode, @(':common-lisp-compliant') if @('name') is @(see
  guard)-verified, and otherwise, @(':ideal').  If @('name') is the name of a
  theorem (more specifically, has a @(''theorem') property; see @(see getprop)),
  return @(':ideal') unless the theorem is guard-verified, in which case return
@@ -115232,7 +115239,7 @@ arithmetic) for libraries of @(see books) for arithmetic reasoning.</p>")
  <h3>Relation to Guards</h3>
 
  <p>To justify that type declarations are correct, @('the') is integrated into
- ACL2's @(see guard) mechanism.  When a call of @('(the TYPE EXPR)') in the
+ ACL2's @(see guard) mechanism.  A call of @('(the TYPE EXPR)') in the
  body of a function definition generates a guard proof obligation that the
  type, @('TYPE'), holds for the value of the expression, @('EXPR').  Consider
  the following example.</p>
