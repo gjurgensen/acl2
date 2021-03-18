@@ -87253,6 +87253,9 @@ it."
 ; evidenced by submitting: :tthm apply$.  Thanks to Eric Smith for reporting
 ; this bug and supplying the fix.
 
+; Theory errors now respect the input when printing the offending arguments.
+; Thanks to Eric Smith for bringing this issue to our attention.
+
   :parents (release-notes)
   :short "ACL2 Version  8.4 (xxx, 20xx) Notes"
   :long "<p>NOTE!  New users can ignore these release notes, because the @(see

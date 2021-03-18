@@ -114418,7 +114418,7 @@ List of a few built-in system utilities
       variable.
     * (symbol-class name w): For a function symbol, name, of the ACL2
       [world] w, return :program if name is in :[program] mode,
-      :common-lisp-compliant is name is [guard]-verified, and
+      :common-lisp-compliant if name is [guard]-verified, and
       otherwise, :ideal.  If name is the name of a theorem (more
       specifically, has a 'theorem property; see [getprop]), return
       :ideal unless the theorem is guard-verified, in which case
@@ -116520,10 +116520,10 @@ Subtopics
 Relation to Guards
 
   To justify that type declarations are correct, the is integrated into
-  ACL2's [guard] mechanism.  When a call of (the TYPE EXPR) in the
-  body of a function definition generates a guard proof obligation
-  that the type, TYPE, holds for the value of the expression, EXPR.
-  Consider the following example.
+  ACL2's [guard] mechanism.  A call of (the TYPE EXPR) in the body of
+  a function definition generates a guard proof obligation that the
+  type, TYPE, holds for the value of the expression, EXPR.  Consider
+  the following example.
 
     (defun f (x)
       (declare (xargs :guard (p1 x)))
