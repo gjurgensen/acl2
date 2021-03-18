@@ -115242,10 +115242,10 @@ arithmetic) for libraries of @(see books) for arithmetic reasoning.</p>")
  <h3>Relation to Guards</h3>
 
  <p>To justify that type declarations are correct, @('the') is integrated into
- ACL2's @(see guard) mechanism.  A call of @('(the TYPE EXPR)') in the
- body of a function definition generates a guard proof obligation that the
- type, @('TYPE'), holds for the value of the expression, @('EXPR').  Consider
- the following example.</p>
+ ACL2's @(see guard) mechanism.  A call of @('(the TYPE EXPR)') in the body of
+ a function definition generates a guard proof obligation that the type,
+ @('TYPE'), holds for the value of the expression, @('EXPR').  Consider the
+ following example.</p>
 
  @({
   (defun f (x)
