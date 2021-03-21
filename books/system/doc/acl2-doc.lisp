@@ -87256,6 +87256,25 @@ it."
 ; Theory errors now respect the input when printing the offending arguments.
 ; Thanks to Eric Smith for bringing this issue to our attention.
 
+; Here is an example sent by Eric Smith relevant to (and essentially prompting)
+; the change to ACL2's handling of compound-recognizers discussed in these
+; release notes.  If you run these events, then the final THM call will produce
+; some output showing that X is a term "with type (TS-UNION *TS-SYMBOL*
+; *TS-PROPER-CONS*)".  No such output appeared before the enhancement; instead,
+; it was merely the case that the term (OR (SYMBOLP X) (TRUE-LISTP X)) was
+; typed as non-nil.
+;
+;   (defthm pseudo-termp-forward
+;     (implies (pseudo-termp x)
+;              (or (symbolp x)
+;                  (true-listp x)))
+;     :rule-classes :forward-chaining)
+;   (defstub stub (x) t)
+;   (skip-proofs (defthm rule (implies (stub 3) (stub x))))
+;   :brr t
+;   :monitor rule '(:type-alist :go)
+;   (thm (implies (pseudo-termp x) (stub x)))
+
   :parents (release-notes)
   :short "ACL2 Version  8.4 (xxx, 20xx) Notes"
   :long "<p>NOTE!  New users can ignore these release notes, because the @(see
@@ -87519,7 +87538,17 @@ it."
  implementing that interaction was introduced in Version  4.0 to speed up the
  process; that code has been eliminated, as it is no longer necessary.</p>
 
- <h3>Bug Fixes</h3>
+ <p>ACL2's @(see type-set) reasoning has been slightly strengthened to
+ comprehend Boolean combinations of strong @(see compound-recognizer) calls on
+ a single variable when building a context (a so-called @(see type-alist)).
+ (By a ``strong compound-recognizer call'' we mean a unary function that
+ recognizes a union of primitive ACL2 types and has, either explicitly or
+ implicity, a corresponding @(see compound-recognizer) rule; examples include
+ @(tsee stringp), @(tsee integerp), and @(tsee true-listp).)  In particular,
+ this change can strengthen the result of @(see forward-chaining).  Thanks to
+ Eric Smith, who raised this issue by providing an example that we include in a
+ comment, inside the form @('(defxdoc note-8-4 ...)') in @(see community-book)
+ @('books/system/doc/acl2-doc.lisp').</p> <h3>Bug Fixes</h3>
 
  <p>A soundness bug, present since @(tsee loop$) was introduced, was fixed. The
  bug was manifested when the keyword @(':guard') was used as the @('loop$')
