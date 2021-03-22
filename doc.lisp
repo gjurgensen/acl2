@@ -85869,6 +85869,19 @@ Heuristic and Efficiency Improvements
   introduced in Version 4.0 to speed up the process; that code has
   been eliminated, as it is no longer necessary.
 
+  ACL2's [type-set] reasoning has been slightly strengthened to
+  comprehend Boolean combinations of strong [compound-recognizer]
+  calls on a single variable when building a context (a so-called
+  [type-alist]).  (By a ``strong compound-recognizer call'' we mean a
+  unary function that recognizes a union of primitive ACL2 types and
+  has, either explicitly or implicity, a corresponding
+  [compound-recognizer] rule; examples include [stringp], [integerp],
+  and [true-listp].)  In particular, this change can strengthen the
+  result of [forward-chaining].  Thanks to Eric Smith, who raised
+  this issue by providing an example that we include in a comment,
+  inside the form (defxdoc note-8-4 ...) in [community-book]
+  books/system/doc/acl2-doc.lisp.
+
 
 Bug Fixes
 
