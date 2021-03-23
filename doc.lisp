@@ -11606,14 +11606,16 @@ Subtopics
   are no more, instantiate the right hand side of the rule.
 
   There is also a second, optional, var-list argument to a bind-free
-  hypothesis.  If provided, it must be either t or a list of
-  variables.  If it is not provided, it defaults to t.  If it is a
-  list of variables, this second argument is used to place a further
-  restriction on the possible values of the alist to be returned by
-  term: any variables bound in the alist must be present in the list
-  of variables.  We strongly recommend the use of this list of
-  variables, as it allows some consistency checks to be performed at
-  the time of the rule's admittance which are not possible otherwise.
+  hypothesis.  If provided, it must be either t, nil, or a non-empty
+  list of variables.  If it is not provided, it defaults to t; and it
+  is also treated as t if the value provided is nil.  If it is a
+  non-empty list of variables, this second argument is used to place
+  a further restriction on the possible values of the alist to be
+  returned by term: any variables bound in the alist must be present
+  in that list of variables.  We strongly recommend the use of this
+  list of variables, as it allows some consistency checks to be
+  performed at the time of the rule's admittance which are not
+  possible otherwise.
 
   An extended bind-free hypothesis is similar to the simple type
   described above, but it uses two additional variables, mfc and
@@ -58435,7 +58437,7 @@ Subtopics
   The use of default values is allowed, so that an optional or keyword
   argument may be given in any of the following forms.
 
-    * arg
+    * arg or, equivalently, (arg)
     * (arg 'init)
     * (arg 'init supplied-p)
 
@@ -86069,6 +86071,13 @@ Bug Fixes
 
   Fixed printing of the ACL2 [state] in error messages, specifically
   when executing a non-executable function.
+
+  Fixed a bug that could cause a raw Lisp error when processing a
+  [linear] rule with a [bind-free] hypothesis, when that hypothesis
+  does not specify a list of variables (in its second argument).
+  Thanks to Dave Greve for reporting this bug by sending a simple
+  example.  (Technical note: the fix was in the definition of source
+  function all-vars-in-hyps.)
 
 
 Changes at the System Level
