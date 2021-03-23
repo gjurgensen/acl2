@@ -8900,14 +8900,15 @@ and @(tsee include-book)"
  the right hand side of the rule.</p>
 
  <p>There is also a second, optional, @('var-list') argument to a
- @('bind-free') hypothesis.  If provided, it must be either @('t') or a list of
- variables.  If it is not provided, it defaults to @('t').  If it is a list of
- variables, this second argument is used to place a further restriction on the
- possible values of the alist to be returned by @('term'): any variables bound
- in the alist must be present in the list of variables.  We strongly recommend
- the use of this list of variables, as it allows some consistency checks to be
- performed at the time of the rule's admittance which are not possible
- otherwise.</p>
+ @('bind-free') hypothesis.  If provided, it must be either @('t'), @('nil'),
+ or a non-empty list of variables.  If it is not provided, it defaults to
+ @('t'); and it is also treated as @('t') if the value provided is @('nil').
+ If it is a non-empty list of variables, this second argument is used to place
+ a further restriction on the possible values of the alist to be returned by
+ @('term'): any variables bound in the alist must be present in that list of
+ variables.  We strongly recommend the use of this list of variables, as it
+ allows some consistency checks to be performed at the time of the rule's
+ admittance which are not possible otherwise.</p>
 
  <p>An extended @('bind-free') hypothesis is similar to the simple type
  described above, but it uses two additional variables, @('mfc') and
@@ -54360,7 +54361,7 @@ forms allowed for a @('let') form are  @('ignore'), @('ignorable'), and
 
  <ul>
 
- <li>@('arg')</li>
+ <li>@('arg') or, equivalently, @('(arg)')</li>
 
  <li>@('(arg 'init)')</li>
 
@@ -87548,7 +87549,9 @@ it."
  this change can strengthen the result of @(see forward-chaining).  Thanks to
  Eric Smith, who raised this issue by providing an example that we include in a
  comment, inside the form @('(defxdoc note-8-4 ...)') in @(see community-book)
- @('books/system/doc/acl2-doc.lisp').</p> <h3>Bug Fixes</h3>
+ @('books/system/doc/acl2-doc.lisp').</p>
+
+ <h3>Bug Fixes</h3>
 
  <p>A soundness bug, present since @(tsee loop$) was introduced, was fixed. The
  bug was manifested when the keyword @(':guard') was used as the @('loop$')
@@ -87752,6 +87755,12 @@ it."
 
  <p>Fixed printing of the ACL2 @(see state) in error messages, specifically
  when executing a non-executable function.</p>
+
+ <p>Fixed a bug that could cause a raw Lisp error when processing a @(see
+ linear) rule with a @(tsee bind-free) hypothesis, when that hypothesis does
+ not specify a list of variables (in its second argument).  Thanks to Dave
+ Greve for reporting this bug by sending a simple example.  (Technical note:
+ the fix was in the definition of source function all-vars-in-hyps.)</p>
 
  <h3>Changes at the System Level</h3>
 
