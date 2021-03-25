@@ -38529,7 +38529,7 @@ current fast alists."
  @({
  (return-last term0 term1 term2)  ==>  term2
 
- (mv-list term0 ... termk)        ==>  termk
+ (mv-list n term)                 ==>  term
 
  (cons-with-hint x y)             ==>  (cons x y)
 
@@ -87276,6 +87276,10 @@ it."
 ;   :monitor rule '(:type-alist :go)
 ;   (thm (implies (pseudo-termp x) (stub x)))
 
+; Fixed the error message wording when attempting to monitor only simple
+; (abbreviation) runes.  Thanks to Mihir Mehta for reporting the issue and
+; providing a fix that we incorporated.
+
   :parents (release-notes)
   :short "ACL2 Version  8.4 (xxx, 20xx) Notes"
   :long "<p>NOTE!  New users can ignore these release notes, because the @(see
@@ -113085,6 +113089,9 @@ arithmetic) for libraries of @(see books) for arithmetic reasoning.</p>")
  keyword), @('*c*') (syntax of a constant), and @('pi') (a Common Lisp
  constant).</li>
 
+ <li>@('(logical-defun name w)'): For the given name of a defined function in
+ the current ACL2 @(see world) @('w'), return its @(tsee defun) form.</li>
+
  <li>@('(logicp fn w)'): For a function symbol @('fn') of @(see world)
  @('w'), return @('t') when the @('symbol-class') of @('fn') in @('w') is not
  @(':program'), else @('nil').  (See @('symbol-class'), below.)</li>
@@ -132799,6 +132806,7 @@ expand function call at the current subterm, without simplifying"
 (defpointer legal-variablep system-utilities)
 (defpointer let-mbe equality-variants-details)
 (defpointer lisp-programmer-introduction introduction-to-programming-in-acl2-for-those-who-know-lisp)
+(defpointer logical-defun system-utilities)
 (defpointer logicp system-utilities)
 (defpointer make-lambda system-utilities)
 (defpointer make-lambda-application system-utilities)
