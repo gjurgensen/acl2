@@ -41954,7 +41954,7 @@ Subtopics
 
     (return-last term0 term1 term2)  ==>  term2
 
-    (mv-list term0 ... termk)        ==>  termk
+    (mv-list n term)                 ==>  term
 
     (cons-with-hint x y)             ==>  (cons x y)
 
@@ -56737,6 +56737,8 @@ Subtopics
            (declare (xargs :guard (plist-worldp-with-formals wrld)))
            (and (termp x wrld)
                 (logic-fnsp x wrld)))")
+ (LOGICAL-DEFUN (POINTERS)
+                "See [system-utilities].")
  (LOGICAL-NAME
   (EVENTS WORLD)
   "A name created by a logical event
@@ -90997,6 +90999,9 @@ Subtopics
   [Lisp-programmer-introduction]
       See [introduction-to-programming-in-ACL2-for-those-who-know-lisp].
 
+  [Logical-defun]
+      See [system-utilities].
+
   [Logicp]
       See [system-utilities].
 
@@ -114322,6 +114327,8 @@ List of a few built-in system utilities
       else nil.  For example, x is a legal variable name but the
       following are not: :abc, t, nil, &a (a lambda keyword), *c*
       (syntax of a constant), and pi (a Common Lisp constant).
+    * (logical-defun name w): For the given name of a defined function in
+      the current ACL2 [world] w, return its [defun] form.
     * (logicp fn w): For a function symbol fn of [world] w, return t when
       the symbol-class of fn in w is not :program, else nil.  (See
       symbol-class, below.)
