@@ -18906,8 +18906,8 @@ subtree of X with T, without duplication.</p>
   (defmacro stp (&rest args) (cons 'st$cp args))
  })
 
- <p>The definitions are made similarly for exported functions, with @(see
- guard)s derived from their @(':LOGIC') functions as follows.  Consider the
+ <p>The definitions are made similarly for exported functions.  @(csee Guard)s
+ are derived from their @(':LOGIC') functions as follows.  Consider the
  exported function @('update') in our example.  Its @(':LOGIC') function,
  @('update$a'), has formals @('(k val st$a)') and the following guard.</p>
 
@@ -18945,6 +18945,10 @@ subtree of X with T, without duplication.</p>
        (stp st)
        (mem$c-entryp v))
  })
+
+ <p>Note that the @(':LOGIC') version of an abstract @(see stobj) export must
+ not declare the corresponding concrete stobj name as a stobj.  (That name may
+ be a formal parameter, but must not be declared as a @(see stobj).)</p>
 
  <p>We turn now to the proof obligations, as promised above.  There are three
  types: @(':CORRESPONDENCE'), @(':PRESERVED'), and @(':GUARD-THM').  All
@@ -87765,6 +87769,11 @@ it."
  not specify a list of variables (in its second argument).  Thanks to Dave
  Greve for reporting this bug by sending a simple example.  (Technical note:
  the fix was in the definition of source function all-vars-in-hyps.)</p>
+
+ <p>For @(tsee defabsstobj), a suitable error now occurs when the @(':LOGIC')
+ version of an abstract @(see stobj) export has the corresponding concrete
+ stobj as a formal parameter that is declared as a @(see stobj).  Formerly, a
+ confusing hard error could occur in this case.</p>
 
  <h3>Changes at the System Level</h3>
 

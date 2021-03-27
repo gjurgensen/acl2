@@ -22115,9 +22115,9 @@ Subtopics
     ; In raw Lisp:
     (defmacro stp (&rest args) (cons 'st$cp args))
 
-  The definitions are made similarly for exported functions, with
-  [guard]s derived from their :LOGIC functions as follows.  Consider
-  the exported function update in our example.  Its :LOGIC function,
+  The definitions are made similarly for exported functions.  [Guard]s
+  are derived from their :LOGIC functions as follows.  Consider the
+  exported function update in our example.  Its :LOGIC function,
   update$a, has formals (k val st$a) and the following guard.
 
     (and (and (integerp k) (<= 0 k) (<= k 49))
@@ -22147,6 +22147,11 @@ Subtopics
          (and (integerp v) (<= 0 v))
          (stp st)
          (mem$c-entryp v))
+
+  Note that the :LOGIC version of an abstract [stobj] export must not
+  declare the corresponding concrete stobj name as a stobj.  (That
+  name may be a formal parameter, but must not be declared as a
+  [stobj].)
 
   We turn now to the proof obligations, as promised above.  There are
   three types: :CORRESPONDENCE, :PRESERVED, and :GUARD-THM.  All
@@ -86080,6 +86085,11 @@ Bug Fixes
   Thanks to Dave Greve for reporting this bug by sending a simple
   example.  (Technical note: the fix was in the definition of source
   function all-vars-in-hyps.)
+
+  For [defabsstobj], a suitable error now occurs when the :LOGIC
+  version of an abstract [stobj] export has the corresponding
+  concrete stobj as a formal parameter that is declared as a [stobj].
+  Formerly, a confusing hard error could occur in this case.
 
 
 Changes at the System Level
