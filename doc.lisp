@@ -85758,6 +85758,17 @@ Changes to Existing Features
   [set-state-ok].  Thanks to Eric Smith for suggesting the
   possibility of this change.
 
+  It had been the case that if [defun-nx] or [defund-nx] is used for a
+  recursive definition, and that form specifies a value for
+  :ruler-extenders that omits [return-last] (see [rulers] for
+  relevant background), then the definition generally fails to be
+  admitted.  (This is due to the generated [defun]'s use of [prog2$],
+  which is a macro that abbreviates a call of [return-last], which
+  blocks the termination analysis.)  That has been fixed, by ensuring
+  that defun-nx and defund-nx arrange that return-last is always
+  among the ruler-extenders of the generated [defun] form.  Thanks to
+  Eric Smith for noticing this issue and for a helpful discussion.
+
 
 New Features
 
