@@ -87433,6 +87433,17 @@ it."
  or use @(tsee set-state-ok).  Thanks to Eric Smith for suggesting the
  possibility of this change.</p>
 
+ <p>It had been the case that if @(tsee defun-nx) or @(tsee defund-nx) is used
+ for a recursive definition, and that form specifies a value for
+ @(':ruler-extenders') that omits @(tsee return-last) (see @(see rulers) for
+ relevant background), then the definition generally fails to be admitted.
+ (This is due to the generated @(tsee defun)'s use of @(tsee prog2$), which is
+ a macro that abbreviates a call of @(tsee return-last), which blocks the
+ termination analysis.)  That has been fixed, by ensuring that @('defun-nx')
+ and @('defund-nx') arrange that @('return-last') is always among the
+ ruler-extenders of the generated @(tsee defun) form.  Thanks to Eric Smith for
+ noticing this issue and for a helpful discussion.</p>
+
  <h3>New Features</h3>
 
  <p>A new option for @(tsee certify-book), @(':useless-runes'), makes it
