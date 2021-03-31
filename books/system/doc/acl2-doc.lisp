@@ -50613,8 +50613,9 @@ forms allowed for a @('let') form are  @('ignore'), @('ignorable'), and
  terms.  Each conjunct of the corollary formula may be given a unique set of
  triggers depending on the variables that occur in the conjunct and the addends
  that occur in the concluding inequality.  In particular, the trigger terms for
- a conjunct is the list of all ``maximal addends'' in the concluding
- inequality.</p>
+ a conjunct is the list of all ``maximal addends'' in the concluding inequality
+ after replacing, where possible based on the @(see current-theory), ground
+ subterms (those that have no free variables) with their values.</p>
 
  <p>The ``addends'' of @('(+ x y)') and @('(- x y)') are the union of the
  addends of @('x') and @('y').  The addends of @('(- x)') and @('(* n x)'),
@@ -87284,6 +87285,19 @@ it."
 ; (abbreviation) runes.  Thanks to Mihir Mehta for reporting the issue and
 ; providing a fix that we incorporated.
 
+; Here is the example promised below by the "Improved handling of linear rules"
+; item.  The encapsulate formerly succeeded without creating a linear rule,
+; because ground term evaluation removed (foo) and hence no trigger term was
+; heuristically determined.  Now, an error occurs suggesting the use of the
+; :trigger-terms keyword.
+;
+;   (defun foo () 3)
+;   (encapsulate ()
+;     (local (in-theory (disable (:e foo))))
+;     (defthm foo-linear
+;       (= (foo) 3)
+;       :rule-classes :linear))
+
   :parents (release-notes)
   :short "ACL2 Version  8.4 (xxx, 20xx) Notes"
   :long "<p>NOTE!  New users can ignore these release notes, because the @(see
@@ -87443,6 +87457,14 @@ it."
  and @('defund-nx') arrange that @('return-last') is always among the
  ruler-extenders of the generated @(tsee defun) form.  Thanks to Eric Smith for
  noticing this issue and for a helpful discussion.</p>
+
+ <p>Improved handling of @(see linear) rules: cause an error with a helpful
+ message when a linear rule is no longer created during @(tsee include-book) or
+ the second pass of an @(tsee encapsulate) form, and optimize by avoiding
+ certain calculations when the @(':trigger-terms') keyword is supplied.  Thanks
+ to Eric Smith for sending an example that illustrates the former issue,
+ essentially as included in a comment in @(see community-book)
+ @('books/system/doc/acl2-doc.lisp'), form @('(defxdoc note-8-4 ...)').</p>
 
  <h3>New Features</h3>
 

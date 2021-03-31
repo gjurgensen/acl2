@@ -54577,7 +54577,9 @@ Introduction
   unique set of triggers depending on the variables that occur in the
   conjunct and the addends that occur in the concluding inequality.
   In particular, the trigger terms for a conjunct is the list of all
-  ``maximal addends'' in the concluding inequality.
+  ``maximal addends'' in the concluding inequality after replacing,
+  where possible based on the [current-theory], ground subterms
+  (those that have no free variables) with their values.
 
   The ``addends'' of (+ x y) and (- x y) are the union of the addends
   of x and y.  The addends of (- x) and (* n x), where n is a
@@ -85768,6 +85770,15 @@ Changes to Existing Features
   that defun-nx and defund-nx arrange that return-last is always
   among the ruler-extenders of the generated [defun] form.  Thanks to
   Eric Smith for noticing this issue and for a helpful discussion.
+
+  Improved handling of [linear] rules: cause an error with a helpful
+  message when a linear rule is no longer created during
+  [include-book] or the second pass of an [encapsulate] form, and
+  optimize by avoiding certain calculations when the :trigger-terms
+  keyword is supplied.  Thanks to Eric Smith for sending an example
+  that illustrates the former issue, essentially as included in a
+  comment in [community-book] books/system/doc/acl2-doc.lisp, form
+  (defxdoc note-8-4 ...).
 
 
 New Features
