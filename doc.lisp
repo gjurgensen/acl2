@@ -18673,7 +18673,7 @@ Subtopics
              (true-listp x)))
 
   but we in fact allow (true-listp x) as well.  When time permits we
-  will document more fully what is allowed or implement a macro that
+  may document more fully what is allowed or implement a macro that
   permits direct specification of the desired type in terms of the
   primitives.
 
@@ -86157,6 +86157,15 @@ Changes at the System Level
   variable (for host Lisps CCL, SBCL, Allegro CL, and CMUCL; GCL and
   LispWorks didn't seem to have this problem).  Thanks to Mihir Mehta
   for bringing this issue to our attention.
+
+  Fixed the process for running ACL2 without building an executable
+  image.  Some initialization that was missing from that process is
+  now included.  Also, added the missing command, (lp), to the
+  instructions in section ``Running Without Building an Executable
+  Image'' on the ``Obtaining and Installing ACL2'' web page
+  (accessible from the ``Obtaining, Installing, and License'' link on
+  the ACL2 home page).  Thanks to Petter Gustad for an inquiry
+  leading to these improvements.
 
 
 EMACS Support
