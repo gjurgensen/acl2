@@ -50516,12 +50516,16 @@ forms allowed for a @('let') form are  @('ignore'), @('ignorable'), and
   (implies (and h1 ... hn) (rel lhs rhs))
  })
 
- <p>where no hypothesis is a conjunction and @('rel') is one of the inequality
- relations @(tsee <), @(tsee <=), @(tsee =), @(tsee /=), @(tsee >), or @(tsee
- >=).  If necessary, the hypothesis of such a conjunct may be vacuous.  We
- create a @(':linear') rule for each such conjunct, if possible, and otherwise
- cause an error.  To create a @(':linear') rule from a term (i.e., from a
- single such conjunct), we apply the following sequence of transformations.</p>
+ <p>where no hypothesis is a conjunction and the term @('(rel lhs rhs)') is a
+ call of one of the inequality relations @(tsee <), @(tsee <=), @(tsee >), or
+ @(tsee >=); the negation of such a call; a call of @(tsee =) or @(tsee equal);
+ or a negated call of @(tsee /=).  Note that we refer to all of these terms as
+ ``inequalities'' below, even the equalities.  If necessary, the hypothesis of
+ such a conjunct may be vacuous.  We create a @(':linear') rule for each such
+ conjunct, if possible, and otherwise cause an error.  To create a @(':linear')
+ rule from a term (i.e., from a single such conjunct), we apply the following
+ sequence of transformations (as well as macroexpansion, which removes calls of
+ @(tsee <=), @(tsee >), and @(tsee >=)).</p>
 
  <ol>
 
