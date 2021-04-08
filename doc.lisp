@@ -11606,14 +11606,16 @@ Subtopics
   are no more, instantiate the right hand side of the rule.
 
   There is also a second, optional, var-list argument to a bind-free
-  hypothesis.  If provided, it must be either t or a list of
-  variables.  If it is not provided, it defaults to t.  If it is a
-  list of variables, this second argument is used to place a further
-  restriction on the possible values of the alist to be returned by
-  term: any variables bound in the alist must be present in the list
-  of variables.  We strongly recommend the use of this list of
-  variables, as it allows some consistency checks to be performed at
-  the time of the rule's admittance which are not possible otherwise.
+  hypothesis.  If provided, it must be either t, nil, or a non-empty
+  list of variables.  If it is not provided, it defaults to t; and it
+  is also treated as t if the value provided is nil.  If it is a
+  non-empty list of variables, this second argument is used to place
+  a further restriction on the possible values of the alist to be
+  returned by term: any variables bound in the alist must be present
+  in that list of variables.  We strongly recommend the use of this
+  list of variables, as it allows some consistency checks to be
+  performed at the time of the rule's admittance which are not
+  possible otherwise.
 
   An extended bind-free hypothesis is similar to the simple type
   described above, but it uses two additional variables, mfc and
@@ -18671,7 +18673,7 @@ Subtopics
              (true-listp x)))
 
   but we in fact allow (true-listp x) as well.  When time permits we
-  will document more fully what is allowed or implement a macro that
+  may document more fully what is allowed or implement a macro that
   permits direct specification of the desired type in terms of the
   primitives.
 
@@ -22113,9 +22115,9 @@ Subtopics
     ; In raw Lisp:
     (defmacro stp (&rest args) (cons 'st$cp args))
 
-  The definitions are made similarly for exported functions, with
-  [guard]s derived from their :LOGIC functions as follows.  Consider
-  the exported function update in our example.  Its :LOGIC function,
+  The definitions are made similarly for exported functions.  [Guard]s
+  are derived from their :LOGIC functions as follows.  Consider the
+  exported function update in our example.  Its :LOGIC function,
   update$a, has formals (k val st$a) and the following guard.
 
     (and (and (integerp k) (<= 0 k) (<= k 49))
@@ -22145,6 +22147,11 @@ Subtopics
          (and (integerp v) (<= 0 v))
          (stp st)
          (mem$c-entryp v))
+
+  Note that the :LOGIC version of an abstract [stobj] export must not
+  declare the corresponding concrete stobj name as a stobj.  (That
+  name may be a formal parameter, but must not be declared as a
+  [stobj].)
 
   We turn now to the proof obligations, as promised above.  There are
   three types: :CORRESPONDENCE, :PRESERVED, and :GUARD-THM.  All
@@ -41952,7 +41959,7 @@ Subtopics
 
     (return-last term0 term1 term2)  ==>  term2
 
-    (mv-list term0 ... termk)        ==>  termk
+    (mv-list n term)                 ==>  term
 
     (cons-with-hint x y)             ==>  (cons x y)
 
@@ -54476,12 +54483,17 @@ Introduction
 
     (implies (and h1 ... hn) (rel lhs rhs))
 
-  where no hypothesis is a conjunction and rel is one of the inequality
-  relations [<], [<=], [=], [/=], [>], or [>=].  If necessary, the
+  where no hypothesis is a conjunction and the term (rel lhs rhs) is a
+  call of one of the inequality relations [<], [<=], [>], or [>=];
+  the negation of such a call; a call of [=] or [equal]; or a negated
+  call of [/=].  Note that we refer to all of these terms as
+  ``inequalities'' below, even the equalities.  If necessary, the
   hypothesis of such a conjunct may be vacuous.  We create a :linear
   rule for each such conjunct, if possible, and otherwise cause an
   error.  To create a :linear rule from a term (i.e., from a single
-  such conjunct), we apply the following sequence of transformations.
+  such conjunct), we apply the following sequence of transformations
+  (as well as macroexpansion, which removes calls of [<=], [>], and
+  [>=]).
 
    1. Remove [guard-holders] such as [prog2$] from the term to obtain
       (implies hyp concl), where hyp is t in the case of an
@@ -54570,7 +54582,9 @@ Introduction
   unique set of triggers depending on the variables that occur in the
   conjunct and the addends that occur in the concluding inequality.
   In particular, the trigger terms for a conjunct is the list of all
-  ``maximal addends'' in the concluding inequality.
+  ``maximal addends'' in the concluding inequality after replacing,
+  where possible based on the [current-theory], ground subterms
+  (those that have no free variables) with their values.
 
   The ``addends'' of (+ x y) and (- x y) are the union of the addends
   of x and y.  The addends of (- x) and (* n x), where n is a
@@ -56735,6 +56749,8 @@ Subtopics
            (declare (xargs :guard (plist-worldp-with-formals wrld)))
            (and (termp x wrld)
                 (logic-fnsp x wrld)))")
+ (LOGICAL-DEFUN (POINTERS)
+                "See [system-utilities].")
  (LOGICAL-NAME
   (EVENTS WORLD)
   "A name created by a logical event
@@ -58435,7 +58451,7 @@ Subtopics
   The use of default values is allowed, so that an optional or keyword
   argument may be given in any of the following forms.
 
-    * arg
+    * arg or, equivalently, (arg)
     * (arg 'init)
     * (arg 'init supplied-p)
 
@@ -85749,6 +85765,26 @@ Changes to Existing Features
   [set-state-ok].  Thanks to Eric Smith for suggesting the
   possibility of this change.
 
+  It had been the case that if [defun-nx] or [defund-nx] is used for a
+  recursive definition, and that form specifies a value for
+  :ruler-extenders that omits [return-last] (see [rulers] for
+  relevant background), then the definition generally fails to be
+  admitted.  (This is due to the generated [defun]'s use of [prog2$],
+  which is a macro that abbreviates a call of [return-last], which
+  blocks the termination analysis.)  That has been fixed, by ensuring
+  that defun-nx and defund-nx arrange that return-last is always
+  among the ruler-extenders of the generated [defun] form.  Thanks to
+  Eric Smith for noticing this issue and for a helpful discussion.
+
+  Improved handling of [linear] rules: cause an error with a helpful
+  message when a linear rule is no longer created during
+  [include-book] or the second pass of an [encapsulate] form, and
+  optimize by avoiding certain calculations when the :trigger-terms
+  keyword is supplied.  Thanks to Eric Smith for sending an example
+  that illustrates the former issue, essentially as included in a
+  comment in [community-book] books/system/doc/acl2-doc.lisp, form
+  (defxdoc note-8-4 ...).
+
 
 New Features
 
@@ -85868,6 +85904,19 @@ Heuristic and Efficiency Improvements
   [reset-prehistory].  Code implementing that interaction was
   introduced in Version 4.0 to speed up the process; that code has
   been eliminated, as it is no longer necessary.
+
+  ACL2's [type-set] reasoning has been slightly strengthened to
+  comprehend Boolean combinations of strong [compound-recognizer]
+  calls on a single variable when building a context (a so-called
+  [type-alist]).  (By a ``strong compound-recognizer call'' we mean a
+  unary function that recognizes a union of primitive ACL2 types and
+  has, either explicitly or implicity, a corresponding
+  [compound-recognizer] rule; examples include [stringp], [integerp],
+  and [true-listp].)  In particular, this change can strengthen the
+  result of [forward-chaining].  Thanks to Eric Smith, who raised
+  this issue by providing an example that we include in a comment,
+  inside the form (defxdoc note-8-4 ...) in [community-book]
+  books/system/doc/acl2-doc.lisp.
 
 
 Bug Fixes
@@ -86057,6 +86106,18 @@ Bug Fixes
   Fixed printing of the ACL2 [state] in error messages, specifically
   when executing a non-executable function.
 
+  Fixed a bug that could cause a raw Lisp error when processing a
+  [linear] rule with a [bind-free] hypothesis, when that hypothesis
+  does not specify a list of variables (in its second argument).
+  Thanks to Dave Greve for reporting this bug by sending a simple
+  example.  (Technical note: the fix was in the definition of source
+  function all-vars-in-hyps.)
+
+  For [defabsstobj], a suitable error now occurs when the :LOGIC
+  version of an abstract [stobj] export has the corresponding
+  concrete stobj as a formal parameter that is declared as a [stobj].
+  Formerly, a confusing hard error could occur in this case.
+
 
 Changes at the System Level
 
@@ -86112,6 +86173,15 @@ Changes at the System Level
   variable (for host Lisps CCL, SBCL, Allegro CL, and CMUCL; GCL and
   LispWorks didn't seem to have this problem).  Thanks to Mihir Mehta
   for bringing this issue to our attention.
+
+  Fixed the process for running ACL2 without building an executable
+  image.  Some initialization that was missing from that process is
+  now included.  Also, added the missing command, (lp), to the
+  instructions in section ``Running Without Building an Executable
+  Image'' on the ``Obtaining and Installing ACL2'' web page
+  (accessible from the ``Obtaining, Installing, and License'' link on
+  the ACL2 home page).  Thanks to Petter Gustad for an inquiry
+  leading to these improvements.
 
 
 EMACS Support
@@ -90974,6 +91044,9 @@ Subtopics
 
   [Lisp-programmer-introduction]
       See [introduction-to-programming-in-ACL2-for-those-who-know-lisp].
+
+  [Logical-defun]
+      See [system-utilities].
 
   [Logicp]
       See [system-utilities].
@@ -114300,6 +114373,8 @@ List of a few built-in system utilities
       else nil.  For example, x is a legal variable name but the
       following are not: :abc, t, nil, &a (a lambda keyword), *c*
       (syntax of a constant), and pi (a Common Lisp constant).
+    * (logical-defun name w): For the given name of a defined function in
+      the current ACL2 [world] w, return its [defun] form.
     * (logicp fn w): For a function symbol fn of [world] w, return t when
       the symbol-class of fn in w is not :program, else nil.  (See
       symbol-class, below.)
@@ -114418,7 +114493,7 @@ List of a few built-in system utilities
       variable.
     * (symbol-class name w): For a function symbol, name, of the ACL2
       [world] w, return :program if name is in :[program] mode,
-      :common-lisp-compliant is name is [guard]-verified, and
+      :common-lisp-compliant if name is [guard]-verified, and
       otherwise, :ideal.  If name is the name of a theorem (more
       specifically, has a 'theorem property; see [getprop]), return
       :ideal unless the theorem is guard-verified, in which case
@@ -116520,10 +116595,10 @@ Subtopics
 Relation to Guards
 
   To justify that type declarations are correct, the is integrated into
-  ACL2's [guard] mechanism.  When a call of (the TYPE EXPR) in the
-  body of a function definition generates a guard proof obligation
-  that the type, TYPE, holds for the value of the expression, EXPR.
-  Consider the following example.
+  ACL2's [guard] mechanism.  A call of (the TYPE EXPR) in the body of
+  a function definition generates a guard proof obligation that the
+  type, TYPE, holds for the value of the expression, EXPR.  Consider
+  the following example.
 
     (defun f (x)
       (declare (xargs :guard (p1 x)))

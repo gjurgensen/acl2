@@ -8900,14 +8900,15 @@ and @(tsee include-book)"
  the right hand side of the rule.</p>
 
  <p>There is also a second, optional, @('var-list') argument to a
- @('bind-free') hypothesis.  If provided, it must be either @('t') or a list of
- variables.  If it is not provided, it defaults to @('t').  If it is a list of
- variables, this second argument is used to place a further restriction on the
- possible values of the alist to be returned by @('term'): any variables bound
- in the alist must be present in the list of variables.  We strongly recommend
- the use of this list of variables, as it allows some consistency checks to be
- performed at the time of the rule's admittance which are not possible
- otherwise.</p>
+ @('bind-free') hypothesis.  If provided, it must be either @('t'), @('nil'),
+ or a non-empty list of variables.  If it is not provided, it defaults to
+ @('t'); and it is also treated as @('t') if the value provided is @('nil').
+ If it is a non-empty list of variables, this second argument is used to place
+ a further restriction on the possible values of the alist to be returned by
+ @('term'): any variables bound in the alist must be present in that list of
+ variables.  We strongly recommend the use of this list of variables, as it
+ allows some consistency checks to be performed at the time of the rule's
+ admittance which are not possible otherwise.</p>
 
  <p>An extended @('bind-free') hypothesis is similar to the simple type
  described above, but it uses two additional variables, @('mfc') and
@@ -15634,7 +15635,7 @@ with any questions about building the community books.</p>")
  })
 
  <p>but we in fact allow @('(true-listp x)') as well.  When time permits we
- will document more fully what is allowed or implement a macro that permits
+ may document more fully what is allowed or implement a macro that permits
  direct specification of the desired type in terms of the primitives.</p>
 
  <p>There are essentially four forms of @(':compound-recognizer') rules, as the
@@ -18905,8 +18906,8 @@ subtree of X with T, without duplication.</p>
   (defmacro stp (&rest args) (cons 'st$cp args))
  })
 
- <p>The definitions are made similarly for exported functions, with @(see
- guard)s derived from their @(':LOGIC') functions as follows.  Consider the
+ <p>The definitions are made similarly for exported functions.  @(csee Guard)s
+ are derived from their @(':LOGIC') functions as follows.  Consider the
  exported function @('update') in our example.  Its @(':LOGIC') function,
  @('update$a'), has formals @('(k val st$a)') and the following guard.</p>
 
@@ -18944,6 +18945,10 @@ subtree of X with T, without duplication.</p>
        (stp st)
        (mem$c-entryp v))
  })
+
+ <p>Note that the @(':LOGIC') version of an abstract @(see stobj) export must
+ not declare the corresponding concrete stobj name as a stobj.  (That name may
+ be a formal parameter, but must not be declared as a @(see stobj).)</p>
 
  <p>We turn now to the proof obligations, as promised above.  There are three
  types: @(':CORRESPONDENCE'), @(':PRESERVED'), and @(':GUARD-THM').  All
@@ -38528,7 +38533,7 @@ current fast alists."
  @({
  (return-last term0 term1 term2)  ==>  term2
 
- (mv-list term0 ... termk)        ==>  termk
+ (mv-list n term)                 ==>  term
 
  (cons-with-hint x y)             ==>  (cons x y)
 
@@ -50511,12 +50516,16 @@ forms allowed for a @('let') form are  @('ignore'), @('ignorable'), and
   (implies (and h1 ... hn) (rel lhs rhs))
  })
 
- <p>where no hypothesis is a conjunction and @('rel') is one of the inequality
- relations @(tsee <), @(tsee <=), @(tsee =), @(tsee /=), @(tsee >), or @(tsee
- >=).  If necessary, the hypothesis of such a conjunct may be vacuous.  We
- create a @(':linear') rule for each such conjunct, if possible, and otherwise
- cause an error.  To create a @(':linear') rule from a term (i.e., from a
- single such conjunct), we apply the following sequence of transformations.</p>
+ <p>where no hypothesis is a conjunction and the term @('(rel lhs rhs)') is a
+ call of one of the inequality relations @(tsee <), @(tsee <=), @(tsee >), or
+ @(tsee >=); the negation of such a call; a call of @(tsee =) or @(tsee equal);
+ or a negated call of @(tsee /=).  Note that we refer to all of these terms as
+ ``inequalities'' below, even the equalities.  If necessary, the hypothesis of
+ such a conjunct may be vacuous.  We create a @(':linear') rule for each such
+ conjunct, if possible, and otherwise cause an error.  To create a @(':linear')
+ rule from a term (i.e., from a single such conjunct), we apply the following
+ sequence of transformations (as well as macroexpansion, which removes calls of
+ @(tsee <=), @(tsee >), and @(tsee >=)).</p>
 
  <ol>
 
@@ -50608,8 +50617,9 @@ forms allowed for a @('let') form are  @('ignore'), @('ignorable'), and
  terms.  Each conjunct of the corollary formula may be given a unique set of
  triggers depending on the variables that occur in the conjunct and the addends
  that occur in the concluding inequality.  In particular, the trigger terms for
- a conjunct is the list of all ``maximal addends'' in the concluding
- inequality.</p>
+ a conjunct is the list of all ``maximal addends'' in the concluding inequality
+ after replacing, where possible based on the @(see current-theory), ground
+ subterms (those that have no free variables) with their values.</p>
 
  <p>The ``addends'' of @('(+ x y)') and @('(- x y)') are the union of the
  addends of @('x') and @('y').  The addends of @('(- x)') and @('(* n x)'),
@@ -54360,7 +54370,7 @@ forms allowed for a @('let') form are  @('ignore'), @('ignorable'), and
 
  <ul>
 
- <li>@('arg')</li>
+ <li>@('arg') or, equivalently, @('(arg)')</li>
 
  <li>@('(arg 'init)')</li>
 
@@ -87253,6 +87263,45 @@ it."
 ; evidenced by submitting: :tthm apply$.  Thanks to Eric Smith for reporting
 ; this bug and supplying the fix.
 
+; Theory errors now respect the input when printing the offending arguments.
+; Thanks to Eric Smith for bringing this issue to our attention.
+
+; Here is an example sent by Eric Smith relevant to (and essentially prompting)
+; the change to ACL2's handling of compound-recognizers discussed in these
+; release notes.  If you run these events, then the final THM call will produce
+; some output showing that X is a term "with type (TS-UNION *TS-SYMBOL*
+; *TS-PROPER-CONS*)".  No such output appeared before the enhancement; instead,
+; it was merely the case that the term (OR (SYMBOLP X) (TRUE-LISTP X)) was
+; typed as non-nil.
+;
+;   (defthm pseudo-termp-forward
+;     (implies (pseudo-termp x)
+;              (or (symbolp x)
+;                  (true-listp x)))
+;     :rule-classes :forward-chaining)
+;   (defstub stub (x) t)
+;   (skip-proofs (defthm rule (implies (stub 3) (stub x))))
+;   :brr t
+;   :monitor rule '(:type-alist :go)
+;   (thm (implies (pseudo-termp x) (stub x)))
+
+; Fixed the error message wording when attempting to monitor only simple
+; (abbreviation) runes.  Thanks to Mihir Mehta for reporting the issue and
+; providing a fix that we incorporated.
+
+; Here is the example promised below by the "Improved handling of linear rules"
+; item.  The encapsulate formerly succeeded without creating a linear rule,
+; because ground term evaluation removed (foo) and hence no trigger term was
+; heuristically determined.  Now, an error occurs suggesting the use of the
+; :trigger-terms keyword.
+;
+;   (defun foo () 3)
+;   (encapsulate ()
+;     (local (in-theory (disable (:e foo))))
+;     (defthm foo-linear
+;       (= (foo) 3)
+;       :rule-classes :linear))
+
   :parents (release-notes)
   :short "ACL2 Version  8.4 (xxx, 20xx) Notes"
   :long "<p>NOTE!  New users can ignore these release notes, because the @(see
@@ -87402,6 +87451,25 @@ it."
  or use @(tsee set-state-ok).  Thanks to Eric Smith for suggesting the
  possibility of this change.</p>
 
+ <p>It had been the case that if @(tsee defun-nx) or @(tsee defund-nx) is used
+ for a recursive definition, and that form specifies a value for
+ @(':ruler-extenders') that omits @(tsee return-last) (see @(see rulers) for
+ relevant background), then the definition generally fails to be admitted.
+ (This is due to the generated @(tsee defun)'s use of @(tsee prog2$), which is
+ a macro that abbreviates a call of @(tsee return-last), which blocks the
+ termination analysis.)  That has been fixed, by ensuring that @('defun-nx')
+ and @('defund-nx') arrange that @('return-last') is always among the
+ ruler-extenders of the generated @(tsee defun) form.  Thanks to Eric Smith for
+ noticing this issue and for a helpful discussion.</p>
+
+ <p>Improved handling of @(see linear) rules: cause an error with a helpful
+ message when a linear rule is no longer created during @(tsee include-book) or
+ the second pass of an @(tsee encapsulate) form, and optimize by avoiding
+ certain calculations when the @(':trigger-terms') keyword is supplied.  Thanks
+ to Eric Smith for sending an example that illustrates the former issue,
+ essentially as included in a comment in @(see community-book)
+ @('books/system/doc/acl2-doc.lisp'), form @('(defxdoc note-8-4 ...)').</p>
+
  <h3>New Features</h3>
 
  <p>A new option for @(tsee certify-book), @(':useless-runes'), makes it
@@ -87515,6 +87583,18 @@ it."
  how the process was interacting badly with @(tsee reset-prehistory).  Code
  implementing that interaction was introduced in Version  4.0 to speed up the
  process; that code has been eliminated, as it is no longer necessary.</p>
+
+ <p>ACL2's @(see type-set) reasoning has been slightly strengthened to
+ comprehend Boolean combinations of strong @(see compound-recognizer) calls on
+ a single variable when building a context (a so-called @(see type-alist)).
+ (By a ``strong compound-recognizer call'' we mean a unary function that
+ recognizes a union of primitive ACL2 types and has, either explicitly or
+ implicity, a corresponding @(see compound-recognizer) rule; examples include
+ @(tsee stringp), @(tsee integerp), and @(tsee true-listp).)  In particular,
+ this change can strengthen the result of @(see forward-chaining).  Thanks to
+ Eric Smith, who raised this issue by providing an example that we include in a
+ comment, inside the form @('(defxdoc note-8-4 ...)') in @(see community-book)
+ @('books/system/doc/acl2-doc.lisp').</p>
 
  <h3>Bug Fixes</h3>
 
@@ -87721,6 +87801,17 @@ it."
  <p>Fixed printing of the ACL2 @(see state) in error messages, specifically
  when executing a non-executable function.</p>
 
+ <p>Fixed a bug that could cause a raw Lisp error when processing a @(see
+ linear) rule with a @(tsee bind-free) hypothesis, when that hypothesis does
+ not specify a list of variables (in its second argument).  Thanks to Dave
+ Greve for reporting this bug by sending a simple example.  (Technical note:
+ the fix was in the definition of source function all-vars-in-hyps.)</p>
+
+ <p>For @(tsee defabsstobj), a suitable error now occurs when the @(':LOGIC')
+ version of an abstract @(see stobj) export has the corresponding concrete
+ stobj as a formal parameter that is declared as a @(see stobj).  Formerly, a
+ confusing hard error could occur in this case.</p>
+
  <h3>Changes at the System Level</h3>
 
  <p>(SBCL only) Filenames are now read as ASCII (specifically, ISO-8859-1) when
@@ -87772,6 +87863,14 @@ it."
  variable (for host Lisps CCL, SBCL, Allegro CL, and CMUCL; GCL and LispWorks
  didn't seem to have this problem).  Thanks to Mihir Mehta for bringing this
  issue to our attention.</p>
+
+ <p>Fixed the process for running ACL2 without building an executable image.
+ Some initialization that was missing from that process is now included.  Also,
+ added the missing command, (lp), to the instructions in section ``Running
+ Without Building an Executable Image'' on the ``Obtaining and Installing
+ ACL2'' web page (accessible from the ``Obtaining, Installing, and License''
+ link on the ACL2 home page).  Thanks to Petter Gustad for an inquiry leading
+ to these improvements.</p>
 
  <h3>EMACS Support</h3>
 
@@ -113044,6 +113143,9 @@ arithmetic) for libraries of @(see books) for arithmetic reasoning.</p>")
  keyword), @('*c*') (syntax of a constant), and @('pi') (a Common Lisp
  constant).</li>
 
+ <li>@('(logical-defun name w)'): For the given name of a defined function in
+ the current ACL2 @(see world) @('w'), return its @(tsee defun) form.</li>
+
  <li>@('(logicp fn w)'): For a function symbol @('fn') of @(see world)
  @('w'), return @('t') when the @('symbol-class') of @('fn') in @('w') is not
  @(':program'), else @('nil').  (See @('symbol-class'), below.)</li>
@@ -115239,10 +115341,10 @@ arithmetic) for libraries of @(see books) for arithmetic reasoning.</p>")
  <h3>Relation to Guards</h3>
 
  <p>To justify that type declarations are correct, @('the') is integrated into
- ACL2's @(see guard) mechanism.  A call of @('(the TYPE EXPR)') in the
- body of a function definition generates a guard proof obligation that the
- type, @('TYPE'), holds for the value of the expression, @('EXPR').  Consider
- the following example.</p>
+ ACL2's @(see guard) mechanism.  A call of @('(the TYPE EXPR)') in the body of
+ a function definition generates a guard proof obligation that the type,
+ @('TYPE'), holds for the value of the expression, @('EXPR').  Consider the
+ following example.</p>
 
  @({
   (defun f (x)
@@ -132758,6 +132860,7 @@ expand function call at the current subterm, without simplifying"
 (defpointer legal-variablep system-utilities)
 (defpointer let-mbe equality-variants-details)
 (defpointer lisp-programmer-introduction introduction-to-programming-in-acl2-for-those-who-know-lisp)
+(defpointer logical-defun system-utilities)
 (defpointer logicp system-utilities)
 (defpointer make-lambda system-utilities)
 (defpointer make-lambda-application system-utilities)
