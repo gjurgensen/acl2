@@ -117429,8 +117429,7 @@ Subtopics
     Summary
     Form:  ( DEFUN APP ...)
     Rules: ((:FAKE-RUNE-FOR-TYPE-SET NIL))
-    Warnings:  None
-    Time:  0.03 seconds (prove: 0.00, print: 0.00, other: 0.03)
+    Time:  0.00 seconds (prove: 0.00, print: 0.00, other: 0.00)
      APP
 
   {IMAGE}
@@ -117841,10 +117840,16 @@ Subtopics
   works.  You just have to understand how to interact with it.  We
   explain this in great detail later.  But basically all new users
   are curious to know how ACL2 works and this little tour attempts to
-  give some answers, just to satisfy your curiosity.
+  give some answers, just to satisfy your curiosity.  The first
+  command below, :set-gag-mode nil, instructs ACL2 to supply its full
+  prover output; normally that output is restricted considerably
+  (``gagged''), but we include it all below in support of the
+  associated explanations.
 
   {IMAGE}
 
+    ACL2!>:set-gag-mode nil
+    <state>
     ACL2!>(defthm associativity-of-app
             (equal (app (app a b) c)
                    (app a (app b c))))
