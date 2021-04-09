@@ -87615,7 +87615,10 @@ it."
  equal to the @(':DEFAULT') specified by the header.  In particular, this can
  cut the time to run @('compress1') on an alist containing only the header by
  more than half, which addresses a request made by Eric Smith (whom we thank
- for bringing this efficiency issue to our attention).</p>
+ for bringing this efficiency issue to our attention).  Eric also noticed that
+ when the @(see default) is @('nil') then there was no speedup; this led us to
+ fix an existing bug (technical description: for an array with default
+ @('nil'), the alist was never considered to be in order).</p>
 
  <h3>Bug Fixes</h3>
 
