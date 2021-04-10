@@ -15754,7 +15754,7 @@ with any questions about building the community books.</p>")
 
  <p>where @('name') is a symbol and @('alist') is a 1-dimensional array,
  generally named @('name').  See @(see arrays) for details.  Logically
- speaking, this function removes irrelevant pairs from @('alist'), possibly
+ speaking, this function can remove irrelevant pairs from @('alist'), possibly
  shortening it.  The function returns a new array, @('alist''), with the same
  @(tsee header) (including name and dimension) as @('alist'), that, under
  @(tsee aref1), is everywhere equal to @('alist').  That is, @('(aref1 name
@@ -15775,12 +15775,21 @@ with any questions about building the community books.</p>")
  <p>In general, @('compress1') returns an alist whose @(tsee cdr) is an
  association list whose keys are nonnegative integers in ascending order.
  However, if the @(tsee header) specifies an @(':order') of @('>') then the
- keys will occur in descending order, and if the @(':order') is @(':none') or
- @('nil') then the keys will not be sorted, i.e., @('compress1') is logically
- the identity function (though it still attaches an array under the hood).
- Note however that a @(tsee compress1) call is replaced by a hard error if the
- header specifies an @(':order') of @(':none') or @('nil') and the array's
- length exceeds the @(tsee maximum-length) field of its @(tsee header).</p>
+ keys will occur in descending order; and if the @(':order') is @(':none') or
+ @('nil') then the keys will not be sorted and the header may appear anywhere
+ (even more than once), i.e., @('compress1') is logically the identity
+ function (though it still attaches an array under the hood).  Note however
+ that a @(tsee compress1) call is replaced by a hard error if the header
+ specifies an @(':order') of @(':none') or @('nil') and the array's length
+ exceeds the @(tsee maximum-length) field of its @(tsee header).</p>
+
+ <p>We close with a remark concerning efficiency in the case that the
+ @(':ORDER') specified by the given @(see array)'s @(see header) is @('<') or
+ @('>') and the alist is properly ordered: header occurring only first, then
+ ascending (for @(':ORDER <')) or descending (for @(':ORDER >')) order of
+ indices, with no value in the alist equal to the @(':DEFAULT') specified by
+ the header.  In particular, this can cut the time to run @('compress1') on an
+ alist containing only the header by more than half.</p>
 
  @(def compress1)")
 
@@ -87302,6 +87311,9 @@ it."
 ;       (= (foo) 3)
 ;       :rule-classes :linear))
 
+; The increased efficiency of compress1 in the ordered case, discussed below,
+; can be seen by running the file books/system/tests/compress1-header-only.lsp.
+
   :parents (release-notes)
   :short "ACL2 Version  8.4 (xxx, 20xx) Notes"
   :long "<p>NOTE!  New users can ignore these release notes, because the @(see
@@ -87595,6 +87607,18 @@ it."
  Eric Smith, who raised this issue by providing an example that we include in a
  comment, inside the form @('(defxdoc note-8-4 ...)') in @(see community-book)
  @('books/system/doc/acl2-doc.lisp').</p>
+
+ <p>The function @(tsee compress1) is now faster when the @(':ORDER') specified
+ by the given @(see array)'s @(see header) is @('<') or @('>') and the alist is
+ properly ordered: header first, then ascending (for @(':ORDER <')) or
+ descending (for @(':ORDER >')) order of indices, with no value in the alist
+ equal to the @(':DEFAULT') specified by the header.  In particular, this can
+ cut the time to run @('compress1') on an alist containing only the header by
+ more than half, which addresses a request made by Eric Smith (whom we thank
+ for bringing this efficiency issue to our attention).  Eric also noticed that
+ when the @(see default) is @('nil') then there was no speedup; this led us to
+ fix an existing bug (technical description: for an array with default
+ @('nil'), the alist was never considered to be in order).</p>
 
  <h3>Bug Fixes</h3>
 
@@ -120560,8 +120584,7 @@ introduction-to-the-tau-system) for more information about Tau.</dd>
  Summary
  Form:  ( DEFUN APP ...)
  Rules: ((:FAKE-RUNE-FOR-TYPE-SET NIL))
- Warnings:  None
- Time:  0.03 seconds (prove: 0.00, print: 0.00, other: 0.03)
+ Time:  0.00 seconds (prove: 0.00, print: 0.00, other: 0.00)
   APP
  </code>
 
@@ -121021,11 +121044,16 @@ introduction-to-the-tau-system) for more information about Tau.</dd>
  theorem prover works.  You just have to understand how to interact with it.
  We explain this in great detail later.  But basically all new users are
  curious to know how ACL2 works and this little tour attempts to give some
- answers, just to satisfy your curiosity.</p>
+ answers, just to satisfy your curiosity.  The first command below,
+ @(':set-gag-mode nil'), instructs ACL2 to supply its full prover output;
+ normally that output is restricted considerably (``gagged''), but we include
+ it all below in support of the associated explanations.</p>
 
  <p><img src='res/tours/green-line.gif'></img></p>
 
  <code>
+ ACL2!&gt;<b>:set-gag-mode nil</b>
+ &lt;state&gt;
  ACL2!&gt;<b>(defthm associativity-of-app</b>
          <b>(equal (app (app a b) c)</b>
                 <b>(app a (app b c))))</b>

@@ -18791,9 +18791,9 @@ Subtopics
 
   where name is a symbol and alist is a 1-dimensional array, generally
   named name.  See [arrays] for details.  Logically speaking, this
-  function removes irrelevant pairs from alist, possibly shortening
-  it.  The function returns a new array, alist', with the same
-  [header] (including name and dimension) as alist, that, under
+  function can remove irrelevant pairs from alist, possibly
+  shortening it.  The function returns a new array, alist', with the
+  same [header] (including name and dimension) as alist, that, under
   [aref1], is everywhere equal to alist.  That is, (aref1 name alist'
   i) is (aref1 name alist i), for all legal indices i.  Alist' may be
   shorter than alist and the non-irrelevant pairs may occur in a
@@ -18812,12 +18812,21 @@ Subtopics
   In general, compress1 returns an alist whose [cdr] is an association
   list whose keys are nonnegative integers in ascending order.
   However, if the [header] specifies an :order of > then the keys
-  will occur in descending order, and if the :order is :none or nil
-  then the keys will not be sorted, i.e., compress1 is logically the
-  identity function (though it still attaches an array under the
-  hood).  Note however that a [compress1] call is replaced by a hard
-  error if the header specifies an :order of :none or nil and the
-  array's length exceeds the [maximum-length] field of its [header].
+  will occur in descending order; and if the :order is :none or nil
+  then the keys will not be sorted and the header may appear anywhere
+  (even more than once), i.e., compress1 is logically the identity
+  function (though it still attaches an array under the hood).  Note
+  however that a [compress1] call is replaced by a hard error if the
+  header specifies an :order of :none or nil and the array's length
+  exceeds the [maximum-length] field of its [header].
+
+  We close with a remark concerning efficiency in the case that the
+  :ORDER specified by the given [array]'s [header] is < or > and the
+  alist is properly ordered: header occurring only first, then
+  ascending (for :ORDER <) or descending (for :ORDER >) order of
+  indices, with no value in the alist equal to the :DEFAULT specified
+  by the header.  In particular, this can cut the time to run
+  compress1 on an alist containing only the header by more than half.
 
   Function: <compress1>
 
@@ -85918,6 +85927,19 @@ Heuristic and Efficiency Improvements
   inside the form (defxdoc note-8-4 ...) in [community-book]
   books/system/doc/acl2-doc.lisp.
 
+  The function [compress1] is now faster when the :ORDER specified by
+  the given [array]'s [header] is < or > and the alist is properly
+  ordered: header first, then ascending (for :ORDER <) or descending
+  (for :ORDER >) order of indices, with no value in the alist equal
+  to the :DEFAULT specified by the header.  In particular, this can
+  cut the time to run compress1 on an alist containing only the
+  header by more than half, which addresses a request made by Eric
+  Smith (whom we thank for bringing this efficiency issue to our
+  attention).  Eric also noticed that when the [default] is nil then
+  there was no speedup; this led us to fix an existing bug (technical
+  description: for an array with default nil, the alist was never
+  considered to be in order).
+
 
 Bug Fixes
 
@@ -117407,8 +117429,7 @@ Subtopics
     Summary
     Form:  ( DEFUN APP ...)
     Rules: ((:FAKE-RUNE-FOR-TYPE-SET NIL))
-    Warnings:  None
-    Time:  0.03 seconds (prove: 0.00, print: 0.00, other: 0.03)
+    Time:  0.00 seconds (prove: 0.00, print: 0.00, other: 0.00)
      APP
 
   {IMAGE}
@@ -117819,10 +117840,16 @@ Subtopics
   works.  You just have to understand how to interact with it.  We
   explain this in great detail later.  But basically all new users
   are curious to know how ACL2 works and this little tour attempts to
-  give some answers, just to satisfy your curiosity.
+  give some answers, just to satisfy your curiosity.  The first
+  command below, :set-gag-mode nil, instructs ACL2 to supply its full
+  prover output; normally that output is restricted considerably
+  (``gagged''), but we include it all below in support of the
+  associated explanations.
 
   {IMAGE}
 
+    ACL2!>:set-gag-mode nil
+    <state>
     ACL2!>(defthm associativity-of-app
             (equal (app (app a b) c)
                    (app a (app b c))))
