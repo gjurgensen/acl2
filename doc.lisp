@@ -9162,7 +9162,8 @@ See [arity+] for a variant of arity with a stronger [guard].")
   they are implemented, and how to program with them.  2-dimensional
   arrays are dealt with by analogy.
 
-  The Logical Description of ACL2 Arrays
+
+The Logical Description of ACL2 Arrays
 
   An ACL2 1-dimensional array is an object that associates arbitrary
   objects with certain integers, called ``indices.'' Every array has
@@ -9244,8 +9245,8 @@ See [arity+] for a variant of arity with a stronger [guard].")
   different order than listed in a.
 
   To prevent arrays from growing excessively long due to repeated
-  [aset1] operations, [aset1] actually calls [compress1] on the new
-  alist whenever the length of the new alist exceeds the
+  [aset1] operations, [aset1] essentially calls [compress1] on the
+  new alist whenever the length of the new alist exceeds the
   :[maximum-length] entry, [max], in the [header] of the array.  See
   the definition of [aset1] (for example by using :[pe]).  This is
   primarily just a mechanism for freeing up [cons] space consumed
@@ -9262,7 +9263,8 @@ See [arity+] for a variant of arity with a stronger [guard].")
   additional index argument.  Finally, the pairs in a 2-dimensional
   array are of the form ((i . j) . val).
 
-  The Implementation of ACL2 Arrays
+
+The Implementation of ACL2 Arrays
 
   Very informally speaking, the function [compress1] ``creates'' an
   ACL2 array that provides fast access, while the function [aref1]
@@ -9288,12 +9290,17 @@ See [arity+] for a variant of arity with a stronger [guard].")
   array.
 
   When (compress1 name alist) builds a new alist, a', it sets the
-  semantic value of name to that new alist.  Furthermore, it creates
-  a Common Lisp array and writes into it all of the index/value pairs
-  of a', initializing unassigned indices with the default value.
-  This array becomes the raw lisp array of name.  [Compress1] then
-  returns a', the semantic value, as its result, as required by the
-  definition of [compress1].
+  semantic value of name to that new alist.  Furthermore, it writes
+  into a Common Lisp array all of the index/value pairs of a',
+  initializing unassigned indices with the default value.  In general
+  this is a new array, which becomes the raw lisp array of name.
+  However, if a raw lisp array is already associated with name and is
+  at least as long as the dimension specified in the [header], then
+  that array is reused and all indices out of range are ignored.
+  (Such reuse can be avoided; see [flush-compress] for how to remove
+  the existing association of a raw lisp array with a name.)  Either
+  way, [compress1] then returns a', the semantic value, as its
+  result, as required by the definition of [compress1].
 
   When (aref1 name a i) is invoked, [aref1] first determines whether
   the semantic value of name is a (i.e., is [eq] to the alist a).  If
@@ -9342,7 +9349,8 @@ See [arity+] for a variant of arity with a stronger [guard].")
   was compressed under the name in the [header] or that all asets
   used that name.  Such enforcement would be inefficient.
 
-  Some Programming Examples
+
+Some Programming Examples
 
   In the following examples we will use ACL2 ``global variables'' to
   hold several arrays.  See [@], and see [assign].
@@ -85927,18 +85935,29 @@ Heuristic and Efficiency Improvements
   inside the form (defxdoc note-8-4 ...) in [community-book]
   books/system/doc/acl2-doc.lisp.
 
-  The function [compress1] is now faster when the :ORDER specified by
-  the given [array]'s [header] is < or > and the alist is properly
-  ordered: header first, then ascending (for :ORDER <) or descending
-  (for :ORDER >) order of indices, with no value in the alist equal
-  to the :DEFAULT specified by the header.  In particular, this can
-  cut the time to run compress1 on an alist containing only the
-  header by more than half, which addresses a request made by Eric
-  Smith (whom we thank for bringing this efficiency issue to our
-  attention).  Eric also noticed that when the [default] is nil then
-  there was no speedup; this led us to fix an existing bug (technical
-  description: for an array with default nil, the alist was never
-  considered to be in order).
+  The function [compress1] has been made more efficient in the
+  following ways.
+
+    * Compress1 is now faster when the :ORDER specified by the given
+      [array]'s [header] is < or > and the alist is properly ordered:
+      header first, then ascending (for :ORDER <) or descending (for
+      :ORDER >) order of indices, with no value in the alist equal to
+      the :DEFAULT specified by the header.  In particular, this can
+      cut the time to run compress1 on an alist containing only the
+      header by more than half, which addresses a request made by
+      Eric Smith (whom we thank for bringing this efficiency issue to
+      our attention).
+    * For the change noted just above, Eric also noticed that when the
+      [default] is nil then there was no speedup.  This led us to fix
+      an existing bug (technical description: for an array with
+      default nil, the alist was never considered to be in order).
+    * Functions [compress1] and [compress2] no longer require the new and
+      old dimensions to agree in order that the underlying raw lisp
+      array is reused.  Now it suffices for the new dimension (for
+      compress1; each dimension for compress2) to be at least as
+      great as the old.  (You can still avoid reuse of the raw Lisp
+      array by using [flush-compress].)  Thanks to Eric Smith for
+      suggesting this change.
 
 
 Bug Fixes
