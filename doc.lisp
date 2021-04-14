@@ -9162,7 +9162,8 @@ See [arity+] for a variant of arity with a stronger [guard].")
   they are implemented, and how to program with them.  2-dimensional
   arrays are dealt with by analogy.
 
-  The Logical Description of ACL2 Arrays
+
+The Logical Description of ACL2 Arrays
 
   An ACL2 1-dimensional array is an object that associates arbitrary
   objects with certain integers, called ``indices.'' Every array has
@@ -9244,8 +9245,8 @@ See [arity+] for a variant of arity with a stronger [guard].")
   different order than listed in a.
 
   To prevent arrays from growing excessively long due to repeated
-  [aset1] operations, [aset1] actually calls [compress1] on the new
-  alist whenever the length of the new alist exceeds the
+  [aset1] operations, [aset1] essentially calls [compress1] on the
+  new alist whenever the length of the new alist exceeds the
   :[maximum-length] entry, [max], in the [header] of the array.  See
   the definition of [aset1] (for example by using :[pe]).  This is
   primarily just a mechanism for freeing up [cons] space consumed
@@ -9262,7 +9263,8 @@ See [arity+] for a variant of arity with a stronger [guard].")
   additional index argument.  Finally, the pairs in a 2-dimensional
   array are of the form ((i . j) . val).
 
-  The Implementation of ACL2 Arrays
+
+The Implementation of ACL2 Arrays
 
   Very informally speaking, the function [compress1] ``creates'' an
   ACL2 array that provides fast access, while the function [aref1]
@@ -9288,12 +9290,17 @@ See [arity+] for a variant of arity with a stronger [guard].")
   array.
 
   When (compress1 name alist) builds a new alist, a', it sets the
-  semantic value of name to that new alist.  Furthermore, it creates
-  a Common Lisp array and writes into it all of the index/value pairs
-  of a', initializing unassigned indices with the default value.
-  This array becomes the raw lisp array of name.  [Compress1] then
-  returns a', the semantic value, as its result, as required by the
-  definition of [compress1].
+  semantic value of name to that new alist.  Furthermore, it writes
+  into a Common Lisp array all of the index/value pairs of a',
+  initializing unassigned indices with the default value.  In general
+  this is a new array, which becomes the raw lisp array of name.
+  However, if a raw lisp array is already associated with name and is
+  at least as long as the dimension specified in the [header], then
+  that array is reused and all indices out of range are ignored.
+  (Such reuse can be avoided; see [flush-compress] for how to remove
+  the existing association of a raw lisp array with a name.)  Either
+  way, [compress1] then returns a', the semantic value, as its
+  result, as required by the definition of [compress1].
 
   When (aref1 name a i) is invoked, [aref1] first determines whether
   the semantic value of name is a (i.e., is [eq] to the alist a).  If
@@ -9342,7 +9349,8 @@ See [arity+] for a variant of arity with a stronger [guard].")
   was compressed under the name in the [header] or that all asets
   used that name.  Such enforcement would be inefficient.
 
-  Some Programming Examples
+
+Some Programming Examples
 
   In the following examples we will use ACL2 ``global variables'' to
   hold several arrays.  See [@], and see [assign].
@@ -11606,14 +11614,16 @@ Subtopics
   are no more, instantiate the right hand side of the rule.
 
   There is also a second, optional, var-list argument to a bind-free
-  hypothesis.  If provided, it must be either t or a list of
-  variables.  If it is not provided, it defaults to t.  If it is a
-  list of variables, this second argument is used to place a further
-  restriction on the possible values of the alist to be returned by
-  term: any variables bound in the alist must be present in the list
-  of variables.  We strongly recommend the use of this list of
-  variables, as it allows some consistency checks to be performed at
-  the time of the rule's admittance which are not possible otherwise.
+  hypothesis.  If provided, it must be either t, nil, or a non-empty
+  list of variables.  If it is not provided, it defaults to t; and it
+  is also treated as t if the value provided is nil.  If it is a
+  non-empty list of variables, this second argument is used to place
+  a further restriction on the possible values of the alist to be
+  returned by term: any variables bound in the alist must be present
+  in that list of variables.  We strongly recommend the use of this
+  list of variables, as it allows some consistency checks to be
+  performed at the time of the rule's admittance which are not
+  possible otherwise.
 
   An extended bind-free hypothesis is similar to the simple type
   described above, but it uses two additional variables, mfc and
@@ -18671,7 +18681,7 @@ Subtopics
              (true-listp x)))
 
   but we in fact allow (true-listp x) as well.  When time permits we
-  will document more fully what is allowed or implement a macro that
+  may document more fully what is allowed or implement a macro that
   permits direct specification of the desired type in terms of the
   primitives.
 
@@ -18789,9 +18799,9 @@ Subtopics
 
   where name is a symbol and alist is a 1-dimensional array, generally
   named name.  See [arrays] for details.  Logically speaking, this
-  function removes irrelevant pairs from alist, possibly shortening
-  it.  The function returns a new array, alist', with the same
-  [header] (including name and dimension) as alist, that, under
+  function can remove irrelevant pairs from alist, possibly
+  shortening it.  The function returns a new array, alist', with the
+  same [header] (including name and dimension) as alist, that, under
   [aref1], is everywhere equal to alist.  That is, (aref1 name alist'
   i) is (aref1 name alist i), for all legal indices i.  Alist' may be
   shorter than alist and the non-irrelevant pairs may occur in a
@@ -18810,12 +18820,21 @@ Subtopics
   In general, compress1 returns an alist whose [cdr] is an association
   list whose keys are nonnegative integers in ascending order.
   However, if the [header] specifies an :order of > then the keys
-  will occur in descending order, and if the :order is :none or nil
-  then the keys will not be sorted, i.e., compress1 is logically the
-  identity function (though it still attaches an array under the
-  hood).  Note however that a [compress1] call is replaced by a hard
-  error if the header specifies an :order of :none or nil and the
-  array's length exceeds the [maximum-length] field of its [header].
+  will occur in descending order; and if the :order is :none or nil
+  then the keys will not be sorted and the header may appear anywhere
+  (even more than once), i.e., compress1 is logically the identity
+  function (though it still attaches an array under the hood).  Note
+  however that a [compress1] call is replaced by a hard error if the
+  header specifies an :order of :none or nil and the array's length
+  exceeds the [maximum-length] field of its [header].
+
+  We close with a remark concerning efficiency in the case that the
+  :ORDER specified by the given [array]'s [header] is < or > and the
+  alist is properly ordered: header occurring only first, then
+  ascending (for :ORDER <) or descending (for :ORDER >) order of
+  indices, with no value in the alist equal to the :DEFAULT specified
+  by the header.  In particular, this can cut the time to run
+  compress1 on an alist containing only the header by more than half.
 
   Function: <compress1>
 
@@ -22113,9 +22132,9 @@ Subtopics
     ; In raw Lisp:
     (defmacro stp (&rest args) (cons 'st$cp args))
 
-  The definitions are made similarly for exported functions, with
-  [guard]s derived from their :LOGIC functions as follows.  Consider
-  the exported function update in our example.  Its :LOGIC function,
+  The definitions are made similarly for exported functions.  [Guard]s
+  are derived from their :LOGIC functions as follows.  Consider the
+  exported function update in our example.  Its :LOGIC function,
   update$a, has formals (k val st$a) and the following guard.
 
     (and (and (integerp k) (<= 0 k) (<= k 49))
@@ -22145,6 +22164,11 @@ Subtopics
          (and (integerp v) (<= 0 v))
          (stp st)
          (mem$c-entryp v))
+
+  Note that the :LOGIC version of an abstract [stobj] export must not
+  declare the corresponding concrete stobj name as a stobj.  (That
+  name may be a formal parameter, but must not be declared as a
+  [stobj].)
 
   We turn now to the proof obligations, as promised above.  There are
   three types: :CORRESPONDENCE, :PRESERVED, and :GUARD-THM.  All
@@ -41952,7 +41976,7 @@ Subtopics
 
     (return-last term0 term1 term2)  ==>  term2
 
-    (mv-list term0 ... termk)        ==>  termk
+    (mv-list n term)                 ==>  term
 
     (cons-with-hint x y)             ==>  (cons x y)
 
@@ -54476,12 +54500,17 @@ Introduction
 
     (implies (and h1 ... hn) (rel lhs rhs))
 
-  where no hypothesis is a conjunction and rel is one of the inequality
-  relations [<], [<=], [=], [/=], [>], or [>=].  If necessary, the
+  where no hypothesis is a conjunction and the term (rel lhs rhs) is a
+  call of one of the inequality relations [<], [<=], [>], or [>=];
+  the negation of such a call; a call of [=] or [equal]; or a negated
+  call of [/=].  Note that we refer to all of these terms as
+  ``inequalities'' below, even the equalities.  If necessary, the
   hypothesis of such a conjunct may be vacuous.  We create a :linear
   rule for each such conjunct, if possible, and otherwise cause an
   error.  To create a :linear rule from a term (i.e., from a single
-  such conjunct), we apply the following sequence of transformations.
+  such conjunct), we apply the following sequence of transformations
+  (as well as macroexpansion, which removes calls of [<=], [>], and
+  [>=]).
 
    1. Remove [guard-holders] such as [prog2$] from the term to obtain
       (implies hyp concl), where hyp is t in the case of an
@@ -54570,7 +54599,9 @@ Introduction
   unique set of triggers depending on the variables that occur in the
   conjunct and the addends that occur in the concluding inequality.
   In particular, the trigger terms for a conjunct is the list of all
-  ``maximal addends'' in the concluding inequality.
+  ``maximal addends'' in the concluding inequality after replacing,
+  where possible based on the [current-theory], ground subterms
+  (those that have no free variables) with their values.
 
   The ``addends'' of (+ x y) and (- x y) are the union of the addends
   of x and y.  The addends of (- x) and (* n x), where n is a
@@ -56735,6 +56766,8 @@ Subtopics
            (declare (xargs :guard (plist-worldp-with-formals wrld)))
            (and (termp x wrld)
                 (logic-fnsp x wrld)))")
+ (LOGICAL-DEFUN (POINTERS)
+                "See [system-utilities].")
  (LOGICAL-NAME
   (EVENTS WORLD)
   "A name created by a logical event
@@ -58435,7 +58468,7 @@ Subtopics
   The use of default values is allowed, so that an optional or keyword
   argument may be given in any of the following forms.
 
-    * arg
+    * arg or, equivalently, (arg)
     * (arg 'init)
     * (arg 'init supplied-p)
 
@@ -85749,6 +85782,26 @@ Changes to Existing Features
   [set-state-ok].  Thanks to Eric Smith for suggesting the
   possibility of this change.
 
+  It had been the case that if [defun-nx] or [defund-nx] is used for a
+  recursive definition, and that form specifies a value for
+  :ruler-extenders that omits [return-last] (see [rulers] for
+  relevant background), then the definition generally fails to be
+  admitted.  (This is due to the generated [defun]'s use of [prog2$],
+  which is a macro that abbreviates a call of [return-last], which
+  blocks the termination analysis.)  That has been fixed, by ensuring
+  that defun-nx and defund-nx arrange that return-last is always
+  among the ruler-extenders of the generated [defun] form.  Thanks to
+  Eric Smith for noticing this issue and for a helpful discussion.
+
+  Improved handling of [linear] rules: cause an error with a helpful
+  message when a linear rule is no longer created during
+  [include-book] or the second pass of an [encapsulate] form, and
+  optimize by avoiding certain calculations when the :trigger-terms
+  keyword is supplied.  Thanks to Eric Smith for sending an example
+  that illustrates the former issue, essentially as included in a
+  comment in [community-book] books/system/doc/acl2-doc.lisp, form
+  (defxdoc note-8-4 ...).
+
 
 New Features
 
@@ -85868,6 +85921,43 @@ Heuristic and Efficiency Improvements
   [reset-prehistory].  Code implementing that interaction was
   introduced in Version 4.0 to speed up the process; that code has
   been eliminated, as it is no longer necessary.
+
+  ACL2's [type-set] reasoning has been slightly strengthened to
+  comprehend Boolean combinations of strong [compound-recognizer]
+  calls on a single variable when building a context (a so-called
+  [type-alist]).  (By a ``strong compound-recognizer call'' we mean a
+  unary function that recognizes a union of primitive ACL2 types and
+  has, either explicitly or implicity, a corresponding
+  [compound-recognizer] rule; examples include [stringp], [integerp],
+  and [true-listp].)  In particular, this change can strengthen the
+  result of [forward-chaining].  Thanks to Eric Smith, who raised
+  this issue by providing an example that we include in a comment,
+  inside the form (defxdoc note-8-4 ...) in [community-book]
+  books/system/doc/acl2-doc.lisp.
+
+  The function [compress1] has been made more efficient in the
+  following ways.
+
+    * Compress1 is now faster when the :ORDER specified by the given
+      [array]'s [header] is < or > and the alist is properly ordered:
+      header first, then ascending (for :ORDER <) or descending (for
+      :ORDER >) order of indices, with no value in the alist equal to
+      the :DEFAULT specified by the header.  In particular, this can
+      cut the time to run compress1 on an alist containing only the
+      header by more than half, which addresses a request made by
+      Eric Smith (whom we thank for bringing this efficiency issue to
+      our attention).
+    * For the change noted just above, Eric also noticed that when the
+      [default] is nil then there was no speedup.  This led us to fix
+      an existing bug (technical description: for an array with
+      default nil, the alist was never considered to be in order).
+    * Functions [compress1] and [compress2] no longer require the new and
+      old dimensions to agree in order that the underlying raw lisp
+      array is reused.  Now it suffices for the new dimension (for
+      compress1; each dimension for compress2) to be at least as
+      great as the old.  (You can still avoid reuse of the raw Lisp
+      array by using [flush-compress].)  Thanks to Eric Smith for
+      suggesting this change.
 
 
 Bug Fixes
@@ -86057,6 +86147,18 @@ Bug Fixes
   Fixed printing of the ACL2 [state] in error messages, specifically
   when executing a non-executable function.
 
+  Fixed a bug that could cause a raw Lisp error when processing a
+  [linear] rule with a [bind-free] hypothesis, when that hypothesis
+  does not specify a list of variables (in its second argument).
+  Thanks to Dave Greve for reporting this bug by sending a simple
+  example.  (Technical note: the fix was in the definition of source
+  function all-vars-in-hyps.)
+
+  For [defabsstobj], a suitable error now occurs when the :LOGIC
+  version of an abstract [stobj] export has the corresponding
+  concrete stobj as a formal parameter that is declared as a [stobj].
+  Formerly, a confusing hard error could occur in this case.
+
 
 Changes at the System Level
 
@@ -86112,6 +86214,15 @@ Changes at the System Level
   variable (for host Lisps CCL, SBCL, Allegro CL, and CMUCL; GCL and
   LispWorks didn't seem to have this problem).  Thanks to Mihir Mehta
   for bringing this issue to our attention.
+
+  Fixed the process for running ACL2 without building an executable
+  image.  Some initialization that was missing from that process is
+  now included.  Also, added the missing command, (lp), to the
+  instructions in section ``Running Without Building an Executable
+  Image'' on the ``Obtaining and Installing ACL2'' web page
+  (accessible from the ``Obtaining, Installing, and License'' link on
+  the ACL2 home page).  Thanks to Petter Gustad for an inquiry
+  leading to these improvements.
 
 
 EMACS Support
@@ -90974,6 +91085,9 @@ Subtopics
 
   [Lisp-programmer-introduction]
       See [introduction-to-programming-in-ACL2-for-those-who-know-lisp].
+
+  [Logical-defun]
+      See [system-utilities].
 
   [Logicp]
       See [system-utilities].
@@ -114300,6 +114414,8 @@ List of a few built-in system utilities
       else nil.  For example, x is a legal variable name but the
       following are not: :abc, t, nil, &a (a lambda keyword), *c*
       (syntax of a constant), and pi (a Common Lisp constant).
+    * (logical-defun name w): For the given name of a defined function in
+      the current ACL2 [world] w, return its [defun] form.
     * (logicp fn w): For a function symbol fn of [world] w, return t when
       the symbol-class of fn in w is not :program, else nil.  (See
       symbol-class, below.)
@@ -114418,7 +114534,7 @@ List of a few built-in system utilities
       variable.
     * (symbol-class name w): For a function symbol, name, of the ACL2
       [world] w, return :program if name is in :[program] mode,
-      :common-lisp-compliant is name is [guard]-verified, and
+      :common-lisp-compliant if name is [guard]-verified, and
       otherwise, :ideal.  If name is the name of a theorem (more
       specifically, has a 'theorem property; see [getprop]), return
       :ideal unless the theorem is guard-verified, in which case
@@ -116520,10 +116636,10 @@ Subtopics
 Relation to Guards
 
   To justify that type declarations are correct, the is integrated into
-  ACL2's [guard] mechanism.  When a call of (the TYPE EXPR) in the
-  body of a function definition generates a guard proof obligation
-  that the type, TYPE, holds for the value of the expression, EXPR.
-  Consider the following example.
+  ACL2's [guard] mechanism.  A call of (the TYPE EXPR) in the body of
+  a function definition generates a guard proof obligation that the
+  type, TYPE, holds for the value of the expression, EXPR.  Consider
+  the following example.
 
     (defun f (x)
       (declare (xargs :guard (p1 x)))
@@ -117332,8 +117448,7 @@ Subtopics
     Summary
     Form:  ( DEFUN APP ...)
     Rules: ((:FAKE-RUNE-FOR-TYPE-SET NIL))
-    Warnings:  None
-    Time:  0.03 seconds (prove: 0.00, print: 0.00, other: 0.03)
+    Time:  0.00 seconds (prove: 0.00, print: 0.00, other: 0.00)
      APP
 
   {IMAGE}
@@ -117744,10 +117859,16 @@ Subtopics
   works.  You just have to understand how to interact with it.  We
   explain this in great detail later.  But basically all new users
   are curious to know how ACL2 works and this little tour attempts to
-  give some answers, just to satisfy your curiosity.
+  give some answers, just to satisfy your curiosity.  The first
+  command below, :set-gag-mode nil, instructs ACL2 to supply its full
+  prover output; normally that output is restricted considerably
+  (``gagged''), but we include it all below in support of the
+  associated explanations.
 
   {IMAGE}
 
+    ACL2!>:set-gag-mode nil
+    <state>
     ACL2!>(defthm associativity-of-app
             (equal (app (app a b) c)
                    (app a (app b c))))
