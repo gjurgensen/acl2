@@ -23699,6 +23699,7 @@ subtree of X with T, without duplication.</p>
                     :normalize nil
                     :verify-guards nil
                     :non-executable t
+                    :type-prescription (natp (example x y z a b c i j))
                     :otf-flg t))
     (example-body x y z i j))
  })")
@@ -87544,6 +87545,14 @@ it."
  pair.  Thanks to Eric McCarthy, Alessandro Coglio, and Eric Smith for
  requesting the latter capability and providing helpful feedback.</p>
 
+ <p>A new @(see xargs) keyword for @(tsee defun), @(':type-prescription'), can
+ be supplied as a formula in the shape of a @(see type-prescription) rule.  It
+ is checked to be implied by the built-in type-prescription rule computed for
+ the newly-defined function.  Thus, it can serve as documentation for the
+ expected type returned by the function; if the implication is not equivalence,
+ a warning is printed.  Thanks to Alessandro Coglio and Eric Smith for the
+ suggestion.</p>
+
  <h3>Heuristic and Efficiency Improvements</h3>
 
  <p>We changed the lightweight ``preprocess'' simplifier for ``@(see simple)''
@@ -98929,11 +98938,11 @@ arithmetic) for libraries of @(see books) for arithmetic reasoning.</p>")
  introduced a function with the same name, formals, and body (before
  macroexpansion), and with the same values @(see declare)d for the @(':')@(tsee
  guard), @(':')@(tsee measure), types, @(':')@(tsee ruler-extenders),
- @(':non-executable'), @(':')@(tsee stobj)@('s'), and @(':')@(tsee
- split-types), provided that the @(see defun-mode)s are appropriate (see the
- ``Note About Appropriate Modes'' below).  Moreover, the order of the combined
- @(':')@(tsee guard) and type declarations must be the same in both cases.
- Exceptions and clarifications:</p>
+ @(':non-executable'), @(':type-prescription'), @(':')@(tsee stobj)@('s'), and
+ @(':')@(tsee split-types), provided that the @(see defun-mode)s are
+ appropriate (see the ``Note About Appropriate Modes'' below).  Moreover, the
+ order of the combined @(':')@(tsee guard) and type declarations must be the
+ same in both cases.  Exceptions and clarifications:</p>
 
  <ol>
 
@@ -129028,6 +129037,7 @@ created from the original fast alist during @('form') must be manually freed."
                   :ruler-extenders :basic
                   :split-types t
                   :stobjs ($s)
+                  :type-prescription (natp (foo x y))
                   :verify-guards t
                   :well-founded-relation my-wfr))
 
@@ -129186,6 +129196,24 @@ created from the original fast alist during @('form') must be manually freed."
  @(tsee guard) of the function being defined so that it includes conjuncts
  specifying that each declared single-threaded object argument satisfies the
  recognizer for the corresponding single-threaded object.</p>
+
+ <p>@(':type-prescription')<br></br>
+
+ @('Value') is either @('nil') (the default) or a formula that is suitable for
+ a hypothesis-free @(':')@(tsee type-prescription) rule.  That rule must be
+ appropriate for the @(':typed-term') that is the application of the defined
+ function symbol to its formal parameters.  For example, a legal value for
+ @(':type-prescription') in @('(defun f (x y) ...)') could be @('(or (consp (f
+ x y)) (equal (f x y) y))'), but not @('(or (consp (f u v)) (equal (f u v)
+ v))').  The specified formula must provide a type that is implied by the
+ built-in type that is computed for the defined function.  Normally these will
+ be equal, but if the value of @(':type-prescription') specifies a strictly
+ weaker type than the computed built-in type then a warning will be printed
+ (unless of course such warnings have been suppressed; see @(see
+ set-inhibit-output-lst) and @(see set-inhibit-warnings)).  It is an error to
+ supply a non-@('nil') value for @(':type-prescription') if there is no
+ built-in type computed for the function.  See also @(see
+ type-prescription).</p>
 
  <p>@(':')@(tsee verify-guards)<br></br>
 

@@ -26840,6 +26840,7 @@ Subtopics
                       :normalize nil
                       :verify-guards nil
                       :non-executable t
+                      :type-prescription (natp (example x y z a b c i j))
                       :otf-flg t))
       (example-body x y z i j))
 
@@ -85865,6 +85866,14 @@ New Features
   Coglio, and Eric Smith for requesting the latter capability and
   providing helpful feedback.
 
+  A new [xargs] keyword for [defun], :type-prescription, can be
+  supplied as a formula in the shape of a [type-prescription] rule.
+  It is checked to be implied by the built-in type-prescription rule
+  computed for the newly-defined function.  Thus, it can serve as
+  documentation for the expected type returned by the function; if
+  the implication is not equivalence, a warning is printed.  Thanks
+  to Alessandro Coglio and Eric Smith for the suggestion.
+
 
 Heuristic and Efficiency Improvements
 
@@ -99803,10 +99812,11 @@ Subtopics
   function with the same name, formals, and body (before
   macroexpansion), and with the same values [declare]d for the
   :[guard], :[measure], types, :[ruler-extenders], :non-executable,
-  :[stobj]s, and :[split-types], provided that the [defun-mode]s are
-  appropriate (see the ``Note About Appropriate Modes'' below).
-  Moreover, the order of the combined :[guard] and type declarations
-  must be the same in both cases.  Exceptions and clarifications:
+  :type-prescription, :[stobj]s, and :[split-types], provided that
+  the [defun-mode]s are appropriate (see the ``Note About Appropriate
+  Modes'' below).  Moreover, the order of the combined :[guard] and
+  type declarations must be the same in both cases.  Exceptions and
+  clarifications:
 
    1. If the new and existing function events have no explicit
       [ruler-extenders] (which are therefore syntactically equal),
@@ -129976,6 +129986,7 @@ Subtopics
                     :ruler-extenders :basic
                     :split-types t
                     :stobjs ($s)
+                    :type-prescription (natp (foo x y))
                     :verify-guards t
                     :well-founded-relation my-wfr))
 
@@ -130122,6 +130133,24 @@ Subtopics
   being defined so that it includes conjuncts specifying that each
   declared single-threaded object argument satisfies the recognizer
   for the corresponding single-threaded object.
+
+  :type-prescription
+  Value is either nil (the default) or a formula that is suitable for
+  a hypothesis-free :[type-prescription] rule.  That rule must be
+  appropriate for the :typed-term that is the application of the
+  defined function symbol to its formal parameters.  For example, a
+  legal value for :type-prescription in (defun f (x y) ...) could be
+  (or (consp (f x y)) (equal (f x y) y)), but not (or (consp (f u v))
+  (equal (f u v) v)).  The specified formula must provide a type that
+  is implied by the built-in type that is computed for the defined
+  function.  Normally these will be equal, but if the value of
+  :type-prescription specifies a strictly weaker type than the
+  computed built-in type then a warning will be printed (unless of
+  course such warnings have been suppressed; see
+  [set-inhibit-output-lst] and [set-inhibit-warnings]).  It is an
+  error to supply a non-nil value for :type-prescription if there is
+  no built-in type computed for the function.  See also
+  [type-prescription].
 
   :[verify-guards]
   Value is t or nil, indicating whether or not [guard]s are to be
