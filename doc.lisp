@@ -123841,11 +123841,11 @@ Detailed Documentation
     (name
      (frames-1 tries-1 rune-1)
      (frames-2 tries-2 rune-2)
-     (frames-2 tries-2 rune-3)
-     (frames-2 tries-2 rune-4)
-     (frames-2 tries-2 rune-5)
-     (frames-2 tries-2 rune-6)
-     (frames-k tries-k rune-7)
+     (frames-3 tries-3 rune-3)
+     (frames-4 tries-4 rune-4)
+     (frames-5 tries-5 rune-5)
+     (frames-6 tries-6 rune-6)
+     (frames-7 tries-7 rune-7)
      )
 
   then 1/5 of the 7 runes are to be disabled, so since the first
