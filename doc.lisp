@@ -9810,7 +9810,7 @@ Subtopics
   where test returns a single value and form is arbitrary.
   Semantically, this call of assert* is equivalent to form.  However,
   a [guard] proof obligation is created that test holds, when used in
-  a definition made in [logic]-mode).
+  a definition made in [logic]-mode.
 
   For a related utility, see [assert$].  Both assert$ and assert*
   create a [guard] proof obligation (when used in a definition made
@@ -85803,6 +85803,11 @@ Changes to Existing Features
   comment in [community-book] books/system/doc/acl2-doc.lisp, form
   (defxdoc note-8-4 ...).
 
+  When [certify-book] directs printing of [useless-runes], each tuple
+  is now printed on a single line starting after a space.  See
+  [useless-runes] for details.  Thanks to Eric Smith for requesting
+  this enhancement, which can support grep-like tools.
+
 
 New Features
 
@@ -123788,12 +123793,15 @@ Detailed Documentation
 
   When certify-book is supplied with option :useless-runes :write, the
   result is to write out a corresponding @useless-runes.lsp file.
-  Each top-level entry of this file has the form
+  Each top-level entry of this file that is non-trivial (see below)
+  has the form
 
-    (name (frames-1 tries-1 rune-1)
-          (frames-2 tries-2 rune-2)
-          ...
-          (frames-k tries-k rune-k))
+    (name
+     (frames-1 tries-1 rune-1)
+     (frames-2 tries-2 rune-2)
+     ...
+     (frames-k tries-k rune-k)
+     )
 
   where name is the name of a [defthm], [defun], or [verify-guards]
   event, and each tuple (frames-i tries-i rune-i) indicates the
@@ -123806,6 +123814,13 @@ Detailed Documentation
   top to bottom.  Because of [local] [events], the same name may
   appear more than once; we say more about this in the ``Subtleties''
   section, below.
+
+  Note that ``trivial'' entries are possible, where there are no
+  tuples; in that case, just (name) is printed, on a single line.
+  Otherwise printing uses the format shown above, where the first
+  line contains a left parenthesis on the left margin followed by the
+  name, and each tuple is on a single line starting in column 1
+  (i.e., after a single space), as is the final right parenthesis.
 
   When certify-book is supplied with option :useless-runes :read or
   :useless-runes :read?, then book certification takes advantage of
@@ -123823,13 +123838,15 @@ Detailed Documentation
   @useless-runes.lsp file are to be kept disabled; so if the relevant
   top-level form in that file is
 
-    (name (frames-1 tries-1 rune-1)
-          (frames-2 tries-2 rune-2)
-          (frames-2 tries-2 rune-3)
-          (frames-2 tries-2 rune-4)
-          (frames-2 tries-2 rune-5)
-          (frames-2 tries-2 rune-6)
-          (frames-k tries-k rune-7))
+    (name
+     (frames-1 tries-1 rune-1)
+     (frames-2 tries-2 rune-2)
+     (frames-2 tries-2 rune-3)
+     (frames-2 tries-2 rune-4)
+     (frames-2 tries-2 rune-5)
+     (frames-2 tries-2 rune-6)
+     (frames-k tries-k rune-7)
+     )
 
   then 1/5 of the 7 runes are to be disabled, so since the first
   integer greater than or equal to 7/5 is 2, the runes rune-1 and
