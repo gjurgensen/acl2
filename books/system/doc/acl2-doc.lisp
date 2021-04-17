@@ -6974,7 +6974,7 @@ and @(tsee include-book)"
  <p>where @('test') returns a single value and @('form') is arbitrary.
  Semantically, this call of @('assert*') is equivalent to @('form').  However,
  a @(see guard) proof obligation is created that @('test') holds, when used in
- a definition made in @(tsee logic)-mode).</p>
+ a definition made in @(tsee logic)-mode.</p>
 
  <p>For a related utility, see @(see assert$).  Both @('assert$') and
  @('assert*') create a @(see guard) proof obligation (when used in a definition
