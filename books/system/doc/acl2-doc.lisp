@@ -87487,6 +87487,11 @@ it."
  essentially as included in a comment in @(see community-book)
  @('books/system/doc/acl2-doc.lisp'), form @('(defxdoc note-8-4 ...)').</p>
 
+ <p>When @(tsee certify-book) directs printing of @(see useless-runes), each
+ tuple is now printed on a single line starting after a space.  See @(see
+ useless-runes) for details.  Thanks to Eric Smith for requesting this
+ enhancement, which can support grep-like tools.</p>
+
  <h3>New Features</h3>
 
  <p>A new option for @(tsee certify-book), @(':useless-runes'), makes it
@@ -122597,13 +122602,15 @@ introduction-to-the-tau-system) for more information about Tau.</dd>
 
  <p>When @('certify-book') is supplied with option @(':useless-runes :write'),
  the result is to write out a corresponding @useless-runes.lsp file.  Each
- top-level entry of this file has the form</p>
+ top-level entry of this file that is non-trivial (see below) has the form</p>
 
  @({
- (name (frames-1 tries-1 rune-1)
-       (frames-2 tries-2 rune-2)
-       ...
-       (frames-k tries-k rune-k))
+ (name
+  (frames-1 tries-1 rune-1)
+  (frames-2 tries-2 rune-2)
+  ...
+  (frames-k tries-k rune-k)
+  )
  })
 
  <p>where @('name') is the name of a @(tsee defthm), @(tsee defun), or @(tsee
@@ -122615,6 +122622,13 @@ introduction-to-the-tau-system) for more information about Tau.</dd>
  These top-level entries are listed in order of event in the book, from top to
  bottom.  Because of @(see local) @(see events), the same name may appear more
  than once; we say more about this in the ``Subtleties'' section, below.</p>
+
+ <p>Note that ``trivial'' entries are possible, where there are no tuples; in
+ that case, just @('(name)') is printed, on a single line.  Otherwise printing
+ uses the format shown above, where the first line contains a left parenthesis
+ on the left margin followed by the name, and each tuple is on a single line
+ starting in column 1 (i.e., after a single space), as is the final right
+ parenthesis.</p>
 
  <p>When @('certify-book') is supplied with option @(':useless-runes :read') or
  @(':useless-runes :read?'), then book certification takes advantage of the
@@ -122632,13 +122646,15 @@ introduction-to-the-tau-system) for more information about Tau.</dd>
  form in that file is</p>
 
   @({
- (name (frames-1 tries-1 rune-1)
-       (frames-2 tries-2 rune-2)
-       (frames-2 tries-2 rune-3)
-       (frames-2 tries-2 rune-4)
-       (frames-2 tries-2 rune-5)
-       (frames-2 tries-2 rune-6)
-       (frames-k tries-k rune-7))
+ (name
+  (frames-1 tries-1 rune-1)
+  (frames-2 tries-2 rune-2)
+  (frames-2 tries-2 rune-3)
+  (frames-2 tries-2 rune-4)
+  (frames-2 tries-2 rune-5)
+  (frames-2 tries-2 rune-6)
+  (frames-k tries-k rune-7)
+  )
  })
 
  <p>then 1/5 of the 7 runes are to be disabled, so since the first integer
