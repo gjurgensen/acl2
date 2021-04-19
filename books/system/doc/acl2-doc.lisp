@@ -12883,106 +12883,35 @@ with any questions about building the community books.</p>")
  redundant.</p>")
 
 (defxdoc ccl-installation
-  :parents (hons-and-memoization)
+  :parents (building-acl2)
   :short "Installing Clozure Common Lisp (CCL)"
   :long "<p>For those who use ACL2 built on CCL as the host Common Lisp
  implementation, it has been common practice to use the latest GitHub version
- of CCL.  Below are self-contained instructions for how to build CCL on Linux,
- with comments on how to adapt them to Mac (Darwin).  You may prefer instead to
- look at the <a href='https://github.com/Clozure/ccl/releases'>CCL Releases</a>
- page, using the text below only as needed (e.g., for Linux-specific
- information or for discussion of @('CCL_DEFAULT_DIRECTORY')).  Note: Linux
- users may need to install m4.</p>
+ of CCL.  We provide the following instructions for you to choose from.  The
+ ``brief'' instructions for Linux or Mac (according to your operating system)
+ might well suffice; the ``elaborate'' instructions have helped with version
+ control.</p>
 
- <p>Remark. The instructions immediately below should generally suffice.  But
- if you would like additional information on CCL installation and
- implementation, see @(see ccl-installation-extra).</p>
+ <ul>
 
- <p>First fetch CCL from GitHub as follows.  (You may prefer to use ``@('git
- pull')'' if you previously did this step.  In that case you probably won't
- want to do the optional renaming of the directory, mentioned below.)</p>
+ <li>@(see ccl-installation-linux-brief)</li>
 
- @({
- # Obtain a ccl distribution in a fresh directory:
- mkdir temp
- cd temp
- git clone https://github.com/Clozure/ccl
- # Optionally rename that directory as suggested below, after
- # executing the following three commands.
- cd ccl
- git rev-parse HEAD
- cd ../../
- # Optionally change directory name, and then go back to ccl directory:
- # You'll want the last 10 hex digits to match those of the
- # output from the ``git rev-parse HEAD'' command above: do
- # that twice here and once further below.
- mv temp 2017-12-07-6be8298fe5
- cd 2017-12-07-6be8298fe5/ccl
- })
+ <li>@(see ccl-installation-mac-brief)</li>
 
- <p>Next fetch a development snapshot.  The version below is current as of this
- writing (late April, 2019), but see <a
- href='https://github.com/Clozure/ccl/releases/'>https://github.com/Clozure/ccl/releases/</a>
- for the latest snapshots.</p>
+ <li>@(see ccl-installation-linux-elaborate)</li>
 
- @({
- # If you are on a Mac, skip this wget command and see just below.
- wget https://github.com/Clozure/ccl/releases/download/v1.12/linuxx86.tar.gz
- # On a Mac, do this instead:
- # curl --location https://github.com/Clozure/ccl/releases/download/v1.12/darwinx86.tar.gz > darwinx86.tar.gz
- # Now untar.  NOTE: This is for Linux.
- # For a Mac: tar xfz darwinx86.tar.gz
- tar xfz linuxx86.tar.gz
- })
+ <li>@(see ccl-installation-mac-elaborate)</li>
 
- <p>Rebuild the lisp kernel by hand before trying to rebuild the lisp.
- (Note: This step was formerly unnecessary and might become unnecessary again,
- but as of Sept. 2020 it seems to be necessary on MacOS Catalina (10.15).
- If you skip it, then consider replacing :clean by :full below.)</p>
+ </ul>
 
- @({
- cd lisp-kernel/linuxx8664; make clean; make
- cd -
- })
+ <p>You may prefer instead to look at the <a
+ href='https://github.com/Clozure/ccl/releases'>CCL Releases</a> page, using
+ links above only as needed (e.g., for Linux-specific information or for
+ discussion of @('CCL_DEFAULT_DIRECTORY')).</p>
 
- <p>Finish up:</p>
-
- @({
- # (On a Mac, replace the next command with: ./dx86cl64)
- ./lx86cl64
- # This welcomes you, e.g.:
- #   Clozure Common Lisp Version 1.12-dev (v1.12-dev.5) LinuxX8664
- # Now submit this command:
- ? (rebuild-ccl :clean t)
- # After it returns, quit:
- ? (quit)
- # Now, back at the shell, rebuild the kernel again just to be safe:
- # For a Mac: ./dx86cl64
- ./lx86cl64
- ? (rebuild-ccl :clean t)
- ? (quit)
- })
-
- <p>Create an executable script like the following.  Be sure to change the
- name (shown as ``2017-12-07-6be8298fe5'' above) to match the name change
- already made above.</p>
-
- @({
- #!/bin/sh
-
- export CCL_DEFAULT_DIRECTORY=/projects/acl2/lisps/ccl/2017-12-07-6be8298fe5/ccl
- ${CCL_DEFAULT_DIRECTORY}/scripts/ccl64 \"$@\"
- })
-
- <p>Now ensure that your script is executable, e.g.:</p>
-
- @({
- chmod +x my-script
- })
-
- <p>You're done!  (Note however that certification of @(see books) that use
- @(see Quicklisp) may require @('openssl') to be installed if it is not already
- on your system.)</p>")
+ <p>One of the links listed above should generally suffice.  But if you
+ would like additional information on CCL installation and implementation, see
+ @(see ccl-installation-extra).</p>")
 
 (defxdoc ccl-installation-extra
   :parents (ccl-installation)
@@ -13193,6 +13122,274 @@ with any questions about building the community books.</p>")
    (save-exec *heap-image-name* \"Modification string to print at startup\")
    )
  })")
+
+(defxdoc ccl-installation-linux-brief
+
+; Warning: Keep this in sync with ccl-installation-mac-brief and, to a lesser
+; extent, ccl-installation-linux-elaborate.
+
+  :parents (ccl-installation)
+  :short "Installing Clozure Common Lisp (CCL)"
+  :long "<p>See @(see ccl-installation) for introductory remarks.  The
+ instructions below describe how to install CCL on Linux.  For more elaborate
+ ``cookbook'' instructions see @(see ccl-installation-linux-elaborate).</p>
+
+ <p><b>Note</b>: Linux users may need to install m4.</p>
+
+ <p>Fetch CCL from GitHub into a fresh subdirectory, @('ccl/').</p>
+
+ @({
+ git clone https://github.com/Clozure/ccl
+ })
+
+ <p>Next fetch and extract a development snapshot in the new @('ccl')
+ directory.  The version below is current as of this writing (April, 2021), but
+ see <a
+ href='https://github.com/Clozure/ccl/releases/'>https://github.com/Clozure/ccl/releases/</a>
+ for the latest snapshots.</p>
+
+ @({
+ cd ccl
+ wget https://github.com/Clozure/ccl/releases/download/v1.12/linuxx86.tar.gz
+ tar xfz linuxx86.tar.gz
+ })
+
+ <p>Rebuild and quit, twice.</p>
+
+ @({
+ echo '(rebuild-ccl :full t)' | ./lx86cl64
+ echo '(rebuild-ccl :full t)' | ./lx86cl64
+ })
+
+ <p>Create the following executable script, where @('<DIR>') is the absolute
+ pathname (without using ``@('~')'') of the directory in which you issued the
+ ``@('git clone')'' command.</p>
+
+ @({
+ #!/bin/sh
+
+ export CCL_DEFAULT_DIRECTORY=<DIR>/ccl
+ ${CCL_DEFAULT_DIRECTORY}/scripts/ccl64 \"$@\"
+ })
+
+ <p>You're done!  (Note however that certification of @(see books) that use
+ @(see Quicklisp) may require @('openssl') to be installed if it is not already
+ on your system.)</p>")
+
+(defxdoc ccl-installation-linux-elaborate
+
+; Warning: Keep this in sync with ccl-installation-mac-elaborate and, to a
+; lesser extent, ccl-installation-linux-brief.
+
+  :parents (ccl-installation)
+  :short "Installing Clozure Common Lisp (CCL)"
+  :long "<p>See @(see ccl-installation) for introductory remarks.  The
+ ``cookbook'' instructions below give you one way to install CCL on Linux
+ without any knowledge of git or CCL.  For more streamlined instructions see
+ @(see ccl-installation-linux-brief).</p>
+
+ <p><b>Note</b>: Linux users may need to install m4.</p>
+
+ <p>First fetch CCL from GitHub as follows.  (You may prefer to use ``@('git
+ pull')'' if you previously did this step.  In that case you probably won't
+ want to do the optional renaming of the directory, mentioned below.)</p>
+
+ @({
+ # Obtain a ccl distribution in a fresh directory:
+ mkdir temp
+ cd temp
+ git clone https://github.com/Clozure/ccl
+ # Optionally rename that directory as suggested below, after
+ # executing the following three commands.
+ cd ccl
+ git rev-parse HEAD
+ cd ../../
+ # Optionally change directory name, and then go back to ccl directory:
+ # You'll want the last 10 hex digits to match those of the
+ # output from the ``git rev-parse HEAD'' command above: do
+ # that twice here and once further below.
+ mv temp 2017-12-07-6be8298fe5
+ cd 2017-12-07-6be8298fe5/ccl
+ })
+
+ <p>Next fetch and extract a development snapshot.  The version below is
+ current as of this writing (April, 2021), but see <a
+ href='https://github.com/Clozure/ccl/releases/'>https://github.com/Clozure/ccl/releases/</a>
+ for the latest snapshots.</p>
+
+ @({
+ wget https://github.com/Clozure/ccl/releases/download/v1.12/linuxx86.tar.gz
+ tar xfz linuxx86.tar.gz
+ })
+
+ <p>Rebuild and quit, twice.</p>
+
+ @({
+ echo '(rebuild-ccl :full t)' | ./lx86cl64
+ echo '(rebuild-ccl :full t)' | ./lx86cl64
+ })
+
+ <p>Create an executable script like the following.  You might want to call it
+ ``@('ccl')'' and put it into a directory on your path.  Be sure to change the
+ name (shown as ``2017-12-07-6be8298fe5'' above) to match the name change
+ already made above.</p>
+
+ @({
+ #!/bin/sh
+
+ export CCL_DEFAULT_DIRECTORY=/projects/acl2/lisps/ccl/2017-12-07-6be8298fe5/ccl
+ ${CCL_DEFAULT_DIRECTORY}/scripts/ccl64 \"$@\"
+ })
+
+ <p>Now ensure that your script is executable, e.g.:</p>
+
+ @({
+ chmod +x my-script
+ })
+
+ <p>You're done!  (Note however that certification of @(see books) that use
+ @(see Quicklisp) may require @('openssl') to be installed if it is not already
+ on your system.)</p>")
+
+(defxdoc ccl-installation-mac-brief
+
+; Warning: Keep this in sync with ccl-installation-linux-brief and, to a lesser
+; extent, ccl-installation-macc-elaborate.
+
+  :parents (ccl-installation)
+  :short "Installing Clozure Common Lisp (CCL)"
+  :long "<p>See @(see ccl-installation) for introductory remarks.  The
+ instructions below describe how to install CCL on a Mac (Darwin).  For more
+ elaborate ``cookbook'' instructions see @(see
+ ccl-installation-mac-elaborate).</p>
+
+ <p>Fetch CCL from GitHub into a fresh subdirectory, @('ccl/').</p>
+
+ @({
+ git clone https://github.com/Clozure/ccl
+ })
+
+ <p>Next fetch and extract a development snapshot in the new @('ccl')
+ directory.  The version below is current as of this writing (April, 2021), but
+ see <a
+ href='https://github.com/Clozure/ccl/releases/'>https://github.com/Clozure/ccl/releases/</a>
+ for the latest snapshots.</p>
+
+ @({
+ cd ccl
+ curl -O -L https://github.com/Clozure/ccl/releases/download/v1.12/darwinx86.tar.gz
+ tar xfz darwinx86.tar.gz
+ })
+
+ <p>Rebuild the lisp kernel by hand before trying to rebuild the lisp.</p>
+
+ @({
+ cd lisp-kernel/darwinx8664; make clean; make
+ cd -
+ })
+
+ <p>Rebuild and quit, twice.</p>
+
+ @({
+ echo '(rebuild-ccl :clean t)' | ./lx86cl64
+ echo '(rebuild-ccl :clean t)' | ./lx86cl64
+ })
+
+ <p>Create the following executable script, where @('<DIR>') is the absolute
+ pathname (without using ``@('~')'') of the directory in which you issued the
+ ``@('git clone')'' command.</p>
+
+ @({
+ #!/bin/sh
+
+ export CCL_DEFAULT_DIRECTORY=<DIR>/ccl
+ ${CCL_DEFAULT_DIRECTORY}/scripts/ccl64 \"$@\"
+ })
+
+ <p>You're done!  (Note however that certification of @(see books) that use
+ @(see Quicklisp) may require @('openssl') to be installed if it is not already
+ on your system.)</p>")
+
+(defxdoc ccl-installation-mac-elaborate
+
+; Warning: Keep this in sync with ccl-installation-mac-elaborate and, to a
+; lesser extent, ccl-installation-mac-brief.
+
+  :parents (ccl-installation)
+  :short "Installing Clozure Common Lisp (CCL)"
+  :long "<p>See @(see ccl-installation) for introductory remarks.  The
+ ``cookbook'' instructions below give you one way to install CCL on a Mac
+ (Darwin) without any knowledge of git or CCL.  For more streamlined
+ instructions see @(see ccl-installation-mac-brief).</p>
+
+ <p>First fetch CCL from GitHub as follows.  (You may prefer to use ``@('git
+ pull')'' if you previously did this step.  In that case you probably won't
+ want to do the optional renaming of the directory, mentioned below.)</p>
+
+ @({
+ # Obtain a ccl distribution in a fresh directory:
+ mkdir temp
+ cd temp
+ git clone https://github.com/Clozure/ccl
+ # Optionally rename that directory as suggested below, after
+ # executing the following three commands.
+ cd ccl
+ git rev-parse HEAD
+ cd ../../
+ # Optionally change directory name, and then go back to ccl directory:
+ # You'll want the last 10 hex digits to match those of the
+ # output from the ``git rev-parse HEAD'' command above: do
+ # that twice here and once further below.
+ mv temp 2017-12-07-6be8298fe5
+ cd 2017-12-07-6be8298fe5/ccl
+ })
+
+ <p>Next fetch and extract a development snapshot.  The version below is
+ current as of this writing (April, 2021), but see <a
+ href='https://github.com/Clozure/ccl/releases/'>https://github.com/Clozure/ccl/releases/</a>
+ for the latest snapshots.</p>
+
+ @({
+ curl -O -L https://github.com/Clozure/ccl/releases/download/v1.12/darwinx86.tar.gz
+ })
+
+ <p>Rebuild the lisp kernel by hand before trying to rebuild the lisp.
+ (Note: This step was formerly unnecessary and might become unnecessary again,
+ but it seems to have been necessary on MacOS Catalina (10.15).</p>
+
+ @({
+ cd lisp-kernel/darwinx8664; make clean; make
+ cd -
+ })
+
+ <p>Rebuild and quit, twice.</p>
+
+ @({
+ echo '(rebuild-ccl :clean t)' | ./lx86cl64
+ echo '(rebuild-ccl :clean t)' | ./lx86cl64
+ })
+
+ <p>Create an executable script like the following.  You might want to call it
+ ``@('ccl')'' and put it into a directory on your path.  Be sure to change the
+ name (shown as ``2017-12-07-6be8298fe5'' above) to match the name change
+ already made above.</p>
+
+ @({
+ #!/bin/sh
+
+ export CCL_DEFAULT_DIRECTORY=/projects/acl2/lisps/ccl/2017-12-07-6be8298fe5/ccl
+ ${CCL_DEFAULT_DIRECTORY}/scripts/ccl64 \"$@\"
+ })
+
+ <p>Now ensure that your script is executable, e.g.:</p>
+
+ @({
+ chmod +x my-script
+ })
+
+ <p>You're done!  (Note however that certification of @(see books) that use
+ @(see Quicklisp) may require @('openssl') to be installed if it is not already
+ on your system.)</p>")
 
 (defxdoc cdaaar
   :parents (conses acl2-built-ins)
