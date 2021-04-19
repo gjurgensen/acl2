@@ -6734,6 +6734,8 @@ Subtopics
 
   [Symbol-alistp]
       Recognizer for association lists with symbols as keys")
+ (ALL-ATTACHMENTS (POINTERS)
+                  "See [system-utilities].")
  (ALL-CALLS (POINTERS)
             "See [system-utilities].")
  (ALL-FNNAMES (POINTERS)
@@ -26875,14 +26877,21 @@ Subtopics
   of successively rel-smaller mp-objects.  Thus, the recursion must
   terminate.
 
-  The only primitive well-founded relation in ACL2 is [o<] (see [o<]),
-  which is known to be well-founded on the [o-p]s (see [o-p]).  For
-  the proof of well-foundedness, see [proof-of-well-foundedness].
-  However it is possible to add new well-founded relations.  For
-  details, see [well-founded-relation].  We discuss later how to
-  specify which well-founded relation is selected by defun and in the
-  present discussion we assume, without loss of generality, that it
-  is [o<] on the [o-p]s.
+  The default well-founded relation is [o<], an ``ordinal less-than''
+  relation (discussed further below) that reduces to ordinary < on
+  the natural numbers.  The default measure term is (acl2-count var),
+  where var is a formal parameter that is chosen heuristically:
+  roughly speaking, it is the first formal that is tested along every
+  branch and changed in each recursive call.
+
+  The only primitive well-founded relation in ACL2 is [o<], which is
+  known to be well-founded on the [o-p]s.  For the proof of
+  well-foundedness, see [proof-of-well-foundedness].  However it is
+  possible to add new well-founded relations.  For details, see
+  [well-founded-relation].  We discuss later how to specify which
+  well-founded relation is selected by defun and in the present
+  discussion we assume, without loss of generality, that it is [o<]
+  on the [o-p]s.
 
   For example, for our generic definition of fn above, with measure
   term (m x y), two theorems must be proved.  The first establishes
@@ -38828,7 +38837,9 @@ Subtopics
   suggest downloading the community books.)  The book \"top-with-meta\"
   is the most elementary and most widely used arithmetic book.  Other
   community books include \"arithmetic-5/top\" and various hardware and
-  floating-point arithmetic books.
+  floating-point arithmetic books; if including
+  \"arithmetic/top-with-meta\" isn't sufficient, you could try
+  (include-book \"arithmetic-5/top\" :dir :system).
 
   Rules Concluding with Arithmetic Inequalities: If you are tempted to
   create a rewrite rule with an arithmetic inequality as its
@@ -90857,6 +90868,9 @@ Subtopics
   [Add-to-set-equal]
       See [add-to-set].
 
+  [All-attachments]
+      See [system-utilities].
+
   [All-calls]
       See [system-utilities].
 
@@ -103367,12 +103381,13 @@ Subtopics
 
   One might expect ACL2's termination analysis to admit this function,
   since we know that (cdr x) is ``smaller'' than x if (consp x) is
-  true.  (By default, ACL2's notion of ``smaller'' is ordinary
+  true.  (ACL2's notion of ``smaller'' here is essentially ordinary
   natural-number <, and the argument x is measured by applying
-  function acl2-count to x.)  However, by default that termination
-  analysis does not consider [if] tests, like (consp x) above, when
-  they occur under calls of functions other than IF, such as CONS in
-  the case above; it considers only rulers, as we now discuss.
+  function [ACL2-count] to x; see [defun].)  However, by default that
+  termination analysis does not consider [if] tests, like (consp x)
+  above, when they occur under calls of functions other than IF, such
+  as CONS in the case above; it considers only rulers, as we now
+  discuss.
 
   In the example above, we say that the term (consp x) governs the
   recursive call (f (cdr x)) shown above, but does not rule that
@@ -111417,12 +111432,13 @@ Subtopics
   using ([set-verify-guards-eagerness] 0) to avoid [guard]
   verification.
 
-  The documentation in this section is laid out in the form of a tour
-  that visits the documented topics in a reasonable order.  We
-  recommend that you follow the tour the first time you read about
-  stobjs.  The list of all stobj topics is shown below.  The tour
-  starts immediately afterwards.  Also see [defstobj] and, for
-  so-called abstract stobjs, see [defabsstobj].
+  This topic introduces the notion of a ``stobj'', or single-threaded
+  object.  It concludes with a link to a tour that introduces the use
+  of stobjs by way of examples.  We recommend that you follow that
+  link the first time you read about stobjs.  Detailed reference
+  documentation about stobjs may be found in the subtopics listed at
+  the end below; in particular see [defstobj] and, for so-called
+  abstract stobjs, see [defabsstobj].
 
   As noted, a ``single-threaded object'' is a data structure whose use
   is so syntactically restricted that only one instance of the object
@@ -111454,12 +111470,13 @@ Subtopics
 
     * OBJ is a top-level global variable that contains the current object,
       obj.
-    * If a function uses the formal parameter OBJ, the only ``actual
-      expression'' that can be passed into that slot is the variable
-      OBJ, not merely a term that ``evaluates to an obj''; thus, such
-      functions can only operate on the current object.  So for
-      example, instead of (FOO (UPDATE-FIELD1 3 ST)) write (LET ((ST
-      (UPDATE-FIELD1 3 ST))) (FOO ST)).
+    * If a function uses the formal parameter OBJ that is declared as a
+      stobj, the only ``actual expression'' that can be passed into
+      that slot is the variable OBJ, not merely a term that
+      ``evaluates to an obj''; thus, such functions can only operate
+      on the current object.  So for example, instead of (FOO
+      (UPDATE-FIELD1 3 ST)) write (LET ((ST (UPDATE-FIELD1 3 ST)))
+      (FOO ST)).
     * The accessors and updaters have a formal parameter named OBJ, so by
       the rule just above, those functions can only be applied to the
       current object.  The recognizer is the one exception to the
@@ -111503,8 +111520,8 @@ Subtopics
   keywords allow inlining and renaming of stobj accessors and
   updaters.
 
-  But we are getting ahead of ourselves.  To start the stobj tour, see
-  [stobj-example-1].
+  But we are getting ahead of ourselves.  To start the stobj tour
+  recommended earlier in this topic, see [stobj-example-1].
 
 
 Subtopics
@@ -114350,6 +114367,15 @@ List of a few built-in system utilities
       \"COMMON-LISP\" package.  New function symbols cannot be in the
       \"COMMON-LISP\" package; thus, this utility may be appropriate
       when generating new function names from old ones.
+    * (all-attachments wrld): Return a list of all attachment pairs (f . g)
+      where g is attached to f (see [defattach]) in the [world],
+      wrld, except for two cases that are ignored for this purpose:
+      [warrant]s, and attachments introduced with a non-nil value of
+      :skip-checks.  To obtain the attachment to a function symbol f,
+      without the restrictions above and with value nil if there is
+      no attachment to f, evaluate (cdr (attachment-pair 'f wrld)).
+      To obtain the list of all built-in attachments, evaluate
+      (global-val 'attachments-at-ground-zero (w state)).
     * (all-calls names term alist ans): Accumulate into ans (which
       typically is nil at the top level) all pseudo-terms u/alist
       such that for some f in the list, names, u is a subterm of the

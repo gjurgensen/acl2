@@ -23765,14 +23765,20 @@ subtree of X with T, without duplication.</p>
  there are no infinitely descending chains of successively @('rel')-smaller
  @('mp')-objects.  Thus, the recursion must terminate.</p>
 
- <p>The only primitive well-founded relation in ACL2 is @(tsee o<) (see @(see
- o<)), which is known to be well-founded on the @(tsee o-p)s (see @(see o-p)).
- For the proof of well-foundedness, see @(see proof-of-well-foundedness).
- However it is possible to add new well-founded relations.  For details, see
- @(see well-founded-relation).  We discuss later how to specify which
- well-founded relation is selected by @('defun') and in the present discussion
- we assume, without loss of generality, that it is @(tsee o<) on the @(tsee
- o-p)s.</p>
+ <p>The default well-founded relation is @(tsee o<), an ``ordinal less-than''
+ relation (discussed further below) that reduces to ordinary @('<') on the
+ natural numbers.  The default measure term is @('(acl2-count var)'), where
+ @('var') is a formal parameter that is chosen heuristically: roughly speaking,
+ it is the first formal that is tested along every branch and changed in each
+ recursive call.</p>
+
+ <p>The only primitive well-founded relation in ACL2 is @(tsee o<), which is
+ known to be well-founded on the @(tsee o-p)s.  For the proof of
+ well-foundedness, see @(see proof-of-well-foundedness).  However it is
+ possible to add new well-founded relations.  For details, see @(see
+ well-founded-relation).  We discuss later how to specify which well-founded
+ relation is selected by @('defun') and in the present discussion we assume,
+ without loss of generality, that it is @(tsee o<) on the @(tsee o-p)s.</p>
 
  <p>For example, for our generic definition of @('fn') above, with measure term
  @('(m x y)'), two theorems must be proved.  The first establishes that @('m')
@@ -35343,8 +35349,9 @@ current fast alists."
  the community.  The ACL2 installation instructions suggest downloading the
  community books.)  The book \"top-with-meta\" is the most elementary and most
  widely used arithmetic book.  Other community books include
- \"arithmetic-5/top\" and various hardware and floating-point arithmetic
- books.</p>
+ \"arithmetic-5/top\" and various hardware and floating-point arithmetic books;
+ if including \"arithmetic/top-with-meta\" isn't sufficient, you could try
+ @('(include-book \"arithmetic-5/top\" :dir :system)').</p>
 
  <p><b>Rules Concluding with Arithmetic Inequalities</b>: If you are tempted to
  create a rewrite rule with an arithmetic inequality as its conclusion or
@@ -102053,12 +102060,13 @@ arithmetic) for libraries of @(see books) for arithmetic reasoning.</p>")
 
  <p>One might expect ACL2's termination analysis to admit this function, since
  we know that @('(cdr x)') is ``smaller'' than @('x') if @('(consp x)') is
- true.  (By default, ACL2's notion of ``smaller'' is ordinary natural-number
- @('<'), and the argument @('x') is measured by applying function
- @('acl2-count') to @('x').)  However, by default that termination analysis
- does not consider @(tsee IF) tests, like @('(consp x)') above, when they occur
- under calls of functions other than @('IF'), such as @('CONS') in the case
- above; it considers only rulers, as we now discuss.</p>
+ true.  (ACL2's notion of ``smaller'' here is essentially ordinary
+ natural-number @('<'), and the argument @('x') is measured by applying
+ function @(tsee acl2-count) to @('x'); see @(see defun).)  However, by default
+ that termination analysis does not consider @(tsee IF) tests, like @('(consp
+ x)') above, when they occur under calls of functions other than @('IF'), such
+ as @('CONS') in the case above; it considers only rulers, as we now
+ discuss.</p>
 
  <p>In the example above, we say that the term @('(consp x)') <i>governs</i>
  the recursive call @('(f (cdr x))') shown above, but does not <i>rule</i> that
@@ -110396,12 +110404,12 @@ arithmetic) for libraries of @(see books) for arithmetic reasoning.</p>")
  @('(')@(tsee set-verify-guards-eagerness)@(' 0)') to avoid @(see guard)
  verification.</p>
 
- <p>The documentation in this section is laid out in the form of a tour that
- visits the documented topics in a reasonable order.  We recommend that you
- follow the tour the first time you read about stobjs.  The list of all stobj
- topics is shown below.  The tour starts immediately afterwards.  Also see
- @(see defstobj) and, for so-called abstract stobjs, see @(see
- defabsstobj).</p>
+ <p>This topic introduces the notion of a ``stobj'', or single-threaded object.
+ It concludes with a link to a tour that introduces the use of stobjs by way of
+ examples.  We recommend that you follow that link the first time you read
+ about stobjs.  Detailed reference documentation about stobjs may be found in
+ the subtopics listed at the end below; in particular see @(see defstobj) and,
+ for so-called abstract stobjs, see @(see defabsstobj).</p>
 
  <p>As noted, a ``single-threaded object'' is a data structure whose use is so
  syntactically restricted that only one instance of the object need ever exist.
@@ -110432,11 +110440,11 @@ arithmetic) for libraries of @(see books) for arithmetic reasoning.</p>")
  <li>@('OBJ') is a top-level global variable that contains the current object,
  obj.</li>
 
- <li>If a function uses the formal parameter @('OBJ'), the only ``actual
- expression'' that can be passed into that slot is the variable @('OBJ'), not
- merely a term that ``evaluates to an obj''; thus, such functions can only
- operate on the current object.  So for example, instead of @('(FOO
- (UPDATE-FIELD1 3 ST))') write @('(LET ((ST (UPDATE-FIELD1 3 ST))) (FOO
+ <li>If a function uses the formal parameter @('OBJ') that is declared as a
+ stobj, the only ``actual expression'' that can be passed into that slot is the
+ variable @('OBJ'), not merely a term that ``evaluates to an obj''; thus, such
+ functions can only operate on the current object.  So for example, instead of
+ @('(FOO (UPDATE-FIELD1 3 ST))') write @('(LET ((ST (UPDATE-FIELD1 3 ST))) (FOO
  ST))').</li>
 
  <li>The accessors and updaters have a formal parameter named @('OBJ'), so by
@@ -110485,8 +110493,8 @@ arithmetic) for libraries of @(see books) for arithmetic reasoning.</p>")
  @('st1'), to be used in place of @('st1').  Other @(tsee defstobj) keywords
  allow inlining and renaming of stobj accessors and updaters.</p>
 
- <p>But we are getting ahead of ourselves.  To start the stobj tour, see @(see
- stobj-example-1).</p>")
+ <p>But we are getting ahead of ourselves.  To start the stobj tour recommended
+ earlier in this topic, see @(see stobj-example-1).</p>")
 
 (defxdoc stobj-example-1
   :parents (stobj)
@@ -113093,6 +113101,17 @@ arithmetic) for libraries of @(see books) for arithmetic reasoning.</p>")
  @('\"COMMON-LISP\"') package.  New function symbols cannot be in the
  @('\"COMMON-LISP\"') package; thus, this utility may be appropriate when
  generating new function names from old ones.</li>
+
+
+ <li>@('(all-attachments wrld)'): Return a list of all attachment pairs @('(f
+ . g)') where @('g') is attached to @('f') (see @(see defattach)) in the @(see
+ world), @('wrld'), except for two cases that are ignored for this purpose:
+ [warrant]s, and attachments introduced with a non-@('nil') value of
+ @(':skip-checks').  To obtain the attachment to a function symbol @('f'),
+ without the restrictions above and with value @('nil') if there is no
+ attachment to @('f'), evaluate @('(cdr (attachment-pair 'f wrld))').  To
+ obtain the list of all built-in attachments, evaluate @('(global-val
+ 'attachments-at-ground-zero (w state))').</li>
 
  <li>@('(all-calls names term alist ans)'):  Accumulate into @('ans')
  (which typically is @('nil') at the top level) all pseudo-terms @('u/alist')
@@ -133015,6 +133034,7 @@ expand function call at the current subterm, without simplifying"
 (defpointer add-to-set-eq add-to-set)
 (defpointer add-to-set-eql add-to-set) ; pre-v4-3 compatibility
 (defpointer add-to-set-equal add-to-set)
+(defpointer all-attachments system-utilities)
 (defpointer all-calls system-utilities)
 (defpointer all-fnnames system-utilities)
 (defpointer all-fnnames-lst system-utilities)
