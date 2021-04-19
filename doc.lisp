@@ -15773,16 +15773,16 @@ Subtopics
       Clozure Common Lisp (CCL) installation and implementation details
 
   [Ccl-installation-linux-brief]
-      Installing Clozure Common Lisp (CCL)
+      Installing Clozure Common Lisp (CCL) on Linux (brief version)
 
   [Ccl-installation-linux-elaborate]
-      Installing Clozure Common Lisp (CCL)
+      Installing Clozure Common Lisp (CCL) on Linux (elaborate version)
 
   [Ccl-installation-mac-brief]
-      Installing Clozure Common Lisp (CCL)
+      Installing Clozure Common Lisp (CCL) on Mac (brief version)
 
   [Ccl-installation-mac-elaborate]
-      Installing Clozure Common Lisp (CCL)")
+      Installing Clozure Common Lisp (CCL) on Mac (elaborate version)")
  (CCL-INSTALLATION-EXTRA
   (CCL-INSTALLATION)
   "Clozure Common Lisp (CCL) installation and implementation details
@@ -15972,7 +15972,7 @@ configure-ccl.lisp
       )")
  (CCL-INSTALLATION-LINUX-BRIEF
   (CCL-INSTALLATION)
-  "Installing Clozure Common Lisp (CCL)
+  "Installing Clozure Common Lisp (CCL) on Linux (brief version)
 
   See [ccl-installation] for introductory remarks.  The instructions
   below describe how to install CCL on Linux.  For more elaborate
@@ -16012,7 +16012,7 @@ configure-ccl.lisp
   already on your system.)")
  (CCL-INSTALLATION-LINUX-ELABORATE
   (CCL-INSTALLATION)
-  "Installing Clozure Common Lisp (CCL)
+  "Installing Clozure Common Lisp (CCL) on Linux (elaborate version)
 
   See [ccl-installation] for introductory remarks.  The ``cookbook''
   instructions below give you one way to install CCL on Linux without
@@ -16074,7 +16074,7 @@ configure-ccl.lisp
   already on your system.)")
  (CCL-INSTALLATION-MAC-BRIEF
   (CCL-INSTALLATION)
-  "Installing Clozure Common Lisp (CCL)
+  "Installing Clozure Common Lisp (CCL) on Mac (brief version)
 
   See [ccl-installation] for introductory remarks.  The instructions
   below describe how to install CCL on a Mac (Darwin).  For more
@@ -16118,7 +16118,7 @@ configure-ccl.lisp
   already on your system.)")
  (CCL-INSTALLATION-MAC-ELABORATE
   (CCL-INSTALLATION)
-  "Installing Clozure Common Lisp (CCL)
+  "Installing Clozure Common Lisp (CCL) on Mac (elaborate version)
 
   See [ccl-installation] for introductory remarks.  The ``cookbook''
   instructions below give you one way to install CCL on a Mac

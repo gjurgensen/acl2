@@ -13129,7 +13129,7 @@ with any questions about building the community books.</p>")
 ; extent, ccl-installation-linux-elaborate.
 
   :parents (ccl-installation)
-  :short "Installing Clozure Common Lisp (CCL)"
+  :short "Installing Clozure Common Lisp (CCL) on Linux (brief version)"
   :long "<p>See @(see ccl-installation) for introductory remarks.  The
  instructions below describe how to install CCL on Linux.  For more elaborate
  ``cookbook'' instructions see @(see ccl-installation-linux-elaborate).</p>
@@ -13182,7 +13182,7 @@ with any questions about building the community books.</p>")
 ; lesser extent, ccl-installation-linux-brief.
 
   :parents (ccl-installation)
-  :short "Installing Clozure Common Lisp (CCL)"
+  :short "Installing Clozure Common Lisp (CCL) on Linux (elaborate version)"
   :long "<p>See @(see ccl-installation) for introductory remarks.  The
  ``cookbook'' instructions below give you one way to install CCL on Linux
  without any knowledge of git or CCL.  For more streamlined instructions see
@@ -13257,7 +13257,7 @@ with any questions about building the community books.</p>")
 ; extent, ccl-installation-macc-elaborate.
 
   :parents (ccl-installation)
-  :short "Installing Clozure Common Lisp (CCL)"
+  :short "Installing Clozure Common Lisp (CCL) on Mac (brief version)"
   :long "<p>See @(see ccl-installation) for introductory remarks.  The
  instructions below describe how to install CCL on a Mac (Darwin).  For more
  elaborate ``cookbook'' instructions see @(see
@@ -13316,7 +13316,7 @@ with any questions about building the community books.</p>")
 ; lesser extent, ccl-installation-mac-brief.
 
   :parents (ccl-installation)
-  :short "Installing Clozure Common Lisp (CCL)"
+  :short "Installing Clozure Common Lisp (CCL) on Mac (elaborate version)"
   :long "<p>See @(see ccl-installation) for introductory remarks.  The
  ``cookbook'' instructions below give you one way to install CCL on a Mac
  (Darwin) without any knowledge of git or CCL.  For more streamlined
