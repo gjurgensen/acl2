@@ -6377,7 +6377,7 @@ and @(tsee include-book)"
  and how to program with them.  2-dimensional arrays are dealt with by
  analogy.</p>
 
- <p><i>The Logical Description of ACL2 Arrays</i></p>
+ <h3>The Logical Description of ACL2 Arrays</h3>
 
  <p>An ACL2 1-dimensional array is an object that associates arbitrary objects
  with certain integers, called ``indices.'' Every array has a dimension,
@@ -6459,8 +6459,8 @@ and @(tsee include-book)"
  than listed in @('a').</p>
 
  <p>To prevent arrays from growing excessively long due to repeated @(tsee
- aset1) operations, @(tsee aset1) actually calls @(tsee compress1) on the new
- alist whenever the length of the new alist exceeds the @(':')@(tsee
+ aset1) operations, @(tsee aset1) essentially calls @(tsee compress1) on the
+ new alist whenever the length of the new alist exceeds the @(':')@(tsee
  maximum-length) entry, @(tsee max), in the @(see header) of the array.  See
  the definition of @(tsee aset1) (for example by using @(':')@(tsee pe)).  This
  is primarily just a mechanism for freeing up @(tsee cons) space consumed while
@@ -6477,7 +6477,7 @@ and @(tsee include-book)"
  counterparts but take an additional @('index') argument.  Finally, the pairs
  in a 2-dimensional array are of the form @('((i . j) . val)').</p>
 
- <p><i>The Implementation of ACL2 Arrays</i></p>
+ <h3>The Implementation of ACL2 Arrays</h3>
 
  <p>Very informally speaking, the function @(tsee compress1) ``creates'' an
  ACL2 array that provides fast access, while the function @(tsee aref1)
@@ -6502,12 +6502,16 @@ and @(tsee include-book)"
  the ``raw lisp array'' and is a Common Lisp array.</p>
 
  <p>When @('(compress1 name alist)') builds a new alist, @('a''), it sets the
- semantic value of @('name') to that new alist.  Furthermore, it creates a
- Common Lisp array and writes into it all of the index/value pairs of @('a''),
- initializing unassigned indices with the default value.  This array becomes
- the raw lisp array of @('name').  @(tsee Compress1) then returns @('a''), the
- semantic value, as its result, as required by the definition of @(tsee
- compress1).</p>
+ semantic value of @('name') to that new alist.  Furthermore, it writes into a
+ Common Lisp array all of the index/value pairs of @('a''), initializing
+ unassigned indices with the default value.  In general this is a new array,
+ which becomes the raw lisp array of @('name').  However, if a raw lisp array
+ is already associated with @('name') and is at least as long as the dimension
+ specified in the @(see header), then that array is reused and all indices out
+ of range are ignored.  (Such reuse can be avoided; see @(see flush-compress)
+ for how to remove the existing association of a raw lisp array with a name.)
+ Either way, @(tsee compress1) then returns @('a''), the semantic value, as its
+ result, as required by the definition of @(tsee compress1).</p>
 
  <p>When @('(aref1 name a i)') is invoked, @(tsee aref1) first determines
  whether the semantic value of @('name') is @('a') (i.e., is @(tsee eq) to the
@@ -6554,7 +6558,7 @@ and @(tsee include-book)"
  header) or that all @('aset')s used that name.  Such enforcement would be
  inefficient.</p>
 
- <p><i>Some Programming Examples</i></p>
+ <h3>Some Programming Examples</h3>
 
  <p>In the following examples we will use ACL2 ``global variables'' to hold
  several arrays.  See @(see @), and see @(see assign).</p>
@@ -6970,7 +6974,7 @@ and @(tsee include-book)"
  <p>where @('test') returns a single value and @('form') is arbitrary.
  Semantically, this call of @('assert*') is equivalent to @('form').  However,
  a @(see guard) proof obligation is created that @('test') holds, when used in
- a definition made in @(tsee logic)-mode).</p>
+ a definition made in @(tsee logic)-mode.</p>
 
  <p>For a related utility, see @(see assert$).  Both @('assert$') and
  @('assert*') create a @(see guard) proof obligation (when used in a definition
@@ -8900,14 +8904,15 @@ and @(tsee include-book)"
  the right hand side of the rule.</p>
 
  <p>There is also a second, optional, @('var-list') argument to a
- @('bind-free') hypothesis.  If provided, it must be either @('t') or a list of
- variables.  If it is not provided, it defaults to @('t').  If it is a list of
- variables, this second argument is used to place a further restriction on the
- possible values of the alist to be returned by @('term'): any variables bound
- in the alist must be present in the list of variables.  We strongly recommend
- the use of this list of variables, as it allows some consistency checks to be
- performed at the time of the rule's admittance which are not possible
- otherwise.</p>
+ @('bind-free') hypothesis.  If provided, it must be either @('t'), @('nil'),
+ or a non-empty list of variables.  If it is not provided, it defaults to
+ @('t'); and it is also treated as @('t') if the value provided is @('nil').
+ If it is a non-empty list of variables, this second argument is used to place
+ a further restriction on the possible values of the alist to be returned by
+ @('term'): any variables bound in the alist must be present in that list of
+ variables.  We strongly recommend the use of this list of variables, as it
+ allows some consistency checks to be performed at the time of the rule's
+ admittance which are not possible otherwise.</p>
 
  <p>An extended @('bind-free') hypothesis is similar to the simple type
  described above, but it uses two additional variables, @('mfc') and
@@ -12878,106 +12883,35 @@ with any questions about building the community books.</p>")
  redundant.</p>")
 
 (defxdoc ccl-installation
-  :parents (hons-and-memoization)
+  :parents (building-acl2)
   :short "Installing Clozure Common Lisp (CCL)"
   :long "<p>For those who use ACL2 built on CCL as the host Common Lisp
  implementation, it has been common practice to use the latest GitHub version
- of CCL.  Below are self-contained instructions for how to build CCL on Linux,
- with comments on how to adapt them to Mac (Darwin).  You may prefer instead to
- look at the <a href='https://github.com/Clozure/ccl/releases'>CCL Releases</a>
- page, using the text below only as needed (e.g., for Linux-specific
- information or for discussion of @('CCL_DEFAULT_DIRECTORY')).  Note: Linux
- users may need to install m4.</p>
+ of CCL.  We provide the following instructions for you to choose from.  The
+ ``brief'' instructions for Linux or Mac (according to your operating system)
+ might well suffice; the ``elaborate'' instructions have helped with version
+ control.</p>
 
- <p>Remark. The instructions immediately below should generally suffice.  But
- if you would like additional information on CCL installation and
- implementation, see @(see ccl-installation-extra).</p>
+ <ul>
 
- <p>First fetch CCL from GitHub as follows.  (You may prefer to use ``@('git
- pull')'' if you previously did this step.  In that case you probably won't
- want to do the optional renaming of the directory, mentioned below.)</p>
+ <li>@(see ccl-installation-linux-brief)</li>
 
- @({
- # Obtain a ccl distribution in a fresh directory:
- mkdir temp
- cd temp
- git clone https://github.com/Clozure/ccl
- # Optionally rename that directory as suggested below, after
- # executing the following three commands.
- cd ccl
- git rev-parse HEAD
- cd ../../
- # Optionally change directory name, and then go back to ccl directory:
- # You'll want the last 10 hex digits to match those of the
- # output from the ``git rev-parse HEAD'' command above: do
- # that twice here and once further below.
- mv temp 2017-12-07-6be8298fe5
- cd 2017-12-07-6be8298fe5/ccl
- })
+ <li>@(see ccl-installation-mac-brief)</li>
 
- <p>Next fetch a development snapshot.  The version below is current as of this
- writing (late April, 2019), but see <a
- href='https://github.com/Clozure/ccl/releases/'>https://github.com/Clozure/ccl/releases/</a>
- for the latest snapshots.</p>
+ <li>@(see ccl-installation-linux-elaborate)</li>
 
- @({
- # If you are on a Mac, skip this wget command and see just below.
- wget https://github.com/Clozure/ccl/releases/download/v1.12/linuxx86.tar.gz
- # On a Mac, do this instead:
- # curl --location https://github.com/Clozure/ccl/releases/download/v1.12/darwinx86.tar.gz > darwinx86.tar.gz
- # Now untar.  NOTE: This is for Linux.
- # For a Mac: tar xfz darwinx86.tar.gz
- tar xfz linuxx86.tar.gz
- })
+ <li>@(see ccl-installation-mac-elaborate)</li>
 
- <p>Rebuild the lisp kernel by hand before trying to rebuild the lisp.
- (Note: This step was formerly unnecessary and might become unnecessary again,
- but as of Sept. 2020 it seems to be necessary on MacOS Catalina (10.15).
- If you skip it, then consider replacing :clean by :full below.)</p>
+ </ul>
 
- @({
- cd lisp-kernel/linuxx8664; make clean; make
- cd -
- })
+ <p>You may prefer instead to look at the <a
+ href='https://github.com/Clozure/ccl/releases'>CCL Releases</a> page, using
+ links above only as needed (e.g., for Linux-specific information or for
+ discussion of @('CCL_DEFAULT_DIRECTORY')).</p>
 
- <p>Finish up:</p>
-
- @({
- # (On a Mac, replace the next command with: ./dx86cl64)
- ./lx86cl64
- # This welcomes you, e.g.:
- #   Clozure Common Lisp Version 1.12-dev (v1.12-dev.5) LinuxX8664
- # Now submit this command:
- ? (rebuild-ccl :clean t)
- # After it returns, quit:
- ? (quit)
- # Now, back at the shell, rebuild the kernel again just to be safe:
- # For a Mac: ./dx86cl64
- ./lx86cl64
- ? (rebuild-ccl :clean t)
- ? (quit)
- })
-
- <p>Create an executable script like the following.  Be sure to change the
- name (shown as ``2017-12-07-6be8298fe5'' above) to match the name change
- already made above.</p>
-
- @({
- #!/bin/sh
-
- export CCL_DEFAULT_DIRECTORY=/projects/acl2/lisps/ccl/2017-12-07-6be8298fe5/ccl
- ${CCL_DEFAULT_DIRECTORY}/scripts/ccl64 \"$@\"
- })
-
- <p>Now ensure that your script is executable, e.g.:</p>
-
- @({
- chmod +x my-script
- })
-
- <p>You're done!  (Note however that certification of @(see books) that use
- @(see Quicklisp) may require @('openssl') to be installed if it is not already
- on your system.)</p>")
+ <p>One of the links listed above should generally suffice.  But if you
+ would like additional information on CCL installation and implementation, see
+ @(see ccl-installation-extra).</p>")
 
 (defxdoc ccl-installation-extra
   :parents (ccl-installation)
@@ -13188,6 +13122,274 @@ with any questions about building the community books.</p>")
    (save-exec *heap-image-name* \"Modification string to print at startup\")
    )
  })")
+
+(defxdoc ccl-installation-linux-brief
+
+; Warning: Keep this in sync with ccl-installation-mac-brief and, to a lesser
+; extent, ccl-installation-linux-elaborate.
+
+  :parents (ccl-installation)
+  :short "Installing Clozure Common Lisp (CCL)"
+  :long "<p>See @(see ccl-installation) for introductory remarks.  The
+ instructions below describe how to install CCL on Linux.  For more elaborate
+ ``cookbook'' instructions see @(see ccl-installation-linux-elaborate).</p>
+
+ <p><b>Note</b>: Linux users may need to install m4.</p>
+
+ <p>Fetch CCL from GitHub into a fresh subdirectory, @('ccl/').</p>
+
+ @({
+ git clone https://github.com/Clozure/ccl
+ })
+
+ <p>Next fetch and extract a development snapshot in the new @('ccl')
+ directory.  The version below is current as of this writing (April, 2021), but
+ see <a
+ href='https://github.com/Clozure/ccl/releases/'>https://github.com/Clozure/ccl/releases/</a>
+ for the latest snapshots.</p>
+
+ @({
+ cd ccl
+ wget https://github.com/Clozure/ccl/releases/download/v1.12/linuxx86.tar.gz
+ tar xfz linuxx86.tar.gz
+ })
+
+ <p>Rebuild and quit, twice.</p>
+
+ @({
+ echo '(rebuild-ccl :full t)' | ./lx86cl64
+ echo '(rebuild-ccl :full t)' | ./lx86cl64
+ })
+
+ <p>Create the following executable script, where @('<DIR>') is the absolute
+ pathname (without using ``@('~')'') of the directory in which you issued the
+ ``@('git clone')'' command.</p>
+
+ @({
+ #!/bin/sh
+
+ export CCL_DEFAULT_DIRECTORY=<DIR>/ccl
+ ${CCL_DEFAULT_DIRECTORY}/scripts/ccl64 \"$@\"
+ })
+
+ <p>You're done!  (Note however that certification of @(see books) that use
+ @(see Quicklisp) may require @('openssl') to be installed if it is not already
+ on your system.)</p>")
+
+(defxdoc ccl-installation-linux-elaborate
+
+; Warning: Keep this in sync with ccl-installation-mac-elaborate and, to a
+; lesser extent, ccl-installation-linux-brief.
+
+  :parents (ccl-installation)
+  :short "Installing Clozure Common Lisp (CCL)"
+  :long "<p>See @(see ccl-installation) for introductory remarks.  The
+ ``cookbook'' instructions below give you one way to install CCL on Linux
+ without any knowledge of git or CCL.  For more streamlined instructions see
+ @(see ccl-installation-linux-brief).</p>
+
+ <p><b>Note</b>: Linux users may need to install m4.</p>
+
+ <p>First fetch CCL from GitHub as follows.  (You may prefer to use ``@('git
+ pull')'' if you previously did this step.  In that case you probably won't
+ want to do the optional renaming of the directory, mentioned below.)</p>
+
+ @({
+ # Obtain a ccl distribution in a fresh directory:
+ mkdir temp
+ cd temp
+ git clone https://github.com/Clozure/ccl
+ # Optionally rename that directory as suggested below, after
+ # executing the following three commands.
+ cd ccl
+ git rev-parse HEAD
+ cd ../../
+ # Optionally change directory name, and then go back to ccl directory:
+ # You'll want the last 10 hex digits to match those of the
+ # output from the ``git rev-parse HEAD'' command above: do
+ # that twice here and once further below.
+ mv temp 2017-12-07-6be8298fe5
+ cd 2017-12-07-6be8298fe5/ccl
+ })
+
+ <p>Next fetch and extract a development snapshot.  The version below is
+ current as of this writing (April, 2021), but see <a
+ href='https://github.com/Clozure/ccl/releases/'>https://github.com/Clozure/ccl/releases/</a>
+ for the latest snapshots.</p>
+
+ @({
+ wget https://github.com/Clozure/ccl/releases/download/v1.12/linuxx86.tar.gz
+ tar xfz linuxx86.tar.gz
+ })
+
+ <p>Rebuild and quit, twice.</p>
+
+ @({
+ echo '(rebuild-ccl :full t)' | ./lx86cl64
+ echo '(rebuild-ccl :full t)' | ./lx86cl64
+ })
+
+ <p>Create an executable script like the following.  You might want to call it
+ ``@('ccl')'' and put it into a directory on your path.  Be sure to change the
+ name (shown as ``2017-12-07-6be8298fe5'' above) to match the name change
+ already made above.</p>
+
+ @({
+ #!/bin/sh
+
+ export CCL_DEFAULT_DIRECTORY=/projects/acl2/lisps/ccl/2017-12-07-6be8298fe5/ccl
+ ${CCL_DEFAULT_DIRECTORY}/scripts/ccl64 \"$@\"
+ })
+
+ <p>Now ensure that your script is executable, e.g.:</p>
+
+ @({
+ chmod +x my-script
+ })
+
+ <p>You're done!  (Note however that certification of @(see books) that use
+ @(see Quicklisp) may require @('openssl') to be installed if it is not already
+ on your system.)</p>")
+
+(defxdoc ccl-installation-mac-brief
+
+; Warning: Keep this in sync with ccl-installation-linux-brief and, to a lesser
+; extent, ccl-installation-macc-elaborate.
+
+  :parents (ccl-installation)
+  :short "Installing Clozure Common Lisp (CCL)"
+  :long "<p>See @(see ccl-installation) for introductory remarks.  The
+ instructions below describe how to install CCL on a Mac (Darwin).  For more
+ elaborate ``cookbook'' instructions see @(see
+ ccl-installation-mac-elaborate).</p>
+
+ <p>Fetch CCL from GitHub into a fresh subdirectory, @('ccl/').</p>
+
+ @({
+ git clone https://github.com/Clozure/ccl
+ })
+
+ <p>Next fetch and extract a development snapshot in the new @('ccl')
+ directory.  The version below is current as of this writing (April, 2021), but
+ see <a
+ href='https://github.com/Clozure/ccl/releases/'>https://github.com/Clozure/ccl/releases/</a>
+ for the latest snapshots.</p>
+
+ @({
+ cd ccl
+ curl -O -L https://github.com/Clozure/ccl/releases/download/v1.12/darwinx86.tar.gz
+ tar xfz darwinx86.tar.gz
+ })
+
+ <p>Rebuild the lisp kernel by hand before trying to rebuild the lisp.</p>
+
+ @({
+ cd lisp-kernel/darwinx8664; make clean; make
+ cd -
+ })
+
+ <p>Rebuild and quit, twice.</p>
+
+ @({
+ echo '(rebuild-ccl :clean t)' | ./lx86cl64
+ echo '(rebuild-ccl :clean t)' | ./lx86cl64
+ })
+
+ <p>Create the following executable script, where @('<DIR>') is the absolute
+ pathname (without using ``@('~')'') of the directory in which you issued the
+ ``@('git clone')'' command.</p>
+
+ @({
+ #!/bin/sh
+
+ export CCL_DEFAULT_DIRECTORY=<DIR>/ccl
+ ${CCL_DEFAULT_DIRECTORY}/scripts/ccl64 \"$@\"
+ })
+
+ <p>You're done!  (Note however that certification of @(see books) that use
+ @(see Quicklisp) may require @('openssl') to be installed if it is not already
+ on your system.)</p>")
+
+(defxdoc ccl-installation-mac-elaborate
+
+; Warning: Keep this in sync with ccl-installation-mac-elaborate and, to a
+; lesser extent, ccl-installation-mac-brief.
+
+  :parents (ccl-installation)
+  :short "Installing Clozure Common Lisp (CCL)"
+  :long "<p>See @(see ccl-installation) for introductory remarks.  The
+ ``cookbook'' instructions below give you one way to install CCL on a Mac
+ (Darwin) without any knowledge of git or CCL.  For more streamlined
+ instructions see @(see ccl-installation-mac-brief).</p>
+
+ <p>First fetch CCL from GitHub as follows.  (You may prefer to use ``@('git
+ pull')'' if you previously did this step.  In that case you probably won't
+ want to do the optional renaming of the directory, mentioned below.)</p>
+
+ @({
+ # Obtain a ccl distribution in a fresh directory:
+ mkdir temp
+ cd temp
+ git clone https://github.com/Clozure/ccl
+ # Optionally rename that directory as suggested below, after
+ # executing the following three commands.
+ cd ccl
+ git rev-parse HEAD
+ cd ../../
+ # Optionally change directory name, and then go back to ccl directory:
+ # You'll want the last 10 hex digits to match those of the
+ # output from the ``git rev-parse HEAD'' command above: do
+ # that twice here and once further below.
+ mv temp 2017-12-07-6be8298fe5
+ cd 2017-12-07-6be8298fe5/ccl
+ })
+
+ <p>Next fetch and extract a development snapshot.  The version below is
+ current as of this writing (April, 2021), but see <a
+ href='https://github.com/Clozure/ccl/releases/'>https://github.com/Clozure/ccl/releases/</a>
+ for the latest snapshots.</p>
+
+ @({
+ curl -O -L https://github.com/Clozure/ccl/releases/download/v1.12/darwinx86.tar.gz
+ })
+
+ <p>Rebuild the lisp kernel by hand before trying to rebuild the lisp.
+ (Note: This step was formerly unnecessary and might become unnecessary again,
+ but it seems to have been necessary on MacOS Catalina (10.15).</p>
+
+ @({
+ cd lisp-kernel/darwinx8664; make clean; make
+ cd -
+ })
+
+ <p>Rebuild and quit, twice.</p>
+
+ @({
+ echo '(rebuild-ccl :clean t)' | ./lx86cl64
+ echo '(rebuild-ccl :clean t)' | ./lx86cl64
+ })
+
+ <p>Create an executable script like the following.  You might want to call it
+ ``@('ccl')'' and put it into a directory on your path.  Be sure to change the
+ name (shown as ``2017-12-07-6be8298fe5'' above) to match the name change
+ already made above.</p>
+
+ @({
+ #!/bin/sh
+
+ export CCL_DEFAULT_DIRECTORY=/projects/acl2/lisps/ccl/2017-12-07-6be8298fe5/ccl
+ ${CCL_DEFAULT_DIRECTORY}/scripts/ccl64 \"$@\"
+ })
+
+ <p>Now ensure that your script is executable, e.g.:</p>
+
+ @({
+ chmod +x my-script
+ })
+
+ <p>You're done!  (Note however that certification of @(see books) that use
+ @(see Quicklisp) may require @('openssl') to be installed if it is not already
+ on your system.)</p>")
 
 (defxdoc cdaaar
   :parents (conses acl2-built-ins)
@@ -15634,7 +15836,7 @@ with any questions about building the community books.</p>")
  })
 
  <p>but we in fact allow @('(true-listp x)') as well.  When time permits we
- will document more fully what is allowed or implement a macro that permits
+ may document more fully what is allowed or implement a macro that permits
  direct specification of the desired type in terms of the primitives.</p>
 
  <p>There are essentially four forms of @(':compound-recognizer') rules, as the
@@ -15753,7 +15955,7 @@ with any questions about building the community books.</p>")
 
  <p>where @('name') is a symbol and @('alist') is a 1-dimensional array,
  generally named @('name').  See @(see arrays) for details.  Logically
- speaking, this function removes irrelevant pairs from @('alist'), possibly
+ speaking, this function can remove irrelevant pairs from @('alist'), possibly
  shortening it.  The function returns a new array, @('alist''), with the same
  @(tsee header) (including name and dimension) as @('alist'), that, under
  @(tsee aref1), is everywhere equal to @('alist').  That is, @('(aref1 name
@@ -15774,12 +15976,21 @@ with any questions about building the community books.</p>")
  <p>In general, @('compress1') returns an alist whose @(tsee cdr) is an
  association list whose keys are nonnegative integers in ascending order.
  However, if the @(tsee header) specifies an @(':order') of @('>') then the
- keys will occur in descending order, and if the @(':order') is @(':none') or
- @('nil') then the keys will not be sorted, i.e., @('compress1') is logically
- the identity function (though it still attaches an array under the hood).
- Note however that a @(tsee compress1) call is replaced by a hard error if the
- header specifies an @(':order') of @(':none') or @('nil') and the array's
- length exceeds the @(tsee maximum-length) field of its @(tsee header).</p>
+ keys will occur in descending order; and if the @(':order') is @(':none') or
+ @('nil') then the keys will not be sorted and the header may appear anywhere
+ (even more than once), i.e., @('compress1') is logically the identity
+ function (though it still attaches an array under the hood).  Note however
+ that a @(tsee compress1) call is replaced by a hard error if the header
+ specifies an @(':order') of @(':none') or @('nil') and the array's length
+ exceeds the @(tsee maximum-length) field of its @(tsee header).</p>
+
+ <p>We close with a remark concerning efficiency in the case that the
+ @(':ORDER') specified by the given @(see array)'s @(see header) is @('<') or
+ @('>') and the alist is properly ordered: header occurring only first, then
+ ascending (for @(':ORDER <')) or descending (for @(':ORDER >')) order of
+ indices, with no value in the alist equal to the @(':DEFAULT') specified by
+ the header.  In particular, this can cut the time to run @('compress1') on an
+ alist containing only the header by more than half.</p>
 
  @(def compress1)")
 
@@ -18905,8 +19116,8 @@ subtree of X with T, without duplication.</p>
   (defmacro stp (&rest args) (cons 'st$cp args))
  })
 
- <p>The definitions are made similarly for exported functions, with @(see
- guard)s derived from their @(':LOGIC') functions as follows.  Consider the
+ <p>The definitions are made similarly for exported functions.  @(csee Guard)s
+ are derived from their @(':LOGIC') functions as follows.  Consider the
  exported function @('update') in our example.  Its @(':LOGIC') function,
  @('update$a'), has formals @('(k val st$a)') and the following guard.</p>
 
@@ -18944,6 +19155,10 @@ subtree of X with T, without duplication.</p>
        (stp st)
        (mem$c-entryp v))
  })
+
+ <p>Note that the @(':LOGIC') version of an abstract @(see stobj) export must
+ not declare the corresponding concrete stobj name as a stobj.  (That name may
+ be a formal parameter, but must not be declared as a @(see stobj).)</p>
 
  <p>We turn now to the proof obligations, as promised above.  There are three
  types: @(':CORRESPONDENCE'), @(':PRESERVED'), and @(':GUARD-THM').  All
@@ -23550,14 +23765,20 @@ subtree of X with T, without duplication.</p>
  there are no infinitely descending chains of successively @('rel')-smaller
  @('mp')-objects.  Thus, the recursion must terminate.</p>
 
- <p>The only primitive well-founded relation in ACL2 is @(tsee o<) (see @(see
- o<)), which is known to be well-founded on the @(tsee o-p)s (see @(see o-p)).
- For the proof of well-foundedness, see @(see proof-of-well-foundedness).
- However it is possible to add new well-founded relations.  For details, see
- @(see well-founded-relation).  We discuss later how to specify which
- well-founded relation is selected by @('defun') and in the present discussion
- we assume, without loss of generality, that it is @(tsee o<) on the @(tsee
- o-p)s.</p>
+ <p>The default well-founded relation is @(tsee o<), an ``ordinal less-than''
+ relation (discussed further below) that reduces to ordinary @('<') on the
+ natural numbers.  The default measure term is @('(acl2-count var)'), where
+ @('var') is a formal parameter that is chosen heuristically: roughly speaking,
+ it is the first formal that is tested along every branch and changed in each
+ recursive call.</p>
+
+ <p>The only primitive well-founded relation in ACL2 is @(tsee o<), which is
+ known to be well-founded on the @(tsee o-p)s.  For the proof of
+ well-foundedness, see @(see proof-of-well-foundedness).  However it is
+ possible to add new well-founded relations.  For details, see @(see
+ well-founded-relation).  We discuss later how to specify which well-founded
+ relation is selected by @('defun') and in the present discussion we assume,
+ without loss of generality, that it is @(tsee o<) on the @(tsee o-p)s.</p>
 
  <p>For example, for our generic definition of @('fn') above, with measure term
  @('(m x y)'), two theorems must be proved.  The first establishes that @('m')
@@ -23681,6 +23902,7 @@ subtree of X with T, without duplication.</p>
                     :normalize nil
                     :verify-guards nil
                     :non-executable t
+                    :type-prescription (natp (example x y z a b c i j))
                     :otf-flg t))
     (example-body x y z i j))
  })")
@@ -24058,13 +24280,14 @@ subtree of X with T, without duplication.</p>
   :long "@({
   Example:
 
-  (set-state-ok t)
   (defun-nx foo (x state)
+    (declare (xargs :guard t))
     (mv-let (a b c)
             (cons x state)
             (list a b c b a)))
   ; Note ``ill-formed'' call of foo just below.
   (defun bar (state y)
+    (declare (xargs :stobjs state))
     (foo state y))
  })
 
@@ -24096,8 +24319,13 @@ subtree of X with T, without duplication.</p>
             body))
  })
 
- <p>Moreover, the @(see executable-counterpart) @(see rune) for @('name') is
- @(see disable)d by this event.</p>
+ <p>But @('defun-nx') does two other things.  Before executing the @('defun')
+ form displayed above, ACL2 arranges that @('state') is allowed as a formal
+ parameter, by first introducing @('(set-state-ok t)') in a way that is @(see
+ local) to the generated event.  After executing the @('defun'), the @(see
+ executable-counterpart) @(see rune) for @('name') is @(see disable)d.  You can
+ evaluate @(':trans1 (defun-nx ...)') for your @('defun-nx') form to see its
+ single-step macroexpansion.</p>
 
  <p>Note that because of the insertion of the above call of
  @('throw-nonexec-error'), no formal is ignored when using @('defun-nx').</p>
@@ -24115,8 +24343,8 @@ subtree of X with T, without duplication.</p>
  @(tsee declare) form; @('defun-nx') will still lay down its own such
  declaration, but ACL2 can tolerate the duplication.</p>
 
- <p>Note that @('defund-nx') is also available.  It is essentially identical to
- @('defun-nx') except that as with @(tsee defund), @('defund-nx') leaves the
+ <p>Note that @(tsee defund-nx) is also available.  It is essentially identical
+ to @('defun-nx') except that as with @(tsee defund), @('defund-nx') leaves the
  definition @(see rune) disabled for the new function symbol.</p>
 
  <p>If you use guards (see @(see guard)), please be aware that even though
@@ -35121,8 +35349,9 @@ current fast alists."
  the community.  The ACL2 installation instructions suggest downloading the
  community books.)  The book \"top-with-meta\" is the most elementary and most
  widely used arithmetic book.  Other community books include
- \"arithmetic-5/top\" and various hardware and floating-point arithmetic
- books.</p>
+ \"arithmetic-5/top\" and various hardware and floating-point arithmetic books;
+ if including \"arithmetic/top-with-meta\" isn't sufficient, you could try
+ @('(include-book \"arithmetic-5/top\" :dir :system)').</p>
 
  <p><b>Rules Concluding with Arithmetic Inequalities</b>: If you are tempted to
  create a rewrite rule with an arithmetic inequality as its conclusion or
@@ -38522,7 +38751,7 @@ current fast alists."
  @({
  (return-last term0 term1 term2)  ==>  term2
 
- (mv-list term0 ... termk)        ==>  termk
+ (mv-list n term)                 ==>  term
 
  (cons-with-hint x y)             ==>  (cons x y)
 
@@ -50334,7 +50563,9 @@ tables in the current Hons Space."
  involving only variables bound in the environment containing the @('let'), and
  @('body') is a term involving only the @('vari') plus the variables bound in
  the environment containing the @('let').  Each @('vari') must be used in
- @('body') or else @(see declare)d ignored.</p>
+ @('body') or else @(see declare)d ignored.  In ACL2 the only @(tsee declare)
+forms allowed for a @('let') form are  @('ignore'), @('ignorable'), and
+@('type').  See @(see declare).</p>
 
  <p>A @('let') form is evaluated by first evaluating each of the @('termi'),
  obtaining for each a @('vali').  Then, each @('vari') is bound to the
@@ -50391,10 +50622,10 @@ tables in the current Hons Space."
  })
 
  <p>Thus, the @('termi') are evaluated successively and after each evaluation
- the corresponding @('vali') is bound to the value of @('termi').  The second
+ the corresponding @('vari') is bound to the value of @('termi').  The second
  @(tsee let*) is similarly expanded, except that each for each @('vari') that
  is among the @('(x1 ... xm)'), the form @('(declare (ignore vari))') is
- inserted immediately after @('(vari termi)').</p>
+ inserted immediately after @('((vari termi))').</p>
 
  <p>Each @('(vari termi)') pair in a @('let') or @(tsee let*) form is called a
  ``binding'' of @('vari') and the @('vari') are called the ``local variables''
@@ -50503,12 +50734,16 @@ tables in the current Hons Space."
   (implies (and h1 ... hn) (rel lhs rhs))
  })
 
- <p>where no hypothesis is a conjunction and @('rel') is one of the inequality
- relations @(tsee <), @(tsee <=), @(tsee =), @(tsee /=), @(tsee >), or @(tsee
- >=).  If necessary, the hypothesis of such a conjunct may be vacuous.  We
- create a @(':linear') rule for each such conjunct, if possible, and otherwise
- cause an error.  To create a @(':linear') rule from a term (i.e., from a
- single such conjunct), we apply the following sequence of transformations.</p>
+ <p>where no hypothesis is a conjunction and the term @('(rel lhs rhs)') is a
+ call of one of the inequality relations @(tsee <), @(tsee <=), @(tsee >), or
+ @(tsee >=); the negation of such a call; a call of @(tsee =) or @(tsee equal);
+ or a negated call of @(tsee /=).  Note that we refer to all of these terms as
+ ``inequalities'' below, even the equalities.  If necessary, the hypothesis of
+ such a conjunct may be vacuous.  We create a @(':linear') rule for each such
+ conjunct, if possible, and otherwise cause an error.  To create a @(':linear')
+ rule from a term (i.e., from a single such conjunct), we apply the following
+ sequence of transformations (as well as macroexpansion, which removes calls of
+ @(tsee <=), @(tsee >), and @(tsee >=)).</p>
 
  <ol>
 
@@ -50600,8 +50835,9 @@ tables in the current Hons Space."
  terms.  Each conjunct of the corollary formula may be given a unique set of
  triggers depending on the variables that occur in the conjunct and the addends
  that occur in the concluding inequality.  In particular, the trigger terms for
- a conjunct is the list of all ``maximal addends'' in the concluding
- inequality.</p>
+ a conjunct is the list of all ``maximal addends'' in the concluding inequality
+ after replacing, where possible based on the @(see current-theory), ground
+ subterms (those that have no free variables) with their values.</p>
 
  <p>The ``addends'' of @('(+ x y)') and @('(- x y)') are the union of the
  addends of @('x') and @('y').  The addends of @('(- x)') and @('(* n x)'),
@@ -54352,7 +54588,7 @@ tables in the current Hons Space."
 
  <ul>
 
- <li>@('arg')</li>
+ <li>@('arg') or, equivalently, @('(arg)')</li>
 
  <li>@('(arg 'init)')</li>
 
@@ -61449,8 +61685,9 @@ it."
 
  <li>potential simplification with @(see type-set) reasoning; and</li>
 
- <li>the expansion of calls of a few built-in functions (like @(tsee
- implies)).</li>
+ <li>the expansion of calls of a few built-in functions like @(tsee
+ implies) (the full list is the value of the constant,
+ @('*expandable-boot-strap-non-rec-fns*')).</li>
 
  </ul>
 
@@ -87188,6 +87425,104 @@ it."
 ; Tweaked our-with-standard-io-syntax for SBCL to support the fix for builds
 ; using relative pathnames for the LISP environment variable.
 
+; Here is a proof of nil that exploits the defabsstobj bug involving mbe that
+; is discussed in the release notes below.  This book was certifiable in ACL2
+; Version  8.3.
+
+;   (in-package "ACL2")
+;
+;   (defstobj st$c fld)
+;
+;   (defun st$ap (st)
+;     (declare (ignore st)
+;              (xargs :guard t))
+;     t)
+;
+;   (defun val$a (st)
+;     (declare (xargs :guard t))
+;     st)
+;
+;   (defun create-st$a ()
+;     (declare (xargs :guard t))
+;     nil)
+;
+;   (defun st$corr (st$c st$a)
+;     (declare (xargs :stobjs st$c))
+;     (equal (fld st$c) st$a))
+;
+;   (DEFTHM CREATE-ST{CORRESPONDENCE}
+;           (ST$CORR (CREATE-ST$C) (CREATE-ST$A))
+;           :RULE-CLASSES NIL)
+;
+;   (DEFTHM CREATE-ST{PRESERVED}
+;           (ST$AP (CREATE-ST$A))
+;           :RULE-CLASSES NIL)
+;
+;   (DEFTHM VAL{CORRESPONDENCE}
+;           (IMPLIES (ST$CORR ST$C ST)
+;                    (EQUAL (FLD ST$C) (VAL$A ST)))
+;           :RULE-CLASSES NIL)
+;
+;   (DEFABSSTOBJ ST
+;     :EXPORTS ((val :logic val$a :EXEC fld)))
+;
+;   (defthm bad-lemma
+;     (equal (st$ap st) (st$cp st))
+;     :hints (("Goal" :by (:guard-theorem stp)))
+;     :rule-classes nil)
+;
+;   (defthm bad
+;     nil
+;     :hints (("Goal" :use ((:instance bad-lemma
+;                                      (st nil)))))
+;     :rule-classes nil)
+
+; Added a missing fmt argument in termination-theorem, which fixes a bug
+; evidenced by submitting: :tthm apply$.  Thanks to Eric Smith for reporting
+; this bug and supplying the fix.
+
+; Theory errors now respect the input when printing the offending arguments.
+; Thanks to Eric Smith for bringing this issue to our attention.
+
+; Here is an example sent by Eric Smith relevant to (and essentially prompting)
+; the change to ACL2's handling of compound-recognizers discussed in these
+; release notes.  If you run these events, then the final THM call will produce
+; some output showing that X is a term "with type (TS-UNION *TS-SYMBOL*
+; *TS-PROPER-CONS*)".  No such output appeared before the enhancement; instead,
+; it was merely the case that the term (OR (SYMBOLP X) (TRUE-LISTP X)) was
+; typed as non-nil.
+;
+;   (defthm pseudo-termp-forward
+;     (implies (pseudo-termp x)
+;              (or (symbolp x)
+;                  (true-listp x)))
+;     :rule-classes :forward-chaining)
+;   (defstub stub (x) t)
+;   (skip-proofs (defthm rule (implies (stub 3) (stub x))))
+;   :brr t
+;   :monitor rule '(:type-alist :go)
+;   (thm (implies (pseudo-termp x) (stub x)))
+
+; Fixed the error message wording when attempting to monitor only simple
+; (abbreviation) runes.  Thanks to Mihir Mehta for reporting the issue and
+; providing a fix that we incorporated.
+
+; Here is the example promised below by the "Improved handling of linear rules"
+; item.  The encapsulate formerly succeeded without creating a linear rule,
+; because ground term evaluation removed (foo) and hence no trigger term was
+; heuristically determined.  Now, an error occurs suggesting the use of the
+; :trigger-terms keyword.
+;
+;   (defun foo () 3)
+;   (encapsulate ()
+;     (local (in-theory (disable (:e foo))))
+;     (defthm foo-linear
+;       (= (foo) 3)
+;       :rule-classes :linear))
+
+; The increased efficiency of compress1 in the ordered case, discussed below,
+; can be seen by running the file books/system/tests/compress1-header-only.lsp.
+
   :parents (release-notes)
   :short "ACL2 Version  8.4 (xxx, 20xx) Notes"
   :long "<p>NOTE!  New users can ignore these release notes, because the @(see
@@ -87332,6 +87667,35 @@ it."
  through the first argument of an @('IF') call.  Thanks to Eric Smith for
  suggesting this improvement and testing it on some proprietary books.</p>
 
+ <p>When supplying @('state') as an argument to @(tsee defun-nx) (or @(tsee
+ defund-nx), it is no longer necessary to declare @('state') as a @(see stobj)
+ or use @(tsee set-state-ok).  Thanks to Eric Smith for suggesting the
+ possibility of this change.</p>
+
+ <p>It had been the case that if @(tsee defun-nx) or @(tsee defund-nx) is used
+ for a recursive definition, and that form specifies a value for
+ @(':ruler-extenders') that omits @(tsee return-last) (see @(see rulers) for
+ relevant background), then the definition generally fails to be admitted.
+ (This is due to the generated @(tsee defun)'s use of @(tsee prog2$), which is
+ a macro that abbreviates a call of @(tsee return-last), which blocks the
+ termination analysis.)  That has been fixed, by ensuring that @('defun-nx')
+ and @('defund-nx') arrange that @('return-last') is always among the
+ ruler-extenders of the generated @(tsee defun) form.  Thanks to Eric Smith for
+ noticing this issue and for a helpful discussion.</p>
+
+ <p>Improved handling of @(see linear) rules: cause an error with a helpful
+ message when a linear rule is no longer created during @(tsee include-book) or
+ the second pass of an @(tsee encapsulate) form, and optimize by avoiding
+ certain calculations when the @(':trigger-terms') keyword is supplied.  Thanks
+ to Eric Smith for sending an example that illustrates the former issue,
+ essentially as included in a comment in @(see community-book)
+ @('books/system/doc/acl2-doc.lisp'), form @('(defxdoc note-8-4 ...)').</p>
+
+ <p>When @(tsee certify-book) directs printing of @(see useless-runes), each
+ tuple is now printed on a single line starting after a space.  See @(see
+ useless-runes) for details.  Thanks to Eric Smith for requesting this
+ enhancement, which can support grep-like tools.</p>
+
  <h3>New Features</h3>
 
  <p>A new option for @(tsee certify-book), @(':useless-runes'), makes it
@@ -87390,6 +87754,14 @@ it."
  pair.  Thanks to Eric McCarthy, Alessandro Coglio, and Eric Smith for
  requesting the latter capability and providing helpful feedback.</p>
 
+ <p>A new @(see xargs) keyword for @(tsee defun), @(':type-prescription'), can
+ be supplied as a formula in the shape of a @(see type-prescription) rule.  It
+ is checked to be implied by the built-in type-prescription rule computed for
+ the newly-defined function.  Thus, it can serve as documentation for the
+ expected type returned by the function; if the implication is not equivalence,
+ a warning is printed.  Thanks to Alessandro Coglio and Eric Smith for the
+ suggestion.</p>
+
  <h3>Heuristic and Efficiency Improvements</h3>
 
  <p>We changed the lightweight ``preprocess'' simplifier for ``@(see simple)''
@@ -87446,12 +87818,61 @@ it."
  implementing that interaction was introduced in Version  4.0 to speed up the
  process; that code has been eliminated, as it is no longer necessary.</p>
 
+ <p>ACL2's @(see type-set) reasoning has been slightly strengthened to
+ comprehend Boolean combinations of strong @(see compound-recognizer) calls on
+ a single variable when building a context (a so-called @(see type-alist)).
+ (By a ``strong compound-recognizer call'' we mean a unary function that
+ recognizes a union of primitive ACL2 types and has, either explicitly or
+ implicity, a corresponding @(see compound-recognizer) rule; examples include
+ @(tsee stringp), @(tsee integerp), and @(tsee true-listp).)  In particular,
+ this change can strengthen the result of @(see forward-chaining).  Thanks to
+ Eric Smith, who raised this issue by providing an example that we include in a
+ comment, inside the form @('(defxdoc note-8-4 ...)') in @(see community-book)
+ @('books/system/doc/acl2-doc.lisp').</p>
+
+ <p>The function @(tsee compress1) has been made more efficient in the
+ following ways.</p>
+
+ <ul>
+
+ <li>@('Compress1') is now faster when the @(':ORDER') specified by the given
+ @(see array)'s @(see header) is @('<') or @('>') and the alist is properly
+ ordered: header first, then ascending (for @(':ORDER <')) or descending (for
+ @(':ORDER >')) order of indices, with no value in the alist equal to the
+ @(':DEFAULT') specified by the header.  In particular, this can cut the time
+ to run @('compress1') on an alist containing only the header by more than
+ half, which addresses a request made by Eric Smith (whom we thank for bringing
+ this efficiency issue to our attention).</li>
+
+ <li>For the change noted just above, Eric also noticed that when the @(see
+ default) is @('nil') then there was no speedup.  This led us to fix an
+ existing bug (technical description: for an array with default @('nil'), the
+ alist was never considered to be in order).</li>
+
+ <li>Functions @(tsee compress1) and @(tsee compress2) no longer require the
+ new and old dimensions to agree in order that the underlying raw lisp array is
+ reused.  Now it suffices for the new dimension (for @('compress1'); each
+ dimension for @('compress2')) to be at least as great as the old.
+ (You can still avoid reuse of the raw Lisp array by using @(tsee
+ flush-compress).)  Thanks to Eric Smith for suggesting this change.</li>
+
+ </ul>
+
  <h3>Bug Fixes</h3>
 
  <p>A soundness bug, present since @(tsee loop$) was introduced, was fixed. The
  bug was manifested when the keyword @(':guard') was used as the @('loop$')
  body, as in @('(loop$ for v in lst collect :guard)').  (Note: It's not clear
  that this bug could be used to prove @('nil').)</p>
+
+ <p>A soundness bug was fixed by changing @(tsee defabsstobj) to avoid using
+ @(tsee mbe) in the definitions generated for the logic.  The problem was that
+ the @(':logic') and @(':exec') forms are not actually equal (they correspond,
+ in the sense of the correspondence predicate), and this can be exploited by
+ using a @(':')@(tsee guard-theorem) @(see lemma-instance).  For an example
+ proof of @('nil') in Version 8.3, see a comment about a @('defabsstobj') bug
+ in the form @('(defxdoc note-8-4 ...)') in file
+ @('books/system/doc/acl2-doc.lisp').</p>
 
  <p>The mechanism for tracking @(see warrant)s needed during a proof had a bug,
  which might be a soundness bug if one uses @(tsee apply$) or @(tsee loop$).
@@ -87633,6 +88054,26 @@ it."
  @('books/system/tests/early-load-of-compiled/').  Thanks to Sol Swords for
  helpful discussions.</p>
 
+ <p>Improved a utility that builds sets of clauses, which improves the
+ reliability of using a @(see lemma-instance) of the form @('(:guard-theorem
+ <name> nil)').  Thanks to Eric Smith for reporting this problem with a simple
+ example, and to Dave Greve for following up with a related example; both now
+ work as one would expect.</p>
+
+ <p>Fixed printing of the ACL2 @(see state) in error messages, specifically
+ when executing a non-executable function.</p>
+
+ <p>Fixed a bug that could cause a raw Lisp error when processing a @(see
+ linear) rule with a @(tsee bind-free) hypothesis, when that hypothesis does
+ not specify a list of variables (in its second argument).  Thanks to Dave
+ Greve for reporting this bug by sending a simple example.  (Technical note:
+ the fix was in the definition of source function all-vars-in-hyps.)</p>
+
+ <p>For @(tsee defabsstobj), a suitable error now occurs when the @(':LOGIC')
+ version of an abstract @(see stobj) export has the corresponding concrete
+ stobj as a formal parameter that is declared as a @(see stobj).  Formerly, a
+ confusing hard error could occur in this case.</p>
+
  <h3>Changes at the System Level</h3>
 
  <p>(SBCL only) Filenames are now read as ASCII (specifically, ISO-8859-1) when
@@ -87684,6 +88125,14 @@ it."
  variable (for host Lisps CCL, SBCL, Allegro CL, and CMUCL; GCL and LispWorks
  didn't seem to have this problem).  Thanks to Mihir Mehta for bringing this
  issue to our attention.</p>
+
+ <p>Fixed the process for running ACL2 without building an executable image.
+ Some initialization that was missing from that process is now included.  Also,
+ added the missing command, (lp), to the instructions in section ``Running
+ Without Building an Executable Image'' on the ``Obtaining and Installing
+ ACL2'' web page (accessible from the ``Obtaining, Installing, and License''
+ link on the ACL2 home page).  Thanks to Petter Gustad for an inquiry leading
+ to these improvements.</p>
 
  <h3>EMACS Support</h3>
 
@@ -96109,7 +96558,7 @@ arithmetic) for libraries of @(see books) for arithmetic reasoning.</p>")
   :long "<p>Untouchables are functions that cannot be called, as well as @(see
  state) global variables (see @(see programming-with-state)) that cannot be
  modified or unbound.  Macros can also be untouchable in some sense; see @(see
- push-untouchable).</p>
+ defmacro-untouchable).</p>
 
  @({
   Examples:
@@ -98698,11 +99147,11 @@ arithmetic) for libraries of @(see books) for arithmetic reasoning.</p>")
  introduced a function with the same name, formals, and body (before
  macroexpansion), and with the same values @(see declare)d for the @(':')@(tsee
  guard), @(':')@(tsee measure), types, @(':')@(tsee ruler-extenders),
- @(':non-executable'), @(':')@(tsee stobj)@('s'), and @(':')@(tsee
- split-types), provided that the @(see defun-mode)s are appropriate (see the
- ``Note About Appropriate Modes'' below).  Moreover, the order of the combined
- @(':')@(tsee guard) and type declarations must be the same in both cases.
- Exceptions and clarifications:</p>
+ @(':non-executable'), @(':type-prescription'), @(':')@(tsee stobj)@('s'), and
+ @(':')@(tsee split-types), provided that the @(see defun-mode)s are
+ appropriate (see the ``Note About Appropriate Modes'' below).  Moreover, the
+ order of the combined @(':')@(tsee guard) and type declarations must be the
+ same in both cases.  Exceptions and clarifications:</p>
 
  <ol>
 
@@ -101611,12 +102060,13 @@ arithmetic) for libraries of @(see books) for arithmetic reasoning.</p>")
 
  <p>One might expect ACL2's termination analysis to admit this function, since
  we know that @('(cdr x)') is ``smaller'' than @('x') if @('(consp x)') is
- true.  (By default, ACL2's notion of ``smaller'' is ordinary natural-number
- @('<'), and the argument @('x') is measured by applying function
- @('acl2-count') to @('x').)  However, by default that termination analysis
- does not consider @(tsee IF) tests, like @('(consp x)') above, when they occur
- under calls of functions other than @('IF'), such as @('CONS') in the case
- above; it considers only rulers, as we now discuss.</p>
+ true.  (ACL2's notion of ``smaller'' here is essentially ordinary
+ natural-number @('<'), and the argument @('x') is measured by applying
+ function @(tsee acl2-count) to @('x'); see @(see defun).)  However, by default
+ that termination analysis does not consider @(tsee IF) tests, like @('(consp
+ x)') above, when they occur under calls of functions other than @('IF'), such
+ as @('CONS') in the case above; it considers only rulers, as we now
+ discuss.</p>
 
  <p>In the example above, we say that the term @('(consp x)') <i>governs</i>
  the recursive call @('(f (cdr x))') shown above, but does not <i>rule</i> that
@@ -109954,12 +110404,12 @@ arithmetic) for libraries of @(see books) for arithmetic reasoning.</p>")
  @('(')@(tsee set-verify-guards-eagerness)@(' 0)') to avoid @(see guard)
  verification.</p>
 
- <p>The documentation in this section is laid out in the form of a tour that
- visits the documented topics in a reasonable order.  We recommend that you
- follow the tour the first time you read about stobjs.  The list of all stobj
- topics is shown below.  The tour starts immediately afterwards.  Also see
- @(see defstobj) and, for so-called abstract stobjs, see @(see
- defabsstobj).</p>
+ <p>This topic introduces the notion of a ``stobj'', or single-threaded object.
+ It concludes with a link to a tour that introduces the use of stobjs by way of
+ examples.  We recommend that you follow that link the first time you read
+ about stobjs.  Detailed reference documentation about stobjs may be found in
+ the subtopics listed at the end below; in particular see @(see defstobj) and,
+ for so-called abstract stobjs, see @(see defabsstobj).</p>
 
  <p>As noted, a ``single-threaded object'' is a data structure whose use is so
  syntactically restricted that only one instance of the object need ever exist.
@@ -109990,11 +110440,11 @@ arithmetic) for libraries of @(see books) for arithmetic reasoning.</p>")
  <li>@('OBJ') is a top-level global variable that contains the current object,
  obj.</li>
 
- <li>If a function uses the formal parameter @('OBJ'), the only ``actual
- expression'' that can be passed into that slot is the variable @('OBJ'), not
- merely a term that ``evaluates to an obj''; thus, such functions can only
- operate on the current object.  So for example, instead of @('(FOO
- (UPDATE-FIELD1 3 ST))') write @('(LET ((ST (UPDATE-FIELD1 3 ST))) (FOO
+ <li>If a function uses the formal parameter @('OBJ') that is declared as a
+ stobj, the only ``actual expression'' that can be passed into that slot is the
+ variable @('OBJ'), not merely a term that ``evaluates to an obj''; thus, such
+ functions can only operate on the current object.  So for example, instead of
+ @('(FOO (UPDATE-FIELD1 3 ST))') write @('(LET ((ST (UPDATE-FIELD1 3 ST))) (FOO
  ST))').</li>
 
  <li>The accessors and updaters have a formal parameter named @('OBJ'), so by
@@ -110043,8 +110493,8 @@ arithmetic) for libraries of @(see books) for arithmetic reasoning.</p>")
  @('st1'), to be used in place of @('st1').  Other @(tsee defstobj) keywords
  allow inlining and renaming of stobj accessors and updaters.</p>
 
- <p>But we are getting ahead of ourselves.  To start the stobj tour, see @(see
- stobj-example-1).</p>")
+ <p>But we are getting ahead of ourselves.  To start the stobj tour recommended
+ earlier in this topic, see @(see stobj-example-1).</p>")
 
 (defxdoc stobj-example-1
   :parents (stobj)
@@ -112652,6 +113102,17 @@ arithmetic) for libraries of @(see books) for arithmetic reasoning.</p>")
  @('\"COMMON-LISP\"') package; thus, this utility may be appropriate when
  generating new function names from old ones.</li>
 
+
+ <li>@('(all-attachments wrld)'): Return a list of all attachment pairs @('(f
+ . g)') where @('g') is attached to @('f') (see @(see defattach)) in the @(see
+ world), @('wrld'), except for two cases that are ignored for this purpose:
+ [warrant]s, and attachments introduced with a non-@('nil') value of
+ @(':skip-checks').  To obtain the attachment to a function symbol @('f'),
+ without the restrictions above and with value @('nil') if there is no
+ attachment to @('f'), evaluate @('(cdr (attachment-pair 'f wrld))').  To
+ obtain the list of all built-in attachments, evaluate @('(global-val
+ 'attachments-at-ground-zero (w state))').</li>
+
  <li>@('(all-calls names term alist ans)'):  Accumulate into @('ans')
  (which typically is @('nil') at the top level) all pseudo-terms @('u/alist')
  such that for some @('f') in the list, @('names'), @('u') is a subterm of the
@@ -112679,7 +113140,7 @@ arithmetic) for libraries of @(see books) for arithmetic reasoning.</p>")
  in the given list of terms.  This is a macro call expanding to
  @('(all-fnnames1 t lst nil)').</li>
 
- <li>@('(all-fnnames1 flg x acc)'): Accumulate into @('ans') the function
+ <li>@('(all-fnnames1 flg x acc)'): Accumulate into @('acc') the function
  symbols called in the given term or list of terms, @('x'), according to
  whether @('flg') is @('nil') (for a term) or not @('nil') (for a list of
  terms), respectively.</li>
@@ -112699,21 +113160,21 @@ arithmetic) for libraries of @(see books) for arithmetic reasoning.</p>")
  <li>@('(body fn normalp w)'): @('Fn') should either be a @(':')@(tsee
  logic)-mode function symbol of @(see world) @('w') or a @('lambda')
  expression.  If @('fn') is a symbol and @('normalp') is @('nil'), then return
- the body of its original definition.  If @('fn') is a @('lambda') expression,
- return its body.  We now discuss the remaining case, where @('fn') is a
- @(':')@(tsee logic)-mode function symbol and @('normalp') is true.  In the
- usual case that no @(see definition) rule has been introduced for @('fn') with
- a non-@('nil') value of @(':install-body') (which is the default), return the
- @(see normalize)d body from the @('defun') form that introduced @('fn'), or
- @('nil') if @('fn') was not introduced with @('defun') (as with @(tsee
- encapsulate), @(tsee defstub), or @(tsee defchoose)) &mdash; except that in
- the case that @(':normalize nil') was specified in that @('defun') form (see
- @(see xargs)), return the unnormalized body.  The remaining case is that at
- least one @(see definition) rule for @('fn') has been installed.  In that
- case, the latest such rule provides the body (see source function
- @('latest-body') for how hypotheses are handled), with one exception: if the
- equivalence relation for that rule is other than @('equal'), then the
- unnormalized body is returned.</li>
+ the body (translated but unnormalized) of its original definition.  If @('fn')
+ is a @('lambda') expression, return its body.  We now discuss the remaining
+ case, where @('fn') is a @(':')@(tsee logic)-mode function symbol and
+ @('normalp') is true.  In the usual case that no @(see definition) rule has
+ been introduced for @('fn') with a non-@('nil') value of
+ @(':install-body') (which is the default), return the @(see normalize)d body
+ from the @('defun') form that introduced @('fn'), or @('nil') if @('fn') was
+ not introduced with @('defun') (as with @(tsee encapsulate), @(tsee defstub),
+ or @(tsee defchoose)) &mdash; except that in the case that @(':normalize nil')
+ was specified in that @('defun') form (see @(see xargs)), return the
+ unnormalized body.  The remaining case is that at least one @(see definition)
+ rule for @('fn') has been installed.  In that case, the latest such rule
+ provides the body (see source function @('latest-body') for how hypotheses are
+ handled), with one exception: if the equivalence relation for that rule is
+ other than @('equal'), then the unnormalized body is returned.</li>
 
  <li>@('(conjoin lst)'): The conjunction of the given list of terms.</li>
 
@@ -112956,6 +113417,9 @@ arithmetic) for libraries of @(see books) for arithmetic reasoning.</p>")
  keyword), @('*c*') (syntax of a constant), and @('pi') (a Common Lisp
  constant).</li>
 
+ <li>@('(logical-defun name w)'): For the given name of a defined function in
+ the current ACL2 @(see world) @('w'), return its @(tsee defun) form.</li>
+
  <li>@('(logicp fn w)'): For a function symbol @('fn') of @(see world)
  @('w'), return @('t') when the @('symbol-class') of @('fn') in @('w') is not
  @(':program'), else @('nil').  (See @('symbol-class'), below.)</li>
@@ -113094,7 +113558,7 @@ arithmetic) for libraries of @(see books) for arithmetic reasoning.</p>")
 
  <li>@('(symbol-class name w)'): For a function symbol, @('name'), of the ACL2
  @(see world) @('w'), return @(':program') if @('name') is in @(':')@(tsee
- program) mode, @(':common-lisp-compliant') is @('name') is @(see
+ program) mode, @(':common-lisp-compliant') if @('name') is @(see
  guard)-verified, and otherwise, @(':ideal').  If @('name') is the name of a
  theorem (more specifically, has a @(''theorem') property; see @(see getprop)),
  return @(':ideal') unless the theorem is guard-verified, in which case return
@@ -115151,10 +115615,10 @@ arithmetic) for libraries of @(see books) for arithmetic reasoning.</p>")
  <h3>Relation to Guards</h3>
 
  <p>To justify that type declarations are correct, @('the') is integrated into
- ACL2's @(see guard) mechanism.  When a call of @('(the TYPE EXPR)') in the
- body of a function definition generates a guard proof obligation that the
- type, @('TYPE'), holds for the value of the expression, @('EXPR').  Consider
- the following example.</p>
+ ACL2's @(see guard) mechanism.  A call of @('(the TYPE EXPR)') in the body of
+ a function definition generates a guard proof obligation that the type,
+ @('TYPE'), holds for the value of the expression, @('EXPR').  Consider the
+ following example.</p>
 
  @({
   (defun f (x)
@@ -120370,8 +120834,7 @@ introduction-to-the-tau-system) for more information about Tau.</dd>
  Summary
  Form:  ( DEFUN APP ...)
  Rules: ((:FAKE-RUNE-FOR-TYPE-SET NIL))
- Warnings:  None
- Time:  0.03 seconds (prove: 0.00, print: 0.00, other: 0.03)
+ Time:  0.00 seconds (prove: 0.00, print: 0.00, other: 0.00)
   APP
  </code>
 
@@ -120831,11 +121294,16 @@ introduction-to-the-tau-system) for more information about Tau.</dd>
  theorem prover works.  You just have to understand how to interact with it.
  We explain this in great detail later.  But basically all new users are
  curious to know how ACL2 works and this little tour attempts to give some
- answers, just to satisfy your curiosity.</p>
+ answers, just to satisfy your curiosity.  The first command below,
+ @(':set-gag-mode nil'), instructs ACL2 to supply its full prover output;
+ normally that output is restricted considerably (``gagged''), but we include
+ it all below in support of the associated explanations.</p>
 
  <p><img src='res/tours/green-line.gif'></img></p>
 
  <code>
+ ACL2!&gt;<b>:set-gag-mode nil</b>
+ &lt;state&gt;
  ACL2!&gt;<b>(defthm associativity-of-app</b>
          <b>(equal (app (app a b) c)</b>
                 <b>(app a (app b c))))</b>
@@ -122350,13 +122818,15 @@ introduction-to-the-tau-system) for more information about Tau.</dd>
 
  <p>When @('certify-book') is supplied with option @(':useless-runes :write'),
  the result is to write out a corresponding @useless-runes.lsp file.  Each
- top-level entry of this file has the form</p>
+ top-level entry of this file that is non-trivial (see below) has the form</p>
 
  @({
- (name (frames-1 tries-1 rune-1)
-       (frames-2 tries-2 rune-2)
-       ...
-       (frames-k tries-k rune-k))
+ (name
+  (frames-1 tries-1 rune-1)
+  (frames-2 tries-2 rune-2)
+  ...
+  (frames-k tries-k rune-k)
+  )
  })
 
  <p>where @('name') is the name of a @(tsee defthm), @(tsee defun), or @(tsee
@@ -122368,6 +122838,13 @@ introduction-to-the-tau-system) for more information about Tau.</dd>
  These top-level entries are listed in order of event in the book, from top to
  bottom.  Because of @(see local) @(see events), the same name may appear more
  than once; we say more about this in the ``Subtleties'' section, below.</p>
+
+ <p>Note that ``trivial'' entries are possible, where there are no tuples; in
+ that case, just @('(name)') is printed, on a single line.  Otherwise printing
+ uses the format shown above, where the first line contains a left parenthesis
+ on the left margin followed by the name, and each tuple is on a single line
+ starting in column 1 (i.e., after a single space), as is the final right
+ parenthesis.</p>
 
  <p>When @('certify-book') is supplied with option @(':useless-runes :read') or
  @(':useless-runes :read?'), then book certification takes advantage of the
@@ -122385,13 +122862,15 @@ introduction-to-the-tau-system) for more information about Tau.</dd>
  form in that file is</p>
 
   @({
- (name (frames-1 tries-1 rune-1)
-       (frames-2 tries-2 rune-2)
-       (frames-2 tries-2 rune-3)
-       (frames-2 tries-2 rune-4)
-       (frames-2 tries-2 rune-5)
-       (frames-2 tries-2 rune-6)
-       (frames-k tries-k rune-7))
+ (name
+  (frames-1 tries-1 rune-1)
+  (frames-2 tries-2 rune-2)
+  (frames-3 tries-3 rune-3)
+  (frames-4 tries-4 rune-4)
+  (frames-5 tries-5 rune-5)
+  (frames-6 tries-6 rune-6)
+  (frames-7 tries-7 rune-7)
+  )
  })
 
  <p>then 1/5 of the 7 runes are to be disabled, so since the first integer
@@ -128790,6 +129269,7 @@ created from the original fast alist during @('form') must be manually freed."
                   :ruler-extenders :basic
                   :split-types t
                   :stobjs ($s)
+                  :type-prescription (natp (foo x y))
                   :verify-guards t
                   :well-founded-relation my-wfr))
 
@@ -128948,6 +129428,24 @@ created from the original fast alist during @('form') must be manually freed."
  @(tsee guard) of the function being defined so that it includes conjuncts
  specifying that each declared single-threaded object argument satisfies the
  recognizer for the corresponding single-threaded object.</p>
+
+ <p>@(':type-prescription')<br></br>
+
+ @('Value') is either @('nil') (the default) or a formula that is suitable for
+ a hypothesis-free @(':')@(tsee type-prescription) rule.  That rule must be
+ appropriate for the @(':typed-term') that is the application of the defined
+ function symbol to its formal parameters.  For example, a legal value for
+ @(':type-prescription') in @('(defun f (x y) ...)') could be @('(or (consp (f
+ x y)) (equal (f x y) y))'), but not @('(or (consp (f u v)) (equal (f u v)
+ v))').  The specified formula must provide a type that is implied by the
+ built-in type that is computed for the defined function.  Normally these will
+ be equal, but if the value of @(':type-prescription') specifies a strictly
+ weaker type than the computed built-in type then a warning will be printed
+ (unless of course such warnings have been suppressed; see @(see
+ set-inhibit-output-lst) and @(see set-inhibit-warnings)).  It is an error to
+ supply a non-@('nil') value for @(':type-prescription') if there is no
+ built-in type computed for the function.  See also @(see
+ type-prescription).</p>
 
  <p>@(':')@(tsee verify-guards)<br></br>
 
@@ -132536,6 +133034,7 @@ expand function call at the current subterm, without simplifying"
 (defpointer add-to-set-eq add-to-set)
 (defpointer add-to-set-eql add-to-set) ; pre-v4-3 compatibility
 (defpointer add-to-set-equal add-to-set)
+(defpointer all-attachments system-utilities)
 (defpointer all-calls system-utilities)
 (defpointer all-fnnames system-utilities)
 (defpointer all-fnnames-lst system-utilities)
@@ -132670,6 +133169,7 @@ expand function call at the current subterm, without simplifying"
 (defpointer legal-variablep system-utilities)
 (defpointer let-mbe equality-variants-details)
 (defpointer lisp-programmer-introduction introduction-to-programming-in-acl2-for-those-who-know-lisp)
+(defpointer logical-defun system-utilities)
 (defpointer logicp system-utilities)
 (defpointer make-lambda system-utilities)
 (defpointer make-lambda-application system-utilities)

@@ -6734,6 +6734,8 @@ Subtopics
 
   [Symbol-alistp]
       Recognizer for association lists with symbols as keys")
+ (ALL-ATTACHMENTS (POINTERS)
+                  "See [system-utilities].")
  (ALL-CALLS (POINTERS)
             "See [system-utilities].")
  (ALL-FNNAMES (POINTERS)
@@ -9162,7 +9164,8 @@ See [arity+] for a variant of arity with a stronger [guard].")
   they are implemented, and how to program with them.  2-dimensional
   arrays are dealt with by analogy.
 
-  The Logical Description of ACL2 Arrays
+
+The Logical Description of ACL2 Arrays
 
   An ACL2 1-dimensional array is an object that associates arbitrary
   objects with certain integers, called ``indices.'' Every array has
@@ -9244,8 +9247,8 @@ See [arity+] for a variant of arity with a stronger [guard].")
   different order than listed in a.
 
   To prevent arrays from growing excessively long due to repeated
-  [aset1] operations, [aset1] actually calls [compress1] on the new
-  alist whenever the length of the new alist exceeds the
+  [aset1] operations, [aset1] essentially calls [compress1] on the
+  new alist whenever the length of the new alist exceeds the
   :[maximum-length] entry, [max], in the [header] of the array.  See
   the definition of [aset1] (for example by using :[pe]).  This is
   primarily just a mechanism for freeing up [cons] space consumed
@@ -9262,7 +9265,8 @@ See [arity+] for a variant of arity with a stronger [guard].")
   additional index argument.  Finally, the pairs in a 2-dimensional
   array are of the form ((i . j) . val).
 
-  The Implementation of ACL2 Arrays
+
+The Implementation of ACL2 Arrays
 
   Very informally speaking, the function [compress1] ``creates'' an
   ACL2 array that provides fast access, while the function [aref1]
@@ -9288,12 +9292,17 @@ See [arity+] for a variant of arity with a stronger [guard].")
   array.
 
   When (compress1 name alist) builds a new alist, a', it sets the
-  semantic value of name to that new alist.  Furthermore, it creates
-  a Common Lisp array and writes into it all of the index/value pairs
-  of a', initializing unassigned indices with the default value.
-  This array becomes the raw lisp array of name.  [Compress1] then
-  returns a', the semantic value, as its result, as required by the
-  definition of [compress1].
+  semantic value of name to that new alist.  Furthermore, it writes
+  into a Common Lisp array all of the index/value pairs of a',
+  initializing unassigned indices with the default value.  In general
+  this is a new array, which becomes the raw lisp array of name.
+  However, if a raw lisp array is already associated with name and is
+  at least as long as the dimension specified in the [header], then
+  that array is reused and all indices out of range are ignored.
+  (Such reuse can be avoided; see [flush-compress] for how to remove
+  the existing association of a raw lisp array with a name.)  Either
+  way, [compress1] then returns a', the semantic value, as its
+  result, as required by the definition of [compress1].
 
   When (aref1 name a i) is invoked, [aref1] first determines whether
   the semantic value of name is a (i.e., is [eq] to the alist a).  If
@@ -9342,7 +9351,8 @@ See [arity+] for a variant of arity with a stronger [guard].")
   was compressed under the name in the [header] or that all asets
   used that name.  Such enforcement would be inefficient.
 
-  Some Programming Examples
+
+Some Programming Examples
 
   In the following examples we will use ACL2 ``global variables'' to
   hold several arrays.  See [@], and see [assign].
@@ -9802,7 +9812,7 @@ Subtopics
   where test returns a single value and form is arbitrary.
   Semantically, this call of assert* is equivalent to form.  However,
   a [guard] proof obligation is created that test holds, when used in
-  a definition made in [logic]-mode).
+  a definition made in [logic]-mode.
 
   For a related utility, see [assert$].  Both assert$ and assert*
   create a [guard] proof obligation (when used in a definition made
@@ -11606,14 +11616,16 @@ Subtopics
   are no more, instantiate the right hand side of the rule.
 
   There is also a second, optional, var-list argument to a bind-free
-  hypothesis.  If provided, it must be either t or a list of
-  variables.  If it is not provided, it defaults to t.  If it is a
-  list of variables, this second argument is used to place a further
-  restriction on the possible values of the alist to be returned by
-  term: any variables bound in the alist must be present in the list
-  of variables.  We strongly recommend the use of this list of
-  variables, as it allows some consistency checks to be performed at
-  the time of the rule's admittance which are not possible otherwise.
+  hypothesis.  If provided, it must be either t, nil, or a non-empty
+  list of variables.  If it is not provided, it defaults to t; and it
+  is also treated as t if the value provided is nil.  If it is a
+  non-empty list of variables, this second argument is used to place
+  a further restriction on the possible values of the alist to be
+  returned by term: any variables bound in the alist must be present
+  in that list of variables.  We strongly recommend the use of this
+  list of variables, as it allows some consistency checks to be
+  performed at the time of the rule's admittance which are not
+  possible otherwise.
 
   An extended bind-free hypothesis is similar to the simple type
   described above, but it uses two additional variables, mfc and
@@ -14965,7 +14977,13 @@ Subtopics
   [Skip-proofs] in....\".  These may be safely ignored.
 
   Note that you will want to certify [books] in order to take full
-  advantage of ACL2.  See [books-certification].")
+  advantage of ACL2.  See [books-certification].
+
+
+Subtopics
+
+  [Ccl-installation]
+      Installing Clozure Common Lisp (CCL)")
  (BUILT-IN-CLAUSE
   (RULE-CLASSES)
   "To build a clause into the simplifier
@@ -15726,104 +15744,47 @@ Subtopics
   cause ACL2 to include the same book twice, not recognizing the
   second one as redundant.")
  (CCL-INSTALLATION
-  (HONS-AND-MEMOIZATION)
+  (BUILDING-ACL2)
   "Installing Clozure Common Lisp (CCL)
 
   For those who use ACL2 built on CCL as the host Common Lisp
   implementation, it has been common practice to use the latest
-  GitHub version of CCL.  Below are self-contained instructions for
-  how to build CCL on Linux, with comments on how to adapt them to
-  Mac (Darwin).  You may prefer instead to look at the {CCL Releases
-  | https://github.com/Clozure/ccl/releases} page, using the text
-  below only as needed (e.g., for Linux-specific information or for
-  discussion of CCL_DEFAULT_DIRECTORY).  Note: Linux users may need
-  to install m4.
+  GitHub version of CCL.  We provide the following instructions for
+  you to choose from.  The ``brief'' instructions for Linux or Mac
+  (according to your operating system) might well suffice; the
+  ``elaborate'' instructions have helped with version control.
 
-  Remark. The instructions immediately below should generally suffice.
-  But if you would like additional information on CCL installation
-  and implementation, see [ccl-installation-extra].
+    * [ccl-installation-linux-brief]
+    * [ccl-installation-mac-brief]
+    * [ccl-installation-linux-elaborate]
+    * [ccl-installation-mac-elaborate]
 
-  First fetch CCL from GitHub as follows.  (You may prefer to use ``git
-  pull'' if you previously did this step.  In that case you probably
-  won't want to do the optional renaming of the directory, mentioned
-  below.)
+  You may prefer instead to look at the {CCL Releases |
+  https://github.com/Clozure/ccl/releases} page, using links above
+  only as needed (e.g., for Linux-specific information or for
+  discussion of CCL_DEFAULT_DIRECTORY).
 
-    # Obtain a ccl distribution in a fresh directory:
-    mkdir temp
-    cd temp
-    git clone https://github.com/Clozure/ccl
-    # Optionally rename that directory as suggested below, after
-    # executing the following three commands.
-    cd ccl
-    git rev-parse HEAD
-    cd ../../
-    # Optionally change directory name, and then go back to ccl directory:
-    # You'll want the last 10 hex digits to match those of the
-    # output from the ``git rev-parse HEAD'' command above: do
-    # that twice here and once further below.
-    mv temp 2017-12-07-6be8298fe5
-    cd 2017-12-07-6be8298fe5/ccl
-
-  Next fetch a development snapshot.  The version below is current as
-  of this writing (late April, 2019), but see
-  {https://github.com/Clozure/ccl/releases/ |
-  https://github.com/Clozure/ccl/releases/} for the latest snapshots.
-
-    # If you are on a Mac, skip this wget command and see just below.
-    wget https://github.com/Clozure/ccl/releases/download/v1.12/linuxx86.tar.gz
-    # On a Mac, do this instead:
-    # curl --location https://github.com/Clozure/ccl/releases/download/v1.12/darwinx86.tar.gz > darwinx86.tar.gz
-    # Now untar.  NOTE: This is for Linux.
-    # For a Mac: tar xfz darwinx86.tar.gz
-    tar xfz linuxx86.tar.gz
-
-  Rebuild the lisp kernel by hand before trying to rebuild the lisp.
-  (Note: This step was formerly unnecessary and might become
-  unnecessary again, but as of Sept. 2020 it seems to be necessary on
-  MacOS Catalina (10.15).  If you skip it, then consider replacing
-  :clean by :full below.)
-
-    cd lisp-kernel/linuxx8664; make clean; make
-    cd -
-
-  Finish up:
-
-    # (On a Mac, replace the next command with: ./dx86cl64)
-    ./lx86cl64
-    # This welcomes you, e.g.:
-    #   Clozure Common Lisp Version 1.12-dev (v1.12-dev.5) LinuxX8664
-    # Now submit this command:
-    ? (rebuild-ccl :clean t)
-    # After it returns, quit:
-    ? (quit)
-    # Now, back at the shell, rebuild the kernel again just to be safe:
-    # For a Mac: ./dx86cl64
-    ./lx86cl64
-    ? (rebuild-ccl :clean t)
-    ? (quit)
-
-  Create an executable script like the following.  Be sure to change
-  the name (shown as ``2017-12-07-6be8298fe5'' above) to match the
-  name change already made above.
-
-    #!/bin/sh
-
-    export CCL_DEFAULT_DIRECTORY=/projects/acl2/lisps/ccl/2017-12-07-6be8298fe5/ccl
-    ${CCL_DEFAULT_DIRECTORY}/scripts/ccl64 \"$@\"
-
-  Now ensure that your script is executable, e.g.:
-
-    chmod +x my-script
-
-  You're done!  (Note however that certification of [books] that use
-  [Quicklisp] may require openssl to be installed if it is not
-  already on your system.)
+  One of the links listed above should generally suffice.  But if you
+  would like additional information on CCL installation and
+  implementation, see [ccl-installation-extra].
 
 
 Subtopics
 
   [Ccl-installation-extra]
-      Clozure Common Lisp (CCL) installation and implementation details")
+      Clozure Common Lisp (CCL) installation and implementation details
+
+  [Ccl-installation-linux-brief]
+      Installing Clozure Common Lisp (CCL)
+
+  [Ccl-installation-linux-elaborate]
+      Installing Clozure Common Lisp (CCL)
+
+  [Ccl-installation-mac-brief]
+      Installing Clozure Common Lisp (CCL)
+
+  [Ccl-installation-mac-elaborate]
+      Installing Clozure Common Lisp (CCL)")
  (CCL-INSTALLATION-EXTRA
   (CCL-INSTALLATION)
   "Clozure Common Lisp (CCL) installation and implementation details
@@ -16011,6 +15972,219 @@ configure-ccl.lisp
       ;; Dump executable heap image; see ACL2 documentation topic SAVE-EXEC.
       (save-exec *heap-image-name* \"Modification string to print at startup\")
       )")
+ (CCL-INSTALLATION-LINUX-BRIEF
+  (CCL-INSTALLATION)
+  "Installing Clozure Common Lisp (CCL)
+
+  See [ccl-installation] for introductory remarks.  The instructions
+  below describe how to install CCL on Linux.  For more elaborate
+  ``cookbook'' instructions see [ccl-installation-linux-elaborate].
+
+  Note: Linux users may need to install m4.
+
+  Fetch CCL from GitHub into a fresh subdirectory, ccl/.
+
+    git clone https://github.com/Clozure/ccl
+
+  Next fetch and extract a development snapshot in the new ccl
+  directory.  The version below is current as of this writing (April,
+  2021), but see {https://github.com/Clozure/ccl/releases/ |
+  https://github.com/Clozure/ccl/releases/} for the latest snapshots.
+
+    cd ccl
+    wget https://github.com/Clozure/ccl/releases/download/v1.12/linuxx86.tar.gz
+    tar xfz linuxx86.tar.gz
+
+  Rebuild and quit, twice.
+
+    echo '(rebuild-ccl :full t)' | ./lx86cl64
+    echo '(rebuild-ccl :full t)' | ./lx86cl64
+
+  Create the following executable script, where <DIR> is the absolute
+  pathname (without using ``~'') of the directory in which you issued
+  the ``git clone'' command.
+
+    #!/bin/sh
+
+    export CCL_DEFAULT_DIRECTORY=<DIR>/ccl
+    ${CCL_DEFAULT_DIRECTORY}/scripts/ccl64 \"$@\"
+
+  You're done!  (Note however that certification of [books] that use
+  [Quicklisp] may require openssl to be installed if it is not
+  already on your system.)")
+ (CCL-INSTALLATION-LINUX-ELABORATE
+  (CCL-INSTALLATION)
+  "Installing Clozure Common Lisp (CCL)
+
+  See [ccl-installation] for introductory remarks.  The ``cookbook''
+  instructions below give you one way to install CCL on Linux without
+  any knowledge of git or CCL.  For more streamlined instructions see
+  [ccl-installation-linux-brief].
+
+  Note: Linux users may need to install m4.
+
+  First fetch CCL from GitHub as follows.  (You may prefer to use ``git
+  pull'' if you previously did this step.  In that case you probably
+  won't want to do the optional renaming of the directory, mentioned
+  below.)
+
+    # Obtain a ccl distribution in a fresh directory:
+    mkdir temp
+    cd temp
+    git clone https://github.com/Clozure/ccl
+    # Optionally rename that directory as suggested below, after
+    # executing the following three commands.
+    cd ccl
+    git rev-parse HEAD
+    cd ../../
+    # Optionally change directory name, and then go back to ccl directory:
+    # You'll want the last 10 hex digits to match those of the
+    # output from the ``git rev-parse HEAD'' command above: do
+    # that twice here and once further below.
+    mv temp 2017-12-07-6be8298fe5
+    cd 2017-12-07-6be8298fe5/ccl
+
+  Next fetch and extract a development snapshot.  The version below is
+  current as of this writing (April, 2021), but see
+  {https://github.com/Clozure/ccl/releases/ |
+  https://github.com/Clozure/ccl/releases/} for the latest snapshots.
+
+    wget https://github.com/Clozure/ccl/releases/download/v1.12/linuxx86.tar.gz
+    tar xfz linuxx86.tar.gz
+
+  Rebuild and quit, twice.
+
+    echo '(rebuild-ccl :full t)' | ./lx86cl64
+    echo '(rebuild-ccl :full t)' | ./lx86cl64
+
+  Create an executable script like the following.  You might want to
+  call it ``ccl'' and put it into a directory on your path.  Be sure
+  to change the name (shown as ``2017-12-07-6be8298fe5'' above) to
+  match the name change already made above.
+
+    #!/bin/sh
+
+    export CCL_DEFAULT_DIRECTORY=/projects/acl2/lisps/ccl/2017-12-07-6be8298fe5/ccl
+    ${CCL_DEFAULT_DIRECTORY}/scripts/ccl64 \"$@\"
+
+  Now ensure that your script is executable, e.g.:
+
+    chmod +x my-script
+
+  You're done!  (Note however that certification of [books] that use
+  [Quicklisp] may require openssl to be installed if it is not
+  already on your system.)")
+ (CCL-INSTALLATION-MAC-BRIEF
+  (CCL-INSTALLATION)
+  "Installing Clozure Common Lisp (CCL)
+
+  See [ccl-installation] for introductory remarks.  The instructions
+  below describe how to install CCL on a Mac (Darwin).  For more
+  elaborate ``cookbook'' instructions see
+  [ccl-installation-mac-elaborate].
+
+  Fetch CCL from GitHub into a fresh subdirectory, ccl/.
+
+    git clone https://github.com/Clozure/ccl
+
+  Next fetch and extract a development snapshot in the new ccl
+  directory.  The version below is current as of this writing (April,
+  2021), but see {https://github.com/Clozure/ccl/releases/ |
+  https://github.com/Clozure/ccl/releases/} for the latest snapshots.
+
+    cd ccl
+    curl -O -L https://github.com/Clozure/ccl/releases/download/v1.12/darwinx86.tar.gz
+    tar xfz darwinx86.tar.gz
+
+  Rebuild the lisp kernel by hand before trying to rebuild the lisp.
+
+    cd lisp-kernel/darwinx8664; make clean; make
+    cd -
+
+  Rebuild and quit, twice.
+
+    echo '(rebuild-ccl :clean t)' | ./lx86cl64
+    echo '(rebuild-ccl :clean t)' | ./lx86cl64
+
+  Create the following executable script, where <DIR> is the absolute
+  pathname (without using ``~'') of the directory in which you issued
+  the ``git clone'' command.
+
+    #!/bin/sh
+
+    export CCL_DEFAULT_DIRECTORY=<DIR>/ccl
+    ${CCL_DEFAULT_DIRECTORY}/scripts/ccl64 \"$@\"
+
+  You're done!  (Note however that certification of [books] that use
+  [Quicklisp] may require openssl to be installed if it is not
+  already on your system.)")
+ (CCL-INSTALLATION-MAC-ELABORATE
+  (CCL-INSTALLATION)
+  "Installing Clozure Common Lisp (CCL)
+
+  See [ccl-installation] for introductory remarks.  The ``cookbook''
+  instructions below give you one way to install CCL on a Mac
+  (Darwin) without any knowledge of git or CCL.  For more streamlined
+  instructions see [ccl-installation-mac-brief].
+
+  First fetch CCL from GitHub as follows.  (You may prefer to use ``git
+  pull'' if you previously did this step.  In that case you probably
+  won't want to do the optional renaming of the directory, mentioned
+  below.)
+
+    # Obtain a ccl distribution in a fresh directory:
+    mkdir temp
+    cd temp
+    git clone https://github.com/Clozure/ccl
+    # Optionally rename that directory as suggested below, after
+    # executing the following three commands.
+    cd ccl
+    git rev-parse HEAD
+    cd ../../
+    # Optionally change directory name, and then go back to ccl directory:
+    # You'll want the last 10 hex digits to match those of the
+    # output from the ``git rev-parse HEAD'' command above: do
+    # that twice here and once further below.
+    mv temp 2017-12-07-6be8298fe5
+    cd 2017-12-07-6be8298fe5/ccl
+
+  Next fetch and extract a development snapshot.  The version below is
+  current as of this writing (April, 2021), but see
+  {https://github.com/Clozure/ccl/releases/ |
+  https://github.com/Clozure/ccl/releases/} for the latest snapshots.
+
+    curl -O -L https://github.com/Clozure/ccl/releases/download/v1.12/darwinx86.tar.gz
+
+  Rebuild the lisp kernel by hand before trying to rebuild the lisp.
+  (Note: This step was formerly unnecessary and might become
+  unnecessary again, but it seems to have been necessary on MacOS
+  Catalina (10.15).
+
+    cd lisp-kernel/darwinx8664; make clean; make
+    cd -
+
+  Rebuild and quit, twice.
+
+    echo '(rebuild-ccl :clean t)' | ./lx86cl64
+    echo '(rebuild-ccl :clean t)' | ./lx86cl64
+
+  Create an executable script like the following.  You might want to
+  call it ``ccl'' and put it into a directory on your path.  Be sure
+  to change the name (shown as ``2017-12-07-6be8298fe5'' above) to
+  match the name change already made above.
+
+    #!/bin/sh
+
+    export CCL_DEFAULT_DIRECTORY=/projects/acl2/lisps/ccl/2017-12-07-6be8298fe5/ccl
+    ${CCL_DEFAULT_DIRECTORY}/scripts/ccl64 \"$@\"
+
+  Now ensure that your script is executable, e.g.:
+
+    chmod +x my-script
+
+  You're done!  (Note however that certification of [books] that use
+  [Quicklisp] may require openssl to be installed if it is not
+  already on your system.)")
  (CCL-UPDATES (POINTERS)
               "See [ccl-installation].")
  (CDAAAR
@@ -18671,7 +18845,7 @@ Subtopics
              (true-listp x)))
 
   but we in fact allow (true-listp x) as well.  When time permits we
-  will document more fully what is allowed or implement a macro that
+  may document more fully what is allowed or implement a macro that
   permits direct specification of the desired type in terms of the
   primitives.
 
@@ -18789,9 +18963,9 @@ Subtopics
 
   where name is a symbol and alist is a 1-dimensional array, generally
   named name.  See [arrays] for details.  Logically speaking, this
-  function removes irrelevant pairs from alist, possibly shortening
-  it.  The function returns a new array, alist', with the same
-  [header] (including name and dimension) as alist, that, under
+  function can remove irrelevant pairs from alist, possibly
+  shortening it.  The function returns a new array, alist', with the
+  same [header] (including name and dimension) as alist, that, under
   [aref1], is everywhere equal to alist.  That is, (aref1 name alist'
   i) is (aref1 name alist i), for all legal indices i.  Alist' may be
   shorter than alist and the non-irrelevant pairs may occur in a
@@ -18810,12 +18984,21 @@ Subtopics
   In general, compress1 returns an alist whose [cdr] is an association
   list whose keys are nonnegative integers in ascending order.
   However, if the [header] specifies an :order of > then the keys
-  will occur in descending order, and if the :order is :none or nil
-  then the keys will not be sorted, i.e., compress1 is logically the
-  identity function (though it still attaches an array under the
-  hood).  Note however that a [compress1] call is replaced by a hard
-  error if the header specifies an :order of :none or nil and the
-  array's length exceeds the [maximum-length] field of its [header].
+  will occur in descending order; and if the :order is :none or nil
+  then the keys will not be sorted and the header may appear anywhere
+  (even more than once), i.e., compress1 is logically the identity
+  function (though it still attaches an array under the hood).  Note
+  however that a [compress1] call is replaced by a hard error if the
+  header specifies an :order of :none or nil and the array's length
+  exceeds the [maximum-length] field of its [header].
+
+  We close with a remark concerning efficiency in the case that the
+  :ORDER specified by the given [array]'s [header] is < or > and the
+  alist is properly ordered: header occurring only first, then
+  ascending (for :ORDER <) or descending (for :ORDER >) order of
+  indices, with no value in the alist equal to the :DEFAULT specified
+  by the header.  In particular, this can cut the time to run
+  compress1 on an alist containing only the header by more than half.
 
   Function: <compress1>
 
@@ -22113,9 +22296,9 @@ Subtopics
     ; In raw Lisp:
     (defmacro stp (&rest args) (cons 'st$cp args))
 
-  The definitions are made similarly for exported functions, with
-  [guard]s derived from their :LOGIC functions as follows.  Consider
-  the exported function update in our example.  Its :LOGIC function,
+  The definitions are made similarly for exported functions.  [Guard]s
+  are derived from their :LOGIC functions as follows.  Consider the
+  exported function update in our example.  Its :LOGIC function,
   update$a, has formals (k val st$a) and the following guard.
 
     (and (and (integerp k) (<= 0 k) (<= k 49))
@@ -22145,6 +22328,11 @@ Subtopics
          (and (integerp v) (<= 0 v))
          (stp st)
          (mem$c-entryp v))
+
+  Note that the :LOGIC version of an abstract [stobj] export must not
+  declare the corresponding concrete stobj name as a stobj.  (That
+  name may be a formal parameter, but must not be declared as a
+  [stobj].)
 
   We turn now to the proof obligations, as promised above.  There are
   three types: :CORRESPONDENCE, :PRESERVED, and :GUARD-THM.  All
@@ -26689,14 +26877,21 @@ Subtopics
   of successively rel-smaller mp-objects.  Thus, the recursion must
   terminate.
 
-  The only primitive well-founded relation in ACL2 is [o<] (see [o<]),
-  which is known to be well-founded on the [o-p]s (see [o-p]).  For
-  the proof of well-foundedness, see [proof-of-well-foundedness].
-  However it is possible to add new well-founded relations.  For
-  details, see [well-founded-relation].  We discuss later how to
-  specify which well-founded relation is selected by defun and in the
-  present discussion we assume, without loss of generality, that it
-  is [o<] on the [o-p]s.
+  The default well-founded relation is [o<], an ``ordinal less-than''
+  relation (discussed further below) that reduces to ordinary < on
+  the natural numbers.  The default measure term is (acl2-count var),
+  where var is a formal parameter that is chosen heuristically:
+  roughly speaking, it is the first formal that is tested along every
+  branch and changed in each recursive call.
+
+  The only primitive well-founded relation in ACL2 is [o<], which is
+  known to be well-founded on the [o-p]s.  For the proof of
+  well-foundedness, see [proof-of-well-foundedness].  However it is
+  possible to add new well-founded relations.  For details, see
+  [well-founded-relation].  We discuss later how to specify which
+  well-founded relation is selected by defun and in the present
+  discussion we assume, without loss of generality, that it is [o<]
+  on the [o-p]s.
 
   For example, for our generic definition of fn above, with measure
   term (m x y), two theorems must be proved.  The first establishes
@@ -26816,6 +27011,7 @@ Subtopics
                       :normalize nil
                       :verify-guards nil
                       :non-executable t
+                      :type-prescription (natp (example x y z a b c i j))
                       :otf-flg t))
       (example-body x y z i j))
 
@@ -27258,13 +27454,14 @@ Subtopics
 
     Example:
 
-    (set-state-ok t)
     (defun-nx foo (x state)
+      (declare (xargs :guard t))
       (mv-let (a b c)
               (cons x state)
               (list a b c b a)))
     ; Note ``ill-formed'' call of foo just below.
     (defun bar (state y)
+      (declare (xargs :stobjs state))
       (foo state y))
 
   The macro defun-nx introduces definitions using the [defun] macro,
@@ -27291,8 +27488,13 @@ Subtopics
       (prog2$ (throw-nonexec-error 'name (list x1 ... xk))
               body))
 
-  Moreover, the [executable-counterpart] [rune] for name is [disable]d
-  by this event.
+  But defun-nx does two other things.  Before executing the defun form
+  displayed above, ACL2 arranges that state is allowed as a formal
+  parameter, by first introducing (set-state-ok t) in a way that is
+  [local] to the generated event.  After executing the defun, the
+  [executable-counterpart] [rune] for name is [disable]d.  You can
+  evaluate :trans1 (defun-nx ...) for your defun-nx form to see its
+  single-step macroexpansion.
 
   Note that because of the insertion of the above call of
   throw-nonexec-error, no formal is ignored when using defun-nx.
@@ -27311,7 +27513,7 @@ Subtopics
   [declare] form; defun-nx will still lay down its own such
   declaration, but ACL2 can tolerate the duplication.
 
-  Note that defund-nx is also available.  It is essentially identical
+  Note that [defund-nx] is also available.  It is essentially identical
   to defun-nx except that as with [defund], defund-nx leaves the
   definition [rune] disabled for the new function symbol.
 
@@ -38635,7 +38837,9 @@ Subtopics
   suggest downloading the community books.)  The book \"top-with-meta\"
   is the most elementary and most widely used arithmetic book.  Other
   community books include \"arithmetic-5/top\" and various hardware and
-  floating-point arithmetic books.
+  floating-point arithmetic books; if including
+  \"arithmetic/top-with-meta\" isn't sufficient, you could try
+  (include-book \"arithmetic-5/top\" :dir :system).
 
   Rules Concluding with Arithmetic Inequalities: If you are tempted to
   create a rewrite rule with an arithmetic inequality as its
@@ -41946,7 +42150,7 @@ Subtopics
 
     (return-last term0 term1 term2)  ==>  term2
 
-    (mv-list term0 ... termk)        ==>  termk
+    (mv-list n term)                 ==>  term
 
     (cons-with-hint x y)             ==>  (cons x y)
 
@@ -44977,9 +45181,6 @@ Subtopics
 
 
 Subtopics
-
-  [Ccl-installation]
-      Installing Clozure Common Lisp (CCL)
 
   [Fast-alists]
       Alists with hidden hash tables for faster execution
@@ -54301,7 +54502,9 @@ Introduction
   only variables bound in the environment containing the let, and
   body is a term involving only the vari plus the variables bound in
   the environment containing the let.  Each vari must be used in body
-  or else [declare]d ignored.
+  or else [declare]d ignored.  In ACL2 the only [declare] forms
+  allowed for a let form are ignore, ignorable, and type.  See
+  [declare].
 
   A let form is evaluated by first evaluating each of the termi,
   obtaining for each a vali.  Then, each vari is bound to the
@@ -54350,10 +54553,10 @@ Introduction
      (let ((varn termn)) body)...)
 
   Thus, the termi are evaluated successively and after each evaluation
-  the corresponding vali is bound to the value of termi.  The second
+  the corresponding vari is bound to the value of termi.  The second
   [let*] is similarly expanded, except that each for each vari that
   is among the (x1 ... xm), the form (declare (ignore vari)) is
-  inserted immediately after (vari termi).
+  inserted immediately after ((vari termi)).
 
   Each (vari termi) pair in a let or [let*] form is called a
   ``binding'' of vari and the vari are called the ``local variables''
@@ -54468,12 +54671,17 @@ Introduction
 
     (implies (and h1 ... hn) (rel lhs rhs))
 
-  where no hypothesis is a conjunction and rel is one of the inequality
-  relations [<], [<=], [=], [/=], [>], or [>=].  If necessary, the
+  where no hypothesis is a conjunction and the term (rel lhs rhs) is a
+  call of one of the inequality relations [<], [<=], [>], or [>=];
+  the negation of such a call; a call of [=] or [equal]; or a negated
+  call of [/=].  Note that we refer to all of these terms as
+  ``inequalities'' below, even the equalities.  If necessary, the
   hypothesis of such a conjunct may be vacuous.  We create a :linear
   rule for each such conjunct, if possible, and otherwise cause an
   error.  To create a :linear rule from a term (i.e., from a single
-  such conjunct), we apply the following sequence of transformations.
+  such conjunct), we apply the following sequence of transformations
+  (as well as macroexpansion, which removes calls of [<=], [>], and
+  [>=]).
 
    1. Remove [guard-holders] such as [prog2$] from the term to obtain
       (implies hyp concl), where hyp is t in the case of an
@@ -54562,7 +54770,9 @@ Introduction
   unique set of triggers depending on the variables that occur in the
   conjunct and the addends that occur in the concluding inequality.
   In particular, the trigger terms for a conjunct is the list of all
-  ``maximal addends'' in the concluding inequality.
+  ``maximal addends'' in the concluding inequality after replacing,
+  where possible based on the [current-theory], ground subterms
+  (those that have no free variables) with their values.
 
   The ``addends'' of (+ x y) and (- x y) are the union of the addends
   of x and y.  The addends of (- x) and (* n x), where n is a
@@ -56727,6 +56937,8 @@ Subtopics
            (declare (xargs :guard (plist-worldp-with-formals wrld)))
            (and (termp x wrld)
                 (logic-fnsp x wrld)))")
+ (LOGICAL-DEFUN (POINTERS)
+                "See [system-utilities].")
  (LOGICAL-NAME
   (EVENTS WORLD)
   "A name created by a logical event
@@ -58427,7 +58639,7 @@ Subtopics
   The use of default values is allowed, so that an optional or keyword
   argument may be given in any of the following forms.
 
-    * arg
+    * arg or, equivalently, (arg)
     * (arg 'init)
     * (arg 'init supplied-p)
 
@@ -65522,7 +65734,9 @@ Subtopics
 
     * propagation upward of if tests;
     * potential simplification with [type-set] reasoning; and
-    * the expansion of calls of a few built-in functions (like [implies]).
+    * the expansion of calls of a few built-in functions like [implies]
+      (the full list is the value of the constant,
+      *expandable-boot-strap-non-rec-fns*).
 
   We have seen an example where [type-set] reasoning can be expensive.
   So when ACL2 normalizes [definition] bodies and [guard]s, it
@@ -85734,6 +85948,36 @@ Changes to Existing Features
   Smith for suggesting this improvement and testing it on some
   proprietary books.
 
+  When supplying state as an argument to [defun-nx] (or [defund-nx], it
+  is no longer necessary to declare state as a [stobj] or use
+  [set-state-ok].  Thanks to Eric Smith for suggesting the
+  possibility of this change.
+
+  It had been the case that if [defun-nx] or [defund-nx] is used for a
+  recursive definition, and that form specifies a value for
+  :ruler-extenders that omits [return-last] (see [rulers] for
+  relevant background), then the definition generally fails to be
+  admitted.  (This is due to the generated [defun]'s use of [prog2$],
+  which is a macro that abbreviates a call of [return-last], which
+  blocks the termination analysis.)  That has been fixed, by ensuring
+  that defun-nx and defund-nx arrange that return-last is always
+  among the ruler-extenders of the generated [defun] form.  Thanks to
+  Eric Smith for noticing this issue and for a helpful discussion.
+
+  Improved handling of [linear] rules: cause an error with a helpful
+  message when a linear rule is no longer created during
+  [include-book] or the second pass of an [encapsulate] form, and
+  optimize by avoiding certain calculations when the :trigger-terms
+  keyword is supplied.  Thanks to Eric Smith for sending an example
+  that illustrates the former issue, essentially as included in a
+  comment in [community-book] books/system/doc/acl2-doc.lisp, form
+  (defxdoc note-8-4 ...).
+
+  When [certify-book] directs printing of [useless-runes], each tuple
+  is now printed on a single line starting after a space.  See
+  [useless-runes] for details.  Thanks to Eric Smith for requesting
+  this enhancement, which can support grep-like tools.
+
 
 New Features
 
@@ -85797,6 +86041,14 @@ New Features
   Coglio, and Eric Smith for requesting the latter capability and
   providing helpful feedback.
 
+  A new [xargs] keyword for [defun], :type-prescription, can be
+  supplied as a formula in the shape of a [type-prescription] rule.
+  It is checked to be implied by the built-in type-prescription rule
+  computed for the newly-defined function.  Thus, it can serve as
+  documentation for the expected type returned by the function; if
+  the implication is not equivalence, a warning is printed.  Thanks
+  to Alessandro Coglio and Eric Smith for the suggestion.
+
 
 Heuristic and Efficiency Improvements
 
@@ -85854,6 +86106,43 @@ Heuristic and Efficiency Improvements
   introduced in Version 4.0 to speed up the process; that code has
   been eliminated, as it is no longer necessary.
 
+  ACL2's [type-set] reasoning has been slightly strengthened to
+  comprehend Boolean combinations of strong [compound-recognizer]
+  calls on a single variable when building a context (a so-called
+  [type-alist]).  (By a ``strong compound-recognizer call'' we mean a
+  unary function that recognizes a union of primitive ACL2 types and
+  has, either explicitly or implicity, a corresponding
+  [compound-recognizer] rule; examples include [stringp], [integerp],
+  and [true-listp].)  In particular, this change can strengthen the
+  result of [forward-chaining].  Thanks to Eric Smith, who raised
+  this issue by providing an example that we include in a comment,
+  inside the form (defxdoc note-8-4 ...) in [community-book]
+  books/system/doc/acl2-doc.lisp.
+
+  The function [compress1] has been made more efficient in the
+  following ways.
+
+    * Compress1 is now faster when the :ORDER specified by the given
+      [array]'s [header] is < or > and the alist is properly ordered:
+      header first, then ascending (for :ORDER <) or descending (for
+      :ORDER >) order of indices, with no value in the alist equal to
+      the :DEFAULT specified by the header.  In particular, this can
+      cut the time to run compress1 on an alist containing only the
+      header by more than half, which addresses a request made by
+      Eric Smith (whom we thank for bringing this efficiency issue to
+      our attention).
+    * For the change noted just above, Eric also noticed that when the
+      [default] is nil then there was no speedup.  This led us to fix
+      an existing bug (technical description: for an array with
+      default nil, the alist was never considered to be in order).
+    * Functions [compress1] and [compress2] no longer require the new and
+      old dimensions to agree in order that the underlying raw lisp
+      array is reused.  Now it suffices for the new dimension (for
+      compress1; each dimension for compress2) to be at least as
+      great as the old.  (You can still avoid reuse of the raw Lisp
+      array by using [flush-compress].)  Thanks to Eric Smith for
+      suggesting this change.
+
 
 Bug Fixes
 
@@ -85861,6 +86150,15 @@ Bug Fixes
   bug was manifested when the keyword :guard was used as the loop$
   body, as in (loop$ for v in lst collect :guard).  (Note: It's not
   clear that this bug could be used to prove nil.)
+
+  A soundness bug was fixed by changing [defabsstobj] to avoid using
+  [mbe] in the definitions generated for the logic.  The problem was
+  that the :logic and :exec forms are not actually equal (they
+  correspond, in the sense of the correspondence predicate), and this
+  can be exploited by using a :[guard-theorem] [lemma-instance].  For
+  an example proof of nil in Version 8.3, see a comment about a
+  defabsstobj bug in the form (defxdoc note-8-4 ...) in file
+  books/system/doc/acl2-doc.lisp.
 
   The mechanism for tracking [warrant]s needed during a proof had a
   bug, which might be a soundness bug if one uses [apply$] or
@@ -86024,6 +86322,27 @@ Bug Fixes
   books/system/tests/early-load-of-compiled/.  Thanks to Sol Swords
   for helpful discussions.
 
+  Improved a utility that builds sets of clauses, which improves the
+  reliability of using a [lemma-instance] of the form (:guard-theorem
+  <name> nil).  Thanks to Eric Smith for reporting this problem with
+  a simple example, and to Dave Greve for following up with a related
+  example; both now work as one would expect.
+
+  Fixed printing of the ACL2 [state] in error messages, specifically
+  when executing a non-executable function.
+
+  Fixed a bug that could cause a raw Lisp error when processing a
+  [linear] rule with a [bind-free] hypothesis, when that hypothesis
+  does not specify a list of variables (in its second argument).
+  Thanks to Dave Greve for reporting this bug by sending a simple
+  example.  (Technical note: the fix was in the definition of source
+  function all-vars-in-hyps.)
+
+  For [defabsstobj], a suitable error now occurs when the :LOGIC
+  version of an abstract [stobj] export has the corresponding
+  concrete stobj as a formal parameter that is declared as a [stobj].
+  Formerly, a confusing hard error could occur in this case.
+
 
 Changes at the System Level
 
@@ -86079,6 +86398,15 @@ Changes at the System Level
   variable (for host Lisps CCL, SBCL, Allegro CL, and CMUCL; GCL and
   LispWorks didn't seem to have this problem).  Thanks to Mihir Mehta
   for bringing this issue to our attention.
+
+  Fixed the process for running ACL2 without building an executable
+  image.  Some initialization that was missing from that process is
+  now included.  Also, added the missing command, (lp), to the
+  instructions in section ``Running Without Building an Executable
+  Image'' on the ``Obtaining and Installing ACL2'' web page
+  (accessible from the ``Obtaining, Installing, and License'' link on
+  the ACL2 home page).  Thanks to Petter Gustad for an inquiry
+  leading to these improvements.
 
 
 EMACS Support
@@ -90540,6 +90868,9 @@ Subtopics
   [Add-to-set-equal]
       See [add-to-set].
 
+  [All-attachments]
+      See [system-utilities].
+
   [All-calls]
       See [system-utilities].
 
@@ -90941,6 +91272,9 @@ Subtopics
 
   [Lisp-programmer-introduction]
       See [introduction-to-programming-in-ACL2-for-those-who-know-lisp].
+
+  [Logical-defun]
+      See [system-utilities].
 
   [Logicp]
       See [system-utilities].
@@ -97048,7 +97382,7 @@ Subtopics
   Untouchables are functions that cannot be called, as well as [state]
   global variables (see [programming-with-state]) that cannot be
   modified or unbound.  Macros can also be untouchable in some sense;
-  see [push-untouchable].
+  see [defmacro-untouchable].
 
     Examples:
     (push-untouchable my-var nil)
@@ -99656,10 +99990,11 @@ Subtopics
   function with the same name, formals, and body (before
   macroexpansion), and with the same values [declare]d for the
   :[guard], :[measure], types, :[ruler-extenders], :non-executable,
-  :[stobj]s, and :[split-types], provided that the [defun-mode]s are
-  appropriate (see the ``Note About Appropriate Modes'' below).
-  Moreover, the order of the combined :[guard] and type declarations
-  must be the same in both cases.  Exceptions and clarifications:
+  :type-prescription, :[stobj]s, and :[split-types], provided that
+  the [defun-mode]s are appropriate (see the ``Note About Appropriate
+  Modes'' below).  Moreover, the order of the combined :[guard] and
+  type declarations must be the same in both cases.  Exceptions and
+  clarifications:
 
    1. If the new and existing function events have no explicit
       [ruler-extenders] (which are therefore syntactically equal),
@@ -103046,12 +103381,13 @@ Subtopics
 
   One might expect ACL2's termination analysis to admit this function,
   since we know that (cdr x) is ``smaller'' than x if (consp x) is
-  true.  (By default, ACL2's notion of ``smaller'' is ordinary
+  true.  (ACL2's notion of ``smaller'' here is essentially ordinary
   natural-number <, and the argument x is measured by applying
-  function acl2-count to x.)  However, by default that termination
-  analysis does not consider [if] tests, like (consp x) above, when
-  they occur under calls of functions other than IF, such as CONS in
-  the case above; it considers only rulers, as we now discuss.
+  function [ACL2-count] to x; see [defun].)  However, by default that
+  termination analysis does not consider [if] tests, like (consp x)
+  above, when they occur under calls of functions other than IF, such
+  as CONS in the case above; it considers only rulers, as we now
+  discuss.
 
   In the example above, we say that the term (consp x) governs the
   recursive call (f (cdr x)) shown above, but does not rule that
@@ -111096,12 +111432,13 @@ Subtopics
   using ([set-verify-guards-eagerness] 0) to avoid [guard]
   verification.
 
-  The documentation in this section is laid out in the form of a tour
-  that visits the documented topics in a reasonable order.  We
-  recommend that you follow the tour the first time you read about
-  stobjs.  The list of all stobj topics is shown below.  The tour
-  starts immediately afterwards.  Also see [defstobj] and, for
-  so-called abstract stobjs, see [defabsstobj].
+  This topic introduces the notion of a ``stobj'', or single-threaded
+  object.  It concludes with a link to a tour that introduces the use
+  of stobjs by way of examples.  We recommend that you follow that
+  link the first time you read about stobjs.  Detailed reference
+  documentation about stobjs may be found in the subtopics listed at
+  the end below; in particular see [defstobj] and, for so-called
+  abstract stobjs, see [defabsstobj].
 
   As noted, a ``single-threaded object'' is a data structure whose use
   is so syntactically restricted that only one instance of the object
@@ -111133,12 +111470,13 @@ Subtopics
 
     * OBJ is a top-level global variable that contains the current object,
       obj.
-    * If a function uses the formal parameter OBJ, the only ``actual
-      expression'' that can be passed into that slot is the variable
-      OBJ, not merely a term that ``evaluates to an obj''; thus, such
-      functions can only operate on the current object.  So for
-      example, instead of (FOO (UPDATE-FIELD1 3 ST)) write (LET ((ST
-      (UPDATE-FIELD1 3 ST))) (FOO ST)).
+    * If a function uses the formal parameter OBJ that is declared as a
+      stobj, the only ``actual expression'' that can be passed into
+      that slot is the variable OBJ, not merely a term that
+      ``evaluates to an obj''; thus, such functions can only operate
+      on the current object.  So for example, instead of (FOO
+      (UPDATE-FIELD1 3 ST)) write (LET ((ST (UPDATE-FIELD1 3 ST)))
+      (FOO ST)).
     * The accessors and updaters have a formal parameter named OBJ, so by
       the rule just above, those functions can only be applied to the
       current object.  The recognizer is the one exception to the
@@ -111182,8 +111520,8 @@ Subtopics
   keywords allow inlining and renaming of stobj accessors and
   updaters.
 
-  But we are getting ahead of ourselves.  To start the stobj tour, see
-  [stobj-example-1].
+  But we are getting ahead of ourselves.  To start the stobj tour
+  recommended earlier in this topic, see [stobj-example-1].
 
 
 Subtopics
@@ -114029,6 +114367,15 @@ List of a few built-in system utilities
       \"COMMON-LISP\" package.  New function symbols cannot be in the
       \"COMMON-LISP\" package; thus, this utility may be appropriate
       when generating new function names from old ones.
+    * (all-attachments wrld): Return a list of all attachment pairs (f . g)
+      where g is attached to f (see [defattach]) in the [world],
+      wrld, except for two cases that are ignored for this purpose:
+      [warrant]s, and attachments introduced with a non-nil value of
+      :skip-checks.  To obtain the attachment to a function symbol f,
+      without the restrictions above and with value nil if there is
+      no attachment to f, evaluate (cdr (attachment-pair 'f wrld)).
+      To obtain the list of all built-in attachments, evaluate
+      (global-val 'attachments-at-ground-zero (w state)).
     * (all-calls names term alist ans): Accumulate into ans (which
       typically is nil at the top level) all pseudo-terms u/alist
       such that for some f in the list, names, u is a subterm of the
@@ -114051,7 +114398,7 @@ List of a few built-in system utilities
     * (all-fnnames-lst lst): Return a list of all function symbols called
       in the given list of terms.  This is a macro call expanding to
       (all-fnnames1 t lst nil).
-    * (all-fnnames1 flg x acc): Accumulate into ans the function symbols
+    * (all-fnnames1 flg x acc): Accumulate into acc the function symbols
       called in the given term or list of terms, x, according to
       whether flg is nil (for a term) or not nil (for a list of
       terms), respectively.
@@ -114065,22 +114412,23 @@ List of a few built-in system utilities
       [world] w, return the number of its formal parameters.
     * (body fn normalp w): Fn should either be a :[logic]-mode function
       symbol of [world] w or a lambda expression.  If fn is a symbol
-      and normalp is nil, then return the body of its original
-      definition.  If fn is a lambda expression, return its body.  We
-      now discuss the remaining case, where fn is a :[logic]-mode
-      function symbol and normalp is true.  In the usual case that no
-      [definition] rule has been introduced for fn with a non-nil
-      value of :install-body (which is the default), return the
-      [normalize]d body from the defun form that introduced fn, or
-      nil if fn was not introduced with defun (as with [encapsulate],
-      [defstub], or [defchoose]) --- except that in the case that
-      :normalize nil was specified in that defun form (see [xargs]),
-      return the unnormalized body.  The remaining case is that at
-      least one [definition] rule for fn has been installed.  In that
-      case, the latest such rule provides the body (see source
-      function latest-body for how hypotheses are handled), with one
-      exception: if the equivalence relation for that rule is other
-      than equal, then the unnormalized body is returned.
+      and normalp is nil, then return the body (translated but
+      unnormalized) of its original definition.  If fn is a lambda
+      expression, return its body.  We now discuss the remaining
+      case, where fn is a :[logic]-mode function symbol and normalp
+      is true.  In the usual case that no [definition] rule has been
+      introduced for fn with a non-nil value of :install-body (which
+      is the default), return the [normalize]d body from the defun
+      form that introduced fn, or nil if fn was not introduced with
+      defun (as with [encapsulate], [defstub], or [defchoose]) ---
+      except that in the case that :normalize nil was specified in
+      that defun form (see [xargs]), return the unnormalized body.
+      The remaining case is that at least one [definition] rule for
+      fn has been installed.  In that case, the latest such rule
+      provides the body (see source function latest-body for how
+      hypotheses are handled), with one exception: if the equivalence
+      relation for that rule is other than equal, then the
+      unnormalized body is returned.
     * (conjoin lst): The conjunction of the given list of terms.
     * (conjoin2 term1 term2): The conjunction of the given two terms.
     * (cons-term fn args): Returns a [term] with function symbol (or
@@ -114266,6 +114614,8 @@ List of a few built-in system utilities
       else nil.  For example, x is a legal variable name but the
       following are not: :abc, t, nil, &a (a lambda keyword), *c*
       (syntax of a constant), and pi (a Common Lisp constant).
+    * (logical-defun name w): For the given name of a defined function in
+      the current ACL2 [world] w, return its [defun] form.
     * (logicp fn w): For a function symbol fn of [world] w, return t when
       the symbol-class of fn in w is not :program, else nil.  (See
       symbol-class, below.)
@@ -114384,7 +114734,7 @@ List of a few built-in system utilities
       variable.
     * (symbol-class name w): For a function symbol, name, of the ACL2
       [world] w, return :program if name is in :[program] mode,
-      :common-lisp-compliant is name is [guard]-verified, and
+      :common-lisp-compliant if name is [guard]-verified, and
       otherwise, :ideal.  If name is the name of a theorem (more
       specifically, has a 'theorem property; see [getprop]), return
       :ideal unless the theorem is guard-verified, in which case
@@ -116486,10 +116836,10 @@ Subtopics
 Relation to Guards
 
   To justify that type declarations are correct, the is integrated into
-  ACL2's [guard] mechanism.  When a call of (the TYPE EXPR) in the
-  body of a function definition generates a guard proof obligation
-  that the type, TYPE, holds for the value of the expression, EXPR.
-  Consider the following example.
+  ACL2's [guard] mechanism.  A call of (the TYPE EXPR) in the body of
+  a function definition generates a guard proof obligation that the
+  type, TYPE, holds for the value of the expression, EXPR.  Consider
+  the following example.
 
     (defun f (x)
       (declare (xargs :guard (p1 x)))
@@ -117298,8 +117648,7 @@ Subtopics
     Summary
     Form:  ( DEFUN APP ...)
     Rules: ((:FAKE-RUNE-FOR-TYPE-SET NIL))
-    Warnings:  None
-    Time:  0.03 seconds (prove: 0.00, print: 0.00, other: 0.03)
+    Time:  0.00 seconds (prove: 0.00, print: 0.00, other: 0.00)
      APP
 
   {IMAGE}
@@ -117710,10 +118059,16 @@ Subtopics
   works.  You just have to understand how to interact with it.  We
   explain this in great detail later.  But basically all new users
   are curious to know how ACL2 works and this little tour attempts to
-  give some answers, just to satisfy your curiosity.
+  give some answers, just to satisfy your curiosity.  The first
+  command below, :set-gag-mode nil, instructs ACL2 to supply its full
+  prover output; normally that output is restricted considerably
+  (``gagged''), but we include it all below in support of the
+  associated explanations.
 
   {IMAGE}
 
+    ACL2!>:set-gag-mode nil
+    <state>
     ACL2!>(defthm associativity-of-app
             (equal (app (app a b) c)
                    (app a (app b c))))
@@ -123623,12 +123978,15 @@ Detailed Documentation
 
   When certify-book is supplied with option :useless-runes :write, the
   result is to write out a corresponding @useless-runes.lsp file.
-  Each top-level entry of this file has the form
+  Each top-level entry of this file that is non-trivial (see below)
+  has the form
 
-    (name (frames-1 tries-1 rune-1)
-          (frames-2 tries-2 rune-2)
-          ...
-          (frames-k tries-k rune-k))
+    (name
+     (frames-1 tries-1 rune-1)
+     (frames-2 tries-2 rune-2)
+     ...
+     (frames-k tries-k rune-k)
+     )
 
   where name is the name of a [defthm], [defun], or [verify-guards]
   event, and each tuple (frames-i tries-i rune-i) indicates the
@@ -123641,6 +123999,13 @@ Detailed Documentation
   top to bottom.  Because of [local] [events], the same name may
   appear more than once; we say more about this in the ``Subtleties''
   section, below.
+
+  Note that ``trivial'' entries are possible, where there are no
+  tuples; in that case, just (name) is printed, on a single line.
+  Otherwise printing uses the format shown above, where the first
+  line contains a left parenthesis on the left margin followed by the
+  name, and each tuple is on a single line starting in column 1
+  (i.e., after a single space), as is the final right parenthesis.
 
   When certify-book is supplied with option :useless-runes :read or
   :useless-runes :read?, then book certification takes advantage of
@@ -123658,13 +124023,15 @@ Detailed Documentation
   @useless-runes.lsp file are to be kept disabled; so if the relevant
   top-level form in that file is
 
-    (name (frames-1 tries-1 rune-1)
-          (frames-2 tries-2 rune-2)
-          (frames-2 tries-2 rune-3)
-          (frames-2 tries-2 rune-4)
-          (frames-2 tries-2 rune-5)
-          (frames-2 tries-2 rune-6)
-          (frames-k tries-k rune-7))
+    (name
+     (frames-1 tries-1 rune-1)
+     (frames-2 tries-2 rune-2)
+     (frames-3 tries-3 rune-3)
+     (frames-4 tries-4 rune-4)
+     (frames-5 tries-5 rune-5)
+     (frames-6 tries-6 rune-6)
+     (frames-7 tries-7 rune-7)
+     )
 
   then 1/5 of the 7 runes are to be disabled, so since the first
   integer greater than or equal to 7/5 is 2, the runes rune-1 and
@@ -129821,6 +130188,7 @@ Subtopics
                     :ruler-extenders :basic
                     :split-types t
                     :stobjs ($s)
+                    :type-prescription (natp (foo x y))
                     :verify-guards t
                     :well-founded-relation my-wfr))
 
@@ -129967,6 +130335,24 @@ Subtopics
   being defined so that it includes conjuncts specifying that each
   declared single-threaded object argument satisfies the recognizer
   for the corresponding single-threaded object.
+
+  :type-prescription
+  Value is either nil (the default) or a formula that is suitable for
+  a hypothesis-free :[type-prescription] rule.  That rule must be
+  appropriate for the :typed-term that is the application of the
+  defined function symbol to its formal parameters.  For example, a
+  legal value for :type-prescription in (defun f (x y) ...) could be
+  (or (consp (f x y)) (equal (f x y) y)), but not (or (consp (f u v))
+  (equal (f u v) v)).  The specified formula must provide a type that
+  is implied by the built-in type that is computed for the defined
+  function.  Normally these will be equal, but if the value of
+  :type-prescription specifies a strictly weaker type than the
+  computed built-in type then a warning will be printed (unless of
+  course such warnings have been suppressed; see
+  [set-inhibit-output-lst] and [set-inhibit-warnings]).  It is an
+  error to supply a non-nil value for :type-prescription if there is
+  no built-in type computed for the function.  See also
+  [type-prescription].
 
   :[verify-guards]
   Value is t or nil, indicating whether or not [guard]s are to be
