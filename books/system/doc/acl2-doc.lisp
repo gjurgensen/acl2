@@ -113102,7 +113102,6 @@ arithmetic) for libraries of @(see books) for arithmetic reasoning.</p>")
  @('\"COMMON-LISP\"') package; thus, this utility may be appropriate when
  generating new function names from old ones.</li>
 
-
  <li>@('(all-attachments wrld)'): Return a list of all attachment pairs @('(f
  . g)') where @('g') is attached to @('f') (see @(see defattach)) in the @(see
  world), @('wrld'), except for two cases that are ignored for this purpose:
