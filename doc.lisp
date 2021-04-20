@@ -86408,6 +86408,14 @@ Changes at the System Level
   the ACL2 home page).  Thanks to Petter Gustad for an inquiry
   leading to these improvements.
 
+  When invoking `make' to build the ACL2 executable, output from the
+  build process is now written to file make.log.  The terminal output
+  is now minimal.  If there is already a file make.log, it is first
+  moved to make.log.bak.  See file GNUmakefile for additional
+  documentation.  Thanks to Alessandro Coglio and Eric Smith for
+  suggesting this change, and to David Rager for pointing out
+  associated changes to make for Jenkins builds.
+
 
 EMACS Support
 
