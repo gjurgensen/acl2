@@ -6734,6 +6734,8 @@ Subtopics
 
   [Symbol-alistp]
       Recognizer for association lists with symbols as keys")
+ (ALL-ATTACHMENTS (POINTERS)
+                  "See [system-utilities].")
  (ALL-CALLS (POINTERS)
             "See [system-utilities].")
  (ALL-FNNAMES (POINTERS)
@@ -9810,7 +9812,7 @@ Subtopics
   where test returns a single value and form is arbitrary.
   Semantically, this call of assert* is equivalent to form.  However,
   a [guard] proof obligation is created that test holds, when used in
-  a definition made in [logic]-mode).
+  a definition made in [logic]-mode.
 
   For a related utility, see [assert$].  Both assert$ and assert*
   create a [guard] proof obligation (when used in a definition made
@@ -14975,7 +14977,13 @@ Subtopics
   [Skip-proofs] in....\".  These may be safely ignored.
 
   Note that you will want to certify [books] in order to take full
-  advantage of ACL2.  See [books-certification].")
+  advantage of ACL2.  See [books-certification].
+
+
+Subtopics
+
+  [Ccl-installation]
+      Installing Clozure Common Lisp (CCL)")
  (BUILT-IN-CLAUSE
   (RULE-CLASSES)
   "To build a clause into the simplifier
@@ -15736,104 +15744,47 @@ Subtopics
   cause ACL2 to include the same book twice, not recognizing the
   second one as redundant.")
  (CCL-INSTALLATION
-  (HONS-AND-MEMOIZATION)
+  (BUILDING-ACL2)
   "Installing Clozure Common Lisp (CCL)
 
   For those who use ACL2 built on CCL as the host Common Lisp
   implementation, it has been common practice to use the latest
-  GitHub version of CCL.  Below are self-contained instructions for
-  how to build CCL on Linux, with comments on how to adapt them to
-  Mac (Darwin).  You may prefer instead to look at the {CCL Releases
-  | https://github.com/Clozure/ccl/releases} page, using the text
-  below only as needed (e.g., for Linux-specific information or for
-  discussion of CCL_DEFAULT_DIRECTORY).  Note: Linux users may need
-  to install m4.
+  GitHub version of CCL.  We provide the following instructions for
+  you to choose from.  The ``brief'' instructions for Linux or Mac
+  (according to your operating system) might well suffice; the
+  ``elaborate'' instructions have helped with version control.
 
-  Remark. The instructions immediately below should generally suffice.
-  But if you would like additional information on CCL installation
-  and implementation, see [ccl-installation-extra].
+    * [ccl-installation-linux-brief]
+    * [ccl-installation-mac-brief]
+    * [ccl-installation-linux-elaborate]
+    * [ccl-installation-mac-elaborate]
 
-  First fetch CCL from GitHub as follows.  (You may prefer to use ``git
-  pull'' if you previously did this step.  In that case you probably
-  won't want to do the optional renaming of the directory, mentioned
-  below.)
+  You may prefer instead to look at the {CCL Releases |
+  https://github.com/Clozure/ccl/releases} page, using links above
+  only as needed (e.g., for Linux-specific information or for
+  discussion of CCL_DEFAULT_DIRECTORY).
 
-    # Obtain a ccl distribution in a fresh directory:
-    mkdir temp
-    cd temp
-    git clone https://github.com/Clozure/ccl
-    # Optionally rename that directory as suggested below, after
-    # executing the following three commands.
-    cd ccl
-    git rev-parse HEAD
-    cd ../../
-    # Optionally change directory name, and then go back to ccl directory:
-    # You'll want the last 10 hex digits to match those of the
-    # output from the ``git rev-parse HEAD'' command above: do
-    # that twice here and once further below.
-    mv temp 2017-12-07-6be8298fe5
-    cd 2017-12-07-6be8298fe5/ccl
-
-  Next fetch a development snapshot.  The version below is current as
-  of this writing (late April, 2019), but see
-  {https://github.com/Clozure/ccl/releases/ |
-  https://github.com/Clozure/ccl/releases/} for the latest snapshots.
-
-    # If you are on a Mac, skip this wget command and see just below.
-    wget https://github.com/Clozure/ccl/releases/download/v1.12/linuxx86.tar.gz
-    # On a Mac, do this instead:
-    # curl --location https://github.com/Clozure/ccl/releases/download/v1.12/darwinx86.tar.gz > darwinx86.tar.gz
-    # Now untar.  NOTE: This is for Linux.
-    # For a Mac: tar xfz darwinx86.tar.gz
-    tar xfz linuxx86.tar.gz
-
-  Rebuild the lisp kernel by hand before trying to rebuild the lisp.
-  (Note: This step was formerly unnecessary and might become
-  unnecessary again, but as of Sept. 2020 it seems to be necessary on
-  MacOS Catalina (10.15).  If you skip it, then consider replacing
-  :clean by :full below.)
-
-    cd lisp-kernel/linuxx8664; make clean; make
-    cd -
-
-  Finish up:
-
-    # (On a Mac, replace the next command with: ./dx86cl64)
-    ./lx86cl64
-    # This welcomes you, e.g.:
-    #   Clozure Common Lisp Version 1.12-dev (v1.12-dev.5) LinuxX8664
-    # Now submit this command:
-    ? (rebuild-ccl :clean t)
-    # After it returns, quit:
-    ? (quit)
-    # Now, back at the shell, rebuild the kernel again just to be safe:
-    # For a Mac: ./dx86cl64
-    ./lx86cl64
-    ? (rebuild-ccl :clean t)
-    ? (quit)
-
-  Create an executable script like the following.  Be sure to change
-  the name (shown as ``2017-12-07-6be8298fe5'' above) to match the
-  name change already made above.
-
-    #!/bin/sh
-
-    export CCL_DEFAULT_DIRECTORY=/projects/acl2/lisps/ccl/2017-12-07-6be8298fe5/ccl
-    ${CCL_DEFAULT_DIRECTORY}/scripts/ccl64 \"$@\"
-
-  Now ensure that your script is executable, e.g.:
-
-    chmod +x my-script
-
-  You're done!  (Note however that certification of [books] that use
-  [Quicklisp] may require openssl to be installed if it is not
-  already on your system.)
+  One of the links listed above should generally suffice.  But if you
+  would like additional information on CCL installation and
+  implementation, see [ccl-installation-extra].
 
 
 Subtopics
 
   [Ccl-installation-extra]
-      Clozure Common Lisp (CCL) installation and implementation details")
+      Clozure Common Lisp (CCL) installation and implementation details
+
+  [Ccl-installation-linux-brief]
+      Installing Clozure Common Lisp (CCL) on Linux (brief version)
+
+  [Ccl-installation-linux-elaborate]
+      Installing Clozure Common Lisp (CCL) on Linux (elaborate version)
+
+  [Ccl-installation-mac-brief]
+      Installing Clozure Common Lisp (CCL) on Mac (brief version)
+
+  [Ccl-installation-mac-elaborate]
+      Installing Clozure Common Lisp (CCL) on Mac (elaborate version)")
  (CCL-INSTALLATION-EXTRA
   (CCL-INSTALLATION)
   "Clozure Common Lisp (CCL) installation and implementation details
@@ -16021,6 +15972,219 @@ configure-ccl.lisp
       ;; Dump executable heap image; see ACL2 documentation topic SAVE-EXEC.
       (save-exec *heap-image-name* \"Modification string to print at startup\")
       )")
+ (CCL-INSTALLATION-LINUX-BRIEF
+  (CCL-INSTALLATION)
+  "Installing Clozure Common Lisp (CCL) on Linux (brief version)
+
+  See [ccl-installation] for introductory remarks.  The instructions
+  below describe how to install CCL on Linux.  For more elaborate
+  ``cookbook'' instructions see [ccl-installation-linux-elaborate].
+
+  Note: Linux users may need to install m4.
+
+  Fetch CCL from GitHub into a fresh subdirectory, ccl/.
+
+    git clone https://github.com/Clozure/ccl
+
+  Next fetch and extract a development snapshot in the new ccl
+  directory.  The version below is current as of this writing (April,
+  2021), but see {https://github.com/Clozure/ccl/releases/ |
+  https://github.com/Clozure/ccl/releases/} for the latest snapshots.
+
+    cd ccl
+    wget https://github.com/Clozure/ccl/releases/download/v1.12/linuxx86.tar.gz
+    tar xfz linuxx86.tar.gz
+
+  Rebuild and quit, twice.
+
+    echo '(rebuild-ccl :full t)' | ./lx86cl64
+    echo '(rebuild-ccl :full t)' | ./lx86cl64
+
+  Create the following executable script, where <DIR> is the absolute
+  pathname (without using ``~'') of the directory in which you issued
+  the ``git clone'' command.
+
+    #!/bin/sh
+
+    export CCL_DEFAULT_DIRECTORY=<DIR>/ccl
+    ${CCL_DEFAULT_DIRECTORY}/scripts/ccl64 \"$@\"
+
+  You're done!  (Note however that certification of [books] that use
+  [Quicklisp] may require openssl to be installed if it is not
+  already on your system.)")
+ (CCL-INSTALLATION-LINUX-ELABORATE
+  (CCL-INSTALLATION)
+  "Installing Clozure Common Lisp (CCL) on Linux (elaborate version)
+
+  See [ccl-installation] for introductory remarks.  The ``cookbook''
+  instructions below give you one way to install CCL on Linux without
+  any knowledge of git or CCL.  For more streamlined instructions see
+  [ccl-installation-linux-brief].
+
+  Note: Linux users may need to install m4.
+
+  First fetch CCL from GitHub as follows.  (You may prefer to use ``git
+  pull'' if you previously did this step.  In that case you probably
+  won't want to do the optional renaming of the directory, mentioned
+  below.)
+
+    # Obtain a ccl distribution in a fresh directory:
+    mkdir temp
+    cd temp
+    git clone https://github.com/Clozure/ccl
+    # Optionally rename that directory as suggested below, after
+    # executing the following three commands.
+    cd ccl
+    git rev-parse HEAD
+    cd ../../
+    # Optionally change directory name, and then go back to ccl directory:
+    # You'll want the last 10 hex digits to match those of the
+    # output from the ``git rev-parse HEAD'' command above: do
+    # that twice here and once further below.
+    mv temp 2017-12-07-6be8298fe5
+    cd 2017-12-07-6be8298fe5/ccl
+
+  Next fetch and extract a development snapshot.  The version below is
+  current as of this writing (April, 2021), but see
+  {https://github.com/Clozure/ccl/releases/ |
+  https://github.com/Clozure/ccl/releases/} for the latest snapshots.
+
+    wget https://github.com/Clozure/ccl/releases/download/v1.12/linuxx86.tar.gz
+    tar xfz linuxx86.tar.gz
+
+  Rebuild and quit, twice.
+
+    echo '(rebuild-ccl :full t)' | ./lx86cl64
+    echo '(rebuild-ccl :full t)' | ./lx86cl64
+
+  Create an executable script like the following.  You might want to
+  call it ``ccl'' and put it into a directory on your path.  Be sure
+  to change the name (shown as ``2017-12-07-6be8298fe5'' above) to
+  match the name change already made above.
+
+    #!/bin/sh
+
+    export CCL_DEFAULT_DIRECTORY=/projects/acl2/lisps/ccl/2017-12-07-6be8298fe5/ccl
+    ${CCL_DEFAULT_DIRECTORY}/scripts/ccl64 \"$@\"
+
+  Now ensure that your script is executable, e.g.:
+
+    chmod +x my-script
+
+  You're done!  (Note however that certification of [books] that use
+  [Quicklisp] may require openssl to be installed if it is not
+  already on your system.)")
+ (CCL-INSTALLATION-MAC-BRIEF
+  (CCL-INSTALLATION)
+  "Installing Clozure Common Lisp (CCL) on Mac (brief version)
+
+  See [ccl-installation] for introductory remarks.  The instructions
+  below describe how to install CCL on a Mac (Darwin).  For more
+  elaborate ``cookbook'' instructions see
+  [ccl-installation-mac-elaborate].
+
+  Fetch CCL from GitHub into a fresh subdirectory, ccl/.
+
+    git clone https://github.com/Clozure/ccl
+
+  Next fetch and extract a development snapshot in the new ccl
+  directory.  The version below is current as of this writing (April,
+  2021), but see {https://github.com/Clozure/ccl/releases/ |
+  https://github.com/Clozure/ccl/releases/} for the latest snapshots.
+
+    cd ccl
+    curl -O -L https://github.com/Clozure/ccl/releases/download/v1.12/darwinx86.tar.gz
+    tar xfz darwinx86.tar.gz
+
+  Rebuild the lisp kernel by hand before trying to rebuild the lisp.
+
+    cd lisp-kernel/darwinx8664; make clean; make
+    cd -
+
+  Rebuild and quit, twice.
+
+    echo '(rebuild-ccl :clean t)' | ./lx86cl64
+    echo '(rebuild-ccl :clean t)' | ./lx86cl64
+
+  Create the following executable script, where <DIR> is the absolute
+  pathname (without using ``~'') of the directory in which you issued
+  the ``git clone'' command.
+
+    #!/bin/sh
+
+    export CCL_DEFAULT_DIRECTORY=<DIR>/ccl
+    ${CCL_DEFAULT_DIRECTORY}/scripts/ccl64 \"$@\"
+
+  You're done!  (Note however that certification of [books] that use
+  [Quicklisp] may require openssl to be installed if it is not
+  already on your system.)")
+ (CCL-INSTALLATION-MAC-ELABORATE
+  (CCL-INSTALLATION)
+  "Installing Clozure Common Lisp (CCL) on Mac (elaborate version)
+
+  See [ccl-installation] for introductory remarks.  The ``cookbook''
+  instructions below give you one way to install CCL on a Mac
+  (Darwin) without any knowledge of git or CCL.  For more streamlined
+  instructions see [ccl-installation-mac-brief].
+
+  First fetch CCL from GitHub as follows.  (You may prefer to use ``git
+  pull'' if you previously did this step.  In that case you probably
+  won't want to do the optional renaming of the directory, mentioned
+  below.)
+
+    # Obtain a ccl distribution in a fresh directory:
+    mkdir temp
+    cd temp
+    git clone https://github.com/Clozure/ccl
+    # Optionally rename that directory as suggested below, after
+    # executing the following three commands.
+    cd ccl
+    git rev-parse HEAD
+    cd ../../
+    # Optionally change directory name, and then go back to ccl directory:
+    # You'll want the last 10 hex digits to match those of the
+    # output from the ``git rev-parse HEAD'' command above: do
+    # that twice here and once further below.
+    mv temp 2017-12-07-6be8298fe5
+    cd 2017-12-07-6be8298fe5/ccl
+
+  Next fetch and extract a development snapshot.  The version below is
+  current as of this writing (April, 2021), but see
+  {https://github.com/Clozure/ccl/releases/ |
+  https://github.com/Clozure/ccl/releases/} for the latest snapshots.
+
+    curl -O -L https://github.com/Clozure/ccl/releases/download/v1.12/darwinx86.tar.gz
+
+  Rebuild the lisp kernel by hand before trying to rebuild the lisp.
+  (Note: This step was formerly unnecessary and might become
+  unnecessary again, but it seems to have been necessary on MacOS
+  Catalina (10.15).
+
+    cd lisp-kernel/darwinx8664; make clean; make
+    cd -
+
+  Rebuild and quit, twice.
+
+    echo '(rebuild-ccl :clean t)' | ./lx86cl64
+    echo '(rebuild-ccl :clean t)' | ./lx86cl64
+
+  Create an executable script like the following.  You might want to
+  call it ``ccl'' and put it into a directory on your path.  Be sure
+  to change the name (shown as ``2017-12-07-6be8298fe5'' above) to
+  match the name change already made above.
+
+    #!/bin/sh
+
+    export CCL_DEFAULT_DIRECTORY=/projects/acl2/lisps/ccl/2017-12-07-6be8298fe5/ccl
+    ${CCL_DEFAULT_DIRECTORY}/scripts/ccl64 \"$@\"
+
+  Now ensure that your script is executable, e.g.:
+
+    chmod +x my-script
+
+  You're done!  (Note however that certification of [books] that use
+  [Quicklisp] may require openssl to be installed if it is not
+  already on your system.)")
  (CCL-UPDATES (POINTERS)
               "See [ccl-installation].")
  (CDAAAR
@@ -26713,14 +26877,21 @@ Subtopics
   of successively rel-smaller mp-objects.  Thus, the recursion must
   terminate.
 
-  The only primitive well-founded relation in ACL2 is [o<] (see [o<]),
-  which is known to be well-founded on the [o-p]s (see [o-p]).  For
-  the proof of well-foundedness, see [proof-of-well-foundedness].
-  However it is possible to add new well-founded relations.  For
-  details, see [well-founded-relation].  We discuss later how to
-  specify which well-founded relation is selected by defun and in the
-  present discussion we assume, without loss of generality, that it
-  is [o<] on the [o-p]s.
+  The default well-founded relation is [o<], an ``ordinal less-than''
+  relation (discussed further below) that reduces to ordinary < on
+  the natural numbers.  The default measure term is (acl2-count var),
+  where var is a formal parameter that is chosen heuristically:
+  roughly speaking, it is the first formal that is tested along every
+  branch and changed in each recursive call.
+
+  The only primitive well-founded relation in ACL2 is [o<], which is
+  known to be well-founded on the [o-p]s.  For the proof of
+  well-foundedness, see [proof-of-well-foundedness].  However it is
+  possible to add new well-founded relations.  For details, see
+  [well-founded-relation].  We discuss later how to specify which
+  well-founded relation is selected by defun and in the present
+  discussion we assume, without loss of generality, that it is [o<]
+  on the [o-p]s.
 
   For example, for our generic definition of fn above, with measure
   term (m x y), two theorems must be proved.  The first establishes
@@ -38666,7 +38837,9 @@ Subtopics
   suggest downloading the community books.)  The book \"top-with-meta\"
   is the most elementary and most widely used arithmetic book.  Other
   community books include \"arithmetic-5/top\" and various hardware and
-  floating-point arithmetic books.
+  floating-point arithmetic books; if including
+  \"arithmetic/top-with-meta\" isn't sufficient, you could try
+  (include-book \"arithmetic-5/top\" :dir :system).
 
   Rules Concluding with Arithmetic Inequalities: If you are tempted to
   create a rewrite rule with an arithmetic inequality as its
@@ -45008,9 +45181,6 @@ Subtopics
 
 
 Subtopics
-
-  [Ccl-installation]
-      Installing Clozure Common Lisp (CCL)
 
   [Fast-alists]
       Alists with hidden hash tables for faster execution
@@ -85803,6 +85973,11 @@ Changes to Existing Features
   comment in [community-book] books/system/doc/acl2-doc.lisp, form
   (defxdoc note-8-4 ...).
 
+  When [certify-book] directs printing of [useless-runes], each tuple
+  is now printed on a single line starting after a space.  See
+  [useless-runes] for details.  Thanks to Eric Smith for requesting
+  this enhancement, which can support grep-like tools.
+
 
 New Features
 
@@ -86232,6 +86407,14 @@ Changes at the System Level
   (accessible from the ``Obtaining, Installing, and License'' link on
   the ACL2 home page).  Thanks to Petter Gustad for an inquiry
   leading to these improvements.
+
+  When invoking `make' to build the ACL2 executable, output from the
+  build process is now written to file make.log.  The terminal output
+  is now minimal.  If there is already a file make.log, it is first
+  moved to make.log.bak.  See file GNUmakefile for additional
+  documentation.  Thanks to Alessandro Coglio and Eric Smith for
+  suggesting this change, and to David Rager for pointing out
+  associated changes to make for Jenkins builds.
 
 
 EMACS Support
@@ -90692,6 +90875,9 @@ Subtopics
 
   [Add-to-set-equal]
       See [add-to-set].
+
+  [All-attachments]
+      See [system-utilities].
 
   [All-calls]
       See [system-utilities].
@@ -103203,12 +103389,13 @@ Subtopics
 
   One might expect ACL2's termination analysis to admit this function,
   since we know that (cdr x) is ``smaller'' than x if (consp x) is
-  true.  (By default, ACL2's notion of ``smaller'' is ordinary
+  true.  (ACL2's notion of ``smaller'' here is essentially ordinary
   natural-number <, and the argument x is measured by applying
-  function acl2-count to x.)  However, by default that termination
-  analysis does not consider [if] tests, like (consp x) above, when
-  they occur under calls of functions other than IF, such as CONS in
-  the case above; it considers only rulers, as we now discuss.
+  function [ACL2-count] to x; see [defun].)  However, by default that
+  termination analysis does not consider [if] tests, like (consp x)
+  above, when they occur under calls of functions other than IF, such
+  as CONS in the case above; it considers only rulers, as we now
+  discuss.
 
   In the example above, we say that the term (consp x) governs the
   recursive call (f (cdr x)) shown above, but does not rule that
@@ -111253,12 +111440,13 @@ Subtopics
   using ([set-verify-guards-eagerness] 0) to avoid [guard]
   verification.
 
-  The documentation in this section is laid out in the form of a tour
-  that visits the documented topics in a reasonable order.  We
-  recommend that you follow the tour the first time you read about
-  stobjs.  The list of all stobj topics is shown below.  The tour
-  starts immediately afterwards.  Also see [defstobj] and, for
-  so-called abstract stobjs, see [defabsstobj].
+  This topic introduces the notion of a ``stobj'', or single-threaded
+  object.  It concludes with a link to a tour that introduces the use
+  of stobjs by way of examples.  We recommend that you follow that
+  link the first time you read about stobjs.  Detailed reference
+  documentation about stobjs may be found in the subtopics listed at
+  the end below; in particular see [defstobj] and, for so-called
+  abstract stobjs, see [defabsstobj].
 
   As noted, a ``single-threaded object'' is a data structure whose use
   is so syntactically restricted that only one instance of the object
@@ -111290,12 +111478,13 @@ Subtopics
 
     * OBJ is a top-level global variable that contains the current object,
       obj.
-    * If a function uses the formal parameter OBJ, the only ``actual
-      expression'' that can be passed into that slot is the variable
-      OBJ, not merely a term that ``evaluates to an obj''; thus, such
-      functions can only operate on the current object.  So for
-      example, instead of (FOO (UPDATE-FIELD1 3 ST)) write (LET ((ST
-      (UPDATE-FIELD1 3 ST))) (FOO ST)).
+    * If a function uses the formal parameter OBJ that is declared as a
+      stobj, the only ``actual expression'' that can be passed into
+      that slot is the variable OBJ, not merely a term that
+      ``evaluates to an obj''; thus, such functions can only operate
+      on the current object.  So for example, instead of (FOO
+      (UPDATE-FIELD1 3 ST)) write (LET ((ST (UPDATE-FIELD1 3 ST)))
+      (FOO ST)).
     * The accessors and updaters have a formal parameter named OBJ, so by
       the rule just above, those functions can only be applied to the
       current object.  The recognizer is the one exception to the
@@ -111339,8 +111528,8 @@ Subtopics
   keywords allow inlining and renaming of stobj accessors and
   updaters.
 
-  But we are getting ahead of ourselves.  To start the stobj tour, see
-  [stobj-example-1].
+  But we are getting ahead of ourselves.  To start the stobj tour
+  recommended earlier in this topic, see [stobj-example-1].
 
 
 Subtopics
@@ -114186,6 +114375,15 @@ List of a few built-in system utilities
       \"COMMON-LISP\" package.  New function symbols cannot be in the
       \"COMMON-LISP\" package; thus, this utility may be appropriate
       when generating new function names from old ones.
+    * (all-attachments wrld): Return a list of all attachment pairs (f . g)
+      where g is attached to f (see [defattach]) in the [world],
+      wrld, except for two cases that are ignored for this purpose:
+      [warrant]s, and attachments introduced with a non-nil value of
+      :skip-checks.  To obtain the attachment to a function symbol f,
+      without the restrictions above and with value nil if there is
+      no attachment to f, evaluate (cdr (attachment-pair 'f wrld)).
+      To obtain the list of all built-in attachments, evaluate
+      (global-val 'attachments-at-ground-zero (w state)).
     * (all-calls names term alist ans): Accumulate into ans (which
       typically is nil at the top level) all pseudo-terms u/alist
       such that for some f in the list, names, u is a subterm of the
@@ -123788,12 +123986,15 @@ Detailed Documentation
 
   When certify-book is supplied with option :useless-runes :write, the
   result is to write out a corresponding @useless-runes.lsp file.
-  Each top-level entry of this file has the form
+  Each top-level entry of this file that is non-trivial (see below)
+  has the form
 
-    (name (frames-1 tries-1 rune-1)
-          (frames-2 tries-2 rune-2)
-          ...
-          (frames-k tries-k rune-k))
+    (name
+     (frames-1 tries-1 rune-1)
+     (frames-2 tries-2 rune-2)
+     ...
+     (frames-k tries-k rune-k)
+     )
 
   where name is the name of a [defthm], [defun], or [verify-guards]
   event, and each tuple (frames-i tries-i rune-i) indicates the
@@ -123806,6 +124007,13 @@ Detailed Documentation
   top to bottom.  Because of [local] [events], the same name may
   appear more than once; we say more about this in the ``Subtleties''
   section, below.
+
+  Note that ``trivial'' entries are possible, where there are no
+  tuples; in that case, just (name) is printed, on a single line.
+  Otherwise printing uses the format shown above, where the first
+  line contains a left parenthesis on the left margin followed by the
+  name, and each tuple is on a single line starting in column 1
+  (i.e., after a single space), as is the final right parenthesis.
 
   When certify-book is supplied with option :useless-runes :read or
   :useless-runes :read?, then book certification takes advantage of
@@ -123823,13 +124031,15 @@ Detailed Documentation
   @useless-runes.lsp file are to be kept disabled; so if the relevant
   top-level form in that file is
 
-    (name (frames-1 tries-1 rune-1)
-          (frames-2 tries-2 rune-2)
-          (frames-2 tries-2 rune-3)
-          (frames-2 tries-2 rune-4)
-          (frames-2 tries-2 rune-5)
-          (frames-2 tries-2 rune-6)
-          (frames-k tries-k rune-7))
+    (name
+     (frames-1 tries-1 rune-1)
+     (frames-2 tries-2 rune-2)
+     (frames-3 tries-3 rune-3)
+     (frames-4 tries-4 rune-4)
+     (frames-5 tries-5 rune-5)
+     (frames-6 tries-6 rune-6)
+     (frames-7 tries-7 rune-7)
+     )
 
   then 1/5 of the 7 runes are to be disabled, so since the first
   integer greater than or equal to 7/5 is 2, the runes rune-1 and
