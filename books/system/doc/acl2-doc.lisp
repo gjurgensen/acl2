@@ -6996,7 +6996,7 @@ and @(tsee include-book)"
  of an expression returns a non-@('nil') value, causing an error otherwise.
  Calls of @('assert-event') are @(see event) forms; thus, they may occur in
  @(see books) as well as @(tsee encapsulate) and @(tsee progn) events.  See
- also @(see assert!) and @(see assert@-stobj) for simple interfaces to
+ also @(see assert!) and @(see assert!-stobj) for simple interfaces to
  @('assert-event').  See @(see assert$) and @(see assert*) for
  assertion-checking utilities to use in programs.</p>
 
