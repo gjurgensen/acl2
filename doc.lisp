@@ -109746,9 +109746,9 @@ Subtopics
 
       w --- Walk around the object with a structure editor
 
-      t --- Print the object in full
+      y --- Print the object in full
 
-      nil --- Do not print any more of the object
+      n --- Do not print any more of the object
 
   Show-bdd actually has four optional arguments, probably rarely used.
   The general form is
@@ -109757,11 +109757,13 @@ Subtopics
 
   where goal-name is the name of the goal on which the :[bdd] hint was
   used (or, nil if the system should find such a goal), goal-ans is
-  the answer to be used in place of the query for whether to print
-  the input goal in full, falsifying-ans is the answer to be used in
-  place of the query for whether to print the falsifying constraints
-  in full, and term-ans is the answer to be used in place of the
-  query for whether to print the resulting [term] in full.")
+  nil if there is to be a query and otherwise is the answer to be
+  used (without a query) for whether to print the input goal in full
+  (t for 'y', nil for 'n', and :w for 'w'), falsifying-ans is the
+  answer to be used in place of the query for whether to print the
+  falsifying constraints in full, and term-ans is the answer to be
+  used in place of the query for whether to print the resulting
+  [term] in full.")
  (SHOW-BODIES
   (DEFINITION)
   "Show the potential definition bodies

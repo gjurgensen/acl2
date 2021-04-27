@@ -108713,9 +108713,9 @@ arithmetic) for libraries of @(see books) for arithmetic reasoning.</p>")
  <blockquote><p>@(' w') &mdash; Walk around the object with a structure
  editor</p>
 
- <p>@(' t') &mdash; Print the object in full</p>
+ <p>@(' y') &mdash; Print the object in full</p>
 
- <p>@('nil') &mdash; Do not print any more of the object</p></blockquote>
+ <p>@(' n') &mdash; Do not print any more of the object</p></blockquote>
 
  <p>@('Show-bdd') actually has four optional arguments, probably rarely used.
  The general form is</p>
@@ -108726,11 +108726,13 @@ arithmetic) for libraries of @(see books) for arithmetic reasoning.</p>")
 
  <p>where @('goal-name') is the name of the goal on which the @(':')@(tsee bdd)
  hint was used (or, @('nil') if the system should find such a goal),
- @('goal-ans') is the answer to be used in place of the query for whether to
- print the input goal in full, @('falsifying-ans') is the answer to be used in
- place of the query for whether to print the falsifying constraints in full,
- and @('term-ans') is the answer to be used in place of the query for whether
- to print the resulting @(see term) in full.</p>")
+ @('goal-ans') is @('nil') if there is to be a query and otherwise is the
+ answer to be used (without a query) for whether to print the input goal in
+ full (@('t') for '@('y')', @('nil') for '@('n')', and @(':w') for '@('w')'),
+ @('falsifying-ans') is the answer to be used in place of the query for whether
+ to print the falsifying constraints in full, and @('term-ans') is the answer
+ to be used in place of the query for whether to print the resulting @(see
+ term) in full.</p>")
 
 (defxdoc show-bodies
   :parents (definition)
