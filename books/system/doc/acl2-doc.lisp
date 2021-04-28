@@ -87743,6 +87743,10 @@ it."
  now @(tsee assert-event), which in turn uses @('value-triple') to check the
  supplied assertion.</p>
 
+ <p>The ACL2 @(tsee bdd) package can now reason using the implicit rewrite rule
+ @('(equal (consp (cons x y)) t)').  Thanks to Warren Hunt for requesting this
+ enhancement.</p>
+
  <h3>New Features</h3>
 
  <p>A new option for @(tsee certify-book), @(':useless-runes'), makes it
@@ -88120,6 +88124,10 @@ it."
  version of an abstract @(see stobj) export has the corresponding concrete
  stobj as a formal parameter that is declared as a @(see stobj).  Formerly, a
  confusing hard error could occur in this case.</p>
+
+ <p>An unfortunate ``Proof skipped'' could be printed during the
+ @('include-book') phase of @(tsee certify-book) for certain uses of @(tsee
+ make-event), including calls of @(tsee thm).  This has been fixed.</p>
 
  <h3>Changes at the System Level</h3>
 

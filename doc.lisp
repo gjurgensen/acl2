@@ -86033,6 +86033,10 @@ Changes to Existing Features
   [assert!-stobj].  That single utility is now [assert-event], which
   in turn uses value-triple to check the supplied assertion.
 
+  The ACL2 [bdd] package can now reason using the implicit rewrite rule
+  (equal (consp (cons x y)) t).  Thanks to Warren Hunt for requesting
+  this enhancement.
+
 
 New Features
 
@@ -86397,6 +86401,10 @@ Bug Fixes
   version of an abstract [stobj] export has the corresponding
   concrete stobj as a formal parameter that is declared as a [stobj].
   Formerly, a confusing hard error could occur in this case.
+
+  An unfortunate ``Proof skipped'' could be printed during the
+  include-book phase of [certify-book] for certain uses of
+  [make-event], including calls of [thm].  This has been fixed.
 
 
 Changes at the System Level
