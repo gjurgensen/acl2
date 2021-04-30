@@ -87813,6 +87813,23 @@ it."
  a warning is printed.  Thanks to Alessandro Coglio and Eric Smith for the
  suggestion.</p>
 
+ <p>@(see Table)s may now supply custom error messages for table @(':guard')
+ failures.  This is accomplished by supplying a table @(':guard') that returns
+ two values instead of one.  For a return @('(mv okp msg)'), if @('okp') is
+ non-@('nil') then the table guard is considered to be true, that is, it has
+ the same meaning as a non-@('nil') single-value return.  Also, @('(mv nil
+ nil)') has the same meaning and effect as a @('nil') single-value return: the
+ table guard fails, and a generic error message is printed about the illegal
+ key/value pair.  The new case is a return of @('(mv nil msg)'), where @('msg')
+ should be a @(tsee msgp) &mdash; a string or a cons suitable for printing with
+ the @(tsee fmt) directive, @('~@').  In that case, @('msg') is printed (using
+ the @(tsee fmt) directive, @('~@')) instead of a generic error message.  This
+ new feature is now used in some built-in tables.  See @(see table).</p>
+
+ <p>The @(see proof-builder) command @(tsee type-alist) has a new optional
+ argument that supports printing the type-alist in an alist format.  Thanks to
+ Mihir Mehta for requesting this feature.</p>
+
  <h3>Heuristic and Efficiency Improvements</h3>
 
  <p>We changed the lightweight ``preprocess'' simplifier for ``@(see simple)''
@@ -113876,16 +113893,47 @@ arithmetic) for libraries of @(see books) for arithmetic reasoning.</p>")
   (table name nil nil :guard term)
  })
 
- <p>Provided the named table is empty and has not yet been assigned a
- @(':guard') and @('term') (which is not evaluated) is a term that mentions at
- most the variables @('KEY'), @('VAL'), @('WORLD'), @('ENS'), and @('STATE'),
- this event sets the @(':guard') of the named table to @('term').  Whenever a
- subsequent @(':put') occurs, @('term') will be evaluated with @('KEY') bound
- to the key argument of the @(':put'), @('VAL') bound to the @('val') argument
- of the @(':put'), @('WORLD') bound to the then current @(see world), @('ENS')
- bound to the enabled structure representing the current theory, and @('STATE')
- bound to the ACL2 @(see state).  An error will be caused by the @(':put') if
- the result of the evaluation is @('nil').</p>
+ <p>This event sets the @(':guard') of the named table to @('term'), provided
+ the following requirements are met.  The named table must be empty and it must
+ not have been assigned a @(':guard') yet.  @('Term') (which is not evaluated)
+ should be a term that mentions at most the variables @('KEY'), @('VAL'),
+ @('WORLD'), @('ENS'), and @('STATE').  In the common case @('term') will
+ evaluate to a single value, but it can return two values as discussed later
+ below; either way, it must not return @('STATE').</p>
+
+ <p>Whenever a subsequent @(':put') occurs, @('term') will be evaluated with
+ @('KEY') bound to the key argument of the @(':put'), @('VAL') bound to the
+ @('val') argument of the @(':put'), @('WORLD') bound to the then current @(see
+ world), @('ENS') bound to the enabled structure representing the current
+ theory, and @('STATE') bound to the ACL2 @(see state).  The term is evaluated.
+ An error will be caused by the @(':put') if the result of the evaluation is
+ @('nil') when a single value is returned; what if two values are returned?</p>
+
+ <p>If the term returns multiple values @('(mv okp msg)'), then an error will
+ be caused if @('okp') is @('nil').  In that case, if @('msg') is also @('nil')
+ then a generic error message is printed about the illegal key/value pair, just
+ as in the single-value return case.  Otherwise @('msg') should be a @(tsee
+ msgp) &mdash; a string or a cons suitable for printing with the @(tsee fmt)
+ directive, @('~@').  In that case, @('msg') is printed (using @(tsee fmt)
+ @('~@')) instead of the generic error message.  Here is a simple example from
+ the ACL2 sources.</p>
+
+ @({
+ (defun partial-functions-table-guard (fn val wrld)
+   (let ((msg0 ; nil if fn/val is OK as a key/value pair, else a msg
+          (partial-functions-table-guard-msg fn val wrld)))
+     (cond
+      (msg0 (mv nil
+                (msg
+                 \"Illegal partial-functions-table key and value (see :DOC ~
+                  memoize-partial):~|key = ~y0value  = ~y1Reason:~%~@2~|~%\"
+                 fn val msg0)))
+      (t (mv t nil)))))
+
+ (table partial-functions-table nil nil
+        :guard
+        (partial-functions-table-guard key val world))
+ })
 
  <p>Note that it is not allowed to change the @(':guard') on a table once it
  has been explicitly set.  Before the @(':guard') is explicitly set, it is
@@ -132921,26 +132969,34 @@ move to the top of the goal"
 display the @(see type-alist) from the current context"
   :long "@({
   Examples:
-  (type-alist t t)     ; display type-alist based on conclusion and governors
-  (type-alist t t t)   ; as above, but also display forward-chaining report
-  type-alist           ; same as (type-alist nil t) -- governors only
-  (type-alist nil)     ; same as (type-alist nil t) -- governors only
-  (type-alist t)       ; same as (type-alist t nil) -- conclusion only
-  (type-alist nil nil) ; display type-alist without considering
-                       ; conclusion or governors
+  (type-alist nil t nil) ; display type-alist based on governors (default)
+  type-alist             ; same as (type-alist nil t) -- governors only
+  (type-alist t t)       ; display type-alist based on conclusion and governors
+  (type-alist t t t)     ; as above, but also display forward-chaining report
+  type-alist             ; same as (type-alist nil t) -- governors only
+  (type-alist nil)       ; same as (type-alist nil t) -- governors only
+  (type-alist t)         ; same as (type-alist t nil) -- conclusion only
+  (type-alist nil nil)   ; based on neither conclusion nor governors
+  (type-alist nil t nil nil)  ; same as type-alist (default) -- governors only
+  (type-alist nil t nil :raw) ; governors only, raw alist format
+  (type-alist nil t nil t)    ; governors only, simple alist format
 
   General Form:
-  (type-alist &optional concl-flg govs-flg fc-report-flg)
+  (type-alist &optional concl-flg govs-flg fc-report-flg alistp)
  })
 
  <p>where if @('govs-flg') is omitted then it defaults to @('(not concl-flg)'),
- and @('concl-flg') and @('fc-report-flg') default to @('nil').</p>
+ and each of the other optional arguments defaults to @('nil').</p>
 
  <p>Display the current assumptions as a @(see type-alist).  Note that this
  display includes the result of forward chaining.  When @('fc-report-flg') is
  supplied a non-@('nil') value, the display also includes a forward-chaining
  report; otherwise,the presence or absence of such a report is controlled by
- the usual global settings (see @(see forward-chaining-reports)).</p>
+ the usual global settings (see @(see forward-chaining-reports)).  By default,
+ the display is organized by type, with terms shown of each type; but when
+ @('alistp') is @(':raw') then the underlying type-alist structure is shown,
+ which is made more user-friendly when any other non-@('nil') value of
+ @('alistp') is provided.</p>
 
  <p>There are two basic reasons contemplated for using this command.</p>
 
