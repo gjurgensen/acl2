@@ -86478,7 +86478,9 @@ Changes at the System Level
   Fixed builds that use a relative pathname for the LISP environment
   variable (for host Lisps CCL, SBCL, Allegro CL, and CMUCL; GCL and
   LispWorks didn't seem to have this problem).  Thanks to Mihir Mehta
-  for bringing this issue to our attention.
+  for bringing this issue to our attention; and thanks to Andrew
+  Walter for reporting a problem with our first solution for SBCL and
+  proposing an alternative, which we adopted.
 
   Fixed the process for running ACL2 without building an executable
   image.  Some initialization that was missing from that process is
