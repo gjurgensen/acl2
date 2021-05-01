@@ -56700,11 +56700,11 @@ Subtopics
   it is a call of a function on distinct variables.
 
   This page discusses rewriting from the logical perspective.  It is
-  important that you are familiar with the notions of a pattern term
+  important that you are familiar with the notions of a target term
   being an instance (see
-  [LOGIC-KNOWLEDGE-TAKEN-FOR-GRANTED-INSTANCE]) of a target term.  We
-  often say the pattern matches the target.  These notions involve a
-  corresponding substitution of terms for variables.  All these
+  [LOGIC-KNOWLEDGE-TAKEN-FOR-GRANTED-INSTANCE]) of a pattern term.
+  We often say the pattern matches the target.  These notions involve
+  a corresponding substitution of terms for variables.  All these
   notions are discussed in the link for ``instance (see
   [LOGIC-KNOWLEDGE-TAKEN-FOR-GRANTED-INSTANCE])'' above and we
   recommend you read it before continuing.  Then use your browser's

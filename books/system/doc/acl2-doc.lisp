@@ -52600,15 +52600,15 @@ forms allowed for a @('let') form are  @('ignore'), @('ignorable'), and
  a function on distinct variables.</p>
 
  <p>This page discusses <i>rewriting</i> from the logical perspective.  It is
- important that you are familiar with the notions of a <i>pattern</i> term
- being an <see topic='@(url
- LOGIC-KNOWLEDGE-TAKEN-FOR-GRANTED-INSTANCE)'>instance</see> of a <i>target</i>
- term.  We often say the pattern <i>matches</i> the target.  These notions
- involve a corresponding <i>substitution</i> of terms for variables.  All these
- notions are discussed in the link for ``<see topic='@(url
- LOGIC-KNOWLEDGE-TAKEN-FOR-GRANTED-INSTANCE)'>instance</see>'' above and we
- recommend you read it before continuing.  Then use your browser's <b>Back
- Button</b> to come back here.</p>
+ important that you are familiar with the notions of a <i>target</i> term being
+ an <see topic='@(url
+ LOGIC-KNOWLEDGE-TAKEN-FOR-GRANTED-INSTANCE)'>instance</see> of a
+ <i>pattern</i> term.  We often say the pattern <i>matches</i> the target.
+ These notions involve a corresponding <i>substitution</i> of terms for
+ variables.  All these notions are discussed in the link for ``<see
+ topic='@(url LOGIC-KNOWLEDGE-TAKEN-FOR-GRANTED-INSTANCE)'>instance</see>''
+ above and we recommend you read it before continuing.  Then use your browser's
+ <b>Back Button</b> to come back here.</p>
 
  <p>You should also be aware of the terms introduced in our discussion of <see
  topic='@(url
