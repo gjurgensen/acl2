@@ -56739,10 +56739,10 @@ Subtopics
   rearrange it equivalently into this form for the purposes of this
   one rewrite step.
 
-  Suppose pattern is an instance of some target term, target that
-  occurs in your goal conjecture.  Let the corresponding substitution
-  be sigma.  If sigma does not contain a binding for every variable
-  that occurs in Theorem, then extend sigma to sigma' by adding one
+  Suppose some target term, target that occurs in your goal conjecture
+  is an instance of pattern.  Let the corresponding substitution be
+  sigma.  If sigma does not contain a binding for every variable that
+  occurs in Theorem, then extend sigma to sigma' by adding one
   binding for each such variable.  (This is necessary only if pattern
   does not contain every variable in Theorem.)
 

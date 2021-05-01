@@ -52640,8 +52640,8 @@ forms allowed for a @('let') form are  @('ignore'), @('ignorable'), and
  don't matter.  Just take a theorem and use propositional calculus to rearrange
  it equivalently into this form for the purposes of this one rewrite step.</p>
 
- <p>Suppose <i>pattern</i> is an instance of some target term, <i>target</i>
- that occurs in your goal conjecture.  Let the corresponding substitution be
+ <p>Suppose some target term, <i>target</i> that occurs in your goal conjecture
+ is an instance of <i>pattern</i>.  Let the corresponding substitution be
  <i>sigma</i>.  If <i>sigma</i> does not contain a binding for every variable
  that occurs in <i>Theorem</i>, then extend <i>sigma</i> to <i>sigma'</i> by
  adding one binding for each such variable.  (This is necessary only if
