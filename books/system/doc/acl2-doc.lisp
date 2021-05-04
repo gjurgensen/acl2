@@ -3,7 +3,7 @@
 ; acl2-doc.lisp - Documentation for the ACL2 Theorem Prover
 ;
 ; ACL2 Version 8.3 -- A Computational Logic for Applicative Common Lisp
-; Copyright (C) 2020, Regents of the University of Texas
+; Copyright (C) 2021, Regents of the University of Texas
 ;
 ; This documentation was derived from the ACL2 system in October 2013, which
 ; was a descendant of ACL2 Version 1.9, Copyright (C) 1997 Computational Logic,
@@ -69,6 +69,7 @@
     (ARITHMETIC/NATP-POSP "[books]/arithmetic/natp-posp.lisp")
     (ARITY+ "[books]/kestrel/std/system/arity-plus.lisp")
     (ASSERT! "[books]/std/testing/assert-bang.lisp")
+    (ASSERT!-STOBJ "[books]/std/testing/assert-bang-stobj.lisp")
     (B* "[books]/std/util/bstar.lisp")
     (BRIDGE "[books]/centaur/bridge/top.lisp")
     (BUILD::CERT.PL "[books]/build/doc.lisp")
@@ -755,7 +756,7 @@
 (defxdoc about-acl2
   :parents (acl2)
   :short "General information About ACL2"
-  :long "<p>This is @(`(:raw (@ acl2-version))`), @(see copyright) (C) 2020,
+  :long "<p>This is @(`(:raw (@ acl2-version))`), @(see copyright) (C) 2021,
  Regents of the University of Texas, authored by Matt Kaufmann and J Strother
  Moore.</p>
 
@@ -6957,11 +6958,13 @@ and @(tsee include-book)"
  then a proof obligation will be that the occurrence of @('test') is never
  @('nil').</p>
 
- <p>See @(see assert-event) for related utilities that offer a variety of
- features.  In particular, both @(tsee assert$) and @(tsee assert*) create a
- @(see guard) proof obligation (when used in a definition made in @(tsee
+ <p>See also @(tsee assert*).  Both @(tsee assert$) and @(tsee assert*) create
+ a @(see guard) proof obligation (when used in a definition made in @(tsee
  logic)-mode).  However, @('assert$') checks the assertion at runtime, while
- @('assert*') does not.</p>")
+ @('assert*') does not.</p>
+
+ <p>Also see @(see assert-event) for an assertion-checking utility that is an
+ @(see event).</p>")
 
 (defxdoc assert*
   :parents (errors acl2-built-ins)
@@ -6981,81 +6984,112 @@ and @(tsee include-book)"
  made in @(tsee logic)-mode).  However, @('assert$') checks the assertion at
  runtime, while @('assert*') does not.</p>
 
+ <p>Also see @(see assert-event) for an assertion-checking utility that is an
+ @(see event).</p>
+
  @(def assert*)")
 
 (defxdoc assert-event
   :parents (events errors)
   :short "Assert that a given form returns a non-@('nil') value"
-  :long "<p>@('Assert-event') provides a way to check that the value of an
- expression is not @('nil'), causing an error otherwise.  For a similar utility
- see the macro @(tsee assert!) defined in @(see community-books) file
- @('books/std/testing/assert.lisp').  Here we compare the two, highlighting
- some key differences.</p>
+  :long "<p>@('Assert-event') provides a flexible way to check that evaluation
+ of an expression returns a non-@('nil') value, causing an error otherwise.
+ Calls of @('assert-event') are @(see event) forms; thus, they may occur in
+ @(see books) as well as @(tsee encapsulate) and @(tsee progn) events.  See
+ also @(see assert!) and @(see assert!-stobj) for simple interfaces to
+ @('assert-event').  See @(see assert$) and @(see assert*) for
+ assertion-checking utilities to use in programs.</p>
 
- <ul>
-
- <li>Both @('assert!') and @('assert-event') evaluate using the current @(see
- guard)-checking status (e.g., see @(see with-guard-checking)).  However,
- @('Assert-event') evaluates using the same ``safe-mode'' that is used during
- macroexpansion, which essentially enforces guard checking for @(see
- primitive)s.  For example, @('(assert! (equal (car 3) nil))') causes an error
- by default but succeeds after @('(set-guard-checking nil)'), but
- @('(assert-event (equal (car 3) nil))') always causes an error.</li>
-
- <li>@('Assert!') is implemented using @(tsee make-event), so in unusual cases
- it could cause @(see certificate) files to be large.</li>
-
- <li>@('Assert-event') provides two keyword arguments not directly available in
- @('assert!'): @(':msg'), for custom error messages; and @(':on-skip-proofs'),
- to control whether or not the check is done when skipping proofs, as is the
- case during @(tsee include-book).  Of course, one could modify @('assert!'),
- or wrap its calls inside other code, to do these sorts of things.</li>
-
- <li>@('Assert!') allows one to specify an event when the check passes.  Of
- course, this could easily be accomplished by combining the use of @(tsee
- progn) and @(tsee assert-event).</li>
-
- <li>@('Assert-event') is built into ACL2, so it can be used without including
- a book.  On the other hand, since @('assert!') is in a book, the ACL2
- community is welcome to modify it to improve it.</li>
-
- </ul>
+ <p>Basic calls of @('assert-event') will take just one argument, called an
+ ``assertion'', which is a form that evaluates to a single value that is not a
+ @(see stobj).  The following log shows a successful invocation &mdash; one
+ where the assertion evaluates to a non-@('nil') value.</p>
 
  @({
- Examples:
- (assert-event (equal (+ 3 4) 7))
- (assert-event (equal (+ 3 4) 7) :msg (msg \"Error: ~x0\" 'equal-check))
- (assert-event (equal (+ 3 4) 7) :on-skip-proofs t)
-
- General Form:
- (assert-event form ; keyword arguments are optional
-               :on-skip-proofs t :msg msg)
+ ACL2 !>(assert-event (equal (+ 3 4) 7))
+  :PASSED
+ ACL2 !>
  })
 
- <p>@('Assert-event') takes a ground form, i.e., one with no free variables;
- @(tsee stobj)s are allowed but only a single non-@(tsee stobj) value can be
- returned.  The form is then evaluated and if the result is @('nil'), then a
- so-called hard error (see @(see er)) results.  This evaluation is however not
- done if proofs are being skipped, as during @(tsee include-book) (also see
- @(see skip-proofs) and see @(see ld-skip-proofsp)), unless @(':on-skip-proofs
- t') is supplied.</p>
+ <p>Such a use of @('assert-event') will probably suffice for most users, that
+ is, where the form evaluates to a single non-stobj value and there are no
+ keyword arguments.  The keyword arguments, which are optional and discussed
+ below, extend that functionality, for example: multiple values are permitted
+ by keyword @(':stobjs-out'), and keyword @(':on-skip-proofs') can override the
+ default behavior of ignoring assertions when proofs are being skipped.</p>
 
- <p>Normally, if an @('assert-event') call fails then a generic failure message
- is printed, showing the offending form.  However, if keyword argument
- @(':msg') is supplied, then the failure message is printed as with @(tsee fmt)
- argument @('~@0'); see @(see fmt).  In particular, @(':msg') is typically a
- string or a call @('(msg str arg-0 arg-1 ... arg-k)'), where @('str') is a
- string and each @('arg-i') is the value to be associated with @('#\\i') upon
- formatted printing (as with @(tsee fmt)) of the string @('str').</p>
+ @({
+ General Form:
+ (assert-event assertion
+               :event event           ; default nil
+               ;; evaluated keyword arguments:
+               :ctx                   ; default 'assert-event
+               :msg msg               ; default t
+               :on-skip-proofs sp     ; default nil
+               :safe-mode safe-mode   ; default :same
+               :stobjs-out stobjs-out ; default nil
+               )
+ })
 
- <p>This form may be put into a book to be certified (see @(see books)),
- because @('assert-event') is a macro whose calls expand to calls of
- @('value-triple') (see @(see embedded-event-form)).  When certifying a book,
- guard-checking is off, as though @('(set-guard-checking nil)') has been
- evaluated; see @(see set-guard-checking).  That, together with a ``safe
- mode,'' guarantees that @('assert-event') forms are evaluated in the logic
- without ill-guarded calls of @(':')@(tsee program)-mode functions while
- certifying a book.</p>")
+ <p>where @('assertion') and @('event') are not evaluated but all the other
+ arguments are evaluated, with the defaults shown above corresponding to values
+ after evaluation.</p>
+
+ <p>The following example illustrates all of the keyword arguments, which are
+ documented below.</p>
+
+ @({
+ (assert-event (mv (equal (+ 3 4) 7) state)
+               :event (defun f (x) (cons x x))
+               :ctx '(assert-event . <some-mv>)
+               :msg (msg \"Oops, I forgot what ~x0+~x1 is!\" 3 4)
+               :on-skip-proofs t
+               :safe-mode nil
+               :stobjs-out '(nil state))
+ })
+
+ <p>@('Assert-event') is a macro whose expansion directly produces a call of
+ the primitive event, @('value-triple'), where: if a call of @('assert-event')
+ speifies @(':msg msg'), then the corresponding call of @('value-triple')
+ specifies @(':check (or msg t)').  But unlike @('value-triple'),
+ @('assert-event') can specify an event to evaluate when the assertion has
+ non-@('nil') value, using the @(':event') keyword.  (You can get a sense of
+ the @('value-triple') call generated from an @('assert-event') call by using
+ @(':')@(tsee trans1) on the @('assert-event') form.)  The remaining keyword
+ arguments of @('assert-event') are also arguments of @('value-triple').  Here
+ is a brief summary of the keyword arguments, but <b>NOTE</b>: see @(see
+ value-triple) for more detailed explanations of keywords other than
+ @(':EVENT').</p>
+
+ <p>@(':EVENT event') (default @('nil')): When @('event') is not @('nil'), it
+ should be an @(see event), that is, a form that may be in a book or a call of
+ @(tsee encapsulate) or @(tsee progn).  If the assertion evaluates to a
+ non-@('nil') value (or to multiple values where the first value is not a stobj
+ and is non-@('nil'); see @(':STOBJS-OUT') below), then @('event') is
+ evaluated; otherwise the evaluation results in an error.</p>
+
+ <p>@(':CTX ctx') (default: @(''assert-event')): context for error messages.</p>
+
+ <p>@(':MSG msg') (default: @('t')): message to print when there is an
+ error (equivalent to keyword argument @(':CHECK') of @(tsee
+ value-triple)).</p>
+
+ <p>@(':ON-SKIP-PROOFS sp') (default: @('nil')): supply @('t') to evaluate the
+ assertion even when skipping proofs (i.e., during @(tsee include-book) or the
+ second pass of an @(tsee encapsulate) event, or after invoking @(tsee
+ set-ld-skip-proofsp) to skip proofs).</p>
+
+ <p>@(':SAFE-MODE safe-mode') (default: @(':same')): provides backward
+ compatibility, but is probably best ignored.</p>
+
+ <p>@(':STOBJS-OUT stobjs-out') (default: @('nil')): specify @(':auto') to
+ allow any return, even with multiple values provided the first return value is
+ not a @(see stobj); or specify a list starting with @('nil'), corresponding to
+ the multiple values returned, with stobjs in stobj positions and @('nil')
+ elsewhere.  A @('stobjs-out') of @('nil') is treated as @('(nil)').  The first
+ return value is the one checked to be non-@('nil') with one exception: when an
+ @(see error-triple) @('(mv erp val state)') is returned, @('erp') must be
+ @('nil') and it is @('val') that is checked to be non-@('nil').</p>")
 
 (defxdoc assign
   :parents (programming-with-state acl2-built-ins)
@@ -17522,7 +17556,7 @@ subtree of X with T, without duplication.</p>
  <p>@(`(:raw (@ acl2-version))`) &mdash; A Computational Logic for Applicative
  Common Lisp</p>
 
- <p>Copyright (C) 2020, Regents of the University of Texas</p>
+ <p>Copyright (C) 2021, Regents of the University of Texas</p>
 
  <p>This version of ACL2 is a descendant of ACL2 Version 1.9, Copyright (C)
  1997 Computational Logic, Inc.  See the documentation topic NOTE-2-0.</p>
@@ -50232,8 +50266,8 @@ tables in the current Hons Space."
  accessor is @('(ld-verbose state)') and the updater is @('(set-ld-verbose val
  state)').  @('Ld-verbose') must be @('t'), @('nil') or a string or @(tsee
  consp) suitable for @(tsee fmt) printing via the @('~@') command.  The initial
- value of @('ld-verbose') is a @(tsee fmt) message that prints the ACL2 version
- number, @(tsee ld) level and connected book directory.</p>
+ value of @('ld-verbose') is a @(tsee fmt) message that prints the system books
+ directory.</p>
 
  <p>Note: @('Ld-verbose') has no effect on proofs.  See @(see set-gag-mode) and
  see @(see set-inhibit-output-lst) for how to control the size of proof
@@ -50253,9 +50287,10 @@ tables in the current Hons Space."
  @('t') nor @('nil') then it is presumably a header and is printed with the
  @('~@') @(tsee fmt) directive before @(tsee ld) begins to read and process
  forms.  In this case the @('~@') @(tsee fmt) directive is interpreted in an
- environment in which @('#\\v') is the ACL2 version string, @('#\\l') is the
- level of the current recursion in @(tsee ld) and/or @(tsee wormhole), and
- @('#\\c') is the connected book directory @('(cbd)').</p>")
+ environment in which @('#\\b') is the system books directory, @('#\\v') is the
+ ACL2 version string, @('#\\l') is the level of the current recursion in @(tsee
+ ld) and/or @(tsee wormhole), and @('#\\c') is the connected book directory
+ @('(cbd)').</p>")
 
 (defxdoc lemma-instance
   :parents (hints functional-instantiation)
@@ -52565,15 +52600,15 @@ forms allowed for a @('let') form are  @('ignore'), @('ignorable'), and
  a function on distinct variables.</p>
 
  <p>This page discusses <i>rewriting</i> from the logical perspective.  It is
- important that you are familiar with the notions of a <i>pattern</i> term
- being an <see topic='@(url
- LOGIC-KNOWLEDGE-TAKEN-FOR-GRANTED-INSTANCE)'>instance</see> of a <i>target</i>
- term.  We often say the pattern <i>matches</i> the target.  These notions
- involve a corresponding <i>substitution</i> of terms for variables.  All these
- notions are discussed in the link for ``<see topic='@(url
- LOGIC-KNOWLEDGE-TAKEN-FOR-GRANTED-INSTANCE)'>instance</see>'' above and we
- recommend you read it before continuing.  Then use your browser's <b>Back
- Button</b> to come back here.</p>
+ important that you are familiar with the notions of a <i>target</i> term being
+ an <see topic='@(url
+ LOGIC-KNOWLEDGE-TAKEN-FOR-GRANTED-INSTANCE)'>instance</see> of a
+ <i>pattern</i> term.  We often say the pattern <i>matches</i> the target.
+ These notions involve a corresponding <i>substitution</i> of terms for
+ variables.  All these notions are discussed in the link for ``<see
+ topic='@(url LOGIC-KNOWLEDGE-TAKEN-FOR-GRANTED-INSTANCE)'>instance</see>''
+ above and we recommend you read it before continuing.  Then use your browser's
+ <b>Back Button</b> to come back here.</p>
 
  <p>You should also be aware of the terms introduced in our discussion of <see
  topic='@(url
@@ -52605,8 +52640,8 @@ forms allowed for a @('let') form are  @('ignore'), @('ignorable'), and
  don't matter.  Just take a theorem and use propositional calculus to rearrange
  it equivalently into this form for the purposes of this one rewrite step.</p>
 
- <p>Suppose <i>pattern</i> is an instance of some target term, <i>target</i>
- that occurs in your goal conjecture.  Let the corresponding substitution be
+ <p>Suppose some target term, <i>target</i> that occurs in your goal conjecture
+ is an instance of <i>pattern</i>.  Let the corresponding substitution be
  <i>sigma</i>.  If <i>sigma</i> does not contain a binding for every variable
  that occurs in <i>Theorem</i>, then extend <i>sigma</i> to <i>sigma'</i> by
  adding one binding for each such variable.  (This is necessary only if
@@ -58485,7 +58520,7 @@ it."
  })")
 
 (defxdoc meta-extract
-  :parents (meta)
+  :parents (meta clause-processor)
   :short "Meta reasoning using valid terms extracted from context or @(see world)"
   :long "<p>For this advanced topic, we assume familiarity with metatheorems
  and metafunctions (see @(see meta)), as well as extended metafunctions (see
@@ -87696,6 +87731,22 @@ it."
  useless-runes) for details.  Thanks to Eric Smith for requesting this
  enhancement, which can support grep-like tools.</p>
 
+ <p>The @(see event) macros @(tsee value-triple) and @(tsee assert-event) have
+ been changed to be more flexible, in particular by providing an option to
+ allow the given form to return multiple values.  They are also more efficient,
+ as they no longer evaluate using @(see safe-mode) by default.
+ (Technical note: As a consequence of implementation changes, one will rarely
+ if ever see ``hard'' errors (see @(see er)) from these utilities.)  Thanks to
+ Eric Smith for requesting that a single utility encompass what is provided by
+ the built-in utility @(tsee assert-event) and the @(see community-books)
+ utilities @(tsee assert!) and @(tsee assert!-stobj).  That single utility is
+ now @(tsee assert-event), which in turn uses @('value-triple') to check the
+ supplied assertion.</p>
+
+ <p>The ACL2 @(tsee bdd) package can now reason using the implicit rewrite rule
+ @('(equal (consp (cons x y)) t)').  Thanks to Warren Hunt for requesting this
+ enhancement.</p>
+
  <h3>New Features</h3>
 
  <p>A new option for @(tsee certify-book), @(':useless-runes'), makes it
@@ -87761,6 +87812,23 @@ it."
  expected type returned by the function; if the implication is not equivalence,
  a warning is printed.  Thanks to Alessandro Coglio and Eric Smith for the
  suggestion.</p>
+
+ <p>@(see Table)s may now supply custom error messages for table @(':guard')
+ failures.  This is accomplished by supplying a table @(':guard') that returns
+ two values instead of one.  For a return @('(mv okp msg)'), if @('okp') is
+ non-@('nil') then the table guard is considered to be true, that is, it has
+ the same meaning as a non-@('nil') single-value return.  Also, @('(mv nil
+ nil)') has the same meaning and effect as a @('nil') single-value return: the
+ table guard fails, and a generic error message is printed about the illegal
+ key/value pair.  The new case is a return of @('(mv nil msg)'), where @('msg')
+ should be a @(tsee msgp) &mdash; a string or a cons suitable for printing with
+ the @(tsee fmt) directive, @('~@').  In that case, @('msg') is printed (using
+ the @(tsee fmt) directive, @('~@')) instead of a generic error message.  This
+ new feature is now used in some built-in tables.  See @(see table).</p>
+
+ <p>The @(see proof-builder) command @(tsee type-alist) has a new optional
+ argument that supports printing the type-alist in an alist format.  Thanks to
+ Mihir Mehta for requesting this feature.</p>
 
  <h3>Heuristic and Efficiency Improvements</h3>
 
@@ -88074,6 +88142,10 @@ it."
  stobj as a formal parameter that is declared as a @(see stobj).  Formerly, a
  confusing hard error could occur in this case.</p>
 
+ <p>An unfortunate ``Proof skipped'' could be printed during the
+ @('include-book') phase of @(tsee certify-book) for certain uses of @(tsee
+ make-event), including calls of @(tsee thm).  This has been fixed.</p>
+
  <h3>Changes at the System Level</h3>
 
  <p>(SBCL only) Filenames are now read as ASCII (specifically, ISO-8859-1) when
@@ -88124,7 +88196,9 @@ it."
  <p>Fixed builds that use a relative pathname for the LISP environment
  variable (for host Lisps CCL, SBCL, Allegro CL, and CMUCL; GCL and LispWorks
  didn't seem to have this problem).  Thanks to Mihir Mehta for bringing this
- issue to our attention.</p>
+ issue to our attention; and thanks to Andrew Walter for reporting a problem
+ with our first solution for SBCL and proposing an alternative, which we
+ adopted.</p>
 
  <p>Fixed the process for running ACL2 without building an executable image.
  Some initialization that was missing from that process is now included.  Also,
@@ -88141,6 +88215,10 @@ it."
  Thanks to Alessandro Coglio and Eric Smith for suggesting this change, and to
  David Rager for pointing out associated changes to make for Jenkins
  builds.</p>
+
+ <p>The startup banner now has a cleaner look (see @(see startup-banner)).
+ Thanks to Alessandro Coglio and Eric Smith for key suggestions for
+ improvement.</p>
 
  <h3>EMACS Support</h3>
 
@@ -108662,9 +108740,9 @@ arithmetic) for libraries of @(see books) for arithmetic reasoning.</p>")
  <blockquote><p>@(' w') &mdash; Walk around the object with a structure
  editor</p>
 
- <p>@(' t') &mdash; Print the object in full</p>
+ <p>@(' y') &mdash; Print the object in full</p>
 
- <p>@('nil') &mdash; Do not print any more of the object</p></blockquote>
+ <p>@(' n') &mdash; Do not print any more of the object</p></blockquote>
 
  <p>@('Show-bdd') actually has four optional arguments, probably rarely used.
  The general form is</p>
@@ -108675,11 +108753,13 @@ arithmetic) for libraries of @(see books) for arithmetic reasoning.</p>")
 
  <p>where @('goal-name') is the name of the goal on which the @(':')@(tsee bdd)
  hint was used (or, @('nil') if the system should find such a goal),
- @('goal-ans') is the answer to be used in place of the query for whether to
- print the input goal in full, @('falsifying-ans') is the answer to be used in
- place of the query for whether to print the falsifying constraints in full,
- and @('term-ans') is the answer to be used in place of the query for whether
- to print the resulting @(see term) in full.</p>")
+ @('goal-ans') is @('nil') if there is to be a query and otherwise is the
+ answer to be used (without a query) for whether to print the input goal in
+ full (@('t') for '@('y')', @('nil') for '@('n')', and @(':w') for '@('w')'),
+ @('falsifying-ans') is the answer to be used in place of the query for whether
+ to print the falsifying constraints in full, and @('term-ans') is the answer
+ to be used in place of the query for whether to print the resulting @(see
+ term) in full.</p>")
 
 (defxdoc show-bodies
   :parents (definition)
@@ -110112,42 +110192,39 @@ arithmetic) for libraries of @(see books) for arithmetic reasoning.</p>")
   this:</p>
 
  @({
-  +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-  + WARNING: This is NOT an ACL2 release; it is a development snapshot. +
-  + (git commit hash: 6bab5ea7c616e013c3e28c55cd5ebe1431a1d7cd)         +
-  + On rare occasions development snapshots may be incomplete, fragile, +
-  + or unable to pass the usual regression tests.                       +
-  +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+ ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+ + ACL2 Version 8.3+ (a development snapshot based on ACL2 Version 8.3) +
+ +   built April 21, 2021  15:56:37.                                    +
+ +   (Git commit hash: 41bb85ab9dbf5ac7d4ed246847db8934b6a48f92)        +
+ + Copyright (C) 2021, Regents of the University of Texas.              +
+ + ACL2 comes with ABSOLUTELY NO WARRANTY.  This is free software and   +
+ + you are welcome to redistribute it under certain conditions.  For    +
+ + details, see the LICENSE file distributed with ACL2.                 +
+ ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
  })
 
- <p>The second line of that banner can be modified by setting environment
+ <p>The third line of that banner can be modified by setting environment
  variable @('ACL2_SNAPSHOT_INFO') to a non-empty string before saving the
  executable.  The value of that variable will be placed into the banner, for
  example as follows if that value is @('\"This is my private
  executable.\"').</p>
 
  @({
-  +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-  + WARNING: This is NOT an ACL2 release; it is a development snapshot. +
-  + (Note from the environment when this executable was saved:          +
-  +  This is my private executable.)                                    +
-  + On rare occasions development snapshots may be incomplete, fragile, +
-  + or unable to pass the usual regression tests.                       +
-  +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+ ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+ + ACL2 Version 8.3+ (a development snapshot based on ACL2 Version 8.3) +
+ +   built April 21, 2021  15:56:37.                                    +
+ +   (Note from the environment when this executable was saved:         +
+ +    This is my private executable.)                                   +
+ + Copyright (C) 2021, Regents of the University of Texas.              +
+ + ACL2 comes with ABSOLUTELY NO WARRANTY.  This is free software and   +
+ + you are welcome to redistribute it under certain conditions.  For    +
+ + details, see the LICENSE file distributed with ACL2.                 +
+ ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
  })
 
  <p>An exception is the special value, @('\"none\"'), which is treated as
  case-insensitive (so it can similarly be @('\"None\"'), @('\"NONE\"'), etc.).
- In that case, the second line is omitted entirely, for example as follows.</p>
-
- @({
-  +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-  + WARNING: This is NOT an ACL2 release; it is a development snapshot. +
-  +                                                                     +
-  + On rare occasions development snapshots may be incomplete, fragile, +
-  + or unable to pass the usual regression tests.                       +
-  +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
- })")
+ In that case, the third line of the original banner is omitted entirely.</p>")
 
 (defxdoc state
   :parents (programming)
@@ -113818,16 +113895,47 @@ arithmetic) for libraries of @(see books) for arithmetic reasoning.</p>")
   (table name nil nil :guard term)
  })
 
- <p>Provided the named table is empty and has not yet been assigned a
- @(':guard') and @('term') (which is not evaluated) is a term that mentions at
- most the variables @('KEY'), @('VAL'), @('WORLD'), @('ENS'), and @('STATE'),
- this event sets the @(':guard') of the named table to @('term').  Whenever a
- subsequent @(':put') occurs, @('term') will be evaluated with @('KEY') bound
- to the key argument of the @(':put'), @('VAL') bound to the @('val') argument
- of the @(':put'), @('WORLD') bound to the then current @(see world), @('ENS')
- bound to the enabled structure representing the current theory, and @('STATE')
- bound to the ACL2 @(see state).  An error will be caused by the @(':put') if
- the result of the evaluation is @('nil').</p>
+ <p>This event sets the @(':guard') of the named table to @('term'), provided
+ the following requirements are met.  The named table must be empty and it must
+ not have been assigned a @(':guard') yet.  @('Term') (which is not evaluated)
+ should be a term that mentions at most the variables @('KEY'), @('VAL'),
+ @('WORLD'), @('ENS'), and @('STATE').  In the common case @('term') will
+ evaluate to a single value, but it can return two values as discussed later
+ below; either way, it must not return @('STATE').</p>
+
+ <p>Whenever a subsequent @(':put') occurs, @('term') will be evaluated with
+ @('KEY') bound to the key argument of the @(':put'), @('VAL') bound to the
+ @('val') argument of the @(':put'), @('WORLD') bound to the then current @(see
+ world), @('ENS') bound to the enabled structure representing the current
+ theory, and @('STATE') bound to the ACL2 @(see state).  The term is evaluated.
+ An error will be caused by the @(':put') if the result of the evaluation is
+ @('nil') when a single value is returned; what if two values are returned?</p>
+
+ <p>If the term returns multiple values @('(mv okp msg)'), then an error will
+ be caused if @('okp') is @('nil').  In that case, if @('msg') is also @('nil')
+ then a generic error message is printed about the illegal key/value pair, just
+ as in the single-value return case.  Otherwise @('msg') should be a @(tsee
+ msgp) &mdash; a string or a cons suitable for printing with the @(tsee fmt)
+ directive, @('~@').  In that case, @('msg') is printed (using @(tsee fmt)
+ @('~@')) instead of the generic error message.  Here is a simple example from
+ the ACL2 sources.</p>
+
+ @({
+ (defun partial-functions-table-guard (fn val wrld)
+   (let ((msg0 ; nil if fn/val is OK as a key/value pair, else a msg
+          (partial-functions-table-guard-msg fn val wrld)))
+     (cond
+      (msg0 (mv nil
+                (msg
+                 \"Illegal partial-functions-table key and value (see :DOC ~
+                  memoize-partial):~|key = ~y0value  = ~y1Reason:~%~@2~|~%\"
+                 fn val msg0)))
+      (t (mv t nil)))))
+
+ (table partial-functions-table nil nil
+        :guard
+        (partial-functions-table-guard key val world))
+ })
 
  <p>Note that it is not allowed to change the @(':guard') on a table once it
  has been explicitly set.  Before the @(':guard') is explicitly set, it is
@@ -123258,10 +123366,10 @@ introduction-to-the-tau-system) for more information about Tau.</dd>
  the stobj is the entire array field when there is only that one field.)  The
  @(tsee make-event) call below fails, because the resizing operation replaces
  the stobj in the global @('user-stobj-alist') of the ACL2 @(see state), but
- the @(tsee assert-event) call still references the original stobj.  This
- failure is thus exactly as expected for an applicative semantics.  However, it
- fails only because the resize operation is not destructive: it replaces the
- entire stobj.</p>
+ the call of @('EQUAL') still references the original stobj.  This failure is
+ thus exactly as expected for an applicative semantics.  However, it fails only
+ because the resize operation is not destructive: it replaces the entire
+ stobj.</p>
 
  @({
  (defstobj st3 (ar3 :type (array t (10)) :resizable t))
@@ -123272,8 +123380,7 @@ introduction-to-the-tau-system) for more information about Tau.</dd>
                            (update-ar3i 24 'done st3))
                         'top
                         state t)
-            (assert-event (equal (ar3i 24 st3) 'done)
-                          :on-skip-proofs t)
+            (value (equal (ar3i 24 st3) 'done))
             (value '(value-triple :success))))
 
  ; Passes because by now, the user-stobj-alist has been updated by
@@ -123281,10 +123388,9 @@ introduction-to-the-tau-system) for more information about Tau.</dd>
  ; read-eval-print loop:
  (assert-event (equal (ar3i 24 st3) 'done))
 
- ; The following version passes because we avoid assert-event.
- ; Instead, the second trans-eval call below references the value of
- ; st3 in the user-stobj-alist that was produced by the first
- ; trans-eval call below.
+ ; The following version passes because the second trans-eval call
+ ; below references the value of st3 in the user-stobj-alist that was
+ ; produced by the first trans-eval call below.
  (make-event
   (er-progn (trans-eval '(let ((st3 (resize-ar3 40 st3)))
                            (update-ar3i 34 'new st3))
@@ -124577,53 +124683,218 @@ introduction-to-the-tau-system) for more information about Tau.</dd>
  src='res/tours/walking.gif'></img></see></p>")
 
 (defxdoc value-triple
-  :parents (events acl2-built-ins)
+  :parents (events acl2-built-ins errors)
   :short "Compute a value, optionally checking that it is not @('nil')"
-  :long "@({
-  Examples:
-  (value-triple (+ 3 4))
-  (value-triple (cw \"hi\") :on-skip-proofs t)
-  (value-triple (cw \"hi\") :on-skip-proofs :interactive)
-  (value-triple (@ ld-pre-eval-print))
-  (value-triple (@ ld-pre-eval-print) :check t)
+  :long "<h3>Simple Example</h3>
 
-  General Form:
-  (value-triple form
-                :on-skip-proofs sp ; optional; nil by default
-                :check chk         ; optional; nil by default
-                :ctx ctx           ; optional; ''value-triple by default
-                )
+ @({
+ ; Return the value 7 as an error triple, i.e., (mv nil 7 state)).
+ (value-triple (+ 3 4))
  })
 
- <p>@('Value-triple') provides a convenient way to evaluate a form in an event
- context, including @(tsee progn) and @(tsee encapsulate) and in @(see books);
- see @(see events).  The form should evaluate to a single, non-@(see stobj)
- value.</p>
+ <h3>Examples Involving Keyword Arguments</h3>
 
- <p>Calls of @('value-triple') are generally skipped when proofs are being
- skipped.  However, a call of @('value-triple') will be evaluated even when
- proofs are being skipped if there is a non-@('nil') value for keyword argument
- @(':on-skip-proofs'), typically, @('t').  The special value for
- @(':on-skip-proofs'), @(':interactive'), is more restrictive than @('t'): it
- will still cause the @('value-triple') call to be evaluated under a call of
- @(tsee skip-proofs), but <i>not</i> when proofs are being skipped only due to
- either making a second pass through an @(tsee encapsulate) or executing an
- @(tsee include-book).</p>
+ @({
+ ; Print \"hi\" even when skipping proofs.
+ (value-triple (cw \"hi\") :on-skip-proofs t)
 
- <p>If you expect the form to evaluate to a non-@('nil') value and you want an
- error to occur when that is not the case, you can use @(':check t').  More
- generally, the argument of @(':check') can be a form that evaluates to a
- single, non-@(see stobj) value.  If this value is not @('nil'), then the
- aforementioned test is made (that the given form is not @('nil')).  If an
- error occurs and the value of @(':check') is a string or indeed any
- ``message'' suitable for printing by @(tsee fmt) when supplied as a value for
- tilde-directive @('~@'), then that string or message is printed as an ACL2
- soft error, evaluating the given @(':ctx') argument (default
- @('''value-triple')) as the @('ctx') for @(tsee er).</p>
+ ; Return an error triple containing the value of a state global.
+ ; (This shows that it's OK to reference state.)
+ (value-triple (@ ld-pre-eval-print))
 
- <p>Finally, note that @('value-triple') performs evaluation in so-called @(see
- safe-mode), which can slow down evaluation significantly but checks @(see
- guard)s on @(see primitive)s.</p>")
+ ; Check that the given form returns a non-nil value.
+ (value-triple (equal (+ 3 4) 7) :check t)
+
+ ; Check that the given defun is admissible, then revert the world.
+ (value-triple (er-progn (defun foo (x) (cons x x))
+                         (value :success))
+               :stobjs-out :auto)
+ })
+
+ <h3>General Form</h3>
+
+ @({
+ (value-triple form
+               :check chk             ; default nil
+               :ctx                   ; default 'value-triple
+               :on-skip-proofs sp     ; default nil
+               :safe-mode safe-mode   ; default :same
+               :stobjs-out stobjs-out ; default nil
+               )
+ })
+
+ <p>where all keyword arguments are evaluated and optional, and the defaults
+ shown above represent values after evaluation.</p>
+
+ <p>The following example illustrates all of the keyword arguments, which are
+ documented below.</p>
+
+ @({
+ (value-triple (mv nil (equal (+ 3 4) 7) state)
+               :check (msg \"Oops, I forgot what ~x0+~x1 is!\" 3 4)
+               :ctx '(value-triple . <some-mv>)
+               :on-skip-proofs t
+               :safe-mode nil ; legacy behavior (rarely used)
+               :stobjs-out '(nil nil state))
+ })
+
+ <h3>Description</h3>
+
+ <p>@('Value-triple') provides a convenient way to evaluate a form in a context
+ where an @(see event) is expected; thus, a call of @('value-triple') may occur
+ in @(tsee progn) and @(tsee encapsulate) forms and in @(see books).  By
+ default, the form should evaluate to a single, non-@(see stobj) value (but see
+ the discussion below about the @(':STOBJS-OUT') keyword argument).  Calls of
+ @('value-triple') are skipped by default when proofs are being skipped (but
+ see the discussion below about the @(':ON-SKIP-PROOFS') keyword argument).  By
+ default, a @('value-triple') call has no effect other than to evaluate its
+ form, but see the discussion of the @(':CHECK') keyword below for how to check
+ the result.</p>
+
+ <p>A call of @('value-triple') returns an @(see error-triple), @('(mv erp val
+ state)').  By default or when @(':CHECK nil') is supplied: @('erp') is
+ @('nil') when evaluation completes without error and @('val') is the value
+ returned by evaluating the given form.  However, when the keyword argument
+ @(':CHECK') has a non-@('nil') value, there is a check that @('val') is
+ non-@('nil').  Note that the value of keyword argument @(':STOBJS-OUT') can
+ affect this notion of ``the value returned'' (by evaluation), as discussed
+ below.</p>
+
+ <h3>Keyword Arguments</h3>
+
+ <p>Here is documentation for the keyword arguments, arranged alphabetically
+ and followed by relevant remarks.</p>
+
+ <p>@(':CHECK chk') (default: @('nil'))</p>
+
+ <p>When @('chk') is supplied and non-@('nil'), the value returned by
+ evaluating the given form must be non-@('nil'), or else an error occurs: The
+ error message is generic if @('chk') is @('t').  (By default a single value is
+ returned, so the notion of ``the value returned'' is clear; but see the
+ discussion of @(':STOBJS-OUT') below for the notion of ``the value returned''
+ in the general case.)  If @('chk') is supplied and is neither @('t') nor
+ @('nil'), then it should be a ``message'' (see @(see msg)) that is used when
+ printing the error message.</p>
+
+ <p>@(':CTX ctx') (default: @(''value-triple'))</p>
+
+ <p>Error messages from @('value-triple') start, by default, with ``ACL2 Error
+ in VALUE-TRIPLE''.  To replace @('VALUE-TRIPLE') with a different context (see
+ @(see ctx)), @('ctx'), supply keyword argument @(':CTX ctx').</p>
+
+ <p>@(':ON-SKIP-PROOFS sp') (default: @('nil'))</p>
+
+ <p>By default or when @(':ON-SKIP-PROOFS') has value @('nil'), the form is not
+ evaluated when proofs are being skipped.  The form is, however, evaluated when
+ @(':ON-SKIP-PROOFS t') is supplied.  The other legal value for
+ @(':ON-SKIP-PROOFS') is @(':interactive'), which is more restrictive than
+ @('t').  @(':Interactive') directs the @('value-triple') call to be skipped
+ when executing an @(tsee include-book) or making a second pass through an
+ @(tsee encapsulate), but not merely because @('(set-ld-skip-proofsp t state)')
+ has been executed.</p>
+
+ <p>@(':SAFE-MODE safe-mode') (default: @(':same'))</p>
+
+ <p>It is usually safe to ignore this option, which is available for backward
+ compatibility: @(':SAFE-MODE t') gives the behavior of @('assert-event') from
+ before April, 2021.  Normally ACL2 operates without so-called ``safe-mode'';
+ see @(see safe-mode).  The value @(':same') prevents any change in whether
+ safe-mode is on or off; otherwise the value is @('t') to evaluate the form
+ with safe-mode on and @('nil') for safe-mode off.</p>
+
+ <p>@(':STOBJS-OUT stobjs-out') (default: @('nil'))</p>
+
+ <p>When @('stobjs-out') has its default value of @('nil'), which abbreviates
+ the value @('(nil)'), the form supplied to @('value-triple') is expected to
+ evaluate to a single, non-@(see stobj) value.  However, multiple-value
+ return (see @(see mv-let)) is also allowed, including stobjs (user-defined
+ stobjs as well as @('state')).  The return shape is specified by supplying
+ @('stobjs-out') as a true list corresponding to the values returned, with
+ stobj names in stobj positions and @('nil') elsewhere.  (The list has length
+ one if a single value is returned.)  For example, if @('stobjs-out') is
+ @('(nil st1 nil st2)') then the form should evaluate to a multiple-value
+ return, with ordinary values in (zero-based) positions 0 and 2, stobj @('st1')
+ in position 1, and stobj @('st2') in position 3.</p>
+
+ <p>@('Stobjs-out') may also be @(':auto'), which allows arbitrary returns.</p>
+
+ <p>We speak of ``the value returned''.  When the evaluation results in a
+ single value, that is of course the value returned.  When multiple values are
+ returned, the first of those values is normally what we mean by ``the value
+ returned'', with the following exception.  When an @(see error-triple) is
+ returned, say @('(mv erp val state)') where @('erp') and @('val') are
+ non-stobj values and @('state') is the ACL2 @(see state), then @('val') is
+ considered to be the value returned if @('erp') is @('nil'); but if @('erp')
+ is not @('nil'), then there is no value returned, and @('value-triple')
+ results in an error.</p>
+
+ <p>If @(':CHECK') has a non-@('nil') value then the value returned must not be
+ a stobj.  Otherwise, when the value returned is a stobj it is replaced by the
+ stobj's name, as discussed below.</p>
+
+ <h3>Remarks</h3>
+
+ <p>We conclude by remarking on some details.  These remarks also apply to
+ @(see assert-event), since it expands to make corresponding calls of
+ @('value-triple').</p>
+
+ <ol>
+
+ <li>Since @('value-triple') is an @(see event) macro, it returns an @(see
+ error-triple), that is, the multiple values @('(mv erp val state)'), where
+ @('erp') is @('nil') exactly when the event completes without error.  If the
+ value of keyword argument @(':CHECK') is non-@('nil') and @('erp') is
+ @('nil'), then @('val') is @(':passed').  Otherwise @('val') is the value
+ returned as discussed above.  To be precise: @('val') is the result of
+ evaluating the given form in the default case, when @(':STOBJS-OUT') is not
+ provided (or is @('nil') or @('(nil)')), but in general there several cases
+ possible, as follows.</li>
+
+ <ul>
+
+ <li>If the evaluation of the given form results in a single non-stobj value,
+ then @('val') is that value.</li>
+
+ <li>If the evaluation of the given form results in a single stobj value, then
+ @('val') is that stobj's name (a symbol).  In particular, if the value is
+ state, then @('val') is the symbol @('STATE') (in the @('\"ACL2\"')
+ package).</li>
+
+ <li>If the evaluation of the given form results in multiple values @('(mv x1
+ ...)'), then @('val') is @('x1') if @('x1') is not a stobj, else @('val') is
+ the name of that stobj.</li>
+
+ </ul>
+
+ <li>When @(':STOBJS-OUT') is @(':auto') and at least one user-defined @(see
+ stobj) is returned, you will see a @('\"User-stobjs-modified\"') warning
+ unless warnings have been suppressed.  Although warnings are typically
+ suppressed by general utilities such as @(tsee set-inhibit-output-lst), @(tsee
+ set-inhibit-warnings), and @(tsee with-output), a more direct way to avoid
+ this warning is to specify @(':STOBJS-OUT') as a list (as discussed
+ above).</li>
+
+ <li>As noted above, the ACL2 @(see state) may change when keyword option
+ @(':STOBJS-OUT') has a value other than @('nil') or @('(nil)').  Nevertheless,
+ ACL2 ensures that certain parts of the state, including the logical @(see
+ world), are the same after the @('value-triple') call completes as they were
+ before (as with @('make-event') expansion; see @(see make-event)).  Also,
+ trust tags (see @(see defttag)) must not be introduced during such
+ evaluation.</li>
+
+ <li>(Ignore this remark unless you make many, many calls of
+ @('value-triple').)  Evaluation may be much faster when @(':STOBJS-OUT') is
+ omitted or is specified as @('nil') (the default) or @('(nil)').  That is
+ because otherwise, since the return shape is checked only after evaluation
+ completes, therefore a somewhat complex environment set-up is performed prior
+ to evaluation, in which certain parts of the ACL2 @(see state) are protected
+ as for @(tsee make-event) (using @(tsee revert-world), and also as discussed
+ in the documentation for @(tsee make-event) about
+ @('*protected-system-state-globals*')).  Moreover, evaluation is faster still
+ if in addition, the given form is @('t'), @('nil'), a @(see keyword), or of
+ the form @('(QUOTE x)').</li>
+
+ </ol>")
 
 (defxdoc verbose-pstack
   :parents (pstack)
@@ -132700,26 +132971,34 @@ move to the top of the goal"
 display the @(see type-alist) from the current context"
   :long "@({
   Examples:
-  (type-alist t t)     ; display type-alist based on conclusion and governors
-  (type-alist t t t)   ; as above, but also display forward-chaining report
-  type-alist           ; same as (type-alist nil t) -- governors only
-  (type-alist nil)     ; same as (type-alist nil t) -- governors only
-  (type-alist t)       ; same as (type-alist t nil) -- conclusion only
-  (type-alist nil nil) ; display type-alist without considering
-                       ; conclusion or governors
+  (type-alist nil t nil) ; display type-alist based on governors (default)
+  type-alist             ; same as (type-alist nil t) -- governors only
+  (type-alist t t)       ; display type-alist based on conclusion and governors
+  (type-alist t t t)     ; as above, but also display forward-chaining report
+  type-alist             ; same as (type-alist nil t) -- governors only
+  (type-alist nil)       ; same as (type-alist nil t) -- governors only
+  (type-alist t)         ; same as (type-alist t nil) -- conclusion only
+  (type-alist nil nil)   ; based on neither conclusion nor governors
+  (type-alist nil t nil nil)  ; same as type-alist (default) -- governors only
+  (type-alist nil t nil :raw) ; governors only, raw alist format
+  (type-alist nil t nil t)    ; governors only, simple alist format
 
   General Form:
-  (type-alist &optional concl-flg govs-flg fc-report-flg)
+  (type-alist &optional concl-flg govs-flg fc-report-flg alistp)
  })
 
  <p>where if @('govs-flg') is omitted then it defaults to @('(not concl-flg)'),
- and @('concl-flg') and @('fc-report-flg') default to @('nil').</p>
+ and each of the other optional arguments defaults to @('nil').</p>
 
  <p>Display the current assumptions as a @(see type-alist).  Note that this
  display includes the result of forward chaining.  When @('fc-report-flg') is
  supplied a non-@('nil') value, the display also includes a forward-chaining
  report; otherwise,the presence or absence of such a report is controlled by
- the usual global settings (see @(see forward-chaining-reports)).</p>
+ the usual global settings (see @(see forward-chaining-reports)).  By default,
+ the display is organized by type, with terms shown of each type; but when
+ @('alistp') is @(':raw') then the underlying type-alist structure is shown,
+ which is made more user-friendly when any other non-@('nil') value of
+ @('alistp') is provided.</p>
 
  <p>There are two basic reasons contemplated for using this command.</p>
 
