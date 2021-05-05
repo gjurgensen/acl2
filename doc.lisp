@@ -77,7 +77,7 @@ Subtopics
   [defthm], [in-theory], [xargs], [state], etc., without an acl2::
   prefix.
 
-  The constant *acl2-exports* lists 1514 symbols, including most
+  The constant *acl2-exports* lists 1517 symbols, including most
   documented ACL2 system constants, functions, and macros.  You will
   typically also want to import many symbols from Common Lisp; see
   [*common-lisp-symbols-from-main-lisp-package*].
@@ -123,6 +123,7 @@ Subtopics
        add-timers add-to-set add-to-set-eq
        add-to-set-eql add-to-set-equal
        alistp alistp-forward-to-true-listp
+       all-attachments
        all-boundp all-boundp-preserves-assoc
        all-vars all-vars1 all-vars1-lst
        allocate-fixnum-range alpha-char-p
@@ -393,7 +394,8 @@ Subtopics
        logeqv logic logic-fns-list-listp
        logic-fns-listp logic-fnsp
        logic-term-list-listp logic-term-listp
-       logic-termp logior lognand lognor lognot
+       logic-termp logical-defun
+       logior lognand lognor lognot
        logorc1 logorc2 logtest logxor loop$
        lower-case-p lower-case-p-char-downcase
        lower-case-p-forward-to-alpha-char-p
@@ -751,7 +753,8 @@ Subtopics
        upper-case-p-forward-to-alpha-char-p
        user-stobj-alist user-stobj-alist1
        value value-triple verbose-pstack
-       verify verify-guards verify-guards+
+       verify verify-guard-implication
+       verify-guards verify-guards+
        verify-guards-formula verify-termination
        w walkabout warning! warrant
        waterfall-parallelism waterfall-printing
@@ -86565,9 +86568,9 @@ Experimental Versions")
 
 Changes to Existing Features
 
-  [Apply$], [lambda$], and loop$ may be used with badged :program mode
-  functions in top-level evaluation.  To assign a badge to a :program
-  mode function use the new feature [defbadge].
+  [Apply$], [lambda$], and [loop$] may be used with [badge]d :[program]
+  mode functions in top-level evaluation.  To assign a badge to a
+  program mode function, use the new feature [defbadge].
 
   For calls of the form (HIDE (COMMENT \"...\" ...)), the string is a bit
   more descriptive.  See [comment] and see [hide].  Thanks to Mark
@@ -86740,11 +86743,11 @@ Changes to Existing Features
 
 New Features
 
-  It is now possible to assign [badge]s to :program mode functions,
+  It is now possible to assign [badge]s to :[program] mode functions,
   which allows them to be used by [apply$], [lambda$] and [loop$]
   during top-level evaluation.  See [defbadge], which assigns badges
-  but not warrants and which can handle both :program and :logic mode
-  functions.
+  but not [warrant]s and which can handle both :[program] and
+  :[logic] mode functions.
 
   A new option for [certify-book], :useless-runes, makes it possible to
   speed up repeated certification of a book, sometimes substantially.
