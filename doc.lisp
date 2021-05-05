@@ -4,7 +4,7 @@
 ; books/system/doc/acl2-doc.lisp.
 
 ; ACL2 Version 8.3 -- A Computational Logic for Applicative Common Lisp
-; Copyright (C) 2020, Regents of the University of Texas
+; Copyright (C) 2021, Regents of the University of Texas
 
 ; This version of ACL2 is a descendent of ACL2 Version 1.9, Copyright
 ; (C) 1997 Computational Logic, Inc.  See the documentation topic NOTE-2-0.
@@ -77,7 +77,7 @@ Subtopics
   [defthm], [in-theory], [xargs], [state], etc., without an acl2::
   prefix.
 
-  The constant *acl2-exports* lists 1513 symbols, including most
+  The constant *acl2-exports* lists 1514 symbols, including most
   documented ACL2 system constants, functions, and macros.  You will
   typically also want to import many symbols from Common Lisp; see
   [*common-lisp-symbols-from-main-lisp-package*].
@@ -250,7 +250,7 @@ Subtopics
        default-unary-/ default-unary-minus
        default-verify-guards-eagerness
        default-well-founded-relation
-       defaxiom defchoose defcong
+       defaxiom defbadge defchoose defcong
        defconst defequiv defevaluator defexec
        define-pc-atomic-macro define-pc-help
        define-pc-macro define-pc-meta
@@ -1537,7 +1537,7 @@ Subtopics
   (ACL2)
   "General information About ACL2
 
-  This is ACL2 Version 8.3, [copyright] (C) 2020, Regents of the
+  This is ACL2 Version 8.3, [copyright] (C) 2021, Regents of the
   University of Texas, authored by Matt Kaufmann and J Strother
   Moore.
 
@@ -3186,8 +3186,11 @@ Subtopics
   [Default]
       Return the :default from the [header] of a 1- or 2-dimensional array
 
+  [Defbadge]
+      Issue a badge for a function so [apply$] can evaluate with it
+
   [Defwarrant]
-      Issue a warrant for a function so [apply$] can use it
+      Issue a warrant for a function so [apply$] can use it in proofs
 
   [Delete-assoc]
       Deprecated version of [remove1-assoc]
@@ -6734,6 +6737,8 @@ Subtopics
 
   [Symbol-alistp]
       Recognizer for association lists with symbols as keys")
+ (ALL-ATTACHMENTS (POINTERS)
+                  "See [system-utilities].")
  (ALL-CALLS (POINTERS)
             "See [system-utilities].")
  (ALL-FNNAMES (POINTERS)
@@ -7765,33 +7770,35 @@ Glossary
       arity,'' (i.e., the number of results the function returns),
       and the [ilk] of each argument position telling apply$ how each
       argument is treated.  The ilks are :FN, :EXPR and NIL.  The
-      association between a function symbol and its badge is manged
-      by [warrant]s.  In proofs, apply$ must have a warrant for every
-      non-primitive function symbol to be applied.  Those warrants
-      are provided as hypotheses to the theorem being proved.
-      Symbols without badges cannot be apply$d.  Badges are
-      generated, when possible, by [defwarrant].  Not every function
-      symbol can have a badge.
+      association between a non-primitive function symbol and its
+      badge is manged by [warrant]s.  In proofs, apply$ must have a
+      warrant for every non-primitive function symbol to be applied.
+      Those warrants are provided as hypotheses to the theorem being
+      proved.  Symbols without badges cannot be apply$d.  Badges are
+      generated, when possible, by [defwarrant].  (Badges can be
+      generated for :program mode functions by [defbadge], allowing
+      apply$ to handle such functions in top level evaluation not not
+      in proofs.)  Not every function symbol can have a badge.
     * compiled LAMBDA cache (or simply cache in this context) -- a cache in
       the raw Lisp under ACL2 that supports the application of apply$
-      on well-formed, guard verified LAMBDA objects.  We include
-      ``lambda expression,'' ``LAMBDA object,'' and ``lambda$
-      expression'' -- three similar looking phrases with very
-      different meanings -- later in this Glossary.  See
-      [print-cl-cache] for some details of the cache.
+      on well-formed, guard verified LAMBDA objects.  Later in this
+      Glossary we define ``lambda expression,'' ``LAMBDA object,''
+      and ``lambda$ expression'' -- three similar looking phrases
+      with very different meanings.  See [print-cl-cache] for some
+      details of the cache.
     * evaluation theory -- the logical theory in which expressions
-      submitted at the top-level of the ACL2 read-eval-print loop are
+      submitted at the top level of the ACL2 read-eval-print loop are
       evaluated.  The evaluation theory is a consistent extension of
       the proof theory, the latter being the logical theory in which
       the ACL2 theorem prover operates.  The evaluation theory is not
       new to apply$; it was introduced when [defattach] was added.
       But the evaluation theory changed with the introduction of
-      apply$.  All [warrant]s introduced by defwarrant are assumed in
-      the evaluation theory but not in the proof theory.  This means
-      ACL2 can execute calls of apply$ that arise in the evaluation
-      of top-level input, but ACL2 cannot evaluate all calls of
-      apply$ that arise in proofs unless the appropriate warrants are
-      available as hypotheses.
+      apply$.  All [warrant]s introduced by defwarrant are assumed
+      true in the evaluation theory but not in the proof theory.
+      This means ACL2 can execute calls of apply$ that arise in the
+      evaluation of top-level input, but ACL2 cannot evaluate all
+      calls of apply$ that arise in proofs unless the appropriate
+      warrants are available as hypotheses.
     * lambda expression -- an integral part of ACL2's formal term syntax,
       lambda expressions are the way let expressions and other
       variable-binding idioms are translated into formal terms.
@@ -7824,11 +7831,14 @@ Glossary
       the body with a [return-last] form that indicates it came from
       a translated lambda$. See also [lambda] for some
       clarifications.
-    * [scion] -- a function that is ancestrally dependent on apply$,
-      sometimes (perhaps misleadingly) called a ``mapping function.''
-      An example of a scion is the function that takes a ``function''
-      and a list and maps over the list apply$ing the ``function'' to
-      every element and accumulating the results.  Any function
+    * [scion] -- a function that is ancestrally dependent on apply$.  In
+      the early days of apply$ we called scions ``mapping function''
+      but in the Lisp community that implies iteration over a list
+      and scions are more general.  Of course, a function that
+      iterates over a list apply$ing a ``function'' to each element
+      and collecting the results is an example of a scion.  But so is
+      function that takes a ``function'' and applies it in one
+      special situation, e.g., as a test or base case.  Any function
       ancestrally dependent on apply$ is a scion whether or not it
       takes a ``function'' as an argument or maps over a domain.
     * [tame] -- the class of functions that apply$ knows about; we actually
@@ -7839,14 +7849,14 @@ Glossary
       defineable functions: ACL2 is first order and if apply$ were
       able to ``handle'' certain functions the logic would be
       inconsistent.
-    * [warrant] -- a predicate associated with some user-defined function
-      symbols that must be a hypothesis of any theorem whose proof
-      involves ``expanding'' apply$ on such symbols; the warrant
-      gives apply$ ``permission'' to expand if the arguments to which
-      the function is applied are appropriately [tame].  The warrant
-      for a function specifies the function's [badge] and how apply$
-      behaves on the function symbol.  Warrants (and badges) are
-      computed and introduced by the [defwarrant] event.  Not all
+    * [warrant] -- a 0-ary predicate associated with some user-defined
+      function symbols that must be a hypothesis of any theorem whose
+      proof involves ``expanding'' apply$ on such symbols; the
+      warrant gives apply$ ``permission'' to expand if the arguments
+      to which the function is applied are appropriately [tame].  The
+      warrant for a function specifies the function's [badge] and how
+      apply$ behaves on the function symbol.  Warrants (and badges)
+      are computed and introduced by the [defwarrant] event.  Not all
       function symbols can be warranted.
 
   You will get a much better understanding of these concepts if you
@@ -7922,6 +7932,12 @@ Examples
                   nil)
     (4 3 2 1)
 
+    ACL2 !>(russell 'natp 3)
+    NIL
+
+    ACL2 !>(russell 'consp 3)
+    T
+
   Apply$ doesn't always work the way you might want!
 
     ACL2 !>(let ((x 'russell))(russell x x))
@@ -7994,25 +8010,19 @@ Examples
   weird-little-lemma1 and weird-little-lemma2, shown in
   books/projects/apply/report.lisp.
 
-    ; [1] SQ squares, if you have the warrant for sq!  Imagine
-    ; for a moment that we could prove @('(equal (apply$ 'SQ
-    ; (list i)) (* i i))') without the warrant hypothesis shown
-    ; below.  And imagine that we did so in an @(tsee
-    ; encapsulate)d environment in which @('sq') was locally
-    ; defined to be @('(* x x)').  Then imagine we exported the
-    ; simpler theorem out of that @('encapsulate') and defined
-    ; @('sq') to be @('(+ 1 (* x x))').  Then ACL2 would be
-    ; unsound.  Exporting a theorem requires that the theorem be
-    ; ancestrally independent of every locally defined function
-    ; and the simpler hypothetical theorem is, because the
-    ; symbol @(''SQ') is not ancestrally dependent on @('sq').
-    ; But ACL2 cannot prove the simpler theorem!  It cannot
-    ; ``open'' @('apply$') on @(''SQ') without the warrant for
-    ; @('sq') and the warrant for @('sq') is ancestrally
-    ; dependent on @('sq').  So the theorem below cannot be
-    ; exported from an environment in which @('sq') is locally
-    ; defined.  Thus warrants solve the so-called ``@('LOCAL')
-    ; problem.''
+    ; [1] SQ squares, if you have the warrant for sq!  Imagine for a moment that
+    ; we could prove (equal (apply$ 'SQ (list i)) (* i i)) without the warrant
+    ; hypothesis shown below.  And imagine that we did so in an encapsulated
+    ; environment in which sq was locally defined to be (* x x).  Then imagine we
+    ; exported the simpler theorem out of that encapsulate and defined sq to be
+    ; (+ 1 (* x x)).  Then ACL2 would be unsound.  Exporting a theorem requires
+    ; that the theorem be ancestrally independent of every locally defined
+    ; function and the simpler hypothetical theorem is, because the symbol 'SQ is
+    ; not ancestrally dependent on sq.  But ACL2 cannot prove the simpler
+    ; theorem!  It cannot ``open'' apply$ on 'SQ without the warrant for sq and
+    ; the warrant for sq is ancestrally dependent on sq.  So the theorem below
+    ; cannot be exported from an environment in which sq is locally defined.
+    ; Thus warrants solve the so-called ``LOCAL problem.''
 
     (thm (implies (warrant sq)
                   (equal (apply$ 'SQ (list i))
@@ -8112,10 +8122,10 @@ Specification of APPLY$
   [gratuitous-lambda-object-restrictions] -- if you really mean to
   supply ill-formed LAMBDA objects to :FN slots.
 
-  Badges are assigned by [defwarrant].  See [badge] for documentation
-  about how to find out whether a function has a badge and how to
-  interpret a badge.  The terms ``out arity'' and ``tameness
-  requirements,'' used above, are explained there too.
+  Badges are assigned by [defwarrant], and also by [defbadge].  See
+  [badge] for documentation about how to find out whether a function
+  has a badge and how to interpret a badge.  The terms ``out arity''
+  and ``tameness requirements,'' used above, are explained there too.
 
   Intuitively, the badge of fn tells apply$ how each formal of fn is
   used in the definition of fn and there are only three ``ilks'' of
@@ -8135,9 +8145,12 @@ Specification of APPLY$
   the topic [tame].
 
   Generally speaking, if you want to be able to apply$ a function you
-  should introduce it with [defun$] or a similar macro, because only
-  badged functions can be applied.  The ACL2 macro defun$ is just an
-  abbreviation for a [defun] event followed by a [defwarrant] event.
+  should introduce it with [defun] and then call [defwarrant] on the
+  function name, or use [defun$], which is a convenient abbreviation
+  for the above sequence of events.  But defun$ only works for :logic
+  mode functions because defwarrant enforces that restriction.  If
+  you want to apply$ a :program mode function you should define it
+  with defun and then call defbadge on its name.
 
   We summarize specification of apply$ with an example.  Consider
 
@@ -8239,16 +8252,21 @@ Specification of APPLY$
       other than a LAMBDA object or a built-in function symbol.  In
       the evaluation theory, we attach a function to apply$-userfn
       that explicitly enforces the tameness requirements for each
-      user-defined function symbol that has had a badge computed by
-      [defwarrant] and, if those requirements are met, applies the
-      corresponding function.  But in the proof theory apply$-userfn
-      remains undefined.  The value of (apply$-userfn 'fn ...), and
-      thus of (apply$ 'fn ...), is specified by a special hypothesis,
-      called the ``warrant for fn.'' You can't prove anything
-      interesting about the behavior of apply$ on a user-defined
-      function symbol fn unless the warrant for fn is a governing
-      hypothesis.  We discuss warrants in [warrant].  See also
-      [defwarrant].
+      user-defined :logic mode function symbol that has had a badge
+      computed by [defwarrant] and, if those requirements are met,
+      applies the corresponding function.  Magically, that attachment
+      to apply$-userfn can also evaluate :program mode functions with
+      badges created by [defbadge].  We say ``magically'' because
+      there are no axioms that explain this behavior, just as there
+      are no axioms that explain how you can evaluate ordinary calls
+      of :program mode functions in the evaluation theory.  But in
+      the proof theory apply$-userfn remains undefined.  The value of
+      (apply$-userfn 'fn ...), and thus of (apply$ 'fn ...), is
+      specified by a special hypothesis, called the ``warrant for
+      fn.'' You can't prove anything interesting about the behavior
+      of apply$ on a user-defined function symbol fn unless the
+      warrant for fn is a governing hypothesis.  We discuss warrants
+      in [warrant].  See also [defwarrant].
     * untame-apply$: used by apply$ when it is asked to deal with a
       situation in which tameness is violated.
     * untame-ev$: used by ev$ when it is asked to deal with a situation in
@@ -8269,8 +8287,8 @@ Definitions Involving on Apply$
   determine whether a formal parameter is ``used as a function'' in a
   given definition.  Basically, you will want every :logic mode
   function that you define to be processed by defwarrant so that it
-  gets a badge if at all possible and at least has a chance of being
-  applied as expected by apply$.
+  gets a badge and warrant if at all possible and at least has a
+  chance of being applied as expected by apply$.
 
   The macro defun$ is just an abbreviation for a defun followed by a
   defwarrant and it is easy to imagine the other ACL2 definitional
@@ -8278,8 +8296,30 @@ Definitions Involving on Apply$
   extended to include a subsequent defwarrant.
 
   So the question becomes ``What rules must a defun obey in order to be
-  processed successfully by defwarrant?'' The answer is given in the
-  documentation for [defwarrant].
+  processed successfully by defwarrant?'' The full answer is given in
+  the documentation for [defwarrant].  But here are some guidelines
+  to follow:
+      * use :logic mode,
+      * don't use [state] or [stobj]s in the signature,
+      * use a measure that either returns a natural number or a lexicographic
+        combination of natural numbers as defined by the llist
+        function in the Community Books at books/ordinals/,
+      * make sure every function used in the definition has a badge,
+      * ensure that every :FN slot in the body is occupied either by a formal
+        parameter or a quoted, badged function symbol or [lambda$]
+        expression, and
+      * ensure that no parameter occupying a :FN slot is ever used in a slot
+        of any other ilk, and
+      * ensure that every parameter passed into a :FN slot is passed into the
+        same argument position in any recursive calls of the function
+        being defined.
+
+  You can certainly violate these rules and still get an admissible
+  definition.  For example (defun rus (x) (not (apply$ x (list x))))
+  is admissible and you can run it on some arguments, e.g., (rus
+  'consp) evaluates to T.  You can even prove (equal (rus 'consp) t).
+  But (defwarrant rus) fails because rus violates the rules.  So you
+  will not be able to apply$ 'rus.
 
 
 Theorems Involving Apply$
@@ -8348,32 +8388,55 @@ Theorems Involving Apply$
   comment titled Essay on Admitting a Model for Apply$ and the
   Functions that Use It in the ACL2 source file apply-raw.lisp.
 
-  So there are three lessons here:
+  So there are four lessons here:
 
-  Lesson 1: When stating theorems involving apply$ or mapping functions
-  on concrete user-defined functions, provide as additional
-  hypotheses the warrants for all user-defined functions that apply$
-  will encounter during the proof.  This generally means you should
-  add the hypothesis (warrant fn1 fn2 ... fnk) typically listing
-  every function symbol that appears inside a quoted constant
-  destined for apply$ or ev$ in your conjecture.  In particular, you
-  should include every quoted function symbol appearing in a :FN slot
-  of apply$ or any mapping function, including every function symbol
-  appearing in the body of any LAMBDA object or lambda$ term.
-  Unfortunately, in the case of lambda$ terms, you'll need to
-  consider the translated form of the lambda$.  You can see that with
-  :[translam].
+  Lesson 1: When stating theorems involving apply$ or scions on
+  concrete user-defined functions, provide as additional hypotheses
+  the warrants for all user-defined functions that apply$ will
+  encounter during the proof.  This generally means you should add
+  the hypothesis (warrant fn1 fn2 ... fnk) typically listing every
+  function symbol that appears inside a quoted constant destined for
+  apply$ or ev$ in your conjecture.  In particular, you should
+  include every quoted function symbol appearing in a :FN slot of
+  apply$ or any scion, including every function symbol appearing in
+  the body of any LAMBDA object or lambda$ term or any until, when,
+  or body expressions of loop$s.  (Macro expansion in lambda$s and
+  loop$s may introduce function symbols not evident in the
+  untranslated forms.  See :[translam] and :[trans].)
 
   Lesson 2: You need not worry that adding warrant hypotheses makes
   your theorems vacuously valid!  There is a model of apply$ and all
-  your mapping functions in which all warrants are valid.
+  your scions in which all warrants are valid.
 
-  Lesson 3: If a proof involving apply$ or a mapping function fails in
-  a forcing round with a checkpoint whose conclusion is the warrant
-  for some function, you should remember Lesson 1 and include that
-  function symbol in the warrant for your conjecture!  That is, if
-  you forget to supply a warrant but your conjecture is otherwise
-  provable, ACL2's checkpoints will remind you.
+  Lesson 3: If a proof involving apply$ or a scion fails in a forcing
+  round with a checkpoint whose conclusion is the warrant for some
+  function, you should remember Lesson 1 and include that function
+  symbol in the warrant for your conjecture!  That is, if you forget
+  to supply a warrant but your conjecture is otherwise provable,
+  ACL2's checkpoints will remind you.
+
+  Lesson 4: If a proof involving apply$ or a scion fails here are some
+  things to think about.  The basic question is whether something is
+  ``wrong'' with one or more function symbols supposedly handled by
+  apply$.  You have to identify which quoted function symbols are not
+  being simplified or expanded.  Typically you'll see a checkpoint
+  with a term like (apply$ 'fn ...) or (ev$ '(fn ...)  ...) that you
+  expect would be expanded into an actual call of fn.  In that case,
+  fn is of interest.  Here are some questions you should ask yourself
+  about fn.
+
+    * Is fn defined and in :logic mode?  If fn is in :program mode it is
+      treated by the prover as an undefined symbol.  You should try
+      to convert it :logic mode with [verify-termination].
+    * Is fn warranted?  If not, see [defwarrant].  If fn is warranted then
+      it is possible fn is not the problem.  Maybe the warrant for fn
+      was not provided as a hypothesis?  Normally, missing warrant
+      hypotheses are forced, but the proof might have failed for
+      other reasons before the warrant for fn was forced.  But you
+      should ask whether forcing is disabled; see [force].
+    * If you see (apply$ 'fn ...) then perhaps the rewrite rule APPLY$-fn
+      is disabled.  That rule is the one that forces the warrant for
+      fn and it was proved when fn was warranted.
 
   These issues are discussed further in the documentation for
   [warrant].
@@ -8420,6 +8483,10 @@ Guards and Guard Verification
   a function object is apply$d, it is applied to a list of the right
   length.
 
+  Note also that [mixed-mode-functions], i.e., :logic mode functions
+  that use :program mode functions in slots of [ilk] :FN or :EXPR,
+  cannot be guard verified.
+
   But guards arise in another way in connection with apply$.  How does
   (apply$ fn args) behave when fn has guards?  The short answer is:
   logically speaking, apply$ completely ignores guards.  Guards in
@@ -8454,7 +8521,7 @@ Guards and Guard Verification
   of [set-guard-checking].
 
   A similar guard violation error is signalled if a guarded LAMBDA
-  object is apply$ to something violating its guard.
+  object is apply$ed to something violating its guard.
 
   But now consider
 
@@ -8463,8 +8530,89 @@ Guards and Guard Verification
       (apply$ 'SQU (list x)))
 
   This succeeds and strange is now a guard verified, warranted
-  function, with a guard of T.  So what happens when we call it on a
-  non-natural?
+  function, with a guard of T.  This might be surprising since (a)
+  the guard of strange tells us nothing about x, (b) SQU is applied
+  to x, and (c) we know the guard of SQU requires its argument to be
+  a natp.  Guard verification ignores the guards of a quoted function
+  symbol being applied by a scion.  This may be particularly
+  offensive to one's intuitions when the scion is apply$ itself,
+  since the appropriate information is available.  But consider a
+  call of an arbitrary user-defined scion, e.g., (my-scion 'SQU x).
+  To what arguments will my-scion apply$ SQU?  And how can the
+  definition of my-scion even specify what functional objects are
+  acceptable in its first argument?  This is a limitation suffered by
+  ACL2 that a suitably expressive type system would not.  Our way of
+  coping with it is to ignore the guard here and make sure that when
+  apply$ applies the function symbol executes it checks the guard of
+  the symbol.
+
+  Guard verification does not ignore guards of a quoted lambda object
+  being apply$ed.  Thus, for example, while strange can be guard
+  verified,
+
+    (defun$ stranger (x)
+      (declare (xargs :guard t))
+      (apply$ (lambda$ (e) (SQU e)) (list x)))
+
+  cannot be guard verified, because guard verification tries to verify
+  the guards of every lambda object in a :FN slot so that the lambda
+  object can be marked as guard verified in the compiled lambda cache
+  (see [print-cl-cache]).  But guards of lambda objects must be
+  verified independently of the context in which they are used.  To
+  be specific, even
+
+    (defun$ stranger (x)
+      (declare (xargs :guard (natp x)))
+      (apply$ (lambda$ (e) (SQU e)) (list x)))
+
+  cannot be guard verified because the lambda object's guards are
+  verified independently of the context.  The lambda object must
+  carry its own guard, as in
+
+    (defun$ stranger (x)
+      (declare (xargs :guard (natp x)))
+      (apply$ (lambda$ (e)
+                (declare (xargs :guard (natp e)))
+                (SQU e))
+              (list x)))
+
+  The last definition of stranger can be guard verified, the lambda
+  object is so marked in the cache and compiled, and if that lambda
+  object is used in any other context it is recognized as being guard
+  verified.  The guard for that lambda is checked when the object is
+  apply$ed but if the check approves then the body of the lambda is
+  executed as compiled code without further guard checking.
+
+  While apply$ is not evident in a [loop$] statement like
+
+    (loop$ for e in lst collect (SQU e))
+
+  similar treatment is given.  In particular, the loop$ above cannot be
+  guard verified but
+
+    (loop$ for e in lst collect :guard (natp e) (SQU e))
+
+  can be and is compiled into a Common Lisp loop.  Recall also from the
+  [loop$] documentation that the formal semantics of the above
+  statement is essentially
+
+    (collect$ (lambda$ (e)
+                (declare (xargs :guard (natp e)))
+                (SQU e))
+              lst)
+
+  so guard verification of the loop$ also compiles and marks that
+  lambda expression as guard verified.
+
+  So now let's return to consideration of
+
+    (defun$ strange (x)
+      (declare (xargs :guard t))
+      (apply$ 'SQU (list x)))
+
+  which we've seen is guard verified despite the fact that SQU expects
+  a natural number and will not necessarily be given one.  What
+  happens when we call strange on a non-natural?
 
     ACL2 !>(strange 'NAN)
 
@@ -8530,7 +8678,9 @@ Top-Level Evaluation of Apply$
   expressions arising in proofs, where warrants must be explicit.
 
   In this section we focus on calls of apply$ arising in the evaluation
-  theory.
+  theory.  We start with a discussion of the use of apply$ with
+  badged :logic mode functions.  We then describe how apply$ handles
+  badged :program mode functions.
 
   Evaluation of apply$ terms in the evaluation theory respects guards
   on quoted function symbols and [lambda$] expressions (which is to
@@ -8538,17 +8688,21 @@ Top-Level Evaluation of Apply$
   produces).  So consider a call of apply$ on fn and args in the
   evaluation theory, where fn is a badged function symbol or a
   well-formed (and thus tame) LAMBDA object.  Here's what happens.
+  Except where noted, the description below applies both to badged
+  :logic and badged :program mode functions.
 
   Apply$ determines whether fn's tameness restrictions are met by args.
-  If not, an error is caused.
+  Tameness is a syntactic property and so can be checked.  If the
+  function's tameness restrictions are not met, an error is caused.
 
   If the tameness restrictions are met, apply$ determines whether fn
   has been guard verified.  In the case of function symbols this is a
-  simple lookup on the property list of fn.  In the case of LAMBDA
-  objects it is a cache query and if the query reveals that we have
-  not yet tried to verify the guards of this LAMBDA object, apply$
-  uses tau reasoning alone (see [introduction-to-the-tau-system]) to
-  verify the guard conjectures.
+  simple lookup on the property list of fn.  (Of course, this check
+  fails for :program mode functions.)  In the case of LAMBDA objects
+  it is a cache query and if the query reveals that we have not yet
+  tried to verify the guards of this LAMBDA object, apply$ uses tau
+  reasoning alone (see [introduction-to-the-tau-system]) to verify
+  the guard conjectures.
 
   Note:An important distinction between the runtime handling of
   function symbols versus LAMBDA objects by apply$ is that function
@@ -8578,6 +8732,32 @@ Top-Level Evaluation of Apply$
   [print-cl-cache].  See also the discussion of guard verification in
   [lambda$].  It should be noted that a LAMBDA object can also be
   guard verified using the [verify-guards] event.
+
+  Users are accustomed to executing :program mode functions at the
+  top-level of the ACL2 read-eval-print loop.  Indeed, the prover
+  itself and the various event commands are mostly written in
+  :program mode.  Furthermore, the evaluation theory is described as
+  an extension of the proof theory, i.e., as an axiomatic theory.
+  And yet no part of that axiomatization explains how :program mode
+  functions are run!  It simply isn't important.  The implementation
+  supports it and no questions are asked.  We, the implementors of
+  ACL2, view top-level evaluation of both :logic mode and :program
+  mode functions as a convenience not affecting the consistency of
+  the proof theory.  No inconsistency results from starting a
+  non-terminating computation because you can never inspect the
+  result, whereas if you added the corresponding definition as an
+  axiom you might be able to prove something contradictory.  So we
+  regard the seamless execution of :program mode functions as a
+  convenience to the user who might use them to inspect the ACL2
+  logical world, gather data, experiment with constrained formal
+  models by attaching executable code to unspecified functions,
+  prototype something to be formalized, etc.  In that spirit, we have
+  arranged for apply$ to handle :program mode functions provided they
+  have badges.  Badges are critical because it means that execution
+  of the functions won't ``go outside the sandbox.'' However, apply$
+  runs :program mode functions in [safe-mode] to ensure the
+  functional substitutivity of apply$: identical calls must always
+  yield identical results.
 
 
 Logical Definitions
@@ -8700,16 +8880,19 @@ Subtopics
       Undefined function used by apply$ on non-primitives
 
   [Badge]
-      Information on when a function symbol can be apply$d
+      Syntactic requirements on a function symbol to be used by apply$
 
   [Badge-userfn]
       Undefined function used by badge on non-primitives
+
+  [Defbadge]
+      Issue a badge for a function so [apply$] can evaluate with it
 
   [Defun$]
       Define a function symbol and generate a warrant
 
   [Defwarrant]
-      Issue a warrant for a function so [apply$] can use it
+      Issue a warrant for a function so [apply$] can use it in proofs
 
   [Ev$]
       Evaluate a tame expression using apply$
@@ -8732,6 +8915,9 @@ Subtopics
   [Lambda$]
       Lambda object constructor for use with apply$
 
+  [Mixed-mode-functions]
+      :[logic] mode functions can [apply$] :[program] mode functions
+
   [Print-cl-cache]
       Information about the cache supporting apply$
 
@@ -8745,7 +8931,8 @@ Subtopics
       Print the translation of a lambda$ expression
 
   [Warrant]
-      Giving [apply$] permission to call a user-defined function
+      Giving [apply$] permission to handle a user-defined function in
+      proofs
 
   [Well-formed-lambda-objectp]
       Predicate for recognizing well-formed LAMBDA objects")
@@ -9795,11 +9982,13 @@ Subtopics
   guards, then a proof obligation will be that the occurrence of test
   is never nil.
 
-  See [assert-event] for related utilities that offer a variety of
-  features.  In particular, both [assert$] and [assert*] create a
-  [guard] proof obligation (when used in a definition made in
-  [logic]-mode).  However, assert$ checks the assertion at runtime,
-  while assert* does not.")
+  See also [assert*].  Both [assert$] and [assert*] create a [guard]
+  proof obligation (when used in a definition made in [logic]-mode).
+  However, assert$ checks the assertion at runtime, while assert*
+  does not.
+
+  Also see [assert-event] for an assertion-checking utility that is an
+  [event].")
  (ASSERT*
   (ERRORS ACL2-BUILT-INS)
   "Create a [guard] proof obligation that given test holds
@@ -9810,12 +9999,15 @@ Subtopics
   where test returns a single value and form is arbitrary.
   Semantically, this call of assert* is equivalent to form.  However,
   a [guard] proof obligation is created that test holds, when used in
-  a definition made in [logic]-mode).
+  a definition made in [logic]-mode.
 
   For a related utility, see [assert$].  Both assert$ and assert*
   create a [guard] proof obligation (when used in a definition made
   in [logic]-mode).  However, assert$ checks the assertion at
   runtime, while assert* does not.
+
+  Also see [assert-event] for an assertion-checking utility that is an
+  [event].
 
   Macro: <assert*>
 
@@ -9827,68 +10019,100 @@ Subtopics
   (EVENTS ERRORS)
   "Assert that a given form returns a non-nil value
 
-  Assert-event provides a way to check that the value of an expression
-  is not nil, causing an error otherwise.  For a similar utility see
-  the macro [assert!] defined in [community-books] file
-  books/std/testing/assert.lisp.  Here we compare the two,
-  highlighting some key differences.
+  Assert-event provides a flexible way to check that evaluation of an
+  expression returns a non-nil value, causing an error otherwise.
+  Calls of assert-event are [event] forms; thus, they may occur in
+  [books] as well as [encapsulate] and [progn] events.  See also
+  [assert!] and [assert!-stobj] for simple interfaces to
+  assert-event.  See [assert$] and [assert*] for assertion-checking
+  utilities to use in programs.
 
-    * Both assert! and assert-event evaluate using the current
-      [guard]-checking status (e.g., see [with-guard-checking]).
-      However, Assert-event evaluates using the same ``safe-mode''
-      that is used during macroexpansion, which essentially enforces
-      guard checking for [primitive]s.  For example, (assert! (equal
-      (car 3) nil)) causes an error by default but succeeds after
-      (set-guard-checking nil), but (assert-event (equal (car 3)
-      nil)) always causes an error.
-    * Assert! is implemented using [make-event], so in unusual cases it
-      could cause [certificate] files to be large.
-    * Assert-event provides two keyword arguments not directly available in
-      assert!: :msg, for custom error messages; and :on-skip-proofs,
-      to control whether or not the check is done when skipping
-      proofs, as is the case during [include-book].  Of course, one
-      could modify assert!, or wrap its calls inside other code, to
-      do these sorts of things.
-    * Assert! allows one to specify an event when the check passes.  Of
-      course, this could easily be accomplished by combining the use
-      of [progn] and [assert-event].
-    * Assert-event is built into ACL2, so it can be used without including
-      a book.  On the other hand, since assert! is in a book, the
-      ACL2 community is welcome to modify it to improve it.
+  Basic calls of assert-event will take just one argument, called an
+  ``assertion'', which is a form that evaluates to a single value
+  that is not a [stobj].  The following log shows a successful
+  invocation --- one where the assertion evaluates to a non-nil
+  value.
 
-    Examples:
-    (assert-event (equal (+ 3 4) 7))
-    (assert-event (equal (+ 3 4) 7) :msg (msg \"Error: ~x0\" 'equal-check))
-    (assert-event (equal (+ 3 4) 7) :on-skip-proofs t)
+    ACL2 !>(assert-event (equal (+ 3 4) 7))
+     :PASSED
+    ACL2 !>
+
+  Such a use of assert-event will probably suffice for most users, that
+  is, where the form evaluates to a single non-stobj value and there
+  are no keyword arguments.  The keyword arguments, which are
+  optional and discussed below, extend that functionality, for
+  example: multiple values are permitted by keyword :stobjs-out, and
+  keyword :on-skip-proofs can override the default behavior of
+  ignoring assertions when proofs are being skipped.
 
     General Form:
-    (assert-event form ; keyword arguments are optional
-                  :on-skip-proofs t :msg msg)
+    (assert-event assertion
+                  :event event           ; default nil
+                  ;; evaluated keyword arguments:
+                  :ctx                   ; default 'assert-event
+                  :msg msg               ; default t
+                  :on-skip-proofs sp     ; default nil
+                  :safe-mode safe-mode   ; default :same
+                  :stobjs-out stobjs-out ; default nil
+                  )
 
-  Assert-event takes a ground form, i.e., one with no free variables;
-  [stobj]s are allowed but only a single non-[stobj] value can be
-  returned.  The form is then evaluated and if the result is nil,
-  then a so-called hard error (see [er]) results.  This evaluation is
-  however not done if proofs are being skipped, as during
-  [include-book] (also see [skip-proofs] and see [ld-skip-proofsp]),
-  unless :on-skip-proofs t is supplied.
+  where assertion and event are not evaluated but all the other
+  arguments are evaluated, with the defaults shown above
+  corresponding to values after evaluation.
 
-  Normally, if an assert-event call fails then a generic failure
-  message is printed, showing the offending form.  However, if
-  keyword argument :msg is supplied, then the failure message is
-  printed as with [fmt] argument ~@0; see [fmt].  In particular, :msg
-  is typically a string or a call (msg str arg-0 arg-1 ... arg-k),
-  where str is a string and each arg-i is the value to be associated
-  with #\\i upon formatted printing (as with [fmt]) of the string str.
+  The following example illustrates all of the keyword arguments, which
+  are documented below.
 
-  This form may be put into a book to be certified (see [books]),
-  because assert-event is a macro whose calls expand to calls of
-  value-triple (see [embedded-event-form]).  When certifying a book,
-  guard-checking is off, as though (set-guard-checking nil) has been
-  evaluated; see [set-guard-checking].  That, together with a ``safe
-  mode,'' guarantees that assert-event forms are evaluated in the
-  logic without ill-guarded calls of :[program]-mode functions while
-  certifying a book.")
+    (assert-event (mv (equal (+ 3 4) 7) state)
+                  :event (defun f (x) (cons x x))
+                  :ctx '(assert-event . <some-mv>)
+                  :msg (msg \"Oops, I forgot what ~x0+~x1 is!\" 3 4)
+                  :on-skip-proofs t
+                  :safe-mode nil
+                  :stobjs-out '(nil state))
+
+  Assert-event is a macro whose expansion directly produces a call of
+  the primitive event, value-triple, where: if a call of assert-event
+  speifies :msg msg, then the corresponding call of value-triple
+  specifies :check (or msg t).  But unlike value-triple, assert-event
+  can specify an event to evaluate when the assertion has non-nil
+  value, using the :event keyword.  (You can get a sense of the
+  value-triple call generated from an assert-event call by using
+  :[trans1] on the assert-event form.)  The remaining keyword
+  arguments of assert-event are also arguments of value-triple.  Here
+  is a brief summary of the keyword arguments, but NOTE: see
+  [value-triple] for more detailed explanations of keywords other
+  than :EVENT.
+
+  :EVENT event (default nil): When event is not nil, it should be an
+  [event], that is, a form that may be in a book or a call of
+  [encapsulate] or [progn].  If the assertion evaluates to a non-nil
+  value (or to multiple values where the first value is not a stobj
+  and is non-nil; see :STOBJS-OUT below), then event is evaluated;
+  otherwise the evaluation results in an error.
+
+  :CTX ctx (default: 'assert-event): context for error messages.
+
+  :MSG msg (default: t): message to print when there is an error
+  (equivalent to keyword argument :CHECK of [value-triple]).
+
+  :ON-SKIP-PROOFS sp (default: nil): supply t to evaluate the assertion
+  even when skipping proofs (i.e., during [include-book] or the
+  second pass of an [encapsulate] event, or after invoking
+  [set-ld-skip-proofsp] to skip proofs).
+
+  :SAFE-MODE safe-mode (default: :same): provides backward
+  compatibility, but is probably best ignored.
+
+  :STOBJS-OUT stobjs-out (default: nil): specify :auto to allow any
+  return, even with multiple values provided the first return value
+  is not a [stobj]; or specify a list starting with nil,
+  corresponding to the multiple values returned, with stobjs in stobj
+  positions and nil elsewhere.  A stobjs-out of nil is treated as
+  (nil).  The first return value is the one checked to be non-nil
+  with one exception: when an [error-triple] (mv erp val state) is
+  returned, erp must be nil and it is val that is checked to be
+  non-nil.")
  (ASSERTIONS (POINTERS) "See [errors].")
  (ASSIGN
   (PROGRAMMING-WITH-STATE ACL2-BUILT-INS)
@@ -10357,7 +10581,18 @@ Subtopics
             "See [hints] for information about the keyword :backtrack.")
  (BADGE
   (APPLY$)
-  "Information on when a function symbol can be apply$d
+  "Syntactic requirements on a function symbol to be used by apply$
+
+  ``Badge'' is both the name of an ACL2 function and the name of a
+  concept key to the [apply$] machinery.  We discuss the function
+  named badge first.  The discussion also mentions the concept of
+  warrants, which are easily confused with badges.  See the
+  discussion of Badges versus Warrants at the top of defbadge.  But
+  roughly put, badges extend the ACL2 syntax and warrants extend the
+  proof theory.  You'll need a badge for fn to allow the system to
+  syntactically analyze (apply$ 'fn ...).  You'll need a both a badge
+  and a warrant for fn if you wish to reason about that term with
+  ACL2.
 
   General Form:
 
@@ -10365,19 +10600,21 @@ Subtopics
 
   The argument, fn, is expected to be a function symbol.  If fn is one
   of about 800 ACL2 primitives (discussed below) or is a user-defined
-  function successfully processed by the event [defwarrant], the
-  result is an object, called the ``badge'' of fn, which among other
-  things specifies the [ilk] of each formal of fn.  Otherwise, an
-  error is caused.  We explain below, where we define the concepts of
-  the ``out arity,'' ``ilks,'' and ``tameness requirements'' of fn's
-  badge.
+  function successfully processed by either the event [defbadge] or
+  the event [defwarrant], the result is an object, called the
+  ``badge'' of fn, which among other things specifies the [ilk] of
+  each formal of fn.  Otherwise, an error is caused.  We explain
+  below, where we define the concepts of the ``out arity,'' ``ilks,''
+  and ``tameness requirements'' of fn's badge.
 
-  A function symbol must have a badge in order to apply$ the symbol.
-  So if you want to be able to apply$ a function you should introduce
-  it with defun$ or a similar macro, or call [defwarrant] on the
-  function after introducing.  The ACL2 macro defun$ is just an
-  abbreviation for a [defun] event followed by a [defwarrant] event.
-  But not every function symbol can have a badge!
+  A function symbol must have a badge in order to apply$ the symbol and
+  it is up to you, the user, to invoke an event that will assign a
+  badge to your user-defined functions, if possible.  Defbadge will
+  assign a badge to a function symbol, if possible, and defwarrant
+  will assign both a badge (if the function symbol doesn't already
+  have one) and a [warrant], if possible.  The macro [defun$] is just
+  an abbreviation for a defun followed by a defwarrant.  Almost all
+  primitive system functions already have badges.
 
   The complete list of badged primitives can be seen by evaluating
 
@@ -10393,11 +10630,11 @@ Subtopics
   and see that after handling the built-in symbols it defers to the
   undefined function [badge-userfn].  In the evaluation theory,
   badge-userfn has an attachment that returns the badge computed by
-  defwarrant.  But in the proof theory, badge-userfn is undefined and
-  the [warrant] for fn specifies the badge of fn.  Thus, in the proof
-  theory, you cannot reason about the application of a non-primitive
-  function unless there is a warrant for the function available as a
-  hypothesis.
+  defbadge or defwarrant.  But in the proof theory, badge-userfn is
+  undefined and the [warrant] for fn specifies the badge of fn.
+  Thus, in the proof theory, you cannot reason about the application
+  of a non-primitive function unless there is a warrant for the
+  function available as a hypothesis.
 
   The rest of this documentation illustrates and explains what badges
   mean, starting with a few examples.
@@ -10425,10 +10662,10 @@ Subtopics
   returned by fn) and ilks is either T or a list of n tokens.  Each
   token is either :FN, :EXPR, or NIL.
 
-  The badge of fn, if any, is computed when the event (defwarrant fn)
-  completes successfully.  See [defwarrant] for a sketch of the
-  algorithm used to compute badges.  Here though we are just
-  concerned with how badges impact apply$.
+  The badge of fn, if any, is computed when the event (defbadge fn) or
+  (defwarrant fn) completes successfully.  See [defbadge] for a
+  sketch of the algorithm used to compute badges.  Here though we are
+  just concerned with how badges impact apply$.
 
   The ilks of a function, fn, determines the ``tameness requirements''
   mentioned in the specification of [apply$].  When the ilks
@@ -14539,6 +14776,7 @@ Subtopics
        (arithmetic/natp-posp \"[books]/arithmetic/natp-posp.lisp\")
        (arity+ \"[books]/kestrel/std/system/arity-plus.lisp\")
        (assert! \"[books]/std/testing/assert-bang.lisp\")
+       (assert!-stobj \"[books]/std/testing/assert-bang-stobj.lisp\")
        (b* \"[books]/std/util/bstar.lisp\")
        (bridge \"[books]/centaur/bridge/top.lisp\")
        (build::cert.pl \"[books]/build/doc.lisp\")
@@ -14975,7 +15213,13 @@ Subtopics
   [Skip-proofs] in....\".  These may be safely ignored.
 
   Note that you will want to certify [books] in order to take full
-  advantage of ACL2.  See [books-certification].")
+  advantage of ACL2.  See [books-certification].
+
+
+Subtopics
+
+  [Ccl-installation]
+      Installing Clozure Common Lisp (CCL)")
  (BUILT-IN-CLAUSE
   (RULE-CLASSES)
   "To build a clause into the simplifier
@@ -15736,104 +15980,47 @@ Subtopics
   cause ACL2 to include the same book twice, not recognizing the
   second one as redundant.")
  (CCL-INSTALLATION
-  (HONS-AND-MEMOIZATION)
+  (BUILDING-ACL2)
   "Installing Clozure Common Lisp (CCL)
 
   For those who use ACL2 built on CCL as the host Common Lisp
   implementation, it has been common practice to use the latest
-  GitHub version of CCL.  Below are self-contained instructions for
-  how to build CCL on Linux, with comments on how to adapt them to
-  Mac (Darwin).  You may prefer instead to look at the {CCL Releases
-  | https://github.com/Clozure/ccl/releases} page, using the text
-  below only as needed (e.g., for Linux-specific information or for
-  discussion of CCL_DEFAULT_DIRECTORY).  Note: Linux users may need
-  to install m4.
+  GitHub version of CCL.  We provide the following instructions for
+  you to choose from.  The ``brief'' instructions for Linux or Mac
+  (according to your operating system) might well suffice; the
+  ``elaborate'' instructions have helped with version control.
 
-  Remark. The instructions immediately below should generally suffice.
-  But if you would like additional information on CCL installation
-  and implementation, see [ccl-installation-extra].
+    * [ccl-installation-linux-brief]
+    * [ccl-installation-mac-brief]
+    * [ccl-installation-linux-elaborate]
+    * [ccl-installation-mac-elaborate]
 
-  First fetch CCL from GitHub as follows.  (You may prefer to use ``git
-  pull'' if you previously did this step.  In that case you probably
-  won't want to do the optional renaming of the directory, mentioned
-  below.)
+  You may prefer instead to look at the {CCL Releases |
+  https://github.com/Clozure/ccl/releases} page, using links above
+  only as needed (e.g., for Linux-specific information or for
+  discussion of CCL_DEFAULT_DIRECTORY).
 
-    # Obtain a ccl distribution in a fresh directory:
-    mkdir temp
-    cd temp
-    git clone https://github.com/Clozure/ccl
-    # Optionally rename that directory as suggested below, after
-    # executing the following three commands.
-    cd ccl
-    git rev-parse HEAD
-    cd ../../
-    # Optionally change directory name, and then go back to ccl directory:
-    # You'll want the last 10 hex digits to match those of the
-    # output from the ``git rev-parse HEAD'' command above: do
-    # that twice here and once further below.
-    mv temp 2017-12-07-6be8298fe5
-    cd 2017-12-07-6be8298fe5/ccl
-
-  Next fetch a development snapshot.  The version below is current as
-  of this writing (late April, 2019), but see
-  {https://github.com/Clozure/ccl/releases/ |
-  https://github.com/Clozure/ccl/releases/} for the latest snapshots.
-
-    # If you are on a Mac, skip this wget command and see just below.
-    wget https://github.com/Clozure/ccl/releases/download/v1.12/linuxx86.tar.gz
-    # On a Mac, do this instead:
-    # curl --location https://github.com/Clozure/ccl/releases/download/v1.12/darwinx86.tar.gz > darwinx86.tar.gz
-    # Now untar.  NOTE: This is for Linux.
-    # For a Mac: tar xfz darwinx86.tar.gz
-    tar xfz linuxx86.tar.gz
-
-  Rebuild the lisp kernel by hand before trying to rebuild the lisp.
-  (Note: This step was formerly unnecessary and might become
-  unnecessary again, but as of Sept. 2020 it seems to be necessary on
-  MacOS Catalina (10.15).  If you skip it, then consider replacing
-  :clean by :full below.)
-
-    cd lisp-kernel/linuxx8664; make clean; make
-    cd -
-
-  Finish up:
-
-    # (On a Mac, replace the next command with: ./dx86cl64)
-    ./lx86cl64
-    # This welcomes you, e.g.:
-    #   Clozure Common Lisp Version 1.12-dev (v1.12-dev.5) LinuxX8664
-    # Now submit this command:
-    ? (rebuild-ccl :clean t)
-    # After it returns, quit:
-    ? (quit)
-    # Now, back at the shell, rebuild the kernel again just to be safe:
-    # For a Mac: ./dx86cl64
-    ./lx86cl64
-    ? (rebuild-ccl :clean t)
-    ? (quit)
-
-  Create an executable script like the following.  Be sure to change
-  the name (shown as ``2017-12-07-6be8298fe5'' above) to match the
-  name change already made above.
-
-    #!/bin/sh
-
-    export CCL_DEFAULT_DIRECTORY=/projects/acl2/lisps/ccl/2017-12-07-6be8298fe5/ccl
-    ${CCL_DEFAULT_DIRECTORY}/scripts/ccl64 \"$@\"
-
-  Now ensure that your script is executable, e.g.:
-
-    chmod +x my-script
-
-  You're done!  (Note however that certification of [books] that use
-  [Quicklisp] may require openssl to be installed if it is not
-  already on your system.)
+  One of the links listed above should generally suffice.  But if you
+  would like additional information on CCL installation and
+  implementation, see [ccl-installation-extra].
 
 
 Subtopics
 
   [Ccl-installation-extra]
-      Clozure Common Lisp (CCL) installation and implementation details")
+      Clozure Common Lisp (CCL) installation and implementation details
+
+  [Ccl-installation-linux-brief]
+      Installing Clozure Common Lisp (CCL) on Linux (brief version)
+
+  [Ccl-installation-linux-elaborate]
+      Installing Clozure Common Lisp (CCL) on Linux (elaborate version)
+
+  [Ccl-installation-mac-brief]
+      Installing Clozure Common Lisp (CCL) on Mac (brief version)
+
+  [Ccl-installation-mac-elaborate]
+      Installing Clozure Common Lisp (CCL) on Mac (elaborate version)")
  (CCL-INSTALLATION-EXTRA
   (CCL-INSTALLATION)
   "Clozure Common Lisp (CCL) installation and implementation details
@@ -16021,6 +16208,219 @@ configure-ccl.lisp
       ;; Dump executable heap image; see ACL2 documentation topic SAVE-EXEC.
       (save-exec *heap-image-name* \"Modification string to print at startup\")
       )")
+ (CCL-INSTALLATION-LINUX-BRIEF
+  (CCL-INSTALLATION)
+  "Installing Clozure Common Lisp (CCL) on Linux (brief version)
+
+  See [ccl-installation] for introductory remarks.  The instructions
+  below describe how to install CCL on Linux.  For more elaborate
+  ``cookbook'' instructions see [ccl-installation-linux-elaborate].
+
+  Note: Linux users may need to install m4.
+
+  Fetch CCL from GitHub into a fresh subdirectory, ccl/.
+
+    git clone https://github.com/Clozure/ccl
+
+  Next fetch and extract a development snapshot in the new ccl
+  directory.  The version below is current as of this writing (April,
+  2021), but see {https://github.com/Clozure/ccl/releases/ |
+  https://github.com/Clozure/ccl/releases/} for the latest snapshots.
+
+    cd ccl
+    wget https://github.com/Clozure/ccl/releases/download/v1.12/linuxx86.tar.gz
+    tar xfz linuxx86.tar.gz
+
+  Rebuild and quit, twice.
+
+    echo '(rebuild-ccl :full t)' | ./lx86cl64
+    echo '(rebuild-ccl :full t)' | ./lx86cl64
+
+  Create the following executable script, where <DIR> is the absolute
+  pathname (without using ``~'') of the directory in which you issued
+  the ``git clone'' command.
+
+    #!/bin/sh
+
+    export CCL_DEFAULT_DIRECTORY=<DIR>/ccl
+    ${CCL_DEFAULT_DIRECTORY}/scripts/ccl64 \"$@\"
+
+  You're done!  (Note however that certification of [books] that use
+  [Quicklisp] may require openssl to be installed if it is not
+  already on your system.)")
+ (CCL-INSTALLATION-LINUX-ELABORATE
+  (CCL-INSTALLATION)
+  "Installing Clozure Common Lisp (CCL) on Linux (elaborate version)
+
+  See [ccl-installation] for introductory remarks.  The ``cookbook''
+  instructions below give you one way to install CCL on Linux without
+  any knowledge of git or CCL.  For more streamlined instructions see
+  [ccl-installation-linux-brief].
+
+  Note: Linux users may need to install m4.
+
+  First fetch CCL from GitHub as follows.  (You may prefer to use ``git
+  pull'' if you previously did this step.  In that case you probably
+  won't want to do the optional renaming of the directory, mentioned
+  below.)
+
+    # Obtain a ccl distribution in a fresh directory:
+    mkdir temp
+    cd temp
+    git clone https://github.com/Clozure/ccl
+    # Optionally rename that directory as suggested below, after
+    # executing the following three commands.
+    cd ccl
+    git rev-parse HEAD
+    cd ../../
+    # Optionally change directory name, and then go back to ccl directory:
+    # You'll want the last 10 hex digits to match those of the
+    # output from the ``git rev-parse HEAD'' command above: do
+    # that twice here and once further below.
+    mv temp 2017-12-07-6be8298fe5
+    cd 2017-12-07-6be8298fe5/ccl
+
+  Next fetch and extract a development snapshot.  The version below is
+  current as of this writing (April, 2021), but see
+  {https://github.com/Clozure/ccl/releases/ |
+  https://github.com/Clozure/ccl/releases/} for the latest snapshots.
+
+    wget https://github.com/Clozure/ccl/releases/download/v1.12/linuxx86.tar.gz
+    tar xfz linuxx86.tar.gz
+
+  Rebuild and quit, twice.
+
+    echo '(rebuild-ccl :full t)' | ./lx86cl64
+    echo '(rebuild-ccl :full t)' | ./lx86cl64
+
+  Create an executable script like the following.  You might want to
+  call it ``ccl'' and put it into a directory on your path.  Be sure
+  to change the name (shown as ``2017-12-07-6be8298fe5'' above) to
+  match the name change already made above.
+
+    #!/bin/sh
+
+    export CCL_DEFAULT_DIRECTORY=/projects/acl2/lisps/ccl/2017-12-07-6be8298fe5/ccl
+    ${CCL_DEFAULT_DIRECTORY}/scripts/ccl64 \"$@\"
+
+  Now ensure that your script is executable, e.g.:
+
+    chmod +x my-script
+
+  You're done!  (Note however that certification of [books] that use
+  [Quicklisp] may require openssl to be installed if it is not
+  already on your system.)")
+ (CCL-INSTALLATION-MAC-BRIEF
+  (CCL-INSTALLATION)
+  "Installing Clozure Common Lisp (CCL) on Mac (brief version)
+
+  See [ccl-installation] for introductory remarks.  The instructions
+  below describe how to install CCL on a Mac (Darwin).  For more
+  elaborate ``cookbook'' instructions see
+  [ccl-installation-mac-elaborate].
+
+  Fetch CCL from GitHub into a fresh subdirectory, ccl/.
+
+    git clone https://github.com/Clozure/ccl
+
+  Next fetch and extract a development snapshot in the new ccl
+  directory.  The version below is current as of this writing (April,
+  2021), but see {https://github.com/Clozure/ccl/releases/ |
+  https://github.com/Clozure/ccl/releases/} for the latest snapshots.
+
+    cd ccl
+    curl -O -L https://github.com/Clozure/ccl/releases/download/v1.12/darwinx86.tar.gz
+    tar xfz darwinx86.tar.gz
+
+  Rebuild the lisp kernel by hand before trying to rebuild the lisp.
+
+    cd lisp-kernel/darwinx8664; make clean; make
+    cd -
+
+  Rebuild and quit, twice.
+
+    echo '(rebuild-ccl :clean t)' | ./lx86cl64
+    echo '(rebuild-ccl :clean t)' | ./lx86cl64
+
+  Create the following executable script, where <DIR> is the absolute
+  pathname (without using ``~'') of the directory in which you issued
+  the ``git clone'' command.
+
+    #!/bin/sh
+
+    export CCL_DEFAULT_DIRECTORY=<DIR>/ccl
+    ${CCL_DEFAULT_DIRECTORY}/scripts/ccl64 \"$@\"
+
+  You're done!  (Note however that certification of [books] that use
+  [Quicklisp] may require openssl to be installed if it is not
+  already on your system.)")
+ (CCL-INSTALLATION-MAC-ELABORATE
+  (CCL-INSTALLATION)
+  "Installing Clozure Common Lisp (CCL) on Mac (elaborate version)
+
+  See [ccl-installation] for introductory remarks.  The ``cookbook''
+  instructions below give you one way to install CCL on a Mac
+  (Darwin) without any knowledge of git or CCL.  For more streamlined
+  instructions see [ccl-installation-mac-brief].
+
+  First fetch CCL from GitHub as follows.  (You may prefer to use ``git
+  pull'' if you previously did this step.  In that case you probably
+  won't want to do the optional renaming of the directory, mentioned
+  below.)
+
+    # Obtain a ccl distribution in a fresh directory:
+    mkdir temp
+    cd temp
+    git clone https://github.com/Clozure/ccl
+    # Optionally rename that directory as suggested below, after
+    # executing the following three commands.
+    cd ccl
+    git rev-parse HEAD
+    cd ../../
+    # Optionally change directory name, and then go back to ccl directory:
+    # You'll want the last 10 hex digits to match those of the
+    # output from the ``git rev-parse HEAD'' command above: do
+    # that twice here and once further below.
+    mv temp 2017-12-07-6be8298fe5
+    cd 2017-12-07-6be8298fe5/ccl
+
+  Next fetch and extract a development snapshot.  The version below is
+  current as of this writing (April, 2021), but see
+  {https://github.com/Clozure/ccl/releases/ |
+  https://github.com/Clozure/ccl/releases/} for the latest snapshots.
+
+    curl -O -L https://github.com/Clozure/ccl/releases/download/v1.12/darwinx86.tar.gz
+
+  Rebuild the lisp kernel by hand before trying to rebuild the lisp.
+  (Note: This step was formerly unnecessary and might become
+  unnecessary again, but it seems to have been necessary on MacOS
+  Catalina (10.15).
+
+    cd lisp-kernel/darwinx8664; make clean; make
+    cd -
+
+  Rebuild and quit, twice.
+
+    echo '(rebuild-ccl :clean t)' | ./lx86cl64
+    echo '(rebuild-ccl :clean t)' | ./lx86cl64
+
+  Create an executable script like the following.  You might want to
+  call it ``ccl'' and put it into a directory on your path.  Be sure
+  to change the name (shown as ``2017-12-07-6be8298fe5'' above) to
+  match the name change already made above.
+
+    #!/bin/sh
+
+    export CCL_DEFAULT_DIRECTORY=/projects/acl2/lisps/ccl/2017-12-07-6be8298fe5/ccl
+    ${CCL_DEFAULT_DIRECTORY}/scripts/ccl64 \"$@\"
+
+  Now ensure that your script is executable, e.g.:
+
+    chmod +x my-script
+
+  You're done!  (Note however that certification of [books] that use
+  [Quicklisp] may require openssl to be installed if it is not
+  already on your system.)")
  (CCL-UPDATES (POINTERS)
               "See [ccl-installation].")
  (CDAAAR
@@ -17598,6 +17998,9 @@ Subtopics
 
   [Make-summary-data]
       Return summary data from a [clause-processor] function
+
+  [Meta-extract]
+      Meta reasoning using valid terms extracted from context or [world]
 
   [Set-skip-meta-termp-checks]
       Skip output checks for [meta] functions and [clause-processor]s
@@ -20575,7 +20978,7 @@ Subtopics
   ACL2 Version 8.3 --- A Computational Logic for Applicative Common
   Lisp
 
-  Copyright (C) 2020, Regents of the University of Texas
+  Copyright (C) 2021, Regents of the University of Texas
 
   This version of ACL2 is a descendant of ACL2 Version 1.9, Copyright
   (C) 1997 Computational Logic, Inc.  See the documentation topic
@@ -23357,6 +23760,264 @@ Subtopics
   optional.  If :[rule-classes] is not supplied, the list (:rewrite)
   is used; if you wish the axiom to generate no rules, specify
   :[rule-classes] nil.")
+ (DEFBADGE
+  (APPLY$ ACL2-BUILT-INS)
+  "Issue a badge for a function so [apply$] can evaluate with it
+
+  It is best to be somewhat familiar with the documentation of [apply$]
+  before reading this topic.
+
+  Before using defbadge or a utility like [defun$] that relies on it:
+
+    (include-book \"projects/apply/top\" :dir :system)
+
+
+Badges versus Warrants
+
+  It is easy to confuse badges, which are issued by defbadge, with
+  warrants, which are issued by [defwarrant].  The thing to keep in
+  mind is that badges extend the syntax and evaluation capabilities
+  of ACL2, while warrants extend the proof theory.  Some user-defined
+  function symbols may be given badges even if they are in :[program]
+  mode (see [mixed-mode-functions]).  If fn has a badge, you are
+  allowed to write (apply$ 'fn (list a1 ... an)) and expect it
+  evaluate ``correctly'' at the top level of the ACL2 read-eval-print
+  loop, just as you expect (fn a1 ... an) to evaluate.  But you
+  cannot prove anything interesting about (apply$ 'fn (list a1 ...
+  an)) without the warrant for fn.  A badged but unwarranted function
+  symbol might as well be undefined as far as the prover is
+  concerned.  Warrants connect the quoted symbol to the axiomatic
+  behavior of apply$, in particular, they constrain (apply$ 'fn (list
+  a1 ... an)) to be (fn a1 ... an) under certain conditions.
+  Obviously, the very first requirement on fn to have a warrant is
+  that fn must be in :[logic] mode.  But there are other requirements
+  because defwarrant must make sure the extended proof theory is
+  consistent.
+
+
+Requirements of Defbadge
+
+    General Form:
+    (defbadge fn)
+
+  where fn is a defined function name in either :[program] or :[logic]
+  mode.  This command analyzes the body of fn to determine whether it
+  satisfies certain stringent syntactic conditions discussed below.
+  If the conditions are not met, defbadge signals an error.
+  Otherwise, if records a [badge] for fn.  Badges record the input
+  and output arities of fn and specify which arguments are
+  ``functions'' that may be applied with apply$, which are
+  ``expressions'' that may be evaluated with [ev$], and which are
+  neither.  The conditions checked are sufficient to allow [apply$]
+  to run the function safely at the top level of the ACL2
+  read-eval-print loop.  However, in order to prove anything about
+  the behavior of apply$ on fn the function will need a [warrant] as
+  issued by [defwarrant].  Defbadge does not issue warrants, just
+  badges.  Defwarrant can issue both badges and warrants.
+
+  The first condition on fn is that it must be a defined function
+  symbol that does not take or return [state] or any [stobj].  Since
+  fn must be defined it may not be a constrained function such as one
+  introduced by [defchoose] or [encapsulate].  In addition, fn may
+  not be one of a very few ``blacklisted'' symbols (see the value of
+  *blacklisted-apply$-fns*) like [sys-call] (which requires a trust
+  tag) or an [untouchable].  (For technical reasons, untouchables are
+  disallowed even if they are on temp-touchable-fns; see
+  [remove-untouchable].)
+
+  The other conditions depend on whether [apply$] is reachable from fn.
+  That is, can a call of fn lead to a call of apply$?  If apply$ is
+  not reachable from fn, then there are no more conditions on fn.  A
+  badge for fn is computed and stored.  We are more precise about
+  ``reachability'' later.
+
+  If apply$ is reachable from fn, then there are additional conditions
+  that must be checked.  First, fn must not have been introduced with
+  [mutual-recursion].  The current badging machinery is unable to
+  enforce the syntactic restrictions for mutually-recursive cliques.
+  Another restriction is that every function mentioned in the body of
+  fn, except fn itself, must already have a badge.  Finally, fn must
+  respect certain conventions regarding its use of [apply$] and other
+  [scion]s.  The basic idea of this last restriction is to make sure
+  that apply$ is always called on a ``known'' function symbol or
+  [lambda] object.  This restriction is enforced by checking the
+  following conditions:
+
+  (a) It must be possible for each formal of fn to be assigned one of
+  three [ilk]s, :FN, :EXPR, or NIL, as described below.  The basic
+  idea is that a formal can be assigned ilk :FN (or ilk :EXPR) iff it
+  is sometimes passed into a :FN (or :EXPR) slot in the body of fn
+  and is never passed into any other kind of slot.  A formal can be
+  be assigned ilk NIL iff it is never passed into a slot of ilk :FN
+  or :EXPR, i.e., if it is used as an ``ordinary'' object.  We are
+  more precise below.
+
+  (b) Every :FN and :EXPR slot of every function called in the body of
+  fn is occupied either by a formal of fn of the same ilk or, in the
+  case of calls of functions other than fn, a quoted [tame] function
+  symbol or quoted tame (preferably well-formed) LAMBDA object.
+
+  This completes the list of restrictions imposed by defbadge.
+
+
+Discussion and Examples
+
+  Note that if apply$ is not reachable from fn, the restrictions
+  imposed on fn are comparatively generous.  Such a fn could be
+  badged despite being defined mutually recursively or in terms of
+  unbadged or even unbadgeable functions.  (Functions with [stobj]s
+  in their signatures are unbadgeable but could be used with
+  [with-local-stobj] in fn and fn could still be badged.)
+
+  After a successful defbadge event for fn, the function [badge] will
+  return the computed badge and [apply$] will be able to accept the
+  fn as a functional argument.  Here is an annotated script.  First,
+  carry out these two events, defining foldr as a :program mode
+  function.
+
+    (include-book \"projects/apply/top\" :dir :system)
+
+    (defun foldr (lst fn init)
+      (declare (xargs :mode :program))
+      (if (endp lst)
+          init
+          (apply$ fn
+                  (list (car lst)
+                        (foldr (cdr lst) fn init)))))
+
+  Note the apply$ call in the definition.  We see that foldr treats its
+  middle argument, fn, as a function of arity 2.  We can run foldr,
+  even without assigning a badge to foldr, as long as we supply a
+  badged function symbol of arity 2 as the middle argument.  Since
+  the ACL2 primitive cons has a badge and has arity 2, we can use it:
+
+    ACL2 !>(foldr '(a b c) 'cons '(d e f))
+    (A B C D E F)
+
+  Since foldr has arity 3, we can try to apply it to a list of three
+  things.
+
+    (apply$ 'foldr (list '(a b c) 'cons '(d e f)))
+
+    ACL2 Error in TOP-LEVEL:  The value of APPLY$-USERFN is not specified
+    on FOLDR because FOLDR has not been badged.
+
+  However, we can use defbadge to compute the badge for foldr.  The
+  badge says foldr has input arity 3, output arity 1, and treats its
+  middle argument as a function.  We can recover the badge by calling
+  the function [badge].  We can successfully apply foldr.  We can
+  even use it in a lambda expression that we pass as the middle
+  argument to foldr.
+
+    ACL2 !>(defbadge foldr)
+
+    FOLDR now has the badge (APPLY$-BADGE 3 1 NIL :FN NIL) but has no warrant.
+    T
+
+    ACL2 !>(badge 'foldr)
+    (APPLY$-BADGE 3 1 NIL :FN NIL)
+
+    ACL2 !>(apply$ 'foldr (list '(a b c) 'cons '(d e f)))
+    (A B C D E F)
+
+    ACL2 !>(foldr '((a b c) (d e) (f g h) (i j k))
+                  (lambda$ (x y)
+                    (foldr x 'cons y))
+                  nil)
+    (A B C D E F G H I J K)
+
+
+The ``Reachability'' Test
+
+  We now clarify the test that we colloquially described above as
+  whether apply$ is reachable from fn.  The actual test is whether
+  apply$-userfn is ancestral in fn.  That is, does fn call
+  apply$-userfn, or a function that calls apply$-userfn, or a
+  function that calls a function that calls apply$-userfn, etc.
+
+  Since the only system functions that call apply$-userfn are apply$,
+  ev$, and [warrant]s, and since it is very unusual for a
+  user-defined function to call directly apply$-userfn, ev$, or
+  warrants, we think of this test colloquially as whether apply$ is
+  ancestral in fn.
+
+  The test and the onerous conditions imposed when the apply$ is
+  reachable is crucial to the soundness of the ACL2 proof theory.  We
+  discuss this further in the background material for [apply$],
+  including {``Limited Second-Order Functionality in a First-Order
+  Setting'' |
+  http://www.cs.utexas.edu/users/kaufmann/papers/apply/index.html} by
+  Matt Kaufmann and J Strother Moore and offer a fully fleshed out
+  metalevel proof that apply$ and all :logic-mode scions can be
+  modelled in the comment titled Essay on Admitting a Model for
+  Apply$ and the Functions that Use It in the ACL2 source file
+  apply-raw.lisp.
+
+  But badges are more concerned with the evaluation theory than the
+  proof theory.  Even if we convert foldr to :logic mode we cannot
+  prove anything interesting about what happens when it is applied
+  with apply$.
+
+    ACL2 !>(verify-termination foldr)
+    [Successful.  Output deleted.]
+     FOLDR
+
+    ACL2 !>(thm
+             (equal (apply$ 'foldr (list x 'cons z))
+                    (append x z)))
+    [Unsuccessful.  Output deleted.]
+    ******** FAILED ********
+
+  In order to prove anything about applying foldr we need the [warrant]
+  for foldr.  Warrants are issued by [defwarrant].
+
+
+How Ilks Are Assigned
+
+  If a formal variable (or its slot among the actuals) has an ilk of
+  :FN then the variable is ``used as a function'' in the sense that
+  it might eventually reach the first argument of a call of apply$
+  and is never passed into an ``ordinary'' slot like those for cons.
+  Similarly, an ilk of :EXPR means the variable is ``used as an
+  expression'' and may eventually reach the first argument of ev$.
+  An ilk of NIL means the variable is never used as a function or an
+  expression.  The correctness of this algorithm is crucial to the
+  safe evaluation of apply$ on user-defined function symbols.  It
+  also is crucial to the termination argument justifying the
+  consistency of the proof theory created if and when fn is
+  warranted.
+
+  The key to the inductive correctness of the algorithm implicity
+  described below is the fact that initially the only function symbol
+  with a slot of ilk :FN is apply$ and the only function with a slot
+  of ilk :EXPR is ev$.  In both functions it is the first argument
+  slot that is so distinguished.
+
+  Let v  be the i th formal parameter of a defined function fn.  Then
+  the ilk of v  is :FN iff the value of v  eventually makes its way
+  into the first argument of apply$, either in the definition of fn
+  or in some function ancestral to (i.e., eventually called by) fn.
+  Another way to say this is that there is an occurrence of v  in a
+  slot of ilk :FN.  Furthermore, v  is never used any other way:
+  every place v  occurs in the body of fn  is in a slot of ilk :FN.
+  And finally, in every recursive call of fn , v  is passed
+  identically in the i th argument position of the call.  We say such
+  a v  is ``used (exclusively) as a function.''
+
+  The i th formal variable v  has ilk :EXPR under analogous conditions
+  except that instead of eventually getting into the first argument
+  of apply$ it eventually gets into the first argument of ev$.  We
+  say such a v  is ``used (exclusively) as an expression.'' Note:
+  [ev$] is the natural notion of expression evaluation in this
+  context: look up the values of variables in the alist argument to
+  ev$, return quoted constants, and otherwise apply$ function symbols
+  and LAMBDA objects to the recursively obtained list of values
+  returned by evaluating the actuals.  However, ev$ first checks that
+  the expression is [tamep].
+
+  The i th formal variable v  has ilk NIL if it never occurs in a :FN
+  slot and never occurs in an :EXPR slot.  We say such a v  is ``used
+  (exclusively) as an ordinary object.''")
  (DEFCHOOSE
   (EVENTS)
   "Define a Skolem (witnessing) function
@@ -23590,6 +24251,16 @@ Subtopics
   term is a variable-free term that is evaluated to determine the
   value of the constant.
 
+  There are two restrictions on term aside from it being variable-free.
+  Both restrictions relate to ancestral uses of [apply$] in term,
+  i.e., uses of apply$ by term or any function that might be called
+  during the evaluation of term.  First, only badged primitive
+  functions may be applied.  See [badge] for a way to obtain the
+  complete list of badged primitives.  Second, loop$ and lambda$ may
+  not be used anywhere in the ancestry of term.  See
+  ignored-attachment and prohibition-of-loop$-and-lambda$ for more
+  discussion.
+
   When a constant symbol is used as a [term], ACL2 replaces it by its
   value; see [term].
 
@@ -23621,6 +24292,12 @@ Subtopics
 
 
 Subtopics
+
+  [Ignored-attachment]
+      Why attachments are sometimes not used
+
+  [Prohibition-of-loop$-and-lambda$]
+      Certain events do not allow [loop$]s or [lambda$]s
 
   [Sharp-dot-reader]
       Read-time evaluation of constants")
@@ -24813,15 +25490,27 @@ Subtopics
     (defmacro name macro-args doc-string dcl ... dcl body)
 
   where name is a new symbolic name (see [name]), macro-args specifies
-  the formal parameters of the macro, and body is a term.  The formal
-  parameters can be specified in a much more general way than is
-  allowed by ACL2 [defun] [events]; see [macro-args] for a
-  description of keyword (&key) and optional (&optional) parameters
-  as well as other so-called ``lambda-list keywords'', &rest and
-  &whole.  Doc-string, if non-nil, is an optional string that can
-  provide documentation but is essentially ignored by ACL2.  Each dcl
-  is an optional declaration (see [declare]) except that the only
-  [xargs] keyword permitted by defmacro is :[guard].
+  the formal parameters of the macro, and body is a term whose only
+  free variables are the macro-args.  The formal parameters can be
+  specified in a much more general way than is allowed by ACL2
+  [defun] [events]; see [macro-args] for a description of keyword
+  (&key) and optional (&optional) parameters as well as other
+  so-called ``lambda-list keywords'', &rest and &whole.  Doc-string,
+  if non-nil, is an optional string that can provide documentation
+  but is essentially ignored by ACL2.  Each dcl is an optional
+  declaration (see [declare]) except that the only [xargs] keyword
+  permitted by defmacro is :[guard].
+
+  There are two restrictions on body aside from it simply being a term
+  in macro-args.  Both restrictions relate to ancestral uses of
+  [apply$] in body, i.e., uses of apply$ by body or any function that
+  might be called during the evaluation of body.  First, only badged
+  primitive functions may be applied.  See [badge] for a way to
+  obtain the complete list of badged primitives.  Second, loop$ and
+  lambda$ may not be used anywhere in the ancestry of body.  See
+  ignored-attachment and prohibition-of-loop$-and-lambda$ for more
+  discussion.  Note: It is permitted for the value of body to mention
+  apply$, loop$, and lambda$.
 
   For compute-intensive applications, see [defmac], which can speed up
   macroexpansion by introducing an auxiliary defun.  For a variant of
@@ -24858,7 +25547,13 @@ Subtopics
 Subtopics
 
   [Defmacro-untouchable]
-      Define an ``untouchable'' macro")
+      Define an ``untouchable'' macro
+
+  [Ignored-attachment]
+      Why attachments are sometimes not used
+
+  [Prohibition-of-loop$-and-lambda$]
+      Certain events do not allow [loop$]s or [lambda$]s")
  (DEFMACRO-LAST
   (EVENTS)
   "Define a macro that returns its last argument, but with side effects
@@ -24956,6 +25651,16 @@ Subtopics
   by ACL2 to the [portcullis] of a book's [certificate]; see
   [hidden-death-package].)
 
+  There are two restrictions on term aside from those mentioned above.
+  Both restrictions relate to ancestral uses of [apply$] in term,
+  i.e., uses of apply$ by term or any function that might be called
+  during the evaluation of term.  First, only badged primitive
+  functions may be applied.  See [badge] for a way to obtain the
+  complete list of badged primitives.  Second, loop$ and lambda$ may
+  not be used anywhere in the ancestry of term.  See
+  ignored-attachment and prohibition-of-loop$-and-lambda$ for more
+  discussion.
+
   Defpkg forms can be entered at the top-level of the ACL2 [command]
   loop.  They should not occur in [books] (see [certify-book]).
 
@@ -25037,7 +25742,13 @@ Subtopics
       Handling [defpkg] [events] that are [local]
 
   [Hidden-defpkg]
-      Handling defpkg events that are local")
+      Handling defpkg events that are local
+
+  [Ignored-attachment]
+      Why attachments are sometimes not used
+
+  [Prohibition-of-loop$-and-lambda$]
+      Certain events do not allow [loop$]s or [lambda$]s")
  (DEFPROXY
   (EVENTS)
   "Define a non-executable :[program]-mode function for attachment
@@ -26713,14 +27424,21 @@ Subtopics
   of successively rel-smaller mp-objects.  Thus, the recursion must
   terminate.
 
-  The only primitive well-founded relation in ACL2 is [o<] (see [o<]),
-  which is known to be well-founded on the [o-p]s (see [o-p]).  For
-  the proof of well-foundedness, see [proof-of-well-foundedness].
-  However it is possible to add new well-founded relations.  For
-  details, see [well-founded-relation].  We discuss later how to
-  specify which well-founded relation is selected by defun and in the
-  present discussion we assume, without loss of generality, that it
-  is [o<] on the [o-p]s.
+  The default well-founded relation is [o<], an ``ordinal less-than''
+  relation (discussed further below) that reduces to ordinary < on
+  the natural numbers.  The default measure term is (acl2-count var),
+  where var is a formal parameter that is chosen heuristically:
+  roughly speaking, it is the first formal that is tested along every
+  branch and changed in each recursive call.
+
+  The only primitive well-founded relation in ACL2 is [o<], which is
+  known to be well-founded on the [o-p]s.  For the proof of
+  well-foundedness, see [proof-of-well-foundedness].  However it is
+  possible to add new well-founded relations.  For details, see
+  [well-founded-relation].  We discuss later how to specify which
+  well-founded relation is selected by defun and in the present
+  discussion we assume, without loss of generality, that it is [o<]
+  on the [o-p]s.
 
   For example, for our generic definition of fn above, with measure
   term (m x y), two theorems must be proved.  The first establishes
@@ -26840,6 +27558,7 @@ Subtopics
                       :normalize nil
                       :verify-guards nil
                       :non-executable t
+                      :type-prescription (natp (example x y z a b c i j))
                       :otf-flg t))
       (example-body x y z i j))
 
@@ -27043,8 +27762,12 @@ Subtopics
   deductively about the function because each definition extends the
   underlying logic with a definitional axiom.  To ensure that the
   logic is sound after the addition of this axiom, certain
-  restrictions have to be met, namely that the recursion terminates.
-  This can be quite challenging.
+  restrictions have to be met.  One restriction is that every
+  function called by the newly defined one must be in :logic mode.
+  (However, see [defun-mode-lambdas] for some clarification
+  concerning [apply$].)  But the most challenging restriction is that
+  the system must prove that the recursion in the new definition
+  terminates.
 
   Because ACL2 is a [programming] language, you often may wish simply
   to program in ACL2.  For example, you may wish to define your
@@ -27157,6 +27880,9 @@ Subtopics
 
 Subtopics
 
+  [Defun-mode-lambdas]
+      :program mode functions in [lambda] objects
+
   [Logic]
       To set the default [defun-mode] to :logic
 
@@ -27259,6 +27985,89 @@ Subtopics
   develop (or dismiss) this style of formal system development.  BUT
   BE ON THE LOOKOUT FOR SCREWUPS DUE TO DAMAGE CAUSED BY THE
   EXECUTION OF YOUR FUNCTIONS HAVING :[program] MODE!")
+ (DEFUN-MODE-LAMBDAS
+  (DEFUN-MODE)
+  ":program mode functions in [lambda] objects
+
+  A rough rule-of-thumb is that all functions mentioned in a :[logic]
+  mode [defun] must themselves be in :logic mode.  If prgm is a
+  :[program] mode function then (defun fn (x) (prgm x)) is illegal.
+  But there are situations (always involving [apply$]) in which
+  :program mode function symbols are allowed to be mentioned in
+  :logic mode [defun]s.  We explain here.
+
+  Here are two example terms that mention the badged (see [defbadge])
+  :program mode symbol prgm.
+
+    (apply$ (lambda$ (e) (prgm e)) (list x))
+
+    (loop$ for e in lst collect (prgm e))
+
+  Are such terms permitted in the defun of a :logic mode function?  The
+  answer is complicated because it depends on whether the defun is
+  [loop$] recursive and whether the defun will also try to verify the
+  [guard]s of fn.
+
+  First, a :logic mode function may apply$ a quoted :program mode
+  symbol, whether guards are being verified or not.  For example,
+  (apply$ 'prgm args) is legal.  Here prgm is just a quoted symbol.
+  Since prgm is a :program mode symbol, there are no axioms about it,
+  so during proofs such a call of apply$ is not evaluated or
+  expanded.  If this form is evaluated at the top-level -- where
+  :program mode functions are evaluable -- apply$ checks the guards
+  of prgm just as it would before any :program mode function is
+  called.
+
+  The situation is more complicated for use of :program mode functions
+  in forms like [lambda$], well-formed quoted [lambda] objects, and
+  [loop$].  The reason is that in guard-verified code, these forms
+  are generally executed via compiled code and that requires that the
+  loop$ and lambda objects be Common Lisp compliant, which in turn
+  implies they must be analyzable by the prover.  Since formally
+  loop$s are understood as calls of [scion]s on lambda$ expressions
+  it suffices for us to discuss the lambda$ case alone.  Well-formed
+  quoted LAMBDA objects are treated the same way.
+
+  So again, suppose you're defining a :logic mode function fn.  Suppose
+  fn is not loop$ recursive and guards are not being verified during
+  the defun.  Then badged :program mode symbols may be used lambda$
+  forms in the definition of fn.
+
+  If fn is loop$ recursive, i.e., :[loop$-recursion] t is declared,
+  then all symbols used as functions in lambda$ forms must be in
+  :logic mode.  The reason is that the measure conjectures generated
+  must be in :logic mode to be provable.
+
+  If fn is to be guard-verified, then all symbols used as functions in
+  lambda$ forms must be in :logic mode.  The reason is that the guard
+  conjectures must be in :logic mode to be provable.
+
+  When a :program function is permitted in a :logic mode definition the
+  system will print a warning to alert you to the possibility that
+  proofs will fail.  For example, the following events are legal
+
+    (include-book \"projects/apply/top\" :dir :system)
+
+    (defun prgm (x)
+      (declare (xargs :mode :program))
+      (list 'hi x))
+
+    (defbadge prgm)
+
+    (defun fn1 (x)
+      (declare (xargs :mode :logic))
+      (apply$ 'prgm (list x)))
+
+  but the last event will print:
+
+    ACL2 Warning [Problematic-quoted-fns] in ( DEFUN FN1 ...): The definition of
+    FN1 is in :LOGIC mode but mentions the :PROGRAM mode function HELLO in one or
+    more :FN or :EXPR slots.  Conjectures about FN1 may not be provable until
+    this program is converted to :LOGIC mode and warranted!  See :DOC
+    verify-termination and defwarrant.
+
+  Uses of prgm in quoted well-formed LAMBDA objects, lambda$ forms, and
+  loop$ forms will cause similar warning messages to be printed.")
  (DEFUN-NOTINLINE
   (DEFUN EVENTS)
   "Define a not-to-be-inlined function symbol and associated macro
@@ -27852,7 +28661,10 @@ Subtopics
   program.  See [mutual-recursion].")
  (DEFWARRANT
   (APPLY$ ACL2-BUILT-INS)
-  "Issue a warrant for a function so [apply$] can use it
+  "Issue a warrant for a function so [apply$] can use it in proofs
+
+  It is best to be somewhat familiar with the documentation of [apply$]
+  before reading this topic.
 
   Before using defwarrant or a utility like [defun$] that relies on it:
 
@@ -27861,12 +28673,44 @@ Subtopics
   Several lemmas in that book are necessary for defwarrant to prove the
   theorems it must prove.
 
+
+Badges versus Warrants
+
+  It is easy to confuse badges, which are issued by [defbadge], with
+  warrants, which are issued by defwarrant.  The thing to keep in
+  mind is that badges extend the syntax and evaluation capabilities
+  of ACL2, while warrants extend the proof theory.  Some user-defined
+  function symbols may be given badges even if they are in :[program]
+  mode (see [mixed-mode-functions]).  If fn has a badge, you are
+  allowed to write (apply$ 'fn (list a1 ... an)) and expect it
+  evaluate ``correctly'' at the top level of the ACL2 read-eval-print
+  loop, just as you expect (fn a1 ... an) to evaluate.  But you
+  cannot prove anything interesting about (apply$ 'fn (list a1 ...
+  an)) without the warrant for fn.  A badged but unwarranted function
+  symbol might as well be undefined as far as the prover is
+  concerned.  Warrants connect the quoted symbol to the axiomatic
+  behavior of apply$, in particular, they constrain (apply$ 'fn (list
+  a1 ... an)) to be (fn a1 ... an) under certain conditions.
+  Obviously, the very first requirement on fn to have a warrant is
+  that fn must be in :[logic] mode.  But there are other requirements
+  because defwarrant must make sure the extended proof theory is
+  consistent.
+
+
+Requirements of Defwarrant
+
     General Form:
     (defwarrant fn)
 
   where fn is a defined function name.  This command analyzes the body
   of fn to determine whether it satisfies certain stringent syntactic
-  conditions.
+  and semantic conditions that allow the ACL2 proof theory to be
+  extended so that the prover can simplify forms like (apply$ 'fn
+  ...).  The syntactic conditions are actually those of [defbadge],
+  which defwarrant essentially invokes if fn is not already badged.
+  But below we describe all the conditions --- those enforced by
+  defbadge and those unique to defwarrant --- since many users use
+  defwarrant to issue both a badge and a warrant.
 
   Basic conditions include that fn is in :[logic]-mode, does not have
   [state] or any [stobj] in its signature, and that its justification
@@ -27875,10 +28719,11 @@ Subtopics
   [ev$], or [apply$-userfn].
 
   Defwarrant imposes some additional conditions on fn, but exactly what
-  those conditions are depends on a certain ``reachability'' test.
-  Roughly speaking the test is whether apply$ is reachable from fn
-  but the test is broader than that and we clarify the test further
-  below.
+  those conditions are depends on a certain ``reachability'' test
+  detailed in the section titled The ``Reachability'' Test in
+  [defbadge].  Roughly speaking the test is whether apply$ is
+  ancestral in fn, meaning apply$ is somehow involved in the
+  definition of fn or the functions it calls.
 
   If the reachability test succeeds --- colloquially, if fn depends on
   apply$ --- then defwarrant imposes the following additional
@@ -27911,7 +28756,7 @@ Subtopics
   symbol or quoted tame (preferably well-formed) LAMBDA object.
 
   This completes the list of additional restrictions imposed by
-  defwarrant on functions from which apply$ can be reached.
+  defwarrant on fn, when apply$ is reachable from fn.
 
   If the reachability test fails --- colloquially, if fn does not
   depend on apply$ --- then defwarrant just checks that fn does not
@@ -27928,14 +28773,15 @@ Subtopics
   example, functions that use local [stobj]s (see
   [with-local-stobj]s).
 
-  Regardless of whether apply$ is reachable or not, if the requisite
+  Regardless of whether apply$ is reachable, if the requisite
   conditions are not met, defwarrant causes an error.
 
-  If the requisite conditions are met, defwarrant constructs the
-  [badge] for fn, setting the arity and out arity appropriately and
-  setting the ilks field to the list of computed ilks (or to T if
+  If the requisite conditions are met, defwarrant obtains or constructs
+  the [badge] for fn, setting the arity and out arity appropriately
+  and setting the ilks field to the list of computed ilks (or to T if
   every formal has ilk NIL).  The generated badge is stored for the
-  future use of defwarrant.
+  future use of defwarrant.  See [defbadge] for a brief discussion of
+  how ilks are computed.
 
   Furthermore, defwarrant generates the [warrant] for fn.  The name of
   that 0-ary function will be APPLY$-WARRANT-fn.  Calls of [apply$]
@@ -27948,87 +28794,25 @@ Subtopics
   [defwarrant] proves rewrite rules to make calls of badge and apply$
   simplify accordingly.)
 
-  In addition, if a warrant is issued for fn, then defwarrant extends
-  ACL2's evaluation theory (but not its proof theory) so that the
-  warrant hypothesis is assumed in that theory, allowing calls of
-  badge and apply$ to be evaluated in the evaluation theory (but not
-  in the proof theory).  See [warrant] for details.
+  If a warrant is issued for fn, then defwarrant also extends ACL2's
+  evaluation theory (but not its proof theory) so that the warrant
+  hypothesis is assumed true in that theory, allowing calls of badge
+  and apply$ to be evaluated in the evaluation theory (but not in the
+  proof theory).  See [warrant] for details.
+
+  You might worry that theorems burdened by warrants are vacuously
+  valid because it might be impossible to satisfy all the warrant
+  hypotheses.  You needn't worry about this.  There is a model of
+  apply$ and all of its [scion]s that makes every warrant issued by
+  defwarrant valid. The proof of this is sketched in {``Limited
+  Second-Order Functionality in a First-Order Setting'' |
+  http://www.cs.utexas.edu/users/kaufmann/papers/apply/index.html} by
+  Matt Kaufmann and J Strother Moore and fully fleshed out in the
+  comment titled Essay on Admitting a Model for Apply$ and the
+  Functions that Use It in the ACL2 source file apply-raw.lisp.
 
   Defwarrant also proves that [fn-equal] is a congruence relation for
   each :FN position of fn.
-
-
-The ``Reachability'' Test
-
-  We now clarify the test that we colloquially described above as
-  whether apply$ is reachable from fn.  The actual test is whether
-  apply$-userfn is ancestral in fn.  That is, does fn call
-  apply$-userfn, or a function that calls apply$-userfn, or a
-  function that calls a function that calls apply$-userfn, etc.
-
-  Since the only system functions that call apply$-userfn are apply$,
-  ev$, and [warrant]s, and since it is very unusual for a
-  user-defined function to call directly apply$-userfn, ev$, or
-  warrants, we think of this test colloquially as whether apply$ is
-  ancestral in fn.
-
-  The test affects the metatheoretical model of apply$ and the onerous
-  conditions imposed when the apply$ is reachable from fn are crucial
-  to soundness.  If apply$ is reachable, then in the metatheoretic
-  model of apply$, fn is introduced in a mutually recursive clique
-  with apply$ itself (they call each other) and the termination
-  argument is delicate and depends on function objects not changing
-  as they are passed around.  If apply$ isn't reachable, fn can be
-  introduced in the model before apply$.  These considerations are
-  unimportant to the user --- the metatheoretic model is a
-  mathematical abstraction that establishes the soundness of apply$
-  and is not part of the implementation.
-
-
-How Ilks Are Assigned
-
-  If a formal variable (or its slot among the actuals) has an ilk of
-  :FN then the variable is ``used as a function'' in the sense that
-  it might eventually reach the first argument of a call of apply$
-  and is never passed into an ``ordinary'' slot like those for cons.
-  Similarly, an ilk of :EXPR means the variable is ``used as an
-  expression'' and may eventually reach the first argument of ev$.
-  An ilk of NIL means the variable is never used as a function or an
-  expression.  The correctness of this algorithm is crucial to the
-  termination argument justifying the definition of apply$ in the
-  metatheoretic model.
-
-  The key to the inductive correctness of the algorithm implicity
-  described below is the fact that initially the only function symbol
-  with a slot of ilk :FN is apply$ and the only function with a slot
-  of ilk :EXPR is ev$.  In both functions it is the first argument
-  slot that is so distinguished.
-
-  Let v  be the i th formal parameter of a defined function fn.  Then
-  the ilk of v  is :FN iff the value of v  eventually makes its way
-  into the first argument of apply$, either in the definition of fn
-  or in some function ancestral to (i.e., eventually called by) fn.
-  Another way to say this is that there is an occurrence of v  in a
-  slot of ilk :FN.  Furthermore, v  is never used any other way:
-  every place v  occurs in the body of fn  is in a slot of ilk :FN.
-  And finally, in every recursive call of fn , v  is passed
-  identically in the i th argument position of the call.  We say such
-  a v  is ``used (exclusively) as a function.''
-
-  The i th formal variable v  has ilk :EXPR under analogous conditions
-  except that instead of eventually getting into the first argument
-  of apply$ it eventually gets into the first argument of ev$.  We
-  say such a v  is ``used (exclusively) as an expression.'' Note:
-  [ev$] is the natural notion of expression evaluation in this
-  context: look up the values of variables in the alist argument to
-  ev$, return quoted constants, and otherwise apply$ function symbols
-  and LAMBDA objects to the recursively obtained list of values
-  returned by evaluating the actuals.  However, ev$ first checks that
-  the expression is [tamep].
-
-  The i th formal variable v  has ilk NIL if it never occurs in a :FN
-  slot and never occurs in an :EXPR slot.  We say such a v  is ``used
-  (exclusively) as an ordinary object.''
 
 
 Subtopics
@@ -31416,7 +32200,10 @@ Subtopics
       Print an error message and stop execution
 
   [Illegal]
-      Print an error message and stop execution")
+      Print an error message and stop execution
+
+  [Value-triple]
+      Compute a value, optionally checking that it is not nil")
  (ESCAPE-TO-COMMON-LISP
   (COMMON-LISP)
   "Escaping to Common Lisp
@@ -32791,7 +33578,7 @@ Subtopics
 
   A function that suggests this induction is shown below.  ACL2 has to
   be told the measure, namely the difference between max and i
-  (coerced to a natural number to insure that the measure is an
+  (coerced to a natural number to ensure that the measure is an
   ordinal).
 
     (defun count-up (i max)
@@ -32850,7 +33637,7 @@ Subtopics
   that all the formal parameters play a role in the computation (at
   least syntactically), it is common practice when defining functions
   for their induction schemes to return the list of all the formals
-  (to insure all variables are involved) and to combine recursive
+  (to ensure all variables are involved) and to combine recursive
   calls on a given branch with list (to avoid introducing additional
   case analysis as would happen if and or or or other propositional
   functions are used).
@@ -37833,7 +38620,7 @@ Subtopics
   likely problems.  The most likely one is that your measure isn't
   really always a natural!  Suppose the formals of your defun are x
   and y and your measure is (m x y).  Suppose the recursive calls of
-  your function are protected by tests that insure that x and y are
+  your function are protected by tests that ensure that x and y are
   naturals.  Then you might assume x and y are naturals in the
   measure.  But ACL2 has to prove (o-p (m x y)), where [o-p] is the
   predicate that recognizes ordinals (and naturals are ordinals).
@@ -37860,7 +38647,7 @@ Subtopics
   [well-founded-relation-rule].
 
   Q.  What is an ordinal?  What does it mean to be well-founded?  A.
-  Ordinals are an extension of the natural numbers used to insure
+  Ordinals are an extension of the natural numbers used to ensure
   that a process can't go on forever.  Like naturals, they can be
   added, multiplied, and exponentiated.  There is a sense of one
   ordinal being less than another.  Unlike the naturals, each of
@@ -38665,7 +39452,9 @@ Subtopics
   suggest downloading the community books.)  The book \"top-with-meta\"
   is the most elementary and most widely used arithmetic book.  Other
   community books include \"arithmetic-5/top\" and various hardware and
-  floating-point arithmetic books.
+  floating-point arithmetic books; if including
+  \"arithmetic/top-with-meta\" isn't sufficient, you could try
+  (include-book \"arithmetic-5/top\" :dir :system).
 
   Rules Concluding with Arithmetic Inequalities: If you are tempted to
   create a rewrite rule with an arithmetic inequality as its
@@ -45008,9 +45797,6 @@ Subtopics
 
 Subtopics
 
-  [Ccl-installation]
-      Installing Clozure Common Lisp (CCL)
-
   [Fast-alists]
       Alists with hidden hash tables for faster execution
 
@@ -45831,7 +46617,7 @@ Subtopics
  (IGNORABLE (POINTERS) "See [declare].")
  (IGNORE (POINTERS) "See [declare].")
  (IGNORED-ATTACHMENT
-  (DEFATTACH)
+  (DEFATTACH DEFCONST DEFMACRO DEFPKG)
   "Why attachments are sometimes not used
 
   Attachments provide a way to execute constrained functions.  But in
@@ -47622,7 +48408,7 @@ Subtopics
   Key properties of the Sun Java Virtual Machine and its bytecode
   verifier were verified in ACL2. Among the properties proved were
   that certain invariants are maintained by class loading and that
-  the bytecode verifier insures that execution is safe. In addition,
+  the bytecode verifier ensures that execution is safe. In addition,
   various JVM bytecode programs have been verified using this model
   of the JVM.  (See Hanbing Liu. Formal Specification and
   Verification of a JVM and its Bytecode Verifier. PhD thesis,
@@ -48121,16 +48907,16 @@ Subtopics
   The paper {``Limited Second-Order Functionality in a First-Order
   Setting'' |
   http://www.cs.utexas.edu/users/kaufmann/papers/apply/index.html} by
-  Matt Kaufmann and J Strother Moore is the definitive reference on
-  [apply$].  That paper serves not only as a manual, but it also
-  provides logical foundations.  We refer to it below simply as ``the
-  paper.'' Supplemental material on the logical foundations of apply$
-  can be found in the [community-books] directory
+  Matt Kaufmann and J Strother Moore best explains the basic logical
+  and practical ideas behind apply$.  We refer to the paper simply as
+  ``the paper.'' Supplemental material on the logical foundations of
+  apply$ can be found in the [community-books] directory
   books/projects/apply-model/.  Also see [apply$] for detailed
   documentation on apply$ that complements the introduction below, to
   be read carefully when you're ready to use apply$ in your own
-  projects.  We suggest that you not follow all the links in this
-  topic and instead read it linearly as you might a paper.
+  projects.  We suggest that you not follow all the links in
+  introductory discussion and instead read it linearly as you might a
+  paper.
 
   The unreachable goal of this work is to allow the ACL2 user to pass
   `functions' as objects and to apply them.  That goal is unreachable
@@ -48148,9 +48934,14 @@ Subtopics
 
   The fundamental question raised by apply$ is ``How can apply$ know
   the correspondence between an ordinary ACL2 object, like a symbol
-  or a list, and the ACL2 function the user means to apply?'' The
-  definition of apply$ builds in about 800 ACL2 primitives, so that
-  for example:
+  or a list, and the ACL2 function the user means to apply?'' For
+  example, if the user defines the function my-append, how can apply$
+  know that (apply$ 'MY-APPEND (list a b)) should expand to
+  (my-append a b)?
+
+  The ACL2 primitives can be built in.  The logical definition of
+  apply$ includes a big case split that recognizes about 800 ACL2
+  primitives, so that for example:
 
     (apply$ 'car (list a)) = (car a)
 
@@ -48182,7 +48973,7 @@ Subtopics
 
   In our case, a warrant for fn gives apply$ permission to apply fn
   under some circumstances, by asserting a universally quantified
-  conditional equality about apply$'s behavior on 'fn It also tells
+  conditional equality about apply$'s behavior on 'fn. It also tells
   apply$ and the [tame]ness predicates things like how many arguments
   fn takes and how it uses them by asserting the [badge] of 'fn.  The
   badge of fn is an ACL2 object that contains various tokens
@@ -48261,12 +49052,24 @@ Subtopics
   analyzed them to make sure they have the appropriate tameness
   properties.  (Note that collect$ is not tame, but the way it uses
   its ``functional'' argument is crucial to the tameness of (collect$
-  'SQ lst).)  To use apply$ to full advantage we need to analyze
-  every relevant function definition, which has the side-effect of
-  producing warrants for those functions.  We therefore have
-  introduced the new command defun$, which is just an ordinary
-  [defun] followed by a [defwarrant] command which analyzes
-  definitions and sometimes produces warrants.
+  'SQ lst).)  To use apply$ to full advantage we need to have
+  analyzed every relevant function definition so we know which
+  arguments are treated like functions and whether they are used in
+  accordance with our restrictions.  So if you're defining a function
+  you intend to apply$ it is convenient to define it with the new
+  command [defun$], which is just an ordinary [defun] followed by a
+  [defwarrant] command.  If you've already defined the function and
+  then realize you wish to apply$ it, you can call defwarrant
+  yourself.
+
+  Defwarrant analyzes a :[logic] mode definition and produces a badge
+  and a warrant, if possible.  Also relevant is the [defbadge]
+  command which issues a badge for a function (if possible) but does
+  not issue a warrant.  Its primary purpose is to allow :program mode
+  functions to analyzed and badged so they can be safely executed by
+  apply$ at the top-level ACL2 loop.  But the present discussion
+  focuses primarily on the logical machinery, which requires
+  warrants.
 
   We explain further via an annotated example, starting from scratch
   but from the basic background just sketched.  For many additional
@@ -48276,9 +49079,11 @@ Subtopics
   Note carefully: the directory books/projects/apply-model/, mentioned
   earlier in conjunction with the paper, is different from the
   directory books/projects/apply/ just mentioned!  The former
-  directory concerns the logical foundations of apply$.  The latter
-  is more directly relevant to ACL2 users and provides useful lemmas
-  about apply$ and many example theorems.
+  directory concerns the logical foundations of apply$ as they stood
+  when the paper was written.  The latter is more directly relevant
+  to ACL2 users and provides useful lemmas about apply$ as it is
+  axiomatized and implemented today.  It also includes many example
+  theorems.
 
   To get started, define two ordinary ACL2 functions, one that squares
   its argument and the other that reverses its argument.
@@ -48308,54 +49113,60 @@ Subtopics
   Lesson 2: To allow apply$ to ``work'' on a function symbol the symbol
   must be ``warranted.'' Actually, of course, you can pass anything
   to apply$ and the axioms will reduce it to some value: ACL2 is
-  untyped and all functions are total!  But apply$ won't work as you
-  expect if the first argument to apply$ is not warranted!  To issue
-  warrants for sq and rev do:
+  untyped and all functions are total!  But apply$ won't work in the
+  logic as you expect if the first argument to apply$ is not
+  warranted!  (And apply$ won't work as you expect for top-level
+  evaluation if its first argument is not at least badged.)  To issue
+  warrants (and badges) for sq and rev do:
 
     (defwarrant sq)
 
     (defwarrant rev)
 
-  [defwarrant] checks that its argument, fn, is a defined function
+  [Defwarrant] checks that its argument, fn, is a defined function
   symbol that satisfies certain restrictions on how it uses its
   arguments, restrictions that enable us to define the tameness
   predicates and that allow apply$ to ``work'' without causing
-  logical contradictions.  defwarrant causes an error if fn does not
+  logical contradictions.  Defwarrant causes an error if fn does not
   obey our rules.  But if defwarrant does not cause an error it
   produces a ``badge'' for fn that describes which formals are
   treated as ``functions.'' Henceforth, we'll say such formals have
   ``[ilk]'' :FN.  In addition to computing a badge, non-erroneous
-  calls of defwarrant may produce a [warrant] for fn that specifies
-  the [badge] and the conditions under which apply$ ``works'' on the
+  calls of defwarrant produce a [warrant] for fn that specifies the
+  [badge] and the conditions under which apply$ ``works'' on the
   function symbol fn.
 
   Lesson 3: We'll say more about tameness, badges, and warrants later.
-  But you might as well learn four major limitations of apply$: (i)
-  Apply$ does not take [state] or [stobj] arguments and so cannot
-  call any function that takes STATE or stobj arguments.  (ii) Apply$
-  cannot call a function whose measure, well-founded relation, or
-  domain predicate depends on apply$. (iii) Apply$ cannot call a
-  function that itself uses apply$ unless that function's measure is
-  a natural number or a lexicographic combination of naturals formed
-  with llist as defined in the Community Books at books/ordinals/.
-  (iv) Apply$ cannot call a function that itself uses apply$ if that
-  function was defined mutually recursively.  Another way of saying
-  all this is that defwarrant will cause an error if you try to
-  warrant a function violating (i), (ii), (iii) or (iv).
+  You already know that warrants can only be issued for :logic mode
+  functions because the function symbol is used as a function in the
+  logical definition of the warrant.  But you might as well learn
+  four major limitations of apply$: (i) Apply$ does not take [state]
+  or [stobj] arguments and so cannot call any function that takes
+  STATE or stobj arguments.  (ii) Apply$ cannot call a function whose
+  measure, well-founded relation, or domain predicate depends on
+  apply$. (iii) Apply$ cannot call a function that itself uses apply$
+  unless that function's measure is a natural number or a
+  lexicographic combination of naturals formed with llist as defined
+  in the Community Books at books/ordinals/. (iv) Apply$ cannot call
+  a function that itself uses apply$ if that function was defined
+  mutually recursively.  Another way of saying all this is that
+  defwarrant will cause an error if you try to warrant a function
+  violating (i), (ii), (iii) or (iv).
 
   Lesson 4: If you want to define a function and immediately call
   defwarrant on it you can use the handy macro defun$.  We'll use
   defun$ freely below.
 
   Lesson 5: You can define functions that take warranted ``functions''
-  as arguments and apply them.  Here is a function that applies its
+  as arguments and apply$ them.  Here is a function that applies its
   first argument to every element of its second argument and collects
   the results.  We sometimes call functions like collect$ ``mapping
-  functions'' because they map another function over some range.  But
-  more often we call them [scion]s of apply$.  In ordinary English
-  usage, a ``scion'' is a descendent of an important family or
-  individual; our scions are ``descendents'' of apply$ and inherit
-  its power and restrictions.
+  functions'' because they map another function over some range.  We
+  would call them ``functionals'' except that suggests ACL2 is
+  higher-order and it is not!  So we most often call them [scion]s of
+  apply$.  In ordinary English usage, a ``scion'' is a descendent of
+  an important family or individual; our scions are ``descendents''
+  of apply$ and inherit its power and restrictions.
 
     (defun$ collect$ (fn lst)
       (if (endp lst)
@@ -48368,15 +49179,14 @@ Subtopics
   apply$ and is untouched otherwise.  The second argument has ilk NIL
   and we say it's ``ordinary.'' It is never used as a function.
 
-  Note: We define collect$ with defun$ simply because we might be in
-  the habit now of using defun$.  Unless we mean to pass collect$ to
-  apply$ or to some mapping function in the future, there is no
-  reason to have a warrant for collect$.  Had we defined collect$
-  with the ordinary defun and realized later that we want to pass
-  'COLLECT$ into a slot of ilk :FN, we could get a warrant for
-  collect$ by calling (defwarrant collect$).
+  Note: We define collect$ with defun$ simply to illustrate defun$.
+  Unless we mean to pass collect$ to apply$ or to some scion in the
+  future, there is no reason to have a warrant for collect$.  Had we
+  defined collect$ with the ordinary defun and realized later that we
+  want to pass 'COLLECT$ into a slot of ilk :FN, we could get a
+  warrant for collect$ by calling (defwarrant collect$).
 
-  Here's another useful scion (``mapping function''):
+  Here's another useful scion:
 
     (defun$ always$ (fn lst)
       (if (endp lst)
@@ -48389,8 +49199,7 @@ Subtopics
   By the way, both collect$ and always$ are pre-defined in ACL2 because
   they are part of the support for the [loop$] statment.
 
-  Lesson 6: You can run scions (``mapping functions'') on warranted
-  function symbols:
+  Lesson 6: You can run scions on warranted function symbols:
 
     ACL2 !>(collect$ 'SQ '(1 -2 3 -4))
     (1 4 9 16)
@@ -48398,13 +49207,15 @@ Subtopics
     ACL2 !>(collect$ 'rev '((1 2 3) (4 5 6) (7 8 9)))
     ((3 2 1) (6 5 4) (9 8 7))
 
-  Lesson 7: You can run scions on tame LAMBDA objects --- but those
-  LAMBDA objects have to have fully translated bodies and meet other
-  restrictions so apply$ can interpret them.  You cannot use macros
-  like + or cond and must you quote all constants.  We urge you not
-  to type quoted LAMBDA objects by hand!  Instead, we provide a
-  macro, [lambda$], that allows you to write in untranslated form as
-  you would a lambda expression in ACL2.
+  Lesson 7: You can run scions on tame quoted LAMBDA objects.  These
+  are just quoted list expressions that start with the symbol LAMBDA
+  and look like lambda-expressions.  But quoted LAMBDA objects have
+  to have fully translated bodies and meet other restrictions so
+  apply$ can interpret them.  You cannot use macros like + or cond
+  and must you quote all constants.  We urge you not to type quoted
+  LAMBDA objects by hand!  Instead, we provide a macro, [lambda$],
+  that allows you to write in untranslated form as you would a lambda
+  expression in ACL2.
 
   Lesson 8: There are three very similar looking but very different
   notions used in this documentation: lambda expressions, LAMBDA
@@ -48446,7 +49257,7 @@ Subtopics
                         (collect$ (lambda$ (x) (sq (sq x))) d))))
 
   Notice that the lemma collect$-append talks about an arbitrary fn.
-  It simply doesn't matter what apply$ does for this theorem to hold.
+  The definition of apply$ is completely irrelevant to this theorem!
   Once collect$-append has been proved can be instantiated with
   anything for fn.  This is demonstrated when the thm above is
   proved: the proof is just to rewrite with collect$-append.
@@ -49238,7 +50049,7 @@ More help
   preferred form.
 
   Most good users develop an implicit ordering on terms and rewrite
-  ``heavy'' terms to ``lighter'' ones.  This insures that there are
+  ``heavy'' terms to ``lighter'' ones.  This ensures that there are
   no loops in their rewrite rules.  But this ordering changes
   according to the user and the problem.
 
@@ -49699,7 +50510,7 @@ More help
   See [generalize] {ICON} (see [A_Tiny_Warning_Sign]) for a description
   of how you can make ACL2 restrict the new variables it introduces
   when generalizing.  ACL2 will sometimes replace a term by a new
-  variable and with generalize rules you can insure that the new
+  variable and with generalize rules you can ensure that the new
   variable symbol has certain properties of the term it replaces.
 
   See [induction] {ICON} (see [A_Tiny_Warning_Sign]) for a description
@@ -53977,8 +54788,7 @@ Subtopics
   (ld-verbose state) and the updater is (set-ld-verbose val state).
   Ld-verbose must be t, nil or a string or [consp] suitable for [fmt]
   printing via the ~@ command.  The initial value of ld-verbose is a
-  [fmt] message that prints the ACL2 version number, [ld] level and
-  connected book directory.
+  [fmt] message that prints the system books directory.
 
   Note: Ld-verbose has no effect on proofs.  See [set-gag-mode] and see
   [set-inhibit-output-lst] for how to control the size of proof
@@ -53996,9 +54806,9 @@ Subtopics
   nor nil then it is presumably a header and is printed with the ~@
   [fmt] directive before [ld] begins to read and process forms.  In
   this case the ~@ [fmt] directive is interpreted in an environment
-  in which #\\v is the ACL2 version string, #\\l is the level of the
-  current recursion in [ld] and/or [wormhole], and #\\c is the
-  connected book directory (cbd).")
+  in which #\\b is the system books directory, #\\v is the ACL2 version
+  string, #\\l is the level of the current recursion in [ld] and/or
+  [wormhole], and #\\c is the connected book directory (cbd).")
  (LEGAL-CONSTANTP (POINTERS)
                   "See [system-utilities].")
  (LEGAL-VARIABLEP (POINTERS)
@@ -55329,7 +56139,9 @@ Subtopics
   symbol called in x is in :[logic] mode in wrld.  Unlike
   [logic-term-list-listp], logic-fns-list-listp does not check that x
   is a list of lists of terms; rather, logic-fns-list-listp should
-  only be applied to such lists.
+  only be applied to such lists.  See [defun-mode-lambdas] for some
+  clarifications of how :program mode functions are allowed in
+  certain :logic mode terms.
 
   Function: <logic-fns-list-listp>
 
@@ -55348,7 +56160,9 @@ Subtopics
   true if and only if every function symbol called in x is in
   :[logic] mode in wrld.  Unlike [logic-term-listp], logic-fns-listp
   does not check that x is a list of terms; rather, logic-fns-listp
-  should only be applied to such lists.
+  should only be applied to such lists.  See [defun-mode-lambdas] for
+  some clarifications of how :program mode functions are allowed in
+  certain :logic mode terms.
 
   Function: <logic-fns-listp>
 
@@ -55366,7 +56180,9 @@ Subtopics
   For a [term] x in [world] wrld, (logic-fnsp x wrld) is true if and
   only if every function symbol called in x is in :[logic] mode in
   wrld.  Unlike [logic-termp], logic-fnsp does not check that x is a
-  term; rather, logic-fnsp should only be applied to terms.
+  term; rather, logic-fnsp should only be applied to terms.  See
+  [defun-mode-lambdas] for some clarifications of how :program mode
+  functions are allowed in certain :logic mode terms.
 
   Function: <logic-fnsp>
 
@@ -55757,7 +56573,7 @@ Subtopics
   arguments.  That measure must return an ordinal (see [ordinals]
   {ICON} (see [A_Tiny_Warning_Sign])), but the most common measures
   return natural numbers, which are among the ordinals.  Furthermore,
-  that measure should insure that the terms in the recursive calls
+  that measure should ensure that the terms in the recursive calls
   are smaller than the formals, i.e., the measure of (- n 1) must be
   smaller than the measure of n, when the recursive branches are
   taken.  This sense of ``smaller'' must be well-founded: it must be
@@ -56486,11 +57302,11 @@ Subtopics
   it is a call of a function on distinct variables.
 
   This page discusses rewriting from the logical perspective.  It is
-  important that you are familiar with the notions of a pattern term
+  important that you are familiar with the notions of a target term
   being an instance (see
-  [LOGIC-KNOWLEDGE-TAKEN-FOR-GRANTED-INSTANCE]) of a target term.  We
-  often say the pattern matches the target.  These notions involve a
-  corresponding substitution of terms for variables.  All these
+  [LOGIC-KNOWLEDGE-TAKEN-FOR-GRANTED-INSTANCE]) of a pattern term.
+  We often say the pattern matches the target.  These notions involve
+  a corresponding substitution of terms for variables.  All these
   notions are discussed in the link for ``instance (see
   [LOGIC-KNOWLEDGE-TAKEN-FOR-GRANTED-INSTANCE])'' above and we
   recommend you read it before continuing.  Then use your browser's
@@ -56525,10 +57341,10 @@ Subtopics
   rearrange it equivalently into this form for the purposes of this
   one rewrite step.
 
-  Suppose pattern is an instance of some target term, target that
-  occurs in your goal conjecture.  Let the corresponding substitution
-  be sigma.  If sigma does not contain a binding for every variable
-  that occurs in Theorem, then extend sigma to sigma' by adding one
+  Suppose some target term, target that occurs in your goal conjecture
+  is an instance of pattern.  Let the corresponding substitution be
+  sigma.  If sigma does not contain a binding for every variable that
+  occurs in Theorem, then extend sigma to sigma' by adding one
   binding for each such variable.  (This is necessary only if pattern
   does not contain every variable in Theorem.)
 
@@ -57018,9 +57834,11 @@ Subtopics
   of the syntax of loop, the main restriction is that the
   subexpressions of the loop$ statement that are evaluated repeatedly
   must be [tame]!  These expressions include the until test, the when
-  test, and the loop$ body.  For example, this means that loop$ does
-  not allow iterations involving [state] or [stobj]s.  Further
-  restrictions are enforced for [defun]'d functions in which
+  test, and the loop$ body.  Thus, all the function symbols used in
+  these expressions must be badged (see [defbadge] and [defwarrant]).
+  Since functions involving [state] or [stobj]s cannot be badged, you
+  cannot use them in the until, when, or body expressions of loop$s.
+  Further restrictions are enforced for [defun]'d functions in which
   recursive calls appear in loop$ bodies.  We mention that only in
   passing in this documentation topic.  It is discussed more fully in
   [loop$-recursion].  We recommend that users unfamiliar with loop$
@@ -57030,11 +57848,11 @@ Subtopics
 
 Informal Introduction
 
-  ACL2's loop$ is considerably more restricted than Common Lisp's but
-  when an ACL2 loop$ statement is translated without error it has the
-  same meaning as the corresponding Common Lisp loop.  (Note: loop$
-  allows :guard declarations in certain places and these are ignored
-  by Common Lisp.)
+  ACL2's loop$ is considerably more restricted than Common Lisp's loop
+  but when an ACL2 loop$ statement is translated without error it has
+  the same meaning as the corresponding Common Lisp loop.  (Note:
+  loop$ allows :guard declarations in certain places and these are
+  ignored by Common Lisp.)
 
   We give some examples of legal loop$ statements below.  We deal with
   guards and guard verification later in this topic.
@@ -62416,7 +63234,7 @@ Subtopics
   [Term-table]
       A table used to validate meta rules")
  (META-EXTRACT
-  (META)
+  (META CLAUSE-PROCESSOR)
   "Meta reasoning using valid terms extracted from context or [world]
 
   For this advanced topic, we assume familiarity with metatheorems and
@@ -63266,6 +64084,98 @@ Subtopics
 
   [With-prover-time-limit]
       Limit the time for proofs")
+ (MIXED-MODE-FUNCTIONS
+  (APPLY$)
+  ":[logic] mode functions can [apply$] :[program] mode functions
+
+  Because :[program] mode functions can be given badges it is possible
+  to [apply$] them from within :[logic] mode functions.
+  Colloquially, we call such :logic mode functions ``mixed mode,''
+  but that is a misnomer.  They are indisputably in :logic mode.
+
+  First, note that the only way to introduce a :program mode function
+  into :logic mode functions is to use the quoted :program mode
+  function name in an argument slot of [ilk] :FN, use the :program
+  mode function in a quoted [lambda] object or [lambda$] expression
+  in a slot of [ilk] :FN or use it in a quoted expression in a slot
+  of ilk :EXPR.  We do not allow :program mode functions to be called
+  directly from :logic mode functions.  For example, if prgm is
+  defined as a :program mode function of one argument, and has been
+  assigned a badge by [defbadge]
+
+    (defun foo (x)
+      (declare (xargs :mode :logic))
+      (apply$ 'prgm (list x)))
+
+  is legal but
+
+    (defun foo (x)
+      (declare (xargs :mode :logic))
+      (prgm x))
+
+  is not.
+
+  Second, the presence of a :program mode function in a :logic mode
+  function prohibits the :logic mode function from being guard
+  verified.
+
+  Mixed-mode functions raise interesting questions for top-level
+  evaluation and evaluation and rewriting during proofs.
+
+  When a :program mode function is apply$ed, it is always done in
+  [safe-mode].  In general, evaluating a :program mode function at
+  the top-level can cause hard Lisp errors.  For example,
+
+    (defun prgm (x) (declare (xargs :mode :program)) (car x))
+
+  Then (prgm 23) causes a hard Lisp error in both CCL and SBCL, but
+  (prgm 'abc) returns numbers in both of those Common Lisps, but they
+  return different numbers.  Furthermore, there is no guarantee
+  across all Common Lisps that (prgm 'abc) will always return the
+  same number throughout a given ACL2 session; the value could
+  conceivably change as memory is allocated, compacted, garbage
+  collected, etc., since according to the CLTL standard, one is not
+  supposed to apply CAR to any symbol other than NIL but no error
+  need be signalled.  It is likely that a CLTL implementation of CAR
+  just accesses memory where the CAR component of a cons is supposed
+  to be!
+
+  We tolerate such behavior when :program mode functions are directly
+  called at the top-level because there are no axioms about them and
+  we regard the evaluation of such programs from within the ACL2 loop
+  as just a convenience to the user.
+
+  But apply$ is a :logic mode function and we must guarantee that when
+  any :logic mode function is evaluated functional substitutivity
+  holds: identical calls must yield identical results.  That is,
+  apply$ must behave like a function and not give different answers
+  to the same questions over time when errors are not signaled.  We
+  also strive to achieve the goal that :logic mode functions never
+  cause hard Lisp errors other than resource errors like stack
+  overflow or memory exhaustion.  So when apply$ is given a badged
+  :program mode function, e.g., had we badged prgm and then evaluated
+  (apply$ 'prgm '(abc)), it must at least return the same ACL2 object
+  every time!  To achieve this end apply$ runs :program mode
+  functions in [safe-mode].  (Safe mode does shift into raw Lisp on
+  calls of guard verified :logic mode functions which might be called
+  from within the :program mode function.  But a mixed mode function
+  cannot be guard verified because the :program mode functions used
+  within it cannot be guard verified.)
+
+  This means that a top-level call of a mixed mode function generally
+  runs slower than a corresponding call of an otherwise identical
+  :program mode function.  (And, on the positive side, it means that
+  mixed mode functions actually behave like functions while :program
+  mode ones may not!)  The only way to speed up a mixed-mode function
+  is to convert the :program mode functions in it to :logic mode with
+  [verify-termination] and verify the guards.
+
+  As for proofs, since there are no axioms about :program mode
+  functions, if a mixed-mode function is expanded in a proof all
+  :program mode functions in it are treated as though they are
+  undefined.  In particular, the absence of a warrant on the :program
+  mode function prgm means that (apply$ 'prgm '(abc)), is not
+  evaluated by the prover despite the fact that it is a ground term.")
  (MOD
   (NUMBERS ACL2-BUILT-INS)
   "Remainder using [floor]
@@ -85655,6 +86565,10 @@ Experimental Versions")
 
 Changes to Existing Features
 
+  [Apply$], [lambda$], and loop$ may be used with badged :program mode
+  functions in top-level evaluation.  To assign a badge to a :program
+  mode function use the new feature [defbadge].
+
   For calls of the form (HIDE (COMMENT \"...\" ...)), the string is a bit
   more descriptive.  See [comment] and see [hide].  Thanks to Mark
   Greenstreet for helpful discussions leading to this change.
@@ -85802,8 +86716,35 @@ Changes to Existing Features
   comment in [community-book] books/system/doc/acl2-doc.lisp, form
   (defxdoc note-8-4 ...).
 
+  When [certify-book] directs printing of [useless-runes], each tuple
+  is now printed on a single line starting after a space.  See
+  [useless-runes] for details.  Thanks to Eric Smith for requesting
+  this enhancement, which can support grep-like tools.
+
+  The [event] macros [value-triple] and [assert-event] have been
+  changed to be more flexible, in particular by providing an option
+  to allow the given form to return multiple values.  They are also
+  more efficient, as they no longer evaluate using [safe-mode] by
+  default.  (Technical note: As a consequence of implementation
+  changes, one will rarely if ever see ``hard'' errors (see [er])
+  from these utilities.)  Thanks to Eric Smith for requesting that a
+  single utility encompass what is provided by the built-in utility
+  [assert-event] and the [community-books] utilities [assert!] and
+  [assert!-stobj].  That single utility is now [assert-event], which
+  in turn uses value-triple to check the supplied assertion.
+
+  The ACL2 [bdd] package can now reason using the implicit rewrite rule
+  (equal (consp (cons x y)) t).  Thanks to Warren Hunt for requesting
+  this enhancement.
+
 
 New Features
+
+  It is now possible to assign [badge]s to :program mode functions,
+  which allows them to be used by [apply$], [lambda$] and [loop$]
+  during top-level evaluation.  See [defbadge], which assigns badges
+  but not warrants and which can handle both :program and :logic mode
+  functions.
 
   A new option for [certify-book], :useless-runes, makes it possible to
   speed up repeated certification of a book, sometimes substantially.
@@ -85864,6 +86805,32 @@ New Features
   a verified input-output pair.  Thanks to Eric McCarthy, Alessandro
   Coglio, and Eric Smith for requesting the latter capability and
   providing helpful feedback.
+
+  A new [xargs] keyword for [defun], :type-prescription, can be
+  supplied as a formula in the shape of a [type-prescription] rule.
+  It is checked to be implied by the built-in type-prescription rule
+  computed for the newly-defined function.  Thus, it can serve as
+  documentation for the expected type returned by the function; if
+  the implication is not equivalence, a warning is printed.  Thanks
+  to Alessandro Coglio and Eric Smith for the suggestion.
+
+  [Table]s may now supply custom error messages for table :guard
+  failures.  This is accomplished by supplying a table :guard that
+  returns two values instead of one.  For a return (mv okp msg), if
+  okp is non-nil then the table guard is considered to be true, that
+  is, it has the same meaning as a non-nil single-value return.
+  Also, (mv nil nil) has the same meaning and effect as a nil
+  single-value return: the table guard fails, and a generic error
+  message is printed about the illegal key/value pair.  The new case
+  is a return of (mv nil msg), where msg should be a [msgp] --- a
+  string or a cons suitable for printing with the [fmt] directive,
+  ~@.  In that case, msg is printed (using the [fmt] directive, ~@)
+  instead of a generic error message.  This new feature is now used
+  in some built-in tables.  See [table].
+
+  The [proof-builder] command [type-alist] has a new optional argument
+  that supports printing the type-alist in an alist format.  Thanks
+  to Mihir Mehta for requesting this feature.
 
 
 Heuristic and Efficiency Improvements
@@ -86159,6 +87126,10 @@ Bug Fixes
   concrete stobj as a formal parameter that is declared as a [stobj].
   Formerly, a confusing hard error could occur in this case.
 
+  An unfortunate ``Proof skipped'' could be printed during the
+  include-book phase of [certify-book] for certain uses of
+  [make-event], including calls of [thm].  This has been fixed.
+
 
 Changes at the System Level
 
@@ -86213,7 +87184,9 @@ Changes at the System Level
   Fixed builds that use a relative pathname for the LISP environment
   variable (for host Lisps CCL, SBCL, Allegro CL, and CMUCL; GCL and
   LispWorks didn't seem to have this problem).  Thanks to Mihir Mehta
-  for bringing this issue to our attention.
+  for bringing this issue to our attention; and thanks to Andrew
+  Walter for reporting a problem with our first solution for SBCL and
+  proposing an alternative, which we adopted.
 
   Fixed the process for running ACL2 without building an executable
   image.  Some initialization that was missing from that process is
@@ -86223,6 +87196,18 @@ Changes at the System Level
   (accessible from the ``Obtaining, Installing, and License'' link on
   the ACL2 home page).  Thanks to Petter Gustad for an inquiry
   leading to these improvements.
+
+  When invoking `make' to build the ACL2 executable, output from the
+  build process is now written to file make.log.  The terminal output
+  is now minimal.  If there is already a file make.log, it is first
+  moved to make.log.bak.  See file GNUmakefile for additional
+  documentation.  Thanks to Alessandro Coglio and Eric Smith for
+  suggesting this change, and to David Rager for pointing out
+  associated changes to make for Jenkins builds.
+
+  The startup banner now has a cleaner look (see [startup-banner]).
+  Thanks to Alessandro Coglio and Eric Smith for key suggestions for
+  improvement.
 
 
 EMACS Support
@@ -90684,6 +91669,9 @@ Subtopics
   [Add-to-set-equal]
       See [add-to-set].
 
+  [All-attachments]
+      See [system-utilities].
+
   [All-calls]
       See [system-utilities].
 
@@ -94436,7 +95424,7 @@ Subtopics
   form (set-inhibit-output-lst '(prove proof-tree)) is approximately
   equivalent to (assign inhibit-output-lst '(prove proof-tree)).  We
   say ``approximately'' because set-inhibit-output-lst additionally
-  does some error checking to insure that all the tokens in the new
+  does some error checking to ensure that all the tokens in the new
   list are legal.  When deciding whether to print output, the ACL2
   system reads the value of state global variable inhibit-output-lst.
 
@@ -94915,6 +95903,204 @@ Subtopics
       Allow a reference to state in raw Lisp")
  (PROGRAMP (POINTERS)
            "See [system-utilities].")
+ (PROHIBITION-OF-LOOP$-AND-LAMBDA$
+  (DEFCONST DEFMACRO DEFPKG)
+  "Certain events do not allow [loop$]s or [lambda$]s
+
+  Certain events, including [defconst], [defmacro], and [defpkg],
+  prohibit the use of [loop$] and [lambda$].  The prohibition of
+  loop$s is due to their use of lambda$s, so we focus on why lambda$s
+  are prohibited here.
+
+  Lambda$ is prohibited in these events because of the way [books] are
+  loaded.  To speed up the execution of include-book the compiled
+  file for a book is loaded before the events in the book are
+  processed.  But the evaluation of lambda$ expressions in raw Lisp
+  depends on the lambda$s having been translated and recorded in the
+  logical world and in the lambda cache (see [print-cl-cache]).  So
+  the execution of these events can't depend on lambda$.
+
+  If you have submitted an event that provoked an error citing this
+  topic you must restate the event to avoid those prohibited
+  constructions.  Unfortunately, you must also consider ancestral
+  occurrences of the prohibited constructions! We first give two
+  examples of the problem to drive home the message and then we
+  discuss various ways the problem can be dealt with.
+
+
+Examples of Prohibited Forms
+
+    ACL2 !>(defconst *2^10* (apply$ (lambda$ (x) (expt 2 x)) '(10)))
+
+    ACL2 Error in ( DEFCONST *2^10* ...):  We prohibit certain events,
+    including DEFCONST, DEFPKG, and DEFMACRO, from being ancestrally dependent
+    on loop$ and lambda$ expressions.  But at least one of these prohibited
+    expressions occurs in this event.  See :DOC prohibition-of-loop$-and-
+    lambda$.
+
+  We will discuss how to avoid such errors in the next section.
+
+  Here is an example of an ancestral use of lambda$ in a macro.
+  Suppose we wish to define the macro rat so that (rat \"123.4567\")
+  expands to the rational 1234567/10000.  Our idea is to use loop$ in
+  the definition of the function string-to-rat and then to call
+  string-to-rat in our macro.  (We don't recommend this particular
+  use of loop$s to parse a string into a rational but we use it here
+  to make a point later.)
+
+    (defun string-to-rat (str)
+      (let* ((lst (coerce str 'list))
+             (right-of-pt (length (cdr (loop$ for d in lst
+                                              as tail on lst
+                                              thereis
+                                              (if (eql #. d) tail nil))))))
+        (loop$ for tail on lst
+               when (not (eql (car tail) #.))
+               sum
+               (* (- (char-code (car tail)) 48)
+                  (expt 10
+                        (- (loop$ for d in tail sum (if (eql d #.) 0 1))
+                           (+ 1 right-of-pt)))))))
+
+    (defmacro rat (str) (string-to-rat str))
+
+  The attempt to define the macro will provoke the error shown above
+  for (defconst *2^10* ...).
+
+
+Avoiding These Errors
+
+  The only way to avoid these errors is to not use lambda$ or loop$ in
+  these events!  We can fix the particular defconst example above
+  simply with
+
+    (defconst *2^10* (apply$ 'expt '(2 10)))
+
+  or, better yet, by
+
+    (defconst *2^10* (expt 2 10))
+
+  since there is reason apply$ is involved at all.
+
+  When it is hard to avoid the prohibited constructs you might be able
+  to use make-event to do the necessary computation during the
+  creation of the event, though this technique seems mainly
+  applicable to defconst and much less useful to the defmacro case.
+
+    (make-event
+      `(defconst *2^10*
+        ',(apply$ (lambda$ (x) (expt 2 x)) '(10))))
+
+  However, in general, removing all uses of loop$ and lambda$ can
+  require a lot of re-coding.  For example, fixing the rat macro
+  requires several old-fashioned recursive definitions to carry out
+  the iterations done with loop$.
+
+    (defun old-fashioned-string-to-rat1 (lst power)
+      (cond
+       ((endp lst) 0)
+       ((eql (car lst) #.)
+        (old-fashioned-string-to-rat1 (cdr lst) power))
+       (t (+ (* (- (char-code (car lst)) 48)
+                (expt 10 power))
+             (old-fashioned-string-to-rat1 (cdr lst) (- power 1))))))
+
+    (defun left-of-pt (lst)
+      (cond ((endp lst) 0)
+            ((eql (car lst) #.) 0)
+            (t (+ 1 (left-of-pt (cdr lst))))))
+
+    (defun old-fashioned-string-to-rat (str)
+      (let ((lst (coerce str 'list)))
+        (old-fashioned-string-to-rat1 lst (- (left-of-pt lst) 1))))
+
+    (defmacro rat (str) (old-fashioned-string-to-rat str))
+
+  Another way to eliminate loop$ and lambda$ is to replace the
+  offending expressions with their translations.  There is no
+  prohibition of fully-translated quoted [lambda] objects, just of
+  lambda$ expressions.
+
+    (defun string-to-rat (str)
+      ((LAMBDA
+        (LST)
+        ((LAMBDA
+          (RIGHT-OF-PT LST)
+          (SUM$+
+           '(LAMBDA
+             (LOOP$-GVARS LOOP$-IVARS)
+             (DECLARE (IGNORABLE LOOP$-GVARS LOOP$-IVARS))
+             ((LAMBDA
+               (RIGHT-OF-PT TAIL)
+               (BINARY-*
+                (BINARY-+ '-48 (CHAR-CODE (CAR TAIL)))
+                (EXPT
+                 '10
+                 (BINARY-+
+                  (SUM$
+                   '(LAMBDA (LOOP$-IVAR)
+                            (DECLARE (IGNORABLE LOOP$-IVAR))
+                            ((LAMBDA (D) (IF (EQL D '#.) '0 '1))
+                             LOOP$-IVAR))
+                   TAIL)
+                  (UNARY-- (BINARY-+ '1 RIGHT-OF-PT))))))
+              (CAR LOOP$-GVARS)
+              (CAR LOOP$-IVARS)))
+           (CONS RIGHT-OF-PT 'NIL)
+           (WHEN$+
+            '(LAMBDA
+              (LOOP$-GVARS LOOP$-IVARS)
+              (DECLARE (IGNORABLE LOOP$-GVARS LOOP$-IVARS))
+              ((LAMBDA (TAIL)
+                       (NOT (EQL (CAR TAIL) '#.)))
+               (CAR LOOP$-IVARS)))
+            'NIL
+            (LOOP$-AS (CONS (TAILS LST) 'NIL)))))
+         (LENGTH
+          (CDR
+           (THEREIS$+
+            '(LAMBDA
+              (LOOP$-GVARS LOOP$-IVARS)
+              (DECLARE (IGNORABLE LOOP$-GVARS LOOP$-IVARS))
+              ((LAMBDA (D TAIL)
+                       (IF (EQL '#. D) TAIL 'NIL))
+               (CAR LOOP$-IVARS)
+               (CAR (CDR LOOP$-IVARS))))
+            'NIL
+            (LOOP$-AS (CONS LST (CONS (TAILS LST) 'NIL))))))
+         LST))
+       (COERCE STR 'LIST)))
+
+  If we define string-to-rat as above then we can define the rat macro
+  as originally desired and the defmacro is accepted.
+
+  But there are several arguments against this approach in general:
+
+    *
+        Defconst, defmacro and defpkg not only prohibit loop$ and lambda$ but
+        also prohibit all uses of apply$ and scions if user-defined
+        functions are involved in the function objects.  This is
+        because to compute logically with them one must have
+        [warrant] hypotheses and there is no provision for supplying
+        warrants with these events.  See [ignored-attachment].  It
+        turns out that the hideous example above does not mention any
+        user-defined functions in the function objects, so this
+        restriction doesn't stop us here.
+
+    *
+        Eliminating loop$ in favor of scions sacrifices execution speed if
+        the loop$s are guard verified.  A guard-verified loop$
+        executes in raw Lisp as a Common Lisp loop, whereas its
+        translation into nested calls of loop$ scions, even if guard
+        verified, involves far more function calls.
+
+    *
+        It is much harder to ``maintain'' code derived this way!
+
+  There may be cases where no user-defined functions are involved,
+  efficiency doesn't matter, and the loop$ scion translation of a
+  loop$ is as perspicuous as the loop$ itself.  So don't dismiss this
+  approach out of hand.")
  (PROMPT
   (LD)
   "The prompt printed by [ld]
@@ -99803,10 +100989,11 @@ Subtopics
   function with the same name, formals, and body (before
   macroexpansion), and with the same values [declare]d for the
   :[guard], :[measure], types, :[ruler-extenders], :non-executable,
-  :[stobj]s, and :[split-types], provided that the [defun-mode]s are
-  appropriate (see the ``Note About Appropriate Modes'' below).
-  Moreover, the order of the combined :[guard] and type declarations
-  must be the same in both cases.  Exceptions and clarifications:
+  :type-prescription, :[stobj]s, and :[split-types], provided that
+  the [defun-mode]s are appropriate (see the ``Note About Appropriate
+  Modes'' below).  Moreover, the order of the combined :[guard] and
+  type declarations must be the same in both cases.  Exceptions and
+  clarifications:
 
    1. If the new and existing function events have no explicit
       [ruler-extenders] (which are therefore syntactically equal),
@@ -102123,16 +103310,29 @@ When Rewriting of lambda Objects Is Attempted
   The rewriter attempts to rewrite the body of a quoted lambda constant
   provided
 
-    * (a) it occurs in a :FN position of a call of a [scion] and
+    * (a) it occurs in a :FN position of a call of a [scion],
     * (b) the lambda object is well-formed (see
-      [well-formed-lambda-objectp]).
+      [well-formed-lambda-objectp]), and
+    * (c) every function symbol mentioned in the body has been warranted.
 
   Condition (b) implies the body of the lambda is in fact a well-formed
-  ACL2 term (so the rewriter can explore it), that it is [tame] (so
-  apply$ ``behaves'' as expected on it provided warrants are
-  available), and that every variable symbol occurring freely in the
-  body is among the formals of the lambda object (so the rewriting
-  can occur in a different scope).
+  ACL2 term (so the rewriter can explore it), every function symbol
+  in it is properly badged (so that function objects mentioned are
+  used properly), that every variable symbol occurring freely in the
+  body is among the formals of the lambda object, and together with
+  (c) implies that the term ``behaves'' as expected if the
+  appropriate warrant hypotheses govern this occurrence of the
+  object.  This last implication means that [ev$] of the body is
+  equal to unquoted body (under a suitable assignment), which means
+  we can rewrite the unquoted body.
+
+  If a quoted lambda-like occurs in a :FN position but fails either (b)
+  or (c) a \"rewrite-lambda-object\" warning message is printed during
+  the proof.  However, this message is only printed once per lambda
+  object per proof attempt because otherwise the presence of
+  ill-formed lambda-like objects in a conjecture will litter the
+  output with repeated warnings.  You may turn these warnings off
+  with ([toggle-inhibit-warning] \"Rewrite-lambda-object\").
 
 
 Restrictions During Rewriting of a Lambda Body
@@ -102198,7 +103398,12 @@ What Happens After Rewriting a Lambda Body
   when the rewritten body is different from the original one but the
   rewrite is rejected.  The warning message displays the before and
   after lambda objects, lists the rewrite rules used, and explains
-  which of the three conditions above was violated.
+  which of the three conditions above was violated.  However, this
+  message is only printed once per lambda object per proof attempt
+  because otherwise the presence of a lambda object that rewrites
+  inappropriately will litter the output with repeated warnings.  You
+  may turn these warnings off with ([toggle-inhibit-warning]
+  \"Rewrite-lambda-object\").
 
   Condition (a) can arise if a rewrite rule introduces a free variable;
   disabling that rewrite rule is recommended.  Condition (b) can
@@ -103193,12 +104398,13 @@ Subtopics
 
   One might expect ACL2's termination analysis to admit this function,
   since we know that (cdr x) is ``smaller'' than x if (consp x) is
-  true.  (By default, ACL2's notion of ``smaller'' is ordinary
+  true.  (ACL2's notion of ``smaller'' here is essentially ordinary
   natural-number <, and the argument x is measured by applying
-  function acl2-count to x.)  However, by default that termination
-  analysis does not consider [if] tests, like (consp x) above, when
-  they occur under calls of functions other than IF, such as CONS in
-  the case above; it considers only rulers, as we now discuss.
+  function [ACL2-count] to x; see [defun].)  However, by default that
+  termination analysis does not consider [if] tests, like (consp x)
+  above, when they occur under calls of functions other than IF, such
+  as CONS in the case above; it considers only rulers, as we now
+  discuss.
 
   In the example above, we say that the term (consp x) governs the
   recursive call (f (cdr x)) shown above, but does not rule that
@@ -104347,10 +105553,10 @@ Subtopics
   extensions of alist binding the variable symbol v to successive
   elements of lst.
 
-  From time to time, we have used the term ``mapping function'' to
-  refer to scions.  But that nomenclature was misleading because it
-  suggests that the function takes a ``function'' as an argument and
-  that it maps over some explicitly given domain.
+  In the early days of apply$ we used the term ``mapping function'' to
+  refer to scions.  But that nomenclature was misleading because in
+  the Lisp culture ``mapping'' tends to be understood as a kind of
+  linear iteration.
 
   Fans of higher order logic have suggested we use the term
   ``functional'' for our scions, or at least for those scions having
@@ -109490,9 +110696,9 @@ Subtopics
 
       w --- Walk around the object with a structure editor
 
-      t --- Print the object in full
+      y --- Print the object in full
 
-      nil --- Do not print any more of the object
+      n --- Do not print any more of the object
 
   Show-bdd actually has four optional arguments, probably rarely used.
   The general form is
@@ -109501,11 +110707,13 @@ Subtopics
 
   where goal-name is the name of the goal on which the :[bdd] hint was
   used (or, nil if the system should find such a goal), goal-ans is
-  the answer to be used in place of the query for whether to print
-  the input goal in full, falsifying-ans is the answer to be used in
-  place of the query for whether to print the falsifying constraints
-  in full, and term-ans is the answer to be used in place of the
-  query for whether to print the resulting [term] in full.")
+  nil if there is to be a query and otherwise is the answer to be
+  used (without a query) for whether to print the input goal in full
+  (t for 'y', nil for 'n', and :w for 'w'), falsifying-ans is the
+  answer to be used in place of the query for whether to print the
+  falsifying constraints in full, and term-ans is the answer to be
+  used in place of the query for whether to print the resulting
+  [term] in full.")
  (SHOW-BODIES
   (DEFINITION)
   "Show the potential definition bodies
@@ -110922,38 +112130,37 @@ Subtopics
   GitHub between ACL2 releases, you'll typically see a startup banner
   like this:
 
-    +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-    + WARNING: This is NOT an ACL2 release; it is a development snapshot. +
-    + (git commit hash: 6bab5ea7c616e013c3e28c55cd5ebe1431a1d7cd)         +
-    + On rare occasions development snapshots may be incomplete, fragile, +
-    + or unable to pass the usual regression tests.                       +
-    +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+    ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+    + ACL2 Version 8.3+ (a development snapshot based on ACL2 Version 8.3) +
+    +   built April 21, 2021  15:56:37.                                    +
+    +   (Git commit hash: 41bb85ab9dbf5ac7d4ed246847db8934b6a48f92)        +
+    + Copyright (C) 2021, Regents of the University of Texas.              +
+    + ACL2 comes with ABSOLUTELY NO WARRANTY.  This is free software and   +
+    + you are welcome to redistribute it under certain conditions.  For    +
+    + details, see the LICENSE file distributed with ACL2.                 +
+    ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
-  The second line of that banner can be modified by setting environment
+  The third line of that banner can be modified by setting environment
   variable ACL2_SNAPSHOT_INFO to a non-empty string before saving the
   executable.  The value of that variable will be placed into the
   banner, for example as follows if that value is \"This is my private
   executable.\".
 
-    +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-    + WARNING: This is NOT an ACL2 release; it is a development snapshot. +
-    + (Note from the environment when this executable was saved:          +
-    +  This is my private executable.)                                    +
-    + On rare occasions development snapshots may be incomplete, fragile, +
-    + or unable to pass the usual regression tests.                       +
-    +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+    ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+    + ACL2 Version 8.3+ (a development snapshot based on ACL2 Version 8.3) +
+    +   built April 21, 2021  15:56:37.                                    +
+    +   (Note from the environment when this executable was saved:         +
+    +    This is my private executable.)                                   +
+    + Copyright (C) 2021, Regents of the University of Texas.              +
+    + ACL2 comes with ABSOLUTELY NO WARRANTY.  This is free software and   +
+    + you are welcome to redistribute it under certain conditions.  For    +
+    + details, see the LICENSE file distributed with ACL2.                 +
+    ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
   An exception is the special value, \"none\", which is treated as
   case-insensitive (so it can similarly be \"None\", \"NONE\", etc.).  In
-  that case, the second line is omitted entirely, for example as
-  follows.
-
-    +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-    + WARNING: This is NOT an ACL2 release; it is a development snapshot. +
-    +                                                                     +
-    + On rare occasions development snapshots may be incomplete, fragile, +
-    + or unable to pass the usual regression tests.                       +
-    +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++")
+  that case, the third line of the original banner is omitted
+  entirely.")
  (STATE
   (PROGRAMMING)
   "The von Neumannesque ACL2 state object
@@ -111243,12 +112450,13 @@ Subtopics
   using ([set-verify-guards-eagerness] 0) to avoid [guard]
   verification.
 
-  The documentation in this section is laid out in the form of a tour
-  that visits the documented topics in a reasonable order.  We
-  recommend that you follow the tour the first time you read about
-  stobjs.  The list of all stobj topics is shown below.  The tour
-  starts immediately afterwards.  Also see [defstobj] and, for
-  so-called abstract stobjs, see [defabsstobj].
+  This topic introduces the notion of a ``stobj'', or single-threaded
+  object.  It concludes with a link to a tour that introduces the use
+  of stobjs by way of examples.  We recommend that you follow that
+  link the first time you read about stobjs.  Detailed reference
+  documentation about stobjs may be found in the subtopics listed at
+  the end below; in particular see [defstobj] and, for so-called
+  abstract stobjs, see [defabsstobj].
 
   As noted, a ``single-threaded object'' is a data structure whose use
   is so syntactically restricted that only one instance of the object
@@ -111280,12 +112488,13 @@ Subtopics
 
     * OBJ is a top-level global variable that contains the current object,
       obj.
-    * If a function uses the formal parameter OBJ, the only ``actual
-      expression'' that can be passed into that slot is the variable
-      OBJ, not merely a term that ``evaluates to an obj''; thus, such
-      functions can only operate on the current object.  So for
-      example, instead of (FOO (UPDATE-FIELD1 3 ST)) write (LET ((ST
-      (UPDATE-FIELD1 3 ST))) (FOO ST)).
+    * If a function uses the formal parameter OBJ that is declared as a
+      stobj, the only ``actual expression'' that can be passed into
+      that slot is the variable OBJ, not merely a term that
+      ``evaluates to an obj''; thus, such functions can only operate
+      on the current object.  So for example, instead of (FOO
+      (UPDATE-FIELD1 3 ST)) write (LET ((ST (UPDATE-FIELD1 3 ST)))
+      (FOO ST)).
     * The accessors and updaters have a formal parameter named OBJ, so by
       the rule just above, those functions can only be applied to the
       current object.  The recognizer is the one exception to the
@@ -111329,8 +112538,8 @@ Subtopics
   keywords allow inlining and renaming of stobj accessors and
   updaters.
 
-  But we are getting ahead of ourselves.  To start the stobj tour, see
-  [stobj-example-1].
+  But we are getting ahead of ourselves.  To start the stobj tour
+  recommended earlier in this topic, see [stobj-example-1].
 
 
 Subtopics
@@ -114176,6 +115385,15 @@ List of a few built-in system utilities
       \"COMMON-LISP\" package.  New function symbols cannot be in the
       \"COMMON-LISP\" package; thus, this utility may be appropriate
       when generating new function names from old ones.
+    * (all-attachments wrld): Return a list of all attachment pairs (f . g)
+      where g is attached to f (see [defattach]) in the [world],
+      wrld, except for two cases that are ignored for this purpose:
+      [warrant]s, and attachments introduced with a non-nil value of
+      :skip-checks.  To obtain the attachment to a function symbol f,
+      without the restrictions above and with value nil if there is
+      no attachment to f, evaluate (cdr (attachment-pair 'f wrld)).
+      To obtain the list of all built-in attachments, evaluate
+      (global-val 'attachments-at-ground-zero (w state)).
     * (all-calls names term alist ans): Accumulate into ans (which
       typically is nil at the top level) all pseudo-terms u/alist
       such that for some f in the list, names, u is a subterm of the
@@ -114711,16 +115929,45 @@ Subtopics
 
     (table name nil nil :guard term)
 
-  Provided the named table is empty and has not yet been assigned a
-  :guard and term (which is not evaluated) is a term that mentions at
-  most the variables KEY, VAL, WORLD, ENS, and STATE, this event sets
-  the :guard of the named table to term.  Whenever a subsequent :put
-  occurs, term will be evaluated with KEY bound to the key argument
-  of the :put, VAL bound to the val argument of the :put, WORLD bound
-  to the then current [world], ENS bound to the enabled structure
-  representing the current theory, and STATE bound to the ACL2
-  [state].  An error will be caused by the :put if the result of the
-  evaluation is nil.
+  This event sets the :guard of the named table to term, provided the
+  following requirements are met.  The named table must be empty and
+  it must not have been assigned a :guard yet.  Term (which is not
+  evaluated) should be a term that mentions at most the variables
+  KEY, VAL, WORLD, ENS, and STATE.  In the common case term will
+  evaluate to a single value, but it can return two values as
+  discussed later below; either way, it must not return STATE.
+
+  Whenever a subsequent :put occurs, term will be evaluated with KEY
+  bound to the key argument of the :put, VAL bound to the val
+  argument of the :put, WORLD bound to the then current [world], ENS
+  bound to the enabled structure representing the current theory, and
+  STATE bound to the ACL2 [state].  The term is evaluated.  An error
+  will be caused by the :put if the result of the evaluation is nil
+  when a single value is returned; what if two values are returned?
+
+  If the term returns multiple values (mv okp msg), then an error will
+  be caused if okp is nil.  In that case, if msg is also nil then a
+  generic error message is printed about the illegal key/value pair,
+  just as in the single-value return case.  Otherwise msg should be a
+  [msgp] --- a string or a cons suitable for printing with the [fmt]
+  directive, ~@.  In that case, msg is printed (using [fmt] ~@)
+  instead of the generic error message.  Here is a simple example
+  from the ACL2 sources.
+
+    (defun partial-functions-table-guard (fn val wrld)
+      (let ((msg0 ; nil if fn/val is OK as a key/value pair, else a msg
+             (partial-functions-table-guard-msg fn val wrld)))
+        (cond
+         (msg0 (mv nil
+                   (msg
+                    \"Illegal partial-functions-table key and value (see :DOC ~
+                     memoize-partial):~|key = ~y0value  = ~y1Reason:~%~@2~|~%\"
+                    fn val msg0)))
+         (t (mv t nil)))))
+
+    (table partial-functions-table nil nil
+           :guard
+           (partial-functions-table-guard key val world))
 
   Note that it is not allowed to change the :guard on a table once it
   has been explicitly set.  Before the :guard is explicitly set, it
@@ -114962,9 +116209,9 @@ Examples
 
     (foldr lst (lambda$ (x y) (foldr y 'cons (list (sq x)))) nil)
 
-  This expression uses foldr to reverse the list lst, except it squares
-  each element of the list.  E.g., if lst is (1 2 3 4) the result is
-  (16 9 4 1).
+  This expression uses foldr to square and reverse the order of the
+  elements of lst.  E.g., if lst is (1 2 3 4) the result is (16 9 4
+  1).
 
   The tameness functions do not expand macros and so one should
   endeavor to present them with fully translated terms.  So we will
@@ -115443,7 +116690,7 @@ Logical Definitions
   system.  We discuss each form in more detail below.
 
   The documentation below is written as though the tau system is in
-  auto mode!  To insure that the only rules added to the tau system
+  auto mode!  To ensure that the only rules added to the tau system
   are those explicitly assigned to :rule-class :tau-system, you
   should use [set-tau-auto-mode] to select manual mode.
 
@@ -123778,12 +125025,15 @@ Detailed Documentation
 
   When certify-book is supplied with option :useless-runes :write, the
   result is to write out a corresponding @useless-runes.lsp file.
-  Each top-level entry of this file has the form
+  Each top-level entry of this file that is non-trivial (see below)
+  has the form
 
-    (name (frames-1 tries-1 rune-1)
-          (frames-2 tries-2 rune-2)
-          ...
-          (frames-k tries-k rune-k))
+    (name
+     (frames-1 tries-1 rune-1)
+     (frames-2 tries-2 rune-2)
+     ...
+     (frames-k tries-k rune-k)
+     )
 
   where name is the name of a [defthm], [defun], or [verify-guards]
   event, and each tuple (frames-i tries-i rune-i) indicates the
@@ -123796,6 +125046,13 @@ Detailed Documentation
   top to bottom.  Because of [local] [events], the same name may
   appear more than once; we say more about this in the ``Subtleties''
   section, below.
+
+  Note that ``trivial'' entries are possible, where there are no
+  tuples; in that case, just (name) is printed, on a single line.
+  Otherwise printing uses the format shown above, where the first
+  line contains a left parenthesis on the left margin followed by the
+  name, and each tuple is on a single line starting in column 1
+  (i.e., after a single space), as is the final right parenthesis.
 
   When certify-book is supplied with option :useless-runes :read or
   :useless-runes :read?, then book certification takes advantage of
@@ -123813,13 +125070,15 @@ Detailed Documentation
   @useless-runes.lsp file are to be kept disabled; so if the relevant
   top-level form in that file is
 
-    (name (frames-1 tries-1 rune-1)
-          (frames-2 tries-2 rune-2)
-          (frames-2 tries-2 rune-3)
-          (frames-2 tries-2 rune-4)
-          (frames-2 tries-2 rune-5)
-          (frames-2 tries-2 rune-6)
-          (frames-k tries-k rune-7))
+    (name
+     (frames-1 tries-1 rune-1)
+     (frames-2 tries-2 rune-2)
+     (frames-3 tries-3 rune-3)
+     (frames-4 tries-4 rune-4)
+     (frames-5 tries-5 rune-5)
+     (frames-6 tries-6 rune-6)
+     (frames-7 tries-7 rune-7)
+     )
 
   then 1/5 of the 7 runes are to be disabled, so since the first
   integer greater than or equal to 7/5 is 2, the runes rune-1 and
@@ -124193,9 +125452,9 @@ Performance
   we changed ACL2 so that the stobj is the entire array field when
   there is only that one field.)  The [make-event] call below fails,
   because the resizing operation replaces the stobj in the global
-  user-stobj-alist of the ACL2 [state], but the [assert-event] call
-  still references the original stobj.  This failure is thus exactly
-  as expected for an applicative semantics.  However, it fails only
+  user-stobj-alist of the ACL2 [state], but the call of EQUAL still
+  references the original stobj.  This failure is thus exactly as
+  expected for an applicative semantics.  However, it fails only
   because the resize operation is not destructive: it replaces the
   entire stobj.
 
@@ -124207,8 +125466,7 @@ Performance
                               (update-ar3i 24 'done st3))
                            'top
                            state t)
-               (assert-event (equal (ar3i 24 st3) 'done)
-                             :on-skip-proofs t)
+               (value (equal (ar3i 24 st3) 'done))
                (value '(value-triple :success))))
 
     ; Passes because by now, the user-stobj-alist has been updated by
@@ -124216,10 +125474,9 @@ Performance
     ; read-eval-print loop:
     (assert-event (equal (ar3i 24 st3) 'done))
 
-    ; The following version passes because we avoid assert-event.
-    ; Instead, the second trans-eval call below references the value of
-    ; st3 in the user-stobj-alist that was produced by the first
-    ; trans-eval call below.
+    ; The following version passes because the second trans-eval call
+    ; below references the value of st3 in the user-stobj-alist that was
+    ; produced by the first trans-eval call below.
     (make-event
      (er-progn (trans-eval '(let ((st3 (resize-ar3 40 st3)))
                               (update-ar3i 34 'new st3))
@@ -125395,51 +126652,207 @@ Subtopics
  (VALUE (POINTERS)
         "See [system-utilities].")
  (VALUE-TRIPLE
-  (EVENTS ACL2-BUILT-INS)
+  (EVENTS ACL2-BUILT-INS ERRORS)
   "Compute a value, optionally checking that it is not nil
 
-    Examples:
-    (value-triple (+ 3 4))
-    (value-triple (cw \"hi\") :on-skip-proofs t)
-    (value-triple (cw \"hi\") :on-skip-proofs :interactive)
-    (value-triple (@ ld-pre-eval-print))
-    (value-triple (@ ld-pre-eval-print) :check t)
 
-    General Form:
+Simple Example
+
+    ; Return the value 7 as an error triple, i.e., (mv nil 7 state)).
+    (value-triple (+ 3 4))
+
+
+Examples Involving Keyword Arguments
+
+    ; Print \"hi\" even when skipping proofs.
+    (value-triple (cw \"hi\") :on-skip-proofs t)
+
+    ; Return an error triple containing the value of a state global.
+    ; (This shows that it's OK to reference state.)
+    (value-triple (@ ld-pre-eval-print))
+
+    ; Check that the given form returns a non-nil value.
+    (value-triple (equal (+ 3 4) 7) :check t)
+
+    ; Check that the given defun is admissible, then revert the world.
+    (value-triple (er-progn (defun foo (x) (cons x x))
+                            (value :success))
+                  :stobjs-out :auto)
+
+
+General Form
+
     (value-triple form
-                  :on-skip-proofs sp ; optional; nil by default
-                  :check chk         ; optional; nil by default
-                  :ctx ctx           ; optional; ''value-triple by default
+                  :check chk             ; default nil
+                  :ctx                   ; default 'value-triple
+                  :on-skip-proofs sp     ; default nil
+                  :safe-mode safe-mode   ; default :same
+                  :stobjs-out stobjs-out ; default nil
                   )
 
-  Value-triple provides a convenient way to evaluate a form in an event
-  context, including [progn] and [encapsulate] and in [books]; see
-  [events].  The form should evaluate to a single, non-[stobj] value.
+  where all keyword arguments are evaluated and optional, and the
+  defaults shown above represent values after evaluation.
 
-  Calls of value-triple are generally skipped when proofs are being
-  skipped.  However, a call of value-triple will be evaluated even
-  when proofs are being skipped if there is a non-nil value for
-  keyword argument :on-skip-proofs, typically, t.  The special value
-  for :on-skip-proofs, :interactive, is more restrictive than t: it
-  will still cause the value-triple call to be evaluated under a call
-  of [skip-proofs], but not when proofs are being skipped only due to
-  either making a second pass through an [encapsulate] or executing
-  an [include-book].
+  The following example illustrates all of the keyword arguments, which
+  are documented below.
 
-  If you expect the form to evaluate to a non-nil value and you want an
-  error to occur when that is not the case, you can use :check t.
-  More generally, the argument of :check can be a form that evaluates
-  to a single, non-[stobj] value.  If this value is not nil, then the
-  aforementioned test is made (that the given form is not nil).  If
-  an error occurs and the value of :check is a string or indeed any
-  ``message'' suitable for printing by [fmt] when supplied as a value
-  for tilde-directive ~@, then that string or message is printed as
-  an ACL2 soft error, evaluating the given :ctx argument (default
-  ''value-triple) as the ctx for [er].
+    (value-triple (mv nil (equal (+ 3 4) 7) state)
+                  :check (msg \"Oops, I forgot what ~x0+~x1 is!\" 3 4)
+                  :ctx '(value-triple . <some-mv>)
+                  :on-skip-proofs t
+                  :safe-mode nil ; legacy behavior (rarely used)
+                  :stobjs-out '(nil nil state))
 
-  Finally, note that value-triple performs evaluation in so-called
-  [safe-mode], which can slow down evaluation significantly but
-  checks [guard]s on [primitive]s.")
+
+Description
+
+  Value-triple provides a convenient way to evaluate a form in a
+  context where an [event] is expected; thus, a call of value-triple
+  may occur in [progn] and [encapsulate] forms and in [books].  By
+  default, the form should evaluate to a single, non-[stobj] value
+  (but see the discussion below about the :STOBJS-OUT keyword
+  argument).  Calls of value-triple are skipped by default when
+  proofs are being skipped (but see the discussion below about the
+  :ON-SKIP-PROOFS keyword argument).  By default, a value-triple call
+  has no effect other than to evaluate its form, but see the
+  discussion of the :CHECK keyword below for how to check the result.
+
+  A call of value-triple returns an [error-triple], (mv erp val state).
+  By default or when :CHECK nil is supplied: erp is nil when
+  evaluation completes without error and val is the value returned by
+  evaluating the given form.  However, when the keyword argument
+  :CHECK has a non-nil value, there is a check that val is non-nil.
+  Note that the value of keyword argument :STOBJS-OUT can affect this
+  notion of ``the value returned'' (by evaluation), as discussed
+  below.
+
+
+Keyword Arguments
+
+  Here is documentation for the keyword arguments, arranged
+  alphabetically and followed by relevant remarks.
+
+  :CHECK chk (default: nil)
+
+  When chk is supplied and non-nil, the value returned by evaluating
+  the given form must be non-nil, or else an error occurs: The error
+  message is generic if chk is t.  (By default a single value is
+  returned, so the notion of ``the value returned'' is clear; but see
+  the discussion of :STOBJS-OUT below for the notion of ``the value
+  returned'' in the general case.)  If chk is supplied and is neither
+  t nor nil, then it should be a ``message'' (see [msg]) that is used
+  when printing the error message.
+
+  :CTX ctx (default: 'value-triple)
+
+  Error messages from value-triple start, by default, with ``ACL2 Error
+  in VALUE-TRIPLE''.  To replace VALUE-TRIPLE with a different
+  context (see [ctx]), ctx, supply keyword argument :CTX ctx.
+
+  :ON-SKIP-PROOFS sp (default: nil)
+
+  By default or when :ON-SKIP-PROOFS has value nil, the form is not
+  evaluated when proofs are being skipped.  The form is, however,
+  evaluated when :ON-SKIP-PROOFS t is supplied.  The other legal
+  value for :ON-SKIP-PROOFS is :interactive, which is more
+  restrictive than t.  :Interactive directs the value-triple call to
+  be skipped when executing an [include-book] or making a second pass
+  through an [encapsulate], but not merely because
+  (set-ld-skip-proofsp t state) has been executed.
+
+  :SAFE-MODE safe-mode (default: :same)
+
+  It is usually safe to ignore this option, which is available for
+  backward compatibility: :SAFE-MODE t gives the behavior of
+  assert-event from before April, 2021.  Normally ACL2 operates
+  without so-called ``safe-mode''; see [safe-mode].  The value :same
+  prevents any change in whether safe-mode is on or off; otherwise
+  the value is t to evaluate the form with safe-mode on and nil for
+  safe-mode off.
+
+  :STOBJS-OUT stobjs-out (default: nil)
+
+  When stobjs-out has its default value of nil, which abbreviates the
+  value (nil), the form supplied to value-triple is expected to
+  evaluate to a single, non-[stobj] value.  However, multiple-value
+  return (see [mv-let]) is also allowed, including stobjs
+  (user-defined stobjs as well as state).  The return shape is
+  specified by supplying stobjs-out as a true list corresponding to
+  the values returned, with stobj names in stobj positions and nil
+  elsewhere.  (The list has length one if a single value is
+  returned.)  For example, if stobjs-out is (nil st1 nil st2) then
+  the form should evaluate to a multiple-value return, with ordinary
+  values in (zero-based) positions 0 and 2, stobj st1 in position 1,
+  and stobj st2 in position 3.
+
+  Stobjs-out may also be :auto, which allows arbitrary returns.
+
+  We speak of ``the value returned''.  When the evaluation results in a
+  single value, that is of course the value returned.  When multiple
+  values are returned, the first of those values is normally what we
+  mean by ``the value returned'', with the following exception.  When
+  an [error-triple] is returned, say (mv erp val state) where erp and
+  val are non-stobj values and state is the ACL2 [state], then val is
+  considered to be the value returned if erp is nil; but if erp is
+  not nil, then there is no value returned, and value-triple results
+  in an error.
+
+  If :CHECK has a non-nil value then the value returned must not be a
+  stobj.  Otherwise, when the value returned is a stobj it is
+  replaced by the stobj's name, as discussed below.
+
+
+Remarks
+
+  We conclude by remarking on some details.  These remarks also apply
+  to [assert-event], since it expands to make corresponding calls of
+  value-triple.
+
+   1. Since value-triple is an [event] macro, it returns an [error-triple],
+      that is, the multiple values (mv erp val state), where erp is
+      nil exactly when the event completes without error.  If the
+      value of keyword argument :CHECK is non-nil and erp is nil,
+      then val is :passed.  Otherwise val is the value returned as
+      discussed above.  To be precise: val is the result of
+      evaluating the given form in the default case, when :STOBJS-OUT
+      is not provided (or is nil or (nil)), but in general there
+      several cases possible, as follows.
+          * If the evaluation of the given form results in a single non-stobj
+            value, then val is that value.
+          * If the evaluation of the given form results in a single stobj value,
+            then val is that stobj's name (a symbol).  In particular,
+            if the value is state, then val is the symbol STATE (in
+            the \"ACL2\" package).
+          * If the evaluation of the given form results in multiple values (mv x1
+            ...), then val is x1 if x1 is not a stobj, else val is
+            the name of that stobj.
+
+   2. When :STOBJS-OUT is :auto and at least one user-defined [stobj] is
+      returned, you will see a \"User-stobjs-modified\" warning unless
+      warnings have been suppressed.  Although warnings are typically
+      suppressed by general utilities such as
+      [set-inhibit-output-lst], [set-inhibit-warnings], and
+      [with-output], a more direct way to avoid this warning is to
+      specify :STOBJS-OUT as a list (as discussed above).
+   3. As noted above, the ACL2 [state] may change when keyword option
+      :STOBJS-OUT has a value other than nil or (nil).  Nevertheless,
+      ACL2 ensures that certain parts of the state, including the
+      logical [world], are the same after the value-triple call
+      completes as they were before (as with make-event expansion;
+      see [make-event]).  Also, trust tags (see [defttag]) must not
+      be introduced during such evaluation.
+   4. (Ignore this remark unless you make many, many calls of
+      value-triple.)  Evaluation may be much faster when :STOBJS-OUT
+      is omitted or is specified as nil (the default) or (nil).  That
+      is because otherwise, since the return shape is checked only
+      after evaluation completes, therefore a somewhat complex
+      environment set-up is performed prior to evaluation, in which
+      certain parts of the ACL2 [state] are protected as for
+      [make-event] (using [revert-world], and also as discussed in
+      the documentation for [make-event] about
+      *protected-system-state-globals*).  Moreover, evaluation is
+      faster still if in addition, the given form is t, nil, a
+      [keyword], or of the form (QUOTE x).")
  (VARIABLEP (POINTERS)
             "See [system-utilities].")
  (VERBOSE-PSTACK
@@ -125654,7 +127067,10 @@ Subtopics
   the named function, it is assumed that the guard holds for that
   function on its formal parameters.  And in both cases --- the body
   of the named function and also its guard --- the governing tests
-  from superior calls of [if] are also assumed.
+  from superior calls of [if] are also assumed.  (However, additional
+  conjectures are generated for loop$ statements.  See the section
+  Special Guard Conjectures for LOOP$ in the documentation for
+  [loop$].)
 
   As mentioned above, if the guard on a function is not t, then guard
   verification requires not only consideration of the body under the
@@ -125700,6 +127116,7 @@ Subtopics
   In the General Form above, name is the name of a :[logic] function
   (see [defun-mode]) or of a theorem or axiom, or else is a [lambda$]
   expression or a well-formed LAMBDA object (not quoted).
+  [Mixed-mode-functions] cannot be guard verified.
 
   If name is a lambda$ expression it is translated (to a quoted
   well-formed LAMBDA object), the formals, declaration, and body are
@@ -126573,10 +127990,19 @@ Subtopics
   disable and enable them.  See also [toggle-inhibit-warning].")
  (WARRANT
   (APPLY$)
-  "Giving [apply$] permission to call a user-defined function
+  "Giving [apply$] permission to handle a user-defined function in
+  proofs
 
   The word ``warrant'' is defined in the Merriam-Webster dictionary as
   ``a commission or document giving authority to do something....''
+
+  The discussion below mentions the concept of [badge]s, which are
+  easily confused with warrants.  See the discussion of Badges versus
+  Warrants at the top of defwarrant.  But roughly put, badges extend
+  the ACL2 syntax and warrants extend the proof theory.  You'll need
+  a badge for fn to allow the system to syntactically analyze (apply$
+  'fn ...).  You'll need a both a badge and a warrant for fn if you
+  wish to reason about that term with ACL2.
 
   In the ACL2 proof theory, the functions [badge] and [apply$] are
   undefined on user-defined function symbols.  The meanings of those
@@ -126587,14 +128013,19 @@ Subtopics
   of logical consistency not every fn can have a warrant.  Warrants
   are issued, when possible, by [defwarrant].
 
-  In the ACL2 evaluation theory -- a consistent extension of the proof
-  theory -- all warrants issued by defwarrant are implicitly assumed,
-  meaning badge and apply$ can be executed on warranted user-defined
-  function symbols at the top-level of the ACL2 loop without explicit
-  mention of the warrants.  For a discussion of the restrictions on
-  when a fn can be warranted, see [defwarrant].  This topic discusses
-  warrants per se, their names, their logical meaning, when they must
-  be explicitly added as hypotheses to theorems, and their
+  In the ACL2 evaluation theory --- a consistent extension of the proof
+  theory --- all warrants issued by defwarrant are implicitly
+  assumed, meaning badge and apply$ can be executed on warranted
+  user-defined function symbols at the top-level of the ACL2 loop
+  without explicit mention of the warrants.  (In fact, just as the
+  evaluation theory can -- inexplicably -- execute :program mode
+  functions despite the absence of any axioms about them, the
+  evaluation theory can execute a well-formed apply$ on any function
+  having a [badge] even if no warrant has been issued for the
+  function.  See [defbadge].)  For a discussion of the restrictions
+  on when a fn can be warranted, see [defwarrant].  This topic
+  discusses warrants per se, their names, their logical meaning, when
+  they must be explicitly added as hypotheses to theorems, and their
   consistency.
 
 
@@ -127068,7 +128499,7 @@ Why Warrants Don't Render Theorems Vacuous
   would involve a lot of work!)
 
   Well-formedness implies tameness.  So if you write your LAMBDA
-  objects with lambda$ apply$ will be able to handle them. But Apply$
+  objects with lambda$ apply$ will be able to handle them. But apply$
   can handle more objects than the Common Lisp compiler can.  Some
   tame LAMBDA objects can be applied faster than others.  The fast
   ones are recognized by well-formed-lambda-objectp -- but also have
@@ -127178,9 +128609,9 @@ Why Warrants Don't Render Theorems Vacuous
         apply$).
 
     *
-        tbody is a fully translated, [tame], :logic mode term, involving no
-        free variables and respecting the declared IGNORE and
-        IGNORABLE declarations.
+        tbody is a fully translated, [tame] term, involving no free variables
+        and respecting the declared IGNORE and IGNORABLE
+        declarations.
 
         Furthermore, in the case of a lambda object generated by lambda$,
         tbody is a ``tagged'' version of the translation of the body
@@ -129976,6 +131407,7 @@ Subtopics
                     :ruler-extenders :basic
                     :split-types t
                     :stobjs ($s)
+                    :type-prescription (natp (foo x y))
                     :verify-guards t
                     :well-founded-relation my-wfr))
 
@@ -130122,6 +131554,24 @@ Subtopics
   being defined so that it includes conjuncts specifying that each
   declared single-threaded object argument satisfies the recognizer
   for the corresponding single-threaded object.
+
+  :type-prescription
+  Value is either nil (the default) or a formula that is suitable for
+  a hypothesis-free :[type-prescription] rule.  That rule must be
+  appropriate for the :typed-term that is the application of the
+  defined function symbol to its formal parameters.  For example, a
+  legal value for :type-prescription in (defun f (x y) ...) could be
+  (or (consp (f x y)) (equal (f x y) y)), but not (or (consp (f u v))
+  (equal (f u v) v)).  The specified formula must provide a type that
+  is implied by the built-in type that is computed for the defined
+  function.  Normally these will be equal, but if the value of
+  :type-prescription specifies a strictly weaker type than the
+  computed built-in type then a warning will be printed (unless of
+  course such warnings have been suppressed; see
+  [set-inhibit-output-lst] and [set-inhibit-warnings]).  It is an
+  error to supply a non-nil value for :type-prescription if there is
+  no built-in type computed for the function.  See also
+  [type-prescription].
 
   :[verify-guards]
   Value is t or nil, indicating whether or not [guard]s are to be
@@ -133064,26 +134514,34 @@ Subtopics
   "(macro) display the [type-alist] from the current context
 
     Examples:
-    (type-alist t t)     ; display type-alist based on conclusion and governors
-    (type-alist t t t)   ; as above, but also display forward-chaining report
-    type-alist           ; same as (type-alist nil t) -- governors only
-    (type-alist nil)     ; same as (type-alist nil t) -- governors only
-    (type-alist t)       ; same as (type-alist t nil) -- conclusion only
-    (type-alist nil nil) ; display type-alist without considering
-                         ; conclusion or governors
+    (type-alist nil t nil) ; display type-alist based on governors (default)
+    type-alist             ; same as (type-alist nil t) -- governors only
+    (type-alist t t)       ; display type-alist based on conclusion and governors
+    (type-alist t t t)     ; as above, but also display forward-chaining report
+    type-alist             ; same as (type-alist nil t) -- governors only
+    (type-alist nil)       ; same as (type-alist nil t) -- governors only
+    (type-alist t)         ; same as (type-alist t nil) -- conclusion only
+    (type-alist nil nil)   ; based on neither conclusion nor governors
+    (type-alist nil t nil nil)  ; same as type-alist (default) -- governors only
+    (type-alist nil t nil :raw) ; governors only, raw alist format
+    (type-alist nil t nil t)    ; governors only, simple alist format
 
     General Form:
-    (type-alist &optional concl-flg govs-flg fc-report-flg)
+    (type-alist &optional concl-flg govs-flg fc-report-flg alistp)
 
   where if govs-flg is omitted then it defaults to (not concl-flg), and
-  concl-flg and fc-report-flg default to nil.
+  each of the other optional arguments defaults to nil.
 
   Display the current assumptions as a [type-alist].  Note that this
   display includes the result of forward chaining.  When
   fc-report-flg is supplied a non-nil value, the display also
   includes a forward-chaining report; otherwise,the presence or
   absence of such a report is controlled by the usual global settings
-  (see [forward-chaining-reports]).
+  (see [forward-chaining-reports]).  By default, the display is
+  organized by type, with terms shown of each type; but when alistp
+  is :raw then the underlying type-alist structure is shown, which is
+  made more user-friendly when any other non-nil value of alistp is
+  provided.
 
   There are two basic reasons contemplated for using this command.
 
