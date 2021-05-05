@@ -20776,7 +20776,7 @@ subtree of X with T, without duplication.</p>
   ACL2 !>(apply$ 'foldr (list '(a b c) 'cons '(d e f)))
   (A B C D E F)
 
-  ACL2 !>(foldr '((a b c) (d e) (f g h) (i j k)) 
+  ACL2 !>(foldr '((a b c) (d e) (f g h) (i j k))
                 (lambda$ (x y)
                   (foldr x 'cons y))
                 nil)
@@ -24814,8 +24814,8 @@ subtree of X with T, without duplication.</p>
   @({
   (apply$ (lambda$ (e) (prgm e)) (list x))
 
-  (loop$ for e in lst collect (prgm e))  
-  })  
+  (loop$ for e in lst collect (prgm e))
+  })
 
   <p>Are such terms permitted in the @('defun') of a @(':logic') mode function?
   The answer is complicated because it depends on whether the @('defun') is
@@ -45260,7 +45260,7 @@ tables in the current Hons Space."
  often provokes a break into the raw Lisp's error handler.</p>
 
  <p>The fundamental lesson is that you should pay attention to the prompt and
- learn what the different prompts mean &mdash; or use the ACL2 Sedan.</p> 
+ learn what the different prompts mean &mdash; or use the ACL2 Sedan.</p>
 
  <p>If you have been working your way through the tutorial introduction to the
  theorem prover, use your browser's <b>Back Button</b> now to return to @(see
@@ -88277,9 +88277,10 @@ it."
 
  <h3>Changes to Existing Features</h3>
 
- <p>@(tsee Apply$), @(tsee lambda$), and @('loop$') may be used with badged
- @(':program') mode functions in top-level evaluation.  To assign a badge to a
- @(':program') mode function use the new feature @(tsee defbadge).</p>
+ <p>@(tsee Apply$), @(tsee lambda$), and @(tsee loop$) may be used with @(see
+ badge)d @(':')@(tsee program) mode functions in top-level evaluation.  To
+ assign a badge to a @('program') mode function, use the new feature @(tsee
+ defbadge).</p>
 
  <p>For calls of the form @('(HIDE (COMMENT \"...\" ...))'), the string is a
  bit more descriptive.  See @(see comment) and see @(see hide).  Thanks to Mark
@@ -88449,11 +88450,11 @@ it."
 
  <h3>New Features</h3>
 
- <p>It is now possible to assign @(tsee badge)s to @(':program') mode
+ <p>It is now possible to assign @(tsee badge)s to @(':')@(tsee program) mode
  functions, which allows them to be used by @(tsee apply$), @(tsee lambda$) and
  @(tsee loop$) during top-level evaluation.  See @(tsee defbadge), which
- assigns badges but not warrants and which can handle both @(':program') and
- @(':logic') mode functions.</p>
+ assigns badges but not @(see warrant)s and which can handle both @(':')@(tsee
+ program) and @(':')@(tsee logic) mode functions.</p>
 
  <p>A new option for @(tsee certify-book), @(':useless-runes'), makes it
  possible to speed up repeated certification of a book, sometimes
