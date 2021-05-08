@@ -134549,6 +134549,7 @@ expand function call at the current subterm, without simplifying"
 (defpointer sum$ loop$)
 (defpointer sum$+ loop$)
 (defpointer symbol-class system-utilities)
+(defpointer table-alist table)
 (defpointer tag-tree ttree)
 (defpointer tamep tame)
 (defpointer tamep-functionp tame)
