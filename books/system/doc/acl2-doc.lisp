@@ -88254,6 +88254,10 @@ it."
 ; The increased efficiency of compress1 in the ordered case, discussed below,
 ; can be seen by running the file books/system/tests/compress1-header-only.lsp.
 
+; An IN-PACKAGE error message during include-book now suggests certification.
+; Thanks to Khairul Azhar Kasmiran for an email exchange leading to this
+; enhancement, and to Mihir Mehta for a wording suggestion.
+
   :parents (release-notes)
   :short "ACL2 Version  8.4 (xxx, 20xx) Notes"
   :long "<p>NOTE!  New users can ignore these release notes, because the @(see
