@@ -92530,6 +92530,9 @@ Subtopics
   [Symbol-class]
       See [system-utilities].
 
+  [Table-alist]
+      See [table].
+
   [Tag-tree]
       See [ttree].
 
@@ -116028,6 +116031,7 @@ Subtopics
 
   [Using-tables-efficiently]
       Notes on how to use tables efficiently")
+ (TABLE-ALIST (POINTERS) "See [table].")
  (TAG-TREE (POINTERS) "See [ttree].")
  (TAKE
   (LISTS ACL2-BUILT-INS)
