@@ -23629,46 +23629,38 @@ subtree of X with T, without duplication.</p>
  ACL2 !>(defstub add-hash (* * hashtable) => hashtable)
  ACL2 !>(defstub inv (*) => * :formals (x) :guard (fieldp x))
 
- General Form:
- (defstub name (inputs) => outputs :kwd1 val1 ... :kwdn valn)
+ General Forms:
+ (defstub name (i1 ... ik) => outputs :kwd1 val1 ... :kwdn valn) ; new style
+ (defstub name (i1 ... ik) outputs :kwd1 val1 ... :kwdn valn)    ; old style
  })
 
- <p>@('Name') must be a new function symbol, and
- @('inputs'), @('outputs'), @(':kwdi'), and @('vali') must be such that
- @('((name . inputs) => outputs :kwd1 val1 ... :kwdn valn)')
- is a valid @(see signature).</p>
+ <p>where @('name') is a new function symbol, and @('(i1 ... ik)'),
+ @('outputs'), @(':kwdi'), and @('vali') must be as follows, respectively.</p>
+
+ <ul>
+
+ <li><i>New style:</i> @('((name i1 ... ik) => outputs :kwd1 val1 ... :kwdn
+ valn)') is a valid new-style @(see signature).</li>
+
+ <li><i>Old style:</i> @('(name (i1 ... ik) outputs :kwd1 val1 ... :kwdn
+ valn)') is a valid old-style @(see signature).</li>
+
+ </ul>
+
+ <p>Also see @(see signature).  Note that @('(i1 ... ik)') is the
+ list of formal parameters of the newly-defined function symbol, @('name').</p>
+
 
  <p>Note that while the @('defstub') syntax resembles a @(see signature), it is
- different: @('name') occurs outside the parentheses containing @('inputs').</p>
+ different: @('name') occurs outside the parentheses containing @('(i1
+ ... ik)') in the @('defstub') syntax, but inside in the signature syntax.</p>
 
  <p>A @('defstub') macro call expands into an @(tsee encapsulate) event (see
  @(see encapsulate)).  Thus, no axioms are available about @('name') but it may
  be used wherever a function of the given signature is permitted.  Exception:
  if @('outputs') is of the form @('(mv ...)'), then a @(':')@(tsee
  type-prescription) rule is introduced stating that @('name') returns a value
- satisfying @(tsee true-listp).</p>
-
- <p>Old Style:</p>
-
- @({
-  Old Style General Form:
-  (defstub name inputs outputs :kwd1 val1 ... :kwdn valn)
- })
-
- <p>where @('name') is a new function symbol, @('inputs') is its list of formal
- parameters, and @('outputs') is either a symbol (indicating that the function
- returns one result) or a term of the form @('(mv s1 ... sn)'), where each
- @('si') is a symbol (indicating that the function returns @('n') results).
- Whether and where the symbol @(tsee state) occurs in @('inputs') and
- @('outputs') indicates how the function handles @(see state).  It should be
- the case that @('(name inputs outputs :kwd1 val1 ... :kwdn valn)') is in fact
- an old-style signature (see @(see signature)).  In particular, a @(':kwdi')
- may be @(':stobjs'), to indicate which inputs and outputs are stobjs; but
- @('state') does not need to be included, since it is automatically treated as
- the state stobj).</p>
-
- <p>The old style is preserved for compatibility with earlier versions of
- ACL2.</p>")
+ satisfying @(tsee true-listp).</p>")
 
 (defxdoc deftheory
   :parents (events theories)
@@ -27858,6 +27850,14 @@ ld) and @(tsee include-book)"
  itself).  Actually, between @('previous') and @('thm1') certain extensions
  were made to the @(see world) by the superior @('encapsulate'), to permit
  @('an-element') to be used as a function symbol in @('thm1').</p>
+
+ <p>Remark on return value.  As with all @(see events), a call of
+ @('encapsulate') returns an @(see error-triple), @('(mv erp val state)'),
+ where @('erp') is nil when the event is successfully admitted.  In that case,
+ @('val') is @('t') if the list of signatures is @('nil'); @('val') is @('fn')
+ if there is a single signature, which introduces the function symbol, @('fn');
+ and otherwise is the list of function symbols introduced in the
+ signatures.</p>
 
  <p>Remark on implicit @(see constraint)s (unknown-constraints).  See @(see
  partial-encapsulate) for a related utility that allows some of the constraints
