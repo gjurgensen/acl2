@@ -88475,7 +88475,7 @@ it."
  <p>The @(see event) macro @(tsee with-output) has been improved with several
  changes and new features (and correspondingly, so has @('with-output!')).  In
  addition to improvements to its documentation, these include the following;
- see @(tsee with-output) for more information..</p>
+ see @(tsee with-output) for more information.</p>
 
  <ul>
 
@@ -88488,14 +88488,13 @@ it."
  @('nil').</li>
 
  <li>So-called ``on-off specs'', @('(:on-off sym1 ... symk)') are now allowed
- for keyword arguments @(':on') and @(':off'), which let you turn turn on or
- off all output types except the specified @('symi').  On-off specs are
- similarly supported for keyword arguments @(':summary-on') and
- @(':summary-off').</li>
+ for keyword arguments @(':on') and @(':off'), which let you turn on or off all
+ output types except the specified @('symi').  On-off specs are similarly
+ supported for keyword arguments @(':summary-on') and @(':summary-off').</li>
 
- <li>There is a new keyword for @(tsee with-output), @(':ctx'), which support a
- sort of global override of @(see event) contexts.  See @(see with-output) and
- see @(see ctx).</li>
+ <li>There is a new keyword for @(tsee with-output), @(':ctx'), which supports
+ a sort of global override of @(see event) contexts.  See @(see with-output)
+ and see @(see ctx).</li>
 
  <li>There is better error checking, in particular for duplicate keywords.</li>
 
@@ -88610,7 +88609,7 @@ it."
  <p>A new summary type, @('REDUNDANT'), controls whether a message is printed
  indicating a redundant event (see @(see redundant-events)), which however will
  still always take place if @('EVENT') output is not inhibited (see @(see
- set-inhibit-output-lst).  See @(see summary).</p>
+ set-inhibit-output-lst)).  See @(see summary).</p>
 
  <h3>Heuristic and Efficiency Improvements</h3>
 
