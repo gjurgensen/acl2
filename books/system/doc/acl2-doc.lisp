@@ -88727,11 +88727,13 @@ it."
  @('fmt-to-string'); see @(see printing-to-strings).  The bug was a dependence
  of the result on the ACL2 @(see state), even though @('state') is not an
  argument to these functions.  More specifically, the dependence was on the
- @(tsee current-package) and the global @(tsee evisc-table).  Note: We also
- strengthened the @(see guard)s on these functions to require that the keys of
- the @('fmt-control-alist') alist argument are all appropriate; in particular,
- the symbol @('current-package') in the @('\"ACL2\"') package is a suitable
- key, but for example the keyword @(':current-package') is not.</p>
+ @(tsee current-package) and the global @(tsee evisc-table).  For examples see
+ @(see community-books) @('books/system/tests/fmt-to-string.lisp') and
+ @('books/system/tests/fmt-to-string-pkg.lisp').  Note: We also strengthened
+ the @(see guard)s on these functions to require that the keys of the
+ @('fmt-control-alist') alist argument are all appropriate; in particular, the
+ symbol @('current-package') in the @('\"ACL2\"') package is a suitable key,
+ but for example the keyword @(':current-package') is not.</p>
 
  <p>The mechanism for tracking @(see warrant)s needed during a proof had a bug,
  which might be a soundness bug if one uses @(tsee apply$) or @(tsee loop$).

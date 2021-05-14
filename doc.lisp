@@ -87004,11 +87004,14 @@ Bug Fixes
   dependence of the result on the ACL2 [state], even though state is
   not an argument to these functions.  More specifically, the
   dependence was on the [current-package] and the global
-  [evisc-table].  Note: We also strengthened the [guard]s on these
-  functions to require that the keys of the fmt-control-alist alist
-  argument are all appropriate; in particular, the symbol
-  current-package in the \"ACL2\" package is a suitable key, but for
-  example the keyword :current-package is not.
+  [evisc-table].  For examples see [community-books]
+  books/system/tests/fmt-to-string.lisp and
+  books/system/tests/fmt-to-string-pkg.lisp.  Note: We also
+  strengthened the [guard]s on these functions to require that the
+  keys of the fmt-control-alist alist argument are all appropriate;
+  in particular, the symbol current-package in the \"ACL2\" package is
+  a suitable key, but for example the keyword :current-package is
+  not.
 
   The mechanism for tracking [warrant]s needed during a proof had a
   bug, which might be a soundness bug if one uses [apply$] or
