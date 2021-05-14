@@ -86758,7 +86758,7 @@ Changes to Existing Features
   changes and new features (and correspondingly, so has
   with-output!).  In addition to improvements to its documentation,
   these include the following; see [with-output] for more
-  information..
+  information.
 
     * The keyword argument :summary has been replaced by keyword arguments
       :summary-on and :summary-off, which control inhibited summary
@@ -86766,11 +86766,11 @@ Changes to Existing Features
       inhibited output.
     * The keyword arguments :on and :off may now take value nil.
     * So-called ``on-off specs'', (:on-off sym1 ... symk) are now allowed
-      for keyword arguments :on and :off, which let you turn turn on
-      or off all output types except the specified symi.  On-off
-      specs are similarly supported for keyword arguments :summary-on
-      and :summary-off.
-    * There is a new keyword for [with-output], :ctx, which support a sort
+      for keyword arguments :on and :off, which let you turn on or
+      off all output types except the specified symi.  On-off specs
+      are similarly supported for keyword arguments :summary-on and
+      :summary-off.
+    * There is a new keyword for [with-output], :ctx, which supports a sort
       of global override of [event] contexts.  See [with-output] and
       see [ctx].
     * There is better error checking, in particular for duplicate keywords.
@@ -86885,7 +86885,7 @@ New Features
   A new summary type, REDUNDANT, controls whether a message is printed
   indicating a redundant event (see [redundant-events]), which
   however will still always take place if EVENT output is not
-  inhibited (see [set-inhibit-output-lst].  See [summary].
+  inhibited (see [set-inhibit-output-lst]).  See [summary].
 
 
 Heuristic and Efficiency Improvements
