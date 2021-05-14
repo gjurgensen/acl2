@@ -86682,10 +86682,11 @@ Changes to Existing Features
   [gag-mode] turned off.  Thanks to Mihir Mehta for a query that led
   to this enhancement.
 
-  ACL2 now uses the [evisc-table] for [fmt] directives ~f and ~F.
-  Previously it used that [table] only for directives ~x, ~y, ~X, and
-  ~Y (and deprecated directives ~p etc.; see [fmt]).  Thanks to Eric
-  Smith for a query leading to this enhancement.
+  For [fmt] directives ~f and ~F, ACL2 now uses the alist component of
+  the evisc-tuple argument and the global [evisc-table].  Previously
+  it used these only for directives ~x, ~y, ~X, and ~Y (and
+  deprecated directives ~p etc.; see [fmt]).  Thanks to Eric Smith
+  for a query leading to this enhancement.
 
   Reporting has been improved when encountering possible invariance
   violations for abstract [stobj]s.  Now, when that happens an
@@ -86997,6 +86998,17 @@ Bug Fixes
   an example proof of nil in Version 8.3, see a comment about a
   defabsstobj bug in the form (defxdoc note-8-4 ...) in file
   books/system/doc/acl2-doc.lisp.
+
+  A soundness bug was fixed in the functions that print to strings,
+  such as fmt-to-string; see [printing-to-strings].  The bug was a
+  dependence of the result on the ACL2 [state], even though state is
+  not an argument to these functions.  More specifically, the
+  dependence was on the [current-package] and the global
+  [evisc-table].  Note: We also strengthened the [guard]s on these
+  functions to require that the keys of the fmt-control-alist alist
+  argument are all appropriate; in particular, the symbol
+  current-package in the \"ACL2\" package is a suitable key, but for
+  example the keyword :current-package is not.
 
   The mechanism for tracking [warrant]s needed during a proof had a
   bug, which might be a soundness bug if one uses [apply$] or
@@ -94414,14 +94426,14 @@ Subtopics
   The legal keyword arguments are as follows.  They are all optional
   with a default of nil.
 
-      Evisc-tuple is evaluated, and corresponds exactly to the evisc-tuple
+      :Evisc-tuple is evaluated, and corresponds exactly to the evisc-tuple
       argument of the corresponding FM* function; see [fmt].
 
-      Fmt-control-alist should typically evaluate to an alist that maps
+      :Fmt-control-alist should typically evaluate to an alist that maps
       print-control variables to values; see [print-control].  Any
       alist mapping variables to values is legal, however.  By
       default the print controls are set according to the value of
-      constant *fmt-control-defaults*; fmt-control-alist overrides
+      constant *fmt-control-defaults*; :fmt-control-alist overrides
       these defaults.  For example, *fmt-control-defaults* sets the
       right margin just as it is set in the initial ACL2 [state], by
       binding fmt-soft-right-margin and fmt-hard-right-margin to
@@ -94437,28 +94449,31 @@ Subtopics
                        `((fmt-soft-right-margin . 10000)
                          (fmt-hard-right-margin . 10000)))
 
-  The following remark is subtle; see [fmt!] for relevant background.
-  By default, there is identical behavior for each pair of functions
-  of the form fm<..>-to-string and fm<..>!-to-string: both functions
-  act like the fm<..>! function, which is to say, they both avoid
-  printing a backslash (\\) when the right margin is exceeded, so that
-  the results can be read by ACL2.  If you include the pair
-  (:WRITE-FOR-READ NIL) in :fmt-control-alist, then the
-  fm<..>-to-string functions will be free to insert such backslashes;
-  but that pair will have no effect on the fm<..>!-to-string
-  functions.
-
-  Note that [iprinting] is turned off during evaluation of calls of
-  these functions, even if it is enabled globally.  The reason is
-  that for each iprint index, i, that is bound during creation of the
-  result string, that binding would disappear after the string is
-  returned; so it would be misleading or an error to read #@i# after
-  that return.
-
   Also see [io] for a discussion of the utility
   get-output-stream-string$, which allows for accumulating the
   results of more than one printing call into a single string but
-  requires the use of [state].")
+  requires the use of [state].
+
+  Remarks on deviation from the [fmt] functions.
+
+   1. The [evisc-table] is ignored by these functions that print to
+      strings.  Use the :evisc-tuple keyword instead.
+   2. [Iprinting] is turned off during evaluation of calls of these
+      functions, even if it is enabled globally.  The reason is that
+      for each iprint index, i, that is bound during creation of the
+      result string, that binding would disappear after the string is
+      returned; so it would be misleading or an error to read #@i#
+      after that return.
+   3. The following remark is subtle; see [fmt!] for relevant background.
+      By default, there is identical behavior for each pair of
+      functions of the form fm<..>-to-string and fm<..>!-to-string:
+      both functions act like the fm<..>! function, which is to say,
+      they both avoid printing a backslash (\\) when the right margin
+      is exceeded, so that the results can be read by ACL2.  If you
+      include the pair (:WRITE-FOR-READ NIL) in :fmt-control-alist,
+      then the fm<..>-to-string functions will be free to insert such
+      backslashes; but that pair will have no effect on the
+      fm<..>!-to-string functions.")
  (PROFILE
   (EVENTS)
   "Turn on profiling for one function
