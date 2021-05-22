@@ -86788,6 +86788,16 @@ Changes to Existing Features
     * [Defun-sk] has a new :verbose argument for when output is desired
       after all.
 
+  For the :logic and :exec components of a [defabsstobj] export,
+  [signature]s no longer need to match.  Thanks to Sol Swords for
+  suggesting this improvement.  Now, the only such requirements are
+  that the lengths of the input signatures are equal and the lengths
+  of the output signatures are equal.
+
+  The utility [set-guard-checking] now prints messages to (standard-co
+  state) rather than to *standard-co*.  (Of course, these are the
+  same by default.)
+
 
 New Features
 
@@ -86887,6 +86897,21 @@ New Features
   indicating a redundant event (see [redundant-events]), which
   however will still always take place if EVENT output is not
   inhibited (see [set-inhibit-output-lst]).  See [summary].
+
+  A [defabsstobj] event may now specify child [stobj] fields, for use
+  by [stobj-let].  This feature will likely be documented by the end
+  of July 2021; for now, examples may be found in the
+  [community-books], directory
+  books/system/tests/abstract-stobj-nesting/, where the README file
+  provides a rough guide to the files there.  Thanks to Sol Swords
+  for requesting this feature and helping to design it, and for his
+  helpful discussions, feedback, and test files.
+
+  The :congruent-to keyword is now supported for [defabsstobj].
+
+  [Stobj-let] now allows aliases in the bindings in some cases where
+  this is safe because updating is not involved.  Thanks to Sol
+  Swords for suggesting such a change.
 
 
 Heuristic and Efficiency Improvements
@@ -87199,6 +87224,12 @@ Bug Fixes
   An unfortunate ``Proof skipped'' could be printed during the
   include-book phase of [certify-book] for certain uses of
   [make-event], including calls of [thm].  This has been fixed.
+
+  Fixed an implementation error that was being reported when a
+  [stobj-let] form updates two array fields each with at least two
+  indices that are not all natural numbers.  For an example that
+  caused this error, see [community-book]
+  books/system/tests/nested-stobj-two-updates.lisp.
 
 
 Changes at the System Level
@@ -104409,7 +104440,7 @@ Subtopics
   by standing in the books/ directory and issuing the following shell
   command (Linux or MacOS):
 
-    time grep --include='*.l*sp' -ri ':rule-classes .*type-prescription' .
+    time egrep -e ':rule-classes .*type-prescription' --include='*.l*sp' -ri .
 
   Below, we sometimes speak of the ``conclusion'' of a formula.  For
   many rule classes, this is simply the formula itself unless the
@@ -115430,7 +115461,7 @@ Subtopics
   implementors to make corresponding additions to the source code
   comments.  Note that if you execute the command
 
-    grep '^; Essay on' *.lisp
+    egrep -e '^; Essay on' *.lisp
 
   in your ACL2 sources directory, you will see the names of more than
   90 long source comments, or ``Essays'', that can provide additional

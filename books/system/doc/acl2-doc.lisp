@@ -88278,6 +88278,35 @@ it."
 ; implementation of defstub, in particular to allow event output to be
 ; suppressed while allowing a redundancy message to be printed.
 
+; The following lists some of the more major changes in support of stobj fields
+; of abstract stobjs.
+
+; - The Essay on the Correctness of Abstract Stobjs has been improved
+;   significantly.  It is now much more rigorous, and it has been extended to
+;   address both stobj fields of abstract stobjs and the case that the
+;   :concrete stobj of an abstract stobj is itself an abstract stobj.
+
+; - The logic-exec-pairs field of record absstobj-info has been renamed
+;   logic-exec-updater-tuples, to reflect that it now also stores updaters.
+
+; - Changed the cltl-cmd for both concrete and abstract stobjs to use the raw
+;   lisp discriminator, where formerly concrete stobjs used the stobj template
+;   and abstract stobjs used the event form.
+
+; - Improved some error messages, e.g., for duplicate expressions in a
+;   stobj-let's bindings (source function chk-stobj-let/bindings).
+
+; - Improved many comments.  More improvements are likely possible; see
+;   books/system/doc/stobj-fields-of-abstract-stobjs.txt.
+
+; - The 'stobj property for an abstract stobj name now ensures that each
+;   updater immediately follows the corresponding accessor, as noted in
+;   defabsstobj-fn1
+
+; - The function with-inside-absstobj-update was extracted from
+;   defabsstobj-raw-def and is now used in both defabsstobj-raw-def (whose code
+;   is therefore considerably simpler) and stobj-let-fn-raw.
+
   :parents (release-notes)
   :short "ACL2 Version  8.4 (xxx, 20xx) Notes"
   :long "<p>NOTE!  New users can ignore these release notes, because the @(see
@@ -88517,6 +88546,16 @@ it."
 
  </ul>
 
+ <p>For the @(':logic') and @(':exec') components of a @(tsee defabsstobj)
+ export, @(see signature)s no longer need to match.  Thanks to Sol Swords for
+ suggesting this improvement.  Now, the only such requirements are that the
+ lengths of the input signatures are equal and the lengths of the output
+ signatures are equal.</p>
+
+ <p>The utility @(tsee set-guard-checking) now prints messages to
+ @('(standard-co state)') rather than to @('*standard-co*').  (Of course, these
+ are the same by default.)</p>
+
  <h3>New Features</h3>
 
  <p>It is now possible to assign @(tsee badge)s to @(':')@(tsee program) mode
@@ -88610,6 +88649,21 @@ it."
  indicating a redundant event (see @(see redundant-events)), which however will
  still always take place if @('EVENT') output is not inhibited (see @(see
  set-inhibit-output-lst)).  See @(see summary).</p>
+
+ <p>A @(tsee defabsstobj) event may now specify child @(see stobj) fields, for
+ use by @(tsee stobj-let).  This feature will likely be documented by the end
+ of July 2021; for now, examples may be found in the @(see community-books),
+ directory @('books/system/tests/abstract-stobj-nesting/'), where the
+ @('README') file provides a rough guide to the files there.  Thanks to Sol
+ Swords for requesting this feature and helping to design it, and for his
+ helpful discussions, feedback, and test files.</p>
+
+ <p>The @(':congruent-to') keyword is now supported for @(tsee
+ defabsstobj).</p>
+
+ <p>@(tsee Stobj-let) now allows aliases in the bindings in some cases where
+ this is safe because updating is not involved.  Thanks to Sol Swords for
+ suggesting such a change.</p>
 
  <h3>Heuristic and Efficiency Improvements</h3>
 
@@ -88938,6 +88992,11 @@ it."
  <p>An unfortunate ``Proof skipped'' could be printed during the
  @('include-book') phase of @(tsee certify-book) for certain uses of @(tsee
  make-event), including calls of @(tsee thm).  This has been fixed.</p>
+
+ <p>Fixed an implementation error that was being reported when a @(tsee
+ stobj-let) form updates two array fields each with at least two indices that
+ are not all natural numbers.  For an example that caused this error, see @(see
+ community-book) @('books/system/tests/nested-stobj-two-updates.lisp').</p>
 
  <h3>Changes at the System Level</h3>
 
@@ -103096,7 +103155,7 @@ arithmetic) for libraries of @(see books) for arithmetic reasoning.</p>")
  command (Linux or MacOS):</p>
 
  @({
- time grep --include='*.l*sp' -ri ':rule-classes .*type-prescription' .
+ time egrep -e ':rule-classes .*type-prescription' --include='*.l*sp' -ri .
  })
 
  <p>Below, we sometimes speak of the ``conclusion'' of a formula.  For many
@@ -114176,7 +114235,7 @@ arithmetic) for libraries of @(see books) for arithmetic reasoning.</p>")
  Note that if you execute the command</p>
 
  @({
- grep '^; Essay on' *.lisp
+ egrep -e '^; Essay on' *.lisp
  })
 
  <p>in your ACL2 sources directory, you will see the names of more than 90 long
