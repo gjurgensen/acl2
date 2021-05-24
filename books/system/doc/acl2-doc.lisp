@@ -17870,7 +17870,8 @@ subtree of X with T, without duplication.</p>
  argument, typically called @('ctx'), for the initial part of the message:
  @('\"ACL2 Error in\"').  If @('ctx') is @('nil'), only @('\"ACL2 Error:\"') is
  printed for that initial part of the message.  Otherwise, the string printed
- after @('\"in\"') depends on the form of that context, as follows.</p>
+ after @('\"in\"') depends on the form of that context, as follows.  (See @(see
+ ctxp) for the definition of a valid context.)</p>
 
  <ul>
 
@@ -17890,6 +17891,15 @@ subtree of X with T, without duplication.</p>
  <li>Otherwise, print @('ctx') with @('fmt') using @('\"~@\"').</li>
 
  </ul>")
+
+(defxdoc ctxp
+  :parents (errors)
+  :short "Recognizer for context objects for error messages"
+  :long "<p>See @(see ctx) for relevant background.  The function @('ctxp')
+  returns @('t') when @('ctx') is a valid context according to the definition
+  below (also see @(see msgp)), else @('nil').</p>
+
+ @(def ctxp)")
 
 (defxdoc current-package
   :parents (ld)
@@ -88665,6 +88675,10 @@ it."
  this is safe because updating is not involved.  Thanks to Sol Swords for
  suggesting such a change.</p>
 
+ <p>Added a function @(tsee ctxp) to recognize valid contexts, which are used
+ for printing error message (see @(see ctx)).  Thanks to Eric Smith for
+ requesting this addition.</p>
+
  <h3>Heuristic and Efficiency Improvements</h3>
 
  <p>We changed the lightweight ``preprocess'' simplifier for ``@(see simple)''
@@ -88732,6 +88746,13 @@ it."
  Eric Smith, who raised this issue by providing an example that we include in a
  comment, inside the form @('(defxdoc note-8-4 ...)') in @(see community-book)
  @('books/system/doc/acl2-doc.lisp').</p>
+
+ <p>@(csee Type-set) reasoning also has been improved for inequalities to take
+ more advantage of the fact that the number 1 constitutes a singleton type.
+ For example, after evaluating @('(defstub foo (x) t)') ACL2 is now able to
+ prove @('(implies (< 2 x) (equal (foo (bitp x)) (foo nil)))') where previously
+ it could not.  In fact @('2') can now be replaced by any rational number that
+ is at least 1.</p>
 
  <p>The function @(tsee compress1) has been made more efficient in the
  following ways.</p>
@@ -114192,6 +114213,13 @@ arithmetic) for libraries of @(see books) for arithmetic reasoning.</p>")
 ; NOTE: Consider adding a defpointer below for each system utility documented
 ; here that doesn't have an xdoc topic.
 
+; The documentation for cons-term deliberately is not specific about which
+; primitives' calls are evaluated.  As of this writing the primitives
+; bad-atom<=, pkg-imports, and pkg-witness are excluded from this treatment,
+; but the ACL2 implementors would like the flexibility to change this in the
+; future.  System hackers who want to know exactly what cons-term does can, of
+; course, look at the ACL2 source code.
+
   :parents (programming)
   :short "Some built-in programming utilities pertaining to the ACL2 system"
   :long "<p>Since the ACL2 system is written in itself, the source code defines
@@ -114358,10 +114386,19 @@ arithmetic) for libraries of @(see books) for arithmetic reasoning.</p>")
  <li>@('(conjoin2 term1 term2)'): The conjunction of the given two terms.</li>
 
  <li>@('(cons-term fn args)'): Returns a @(see term) with function symbol (or
- @(see lambda) expression) @('fn') and arguments @('args').  Some
- simplification may be done; to avoid that, use @('fcons-term') (``fast
- cons-term''), described below.  Also see @('cons-term*') and @('fcons-term*')
- below.</li>
+ @(see lambda) expression) @('fn') and arguments @('args').  Evaluation may be
+ performed for calls of primitives &mdash; that is, built-in functions without
+ definitions &mdash; on arguments that are quoted constants, for example as
+ follows.
+
+ @({
+ ACL2 !>(cons-term 'coerce (list ''\"abc\" ''list))
+ '(#\\a #\\b #\\c)
+ ACL2 !>
+ })
+
+ To avoid such evaluation, use @('fcons-term') (``fast cons-term''), described
+ below.  Also see @('cons-term*') and @('fcons-term*') below.</li>
 
  <li>@('(cons-term* fn arg1 arg2 ...)'): This variant of @('cons-term')
  (described above) returns a term with the indicated function and arguments,
@@ -114400,6 +114437,9 @@ arithmetic) for libraries of @(see books) for arithmetic reasoning.</p>")
  <li>@('(disjoin lst)'): The disjunction of the given list of terms.</li>
 
  <li>@('(disjoin2 term1 term2)'): The disjunction of the given two terms.</li>
+
+ <li>@('(doublet-listp x)'): Returns @('t') if @('lst') is a list of
+ two-element lists @('(x1 x2)'), else @('nil').</li>
 
  <li>@('(dumb-negate-lit t1)'): For the given @(see term) @('t1'), return a
  term that is propositionally equivalent to @('(not t1)').</li>
@@ -114713,7 +114753,10 @@ arithmetic) for libraries of @(see books) for arithmetic reasoning.</p>")
  description of @('sublis-fn-simple'), above.</li>
 
  <li>@('(sublis-var alist form)'): Substitute @('alist') into the @(see term),
- @('form').</li>
+ @('form').  @('Alist') should be an alist that associates symbols with @(tsee
+ pseudo-termp)s, and @('term') should also satisfy @('pseudo-termp').  Note
+ that the substitution process evaluates calls of primitives on quoted
+ constants, essentially using @(tsee cons-term).</li>
 
  <li>@('(subsequencep lst1 lst2)'): Determine whether the list lst1 is a
  subsequence of the list lst2, although not necessarily a proper
@@ -114740,6 +114783,9 @@ arithmetic) for libraries of @(see books) for arithmetic reasoning.</p>")
  theorem (more specifically, has a @(''theorem') property; see @(see getprop)),
  return @(':ideal') unless the theorem is guard-verified, in which case return
  @(':common-lisp-compliant').  Otherwise return @(':program').</li>
+
+ <li>@('(symbol-doublet-listp lst)'): Returns @('t') if @('lst') is a list of
+ two-element lists @('(x1 x2)') where @('x1') is a symbol, else @('nil').</li>
 
  <li>@('(termp x w)'): Is @('x') a @(see term) in logical @(see world)
  @('w')?</li>
@@ -134547,6 +134593,7 @@ expand function call at the current subterm, without simplifying"
 (defpointer disjoin system-utilities)
 (defpointer disjoin2 system-utilities)
 (defpointer do-not-induct hints t)
+(defpointer doublet-listp system-utilities)
 (defpointer dynamically-monitor-rewrites dmr)
 (defpointer dumb-negate-lit system-utilities)
 (defpointer dumb-occur system-utilities)
@@ -134787,6 +134834,7 @@ expand function call at the current subterm, without simplifying"
 (defpointer sum$ loop$)
 (defpointer sum$+ loop$)
 (defpointer symbol-class system-utilities)
+(defpointer symbol-doublet-listp system-utilities)
 (defpointer table-alist table)
 (defpointer tag-tree ttree)
 (defpointer tamep tame)

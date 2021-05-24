@@ -21170,7 +21170,8 @@ Subtopics
   typically called ctx, for the initial part of the message: \"ACL2
   Error in\".  If ctx is nil, only \"ACL2 Error:\" is printed for that
   initial part of the message.  Otherwise, the string printed after
-  \"in\" depends on the form of that context, as follows.
+  \"in\" depends on the form of that context, as follows.  (See [ctxp]
+  for the definition of a valid context.)
 
     * If ctx is a symbol, print it with [fmt] using \"~x\".
     * If ctx is a pair whose car is a symbol, use [fmt] to print \"(~x0 ~x1
@@ -21183,6 +21184,21 @@ Subtopics
           ACL2 Error in ( DEFUN FOO ...):
 
     * Otherwise, print ctx with fmt using \"~@\".")
+ (CTXP
+  (ERRORS)
+  "Recognizer for context objects for error messages
+
+  See [ctx] for relevant background.  The function ctxp returns t when
+  ctx is a valid context according to the definition below (also see
+  [msgp]), else nil.
+
+  Function: <ctxp>
+
+    (defun ctxp (x)
+           (declare (xargs :guard t))
+           (or (symbolp x)
+               (and (consp x) (symbolp (car x)))
+               (msgp x)))")
  (CURRENT-PACKAGE
   (LD)
   "The package used for reading and printing
@@ -29892,6 +29908,8 @@ Subtopics
        (iff (bar x) t)))
 
     (thm (foo (bar y)))")
+ (DOUBLET-LISTP (POINTERS)
+                "See [system-utilities].")
  (DUMB-NEGATE-LIT (POINTERS)
                   "See [system-utilities].")
  (DUMB-OCCUR (POINTERS)
@@ -32200,6 +32218,9 @@ Subtopics
 
   [Ctx]
       Context object for error messages
+
+  [Ctxp]
+      Recognizer for context objects for error messages
 
   [Er]
       Print an error message and ``cause an error''
@@ -86913,6 +86934,10 @@ New Features
   this is safe because updating is not involved.  Thanks to Sol
   Swords for suggesting such a change.
 
+  Added a function [ctxp] to recognize valid contexts, which are used
+  for printing error message (see [ctx]).  Thanks to Eric Smith for
+  requesting this addition.
+
 
 Heuristic and Efficiency Improvements
 
@@ -86982,6 +87007,13 @@ Heuristic and Efficiency Improvements
   this issue by providing an example that we include in a comment,
   inside the form (defxdoc note-8-4 ...) in [community-book]
   books/system/doc/acl2-doc.lisp.
+
+  [Type-set] reasoning also has been improved for inequalities to take
+  more advantage of the fact that the number 1 constitutes a
+  singleton type.  For example, after evaluating (defstub foo (x) t)
+  ACL2 is now able to prove (implies (< 2 x) (equal (foo (bitp x))
+  (foo nil))) where previously it could not.  In fact 2 can now be
+  replaced by any rational number that is at least 1.
 
   The function [compress1] has been made more efficient in the
   following ways.
@@ -91908,6 +91940,9 @@ Subtopics
   [Do-not-induct]
       See [hints] for information about the keyword :do-not-induct.
 
+  [Doublet-listp]
+      See [system-utilities].
+
   [Dumb-negate-lit]
       See [system-utilities].
 
@@ -92626,6 +92661,9 @@ Subtopics
       See [loop$].
 
   [Symbol-class]
+      See [system-utilities].
+
+  [Symbol-doublet-listp]
       See [system-utilities].
 
   [Table-alist]
@@ -114555,6 +114593,8 @@ Subtopics
                          (symbol-alistp (cdr x))))))")
  (SYMBOL-CLASS (POINTERS)
                "See [system-utilities].")
+ (SYMBOL-DOUBLET-LISTP (POINTERS)
+                       "See [system-utilities].")
  (SYMBOL-LISTP
   (SYMBOLS LISTS ACL2-BUILT-INS)
   "Recognizer for a true list of symbols
@@ -115568,10 +115608,17 @@ List of a few built-in system utilities
     * (conjoin lst): The conjunction of the given list of terms.
     * (conjoin2 term1 term2): The conjunction of the given two terms.
     * (cons-term fn args): Returns a [term] with function symbol (or
-      [lambda] expression) fn and arguments args.  Some
-      simplification may be done; to avoid that, use fcons-term
-      (``fast cons-term''), described below.  Also see cons-term* and
-      fcons-term* below.
+      [lambda] expression) fn and arguments args.  Evaluation may be
+      performed for calls of primitives --- that is, built-in
+      functions without definitions --- on arguments that are quoted
+      constants, for example as follows.
+
+          ACL2 !>(cons-term 'coerce (list ''\"abc\" ''list))
+          '(#\\a #\\b #\\c)
+          ACL2 !>
+
+      To avoid such evaluation, use fcons-term (``fast cons-term''),
+      described below.  Also see cons-term* and fcons-term* below.
     * (cons-term* fn arg1 arg2 ...): This variant of cons-term (described
       above) returns a term with the indicated function and
       arguments, where the arguments are ``spread'' into individual
@@ -115605,6 +115652,8 @@ List of a few built-in system utilities
       rune is [enable]d.
     * (disjoin lst): The disjunction of the given list of terms.
     * (disjoin2 term1 term2): The disjunction of the given two terms.
+    * (doublet-listp x): Returns t if lst is a list of two-element lists
+      (x1 x2), else nil.
     * (dumb-negate-lit t1): For the given [term] t1, return a term that is
       propositionally equivalent to (not t1).
     * (dumb-occur x y): Return t if the term x occurs free in the term y,
@@ -115852,6 +115901,10 @@ List of a few built-in system utilities
       applying sublis-fn-simple to alist and each such term.  See the
       description of sublis-fn-simple, above.
     * (sublis-var alist form): Substitute alist into the [term], form.
+      Alist should be an alist that associates symbols with
+      [pseudo-termp]s, and term should also satisfy pseudo-termp.
+      Note that the substitution process evaluates calls of
+      primitives on quoted constants, essentially using [cons-term].
     * (subsequencep lst1 lst2): Determine whether the list lst1 is a
       subsequence of the list lst2, although not necessarily a proper
       subsequence.
@@ -115875,6 +115928,8 @@ List of a few built-in system utilities
       specifically, has a 'theorem property; see [getprop]), return
       :ideal unless the theorem is guard-verified, in which case
       return :common-lisp-compliant.  Otherwise return :program.
+    * (symbol-doublet-listp lst): Returns t if lst is a list of two-element
+      lists (x1 x2) where x1 is a symbol, else nil.
     * (termp x w): Is x a [term] in logical [world] w?
     * (trans-eval form ctx state aok): Translate and then evaluate form.
       See [trans-eval] for discussion and related utilities.
