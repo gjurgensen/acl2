@@ -11522,7 +11522,9 @@ with any questions about building the community books.</p>")
   Example:
   :brr t                          ; if you haven't done that yet
   :monitor (:rewrite lemma12) t   ; to install a break point on the
-                                  ; rule named (:rewrite lemma12)
+                                  ;   rule named (:rewrite lemma12)
+  :monitor! (:rewrite lemma12) t  ; quiet version of :monitor that
+                                  ;   invokes :brr t
  })
 
  <p>ACL2 does not support Nqthm's @('break-lemma') but supports a very similar
@@ -12003,16 +12005,19 @@ with any questions about building the community books.</p>")
   :long "@({
   Example:
   :brr t       ; enable
+  (brr t)      ; enable (same as above)
+  (brr t t)    ; enable with less output (rarely invoked interactively)
   :brr nil     ; disable
 
   General Form:
-  (brr flg)
+  (brr flg &optional quietp)
  })
 
- <p>where @('flg') evaluates to @('t') or @('nil').  This function modifies
- @(tsee state) so that the attempted application of certain rewrite rules are
- ``broken.'' ``@('Brr')'' stands for ``break-rewrite'' and can be thought of as
- a mode with two settings.  The normal mode is ``disabled.''</p>
+ <p>where @('flg') and the optional @('quietp') argument evaluate to @('t') or
+ @('nil').  This function modifies @(tsee state) so that the attempted
+ application of certain rewrite rules are ``broken.'' ``@('Brr')'' stands for
+ ``break-rewrite'' and can be thought of as a mode with two settings.  The
+ normal mode is ``disabled.''</p>
 
  <p>For a more thorough introduction to the break rewrite system see @(see
  break-rewrite).</p>
@@ -60210,25 +60215,36 @@ it."
  })
 
  <p>In the examples above, the first four forms are equivalent; see @(see
- keyword-commands).  Those are equivalent to the fifth form if the event
- @('assoc-of-app') corresponds to a rewrite rule, or more precisely, to a
- single @(see rune), @('(:rewrite assoc-of-app)').</p>
+ keyword-commands) and see @(see rune).  Those are equivalent to the fifth form
+ if the event @('assoc-of-app') corresponds to a @(see rewrite) rule, or more
+ precisely, to a single @(see rune), @('(:rewrite assoc-of-app)').</p>
 
  @({
   General Forms:
   (monitor x condition)
   :monitor y z ; same as (monitor 'y 'z)
+  (monitor x condition t) ; same as above, but avoiding output
  })
 
  <p>where we focus below on the first form, in which the arguments are
- evaluated.  Above, @('x') (or more precisely, the result of evaluating @('x'))
- is a runic designator other than a theory name (see @(see theories)) and
- (the value of) @('condition') is a term, called the ``break condition.'' If
- @('x') is not a symbol then it must designate a rune corresponding to a rule
- of class @(':')@(tsee rewrite), @(':')@(tsee definition), or @(':')@(tsee
- linear).  If @('x') is a symbol then it represents all such runes that it
- designates, and there must be at least one such.  (Thus, @('x') cannot name an
- event that generates only rules of classes other than those three.)</p>
+ evaluated.  The second form quotes its arguments; see @(see keyword-commands).
+ The third form is a quiet version of the first that avoids the need to invoke
+ @(tsee brr) explicitly, as discussed below.</p>
+
+ <p>Above, @('x') (or more precisely, the result of evaluating @('x')) is a
+ runic designator (see @(see theories)) other than a theory name (see @(see
+ theories)) and (the value of) @('condition') is a term, called the ``break
+ condition.'' If @('x') is not a symbol then it must designate a @(see rune)
+ corresponding to a rule of class @(':')@(tsee rewrite), @(':')@(tsee
+ definition), or @(':')@(tsee linear).  If @('x') is a symbol then it
+ represents all such runes that it designates, and there must be at least one
+ such.  (Thus, @('x') cannot name an event that generates only rules of classes
+ other than those three.)</p>
+
+ <p>@('Monitor') does not affect proof attempts until the @(see break-rewrite)
+ utility is turned on with @(tsee brr), for example, using @(':brr t').  For a
+ shortcut that does this automatically while avoiding output, see @(see
+ monitor!).</p>
 
  <p>When a @(see rune) is @(see monitor)ed any attempt to apply it may result
  in an interactive break in an ACL2 ``@(see wormhole) @(see state).''  There
@@ -60386,6 +60402,17 @@ it."
  thought it best to provide a general (if arcane) mechanism and hope that the
  ACL2 community will develop the special cases that we find most
  convenient.</p>")
+
+(defxdoc monitor!
+  :parents (break-rewrite)
+  :short "A quiet combination of @(tsee monitor) and @(tsee brr)"
+  :long "<p>@('Monitor!') is essentially the corresponding call of @(tsee
+  monitor) preceded by @('(brr t)'), but avoiding output.  See @(see monitor)
+  and see @(see brr).</p>
+
+  <p>Note that @('monitor!') may be used in place of @('monitor') even when
+  inside an interactive break from @(see break-rewrite); in that case, the
+  @('brr') invocation on its behalf is essentially redundant.</p>")
 
 (defxdoc monitored-runes
   :parents (break-rewrite)
@@ -88678,6 +88705,12 @@ it."
  <p>Added a function @(tsee ctxp) to recognize valid contexts, which are used
  for printing error message (see @(see ctx)).  Thanks to Eric Smith for
  requesting this addition.</p>
+
+ <p>The utilities @(tsee brr) and @(tsee monitor) now each take an optional
+ argument that avoids output.  A new utility, @(tsee monitor!), is a
+ combination of these two with their new optional arguments of @('t'), thus
+ also avoiding output.  Thanks to Eric Smith for requesting a version of
+ @('monitor') that turns on @('brr').</p>
 
  <h3>Heuristic and Efficiency Improvements</h3>
 
