@@ -14265,7 +14265,9 @@ Subtopics
     Example:
     :brr t                          ; if you haven't done that yet
     :monitor (:rewrite lemma12) t   ; to install a break point on the
-                                    ; rule named (:rewrite lemma12)
+                                    ;   rule named (:rewrite lemma12)
+    :monitor! (:rewrite lemma12) t  ; quiet version of :monitor that
+                                    ;   invokes :brr t
 
   ACL2 does not support Nqthm's break-lemma but supports a very similar
   and more powerful break facility.  Suppose some proof is failing;
@@ -14675,6 +14677,9 @@ Subtopics
   [Monitor]
       To monitor the attempted application of a rule name
 
+  [Monitor!]
+      A quiet combination of [monitor] and [brr]
+
   [Monitored-runes]
       Print the [monitor]ed [rune]s and their break conditions
 
@@ -14886,15 +14891,18 @@ Subtopics
 
     Example:
     :brr t       ; enable
+    (brr t)      ; enable (same as above)
+    (brr t t)    ; enable with less output (rarely invoked interactively)
     :brr nil     ; disable
 
     General Form:
-    (brr flg)
+    (brr flg &optional quietp)
 
-  where flg evaluates to t or nil.  This function modifies [state] so
-  that the attempted application of certain rewrite rules are
-  ``broken.'' ``Brr'' stands for ``break-rewrite'' and can be thought
-  of as a mode with two settings.  The normal mode is ``disabled.''
+  where flg and the optional quietp argument evaluate to t or nil.
+  This function modifies [state] so that the attempted application of
+  certain rewrite rules are ``broken.'' ``Brr'' stands for
+  ``break-rewrite'' and can be thought of as a mode with two
+  settings.  The normal mode is ``disabled.''
 
   For a more thorough introduction to the break rewrite system see
   [break-rewrite].
@@ -64370,24 +64378,36 @@ Subtopics
     :monitor (:linear rule3) t
 
   In the examples above, the first four forms are equivalent; see
-  [keyword-commands].  Those are equivalent to the fifth form if the
-  event assoc-of-app corresponds to a rewrite rule, or more
-  precisely, to a single [rune], (:rewrite assoc-of-app).
+  [keyword-commands] and see [rune].  Those are equivalent to the
+  fifth form if the event assoc-of-app corresponds to a [rewrite]
+  rule, or more precisely, to a single [rune], (:rewrite
+  assoc-of-app).
 
     General Forms:
     (monitor x condition)
     :monitor y z ; same as (monitor 'y 'z)
+    (monitor x condition t) ; same as above, but avoiding output
 
   where we focus below on the first form, in which the arguments are
-  evaluated.  Above, x (or more precisely, the result of evaluating
-  x) is a runic designator other than a theory name (see [theories])
-  and (the value of) condition is a term, called the ``break
-  condition.'' If x is not a symbol then it must designate a rune
-  corresponding to a rule of class :[rewrite], :[definition], or
-  :[linear].  If x is a symbol then it represents all such runes that
-  it designates, and there must be at least one such.  (Thus, x
+  evaluated.  The second form quotes its arguments; see
+  [keyword-commands].  The third form is a quiet version of the first
+  that avoids the need to invoke [brr] explicitly, as discussed
+  below.
+
+  Above, x (or more precisely, the result of evaluating x) is a runic
+  designator (see [theories]) other than a theory name (see
+  [theories]) and (the value of) condition is a term, called the
+  ``break condition.'' If x is not a symbol then it must designate a
+  [rune] corresponding to a rule of class :[rewrite], :[definition],
+  or :[linear].  If x is a symbol then it represents all such runes
+  that it designates, and there must be at least one such.  (Thus, x
   cannot name an event that generates only rules of classes other
   than those three.)
+
+  Monitor does not affect proof attempts until the [break-rewrite]
+  utility is turned on with [brr], for example, using :brr t.  For a
+  shortcut that does this automatically while avoiding output, see
+  [monitor!].
 
   When a [rune] is [monitor]ed any attempt to apply it may result in an
   interactive break in an ACL2 ``[wormhole] [state].'' There you will
@@ -64545,6 +64565,16 @@ Subtopics
   lemmas we thought it best to provide a general (if arcane)
   mechanism and hope that the ACL2 community will develop the special
   cases that we find most convenient.")
+ (MONITOR!
+  (BREAK-REWRITE)
+  "A quiet combination of [monitor] and [brr]
+
+  Monitor! is essentially the corresponding call of [monitor] preceded
+  by (brr t), but avoiding output.  See [monitor] and see [brr].
+
+  Note that monitor! may be used in place of monitor even when inside
+  an interactive break from [break-rewrite]; in that case, the brr
+  invocation on its behalf is essentially redundant.")
  (MONITORED-RUNES
   (BREAK-REWRITE)
   "Print the [monitor]ed [rune]s and their break conditions
@@ -86937,6 +86967,12 @@ New Features
   Added a function [ctxp] to recognize valid contexts, which are used
   for printing error message (see [ctx]).  Thanks to Eric Smith for
   requesting this addition.
+
+  The utilities [brr] and [monitor] now each take an optional argument
+  that avoids output.  A new utility, [monitor!], is a combination of
+  these two with their new optional arguments of t, thus also
+  avoiding output.  Thanks to Eric Smith for requesting a version of
+  monitor that turns on brr.
 
 
 Heuristic and Efficiency Improvements
