@@ -8990,11 +8990,12 @@ and @(tsee include-book)"
  occurring freely in @('term') occurs freely in @('lhs') or in some @('hypi'),
  @('i<n').  In addition, @('term') must not use any stobjs.  Later below we
  will describe the second type, an <i>extended</i> @('bind-free') hypothesis,
- which may use @(tsee state).  Whether simple or extended, a @('bind-free')
- hypothesis may return an alist that binds free variables, as explained below,
- or it may return a list of such alists.  We focus on the first of these cases:
- return of a single binding alist.  We conclude our discussion with a section
- that covers the other case: return of a list of alists.</p>
+ which is similar except that it may use @(tsee state) and @(tsee mfc).
+ Whether simple or extended, a @('bind-free') hypothesis may return an alist
+ that binds free variables, as explained below, or it may return a list of such
+ alists.  We focus on the first of these cases: return of a single binding
+ alist.  We conclude our discussion with a section that covers the other case:
+ return of a list of alists.</p>
 
  <p>We begin our description of @('bind-free') by examining the first example
  above in some detail.</p>
@@ -9152,9 +9153,14 @@ and @(tsee include-book)"
  If it is a non-empty list of variables, this second argument is used to place
  a further restriction on the possible values of the alist to be returned by
  @('term'): any variables bound in the alist must be present in that list of
- variables.  We strongly recommend the use of this list of variables, as it
- allows some consistency checks to be performed at the time of the rule's
- admittance which are not possible otherwise.</p>
+ variables.  We strongly recommend the use of this list of variables, as that
+ list is considered to contribute to the list of variables in the hypotheses of
+ a linear rule; see @(see linear), in particular condition (b) mentioned there
+ regarding a requirement that maximal terms and hypotheses must suffice for
+ instantiating all the variables in the conclusion.  If @('var-list') is @('t)
+ (either expicitly or implicitly, as described above), then that condition is
+ considered to be met trivially; this could prevent ACL2 from rejecting
+ ineffective linear rules.</p>
 
  <p>An extended @('bind-free') hypothesis is similar to the simple type
  described above, but it uses two additional variables, @('mfc') and
@@ -51508,7 +51514,9 @@ forms allowed for a @('let') form are  @('ignore'), @('ignorable'), and
  variables so that when they are instantiated and the hypotheses are relieved
  (which may bind some free variables; see @(see free-variables)) then all the
  variables in @('concl') are instantiated, and (c) no other addend is always
- ``bigger'' than the term, in the technical sense described below.</p>
+ ``bigger'' than the term, in the technical sense described below.  Note that
+ the notion of ``enough variables'' in (b) is affected by hypotheses that are
+ calls of @('bind-free'); see @(see bind-free).</p>
 
  <p>The technical notion referenced above depends on the notion of
  <i>fn-count</i>, the number of function symbols in a term, and
@@ -88344,6 +88352,10 @@ it."
 ;   defabsstobj-raw-def and is now used in both defabsstobj-raw-def (whose code
 ;   is therefore considerably simpler) and stobj-let-fn-raw.
 
+; Added slight optimizations to chk-acceptable-linear-rule2 and
+; add-linear-rule2 by avoiding unnecessary calls of all-vars-in-hyps
+; when a linear rule explicitly supplies :trigger-terms.
+
   :parents (release-notes)
   :short "ACL2 Version  8.4 (xxx, 20xx) Notes"
   :long "<p>NOTE!  New users can ignore these release notes, because the @(see
@@ -88592,6 +88604,42 @@ it."
  <p>The utility @(tsee set-guard-checking) now prints messages to
  @('(standard-co state)') rather than to @('*standard-co*').  (Of course, these
  are the same by default.)</p>
+
+ <p>In a proposed @(see linear) rule, hypotheses that are calls of @(tsee
+ bind-free) are now accounted for when considering whether each of the
+ @(':trigger-terms') has sufficient free variables (see @(see linear), in
+ particular condition (b) there, and see @(see bind-free)).  Thanks to Dave
+ Greve for reporting this issue.  The example below has the indicated failure
+ in ACL2  Version 8.3 but is now accepted.</p>
+
+ @({
+
+ (defstub f (x) t)
+ (defstub g (x) t)
+
+ ; The following two events are the same except that the first supplies
+ ; :trigger-terms while the second does not (instead computing trigger terms
+ ; heuristically).  These should either both fail or both succeed; now they
+ ; both succeed.
+
+ ; FAILED, but now SUCCEEDS after the fix since then variables y and z are
+ ; considered to occur (free) in the hypotheses when determining
+ ; whether the hypotheses and trigger term include enough variables to cover
+ ; those in the conclusion.
+ (defaxiom ax1
+   (implies (bind-free '((z . z))) ; or, (bind-free '((z . z)) (y z))
+            (< (f x) (g y)))
+   :rule-classes ((:linear :trigger-terms ((f x)))))
+
+ ; SUCCEEDED even before the fix: the bind-free hypothesis fools ACL2
+ ; into believing that otherwise-free variables may be bound by the
+ ; bind-free alist.
+ (defaxiom ax2
+   (implies (bind-free '((z . z))) ; or, (bind-free '((z . z)) (y z))
+            (< (f x) (g y)))
+   :rule-classes :linear)
+
+ })
 
  <h3>New Features</h3>
 

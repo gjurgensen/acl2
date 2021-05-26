@@ -11710,12 +11710,13 @@ Subtopics
   at least one variable, and every variable occurring freely in term
   occurs freely in lhs or in some hypi, i<n.  In addition, term must
   not use any stobjs.  Later below we will describe the second type,
-  an extended bind-free hypothesis, which may use [state].  Whether
-  simple or extended, a bind-free hypothesis may return an alist that
-  binds free variables, as explained below, or it may return a list
-  of such alists.  We focus on the first of these cases: return of a
-  single binding alist.  We conclude our discussion with a section
-  that covers the other case: return of a list of alists.
+  an extended bind-free hypothesis, which is similar except that it
+  may use [state] and [mfc].  Whether simple or extended, a bind-free
+  hypothesis may return an alist that binds free variables, as
+  explained below, or it may return a list of such alists.  We focus
+  on the first of these cases: return of a single binding alist.  We
+  conclude our discussion with a section that covers the other case:
+  return of a list of alists.
 
   We begin our description of bind-free by examining the first example
   above in some detail.
@@ -11861,19 +11862,23 @@ Subtopics
   a further restriction on the possible values of the alist to be
   returned by term: any variables bound in the alist must be present
   in that list of variables.  We strongly recommend the use of this
-  list of variables, as it allows some consistency checks to be
-  performed at the time of the rule's admittance which are not
-  possible otherwise.
-
-  An extended bind-free hypothesis is similar to the simple type
-  described above, but it uses two additional variables, mfc and
-  state, which must not be bound by the left hand side or an earlier
-  hypothesis of the rule.  They must be the last two variables
-  mentioned by term: first mfc, then state.  These two variables give
-  access to the functions mfc-xxx; see [extended-metafunctions].  As
-  described there, mfc is bound to the so-called metafunction-context
-  and state to ACL2's [state].  See [bind-free-examples] for examples
-  of the use of these extended bind-free hypotheses.
+  list of variables, as that list is considered to contribute to the
+  list of variables in the hypotheses of a linear rule; see [linear],
+  in particular condition (b) mentioned there regarding a requirement
+  that maximal terms and hypotheses must suffice for instantiating
+  all the variables in the conclusion.  If var-list is t) (either
+  expicitly or implicitly, as described above), then that condition
+  is considered to be met trivially; this could prevent ACL2 from
+  rejecting ineffective linear rules.</p> <p>An extended @('bind-free
+  hypothesis is similar to the simple type described above, but it
+  uses two additional variables, mfc and state, which must not be
+  bound by the left hand side or an earlier hypothesis of the rule.
+  They must be the last two variables mentioned by term: first mfc,
+  then state.  These two variables give access to the functions
+  mfc-xxx; see [extended-metafunctions].  As described there, mfc is
+  bound to the so-called metafunction-context and state to ACL2's
+  [state].  See [bind-free-examples] for examples of the use of these
+  extended bind-free hypotheses.
 
   SECTION: Returning a list of alists.
 
@@ -55472,7 +55477,9 @@ Introduction
   the hypotheses are relieved (which may bind some free variables;
   see [free-variables]) then all the variables in concl are
   instantiated, and (c) no other addend is always ``bigger'' than the
-  term, in the technical sense described below.
+  term, in the technical sense described below.  Note that the notion
+  of ``enough variables'' in (b) is affected by hypotheses that are
+  calls of bind-free; see [bind-free].
 
   The technical notion referenced above depends on the notion of
   fn-count, the number of function symbols in a term, and
@@ -86848,6 +86855,38 @@ Changes to Existing Features
   The utility [set-guard-checking] now prints messages to (standard-co
   state) rather than to *standard-co*.  (Of course, these are the
   same by default.)
+
+  In a proposed [linear] rule, hypotheses that are calls of [bind-free]
+  are now accounted for when considering whether each of the
+  :trigger-terms has sufficient free variables (see [linear], in
+  particular condition (b) there, and see [bind-free]).  Thanks to
+  Dave Greve for reporting this issue.  The example below has the
+  indicated failure in ACL2 Version 8.3 but is now accepted.
+
+    (defstub f (x) t)
+    (defstub g (x) t)
+
+    ; The following two events are the same except that the first supplies
+    ; :trigger-terms while the second does not (instead computing trigger terms
+    ; heuristically).  These should either both fail or both succeed; now they
+    ; both succeed.
+
+    ; FAILED, but now SUCCEEDS after the fix since then variables y and z are
+    ; considered to occur (free) in the hypotheses when determining
+    ; whether the hypotheses and trigger term include enough variables to cover
+    ; those in the conclusion.
+    (defaxiom ax1
+      (implies (bind-free '((z . z))) ; or, (bind-free '((z . z)) (y z))
+               (< (f x) (g y)))
+      :rule-classes ((:linear :trigger-terms ((f x)))))
+
+    ; SUCCEEDED even before the fix: the bind-free hypothesis fools ACL2
+    ; into believing that otherwise-free variables may be bound by the
+    ; bind-free alist.
+    (defaxiom ax2
+      (implies (bind-free '((z . z))) ; or, (bind-free '((z . z)) (y z))
+               (< (f x) (g y)))
+      :rule-classes :linear)
 
 
 New Features
