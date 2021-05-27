@@ -89100,6 +89100,10 @@ it."
  are not all natural numbers.  For an example that caused this error, see @(see
  community-book) @('books/system/tests/nested-stobj-two-updates.lisp').</p>
 
+ <p>Fixed a bug in resizing @(see stobj) arrays whose elements are specified to
+ be @('(signed-byte 30)') or a subtype of that type.  Thanks to Eric Smith for
+ reporting this bug with a reproducible example.</p>
+
  <h3>Changes at the System Level</h3>
 
  <p>(SBCL only) Filenames are now read as ASCII (specifically, ISO-8859-1) when

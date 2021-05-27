@@ -87338,6 +87338,10 @@ Bug Fixes
   caused this error, see [community-book]
   books/system/tests/nested-stobj-two-updates.lisp.
 
+  Fixed a bug in resizing [stobj] arrays whose elements are specified
+  to be (signed-byte 30) or a subtype of that type.  Thanks to Eric
+  Smith for reporting this bug with a reproducible example.
+
 
 Changes at the System Level
 
