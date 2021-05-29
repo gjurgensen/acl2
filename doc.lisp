@@ -86888,6 +86888,12 @@ Changes to Existing Features
                (< (f x) (g y)))
       :rule-classes :linear)
 
+  The report for :[brr] when a hypothesis fails to be relieved shows
+  repeated attempts to bind free variables not only as before ---
+  that is, when a hypothesis has free variables --- but also when the
+  hypothesis is a call of [bind-free] that returns a list of
+  substitutions.  Thanks to Dave Greve for bringing up this issue.
+
 
 New Features
 
@@ -87420,6 +87426,11 @@ Changes at the System Level
   The startup banner now has a cleaner look (see [startup-banner]).
   Thanks to Alessandro Coglio and Eric Smith for key suggestions for
   improvement.
+
+  (CCL only) When an attempt to build ACL2 fails, a more informative
+  error message is printed when the error is caused by invoking CCL
+  as a soft link on the Unix PATH rather than as a regular file.
+  Thanks to Mertcan Temel for feedback leading to this change.
 
 
 EMACS Support

@@ -34434,6 +34434,9 @@ current fast alists."
 
 (defxdoc free-variables-examples-rewrite
 
+; See community books file books/demos/brr-free-variables-input.lsp for these
+; examples.
+
 ; The second example below could have been given as follows instead, though
 ; this one is kind of weird since there are free variables on the right-hand
 ; side of the ground unit rules.
@@ -88641,6 +88644,12 @@ it."
 
  })
 
+ <p>The report for @(':')@(tsee brr) when a hypothesis fails to be relieved
+ shows repeated attempts to bind free variables not only as before &mdash; that
+ is, when a hypothesis has free variables &mdash; but also when the hypothesis
+ is a call of @(tsee bind-free) that returns a list of substitutions.  Thanks
+ to Dave Greve for bringing up this issue.</p>
+
  <h3>New Features</h3>
 
  <p>It is now possible to assign @(tsee badge)s to @(':')@(tsee program) mode
@@ -89177,6 +89186,11 @@ it."
  <p>The startup banner now has a cleaner look (see @(see startup-banner)).
  Thanks to Alessandro Coglio and Eric Smith for key suggestions for
  improvement.</p>
+
+ <p>(CCL only) When an attempt to build ACL2 fails, a more informative error
+ message is printed when the error is caused by invoking CCL as a soft link on
+ the Unix PATH rather than as a regular file.  Thanks to Mertcan Temel for
+ feedback leading to this change.</p>
 
  <h3>EMACS Support</h3>
 
