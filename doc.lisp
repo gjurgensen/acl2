@@ -12974,7 +12974,11 @@ Subtopics
   the top-level directory (see [books-certification-alt]).
 
   Below are instructions for certifying various sets of books.  They
-  all have the following form in common.
+  all have the following form in common.  Note: If there is a
+  suitable \"acl2\" executable on your Unix PATH --- for example, if
+  the bin subdirectory of the main ACL2 directory is on your PATH, so
+  that bin/acl2 may be your executable --- then you can omit
+  \"ACL2=...\" below.
 
     cd /path/to/acl2-sources/books
     make ACL2=/path/to/acl2-sources/saved_acl2 ...
@@ -13151,7 +13155,10 @@ Building the manual
 A Full Build
 
   Building all of the books can take hours and is usually unnecessary.
-  That said, it is easy to do: just run make all, e.g.,
+  That said, it is easy to do: just run make all, for example as
+  follows.  (But as noted above, you may omit \"ACL2=...\" if a
+  suitable executable named acl2 is on your Unix PATH, such as
+  bin/acl2.)
 
     $ cd /path/to/acl2-sources/books
     $ make ACL2=/path/to/acl2-sources/saved_acl2 -j 2 all
@@ -86792,11 +86799,6 @@ Changes to Existing Features
   comment in [community-book] books/system/doc/acl2-doc.lisp, form
   (defxdoc note-8-4 ...).
 
-  When [certify-book] directs printing of [useless-runes], each tuple
-  is now printed on a single line starting after a space.  See
-  [useless-runes] for details.  Thanks to Eric Smith for requesting
-  this enhancement, which can support grep-like tools.
-
   The [event] macros [value-triple] and [assert-event] have been
   changed to be more flexible, in particular by providing an option
   to allow the given form to return multiple values.  They are also
@@ -86903,11 +86905,17 @@ New Features
   but not [warrant]s and which can handle both :[program] and
   :[logic] mode functions.
 
-  A new option for [certify-book], :useless-runes, makes it possible to
-  speed up repeated certification of a book, sometimes substantially.
-  See [useless-runes].  Thanks to Sol Swords for reporting a bug (in
-  ACL2 source function read-file-iterate-safe) and supplying a fix,
-  which we have incorporated.
+  A new option for [certify-book], provided with keyword option
+  :useless-runes or environment variable ACL2_USELESS_RUNES, makes it
+  possible to speed up repeated certification of a book, sometimes
+  substantially.  See [useless-runes].  Thanks to Sol Swords for
+  reporting a bug (in ACL2 source function read-file-iterate-safe)
+  and supplying a fix, which we have incorporated.  Also thanks to
+  Eric Smith for requesting that each tuple in a generated
+  ``useless-runes'' file be printed on a single line starting after a
+  space, thus supporting grep-like tools.  Finally, thanks to
+  Alessandro Coglio and Eric Smith for discussions leading to
+  creation of .sys/ subdirectories to hold useless-runes files.
 
   A new keyword for [defstobj], :non-executable, can be given value t
   to skip memory allocation for the new [stobj], by avoiding creation
@@ -87431,6 +87439,14 @@ Changes at the System Level
   error message is printed when the error is caused by invoking CCL
   as a soft link on the Unix PATH rather than as a regular file.
   Thanks to Mertcan Temel for feedback leading to this change.
+
+  A script bin/acl2 has been added below the main ACL2 direcctory.  It
+  may be used in place of saved_acl2, invoked from any directory.  If
+  the bin subdirectory is on one's Unix PATH then of course acl2 will
+  invoke this script (unless a different acl2 is in a directory that
+  is earlier on that path).  Thanks to Alessandro Coglio for
+  suggesting that an acl2 script be made available with ACL2, and to
+  him and Eric Smith for subsequent discussions on that topic.
 
 
 EMACS Support
@@ -125238,10 +125254,12 @@ Introduction
 
   To use the :useless-runes option of [certify-book], first certify
   your book --- say, foo.lisp --- by supplying option :useless-runes
-  :write.  This creates a file foo@useless-runes.lsp that associates
-  names of [defthm], [defun], and [verify-guards] [events] with sets
-  of ``useless'' [rune]s'': rule names (``runes'') not contributing
-  to the progress of the proof.  Then, future certifications can use
+  :write.  This creates a file in the subdirectory .sys of the book's
+  directory, creating that directory if it does not already exist.
+  This new file, .sys/foo@useless-runes.lsp, associates names of
+  [defthm], [defun], and [verify-guards] [events] with sets of
+  ``useless'' [rune]s'': rule names (``runes'') not contributing to
+  the progress of the proof.  Then, future certifications can use
   option :useless-runes :read --- or some limited variations of :read
   using numeric values, as discussed below) --- which, during
   evaluation of an event, will effectively [disable] rules associated
@@ -125255,7 +125273,7 @@ Introduction
   default, certification of the [community-books], as laid out in
   documentation topic [books-certification], is performed with
   ACL2_USELESS_RUNES=-25, which for each book foo.lisp causes part of
-  the corresponding foo@useless-runes.lsp, if it exists, to be
+  the corresponding .sys/foo@useless-runes.lsp, if it exists, to be
   consulted (as described below).  This default behavior is only for
   ACL2, not ACL2(r) (see [real]) or ACL2(p) (see [parallelism]).
 
@@ -125266,11 +125284,13 @@ Detailed Documentation
   automate discovery and, in future certifications, disabling of
   useless runes (as described above), which can speed up proofs.
   Information about useless runes is communicated using a file, which
-  we call the ``@useless-runes.lsp file'', whose name is obtained by
-  adding the suffix \"@useless-runes.lsp\" to the book name.  For
-  example, if the book's filename is \"foo.lisp\" then the
-  corresponding @useless-runes.lsp file is named
-  \"foo@useless-runes.lsp\".
+  we call the ``@useless-runes.lsp file'' (or, sometimes,
+  ``useless-runes file''a), whose name is obtained by adding the
+  suffix \"@useless-runes.lsp\" to the book name, and which is placed
+  in the .sys subdirectory of the book's directory, after creating
+  that subdirectory if it does not already exist.  For example, if
+  the book's file is foo.lisp then the corresponding
+  @useless-runes.lsp file is .sys/foo@useless-runes.lsp.
 
   The following table summarizes the legal values for the option
   :useless-runes; further explanation follows.

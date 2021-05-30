@@ -10281,7 +10281,11 @@ Alternate instructions are however available for certifying from the top-level
 directory (see @(see books-certification-alt)).</p>
 
 <p>Below are instructions for certifying various sets of books.  They all have
-the following form in common.</p>
+the following form in common.  Note: If there is a suitable @('\"acl2\"')
+executable on your Unix @('PATH') &mdash; for example, if the @('bin')
+subdirectory of the main ACL2 directory is on your @('PATH'), so that
+@('bin/acl2') may be your executable &mdash; then you can omit
+@('\"ACL2=...\"') below.</p>
 
 @({
 cd /path/to/acl2-sources/books
@@ -10468,7 +10472,9 @@ include your own unreleased books.</p>
 <h3>A Full Build</h3>
 
 <p>Building all of the books can take hours and is <b>usually unnecessary</b>.
-That said, it is easy to do: just run @('make all'), e.g.,</p>
+That said, it is easy to do: just run @('make all'), for example as follows.
+(But as noted above, you may omit @('\"ACL2=...\"') if a suitable executable
+named @('acl2') is on your Unix @('PATH'), such as @('bin/acl2').)</p>
 
 @({
     $ cd /path/to/acl2-sources/books
@@ -88359,6 +88365,11 @@ it."
 ; add-linear-rule2 by avoiding unnecessary calls of all-vars-in-hyps
 ; when a linear rule explicitly supplies :trigger-terms.
 
+; Print the "Writing .port file" message, "Deleting expansion file" (during
+; certify-book) "Writing book expansion file" uniformly, like the new
+; "Consulting useless-runes file" message: preceded by "Note: ", and without
+; hard linebreaks.
+
   :parents (release-notes)
   :short "ACL2 Version  8.4 (xxx, 20xx) Notes"
   :long "<p>NOTE!  New users can ignore these release notes, because the @(see
@@ -88532,11 +88543,6 @@ it."
  essentially as included in a comment in @(see community-book)
  @('books/system/doc/acl2-doc.lisp'), form @('(defxdoc note-8-4 ...)').</p>
 
- <p>When @(tsee certify-book) directs printing of @(see useless-runes), each
- tuple is now printed on a single line starting after a space.  See @(see
- useless-runes) for details.  Thanks to Eric Smith for requesting this
- enhancement, which can support grep-like tools.</p>
-
  <p>The @(see event) macros @(tsee value-triple) and @(tsee assert-event) have
  been changed to be more flexible, in particular by providing an option to
  allow the given form to return multiple values.  They are also more efficient,
@@ -88658,11 +88664,16 @@ it."
  assigns badges but not @(see warrant)s and which can handle both @(':')@(tsee
  program) and @(':')@(tsee logic) mode functions.</p>
 
- <p>A new option for @(tsee certify-book), @(':useless-runes'), makes it
+ <p>A new option for @(tsee certify-book), provided with keyword option
+ @(':useless-runes') or environment variable @('ACL2_USELESS_RUNES'), makes it
  possible to speed up repeated certification of a book, sometimes
  substantially.  See @(see useless-runes).  Thanks to Sol Swords for reporting
  a bug (in ACL2 source function @('read-file-iterate-safe')) and supplying a
- fix, which we have incorporated.</p>
+ fix, which we have incorporated.  Also thanks to Eric Smith for requesting
+ that each tuple in a generated ``useless-runes'' file be printed on a single
+ line starting after a space, thus supporting grep-like tools.  Finally, thanks
+ to Alessandro Coglio and Eric Smith for discussions leading to creation of
+ @('.sys/') subdirectories to hold useless-runes files.</p>
 
  <p>A new keyword for @(tsee defstobj), @(':non-executable'), can be given
  value @('t') to skip memory allocation for the new @(see stobj), by avoiding
@@ -89191,6 +89202,14 @@ it."
  message is printed when the error is caused by invoking CCL as a soft link on
  the Unix PATH rather than as a regular file.  Thanks to Mertcan Temel for
  feedback leading to this change.</p>
+
+ <p>A script @('bin/acl2') has been added below the main ACL2 direcctory.  It
+ may be used in place of @('saved_acl2'), invoked from any directory.  If the
+ @('bin') subdirectory is on one's Unix @('PATH') then of course @('acl2') will
+ invoke this script (unless a different @('acl2') is in a directory that is
+ earlier on that path).  Thanks to Alessandro Coglio for suggesting that an
+ @('acl2') script be made available with ACL2, and to him and Eric Smith for
+ subsequent discussions on that topic.</p>
 
  <h3>EMACS Support</h3>
 
@@ -124120,14 +124139,16 @@ introduction-to-the-tau-system) for more information about Tau.</dd>
 
  <p>To use the @(':useless-runes') option of @(tsee certify-book), first
  certify your book &mdash; say, @('foo.lisp') &mdash; by supplying option
- @(':useless-runes :write').  This creates a file @('foo@useless-runes.lsp')
- that associates names of @(tsee defthm), @(tsee defun), and @(tsee
- verify-guards) @(see events) with sets of ``useless'' @(see rune)s'': rule
- names (``runes'') not contributing to the progress of the proof.  Then, future
- certifications can use option @(':useless-runes :read') &mdash; or some
- limited variations of @(':read') using numeric values, as discussed below)
- &mdash; which, during evaluation of an event, will effectively @(see disable)
- rules associated with that event in file @('foo@useless-runes.lsp').</p>
+ @(':useless-runes :write').  This creates a file in the subdirectory @('.sys')
+ of the book's directory, creating that directory if it does not already exist.
+ This new file, @('.sys/foo@useless-runes.lsp'), associates names of @(tsee
+ defthm), @(tsee defun), and @(tsee verify-guards) @(see events) with sets of
+ ``useless'' @(see rune)s'': rule names (``runes'') not contributing to the
+ progress of the proof.  Then, future certifications can use option
+ @(':useless-runes :read') &mdash; or some limited variations of @(':read')
+ using numeric values, as discussed below) &mdash; which, during evaluation of
+ an event, will effectively @(see disable) rules associated with that event in
+ file @('foo@useless-runes.lsp').</p>
 
  <p>Environment variable @('ACL2_USELESS_RUNES') can take the value
  @('\"write\"') or @('\"read\"') to be used in place of the @(':useless-runes')
@@ -124137,7 +124158,7 @@ introduction-to-the-tau-system) for more information about Tau.</dd>
  below.  Note that by default, certification of the @(see community-books), as
  laid out in documentation topic @(see books-certification), is performed with
  @('ACL2_USELESS_RUNES=-25'), which for each book @('foo.lisp') causes part of
- the corresponding @('foo@useless-runes.lsp'), if it exists, to be
+ the corresponding @('.sys/foo@useless-runes.lsp'), if it exists, to be
  consulted (as described below).  This default behavior is only for ACL2, not
  ACL2(r) (see @(see real)) or ACL2(p) (see @(see parallelism)).</p>
 
@@ -124147,10 +124168,12 @@ introduction-to-the-tau-system) for more information about Tau.</dd>
  way to automate discovery and, in future certifications, disabling of useless
  runes (as described above), which can speed up proofs.  Information about
  useless runes is communicated using a file, which we call the
- ``@useless-runes.lsp file'', whose name is obtained by adding the suffix
- @('\"@useless-runes.lsp\"') to the book name.  For example, if the book's
- filename is @('\"foo.lisp\"') then the corresponding @useless-runes.lsp file
- is named @('\"foo@useless-runes.lsp\"').</p>
+ ``@useless-runes.lsp file'' (or, sometimes, ``useless-runes file''a), whose
+ name is obtained by adding the suffix @('\"@useless-runes.lsp\"') to the book
+ name, and which is placed in the @('.sys') subdirectory of the book's
+ directory, after creating that subdirectory if it does not already exist.  For
+ example, if the book's file is @('foo.lisp') then the corresponding
+ @useless-runes.lsp file is @('.sys/foo@useless-runes.lsp').</p>
 
  <p>The following table summarizes the legal values for the option
  @(':useless-runes'); further explanation follows.</p>
