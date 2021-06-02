@@ -11710,12 +11710,13 @@ Subtopics
   at least one variable, and every variable occurring freely in term
   occurs freely in lhs or in some hypi, i<n.  In addition, term must
   not use any stobjs.  Later below we will describe the second type,
-  an extended bind-free hypothesis, which may use [state].  Whether
-  simple or extended, a bind-free hypothesis may return an alist that
-  binds free variables, as explained below, or it may return a list
-  of such alists.  We focus on the first of these cases: return of a
-  single binding alist.  We conclude our discussion with a section
-  that covers the other case: return of a list of alists.
+  an extended bind-free hypothesis, which is similar except that it
+  may use [state] and [mfc].  Whether simple or extended, a bind-free
+  hypothesis may return an alist that binds free variables, as
+  explained below, or it may return a list of such alists.  We focus
+  on the first of these cases: return of a single binding alist.  We
+  conclude our discussion with a section that covers the other case:
+  return of a list of alists.
 
   We begin our description of bind-free by examining the first example
   above in some detail.
@@ -11861,19 +11862,23 @@ Subtopics
   a further restriction on the possible values of the alist to be
   returned by term: any variables bound in the alist must be present
   in that list of variables.  We strongly recommend the use of this
-  list of variables, as it allows some consistency checks to be
-  performed at the time of the rule's admittance which are not
-  possible otherwise.
-
-  An extended bind-free hypothesis is similar to the simple type
-  described above, but it uses two additional variables, mfc and
-  state, which must not be bound by the left hand side or an earlier
-  hypothesis of the rule.  They must be the last two variables
-  mentioned by term: first mfc, then state.  These two variables give
-  access to the functions mfc-xxx; see [extended-metafunctions].  As
-  described there, mfc is bound to the so-called metafunction-context
-  and state to ACL2's [state].  See [bind-free-examples] for examples
-  of the use of these extended bind-free hypotheses.
+  list of variables, as that list is considered to contribute to the
+  list of variables in the hypotheses of a linear rule; see [linear],
+  in particular condition (b) mentioned there regarding a requirement
+  that maximal terms and hypotheses must suffice for instantiating
+  all the variables in the conclusion.  If var-list is t) (either
+  expicitly or implicitly, as described above), then that condition
+  is considered to be met trivially; this could prevent ACL2 from
+  rejecting ineffective linear rules.</p> <p>An extended @('bind-free
+  hypothesis is similar to the simple type described above, but it
+  uses two additional variables, mfc and state, which must not be
+  bound by the left hand side or an earlier hypothesis of the rule.
+  They must be the last two variables mentioned by term: first mfc,
+  then state.  These two variables give access to the functions
+  mfc-xxx; see [extended-metafunctions].  As described there, mfc is
+  bound to the so-called metafunction-context and state to ACL2's
+  [state].  See [bind-free-examples] for examples of the use of these
+  extended bind-free hypotheses.
 
   SECTION: Returning a list of alists.
 
@@ -12969,7 +12974,11 @@ Subtopics
   the top-level directory (see [books-certification-alt]).
 
   Below are instructions for certifying various sets of books.  They
-  all have the following form in common.
+  all have the following form in common.  Note: If there is a
+  suitable \"acl2\" executable on your Unix PATH --- for example, if
+  the bin subdirectory of the main ACL2 directory is on your PATH, so
+  that bin/acl2 may be your executable --- then you can omit
+  \"ACL2=...\" below.
 
     cd /path/to/acl2-sources/books
     make ACL2=/path/to/acl2-sources/saved_acl2 ...
@@ -13146,7 +13155,10 @@ Building the manual
 A Full Build
 
   Building all of the books can take hours and is usually unnecessary.
-  That said, it is easy to do: just run make all, e.g.,
+  That said, it is easy to do: just run make all, for example as
+  follows.  (But as noted above, you may omit \"ACL2=...\" if a
+  suitable executable named acl2 is on your Unix PATH, such as
+  bin/acl2.)
 
     $ cd /path/to/acl2-sources/books
     $ make ACL2=/path/to/acl2-sources/saved_acl2 -j 2 all
@@ -55472,7 +55484,9 @@ Introduction
   the hypotheses are relieved (which may bind some free variables;
   see [free-variables]) then all the variables in concl are
   instantiated, and (c) no other addend is always ``bigger'' than the
-  term, in the technical sense described below.
+  term, in the technical sense described below.  Note that the notion
+  of ``enough variables'' in (b) is affected by hypotheses that are
+  calls of bind-free; see [bind-free].
 
   The technical notion referenced above depends on the notion of
   fn-count, the number of function symbols in a term, and
@@ -86785,11 +86799,6 @@ Changes to Existing Features
   comment in [community-book] books/system/doc/acl2-doc.lisp, form
   (defxdoc note-8-4 ...).
 
-  When [certify-book] directs printing of [useless-runes], each tuple
-  is now printed on a single line starting after a space.  See
-  [useless-runes] for details.  Thanks to Eric Smith for requesting
-  this enhancement, which can support grep-like tools.
-
   The [event] macros [value-triple] and [assert-event] have been
   changed to be more flexible, in particular by providing an option
   to allow the given form to return multiple values.  They are also
@@ -86849,6 +86858,44 @@ Changes to Existing Features
   state) rather than to *standard-co*.  (Of course, these are the
   same by default.)
 
+  In a proposed [linear] rule, hypotheses that are calls of [bind-free]
+  are now accounted for when considering whether each of the
+  :trigger-terms has sufficient free variables (see [linear], in
+  particular condition (b) there, and see [bind-free]).  Thanks to
+  Dave Greve for reporting this issue.  The example below has the
+  indicated failure in ACL2 Version 8.3 but is now accepted.
+
+    (defstub f (x) t)
+    (defstub g (x) t)
+
+    ; The following two events are the same except that the first supplies
+    ; :trigger-terms while the second does not (instead computing trigger terms
+    ; heuristically).  These should either both fail or both succeed; now they
+    ; both succeed.
+
+    ; FAILED, but now SUCCEEDS after the fix since then variables y and z are
+    ; considered to occur (free) in the hypotheses when determining
+    ; whether the hypotheses and trigger term include enough variables to cover
+    ; those in the conclusion.
+    (defaxiom ax1
+      (implies (bind-free '((z . z))) ; or, (bind-free '((z . z)) (y z))
+               (< (f x) (g y)))
+      :rule-classes ((:linear :trigger-terms ((f x)))))
+
+    ; SUCCEEDED even before the fix: the bind-free hypothesis fools ACL2
+    ; into believing that otherwise-free variables may be bound by the
+    ; bind-free alist.
+    (defaxiom ax2
+      (implies (bind-free '((z . z))) ; or, (bind-free '((z . z)) (y z))
+               (< (f x) (g y)))
+      :rule-classes :linear)
+
+  The report for :[brr] when a hypothesis fails to be relieved shows
+  repeated attempts to bind free variables not only as before ---
+  that is, when a hypothesis has free variables --- but also when the
+  hypothesis is a call of [bind-free] that returns a list of
+  substitutions.  Thanks to Dave Greve for bringing up this issue.
+
 
 New Features
 
@@ -86858,11 +86905,17 @@ New Features
   but not [warrant]s and which can handle both :[program] and
   :[logic] mode functions.
 
-  A new option for [certify-book], :useless-runes, makes it possible to
-  speed up repeated certification of a book, sometimes substantially.
-  See [useless-runes].  Thanks to Sol Swords for reporting a bug (in
-  ACL2 source function read-file-iterate-safe) and supplying a fix,
-  which we have incorporated.
+  A new option for [certify-book], provided with keyword option
+  :useless-runes or environment variable ACL2_USELESS_RUNES, makes it
+  possible to speed up repeated certification of a book, sometimes
+  substantially.  See [useless-runes].  Thanks to Sol Swords for
+  reporting a bug (in ACL2 source function read-file-iterate-safe)
+  and supplying a fix, which we have incorporated.  Also thanks to
+  Eric Smith for requesting that each tuple in a generated
+  ``useless-runes'' file be printed on a single line starting after a
+  space, thus supporting grep-like tools.  Finally, thanks to
+  Alessandro Coglio and Eric Smith for discussions leading to
+  creation of .sys/ subdirectories to hold useless-runes files.
 
   A new keyword for [defstobj], :non-executable, can be given value t
   to skip memory allocation for the new [stobj], by avoiding creation
@@ -87299,6 +87352,10 @@ Bug Fixes
   caused this error, see [community-book]
   books/system/tests/nested-stobj-two-updates.lisp.
 
+  Fixed a bug in resizing [stobj] arrays whose elements are specified
+  to be (signed-byte 30) or a subtype of that type.  Thanks to Eric
+  Smith for reporting this bug with a reproducible example.
+
 
 Changes at the System Level
 
@@ -87377,6 +87434,19 @@ Changes at the System Level
   The startup banner now has a cleaner look (see [startup-banner]).
   Thanks to Alessandro Coglio and Eric Smith for key suggestions for
   improvement.
+
+  (CCL only) When an attempt to build ACL2 fails, a more informative
+  error message is printed when the error is caused by invoking CCL
+  as a soft link on the Unix PATH rather than as a regular file.
+  Thanks to Mertcan Temel for feedback leading to this change.
+
+  A script bin/acl2 has been added below the main ACL2 direcctory.  It
+  may be used in place of saved_acl2, invoked from any directory.  If
+  the bin subdirectory is on one's Unix PATH then of course acl2 will
+  invoke this script (unless a different acl2 is in a directory that
+  is earlier on that path).  Thanks to Alessandro Coglio for
+  suggesting that an acl2 script be made available with ACL2, and to
+  him and Eric Smith for subsequent discussions on that topic.
 
 
 EMACS Support
@@ -125184,10 +125254,12 @@ Introduction
 
   To use the :useless-runes option of [certify-book], first certify
   your book --- say, foo.lisp --- by supplying option :useless-runes
-  :write.  This creates a file foo@useless-runes.lsp that associates
-  names of [defthm], [defun], and [verify-guards] [events] with sets
-  of ``useless'' [rune]s'': rule names (``runes'') not contributing
-  to the progress of the proof.  Then, future certifications can use
+  :write.  This creates a file in the subdirectory .sys of the book's
+  directory, creating that directory if it does not already exist.
+  This new file, .sys/foo@useless-runes.lsp, associates names of
+  [defthm], [defun], and [verify-guards] [events] with sets of
+  ``useless'' [rune]s'': rule names (``runes'') not contributing to
+  the progress of the proof.  Then, future certifications can use
   option :useless-runes :read --- or some limited variations of :read
   using numeric values, as discussed below) --- which, during
   evaluation of an event, will effectively [disable] rules associated
@@ -125201,7 +125273,7 @@ Introduction
   default, certification of the [community-books], as laid out in
   documentation topic [books-certification], is performed with
   ACL2_USELESS_RUNES=-25, which for each book foo.lisp causes part of
-  the corresponding foo@useless-runes.lsp, if it exists, to be
+  the corresponding .sys/foo@useless-runes.lsp, if it exists, to be
   consulted (as described below).  This default behavior is only for
   ACL2, not ACL2(r) (see [real]) or ACL2(p) (see [parallelism]).
 
@@ -125212,11 +125284,13 @@ Detailed Documentation
   automate discovery and, in future certifications, disabling of
   useless runes (as described above), which can speed up proofs.
   Information about useless runes is communicated using a file, which
-  we call the ``@useless-runes.lsp file'', whose name is obtained by
-  adding the suffix \"@useless-runes.lsp\" to the book name.  For
-  example, if the book's filename is \"foo.lisp\" then the
-  corresponding @useless-runes.lsp file is named
-  \"foo@useless-runes.lsp\".
+  we call the ``@useless-runes.lsp file'' (or, sometimes,
+  ``useless-runes file''a), whose name is obtained by adding the
+  suffix \"@useless-runes.lsp\" to the book name, and which is placed
+  in the .sys subdirectory of the book's directory, after creating
+  that subdirectory if it does not already exist.  For example, if
+  the book's file is foo.lisp then the corresponding
+  @useless-runes.lsp file is .sys/foo@useless-runes.lsp.
 
   The following table summarizes the legal values for the option
   :useless-runes; further explanation follows.
