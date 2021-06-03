@@ -13420,9 +13420,12 @@ with any questions about building the community books.</p>")
  echo '(rebuild-ccl :full t)' | ./lx86cl64
  })
 
- <p>Create the following executable script, where @('<DIR>') is the absolute
- pathname (without using ``@('~')'') of the directory in which you issued the
- ``@('git clone')'' command.</p>
+ <p>Create the following executable script, which you will probably want to
+ name @('\"ccl\"'), where @('<DIR>') is the absolute pathname (without using
+ ``@('~')'') of the directory in which you issued the ``@('git clone')''
+ command.  Place this script wherever you wish, though putting it in a
+ directory on your Unix @('PATH') might be helpful (since then you can invoke
+ it as, say @('\"ccl\"')).</p>
 
  @({
  #!/bin/sh
@@ -13554,9 +13557,12 @@ with any questions about building the community books.</p>")
  echo '(rebuild-ccl :clean t)' | ./lx86cl64
  })
 
- <p>Create the following executable script, where @('<DIR>') is the absolute
- pathname (without using ``@('~')'') of the directory in which you issued the
- ``@('git clone')'' command.</p>
+ <p>Create the following executable script, which you will probably want to
+ name @('\"ccl\"'), where @('<DIR>') is the absolute pathname (without using
+ ``@('~')'') of the directory in which you issued the ``@('git clone')''
+ command.  Place this script wherever you wish, though putting it in a
+ directory on your Unix @('PATH') might be helpful (since then you can invoke
+ it as, say @('\"ccl\"')).</p>
 
  @({
  #!/bin/sh
@@ -29768,7 +29774,7 @@ ld) and @(tsee include-book)"
 
  <p>It can be particularly helpful to use this table to abbreviate a constant
  introduced by @(tsee defconst) by prefixing the constant name with
- @('\"#,\"'), as we now describe.  Consider first the following example.</p>
+ @('\"#.\"'), as we now describe.  Consider first the following example.</p>
 
  @({
   (defconst *abc* '(1 2 3 4 5 6 7 8))
@@ -36864,6 +36870,14 @@ current fast alists."
  summary.</li>
 
  </ul>")
+
+(defxdoc get-guard-checking
+  :parents (redundant-events)
+  :short "Get the status most recently installed by @(tsee set-guard-checking)"
+  :long "<p>See @(see set-guard-checking) for relevant background.  The value
+ returned by @('(get-guard-checking)') is @('t') by default, but is the value
+ most recently installed for @(see guard)-checking, typically supplied as the
+ argument of a call of @(tsee set-guard-checking).</p>")
 
 (defxdoc get-internal-time
   :parents (programming acl2-built-ins)
@@ -88779,6 +88793,11 @@ it."
  combination of these two with their new optional arguments of @('t'), thus
  also avoiding output.  Thanks to Eric Smith for requesting a version of
  @('monitor') that turns on @('brr').</p>
+
+ <p>A new utility, @(tsee get-guard-checking), returns the @(see
+ guard)-checking value most recently installed, either @('t') (when the ACL2
+ executable was built) or presumably by @(tsee set-guard-checking).  Thanks to
+ Eric McCarthy for suggesting this utility.</p>
 
  <h3>Heuristic and Efficiency Improvements</h3>
 

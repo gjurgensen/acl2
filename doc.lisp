@@ -16259,9 +16259,12 @@ configure-ccl.lisp
     echo '(rebuild-ccl :full t)' | ./lx86cl64
     echo '(rebuild-ccl :full t)' | ./lx86cl64
 
-  Create the following executable script, where <DIR> is the absolute
-  pathname (without using ``~'') of the directory in which you issued
-  the ``git clone'' command.
+  Create the following executable script, which you will probably want
+  to name \"ccl\", where <DIR> is the absolute pathname (without using
+  ``~'') of the directory in which you issued the ``git clone''
+  command.  Place this script wherever you wish, though putting it in
+  a directory on your Unix PATH might be helpful (since then you can
+  invoke it as, say \"ccl\").
 
     #!/bin/sh
 
@@ -16365,9 +16368,12 @@ configure-ccl.lisp
     echo '(rebuild-ccl :clean t)' | ./lx86cl64
     echo '(rebuild-ccl :clean t)' | ./lx86cl64
 
-  Create the following executable script, where <DIR> is the absolute
-  pathname (without using ``~'') of the directory in which you issued
-  the ``git clone'' command.
+  Create the following executable script, which you will probably want
+  to name \"ccl\", where <DIR> is the absolute pathname (without using
+  ``~'') of the directory in which you issued the ``git clone''
+  command.  Place this script wherever you wish, though putting it in
+  a directory on your Unix PATH might be helpful (since then you can
+  invoke it as, say \"ccl\").
 
     #!/bin/sh
 
@@ -33258,7 +33264,7 @@ Subtopics
 
   It can be particularly helpful to use this table to abbreviate a
   constant introduced by [defconst] by prefixing the constant name
-  with \"#,\", as we now describe.  Consider first the following
+  with \"#.\", as we now describe.  Consider first the following
   example.
 
     (defconst *abc* '(1 2 3 4 5 6 7 8))
@@ -40226,6 +40232,14 @@ Subtopics
     * TIME: VAL represents the corresponding field of the event summary, as
       the list (prove print proof-tree other).
     * WARNINGS: VAL is as in the corresponding field of the event summary.")
+ (GET-GUARD-CHECKING
+  (REDUNDANT-EVENTS)
+  "Get the status most recently installed by [set-guard-checking]
+
+  See [set-guard-checking] for relevant background.  The value returned
+  by (get-guard-checking) is t by default, but is the value most
+  recently installed for [guard]-checking, typically supplied as the
+  argument of a call of [set-guard-checking].")
  (GET-IN-THEORY-REDUNDANT-OKP (POINTERS)
                               "See [set-in-theory-redundant-okp].")
  (GET-INTERNAL-TIME
@@ -87027,6 +87041,11 @@ New Features
   avoiding output.  Thanks to Eric Smith for requesting a version of
   monitor that turns on brr.
 
+  A new utility, [get-guard-checking], returns the [guard]-checking
+  value most recently installed, either t (when the ACL2 executable
+  was built) or presumably by [set-guard-checking].  Thanks to Eric
+  McCarthy for suggesting this utility.
+
 
 Heuristic and Efficiency Improvements
 
@@ -101503,6 +101522,9 @@ Subtopics
 
   [Get-enforce-redundancy]
       Query the [world] on whether redundancy is being enforced
+
+  [Get-guard-checking]
+      Get the status most recently installed by [set-guard-checking]
 
   [Set-enforce-redundancy]
       Require most events to be redundant
