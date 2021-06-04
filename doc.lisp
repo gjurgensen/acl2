@@ -53040,8 +53040,10 @@ Subtopics
   formals are said to be ``ignored'' by Common Lisp and a special
   declaration is provided to allow ignored formals.  ACL2 makes a
   distinction between ignored and irrelevant formals.  Note however
-  that if a variable is [declare]d ignored or ignorable, then it will
-  not be reported as irrelevant.
+  that if a variable is [declare]d ignored or ignorable, or if it
+  occurs free in an [xargs] term associated with :[measure],
+  :[guard], or :[split-types], then it will not be reported as
+  irrelevant.
 
   An example of an irrelevant formal is x in the definition of fact
   below.
@@ -87146,6 +87148,12 @@ Heuristic and Efficiency Improvements
       great as the old.  (You can still avoid reuse of the raw Lisp
       array by using [flush-compress].)  Thanks to Eric Smith for
       suggesting this change.
+
+  We found that [accumulated-persistence] was measurably slowing down
+  ACL2 even when it is off.  We modified its implementation and
+  measured a time reduction of 3.7% for a proof-intensive book.  The
+  modification includes a documented efficiency tweak to
+  [wormhole-eval].
 
 
 Bug Fixes
@@ -131554,7 +131562,7 @@ Subtopics
       Determines the wormhole entry code from a wormhole status object
 
   [Wormhole-eval]
-      State-saving without state --- a short-cut to a parallel universe
+      State-saving without [state] --- a short-cut to a parallel universe
 
   [Wormhole-implementation]
       Notes on how wormholes are implemented
@@ -131584,7 +131592,7 @@ Subtopics
   :ENTER.")
  (WORMHOLE-EVAL
   (WORMHOLE)
-  "State-saving without state --- a short-cut to a parallel universe
+  "State-saving without [state] --- a short-cut to a parallel universe
 
     Example Form:
     (wormhole-eval 'demo
@@ -131650,6 +131658,17 @@ Subtopics
   [wormhole-statusp], [wormhole-entry-code], [wormhole-data],
   [set-wormhole-entry-code], [set-wormhole-data], and
   [make-wormhole-status].
+
+  Wormhole-eval is intended to be fast, but it is further optimized
+  when the given lambda is of the following form.  In this case
+  wormhole-eval returns immediately when the [wormhole-data] is nil,
+  which is reasonable since the old and new status are equal in this
+  case.
+
+    (lambda (whs)
+            (let ((info (wormhole-data whs)))
+                    (cond ((null info) whs)
+                          ...)))
 
   See [wormhole] for a series of example uses of wormhole-eval and
   wormhole.
