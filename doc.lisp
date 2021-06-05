@@ -55520,6 +55520,12 @@ Introduction
   applications and {a b} is a subbag of {a b b}, but (/ a (* b b)) is
   not always bigger than (fn a x).
 
+  We conclude by noting that linear rules are useless when all of the
+  polynomial's terms are provably non-numeric.  If ACL2 determines
+  that to be the case for one or more of the conclusions, then it
+  causes an error, except when :trigger-terms is supplied explicitly
+  by the user.
+
 
 Subtopics
 
@@ -86911,6 +86917,16 @@ Changes to Existing Features
   that is, when a hypothesis has free variables --- but also when the
   hypothesis is a call of [bind-free] that returns a list of
   substitutions.  Thanks to Dave Greve for bringing up this issue.
+
+  It is now an error for a :[linear] rule's conclusion to generate a
+  polynomial whose terms are all determined to be non-numeric.
+  Thanks to Eric Smith for suggesting such a check.  Here is an
+  example of such a rule that was formerly admitted but useless but
+  now causes an error.
+
+    (defthm bad-rule
+            (equal (< (foo x) x) nil)
+            :rule-classes :linear)
 
 
 New Features
