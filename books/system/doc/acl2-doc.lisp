@@ -51556,7 +51556,12 @@ forms allowed for a @('let') form are  @('ignore'), @('ignorable'), and
  variable bag for @('term2') is a subbag of that for @('term1').  For example,
  @('(/ a (* b b))') is always bigger than @('(fn a b)') because the first has
  two function applications and @('{a b}') is a subbag of @('{a b b}'), but
- @('(/ a (* b b))') is not always bigger than @('(fn a x)').</p>")
+ @('(/ a (* b b))') is not always bigger than @('(fn a x)').</p>
+
+ <p>We conclude by noting that linear rules are useless when all of the
+ polynomial's terms are provably non-numeric.  If ACL2 determines that to be
+ the case for one or more of the conclusions, then it causes an error, except
+ when @(':trigger-terms') is supplied explicitly by the user.</p>")
 
 (defxdoc linear-arithmetic
   :parents (linear)
@@ -88700,6 +88705,17 @@ it."
  is, when a hypothesis has free variables &mdash; but also when the hypothesis
  is a call of @(tsee bind-free) that returns a list of substitutions.  Thanks
  to Dave Greve for bringing up this issue.</p>
+
+ <p>It is now an error for a @(':')@(tsee linear) rule's conclusion to generate
+ a polynomial whose terms are all determined to be non-numeric.  Thanks to Eric
+ Smith for suggesting such a check.  Here is an example of such a rule that was
+ formerly admitted but useless but now causes an error.</p>
+
+ @({
+ (defthm bad-rule
+         (equal (< (foo x) x) nil)
+         :rule-classes :linear)
+ })
 
  <h3>New Features</h3>
 
