@@ -49183,7 +49183,9 @@ tables in the current Hons Space."
  ``ignored'' by Common Lisp and a special declaration is provided to allow
  ignored formals.  ACL2 makes a distinction between ignored and irrelevant
  formals.  Note however that if a variable is @(tsee declare)d @('ignore')d or
- @('ignorable'), then it will not be reported as irrelevant.</p>
+ @('ignorable'), or if it occurs free in an @(tsee xargs) term associated with
+ @(':')@(see measure), @(':')@(see guard), or @(':')@(tsee split-types), then
+ it will not be reported as irrelevant.</p>
 
  <p>An example of an irrelevant formal is @('x') in the definition of @('fact')
  below.</p>
@@ -88384,6 +88386,35 @@ it."
 ; "Consulting useless-runes file" message: preceded by "Note: ", and without
 ; hard linebreaks.
 
+; Clarified in :doc irrelevant-formals that variables occuring in the :measure,
+; :guard, and :split-types are not irrelevant.  Thanks to Eric Smith for
+; suggesting such clarification.
+
+; The speed-up with accumulated-persistence off was accomplished by tweaking
+; wormhole-eval so that certain lambdas -- including those in slightly modified
+; versions of push-accp and pop-accp -- permit early exit when the old and new
+; wormhole-data are both nil.  This is documented in :DOC wormhole-eval.
+;
+; Here is how the reduction in time of 3.7% was determined for the change in
+; handling accumulated-persistence reported below (for when it's off).  Three
+; runs were done in fresh ACL2 sessions of the following form using an ACL2
+; from just before the change and one from just after.  The second and third
+; runs were considered as shown below.
+;
+; (time$ (ld "workshops/2004/legato/support/proof-by-generalization-mult.lisp"
+;        :dir :system))
+;
+; Old:
+;   24.21 seconds realtime, 22.97 seconds runtime
+;   24.15 seconds realtime, 22.95 seconds runtime
+;
+; New:
+;   23.20 seconds realtime, 22.06 seconds runtime
+;   23.36 seconds realtime, 22.07 seconds runtime
+;
+; (/ (+ 23.20 23.36) (+ 24.21 24.15)) = 0.9627791563275435
+; (/ (+ 22.06 22.07) (+ 22.97 22.95)) = 0.9610191637630661
+
   :parents (release-notes)
   :short "ACL2 Version  8.4 (xxx, 20xx) Notes"
   :long "<p>NOTE!  New users can ignore these release notes, because the @(see
@@ -88901,6 +88932,11 @@ it."
  flush-compress).)  Thanks to Eric Smith for suggesting this change.</li>
 
  </ul>
+
+ <p>We found that @(tsee accumulated-persistence) was measurably slowing down
+ ACL2 even when it is off.  We modified its implementation and measured a time
+ reduction of 3.7% for a proof-intensive book.  The modification includes a
+ documented efficiency tweak to @(tsee wormhole-eval).</p>
 
  <h3>Bug Fixes</h3>
 
@@ -130590,7 +130626,7 @@ created from the original fast alist during @('form') must be manually freed."
 
 (defxdoc wormhole-eval
   :parents (wormhole)
-  :short "State-saving without state &mdash; a short-cut to a parallel universe"
+  :short "State-saving without @(see state) &mdash; a short-cut to a parallel universe"
   :long "@({
   Example Form:
   (wormhole-eval 'demo
@@ -130655,6 +130691,19 @@ created from the original fast alist during @('form') must be manually freed."
  wormhole-statusp), @(tsee wormhole-entry-code), @(tsee wormhole-data), @(tsee
  set-wormhole-entry-code), @(tsee set-wormhole-data), and @(tsee
  make-wormhole-status).</p>
+
+ <p>@('Wormhole-eval') is intended to be fast, but it is further optimized when
+ the given @('lambda') is of the following form.  In this case
+ @('wormhole-eval') returns immediately when the @(tsee wormhole-data) is
+ @('nil'), which is reasonable since the old and new status are equal in this
+ case.</p>
+
+ @({
+ (lambda (whs)
+         (let ((info (wormhole-data whs)))
+                 (cond ((null info) whs)
+                       ...)))
+ })
 
  <p>See @(see wormhole) for a series of example uses of @('wormhole-eval') and
  @('wormhole').</p>
