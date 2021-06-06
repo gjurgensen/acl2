@@ -86928,6 +86928,41 @@ Changes to Existing Features
             (equal (< (foo x) x) nil)
             :rule-classes :linear)
 
+  In executable code, calls of [hide] in [let]-bindings or [lambda]
+  bodies are no longer considered to represent [ignore] declarations.
+  We thank Alessandro Coglio for raising and discussing this issue.
+  Below is a log, based on that discussion, that was produced using
+  ACL2 before this change.  After this change, the second and third
+  calls of :[trans] will now result in errors, as noted in comments
+  below.  Previously ACL2 treated the hide calls in those two input
+  expressions as though they represented ignore declarations, in the
+  sense of translation of the first form shown below.  That is still
+  the case when translating for theorems rather than executable code;
+  for details see the ``Essay on Using Hide for Ignored
+  Let-bindings'' in the ACL2 source code.
+
+    ACL2 !>:trans (let ((x 0)) (declare (ignore x)) 1)
+
+    ((LAMBDA (X) '1) (HIDE '0))
+
+    => *
+
+    ACL2 !>:trans ((LAMBDA (X) '1) (HIDE '0)) ; error after this change
+
+    ((LAMBDA (X) '1) (HIDE '0))
+
+    => *
+
+    ACL2 !>(untranslate '((LAMBDA (X) '1) (HIDE '0)) nil (w state))
+    (LET ((X (HIDE 0))) 1)
+    ACL2 !>:trans (LET ((X (HIDE 0))) 1) ; error after this change
+
+    ((LAMBDA (X) '1) (HIDE '0))
+
+    => *
+
+    ACL2 !>
+
 
 New Features
 
