@@ -10282,9 +10282,9 @@ Subtopics
   {IMAGE} (see [About_the_ACL2_Home_Page])
 
   On this tour you will learn a little about what ACL2 is for rather
-  than how ACL2 works.  At the top and bottom bottom of the ``page''
-  there are ``flying tour'' icons.  Click on either icon to go to the
-  next page of the tour.
+  than how ACL2 works.  At the top and bottom of the ``page'' there
+  are ``flying tour'' icons.  Click on either icon to go to the next
+  page of the tour.
 
   The tour visits the following topics sequentially.  But on your first
   reading, don't navigate through the tour by clicking on these
