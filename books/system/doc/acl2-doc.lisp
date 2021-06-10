@@ -88420,6 +88420,26 @@ it."
 ; (/ (+ 23.20 23.36) (+ 24.21 24.15)) = 0.9627791563275435
 ; (/ (+ 22.06 22.07) (+ 22.97 22.95)) = 0.9610191637630661
 
+; Regarding the item on linear-arithmetic heuristics taking further advantage
+; of negated equality hypotheses:
+; The key idea (implemented in source function add-terms-and-lemmas) is to make
+; better use of hypotheses of the form (not (equal term1 term2)) when building
+; the linear pot-lst.  As before, ACL2 uses linear lemmas to build a goal's
+; initial pot-lst, which is then perhaps strengthened llst by making use of
+; such "disjunctive" linear hypotheses.  The enhancement is to use linear
+; lemmas again to attempt to further strengthen the pot-lst.  For efficiency,
+; that added step is performed only when the use of disjunctions appears to
+; have had an effect, and even then, only after simplification has stabilized
+; ("settled down").  The enhanced heuristic is thus a new example of what we
+; have called a "desperation heuristic".  Importantly, it only used when
+; building a goal's pot-lst, not during other uses of linear arithmetic, where
+; it could be far too expensive; in particular, the book
+; books/kestrel/number-theory/tonelli-shanks-proof.lisp went out to lunch when
+; the enhanced heuristic wasn't restricted to building the pot-lst.
+
+; Tweaked cw-gstack and dmr to clarify when add-terms-and-lemmas is being used
+; on behalf of setting up the linear pot, to falsify, or to establish.
+
   :parents (release-notes)
   :short "ACL2 Version  8.4 (xxx, 20xx) Notes"
   :long "<p>NOTE!  New users can ignore these release notes, because the @(see
@@ -88989,6 +89009,13 @@ it."
  ACL2 even when it is off.  We modified its implementation and measured a time
  reduction of 3.7% for a proof-intensive book.  The modification includes a
  documented efficiency tweak to @(tsee wormhole-eval).</p>
+
+ <p>The @(see linear-arithmetic) heuristics have long taken advantage of
+ negated equality hypotheses.  These heuristics have been strengthened to take
+ further such advantage.  Thanks to Warren Hunt for sending an example proof
+ attempt that failed before this change but now succeeds, and for his
+ encouragement to pursue an improvement to linear arithmetic that can benefit
+ such proof attempts.</p>
 
  <h3>Bug Fixes</h3>
 

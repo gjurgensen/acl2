@@ -87206,6 +87206,14 @@ Heuristic and Efficiency Improvements
   modification includes a documented efficiency tweak to
   [wormhole-eval].
 
+  The [linear-arithmetic] heuristics have long taken advantage of
+  negated equality hypotheses.  These heuristics have been
+  strengthened to take further such advantage.  Thanks to Warren Hunt
+  for sending an example proof attempt that failed before this change
+  but now succeeds, and for his encouragement to pursue an
+  improvement to linear arithmetic that can benefit such proof
+  attempts.
+
 
 Bug Fixes
 
