@@ -88425,15 +88425,15 @@ it."
 ; The key idea (implemented in source function add-terms-and-lemmas) is to make
 ; better use of hypotheses of the form (not (equal term1 term2)) when building
 ; the linear pot-lst.  As before, ACL2 uses linear lemmas to build a goal's
-; initial pot-lst, which is then perhaps strengthened llst by making use of
-; such "disjunctive" linear hypotheses.  The enhancement is to use linear
-; lemmas again to attempt to further strengthen the pot-lst.  For efficiency,
-; that added step is performed only when the use of disjunctions appears to
-; have had an effect, and even then, only after simplification has stabilized
-; ("settled down").  The enhanced heuristic is thus a new example of what we
-; have called a "desperation heuristic".  Importantly, it only used when
-; building a goal's pot-lst, not during other uses of linear arithmetic, where
-; it could be far too expensive; in particular, the book
+; initial pot-lst, which is then perhaps strengthened by making use of such
+; "disjunctive" linear hypotheses.  The enhancement is to use linear lemmas
+; again to attempt to further strengthen the pot-lst.  For efficiency, that
+; added step is performed only when the use of disjunctions appears to have had
+; an effect, and even then, only after simplification has stabilized ("settled
+; down").  The enhanced heuristic is thus a new example of what we have called
+; a "desperation heuristic".  Importantly, it is only used when building a
+; goal's pot-lst, not during other uses of linear arithmetic, where it could be
+; far too expensive; in particular, the book
 ; books/kestrel/number-theory/tonelli-shanks-proof.lisp went out to lunch when
 ; the enhanced heuristic wasn't restricted to building the pot-lst.
 
