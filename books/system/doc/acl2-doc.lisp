@@ -19107,6 +19107,14 @@ subtree of X with T, without duplication.</p>
  guard violation unless @('test') holds of @('expr1').</p>")
 
 (defxdoc defabsstobj
+
+; Warning: If you change the discussion below of
+; books/demos/defabsstobj-example-1.lisp, change that book accordingly.
+
+; Warning: Do not replace the use of <code>...</code> with the use of the more
+; common xdoc marking @({...}), because the presence of curly braces in the
+; text will make the rendered text a mess.
+
   :parents (events stobj)
   :short "Define a new abstract single-threaded object"
   :long "<p>We assume familiarity with single-threaded objects; see @(see
@@ -19114,7 +19122,7 @@ subtree of X with T, without duplication.</p>
  so-called ``abstract stobj'', a notion we introduce briefly now and then
  explain in more depth below.</p>
 
- <p>The evaluation of a @(see defstobj) event produces logical definitions for
+ <p>Recall that a @(see defstobj) event produces logical definitions for
  several functions: a recognizer, which characterizes the @(see stobj) in terms
  of lists; a creator, which produces an initial suitable list structure; and
  field accessors and updaters, defined in terms of @(tsee nth) and @(tsee
@@ -19122,9 +19130,9 @@ subtree of X with T, without duplication.</p>
  for ``stobj primitives'' for a corresponding single-threaded object.  These
  stobj primitives include a recognizer, a creator, and other ``exported''
  functions.  In essence, @('defabsstobj') establishes interface functions, or
- ``exports'', on a new stobj that is a copy of an indicated stobj, either
- <i>conventional</i> (introduced by @(tsee defstobj)) or abstract (introduced
- by @('defabsstobj')) that already exists.</p>
+ ``exports'', on a new stobj that is a copy of an existing stobj, its
+ ``foundation'', which is either <i>concrete</i> (introduced by @(tsee
+ defstobj)) or <i>abstract</i> (introduced by @('defabsstobj')).</p>
 
  <p>We begin below with an introduction to abstract @(see stobj)s.  We then
  explain the @(tsee defabsstobj) event by way of an example.  We conclude by
@@ -19143,10 +19151,10 @@ subtree of X with T, without duplication.</p>
  reader to absorb the ideas below.</p>
 
  <p>Recall that single-threaded objects, or @(see stobj)s, provide a way for
- ACL2 users to stay within the ACL2 logic, where every data object is an atom
- or a @(tsee cons) of data objects, while obtaining the benefits of fast
- evaluation through destructive updates.  Consider for example this very simple
- event.</p>
+ ACL2 users to stay within the ACL2 logic &mdash; where every data object is an
+ atom or a @(tsee cons) of data objects &mdash; while obtaining the benefits of
+ fast evaluation through destructive updates.  Consider for example this very
+ simple event.</p>
 
  @({
   (defstobj st fld)
@@ -19237,37 +19245,46 @@ subtree of X with T, without duplication.</p>
  <p>But there are at least two potential difficulties in using stobjs as
  described above.</p>
 
- <blockquote><p>1. When @('foo') is executed on concrete data in the ACL2 loop,
- the guard check may be expensive because @('(good-stp st)') is expensive.</p>
+ <ol>
 
- <p>2. Reasoning about @('foo') (using rules like @('foo-is-correct') above)
+ <li>When @('foo') is executed on concrete data in the ACL2 loop,
+ the guard check may be expensive because @('(good-stp st)') is expensive.</li>
+
+ <li>Reasoning about @('foo') (using rules like @('foo-is-correct') above)
  involves proving hypotheses of invariance theorems, which may be complicated
- for the user to manage or slow for the theorem prover.</p></blockquote>
+ for the user to manage or slow for the theorem prover.</li>
+
+ </ol>
 
  <p>The @('defabsstobj') event offers an opportunity to address these issues.
  It introduces a new stobj, which we call an ``abstract stobj'', which is
- associated with a corresponding ``concrete stobj'' introduced by an earlier
- @(tsee defstobj) or @('defabsstobj') event.  (Thus, note that the term,
- ``concrete'', refers to the status of being the underlying stobj that supports
- an abstract stobj.  While a concrete stobj has often been introduced with
- @('defstobj'), it could also have been introduced with @('defabsstobj').)  The
- @('defabsstobj') event specifies a logical (@(':LOGIC')) and an
- executable (@(':EXEC')) definition for each primitive operation, or ``stobj
- primitive'', involving that stobj.  As is the case for @(tsee defstobj), the
- logical definition is what ACL2 reasons about, and is appropriate to apply to
- an ACL2 object satisfying the logical definition of the recognizer function
- for the stobj.  The executable definition is applied in raw Lisp to a live
- stobj (as discussed above).</p>
+ associated with a corresponding ``foundational stobj'' introduced by an
+ earlier @(tsee defstobj) or @('defabsstobj') event.  The @('defabsstobj')
+ event specifies a logical (@(':LOGIC')) and an executable (@(':EXEC'))
+ definition for each primitive operation, or ``stobj primitive'', involving
+ that stobj.  As is the case for @(tsee defstobj), the logical definition is
+ what ACL2 reasons about, and is appropriate to apply to an ACL2 object
+ satisfying the logical definition of the recognizer function for the stobj.
+ The executable definition is applied in raw Lisp to a live stobj (as discussed
+ above).</p>
 
- <p>We can picture a sequence of updates to corresponding abstract and concrete
- stobjs as follows.  Initially in this picture, @('st$a0') and @('st$c0') are a
- corresponding abstract and concrete stobj (respectively).  Then an update,
- @('u1'), is applied with @(':LOGIC') and @(':EXEC') functions @('u$a1') and
- @('u$c1'), respectively.  The resulting abstract and concrete stobj,
- @('st$a1') and @('st$c1'), correspond as before.  Then a second update,
- @('u2'), is applied with @(':LOGIC') and @(':EXEC') functions @('u$a2') and
- @('u$c2'), respectively &mdash; again preserving the correspondence.  And so
- on.</p>
+ <p>Remark.  It is common to use ``a'' and ``c'' in a suffix to suggest
+ ``abstract'' and ``concrete'', respectively.  The foundational stobj was, at
+ one time, called the ``corresponding concrete stobj''.  That old terminology
+ may still be appropriate in the common case that the foundational stobj is a
+ concrete stobj (rather than another abstract stobj).  So below, a name like
+ @('st$c0') suggests a foundational (``concrete'') stobj for an abstract stobj
+ named @('st'), whose abstract stobj recognizer is @('st$ap'), and so on.  End
+ of Remark.</p>
+
+ <p>We can picture a sequence of updates to an abstract stobj and its
+ foundational stobj.  Initially in this picture, @('st$a0') and @('st$c0') are
+ an abstract stobj and its foundation (respectively).  Then an update, @('u1'),
+ is applied with @(':LOGIC') and @(':EXEC') functions @('u$a1') and @('u$c1'),
+ respectively.  The resulting abstract and foundational stobj, @('st$a1') and
+ @('st$c1'), correspond as before.  Then a second update, @('u2'), is applied
+ with @(':LOGIC') and @(':EXEC') functions @('u$a2') and @('u$c2'),
+ respectively &mdash; again preserving the correspondence.  And so on.</p>
 
  @({
   Abstract               u$a1       u$a2       u$a3
@@ -19278,23 +19295,23 @@ subtree of X with T, without duplication.</p>
                      v          v          v               v
 
                          u$c1       u$c2       u$c3
-  Concrete         st$c0  --> st$c1  --> st$c2  -->   ...
+  Foundation       st$c0  --> st$c1  --> st$c2  -->   ...
   (:exec)
  })
 
  <p>We conclude this introduction with some remarks about implementation.
- Consider an abstract stobj @('st') with corresponding concrete stobj
- @('st$c').  The live stobjs for @('st') and @('st$c') have the same structure,
- but are distinct arrays.  Indeed, the raw Lisp creator function for @('st$c')
- is called to create a new initial live stobj for @('st').  As we will see
- below, reads and writes in raw Lisp to the live stobj for @('st') are
- ultimately performed using the primitive accessors and updaters defined for
- @('st$c').  One might think of the live stobjs for @('st') and @('st$c') as
- being congruent stobjs (see @(see defstobj)), except that the stobjs
- themselves are not congruent: the stobj primitives introduced for @('st') may
- be applied to @('st') but not arbitrary field updaters of @('st$c'), for
- example.  As one might expect, the @(':EXEC') function for an exported
- function is applied to the live stobj for @('st') in raw Lisp.</p>
+ Consider an abstract stobj @('st') with corresponding foundation @('st$c').
+ The live stobjs for @('st') and @('st$c') have the same structure, but are
+ distinct arrays.  Indeed, the raw Lisp creator function for @('st$c') is
+ called to create a new initial live stobj for @('st').  As we will see below,
+ reads and writes in raw Lisp to the live stobj for @('st') are ultimately
+ performed using the primitive accessors and updaters defined for @('st$c').
+ One might think of the live stobjs for @('st') and @('st$c') as being
+ congruent stobjs (see @(see defstobj)), except that the stobjs themselves are
+ not truly congruent: in particular, the stobj primitives introduced for
+ @('st') may be applied to @('st'), but field updaters of @('st$c') may not.
+ As one might expect, the @(':EXEC') function for an exported function is
+ applied to the live stobj for @('st') in raw Lisp.</p>
 
  <p><b>EXAMPLE</b></p>
 
@@ -19304,9 +19321,9 @@ subtree of X with T, without duplication.</p>
  the first of these.  We suggest that after you finish this @(see
  documentation) topic, you read through those two books.  There are other books
  @('books/dmeos/defabsstobj-example-*.lisp') that may be helpful to read; in
- particaular, @('books/demos/defabsstobj-example-5.lisp') illustrates building
+ particular, @('books/demos/defabsstobj-example-5.lisp') illustrates building
  an abstract stobj on top of another abstract stobj (as its so-called
- ``concrete stobj'', as described below).</p>
+ ``foundation'', as described below).</p>
 
  <p>Here is the first of two closely related @('defabsstobj') @(see events)
  from the book @('defabsstobj-example-1.lisp'), but in expanded form.  We will
@@ -19321,9 +19338,9 @@ subtree of X with T, without duplication.</p>
  <code>
  (defabsstobj st ; The new abstract stobj is named st.
 
- ; The concrete stobj corresponding to st is st$c:
+ ; The foundational stobj for st is st$c:
 
-   :concrete st$c
+   :foundation st$c
 
  ; The recognizer for the new abstract stobj is stp, which is defined to be
  ; st$ap in the logic, and is executed on the live stobj in raw Lisp using
@@ -19341,10 +19358,10 @@ subtree of X with T, without duplication.</p>
                        :preserved create-st{preserved})
 
  ; Proof obligations are generated that involve a correspondence between the
- ; new abstract stobj and corresponding concrete stobj.  The function
+ ; new abstract stobj and corresponding foundational stobj.  The function
  ; st$corr, which need not be executable (see :DOC defun-nx), takes two
- ; arguments, a concrete stobj and an abstract stobj.  This function symbol is
- ; used in the statements of the proof obligations.
+ ; arguments, a foundational stobj and an abstract stobj.  This function symbol
+ ; is used in the statements of the proof obligations.
 
    :corr-fn st$corr
 
@@ -19368,8 +19385,7 @@ subtree of X with T, without duplication.</p>
              (update-misc :logic update-misc$a
                           :exec update-misc$c
                           :correspondence update-misc{correspondence}
-                          :preserved update-misc{preserved}))
-   :doc nil)
+                          :preserved update-misc{preserved})))
  </code>
 
  <p>Note that all stobj primitives (recognizer, creator, and exported
@@ -19405,9 +19421,9 @@ subtree of X with T, without duplication.</p>
 
  <p>The formals of @('update') are obtained by starting with the formals of its
  @(':EXEC') function, @('update-mem$ci') &mdash; which are @('(i v st$c)')
- &mdash; and replacing the concrete stobj name @('st$c') by the new stobj name
- @('st').  The formals of @('update') are thus @('(i v st)').  The guard for
- @('update') is obtained in two steps.  The first step is to substitute the
+ &mdash; and replacing the foundational stobj name @('st$c') by the new stobj
+ name @('st').  The formals of @('update') are thus @('(i v st)').  The guard
+ for @('update') is obtained in two steps.  The first step is to substitute the
  formals of @('update') for the formals of @('update$a') in the guard for
  @('update$a'), to obtain the following.</p>
 
@@ -19431,9 +19447,8 @@ subtree of X with T, without duplication.</p>
        (mem$c-entryp v))
  })
 
- <p>Note that the @(':LOGIC') version of an abstract @(see stobj) export must
- not declare the corresponding concrete stobj name as a stobj.  (That name may
- be a formal parameter, but must not be declared as a @(see stobj).)</p>
+ <p>Note that the @(':EXEC') version of an abstract @(see stobj) export must
+ not include the abstract stobj name among its formals.</p>
 
  <p>We turn now to the proof obligations, as promised above.  There are three
  types: @(':CORRESPONDENCE'), @(':PRESERVED'), and @(':GUARD-THM').  All
@@ -19474,10 +19489,10 @@ subtree of X with T, without duplication.</p>
  functions for the exported function.  Hypotheses include the @(':CORR-FN')
  correspondence followed by the @(see guard) for the @(':LOGIC') function,
  which is stated in terms of the formal parameters of the @(':EXEC') function
- except using the abstract stobj (here, @('st')) in place of the concrete stobj
- (here, @('st$c')).  The conclusion uses the @(':EXEC') formals, modified in
- the call of the @(':LOGIC') function (here, @('lookup$a')) to use the abstract
- stobj, as in the hypotheses.</p>
+ except using the abstract stobj (here, @('st')) in place of the foundational
+ stobj (here, @('st$c')).  The conclusion uses the @(':EXEC') formals, modified
+ in the call of the @(':LOGIC') function (here, @('lookup$a')) to use the
+ abstract stobj, as in the hypotheses.</p>
 
  @({
   (defthm lookup{correspondence}
@@ -19543,7 +19558,7 @@ subtree of X with T, without duplication.</p>
  @(':EXEC') function is called for an exported function?  The @(':GUARD-THM')
  lemmas provide the answer, as they state that if the @(':LOGIC') function's
  guard holds, then the @(':EXEC') function's guard holds.  Here is an example.
- Note that the hypotheses come from the correspondence of the concrete and
+ Note that the hypotheses come from the correspondence of the foundational and
  abstract function as guaranteed by the @(':CORR') function, together with the
  guard of the @(':LOGIC') function; and the conclusion comes from the guard of
  the @(':EXEC') function.</p>
@@ -19580,14 +19595,13 @@ subtree of X with T, without duplication.</p>
 
  @({
   (defabsstobj st
-    :concrete concrete
+    :foundation foundation
     :recognizer recognizer
     :creator creator
     :corr-fn corr-fn
     :congruent-to congruent-to
     :protect-default protect-default
-    :exports (e1 ... ek)
-    :doc doc)
+    :exports (e1 ... ek))
  })
 
  <p>The keyword argument @(':EXPORTS') must be supplied, and missing or
@@ -19619,7 +19633,7 @@ subtree of X with T, without duplication.</p>
 
  <p>@('St') is a symbol, which names the new abstract stobj.</p>
 
- <p>@('Concrete') is the name of an existing stobj, which may have been
+ <p>@('Foundation') is the name of an existing stobj, which may have been
  introduced either with @(tsee defstobj) or with @('defabsstobj').</p>
 
  <p>@('Recognizer') is a function spec (for the recognizer function).  The
@@ -19627,17 +19641,16 @@ subtree of X with T, without duplication.</p>
  @('recognizer') is obtained by adding the suffix @('\"P\"') to @('name').  The
  default value for @(':LOGIC') is formed by adding the suffix @('\"$AP\"') to
  @('recognizer'); for @(':EXEC'), by adding the suffix @('\"$CP\"').  The
- @(':EXEC') function must be the recognizer for the specified @(':CONCRETE')
- stobj.</p>
+ @(':EXEC') function must be the recognizer for the foundational stobj (which
+ can be specified using the @(':FOUNDATION') keyword).</p>
 
  <p>@('Creator') is a function spec (for the creator function).  The valid
  keywords are @(':LOGIC') and @(':EXEC').  The default for @('creator') is
  obtained by adding the prefix @('\"CREATE-\"') to @('name').  The default
  value for @(':LOGIC') is formed by adding the suffix @('\"$A\"') to
  @('creator'); for @(':EXEC'), by adding the suffix @('\"$C\"').  The
- @(':CREATOR') function must be the creator for the specified @(':CONCRETE')
- stobj, as ACL2 checks that the @(':CREATOR') function takes no arguments and
- returns the @(':CONCRETE') stobj.</p>
+ @(':EXEC') function must be the creator for the foundational stobj (which can
+ be specified using the @(':FOUNDATION') keyword).</p>
 
  <p>@('Corr-fn') is a known function symbol that takes two arguments (for the
  correspondence theorems).  The default for @('corr-fn') is obtained by adding
@@ -19645,13 +19658,13 @@ subtree of X with T, without duplication.</p>
 
  <p>@('Congruent-to') should either be @('nil') (the default) or the name of an
  abstract stobj previously introduced (by @(tsee defabsstobj)).  In the latter
- case, the current and previous abstract stobj should have the same concrete
- stobj (not merely congruent concrete stobjs), and their @(':EXPORTS') fields
- should have the same length and also correspond, as follows: the ith export of
- each should have the same @(':LOGIC') and @(':EXEC') symbols.  See @(see
- defstobj) for more about congruent stobjs.  Note that if two names are
- congruent, then they are either both ordinary stobjs or both abstract
- stobjs.</p>
+ case, the current and previous abstract stobj should have the same
+ foundational stobj (not merely congruent foundational stobjs), and their
+ @(':EXPORTS') fields should have the same length and also correspond, as
+ follows: the ith export of each should have the same @(':LOGIC') and
+ @(':EXEC') symbols.  See @(see defstobj) for more about congruent stobjs.
+ Note that if two names are congruent, then they are either both ordinary
+ stobjs or both abstract stobjs.</p>
 
  <p>@('Protect-default') should either be @('nil') (the default) or @('t').  It
  provides the value of keyword @(':PROTECT') for each member of @('exports')
@@ -19667,13 +19680,17 @@ subtree of X with T, without duplication.</p>
 
  <p>The value of @(':EXPORTS') is a non-empty true list.  Each @('ei') is a
  function spec (for an exported function).  The valid keywords are @(':LOGIC'),
- @(':EXEC'), @(':CORRESPONDENCE'), and @(':GUARD-THM'), @(':PROTECT'), and also
- @(':PRESERVED') if and only if the specified @(':EXEC') function returns the
- @(':CONCRETE') stobj.  The default values for all of these keywords except
- @(':PROTECT') are obtained by respectively adding the suffix @('\"$A\"')
- @('\"$C\"'), @('\"{CORRESPONDENCE}\"'), @('\"{GUARD-THM}\"'), or
- @('\"{PRESERVED}\"').  For @(':PROTECT'), the default is @('nil') unless the
- @('defabsstobj') event specifies @(':PROTECT-DEFAULT t').</p>
+ @(':EXEC'), @(':CORRESPONDENCE'), and @(':GUARD-THM'), @(':PROTECT'),
+ @(':UPDATER'), and also @(':PRESERVED') if and only if the specified
+ @(':EXEC') function returns the foundational stobj.  The default values for
+ all of these keywords except @(':UPDATER') and @(':PROTECT') are obtained by
+ respectively adding the suffix @('\"$A\"') @('\"$C\"'),
+ @('\"{CORRESPONDENCE}\"'), @('\"{GUARD-THM}\"'), or @('\"{PRESERVED}\"').  For
+ @(':PROTECT'), the default is @('nil') unless the @('defabsstobj') event
+ specifies @(':PROTECT-DEFAULT t').  If @(':UPDATER upd') is supplied and
+ @('upd') is not @('nil'), then function exported by the function spec is a
+ child stobj accessor whose corresponding updater is @('upd'); see the
+ discussion of @(':UPDATER') in @(see nested-stobjs).</p>
 
  </blockquote>
 
@@ -19695,8 +19712,8 @@ subtree of X with T, without duplication.</p>
  defabsstobj-missing-events) for a utility that returns a data structure
  containing the missing lemmas.</p>
 
- <p>Let @('st') be an abstract stobj with corresponding concrete stobj
- @('st$c').  let @('f') be an exported function for @('st') and let @('f$a')
+ <p>Let @('st') be an abstract stobj with corresponding foundational stobj
+ @('st$c').  Let @('f') be an exported function for @('st') and let @('f$a')
  and @('f$c') be the corresponding @(':LOGIC') and @(':EXEC') functions,
  respectively.  The formals of @('f') are obtained by taking the formals of
  @('f$c') and replacing @('st$c') by @('st').  The @(see guard) for @('f') is
@@ -19722,28 +19739,28 @@ subtree of X with T, without duplication.</p>
  you intended if you were using @('length') in that guard simply to compute the
  length of an ordinary list.</p>
 
- <p>There are a few additional restrictions, as follows.</p>
+ <p>Additional restrictions include the following.</p>
 
- <blockquote><p>All exported function names must be new (unless redefinition is
- on; see @(see ld-redefinition-action)), and there must be no duplicates among
- them.</p>
+ <ul>
 
- <p>The @(':CONCRETE') stobj name must be a formal parameter of the @(':EXEC')
- fn of every function spec, except for the @(':CREATOR') function spec.  Also
- the input signatures of the @(':LOGIC') and @(':EXEC') function for a function
- spec must agree, except perhaps at the position of that @(':CONCRETE')
- formal.</p>
+ <li>All exported function names must be new (unless redefinition is on; see
+ @(see ld-redefinition-action)), and there must be no duplicates among
+ them.</li>
 
- <p>For function specs other than the @(':CREATOR') function spec, the output
- signatures of the @(':LOGIC') and @(':EXEC') functions must have the same
- length and must agree, except perhaps at position @('p_out') of the
- @(':CONCRETE') stobj in the @(':EXEC') function's output.  If @('p_in') is the
- position of the @(':CONCRETE') stobj in the @(':EXEC') function's formals,
- then the @(':LOGIC') function's output at position @('p_out') should match the
- @(':LOGIC') function's formal at position @('p_in').</p>
+ <li>The foundational stobj name must be a formal parameter of the @(':EXEC')
+ function of every function spec, except for the @(':CREATOR') function
+ spec.</li>
 
- <p>The @(':PROTECT') keyword is something that you should ignore unless you
- get an error message about it, pertaining to modifying the concrete stobj
+ <li>The @(':LOGIC') and @(':EXEC') function for a function spec must agree on
+ both the number of inputs and the number of outputs.</li>
+
+ <li>The foundational stobj must not be a @(see declare)d stobj of the
+ @(':LOGIC') function of any function spec.  (This restriction could perhaps be
+ removed, but it is convenient for the implementation of the events generated
+ by a call of @('defabsstobj').)</li>
+
+ <li>The @(':PROTECT') keyword is something that you should ignore unless you
+ get an error message about it, pertaining to modifying the foundational stobj
  non-atomically.  In that case, you can eliminate the error by providing
  @(':PROTECT t') in the function spec, or by providing @('defabsstobj') keyword
  argument @(':PROTECT-DEFAULT t') at the top level, in order to restore the
@@ -19751,18 +19768,20 @@ subtree of X with T, without duplication.</p>
  about @(':PROTECT'), but just below is a more complete explanation for those
  who desire it.  Further information is also available if you need it; see
  @(see set-absstobj-debug), and see the example uses of these keywords in
- community book @('books/demos/defabsstobj-example-2.lisp').</p></blockquote>
+ community book @('books/demos/defabsstobj-example-2.lisp').</li>
+
+ </ul>
 
  <p>For those who are interested, here is a more detailed discussion of
  @(':PROTECT') and @(':PROTECT-DEFAULT'), as promised above.  It applies to any
  function spec for an export (hence not to the @(':CREATOR') function spec).
  If the @(':EXEC') function is a stobj primitive, then clearly the following
  property holds: any execution of a call of that function can only update the
- concrete stobj at most once &mdash; i.e., modification of the concrete stobj
- is atomic.  ACL2 can deduce this property not only for stobj primitives but
- for many other functions as well.  However, if ACL2 cannot deduce this
+ foundational stobj at most once &mdash; i.e., modification of the foundational
+ stobj is atomic.  ACL2 can deduce this property not only for stobj primitives
+ but for many other functions as well.  However, if ACL2 cannot deduce this
  property, then it will cause an error saying that the @(':EXEC') function
- ``appears capable of modifying the concrete stobj, @('<stobj_name>'),
+ ``appears capable of modifying the foundational stobj, @('<stobj_name>'),
  non-atomically.''  That message also explains how to eliminate this error:
  provide @(':PROTECT t') for the function spec.  Alternatively, all function
  specs without an explicit @(':PROTECT') keyword can be implicitly supplied
@@ -19783,14 +19802,14 @@ subtree of X with T, without duplication.</p>
  @(tsee defstobj), there is no @(':inline') or @(':non-memoizable') argument;
  @(':inline') is essentially t, in the sense that stobj primitives are macros
  in raw Lisp; and the @(':non-memoizable') argument is derived implicitly, to
- agree with non-memoizability of the corresponding concrete stobj.</p>
+ agree with non-memoizability of the foundational stobj.</p>
 
  <p>Those who use @(see hons-enabled) features, including function
  memoization (see @(see memoize)), may be aware that the memo table for a
  function is flushed whenever it is the case that one of its stobj inputs is
  updated.  In fact, such flushing happens even when a stobj that is congruent
  to one of its stobj inputs is updated.  For that purpose, an abstract stobj is
- considered to be congruent to its corresponding concrete stobj.</p>")
+ considered to be congruent to its foundational stobj.</p>")
 
 (defxdoc defabsstobj-missing-events
   :parents (events)
@@ -43219,6 +43238,10 @@ tables in the current Hons Space."
  <p>To get a bit more information from the error message displayed above, see
  @(see set-absstobj-debug).</p>
 
+ <p>See @(see community-book) file
+ @('books/system/tests/abstract-stobj-nesting/nested-abstract-stobjs-input.lsp'),
+ Examples 3 and 4, for relevant examples.</p>
+
  <p>Technical note.  An illegal-state is entered when ACL2 sets the @('ld')
  special, @(tsee ld-pre-eval-print), to the value @(':illegal-state').</p>")
 
@@ -61381,13 +61404,16 @@ it."
  itself be a stobj or an array of stobjs.  That discussion is the subject of
  the present @(see documentation) topic.</p>
 
- <p>Our presentation is in four sections.  First we augment the documentation
+ <p>Our presentation is in five sections.  First we augment the documentation
  for @(tsee defstobj) by explaining how stobjs may be specified for fields in a
  new stobj definition.  Then we explain an aliasing problem, which accounts for
  a prohibition against making direct calls to accessors and updaters involving
  stobj fields of stobjs.  Next, we introduce an ACL2 primitive, @('stobj-let'),
  which provides the only way to read and write stobj components of stobjs.  The
- final section provides precise documentation for @('stobj-let').</p>
+ fourth section provides precise documentation for @('stobj-let').  We conclude
+ by discussing the use of @('stobj-let') with abstract stobjs (see @(see
+ defabsstobj)); the discussion below ignores abstract stobjs until reaching
+ that section.</p>
 
  <p>See also ACL2 community book @('demos/modeling/nested-stobj-toy-isa.lisp')
  for a worked example, which applies nested stobj structures to the problem of
@@ -61498,19 +61524,18 @@ it."
  @('parent').</p>
 
  <p>(Aside: Here is an explanation involving raw Lisp, for those who might find
- this useful.  We escape to raw Lisp and execute the following; note that
- @('*the-live-parent*') is the Lisp variable representing the global value of
- @('parent').</p>
+ this useful.  We escape to raw Lisp and execute the following.</p>
 
  @({
-  (let ((parent *the-live-parent*))
+  (let ((parent (cdr (assoc-eq 'parent *user-stobj-alist*))))
     (let* ((child (fld2 parent))
            (child (update-fld 4 child)))
       (mv child parent)))
  })
 
- <p>Then, in raw Lisp, @('(fld (fld2 *the-live-parent*))') evaluates to @('4'),
- illustrating the destructive update.  End of Aside.)</p>
+ <p>Then, in raw Lisp, @('(fld (fld2 (cdr (assoc-eq 'parent
+ *user-stobj-alist*))))') evaluates to @('4'), illustrating the destructive
+ update.  End of Aside.)</p>
 
  <p>Such aliasing can permit a change to a child stobj to cause a
  logically-inexplicable change to the parent stobj.  Similarly, unfettered
@@ -61918,42 +61943,55 @@ it."
  @('BINDINGS') is a list subject to the following requirements.</p>
 
  <p>@('BINDINGS') is a non-empty true list of tuples, each of which has the
- form @('(VAR ACCESSOR)') or @('(VAR ACCESSOR UPDATER)').  There is a stobj
- name, @('ST'), previously introduced by @(tsee defstobj) (not @(tsee
- defabsstobj)), such that each @('accessor') is of the form @('(ACC ST)') or
- @('(ACCi I ST)'), with the same stobj name (@('ST')) for each binding.  Each
- of these accessors and (if supplied) updaters is a stobj accessor for the same
- stobj, which is typically @('ST') but may be a stobj congruent to @('ST').  In
- the case @('(ACC ST)'), @('ACC') is the accessor for a non-array field.  In
- the case @('(ACCi I ST)'), @('ACCi') is the accessor for an array field and
- @('I') is either a variable, a natural number, a list @('(quote N)') where
- @('N') is a natural number, or a symbol introduced by @(tsee defconst).  If
- @('UPDATER') is supplied, then it is a symbol that is the name of the stobj
- updater for the field of @('ST') accessed by @('ACCESSOR').  If @('UPDATER')
- is not supplied, then for the discussion below we consider it to be,
- implicitly, the symbol in the same package as the function symbol of
- @('ACCESSOR') (i.e., @('ACC') or @('ACCi')), obtained by prepending the string
- @('\"UPDATE-\"') to the @(tsee symbol-name) of that function symbol.  Finally,
- @('ACCESSOR') has a @(see signature) specifying a return value that is either
- @('VAL') or is a stobj that is congruent to @('VAL'). (This means that only
- stobjs may be bound in these bindings.)</p>
+ form @('(VAR ACCESSOR)') or @('(VAR ACCESSOR UPDATER)').  Each @('VAR') may
+ occur only once, and to avoid aliasing, each @('ACCESSOR') may occur only
+ once.  There is a stobj name, @('ST'), previously introduced by @(tsee
+ defstobj) (not @(tsee defabsstobj)), such that each @('accessor') is of the
+ form @('(ACC ST)') or @('(ACCi I ST)'), with the same stobj name (@('ST')) for
+ each binding.  Each of these accessors and (if supplied) updaters is a stobj
+ accessor for the same stobj, which is typically @('ST') but may be a stobj
+ congruent to @('ST').  In the case @('(ACC ST)'), @('ACC') is the accessor for
+ a non-array field.  In the case @('(ACCi I ST)'), @('ACCi') is the accessor
+ for an array field and @('I') is either a variable, a natural number, a list
+ @('(quote N)') where @('N') is a natural number, or a symbol introduced by
+ @(tsee defconst).  If @('UPDATER') is supplied, then it is a symbol that is
+ the name of the stobj updater for the field of @('ST') accessed by
+ @('ACCESSOR').  If @('UPDATER') is not supplied, then for the discussion below
+ we consider it to be, implicitly, the symbol in the same package as the
+ function symbol of @('ACCESSOR') (i.e., @('ACC') or @('ACCi')), obtained by
+ prepending the string @('\"UPDATE-\"') to the @(tsee symbol-name) of that
+ function symbol.  Finally, @('ACCESSOR') has a @(see signature) specifying a
+ return value that is either @('VAL') or is a stobj that is congruent to
+ @('VAL'). (This means that only stobjs may be bound in these bindings.)</p>
 
- <p>If the conditions above are met, then the General Form expands to the one
- of the following expressions, depending on whether the list
+ <p>If the conditions above are met, then the General Form expands to one of
+ the expressions below, depending on whether the list
  @('PRODUCER-VARIABLES') has one member or more than one member, respectively.
  (But see below for extra code that may be inserted if there are stobj array
- accesses in @('BINDINGS').)  Here we write @('STOBJ-LET-BOUND-VARS') for the
- list of variables @('VAR') discussed above, i.e., for @('(strip-cars
- BINDINGS)').  And, we write @('UPDATES') for the result of mapping through
+ accesses in @('BINDINGS').)  We observe the following conventions.</p>
+
+ <ul>
+
+ <li>Let @('BINDINGS'') be the result of dropping each updater (if any) from
+ @('BINDINGS'), that is, replacing each tuple @('(VAR ACCESSOR UPDATER)') in
+ @('BINDINGS') by @('(VAR ACCESSOR)').</li>
+
+ <li>Let @('STOBJ-LET-BOUND-VARIABLES') be
+ the list of variables @('VAR') discussed above, that is, @('(strip-cars
+ BINDINGS)').</li>
+
+ <li>Let @('UPDATES') be the result of mapping through
  @('PRODUCER-VARIABLES') and, for each variable @('VAR') that has a binding
  @('(VAR ACCESSOR UPDATER)') in @('BINDINGS') (where @('UPDATER') may be
  implicit, as discussed above), collect into @('UPDATES') the tuple @('(ST
- (UPDATER VAR ST))').</p>
+ (UPDATER VAR ST))').</li>
+
+ </ul>
 
  <p>For @('PRODUCER-VARIABLES') = @('(PRODUCER-VAR)'):</p>
 
  @({
-    (let BINDINGS
+    (let BINDINGS'
       (declare (ignorable . STOBJ-LET-BOUND-VARIABLES))
       (let ((PRODUCER-VAR PRODUCER))
         (let* UPDATES
@@ -61963,7 +62001,7 @@ it."
  <p>Otherwise:</p>
 
  @({
-    (let BINDINGS
+    (let BINDINGS'
       (declare (ignorable . STOBJ-LET-BOUND-VARIABLES))
       (mv-let PRODUCER-VARS
               PRODUCER
@@ -61981,27 +62019,254 @@ it."
  top-level loop or other top-level contexts for execution (such as during
  @(tsee make-event) expansion).</p>
 
- <p>Finally, let @('FORM') denote the form displayed above (either case).  We
- explain how @('FORM') is actually replaced by an expression of the form
- @('(PROGN$ ... FORM)').  This expression generates an extra @(see guard) proof
- obligation, which guarantees that no aliasing occurs from binding two
- stobj-let-bound variables to the same array access.  So fix a stobj array
- accessor @('ACCi') for which some stobj is bound to @('(ACCi I ST)') in
- @('BINDINGS'); we define an expression @('ACCi-CHECK') as follows.  Collect up
- all such index expressions @('I'), where if @('I') is of the form @('(quote
- N)') then replace @('I') by @('N').  If the resulting list of index
- expressions for @('ACCi') consists solely of distinct numbers, or if it is of
- length 1, then no extra check is generated for @('ACCi').  Otherwise, let
- @('ACCi-CHECK') be the form @('(chk-no-duplicatesp (list I1 ... Ik))'), where
- @('I1'), ..., @('Ik') are the index expressions for @('ACCi').  Note:
- @('chk-no-duplicatesp') is a function that returns nil, but has a @(see guard)
- that its argument is an @(tsee eqlable-listp) that satisfies @(tsee
- no-duplicatesp).  Finally, @('FORM') is replaced by @('(PROGN$ CHK1 ... CHKn
- FORM)'), where each @('ACCi-CHECK') generates a @('CHKm') of the form
- @('(with-guard-checking t ACCi-CHECK)').  The use of @(tsee
- with-guard-checking) guarantees that the check will always be performed, even
- in code that is not guard-verified and even when using @(see
- program-wrapper)s.</p>")
+ <p>Finally, let @('FORM') denote the form displayed above (either case).  When
+ @('FORM') appears in the body of a definition then in some cases, its
+ translation into logic is an expression of the form @('(PROG2$ <check>
+ FORM')'), where @('FORM'') is the translation of @('FORM').  (See @(see term)
+ for a discussion of translation.)  The @('<check>') expression generates an
+ extra @(see guard) proof obligation, which guarantees that no aliasing occurs
+ in @('BINDINGS') for two variables bound to accesses of the same stobj array,
+ when at least one of the two variables is a producer variable.  When ACL2
+ determines that no such aliasing is possible, for example because all the
+ array accesses use distinct numeric indices or because there are no producer
+ variables, then @('FORM') does not undergo such replacement.  Warning: The use
+ of @(':')@(tsee trans1) will not show this addition of a check.  But you can
+ see it after admitting the definition of @('FN') (perhaps using @(tsee
+ skip-proofs) if you are having difficult admitting the definition) as
+ follows.</p>
+
+ @({
+ (untranslate (body 'FN nil (w state)) nil (w state))
+ })
+
+ <h3>SECTION: Using @('stobj-let') with abstract stobjs</h3>
+
+ <p>This section shows how an abstract stobj may be considered to have child
+ stobj accessors and updaters that may be used with @('stobj-let'), in
+ essentially in the same way that a child stobj of a concrete stobj may be
+ accessed and updated with @('stobj-let').</p>
+
+ <p>Below we assume familiarity with abstract stobjs; see @(see defabsstobj).
+ We begin with a specification of child stobj accessor/updater pairs for
+ abstract stobjs.  We then present an example.  Finally we conclude by
+ discussing aspects of @('stobj-let') specific to abstract stobjs.</p>
+
+ <h4>Child stobj accessors and updaters for abstract stobjs</h4>
+
+ <p>The documentation for @(tsee defabsstobj) notes a function spec in the
+ @(':EXPORTS') may introduce a child stobj accessor by including the keyword,
+ @(':UPDATER'), whose value is the corresponding child stobj updater.  Here we
+ flesh out that brief summary.</p>
+
+ <p>An abstract stobj @('st') is considered to have a child stobj with accessor
+ @('acc') and updater @('upd') if the @('defabsstobj') event introducing
+ @('st') has a pair of function specs of the following form.</p>
+
+ @({
+ (acc :logic acc$a :exec acc$c :updater upd) ; and optionally, other keywords
+ (upd :logic upd$a :exec upd$c)              ; and optionally, other keywords
+ })
+
+ <p>It is required that @('acc$c') is a child stobj accessor for the
+ foundational stobj, @('st$c'), of @('st').  It is also required that
+ @('upd$c') is the child stobj updater of @('st$c') that corresponds to
+ @('acc$c').  We may call @('acc') and @('upd') a child stobj accessor/updater
+ pair for @('st').  Note that @('st$c') may itself be an abstract stobj, in
+ which case its exports @('acc$c') and @('upd$c') must be a child stobj
+ accessor/updater pair for @('st$c').</p>
+
+ <p>For @('acc') and @('acc$c') as above, @('acc') is considered to be a scalar
+ accessor if @('acc$c') is a scalar accessor, and otherwise @('acc') is an
+ array accessor; similarly for @('upd'), which therefore is a scalar accessor
+ if and only if @('acc') is a scalar accessor.</p>
+
+ <p>A child stobj accessor/updater pair may be used in @('stobj-let') in the
+ same way when the parent is an abstract stobj as when the parent is a concrete
+ stobj.</p>
+
+ <h4>Example uses of @('stobj-let') for an abstract stobj</h4>
+
+ <p>The following basic example comes from the @(see community-book),
+ @('books/system/tests/abstract-stobj-nesting/two-usuallyequal-nums-stobj-simpler.lisp'),
+ which is based on a book contributed by Sol Swords.  This example introduces
+ an abstract stobj with child stobj fields, and uses @('stobj-let') to read and
+ write those fields.</p>
+
+ <p>We start by introducing a concrete stobj with two child stobj fields, each
+ of which represents a natural number, together with a ``valid bit'' that, when
+ true, asserts the equality of those two numbers.</p>
+
+ @({
+ (defstobj n$ (n$val :type (integer 0 *) :initially 0))
+ (defstobj n$2 (n$val$c :type (integer 0 *) :initially 0)
+   :congruent-to n$)
+ (defstobj two-usuallyequal-nums$c
+   (uenslot1$c :type n$) ; stobj slot ;
+   (uenslot2$c :type n$2) ; stobj slot ;
+   (uenvalid$c :type (member t nil) :initially nil))
+ })
+
+ <p>We represent this concrete stobj abstractly using a cons structure of the
+ form @('(valid slot1 . slot2)') for the valid bit and the two numbers.  Here
+ is the recognizer for that abstract stobj.</p>
+
+ @({
+ (defun-nx two-usuallyequal-nums$ap (x)
+
+ ; A two-usuallyequal-nums contains three fields (valid slot1 . slot2).  Valid
+ ; is Boolean, and slot1 and slot2 are n$ stobjs that must be equal if valid is
+ ; T.
+
+   (declare (xargs :guard t))
+   (and (consp x)
+        (consp (cdr x))
+        (let* ((valid (car x))
+               (slot1 (cadr x))
+               (slot2 (cddr x)))
+          (and (booleanp valid)
+               (n$p slot1)
+               (n$p slot2)
+               (implies valid
+                        (equal slot1 slot2))))))
+ })
+
+ <p>The next step is to define functions in support of the abstract stobj that
+ we intend to introduce.  Here is one such definition.</p>
+
+ @({
+ (defun-nx update-uenslot1$a (n$ x)
+   (declare (xargs :guard (and (two-usuallyequal-nums$ap x)
+                               (or (not (uenvalid$a x))
+                                   (non-exec (equal (n$val n$)
+                                                    (n$val (uenslot2$a x))))))
+                   :stobjs n$))
+   (cons (car x) (cons n$ (cddr x))))
+ })
+
+ <p>After introducing such functions we introduce our abstract stobj as
+ follows (see the aforementioned book if you want details).  Notice the use of
+ the @(':updater') keyword, which identifies child stobj fields of the new
+ abstract stobj.  Thus, @('uenslot1') accesses a child stobj field of the
+ @('two-usuallyequal-nums') stobj, and that field is updated by the specified
+ @(':updater'), @('update-uenslot1'); similarly for @('uenslot2') and its
+ corresponding updater, @('update-uenslot2').</p>
+
+ @({
+ (defabsstobj two-usuallyequal-nums
+   :exports
+   ((uenslot1 :logic uenslot1$a :exec uenslot1$c :updater update-uenslot1)
+    (uenslot2 :logic uenslot2$a :exec uenslot2$c :updater update-uenslot2)
+    (uenvalid :logic uenvalid$a :exec uenvalid$c)
+    (update-uenslot1 :logic update-uenslot1$a :exec update-uenslot1$c)
+    (update-uenslot2 :logic update-uenslot2$a :exec update-uenslot2$c)
+    (update-uenvalid :logic update-uenvalid$a :exec update-uenvalid$c)))
+ })
+
+ <p>We may now use @('stobj-let') in the same way that we use it for concrete
+ stobjs with child stobj fields.  That point is illustrated by the following
+ definition, which accesses the numbers in the two child stobj fields.</p>
+
+ @({
+ (defun fields-of-two-usuallyequal-nums (two-usuallyequal-nums)
+   (declare (xargs :stobjs two-usuallyequal-nums))
+   (stobj-let
+ ; bindings:
+    ((n$  (uenslot1 two-usuallyequal-nums))
+     (n$2 (uenslot2 two-usuallyequal-nums)))
+ ; producer variable:
+    (n1 n2)
+ ; producer:
+    (mv (n$val n$) (n$val n$2))
+ ; consumer:
+    (list :n n1 :n2 n2 :valid (uenvalid two-usuallyequal-nums))))
+ })
+
+ <p>Here is what we get when we we this function before updating the abstract
+ stobj.</p>
+
+ @({
+ ACL2 !>(fields-of-two-usuallyequal-nums two-usuallyequal-nums)
+ (:N 0 :N2 0 :VALID NIL)
+ ACL2 !>
+ })
+
+ <p>We can update the abstract stobj by first setting the valid bit to nil, so
+ that we can sequentially update the two child stobjs.  We say more about that
+ point below.</p>
+
+ @({
+ (defun update-two-usuallyequal-nums (n two-usuallyequal-nums)
+   (declare (xargs :guard (natp n)
+                   :stobjs two-usuallyequal-nums))
+   (let* ((two-usuallyequal-nums (update-uenvalid nil two-usuallyequal-nums)))
+     (stobj-let ((n$ (uenslot1 two-usuallyequal-nums))
+                 (n$2 (uenslot2 two-usuallyequal-nums)))
+                (n$ n$2)
+                (let* ((n$ (update-n$val n n$))
+                       (n$2 (update-n$val n n$2)))
+                  (mv n$ n$2))
+                (update-uenvalid t two-usuallyequal-nums))))
+ })
+
+ <p>To see why we first update the valid bit to @('nil'), consider the logical
+ translation of the @('stobj-let') form above.</p>
+
+ @({
+ ACL2 !>(untranslate (body 'update-two-usuallyequal-nums nil (w state))
+                     nil
+                     (w state))
+ (LET
+  ((TWO-USUALLYEQUAL-NUMS (UPDATE-UENVALID NIL TWO-USUALLYEQUAL-NUMS)))
+  (LET
+   ((N$ (UENSLOT1 TWO-USUALLYEQUAL-NUMS))
+    (N$2 (UENSLOT2 TWO-USUALLYEQUAL-NUMS)))
+   (MV-LET
+    (N$ N$2)
+    (LET* ((N$ (UPDATE-N$VAL N N$))
+           (N$2 (UPDATE-N$VAL N N$2)))
+          (LIST N$ N$2))
+    (LET*
+         ((TWO-USUALLYEQUAL-NUMS (UPDATE-UENSLOT1 N$ TWO-USUALLYEQUAL-NUMS))
+          (TWO-USUALLYEQUAL-NUMS (UPDATE-UENSLOT2 N$2 TWO-USUALLYEQUAL-NUMS)))
+         (UPDATE-UENVALID T TWO-USUALLYEQUAL-NUMS)))))
+ ACL2 !>
+ })
+
+ <p>We can see that if the valid bit were @('t') before doing any updates, then
+ the guard proof obligation would fail for the first child stobj update, made
+ with @('update-uenslot1') (as defined above; see its guard).</p>
+
+ <p>The update works, as shown in the log below.</p>
+
+ @({
+ ACL2 !>(update-two-usuallyequal-nums 17 two-usuallyequal-nums)
+ <two-usuallyequal-nums>
+ ACL2 !>(fields-of-two-usuallyequal-nums two-usuallyequal-nums)
+ (:N 17 :N2 17 :VALID T)
+ ACL2 !>
+ })
+
+ <h4>Aspects of @('stobj-let') specific to abstract stobjs</h4>
+
+ <p>As suggested by the example above, @('stobj-let') operates about the same
+ whether the parent stobj is a concrete stobj or an abstract stobj.  The main
+ difference is in an understanding of the aliasing checks.  Recall that for an
+ abstract stobj @('st'), each child stobj accessor has an @(':EXEC') function
+ that is a child stobj accessor of the foundational stobj, @('st$c'), for
+ @('st').  If @('st$c') is itself an abstract stobj then the @(':EXEC')
+ function for @('st$c') is a child stobj accessor for the foundation of
+ @('st$c'); and so on.  At the end of this chain we have a child stobj accessor
+ for a concrete stobj, which we might call the underlying concrete child stobj
+ accessor.  The anti-aliasing checks are actually done with respect to the
+ underlying concrete child stobj accessors that correspond to the accessors in
+ the @('BINDINGS').  After all, under the hood those concrete stobj functions
+ are the ones that are actually executed on the ``live'' stobj.</p>
+
+ <p>Another aspect of @('stobj-let') specific to abstract stobjs is how aborts
+ are handled.  If an abort occurs in the middle of a @('stobj-let') that
+ updates child stobjs, when the parent stobj is an abstract stobj, you may be
+ put into an illegal state, with instructions for how to continue at your own
+ risk.  See @(see illegal-state).</p>")
 
 (defxdoc never-memoize
   :parents (memoize)
@@ -88353,13 +88618,13 @@ it."
 ; implementation of defstub, in particular to allow event output to be
 ; suppressed while allowing a redundancy message to be printed.
 
-; The following lists some of the more major changes in support of stobj fields
-; of abstract stobjs.
+; The following lists some of the more significant changes in support of stobj
+; fields of abstract stobjs (that are not already dealt with in the :doc).
 
 ; - The Essay on the Correctness of Abstract Stobjs has been improved
 ;   significantly.  It is now much more rigorous, and it has been extended to
 ;   address both stobj fields of abstract stobjs and the case that the
-;   :concrete stobj of an abstract stobj is itself an abstract stobj.
+;   foundational stobj for an abstract stobj is itself an abstract stobj.
 
 ; - The logic-exec-pairs field of record absstobj-info has been renamed
 ;   logic-exec-updater-tuples, to reflect that it now also stores updaters.
@@ -88439,6 +88704,9 @@ it."
 
 ; Tweaked cw-gstack and dmr to clarify when add-terms-and-lemmas is being used
 ; on behalf of setting up the linear pot, to falsify, or to establish.
+
+; Fixed a comment in the definition of source utility warning$-cw, which was
+; mistakenly showing the use of a summary string.
 
   :parents (release-notes)
   :short "ACL2 Version  8.4 (xxx, 20xx) Notes"
@@ -88773,6 +89041,16 @@ it."
  ACL2 !>
  })
 
+ <p>The @(tsee defabsstobj) keyword, @(':CONCRETE'), has been changed to
+ @(':FOUNDATION').  Although the use of @(':CONCRETE') is still supported in
+ this release (Version 8.4), it generates a warning that this usage is
+ deprecated and will likely not be supported after this release.  Also,
+ documentation and comments now typically speak of ``foundational stobj'' for
+ the underlying stobj of the abstract stobj (which can be supplied explicitly
+ by the @(':FOUNDATION') keyword) rather than ``corresponding concrete stobj'';
+ this reflects the fact that the foundational stobj may itself be an abstract
+ stobj (which is not new for this release).</p>
+
  <h3>New Features</h3>
 
  <p>It is now possible to assign @(tsee badge)s to @(':')@(tsee program) mode
@@ -88872,13 +89150,12 @@ it."
  still always take place if @('EVENT') output is not inhibited (see @(see
  set-inhibit-output-lst)).  See @(see summary).</p>
 
- <p>A @(tsee defabsstobj) event may now specify child @(see stobj) fields, for
- use by @(tsee stobj-let).  This feature will likely be documented by the end
- of July 2021; for now, examples may be found in the @(see community-books),
- directory @('books/system/tests/abstract-stobj-nesting/'), where the
- @('README') file provides a rough guide to the files there.  Thanks to Sol
- Swords for requesting this feature and helping to design it, and for his
- helpful discussions, feedback, and test files.</p>
+ <p>A @('defabsstobj') event may now specify child @(see stobj) fields, for use
+ by @(tsee stobj-let).  See @(see defabsstobj), and see @(see community-books)
+ file @('books/system/tests/abstract-stobj-nesting/README') for a brief guide
+ to the examples in that directory.  Thanks to Sol Swords for requesting this
+ feature and helping to design it, as well as for his helpful discussions,
+ feedback, and test files.</p>
 
  <p>The @(':congruent-to') keyword is now supported for @(tsee
  defabsstobj).</p>
@@ -89241,9 +89518,9 @@ it."
  the fix was in the definition of source function all-vars-in-hyps.)</p>
 
  <p>For @(tsee defabsstobj), a suitable error now occurs when the @(':LOGIC')
- version of an abstract @(see stobj) export has the corresponding concrete
- stobj as a formal parameter that is declared as a @(see stobj).  Formerly, a
- confusing hard error could occur in this case.</p>
+ version of an abstract @(see stobj) export has the foundational stobj as a
+ formal parameter that is declared as a @(see stobj).  Formerly, a confusing
+ hard error could occur in this case.</p>
 
  <p>An unfortunate ``Proof skipped'' could be printed during the
  @('include-book') phase of @(tsee certify-book) for certain uses of @(tsee
@@ -89257,6 +89534,11 @@ it."
  <p>Fixed a bug in resizing @(see stobj) arrays whose elements are specified to
  be @('(signed-byte 30)') or a subtype of that type.  Thanks to Eric Smith for
  reporting this bug with a reproducible example.</p>
+
+ <p>For a @(tsee stobj-let) call occurring in other than a definition body, the
+ top-level bindings of variables to child stobj accessors was treated as @(tsee
+ let*) rather than as @(tsee let).  That was at odds with the documentation,
+ and has been fixed.</p>
 
  <h3>Changes at the System Level</h3>
 
@@ -105125,15 +105407,15 @@ arithmetic) for libraries of @(see books) for arithmetic reasoning.</p>")
  <p>where @('val') is evaluated.</p>
 
  <p>Recall (see @(see defabsstobj)) that for any exported function whose
- @(':EXEC') function might (according to ACL2's heuristics) modify the concrete
- stobj non-atomically, one must specify @(':PROTECT t').  This results in extra
- code generated for the exported function, which provides a check that
- atomicity was not actually violated by a call of the exported function.  The
- extra code might slow down execution, but perhaps only negligibly in typical
- cases.  If you can tolerate a bit extra slow-down, then evaluate the form
- @('(set-absstobj-debug t)').  Subsequent such errors will provide additional
- information, as in the example displayed earlier in this documentation
- topic.</p>
+ @(':EXEC') function might (according to ACL2's heuristics) modify the
+ foundational stobj non-atomically, one must specify @(':PROTECT t').  This
+ results in extra code generated for the exported function, which provides a
+ check that atomicity was not actually violated by a call of the exported
+ function.  The extra code might slow down execution, but perhaps only
+ negligibly in typical cases.  If you can tolerate a bit extra slow-down, then
+ evaluate the form @('(set-absstobj-debug t)').  Subsequent such errors will
+ provide additional information, as in the example displayed earlier in this
+ documentation topic.</p>
 
  <p>Calls of @('set-absstobj-debug') are legal event forms (e.g., for @(see
  books)).</p>")
@@ -120102,17 +120384,26 @@ arithmetic) for libraries of @(see books) for arithmetic reasoning.</p>")
 (defxdoc trans1
   :parents (macros)
   :short "Print the one-step macroexpansion of a form"
-  :long "@({
+  :long "<p>See @(see term) for background on translated and untranslated terms,
+ including some discussion of macros.</p>
+
+ @({
   Examples:
   :trans1 (list a b c)
   :trans1 (caddr x)
   :trans1 (cond (p q) (r))
  })
 
- <p>This function takes one argument, an alleged term, and expands the
- top-level macro in it for one step only.  Either an error is caused, which
+ <p>This utility takes one argument, an alleged untranslated term, and expands
+ the top-level macro in it for one step only.  Either an error is caused, which
  happens when the form is not a call of a macro, or the result is printed.
- Also see @(see trans), which translates the given form completely.</p>")
+ Also see @(see trans), which translates the given form completely.</p>
+
+ <p>On very rare occasions, complete translation is not quite the same as
+ translating the output of @(':trans1'), though the two should still be
+ logically equivalent.  This can happen for a call of @(tsee stobj-let) in the
+ body of a function: its translation may include a check for duplicate indices
+ that is omitted in the single-step macroexpansion.</p>")
 
 (defxdoc translam
   :parents (apply$)

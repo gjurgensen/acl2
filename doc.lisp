@@ -22305,7 +22305,7 @@ Subtopics
   ``abstract stobj'', a notion we introduce briefly now and then
   explain in more depth below.
 
-  The evaluation of a [defstobj] event produces logical definitions for
+  Recall that a [defstobj] event produces logical definitions for
   several functions: a recognizer, which characterizes the [stobj] in
   terms of lists; a creator, which produces an initial suitable list
   structure; and field accessors and updaters, defined in terms of
@@ -22314,9 +22314,9 @@ Subtopics
   single-threaded object.  These stobj primitives include a
   recognizer, a creator, and other ``exported'' functions.  In
   essence, defabsstobj establishes interface functions, or
-  ``exports'', on a new stobj that is a copy of an indicated stobj,
-  either conventional (introduced by [defstobj]) or abstract
-  (introduced by defabsstobj) that already exists.
+  ``exports'', on a new stobj that is a copy of an existing stobj,
+  its ``foundation'', which is either concrete (introduced by
+  [defstobj]) or abstract (introduced by defabsstobj).
 
   We begin below with an introduction to abstract [stobj]s.  We then
   explain the [defabsstobj] event by way of an example.  We conclude
@@ -22335,10 +22335,10 @@ Subtopics
   probably help the reader to absorb the ideas below.
 
   Recall that single-threaded objects, or [stobj]s, provide a way for
-  ACL2 users to stay within the ACL2 logic, where every data object
-  is an atom or a [cons] of data objects, while obtaining the
-  benefits of fast evaluation through destructive updates.  Consider
-  for example this very simple event.
+  ACL2 users to stay within the ACL2 logic --- where every data
+  object is an atom or a [cons] of data objects --- while obtaining
+  the benefits of fast evaluation through destructive updates.
+  Consider for example this very simple event.
 
     (defstobj st fld)
 
@@ -22425,39 +22425,44 @@ Subtopics
   But there are at least two potential difficulties in using stobjs as
   described above.
 
-      1. When foo is executed on concrete data in the ACL2 loop, the guard
+   1. When foo is executed on concrete data in the ACL2 loop, the guard
       check may be expensive because (good-stp st) is expensive.
-
-      2. Reasoning about foo (using rules like foo-is-correct above)
-      involves proving hypotheses of invariance theorems, which may
-      be complicated for the user to manage or slow for the theorem
+   2. Reasoning about foo (using rules like foo-is-correct above) involves
+      proving hypotheses of invariance theorems, which may be
+      complicated for the user to manage or slow for the theorem
       prover.
 
   The defabsstobj event offers an opportunity to address these issues.
   It introduces a new stobj, which we call an ``abstract stobj'',
-  which is associated with a corresponding ``concrete stobj''
-  introduced by an earlier [defstobj] or defabsstobj event.  (Thus,
-  note that the term, ``concrete'', refers to the status of being the
-  underlying stobj that supports an abstract stobj.  While a concrete
-  stobj has often been introduced with defstobj, it could also have
-  been introduced with defabsstobj.)  The defabsstobj event specifies
-  a logical (:LOGIC) and an executable (:EXEC) definition for each
-  primitive operation, or ``stobj primitive'', involving that stobj.
-  As is the case for [defstobj], the logical definition is what ACL2
-  reasons about, and is appropriate to apply to an ACL2 object
-  satisfying the logical definition of the recognizer function for
-  the stobj.  The executable definition is applied in raw Lisp to a
-  live stobj (as discussed above).
+  which is associated with a corresponding ``foundational stobj''
+  introduced by an earlier [defstobj] or defabsstobj event.  The
+  defabsstobj event specifies a logical (:LOGIC) and an executable
+  (:EXEC) definition for each primitive operation, or ``stobj
+  primitive'', involving that stobj.  As is the case for [defstobj],
+  the logical definition is what ACL2 reasons about, and is
+  appropriate to apply to an ACL2 object satisfying the logical
+  definition of the recognizer function for the stobj.  The
+  executable definition is applied in raw Lisp to a live stobj (as
+  discussed above).
 
-  We can picture a sequence of updates to corresponding abstract and
-  concrete stobjs as follows.  Initially in this picture, st$a0 and
-  st$c0 are a corresponding abstract and concrete stobj
-  (respectively).  Then an update, u1, is applied with :LOGIC and
-  :EXEC functions u$a1 and u$c1, respectively.  The resulting
-  abstract and concrete stobj, st$a1 and st$c1, correspond as before.
-  Then a second update, u2, is applied with :LOGIC and :EXEC
-  functions u$a2 and u$c2, respectively --- again preserving the
-  correspondence.  And so on.
+  Remark.  It is common to use ``a'' and ``c'' in a suffix to suggest
+  ``abstract'' and ``concrete'', respectively.  The foundational
+  stobj was, at one time, called the ``corresponding concrete
+  stobj''.  That old terminology may still be appropriate in the
+  common case that the foundational stobj is a concrete stobj (rather
+  than another abstract stobj).  So below, a name like st$c0 suggests
+  a foundational (``concrete'') stobj for an abstract stobj named st,
+  whose abstract stobj recognizer is st$ap, and so on.  End of
+  Remark.
+
+  We can picture a sequence of updates to an abstract stobj and its
+  foundational stobj.  Initially in this picture, st$a0 and st$c0 are
+  an abstract stobj and its foundation (respectively).  Then an
+  update, u1, is applied with :LOGIC and :EXEC functions u$a1 and
+  u$c1, respectively.  The resulting abstract and foundational stobj,
+  st$a1 and st$c1, correspond as before.  Then a second update, u2,
+  is applied with :LOGIC and :EXEC functions u$a2 and u$c2,
+  respectively --- again preserving the correspondence.  And so on.
 
     Abstract               u$a1       u$a2       u$a3
     (:logic)         st$a0  --> st$a1  --> st$a2  -->   ...
@@ -22467,23 +22472,23 @@ Subtopics
                        v          v          v               v
 
                            u$c1       u$c2       u$c3
-    Concrete         st$c0  --> st$c1  --> st$c2  -->   ...
+    Foundation       st$c0  --> st$c1  --> st$c2  -->   ...
     (:exec)
 
   We conclude this introduction with some remarks about implementation.
-  Consider an abstract stobj st with corresponding concrete stobj
-  st$c.  The live stobjs for st and st$c have the same structure, but
-  are distinct arrays.  Indeed, the raw Lisp creator function for
-  st$c is called to create a new initial live stobj for st.  As we
-  will see below, reads and writes in raw Lisp to the live stobj for
-  st are ultimately performed using the primitive accessors and
-  updaters defined for st$c.  One might think of the live stobjs for
-  st and st$c as being congruent stobjs (see [defstobj]), except that
-  the stobjs themselves are not congruent: the stobj primitives
-  introduced for st may be applied to st but not arbitrary field
-  updaters of st$c, for example.  As one might expect, the :EXEC
-  function for an exported function is applied to the live stobj for
-  st in raw Lisp.
+  Consider an abstract stobj st with corresponding foundation st$c.
+  The live stobjs for st and st$c have the same structure, but are
+  distinct arrays.  Indeed, the raw Lisp creator function for st$c is
+  called to create a new initial live stobj for st.  As we will see
+  below, reads and writes in raw Lisp to the live stobj for st are
+  ultimately performed using the primitive accessors and updaters
+  defined for st$c.  One might think of the live stobjs for st and
+  st$c as being congruent stobjs (see [defstobj]), except that the
+  stobjs themselves are not truly congruent: in particular, the stobj
+  primitives introduced for st may be applied to st, but field
+  updaters of st$c may not.  As one might expect, the :EXEC function
+  for an exported function is applied to the live stobj for st in raw
+  Lisp.
 
   EXAMPLE
 
@@ -22494,10 +22499,10 @@ Subtopics
   the first of these.  We suggest that after you finish this
   [documentation] topic, you read through those two books.  There are
   other books books/dmeos/defabsstobj-example-*.lisp that may be
-  helpful to read; in particaular,
+  helpful to read; in particular,
   books/demos/defabsstobj-example-5.lisp illustrates building an
   abstract stobj on top of another abstract stobj (as its so-called
-  ``concrete stobj'', as described below).
+  ``foundation'', as described below).
 
   Here is the first of two closely related defabsstobj [events] from
   the book defabsstobj-example-1.lisp, but in expanded form.  We will
@@ -22512,9 +22517,9 @@ Subtopics
 
     (defabsstobj st ; The new abstract stobj is named st.
 
-    ; The concrete stobj corresponding to st is st$c:
+    ; The foundational stobj for st is st$c:
 
-      :concrete st$c
+      :foundation st$c
 
     ; The recognizer for the new abstract stobj is stp, which is defined to be
     ; st$ap in the logic, and is executed on the live stobj in raw Lisp using
@@ -22532,10 +22537,10 @@ Subtopics
                           :preserved create-st{preserved})
 
     ; Proof obligations are generated that involve a correspondence between the
-    ; new abstract stobj and corresponding concrete stobj.  The function
+    ; new abstract stobj and corresponding foundational stobj.  The function
     ; st$corr, which need not be executable (see :DOC defun-nx), takes two
-    ; arguments, a concrete stobj and an abstract stobj.  This function symbol is
-    ; used in the statements of the proof obligations.
+    ; arguments, a foundational stobj and an abstract stobj.  This function symbol
+    ; is used in the statements of the proof obligations.
 
       :corr-fn st$corr
 
@@ -22559,8 +22564,7 @@ Subtopics
                 (update-misc :logic update-misc$a
                              :exec update-misc$c
                              :correspondence update-misc{correspondence}
-                             :preserved update-misc{preserved}))
-      :doc nil)
+                             :preserved update-misc{preserved})))
 
   Note that all stobj primitives (recognizer, creator, and exported
   functions) are defined in the ACL2 loop in terms of their :LOGIC
@@ -22592,11 +22596,11 @@ Subtopics
 
   The formals of update are obtained by starting with the formals of
   its :EXEC function, update-mem$ci --- which are (i v st$c) --- and
-  replacing the concrete stobj name st$c by the new stobj name st.
-  The formals of update are thus (i v st).  The guard for update is
-  obtained in two steps.  The first step is to substitute the formals
-  of update for the formals of update$a in the guard for update$a, to
-  obtain the following.
+  replacing the foundational stobj name st$c by the new stobj name
+  st.  The formals of update are thus (i v st).  The guard for update
+  is obtained in two steps.  The first step is to substitute the
+  formals of update for the formals of update$a in the guard for
+  update$a, to obtain the following.
 
     (and (and (integerp i) (<= 0 i) (<= i 49))
          (and (integerp v) (<= 0 v))
@@ -22613,10 +22617,8 @@ Subtopics
          (stp st)
          (mem$c-entryp v))
 
-  Note that the :LOGIC version of an abstract [stobj] export must not
-  declare the corresponding concrete stobj name as a stobj.  (That
-  name may be a formal parameter, but must not be declared as a
-  [stobj].)
+  Note that the :EXEC version of an abstract [stobj] export must not
+  include the abstract stobj name among its formals.
 
   We turn now to the proof obligations, as promised above.  There are
   three types: :CORRESPONDENCE, :PRESERVED, and :GUARD-THM.  All
@@ -22659,9 +22661,9 @@ Subtopics
   include the :CORR-FN correspondence followed by the [guard] for the
   :LOGIC function, which is stated in terms of the formal parameters
   of the :EXEC function except using the abstract stobj (here, st) in
-  place of the concrete stobj (here, st$c).  The conclusion uses the
-  :EXEC formals, modified in the call of the :LOGIC function (here,
-  lookup$a) to use the abstract stobj, as in the hypotheses.
+  place of the foundational stobj (here, st$c).  The conclusion uses
+  the :EXEC formals, modified in the call of the :LOGIC function
+  (here, lookup$a) to use the abstract stobj, as in the hypotheses.
 
     (defthm lookup{correspondence}
       (implies (and (st$corr st$c st)
@@ -22721,10 +22723,10 @@ Subtopics
   for an exported function?  The :GUARD-THM lemmas provide the
   answer, as they state that if the :LOGIC function's guard holds,
   then the :EXEC function's guard holds.  Here is an example.  Note
-  that the hypotheses come from the correspondence of the concrete
-  and abstract function as guaranteed by the :CORR function, together
-  with the guard of the :LOGIC function; and the conclusion comes
-  from the guard of the :EXEC function.
+  that the hypotheses come from the correspondence of the
+  foundational and abstract function as guaranteed by the :CORR
+  function, together with the guard of the :LOGIC function; and the
+  conclusion comes from the guard of the :EXEC function.
 
     (defthm lookup{guard-thm}
       (implies (and (st$corr st$c c)
@@ -22753,14 +22755,13 @@ Subtopics
   Only the :exports keyword is required.
 
     (defabsstobj st
-      :concrete concrete
+      :foundation foundation
       :recognizer recognizer
       :creator creator
       :corr-fn corr-fn
       :congruent-to congruent-to
       :protect-default protect-default
-      :exports (e1 ... ek)
-      :doc doc)
+      :exports (e1 ... ek))
 
   The keyword argument :EXPORTS must be supplied, and missing or nil
   keyword arguments have defaults as indicated below.  All arguments
@@ -22790,7 +22791,7 @@ Subtopics
 
       St is a symbol, which names the new abstract stobj.
 
-      Concrete is the name of an existing stobj, which may have been
+      Foundation is the name of an existing stobj, which may have been
       introduced either with [defstobj] or with defabsstobj.
 
       Recognizer is a function spec (for the recognizer function).  The
@@ -22798,17 +22799,16 @@ Subtopics
       recognizer is obtained by adding the suffix \"P\" to name.  The
       default value for :LOGIC is formed by adding the suffix \"$AP\"
       to recognizer; for :EXEC, by adding the suffix \"$CP\".  The
-      :EXEC function must be the recognizer for the specified
-      :CONCRETE stobj.
+      :EXEC function must be the recognizer for the foundational
+      stobj (which can be specified using the :FOUNDATION keyword).
 
       Creator is a function spec (for the creator function).  The valid
       keywords are :LOGIC and :EXEC.  The default for creator is
       obtained by adding the prefix \"CREATE-\" to name.  The default
       value for :LOGIC is formed by adding the suffix \"$A\" to
-      creator; for :EXEC, by adding the suffix \"$C\".  The :CREATOR
-      function must be the creator for the specified :CONCRETE stobj,
-      as ACL2 checks that the :CREATOR function takes no arguments
-      and returns the :CONCRETE stobj.
+      creator; for :EXEC, by adding the suffix \"$C\".  The :EXEC
+      function must be the creator for the foundational stobj (which
+      can be specified using the :FOUNDATION keyword).
 
       Corr-fn is a known function symbol that takes two arguments (for the
       correspondence theorems).  The default for corr-fn is obtained
@@ -22817,13 +22817,13 @@ Subtopics
       Congruent-to should either be nil (the default) or the name of an
       abstract stobj previously introduced (by [defabsstobj]).  In
       the latter case, the current and previous abstract stobj should
-      have the same concrete stobj (not merely congruent concrete
-      stobjs), and their :EXPORTS fields should have the same length
-      and also correspond, as follows: the ith export of each should
-      have the same :LOGIC and :EXEC symbols.  See [defstobj] for
-      more about congruent stobjs.  Note that if two names are
-      congruent, then they are either both ordinary stobjs or both
-      abstract stobjs.
+      have the same foundational stobj (not merely congruent
+      foundational stobjs), and their :EXPORTS fields should have the
+      same length and also correspond, as follows: the ith export of
+      each should have the same :LOGIC and :EXEC symbols.  See
+      [defstobj] for more about congruent stobjs.  Note that if two
+      names are congruent, then they are either both ordinary stobjs
+      or both abstract stobjs.
 
       Protect-default should either be nil (the default) or t.  It provides
       the value of keyword :PROTECT for each member of exports that
@@ -22841,12 +22841,16 @@ Subtopics
       The value of :EXPORTS is a non-empty true list.  Each ei is a
       function spec (for an exported function).  The valid keywords
       are :LOGIC, :EXEC, :CORRESPONDENCE, and :GUARD-THM, :PROTECT,
-      and also :PRESERVED if and only if the specified :EXEC function
-      returns the :CONCRETE stobj.  The default values for all of
-      these keywords except :PROTECT are obtained by respectively
-      adding the suffix \"$A\" \"$C\", \"{CORRESPONDENCE}\", \"{GUARD-THM}\",
-      or \"{PRESERVED}\".  For :PROTECT, the default is nil unless the
-      defabsstobj event specifies :PROTECT-DEFAULT t.
+      :UPDATER, and also :PRESERVED if and only if the specified
+      :EXEC function returns the foundational stobj.  The default
+      values for all of these keywords except :UPDATER and :PROTECT
+      are obtained by respectively adding the suffix \"$A\" \"$C\",
+      \"{CORRESPONDENCE}\", \"{GUARD-THM}\", or \"{PRESERVED}\".  For
+      :PROTECT, the default is nil unless the defabsstobj event
+      specifies :PROTECT-DEFAULT t.  If :UPDATER upd is supplied and
+      upd is not nil, then function exported by the function spec is
+      a child stobj accessor whose corresponding updater is upd; see
+      the discussion of :UPDATER in [nested-stobjs].
 
   Not shown is the keyword, :MISSING; the effect of :missing t is to
   turn the call of defabsstobj into a corresponding call of
@@ -22867,9 +22871,9 @@ Subtopics
   utility that returns a data structure containing the missing
   lemmas.
 
-  Let st be an abstract stobj with corresponding concrete stobj st$c.
-  let f be an exported function for st and let f$a and f$c be the
-  corresponding :LOGIC and :EXEC functions, respectively.  The
+  Let st be an abstract stobj with corresponding foundational stobj
+  st$c.  Let f be an exported function for st and let f$a and f$c be
+  the corresponding :LOGIC and :EXEC functions, respectively.  The
   formals of f are obtained by taking the formals of f$c and
   replacing st$c by st.  The [guard] for f is derived as follows from
   the guard of f$a.  First, the formals of f$a are replaced by the
@@ -22895,37 +22899,31 @@ Subtopics
   if you were using length in that guard simply to compute the length
   of an ordinary list.
 
-  There are a few additional restrictions, as follows.
+  Additional restrictions include the following.
 
-      All exported function names must be new (unless redefinition is on;
+    * All exported function names must be new (unless redefinition is on;
       see [ld-redefinition-action]), and there must be no duplicates
       among them.
-
-      The :CONCRETE stobj name must be a formal parameter of the :EXEC fn
-      of every function spec, except for the :CREATOR function spec.
-      Also the input signatures of the :LOGIC and :EXEC function for
-      a function spec must agree, except perhaps at the position of
-      that :CONCRETE formal.
-
-      For function specs other than the :CREATOR function spec, the output
-      signatures of the :LOGIC and :EXEC functions must have the same
-      length and must agree, except perhaps at position p_out of the
-      :CONCRETE stobj in the :EXEC function's output.  If p_in is the
-      position of the :CONCRETE stobj in the :EXEC function's
-      formals, then the :LOGIC function's output at position p_out
-      should match the :LOGIC function's formal at position p_in.
-
-      The :PROTECT keyword is something that you should ignore unless you
+    * The foundational stobj name must be a formal parameter of the :EXEC
+      function of every function spec, except for the :CREATOR
+      function spec.
+    * The :LOGIC and :EXEC function for a function spec must agree on both
+      the number of inputs and the number of outputs.
+    * The foundational stobj must not be a [declare]d stobj of the :LOGIC
+      function of any function spec.  (This restriction could perhaps
+      be removed, but it is convenient for the implementation of the
+      events generated by a call of defabsstobj.)
+    * The :PROTECT keyword is something that you should ignore unless you
       get an error message about it, pertaining to modifying the
-      concrete stobj non-atomically.  In that case, you can eliminate
-      the error by providing :PROTECT t in the function spec, or by
-      providing defabsstobj keyword argument :PROTECT-DEFAULT t at
-      the top level, in order to restore the required atomicity.  The
-      above explanation is probably all you need to know about
-      :PROTECT, but just below is a more complete explanation for
-      those who desire it.  Further information is also available if
-      you need it; see [set-absstobj-debug], and see the example uses
-      of these keywords in community book
+      foundational stobj non-atomically.  In that case, you can
+      eliminate the error by providing :PROTECT t in the function
+      spec, or by providing defabsstobj keyword argument
+      :PROTECT-DEFAULT t at the top level, in order to restore the
+      required atomicity.  The above explanation is probably all you
+      need to know about :PROTECT, but just below is a more complete
+      explanation for those who desire it.  Further information is
+      also available if you need it; see [set-absstobj-debug], and
+      see the example uses of these keywords in community book
       books/demos/defabsstobj-example-2.lisp.
 
   For those who are interested, here is a more detailed discussion of
@@ -22933,21 +22931,22 @@ Subtopics
   any function spec for an export (hence not to the :CREATOR function
   spec).  If the :EXEC function is a stobj primitive, then clearly
   the following property holds: any execution of a call of that
-  function can only update the concrete stobj at most once --- i.e.,
-  modification of the concrete stobj is atomic.  ACL2 can deduce this
-  property not only for stobj primitives but for many other functions
-  as well.  However, if ACL2 cannot deduce this property, then it
-  will cause an error saying that the :EXEC function ``appears
-  capable of modifying the concrete stobj, <stobj_name>,
-  non-atomically.'' That message also explains how to eliminate this
-  error: provide :PROTECT t for the function spec.  Alternatively,
-  all function specs without an explicit :PROTECT keyword can be
-  implicitly supplied :PROTECT t by supplying the value t for the
-  :PROTECT-DEFAULT keyword parameter of the defabsstobj event.
-  However, beware that when :PROTECT is t, the generated raw Lisp
-  code runs slightly less efficiently --- though perhaps with
-  negligible efficiency loss if the :EXEC function is not trivial.
-  Community books books/demos/defabsstobj-example-3.lisp and
+  function can only update the foundational stobj at most once ---
+  i.e., modification of the foundational stobj is atomic.  ACL2 can
+  deduce this property not only for stobj primitives but for many
+  other functions as well.  However, if ACL2 cannot deduce this
+  property, then it will cause an error saying that the :EXEC
+  function ``appears capable of modifying the foundational stobj,
+  <stobj_name>, non-atomically.'' That message also explains how to
+  eliminate this error: provide :PROTECT t for the function spec.
+  Alternatively, all function specs without an explicit :PROTECT
+  keyword can be implicitly supplied :PROTECT t by supplying the
+  value t for the :PROTECT-DEFAULT keyword parameter of the
+  defabsstobj event.  However, beware that when :PROTECT is t, the
+  generated raw Lisp code runs slightly less efficiently --- though
+  perhaps with negligible efficiency loss if the :EXEC function is
+  not trivial.  Community books
+  books/demos/defabsstobj-example-3.lisp and
   books/demos/defabsstobj-example-4.lisp provide related information.
   Also see [set-absstobj-debug] for a potentially dangerous way to
   eliminate that inefficiency using argument :ignore.
@@ -22960,15 +22959,15 @@ Subtopics
   argument; :inline is essentially t, in the sense that stobj
   primitives are macros in raw Lisp; and the :non-memoizable argument
   is derived implicitly, to agree with non-memoizability of the
-  corresponding concrete stobj.
+  foundational stobj.
 
   Those who use [hons-enabled] features, including function memoization
   (see [memoize]), may be aware that the memo table for a function is
   flushed whenever it is the case that one of its stobj inputs is
   updated.  In fact, such flushing happens even when a stobj that is
   congruent to one of its stobj inputs is updated.  For that purpose,
-  an abstract stobj is considered to be congruent to its
-  corresponding concrete stobj.
+  an abstract stobj is considered to be congruent to its foundational
+  stobj.
 
 
 Subtopics
@@ -46882,6 +46881,10 @@ Subtopics
   To get a bit more information from the error message displayed above,
   see [set-absstobj-debug].
 
+  See [community-book] file
+  books/system/tests/abstract-stobj-nesting/nested-abstract-stobjs-input.lsp,
+  Examples 3 and 4, for relevant examples.
+
   Technical note.  An illegal-state is entered when ACL2 sets the ld
   special, [ld-pre-eval-print], to the value :illegal-state.")
  (IMAGPART
@@ -65453,14 +65456,17 @@ Subtopics
   field can itself be a stobj or an array of stobjs.  That discussion
   is the subject of the present [documentation] topic.
 
-  Our presentation is in four sections.  First we augment the
+  Our presentation is in five sections.  First we augment the
   documentation for [defstobj] by explaining how stobjs may be
   specified for fields in a new stobj definition.  Then we explain an
   aliasing problem, which accounts for a prohibition against making
   direct calls to accessors and updaters involving stobj fields of
   stobjs.  Next, we introduce an ACL2 primitive, stobj-let, which
   provides the only way to read and write stobj components of stobjs.
-  The final section provides precise documentation for stobj-let.
+  The fourth section provides precise documentation for stobj-let.
+  We conclude by discussing the use of stobj-let with abstract stobjs
+  (see [defabsstobj]); the discussion below ignores abstract stobjs
+  until reaching that section.
 
   See also ACL2 community book demos/modeling/nested-stobj-toy-isa.lisp
   for a worked example, which applies nested stobj structures to the
@@ -65568,16 +65574,16 @@ SECTION: An aliasing problem
 
   (Aside: Here is an explanation involving raw Lisp, for those who
   might find this useful.  We escape to raw Lisp and execute the
-  following; note that *the-live-parent* is the Lisp variable
-  representing the global value of parent.
+  following.
 
-    (let ((parent *the-live-parent*))
+    (let ((parent (cdr (assoc-eq 'parent *user-stobj-alist*))))
       (let* ((child (fld2 parent))
              (child (update-fld 4 child)))
         (mv child parent)))
 
-  Then, in raw Lisp, (fld (fld2 *the-live-parent*)) evaluates to 4,
-  illustrating the destructive update.  End of Aside.)
+  Then, in raw Lisp, (fld (fld2 (cdr (assoc-eq 'parent
+  *user-stobj-alist*)))) evaluates to 4, illustrating the destructive
+  update.  End of Aside.)
 
   Such aliasing can permit a change to a child stobj to cause a
   logically-inexplicable change to the parent stobj.  Similarly,
@@ -65958,42 +65964,48 @@ SECTION: Precise documentation for stobj-let
   and BINDINGS is a list subject to the following requirements.
 
   BINDINGS is a non-empty true list of tuples, each of which has the
-  form (VAR ACCESSOR) or (VAR ACCESSOR UPDATER).  There is a stobj
-  name, ST, previously introduced by [defstobj] (not [defabsstobj]),
-  such that each accessor is of the form (ACC ST) or (ACCi I ST),
-  with the same stobj name (ST) for each binding.  Each of these
-  accessors and (if supplied) updaters is a stobj accessor for the
-  same stobj, which is typically ST but may be a stobj congruent to
-  ST.  In the case (ACC ST), ACC is the accessor for a non-array
-  field.  In the case (ACCi I ST), ACCi is the accessor for an array
-  field and I is either a variable, a natural number, a list (quote
-  N) where N is a natural number, or a symbol introduced by
-  [defconst].  If UPDATER is supplied, then it is a symbol that is
-  the name of the stobj updater for the field of ST accessed by
-  ACCESSOR.  If UPDATER is not supplied, then for the discussion
-  below we consider it to be, implicitly, the symbol in the same
-  package as the function symbol of ACCESSOR (i.e., ACC or ACCi),
-  obtained by prepending the string \"UPDATE-\" to the [symbol-name] of
-  that function symbol.  Finally, ACCESSOR has a [signature]
-  specifying a return value that is either VAL or is a stobj that is
-  congruent to VAL. (This means that only stobjs may be bound in
-  these bindings.)
+  form (VAR ACCESSOR) or (VAR ACCESSOR UPDATER).  Each VAR may occur
+  only once, and to avoid aliasing, each ACCESSOR may occur only
+  once.  There is a stobj name, ST, previously introduced by
+  [defstobj] (not [defabsstobj]), such that each accessor is of the
+  form (ACC ST) or (ACCi I ST), with the same stobj name (ST) for
+  each binding.  Each of these accessors and (if supplied) updaters
+  is a stobj accessor for the same stobj, which is typically ST but
+  may be a stobj congruent to ST.  In the case (ACC ST), ACC is the
+  accessor for a non-array field.  In the case (ACCi I ST), ACCi is
+  the accessor for an array field and I is either a variable, a
+  natural number, a list (quote N) where N is a natural number, or a
+  symbol introduced by [defconst].  If UPDATER is supplied, then it
+  is a symbol that is the name of the stobj updater for the field of
+  ST accessed by ACCESSOR.  If UPDATER is not supplied, then for the
+  discussion below we consider it to be, implicitly, the symbol in
+  the same package as the function symbol of ACCESSOR (i.e., ACC or
+  ACCi), obtained by prepending the string \"UPDATE-\" to the
+  [symbol-name] of that function symbol.  Finally, ACCESSOR has a
+  [signature] specifying a return value that is either VAL or is a
+  stobj that is congruent to VAL. (This means that only stobjs may be
+  bound in these bindings.)
 
-  If the conditions above are met, then the General Form expands to the
-  one of the following expressions, depending on whether the list
+  If the conditions above are met, then the General Form expands to one
+  of the expressions below, depending on whether the list
   PRODUCER-VARIABLES has one member or more than one member,
   respectively.  (But see below for extra code that may be inserted
-  if there are stobj array accesses in BINDINGS.)  Here we write
-  STOBJ-LET-BOUND-VARS for the list of variables VAR discussed above,
-  i.e., for (strip-cars BINDINGS).  And, we write UPDATES for the
-  result of mapping through PRODUCER-VARIABLES and, for each variable
-  VAR that has a binding (VAR ACCESSOR UPDATER) in BINDINGS (where
-  UPDATER may be implicit, as discussed above), collect into UPDATES
-  the tuple (ST (UPDATER VAR ST)).
+  if there are stobj array accesses in BINDINGS.)  We observe the
+  following conventions.
+
+    * Let BINDINGS' be the result of dropping each updater (if any) from
+      BINDINGS, that is, replacing each tuple (VAR ACCESSOR UPDATER)
+      in BINDINGS by (VAR ACCESSOR).
+    * Let STOBJ-LET-BOUND-VARIABLES be the list of variables VAR discussed
+      above, that is, (strip-cars BINDINGS).
+    * Let UPDATES be the result of mapping through PRODUCER-VARIABLES and,
+      for each variable VAR that has a binding (VAR ACCESSOR UPDATER)
+      in BINDINGS (where UPDATER may be implicit, as discussed
+      above), collect into UPDATES the tuple (ST (UPDATER VAR ST)).
 
   For PRODUCER-VARIABLES = (PRODUCER-VAR):
 
-    (let BINDINGS
+    (let BINDINGS'
       (declare (ignorable . STOBJ-LET-BOUND-VARIABLES))
       (let ((PRODUCER-VAR PRODUCER))
         (let* UPDATES
@@ -66001,7 +66013,7 @@ SECTION: Precise documentation for stobj-let
 
   Otherwise:
 
-    (let BINDINGS
+    (let BINDINGS'
       (declare (ignorable . STOBJ-LET-BOUND-VARIABLES))
       (mv-let PRODUCER-VARS
               PRODUCER
@@ -66018,27 +66030,239 @@ SECTION: Precise documentation for stobj-let
   directly in the top-level loop or other top-level contexts for
   execution (such as during [make-event] expansion).
 
-  Finally, let FORM denote the form displayed above (either case).  We
-  explain how FORM is actually replaced by an expression of the form
-  (PROGN$ ... FORM).  This expression generates an extra [guard]
-  proof obligation, which guarantees that no aliasing occurs from
-  binding two stobj-let-bound variables to the same array access.  So
-  fix a stobj array accessor ACCi for which some stobj is bound to
-  (ACCi I ST) in BINDINGS; we define an expression ACCi-CHECK as
-  follows.  Collect up all such index expressions I, where if I is of
-  the form (quote N) then replace I by N.  If the resulting list of
-  index expressions for ACCi consists solely of distinct numbers, or
-  if it is of length 1, then no extra check is generated for ACCi.
-  Otherwise, let ACCi-CHECK be the form (chk-no-duplicatesp (list I1
-  ... Ik)), where I1, ..., Ik are the index expressions for ACCi.
-  Note: chk-no-duplicatesp is a function that returns nil, but has a
-  [guard] that its argument is an [eqlable-listp] that satisfies
-  [no-duplicatesp].  Finally, FORM is replaced by (PROGN$ CHK1 ...
-  CHKn FORM), where each ACCi-CHECK generates a CHKm of the form
-  (with-guard-checking t ACCi-CHECK).  The use of
-  [with-guard-checking] guarantees that the check will always be
-  performed, even in code that is not guard-verified and even when
-  using [program-wrapper]s.")
+  Finally, let FORM denote the form displayed above (either case).
+  When FORM appears in the body of a definition then in some cases,
+  its translation into logic is an expression of the form (PROG2$
+  <check> FORM'), where FORM' is the translation of FORM.  (See
+  [term] for a discussion of translation.)  The <check> expression
+  generates an extra [guard] proof obligation, which guarantees that
+  no aliasing occurs in BINDINGS for two variables bound to accesses
+  of the same stobj array, when at least one of the two variables is
+  a producer variable.  When ACL2 determines that no such aliasing is
+  possible, for example because all the array accesses use distinct
+  numeric indices or because there are no producer variables, then
+  FORM does not undergo such replacement.  Warning: The use of
+  :[trans1] will not show this addition of a check.  But you can see
+  it after admitting the definition of FN (perhaps using
+  [skip-proofs] if you are having difficult admitting the definition)
+  as follows.
+
+    (untranslate (body 'FN nil (w state)) nil (w state))
+
+
+SECTION: Using stobj-let with abstract stobjs
+
+  This section shows how an abstract stobj may be considered to have
+  child stobj accessors and updaters that may be used with stobj-let,
+  in essentially in the same way that a child stobj of a concrete
+  stobj may be accessed and updated with stobj-let.
+
+  Below we assume familiarity with abstract stobjs; see [defabsstobj].
+  We begin with a specification of child stobj accessor/updater pairs
+  for abstract stobjs.  We then present an example.  Finally we
+  conclude by discussing aspects of stobj-let specific to abstract
+  stobjs.
+
+  Child stobj accessors and updaters for abstract stobjs
+
+  The documentation for [defabsstobj] notes a function spec in the
+  :EXPORTS may introduce a child stobj accessor by including the
+  keyword, :UPDATER, whose value is the corresponding child stobj
+  updater.  Here we flesh out that brief summary.
+
+  An abstract stobj st is considered to have a child stobj with
+  accessor acc and updater upd if the defabsstobj event introducing
+  st has a pair of function specs of the following form.
+
+    (acc :logic acc$a :exec acc$c :updater upd) ; and optionally, other keywords
+    (upd :logic upd$a :exec upd$c)              ; and optionally, other keywords
+
+  It is required that acc$c is a child stobj accessor for the
+  foundational stobj, st$c, of st.  It is also required that upd$c is
+  the child stobj updater of st$c that corresponds to acc$c.  We may
+  call acc and upd a child stobj accessor/updater pair for st.  Note
+  that st$c may itself be an abstract stobj, in which case its
+  exports acc$c and upd$c must be a child stobj accessor/updater pair
+  for st$c.
+
+  For acc and acc$c as above, acc is considered to be a scalar accessor
+  if acc$c is a scalar accessor, and otherwise acc is an array
+  accessor; similarly for upd, which therefore is a scalar accessor
+  if and only if acc is a scalar accessor.
+
+  A child stobj accessor/updater pair may be used in stobj-let in the
+  same way when the parent is an abstract stobj as when the parent is
+  a concrete stobj.
+
+  Example uses of stobj-let for an abstract stobj
+
+  The following basic example comes from the [community-book],
+  books/system/tests/abstract-stobj-nesting/two-usuallyequal-nums-stobj-simpler.lisp,
+  which is based on a book contributed by Sol Swords.  This example
+  introduces an abstract stobj with child stobj fields, and uses
+  stobj-let to read and write those fields.
+
+  We start by introducing a concrete stobj with two child stobj fields,
+  each of which represents a natural number, together with a ``valid
+  bit'' that, when true, asserts the equality of those two numbers.
+
+    (defstobj n$ (n$val :type (integer 0 *) :initially 0))
+    (defstobj n$2 (n$val$c :type (integer 0 *) :initially 0)
+      :congruent-to n$)
+    (defstobj two-usuallyequal-nums$c
+      (uenslot1$c :type n$) ; stobj slot ;
+      (uenslot2$c :type n$2) ; stobj slot ;
+      (uenvalid$c :type (member t nil) :initially nil))
+
+  We represent this concrete stobj abstractly using a cons structure of
+  the form (valid slot1 . slot2) for the valid bit and the two
+  numbers.  Here is the recognizer for that abstract stobj.
+
+    (defun-nx two-usuallyequal-nums$ap (x)
+
+    ; A two-usuallyequal-nums contains three fields (valid slot1 . slot2).  Valid
+    ; is Boolean, and slot1 and slot2 are n$ stobjs that must be equal if valid is
+    ; T.
+
+      (declare (xargs :guard t))
+      (and (consp x)
+           (consp (cdr x))
+           (let* ((valid (car x))
+                  (slot1 (cadr x))
+                  (slot2 (cddr x)))
+             (and (booleanp valid)
+                  (n$p slot1)
+                  (n$p slot2)
+                  (implies valid
+                           (equal slot1 slot2))))))
+
+  The next step is to define functions in support of the abstract stobj
+  that we intend to introduce.  Here is one such definition.
+
+    (defun-nx update-uenslot1$a (n$ x)
+      (declare (xargs :guard (and (two-usuallyequal-nums$ap x)
+                                  (or (not (uenvalid$a x))
+                                      (non-exec (equal (n$val n$)
+                                                       (n$val (uenslot2$a x))))))
+                      :stobjs n$))
+      (cons (car x) (cons n$ (cddr x))))
+
+  After introducing such functions we introduce our abstract stobj as
+  follows (see the aforementioned book if you want details).  Notice
+  the use of the :updater keyword, which identifies child stobj
+  fields of the new abstract stobj.  Thus, uenslot1 accesses a child
+  stobj field of the two-usuallyequal-nums stobj, and that field is
+  updated by the specified :updater, update-uenslot1; similarly for
+  uenslot2 and its corresponding updater, update-uenslot2.
+
+    (defabsstobj two-usuallyequal-nums
+      :exports
+      ((uenslot1 :logic uenslot1$a :exec uenslot1$c :updater update-uenslot1)
+       (uenslot2 :logic uenslot2$a :exec uenslot2$c :updater update-uenslot2)
+       (uenvalid :logic uenvalid$a :exec uenvalid$c)
+       (update-uenslot1 :logic update-uenslot1$a :exec update-uenslot1$c)
+       (update-uenslot2 :logic update-uenslot2$a :exec update-uenslot2$c)
+       (update-uenvalid :logic update-uenvalid$a :exec update-uenvalid$c)))
+
+  We may now use stobj-let in the same way that we use it for concrete
+  stobjs with child stobj fields.  That point is illustrated by the
+  following definition, which accesses the numbers in the two child
+  stobj fields.
+
+    (defun fields-of-two-usuallyequal-nums (two-usuallyequal-nums)
+      (declare (xargs :stobjs two-usuallyequal-nums))
+      (stobj-let
+    ; bindings:
+       ((n$  (uenslot1 two-usuallyequal-nums))
+        (n$2 (uenslot2 two-usuallyequal-nums)))
+    ; producer variable:
+       (n1 n2)
+    ; producer:
+       (mv (n$val n$) (n$val n$2))
+    ; consumer:
+       (list :n n1 :n2 n2 :valid (uenvalid two-usuallyequal-nums))))
+
+  Here is what we get when we we this function before updating the
+  abstract stobj.
+
+    ACL2 !>(fields-of-two-usuallyequal-nums two-usuallyequal-nums)
+    (:N 0 :N2 0 :VALID NIL)
+    ACL2 !>
+
+  We can update the abstract stobj by first setting the valid bit to
+  nil, so that we can sequentially update the two child stobjs.  We
+  say more about that point below.
+
+    (defun update-two-usuallyequal-nums (n two-usuallyequal-nums)
+      (declare (xargs :guard (natp n)
+                      :stobjs two-usuallyequal-nums))
+      (let* ((two-usuallyequal-nums (update-uenvalid nil two-usuallyequal-nums)))
+        (stobj-let ((n$ (uenslot1 two-usuallyequal-nums))
+                    (n$2 (uenslot2 two-usuallyequal-nums)))
+                   (n$ n$2)
+                   (let* ((n$ (update-n$val n n$))
+                          (n$2 (update-n$val n n$2)))
+                     (mv n$ n$2))
+                   (update-uenvalid t two-usuallyequal-nums))))
+
+  To see why we first update the valid bit to nil, consider the logical
+  translation of the stobj-let form above.
+
+    ACL2 !>(untranslate (body 'update-two-usuallyequal-nums nil (w state))
+                        nil
+                        (w state))
+    (LET
+     ((TWO-USUALLYEQUAL-NUMS (UPDATE-UENVALID NIL TWO-USUALLYEQUAL-NUMS)))
+     (LET
+      ((N$ (UENSLOT1 TWO-USUALLYEQUAL-NUMS))
+       (N$2 (UENSLOT2 TWO-USUALLYEQUAL-NUMS)))
+      (MV-LET
+       (N$ N$2)
+       (LET* ((N$ (UPDATE-N$VAL N N$))
+              (N$2 (UPDATE-N$VAL N N$2)))
+             (LIST N$ N$2))
+       (LET*
+            ((TWO-USUALLYEQUAL-NUMS (UPDATE-UENSLOT1 N$ TWO-USUALLYEQUAL-NUMS))
+             (TWO-USUALLYEQUAL-NUMS (UPDATE-UENSLOT2 N$2 TWO-USUALLYEQUAL-NUMS)))
+            (UPDATE-UENVALID T TWO-USUALLYEQUAL-NUMS)))))
+    ACL2 !>
+
+  We can see that if the valid bit were t before doing any updates,
+  then the guard proof obligation would fail for the first child
+  stobj update, made with update-uenslot1 (as defined above; see its
+  guard).
+
+  The update works, as shown in the log below.
+
+    ACL2 !>(update-two-usuallyequal-nums 17 two-usuallyequal-nums)
+    <two-usuallyequal-nums>
+    ACL2 !>(fields-of-two-usuallyequal-nums two-usuallyequal-nums)
+    (:N 17 :N2 17 :VALID T)
+    ACL2 !>
+
+  Aspects of stobj-let specific to abstract stobjs
+
+  As suggested by the example above, stobj-let operates about the same
+  whether the parent stobj is a concrete stobj or an abstract stobj.
+  The main difference is in an understanding of the aliasing checks.
+  Recall that for an abstract stobj st, each child stobj accessor has
+  an :EXEC function that is a child stobj accessor of the
+  foundational stobj, st$c, for st.  If st$c is itself an abstract
+  stobj then the :EXEC function for st$c is a child stobj accessor
+  for the foundation of st$c; and so on.  At the end of this chain we
+  have a child stobj accessor for a concrete stobj, which we might
+  call the underlying concrete child stobj accessor.  The
+  anti-aliasing checks are actually done with respect to the
+  underlying concrete child stobj accessors that correspond to the
+  accessors in the BINDINGS.  After all, under the hood those
+  concrete stobj functions are the ones that are actually executed on
+  the ``live'' stobj.
+
+  Another aspect of stobj-let specific to abstract stobjs is how aborts
+  are handled.  If an abort occurs in the middle of a stobj-let that
+  updates child stobjs, when the parent stobj is an abstract stobj,
+  you may be put into an illegal state, with instructions for how to
+  continue at your own risk.  See [illegal-state].")
  (NEVER-MEMOIZE
   (MEMOIZE)
   "Mark a function as unsafe to memoize.
@@ -86963,6 +87187,17 @@ Changes to Existing Features
 
     ACL2 !>
 
+  The [defabsstobj] keyword, :CONCRETE, has been changed to
+  :FOUNDATION.  Although the use of :CONCRETE is still supported in
+  this release (Version 8.4), it generates a warning that this usage
+  is deprecated and will likely not be supported after this release.
+  Also, documentation and comments now typically speak of
+  ``foundational stobj'' for the underlying stobj of the abstract
+  stobj (which can be supplied explicitly by the :FOUNDATION keyword)
+  rather than ``corresponding concrete stobj''; this reflects the
+  fact that the foundational stobj may itself be an abstract stobj
+  (which is not new for this release).
+
 
 New Features
 
@@ -87069,14 +87304,12 @@ New Features
   however will still always take place if EVENT output is not
   inhibited (see [set-inhibit-output-lst]).  See [summary].
 
-  A [defabsstobj] event may now specify child [stobj] fields, for use
-  by [stobj-let].  This feature will likely be documented by the end
-  of July 2021; for now, examples may be found in the
-  [community-books], directory
-  books/system/tests/abstract-stobj-nesting/, where the README file
-  provides a rough guide to the files there.  Thanks to Sol Swords
-  for requesting this feature and helping to design it, and for his
-  helpful discussions, feedback, and test files.
+  A defabsstobj event may now specify child [stobj] fields, for use by
+  [stobj-let].  See [defabsstobj], and see [community-books] file
+  books/system/tests/abstract-stobj-nesting/README for a brief guide
+  to the examples in that directory.  Thanks to Sol Swords for
+  requesting this feature and helping to design it, as well as for
+  his helpful discussions, feedback, and test files.
 
   The :congruent-to keyword is now supported for [defabsstobj].
 
@@ -87424,9 +87657,9 @@ Bug Fixes
   function all-vars-in-hyps.)
 
   For [defabsstobj], a suitable error now occurs when the :LOGIC
-  version of an abstract [stobj] export has the corresponding
-  concrete stobj as a formal parameter that is declared as a [stobj].
-  Formerly, a confusing hard error could occur in this case.
+  version of an abstract [stobj] export has the foundational stobj as
+  a formal parameter that is declared as a [stobj].  Formerly, a
+  confusing hard error could occur in this case.
 
   An unfortunate ``Proof skipped'' could be printed during the
   include-book phase of [certify-book] for certain uses of
@@ -87441,6 +87674,11 @@ Bug Fixes
   Fixed a bug in resizing [stobj] arrays whose elements are specified
   to be (signed-byte 30) or a subtype of that type.  Thanks to Eric
   Smith for reporting this bug with a reproducible example.
+
+  For a [stobj-let] call occurring in other than a definition body, the
+  top-level bindings of variables to child stobj accessors was
+  treated as [let*] rather than as [let].  That was at odds with the
+  documentation, and has been fixed.
 
 
 Changes at the System Level
@@ -106273,15 +106511,16 @@ Subtopics
   where val is evaluated.
 
   Recall (see [defabsstobj]) that for any exported function whose :EXEC
-  function might (according to ACL2's heuristics) modify the concrete
-  stobj non-atomically, one must specify :PROTECT t.  This results in
-  extra code generated for the exported function, which provides a
-  check that atomicity was not actually violated by a call of the
-  exported function.  The extra code might slow down execution, but
-  perhaps only negligibly in typical cases.  If you can tolerate a
-  bit extra slow-down, then evaluate the form (set-absstobj-debug t).
-  Subsequent such errors will provide additional information, as in
-  the example displayed earlier in this documentation topic.
+  function might (according to ACL2's heuristics) modify the
+  foundational stobj non-atomically, one must specify :PROTECT t.
+  This results in extra code generated for the exported function,
+  which provides a check that atomicity was not actually violated by
+  a call of the exported function.  The extra code might slow down
+  execution, but perhaps only negligibly in typical cases.  If you
+  can tolerate a bit extra slow-down, then evaluate the form
+  (set-absstobj-debug t).  Subsequent such errors will provide
+  additional information, as in the example displayed earlier in this
+  documentation topic.
 
   Calls of set-absstobj-debug are legal event forms (e.g., for
   [books]).")
@@ -122128,16 +122367,26 @@ Subtopics
   (MACROS)
   "Print the one-step macroexpansion of a form
 
+  See [term] for background on translated and untranslated terms,
+  including some discussion of macros.
+
     Examples:
     :trans1 (list a b c)
     :trans1 (caddr x)
     :trans1 (cond (p q) (r))
 
-  This function takes one argument, an alleged term, and expands the
-  top-level macro in it for one step only.  Either an error is
-  caused, which happens when the form is not a call of a macro, or
-  the result is printed.  Also see [trans], which translates the
-  given form completely.")
+  This utility takes one argument, an alleged untranslated term, and
+  expands the top-level macro in it for one step only.  Either an
+  error is caused, which happens when the form is not a call of a
+  macro, or the result is printed.  Also see [trans], which
+  translates the given form completely.
+
+  On very rare occasions, complete translation is not quite the same as
+  translating the output of :trans1, though the two should still be
+  logically equivalent.  This can happen for a call of [stobj-let] in
+  the body of a function: its translation may include a check for
+  duplicate indices that is omitted in the single-step
+  macroexpansion.")
  (TRANSLAM
   (APPLY$)
   "Print the translation of a lambda$ expression
