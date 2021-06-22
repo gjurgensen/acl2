@@ -87680,6 +87680,21 @@ Bug Fixes
   treated as [let*] rather than as [let].  That was at odds with the
   documentation, and has been fixed.
 
+  Fixed a bug that caused an error when attempting to redefine a
+  function for which a :[compound-recognizer] rule has been proved.
+  Thanks to Eric McCarthy for reporting this bug (GitHub Issue #1273)
+  with a reproducible example.
+
+  Raw mode now does a better job of maintaining global [stobj] values.
+  Here is an example that illustrates the fix; also see
+  [set-raw-mode], which has been extended to explain a related but
+  remaining issue.
+
+    (defstobj st2 (ar :type (array t (8)) :resizable t))
+    (set-raw-mode-on!)
+    (resize-ar 20 st2)
+    (ar-length st2) ; formerly 8, but now 20 as expected
+
 
 Changes at the System Level
 
@@ -109686,11 +109701,13 @@ Subtopics
   make that happen).  To turn raw mode off or on:
 
     :set-raw-mode t   ; turn raw mode on
+    :set-raw-mode-on! ; same as above, but no trust tag required
     :set-raw-mode nil ; turn raw mode off
 
   The way you can tell that you are in raw mode is by looking at the
   prompt (see [default-print-prompt]), which uses a capital ``P''
-  (suggesting something like program mode, but more so).
+  (suggesting something like [program] mode, but even further from
+  [logic] mode).
 
     ACL2 P>
 
@@ -109700,13 +109717,14 @@ Subtopics
   primitives available).  In addition, ACL2 hard errors will put you
   into the Lisp debugger, rather than returning you to the ACL2 loop,
   and this may be helpful for debugging; see [hard-error] and see
-  [illegal], but also see [break-on-error].  However, it probably is
-  generally best to avoid raw mode unless these advantages seem
-  important.  We expect the main benefit of raw mode to be in
-  deployment of applications, where load time is much faster than the
-  time required for a full-blown [include-book], although in certain
-  cases the fast loading of books and treatment of hard errors
-  discussed above may be useful during development.
+  [illegal], but also see [break-on-error] and [break$].  However, it
+  probably is generally best to avoid raw mode unless these
+  advantages seem important.  We expect the main benefit of raw mode
+  to be in deployment of applications, where raw Lisp code may be
+  useful, and where load time is much faster than the time required
+  for a full-blown [include-book] --- but not that the fast loading
+  of books and treatment of hard errors discussed above may be useful
+  during development.
 
   Raw mode is also useful for those who want to build extensions of
   ACL2.  For example, the following form can be put into a
@@ -109717,12 +109735,11 @@ Subtopics
            (progn! (set-raw-mode t)
                    (load \"some-file\")))
 
-  Also see [include-raw] and [with-raw-mode].  See [defttag], and see
-  [progn!].
+  Also see [include-raw] [with-raw-mode], [defttag], and [progn!].
 
-  Below are several disadvantages to raw mode.  These should discourage
-  users from using it for general code development, as :[program]
-  mode is generally preferable.
+  Below are several disadvantages to using raw mode.  These should
+  discourage users from using it for general code development, as
+  :[program] mode is generally preferable.
 
     * Forms are in essence executed in raw Lisp.  Hence:
         * Syntax checking is turned off; and
@@ -109742,15 +109759,15 @@ Subtopics
 
   We conclude with some details.
 
-  Printing results.  The rules for printing results are unchanged for
-  raw mode, with one exception.  If the value to be printed would
-  contain any Lisp object that is not a legal ACL2 object, then the
-  print routine is used from the host Lisp, rather than the usual
-  ACL2 printing routine.  The following example illustrates the
-  printing used when an illegal ACL2 object needs to be printed.
-  Notice how that ``command conventions'' are observed (see
-  [ld-post-eval-print]); the ``[Note'' occurs one space over in the
-  second example, and no result is printed in the third example.
+  Printing results.  The rules for printing results are essentially
+  unchanged for raw mode, with one major exception.  If the value to
+  be printed would contain any Lisp object that is not a legal ACL2
+  object, then the print routine is used from the host Lisp, rather
+  than the usual ACL2 printing routine.  The following example
+  illustrates the printing used when an illegal ACL2 object needs to
+  be printed.  Notice how that ``command conventions'' are observed
+  (see [ld-post-eval-print]); the ``[Note'' occurs one space over in
+  the second example, and no result is printed in the third example.
 
     ACL2 P>(find-package \"ACL2\")
     [Note:  Printing non-ACL2 result.]
@@ -109768,6 +109785,59 @@ Subtopics
   might want to execute appropriate Common Lisp forms in raw mode,
   for example, (setq *print-length* 5) and (setq *print-level* 5).
 
+  Evaluation in raw mode attempts to maintain global [stobjs], but may
+  not accommodate arbitrary raw Lisp hacks that hide the stobj
+  returned by ACL2.  This can happen in two cases: when array
+  resizing is used on the unique (array) field of a stobj, and when
+  [swap-stobjs] is used.  Consider for example the following log.
+  Evaluation behaves nicely for all forms except the last, where
+  resizing seems not to have taken effect as explained after the log,
+  below.
+
+    ACL2 !>(defstobj st fld)
+
+    Summary
+    Form:  ( DEFSTOBJ ST ...)
+    Rules: NIL
+    Time:  0.02 seconds (prove: 0.00, print: 0.00, other: 0.02)
+     ST
+    ACL2 !>(defstobj st2 (ar :type (array t (8)) :resizable t))
+
+    Summary
+    Form:  ( DEFSTOBJ ST2 ...)
+    Rules: NIL
+    Time:  0.02 seconds (prove: 0.00, print: 0.00, other: 0.02)
+     ST2
+    ACL2 !>(set-raw-mode-on!)
+
+    TTAG NOTE: Adding ttag :RAW-MODE-HACK from the top level loop.
+    ACL2 P>(progn (update-fld 3 st) 17)
+    17
+    ACL2 P>(resize-ar 20 st2)
+    <st2>
+    ACL2 P>(ar-length st2)
+    20
+    ACL2 P>(progn (resize-ar 30 st2) 17)
+    17
+    ACL2 P>(ar-length st2) ; Should be 30, but it's not!
+    20
+    ACL2 P>
+
+  The reason for the last form's ``wrong'' result (and the other
+  ``correct'' results) is technical.  A stobj with a single array
+  field is exactly that array in raw Lisp (except in some cases where
+  that may be an array of characters), in which case resizing
+  completely replaces the stobj in the global structure that stores
+  the global stobj values.  The use of raw-Lisp progn hides the
+  evidence of stobj modification, which is based on the stobjs
+  returned by the form (but this progn form returns 17).  Such
+  evidence is available in the earlier call of resize-ar above, since
+  ACL2 knows that resize-ar returns a st2 stobj.  The update-fld call
+  does not provide such evidence for st1, again because of the progn
+  around the call; but update-fld actually modifies the stobj in
+  place, rather than replacing it in the aforementioned global
+  structure.
+
   Include-book.  The [events] [add-include-book-dir],
   [add-include-book-dir!], [delete-include-book-dir], and
   [delete-include-book-dir!] have been designed to work with raw
@@ -109777,11 +109847,6 @@ Subtopics
   Regarding include-book itself: it should work in raw mode as you
   might expect, at least if a compiled file or expansion file was
   created when the book was certified; see [certify-book].
-
-  Packages.  Raw mode disallows the use of [defpkg].  If you want to
-  create a new package, first exit raw mode with :set-raw-mode nil;
-  you can subsequently re-enter raw mode with :set-raw-mode t if you
-  wish.
 
 
 Subtopics
