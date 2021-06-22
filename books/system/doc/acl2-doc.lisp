@@ -89540,6 +89540,22 @@ it."
  let*) rather than as @(tsee let).  That was at odds with the documentation,
  and has been fixed.</p>
 
+ <p>Fixed a bug that caused an error when attempting to redefine a function for
+ which a @(':')@(tsee COMPOUND-RECOGNIZER) rule has been proved.  Thanks to
+ Eric McCarthy for reporting this bug (GitHub Issue #1273) with a reproducible
+ example.</p>
+
+ <p>Raw mode now does a better job of maintaining global @(see stobj) values.
+ Here is an example that illustrates the fix; also see @(see set-raw-mode),
+ which has been extended to explain a related but remaining issue.</p>
+
+ @({
+ (defstobj st2 (ar :type (array t (8)) :resizable t))
+ (set-raw-mode-on!)
+ (resize-ar 20 st2)
+ (ar-length st2) ; formerly 8, but now 20 as expected
+ })
+
  <h3>Changes at the System Level</h3>
 
  <p>(SBCL only) Filenames are now read as ASCII (specifically, ISO-8859-1) when
@@ -108683,6 +108699,11 @@ arithmetic) for libraries of @(see books) for arithmetic reasoning.</p>")
  })")
 
 (defxdoc set-raw-mode
+
+; Version_8.3 had the following behavior described in :doc note-8-4.  This was
+; fixed by modifying the raw Lisp code for ACL2 source function acl2-raw-eval,
+; by using a new raw Lisp ACL2 source function, stobjs-out-raw.
+
   :parents (defttag)
   :short "Enter or exit ``raw mode,'' a raw Lisp environment"
   :long "<p>Below we discuss raw-mode.  In brief: The simplest way to turn
@@ -108720,12 +108741,14 @@ arithmetic) for libraries of @(see books) for arithmetic reasoning.</p>")
 
  @({
   :set-raw-mode t   ; turn raw mode on
+  :set-raw-mode-on! ; same as above, but no trust tag required
   :set-raw-mode nil ; turn raw mode off
  })
 
  <p>The way you can tell that you are in raw mode is by looking at the prompt
  (see @(see default-print-prompt)), which uses a capital ``@('P')'' (suggesting
- something like program mode, but more so).</p>
+ something like @(see program) mode, but even further from @(see logic)
+ mode).</p>
 
  @({
   ACL2 P>
@@ -108736,13 +108759,13 @@ arithmetic) for libraries of @(see books) for arithmetic reasoning.</p>")
  the ACL2 sources loaded (and hence with ACL2 primitives available).  In
  addition, ACL2 hard errors will put you into the Lisp debugger, rather than
  returning you to the ACL2 loop, and this may be helpful for debugging; see
- @(see hard-error) and see @(see illegal), but also see @(see break-on-error).
- However, it probably is generally best to avoid raw mode unless these
- advantages seem important.  We expect the main benefit of raw mode to be in
- deployment of applications, where load time is much faster than the time
- required for a full-blown @(tsee include-book), although in certain cases the
- fast loading of books and treatment of hard errors discussed above may be
- useful during development.</p>
+ @(see hard-error) and see @(see illegal), but also see @(see break-on-error)
+ and @(see break$).  However, it probably is generally best to avoid raw mode
+ unless these advantages seem important.  We expect the main benefit of raw
+ mode to be in deployment of applications, where raw Lisp code may be useful,
+ and where load time is much faster than the time required for a full-blown
+ @(tsee include-book) &mdash; but not that the fast loading of books and
+ treatment of hard errors discussed above may be useful during development.</p>
 
  <p>Raw mode is also useful for those who want to build extensions of ACL2.
  For example, the following form can be put into a certifiable book to load an
@@ -108754,12 +108777,12 @@ arithmetic) for libraries of @(see books) for arithmetic reasoning.</p>")
                  (load \"some-file\")))
  })
 
- <p>Also see @(see include-raw) and @(see with-raw-mode).  See @(see defttag),
- and see @(see progn!).</p>
+ <p>Also see @(see include-raw) @(see with-raw-mode), @(see defttag), and @(see
+ progn!).</p>
 
- <p>Below are several disadvantages to raw mode.  These should discourage users
- from using it for general code development, as @(':')@(tsee program) mode is
- generally preferable.</p>
+ <p>Below are several disadvantages to using raw mode.  These should discourage
+ users from using it for general code development, as @(':')@(tsee program)
+ mode is generally preferable.</p>
 
  <ul>
  <li>Forms are in essence executed in raw Lisp.  Hence:
@@ -108782,14 +108805,15 @@ arithmetic) for libraries of @(see books) for arithmetic reasoning.</p>")
 
  <p>We conclude with some details.</p>
 
- <p><i>Printing results</i>.  The rules for printing results are unchanged for
- raw mode, with one exception.  If the value to be printed would contain any
- Lisp object that is not a legal ACL2 object, then the @('print') routine is
- used from the host Lisp, rather than the usual ACL2 printing routine.  The
- following example illustrates the printing used when an illegal ACL2 object
- needs to be printed.  Notice how that ``command conventions'' are observed
- (see @(see ld-post-eval-print)); the ``@('[Note')'' occurs one space over in
- the second example, and no result is printed in the third example.</p>
+ <p><i>Printing results</i>.  The rules for printing results are essentially
+ unchanged for raw mode, with one major exception.  If the value to be printed
+ would contain any Lisp object that is not a legal ACL2 object, then the
+ @('print') routine is used from the host Lisp, rather than the usual ACL2
+ printing routine.  The following example illustrates the printing used when an
+ illegal ACL2 object needs to be printed.  Notice how that ``command
+ conventions'' are observed (see @(see ld-post-eval-print)); the ``@('[Note')''
+ occurs one space over in the second example, and no result is printed in the
+ third example.</p>
 
  @({
   ACL2 P>(find-package \"ACL2\")
@@ -108809,6 +108833,58 @@ arithmetic) for libraries of @(see books) for arithmetic reasoning.</p>")
  to execute appropriate Common Lisp forms in raw mode, for example, @('(setq
  *print-length* 5)') and @('(setq *print-level* 5)').</p>
 
+ <p>Evaluation in raw mode attempts to maintain global @(see stobjs), but may
+ not accommodate arbitrary raw Lisp hacks that hide the stobj returned by ACL2.
+ This can happen in two cases: when array resizing is used on the
+ unique (array) field of a stobj, and when @(tsee swap-stobjs) is used.
+ Consider for example the following log.  Evaluation behaves nicely for all
+ forms except the last, where resizing seems not to have taken effect as
+ explained after the log, below.</p>
+
+ @({
+ ACL2 !>(defstobj st fld)
+
+ Summary
+ Form:  ( DEFSTOBJ ST ...)
+ Rules: NIL
+ Time:  0.02 seconds (prove: 0.00, print: 0.00, other: 0.02)
+  ST
+ ACL2 !>(defstobj st2 (ar :type (array t (8)) :resizable t))
+
+ Summary
+ Form:  ( DEFSTOBJ ST2 ...)
+ Rules: NIL
+ Time:  0.02 seconds (prove: 0.00, print: 0.00, other: 0.02)
+  ST2
+ ACL2 !>(set-raw-mode-on!)
+
+ TTAG NOTE: Adding ttag :RAW-MODE-HACK from the top level loop.
+ ACL2 P>(progn (update-fld 3 st) 17)
+ 17
+ ACL2 P>(resize-ar 20 st2)
+ <st2>
+ ACL2 P>(ar-length st2)
+ 20
+ ACL2 P>(progn (resize-ar 30 st2) 17)
+ 17
+ ACL2 P>(ar-length st2) ; Should be 30, but it's not!
+ 20
+ ACL2 P>
+ })
+
+ <p>The reason for the last form's ``wrong'' result (and the other ``correct''
+ results) is technical.  A stobj with a single array field is exactly that
+ array in raw Lisp (except in some cases where that may be an array of
+ characters), in which case resizing completely replaces the stobj in the
+ global structure that stores the global stobj values.  The use of raw-Lisp
+ @('progn') hides the evidence of stobj modification, which is based on the
+ stobjs returned by the form (but this @('progn') form returns 17).  Such
+ evidence is available in the earlier call of @('resize-ar') above, since ACL2
+ knows that @('resize-ar') returns a @('st2') stobj.  The @('update-fld') call
+ does not provide such evidence for @('st1'), again because of the @('progn')
+ around the call; but @('update-fld') actually modifies the stobj in place,
+ rather than replacing it in the aforementioned global structure.</p>
+
  <p><i>Include-book</i>.  The @(see events) @(tsee add-include-book-dir),
  @(tsee add-include-book-dir!), @(tsee delete-include-book-dir), and @(tsee
  delete-include-book-dir!) have been designed to work with raw mode.  However,
@@ -108816,12 +108892,7 @@ arithmetic) for libraries of @(see books) for arithmetic reasoning.</p>")
  forms will disappear when you exit raw mode, in which case you can expect to
  see a suitable warning.  Regarding <i>include-book</i> itself: it should work
  in raw mode as you might expect, at least if a compiled file or expansion file
- was created when the book was certified; see @(see certify-book).</p>
-
- <p><i>Packages</i>.  Raw mode disallows the use of @(tsee defpkg).  If you
- want to create a new package, first exit raw mode with @(':set-raw-mode nil');
- you can subsequently re-enter raw mode with @(':set-raw-mode t') if you
- wish.</p>")
+ was created when the book was certified; see @(see certify-book).</p>")
 
 (defxdoc set-raw-mode-on
   :parents (defttag)
