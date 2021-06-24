@@ -88829,8 +88829,9 @@ it."
 
  <p>ACL2 now points out when specious simplification takes place; see @(see
  specious-simplification).  Formerly this was the case only with @(see
- gag-mode) turned off.  Thanks to Mihir Mehta for a query that led to this
- enhancement.</p>
+ gag-mode) turned off; still, @('prove') output needs to be on for any such
+ message to be printed (see @(see set-inhibit-output-lst)).  Thanks to Mihir
+ Mehta for a query that led to this enhancement.</p>
 
  <p>For @(tsee fmt) directives @('~f') and @('~F'), ACL2 now uses the alist
  component of the @('evisc-tuple') argument and the global @(tsee evisc-table).
@@ -89050,6 +89051,26 @@ it."
  by the @(':FOUNDATION') keyword) rather than ``corresponding concrete stobj'';
  this reflects the fact that the foundational stobj may itself be an abstract
  stobj (which is not new for this release).</p>
+
+ <p>Strengthened error-checking for @(tsee stobj-let) to insist that if an
+ updater is supplied explicitly in a binding, then it must be a valid updater.
+ This check was formerly made only if the variable bound in that binding is
+ among the producer variables (see @(see nested-stobjs)).  For example, the
+ following now causes an error, but it was formerly accepted in spite of the
+ fact that @('xyz') is not the updater for the accessor, @('top1-fld'); in fact
+ @('xyz') is not even defined!</p>
+
+ @({
+ (defstobj sub1 sub1-fld1)
+ (defstobj top1 (top1-fld :type sub1))
+ (defun f1 (top1)
+   (declare (xargs :stobjs top1))
+   (stobj-let
+    ((sub1 (top1-fld top1) xyz)) ; bad updater!
+    (val)
+    (sub1-fld1 sub1)
+    val))
+ })
 
  <h3>New Features</h3>
 
@@ -114588,6 +114609,15 @@ arithmetic) for libraries of @(see books) for arithmetic reasoning.</p>")
 
  @({
   P $* >& foo.out
+ })
+
+ <p>Another approach is suggested by <a
+ href='https://ccl.clozure.com/manual/chapter9.2.html'>a passage in the CCL
+ manual</a>: call the shell program.  For example, here is a how one might list
+ the @('.lisp') files in a directory.</p>
+
+ @({
+ (sys-call \"sh\" '(\"-c\" \"ls *.lisp\"))
  })
 
  <p>For related utilities, see @(see sys-call*) and @(see sys-call+).  Both of
