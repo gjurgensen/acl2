@@ -14135,7 +14135,7 @@ with any questions about building the community books.</p>")
  respectively.</p>
 
  @({
- (set-serialize-character-system nil)
+ (set-serialize-character-system nil state)
  (set-bad-lisp-consp-memoize nil)
  })
 
