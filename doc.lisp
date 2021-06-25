@@ -16983,7 +16983,7 @@ Subtopics
   These two potential causes can be remedied by first evaluating the
   following forms, respectively.
 
-    (set-serialize-character-system nil)
+    (set-serialize-character-system nil state)
     (set-bad-lisp-consp-memoize nil)
 
   If the large object is in an event in the book under certification,
@@ -60145,6 +60145,32 @@ Restriction to Event Contexts
   exception.
 
 
+Avoiding large make-event forms in [certificate] files
+
+  The [certificate] file for a book contains expansions of make-event
+  forms from the book.  (Those interested may find details about this
+  in an Implementation Note about ``The book expansion'' in the
+  documentation topic, [make-event-details].)  Those expansions can
+  be very large if one is not careful.  Consider the difference
+  between the following two events.
+
+    (make-event
+     `(defconst *foo* ,(length (w state))))
+
+    (make-event
+     `(defconst *foo* (length ',(w state))))
+
+  The first generates an expansion such as (defconst *foo* 122700)
+  (where the numeric value depends on the [world] in which the
+  make-event form is evaluated).  The second, however, generates an
+  expansion of the form (defconst *foo* (length '<wrld>)), where
+  <wrld is an ACL2 world --- a very large structure.  The .cert file
+  for a book containing the second form will therefore contain many
+  megabytes.  Moreover, with the second form the length of that world
+  will need to be computed when the book is included (which may be
+  fast, but could be slow for a different such computation).
+
+
 Examples Illustrating How to Access State
 
   You can modify the ACL2 [state] by doing your state-changing
@@ -86990,8 +87016,9 @@ Changes to Existing Features
 
   ACL2 now points out when specious simplification takes place; see
   [specious-simplification].  Formerly this was the case only with
-  [gag-mode] turned off.  Thanks to Mihir Mehta for a query that led
-  to this enhancement.
+  [gag-mode] turned off; still, prove output needs to be on for any
+  such message to be printed (see [set-inhibit-output-lst]).  Thanks
+  to Mihir Mehta for a query that led to this enhancement.
 
   For [fmt] directives ~f and ~F, ACL2 now uses the alist component of
   the evisc-tuple argument and the global [evisc-table].  Previously
@@ -87197,6 +87224,25 @@ Changes to Existing Features
   rather than ``corresponding concrete stobj''; this reflects the
   fact that the foundational stobj may itself be an abstract stobj
   (which is not new for this release).
+
+  Strengthened error-checking for [stobj-let] to insist that if an
+  updater is supplied explicitly in a binding, then it must be a
+  valid updater.  This check was formerly made only if the variable
+  bound in that binding is among the producer variables (see
+  [nested-stobjs]).  For example, the following now causes an error,
+  but it was formerly accepted in spite of the fact that xyz is not
+  the updater for the accessor, top1-fld; in fact xyz is not even
+  defined!
+
+    (defstobj sub1 sub1-fld1)
+    (defstobj top1 (top1-fld :type sub1))
+    (defun f1 (top1)
+      (declare (xargs :stobjs top1))
+      (stobj-let
+       ((sub1 (top1-fld top1) xyz)) ; bad updater!
+       (val)
+       (sub1-fld1 sub1)
+       val))
 
 
 New Features
@@ -115723,6 +115769,13 @@ Subtopics
   instead.  Thus W might be a shell script containing the line:
 
     P $* >& foo.out
+
+  Another approach is suggested by {a passage in the CCL manual |
+  https://ccl.clozure.com/manual/chapter9.2.html}: call the shell
+  program.  For example, here is a how one might list the .lisp files
+  in a directory.
+
+    (sys-call \"sh\" '(\"-c\" \"ls *.lisp\"))
 
   For related utilities, see [sys-call*] and [sys-call+].  Both of
   those utilities return a suitable status (rather than requiring a

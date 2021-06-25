@@ -14135,7 +14135,7 @@ with any questions about building the community books.</p>")
  respectively.</p>
 
  @({
- (set-serialize-character-system nil)
+ (set-serialize-character-system nil state)
  (set-bad-lisp-consp-memoize nil)
  })
 
@@ -56074,6 +56074,34 @@ forms allowed for a @('let') form are  @('ignore'), @('ignorable'), and
  <p>Also see @(see remove-untouchable) for an interesting use of this
  exception.</p>
 
+ <h3>Avoiding large @('make-event') forms in @(see certificate) files</h3>
+
+ <p>The @(see certificate) file for a book contains expansions of
+ @('make-event') forms from the book.  (Those interested may find details about
+ this in an Implementation Note about ``The book expansion'' in the
+ documentation topic, @(see make-event-details).)  Those expansions can be very
+ large if one is not careful.  Consider the difference between the following
+ two events.</p>
+
+ @({
+ (make-event
+  `(defconst *foo* ,(length (w state))))
+
+ (make-event
+  `(defconst *foo* (length ',(w state))))
+
+ })
+
+ <p>The first generates an expansion such as @('(defconst *foo* 122700)')
+ (where the numeric value depends on the @(see world) in which the
+ @('make-event') form is evaluated).  The second, however, generates an
+ expansion of the form @('(defconst *foo* (length '<wrld>))'), where @('<wrld')
+ is an ACL2 world &mdash; a very large structure.  The @('.cert') file for a
+ book containing the second form will therefore contain many megabytes.
+ Moreover, with the second form the length of that world will need to be
+ computed when the book is included (which may be fast, but could be slow for a
+ different such computation).</p>
+
  <h3>Examples Illustrating How to Access State</h3>
 
  <p>You can modify the ACL2 @(see state) by doing your state-changing
@@ -88829,8 +88857,9 @@ it."
 
  <p>ACL2 now points out when specious simplification takes place; see @(see
  specious-simplification).  Formerly this was the case only with @(see
- gag-mode) turned off.  Thanks to Mihir Mehta for a query that led to this
- enhancement.</p>
+ gag-mode) turned off; still, @('prove') output needs to be on for any such
+ message to be printed (see @(see set-inhibit-output-lst)).  Thanks to Mihir
+ Mehta for a query that led to this enhancement.</p>
 
  <p>For @(tsee fmt) directives @('~f') and @('~F'), ACL2 now uses the alist
  component of the @('evisc-tuple') argument and the global @(tsee evisc-table).
@@ -89050,6 +89079,26 @@ it."
  by the @(':FOUNDATION') keyword) rather than ``corresponding concrete stobj'';
  this reflects the fact that the foundational stobj may itself be an abstract
  stobj (which is not new for this release).</p>
+
+ <p>Strengthened error-checking for @(tsee stobj-let) to insist that if an
+ updater is supplied explicitly in a binding, then it must be a valid updater.
+ This check was formerly made only if the variable bound in that binding is
+ among the producer variables (see @(see nested-stobjs)).  For example, the
+ following now causes an error, but it was formerly accepted in spite of the
+ fact that @('xyz') is not the updater for the accessor, @('top1-fld'); in fact
+ @('xyz') is not even defined!</p>
+
+ @({
+ (defstobj sub1 sub1-fld1)
+ (defstobj top1 (top1-fld :type sub1))
+ (defun f1 (top1)
+   (declare (xargs :stobjs top1))
+   (stobj-let
+    ((sub1 (top1-fld top1) xyz)) ; bad updater!
+    (val)
+    (sub1-fld1 sub1)
+    val))
+ })
 
  <h3>New Features</h3>
 
@@ -114588,6 +114637,15 @@ arithmetic) for libraries of @(see books) for arithmetic reasoning.</p>")
 
  @({
   P $* >& foo.out
+ })
+
+ <p>Another approach is suggested by <a
+ href='https://ccl.clozure.com/manual/chapter9.2.html'>a passage in the CCL
+ manual</a>: call the shell program.  For example, here is a how one might list
+ the @('.lisp') files in a directory.</p>
+
+ @({
+ (sys-call \"sh\" '(\"-c\" \"ls *.lisp\"))
  })
 
  <p>For related utilities, see @(see sys-call*) and @(see sys-call+).  Both of
