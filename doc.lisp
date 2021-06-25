@@ -16983,7 +16983,7 @@ Subtopics
   These two potential causes can be remedied by first evaluating the
   following forms, respectively.
 
-    (set-serialize-character-system nil)
+    (set-serialize-character-system nil state)
     (set-bad-lisp-consp-memoize nil)
 
   If the large object is in an event in the book under certification,
@@ -60143,6 +60143,32 @@ Restriction to Event Contexts
 
   Also see [remove-untouchable] for an interesting use of this
   exception.
+
+
+Avoiding large make-event forms in [certificate] files
+
+  The [certificate] file for a book contains expansions of make-event
+  forms from the book.  (Those interested may find details about this
+  in an Implementation Note about ``The book expansion'' in the
+  documentation topic, [make-event-details].)  Those expansions can
+  be very large if one is not careful.  Consider the difference
+  between the following two events.
+
+    (make-event
+     `(defconst *foo* ,(length (w state))))
+
+    (make-event
+     `(defconst *foo* (length ',(w state))))
+
+  The first generates an expansion such as (defconst *foo* 122700)
+  (where the numeric value depends on the [world] in which the
+  make-event form is evaluated).  The second, however, generates an
+  expansion of the form (defconst *foo* (length '<wrld>)), where
+  <wrld is an ACL2 world --- a very large structure.  The .cert file
+  for a book containing the second form will therefore contain many
+  megabytes.  Moreover, with the second form the length of that world
+  will need to be computed when the book is included (which may be
+  fast, but could be slow for a different such computation).
 
 
 Examples Illustrating How to Access State
