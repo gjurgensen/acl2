@@ -4314,20 +4314,22 @@ Subtopics
       Windows operating systems.
 
   Except for the fact that this [ld] command is not typed explicitly by
-  you, it is a standard [ld] command, with one exception: any
-  settings of [ld] specials are remembered once this call of [ld] has
-  completed.  For example, suppose that you start your customization
-  file with (set-ld-skip-proofsp t state), so that proofs are skipped
-  as it is loaded with [ld].  Then the [ld] special [ld-skip-proofsp]
-  will remain t after the [ld] has completed, causing proofs to be
-  skipped in your ACL2 session, unless your customization file sets
-  this variable back to nil, say with (set-ld-skip-proofsp nil
-  state).
+  you, it is a standard [ld] command except that any settings of [ld]
+  specials are remembered once this call of [ld] has completed other
+  than [ld-error-action], which will always be :command-conventions
+  after that call of ld completes.  For example, suppose that you
+  start your customization file with (set-ld-skip-proofsp t state),
+  so that proofs are skipped as it is loaded with [ld].  Then the
+  [ld] special [ld-skip-proofsp] will remain t after the [ld] has
+  completed, causing proofs to be skipped in your ACL2 session,
+  unless your customization file sets this variable back to nil, say
+  with (set-ld-skip-proofsp nil state).
 
   If the customization file exists, it is loaded with [ld] using the
-  usual default values for the [ld] specials (see [ld]).  Thus, if an
-  error is encountered, no subsequent forms in the file will be
-  evaluated.
+  usual default values for the [ld] specials (see [ld]) except that
+  :ld-error-action is :error.  If an error is encountered, then no
+  subsequent forms in the file will be evaluated and ACL2 will quit
+  immediately.
 
   To create a customization file it is recommended that you first give
   it a name other than \"acl2-customization.lsp\" or
@@ -16847,12 +16849,15 @@ Subtopics
   also recording the [command]s necessary to recreate the
   certification [world] (so the appropriate packages can be defined
   when the book is included in other [world]s) and a [book-hash] for
-  each of the [books] involved (see [certificate]); (5) compiles the
-  book if so directed (and then loads the object file in that case).
-  The result of executing a certify-book [command] is the creation of
-  a single new event, which is actually an [include-book] event.  If
-  you don't want its included [events] in your present [world],
-  simply execute :[ubt] :here afterwards.
+  each of the [books] involved (see [certificate]); and (5) compiles
+  the book if so directed (and then loads the object file in that
+  case).
+
+  Certify-book is a macro that returns an [error-triple], where success
+  is indicated by an error component of nil and has the effect of
+  extending the [world] with a corresponding [include-book] event.
+  If you don't want the included book's [events] in your present
+  [world], simply execute :[u].
 
   Technical Remark.  Step 3 above mentions rolling the logical [world]
   back to check for local incompatibilities.  For efficiency, this
@@ -16983,7 +16988,7 @@ Subtopics
   These two potential causes can be remedied by first evaluating the
   following forms, respectively.
 
-    (set-serialize-character-system nil)
+    (set-serialize-character-system nil state)
     (set-bad-lisp-consp-memoize nil)
 
   If the large object is in an event in the book under certification,
@@ -60145,6 +60150,32 @@ Restriction to Event Contexts
   exception.
 
 
+Avoiding large make-event forms in [certificate] files
+
+  The [certificate] file for a book contains expansions of make-event
+  forms from the book.  (Those interested may find details about this
+  in an Implementation Note about ``The book expansion'' in the
+  documentation topic, [make-event-details].)  Those expansions can
+  be very large if one is not careful.  Consider the difference
+  between the following two events.
+
+    (make-event
+     `(defconst *foo* ,(length (w state))))
+
+    (make-event
+     `(defconst *foo* (length ',(w state))))
+
+  The first generates an expansion such as (defconst *foo* 122700)
+  (where the numeric value depends on the [world] in which the
+  make-event form is evaluated).  The second, however, generates an
+  expansion of the form (defconst *foo* (length '<wrld>)), where
+  <wrld is an ACL2 world --- a very large structure.  The .cert file
+  for a book containing the second form will therefore contain many
+  megabytes.  Moreover, with the second form the length of that world
+  will need to be computed when the book is included (which may be
+  fast, but could be slow for a different such computation).
+
+
 Examples Illustrating How to Access State
 
   You can modify the ACL2 [state] by doing your state-changing
@@ -86990,8 +87021,9 @@ Changes to Existing Features
 
   ACL2 now points out when specious simplification takes place; see
   [specious-simplification].  Formerly this was the case only with
-  [gag-mode] turned off.  Thanks to Mihir Mehta for a query that led
-  to this enhancement.
+  [gag-mode] turned off; still, prove output needs to be on for any
+  such message to be printed (see [set-inhibit-output-lst]).  Thanks
+  to Mihir Mehta for a query that led to this enhancement.
 
   For [fmt] directives ~f and ~F, ACL2 now uses the alist component of
   the evisc-tuple argument and the global [evisc-table].  Previously
@@ -87197,6 +87229,25 @@ Changes to Existing Features
   rather than ``corresponding concrete stobj''; this reflects the
   fact that the foundational stobj may itself be an abstract stobj
   (which is not new for this release).
+
+  Strengthened error-checking for [stobj-let] to insist that if an
+  updater is supplied explicitly in a binding, then it must be a
+  valid updater.  This check was formerly made only if the variable
+  bound in that binding is among the producer variables (see
+  [nested-stobjs]).  For example, the following now causes an error,
+  but it was formerly accepted in spite of the fact that xyz is not
+  the updater for the accessor, top1-fld; in fact xyz is not even
+  defined!
+
+    (defstobj sub1 sub1-fld1)
+    (defstobj top1 (top1-fld :type sub1))
+    (defun f1 (top1)
+      (declare (xargs :stobjs top1))
+      (stobj-let
+       ((sub1 (top1-fld top1) xyz)) ; bad updater!
+       (val)
+       (sub1-fld1 sub1)
+       val))
 
 
 New Features
@@ -87786,6 +87837,10 @@ Changes at the System Level
   is earlier on that path).  Thanks to Alessandro Coglio for
   suggesting that an acl2 script be made available with ACL2, and to
   him and Eric Smith for subsequent discussions on that topic.
+
+  When an error occurs while loading an [ACL2-customization] file, ACL2
+  quits with exit code 1.  Thanks to Eric Smith for suggesting the
+  quit and to Eric McCarthy for suggesting exit code 1 in that case.
 
 
 EMACS Support
@@ -92034,19 +92089,21 @@ Implementation
   as one ``class'' for this purpose; and only the current (most
   recent) :elim rule is displayed.
 
-  Otherwise the argument should be a term (in user syntax, so that for
-  example macros are permitted).  In this case, :pl displays rules
-  that are (possibly) applicable to the given term, in order (as
-  above, most recent rule first) for each of these four cases: first
-  :[rewrite-quoted-constant], :[rewrite] and :[definition] rules,
-  then :meta rules, then :[linear] rules, and finally
-  :[type-prescription] rules.  Each rule is displayed with additional
-  information, such as the hypotheses that remain after applying some
-  simple techniques to discharge them that are likely to apply in any
-  context.  (Those techniques include [type-set] reasoning,
-  [forward-chaining], and some attempts to deal with [free-variables]
-  including handling of binding hypotheses, [syntaxp] and
-  [bind-free].)
+  Otherwise the argument should be a term.  Note that the term may have
+  user-level syntax (that is, it may be an untranslated term; see
+  [term]), for example one that is obtained from the theorem prover's
+  output; in particular, macro calls are permitted.  When supplied a
+  term, :pl displays rules that are (possibly) applicable to the
+  given term, in order (as above, most recent rule first) for each of
+  these four cases: first :[rewrite-quoted-constant], :[rewrite] and
+  :[definition] rules, then :meta rules, then :[linear] rules, and
+  finally :[type-prescription] rules.  Each rule is displayed with
+  additional information, such as the hypotheses that remain after
+  applying some simple techniques to discharge them that are likely
+  to apply in any context.  (Those techniques include [type-set]
+  reasoning, [forward-chaining], and some attempts to deal with
+  [free-variables] including handling of binding hypotheses,
+  [syntaxp] and [bind-free].)
 
   It is important to remember that rules displayed as ``applicable'' by
   pl may in fact not be used because of logical requirements, like
@@ -115723,6 +115780,13 @@ Subtopics
   instead.  Thus W might be a shell script containing the line:
 
     P $* >& foo.out
+
+  Another approach is suggested by {a passage in the CCL manual |
+  https://ccl.clozure.com/manual/chapter9.2.html}: call the shell
+  program.  For example, here is a how one might list the .lisp files
+  in a directory.
+
+    (sys-call \"sh\" '(\"-c\" \"ls *.lisp\"))
 
   For related utilities, see [sys-call*] and [sys-call+].  Both of
   those utilities return a suitable status (rather than requiring a

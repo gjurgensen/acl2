@@ -1989,18 +1989,22 @@
  </ol>
 
  <p>Except for the fact that this @(tsee ld) command is not typed explicitly by
- you, it is a standard @(tsee ld) command, with one exception: any settings of
- @(tsee ld) specials are remembered once this call of @(tsee ld) has completed.
- For example, suppose that you start your customization file with
- @('(set-ld-skip-proofsp t state)'), so that proofs are skipped as it is loaded
- with @(tsee ld).  Then the @(tsee ld) special @(tsee ld-skip-proofsp) will
- remain @('t') after the @(tsee ld) has completed, causing proofs to be skipped
- in your ACL2 session, unless your customization file sets this variable back
- to @('nil'), say with @('(set-ld-skip-proofsp nil state)').</p>
+ you, it is a standard @(tsee ld) command except that any settings of @(tsee
+ ld) specials are remembered once this call of @(tsee ld) has completed other
+ than @(tsee ld-error-action), which will always be @(':command-conventions')
+ after that call of @('ld') completes.  For example, suppose that you start
+ your customization file with @('(set-ld-skip-proofsp t state)'), so that
+ proofs are skipped as it is loaded with @(tsee ld).  Then the @(tsee ld)
+ special @(tsee ld-skip-proofsp) will remain @('t') after the @(tsee ld) has
+ completed, causing proofs to be skipped in your ACL2 session, unless your
+ customization file sets this variable back to @('nil'), say with
+ @('(set-ld-skip-proofsp nil state)').</p>
 
  <p>If the customization file exists, it is loaded with @(tsee ld) using the
- usual default values for the @(tsee ld) specials (see @(see ld)).  Thus, if an
- error is encountered, no subsequent forms in the file will be evaluated.</p>
+ usual default values for the @(tsee ld) specials (see @(see ld)) except that
+ @(':ld-error-action') is @(':error').  If an error is encountered, then no
+ subsequent forms in the file will be evaluated and ACL2 will quit
+ immediately.</p>
 
  <p>To create a customization file it is recommended that you first give it a
  name other than @('\"acl2-customization.lsp\"') or
@@ -14031,12 +14035,15 @@ with any questions about building the community books.</p>")
  that the book was certified but also recording the @(see command)s necessary
  to recreate the certification @(see world) (so the appropriate packages can be
  defined when the book is included in other @(see world)s) and a @(see
- book-hash) for each of the @(see books) involved (see @(see certificate)); (5)
- compiles the book if so directed (and then loads the object file in that
- case).  The result of executing a @('certify-book') @(see command) is the
- creation of a single new event, which is actually an @(tsee include-book)
- event.  If you don't want its included @(see events) in your present @(see
- world), simply execute @(':')@(tsee ubt) @(':here') afterwards.</p>
+ book-hash) for each of the @(see books) involved (see @(see certificate)); and
+ (5) compiles the book if so directed (and then loads the object file in that
+ case).</p>
+
+ <p>@('Certify-book') is a macro that returns an @(see error-triple), where
+ success is indicated by an error component of @('nil') and has the effect of
+ extending the @(see world) with a corresponding @(tsee include-book) event.
+ If you don't want the included book's @(see events) in your present @(see
+ world), simply execute @(':')@(tsee u).</p>
 
  <p>Technical Remark.  Step 3 above mentions rolling the logical @(see world)
  back to check for local incompatibilities.  For efficiency, this retraction to
@@ -14135,7 +14142,7 @@ with any questions about building the community books.</p>")
  respectively.</p>
 
  @({
- (set-serialize-character-system nil)
+ (set-serialize-character-system nil state)
  (set-bad-lisp-consp-memoize nil)
  })
 
@@ -56074,6 +56081,34 @@ forms allowed for a @('let') form are  @('ignore'), @('ignorable'), and
  <p>Also see @(see remove-untouchable) for an interesting use of this
  exception.</p>
 
+ <h3>Avoiding large @('make-event') forms in @(see certificate) files</h3>
+
+ <p>The @(see certificate) file for a book contains expansions of
+ @('make-event') forms from the book.  (Those interested may find details about
+ this in an Implementation Note about ``The book expansion'' in the
+ documentation topic, @(see make-event-details).)  Those expansions can be very
+ large if one is not careful.  Consider the difference between the following
+ two events.</p>
+
+ @({
+ (make-event
+  `(defconst *foo* ,(length (w state))))
+
+ (make-event
+  `(defconst *foo* (length ',(w state))))
+
+ })
+
+ <p>The first generates an expansion such as @('(defconst *foo* 122700)')
+ (where the numeric value depends on the @(see world) in which the
+ @('make-event') form is evaluated).  The second, however, generates an
+ expansion of the form @('(defconst *foo* (length '<wrld>))'), where @('<wrld')
+ is an ACL2 world &mdash; a very large structure.  The @('.cert') file for a
+ book containing the second form will therefore contain many megabytes.
+ Moreover, with the second form the length of that world will need to be
+ computed when the book is included (which may be fast, but could be slow for a
+ different such computation).</p>
+
  <h3>Examples Illustrating How to Access State</h3>
 
  <p>You can modify the ACL2 @(see state) by doing your state-changing
@@ -88708,6 +88743,11 @@ it."
 ; Fixed a comment in the definition of source utility warning$-cw, which was
 ; mistakenly showing the use of a summary string.
 
+; Tweaked the output of :help to be about "<name>" rather than "name".  Thanks
+; to Alessandro Coglio for suggesting this change.
+
+
+
   :parents (release-notes)
   :short "ACL2 Version  8.4 (xxx, 20xx) Notes"
   :long "<p>NOTE!  New users can ignore these release notes, because the @(see
@@ -88829,8 +88869,9 @@ it."
 
  <p>ACL2 now points out when specious simplification takes place; see @(see
  specious-simplification).  Formerly this was the case only with @(see
- gag-mode) turned off.  Thanks to Mihir Mehta for a query that led to this
- enhancement.</p>
+ gag-mode) turned off; still, @('prove') output needs to be on for any such
+ message to be printed (see @(see set-inhibit-output-lst)).  Thanks to Mihir
+ Mehta for a query that led to this enhancement.</p>
 
  <p>For @(tsee fmt) directives @('~f') and @('~F'), ACL2 now uses the alist
  component of the @('evisc-tuple') argument and the global @(tsee evisc-table).
@@ -89050,6 +89091,26 @@ it."
  by the @(':FOUNDATION') keyword) rather than ``corresponding concrete stobj'';
  this reflects the fact that the foundational stobj may itself be an abstract
  stobj (which is not new for this release).</p>
+
+ <p>Strengthened error-checking for @(tsee stobj-let) to insist that if an
+ updater is supplied explicitly in a binding, then it must be a valid updater.
+ This check was formerly made only if the variable bound in that binding is
+ among the producer variables (see @(see nested-stobjs)).  For example, the
+ following now causes an error, but it was formerly accepted in spite of the
+ fact that @('xyz') is not the updater for the accessor, @('top1-fld'); in fact
+ @('xyz') is not even defined!</p>
+
+ @({
+ (defstobj sub1 sub1-fld1)
+ (defstobj top1 (top1-fld :type sub1))
+ (defun f1 (top1)
+   (declare (xargs :stobjs top1))
+   (stobj-let
+    ((sub1 (top1-fld top1) xyz)) ; bad updater!
+    (val)
+    (sub1-fld1 sub1)
+    val))
+ })
 
  <h3>New Features</h3>
 
@@ -89642,6 +89703,10 @@ it."
  earlier on that path).  Thanks to Alessandro Coglio for suggesting that an
  @('acl2') script be made available with ACL2, and to him and Eric Smith for
  subsequent discussions on that topic.</p>
+
+ <p>When an error occurs while loading an @(see acl2-customization) file, ACL2
+ quits with exit code 1.  Thanks to Eric Smith for suggesting the quit and to
+ Eric McCarthy for suggesting exit code 1 in that case.</p>
 
  <h3>EMACS Support</h3>
 
@@ -93008,18 +93073,21 @@ arithmetic) for libraries of @(see books) for arithmetic reasoning.</p>")
  @(':meta') rules are considered as one ``class'' for this purpose; and only
  the current (most recent) @(':elim') rule is displayed.</p>
 
- <p>Otherwise the argument should be a term (in user syntax, so that for
- example macros are permitted).  In this case, @(':pl') displays rules that
- are (possibly) applicable to the given term, in order (as above, most recent
- rule first) for each of these four cases: first @(':')@(tsee
- rewrite-quoted-constant), @(':')@(tsee rewrite) and @(':')@(tsee definition)
- rules, then @(':meta') rules, then @(':')@(tsee linear) rules, and finally
- @(':')@(tsee type-prescription) rules.  Each rule is displayed with additional
- information, such as the hypotheses that remain after applying some simple
- techniques to discharge them that are likely to apply in any context.  (Those
- techniques include @(see type-set) reasoning, @(see forward-chaining), and
- some attempts to deal with @(see free-variables) including handling of binding
- hypotheses, @(tsee syntaxp) and @(tsee bind-free).)</p>
+ <p>Otherwise the argument should be a term.  Note that the term may have
+ user-level syntax (that is, it may be an untranslated term; see @(see term)),
+ for example one that is obtained from the theorem prover's output; in
+ particular, macro calls are permitted.  When supplied a term, @(':pl')
+ displays rules that are (possibly) applicable to the given term, in order (as
+ above, most recent rule first) for each of these four cases: first
+ @(':')@(tsee rewrite-quoted-constant), @(':')@(tsee rewrite) and @(':')@(tsee
+ definition) rules, then @(':meta') rules, then @(':')@(tsee linear) rules, and
+ finally @(':')@(tsee type-prescription) rules.  Each rule is displayed with
+ additional information, such as the hypotheses that remain after applying some
+ simple techniques to discharge them that are likely to apply in any
+ context.  (Those techniques include @(see type-set) reasoning, @(see
+ forward-chaining), and some attempts to deal with @(see free-variables)
+ including handling of binding hypotheses, @(tsee syntaxp) and @(tsee
+ bind-free).)</p>
 
  <p>It is important to remember that rules displayed as ``applicable'' by
  @('pl') may in fact not be used because of logical requirements, like
@@ -114588,6 +114656,15 @@ arithmetic) for libraries of @(see books) for arithmetic reasoning.</p>")
 
  @({
   P $* >& foo.out
+ })
+
+ <p>Another approach is suggested by <a
+ href='https://ccl.clozure.com/manual/chapter9.2.html'>a passage in the CCL
+ manual</a>: call the shell program.  For example, here is a how one might list
+ the @('.lisp') files in a directory.</p>
+
+ @({
+ (sys-call \"sh\" '(\"-c\" \"ls *.lisp\"))
  })
 
  <p>For related utilities, see @(see sys-call*) and @(see sys-call+).  Both of
