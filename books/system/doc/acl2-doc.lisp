@@ -23576,7 +23576,10 @@ subtree of X with T, without duplication.</p>
   (nth 4 (global-val 'cltl-command (w state)))
  })
 
- <p><i>immediately after</i> the @('defstobj') event has been processed.</p>
+ <p><i>immediately after</i> the @('defstobj') event has been processed.  Those
+ functions that contain @('(DECLARE (STOBJ-INLINE-FN T))') will generate @(tsee
+ defabbrev) forms because the @(':inline') keyword of @('defstobj') was
+ supplied the value @('t').  The rest will generate @(tsee defun) forms.</p>
 
  <p>A @('defstobj') is considered redundant only if it is syntactically
  identical to a previously executed @('defstobj').  Note that a redundant
@@ -61979,25 +61982,27 @@ it."
 
  <p>@('BINDINGS') is a non-empty true list of tuples, each of which has the
  form @('(VAR ACCESSOR)') or @('(VAR ACCESSOR UPDATER)').  Each @('VAR') may
- occur only once, and to avoid aliasing, each @('ACCESSOR') may occur only
- once.  There is a stobj name, @('ST'), previously introduced by @(tsee
- defstobj) (not @(tsee defabsstobj)), such that each @('accessor') is of the
- form @('(ACC ST)') or @('(ACCi I ST)'), with the same stobj name (@('ST')) for
- each binding.  Each of these accessors and (if supplied) updaters is a stobj
- accessor for the same stobj, which is typically @('ST') but may be a stobj
- congruent to @('ST').  In the case @('(ACC ST)'), @('ACC') is the accessor for
- a non-array field.  In the case @('(ACCi I ST)'), @('ACCi') is the accessor
- for an array field and @('I') is either a variable, a natural number, a list
- @('(quote N)') where @('N') is a natural number, or a symbol introduced by
- @(tsee defconst).  If @('UPDATER') is supplied, then it is a symbol that is
- the name of the stobj updater for the field of @('ST') accessed by
- @('ACCESSOR').  If @('UPDATER') is not supplied, then for the discussion below
- we consider it to be, implicitly, the symbol in the same package as the
- function symbol of @('ACCESSOR') (i.e., @('ACC') or @('ACCi')), obtained by
- prepending the string @('\"UPDATE-\"') to the @(tsee symbol-name) of that
- function symbol.  Finally, @('ACCESSOR') has a @(see signature) specifying a
- return value that is either @('VAL') or is a stobj that is congruent to
- @('VAL'). (This means that only stobjs may be bound in these bindings.)</p>
+ occur only once, and to avoid aliasing, the same @('ACCESSOR') may not be
+ bound more than once if at least one of the variables to which it's bound is
+ among the @('PRODUCER-VARIABLES').  There is a stobj name, @('ST'), previously
+ introduced by @(tsee defstobj) (not @(tsee defabsstobj)), such that each
+ @('accessor') is of the form @('(ACC ST)') or @('(ACCi I ST)'), with the same
+ stobj name (@('ST')) for each binding.  Each of these accessors and (if
+ supplied) updaters is a stobj accessor for the same stobj, which is typically
+ @('ST') but may be a stobj congruent to @('ST').  In the case @('(ACC ST)'),
+ @('ACC') is the accessor for a non-array field.  In the case @('(ACCi I ST)'),
+ @('ACCi') is the accessor for an array field and @('I') is either a variable,
+ a natural number, a list @('(quote N)') where @('N') is a natural number, or a
+ symbol introduced by @(tsee defconst).  If @('UPDATER') is supplied, then it
+ is a symbol that is the name of the stobj updater for the field of @('ST')
+ accessed by @('ACCESSOR').  If @('UPDATER') is not supplied, then for the
+ discussion below we consider it to be, implicitly, the symbol in the same
+ package as the function symbol of @('ACCESSOR') (i.e., @('ACC') or @('ACCi')),
+ obtained by prepending the string @('\"UPDATE-\"') to the @(tsee symbol-name)
+ of that function symbol.  Finally, @('ACCESSOR') has a @(see signature)
+ specifying a return value that is either @('VAL') or is a stobj that is
+ congruent to @('VAL'). (This means that only stobjs may be bound in these
+ bindings.)</p>
 
  <p>If the conditions above are met, then the General Form expands to one of
  the expressions below, depending on whether the list
@@ -62284,18 +62289,24 @@ it."
  <h4>Aspects of @('stobj-let') specific to abstract stobjs</h4>
 
  <p>As suggested by the example above, @('stobj-let') operates about the same
- whether the parent stobj is a concrete stobj or an abstract stobj.  The main
- difference is in an understanding of the aliasing checks.  Recall that for an
- abstract stobj @('st'), each child stobj accessor has an @(':EXEC') function
- that is a child stobj accessor of the foundational stobj, @('st$c'), for
- @('st').  If @('st$c') is itself an abstract stobj then the @(':EXEC')
- function for @('st$c') is a child stobj accessor for the foundation of
- @('st$c'); and so on.  At the end of this chain we have a child stobj accessor
- for a concrete stobj, which we might call the underlying concrete child stobj
- accessor.  The anti-aliasing checks are actually done with respect to the
- underlying concrete child stobj accessors that correspond to the accessors in
- the @('BINDINGS').  After all, under the hood those concrete stobj functions
- are the ones that are actually executed on the ``live'' stobj.</p>
+ whether the parent stobj is a concrete stobj or an abstract stobj.  In this
+ section we discuss some differences.</p>
+
+ <p>One difference is that the only field accessors in the @('BINDINGS') are
+ child stobj field accessors.  After all those are the only exported functions
+ for an abstract stobj that may be considered to correspond to fields..</p>
+
+ <p>Another difference is in the aliasing checks.  Recall that for an abstract
+ stobj @('st'), each child stobj accessor has an @(':EXEC') function that is a
+ child stobj accessor of the foundational stobj, @('st$c'), for @('st').  If
+ @('st$c') is itself an abstract stobj then the @(':EXEC') function for
+ @('st$c') is a child stobj accessor for the foundation of @('st$c'); and so
+ on.  At the end of this chain we have a child stobj accessor for a concrete
+ stobj, which we may call the underlying concrete child stobj accessor.  The
+ aliasing checks are actually done with respect to the underlying concrete
+ child stobj accessors that correspond to the accessors in the @('BINDINGS').
+ After all, under the hood those concrete stobj functions are the ones that are
+ actually executed on the ``live'' stobj.</p>
 
  <p>Another aspect of @('stobj-let') specific to abstract stobjs is how aborts
  are handled.  If an abort occurs in the middle of a @('stobj-let') that
