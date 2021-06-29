@@ -88682,8 +88682,7 @@ it."
 ; - Improved some error messages, e.g., for duplicate expressions in a
 ;   stobj-let's bindings (source function chk-stobj-let/bindings).
 
-; - Improved many comments.  More improvements are likely possible; see
-;   books/system/doc/stobj-fields-of-abstract-stobjs.txt.
+; - Improved many comments.
 
 ; - The 'stobj property for an abstract stobj name now ensures that each
 ;   updater immediately follows the corresponding accessor, as noted in
