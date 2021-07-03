@@ -60521,9 +60521,9 @@ Introduction
   replacement takes place.
 
   Expansion for (encapsulate ... (make-event form ...) ...) is similar
-  to the case for @('progn, except that for if the expansion of form
-  is exp, then what is stored is (record-expansion (make-event form
-  ...)  exp).  Also as for progn, the exception is that when
+  to the case for progn, except that for if the expansion of form is
+  exp, then what is stored is (record-expansion (make-event form ...)
+  exp).  Also as for progn, the exception is that when
   :check-expansion exp is supplied explicitly, no such replacement
   takes place.  Here, record-expansion is a macro that simply returns
   its second argument, but is used for checking redundancy of
@@ -87539,6 +87539,14 @@ Bug Fixes
   a suitable key, but for example the keyword :current-package is
   not.
 
+  It was possible to prove nil by counterfeiting record-expansion
+  calls, which are normally only created by the implementation in
+  support of [make-event] calls.  This soundness bug has been fixed.
+  (The bug was perhaps impossible to hit in ordinary usage, where
+  record-expansion is not used explicitly.)  A proof of nil before
+  this fix may be found in a comment in ACL2 source function,
+  corresponding-encaps.
+
   The mechanism for tracking [warrant]s needed during a proof had a
   bug, which might be a soundness bug if one uses [apply$] or
   [loop$].  That bug has been fixed.
@@ -101508,7 +101516,8 @@ Subtopics
   following ways.
 
     * E1 and E2 are equal; or
-    * E1 is of the form (record-expansion E2 ...); or else
+    * E1 is of the form (record-expansion E2 ...), with the exception noted
+      below; or else
     * E1 and E2 are equal after replacing each sub-event of E1 with its
       [make-event] expansion and replacing each [local] sub-event of
       E1 or E2 by (local (value-triple :elided)).  Here, a sub-event
@@ -101517,6 +101526,11 @@ Subtopics
       [skip-proofs], [with-output], [with-prover-time-limit],
       [with-prover-step-limit], record-expansion, [time$], [progn],
       [progn!], or [encapsulate] itself.
+
+  The second condition has the following exception: it does not apply
+  when the new encapsulate event takes place within an [include-book]
+  event.  (Allowing that would be unsound, as explained in a comment
+  in ACL2 source function corresponding-encaps.)
 
   Remark.  We conclude with some discussion of redundancy of
   encapsulate events in the presence of redefinition (see

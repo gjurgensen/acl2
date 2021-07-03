@@ -56452,8 +56452,8 @@ forms allowed for a @('let') form are  @('ignore'), @('ignorable'), and
  @(':check-expansion exp') is supplied explicitly, then no such replacement
  takes place.</p>
 
- <p>Expansion for @('(encapsulate ... (make-event form ...) ...) is similar to
- the case for @('progn'), except that for if the expansion of @('form') is
+ <p>Expansion for @('(encapsulate ... (make-event form ...) ...)') is similar
+ to the case for @('progn'), except that for if the expansion of @('form') is
  @('exp'), then what is stored is @('(record-expansion (make-event form ...)
  exp)').  Also as for @('progn'), the exception is that when
  @(':check-expansion exp') is supplied explicitly, no such replacement takes
@@ -88450,6 +88450,15 @@ it."
 
 (defxdoc note-8-4
 
+; Total number of release note items: 130, as follows.
+;   41 ; Changes to Existing Features
+;   20 ; New Features
+;   10 ; Heuristic and Efficiency Improvements
+;   42 ; Bug Fixes
+;   13 ; Changes at the System Level
+;    2 ; EMACS Support
+;    2 ; Experimental Versions
+
 ; Any ``Cryptic BRR Message'' printed by the prover now acknowledges that the
 ; issue may be due to an invocation of the prover from within BRR.  (We do not
 ; recall BRR being designed to behave well in this case.)  :DOC brr has been
@@ -89392,6 +89401,13 @@ it."
  @('fmt-control-alist') alist argument are all appropriate; in particular, the
  symbol @('current-package') in the @('\"ACL2\"') package is a suitable key,
  but for example the keyword @(':current-package') is not.</p>
+
+ <p>It was possible to prove @('nil') by counterfeiting @('record-expansion')
+ calls, which are normally only created by the implementation in support of
+ @(tsee make-event) calls.  This soundness bug has been fixed.  (The bug was
+ perhaps impossible to hit in ordinary usage, where @('record-expansion') is
+ not used explicitly.)  A proof of @('nil') before this fix may be found in a
+ comment in ACL2 source function, @('corresponding-encaps').</p>
 
  <p>The mechanism for tracking @(see warrant)s needed during a proof had a bug,
  which might be a soundness bug if one uses @(tsee apply$) or @(tsee loop$).
@@ -100805,7 +100821,8 @@ arithmetic) for libraries of @(see books) for arithmetic reasoning.</p>")
 
  <li>@('E1') and @('E2') are equal; or</li>
 
- <li>@('E1') is of the form @('(record-expansion E2 ...)'); or else</li>
+ <li>@('E1') is of the form @('(record-expansion E2 ...)'), with the exception
+ noted below; or else</li>
 
  <li>@('E1') and @('E2') are equal after replacing each sub-event of @('E1')
  with its @(tsee make-event) expansion and replacing each @(tsee local)
@@ -100817,6 +100834,11 @@ arithmetic) for libraries of @(see books) for arithmetic reasoning.</p>")
  progn), @(tsee progn!), or @(tsee encapsulate) itself.</li>
 
  </ul>
+
+ <p>The second condition has the following exception: it does not apply when
+ the new @('encapsulate') event takes place within an @(tsee include-book)
+ event.  (Allowing that would be unsound, as explained in a comment in ACL2
+ source function @('corresponding-encaps').)</p>
 
  <p><b>Remark</b>.  We conclude with some discussion of redundancy of
  @('encapsulate') events in the presence of redefinition (see @(see
