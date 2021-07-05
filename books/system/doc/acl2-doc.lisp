@@ -88796,7 +88796,37 @@ it."
 ; Tweaked the output of :help to be about "<name>" rather than "name".  Thanks
 ; to Alessandro Coglio for suggesting this change.
 
-
+; The "bleeding-edge" version of the ACL2+books manual -- the one that is most
+; up-to-date and is appropriate for those who use recent copies of ACL2 from
+; the GitHub repository -- can now be accessed using
+; https://www.cs.utexas.edu/users/moore/acl2/manuals/latest or acl2.org/manual.
+; If you stick to those two URLs, you shouldn't encounter any problems.  If you
+; change "https://" to "http://" or drop that prefix entirely, or if you add a
+; "/" after those URLs, there can be issues.  Here is are details about that.
+; using the "LD" topic as an example).  Thanks to Charles Sandel for
+; maintaining acl2.org.
+;
+; - Via www.cs.utexas.edu using https, http, or no prefix, and with or without
+;   "/" after "latest".  Examples:
+;   https://www.cs.utexas.edu/users/moore/acl2/manuals/latest
+;    http://www.cs.utexas.edu/users/moore/acl2/manuals/latest
+;   https://www.cs.utexas.edu/users/moore/acl2/manuals/latest?topic=ACL2____LD
+;           www.cs.utexas.edu/users/moore/acl2/manuals/latest/?topic=ACL2____LD
+;   NOT allowed: omitting both the prefix and the "/" after "latest", e.g.:
+;           www.cs.utexas.edu/users/moore/acl2/manuals/latest?topic=ACL2____LD
+;           www.cs.utexas.edu/users/moore/acl2/manuals/latest
+;
+; - Via acl2.org/manual, provided "https" isn't used and there is no "/" after
+;   manual.  So for example these are all OK.
+;   acl2.org/manual
+;   acl2.org/manual?topic=ACL2____LD
+;   http://acl2.org/manual
+;   http://acl2.org/manual?topic=ACL2____LD
+;   NOT allowed, for example (violating one or both of the restrictions above):
+;   https://acl2.org/manual
+;   https://acl2.org/manual/
+;   http://acl2.org/manual/
+;   http://acl2.org/manual/?topic=ACL2____LD
 
   :parents (release-notes)
   :short "ACL2 Version  8.4 (xxx, 20xx) Notes"
