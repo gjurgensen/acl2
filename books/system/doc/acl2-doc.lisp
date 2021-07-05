@@ -122,6 +122,7 @@
     (NOTE-8-1-BOOKS "[books]/doc/relnotes.lisp")
     (NOTE-8-2-BOOKS "[books]/doc/relnotes.lisp")
     (NOTE-8-3-BOOKS "[books]/doc/relnotes.lisp")
+    (NOTE-8-4-BOOKS "[books]/doc/relnotes.lisp")
     (STR::NUMBERS "[books]/std/strings/top.lisp")
     (OPEN-TRACE-FILE! "[books]/tools/open-trace-file-bang.lisp")
     (ORACLE-TIMELIMIT "[books]/tools/oracle-timelimit.lisp")
@@ -90927,7 +90928,7 @@ arithmetic) for libraries of @(see books) for arithmetic reasoning.</p>")
  close-trace-file) for how to send trace output back to the screen.</p>
 
  <p>@('Open-trace-file') does not work as would reasonably be expected during
- @(tsee make-event) expansion.  Use @('open-trace-file!') instead within
+ @(tsee make-event) expansion.  Use @(tsee open-trace-file!) instead within
  @('make-event').</p>")
 
 (defxdoc or
