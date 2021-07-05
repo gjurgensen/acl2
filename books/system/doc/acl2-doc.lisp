@@ -39422,15 +39422,19 @@ current fast alists."
   :parents (rule-classes term guard)
   :short "Remove trivial calls from a @(see term)"
   :long "<p>For many @(see rule-classes), the process of converting terms to
- rules includes the removal of certain trivial calls from the term.  In all
- such cases, the resulting term is provably equivalent to the input term.  A
- common example is to replace the term @('(prog2$ term1 term2)') by the term
- @('term2').  But @('(prog2$ term1 term2)') is really an abbreviation for
- (i.e., macroexpands to) the term @('(return-last 'progn term1 term2)'); so a
- more accurate explanation, at the level of proper ACL2 @(see term)s, is that
+ rules includes the removal of certain trivial calls from the term.  Such
+ removal is performed in some other settings as well, including @(see hints)
+ processing, generating proof obligations for @(see guard)s and termination,
+ and the storing of induction schemes and @(see constraint)s.</p>
+
+ <p>In all such cases, the resulting term is provably equivalent to the input
+ term.  A common example is to replace the term @('(prog2$ term1 term2)') by
+ the term @('term2').  But @('(prog2$ term1 term2)') is really an abbreviation
+ for (i.e., macroexpands to) the term @('(return-last 'progn term1 term2)'); so
+ a more accurate explanation, at the level of proper ACL2 @(see term)s, is that
  the call of function @(tsee return-last) is replaced by its last argument.
  ACL2 identifies certain such transformations, from a term to a trivial
- simplification of it such that the input and output are provably equal.  We
+ simplification of it, such that the input and output are provably equal.  We
  historically have referred to the process of making such replacements as
  ``removing guard holders.''  (For a discussion of the connection to guards,
  see the ``Essay on the Removal of Guard Holders'' in the ACL2 sources.)</p>
@@ -39455,15 +39459,37 @@ current fast alists."
  ; For replacing equality aliases; for example, this transforms
  ; the macroexpansion of (member x y) to (member-equal x y):
  (('LAMBDA (f1 ... fk) ('RETURN-LAST ''MBE1-RAW exec logic))
-  a1 ... ak)
-                                  ==>  logic
+  a1 ... ak)                      ==>  logic
 
+ ; For other than measure theorems and induction schemes, remove lambda
+ ; applications that are ``trivial'' in either of the following two senses.
+
+ ; For replacing a term (let ((v term)) v) by term:
+ (('LAMBDA (v) v) term)           ==>  term
+
+ ; When each formal is equal to the corresponding actual:
+ (('LAMBDA (f1 ... fk) body)
+  f1 ... fk)                      ==>  body ; restricted as noted above
  })
 
  <p>Because of how @(tsee mbe) and @(tsee ec-call) are defined in terms of
  @(tsee return-last), the expressions @('(mbe :logic l :exec e)') and
  @('(ec-call (f t1 ... tk))') are effectively transformed by removing guard
  holders into @('l') and @('(f t1 ... tk)'), respectively.</p>
+
+ <p>The final two classes of simplification above (removal of ``trivial''
+ lambda applications) may be removed by executing the following form, which is
+ @(tsee local) to an @(tsee encapsulate) form and to @(see books).</p>
+
+ @({
+ (defattach-system remove-guard-holders-lamp constant-nil-function-arity-0)
+ })
+
+ <p>Here is how to restore the default behavior.</p>
+
+ @({
+ (defattach-system remove-guard-holders-lamp constant-t-function-arity-0)
+ })
 
  <p>Note that by default, guard-holders are not removed inside calls of @(tsee
  hide).  You can however cause them to be removed inside such calls after all,
@@ -88450,10 +88476,10 @@ it."
 
 (defxdoc note-8-4
 
-; Total number of release note items: 130, as follows.
+; Total number of release note items: 131, as follows.
 ;   41 ; Changes to Existing Features
 ;   20 ; New Features
-;   10 ; Heuristic and Efficiency Improvements
+;   11 ; Heuristic and Efficiency Improvements
 ;   42 ; Bug Fixes
 ;   13 ; Changes at the System Level
 ;    2 ; EMACS Support
@@ -89373,6 +89399,12 @@ it."
  attempt that failed before this change but now succeeds, and for his
  encouragement to pursue an improvement to linear arithmetic that can benefit
  such proof attempts.</p>
+
+ <p>The removal of @(see guard-holders) has been augmented to include removal
+ of certain ``trivial'' lambda applications.  See @(see guard-holders), in
+ particular for how to restore the legacy behavior.  Thanks to Alessandro
+ Coglio for an example and Eric Smith for a subsequent suggestion that led to
+ this enhancement.</p>
 
  <h3>Bug Fixes</h3>
 
