@@ -42822,19 +42822,25 @@ Subtopics
   "Remove trivial calls from a [term]
 
   For many [rule-classes], the process of converting terms to rules
-  includes the removal of certain trivial calls from the term.  In
-  all such cases, the resulting term is provably equivalent to the
+  includes the removal of certain trivial calls from the term.  Such
+  removal is performed in some other settings as well, including
+  [hints] processing, generating proof obligations for [guard]s and
+  termination, and the storing of induction schemes and
+  [constraint]s.
+
+  In all such cases, the resulting term is provably equivalent to the
   input term.  A common example is to replace the term (prog2$ term1
   term2) by the term term2.  But (prog2$ term1 term2) is really an
   abbreviation for (i.e., macroexpands to) the term (return-last
   'progn term1 term2); so a more accurate explanation, at the level
   of proper ACL2 [term]s, is that the call of function [return-last]
   is replaced by its last argument.  ACL2 identifies certain such
-  transformations, from a term to a trivial simplification of it such
-  that the input and output are provably equal.  We historically have
-  referred to the process of making such replacements as ``removing
-  guard holders.'' (For a discussion of the connection to guards, see
-  the ``Essay on the Removal of Guard Holders'' in the ACL2 sources.)
+  transformations, from a term to a trivial simplification of it,
+  such that the input and output are provably equal.  We historically
+  have referred to the process of making such replacements as
+  ``removing guard holders.'' (For a discussion of the connection to
+  guards, see the ``Essay on the Removal of Guard Holders'' in the
+  ACL2 sources.)
 
   The process of removing guard-holders includes the transformations
   below.  That process is also applied to each argument of a function
@@ -42855,13 +42861,32 @@ Subtopics
     ; For replacing equality aliases; for example, this transforms
     ; the macroexpansion of (member x y) to (member-equal x y):
     (('LAMBDA (f1 ... fk) ('RETURN-LAST ''MBE1-RAW exec logic))
-     a1 ... ak)
-                                     ==>  logic
+     a1 ... ak)                      ==>  logic
+
+    ; For other than measure theorems and induction schemes, remove lambda
+    ; applications that are ``trivial'' in either of the following two senses.
+
+    ; For replacing a term (let ((v term)) v) by term:
+    (('LAMBDA (v) v) term)           ==>  term
+
+    ; When each formal is equal to the corresponding actual:
+    (('LAMBDA (f1 ... fk) body)
+     f1 ... fk)                      ==>  body
 
   Because of how [mbe] and [ec-call] are defined in terms of
   [return-last], the expressions (mbe :logic l :exec e) and (ec-call
   (f t1 ... tk)) are effectively transformed by removing guard
   holders into l and (f t1 ... tk), respectively.
+
+  The final two classes of simplification above (removal of ``trivial''
+  lambda applications) may be removed by executing the following
+  form, which is [local] to an [encapsulate] form and to [books].
+
+    (defattach-system remove-guard-holders-lamp constant-nil-function-arity-0)
+
+  Here is how to restore the default behavior.
+
+    (defattach-system remove-guard-holders-lamp constant-t-function-arity-0)
 
   Note that by default, guard-holders are not removed inside calls of
   [hide].  You can however cause them to be removed inside such calls
@@ -52331,7 +52356,7 @@ Subtopics
     * writing a value of the wrong type to a [stobj] field; or
     * performing an out-of-bounds write to an ACL2 [array].
 
-  Whenever a :[program] mode function call can perhaps lead to such a
+  Whenever a :[program]-mode function call can perhaps lead to such a
   write, [guard]-checking is performed by ACL2, even though the
   normal expectation is to execute without such checks in Common
   Lisp; see [evaluation].  Consider the following example.
@@ -52356,6 +52381,11 @@ Subtopics
   Each of the two calls of g produces an \"Invariant-risk\" warning, and
   indeed [guard]s are checked for the ensuing calls of f, causing a
   guard violation for the second call of g.
+
+  We may say that such :[program]-mode functions have invariant-risk.
+  Because of how the ``aggressive protection'' discussed above is
+  implemented, recursive calls of invariant-risk functions are not
+  traced; see [trace$].
 
   There are two general methods for avoiding such warnings: at runtime
   with [set-check-invariant-risk], and at definition time with
@@ -87508,6 +87538,12 @@ Heuristic and Efficiency Improvements
   improvement to linear arithmetic that can benefit such proof
   attempts.
 
+  The removal of [guard-holders] has been augmented to include removal
+  of certain ``trivial'' lambda applications.  See [guard-holders],
+  in particular for how to restore the legacy behavior.  Thanks to
+  Alessandro Coglio for an example and Eric Smith for a subsequent
+  suggestion that led to this enhancement.
+
 
 Bug Fixes
 
@@ -122207,7 +122243,8 @@ Advanced Options (alphabetical list)
 
   By default, a new definition installed by trace$ will include a
   notinline declaration so that recursive calls will always be
-  traced.  To avoid this declaration, supply value nil.
+  traced.  (But see Remark (0) below for an exception involving
+  [invariant-risk].)  To avoid this declaration, supply value nil.
 
   A special value for :notinline, :fncall, will cause the traced
   function to call its original definition.  Without this special
@@ -122227,6 +122264,14 @@ Advanced Options (alphabetical list)
 
 
 Remarks
+
+  (0) For a :[program] mode function with [invariant-risk], recursive
+  calls are never traced.  To see these recursive calls, use one of
+  the two methods to defeat invariant-risk checking; see
+  [invariant-risk]. (Implementation note: This behavior on recursive
+  calls is a consequence of how ACL2 defines the
+  executable-counterpart --- also known as the ``*1* function'' (see
+  [evaluation]) --- to call a local function to do the computation.)
 
   (1) If some of the given trace specs have errors, then trace$ will
   generally print error messages for those but will still process

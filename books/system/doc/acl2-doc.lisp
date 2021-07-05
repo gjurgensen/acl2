@@ -39469,7 +39469,7 @@ current fast alists."
 
  ; When each formal is equal to the corresponding actual:
  (('LAMBDA (f1 ... fk) body)
-  f1 ... fk)                      ==>  body ; restricted as noted above
+  f1 ... fk)                      ==>  body
  })
 
  <p>Because of how @(tsee mbe) and @(tsee ec-call) are defined in terms of
@@ -48653,7 +48653,7 @@ tables in the current Hons Space."
 
  </ul>
 
- <p>Whenever a @(':')@(tsee program) mode function call can perhaps lead to
+ <p>Whenever a @(':')@(tsee program)-mode function call can perhaps lead to
  such a write, @(see guard)-checking is performed by ACL2, even though the
  normal expectation is to execute without such checks in Common Lisp; see @(see
  evaluation).  Consider the following example.</p>
@@ -48680,6 +48680,11 @@ tables in the current Hons Space."
  <p>Each of the two calls of @('g') produces an @('\"Invariant-risk\"')
  warning, and indeed @(see guard)s are checked for the ensuing calls of @('f'),
  causing a guard violation for the second call of @('g').</p>
+
+ <p>We may say that such @(':')@(tsee program)-mode functions have
+ invariant-risk.  Because of how the ``aggressive protection'' discussed above
+ is implemented, recursive calls of invariant-risk functions are not traced;
+ see @(see trace$).</p>
 
  <p>There are two general methods for avoiding such warnings: at runtime with
  @(tsee set-check-invariant-risk), and at definition time with @(tsee
@@ -120266,8 +120271,9 @@ arithmetic) for libraries of @(see books) for arithmetic reasoning.</p>")
  <p>@(':NOTINLINE')</p>
 
  <p>By default, a new definition installed by @('trace$') will include a
- @('notinline') declaration so that recursive calls will always be traced.  To
- avoid this declaration, supply value @('nil').</p>
+ @('notinline') declaration so that recursive calls will always be traced.
+ (But see Remark (0) below for an exception involving @(see invariant-risk).)
+ To avoid this declaration, supply value @('nil').</p>
 
  <p>A special value for @(':notinline'), @(':fncall'), will cause the traced
  function to call its original definition.  Without this special value, the new
@@ -120292,6 +120298,14 @@ arithmetic) for libraries of @(see books) for arithmetic reasoning.</p>")
  the cases displayed above), @('nil'), and @(':fncall').</p>
 
  <h3>Remarks</h3>
+
+ <p>(0) For a @(':')@(tsee program) mode function with @(see invariant-risk),
+ recursive calls are never traced.  To see these recursive calls, use one of
+ the two methods to defeat invariant-risk checking; see @(see
+ invariant-risk). (Implementation note: This behavior on recursive calls is a
+ consequence of how ACL2 defines the executable-counterpart &mdash; also known
+ as the ``*1* function'' (see @(see evaluation)) &mdash; to call a local
+ function to do the computation.)</p>
 
  <p>(1) If some of the given trace specs have errors, then @('trace$') will
  generally print error messages for those but will still process those that do
