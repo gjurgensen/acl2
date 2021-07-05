@@ -88804,7 +88804,9 @@ it."
 ; change "https://" to "http://" or drop that prefix entirely, or if you add a
 ; "/" after those URLs, there can be issues.  Here is are details about that.
 ; using the "LD" topic as an example).  Thanks to Charles Sandel for
-; maintaining acl2.org.
+; maintaining acl2.org and to Eric Smith for suggesting better URLs than the
+; old one, which however still works
+; (http://www.cs.utexas.edu/users/moore/acl2/manuals/current/manual/index.html).
 ;
 ; - Via www.cs.utexas.edu using https, http, or no prefix, and with or without
 ;   "/" after "latest".  Examples:
