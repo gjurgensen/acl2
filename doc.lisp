@@ -14852,6 +14852,7 @@ Subtopics
        (note-8-1-books \"[books]/doc/relnotes.lisp\")
        (note-8-2-books \"[books]/doc/relnotes.lisp\")
        (note-8-3-books \"[books]/doc/relnotes.lisp\")
+       (note-8-4-books \"[books]/doc/relnotes.lisp\")
        (str::numbers \"[books]/std/strings/top.lisp\")
        (open-trace-file! \"[books]/tools/open-trace-file-bang.lisp\")
        (oracle-timelimit \"[books]/tools/oracle-timelimit.lisp\")
@@ -86954,10 +86955,10 @@ Experimental Versions")
   many changes could be placed in more than one category.
 
   Note that only ACL2 system changes are listed below.  See also
-  note-8-4-books for a summary of changes made to the ACL2 Community
-  Books since ACL2 8.3, including the build system.  Also note that
-  with each release, it is typical that the value of constant
-  [*ACL2-exports*] has been extended, and that some built-in
+  [note-8-4-books] for a summary of changes made to the ACL2
+  Community Books since ACL2 8.3, including the build system.  Also
+  note that with each release, it is typical that the value of
+  constant [*ACL2-exports*] has been extended, and that some built-in
   functions that were formerly in :[program] mode are now
   [guard]-verified :[logic] mode functions.
 
@@ -89410,7 +89411,7 @@ Subtopics
   screen.
 
   Open-trace-file does not work as would reasonably be expected during
-  [make-event] expansion.  Use open-trace-file! instead within
+  [make-event] expansion.  Use [open-trace-file!] instead within
   make-event.")
  (OPTIMIZE (POINTERS) "See [declare].")
  (OR
