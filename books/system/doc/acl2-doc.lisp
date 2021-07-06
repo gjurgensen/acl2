@@ -1402,6 +1402,10 @@
 
  <li>IBM</li>
 
+ <li>Kestrel Institute</li>
+
+ <li>Kestrel Technology</li>
+
  <li>NSF</li>
 
  <li>ONR</li>
