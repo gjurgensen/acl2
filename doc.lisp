@@ -87899,6 +87899,13 @@ Changes at the System Level
   quits with exit code 1.  Thanks to Eric Smith for suggesting the
   quit and to Eric McCarthy for suggesting exit code 1 in that case.
 
+  ACL2 now does a more thorough job of doing proofs when ``make
+  proofs'' is executed.  In particular, proofs were formerly skipped
+  but are now performed for [defun] forms containing the explicit
+  [xargs] [declaration], :mode :logic, and for [defthm] events
+  evaluated with [default-defun-mode] :logic outside the so-called
+  ``pass 2 files''.
+
 
 EMACS Support
 
@@ -116371,7 +116378,10 @@ List of a few built-in system utilities
     * (get-brr-local var state): The value of brr-local variable var; this
       is the utility used by [brr@].
     * (get-event name w): For the given name of an event in the current
-      ACL2 [world] w, return that event.
+      ACL2 [world] w, return that event.  Typically there is only one
+      such event, but for built-in functions the most recent event
+      might be a variant of a [verify-termination] event, so consider
+      using logical-defun for names of functions (see below).
     * (get-skipped-proofs-p name w): For the given name of an event in the
       current ACL2 [world] w, return t if proofs were skipped when
       introducing that event, as with [skip-proofs] or using
@@ -116396,8 +116406,8 @@ List of a few built-in system utilities
       This is essentially just the body argument, which here is the
       indicated [fms] call, but where, going through the other
       arguments:
-        * summary --- printing only takes place when summary output is enabled
-          (see [set-inhibit-output-lst]);
+        * summary --- evaluation only takes place when summary output is
+          enabled (see [set-inhibit-output-lst]);
         * nil --- don't enter a wormhole;
         * state --- the body (which here is the fms call) returns a single
           state value; and finally
@@ -116426,7 +116436,10 @@ List of a few built-in system utilities
       following are not: :abc, t, nil, &a (a lambda keyword), *c*
       (syntax of a constant), and pi (a Common Lisp constant).
     * (logical-defun name w): For the given name of a defined function in
-      the current ACL2 [world] w, return its [defun] form.
+      the current ACL2 [world] w, return its [defun] form.  Note that
+      this applies to both :[logic]-mode and :[program]-mode
+      functions, in spite of the name, ``logical'' (which is actually
+      intended to distinguish from ``raw Lisp'').
     * (logicp fn w): For a function symbol fn of [world] w, return t when
       the symbol-class of fn in w is not :program, else nil.  (See
       symbol-class, below.)

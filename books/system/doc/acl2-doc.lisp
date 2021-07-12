@@ -88491,7 +88491,7 @@ it."
 ;   20 ; New Features
 ;   11 ; Heuristic and Efficiency Improvements
 ;   42 ; Bug Fixes
-;   13 ; Changes at the System Level
+;   14 ; Changes at the System Level
 ;    2 ; EMACS Support
 ;    2 ; Experimental Versions
 
@@ -89807,6 +89807,13 @@ it."
  <p>When an error occurs while loading an @(see acl2-customization) file, ACL2
  quits with exit code 1.  Thanks to Eric Smith for suggesting the quit and to
  Eric McCarthy for suggesting exit code 1 in that case.</p>
+
+ <p>ACL2 now does a more thorough job of doing proofs when ``@('make proofs')''
+ is executed.  In particular, proofs were formerly skipped but are now
+ performed for @(tsee defun) forms containing the explicit @(tsee xargs) @(see
+ declaration), @(':mode :logic'), and for @(tsee defthm) events evaluated with
+ @(see default-defun-mode) @(':logic') outside the so-called ``pass 2
+ files''.</p>
 
  <h3>EMACS Support</h3>
 
@@ -115347,7 +115354,10 @@ arithmetic) for libraries of @(see books) for arithmetic reasoning.</p>")
  this is the utility used by @(see brr@).</li>
 
  <li>@('(get-event name w)'): For the given name of an event in the current
- ACL2 @(see world) @('w'), return that event.</li>
+ ACL2 @(see world) @('w'), return that event.  Typically there is only one such
+ event, but for built-in functions the most recent event might be a variant of
+ a @(tsee verify-termination) event, so consider using @('logical-defun') for
+ names of functions (see below).</li>
 
  <li>@('(get-skipped-proofs-p name w)'): For the given name of an event in the
  current ACL2 @(see world) @('w'), return @('t') if proofs were skipped when
@@ -115380,8 +115390,8 @@ arithmetic) for libraries of @(see books) for arithmetic reasoning.</p>")
 
    <ul>
 
-   <li>@('summary') &mdash; printing only takes place when @('summary') output is
-   enabled (see @(see set-inhibit-output-lst));</li>
+   <li>@('summary') &mdash; evaluation only takes place when @('summary')
+   output is enabled (see @(see set-inhibit-output-lst));</li>
 
    <li>@('nil') &mdash; don't enter a wormhole;</li>
 
@@ -115423,7 +115433,10 @@ arithmetic) for libraries of @(see books) for arithmetic reasoning.</p>")
  constant).</li>
 
  <li>@('(logical-defun name w)'): For the given name of a defined function in
- the current ACL2 @(see world) @('w'), return its @(tsee defun) form.</li>
+ the current ACL2 @(see world) @('w'), return its @(tsee defun) form.  Note
+ that this applies to both @(':')@(tsee logic)-mode and @(':')@(tsee
+ program)-mode functions, in spite of the name, ``logical'' (which is actually
+ intended to distinguish from ``raw Lisp'').</li>
 
  <li>@('(logicp fn w)'): For a function symbol @('fn') of @(see world)
  @('w'), return @('t') when the @('symbol-class') of @('fn') in @('w') is not
