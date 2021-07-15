@@ -16502,6 +16502,30 @@ with any questions about building the community books.</p>")
  against @('nil').  The argument list for @('cond') is a list of ``clauses'',
  each of which is a list.  In ACL2, clauses must have length 1 or 2.</p>
 
+ @({
+ ; Example 1.  The form
+   (COND ((CONSP X) (FOO X Y))
+         ((SYMBOLP X) (BAR X Y))
+         (T (LIST X Y)))
+ ; abbreviates the following.
+   (IF (CONSP X)
+       (FOO X Y)
+       (IF (SYMBOLP X)
+           (BAR X Y)
+           (LIST X Y)))
+
+ ; Example 2.  The form
+   (COND ((CONSP X))
+         ((SYMBOLP X) (BAR X Y)))
+ ; abbreviates the following.
+   (OR (CONSP X)
+       (IF (SYMBOLP X) (BAR X Y) NIL))
+ })
+
+ <p>The results above were obtained by typing @(':trans1') followed by the form
+ in the ACL2 loop, and then hitting @('<RETURN>').  See @(see trans1).  You can
+ experiment in this way to see other such examples.</p>
+
  <p>@('Cond') is a Common Lisp macro.  See any Common Lisp documentation for
  more information.</p>
 
@@ -18419,7 +18443,7 @@ subtree of X with T, without duplication.</p>
  you submit to ACL2, we say that @('A') is a ``proof-supporter'' of @('B').
  ACL2 stores an association list such that for every event @('B') with at least
  one proof-supporter, @('B') is associated with a list of all of its
- proof-supporters, sorted by @(tsee symbol-<).  The following form evaluates to
+ proof-supporters, sorted by @(tsee symbol<).  The following form evaluates to
  that alist, which is called the ``proof-supporters-alist''.</p>
 
  @({
@@ -19861,6 +19885,10 @@ subtree of X with T, without duplication.</p>
  <p>where each indicated keyword-value pair is optional and each keyword is in
  the list @(`*defattach-keys-extended*`).  More details are in the ``Syntax and
  Semantics'' section below.</p>
+
+ <p>A related utility can cause a function call to be evaluated using an
+ alternate, provably equal function.  See @(see memoize), option
+ @(':INVOKE').</p>
 
  <p>This @(see documentation) topic is organized into the following
  sections:</p>
@@ -68946,7 +68974,7 @@ it."
    ((\"Goal\"
      :IN-THEORY
      (UNION-THEORIES
-      '(STRING< SYMBOL-<)
+      '(STRING< SYMBOL<)
       (DISABLE
          CODE-CHAR-CHAR-CODE-IS-IDENTITY))
      :USE
@@ -68986,7 +69014,7 @@ it."
    ((\"Goal\"
        :IN-THEORY
        (UNION-THEORIES
-            '(STRING< SYMBOL-<)
+            '(STRING< SYMBOL<)
             (DISABLE CODE-CHAR-CHAR-CODE-IS-IDENTITY))
        :USE ((:INSTANCE SYMBOL-EQUALITY (S1 X)
                         (S2 Y))
@@ -69017,7 +69045,7 @@ it."
    :HINTS
    ((\"Goal\" :IN-THEORY
             (UNION-THEORIES
-                 '(STRING< SYMBOL-<)
+                 '(STRING< SYMBOL<)
                  (DISABLE CODE-CHAR-CHAR-CODE-IS-IDENTITY))
             :USE
             ((:INSTANCE SYMBOL-EQUALITY (S1 X)
@@ -81663,7 +81691,7 @@ it."
 ;
 ;   (defun foo () 'foo)
 ;   (defthm symbolp-foo (symbolp (foo)))
-;   :pl2 (symbol-< 'x 'z) symbol-<-transitive
+;   :pl2 (symbol< 'x 'z) symbol<-transitive
 
 ; We now avoid a raw Lisp error for encapsulate events occurring when trying to
 ; check for redundancy.  The problem was that getprop was being called by
@@ -88487,7 +88515,7 @@ it."
 (defxdoc note-8-4
 
 ; Total number of release note items: 131, as follows.
-;   41 ; Changes to Existing Features
+;   42 ; Changes to Existing Features
 ;   20 ; New Features
 ;   11 ; Heuristic and Efficiency Improvements
 ;   42 ; Bug Fixes
@@ -89198,6 +89226,17 @@ it."
     (sub1-fld1 sub1)
     val))
  })
+
+ <p>The function symbol @('symbol<') replaces the function symbol
+ @('symbol-<').  More generally, for every built-in function symbol and theorem
+ name containing @('\"SYMBOL-<\"'), that string in its @(tsee symbol-name) is
+ replaced by @('\"SYMBOL<\"').  The function @('logical-defun') is similarly
+ replaced by @('get-defun-event').  Thanks to Alessandro Coglio for suggesting
+ these changes.  Note that the old function names still work in ACL2 Version
+ 8.4, as they are macro-aliases for the corresponding new function names (see
+ @(see add-macro-alias)); however, they are deprecated and will probably not be
+ supported in later ACL2 versions.  (A deprecation warning is printed each time
+ one of those macros is expanded.)</p>
 
  <h3>New Features</h3>
 
@@ -114133,22 +114172,6 @@ arithmetic) for libraries of @(see books) for arithmetic reasoning.</p>")
  stobj-let).  It also explains subtle interaction with @(tsee
  trans-eval).</p>")
 
-(defxdoc symbol-<
-  :parents (symbols acl2-built-ins)
-  :short "Less-than test for symbols"
-  :long "<p>@('(symbol-< x y)') is non-@('nil') if and only if either the
- @(tsee symbol-name) of the symbol @('x') lexicographically precedes the @(tsee
- symbol-name) of the symbol @('y') (in the sense of @(tsee string<)) or else
- the @(tsee symbol-name)s are equal and the @(tsee symbol-package-name) of
- @('x') lexicographically precedes that of @('y') (in the same sense).  So for
- example, @('(symbol-< 'abcd 'abce)') and @('(symbol-< 'acl2::abcd
- 'foo::abce)') are true.</p>
-
- <p>The @(see guard) for @('symbol') specifies that its arguments are
- symbols.</p>
-
- @(def symbol-<)")
-
 (defxdoc symbol-alistp
   :parents (alists acl2-built-ins)
   :short "Recognizer for association lists with symbols as keys"
@@ -114219,6 +114242,22 @@ arithmetic) for libraries of @(see books) for arithmetic reasoning.</p>")
  For example, in GCL @('(symbol-package-name 'car)') evaluates to
  \"COMMON-LISP\" even though the actual package name for the symbol, @('car'),
  is \"LISP\".</p>")
+
+(defxdoc symbol<
+  :parents (symbols acl2-built-ins)
+  :short "Less-than test for symbols"
+  :long "<p>@('(symbol< x y)') is non-@('nil') if and only if either the
+ @(tsee symbol-name) of the symbol @('x') lexicographically precedes the @(tsee
+ symbol-name) of the symbol @('y') (in the sense of @(tsee string<)) or else
+ the @(tsee symbol-name)s are equal and the @(tsee symbol-package-name) of
+ @('x') lexicographically precedes that of @('y') (in the same sense).  So for
+ example, @('(symbol< 'abcd 'abce)') and @('(symbol< 'acl2::abcd
+ 'foo::abce)') are true.</p>
+
+ <p>The @(see guard) for @('symbol') specifies that its arguments are
+ symbols.</p>
+
+ @(def symbol<)")
 
 (defxdoc symbolp
   :parents (symbols acl2-built-ins)
@@ -115090,6 +115129,24 @@ arithmetic) for libraries of @(see books) for arithmetic reasoning.</p>")
 
  <ul>
 
+ <li>@('(acl2-unwind-protect expl body cleanup1 cleanup2)'): This particularly
+ sophisticated utility (warning: for advanced system hackers) is logically just
+ the following (where the formals shown above are capitalized).
+
+ @({
+ (mv-let (erp val state)
+         BODY
+         (cond (erp (pprogn CLEANUP1 (mv erp val state)))
+               (t   (pprogn CLEANUP2 (mv erp val state)))))
+ })
+
+ However, aborts are typically handled by causing the ``cleanup'' forms to be
+ executed, in the spirit of Common Lisp's @('unwind-protect').  In typical use
+ the cleanup forms restore the values of @(see state) global variables that
+ were ``temporarily'' set by @('body').  Note that @('expl') is essentially
+ ignored.  For more information see the Essay on Unwind-Protect in the ACL2
+ source code.</li>
+
  <li>@('(add-suffix sym str)'): Extend a symbol @('sym') with a suffix
  expressed as a string @('str').  The resulting symbol is in the same package
  as the original symbol.  For instance, @('(add-suffix 'abc \"DEF\")') results
@@ -115353,11 +115410,17 @@ arithmetic) for libraries of @(see books) for arithmetic reasoning.</p>")
  <li>@('(get-brr-local var state)'): The value of brr-local variable @('var');
  this is the utility used by @(see brr@).</li>
 
+ <li>@('(get-defun-event name w)'): For the given name of a defined function in
+ the current ACL2 @(see world) @('w'), return its @(tsee defun) form.  Note
+ that this applies to both @(':')@(tsee logic)-mode and @(':')@(tsee
+ program)-mode functions, in spite of the name, ``logical'' (which is actually
+ intended to distinguish from ``raw Lisp'').</li>
+
  <li>@('(get-event name w)'): For the given name of an event in the current
  ACL2 @(see world) @('w'), return that event.  Typically there is only one such
  event, but for built-in functions the most recent event might be a variant of
- a @(tsee verify-termination) event, so consider using @('logical-defun') for
- names of functions (see below).</li>
+ a @(tsee verify-termination) event, so consider using @('get-defun-event') for
+ names of functions (see above).</li>
 
  <li>@('(get-skipped-proofs-p name w)'): For the given name of an event in the
  current ACL2 @(see world) @('w'), return @('t') if proofs were skipped when
@@ -115431,12 +115494,6 @@ arithmetic) for libraries of @(see books) for arithmetic reasoning.</p>")
  but the following are not: @(':abc'), @('t'), @('nil'), @('&a') (a lambda
  keyword), @('*c*') (syntax of a constant), and @('pi') (a Common Lisp
  constant).</li>
-
- <li>@('(logical-defun name w)'): For the given name of a defined function in
- the current ACL2 @(see world) @('w'), return its @(tsee defun) form.  Note
- that this applies to both @(':')@(tsee logic)-mode and @(':')@(tsee
- program)-mode functions, in spite of the name, ``logical'' (which is actually
- intended to distinguish from ``raw Lisp'').</li>
 
  <li>@('(logicp fn w)'): For a function symbol @('fn') of @(see world)
  @('w'), return @('t') when the @('symbol-class') of @('fn') in @('w') is not
@@ -135375,6 +135432,7 @@ expand function call at the current subterm, without simplifying"
 (defpointer &whole macro-args)
 (defpointer abstract-stobj defabsstobj)
 (defpointer accumulated-persistence-oops accumulated-persistence)
+(defpointer acl2-unwind-protect system-utilities)
 (defpointer acl2s acl2-sedan)
 (defpointer add-ld-keyword-alias ld-keyword-aliases)
 (defpointer add-ld-keyword-alias! ld-keyword-aliases)
@@ -135483,6 +135541,7 @@ expand function call at the current subterm, without simplifying"
 (defpointer genvar system-utilities)
 (defpointer get-brr-local system-utilities)
 (defpointer get-check-invariant-risk set-check-invariant-risk)
+(defpointer get-defun-event system-utilities)
 (defpointer get-event system-utilities)
 (defpointer get-in-theory-redundant-okp set-in-theory-redundant-okp)
 (defpointer get-output-stream-string$ io)
@@ -135519,7 +135578,6 @@ expand function call at the current subterm, without simplifying"
 (defpointer legal-variablep system-utilities)
 (defpointer let-mbe equality-variants-details)
 (defpointer lisp-programmer-introduction introduction-to-programming-in-acl2-for-those-who-know-lisp)
-(defpointer logical-defun system-utilities)
 (defpointer logicp system-utilities)
 (defpointer make-lambda system-utilities)
 (defpointer make-lambda-application system-utilities)

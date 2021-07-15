@@ -77,7 +77,7 @@ Subtopics
   [defthm], [in-theory], [xargs], [state], etc., without an acl2::
   prefix.
 
-  The constant *acl2-exports* lists 1517 symbols, including most
+  The constant *acl2-exports* lists 1527 symbols, including most
   documented ACL2 system constants, functions, and macros.  You will
   typically also want to import many symbols from Common Lisp; see
   [*common-lisp-symbols-from-main-lisp-package*].
@@ -225,7 +225,7 @@ Subtopics
        conjugate cons cons-equal cons-subtrees
        cons-with-hint consp consp-assoc-equal
        constraint-info corollary count-keys
-       cpu-core-count ctx current-package
+       cpu-core-count ctx ctxp current-package
        current-theory cw cw! cw-gstack
        cw-print-base-radix cw-print-base-radix!
        declare decrement-big-clock defabbrev
@@ -275,8 +275,8 @@ Subtopics
        disabledp disassemble$
        distributivity dmr-start dmr-stop
        doc doc! docs doppelganger-apply$-userfn
-       doppelganger-badge-userfn
-       double-rewrite dumb-occur dumb-occur-var
+       doppelganger-badge-userfn double-rewrite
+       doublet-listp dumb-occur dumb-occur-var
        duplicates e/d e0-ord-< e0-ordinalp
        ec-call eighth eliminate-destructors
        eliminate-irrelevance
@@ -321,9 +321,10 @@ Subtopics
        fourth function-symbolp function-theory
        gag-mode gc$ gc-strategy gc-verbose
        gcs generalize get-check-invariant-risk
-       get-command-sequence
+       get-command-sequence get-defun-event
        get-enforce-redundancy get-event-data
-       get-global get-in-theory-redundant-okp
+       get-global get-guard-checking
+       get-in-theory-redundant-okp
        get-output-stream-string$
        get-register-invariant-risk
        get-slow-alist-action get-timer
@@ -422,10 +423,10 @@ Subtopics
        meta-extract-global-fact+
        meta-extract-rw+-term mfc mfc-ancestors
        mfc-ap mfc-clause mfc-rdepth
-       mfc-relieve-hyp mfc-rw mfc-rw+
-       mfc-ts mfc-type-alist mfc-unify-subst
-       mfc-world min minimal-theory minusp mod
-       mod-expt monitor monitored-runes more
+       mfc-relieve-hyp mfc-rw mfc-rw+ mfc-ts
+       mfc-type-alist mfc-unify-subst mfc-world
+       min minimal-theory minusp mod mod-expt
+       monitor monitor! monitored-runes more
        more! more-doc msg msgp must-be-equal
        mutual-recursion mutual-recursion-guardp
        mv mv-let mv-list mv-nth mv? mv?-let
@@ -694,8 +695,10 @@ Subtopics
        symbol-listp-forward-to-true-listp
        symbol-name
        symbol-name-intern-in-package-of-symbol
-       symbol-name-lst
-       symbol-package-name symbolp
+       symbol-name-lst symbol-package-name
+       symbol< symbol<-asymmetric
+       symbol<-irreflexive symbol<-transitive
+       symbol<-trichotomy symbolp
        symbolp-intern-in-package-of-symbol synp
        syntaxp sys-call sys-call* sys-call+
        sys-call-status t t-stack t-stack-length
@@ -4094,9 +4097,6 @@ Subtopics
   [Swap-stobjs]
       Swap two congruent [stobj]s
 
-  [Symbol-<]
-      Less-than test for symbols
-
   [Symbol-alistp]
       Recognizer for association lists with symbols as keys
 
@@ -4111,6 +4111,9 @@ Subtopics
 
   [Symbol-package-name]
       The name of the package of a symbol (a string)
+
+  [Symbol<]
+      Less-than test for symbols
 
   [Symbolp]
       Recognizer for symbols
@@ -5427,6 +5430,8 @@ Subtopics
 
   [Tips]
       Some hints for using the ACL2 prover")
+ (ACL2-UNWIND-PROTECT (POINTERS)
+                      "See [system-utilities].")
  (ACL2-USER
   (PACKAGES)
   "A package the ACL2 user may prefer
@@ -6849,7 +6854,7 @@ Subtopics
                         (t t)))
                  ((stringp y) nil)
                  (t (cond ((symbolp x)
-                           (cond ((symbolp y) (not (symbol-< y x)))
+                           (cond ((symbolp y) (not (symbol< y x)))
                                  (t t)))
                           ((symbolp y) nil)
                           (t (bad-atom<= x y))))))")
@@ -19568,6 +19573,28 @@ Subtopics
   nil.  The argument list for cond is a list of ``clauses'', each of
   which is a list.  In ACL2, clauses must have length 1 or 2.
 
+    ; Example 1.  The form
+      (COND ((CONSP X) (FOO X Y))
+            ((SYMBOLP X) (BAR X Y))
+            (T (LIST X Y)))
+    ; abbreviates the following.
+      (IF (CONSP X)
+          (FOO X Y)
+          (IF (SYMBOLP X)
+              (BAR X Y)
+              (LIST X Y)))
+
+    ; Example 2.  The form
+      (COND ((CONSP X))
+            ((SYMBOLP X) (BAR X Y)))
+    ; abbreviates the following.
+      (OR (CONSP X)
+          (IF (SYMBOLP X) (BAR X Y) NIL))
+
+  The results above were obtained by typing :trans1 followed by the
+  form in the ACL2 loop, and then hitting <RETURN>.  See [trans1].
+  You can experiment in this way to see other such examples.
+
   Cond is a Common Lisp macro.  See any Common Lisp documentation for
   more information.
 
@@ -21557,7 +21584,7 @@ Subtopics
   submit to ACL2, we say that A is a ``proof-supporter'' of B.  ACL2
   stores an association list such that for every event B with at
   least one proof-supporter, B is associated with a list of all of
-  its proof-supporters, sorted by [symbol-<].  The following form
+  its proof-supporters, sorted by [symbol<].  The following form
   evaluates to that alist, which is called the
   ``proof-supporters-alist''.
 
@@ -23019,6 +23046,9 @@ Subtopics
   is in the list (:hints :instructions :otf-flg :attach :skip-checks
   :system-ok).  More details are in the ``Syntax and Semantics''
   section below.
+
+  A related utility can cause a function call to be evaluated using an
+  alternate, provably equal function.  See [memoize], option :INVOKE.
 
   This [documentation] topic is organized into the following sections:
 
@@ -40197,6 +40227,8 @@ Subtopics
   it simply returns the corresponding list of commands.  More
   precisely, it returns an [error-triple] (mv erp val state) such
   that if erp is not nil, then val is the desired list of commands.")
+ (GET-DEFUN-EVENT (POINTERS)
+                  "See [system-utilities].")
  (GET-ENFORCE-REDUNDANCY
   (REDUNDANT-EVENTS)
   "Query the [world] on whether redundancy is being enforced
@@ -57708,8 +57740,6 @@ Subtopics
            (declare (xargs :guard (plist-worldp-with-formals wrld)))
            (and (termp x wrld)
                 (logic-fnsp x wrld)))")
- (LOGICAL-DEFUN (POINTERS)
-                "See [system-utilities].")
  (LOGICAL-NAME
   (EVENTS WORLD)
   "A name created by a logical event
@@ -72504,7 +72534,7 @@ Subtopics
      ((\"Goal\"
        :IN-THEORY
        (UNION-THEORIES
-        '(STRING< SYMBOL-<)
+        '(STRING< SYMBOL<)
         (DISABLE
            CODE-CHAR-CHAR-CODE-IS-IDENTITY))
        :USE
@@ -72542,7 +72572,7 @@ Subtopics
      ((\"Goal\"
          :IN-THEORY
          (UNION-THEORIES
-              '(STRING< SYMBOL-<)
+              '(STRING< SYMBOL<)
               (DISABLE CODE-CHAR-CHAR-CODE-IS-IDENTITY))
          :USE ((:INSTANCE SYMBOL-EQUALITY (S1 X)
                           (S2 Y))
@@ -72571,7 +72601,7 @@ Subtopics
      :HINTS
      ((\"Goal\" :IN-THEORY
               (UNION-THEORIES
-                   '(STRING< SYMBOL-<)
+                   '(STRING< SYMBOL<)
                    (DISABLE CODE-CHAR-CHAR-CODE-IS-IDENTITY))
               :USE
               ((:INSTANCE SYMBOL-EQUALITY (S1 X)
@@ -87292,6 +87322,18 @@ Changes to Existing Features
        (sub1-fld1 sub1)
        val))
 
+  The function symbol symbol< replaces the function symbol symbol-<.
+  More generally, for every built-in function symbol and theorem name
+  containing \"SYMBOL-<\", that string in its [symbol-name] is replaced
+  by \"SYMBOL<\".  The function logical-defun is similarly replaced by
+  get-defun-event.  Thanks to Alessandro Coglio for suggesting these
+  changes.  Note that the old function names still work in ACL2
+  Version 8.4, as they are macro-aliases for the corresponding new
+  function names (see [add-macro-alias]); however, they are
+  deprecated and will probably not be supported in later ACL2
+  versions.  (A deprecation warning is printed each time one of those
+  macros is expanded.)
+
 
 New Features
 
@@ -92344,6 +92386,9 @@ Subtopics
   [Accumulated-persistence-oops]
       See [accumulated-persistence].
 
+  [ACL2-unwind-protect]
+      See [system-utilities].
+
   [ACL2s]
       See [ACL2-sedan].
 
@@ -92668,6 +92713,9 @@ Subtopics
   [Get-check-invariant-risk]
       See [set-check-invariant-risk].
 
+  [Get-defun-event]
+      See [system-utilities].
+
   [Get-event]
       See [system-utilities].
 
@@ -92775,9 +92823,6 @@ Subtopics
 
   [Lisp-programmer-introduction]
       See [introduction-to-programming-in-ACL2-for-those-who-know-lisp].
-
-  [Logical-defun]
-      See [system-utilities].
 
   [Logicp]
       See [system-utilities].
@@ -115179,29 +115224,6 @@ Subtopics
   even when stobjs are involved that are bound by [with-local-stobj]
   or [stobj-let].  It also explains subtle interaction with
   [trans-eval].")
- (SYMBOL-<
-  (SYMBOLS ACL2-BUILT-INS)
-  "Less-than test for symbols
-
-  (symbol-< x y) is non-nil if and only if either the [symbol-name] of
-  the symbol x lexicographically precedes the [symbol-name] of the
-  symbol y (in the sense of [string<]) or else the [symbol-name]s are
-  equal and the [symbol-package-name] of x lexicographically precedes
-  that of y (in the same sense).  So for example, (symbol-< 'abcd
-  'abce) and (symbol-< 'acl2::abcd 'foo::abce) are true.
-
-  The [guard] for symbol specifies that its arguments are symbols.
-
-  Function: <symbol-<>
-
-    (defun symbol-< (x y)
-           (declare (xargs :guard (and (symbolp x) (symbolp y))))
-           (let ((x1 (symbol-name x))
-                 (y1 (symbol-name y)))
-                (or (string< x1 y1)
-                    (and (equal x1 y1)
-                         (string< (symbol-package-name x)
-                                  (symbol-package-name y))))))")
  (SYMBOL-ALISTP
   (ALISTS ACL2-BUILT-INS)
   "Recognizer for association lists with symbols as keys
@@ -115288,6 +115310,29 @@ Subtopics
   package.  For example, in GCL (symbol-package-name 'car) evaluates
   to \"COMMON-LISP\" even though the actual package name for the
   symbol, car, is \"LISP\".")
+ (SYMBOL<
+  (SYMBOLS ACL2-BUILT-INS)
+  "Less-than test for symbols
+
+  (symbol< x y) is non-nil if and only if either the [symbol-name] of
+  the symbol x lexicographically precedes the [symbol-name] of the
+  symbol y (in the sense of [string<]) or else the [symbol-name]s are
+  equal and the [symbol-package-name] of x lexicographically precedes
+  that of y (in the same sense).  So for example, (symbol< 'abcd
+  'abce) and (symbol< 'acl2::abcd 'foo::abce) are true.
+
+  The [guard] for symbol specifies that its arguments are symbols.
+
+  Function: <symbol<>
+
+    (defun symbol< (x y)
+           (declare (xargs :guard (and (symbolp x) (symbolp y))))
+           (let ((x1 (symbol-name x))
+                 (y1 (symbol-name y)))
+                (or (string< x1 y1)
+                    (and (equal x1 y1)
+                         (string< (symbol-package-name x)
+                                  (symbol-package-name y))))))")
  (SYMBOLIC_EXECUTION_OF_MODELS
   (PAGES_WRITTEN_ESPECIALLY_FOR_THE_TOURS)
   "Symbolic Execution of Models
@@ -115349,9 +115394,6 @@ Subtopics
   [Packn-pos]
       Build a symbol in a specified package from a list
 
-  [Symbol-<]
-      Less-than test for symbols
-
   [Symbol-listp]
       Recognizer for a true list of symbols
 
@@ -115363,6 +115405,9 @@ Subtopics
 
   [Symbol-package-name]
       The name of the package of a symbol (a string)
+
+  [Symbol<]
+      Less-than test for symbols
 
   [Symbolp]
       Recognizer for symbols")
@@ -116165,6 +116210,23 @@ List of a few built-in system utilities
   utilities that are less relevant to the ACL2 system, and see
   [programming] for utilities in general.
 
+    * (acl2-unwind-protect expl body cleanup1 cleanup2): This particularly
+      sophisticated utility (warning: for advanced system hackers) is
+      logically just the following (where the formals shown above are
+      capitalized).
+
+          (mv-let (erp val state)
+                  BODY
+                  (cond (erp (pprogn CLEANUP1 (mv erp val state)))
+                        (t   (pprogn CLEANUP2 (mv erp val state)))))
+
+      However, aborts are typically handled by causing the ``cleanup''
+      forms to be executed, in the spirit of Common Lisp's
+      unwind-protect.  In typical use the cleanup forms restore the
+      values of [state] global variables that were ``temporarily''
+      set by body.  Note that expl is essentially ignored.  For more
+      information see the Essay on Unwind-Protect in the ACL2 source
+      code.
     * (add-suffix sym str): Extend a symbol sym with a suffix expressed as
       a string str.  The resulting symbol is in the same package as
       the original symbol.  For instance, (add-suffix 'abc \"DEF\")
@@ -116377,11 +116439,16 @@ List of a few built-in system utilities
       name.
     * (get-brr-local var state): The value of brr-local variable var; this
       is the utility used by [brr@].
+    * (get-defun-event name w): For the given name of a defined function in
+      the current ACL2 [world] w, return its [defun] form.  Note that
+      this applies to both :[logic]-mode and :[program]-mode
+      functions, in spite of the name, ``logical'' (which is actually
+      intended to distinguish from ``raw Lisp'').
     * (get-event name w): For the given name of an event in the current
       ACL2 [world] w, return that event.  Typically there is only one
       such event, but for built-in functions the most recent event
       might be a variant of a [verify-termination] event, so consider
-      using logical-defun for names of functions (see below).
+      using get-defun-event for names of functions (see above).
     * (get-skipped-proofs-p name w): For the given name of an event in the
       current ACL2 [world] w, return t if proofs were skipped when
       introducing that event, as with [skip-proofs] or using
@@ -116435,11 +116502,6 @@ List of a few built-in system utilities
       else nil.  For example, x is a legal variable name but the
       following are not: :abc, t, nil, &a (a lambda keyword), *c*
       (syntax of a constant), and pi (a Common Lisp constant).
-    * (logical-defun name w): For the given name of a defined function in
-      the current ACL2 [world] w, return its [defun] form.  Note that
-      this applies to both :[logic]-mode and :[program]-mode
-      functions, in spite of the name, ``logical'' (which is actually
-      intended to distinguish from ``raw Lisp'').
     * (logicp fn w): For a function symbol fn of [world] w, return t when
       the symbol-class of fn in w is not :program, else nil.  (See
       symbol-class, below.)
