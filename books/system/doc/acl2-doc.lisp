@@ -89233,10 +89233,10 @@ it."
  replaced by @('\"SYMBOL<\"').  The function @('logical-defun') is similarly
  replaced by @('get-defun-event').  Thanks to Alessandro Coglio for suggesting
  these changes.  Note that the old function names still work in ACL2 Version
- 8.4, as they are macro-alias for the corresponding new function names (see
+ 8.4, as they are macro-aliases for the corresponding new function names (see
  @(see add-macro-alias)); however, they are deprecated and will probably not be
- supported later ACL2 versions.  (A deprecation warning is printed each time
- one of those macros is expanded by ACL2.)</p>
+ supported in later ACL2 versions.  (A deprecation warning is printed each time
+ one of those macros is expanded.)</p>
 
  <h3>New Features</h3>
 
