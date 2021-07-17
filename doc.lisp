@@ -77,7 +77,7 @@ Subtopics
   [defthm], [in-theory], [xargs], [state], etc., without an acl2::
   prefix.
 
-  The constant *acl2-exports* lists 1527 symbols, including most
+  The constant *acl2-exports* lists 1529 symbols, including most
   documented ACL2 system constants, functions, and macros.  You will
   typically also want to import many symbols from Common Lisp; see
   [*common-lisp-symbols-from-main-lisp-package*].
@@ -104,9 +104,9 @@ Subtopics
        abs access accumulated-persistence
        accumulated-persistence-oops
        acl2-count acl2-input-channel-package
-       acl2-number-listp
-       acl2-numberp acl2-oracle
-       acl2-output-channel-package acl2-package
+       acl2-number-listp acl2-numberp
+       acl2-oracle acl2-output-channel-package
+       acl2-package acl2-unwind-protect
        acons active-or-non-runep active-runep
        add-binop add-custom-keyword-hint
        add-default-hints
@@ -128,17 +128,17 @@ Subtopics
        all-vars all-vars1 all-vars1-lst
        allocate-fixnum-range alpha-char-p
        alpha-char-p-forward-to-characterp
-       alphorder
-       always$ always$+ and and-macro append
-       append$ append$+ apply$ apply$-guard
-       apply$-lambda apply$-lambda-guard
-       apply$-userfn aref-32-bit-integer-stack
-       aref-t-stack aref1 aref2 args
-       arities-okp arity array1p array1p-cons
-       array1p-forward array1p-linear
-       array2p array2p-cons array2p-forward
-       array2p-linear aset-32-bit-integer-stack
-       aset-t-stack aset1 aset2 ash assert$
+       alphorder always$ always$+
+       and and-macro append append$ append$+
+       apply$ apply$-guard apply$-lambda
+       apply$-lambda-guard apply$-userfn
+       aref-32-bit-integer-stack aref-t-stack
+       aref1 aref2 args arities-okp arity
+       array1p array1p-cons array1p-forward
+       array1p-linear array2p array2p-cons
+       array2p-forward array2p-linear
+       aset-32-bit-integer-stack aset-t-stack
+       aset1 aset1-trusted aset2 ash assert$
        assert* assert-event assign assoc
        assoc-add-pair assoc-eq assoc-eq-equal
        assoc-eq-equal-alistp assoc-equal
@@ -2906,6 +2906,9 @@ Subtopics
 
   [Aset1]
       Set the elements of a 1-dimensional array
+
+  [Aset1-trusted]
+      Set the elements of a 1-dimensional array without [invariant-risk]
 
   [Aset2]
       Set the elements of a 2-dimensional array
@@ -9768,6 +9771,9 @@ Subtopics
   [Aset1]
       Set the elements of a 1-dimensional array
 
+  [Aset1-trusted]
+      Set the elements of a 1-dimensional array without [invariant-risk]
+
   [Aset2]
       Set the elements of a 2-dimensional array
 
@@ -9899,6 +9905,10 @@ Subtopics
   if the condition is not true, aset1 prints a slow array warning to
   the comment window.  See [slow-array-warning].
 
+  Note that [aset1] is marked as having [invariant-risk], which can
+  affect the execution of :[program]-mode functions.  To get around
+  this problem (but only with great care!), see [aset1-trusted].
+
   Function: <aset1>
 
     (defun
@@ -9910,7 +9920,42 @@ Subtopics
          (let ((l (cons (cons n val) l)))
               (cond ((> (length l) (maximum-length name l))
                      (compress1 name l))
-                    (t l))))")
+                    (t l))))
+
+
+Subtopics
+
+  [Aset1-trusted]
+      Set the elements of a 1-dimensional array without [invariant-risk]")
+ (ASET1-TRUSTED
+  (ARRAYS ACL2-BUILT-INS ASET1)
+  "Set the elements of a 1-dimensional array without [invariant-risk]
+
+    Example Form:
+    (aset1-trusted 'delta1 a (+ i k) 27)
+
+    General Form:
+    (aset1-trusted name alist index val)
+
+  This utility is identical to [aset1]; in fact, it has the same guard.
+  The difference is that it does not carry [invariant-risk].  Because
+  of that, functions that call aset1-trusted may suffer from
+  invariant-risk but not be noted by the system as carrying
+  invariant-risk.  Therefore, aset1-trusted it is [untouchable] and
+  should be used with great care.  If your system consists of
+  :[logic]-mode functions, then there is no reason to use
+  aset1-trusted, because only :[program]-mode functions truly carry
+  invariant-risk.
+
+  Function: <aset1-trusted>
+
+    (defun
+         aset1-trusted (name l n val)
+         (declare (xargs :guard (and (array1p name l)
+                                     (integerp n)
+                                     (>= n 0)
+                                     (< n (car (dimensions name l))))))
+         (aset1 name l n val))")
  (ASET2
   (ARRAYS ACL2-BUILT-INS)
   "Set the elements of a 2-dimensional array
@@ -52427,7 +52472,9 @@ Subtopics
   [set-register-invariant-risk].  We describe each briefly below.
   For more information follow the links just above to their
   respective documentation topics.  For yet more detail about
-  invariant-risk see [invariant-risk-details].
+  invariant-risk see [invariant-risk-details].  For tools that may
+  help find sources of invariant-risk, see [community-book]
+  books/std/system/invariant-risk.lisp.
 
 
 Controlling runtime checking for invariant-risk
@@ -87467,6 +87514,9 @@ New Features
   value most recently installed, either t (when the ACL2 executable
   was built) or presumably by [set-guard-checking].  Thanks to Eric
   McCarthy for suggesting this utility.
+
+  The function [aset1-trusted] may be used in place of [aset1] to avoid
+  [invariant-risk], but is therefore [untouchable].
 
 
 Heuristic and Efficiency Improvements

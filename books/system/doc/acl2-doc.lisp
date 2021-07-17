@@ -7090,7 +7090,34 @@ and @(tsee include-book)"
  condition is not true, @('aset1') prints a <b>slow array</b> warning to the
  comment window.  See @(see slow-array-warning).</p>
 
+ <p>Note that @(tsee aset1) is marked as having @(tsee invariant-risk), which
+ can affect the execution of @(':')@(tsee program)-mode functions.  To get
+ around this problem (but only with great care!), see @(see aset1-trusted).</p>
+
  @(def aset1)")
+
+(defxdoc aset1-trusted
+  :parents (arrays acl2-built-ins aset1)
+  :short "Set the elements of a 1-dimensional array without @(see
+ invariant-risk)"
+  :long "@({
+ Example Form:
+ (aset1-trusted 'delta1 a (+ i k) 27)
+
+ General Form:
+ (aset1-trusted name alist index val)
+ })
+
+ <p>This utility is identical to @(tsee aset1); in fact, it has the same guard.
+ The difference is that it does not carry @(see invariant-risk).  Because of
+ that, functions that call @('aset1-trusted') may suffer from invariant-risk
+ but not be noted by the system as carrying invariant-risk.  Therefore,
+ @('aset1-trusted') it is @(see untouchable) and should be used with great
+ care.  If your system consists of @(':')@(tsee logic)-mode functions, then
+ there is no reason to use @('aset1-trusted'), because only @(':')@(tsee
+ program)-mode functions truly carry invariant-risk.</p>
+
+ @(def aset1-trusted)")
 
 (defxdoc aset2
   :parents (arrays acl2-built-ins)
@@ -48724,7 +48751,9 @@ tables in the current Hons Space."
  set-register-invariant-risk).  We describe each briefly below.  For more
  information follow the links just above to their respective documentation
  topics.  For yet more detail about invariant-risk see @(see
- invariant-risk-details).</p>
+ invariant-risk-details).  For tools that may help find sources of
+ invariant-risk, see @(see community-book)
+ @('books/std/system/invariant-risk.lisp').</p>
 
  <h3>Controlling runtime checking for invariant-risk</h3>
 
@@ -88516,7 +88545,7 @@ it."
 
 ; Total number of release note items: 131, as follows.
 ;   42 ; Changes to Existing Features
-;   20 ; New Features
+;   21 ; New Features
 ;   11 ; Heuristic and Efficiency Improvements
 ;   42 ; Bug Fixes
 ;   14 ; Changes at the System Level
@@ -88862,6 +88891,12 @@ it."
 ;   https://acl2.org/manual/
 ;   http://acl2.org/manual/
 ;   http://acl2.org/manual/?topic=ACL2____LD
+
+; The method for assigning invariant-risk to built-in functions has been
+; improved substantially.  Formerly, the invariant-risk property for
+; undocumented function symbol aset1-lst was erroneously missing.  See in
+; particular *boot-strap-invariant-risk-alist*, which replaces
+; *boot-strap-invariant-risk-symbols*.
 
   :parents (release-notes)
   :short "ACL2 Version  8.4 (xxx, 20xx) Notes"
@@ -89365,6 +89400,9 @@ it."
  guard)-checking value most recently installed, either @('t') (when the ACL2
  executable was built) or presumably by @(tsee set-guard-checking).  Thanks to
  Eric McCarthy for suggesting this utility.</p>
+
+ <p>The function @(tsee aset1-trusted) may be used in place of @(tsee aset1) to
+ avoid @(see invariant-risk), but is therefore @(see untouchable).</p>
 
  <h3>Heuristic and Efficiency Improvements</h3>
 
