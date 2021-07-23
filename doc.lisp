@@ -77,7 +77,7 @@ Subtopics
   [defthm], [in-theory], [xargs], [state], etc., without an acl2::
   prefix.
 
-  The constant *acl2-exports* lists 1517 symbols, including most
+  The constant *acl2-exports* lists 1529 symbols, including most
   documented ACL2 system constants, functions, and macros.  You will
   typically also want to import many symbols from Common Lisp; see
   [*common-lisp-symbols-from-main-lisp-package*].
@@ -104,9 +104,9 @@ Subtopics
        abs access accumulated-persistence
        accumulated-persistence-oops
        acl2-count acl2-input-channel-package
-       acl2-number-listp
-       acl2-numberp acl2-oracle
-       acl2-output-channel-package acl2-package
+       acl2-number-listp acl2-numberp
+       acl2-oracle acl2-output-channel-package
+       acl2-package acl2-unwind-protect
        acons active-or-non-runep active-runep
        add-binop add-custom-keyword-hint
        add-default-hints
@@ -128,17 +128,17 @@ Subtopics
        all-vars all-vars1 all-vars1-lst
        allocate-fixnum-range alpha-char-p
        alpha-char-p-forward-to-characterp
-       alphorder
-       always$ always$+ and and-macro append
-       append$ append$+ apply$ apply$-guard
-       apply$-lambda apply$-lambda-guard
-       apply$-userfn aref-32-bit-integer-stack
-       aref-t-stack aref1 aref2 args
-       arities-okp arity array1p array1p-cons
-       array1p-forward array1p-linear
-       array2p array2p-cons array2p-forward
-       array2p-linear aset-32-bit-integer-stack
-       aset-t-stack aset1 aset2 ash assert$
+       alphorder always$ always$+
+       and and-macro append append$ append$+
+       apply$ apply$-guard apply$-lambda
+       apply$-lambda-guard apply$-userfn
+       aref-32-bit-integer-stack aref-t-stack
+       aref1 aref2 args arities-okp arity
+       array1p array1p-cons array1p-forward
+       array1p-linear array2p array2p-cons
+       array2p-forward array2p-linear
+       aset-32-bit-integer-stack aset-t-stack
+       aset1 aset1-trusted aset2 ash assert$
        assert* assert-event assign assoc
        assoc-add-pair assoc-eq assoc-eq-equal
        assoc-eq-equal-alistp assoc-equal
@@ -225,7 +225,7 @@ Subtopics
        conjugate cons cons-equal cons-subtrees
        cons-with-hint consp consp-assoc-equal
        constraint-info corollary count-keys
-       cpu-core-count ctx current-package
+       cpu-core-count ctx ctxp current-package
        current-theory cw cw! cw-gstack
        cw-print-base-radix cw-print-base-radix!
        declare decrement-big-clock defabbrev
@@ -275,8 +275,8 @@ Subtopics
        disabledp disassemble$
        distributivity dmr-start dmr-stop
        doc doc! docs doppelganger-apply$-userfn
-       doppelganger-badge-userfn
-       double-rewrite dumb-occur dumb-occur-var
+       doppelganger-badge-userfn double-rewrite
+       doublet-listp dumb-occur dumb-occur-var
        duplicates e/d e0-ord-< e0-ordinalp
        ec-call eighth eliminate-destructors
        eliminate-irrelevance
@@ -321,9 +321,10 @@ Subtopics
        fourth function-symbolp function-theory
        gag-mode gc$ gc-strategy gc-verbose
        gcs generalize get-check-invariant-risk
-       get-command-sequence
+       get-command-sequence get-defun-event
        get-enforce-redundancy get-event-data
-       get-global get-in-theory-redundant-okp
+       get-global get-guard-checking
+       get-in-theory-redundant-okp
        get-output-stream-string$
        get-register-invariant-risk
        get-slow-alist-action get-timer
@@ -422,10 +423,10 @@ Subtopics
        meta-extract-global-fact+
        meta-extract-rw+-term mfc mfc-ancestors
        mfc-ap mfc-clause mfc-rdepth
-       mfc-relieve-hyp mfc-rw mfc-rw+
-       mfc-ts mfc-type-alist mfc-unify-subst
-       mfc-world min minimal-theory minusp mod
-       mod-expt monitor monitored-runes more
+       mfc-relieve-hyp mfc-rw mfc-rw+ mfc-ts
+       mfc-type-alist mfc-unify-subst mfc-world
+       min minimal-theory minusp mod mod-expt
+       monitor monitor! monitored-runes more
        more! more-doc msg msgp must-be-equal
        mutual-recursion mutual-recursion-guardp
        mv mv-let mv-list mv-nth mv? mv?-let
@@ -694,8 +695,10 @@ Subtopics
        symbol-listp-forward-to-true-listp
        symbol-name
        symbol-name-intern-in-package-of-symbol
-       symbol-name-lst
-       symbol-package-name symbolp
+       symbol-name-lst symbol-package-name
+       symbol< symbol<-asymmetric
+       symbol<-irreflexive symbol<-transitive
+       symbol<-trichotomy symbolp
        symbolp-intern-in-package-of-symbol synp
        syntaxp sys-call sys-call* sys-call+
        sys-call-status t t-stack t-stack-length
@@ -2416,6 +2419,8 @@ Subtopics
     * EDS, which provided some time for Matt Kaufmann's ACL2 work 1998-1999
     * ForrestHunt and, more generally, Warren A. Hunt, Jr. (see below)
     * IBM
+    * Kestrel Institute
+    * Kestrel Technology
     * NSF
     * ONR
     * Rockwell Collins
@@ -2901,6 +2906,9 @@ Subtopics
 
   [Aset1]
       Set the elements of a 1-dimensional array
+
+  [Aset1-trusted]
+      Set the elements of a 1-dimensional array without [invariant-risk]
 
   [Aset2]
       Set the elements of a 2-dimensional array
@@ -4092,9 +4100,6 @@ Subtopics
   [Swap-stobjs]
       Swap two congruent [stobj]s
 
-  [Symbol-<]
-      Less-than test for symbols
-
   [Symbol-alistp]
       Recognizer for association lists with symbols as keys
 
@@ -4109,6 +4114,9 @@ Subtopics
 
   [Symbol-package-name]
       The name of the package of a symbol (a string)
+
+  [Symbol<]
+      Less-than test for symbols
 
   [Symbolp]
       Recognizer for symbols
@@ -5425,6 +5433,8 @@ Subtopics
 
   [Tips]
       Some hints for using the ACL2 prover")
+ (ACL2-UNWIND-PROTECT (POINTERS)
+                      "See [system-utilities].")
  (ACL2-USER
   (PACKAGES)
   "A package the ACL2 user may prefer
@@ -6847,7 +6857,7 @@ Subtopics
                         (t t)))
                  ((stringp y) nil)
                  (t (cond ((symbolp x)
-                           (cond ((symbolp y) (not (symbol-< y x)))
+                           (cond ((symbolp y) (not (symbol< y x)))
                                  (t t)))
                           ((symbolp y) nil)
                           (t (bad-atom<= x y))))))")
@@ -9761,6 +9771,9 @@ Subtopics
   [Aset1]
       Set the elements of a 1-dimensional array
 
+  [Aset1-trusted]
+      Set the elements of a 1-dimensional array without [invariant-risk]
+
   [Aset2]
       Set the elements of a 2-dimensional array
 
@@ -9892,6 +9905,10 @@ Subtopics
   if the condition is not true, aset1 prints a slow array warning to
   the comment window.  See [slow-array-warning].
 
+  Note that [aset1] is marked as having [invariant-risk], which can
+  affect the execution of :[program]-mode functions.  To get around
+  this problem (but only with great care!), see [aset1-trusted].
+
   Function: <aset1>
 
     (defun
@@ -9903,7 +9920,42 @@ Subtopics
          (let ((l (cons (cons n val) l)))
               (cond ((> (length l) (maximum-length name l))
                      (compress1 name l))
-                    (t l))))")
+                    (t l))))
+
+
+Subtopics
+
+  [Aset1-trusted]
+      Set the elements of a 1-dimensional array without [invariant-risk]")
+ (ASET1-TRUSTED
+  (ARRAYS ACL2-BUILT-INS ASET1)
+  "Set the elements of a 1-dimensional array without [invariant-risk]
+
+    Example Form:
+    (aset1-trusted 'delta1 a (+ i k) 27)
+
+    General Form:
+    (aset1-trusted name alist index val)
+
+  This utility is identical to [aset1]; in fact, it has the same guard.
+  The difference is that it does not carry [invariant-risk].  Because
+  of that, functions that call aset1-trusted may suffer from
+  invariant-risk but not be noted by the system as carrying
+  invariant-risk.  Therefore, aset1-trusted it is [untouchable] and
+  should be used with great care.  If your system consists of
+  :[logic]-mode functions, then there is no reason to use
+  aset1-trusted, because only :[program]-mode functions truly carry
+  invariant-risk.
+
+  Function: <aset1-trusted>
+
+    (defun
+         aset1-trusted (name l n val)
+         (declare (xargs :guard (and (array1p name l)
+                                     (integerp n)
+                                     (>= n 0)
+                                     (< n (car (dimensions name l))))))
+         (aset1 name l n val))")
  (ASET2
   (ARRAYS ACL2-BUILT-INS)
   "Set the elements of a 2-dimensional array
@@ -14852,6 +14904,7 @@ Subtopics
        (note-8-1-books \"[books]/doc/relnotes.lisp\")
        (note-8-2-books \"[books]/doc/relnotes.lisp\")
        (note-8-3-books \"[books]/doc/relnotes.lisp\")
+       (note-8-4-books \"[books]/doc/relnotes.lisp\")
        (str::numbers \"[books]/std/strings/top.lisp\")
        (open-trace-file! \"[books]/tools/open-trace-file-bang.lisp\")
        (oracle-timelimit \"[books]/tools/oracle-timelimit.lisp\")
@@ -19565,6 +19618,28 @@ Subtopics
   nil.  The argument list for cond is a list of ``clauses'', each of
   which is a list.  In ACL2, clauses must have length 1 or 2.
 
+    ; Example 1.  The form
+      (COND ((CONSP X) (FOO X Y))
+            ((SYMBOLP X) (BAR X Y))
+            (T (LIST X Y)))
+    ; abbreviates the following.
+      (IF (CONSP X)
+          (FOO X Y)
+          (IF (SYMBOLP X)
+              (BAR X Y)
+              (LIST X Y)))
+
+    ; Example 2.  The form
+      (COND ((CONSP X))
+            ((SYMBOLP X) (BAR X Y)))
+    ; abbreviates the following.
+      (OR (CONSP X)
+          (IF (SYMBOLP X) (BAR X Y) NIL))
+
+  The results above were obtained by typing :trans1 followed by the
+  form in the ACL2 loop, and then hitting <RETURN>.  See [trans1].
+  You can experiment in this way to see other such examples.
+
   Cond is a Common Lisp macro.  See any Common Lisp documentation for
   more information.
 
@@ -21554,7 +21629,7 @@ Subtopics
   submit to ACL2, we say that A is a ``proof-supporter'' of B.  ACL2
   stores an association list such that for every event B with at
   least one proof-supporter, B is associated with a list of all of
-  its proof-supporters, sorted by [symbol-<].  The following form
+  its proof-supporters, sorted by [symbol<].  The following form
   evaluates to that alist, which is called the
   ``proof-supporters-alist''.
 
@@ -23016,6 +23091,9 @@ Subtopics
   is in the list (:hints :instructions :otf-flg :attach :skip-checks
   :system-ok).  More details are in the ``Syntax and Semantics''
   section below.
+
+  A related utility can cause a function call to be evaluated using an
+  alternate, provably equal function.  See [memoize], option :INVOKE.
 
   This [documentation] topic is organized into the following sections:
 
@@ -26689,7 +26767,10 @@ Inspecting the Effects of a Defstobj
 
     (nth 4 (global-val 'cltl-command (w state)))
 
-  immediately after the defstobj event has been processed.
+  immediately after the defstobj event has been processed.  Those
+  functions that contain (DECLARE (STOBJ-INLINE-FN T)) will generate
+  [defabbrev] forms because the :inline keyword of defstobj was
+  supplied the value t.  The rest will generate [defun] forms.
 
   A defstobj is considered redundant only if it is syntactically
   identical to a previously executed defstobj.  Note that a redundant
@@ -40191,6 +40272,8 @@ Subtopics
   it simply returns the corresponding list of commands.  More
   precisely, it returns an [error-triple] (mv erp val state) such
   that if erp is not nil, then val is the desired list of commands.")
+ (GET-DEFUN-EVENT (POINTERS)
+                  "See [system-utilities].")
  (GET-ENFORCE-REDUNDANCY
   (REDUNDANT-EVENTS)
   "Query the [world] on whether redundancy is being enforced
@@ -42819,19 +42902,25 @@ Subtopics
   "Remove trivial calls from a [term]
 
   For many [rule-classes], the process of converting terms to rules
-  includes the removal of certain trivial calls from the term.  In
-  all such cases, the resulting term is provably equivalent to the
+  includes the removal of certain trivial calls from the term.  Such
+  removal is performed in some other settings as well, including
+  [hints] processing, generating proof obligations for [guard]s and
+  termination, and the storing of induction schemes and
+  [constraint]s.
+
+  In all such cases, the resulting term is provably equivalent to the
   input term.  A common example is to replace the term (prog2$ term1
   term2) by the term term2.  But (prog2$ term1 term2) is really an
   abbreviation for (i.e., macroexpands to) the term (return-last
   'progn term1 term2); so a more accurate explanation, at the level
   of proper ACL2 [term]s, is that the call of function [return-last]
   is replaced by its last argument.  ACL2 identifies certain such
-  transformations, from a term to a trivial simplification of it such
-  that the input and output are provably equal.  We historically have
-  referred to the process of making such replacements as ``removing
-  guard holders.'' (For a discussion of the connection to guards, see
-  the ``Essay on the Removal of Guard Holders'' in the ACL2 sources.)
+  transformations, from a term to a trivial simplification of it,
+  such that the input and output are provably equal.  We historically
+  have referred to the process of making such replacements as
+  ``removing guard holders.'' (For a discussion of the connection to
+  guards, see the ``Essay on the Removal of Guard Holders'' in the
+  ACL2 sources.)
 
   The process of removing guard-holders includes the transformations
   below.  That process is also applied to each argument of a function
@@ -42852,13 +42941,32 @@ Subtopics
     ; For replacing equality aliases; for example, this transforms
     ; the macroexpansion of (member x y) to (member-equal x y):
     (('LAMBDA (f1 ... fk) ('RETURN-LAST ''MBE1-RAW exec logic))
-     a1 ... ak)
-                                     ==>  logic
+     a1 ... ak)                      ==>  logic
+
+    ; For other than measure theorems and induction schemes, remove lambda
+    ; applications that are ``trivial'' in either of the following two senses.
+
+    ; For replacing a term (let ((v term)) v) by term:
+    (('LAMBDA (v) v) term)           ==>  term
+
+    ; When each formal is equal to the corresponding actual:
+    (('LAMBDA (f1 ... fk) body)
+     f1 ... fk)                      ==>  body
 
   Because of how [mbe] and [ec-call] are defined in terms of
   [return-last], the expressions (mbe :logic l :exec e) and (ec-call
   (f t1 ... tk)) are effectively transformed by removing guard
   holders into l and (f t1 ... tk), respectively.
+
+  The final two classes of simplification above (removal of ``trivial''
+  lambda applications) may be removed by executing the following
+  form, which is [local] to an [encapsulate] form and to [books].
+
+    (defattach-system remove-guard-holders-lamp constant-nil-function-arity-0)
+
+  Here is how to restore the default behavior.
+
+    (defattach-system remove-guard-holders-lamp constant-t-function-arity-0)
 
   Note that by default, guard-holders are not removed inside calls of
   [hide].  You can however cause them to be removed inside such calls
@@ -52328,7 +52436,7 @@ Subtopics
     * writing a value of the wrong type to a [stobj] field; or
     * performing an out-of-bounds write to an ACL2 [array].
 
-  Whenever a :[program] mode function call can perhaps lead to such a
+  Whenever a :[program]-mode function call can perhaps lead to such a
   write, [guard]-checking is performed by ACL2, even though the
   normal expectation is to execute without such checks in Common
   Lisp; see [evaluation].  Consider the following example.
@@ -52354,12 +52462,19 @@ Subtopics
   indeed [guard]s are checked for the ensuing calls of f, causing a
   guard violation for the second call of g.
 
+  We may say that such :[program]-mode functions have invariant-risk.
+  Because of how the ``aggressive protection'' discussed above is
+  implemented, recursive calls of invariant-risk functions are not
+  traced; see [trace$].
+
   There are two general methods for avoiding such warnings: at runtime
   with [set-check-invariant-risk], and at definition time with
   [set-register-invariant-risk].  We describe each briefly below.
   For more information follow the links just above to their
   respective documentation topics.  For yet more detail about
-  invariant-risk see [invariant-risk-details].
+  invariant-risk see [invariant-risk-details].  For tools that may
+  help find sources of invariant-risk, see [community-book]
+  books/std/system/invariant-risk.lisp.
 
 
 Controlling runtime checking for invariant-risk
@@ -57672,8 +57787,6 @@ Subtopics
            (declare (xargs :guard (plist-worldp-with-formals wrld)))
            (and (termp x wrld)
                 (logic-fnsp x wrld)))")
- (LOGICAL-DEFUN (POINTERS)
-                "See [system-utilities].")
  (LOGICAL-NAME
   (EVENTS WORLD)
   "A name created by a logical event
@@ -60518,9 +60631,9 @@ Introduction
   replacement takes place.
 
   Expansion for (encapsulate ... (make-event form ...) ...) is similar
-  to the case for @('progn, except that for if the expansion of form
-  is exp, then what is stored is (record-expansion (make-event form
-  ...)  exp).  Also as for progn, the exception is that when
+  to the case for progn, except that for if the expansion of form is
+  exp, then what is stored is (record-expansion (make-event form ...)
+  exp).  Also as for progn, the exception is that when
   :check-expansion exp is supplied explicitly, no such replacement
   takes place.  Here, record-expansion is a macro that simply returns
   its second argument, but is used for checking redundancy of
@@ -65996,26 +66109,27 @@ SECTION: Precise documentation for stobj-let
 
   BINDINGS is a non-empty true list of tuples, each of which has the
   form (VAR ACCESSOR) or (VAR ACCESSOR UPDATER).  Each VAR may occur
-  only once, and to avoid aliasing, each ACCESSOR may occur only
-  once.  There is a stobj name, ST, previously introduced by
-  [defstobj] (not [defabsstobj]), such that each accessor is of the
-  form (ACC ST) or (ACCi I ST), with the same stobj name (ST) for
-  each binding.  Each of these accessors and (if supplied) updaters
-  is a stobj accessor for the same stobj, which is typically ST but
-  may be a stobj congruent to ST.  In the case (ACC ST), ACC is the
-  accessor for a non-array field.  In the case (ACCi I ST), ACCi is
-  the accessor for an array field and I is either a variable, a
-  natural number, a list (quote N) where N is a natural number, or a
-  symbol introduced by [defconst].  If UPDATER is supplied, then it
-  is a symbol that is the name of the stobj updater for the field of
-  ST accessed by ACCESSOR.  If UPDATER is not supplied, then for the
-  discussion below we consider it to be, implicitly, the symbol in
-  the same package as the function symbol of ACCESSOR (i.e., ACC or
-  ACCi), obtained by prepending the string \"UPDATE-\" to the
-  [symbol-name] of that function symbol.  Finally, ACCESSOR has a
-  [signature] specifying a return value that is either VAL or is a
-  stobj that is congruent to VAL. (This means that only stobjs may be
-  bound in these bindings.)
+  only once, and to avoid aliasing, the same ACCESSOR may not be
+  bound more than once if at least one of the variables to which it's
+  bound is among the PRODUCER-VARIABLES.  There is a stobj name, ST,
+  previously introduced by [defstobj] (not [defabsstobj]), such that
+  each accessor is of the form (ACC ST) or (ACCi I ST), with the same
+  stobj name (ST) for each binding.  Each of these accessors and (if
+  supplied) updaters is a stobj accessor for the same stobj, which is
+  typically ST but may be a stobj congruent to ST.  In the case (ACC
+  ST), ACC is the accessor for a non-array field.  In the case (ACCi
+  I ST), ACCi is the accessor for an array field and I is either a
+  variable, a natural number, a list (quote N) where N is a natural
+  number, or a symbol introduced by [defconst].  If UPDATER is
+  supplied, then it is a symbol that is the name of the stobj updater
+  for the field of ST accessed by ACCESSOR.  If UPDATER is not
+  supplied, then for the discussion below we consider it to be,
+  implicitly, the symbol in the same package as the function symbol
+  of ACCESSOR (i.e., ACC or ACCi), obtained by prepending the string
+  \"UPDATE-\" to the [symbol-name] of that function symbol.  Finally,
+  ACCESSOR has a [signature] specifying a return value that is either
+  VAL or is a stobj that is congruent to VAL. (This means that only
+  stobjs may be bound in these bindings.)
 
   If the conditions above are met, then the General Form expands to one
   of the expressions below, depending on whether the list
@@ -66275,17 +66389,23 @@ SECTION: Using stobj-let with abstract stobjs
 
   As suggested by the example above, stobj-let operates about the same
   whether the parent stobj is a concrete stobj or an abstract stobj.
-  The main difference is in an understanding of the aliasing checks.
-  Recall that for an abstract stobj st, each child stobj accessor has
-  an :EXEC function that is a child stobj accessor of the
-  foundational stobj, st$c, for st.  If st$c is itself an abstract
-  stobj then the :EXEC function for st$c is a child stobj accessor
-  for the foundation of st$c; and so on.  At the end of this chain we
-  have a child stobj accessor for a concrete stobj, which we might
-  call the underlying concrete child stobj accessor.  The
-  anti-aliasing checks are actually done with respect to the
-  underlying concrete child stobj accessors that correspond to the
-  accessors in the BINDINGS.  After all, under the hood those
+  In this section we discuss some differences.
+
+  One difference is that the only field accessors in the BINDINGS are
+  child stobj field accessors.  After all those are the only exported
+  functions for an abstract stobj that may be considered to
+  correspond to fields..
+
+  Another difference is in the aliasing checks.  Recall that for an
+  abstract stobj st, each child stobj accessor has an :EXEC function
+  that is a child stobj accessor of the foundational stobj, st$c, for
+  st.  If st$c is itself an abstract stobj then the :EXEC function
+  for st$c is a child stobj accessor for the foundation of st$c; and
+  so on.  At the end of this chain we have a child stobj accessor for
+  a concrete stobj, which we may call the underlying concrete child
+  stobj accessor.  The aliasing checks are actually done with respect
+  to the underlying concrete child stobj accessors that correspond to
+  the accessors in the BINDINGS.  After all, under the hood those
   concrete stobj functions are the ones that are actually executed on
   the ``live'' stobj.
 
@@ -72461,7 +72581,7 @@ Subtopics
      ((\"Goal\"
        :IN-THEORY
        (UNION-THEORIES
-        '(STRING< SYMBOL-<)
+        '(STRING< SYMBOL<)
         (DISABLE
            CODE-CHAR-CHAR-CODE-IS-IDENTITY))
        :USE
@@ -72499,7 +72619,7 @@ Subtopics
      ((\"Goal\"
          :IN-THEORY
          (UNION-THEORIES
-              '(STRING< SYMBOL-<)
+              '(STRING< SYMBOL<)
               (DISABLE CODE-CHAR-CHAR-CODE-IS-IDENTITY))
          :USE ((:INSTANCE SYMBOL-EQUALITY (S1 X)
                           (S2 Y))
@@ -72528,7 +72648,7 @@ Subtopics
      :HINTS
      ((\"Goal\" :IN-THEORY
               (UNION-THEORIES
-                   '(STRING< SYMBOL-<)
+                   '(STRING< SYMBOL<)
                    (DISABLE CODE-CHAR-CHAR-CODE-IS-IDENTITY))
               :USE
               ((:INSTANCE SYMBOL-EQUALITY (S1 X)
@@ -86914,10 +87034,10 @@ Experimental Versions")
   many changes could be placed in more than one category.
 
   Note that only ACL2 system changes are listed below.  See also
-  note-8-4-books for a summary of changes made to the ACL2 Community
-  Books since ACL2 8.3, including the build system.  Also note that
-  with each release, it is typical that the value of constant
-  [*ACL2-exports*] has been extended, and that some built-in
+  [note-8-4-books] for a summary of changes made to the ACL2
+  Community Books since ACL2 8.3, including the build system.  Also
+  note that with each release, it is typical that the value of
+  constant [*ACL2-exports*] has been extended, and that some built-in
   functions that were formerly in :[program] mode are now
   [guard]-verified :[logic] mode functions.
 
@@ -87249,6 +87369,18 @@ Changes to Existing Features
        (sub1-fld1 sub1)
        val))
 
+  The function symbol symbol< replaces the function symbol symbol-<.
+  More generally, for every built-in function symbol and theorem name
+  containing \"SYMBOL-<\", that string in its [symbol-name] is replaced
+  by \"SYMBOL<\".  The function logical-defun is similarly replaced by
+  get-defun-event.  Thanks to Alessandro Coglio for suggesting these
+  changes.  Note that the old function names still work in ACL2
+  Version 8.4, as they are macro-aliases for the corresponding new
+  function names (see [add-macro-alias]); however, they are
+  deprecated and will probably not be supported in later ACL2
+  versions.  (A deprecation warning is printed each time one of those
+  macros is expanded.)
+
 
 New Features
 
@@ -87383,6 +87515,9 @@ New Features
   was built) or presumably by [set-guard-checking].  Thanks to Eric
   McCarthy for suggesting this utility.
 
+  The function [aset1-trusted] may be used in place of [aset1] to avoid
+  [invariant-risk], but is therefore [untouchable].
+
 
 Heuristic and Efficiency Improvements
 
@@ -87498,6 +87633,12 @@ Heuristic and Efficiency Improvements
   improvement to linear arithmetic that can benefit such proof
   attempts.
 
+  The removal of [guard-holders] has been augmented to include removal
+  of certain ``trivial'' lambda applications.  See [guard-holders],
+  in particular for how to restore the legacy behavior.  Thanks to
+  Alessandro Coglio for an example and Eric Smith for a subsequent
+  suggestion that led to this enhancement.
+
 
 Bug Fixes
 
@@ -87528,6 +87669,14 @@ Bug Fixes
   in particular, the symbol current-package in the \"ACL2\" package is
   a suitable key, but for example the keyword :current-package is
   not.
+
+  It was possible to prove nil by counterfeiting record-expansion
+  calls, which are normally only created by the implementation in
+  support of [make-event] calls.  This soundness bug has been fixed.
+  (The bug was perhaps impossible to hit in ordinary usage, where
+  record-expansion is not used explicitly.)  A proof of nil before
+  this fix may be found in a comment in ACL2 source function,
+  corresponding-encaps.
 
   The mechanism for tracking [warrant]s needed during a proof had a
   bug, which might be a soundness bug if one uses [apply$] or
@@ -87841,6 +87990,13 @@ Changes at the System Level
   When an error occurs while loading an [ACL2-customization] file, ACL2
   quits with exit code 1.  Thanks to Eric Smith for suggesting the
   quit and to Eric McCarthy for suggesting exit code 1 in that case.
+
+  ACL2 now does a more thorough job of doing proofs when ``make
+  proofs'' is executed.  In particular, proofs were formerly skipped
+  but are now performed for [defun] forms containing the explicit
+  [xargs] [declaration], :mode :logic, and for [defthm] events
+  evaluated with [default-defun-mode] :logic outside the so-called
+  ``pass 2 files''.
 
 
 EMACS Support
@@ -89356,7 +89512,7 @@ Subtopics
   screen.
 
   Open-trace-file does not work as would reasonably be expected during
-  [make-event] expansion.  Use open-trace-file! instead within
+  [make-event] expansion.  Use [open-trace-file!] instead within
   make-event.")
  (OPTIMIZE (POINTERS) "See [declare].")
  (OR
@@ -92280,6 +92436,9 @@ Subtopics
   [Accumulated-persistence-oops]
       See [accumulated-persistence].
 
+  [ACL2-unwind-protect]
+      See [system-utilities].
+
   [ACL2s]
       See [ACL2-sedan].
 
@@ -92604,6 +92763,9 @@ Subtopics
   [Get-check-invariant-risk]
       See [set-check-invariant-risk].
 
+  [Get-defun-event]
+      See [system-utilities].
+
   [Get-event]
       See [system-utilities].
 
@@ -92711,9 +92873,6 @@ Subtopics
 
   [Lisp-programmer-introduction]
       See [introduction-to-programming-in-ACL2-for-those-who-know-lisp].
-
-  [Logical-defun]
-      See [system-utilities].
 
   [Logicp]
       See [system-utilities].
@@ -101498,7 +101657,8 @@ Subtopics
   following ways.
 
     * E1 and E2 are equal; or
-    * E1 is of the form (record-expansion E2 ...); or else
+    * E1 is of the form (record-expansion E2 ...), with the exception noted
+      below; or else
     * E1 and E2 are equal after replacing each sub-event of E1 with its
       [make-event] expansion and replacing each [local] sub-event of
       E1 or E2 by (local (value-triple :elided)).  Here, a sub-event
@@ -101507,6 +101667,11 @@ Subtopics
       [skip-proofs], [with-output], [with-prover-time-limit],
       [with-prover-step-limit], record-expansion, [time$], [progn],
       [progn!], or [encapsulate] itself.
+
+  The second condition has the following exception: it does not apply
+  when the new encapsulate event takes place within an [include-book]
+  event.  (Allowing that would be unsound, as explained in a comment
+  in ACL2 source function corresponding-encaps.)
 
   Remark.  We conclude with some discussion of redundancy of
   encapsulate events in the presence of redefinition (see
@@ -115109,29 +115274,6 @@ Subtopics
   even when stobjs are involved that are bound by [with-local-stobj]
   or [stobj-let].  It also explains subtle interaction with
   [trans-eval].")
- (SYMBOL-<
-  (SYMBOLS ACL2-BUILT-INS)
-  "Less-than test for symbols
-
-  (symbol-< x y) is non-nil if and only if either the [symbol-name] of
-  the symbol x lexicographically precedes the [symbol-name] of the
-  symbol y (in the sense of [string<]) or else the [symbol-name]s are
-  equal and the [symbol-package-name] of x lexicographically precedes
-  that of y (in the same sense).  So for example, (symbol-< 'abcd
-  'abce) and (symbol-< 'acl2::abcd 'foo::abce) are true.
-
-  The [guard] for symbol specifies that its arguments are symbols.
-
-  Function: <symbol-<>
-
-    (defun symbol-< (x y)
-           (declare (xargs :guard (and (symbolp x) (symbolp y))))
-           (let ((x1 (symbol-name x))
-                 (y1 (symbol-name y)))
-                (or (string< x1 y1)
-                    (and (equal x1 y1)
-                         (string< (symbol-package-name x)
-                                  (symbol-package-name y))))))")
  (SYMBOL-ALISTP
   (ALISTS ACL2-BUILT-INS)
   "Recognizer for association lists with symbols as keys
@@ -115218,6 +115360,29 @@ Subtopics
   package.  For example, in GCL (symbol-package-name 'car) evaluates
   to \"COMMON-LISP\" even though the actual package name for the
   symbol, car, is \"LISP\".")
+ (SYMBOL<
+  (SYMBOLS ACL2-BUILT-INS)
+  "Less-than test for symbols
+
+  (symbol< x y) is non-nil if and only if either the [symbol-name] of
+  the symbol x lexicographically precedes the [symbol-name] of the
+  symbol y (in the sense of [string<]) or else the [symbol-name]s are
+  equal and the [symbol-package-name] of x lexicographically precedes
+  that of y (in the same sense).  So for example, (symbol< 'abcd
+  'abce) and (symbol< 'acl2::abcd 'foo::abce) are true.
+
+  The [guard] for symbol specifies that its arguments are symbols.
+
+  Function: <symbol<>
+
+    (defun symbol< (x y)
+           (declare (xargs :guard (and (symbolp x) (symbolp y))))
+           (let ((x1 (symbol-name x))
+                 (y1 (symbol-name y)))
+                (or (string< x1 y1)
+                    (and (equal x1 y1)
+                         (string< (symbol-package-name x)
+                                  (symbol-package-name y))))))")
  (SYMBOLIC_EXECUTION_OF_MODELS
   (PAGES_WRITTEN_ESPECIALLY_FOR_THE_TOURS)
   "Symbolic Execution of Models
@@ -115279,9 +115444,6 @@ Subtopics
   [Packn-pos]
       Build a symbol in a specified package from a list
 
-  [Symbol-<]
-      Less-than test for symbols
-
   [Symbol-listp]
       Recognizer for a true list of symbols
 
@@ -115293,6 +115455,9 @@ Subtopics
 
   [Symbol-package-name]
       The name of the package of a symbol (a string)
+
+  [Symbol<]
+      Less-than test for symbols
 
   [Symbolp]
       Recognizer for symbols")
@@ -116095,6 +116260,23 @@ List of a few built-in system utilities
   utilities that are less relevant to the ACL2 system, and see
   [programming] for utilities in general.
 
+    * (acl2-unwind-protect expl body cleanup1 cleanup2): This particularly
+      sophisticated utility (warning: for advanced system hackers) is
+      logically just the following (where the formals shown above are
+      capitalized).
+
+          (mv-let (erp val state)
+                  BODY
+                  (cond (erp (pprogn CLEANUP1 (mv erp val state)))
+                        (t   (pprogn CLEANUP2 (mv erp val state)))))
+
+      However, aborts are typically handled by causing the ``cleanup''
+      forms to be executed, in the spirit of Common Lisp's
+      unwind-protect.  In typical use the cleanup forms restore the
+      values of [state] global variables that were ``temporarily''
+      set by body.  Note that expl is essentially ignored.  For more
+      information see the Essay on Unwind-Protect in the ACL2 source
+      code.
     * (add-suffix sym str): Extend a symbol sym with a suffix expressed as
       a string str.  The resulting symbol is in the same package as
       the original symbol.  For instance, (add-suffix 'abc \"DEF\")
@@ -116307,8 +116489,16 @@ List of a few built-in system utilities
       name.
     * (get-brr-local var state): The value of brr-local variable var; this
       is the utility used by [brr@].
+    * (get-defun-event name w): For the given name of a defined function in
+      the current ACL2 [world] w, return its [defun] form.  Note that
+      this applies to both :[logic]-mode and :[program]-mode
+      functions, in spite of the name, ``logical'' (which is actually
+      intended to distinguish from ``raw Lisp'').
     * (get-event name w): For the given name of an event in the current
-      ACL2 [world] w, return that event.
+      ACL2 [world] w, return that event.  Typically there is only one
+      such event, but for built-in functions the most recent event
+      might be a variant of a [verify-termination] event, so consider
+      using get-defun-event for names of functions (see above).
     * (get-skipped-proofs-p name w): For the given name of an event in the
       current ACL2 [world] w, return t if proofs were skipped when
       introducing that event, as with [skip-proofs] or using
@@ -116333,8 +116523,8 @@ List of a few built-in system utilities
       This is essentially just the body argument, which here is the
       indicated [fms] call, but where, going through the other
       arguments:
-        * summary --- printing only takes place when summary output is enabled
-          (see [set-inhibit-output-lst]);
+        * summary --- evaluation only takes place when summary output is
+          enabled (see [set-inhibit-output-lst]);
         * nil --- don't enter a wormhole;
         * state --- the body (which here is the fms call) returns a single
           state value; and finally
@@ -116362,8 +116552,6 @@ List of a few built-in system utilities
       else nil.  For example, x is a legal variable name but the
       following are not: :abc, t, nil, &a (a lambda keyword), *c*
       (syntax of a constant), and pi (a Common Lisp constant).
-    * (logical-defun name w): For the given name of a defined function in
-      the current ACL2 [world] w, return its [defun] form.
     * (logicp fn w): For a function symbol fn of [world] w, return t when
       the symbol-class of fn in w is not :program, else nil.  (See
       symbol-class, below.)
@@ -122183,7 +122371,8 @@ Advanced Options (alphabetical list)
 
   By default, a new definition installed by trace$ will include a
   notinline declaration so that recursive calls will always be
-  traced.  To avoid this declaration, supply value nil.
+  traced.  (But see Remark (0) below for an exception involving
+  [invariant-risk].)  To avoid this declaration, supply value nil.
 
   A special value for :notinline, :fncall, will cause the traced
   function to call its original definition.  Without this special
@@ -122203,6 +122392,14 @@ Advanced Options (alphabetical list)
 
 
 Remarks
+
+  (0) For a :[program] mode function with [invariant-risk], recursive
+  calls are never traced.  To see these recursive calls, use one of
+  the two methods to defeat invariant-risk checking; see
+  [invariant-risk]. (Implementation note: This behavior on recursive
+  calls is a consequence of how ACL2 defines the
+  executable-counterpart --- also known as the ``*1* function'' (see
+  [evaluation]) --- to call a local function to do the computation.)
 
   (1) If some of the given trace specs have errors, then trace$ will
   generally print error messages for those but will still process
