@@ -49060,22 +49060,24 @@ tables in the current Hons Space."
  @(':object') is an abstraction not found in Common Lisp.  An @(':object') file
  is a file of Lisp objects.  One uses @('read-object') or
  @('read-object-with-case') (see below) to read from @(':object') files and
- @('print-object$') or @('print-object$-preserving-case') (see below; also,
- @('print-object$-ser')) to print to @(':object') files.  (The reading and
- printing are really done with the Common Lisp @('read') and printing
- functions.  For those familiar with @('read'), we note that the
- @('recursive-p') argument is @('nil').)  The function
- @('read-object-suppress') is logically the same as @('read-object') except
- that @('read-object-suppress') throws away the second returned value, i.e. the
- value that would normally be read, simply returning @('(mv eof state)'); under
- the hood, @('read-object-suppress') avoids errors, for example those caused by
- encountering symbols in packages unknown to ACL2.</p>
+ @(tsee print-object$), its more flexible variant @(tsee print-object$+), or
+ @('print-object$-preserving-case') (see below; also, @('print-object$-fn')) to
+ print to @(':object') files.  (The reading and printing are really done with
+ the Common Lisp @('read') and printing functions.  For those familiar with
+ @('read'), we note that the @('recursive-p') argument is @('nil').)  The
+ function @('read-object-suppress') is logically the same as @('read-object')
+ except that @('read-object-suppress') throws away the second returned value,
+ i.e. the value that would normally be read, simply returning @('(mv eof
+ state)'); under the hood, @('read-object-suppress') avoids errors, for example
+ those caused by encountering symbols in packages unknown to ACL2.</p>
 
- <p>The functions @('read-object-with-case') and
- @('print-object$-preserving-case') are logically defined simply to be
- @('read-object') and @('print-object$'), respectively, though they do I/O
- differently from those functions, except when the host Lisp is GCL.  For
- @('read-object-with-case') the value that is read is affected by an extra
+ <p>The functions @('read-object-with-case') is defined logically simply to be
+ @('read-object'), while the function @('print-object$-preserving-case') and
+ macro @(tsee print-object$+) are defined logically simply to be
+ @('print-object$').  However, these variants generally do I/O
+ differently (except that when the host Lisp is GCL,
+ @('print-object$-preserving-case') behaves the same as @('print-object$')).
+ For @('read-object-with-case') the value that is read is affected by an extra
  argument, namely, the second argument: the <i>mode</i>.  The mode is one of
  the keywords @(':upcase'), @(':downcase'), @(':preserve'), or @(':invert'),
  where @(':upcase') gives the same behavior as @('read-object'), and the other
@@ -49092,9 +49094,9 @@ tables in the current Hons Space."
  @('print-object$-preserving-case') may still insert vertical bars, depending
  on the host Lisp, because different Lisp implementations choose to escape
  symbols differently.  Consider the symbol typically printed as @('|1u|').
- Using @('print-object$-preserving-case'), this prints simply as @('1u') in
- CCL and Allegro CL, but it is printed as @('|1u|') in SBCL, LispWorks, and
- CMUCL &mdash; at least in the implementations that we tested!</p>
+ Using @('print-object$-preserving-case'), this prints simply as @('1u') in CCL
+ and Allegro CL, but it is printed as @('|1u|') in SBCL, LispWorks, and CMUCL
+ &mdash; at least in the implementations that we tested!</p>
 
  <p>File-names are strings.  ACL2 does not support the Common Lisp type @(tsee
  pathname).  However, for the @('file-name') argument of the output-related
@@ -49127,8 +49129,9 @@ tables in the current Hons Space."
     (princ$ (obj channel state) state)
     (write-byte$ (byte channel state) state)
     (print-object$ (obj channel state) state)
+    (print-object$+ (obj channel &key ...) state)
     (print-object$-preserving-case (obj channel state) state)
-    (print-object$-ser (obj serialize-character channel state) state)
+    (print-object$-fn (obj serialize-character channel state) state)
     (fms  (string alist channel state evisc-tuple) state)
     (fms! (string alist channel state evisc-tuple) state)
     (fmt  (string alist channel state evisc-tuple) (mv col state))
@@ -49184,14 +49187,14 @@ tables in the current Hons Space."
   (mv-let
      (channel state)
      (open-output-channel :string :object state)
-     (pprogn (print-object$-ser 17 nil channel state)
-             (print-object$-ser '(a b (c d)) nil channel state)
+     (pprogn (print-object$-fn 17 nil channel state)
+             (print-object$-fn '(a b (c d)) nil channel state)
              (er-let*
                ((str1 (get-output-stream-string$
                        channel state
                        nil))) ; keep the channel open
-               (pprogn (print-object$-ser 23 nil channel state)
-                       (print-object$-ser '((e f)) nil channel state)
+               (pprogn (print-object$-fn 23 nil channel state)
+                       (print-object$-fn '((e f)) nil channel state)
                        (er-let* ; close the channel
                          ((str2 (get-output-stream-string$ channel state)))
                          (value (cons str1 str2)))))))
@@ -88545,7 +88548,7 @@ it."
 
 ; Total number of release note items: 131, as follows.
 ;   42 ; Changes to Existing Features
-;   21 ; New Features
+;   22 ; New Features
 ;   11 ; Heuristic and Efficiency Improvements
 ;   42 ; Bug Fixes
 ;   14 ; Changes at the System Level
@@ -88897,6 +88900,12 @@ it."
 ; undocumented function symbol aset1-lst was erroneously missing.  See in
 ; particular *boot-strap-invariant-risk-alist*, which replaces
 ; *boot-strap-invariant-risk-symbols*.
+
+; Deleted set-acl2-print-base and set-acl2-print-case, which have been obsolete
+; since Version 3.5 (just causing errors).
+
+; Replaced print-object$-ser by print-object$-fn.  The change is essentially
+; backward compatible.
 
   :parents (release-notes)
   :short "ACL2 Version  8.4 (xxx, 20xx) Notes"
@@ -89388,7 +89397,8 @@ it."
 
  <p>Added a function @(tsee ctxp) to recognize valid contexts, which are used
  for printing error message (see @(see ctx)).  Thanks to Eric Smith for
- requesting this addition.</p>
+ requesting this addition and to Alessandro Coglio for suggesting that it be
+ disabled, for efficiency.</p>
 
  <p>The utilities @(tsee brr) and @(tsee monitor) now each take an optional
  argument that avoids output.  A new utility, @(tsee monitor!), is a
@@ -89403,6 +89413,12 @@ it."
 
  <p>The function @(tsee aset1-trusted) may be used in place of @(tsee aset1) to
  avoid @(see invariant-risk), but is therefore @(see untouchable).</p>
+
+ <p>Added a new utility, @(tsee print-object$+), that is like @(tsee
+ print-object$) but instead of taking @('STATE'), @(tsee print-object$+) is a
+ macro that takes keyword arguments to customize the output.  See @(see
+ print-object$+).  Thanks to Eric Smith for requesting such additional print
+ control.</p>
 
  <h3>Heuristic and Efficiency Improvements</h3>
 
@@ -95128,6 +95144,66 @@ arithmetic) for libraries of @(see books) for arithmetic reasoning.</p>")
  the function @('g') is not currently defined.  This problem can be solved by
  preceding @(':print-gv') with @(':redo-flat'), to re-run the events up to the
  one that failed; see @(see redo-flat).</p>")
+
+(defxdoc print-object$
+  :parents (io acl2-built-ins)
+  :short "Print an an object to an open output channel"
+  :long "
+ @({
+ General Form:
+ (print-object$ x channel state)
+ })
+
+ <p>where @('x') is any ACL2 object and @('channel') is an open output
+ channel.  See @(see io).</p>
+
+ <h3>Remarks</h3>
+
+ <p>A newline is printed just above @('x').  To eliminate that newline or print
+ a given comment instead, see @(see print-object$+).</p>
+
+ <p>@('Print-object$') pays attention to the values of @(see print-control)
+ variables.  To provide them as keyword arguments rather than assigning them
+ globally, see @(see print-object$+).</p>
+
+ <p>By default, the output of @('print-object$') is human-readable.  To use
+ @(see serialize) printing instead, first set the serialize character using
+ @(tsee set-serialize-character).</p>
+
+ <p>For a related utility, see @(tsee write-list).</p>")
+
+(defxdoc print-object$+
+  :parents (io acl2-built-ins)
+  :short "Print an an object to an open output channel in a specified manner"
+  :long "
+ @({
+ General Form:
+ (print-object$+ x       ; an ACL2 object
+                 channel ; an open output channel
+                 &key
+                 header ; nil or a comment string (see below)
+                 serialize-character ; as in @(see with-serialize-character)
+                 print-base print-case ... ; print-control variables
+                 )
+ })
+
+ <p>This macro is a more flexible variant of @(tsee print-object$).  Any of the
+ print-control variables may be provided as a keyword; see @(see
+ print-control).  All arguments are evaluated.</p>
+
+ <p>The @(':header') is printed so that it immediately precedes @('x').  By
+ default, a single newline is what is printed for the header.  If @(':header')
+ is specified as @('nil') then no such header is printed.  Otherwise, the value
+ @(':header') should be a string for which the first non-whitespace character
+ (if any) on each line is a semicolon (@(';')).  If the last character of the
+ string is not a newline, then a newline will be printed to separate the string
+ from @('x').</p>
+
+ <p>The @(':serialize-character') keyword argument has a default of @('nil').
+ If it is supplied a value other than @('nil') or @(''nil') (even if it is
+ supplied an expression other than those two constants), then it is an error to
+ supply other keyword arguments.  Otherwise printing is done without
+ serialization (see @(see serialize)).</p>")
 
 (defxdoc printing-to-strings
   :parents (io)
@@ -130613,7 +130689,7 @@ for the execution of @('form')."
  @('#\\Z').  We describe the effect of that assignment below.  But note that if
  you are doing this because of one or more specific calls of
  @('print-object$'), such as @('(print-object$ x channel state)'), then you may
- wish instead to evaluate @('(print-object$-ser x serialize-character channel
+ wish instead to evaluate @('(print-object$-fn x serialize-character channel
  state)'), in which case you will not need to use
  @('with-serialize-character').</p>
 
@@ -135679,7 +135755,6 @@ expand function call at the current subterm, without simplifying"
 (defpointer pound-dot-reader sharp-dot-reader)
 (defpointer pound-u-reader sharp-u-reader)
 (defpointer prettyify-clause system-utilities)
-(defpointer print-object$ io)
 (defpointer print-object$-preserving-case io)
 (defpointer print-summary-user finalize-event-user)
 (defpointer programp system-utilities)
