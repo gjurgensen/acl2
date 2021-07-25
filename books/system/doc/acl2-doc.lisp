@@ -2755,6 +2755,26 @@
  give a prefix argument to the `@('I')' command, as described briefly
  above.</p>
 
+ <p>The acl2-doc browser makes a query when first loading a manual if there is
+ a newer web-based manual (specifically, comparing the write date of the
+ acl2-doc manual, which is typically in
+ @('books/system/doc/rendered-doc-combined.lsp'), to the write-date of the file
+ @('books/doc/manual/index.html') when that file exists).  If you decline, then
+ you will be given the opportunity to download that acl2-doc manual from the
+ web.  If you prefer, you can rebuild the acl2-doc manual yourself when buiding
+ the web-based manual, for example as follows.</p>
+
+ @({
+ cd <your_acl2_directory>/books
+ make manual ACL2_DOC_GENERATE_SUPPORTING_FILES=t
+ })
+
+ <p>Note that the ``@('make')'' target, ``@('regression-everything')'',
+ automatically sets @('ACL2_DOC_GENERATE_SUPPORTING_FILES'); or you can set it
+ as an environment variable.  Any non-empty value other than (case-insensitive)
+ @('SKIP') will cause the acl2-doc manual to be built when building the
+ web-based manual.</p>
+
  <p>For the `@('/')' and `@('W')' commands, you will need tags table files.
  These come with the ACL2 gzipped tarfile distribution, but if you obtain ACL2
  from github then you will need to build them.  The file @('\"TAGS\"') is used
@@ -88552,7 +88572,7 @@ it."
 ;   11 ; Heuristic and Efficiency Improvements
 ;   42 ; Bug Fixes
 ;   14 ; Changes at the System Level
-;    2 ; EMACS Support
+;    3 ; EMACS Support
 ;    2 ; Experimental Versions
 
 ; Any ``Cryptic BRR Message'' printed by the prover now acknowledges that the
@@ -89922,6 +89942,15 @@ it."
  particular the first argument of @('defthm').  Thanks to Vivek Ramanathan,
  both for pointing out the @('defthm') issue and for suggesting code that was
  incorporated into the changes.</p>
+
+ <p>The @(see acl2-doc) browser now queries when first loading an ACL2+books
+ manual if you have a newer web-based version.  A ``yes'' response will use
+ the (out-of-date) manual, while a ``no'' response will generally produce a new
+ query asking if you want to download the manual from the web.  This change was
+ made in support building the manual more quickly, as the acl2-doc manual is no
+ longer built by default.  See @(see acl2-doc) for how to do that build and
+ other details.  Thanks to Alessandro Coglio, Eric Smith, and Sol Swords for
+ discussions about speeding up the build of the manual.</p>
 
  <h3>Experimental Versions</h3>
 

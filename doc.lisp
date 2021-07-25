@@ -4995,6 +4995,25 @@ Silent loading of ACL2 customization files
   well.  To change which of these two manuals you display, just give
   a prefix argument to the `I' command, as described briefly above.
 
+  The acl2-doc browser makes a query when first loading a manual if
+  there is a newer web-based manual (specifically, comparing the
+  write date of the acl2-doc manual, which is typically in
+  books/system/doc/rendered-doc-combined.lsp, to the write-date of
+  the file books/doc/manual/index.html when that file exists).  If
+  you decline, then you will be given the opportunity to download
+  that acl2-doc manual from the web.  If you prefer, you can rebuild
+  the acl2-doc manual yourself when buiding the web-based manual, for
+  example as follows.
+
+    cd <your_acl2_directory>/books
+    make manual ACL2_DOC_GENERATE_SUPPORTING_FILES=t
+
+  Note that the ``make'' target, ``regression-everything'',
+  automatically sets ACL2_DOC_GENERATE_SUPPORTING_FILES; or you can
+  set it as an environment variable.  Any non-empty value other than
+  (case-insensitive) SKIP will cause the acl2-doc manual to be built
+  when building the web-based manual.
+
   For the `/' and `W' commands, you will need tags table files.  These
   come with the ACL2 gzipped tarfile distribution, but if you obtain
   ACL2 from github then you will need to build them.  The file \"TAGS\"
@@ -88034,6 +88053,16 @@ EMACS Support
   arguments, in particular the first argument of defthm.  Thanks to
   Vivek Ramanathan, both for pointing out the defthm issue and for
   suggesting code that was incorporated into the changes.
+
+  The [ACL2-doc] browser now queries when first loading an ACL2+books
+  manual if you have a newer web-based version.  A ``yes'' response
+  will use the (out-of-date) manual, while a ``no'' response will
+  generally produce a new query asking if you want to download the
+  manual from the web.  This change was made in support building the
+  manual more quickly, as the acl2-doc manual is no longer built by
+  default.  See [ACL2-doc] for how to do that build and other
+  details.  Thanks to Alessandro Coglio, Eric Smith, and Sol Swords
+  for discussions about speeding up the build of the manual.
 
 
 Experimental Versions
