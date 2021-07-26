@@ -88570,7 +88570,7 @@ it."
 ;   42 ; Changes to Existing Features
 ;   22 ; New Features
 ;   11 ; Heuristic and Efficiency Improvements
-;   42 ; Bug Fixes
+;   44 ; Bug Fixes
 ;   14 ; Changes at the System Level
 ;    4 ; EMACS Support
 ;    2 ; Experimental Versions
@@ -88926,6 +88926,11 @@ it."
 
 ; Replaced print-object$-ser by print-object$-fn.  The change is essentially
 ; backward compatible.
+
+; Source function initialize-acl2 now has only one argument (which is still
+; optional).  The others have apparently not been used for a long time, and it
+; might take considerable thought to set them to other than their default
+; values.
 
   :parents (release-notes)
   :short "ACL2 Version  8.4 (xxx, 20xx) Notes"
@@ -89829,6 +89834,16 @@ it."
  (resize-ar 20 st2)
  (ar-length st2) ; formerly 8, but now 20 as expected
  })
+
+ <p>For any @(tsee proof-builder) command of the form @('(= term1 term2 atom
+ ...)'), the keyword arguments were ignored.  This has been fixed, and also the
+ documentation for @(tsee acl2-pc::=) has been improved.</p>
+
+ <p>Consider when a @(see community-book) is included using an ACL2 executable
+ different from the one that certified the book, with those two executables
+ being located in different directories.  The book is now considered to be
+ uncertified in that case.  To avoid this issue see @(see include-book) for a
+ discussion of environment variable @('ACL2_SYSTEM_BOOKS').</p>
 
  <h3>Changes at the System Level</h3>
 
@@ -132358,62 +132373,62 @@ attempt an equality (or equivalence) substitution"
            must be that only propositional equivalence matters at
            the current subterm)
 
-  General Form:
-  (= &optional x y &rest keyword-args)
+  General Forms:
+  (= x)
+  (= x y)
+  (= x y :kwd1 val1 ... :kwdn valn)
+  (= x y atom :kwd1 val1 ... :kwdn valn)
  })
 
+ <p>where each @(':kwdi') is one of @(':hints'), @(':otf-flg'), or @(':equiv'),
+ without repetition.  In the last form, @('atom') is a non-keyword atom and no
+ @('kwdi') may be @(':hints'); that atom, if supplied, is equivalent to
+ @(':hints atom'), which indicates that instead of performing a proof that the
+ two indicated terms (as described below) are suitably equivalent, a new such
+ goal is created.</p>
+
  <p>If terms @('x') and @('y') are supplied, then replace @('x') by @('y')
- inside the current subterm if they are ``known'' to be ``equal''.  Here
- ``known'' means the following: the prover is called as in the @('prove')
- command (using @('keyword-args')) to prove @('(equal x y)'), except that a
- keyword argument @(':equiv') is allowed, in which case @('(equiv x y)') is
- proved instead, where @('equiv') is that argument.  (See below for how
- governors are handled.)</p>
+ inside the current subterm if they are ``known'' to be equal, or more
+ generally, equivalent in the sense described below.  Here ``known'' means the
+ following: except in the cases that no arguments are provided or else
+ @(':hints atom') is provided as described above, the prover is called as in
+ the @('prove') command (using keyword arguments @(':otf') and @(':hints'), if
+ supplied, where the value of @(':hints') is not an atom) to prove equivalence
+ of @('x') and @('y') under the current governors and top-level hypotheses.  By
+ default, this equivalence is equality; however the keyword argument
+ @(':equiv') can specify a known equivalence relation.  In cases other than
+ equality, substitution only takes place where justified by the equivlance
+ maintained at the current subterm.</p>
 
- <p>Actually, @('keyword-args') is either a single non-keyword or is a list of
- the form @('((kw-1 x-1) ... (kw-n x-n))'), where each @('kw-i') is one of the
- keywords @(':equiv'), @(':otf-flg'), @(':hints').  Here @(':equiv') defaults
- to @('equal') if the argument is not supplied or is @('nil'); if it is not
- @('equal') (either explicitly or by default), then it should be the name of an
- ACL2 @(see equivalence) relation, and substitution will only take place at
- subterm occurrences for which the @(':equiv') is among the @(see equivalence)
- relations being maintained without the use of @(see patterned-congruence)s.
- @(':Otf-flg') and @(':hints') give directives to the prover, as explained
- above; also see @(see acl2-pc::prove).  However, no prover call is made if
- @(':hints') is a non-@('nil') atom or if @('keyword-args') is a single
- non-keyword (more on this below).</p>
+ <p>For the keyword arguments, @(':equiv') defaults to @('equal') if not
+ supplied or @('nil'); if it is not @('equal') (either explicitly or by
+ default), then it should be the name of a known ACL2 @(see equivalence)
+ relation, and substitution will only take place at subterm occurrences for
+ which the @(':equiv') is among the @(see equivalence) relations being
+ maintained without the use of @(see patterned-congruence)s.</p>
 
- <p><i>Remarks on defaults</i></p>
+ <h3>Remarks on defaults</h3>
 
- <p>(1) If there is only one argument, say @('a'), then @('x') defaults to the
- current subterm, in the sense that @('x') is taken to be the current subterm
- and @('y') is taken to be @('a').</p>
+ <ul>
 
- <p>(2) If there are at least two arguments, then @('x') may be the symbol
- @('&'), which then represents the current subterm.  Thus, @('(= a)') is
- equivalent to @('(= & a)').  (Obscure point: actually, @('&') can be in any
- package, except the keyword package.)</p>
+ <li>If there are at least two arguments, then @('x') may be the symbol
+ @('&'), in any package except the keyword package, which represents the
+ current subterm.</li>
 
- <p>(3) If there are no arguments, then we look for a top-level hypothesis or a
+ <li>The one-argument command @('(= a)') is equivalent to @('(= & a)').</li>
+
+ <li>If there are no arguments, then we look for a top-level hypothesis or a
  governor of the form @('(equal c u)') or @('(equal u c)'), where @('c') is the
- current subterm.  In that case we replace the current subterm by @('u').</p>
+ current subterm.  In that case we replace the current subterm by @('u').</li>
 
- <p>As with the @('prove') command, we allow goals to be given ``bye''s in the
+ <li>As with the @('prove') command, we allow goals to be given ``bye''s in the
  proof, which may be generated by a @(':hints') keyword argument in
- @('keyword-args').  These result in the creation of new subgoals.</p>
+ @('keyword-args').  These result in the creation of new subgoals.</li>
 
- <p>A proof is attempted unless the @(':hints') argument is a non-@('nil') atom
- other than @(':')@('none'), or unless there is one element of @('keyword-args') and
- it is not a keyword.  In that case, if there are any hypotheses in the current
- goal, then what is attempted is a proof of the implication whose antecedent is
- the conjunction of the current hypotheses and governors and whose conclusion
- is the appropriate @('equal') term.</p>
+ <li>It is allowed to use abbreviations (see @(see acl2-pc::add-abbreviation))
+ in the hints.</li>
 
- <p><b>Remarks:</b> (1) It is allowed to use abbreviations in the hints.  (2)
- The keyword @(':')@('none') has the special role as a value of
- @(':')@('hints') that is shown clearly in an example above.  (3) If there are
- governors, then the new subgoal has as additional hypotheses the current
- governors.</p>")
+ </ul>")
 
 (defxdoc acl2-pc::acl2-wrap
   :parents (proof-builder-commands)
