@@ -88064,6 +88064,10 @@ EMACS Support
   details.  Thanks to Alessandro Coglio, Eric Smith, and Sol Swords
   for discussions about speeding up the build of the manual.
 
+  Fixed certain hangs in the [ACL2-doc] browser.  For example, when
+  standing on whitespace near the left margin of topic
+  [*ACL2-exports*], the 'g' command coulld formerly hang.
+
 
 Experimental Versions
 

@@ -88572,7 +88572,7 @@ it."
 ;   11 ; Heuristic and Efficiency Improvements
 ;   42 ; Bug Fixes
 ;   14 ; Changes at the System Level
-;    3 ; EMACS Support
+;    4 ; EMACS Support
 ;    2 ; Experimental Versions
 
 ; Any ``Cryptic BRR Message'' printed by the prover now acknowledges that the
@@ -89951,6 +89951,10 @@ it."
  longer built by default.  See @(see acl2-doc) for how to do that build and
  other details.  Thanks to Alessandro Coglio, Eric Smith, and Sol Swords for
  discussions about speeding up the build of the manual.</p>
+
+ <p>Fixed certain hangs in the @(see acl2-doc) browser.  For example, when
+ standing on whitespace near the left margin of topic @(see *acl2-exports*),
+ the '@('g')' command coulld formerly hang.</p>
 
  <h3>Experimental Versions</h3>
 
