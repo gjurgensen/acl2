@@ -88077,7 +88077,7 @@ EMACS Support
 
   Fixed certain hangs in the [ACL2-doc] browser.  For example, when
   standing on whitespace near the left margin of topic
-  [*ACL2-exports*], the 'g' command coulld formerly hang.
+  [*ACL2-exports*], the 'g' command could formerly hang.
 
 
 Experimental Versions
