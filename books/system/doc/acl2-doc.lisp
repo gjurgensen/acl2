@@ -89969,7 +89969,7 @@ it."
 
  <p>Fixed certain hangs in the @(see acl2-doc) browser.  For example, when
  standing on whitespace near the left margin of topic @(see *acl2-exports*),
- the '@('g')' command coulld formerly hang.</p>
+ the '@('g')' command could formerly hang.</p>
 
  <h3>Experimental Versions</h3>
 
