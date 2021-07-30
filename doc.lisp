@@ -77,7 +77,7 @@ Subtopics
   [defthm], [in-theory], [xargs], [state], etc., without an acl2::
   prefix.
 
-  The constant *acl2-exports* lists 1529 symbols, including most
+  The constant *acl2-exports* lists 1530 symbols, including most
   documented ACL2 system constants, functions, and macros.  You will
   typically also want to import many symbols from Common Lisp; see
   [*common-lisp-symbols-from-main-lisp-package*].
@@ -480,8 +480,8 @@ Subtopics
        pr! preprocess prin1$ prin1-with-slashes
        prin1-with-slashes1 princ$ print-base-p
        print-cl-cache print-gv print-object$
+       print-object$+ print-object$-fn
        print-object$-preserving-case
-       print-object$-ser
        print-rational-as-decimal
        print-timer profile
        prog2$ progn progn! progn$ program
@@ -3864,6 +3864,12 @@ Subtopics
       Recognizer for print bases that are understood by functions such as
       [explode-nonnegative-integer] and [explode-atom].
 
+  [Print-object$]
+      Print an an object to an open output channel
+
+  [Print-object$+]
+      Print an an object to an open output channel in a specified manner
+
   [Prog2$]
       Execute two forms and return the value of the second one
 
@@ -4988,6 +4994,25 @@ Silent loading of ACL2 customization files
   ACL2+Books Manual, which includes documentation for those books as
   well.  To change which of these two manuals you display, just give
   a prefix argument to the `I' command, as described briefly above.
+
+  The acl2-doc browser makes a query when first loading a manual if
+  there is a newer web-based manual (specifically, comparing the
+  write date of the acl2-doc manual, which is typically in
+  books/system/doc/rendered-doc-combined.lsp, to the write-date of
+  the file books/doc/manual/index.html when that file exists).  If
+  you decline, then you will be given the opportunity to download
+  that acl2-doc manual from the web.  If you prefer, you can rebuild
+  the acl2-doc manual yourself when buiding the web-based manual, for
+  example as follows.
+
+    cd <your_acl2_directory>/books
+    make manual ACL2_DOC_GENERATE_SUPPORTING_FILES=t
+
+  Note that the ``make'' target, ``regression-everything'',
+  automatically sets ACL2_DOC_GENERATE_SUPPORTING_FILES; or you can
+  set it as an environment variable.  Any non-empty value other than
+  (case-insensitive) SKIP will cause the acl2-doc manual to be built
+  when building the web-based manual.
 
   For the `/' and `W' commands, you will need tags table files.  These
   come with the ACL2 gzipped tarfile distribution, but if you obtain
@@ -28307,7 +28332,7 @@ Subtopics
       dcl_1 dcl_2 ... dcl_k
       body
       &key
-      rewrite quant-ok skolem-name thm-name witness-dcls strengthen constrain
+      rewrite quant-ok skolem-name thm-name strengthen constrain
       verbose)
 
   where fn is the symbol you wish to define and is a new symbolic
@@ -28487,13 +28512,10 @@ Subtopics
   defined functions cannot be evaluated; see [defun-nx].  Normally
   that is not a problem, since these notions involve quantifiers.
   But if you prefer that [defun] be used instead of defun-nx, you can
-  arrange that using [declare] forms.  These may be given either as
-  the dcl_i as shown above, or (using an older notation that might
-  some day be deprecated) as a list of declare forms supplied as the
-  value of keyword argument :witness-dcls; or, both.  These will
-  become the declare forms in the generated [defun].  If the [xargs]
-  [declaration] form :non-executable nil is supplied, then [defun]
-  will be used in place of [defun-nx].
+  arrange that using [declare] forms, given as the dcl_i as shown
+  above.  These will become the declare forms in the generated
+  [defun].  If the [xargs] [declaration] form :non-executable nil is
+  supplied, then [defun] will be used in place of [defun-nx].
 
   [Guard] verification is performed for defun-sk events under the same
   conditions as for defun events.  (An exception, ignored here but
@@ -28501,10 +28523,9 @@ Subtopics
   :constrain t is supplied.)  Thus, by default, guard verification
   will be attempted exactly when at least one of type, :guard, or
   :verify-guards t is specified in a declaration (that is, in some
-  dcl_i or in the :witness-dcls argument).  This default behavior can
-  be modified just as it is for defun; see
-  [set-verify-guards-eagerness].  Technical note: such guard
-  verification is implemented through a generated call of
+  dcl_i.  This default behavior can be modified just as it is for
+  defun; see [set-verify-guards-eagerness].  Technical note: such
+  guard verification is implemented through a generated call of
   [verify-guards] after the encapsulate that surrounds the
   definitions introduced; use :[trans1] to see the expansion.
 
@@ -52768,30 +52789,32 @@ Subtopics
   :byte are familiar.  Type :object is an abstraction not found in
   Common Lisp.  An :object file is a file of Lisp objects.  One uses
   read-object or read-object-with-case (see below) to read from
-  :object files and print-object$ or print-object$-preserving-case
-  (see below; also, print-object$-ser) to print to :object files.
-  (The reading and printing are really done with the Common Lisp read
-  and printing functions.  For those familiar with read, we note that
-  the recursive-p argument is nil.)  The function
-  read-object-suppress is logically the same as read-object except
-  that read-object-suppress throws away the second returned value,
-  i.e. the value that would normally be read, simply returning (mv
-  eof state); under the hood, read-object-suppress avoids errors, for
-  example those caused by encountering symbols in packages unknown to
-  ACL2.
+  :object files and [print-object$], its more flexible variant
+  [print-object$+], or print-object$-preserving-case (see below;
+  also, print-object$-fn) to print to :object files.  (The reading
+  and printing are really done with the Common Lisp read and printing
+  functions.  For those familiar with read, we note that the
+  recursive-p argument is nil.)  The function read-object-suppress is
+  logically the same as read-object except that read-object-suppress
+  throws away the second returned value, i.e. the value that would
+  normally be read, simply returning (mv eof state); under the hood,
+  read-object-suppress avoids errors, for example those caused by
+  encountering symbols in packages unknown to ACL2.
 
-  The functions read-object-with-case and print-object$-preserving-case
-  are logically defined simply to be read-object and print-object$,
-  respectively, though they do I/O differently from those functions,
-  except when the host Lisp is GCL.  For read-object-with-case the
-  value that is read is affected by an extra argument, namely, the
-  second argument: the mode.  The mode is one of the keywords
-  :upcase, :downcase, :preserve, or :invert, where :upcase gives the
-  same behavior as read-object, and the other three modes are handled
-  according to the specification for the Common Lisp function,
-  readtable-case (see for example {the Common Lisp HyperSpec's
-  documentation for ``Examples of Effect of Readtable Case on the
-  Lisp Reader'' |
+  The functions read-object-with-case is defined logically simply to be
+  read-object, while the function print-object$-preserving-case and
+  macro [print-object$+] are defined logically simply to be
+  print-object$.  However, these variants generally do I/O
+  differently (except that when the host Lisp is GCL,
+  print-object$-preserving-case behaves the same as print-object$).
+  For read-object-with-case the value that is read is affected by an
+  extra argument, namely, the second argument: the mode.  The mode is
+  one of the keywords :upcase, :downcase, :preserve, or :invert,
+  where :upcase gives the same behavior as read-object, and the other
+  three modes are handled according to the specification for the
+  Common Lisp function, readtable-case (see for example {the Common
+  Lisp HyperSpec's documentation for ``Examples of Effect of
+  Readtable Case on the Lisp Reader'' |
   http://www.lispworks.com/documentation/HyperSpec/Body/23_aba.htm}).
   The function print-object$-preserving-case is somewhat analogous:
   it is defined logically to be print-object$ and it has the same
@@ -52837,8 +52860,9 @@ Subtopics
       (princ$ (obj channel state) state)
       (write-byte$ (byte channel state) state)
       (print-object$ (obj channel state) state)
+      (print-object$+ (obj channel &key ...) state)
       (print-object$-preserving-case (obj channel state) state)
-      (print-object$-ser (obj serialize-character channel state) state)
+      (print-object$-fn (obj serialize-character channel state) state)
       (fms  (string alist channel state evisc-tuple) state)
       (fms! (string alist channel state evisc-tuple) state)
       (fmt  (string alist channel state evisc-tuple) (mv col state))
@@ -52891,14 +52915,14 @@ Subtopics
     (mv-let
        (channel state)
        (open-output-channel :string :object state)
-       (pprogn (print-object$-ser 17 nil channel state)
-               (print-object$-ser '(a b (c d)) nil channel state)
+       (pprogn (print-object$-fn 17 nil channel state)
+               (print-object$-fn '(a b (c d)) nil channel state)
                (er-let*
                  ((str1 (get-output-stream-string$
                          channel state
                          nil))) ; keep the channel open
-                 (pprogn (print-object$-ser 23 nil channel state)
-                         (print-object$-ser '((e f)) nil channel state)
+                 (pprogn (print-object$-fn 23 nil channel state)
+                         (print-object$-fn '((e f)) nil channel state)
                          (er-let* ; close the channel
                            ((str2 (get-output-stream-string$ channel state)))
                            (value (cons str1 str2)))))))
@@ -53093,6 +53117,12 @@ Subtopics
 
   [Print-control]
       Advanced controls of ACL2 printing
+
+  [Print-object$]
+      Print an an object to an open output channel
+
+  [Print-object$+]
+      Print an an object to an open output channel in a specified manner
 
   [Printing-to-strings]
       Printing to strings instead of files or standard output
@@ -77812,9 +77842,8 @@ Subtopics
 
     (defstub foo (a b c) nil)
     (defun-sk forall-a-b-foo (c)
-       (forall (a b) (foo a b c))
-       :witness-dcls ((declare (Xargs :guard t
-                                      :verify-guards nil))))
+       (declare (xargs :guard t :verify-guards nil))
+       (forall (a b) (foo a b c)))
     (verify-guards forall-a-b-foo)
 
   The implementations of [prog2$], [time$], [with-prover-time-limit],
@@ -87381,6 +87410,10 @@ Changes to Existing Features
   versions.  (A deprecation warning is printed each time one of those
   macros is expanded.)
 
+  The keyword :witness-dcls of [defun-sk] is deprecated and will
+  probably be unsupported in future ACL2 releases.  Use [declare]
+  forms instead; see [defun-sk].
+
 
 New Features
 
@@ -87502,7 +87535,8 @@ New Features
 
   Added a function [ctxp] to recognize valid contexts, which are used
   for printing error message (see [ctx]).  Thanks to Eric Smith for
-  requesting this addition.
+  requesting this addition and to Alessandro Coglio for suggesting
+  that it be disabled, for efficiency.
 
   The utilities [brr] and [monitor] now each take an optional argument
   that avoids output.  A new utility, [monitor!], is a combination of
@@ -87517,6 +87551,11 @@ New Features
 
   The function [aset1-trusted] may be used in place of [aset1] to avoid
   [invariant-risk], but is therefore [untouchable].
+
+  Added a new utility, [print-object$+], that is like [print-object$]
+  but instead of taking STATE, [print-object$+] is a macro that takes
+  keyword arguments to customize the output.  See [print-object$+].
+  Thanks to Eric Smith for requesting such additional print control.
 
 
 Heuristic and Efficiency Improvements
@@ -87895,6 +87934,17 @@ Bug Fixes
     (resize-ar 20 st2)
     (ar-length st2) ; formerly 8, but now 20 as expected
 
+  For any [proof-builder] command of the form (= term1 term2 atom ...),
+  the keyword arguments were ignored.  This has been fixed, and also
+  the documentation for [ACL2-pc::=] has been improved.
+
+  Consider when a [community-book] is included using an ACL2 executable
+  different from the one that certified the book, with those two
+  executables being located in different directories.  The book is
+  now considered to be uncertified in that case.  To avoid this issue
+  see [include-book] for a discussion of environment variable
+  ACL2_SYSTEM_BOOKS.
+
 
 Changes at the System Level
 
@@ -88013,6 +88063,20 @@ EMACS Support
   arguments, in particular the first argument of defthm.  Thanks to
   Vivek Ramanathan, both for pointing out the defthm issue and for
   suggesting code that was incorporated into the changes.
+
+  The [ACL2-doc] browser now queries when first loading an ACL2+books
+  manual if you have a newer web-based version.  A ``yes'' response
+  will use the (out-of-date) manual, while a ``no'' response will
+  generally produce a new query asking if you want to download the
+  manual from the web.  This change was made in support building the
+  manual more quickly, as the acl2-doc manual is no longer built by
+  default.  See [ACL2-doc] for how to do that build and other
+  details.  Thanks to Alessandro Coglio, Eric Smith, and Sol Swords
+  for discussions about speeding up the build of the manual.
+
+  Fixed certain hangs in the [ACL2-doc] browser.  For example, when
+  standing on whitespace near the left margin of topic
+  [*ACL2-exports*], the 'g' command could formerly hang.
 
 
 Experimental Versions
@@ -93063,9 +93127,6 @@ Subtopics
   [Prettyify-clause]
       See [system-utilities].
 
-  [Print-object$]
-      See [io].
-
   [Print-object$-preserving-case]
       See [io].
 
@@ -95133,7 +95194,61 @@ Subtopics
 
   [Set-print-gv-defaults]
       Set default keyword values for [print-gv]")
- (PRINT-OBJECT$ (POINTERS) "See [io].")
+ (PRINT-OBJECT$
+  (IO ACL2-BUILT-INS)
+  "Print an an object to an open output channel
+
+    General Form:
+    (print-object$ x channel state)
+
+  where x is any ACL2 object and channel is an open output channel.
+  See [io].
+
+
+Remarks
+
+  A newline is printed just above x.  To eliminate that newline or
+  print a given comment instead, see [print-object$+].
+
+  Print-object$ pays attention to the values of [print-control]
+  variables.  To provide them as keyword arguments rather than
+  assigning them globally, see [print-object$+].
+
+  By default, the output of print-object$ is human-readable.  To use
+  [serialize] printing instead, first set the serialize character
+  using [set-serialize-character].
+
+  For a related utility, see [write-list].")
+ (PRINT-OBJECT$+
+  (IO ACL2-BUILT-INS)
+  "Print an an object to an open output channel in a specified manner
+
+    General Form:
+    (print-object$+ x       ; an ACL2 object
+                    channel ; an open output channel
+                    &key
+                    header ; nil or a comment string (see below)
+                    serialize-character ; as in @(see with-serialize-character)
+                    print-base print-case ... ; print-control variables
+                    )
+
+  This macro is a more flexible variant of [print-object$].  Any of the
+  print-control variables may be provided as a keyword; see
+  [print-control].  All arguments are evaluated.
+
+  The :header is printed so that it immediately precedes x.  By
+  default, a single newline is what is printed for the header.  If
+  :header is specified as nil then no such header is printed.
+  Otherwise, the value :header should be a string for which the first
+  non-whitespace character (if any) on each line is a semicolon (;).
+  If the last character of the string is not a newline, then a
+  newline will be printed to separate the string from x.
+
+  The :serialize-character keyword argument has a default of nil.  If
+  it is supplied a value other than nil or 'nil (even if it is
+  supplied an expression other than those two constants), then it is
+  an error to supply other keyword arguments.  Otherwise printing is
+  done without serialization (see [serialize]).")
  (PRINT-OBJECT$-PRESERVING-CASE (POINTERS)
                                 "See [io].")
  (PRINT-SUMMARY-USER (POINTERS)
@@ -131434,7 +131549,7 @@ Subtopics
   describe the effect of that assignment below.  But note that if you
   are doing this because of one or more specific calls of
   print-object$, such as (print-object$ x channel state), then you
-  may wish instead to evaluate (print-object$-ser x
+  may wish instead to evaluate (print-object$-fn x
   serialize-character channel state), in which case you will not need
   to use with-serialize-character.
 
@@ -132981,63 +133096,56 @@ Subtopics
              must be that only propositional equivalence matters at
              the current subterm)
 
-    General Form:
-    (= &optional x y &rest keyword-args)
+    General Forms:
+    (= x)
+    (= x y)
+    (= x y :kwd1 val1 ... :kwdn valn)
+    (= x y atom :kwd1 val1 ... :kwdn valn)
+
+  where each :kwdi is one of :hints, :otf-flg, or :equiv, without
+  repetition.  In the last form, atom is a non-keyword atom and no
+  kwdi may be :hints; that atom, if supplied, is equivalent to :hints
+  atom, which indicates that instead of performing a proof that the
+  two indicated terms (as described below) are suitably equivalent, a
+  new such goal is created.
 
   If terms x and y are supplied, then replace x by y inside the current
-  subterm if they are ``known'' to be ``equal''.  Here ``known''
-  means the following: the prover is called as in the prove command
-  (using keyword-args) to prove (equal x y), except that a keyword
-  argument :equiv is allowed, in which case (equiv x y) is proved
-  instead, where equiv is that argument.  (See below for how
-  governors are handled.)
+  subterm if they are ``known'' to be equal, or more generally,
+  equivalent in the sense described below.  Here ``known'' means the
+  following: except in the cases that no arguments are provided or
+  else :hints atom is provided as described above, the prover is
+  called as in the prove command (using keyword arguments :otf and
+  :hints, if supplied, where the value of :hints is not an atom) to
+  prove equivalence of x and y under the current governors and
+  top-level hypotheses.  By default, this equivalence is equality;
+  however the keyword argument :equiv can specify a known equivalence
+  relation.  In cases other than equality, substitution only takes
+  place where justified by the equivlance maintained at the current
+  subterm.
 
-  Actually, keyword-args is either a single non-keyword or is a list of
-  the form ((kw-1 x-1) ... (kw-n x-n)), where each kw-i is one of the
-  keywords :equiv, :otf-flg, :hints.  Here :equiv defaults to equal
-  if the argument is not supplied or is nil; if it is not equal
-  (either explicitly or by default), then it should be the name of an
-  ACL2 [equivalence] relation, and substitution will only take place
-  at subterm occurrences for which the :equiv is among the
-  [equivalence] relations being maintained without the use of
-  [patterned-congruence]s.  :Otf-flg and :hints give directives to
-  the prover, as explained above; also see [ACL2-pc::prove].
-  However, no prover call is made if :hints is a non-nil atom or if
-  keyword-args is a single non-keyword (more on this below).
+  For the keyword arguments, :equiv defaults to equal if not supplied
+  or nil; if it is not equal (either explicitly or by default), then
+  it should be the name of a known ACL2 [equivalence] relation, and
+  substitution will only take place at subterm occurrences for which
+  the :equiv is among the [equivalence] relations being maintained
+  without the use of [patterned-congruence]s.
 
-  Remarks on defaults
 
-  (1) If there is only one argument, say a, then x defaults to the
-  current subterm, in the sense that x is taken to be the current
-  subterm and y is taken to be a.
+Remarks on defaults
 
-  (2) If there are at least two arguments, then x may be the symbol &,
-  which then represents the current subterm.  Thus, (= a) is
-  equivalent to (= & a).  (Obscure point: actually, & can be in any
-  package, except the keyword package.)
-
-  (3) If there are no arguments, then we look for a top-level
-  hypothesis or a governor of the form (equal c u) or (equal u c),
-  where c is the current subterm.  In that case we replace the
-  current subterm by u.
-
-  As with the prove command, we allow goals to be given ``bye''s in the
-  proof, which may be generated by a :hints keyword argument in
-  keyword-args.  These result in the creation of new subgoals.
-
-  A proof is attempted unless the :hints argument is a non-nil atom
-  other than :none, or unless there is one element of keyword-args
-  and it is not a keyword.  In that case, if there are any hypotheses
-  in the current goal, then what is attempted is a proof of the
-  implication whose antecedent is the conjunction of the current
-  hypotheses and governors and whose conclusion is the appropriate
-  equal term.
-
-  Remarks: (1) It is allowed to use abbreviations in the hints.  (2)
-  The keyword :none has the special role as a value of :hints that is
-  shown clearly in an example above.  (3) If there are governors,
-  then the new subgoal has as additional hypotheses the current
-  governors.")
+    * If there are at least two arguments, then x may be the symbol &, in
+      any package except the keyword package, which represents the
+      current subterm.
+    * The one-argument command (= a) is equivalent to (= & a).
+    * If there are no arguments, then we look for a top-level hypothesis or
+      a governor of the form (equal c u) or (equal u c), where c is
+      the current subterm.  In that case we replace the current
+      subterm by u.
+    * As with the prove command, we allow goals to be given ``bye''s in the
+      proof, which may be generated by a :hints keyword argument in
+      keyword-args.  These result in the creation of new subgoals.
+    * It is allowed to use abbreviations (see [ACL2-pc::add-abbreviation])
+      in the hints.")
  (ACL2-PC::ACL2-WRAP
   (PROOF-BUILDER-COMMANDS)
   "(macro) same as (lisp x)
