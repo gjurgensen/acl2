@@ -28332,7 +28332,7 @@ Subtopics
       dcl_1 dcl_2 ... dcl_k
       body
       &key
-      rewrite quant-ok skolem-name thm-name witness-dcls strengthen constrain
+      rewrite quant-ok skolem-name thm-name strengthen constrain
       verbose)
 
   where fn is the symbol you wish to define and is a new symbolic
@@ -28512,13 +28512,10 @@ Subtopics
   defined functions cannot be evaluated; see [defun-nx].  Normally
   that is not a problem, since these notions involve quantifiers.
   But if you prefer that [defun] be used instead of defun-nx, you can
-  arrange that using [declare] forms.  These may be given either as
-  the dcl_i as shown above, or (using an older notation that might
-  some day be deprecated) as a list of declare forms supplied as the
-  value of keyword argument :witness-dcls; or, both.  These will
-  become the declare forms in the generated [defun].  If the [xargs]
-  [declaration] form :non-executable nil is supplied, then [defun]
-  will be used in place of [defun-nx].
+  arrange that using [declare] forms, given as the dcl_i as shown
+  above.  These will become the declare forms in the generated
+  [defun].  If the [xargs] [declaration] form :non-executable nil is
+  supplied, then [defun] will be used in place of [defun-nx].
 
   [Guard] verification is performed for defun-sk events under the same
   conditions as for defun events.  (An exception, ignored here but
@@ -28526,10 +28523,9 @@ Subtopics
   :constrain t is supplied.)  Thus, by default, guard verification
   will be attempted exactly when at least one of type, :guard, or
   :verify-guards t is specified in a declaration (that is, in some
-  dcl_i or in the :witness-dcls argument).  This default behavior can
-  be modified just as it is for defun; see
-  [set-verify-guards-eagerness].  Technical note: such guard
-  verification is implemented through a generated call of
+  dcl_i.  This default behavior can be modified just as it is for
+  defun; see [set-verify-guards-eagerness].  Technical note: such
+  guard verification is implemented through a generated call of
   [verify-guards] after the encapsulate that surrounds the
   definitions introduced; use :[trans1] to see the expansion.
 
@@ -77846,9 +77842,8 @@ Subtopics
 
     (defstub foo (a b c) nil)
     (defun-sk forall-a-b-foo (c)
-       (forall (a b) (foo a b c))
-       :witness-dcls ((declare (Xargs :guard t
-                                      :verify-guards nil))))
+       (declare (xargs :guard t :verify-guards nil))
+       (forall (a b) (foo a b c)))
     (verify-guards forall-a-b-foo)
 
   The implementations of [prog2$], [time$], [with-prover-time-limit],
@@ -87414,6 +87409,10 @@ Changes to Existing Features
   deprecated and will probably not be supported in later ACL2
   versions.  (A deprecation warning is printed each time one of those
   macros is expanded.)
+
+  The keyword :witness-dcls of [defun-sk] is deprecated and will
+  probably be unsupported in future ACL2 releases.  Use [declare]
+  forms instead; see [defun-sk].
 
 
 New Features
