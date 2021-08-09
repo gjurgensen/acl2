@@ -2,7 +2,7 @@
 ;
 ; acl2-doc.lisp - Documentation for the ACL2 Theorem Prover
 ;
-; ACL2 Version 8.3 -- A Computational Logic for Applicative Common Lisp
+; ACL2 Version 8.4 -- A Computational Logic for Applicative Common Lisp
 ; Copyright (C) 2021, Regents of the University of Texas
 ;
 ; This documentation was derived from the ACL2 system in October 2013, which
@@ -177,7 +177,7 @@
 ; who are looking at an older version of ACL2 will see the corresponding
 ; ACL2+Books Manual at this link.
 
-  "http://www.cs.utexas.edu/users/moore/acl2/v8-3/")
+  "http://www.cs.utexas.edu/users/moore/acl2/v8-4/")
 
 (defconst *installation-url*
 
@@ -88198,7 +88198,7 @@ it."
  macro can be made effectively untouchable by defining it with the new utility,
  @(tsee defmacro-untouchable).  Note that the alleged support for untouchable
  macros was already incomplete, as explained in an example in the form
- @('(deflabel note-8-3 ...)') in @(see community-book)
+ @('(defxdoc note-8-3 ...)') in @(see community-book)
  @('books/system/doc/acl2-doc.lisp').</p>
 
  <p>The @(see event) macro, @(tsee thm), is now treated like @(tsee defthm) in
@@ -88416,7 +88416,7 @@ it."
 
  <p>The second pass of @(tsee encapsulate) now uses @(see fast-alists) when
  calculating new triples in the logical @(see world) (in ACL2 system function
- @('new-trips').  We have seen this change result in cutting the time by 4.7%
+ @('new-trips')).  We have seen this change result in cutting the time by 4.7%
  and the bytes allocated by 34% for including the community book,
  @('\"centaur/sv/top\"').</p>
 
@@ -88929,7 +88929,7 @@ it."
 ; values.
 
   :parents (release-notes)
-  :short "ACL2 Version  8.4 (xxx, 20xx) Notes"
+  :short "ACL2 Version  8.4 (August, 2021) Notes"
   :long "<p>NOTE!  New users can ignore these release notes, because the @(see
  documentation) has been updated to reflect all changes that are recorded
  here.</p>
@@ -89079,7 +89079,7 @@ it."
  suggesting this improvement and testing it on some proprietary books.</p>
 
  <p>When supplying @('state') as an argument to @(tsee defun-nx) (or @(tsee
- defund-nx), it is no longer necessary to declare @('state') as a @(see stobj)
+ defund-nx)), it is no longer necessary to declare @('state') as a @(see stobj)
  or use @(tsee set-state-ok).  Thanks to Eric Smith for suggesting the
  possibility of this change.</p>
 
@@ -89962,8 +89962,8 @@ it."
  manual if you have a newer web-based version.  A ``yes'' response will use
  the (out-of-date) manual, while a ``no'' response will generally produce a new
  query asking if you want to download the manual from the web.  This change was
- made in support building the manual more quickly, as the acl2-doc manual is no
- longer built by default.  See @(see acl2-doc) for how to do that build and
+ made in support of building the manual more quickly, as the acl2-doc manual is
+ no longer built by default.  See @(see acl2-doc) for how to do that build and
  other details.  Thanks to Alessandro Coglio, Eric Smith, and Sol Swords for
  discussions about speeding up the build of the manual.</p>
 
@@ -89982,6 +89982,44 @@ it."
  the @(see state) global, @(''waterfall-parallelism'), or upon a transition of
  @(see waterfall-parallelism) to @('nil').  Thanks to David Rager for raising
  this issue (see GitHub Issue #1171) and discussing its resolution.</p>
+
+ ")
+
+(defxdoc note-8-5
+  :parents (release-notes)
+  :short "ACL2 Version  8.5 (xx, 20xx) Notes"
+  :long "<p>NOTE!  New users can ignore these release notes, because the @(see
+ documentation) has been updated to reflect all changes that are recorded
+ here.</p>
+
+ <p>Below we roughly organize the changes to ACL2 since Version 8.4 into the
+ following categories of changes: existing features, new features, heuristic
+ and efficiency improvements, bug fixes, changes at the system level, Emacs
+ support, and experimental versions.  Each change is described in just one
+ category, though of course many changes could be placed in more than one
+ category.</p>
+
+ <p>Note that only ACL2 system changes are listed below.  See also @(see
+ note-8-5-books) for a summary of changes made to the ACL2 Community Books
+ since ACL2 8.4, including the build system.  Also note that with each release,
+ it is typical that the value of constant @(tsee *acl2-exports*) has been
+ extended, and that some built-in functions that were formerly in @(':')@(tsee
+ program) mode are now @(see guard)-verified @(':')@(tsee logic) mode
+ functions.</p>
+
+ <h3>Changes to Existing Features</h3>
+
+ <h3>New Features</h3>
+
+ <h3>Heuristic and Efficiency Improvements</h3>
+
+ <h3>Bug Fixes</h3>
+
+ <h3>Changes at the System Level</h3>
+
+ <h3>EMACS Support</h3>
+
+ <h3>Experimental Versions</h3>
 
  ")
 

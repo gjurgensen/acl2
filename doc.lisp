@@ -3,7 +3,7 @@
 ; The contents of this file are derived from ACL2 Community Book
 ; books/system/doc/acl2-doc.lisp.
 
-; ACL2 Version 8.3 -- A Computational Logic for Applicative Common Lisp
+; ACL2 Version 8.4 -- A Computational Logic for Applicative Common Lisp
 ; Copyright (C) 2021, Regents of the University of Texas
 
 ; This version of ACL2 is a descendent of ACL2 Version 1.9, Copyright
@@ -1543,7 +1543,7 @@ Subtopics
   (ACL2)
   "General information About ACL2
 
-  This is ACL2 Version 8.3, [copyright] (C) 2021, Regents of the
+  This is ACL2 Version 8.4, [copyright] (C) 2021, Regents of the
   University of Texas, authored by Matt Kaufmann and J Strother
   Moore.
 
@@ -2587,7 +2587,7 @@ Subtopics
   This is the ACL2 documentation.  For the ACL2+Books Manual, which
   that includes both the ACL2 documentation and the ACL2
   [community-books], see the {ACL2+Books Manual |
-  http://www.cs.utexas.edu/users/moore/acl2/v8-3/combined-manual/index.html}.
+  http://www.cs.utexas.edu/users/moore/acl2/v8-4/combined-manual/index.html}.
 
 
 Subtopics
@@ -4757,7 +4757,7 @@ Silent loading of ACL2 customization files
 
   As discussed elsewhere (see [documentation]), the web-based
   {ACL2+Books Manual |
-  http://www.cs.utexas.edu/users/moore/acl2/v8-3/combined-manual/index.html}
+  http://www.cs.utexas.edu/users/moore/acl2/v8-4/combined-manual/index.html}
   provides a way to browse the combined documentation for the ACL2
   system and community books.  Such documentation can also be read at
   the terminal using the :[doc] command, though documentation for
@@ -13088,7 +13088,7 @@ Prerequisites
 
   We assume that you have already downloaded and installed ACL2 as per
   the {ACL2 installation instructions |
-  http://www.cs.utexas.edu/users/moore/acl2/v8-3/HTML/installation/installation.html}
+  http://www.cs.utexas.edu/users/moore/acl2/v8-4/HTML/installation/installation.html}
   on the ACL2 home page.
 
   We assume you know the path to your ACL2 executable.  Typically this
@@ -13343,7 +13343,7 @@ Subtopics
 
   For more information about installing ACL2, see the {ACL2
   installation instructions |
-  http://www.cs.utexas.edu/users/moore/acl2/v8-3/HTML/installation/installation.html}.
+  http://www.cs.utexas.edu/users/moore/acl2/v8-4/HTML/installation/installation.html}.
   For information about so-called ``classic ACL2 `make'-based
   certification'', which provides support for certifying directories
   of books but may disappear in a future ACL2 release, see
@@ -14839,7 +14839,7 @@ Subtopics
   contains [documentation] only about the ACL2 system, and does not
   include documentation from the [community-books].  Please point
   your browser at the {ACL2+Books Manual |
-  http://www.cs.utexas.edu/users/moore/acl2/v8-3/combined-manual/index.html}
+  http://www.cs.utexas.edu/users/moore/acl2/v8-4/combined-manual/index.html}
   (or if browsing in [ACL2-Doc], switch to that manual with meta-0 I)
   to access the desired topic.
 
@@ -21109,7 +21109,7 @@ Subtopics
   [documentation-copyright], which notes that there are many
   documentation authors.
 
-  ACL2 Version 8.3 --- A Computational Logic for Applicative Common
+  ACL2 Version 8.4 --- A Computational Logic for Applicative Common
   Lisp
 
   Copyright (C) 2021, Regents of the University of Texas
@@ -29649,7 +29649,7 @@ Subtopics
   defined in books.  However, most users will probably access the
   ACL2 documentation in other ways; see [documentation].  In
   particular, consider using the {ACL2+Books Manual |
-  http://www.cs.utexas.edu/users/moore/acl2/v8-3/combined-manual/index.html},
+  http://www.cs.utexas.edu/users/moore/acl2/v8-4/combined-manual/index.html},
   for topics documented in the ACL2 community [books] or in the ACL2
   system (where the latter are rearranged).
 
@@ -29691,7 +29691,7 @@ Available Documentation
     * The online version (recommended). If you expect to have an internet
       connection while using the documentation, you may prefer to use
       the online version of the {ACL2+Books Manual |
-      http://www.cs.utexas.edu/users/moore/acl2/v8-3/combined-manual/index.html}.
+      http://www.cs.utexas.edu/users/moore/acl2/v8-4/combined-manual/index.html}.
     * A local version. If you sometimes work without an internet
       connection, you can {download | download/} a local copy of any
       web-based XDOC manual using the \"down arrow\" icon at the top of
@@ -35830,7 +35830,7 @@ Subtopics
   not included in the current ACL2 session?
 
   The [xdoc] {ACL2+Books Manual |
-  http://www.cs.utexas.edu/users/moore/acl2/v8-3/combined-manual/index.html}
+  http://www.cs.utexas.edu/users/moore/acl2/v8-4/combined-manual/index.html}
   includes documentation for both the ACL2 system and the
   [community-books].  For more information on this manual and how to
   view it, see [documentation].")
@@ -86680,7 +86680,7 @@ Changes to Existing Features
   However, a macro can be made effectively untouchable by defining it
   with the new utility, [defmacro-untouchable].  Note that the
   alleged support for untouchable macros was already incomplete, as
-  explained in an example in the form (deflabel note-8-3 ...) in
+  explained in an example in the form (defxdoc note-8-3 ...) in
   [community-book] books/system/doc/acl2-doc.lisp.
 
   The [event] macro, [thm], is now treated like [defthm] in the
@@ -86901,8 +86901,8 @@ Heuristic and Efficiency Improvements
 
   The second pass of [encapsulate] now uses [fast-alists] when
   calculating new triples in the logical [world] (in ACL2 system
-  function new-trips.  We have seen this change result in cutting the
-  time by 4.7% and the bytes allocated by 34% for including the
+  function new-trips).  We have seen this change result in cutting
+  the time by 4.7% and the bytes allocated by 34% for including the
   community book, \"centaur/sv/top\".
 
   Computation of the [guard] proof obligation has been sped up in some
@@ -87049,7 +87049,7 @@ EMACS Support
 Experimental Versions")
  (NOTE-8-4
   (RELEASE-NOTES)
-  "ACL2 Version 8.4 (xxx, 20xx) Notes
+  "ACL2 Version 8.4 (August, 2021) Notes
 
   NOTE!  New users can ignore these release notes, because the
   [documentation] has been updated to reflect all changes that are
@@ -87201,8 +87201,8 @@ Changes to Existing Features
   Smith for suggesting this improvement and testing it on some
   proprietary books.
 
-  When supplying state as an argument to [defun-nx] (or [defund-nx], it
-  is no longer necessary to declare state as a [stobj] or use
+  When supplying state as an argument to [defun-nx] (or [defund-nx]),
+  it is no longer necessary to declare state as a [stobj] or use
   [set-state-ok].  Thanks to Eric Smith for suggesting the
   possibility of this change.
 
@@ -88068,9 +88068,9 @@ EMACS Support
   manual if you have a newer web-based version.  A ``yes'' response
   will use the (out-of-date) manual, while a ``no'' response will
   generally produce a new query asking if you want to download the
-  manual from the web.  This change was made in support building the
-  manual more quickly, as the acl2-doc manual is no longer built by
-  default.  See [ACL2-doc] for how to do that build and other
+  manual from the web.  This change was made in support of building
+  the manual more quickly, as the acl2-doc manual is no longer built
+  by default.  See [ACL2-doc] for how to do that build and other
   details.  Thanks to Alessandro Coglio, Eric Smith, and Sol Swords
   for discussions about speeding up the build of the manual.
 
@@ -88091,6 +88091,49 @@ Experimental Versions
   transition of [waterfall-parallelism] to nil.  Thanks to David
   Rager for raising this issue (see GitHub Issue #1171) and
   discussing its resolution.")
+ (NOTE-8-5
+  (RELEASE-NOTES)
+  "ACL2 Version 8.5 (xx, 20xx) Notes
+
+  NOTE!  New users can ignore these release notes, because the
+  [documentation] has been updated to reflect all changes that are
+  recorded here.
+
+  Below we roughly organize the changes to ACL2 since Version 8.4 into
+  the following categories of changes: existing features, new
+  features, heuristic and efficiency improvements, bug fixes, changes
+  at the system level, Emacs support, and experimental versions.
+  Each change is described in just one category, though of course
+  many changes could be placed in more than one category.
+
+  Note that only ACL2 system changes are listed below.  See also
+  note-8-5-books for a summary of changes made to the ACL2 Community
+  Books since ACL2 8.4, including the build system.  Also note that
+  with each release, it is typical that the value of constant
+  [*ACL2-exports*] has been extended, and that some built-in
+  functions that were formerly in :[program] mode are now
+  [guard]-verified :[logic] mode functions.
+
+
+Changes to Existing Features
+
+
+New Features
+
+
+Heuristic and Efficiency Improvements
+
+
+Bug Fixes
+
+
+Changes at the System Level
+
+
+EMACS Support
+
+
+Experimental Versions")
  (NOTE1 (POINTERS) "See [note-1-1].")
  (NOTE2 (POINTERS) "See [note-1-2].")
  (NOTE3 (POINTERS) "See [note-1-3].")
@@ -102539,7 +102582,10 @@ Subtopics
       ACL2 Version 8.3 (April, 2020) Notes
 
   [Note-8-4]
-      ACL2 Version 8.4 (xxx, 20xx) Notes")
+      ACL2 Version 8.4 (August, 2021) Notes
+
+  [Note-8-5]
+      ACL2 Version 8.5 (xx, 20xx) Notes")
  (REM
   (NUMBERS ACL2-BUILT-INS)
   "Remainder using [truncate]
