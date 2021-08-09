@@ -90009,6 +90009,10 @@ it."
 
  <h3>Changes to Existing Features</h3>
 
+ <p>The built-in theorem @('symbol-equality') was strengthened a bit (only one
+ object needs to be assumed to be a symbol).  Thanks to Eric Smith for
+ suggesting this change.</p>
+
  <h3>New Features</h3>
 
  <h3>Heuristic and Efficiency Improvements</h3>
