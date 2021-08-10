@@ -88117,6 +88117,10 @@ Experimental Versions
 
 Changes to Existing Features
 
+  The built-in theorem symbol-equality was strengthened a bit (only one
+  object needs to be assumed to be a symbol).  Thanks to Eric Smith
+  for suggesting this change.
+
 
 New Features
 
