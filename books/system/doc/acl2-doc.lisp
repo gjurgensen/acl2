@@ -90013,7 +90013,20 @@ it."
  object needs to be assumed to be a symbol).  Thanks to Eric Smith for
  suggesting this change.</p>
 
+ <p>Eliminated the hypothesis from built-in theorem
+ @('true-listp-first-n-ac-type-prescription') and eliminated built-in theorem
+ @('main-timer-type-prescription') entirely (that rule was already deduced by
+ ACL2 at definition time).  Thanks to Eric Smith for pointing out unnecessary
+ hypotheses in these theorems.</p>
+
  <h3>New Features</h3>
+
+ <p>One can now suppress output from @(tsee cw) and @(tsee cw!), and from
+ utilities that use these such as @(tsee time$), by inhibiting a new output
+ type, @('COMMENT').  (Thus, that symbol has been added to the value of
+ @('*valid-output-names*').  See @(see set-inhibit-output-lst) and @(see
+ with-output).  Thanks to Eric McCarthy for a conversation via GitHub Issue
+ #1293 that led to this enhancement.</p>
 
  <h3>Heuristic and Efficiency Improvements</h3>
 
@@ -107850,6 +107863,7 @@ arithmetic) for libraries of @(see books) for arithmetic reasoning.</p>")
     history        output from history commands such as :ubt and :pbt
     summary        the summary at the successful conclusion of an event
     proof-tree     proof-tree output
+    comment        output from cw, cw!, and utilities like time$ that use them
  })
 
  <p>It is possible to inhibit each kind of output by putting the corresponding

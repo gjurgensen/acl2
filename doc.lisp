@@ -88121,8 +88121,21 @@ Changes to Existing Features
   object needs to be assumed to be a symbol).  Thanks to Eric Smith
   for suggesting this change.
 
+  Eliminated the hypothesis from built-in theorem
+  true-listp-first-n-ac-type-prescription and eliminated built-in
+  theorem main-timer-type-prescription entirely (that rule was
+  already deduced by ACL2 at definition time).  Thanks to Eric Smith
+  for pointing out unnecessary hypotheses in these theorems.
+
 
 New Features
+
+  One can now suppress output from [cw] and [cw!], and from utilities
+  that use these such as [time$], by inhibiting a new output type,
+  COMMENT.  (Thus, that symbol has been added to the value of
+  *valid-output-names*.  See [set-inhibit-output-lst] and
+  [with-output].  Thanks to Eric McCarthy for a conversation via
+  GitHub Issue #1293 that led to this enhancement.
 
 
 Heuristic and Efficiency Improvements
@@ -108824,6 +108837,7 @@ Example
     history        output from history commands such as :ubt and :pbt
     summary        the summary at the successful conclusion of an event
     proof-tree     proof-tree output
+    comment        output from cw, cw!, and utilities like time$ that use them
 
   It is possible to inhibit each kind of output by putting the
   corresponding name into lst.  For example, if 'warning is included
@@ -131089,8 +131103,8 @@ On-off specs
   inhibited (see [set-inhibit-output-lst]), that is, members of the
   list stored in the constant *valid-output-names*, (proof-tree error
   warning! warning observation prove event summary proof-builder
-  history); similarly, for :summary-on or :summary-off, these are the
-  parts of the [summary] that can be inhibited (see
+  comment history); similarly, for :summary-on or :summary-off, these
+  are the parts of the [summary] that can be inhibited (see
   [set-inhibited-summary-types]), that is, members of the list stored
   in the constant *summary-types*, (errors form header hint-events
   redundant rules splitter-rules steps system-attachments time value
