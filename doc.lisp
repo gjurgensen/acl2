@@ -88143,6 +88143,11 @@ Heuristic and Efficiency Improvements
 
 Bug Fixes
 
+  Fixed an error that could occur when the [break-rewrite] utility is
+  displaying failure information for an attempt to apply a [linear]
+  rule containing [free-variables].  Thanks to Karthik Nukala and
+  Eric Smith for sending a bug report with a replayable example.
+
 
 Changes at the System Level
 
