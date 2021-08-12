@@ -90032,6 +90032,11 @@ it."
 
  <h3>Bug Fixes</h3>
 
+ <p>Fixed an error that could occur when the @(see break-rewrite) utility is
+ displaying failure information for an attempt to apply a @(see linear) rule
+ containing @(see free-variables).  Thanks to Karthik Nukala and Eric Smith for
+ sending a bug report with a replayable example.</p>
+
  <h3>Changes at the System Level</h3>
 
  <h3>EMACS Support</h3>
