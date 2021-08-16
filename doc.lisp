@@ -77,7 +77,7 @@ Subtopics
   [defthm], [in-theory], [xargs], [state], etc., without an acl2::
   prefix.
 
-  The constant *acl2-exports* lists 1530 symbols, including most
+  The constant *acl2-exports* lists 1536 symbols, including most
   documented ACL2 system constants, functions, and macros.  You will
   typically also want to import many symbols from Common Lisp; see
   [*common-lisp-symbols-from-main-lisp-package*].
@@ -100,7 +100,8 @@ Subtopics
        32-bit-integer-stack-length1
        32-bit-integerp
        32-bit-integerp-forward-to-integerp
-       < <-on-others <= = > >= ?-fn @ a! abort!
+       < <-on-others
+       <= = > >= ?-fn @ a! abort! abort-soft
        abs access accumulated-persistence
        accumulated-persistence-oops
        acl2-count acl2-input-channel-package
@@ -226,7 +227,7 @@ Subtopics
        cons-with-hint consp consp-assoc-equal
        constraint-info corollary count-keys
        cpu-core-count ctx ctxp current-package
-       current-theory cw cw! cw-gstack
+       current-theory cw cw! cw!+ cw+ cw-gstack
        cw-print-base-radix cw-print-base-radix!
        declare decrement-big-clock defabbrev
        defabsstobj defabsstobj-missing-events
@@ -314,7 +315,11 @@ Subtopics
        fms!-to-string fms-to-string fmt fmt!
        fmt!-to-string fmt-hard-right-margin
        fmt-soft-right-margin
-       fmt-to-comment-window fmt-to-string fmt1
+       fmt-to-comment-window
+       fmt-to-comment-window!
+       fmt-to-comment-window!+
+       fmt-to-comment-window+
+       fmt-to-string fmt1
        fmt1! fmt1!-to-string fmt1-to-string
        fmx fmx!-cw fmx-cw fn-equal
        fncall-term forall force formula
@@ -1539,6 +1544,41 @@ Subtopics
 
   This is an alias for a!; see [a!].  For a related feature that only
   pops up one level, see [p!].")
+ (ABORT-SOFT
+  (MISCELLANEOUS)
+  "Control how interrupts are handled in proofs
+
+  ACL2 arranges by default that when a proof is interrupted (with
+  Control-C), a ``soft'' abort occurs in the following sense: the
+  message below is printed and then the proof attempt continues
+  temporarily before ultimately failing (usually very soon
+  thereafter).
+
+    ***********************************************
+    Note:  interrupt signal
+      Will attempt to exit the proof in progress;
+      otherwise, the next interrupt will abort the proof.
+      For an immediate abort see :DOC abort-soft.
+    ***********************************************
+
+  This default behavior supports proper operation of the utility,
+  [redo-flat], when a proof is interrupted.  It also supports more
+  complete summaries than would be obtained with an immediate abort.
+  If you nevertheless want proofs to abort immediately, you may
+  evaluate the form (assign abort-soft nil).  To restore the default
+  behavior, evaluate (assign abort-soft t).
+
+  Remarks for system hackers.
+
+    * An important effect of having evaluated (assign abort-soft nil) is
+      that an interrupt will send you immediately back to the ACL2
+      read-eval-print loop, in contrast to the default behavior where
+      the prover returns an [error-triple] whose error component is
+      non-nil.
+    * It may be preferable to bind [state] global abort-soft rather than to
+      assign it globally.  See the implementation of [prove$]
+      (specifically, the definition of prove$-fn in [community-book]
+      books/tools/prove-dollar.lisp) for an example.")
  (ABOUT-ACL2
   (ACL2)
   "General information About ACL2
@@ -3182,7 +3222,13 @@ Subtopics
       Print to the comment window
 
   [Cw!]
-      Print to the comment window
+      Print readably to the comment window
+
+  [Cw!+]
+      Print readably and uninhibited to the comment window
+
+  [Cw+]
+      Print uninhibited to the comment window
 
   [Cw-print-base-radix]
       Print to the comment window in a given print-base
@@ -3351,6 +3397,15 @@ Subtopics
 
   [Fmt-to-comment-window]
       Print to the comment window
+
+  [Fmt-to-comment-window!]
+      Print readably to the comment window
+
+  [Fmt-to-comment-window!+]
+      Print readably and uninhibited to the comment window
+
+  [Fmt-to-comment-window+]
+      Print uninhibited to the comment window
 
   [Fmt1]
       (fmt1 str alist col co-channel state evisc) => (mv col state)
@@ -14941,6 +14996,7 @@ Subtopics
        (str::pretty-printing \"[books]/std/strings/pretty.lisp\")
        (profile-acl2 \"[books]/centaur/memoize/old/profile.lisp\")
        (profile-all \"[books]/centaur/memoize/old/profile.lisp\")
+       (prove$ \"[books]/tools/prove-dollar.lisp\")
        (quicklisp \"[books]/quicklisp/top.lisp\")
        (release-notes-books \"[books]/doc/relnotes.lisp\")
        (removable-runes \"[books]/tools/removable-runes.lisp\")
@@ -15749,8 +15805,10 @@ Subtopics
 
   where x is a variable symbol, the pati are structural patterns as
   described below, the dcli are optional [declare] forms and the
-  bodyi are terms.  Return the value(s) of the bodyi corresponding to
-  the first pati matching x, or nil if none matches.
+  bodyi are terms.  The legal declare forms are the same as for
+  [let]: ignore, ignorable, and type.  Return the value(s) of the
+  bodyi corresponding to the first pati matching x, or nil if none
+  matches.
 
   Pattern Language:
   With the few special exceptions described below, matching requires
@@ -21441,7 +21499,11 @@ Subtopics
   "Print to the comment window
 
   Cw is a macro that expands to a function whose guard is t.  For a
-  guarded variant of cw, see [fmx-cw].
+  guarded variant of cw, see [fmx-cw].  For variants of cw that
+  provide readable output (suffix \"!\") and are never inhibited
+  (suffix \"+\"), see [cw!], [cw+], and [cw!+].  For corresponding
+  functions see [fmt-to-comment-window], [fmt-to-comment-window!],
+  [fmt-to-comment-window+], and [fmt-to-comment-window!+].
 
   Example:
 
@@ -21452,8 +21514,8 @@ Subtopics
   Logically, this expression is equivalent to nil.  However, it has the
   effect of first printing to the so-called ``comment window'' the
   [fmt] string as indicated.  Thus, cw is like fmt (see [fmt]) except
-  in three important ways.  First, it is a macro whose calls expand
-  to calls of a :[logic] mode function.  Second, it neither takes nor
+  in four important ways.  First, it is a macro whose calls expand to
+  calls of a :[logic] mode function.  Second, it neither takes nor
   returns the ACL2 [state]; logically cw simply returns nil, although
   it prints to a comment window that just happens to share the
   terminal screen with the standard character output [*standard-co*].
@@ -21466,6 +21528,9 @@ Subtopics
     (fmt \"Answers: ~p0 and ~p1\"
          (list (cons #\\0 ans1) (cons #\\1 ans2))
          *standard-co* state nil)
+
+  And finally, output from cw is suppressed if the COMMENT type of
+  output is suppressed; see [set-inhibit-output-lst].
 
   Typically, calls of cw are embedded in [prog2$] forms, e.g.,
 
@@ -21489,9 +21554,6 @@ Subtopics
     (d) a different evisc-tuple,
 
   then call [fmt-to-comment-window] instead.
-
-  Also see [cw!], which is useful if you want to be able to read the
-  printed forms back in.
 
   Finally, we discuss another way to create formatted output that also
   avoids the need to pass in the ACL2 [state].  The idea is to use
@@ -21525,14 +21587,58 @@ Subtopics
     ; A guard violation in the binding; note that even with the error,
     ; the wormhole is exited.
     (my-fmt-to-comment-window \"Here is ~x0 for your inspection~%\"
-                              (list (cons #\\0 (car 'foo))))")
+                              (list (cons #\\0 (car 'foo))))
+
+
+Subtopics
+
+  [Cw!]
+      Print readably to the comment window
+
+  [Cw!+]
+      Print readably and uninhibited to the comment window
+
+  [Cw+]
+      Print uninhibited to the comment window
+
+  [Fmt-to-comment-window]
+      Print to the comment window
+
+  [Fmt-to-comment-window!]
+      Print readably to the comment window
+
+  [Fmt-to-comment-window!+]
+      Print readably and uninhibited to the comment window
+
+  [Fmt-to-comment-window+]
+      Print uninhibited to the comment window")
  (CW!
-  (IO ACL2-BUILT-INS)
-  "Print to the comment window
+  (CW IO ACL2-BUILT-INS)
+  "Print readably to the comment window
+
+  See [cw] for important background.
 
   This is nearly the same as [cw], but cw! avoids inserting backslash
   (\\) characters when forced to print past the right margin.  Use cw!
   if you want to be able to read the forms back in.")
+ (CW!+
+  (CW IO ACL2-BUILT-INS)
+  "Print readably and uninhibited to the comment window
+
+  See [cw] for important background.
+
+  This is nearly the same as [cw], but cw+ always produces readable
+  output (like [cw!]), even when the COMMENT output type is inhibited
+  (like [cw+]).")
+ (CW+
+  (CW IO ACL2-BUILT-INS)
+  "Print uninhibited to the comment window
+
+  See [cw] for important background.
+
+  This is nearly the same as [cw], but cw+ always produces output, even
+  when the COMMENT output type is inhibited (see
+  [set-inhibit-output-lst]).")
  (CW-GSTACK
   (BREAK-REWRITE DEBUGGING)
   "Debug a rewriting loop or stack overflow
@@ -22234,11 +22340,6 @@ Usage
     * (MV-LET (v1 ...) term dcl ... dcl body)
     * (FLET ((name args dcl ... dcl body) ...))
 
-  Of course, if a form macroexpands into one of these (e.g., as [let*]
-  expands into nested [let]s and our er-let* expands into nested
-  [mv-let]s) then declarations are permitted as handled by the macros
-  involved.
-
   Each of the cases above permits certain declarations, as follows.
 
     * DEFUN: (ignore ignorable irrelevant type optimize xargs)
@@ -22246,6 +22347,13 @@ Usage
     * LET: (ignore ignorable type)
     * MV-LET: (ignore ignorable type)
     * FLET: (ignore ignorable type)
+
+  Of course, declarations are permitted in macro calls to the extent
+  that they are permitted in the macroexpansions.  For example,
+  declare forms generated by calls of [let*] and [case-match] may
+  wind up in corresponding [let] forms in the macroexpansions, where
+  they would be subject to the restrictions on declare forms for let
+  shown just above.
 
   Also see [lambda] for discussion of lambda objects and their legal
   declare forms.
@@ -36652,11 +36760,21 @@ Subtopics
  (FMT-SOFT-RIGHT-MARGIN (POINTERS)
                         "See [set-fmt-hard-right-margin].")
  (FMT-TO-COMMENT-WINDOW
-  (IO ACL2-BUILT-INS)
+  (CW IO ACL2-BUILT-INS)
   "Print to the comment window
 
-  See [cw] for an introduction to the comment window and the usual way
-  to print it.
+    General Form:
+    (fmt-to-comment-window fmt-string alist col evisc-tuple print-base-radix)
+
+  where these arguments are as described for [fmt1] (see [fmt]) except
+  that the last argument is as described for [cw-print-base-radix].
+
+  See [cw] for important background.  Calls of the macro cw expand to
+  calls of the function fmt-to-comment-window whose final three
+  arguments are 0, nil, and nil.  For variants of
+  fmt-to-comment-window that provide readable output (suffix \"!\") and
+  are never inhibited (suffix \"+\"), see [fmt-to-comment-window!],
+  [fmt-to-comment-window+], and [fmt-to-comment-window!+].
 
   Function fmt-to-comment-window is similar to fmt1 (see [fmt]), except
   that the channel is [*standard-co*] and the ACL2 [state] is neither
@@ -36666,16 +36784,41 @@ Subtopics
   cw-print-base-radix; see [cw-print-base-radix].  An analogous
   function, fmt-to-comment-window!, prints with [fmt!] instead of
   [fmt], in order to avoid insertion of backslash (\\) characters for
-  margins; also see [cw!].  Note that even if you change the value of
-  [ld] special standard-co (see [standard-co]), fmt-to-comment-window
-  will print to [*standard-co*], which is the original value of
-  [standard-co].
+  margins; also see [cw!], a macro that expands to a call of
+  fmt-to-comment-window!).  Note that even if you change the value of
+  @(tsee ld) special @('standard-co (see [standard-co]),
+  fmt-to-comment-window will print to [*standard-co*], which is the
+  original value of [standard-co].")
+ (FMT-TO-COMMENT-WINDOW!
+  (CW IO ACL2-BUILT-INS)
+  "Print readably to the comment window
 
-    General Form:
-    (fmt-to-comment-window fmt-string alist col evisc-tuple print-base-radix)
+  See [cw] for important background.
 
-  where these arguments are as described for [fmt1] (see [fmt]) except
-  that the last argument is as described for [cw-print-base-radix].")
+  This is nearly the same as [fmt-to-comment-window], but
+  fmt-to-comment-window! avoids inserting backslash (\\) characters
+  when forced to print past the right margin.  Use
+  fmt-to-comment-window! if you want to be able to read the forms
+  back in.")
+ (FMT-TO-COMMENT-WINDOW!+
+  (CW IO ACL2-BUILT-INS)
+  "Print readably and uninhibited to the comment window
+
+  See [cw] for important background.
+
+  This is nearly the same as [fmt-to-comment-window], but
+  fmt-to-comment-window!+ always produces readable output (like
+  [fmt-to-comment-window!]), even when the COMMENT output type is
+  inhibited (like [fmt-to-comment-window+]).")
+ (FMT-TO-COMMENT-WINDOW+
+  (CW IO ACL2-BUILT-INS)
+  "Print uninhibited to the comment window
+
+  See [cw] for important background.
+
+  This is nearly the same as [fmt-to-comment-window], but
+  fmt-to-comment-window+ always produces output, even when the
+  COMMENT output type is inhibited (see [set-inhibit-output-lst]).")
  (FMT-TO-STRING (POINTERS)
                 "See [printing-to-strings].")
  (FMT1
@@ -48781,6 +48924,8 @@ Subtopics
     (intern-in-package-of-symbol \"CAR\" w) is LISP::CAR
 
     (intern-in-package-of-symbol \"car\" w) is MY-PKG::|car|")
+ (INTERRUPTS (POINTERS)
+             "See [abort-soft].")
  (INTERSECTION$
   (LISTS ACL2-BUILT-INS)
   "Elements common to the given lists
@@ -53040,7 +53185,13 @@ Subtopics
       Print to the comment window
 
   [Cw!]
-      Print to the comment window
+      Print readably to the comment window
+
+  [Cw!+]
+      Print readably and uninhibited to the comment window
+
+  [Cw+]
+      Print uninhibited to the comment window
 
   [Cw-print-base-radix]
       Print to the comment window in a given print-base
@@ -53077,6 +53228,15 @@ Subtopics
 
   [Fmt-to-comment-window]
       Print to the comment window
+
+  [Fmt-to-comment-window!]
+      Print readably to the comment window
+
+  [Fmt-to-comment-window!+]
+      Print readably and uninhibited to the comment window
+
+  [Fmt-to-comment-window+]
+      Print uninhibited to the comment window
 
   [Fmt1]
       (fmt1 str alist col co-channel state evisc) => (mv col state)
@@ -64265,6 +64425,9 @@ Precise specification
 
 
 Subtopics
+
+  [Abort-soft]
+      Control how interrupts are handled in proofs
 
   [ACL2-customization]
       File of initial commands for ACL2 to run at [startup]
@@ -88117,25 +88280,63 @@ Experimental Versions
 
 Changes to Existing Features
 
-  The built-in theorem symbol-equality was strengthened a bit (only one
-  object needs to be assumed to be a symbol).  Thanks to Eric Smith
-  for suggesting this change.
+  Weakened hypotheses from built-in theorems (thus strengthening them)
+  symbol-equality, true-listp-first-n-ac-type-prescription,
+  ordered-symbol-alistp-getprops, add-pair-preserves-all-boundp, and
+  symbol<-asymmetric.  Eliminated built-in theorem
+  main-timer-type-prescription entirely (that rule was already
+  deduced by ACL2 at definition time).  Simplified guards slightly
+  for built-in functions serialize-write-fn and serialize-read-fn.
+  Thanks to Eric Smith for correspondence, based on his linter,
+  leading to these improvements.
 
-  Eliminated the hypothesis from built-in theorem
-  true-listp-first-n-ac-type-prescription and eliminated built-in
-  theorem main-timer-type-prescription entirely (that rule was
-  already deduced by ACL2 at definition time).  Thanks to Eric Smith
-  for pointing out unnecessary hypotheses in these theorems.
+  The utility [without-evisc] formerly always (or nearly always)
+  returned the [error-triple] (mv nil :invisible state) after
+  printing the result.  Now it generally returns (mv t nil state)
+  when evaluation of the given form causes an error.  See
+  [without-evisc].  Thanks to Karthik Nukala and Eric Smith for
+  reporting the former (undesirable) behavior.
+
+  One would get an error when including an uncertified book when a
+  :type-prescription specified in an [xargs] [declaration] failed a
+  validity check, even when no such failure occurs when that book is
+  certified.  (That could happen because type-prescription
+  information from locally included books is saved in the book's
+  [certificate] file and is used when checking such
+  :type-prescription declarations.)  This situation now generates an
+  error rather than a warning.  Thanks to Karthik Nukala and Eric
+  Smith for sending an example that pointed out this problem.
 
 
 New Features
 
-  One can now suppress output from [cw] and [cw!], and from utilities
-  that use these such as [time$], by inhibiting a new output type,
-  COMMENT.  (Thus, that symbol has been added to the value of
-  *valid-output-names*.  See [set-inhibit-output-lst] and
+  One can now suppress output from [cw], [cw!],
+  [fmt-to-comment-window], and [fmt-to-comment-window!], and from
+  utilities that use these such as [time$], by inhibiting a new
+  output type, COMMENT.  (Thus, that symbol has been added to the
+  value of *valid-output-names*.  See [set-inhibit-output-lst] and
   [with-output].  Thanks to Eric McCarthy for a conversation via
-  GitHub Issue #1293 that led to this enhancement.
+  GitHub Issue #1293 that led to this enhancement.  Moreover, new
+  macros [cw+] and [cw!+] and new functions [fmt-to-comment-window+]
+  and [fmt-to-comment-window!+] never suppress output; the \"+\" suffix
+  is intended to indicate that feature.  Thus, these new utilities
+  behave like the previous utilities without the \"+\" suffix.  Thanks
+  to Eric Smith, Karthik Nukala, and Alessandro Coglio for observing
+  inappropriate suppression of output from the utility [er-soft+] and
+  the connection of this problem to the addition of the COMMENT
+  output type; it was resolved by using fmt-to-comment-window+ in
+  place of fmt-to-comment-window in the implementation of a utility
+  underlying er-soft+ (see [community-book]
+  books/tools/er-soft-logic.lisp).
+
+  You can now arrange that an interrupt will kill a proof immediately
+  by evaluating (assign abort-soft nil), and you can restore the
+  default behavior --- where an interrupt instructs the proof to
+  quick cleanly at an appropriate opportunity --- by evaluating
+  (assign abort-soft t).  Note that this can interfere with
+  :[redo-flat]; see [abort-soft].  Thanks to Eric Smith for reporting
+  an inability to abort a series of proof attempts using the [prove$]
+  utility, which led to this enhancement.
 
 
 Heuristic and Efficiency Improvements
@@ -92955,6 +93156,9 @@ Subtopics
   [Inline]
       See [defun-inline].
 
+  [Interrupts]
+      See [abort-soft].
+
   [Intersection-eq]
       See [intersection$].
 
@@ -93393,6 +93597,9 @@ Subtopics
   [Stable-under-simplificationp]
       See [computed-hints].
 
+  [Step-limit]
+      See [with-prover-step-limit].
+
   [Stobj-let]
       See [nested-stobjs].
 
@@ -93473,6 +93680,9 @@ Subtopics
 
   [Thereis$+]
       See [loop$].
+
+  [Time-limit]
+      See [with-prover-time-limit].
 
   [Too-many-ifs]
       See [efficiency].
@@ -101693,7 +101903,7 @@ Subtopics
   executed successfully.
 
   You can eliminate some of the steps above by supplying keyword
-  values, as follows.
+  values, as follows, where those arguments are not evaluated.
 
     (redo-flat
      :succ  succ ; Skip the successful sub-events if val is nil.
@@ -101753,7 +101963,8 @@ Subtopics
   Normally, redo-flat will have the desired effect even if you
   interrupted a proof (with control-c).  However, redo-flat will not
   produce the desired result after an interrupt if you have enabled
-  the debugger using (set-debugger-enable t),")
+  the debugger using (set-debugger-enable t) or if you have disabled
+  the default ``soft'' interrupt behavior (see [abort-soft]).")
  (REDUNDANT (POINTERS)
             "See [redundant-events].")
  (REDUNDANT-ENCAPSULATE
@@ -113491,6 +113702,8 @@ Subtopics
     #xA
      10
     ACL2 !>")
+ (STEP-LIMIT (POINTERS)
+             "See [with-prover-step-limit].")
  (STOBJ
   (PROGRAMMING)
   "Single-threaded objects or ``von Neumann bottlenecks''
@@ -120906,6 +121119,8 @@ Subtopics
 
   [Time-tracker]
       Display time spent during specified evaluation")
+ (TIME-LIMIT (POINTERS)
+             "See [with-prover-time-limit].")
  (TIME-TRACKER
   (DEBUGGING TIME$ ACL2-BUILT-INS)
   "Display time spent during specified evaluation
@@ -131713,24 +131928,24 @@ Subtopics
   We conclude with two remarks.  (1) A call of without-evisc on
   expression exp actually invokes a specialized call of [ld] on a
   one-element list containing exp, which prints the value returned by
-  evaluation of exp but actually returns the useless value (mv nil
-  :invisible state).  So do not use without-evisc in programs; just
-  use it at the top level of the ACL2 read-eval-print loop, or at
-  least the top level of ld.  (2) Even when using without-evisc, if
-  the ACL2 logical [world] is part of the value returned, it will be
-  printed in abbreviated form because the ACL2 read-eval-print loop
-  always arranges for this to be the case, regardless of the
-  ld-evisc-tuple.  For example:
+  evaluation of exp.  It actually returns the useless value (mv nil
+  :invisible state), except that if an error is detected then it
+  generally returns (mv t nil state), indicating an error; see
+  [error-triple].  So do not use without-evisc in programs if you
+  want the value of the computation to be returned, rather than
+  merely printed.  (2) Even when using without-evisc, if the ACL2
+  logical [world] is part of the value returned, it will be printed
+  in abbreviated form because the ACL2 read-eval-print loop always
+  arranges for this to be the case, regardless of the ld-evisc-tuple.
+  For example:
 
     ACL2 !>(without-evisc (w state))
     <world>
     ACL2 !>
 
   An alternative to the use of without-evisc is to explore large
-  objects using the ACL2 function (walkabout object state).  Some
-  brief documentation is printed when you enter an interactive loop
-  upon evaluating a call of walkabout.  We may add documentation for
-  walkabout if that is requested.")
+  objects using the ACL2 function (walkabout object state); see
+  [walkabout].")
  (WOF
   (PROVER-OUTPUT IO)
   "Direct standard output and proofs output to a file
@@ -133827,8 +134042,8 @@ Remarks on defaults
   instruction-list does.  (See [ACL2-pc::sequence] for an explanation
   of ``success'' and ``failure.'') As each instruction is executed,
   the system will print the usual prompt followed by that
-  instruction, unless the global state variable
-  pc-print-prompt-and-instr-flg is nil.
+  instruction, unless the value of (access pc-info (@ pc-info)
+  :print-prompt-and-instr-flg) is nil.
 
   Remark: If do-all ``fails'', then the failure is hard if and only if
   the last instruction it runs has a hard ``failure''.

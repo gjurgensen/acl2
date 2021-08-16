@@ -134,6 +134,7 @@
     (STR::PRETTY-PRINTING "[books]/std/strings/pretty.lisp")
     (PROFILE-ACL2 "[books]/centaur/memoize/old/profile.lisp")
     (PROFILE-ALL "[books]/centaur/memoize/old/profile.lisp")
+    (PROVE$ "[books]/tools/prove-dollar.lisp")
     (QUICKLISP "[books]/quicklisp/top.lisp")
     (RELEASE-NOTES-BOOKS "[books]/doc/relnotes.lisp")
     (REMOVABLE-RUNES "[books]/tools/removable-runes.lisp")
@@ -753,6 +754,46 @@
   :short "To return to the top-level of ACL2's command loop"
   :long "<p>This is an alias for @('a!'); see @(see a!).  For a related feature
  that only pops up one level, see @(see p!).</p>")
+
+(defxdoc abort-soft
+  :parents (miscellaneous)
+  :short "Control how interrupts are handled in proofs"
+  :long "<p>ACL2 arranges by default that when a proof is interrupted (with
+ @('Control-C')), a ``soft'' abort occurs in the following sense: the message
+ below is printed and then the proof attempt continues temporarily before
+ ultimately failing (usually very soon thereafter).</p>
+
+ @({
+ ***********************************************
+ Note:  interrupt signal
+   Will attempt to exit the proof in progress;
+   otherwise, the next interrupt will abort the proof.
+   For an immediate abort see :DOC abort-soft.
+ ***********************************************
+ })
+
+ <p>This default behavior supports proper operation of the utility, @(tsee
+ redo-flat), when a proof is interrupted.  It also supports more complete
+ summaries than would be obtained with an immediate abort.  If you nevertheless
+ want proofs to abort immediately, you may evaluate the form @('(assign
+ abort-soft nil)').  To restore the default behavior, evaluate @('(assign
+ abort-soft t)').</p>
+
+ <p>Remarks for system hackers.</p>
+
+ <ul>
+
+ <li>An important effect of having evaluated @('(assign abort-soft nil)') is
+ that an interrupt will send you immediately back to the ACL2 read-eval-print
+ loop, in contrast to the default behavior where the prover returns an @(see
+ error-triple) whose error component is non-@('nil').</li>
+
+ <li>It may be preferable to bind @(see state) global @('abort-soft') rather
+ than to assign it globally.  See the implementation of @(see
+ prove$) (specifically, the definition of @('prove$-fn') in @(see
+ community-book) @('books/tools/prove-dollar.lisp')) for an example.</li>
+
+ </ul>")
 
 (defxdoc about-acl2
   :parents (acl2)
@@ -12849,8 +12890,10 @@ with any questions about building the community books.</p>")
 
  <p>where @('x') is a variable symbol, the @('pati') are structural patterns as
  described below, the @('dcli') are optional @(tsee declare) forms and the
- @('bodyi') are terms.  Return the value(s) of the @('bodyi') corresponding to
- the first @('pati') matching @('x'), or @('nil') if none matches.</p>
+ @('bodyi') are terms.  The legal @('declare') forms are the same as for @(tsee
+ let): @('ignore'), @('ignorable'), and @('type').  Return the value(s) of the
+ @('bodyi') corresponding to the first @('pati') matching @('x'), or @('nil')
+ if none matches.</p>
 
  <p>Pattern Language:<br></br>
 
@@ -18116,7 +18159,12 @@ subtree of X with T, without duplication.</p>
   :parents (io acl2-built-ins)
   :short "Print to the comment window"
   :long "<p>@('Cw') is a macro that expands to a function whose guard is
- @('t').  For a guarded variant of @('cw'), see @(see fmx-cw).</p>
+ @('t').  For a guarded variant of @('cw'), see @(see fmx-cw).  For variants of
+ @('cw') that provide readable output (suffix @('\"!\"')) and are never
+ inhibited (suffix @('\"+\"')), see @(see cw!), @(see cw+), and @(see cw!+).
+ For corresponding functions see @(see fmt-to-comment-window), @(see
+ fmt-to-comment-window!), @(see fmt-to-comment-window+), and @(see
+ fmt-to-comment-window!+).</p>
 
  <p>Example:</p>
 
@@ -18129,7 +18177,7 @@ subtree of X with T, without duplication.</p>
  <p>Logically, this expression is equivalent to @('nil').  However, it has the
  effect of first printing to the so-called ``comment window'' the @(tsee fmt)
  string as indicated.  Thus, @('cw') is like @('fmt') (see @(see fmt)) except
- in three important ways.  First, it is a macro whose calls expand to calls of
+ in four important ways.  First, it is a macro whose calls expand to calls of
  a @(':')@(tsee logic) mode function.  Second, it neither takes nor returns the
  ACL2 @(tsee state); logically @('cw') simply returns @('nil'), although it
  prints to a <i>comment window</i> that just happens to share the terminal
@@ -18147,6 +18195,9 @@ subtree of X with T, without duplication.</p>
        (list (cons #\\0 ans1) (cons #\\1 ans2))
        *standard-co* state nil)
  })
+
+ <p>And finally, output from @('cw') is suppressed if the @('COMMENT') type of
+ output is suppressed; see @(see set-inhibit-output-lst).</p>
 
  <p>Typically, calls of @('cw') are embedded in @(tsee prog2$) forms, e.g.,</p>
 
@@ -18176,9 +18227,6 @@ subtree of X with T, without duplication.</p>
  })
 
  <p>then call @(tsee fmt-to-comment-window) instead.</p>
-
- <p>Also see @(see cw!), which is useful if you want to be able to read the
- printed forms back in.</p>
 
  <p>Finally, we discuss another way to create formatted output that also avoids
  the need to pass in the ACL2 @(tsee state).  The idea is to use wormholes; see
@@ -18217,11 +18265,31 @@ subtree of X with T, without duplication.</p>
  })")
 
 (defxdoc cw!
-  :parents (io acl2-built-ins)
-  :short "Print to the comment window"
-  :long "<p>This is nearly the same as @(tsee cw), but @('cw!') avoids
+  :parents (cw io acl2-built-ins)
+  :short "Print readably to the comment window"
+  :long "<p>See @(see cw) for important background.</p>
+
+ <p>This is nearly the same as @(tsee cw), but @('cw!') avoids
  inserting backslash (\\) characters when forced to print past the right
  margin.  Use @('cw!') if you want to be able to read the forms back in.</p>")
+
+(defxdoc cw+
+  :parents (cw io acl2-built-ins)
+  :short "Print uninhibited to the comment window"
+  :long "<p>See @(see cw) for important background.</p>
+
+ <p>This is nearly the same as @(tsee cw), but @('cw+') always produces output,
+ even when the @('COMMENT') output type is inhibited (see @(see
+ set-inhibit-output-lst)).</p>")
+
+(defxdoc cw!+
+  :parents (cw io acl2-built-ins)
+  :short "Print readably and uninhibited to the comment window"
+  :long "<p>See @(see cw) for important background.</p>
+
+ <p>This is nearly the same as @(tsee cw), but @('cw+') always produces
+ readable output (like @(tsee cw!)), even when the @('COMMENT') output type is
+ inhibited (like @(tsee cw+)).</p>")
 
 (defxdoc cw-gstack
   :parents (break-rewrite debugging)
@@ -19024,11 +19092,6 @@ subtree of X with T, without duplication.</p>
  <li>@('(FLET ((name args dcl ... dcl body) ...))')</li>
  </ul>
 
- <p>Of course, if a form macroexpands into one of these (e.g., as @(tsee let*)
- expands into nested @(tsee let)s and our @('er-let*') expands into nested
- @(tsee mv-let)s) then declarations are permitted as handled by the macros
- involved.</p>
-
  <p>Each of the cases above permits certain declarations, as follows.</p>
 
  <ul>
@@ -19039,6 +19102,13 @@ subtree of X with T, without duplication.</p>
  <li>@('MV-LET'): @(`(cdr (assoc-eq 'mv-let *acceptable-dcls-alist*))`)</li>
  <li>@('FLET'): @(`(cdr (assoc-eq 'flet *acceptable-dcls-alist*))`)</li>
  </ul>
+
+ <p>Of course, declarations are permitted in macro calls to the extent that
+ they are permitted in the macroexpansions.  For example, @('declare') forms
+ generated by calls of @(tsee let*) and @(tsee case-match) may wind up in
+ corresponding @(tsee let) forms in the macroexpansions, where they would be
+ subject to the restrictions on @('declare') forms for @('let') shown just
+ above.</p>
 
  <p>Also see @(see lambda) for discussion of lambda objects and their legal
  @('declare') forms.</p>
@@ -33173,10 +33243,25 @@ current fast alists."
  margin.  Use @('fmt!') if you want to be able to read the forms back in.</p>")
 
 (defxdoc fmt-to-comment-window
-  :parents (io acl2-built-ins)
+  :parents (cw io acl2-built-ins)
   :short "Print to the comment window"
-  :long "<p>See @(see cw) for an introduction to the comment window and the
- usual way to print it.</p>
+  :long "
+ @({
+  General Form:
+  (fmt-to-comment-window fmt-string alist col evisc-tuple print-base-radix)
+ })
+
+ <p>where these arguments are as described for @(tsee fmt1) (see @(see fmt))
+ except that the last argument is as described for @(tsee
+ cw-print-base-radix).</p>
+
+ <p>See @(see cw) for important background.  Calls of the macro @('cw') expand
+ to calls of the function @('fmt-to-comment-window') whose final three
+ arguments are @('0'), @('nil'), and @('nil').  For variants of
+ @('fmt-to-comment-window') that provide readable output (suffix @('\"!\"'))
+ and are never inhibited (suffix @('\"+\"')), see @(see
+ fmt-to-comment-window!), @(see fmt-to-comment-window+), and @(see
+ fmt-to-comment-window!+).</p>
 
  <p>Function @('fmt-to-comment-window') is similar to @('fmt1') (see @(see
  fmt)), except that the channel is @(tsee *standard-co*) and the ACL2 @(tsee
@@ -33186,19 +33271,40 @@ current fast alists."
  @('cw-print-base-radix'); see @(see cw-print-base-radix).  An analogous
  function, @('fmt-to-comment-window!'), prints with @(tsee fmt!) instead of
  @(tsee fmt), in order to avoid insertion of backslash (\\) characters for
- margins; also see @(see cw!).  Note that even if you change the value of
- @(tsee ld) special @('standard-co') (see @(see standard-co)),
+ margins; also see @(see cw!), a macro that expands to a call of
+ @('fmt-to-comment-window!).  Note that even if you change the value of @(tsee
+ ld) special @('standard-co') (see @(see standard-co)),
  @('fmt-to-comment-window') will print to @(tsee *standard-co*), which is the
- original value of @(tsee standard-co).</p>
+ original value of @(tsee standard-co).</p>")
 
- @({
-  General Form:
-  (fmt-to-comment-window fmt-string alist col evisc-tuple print-base-radix)
- })
+(defxdoc fmt-to-comment-window!
+  :parents (cw io acl2-built-ins)
+  :short "Print readably to the comment window"
+  :long "<p>See @(see cw) for important background.</p>
 
- <p>where these arguments are as described for @(tsee fmt1) (see @(see fmt))
- except that the last argument is as described for @(tsee
- cw-print-base-radix).</p>")
+ <p>This is nearly the same as @(tsee fmt-to-comment-window), but
+ @('fmt-to-comment-window!') avoids inserting backslash (\\) characters when
+ forced to print past the right margin.  Use @('fmt-to-comment-window!') if you
+ want to be able to read the forms back in.</p>")
+
+(defxdoc fmt-to-comment-window+
+  :parents (cw io acl2-built-ins)
+  :short "Print uninhibited to the comment window"
+  :long "<p>See @(see cw) for important background.</p>
+
+ <p>This is nearly the same as @(tsee fmt-to-comment-window), but
+ @('fmt-to-comment-window+') always produces output, even when the @('COMMENT')
+ output type is inhibited (see @(see set-inhibit-output-lst)).</p>")
+
+(defxdoc fmt-to-comment-window!+
+  :parents (cw io acl2-built-ins)
+  :short "Print readably and uninhibited to the comment window"
+  :long "<p>See @(see cw) for important background.</p>
+
+ <p>This is nearly the same as @(tsee fmt-to-comment-window), but
+ @('fmt-to-comment-window!+') always produces readable output (like @(tsee
+ fmt-to-comment-window!)), even when the @('COMMENT') output type is
+ inhibited (like @(tsee fmt-to-comment-window+)).</p>")
 
 (defxdoc fmt1
   :parents (io acl2-built-ins)
@@ -89986,6 +90092,13 @@ it."
  ")
 
 (defxdoc note-8-5
+
+; The new state global pc-info has as its value a pc-info record, whose
+; components replace the four state globals pc-print-macroexpansion-flg,
+; pc-print-prompt-and-instr-flg, pc-prompt, and pc-prompt-depth-prefix.
+; Reducing the number of state globals can be useful for putting less stress
+; on compilation of calls of the macro protect-system-state-globals.
+
   :parents (release-notes)
   :short "ACL2 Version  8.5 (xx, 20xx) Notes"
   :long "<p>NOTE!  New users can ignore these release notes, because the @(see
@@ -90009,24 +90122,58 @@ it."
 
  <h3>Changes to Existing Features</h3>
 
- <p>The built-in theorem @('symbol-equality') was strengthened a bit (only one
- object needs to be assumed to be a symbol).  Thanks to Eric Smith for
- suggesting this change.</p>
-
- <p>Eliminated the hypothesis from built-in theorem
- @('true-listp-first-n-ac-type-prescription') and eliminated built-in theorem
+ <p>Weakened hypotheses from built-in theorems (thus strengthening them)
+ @('symbol-equality'), @('true-listp-first-n-ac-type-prescription'),
+ @('ordered-symbol-alistp-getprops'), @('add-pair-preserves-all-boundp'), and
+ @('symbol<-asymmetric').  Eliminated built-in theorem
  @('main-timer-type-prescription') entirely (that rule was already deduced by
- ACL2 at definition time).  Thanks to Eric Smith for pointing out unnecessary
- hypotheses in these theorems.</p>
+ ACL2 at definition time).  Simplified guards slightly for built-in functions
+ @('serialize-write-fn') and @('serialize-read-fn').  Thanks to Eric Smith for
+ correspondence, based on his linter, leading to these improvements.</p>
+
+ <p>The utility @(tsee without-evisc) formerly always (or nearly always)
+ returned the @(see error-triple) @('(mv nil :invisible state)') after printing
+ the result.  Now it generally returns @('(mv t nil state)') when evaluation of
+ the given form causes an error.  See @(see without-evisc).  Thanks to Karthik
+ Nukala and Eric Smith for reporting the former (undesirable) behavior.</p>
+
+ <p>One would get an error when including an uncertified book when a
+ @(':type-prescription') specified in an @(tsee xargs) @(see declaration)
+ failed a validity check, even when no such failure occurs when that book is
+ certified.  (That could happen because type-prescription information from
+ locally included books is saved in the book's @(see certificate) file and is
+ used when checking such @(':type-prescription') declarations.)  This situation
+ now generates an error rather than a warning.  Thanks to Karthik Nukala and
+ Eric Smith for sending an example that pointed out this problem.</p>
 
  <h3>New Features</h3>
 
- <p>One can now suppress output from @(tsee cw) and @(tsee cw!), and from
- utilities that use these such as @(tsee time$), by inhibiting a new output
- type, @('COMMENT').  (Thus, that symbol has been added to the value of
+ <p>One can now suppress output from @(tsee cw), @(tsee cw!), @(tsee
+ fmt-to-comment-window), and @(tsee fmt-to-comment-window!), and from utilities
+ that use these such as @(tsee time$), by inhibiting a new output type,
+ @('COMMENT').  (Thus, that symbol has been added to the value of
  @('*valid-output-names*').  See @(see set-inhibit-output-lst) and @(see
  with-output).  Thanks to Eric McCarthy for a conversation via GitHub Issue
- #1293 that led to this enhancement.</p>
+ #1293 that led to this enhancement.  Moreover, new macros @(tsee cw+) and
+ @(tsee cw!+) and new functions @(tsee fmt-to-comment-window+) and @(tsee
+ fmt-to-comment-window!+) never suppress output; the @('\"+\"') suffix is
+ intended to indicate that feature.  Thus, these new utilities behave like the
+ previous utilities without the @('\"+\"') suffix.  Thanks to Eric Smith,
+ Karthik Nukala, and Alessandro Coglio for observing inappropriate suppression
+ of output from the utility @(tsee er-soft+) and the connection of this problem
+ to the addition of the @('COMMENT') output type; it was resolved by using
+ @('fmt-to-comment-window+') in place of @('fmt-to-comment-window') in the
+ implementation of a utility underlying @('er-soft+') (see @(see
+ community-book) @('books/tools/er-soft-logic.lisp')).</p>
+
+ <p>You can now arrange that an interrupt will kill a proof immediately by
+ evaluating @('(assign abort-soft nil)'), and you can restore the default
+ behavior &mdash; where an interrupt instructs the proof to quick cleanly at an
+ appropriate opportunity &mdash; by evaluating @('(assign abort-soft t)').
+ Note that this can interfere with @(':')@(tsee redo-flat); see @(see
+ abort-soft).  Thanks to Eric Smith for reporting an inability to abort a
+ series of proof attempts using the @(tsee prove$) utility, which led to this
+ enhancement.</p>
 
  <h3>Heuristic and Efficiency Improvements</h3>
 
@@ -101011,7 +101158,7 @@ arithmetic) for libraries of @(see books) for arithmetic reasoning.</p>")
  see a summary of the events that executed successfully.</p>
 
  <p>You can eliminate some of the steps above by supplying keyword values, as
- follows.</p>
+ follows, where those arguments are not evaluated.</p>
 
  @({
   (redo-flat
@@ -101074,7 +101221,8 @@ arithmetic) for libraries of @(see books) for arithmetic reasoning.</p>")
  <p>Normally, @('redo-flat') will have the desired effect even if you
  interrupted a proof (with control-c).  However, @('redo-flat') will not
  produce the desired result after an interrupt if you have enabled the debugger
- using @('(set-debugger-enable t)'),</p>")
+ using @('(set-debugger-enable t)') or if you have disabled the default
+ ``soft'' interrupt behavior (see @(see abort-soft)).</p>")
 
 (defxdoc redundant-encapsulate
   :parents (encapsulate)
@@ -130898,13 +131046,15 @@ created from the original fast alist during @('form') must be manually freed."
  <p>We conclude with two remarks.  (1) A call of @('without-evisc') on
  expression @('exp') actually invokes a specialized call of @(tsee ld) on a
  one-element list containing @('exp'), which prints the value returned by
- evaluation of @('exp') but actually returns the useless value @('(mv nil
- :invisible state)').  So do not use @('without-evisc') in programs; just use
- it at the top level of the ACL2 read-eval-print loop, or at least the top
- level of @('ld').  (2) Even when using without-evisc, if the ACL2 logical
- @(see world) is part of the value returned, it will be printed in abbreviated
- form because the ACL2 read-eval-print loop always arranges for this to be the
- case, regardless of the ld-evisc-tuple.  For example:</p>
+ evaluation of @('exp').  It actually returns the useless value @('(mv nil
+ :invisible state)'), except that if an error is detected then it generally
+ returns @('(mv t nil state)'), indicating an error; see @(see error-triple).
+ So do not use @('without-evisc') in programs if you want the value of the
+ computation to be returned, rather than merely printed.  (2) Even when using
+ without-evisc, if the ACL2 logical @(see world) is part of the value returned,
+ it will be printed in abbreviated form because the ACL2 read-eval-print loop
+ always arranges for this to be the case, regardless of the ld-evisc-tuple.
+ For example:</p>
 
  @({
   ACL2 !>(without-evisc (w state))
@@ -130913,10 +131063,8 @@ created from the original fast alist during @('form') must be manually freed."
  })
 
  <p>An alternative to the use of @('without-evisc') is to explore large objects
- using the ACL2 function @('(walkabout object state)').  Some brief
- documentation is printed when you enter an interactive loop upon evaluating a
- call of @('walkabout').  We may add documentation for @('walkabout') if that
- is requested.</p>")
+ using the ACL2 function @('(walkabout object state)'); see @(see
+ walkabout).</p>")
 
 (defxdoc wof
   :parents (prover-output io)
@@ -133177,8 +133325,8 @@ run the given instructions"
  instruction ``succeeds'' if and only if each instruction in
  @('instruction-list') does.  (See @(see acl2-pc::sequence) for an explanation
  of ``success'' and ``failure.'')  As each instruction is executed, the system
- will print the usual prompt followed by that instruction, unless the global
- state variable @('pc-print-prompt-and-instr-flg') is @('nil').</p>
+ will print the usual prompt followed by that instruction, unless the value of
+ @('(access pc-info (@ pc-info) :print-prompt-and-instr-flg)') is @('nil').</p>
 
  <p><b>Remark:</b> If @('do-all') ``fails'', then the failure is hard if and
  only if the last instruction it runs has a hard ``failure''.</p>
@@ -135785,6 +135933,7 @@ expand function call at the current subterm, without simplifying"
 (defpointer implicate system-utilities)
 (defpointer induct hints t)
 (defpointer inline defun-inline)
+(defpointer interrupts abort-soft)
 (defpointer intersection-eq intersection$)
 (defpointer intersection-equal intersection$)
 (defpointer intersectp-eq intersectp)
@@ -135931,6 +136080,7 @@ expand function call at the current subterm, without simplifying"
 (defpointer single-threaded-objects stobj)
 (defpointer split-types xargs t)
 (defpointer stable-under-simplificationp computed-hints)
+(defpointer step-limit with-prover-step-limit) ; referenced in :doc prove$
 (defpointer stobj-let nested-stobjs)
 (defpointer stobjp system-utilities)
 (defpointer stobjs xargs t)
@@ -135958,6 +136108,7 @@ expand function call at the current subterm, without simplifying"
 (defpointer tamep-lambdap tame)
 (defpointer thereis$ loop$)
 (defpointer thereis$+ loop$)
+(defpointer time-limit with-prover-time-limit) ; referenced in :doc prove$
 (defpointer too-many-ifs efficiency)
 (defpointer trans-eval-default-warning user-stobjs-modified-warnings)
 (defpointer trans-eval-no-warning user-stobjs-modified-warnings)
