@@ -16503,8 +16503,8 @@ configure-ccl.lisp
 
   Rebuild and quit, twice.
 
-    echo '(rebuild-ccl :clean t)' | ./lx86cl64
-    echo '(rebuild-ccl :clean t)' | ./lx86cl64
+    echo '(rebuild-ccl :clean t)' | ./dx86cl64
+    echo '(rebuild-ccl :clean t)' | ./dx86cl64
 
   Create the following executable script, which you will probably want
   to name \"ccl\", where <DIR> is the absolute pathname (without using
@@ -16568,8 +16568,8 @@ configure-ccl.lisp
 
   Rebuild and quit, twice.
 
-    echo '(rebuild-ccl :clean t)' | ./lx86cl64
-    echo '(rebuild-ccl :clean t)' | ./lx86cl64
+    echo '(rebuild-ccl :clean t)' | ./dx86cl64
+    echo '(rebuild-ccl :clean t)' | ./dx86cl64
 
   Create an executable script like the following.  You might want to
   call it ``ccl'' and put it into a directory on your path.  Be sure
