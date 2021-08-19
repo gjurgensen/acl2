@@ -88303,8 +88303,8 @@ Changes to Existing Features
   certified.  (That could happen because type-prescription
   information from locally included books is saved in the book's
   [certificate] file and is used when checking such
-  :type-prescription declarations.)  This situation now generates an
-  error rather than a warning.  Thanks to Karthik Nukala and Eric
+  :type-prescription declarations.)  This situation now generates a
+  warning rather than an error.  Thanks to Karthik Nukala and Eric
   Smith for sending an example that pointed out this problem.
 
 
