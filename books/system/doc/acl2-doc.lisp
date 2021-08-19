@@ -13652,8 +13652,8 @@ with any questions about building the community books.</p>")
  <p>Rebuild and quit, twice.</p>
 
  @({
- echo '(rebuild-ccl :clean t)' | ./lx86cl64
- echo '(rebuild-ccl :clean t)' | ./lx86cl64
+ echo '(rebuild-ccl :clean t)' | ./dx86cl64
+ echo '(rebuild-ccl :clean t)' | ./dx86cl64
  })
 
  <p>Create the following executable script, which you will probably want to
@@ -13729,8 +13729,8 @@ with any questions about building the community books.</p>")
  <p>Rebuild and quit, twice.</p>
 
  @({
- echo '(rebuild-ccl :clean t)' | ./lx86cl64
- echo '(rebuild-ccl :clean t)' | ./lx86cl64
+ echo '(rebuild-ccl :clean t)' | ./dx86cl64
+ echo '(rebuild-ccl :clean t)' | ./dx86cl64
  })
 
  <p>Create an executable script like the following.  You might want to call it
