@@ -107138,7 +107138,7 @@ arithmetic) for libraries of @(see books) for arithmetic reasoning.</p>")
   :short "Control suppression of details when printing"
   :long "<p>ACL2 output is generally printed in full.  However, ACL2 can be
  directed to abbreviate, or ``eviscerate'', objects before printing them,
- though the use of a so-called ``evisc-tuple''.  See @(see evisc-tuple) for a
+ through the use of a so-called ``evisc-tuple''.  See @(see evisc-tuple) for a
  discussion of evisc-tuples.  The utility @('set-evisc-tuple') modifies certain
  global evisc-tuples, as explained below, to affect the extent to which ACL2
  eviscerates objects during printing, for example during proof output or when
