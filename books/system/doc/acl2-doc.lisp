@@ -13652,8 +13652,8 @@ with any questions about building the community books.</p>")
  <p>Rebuild and quit, twice.</p>
 
  @({
- echo '(rebuild-ccl :clean t)' | ./lx86cl64
- echo '(rebuild-ccl :clean t)' | ./lx86cl64
+ echo '(rebuild-ccl :clean t)' | ./dx86cl64
+ echo '(rebuild-ccl :clean t)' | ./dx86cl64
  })
 
  <p>Create the following executable script, which you will probably want to
@@ -13729,8 +13729,8 @@ with any questions about building the community books.</p>")
  <p>Rebuild and quit, twice.</p>
 
  @({
- echo '(rebuild-ccl :clean t)' | ./lx86cl64
- echo '(rebuild-ccl :clean t)' | ./lx86cl64
+ echo '(rebuild-ccl :clean t)' | ./dx86cl64
+ echo '(rebuild-ccl :clean t)' | ./dx86cl64
  })
 
  <p>Create an executable script like the following.  You might want to call it
@@ -90143,7 +90143,7 @@ it."
  certified.  (That could happen because type-prescription information from
  locally included books is saved in the book's @(see certificate) file and is
  used when checking such @(':type-prescription') declarations.)  This situation
- now generates an error rather than a warning.  Thanks to Karthik Nukala and
+ now generates a warning rather than an error.  Thanks to Karthik Nukala and
  Eric Smith for sending an example that pointed out this problem.</p>
 
  <h3>New Features</h3>
@@ -107138,7 +107138,7 @@ arithmetic) for libraries of @(see books) for arithmetic reasoning.</p>")
   :short "Control suppression of details when printing"
   :long "<p>ACL2 output is generally printed in full.  However, ACL2 can be
  directed to abbreviate, or ``eviscerate'', objects before printing them,
- though the use of a so-called ``evisc-tuple''.  See @(see evisc-tuple) for a
+ through the use of a so-called ``evisc-tuple''.  See @(see evisc-tuple) for a
  discussion of evisc-tuples.  The utility @('set-evisc-tuple') modifies certain
  global evisc-tuples, as explained below, to affect the extent to which ACL2
  eviscerates objects during printing, for example during proof output or when

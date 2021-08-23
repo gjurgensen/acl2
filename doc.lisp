@@ -16503,8 +16503,8 @@ configure-ccl.lisp
 
   Rebuild and quit, twice.
 
-    echo '(rebuild-ccl :clean t)' | ./lx86cl64
-    echo '(rebuild-ccl :clean t)' | ./lx86cl64
+    echo '(rebuild-ccl :clean t)' | ./dx86cl64
+    echo '(rebuild-ccl :clean t)' | ./dx86cl64
 
   Create the following executable script, which you will probably want
   to name \"ccl\", where <DIR> is the absolute pathname (without using
@@ -16568,8 +16568,8 @@ configure-ccl.lisp
 
   Rebuild and quit, twice.
 
-    echo '(rebuild-ccl :clean t)' | ./lx86cl64
-    echo '(rebuild-ccl :clean t)' | ./lx86cl64
+    echo '(rebuild-ccl :clean t)' | ./dx86cl64
+    echo '(rebuild-ccl :clean t)' | ./dx86cl64
 
   Create an executable script like the following.  You might want to
   call it ``ccl'' and put it into a directory on your path.  Be sure
@@ -88303,8 +88303,8 @@ Changes to Existing Features
   certified.  (That could happen because type-prescription
   information from locally included books is saved in the book's
   [certificate] file and is used when checking such
-  :type-prescription declarations.)  This situation now generates an
-  error rather than a warning.  Thanks to Karthik Nukala and Eric
+  :type-prescription declarations.)  This situation now generates a
+  warning rather than an error.  Thanks to Karthik Nukala and Eric
   Smith for sending an example that pointed out this problem.
 
 
