@@ -88332,6 +88332,9 @@ Changes to Existing Features
   warning rather than an error.  Thanks to Karthik Nukala and Eric
   Smith for sending an example that pointed out this problem.
 
+  Output from :[oops] may now be inhibited as OBSERVATION output, by
+  using [set-inhibit-output-lst] or [with-output].
+
 
 New Features
 
