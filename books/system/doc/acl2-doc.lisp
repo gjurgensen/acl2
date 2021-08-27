@@ -90190,6 +90190,9 @@ it."
  now generates a warning rather than an error.  Thanks to Karthik Nukala and
  Eric Smith for sending an example that pointed out this problem.</p>
 
+ <p>Output from @(':')@(tsee oops) may now be inhibited as @('OBSERVATION')
+ output, by using @(tsee set-inhibit-output-lst) or @(tsee with-output).</p>
+
  <h3>New Features</h3>
 
  <p>One can now suppress output from @(tsee cw), @(tsee cw!), @(tsee
