@@ -77,7 +77,7 @@ Subtopics
   [defthm], [in-theory], [xargs], [state], etc., without an acl2::
   prefix.
 
-  The constant *acl2-exports* lists 1536 symbols, including most
+  The constant *acl2-exports* lists 1537 symbols, including most
   documented ACL2 system constants, functions, and macros.  You will
   typically also want to import many symbols from Common Lisp; see
   [*common-lisp-symbols-from-main-lisp-package*].
@@ -670,8 +670,8 @@ Subtopics
        state-p-implies-and-forward-to-state-p1
        state-p1 state-p1-forward
        state-p1-update-main-timer
-       state-p1-update-nth-2-world
-       step-limit stobj-let stop-proof-tree
+       state-p1-update-nth-2-world step-limit
+       stobj-let stobj-table stop-proof-tree
        string string-append string-append-lst
        string-downcase string-downcase1
        string-equal string-equal1
@@ -26462,34 +26462,37 @@ Subtopics
 
   where name is a new symbol; each fieldi is a symbol; each typei is
   either a type-indicator (a [type-spec] or [stobj] name), of the
-  form (ARRAY type-indicator (max)), or of the form (HASH-TABLE test)
-  or (HASH-TABLE test size); each vali is an object satisfying typei;
-  and each bi is t or nil.  Each pair :initially vali and :resizable
-  bi may be omitted; more on this below.  The :renaming alist
-  argument is optional and allows the user to override the default
-  function names introduced by this event.  The :inline flg Boolean
-  argument is also optional and declares to ACL2 that the generated
-  access and update functions for the stobj should be implemented as
-  macros under the hood (which has the effect of inlining the
-  function calls).  The optional :congruent-to old-stobj-name
-  argument specifies an existing stobj with exactly the same
-  structure, and is discussed below.  The optional :non-memoizable
-  nm-flg and :non-executable ne-flg Boolean arguments are ignored
-  when nm-flg and ne-flg are nil, but otherwise: the former instructs
-  ACL2 to lay down faster code for functions that return the new
-  stobj but disallows [memoization] of any function that takes the
-  new stobj as an argument; and the latter avoids actually creating
-  the stobj (details follow later below).  We describe further
-  restrictions on the fieldi, typei, vali, and on alist below.  We
-  recommend that you read about single-threaded objects (stobjs) in
-  ACL2 before proceeding; see [stobj].
+  form (ARRAY type-indicator (max)), or of one of the forms
+  (HASH-TABLE test), (HASH-TABLE test size), (STOBJ-TABLE), or
+  (STOBJ-TABLE size); each vali is an object satisfying typei; and
+  each bi is t or nil.  Each pair :initially vali and :resizable bi
+  may be omitted; more on this below.  The :renaming alist argument
+  is optional and allows the user to override the default function
+  names introduced by this event.  The :inline flg Boolean argument
+  is also optional and declares to ACL2 that the generated access and
+  update functions for the stobj should be implemented as macros
+  under the hood (which has the effect of inlining the function
+  calls).  The optional :congruent-to old-stobj-name argument
+  specifies an existing stobj with exactly the same structure, and is
+  discussed below.  The optional :non-memoizable nm-flg and
+  :non-executable ne-flg Boolean arguments are ignored when nm-flg
+  and ne-flg are nil, but otherwise: the former instructs ACL2 to lay
+  down faster code for functions that return the new stobj but
+  disallows [memoization] of any function that takes the new stobj as
+  an argument; and the latter avoids actually creating the stobj
+  (details follow later below).  We describe further restrictions on
+  the fieldi, typei, vali, and on alist below.  We recommend that you
+  read about single-threaded objects (stobjs) in ACL2 before
+  proceeding; see [stobj].
 
   The effect of this event is to introduce a new single-threaded object
   (i.e., a ``[stobj]''), named name, and the associated recognizers,
   creator, accessors, updaters, constants.  For fields of ARRAY type,
   this event also introduces length and resize functions.  For fields
   of HASH-TABLE type, this event also introduces boundp, get?,
-  remove, count, clear, and initialization functions.
+  remove, count, clear, and initialization functions; similarly for
+  STOBJ-TABLE type, except for the get? function, which is only for
+  the HASH-TABLE type.
 
 
 The Single-Threaded Object Introduced
@@ -26510,11 +26513,12 @@ The Single-Threaded Object Introduced
   integer, and the corresponding element of the stobj is initially of
   length specified by max.  If the :type of a field is (HASH-TABLE
   test) or (HASH-TABLE test size), then test is one of the symbols
-  EQ, EQL, HONS-EQUAL, or EQUAL and size, if supplied, is a positive
-  integer.  In that case the test is applied when looking up keys,
-  where [hons-copy] is first applied to the key in the HONS-EQUAL
-  case; and the size is a hint to the host Lisp for the initial size
-  of the associated hash table in raw Lisp.
+  EQ, EQL, HONS-EQUAL, or EQUAL, while size, if supplied as above or
+  in (STOBJ-TABLE size), is a positive integer.  In that case the
+  test is applied when looking up keys, where [hons-copy] is first
+  applied to the key in the HONS-EQUAL case; and the size is a hint
+  to the host Lisp for the initial size of the associated hash table
+  in raw Lisp.
 
   If the value of :type is of the form (ARRAY type-indicator (max)) or
   just type-indicator, then type-indicator is typically a type-spec;
@@ -26525,11 +26529,17 @@ The Single-Threaded Object Introduced
   that HASH-TABLE types do not specify a type indicator; thus, a
   hash-table field cannot contain stobjs as values.
 
+  A field with a STOBJ-TABLE type is logically an association list
+  whose keys are [stobj] names, such that each stobj name is mapped
+  to a stobj satisfyin that stobj name's recognizer.  We say little
+  more here about stobj-tables; see [stobj-table] for relevant
+  discussion.
+
   The keyword value :initially val specifies the initial value of a
   field, except for the case of a :type (ARRAY type-indicator (max)),
   in which case val is the initial value of the corresponding array.
-  Note that the :initially field is ignored for HASH-TABLE types,
-  since hash tables are initially empty.
+  Note that the :initially field is ignored for HASH-TABLE and
+  STOBJ-TABLE types, since these are both initially empty.
 
   Note that the actual representation of the stobj in the underlying
   Lisp may be quite different; see [stobj-example-2].  For the moment
@@ -26538,10 +26548,11 @@ The Single-Threaded Object Introduced
   In addition, the defstobj event introduces functions for recognizing
   and creating the stobj and for recognizing, accessing, and updating
   its fields.  For fields of ARRAY type, length and resize functions
-  are also introduced.  For fields of HASH-TABLE type, this event
-  also introduces boundp, get?, remove, count, clear, and
-  initialization functions, as discussed below.  Constants are
-  introduced that correspond to the accessor functions.
+  are also introduced.  For fields of HASH-TABLE or STOBJ-TABLE type,
+  this event also introduces boundp, get? (HASH-TABLE types only),
+  remove, count, clear, and initialization functions, as discussed
+  below.  Constants are introduced that correspond to the accessor
+  functions.
 
 
 Restrictions on the Field Descriptions in Defstobj
@@ -26556,17 +26567,19 @@ Restrictions on the Field Descriptions in Defstobj
   defaults to t (unrestricted) and the initial value defaults to nil.
 
   Each typei must be either a [type-spec] or else a list of the form
-  (ARRAY type-spec (max)), (HASH-TABLE test), or (HASH-TABLE test
-  size).  (Again, we are ignoring the case of nested stobjs,
-  discussed elsewhere; see [nested-stobjs].)  The latter forms are
-  said to be ``array types'' and ``hash-table types.'' Examples of
-  legal typei are:
+  (ARRAY type-spec (max)), (HASH-TABLE test), (HASH-TABLE test size),
+  (STOBJ-TABLE), or (STOBJ-TABLE size).  (Again, we are ignoring the
+  case of nested stobjs, discussed elsewhere; see [nested-stobjs].)
+  The latter forms are said to be ``array types'', ``hash-table
+  types'', and stobj-table types (again, not discussed much here; see
+  [stobj-table]).  Examples of legal typei are:
 
     (INTEGER 0 31)
     (SIGNED-BYTE 31)
     (ARRAY (SIGNED-BYTE 31) (16))
     (ARRAY (SIGNED-BYTE 31) (*c*)) ; where *c* has a non-negative integer value
     (HASH-TABLE HONS-EQUAL 70)
+    (STOBJ-TABLE 70)
 
   The typei describes the objects which are expected to occupy the
   given field.  Those objects in fieldi should satisfy typei.  We are
@@ -26576,8 +26589,8 @@ Restrictions on the Field Descriptions in Defstobj
 
 Scalar Types
 
-  We first discuss types that are neither array types nor hash-table
-  types.  We call these ``scalar types.''
+  We first discuss types that are neither array types, hash-table
+  types, nor stobj-table types.  We call these ``scalar types.''
 
   When typei is a [type-spec] it restricts the contents, x, of fieldi
   according to the ``meaning'' formula given in the table for
@@ -26703,6 +26716,11 @@ Hash-table Types
   table depends on the host Lisp.
 
 
+Stobj-table Types
+
+  As noted above, these are not discussed much here; see [stobj-table].
+
+
 The Default Function Names
 
   To recap, in
@@ -26724,8 +26742,8 @@ The Default Function Names
   accessor function, for example, takes the stobj and returns the
   indicated component; the updater takes a new component value and
   the stobj and return a new stobj with the component replaced by the
-  new value.  But that summary is inaccurate for array and hash-table
-  fields.
+  new value.  But that summary is inaccurate for array, hash-table,
+  and stobj-table fields.
 
   The accessor function for an array field does not take the stobj and
   return the indicated component array, which is a list of length
@@ -26740,7 +26758,8 @@ The Default Function Names
   additional key argument and returns the associated value, or nil if
   the key is not bound.  The updater function takes a key, a new
   value, and the stobj, and returns a new stobj with the indicated
-  element replaced by the new value.
+  element replaced by the new value.  See [stobj-table] for a
+  discussion of stobj-table types, which are ignored below.
 
   These functions --- the recognizer, accessor, and updater, and also
   length and resize functions in the case of array fields, and
@@ -66606,7 +66625,13 @@ SECTION: Using stobj-let with abstract stobjs
   are handled.  If an abort occurs in the middle of a stobj-let that
   updates child stobjs, when the parent stobj is an abstract stobj,
   you may be put into an illegal state, with instructions for how to
-  continue at your own risk.  See [illegal-state].")
+  continue at your own risk.  See [illegal-state].
+
+
+Subtopics
+
+  [Stobj-table]
+      [Stobj] field mapping names to stobjs")
  (NEVER-MEMOIZE
   (MEMOIZE)
   "Mark a function as unsafe to memoize.
@@ -88307,6 +88332,9 @@ Changes to Existing Features
   warning rather than an error.  Thanks to Karthik Nukala and Eric
   Smith for sending an example that pointed out this problem.
 
+  Output from :[oops] may now be inhibited as OBSERVATION output, by
+  using [set-inhibit-output-lst] or [with-output].
+
 
 New Features
 
@@ -88338,6 +88366,12 @@ New Features
   an inability to abort a series of proof attempts using the [prove$]
   utility, which led to this enhancement.
 
+  A [stobj] may now have a field of type STOBJ-TABLE, which associates
+  arbitrary stobj names with corresponding stobjs.  As of this
+  writing, that feature should be considered experimental; see
+  [stobj-table].  Thanks to Rob Sumners for suggesting the idea and
+  to him and Sol Swords for useful design discussions.
+
 
 Heuristic and Efficiency Improvements
 
@@ -88348,6 +88382,9 @@ Bug Fixes
   displaying failure information for an attempt to apply a [linear]
   rule containing [free-variables].  Thanks to Karthik Nukala and
   Eric Smith for sending a bug report with a replayable example.
+
+  Strengthened syntax checking for accessor expressions in [stobj-let]
+  bindings.  See a comment about this in (defxdoc note-8-5 ...).
 
 
 Changes at the System Level
@@ -108217,7 +108254,7 @@ Subtopics
 
   ACL2 output is generally printed in full.  However, ACL2 can be
   directed to abbreviate, or ``eviscerate'', objects before printing
-  them, though the use of a so-called ``evisc-tuple''.  See
+  them, through the use of a so-called ``evisc-tuple''.  See
   [evisc-tuple] for a discussion of evisc-tuples.  The utility
   set-evisc-tuple modifies certain global evisc-tuples, as explained
   below, to affect the extent to which ACL2 eviscerates objects
@@ -113852,6 +113889,9 @@ Subtopics
   [Stobj-example-3]
       Another example of a single-threaded object
 
+  [Stobj-table]
+      [Stobj] field mapping names to stobjs
+
   [Swap-stobjs]
       Swap two congruent [stobj]s
 
@@ -114741,6 +114781,18 @@ Subtopics
   that introduces a new single-threaded object; see [defstobj].")
  (STOBJ-LET (POINTERS)
             "See [nested-stobjs].")
+ (STOBJ-TABLE
+  (STOBJ NESTED-STOBJS)
+  "[Stobj] field mapping names to stobjs
+
+  WARNING: Stobj-table fields of [stobj]s should be considered
+  experimental at this point!  This warning will probably be removed
+  soon, and when it is, stobj-table fields may be considered not to
+  be experimental any longer.
+
+  This documentation is a stub.  See [community-book]
+  books/system/tests/stobj-table-tests-input.lsp for example uses of
+  stobj-tables.")
  (STOBJP (POINTERS)
          "See [system-utilities].")
  (STOBJS (POINTERS)
@@ -125184,6 +125236,10 @@ Subtopics
   type declarations, it may be useful to use [disassemble$] to
   inspect the impact that your declarations have on the resulting
   code.
+
+  While type specs may be used in [defstobj] events, the HASH-TABLE and
+  STOBJ-TABLE type specs may only be used in those events.  We say
+  nothing further about them in the present topic.
 
 
 Type Specs

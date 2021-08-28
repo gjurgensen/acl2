@@ -23272,17 +23272,18 @@ subtree of X with T, without duplication.</p>
 
  <p>where @('name') is a new symbol; each @('fieldi') is a symbol; each
  @('typei') is either a type-indicator (a @(tsee type-spec) or @(see stobj)
- name), of the form @('(ARRAY type-indicator (max))'), or of the form
- @('(HASH-TABLE test)') or @('(HASH-TABLE test size)'); each @('vali') is an
- object satisfying @('typei'); and each @('bi') is @('t') or @('nil').  Each
- pair @(':initially vali') and @(':resizable bi') may be omitted; more on this
- below.  The @(':renaming alist') argument is optional and allows the user to
- override the default function names introduced by this event.  The @(':inline
- flg') Boolean argument is also optional and declares to ACL2 that the
- generated access and update functions for the stobj should be implemented as
- macros under the hood (which has the effect of inlining the function calls).
- The optional @(':congruent-to old-stobj-name') argument specifies an existing
- stobj with exactly the same structure, and is discussed below.  The optional
+ name), of the form @('(ARRAY type-indicator (max))'), or of one of the forms
+ @('(HASH-TABLE test)'), @('(HASH-TABLE test size)'), @('(STOBJ-TABLE)'), or
+ @('(STOBJ-TABLE size)'); each @('vali') is an object satisfying @('typei');
+ and each @('bi') is @('t') or @('nil').  Each pair @(':initially vali') and
+ @(':resizable bi') may be omitted; more on this below.  The @(':renaming
+ alist') argument is optional and allows the user to override the default
+ function names introduced by this event.  The @(':inline flg') Boolean
+ argument is also optional and declares to ACL2 that the generated access and
+ update functions for the stobj should be implemented as macros under the
+ hood (which has the effect of inlining the function calls).  The optional
+ @(':congruent-to old-stobj-name') argument specifies an existing stobj with
+ exactly the same structure, and is discussed below.  The optional
  @(':non-memoizable nm-flg') and @(':non-executable ne-flg') Boolean arguments
  are ignored when @('nm-flg') and @('ne-flg') are @('nil'), but otherwise: the
  former instructs ACL2 to lay down faster code for functions that return the
@@ -23298,7 +23299,8 @@ subtree of X with T, without duplication.</p>
  creator, accessors, updaters, constants.  For fields of @('ARRAY') type, this
  event also introduces length and resize functions.  For fields of
  @('HASH-TABLE') type, this event also introduces boundp, get?, remove, count,
- clear, and initialization functions.</p>
+ clear, and initialization functions; similarly for @('STOBJ-TABLE') type,
+ except for the get? function, which is only for the @('HASH-TABLE') type.</p>
 
  <h3>The Single-Threaded Object Introduced</h3>
 
@@ -23317,11 +23319,11 @@ subtree of X with T, without duplication.</p>
  element of the stobj is initially of length specified by @('max').  If the
  @(':type') of a field is @('(HASH-TABLE test)') or @('(HASH-TABLE test
  size)'), then @('test') is one of the symbols @('EQ'), @('EQL'),
- @('HONS-EQUAL'), or @('EQUAL') and @('size'), if supplied, is a positive
- integer.  In that case the test is applied when looking up keys, where @(tsee
- hons-copy) is first applied to the key in the @('HONS-EQUAL') case; and the
- size is a hint to the host Lisp for the initial size of the associated hash
- table in raw Lisp.</p>
+ @('HONS-EQUAL'), or @('EQUAL'), while @('size'), if supplied as above or in
+ @('(STOBJ-TABLE size)'), is a positive integer.  In that case the test is
+ applied when looking up keys, where @(tsee hons-copy) is first applied to the
+ key in the @('HONS-EQUAL') case; and the size is a hint to the host Lisp for
+ the initial size of the associated hash table in raw Lisp.</p>
 
  <p>If the value of @(':type') is of the form @('(ARRAY type-indicator
  (max))') or just @('type-indicator'), then @('type-indicator') is typically a
@@ -23332,11 +23334,16 @@ subtree of X with T, without duplication.</p>
  @('HASH-TABLE') types do not specify a type indicator; thus, a hash-table
  field cannot contain stobjs as values.</p>
 
+ <p>A field with a @('STOBJ-TABLE') type is logically an association list whose
+ keys are @(see stobj) names, such that each stobj name is mapped to a stobj
+ satisfyin that stobj name's recognizer.  We say little more here about
+ stobj-tables; see @(see stobj-table) for relevant discussion.</p>
+
  <p>The keyword value @(':initially val') specifies the initial value of a
  field, except for the case of a @(':type') @('(ARRAY type-indicator (max))'),
  in which case @('val') is the initial value of the corresponding array.  Note
- that the @(':initially') field is ignored for @('HASH-TABLE') types, since
- hash tables are initially empty.</p>
+ that the @(':initially') field is ignored for @('HASH-TABLE') and
+ @('STOBJ-TABLE') types, since these are both initially empty.</p>
 
  <p>Note that the actual representation of the stobj in the underlying Lisp may
  be quite different; see @(see stobj-example-2).  For the moment we focus
@@ -23345,10 +23352,10 @@ subtree of X with T, without duplication.</p>
  <p>In addition, the @('defstobj') event introduces functions for recognizing
  and creating the stobj and for recognizing, accessing, and updating its
  fields.  For fields of @('ARRAY') type, length and resize functions are also
- introduced.  For fields of @('HASH-TABLE') type, this event also introduces
- boundp, get?, remove, count, clear, and initialization functions, as discussed
- below.  Constants are introduced that correspond to the accessor
- functions.</p>
+ introduced.  For fields of @('HASH-TABLE') or @('STOBJ-TABLE') type, this
+ event also introduces boundp, get? (@('HASH-TABLE') types only), remove,
+ count, clear, and initialization functions, as discussed below.  Constants are
+ introduced that correspond to the accessor functions.</p>
 
  <h3>Restrictions on the Field Descriptions in Defstobj</h3>
 
@@ -23364,10 +23371,12 @@ subtree of X with T, without duplication.</p>
  (unrestricted) and the initial value defaults to @('nil').</p>
 
  <p>Each @('typei') must be either a @(tsee type-spec) or else a list of the
- form @('(ARRAY type-spec (max))'), @('(HASH-TABLE test)'), or @('(HASH-TABLE
- test size)').  (Again, we are ignoring the case of nested stobjs, discussed
- elsewhere; see @(see nested-stobjs).)  The latter forms are said to be ``array
- types'' and ``hash-table types.''  Examples of legal @('typei') are:</p>
+ form @('(ARRAY type-spec (max))'), @('(HASH-TABLE test)'), @('(HASH-TABLE test
+ size)'), @('(STOBJ-TABLE)'), or @('(STOBJ-TABLE size)').  (Again, we are
+ ignoring the case of nested stobjs, discussed elsewhere; see @(see
+ nested-stobjs).)  The latter forms are said to be ``array types'',
+ ``hash-table types'', and stobj-table types (again, not discussed much here;
+ see @(see stobj-table)).  Examples of legal @('typei') are:</p>
 
  @({
   (INTEGER 0 31)
@@ -23375,6 +23384,7 @@ subtree of X with T, without duplication.</p>
   (ARRAY (SIGNED-BYTE 31) (16))
   (ARRAY (SIGNED-BYTE 31) (*c*)) ; where *c* has a non-negative integer value
   (HASH-TABLE HONS-EQUAL 70)
+  (STOBJ-TABLE 70)
  })
 
  <p>The @('typei') describes the objects which are expected to occupy the given
@@ -23384,8 +23394,8 @@ subtree of X with T, without duplication.</p>
 
  <h3>Scalar Types</h3>
 
- <p>We first discuss types that are neither array types nor hash-table types.
- We call these ``scalar types.''</p>
+ <p>We first discuss types that are neither array types, hash-table types, nor
+ stobj-table types.  We call these ``scalar types.''</p>
 
  <p>When @('typei') is a @(tsee type-spec) it restricts the contents, @('x'),
  of @('fieldi') according to the ``meaning'' formula given in the table for
@@ -23518,6 +23528,11 @@ subtree of X with T, without duplication.</p>
  argument was supplied in that type, then the size of the hash table depends on
  the host Lisp.</p>
 
+ <h3>Stobj-table Types</h3>
+
+ <p>As noted above, these are not discussed much here; see @(see
+ stobj-table).</p>
+
  <h3>The Default Function Names</h3>
 
  <p>To recap, in</p>
@@ -23541,7 +23556,7 @@ subtree of X with T, without duplication.</p>
  accessor function, for example, takes the stobj and returns the indicated
  component; the updater takes a new component value and the stobj and return a
  new stobj with the component replaced by the new value.  But that summary is
- inaccurate for array and hash-table fields.</p>
+ inaccurate for array, hash-table, and stobj-table fields.</p>
 
  <p>The accessor function for an array field does not take the stobj and return
  the indicated component array, which is a list of length specified by
@@ -23554,7 +23569,8 @@ subtree of X with T, without duplication.</p>
  those for array fields.  Thus, the accessor takes an additional key argument
  and returns the associated value, or nil if the key is not bound.  The updater
  function takes a key, a new value, and the stobj, and returns a new stobj with
- the indicated element replaced by the new value.</p>
+ the indicated element replaced by the new value.  See @(see stobj-table) for a
+ discussion of stobj-table types, which are ignored below.</p>
 
  <p>These functions &mdash; the recognizer, accessor, and updater, and also
  length and resize functions in the case of array fields, and boundp, get?,
@@ -90099,6 +90115,34 @@ it."
 ; Reducing the number of state globals can be useful for putting less stress
 ; on compilation of calls of the macro protect-system-state-globals.
 
+; Here is an example regarding the item, "Strengthened syntax checking for
+; accessor expressions in stobj-let bindings."  It was accepted in ACL2 Version
+; 8.4 even though it should not have been; see the comment "forgot index!"
+; below.
+;
+;   (defstobj kid1 fld1)
+;   (defstobj kid2 fld2)
+;   (defstobj mom
+;     (kid1-field :type kid1)
+;     (kid2-ar-field :type (array kid2 (5)))
+;     last-op)
+;   (set-ignore-ok t)
+;   ; Should be rejected (see comment below):
+;   (defun foo (index mom)
+;     (declare (xargs :stobjs mom
+;                     :mode :program
+;                     :guard (and (natp index)
+;                                 (< index (kid2-ar-field-length mom)))))
+;     (stobj-let
+;      ((kid1 (kid1-field mom))
+;       (kid2 (kid2-ar-fieldi mom))) ; forgot index!
+;      (kid1 kid2)
+;      (mv kid1 kid2)
+;      mom))
+
+; Implementation note: Added a stobj-property record, now used as the value of
+; the 'stobj property of a stobj name.
+
   :parents (release-notes)
   :short "ACL2 Version  8.5 (xx, 20xx) Notes"
   :long "<p>NOTE!  New users can ignore these release notes, because the @(see
@@ -90146,6 +90190,9 @@ it."
  now generates a warning rather than an error.  Thanks to Karthik Nukala and
  Eric Smith for sending an example that pointed out this problem.</p>
 
+ <p>Output from @(':')@(tsee oops) may now be inhibited as @('OBSERVATION')
+ output, by using @(tsee set-inhibit-output-lst) or @(tsee with-output).</p>
+
  <h3>New Features</h3>
 
  <p>One can now suppress output from @(tsee cw), @(tsee cw!), @(tsee
@@ -90175,6 +90222,12 @@ it."
  series of proof attempts using the @(tsee prove$) utility, which led to this
  enhancement.</p>
 
+ <p>A @(see stobj) may now have a field of type @('STOBJ-TABLE'), which
+ associates arbitrary stobj names with corresponding stobjs.  As of this
+ writing, that feature should be considered experimental; see @(see
+ stobj-table).  Thanks to Rob Sumners for suggesting the idea and to him and
+ Sol Swords for useful design discussions.</p>
+
  <h3>Heuristic and Efficiency Improvements</h3>
 
  <h3>Bug Fixes</h3>
@@ -90183,6 +90236,9 @@ it."
  displaying failure information for an attempt to apply a @(see linear) rule
  containing @(see free-variables).  Thanks to Karthik Nukala and Eric Smith for
  sending a bug report with a replayable example.</p>
+
+ <p>Strengthened syntax checking for accessor expressions in @(tsee stobj-let)
+ bindings.  See a comment about this in @('(defxdoc note-8-5 ...)').</p>
 
  <h3>Changes at the System Level</h3>
 
@@ -113837,6 +113893,18 @@ arithmetic) for libraries of @(see books) for arithmetic reasoning.</p>")
  However, you may now wish to read the documentation for the event that
  introduces a new single-threaded object; see @(see defstobj).</p>")
 
+(defxdoc stobj-table
+  :parents (stobj nested-stobjs)
+  :short "@(see Stobj) field mapping names to stobjs"
+  :long "<p>WARNING: Stobj-table fields of @(see stobj)s should be considered
+ experimental at this point!  This warning will probably be removed soon, and
+ when it is, stobj-table fields may be considered not to be experimental any
+ longer.</p>
+
+ <p>This documentation is a stub.  See @(see community-book)
+ @('books/system/tests/stobj-table-tests-input.lsp') for example uses of
+ stobj-tables.</p>")
+
 (defxdoc stop-proof-tree
   :parents (proof-tree)
   :short "Stop displaying proof trees during proofs"
@@ -123209,6 +123277,10 @@ introduction-to-the-tau-system) for more information about Tau.</dd>
  If you are trying to optimize code by adding type declarations, it may be
  useful to use @(see disassemble$) to inspect the impact that your declarations
  have on the resulting code.</p>
+
+ <p>While type specs may be used in @(see defstobj) events, the @('HASH-TABLE')
+ and @('STOBJ-TABLE') type specs may only be used in those events.  We say
+ nothing further about them in the present topic.</p>
 
  <h3>Type Specs</h3>
 
