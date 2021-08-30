@@ -3,7 +3,7 @@
 ; The contents of this file are derived from ACL2 Community Book
 ; books/system/doc/acl2-doc.lisp.
 
-; ACL2 Version 8.3 -- A Computational Logic for Applicative Common Lisp
+; ACL2 Version 8.4 -- A Computational Logic for Applicative Common Lisp
 ; Copyright (C) 2021, Regents of the University of Texas
 
 ; This version of ACL2 is a descendent of ACL2 Version 1.9, Copyright
@@ -77,7 +77,7 @@ Subtopics
   [defthm], [in-theory], [xargs], [state], etc., without an acl2::
   prefix.
 
-  The constant *acl2-exports* lists 1527 symbols, including most
+  The constant *acl2-exports* lists 1537 symbols, including most
   documented ACL2 system constants, functions, and macros.  You will
   typically also want to import many symbols from Common Lisp; see
   [*common-lisp-symbols-from-main-lisp-package*].
@@ -100,13 +100,14 @@ Subtopics
        32-bit-integer-stack-length1
        32-bit-integerp
        32-bit-integerp-forward-to-integerp
-       < <-on-others <= = > >= ?-fn @ a! abort!
+       < <-on-others
+       <= = > >= ?-fn @ a! abort! abort-soft
        abs access accumulated-persistence
        accumulated-persistence-oops
        acl2-count acl2-input-channel-package
-       acl2-number-listp
-       acl2-numberp acl2-oracle
-       acl2-output-channel-package acl2-package
+       acl2-number-listp acl2-numberp
+       acl2-oracle acl2-output-channel-package
+       acl2-package acl2-unwind-protect
        acons active-or-non-runep active-runep
        add-binop add-custom-keyword-hint
        add-default-hints
@@ -128,17 +129,17 @@ Subtopics
        all-vars all-vars1 all-vars1-lst
        allocate-fixnum-range alpha-char-p
        alpha-char-p-forward-to-characterp
-       alphorder
-       always$ always$+ and and-macro append
-       append$ append$+ apply$ apply$-guard
-       apply$-lambda apply$-lambda-guard
-       apply$-userfn aref-32-bit-integer-stack
-       aref-t-stack aref1 aref2 args
-       arities-okp arity array1p array1p-cons
-       array1p-forward array1p-linear
-       array2p array2p-cons array2p-forward
-       array2p-linear aset-32-bit-integer-stack
-       aset-t-stack aset1 aset2 ash assert$
+       alphorder always$ always$+
+       and and-macro append append$ append$+
+       apply$ apply$-guard apply$-lambda
+       apply$-lambda-guard apply$-userfn
+       aref-32-bit-integer-stack aref-t-stack
+       aref1 aref2 args arities-okp arity
+       array1p array1p-cons array1p-forward
+       array1p-linear array2p array2p-cons
+       array2p-forward array2p-linear
+       aset-32-bit-integer-stack aset-t-stack
+       aset1 aset1-trusted aset2 ash assert$
        assert* assert-event assign assoc
        assoc-add-pair assoc-eq assoc-eq-equal
        assoc-eq-equal-alistp assoc-equal
@@ -226,7 +227,7 @@ Subtopics
        cons-with-hint consp consp-assoc-equal
        constraint-info corollary count-keys
        cpu-core-count ctx ctxp current-package
-       current-theory cw cw! cw-gstack
+       current-theory cw cw! cw!+ cw+ cw-gstack
        cw-print-base-radix cw-print-base-radix!
        declare decrement-big-clock defabbrev
        defabsstobj defabsstobj-missing-events
@@ -314,7 +315,11 @@ Subtopics
        fms!-to-string fms-to-string fmt fmt!
        fmt!-to-string fmt-hard-right-margin
        fmt-soft-right-margin
-       fmt-to-comment-window fmt-to-string fmt1
+       fmt-to-comment-window
+       fmt-to-comment-window!
+       fmt-to-comment-window!+
+       fmt-to-comment-window+
+       fmt-to-string fmt1
        fmt1! fmt1!-to-string fmt1-to-string
        fmx fmx!-cw fmx-cw fn-equal
        fncall-term forall force formula
@@ -480,8 +485,8 @@ Subtopics
        pr! preprocess prin1$ prin1-with-slashes
        prin1-with-slashes1 princ$ print-base-p
        print-cl-cache print-gv print-object$
+       print-object$+ print-object$-fn
        print-object$-preserving-case
-       print-object$-ser
        print-rational-as-decimal
        print-timer profile
        prog2$ progn progn! progn$ program
@@ -665,8 +670,8 @@ Subtopics
        state-p-implies-and-forward-to-state-p1
        state-p1 state-p1-forward
        state-p1-update-main-timer
-       state-p1-update-nth-2-world
-       step-limit stobj-let stop-proof-tree
+       state-p1-update-nth-2-world step-limit
+       stobj-let stobj-table stop-proof-tree
        string string-append string-append-lst
        string-downcase string-downcase1
        string-equal string-equal1
@@ -1539,11 +1544,46 @@ Subtopics
 
   This is an alias for a!; see [a!].  For a related feature that only
   pops up one level, see [p!].")
+ (ABORT-SOFT
+  (MISCELLANEOUS)
+  "Control how interrupts are handled in proofs
+
+  ACL2 arranges by default that when a proof is interrupted (with
+  Control-C), a ``soft'' abort occurs in the following sense: the
+  message below is printed and then the proof attempt continues
+  temporarily before ultimately failing (usually very soon
+  thereafter).
+
+    ***********************************************
+    Note:  interrupt signal
+      Will attempt to exit the proof in progress;
+      otherwise, the next interrupt will abort the proof.
+      For an immediate abort see :DOC abort-soft.
+    ***********************************************
+
+  This default behavior supports proper operation of the utility,
+  [redo-flat], when a proof is interrupted.  It also supports more
+  complete summaries than would be obtained with an immediate abort.
+  If you nevertheless want proofs to abort immediately, you may
+  evaluate the form (assign abort-soft nil).  To restore the default
+  behavior, evaluate (assign abort-soft t).
+
+  Remarks for system hackers.
+
+    * An important effect of having evaluated (assign abort-soft nil) is
+      that an interrupt will send you immediately back to the ACL2
+      read-eval-print loop, in contrast to the default behavior where
+      the prover returns an [error-triple] whose error component is
+      non-nil.
+    * It may be preferable to bind [state] global abort-soft rather than to
+      assign it globally.  See the implementation of [prove$]
+      (specifically, the definition of prove$-fn in [community-book]
+      books/tools/prove-dollar.lisp) for an example.")
  (ABOUT-ACL2
   (ACL2)
   "General information About ACL2
 
-  This is ACL2 Version 8.3, [copyright] (C) 2021, Regents of the
+  This is ACL2 Version 8.4, [copyright] (C) 2021, Regents of the
   University of Texas, authored by Matt Kaufmann and J Strother
   Moore.
 
@@ -2587,7 +2627,7 @@ Subtopics
   This is the ACL2 documentation.  For the ACL2+Books Manual, which
   that includes both the ACL2 documentation and the ACL2
   [community-books], see the {ACL2+Books Manual |
-  http://www.cs.utexas.edu/users/moore/acl2/v8-3/combined-manual/index.html}.
+  http://www.cs.utexas.edu/users/moore/acl2/v8-4/combined-manual/index.html}.
 
 
 Subtopics
@@ -2907,6 +2947,9 @@ Subtopics
   [Aset1]
       Set the elements of a 1-dimensional array
 
+  [Aset1-trusted]
+      Set the elements of a 1-dimensional array without [invariant-risk]
+
   [Aset2]
       Set the elements of a 2-dimensional array
 
@@ -3179,7 +3222,13 @@ Subtopics
       Print to the comment window
 
   [Cw!]
-      Print to the comment window
+      Print readably to the comment window
+
+  [Cw!+]
+      Print readably and uninhibited to the comment window
+
+  [Cw+]
+      Print uninhibited to the comment window
 
   [Cw-print-base-radix]
       Print to the comment window in a given print-base
@@ -3348,6 +3397,15 @@ Subtopics
 
   [Fmt-to-comment-window]
       Print to the comment window
+
+  [Fmt-to-comment-window!]
+      Print readably to the comment window
+
+  [Fmt-to-comment-window!+]
+      Print readably and uninhibited to the comment window
+
+  [Fmt-to-comment-window+]
+      Print uninhibited to the comment window
 
   [Fmt1]
       (fmt1 str alist col co-channel state evisc) => (mv col state)
@@ -3860,6 +3918,12 @@ Subtopics
   [Print-base-p]
       Recognizer for print bases that are understood by functions such as
       [explode-nonnegative-integer] and [explode-atom].
+
+  [Print-object$]
+      Print an an object to an open output channel
+
+  [Print-object$+]
+      Print an an object to an open output channel in a specified manner
 
   [Prog2$]
       Execute two forms and return the value of the second one
@@ -4748,7 +4812,7 @@ Silent loading of ACL2 customization files
 
   As discussed elsewhere (see [documentation]), the web-based
   {ACL2+Books Manual |
-  http://www.cs.utexas.edu/users/moore/acl2/v8-3/combined-manual/index.html}
+  http://www.cs.utexas.edu/users/moore/acl2/v8-4/combined-manual/index.html}
   provides a way to browse the combined documentation for the ACL2
   system and community books.  Such documentation can also be read at
   the terminal using the :[doc] command, though documentation for
@@ -4985,6 +5049,25 @@ Silent loading of ACL2 customization files
   ACL2+Books Manual, which includes documentation for those books as
   well.  To change which of these two manuals you display, just give
   a prefix argument to the `I' command, as described briefly above.
+
+  The acl2-doc browser makes a query when first loading a manual if
+  there is a newer web-based manual (specifically, comparing the
+  write date of the acl2-doc manual, which is typically in
+  books/system/doc/rendered-doc-combined.lsp, to the write-date of
+  the file books/doc/manual/index.html when that file exists).  If
+  you decline, then you will be given the opportunity to download
+  that acl2-doc manual from the web.  If you prefer, you can rebuild
+  the acl2-doc manual yourself when buiding the web-based manual, for
+  example as follows.
+
+    cd <your_acl2_directory>/books
+    make manual ACL2_DOC_GENERATE_SUPPORTING_FILES=t
+
+  Note that the ``make'' target, ``regression-everything'',
+  automatically sets ACL2_DOC_GENERATE_SUPPORTING_FILES; or you can
+  set it as an environment variable.  Any non-empty value other than
+  (case-insensitive) SKIP will cause the acl2-doc manual to be built
+  when building the web-based manual.
 
   For the `/' and `W' commands, you will need tags table files.  These
   come with the ACL2 gzipped tarfile distribution, but if you obtain
@@ -6259,8 +6342,8 @@ Subtopics
   (SET-RAW-MODE)
   "Add arity information for raw mode
 
-  Technical note: This macro is a no-op, and is not necessary, when
-  ACL2 is built with #-acl2-mv-as-values.
+  Note: This macro is currently a no-op, and the documentation below is
+  wishful thinking!.  This may be fixed in late
 
   Users of raw mode (see [set-raw-mode]) can use arbitrary raw Lisp
   functions that are not known inside the usual ACL2 loop.  In such
@@ -9768,6 +9851,9 @@ Subtopics
   [Aset1]
       Set the elements of a 1-dimensional array
 
+  [Aset1-trusted]
+      Set the elements of a 1-dimensional array without [invariant-risk]
+
   [Aset2]
       Set the elements of a 2-dimensional array
 
@@ -9899,6 +9985,10 @@ Subtopics
   if the condition is not true, aset1 prints a slow array warning to
   the comment window.  See [slow-array-warning].
 
+  Note that [aset1] is marked as having [invariant-risk], which can
+  affect the execution of :[program]-mode functions.  To get around
+  this problem (but only with great care!), see [aset1-trusted].
+
   Function: <aset1>
 
     (defun
@@ -9910,7 +10000,42 @@ Subtopics
          (let ((l (cons (cons n val) l)))
               (cond ((> (length l) (maximum-length name l))
                      (compress1 name l))
-                    (t l))))")
+                    (t l))))
+
+
+Subtopics
+
+  [Aset1-trusted]
+      Set the elements of a 1-dimensional array without [invariant-risk]")
+ (ASET1-TRUSTED
+  (ARRAYS ACL2-BUILT-INS ASET1)
+  "Set the elements of a 1-dimensional array without [invariant-risk]
+
+    Example Form:
+    (aset1-trusted 'delta1 a (+ i k) 27)
+
+    General Form:
+    (aset1-trusted name alist index val)
+
+  This utility is identical to [aset1]; in fact, it has the same guard.
+  The difference is that it does not carry [invariant-risk].  Because
+  of that, functions that call aset1-trusted may suffer from
+  invariant-risk but not be noted by the system as carrying
+  invariant-risk.  Therefore, aset1-trusted it is [untouchable] and
+  should be used with great care.  If your system consists of
+  :[logic]-mode functions, then there is no reason to use
+  aset1-trusted, because only :[program]-mode functions truly carry
+  invariant-risk.
+
+  Function: <aset1-trusted>
+
+    (defun
+         aset1-trusted (name l n val)
+         (declare (xargs :guard (and (array1p name l)
+                                     (integerp n)
+                                     (>= n 0)
+                                     (< n (car (dimensions name l))))))
+         (aset1 name l n val))")
  (ASET2
   (ARRAYS ACL2-BUILT-INS)
   "Set the elements of a 2-dimensional array
@@ -13018,7 +13143,7 @@ Prerequisites
 
   We assume that you have already downloaded and installed ACL2 as per
   the {ACL2 installation instructions |
-  http://www.cs.utexas.edu/users/moore/acl2/v8-3/HTML/installation/installation.html}
+  http://www.cs.utexas.edu/users/moore/acl2/v8-4/HTML/installation/installation.html}
   on the ACL2 home page.
 
   We assume you know the path to your ACL2 executable.  Typically this
@@ -13273,7 +13398,7 @@ Subtopics
 
   For more information about installing ACL2, see the {ACL2
   installation instructions |
-  http://www.cs.utexas.edu/users/moore/acl2/v8-3/HTML/installation/installation.html}.
+  http://www.cs.utexas.edu/users/moore/acl2/v8-4/HTML/installation/installation.html}.
   For information about so-called ``classic ACL2 `make'-based
   certification'', which provides support for certifying directories
   of books but may disappear in a future ACL2 release, see
@@ -14769,7 +14894,7 @@ Subtopics
   contains [documentation] only about the ACL2 system, and does not
   include documentation from the [community-books].  Please point
   your browser at the {ACL2+Books Manual |
-  http://www.cs.utexas.edu/users/moore/acl2/v8-3/combined-manual/index.html}
+  http://www.cs.utexas.edu/users/moore/acl2/v8-4/combined-manual/index.html}
   (or if browsing in [ACL2-Doc], switch to that manual with meta-0 I)
   to access the desired topic.
 
@@ -14871,6 +14996,7 @@ Subtopics
        (str::pretty-printing \"[books]/std/strings/pretty.lisp\")
        (profile-acl2 \"[books]/centaur/memoize/old/profile.lisp\")
        (profile-all \"[books]/centaur/memoize/old/profile.lisp\")
+       (prove$ \"[books]/tools/prove-dollar.lisp\")
        (quicklisp \"[books]/quicklisp/top.lisp\")
        (release-notes-books \"[books]/doc/relnotes.lisp\")
        (removable-runes \"[books]/tools/removable-runes.lisp\")
@@ -15679,8 +15805,10 @@ Subtopics
 
   where x is a variable symbol, the pati are structural patterns as
   described below, the dcli are optional [declare] forms and the
-  bodyi are terms.  Return the value(s) of the bodyi corresponding to
-  the first pati matching x, or nil if none matches.
+  bodyi are terms.  The legal declare forms are the same as for
+  [let]: ignore, ignorable, and type.  Return the value(s) of the
+  bodyi corresponding to the first pati matching x, or nil if none
+  matches.
 
   Pattern Language:
   With the few special exceptions described below, matching requires
@@ -16375,8 +16503,8 @@ configure-ccl.lisp
 
   Rebuild and quit, twice.
 
-    echo '(rebuild-ccl :clean t)' | ./lx86cl64
-    echo '(rebuild-ccl :clean t)' | ./lx86cl64
+    echo '(rebuild-ccl :clean t)' | ./dx86cl64
+    echo '(rebuild-ccl :clean t)' | ./dx86cl64
 
   Create the following executable script, which you will probably want
   to name \"ccl\", where <DIR> is the absolute pathname (without using
@@ -16440,8 +16568,8 @@ configure-ccl.lisp
 
   Rebuild and quit, twice.
 
-    echo '(rebuild-ccl :clean t)' | ./lx86cl64
-    echo '(rebuild-ccl :clean t)' | ./lx86cl64
+    echo '(rebuild-ccl :clean t)' | ./dx86cl64
+    echo '(rebuild-ccl :clean t)' | ./dx86cl64
 
   Create an executable script like the following.  You might want to
   call it ``ccl'' and put it into a directory on your path.  Be sure
@@ -21039,7 +21167,7 @@ Subtopics
   [documentation-copyright], which notes that there are many
   documentation authors.
 
-  ACL2 Version 8.3 --- A Computational Logic for Applicative Common
+  ACL2 Version 8.4 --- A Computational Logic for Applicative Common
   Lisp
 
   Copyright (C) 2021, Regents of the University of Texas
@@ -21371,7 +21499,11 @@ Subtopics
   "Print to the comment window
 
   Cw is a macro that expands to a function whose guard is t.  For a
-  guarded variant of cw, see [fmx-cw].
+  guarded variant of cw, see [fmx-cw].  For variants of cw that
+  provide readable output (suffix \"!\") and are never inhibited
+  (suffix \"+\"), see [cw!], [cw+], and [cw!+].  For corresponding
+  functions see [fmt-to-comment-window], [fmt-to-comment-window!],
+  [fmt-to-comment-window+], and [fmt-to-comment-window!+].
 
   Example:
 
@@ -21382,8 +21514,8 @@ Subtopics
   Logically, this expression is equivalent to nil.  However, it has the
   effect of first printing to the so-called ``comment window'' the
   [fmt] string as indicated.  Thus, cw is like fmt (see [fmt]) except
-  in three important ways.  First, it is a macro whose calls expand
-  to calls of a :[logic] mode function.  Second, it neither takes nor
+  in four important ways.  First, it is a macro whose calls expand to
+  calls of a :[logic] mode function.  Second, it neither takes nor
   returns the ACL2 [state]; logically cw simply returns nil, although
   it prints to a comment window that just happens to share the
   terminal screen with the standard character output [*standard-co*].
@@ -21396,6 +21528,9 @@ Subtopics
     (fmt \"Answers: ~p0 and ~p1\"
          (list (cons #\\0 ans1) (cons #\\1 ans2))
          *standard-co* state nil)
+
+  And finally, output from cw is suppressed if the COMMENT type of
+  output is suppressed; see [set-inhibit-output-lst].
 
   Typically, calls of cw are embedded in [prog2$] forms, e.g.,
 
@@ -21419,9 +21554,6 @@ Subtopics
     (d) a different evisc-tuple,
 
   then call [fmt-to-comment-window] instead.
-
-  Also see [cw!], which is useful if you want to be able to read the
-  printed forms back in.
 
   Finally, we discuss another way to create formatted output that also
   avoids the need to pass in the ACL2 [state].  The idea is to use
@@ -21455,14 +21587,58 @@ Subtopics
     ; A guard violation in the binding; note that even with the error,
     ; the wormhole is exited.
     (my-fmt-to-comment-window \"Here is ~x0 for your inspection~%\"
-                              (list (cons #\\0 (car 'foo))))")
+                              (list (cons #\\0 (car 'foo))))
+
+
+Subtopics
+
+  [Cw!]
+      Print readably to the comment window
+
+  [Cw!+]
+      Print readably and uninhibited to the comment window
+
+  [Cw+]
+      Print uninhibited to the comment window
+
+  [Fmt-to-comment-window]
+      Print to the comment window
+
+  [Fmt-to-comment-window!]
+      Print readably to the comment window
+
+  [Fmt-to-comment-window!+]
+      Print readably and uninhibited to the comment window
+
+  [Fmt-to-comment-window+]
+      Print uninhibited to the comment window")
  (CW!
-  (IO ACL2-BUILT-INS)
-  "Print to the comment window
+  (CW IO ACL2-BUILT-INS)
+  "Print readably to the comment window
+
+  See [cw] for important background.
 
   This is nearly the same as [cw], but cw! avoids inserting backslash
   (\\) characters when forced to print past the right margin.  Use cw!
   if you want to be able to read the forms back in.")
+ (CW!+
+  (CW IO ACL2-BUILT-INS)
+  "Print readably and uninhibited to the comment window
+
+  See [cw] for important background.
+
+  This is nearly the same as [cw], but cw+ always produces readable
+  output (like [cw!]), even when the COMMENT output type is inhibited
+  (like [cw+]).")
+ (CW+
+  (CW IO ACL2-BUILT-INS)
+  "Print uninhibited to the comment window
+
+  See [cw] for important background.
+
+  This is nearly the same as [cw], but cw+ always produces output, even
+  when the COMMENT output type is inhibited (see
+  [set-inhibit-output-lst]).")
  (CW-GSTACK
   (BREAK-REWRITE DEBUGGING)
   "Debug a rewriting loop or stack overflow
@@ -22164,11 +22340,6 @@ Usage
     * (MV-LET (v1 ...) term dcl ... dcl body)
     * (FLET ((name args dcl ... dcl body) ...))
 
-  Of course, if a form macroexpands into one of these (e.g., as [let*]
-  expands into nested [let]s and our er-let* expands into nested
-  [mv-let]s) then declarations are permitted as handled by the macros
-  involved.
-
   Each of the cases above permits certain declarations, as follows.
 
     * DEFUN: (ignore ignorable irrelevant type optimize xargs)
@@ -22176,6 +22347,13 @@ Usage
     * LET: (ignore ignorable type)
     * MV-LET: (ignore ignorable type)
     * FLET: (ignore ignorable type)
+
+  Of course, declarations are permitted in macro calls to the extent
+  that they are permitted in the macroexpansions.  For example,
+  declare forms generated by calls of [let*] and [case-match] may
+  wind up in corresponding [let] forms in the macroexpansions, where
+  they would be subject to the restrictions on declare forms for let
+  shown just above.
 
   Also see [lambda] for discussion of lambda objects and their legal
   declare forms.
@@ -26284,34 +26462,37 @@ Subtopics
 
   where name is a new symbol; each fieldi is a symbol; each typei is
   either a type-indicator (a [type-spec] or [stobj] name), of the
-  form (ARRAY type-indicator (max)), or of the form (HASH-TABLE test)
-  or (HASH-TABLE test size); each vali is an object satisfying typei;
-  and each bi is t or nil.  Each pair :initially vali and :resizable
-  bi may be omitted; more on this below.  The :renaming alist
-  argument is optional and allows the user to override the default
-  function names introduced by this event.  The :inline flg Boolean
-  argument is also optional and declares to ACL2 that the generated
-  access and update functions for the stobj should be implemented as
-  macros under the hood (which has the effect of inlining the
-  function calls).  The optional :congruent-to old-stobj-name
-  argument specifies an existing stobj with exactly the same
-  structure, and is discussed below.  The optional :non-memoizable
-  nm-flg and :non-executable ne-flg Boolean arguments are ignored
-  when nm-flg and ne-flg are nil, but otherwise: the former instructs
-  ACL2 to lay down faster code for functions that return the new
-  stobj but disallows [memoization] of any function that takes the
-  new stobj as an argument; and the latter avoids actually creating
-  the stobj (details follow later below).  We describe further
-  restrictions on the fieldi, typei, vali, and on alist below.  We
-  recommend that you read about single-threaded objects (stobjs) in
-  ACL2 before proceeding; see [stobj].
+  form (ARRAY type-indicator (max)), or of one of the forms
+  (HASH-TABLE test), (HASH-TABLE test size), (STOBJ-TABLE), or
+  (STOBJ-TABLE size); each vali is an object satisfying typei; and
+  each bi is t or nil.  Each pair :initially vali and :resizable bi
+  may be omitted; more on this below.  The :renaming alist argument
+  is optional and allows the user to override the default function
+  names introduced by this event.  The :inline flg Boolean argument
+  is also optional and declares to ACL2 that the generated access and
+  update functions for the stobj should be implemented as macros
+  under the hood (which has the effect of inlining the function
+  calls).  The optional :congruent-to old-stobj-name argument
+  specifies an existing stobj with exactly the same structure, and is
+  discussed below.  The optional :non-memoizable nm-flg and
+  :non-executable ne-flg Boolean arguments are ignored when nm-flg
+  and ne-flg are nil, but otherwise: the former instructs ACL2 to lay
+  down faster code for functions that return the new stobj but
+  disallows [memoization] of any function that takes the new stobj as
+  an argument; and the latter avoids actually creating the stobj
+  (details follow later below).  We describe further restrictions on
+  the fieldi, typei, vali, and on alist below.  We recommend that you
+  read about single-threaded objects (stobjs) in ACL2 before
+  proceeding; see [stobj].
 
   The effect of this event is to introduce a new single-threaded object
   (i.e., a ``[stobj]''), named name, and the associated recognizers,
   creator, accessors, updaters, constants.  For fields of ARRAY type,
   this event also introduces length and resize functions.  For fields
   of HASH-TABLE type, this event also introduces boundp, get?,
-  remove, count, clear, and initialization functions.
+  remove, count, clear, and initialization functions; similarly for
+  STOBJ-TABLE type, except for the get? function, which is only for
+  the HASH-TABLE type.
 
 
 The Single-Threaded Object Introduced
@@ -26332,11 +26513,12 @@ The Single-Threaded Object Introduced
   integer, and the corresponding element of the stobj is initially of
   length specified by max.  If the :type of a field is (HASH-TABLE
   test) or (HASH-TABLE test size), then test is one of the symbols
-  EQ, EQL, HONS-EQUAL, or EQUAL and size, if supplied, is a positive
-  integer.  In that case the test is applied when looking up keys,
-  where [hons-copy] is first applied to the key in the HONS-EQUAL
-  case; and the size is a hint to the host Lisp for the initial size
-  of the associated hash table in raw Lisp.
+  EQ, EQL, HONS-EQUAL, or EQUAL, while size, if supplied as above or
+  in (STOBJ-TABLE size), is a positive integer.  In that case the
+  test is applied when looking up keys, where [hons-copy] is first
+  applied to the key in the HONS-EQUAL case; and the size is a hint
+  to the host Lisp for the initial size of the associated hash table
+  in raw Lisp.
 
   If the value of :type is of the form (ARRAY type-indicator (max)) or
   just type-indicator, then type-indicator is typically a type-spec;
@@ -26347,11 +26529,17 @@ The Single-Threaded Object Introduced
   that HASH-TABLE types do not specify a type indicator; thus, a
   hash-table field cannot contain stobjs as values.
 
+  A field with a STOBJ-TABLE type is logically an association list
+  whose keys are [stobj] names, such that each stobj name is mapped
+  to a stobj satisfyin that stobj name's recognizer.  We say little
+  more here about stobj-tables; see [stobj-table] for relevant
+  discussion.
+
   The keyword value :initially val specifies the initial value of a
   field, except for the case of a :type (ARRAY type-indicator (max)),
   in which case val is the initial value of the corresponding array.
-  Note that the :initially field is ignored for HASH-TABLE types,
-  since hash tables are initially empty.
+  Note that the :initially field is ignored for HASH-TABLE and
+  STOBJ-TABLE types, since these are both initially empty.
 
   Note that the actual representation of the stobj in the underlying
   Lisp may be quite different; see [stobj-example-2].  For the moment
@@ -26360,10 +26548,11 @@ The Single-Threaded Object Introduced
   In addition, the defstobj event introduces functions for recognizing
   and creating the stobj and for recognizing, accessing, and updating
   its fields.  For fields of ARRAY type, length and resize functions
-  are also introduced.  For fields of HASH-TABLE type, this event
-  also introduces boundp, get?, remove, count, clear, and
-  initialization functions, as discussed below.  Constants are
-  introduced that correspond to the accessor functions.
+  are also introduced.  For fields of HASH-TABLE or STOBJ-TABLE type,
+  this event also introduces boundp, get? (HASH-TABLE types only),
+  remove, count, clear, and initialization functions, as discussed
+  below.  Constants are introduced that correspond to the accessor
+  functions.
 
 
 Restrictions on the Field Descriptions in Defstobj
@@ -26378,17 +26567,19 @@ Restrictions on the Field Descriptions in Defstobj
   defaults to t (unrestricted) and the initial value defaults to nil.
 
   Each typei must be either a [type-spec] or else a list of the form
-  (ARRAY type-spec (max)), (HASH-TABLE test), or (HASH-TABLE test
-  size).  (Again, we are ignoring the case of nested stobjs,
-  discussed elsewhere; see [nested-stobjs].)  The latter forms are
-  said to be ``array types'' and ``hash-table types.'' Examples of
-  legal typei are:
+  (ARRAY type-spec (max)), (HASH-TABLE test), (HASH-TABLE test size),
+  (STOBJ-TABLE), or (STOBJ-TABLE size).  (Again, we are ignoring the
+  case of nested stobjs, discussed elsewhere; see [nested-stobjs].)
+  The latter forms are said to be ``array types'', ``hash-table
+  types'', and stobj-table types (again, not discussed much here; see
+  [stobj-table]).  Examples of legal typei are:
 
     (INTEGER 0 31)
     (SIGNED-BYTE 31)
     (ARRAY (SIGNED-BYTE 31) (16))
     (ARRAY (SIGNED-BYTE 31) (*c*)) ; where *c* has a non-negative integer value
     (HASH-TABLE HONS-EQUAL 70)
+    (STOBJ-TABLE 70)
 
   The typei describes the objects which are expected to occupy the
   given field.  Those objects in fieldi should satisfy typei.  We are
@@ -26398,8 +26589,8 @@ Restrictions on the Field Descriptions in Defstobj
 
 Scalar Types
 
-  We first discuss types that are neither array types nor hash-table
-  types.  We call these ``scalar types.''
+  We first discuss types that are neither array types, hash-table
+  types, nor stobj-table types.  We call these ``scalar types.''
 
   When typei is a [type-spec] it restricts the contents, x, of fieldi
   according to the ``meaning'' formula given in the table for
@@ -26525,6 +26716,11 @@ Hash-table Types
   table depends on the host Lisp.
 
 
+Stobj-table Types
+
+  As noted above, these are not discussed much here; see [stobj-table].
+
+
 The Default Function Names
 
   To recap, in
@@ -26546,8 +26742,8 @@ The Default Function Names
   accessor function, for example, takes the stobj and returns the
   indicated component; the updater takes a new component value and
   the stobj and return a new stobj with the component replaced by the
-  new value.  But that summary is inaccurate for array and hash-table
-  fields.
+  new value.  But that summary is inaccurate for array, hash-table,
+  and stobj-table fields.
 
   The accessor function for an array field does not take the stobj and
   return the indicated component array, which is a list of length
@@ -26562,7 +26758,8 @@ The Default Function Names
   additional key argument and returns the associated value, or nil if
   the key is not bound.  The updater function takes a key, a new
   value, and the stobj, and returns a new stobj with the indicated
-  element replaced by the new value.
+  element replaced by the new value.  See [stobj-table] for a
+  discussion of stobj-table types, which are ignored below.
 
   These functions --- the recognizer, accessor, and updater, and also
   length and resize functions in the case of array fields, and
@@ -28262,7 +28459,7 @@ Subtopics
       dcl_1 dcl_2 ... dcl_k
       body
       &key
-      rewrite quant-ok skolem-name thm-name witness-dcls strengthen constrain
+      rewrite quant-ok skolem-name thm-name strengthen constrain
       verbose)
 
   where fn is the symbol you wish to define and is a new symbolic
@@ -28442,13 +28639,10 @@ Subtopics
   defined functions cannot be evaluated; see [defun-nx].  Normally
   that is not a problem, since these notions involve quantifiers.
   But if you prefer that [defun] be used instead of defun-nx, you can
-  arrange that using [declare] forms.  These may be given either as
-  the dcl_i as shown above, or (using an older notation that might
-  some day be deprecated) as a list of declare forms supplied as the
-  value of keyword argument :witness-dcls; or, both.  These will
-  become the declare forms in the generated [defun].  If the [xargs]
-  [declaration] form :non-executable nil is supplied, then [defun]
-  will be used in place of [defun-nx].
+  arrange that using [declare] forms, given as the dcl_i as shown
+  above.  These will become the declare forms in the generated
+  [defun].  If the [xargs] [declaration] form :non-executable nil is
+  supplied, then [defun] will be used in place of [defun-nx].
 
   [Guard] verification is performed for defun-sk events under the same
   conditions as for defun events.  (An exception, ignored here but
@@ -28456,10 +28650,9 @@ Subtopics
   :constrain t is supplied.)  Thus, by default, guard verification
   will be attempted exactly when at least one of type, :guard, or
   :verify-guards t is specified in a declaration (that is, in some
-  dcl_i or in the :witness-dcls argument).  This default behavior can
-  be modified just as it is for defun; see
-  [set-verify-guards-eagerness].  Technical note: such guard
-  verification is implemented through a generated call of
+  dcl_i.  This default behavior can be modified just as it is for
+  defun; see [set-verify-guards-eagerness].  Technical note: such
+  guard verification is implemented through a generated call of
   [verify-guards] after the encapsulate that surrounds the
   definitions introduced; use :[trans1] to see the expansion.
 
@@ -29583,7 +29776,7 @@ Subtopics
   defined in books.  However, most users will probably access the
   ACL2 documentation in other ways; see [documentation].  In
   particular, consider using the {ACL2+Books Manual |
-  http://www.cs.utexas.edu/users/moore/acl2/v8-3/combined-manual/index.html},
+  http://www.cs.utexas.edu/users/moore/acl2/v8-4/combined-manual/index.html},
   for topics documented in the ACL2 community [books] or in the ACL2
   system (where the latter are rearranged).
 
@@ -29625,7 +29818,7 @@ Available Documentation
     * The online version (recommended). If you expect to have an internet
       connection while using the documentation, you may prefer to use
       the online version of the {ACL2+Books Manual |
-      http://www.cs.utexas.edu/users/moore/acl2/v8-3/combined-manual/index.html}.
+      http://www.cs.utexas.edu/users/moore/acl2/v8-4/combined-manual/index.html}.
     * A local version. If you sometimes work without an internet
       connection, you can {download | download/} a local copy of any
       web-based XDOC manual using the \"down arrow\" icon at the top of
@@ -35764,7 +35957,7 @@ Subtopics
   not included in the current ACL2 session?
 
   The [xdoc] {ACL2+Books Manual |
-  http://www.cs.utexas.edu/users/moore/acl2/v8-3/combined-manual/index.html}
+  http://www.cs.utexas.edu/users/moore/acl2/v8-4/combined-manual/index.html}
   includes documentation for both the ACL2 system and the
   [community-books].  For more information on this manual and how to
   view it, see [documentation].")
@@ -36586,11 +36779,21 @@ Subtopics
  (FMT-SOFT-RIGHT-MARGIN (POINTERS)
                         "See [set-fmt-hard-right-margin].")
  (FMT-TO-COMMENT-WINDOW
-  (IO ACL2-BUILT-INS)
+  (CW IO ACL2-BUILT-INS)
   "Print to the comment window
 
-  See [cw] for an introduction to the comment window and the usual way
-  to print it.
+    General Form:
+    (fmt-to-comment-window fmt-string alist col evisc-tuple print-base-radix)
+
+  where these arguments are as described for [fmt1] (see [fmt]) except
+  that the last argument is as described for [cw-print-base-radix].
+
+  See [cw] for important background.  Calls of the macro cw expand to
+  calls of the function fmt-to-comment-window whose final three
+  arguments are 0, nil, and nil.  For variants of
+  fmt-to-comment-window that provide readable output (suffix \"!\") and
+  are never inhibited (suffix \"+\"), see [fmt-to-comment-window!],
+  [fmt-to-comment-window+], and [fmt-to-comment-window!+].
 
   Function fmt-to-comment-window is similar to fmt1 (see [fmt]), except
   that the channel is [*standard-co*] and the ACL2 [state] is neither
@@ -36600,16 +36803,41 @@ Subtopics
   cw-print-base-radix; see [cw-print-base-radix].  An analogous
   function, fmt-to-comment-window!, prints with [fmt!] instead of
   [fmt], in order to avoid insertion of backslash (\\) characters for
-  margins; also see [cw!].  Note that even if you change the value of
-  [ld] special standard-co (see [standard-co]), fmt-to-comment-window
-  will print to [*standard-co*], which is the original value of
-  [standard-co].
+  margins; also see [cw!], a macro that expands to a call of
+  fmt-to-comment-window!).  Note that even if you change the value of
+  @(tsee ld) special @('standard-co (see [standard-co]),
+  fmt-to-comment-window will print to [*standard-co*], which is the
+  original value of [standard-co].")
+ (FMT-TO-COMMENT-WINDOW!
+  (CW IO ACL2-BUILT-INS)
+  "Print readably to the comment window
 
-    General Form:
-    (fmt-to-comment-window fmt-string alist col evisc-tuple print-base-radix)
+  See [cw] for important background.
 
-  where these arguments are as described for [fmt1] (see [fmt]) except
-  that the last argument is as described for [cw-print-base-radix].")
+  This is nearly the same as [fmt-to-comment-window], but
+  fmt-to-comment-window! avoids inserting backslash (\\) characters
+  when forced to print past the right margin.  Use
+  fmt-to-comment-window! if you want to be able to read the forms
+  back in.")
+ (FMT-TO-COMMENT-WINDOW!+
+  (CW IO ACL2-BUILT-INS)
+  "Print readably and uninhibited to the comment window
+
+  See [cw] for important background.
+
+  This is nearly the same as [fmt-to-comment-window], but
+  fmt-to-comment-window!+ always produces readable output (like
+  [fmt-to-comment-window!]), even when the COMMENT output type is
+  inhibited (like [fmt-to-comment-window+]).")
+ (FMT-TO-COMMENT-WINDOW+
+  (CW IO ACL2-BUILT-INS)
+  "Print uninhibited to the comment window
+
+  See [cw] for important background.
+
+  This is nearly the same as [fmt-to-comment-window], but
+  fmt-to-comment-window+ always produces output, even when the
+  COMMENT output type is inhibited (see [set-inhibit-output-lst]).")
  (FMT-TO-STRING (POINTERS)
                 "See [printing-to-strings].")
  (FMT1
@@ -48715,6 +48943,8 @@ Subtopics
     (intern-in-package-of-symbol \"CAR\" w) is LISP::CAR
 
     (intern-in-package-of-symbol \"car\" w) is MY-PKG::|car|")
+ (INTERRUPTS (POINTERS)
+             "See [abort-soft].")
  (INTERSECTION$
   (LISTS ACL2-BUILT-INS)
   "Elements common to the given lists
@@ -52427,7 +52657,9 @@ Subtopics
   [set-register-invariant-risk].  We describe each briefly below.
   For more information follow the links just above to their
   respective documentation topics.  For yet more detail about
-  invariant-risk see [invariant-risk-details].
+  invariant-risk see [invariant-risk-details].  For tools that may
+  help find sources of invariant-risk, see [community-book]
+  books/std/system/invariant-risk.lisp.
 
 
 Controlling runtime checking for invariant-risk
@@ -52721,30 +52953,32 @@ Subtopics
   :byte are familiar.  Type :object is an abstraction not found in
   Common Lisp.  An :object file is a file of Lisp objects.  One uses
   read-object or read-object-with-case (see below) to read from
-  :object files and print-object$ or print-object$-preserving-case
-  (see below; also, print-object$-ser) to print to :object files.
-  (The reading and printing are really done with the Common Lisp read
-  and printing functions.  For those familiar with read, we note that
-  the recursive-p argument is nil.)  The function
-  read-object-suppress is logically the same as read-object except
-  that read-object-suppress throws away the second returned value,
-  i.e. the value that would normally be read, simply returning (mv
-  eof state); under the hood, read-object-suppress avoids errors, for
-  example those caused by encountering symbols in packages unknown to
-  ACL2.
+  :object files and [print-object$], its more flexible variant
+  [print-object$+], or print-object$-preserving-case (see below;
+  also, print-object$-fn) to print to :object files.  (The reading
+  and printing are really done with the Common Lisp read and printing
+  functions.  For those familiar with read, we note that the
+  recursive-p argument is nil.)  The function read-object-suppress is
+  logically the same as read-object except that read-object-suppress
+  throws away the second returned value, i.e. the value that would
+  normally be read, simply returning (mv eof state); under the hood,
+  read-object-suppress avoids errors, for example those caused by
+  encountering symbols in packages unknown to ACL2.
 
-  The functions read-object-with-case and print-object$-preserving-case
-  are logically defined simply to be read-object and print-object$,
-  respectively, though they do I/O differently from those functions,
-  except when the host Lisp is GCL.  For read-object-with-case the
-  value that is read is affected by an extra argument, namely, the
-  second argument: the mode.  The mode is one of the keywords
-  :upcase, :downcase, :preserve, or :invert, where :upcase gives the
-  same behavior as read-object, and the other three modes are handled
-  according to the specification for the Common Lisp function,
-  readtable-case (see for example {the Common Lisp HyperSpec's
-  documentation for ``Examples of Effect of Readtable Case on the
-  Lisp Reader'' |
+  The functions read-object-with-case is defined logically simply to be
+  read-object, while the function print-object$-preserving-case and
+  macro [print-object$+] are defined logically simply to be
+  print-object$.  However, these variants generally do I/O
+  differently (except that when the host Lisp is GCL,
+  print-object$-preserving-case behaves the same as print-object$).
+  For read-object-with-case the value that is read is affected by an
+  extra argument, namely, the second argument: the mode.  The mode is
+  one of the keywords :upcase, :downcase, :preserve, or :invert,
+  where :upcase gives the same behavior as read-object, and the other
+  three modes are handled according to the specification for the
+  Common Lisp function, readtable-case (see for example {the Common
+  Lisp HyperSpec's documentation for ``Examples of Effect of
+  Readtable Case on the Lisp Reader'' |
   http://www.lispworks.com/documentation/HyperSpec/Body/23_aba.htm}).
   The function print-object$-preserving-case is somewhat analogous:
   it is defined logically to be print-object$ and it has the same
@@ -52790,8 +53024,9 @@ Subtopics
       (princ$ (obj channel state) state)
       (write-byte$ (byte channel state) state)
       (print-object$ (obj channel state) state)
+      (print-object$+ (obj channel &key ...) state)
       (print-object$-preserving-case (obj channel state) state)
-      (print-object$-ser (obj serialize-character channel state) state)
+      (print-object$-fn (obj serialize-character channel state) state)
       (fms  (string alist channel state evisc-tuple) state)
       (fms! (string alist channel state evisc-tuple) state)
       (fmt  (string alist channel state evisc-tuple) (mv col state))
@@ -52844,14 +53079,14 @@ Subtopics
     (mv-let
        (channel state)
        (open-output-channel :string :object state)
-       (pprogn (print-object$-ser 17 nil channel state)
-               (print-object$-ser '(a b (c d)) nil channel state)
+       (pprogn (print-object$-fn 17 nil channel state)
+               (print-object$-fn '(a b (c d)) nil channel state)
                (er-let*
                  ((str1 (get-output-stream-string$
                          channel state
                          nil))) ; keep the channel open
-                 (pprogn (print-object$-ser 23 nil channel state)
-                         (print-object$-ser '((e f)) nil channel state)
+                 (pprogn (print-object$-fn 23 nil channel state)
+                         (print-object$-fn '((e f)) nil channel state)
                          (er-let* ; close the channel
                            ((str2 (get-output-stream-string$ channel state)))
                            (value (cons str1 str2)))))))
@@ -52969,7 +53204,13 @@ Subtopics
       Print to the comment window
 
   [Cw!]
-      Print to the comment window
+      Print readably to the comment window
+
+  [Cw!+]
+      Print readably and uninhibited to the comment window
+
+  [Cw+]
+      Print uninhibited to the comment window
 
   [Cw-print-base-radix]
       Print to the comment window in a given print-base
@@ -53006,6 +53247,15 @@ Subtopics
 
   [Fmt-to-comment-window]
       Print to the comment window
+
+  [Fmt-to-comment-window!]
+      Print readably to the comment window
+
+  [Fmt-to-comment-window!+]
+      Print readably and uninhibited to the comment window
+
+  [Fmt-to-comment-window+]
+      Print uninhibited to the comment window
 
   [Fmt1]
       (fmt1 str alist col co-channel state evisc) => (mv col state)
@@ -53046,6 +53296,12 @@ Subtopics
 
   [Print-control]
       Advanced controls of ACL2 printing
+
+  [Print-object$]
+      Print an an object to an open output channel
+
+  [Print-object$+]
+      Print an an object to an open output channel in a specified manner
 
   [Printing-to-strings]
       Printing to strings instead of files or standard output
@@ -64189,6 +64445,9 @@ Precise specification
 
 Subtopics
 
+  [Abort-soft]
+      Control how interrupts are handled in proofs
+
   [ACL2-customization]
       File of initial commands for ACL2 to run at [startup]
 
@@ -66366,7 +66625,13 @@ SECTION: Using stobj-let with abstract stobjs
   are handled.  If an abort occurs in the middle of a stobj-let that
   updates child stobjs, when the parent stobj is an abstract stobj,
   you may be put into an illegal state, with instructions for how to
-  continue at your own risk.  See [illegal-state].")
+  continue at your own risk.  See [illegal-state].
+
+
+Subtopics
+
+  [Stobj-table]
+      [Stobj] field mapping names to stobjs")
  (NEVER-MEMOIZE
   (MEMOIZE)
   "Mark a function as unsafe to memoize.
@@ -76226,7 +76491,7 @@ Subtopics
   Bob Boyer and others have contributed numerous changes for the
   experimental ``hons'' version of ACL2 (see [hons-and-memoization]).
 
-  The ACL2 [state] can now be queried with (@ hons-enabled) so that a
+  The ACL2 [state] can now be queried with (@ hons-enabledp) so that a
   result of t says that one is in the experimental hons version,
   while nil says the opposite.")
  (NOTE-3-5{R}
@@ -77765,9 +78030,8 @@ Subtopics
 
     (defstub foo (a b c) nil)
     (defun-sk forall-a-b-foo (c)
-       (forall (a b) (foo a b c))
-       :witness-dcls ((declare (Xargs :guard t
-                                      :verify-guards nil))))
+       (declare (xargs :guard t :verify-guards nil))
+       (forall (a b) (foo a b c)))
     (verify-guards forall-a-b-foo)
 
   The implementations of [prog2$], [time$], [with-prover-time-limit],
@@ -86604,7 +86868,7 @@ Changes to Existing Features
   However, a macro can be made effectively untouchable by defining it
   with the new utility, [defmacro-untouchable].  Note that the
   alleged support for untouchable macros was already incomplete, as
-  explained in an example in the form (deflabel note-8-3 ...) in
+  explained in an example in the form (defxdoc note-8-3 ...) in
   [community-book] books/system/doc/acl2-doc.lisp.
 
   The [event] macro, [thm], is now treated like [defthm] in the
@@ -86825,8 +87089,8 @@ Heuristic and Efficiency Improvements
 
   The second pass of [encapsulate] now uses [fast-alists] when
   calculating new triples in the logical [world] (in ACL2 system
-  function new-trips.  We have seen this change result in cutting the
-  time by 4.7% and the bytes allocated by 34% for including the
+  function new-trips).  We have seen this change result in cutting
+  the time by 4.7% and the bytes allocated by 34% for including the
   community book, \"centaur/sv/top\".
 
   Computation of the [guard] proof obligation has been sped up in some
@@ -86973,7 +87237,7 @@ EMACS Support
 Experimental Versions")
  (NOTE-8-4
   (RELEASE-NOTES)
-  "ACL2 Version 8.4 (xxx, 20xx) Notes
+  "ACL2 Version 8.4 (August, 2021) Notes
 
   NOTE!  New users can ignore these release notes, because the
   [documentation] has been updated to reflect all changes that are
@@ -87125,8 +87389,8 @@ Changes to Existing Features
   Smith for suggesting this improvement and testing it on some
   proprietary books.
 
-  When supplying state as an argument to [defun-nx] (or [defund-nx], it
-  is no longer necessary to declare state as a [stobj] or use
+  When supplying state as an argument to [defun-nx] (or [defund-nx]),
+  it is no longer necessary to declare state as a [stobj] or use
   [set-state-ok].  Thanks to Eric Smith for suggesting the
   possibility of this change.
 
@@ -87334,6 +87598,10 @@ Changes to Existing Features
   versions.  (A deprecation warning is printed each time one of those
   macros is expanded.)
 
+  The keyword :witness-dcls of [defun-sk] is deprecated and will
+  probably be unsupported in future ACL2 releases.  Use [declare]
+  forms instead; see [defun-sk].
+
 
 New Features
 
@@ -87455,7 +87723,8 @@ New Features
 
   Added a function [ctxp] to recognize valid contexts, which are used
   for printing error message (see [ctx]).  Thanks to Eric Smith for
-  requesting this addition.
+  requesting this addition and to Alessandro Coglio for suggesting
+  that it be disabled, for efficiency.
 
   The utilities [brr] and [monitor] now each take an optional argument
   that avoids output.  A new utility, [monitor!], is a combination of
@@ -87467,6 +87736,14 @@ New Features
   value most recently installed, either t (when the ACL2 executable
   was built) or presumably by [set-guard-checking].  Thanks to Eric
   McCarthy for suggesting this utility.
+
+  The function [aset1-trusted] may be used in place of [aset1] to avoid
+  [invariant-risk], but is therefore [untouchable].
+
+  Added a new utility, [print-object$+], that is like [print-object$]
+  but instead of taking STATE, [print-object$+] is a macro that takes
+  keyword arguments to customize the output.  See [print-object$+].
+  Thanks to Eric Smith for requesting such additional print control.
 
 
 Heuristic and Efficiency Improvements
@@ -87845,6 +88122,17 @@ Bug Fixes
     (resize-ar 20 st2)
     (ar-length st2) ; formerly 8, but now 20 as expected
 
+  For any [proof-builder] command of the form (= term1 term2 atom ...),
+  the keyword arguments were ignored.  This has been fixed, and also
+  the documentation for [ACL2-pc::=] has been improved.
+
+  Consider when a [community-book] is included using an ACL2 executable
+  different from the one that certified the book, with those two
+  executables being located in different directories.  The book is
+  now considered to be uncertified in that case.  To avoid this issue
+  see [include-book] for a discussion of environment variable
+  ACL2_SYSTEM_BOOKS.
+
 
 Changes at the System Level
 
@@ -87964,6 +88252,20 @@ EMACS Support
   Vivek Ramanathan, both for pointing out the defthm issue and for
   suggesting code that was incorporated into the changes.
 
+  The [ACL2-doc] browser now queries when first loading an ACL2+books
+  manual if you have a newer web-based version.  A ``yes'' response
+  will use the (out-of-date) manual, while a ``no'' response will
+  generally produce a new query asking if you want to download the
+  manual from the web.  This change was made in support of building
+  the manual more quickly, as the acl2-doc manual is no longer built
+  by default.  See [ACL2-doc] for how to do that build and other
+  details.  Thanks to Alessandro Coglio, Eric Smith, and Sol Swords
+  for discussions about speeding up the build of the manual.
+
+  Fixed certain hangs in the [ACL2-doc] browser.  For example, when
+  standing on whitespace near the left margin of topic
+  [*ACL2-exports*], the 'g' command could formerly hang.
+
 
 Experimental Versions
 
@@ -87977,6 +88279,133 @@ Experimental Versions
   transition of [waterfall-parallelism] to nil.  Thanks to David
   Rager for raising this issue (see GitHub Issue #1171) and
   discussing its resolution.")
+ (NOTE-8-5
+  (RELEASE-NOTES)
+  "ACL2 Version 8.5 (xx, 20xx) Notes
+
+  NOTE!  New users can ignore these release notes, because the
+  [documentation] has been updated to reflect all changes that are
+  recorded here.
+
+  Below we roughly organize the changes to ACL2 since Version 8.4 into
+  the following categories of changes: existing features, new
+  features, heuristic and efficiency improvements, bug fixes, changes
+  at the system level, Emacs support, and experimental versions.
+  Each change is described in just one category, though of course
+  many changes could be placed in more than one category.
+
+  Note that only ACL2 system changes are listed below.  See also
+  note-8-5-books for a summary of changes made to the ACL2 Community
+  Books since ACL2 8.4, including the build system.  Also note that
+  with each release, it is typical that the value of constant
+  [*ACL2-exports*] has been extended, and that some built-in
+  functions that were formerly in :[program] mode are now
+  [guard]-verified :[logic] mode functions.
+
+
+Changes to Existing Features
+
+  Weakened hypotheses from built-in theorems (thus strengthening them)
+  symbol-equality, true-listp-first-n-ac-type-prescription,
+  ordered-symbol-alistp-getprops, add-pair-preserves-all-boundp, and
+  symbol<-asymmetric.  Eliminated built-in theorem
+  main-timer-type-prescription entirely (that rule was already
+  deduced by ACL2 at definition time).  Simplified guards slightly
+  for built-in functions serialize-write-fn and serialize-read-fn.
+  Thanks to Eric Smith for correspondence, based on his linter,
+  leading to these improvements.
+
+  The utility [without-evisc] formerly always (or nearly always)
+  returned the [error-triple] (mv nil :invisible state) after
+  printing the result.  Now it generally returns (mv t nil state)
+  when evaluation of the given form causes an error.  See
+  [without-evisc].  Thanks to Karthik Nukala and Eric Smith for
+  reporting the former (undesirable) behavior.
+
+  One would get an error when including an uncertified book when a
+  :type-prescription specified in an [xargs] [declaration] failed a
+  validity check, even when no such failure occurs when that book is
+  certified.  (That could happen because type-prescription
+  information from locally included books is saved in the book's
+  [certificate] file and is used when checking such
+  :type-prescription declarations.)  This situation now generates a
+  warning rather than an error.  Thanks to Karthik Nukala and Eric
+  Smith for sending an example that pointed out this problem.
+
+  Output from :[oops] may now be inhibited as OBSERVATION output, by
+  using [set-inhibit-output-lst] or [with-output].
+
+
+New Features
+
+  One can now suppress output from [cw], [cw!],
+  [fmt-to-comment-window], and [fmt-to-comment-window!], and from
+  utilities that use these such as [time$], by inhibiting a new
+  output type, COMMENT.  (Thus, that symbol has been added to the
+  value of *valid-output-names*.  See [set-inhibit-output-lst] and
+  [with-output].  Thanks to Eric McCarthy for a conversation via
+  GitHub Issue #1293 that led to this enhancement.  Moreover, new
+  macros [cw+] and [cw!+] and new functions [fmt-to-comment-window+]
+  and [fmt-to-comment-window!+] never suppress output; the \"+\" suffix
+  is intended to indicate that feature.  Thus, these new utilities
+  behave like the previous utilities without the \"+\" suffix.  Thanks
+  to Eric Smith, Karthik Nukala, and Alessandro Coglio for observing
+  inappropriate suppression of output from the utility [er-soft+] and
+  the connection of this problem to the addition of the COMMENT
+  output type; it was resolved by using fmt-to-comment-window+ in
+  place of fmt-to-comment-window in the implementation of a utility
+  underlying er-soft+ (see [community-book]
+  books/tools/er-soft-logic.lisp).
+
+  You can now arrange that an interrupt will kill a proof immediately
+  by evaluating (assign abort-soft nil), and you can restore the
+  default behavior --- where an interrupt instructs the proof to
+  quick cleanly at an appropriate opportunity --- by evaluating
+  (assign abort-soft t).  Note that this can interfere with
+  :[redo-flat]; see [abort-soft].  Thanks to Eric Smith for reporting
+  an inability to abort a series of proof attempts using the [prove$]
+  utility, which led to this enhancement.
+
+  A [stobj] may now have a field of type STOBJ-TABLE, which associates
+  arbitrary stobj names with corresponding stobjs.  As of this
+  writing, that feature should be considered experimental; see
+  [stobj-table].  Thanks to Rob Sumners for suggesting the idea and
+  to him and Sol Swords for useful design discussions.
+
+
+Heuristic and Efficiency Improvements
+
+
+Bug Fixes
+
+  Fixed an error that could occur when the [break-rewrite] utility is
+  displaying failure information for an attempt to apply a [linear]
+  rule containing [free-variables].  Thanks to Karthik Nukala and
+  Eric Smith for sending a bug report with a replayable example.
+
+  Strengthened syntax checking for accessor expressions in [stobj-let]
+  bindings.  See a comment about this in (defxdoc note-8-5 ...).
+
+
+Changes at the System Level
+
+  The [hons-enabled] features of ACL2 ([hons], [memoization], and
+  [fast-alists]) have been included in ACL2 builds by default since
+  Version 7.0 (January, 2015) and in all ACL2 builds since Version
+  7.2 (January, 2016).  Now, essentially all support for building
+  ACL2 without these features has been removed.  The function
+  (hons-enabledp state) and the feature :hons both remain, but are
+  always true and are deprecated, scheduled for removal very soon
+  after the next release.  The feature :acl2-mv-as-values was always
+  true when feature :hons was present, hence was always true; so it
+  has been removed (and #-acl2-mv-as-values code has been
+  eliminated).
+
+
+EMACS Support
+
+
+Experimental Versions")
  (NOTE1 (POINTERS) "See [note-1-1].")
  (NOTE2 (POINTERS) "See [note-1-2].")
  (NOTE3 (POINTERS) "See [note-1-3].")
@@ -92776,6 +93205,9 @@ Subtopics
   [Inline]
       See [defun-inline].
 
+  [Interrupts]
+      See [abort-soft].
+
   [Intersection-eq]
       See [intersection$].
 
@@ -93013,9 +93445,6 @@ Subtopics
   [Prettyify-clause]
       See [system-utilities].
 
-  [Print-object$]
-      See [io].
-
   [Print-object$-preserving-case]
       See [io].
 
@@ -93217,6 +93646,9 @@ Subtopics
   [Stable-under-simplificationp]
       See [computed-hints].
 
+  [Step-limit]
+      See [with-prover-step-limit].
+
   [Stobj-let]
       See [nested-stobjs].
 
@@ -93297,6 +93729,9 @@ Subtopics
 
   [Thereis$+]
       See [loop$].
+
+  [Time-limit]
+      See [with-prover-time-limit].
 
   [Too-many-ifs]
       See [efficiency].
@@ -95083,7 +95518,61 @@ Subtopics
 
   [Set-print-gv-defaults]
       Set default keyword values for [print-gv]")
- (PRINT-OBJECT$ (POINTERS) "See [io].")
+ (PRINT-OBJECT$
+  (IO ACL2-BUILT-INS)
+  "Print an an object to an open output channel
+
+    General Form:
+    (print-object$ x channel state)
+
+  where x is any ACL2 object and channel is an open output channel.
+  See [io].
+
+
+Remarks
+
+  A newline is printed just above x.  To eliminate that newline or
+  print a given comment instead, see [print-object$+].
+
+  Print-object$ pays attention to the values of [print-control]
+  variables.  To provide them as keyword arguments rather than
+  assigning them globally, see [print-object$+].
+
+  By default, the output of print-object$ is human-readable.  To use
+  [serialize] printing instead, first set the serialize character
+  using [set-serialize-character].
+
+  For a related utility, see [write-list].")
+ (PRINT-OBJECT$+
+  (IO ACL2-BUILT-INS)
+  "Print an an object to an open output channel in a specified manner
+
+    General Form:
+    (print-object$+ x       ; an ACL2 object
+                    channel ; an open output channel
+                    &key
+                    header ; nil or a comment string (see below)
+                    serialize-character ; as in @(see with-serialize-character)
+                    print-base print-case ... ; print-control variables
+                    )
+
+  This macro is a more flexible variant of [print-object$].  Any of the
+  print-control variables may be provided as a keyword; see
+  [print-control].  All arguments are evaluated.
+
+  The :header is printed so that it immediately precedes x.  By
+  default, a single newline is what is printed for the header.  If
+  :header is specified as nil then no such header is printed.
+  Otherwise, the value :header should be a string for which the first
+  non-whitespace character (if any) on each line is a semicolon (;).
+  If the last character of the string is not a newline, then a
+  newline will be printed to separate the string from x.
+
+  The :serialize-character keyword argument has a default of nil.  If
+  it is supplied a value other than nil or 'nil (even if it is
+  supplied an expression other than those two constants), then it is
+  an error to supply other keyword arguments.  Otherwise printing is
+  done without serialization (see [serialize]).")
  (PRINT-OBJECT$-PRESERVING-CASE (POINTERS)
                                 "See [io].")
  (PRINT-SUMMARY-USER (POINTERS)
@@ -101463,7 +101952,7 @@ Subtopics
   executed successfully.
 
   You can eliminate some of the steps above by supplying keyword
-  values, as follows.
+  values, as follows, where those arguments are not evaluated.
 
     (redo-flat
      :succ  succ ; Skip the successful sub-events if val is nil.
@@ -101523,7 +102012,8 @@ Subtopics
   Normally, redo-flat will have the desired effect even if you
   interrupted a proof (with control-c).  However, redo-flat will not
   produce the desired result after an interrupt if you have enabled
-  the debugger using (set-debugger-enable t),")
+  the debugger using (set-debugger-enable t) or if you have disabled
+  the default ``soft'' interrupt behavior (see [abort-soft]).")
  (REDUNDANT (POINTERS)
             "See [redundant-events].")
  (REDUNDANT-ENCAPSULATE
@@ -102374,7 +102864,10 @@ Subtopics
       ACL2 Version 8.3 (April, 2020) Notes
 
   [Note-8-4]
-      ACL2 Version 8.4 (xxx, 20xx) Notes")
+      ACL2 Version 8.4 (August, 2021) Notes
+
+  [Note-8-5]
+      ACL2 Version 8.5 (xx, 20xx) Notes")
  (REM
   (NUMBERS ACL2-BUILT-INS)
   "Remainder using [truncate]
@@ -102758,8 +103251,8 @@ Subtopics
   (SET-RAW-MODE)
   "Remove arity information for raw mode
 
-  Technical note: This macro is a no-op, and is not necessary, when
-  ACL2 is built with #-acl2-mv-as-values.
+  Note: This macro is currently a no-op, and the documentation below is
+  wishful thinking!.  This may be fixed in late
 
   The form (remove-raw-arity fn) undoes the effect of an earlier
   (remove-raw-arity fn val).  See [add-raw-arity].")
@@ -107773,7 +108266,7 @@ Subtopics
 
   ACL2 output is generally printed in full.  However, ACL2 can be
   directed to abbreviate, or ``eviscerate'', objects before printing
-  them, though the use of a so-called ``evisc-tuple''.  See
+  them, through the use of a so-called ``evisc-tuple''.  See
   [evisc-tuple] for a discussion of evisc-tuples.  The utility
   set-evisc-tuple modifies certain global evisc-tuples, as explained
   below, to affect the extent to which ACL2 eviscerates objects
@@ -108609,6 +109102,7 @@ Example
     history        output from history commands such as :ubt and :pbt
     summary        the summary at the successful conclusion of an event
     proof-tree     proof-tree output
+    comment        output from cw, cw!, and utilities like time$ that use them
 
   It is possible to inhibit each kind of output by putting the
   corresponding name into lst.  For example, if 'warning is included
@@ -113257,6 +113751,8 @@ Subtopics
     #xA
      10
     ACL2 !>")
+ (STEP-LIMIT (POINTERS)
+             "See [with-prover-step-limit].")
  (STOBJ
   (PROGRAMMING)
   "Single-threaded objects or ``von Neumann bottlenecks''
@@ -113404,6 +113900,9 @@ Subtopics
 
   [Stobj-example-3]
       Another example of a single-threaded object
+
+  [Stobj-table]
+      [Stobj] field mapping names to stobjs
 
   [Swap-stobjs]
       Swap two congruent [stobj]s
@@ -114294,6 +114793,18 @@ Subtopics
   that introduces a new single-threaded object; see [defstobj].")
  (STOBJ-LET (POINTERS)
             "See [nested-stobjs].")
+ (STOBJ-TABLE
+  (STOBJ NESTED-STOBJS)
+  "[Stobj] field mapping names to stobjs
+
+  WARNING: Stobj-table fields of [stobj]s should be considered
+  experimental at this point!  This warning will probably be removed
+  soon, and when it is, stobj-table fields may be considered not to
+  be experimental any longer.
+
+  This documentation is a stub.  See [community-book]
+  books/system/tests/stobj-table-tests-input.lsp for example uses of
+  stobj-tables.")
  (STOBJP (POINTERS)
          "See [system-utilities].")
  (STOBJS (POINTERS)
@@ -120672,6 +121183,8 @@ Subtopics
 
   [Time-tracker]
       Display time spent during specified evaluation")
+ (TIME-LIMIT (POINTERS)
+             "See [with-prover-time-limit].")
  (TIME-TRACKER
   (DEBUGGING TIME$ ACL2-BUILT-INS)
   "Display time spent during specified evaluation
@@ -124735,6 +125248,10 @@ Subtopics
   type declarations, it may be useful to use [disassemble$] to
   inspect the impact that your declarations have on the resulting
   code.
+
+  While type specs may be used in [defstobj] events, the HASH-TABLE and
+  STOBJ-TABLE type specs may only be used in those events.  We say
+  nothing further about them in the present topic.
 
 
 Type Specs
@@ -130874,8 +131391,8 @@ On-off specs
   inhibited (see [set-inhibit-output-lst]), that is, members of the
   list stored in the constant *valid-output-names*, (proof-tree error
   warning! warning observation prove event summary proof-builder
-  history); similarly, for :summary-on or :summary-off, these are the
-  parts of the [summary] that can be inhibited (see
+  comment history); similarly, for :summary-on or :summary-off, these
+  are the parts of the [summary] that can be inhibited (see
   [set-inhibited-summary-types]), that is, members of the list stored
   in the constant *summary-types*, (errors form header hint-events
   redundant rules splitter-rules steps system-attachments time value
@@ -131384,7 +131901,7 @@ Subtopics
   describe the effect of that assignment below.  But note that if you
   are doing this because of one or more specific calls of
   print-object$, such as (print-object$ x channel state), then you
-  may wish instead to evaluate (print-object$-ser x
+  may wish instead to evaluate (print-object$-fn x
   serialize-character channel state), in which case you will not need
   to use with-serialize-character.
 
@@ -131479,24 +131996,24 @@ Subtopics
   We conclude with two remarks.  (1) A call of without-evisc on
   expression exp actually invokes a specialized call of [ld] on a
   one-element list containing exp, which prints the value returned by
-  evaluation of exp but actually returns the useless value (mv nil
-  :invisible state).  So do not use without-evisc in programs; just
-  use it at the top level of the ACL2 read-eval-print loop, or at
-  least the top level of ld.  (2) Even when using without-evisc, if
-  the ACL2 logical [world] is part of the value returned, it will be
-  printed in abbreviated form because the ACL2 read-eval-print loop
-  always arranges for this to be the case, regardless of the
-  ld-evisc-tuple.  For example:
+  evaluation of exp.  It actually returns the useless value (mv nil
+  :invisible state), except that if an error is detected then it
+  generally returns (mv t nil state), indicating an error; see
+  [error-triple].  So do not use without-evisc in programs if you
+  want the value of the computation to be returned, rather than
+  merely printed.  (2) Even when using without-evisc, if the ACL2
+  logical [world] is part of the value returned, it will be printed
+  in abbreviated form because the ACL2 read-eval-print loop always
+  arranges for this to be the case, regardless of the ld-evisc-tuple.
+  For example:
 
     ACL2 !>(without-evisc (w state))
     <world>
     ACL2 !>
 
   An alternative to the use of without-evisc is to explore large
-  objects using the ACL2 function (walkabout object state).  Some
-  brief documentation is printed when you enter an interactive loop
-  upon evaluating a call of walkabout.  We may add documentation for
-  walkabout if that is requested.")
+  objects using the ACL2 function (walkabout object state); see
+  [walkabout].")
  (WOF
   (PROVER-OUTPUT IO)
   "Direct standard output and proofs output to a file
@@ -132931,63 +133448,56 @@ Subtopics
              must be that only propositional equivalence matters at
              the current subterm)
 
-    General Form:
-    (= &optional x y &rest keyword-args)
+    General Forms:
+    (= x)
+    (= x y)
+    (= x y :kwd1 val1 ... :kwdn valn)
+    (= x y atom :kwd1 val1 ... :kwdn valn)
+
+  where each :kwdi is one of :hints, :otf-flg, or :equiv, without
+  repetition.  In the last form, atom is a non-keyword atom and no
+  kwdi may be :hints; that atom, if supplied, is equivalent to :hints
+  atom, which indicates that instead of performing a proof that the
+  two indicated terms (as described below) are suitably equivalent, a
+  new such goal is created.
 
   If terms x and y are supplied, then replace x by y inside the current
-  subterm if they are ``known'' to be ``equal''.  Here ``known''
-  means the following: the prover is called as in the prove command
-  (using keyword-args) to prove (equal x y), except that a keyword
-  argument :equiv is allowed, in which case (equiv x y) is proved
-  instead, where equiv is that argument.  (See below for how
-  governors are handled.)
+  subterm if they are ``known'' to be equal, or more generally,
+  equivalent in the sense described below.  Here ``known'' means the
+  following: except in the cases that no arguments are provided or
+  else :hints atom is provided as described above, the prover is
+  called as in the prove command (using keyword arguments :otf and
+  :hints, if supplied, where the value of :hints is not an atom) to
+  prove equivalence of x and y under the current governors and
+  top-level hypotheses.  By default, this equivalence is equality;
+  however the keyword argument :equiv can specify a known equivalence
+  relation.  In cases other than equality, substitution only takes
+  place where justified by the equivlance maintained at the current
+  subterm.
 
-  Actually, keyword-args is either a single non-keyword or is a list of
-  the form ((kw-1 x-1) ... (kw-n x-n)), where each kw-i is one of the
-  keywords :equiv, :otf-flg, :hints.  Here :equiv defaults to equal
-  if the argument is not supplied or is nil; if it is not equal
-  (either explicitly or by default), then it should be the name of an
-  ACL2 [equivalence] relation, and substitution will only take place
-  at subterm occurrences for which the :equiv is among the
-  [equivalence] relations being maintained without the use of
-  [patterned-congruence]s.  :Otf-flg and :hints give directives to
-  the prover, as explained above; also see [ACL2-pc::prove].
-  However, no prover call is made if :hints is a non-nil atom or if
-  keyword-args is a single non-keyword (more on this below).
+  For the keyword arguments, :equiv defaults to equal if not supplied
+  or nil; if it is not equal (either explicitly or by default), then
+  it should be the name of a known ACL2 [equivalence] relation, and
+  substitution will only take place at subterm occurrences for which
+  the :equiv is among the [equivalence] relations being maintained
+  without the use of [patterned-congruence]s.
 
-  Remarks on defaults
 
-  (1) If there is only one argument, say a, then x defaults to the
-  current subterm, in the sense that x is taken to be the current
-  subterm and y is taken to be a.
+Remarks on defaults
 
-  (2) If there are at least two arguments, then x may be the symbol &,
-  which then represents the current subterm.  Thus, (= a) is
-  equivalent to (= & a).  (Obscure point: actually, & can be in any
-  package, except the keyword package.)
-
-  (3) If there are no arguments, then we look for a top-level
-  hypothesis or a governor of the form (equal c u) or (equal u c),
-  where c is the current subterm.  In that case we replace the
-  current subterm by u.
-
-  As with the prove command, we allow goals to be given ``bye''s in the
-  proof, which may be generated by a :hints keyword argument in
-  keyword-args.  These result in the creation of new subgoals.
-
-  A proof is attempted unless the :hints argument is a non-nil atom
-  other than :none, or unless there is one element of keyword-args
-  and it is not a keyword.  In that case, if there are any hypotheses
-  in the current goal, then what is attempted is a proof of the
-  implication whose antecedent is the conjunction of the current
-  hypotheses and governors and whose conclusion is the appropriate
-  equal term.
-
-  Remarks: (1) It is allowed to use abbreviations in the hints.  (2)
-  The keyword :none has the special role as a value of :hints that is
-  shown clearly in an example above.  (3) If there are governors,
-  then the new subgoal has as additional hypotheses the current
-  governors.")
+    * If there are at least two arguments, then x may be the symbol &, in
+      any package except the keyword package, which represents the
+      current subterm.
+    * The one-argument command (= a) is equivalent to (= & a).
+    * If there are no arguments, then we look for a top-level hypothesis or
+      a governor of the form (equal c u) or (equal u c), where c is
+      the current subterm.  In that case we replace the current
+      subterm by u.
+    * As with the prove command, we allow goals to be given ``bye''s in the
+      proof, which may be generated by a :hints keyword argument in
+      keyword-args.  These result in the creation of new subgoals.
+    * It is allowed to use abbreviations (see [ACL2-pc::add-abbreviation])
+      in the hints.")
  (ACL2-PC::ACL2-WRAP
   (PROOF-BUILDER-COMMANDS)
   "(macro) same as (lisp x)
@@ -133600,8 +134110,8 @@ Subtopics
   instruction-list does.  (See [ACL2-pc::sequence] for an explanation
   of ``success'' and ``failure.'') As each instruction is executed,
   the system will print the usual prompt followed by that
-  instruction, unless the global state variable
-  pc-print-prompt-and-instr-flg is nil.
+  instruction, unless the value of (access pc-info (@ pc-info)
+  :print-prompt-and-instr-flg) is nil.
 
   Remark: If do-all ``fails'', then the failure is hard if and only if
   the last instruction it runs has a hard ``failure''.
