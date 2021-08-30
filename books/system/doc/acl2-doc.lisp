@@ -3927,8 +3927,8 @@ and @(tsee include-book)"
 (defxdoc add-raw-arity
   :parents (set-raw-mode)
   :short "Add arity information for raw mode"
-  :long "<p>Technical note: This macro is a no-op, and is not necessary, when
- ACL2 is built with #-acl2-mv-as-values.</p>
+  :long "<p>Note: This macro is currently a no-op, and the documentation below
+ is wishful thinking!.  This may be fixed in late</p>
 
  <p>Users of raw mode (see @(see set-raw-mode)) can use arbitrary raw Lisp
  functions that are not known inside the usual ACL2 loop.  In such cases, ACL2
@@ -74166,7 +74166,7 @@ it."
  <p>Bob Boyer and others have contributed numerous changes for the experimental
  ``@('hons')'' version of ACL2 (see @(see hons-and-memoization)).</p>
 
- <p>The ACL2 @(tsee state) can now be queried with @('(@ hons-enabled)') so
+ <p>The ACL2 @(tsee state) can now be queried with @('(@ hons-enabledp)') so
  that a result of @('t') says that one is in the experimental @('hons')
  version, while @('nil') says the opposite.</p>")
 
@@ -90242,6 +90242,17 @@ it."
 
  <h3>Changes at the System Level</h3>
 
+ <p>The @(see hons-enabled) features of ACL2 (@(tsee hons), @(see memoization),
+ and @(see fast-alists)) have been included in ACL2 builds by default since
+ Version 7.0 (January, 2015) and in all ACL2 builds since Version 7.2 (January,
+ 2016).  Now, essentially all support for building ACL2 without these features
+ has been removed.  The function @('(hons-enabledp state)') and the feature
+ @(':hons') both remain, but are always true and are deprecated, scheduled for
+ removal very soon after the next release.  The feature @(':acl2-mv-as-values')
+ was always true when feature @(':hons') was present, hence was always true; so
+ it has been removed (and @('#-acl2-mv-as-values') code has been
+ eliminated).</p>
+
  <h3>EMACS Support</h3>
 
  <h3>Experimental Versions</h3>
@@ -102272,8 +102283,8 @@ arithmetic) for libraries of @(see books) for arithmetic reasoning.</p>")
 (defxdoc remove-raw-arity
   :parents (set-raw-mode)
   :short "Remove arity information for raw mode"
-  :long "<p>Technical note: This macro is a no-op, and is not necessary, when
- ACL2 is built with #-acl2-mv-as-values.</p>
+  :long "<p>Note: This macro is currently a no-op, and the documentation below
+ is wishful thinking!.  This may be fixed in late</p>
 
  <p>The form @('(remove-raw-arity fn)') undoes the effect of an earlier
  @('(remove-raw-arity fn val)').  See @(see add-raw-arity).</p>")

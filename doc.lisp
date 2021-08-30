@@ -6342,8 +6342,8 @@ Subtopics
   (SET-RAW-MODE)
   "Add arity information for raw mode
 
-  Technical note: This macro is a no-op, and is not necessary, when
-  ACL2 is built with #-acl2-mv-as-values.
+  Note: This macro is currently a no-op, and the documentation below is
+  wishful thinking!.  This may be fixed in late
 
   Users of raw mode (see [set-raw-mode]) can use arbitrary raw Lisp
   functions that are not known inside the usual ACL2 loop.  In such
@@ -76491,7 +76491,7 @@ Subtopics
   Bob Boyer and others have contributed numerous changes for the
   experimental ``hons'' version of ACL2 (see [hons-and-memoization]).
 
-  The ACL2 [state] can now be queried with (@ hons-enabled) so that a
+  The ACL2 [state] can now be queried with (@ hons-enabledp) so that a
   result of t says that one is in the experimental hons version,
   while nil says the opposite.")
  (NOTE-3-5{R}
@@ -88388,6 +88388,18 @@ Bug Fixes
 
 
 Changes at the System Level
+
+  The [hons-enabled] features of ACL2 ([hons], [memoization], and
+  [fast-alists]) have been included in ACL2 builds by default since
+  Version 7.0 (January, 2015) and in all ACL2 builds since Version
+  7.2 (January, 2016).  Now, essentially all support for building
+  ACL2 without these features has been removed.  The function
+  (hons-enabledp state) and the feature :hons both remain, but are
+  always true and are deprecated, scheduled for removal very soon
+  after the next release.  The feature :acl2-mv-as-values was always
+  true when feature :hons was present, hence was always true; so it
+  has been removed (and #-acl2-mv-as-values code has been
+  eliminated).
 
 
 EMACS Support
@@ -103239,8 +103251,8 @@ Subtopics
   (SET-RAW-MODE)
   "Remove arity information for raw mode
 
-  Technical note: This macro is a no-op, and is not necessary, when
-  ACL2 is built with #-acl2-mv-as-values.
+  Note: This macro is currently a no-op, and the documentation below is
+  wishful thinking!.  This may be fixed in late
 
   The form (remove-raw-arity fn) undoes the effect of an earlier
   (remove-raw-arity fn val).  See [add-raw-arity].")
