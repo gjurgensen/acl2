@@ -3924,45 +3924,6 @@ and @(tsee include-book)"
  encapsulate) @(see events) in which it occurs.  See @(see add-override-hints);
  also see @(see set-override-hints).</p>")
 
-(defxdoc add-raw-arity
-  :parents (set-raw-mode)
-  :short "Add arity information for raw mode"
-  :long "<p>Note: This macro is currently a no-op, and the documentation below
- is wishful thinking!.  This may be fixed in late</p>
-
- <p>Users of raw mode (see @(see set-raw-mode)) can use arbitrary raw Lisp
- functions that are not known inside the usual ACL2 loop.  In such cases, ACL2
- may not know how to display a multiple value returned by ACL2's @(tsee mv)
- macro.  The following example should make this clear.</p>
-
- @({
-  ACL2 P>(defun foo (x y) (mv y x))
-  FOO
-  ACL2 P>(foo 3 4)
-
-  Note: Unable to compute number of values returned by this evaluation
-  because function FOO is not known in the ACL2 logical world.  Presumably
-  it was defined in raw Lisp or in raw mode.  Returning the first (perhaps
-  only) value for calls of FOO.
-  4
-  ACL2 P>(add-raw-arity foo 2)
-   RAW-ARITY-ALIST
-  ACL2 P>(foo 3 4)
-  (4 3)
-  ACL2 P>
- })
-
- <p>The first argument of @('add-raw-arity') should be a symbol, representing
- the name of a function, macro, or special form, and the second argument should
- either be a non-negative integer (denoting the number of values returned by
- ACL2) or else the symbol @(':LAST'), meaning that the number of values
- returned by the call is the number of values returned by the last
- argument.</p>
-
- <p>The current arity assignments can be seen by evaluating @('(@
- raw-arity-alist)').  See @(see remove-raw-arity) for how to undo a call of
- @('add-raw-arity').</p>")
-
 (defxdoc add-to-set
   :parents (lists symbols acl2-built-ins)
   :short "Add a symbol to a list"
@@ -66685,7 +66646,8 @@ it."
  include-book), in particular its ``soundness warning''.</li>
 
  <li>The printing of results in raw mode (see @(see set-raw-mode)) may now be
- partially controlled by the user: see @(see add-raw-arity).</li>
+ partially controlled by the user: see @('add-raw-arity').  [Note added 2021:
+ this utility has been removed and is no longer necessary.]</li>
 
  <li>For those using Unix/Linux `make': A @('cert.acl2') file can contain
  forms to be evaluated before an appropriate @(tsee certify-book) command is
@@ -67379,8 +67341,9 @@ it."
  in particular its ``soundness warning''.</p>
 
  <p>The printing of results in raw mode (see @(see set-raw-mode)) may now be
- partially controlled by the user: see @(see add-raw-arity).  Also, newlines
- are printed when necessary before the value is printed.</p>
+ partially controlled by the user: see @('add-raw-arity').  [Note added 2021:
+ this utility has been removed and is no longer necessary.]  Also, newlines are
+ printed when necessary before the value is printed.</p>
 
  <p>For those using Unix/Linux `make': A @('cert.acl2') file can contain forms
  to be evaluated before an appropriate @(tsee certify-book) command is invoked
@@ -86968,7 +86931,7 @@ it."
  NAME)') and @('(:guard-theorem NAME)').</p>
 
  <p>We improved redundancy checking for @(tsee defun) forms so that it is not
- sensitive to whether @(tsee state) has a @(':stobj') declaration.</p>
+ sensitive to whether @(tsee state) has a @(':stobjs') declaration.</p>
 
  <p>The @(see warnings) for weak @(see type-prescription) rules have been
  eliminated.  These warnings were issued when a rule was insufficient to prove
@@ -90143,6 +90106,14 @@ it."
 ; Implementation note: Added a stobj-property record, now used as the value of
 ; the 'stobj property of a stobj name.
 
+; Changed a function name, print-list-without-stobj-arrays, to
+; replace-live-stobjs-in-list, since live stobjs can now be hash-tables (in the
+; case of stobjs with a single field that is of stobj-table type).
+
+; Built-in raw Lisp function with-reckless-read did some unnecessary work as
+; opposed to with-reckless-readtable, so the former was eliminated and its
+; calls were replaced by calls of with-reckless-readtable.
+
   :parents (release-notes)
   :short "ACL2 Version  8.5 (xx, 20xx) Notes"
   :long "<p>NOTE!  New users can ignore these release notes, because the @(see
@@ -90192,6 +90163,25 @@ it."
 
  <p>Output from @(':')@(tsee oops) may now be inhibited as @('OBSERVATION')
  output, by using @(tsee set-inhibit-output-lst) or @(tsee with-output).</p>
+
+ <p>@(csee Raw-mode) has been fixed so that reasonable results are printed when
+ multiple values are returned by a function defined in raw-mode or raw Lisp
+ (rather than in the logic).  The following examples illustrate the problem and
+ the fixed behavior.  The utilities @('add-raw-arity') and
+ @('remove-raw-arity') are no longer necessary (and they had no effect anyhow,
+ at least in recent ACL2 versions), so they have been removed.</p>
+
+ @({
+ (defstobj st fld)
+ (set-raw-mode-on!)
+ (defun f1 (st) st)
+ (f1 st) ; printed a vector; now prints <st>
+ (defun f2 (state) state)
+ (f2 state) ; printed ACL2_INVISIBLE::|The Live State Itself|;
+            ; now prints <state>
+ (defun bar (x st state) (mv x st state))
+ (bar 3 st state) ; printed 3; now prints (3 <st> <state>)
+ })
 
  <h3>New Features</h3>
 
@@ -101561,7 +101551,7 @@ arithmetic) for libraries of @(see books) for arithmetic reasoning.</p>")
  the same set of function symbols.</li>
 
  <li>The @(see stobj)s declared by the two definitions are allowed to disagree
- on @('state'): one can declare @('state') among its declared @(':stobj')
+ on @('state'): one can declare @('state') among its declared @(':stobjs')
  values while the other does not, regardless of whether or not @(tsee
  set-state-ok) has been evaluated.  That is, they only need to agree on the
  <i>user-defined</i> stobjs.</li>
@@ -102279,15 +102269,6 @@ arithmetic) for libraries of @(see books) for arithmetic reasoning.</p>")
  books) or @(tsee encapsulate) @(see events) in which it occurs.  See @(see
  remove-override-hints); also see @(see add-override-hints) and see @(see
  set-override-hints).</p>")
-
-(defxdoc remove-raw-arity
-  :parents (set-raw-mode)
-  :short "Remove arity information for raw mode"
-  :long "<p>Note: This macro is currently a no-op, and the documentation below
- is wishful thinking!.  This may be fixed in late</p>
-
- <p>The form @('(remove-raw-arity fn)') undoes the effect of an earlier
- @('(remove-raw-arity fn val)').  See @(see add-raw-arity).</p>")
 
 (defxdoc remove-untouchable
   :parents (defttag)
@@ -109357,11 +109338,6 @@ arithmetic) for libraries of @(see books) for arithmetic reasoning.</p>")
  })")
 
 (defxdoc set-raw-mode
-
-; Version_8.3 had the following behavior described in :doc note-8-4.  This was
-; fixed by modifying the raw Lisp code for ACL2 source function acl2-raw-eval,
-; by using a new raw Lisp ACL2 source function, stobjs-out-raw.
-
   :parents (defttag)
   :short "Enter or exit ``raw mode,'' a raw Lisp environment"
   :long "<p>Below we discuss raw-mode.  In brief: The simplest way to turn
@@ -109463,15 +109439,45 @@ arithmetic) for libraries of @(see books) for arithmetic reasoning.</p>")
 
  <p>We conclude with some details.</p>
 
- <p><i>Printing results</i>.  The rules for printing results are essentially
- unchanged for raw mode, with one major exception.  If the value to be printed
- would contain any Lisp object that is not a legal ACL2 object, then the
- @('print') routine is used from the host Lisp, rather than the usual ACL2
- printing routine.  The following example illustrates the printing used when an
- illegal ACL2 object needs to be printed.  Notice how that ``command
- conventions'' are observed (see @(see ld-post-eval-print)); the ``@('[Note')''
- occurs one space over in the second example, and no result is printed in the
- third example.</p>
+ <p><i>Printing results</i>.  The rules for printing results are mostly
+ unchanged for raw mode, even to the point of attempting appropriate printing
+ for state and stobjs (though this is merely heuristic when the top-level
+ function is defined in raw mode), for example as follows.</p>
+
+ @({
+ ACL2 !>(defstobj st fld)
+
+ Summary
+ Form:  ( DEFSTOBJ ST ...)
+ Rules: NIL
+ Time:  0.02 seconds (prove: 0.00, print: 0.00, other: 0.02)
+  ST
+ ACL2 !>(set-raw-mode-on!)
+
+ TTAG NOTE: Adding ttag :RAW-MODE-HACK from the top level loop.
+ ACL2 P>(defun f (st) st)
+ F
+ ACL2 P>(f st)
+ <st>
+ ACL2 P>(defun g (st state) (mv 3 st state))
+ G
+ ACL2 P>(g st state)
+ (3 <st> <state>)
+ ACL2 P>(defun h (state) (mv nil 17 state))
+ H
+ ACL2 P>(h state) ; notice the leading space; see below
+  17
+ ACL2 P>
+ })
+
+ <p>There is however one major exception.  If the value to be printed contains
+ any Lisp object that is not a legal ACL2 object, then the @('print') routine
+ is used from the host Lisp, rather than the usual ACL2 printing routine.  The
+ following example illustrates the printing used when an illegal ACL2 object
+ needs to be printed.  Notice how that ``command conventions'' are observed, as
+ indicated in the ``leading space'' comment above; see @(see
+ ld-post-eval-print).  In particular, the ``@('[Note')'' occurs one space over
+ in the second example, and no result is printed in the third example.</p>
 
  @({
   ACL2 P>(find-package \"ACL2\")
@@ -113078,7 +113084,7 @@ arithmetic) for libraries of @(see books) for arithmetic reasoning.</p>")
  <p>Returning to the admission of @('show-counters') above, the last sentence
  printed indicates that the @(tsee guard) conjectures for the function were
  proved.  When some argument of a function is declared to be a single-threaded
- object via the @('xargs') @(':stobj'), we automatically add (conjoin) to the
+ object via the @('xargs'), @(':stobjs'), we automatically add (conjoin) to the
  guard the condition that the argument satisfy the recognizer for that
  single-threaded object.  In the case of @('show-counters') the guard is
  @('(countersp counters)').</p>
@@ -136106,6 +136112,7 @@ expand function call at the current subterm, without simplifying"
 (defpointer quotep system-utilities)
 (defpointer rassoc-eq rassoc)
 (defpointer rassoc-equal rassoc)
+(defpointer raw-mode set-raw-mode)
 (defpointer read-byte$ io)
 (defpointer read-char$ io)
 (defpointer read-object io)
