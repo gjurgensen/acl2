@@ -6338,44 +6338,6 @@ Subtopics
   the former is not [local] to [books] or [encapsulate] [events] in
   which it occurs.  See [add-override-hints]; also see
   [set-override-hints].")
- (ADD-RAW-ARITY
-  (SET-RAW-MODE)
-  "Add arity information for raw mode
-
-  Note: This macro is currently a no-op, and the documentation below is
-  wishful thinking!.  This may be fixed in late
-
-  Users of raw mode (see [set-raw-mode]) can use arbitrary raw Lisp
-  functions that are not known inside the usual ACL2 loop.  In such
-  cases, ACL2 may not know how to display a multiple value returned
-  by ACL2's [mv] macro.  The following example should make this
-  clear.
-
-    ACL2 P>(defun foo (x y) (mv y x))
-    FOO
-    ACL2 P>(foo 3 4)
-
-    Note: Unable to compute number of values returned by this evaluation
-    because function FOO is not known in the ACL2 logical world.  Presumably
-    it was defined in raw Lisp or in raw mode.  Returning the first (perhaps
-    only) value for calls of FOO.
-    4
-    ACL2 P>(add-raw-arity foo 2)
-     RAW-ARITY-ALIST
-    ACL2 P>(foo 3 4)
-    (4 3)
-    ACL2 P>
-
-  The first argument of add-raw-arity should be a symbol, representing
-  the name of a function, macro, or special form, and the second
-  argument should either be a non-negative integer (denoting the
-  number of values returned by ACL2) or else the symbol :LAST,
-  meaning that the number of values returned by the call is the
-  number of values returned by the last argument.
-
-  The current arity assignments can be seen by evaluating (@
-  raw-arity-alist).  See [remove-raw-arity] for how to undo a call of
-  add-raw-arity.")
  (ADD-SUFFIX (POINTERS)
              "See [system-utilities].")
  (ADD-SUFFIX-TO-FN (POINTERS)
@@ -70748,7 +70710,9 @@ Subtopics
       distributed books; see [include-book], in particular its
       ``soundness warning''.
     * The printing of results in raw mode (see [set-raw-mode]) may now be
-      partially controlled by the user: see [add-raw-arity].
+      partially controlled by the user: see add-raw-arity.  [Note
+      added 2021: this utility has been removed and is no longer
+      necessary.]
     * For those using Unix/Linux `make': A cert.acl2 file can contain forms
       to be evaluated before an appropriate [certify-book] command is
       invoked automatically (not included in cert.acl2).
@@ -71311,8 +71275,10 @@ Subtopics
   [include-book], in particular its ``soundness warning''.
 
   The printing of results in raw mode (see [set-raw-mode]) may now be
-  partially controlled by the user: see [add-raw-arity].  Also,
-  newlines are printed when necessary before the value is printed.
+  partially controlled by the user: see add-raw-arity.  [Note added
+  2021: this utility has been removed and is no longer necessary.]
+  Also, newlines are printed when necessary before the value is
+  printed.
 
   For those using Unix/Linux `make': A cert.acl2 file can contain forms
   to be evaluated before an appropriate [certify-book] command is
@@ -85763,7 +85729,7 @@ Changes to Existing Features
   (:guard-theorem NAME).
 
   We improved redundancy checking for [defun] forms so that it is not
-  sensitive to whether [state] has a :stobj declaration.
+  sensitive to whether [state] has a :stobjs declaration.
 
   The [warnings] for weak [type-prescription] rules have been
   eliminated.  These warnings were issued when a rule was
@@ -88334,6 +88300,24 @@ Changes to Existing Features
 
   Output from :[oops] may now be inhibited as OBSERVATION output, by
   using [set-inhibit-output-lst] or [with-output].
+
+  [Raw-mode] has been fixed so that reasonable results are printed when
+  multiple values are returned by a function defined in raw-mode or
+  raw Lisp (rather than in the logic).  The following examples
+  illustrate the problem and the fixed behavior.  The utilities
+  add-raw-arity and remove-raw-arity are no longer necessary (and
+  they had no effect anyhow, at least in recent ACL2 versions), so
+  they have been removed.
+
+    (defstobj st fld)
+    (set-raw-mode-on!)
+    (defun f1 (st) st)
+    (f1 st) ; printed a vector; now prints <st>
+    (defun f2 (state) state)
+    (f2 state) ; printed ACL2_INVISIBLE::|The Live State Itself|;
+               ; now prints <state>
+    (defun bar (x st state) (mv x st state))
+    (bar 3 st state) ; printed 3; now prints (3 <st> <state>)
 
 
 New Features
@@ -93474,6 +93458,9 @@ Subtopics
 
   [Rassoc-equal]
       See [rassoc].
+
+  [Raw-mode]
+      See [set-raw-mode].
 
   [Read-byte$]
       See [io].
@@ -101083,6 +101070,8 @@ Subtopics
       [return-last]
     * [Defattach] using argument :skip-checks t
     * Reader errors (for examples see [reader] and see [set-iprint])")
+ (RAW-MODE (POINTERS)
+           "See [set-raw-mode].")
  (READ-ACL2-ORACLE
   (PROGRAMMING-WITH-STATE ACL2-BUILT-INS)
   "Pop the oracle field of the state
@@ -102270,7 +102259,7 @@ Subtopics
       redundancy requires that both are [mutual-recursion] events
       that define the same set of function symbols.
    5. The [stobj]s declared by the two definitions are allowed to disagree
-      on state: one can declare state among its declared :stobj
+      on state: one can declare state among its declared :stobjs
       values while the other does not, regardless of whether or not
       [set-state-ok] has been evaluated.  That is, they only need to
       agree on the user-defined stobjs.
@@ -103247,15 +103236,6 @@ Subtopics
   that the former is not [local] to [books] or [encapsulate] [events]
   in which it occurs.  See [remove-override-hints]; also see
   [add-override-hints] and see [set-override-hints].")
- (REMOVE-RAW-ARITY
-  (SET-RAW-MODE)
-  "Remove arity information for raw mode
-
-  Note: This macro is currently a no-op, and the documentation below is
-  wishful thinking!.  This may be fixed in late
-
-  The form (remove-raw-arity fn) undoes the effect of an earlier
-  (remove-raw-arity fn val).  See [add-raw-arity].")
  (REMOVE-UNTOUCHABLE
   (DEFTTAG)
   "Remove names from lists of untouchable symbols
@@ -110425,15 +110405,45 @@ Subtopics
 
   We conclude with some details.
 
-  Printing results.  The rules for printing results are essentially
-  unchanged for raw mode, with one major exception.  If the value to
-  be printed would contain any Lisp object that is not a legal ACL2
-  object, then the print routine is used from the host Lisp, rather
-  than the usual ACL2 printing routine.  The following example
-  illustrates the printing used when an illegal ACL2 object needs to
-  be printed.  Notice how that ``command conventions'' are observed
-  (see [ld-post-eval-print]); the ``[Note'' occurs one space over in
-  the second example, and no result is printed in the third example.
+  Printing results.  The rules for printing results are mostly
+  unchanged for raw mode, even to the point of attempting appropriate
+  printing for state and stobjs (though this is merely heuristic when
+  the top-level function is defined in raw mode), for example as
+  follows.
+
+    ACL2 !>(defstobj st fld)
+
+    Summary
+    Form:  ( DEFSTOBJ ST ...)
+    Rules: NIL
+    Time:  0.02 seconds (prove: 0.00, print: 0.00, other: 0.02)
+     ST
+    ACL2 !>(set-raw-mode-on!)
+
+    TTAG NOTE: Adding ttag :RAW-MODE-HACK from the top level loop.
+    ACL2 P>(defun f (st) st)
+    F
+    ACL2 P>(f st)
+    <st>
+    ACL2 P>(defun g (st state) (mv 3 st state))
+    G
+    ACL2 P>(g st state)
+    (3 <st> <state>)
+    ACL2 P>(defun h (state) (mv nil 17 state))
+    H
+    ACL2 P>(h state) ; notice the leading space; see below
+     17
+    ACL2 P>
+
+  There is however one major exception.  If the value to be printed
+  contains any Lisp object that is not a legal ACL2 object, then the
+  print routine is used from the host Lisp, rather than the usual
+  ACL2 printing routine.  The following example illustrates the
+  printing used when an illegal ACL2 object needs to be printed.
+  Notice how that ``command conventions'' are observed, as indicated
+  in the ``leading space'' comment above; see [ld-post-eval-print].
+  In particular, the ``[Note'' occurs one space over in the second
+  example, and no result is printed in the third example.
 
     ACL2 P>(find-package \"ACL2\")
     [Note:  Printing non-ACL2 result.]
@@ -110512,16 +110522,7 @@ Subtopics
   mode, in which case you can expect to see a suitable warning.
   Regarding include-book itself: it should work in raw mode as you
   might expect, at least if a compiled file or expansion file was
-  created when the book was certified; see [certify-book].
-
-
-Subtopics
-
-  [Add-raw-arity]
-      Add arity information for raw mode
-
-  [Remove-raw-arity]
-      Remove arity information for raw mode")
+  created when the book was certified; see [certify-book].")
  (SET-RAW-MODE-ON
   (DEFTTAG)
   "Enter ``raw mode,'' a raw Lisp environment (requires trust tag)
@@ -114041,7 +114042,7 @@ Subtopics
   Returning to the admission of show-counters above, the last sentence
   printed indicates that the [guard] conjectures for the function
   were proved.  When some argument of a function is declared to be a
-  single-threaded object via the xargs :stobj, we automatically add
+  single-threaded object via the xargs, :stobjs, we automatically add
   (conjoin) to the guard the condition that the argument satisfy the
   recognizer for that single-threaded object.  In the case of
   show-counters the guard is (countersp counters).
