@@ -2,7 +2,7 @@
 ;
 ; acl2-doc.lisp - Documentation for the ACL2 Theorem Prover
 ;
-; ACL2 Version 8.3 -- A Computational Logic for Applicative Common Lisp
+; ACL2 Version 8.4 -- A Computational Logic for Applicative Common Lisp
 ; Copyright (C) 2021, Regents of the University of Texas
 ;
 ; This documentation was derived from the ACL2 system in October 2013, which
@@ -134,6 +134,7 @@
     (STR::PRETTY-PRINTING "[books]/std/strings/pretty.lisp")
     (PROFILE-ACL2 "[books]/centaur/memoize/old/profile.lisp")
     (PROFILE-ALL "[books]/centaur/memoize/old/profile.lisp")
+    (PROVE$ "[books]/tools/prove-dollar.lisp")
     (QUICKLISP "[books]/quicklisp/top.lisp")
     (RELEASE-NOTES-BOOKS "[books]/doc/relnotes.lisp")
     (REMOVABLE-RUNES "[books]/tools/removable-runes.lisp")
@@ -177,7 +178,7 @@
 ; who are looking at an older version of ACL2 will see the corresponding
 ; ACL2+Books Manual at this link.
 
-  "http://www.cs.utexas.edu/users/moore/acl2/v8-3/")
+  "http://www.cs.utexas.edu/users/moore/acl2/v8-4/")
 
 (defconst *installation-url*
 
@@ -753,6 +754,46 @@
   :short "To return to the top-level of ACL2's command loop"
   :long "<p>This is an alias for @('a!'); see @(see a!).  For a related feature
  that only pops up one level, see @(see p!).</p>")
+
+(defxdoc abort-soft
+  :parents (miscellaneous)
+  :short "Control how interrupts are handled in proofs"
+  :long "<p>ACL2 arranges by default that when a proof is interrupted (with
+ @('Control-C')), a ``soft'' abort occurs in the following sense: the message
+ below is printed and then the proof attempt continues temporarily before
+ ultimately failing (usually very soon thereafter).</p>
+
+ @({
+ ***********************************************
+ Note:  interrupt signal
+   Will attempt to exit the proof in progress;
+   otherwise, the next interrupt will abort the proof.
+   For an immediate abort see :DOC abort-soft.
+ ***********************************************
+ })
+
+ <p>This default behavior supports proper operation of the utility, @(tsee
+ redo-flat), when a proof is interrupted.  It also supports more complete
+ summaries than would be obtained with an immediate abort.  If you nevertheless
+ want proofs to abort immediately, you may evaluate the form @('(assign
+ abort-soft nil)').  To restore the default behavior, evaluate @('(assign
+ abort-soft t)').</p>
+
+ <p>Remarks for system hackers.</p>
+
+ <ul>
+
+ <li>An important effect of having evaluated @('(assign abort-soft nil)') is
+ that an interrupt will send you immediately back to the ACL2 read-eval-print
+ loop, in contrast to the default behavior where the prover returns an @(see
+ error-triple) whose error component is non-@('nil').</li>
+
+ <li>It may be preferable to bind @(see state) global @('abort-soft') rather
+ than to assign it globally.  See the implementation of @(see
+ prove$) (specifically, the definition of @('prove$-fn') in @(see
+ community-book) @('books/tools/prove-dollar.lisp')) for an example.</li>
+
+ </ul>")
 
 (defxdoc about-acl2
   :parents (acl2)
@@ -3882,45 +3923,6 @@ and @(tsee include-book)"
  except that the former is not @(see local) to @(see books) or @(tsee
  encapsulate) @(see events) in which it occurs.  See @(see add-override-hints);
  also see @(see set-override-hints).</p>")
-
-(defxdoc add-raw-arity
-  :parents (set-raw-mode)
-  :short "Add arity information for raw mode"
-  :long "<p>Technical note: This macro is a no-op, and is not necessary, when
- ACL2 is built with #-acl2-mv-as-values.</p>
-
- <p>Users of raw mode (see @(see set-raw-mode)) can use arbitrary raw Lisp
- functions that are not known inside the usual ACL2 loop.  In such cases, ACL2
- may not know how to display a multiple value returned by ACL2's @(tsee mv)
- macro.  The following example should make this clear.</p>
-
- @({
-  ACL2 P>(defun foo (x y) (mv y x))
-  FOO
-  ACL2 P>(foo 3 4)
-
-  Note: Unable to compute number of values returned by this evaluation
-  because function FOO is not known in the ACL2 logical world.  Presumably
-  it was defined in raw Lisp or in raw mode.  Returning the first (perhaps
-  only) value for calls of FOO.
-  4
-  ACL2 P>(add-raw-arity foo 2)
-   RAW-ARITY-ALIST
-  ACL2 P>(foo 3 4)
-  (4 3)
-  ACL2 P>
- })
-
- <p>The first argument of @('add-raw-arity') should be a symbol, representing
- the name of a function, macro, or special form, and the second argument should
- either be a non-negative integer (denoting the number of values returned by
- ACL2) or else the symbol @(':LAST'), meaning that the number of values
- returned by the call is the number of values returned by the last
- argument.</p>
-
- <p>The current arity assignments can be seen by evaluating @('(@
- raw-arity-alist)').  See @(see remove-raw-arity) for how to undo a call of
- @('add-raw-arity').</p>")
 
 (defxdoc add-to-set
   :parents (lists symbols acl2-built-ins)
@@ -12849,8 +12851,10 @@ with any questions about building the community books.</p>")
 
  <p>where @('x') is a variable symbol, the @('pati') are structural patterns as
  described below, the @('dcli') are optional @(tsee declare) forms and the
- @('bodyi') are terms.  Return the value(s) of the @('bodyi') corresponding to
- the first @('pati') matching @('x'), or @('nil') if none matches.</p>
+ @('bodyi') are terms.  The legal @('declare') forms are the same as for @(tsee
+ let): @('ignore'), @('ignorable'), and @('type').  Return the value(s) of the
+ @('bodyi') corresponding to the first @('pati') matching @('x'), or @('nil')
+ if none matches.</p>
 
  <p>Pattern Language:<br></br>
 
@@ -13609,8 +13613,8 @@ with any questions about building the community books.</p>")
  <p>Rebuild and quit, twice.</p>
 
  @({
- echo '(rebuild-ccl :clean t)' | ./lx86cl64
- echo '(rebuild-ccl :clean t)' | ./lx86cl64
+ echo '(rebuild-ccl :clean t)' | ./dx86cl64
+ echo '(rebuild-ccl :clean t)' | ./dx86cl64
  })
 
  <p>Create the following executable script, which you will probably want to
@@ -13686,8 +13690,8 @@ with any questions about building the community books.</p>")
  <p>Rebuild and quit, twice.</p>
 
  @({
- echo '(rebuild-ccl :clean t)' | ./lx86cl64
- echo '(rebuild-ccl :clean t)' | ./lx86cl64
+ echo '(rebuild-ccl :clean t)' | ./dx86cl64
+ echo '(rebuild-ccl :clean t)' | ./dx86cl64
  })
 
  <p>Create an executable script like the following.  You might want to call it
@@ -18116,7 +18120,12 @@ subtree of X with T, without duplication.</p>
   :parents (io acl2-built-ins)
   :short "Print to the comment window"
   :long "<p>@('Cw') is a macro that expands to a function whose guard is
- @('t').  For a guarded variant of @('cw'), see @(see fmx-cw).</p>
+ @('t').  For a guarded variant of @('cw'), see @(see fmx-cw).  For variants of
+ @('cw') that provide readable output (suffix @('\"!\"')) and are never
+ inhibited (suffix @('\"+\"')), see @(see cw!), @(see cw+), and @(see cw!+).
+ For corresponding functions see @(see fmt-to-comment-window), @(see
+ fmt-to-comment-window!), @(see fmt-to-comment-window+), and @(see
+ fmt-to-comment-window!+).</p>
 
  <p>Example:</p>
 
@@ -18129,7 +18138,7 @@ subtree of X with T, without duplication.</p>
  <p>Logically, this expression is equivalent to @('nil').  However, it has the
  effect of first printing to the so-called ``comment window'' the @(tsee fmt)
  string as indicated.  Thus, @('cw') is like @('fmt') (see @(see fmt)) except
- in three important ways.  First, it is a macro whose calls expand to calls of
+ in four important ways.  First, it is a macro whose calls expand to calls of
  a @(':')@(tsee logic) mode function.  Second, it neither takes nor returns the
  ACL2 @(tsee state); logically @('cw') simply returns @('nil'), although it
  prints to a <i>comment window</i> that just happens to share the terminal
@@ -18147,6 +18156,9 @@ subtree of X with T, without duplication.</p>
        (list (cons #\\0 ans1) (cons #\\1 ans2))
        *standard-co* state nil)
  })
+
+ <p>And finally, output from @('cw') is suppressed if the @('COMMENT') type of
+ output is suppressed; see @(see set-inhibit-output-lst).</p>
 
  <p>Typically, calls of @('cw') are embedded in @(tsee prog2$) forms, e.g.,</p>
 
@@ -18176,9 +18188,6 @@ subtree of X with T, without duplication.</p>
  })
 
  <p>then call @(tsee fmt-to-comment-window) instead.</p>
-
- <p>Also see @(see cw!), which is useful if you want to be able to read the
- printed forms back in.</p>
 
  <p>Finally, we discuss another way to create formatted output that also avoids
  the need to pass in the ACL2 @(tsee state).  The idea is to use wormholes; see
@@ -18217,11 +18226,31 @@ subtree of X with T, without duplication.</p>
  })")
 
 (defxdoc cw!
-  :parents (io acl2-built-ins)
-  :short "Print to the comment window"
-  :long "<p>This is nearly the same as @(tsee cw), but @('cw!') avoids
+  :parents (cw io acl2-built-ins)
+  :short "Print readably to the comment window"
+  :long "<p>See @(see cw) for important background.</p>
+
+ <p>This is nearly the same as @(tsee cw), but @('cw!') avoids
  inserting backslash (\\) characters when forced to print past the right
  margin.  Use @('cw!') if you want to be able to read the forms back in.</p>")
+
+(defxdoc cw+
+  :parents (cw io acl2-built-ins)
+  :short "Print uninhibited to the comment window"
+  :long "<p>See @(see cw) for important background.</p>
+
+ <p>This is nearly the same as @(tsee cw), but @('cw+') always produces output,
+ even when the @('COMMENT') output type is inhibited (see @(see
+ set-inhibit-output-lst)).</p>")
+
+(defxdoc cw!+
+  :parents (cw io acl2-built-ins)
+  :short "Print readably and uninhibited to the comment window"
+  :long "<p>See @(see cw) for important background.</p>
+
+ <p>This is nearly the same as @(tsee cw), but @('cw+') always produces
+ readable output (like @(tsee cw!)), even when the @('COMMENT') output type is
+ inhibited (like @(tsee cw+)).</p>")
 
 (defxdoc cw-gstack
   :parents (break-rewrite debugging)
@@ -19024,11 +19053,6 @@ subtree of X with T, without duplication.</p>
  <li>@('(FLET ((name args dcl ... dcl body) ...))')</li>
  </ul>
 
- <p>Of course, if a form macroexpands into one of these (e.g., as @(tsee let*)
- expands into nested @(tsee let)s and our @('er-let*') expands into nested
- @(tsee mv-let)s) then declarations are permitted as handled by the macros
- involved.</p>
-
  <p>Each of the cases above permits certain declarations, as follows.</p>
 
  <ul>
@@ -19039,6 +19063,13 @@ subtree of X with T, without duplication.</p>
  <li>@('MV-LET'): @(`(cdr (assoc-eq 'mv-let *acceptable-dcls-alist*))`)</li>
  <li>@('FLET'): @(`(cdr (assoc-eq 'flet *acceptable-dcls-alist*))`)</li>
  </ul>
+
+ <p>Of course, declarations are permitted in macro calls to the extent that
+ they are permitted in the macroexpansions.  For example, @('declare') forms
+ generated by calls of @(tsee let*) and @(tsee case-match) may wind up in
+ corresponding @(tsee let) forms in the macroexpansions, where they would be
+ subject to the restrictions on @('declare') forms for @('let') shown just
+ above.</p>
 
  <p>Also see @(see lambda) for discussion of lambda objects and their legal
  @('declare') forms.</p>
@@ -23202,17 +23233,18 @@ subtree of X with T, without duplication.</p>
 
  <p>where @('name') is a new symbol; each @('fieldi') is a symbol; each
  @('typei') is either a type-indicator (a @(tsee type-spec) or @(see stobj)
- name), of the form @('(ARRAY type-indicator (max))'), or of the form
- @('(HASH-TABLE test)') or @('(HASH-TABLE test size)'); each @('vali') is an
- object satisfying @('typei'); and each @('bi') is @('t') or @('nil').  Each
- pair @(':initially vali') and @(':resizable bi') may be omitted; more on this
- below.  The @(':renaming alist') argument is optional and allows the user to
- override the default function names introduced by this event.  The @(':inline
- flg') Boolean argument is also optional and declares to ACL2 that the
- generated access and update functions for the stobj should be implemented as
- macros under the hood (which has the effect of inlining the function calls).
- The optional @(':congruent-to old-stobj-name') argument specifies an existing
- stobj with exactly the same structure, and is discussed below.  The optional
+ name), of the form @('(ARRAY type-indicator (max))'), or of one of the forms
+ @('(HASH-TABLE test)'), @('(HASH-TABLE test size)'), @('(STOBJ-TABLE)'), or
+ @('(STOBJ-TABLE size)'); each @('vali') is an object satisfying @('typei');
+ and each @('bi') is @('t') or @('nil').  Each pair @(':initially vali') and
+ @(':resizable bi') may be omitted; more on this below.  The @(':renaming
+ alist') argument is optional and allows the user to override the default
+ function names introduced by this event.  The @(':inline flg') Boolean
+ argument is also optional and declares to ACL2 that the generated access and
+ update functions for the stobj should be implemented as macros under the
+ hood (which has the effect of inlining the function calls).  The optional
+ @(':congruent-to old-stobj-name') argument specifies an existing stobj with
+ exactly the same structure, and is discussed below.  The optional
  @(':non-memoizable nm-flg') and @(':non-executable ne-flg') Boolean arguments
  are ignored when @('nm-flg') and @('ne-flg') are @('nil'), but otherwise: the
  former instructs ACL2 to lay down faster code for functions that return the
@@ -23228,7 +23260,8 @@ subtree of X with T, without duplication.</p>
  creator, accessors, updaters, constants.  For fields of @('ARRAY') type, this
  event also introduces length and resize functions.  For fields of
  @('HASH-TABLE') type, this event also introduces boundp, get?, remove, count,
- clear, and initialization functions.</p>
+ clear, and initialization functions; similarly for @('STOBJ-TABLE') type,
+ except for the get? function, which is only for the @('HASH-TABLE') type.</p>
 
  <h3>The Single-Threaded Object Introduced</h3>
 
@@ -23247,11 +23280,11 @@ subtree of X with T, without duplication.</p>
  element of the stobj is initially of length specified by @('max').  If the
  @(':type') of a field is @('(HASH-TABLE test)') or @('(HASH-TABLE test
  size)'), then @('test') is one of the symbols @('EQ'), @('EQL'),
- @('HONS-EQUAL'), or @('EQUAL') and @('size'), if supplied, is a positive
- integer.  In that case the test is applied when looking up keys, where @(tsee
- hons-copy) is first applied to the key in the @('HONS-EQUAL') case; and the
- size is a hint to the host Lisp for the initial size of the associated hash
- table in raw Lisp.</p>
+ @('HONS-EQUAL'), or @('EQUAL'), while @('size'), if supplied as above or in
+ @('(STOBJ-TABLE size)'), is a positive integer.  In that case the test is
+ applied when looking up keys, where @(tsee hons-copy) is first applied to the
+ key in the @('HONS-EQUAL') case; and the size is a hint to the host Lisp for
+ the initial size of the associated hash table in raw Lisp.</p>
 
  <p>If the value of @(':type') is of the form @('(ARRAY type-indicator
  (max))') or just @('type-indicator'), then @('type-indicator') is typically a
@@ -23262,11 +23295,16 @@ subtree of X with T, without duplication.</p>
  @('HASH-TABLE') types do not specify a type indicator; thus, a hash-table
  field cannot contain stobjs as values.</p>
 
+ <p>A field with a @('STOBJ-TABLE') type is logically an association list whose
+ keys are @(see stobj) names, such that each stobj name is mapped to a stobj
+ satisfyin that stobj name's recognizer.  We say little more here about
+ stobj-tables; see @(see stobj-table) for relevant discussion.</p>
+
  <p>The keyword value @(':initially val') specifies the initial value of a
  field, except for the case of a @(':type') @('(ARRAY type-indicator (max))'),
  in which case @('val') is the initial value of the corresponding array.  Note
- that the @(':initially') field is ignored for @('HASH-TABLE') types, since
- hash tables are initially empty.</p>
+ that the @(':initially') field is ignored for @('HASH-TABLE') and
+ @('STOBJ-TABLE') types, since these are both initially empty.</p>
 
  <p>Note that the actual representation of the stobj in the underlying Lisp may
  be quite different; see @(see stobj-example-2).  For the moment we focus
@@ -23275,10 +23313,10 @@ subtree of X with T, without duplication.</p>
  <p>In addition, the @('defstobj') event introduces functions for recognizing
  and creating the stobj and for recognizing, accessing, and updating its
  fields.  For fields of @('ARRAY') type, length and resize functions are also
- introduced.  For fields of @('HASH-TABLE') type, this event also introduces
- boundp, get?, remove, count, clear, and initialization functions, as discussed
- below.  Constants are introduced that correspond to the accessor
- functions.</p>
+ introduced.  For fields of @('HASH-TABLE') or @('STOBJ-TABLE') type, this
+ event also introduces boundp, get? (@('HASH-TABLE') types only), remove,
+ count, clear, and initialization functions, as discussed below.  Constants are
+ introduced that correspond to the accessor functions.</p>
 
  <h3>Restrictions on the Field Descriptions in Defstobj</h3>
 
@@ -23294,10 +23332,12 @@ subtree of X with T, without duplication.</p>
  (unrestricted) and the initial value defaults to @('nil').</p>
 
  <p>Each @('typei') must be either a @(tsee type-spec) or else a list of the
- form @('(ARRAY type-spec (max))'), @('(HASH-TABLE test)'), or @('(HASH-TABLE
- test size)').  (Again, we are ignoring the case of nested stobjs, discussed
- elsewhere; see @(see nested-stobjs).)  The latter forms are said to be ``array
- types'' and ``hash-table types.''  Examples of legal @('typei') are:</p>
+ form @('(ARRAY type-spec (max))'), @('(HASH-TABLE test)'), @('(HASH-TABLE test
+ size)'), @('(STOBJ-TABLE)'), or @('(STOBJ-TABLE size)').  (Again, we are
+ ignoring the case of nested stobjs, discussed elsewhere; see @(see
+ nested-stobjs).)  The latter forms are said to be ``array types'',
+ ``hash-table types'', and stobj-table types (again, not discussed much here;
+ see @(see stobj-table)).  Examples of legal @('typei') are:</p>
 
  @({
   (INTEGER 0 31)
@@ -23305,6 +23345,7 @@ subtree of X with T, without duplication.</p>
   (ARRAY (SIGNED-BYTE 31) (16))
   (ARRAY (SIGNED-BYTE 31) (*c*)) ; where *c* has a non-negative integer value
   (HASH-TABLE HONS-EQUAL 70)
+  (STOBJ-TABLE 70)
  })
 
  <p>The @('typei') describes the objects which are expected to occupy the given
@@ -23314,8 +23355,8 @@ subtree of X with T, without duplication.</p>
 
  <h3>Scalar Types</h3>
 
- <p>We first discuss types that are neither array types nor hash-table types.
- We call these ``scalar types.''</p>
+ <p>We first discuss types that are neither array types, hash-table types, nor
+ stobj-table types.  We call these ``scalar types.''</p>
 
  <p>When @('typei') is a @(tsee type-spec) it restricts the contents, @('x'),
  of @('fieldi') according to the ``meaning'' formula given in the table for
@@ -23448,6 +23489,11 @@ subtree of X with T, without duplication.</p>
  argument was supplied in that type, then the size of the hash table depends on
  the host Lisp.</p>
 
+ <h3>Stobj-table Types</h3>
+
+ <p>As noted above, these are not discussed much here; see @(see
+ stobj-table).</p>
+
  <h3>The Default Function Names</h3>
 
  <p>To recap, in</p>
@@ -23471,7 +23517,7 @@ subtree of X with T, without duplication.</p>
  accessor function, for example, takes the stobj and returns the indicated
  component; the updater takes a new component value and the stobj and return a
  new stobj with the component replaced by the new value.  But that summary is
- inaccurate for array and hash-table fields.</p>
+ inaccurate for array, hash-table, and stobj-table fields.</p>
 
  <p>The accessor function for an array field does not take the stobj and return
  the indicated component array, which is a list of length specified by
@@ -23484,7 +23530,8 @@ subtree of X with T, without duplication.</p>
  those for array fields.  Thus, the accessor takes an additional key argument
  and returns the associated value, or nil if the key is not bound.  The updater
  function takes a key, a new value, and the stobj, and returns a new stobj with
- the indicated element replaced by the new value.</p>
+ the indicated element replaced by the new value.  See @(see stobj-table) for a
+ discussion of stobj-table types, which are ignored below.</p>
 
  <p>These functions &mdash; the recognizer, accessor, and updater, and also
  length and resize functions in the case of array fields, and boundp, get?,
@@ -33173,10 +33220,25 @@ current fast alists."
  margin.  Use @('fmt!') if you want to be able to read the forms back in.</p>")
 
 (defxdoc fmt-to-comment-window
-  :parents (io acl2-built-ins)
+  :parents (cw io acl2-built-ins)
   :short "Print to the comment window"
-  :long "<p>See @(see cw) for an introduction to the comment window and the
- usual way to print it.</p>
+  :long "
+ @({
+  General Form:
+  (fmt-to-comment-window fmt-string alist col evisc-tuple print-base-radix)
+ })
+
+ <p>where these arguments are as described for @(tsee fmt1) (see @(see fmt))
+ except that the last argument is as described for @(tsee
+ cw-print-base-radix).</p>
+
+ <p>See @(see cw) for important background.  Calls of the macro @('cw') expand
+ to calls of the function @('fmt-to-comment-window') whose final three
+ arguments are @('0'), @('nil'), and @('nil').  For variants of
+ @('fmt-to-comment-window') that provide readable output (suffix @('\"!\"'))
+ and are never inhibited (suffix @('\"+\"')), see @(see
+ fmt-to-comment-window!), @(see fmt-to-comment-window+), and @(see
+ fmt-to-comment-window!+).</p>
 
  <p>Function @('fmt-to-comment-window') is similar to @('fmt1') (see @(see
  fmt)), except that the channel is @(tsee *standard-co*) and the ACL2 @(tsee
@@ -33186,19 +33248,40 @@ current fast alists."
  @('cw-print-base-radix'); see @(see cw-print-base-radix).  An analogous
  function, @('fmt-to-comment-window!'), prints with @(tsee fmt!) instead of
  @(tsee fmt), in order to avoid insertion of backslash (\\) characters for
- margins; also see @(see cw!).  Note that even if you change the value of
- @(tsee ld) special @('standard-co') (see @(see standard-co)),
+ margins; also see @(see cw!), a macro that expands to a call of
+ @('fmt-to-comment-window!).  Note that even if you change the value of @(tsee
+ ld) special @('standard-co') (see @(see standard-co)),
  @('fmt-to-comment-window') will print to @(tsee *standard-co*), which is the
- original value of @(tsee standard-co).</p>
+ original value of @(tsee standard-co).</p>")
 
- @({
-  General Form:
-  (fmt-to-comment-window fmt-string alist col evisc-tuple print-base-radix)
- })
+(defxdoc fmt-to-comment-window!
+  :parents (cw io acl2-built-ins)
+  :short "Print readably to the comment window"
+  :long "<p>See @(see cw) for important background.</p>
 
- <p>where these arguments are as described for @(tsee fmt1) (see @(see fmt))
- except that the last argument is as described for @(tsee
- cw-print-base-radix).</p>")
+ <p>This is nearly the same as @(tsee fmt-to-comment-window), but
+ @('fmt-to-comment-window!') avoids inserting backslash (\\) characters when
+ forced to print past the right margin.  Use @('fmt-to-comment-window!') if you
+ want to be able to read the forms back in.</p>")
+
+(defxdoc fmt-to-comment-window+
+  :parents (cw io acl2-built-ins)
+  :short "Print uninhibited to the comment window"
+  :long "<p>See @(see cw) for important background.</p>
+
+ <p>This is nearly the same as @(tsee fmt-to-comment-window), but
+ @('fmt-to-comment-window+') always produces output, even when the @('COMMENT')
+ output type is inhibited (see @(see set-inhibit-output-lst)).</p>")
+
+(defxdoc fmt-to-comment-window!+
+  :parents (cw io acl2-built-ins)
+  :short "Print readably and uninhibited to the comment window"
+  :long "<p>See @(see cw) for important background.</p>
+
+ <p>This is nearly the same as @(tsee fmt-to-comment-window), but
+ @('fmt-to-comment-window!+') always produces readable output (like @(tsee
+ fmt-to-comment-window!)), even when the @('COMMENT') output type is
+ inhibited (like @(tsee fmt-to-comment-window+)).</p>")
 
 (defxdoc fmt1
   :parents (io acl2-built-ins)
@@ -39036,12 +39119,12 @@ current fast alists."
  functions defined in @(':')@(tsee logic) mode.  The columns correspond to four
  values of state global @(''guard-checking-on'), as supplied to @(tsee
  set-guard-checking).  (A fifth value, @(':nowarn'), is similar to @('t') but
- suppresses warnings encountered with @('t') (as explained in those warning
- messages), and is not considered here.)  Note that @(''guard-checking-on') is
- set to @('nil') during proofs but is set to @('t') during @(tsee
- certify-book), and @(tsee include-book), regardless of how this variable has
- been set in the top-level loop (see the ``Essay on Guard Checking'' in source
- file @('other-events.lisp') if you are interested in a rationale).</p>
+ suppresses warnings; a remark with details for system hackers is at the end of
+ this topic.)  Note that @(''guard-checking-on') is set to @('nil') during
+ proofs but is set to @('t') during @(tsee certify-book), and @(tsee
+ include-book), regardless of how this variable has been set in the top-level
+ loop (see the ``Essay on Guard Checking'' in source file
+ @('other-events.lisp') if you are interested in a rationale).</p>
 
  <p>Below this table, we make some comments about its entries, ordered by row
  and then by column.  For example, when we refer to ``b2'' we are discussing
@@ -39138,7 +39221,18 @@ current fast alists."
 
  <p>If you want the speed of executing raw Lisp code and you have non-trivial
  guards on functions that you want to call at the top-level, use @('nil')
- rather than @(':none').</p>")
+ rather than @(':none').</p>
+
+ <p>Remark for system hackers.  As noted above, a fifth value, @(':nowarn'), is
+ similar to @('t') but suppresses warnings.  Only the four values in the column
+ headers above and @(':nowarn') are legal for @(tsee set-guard-checking),
+ @(tsee with-guard-checking), @(tsee with-guard-checking-error-triple), and
+ @(tsee with-guard-checking-event).  Behavior is technically undefined if you
+ set @(see state) global @('guard-checking-on') directly to other than those
+ five values, say using @(tsee assign), @(tsee f-put-global), or @(tsee
+ state-global-let*).  However, as of this writing (in August 2021), such a
+ value will cause the same behavior as value @(':nowarn').  End of
+ Remark.</p>")
 
 (defxdoc guard-example
   :parents (tutorial5-miscellaneous-examples guard)
@@ -66563,7 +66657,8 @@ it."
  include-book), in particular its ``soundness warning''.</li>
 
  <li>The printing of results in raw mode (see @(see set-raw-mode)) may now be
- partially controlled by the user: see @(see add-raw-arity).</li>
+ partially controlled by the user: see @('add-raw-arity').  [Note added 2021:
+ this utility has been removed and is no longer necessary.]</li>
 
  <li>For those using Unix/Linux `make': A @('cert.acl2') file can contain
  forms to be evaluated before an appropriate @(tsee certify-book) command is
@@ -67257,8 +67352,9 @@ it."
  in particular its ``soundness warning''.</p>
 
  <p>The printing of results in raw mode (see @(see set-raw-mode)) may now be
- partially controlled by the user: see @(see add-raw-arity).  Also, newlines
- are printed when necessary before the value is printed.</p>
+ partially controlled by the user: see @('add-raw-arity').  [Note added 2021:
+ this utility has been removed and is no longer necessary.]  Also, newlines are
+ printed when necessary before the value is printed.</p>
 
  <p>For those using Unix/Linux `make': A @('cert.acl2') file can contain forms
  to be evaluated before an appropriate @(tsee certify-book) command is invoked
@@ -74044,7 +74140,7 @@ it."
  <p>Bob Boyer and others have contributed numerous changes for the experimental
  ``@('hons')'' version of ACL2 (see @(see hons-and-memoization)).</p>
 
- <p>The ACL2 @(tsee state) can now be queried with @('(@ hons-enabled)') so
+ <p>The ACL2 @(tsee state) can now be queried with @('(@ hons-enabledp)') so
  that a result of @('t') says that one is in the experimental @('hons')
  version, while @('nil') says the opposite.</p>")
 
@@ -78771,7 +78867,7 @@ it."
 ;                            (BAD-ACCESSOR-LOGIC MY-STOBJ-ABS))))
 ;
 ;   (defabsstobj my-stobj-abs
-;      :concrete my-stobj-impl
+;      :foundation my-stobj-impl
 ;      :recognizer (my-stobj-absp :logic my-stobj-logicp :exec my-stobj-implp)
 ;      :creator (create-my-stobj-abs :logic create-my-stobj-logic :exec
 ;                                    create-my-stobj-impl)
@@ -81092,7 +81188,7 @@ it."
 ;           (st2$cp (update-st2$a st1 st2)))
 ;      :rule-classes nil)
 ;    (defabsstobj st2
-;      :concrete st2$c
+;      :foundation st2$c
 ;      :creator (create-st2 :logic create-st2$a
 ;                        :exec create-st2$c)
 ;      :recognizer (st2p :logic st2$cp :exec st2$cp)
@@ -86846,7 +86942,7 @@ it."
  NAME)') and @('(:guard-theorem NAME)').</p>
 
  <p>We improved redundancy checking for @(tsee defun) forms so that it is not
- sensitive to whether @(tsee state) has a @(':stobj') declaration.</p>
+ sensitive to whether @(tsee state) has a @(':stobjs') declaration.</p>
 
  <p>The @(see warnings) for weak @(see type-prescription) rules have been
  eliminated.  These warnings were issued when a rule was insufficient to prove
@@ -87590,8 +87686,9 @@ it."
  </ul>
 
  <p>It is no longer illegal to supply an abstract stobj as the so-called
- ``concrete stobj'' in a @(tsee defabsstobj) event.  Thanks to Sol Swords for
- initiating a discussion leading to this enhancement.</p>
+ ``foundational'' (formerly ``concrete'') stobj in a @(tsee defabsstobj) event.
+ Thanks to Sol Swords for initiating a discussion leading to this
+ enhancement.</p>
 
  <p>Calls of the function @('synp') were formerly required to result from
  macroexpansion of @(tsee syntaxp) or @(tsee bind-free) calls, or at least
@@ -88198,7 +88295,7 @@ it."
  macro can be made effectively untouchable by defining it with the new utility,
  @(tsee defmacro-untouchable).  Note that the alleged support for untouchable
  macros was already incomplete, as explained in an example in the form
- @('(deflabel note-8-3 ...)') in @(see community-book)
+ @('(defxdoc note-8-3 ...)') in @(see community-book)
  @('books/system/doc/acl2-doc.lisp').</p>
 
  <p>The @(see event) macro, @(tsee thm), is now treated like @(tsee defthm) in
@@ -88416,7 +88513,7 @@ it."
 
  <p>The second pass of @(tsee encapsulate) now uses @(see fast-alists) when
  calculating new triples in the logical @(see world) (in ACL2 system function
- @('new-trips').  We have seen this change result in cutting the time by 4.7%
+ @('new-trips')).  We have seen this change result in cutting the time by 4.7%
  and the bytes allocated by 34% for including the community book,
  @('\"centaur/sv/top\"').</p>
 
@@ -88929,7 +89026,7 @@ it."
 ; values.
 
   :parents (release-notes)
-  :short "ACL2 Version  8.4 (xxx, 20xx) Notes"
+  :short "ACL2 Version  8.4 (August, 2021) Notes"
   :long "<p>NOTE!  New users can ignore these release notes, because the @(see
  documentation) has been updated to reflect all changes that are recorded
  here.</p>
@@ -89079,7 +89176,7 @@ it."
  suggesting this improvement and testing it on some proprietary books.</p>
 
  <p>When supplying @('state') as an argument to @(tsee defun-nx) (or @(tsee
- defund-nx), it is no longer necessary to declare @('state') as a @(see stobj)
+ defund-nx)), it is no longer necessary to declare @('state') as a @(see stobj)
  or use @(tsee set-state-ok).  Thanks to Eric Smith for suggesting the
  possibility of this change.</p>
 
@@ -89962,8 +90059,8 @@ it."
  manual if you have a newer web-based version.  A ``yes'' response will use
  the (out-of-date) manual, while a ``no'' response will generally produce a new
  query asking if you want to download the manual from the web.  This change was
- made in support building the manual more quickly, as the acl2-doc manual is no
- longer built by default.  See @(see acl2-doc) for how to do that build and
+ made in support of building the manual more quickly, as the acl2-doc manual is
+ no longer built by default.  See @(see acl2-doc) for how to do that build and
  other details.  Thanks to Alessandro Coglio, Eric Smith, and Sol Swords for
  discussions about speeding up the build of the manual.</p>
 
@@ -89982,6 +90079,210 @@ it."
  the @(see state) global, @(''waterfall-parallelism'), or upon a transition of
  @(see waterfall-parallelism) to @('nil').  Thanks to David Rager for raising
  this issue (see GitHub Issue #1171) and discussing its resolution.</p>
+
+ ")
+
+(defxdoc note-8-5
+
+; The new state global pc-info has as its value a pc-info record, whose
+; components replace the four state globals pc-print-macroexpansion-flg,
+; pc-print-prompt-and-instr-flg, pc-prompt, and pc-prompt-depth-prefix.
+; Reducing the number of state globals can be useful for putting less stress
+; on compilation of calls of the macro protect-system-state-globals.
+
+; Here is an example regarding the item, "Strengthened syntax checking for
+; accessor expressions in stobj-let bindings."  It was accepted in ACL2 Version
+; 8.4 even though it should not have been; see the comment "forgot index!"
+; below.
+;
+;   (defstobj kid1 fld1)
+;   (defstobj kid2 fld2)
+;   (defstobj mom
+;     (kid1-field :type kid1)
+;     (kid2-ar-field :type (array kid2 (5)))
+;     last-op)
+;   (set-ignore-ok t)
+;   ; Should be rejected (see comment below):
+;   (defun foo (index mom)
+;     (declare (xargs :stobjs mom
+;                     :mode :program
+;                     :guard (and (natp index)
+;                                 (< index (kid2-ar-field-length mom)))))
+;     (stobj-let
+;      ((kid1 (kid1-field mom))
+;       (kid2 (kid2-ar-fieldi mom))) ; forgot index!
+;      (kid1 kid2)
+;      (mv kid1 kid2)
+;      mom))
+
+; Implementation note: Added a stobj-property record, now used as the value of
+; the 'stobj property of a stobj name.
+
+; Changed a function name, print-list-without-stobj-arrays, to
+; replace-live-stobjs-in-list, since live stobjs can now be hash-tables (in the
+; case of stobjs with a single field that is of stobj-table type).
+
+; Built-in raw Lisp function with-reckless-read did some unnecessary work as
+; opposed to with-reckless-readtable, so the former was eliminated and its
+; calls were replaced by calls of with-reckless-readtable.
+
+; The special case in translate11 for check-vars-not-free was removed,
+; deferring to its (slightly improved) handling of translate-and-test.
+
+; Documented (in :doc guard-evaluation-table) that values of state global
+; guard-checking-on other than the five that are supported are treated like
+; :nowarn (and can only be set directly, not with set-guard-checking or
+; with-guard-checking etc.).
+
+  :parents (release-notes)
+  :short "ACL2 Version  8.5 (xx, 20xx) Notes"
+  :long "<p>NOTE!  New users can ignore these release notes, because the @(see
+ documentation) has been updated to reflect all changes that are recorded
+ here.</p>
+
+ <p>Below we roughly organize the changes to ACL2 since Version 8.4 into the
+ following categories of changes: existing features, new features, heuristic
+ and efficiency improvements, bug fixes, changes at the system level, Emacs
+ support, and experimental versions.  Each change is described in just one
+ category, though of course many changes could be placed in more than one
+ category.</p>
+
+ <p>Note that only ACL2 system changes are listed below.  See also @(see
+ note-8-5-books) for a summary of changes made to the ACL2 Community Books
+ since ACL2 8.4, including the build system.  Also note that with each release,
+ it is typical that the value of constant @(tsee *acl2-exports*) has been
+ extended, and that some built-in functions that were formerly in @(':')@(tsee
+ program) mode are now @(see guard)-verified @(':')@(tsee logic) mode
+ functions.</p>
+
+ <h3>Changes to Existing Features</h3>
+
+ <p>Weakened hypotheses from built-in theorems (thus strengthening them)
+ @('symbol-equality'), @('true-listp-first-n-ac-type-prescription'),
+ @('ordered-symbol-alistp-getprops'), @('add-pair-preserves-all-boundp'), and
+ @('symbol<-asymmetric').  Eliminated built-in theorem
+ @('main-timer-type-prescription') entirely (that rule was already deduced by
+ ACL2 at definition time).  Simplified guards slightly for built-in functions
+ @('serialize-write-fn') and @('serialize-read-fn').  Thanks to Eric Smith for
+ correspondence, based on his linter, leading to these improvements.</p>
+
+ <p>The utility @(tsee without-evisc) formerly always (or nearly always)
+ returned the @(see error-triple) @('(mv nil :invisible state)') after printing
+ the result.  Now it generally returns @('(mv t nil state)') when evaluation of
+ the given form causes an error.  See @(see without-evisc).  Thanks to Karthik
+ Nukala and Eric Smith for reporting the former (undesirable) behavior.</p>
+
+ <p>One would get an error when including an uncertified book when a
+ @(':type-prescription') specified in an @(tsee xargs) @(see declaration)
+ failed a validity check, even when no such failure occurs when that book is
+ certified.  (That could happen because type-prescription information from
+ locally included books is saved in the book's @(see certificate) file and is
+ used when checking such @(':type-prescription') declarations.)  This situation
+ now generates a warning rather than an error.  Thanks to Karthik Nukala and
+ Eric Smith for sending an example that pointed out this problem.</p>
+
+ <p>Output from @(':')@(tsee oops) may now be inhibited as @('OBSERVATION')
+ output, by using @(tsee set-inhibit-output-lst) or @(tsee with-output).</p>
+
+ <p>@(csee Raw-mode) has been fixed so that reasonable results are printed when
+ multiple values are returned by a function defined in raw-mode or raw Lisp
+ (rather than in the logic).  The following examples illustrate the problem and
+ the fixed behavior.  The utilities @('add-raw-arity') and
+ @('remove-raw-arity') are no longer necessary (and they had no effect anyhow,
+ at least in recent ACL2 versions), so they have been removed.</p>
+
+ @({
+ (defstobj st fld)
+ (set-raw-mode-on!)
+ (defun f1 (st) st)
+ (f1 st) ; printed a vector; now prints <st>
+ (defun f2 (state) state)
+ (f2 state) ; printed ACL2_INVISIBLE::|The Live State Itself|;
+            ; now prints <state>
+ (defun bar (x st state) (mv x st state))
+ (bar 3 st state) ; printed 3; now prints (3 <st> <state>)
+ })
+
+ <p>The keyword @(':concrete') for @(tsee defabsstobj) and the keyword
+ @(':witness-dcls') for @(tsee defun-sk) are no longer supported, as they were
+ deprecated in ACL2 Version 8.4 in favor of @(':foundation') and @(tsee
+ declare) forms, respectively.  Also: the following symbols, deprecated in ACL2
+ Version 8.4, are no longer names of @(see events).</p>
+
+ @({
+ logical-defun
+ merge-sort-symbol-<
+ merge-symbol-<
+ strict-merge-sort-symbol-<
+ strict-merge-sort-symbol-<-cdrs
+ strict-merge-symbol-<
+ strict-symbol-<-sortedp
+ symbol-<
+ })
+
+ <h3>New Features</h3>
+
+ <p>One can now suppress output from @(tsee cw), @(tsee cw!), @(tsee
+ fmt-to-comment-window), and @(tsee fmt-to-comment-window!), and from utilities
+ that use these such as @(tsee time$), by inhibiting a new output type,
+ @('COMMENT').  (Thus, that symbol has been added to the value of
+ @('*valid-output-names*').  See @(see set-inhibit-output-lst) and @(see
+ with-output).  Thanks to Eric McCarthy for a conversation via GitHub Issue
+ #1293 that led to this enhancement.  Moreover, new macros @(tsee cw+) and
+ @(tsee cw!+) and new functions @(tsee fmt-to-comment-window+) and @(tsee
+ fmt-to-comment-window!+) never suppress output; the @('\"+\"') suffix is
+ intended to indicate that feature.  Thus, these new utilities behave like the
+ previous utilities without the @('\"+\"') suffix.  Thanks to Eric Smith,
+ Karthik Nukala, and Alessandro Coglio for observing inappropriate suppression
+ of output from the utility @(tsee er-soft+) and the connection of this problem
+ to the addition of the @('COMMENT') output type; it was resolved by using
+ @('fmt-to-comment-window+') in place of @('fmt-to-comment-window') in the
+ implementation of a utility underlying @('er-soft+') (see @(see
+ community-book) @('books/tools/er-soft-logic.lisp')).</p>
+
+ <p>You can now arrange that an interrupt will kill a proof immediately by
+ evaluating @('(assign abort-soft nil)'), and you can restore the default
+ behavior &mdash; where an interrupt instructs the proof to quick cleanly at an
+ appropriate opportunity &mdash; by evaluating @('(assign abort-soft t)').
+ Note that this can interfere with @(':')@(tsee redo-flat); see @(see
+ abort-soft).  Thanks to Eric Smith for reporting an inability to abort a
+ series of proof attempts using the @(tsee prove$) utility, which led to this
+ enhancement.</p>
+
+ <p>A @(see stobj) may now have a field of type @('STOBJ-TABLE'), which
+ associates arbitrary stobj names with corresponding stobjs.  As of this
+ writing, that feature should be considered experimental; see @(see
+ stobj-table).  Thanks to Rob Sumners for suggesting the idea and to him and
+ Sol Swords for useful design discussions.</p>
+
+ <h3>Heuristic and Efficiency Improvements</h3>
+
+ <h3>Bug Fixes</h3>
+
+ <p>Fixed an error that could occur when the @(see break-rewrite) utility is
+ displaying failure information for an attempt to apply a @(see linear) rule
+ containing @(see free-variables).  Thanks to Karthik Nukala and Eric Smith for
+ sending a bug report with a replayable example.</p>
+
+ <p>Strengthened syntax checking for accessor expressions in @(tsee stobj-let)
+ bindings.  See a comment about this in @('(defxdoc note-8-5 ...)').</p>
+
+ <h3>Changes at the System Level</h3>
+
+ <p>The @(see hons-enabled) features of ACL2 (@(tsee hons), @(see memoization),
+ and @(see fast-alists)) have been included in ACL2 builds by default since
+ Version 7.0 (January, 2015) and in all ACL2 builds since Version 7.2 (January,
+ 2016).  Now, essentially all support for building ACL2 without these features
+ has been removed.  The function @('(hons-enabledp state)') and the feature
+ @(':hons') both remain, but are always true and are deprecated, scheduled for
+ removal very soon after the next release.  The feature @(':acl2-mv-as-values')
+ was always true when feature @(':hons') was present, hence was always true; so
+ it has been removed (and @('#-acl2-mv-as-values') code has been
+ eliminated).</p>
+
+ <h3>EMACS Support</h3>
+
+ <h3>Experimental Versions</h3>
 
  ")
 
@@ -100951,7 +101252,7 @@ arithmetic) for libraries of @(see books) for arithmetic reasoning.</p>")
  see a summary of the events that executed successfully.</p>
 
  <p>You can eliminate some of the steps above by supplying keyword values, as
- follows.</p>
+ follows, where those arguments are not evaluated.</p>
 
  @({
   (redo-flat
@@ -101014,7 +101315,8 @@ arithmetic) for libraries of @(see books) for arithmetic reasoning.</p>")
  <p>Normally, @('redo-flat') will have the desired effect even if you
  interrupted a proof (with control-c).  However, @('redo-flat') will not
  produce the desired result after an interrupt if you have enabled the debugger
- using @('(set-debugger-enable t)'),</p>")
+ using @('(set-debugger-enable t)') or if you have disabled the default
+ ``soft'' interrupt behavior (see @(see abort-soft)).</p>")
 
 (defxdoc redundant-encapsulate
   :parents (encapsulate)
@@ -101286,7 +101588,7 @@ arithmetic) for libraries of @(see books) for arithmetic reasoning.</p>")
  the same set of function symbols.</li>
 
  <li>The @(see stobj)s declared by the two definitions are allowed to disagree
- on @('state'): one can declare @('state') among its declared @(':stobj')
+ on @('state'): one can declare @('state') among its declared @(':stobjs')
  values while the other does not, regardless of whether or not @(tsee
  set-state-ok) has been evaluated.  That is, they only need to agree on the
  <i>user-defined</i> stobjs.</li>
@@ -102004,15 +102306,6 @@ arithmetic) for libraries of @(see books) for arithmetic reasoning.</p>")
  books) or @(tsee encapsulate) @(see events) in which it occurs.  See @(see
  remove-override-hints); also see @(see add-override-hints) and see @(see
  set-override-hints).</p>")
-
-(defxdoc remove-raw-arity
-  :parents (set-raw-mode)
-  :short "Remove arity information for raw mode"
-  :long "<p>Technical note: This macro is a no-op, and is not necessary, when
- ACL2 is built with #-acl2-mv-as-values.</p>
-
- <p>The form @('(remove-raw-arity fn)') undoes the effect of an earlier
- @('(remove-raw-arity fn val)').  See @(see add-raw-arity).</p>")
 
 (defxdoc remove-untouchable
   :parents (defttag)
@@ -106930,7 +107223,7 @@ arithmetic) for libraries of @(see books) for arithmetic reasoning.</p>")
   :short "Control suppression of details when printing"
   :long "<p>ACL2 output is generally printed in full.  However, ACL2 can be
  directed to abbreviate, or ``eviscerate'', objects before printing them,
- though the use of a so-called ``evisc-tuple''.  See @(see evisc-tuple) for a
+ through the use of a so-called ``evisc-tuple''.  See @(see evisc-tuple) for a
  discussion of evisc-tuples.  The utility @('set-evisc-tuple') modifies certain
  global evisc-tuples, as explained below, to affect the extent to which ACL2
  eviscerates objects during printing, for example during proof output or when
@@ -107808,6 +108101,7 @@ arithmetic) for libraries of @(see books) for arithmetic reasoning.</p>")
     history        output from history commands such as :ubt and :pbt
     summary        the summary at the successful conclusion of an event
     proof-tree     proof-tree output
+    comment        output from cw, cw!, and utilities like time$ that use them
  })
 
  <p>It is possible to inhibit each kind of output by putting the corresponding
@@ -109081,11 +109375,6 @@ arithmetic) for libraries of @(see books) for arithmetic reasoning.</p>")
  })")
 
 (defxdoc set-raw-mode
-
-; Version_8.3 had the following behavior described in :doc note-8-4.  This was
-; fixed by modifying the raw Lisp code for ACL2 source function acl2-raw-eval,
-; by using a new raw Lisp ACL2 source function, stobjs-out-raw.
-
   :parents (defttag)
   :short "Enter or exit ``raw mode,'' a raw Lisp environment"
   :long "<p>Below we discuss raw-mode.  In brief: The simplest way to turn
@@ -109187,15 +109476,45 @@ arithmetic) for libraries of @(see books) for arithmetic reasoning.</p>")
 
  <p>We conclude with some details.</p>
 
- <p><i>Printing results</i>.  The rules for printing results are essentially
- unchanged for raw mode, with one major exception.  If the value to be printed
- would contain any Lisp object that is not a legal ACL2 object, then the
- @('print') routine is used from the host Lisp, rather than the usual ACL2
- printing routine.  The following example illustrates the printing used when an
- illegal ACL2 object needs to be printed.  Notice how that ``command
- conventions'' are observed (see @(see ld-post-eval-print)); the ``@('[Note')''
- occurs one space over in the second example, and no result is printed in the
- third example.</p>
+ <p><i>Printing results</i>.  The rules for printing results are mostly
+ unchanged for raw mode, even to the point of attempting appropriate printing
+ for state and stobjs (though this is merely heuristic when the top-level
+ function is defined in raw mode), for example as follows.</p>
+
+ @({
+ ACL2 !>(defstobj st fld)
+
+ Summary
+ Form:  ( DEFSTOBJ ST ...)
+ Rules: NIL
+ Time:  0.02 seconds (prove: 0.00, print: 0.00, other: 0.02)
+  ST
+ ACL2 !>(set-raw-mode-on!)
+
+ TTAG NOTE: Adding ttag :RAW-MODE-HACK from the top level loop.
+ ACL2 P>(defun f (st) st)
+ F
+ ACL2 P>(f st)
+ <st>
+ ACL2 P>(defun g (st state) (mv 3 st state))
+ G
+ ACL2 P>(g st state)
+ (3 <st> <state>)
+ ACL2 P>(defun h (state) (mv nil 17 state))
+ H
+ ACL2 P>(h state) ; notice the leading space; see below
+  17
+ ACL2 P>
+ })
+
+ <p>There is however one major exception.  If the value to be printed contains
+ any Lisp object that is not a legal ACL2 object, then the @('print') routine
+ is used from the host Lisp, rather than the usual ACL2 printing routine.  The
+ following example illustrates the printing used when an illegal ACL2 object
+ needs to be printed.  Notice how that ``command conventions'' are observed, as
+ indicated in the ``leading space'' comment above; see @(see
+ ld-post-eval-print).  In particular, the ``@('[Note')'' occurs one space over
+ in the second example, and no result is printed in the third example.</p>
 
  @({
   ACL2 P>(find-package \"ACL2\")
@@ -112802,7 +113121,7 @@ arithmetic) for libraries of @(see books) for arithmetic reasoning.</p>")
  <p>Returning to the admission of @('show-counters') above, the last sentence
  printed indicates that the @(tsee guard) conjectures for the function were
  proved.  When some argument of a function is declared to be a single-threaded
- object via the @('xargs') @(':stobj'), we automatically add (conjoin) to the
+ object via the @('xargs'), @(':stobjs'), we automatically add (conjoin) to the
  guard the condition that the argument satisfy the recognizer for that
  single-threaded object.  In the case of @('show-counters') the guard is
  @('(countersp counters)').</p>
@@ -113627,6 +113946,18 @@ arithmetic) for libraries of @(see books) for arithmetic reasoning.</p>")
  <p>This completes the tour through the documentation of @(see stobj)s.
  However, you may now wish to read the documentation for the event that
  introduces a new single-threaded object; see @(see defstobj).</p>")
+
+(defxdoc stobj-table
+  :parents (stobj nested-stobjs)
+  :short "@(see Stobj) field mapping names to stobjs"
+  :long "<p>WARNING: Stobj-table fields of @(see stobj)s should be considered
+ experimental at this point!  This warning will probably be removed soon, and
+ when it is, stobj-table fields may be considered not to be experimental any
+ longer.</p>
+
+ <p>This documentation is a stub.  See @(see community-book)
+ @('books/system/tests/stobj-table-tests-input.lsp') for example uses of
+ stobj-tables.</p>")
 
 (defxdoc stop-proof-tree
   :parents (proof-tree)
@@ -123001,6 +123332,10 @@ introduction-to-the-tau-system) for more information about Tau.</dd>
  useful to use @(see disassemble$) to inspect the impact that your declarations
  have on the resulting code.</p>
 
+ <p>While type specs may be used in @(see defstobj) events, the @('HASH-TABLE')
+ and @('STOBJ-TABLE') type specs may only be used in those events.  We say
+ nothing further about them in the present topic.</p>
+
  <h3>Type Specs</h3>
 
  <p>The syntax that Common Lisp compilers use for these type
@@ -130837,13 +131172,15 @@ created from the original fast alist during @('form') must be manually freed."
  <p>We conclude with two remarks.  (1) A call of @('without-evisc') on
  expression @('exp') actually invokes a specialized call of @(tsee ld) on a
  one-element list containing @('exp'), which prints the value returned by
- evaluation of @('exp') but actually returns the useless value @('(mv nil
- :invisible state)').  So do not use @('without-evisc') in programs; just use
- it at the top level of the ACL2 read-eval-print loop, or at least the top
- level of @('ld').  (2) Even when using without-evisc, if the ACL2 logical
- @(see world) is part of the value returned, it will be printed in abbreviated
- form because the ACL2 read-eval-print loop always arranges for this to be the
- case, regardless of the ld-evisc-tuple.  For example:</p>
+ evaluation of @('exp').  It actually returns the useless value @('(mv nil
+ :invisible state)'), except that if an error is detected then it generally
+ returns @('(mv t nil state)'), indicating an error; see @(see error-triple).
+ So do not use @('without-evisc') in programs if you want the value of the
+ computation to be returned, rather than merely printed.  (2) Even when using
+ without-evisc, if the ACL2 logical @(see world) is part of the value returned,
+ it will be printed in abbreviated form because the ACL2 read-eval-print loop
+ always arranges for this to be the case, regardless of the ld-evisc-tuple.
+ For example:</p>
 
  @({
   ACL2 !>(without-evisc (w state))
@@ -130852,10 +131189,8 @@ created from the original fast alist during @('form') must be manually freed."
  })
 
  <p>An alternative to the use of @('without-evisc') is to explore large objects
- using the ACL2 function @('(walkabout object state)').  Some brief
- documentation is printed when you enter an interactive loop upon evaluating a
- call of @('walkabout').  We may add documentation for @('walkabout') if that
- is requested.</p>")
+ using the ACL2 function @('(walkabout object state)'); see @(see
+ walkabout).</p>")
 
 (defxdoc wof
   :parents (prover-output io)
@@ -133116,8 +133451,8 @@ run the given instructions"
  instruction ``succeeds'' if and only if each instruction in
  @('instruction-list') does.  (See @(see acl2-pc::sequence) for an explanation
  of ``success'' and ``failure.'')  As each instruction is executed, the system
- will print the usual prompt followed by that instruction, unless the global
- state variable @('pc-print-prompt-and-instr-flg') is @('nil').</p>
+ will print the usual prompt followed by that instruction, unless the value of
+ @('(access pc-info (@ pc-info) :print-prompt-and-instr-flg)') is @('nil').</p>
 
  <p><b>Remark:</b> If @('do-all') ``fails'', then the failure is hard if and
  only if the last instruction it runs has a hard ``failure''.</p>
@@ -135724,6 +136059,7 @@ expand function call at the current subterm, without simplifying"
 (defpointer implicate system-utilities)
 (defpointer induct hints t)
 (defpointer inline defun-inline)
+(defpointer interrupts abort-soft)
 (defpointer intersection-eq intersection$)
 (defpointer intersection-equal intersection$)
 (defpointer intersectp-eq intersectp)
@@ -135813,6 +136149,7 @@ expand function call at the current subterm, without simplifying"
 (defpointer quotep system-utilities)
 (defpointer rassoc-eq rassoc)
 (defpointer rassoc-equal rassoc)
+(defpointer raw-mode set-raw-mode)
 (defpointer read-byte$ io)
 (defpointer read-char$ io)
 (defpointer read-object io)
@@ -135870,6 +136207,7 @@ expand function call at the current subterm, without simplifying"
 (defpointer single-threaded-objects stobj)
 (defpointer split-types xargs t)
 (defpointer stable-under-simplificationp computed-hints)
+(defpointer step-limit with-prover-step-limit) ; referenced in :doc prove$
 (defpointer stobj-let nested-stobjs)
 (defpointer stobjp system-utilities)
 (defpointer stobjs xargs t)
@@ -135897,6 +136235,7 @@ expand function call at the current subterm, without simplifying"
 (defpointer tamep-lambdap tame)
 (defpointer thereis$ loop$)
 (defpointer thereis$+ loop$)
+(defpointer time-limit with-prover-time-limit) ; referenced in :doc prove$
 (defpointer too-many-ifs efficiency)
 (defpointer trans-eval-default-warning user-stobjs-modified-warnings)
 (defpointer trans-eval-no-warning user-stobjs-modified-warnings)
