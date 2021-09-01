@@ -77,7 +77,7 @@ Subtopics
   [defthm], [in-theory], [xargs], [state], etc., without an acl2::
   prefix.
 
-  The constant *acl2-exports* lists 1537 symbols, including most
+  The constant *acl2-exports* lists 1529 symbols, including most
   documented ACL2 system constants, functions, and macros.  You will
   typically also want to import many symbols from Common Lisp; see
   [*common-lisp-symbols-from-main-lisp-package*].
@@ -119,7 +119,6 @@ Subtopics
        add-match-free-override add-nth-alias
        add-override-hints add-override-hints!
        add-pair add-pair-preserves-all-boundp
-       add-raw-arity
        add-suffix add-suffix-to-fn
        add-timers add-to-set add-to-set-eq
        add-to-set-eql add-to-set-equal
@@ -400,8 +399,7 @@ Subtopics
        logeqv logic logic-fns-list-listp
        logic-fns-listp logic-fnsp
        logic-term-list-listp logic-term-listp
-       logic-termp logical-defun
-       logior lognand lognor lognot
+       logic-termp logior lognand lognor lognot
        logorc1 logorc2 logtest logxor loop$
        lower-case-p lower-case-p-char-downcase
        lower-case-p-forward-to-alpha-char-p
@@ -545,7 +543,7 @@ Subtopics
        remove-invisible-fns
        remove-macro-alias remove-macro-fn
        remove-nth-alias remove-override-hints
-       remove-override-hints! remove-raw-arity
+       remove-override-hints!
        remove-untouchable remove1 remove1-assoc
        remove1-assoc-eq remove1-assoc-equal
        remove1-eq remove1-equal
@@ -684,16 +682,13 @@ Subtopics
        string<-l-trichotomy
        string<= string> string>=
        stringp stringp-symbol-package-name
-       strip-cars strip-cdrs
-       sublis sublis-fn sublis-fn-lst-simple
-       sublis-fn-simple subseq subseq-list
-       subsequencep subsetp subsetp-eq
-       subsetp-equal subst substitute
-       substitute-ac suitably-tamep-listp
-       sum$ sum$+ summary swap-stobjs
-       symbol symbol-< symbol-<-asymmetric
-       symbol-<-irreflexive symbol-<-transitive
-       symbol-<-trichotomy symbol-alistp
+       strip-cars strip-cdrs sublis sublis-fn
+       sublis-fn-lst-simple sublis-fn-simple
+       subseq subseq-list subsequencep
+       subsetp subsetp-eq subsetp-equal
+       subst substitute substitute-ac
+       suitably-tamep-listp sum$ sum$+
+       summary swap-stobjs symbol symbol-alistp
        symbol-alistp-forward-to-eqlable-alistp
        symbol-doublet-listp
        symbol-equality symbol-listp
@@ -42585,12 +42580,12 @@ Subtopics
   consider functions defined in :[logic] mode.  The columns
   correspond to four values of state global 'guard-checking-on, as
   supplied to [set-guard-checking].  (A fifth value, :nowarn, is
-  similar to t but suppresses warnings encountered with t (as
-  explained in those warning messages), and is not considered here.)
-  Note that 'guard-checking-on is set to nil during proofs but is set
-  to t during [certify-book], and [include-book], regardless of how
-  this variable has been set in the top-level loop (see the ``Essay
-  on Guard Checking'' in source file other-events.lisp if you are
+  similar to t but suppresses warnings; a remark with details for
+  system hackers is at the end of this topic.)  Note that
+  'guard-checking-on is set to nil during proofs but is set to t
+  during [certify-book], and [include-book], regardless of how this
+  variable has been set in the top-level loop (see the ``Essay on
+  Guard Checking'' in source file other-events.lisp if you are
   interested in a rationale).
 
   Below this table, we make some comments about its entries, ordered by
@@ -42682,7 +42677,19 @@ Subtopics
 
   If you want the speed of executing raw Lisp code and you have
   non-trivial guards on functions that you want to call at the
-  top-level, use nil rather than :none.")
+  top-level, use nil rather than :none.
+
+  Remark for system hackers.  As noted above, a fifth value, :nowarn,
+  is similar to t but suppresses warnings.  Only the four values in
+  the column headers above and :nowarn are legal for
+  [set-guard-checking], [with-guard-checking],
+  [with-guard-checking-error-triple], and
+  [with-guard-checking-event].  Behavior is technically undefined if
+  you set [state] global guard-checking-on directly to other than
+  those five values, say using [assign], [f-put-global], or
+  [state-global-let*].  However, as of this writing (in August 2021),
+  such a value will cause the same behavior as value :nowarn.  End of
+  Remark.")
  (GUARD-EXAMPLE
   (TUTORIAL5-MISCELLANEOUS-EXAMPLES GUARD)
   "A brief transcript illustrating [guard]s in ACL2
@@ -86334,8 +86341,9 @@ Changes to Existing Features
       in the preceding release (see [note-8-1]), has been improved.
 
   It is no longer illegal to supply an abstract stobj as the so-called
-  ``concrete stobj'' in a [defabsstobj] event.  Thanks to Sol Swords
-  for initiating a discussion leading to this enhancement.
+  ``foundational'' (formerly ``concrete'') stobj in a [defabsstobj]
+  event.  Thanks to Sol Swords for initiating a discussion leading to
+  this enhancement.
 
   Calls of the function synp were formerly required to result from
   macroexpansion of [syntaxp] or [bind-free] calls, or at least
@@ -88318,6 +88326,21 @@ Changes to Existing Features
                ; now prints <state>
     (defun bar (x st state) (mv x st state))
     (bar 3 st state) ; printed 3; now prints (3 <st> <state>)
+
+  The keyword :concrete for [defabsstobj] and the keyword :witness-dcls
+  for [defun-sk] are no longer supported, as they were deprecated in
+  ACL2 Version 8.4 in favor of :foundation and [declare] forms,
+  respectively.  Also: the following symbols, deprecated in ACL2
+  Version 8.4, are no longer names of [events].
+
+    logical-defun
+    merge-sort-symbol-<
+    merge-symbol-<
+    strict-merge-sort-symbol-<
+    strict-merge-sort-symbol-<-cdrs
+    strict-merge-symbol-<
+    strict-symbol-<-sortedp
+    symbol-<
 
 
 New Features

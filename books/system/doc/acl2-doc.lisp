@@ -39119,12 +39119,12 @@ current fast alists."
  functions defined in @(':')@(tsee logic) mode.  The columns correspond to four
  values of state global @(''guard-checking-on'), as supplied to @(tsee
  set-guard-checking).  (A fifth value, @(':nowarn'), is similar to @('t') but
- suppresses warnings encountered with @('t') (as explained in those warning
- messages), and is not considered here.)  Note that @(''guard-checking-on') is
- set to @('nil') during proofs but is set to @('t') during @(tsee
- certify-book), and @(tsee include-book), regardless of how this variable has
- been set in the top-level loop (see the ``Essay on Guard Checking'' in source
- file @('other-events.lisp') if you are interested in a rationale).</p>
+ suppresses warnings; a remark with details for system hackers is at the end of
+ this topic.)  Note that @(''guard-checking-on') is set to @('nil') during
+ proofs but is set to @('t') during @(tsee certify-book), and @(tsee
+ include-book), regardless of how this variable has been set in the top-level
+ loop (see the ``Essay on Guard Checking'' in source file
+ @('other-events.lisp') if you are interested in a rationale).</p>
 
  <p>Below this table, we make some comments about its entries, ordered by row
  and then by column.  For example, when we refer to ``b2'' we are discussing
@@ -39221,7 +39221,18 @@ current fast alists."
 
  <p>If you want the speed of executing raw Lisp code and you have non-trivial
  guards on functions that you want to call at the top-level, use @('nil')
- rather than @(':none').</p>")
+ rather than @(':none').</p>
+
+ <p>Remark for system hackers.  As noted above, a fifth value, @(':nowarn'), is
+ similar to @('t') but suppresses warnings.  Only the four values in the column
+ headers above and @(':nowarn') are legal for @(tsee set-guard-checking),
+ @(tsee with-guard-checking), @(tsee with-guard-checking-error-triple), and
+ @(tsee with-guard-checking-event).  Behavior is technically undefined if you
+ set @(see state) global @('guard-checking-on') directly to other than those
+ five values, say using @(tsee assign), @(tsee f-put-global), or @(tsee
+ state-global-let*).  However, as of this writing (in August 2021), such a
+ value will cause the same behavior as value @(':nowarn').  End of
+ Remark.</p>")
 
 (defxdoc guard-example
   :parents (tutorial5-miscellaneous-examples guard)
@@ -78856,7 +78867,7 @@ it."
 ;                            (BAD-ACCESSOR-LOGIC MY-STOBJ-ABS))))
 ;
 ;   (defabsstobj my-stobj-abs
-;      :concrete my-stobj-impl
+;      :foundation my-stobj-impl
 ;      :recognizer (my-stobj-absp :logic my-stobj-logicp :exec my-stobj-implp)
 ;      :creator (create-my-stobj-abs :logic create-my-stobj-logic :exec
 ;                                    create-my-stobj-impl)
@@ -81177,7 +81188,7 @@ it."
 ;           (st2$cp (update-st2$a st1 st2)))
 ;      :rule-classes nil)
 ;    (defabsstobj st2
-;      :concrete st2$c
+;      :foundation st2$c
 ;      :creator (create-st2 :logic create-st2$a
 ;                        :exec create-st2$c)
 ;      :recognizer (st2p :logic st2$cp :exec st2$cp)
@@ -87675,8 +87686,9 @@ it."
  </ul>
 
  <p>It is no longer illegal to supply an abstract stobj as the so-called
- ``concrete stobj'' in a @(tsee defabsstobj) event.  Thanks to Sol Swords for
- initiating a discussion leading to this enhancement.</p>
+ ``foundational'' (formerly ``concrete'') stobj in a @(tsee defabsstobj) event.
+ Thanks to Sol Swords for initiating a discussion leading to this
+ enhancement.</p>
 
  <p>Calls of the function @('synp') were formerly required to result from
  macroexpansion of @(tsee syntaxp) or @(tsee bind-free) calls, or at least
@@ -90114,6 +90126,14 @@ it."
 ; opposed to with-reckless-readtable, so the former was eliminated and its
 ; calls were replaced by calls of with-reckless-readtable.
 
+; The special case in translate11 for check-vars-not-free was removed,
+; deferring to its (slightly improved) handling of translate-and-test.
+
+; Documented (in :doc guard-evaluation-table) that values of state global
+; guard-checking-on other than the five that are supported are treated like
+; :nowarn (and can only be set directly, not with set-guard-checking or
+; with-guard-checking etc.).
+
   :parents (release-notes)
   :short "ACL2 Version  8.5 (xx, 20xx) Notes"
   :long "<p>NOTE!  New users can ignore these release notes, because the @(see
@@ -90181,6 +90201,23 @@ it."
             ; now prints <state>
  (defun bar (x st state) (mv x st state))
  (bar 3 st state) ; printed 3; now prints (3 <st> <state>)
+ })
+
+ <p>The keyword @(':concrete') for @(tsee defabsstobj) and the keyword
+ @(':witness-dcls') for @(tsee defun-sk) are no longer supported, as they were
+ deprecated in ACL2 Version 8.4 in favor of @(':foundation') and @(tsee
+ declare) forms, respectively.  Also: the following symbols, deprecated in ACL2
+ Version 8.4, are no longer names of @(see events).</p>
+
+ @({
+ logical-defun
+ merge-sort-symbol-<
+ merge-symbol-<
+ strict-merge-sort-symbol-<
+ strict-merge-sort-symbol-<-cdrs
+ strict-merge-symbol-<
+ strict-symbol-<-sortedp
+ symbol-<
  })
 
  <h3>New Features</h3>
