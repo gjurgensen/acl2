@@ -2622,33 +2622,35 @@
  buffer.</p>
 
  @({
-  <Return>      acl2-doc-go!
-  g             acl2-doc-go
-  h             acl2-doc-help
-  ?             acl2-doc-summary
-  i             acl2-doc-index
-  ,             acl2-doc-index-next
-  <             acl2-doc-index-previous
-  l             acl2-doc-last
-  n             acl2-doc-search-next
-  p             acl2-doc-search-previous
-  q             acl2-doc-quit
-  r             acl2-doc-return
-  s             acl2-doc-search
-  S             acl2-doc-re-search
-  t             acl2-doc-top
-  u             acl2-doc-up
-  w             acl2-doc-where
-  SPC           scroll-up
-  TAB           acl2-doc-tab
+  <Return>        acl2-doc-go!
+  Shift-<Return>  acl2-doc-go!-new-buffer
+  g               acl2-doc-go
+  h               acl2-doc-help
+  ?               acl2-doc-summary
+  i               acl2-doc-index
+  ,               acl2-doc-index-next
+  <               acl2-doc-index-previous
+  l               acl2-doc-last
+  n               acl2-doc-search-next
+  p               acl2-doc-search-previous
+  q               acl2-doc-quit
+  K               acl2-doc-kill-buffers
+  r               acl2-doc-return
+  s               acl2-doc-search
+  S               acl2-doc-re-search
+  t               acl2-doc-top
+  u               acl2-doc-up
+  w               acl2-doc-where
+  SPC             scroll-up
+  TAB             acl2-doc-tab
   Control-TAB or <backtab> (which often is Shift-TAB):
-                acl2-doc-tab-back
-  D             acl2-doc-rendered-combined-download
-  H             acl2-doc-history
-  I             acl2-doc-initialize
-  /             acl2-doc-definition
-  Control-t /   acl2-doc-definition
-  W             acl2-doc-where-definition
+                  acl2-doc-tab-back
+  D               acl2-doc-rendered-combined-download
+  H               acl2-doc-history
+  I               acl2-doc-initialize
+  /               acl2-doc-definition
+  Control-t /     acl2-doc-definition
+  W               acl2-doc-where-definition
  })
 
  <p>You can see the documentation for each of these in the usual way, using
@@ -2660,6 +2662,11 @@
      Go to the topic occurring at the cursor position.  In the case
      of <NAME>, instead go to the source code definition of NAME for
      the current manual (as for `/', but without a minibuffer query).
+
+  Shift-<Return>  acl2-doc-go!-new-buffer
+     Go to the topic occurring at the cursor position in a new buffer.  In the
+     case of <NAME>, instead go to the source code definition of NAME for the
+     current manual (as for `/', but without a minibuffer query).
 
   g             acl2-doc-go
      Go to the specified topic; performs completion.
@@ -2674,7 +2681,7 @@
   i             acl2-doc-index
      Go to the specified topic or else one containing it as a substring;
      performs completion.  If the empty string is supplied, then go to the
-     index buffer.  Otherwise, with prefix argument, consider only descendants
+     index buffer.  Otherwise, with prefix argument, consider only descendents
      of the topic supplied in response to a prompt.  Note that the index buffer
      is in ACL2-Doc mode; thus, in particular, you can type <RETURN> while
      standing on a topic in order to go directly to that topic.
@@ -2683,45 +2690,57 @@
      Find the next topic containing, as a substring, the topic of the most
      recent i command.  Note: if this is the first \",\" or \"<\" after an
      exact match from \"i\", then start the topic search alphabetically from
-     the beginning, but avoid a second hit on the original topic.
+     the beginning, but avoid a second hit on the original topic.  Also note
+     that this command is buffer-local; it will follow the most recent i
+     command executed in the current ACL2-Doc buffer.
 
   <             acl2-doc-index-previous
-     Find the previous topic containing, as a substring, the topic of the
-     most recent i command.  Note: if this is the first \",\" or \"<\" after an
+     Find the previous topic containing, as a substring, the topic of the most
+     recent i command.  Note: if this is the first \",\" or \"<\" after an
      exact match from \"i\", then start the topic search alphabetically
-     (backwards) from that exact match.
+     (backwards) from that exact match.  Also note that this command is
+     buffer-local like the \",\" command.
 
   l             acl2-doc-last
-     Go to the last topic visited.
+     Go to the last topic visited in the current buffer.  This command is
+     buffer-local.
 
   n             acl2-doc-search-next
      Find the next occurrence for the most recent search or regular expression
-     search.
+     search.  Note that this command is buffer-local; it will follow the most
+     recent search initiated in the current buffer.
 
   p             acl2-doc-search-previous
      Find the previous occurrence for the most recent search or regular
      expression search.  Note: as for \"n\", the cursor will end up at the end
-     of the match.
+     of the match, and this command is buffer-local.
 
   q             acl2-doc-quit
-     Quit the ACL2-Doc browser.
+     Quit the current ACL2-Doc buffer.
+
+  K             acl2-doc-kill-buffers
+     Kill all background ACL2-Doc buffers.  If invoked in an ACl2-Doc buffer,
+     all ACl2-Doc buffers except the current one will be killed.  If invoked in
+     any other buffer, all ACL2-Doc buffers will be killed.  With prefix
+     argument, avoid a query that asks for confirmation.
 
   r             acl2-doc-return
-     Return to the last topic visited, popping the stack of such topics.
+     Return to the last topic visited in the current buffer, popping the stack
+     of such topics.  This command is buffer-local.
 
   s             acl2-doc-search
      Search forward from the top of the manual for the input string.  If the
      search succeeds, then go to that topic with the cursor put immediately
      after the found text, with the topic name displayed in the minibuffer.
      With prefix argument, consider (also for subsequent \"n\" and \"p\"
-     commands) only descendants of the topic supplied in response to a prompt.
+     commands) only descendents of the topic supplied in response to a prompt.
 
   S             acl2-doc-re-search
      Perform a regular expression search, forward from the top of the manual,
      for the input string.  If the search succeeds, then go to that topic with
      the cursor put immediately after the found text, with the topic name
      displayed in the minibuffer.  With prefix argument, consider (also for
-     subsequent \"n\" and \"p\" commands) only descendants of the topic
+     subsequent \"n\" and \"p\" commands) only descendents of the topic
      supplied in response to a prompt.
 
   t             acl2-doc-top
@@ -2751,10 +2770,11 @@
      restart the ACL2-Doc browser to view that manual.
 
   H             acl2-doc-history
-     Visit a buffer that displays the names of all visited topics in order,
-     newest at the bottom.  That buffer is in acl2-doc mode; thus the usual
-     acl2-doc commands may be used.  In particular, you can visit a displayed
-     topic name by putting your cursor on it and typing <RETURN>.
+     Visit a buffer that displays the names of all topics visited (in any
+     ACL2-Doc buffer) in order, newest at the bottom.  That buffer is in
+     acl2-doc mode; thus the usual acl2-doc commands may be used.  In
+     particular, you can visit a displayed topic name by putting your cursor on
+     it and typing <RETURN>.
 
   I             acl2-doc-initialize
      Restart the ACL2-Doc browser, clearing its state.  With a prefix argument,
@@ -2795,26 +2815,6 @@
  those books as well.  To change which of these two manuals you display, just
  give a prefix argument to the `@('I')' command, as described briefly
  above.</p>
-
- <p>The acl2-doc browser makes a query when first loading a manual if there is
- a newer web-based manual (specifically, comparing the write date of the
- acl2-doc manual, which is typically in
- @('books/system/doc/rendered-doc-combined.lsp'), to the write-date of the file
- @('books/doc/manual/index.html') when that file exists).  If you decline, then
- you will be given the opportunity to download that acl2-doc manual from the
- web.  If you prefer, you can rebuild the acl2-doc manual yourself when buiding
- the web-based manual, for example as follows.</p>
-
- @({
- cd <your_acl2_directory>/books
- make manual ACL2_DOC_GENERATE_SUPPORTING_FILES=t
- })
-
- <p>Note that the ``@('make')'' target, ``@('regression-everything')'',
- automatically sets @('ACL2_DOC_GENERATE_SUPPORTING_FILES'); or you can set it
- as an environment variable.  Any non-empty value other than (case-insensitive)
- @('SKIP') will cause the acl2-doc manual to be built when building the
- web-based manual.</p>
 
  <p>For the `@('/')' and `@('W')' commands, you will need tags table files.
  These come with the ACL2 gzipped tarfile distribution, but if you obtain ACL2
@@ -90285,6 +90285,14 @@ it."
  eliminated).</p>
 
  <h3>EMACS Support</h3>
+
+ <p>It is now possible to have more than one @(see acl2-doc) buffer.
+ A new buffer is created by using @('Shift-<Return>') to follow a
+ link.  Commands that are naturally specific to a given buffer
+ (such as searching and going back) are buffer-local.  Thanks to
+ Mayank Manjrekar for the idea and for supplying an implementation
+ (including documentation), which has been incorporated into the @(see
+ acl2-doc) source file, @('emacs/acl2-doc.el').</p>
 
  <h3>Experimental Versions</h3>
 
