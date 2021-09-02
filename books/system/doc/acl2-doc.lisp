@@ -90255,6 +90255,10 @@ it."
  stobj-table).  Thanks to Rob Sumners for suggesting the idea and to him and
  Sol Swords for useful design discussions.</p>
 
+ <p>The utility @(tsee wet) has a new keyword option, @(':fullp'), that allows
+ it to work even when there is a raw Lisp error.  Thanks to Eric Smith for
+ requesting that @('wet') be able to work in such cases.</p>
+
  <h3>Heuristic and Efficiency Improvements</h3>
 
  <h3>Bug Fixes</h3>
@@ -129738,6 +129742,27 @@ introduction-to-the-tau-system) for more information about Tau.</dd>
  provides a convenient way to obtain a backtrace when evaluation causes a guard
  violation or other error.</p>
 
+ <h3>Summary Documentation</h3>
+
+ @({
+  General Form:
+  (wet form           ; an arbitrary form
+       :book bk-form  ; optional, not evaluated; specify different wet book
+       ;;; the rest are optional and evaluated:
+       :compile c     ; :same, t, or nil; default :same (nil if :fns supplied)
+       :fullp h       ; nil by default, else handle some raw Lisp errors
+       :evisc-tuple e ; an evisc-tuple
+       :fns fns       ; :all, or a list of functions to show in a backtrace
+ })
+
+ <p>@('Form') is evaluated.  If there is an error, a backtrace stack is printed
+ to the standard output (@(tsee *standard-co*)), containing (by default) the
+ user-defined function calls made before the error.  Such printing is
+ controlled by the @(':evisc-tuple') if supplied; otherwise, hiding of large
+ structures will occur.</p>
+
+ <h3>Discussion</h3>
+
  <p>The basic idea is that @('(wet form)') evaluates @('form') and, if there is
  an error, shows a backtrace of calls that led to that error.  Note however
  that by default only calls of user-defined (not built-in) functions
@@ -129800,9 +129825,11 @@ introduction-to-the-tau-system) for more information about Tau.</dd>
  })
 
  <p>By default, large structures are hidden during the printing of the
- backtrace stack.  But you can supply a value for keyword argument
- @(':evisc-tuple') to modify the printing: @('nil') to avoid hiding, else a
- suitable evisc-tuple, as shown below (see @(see evisc-tuple)).</p>
+ backtrace stack.  (Technical detail: by default the global abbrev-evisc-tuple
+ is used, if bound; see @(see set-evisc-tuple).  But you can supply a value for
+ keyword argument @(':evisc-tuple') to modify the printing: @('nil') to avoid
+ hiding, else a suitable evisc-tuple, as shown below (see @(see
+ evisc-tuple)).</p>
 
  @({
   ACL2 !>(wet (g '(3 4)) :evisc-tuple (evisc-tuple 1 1 nil nil))
@@ -129829,22 +129856,75 @@ introduction-to-the-tau-system) for more information about Tau.</dd>
  But note that this object may not be a legal ACL2 value, for example because
  of the ``@('*1*')'' symbols shown above.</p>
 
+ <h3>Keyword Arguments</h3>
+
+ <p>The @(':fullp') option.  Consider the following example.</p>
+
  @({
-  General Form:
-  (wet form           ; an arbitrary form
-       :book bk-form  ; optional, not evaluated
-       ;;; the rest are optional and evaluated:
-       :evisc-tuple e ; an evisc-tuple
-       :fns fns       ; :all, or a list of functions to show in a backtrace
-       :compile c     ; :same, t, or nil; default :same (nil if :fns supplied)
+ (program)
+ (defun foo (x) (declare (xargs :guard (consp x))) (car x))
+ (defun bar (x) (foo (cdr x)))
+ (defun g (x) (bar (cdr x)))
+ ; Raw Lisp error:
+ (g '(3 4 . 5))
  })
 
- <p>@('Form') is evaluated.  If there is an error, a backtrace stack is printed
- to the standard output (@(tsee *standard-co*)), containing (by default) the
- user-defined function calls made before the error.  Such printing is
- controlled by the @(':evisc-tuple') if supplied; otherwise, hiding of large
- structures will occur.  (Technical detail: by default the global
- abbrev-evisc-tuple is used, if bound; see @(see set-evisc-tuple).</p>
+ <p>We may be initially disappointed using @('wet') on this example, as follows
+ &mdash; it didn't work!</p>
+
+ @({
+ ACL2 p!>(wet (g '(3 4 . 5)))
+
+ TTAG NOTE: Adding ttag :TRACE! from the top level loop.
+
+ ***********************************************
+ ************ ABORTING from raw Lisp ***********
+ ********** (see :DOC raw-lisp-error) **********
+ Error:  Fault during read of memory address #x2D
+ While executing: FOO
+ ***********************************************
+
+ The message above might explain the error.  If not, and
+ if you didn't cause an explicit interrupt (Control-C),
+ then the root cause may be call of a :program mode
+ function that has the wrong guard specified, or even no
+ guard specified (i.e., an implicit guard of t).
+ See :DOC raw-lisp-error and see :DOC guards.
+
+ To enable breaks into the debugger (also see :DOC acl2-customization):
+ (SET-DEBUGGER-ENABLE T)
+ ACL2 p!>
+ })
+
+ <p>The fix is to use @(':fullp t').</p>
+
+ @({
+ ACL2 p!>(wet (g '(3 4 . 5)) :fullp t)
+
+ TTAG NOTE: Adding ttag :TRACE! from the top level loop.
+
+
+ ACL2 Error in WET:  The guard for the :program function call (FOO X),
+ which is (CONSP X), is violated by the arguments in the call (FOO 5).
+ See :DOC set-guard-checking for information about suppressing this
+ check with (set-guard-checking :none), as recommended for new users.
+ To debug see :DOC print-gv, see :DOC trace, and see :DOC wet.
+
+
+ Backtrace stack:
+ ----------------
+ 1. (ACL2_*1*_ACL2::FOO 5)
+ 2. (ACL2_*1*_ACL2::BAR (4 . 5))
+ 3. (ACL2_*1*_ACL2::G (3 4 . 5))
+
+ ACL2 p!>
+ })
+
+ <p>Why doesn't @('wet') always do things this way?  The answer pertains to
+ performance.  When @(':fullp') is non-nil, @('wet') sets guard-checking to
+ @(':all') before evaluating the given form; see @(see set-guard-checking).
+ This may slow down evaluation substantially, which is why it is not the
+ default behavior.</p>
 
  <p>The @(':fns') option.  As mentioned above, by default the @('wet')
  backtrace shows user-defined functions that syntactically ``support'' the form
@@ -129890,6 +129970,8 @@ introduction-to-the-tau-system) for more information about Tau.</dd>
  invite you to share them with the ACL2 community (see @(see books)).  Note
  that you can also supply @(':book nil'), in which case the definition of
  @('wet!') in your current session will be used without including a book.</p>
+
+ <h3>Concluding Remark</h3>
 
  <p>Also see @(see trace$) for a general tracing utility.  As mentioned above,
  @('wet') is implemented using @('trace$').  @('Wet') actually first applies
