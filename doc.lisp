@@ -4875,33 +4875,35 @@ Silent loading of ACL2 customization files
   following key bindings; you can also see these by typing Control-h
   m while in that buffer.
 
-    <Return>      acl2-doc-go!
-    g             acl2-doc-go
-    h             acl2-doc-help
-    ?             acl2-doc-summary
-    i             acl2-doc-index
-    ,             acl2-doc-index-next
-    <             acl2-doc-index-previous
-    l             acl2-doc-last
-    n             acl2-doc-search-next
-    p             acl2-doc-search-previous
-    q             acl2-doc-quit
-    r             acl2-doc-return
-    s             acl2-doc-search
-    S             acl2-doc-re-search
-    t             acl2-doc-top
-    u             acl2-doc-up
-    w             acl2-doc-where
-    SPC           scroll-up
-    TAB           acl2-doc-tab
+    <Return>        acl2-doc-go!
+    Shift-<Return>  acl2-doc-go!-new-buffer
+    g               acl2-doc-go
+    h               acl2-doc-help
+    ?               acl2-doc-summary
+    i               acl2-doc-index
+    ,               acl2-doc-index-next
+    <               acl2-doc-index-previous
+    l               acl2-doc-last
+    n               acl2-doc-search-next
+    p               acl2-doc-search-previous
+    q               acl2-doc-quit
+    K               acl2-doc-kill-buffers
+    r               acl2-doc-return
+    s               acl2-doc-search
+    S               acl2-doc-re-search
+    t               acl2-doc-top
+    u               acl2-doc-up
+    w               acl2-doc-where
+    SPC             scroll-up
+    TAB             acl2-doc-tab
     Control-TAB or <backtab> (which often is Shift-TAB):
-                  acl2-doc-tab-back
-    D             acl2-doc-rendered-combined-download
-    H             acl2-doc-history
-    I             acl2-doc-initialize
-    /             acl2-doc-definition
-    Control-t /   acl2-doc-definition
-    W             acl2-doc-where-definition
+                    acl2-doc-tab-back
+    D               acl2-doc-rendered-combined-download
+    H               acl2-doc-history
+    I               acl2-doc-initialize
+    /               acl2-doc-definition
+    Control-t /     acl2-doc-definition
+    W               acl2-doc-where-definition
 
   You can see the documentation for each of these in the usual way,
   using Control-h k {key} or Control-h f {command}.  Here is what you
@@ -4911,6 +4913,11 @@ Silent loading of ACL2 customization files
        Go to the topic occurring at the cursor position.  In the case
        of <NAME>, instead go to the source code definition of NAME for
        the current manual (as for `/', but without a minibuffer query).
+
+    Shift-<Return>  acl2-doc-go!-new-buffer
+       Go to the topic occurring at the cursor position in a new buffer.  In the
+       case of <NAME>, instead go to the source code definition of NAME for the
+       current manual (as for `/', but without a minibuffer query).
 
     g             acl2-doc-go
        Go to the specified topic; performs completion.
@@ -4925,7 +4932,7 @@ Silent loading of ACL2 customization files
     i             acl2-doc-index
        Go to the specified topic or else one containing it as a substring;
        performs completion.  If the empty string is supplied, then go to the
-       index buffer.  Otherwise, with prefix argument, consider only descendants
+       index buffer.  Otherwise, with prefix argument, consider only descendents
        of the topic supplied in response to a prompt.  Note that the index buffer
        is in ACL2-Doc mode; thus, in particular, you can type <RETURN> while
        standing on a topic in order to go directly to that topic.
@@ -4934,45 +4941,57 @@ Silent loading of ACL2 customization files
        Find the next topic containing, as a substring, the topic of the most
        recent i command.  Note: if this is the first \",\" or \"<\" after an
        exact match from \"i\", then start the topic search alphabetically from
-       the beginning, but avoid a second hit on the original topic.
+       the beginning, but avoid a second hit on the original topic.  Also note
+       that this command is buffer-local; it will follow the most recent i
+       command executed in the current ACL2-Doc buffer.
 
     <             acl2-doc-index-previous
-       Find the previous topic containing, as a substring, the topic of the
-       most recent i command.  Note: if this is the first \",\" or \"<\" after an
+       Find the previous topic containing, as a substring, the topic of the most
+       recent i command.  Note: if this is the first \",\" or \"<\" after an
        exact match from \"i\", then start the topic search alphabetically
-       (backwards) from that exact match.
+       (backwards) from that exact match.  Also note that this command is
+       buffer-local like the \",\" command.
 
     l             acl2-doc-last
-       Go to the last topic visited.
+       Go to the last topic visited in the current buffer.  This command is
+       buffer-local.
 
     n             acl2-doc-search-next
        Find the next occurrence for the most recent search or regular expression
-       search.
+       search.  Note that this command is buffer-local; it will follow the most
+       recent search initiated in the current buffer.
 
     p             acl2-doc-search-previous
        Find the previous occurrence for the most recent search or regular
        expression search.  Note: as for \"n\", the cursor will end up at the end
-       of the match.
+       of the match, and this command is buffer-local.
 
     q             acl2-doc-quit
-       Quit the ACL2-Doc browser.
+       Quit the current ACL2-Doc buffer.
+
+    K             acl2-doc-kill-buffers
+       Kill all background ACL2-Doc buffers.  If invoked in an ACl2-Doc buffer,
+       all ACl2-Doc buffers except the current one will be killed.  If invoked in
+       any other buffer, all ACL2-Doc buffers will be killed.  With prefix
+       argument, avoid a query that asks for confirmation.
 
     r             acl2-doc-return
-       Return to the last topic visited, popping the stack of such topics.
+       Return to the last topic visited in the current buffer, popping the stack
+       of such topics.  This command is buffer-local.
 
     s             acl2-doc-search
        Search forward from the top of the manual for the input string.  If the
        search succeeds, then go to that topic with the cursor put immediately
        after the found text, with the topic name displayed in the minibuffer.
        With prefix argument, consider (also for subsequent \"n\" and \"p\"
-       commands) only descendants of the topic supplied in response to a prompt.
+       commands) only descendents of the topic supplied in response to a prompt.
 
     S             acl2-doc-re-search
        Perform a regular expression search, forward from the top of the manual,
        for the input string.  If the search succeeds, then go to that topic with
        the cursor put immediately after the found text, with the topic name
        displayed in the minibuffer.  With prefix argument, consider (also for
-       subsequent \"n\" and \"p\" commands) only descendants of the topic
+       subsequent \"n\" and \"p\" commands) only descendents of the topic
        supplied in response to a prompt.
 
     t             acl2-doc-top
@@ -5002,10 +5021,11 @@ Silent loading of ACL2 customization files
        restart the ACL2-Doc browser to view that manual.
 
     H             acl2-doc-history
-       Visit a buffer that displays the names of all visited topics in order,
-       newest at the bottom.  That buffer is in acl2-doc mode; thus the usual
-       acl2-doc commands may be used.  In particular, you can visit a displayed
-       topic name by putting your cursor on it and typing <RETURN>.
+       Visit a buffer that displays the names of all topics visited (in any
+       ACL2-Doc buffer) in order, newest at the bottom.  That buffer is in
+       acl2-doc mode; thus the usual acl2-doc commands may be used.  In
+       particular, you can visit a displayed topic name by putting your cursor on
+       it and typing <RETURN>.
 
     I             acl2-doc-initialize
        Restart the ACL2-Doc browser, clearing its state.  With a prefix argument,
@@ -5044,25 +5064,6 @@ Silent loading of ACL2 customization files
   ACL2+Books Manual, which includes documentation for those books as
   well.  To change which of these two manuals you display, just give
   a prefix argument to the `I' command, as described briefly above.
-
-  The acl2-doc browser makes a query when first loading a manual if
-  there is a newer web-based manual (specifically, comparing the
-  write date of the acl2-doc manual, which is typically in
-  books/system/doc/rendered-doc-combined.lsp, to the write-date of
-  the file books/doc/manual/index.html when that file exists).  If
-  you decline, then you will be given the opportunity to download
-  that acl2-doc manual from the web.  If you prefer, you can rebuild
-  the acl2-doc manual yourself when buiding the web-based manual, for
-  example as follows.
-
-    cd <your_acl2_directory>/books
-    make manual ACL2_DOC_GENERATE_SUPPORTING_FILES=t
-
-  Note that the ``make'' target, ``regression-everything'',
-  automatically sets ACL2_DOC_GENERATE_SUPPORTING_FILES; or you can
-  set it as an environment variable.  Any non-empty value other than
-  (case-insensitive) SKIP will cause the acl2-doc manual to be built
-  when building the web-based manual.
 
   For the `/' and `W' commands, you will need tags table files.  These
   come with the ACL2 gzipped tarfile distribution, but if you obtain
@@ -88379,6 +88380,10 @@ New Features
   [stobj-table].  Thanks to Rob Sumners for suggesting the idea and
   to him and Sol Swords for useful design discussions.
 
+  The utility [wet] has a new keyword option, :fullp, that allows it to
+  work even when there is a raw Lisp error.  Thanks to Eric Smith for
+  requesting that wet be able to work in such cases.
+
 
 Heuristic and Efficiency Improvements
 
@@ -88410,6 +88415,14 @@ Changes at the System Level
 
 
 EMACS Support
+
+  It is now possible to have more than one [ACL2-doc] buffer.  A new
+  buffer is created by using Shift-<Return> to follow a link.
+  Commands that are naturally specific to a given buffer (such as
+  searching and going back) are buffer-local.  Thanks to Mayank
+  Manjrekar for the idea and for supplying an implementation
+  (including documentation), which has been incorporated into the
+  [ACL2-doc] source file, emacs/acl2-doc.el.
 
 
 Experimental Versions")
@@ -130528,6 +130541,27 @@ The Differences Between Well-Formed and Merely Tame Lambda Objects
   convenient way to obtain a backtrace when evaluation causes a guard
   violation or other error.
 
+
+Summary Documentation
+
+    General Form:
+    (wet form           ; an arbitrary form
+         :book bk-form  ; optional, not evaluated; specify different wet book
+         ;;; the rest are optional and evaluated:
+         :compile c     ; :same, t, or nil; default :same (nil if :fns supplied)
+         :fullp h       ; nil by default, else handle some raw Lisp errors
+         :evisc-tuple e ; an evisc-tuple
+         :fns fns       ; :all, or a list of functions to show in a backtrace
+
+  Form is evaluated.  If there is an error, a backtrace stack is
+  printed to the standard output ([*standard-co*]), containing (by
+  default) the user-defined function calls made before the error.
+  Such printing is controlled by the :evisc-tuple if supplied;
+  otherwise, hiding of large structures will occur.
+
+
+Discussion
+
   The basic idea is that (wet form) evaluates form and, if there is an
   error, shows a backtrace of calls that led to that error.  Note
   however that by default only calls of user-defined (not built-in)
@@ -130584,9 +130618,11 @@ The Differences Between Well-Formed and Merely Tame Lambda Objects
     ACL2 !>
 
   By default, large structures are hidden during the printing of the
-  backtrace stack.  But you can supply a value for keyword argument
-  :evisc-tuple to modify the printing: nil to avoid hiding, else a
-  suitable evisc-tuple, as shown below (see [evisc-tuple]).
+  backtrace stack.  (Technical detail: by default the global
+  abbrev-evisc-tuple is used, if bound; see [set-evisc-tuple].  But
+  you can supply a value for keyword argument :evisc-tuple to modify
+  the printing: nil to avoid hiding, else a suitable evisc-tuple, as
+  shown below (see [evisc-tuple]).
 
     ACL2 !>(wet (g '(3 4)) :evisc-tuple (evisc-tuple 1 1 nil nil))
     ; Fast loading /projects/acl2/devel/books/misc/wet.fasl
@@ -130611,21 +130647,70 @@ The Differences Between Well-Formed and Merely Tame Lambda Objects
   But note that this object may not be a legal ACL2 value, for
   example because of the ``*1*'' symbols shown above.
 
-    General Form:
-    (wet form           ; an arbitrary form
-         :book bk-form  ; optional, not evaluated
-         ;;; the rest are optional and evaluated:
-         :evisc-tuple e ; an evisc-tuple
-         :fns fns       ; :all, or a list of functions to show in a backtrace
-         :compile c     ; :same, t, or nil; default :same (nil if :fns supplied)
 
-  Form is evaluated.  If there is an error, a backtrace stack is
-  printed to the standard output ([*standard-co*]), containing (by
-  default) the user-defined function calls made before the error.
-  Such printing is controlled by the :evisc-tuple if supplied;
-  otherwise, hiding of large structures will occur.  (Technical
-  detail: by default the global abbrev-evisc-tuple is used, if bound;
-  see [set-evisc-tuple].
+Keyword Arguments
+
+  The :fullp option.  Consider the following example.
+
+    (program)
+    (defun foo (x) (declare (xargs :guard (consp x))) (car x))
+    (defun bar (x) (foo (cdr x)))
+    (defun g (x) (bar (cdr x)))
+    ; Raw Lisp error:
+    (g '(3 4 . 5))
+
+  We may be initially disappointed using wet on this example, as
+  follows --- it didn't work!
+
+    ACL2 p!>(wet (g '(3 4 . 5)))
+
+    TTAG NOTE: Adding ttag :TRACE! from the top level loop.
+
+    ***********************************************
+    ************ ABORTING from raw Lisp ***********
+    ********** (see :DOC raw-lisp-error) **********
+    Error:  Fault during read of memory address #x2D
+    While executing: FOO
+    ***********************************************
+
+    The message above might explain the error.  If not, and
+    if you didn't cause an explicit interrupt (Control-C),
+    then the root cause may be call of a :program mode
+    function that has the wrong guard specified, or even no
+    guard specified (i.e., an implicit guard of t).
+    See :DOC raw-lisp-error and see :DOC guards.
+
+    To enable breaks into the debugger (also see :DOC acl2-customization):
+    (SET-DEBUGGER-ENABLE T)
+    ACL2 p!>
+
+  The fix is to use :fullp t.
+
+    ACL2 p!>(wet (g '(3 4 . 5)) :fullp t)
+
+    TTAG NOTE: Adding ttag :TRACE! from the top level loop.
+
+
+    ACL2 Error in WET:  The guard for the :program function call (FOO X),
+    which is (CONSP X), is violated by the arguments in the call (FOO 5).
+    See :DOC set-guard-checking for information about suppressing this
+    check with (set-guard-checking :none), as recommended for new users.
+    To debug see :DOC print-gv, see :DOC trace, and see :DOC wet.
+
+
+    Backtrace stack:
+    ----------------
+    1. (ACL2_*1*_ACL2::FOO 5)
+    2. (ACL2_*1*_ACL2::BAR (4 . 5))
+    3. (ACL2_*1*_ACL2::G (3 4 . 5))
+
+    ACL2 p!>
+
+  Why doesn't wet always do things this way?  The answer pertains to
+  performance.  When :fullp is non-nil, wet sets guard-checking to
+  :all before evaluating the given form; see [set-guard-checking].
+  This may slow down evaluation substantially, which is why it is not
+  the default behavior.
 
   The :fns option.  As mentioned above, by default the wet backtrace
   shows user-defined functions that syntactically ``support'' the
@@ -130672,6 +130757,9 @@ The Differences Between Well-Formed and Merely Tame Lambda Objects
   the ACL2 community (see [books]).  Note that you can also supply
   :book nil, in which case the definition of wet! in your current
   session will be used without including a book.
+
+
+Concluding Remark
 
   Also see [trace$] for a general tracing utility.  As mentioned above,
   wet is implemented using trace$.  Wet actually first applies
