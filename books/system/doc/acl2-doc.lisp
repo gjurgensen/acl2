@@ -90261,6 +90261,12 @@ it."
 
  <h3>Heuristic and Efficiency Improvements</h3>
 
+ <p>Improved the efficiency of some computations involving calls of @(tsee
+ defattach) with option @(':aokp t'), in particular, of @(tsee include-book)
+ events for books including such calls.  Thanks to Mertcan Temel for reporting
+ this efficiency issue and sending an @('include-book') event, whose execution
+ time was reduced from 24 seconds to 10 seconds by this change.</p>
+
  <h3>Bug Fixes</h3>
 
  <p>Fixed an error that could occur when the @(see break-rewrite) utility is
