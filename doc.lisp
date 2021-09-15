@@ -88387,6 +88387,13 @@ New Features
 
 Heuristic and Efficiency Improvements
 
+  Improved the efficiency of some computations involving calls of
+  [defattach] with option :aokp t, in particular, of [include-book]
+  events for books including such calls.  Thanks to Mertcan Temel for
+  reporting this efficiency issue and sending an include-book event,
+  whose execution time was reduced from 24 seconds to 10 seconds by
+  this change.
+
 
 Bug Fixes
 
