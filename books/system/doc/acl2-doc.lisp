@@ -90277,6 +90277,10 @@ it."
  <p>Strengthened syntax checking for accessor expressions in @(tsee stobj-let)
  bindings.  See a comment about this in @('(defxdoc note-8-5 ...)').</p>
 
+ <p>The writing of @(see useless-runes) files was sensitive to the global @(see
+ evisc-table), which could cause failures when reading those files.  This has
+ been fixed.</p>
+
  <h3>Changes at the System Level</h3>
 
  <p>The @(see hons-enabled) features of ACL2 (@(tsee hons), @(see memoization),
