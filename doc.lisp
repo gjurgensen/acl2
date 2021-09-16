@@ -88405,6 +88405,10 @@ Bug Fixes
   Strengthened syntax checking for accessor expressions in [stobj-let]
   bindings.  See a comment about this in (defxdoc note-8-5 ...).
 
+  The writing of [useless-runes] files was sensitive to the global
+  [evisc-table], which could cause failures when reading those files.
+  This has been fixed.
+
 
 Changes at the System Level
 
