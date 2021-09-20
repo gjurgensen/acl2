@@ -26472,11 +26472,14 @@ The Single-Threaded Object Introduced
   length specified by max.  If the :type of a field is (HASH-TABLE
   test) or (HASH-TABLE test size), then test is one of the symbols
   EQ, EQL, HONS-EQUAL, or EQUAL, while size, if supplied as above or
-  in (STOBJ-TABLE size), is a positive integer.  In that case the
-  test is applied when looking up keys, where [hons-copy] is first
-  applied to the key in the HONS-EQUAL case; and the size is a hint
-  to the host Lisp for the initial size of the associated hash table
-  in raw Lisp.
+  in (STOBJ-TABLE size), is a natural number.  In that case the test
+  is applied when looking up keys, where [hons-copy] is first applied
+  to the key in the HONS-EQUAL case; and the size is a hint to the
+  host Lisp for the initial size of the associated hash table in raw
+  Lisp.  (The size really is used only as a hint.  Indeed, at least
+  one host Lisp does not support size 0, so ACL2 simply treats size 0
+  as size 1; and even size 1 may result in a hash-table of
+  considerably larger size.)
 
   If the value of :type is of the form (ARRAY type-indicator (max)) or
   just type-indicator, then type-indicator is typically a type-spec;
@@ -26489,7 +26492,7 @@ The Single-Threaded Object Introduced
 
   A field with a STOBJ-TABLE type is logically an association list
   whose keys are [stobj] names, such that each stobj name is mapped
-  to a stobj satisfyin that stobj name's recognizer.  We say little
+  to a stobj satisfying that stobj name's recognizer.  We say little
   more here about stobj-tables; see [stobj-table] for relevant
   discussion.
 
@@ -26497,7 +26500,7 @@ The Single-Threaded Object Introduced
   field, except for the case of a :type (ARRAY type-indicator (max)),
   in which case val is the initial value of the corresponding array.
   Note that the :initially field is ignored for HASH-TABLE and
-  STOBJ-TABLE types, since these are both initially empty.
+  STOBJ-TABLE types; such tables are initially empty anyhow.
 
   Note that the actual representation of the stobj in the underlying
   Lisp may be quite different; see [stobj-example-2].  For the moment
@@ -26717,7 +26720,7 @@ The Default Function Names
   the key is not bound.  The updater function takes a key, a new
   value, and the stobj, and returns a new stobj with the indicated
   element replaced by the new value.  See [stobj-table] for a
-  discussion of stobj-table types, which are ignored below.
+  discussion of stobj-table types, which are largely ignored below.
 
   These functions --- the recognizer, accessor, and updater, and also
   length and resize functions in the case of array fields, and
@@ -26732,15 +26735,19 @@ The Default Function Names
   array, k as a key (for the logical association list or raw-Lisp
   hash table associated with the field), v as the ``new value'' to be
   installed by an updater, and name as the single-threaded object.
+  Every stobj also has a ``fixer'', shown below, which cannot be
+  renamed and is used when the stobj is later accessed in a
+  stobj-table (see [stobj-table]).
 
                 scalar field        array field          hash-table field
+                                                         and stobj-table field
     recognizer  (cP x)              (cP x)               (cP x)
     accessor    (c name)            (cI i name)          (c-get k name)
     updater     (UPDATE-c v name)   (UPDATE-cI i v name) (c-put k v name)
     length                          (c-LENGTH name)
     resize                          (RESIZE-c i name)
     boundp                                               (c-boundp k name)
-    get?                                                 (c-get? k name)
+    get? [For hash-tables only, not stobj-tables]        (c-get? k name)
     remove                                               (c-rem k name)
     count                                                (c-count name)
     clear                                                (c-clear name)
@@ -26748,6 +26755,7 @@ The Default Function Names
                                                                  rehash-size
                                                                  rehash-threshold
                                                                  name)
+    fixer       (c$FIX x)           (c$FIX x)            (c$FIX x)
 
   Finally, a recognizer and a creator for the entire single-threaded
   object are introduced.  The creator returns the initial stobj, but
@@ -65778,9 +65786,10 @@ Subtopics
 
   For this topic we assume that you already understand the basics of
   single-threaded objects in ACL2.  See [stobj], and in particular,
-  see [defstobj].  The latter topic mentions briefly that a stobj
-  field can itself be a stobj or an array of stobjs.  That discussion
-  is the subject of the present [documentation] topic.
+  see [defstobj], which notes that a stobj field can itself be a
+  stobj, an array of stobjs, or a [stobj-table].  The present
+  [documentation] topic expands on that point.  However, we ignore
+  stobj-table fields here; see [stobj-table] for such documentation.
 
   Our presentation is in five sections.  First we augment the
   documentation for [defstobj] by explaining how stobjs may be
@@ -65821,10 +65830,11 @@ SECTION: Extension of [defstobj] to permit [stobj]s within stobjs
   legal.  The first field descriptor of top, named sub1-field,
   illustrates one new kind of value for :type: the name of a
   previously-introduced stobj, which here is sub1. The second field
-  descriptor of top, named sub2-ar-field, illustrates the other new
+  descriptor of top, named sub2-ar-field, illustrates a second new
   kind of value for :type: an array whose elements are specified by
   the name of a previously-introduced stobj, in this case, the stobj
-  sub2.
+  sub2.  (See [stobj-table] for the third new kind of value for
+  :type.)
 
     (defstobj sub1 fld1)
     (defstobj sub2 fld2)
@@ -65833,7 +65843,8 @@ SECTION: Extension of [defstobj] to permit [stobj]s within stobjs
       (sub2-ar-field :type (array sub2 (10))))
 
   The :initially keyword is illegal for fields whose :type is a stobj
-  or an array of stobjs.  Each such initial value is provided by a
+  or an array of stobjs (or, not further discussed here, a
+  [stobj-table].  Each such initial value is provided by a
   corresponding call of the stobj creator for that stobj.  In
   particular, in the case of an array of stobjs, the stobj creator is
   called once for each element of the array, so that the array
@@ -65916,9 +65927,9 @@ SECTION: An aliasing problem
   unfettered accessing of stobj fields can result in logically
   inexplicable changes to the child stobj when the parent stobj is
   changed.  Thus, ACL2 disallows direct calls of stobj accessors and
-  updaters for fields whose :type is a stobj or an array of stobjs.
-  Instead, ACL2 provides stobj-let for reading and writing such
-  fields in a sound manner.
+  updaters for fields whose :type is a stobj or an array of stobjs
+  (or a [stobj-table]).  Instead, ACL2 provides stobj-let for reading
+  and writing such fields in a sound manner.
 
 
 SECTION: Accessing and updating stobj fields of stobjs using
@@ -66299,13 +66310,13 @@ SECTION: Precise documentation for stobj-let
   stobj name (ST) for each binding.  Each of these accessors and (if
   supplied) updaters is a stobj accessor for the same stobj, which is
   typically ST but may be a stobj congruent to ST.  In the case (ACC
-  ST), ACC is the accessor for a non-array field.  In the case (ACCi
-  I ST), ACCi is the accessor for an array field and I is either a
-  variable, a natural number, a list (quote N) where N is a natural
-  number, or a symbol introduced by [defconst].  If UPDATER is
-  supplied, then it is a symbol that is the name of the stobj updater
-  for the field of ST accessed by ACCESSOR.  If UPDATER is not
-  supplied, then for the discussion below we consider it to be,
+  ST), ACC is the accessor for a scalar (hence not array) field.  In
+  the case (ACCi I ST), ACCi is the accessor for an array field and I
+  is either a variable, a natural number, a list (quote N) where N is
+  a natural number, or a symbol introduced by [defconst].  If UPDATER
+  is supplied, then it is a symbol that is the name of the stobj
+  updater for the field of ST accessed by ACCESSOR.  If UPDATER is
+  not supplied, then for the discussion below we consider it to be,
   implicitly, the symbol in the same package as the function symbol
   of ACCESSOR (i.e., ACC or ACCi), obtained by prepending the string
   \"UPDATE-\" to the [symbol-name] of that function symbol.  Finally,
@@ -66414,8 +66425,9 @@ SECTION: Using stobj-let with abstract stobjs
 
   For acc and acc$c as above, acc is considered to be a scalar accessor
   if acc$c is a scalar accessor, and otherwise acc is an array
-  accessor; similarly for upd, which therefore is a scalar accessor
-  if and only if acc is a scalar accessor.
+  accessor (unless it is a stobj-table accessor, discussed elsewhere;
+  see [stobj-table]); similarly for upd, which therefore is a scalar
+  accessor if and only if acc is a scalar accessor.
 
   A child stobj accessor/updater pair may be used in stobj-let in the
   same way when the parent is an abstract stobj as when the parent is
@@ -66601,7 +66613,7 @@ SECTION: Using stobj-let with abstract stobjs
 Subtopics
 
   [Stobj-table]
-      [Stobj] field mapping names to stobjs")
+      A [stobj] field mapping stobj names to stobjs")
  (NEVER-MEMOIZE
   (MEMOIZE)
   "Mark a function as unsafe to memoize.
@@ -88404,6 +88416,10 @@ Bug Fixes
 
   Strengthened syntax checking for accessor expressions in [stobj-let]
   bindings.  See a comment about this in (defxdoc note-8-5 ...).
+
+  The writing of [useless-runes] files was sensitive to the global
+  [evisc-table], which could cause failures when reading those files.
+  This has been fixed.
 
 
 Changes at the System Level
@@ -113946,7 +113962,7 @@ Subtopics
       Another example of a single-threaded object
 
   [Stobj-table]
-      [Stobj] field mapping names to stobjs
+      A [stobj] field mapping stobj names to stobjs
 
   [Swap-stobjs]
       Swap two congruent [stobj]s
@@ -114839,16 +114855,227 @@ Subtopics
             "See [nested-stobjs].")
  (STOBJ-TABLE
   (STOBJ NESTED-STOBJS)
-  "[Stobj] field mapping names to stobjs
+  "A [stobj] field mapping stobj names to stobjs
 
   WARNING: Stobj-table fields of [stobj]s should be considered
   experimental at this point!  This warning will probably be removed
   soon, and when it is, stobj-table fields may be considered not to
   be experimental any longer.
 
-  This documentation is a stub.  See [community-book]
-  books/system/tests/stobj-table-tests-input.lsp for example uses of
-  stobj-tables.")
+  See [stobj] for basic background on stobjs, and see [defstobj] for
+  detailed documentation on the syntax and semantics of stobjs,
+  including fields specified with :type (stobj-table) or :type
+  (stobj-table SIZE) for some natural number, SIZE.  We call such
+  fields ``stobj-table fields''; this documentation topic explains
+  them, and it assumes familiarity with stobj fields of stobjs as
+  documented in [nested-stobjs] --- especially, the use of
+  [stobj-let] to read and write such fields.  Note that the
+  documentation for [defstobj] shows the default names for accessors
+  and updaters; for a stobj-table field, TBL, these are TBL-GET and
+  TBL-PUT, respectively.
+
+  Logically, a stobj-table field may be viewed as an association list
+  mapping stobj names to corresponding stobjs, so that each stobj
+  name maps to a stobj that satisfies the recognizer for that stobj
+  name.  But in raw Lisp, for efficiency, a stobj-table field is
+  implemented as a hash-table (again, mapping stobj names to
+  corresponding stobjs).  Below we give more details and explain how
+  stobj-let may be used to access and update stobjs that are in such
+  a table.
+
+  The general forms for stobj-table fields of stobjs are as shown
+  below.
+
+    (defstobj NAME
+      (TBL1 :type (stobj-table))      ; stobj field of default size
+      ...
+      (TBL2 :type (stobj-table SIZE)) ; stobj field of desired size SIZE
+      ...)
+
+  That is, a stobj-table field is a field whose type is of the form
+  (stobj-table) or (stobj-table SIZE).  The syntax is thus much like
+  the syntax for hash-table fields of stobjs, except that there is no
+  test specified for a stobj-table (it is actually [eq] in raw Lisp).
+
+  As noted above, a stobj-table is conceptually an alist that
+  associates stobj names with corresponding stobjs.  We say
+  ``conceptually'' because in fact, the recognizer for any
+  stobj-table field is t: there is no requirement that it is actually
+  an alist.  It is accessed logically with [hons-assoc-equal], which
+  is a variant of [assoc] that treats an arbitrary object as an
+  alist: only pairs are considered when looking up a key, and the
+  final cdr is ignored.  In this sense, and in many other senses, a
+  stobj-table field is very much like a hash-table field.  The key
+  difference (pun somewhat intended) is that each key of a
+  stobj-table is the name of a stobj (other than state, i.e., it is a
+  user-defined stobj name), and the corresponding value is a stobj
+  satisfying the recognizer for that name.
+
+  A common case is that a stobj-table field is the unique field of its
+  parent stobj.  In that case we may think of the entire stobj as a
+  stobj-table, and that is actually consistent with the
+  implementation: in raw Lisp, if a stobj-table field is the sole
+  field of its parent stobj, then that stobj-table field is actually
+  the entire stobj; there is not the usual indirection in raw Lisp,
+  where a stobj is a vector of fields and the field is accessed as an
+  entry in that vector.  (Logically, however, a stobj is always a
+  list of its fields, even if there is only one field.)
+
+  Reads and writes of a stobj-table field are much like reads and
+  writes when the field is an array of stobjs.  In both cases, one
+  uses [stobj-let] to access and possibly update the desired
+  individual stobj or stobjs.  However, a stobj fixer must be applied
+  to the result of obtaining the stobj from the table.  (Stobj fixers
+  are further explained below.)  The syntax thus looks as follows,
+  where ST is a stobj name with corresponding fixer function ST$FIX,
+  and PARENT is the name of a stobj that has a stobj-table accessor
+  with name TBL-GET.  Note that the fixer is required, and the first
+  argument of the accessor must be the quotation of the name of the
+  bound stobj.  (Thus below, 'ST is the quotation of ST.)
+
+    (stobj-let (...                                 ; bindings
+                (ST (ST$FIX (TBL-GET 'ST PARENT)))
+                ...
+                )
+               (...)                                ; producer variables
+               (...)                                ; producer
+               ...                                  ; consumer
+               )
+
+  A stobj fixer is introduced with every stobj; above, ST$FIX denotes
+  the stobj fixer introduced with ST.  Stobj fixers cannot be called
+  directly except in theorems or as indicated above; their definition
+  is illustrated as follows.
+
+    (defun st$fix (st)
+      (declare (xargs :guard t :verify-guards t))
+      (if (stp st) st (create-st)))
+
+  A stobj fixer for st is thus defined logically to return its argument
+  if that argument satisfies the recognizer for st (by default, stp),
+  and otherwise to return a new stobj by calling that stobj's
+  creator, which by default is create-st.  Note that a stobj fixer
+  always returns a value that satisfies the recognizer for that
+  stobj.  The requirement that the stobj fixer is applied to the
+  stobj-table lookup thus guarantees that the result is bound to a
+  stobj satisfying the stobj's recognizer --- even if the stobj name
+  is not already bound in the stobj-table.
+
+  Remark.  This remark on the implementation may be skipped, but it may
+  provide some intuition.  When a stobj name is not bound in the
+  underlying hash-table, the above call of the fixer provides a stobj
+  nonetheless.  And if that stobj name is among the producer
+  variables of a stobj-let form, it will be bound in the underlying
+  hash-table when the stobj-let form completes.  End of remark.
+
+  The remainder of this topic explains the use of stobj-tables by
+  following the example in [community-book]
+  std/stobjs/stobj-table.lisp.  The first form in that book (after
+  the initial [in-package] form) is as follows.
+
+    (defstobj stobj-table (tbl :type (stobj-table)))
+
+  This specifies a stobj named stobj-table with a unique field, tbl.
+  As noted above, this stobj is the same as its field in raw Lisp, so
+  even though it is the field that is truly a stobj-table, it is not
+  conceptually problematic to call the entire stobj ``stobj-table''.
+  This may be the most common case for a stobj-table (i.e., being a
+  unique field of a stobj).
+
+  The remaining forms in the book are [local] to the book, intended to
+  illustrate with simple examples how stobj-tables may be used.  The
+  first one just introduces a rather trivial stobj.
+
+    (defstobj st1 fld1)
+
+  The next form puts this stobj into the stobj-table after updating its
+  field with a specified value.  Notice the required use of the stobj
+  fixer.
+
+    (defun update-st1-in-tbl (val stobj-table)
+      (declare (xargs :stobjs stobj-table))
+      (stobj-let ((st1 (st1$fix (tbl-get 'st1 stobj-table)))) ; bindings
+                 (st1)                                        ; producer variable
+                 (update-fld1 val st1)                        ; producer
+                 stobj-table                                  ; consumer
+                 ))
+
+  The form after that accesses the value of 'st1 in the stobj-table and
+  returns its field's value.
+
+    (defun read-st1-in-tbl1 (stobj-table)
+      (declare (xargs :stobjs stobj-table))
+      (stobj-let ((st1 (st1$fix (tbl-get 'st1 stobj-table)))) ; bindings
+                 (val)                                        ; producer variable
+                 (fld1 st1)                                   ; producer
+                 val                                          ; consumer
+                 ))
+
+  Next is a check that when a specific value is written for the key
+  'st1 with the update function defined above, the value subsequently
+  read for key 'st1 is that written value.  The reason for the mv
+  call is that the updater returns an updated stobj-table, which
+  therefore must be returned.  However, [assert-event] is
+  sufficiently clever to check that the first (i.e., ordinary) value
+  returned is non-nil.
+
+    (assert-event
+     (let ((stobj-table (update-st1-in-tbl 3 stobj-table)))
+       (mv (equal (read-st1-in-tbl1 stobj-table)
+                  3)
+           stobj-table))
+     :stobjs-out '(nil stobj-table))
+
+  The computation above is a special case of a standard
+  ``read-over-write'' property, that after a write, we read the value
+  that was just written.  This is proved automatically.
+
+    (defthm read-over-write-st1-in-tbl
+      (implies (stobj-tablep stobj-table)
+               (let ((stobj-table (update-st1-in-tbl val stobj-table)))
+                 (equal (read-st1-in-tbl1 stobj-table)
+                        val))))
+
+  The other standard ``read-over-write'' property is that the write for
+  a given key doesn't affect the value read for a different key.  The
+  following events, admitted automatically, illustrate that property:
+  here, writing a value for the key 'st1 doesn't affect the value
+  read for the key 'st2.
+
+    (defstobj st2 fld2)
+
+    (defun read-st2-in-tbl (stobj-table)
+      (declare (xargs :stobjs stobj-table))
+      (stobj-let ((st2 (st2$fix (tbl-get 'st2 stobj-table)))) ; bindings
+                 (val)                                        ; producer variable
+                 (fld2 st2)                                   ; producer
+                 val                                          ; consumer
+                 ))
+
+    (defthm read-over-write-st2-in-tbl
+      (implies (stobj-tablep stobj-table)
+               (let ((stobj-table-2 (update-st1-in-tbl val stobj-table)))
+                 (equal (read-st2-in-tbl stobj-table-2)
+                        (read-st2-in-tbl stobj-table)))))
+
+  Note that all keys in a stobj-table are names of stobjs.  Consider
+  what heppens when we evaluate the events in the book above,
+  including the local events, and then undo the [defstobj] event
+  admitting st1.  It is clear that undoing has removed the symbol st1
+  as a key in the stobj-table.
+
+    ACL2 !>(ld \"std/stobjs/stobj-table.lisp\" :dir :system)
+    [[.. output omitted ..]]
+    ACL2 !>(tbl-count stobj-table)
+    1
+    ACL2 !>:ubt st1
+       d       1:x(DEFSTOBJ STOBJ-TABLE (TBL :TYPE #))
+    ACL2 !>(tbl-count stobj-table)
+    0
+    ACL2 !>
+
+  Finally, we remark that there is nothing special about stobj-table
+  fields with respect to stobj fields of abstract stobjs.")
  (STOBJP (POINTERS)
          "See [system-utilities].")
  (STOBJS (POINTERS)
