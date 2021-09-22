@@ -129209,13 +129209,17 @@ Subtopics
    2. Check that the build seems to have worked, for example by finding the
       string \"Successfully built\" near the end of your log file.
    3. Run a ``devel'' regression, for example as follows if starting in the
-      ACL2 sources directory.
+      ACL2 sources directory.  Note that including
+      ``ACL2_USELESS_RUNES= '' as shown below may be necessary
+      because of how proofs differ between normal and ``devel''
+      versions of ACL2.
 
           make clean-books ACL2=`pwd`/saved_acl2d
           cd books
-          (time nice ./build/cert.pl -j 8 \\
-                     --acl2 `pwd`/../saved_acl2d \\
-                     system/devel-check) \\
+          (time nice make -j 8 \\
+                     ACL2=`pwd`/../saved_acl2d \\
+                     ACL2_USELESS_RUNES= \\
+                     system/devel-check.cert) \\
             >& make-devel-regression.log&
 
       The last of these commands should run much more quickly than a
