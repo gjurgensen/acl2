@@ -33257,7 +33257,7 @@ current fast alists."
  function, @('fmt-to-comment-window!'), prints with @(tsee fmt!) instead of
  @(tsee fmt), in order to avoid insertion of backslash (\\) characters for
  margins; also see @(see cw!), a macro that expands to a call of
- @('fmt-to-comment-window!).  Note that even if you change the value of @(tsee
+ @('fmt-to-comment-window!').  Note that even if you change the value of @(tsee
  ld) special @('standard-co') (see @(see standard-co)),
  @('fmt-to-comment-window') will print to @(tsee *standard-co*), which is the
  original value of @(tsee standard-co).</p>")
