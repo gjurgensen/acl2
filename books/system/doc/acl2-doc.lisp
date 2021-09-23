@@ -103297,7 +103297,7 @@ arithmetic) for libraries of @(see books) for arithmetic reasoning.</p>")
 
  <p>where @('form') evaluates to an @(see error-triple).</p>
 
- <p>Evaluation of @('(revert-world form) returns the same result, @('(mv erp
+ <p>Evaluation of @('(revert-world form)') returns the same result, @('(mv erp
  val state)'), as the given @('form'), except that the @(see world) of the
  returned @(tsee state) is the same as the world of the input state even if the
  evaluation of @('form') modifies the world of the input state.</p>
