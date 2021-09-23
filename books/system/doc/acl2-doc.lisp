@@ -9215,7 +9215,7 @@ and @(tsee include-book)"
  list is considered to contribute to the list of variables in the hypotheses of
  a linear rule; see @(see linear), in particular condition (b) mentioned there
  regarding a requirement that maximal terms and hypotheses must suffice for
- instantiating all the variables in the conclusion.  If @('var-list') is @('t)
+ instantiating all the variables in the conclusion.  If @('var-list') is @('t')
  (either explicitly or implicitly, as described above), then that condition is
  considered to be met trivially; this could prevent ACL2 from rejecting
  ineffective linear rules.</p>
