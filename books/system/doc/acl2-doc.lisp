@@ -37683,7 +37683,7 @@ current fast alists."
  3.2'\"') rather than @('\"Subgoal 3.2.1\"').  If in turn that goal has a
  single subgoal, it is named @('\"Subgoal 3.2''\"'); and so on.  When four or
  more primes would be generated, say, @('n') primes, then the suffix is
- @('\"'n'\"); e.g., continuing the preceding example we get @('\"Subgoal
+ @('\"'n'\"'); e.g., continuing the preceding example we get @('\"Subgoal
  3.2'''\"'), @('\"Subgoal 3.2'4'\"'), @('\"Subgoal 3.2'5'\"'), and so on.  If
  any of these generates at least two subgoals then any ``prime'' suffix is
  dropped; for example, if @('\"Subgoal 3.2'5'\"') has two subgoals then they
