@@ -9215,8 +9215,8 @@ and @(tsee include-book)"
  list is considered to contribute to the list of variables in the hypotheses of
  a linear rule; see @(see linear), in particular condition (b) mentioned there
  regarding a requirement that maximal terms and hypotheses must suffice for
- instantiating all the variables in the conclusion.  If @('var-list') is @('t)
- (either expicitly or implicitly, as described above), then that condition is
+ instantiating all the variables in the conclusion.  If @('var-list') is @('t')
+ (either explicitly or implicitly, as described above), then that condition is
  considered to be met trivially; this could prevent ACL2 from rejecting
  ineffective linear rules.</p>
 
@@ -23281,10 +23281,13 @@ subtree of X with T, without duplication.</p>
  @(':type') of a field is @('(HASH-TABLE test)') or @('(HASH-TABLE test
  size)'), then @('test') is one of the symbols @('EQ'), @('EQL'),
  @('HONS-EQUAL'), or @('EQUAL'), while @('size'), if supplied as above or in
- @('(STOBJ-TABLE size)'), is a positive integer.  In that case the test is
+ @('(STOBJ-TABLE size)'), is a natural number.  In that case the test is
  applied when looking up keys, where @(tsee hons-copy) is first applied to the
  key in the @('HONS-EQUAL') case; and the size is a hint to the host Lisp for
- the initial size of the associated hash table in raw Lisp.</p>
+ the initial size of the associated hash table in raw Lisp.  (The size really
+ is used only as a hint.  Indeed, at least one host Lisp does not support size
+ 0, so ACL2 simply treats size 0 as size 1; and even size 1 may result in a
+ hash-table of considerably larger size.)</p>
 
  <p>If the value of @(':type') is of the form @('(ARRAY type-indicator
  (max))') or just @('type-indicator'), then @('type-indicator') is typically a
@@ -23297,14 +23300,14 @@ subtree of X with T, without duplication.</p>
 
  <p>A field with a @('STOBJ-TABLE') type is logically an association list whose
  keys are @(see stobj) names, such that each stobj name is mapped to a stobj
- satisfyin that stobj name's recognizer.  We say little more here about
+ satisfying that stobj name's recognizer.  We say little more here about
  stobj-tables; see @(see stobj-table) for relevant discussion.</p>
 
  <p>The keyword value @(':initially val') specifies the initial value of a
  field, except for the case of a @(':type') @('(ARRAY type-indicator (max))'),
  in which case @('val') is the initial value of the corresponding array.  Note
  that the @(':initially') field is ignored for @('HASH-TABLE') and
- @('STOBJ-TABLE') types, since these are both initially empty.</p>
+ @('STOBJ-TABLE') types; such tables are initially empty anyhow.</p>
 
  <p>Note that the actual representation of the stobj in the underlying Lisp may
  be quite different; see @(see stobj-example-2).  For the moment we focus
@@ -23531,7 +23534,7 @@ subtree of X with T, without duplication.</p>
  and returns the associated value, or nil if the key is not bound.  The updater
  function takes a key, a new value, and the stobj, and returns a new stobj with
  the indicated element replaced by the new value.  See @(see stobj-table) for a
- discussion of stobj-table types, which are ignored below.</p>
+ discussion of stobj-table types, which are largely ignored below.</p>
 
  <p>These functions &mdash; the recognizer, accessor, and updater, and also
  length and resize functions in the case of array fields, and boundp, get?,
@@ -23544,17 +23547,21 @@ subtree of X with T, without duplication.</p>
  be recognized by field recognizers, @('i') as an array index or the size of a
  resized array, @('k') as a key (for the logical association list or raw-Lisp
  hash table associated with the field), @('v') as the ``new value'' to be
- installed by an updater, and @('name') as the single-threaded object.</p>
+ installed by an updater, and @('name') as the single-threaded object.  Every
+ stobj also has a ``fixer'', shown below, which cannot be renamed and is used
+ when the stobj is later accessed in a stobj-table (see @(see
+ stobj-table)).</p>
 
  @({
               scalar field        array field          hash-table field
+                                                       and stobj-table field
   recognizer  (cP x)              (cP x)               (cP x)
   accessor    (c name)            (cI i name)          (c-get k name)
   updater     (UPDATE-c v name)   (UPDATE-cI i v name) (c-put k v name)
   length                          (c-LENGTH name)
   resize                          (RESIZE-c i name)
   boundp                                               (c-boundp k name)
-  get?                                                 (c-get? k name)
+  get? [For hash-tables only, not stobj-tables]        (c-get? k name)
   remove                                               (c-rem k name)
   count                                                (c-count name)
   clear                                                (c-clear name)
@@ -23562,6 +23569,7 @@ subtree of X with T, without duplication.</p>
                                                                rehash-size
                                                                rehash-threshold
                                                                name)
+  fixer       (c$FIX x)           (c$FIX x)            (c$FIX x)
  })
 
  <p>Finally, a recognizer and a creator for the entire single-threaded object
@@ -33249,7 +33257,7 @@ current fast alists."
  function, @('fmt-to-comment-window!'), prints with @(tsee fmt!) instead of
  @(tsee fmt), in order to avoid insertion of backslash (\\) characters for
  margins; also see @(see cw!), a macro that expands to a call of
- @('fmt-to-comment-window!).  Note that even if you change the value of @(tsee
+ @('fmt-to-comment-window!').  Note that even if you change the value of @(tsee
  ld) special @('standard-co') (see @(see standard-co)),
  @('fmt-to-comment-window') will print to @(tsee *standard-co*), which is the
  original value of @(tsee standard-co).</p>")
@@ -37675,7 +37683,7 @@ current fast alists."
  3.2'\"') rather than @('\"Subgoal 3.2.1\"').  If in turn that goal has a
  single subgoal, it is named @('\"Subgoal 3.2''\"'); and so on.  When four or
  more primes would be generated, say, @('n') primes, then the suffix is
- @('\"'n'\"); e.g., continuing the preceding example we get @('\"Subgoal
+ @('\"'n'\"'); e.g., continuing the preceding example we get @('\"Subgoal
  3.2'''\"'), @('\"Subgoal 3.2'4'\"'), @('\"Subgoal 3.2'5'\"'), and so on.  If
  any of these generates at least two subgoals then any ``prime'' suffix is
  dropped; for example, if @('\"Subgoal 3.2'5'\"') has two subgoals then they
@@ -61645,9 +61653,10 @@ it."
   :short "Using @(see stobj)s that contain stobjs"
   :long "<p>For this topic we assume that you already understand the basics of
  single-threaded objects in ACL2.  See @(see stobj), and in particular, see
- @(see defstobj).  The latter topic mentions briefly that a stobj field can
- itself be a stobj or an array of stobjs.  That discussion is the subject of
- the present @(see documentation) topic.</p>
+ @(see defstobj), which notes that a stobj field can itself be a stobj, an
+ array of stobjs, or a @(see stobj-table).  The present @(see documentation)
+ topic expands on that point.  However, we ignore stobj-table fields here; see
+ @(see stobj-table) for such documentation.</p>
 
  <p>Our presentation is in five sections.  First we augment the documentation
  for @(tsee defstobj) by explaining how stobjs may be specified for fields in a
@@ -61688,9 +61697,10 @@ it."
  The first field descriptor of @('top'), named @('sub1-field'), illustrates one
  new kind of value for @(':type'): the name of a previously-introduced stobj,
  which here is @('sub1'). The second field descriptor of @('top'), named
- @('sub2-ar-field'), illustrates the other new kind of value for @(':type'): an
+ @('sub2-ar-field'), illustrates a second new kind of value for @(':type'): an
  array whose elements are specified by the name of a previously-introduced
- stobj, in this case, the stobj @('sub2').</p>
+ stobj, in this case, the stobj @('sub2').  (See @(see stobj-table) for the
+ third new kind of value for @(':type').)</p>
 
  @({
     (defstobj sub1 fld1)
@@ -61701,14 +61711,15 @@ it."
  })
 
  <p>The @(':initially') keyword is illegal for fields whose @(':type') is a
- stobj or an array of stobjs.  Each such initial value is provided by a
- corresponding call of the stobj creator for that stobj.  In particular, in the
- case of an array of stobjs, the stobj creator is called once for each element
- of the array, so that the array elements are distinct.  For example, each
- element of @('sub2-ar-field') in the example above is initially provided by a
- separate call of @('create-sub2').  Each initial element is thus unique, and
- in particular is distinct from the initial global value of the stobj.
- Similarly, the initial global stobj for @('sub1') is distinct from the initial
+ stobj or an array of stobjs (or, not further discussed here, a @(see
+ stobj-table).  Each such initial value is provided by a corresponding call of
+ the stobj creator for that stobj.  In particular, in the case of an array of
+ stobjs, the stobj creator is called once for each element of the array, so
+ that the array elements are distinct.  For example, each element of
+ @('sub2-ar-field') in the example above is initially provided by a separate
+ call of @('create-sub2').  Each initial element is thus unique, and in
+ particular is distinct from the initial global value of the stobj.  Similarly,
+ the initial global stobj for @('sub1') is distinct from the initial
  @('sub1-field') field of the global stobj for @('top'), as these result from
  separate calls of @('create-sub1').</p>
 
@@ -61787,8 +61798,8 @@ it."
  accessing of stobj fields can result in logically inexplicable changes to the
  child stobj when the parent stobj is changed.  Thus, ACL2 disallows direct
  calls of stobj accessors and updaters for fields whose @(':type') is a stobj
- or an array of stobjs.  Instead, ACL2 provides @('stobj-let') for reading and
- writing such fields in a sound manner.</p>
+ or an array of stobjs (or a @(see stobj-table)).  Instead, ACL2 provides
+ @('stobj-let') for reading and writing such fields in a sound manner.</p>
 
  <h3>SECTION: Accessing and updating stobj fields of stobjs using
  @('stobj-let')</h3>
@@ -62197,19 +62208,19 @@ it."
  stobj name (@('ST')) for each binding.  Each of these accessors and (if
  supplied) updaters is a stobj accessor for the same stobj, which is typically
  @('ST') but may be a stobj congruent to @('ST').  In the case @('(ACC ST)'),
- @('ACC') is the accessor for a non-array field.  In the case @('(ACCi I ST)'),
- @('ACCi') is the accessor for an array field and @('I') is either a variable,
- a natural number, a list @('(quote N)') where @('N') is a natural number, or a
- symbol introduced by @(tsee defconst).  If @('UPDATER') is supplied, then it
- is a symbol that is the name of the stobj updater for the field of @('ST')
- accessed by @('ACCESSOR').  If @('UPDATER') is not supplied, then for the
- discussion below we consider it to be, implicitly, the symbol in the same
- package as the function symbol of @('ACCESSOR') (i.e., @('ACC') or @('ACCi')),
- obtained by prepending the string @('\"UPDATE-\"') to the @(tsee symbol-name)
- of that function symbol.  Finally, @('ACCESSOR') has a @(see signature)
- specifying a return value that is either @('VAL') or is a stobj that is
- congruent to @('VAL'). (This means that only stobjs may be bound in these
- bindings.)</p>
+ @('ACC') is the accessor for a scalar (hence not array) field.  In the case
+ @('(ACCi I ST)'), @('ACCi') is the accessor for an array field and @('I') is
+ either a variable, a natural number, a list @('(quote N)') where @('N') is a
+ natural number, or a symbol introduced by @(tsee defconst).  If @('UPDATER')
+ is supplied, then it is a symbol that is the name of the stobj updater for the
+ field of @('ST') accessed by @('ACCESSOR').  If @('UPDATER') is not supplied,
+ then for the discussion below we consider it to be, implicitly, the symbol in
+ the same package as the function symbol of @('ACCESSOR') (i.e., @('ACC') or
+ @('ACCi')), obtained by prepending the string @('\"UPDATE-\"') to the @(tsee
+ symbol-name) of that function symbol.  Finally, @('ACCESSOR') has a @(see
+ signature) specifying a return value that is either @('VAL') or is a stobj
+ that is congruent to @('VAL'). (This means that only stobjs may be bound in
+ these bindings.)</p>
 
  <p>If the conditions above are met, then the General Form expands to one of
  the expressions below, depending on whether the list
@@ -62324,8 +62335,9 @@ it."
 
  <p>For @('acc') and @('acc$c') as above, @('acc') is considered to be a scalar
  accessor if @('acc$c') is a scalar accessor, and otherwise @('acc') is an
- array accessor; similarly for @('upd'), which therefore is a scalar accessor
- if and only if @('acc') is a scalar accessor.</p>
+ array accessor (unless it is a stobj-table accessor, discussed elsewhere; see
+ @(see stobj-table)); similarly for @('upd'), which therefore is a scalar
+ accessor if and only if @('acc') is a scalar accessor.</p>
 
  <p>A child stobj accessor/updater pair may be used in @('stobj-let') in the
  same way when the parent is an abstract stobj as when the parent is a concrete
@@ -89727,7 +89739,7 @@ it."
  @('(accumulated-persistence nil)').</li>
 
  <li>Uses of @(see definition) rules because of @(':')@(tsee expand) hints,
- either expicitly given by the user or generated by ACL2's heuristics for doing
+ either explicitly given by the user or generated by ACL2's heuristics for doing
  induction, were not being recorded by @(tsee accumulated-persistence).  They
  are now.</li>
 
@@ -90276,6 +90288,10 @@ it."
 
  <p>Strengthened syntax checking for accessor expressions in @(tsee stobj-let)
  bindings.  See a comment about this in @('(defxdoc note-8-5 ...)').</p>
+
+ <p>The writing of @(see useless-runes) files was sensitive to the global @(see
+ evisc-table), which could cause failures when reading those files.  This has
+ been fixed.</p>
 
  <h3>Changes at the System Level</h3>
 
@@ -103281,7 +103297,7 @@ arithmetic) for libraries of @(see books) for arithmetic reasoning.</p>")
 
  <p>where @('form') evaluates to an @(see error-triple).</p>
 
- <p>Evaluation of @('(revert-world form) returns the same result, @('(mv erp
+ <p>Evaluation of @('(revert-world form)') returns the same result, @('(mv erp
  val state)'), as the given @('form'), except that the @(see world) of the
  returned @(tsee state) is the same as the world of the input state even if the
  evaluation of @('form') modifies the world of the input state.</p>
@@ -104448,7 +104464,7 @@ arithmetic) for libraries of @(see books) for arithmetic reasoning.</p>")
  @(see linear).</li>
 
  <li>If the formula is a term in normal form (not simplifiable by your rewrite
- rules) that tends to be an expicit hypothesis in some of your theorems,
+ rules) that tends to be an explicit hypothesis in some of your theorems,
  consider making it a @(see forward-chaining) rule.  For example, if you are
  reasoning about a finite state machine (such as an interpreter) and your
  theorems tend to have the hypothesis @('(good-state-p st)'), and your formula
@@ -113966,16 +113982,246 @@ arithmetic) for libraries of @(see books) for arithmetic reasoning.</p>")
  introduces a new single-threaded object; see @(see defstobj).</p>")
 
 (defxdoc stobj-table
+
+; Warning: Keep this in sync with books/std/stobjs/stobj-table.lisp.
+
+; Note that the raw Lisp implementation of undoing is rather subtle, and not
+; relevant at the user level; so we do not address it here.
+
   :parents (stobj nested-stobjs)
-  :short "@(see Stobj) field mapping names to stobjs"
+  :short "A @(see stobj) field mapping stobj names to stobjs"
   :long "<p>WARNING: Stobj-table fields of @(see stobj)s should be considered
  experimental at this point!  This warning will probably be removed soon, and
  when it is, stobj-table fields may be considered not to be experimental any
  longer.</p>
 
- <p>This documentation is a stub.  See @(see community-book)
- @('books/system/tests/stobj-table-tests-input.lsp') for example uses of
- stobj-tables.</p>")
+ <p>See @(see stobj) for basic background on stobjs, and see @(see defstobj)
+ for detailed documentation on the syntax and semantics of stobjs, including
+ fields specified with @(':type (stobj-table)') or @(':type (stobj-table
+ SIZE)') for some natural number, @('SIZE').  We call such fields ``stobj-table
+ fields''; this documentation topic explains them, and it assumes familiarity
+ with stobj fields of stobjs as documented in @(see nested-stobjs) &mdash;
+ especially, the use of @(tsee stobj-let) to read and write such fields.  Note
+ that the documentation for @(see defstobj) shows the default names for
+ accessors and updaters; for a stobj-table field, @('TBL'), these are
+ @('TBL-GET') and @('TBL-PUT'), respectively.</p>
+
+ <p>Logically, a stobj-table field may be viewed as an association list mapping
+ stobj names to corresponding stobjs, so that each stobj name maps to a stobj
+ that satisfies the recognizer for that stobj name.  But in raw Lisp, for
+ efficiency, a stobj-table field is implemented as a hash-table (again, mapping
+ stobj names to corresponding stobjs).  Below we give more details and explain
+ how @('stobj-let') may be used to access and update stobjs that are in such a
+ table.</p>
+
+ <p>The general forms for stobj-table fields of stobjs are as shown below.</p>
+
+ @({
+ (defstobj NAME
+   (TBL1 :type (stobj-table))      ; stobj field of default size
+   ...
+   (TBL2 :type (stobj-table SIZE)) ; stobj field of desired size SIZE
+   ...)
+ })
+
+ <p>That is, a stobj-table field is a field whose type is of the form
+ @('(stobj-table)') or @('(stobj-table SIZE)').  The syntax is thus much like
+ the syntax for hash-table fields of stobjs, except that there is no test
+ specified for a stobj-table (it is actually @(tsee eq) in raw Lisp).</p>
+
+ <p>As noted above, a stobj-table is conceptually an alist that associates
+ stobj names with corresponding stobjs.  We say ``conceptually'' because in
+ fact, the recognizer for any stobj-table field is @('t'): there is no
+ requirement that it is actually an alist.  It is accessed logically with
+ @(tsee hons-assoc-equal), which is a variant of @(tsee assoc) that treats an
+ arbitrary object as an alist: only pairs are considered when looking up a key,
+ and the final cdr is ignored.  In this sense, and in many other senses, a
+ stobj-table field is very much like a hash-table field.  The key
+ difference (pun somewhat intended) is that each key of a stobj-table is the
+ name of a stobj (other than @('state'), i.e., it is a user-defined stobj
+ name), and the corresponding value is a stobj satisfying the recognizer for
+ that name.</p>
+
+ <p>A common case is that a stobj-table field is the unique field of its parent
+ stobj.  In that case we may think of the entire stobj as a stobj-table, and
+ that is actually consistent with the implementation: in raw Lisp, if a
+ stobj-table field is the sole field of its parent stobj, then that stobj-table
+ field is actually the entire stobj; there is not the usual indirection in raw
+ Lisp, where a stobj is a vector of fields and the field is accessed as an
+ entry in that vector.  (Logically, however, a stobj is always a list of its
+ fields, even if there is only one field.)</p>
+
+ <p>Reads and writes of a stobj-table field are much like reads and writes when
+ the field is an array of stobjs.  In both cases, one uses @(tsee stobj-let) to
+ access and possibly update the desired individual stobj or stobjs.  However, a
+ stobj fixer must be applied to the result of obtaining the stobj from the
+ table.  (Stobj fixers are further explained below.)  The syntax thus looks as
+ follows, where @('ST') is a stobj name with corresponding fixer function
+ @('ST$FIX'), and @('PARENT') is the name of a stobj that has a stobj-table
+ accessor with name @('TBL-GET').  Note that the fixer is required, and the
+ first argument of the accessor must be the quotation of the name of the bound
+ stobj.  (Thus below, @(''ST') is the quotation of @('ST').)</p>
+
+ @({
+ (stobj-let (...                                 ; bindings
+             (ST (ST$FIX (TBL-GET 'ST PARENT)))
+             ...
+             )
+            (...)                                ; producer variables
+            (...)                                ; producer
+            ...                                  ; consumer
+            )
+ })
+
+ <p>A stobj fixer is introduced with every stobj; above, @('ST$FIX') denotes
+ the stobj fixer introduced with @('ST').  Stobj fixers cannot be called
+ directly except in theorems or as indicated above; their definition is
+ illustrated as follows.</p>
+
+ @({
+ (defun st$fix (st)
+   (declare (xargs :guard t :verify-guards t))
+   (if (stp st) st (create-st)))
+ })
+
+ <p>A stobj fixer for @('st') is thus defined logically to return its argument
+ if that argument satisfies the recognizer for @('st') (by default, @('stp')),
+ and otherwise to return a new stobj by calling that stobj's creator, which by
+ default is @('create-st').  Note that a stobj fixer always returns a value
+ that satisfies the recognizer for that stobj.  The requirement that the stobj
+ fixer is applied to the stobj-table lookup thus guarantees that the result is
+ bound to a stobj satisfying the stobj's recognizer &mdash; even if the stobj
+ name is not already bound in the stobj-table.</p>
+
+ <p><b>Remark</b>.  This remark on the implementation may be skipped, but it
+ may provide some intuition.  When a stobj name is not bound in the underlying
+ hash-table, the above call of the fixer provides a stobj nonetheless.  And if
+ that stobj name is among the producer variables of a @('stobj-let') form, it
+ will be bound in the underlying hash-table when the @('stobj-let') form
+ completes.  End of remark.</p>
+
+ <p>The remainder of this topic explains the use of stobj-tables by following
+ the example in @(see community-book) @('std/stobjs/stobj-table.lisp').  The
+ first form in that book (after the initial @(tsee in-package) form) is as
+ follows.</p>
+
+ @({
+ (defstobj stobj-table (tbl :type (stobj-table)))
+ })
+
+ <p>This specifies a stobj named @('stobj-table') with a unique field,
+ @('tbl').  As noted above, this stobj is the same as its field in raw Lisp, so
+ even though it is the field that is truly a stobj-table, it is not
+ conceptually problematic to call the entire stobj ``stobj-table''.  This may
+ be the most common case for a stobj-table (i.e., being a unique field of a
+ stobj).</p>
+
+ <p>The remaining forms in the book are @(see local) to the book, intended to
+ illustrate with simple examples how stobj-tables may be used.  The first one
+ just introduces a rather trivial stobj.</p>
+
+ @({
+ (defstobj st1 fld1)
+ })
+
+ <p>The next form puts this stobj into the stobj-table after updating its field
+ with a specified value.  Notice the required use of the stobj fixer.</p>
+
+ @({
+ (defun update-st1-in-tbl (val stobj-table)
+   (declare (xargs :stobjs stobj-table))
+   (stobj-let ((st1 (st1$fix (tbl-get 'st1 stobj-table)))) ; bindings
+              (st1)                                        ; producer variable
+              (update-fld1 val st1)                        ; producer
+              stobj-table                                  ; consumer
+              ))
+ })
+
+ <p>The form after that accesses the value of @(''st1') in the stobj-table and
+ returns its field's value.</p>
+
+ @({
+ (defun read-st1-in-tbl1 (stobj-table)
+   (declare (xargs :stobjs stobj-table))
+   (stobj-let ((st1 (st1$fix (tbl-get 'st1 stobj-table)))) ; bindings
+              (val)                                        ; producer variable
+              (fld1 st1)                                   ; producer
+              val                                          ; consumer
+              ))
+ })
+
+ <p>Next is a check that when a specific value is written for the key @(''st1')
+ with the update function defined above, the value subsequently read for key
+ @(''st1') is that written value.  The reason for the @('mv') call is that the
+ updater returns an updated stobj-table, which therefore must be returned.
+ However, @(tsee assert-event) is sufficiently clever to check that the
+ first (i.e., ordinary) value returned is non-@('nil').</p>
+
+ @({
+ (assert-event
+  (let ((stobj-table (update-st1-in-tbl 3 stobj-table)))
+    (mv (equal (read-st1-in-tbl1 stobj-table)
+               3)
+        stobj-table))
+  :stobjs-out '(nil stobj-table))
+ })
+
+ <p>The computation above is a special case of a standard ``read-over-write''
+ property, that after a write, we read the value that was just written.  This
+ is proved automatically.</p>
+
+ @({
+ (defthm read-over-write-st1-in-tbl
+   (implies (stobj-tablep stobj-table)
+            (let ((stobj-table (update-st1-in-tbl val stobj-table)))
+              (equal (read-st1-in-tbl1 stobj-table)
+                     val))))
+ })
+
+ <p>The other standard ``read-over-write'' property is that the write for a
+ given key doesn't affect the value read for a different key.  The following
+ events, admitted automatically, illustrate that property: here, writing a
+ value for the key @(''st1') doesn't affect the value read for the key
+ @(''st2').</p>
+
+ @({
+ (defstobj st2 fld2)
+
+ (defun read-st2-in-tbl (stobj-table)
+   (declare (xargs :stobjs stobj-table))
+   (stobj-let ((st2 (st2$fix (tbl-get 'st2 stobj-table)))) ; bindings
+              (val)                                        ; producer variable
+              (fld2 st2)                                   ; producer
+              val                                          ; consumer
+              ))
+
+ (defthm read-over-write-st2-in-tbl
+   (implies (stobj-tablep stobj-table)
+            (let ((stobj-table-2 (update-st1-in-tbl val stobj-table)))
+              (equal (read-st2-in-tbl stobj-table-2)
+                     (read-st2-in-tbl stobj-table)))))
+ })
+
+ <p>Note that all keys in a stobj-table are names of stobjs.  Consider what
+ heppens when we evaluate the events in the book above, including the local
+ events, and then undo the @(tsee defstobj) event admitting @('st1').  It is
+ clear that undoing has removed the symbol @('st1') as a key in the
+ stobj-table.</p>
+
+ @({
+ ACL2 !>(ld \"std/stobjs/stobj-table.lisp\" :dir :system)
+ [[.. output omitted ..]]
+ ACL2 !>(tbl-count stobj-table)
+ 1
+ ACL2 !>:ubt st1
+    d       1:x(DEFSTOBJ STOBJ-TABLE (TBL :TYPE #))
+ ACL2 !>(tbl-count stobj-table)
+ 0
+ ACL2 !>
+ })
+
+ <p>Finally, we remark that there is nothing special about stobj-table fields
+ with respect to stobj fields of abstract stobjs.</p>")
 
 (defxdoc stop-proof-tree
   :parents (proof-tree)
@@ -128123,14 +128369,17 @@ introduction-to-the-tau-system) for more information about Tau.</dd>
  string @('\"Successfully built\"') near the end of your log file.</li>
 
  <li>Run a ``devel'' regression, for example as follows if starting in the ACL2
- sources directory.
+ sources directory.  Note that including ``@('ACL2_USELESS_RUNES= ')'' as shown
+ below may be necessary because of how proofs differ between normal and
+ ``devel'' versions of ACL2.
 
  @({
  make clean-books ACL2=`pwd`/saved_acl2d
  cd books
- (time nice ./build/cert.pl -j 8 \\
-            --acl2 `pwd`/../saved_acl2d \\
-            system/devel-check) \\
+ (time nice make -j 8 \\
+            ACL2=`pwd`/../saved_acl2d \\
+            ACL2_USELESS_RUNES= \\
+            system/devel-check.cert) \\
    >& make-devel-regression.log&
  })
 
