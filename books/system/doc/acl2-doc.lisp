@@ -113995,6 +113995,11 @@ arithmetic) for libraries of @(see books) for arithmetic reasoning.</p>")
  when it is, stobj-table fields may be considered not to be experimental any
  longer.</p>
 
+ <p>***WARNING*** The documentation below is out of date for now!  (But it will
+ be fixed.)  The primary change is that fixers are no longer applied in the
+ bindings.  For examples of @('stobj-let') usage for stobj-tables, see
+ @('books/system/tests/stobj-table-tests-input.lsp').</p>
+
  <p>See @(see stobj) for basic background on stobjs, and see @(see defstobj)
  for detailed documentation on the syntax and semantics of stobjs, including
  fields specified with @(':type (stobj-table)') or @(':type (stobj-table
