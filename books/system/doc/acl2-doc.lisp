@@ -114852,22 +114852,19 @@ arithmetic) for libraries of @(see books) for arithmetic reasoning.</p>")
 
  <ul>
 
- <li>@('Errors'): The final error message (no field indicator)</li>
+ <li>@('Errors') (no field indicator): The final error message</li>
 
- <li>@('Form'): The ``context'' for the event (@(see ctx)) (no field
- indicator)</li>
+ <li>@('Form') (no field indicator): The ``context'' for the event (@(see
+ ctx))</li>
 
- <li>@('Header'): The initial word ``Summary'' (no field indicator)</li>
+ <li>@('Header') (no field indicator): The initial word ``Summary''</li>
 
- <li>@('Hint-events'): Hints (e.g., @(':use') hints) supplied</li>
+ <li>@('Hint-events'): Certain hints (e.g., @(':use') hints) supplied</li>
 
- <li>@('Prover steps counted'): Prover steps (see @(see
- set-prover-step-limit))</li>
-
- <li>@('Redundant'): There is no field indicator and, moreover, a message is
- printed that notes a redundant event (see @(see redundant-events)) above the
- rest of the summary.  That message is printed even when @('SUMMARY') output or
- the @('REDUNDANT') summary-type is inhibited, if @('EVENT') output is not
+ <li>@('Redundant'): There is field indicator, but a message is printed that
+ notes a redundant event (see @(see redundant-events)) above the rest of the
+ summary.  That message is printed even when @('SUMMARY') output or the
+ @('REDUNDANT') summary-type is inhibited, if @('EVENT') output is not
  inhibited.</li>
 
  <li>@('Rules'): @(see Rune)s contributing to the proof or storage of the
@@ -114875,6 +114872,9 @@ arithmetic) for libraries of @(see books) for arithmetic reasoning.</p>")
 
  <li>@('Splitter-rules'): Potential causes of case splits (see @(see
  splitter))</li>
+
+ <li>@('Steps') (field indicator is @('\"Prover steps counted\"')): Prover
+ steps (see @(see set-prover-step-limit))</li>
 
  <li>@('System-attachments'): List of doublets @('(f g)') for which @('f') is a
  system function with attachment @('g') (see @(see defattach)), when @('g')
