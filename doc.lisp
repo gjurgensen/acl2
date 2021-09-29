@@ -115941,18 +115941,19 @@ Subtopics
   listed alphabetically.  Most are printed with an initial field
   indicator, e.g., ``Rules: ''; a few, as indicated below, are not.
 
-    * Errors: The final error message (no field indicator)
-    * Form: The ``context'' for the event ([ctx]) (no field indicator)
-    * Header: The initial word ``Summary'' (no field indicator)
-    * Hint-events: Hints (e.g., :use hints) supplied
-    * Prover steps counted: Prover steps (see [set-prover-step-limit])
-    * Redundant: There is no field indicator and, moreover, a message is
-      printed that notes a redundant event (see [redundant-events])
-      above the rest of the summary.  That message is printed even
-      when SUMMARY output or the REDUNDANT summary-type is inhibited,
-      if EVENT output is not inhibited.
+    * Errors (no field indicator): The final error message
+    * Form (no field indicator): The ``context'' for the event ([ctx])
+    * Header (no field indicator): The initial word ``Summary''
+    * Hint-events: Certain hints (e.g., :use hints) supplied
+    * Redundant: There is field indicator, but a message is printed that
+      notes a redundant event (see [redundant-events]) above the rest
+      of the summary.  That message is printed even when SUMMARY
+      output or the REDUNDANT summary-type is inhibited, if EVENT
+      output is not inhibited.
     * Rules: [Rune]s contributing to the proof or storage of the event
     * Splitter-rules: Potential causes of case splits (see [splitter])
+    * Steps (field indicator is \"Prover steps counted\"): Prover steps (see
+      [set-prover-step-limit])
     * System-attachments: List of doublets (f g) for which f is a system
       function with attachment g (see [defattach]), when g differs
       from the initial attachment to f
