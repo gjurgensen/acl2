@@ -115941,18 +115941,19 @@ Subtopics
   listed alphabetically.  Most are printed with an initial field
   indicator, e.g., ``Rules: ''; a few, as indicated below, are not.
 
-    * Errors: The final error message (no field indicator)
-    * Form: The ``context'' for the event ([ctx]) (no field indicator)
-    * Header: The initial word ``Summary'' (no field indicator)
-    * Hint-events: Hints (e.g., :use hints) supplied
-    * Prover steps counted: Prover steps (see [set-prover-step-limit])
-    * Redundant: There is no field indicator and, moreover, a message is
-      printed that notes a redundant event (see [redundant-events])
-      above the rest of the summary.  That message is printed even
-      when SUMMARY output or the REDUNDANT summary-type is inhibited,
-      if EVENT output is not inhibited.
+    * Errors (no field indicator): The final error message
+    * Form (no field indicator): The ``context'' for the event ([ctx])
+    * Header (no field indicator): The initial word ``Summary''
+    * Hint-events: Certain hints (e.g., :use hints) supplied
+    * Redundant: There is field indicator, but a message is printed that
+      notes a redundant event (see [redundant-events]) above the rest
+      of the summary.  That message is printed even when SUMMARY
+      output or the REDUNDANT summary-type is inhibited, if EVENT
+      output is not inhibited.
     * Rules: [Rune]s contributing to the proof or storage of the event
     * Splitter-rules: Potential causes of case splits (see [splitter])
+    * Steps (field indicator is \"Prover steps counted\"): Prover steps (see
+      [set-prover-step-limit])
     * System-attachments: List of doublets (f g) for which f is a system
       function with attachment g (see [defattach]), when g differs
       from the initial attachment to f
@@ -131745,20 +131746,52 @@ On-off specs
   The set of ``associated valid symbols'' is defined as follows.  For
   :off or :on, these symbols are the output types that can be
   inhibited (see [set-inhibit-output-lst]), that is, members of the
-  list stored in the constant *valid-output-names*, (proof-tree error
-  warning! warning observation prove event summary proof-builder
-  comment history); similarly, for :summary-on or :summary-off, these
-  are the parts of the [summary] that can be inhibited (see
+  list stored in the constant *valid-output-names*, the list
+  (proof-tree error warning! warning observation prove event summary
+  proof-builder comment history).  Similarly, for :summary-on or
+  :summary-off, these are the summary types: the parts of the
+  [summary] that can be inhibited (see
   [set-inhibited-summary-types]), that is, members of the list stored
-  in the constant *summary-types*, (errors form header hint-events
-  redundant rules splitter-rules steps system-attachments time value
-  warnings).  An on-off spec consisting of associated valid symbols,
-  (sym1 ... symk), indicates the set of symbols, {sym1,...,symk}.
-  The other legal forms of on-off spec and their meanings are as
-  follows: :all represents the set of all associated valid symbols,
-  any other symbol sym abbreviates (sym), and (:other-than sym1 ...
-  symk) represents the set of associated valid symbols that are not
-  in the list (sym1 ... symk).
+  in the constant *summary-types*, the list (errors form header
+  hint-events redundant rules splitter-rules steps system-attachments
+  time value warnings).  An on-off spec consisting of associated
+  valid symbols, (sym1 ... symk), indicates the set of symbols,
+  {sym1,...,symk}.  The other legal forms of on-off spec and their
+  meanings are as follows: :all represents the set of all associated
+  valid symbols, any other symbol sym abbreviates (sym), and
+  (:other-than sym1 ... symk) represents the set of associated valid
+  symbols that are not in the list (sym1 ... symk).
+
+  Note that these two notions of ``associated valid symbols'' --- the
+  output types controlled by keywords :on and :off, and the summary
+  types contolled by keywords :summary-on and :summary-off ---
+  operate independently in the following sense.  The keywords :on and
+  :off control output types from the list *valid-output-names*
+  displayed above, one of whose members is SUMMARY.  The keywords
+  :summary-on and :summary-off control summary types from the list
+  *summary-types* displayed above, indicating which types of summary
+  are to be printed in the case that SUMMARY is among the output
+  types that are on.  This summary control persists even as the
+  SUMMARY type changes state between off and on.  Consider the
+  following example.
+
+    (with-output :off (summary)
+     (with-output :summary-off (time)
+      (with-output :on (summary)
+       (thm (equal (car (append x y)) (if (consp x) (car x) (car y)))))))
+
+  The resulting output does not include TIME output in the summary.
+  The reason is that the second with-output form specifies that TIME
+  summary output is off; then when the third (innermost) output turns
+  SUMMARY output on, still, the TIME summary output is off, so the
+  THM call does not print the TIME part of the summary output.  Note
+  that the same reasoning applies if the third with-output call above
+  specifies :on :all instead of :on (summary); that case also
+  produces no time output in the summary.  That is, the use of :on
+  :all specifies which output types are on, but does not affect which
+  summary types are on; again, output types and summary types are
+  controlled independently by the respective pairs :on/:off and
+  :summary-on/:summary-off.
 
 
 Keyword arguments
@@ -131780,11 +131813,12 @@ Keyword arguments
   :summary-on, :summary-off
 
   The values for these keywords, which are not evaluated, must be
-  on-off specs.  They are interpreted exactly as are the values for
-  :on and :off as described above, except that instead of output
-  types they are interpreted with respect to the summary types (i.e.,
-  in the terminology introduced above, with respect to the set of
-  associated valid symbols for :summary-on and :summary-off).
+  on-off specs for these keywords.  They are interpreted exactly as
+  are the values for :on and :off as described above, except that
+  instead of output types they are interpreted with respect to the
+  summary types (i.e., in the terminology introduced above, with
+  respect to the set of associated valid symbols for :summary-on and
+  :summary-off).
 
   :gag-mode
 

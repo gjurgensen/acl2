@@ -114852,22 +114852,19 @@ arithmetic) for libraries of @(see books) for arithmetic reasoning.</p>")
 
  <ul>
 
- <li>@('Errors'): The final error message (no field indicator)</li>
+ <li>@('Errors') (no field indicator): The final error message</li>
 
- <li>@('Form'): The ``context'' for the event (@(see ctx)) (no field
- indicator)</li>
+ <li>@('Form') (no field indicator): The ``context'' for the event (@(see
+ ctx))</li>
 
- <li>@('Header'): The initial word ``Summary'' (no field indicator)</li>
+ <li>@('Header') (no field indicator): The initial word ``Summary''</li>
 
- <li>@('Hint-events'): Hints (e.g., @(':use') hints) supplied</li>
+ <li>@('Hint-events'): Certain hints (e.g., @(':use') hints) supplied</li>
 
- <li>@('Prover steps counted'): Prover steps (see @(see
- set-prover-step-limit))</li>
-
- <li>@('Redundant'): There is no field indicator and, moreover, a message is
- printed that notes a redundant event (see @(see redundant-events)) above the
- rest of the summary.  That message is printed even when @('SUMMARY') output or
- the @('REDUNDANT') summary-type is inhibited, if @('EVENT') output is not
+ <li>@('Redundant'): There is field indicator, but a message is printed that
+ notes a redundant event (see @(see redundant-events)) above the rest of the
+ summary.  That message is printed even when @('SUMMARY') output or the
+ @('REDUNDANT') summary-type is inhibited, if @('EVENT') output is not
  inhibited.</li>
 
  <li>@('Rules'): @(see Rune)s contributing to the proof or storage of the
@@ -114875,6 +114872,9 @@ arithmetic) for libraries of @(see books) for arithmetic reasoning.</p>")
 
  <li>@('Splitter-rules'): Potential causes of case splits (see @(see
  splitter))</li>
+
+ <li>@('Steps') (field indicator is @('\"Prover steps counted\"')): Prover
+ steps (see @(see set-prover-step-limit))</li>
 
  <li>@('System-attachments'): List of doublets @('(f g)') for which @('f') is a
  system function with attachment @('g') (see @(see defattach)), when @('g')
@@ -130909,19 +130909,52 @@ for the execution of @('form')."
  </ul>
 
  <p>The set of ``associated valid symbols'' is defined as follows.  For
- @(':off') or @(':on'), these symbols are the output types that can be
+ @(':off') or @(':on'), these symbols are the <i>output types</i> that can be
  inhibited (see @(see set-inhibit-output-lst)), that is, members of the list
- stored in the constant @('*valid-output-names*'), @(`*valid-output-names*`);
- similarly, for @(':summary-on') or @(':summary-off'), these are the parts of
- the @(see summary) that can be inhibited (see @(see
- set-inhibited-summary-types)), that is, members of the list stored in the
- constant @('*summary-types*'), @(`*summary-types*`).  An on-off spec
- consisting of associated valid symbols, @('(sym1 ... symk)'), indicates the
- set of symbols, @('{sym1,...,symk}').  The other legal forms of on-off spec
- and their meanings are as follows: @(':all') represents the set of all
- associated valid symbols, any other symbol @('sym') abbreviates @('(sym)'),
- and @('(:other-than sym1 ... symk)') represents the set of associated valid
- symbols that are not in the list @('(sym1 ... symk)').</p>
+ stored in the constant @('*valid-output-names*'), the list
+ @(`*valid-output-names*`).  Similarly, for @(':summary-on') or
+ @(':summary-off'), these are the <i>summary types</i>: the parts of the @(see
+ summary) that can be inhibited (see @(see set-inhibited-summary-types)), that
+ is, members of the list stored in the constant @('*summary-types*'), the list
+ @(`*summary-types*`).  An on-off spec consisting of associated valid symbols,
+ @('(sym1 ... symk)'), indicates the set of symbols, @('{sym1,...,symk}').  The
+ other legal forms of on-off spec and their meanings are as follows: @(':all')
+ represents the set of all associated valid symbols, any other symbol @('sym')
+ abbreviates @('(sym)'), and @('(:other-than sym1 ... symk)') represents the
+ set of associated valid symbols that are not in the list @('(sym1
+ ... symk)').</p>
+
+ <p>Note that these two notions of ``associated valid symbols'' &mdash; the
+ <i>output types</i> controlled by keywords @(':on') and @(':off'), and the
+ <i>summary types</i> contolled by keywords @(':summary-on') and
+ @(':summary-off') &mdash; operate independently in the following sense.  The
+ keywords @(':on') and @(':off') control output types from the list
+ @('*valid-output-names*') displayed above, one of whose members is
+ @('SUMMARY').  The keywords @(':summary-on') and @(':summary-off') control
+ summary types from the list @('*summary-types*') displayed above, indicating
+ which types of summary are to be printed in the case that @('SUMMARY') is
+ among the output types that are on.  This summary control persists even as the
+ @('SUMMARY') type changes state between off and on.  Consider the following
+ example.</p>
+
+ @({
+  (with-output :off (summary)
+   (with-output :summary-off (time)
+    (with-output :on (summary)
+     (thm (equal (car (append x y)) (if (consp x) (car x) (car y)))))))
+ })
+
+ <p>The resulting output does not include @('TIME') output in the summary.  The
+ reason is that the second @('with-output') form specifies that @('TIME')
+ summary output is off; then when the third (innermost) output turns
+ @('SUMMARY') output on, still, the @('TIME') summary output is off, so the
+ @('THM') call does not print the @('TIME') part of the summary output.  Note
+ that the same reasoning applies if the third @('with-output') call above
+ specifies @(':on :all') instead of @(':on (summary)'); that case also produces
+ no time output in the summary.  That is, the use of @(':on :all') specifies
+ which output types are on, but does not affect which summary types are on;
+ again, output types and summary types are controlled independently by the
+ respective pairs @(':on/:off') and @(':summary-on/:summary-off').</p>
 
  <h3>Keyword arguments</h3>
 
@@ -130942,11 +130975,11 @@ for the execution of @('form')."
  <p>@(':summary-on'), @(':summary-off')</p>
 
  <p>The values for these keywords, which are not evaluated, must be on-off
- specs.  They are interpreted exactly as are the values for @(':on') and
- @(':off') as described above, except that instead of output types they are
- interpreted with respect to the summary types (i.e., in the terminology
- introduced above, with respect to the set of associated valid symbols for
- @(':summary-on') and @(':summary-off')).</p>
+ specs for these keywords.  They are interpreted exactly as are the values for
+ @(':on') and @(':off') as described above, except that instead of output types
+ they are interpreted with respect to the summary types (i.e., in the
+ terminology introduced above, with respect to the set of associated valid
+ symbols for @(':summary-on') and @(':summary-off')).</p>
 
  <p>@(':gag-mode')</p>
 
