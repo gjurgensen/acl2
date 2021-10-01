@@ -11958,19 +11958,20 @@ Subtopics
   list of variables in the hypotheses of a linear rule; see [linear],
   in particular condition (b) mentioned there regarding a requirement
   that maximal terms and hypotheses must suffice for instantiating
-  all the variables in the conclusion.  If var-list is t) (either
-  expicitly or implicitly, as described above), then that condition
+  all the variables in the conclusion.  If var-list is t (either
+  explicitly or implicitly, as described above), then that condition
   is considered to be met trivially; this could prevent ACL2 from
-  rejecting ineffective linear rules.</p> <p>An extended @('bind-free
-  hypothesis is similar to the simple type described above, but it
-  uses two additional variables, mfc and state, which must not be
-  bound by the left hand side or an earlier hypothesis of the rule.
-  They must be the last two variables mentioned by term: first mfc,
-  then state.  These two variables give access to the functions
-  mfc-xxx; see [extended-metafunctions].  As described there, mfc is
-  bound to the so-called metafunction-context and state to ACL2's
-  [state].  See [bind-free-examples] for examples of the use of these
-  extended bind-free hypotheses.
+  rejecting ineffective linear rules.
+
+  An extended bind-free hypothesis is similar to the simple type
+  described above, but it uses two additional variables, mfc and
+  state, which must not be bound by the left hand side or an earlier
+  hypothesis of the rule.  They must be the last two variables
+  mentioned by term: first mfc, then state.  These two variables give
+  access to the functions mfc-xxx; see [extended-metafunctions].  As
+  described there, mfc is bound to the so-called metafunction-context
+  and state to ACL2's [state].  See [bind-free-examples] for examples
+  of the use of these extended bind-free hypotheses.
 
   SECTION: Returning a list of alists.
 
@@ -26491,10 +26492,10 @@ The Single-Threaded Object Introduced
   hash-table field cannot contain stobjs as values.
 
   A field with a STOBJ-TABLE type is logically an association list
-  whose keys are [stobj] names, such that each stobj name is mapped
-  to a stobj satisfying that stobj name's recognizer.  We say little
-  more here about stobj-tables; see [stobj-table] for relevant
-  discussion.
+  whose keys are [stobj] names.  ACL2 maintains the execution
+  invariant that each key is mapped to a stobj satisfying that key's
+  recognizer.  We say little more here about stobj-tables; see
+  [stobj-table] for relevant discussion.
 
   The keyword value :initially val specifies the initial value of a
   field, except for the case of a :type (ARRAY type-indicator (max)),
@@ -26735,14 +26736,13 @@ The Default Function Names
   array, k as a key (for the logical association list or raw-Lisp
   hash table associated with the field), v as the ``new value'' to be
   installed by an updater, and name as the single-threaded object.
-  Every stobj also has a ``fixer'', shown below, which cannot be
-  renamed and is used when the stobj is later accessed in a
-  stobj-table (see [stobj-table]).
 
                 scalar field        array field          hash-table field
                                                          and stobj-table field
     recognizer  (cP x)              (cP x)               (cP x)
-    accessor    (c name)            (cI i name)          (c-get k name)
+    accessor    (c name)            (cI i name)
+                                        hash-table access: (c-get k name)
+                                       stobj-table access: (c-get k name default)
     updater     (UPDATE-c v name)   (UPDATE-cI i v name) (c-put k v name)
     length                          (c-LENGTH name)
     resize                          (RESIZE-c i name)
@@ -26755,7 +26755,6 @@ The Default Function Names
                                                                  rehash-size
                                                                  rehash-threshold
                                                                  name)
-    fixer       (c$FIX x)           (c$FIX x)            (c$FIX x)
 
   Finally, a recognizer and a creator for the entire single-threaded
   object are introduced.  The creator returns the initial stobj, but
@@ -36770,10 +36769,10 @@ Subtopics
   function, fmt-to-comment-window!, prints with [fmt!] instead of
   [fmt], in order to avoid insertion of backslash (\\) characters for
   margins; also see [cw!], a macro that expands to a call of
-  fmt-to-comment-window!).  Note that even if you change the value of
-  @(tsee ld) special @('standard-co (see [standard-co]),
-  fmt-to-comment-window will print to [*standard-co*], which is the
-  original value of [standard-co].")
+  fmt-to-comment-window!.  Note that even if you change the value of
+  [ld] special standard-co (see [standard-co]), fmt-to-comment-window
+  will print to [*standard-co*], which is the original value of
+  [standard-co].")
  (FMT-TO-COMMENT-WINDOW!
   (CW IO ACL2-BUILT-INS)
   "Print readably to the comment window
@@ -41046,9 +41045,9 @@ Contribute Your Changes
   it is named \"Subgoal 3.2'\" rather than \"Subgoal 3.2.1\".  If in turn
   that goal has a single subgoal, it is named \"Subgoal 3.2''\"; and so
   on.  When four or more primes would be generated, say, n primes,
-  then the suffix is \"'n'\"); e.g., continuing the preceding example
-  we get @('\"Subgoal 3.2'''\", \"Subgoal 3.2'4'\", \"Subgoal 3.2'5'\", and
-  so on.  If any of these generates at least two subgoals then any
+  then the suffix is \"'n'\"; e.g., continuing the preceding example we
+  get \"Subgoal 3.2'''\", \"Subgoal 3.2'4'\", \"Subgoal 3.2'5'\", and so
+  on.  If any of these generates at least two subgoals then any
   ``prime'' suffix is dropped; for example, if \"Subgoal 3.2'5'\" has
   two subgoals then they are named \"Subgoal 3.2.2\" and \"Subgoal
   3.2.1\".
@@ -87918,7 +87917,7 @@ Bug Fixes
       clearing effect of (accumulated-persistence t), rather than of
       (accumulated-persistence nil).
     * Uses of [definition] rules because of :[expand] hints, either
-      expicitly given by the user or generated by ACL2's heuristics
+      explicitly given by the user or generated by ACL2's heuristics
       for doing induction, were not being recorded by
       [accumulated-persistence].  They are now.
 
@@ -88354,6 +88353,13 @@ Changes to Existing Features
     strict-merge-symbol-<
     strict-symbol-<-sortedp
     symbol-<
+
+  The string \"Proof succeeded\" or \"Proof skipped\" was formerly printed
+  when SUMMARY output is not inhibited (see
+  [set-inhibit-output-lst]), but now that printing takes place
+  instead when PROVE output is not inhibited.  Thanks to Pete
+  Manolios for pointing out a printing issue that is resolved with
+  this change.
 
 
 New Features
@@ -104269,7 +104275,7 @@ Subtopics
 
   where form evaluates to an [error-triple].
 
-  Evaluation of (revert-world form) returns the same result, @('(mv erp
+  Evaluation of (revert-world form) returns the same result, (mv erp
   val state), as the given form, except that the [world] of the
   returned [state] is the same as the world of the input state even
   if the evaluation of form modifies the world of the input state.
@@ -105655,7 +105661,7 @@ Subtopics
       formula (< (f x y) (g y z)) might not make a good linear rule.
       For a more careful discussion of maximal terms, see [linear].
     * If the formula is a term in normal form (not simplifiable by your
-      rewrite rules) that tends to be an expicit hypothesis in some
+      rewrite rules) that tends to be an explicit hypothesis in some
       of your theorems, consider making it a [forward-chaining] rule.
       For example, if you are reasoning about a finite state machine
       (such as an interpreter) and your theorems tend to have the
@@ -114862,6 +114868,9 @@ Subtopics
   soon, and when it is, stobj-table fields may be considered not to
   be experimental any longer.
 
+  For examples of stobj-let usage for stobj-tables, see
+  books/system/tests/stobj-table-tests-input.lsp.
+
   See [stobj] for basic background on stobjs, and see [defstobj] for
   detailed documentation on the syntax and semantics of stobjs,
   including fields specified with :type (stobj-table) or :type
@@ -114874,10 +114883,12 @@ Subtopics
   and updaters; for a stobj-table field, TBL, these are TBL-GET and
   TBL-PUT, respectively.
 
-  Logically, a stobj-table field may be viewed as an association list
-  mapping stobj names to corresponding stobjs, so that each stobj
-  name maps to a stobj that satisfies the recognizer for that stobj
-  name.  But in raw Lisp, for efficiency, a stobj-table field is
+  A stobj-table field may be viewed as an association list mapping
+  stobj names to corresponding stobjs, so that each stobj name maps
+  to a stobj that satisfies the recognizer for that stobj name.  This
+  requirement is not enforced in the logic (i.e., in recognizer
+  functions).  But it is essentially maintained in raw Lisp as an
+  invariant, except that for efficiency, a stobj-table field is
   implemented as a hash-table (again, mapping stobj names to
   corresponding stobjs).  Below we give more details and explain how
   stobj-let may be used to access and update stobjs that are in such
@@ -114904,12 +114915,13 @@ Subtopics
   an alist.  It is accessed logically with [hons-assoc-equal], which
   is a variant of [assoc] that treats an arbitrary object as an
   alist: only pairs are considered when looking up a key, and the
-  final cdr is ignored.  In this sense, and in many other senses, a
-  stobj-table field is very much like a hash-table field.  The key
-  difference (pun somewhat intended) is that each key of a
-  stobj-table is the name of a stobj (other than state, i.e., it is a
-  user-defined stobj name), and the corresponding value is a stobj
-  satisfying the recognizer for that name.
+  final cdr is ignored.  A default value is returned when there is no
+  pair with the given key.  A stobj-table field is thus very much
+  like a hash-table field.  The key difference (pun somewhat
+  intended) is that each key of a stobj-table is the name of a stobj
+  (other than state, i.e., it is a user-defined stobj name), and the
+  corresponding value is a stobj satisfying the recognizer for that
+  name.
 
   A common case is that a stobj-table field is the unique field of its
   parent stobj.  In that case we may think of the entire stobj as a
@@ -114924,17 +114936,15 @@ Subtopics
   Reads and writes of a stobj-table field are much like reads and
   writes when the field is an array of stobjs.  In both cases, one
   uses [stobj-let] to access and possibly update the desired
-  individual stobj or stobjs.  However, a stobj fixer must be applied
-  to the result of obtaining the stobj from the table.  (Stobj fixers
-  are further explained below.)  The syntax thus looks as follows,
-  where ST is a stobj name with corresponding fixer function ST$FIX,
-  and PARENT is the name of a stobj that has a stobj-table accessor
-  with name TBL-GET.  Note that the fixer is required, and the first
+  individual stobj or stobjs.  The syntax thus looks as follows,
+  where ST is a stobj name and PARENT is the name of a stobj that has
+  a stobj-table accessor with name TBL-GET.  Note that the first
   argument of the accessor must be the quotation of the name of the
-  bound stobj.  (Thus below, 'ST is the quotation of ST.)
+  bound stobj (thus below, 'ST is the quotation of ST) and the third
+  argument must be a call of that stobj's creator function.
 
     (stobj-let (...                                 ; bindings
-                (ST (ST$FIX (TBL-GET 'ST PARENT)))
+                (ST (TBL-GET 'ST PARENT (CREATE-ST)))
                 ...
                 )
                (...)                                ; producer variables
@@ -114942,31 +114952,19 @@ Subtopics
                ...                                  ; consumer
                )
 
-  A stobj fixer is introduced with every stobj; above, ST$FIX denotes
-  the stobj fixer introduced with ST.  Stobj fixers cannot be called
-  directly except in theorems or as indicated above; their definition
-  is illustrated as follows.
-
-    (defun st$fix (st)
-      (declare (xargs :guard t :verify-guards t))
-      (if (stp st) st (create-st)))
-
-  A stobj fixer for st is thus defined logically to return its argument
-  if that argument satisfies the recognizer for st (by default, stp),
-  and otherwise to return a new stobj by calling that stobj's
-  creator, which by default is create-st.  Note that a stobj fixer
-  always returns a value that satisfies the recognizer for that
-  stobj.  The requirement that the stobj fixer is applied to the
-  stobj-table lookup thus guarantees that the result is bound to a
-  stobj satisfying the stobj's recognizer --- even if the stobj name
-  is not already bound in the stobj-table.
+  The TBL-GET call above always returns an object that satisfies the
+  recognizer for the stobj, ST.  However, that is a fact about
+  evaluation; it is not provable in the logic.  Fortunately, [guard]
+  verification typically adds hypotheses to this effect when
+  necessary.
 
   Remark.  This remark on the implementation may be skipped, but it may
   provide some intuition.  When a stobj name is not bound in the
-  underlying hash-table, the above call of the fixer provides a stobj
-  nonetheless.  And if that stobj name is among the producer
-  variables of a stobj-let form, it will be bound in the underlying
-  hash-table when the stobj-let form completes.  End of remark.
+  underlying hash-table, then the default value (in the example
+  above, (CREATE-ST)) provides a suitable stobj nonetheless.  And if
+  that stobj name is among the producer variables of a stobj-let
+  form, it will be bound in the underlying hash-table when the
+  stobj-let form completes.  End of remark.
 
   The remainder of this topic explains the use of stobj-tables by
   following the example in [community-book]
@@ -114989,12 +114987,11 @@ Subtopics
     (defstobj st1 fld1)
 
   The next form puts this stobj into the stobj-table after updating its
-  field with a specified value.  Notice the required use of the stobj
-  fixer.
+  field with a specified value.
 
     (defun update-st1-in-tbl (val stobj-table)
       (declare (xargs :stobjs stobj-table))
-      (stobj-let ((st1 (st1$fix (tbl-get 'st1 stobj-table)))) ; bindings
+      (stobj-let ((st1 (tbl-get 'st1 stobj-table (create-st1)))) ; bindings
                  (st1)                                        ; producer variable
                  (update-fld1 val st1)                        ; producer
                  stobj-table                                  ; consumer
@@ -115005,7 +115002,7 @@ Subtopics
 
     (defun read-st1-in-tbl1 (stobj-table)
       (declare (xargs :stobjs stobj-table))
-      (stobj-let ((st1 (st1$fix (tbl-get 'st1 stobj-table)))) ; bindings
+      (stobj-let ((st1 (tbl-get 'st1 stobj-table (create-st1)))) ; bindings
                  (val)                                        ; producer variable
                  (fld1 st1)                                   ; producer
                  val                                          ; consumer
@@ -115046,7 +115043,7 @@ Subtopics
 
     (defun read-st2-in-tbl (stobj-table)
       (declare (xargs :stobjs stobj-table))
-      (stobj-let ((st2 (st2$fix (tbl-get 'st2 stobj-table)))) ; bindings
+      (stobj-let ((st2 (tbl-get 'st2 stobj-table (create-st2)))) ; bindings
                  (val)                                        ; producer variable
                  (fld2 st2)                                   ; producer
                  val                                          ; consumer
@@ -115935,18 +115932,19 @@ Subtopics
   listed alphabetically.  Most are printed with an initial field
   indicator, e.g., ``Rules: ''; a few, as indicated below, are not.
 
-    * Errors: The final error message (no field indicator)
-    * Form: The ``context'' for the event ([ctx]) (no field indicator)
-    * Header: The initial word ``Summary'' (no field indicator)
-    * Hint-events: Hints (e.g., :use hints) supplied
-    * Prover steps counted: Prover steps (see [set-prover-step-limit])
-    * Redundant: There is no field indicator and, moreover, a message is
-      printed that notes a redundant event (see [redundant-events])
-      above the rest of the summary.  That message is printed even
-      when SUMMARY output or the REDUNDANT summary-type is inhibited,
-      if EVENT output is not inhibited.
+    * Errors (no field indicator): The final error message
+    * Form (no field indicator): The ``context'' for the event ([ctx])
+    * Header (no field indicator): The initial word ``Summary''
+    * Hint-events: Certain hints (e.g., :use hints) supplied
+    * Redundant: There is field indicator, but a message is printed that
+      notes a redundant event (see [redundant-events]) above the rest
+      of the summary.  That message is printed even when SUMMARY
+      output or the REDUNDANT summary-type is inhibited, if EVENT
+      output is not inhibited.
     * Rules: [Rune]s contributing to the proof or storage of the event
     * Splitter-rules: Potential causes of case splits (see [splitter])
+    * Steps (field indicator is \"Prover steps counted\"): Prover steps (see
+      [set-prover-step-limit])
     * System-attachments: List of doublets (f g) for which f is a system
       function with attachment g (see [defattach]), when g differs
       from the initial attachment to f
@@ -129209,13 +129207,17 @@ Subtopics
    2. Check that the build seems to have worked, for example by finding the
       string \"Successfully built\" near the end of your log file.
    3. Run a ``devel'' regression, for example as follows if starting in the
-      ACL2 sources directory.
+      ACL2 sources directory.  Note that including
+      ``ACL2_USELESS_RUNES= '' as shown below may be necessary
+      because of how proofs differ between normal and ``devel''
+      versions of ACL2.
 
           make clean-books ACL2=`pwd`/saved_acl2d
           cd books
-          (time nice ./build/cert.pl -j 8 \\
-                     --acl2 `pwd`/../saved_acl2d \\
-                     system/devel-check) \\
+          (time nice make -j 8 \\
+                     ACL2=`pwd`/../saved_acl2d \\
+                     ACL2_USELESS_RUNES= \\
+                     system/devel-check.cert) \\
             >& make-devel-regression.log&
 
       The last of these commands should run much more quickly than a
@@ -131735,20 +131737,52 @@ On-off specs
   The set of ``associated valid symbols'' is defined as follows.  For
   :off or :on, these symbols are the output types that can be
   inhibited (see [set-inhibit-output-lst]), that is, members of the
-  list stored in the constant *valid-output-names*, (proof-tree error
-  warning! warning observation prove event summary proof-builder
-  comment history); similarly, for :summary-on or :summary-off, these
-  are the parts of the [summary] that can be inhibited (see
+  list stored in the constant *valid-output-names*, the list
+  (proof-tree error warning! warning observation prove event summary
+  proof-builder comment history).  Similarly, for :summary-on or
+  :summary-off, these are the summary types: the parts of the
+  [summary] that can be inhibited (see
   [set-inhibited-summary-types]), that is, members of the list stored
-  in the constant *summary-types*, (errors form header hint-events
-  redundant rules splitter-rules steps system-attachments time value
-  warnings).  An on-off spec consisting of associated valid symbols,
-  (sym1 ... symk), indicates the set of symbols, {sym1,...,symk}.
-  The other legal forms of on-off spec and their meanings are as
-  follows: :all represents the set of all associated valid symbols,
-  any other symbol sym abbreviates (sym), and (:other-than sym1 ...
-  symk) represents the set of associated valid symbols that are not
-  in the list (sym1 ... symk).
+  in the constant *summary-types*, the list (errors form header
+  hint-events redundant rules splitter-rules steps system-attachments
+  time value warnings).  An on-off spec consisting of associated
+  valid symbols, (sym1 ... symk), indicates the set of symbols,
+  {sym1,...,symk}.  The other legal forms of on-off spec and their
+  meanings are as follows: :all represents the set of all associated
+  valid symbols, any other symbol sym abbreviates (sym), and
+  (:other-than sym1 ... symk) represents the set of associated valid
+  symbols that are not in the list (sym1 ... symk).
+
+  Note that these two notions of ``associated valid symbols'' --- the
+  output types controlled by keywords :on and :off, and the summary
+  types contolled by keywords :summary-on and :summary-off ---
+  operate independently in the following sense.  The keywords :on and
+  :off control output types from the list *valid-output-names*
+  displayed above, one of whose members is SUMMARY.  The keywords
+  :summary-on and :summary-off control summary types from the list
+  *summary-types* displayed above, indicating which types of summary
+  are to be printed in the case that SUMMARY is among the output
+  types that are on.  This summary control persists even as the
+  SUMMARY type changes state between off and on.  Consider the
+  following example.
+
+    (with-output :off (summary)
+     (with-output :summary-off (time)
+      (with-output :on (summary)
+       (thm (equal (car (append x y)) (if (consp x) (car x) (car y)))))))
+
+  The resulting output does not include TIME output in the summary.
+  The reason is that the second with-output form specifies that TIME
+  summary output is off; then when the third (innermost) output turns
+  SUMMARY output on, still, the TIME summary output is off, so the
+  THM call does not print the TIME part of the summary output.  Note
+  that the same reasoning applies if the third with-output call above
+  specifies :on :all instead of :on (summary); that case also
+  produces no time output in the summary.  That is, the use of :on
+  :all specifies which output types are on, but does not affect which
+  summary types are on; again, output types and summary types are
+  controlled independently by the respective pairs :on/:off and
+  :summary-on/:summary-off.
 
 
 Keyword arguments
@@ -131770,11 +131804,12 @@ Keyword arguments
   :summary-on, :summary-off
 
   The values for these keywords, which are not evaluated, must be
-  on-off specs.  They are interpreted exactly as are the values for
-  :on and :off as described above, except that instead of output
-  types they are interpreted with respect to the summary types (i.e.,
-  in the terminology introduced above, with respect to the set of
-  associated valid symbols for :summary-on and :summary-off).
+  on-off specs for these keywords.  They are interpreted exactly as
+  are the values for :on and :off as described above, except that
+  instead of output types they are interpreted with respect to the
+  summary types (i.e., in the terminology introduced above, with
+  respect to the set of associated valid symbols for :summary-on and
+  :summary-off).
 
   :gag-mode
 
