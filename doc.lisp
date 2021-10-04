@@ -23144,6 +23144,9 @@ Subtopics
 
 Subtopics
 
+  [Illegal-state]
+      Illegal ACL2 state
+
   [Set-absstobj-debug]
       Get more information when atomic update fails for an abstract stobj")
  (DEFABSSTOBJ-MISSING-EVENTS
@@ -47127,7 +47130,7 @@ Subtopics
            (declare (xargs :guard (hard-error ctx str alist)))
            (hard-error ctx str alist))")
  (ILLEGAL-STATE
-  (RELEASE-NOTES)
+  (DEFABSSTOBJ)
   "Illegal ACL2 state
 
   See [set-absstobj-debug] for background on invariance violations for
@@ -88453,6 +88456,9 @@ EMACS Support
   (including documentation), which has been incorporated into the
   [ACL2-doc] source file, emacs/acl2-doc.el.
 
+  A bug has been fixed in [ACL2-doc] that would cause an error when
+  attempting to bring up the acl2-only manual.
+
 
 Experimental Versions")
  (NOTE1 (POINTERS) "See [note-1-1].")
@@ -102691,9 +102697,6 @@ Subtopics
 
 
 Subtopics
-
-  [Illegal-state]
-      Illegal ACL2 state
 
   [Note-1-1]
       Acl2 Version 1.1 Notes
