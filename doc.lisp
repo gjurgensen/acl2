@@ -23144,6 +23144,9 @@ Subtopics
 
 Subtopics
 
+  [Illegal-state]
+      Illegal ACL2 state
+
   [Set-absstobj-debug]
       Get more information when atomic update fails for an abstract stobj")
  (DEFABSSTOBJ-MISSING-EVENTS
@@ -47127,7 +47130,7 @@ Subtopics
            (declare (xargs :guard (hard-error ctx str alist)))
            (hard-error ctx str alist))")
  (ILLEGAL-STATE
-  (RELEASE-NOTES)
+  (DEFABSSTOBJ)
   "Illegal ACL2 state
 
   See [set-absstobj-debug] for background on invariance violations for
@@ -102694,9 +102697,6 @@ Subtopics
 
 
 Subtopics
-
-  [Illegal-state]
-      Illegal ACL2 state
 
   [Note-1-1]
       Acl2 Version 1.1 Notes

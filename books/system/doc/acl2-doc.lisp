@@ -23553,7 +23553,7 @@ subtree of X with T, without duplication.</p>
               scalar field        array field          hash-table field
                                                        and stobj-table field
   recognizer  (cP x)              (cP x)               (cP x)
-  accessor    (c name)            (cI i name)          
+  accessor    (c name)            (cI i name)
                                       hash-table access: (c-get k name)
                                      stobj-table access: (c-get k name default)
   updater     (UPDATE-c v name)   (UPDATE-cI i v name) (c-put k v name)
@@ -43423,7 +43423,7 @@ tables in the current Hons Space."
  @(def illegal)")
 
 (defxdoc illegal-state
-  :parents (release-notes)
+  :parents (defabsstobj)
   :short "Illegal ACL2 state"
   :long "<p>See @(see set-absstobj-debug) for background on invariance
  violations for abstract @(see stobj)s.  In short, they may occur when
