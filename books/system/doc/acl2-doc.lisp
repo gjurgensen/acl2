@@ -90320,6 +90320,9 @@ it."
  (including documentation), which has been incorporated into the @(see
  acl2-doc) source file, @('emacs/acl2-doc.el').</p>
 
+ <p>A bug has been fixed in @(see acl2-doc) that would cause an error
+ when attempting to bring up the acl2-only manual.</p>
+
  <h3>Experimental Versions</h3>
 
  ")

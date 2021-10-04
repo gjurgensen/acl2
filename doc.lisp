@@ -88453,6 +88453,9 @@ EMACS Support
   (including documentation), which has been incorporated into the
   [ACL2-doc] source file, emacs/acl2-doc.el.
 
+  A bug has been fixed in [ACL2-doc] that would cause an error when
+  attempting to bring up the acl2-only manual.
+
 
 Experimental Versions")
  (NOTE1 (POINTERS) "See [note-1-1].")
