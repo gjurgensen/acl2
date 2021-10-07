@@ -60871,9 +60871,9 @@ it."
   :parents (io acl2-built-ins)
   :short "Recognizer for a ``message''"
   :long "<p>The form @('(msgp x)') evaluates to true when @('x') evaluates
- either to a string or to a @('cons') whose @('cdr') satisfies @(tsee
- character-alistp).  Note that @('msgp') will always hold for the output of the
- macro, @('msg'); see @(see msg).</p>
+ either to a string or to a @('cons') whose @('car') is a string and whose
+ @('cdr') satisfies @(tsee character-alistp).  Note that @('msgp') will always
+ hold for the output of the macro @(see msg).</p>
 
  @(def msgp)")
 
