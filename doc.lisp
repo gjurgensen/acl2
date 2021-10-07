@@ -77,7 +77,7 @@ Subtopics
   [defthm], [in-theory], [xargs], [state], etc., without an acl2::
   prefix.
 
-  The constant *acl2-exports* lists 1534 symbols, including most
+  The constant *acl2-exports* lists 1535 symbols, including most
   documented ACL2 system constants, functions, and macros.  You will
   typically also want to import many symbols from Common Lisp; see
   [*common-lisp-symbols-from-main-lisp-package*].
@@ -273,7 +273,7 @@ Subtopics
        dimensions disable disable-forcing
        disable-immediate-force-modep
        disabledp disassemble$
-       distributivity dmr-start dmr-stop
+       distributivity dmr-start dmr-stop do$
        doc doc! docs doppelganger-apply$-userfn
        doppelganger-badge-userfn double-rewrite
        doublet-listp dumb-occur dumb-occur-var
@@ -88418,6 +88418,9 @@ Changes to Existing Features
 
 
 New Features
+
+  A new [loop$] keyword, DO, supports an imperative style of
+  programming (in particular, using setq) in loops.  See [loop$].
 
   One can now suppress output from [cw], [cw!],
   [fmt-to-comment-window], and [fmt-to-comment-window!], and from

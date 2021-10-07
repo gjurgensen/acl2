@@ -90302,6 +90302,9 @@ it."
 
  <h3>New Features</h3>
 
+ <p>A new @(tsee loop$) keyword, @('DO'), supports an imperative style of
+ programming (in particular, using @('setq')) in loops.  See @(see loop$).</p>
+
  <p>One can now suppress output from @(tsee cw), @(tsee cw!), @(tsee
  fmt-to-comment-window), and @(tsee fmt-to-comment-window!), and from utilities
  that use these such as @(tsee time$), by inhibiting a new output type,
