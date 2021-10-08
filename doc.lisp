@@ -77,7 +77,7 @@ Subtopics
   [defthm], [in-theory], [xargs], [state], etc., without an acl2::
   prefix.
 
-  The constant *acl2-exports* lists 1529 symbols, including most
+  The constant *acl2-exports* lists 1535 symbols, including most
   documented ACL2 system constants, functions, and macros.  You will
   typically also want to import many symbols from Common Lisp; see
   [*common-lisp-symbols-from-main-lisp-package*].
@@ -228,7 +228,7 @@ Subtopics
        cpu-core-count ctx ctxp current-package
        current-theory cw cw! cw!+ cw+ cw-gstack
        cw-print-base-radix cw-print-base-radix!
-       declare decrement-big-clock defabbrev
+       d< declare decrement-big-clock defabbrev
        defabsstobj defabsstobj-missing-events
        defattach defattach-system
        default default-*-1 default-*-2
@@ -273,7 +273,7 @@ Subtopics
        dimensions disable disable-forcing
        disable-immediate-force-modep
        disabledp disassemble$
-       distributivity dmr-start dmr-stop
+       distributivity dmr-start dmr-stop do$
        doc doc! docs doppelganger-apply$-userfn
        doppelganger-badge-userfn double-rewrite
        doublet-listp dumb-occur dumb-occur-var
@@ -382,16 +382,16 @@ Subtopics
        known-package-alist known-package-alistp
        known-package-alistp-forward-to-true-list-listp-and-alistp
        kwote kwote-lst
-       lambda lambda$ last last-prover-steps
+       l< lambda lambda$ last last-prover-steps
        ld ld-error-action ld-error-triples
        ld-evisc-tuple ld-keyword-aliases
        ld-missing-input-ok ld-post-eval-print
        ld-pre-eval-filter ld-pre-eval-print
        ld-prompt ld-query-control-alist
-       ld-redefinition-action
-       ld-skip-proofsp ld-verbose
-       legal-case-clausesp len len-update-nth
-       length let let* let-mbe lexorder list
+       ld-redefinition-action ld-skip-proofsp
+       ld-verbose legal-case-clausesp
+       len len-update-nth length let
+       let* let-mbe lex-fix lexorder lexp list
        list* list*-macro list-all-package-names
        list-all-package-names-lst
        list-macro listp local logand
@@ -434,7 +434,7 @@ Subtopics
        mutual-recursion mutual-recursion-guardp
        mv mv-let mv-list mv-nth mv? mv?-let
        nat-listp natp near-misses needs-slashes
-       never-memoize newline nfix nil
+       never-memoize newline nfix nfix-list nil
        nil-is-not-circular ninth no-duplicatesp
        no-duplicatesp-eq no-duplicatesp-equal
        non-exec nonnegative-integer-quotient
@@ -58237,6 +58237,58 @@ Subtopics
   acquaint themselves with the material below, before wading into
   loop$-recursion!
 
+  Warning: Do Loop$s have recently been added but are so far
+  undocumented!  After including the \"projects/apply/top\" book the
+  following definition can be admitted as a guard-verified logic mode
+  function.
+
+    (defun test (lst)
+      (declare (xargs :guard (true-listp lst)))
+      (loop$ with temp of-type (satisfies true-listp) = lst
+             with sum of-type integer = 0
+             with len of-type (satisfies natp) = 0
+             do
+             (cond ((endp temp)
+                    (loop-finish))
+                   ((eq (car temp) 'stop)
+                    (return 'stopped))
+                   (t (progn (setq sum (+ (ifix (car temp)) sum))
+                             (setq len (+ 1 len))
+                             (setq temp (cdr temp)))))
+             finally (return (list 'sum= sum 'len= len))))
+
+    ACL2 !>(test '(1 2 3 4))
+    (SUM= 10 LEN= 4)
+    ACL2 !>(test '(1 2 stop 4))
+    STOPPED
+
+  The example loop$ above illustrates most of the features supported,
+  except for :measure and :guard keywords.  It is also possible to
+  use [let] and [let*] in the do and finally bodies.
+
+  There are many restrictions, the most annoying of which are probably
+
+    * You can't mix the idioms of for loop$s, like ``for x in ...'' or
+      ``until p'', with do, or vice versa.
+    * Common Lisp's ``implicit progns'' are not recognized.  You have to
+      write explicit progns.
+    * You can't put progn, setq, return, and loop-finish just anywhere.
+      For example, you can't write (setq a (+ b (return 23) c)).
+    * Nested do loop@ are not yet supported.
+
+  The best current guide to do loop$s is a comment in the ACL2 source
+  file translate.lisp.  Search for the comment
+
+    ; Section 11: Do Loop$s
+
+  Also be aware that some documentation topics about loop$ may now be
+  misleading because they may claim or suggest that they pertain to
+  all ACL2 loop$ statements when in fact they may be inaccurate for
+  do loop$s.  The basic problem is that when the documentation was
+  written all loop$s were what we now call ``for loop$s'' and for
+  loop$s are handled differently than do loop$s.  Documentation about
+  loop$ is still thought to be accurate, but only for for loop$s.
+
 
 Informal Introduction
 
@@ -88366,6 +88418,9 @@ Changes to Existing Features
 
 
 New Features
+
+  A new [loop$] keyword, DO, supports an imperative style of
+  programming (in particular, using setq) in loops.  See [loop$].
 
   One can now suppress output from [cw], [cw!],
   [fmt-to-comment-window], and [fmt-to-comment-window!], and from
