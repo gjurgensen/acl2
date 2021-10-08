@@ -26440,9 +26440,10 @@ ld) and @(tsee include-book)"
   :parents (documentation)
   :short "@(see Documentation) at the terminal"
   :long "<p>The @(':doc') command may be used at the ACL2 prompt to access the
- ACL2 system @(see documentation).  Usually (when the @(see xdoc) system is
- loaded) it may also access documentation defined in books.  However, most
- users will probably access the ACL2 documentation in other ways; see @(see
+ ACL2 system @(see documentation).  Usually (when the @(see xdoc) system has
+ been included) it can also access other documentation topics defined in the
+ current session, including via included books.  However, most users will
+ probably access the ACL2 documentation in other ways; see @(see
  documentation).  In particular, consider using the
  @(`(:raw (combined-manual-ref))`), for topics documented in the ACL2 community
  @(see books) or in the ACL2 system (where the latter are rearranged).</p>
