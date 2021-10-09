@@ -26422,28 +26422,31 @@ ld) and @(tsee include-book)"
 ; To see why we say "Usually" below, for accessing book documentation, consider
 ; the following examples.  At the terminal, execute:
 
-; (include-book "ihs/basic-definitions" :dir :system)
+; (include-book "xdoc/base" :dir :system)
+; (defxdoc foo :short "Short description")
+; :doc foo
 
-; Then execute:
-
-; :doc ihs
-
-; You'll see a response that says that there is no documentation for IHS.  Now
+; You'll see a response that says that there is no documentation for FOO.  Now
 ; execute:
 
-; (include-book "ihs/ihs-doc-topic" :dir :system)
+; (include-book "xdoc/top" :dir :system)
+; :doc foo
 
-; This time, execution of :doc ihs provides a good result.
+; This time, execution of :doc foo provides a good result.  The reason is that
+; the xdoc system changes the meaning of the :doc keyword command.
+; Also, of course, the requested documentation topic must be present in the
+; world for :doc to access it.
 
   :parents (documentation)
   :short "@(see Documentation) at the terminal"
   :long "<p>The @(':doc') command may be used at the ACL2 prompt to access the
- ACL2 system @(see documentation).  Usually it may also access documentation
- defined in books.  However, most users will probably access the ACL2
- documentation in other ways; see @(see documentation).  In particular,
- consider using the @(`(:raw (combined-manual-ref))`), for topics documented in
- the ACL2 community @(see books) or in the ACL2 system (where the latter are
- rearranged).</p>
+ ACL2 system @(see documentation).  Usually (when the @(see xdoc) system has
+ been included) it can also access other documentation topics defined in the
+ current session, including via included books.  However, most users will
+ probably access the ACL2 documentation in other ways; see @(see
+ documentation).  In particular, consider using the
+ @(`(:raw (combined-manual-ref))`), for topics documented in the ACL2 community
+ @(see books) or in the ACL2 system (where the latter are rearranged).</p>
 
  <p>Alternatively, consider using the ACL2-doc Emacs browser; see @(see
  acl2-doc).</p>
@@ -26462,7 +26465,11 @@ ld) and @(tsee include-book)"
  example, a link to the present topic will be displayed as @('[doc]'), not as
  @('[acl2::doc]'), regardless of the current package or the package of the
  topic being displayed.  Such links can thus take you to topics in the acl2-doc
- Emacs browser (see @(see acl2-doc)).</p>")
+ Emacs browser (see @(see acl2-doc)).</p>
+
+ <p>Note that @('[books]/xdoc/top') redefines @(':doc') (using @(see
+ add-ld-keyword-alias!)) to invoke the similar macro @('xdoc'), which can
+ access documentation topics defined in books.</p>")
 
 (defxdoc documentation
 
@@ -60935,9 +60942,9 @@ it."
   :parents (io acl2-built-ins)
   :short "Recognizer for a ``message''"
   :long "<p>The form @('(msgp x)') evaluates to true when @('x') evaluates
- either to a string or to a @('cons') whose @('cdr') satisfies @(tsee
- character-alistp).  Note that @('msgp') will always hold for the output of the
- macro, @('msg'); see @(see msg).</p>
+ either to a string or to a @('cons') whose @('car') is a string and whose
+ @('cdr') satisfies @(tsee character-alistp).  Note that @('msgp') will always
+ hold for the output of the macro @(see msg).</p>
 
  @(def msgp)")
 
