@@ -60989,7 +60989,7 @@ it."
  <p>If you want to specify @(':')@(tsee hints) or @(':guard-hints') (see @(see
  xargs)), you can put them in the @(tsee xargs) declaration of any of the
  @(tsee defun) forms, as the @(':')@(tsee hints) from each form will be
- appended together, as will the @(tsee guard-hints) from each form.</p>
+ appended together, as will the @(':')@(tsee guard-hints) from each form.</p>
 
  <p>You may find it helpful to use a lexicographic order, the idea being to
  have a measure that returns a list of two arguments, where the first takes
