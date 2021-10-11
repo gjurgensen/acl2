@@ -29740,10 +29740,12 @@ Subtopics
   "[Documentation] at the terminal
 
   The :doc command may be used at the ACL2 prompt to access the ACL2
-  system [documentation].  Usually it may also access documentation
-  defined in books.  However, most users will probably access the
-  ACL2 documentation in other ways; see [documentation].  In
-  particular, consider using the {ACL2+Books Manual |
+  system [documentation].  Usually (when the [xdoc] system has been
+  included) it can also access other documentation topics defined in
+  the current session, including via included books.  However, most
+  users will probably access the ACL2 documentation in other ways;
+  see [documentation].  In particular, consider using the {ACL2+Books
+  Manual |
   http://www.cs.utexas.edu/users/moore/acl2/v8-4/combined-manual/index.html},
   for topics documented in the ACL2 community [books] or in the ACL2
   system (where the latter are rearranged).
@@ -29763,7 +29765,11 @@ Subtopics
   example, a link to the present topic will be displayed as [doc],
   not as [acl2::doc], regardless of the current package or the
   package of the topic being displayed.  Such links can thus take you
-  to topics in the acl2-doc Emacs browser (see [ACL2-doc]).")
+  to topics in the acl2-doc Emacs browser (see [ACL2-doc]).
+
+  Note that [books]/xdoc/top redefines :doc (using
+  [add-ld-keyword-alias!]) to invoke the similar macro xdoc, which
+  can access documentation topics defined in books.")
  (DOCUMENTATION
   (ACL2)
   "Information about options for downloading and viewing the ACL2
@@ -65136,9 +65142,9 @@ Subtopics
   "Recognizer for a ``message''
 
   The form (msgp x) evaluates to true when x evaluates either to a
-  string or to a cons whose cdr satisfies [character-alistp].  Note
-  that msgp will always hold for the output of the macro, msg; see
-  [msg].
+  string or to a cons whose car is a string and whose cdr satisfies
+  [character-alistp].  Note that msgp will always hold for the output
+  of the macro [msg].
 
   Function: <msgp>
 
@@ -65196,7 +65202,7 @@ Subtopics
   If you want to specify :[hints] or :guard-hints (see [xargs]), you
   can put them in the [xargs] declaration of any of the [defun]
   forms, as the :[hints] from each form will be appended together, as
-  will the [guard-hints] from each form.
+  will the :[guard-hints] from each form.
 
   You may find it helpful to use a lexicographic order, the idea being
   to have a measure that returns a list of two arguments, where the
@@ -88460,6 +88466,13 @@ New Features
   work even when there is a raw Lisp error.  Thanks to Eric Smith for
   requesting that wet be able to work in such cases.
 
+  Rewriting of [lambda] objects (see [rewrite-lambda-object]) may now
+  be [disable]d, by disabling the [executable-counterpart] [rune] for
+  (trivial function), rewrite-lambda-modep --- for example, with a
+  hint :in-theory (disable (:e rewrite-lambda-modep)).  Also improved
+  a couple of warnings and a bit of documentation pertaining to such
+  rewriting.
+
 
 Heuristic and Efficiency Improvements
 
@@ -104678,24 +104691,26 @@ When Rewriting of lambda Objects Is Attempted
   provided
 
     * (a) it occurs in a :FN position of a call of a [scion],
-    * (b) the lambda object is well-formed (see
-      [well-formed-lambda-objectp]), and
-    * (c) every function symbol mentioned in the body has been warranted.
+    * (b) the [rune] (:executable-counterpart rewrite-lambda-modep)) is
+      [enable]d (which it is by default),
+    * (c) the lambda object is well-formed (see
+      [well-formed-lambda-objectp]),
+    * (d) every function symbol mentioned in the body has been warranted
 
-  Condition (b) implies the body of the lambda is in fact a well-formed
+  Condition (c) implies the body of the lambda is in fact a well-formed
   ACL2 term (so the rewriter can explore it), every function symbol
-  in it is properly badged (so that function objects mentioned are
-  used properly), that every variable symbol occurring freely in the
-  body is among the formals of the lambda object, and together with
-  (c) implies that the term ``behaves'' as expected if the
-  appropriate warrant hypotheses govern this occurrence of the
-  object.  This last implication means that [ev$] of the body is
-  equal to unquoted body (under a suitable assignment), which means
-  we can rewrite the unquoted body.
+  in it is [warrant]ed (so that function objects mentioned are used
+  properly), that every variable symbol occurring freely in the body
+  is among the formals of the lambda object, and together with (d)
+  implies that the term ``behaves'' as expected if the appropriate
+  warrant hypotheses govern this occurrence of the object.  This last
+  implication means that [ev$] of the body is equal to unquoted body
+  (under a suitable assignment), which means we can rewrite the
+  unquoted body.
 
-  If a quoted lambda-like occurs in a :FN position but fails either (b)
-  or (c) a \"rewrite-lambda-object\" warning message is printed during
-  the proof.  However, this message is only printed once per lambda
+  If (a) and (b) above hold but either (c) or (d) fails, then a
+  \"rewrite-lambda-object\" warning message is printed during the
+  proof.  However, this message is only printed once per lambda
   object per proof attempt because otherwise the presence of
   ill-formed lambda-like objects in a conjecture will litter the
   output with repeated warnings.  You may turn these warnings off
