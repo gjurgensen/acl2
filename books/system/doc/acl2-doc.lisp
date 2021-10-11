@@ -90349,6 +90349,13 @@ it."
  it to work even when there is a raw Lisp error.  Thanks to Eric Smith for
  requesting that @('wet') be able to work in such cases.</p>
 
+ <p>Rewriting of @(see lambda) objects (see @(see rewrite-lambda-object)) may
+ now be @(see disable)d, by disabling the @(see executable-counterpart) @(see
+ rune) for (trivial function), @('rewrite-lambda-modep') &mdash; for example,
+ with a hint @(':in-theory (disable (:e rewrite-lambda-modep))').  Also
+ improved a couple of warnings and a bit of documentation pertaining to such
+ rewriting.</p>
+
  <h3>Heuristic and Efficiency Improvements</h3>
 
  <p>Improved the efficiency of some computations involving calls of @(tsee
@@ -103639,29 +103646,33 @@ arithmetic) for libraries of @(see books) for arithmetic reasoning.</p>")
   <ul>
   <li>(a) it occurs in a @(':FN') position of a call of a @(see scion),</li>
 
-  <li>(b) the @('lambda') object is well-formed (see @(tsee
-  well-formed-lambda-objectp)), and</li>
+  <li>(b) the @(see rune) @('(:executable-counterpart rewrite-lambda-modep)'))
+  is @(see enable)d (which it is by default),</li>
 
-  <li>(c) every function symbol mentioned in the body has been warranted.</li>
+  <li>(c) the @('lambda') object is well-formed (see @(tsee
+  well-formed-lambda-objectp)),</li>
+
+  <li>(d) every function symbol mentioned in the body has been warranted</li>
+
   </ul>
 
-  <p>Condition (b) implies the body of the @('lambda') is in fact a well-formed
+  <p>Condition (c) implies the body of the @('lambda') is in fact a well-formed
   ACL2 term (so the rewriter can explore it), every function symbol in it is
-  properly badged (so that function objects mentioned are used properly), that
+  @(see warrant)ed (so that function objects mentioned are used properly), that
   every variable symbol occurring freely in the body is among the formals of
-  the @('lambda') object, and together with (c) implies that the term
+  the @('lambda') object, and together with (d) implies that the term
   ``behaves'' as expected if the appropriate warrant hypotheses govern this
   occurrence of the object.  This last implication means that @(tsee ev$) of
   the body is equal to unquoted body (under a suitable assignment), which means
   we can rewrite the unquoted body.</p>
 
-  <p>If a quoted @('lambda')-like occurs in a @(':FN') position but fails
-  either (b) or (c) a @('\"rewrite-lambda-object\"') warning message is printed
-  during the proof.  However, this message is only printed once per @('lambda')
-  object per proof attempt because otherwise the presence of ill-formed
-  @('lambda')-like objects in a conjecture will litter the output with repeated
-  warnings.  You may turn these warnings off with @('(')@(tsee
-  toggle-inhibit-warning) @('\"Rewrite-lambda-object\")').</p>
+  <p>If (a) and (b) above hold but either (c) or (d) fails, then a
+  @('\"rewrite-lambda-object\"') warning message is printed during the proof.
+  However, this message is only printed once per @('lambda') object per proof
+  attempt because otherwise the presence of ill-formed @('lambda')-like objects
+  in a conjecture will litter the output with repeated warnings.  You may turn
+  these warnings off with @('(')@(tsee toggle-inhibit-warning)
+  @('\"Rewrite-lambda-object\")').</p>
 
   <h3>Restrictions During Rewriting of a @('Lambda') Body</h3>
 
