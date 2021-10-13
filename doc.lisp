@@ -88422,6 +88422,10 @@ Changes to Existing Features
   Manolios for pointing out a printing issue that is resolved with
   this change.
 
+  Some error messages were improved for the [proof-builder], primarily
+  when refusing a command to dive into an OR expression.  Thanks to
+  Warren Hunt for bringing this issue to our attention.
+
 
 New Features
 
