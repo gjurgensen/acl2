@@ -90307,6 +90307,10 @@ it."
  @('PROVE') output is not inhibited.  Thanks to Pete Manolios for pointing out
  a printing issue that is resolved with this change.</p>
 
+ <p>Some error messages were improved for the @(see proof-builder), primarily
+ when refusing a command to dive into an @('OR') expression.  Thanks to Warren
+ Hunt for bringing this issue to our attention.</p>
+
  <h3>New Features</h3>
 
  <p>A new @(tsee loop$) keyword, @('DO'), supports an imperative style of
