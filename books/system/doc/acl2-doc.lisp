@@ -2643,7 +2643,7 @@
   w               acl2-doc-where
   SPC             scroll-up
   TAB             acl2-doc-tab
-  Control-TAB or <backtab> (which often is Shift-TAB):
+  <backtab> (which often is Shift-TAB):
                   acl2-doc-tab-back
   D               acl2-doc-rendered-combined-download
   H               acl2-doc-history
@@ -2760,7 +2760,7 @@
      Visit the next link after the cursor on the current page, searching from
      the top if no link is below the cursor.
 
-  Control-TAB or <backtab> (which often is Shift-TAB):
+  <backtab> (which often is Shift-TAB):
                 acl2-doc-tab-back
      Visit the previous link before the cursor on the current page, searching
      from the bottom if no link is below the cursor.
@@ -3125,7 +3125,7 @@
        Scroll up (same as Control-v)
     TAB           acl2-doc-tab
        Visit the next link on the current page.
-    Control-TAB or <backtab> (which often is Shift-TAB): acl2-doc-tab-back
+    <backtab> (which often is Shift-TAB): acl2-doc-tab-back
        Visit the previous link on the current page.
     D
        Download the manual from the web; then restart ACL2-Doc.
@@ -90407,6 +90407,10 @@ it."
 
  <p>A bug has been fixed in @(see acl2-doc) that would cause an error
  when attempting to bring up the acl2-only manual.</p>
+
+ <p>The key binding Control-TAB has been removed for the @(see acl2-doc)
+ browser, to avoid conflict with other uses of that key.  Thanks to Alessandro
+ Coglio for the idea.</p>
 
  <h3>Experimental Versions</h3>
 
