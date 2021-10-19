@@ -77,7 +77,7 @@ Subtopics
   [defthm], [in-theory], [xargs], [state], etc., without an acl2::
   prefix.
 
-  The constant *acl2-exports* lists 1529 symbols, including most
+  The constant *acl2-exports* lists 1535 symbols, including most
   documented ACL2 system constants, functions, and macros.  You will
   typically also want to import many symbols from Common Lisp; see
   [*common-lisp-symbols-from-main-lisp-package*].
@@ -228,7 +228,7 @@ Subtopics
        cpu-core-count ctx ctxp current-package
        current-theory cw cw! cw!+ cw+ cw-gstack
        cw-print-base-radix cw-print-base-radix!
-       declare decrement-big-clock defabbrev
+       d< declare decrement-big-clock defabbrev
        defabsstobj defabsstobj-missing-events
        defattach defattach-system
        default default-*-1 default-*-2
@@ -273,7 +273,7 @@ Subtopics
        dimensions disable disable-forcing
        disable-immediate-force-modep
        disabledp disassemble$
-       distributivity dmr-start dmr-stop
+       distributivity dmr-start dmr-stop do$
        doc doc! docs doppelganger-apply$-userfn
        doppelganger-badge-userfn double-rewrite
        doublet-listp dumb-occur dumb-occur-var
@@ -382,16 +382,16 @@ Subtopics
        known-package-alist known-package-alistp
        known-package-alistp-forward-to-true-list-listp-and-alistp
        kwote kwote-lst
-       lambda lambda$ last last-prover-steps
+       l< lambda lambda$ last last-prover-steps
        ld ld-error-action ld-error-triples
        ld-evisc-tuple ld-keyword-aliases
        ld-missing-input-ok ld-post-eval-print
        ld-pre-eval-filter ld-pre-eval-print
        ld-prompt ld-query-control-alist
-       ld-redefinition-action
-       ld-skip-proofsp ld-verbose
-       legal-case-clausesp len len-update-nth
-       length let let* let-mbe lexorder list
+       ld-redefinition-action ld-skip-proofsp
+       ld-verbose legal-case-clausesp
+       len len-update-nth length let
+       let* let-mbe lex-fix lexorder lexp list
        list* list*-macro list-all-package-names
        list-all-package-names-lst
        list-macro listp local logand
@@ -434,7 +434,7 @@ Subtopics
        mutual-recursion mutual-recursion-guardp
        mv mv-let mv-list mv-nth mv? mv?-let
        nat-listp natp near-misses needs-slashes
-       never-memoize newline nfix nil
+       never-memoize newline nfix nfix-list nil
        nil-is-not-circular ninth no-duplicatesp
        no-duplicatesp-eq no-duplicatesp-equal
        non-exec nonnegative-integer-quotient
@@ -4896,7 +4896,7 @@ Silent loading of ACL2 customization files
     w               acl2-doc-where
     SPC             scroll-up
     TAB             acl2-doc-tab
-    Control-TAB or <backtab> (which often is Shift-TAB):
+    <backtab> (which often is Shift-TAB):
                     acl2-doc-tab-back
     D               acl2-doc-rendered-combined-download
     H               acl2-doc-history
@@ -5011,7 +5011,7 @@ Silent loading of ACL2 customization files
        Visit the next link after the cursor on the current page, searching from
        the top if no link is below the cursor.
 
-    Control-TAB or <backtab> (which often is Shift-TAB):
+    <backtab> (which often is Shift-TAB):
                   acl2-doc-tab-back
        Visit the previous link before the cursor on the current page, searching
        from the bottom if no link is below the cursor.
@@ -5341,7 +5341,7 @@ Silent loading of ACL2 customization files
        Scroll up (same as Control-v)
     TAB           acl2-doc-tab
        Visit the next link on the current page.
-    Control-TAB or <backtab> (which often is Shift-TAB): acl2-doc-tab-back
+    <backtab> (which often is Shift-TAB): acl2-doc-tab-back
        Visit the previous link on the current page.
     D
        Download the manual from the web; then restart ACL2-Doc.
@@ -23144,6 +23144,9 @@ Subtopics
 
 Subtopics
 
+  [Illegal-state]
+      Illegal ACL2 state
+
   [Set-absstobj-debug]
       Get more information when atomic update fails for an abstract stobj")
  (DEFABSSTOBJ-MISSING-EVENTS
@@ -29737,10 +29740,12 @@ Subtopics
   "[Documentation] at the terminal
 
   The :doc command may be used at the ACL2 prompt to access the ACL2
-  system [documentation].  Usually it may also access documentation
-  defined in books.  However, most users will probably access the
-  ACL2 documentation in other ways; see [documentation].  In
-  particular, consider using the {ACL2+Books Manual |
+  system [documentation].  Usually (when the [xdoc] system has been
+  included) it can also access other documentation topics defined in
+  the current session, including via included books.  However, most
+  users will probably access the ACL2 documentation in other ways;
+  see [documentation].  In particular, consider using the {ACL2+Books
+  Manual |
   http://www.cs.utexas.edu/users/moore/acl2/v8-4/combined-manual/index.html},
   for topics documented in the ACL2 community [books] or in the ACL2
   system (where the latter are rearranged).
@@ -29760,7 +29765,11 @@ Subtopics
   example, a link to the present topic will be displayed as [doc],
   not as [acl2::doc], regardless of the current package or the
   package of the topic being displayed.  Such links can thus take you
-  to topics in the acl2-doc Emacs browser (see [ACL2-doc]).")
+  to topics in the acl2-doc Emacs browser (see [ACL2-doc]).
+
+  Note that [books]/xdoc/top redefines :doc (using
+  [add-ld-keyword-alias!]) to invoke the similar macro xdoc, which
+  can access documentation topics defined in books.")
  (DOCUMENTATION
   (ACL2)
   "Information about options for downloading and viewing the ACL2
@@ -47127,7 +47136,7 @@ Subtopics
            (declare (xargs :guard (hard-error ctx str alist)))
            (hard-error ctx str alist))")
  (ILLEGAL-STATE
-  (RELEASE-NOTES)
+  (DEFABSSTOBJ)
   "Illegal ACL2 state
 
   See [set-absstobj-debug] for background on invariance violations for
@@ -58234,6 +58243,58 @@ Subtopics
   acquaint themselves with the material below, before wading into
   loop$-recursion!
 
+  Warning: Do Loop$s have recently been added but are so far
+  undocumented!  After including the \"projects/apply/top\" book the
+  following definition can be admitted as a guard-verified logic mode
+  function.
+
+    (defun test (lst)
+      (declare (xargs :guard (true-listp lst)))
+      (loop$ with temp of-type (satisfies true-listp) = lst
+             with sum of-type integer = 0
+             with len of-type (satisfies natp) = 0
+             do
+             (cond ((endp temp)
+                    (loop-finish))
+                   ((eq (car temp) 'stop)
+                    (return 'stopped))
+                   (t (progn (setq sum (+ (ifix (car temp)) sum))
+                             (setq len (+ 1 len))
+                             (setq temp (cdr temp)))))
+             finally (return (list 'sum= sum 'len= len))))
+
+    ACL2 !>(test '(1 2 3 4))
+    (SUM= 10 LEN= 4)
+    ACL2 !>(test '(1 2 stop 4))
+    STOPPED
+
+  The example loop$ above illustrates most of the features supported,
+  except for :measure and :guard keywords.  It is also possible to
+  use [let] and [let*] in the do and finally bodies.
+
+  There are many restrictions, the most annoying of which are probably
+
+    * You can't mix the idioms of for loop$s, like ``for x in ...'' or
+      ``until p'', with do, or vice versa.
+    * Common Lisp's ``implicit progns'' are not recognized.  You have to
+      write explicit progns.
+    * You can't put progn, setq, return, and loop-finish just anywhere.
+      For example, you can't write (setq a (+ b (return 23) c)).
+    * Nested do loop@ are not yet supported.
+
+  The best current guide to do loop$s is a comment in the ACL2 source
+  file translate.lisp.  Search for the comment
+
+    ; Section 11: Do Loop$s
+
+  Also be aware that some documentation topics about loop$ may now be
+  misleading because they may claim or suggest that they pertain to
+  all ACL2 loop$ statements when in fact they may be inaccurate for
+  do loop$s.  The basic problem is that when the documentation was
+  written all loop$s were what we now call ``for loop$s'' and for
+  loop$s are handled differently than do loop$s.  Documentation about
+  loop$ is still thought to be accurate, but only for for loop$s.
+
 
 Informal Introduction
 
@@ -65081,9 +65142,9 @@ Subtopics
   "Recognizer for a ``message''
 
   The form (msgp x) evaluates to true when x evaluates either to a
-  string or to a cons whose cdr satisfies [character-alistp].  Note
-  that msgp will always hold for the output of the macro, msg; see
-  [msg].
+  string or to a cons whose car is a string and whose cdr satisfies
+  [character-alistp].  Note that msgp will always hold for the output
+  of the macro [msg].
 
   Function: <msgp>
 
@@ -65141,7 +65202,7 @@ Subtopics
   If you want to specify :[hints] or :guard-hints (see [xargs]), you
   can put them in the [xargs] declaration of any of the [defun]
   forms, as the :[hints] from each form will be appended together, as
-  will the [guard-hints] from each form.
+  will the :[guard-hints] from each form.
 
   You may find it helpful to use a lexicographic order, the idea being
   to have a measure that returns a list of two arguments, where the
@@ -88361,8 +88422,15 @@ Changes to Existing Features
   Manolios for pointing out a printing issue that is resolved with
   this change.
 
+  Some error messages were improved for the [proof-builder], primarily
+  when refusing a command to dive into an OR expression.  Thanks to
+  Warren Hunt for bringing this issue to our attention.
+
 
 New Features
+
+  A new [loop$] keyword, DO, supports an imperative style of
+  programming (in particular, using setq) in loops.  See [loop$].
 
   One can now suppress output from [cw], [cw!],
   [fmt-to-comment-window], and [fmt-to-comment-window!], and from
@@ -88401,6 +88469,13 @@ New Features
   The utility [wet] has a new keyword option, :fullp, that allows it to
   work even when there is a raw Lisp error.  Thanks to Eric Smith for
   requesting that wet be able to work in such cases.
+
+  Rewriting of [lambda] objects (see [rewrite-lambda-object]) may now
+  be [disable]d, by disabling the [executable-counterpart] [rune] for
+  (trivial function), rewrite-lambda-modep --- for example, with a
+  hint :in-theory (disable (:e rewrite-lambda-modep)).  Also improved
+  a couple of warnings and a bit of documentation pertaining to such
+  rewriting.
 
 
 Heuristic and Efficiency Improvements
@@ -88452,6 +88527,13 @@ EMACS Support
   Manjrekar for the idea and for supplying an implementation
   (including documentation), which has been incorporated into the
   [ACL2-doc] source file, emacs/acl2-doc.el.
+
+  A bug has been fixed in [ACL2-doc] that would cause an error when
+  attempting to bring up the acl2-only manual.
+
+  The key binding Control-TAB has been removed for the [ACL2-doc]
+  browser, to avoid conflict with other uses of that key.  Thanks to
+  Alessandro Coglio for the idea.
 
 
 Experimental Versions")
@@ -102692,9 +102774,6 @@ Subtopics
 
 Subtopics
 
-  [Illegal-state]
-      Illegal ACL2 state
-
   [Note-1-1]
       Acl2 Version 1.1 Notes
 
@@ -104620,24 +104699,26 @@ When Rewriting of lambda Objects Is Attempted
   provided
 
     * (a) it occurs in a :FN position of a call of a [scion],
-    * (b) the lambda object is well-formed (see
-      [well-formed-lambda-objectp]), and
-    * (c) every function symbol mentioned in the body has been warranted.
+    * (b) the [rune] (:executable-counterpart rewrite-lambda-modep)) is
+      [enable]d (which it is by default),
+    * (c) the lambda object is well-formed (see
+      [well-formed-lambda-objectp]),
+    * (d) every function symbol mentioned in the body has been warranted
 
-  Condition (b) implies the body of the lambda is in fact a well-formed
+  Condition (c) implies the body of the lambda is in fact a well-formed
   ACL2 term (so the rewriter can explore it), every function symbol
-  in it is properly badged (so that function objects mentioned are
-  used properly), that every variable symbol occurring freely in the
-  body is among the formals of the lambda object, and together with
-  (c) implies that the term ``behaves'' as expected if the
-  appropriate warrant hypotheses govern this occurrence of the
-  object.  This last implication means that [ev$] of the body is
-  equal to unquoted body (under a suitable assignment), which means
-  we can rewrite the unquoted body.
+  in it is [warrant]ed (so that function objects mentioned are used
+  properly), that every variable symbol occurring freely in the body
+  is among the formals of the lambda object, and together with (d)
+  implies that the term ``behaves'' as expected if the appropriate
+  warrant hypotheses govern this occurrence of the object.  This last
+  implication means that [ev$] of the body is equal to unquoted body
+  (under a suitable assignment), which means we can rewrite the
+  unquoted body.
 
-  If a quoted lambda-like occurs in a :FN position but fails either (b)
-  or (c) a \"rewrite-lambda-object\" warning message is printed during
-  the proof.  However, this message is only printed once per lambda
+  If (a) and (b) above hold but either (c) or (d) fails, then a
+  \"rewrite-lambda-object\" warning message is printed during the
+  proof.  However, this message is only printed once per lambda
   object per proof attempt because otherwise the presence of
   ill-formed lambda-like objects in a conjecture will litter the
   output with repeated warnings.  You may turn these warnings off

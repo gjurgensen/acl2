@@ -2643,7 +2643,7 @@
   w               acl2-doc-where
   SPC             scroll-up
   TAB             acl2-doc-tab
-  Control-TAB or <backtab> (which often is Shift-TAB):
+  <backtab> (which often is Shift-TAB):
                   acl2-doc-tab-back
   D               acl2-doc-rendered-combined-download
   H               acl2-doc-history
@@ -2760,7 +2760,7 @@
      Visit the next link after the cursor on the current page, searching from
      the top if no link is below the cursor.
 
-  Control-TAB or <backtab> (which often is Shift-TAB):
+  <backtab> (which often is Shift-TAB):
                 acl2-doc-tab-back
      Visit the previous link before the cursor on the current page, searching
      from the bottom if no link is below the cursor.
@@ -3125,7 +3125,7 @@
        Scroll up (same as Control-v)
     TAB           acl2-doc-tab
        Visit the next link on the current page.
-    Control-TAB or <backtab> (which often is Shift-TAB): acl2-doc-tab-back
+    <backtab> (which often is Shift-TAB): acl2-doc-tab-back
        Visit the previous link on the current page.
     D
        Download the manual from the web; then restart ACL2-Doc.
@@ -23553,7 +23553,7 @@ subtree of X with T, without duplication.</p>
               scalar field        array field          hash-table field
                                                        and stobj-table field
   recognizer  (cP x)              (cP x)               (cP x)
-  accessor    (c name)            (cI i name)          
+  accessor    (c name)            (cI i name)
                                       hash-table access: (c-get k name)
                                      stobj-table access: (c-get k name default)
   updater     (UPDATE-c v name)   (UPDATE-cI i v name) (c-put k v name)
@@ -26422,28 +26422,31 @@ ld) and @(tsee include-book)"
 ; To see why we say "Usually" below, for accessing book documentation, consider
 ; the following examples.  At the terminal, execute:
 
-; (include-book "ihs/basic-definitions" :dir :system)
+; (include-book "xdoc/base" :dir :system)
+; (defxdoc foo :short "Short description")
+; :doc foo
 
-; Then execute:
-
-; :doc ihs
-
-; You'll see a response that says that there is no documentation for IHS.  Now
+; You'll see a response that says that there is no documentation for FOO.  Now
 ; execute:
 
-; (include-book "ihs/ihs-doc-topic" :dir :system)
+; (include-book "xdoc/top" :dir :system)
+; :doc foo
 
-; This time, execution of :doc ihs provides a good result.
+; This time, execution of :doc foo provides a good result.  The reason is that
+; the xdoc system changes the meaning of the :doc keyword command.
+; Also, of course, the requested documentation topic must be present in the
+; world for :doc to access it.
 
   :parents (documentation)
   :short "@(see Documentation) at the terminal"
   :long "<p>The @(':doc') command may be used at the ACL2 prompt to access the
- ACL2 system @(see documentation).  Usually it may also access documentation
- defined in books.  However, most users will probably access the ACL2
- documentation in other ways; see @(see documentation).  In particular,
- consider using the @(`(:raw (combined-manual-ref))`), for topics documented in
- the ACL2 community @(see books) or in the ACL2 system (where the latter are
- rearranged).</p>
+ ACL2 system @(see documentation).  Usually (when the @(see xdoc) system has
+ been included) it can also access other documentation topics defined in the
+ current session, including via included books.  However, most users will
+ probably access the ACL2 documentation in other ways; see @(see
+ documentation).  In particular, consider using the
+ @(`(:raw (combined-manual-ref))`), for topics documented in the ACL2 community
+ @(see books) or in the ACL2 system (where the latter are rearranged).</p>
 
  <p>Alternatively, consider using the ACL2-doc Emacs browser; see @(see
  acl2-doc).</p>
@@ -26462,7 +26465,11 @@ ld) and @(tsee include-book)"
  example, a link to the present topic will be displayed as @('[doc]'), not as
  @('[acl2::doc]'), regardless of the current package or the package of the
  topic being displayed.  Such links can thus take you to topics in the acl2-doc
- Emacs browser (see @(see acl2-doc)).</p>")
+ Emacs browser (see @(see acl2-doc)).</p>
+
+ <p>Note that @('[books]/xdoc/top') redefines @(':doc') (using @(see
+ add-ld-keyword-alias!)) to invoke the similar macro @('xdoc'), which can
+ access documentation topics defined in books.</p>")
 
 (defxdoc documentation
 
@@ -43423,7 +43430,7 @@ tables in the current Hons Space."
  @(def illegal)")
 
 (defxdoc illegal-state
-  :parents (release-notes)
+  :parents (defabsstobj)
   :short "Illegal ACL2 state"
   :long "<p>See @(see set-absstobj-debug) for background on invariance
  violations for abstract @(see stobj)s.  In short, they may occur when
@@ -54021,6 +54028,70 @@ forms allowed for a @('let') form are  @('ignore'), @('ignorable'), and
   unfamiliar with @('loop$') acquaint themselves with the material below,
   before wading into @('loop$-recursion')!</p>
 
+  <p><b>Warning:</b> @('Do') @('Loop$')s have recently been added but are so
+  far undocumented!  After including the @('\"projects/apply/top\"') book the
+  following definition can be admitted as a guard-verified logic mode
+  function.</p>
+
+  @({
+  (defun test (lst)
+    (declare (xargs :guard (true-listp lst)))
+    (loop$ with temp of-type (satisfies true-listp) = lst
+           with sum of-type integer = 0
+           with len of-type (satisfies natp) = 0
+           do
+           (cond ((endp temp)
+                  (loop-finish))
+                 ((eq (car temp) 'stop)
+                  (return 'stopped))
+                 (t (progn (setq sum (+ (ifix (car temp)) sum))
+                           (setq len (+ 1 len))
+                           (setq temp (cdr temp)))))
+           finally (return (list 'sum= sum 'len= len))))
+
+  ACL2 !>(test '(1 2 3 4))
+  (SUM= 10 LEN= 4)
+  ACL2 !>(test '(1 2 stop 4))
+  STOPPED
+  })
+
+  <p>The example @('loop$') above illustrates most of the features supported,
+  except for @(':measure') and @(':guard') keywords.  It is also possible to
+  use @(tsee let) and @(tsee let*) in the @('do') and @('finally') bodies.</p>
+
+  <p>There are many restrictions, the most annoying of which are probably</p>
+
+  <ul>
+
+  <li>You can't mix the idioms of @('for') @('loop$')s, like ``@('for x in
+  ...')'' or ``@('until p')'', with @('do'), or <i>vice versa</i>.</li>
+
+  <li>Common Lisp's ``implicit @('progn')s'' are not recognized.  You have to
+  write explicit @('progn')s.</li>
+
+  <li>You can't put @('progn'), @('setq'), @('return'), and @('loop-finish')
+  just anywhere.  For example, you can't write @('(setq a (+ b (return 23)
+  c))').</li>
+
+  <li>Nested @('do') @('loop@') are not yet supported.</li>
+  </ul>
+
+  <p>The best current guide to @('do') @('loop$')s is a comment in the ACL2
+  source file @('translate.lisp').  Search for the comment</p>
+
+  @({
+  ; Section 11: Do Loop$s
+  })
+
+  <p>Also be aware that some documentation topics about @('loop$') may now be
+  misleading because they may claim or suggest that they pertain to all ACL2
+  @('loop$') statements when in fact they may be inaccurate for @('do')
+  @('loop$')s.  The basic problem is that when the documentation was written
+  <i>all</i> @('loop$')s were what we now call ``@('for') @('loop$')s'' and
+  @('for') @('loop$')s are handled differently than @('do') @('loop$')s.
+  Documentation about @('loop$') is still thought to be accurate, but only for
+  @('for') @('loop$')s.</p>
+
   <h3>Informal Introduction</h3>
 
   <p>ACL2's @('loop$') is considerably more restricted than Common Lisp's
@@ -60871,9 +60942,9 @@ it."
   :parents (io acl2-built-ins)
   :short "Recognizer for a ``message''"
   :long "<p>The form @('(msgp x)') evaluates to true when @('x') evaluates
- either to a string or to a @('cons') whose @('cdr') satisfies @(tsee
- character-alistp).  Note that @('msgp') will always hold for the output of the
- macro, @('msg'); see @(see msg).</p>
+ either to a string or to a @('cons') whose @('car') is a string and whose
+ @('cdr') satisfies @(tsee character-alistp).  Note that @('msgp') will always
+ hold for the output of the macro @(see msg).</p>
 
  @(def msgp)")
 
@@ -60925,7 +60996,7 @@ it."
  <p>If you want to specify @(':')@(tsee hints) or @(':guard-hints') (see @(see
  xargs)), you can put them in the @(tsee xargs) declaration of any of the
  @(tsee defun) forms, as the @(':')@(tsee hints) from each form will be
- appended together, as will the @(tsee guard-hints) from each form.</p>
+ appended together, as will the @(':')@(tsee guard-hints) from each form.</p>
 
  <p>You may find it helpful to use a lexicographic order, the idea being to
  have a measure that returns a list of two arguments, where the first takes
@@ -90236,7 +90307,14 @@ it."
  @('PROVE') output is not inhibited.  Thanks to Pete Manolios for pointing out
  a printing issue that is resolved with this change.</p>
 
+ <p>Some error messages were improved for the @(see proof-builder), primarily
+ when refusing a command to dive into an @('OR') expression.  Thanks to Warren
+ Hunt for bringing this issue to our attention.</p>
+
  <h3>New Features</h3>
+
+ <p>A new @(tsee loop$) keyword, @('DO'), supports an imperative style of
+ programming (in particular, using @('setq')) in loops.  See @(see loop$).</p>
 
  <p>One can now suppress output from @(tsee cw), @(tsee cw!), @(tsee
  fmt-to-comment-window), and @(tsee fmt-to-comment-window!), and from utilities
@@ -90274,6 +90352,13 @@ it."
  <p>The utility @(tsee wet) has a new keyword option, @(':fullp'), that allows
  it to work even when there is a raw Lisp error.  Thanks to Eric Smith for
  requesting that @('wet') be able to work in such cases.</p>
+
+ <p>Rewriting of @(see lambda) objects (see @(see rewrite-lambda-object)) may
+ now be @(see disable)d, by disabling the @(see executable-counterpart) @(see
+ rune) for (trivial function), @('rewrite-lambda-modep') &mdash; for example,
+ with a hint @(':in-theory (disable (:e rewrite-lambda-modep))').  Also
+ improved a couple of warnings and a bit of documentation pertaining to such
+ rewriting.</p>
 
  <h3>Heuristic and Efficiency Improvements</h3>
 
@@ -90319,6 +90404,13 @@ it."
  Mayank Manjrekar for the idea and for supplying an implementation
  (including documentation), which has been incorporated into the @(see
  acl2-doc) source file, @('emacs/acl2-doc.el').</p>
+
+ <p>A bug has been fixed in @(see acl2-doc) that would cause an error
+ when attempting to bring up the acl2-only manual.</p>
+
+ <p>The key binding Control-TAB has been removed for the @(see acl2-doc)
+ browser, to avoid conflict with other uses of that key.  Thanks to Alessandro
+ Coglio for the idea.</p>
 
  <h3>Experimental Versions</h3>
 
@@ -103562,29 +103654,33 @@ arithmetic) for libraries of @(see books) for arithmetic reasoning.</p>")
   <ul>
   <li>(a) it occurs in a @(':FN') position of a call of a @(see scion),</li>
 
-  <li>(b) the @('lambda') object is well-formed (see @(tsee
-  well-formed-lambda-objectp)), and</li>
+  <li>(b) the @(see rune) @('(:executable-counterpart rewrite-lambda-modep)'))
+  is @(see enable)d (which it is by default),</li>
 
-  <li>(c) every function symbol mentioned in the body has been warranted.</li>
+  <li>(c) the @('lambda') object is well-formed (see @(tsee
+  well-formed-lambda-objectp)),</li>
+
+  <li>(d) every function symbol mentioned in the body has been warranted</li>
+
   </ul>
 
-  <p>Condition (b) implies the body of the @('lambda') is in fact a well-formed
+  <p>Condition (c) implies the body of the @('lambda') is in fact a well-formed
   ACL2 term (so the rewriter can explore it), every function symbol in it is
-  properly badged (so that function objects mentioned are used properly), that
+  @(see warrant)ed (so that function objects mentioned are used properly), that
   every variable symbol occurring freely in the body is among the formals of
-  the @('lambda') object, and together with (c) implies that the term
+  the @('lambda') object, and together with (d) implies that the term
   ``behaves'' as expected if the appropriate warrant hypotheses govern this
   occurrence of the object.  This last implication means that @(tsee ev$) of
   the body is equal to unquoted body (under a suitable assignment), which means
   we can rewrite the unquoted body.</p>
 
-  <p>If a quoted @('lambda')-like occurs in a @(':FN') position but fails
-  either (b) or (c) a @('\"rewrite-lambda-object\"') warning message is printed
-  during the proof.  However, this message is only printed once per @('lambda')
-  object per proof attempt because otherwise the presence of ill-formed
-  @('lambda')-like objects in a conjecture will litter the output with repeated
-  warnings.  You may turn these warnings off with @('(')@(tsee
-  toggle-inhibit-warning) @('\"Rewrite-lambda-object\")').</p>
+  <p>If (a) and (b) above hold but either (c) or (d) fails, then a
+  @('\"rewrite-lambda-object\"') warning message is printed during the proof.
+  However, this message is only printed once per @('lambda') object per proof
+  attempt because otherwise the presence of ill-formed @('lambda')-like objects
+  in a conjecture will litter the output with repeated warnings.  You may turn
+  these warnings off with @('(')@(tsee toggle-inhibit-warning)
+  @('\"Rewrite-lambda-object\")').</p>
 
   <h3>Restrictions During Rewriting of a @('Lambda') Body</h3>
 
