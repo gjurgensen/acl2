@@ -90311,6 +90311,14 @@ it."
  when refusing a command to dive into an @('OR') expression.  Thanks to Warren
  Hunt for bringing this issue to our attention.</p>
 
+ <p>There was a restriction on certain events, notably @(tsee defconst) and
+ @(tsee defmacro) events, to ensure that they are not ancestrally dependent on
+ @(tsee loop$) or @(tsee lambda$) expressions.  That restriction has been
+ removed in the case that the body of the event is a quoted constant.</p>
+
+ <p>A @(tsee defwarrant) event may complete more quickly because a generated
+ hint now @(see disable)s the function.</p>
+
  <h3>New Features</h3>
 
  <p>A new @(tsee loop$) keyword, @('DO'), supports an imperative style of
@@ -90381,6 +90389,11 @@ it."
  <p>The writing of @(see useless-runes) files was sensitive to the global @(see
  evisc-table), which could cause failures when reading those files.  This has
  been fixed.</p>
+
+ <p>An error could occur when encountering a @(see redundant) @(tsee
+ defwarrant) event while including a book.  This has been fixed, by arranging
+ that a @('defwarrant') event always expands to the same @(tsee encapsulate)
+ form.</p>
 
  <h3>Changes at the System Level</h3>
 
