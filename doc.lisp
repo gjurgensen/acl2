@@ -88426,6 +88426,15 @@ Changes to Existing Features
   when refusing a command to dive into an OR expression.  Thanks to
   Warren Hunt for bringing this issue to our attention.
 
+  There was a restriction on certain events, notably [defconst] and
+  [defmacro] events, to ensure that they are not ancestrally
+  dependent on [loop$] or [lambda$] expressions.  That restriction
+  has been removed in the case that the body of the event is a quoted
+  constant.
+
+  A [defwarrant] event may complete more quickly because a generated
+  hint now [disable]s the function.
+
 
 New Features
 
@@ -88501,6 +88510,11 @@ Bug Fixes
   The writing of [useless-runes] files was sensitive to the global
   [evisc-table], which could cause failures when reading those files.
   This has been fixed.
+
+  An error could occur when encountering a [redundant] [defwarrant]
+  event while including a book.  This has been fixed, by arranging
+  that a defwarrant event always expands to the same [encapsulate]
+  form.
 
 
 Changes at the System Level
