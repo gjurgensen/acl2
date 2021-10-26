@@ -104605,7 +104605,7 @@ Subtopics
       documentation.
     * When the hypotheses and right-hand side are rewritten, ACL2 does not
       really first apply the substitution and then rewrite; instead,
-      it as it rewrites those terms it looks up the already rewritten
+      as it rewrites those terms it looks up the already rewritten
       values of the bound variables.  Sometimes you may want those
       bindings rewritten again, e.g., because the variables occur in
       slots that admit additional equivalence relations.  See
