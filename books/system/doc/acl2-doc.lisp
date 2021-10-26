@@ -103612,7 +103612,7 @@ arithmetic) for libraries of @(see books) for arithmetic reasoning.</p>")
  @(tsee hide); see @(see meta), near the end of that documentation.</li>
 
  <li>When the hypotheses and right-hand side are rewritten, ACL2 does not
- really first apply the substitution and then rewrite; instead, it as it
+ really first apply the substitution and then rewrite; instead, as it
  rewrites those terms it looks up the <i>already rewritten</i> values of the
  bound variables.  Sometimes you may want those bindings rewritten again, e.g.,
  because the variables occur in slots that admit additional equivalence
