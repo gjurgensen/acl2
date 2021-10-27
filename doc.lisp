@@ -4896,7 +4896,7 @@ Silent loading of ACL2 customization files
     w               acl2-doc-where
     SPC             scroll-up
     TAB             acl2-doc-tab
-    Control-TAB or <backtab> (which often is Shift-TAB):
+    <backtab> (which often is Shift-TAB):
                     acl2-doc-tab-back
     D               acl2-doc-rendered-combined-download
     H               acl2-doc-history
@@ -5011,7 +5011,7 @@ Silent loading of ACL2 customization files
        Visit the next link after the cursor on the current page, searching from
        the top if no link is below the cursor.
 
-    Control-TAB or <backtab> (which often is Shift-TAB):
+    <backtab> (which often is Shift-TAB):
                   acl2-doc-tab-back
        Visit the previous link before the cursor on the current page, searching
        from the bottom if no link is below the cursor.
@@ -5341,7 +5341,7 @@ Silent loading of ACL2 customization files
        Scroll up (same as Control-v)
     TAB           acl2-doc-tab
        Visit the next link on the current page.
-    Control-TAB or <backtab> (which often is Shift-TAB): acl2-doc-tab-back
+    <backtab> (which often is Shift-TAB): acl2-doc-tab-back
        Visit the previous link on the current page.
     D
        Download the manual from the web; then restart ACL2-Doc.
@@ -88422,6 +88422,19 @@ Changes to Existing Features
   Manolios for pointing out a printing issue that is resolved with
   this change.
 
+  Some error messages were improved for the [proof-builder], primarily
+  when refusing a command to dive into an OR expression.  Thanks to
+  Warren Hunt for bringing this issue to our attention.
+
+  There was a restriction on certain events, notably [defconst] and
+  [defmacro] events, to ensure that they are not ancestrally
+  dependent on [loop$] or [lambda$] expressions.  That restriction
+  has been removed in the case that the body of the event is a quoted
+  constant.
+
+  A [defwarrant] event may complete more quickly because a generated
+  hint now [disable]s the function.
+
 
 New Features
 
@@ -88498,6 +88511,11 @@ Bug Fixes
   [evisc-table], which could cause failures when reading those files.
   This has been fixed.
 
+  An error could occur when encountering a [redundant] [defwarrant]
+  event while including a book.  This has been fixed, by arranging
+  that a defwarrant event always expands to the same [encapsulate]
+  form.
+
 
 Changes at the System Level
 
@@ -88526,6 +88544,10 @@ EMACS Support
 
   A bug has been fixed in [ACL2-doc] that would cause an error when
   attempting to bring up the acl2-only manual.
+
+  The key binding Control-TAB has been removed for the [ACL2-doc]
+  browser, to avoid conflict with other uses of that key.  Thanks to
+  Alessandro Coglio for the idea.
 
 
 Experimental Versions")
@@ -104583,7 +104605,7 @@ Subtopics
       documentation.
     * When the hypotheses and right-hand side are rewritten, ACL2 does not
       really first apply the substitution and then rewrite; instead,
-      it as it rewrites those terms it looks up the already rewritten
+      as it rewrites those terms it looks up the already rewritten
       values of the bound variables.  Sometimes you may want those
       bindings rewritten again, e.g., because the variables occur in
       slots that admit additional equivalence relations.  See

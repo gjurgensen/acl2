@@ -2643,7 +2643,7 @@
   w               acl2-doc-where
   SPC             scroll-up
   TAB             acl2-doc-tab
-  Control-TAB or <backtab> (which often is Shift-TAB):
+  <backtab> (which often is Shift-TAB):
                   acl2-doc-tab-back
   D               acl2-doc-rendered-combined-download
   H               acl2-doc-history
@@ -2760,7 +2760,7 @@
      Visit the next link after the cursor on the current page, searching from
      the top if no link is below the cursor.
 
-  Control-TAB or <backtab> (which often is Shift-TAB):
+  <backtab> (which often is Shift-TAB):
                 acl2-doc-tab-back
      Visit the previous link before the cursor on the current page, searching
      from the bottom if no link is below the cursor.
@@ -3125,7 +3125,7 @@
        Scroll up (same as Control-v)
     TAB           acl2-doc-tab
        Visit the next link on the current page.
-    Control-TAB or <backtab> (which often is Shift-TAB): acl2-doc-tab-back
+    <backtab> (which often is Shift-TAB): acl2-doc-tab-back
        Visit the previous link on the current page.
     D
        Download the manual from the web; then restart ACL2-Doc.
@@ -90307,6 +90307,18 @@ it."
  @('PROVE') output is not inhibited.  Thanks to Pete Manolios for pointing out
  a printing issue that is resolved with this change.</p>
 
+ <p>Some error messages were improved for the @(see proof-builder), primarily
+ when refusing a command to dive into an @('OR') expression.  Thanks to Warren
+ Hunt for bringing this issue to our attention.</p>
+
+ <p>There was a restriction on certain events, notably @(tsee defconst) and
+ @(tsee defmacro) events, to ensure that they are not ancestrally dependent on
+ @(tsee loop$) or @(tsee lambda$) expressions.  That restriction has been
+ removed in the case that the body of the event is a quoted constant.</p>
+
+ <p>A @(tsee defwarrant) event may complete more quickly because a generated
+ hint now @(see disable)s the function.</p>
+
  <h3>New Features</h3>
 
  <p>A new @(tsee loop$) keyword, @('DO'), supports an imperative style of
@@ -90378,6 +90390,11 @@ it."
  evisc-table), which could cause failures when reading those files.  This has
  been fixed.</p>
 
+ <p>An error could occur when encountering a @(see redundant) @(tsee
+ defwarrant) event while including a book.  This has been fixed, by arranging
+ that a @('defwarrant') event always expands to the same @(tsee encapsulate)
+ form.</p>
+
  <h3>Changes at the System Level</h3>
 
  <p>The @(see hons-enabled) features of ACL2 (@(tsee hons), @(see memoization),
@@ -90403,6 +90420,10 @@ it."
 
  <p>A bug has been fixed in @(see acl2-doc) that would cause an error
  when attempting to bring up the acl2-only manual.</p>
+
+ <p>The key binding Control-TAB has been removed for the @(see acl2-doc)
+ browser, to avoid conflict with other uses of that key.  Thanks to Alessandro
+ Coglio for the idea.</p>
 
  <h3>Experimental Versions</h3>
 
@@ -103591,7 +103612,7 @@ arithmetic) for libraries of @(see books) for arithmetic reasoning.</p>")
  @(tsee hide); see @(see meta), near the end of that documentation.</li>
 
  <li>When the hypotheses and right-hand side are rewritten, ACL2 does not
- really first apply the substitution and then rewrite; instead, it as it
+ really first apply the substitution and then rewrite; instead, as it
  rewrites those terms it looks up the <i>already rewritten</i> values of the
  bound variables.  Sometimes you may want those bindings rewritten again, e.g.,
  because the variables occur in slots that admit additional equivalence
