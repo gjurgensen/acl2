@@ -90364,7 +90364,7 @@ it."
  fmt-to-comment-window), and @(tsee fmt-to-comment-window!), and from utilities
  that use these such as @(tsee time$), by inhibiting a new output type,
  @('COMMENT').  (Thus, that symbol has been added to the value of
- @('*valid-output-names*').  See @(see set-inhibit-output-lst) and @(see
+ @('*valid-output-names*').)  See @(see set-inhibit-output-lst) and @(see
  with-output).  Thanks to Eric McCarthy for a conversation via GitHub Issue
  #1293 that led to this enhancement.  Moreover, new macros @(tsee cw+) and
  @(tsee cw!+) and new functions @(tsee fmt-to-comment-window+) and @(tsee
