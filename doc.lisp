@@ -88483,7 +88483,7 @@ New Features
   [fmt-to-comment-window], and [fmt-to-comment-window!], and from
   utilities that use these such as [time$], by inhibiting a new
   output type, COMMENT.  (Thus, that symbol has been added to the
-  value of *valid-output-names*.  See [set-inhibit-output-lst] and
+  value of *valid-output-names*.)  See [set-inhibit-output-lst] and
   [with-output].  Thanks to Eric McCarthy for a conversation via
   GitHub Issue #1293 that led to this enhancement.  Moreover, new
   macros [cw+] and [cw!+] and new functions [fmt-to-comment-window+]
