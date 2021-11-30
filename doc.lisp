@@ -43103,6 +43103,8 @@ Subtopics
 
     (cons-with-hint x y)             ==>  (cons x y)
 
+    (the-check guard x y)            ==>  y
+
     ; For replacing a term (the type term) by term:
     ((lambda (y) (the-check guard x y))
      val)                            ==>  val
@@ -58244,48 +58246,70 @@ Subtopics
   loop$-recursion!
 
   Warning: Do Loop$s have recently been added but are so far
-  undocumented!  After including the \"projects/apply/top\" book the
-  following definition can be admitted as a guard-verified logic mode
-  function.
+  undocumented!  The definition below can be admitted as a
+  guard-verified logic mode function (after evaluating the events
+  that precede it).
 
-    (defun test (lst)
-      (declare (xargs :guard (true-listp lst)))
-      (loop$ with temp of-type (satisfies true-listp) = lst
-             with sum of-type integer = 0
-             with len of-type (satisfies natp) = 0
+    (include-book \"projects/apply/top\" :dir :system)
+
+    (defstobj st fld)
+    (defwarrant fld)
+    (defwarrant update-fld)
+
+    (defun test-loop$ (i0 max st)
+      (declare (xargs :guard (and (natp i0) (natp max))
+                      :stobjs st))
+      (loop$ with i of-type (satisfies natp) = i0
+             with cnt of-type integer = 0
              do
-             (cond ((endp temp)
-                    (loop-finish))
-                   ((eq (car temp) 'stop)
-                    (return 'stopped))
-                   (t (progn (setq sum (+ (ifix (car temp)) sum))
-                             (setq len (+ 1 len))
-                             (setq temp (cdr temp)))))
-             finally (return (list 'sum= sum 'len= len))))
+             :measure (nfix (- max i))
+             :guard (and (natp max)
+                         (natp cnt)
+                         (stp st))
+             :values (nil st) ; shape of return; can be omitted when it's (nil)
+             (if (>= i max)
+                 (loop-finish)
+               (progn (setq st (update-fld i st))
+                      (mv-setq (cnt i)
+                               (mv (+ 1 cnt) (+ 1 i)))))
+             finally
+             :guard (stp st)
+             (return
+              (mv (list 'from i0 'to max 'is cnt 'steps 'and 'fld '= (fld st))
+                  st))))
 
-    ACL2 !>(test '(1 2 3 4))
-    (SUM= 10 LEN= 4)
-    ACL2 !>(test '(1 2 stop 4))
-    STOPPED
+    ACL2 !>(test 3 8 st)
+    ((FROM 3 TO 8 IS 5 STEPS AND FLD = 7)
+     <st>)
+    ACL2 !>
 
-  The example loop$ above illustrates most of the features supported,
-  except for :measure and :guard keywords.  It is also possible to
-  use [let] and [let*] in the do and finally bodies.
-
-  There are many restrictions, the most annoying of which are probably
+  The example do loop$ above illustrates most of the features
+  supported.  There are many restrictions, the most annoying of which
+  are probably as follows.
 
     * You can't mix the idioms of for loop$s, like ``for x in ...'' or
       ``until p'', with do, or vice versa.
     * Common Lisp's ``implicit progns'' are not recognized.  You have to
       write explicit progns.
-    * You can't put progn, setq, return, and loop-finish just anywhere.
-      For example, you can't write (setq a (+ b (return 23) c)).
-    * Nested do loop@ are not yet supported.
+    * You can't put progn, setq, mv-setq, return, and loop-finish just
+      anywhere.  For example, you can't write (setq a (+ b (return
+      23) c)).
+    * [Loop$-recursion] under do loop$s is not yet supported.
 
   The best current guide to do loop$s is a comment in the ACL2 source
   file translate.lisp.  Search for the comment
 
     ; Section 11: Do Loop$s
+
+  and continue on to Section 12 as well if you want to use stobjs or
+  return multiple values in your do loop$s.
+
+  Many examples of do loop$s may be found in [community-book]
+  books/projects/apply/loop-tests.lisp, starting with the comment,
+  ``Now I experiment with do loop$s.'' Examples involving stobjs and
+  multiple-value return are later in the book, under the comment,
+  ``Start tests of DO loop$s that return multiple values and/or
+  stobjs.''
 
   Also be aware that some documentation topics about loop$ may now be
   misleading because they may claim or suggest that they pertain to
@@ -58294,6 +58318,7 @@ Subtopics
   written all loop$s were what we now call ``for loop$s'' and for
   loop$s are handled differently than do loop$s.  Documentation about
   loop$ is still thought to be accurate, but only for for loop$s.
+  Documentation for the DO keyword is forthcoming.
 
 
 Informal Introduction
@@ -62504,7 +62529,8 @@ Subtopics
   if it returns any [stobj]s; if it has been excluded by
   [never-memoize]; or if it is excluded because it is ``special'' in
   the sense that it is in the \"COMMON-LISP\" [package], it has no
-  fixed output signature (i.e., it is [if] or [return-last]), it has
+  fixed output signature (i.e., it is in the value of the list
+  constant (if return-last do$), (if return-last do$)), it has
   associated raw-Lisp code, or it is used in the implementation of
   [hons-and-memoization].  A constrained function (typically, one
   that is introduced in the signature of an [encapsulate] event)
@@ -88435,17 +88461,29 @@ Changes to Existing Features
   A [defwarrant] event may complete more quickly because a generated
   hint now [disable]s the function.
 
+  Functions that take or return [stobj]s may now have [badge]s and
+  [warrant]s.  One cannot (yet) take advantage of these in general
+  because one cannot put a [stobj] into a list, as required for the
+  second argument of [apply$].  However, this change supports the use
+  of stobjs in [loop$] expressions that use the new keyword, DO.
+
+  The function the-check, which is generated by calls of [the], is now
+  a guard-holder.
+
 
 New Features
 
   A new [loop$] keyword, DO, supports an imperative style of
-  programming (in particular, using setq) in loops.  See [loop$].
+  programming in loops.  In particular, DO loop$ expressions may use
+  setq and mv-setq for assigning to one or several variables
+  (respectively), they may reference and return [stobj]s, and they
+  may return multiple values.  See [loop$].
 
   One can now suppress output from [cw], [cw!],
   [fmt-to-comment-window], and [fmt-to-comment-window!], and from
   utilities that use these such as [time$], by inhibiting a new
   output type, COMMENT.  (Thus, that symbol has been added to the
-  value of *valid-output-names*.  See [set-inhibit-output-lst] and
+  value of *valid-output-names*.)  See [set-inhibit-output-lst] and
   [with-output].  Thanks to Eric McCarthy for a conversation via
   GitHub Issue #1293 that led to this enhancement.  Moreover, new
   macros [cw+] and [cw!+] and new functions [fmt-to-comment-window+]
@@ -117449,9 +117487,10 @@ List of a few built-in system utilities
       return value is a stobj, then that is the ith element of the
       stobjs-out; otherwise the ith element of the stobjs-out is nil.
       Note that fn must be a symbol, not a [lambda] expression.
-      Moreover fn must not be a member of the list
-      *stobjs-out-invalid* (currently, IF or RETURN-LAST), since for
-      these functions arbitrary multiple values may be returned.
+      Moreover fn must not be a member of the list value of the
+      constant *stobjs-out-invalid*, i.e., the list (if return-last
+      do$), since for these functions arbitrary multiple values may
+      be returned.
     * (subcor-var vars terms form): For a list vars of symbols, a list
       terms of [pseudo-termp]s, and a [pseudo-termp] form,
       substitute, in form, the i-th variable from vars with the i-th
