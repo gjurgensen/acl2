@@ -111,7 +111,7 @@
     (MAKE-TERMINATION-THEOREM
      "[books]/kestrel/utilities/make-termination-theorem.lisp")
     (MEMOIZED-PROVER-FNS "[books]/tools/memoize-prover-fns.lisp")
-    (STR::NATSTR "[books]/std/strings/decimal.lisp")
+    (STR::NAT-TO-DEC-STRING "[books]/std/strings/decimal.lisp")
     (NON-PARALLEL-BOOK "[books]/std/system/non-parallel-book.lisp")
     (NOTE-6-4-BOOKS "[books]/doc/relnotes.lisp")
     (NOTE-6-5-BOOKS "[books]/doc/relnotes.lisp")
@@ -114393,7 +114393,7 @@ arithmetic) for libraries of @(see books) for arithmetic reasoning.</p>")
 
  <p>Note: this is a rather low-level operation that doesn't support coercing
  numbers or conses into strings.  If you want to turn numbers into strings, see
- functions such as @(see str::natstr), or more generally the @(see
+ functions such as @(see str::nat-to-dec-string), or more generally the @(see
  str::numbers) functions.  For conses, see the @(see str::pretty-printing)
  routines such as @(see str::pretty).</p>
 
