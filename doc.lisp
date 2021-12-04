@@ -16404,11 +16404,11 @@ configure-ccl.lisp
     cd 2017-12-07-6be8298fe5/ccl
 
   Next fetch and extract a development snapshot.  The version below is
-  current as of this writing (April, 2021), but see
+  current as of this writing (December, 2021), but see
   {https://github.com/Clozure/ccl/releases/ |
   https://github.com/Clozure/ccl/releases/} for the latest snapshots.
 
-    wget https://github.com/Clozure/ccl/releases/download/v1.12/linuxx86.tar.gz
+    wget https://github.com/Clozure/ccl/releases/download/v1.12.1/linuxx86.tar.gz
     tar xfz linuxx86.tar.gz
 
   Rebuild and quit, twice.
@@ -16511,11 +16511,12 @@ configure-ccl.lisp
     cd 2017-12-07-6be8298fe5/ccl
 
   Next fetch and extract a development snapshot.  The version below is
-  current as of this writing (April, 2021), but see
+  current as of this writing (December, 2021), but see
   {https://github.com/Clozure/ccl/releases/ |
   https://github.com/Clozure/ccl/releases/} for the latest snapshots.
 
-    curl -O -L https://github.com/Clozure/ccl/releases/download/v1.12/darwinx86.tar.gz
+    curl -L -O https://github.com/Clozure/ccl/releases/download/v1.12.1/darwinx86.tar.gz
+    tar xfz darwinx86.tar.gz
 
   Rebuild the lisp kernel by hand before trying to rebuild the lisp.
   (Note: This step was formerly unnecessary and might become

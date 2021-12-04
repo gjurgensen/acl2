@@ -13535,12 +13535,12 @@ with any questions about building the community books.</p>")
  })
 
  <p>Next fetch and extract a development snapshot.  The version below is
- current as of this writing (April, 2021), but see <a
+ current as of this writing (December, 2021), but see <a
  href='https://github.com/Clozure/ccl/releases/'>https://github.com/Clozure/ccl/releases/</a>
  for the latest snapshots.</p>
 
  @({
- wget https://github.com/Clozure/ccl/releases/download/v1.12/linuxx86.tar.gz
+ wget https://github.com/Clozure/ccl/releases/download/v1.12.1/linuxx86.tar.gz
  tar xfz linuxx86.tar.gz
  })
 
@@ -13670,12 +13670,13 @@ with any questions about building the community books.</p>")
  })
 
  <p>Next fetch and extract a development snapshot.  The version below is
- current as of this writing (April, 2021), but see <a
+ current as of this writing (December, 2021), but see <a
  href='https://github.com/Clozure/ccl/releases/'>https://github.com/Clozure/ccl/releases/</a>
  for the latest snapshots.</p>
 
  @({
- curl -O -L https://github.com/Clozure/ccl/releases/download/v1.12/darwinx86.tar.gz
+ curl -L -O https://github.com/Clozure/ccl/releases/download/v1.12.1/darwinx86.tar.gz
+ tar xfz darwinx86.tar.gz
  })
 
  <p>Rebuild the lisp kernel by hand before trying to rebuild the lisp.
