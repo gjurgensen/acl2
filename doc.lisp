@@ -14932,7 +14932,7 @@ Subtopics
        (make-termination-theorem
             \"[books]/kestrel/utilities/make-termination-theorem.lisp\")
        (memoized-prover-fns \"[books]/tools/memoize-prover-fns.lisp\")
-       (str::natstr \"[books]/std/strings/decimal.lisp\")
+       (str::nat-to-dec-string \"[books]/std/strings/decimal.lisp\")
        (non-parallel-book \"[books]/std/system/non-parallel-book.lisp\")
        (note-6-4-books \"[books]/doc/relnotes.lisp\")
        (note-6-5-books \"[books]/doc/relnotes.lisp\")
@@ -115246,9 +115246,10 @@ Subtopics
 
   Note: this is a rather low-level operation that doesn't support
   coercing numbers or conses into strings.  If you want to turn
-  numbers into strings, see functions such as [str::natstr], or more
-  generally the [str::numbers] functions.  For conses, see the
-  [str::pretty-printing] routines such as [str::pretty].
+  numbers into strings, see functions such as
+  [str::nat-to-dec-string], or more generally the [str::numbers]
+  functions.  For conses, see the [str::pretty-printing] routines
+  such as [str::pretty].
 
   String is a Common Lisp function.  See any Common Lisp documentation
   for more information.
