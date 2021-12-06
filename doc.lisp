@@ -14932,7 +14932,7 @@ Subtopics
        (make-termination-theorem
             \"[books]/kestrel/utilities/make-termination-theorem.lisp\")
        (memoized-prover-fns \"[books]/tools/memoize-prover-fns.lisp\")
-       (str::natstr \"[books]/std/strings/decimal.lisp\")
+       (str::nat-to-dec-string \"[books]/std/strings/decimal.lisp\")
        (non-parallel-book \"[books]/std/system/non-parallel-book.lisp\")
        (note-6-4-books \"[books]/doc/relnotes.lisp\")
        (note-6-5-books \"[books]/doc/relnotes.lisp\")
@@ -16404,11 +16404,11 @@ configure-ccl.lisp
     cd 2017-12-07-6be8298fe5/ccl
 
   Next fetch and extract a development snapshot.  The version below is
-  current as of this writing (April, 2021), but see
+  current as of this writing (December, 2021), but see
   {https://github.com/Clozure/ccl/releases/ |
   https://github.com/Clozure/ccl/releases/} for the latest snapshots.
 
-    wget https://github.com/Clozure/ccl/releases/download/v1.12/linuxx86.tar.gz
+    wget https://github.com/Clozure/ccl/releases/download/v1.12.1/linuxx86.tar.gz
     tar xfz linuxx86.tar.gz
 
   Rebuild and quit, twice.
@@ -16511,11 +16511,12 @@ configure-ccl.lisp
     cd 2017-12-07-6be8298fe5/ccl
 
   Next fetch and extract a development snapshot.  The version below is
-  current as of this writing (April, 2021), but see
+  current as of this writing (December, 2021), but see
   {https://github.com/Clozure/ccl/releases/ |
   https://github.com/Clozure/ccl/releases/} for the latest snapshots.
 
-    curl -O -L https://github.com/Clozure/ccl/releases/download/v1.12/darwinx86.tar.gz
+    curl -L -O https://github.com/Clozure/ccl/releases/download/v1.12.1/darwinx86.tar.gz
+    tar xfz darwinx86.tar.gz
 
   Rebuild the lisp kernel by hand before trying to rebuild the lisp.
   (Note: This step was formerly unnecessary and might become
@@ -115246,9 +115247,10 @@ Subtopics
 
   Note: this is a rather low-level operation that doesn't support
   coercing numbers or conses into strings.  If you want to turn
-  numbers into strings, see functions such as [str::natstr], or more
-  generally the [str::numbers] functions.  For conses, see the
-  [str::pretty-printing] routines such as [str::pretty].
+  numbers into strings, see functions such as
+  [str::nat-to-dec-string], or more generally the [str::numbers]
+  functions.  For conses, see the [str::pretty-printing] routines
+  such as [str::pretty].
 
   String is a Common Lisp function.  See any Common Lisp documentation
   for more information.
