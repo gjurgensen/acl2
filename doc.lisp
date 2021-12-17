@@ -88535,6 +88535,12 @@ Heuristic and Efficiency Improvements
   whose execution time was reduced from 24 seconds to 10 seconds by
   this change.
 
+  Evaluation of some large forms caused stack overflows (from ACL2
+  source function bad-lisp-consp).  This is probably much less likely
+  now.  Thanks to Eric Smith for reporting this issue to the
+  acl2-help list with a helpful example, which formerly caused a
+  stack overflow for ACL2 built on SBCL but no longer does so.
+
 
 Bug Fixes
 
