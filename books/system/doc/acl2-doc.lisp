@@ -61806,7 +61806,7 @@ it."
 
  <p>The @(':initially') keyword is illegal for fields whose @(':type') is a
  stobj or an array of stobjs (or, not further discussed here, a @(see
- stobj-table).  Each such initial value is provided by a corresponding call of
+ stobj-table)).  Each such initial value is provided by a corresponding call of
  the stobj creator for that stobj.  In particular, in the case of an array of
  stobjs, the stobj creator is called once for each element of the array, so
  that the array elements are distinct.  For example, each element of
