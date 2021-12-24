@@ -50540,6 +50540,227 @@ tables in the current Hons Space."
  other evisc-tuples affect the printing of error messages and warnings, as well
  as other output not from @('ld').</p>")
 
+(defxdoc ld-history
+  :parents (loop$)
+  :short "Saving and querying command history"
+  :long "<p>See @(see ld) for background on the ACL2 read-eval-print loop.  The
+ present topic pertains to a history kept for commands issued to that loop,
+ which we call an ``ld-history'' (pronounced ``ell dee history'').  Here are
+ some things to keep in mind when reading this topic.</p>
+
+ <ul>
+
+ <li>Each entry in the history includes the input command, the value returned,
+ and other information, as explained further below.</li>
+
+ <li>This is about commands, not events: that is, we are concerned with forms
+ that are submitted for evaluation to the top-level loop.  See @(see
+ command).</li>
+
+ <li>An entry is saved for every command submitted by the user, even if it
+ doesn't change the ACL2 @(see world) &mdash; e.g., @('(+ 3 4)') &mdash; and
+ even if it undoes commands &mdash; e.g., @(':')@('ubt').</li>
+
+ <li>Keyword commands are turned into s-expressions before saving an entry; see
+ @(see keyword-commands).  For example, the input @(':ubt :x') is stored in an
+ entry as the input @('(ubt ':x)').</li>
+
+ <li>The ld-history saves entries not only for commands issued in the original
+ top-level loop, but also for commands issued in (recursive) calls of @(tsee
+ ld) &mdash; but not during @(tsee make-event) expansion.</li>
+
+ <li>Entries are generally saved even when there are errors.  However, entries
+ are not saved for commands that exit with raw Lisp errors.</li>
+
+ </ul>
+
+ <p>Also see @(see community-books) file @('books/demos/ld-history-input.lsp')
+ for examples.  The output from calling @(tsee ld) on that file (by calling the
+ @(tsee run-script) tool in @('books/demos/ld-history-book.acl2')) is in @(see
+ community-books) file @('books/demos/ld-history-log.txt').</p>
+
+ <p>The ld-history is a stack, represented as a list with the most recent
+ commands at the front.  But by default ACL2 is in <i>single-entry mode</i>,
+ where the list is kept at length 1: an entry is saved in the ld-history only
+ for the most recent command, and the previous entry is discarded.  We now
+ describe relevant utilities, including one that can switch to
+ <i>multiple-entry mode</i>, where all entries are kept until a utility is
+ called explicitly to discard old entries.  Note that the mode is determined by
+ the length of the ld-history: single-entry mode when length 1, multiple-entry
+ mode when length 2 or more.</p>
+
+ <ul>
+
+ <li>@('(ld-history state)')<br/>
+
+ This utility returns a list of structures, denoted ``ld-history entries'',
+ with the most recent one first.  By default, this list has length 1, but that
+ can be changed; see @('adjust-ld-history') below.  Each entry in the list is
+ recognized by the following predicate.  <b>NOTE</b>: This query is evaluated
+ before the ld-history stored in the ACL2 state is updated with a new entry,
+ based on the current command; so the previous command will be at the top of
+ the returned stack, not the current command.  (In particular, submitting the
+ form @('(ld-history state)') at the ACL2 prompt does not put that form at the
+ front of the returned list.)</li>
+
+ <li>@('(weak-ld-history-entry-p x)')<br/>
+
+ This function returns @('t') if @('x') has the shape of an entry in the
+ ld-history list, else @('nil').</li>
+
+ <li>Here are accessors for an ld-history entry, which we think of as returning
+ its fields.<br/>
+
+ <ul>
+
+ <li>@('(ld-history-entry-input state)')<br/>
+
+ The user input</li>
+
+ <li>@('(ld-history-entry-error-flg state)')<br/>
+
+ Non-@('nil') when there was an error translating the user input</li>
+
+ <li>@('(ld-history-entry-stobjs-out/value state)')<br/>
+
+ When @('(ld-history-entry-error-flg state)') is @('nil'), this is a cons whose
+ @('car') is is the @(see stobjs-out) &mdash; a list whose length is the number
+ of values returned, with @('nil') in each position except when occupied by a
+ symbol indicating a returned @(see stobj) for that position &mdash; and whose
+ @('cdr') is the returned value in the single-value case, but is the list of
+ returned values in the multiple-values case.</li>
+
+ <li>@('(ld-history-entry-stobjs-out state)')<br/>
+
+ When @('(ld-history-entry-error-flg state)') is @('nil'), this is the
+ stobjs-out as described above; otherwise this is @('nil').</li>
+
+ <li>@('(ld-history-entry-value state)')<br/>
+
+ When @('(ld-history-entry-error-flg state)') is @('nil'), this is the value or
+ values as described above; otherwise this is @('nil').</li>
+
+ <li>@('(ld-history-entry-user-data state)')<br/>
+
+ This is @('nil') by default.  However, code can be provided to compute this
+ field, as discussed below.</li>
+
+ </ul></li>
+
+ <li>@('(adjust-ld-history x state)')<br/>
+
+ @('X') is @('t'), @('nil'), or an integer.  The result is an @(see
+ error-triple) @('(mv nil value state)'), where @('value') and the effect are
+ as follows, and where if there is no change (i.e., the effect is a no-op) then
+ @('value') is @('(:no-change :length N)') where @('N') is the current length
+ of the ld-history.
+
+ <ul>
+
+ <li>@('T'):<br/>
+
+ Change to multiple-entry mode, where an entry is saved for every command, not
+ just the most recent command.  There is no change if already in multiple-entry
+ mode; otherwise the returned @('value') is @('(:saving-ld-history t)').</li>
+
+ <li>@('NIL'):<br/>
+
+ Change to single-entry mode, where an entry is saved only for the most recent
+ command.  There is no change if already in single-entry mode; otherwise the
+ returned @('value') is @('(:saving-ld-history nil)'), and all old entries will
+ be discarded (to produce a single-element ld-history).</li>
+
+ <li>Positive integer @('k'):<br/>
+
+ Replace the current ld-history by its first @('k') entries, except there is no
+ change if in single-entry mode or if @('k') is not less than the length of the
+ current ld-history.  Note that by ``current ld-history'' we refer to the
+ ld-history in effect at the time @('adjust-ld-history') is invoked, which does
+ not include the current command being evaluated.  (Thus, even if @('k') is 1,
+ multiple-entry mode will be preserved: the ld-history will have 2 entries
+ immediately after the current command completes.)  The returned @('value') is
+ @('(:ld-history-truncated :old-length LEN :new-length k)'), where @('LEN') is
+ the length of the current ld-history before the change.</li>
+
+ <li>Negative integer @('-k'):<br/>
+
+ This is intended to specify removal of the oldest @('k') entries from the
+ current ld-history.  Thus, it is treated identically to argument @('k2') where
+ @('k2') is the sum of @('-k') and the length of the current ld-history, but
+ only if that sum is positive; else there is no change.  For example, suppose
+ that @('-k') is -3.  If the current ld-history, @('h'), has length 2 or 3,
+ then there is no change; but if @('h') has length 10, then it is to be
+ replaced by @('(take 7 h)') and the length will actually thus be 8 after the
+ current command completes.</li>
+
+ </ul></li>
+
+ </ul>
+
+ <p>Remark.  If @('(adjust-ld-history n state)') is evaluated while in
+ multiple-entry mode, where n is a positive integer less than the current
+ length of the ld-history, then the new ld-history after returning to the
+ prompt will have length @('n+1').  That's essentially because it will have
+ length @('n') immediately after that call of @('adjust-ld-history') is
+ evaluated, and then a new entry for the current command (which could be that
+ call itself, if that's what was submitted at the prompt) will be pushed onto
+ the ld-entry just before returning to the prompt.  We say ``essentially''
+ because there is a Special Case: when @('n') is 1 then a 2-element list of
+ entries @('(e1 e2)') is created where @('e2') has fields that are all
+ @('nil'); then when the new entry @('e') is pushed onto the ld-history,
+ @('e2') is dropped so that that the new ld-history is @('(e e1)').  This
+ special-case trick is also used in multiple-entry mode when @('n') is @('-k')
+ where @('k') is one less than the length of the current ld-history, since that
+ is treated the same as @('(adjust-ld-history 1 state)'); and this trick is
+ also used when @('(adjust-ld-history t state)') switches from single-entry
+ mode to multiple-entry mode.  End of Remark.</p>
+
+ <p>Finally we discuss the user-data field of a ld-history entry, which (as
+ noted above) has default @('nil').  It is accessed using
+ @('(ld-history-entry-user-data state)').  It is set automatically when
+ the ld-history is extended with a new entry: the function call
+ @('(set-ld-history-entry-user-data input error-flg stobjs-out/value state)'),
+ is executed where the actuals are the other fields of the entry as indicated,
+ e.g., the first actual is the input field of the new entry
+ (as returned by the function, @('ld-history-entry-input')).  Although
+ @('set-ld-history-entry-user-data') returns @('nil') by default, this can be
+ changed by providing your own function with a @(see guard) of @('t') and the
+ same formal parameters (which however may be renamed, other than @('state')).
+ To make that change, define a function, which here we call @('my-user-data'),
+ and then attach it, as follows.</p>
+
+ @({
+ (defun my-set-user-data (input error-flg stobjs-out/value state)
+   (declare (xargs :guard t))
+   ...)
+ (defattach-system set-ld-history-entry-user-data my-set-user-data)
+ })
+
+ <p>The following example illustrates how to store the length of the ACL2 @(see
+ world) in the user-data.  Note that the @(see world) present in the @(see
+ state) at the time the user-data is set, computed as @('(w state)'), is almost
+ the final world produced by the command &mdash; it is missing just one triple,
+ a so-called command marker.</p>
+
+ @({
+ (defun my-world-length (input error-flg stobjs-out/value state)
+   (declare (xargs :guard t :stobjs state)
+            (ignore input error-flg stobjs-out/value))
+   (len (w state)))
+
+ (defattach-system set-ld-history-entry-user-data my-world-length)
+ })
+
+ <p>Here is how to restore the original behavior, i.e., the default where
+ the user-data is set to @('nil').</p>
+
+ @({
+ (defattach set-ld-history-entry-user-data
+            set-ld-history-entry-user-data-default)
+ })
+
+")
+
 (defxdoc ld-keyword-aliases
   :parents (ld)
   :short "Abbreviation of some keyword commands"
@@ -61806,7 +62027,7 @@ it."
 
  <p>The @(':initially') keyword is illegal for fields whose @(':type') is a
  stobj or an array of stobjs (or, not further discussed here, a @(see
- stobj-table).  Each such initial value is provided by a corresponding call of
+ stobj-table)).  Each such initial value is provided by a corresponding call of
  the stobj creator for that stobj.  In particular, in the case of an array of
  stobjs, the stobj creator is called once for each element of the array, so
  that the array elements are distinct.  For example, each element of
@@ -90405,6 +90626,10 @@ it."
  improved a couple of warnings and a bit of documentation pertaining to such
  rewriting.</p>
 
+ <p>The undocumented @('last-ld-result') feature has been replaced by a new
+ documented feature, a @(see ld-history) that records command input/output
+ history.  Thanks to Eric Smith for requesting this feature.</p>
+
  <h3>Heuristic and Efficiency Improvements</h3>
 
  <p>Improved the efficiency of some computations involving calls of @(tsee
@@ -90412,6 +90637,12 @@ it."
  events for books including such calls.  Thanks to Mertcan Temel for reporting
  this efficiency issue and sending an @('include-book') event, whose execution
  time was reduced from 24 seconds to 10 seconds by this change.</p>
+
+ <p>Evaluation of some large forms caused stack overflows (from ACL2 source
+ function @('bad-lisp-consp')).  This is probably much less likely now.  Thanks
+ to Eric Smith for reporting this issue to the acl2-help list with a helpful
+ example, which formerly caused a stack overflow for ACL2 built on SBCL but no
+ longer does so.</p>
 
  <h3>Bug Fixes</h3>
 
@@ -114140,24 +114371,19 @@ arithmetic) for libraries of @(see books) for arithmetic reasoning.</p>")
 
   :parents (stobj nested-stobjs)
   :short "A @(see stobj) field mapping stobj names to stobjs"
-  :long "<p>WARNING: Stobj-table fields of @(see stobj)s should be considered
- experimental at this point!  This warning will probably be removed soon, and
- when it is, stobj-table fields may be considered not to be experimental any
- longer.</p>
+  :long "<p>See @(see stobj) for basic background on stobjs, and see @(see
+ defstobj) for detailed documentation on the syntax and semantics of stobjs,
+ including fields specified with @(':type (stobj-table)') or
+ @(':type (stobj-table SIZE)') for some natural number, @('SIZE').  We call
+ such fields ``stobj-table fields''; this documentation topic explains them,
+ and it assumes familiarity with stobj fields of stobjs as documented in @(see
+ nested-stobjs) &mdash; especially, the use of @(tsee stobj-let) to read and
+ write such fields.  Note that the documentation for @(see defstobj) shows the
+ default names for accessors and updaters; for a stobj-table field, @('TBL'),
+ these are @('TBL-GET') and @('TBL-PUT'), respectively.</p>
 
- <p>For examples of @('stobj-let') usage for stobj-tables, see
- @('books/system/tests/stobj-table-tests-input.lsp').</p>
-
- <p>See @(see stobj) for basic background on stobjs, and see @(see defstobj)
- for detailed documentation on the syntax and semantics of stobjs, including
- fields specified with @(':type (stobj-table)') or @(':type (stobj-table
- SIZE)') for some natural number, @('SIZE').  We call such fields ``stobj-table
- fields''; this documentation topic explains them, and it assumes familiarity
- with stobj fields of stobjs as documented in @(see nested-stobjs) &mdash;
- especially, the use of @(tsee stobj-let) to read and write such fields.  Note
- that the documentation for @(see defstobj) shows the default names for
- accessors and updaters; for a stobj-table field, @('TBL'), these are
- @('TBL-GET') and @('TBL-PUT'), respectively.</p>
+ <p>For examples of @('stobj-let') usage for stobj-tables, see @(see
+ community-book) @('books/system/tests/stobj-table-tests-input.lsp').</p>
 
  <p>A stobj-table field may be viewed as an association list mapping stobj
  names to corresponding stobjs, so that each stobj name maps to a stobj that
@@ -136455,6 +136681,7 @@ expand function call at the current subterm, without simplifying"
 (defpointer add-to-set-eq add-to-set)
 (defpointer add-to-set-eql add-to-set) ; pre-v4-3 compatibility
 (defpointer add-to-set-equal add-to-set)
+(defpointer adjust-ld-history ld-history)
 (defpointer all-attachments system-utilities)
 (defpointer all-calls system-utilities)
 (defpointer all-fnnames system-utilities)
@@ -136589,6 +136816,12 @@ expand function call at the current subterm, without simplifying"
 (defpointer lambda-applicationp system-utilities)
 (defpointer lambda-body system-utilities)
 (defpointer lambda-formals system-utilities)
+(defpointer ld-history-entry-error-flg ld-history)
+(defpointer ld-history-entry-input ld-history)
+(defpointer ld-history-entry-stobjs-out ld-history)
+(defpointer ld-history-entry-stobjs-out/value ld-history)
+(defpointer ld-history-entry-user-data ld-history)
+(defpointer ld-history-entry-value ld-history)
 (defpointer legal-constantp system-utilities)
 (defpointer legal-variablep system-utilities)
 (defpointer let-mbe equality-variants-details)
@@ -136778,6 +137011,7 @@ expand function call at the current subterm, without simplifying"
 (defpointer variablep system-utilities)
 (defpointer verify-guards-eagerness set-verify-guards-eagerness)
 (defpointer waterfall hints-and-the-waterfall)
+(defpointer weak-ld-history-entry-p ld-history)
 (defpointer when$ loop$)
 (defpointer when$+ loop$)
 (defpointer with-output! with-output)
