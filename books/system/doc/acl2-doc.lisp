@@ -61806,7 +61806,7 @@ it."
 
  <p>The @(':initially') keyword is illegal for fields whose @(':type') is a
  stobj or an array of stobjs (or, not further discussed here, a @(see
- stobj-table).  Each such initial value is provided by a corresponding call of
+ stobj-table)).  Each such initial value is provided by a corresponding call of
  the stobj creator for that stobj.  In particular, in the case of an array of
  stobjs, the stobj creator is called once for each element of the array, so
  that the array elements are distinct.  For example, each element of
@@ -114146,24 +114146,19 @@ arithmetic) for libraries of @(see books) for arithmetic reasoning.</p>")
 
   :parents (stobj nested-stobjs)
   :short "A @(see stobj) field mapping stobj names to stobjs"
-  :long "<p>WARNING: Stobj-table fields of @(see stobj)s should be considered
- experimental at this point!  This warning will probably be removed soon, and
- when it is, stobj-table fields may be considered not to be experimental any
- longer.</p>
+  :long "<p>See @(see stobj) for basic background on stobjs, and see @(see
+ defstobj) for detailed documentation on the syntax and semantics of stobjs,
+ including fields specified with @(':type (stobj-table)') or
+ @(':type (stobj-table SIZE)') for some natural number, @('SIZE').  We call
+ such fields ``stobj-table fields''; this documentation topic explains them,
+ and it assumes familiarity with stobj fields of stobjs as documented in @(see
+ nested-stobjs) &mdash; especially, the use of @(tsee stobj-let) to read and
+ write such fields.  Note that the documentation for @(see defstobj) shows the
+ default names for accessors and updaters; for a stobj-table field, @('TBL'),
+ these are @('TBL-GET') and @('TBL-PUT'), respectively.</p>
 
- <p>For examples of @('stobj-let') usage for stobj-tables, see
- @('books/system/tests/stobj-table-tests-input.lsp').</p>
-
- <p>See @(see stobj) for basic background on stobjs, and see @(see defstobj)
- for detailed documentation on the syntax and semantics of stobjs, including
- fields specified with @(':type (stobj-table)') or @(':type (stobj-table
- SIZE)') for some natural number, @('SIZE').  We call such fields ``stobj-table
- fields''; this documentation topic explains them, and it assumes familiarity
- with stobj fields of stobjs as documented in @(see nested-stobjs) &mdash;
- especially, the use of @(tsee stobj-let) to read and write such fields.  Note
- that the documentation for @(see defstobj) shows the default names for
- accessors and updaters; for a stobj-table field, @('TBL'), these are
- @('TBL-GET') and @('TBL-PUT'), respectively.</p>
+ <p>For examples of @('stobj-let') usage for stobj-tables, see @(see
+ community-book) @('books/system/tests/stobj-table-tests-input.lsp').</p>
 
  <p>A stobj-table field may be viewed as an association list mapping stobj
  names to corresponding stobjs, so that each stobj name maps to a stobj that
