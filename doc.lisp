@@ -115003,14 +115003,6 @@ Subtopics
   (STOBJ NESTED-STOBJS)
   "A [stobj] field mapping stobj names to stobjs
 
-  WARNING: Stobj-table fields of [stobj]s should be considered
-  experimental at this point!  This warning will probably be removed
-  soon, and when it is, stobj-table fields may be considered not to
-  be experimental any longer.
-
-  For examples of stobj-let usage for stobj-tables, see
-  books/system/tests/stobj-table-tests-input.lsp.
-
   See [stobj] for basic background on stobjs, and see [defstobj] for
   detailed documentation on the syntax and semantics of stobjs,
   including fields specified with :type (stobj-table) or :type
@@ -115022,6 +115014,9 @@ Subtopics
   documentation for [defstobj] shows the default names for accessors
   and updaters; for a stobj-table field, TBL, these are TBL-GET and
   TBL-PUT, respectively.
+
+  For examples of stobj-let usage for stobj-tables, see
+  [community-book] books/system/tests/stobj-table-tests-input.lsp.
 
   A stobj-table field may be viewed as an association list mapping
   stobj names to corresponding stobjs, so that each stobj name maps
