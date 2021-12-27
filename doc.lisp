@@ -99200,12 +99200,12 @@ Subtopics
 
   Of course, models of actual machines usually only accept a finite
   number of different inputs.  For example, engineers at Advanced
-  Micro Devices (AMD), Centaur, and IBM have ACL2 models of floating
-  point units that operate on double precision IEEE floating point
-  numbers.  These are finite models.  But the size of their inputs is
-  sufficiently large that they are verified by the same mathematical
-  methods used to prove theorems about infinite state systems like
-  our little mc.
+  Micro Devices (AMD), Centaur, and IBM have produced ACL2 models of
+  floating point units that operate on double precision IEEE floating
+  point numbers.  These are finite models.  But the size of their
+  inputs is sufficiently large that they are verified by the same
+  mathematical methods used to prove theorems about infinite state
+  systems like our little mc.
 
   {IMAGE} (see [What_is_Required_of_the_User{Q}])")
  (PROVISIONAL-CERTIFICATION

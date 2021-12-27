@@ -99538,11 +99538,11 @@ arithmetic) for libraries of @(see books) for arithmetic reasoning.</p>")
 
  <p>Of course, models of actual machines usually only accept a finite number of
  different inputs.  For example, engineers at Advanced Micro Devices (AMD),
- Centaur, and IBM have ACL2 models of floating point units that operate on
- double precision IEEE floating point numbers.  These are finite models.  But
- the size of their inputs is sufficiently large that they are verified by the
- same mathematical methods used to prove theorems about infinite state systems
- like our little @('mc').</p>
+ Centaur, and IBM have produced ACL2 models of floating point units that
+ operate on double precision IEEE floating point numbers.  These are finite
+ models.  But the size of their inputs is sufficiently large that they are
+ verified by the same mathematical methods used to prove theorems about
+ infinite state systems like our little @('mc').</p>
 
  <p><see topic='@(url |What is Required of the User(Q)|)'><img
  src='res/tours/flying.gif'></img></see></p>")
@@ -137020,12 +137020,11 @@ expand function call at the current subterm, without simplifying"
 
 #||
 
-;; See the documentation for SET-MAX-MEM and cert.pl.  This overrides
-;; the previous occurrence of set-max-mem in the documentation for HONS-NOTE,
-;; which fools cert.pl into thinking this book takes tons of memory to
-;; certify.  (This is probably relevant only for folks at Centaur or for
-;; other folks who are using clustering software that understands PBS
-;; directives.)
+;; See the documentation for SET-MAX-MEM and cert.pl.  This overrides the
+;; previous occurrence of set-max-mem in the documentation for HONS-NOTE, which
+;; fools cert.pl into thinking this book takes tons of memory to certify.  (This
+;; is probably relevant only for folks who are using clustering software that
+;; understands PBS directives.)
 
  (value-triple (set-max-mem (* 2 (expt 2 30))))
 ||#
