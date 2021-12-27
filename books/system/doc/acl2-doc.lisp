@@ -50541,7 +50541,7 @@ tables in the current Hons Space."
  as other output not from @('ld').</p>")
 
 (defxdoc ld-history
-  :parents (loop$)
+  :parents (ld history)
   :short "Saving and querying command history"
   :long "<p>See @(see ld) for background on the ACL2 read-eval-print loop.  The
  present topic pertains to a history kept for commands issued to that loop,
@@ -50609,38 +50609,40 @@ tables in the current Hons Space."
  ld-history list, else @('nil').</li>
 
  <li>Here are accessors for an ld-history entry, which we think of as returning
- its fields.<br/>
+ its fields.  The formal parameter @('entry') below is an entry in (i.e.,
+ member of) @('(ld-history state)'); an example call is thus
+ @('(ld-history-entry-input (car (ld-history state)))').<br/>
 
  <ul>
 
- <li>@('(ld-history-entry-input state)')<br/>
+ <li>@('(ld-history-entry-input entry)')<br/>
 
  The user input</li>
 
- <li>@('(ld-history-entry-error-flg state)')<br/>
+ <li>@('(ld-history-entry-error-flg entry)')<br/>
 
  Non-@('nil') when there was an error translating the user input</li>
 
- <li>@('(ld-history-entry-stobjs-out/value state)')<br/>
+ <li>@('(ld-history-entry-stobjs-out/value entry)')<br/>
 
- When @('(ld-history-entry-error-flg state)') is @('nil'), this is a cons whose
+ When @('(ld-history-entry-error-flg entry)') is @('nil'), this is a cons whose
  @('car') is is the @(see stobjs-out) &mdash; a list whose length is the number
  of values returned, with @('nil') in each position except when occupied by a
  symbol indicating a returned @(see stobj) for that position &mdash; and whose
  @('cdr') is the returned value in the single-value case, but is the list of
  returned values in the multiple-values case.</li>
 
- <li>@('(ld-history-entry-stobjs-out state)')<br/>
+ <li>@('(ld-history-entry-stobjs-out entry)')<br/>
 
- When @('(ld-history-entry-error-flg state)') is @('nil'), this is the
+ When @('(ld-history-entry-error-flg entry)') is @('nil'), this is the
  stobjs-out as described above; otherwise this is @('nil').</li>
 
- <li>@('(ld-history-entry-value state)')<br/>
+ <li>@('(ld-history-entry-value entry)')<br/>
 
- When @('(ld-history-entry-error-flg state)') is @('nil'), this is the value or
+ When @('(ld-history-entry-error-flg entry)') is @('nil'), this is the value or
  values as described above; otherwise this is @('nil').</li>
 
- <li>@('(ld-history-entry-user-data state)')<br/>
+ <li>@('(ld-history-entry-user-data entry)')<br/>
 
  This is @('nil') by default.  However, code can be provided to compute this
  field, as discussed below.</li>
@@ -50717,17 +50719,18 @@ tables in the current Hons Space."
 
  <p>Finally we discuss the user-data field of a ld-history entry, which (as
  noted above) has default @('nil').  It is accessed using
- @('(ld-history-entry-user-data state)').  It is set automatically when
+ @('(ld-history-entry-user-data entry)').  It is set automatically when
  the ld-history is extended with a new entry: the function call
  @('(set-ld-history-entry-user-data input error-flg stobjs-out/value state)'),
  is executed where the actuals are the other fields of the entry as indicated,
  e.g., the first actual is the input field of the new entry
  (as returned by the function, @('ld-history-entry-input')).  Although
  @('set-ld-history-entry-user-data') returns @('nil') by default, this can be
- changed by providing your own function with a @(see guard) of @('t') and the
- same formal parameters (which however may be renamed, other than @('state')).
- To make that change, define a function, which here we call @('my-user-data'),
- and then attach it, as follows.</p>
+ changed by providing your own function with a @(':')@(tsee guard) of @('t')
+ and the same formal parameters (which however may be renamed, other than
+ @('state')).  To make that change, define a function, which here we call
+ @('my-user-data'), and then attach it to @('set-ld-history-entry-user-data'),
+ as follows.</p>
 
  @({
  (defun my-set-user-data (input error-flg stobjs-out/value state)
@@ -50751,12 +50754,38 @@ tables in the current Hons Space."
  (defattach-system set-ld-history-entry-user-data my-world-length)
  })
 
+ <p>A subsequent inspection of the stored user-data shows the length of the
+ current world, for example as follows.</p>
+
+ @({
+ ACL2 !>(ld-history-entry-user-data (car (ld-history state)))
+ 125914
+ ACL2 !>
+ })
+
+ <p>Notice that we used @(tsee len), not @(tsee length), since the @(':')@(tsee
+ guard) specified for our function needs to be @('t').  Alternative
+ definitions, which however are less efficienct, are as follows.</p>
+
+ @({
+ (defun my-world-length (input error-flg stobjs-out/value state)
+   (declare (xargs :guard t :stobjs state)
+            (ignore input error-flg stobjs-out/value))
+   (and (true-listp (w state))
+        (length (w state))))
+
+ (defun my-world-length (input error-flg stobjs-out/value state)
+   (declare (xargs :guard t :stobjs state)
+            (ignore input error-flg stobjs-out/value))
+   (ec-call (length (w state))))
+ })
+
  <p>Here is how to restore the original behavior, i.e., the default where
  the user-data is set to @('nil').</p>
 
  @({
- (defattach set-ld-history-entry-user-data
-            set-ld-history-entry-user-data-default)
+ (defattach-system set-ld-history-entry-user-data
+                   set-ld-history-entry-user-data-default)
  })
 
 ")

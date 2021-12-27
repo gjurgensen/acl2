@@ -45558,6 +45558,9 @@ Subtopics
   [Gthm]
       The [guard] theorem for a given function symbol
 
+  [Ld-history]
+      Saving and querying command history
+
   [Oops]
       Undo a :u or :[ubt]
 
@@ -54351,6 +54354,9 @@ Subtopics
   [Ld-evisc-tuple]
       Determines whether [ld] suppresses details when printing
 
+  [Ld-history]
+      Saving and querying command history
+
   [Ld-keyword-aliases]
       Abbreviation of some keyword commands
 
@@ -54571,7 +54577,7 @@ Subtopics
   evisceration and of how other evisc-tuples affect the printing of
   error messages and warnings, as well as other output not from ld.")
  (LD-HISTORY
-  (LOOP$)
+  (LD HISTORY)
   "Saving and querying command history
 
   See [ld] for background on the ACL2 read-eval-print loop.  The
@@ -54631,26 +54637,28 @@ Subtopics
       This function returns t if x has the shape of an entry in the
       ld-history list, else nil.
     * Here are accessors for an ld-history entry, which we think of as
-      returning its fields.
-        * (ld-history-entry-input state)
+      returning its fields.  The formal parameter entry below is an
+      entry in (i.e., member of) (ld-history state); an example call
+      is thus (ld-history-entry-input (car (ld-history state))).
+        * (ld-history-entry-input entry)
           The user input
-        * (ld-history-entry-error-flg state)
+        * (ld-history-entry-error-flg entry)
           Non-nil when there was an error translating the user input
-        * (ld-history-entry-stobjs-out/value state)
-          When (ld-history-entry-error-flg state) is nil, this is a cons whose
+        * (ld-history-entry-stobjs-out/value entry)
+          When (ld-history-entry-error-flg entry) is nil, this is a cons whose
           car is is the [stobjs-out] --- a list whose length is the
           number of values returned, with nil in each position except
           when occupied by a symbol indicating a returned [stobj] for
           that position --- and whose cdr is the returned value in
           the single-value case, but is the list of returned values
           in the multiple-values case.
-        * (ld-history-entry-stobjs-out state)
-          When (ld-history-entry-error-flg state) is nil, this is the
+        * (ld-history-entry-stobjs-out entry)
+          When (ld-history-entry-error-flg entry) is nil, this is the
           stobjs-out as described above; otherwise this is nil.
-        * (ld-history-entry-value state)
-          When (ld-history-entry-error-flg state) is nil, this is the value or
+        * (ld-history-entry-value entry)
+          When (ld-history-entry-error-flg entry) is nil, this is the value or
           values as described above; otherwise this is nil.
-        * (ld-history-entry-user-data state)
+        * (ld-history-entry-user-data entry)
           This is nil by default.  However, code can be provided to compute
           this field, as discussed below.
 
@@ -54716,7 +54724,7 @@ Subtopics
 
   Finally we discuss the user-data field of a ld-history entry, which
   (as noted above) has default nil.  It is accessed using
-  (ld-history-entry-user-data state).  It is set automatically when
+  (ld-history-entry-user-data entry).  It is set automatically when
   the ld-history is extended with a new entry: the function call
   (set-ld-history-entry-user-data input error-flg stobjs-out/value
   state), is executed where the actuals are the other fields of the
@@ -54724,10 +54732,10 @@ Subtopics
   the new entry (as returned by the function,
   ld-history-entry-input).  Although set-ld-history-entry-user-data
   returns nil by default, this can be changed by providing your own
-  function with a [guard] of t and the same formal parameters (which
+  function with a :[guard] of t and the same formal parameters (which
   however may be renamed, other than state).  To make that change,
   define a function, which here we call my-user-data, and then attach
-  it, as follows.
+  it to set-ld-history-entry-user-data, as follows.
 
     (defun my-set-user-data (input error-flg stobjs-out/value state)
       (declare (xargs :guard t))
@@ -54747,11 +54755,33 @@ Subtopics
 
     (defattach-system set-ld-history-entry-user-data my-world-length)
 
+  A subsequent inspection of the stored user-data shows the length of
+  the current world, for example as follows.
+
+    ACL2 !>(ld-history-entry-user-data (car (ld-history state)))
+    125914
+    ACL2 !>
+
+  Notice that we used [len], not [length], since the :[guard] specified
+  for our function needs to be t.  Alternative definitions, which
+  however are less efficienct, are as follows.
+
+    (defun my-world-length (input error-flg stobjs-out/value state)
+      (declare (xargs :guard t :stobjs state)
+               (ignore input error-flg stobjs-out/value))
+      (and (true-listp (w state))
+           (length (w state))))
+
+    (defun my-world-length (input error-flg stobjs-out/value state)
+      (declare (xargs :guard t :stobjs state)
+               (ignore input error-flg stobjs-out/value))
+      (ec-call (length (w state))))
+
   Here is how to restore the original behavior, i.e., the default where
   the user-data is set to nil.
 
-    (defattach set-ld-history-entry-user-data
-               set-ld-history-entry-user-data-default)")
+    (defattach-system set-ld-history-entry-user-data
+                      set-ld-history-entry-user-data-default)")
  (LD-HISTORY-ENTRY-ERROR-FLG (POINTERS)
                              "See [ld-history].")
  (LD-HISTORY-ENTRY-INPUT (POINTERS)
@@ -59247,9 +59277,6 @@ Semantics
 
 
 Subtopics
-
-  [Ld-history]
-      Saving and querying command history
 
   [Loop$-recursion]
       Defining functions that recur from within loop$ statements
