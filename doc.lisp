@@ -21117,7 +21117,11 @@ Subtopics
     * Error case: erp is not nil.  Val may be nil; otherwise val is a
       message (see [msgp]) suitable for printing with [fmt] and
       related functions using the ~@ directive, and erp is a context
-      suitable for error messages (see [ctx]).
+      suitable for error messages (see [ctx]).  A convention
+      generally observed (for example, by ACL2 system function
+      cmp-to-error-triple, which converts a context-message pair to
+      an [error-triple] that may be printed in the error case) is
+      when erp and val are both non-nil, then erp is not t.
 
   To see how this works let us consider the ACL2 source function,
   translate-cmp, whose input is a user-level (``untranslated'') term

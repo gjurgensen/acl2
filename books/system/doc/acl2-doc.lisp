@@ -17880,7 +17880,11 @@ subtree of X with T, without duplication.</p>
  <li><b>Error case</b>: @('erp') is not @('nil').  @('Val') may be @('nil');
  otherwise @('val') is a message (see @(see msgp)) suitable for printing with
  @(tsee fmt) and related functions using the @('~@') directive, and @('erp') is
- a context suitable for error messages (see @(see ctx)).</li>
+ a context suitable for error messages (see @(see ctx)).  A convention
+ generally observed (for example, by ACL2 system function
+ @('cmp-to-error-triple'), which converts a context-message pair to an @(see
+ error-triple) that may be printed in the error case) is when @('erp') and
+ @('val') are both non-@('nil'), then @('erp') is not @('t').</li>
 
  </ul>
 
