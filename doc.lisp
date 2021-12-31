@@ -21104,6 +21104,118 @@ Subtopics
   Also see [constraint].  For more details, see comments in the
   definition of constraint-info in the ACL2 source code.")
  (CONTEXT (POINTERS) "See [ctx].")
+ (CONTEXT-MESSAGE-PAIR
+  (KESTREL-UTILITIES SYSTEM-UTILITIES-NON-BUILT-IN)
+  "A common ACL2 programming idiom: [error-triple]s without [state]
+
+  Context-message pairs are of the form (mv erp val), where there are
+  the following two cases: the first indicates a successful
+  computation and the second indicates an error.
+
+    * Normal case: erp is nil and val is what we call the ``value'' of that
+      context-message pair.
+    * Error case: erp is not nil.  Val may be nil; otherwise val is a
+      message (see [msgp]) suitable for printing with [fmt] and
+      related functions using the ~@ directive, and erp is a context
+      suitable for error messages (see [ctx]).  A convention
+      generally observed (for example, by ACL2 system function
+      cmp-to-error-triple, which converts a context-message pair to
+      an [error-triple] that may be printed in the error case) is
+      when erp and val are both non-nil, then erp is not t.
+
+  To see how this works let us consider the ACL2 source function,
+  translate-cmp, whose input is a user-level (``untranslated'') term
+  as input and returns a context-message pair.  In the non-error
+  case, the value returned is the internal (``translated'') form of
+  that input; see [term].  The log below first shows a successful
+  translation, returning multiple values (mv nil (binary-+ x '3)),
+  thus illustrating the ``Normal case'' above, where the first value
+  returned (the error indicator) is nil and the second is the value
+  of the pair.  The second example in the log shows an error case
+  returning a context and a message.  Don't worry about the various
+  arguments of translate-cmp; the examples are merely to illustrate
+  programming with context-message pairs, not to explain
+  translate-cmp!
+
+    ACL2 !>(translate-cmp '(+ x 3)
+                          t t t 'top (w state)
+                          (default-state-vars state))
+    (NIL (BINARY-+ X '3))
+    ACL2 !>(translate-cmp '(quote 3 4)
+                          t t t 'top (w state)
+                          (default-state-vars state))
+    (TOP (\"The proper form of a quoted constant is (quote x), but ~
+                         ~x0 is not of this form.\"
+              (#0 QUOTE 3 4)))
+    ACL2 !>
+
+  The following macros are useful when programming with context-message
+  pairs.
+
+    * (value-cmp x): same as (mv nil x).  Example:
+
+          ACL2 !>(value-cmp (* 3 4))
+          (NIL 12)
+          ACL2 !>
+
+    * (er-cmp ctx str &rest args): Return (mv ctx msg) where msg is formed
+      from str and args.  Example:
+
+          ACL2 !>(er-cmp 'example
+                         \"I don't like 3-element lists like ~x0.~|\"
+                         (make-list 3))
+          (EXAMPLE (\"I don't like 3-element lists like ~x0.~|\" (#0 NIL NIL NIL)))
+          ACL2 !>(mv-let (ctx msg)
+                   (er-cmp 'example
+                           \"I don't like 3-element lists like ~x0.~|\"
+                           (make-list 3))
+                   (fmx \"Error in ~x0: ~@1\" ctx msg))
+          Error in EXAMPLE: I don't like 3-element lists like (NIL NIL NIL).
+          (0 <state>)
+          ACL2 !>
+
+    * (er-let*-cmp alist body): Analogue of [er-let*] for context-message
+      pairs.  So, it evaluates the bindings in alist much as
+      [let*]-bindings would be evaluated, but where each expression
+      should return a context-message pair and so should body.  If
+      any of those expression evaluations returns a pair with a
+      non-nil first value, then that pair is returned.  Otherwise,
+      body --- which should return a context-message pair --- is
+      evaluated with respect to the resulting bindings.  Examples
+      (refer to previous examples that use translate-cmp):
+
+          ACL2 !>(er-let*-cmp ((x (value-cmp '(+ x 3)))
+                               (val (translate-cmp x
+                                                   t t t 'top (w state)
+                                                   (default-state-vars state)))
+                               (y (value-cmp (list :term val))))
+                              (value-cmp (list :result y)))
+          (NIL (:RESULT (:TERM (BINARY-+ X '3))))
+          ACL2 !>(er-let*-cmp ((x (value-cmp '(quote 3 4)))
+                               (val (translate-cmp x
+                                                   t t t 'top (w state)
+                                                   (default-state-vars state)))
+                               (y (value-cmp (list :term val))))
+                              (value-cmp (list :result y)))
+          (TOP (\"The proper form of a quoted constant is (quote x), but ~
+                               ~x0 is not of this form.\"
+                    (#0 QUOTE 3 4)))
+          ACL2 !>
+
+    * (er-progn-cmp form1 ... formk): Each formi should evaluate to a
+      context-message pair.  If any of these evaluations produces a
+      pair with a non-nil first component (thus indicating an error),
+      return that pair.  Otherwise return the context-message pair
+      produced by evaluating formk.  Examples:
+
+          ACL2 !>(er-progn-cmp (value-cmp (+ 2 8))
+                               (er-cmp 'top \"Ouch\")
+                               (value-cmp (* 3 4)))
+          (TOP (\"Ouch\"))
+          ACL2 !>(er-progn-cmp (value-cmp (+ 2 8))
+                               (value-cmp (* 3 4)))
+          (NIL 12)
+          ACL2 !>")
  (CONVERSION
   (PAGES_WRITTEN_ESPECIALLY_FOR_THE_TOURS)
   "Conversion to Uppercase
@@ -32283,8 +32395,12 @@ Subtopics
 
   Technical note for raw Lisp programmers only: It is possible to cause
   hard errors to signal actual raw Lisp errors.  See [hard-error].")
+ (ER-CMP (POINTERS)
+         "See [context-message-pair].")
  (ER-LET* (POINTERS)
           "See [programming-with-state].")
+ (ER-LET*-CMP (POINTERS)
+              "See [context-message-pair].")
  (ER-PROGN
   (ERRORS PROGRAMMING-WITH-STATE ACL2-BUILT-INS)
   "Perform a sequence of state-changing ``error triples''
@@ -32325,6 +32441,8 @@ Subtopics
                                                   <expr{k-1}>
                                                   (cond (erp (mv erp val state))
                                                         (t <exprk>)))))))))")
+ (ER-PROGN-CMP (POINTERS)
+               "See [context-message-pair].")
  (ERROR (POINTERS)
         "See [hints] for information about the keyword :error.")
  (ERROR-TRIPLE
@@ -93561,8 +93679,17 @@ Subtopics
   [Enabled-runep]
       See [system-utilities].
 
+  [Er-cmp]
+      See [context-message-pair].
+
   [Er-let*]
       See [programming-with-state].
+
+  [Er-let*-cmp]
+      See [context-message-pair].
+
+  [Er-progn-cmp]
+      See [context-message-pair].
 
   [Error]
       See [hints] for information about the keyword :error.
@@ -94382,6 +94509,9 @@ Subtopics
 
   [Value]
       See [system-utilities].
+
+  [Value-cmp]
+      See [context-message-pair].
 
   [Variablep]
       See [system-utilities].
@@ -97558,7 +97688,8 @@ Subtopics
 
   In this section we discuss the macro er-let*, which is a variant of
   the special form, [let*], that is useful when programming with
-  state.
+  state.  A related utility that avoids the use of state is
+  er-let*-cmp; see [context-message-pair].
 
   The macro er-let* is useful when binding variables to the value
   components of error triples.  It is actually quite similar to
@@ -128863,6 +128994,8 @@ Subtopics
   {IMAGE} (see [Overview_of_the_Proof_of_a_Trivial_Consequence])")
  (VALUE (POINTERS)
         "See [system-utilities].")
+ (VALUE-CMP (POINTERS)
+            "See [context-message-pair].")
  (VALUE-TRIPLE
   (EVENTS ACL2-BUILT-INS ERRORS)
   "Compute a value, optionally checking that it is not nil

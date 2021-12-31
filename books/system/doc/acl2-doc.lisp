@@ -17864,6 +17864,133 @@ subtree of X with T, without duplication.</p>
  <p>Also see @(see constraint).  For more details, see comments in the
  definition of @('constraint-info') in the ACL2 source code.</p>")
 
+(defxdoc context-message-pair
+  :parents (kestrel-utilities system-utilities-non-built-in)
+  :short "A common ACL2 programming idiom: @(see error-triple)s without @(see
+ state)"
+  :long "<p><i>Context-message pairs</i> are of the form @('(mv erp val)'),
+ where there are the following two cases: the first indicates a successful
+ computation and the second indicates an error.</p>
+
+ <ul>
+
+ <li><b>Normal case</b>: @('erp') is @('nil') and @('val') is what we call the
+ ``value'' of that context-message pair.</li>
+
+ <li><b>Error case</b>: @('erp') is not @('nil').  @('Val') may be @('nil');
+ otherwise @('val') is a message (see @(see msgp)) suitable for printing with
+ @(tsee fmt) and related functions using the @('~@') directive, and @('erp') is
+ a context suitable for error messages (see @(see ctx)).  A convention
+ generally observed (for example, by ACL2 system function
+ @('cmp-to-error-triple'), which converts a context-message pair to an @(see
+ error-triple) that may be printed in the error case) is when @('erp') and
+ @('val') are both non-@('nil'), then @('erp') is not @('t').</li>
+
+ </ul>
+
+ <p>To see how this works let us consider the ACL2 source function,
+ @('translate-cmp'), whose input is a user-level (``untranslated'') term as
+ input and returns a context-message pair.  In the non-error case, the value
+ returned is the internal (``translated'') form of that input; see @(see term).
+ The log below first shows a successful translation, returning multiple values
+ @('(mv nil (binary-+ x '3))'), thus illustrating the ``Normal case'' above,
+ where the first value returned (the error indicator) is @('nil') and the
+ second is the value of the pair.  The second example in the log shows an error
+ case returning a context and a message.  Don't worry about the various
+ arguments of @('translate-cmp'); the examples are merely to illustrate
+ programming with context-message pairs, not to explain @('translate-cmp')!</p>
+
+ @({
+ ACL2 !>(translate-cmp '(+ x 3)
+                       t t t 'top (w state)
+                       (default-state-vars state))
+ (NIL (BINARY-+ X '3))
+ ACL2 !>(translate-cmp '(quote 3 4)
+                       t t t 'top (w state)
+                       (default-state-vars state))
+ (TOP (\"The proper form of a quoted constant is (quote x), but ~
+                      ~x0 is not of this form.\"
+           (#\0 QUOTE 3 4)))
+ ACL2 !>
+ })
+
+ <p>The following macros are useful when programming with context-message
+ pairs.</p>
+
+ <ul>
+
+ <li>@('(value-cmp x)'): same as @('(mv nil x)').  Example:
+ @({
+ ACL2 !>(value-cmp (* 3 4))
+ (NIL 12)
+ ACL2 !>
+ })</li>
+
+ <li>@('(er-cmp ctx str &rest args)'): Return @('(mv ctx msg)') where @('msg')
+ is formed from @('str') and @('args').  Example:
+ @({
+ ACL2 !>(er-cmp 'example
+                \"I don't like 3-element lists like ~x0.~|\"
+                (make-list 3))
+ (EXAMPLE (\"I don't like 3-element lists like ~x0.~|\" (#\0 NIL NIL NIL)))
+ ACL2 !>(mv-let (ctx msg)
+          (er-cmp 'example
+                  \"I don't like 3-element lists like ~x0.~|\"
+                  (make-list 3))
+          (fmx \"Error in ~x0: ~@1\" ctx msg))
+ Error in EXAMPLE: I don't like 3-element lists like (NIL NIL NIL).
+ (0 <state>)
+ ACL2 !>
+ })</li>
+
+ <li>@('(er-let*-cmp alist body)'): Analogue of @(tsee er-let*) for
+ context-message pairs.  So, it evaluates the bindings in @('alist') much as
+ @(tsee let*)-bindings would be evaluated, but where each expression should
+ return a context-message pair and so should @('body').  If any of those
+ expression evaluations returns a pair with a non-nil first value, then that
+ pair is returned.  Otherwise, @('body') &mdash; which should return a
+ context-message pair &mdash; is evaluated with respect to the resulting
+ bindings.  Examples (refer to previous examples that use @('translate-cmp')):
+
+ @({
+ ACL2 !>(er-let*-cmp ((x (value-cmp '(+ x 3)))
+                      (val (translate-cmp x
+                                          t t t 'top (w state)
+                                          (default-state-vars state)))
+                      (y (value-cmp (list :term val))))
+                     (value-cmp (list :result y)))
+ (NIL (:RESULT (:TERM (BINARY-+ X '3))))
+ ACL2 !>(er-let*-cmp ((x (value-cmp '(quote 3 4)))
+                      (val (translate-cmp x
+                                          t t t 'top (w state)
+                                          (default-state-vars state)))
+                      (y (value-cmp (list :term val))))
+                     (value-cmp (list :result y)))
+ (TOP (\"The proper form of a quoted constant is (quote x), but ~
+                      ~x0 is not of this form.\"
+           (#\0 QUOTE 3 4)))
+ ACL2 !>
+ })</li>
+
+ <li>@('(er-progn-cmp form1 ... formk)'): Each @('formi') should evaluate to a
+ context-message pair.  If any of these evaluations produces a pair with a
+ non-@('nil') first component (thus indicating an error), return that pair.
+ Otherwise return the context-message pair produced by evaluating @('formk').
+ Examples:
+
+ @({
+ ACL2 !>(er-progn-cmp (value-cmp (+ 2 8))
+                      (er-cmp 'top \"Ouch\")
+                      (value-cmp (* 3 4)))
+ (TOP (\"Ouch\"))
+ ACL2 !>(er-progn-cmp (value-cmp (+ 2 8))
+                      (value-cmp (* 3 4)))
+ (NIL 12)
+ ACL2 !>
+ })</li>
+
+ </ul>")
+
 (defxdoc copyright
   :parents (about-acl2)
   :short "ACL2 copyright, license, sponsorship"
@@ -97467,8 +97594,9 @@ arithmetic) for libraries of @(see books) for arithmetic reasoning.</p>")
  <p>BINDING VARIABLES USING ERROR TRIPLES</p>
 
  <p>In this section we discuss the macro @('er-let*'), which is a variant of
- the special form, @(tsee let*), that is useful when programming with
- state.</p>
+ the special form, @(tsee let*), that is useful when programming with state.  A
+ related utility that avoids the use of state is @('er-let*-cmp'); see @(see
+ context-message-pair).</p>
 
  <p>The macro @('er-let*') is useful when binding variables to the value
  components of error triples.  It is actually quite similar to @('er-progn'),
@@ -136918,7 +137046,10 @@ expand function call at the current subterm, without simplifying"
 (defpointer dumb-occur-var system-utilities)
 (defpointer enabled-numep system-utilities)
 (defpointer enabled-runep system-utilities)
+(defpointer er-cmp context-message-pair)
 (defpointer er-let* programming-with-state)
+(defpointer er-let*-cmp context-message-pair)
+(defpointer er-progn-cmp context-message-pair)
 (defpointer error hints t)
 (defpointer ev$-list apply$)
 (defpointer event events)
@@ -137191,6 +137322,7 @@ expand function call at the current subterm, without simplifying"
 (defpointer untranslate-preprocess user-defined-functions-table)
 (defpointer use hints t)
 (defpointer value system-utilities)
+(defpointer value-cmp context-message-pair)
 (defpointer variablep system-utilities)
 (defpointer verify-guards-eagerness set-verify-guards-eagerness)
 (defpointer waterfall hints-and-the-waterfall)
