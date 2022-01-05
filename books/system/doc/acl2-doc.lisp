@@ -3,7 +3,7 @@
 ; acl2-doc.lisp - Documentation for the ACL2 Theorem Prover
 ;
 ; ACL2 Version 8.4 -- A Computational Logic for Applicative Common Lisp
-; Copyright (C) 2021, Regents of the University of Texas
+; Copyright (C) 2022, Regents of the University of Texas
 ;
 ; This documentation was derived from the ACL2 system in October 2013, which
 ; was a descendant of ACL2 Version 1.9, Copyright (C) 1997 Computational Logic,
@@ -75,6 +75,7 @@
     (BUILD::CERT.PL "[books]/build/doc.lisp")
     (BUILD::CERT_PARAM "[books]/build/doc.lisp")
     (CGEN "[books]/acl2s/cgen/top.lisp")
+    (CHECKPOINT-LIST "[books]/kestrel/utilities/checkpoints.lisp")
     (CONSIDERATION "[books]/hints/consider-hint.lisp")
     (BUILD::CUSTOM-CERTIFY-BOOK-COMMANDS "[books]/build/doc.lisp")
     (STD::DEFAGGREGATE "[books]/std/util/defaggregate.lisp")
@@ -798,7 +799,7 @@
 (defxdoc about-acl2
   :parents (acl2)
   :short "General information About ACL2"
-  :long "<p>This is @(`(:raw (@ acl2-version))`), @(see copyright) (C) 2021,
+  :long "<p>This is @(`(:raw (@ acl2-version))`), @(see copyright) (C) 2022,
  Regents of the University of Texas, authored by Matt Kaufmann and J Strother
  Moore.</p>
 
@@ -17863,6 +17864,133 @@ subtree of X with T, without duplication.</p>
  <p>Also see @(see constraint).  For more details, see comments in the
  definition of @('constraint-info') in the ACL2 source code.</p>")
 
+(defxdoc context-message-pair
+  :parents (kestrel-utilities system-utilities-non-built-in)
+  :short "A common ACL2 programming idiom: @(see error-triple)s without @(see
+ state)"
+  :long "<p><i>Context-message pairs</i> are of the form @('(mv erp val)'),
+ where there are the following two cases: the first indicates a successful
+ computation and the second indicates an error.</p>
+
+ <ul>
+
+ <li><b>Normal case</b>: @('erp') is @('nil') and @('val') is what we call the
+ ``value'' of that context-message pair.</li>
+
+ <li><b>Error case</b>: @('erp') is not @('nil').  @('Val') may be @('nil');
+ otherwise @('val') is a message (see @(see msgp)) suitable for printing with
+ @(tsee fmt) and related functions using the @('~@') directive, and @('erp') is
+ a context suitable for error messages (see @(see ctx)).  A convention
+ generally observed (for example, by ACL2 system function
+ @('cmp-to-error-triple'), which converts a context-message pair to an @(see
+ error-triple) that may be printed in the error case) is when @('erp') and
+ @('val') are both non-@('nil'), then @('erp') is not @('t').</li>
+
+ </ul>
+
+ <p>To see how this works let us consider the ACL2 source function,
+ @('translate-cmp'), whose input is a user-level (``untranslated'') term as
+ input and returns a context-message pair.  In the non-error case, the value
+ returned is the internal (``translated'') form of that input; see @(see term).
+ The log below first shows a successful translation, returning multiple values
+ @('(mv nil (binary-+ x '3))'), thus illustrating the ``Normal case'' above,
+ where the first value returned (the error indicator) is @('nil') and the
+ second is the value of the pair.  The second example in the log shows an error
+ case returning a context and a message.  Don't worry about the various
+ arguments of @('translate-cmp'); the examples are merely to illustrate
+ programming with context-message pairs, not to explain @('translate-cmp')!</p>
+
+ @({
+ ACL2 !>(translate-cmp '(+ x 3)
+                       t t t 'top (w state)
+                       (default-state-vars state))
+ (NIL (BINARY-+ X '3))
+ ACL2 !>(translate-cmp '(quote 3 4)
+                       t t t 'top (w state)
+                       (default-state-vars state))
+ (TOP (\"The proper form of a quoted constant is (quote x), but ~
+                      ~x0 is not of this form.\"
+           (#\0 QUOTE 3 4)))
+ ACL2 !>
+ })
+
+ <p>The following macros are useful when programming with context-message
+ pairs.</p>
+
+ <ul>
+
+ <li>@('(value-cmp x)'): same as @('(mv nil x)').  Example:
+ @({
+ ACL2 !>(value-cmp (* 3 4))
+ (NIL 12)
+ ACL2 !>
+ })</li>
+
+ <li>@('(er-cmp ctx str &rest args)'): Return @('(mv ctx msg)') where @('msg')
+ is formed from @('str') and @('args').  Example:
+ @({
+ ACL2 !>(er-cmp 'example
+                \"I don't like 3-element lists like ~x0.~|\"
+                (make-list 3))
+ (EXAMPLE (\"I don't like 3-element lists like ~x0.~|\" (#\0 NIL NIL NIL)))
+ ACL2 !>(mv-let (ctx msg)
+          (er-cmp 'example
+                  \"I don't like 3-element lists like ~x0.~|\"
+                  (make-list 3))
+          (fmx \"Error in ~x0: ~@1\" ctx msg))
+ Error in EXAMPLE: I don't like 3-element lists like (NIL NIL NIL).
+ (0 <state>)
+ ACL2 !>
+ })</li>
+
+ <li>@('(er-let*-cmp alist body)'): Analogue of @(tsee er-let*) for
+ context-message pairs.  So, it evaluates the bindings in @('alist') much as
+ @(tsee let*)-bindings would be evaluated, but where each expression should
+ return a context-message pair and so should @('body').  If any of those
+ expression evaluations returns a pair with a non-nil first value, then that
+ pair is returned.  Otherwise, @('body') &mdash; which should return a
+ context-message pair &mdash; is evaluated with respect to the resulting
+ bindings.  Examples (refer to previous examples that use @('translate-cmp')):
+
+ @({
+ ACL2 !>(er-let*-cmp ((x (value-cmp '(+ x 3)))
+                      (val (translate-cmp x
+                                          t t t 'top (w state)
+                                          (default-state-vars state)))
+                      (y (value-cmp (list :term val))))
+                     (value-cmp (list :result y)))
+ (NIL (:RESULT (:TERM (BINARY-+ X '3))))
+ ACL2 !>(er-let*-cmp ((x (value-cmp '(quote 3 4)))
+                      (val (translate-cmp x
+                                          t t t 'top (w state)
+                                          (default-state-vars state)))
+                      (y (value-cmp (list :term val))))
+                     (value-cmp (list :result y)))
+ (TOP (\"The proper form of a quoted constant is (quote x), but ~
+                      ~x0 is not of this form.\"
+           (#\0 QUOTE 3 4)))
+ ACL2 !>
+ })</li>
+
+ <li>@('(er-progn-cmp form1 ... formk)'): Each @('formi') should evaluate to a
+ context-message pair.  If any of these evaluations produces a pair with a
+ non-@('nil') first component (thus indicating an error), return that pair.
+ Otherwise return the context-message pair produced by evaluating @('formk').
+ Examples:
+
+ @({
+ ACL2 !>(er-progn-cmp (value-cmp (+ 2 8))
+                      (er-cmp 'top \"Ouch\")
+                      (value-cmp (* 3 4)))
+ (TOP (\"Ouch\"))
+ ACL2 !>(er-progn-cmp (value-cmp (+ 2 8))
+                      (value-cmp (* 3 4)))
+ (NIL 12)
+ ACL2 !>
+ })</li>
+
+ </ul>")
+
 (defxdoc copyright
   :parents (about-acl2)
   :short "ACL2 copyright, license, sponsorship"
@@ -17875,7 +18003,7 @@ subtree of X with T, without duplication.</p>
  <p>@(`(:raw (@ acl2-version))`) &mdash; A Computational Logic for Applicative
  Common Lisp</p>
 
- <p>Copyright (C) 2021, Regents of the University of Texas</p>
+ <p>Copyright (C) 2022, Regents of the University of Texas</p>
 
  <p>This version of ACL2 is a descendant of ACL2 Version 1.9, Copyright (C)
  1997 Computational Logic, Inc.  See the documentation topic NOTE-2-0.</p>
@@ -31779,7 +31907,8 @@ ld) and @(tsee include-book)"
  information than is provided by the key checkpoints &mdash; although this
  should rarely be necessary &mdash; then you can look at the full proof,
  perhaps with the aid of certain utilities: see @(see pso), @(see
- set-gag-mode), and @(see proof-tree).</p>
+ set-gag-mode), and @(see proof-tree).  System hackers may want to consider
+ using the utility, @(tsee checkpoint-list).</p>
 
  <p>Again, see @(see the-method) for a general discussion of how to prove
  theorems with ACL2, and see @(see introduction-to-the-theorem-prover) for a
@@ -38026,27 +38155,31 @@ current fast alists."
 (defxdoc gthm
   :parents (history guard-formula-utilities)
   :short "The @(see guard) theorem for a given function symbol"
-  :long "<p>This utility (pronounced ``gee-thumb'') generates the guard proof
- obligation for a given function symbol.</p>
+  :long "<p>This utility (pronounced ``gee-thumb'') generates the @(see guard)
+ theorem (i.e., guard proof obligation) for a given function symbol, as would
+ be generated by a @(':')@(tsee guard-theorem) @(see lemma-instance) in a
+ @(':')@(see use) hint.</p>
 
  @({
  Example Forms:
  :gthm FN
- (gthm 'FN)       ; equivalent to the above
- (gthm 'FN t nil) ; equivalent to the above
- (gthm 'FN nil t) ; avoid any simplification and include guard-debug info
+ (gthm 'FN)              ; equivalent to the above
+ (gthm 'FN :limited nil) ; equivalent to the above
+ (gthm 'FN :limited t)   ; include guard-debug info
+ (gthm 'FN nil)          ; avoid any simplification
 
  General Forms:
  :gthm FN ; equivalent to (gthm 'FN)
- (gthm x &optional simp-p guard-debug)
+ (gthm x &optional simplify guard-debug)
  })
 
  <p>where @('FN') is a function symbol and @('x') evaluates to a function
- symbol.  Evaluation returns the user-level (untranslated) version of that
- guard theorem.  The optional argument @('simp-p'), described below, is @('t')
- by default.  The optional argument @('guard-debug') is @('nil') by default;
- when non-@('nil'), the guard theorem is modified as with the option
- @(':guard-debug') for @(tsee verify-guards); see @(see guard-debug).</p>
+ symbol.  Evaluation returns the guard theorem as a user-level (untranslated)
+ @(tsee term).  The optional argument @('simplify'), described below, is
+ @(':limited') by default.  The optional argument @('guard-debug') is @('nil')
+ by default; when non-@('nil'), the guard theorem is modified as with the
+ option @(':guard-debug') for @(tsee verify-guards); see @(see
+ guard-debug).</p>
 
  <p>See @(see lemma-instance) for how to provide the result of @(':gthm') as a
  @(':guard-theorem') prover hint.  Also see @(see guard-formula-utilities) for
@@ -38054,20 +38187,17 @@ current fast alists."
 
  <p>Normally one will evaluate @(':gthm FN') or equivalently (see @(see
  keyword-commands)), the form @('(gthm 'FN)').  In this case the guard theorem
- may be simplified before it is returned, by using a form of ``subsumption'' to
- eliminate redundancy and by deleting tautologies as well as instances of @(see
- built-in-clause) rules that come with ACL2.  The @('simp-p') argument should
- be @('nil') to avoid such simplification; that is, use @('(gthm 'FN nil)').
- The @('simp-p') argument bears some resemblance to the @(':guard-simplify')
- option to @(tsee verify-guards); but somewhat less simplification is done by
- @('gthm') with @('simp-p = T') than is done when generating guard
- obligations (by @(tsee defun) or @(tsee verify-guards)) with
- @(':guard-simplify = T').</p>
+ may be partially simplified before it is returned, by using a form of
+ ``subsumption'' to eliminate redundancy and by deleting tautologies as well as
+ instances of @(see built-in-clause) rules that come with ACL2.  The
+ @('simplify') argument should be @('nil') to avoid such simplification; that
+ is, use @('(gthm 'FN nil)').  See also @(see guard-simplification) for
+ discussion of simplification done for various guard formula utilities.</p>
 
- <p>Note that the result from evaluating @('(gthm x simp-p guard-debug)') is an
- <i>untranslated</i> term, that is, a user-level term; see @(see termp).  The
- corresponding call @('(guard-theorem x simp-p guard-debug (w state) state)')
- returns a translated term.</p>")
+ <p>Note that the result from evaluating @('(gthm x simplify guard-debug)') is
+ an <i>untranslated</i> term, that is, a user-level term; see @(see term).
+ The corresponding call @('(guard-theorem x simplify guard-debug (w state)
+ state)') returns a translated term.</p>")
 
 (defxdoc guard
   :parents (programming xargs)
@@ -39564,12 +39694,12 @@ current fast alists."
 
  <blockquote>
 
- <p>@(csee Verify-guards-formula): Use this to see what the corresponding
+ <p>@(tsee Verify-guards-formula): Use this to see what the corresponding
  @(tsee verify-guards) event prints, but without following through with a proof
  attempt.  This utility is only for output, without returning an interesting
  value.</p>
 
- <p>@(csee Guard-obligation): This function is a programmatic version of the
+ <p>@(tsee Guard-obligation): This function is a programmatic version of the
  macro, @(tsee verify-guards-formula).  It provides the guard obligation as a
  set of clauses, along with other information.</p>
 
@@ -39580,28 +39710,37 @@ current fast alists."
 
  <blockquote>
 
- <p>@(csee Gthm): This macro returns a user-level (``untranslated'')
+ <p>@(tsee Gthm): This macro returns a user-level (``untranslated'')
  representation of the @(see term) that is generated for a @(':guard-theorem')
  @(see lemma-instance).  Options control whether or not simplification and
  @(see guard-debug) are used.</p>
 
- <p>@(csee Guard-theorem): This utility is like @(see gthm), except that it is
+ <p>@(tsee Guard-theorem): This utility is like @(see gthm), except that it is
  a function rather than a macro and it returns a translated term (a @(tsee
  termp)).</p>
 
  </blockquote>
 
- <p>We conclude by contrasting these two pairs of utilities.  The first pair
- can take as input as either a function symbol or a term; for the second pair a
- function symbol (not a term) is required.  Another difference: the first pair
- simplifies with respect to the @(see current-theory) before producing the
- guard proof obligation formula, as is typically done when verifying guards;
- but the second pair only performs the theory-independent simplification done
- for a @(':guard-theorem') specified in a @(':use') hint, or if a suitable
- option is supplied, no simplification at all.  Finally the two pairs differ in
- their output @(see signature)s: in particular, the utilities in the first pair
- return multiple values while those in the second pair return a single
- value.</p>")
+ <p>We conclude by contrasting these two pairs of utilities.</p>
+
+ <ul>
+
+ <li>The first pair can take as input as either a function symbol or a term;
+ for the second pair a function symbol (not a term) is required.</li>
+
+ <li>The level of simplification differs between the two pairs.  See @(see
+ guard-simplification) for a detailed explanation; here are highlights.  The
+ first pair simplifies (by default) with respect to the @(see current-theory)
+ before producing the guard proof obligation formula, as is typically done when
+ verifying guards; but the second pair only performs the theory-independent
+ simplification done for a @(':guard-theorem') specified in a @(':use') hint,
+ or if a suitable option is supplied, no simplification at all.</li>
+
+ <li>The two pairs differ in their output @(see signature)s: in particular, the
+ utilities in the first pair return multiple values while those in the second
+ pair return a single value.</li>
+
+ </ul>")
 
 (defxdoc guard-holders
   :parents (rule-classes term guard)
@@ -39836,10 +39975,10 @@ current fast alists."
  redundant p'') is non-@('nil') when it is permissible to return a value of
  @(''redundant') in the first (name) case (and is irrelevant in the term case);
  @('guard-debug') is typically @('nil') but may be @('t') (see @(see
- guard-debug)); @('guard-simplify') is typically @('t') but may be @('nil')
- (see @(see verify-guards)); @('ctx') is a context (typically, a symbol used in
- error and warning messages); and @(tsee state) references the ACL2 @(see
- state).</p>
+ guard-debug)); @('guard-simplify') is typically @('t') but may be
+ @(':limited') (see @(see verify-guards)); @('ctx') is a context (typically, a
+ symbol used in error and warning messages); and @(tsee state) references the
+ ACL2 @(see state).</p>
 
  <p>If you want to obtain the formula but you don't care about the so-called
  ``tag tree'':</p>
@@ -39959,17 +40098,120 @@ current fast alists."
  (see @(see default-defun-mode)) must be @(':')@(tsee logic), or else this
  event is ignored.</p>")
 
+(defxdoc guard-simplification
+  :parents (guard-formula-utilities)
+  :short "Levels of simplification for @(see guard) proof obligations"
+  :long "<p>ACL2 provides several features for obtaining the proof obligations
+ generated for @(see guard) verification.  Each of these features can be
+ invoked with an argument that controls the level of simplification to be
+ applied before returning those proof obligations.  This topic examines those
+ simplification levels.  It starts by splitting the features into two groups;
+ then continues by explaining the three levels of simplification; and finally,
+ makes the key point that one group allows the top two levels of simplification
+ and the other group allows the bottom two levels.</p>
+
+ <p>These features can be partitioned into two groups, which we reference below
+ as the ``<b>AT</b>'' and ``<b>AFTER</b>'' groups, as follows.  These
+ correspond respectively to the two groups discussed in the documentation
+ topic, @(see guard-formula-utilities), for capturing formulas produced either
+ during guard verification or when a @(':guard-theorem') is supplied for a
+ @(':use') hint.</p>
+
+ <ul>
+
+ <li>Simplification <b>AT</b> guard-verification time:<br/>
+
+ <ul>
+
+ <li>the @(tsee xargs) keyword @(':guard-simplify'),</li>
+
+ <li>the @(tsee guard-obligation) utility, and</li>
+
+ <li>the @(tsee verify-guards-formula) utility.</li>
+
+ </ul></li>
+
+ <li>Simplification <b>AFTER</b> guard-verification time:<br/>
+
+ <ul>
+
+ <li>the @(':')@(tsee gthm) utility, and</li>
+
+ <li>the @(':')@(tsee guard-theorem) @(see lemma-instance) (and related
+ low-level utility, @('guard-theorem').</li>
+
+ </ul></li>
+
+ </ul>
+
+ <p>Each feature above has an argument (possibly optional) that control the
+ level of simplification.  Each such argument can take any of three values, as
+ follows.</p>
+
+ <ul>
+
+ <li>@('T'):<br/>
+ Full simplification, which is the default behavior for @(tsee
+ verify-guards)</li>
+
+ <li>@(':LIMITED'):<br/>
+ Reduced simplification, skipping simplifications that depend on the set of
+ currently @(see enable)d rules</li>
+
+ <li>@('NIL'):<br/>
+ No simplification</li>
+
+ </ul>
+
+ <p>The key point of this topic is the following specification of the values
+ allowed for the simplification argument, for the features in each group.  For
+ features in the <b>AT</b> group, @('T') and @(':LIMITED') are the legal
+ values.  For features in the <b>AFTER</b> group, @(':LIMITED') and @('NIL')
+ are the legal levels.  Let's see why this is reasonable and discuss whether
+ the missing value for each group might be allowed in the future.</p>
+
+ <p>First consider the <b>AFTER</b> group.  A @(':')@(tsee guard-theorem)
+ @(':use') hint obtains the @(see guard) theorem proved for a previously
+ guard-verified function.  The @(tsee current-theory) at the time of that
+ @(':use') hint may be very different from what it was at guard-verification
+ time.  Thus, when processing that hint it would be misleading to allow the
+ current @(see theory) to participate in simplification that produces the guard
+ theorem, since the result could be very different from the guard theorem
+ generated during the earlier guard verification.  That is why the value @('T')
+ is not allowed for the simplification argument of a @(':')@(tsee
+ guard-theorem) hint.  Instead, the default is @(':LIMITED').  The @(tsee gthm)
+ utility provides a way to show the formula that would be provided by a
+ @(':guard-theorem') lemma instance, so @('gthm') also disallows @('T'), and
+ its default is also @(':LIMITED').  Note that the utility @(tsee
+ verify-guards-formula) is more appropriate than @('gthm') to view the formula
+ to be proved if one is about to verify guards for a function.  (If @('gthm')
+ were to be used for that purpose too, then @('T') might be allowed as a
+ simplification argument; but that could lead to confusion, in particular about
+ the default.)</p>
+
+ <p>Now consider the <b>AT</b> group, which relates to guard verification.
+ @('T') is a reasonable default: it is generally useful to maximize
+ simplification while generating the guard theorem before attempting its proof.
+ But one may prefer more control, by avoiding simplification until the proof is
+ attempted.  @(':LIMITED') has proved to be a good compromise: it limits
+ simplification to basic operations, in particular avoiding goals that are
+ subsumed by other goals or are instances of trivial @(see built-in-clause)
+ rules.  If the need arises to support @('NIL') as a simplification value,
+ perhaps ACL2 will change to support that.</p>")
+
 (defxdoc guard-theorem
   :parents (lemma-instance guard-formula-utilities hints)
   :short "Use a previously-proved @(see guard) theorem"
   :long "<p>See @(see lemma-instance) for a discussion of @(':guard-theorem')
  lemma instances, as illustrated in the topic @(see guard-theorem-example).</p>
 
- <p>The function @('guard-theorem') is a low-level system utility that is
- essentially the functional version of the @(tsee gthm) macro.</p>")
+ <p>The function @('guard-theorem') is a low-level system utility that returns
+ a translated @(see term).  It is essentially the functional version of the
+ @('gthm') macro, which however returns an untranslated term.  See @(see
+ gthm).</p>")
 
 (defxdoc guard-theorem-example
-  :parents (lemma-instance guard hints)
+  :parents (lemma-instance guard hints guard-theorem guard-formula-utilities)
   :short "How to use a previously-proved @(see guard) theorem"
   :long "<p>See @(see lemma-instance) for a discussion of @(':guard-theorem')
  lemma instances, and see @(see gthm) for a related user-level query utility.
@@ -50541,7 +50783,7 @@ tables in the current Hons Space."
  as other output not from @('ld').</p>")
 
 (defxdoc ld-history
-  :parents (loop$)
+  :parents (ld history)
   :short "Saving and querying command history"
   :long "<p>See @(see ld) for background on the ACL2 read-eval-print loop.  The
  present topic pertains to a history kept for commands issued to that loop,
@@ -50609,38 +50851,40 @@ tables in the current Hons Space."
  ld-history list, else @('nil').</li>
 
  <li>Here are accessors for an ld-history entry, which we think of as returning
- its fields.<br/>
+ its fields.  The formal parameter @('entry') below is an entry in (i.e.,
+ member of) @('(ld-history state)'); an example call is thus
+ @('(ld-history-entry-input (car (ld-history state)))').<br/>
 
  <ul>
 
- <li>@('(ld-history-entry-input state)')<br/>
+ <li>@('(ld-history-entry-input entry)')<br/>
 
  The user input</li>
 
- <li>@('(ld-history-entry-error-flg state)')<br/>
+ <li>@('(ld-history-entry-error-flg entry)')<br/>
 
  Non-@('nil') when there was an error translating the user input</li>
 
- <li>@('(ld-history-entry-stobjs-out/value state)')<br/>
+ <li>@('(ld-history-entry-stobjs-out/value entry)')<br/>
 
- When @('(ld-history-entry-error-flg state)') is @('nil'), this is a cons whose
+ When @('(ld-history-entry-error-flg entry)') is @('nil'), this is a cons whose
  @('car') is is the @(see stobjs-out) &mdash; a list whose length is the number
  of values returned, with @('nil') in each position except when occupied by a
  symbol indicating a returned @(see stobj) for that position &mdash; and whose
  @('cdr') is the returned value in the single-value case, but is the list of
  returned values in the multiple-values case.</li>
 
- <li>@('(ld-history-entry-stobjs-out state)')<br/>
+ <li>@('(ld-history-entry-stobjs-out entry)')<br/>
 
- When @('(ld-history-entry-error-flg state)') is @('nil'), this is the
+ When @('(ld-history-entry-error-flg entry)') is @('nil'), this is the
  stobjs-out as described above; otherwise this is @('nil').</li>
 
- <li>@('(ld-history-entry-value state)')<br/>
+ <li>@('(ld-history-entry-value entry)')<br/>
 
- When @('(ld-history-entry-error-flg state)') is @('nil'), this is the value or
+ When @('(ld-history-entry-error-flg entry)') is @('nil'), this is the value or
  values as described above; otherwise this is @('nil').</li>
 
- <li>@('(ld-history-entry-user-data state)')<br/>
+ <li>@('(ld-history-entry-user-data entry)')<br/>
 
  This is @('nil') by default.  However, code can be provided to compute this
  field, as discussed below.</li>
@@ -50717,17 +50961,18 @@ tables in the current Hons Space."
 
  <p>Finally we discuss the user-data field of a ld-history entry, which (as
  noted above) has default @('nil').  It is accessed using
- @('(ld-history-entry-user-data state)').  It is set automatically when
+ @('(ld-history-entry-user-data entry)').  It is set automatically when
  the ld-history is extended with a new entry: the function call
  @('(set-ld-history-entry-user-data input error-flg stobjs-out/value state)'),
  is executed where the actuals are the other fields of the entry as indicated,
  e.g., the first actual is the input field of the new entry
  (as returned by the function, @('ld-history-entry-input')).  Although
  @('set-ld-history-entry-user-data') returns @('nil') by default, this can be
- changed by providing your own function with a @(see guard) of @('t') and the
- same formal parameters (which however may be renamed, other than @('state')).
- To make that change, define a function, which here we call @('my-user-data'),
- and then attach it, as follows.</p>
+ changed by providing your own function with a @(':')@(tsee guard) of @('t')
+ and the same formal parameters (which however may be renamed, other than
+ @('state')).  To make that change, define a function, which here we call
+ @('my-user-data'), and then attach it to @('set-ld-history-entry-user-data'),
+ as follows.</p>
 
  @({
  (defun my-set-user-data (input error-flg stobjs-out/value state)
@@ -50751,12 +50996,38 @@ tables in the current Hons Space."
  (defattach-system set-ld-history-entry-user-data my-world-length)
  })
 
+ <p>A subsequent inspection of the stored user-data shows the length of the
+ current world, for example as follows.</p>
+
+ @({
+ ACL2 !>(ld-history-entry-user-data (car (ld-history state)))
+ 125914
+ ACL2 !>
+ })
+
+ <p>Notice that we used @(tsee len), not @(tsee length), since the @(':')@(tsee
+ guard) specified for our function needs to be @('t').  Alternative
+ definitions, which however are less efficienct, are as follows.</p>
+
+ @({
+ (defun my-world-length (input error-flg stobjs-out/value state)
+   (declare (xargs :guard t :stobjs state)
+            (ignore input error-flg stobjs-out/value))
+   (and (true-listp (w state))
+        (length (w state))))
+
+ (defun my-world-length (input error-flg stobjs-out/value state)
+   (declare (xargs :guard t :stobjs state)
+            (ignore input error-flg stobjs-out/value))
+   (ec-call (length (w state))))
+ })
+
  <p>Here is how to restore the original behavior, i.e., the default where
  the user-data is set to @('nil').</p>
 
  @({
- (defattach set-ld-history-entry-user-data
-            set-ld-history-entry-user-data-default)
+ (defattach-system set-ld-history-entry-user-data
+                   set-ld-history-entry-user-data-default)
  })
 
 ")
@@ -51572,12 +51843,13 @@ tables in the current Hons Space."
  argument is supplied, then there will be no attempt to derive a functional
  substitution automatically, as described in the preceding paragraph.</p>
 
- <p>(7) @('(:guard-theorem name)') or @('(:guard-theorem name flg)'), where
- @('name') is a @(see guard)-verified function symbol (hence, in particular, is
- in @(see logic) mode).  Such a lemma instance denotes the guard theorem
- previously proved for @('name'), where by default @('flg') is @('t'), and a
- non-@('nil') value of @('flg') enables simplification as documented elsewhere;
- see @(see gthm).  If @('name') is defined as part of a mutually-recursive
+ <p>(7) @('(:guard-theorem name)') or @('(:guard-theorem name simplify)'),
+ where @('name') is a @(see guard)-verified function symbol (hence, in
+ particular, is in @(see logic) mode).  Such a lemma instance denotes the guard
+ theorem previously proved for @('name'), where by default @('simplify') is
+ @(':limited'), which enables certain simplifications as documented elsewhere;
+ see @(see gthm).  Otherwise @('simplify') should be @('nil'), to avoid all
+ such simplification.  If @('name') is defined as part of a mutually-recursive
  clique of definitions (see @(see mutual-recursion)), then the lemma instance
  refers to the guard theorem proved for the entire clique.  See @(see
  guard-theorem-example) and see @(see gthm).</p>
@@ -51597,21 +51869,22 @@ tables in the current Hons Space."
 
  <p>We conclude with remarks on (6) and (7).  The termination theorem actually
  used is an unsimplified version of what was originally proved for the
- indicated function; the guard theorem is partially simplified.  That is: while
- in general, the termination theorem is simplified before being given to the
- prover, nevertheless the unsimplified theorem is what is actually used for
- @(':termination-theorem') lemma instances; for @(':guard-theorem'), some
- simplification is done that is independent of the theory, by using a form of
- ``subsumption'' to eliminate redundancy and by deleting tautologies as well as
- instances of @(see built-in-clause) rules that come with ACL2.  Also see @(see
- guard-formula-utilities).  Moreover, the @(':')@(tsee measure-debug) and
- @(':')@(tsee guard-debug) keywords for @(tsee xargs) are ignored when
- generating the termination or guard theorem.  You can see the termination or
- guard theorem for an existing function symbol @('FN') by evaluating the form
- @('(termination-theorem 'FN (w state))') or @('(guard-theorem 'FN (w state)
- state)'), respectively.  In the former case, failure is indicated by a result
- of the form @('(FAILED . msg)'), where @('msg') is a message suitable for
- @(tsee fmt); see @(see msg).</p>
+ indicated function; the guard theorem is, by default, partially simplified.
+ That is: while in general, the termination theorem is simplified before being
+ given to the prover, nevertheless the unsimplified theorem is what is actually
+ used for @(':termination-theorem') lemma instances; for @(':guard-theorem'),
+ some simplification is done that is independent of the theory, by using a form
+ of ``subsumption'' to eliminate redundancy and by deleting tautologies as well
+ as instances of @(see built-in-clause) rules that come with ACL2.  Also see
+ @(see guard-formula-utilities) and @(see guard-simplification).  Moreover, the
+ @(':')@(tsee measure-debug) and @(':')@(tsee guard-debug) keywords for @(tsee
+ xargs) are ignored when generating the termination or guard theorem.  You can
+ see the termination or guard theorem for an existing function symbol @('FN')
+ by evaluating the form @('(termination-theorem 'FN (w state))') or
+ @('(guard-theorem 'FN simplify guard-debug (w state) state)'), respectively.
+ In the former case, failure is indicated by a result of the form @('(FAILED
+ . msg)'), where @('msg') is a message suitable for @(tsee fmt); see @(see
+ msg).</p>
 
  <p>Also see @(see make-termination-theorem).</p>
 
@@ -90574,6 +90847,40 @@ it."
  <p>The function @('the-check'), which is generated by calls of @(tsee the), is
  now a guard-holder.</p>
 
+ <p>Printing of checkpoints now takes place any time @('SUMMARY') output is
+ enabled (see @(see set-inhibit-output-lst).  Formerly, both @('SUMMARY') and
+ @('ERROR') output needed to be enabled.  Related tweaks, probably not
+ user-visible, were made in support of utilities for obtaining and displaying
+ checkpoints programmatically: see @(see checkpoint-list) (which mentions
+ related utilities as well), and we thank to Eric Smith for requesting such
+ utilities.</p>
+
+ <p>The guard formula utilities (see @(see guard-formula-utilities)) continue
+ to perform simplification as before, except that way to specify the level of
+ simplification has changed.  Thanks to Eric Smith for a query and subsequent
+ discussion that led to these changes.  See @(see guard-simplification) for a
+ detailed explanation; below is a summary.  (The reason for these changes is
+ that the value @('T') formerly meant different things in the two cases below
+ &mdash; all simplification and limited simplification, respectively &mdash;
+ and the value @('NIL') also meant different things in those two cases &mdash;
+ limited simplification and no simplification, respectively.)</p>
+
+ <ul>
+
+ <li>For @(tsee xargs) keyword @(':guard-simplify') and related utilities
+ @(tsee guard-obligation) and @(tsee verify-guards-formula):<br/>
+ The default value for simplification remains @('T').  However, the value is
+ now @(':LIMITED') for specifying reduced simplification; formerly it was
+ @('NIL'), which is now illegal.</li>
+
+ <li>For @(':')@(tsee guard-theorem) @(see lemma-instance)s and the related
+ utility @(tsee gthm) (also the low-level utility, @('guard-theorem')):<br/>
+ The default simplification is unchanged but now corresponds to a new default
+ value, @(':LIMITED'); formerly it was @('T'), which is now illegal.  The value
+ @('NIL') continues to be appropriate for avoiding simplification.</li>
+
+ </ul>
+
  <h3>New Features</h3>
 
  <p>A new @(tsee loop$) keyword, @('DO'), supports an imperative style of
@@ -97287,8 +97594,9 @@ arithmetic) for libraries of @(see books) for arithmetic reasoning.</p>")
  <p>BINDING VARIABLES USING ERROR TRIPLES</p>
 
  <p>In this section we discuss the macro @('er-let*'), which is a variant of
- the special form, @(tsee let*), that is useful when programming with
- state.</p>
+ the special form, @(tsee let*), that is useful when programming with state.  A
+ related utility that avoids the use of state is @('er-let*-cmp'); see @(see
+ context-message-pair).</p>
 
  <p>The macro @('er-let*') is useful when binding variables to the value
  components of error triples.  It is actually quite similar to @('er-progn'),
@@ -99538,11 +99846,11 @@ arithmetic) for libraries of @(see books) for arithmetic reasoning.</p>")
 
  <p>Of course, models of actual machines usually only accept a finite number of
  different inputs.  For example, engineers at Advanced Micro Devices (AMD),
- Centaur, and IBM have ACL2 models of floating point units that operate on
- double precision IEEE floating point numbers.  These are finite models.  But
- the size of their inputs is sufficiently large that they are verified by the
- same mathematical methods used to prove theorems about infinite state systems
- like our little @('mc').</p>
+ Centaur, and IBM have produced ACL2 models of floating point units that
+ operate on double precision IEEE floating point numbers.  These are finite
+ models.  But the size of their inputs is sufficiently large that they are
+ verified by the same mathematical methods used to prove theorems about
+ infinite state systems like our little @('mc').</p>
 
  <p><see topic='@(url |What is Required of the User(Q)|)'><img
  src='res/tours/flying.gif'></img></see></p>")
@@ -113023,9 +113331,9 @@ arithmetic) for libraries of @(see books) for arithmetic reasoning.</p>")
  @({
  ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
  + ACL2 Version 8.3+ (a development snapshot based on ACL2 Version 8.3) +
- +   built April 21, 2021  15:56:37.                                    +
+ +   built April 21, 2022  15:56:37.                                    +
  +   (Git commit hash: 41bb85ab9dbf5ac7d4ed246847db8934b6a48f92)        +
- + Copyright (C) 2021, Regents of the University of Texas.              +
+ + Copyright (C) 2022, Regents of the University of Texas.              +
  + ACL2 comes with ABSOLUTELY NO WARRANTY.  This is free software and   +
  + you are welcome to redistribute it under certain conditions.  For    +
  + details, see the LICENSE file distributed with ACL2.                 +
@@ -113041,10 +113349,10 @@ arithmetic) for libraries of @(see books) for arithmetic reasoning.</p>")
  @({
  ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
  + ACL2 Version 8.3+ (a development snapshot based on ACL2 Version 8.3) +
- +   built April 21, 2021  15:56:37.                                    +
+ +   built April 21, 2022  15:56:37.                                    +
  +   (Note from the environment when this executable was saved:         +
  +    This is my private executable.)                                   +
- + Copyright (C) 2021, Regents of the University of Texas.              +
+ + Copyright (C) 2022, Regents of the University of Texas.              +
  + ACL2 comes with ABSOLUTELY NO WARRANTY.  This is free software and   +
  + you are welcome to redistribute it under certain conditions.  For    +
  + details, see the LICENSE file distributed with ACL2.                 +
@@ -128162,13 +128470,13 @@ introduction-to-the-tau-system) for more information about Tau.</dd>
   :short "Verify the @(see guard)s of a function"
   :long "<p>See @(see guard) for a general discussion of guards.</p>
 
- <p>Before discussing the @('verify-guards') event, we first discuss guard
- verification, which can take place at definition time or, later, using
- @('verify-guards').  Typically, guard verification takes place at definition
- time if a guard (or type, or @(see stobjs)) has been supplied explicitly
- unless @(':verify-guards nil') has been specified; see @(see defun) and see
- @(see xargs), and see @(see set-verify-guards-eagerness) for how to change
- this default.  The point of guard verification is to ensure that during
+ <p>Before discussing the @('verify-guards') @(see event), we first discuss
+ @(see guard) verification, which can take place at definition time or, later,
+ using @('verify-guards').  Typically, guard verification takes place at
+ definition time if a guard (or type, or @(see stobjs)) has been supplied
+ explicitly unless @(':verify-guards nil') has been specified; see @(see defun)
+ and see @(see xargs), and see @(see set-verify-guards-eagerness) for how to
+ change this default.  The point of guard verification is to ensure that during
  evaluation of an expression without free variables, no guard violation takes
  place.</p>
 
@@ -128293,7 +128601,7 @@ introduction-to-the-tau-system) for more information about Tau.</dd>
   (verify-guards flatten
                  :hints ((\"Goal\" :use (:instance assoc-of-app)))
                  :guard-debug t ; default = nil
-                 :guard-simplify nil ; default = t
+                 :guard-simplify :limited ; default = t
                  :otf-flg t)
   (verify-guards (lambda$ (x)
                    (declare (xargs :guard (natp x)))
@@ -128311,7 +128619,7 @@ introduction-to-the-tau-system) for more information about Tau.</dd>
   (verify-guards name
           :hints          hints
           :guard-debug    gdbg   ; default is nil, but any value is legal
-          :guard-simplify gsmp ; default is t, may be set to nil
+          :guard-simplify gsmp ; default is t, may be set to :limited
           :otf-flg        otf-flg)
  })
 
@@ -128348,11 +128656,14 @@ introduction-to-the-tau-system) for more information about Tau.</dd>
  guard obligations are proved, @('name') is considered to have had its @(see
  guard)s verified.  The @(':guard-simplify') option controls certain
  simplifications that may be applied to the guard conjecture while generating
- the initial goal; setting it to @('nil') skips all simplifications that depend
- on the set of currently @(see enable)d rules.</p>
+ the initial goal: its default is @('t'), which doesn't restrict such
+ simplification, and the other legal value is @(':limited'), which skips all
+ simplifications that depend on the set of currently @(see enable)d rules.  See
+ also @(see guard-simplification).</p>
 
- <p>See @(see guard-formula-utilities) for utilities that let you view the
- formula to be proved by @('verify-guards'), but without creating an event.</p>
+ <p>See @(see guard-formula-utilities) for related utilities, including ones
+ that let you view the formula to be proved by @('verify-guards'), but without
+ creating an event.</p>
 
  <p>If @('name') is one of several functions in a mutually recursive clique,
  @('verify-guards') will attempt to verify the @(see guard)s of all of the
@@ -128785,30 +129096,28 @@ introduction-to-the-tau-system) for more information about Tau.</dd>
   :short "View the guard proof obligation, without proving it"
   :long "<p>See @(see verify-guards) and see @(see guard) for a discussion of
  guards.  This utility, which does not evaluate its argument, provides output
- showing the guard proof obligation as printed by @('verify-guards'), but
- without then carrying out a proof attempt.  If you simply want the guard proof
- obligation for a definition (without the prover's output), use @(see gthm).
- Note that @('gthm') has an option to avoid the simplification that is normally
- performed when generating the guard proof obligation.  For more about related
- utilities, see @(see guard-formula-utilities).</p>
+ showing the guard proof obligation (also known as the guard theorem) as
+ printed by @('verify-guards'), but without then carrying out a proof attempt.
+ See also @(see guard-formula-utilities) for related utilities.</p>
 
  @({
   Example Forms:
   (verify-guards-formula foo)
   (verify-guards-formula foo :guard-debug t)
-  (verify-guards-formula foo :guard-debug t :guard-simplify nil)
+  (verify-guards-formula foo :guard-debug t :guard-simplify :limited)
   (verify-guards-formula foo :rrp t :otf-flg dont-care :xyz whatever)
   (verify-guards-formula (+ (foo x) (bar y)) :guard-debug t)
  })
 
  <p>@('Verify-guards-formula') allows all keywords, but only pays attention to
  @(':guard-debug') and @(':guard-simplify'), which have the same effect as in
- @(tsee verify-guards) (see @(see guard-debug)), and to @(':rrp'), described
- below.  Apply @('verify-guards-formula') to a name just as you would use
- @(tsee verify-guards), but when you only want the output that shows the guard
- proof obligation, without attempting a proof or creating an event.  If the
- first argument is not a symbol, then it is treated as the body of a @(tsee
- defthm) event for which you want the guard proof obligation.</p>
+ @(tsee verify-guards) (also see @(see guard-debug) and @(see
+ guard-simplification)), and to @(':rrp'), described below.  Apply
+ @('verify-guards-formula') to a name just as you would use @(tsee
+ verify-guards), but when you only want the output that shows the guard proof
+ obligation, without attempting a proof or creating an event.  If the first
+ argument is not a symbol, then it is treated as the body of a @(tsee defthm)
+ event for which you want the guard proof obligation.</p>
 
  <p>The @(':rrp') argument (``return redundant p'') is @('nil') by default.  If
  its value is not @('nil'), then in the case that the first argument is a
@@ -132894,7 +133203,7 @@ created from the original fast alist during @('form') must be manually freed."
  @({
   (declare (xargs :guard (symbolp x)
                   :guard-debug t
-                  :guard-simplify nil
+                  :guard-simplify :limited
                   :guard-hints ((\"Goal\" :in-theory (theory batch1)))
                   :hints ((\"Goal\" :in-theory (theory batch1)))
                   :loop$-recursion t
@@ -132949,10 +133258,12 @@ created from the original fast alist during @('form') must be manually freed."
 
  <p>@(':guard-simplify')<br></br>
 
- @('Value'): @('t') by default, else directs ACL2 to skip certain
- simplifications that ACL2 typically applies while generating the guard
- proof obligation.  This has the same effect as the corresponding keyword
- argument to @(tsee verify-guards).</p>
+ @('Value'): @('t') by default, which supports simplification performed while
+ generating the guard proof obligation.  The value can also be @(':limited'),
+ which directs ACL2 to skip such simplification that depends on which rules are
+ currently @(see enable)d.  This has the same effect as the corresponding
+ keyword argument to @(tsee verify-guards).  Also see @(see
+ guard-simplification) and @(see guard-formula-utilities).</p>
 
  <p>@(':')@(tsee hints)<br></br>
 
@@ -136735,7 +137046,10 @@ expand function call at the current subterm, without simplifying"
 (defpointer dumb-occur-var system-utilities)
 (defpointer enabled-numep system-utilities)
 (defpointer enabled-runep system-utilities)
+(defpointer er-cmp context-message-pair)
 (defpointer er-let* programming-with-state)
+(defpointer er-let*-cmp context-message-pair)
+(defpointer er-progn-cmp context-message-pair)
 (defpointer error hints t)
 (defpointer ev$-list apply$)
 (defpointer event events)
@@ -137008,6 +137322,7 @@ expand function call at the current subterm, without simplifying"
 (defpointer untranslate-preprocess user-defined-functions-table)
 (defpointer use hints t)
 (defpointer value system-utilities)
+(defpointer value-cmp context-message-pair)
 (defpointer variablep system-utilities)
 (defpointer verify-guards-eagerness set-verify-guards-eagerness)
 (defpointer waterfall hints-and-the-waterfall)
@@ -137020,12 +137335,11 @@ expand function call at the current subterm, without simplifying"
 
 #||
 
-;; See the documentation for SET-MAX-MEM and cert.pl.  This overrides
-;; the previous occurrence of set-max-mem in the documentation for HONS-NOTE,
-;; which fools cert.pl into thinking this book takes tons of memory to
-;; certify.  (This is probably relevant only for folks at Centaur or for
-;; other folks who are using clustering software that understands PBS
-;; directives.)
+;; See the documentation for SET-MAX-MEM and cert.pl.  This overrides the
+;; previous occurrence of set-max-mem in the documentation for HONS-NOTE, which
+;; fools cert.pl into thinking this book takes tons of memory to certify.  (This
+;; is probably relevant only for folks who are using clustering software that
+;; understands PBS directives.)
 
  (value-triple (set-max-mem (* 2 (expt 2 30))))
 ||#

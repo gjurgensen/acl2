@@ -4,7 +4,7 @@
 ; books/system/doc/acl2-doc.lisp.
 
 ; ACL2 Version 8.4 -- A Computational Logic for Applicative Common Lisp
-; Copyright (C) 2021, Regents of the University of Texas
+; Copyright (C) 2022, Regents of the University of Texas
 
 ; This version of ACL2 is a descendent of ACL2 Version 1.9, Copyright
 ; (C) 1997 Computational Logic, Inc.  See the documentation topic NOTE-2-0.
@@ -1578,7 +1578,7 @@ Subtopics
   (ACL2)
   "General information About ACL2
 
-  This is ACL2 Version 8.4, [copyright] (C) 2021, Regents of the
+  This is ACL2 Version 8.4, [copyright] (C) 2022, Regents of the
   University of Texas, authored by Matt Kaufmann and J Strother
   Moore.
 
@@ -14897,6 +14897,7 @@ Subtopics
        (build::cert.pl \"[books]/build/doc.lisp\")
        (build::cert_param \"[books]/build/doc.lisp\")
        (cgen \"[books]/acl2s/cgen/top.lisp\")
+       (checkpoint-list \"[books]/kestrel/utilities/checkpoints.lisp\")
        (consideration \"[books]/hints/consider-hint.lisp\")
        (build::custom-certify-book-commands \"[books]/build/doc.lisp\")
        (std::defaggregate \"[books]/std/util/defaggregate.lisp\")
@@ -21103,6 +21104,118 @@ Subtopics
   Also see [constraint].  For more details, see comments in the
   definition of constraint-info in the ACL2 source code.")
  (CONTEXT (POINTERS) "See [ctx].")
+ (CONTEXT-MESSAGE-PAIR
+  (KESTREL-UTILITIES SYSTEM-UTILITIES-NON-BUILT-IN)
+  "A common ACL2 programming idiom: [error-triple]s without [state]
+
+  Context-message pairs are of the form (mv erp val), where there are
+  the following two cases: the first indicates a successful
+  computation and the second indicates an error.
+
+    * Normal case: erp is nil and val is what we call the ``value'' of that
+      context-message pair.
+    * Error case: erp is not nil.  Val may be nil; otherwise val is a
+      message (see [msgp]) suitable for printing with [fmt] and
+      related functions using the ~@ directive, and erp is a context
+      suitable for error messages (see [ctx]).  A convention
+      generally observed (for example, by ACL2 system function
+      cmp-to-error-triple, which converts a context-message pair to
+      an [error-triple] that may be printed in the error case) is
+      when erp and val are both non-nil, then erp is not t.
+
+  To see how this works let us consider the ACL2 source function,
+  translate-cmp, whose input is a user-level (``untranslated'') term
+  as input and returns a context-message pair.  In the non-error
+  case, the value returned is the internal (``translated'') form of
+  that input; see [term].  The log below first shows a successful
+  translation, returning multiple values (mv nil (binary-+ x '3)),
+  thus illustrating the ``Normal case'' above, where the first value
+  returned (the error indicator) is nil and the second is the value
+  of the pair.  The second example in the log shows an error case
+  returning a context and a message.  Don't worry about the various
+  arguments of translate-cmp; the examples are merely to illustrate
+  programming with context-message pairs, not to explain
+  translate-cmp!
+
+    ACL2 !>(translate-cmp '(+ x 3)
+                          t t t 'top (w state)
+                          (default-state-vars state))
+    (NIL (BINARY-+ X '3))
+    ACL2 !>(translate-cmp '(quote 3 4)
+                          t t t 'top (w state)
+                          (default-state-vars state))
+    (TOP (\"The proper form of a quoted constant is (quote x), but ~
+                         ~x0 is not of this form.\"
+              (#0 QUOTE 3 4)))
+    ACL2 !>
+
+  The following macros are useful when programming with context-message
+  pairs.
+
+    * (value-cmp x): same as (mv nil x).  Example:
+
+          ACL2 !>(value-cmp (* 3 4))
+          (NIL 12)
+          ACL2 !>
+
+    * (er-cmp ctx str &rest args): Return (mv ctx msg) where msg is formed
+      from str and args.  Example:
+
+          ACL2 !>(er-cmp 'example
+                         \"I don't like 3-element lists like ~x0.~|\"
+                         (make-list 3))
+          (EXAMPLE (\"I don't like 3-element lists like ~x0.~|\" (#0 NIL NIL NIL)))
+          ACL2 !>(mv-let (ctx msg)
+                   (er-cmp 'example
+                           \"I don't like 3-element lists like ~x0.~|\"
+                           (make-list 3))
+                   (fmx \"Error in ~x0: ~@1\" ctx msg))
+          Error in EXAMPLE: I don't like 3-element lists like (NIL NIL NIL).
+          (0 <state>)
+          ACL2 !>
+
+    * (er-let*-cmp alist body): Analogue of [er-let*] for context-message
+      pairs.  So, it evaluates the bindings in alist much as
+      [let*]-bindings would be evaluated, but where each expression
+      should return a context-message pair and so should body.  If
+      any of those expression evaluations returns a pair with a
+      non-nil first value, then that pair is returned.  Otherwise,
+      body --- which should return a context-message pair --- is
+      evaluated with respect to the resulting bindings.  Examples
+      (refer to previous examples that use translate-cmp):
+
+          ACL2 !>(er-let*-cmp ((x (value-cmp '(+ x 3)))
+                               (val (translate-cmp x
+                                                   t t t 'top (w state)
+                                                   (default-state-vars state)))
+                               (y (value-cmp (list :term val))))
+                              (value-cmp (list :result y)))
+          (NIL (:RESULT (:TERM (BINARY-+ X '3))))
+          ACL2 !>(er-let*-cmp ((x (value-cmp '(quote 3 4)))
+                               (val (translate-cmp x
+                                                   t t t 'top (w state)
+                                                   (default-state-vars state)))
+                               (y (value-cmp (list :term val))))
+                              (value-cmp (list :result y)))
+          (TOP (\"The proper form of a quoted constant is (quote x), but ~
+                               ~x0 is not of this form.\"
+                    (#0 QUOTE 3 4)))
+          ACL2 !>
+
+    * (er-progn-cmp form1 ... formk): Each formi should evaluate to a
+      context-message pair.  If any of these evaluations produces a
+      pair with a non-nil first component (thus indicating an error),
+      return that pair.  Otherwise return the context-message pair
+      produced by evaluating formk.  Examples:
+
+          ACL2 !>(er-progn-cmp (value-cmp (+ 2 8))
+                               (er-cmp 'top \"Ouch\")
+                               (value-cmp (* 3 4)))
+          (TOP (\"Ouch\"))
+          ACL2 !>(er-progn-cmp (value-cmp (+ 2 8))
+                               (value-cmp (* 3 4)))
+          (NIL 12)
+          ACL2 !>")
  (CONVERSION
   (PAGES_WRITTEN_ESPECIALLY_FOR_THE_TOURS)
   "Conversion to Uppercase
@@ -21132,7 +21245,7 @@ Subtopics
   ACL2 Version 8.4 --- A Computational Logic for Applicative Common
   Lisp
 
-  Copyright (C) 2021, Regents of the University of Texas
+  Copyright (C) 2022, Regents of the University of Texas
 
   This version of ACL2 is a descendant of ACL2 Version 1.9, Copyright
   (C) 1997 Computational Logic, Inc.  See the documentation topic
@@ -32282,8 +32395,12 @@ Subtopics
 
   Technical note for raw Lisp programmers only: It is possible to cause
   hard errors to signal actual raw Lisp errors.  See [hard-error].")
+ (ER-CMP (POINTERS)
+         "See [context-message-pair].")
  (ER-LET* (POINTERS)
           "See [programming-with-state].")
+ (ER-LET*-CMP (POINTERS)
+              "See [context-message-pair].")
  (ER-PROGN
   (ERRORS PROGRAMMING-WITH-STATE ACL2-BUILT-INS)
   "Perform a sequence of state-changing ``error triples''
@@ -32324,6 +32441,8 @@ Subtopics
                                                   <expr{k-1}>
                                                   (cond (erp (mv erp val state))
                                                         (t <exprk>)))))))))")
+ (ER-PROGN-CMP (POINTERS)
+               "See [context-message-pair].")
  (ERROR (POINTERS)
         "See [hints] for information about the keyword :error.")
  (ERROR-TRIPLE
@@ -35203,7 +35322,8 @@ Subtopics
   need more information than is provided by the key checkpoints ---
   although this should rarely be necessary --- then you can look at
   the full proof, perhaps with the aid of certain utilities: see
-  [pso], [set-gag-mode], and [proof-tree].
+  [pso], [set-gag-mode], and [proof-tree].  System hackers may want
+  to consider using the utility, [checkpoint-list].
 
   Again, see [the-method] for a general discussion of how to prove
   theorems with ACL2, and see [introduction-to-the-theorem-prover]
@@ -41407,25 +41527,28 @@ Subtopics
   (HISTORY GUARD-FORMULA-UTILITIES)
   "The [guard] theorem for a given function symbol
 
-  This utility (pronounced ``gee-thumb'') generates the guard proof
-  obligation for a given function symbol.
+  This utility (pronounced ``gee-thumb'') generates the [guard] theorem
+  (i.e., guard proof obligation) for a given function symbol, as
+  would be generated by a :[guard-theorem] [lemma-instance] in a
+  :[use] hint.
 
     Example Forms:
     :gthm FN
-    (gthm 'FN)       ; equivalent to the above
-    (gthm 'FN t nil) ; equivalent to the above
-    (gthm 'FN nil t) ; avoid any simplification and include guard-debug info
+    (gthm 'FN)              ; equivalent to the above
+    (gthm 'FN :limited nil) ; equivalent to the above
+    (gthm 'FN :limited t)   ; include guard-debug info
+    (gthm 'FN nil)          ; avoid any simplification
 
     General Forms:
     :gthm FN ; equivalent to (gthm 'FN)
-    (gthm x &optional simp-p guard-debug)
+    (gthm x &optional simplify guard-debug)
 
   where FN is a function symbol and x evaluates to a function symbol.
-  Evaluation returns the user-level (untranslated) version of that
-  guard theorem.  The optional argument simp-p, described below, is t
-  by default.  The optional argument guard-debug is nil by default;
-  when non-nil, the guard theorem is modified as with the option
-  :guard-debug for [verify-guards]; see [guard-debug].
+  Evaluation returns the guard theorem as a user-level (untranslated)
+  [term].  The optional argument simplify, described below, is
+  :limited by default.  The optional argument guard-debug is nil by
+  default; when non-nil, the guard theorem is modified as with the
+  option :guard-debug for [verify-guards]; see [guard-debug].
 
   See [lemma-instance] for how to provide the result of :gthm as a
   :guard-theorem prover hint.  Also see [guard-formula-utilities] for
@@ -41433,19 +41556,17 @@ Subtopics
 
   Normally one will evaluate :gthm FN or equivalently (see
   [keyword-commands]), the form (gthm 'FN).  In this case the guard
-  theorem may be simplified before it is returned, by using a form of
-  ``subsumption'' to eliminate redundancy and by deleting tautologies
-  as well as instances of [built-in-clause] rules that come with
-  ACL2.  The simp-p argument should be nil to avoid such
-  simplification; that is, use (gthm 'FN nil).  The simp-p argument
-  bears some resemblance to the :guard-simplify option to
-  [verify-guards]; but somewhat less simplification is done by gthm
-  with simp-p = T than is done when generating guard obligations (by
-  [defun] or [verify-guards]) with :guard-simplify = T.
+  theorem may be partially simplified before it is returned, by using
+  a form of ``subsumption'' to eliminate redundancy and by deleting
+  tautologies as well as instances of [built-in-clause] rules that
+  come with ACL2.  The simplify argument should be nil to avoid such
+  simplification; that is, use (gthm 'FN nil).  See also
+  [guard-simplification] for discussion of simplification done for
+  various guard formula utilities.
 
-  Note that the result from evaluating (gthm x simp-p guard-debug) is
-  an untranslated term, that is, a user-level term; see [termp].  The
-  corresponding call (guard-theorem x simp-p guard-debug (w state)
+  Note that the result from evaluating (gthm x simplify guard-debug) is
+  an untranslated term, that is, a user-level term; see [term].  The
+  corresponding call (guard-theorem x simplify guard-debug (w state)
   state) returns a translated term.")
  (GUARD
   (PROGRAMMING XARGS)
@@ -43035,18 +43156,23 @@ Subtopics
       function rather than a macro and it returns a translated term
       (a [termp]).
 
-  We conclude by contrasting these two pairs of utilities.  The first
-  pair can take as input as either a function symbol or a term; for
-  the second pair a function symbol (not a term) is required.
-  Another difference: the first pair simplifies with respect to the
-  [current-theory] before producing the guard proof obligation
-  formula, as is typically done when verifying guards; but the second
-  pair only performs the theory-independent simplification done for a
-  :guard-theorem specified in a :use hint, or if a suitable option is
-  supplied, no simplification at all.  Finally the two pairs differ
-  in their output [signature]s: in particular, the utilities in the
-  first pair return multiple values while those in the second pair
-  return a single value.
+  We conclude by contrasting these two pairs of utilities.
+
+    * The first pair can take as input as either a function symbol or a
+      term; for the second pair a function symbol (not a term) is
+      required.
+    * The level of simplification differs between the two pairs.  See
+      [guard-simplification] for a detailed explanation; here are
+      highlights.  The first pair simplifies (by default) with
+      respect to the [current-theory] before producing the guard
+      proof obligation formula, as is typically done when verifying
+      guards; but the second pair only performs the
+      theory-independent simplification done for a :guard-theorem
+      specified in a :use hint, or if a suitable option is supplied,
+      no simplification at all.
+    * The two pairs differ in their output [signature]s: in particular, the
+      utilities in the first pair return multiple values while those
+      in the second pair return a single value.
 
 
 Subtopics
@@ -43057,8 +43183,14 @@ Subtopics
   [Guard-obligation]
       The guard proof obligation
 
+  [Guard-simplification]
+      Levels of simplification for [guard] proof obligations
+
   [Guard-theorem]
       Use a previously-proved [guard] theorem
+
+  [Guard-theorem-example]
+      How to use a previously-proved [guard] theorem
 
   [Verify-guard-implication]
       [Guard] implication for [memoize] keyword :invoke
@@ -43302,9 +43434,9 @@ Subtopics
   return a value of 'redundant in the first (name) case (and is
   irrelevant in the term case); guard-debug is typically nil but may
   be t (see [guard-debug]); guard-simplify is typically t but may be
-  nil (see [verify-guards]); ctx is a context (typically, a symbol
-  used in error and warning messages); and [state] references the
-  ACL2 [state].
+  :limited (see [verify-guards]); ctx is a context (typically, a
+  symbol used in error and warning messages); and [state] references
+  the ACL2 [state].
 
   If you want to obtain the formula but you don't care about the
   so-called ``tag tree'':
@@ -43415,6 +43547,87 @@ Subtopics
   of a [defun] form are met, as discussed above.  The default
   [defun-mode] (see [default-defun-mode]) must be :[logic], or else
   this event is ignored.")
+ (GUARD-SIMPLIFICATION
+  (GUARD-FORMULA-UTILITIES)
+  "Levels of simplification for [guard] proof obligations
+
+  ACL2 provides several features for obtaining the proof obligations
+  generated for [guard] verification.  Each of these features can be
+  invoked with an argument that controls the level of simplification
+  to be applied before returning those proof obligations.  This topic
+  examines those simplification levels.  It starts by splitting the
+  features into two groups; then continues by explaining the three
+  levels of simplification; and finally, makes the key point that one
+  group allows the top two levels of simplification and the other
+  group allows the bottom two levels.
+
+  These features can be partitioned into two groups, which we reference
+  below as the ``AT'' and ``AFTER'' groups, as follows.  These
+  correspond respectively to the two groups discussed in the
+  documentation topic, [guard-formula-utilities], for capturing
+  formulas produced either during guard verification or when a
+  :guard-theorem is supplied for a :use hint.
+
+    * Simplification AT guard-verification time:
+        * the [xargs] keyword :guard-simplify,
+        * the [guard-obligation] utility, and
+        * the [verify-guards-formula] utility.
+
+    * Simplification AFTER guard-verification time:
+        * the :[gthm] utility, and
+        * the :[guard-theorem] [lemma-instance] (and related low-level utility,
+          guard-theorem.
+
+  Each feature above has an argument (possibly optional) that control
+  the level of simplification.  Each such argument can take any of
+  three values, as follows.
+
+    * T:
+      Full simplification, which is the default behavior for
+      [verify-guards]
+    * :LIMITED:
+      Reduced simplification, skipping simplifications that depend on the
+      set of currently [enable]d rules
+    * NIL:
+      No simplification
+
+  The key point of this topic is the following specification of the
+  values allowed for the simplification argument, for the features in
+  each group.  For features in the AT group, T and :LIMITED are the
+  legal values.  For features in the AFTER group, :LIMITED and NIL
+  are the legal levels.  Let's see why this is reasonable and discuss
+  whether the missing value for each group might be allowed in the
+  future.
+
+  First consider the AFTER group.  A :[guard-theorem] :use hint obtains
+  the [guard] theorem proved for a previously guard-verified
+  function.  The [current-theory] at the time of that :use hint may
+  be very different from what it was at guard-verification time.
+  Thus, when processing that hint it would be misleading to allow the
+  current [theory] to participate in simplification that produces the
+  guard theorem, since the result could be very different from the
+  guard theorem generated during the earlier guard verification.
+  That is why the value T is not allowed for the simplification
+  argument of a :[guard-theorem] hint.  Instead, the default is
+  :LIMITED.  The [gthm] utility provides a way to show the formula
+  that would be provided by a :guard-theorem lemma instance, so gthm
+  also disallows T, and its default is also :LIMITED.  Note that the
+  utility [verify-guards-formula] is more appropriate than gthm to
+  view the formula to be proved if one is about to verify guards for
+  a function.  (If gthm were to be used for that purpose too, then T
+  might be allowed as a simplification argument; but that could lead
+  to confusion, in particular about the default.)
+
+  Now consider the AT group, which relates to guard verification.  T is
+  a reasonable default: it is generally useful to maximize
+  simplification while generating the guard theorem before attempting
+  its proof.  But one may prefer more control, by avoiding
+  simplification until the proof is attempted.  :LIMITED has proved
+  to be a good compromise: it limits simplification to basic
+  operations, in particular avoiding goals that are subsumed by other
+  goals or are instances of trivial [built-in-clause] rules.  If the
+  need arises to support NIL as a simplification value, perhaps ACL2
+  will change to support that.")
  (GUARD-THEOREM
   (LEMMA-INSTANCE GUARD-FORMULA-UTILITIES HINTS)
   "Use a previously-proved [guard] theorem
@@ -43422,10 +43635,19 @@ Subtopics
   See [lemma-instance] for a discussion of :guard-theorem lemma
   instances, as illustrated in the topic [guard-theorem-example].
 
-  The function guard-theorem is a low-level system utility that is
-  essentially the functional version of the [gthm] macro.")
+  The function guard-theorem is a low-level system utility that returns
+  a translated [term].  It is essentially the functional version of
+  the gthm macro, which however returns an untranslated term.  See
+  [gthm].
+
+
+Subtopics
+
+  [Guard-theorem-example]
+      How to use a previously-proved [guard] theorem")
  (GUARD-THEOREM-EXAMPLE
-  (LEMMA-INSTANCE GUARD HINTS)
+  (LEMMA-INSTANCE GUARD HINTS
+                  GUARD-THEOREM GUARD-FORMULA-UTILITIES)
   "How to use a previously-proved [guard] theorem
 
   See [lemma-instance] for a discussion of :guard-theorem lemma
@@ -45557,6 +45779,9 @@ Subtopics
 
   [Gthm]
       The [guard] theorem for a given function symbol
+
+  [Ld-history]
+      Saving and querying command history
 
   [Oops]
       Undo a :u or :[ubt]
@@ -54351,6 +54576,9 @@ Subtopics
   [Ld-evisc-tuple]
       Determines whether [ld] suppresses details when printing
 
+  [Ld-history]
+      Saving and querying command history
+
   [Ld-keyword-aliases]
       Abbreviation of some keyword commands
 
@@ -54571,7 +54799,7 @@ Subtopics
   evisceration and of how other evisc-tuples affect the printing of
   error messages and warnings, as well as other output not from ld.")
  (LD-HISTORY
-  (LOOP$)
+  (LD HISTORY)
   "Saving and querying command history
 
   See [ld] for background on the ACL2 read-eval-print loop.  The
@@ -54631,26 +54859,28 @@ Subtopics
       This function returns t if x has the shape of an entry in the
       ld-history list, else nil.
     * Here are accessors for an ld-history entry, which we think of as
-      returning its fields.
-        * (ld-history-entry-input state)
+      returning its fields.  The formal parameter entry below is an
+      entry in (i.e., member of) (ld-history state); an example call
+      is thus (ld-history-entry-input (car (ld-history state))).
+        * (ld-history-entry-input entry)
           The user input
-        * (ld-history-entry-error-flg state)
+        * (ld-history-entry-error-flg entry)
           Non-nil when there was an error translating the user input
-        * (ld-history-entry-stobjs-out/value state)
-          When (ld-history-entry-error-flg state) is nil, this is a cons whose
+        * (ld-history-entry-stobjs-out/value entry)
+          When (ld-history-entry-error-flg entry) is nil, this is a cons whose
           car is is the [stobjs-out] --- a list whose length is the
           number of values returned, with nil in each position except
           when occupied by a symbol indicating a returned [stobj] for
           that position --- and whose cdr is the returned value in
           the single-value case, but is the list of returned values
           in the multiple-values case.
-        * (ld-history-entry-stobjs-out state)
-          When (ld-history-entry-error-flg state) is nil, this is the
+        * (ld-history-entry-stobjs-out entry)
+          When (ld-history-entry-error-flg entry) is nil, this is the
           stobjs-out as described above; otherwise this is nil.
-        * (ld-history-entry-value state)
-          When (ld-history-entry-error-flg state) is nil, this is the value or
+        * (ld-history-entry-value entry)
+          When (ld-history-entry-error-flg entry) is nil, this is the value or
           values as described above; otherwise this is nil.
-        * (ld-history-entry-user-data state)
+        * (ld-history-entry-user-data entry)
           This is nil by default.  However, code can be provided to compute
           this field, as discussed below.
 
@@ -54716,7 +54946,7 @@ Subtopics
 
   Finally we discuss the user-data field of a ld-history entry, which
   (as noted above) has default nil.  It is accessed using
-  (ld-history-entry-user-data state).  It is set automatically when
+  (ld-history-entry-user-data entry).  It is set automatically when
   the ld-history is extended with a new entry: the function call
   (set-ld-history-entry-user-data input error-flg stobjs-out/value
   state), is executed where the actuals are the other fields of the
@@ -54724,10 +54954,10 @@ Subtopics
   the new entry (as returned by the function,
   ld-history-entry-input).  Although set-ld-history-entry-user-data
   returns nil by default, this can be changed by providing your own
-  function with a [guard] of t and the same formal parameters (which
+  function with a :[guard] of t and the same formal parameters (which
   however may be renamed, other than state).  To make that change,
   define a function, which here we call my-user-data, and then attach
-  it, as follows.
+  it to set-ld-history-entry-user-data, as follows.
 
     (defun my-set-user-data (input error-flg stobjs-out/value state)
       (declare (xargs :guard t))
@@ -54747,11 +54977,33 @@ Subtopics
 
     (defattach-system set-ld-history-entry-user-data my-world-length)
 
+  A subsequent inspection of the stored user-data shows the length of
+  the current world, for example as follows.
+
+    ACL2 !>(ld-history-entry-user-data (car (ld-history state)))
+    125914
+    ACL2 !>
+
+  Notice that we used [len], not [length], since the :[guard] specified
+  for our function needs to be t.  Alternative definitions, which
+  however are less efficienct, are as follows.
+
+    (defun my-world-length (input error-flg stobjs-out/value state)
+      (declare (xargs :guard t :stobjs state)
+               (ignore input error-flg stobjs-out/value))
+      (and (true-listp (w state))
+           (length (w state))))
+
+    (defun my-world-length (input error-flg stobjs-out/value state)
+      (declare (xargs :guard t :stobjs state)
+               (ignore input error-flg stobjs-out/value))
+      (ec-call (length (w state))))
+
   Here is how to restore the original behavior, i.e., the default where
   the user-data is set to nil.
 
-    (defattach set-ld-history-entry-user-data
-               set-ld-history-entry-user-data-default)")
+    (defattach-system set-ld-history-entry-user-data
+                      set-ld-history-entry-user-data-default)")
  (LD-HISTORY-ENTRY-ERROR-FLG (POINTERS)
                              "See [ld-history].")
  (LD-HISTORY-ENTRY-INPUT (POINTERS)
@@ -55553,12 +55805,13 @@ Subtopics
   attempt to derive a functional substitution automatically, as
   described in the preceding paragraph.
 
-  (7) (:guard-theorem name) or (:guard-theorem name flg), where name is
-  a [guard]-verified function symbol (hence, in particular, is in
-  [logic] mode).  Such a lemma instance denotes the guard theorem
-  previously proved for name, where by default flg is t, and a
-  non-nil value of flg enables simplification as documented
-  elsewhere; see [gthm].  If name is defined as part of a
+  (7) (:guard-theorem name) or (:guard-theorem name simplify), where
+  name is a [guard]-verified function symbol (hence, in particular,
+  is in [logic] mode).  Such a lemma instance denotes the guard
+  theorem previously proved for name, where by default simplify is
+  :limited, which enables certain simplifications as documented
+  elsewhere; see [gthm].  Otherwise simplify should be nil, to avoid
+  all such simplification.  If name is defined as part of a
   mutually-recursive clique of definitions (see [mutual-recursion]),
   then the lemma instance refers to the guard theorem proved for the
   entire clique.  See [guard-theorem-example] and see [gthm].
@@ -55579,23 +55832,23 @@ Subtopics
 
   We conclude with remarks on (6) and (7).  The termination theorem
   actually used is an unsimplified version of what was originally
-  proved for the indicated function; the guard theorem is partially
-  simplified.  That is: while in general, the termination theorem is
-  simplified before being given to the prover, nevertheless the
-  unsimplified theorem is what is actually used for
+  proved for the indicated function; the guard theorem is, by
+  default, partially simplified.  That is: while in general, the
+  termination theorem is simplified before being given to the prover,
+  nevertheless the unsimplified theorem is what is actually used for
   :termination-theorem lemma instances; for :guard-theorem, some
   simplification is done that is independent of the theory, by using
   a form of ``subsumption'' to eliminate redundancy and by deleting
   tautologies as well as instances of [built-in-clause] rules that
-  come with ACL2.  Also see [guard-formula-utilities].  Moreover, the
-  :[measure-debug] and :[guard-debug] keywords for [xargs] are
-  ignored when generating the termination or guard theorem.  You can
-  see the termination or guard theorem for an existing function
-  symbol FN by evaluating the form (termination-theorem 'FN (w
-  state)) or (guard-theorem 'FN (w state) state), respectively.  In
-  the former case, failure is indicated by a result of the form
-  (FAILED . msg), where msg is a message suitable for [fmt]; see
-  [msg].
+  come with ACL2.  Also see [guard-formula-utilities] and
+  [guard-simplification].  Moreover, the :[measure-debug] and
+  :[guard-debug] keywords for [xargs] are ignored when generating the
+  termination or guard theorem.  You can see the termination or guard
+  theorem for an existing function symbol FN by evaluating the form
+  (termination-theorem 'FN (w state)) or (guard-theorem 'FN simplify
+  guard-debug (w state) state), respectively.  In the former case,
+  failure is indicated by a result of the form (FAILED . msg), where
+  msg is a message suitable for [fmt]; see [msg].
 
   Also see [make-termination-theorem].
 
@@ -59247,9 +59500,6 @@ Semantics
 
 
 Subtopics
-
-  [Ld-history]
-      Saving and querying command history
 
   [Loop$-recursion]
       Defining functions that recur from within loop$ statements
@@ -88670,6 +88920,37 @@ Changes to Existing Features
   The function the-check, which is generated by calls of [the], is now
   a guard-holder.
 
+  Printing of checkpoints now takes place any time SUMMARY output is
+  enabled (see [set-inhibit-output-lst].  Formerly, both SUMMARY and
+  ERROR output needed to be enabled.  Related tweaks, probably not
+  user-visible, were made in support of utilities for obtaining and
+  displaying checkpoints programmatically: see [checkpoint-list]
+  (which mentions related utilities as well), and we thank to Eric
+  Smith for requesting such utilities.
+
+  The guard formula utilities (see [guard-formula-utilities]) continue
+  to perform simplification as before, except that way to specify the
+  level of simplification has changed.  Thanks to Eric Smith for a
+  query and subsequent discussion that led to these changes.  See
+  [guard-simplification] for a detailed explanation; below is a
+  summary.  (The reason for these changes is that the value T
+  formerly meant different things in the two cases below --- all
+  simplification and limited simplification, respectively --- and the
+  value NIL also meant different things in those two cases ---
+  limited simplification and no simplification, respectively.)
+
+    * For [xargs] keyword :guard-simplify and related utilities
+      [guard-obligation] and [verify-guards-formula]:
+      The default value for simplification remains T.  However, the value
+      is now :LIMITED for specifying reduced simplification; formerly
+      it was NIL, which is now illegal.
+    * For :[guard-theorem] [lemma-instance]s and the related utility [gthm]
+      (also the low-level utility, guard-theorem):
+      The default simplification is unchanged but now corresponds to a new
+      default value, :LIMITED; formerly it was T, which is now
+      illegal.  The value NIL continues to be appropriate for
+      avoiding simplification.
+
 
 New Features
 
@@ -93398,8 +93679,17 @@ Subtopics
   [Enabled-runep]
       See [system-utilities].
 
+  [Er-cmp]
+      See [context-message-pair].
+
   [Er-let*]
       See [programming-with-state].
+
+  [Er-let*-cmp]
+      See [context-message-pair].
+
+  [Er-progn-cmp]
+      See [context-message-pair].
 
   [Error]
       See [hints] for information about the keyword :error.
@@ -94219,6 +94509,9 @@ Subtopics
 
   [Value]
       See [system-utilities].
+
+  [Value-cmp]
+      See [context-message-pair].
 
   [Variablep]
       See [system-utilities].
@@ -97395,7 +97688,8 @@ Subtopics
 
   In this section we discuss the macro er-let*, which is a variant of
   the special form, [let*], that is useful when programming with
-  state.
+  state.  A related utility that avoids the use of state is
+  er-let*-cmp; see [context-message-pair].
 
   The macro er-let* is useful when binding variables to the value
   components of error triples.  It is actually quite similar to
@@ -99200,12 +99494,12 @@ Subtopics
 
   Of course, models of actual machines usually only accept a finite
   number of different inputs.  For example, engineers at Advanced
-  Micro Devices (AMD), Centaur, and IBM have ACL2 models of floating
-  point units that operate on double precision IEEE floating point
-  numbers.  These are finite models.  But the size of their inputs is
-  sufficiently large that they are verified by the same mathematical
-  methods used to prove theorems about infinite state systems like
-  our little mc.
+  Micro Devices (AMD), Centaur, and IBM have produced ACL2 models of
+  floating point units that operate on double precision IEEE floating
+  point numbers.  These are finite models.  But the size of their
+  inputs is sufficiently large that they are verified by the same
+  mathematical methods used to prove theorems about infinite state
+  systems like our little mc.
 
   {IMAGE} (see [What_is_Required_of_the_User{Q}])")
  (PROVISIONAL-CERTIFICATION
@@ -113882,9 +114176,9 @@ Subtopics
 
     ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
     + ACL2 Version 8.3+ (a development snapshot based on ACL2 Version 8.3) +
-    +   built April 21, 2021  15:56:37.                                    +
+    +   built April 21, 2022  15:56:37.                                    +
     +   (Git commit hash: 41bb85ab9dbf5ac7d4ed246847db8934b6a48f92)        +
-    + Copyright (C) 2021, Regents of the University of Texas.              +
+    + Copyright (C) 2022, Regents of the University of Texas.              +
     + ACL2 comes with ABSOLUTELY NO WARRANTY.  This is free software and   +
     + you are welcome to redistribute it under certain conditions.  For    +
     + details, see the LICENSE file distributed with ACL2.                 +
@@ -113898,10 +114192,10 @@ Subtopics
 
     ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
     + ACL2 Version 8.3+ (a development snapshot based on ACL2 Version 8.3) +
-    +   built April 21, 2021  15:56:37.                                    +
+    +   built April 21, 2022  15:56:37.                                    +
     +   (Note from the environment when this executable was saved:         +
     +    This is my private executable.)                                   +
-    + Copyright (C) 2021, Regents of the University of Texas.              +
+    + Copyright (C) 2022, Regents of the University of Texas.              +
     + ACL2 comes with ABSOLUTELY NO WARRANTY.  This is free software and   +
     + you are welcome to redistribute it under certain conditions.  For    +
     + details, see the LICENSE file distributed with ACL2.                 +
@@ -128700,6 +128994,8 @@ Subtopics
   {IMAGE} (see [Overview_of_the_Proof_of_a_Trivial_Consequence])")
  (VALUE (POINTERS)
         "See [system-utilities].")
+ (VALUE-CMP (POINTERS)
+            "See [context-message-pair].")
  (VALUE-TRIPLE
   (EVENTS ACL2-BUILT-INS ERRORS)
   "Compute a value, optionally checking that it is not nil
@@ -129015,7 +129311,7 @@ Remarks
 
   See [guard] for a general discussion of guards.
 
-  Before discussing the verify-guards event, we first discuss guard
+  Before discussing the verify-guards [event], we first discuss [guard]
   verification, which can take place at definition time or, later,
   using verify-guards.  Typically, guard verification takes place at
   definition time if a guard (or type, or [stobjs]) has been supplied
@@ -129141,7 +129437,7 @@ Remarks
     (verify-guards flatten
                    :hints ((\"Goal\" :use (:instance assoc-of-app)))
                    :guard-debug t ; default = nil
-                   :guard-simplify nil ; default = t
+                   :guard-simplify :limited ; default = t
                    :otf-flg t)
     (verify-guards (lambda$ (x)
                      (declare (xargs :guard (natp x)))
@@ -129159,7 +129455,7 @@ Remarks
     (verify-guards name
             :hints          hints
             :guard-debug    gdbg   ; default is nil, but any value is legal
-            :guard-simplify gsmp ; default is t, may be set to nil
+            :guard-simplify gsmp ; default is t, may be set to :limited
             :otf-flg        otf-flg)
 
   In the General Form above, name is the name of a :[logic] function
@@ -129195,13 +129491,15 @@ Remarks
   proved.  If all the guard obligations are proved, name is
   considered to have had its [guard]s verified.  The :guard-simplify
   option controls certain simplifications that may be applied to the
-  guard conjecture while generating the initial goal; setting it to
-  nil skips all simplifications that depend on the set of currently
-  [enable]d rules.
+  guard conjecture while generating the initial goal: its default is
+  t, which doesn't restrict such simplification, and the other legal
+  value is :limited, which skips all simplifications that depend on
+  the set of currently [enable]d rules.  See also
+  [guard-simplification].
 
-  See [guard-formula-utilities] for utilities that let you view the
-  formula to be proved by verify-guards, but without creating an
-  event.
+  See [guard-formula-utilities] for related utilities, including ones
+  that let you view the formula to be proved by verify-guards, but
+  without creating an event.
 
   If name is one of several functions in a mutually recursive clique,
   verify-guards will attempt to verify the [guard]s of all of the
@@ -129612,25 +129910,23 @@ Subtopics
 
   See [verify-guards] and see [guard] for a discussion of guards.  This
   utility, which does not evaluate its argument, provides output
-  showing the guard proof obligation as printed by verify-guards, but
-  without then carrying out a proof attempt.  If you simply want the
-  guard proof obligation for a definition (without the prover's
-  output), use [gthm].  Note that gthm has an option to avoid the
-  simplification that is normally performed when generating the guard
-  proof obligation.  For more about related utilities, see
-  [guard-formula-utilities].
+  showing the guard proof obligation (also known as the guard
+  theorem) as printed by verify-guards, but without then carrying out
+  a proof attempt.  See also [guard-formula-utilities] for related
+  utilities.
 
     Example Forms:
     (verify-guards-formula foo)
     (verify-guards-formula foo :guard-debug t)
-    (verify-guards-formula foo :guard-debug t :guard-simplify nil)
+    (verify-guards-formula foo :guard-debug t :guard-simplify :limited)
     (verify-guards-formula foo :rrp t :otf-flg dont-care :xyz whatever)
     (verify-guards-formula (+ (foo x) (bar y)) :guard-debug t)
 
   Verify-guards-formula allows all keywords, but only pays attention to
   :guard-debug and :guard-simplify, which have the same effect as in
-  [verify-guards] (see [guard-debug]), and to :rrp, described below.
-  Apply verify-guards-formula to a name just as you would use
+  [verify-guards] (also see [guard-debug] and
+  [guard-simplification]), and to :rrp, described below.  Apply
+  verify-guards-formula to a name just as you would use
   [verify-guards], but when you only want the output that shows the
   guard proof obligation, without attempting a proof or creating an
   event.  If the first argument is not a symbol, then it is treated
@@ -133641,7 +133937,7 @@ Subtopics
 
     (declare (xargs :guard (symbolp x)
                     :guard-debug t
-                    :guard-simplify nil
+                    :guard-simplify :limited
                     :guard-hints ((\"Goal\" :in-theory (theory batch1)))
                     :hints ((\"Goal\" :in-theory (theory batch1)))
                     :loop$-recursion t
@@ -133693,10 +133989,12 @@ Subtopics
   [defun].
 
   :guard-simplify
-  Value: t by default, else directs ACL2 to skip certain
-  simplifications that ACL2 typically applies while generating the
-  guard proof obligation.  This has the same effect as the
-  corresponding keyword argument to [verify-guards].
+  Value: t by default, which supports simplification performed while
+  generating the guard proof obligation.  The value can also be
+  :limited, which directs ACL2 to skip such simplification that
+  depends on which rules are currently [enable]d.  This has the same
+  effect as the corresponding keyword argument to [verify-guards].
+  Also see [guard-simplification] and [guard-formula-utilities].
 
   :[hints]
   Value: hints (see [hints]), to be used during the termination proofs
