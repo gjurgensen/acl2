@@ -29945,11 +29945,35 @@ Documenting Your Books
   You can also use XDOC to document your own books and to build custom
   manuals for your organization.
 
+  Remark for Experienced Users.  Occasionally it might make sense to
+  add a link to your book's documentation from the ACL2 system
+  documentation, which is in [community-book]
+  books/system/doc/acl2-doc.lisp. You are welcome to do so, but in
+  that case, also add to the constant *acl2-broken-links-alist* near
+  the top of that file, as described in a comment in that constant.
+  For example, that constant's value has the following line.
+
+    (FTY::DEFPROD \"[books]/centaur/fty/top.lisp\")
+
+  That line may have been added because in the form (defxdoc defrec
+  ...) in acl2-doc.lisp, we find a link to fty::defprod.  You can do
+  similarly for your own added link.
+
+  If your topic is not in the \"ACL2\" package, such as in the example
+  link fty::defprod above, then add a suitable [include-book] form to
+  books/system/doc/cert.acl2.  For example, that file includes the
+  line
+
+    (include-book \"centaur/fty/portcullis\" :dir :system)
+
+  in order to define the \"FTY\" package.
+
 
 Other Resources
 
   If you want documentation on an ACL2 function or macro that is not
-  documented, there are still several alternatives.
+  documented, there are still several alternatives.  End of Remark
+  for Experienced Users
 
     ACL2 !>:args fn
 
