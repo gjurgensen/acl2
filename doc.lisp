@@ -105474,7 +105474,7 @@ A Possible Confusion
 
   The application of the metafunction relink-fancy-scion can easily but
   mistakenly be attributed to the rewriting of lambda objects but it
-  is not!  The metafunction is applied to the whole collect$ term
+  is not!  The metafunction is applied to the whole collect$+ term
   (and calls of every other fancy scion), not just the lambda object.
 
   If you want to avoid this normalization of the globals, disable the
