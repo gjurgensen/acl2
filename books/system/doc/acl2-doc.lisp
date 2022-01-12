@@ -104448,9 +104448,9 @@ arithmetic) for libraries of @(see books) for arithmetic reasoning.</p>")
   eliminate the term @('(car (cdr loop$-gvars))').</p>
 
   <p>The application of the metafunction @('relink-fancy-scion') can easily but
-  mistakenly be attributed to the rewriting of @('lambda') objects but it is not!
-  The metafunction is applied to the whole @('collect$') term (and calls of every
-  other fancy scion), not just the @('lambda') object.</p>
+  mistakenly be attributed to the rewriting of @('lambda') objects but it is
+  not!  The metafunction is applied to the whole @('collect$+') term (and calls
+  of every other fancy scion), not just the @('lambda') object.</p>
 
   <p>If you want to avoid this normalization of the globals, disable the @(see
   rune) @('(:meta relink-fancy-scion-correct)').</p>")
