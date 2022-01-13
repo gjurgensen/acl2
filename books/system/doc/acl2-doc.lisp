@@ -90992,6 +90992,28 @@ it."
  evisc-table), which could cause failures when reading those files.  This has
  been fixed.</p>
 
+<p>An error could occur when using the precomputed @(see useless-runes)
+files in ACL2(r).  The @(see useless-runes) feature has been turned
+off for ACL2(r).</p>
+
+<p>The precomputed @(see useless-runes) files have been successfully used
+with ACL2(p), so the previous code that ignored the useless runes at the
+time of @(see books-certification) using @('make')
+has been removed, and ACL2(p) now works the same way as ACL2
+for the @(see useless-runes) feature.</p>
+
+<p>When using <see topic=\"BUILD____CERT.PL\">cert.pl</see>
+to certify books in ACL2 and ACL2(p)
+(but not in ACL2(r)) it now defaults to the same @(see useless-runes)
+setting as when doing @(see books-certification) using @('make').
+Previously there was an unexpected slowdown when using
+<see topic=\"BUILD____CERT.PL\">cert.pl</see>
+to certify a needed subset of books prerequisite to a particular
+book of interest, when those prerequisite books had precomputed
+@('*@useless-runes.lsp') files.  Note that the default behavior of
+@(see certify-book) in ACL2 has not changed, just the default
+behavior of <see topic=\"BUILD____CERT.PL\">cert.pl</see>.</p>
+
  <p>An error could occur when encountering a @(see redundant) @(tsee
  defwarrant) event while including a book.  This has been fixed, by arranging
  that a @('defwarrant') event always expands to the same @(tsee encapsulate)
@@ -101536,8 +101558,8 @@ arithmetic) for libraries of @(see books) for arithmetic reasoning.</p>")
  <p>This will create an executable in your acl2-sources directory named
  @('saved_acl2r').</p>
 
- <p>Note that if you download @(see community-books) as tarfiles, then you will
- automatically be obtaining the books to be certified with ACL2(r).  They can
+ <p>Note that if you have fetched the @(see community-books), then you will
+ already have the books to be certified with ACL2(r).  They can
  be certified from your acl2-sources directory, shown here as @('<DIR>'):</p>
 
  @({
@@ -101567,7 +101589,9 @@ arithmetic) for libraries of @(see books) for arithmetic reasoning.</p>")
  <p>There is only limited documentation on the non-standard features of
  ACL2(r).  We hope to provide more documentation for such features in future
  releases.  Please feel free to query the authors if you are interested in
- learning more about ACL2(r).  Gamboa's dissertation may also be helpful.</p>")
+ learning more about ACL2(r).  Gamboa's dissertation may also be helpful.</p>
+
+<p>ACL2(r) does not currently support the @(see useless-runes) feature.</p>")
 
 (defxdoc real-listp
 
@@ -126345,7 +126369,7 @@ introduction-to-the-tau-system) for more information about Tau.</dd>
   :short "Speed up proofs by disabling useless @(see rune)s"
   :long "<p>This topic documents the @(':useless-runes') option for @(tsee
  certify-book), which makes it possible to speed up repeated certification of a
- book.</p>
+ book.  This option is ignored in ACL2(r).</p>
 
  <h3>Introduction</h3>
 
@@ -126374,12 +126398,17 @@ introduction-to-the-tau-system) for more information about Tau.</dd>
  option @(':read') or @(':write') (respectively) of @('certify-book').
  @('ACL2_USELESS_RUNES') can also take on the numeric values permitted for the
  @(':useless-runes') option of @(tsee certify-book).  This is all discussed
- below.  Note that by default, certification of the @(see community-books), as
- laid out in documentation topic @(see books-certification), is performed with
- @('ACL2_USELESS_RUNES=-25'), which for each book @('foo.lisp') causes part of
- the corresponding @('.sys/foo@useless-runes.lsp'), if it exists, to be
- consulted (as described below).  This default behavior is only for ACL2, not
- ACL2(r) (see @(see real)) or ACL2(p) (see @(see parallelism)).</p>
+ below.</p>
+
+<p>By default, certification of the @(see community-books), using @('make')
+as laid out in documentation topic @(see books-certification),
+and certification using <see topic=\"BUILD____CERT.PL\">cert.pl</see>,
+are both performed with @('ACL2_USELESS_RUNES=-25').
+This setting, for each book @('foo.lisp'),
+causes part of the corresponding @('.sys/foo@useless-runes.lsp'), if it exists,
+to be consulted (as described below).  This default behavior is only for
+ACL2 and ACL2(p) (see @(see parallelism)),
+but not for ACL2(r) (see @(see real)).</p>
 
  <h3>Detailed Documentation</h3>
 
