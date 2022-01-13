@@ -26676,10 +26676,37 @@ ld) and @(tsee include-book)"
  <p>You can also use XDOC to document your own books and to build custom manuals
  for your organization.</p>
 
+ <p><b>Remark for Experienced Users</b>.  Occasionally it might make sense to
+ add a link to your book's documentation from the ACL2 system documentation,
+ which is in @(see community-book) @('books/system/doc/acl2-doc.lisp'). You are
+ welcome to do so, but in that case, also add to the constant
+ @('*acl2-broken-links-alist*') near the top of that file, as described in a
+ comment in that constant.  For example, that constant's value has the
+ following line.</p>
+
+ @({
+     (FTY::DEFPROD \"[books]/centaur/fty/top.lisp\")
+ })
+
+ <p>That line may have been added because in the form @('(defxdoc defrec ...)')
+ in @('acl2-doc.lisp'), we find a link to @('fty::defprod').  You can do
+ similarly for your own added link.</p>
+
+ <p>If your topic is not in the @('\"ACL2\"') package, such as in the example
+ link @('fty::defprod') above, then add a suitable @(tsee include-book) form to
+ @('books/system/doc/cert.acl2').  For example, that file includes the line</p>
+
+ @({
+ (include-book \"centaur/fty/portcullis\" :dir :system)
+ })
+
+ <p>in order to define the @('\"FTY\"') package.</p>
+
  <h3>Other Resources</h3>
 
  <p>If you want documentation on an ACL2 function or macro that is not
- documented, there are still several alternatives.</p>
+ documented, there are still several alternatives.  End of Remark for
+ Experienced Users</p>
 
  @({
   ACL2 !>:args fn
@@ -104421,9 +104448,9 @@ arithmetic) for libraries of @(see books) for arithmetic reasoning.</p>")
   eliminate the term @('(car (cdr loop$-gvars))').</p>
 
   <p>The application of the metafunction @('relink-fancy-scion') can easily but
-  mistakenly be attributed to the rewriting of @('lambda') objects but it is not!
-  The metafunction is applied to the whole @('collect$') term (and calls of every
-  other fancy scion), not just the @('lambda') object.</p>
+  mistakenly be attributed to the rewriting of @('lambda') objects but it is
+  not!  The metafunction is applied to the whole @('collect$+') term (and calls
+  of every other fancy scion), not just the @('lambda') object.</p>
 
   <p>If you want to avoid this normalization of the globals, disable the @(see
   rune) @('(:meta relink-fancy-scion-correct)').</p>")
