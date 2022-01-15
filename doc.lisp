@@ -29854,10 +29854,6 @@ Subtopics
   introduction based largely on examples and then continuing with
   detailed syntax and semantics.
 
-  NOTE.  While this documentation is correct and reasonably thorough as
-  far as we know, we will probably make a few changes, mostly to add
-  some details, in February 2022.
-
   More examples of [loop$] expressions, including DO loop$s, may be
   found in [community-book] projects/apply/loop-tests.lisp.
 
@@ -30203,8 +30199,8 @@ INFORMAL INTRODUCTION
   i.e., a term whose value is expected to decrease on each successive
   iteration.  This notion of ``decrease'' is the expected one when
   the value of the measure is a natural number: smaller in the sense
-  of <.  In general, the measure decreases in the sense of l< when
-  lex-fix is applied to each argument; see [l<].
+  of <.  In general, the measure decreases in the sense of L< when
+  lex-fix is applied to each argument; see [L<].
 
   Of course, no measure decreases in the example above, because the
   values of the variables don't change with each iteration.  We can
@@ -30267,6 +30263,32 @@ INFORMAL INTRODUCTION
 
   In fact, the :MEASURE can be omitted in this case; ACL2 is able to
   guess (ACL2-COUNT X).
+
+  [Guard] verification requires a proof that the measure does indeed go
+  down in the sense of L<, after applying lex-fix to the arguments;
+  see [L<].  Fortunately, guard verification takes advantage of
+  information specified by OF-TYPE and :GUARD keywords.  For example,
+  the following two definitions are admitted (after the usual initial
+  include-book form), even though termination would not be provable
+  without the OF-TYPE expression in the first and the DO body's
+  :GUARD in the second; consider the case that n is -1.
+
+    (defun foo (max)
+      (declare (xargs :guard (natp max)))
+      (loop$ with n of-type (satisfies natp) = max
+             do
+             (if (= n 0)
+                 (return 'stop)
+               (setq n (- n 1)))))
+
+    (defun foo (max)
+      (declare (xargs :guard (natp max)))
+      (loop$ with n = max
+             do
+             :guard (natp n)
+             (if (= n 0)
+                 (return 'stop)
+               (setq n (- n 1)))))
 
   A More Complex Example
 
@@ -30348,32 +30370,98 @@ SYNTAX
   [warrant]ed if proofs are to be done about them or if they are in
   [logic] mode and are called during evaluation.
 
-  The do- and fin- bodies allow a sort of ``extended [term]''.  These
-  extended terms are as follows, informally (in particular we are
+  The do- and fin- bodies allow a sort of ``DO-body term''.  These
+  DO-body terms are as follows, informally (in particular we are
   ignoring here distinctions between translated and untranslated
-  terms; see [term]).  These are the extended terms:
+  terms; see [term]).  As usual, the restrictions on return values
+  apply only to code, not to terms occurring in theorem statements.
 
-    * every ordinary term;
-    * an IF call whose first argument is an ordinary term and whose true
-      and false branches are extended terms;
-    * a LET expression when its beta-reduction (i.e., subtituting actuals
-      for formals) is an extended term;
-    * (PROGN term1 term2 ... termk), where each termi is an extended term;
-      also (PROG2 term1 term2) in that case;
-    * (RETURN term), where term is an ordinary term;
-    * (LOOP-FINISH);
+    * Every ordinary term that returns a single, non-stobj value
+    * An IF call whose first argument is an ordinary term (which
+      necessarily returns a single, non-stobj value) and whose true
+      and false branches are DO-body terms
+    * A LET, LET*, or MV-LET expression whose beta-reduction (i.e.,
+      subtituting actuals for formals) is a DO-body term, provided no
+      bound variable is WITH-bound or a known [stobj]
+    * (PROGN term1 term2 ... termk), where each termi is a DO-body term;
+      also (PROG2 term1 term2) in that case
+    * (RETURN term), where term is an ordinary term
+    * (LOOP-FINISH), but only in a DO body, not in a FINALLY clause
     * (SETQ var term), where the variable var is declared in a WITH
       declaration or is a stobj name, and term is an ordinary term
       that returns a single value, that value being a stobj of type
-      var if var is a stobj; and
+      var if var is a stobj
     * (MV-SETQ (var0 ... varn) term) for two or more distinct variables
       vari, where each vari is declared in a WITH declaration or is a
       stobj name, and term is an ordinary term that returns n+1
       values, where if vari is a stobj then the ith value returned is
-      of that type.
+      of that type
 
-  It is illegal in a DO body or FINALLY clause to LET-bind a variable
-  that is declared in a WITH declaration or is a known stobj.
+  Notice that in code, where restrictions on return values are in
+  force, no stobj may be let-bound in a DO body or FINALLY clause.
+  This is due not only to the explicit restriction above for LET,
+  LET*, and MV-LET expressions, but also due to the first condition
+  above, on ordinary terms returning a single, non-stobj value.
+
+  We conclude this section by discussing some syntactic restrictions.
+
+  The following restriction applies to loop$ expressions meeting the
+  following two conditions: :VALUES specifies other than the default
+  of (NIL), and there is at least one loop-finish expression in the
+  loop$ body.  In that case, there must be a FINALLY clause that ACL2
+  recognizes as always executing a return call.  This makes sense,
+  since in Common Lisp, the value returned by a loop is nil when
+  ``falling through'' without executing a return; but nil would
+  violate the specified :VALUES in the case above.
+
+  As noted above, assignments with setq and mv-setq may only set stobj
+  variables and variables declared using WITH.  This restriction
+  applies to the innermost loop$ that contains the assignment.  The
+  following, for example, is illegal because the WITH declaration for
+  x is not in the loop$ immediately above the assignment to x with
+  setq.
+
+    (defun do-loop-nested-outer-with-var-bad (lst)
+      (loop$ with x = lst
+             do
+             (return
+              (loop$ with temp = '(1 2 3)
+                     do
+                     (cond ((endp temp)
+                            (return (pairlis$ x x)))
+                           (t (progn (setq x (cons (car temp) x))
+                                     (setq temp (cdr temp)))))))))
+
+  However, we expect it to be easy in general to work around this
+  restriction.  The following definition, for example, accomplishes
+  what was presumably intended above and is accepted by ACL2.
+
+    (defun do-loop-nested-outer-with-var (lst)
+      (loop$ with x = lst
+             do
+             (return
+              (loop$ with temp = '(1 2 3)
+                     with x = x
+                     do
+                     (cond ((endp temp)
+                            (return (pairlis$ x x)))
+                           (t (progn (setq x (cons (car temp) x))
+                                     (setq temp (cdr temp)))))))))
+
+  Every return expression in the DO body and (if present) FINALLY
+  clause must return a value or [multiple-value]s consistent with
+  what is specified by the :VALUES keyword (by default, a single
+  ordinary value).  Note that this requirement does not tolerate the
+  replacement of a stobj by a stobj that is congruent to it.
+
+  It is illegal for a loop$ expression to be in the scope of function
+  bindings of an [flet] expression.
+
+  As noted above, the measure, body, and FINALLY clauses of a DO loop$
+  must be fully [badge]d.
+
+  In a function call, it is illegal for a LOOP$ expression to occur in
+  a slot whose [ilk] is not nil.
 
 
 SEMANTICS
