@@ -90992,28 +90992,6 @@ it."
  evisc-table), which could cause failures when reading those files.  This has
  been fixed.</p>
 
-<p>An error could occur when using the precomputed @(see useless-runes)
-files in ACL2(r).  The @(see useless-runes) feature has been turned
-off for ACL2(r).</p>
-
-<p>The precomputed @(see useless-runes) files have been successfully used
-with ACL2(p), so the previous code that ignored the useless runes at the
-time of @(see books-certification) using @('make')
-has been removed, and ACL2(p) now works the same way as ACL2
-for the @(see useless-runes) feature.</p>
-
-<p>When using <see topic=\"BUILD____CERT.PL\">cert.pl</see>
-to certify books in ACL2 and ACL2(p)
-(but not in ACL2(r)) it now defaults to the same @(see useless-runes)
-setting as when doing @(see books-certification) using @('make').
-Previously there was an unexpected slowdown when using
-<see topic=\"BUILD____CERT.PL\">cert.pl</see>
-to certify a needed subset of books prerequisite to a particular
-book of interest, when those prerequisite books had precomputed
-@('*@useless-runes.lsp') files.  Note that the default behavior of
-@(see certify-book) in ACL2 has not changed, just the default
-behavior of <see topic=\"BUILD____CERT.PL\">cert.pl</see>.</p>
-
  <p>An error could occur when encountering a @(see redundant) @(tsee
  defwarrant) event while including a book.  This has been fixed, by arranging
  that a @('defwarrant') event always expands to the same @(tsee encapsulate)
@@ -91050,6 +91028,17 @@ behavior of <see topic=\"BUILD____CERT.PL\">cert.pl</see>.</p>
  Coglio for the idea.</p>
 
  <h3>Experimental Versions</h3>
+
+<p>An error could occur when using the precomputed @(see useless-runes)
+files in ACL2(r).  The @(see useless-runes) feature has now been turned
+off for ACL2(r).</p>
+
+<p>The precomputed @(see useless-runes) files have been successfully used
+with ACL2(p), so the previous code that ignored the useless runes at the
+time of @(see books-certification) using @('make')
+has been removed, and ACL2(p) now works the same way as ACL2
+for the @(see useless-runes) feature.</p>
+
 
  ")
 
@@ -126402,7 +126391,7 @@ introduction-to-the-tau-system) for more information about Tau.</dd>
 
 <p>By default, certification of the @(see community-books), using @('make')
 as laid out in documentation topic @(see books-certification),
-and certification using <see topic=\"BUILD____CERT.PL\">cert.pl</see>,
+and certification using <see topic='@(url build::cert.pl)'>cert.pl</see>,
 are both performed with @('ACL2_USELESS_RUNES=-25').
 This setting, for each book @('foo.lisp'),
 causes part of the corresponding @('.sys/foo@useless-runes.lsp'), if it exists,
