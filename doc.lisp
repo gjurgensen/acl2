@@ -102178,7 +102178,14 @@ Subtopics
     (defun-sk min-M2 () (exists y (and (M y) (none-below-2 y))))
 
   The question is whether (implies (some-M) (min-M2)) is a theorem.
-  Can you prove it?  Can you disprove it?")
+  Can you prove it?  Can you disprove it? See
+  [solution-to-ACL2-quantifier-exercise-2] for a solution.
+
+
+Subtopics
+
+  [Solution-to-ACL2-quantifier-exercise-2]
+      A solution to [quantifier-tutorial] Exercise 2")
  (QUANTIFIERS
   (DEFUN-SK)
   "Issues about quantification in ACL2
@@ -114455,6 +114462,81 @@ Subtopics
   it, the caller's version of the array is obsolete.  If the caller
   is going to make further use of the array, it must obtain the
   latest version, i.e., that produced by the function.")
+ (SOLUTION-TO-ACL2-QUANTIFIER-EXERCISE-2
+  (QUANTIFIER-TUTORIAL)
+  "A solution to [quantifier-tutorial] Exercise 2
+
+  In [quantifier-tutorial] exercise 2, it asks if we can prove or
+  disprove the conjecture below.
+
+    Exercise 2. If there is an ACL2 object x which satisfies M, then
+    there exists a least ACL2 object y that satisfies M.
+
+  This hypothesis can be disproved. Here is one possible solution,
+  provided by Yan Peng..
+
+    (in-package \"ACL2\")
+    (include-book \"misc/total-order\" :dir :system)
+
+    ;; This hypothesis can be disproved.
+    ;; The intuition: find a function M that can be satisfied and does not have a
+    ;; minimal object that satisfies it.
+
+    ;; For example, if M is evenp, then for any ACL2 object that satisfies M, one
+    ;; can always construct a smaller object by subtracting 2 from it, which also
+    ;; satisfies M.
+
+    ;; Instead of using defstub, we provide an implementation for M which calls
+    ;; evenp.
+    (defun M (x) (evenp x))
+
+    ;; We prove a helper lemma that says if x satisfies M, then (- x 2) also
+    ;; satisfies M and it is a smaller object.
+    (defthm -2-satisfies-M-and-<<
+      (implies (M x)
+               (and (M (- x 2)) (<< (- x 2) x)))
+      :hints ((\"Goal\"
+               :in-theory (enable << lexorder alphorder))))
+    (in-theory (disable evenp M))
+
+    (defun-sk some-M () (exists x (M x)))
+    (in-theory (disable some-M some-M-suff))
+
+    ;; We prove M can be satisfied by providing a witness 0.
+    (defthm some-M-lemma
+      (some-M)
+      :hints ((\"Goal\" :use ((:instance some-M-suff (x 0))))))
+
+    ;; We negate none-below-2
+    (defun-sk exists-below (y)
+      (exists r (and (<< r y) (M r))))
+    (in-theory (disable exists-below exists-below-suff))
+
+    ;; We negate min-M2
+    (defun-sk not-min-M () (forall y (implies (M y) (exists-below y))))
+    (in-theory (disable not-min-M not-min-M-necc))
+
+    ;; We prove that forall y, if y satisfies M, then there exists another smaller
+    ;; object that satisfies M.
+    (defthm not-min-M-lemma
+      (not-min-M)
+      :hints ((\"Goal\"
+               :use (;; The definition of not-min-M provides a witness
+                     ;; (not-min-M-witness) that satisfies M but doesn't satisfy
+                     ;; exists-below.
+                     (:instance (:definition not-min-M))
+                     ;; By instantiating exists-below-suff, we provide a smaller
+                     ;; object r:(- (not-min-M-witness) 2) than
+                     ;; y:(not-min-M-witness), and satisfies M. This makes
+                     ;; (not-min-M-witness) vacuous, allowing us to prove the
+                     ;; forall.
+                     (:instance exists-below-suff
+                                (r (- (not-min-M-witness) 2))
+                                (y (not-min-M-witness)))))))
+
+    ;; We prove both some-M and not-min-M
+    (defthm |minimal does not exist|
+      (and (some-M) (not-min-M)))")
  (SOLUTION-TO-SIMPLE-EXAMPLE
   (ANNOTATED-ACL2-SCRIPTS)
   "Solution to a simple example
