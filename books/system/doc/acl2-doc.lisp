@@ -3,7 +3,7 @@
 ; acl2-doc.lisp - Documentation for the ACL2 Theorem Prover
 ;
 ; ACL2 Version 8.4 -- A Computational Logic for Applicative Common Lisp
-; Copyright (C) 2021, Regents of the University of Texas
+; Copyright (C) 2022, Regents of the University of Texas
 ;
 ; This documentation was derived from the ACL2 system in October 2013, which
 ; was a descendant of ACL2 Version 1.9, Copyright (C) 1997 Computational Logic,
@@ -75,6 +75,7 @@
     (BUILD::CERT.PL "[books]/build/doc.lisp")
     (BUILD::CERT_PARAM "[books]/build/doc.lisp")
     (CGEN "[books]/acl2s/cgen/top.lisp")
+    (CHECKPOINT-LIST "[books]/kestrel/utilities/checkpoints.lisp")
     (CONSIDERATION "[books]/hints/consider-hint.lisp")
     (BUILD::CUSTOM-CERTIFY-BOOK-COMMANDS "[books]/build/doc.lisp")
     (STD::DEFAGGREGATE "[books]/std/util/defaggregate.lisp")
@@ -798,7 +799,7 @@
 (defxdoc about-acl2
   :parents (acl2)
   :short "General information About ACL2"
-  :long "<p>This is @(`(:raw (@ acl2-version))`), @(see copyright) (C) 2021,
+  :long "<p>This is @(`(:raw (@ acl2-version))`), @(see copyright) (C) 2022,
  Regents of the University of Texas, authored by Matt Kaufmann and J Strother
  Moore.</p>
 
@@ -4197,8 +4198,8 @@ and @(tsee include-book)"
 
  <li>See @(see MBE) to attach code for execution.</li>
 
- <li>See @(see MV-LIST) to convert a multiple-valued result to a single-valued
- list.</li>
+ <li>See @(see MV-LIST) to convert a @(see multiple-value) result to a
+ single-value list.</li>
 
  <li>See @(see MV?) to return one or more values.</li>
 
@@ -5770,10 +5771,11 @@ and @(tsee include-book)"
 
   <p>So the question becomes ``What rules must a @('defun') obey in order to be
   processed successfully by @('defwarrant')?''  The full answer is given in the
-  documentation for @(tsee defwarrant).  But here are some guidelines to follow:
+  documentation for @(tsee defwarrant).  But here are some guidelines to
+  follow:
+
   <ul>
   <li>use @(':logic') mode,</li>
-  <li>don't use @(tsee state) or @(tsee stobj)s in the signature,</li>
   <li>use a measure that either returns a natural number or a
       lexicographic combination of natural numbers as defined by the @('llist')
       function in the Community Books at @('books/ordinals/'),</li>
@@ -5788,19 +5790,20 @@ and @(tsee include-book)"
       defined.</li>
   </ul></p>
 
-  <p>You can certainly violate these rules and still get an admissible
+  <p>You can certainly violate some of these rules and still get an admissible
   definition.  For example @('(defun rus (x) (not (apply$ x (list x))))') is
   admissible and you can run it on some arguments, e.g., @('(rus 'consp)')
   evaluates to @('T').  You can even prove @('(equal (rus 'consp) t)').  But
-  @('(defwarrant rus)') fails because @('rus') violates the rules.  So you will not
-  be able to @('apply$') @(''rus').</p>
+  @('(defwarrant rus)') fails because @('rus') violates the rules.  So you will
+  not be able to @('apply$') @(''rus').</p>
 
   <h3>Theorems Involving @('Apply$')</h3>
 
   <p>Because @('apply$') is undefined on user-defined function symbols and
-  warrant hypotheses specify the tameness requirements and value of @('apply$') on
-  such symbols, you can't prove much about the application of particular user-defined
-  symbols unless you provide the corresponding warrants as hypotheses.</p>
+  warrant hypotheses specify the tameness requirements and value of @('apply$')
+  on such symbols, you can't prove much about the application of particular
+  user-defined symbols unless you provide the corresponding warrants as
+  hypotheses.</p>
 
   <p>To emphasize this point, suppose @('sq') has been introduced with
   @('defun$') as shown above, then the following top-level evaluation is
@@ -13535,12 +13538,12 @@ with any questions about building the community books.</p>")
  })
 
  <p>Next fetch and extract a development snapshot.  The version below is
- current as of this writing (April, 2021), but see <a
+ current as of this writing (December, 2021), but see <a
  href='https://github.com/Clozure/ccl/releases/'>https://github.com/Clozure/ccl/releases/</a>
  for the latest snapshots.</p>
 
  @({
- wget https://github.com/Clozure/ccl/releases/download/v1.12/linuxx86.tar.gz
+ wget https://github.com/Clozure/ccl/releases/download/v1.12.1/linuxx86.tar.gz
  tar xfz linuxx86.tar.gz
  })
 
@@ -13670,12 +13673,13 @@ with any questions about building the community books.</p>")
  })
 
  <p>Next fetch and extract a development snapshot.  The version below is
- current as of this writing (April, 2021), but see <a
+ current as of this writing (December, 2021), but see <a
  href='https://github.com/Clozure/ccl/releases/'>https://github.com/Clozure/ccl/releases/</a>
  for the latest snapshots.</p>
 
  @({
- curl -O -L https://github.com/Clozure/ccl/releases/download/v1.12/darwinx86.tar.gz
+ curl -L -O https://github.com/Clozure/ccl/releases/download/v1.12.1/darwinx86.tar.gz
+ tar xfz darwinx86.tar.gz
  })
 
  <p>Rebuild the lisp kernel by hand before trying to rebuild the lisp.
@@ -17862,6 +17866,133 @@ subtree of X with T, without duplication.</p>
  <p>Also see @(see constraint).  For more details, see comments in the
  definition of @('constraint-info') in the ACL2 source code.</p>")
 
+(defxdoc context-message-pair
+  :parents (kestrel-utilities system-utilities-non-built-in)
+  :short "A common ACL2 programming idiom: @(see error-triple)s without @(see
+ state)"
+  :long "<p><i>Context-message pairs</i> are of the form @('(mv erp val)'),
+ where there are the following two cases: the first indicates a successful
+ computation and the second indicates an error.</p>
+
+ <ul>
+
+ <li><b>Normal case</b>: @('erp') is @('nil') and @('val') is what we call the
+ ``value'' of that context-message pair.</li>
+
+ <li><b>Error case</b>: @('erp') is not @('nil').  @('Val') may be @('nil');
+ otherwise @('val') is a message (see @(see msgp)) suitable for printing with
+ @(tsee fmt) and related functions using the @('~@') directive, and @('erp') is
+ a context suitable for error messages (see @(see ctx)).  A convention
+ generally observed (for example, by ACL2 system function
+ @('cmp-to-error-triple'), which converts a context-message pair to an @(see
+ error-triple) that may be printed in the error case) is when @('erp') and
+ @('val') are both non-@('nil'), then @('erp') is not @('t').</li>
+
+ </ul>
+
+ <p>To see how this works let us consider the ACL2 source function,
+ @('translate-cmp'), whose input is a user-level (``untranslated'') term as
+ input and returns a context-message pair.  In the non-error case, the value
+ returned is the internal (``translated'') form of that input; see @(see term).
+ The log below first shows a successful translation, returning multiple values
+ @('(mv nil (binary-+ x '3))'), thus illustrating the ``Normal case'' above,
+ where the first value returned (the error indicator) is @('nil') and the
+ second is the value of the pair.  The second example in the log shows an error
+ case returning a context and a message.  Don't worry about the various
+ arguments of @('translate-cmp'); the examples are merely to illustrate
+ programming with context-message pairs, not to explain @('translate-cmp')!</p>
+
+ @({
+ ACL2 !>(translate-cmp '(+ x 3)
+                       t t t 'top (w state)
+                       (default-state-vars state))
+ (NIL (BINARY-+ X '3))
+ ACL2 !>(translate-cmp '(quote 3 4)
+                       t t t 'top (w state)
+                       (default-state-vars state))
+ (TOP (\"The proper form of a quoted constant is (quote x), but ~
+                      ~x0 is not of this form.\"
+           (#\0 QUOTE 3 4)))
+ ACL2 !>
+ })
+
+ <p>The following macros are useful when programming with context-message
+ pairs.</p>
+
+ <ul>
+
+ <li>@('(value-cmp x)'): same as @('(mv nil x)').  Example:
+ @({
+ ACL2 !>(value-cmp (* 3 4))
+ (NIL 12)
+ ACL2 !>
+ })</li>
+
+ <li>@('(er-cmp ctx str &rest args)'): Return @('(mv ctx msg)') where @('msg')
+ is formed from @('str') and @('args').  Example:
+ @({
+ ACL2 !>(er-cmp 'example
+                \"I don't like 3-element lists like ~x0.~|\"
+                (make-list 3))
+ (EXAMPLE (\"I don't like 3-element lists like ~x0.~|\" (#\0 NIL NIL NIL)))
+ ACL2 !>(mv-let (ctx msg)
+          (er-cmp 'example
+                  \"I don't like 3-element lists like ~x0.~|\"
+                  (make-list 3))
+          (fmx \"Error in ~x0: ~@1\" ctx msg))
+ Error in EXAMPLE: I don't like 3-element lists like (NIL NIL NIL).
+ (0 <state>)
+ ACL2 !>
+ })</li>
+
+ <li>@('(er-let*-cmp alist body)'): Analogue of @(tsee er-let*) for
+ context-message pairs.  So, it evaluates the bindings in @('alist') much as
+ @(tsee let*)-bindings would be evaluated, but where each expression should
+ return a context-message pair and so should @('body').  If any of those
+ expression evaluations returns a pair with a non-nil first value, then that
+ pair is returned.  Otherwise, @('body') &mdash; which should return a
+ context-message pair &mdash; is evaluated with respect to the resulting
+ bindings.  Examples (refer to previous examples that use @('translate-cmp')):
+
+ @({
+ ACL2 !>(er-let*-cmp ((x (value-cmp '(+ x 3)))
+                      (val (translate-cmp x
+                                          t t t 'top (w state)
+                                          (default-state-vars state)))
+                      (y (value-cmp (list :term val))))
+                     (value-cmp (list :result y)))
+ (NIL (:RESULT (:TERM (BINARY-+ X '3))))
+ ACL2 !>(er-let*-cmp ((x (value-cmp '(quote 3 4)))
+                      (val (translate-cmp x
+                                          t t t 'top (w state)
+                                          (default-state-vars state)))
+                      (y (value-cmp (list :term val))))
+                     (value-cmp (list :result y)))
+ (TOP (\"The proper form of a quoted constant is (quote x), but ~
+                      ~x0 is not of this form.\"
+           (#\0 QUOTE 3 4)))
+ ACL2 !>
+ })</li>
+
+ <li>@('(er-progn-cmp form1 ... formk)'): Each @('formi') should evaluate to a
+ context-message pair.  If any of these evaluations produces a pair with a
+ non-@('nil') first component (thus indicating an error), return that pair.
+ Otherwise return the context-message pair produced by evaluating @('formk').
+ Examples:
+
+ @({
+ ACL2 !>(er-progn-cmp (value-cmp (+ 2 8))
+                      (er-cmp 'top \"Ouch\")
+                      (value-cmp (* 3 4)))
+ (TOP (\"Ouch\"))
+ ACL2 !>(er-progn-cmp (value-cmp (+ 2 8))
+                      (value-cmp (* 3 4)))
+ (NIL 12)
+ ACL2 !>
+ })</li>
+
+ </ul>")
+
 (defxdoc copyright
   :parents (about-acl2)
   :short "ACL2 copyright, license, sponsorship"
@@ -17874,7 +18005,7 @@ subtree of X with T, without duplication.</p>
  <p>@(`(:raw (@ acl2-version))`) &mdash; A Computational Logic for Applicative
  Common Lisp</p>
 
- <p>Copyright (C) 2021, Regents of the University of Texas</p>
+ <p>Copyright (C) 2022, Regents of the University of Texas</p>
 
  <p>This version of ACL2 is a descendant of ACL2 Version 1.9, Copyright (C)
  1997 Computational Logic, Inc.  See the documentation topic NOTE-2-0.</p>
@@ -20835,14 +20966,13 @@ subtree of X with T, without duplication.</p>
   and warrants.</p>
 
   <p>The first condition on @('fn') is that it must be a defined function
-  symbol that does not take or return @(tsee state) or any @(tsee stobj).
-  Since @('fn') must be defined it may not be a constrained function such as
-  one introduced by @(tsee defchoose) or @(tsee encapsulate).  In addition,
-  @('fn') may not be one of a very few ``blacklisted'' symbols (see the value
-  of @('*blacklisted-apply$-fns*')) like @(tsee sys-call) (which requires a
-  trust tag) or an @(see untouchable).  (For technical reasons, untouchables
-  are disallowed even if they are on @('temp-touchable-fns'); see @(tsee
-  remove-untouchable).)</p>
+  symbol.  Since @('fn') must be defined it may not be a constrained function
+  such as one introduced by @(tsee defchoose) or @(tsee encapsulate).  In
+  addition, @('fn') may not be one of a very few ``blacklisted'' symbols (see
+  the value of @('*blacklisted-apply$-fns*')) like @(tsee sys-call) (which
+  requires a trust tag) or an @(see untouchable).  (For technical reasons,
+  untouchables are disallowed even if they are on @('temp-touchable-fns'); see
+  @(tsee remove-untouchable).)</p>
 
   <p>The other conditions depend on whether @(tsee apply$) is reachable from
   @('fn').  That is, can a call of @('fn') lead to a call of @('apply$')?  If
@@ -20884,9 +21014,7 @@ subtree of X with T, without duplication.</p>
   <p>Note that if @('apply$') is not reachable from @('fn'), the restrictions
   imposed on @('fn') are comparatively generous.  Such a @('fn') could be
   badged despite being defined mutually recursively or in terms of unbadged or
-  even unbadgeable functions.  (Functions with @(tsee stobj)s in their
-  signatures are unbadgeable but could be used with @(tsee with-local-stobj) in
-  @('fn') and @('fn') could still be badged.)</p>
+  even unbadgeable functions.</p>
 
   <p>After a successful @('defbadge') event for @('fn'), the function @(tsee
   badge) will return the computed badge and @(tsee apply$) will be able to
@@ -25735,11 +25863,10 @@ subtree of X with T, without duplication.</p>
   to @('defwarrant') &mdash; since many users use @('defwarrant') to issue both
   a badge and a warrant.</p>
 
-  <p>Basic conditions include that @('fn') is in @(':')@(tsee logic)-mode, does
-  not have @(tsee state) or any @(see stobj) in its signature, and that its
-  justification (i.e., the measure, well-founded relation, and domain predicate
-  used to admit @('fn')) be expressible without any reference to @(tsee
-  apply$), @(tsee ev$), or @(tsee apply$-userfn).</p>
+  <p>Basic conditions include that @('fn') is in @(':')@(tsee logic)-mode and
+  that its justification (i.e., the measure, well-founded relation, and domain
+  predicate used to admit @('fn')) be expressible without any reference to
+  @(tsee apply$), @(tsee ev$), or @(tsee apply$-userfn).</p>
 
   <p>@('Defwarrant') imposes some additional conditions on @('fn'), but exactly
   what those conditions are depends on a certain ``reachability'' test detailed
@@ -25793,8 +25920,7 @@ subtree of X with T, without duplication.</p>
   cannot be reached are comparatively generous.  If @('fn') does not depend on
   @('apply$') then @('fn') can be warranted despite (a) being defined mutually
   recursively or with an arbitrary ordinal measure, or (b) calling unbadged or
-  unbadgeable functions &mdash; including for example, functions that use local
-  @(see stobj)s (see @(see with-local-stobj)s).</p>
+  unbadgeable functions.</p>
 
   <p>Regardless of whether @('apply$') is reachable, if the requisite
   conditions are not met, @('defwarrant') causes an error.</p>
@@ -26406,10 +26532,887 @@ ld) and @(tsee include-book)"
  (see @(see set-waterfall-parallelism)), statistics about parallel execution
  are printed instead of the usual information.</p>")
 
+(defxdoc do-loop$
+  :parents (loop$)
+  :short "Iteration with @(tsee loop$) using local variables and @(see stobj)s"
+  :long "<p>This topic assumes that you have read the introduction to
+ @('loop$') expressions in ACL2; see @(see loop$).  Here we give more complete
+ documentation on @('DO') @('loop$') expressions, beginning with an informal
+ introduction based largely on examples and then continuing with detailed
+ syntax and semantics.</p>
+
+ <p>More examples of @(tsee loop$) expressions, including @('DO') @('loop$')s,
+ may be found in @(see community-book) @('projects/apply/loop-tests.lisp').</p>
+
+ <h3>INFORMAL INTRODUCTION</h3>
+
+ <p>The most basic @('DO') @('loop$') expressions have the following form.</p>
+
+ @({
+ (loop$ WITH v1 = a1
+        ...
+        WITH vn = an
+        DO body)
+ })
+
+ <p><b>A Basic Example</b></p>
+
+ <p>The example @('loop$') expression below initially stores the list @('(a b
+ c)') in the variable @('x') and @('nil') in the variable @('y').  Then it
+ iterates, repeatedly popping the first element of @('x') onto @('y') until
+ @('x') is empty.  Then it returns the final value of @('y').</p>
+
+ @({
+ ACL2 !>(loop$ with x = '(a b c)
+               with y = nil
+               do (cond ((consp x)
+                         (progn (setq y (cons (car x) y))
+                                (setq x (cdr x))))
+                        (t (return y))))
+ (C B A)
+ ACL2 !>
+ })
+
+ <p>This example illustrates the basic operation of @('DO') @('loop$')
+ expressions.</p>
+
+ <ul>
+
+ <li>Initially, variables are initialized according to the @('WITH')
+ clauses: for each binding @('WITH Vi = Ei'), we say that @('Vi') is a
+ <i>@('WITH')-bound variable</i>, and @('Vi') is initially bound to the value
+ of @('Ei').
+
+ <ul><li>In this example, @('x') is initially bound to the list @('(a b c)')
+ and @('y') is initially bound to @('nil').</li></ul></li>
+
+ <li>Then, the <i>loop body</i> &mdash; i.e., the term after the @('DO')
+ keyword &mdash; is repeatedly evaluated.  An update to @('WITH')-bound
+ variable @('Vj') occurs whenever an expression @('(setq Vj Ej)') is
+ encountered while evaluating the loop body, binding @('Vj') to the value of
+ @('Ej') (which may reference the current values of @('WITH')-bound variables).
+
+ <ul><li>In this example, as long is @('x') is a cons, @('y') is assigned to
+ @('(cons (car x) y)') and then @('x') is assigned to the @('cdr') of its
+ current value.</li></ul></li>
+
+ <li>Ultimately an expression @('(RETURN E)') should be encountered, in which
+ case the value of @('E') is returned &mdash; where as before, @('E') may
+ reference the current values of @('WITH')-bound variables.
+
+ <ul><li>In this example, when @('x') is not a cons (and hence is, in fact,
+ @('nil')), the current value of @('y') is returned as the value of the
+ @('loop$') expression.  By this point each element of the initial value of
+ @('x') has been pushed onto @('y'), so the value @('(c b a)') is
+ returned.</li></ul></li>
+
+ </ul>
+
+ <p>Note that @('progn') is permitted as shown, to connect a sequence of
+ expressions.  Indeed, that is how more than one assignment is accomplished;
+ unlike Common Lisp, the @('DO') keyword is followed by exactly one expression,
+ so @('DO expr1 expr2') is illegal in ACL2 but @('DO (progn expr1 expr2)') is
+ fine.</p>
+
+ <p>Also note that the @('WITH')-bound variables are initialized sequentially:
+ later bindings may reference values of earlier ones, for example as
+ follows.</p>
+
+ @({
+ ACL2 !>(loop$ with x = (* 3 4) with y = (* 10 x) do (return (list y)))
+ (120)
+ ACL2 !>
+ })
+
+ <p><b>Parallel Assignment Using @('Mv-setq')</b></p>
+
+ <p>ACL2 also supports parallel assignment to two or more variables, using
+ @('mv-setq').  The following is equivalent to the example immediately
+ above.</p>
+
+ @({
+ ACL2 !>(loop$ with x = '(a b c)
+                with y = nil
+                do (cond ((consp x)
+                          (mv-setq (x y)
+                                   (mv (cdr x) (cons (car x) y))))
+                         (t (return y))))
+ (C B A)
+ ACL2 !>
+ })
+
+ <p>Thus, the first argument of an @('mv-setq') call is not evaluated, and is a
+ list of distinct variables of length at least 2.  The second argument is any
+ expression that returns multiple values consistent with the first argument
+ &mdash; ``consistent'' in the sense that the number of values returned equals
+ the number of variables in the first argument and stobjs must match up.  Thus,
+ the rules for @('(mv-setq vars expr)') are the same as for @('(mv-let vars
+ expr ...)').</p>
+
+ <p><b>The @('FINALLY') Clause</b></p>
+
+ <p>We have seen the @('loop$') keywords @('WITH') and @('DO').  A third
+ @('loop$') keyword, @('FINALLY'), is also supported.  Here is a variant of the
+ preceding example that illustrates the use of @('FINALLY').  The iteration
+ stops with the @('(loop-finish)') form this time, rather than with a call of
+ @('return').  Execution of @('(loop-finish)') passes control to the the
+ @('FINALLY') clause, which is executed just like the @('DO') body but with a
+ single pass, thus determining the value of the @('loop$') &mdash; in this
+ example, returning the final value of @('y').</p>
+
+ @({
+ ACL2 !>(loop$ with x = '(a b c)
+               with y = nil
+               do (cond ((consp x)
+                         (progn (setq y (cons (car x) y))
+                                (setq x (cdr x))))
+                        (t (loop-finish)))
+               finally (return y))
+ (C B A)
+ ACL2 !>
+ })
+
+ <p>This example illustrates that @('(loop-finish)') terminates the iteration,
+ passing control to the @('FINALLY') clause if there is one.  The @('FINALLY')
+ clause is evaluated under the current bindings of the @('WITH')-bound
+ variables, just as a @('DO') body is executed (but with a single pass rather
+ than iteration).</p>
+
+ <p>The value returned by a @('DO') @('loop$') expression is @('nil') when no
+ @('return') expression is evaluated (or more generally, a suitable value
+ consistent with the @(':VALUES') keyword discussed below).  Here is an
+ example, which illustrates an error that may be easy to commit.</p>
+
+ @({
+ ACL2 !>(loop$ with x = '(a b c)
+               with y = nil
+               do (cond ((consp x)
+                         (progn (setq y (cons (car x) y))
+                                (setq x (cdr x))))
+                        (t (loop-finish)))
+               finally (length y))
+ NIL
+ ACL2 !>
+ })
+
+ <p>Presumably the intention was to return the length of @('y'), which in this
+ case would be 3.  But then the @('FINALLY') clause should have been
+ @('(return (length y))').</p>
+
+ <p><b>The @(':VALUES') Keyword</b></p>
+
+ <p>The @(':VALUES') keyword is necessary for a @('loop$') expression that
+ returns a @(see stobj) or @(see multiple-value)s.  When the @(':VALUES')
+ keyword is used, the syntax is @(':VALUES (v0 ... vk)'), where each @('vi') is
+ either @('nil') or a stobj name: @(':VALUES (nil)') denotes return of a single
+ ordinary value; @(':VALUES (s)') denotes return of a single value that is a
+ stobj named @('s'); and @(':VALUES (v0 ... vk)') for k &gt; 0 denotes return
+ of k+1 values, where @('vi') is @('nil') if the ith returned value is an
+ ordinary value, and otherwise @('vi') is the name of the stobj returned as
+ the ith value.  No stobj name may be duplicated, and @(':VALUES') must appear
+ between the @('DO') loop keyword and the @('DO') body.  Let's look at an
+ example.</p>
+
+ <p>Below we introduce a @(see stobj) and add a @(see warrant) for its accessor
+ and updater.  Warrants are necessary for functions called in @('DO') bodies
+ and @('FINALLY') clauses in order for those forms to be evaluated.  See @(see
+ loop$) for a discussion of the necessity of such warrants.  The two @('loop$')
+ expressions are similar in nature to those above, first without and then with
+ a @('FINALLY') clause; also see the discussion below.  All forms below
+ complete successfully.</p>
+
+ @({
+ (include-book \"projects/apply/top\" :dir :system)
+ (defstobj st fld)
+ (defwarrant fld)
+ (defwarrant update-fld)
+ ; Check that (fld st) is currently nil.
+ (assert-event (equal (fld st) nil))
+ (loop$ with x = '(1 2 3)
+        do
+        :values (st)
+        (cond ((endp x)
+               (return st))
+              (t (mv-setq (st x)
+                          (let ((st (update-fld (cons (car x)
+                                                      (fld st))
+                                                st)))
+                            (mv st (cdr x)))))))
+ (assert-event (equal (fld st) '(3 2 1)))
+ (update-fld nil st)
+ (assert-event (equal (fld st) nil))
+ (loop$ with x = '(1 2 3)
+        do
+        :values (st)
+        (cond ((endp x)
+               (loop-finish))
+              (t (progn (setq st
+                              (update-fld (cons (car x)
+                                                (fld st))
+                                          st))
+                        (setq x (cdr x)))))
+        finally (return st))
+ (assert-event (equal (fld st) '(3 2 1)))
+ })
+
+ <p>These loops are similar to those we saw earlier, but this time, when we pop
+ values from @('x') they go into a stobj.  Since we return that stobj, @('st'),
+ the @(':VALUES') is @('(st)').  One might expect it to be @('st') instead, but
+ @(':VALUES') is always a list; when a single value is returned, @(':VALUES')
+ is a one-element list.  Thus, the default for @(':VALUES') is @('(nil)').</p>
+
+ <p>Notice that the examples above apply @('setq') to @('st').  This
+ illustrates that a variable assigned by @('setq') or @('mv-setq') must either
+ be declared in a @('WITH') clause or be a known stobj.  Of course, here
+ @('st') is a known stobj.  In fact, stobjs are not allowed to be declared in
+ @('WITH') clauses (and that is not necessary for assigning to them).</p>
+
+ <p><b>The @('OF-TYPE') Keyword</b></p>
+
+ <p>So far our examples have all involved @('loop$') expressions that are
+ evaluated directed at the ACL2 prompt.  These do not require the @('OF-TYPE')
+ keyword described in this section.  But @('loop$') expressions may also appear
+ in definitions.  When these definitions are to be @(see guard)-verified,
+ @('OF-TYPE') keyword may be critical.</p>
+
+ <p>Consider the following example, which searches for an even number in a
+ given list of integers, returning @('t') if one is found and else @('nil').
+ As usual, we start by including the usual book for reasoning about
+ @('loop$').</p>
+
+ @({
+ (include-book \"projects/apply/top\" :dir :system)
+ (defun has-evenp (x)
+   (declare (xargs :guard (integer-listp x)))
+   (loop$ with temp of-type (satisfies integer-listp) = x
+          do
+          (cond ((endp temp)
+                 (return nil))
+                ((evenp (car temp))
+                 (return t))
+                (t
+                 (setq temp (cdr temp))))))
+ })
+
+ <p>We see that the expression immediately following @('OF-TYPE') is a legal
+ @(see type-spec), in this case expressing that @('(integer-listp temp)') holds
+ for every value of @('temp') during execution of the @('loop$').  Let's see
+ why this use of @('OF-TYPE') is necessary.  When it is omitted, guard
+ verification fails with the following top-level checkpoints.</p>
+
+ @({
+ Subgoal 1.2
+ (IMPLIES (AND (ALISTP ALIST)
+               (NOT (CONSP (CDR (ASSOC-EQ-SAFE 'TEMP ALIST)))))
+          (NOT (CDR (ASSOC-EQ-SAFE 'TEMP ALIST))))
+
+ Subgoal 1.1
+ (IMPLIES (AND (ALISTP ALIST)
+               (CONSP (CDR (ASSOC-EQ-SAFE 'TEMP ALIST))))
+          (INTEGERP (CADR (ASSOC-EQ-SAFE 'TEMP ALIST))))
+ })
+
+ <p>To understand these checkpoints we need to understand a bit about how ACL2
+ gives a semantics to @('DO') @('loop$') expressions (as we explain in more
+ detail in the section on Semantics below).  In the ACL2 logic, a @('DO')
+ @('loop$') expression is represented as a transformation on the variable,
+ @('alist'), an association list that assigns a value to every variable in the
+ expression.  This alist is transformed by each iteration through the loop.</p>
+
+ <p>The value of the variable @('temp') in @('alist') is @('(assoc-eq-safe
+ 'temp alist)'), where @('assoc-eq-safe') is just a variant of @(tsee assoc)
+ whose guard makes no requirements on the alist.  The first checkpoint
+ above (Subgoal 1.2) thus says that if the value of @('temp') is not a cons,
+ then it's @('nil').  That requirement comes from the expression, @('(endp
+ temp)'), since the guard of @(tsee endp) is that its argument is a cons or
+ @('nil').  The second checkpoint (Subgoal 1.1) says that if the value of
+ @('temp') is a cons, then its @('car') is an integer.  That requirement comes
+ from the expression @('(evenp (car temp))'), since the guard for @(tsee evenp)
+ requires its argument to be an integer.</p>
+
+ <p>When we add the restriction provided by the @('OF-TYPE') keyword that
+ @('temp') satisfies @(tsee integer-listp), the checkpoints each get the added
+ hypothesis @('(integer-listp (cdr (assoc-eq-safe 'temp alist)))').  That
+ allows the guard proof to go through.  This addition also imposes that same
+ requirement on the initial alist, but it is discharged because the guard for
+ @('has-evenp') specifies @('(integer-listp x)') and @('temp') is initially
+ assigned to @('x').  Importantly, use of the @('OF-TYPE') keyword on a
+ variable imposes a guard proof obligation for every assignment to that
+ variable, that the new value of that variable also satisfies the given type.
+ In this case, this means that under the hypotheses that @('(endp temp)') and
+ @('(evenp (car temp))') are false, and also assuming that @('temp') satisfies
+ @('integer-listp') &mdash; where here, @('temp') is @('(cdr (assoc-eq-safe
+ 'temp alist))') &mdash; then @('(cdr temp')) satisfies @('integer-listp').
+ ACL2 discharges this requirement automatically.</p>
+
+ <p><b>The @(':GUARD') Keyword</b></p>
+
+ <p>Consider the following definition, which is identical to the one for
+ @('has-evenp') displayed above except that instead of using the @('OF-TYPE')
+ keyword, it uses the @(':GUARD') keyword.</p>
+
+ @({
+ (defun has-evenp (x)
+   (declare (xargs :guard (integer-listp x)))
+   (loop$ with temp = x
+          do
+          :guard (integer-listp temp)
+          (cond ((endp temp)
+                 (return nil))
+                ((evenp (car temp))
+                 (return t))
+                (t
+                 (setq temp (cdr temp))))))
+ })
+
+ <p>This definition is accepted by ACL2 for much the same reason that the
+ preceding one was accepted.  The difference is that while the @('OF-TYPE')
+ keyword adds a requirement at every assignment of the variable, the
+ @(':GUARD') imposes the invariant that when the guard holds entering the
+ @('loop$') body, it also holds when the @('loop$') body is next entered.  Thus
+ we see the following in the @('Goal') generated for the guard conjecture,
+ where @('new-alist') is let-bound (not shown here) to the result of updating
+ @('alist') after one iteration through the loop, and where @('(equal exit-flg
+ nil)') indicates that another iteration is pending (because neither a
+ @('return') nor a @('loop-finish') was executed).</p>
+
+ @({
+ (IMPLIES (AND (AND (ALISTP ALIST)
+                    (INTEGER-LISTP (CDR (ASSOC-EQ-SAFE 'TEMP ALIST))))
+               (EQUAL EXIT-FLG NIL))
+          (AND (ALISTP NEW-ALIST)
+               (INTEGER-LISTP (CDR (ASSOC-EQ-SAFE 'TEMP NEW-ALIST)))))
+ })
+
+ <p><b>The @(':MEASURE') Keyword</b></p>
+
+ <p>The discussion above doesn't address the obvious possibility that a @('DO')
+ @('loop$') may not terminate.  Consider the following example, which not only
+ assumes that the usual book has been included as discussed above, but also
+ assumes that the form @('(defwarrant princ$)') has been evaluated.</p>
+
+ @({
+ ACL2 !>(loop$ with x = '(100 200 300)
+               do
+               :values (state)
+               (setq state (princ$ (car x) *standard-co* state)))
+
+
+ ACL2 Error in TOP-LEVEL:  No :MEASURE was provided after the DO operator
+ and we failed to find a likely measure.  Please supply a :MEASURE in
+ (LOOP$ WITH X = '(100 200 300)
+        DO :VALUES (STATE)
+        (SETQ STATE
+              (PRINC$ (CAR X) *STANDARD-CO* STATE))).
+ See :DOC loop$.
+
+ ACL2 !>
+ })
+
+ <p>As suggested by the error message, ACL2 has tried to guess a measure, i.e.,
+ a term whose value is expected to decrease on each successive iteration.  This
+ notion of ``decrease'' is the expected one when the value of the measure is a
+ natural number: smaller in the sense of @('<').  In general, the measure
+ decreases in the sense of @('L<') when @('lex-fix') is applied to each
+ argument; see @(csee L<).</p>
+
+ <p>Of course, no measure decreases in the example above, because the values of
+ the variables don't change with each iteration.  We can see what happens when
+ we supply an explicit measure: the body is evaluated, as evidenced by the
+ appeaance of @('100') in the output, but then the measure is evaluated and is
+ seen not to have decreased from what it was at the start of the previous
+ iteration.</p>
+
+ @({
+ ACL2 !>(loop$ with x = '(100 200 300)
+               do
+               :values (state)
+               :measure (acl2-count x)
+               (setq state (princ$ (car x) *standard-co* state)))
+ 100
+
+ HARD ACL2 ERROR in DO$:  The measure, (ACL2-COUNT X), used in the do
+ loop$ statement
+ (LOOP$ WITH X = '(100 200 300)
+        DO :VALUES (STATE)
+        :MEASURE (ACL2-COUNT X)
+        (SETQ STATE
+              (PRINC$ (CAR X) *STANDARD-CO* STATE)))
+
+ failed to decrease!  In particular, when the incoming alist (an alist
+ of dotted pairs specifying the values of all the variables) was
+ ((X 100 200 300)
+  (STATE .
+         ACL2_INVISIBLE::|The Live State Itself|))
+ the alist produced by the do body was
+ ((STATE .
+         ACL2_INVISIBLE::|The Live State Itself|)
+  (X 100 200 300))
+ and the measure went from
+ 603
+ to
+ 603.
+ Logically, do$ returns ACL2_INVISIBLE::|The Live State Itself| in this
+ situation.
+
+
+
+ ACL2 Error in TOP-LEVEL:  Evaluation aborted.  To debug see :DOC print-
+ gv, see :DOC trace, and see :DOC wet.
+
+ ACL2 !>
+ })
+
+ <p>Presumably the following is what was intended.</p>
+
+ @({
+ ACL2 !>(loop$ with x = '(100 200 300)
+               do
+               :values (state)
+               :measure (acl2-count x)
+               (if (atom x)
+                   (return state)
+                 (progn
+                   (setq state (princ$ (car x) *standard-co* state))
+                   (setq x (cdr x)))))
+ 100200300<state>
+ ACL2 !>
+ })
+
+ <p>In fact, the @(':MEASURE') can be omitted in this case; ACL2 is able to
+ guess @('(ACL2-COUNT X)').</p>
+
+ <p>@(csee Guard) verification requires a proof that the measure does indeed go
+ down in the sense of @('L<'), after applying @('lex-fix') to the arguments;
+ see @(csee L<).  Fortunately, guard verification takes advantage of
+ information specified by @('OF-TYPE') and @(':GUARD') keywords.  For example,
+ the following two definitions are admitted (after the usual initial
+ @('include-book') form), even though termination would not be provable without
+ the @('OF-TYPE') expression in the first and the DO body's @(':GUARD') in the
+ second; consider the case that @('n') is -1.</p>
+
+ @({
+ (defun foo (max)
+   (declare (xargs :guard (natp max)))
+   (loop$ with n of-type (satisfies natp) = max
+          do
+          (if (= n 0)
+              (return 'stop)
+            (setq n (- n 1)))))
+
+ (defun foo (max)
+   (declare (xargs :guard (natp max)))
+   (loop$ with n = max
+          do
+          :guard (natp n)
+          (if (= n 0)
+              (return 'stop)
+            (setq n (- n 1)))))
+ })
+
+ <p><b>A More Complex Example</b></p>
+
+ <p>We conclude with an example presented in the documentation for @(tsee
+ loop$) that illustrates all the features above.  Notice that the @(':GUARD')
+ keyword may appear not only in the @('DO') body but also in the @('FINALLY')
+ clause, to specify that the indicated guard holds upon entry to the
+ @('FINALLY') clause.  Here we assume that we have already evaluated not only
+ the usual @('include-book') form, but also the @('defstobj') and
+ @('defwarrant') forms above.</p>
+
+ @({
+ (defun test-loop$ (i0 max st)
+   (declare (xargs :guard (and (natp i0) (natp max))
+                   :stobjs st))
+   (loop$ with i of-type (satisfies natp) = i0
+          with cnt of-type integer = 0
+          do
+          :measure (nfix (- max i))
+          :guard (and (natp max)
+                      (natp cnt)
+                      (stp st))
+          :values (nil st) ; shape of return; can be omitted when it's (nil)
+          (if (>= i max)
+              (loop-finish)
+            (progn (setq st (update-fld i st))
+                   (mv-setq (cnt i)
+                            (mv (+ 1 cnt) (+ 1 i)))))
+          finally
+          :guard (stp st)
+          (return
+           (mv (list 'from i0 'to max 'is cnt 'steps 'and 'fld '= (fld st))
+               st))))
+ })
+
+ <p>Notice that any variables bound above the @('loop$') may appear in it, for
+ example, the formal parameters of this function.  But only variables that are
+ @('WITH')-bound or declared as @(see stobj)s may be assigned with @('setq') or
+ @('mv-setq').  The @(':GUARD') of @('(stp st)') is necessary, because ACL2
+ does not automatically infer that stobj recognizer calls hold inside
+ @('loop$') expressions the way it does in ordinary bodies of @(tsee defun)
+ forms.</p>
+
+ <p>We can evaluate the function above, as in the following example.</p>
+
+ @({
+ ACL2 !>(test-loop$ 3 8 st)
+ ((FROM 3 TO 8 IS 5 STEPS AND FLD = 7)
+  <st>)
+ ACL2 !>
+ })
+
+ <h3>SYNTAX</h3>
+
+ @({
+ General Form:
+
+ (LOOP$ WITH var1 OF-TYPE spec1 = init1 ; a WITH declaration
+        WITH var2 OF-TYPE spec2 = init2
+        ...
+        DO
+        :measure m
+        :guard do-guard
+        :values v
+        do-body
+        FINALLY
+        :guard fin-guard
+        fin-body)
+ })
+
+ <p>where much of that is optional: ``@('OF-TYPE speci')'', ``@('=
+ initi')'' (when ``@('OF-TYPE speci')'' is present), ``@(':MEASURE m')'', the
+ two ``@(':GUARD') ...'' clauses, ``@(':VALUES v')'', and ``@('FINALLY
+ fin-body')''.  If the @(':MEASURE') is omitted, ACL2 tries to guess a likely
+ measure using the same heuristic it does with recursive @(tsee defun)s.  If
+ @(':VALUES') is omitted then @('v') defaults to @('(nil)'); it indicates the
+ shape of the return value for the @('loop$') expression.</p>
+
+ <p>@('Do-body') must be a cons, not an atom, as must each of the following
+ that is supplied: @('m'), @('do-guard'), @('v'), @('fin-guard'), and
+ @('fin-body').</p>
+
+ <p>All ACL2 function symbols in the measure @('m') and the two bodies must be
+ @(see badge)d so @(tsee apply$) can handle them.  Furthermore, they must be
+ @(see warrant)ed if proofs are to be done about them or if they are in @(see
+ logic) mode and are called during evaluation.</p>
+
+ <p>The do- and fin- bodies allow a sort of ``DO-body term''.  These DO-body
+ terms are as follows, informally (in particular we are ignoring here
+ distinctions between translated and untranslated terms; see @(see term)).  As
+ usual, the restrictions on return values apply only to code, not to terms
+ occurring in theorem statements.</p>
+
+ <ul>
+
+ <li>Every ordinary term that returns a single, non-stobj value</li>
+
+ <li>An @('IF') call whose first argument is an ordinary term (which
+ necessarily returns a single, non-stobj value) and whose true and false
+ branches are DO-body terms</li>
+
+ <li>A @('LET'), @('LET*'), or @('MV-LET') expression whose
+ beta-reduction (i.e., subtituting actuals for formals) is a DO-body term,
+ provided no bound variable is @('WITH')-bound or a known @(see stobj)</li>
+
+ <li>@('(PROGN term1 term2 ... termk)'), where each @('termi') is a DO-body
+ term; also @('(PROG2 term1 term2)') in that case</li>
+
+ <li>@('(RETURN term)'), where @('term') is an ordinary term</li>
+
+ <li>@('(LOOP-FINISH)'), but only in a DO body, not in a @('FINALLY')
+ clause</li>
+
+ <li>@('(SETQ var term)'), where the variable @('var') is declared in a
+ @('WITH') declaration or is a stobj name, and @('term') is an ordinary term
+ that returns a single value, that value being a stobj of type @('var') if
+ @('var') is a stobj</li>
+
+ <li>@('(MV-SETQ (var0 ... varn) term)') for two or more distinct variables
+ @('vari'), where each @('vari') is declared in a @('WITH') declaration or is a
+ stobj name, and @('term') is an ordinary term that returns n+1 values, where
+ if @('vari') is a stobj then the ith value returned is of that type</li>
+
+ </ul>
+
+ <p>Notice that in code, where restrictions on return values are in force, no
+ stobj may be let-bound in a DO body or FINALLY clause.  This is due not only
+ to the explicit restriction above for @('LET'), @('LET*'), and @('MV-LET')
+ expressions, but also due to the first condition above, on ordinary terms
+ returning a single, non-stobj value.</p>
+
+ <p>We conclude this section by discussing some syntactic restrictions.</p>
+
+ <p>The following restriction applies to @('loop$') expressions meeting the
+ following two conditions: @(':VALUES') specifies other than the default of
+ @('(NIL)'), and there is at least one @('loop-finish') expression in the
+ @('loop$') body.  In that case, there must be a @('FINALLY') clause that ACL2
+ recognizes as always executing a @('return') call.  This makes sense, since in
+ Common Lisp, the value returned by a @('loop') is @('nil') when ``falling
+ through'' without executing a @('return'); but @('nil') would violate the
+ specified @(':VALUES') in the case above.</p>
+
+ <p>As noted above, assignments with @('setq') and @('mv-setq') may only set
+ stobj variables and variables declared using @('WITH').  This restriction
+ applies to the innermost @('loop$') that contains the assignment.  The
+ following, for example, is illegal because the @('WITH') declaration for
+ @('x') is not in the @('loop$') immediately above the assignment to @('x')
+ with @('setq').</p>
+
+ @({
+ (defun do-loop-nested-outer-with-var-bad (lst)
+   (loop$ with x = lst
+          do
+          (return
+           (loop$ with temp = '(1 2 3)
+                  do
+                  (cond ((endp temp)
+                         (return (pairlis$ x x)))
+                        (t (progn (setq x (cons (car temp) x))
+                                  (setq temp (cdr temp)))))))))
+ })
+
+ <p>However, we expect it to be easy in general to work around this
+ restriction.  The following definition, for example, accomplishes what was
+ presumably intended above and is accepted by ACL2.</p>
+
+ @({
+ (defun do-loop-nested-outer-with-var (lst)
+   (loop$ with x = lst
+          do
+          (return
+           (loop$ with temp = '(1 2 3)
+                  with x = x
+                  do
+                  (cond ((endp temp)
+                         (return (pairlis$ x x)))
+                        (t (progn (setq x (cons (car temp) x))
+                                  (setq temp (cdr temp)))))))))
+ })
+
+ <p>Every @('return') expression in the DO body and (if present) @('FINALLY')
+ clause must return a value or @(see multiple-value)s consistent with what is
+ specified by the @(':VALUES') keyword (by default, a single ordinary value).
+ Note that this requirement does not tolerate the replacement of a stobj by a
+ stobj that is congruent to it.</p>
+
+ <p>It is illegal for a @('loop$') expression to be in the scope of function
+ bindings of an @(tsee flet) expression.</p>
+
+ <p>As noted above, the measure, body, and @('FINALLY') clauses of a DO
+ @('loop$') must be fully @(see badge)d.</p>
+
+ <p>In a function call, it is illegal for a LOOP$ expression to occur in a slot
+ whose @(see ilk) is not @('nil').</p>
+
+ <h3>SEMANTICS</h3>
+
+ <p>Consider again the initial example in the Informal Introduction above.</p>
+
+ @({
+ ACL2 !>(loop$ with x = '(a b c)
+               with y = nil
+               do (cond ((consp x)
+                         (progn (setq y (cons (car x) y))
+                                (setq x (cdr x))))
+                        (t (return y))))
+ (C B A)
+ ACL2 !>
+ })
+
+ <p>We have seen that after initializing variables using @('WITH') clauses,
+ each iteration of a @('DO') @('loop$') updates those variables by evaluating
+ the body of the loop (i.e., the term after the @('DO') keyword), until a
+ @('return') expression is executed to return the current value of a term
+ &mdash; in this case, the current value of the term, @('y').</p>
+
+ <p>Of course, @('progn') and @('return') are not ACL2 functions!  (Recall that
+ the word ``applicative'' is part of what ``ACL2'' abbreviates.)  The following
+ term is essentially what is produced from the @('loop$') expression above.  We
+ discuss it below.</p>
+
+ @({
+ (DO$ ; Measure Function
+      (LAMBDA$ (ALIST)
+               (LET ((X (CDR (ASSOC-EQ-SAFE 'X ALIST)))
+                     (Y (CDR (ASSOC-EQ-SAFE 'Y ALIST))))
+                    (ACL2-COUNT X)))
+      ; Initial Alist
+      (LIST (CONS 'X '(A B C))
+            (CONS 'Y NIL))
+      ; Body Function
+      (LAMBDA$ (ALIST)
+               (LET ((X (CDR (ASSOC-EQ-SAFE 'X ALIST)))
+                     (Y (CDR (ASSOC-EQ-SAFE 'Y ALIST))))
+                    (IF (CONSP X)
+                        (LIST NIL
+                              NIL ; irrelevant
+                              (LIST (CONS 'X (CDR X))
+                                    (LIST* 'Y (CAR X) Y)))
+                        (LIST :RETURN
+                              Y
+                              (LIST (CONS 'X X) (CONS 'Y Y))))))
+      ... ; Other arguments are omitted here.
+ )
+ })
+
+ <p>The display above is approximate; in particular, it hides some logically
+ irrelevant clutter such as @(tsee declare) forms and it shows only arguments
+ of @('do$') relevant to our discussion of the example above.  Also, the
+ display employs user-level syntax (i.e., an <i>untranslated term</i>; see
+ @(see term)).</p>
+
+ <p>The definition of @('do$') is given at the end of this topic, for those who
+ care to explore it, but this discussion is intended to be self-contained.
+ @('Do$') operates by maintaining an alist that maps variables to values, for
+ all variables referenced in the @('loop$') expression &mdash; though only
+ variables that are declared in @('WITH') clauses or are stobjs may be
+ modified.  This alist is updated on each iteration by calling @(tsee apply$)
+ on the ``Body Function'' above, producing a 3-element list @('(exit-token val
+ new-alist)').  If @('exit-token') is @(':RETURN') then @('val') is returned.
+ But if @('exit-token') is @('nil'), then @('do$') is called recursively with
+ @('new-alist') as its alist argument.</p>
+
+ <p>To see @('do$') in action one can submit the following forms.  Here the
+ body of @('f') is just the @('loop$') expression shown above.  Notice that
+ @('f') is not @(see guard)-verified; after submitting @('(verify-guards f)')
+ the @('loop$') expression is evaluated as a Common Lisp @('loop') call rather
+ than using @('do$'), so there would be no @(see trace) output.  Don't worry
+ about having a precise understanding of the fancy calls of @(tsee trace!); the
+ comments there should suffice.</p>
+
+ @({
+ (include-book \"projects/apply/top\" :dir :system)
+ (defun f ()
+   (loop$ with x = '(a b c)
+          with y = nil
+          do (cond ((consp x)
+                    (progn (setq y (cons (car x) y))
+                           (setq x (cdr x))))
+                   (t (return y)))))
+ ; Store the translated body function so that we can access it later
+ ; with (@ my-body-fn):
+ (trace! (do$ :entry (f-put-global 'my-body-fn (nth 2 arglist) state)))
+ ; Run f to store to my-body-fn as commented above.
+ (f)
+ ; Trace do$ calls and trace calls of apply$ on the body function.
+ (trace! (do$ :notinline t ; include recursive calls
+              :cond (eq traced-fn 'do$) ; skip *1* call
+              :entry (list traced-fn alist))
+         (apply$ :cond (equal (car arglist) (@ my-body-fn))
+                 :entry (list traced-fn
+                              (cadr arglist) ; the alist
+                        )))
+ (f)
+
+ <p>Here is the trace output from the final call of @('f') above; analysis
+ follows.</p>
+
+ @({
+ ACL2 !>(f)
+ 1> (DO$ ((X A B C) (Y)))
+   2> (APPLY$ (((X A B C) (Y))))
+   <2 (APPLY$ (NIL NIL ((X B C) (Y A))))
+   2> (DO$ ((X B C) (Y A)))
+     3> (APPLY$ (((X B C) (Y A))))
+     <3 (APPLY$ (NIL NIL ((X C) (Y B A))))
+     3> (DO$ ((X C) (Y B A)))
+       4> (APPLY$ (((X C) (Y B A))))
+       <4 (APPLY$ (NIL NIL ((X) (Y C B A))))
+       4> (DO$ ((X) (Y C B A)))
+         5> (APPLY$ (((X) (Y C B A))))
+         <5 (APPLY$ (:RETURN (C B A) ((X) (Y C B A))))
+       <4 (DO$ (C B A))
+     <3 (DO$ (C B A))
+   <2 (DO$ (C B A))
+ <1 (DO$ (C B A))
+ (C B A)
+ ACL2 !>
+ })
+
+ <p>First consider the calls of @('do$') above.  You can see that @('X') is
+ initially bound in the alist to @('(A B C)'), but on successive @('do$')
+ calls, @('X') is bound to successive @('cdr')s of @('(A B C)').  Meanwhile,
+ the accumulator variable @('Y') is initially bound to @('NIL') but at each
+ call of @('do$'), the next @('car') of @('(A B C)') is pushed onto the binding
+ of @('Y').  Now consider the calls of @(tsee apply$).  Up until the last call,
+ @('apply$')ing the body function results in a triple of the form @('(mv nil
+ nil new-alist)'), where @('new-alist') is supplied as the alist argument for
+ the next @('do$') call.  The last call of @('apply$') on the body function
+ gives the result @('(mv :RETURN (C B A) new-alist)'), where @('(C B A)') is
+ the value returned by the calls of @('do$').</p>
+
+ <p>Now consider this variant of the above example, which was given above when
+ introducing @('FINALLY') clauses.</p>
+
+ @({
+ ACL2 !>(loop$ with x = '(a b c)
+               with y = nil
+               do (cond ((consp x)
+                         (progn (setq y (cons (car x) y))
+                                (setq x (cdr x))))
+                        (t (loop-finish)))
+               finally (return y))
+ (C B A)
+ ACL2 !>
+ })
+
+ <p>The corresponding @('do$') call is similar to that of the preceding
+ example, but notice @(':LOOP-FINISH') in place of @(':RETURN'), and notice
+ that we show the fourth argument this time: the function corresponding to the
+ @('FINALLY') clause.</p>
+
+ @({
+ (DO$ ; Measure Function
+      (LAMBDA$ (ALIST)
+               (LET ((X (CDR (ASSOC-EQ-SAFE 'X ALIST)))
+                     (Y (CDR (ASSOC-EQ-SAFE 'Y ALIST))))
+                    (ACL2-COUNT X)))
+      ; Initial Alist
+      (LIST (CONS 'X '(A B C))
+            (CONS 'Y NIL))
+      ; Body Function
+      (LAMBDA$ (ALIST)
+               (LET ((X (CDR (ASSOC-EQ-SAFE 'X ALIST)))
+                     (Y (CDR (ASSOC-EQ-SAFE 'Y ALIST))))
+                    (IF (CONSP X)
+                        (LIST NIL
+                              NIL ; irrelevant
+                              (LIST (CONS 'X (CDR X))
+                                    (LIST* 'Y (CAR X) Y)))
+                        (LIST :LOOP-FINISH
+                              NIL ; irrelevant
+                              (LIST (CONS 'X X) (CONS 'Y Y))))))
+      ; FINALLY function
+      (LAMBDA$ (ALIST)
+               (LET ((X (CDR (ASSOC-EQ-SAFE 'X ALIST)))
+                     (Y (CDR (ASSOC-EQ-SAFE 'Y ALIST))))
+                    (LIST :RETURN
+                          Y
+                          (LIST (CONS 'X X) (CONS 'Y Y)))))
+      ; Default
+      NIL
+      ... ; Other arguments are omitted here.
+ )
+ })
+
+ <p>Above, we also took the opportunity to show the fifth argument of @('do$'),
+ which is the logical (``Default'') value returned when the measure fails to
+ decrease at the start of an iteration.  That value is @('nil') if a single
+ ordinary value is returned, as when the @(':VALUES') keyword is omitted.
+ Otherwise that default value is the value of the @(':VALUES') keyword.  (Got
+ that?)  The default value is never relevant to evaluation since an error
+ occurs when the measure fails to decrease; it can however be relevant when
+ reasoning about @('do$') calls.</p>
+
+ })
+
+ @(def do$)
+
+ ")
+
 (defxdoc do-not
   :parents (hints)
   :short "Instruct the theorem prover not to do certain things."
-
   :long "<p>See @(see hints) for documentation about the @(':do-not') keyword
  for prover @(':hints').</p>
 
@@ -26544,8 +27547,35 @@ ld) and @(tsee include-book)"
  not edit ACL2 source file @('doc.lisp'), which is generated from that book.
  More generally, edit only files under the @('books/') directory.)</p>
 
- <p>You can also use XDOC to document your own books and to build custom manuals
- for your organization.</p>
+ <p>You can also use XDOC to document your own books and to build custom
+ manuals for your organization.</p>
+
+ <p><b>Remark for Experienced Users</b>.  Occasionally it might make sense to
+ add a link to your book's documentation from the ACL2 system documentation,
+ which is in @(see community-book) @('books/system/doc/acl2-doc.lisp'). You are
+ welcome to do so, but in that case, also add to the constant
+ @('*acl2-broken-links-alist*') near the top of that file, as described in a
+ comment in that constant.  For example, that constant's value has the
+ following line.</p>
+
+ @({
+     (FTY::DEFPROD \"[books]/centaur/fty/top.lisp\")
+ })
+
+ <p>That line may have been added because in the form @('(defxdoc defrec ...)')
+ in @('acl2-doc.lisp'), we find a link to @('fty::defprod').  You can do
+ similarly for your own added link.</p>
+
+ <p>If your topic is not in the @('\"ACL2\"') package, such as in the example
+ link @('fty::defprod') above, then add a suitable @(tsee include-book) form to
+ @('books/system/doc/cert.acl2').  For example, that file includes the line</p>
+
+ @({
+ (include-book \"centaur/fty/portcullis\" :dir :system)
+ })
+
+ <p>in order to define the @('\"FTY\"') package.  End of Remark for
+ Experienced Users</p>
 
  <h3>Other Resources</h3>
 
@@ -27272,11 +28302,11 @@ ld) and @(tsee include-book)"
  tail recursion when possible.  In some cases the use of hash cons,
  memoization, or fast alists may reduce computation time dramatically; see
  @(see hons-and-memoization).  Single-threaded objects (see @(see stobj)),
- @(see arrays), multiple-value return (see @(see mv) and @(see mv-let)), and
- @(tsee mbe) are helpful programming constructs provided by ACL2 for efficient
- execution.  Some built-in functions are constructed for efficiency; see for
- example @(tsee cons-with-hint) to reduce consing and @(see
- read-file-into-string) for obtaining the contents of a file quickly.</p>
+ @(see arrays), @(see multiple-value) return, and @(tsee mbe) are helpful
+ programming constructs provided by ACL2 for efficient execution.  Some
+ built-in functions are constructed for efficiency; see for example @(tsee
+ cons-with-hint) to reduce consing and @(see read-file-into-string) for
+ obtaining the contents of a file quickly.</p>
 
  <p>You might find @(tsee type) @(see declaration)s to be useful.  In
  particular, if your host Lisp is GCL then the use of the declaration
@@ -31778,7 +32808,8 @@ ld) and @(tsee include-book)"
  information than is provided by the key checkpoints &mdash; although this
  should rarely be necessary &mdash; then you can look at the full proof,
  perhaps with the aid of certain utilities: see @(see pso), @(see
- set-gag-mode), and @(see proof-tree).</p>
+ set-gag-mode), and @(see proof-tree).  System hackers may want to consider
+ using the utility, @(tsee checkpoint-list).</p>
 
  <p>Again, see @(see the-method) for a general discussion of how to prove
  theorems with ACL2, and see @(see introduction-to-the-theorem-prover) for a
@@ -33374,6 +34405,745 @@ current fast alists."
   <p>We regard @('fn-equal') as a reminder to us &mdash; or a challenge to
   users!  &mdash; to find a way to handle functional equivalence in the
   rewriter.</p>")
+
+(defxdoc for-loop$
+  :parents (loop$)
+  :short "Iteration with @(tsee loop$) over an interval of integers or a list"
+  :long "<p>This topic assumes that you have read the introduction to
+  @('loop$') expressions in ACL2; see @(see loop$).  Here we give more complete
+  documentation on @('FOR') @('loop$') expressions, beginning with informal
+  discussion and then continuing with detailed syntax (General Form) and
+  semantics.</p>
+
+  <p>Examples of @(tsee loop$) expressions, including @('FOR') @('loop$')s, may
+  be found in @(see community-book) @('projects/apply/loop-tests.lisp').</p>
+
+  <p>The only allowed iteration clauses are @('IN'), where the variable ranges
+  over the elements of the given true list; @('ON'), where the variable ranges
+  over the tails of the given true-list; and @('FROM/TO/BY'), where the
+  variable ranges over the integers between two bounds, stepping by a positive
+  integer increment (or by 1 if no @('BY') clause is provided).</p>
+
+  <p>You may have as many iteration clauses as you wish, connected with
+  @('AS').  Each must introduce a unique iteration variable and that variable
+  may be optionally followed by an @('of-type') @(see type-spec) specification.
+  @('Of-type') is a Common Lisp feature that allows the compiler to optimize
+  operations on the variable in question.  Here is an example.</p>
+
+  @({
+  (loop$ for v of-type (and integer (not (satisfies zerop)))
+               from 1 to 100
+         sum (/ 1 v))
+  })
+
+  <p>Here is that same example with a more concise type specification.</p>
+
+  @({
+  (loop$ for v of-type (integer 1 *)
+               from 1 to 100
+         sum (/ 1 v))
+  })
+
+  <p>After all of the iteration clauses, you may have a termination test,
+  signaled by @('UNTIL'), and/or a conditional test, signaled by @('WHEN').  If
+  both are provided, the @('UNTIL') test must come first.  Iteration stops when
+  the @('UNTIL') test is satisfied.  The conditional test determines whether
+  the loop body is executed for the current value of the iteration
+  variables.</p>
+
+  <p>Between the @('UNTIL') symbol and the expression to be tested, and between
+  the @('WHEN') symbol and its expression, you may include a @(':GUARD')
+  clause.  This is useful if @(see guard) verification requires an invariant
+  relating multiple iteration variables.  An example of a guarded @('UNTIL')
+  clause is</p>
+
+  @({
+  (loop$ for u in lst1 as v in lst2
+         until :guard (invariantp u v) (test u v)
+         collect (body u v))
+  })
+
+  <p>ACL2 supports only five operators in @('FOR') @('loop$')s: @('SUM'),
+  @('COLLECT'), @('ALWAYS'), @('THEREIS') and @('APPEND').  We anticipate
+  adding other Common Lisp operators eventually.</p>
+
+  <p>The special symbols noted above, sometimes called ``@('FOR') @('loop$')
+  keywords'' or just ``@('loop$') keywords'' may be in any package.  These are
+  @('FOR'), @('IN'), @('ON'), @('FROM'), @('TO'), @('BY'), @('OF-TYPE'),
+  @('WHEN'), @('UNTIL'), @('SUM'), @('COLLECT'), @('ALWAYS'), @('THEREIS'), and
+  @('APPEND').</p>
+
+  <p>Between the operator, e.g., @('SUM') or @('COLLECT'), and the
+  @('loop$') body you may include a @(':GUARD') clause as in</p>
+
+  @({
+  (loop$ for u in lst1 as v in lst2
+         collect :guard (invariantp u v) (body u v))
+  })
+
+  <p>This is sometimes necessary in the verification of the @(see guard)s for
+  the @('loop$') body because Common Lisp's @('OF-TYPE') clauses do not permit
+  you to relate one variable to another.</p>
+
+  <h3>General Form</h3>
+
+  <p>The syntax of Common Lisp @('loop') expressions is extremely complicated.
+  Rather than try to write the abstract syntax of ACL2's @('loop$') expressions
+  in the same formal style, we take a different approach, which is workable
+  because @('loop$') allows fewer options.</p>
+
+  <p>First we introduce the syntax of a ``target clause,'' a ``type-spec,'' and
+  the ``operators.''  Then we describe the most elaborate form of a @('loop$')
+  expression in terms of these elements and ordinary ACL2 terms.  Every legal
+  @('loop$') expression can be produced by omitting certain optional elements
+  from the most elaborate @('loop$') form.  So we conclude the syntactic
+  description of @('loop$') by listing the elements that can be omitted.</p>
+
+  <p>A <i>target clause</i> has one of four forms</p>
+
+  <ul>
+
+  <li>@('IN') <i>list-expr</i></li>
+
+  <li>@('ON') <i>list-expr</i></li>
+
+  <li>@('FROM') <i>lo-expr</i> @('TO') <i>hi-expr</i></li>
+
+  <li>@('FROM') <i>lo-expr</i> @('TO') <i>hi-expr</i> @('BY')
+  <i>step-expr</i></li>
+
+  </ul>
+
+  <p>where <i>list-expr</i> is a term (which is expected to evaluate to a true
+  list), <i>lo-expr</i> and <i>hi-expr</i> are terms (which are expected to
+  evaluate to integers), and <i>step-expr</i> is a term (which is expected to
+  evaluate to a positive integer).</p>
+
+  <p>The legal <i>type-specs</i> are listed in @(tsee type-spec).</p>
+
+  <p>The legal <i>operators</i> are @('SUM'), @('COLLECT'), @('ALWAYS'),
+  @('THEREIS'), and @('APPEND').</p>
+
+  <p>The most elaborate @('loop$') expression is of the form</p>
+
+  <p>&nbsp; &nbsp; &nbsp; &nbsp; @('(LOOP$ FOR ')<i>v1</i>@(' OF-TYPE ')<i>spec1
+  target1</i><br/> &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;
+  &nbsp; &nbsp; &nbsp; &nbsp; @('AS ') &nbsp; <i>v2</i>@(' OF-TYPE ')<i>spec2
+  target2</i><br/> &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;
+  &nbsp; &nbsp; &nbsp; &nbsp; ...<br/> &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;
+  &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; @('AS ') &nbsp; <i>vn</i>@('
+  OF-TYPE ')<i>specn targetn</i><br/> &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;
+  &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; @('UNTIL :GUARD ')<i>guard1
+  until-expr</i><br/> &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;
+  &nbsp; &nbsp; &nbsp; &nbsp; @('WHEN ') &nbsp; @(':GUARD ')<i>guard2
+  when-expr</i><br/> &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;
+  &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; ; Note the @('ALWAYS')/@('THEREIS') Exceptions
+  below!<br/> &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;
+  &nbsp; &nbsp; &nbsp; <i>op</i>@(' :GUARD ')<i>guard3
+  body-expr</i>@(')')<br/></p>
+
+  <p>where each <i>vi</i> &nbsp; is a legal variable symbol and they are all
+  distinct, each <i>type-speci</i> &nbsp; is a @(tsee type-spec), each
+  <i>targeti</i> &nbsp; is a target clause, each <i>guardi</i>,
+  <i>until-expr</i>, and <i>when-expr</i> &nbsp; is a term, <i>op</i> &nbsp; is
+  an operator, and <i>body-expr</i> &nbsp; is a term.  Furthermore,
+  <i>until-expr</i>, <i>when-expr</i>, and <i>body-expr</i> &nbsp; must be
+  @(see tame)!</p>
+
+  <p><i>The @('ALWAYS')/@('THEREIS') Exception:</i> Common Lisp prohibits loops
+  with both a @('WHEN') clause and either an @('ALWAYS') or a @('THEREIS')
+  operator.  For example, if you are tempted to use @('WHEN') <i>p</i> with
+  @('ALWAYS') <i>q</i> you can instead write @('ALWAYS') @('(implies ')<i>p
+  q</i>@(')') or, if you want to evaluate @('q') only when @('p') is true, you
+  can write @('ALWAYS') @('(if ')<i>p q</i> @('t)').</p>
+
+  <p>The following elements may be omitted.</p>
+
+  <ul>
+  <li>any line beginning with @('AS'), @('UNTIL') or @('WHEN'),</li>
+
+  <li>any @('OF-TYPE') <i>speci</i>, and</li>
+
+  <li>any @(':GUARD') <i>guardi</i>.</li>
+
+  </ul>
+
+  <p>As noted above, the @('FOR') @('loop$') keywords (as used above) may be in
+  any package.  These are @('FOR'), @('IN'), @('ON'), @('FROM'), @('TO'),
+  @('BY'), @('OF-TYPE'), @('WHEN'), @('UNTIL'), @('SUM'), @('COLLECT'),
+  @('ALWAYS'), @('THEREIS'), and @('APPEND').</p>
+
+  <p>We give names to certain classes of the syntactic entities above.  The
+  <i>v1</i>, ..., <i>vn</i> are called the <i>iteration variables</i>.  The
+  <i>spec1</i>, ..., <i>specn</i> are called <i>type specs</i>, each
+  corresponds to a certain iteration variable, and each gives rise to a <i>type
+  term</i> about its variable in the sense that ``@('X OF-TYPE (SATISFIES
+  NATP)')'' gives rise to the type term @('(NATP X)') and ``@('I OF-TYPE
+  INTEGER')'' gives rise to the type term @('(INTEGERP I)').  The terms
+  involved in the target expressions, e.g., the <i>list-expr</i> in ``@('IN')
+  <i>list-expr</i>'' and ``@('ON') <i>list-expr</i>'' and the <i>lo-expr</i>,
+  <i>hi-expr</i> and optional <i>step-expr</i> in the ``@('FROM')
+  <i>lo-expr</i> @('TO') <i>hi-expr</i> @('BY') <i>step-expr</i>'' targets are
+  called <i>target terms</i>.  Finally, the <i>until-expr</i>,
+  <i>when-expr</i>, and <i>body-expr</i> are called <i>iterative forms</i>.</p>
+
+  <p>We distinguish the target terms from the iterative forms because they are
+  handled very differently at evaluation time.  When a @('loop$') is evaluated,
+  the target terms are evaluated just once.  But the iterative forms are
+  evaluated multiple times as the iteration variables range over the values of
+  the targets.</p>
+
+  <p>A @('FOR') @('loop$') expression with just one iteration variable and in
+  which the iterative forms mention no free variable other than the iteration
+  variable is called a <i>simple @('loop$')</i> (or, sometimes, a <i>simple
+  loop</i>).  An example of a simple loop is</p>
+
+  @({
+  (loop$ for x in lst when (evenp x) collect (+ 1 (sq x)))
+  })
+
+  <p>A @('FOR') @('loop$') expression is called a <i>fancy @('loop$')</i> if it
+  is not simple.  Both of the following @('loop$')s are fancy.</p>
+
+  @({
+  (loop$ for x in xlst as y on ylst collect (expr x y))
+
+  (loop$ for x in xlst collect (expr x z))
+  })
+
+  <p>The first is fancy because it has two iteration variables.  The second is
+  fancy because the body freely uses the variable @('z') which is not the
+  iteration variable.</p>
+
+  <h3>Semantics</h3>
+
+  <p>@('FOR') @('loop$') expressions are translated into calls of @(see
+  scion)s, with the @('UNTIL') and @('WHEN') clauses translated into
+  preprocessors of the targets.  But which scions are used depend on whether
+  the loop is simple or fancy.  Recall that a fancy loop is one that has either
+  or both of the following characteristics: (a) there is one or more @('as')
+  clauses, and/or (b) one of the iterative forms (the @('UNTIL'), @('WHEN') or
+  loop body expression) refers to variables other than an iteration variable.
+  If the @('loop$') expression is simple, the simple scions are used; otherwise
+  the fancy scions are used.</p>
+
+  @({
+   loop$               simple          fancy
+   keyword             scion           scion
+   ______________________________________________
+   SUM                 sum$            sum$+
+   COLLECT             collect$        collect$+
+   ALWAYS              always$         always$+
+   THEREIS             thereis$        thereis$+
+   APPEND              append$         append$+
+   UNTIL               until$          until$+
+   WHEN                when$           when$+
+   })
+
+  <p>We deal with simple @('loop$')s first.</p>
+
+  <h4>Semantics of Simple Loop$s</h4>
+
+  <p>For example, the simple @('loop$')</p>
+  @({
+  (loop$ for x in lst collect (+ 1 (sq x)))
+  })
+  <p>translates to (a term equivalent to)</p>
+
+  @({
+  (collect$ (lambda$ (x)
+                     (declare (ignorable x))
+                     (+ 1 (sq x)))
+            lst).
+  })
+
+  <p><b>Note:</b> The actual translation is tagged with various markers that
+  play a role in evaluation but which are logically irrelevant and which are
+  removed during proof.  In this discussion we will not display the marked-up
+  translations but logically equivalent terms instead.  You can see the actual
+  translations for yourself with @(tsee trans).</p>
+
+  <p>In the translation the target term, @('lst'), appears as an ordinary
+  subterm of the translation.  But the iterative form, @('(+ 1 (sq x))'),
+  becomes the body of a @(tsee lambda$) expression, which means its translation
+  becomes a component of a quoted @('LAMBDA') object.  When the @('collect$')
+  is evaluated, the target term is evaluated once but the iterative form is
+  evaluated once for each element of the value of the target.</p>
+
+  <p>@('UNTIL') and @('WHEN') clauses are handled by preprocessing the target.
+  E.g.,</p>
+
+  @({
+  (loop$ for x in lst
+         until (> x 100)
+         when (evenp x)
+         collect (+ 1 (sq x)))
+  })
+
+  <p>becomes</p>
+
+  @({
+  (collect$ (lambda$ (x)
+                     (declare (ignorable x))
+                     (+ 1 (sq x)))
+            (when$ (lambda$ (x)
+                            (declare (ignorable x))
+                            (evenp x))
+                   (until$ (lambda$ (x)
+                                    (declare (ignorable x))
+                                    (> x 100))
+                           lst)))
+  })
+
+  <p>So from a logical perspective, the presence of an @('UNTIL') and/or
+  @('WHEN') clause in a @('collect') iteration over @('lst') ``copies'' the
+  target value.  The @('until$') copies @('lst') until encountering the first
+  element on which its functional argument is true.  The @('when$') then copies
+  that (shortened?) target, keeping only the elements that satisfy its
+  functional argument.  Finally, the @('collect$') then applies its functional
+  argument and collects all the values.</p>
+
+  <p>@('ON') and @('FROM/TO/BY') targets are handled by listing all the
+  elements in the given target.  For example,</p>
+
+  @({
+  (loop$ for x on lst collect (expr x))
+  })
+
+  <p>which maps @('x') over successive non-empty tails of @('lst') and collects
+  the value of @('expr') has the logical meaning</p>
+
+  @({
+  (collect$ (lambda$ (x) (expr x))
+            (tails lst))
+  })
+
+  <p>where, for example, @('(tails '(1 2 3))') is @('((1 2 3) (2 3) (3))').</p>
+
+  <p>Spiritually similarly,</p>
+  @({
+  (loop$ for i from 1 to max by step collect (expr x))
+  })
+
+  <p>becomes</p>
+
+  @({
+  (collect$ (lambda$ (x) (expr x))
+            (from-to-by 1 max step))
+  })
+
+  <p>where, for example, @('(from-to-by 1 10 2)') is @('(1 3 5 7 9)').</p>
+
+  <p>Similar translations are done for the other operators, e.g., @('SUM') and
+  @('ALWAYS').  The advantage of this translation style is that it allows
+  compositional reasoning.  We discuss this further below.</p>
+
+  <p>The following example illustrates basic @(see guard) proof obligations, in
+  particular showing that @('WHEN') clauses do not help with verifying guards
+  for the @('loop$') bodies.  (Similarly, @('UNTIL') clauses do not help
+  either.)  The basic problem is that ACL2 requires that @(tsee lambda) objects
+  be guard verifiable in isolation, not confined to the context in which a
+  particular @('lambda') object appears.  Consider the following.</p>
+
+  @({
+  (include-book \"projects/apply/top\" :dir :system)
+  (defun$ sq (n)
+    (declare (xargs :guard (natp n)))
+    (* n n))
+  (defun foo (lst)
+    (declare (xargs :guard (nat-listp lst)))
+    (loop$ for x of-type (satisfies nat-listp) on lst
+           when (consp x)
+           sum (sq (car x))))
+  })
+
+  <p>Guard verification fails for @('foo').  The summary says that a goal of
+  @('NIL') was generated.  Using @(':')@(tsee pso) we can see that the @('NIL')
+  goal came from:</p>
+
+  @({
+  Subgoal 1
+  (IMPLIES (NAT-LISTP X) (NATP (CAR X))).
+  })
+
+  <p>Let's see what is going on by looking at the following abbreviated
+  translation of the @('loop$') expression.</p>
+
+  @({
+  (sum$ '(lambda (x)
+           (declare (type (satisfies nat-listp) x)
+                    (xargs :guard (nat-listp x)
+                           :split-types t)
+                    (ignorable x))
+           (sq (car x)))
+        (when$ '(lambda ...) (tails lst)))
+  })
+
+  <p>Notice that the @('lambda') object supplied to @('sum$') cannot be guard
+  verified in isolation: @('nil') satisfies the @(':guard') and @('(car nil)')
+  violates the guard of @('sq').  The following modification, which adds a
+  @(':guard') directive after the @('SUM') op keyword, solves the problem.</p>
+
+  @({
+  (defun foo (lst)
+    (declare (xargs :guard (nat-listp lst)))
+    (loop$ for x of-type (satisfies nat-listp) on lst
+           when (consp x)
+           sum :guard (consp x)  ; note new :guard
+           (sq (car x))))
+  })
+
+  <p>This new @(':guard') may feel redundant, coming as it does after the
+  @('when (consp x)') clause.  But it is necessary given the compositional
+  semantics.</p>
+
+  <p>The abbreviated translation of the @('defun') above shows that the
+  application @('(sq (car x))') is protected by a suitable guard in the
+  @('lambda') object.</p>
+
+  @({
+  (sum$ '(lambda (x)
+           (declare (type (satisfies nat-listp) x)
+                    (xargs :guard (if (nat-listp x) (consp x) 'nil)
+                           :split-types t)
+                    (ignorable x))
+           (sq (car x)))
+        (when$ '(lambda ...) (tails lst)))
+  })
+
+  <p>Naively we might have expected that the guard proof obligation for the
+  @('loop$') body @('(sq (car x))') could assume the @('WHEN') clause, but that
+  expectation would be wrong because of the compositional semantics we use and
+  the fact that @(tsee lambda) objects must be guard-verifiable on their own.
+  The reason for the latter requirement is that our implementation caches
+  guard-verified @('lambda') objects for evaluation in raw Lisp, which may take
+  place in other contexts different from that in which the @('lambda') first
+  appeared.  See @(see print-cl-cache).</p>
+
+  <h4>Semantics of Fancy Loop$s</h4>
+
+  <p>An example of a fancy @('loop$') is</p>
+
+  @({
+  (loop$ for x in xlst as y in ylst collect (expr x y z))
+  })
+
+  <p>This loop exhibits both characteristics (a) and (b): it has an @('AS')
+  clause and the variable @('z') appears in the loop body.  Either
+  characteristic is sufficient to classify the loop as fancy.  So fancy scions
+  are used.  Here is its semantic counterpart, i.e., its translation.</p>
+
+  @({
+  (collect$+
+   (lambda$ (loop$-gvars loop$-ivars)
+            (declare (xargs :guard (and (true-listp loop$-gvars)
+                                        (equal (len loop$-gvars) 1)
+                                        (true-listp loop$-ivars)
+                                        (equal (len loop$-ivars) 2))))
+            (let ((z (car loop$-gvars))
+                  (x (car loop$-ivars))
+                  (y (car (cdr loop$-ivars))))
+              (declare (ignorable x y))
+              (expr x y z)))
+   (list z)
+   (loop$-as (list xlst ylst)))
+   })
+
+  <p>Before we show the definition of @('collect$+') note that the arguments
+  above to @('collect$+') are (i) a @('lambda$') expression that handles the
+  evaluation of the iterative form, in this case @('(expr x y z)'), where
+  @('x') and @('y') are iteration variables and @('z') is a ``global'' variable
+  not among the iteration variables; (ii) the list of values of the ``global''
+  variables, in this case the list containing @('z'); and (iii) a target list
+  constructed by @('loop$-as') from the various targets provided in the
+  @('loop$'), in this case @('xlst') and @('ylst'), supplying values for
+  iteration variables @('x') and @('y') respectively.  For example,
+  @('(loop$-as (list '(a b c d e) '(1 2 3)))') is @('((a 1) (b 2) (c 3))').
+  These tuples contain successive corresponding values of @('x') and
+  @('y').</p>
+
+  <p>The definition of @('collect$+') is essentially</p>
+  @({
+  (defun collect$+ (fn loop$-gvars lst)
+    (if (endp lst)
+        nil
+        (cons (apply$ fn (list loop$-gvars (car lst)))
+              (collect$+ fn loop$-gvars (cdr lst)))))
+  })
+
+  <p>We have omitted the guard and an @(tsee MBE) form that make it run more
+  efficiently.  All the fancy @('loop$') scions are defined analogously.</p>
+
+  <p>Inspection of the @('lambda$') expression above reveals that it takes a
+  list of global variable values and a list of iteration variable values,
+  unpacks them with a @('let') that binds the global variables, here just
+  @('z'), to their values and binds the iteration variables, here @('x') and
+  @('y'), to the corresponding pair of values from the target, and then
+  evaluates the @('loop$') body, @('(expr x y z)').</p>
+
+  <p>The names of the formals for the @('lambda$') expressions generated by
+  fancy @('loop$') expressions are always @('loop$-gvars') and
+  @('loop$-ivars'), for ``@('loop$') global variables'' and ``@('loop$')
+  iteration variables.''</p>
+
+  <p>@('UNTIL') and @('WHEN') clauses in a fancy @('loop$') are handled exactly
+  as they are in simple @('loop$')s, except that the fancy scions are used
+  since the target list is a list of tuples of iteration variable values and
+  the @('UNTIL') and @('WHEN') forms may refer to global variables.</p>
+
+  <h4>Special Guard Conjectures for @('FOR') @('loop$')s</h4>
+
+  <p>Since every @('loop$') expands to a call of a @('loop$') scion on a lambda
+  object and a target, one would expect that @(see guard) verification would
+  generate the guard conjectures for that scion and target.  Indeed, it does.
+  In particular, the lambda object must have the correct number of
+  formals (which is guaranteed by translation) and the target must satisfy
+  @(tsee true-listp).</p>
+
+  <p>But in addition to the expected guard conjectures, we generate some
+  special ones for the terms produced by translating @('FOR') @('loop$')
+  expressions.  We discuss the reasons in the next section, but here we just
+  state what the special conjectures are.  We limit ourselves to a simple
+  @('loop$').  Fancy @('loop$') generalize in the obvious way.  The three
+  classes of ``special guard conjectures'' for @('FOR') @('loop$') expressions
+  are:</p>
+
+  <p>First, every element (or tail, in the case of @('ON') @('loop$')s)
+  satisfies the type-spec, if any.  Note that in the case of @('ON')
+  @('loop$')s <i>every</i> tail, including the empty one, must satisfy the
+  type-spec.</p>
+
+  <p>Second, the type-spec, if any, implies the guards of the @('loop$')
+  body.</p>
+
+  <p>Third, the @('loop$') body produces a value acceptable to the @('loop$')
+  operator, e.g., the body of @('SUM') @('loop$') produces a number and
+  the body of an @('APPEND') @('loop$') produces a true list.</p>
+
+  <h4>Discussion of Why LOOP$s Have Special Guards</h4>
+
+  <p>All of the simple @('loop$') scions have the same guard, namely</p>
+
+  @({
+  (AND (APPLY$-GUARD FN '(NIL))
+       (TRUE-LISTP LST)),
+  })
+
+  <p>and all the fancy @('loop$') scions have the same guard, namely</p>
+
+  @({
+  (AND (APPLY$-GUARD FN '(NIL NIL))
+       (TRUE-LISTP LOOP$-GVARS)
+       (TRUE-LIST-LISTP LST)).
+  })
+
+  <p>In addition to the normal guard conjectures that would be generated by
+  calls of these scions, ACL2 generates some special guard conjectures because
+  the normal guard conjectures are insufficient to guarantee the error-free
+  execution of the corresponding Common Lisp @('loop') expressions.</p>
+
+  <p>For example, the logical meaning of</p>
+
+  @({
+  (defun foo (lst)
+    (declare (xargs :guard (foo-guardp lst)))
+    (loop$ for x of-type (satisfies spec) on lst sum (expr x)))
+  })
+
+  <p>is</p>
+
+  @({
+  (defun foo (lst)
+    (declare (xargs :guard (foo-guardp lst)))
+    (sum$ (lambda$ (x)
+                   (declare (type (satisfies spec) x))
+                   (expr x))
+          (tails lst))).
+  })
+
+  <p>Prior to the provision for special guards, the normal guard conjectures
+  generated for @('foo') would be</p>
+
+  @({
+  (and (implies (foo-guardp lst)                                 ; [1]
+                (apply$-guard
+                 (lambda$ (x)
+                   (declare (type (satisfies spec) x))
+                   (expr x))
+                 '(nil)))
+       (implies (foo-guardp lst)                                 ; [2]
+                (true-listp (tails lst)))
+       (implies (foo-guardp lst)                                 ; [3]
+                (true-listp lst))
+       (implies (spec x) (expr-guardp x)))                       ; [4]
+  })
+
+  <p>Conjectures [1] and [2] stem from the guard for @('sum$') and establish
+  that the guard for @('foo') implies that @('sum$') is passed a function
+  object of one argument and a true-list.  Conjecture [3] establishes the guard
+  of @('tails').  And conjecture [4] establishes that the guard on the
+  @('lambda$') implies the guard of its body.</p>
+
+  <p>But consider the raw Lisp @('loop') generated by the @('loop$') in the raw
+  Lisp definition of @('foo'),</p>
+
+  @({
+  (loop for x of-type (satisfies spec) on lst sum (expr x)).
+  })
+
+  <p>For this @('loop') to execute without error we need to know that [5] every
+  non-empty tail of @('lst') satisfies @('spec'), [6] that for every tail,
+  @('x'), of @('lst'), @('(expr x)') returns a number, and [7] that @('nil')
+  satisfies @('spec').  The last is somewhat surprising but inspection of
+  Common Lisp reveals that even though @('(expr x)') is never called on the
+  empty tail of @('lst'), implementations running with high safety settings
+  check that the empty list satisfies @('spec').</p>
+
+  <p>So when ACL2's guard verification process encounters a @('sum$') like that
+  in the logical @('defun') of @('foo'), it generates three additional guard
+  conjectures</p>
+
+  @({
+       (implies (and (warrant ...) ; see below                   ; [5]
+                     (foo-guardp lst)
+                     (member-equal newv (tails lst)))
+                (spec newv))
+
+       (implies (and (warrant ...) ; see below                   ; [6]
+                     (foo-guardp lst)
+                     (member-equal newv (tails lst)))
+                (acl2-numberp
+                 (apply$ (lambda$ (x)
+                           (declare (type (satisfies spec) x))
+                           (expr x))
+                         (list newv))))
+
+       (implies (foo-guardp lst)                                 ; [7]
+                (spec nil))
+  })
+
+  <p>Notice the addition of hypotheses above of the form @('(warrant ...)').
+  ACL2 adds such <i>@(see warrant) hypotheses</i> for function symbols that
+  might be @(tsee apply$)ed during evaluation of a scion call (in this case,
+  @('sum$')).</p>
+
+  <p>In general, you may notice that ACL2 generates such ``special'' guard
+  conjectures for all calls of @('FOR') @('loop$') scions, whether or not they
+  stemmed from uses of @('loop$').  @('FROM/TO/BY') targets require that the
+  bounds and step all satisfy the @('of-type') specification, and the
+  @('append') operator requires that the loop body generate a @(tsee
+  true-listp) (instead of an @(tsee acl2-numberp) as required by the @('sum')
+  operator).</p>
+
+  <h4>The Compromise Between Reasoning and Efficiency</h4>
+
+  <p>The translation of @('loop$') expressions into formal terms reflects a
+  compromise between facilitating compositional reasoning and efficient
+  execution.</p>
+
+  <p>One sign of that compromise is our use of scions to handle @('UNTIL') and
+  @('WHEN') clauses.  As noted above, by translating</p>
+
+  @({
+  (loop$ for x in lst until ... when ... collect ...)
+  })
+
+  <p>into</p>
+
+  @({
+  (collect$ ... (when$ ... (until$ ... lst)))
+  })
+
+  <p>we're forcing the evaluation of the formal semantics to copy the target
+  twice before collecting.  But it gives us the ability to reason
+  compositionally about @('collect$'), @('when$'), and @('until$').  We could
+  have defined a version of @('collect$') that took three @('lambda$')
+  expressions, one to terminate the collection, one to filter for the elements
+  we're interested in, and one to transform those elements into the values we
+  wish to collect.  This would avoid copying upon evaluation but make it more
+  difficult to reason.</p>
+
+  <p>Another example of compositionality is to consider a simple @('loop$')
+  over the @('IN') target @('(append a b)').  There are 8 different ways you
+  can do a simple @('COLLECT') over an @('(append a b)') target,</p>
+
+  @({
+  (loop$ for x in (append a b) collect (expr x))
+  (loop$ for x on (append a b) collect (expr x))
+  (loop$ for x in (append a b) until (stop x) collect (expr x))
+  (loop$ for x on (append a b) until (stop x) collect (expr x))
+  (loop$ for x in (append a b) when (test x) collect (expr x))
+  (loop$ for x on (append a b) when (test x) collect (expr x))
+  (loop$ for x in (append a b) until (stop x) when (test x)
+         collect (expr x))
+  (loop$ for x on (append a b) until (stop x) when (test x)
+         collect (expr x))
+  })
+
+  <p>Similarly, there are 8 ways to @('SUM') over an @('(append a b)') target,
+  8 ways to @('APPEND') over an @('(append a b)'), and 4 ways each to
+  @('ALWAYS') or @('THEREIS') over an @('(append a b)') target.  Thus, there
+  are 32 different simple @('loop$')s over @('(append a b)').  And you can
+  arrange to distribute the simple @('loop$') over the @('(append a b)') with
+  just seven rewrite rules.</p>
+
+  @({
+  (equal (collect$ fn (append a b))
+         (append (collect$ fn a)
+                 (collect$ fn b)))
+
+  (equal (sum$ fn (append a b))
+         (+ (sum$ fn a)
+            (sum$ fn b)))
+
+  (equal (always$ fn (append a b))
+         (and (always$ fn a)
+              (always$ fn b)))
+
+  (equal (thereis$ fn (append a b))
+         (or (thereis$ fn a)
+             (thereis$ fn b)))
+
+  (equal (append$ fn (append a b))
+         (append (append$ fn a)
+                 (append$ fn b)))
+
+  (equal (until$ fn (append a b))
+         (if (exists$ fn a)
+             (until$ fn a)
+             (append a (until$ fn b))))
+
+  (equal (when$ fn (append a b))
+         (append (when$ fn a)
+                 (when$ fn b)))
+
+  })
+
+  <p>Thus, you can reason about @('WHEN') and @('UNTIL') clauses without having
+  to consider how they are used in the superior @('loop$') expression.</p>
+
+  <p>To deal with fancy @('loop$') you need seven more rewrite rules, one for
+  each fancy @('loop$') scion.  But since every simple @('loop$') can be
+  expressed by an appropriate use of fancy scions, we could have translated
+  every @('FOR') @('loop$') to fancy scions.  We chose to break
+  compositionality here because we think simple @('loop$')s are most common and
+  wanted to keep their semantics simple.  I.e., we compromised.</p>
+
+  <p>By the way, if you want the prover to convert every simple scion to its
+  fancy counterpart you could prove rewrite rules like that below.</p>
+
+  @({
+  (defthm convert-collect$-to-collect$+
+    (implies (ok-fnp fn)
+             (equal (collect$ fn lst)
+                    (collect$+ `(lambda (loop$-gvars loop$-ivars)
+                                  (,fn (car loop$-ivars)))
+                               nil
+                               (loop$-as (list lst)))))
+    :hints ((\"[1]Goal\"
+             :expand ((tamep (cons fn '(x)))
+                      (tamep (cons fn '((car loop$-ivars))))))))
+  })")
 
 (defxdoc forall
   :parents (defun-sk)
@@ -38025,27 +39795,31 @@ current fast alists."
 (defxdoc gthm
   :parents (history guard-formula-utilities)
   :short "The @(see guard) theorem for a given function symbol"
-  :long "<p>This utility (pronounced ``gee-thumb'') generates the guard proof
- obligation for a given function symbol.</p>
+  :long "<p>This utility (pronounced ``gee-thumb'') generates the @(see guard)
+ theorem (i.e., guard proof obligation) for a given function symbol, as would
+ be generated by a @(':')@(tsee guard-theorem) @(see lemma-instance) in a
+ @(':')@(see use) hint.</p>
 
  @({
  Example Forms:
  :gthm FN
- (gthm 'FN)       ; equivalent to the above
- (gthm 'FN t nil) ; equivalent to the above
- (gthm 'FN nil t) ; avoid any simplification and include guard-debug info
+ (gthm 'FN)              ; equivalent to the above
+ (gthm 'FN :limited nil) ; equivalent to the above
+ (gthm 'FN :limited t)   ; include guard-debug info
+ (gthm 'FN nil)          ; avoid any simplification
 
  General Forms:
  :gthm FN ; equivalent to (gthm 'FN)
- (gthm x &optional simp-p guard-debug)
+ (gthm x &optional simplify guard-debug)
  })
 
  <p>where @('FN') is a function symbol and @('x') evaluates to a function
- symbol.  Evaluation returns the user-level (untranslated) version of that
- guard theorem.  The optional argument @('simp-p'), described below, is @('t')
- by default.  The optional argument @('guard-debug') is @('nil') by default;
- when non-@('nil'), the guard theorem is modified as with the option
- @(':guard-debug') for @(tsee verify-guards); see @(see guard-debug).</p>
+ symbol.  Evaluation returns the guard theorem as a user-level (untranslated)
+ @(tsee term).  The optional argument @('simplify'), described below, is
+ @(':limited') by default.  The optional argument @('guard-debug') is @('nil')
+ by default; when non-@('nil'), the guard theorem is modified as with the
+ option @(':guard-debug') for @(tsee verify-guards); see @(see
+ guard-debug).</p>
 
  <p>See @(see lemma-instance) for how to provide the result of @(':gthm') as a
  @(':guard-theorem') prover hint.  Also see @(see guard-formula-utilities) for
@@ -38053,20 +39827,17 @@ current fast alists."
 
  <p>Normally one will evaluate @(':gthm FN') or equivalently (see @(see
  keyword-commands)), the form @('(gthm 'FN)').  In this case the guard theorem
- may be simplified before it is returned, by using a form of ``subsumption'' to
- eliminate redundancy and by deleting tautologies as well as instances of @(see
- built-in-clause) rules that come with ACL2.  The @('simp-p') argument should
- be @('nil') to avoid such simplification; that is, use @('(gthm 'FN nil)').
- The @('simp-p') argument bears some resemblance to the @(':guard-simplify')
- option to @(tsee verify-guards); but somewhat less simplification is done by
- @('gthm') with @('simp-p = T') than is done when generating guard
- obligations (by @(tsee defun) or @(tsee verify-guards)) with
- @(':guard-simplify = T').</p>
+ may be partially simplified before it is returned, by using a form of
+ ``subsumption'' to eliminate redundancy and by deleting tautologies as well as
+ instances of @(see built-in-clause) rules that come with ACL2.  The
+ @('simplify') argument should be @('nil') to avoid such simplification; that
+ is, use @('(gthm 'FN nil)').  See also @(see guard-simplification) for
+ discussion of simplification done for various guard formula utilities.</p>
 
- <p>Note that the result from evaluating @('(gthm x simp-p guard-debug)') is an
- <i>untranslated</i> term, that is, a user-level term; see @(see termp).  The
- corresponding call @('(guard-theorem x simp-p guard-debug (w state) state)')
- returns a translated term.</p>")
+ <p>Note that the result from evaluating @('(gthm x simplify guard-debug)') is
+ an <i>untranslated</i> term, that is, a user-level term; see @(see term).
+ The corresponding call @('(guard-theorem x simplify guard-debug (w state)
+ state)') returns a translated term.</p>")
 
 (defxdoc guard
   :parents (programming xargs)
@@ -39563,12 +41334,12 @@ current fast alists."
 
  <blockquote>
 
- <p>@(csee Verify-guards-formula): Use this to see what the corresponding
+ <p>@(tsee Verify-guards-formula): Use this to see what the corresponding
  @(tsee verify-guards) event prints, but without following through with a proof
  attempt.  This utility is only for output, without returning an interesting
  value.</p>
 
- <p>@(csee Guard-obligation): This function is a programmatic version of the
+ <p>@(tsee Guard-obligation): This function is a programmatic version of the
  macro, @(tsee verify-guards-formula).  It provides the guard obligation as a
  set of clauses, along with other information.</p>
 
@@ -39579,28 +41350,37 @@ current fast alists."
 
  <blockquote>
 
- <p>@(csee Gthm): This macro returns a user-level (``untranslated'')
+ <p>@(tsee Gthm): This macro returns a user-level (``untranslated'')
  representation of the @(see term) that is generated for a @(':guard-theorem')
  @(see lemma-instance).  Options control whether or not simplification and
  @(see guard-debug) are used.</p>
 
- <p>@(csee Guard-theorem): This utility is like @(see gthm), except that it is
+ <p>@(tsee Guard-theorem): This utility is like @(see gthm), except that it is
  a function rather than a macro and it returns a translated term (a @(tsee
  termp)).</p>
 
  </blockquote>
 
- <p>We conclude by contrasting these two pairs of utilities.  The first pair
- can take as input as either a function symbol or a term; for the second pair a
- function symbol (not a term) is required.  Another difference: the first pair
- simplifies with respect to the @(see current-theory) before producing the
- guard proof obligation formula, as is typically done when verifying guards;
- but the second pair only performs the theory-independent simplification done
- for a @(':guard-theorem') specified in a @(':use') hint, or if a suitable
- option is supplied, no simplification at all.  Finally the two pairs differ in
- their output @(see signature)s: in particular, the utilities in the first pair
- return multiple values while those in the second pair return a single
- value.</p>")
+ <p>We conclude by contrasting these two pairs of utilities.</p>
+
+ <ul>
+
+ <li>The first pair can take as input as either a function symbol or a term;
+ for the second pair a function symbol (not a term) is required.</li>
+
+ <li>The level of simplification differs between the two pairs.  See @(see
+ guard-simplification) for a detailed explanation; here are highlights.  The
+ first pair simplifies (by default) with respect to the @(see current-theory)
+ before producing the guard proof obligation formula, as is typically done when
+ verifying guards; but the second pair only performs the theory-independent
+ simplification done for a @(':guard-theorem') specified in a @(':use') hint,
+ or if a suitable option is supplied, no simplification at all.</li>
+
+ <li>The two pairs differ in their output @(see signature)s: in particular, the
+ utilities in the first pair return multiple values while those in the second
+ pair return a single value.</li>
+
+ </ul>")
 
 (defxdoc guard-holders
   :parents (rule-classes term guard)
@@ -39835,10 +41615,10 @@ current fast alists."
  redundant p'') is non-@('nil') when it is permissible to return a value of
  @(''redundant') in the first (name) case (and is irrelevant in the term case);
  @('guard-debug') is typically @('nil') but may be @('t') (see @(see
- guard-debug)); @('guard-simplify') is typically @('t') but may be @('nil')
- (see @(see verify-guards)); @('ctx') is a context (typically, a symbol used in
- error and warning messages); and @(tsee state) references the ACL2 @(see
- state).</p>
+ guard-debug)); @('guard-simplify') is typically @('t') but may be
+ @(':limited') (see @(see verify-guards)); @('ctx') is a context (typically, a
+ symbol used in error and warning messages); and @(tsee state) references the
+ ACL2 @(see state).</p>
 
  <p>If you want to obtain the formula but you don't care about the so-called
  ``tag tree'':</p>
@@ -39958,17 +41738,120 @@ current fast alists."
  (see @(see default-defun-mode)) must be @(':')@(tsee logic), or else this
  event is ignored.</p>")
 
+(defxdoc guard-simplification
+  :parents (guard-formula-utilities)
+  :short "Levels of simplification for @(see guard) proof obligations"
+  :long "<p>ACL2 provides several features for obtaining the proof obligations
+ generated for @(see guard) verification.  Each of these features can be
+ invoked with an argument that controls the level of simplification to be
+ applied before returning those proof obligations.  This topic examines those
+ simplification levels.  It starts by splitting the features into two groups;
+ then continues by explaining the three levels of simplification; and finally,
+ makes the key point that one group allows the top two levels of simplification
+ and the other group allows the bottom two levels.</p>
+
+ <p>These features can be partitioned into two groups, which we reference below
+ as the ``<b>AT</b>'' and ``<b>AFTER</b>'' groups, as follows.  These
+ correspond respectively to the two groups discussed in the documentation
+ topic, @(see guard-formula-utilities), for capturing formulas produced either
+ during guard verification or when a @(':guard-theorem') is supplied for a
+ @(':use') hint.</p>
+
+ <ul>
+
+ <li>Simplification <b>AT</b> guard-verification time:<br/>
+
+ <ul>
+
+ <li>the @(tsee xargs) keyword @(':guard-simplify'),</li>
+
+ <li>the @(tsee guard-obligation) utility, and</li>
+
+ <li>the @(tsee verify-guards-formula) utility.</li>
+
+ </ul></li>
+
+ <li>Simplification <b>AFTER</b> guard-verification time:<br/>
+
+ <ul>
+
+ <li>the @(':')@(tsee gthm) utility, and</li>
+
+ <li>the @(':')@(tsee guard-theorem) @(see lemma-instance) (and related
+ low-level utility, @('guard-theorem').</li>
+
+ </ul></li>
+
+ </ul>
+
+ <p>Each feature above has an argument (possibly optional) that control the
+ level of simplification.  Each such argument can take any of three values, as
+ follows.</p>
+
+ <ul>
+
+ <li>@('T'):<br/>
+ Full simplification, which is the default behavior for @(tsee
+ verify-guards)</li>
+
+ <li>@(':LIMITED'):<br/>
+ Reduced simplification, skipping simplifications that depend on the set of
+ currently @(see enable)d rules</li>
+
+ <li>@('NIL'):<br/>
+ No simplification</li>
+
+ </ul>
+
+ <p>The key point of this topic is the following specification of the values
+ allowed for the simplification argument, for the features in each group.  For
+ features in the <b>AT</b> group, @('T') and @(':LIMITED') are the legal
+ values.  For features in the <b>AFTER</b> group, @(':LIMITED') and @('NIL')
+ are the legal levels.  Let's see why this is reasonable and discuss whether
+ the missing value for each group might be allowed in the future.</p>
+
+ <p>First consider the <b>AFTER</b> group.  A @(':')@(tsee guard-theorem)
+ @(':use') hint obtains the @(see guard) theorem proved for a previously
+ guard-verified function.  The @(tsee current-theory) at the time of that
+ @(':use') hint may be very different from what it was at guard-verification
+ time.  Thus, when processing that hint it would be misleading to allow the
+ current @(see theory) to participate in simplification that produces the guard
+ theorem, since the result could be very different from the guard theorem
+ generated during the earlier guard verification.  That is why the value @('T')
+ is not allowed for the simplification argument of a @(':')@(tsee
+ guard-theorem) hint.  Instead, the default is @(':LIMITED').  The @(tsee gthm)
+ utility provides a way to show the formula that would be provided by a
+ @(':guard-theorem') lemma instance, so @('gthm') also disallows @('T'), and
+ its default is also @(':LIMITED').  Note that the utility @(tsee
+ verify-guards-formula) is more appropriate than @('gthm') to view the formula
+ to be proved if one is about to verify guards for a function.  (If @('gthm')
+ were to be used for that purpose too, then @('T') might be allowed as a
+ simplification argument; but that could lead to confusion, in particular about
+ the default.)</p>
+
+ <p>Now consider the <b>AT</b> group, which relates to guard verification.
+ @('T') is a reasonable default: it is generally useful to maximize
+ simplification while generating the guard theorem before attempting its proof.
+ But one may prefer more control, by avoiding simplification until the proof is
+ attempted.  @(':LIMITED') has proved to be a good compromise: it limits
+ simplification to basic operations, in particular avoiding goals that are
+ subsumed by other goals or are instances of trivial @(see built-in-clause)
+ rules.  If the need arises to support @('NIL') as a simplification value,
+ perhaps ACL2 will change to support that.</p>")
+
 (defxdoc guard-theorem
   :parents (lemma-instance guard-formula-utilities hints)
   :short "Use a previously-proved @(see guard) theorem"
   :long "<p>See @(see lemma-instance) for a discussion of @(':guard-theorem')
  lemma instances, as illustrated in the topic @(see guard-theorem-example).</p>
 
- <p>The function @('guard-theorem') is a low-level system utility that is
- essentially the functional version of the @(tsee gthm) macro.</p>")
+ <p>The function @('guard-theorem') is a low-level system utility that returns
+ a translated @(see term).  It is essentially the functional version of the
+ @('gthm') macro, which however returns an untranslated term.  See @(see
+ gthm).</p>")
 
 (defxdoc guard-theorem-example
-  :parents (lemma-instance guard hints)
+  :parents (lemma-instance guard hints guard-theorem guard-formula-utilities)
   :short "How to use a previously-proved @(see guard) theorem"
   :long "<p>See @(see lemma-instance) for a discussion of @(':guard-theorem')
  lemma instances, and see @(see gthm) for a related user-level query utility.
@@ -49662,6 +51545,20 @@ tables in the current Hons Space."
 
  @(def kwote-lst)")
 
+(defxdoc l<
+  :parents (term apply$)
+  :short "Ordering on naturals or lists of naturals"
+  :long "<p>The function @('l<') is a straightforward ordering relation that
+ compares two objects, each of which is a natural number or a list of natural
+ numbers.  It may be convenient to apply @('lex-fix') to two objects before
+ comparing them with @('l<').  Below are the relevant definitions.</p>
+
+ @(def l<)
+ @(def lexp)
+ @(def d<)
+ @(def lex-fix)
+ @(def nfix-list)")
+
 (defxdoc lambda
   :parents (term apply$)
   :short "Lambda expressions, @('LAMBDA') objects, and @('lambda$') expressions"
@@ -49814,11 +51711,10 @@ tables in the current Hons Space."
   is a concept even stronger than tameness.  Among other requirements,
   well-formed @('LAMBDA') objects obey the ACL2 and Common Lisp rules on
   variable names (not every symbol is a legal variable), on the use of free
-  variables, on the body being a fully translated formal term returning 1
-  value, that the declarations, if any, be meaningful to the Common Lisp
-  compiler, etc.  You can read about well-formedness in @(tsee
-  well-formed-lambda-objectp) if you want, but we don't encourage beginners to
-  go there!</p>
+  variables, on the body being a fully translated formal term, that the
+  declarations, if any, be meaningful to the Common Lisp compiler, etc.  You
+  can read about well-formedness in @(tsee well-formed-lambda-objectp) if you
+  want, but we don't encourage beginners to go there!</p>
 
   <p>Note: Even well-formedness is not enough to guarantee execution of
   compiled code.  The @('LAMBDA') object must also be guard verified (see
@@ -49935,14 +51831,16 @@ tables in the current Hons Space."
   <p>where the @('lambda$') expression occurs in an argument position of ilk
   @(':FN'), @('vars') is a list of distinct variable names, @('dcl*') is zero
   or more @('DECLARE') forms as described below, and @('body') is a term
-  returning 1 value.  @('Body') must satisfy the same restrictions one would
-  expect in a non-recursive @(tsee defun) event with the same formals,
-  declarations and body.  In particular, @('body') should contain no free
-  variables other than those listed in @('vars').  @('Lambda$') always adds a
-  declaration that every formal is ignorable and, hence, we prohibit you from
-  adding @('ignore') or @('ignorable') declarations in the @('lambda$')
-  expression itself.  @('Lambda$') expands to a well-formed quoted @('LAMBDA')
-  object or else causes a translate-time error.</p>
+  returning the appropriate number of values, which is currently always 1
+  except when used in the translation of an expression of the form @('(loop$
+  ... DO ...)').  @('Body') must satisfy the same restrictions one would expect
+  in a non-recursive @(tsee defun) event with the same formals, declarations
+  and body.  In particular, @('body') should contain no free variables other
+  than those listed in @('vars').  @('Lambda$') always adds a declaration that
+  every formal is ignorable and, hence, we prohibit you from adding @('ignore')
+  or @('ignorable') declarations in the @('lambda$') expression itself.
+  @('Lambda$') expands to a well-formed quoted @('LAMBDA') object or else
+  causes a translate-time error.</p>
 
   <p>The allowed @('DECLARE') forms in @('lambda$') are @('type') and
   @('xargs').  Furthermore, the only @(tsee xargs) keywords allowed are
@@ -50538,6 +52436,256 @@ tables in the current Hons Space."
  them.  See @(see set-evisc-tuple) for a discussion of evisceration and of how
  other evisc-tuples affect the printing of error messages and warnings, as well
  as other output not from @('ld').</p>")
+
+(defxdoc ld-history
+  :parents (ld history)
+  :short "Saving and querying command history"
+  :long "<p>See @(see ld) for background on the ACL2 read-eval-print loop.  The
+ present topic pertains to a history kept for commands issued to that loop,
+ which we call an ``ld-history'' (pronounced ``ell dee history'').  Here are
+ some things to keep in mind when reading this topic.</p>
+
+ <ul>
+
+ <li>Each entry in the history includes the input command, the value returned,
+ and other information, as explained further below.</li>
+
+ <li>This is about commands, not events: that is, we are concerned with forms
+ that are submitted for evaluation to the top-level loop.  See @(see
+ command).</li>
+
+ <li>An entry is saved for every command submitted by the user, even if it
+ doesn't change the ACL2 @(see world) &mdash; e.g., @('(+ 3 4)') &mdash; and
+ even if it undoes commands &mdash; e.g., @(':')@('ubt').</li>
+
+ <li>Keyword commands are turned into s-expressions before saving an entry; see
+ @(see keyword-commands).  For example, the input @(':ubt :x') is stored in an
+ entry as the input @('(ubt ':x)').</li>
+
+ <li>The ld-history saves entries not only for commands issued in the original
+ top-level loop, but also for commands issued in (recursive) calls of @(tsee
+ ld) &mdash; but not during @(tsee make-event) expansion.</li>
+
+ <li>Entries are generally saved even when there are errors.  However, entries
+ are not saved for commands that exit with raw Lisp errors.</li>
+
+ </ul>
+
+ <p>Also see @(see community-books) file @('books/demos/ld-history-input.lsp')
+ for examples.  The output from calling @(tsee ld) on that file (by calling the
+ @(tsee run-script) tool in @('books/demos/ld-history-book.acl2')) is in @(see
+ community-books) file @('books/demos/ld-history-log.txt').</p>
+
+ <p>The ld-history is a stack, represented as a list with the most recent
+ commands at the front.  But by default ACL2 is in <i>single-entry mode</i>,
+ where the list is kept at length 1: an entry is saved in the ld-history only
+ for the most recent command, and the previous entry is discarded.  We now
+ describe relevant utilities, including one that can switch to
+ <i>multiple-entry mode</i>, where all entries are kept until a utility is
+ called explicitly to discard old entries.  Note that the mode is determined by
+ the length of the ld-history: single-entry mode when length 1, multiple-entry
+ mode when length 2 or more.</p>
+
+ <ul>
+
+ <li>@('(ld-history state)')<br/>
+
+ This utility returns a list of structures, denoted ``ld-history entries'',
+ with the most recent one first.  By default, this list has length 1, but that
+ can be changed; see @('adjust-ld-history') below.  Each entry in the list is
+ recognized by the following predicate.  <b>NOTE</b>: This query is evaluated
+ before the ld-history stored in the ACL2 state is updated with a new entry,
+ based on the current command; so the previous command will be at the top of
+ the returned stack, not the current command.  (In particular, submitting the
+ form @('(ld-history state)') at the ACL2 prompt does not put that form at the
+ front of the returned list.)</li>
+
+ <li>@('(weak-ld-history-entry-p x)')<br/>
+
+ This function returns @('t') if @('x') has the shape of an entry in the
+ ld-history list, else @('nil').</li>
+
+ <li>Here are accessors for an ld-history entry, which we think of as returning
+ its fields.  The formal parameter @('entry') below is an entry in (i.e.,
+ member of) @('(ld-history state)'); an example call is thus
+ @('(ld-history-entry-input (car (ld-history state)))').<br/>
+
+ <ul>
+
+ <li>@('(ld-history-entry-input entry)')<br/>
+
+ The user input</li>
+
+ <li>@('(ld-history-entry-error-flg entry)')<br/>
+
+ Non-@('nil') when there was an error translating the user input</li>
+
+ <li>@('(ld-history-entry-stobjs-out/value entry)')<br/>
+
+ When @('(ld-history-entry-error-flg entry)') is @('nil'), this is a cons whose
+ @('car') is is the @(see stobjs-out) &mdash; a list whose length is the number
+ of values returned, with @('nil') in each position except when occupied by a
+ symbol indicating a returned @(see stobj) for that position &mdash; and whose
+ @('cdr') is the returned value in the single-value case, but is the list of
+ returned values in the @(see multiple-value) case.</li>
+
+ <li>@('(ld-history-entry-stobjs-out entry)')<br/>
+
+ When @('(ld-history-entry-error-flg entry)') is @('nil'), this is the
+ stobjs-out as described above; otherwise this is @('nil').</li>
+
+ <li>@('(ld-history-entry-value entry)')<br/>
+
+ When @('(ld-history-entry-error-flg entry)') is @('nil'), this is the value or
+ values as described above; otherwise this is @('nil').</li>
+
+ <li>@('(ld-history-entry-user-data entry)')<br/>
+
+ This is @('nil') by default.  However, code can be provided to compute this
+ field, as discussed below.</li>
+
+ </ul></li>
+
+ <li>@('(adjust-ld-history x state)')<br/>
+
+ @('X') is @('t'), @('nil'), or an integer.  The result is an @(see
+ error-triple) @('(mv nil value state)'), where @('value') and the effect are
+ as follows, and where if there is no change (i.e., the effect is a no-op) then
+ @('value') is @('(:no-change :length N)') where @('N') is the current length
+ of the ld-history.
+
+ <ul>
+
+ <li>@('T'):<br/>
+
+ Change to multiple-entry mode, where an entry is saved for every command, not
+ just the most recent command.  There is no change if already in multiple-entry
+ mode; otherwise the returned @('value') is @('(:saving-ld-history t)').</li>
+
+ <li>@('NIL'):<br/>
+
+ Change to single-entry mode, where an entry is saved only for the most recent
+ command.  There is no change if already in single-entry mode; otherwise the
+ returned @('value') is @('(:saving-ld-history nil)'), and all old entries will
+ be discarded (to produce a single-element ld-history).</li>
+
+ <li>Positive integer @('k'):<br/>
+
+ Replace the current ld-history by its first @('k') entries, except there is no
+ change if in single-entry mode or if @('k') is not less than the length of the
+ current ld-history.  Note that by ``current ld-history'' we refer to the
+ ld-history in effect at the time @('adjust-ld-history') is invoked, which does
+ not include the current command being evaluated.  (Thus, even if @('k') is 1,
+ multiple-entry mode will be preserved: the ld-history will have 2 entries
+ immediately after the current command completes.)  The returned @('value') is
+ @('(:ld-history-truncated :old-length LEN :new-length k)'), where @('LEN') is
+ the length of the current ld-history before the change.</li>
+
+ <li>Negative integer @('-k'):<br/>
+
+ This is intended to specify removal of the oldest @('k') entries from the
+ current ld-history.  Thus, it is treated identically to argument @('k2') where
+ @('k2') is the sum of @('-k') and the length of the current ld-history, but
+ only if that sum is positive; else there is no change.  For example, suppose
+ that @('-k') is -3.  If the current ld-history, @('h'), has length 2 or 3,
+ then there is no change; but if @('h') has length 10, then it is to be
+ replaced by @('(take 7 h)') and the length will actually thus be 8 after the
+ current command completes.</li>
+
+ </ul></li>
+
+ </ul>
+
+ <p>Remark.  If @('(adjust-ld-history n state)') is evaluated while in
+ multiple-entry mode, where n is a positive integer less than the current
+ length of the ld-history, then the new ld-history after returning to the
+ prompt will have length @('n+1').  That's essentially because it will have
+ length @('n') immediately after that call of @('adjust-ld-history') is
+ evaluated, and then a new entry for the current command (which could be that
+ call itself, if that's what was submitted at the prompt) will be pushed onto
+ the ld-entry just before returning to the prompt.  We say ``essentially''
+ because there is a Special Case: when @('n') is 1 then a 2-element list of
+ entries @('(e1 e2)') is created where @('e2') has fields that are all
+ @('nil'); then when the new entry @('e') is pushed onto the ld-history,
+ @('e2') is dropped so that that the new ld-history is @('(e e1)').  This
+ special-case trick is also used in multiple-entry mode when @('n') is @('-k')
+ where @('k') is one less than the length of the current ld-history, since that
+ is treated the same as @('(adjust-ld-history 1 state)'); and this trick is
+ also used when @('(adjust-ld-history t state)') switches from single-entry
+ mode to multiple-entry mode.  End of Remark.</p>
+
+ <p>Finally we discuss the user-data field of a ld-history entry, which (as
+ noted above) has default @('nil').  It is accessed using
+ @('(ld-history-entry-user-data entry)').  It is set automatically when
+ the ld-history is extended with a new entry: the function call
+ @('(set-ld-history-entry-user-data input error-flg stobjs-out/value state)'),
+ is executed where the actuals are the other fields of the entry as indicated,
+ e.g., the first actual is the input field of the new entry
+ (as returned by the function, @('ld-history-entry-input')).  Although
+ @('set-ld-history-entry-user-data') returns @('nil') by default, this can be
+ changed by providing your own function with a @(':')@(tsee guard) of @('t')
+ and the same formal parameters (which however may be renamed, other than
+ @('state')).  To make that change, define a function, which here we call
+ @('my-user-data'), and then attach it to @('set-ld-history-entry-user-data'),
+ as follows.</p>
+
+ @({
+ (defun my-set-user-data (input error-flg stobjs-out/value state)
+   (declare (xargs :guard t))
+   ...)
+ (defattach-system set-ld-history-entry-user-data my-set-user-data)
+ })
+
+ <p>The following example illustrates how to store the length of the ACL2 @(see
+ world) in the user-data.  Note that the @(see world) present in the @(see
+ state) at the time the user-data is set, computed as @('(w state)'), is almost
+ the final world produced by the command &mdash; it is missing just one triple,
+ a so-called command marker.</p>
+
+ @({
+ (defun my-world-length (input error-flg stobjs-out/value state)
+   (declare (xargs :guard t :stobjs state)
+            (ignore input error-flg stobjs-out/value))
+   (len (w state)))
+
+ (defattach-system set-ld-history-entry-user-data my-world-length)
+ })
+
+ <p>A subsequent inspection of the stored user-data shows the length of the
+ current world, for example as follows.</p>
+
+ @({
+ ACL2 !>(ld-history-entry-user-data (car (ld-history state)))
+ 125914
+ ACL2 !>
+ })
+
+ <p>Notice that we used @(tsee len), not @(tsee length), since the @(':')@(tsee
+ guard) specified for our function needs to be @('t').  Alternative
+ definitions, which however are less efficienct, are as follows.</p>
+
+ @({
+ (defun my-world-length (input error-flg stobjs-out/value state)
+   (declare (xargs :guard t :stobjs state)
+            (ignore input error-flg stobjs-out/value))
+   (and (true-listp (w state))
+        (length (w state))))
+
+ (defun my-world-length (input error-flg stobjs-out/value state)
+   (declare (xargs :guard t :stobjs state)
+            (ignore input error-flg stobjs-out/value))
+   (ec-call (length (w state))))
+ })
+
+ <p>Here is how to restore the original behavior, i.e., the default where
+ the user-data is set to @('nil').</p>
+
+ @({
+ (defattach-system set-ld-history-entry-user-data
+                   set-ld-history-entry-user-data-default)
+ })
+
+")
 
 (defxdoc ld-keyword-aliases
   :parents (ld)
@@ -51350,12 +53498,13 @@ tables in the current Hons Space."
  argument is supplied, then there will be no attempt to derive a functional
  substitution automatically, as described in the preceding paragraph.</p>
 
- <p>(7) @('(:guard-theorem name)') or @('(:guard-theorem name flg)'), where
- @('name') is a @(see guard)-verified function symbol (hence, in particular, is
- in @(see logic) mode).  Such a lemma instance denotes the guard theorem
- previously proved for @('name'), where by default @('flg') is @('t'), and a
- non-@('nil') value of @('flg') enables simplification as documented elsewhere;
- see @(see gthm).  If @('name') is defined as part of a mutually-recursive
+ <p>(7) @('(:guard-theorem name)') or @('(:guard-theorem name simplify)'),
+ where @('name') is a @(see guard)-verified function symbol (hence, in
+ particular, is in @(see logic) mode).  Such a lemma instance denotes the guard
+ theorem previously proved for @('name'), where by default @('simplify') is
+ @(':limited'), which enables certain simplifications as documented elsewhere;
+ see @(see gthm).  Otherwise @('simplify') should be @('nil'), to avoid all
+ such simplification.  If @('name') is defined as part of a mutually-recursive
  clique of definitions (see @(see mutual-recursion)), then the lemma instance
  refers to the guard theorem proved for the entire clique.  See @(see
  guard-theorem-example) and see @(see gthm).</p>
@@ -51375,21 +53524,22 @@ tables in the current Hons Space."
 
  <p>We conclude with remarks on (6) and (7).  The termination theorem actually
  used is an unsimplified version of what was originally proved for the
- indicated function; the guard theorem is partially simplified.  That is: while
- in general, the termination theorem is simplified before being given to the
- prover, nevertheless the unsimplified theorem is what is actually used for
- @(':termination-theorem') lemma instances; for @(':guard-theorem'), some
- simplification is done that is independent of the theory, by using a form of
- ``subsumption'' to eliminate redundancy and by deleting tautologies as well as
- instances of @(see built-in-clause) rules that come with ACL2.  Also see @(see
- guard-formula-utilities).  Moreover, the @(':')@(tsee measure-debug) and
- @(':')@(tsee guard-debug) keywords for @(tsee xargs) are ignored when
- generating the termination or guard theorem.  You can see the termination or
- guard theorem for an existing function symbol @('FN') by evaluating the form
- @('(termination-theorem 'FN (w state))') or @('(guard-theorem 'FN (w state)
- state)'), respectively.  In the former case, failure is indicated by a result
- of the form @('(FAILED . msg)'), where @('msg') is a message suitable for
- @(tsee fmt); see @(see msg).</p>
+ indicated function; the guard theorem is, by default, partially simplified.
+ That is: while in general, the termination theorem is simplified before being
+ given to the prover, nevertheless the unsimplified theorem is what is actually
+ used for @(':termination-theorem') lemma instances; for @(':guard-theorem'),
+ some simplification is done that is independent of the theory, by using a form
+ of ``subsumption'' to eliminate redundancy and by deleting tautologies as well
+ as instances of @(see built-in-clause) rules that come with ACL2.  Also see
+ @(see guard-formula-utilities) and @(see guard-simplification).  Moreover, the
+ @(':')@(tsee measure-debug) and @(':')@(tsee guard-debug) keywords for @(tsee
+ xargs) are ignored when generating the termination or guard theorem.  You can
+ see the termination or guard theorem for an existing function symbol @('FN')
+ by evaluating the form @('(termination-theorem 'FN (w state))') or
+ @('(guard-theorem 'FN simplify guard-debug (w state) state)'), respectively.
+ In the former case, failure is indicated by a result of the form @('(FAILED
+ . msg)'), where @('msg') is a message suitable for @(tsee fmt); see @(see
+ msg).</p>
 
  <p>Also see @(see make-termination-theorem).</p>
 
@@ -54004,931 +56154,305 @@ forms allowed for a @('let') form are  @('ignore'), @('ignorable'), and
   :parents (acl2-built-ins programming)
   :short "Iteration with an analogue of the Common Lisp @('loop') macro"
   :long "<p>@('Loop$') is the ACL2 analogue of the Common Lisp's iteration
-  primitive, @('loop').  This documentation assumes the reader has at least a
-  passing familiarity with @('loop').</p>
-
-  <p><b>Note:</b> Before using @('loop$'), it is a good idea to include the
-  same book as is typically included when using @(tsee apply$), as follows.</p>
-
-  @({
-  (include-book \"projects/apply/top\" :dir :system)
-  })
-
-  <p><b>Warning:</b> @('Loop$') implements only a small part of the
-  functionality of @('loop').  Aside from the simple fact that @('loop$')
-  allows a small subset of the syntax of @('loop'), the main restriction is
-  that the subexpressions of the @('loop$') statement that are evaluated
-  repeatedly must be @(see tame)!  These expressions include the @('until')
-  test, the @('when') test, and the @('loop$') body.  Thus, all the function
-  symbols used in these expressions must be badged (see @(tsee defbadge) and
-  @(tsee defwarrant)).  Since functions involving @(tsee state) or @(see
-  stobj)s cannot be badged, you cannot use them in the @('until'), @('when'),
-  or body expressions of @('loop$')s.  Further restrictions are enforced for
-  @(tsee defun)'d functions in which recursive calls appear in @('loop$')
-  bodies.  We mention that only in passing in this documentation topic.  It is
-  discussed more fully in @(see loop$-recursion).  We recommend that users
-  unfamiliar with @('loop$') acquaint themselves with the material below,
-  before wading into @('loop$-recursion')!</p>
-
-  <p><b>Warning:</b> @('Do') @('Loop$')s have recently been added but are so
-  far undocumented!  The definition below can be admitted as a guard-verified
-  logic mode function (after evaluating the events that precede it).</p>
-
-  @({
-  (include-book \"projects/apply/top\" :dir :system)
-
-  (defstobj st fld)
-  (defwarrant fld)
-  (defwarrant update-fld)
-
-  (defun test-loop$ (i0 max st)
-    (declare (xargs :guard (and (natp i0) (natp max))
-                    :stobjs st))
-    (loop$ with i of-type (satisfies natp) = i0
-           with cnt of-type integer = 0
-           do
-           :measure (nfix (- max i))
-           :guard (and (natp max)
-                       (natp cnt)
-                       (stp st))
-           :values (nil st) ; shape of return; can be omitted when it's (nil)
-           (if (>= i max)
-               (loop-finish)
-             (progn (setq st (update-fld i st))
-                    (mv-setq (cnt i)
-                             (mv (+ 1 cnt) (+ 1 i)))))
-           finally
-           :guard (stp st)
-           (return
-            (mv (list 'from i0 'to max 'is cnt 'steps 'and 'fld '= (fld st))
-                st))))
-
-  ACL2 !>(test 3 8 st)
-  ((FROM 3 TO 8 IS 5 STEPS AND FLD = 7)
-   <st>)
-  ACL2 !>})
-
-  <p>The example @('do loop$') above illustrates most of the features
-  supported.  There are many restrictions, the most annoying of which are
-  probably as follows.</p>
-
-  <ul>
-
-  <li>You can't mix the idioms of @('for') @('loop$')s, like ``@('for x in
-  ...')'' or ``@('until p')'', with @('do'), or <i>vice versa</i>.</li>
-
-  <li>Common Lisp's ``implicit @('progn')s'' are not recognized.  You have to
-  write explicit @('progn')s.</li>
-
-  <li>You can't put @('progn'), @('setq'), @('mv-setq'), @('return'), and
-  @('loop-finish') just anywhere.  For example, you can't write @('(setq a (+
-  b (return 23) c))').</li>
-
-  <li>@(Csee Loop$-recursion) under @('do') @('loop$')s is not yet
-  supported.</li>
-
-  </ul>
-
-  <p>The best current guide to @('do') @('loop$')s is a comment in the ACL2
-  source file @('translate.lisp').  Search for the comment</p>
-
-  @({
-  ; Section 11: Do Loop$s
-  })
-
-  <p>and continue on to Section 12 as well if you want to use stobjs or return
-  multiple values in your @('do loop$')s.</p>
-
-  <p>Many examples of @('do loop$')s may be found in @(see community-book)
-  @('books/projects/apply/loop-tests.lisp'), starting with the comment, ``Now I
-  experiment with do loop$s.''  Examples involving stobjs and multiple-value
-  return are later in the book, under the comment, ``Start tests of DO loop$s
-  that return multiple values and/or stobjs.''</p>
-
-  <p>Also be aware that some documentation topics about @('loop$') may now be
-  misleading because they may claim or suggest that they pertain to all ACL2
-  @('loop$') statements when in fact they may be inaccurate for @('do')
-  @('loop$')s.  The basic problem is that when the documentation was written
-  <i>all</i> @('loop$')s were what we now call ``@('for') @('loop$')s'' and
-  @('for') @('loop$')s are handled differently than @('do') @('loop$')s.
-  Documentation about @('loop$') is still thought to be accurate, but only for
-  @('for') @('loop$')s.  Documentation for the @('DO') keyword is
-  forthcoming.</p>
-
-  <h3>Informal Introduction</h3>
-
-  <p>ACL2's @('loop$') is considerably more restricted than Common Lisp's
-  @('loop') but when an ACL2 @('loop$') statement is translated without error
-  it has the same meaning as the corresponding Common Lisp @('loop').  (Note:
-  @('loop$') allows @(':guard') declarations in certain places and these are
-  ignored by Common Lisp.)</p>
-
-  <p>We give some examples of legal @('loop$') statements below.  We deal with
-  guards and guard verification later in this topic.</p>
-
-  @({
-  ACL2 !>(loop$ for x in '(1 2 3) sum (* x x))
-  14
-  ACL2 !>(loop$ for x in '(1 2 3) collect (* x x))
-  (1 4 9)
-  ACL2 !>(loop$ for x on '(1 2 3) collect x)
-  ((1 2 3) (2 3) (3))
-  ACL2 !>(loop$ for x from -10 to 10 by 2 collect x)
-  (-10 -8 -6 -4 -2 0 2 4 6 8 10)
-  ACL2 !>(loop$ for i from 1 to 10
-                as  x in '(a b c d e f g)
-                collect (cons i x))
-  ((1 . A)
-   (2 . B)
-   (3 . C)
-   (4 . D)
-   (5 . E)
-   (6 . F)
-   (7 . G))
-  ACL2 !>(loop$ for i from 1 to 10
-                as  x in '(a b c d e f g)
-                until (> i 6)
-                collect (cons i x))
-  ((1 . A)
-   (2 . B)
-   (3 . C)
-   (4 . D)
-   (5 . E)
-   (6 . F))
-  ACL2 !>(loop$ for i from 1 to 10
-                as  x in '(a b c d e f g)
-                until (> i 6)
-                when (evenp i)
-                collect (cons i x))
-  ((2 . B) (4 . D) (6 . F))
-  })
-
-  <p>@('Loop$') statements execute fastest when they are guard verified.  But
-  the @('until'), @('when'), and @('loop$') body raise interesting guard
-  verification problems because they are executed for many different values of
-  the iteration variables.  It may be necessary to provide type information or
-  even stronger invariants to verify their guards.  We now provide a few
-  examples illustrating the handling of guards in @('loop$').</p>
-
-  <p>The first example below is an acceptable @('loop$') statement but cannot
-  be guard verified, as would be necessary if it appeared in a @(tsee defun)
-  that was to be guard verified.  The problem is that @('(+ 1 x)') requires
-  @('x') to be numeric and, in general, we don't know anything about the value
-  of @('x') here.  (Actually, because the target range is just a constant
-  below, we could deduce information about each value @('x') takes on, but we
-  don't.)  The second example can be guard verified and has the advantage of
-  being standard Common Lisp so compilers might optimize the handing of @('(+ 1
-  x)').  The third example can also be guard verified but since the @(':guard')
-  directive used here is ignored by Common Lisp it does not inform the
-  compiler, so this example might execute more slowly than the previous one.
-  The last example shows the syntax and use of the ACL2-specific addition to
-  @('loop$'): the @(':guard') directive protecting, in this case, the
-  @('loop$') body.  @(':Guard') is useful when you wish to add more guard
-  information than can be expressed with the Common Lisp @('of-type')
-  directive.  The @('of-type') and @(':guard') directives are conjoined to form
-  the actual guard protecting the @('loop$') body.</p>
-
-  @({
-  ACL2 !>(loop$ for x in '(1 2 3) collect (+ 1 x))
-  (2 3 4)
-  ACL2 !>(loop$ for x of-type integer in '(1 2 3) collect (+ 1 x))
-  (2 3 4)
-  ACL2 !>(loop$ for x in '(1 2 3) collect :guard (integerp x) (+ 1 x))
-  (2 3 4)
-  ACL2 !>(let ((max 10))
-          (loop$ for x of-type integer in '(1 2 3)
-                 collect :guard (and (integerp max) (< x max)) (- max x)))
-  (9 8 7)
-  })
-
-  <p>The guard on the @('(- max x)') above is @('(and (integerp x) (integerp
-  max) (< x max))') and the compiler is informed that @('x') is an integer by
-  the @('of-type').</p>
-
-  <p>As of ACL2 Version 8.2, the only allowed iteration clauses are @('in'),
-  where the variable ranges over the elements of the given true list, @('on'),
-  where the variable ranges over the tails of the given true-list, and
-  @('from/to/by') where the variable ranges over the integers between two
-  bounds, stepping by a positive integer increment (or by 1 if no @('by')
-  clause is provided.)</p>
-
-  <p>You may have as many iteration clauses as you wish, connected with
-  @('as').  Each must introduce a unique iteration variable and that variable
-  may be optionally followed by an @('of-type') @(tsee type-spec)
-  specification.  @('Of-type') is a Common Lisp feature that allows the
-  compiler to optimize operations on the variable in question.  An
-  example is</p>
-
-  @({
-  (loop$ for v of-type (and integer (not (satisfies zerop)))
-               from 1 to 100
-         sum (/ 1 v))
-  })
-
-  <p>After all of the iteration clauses, you may have a termination test,
-  signaled by @('until'), and/or a conditional test signaled by @('when').  If
-  both are provided, the @('until') test must come first.  Iteration stops when
-  the @('until') test is satisfied.  The conditional test determines whether
-  the loop body is executed for the current value of the iteration
-  variables.</p>
-
-  <p>Between the @('until') symbol and the expression to be tested, and between
-  the @('when') symbol and its expression, you may include a @(':guard')
-  clause.  This is useful if guard verification requires an invariant relating
-  multiple iteration variables.  And example of a guarded @('until') clause is</p>
-
-  @({
-  (loop$ for u in lst1 as v in lst2
-         until :guard (invariantp u v) (test u v)
-         collect (body u v))
-  })
-
-  <p>ACL2 Version 8.2 supports only five operators, @('sum'), @('collect'),
-  @('always'), @('thereis') and @('append').  We anticipate adding other Common
-  Lisp operators eventually.</p>
-
-  <p>The special symbols noted above, sometimes called ``@('loop$') keywords'',
-  may be in any package.  These are @('FOR'), @('IN'), @('ON'), @('FROM'),
-  @('TO'), @('BY'), @('OF-TYPE'), @('WHEN'), @('UNTIL'), @('SUM'),
-  @('COLLECT'), @('ALWAYS'), @('THEREIS'), and @('APPEND').</p>
-
-  <p>Between the operator, e.g., @('sum') or @('collect'), and the
-  @('loop$') body you may include a @(':guard') clause as in</p>
-
-  @({
-  (loop$ for u in lst1 as v in lst2
-         collect :guard (invariantp u v) (body u v))
-  })
-
-  <p>This is sometimes necessary in the verification of the guards for the
-  @('loop$') body because Common Lisp's @('of-type') clauses do not permit you
-  to relate one variable to another.</p>
-
-  <p><b>Important Reminder:</b> Recall that @('apply$') and thus @('loop$') are
-  unspecified in the absence of warrants for the relevant user-defined function
-  symbols.  In the documentation for @(tsee apply$), we illustrated how a
-  simple @('defun') was inadmissible because the measure theorem cannot be
-  proved without a warrant and warrants cannot be assumed during the proofs of
-  the measure conjectures.  The same issue arises if @('loop$') involving
-  user-defined functions are involved critically in measure conjectures.  We
-  hope to address this issue in the future.</p>
-
-  <h3>General Form</h3>
-
-  <p>The syntax of Common Lisp @('loop') statements is extremely complicated.
-  Rather than try to write the abstract syntax of ACL2's @('loop$') statements
-  in the same formal style, we take a different approach, which is workable
-  because @('loop$') allows fewer options.</p>
-
-  <p>First we introduce the syntax of a ``target clause,'' a ``type-spec,'' and
-  the ``operators.''  Then we describe the most elaborate form of a @('loop$')
-  statement in terms of these elements and ordinary ACL2 terms.  Every legal
-  @('loop$') statement can be produced by omitting certain optional elements
-  from the most elaborate @('loop$') form.  So we conclude the syntactic
-  description of @('loop$') by listing the elements that can be omitted.</p>
-
-  <p>A <i>target clause</i> has one of four forms</p>
-
-  <ul>
-  <li>@('IN') <i>list-expr</i></li>
-
-  <li>@('ON') <i>list-expr</i></li>
-
-  <li>@('FROM') <i>lo-expr</i> @('TO') <i>hi-expr</i></li>
-
-  <li>@('FROM') <i>lo-expr</i> @('TO') <i>hi-expr</i> @('BY') <i>step-expr</i></li>
-
-  </ul>
-
-  <p>where <i>list-expr</i> is a term (which is expected to evaluate to a true
-  list), <i>lo-expr</i> and <i>hi-expr</i> are terms (which are expected to
-  evaluate to integers), and <i>step-expr</i> is a term (which is expected to
-  evaluate to a positive integer).</p>
-
-  <p>The legal <i>type-specs</i> are listed in @(tsee type-spec).</p>
-
-  <p>The legal <i>operators</i> are @('SUM'), @('COLLECT'), @('ALWAYS'),
-  @('THEREIS'), and @('APPEND').</p>
-
-  <p>The most elaborate @('loop$') statement is of the form</p>
-
-  <p>&nbsp; &nbsp; &nbsp; &nbsp; @('(LOOP$ FOR ')<i>v1</i>@(' OF-TYPE ')<i>spec1
-  target1</i><br/> &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;
-  &nbsp; &nbsp; &nbsp; &nbsp; @('AS ') &nbsp; <i>v2</i>@(' OF-TYPE ')<i>spec2
-  target2</i><br/> &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;
-  &nbsp; &nbsp; &nbsp; &nbsp; ...<br/> &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;
-  &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; @('AS ') &nbsp; <i>vn</i>@('
-  OF-TYPE ')<i>specn targetn</i><br/> &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;
-  &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; @('UNTIL :GUARD ')<i>guard1
-  until-expr</i><br/> &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;
-  &nbsp; &nbsp; &nbsp; &nbsp; @('WHEN ') &nbsp; @(':GUARD ')<i>guard2
-  when-expr</i><br/> &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;
-  &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; ; Note the @('ALWAYS')/@('THEREIS') Exceptions
-  below!<br/> &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;
-  &nbsp; &nbsp; &nbsp; <i>op</i>@(' :GUARD ')<i>guard3
-  body-expr</i>@(')')<br/></p>
-
-  <p>where each <i>vi</i> &nbsp; is a legal variable symbol and they are all
-  distinct, each <i>type-speci</i> &nbsp; is a @(tsee type-spec), each
-  <i>targeti</i> &nbsp; is a target clause, each <i>guardi</i>,
-  <i>until-expr</i>, and <i>when-expr</i> &nbsp; is a term, <i>op</i> &nbsp; is
-  an operator, and <i>body-expr</i> &nbsp; is a term.  Furthermore,
-  <i>until-expr</i>, <i>when-expr</i>, and <i>body-expr</i> &nbsp; must be
-  @(see tame)!</p>
-
-  <p><i>The @('ALWAYS')/@('THEREIS') Exception:</i> Common Lisp prohibits loops
-  with both a @('WHEN') clause and either an @('ALWAYS') or a @('THEREIS')
-  operator.  For example, if you are tempted to use @('WHEN') <i>p</i> with
-  @('ALWAYS') <i>q</i> we recommend you write @('ALWAYS') @('(implies ')<i>p
-  q</i>@(')').</p>
-
-  <p>The following elements may be omitted.</p>
-
-  <ul>
-  <li>any line beginning with @('AS'), @('UNTIL') or @('WHEN'),</li>
-
-  <li>any @('OF-TYPE') <i>speci</i>, and</li>
-
-  <li>any @(':GUARD') <i>guardi</i>.</li>
-
-  </ul>
-
-  <p>As noted above, the @('loop$') keywords (as used above) may be in any
-  package.  These are @('FOR'), @('IN'), @('ON'), @('FROM'), @('TO'), @('BY'),
-  @('OF-TYPE'), @('WHEN'), @('UNTIL'), @('SUM'), @('COLLECT'), @('ALWAYS'),
-  @('THEREIS'), and @('APPEND').</p>
-
-  <p>We give names to certain classes of the syntactic entities above.  The
-  <i>v1</i>, ..., <i>vn</i> are called the <i>iteration variables</i>.  The
-  <i>spec1</i>, ..., <i>specn</i> are called <i>type specs</i>, each corresponds to
-  a certain iteration variable, and each gives rise to a <i>type term</i> about
-  its variable in the sense that ``@('X OF-TYPE (SATISFIES NATP)')'' gives rise
-  to the type term @('(NATP X)') and ``@('I OF-TYPE INTEGER')'' gives rise to
-  the type term @('(INTEGERP I)').  The terms involved in the target
-  expressions, e.g., the <i>list-expr</i> in ``@('IN') <i>list-expr</i>'' and
-  ``@('ON') <i>list-expr</i>'' and the <i>lo-expr</i>, <i>hi-expr</i> and
-  optional <i>step-expr</i> in the ``@('FROM') <i>lo-expr</i> @('TO')
-  <i>hi-expr</i> @('BY') <i>step-expr</i>'' targets are called <i>target
-  terms</i>.  Finally, the <i>until-expr</i>, <i>when-expr</i>, and
-  <i>body-expr</i> are called <i>iterative forms</i>.</p>
-
-  <p>We distinguish the target terms from the iterative forms because they are
-  handled very differently at evaluation time.  When a @('loop$') is evaluated,
-  the target terms are evaluated just once.  But the iterative forms are
-  evaluated multiple times as the iteration variables range over the values of
-  the targets.</p>
-
-  <p>A @('loop$') statement with just one iteration variable and in which the
-  iterative forms mention no free variable other than the iteration variable
-  is called a <i>simple @('loop$')</i>.  An example of a simple loop is</p>
-
-  @({
-  (loop$ for x in lst when (evenp x) collect (+ 1 (sq x)))
-  })
-
-  <p>A @('loop$') statement called a <i>fancy @('loop$')</i> if it is not
-  simple.  Both of the following @('loop$')s are fancy.</p>
-
-  @({
-  (loop$ for x in xlst as y on ylst collect (expr x y))
-
-  (loop$ for x in xlst collect (expr x z))
-  })
-
-  <p>The first is fancy because it has two iteration variables.  The second is
-  fancy because the body freely uses the variable @('z') which is not the
-  iteration variable.</p>
-
-  <h3>Semantics</h3>
-
-  <p>@('Loop$') expressions are translated into calls of @(see scion)s, with
-  the @('until') and @('when') clauses translated into preprocessors of the
-  targets.  But which scions are used depend on whether the loop is simple or
-  fancy.  Recall that a fancy loop is one that has either or both of the
-  following characteristics: (a) there is one or more @('as') clauses,
-  and/or (b) one of the iterative forms (the @('until'), @('when') or loop body
-  expression) refers to variables other than an iteration variable.  If the
-  @('loop$') statement is simple, the simple scions are used; otherwise the
-  fancy scions are used.</p>
-
-  @({
-   loop$
-   syntax              simple          fancy
-   symbol              scion           scion
-   ______________________________________________
-   sum                 sum$            sum$+
-   collect             collect$        collect$+
-   always              always$         always$+
-   thereis             thereis$        thereis$+
-   append              append$         append$+
-   until               until$          until$+
-   when                when$           when$+
-   })
-
-  <p>We deal with simple @('loop$')s first.</p>
-
-  <h4>Semantics of Simple Loop$s</h4>
-
-  <p>For example, the simple @('loop$')</p>
-  @({
-  (loop$ for x in lst collect (+ 1 (sq x)))
-  })
-  <p>translates to (a term equivalent to)</p>
-
-  @({
-  (collect$ (lambda$ (x)
-                     (declare (ignorable x))
-                     (+ 1 (sq x)))
-            lst).
-  })
-
-  <p><b>Note:</b> The actual translation is tagged with various markers that
-  play a role in evaluation but which are logically irrelevant and which are
-  removed during proof.  In this discussion we will not display the marked-up
-  translations but logically equivalent terms instead.  You can see the actual
-  translations for yourself with @(tsee trans).</p>
-
-  <p>In the translation the target term, @('lst'), appears as an ordinary
-  subterm of the translation.  But the iterative form, @('(+ 1 (sq x))'),
-  becomes the body of a @(tsee lambda$) expression, which means its translation
-  becomes a component of a quoted @('LAMBDA') object.  When the @('collect$')
-  is evaluated, the target term is evaluated once but the iterative form is
-  evaluated once for each element of the value of the target.</p>
-
-  <p>@('Until') and @('when') clauses are handled by preprocessing the target.
-  E.g.,</p>
-
-  @({
-  (loop$ for x in lst
-         until (> x 100)
-         when (evenp x)
-         collect (+ 1 (sq x)))
-  })
-
-  <p>becomes</p>
-
-  @({
-  (collect$ (lambda$ (x)
-                     (declare (ignorable x))
-                     (+ 1 (sq x)))
-            (when$ (lambda$ (x)
-                            (declare (ignorable x))
-                            (evenp x))
-                   (until$ (lambda$ (x)
-                                    (declare (ignorable x))
-                                    (> x 100))
-                           lst)))
-  })
-
-  <p>So from a logical perspective, the presence of an @('until') and/or
-  @('when') clause in a @('collect') iteration over @('lst') ``copies'' the
-  target value.  The @('until$') copies @('lst') until encountering the first
-  element on which its functional argument is true.  The @('when$') then copies
-  that (shortened?) target, keeping only the elements that satisfy its
-  functional argument.  Finally, the @('collect$') then applies its functional
-  argument and collects all the values.</p>
-
-  <p>@('ON') and @('FROM/TO/BY') targets are handled by listing all the
-  elements in the given target.  For example,</p>
-
-  @({
-  (loop$ for x on lst collect (expr x))
-  })
-
-  <p>which maps @('x') over successive tails of @('lst') and collects the value
-  of @('expr') has the logical meaning</p>
-
-  @({
-  (collect$ (lambda$ (x) (expr x))
-            (tails lst))
-  })
-
-  <p>where, for example, @('(tails '(1 2 3))') is @('((1 2 3) (2 3) (3))').</p>
-
-  <p>Spiritually similarly,</p>
-  @({
-  (loop$ for i from 1 to max by step collect (expr x))
-  })
-
-  <p>becomes</p>
-
-  @({
-  (collect$ (lambda$ (x) (expr x))
-            (from-to-by 1 max step))
-  })
-
-  <p>where, for example, @('(from-to-by 1 10 2)') is @('(1 3 5 7 9)').</p>
-
-  <p>Similar translations are done for the other operators, e.g., @('sum') and
-  @('always').  The advantage of this translation style is that it allows
-  compositional reasoning.  We discuss this further below.</p>
-
-  <p>The following example illustrates basic @(see guard) proof obligations, in
-  particular showing that @('when') clauses do not help with verifying guards
-  for the loop bodies.  (Similarly, @('until') clauses do not help either.)
-  The basic problem is that ACL2 requires that @(tsee lambda) objects be guard
-  veriable in isolation, not confined to the context in which a particular
-  @('lambda') object appears.  Consider the following.</p>
-
-  @({
-  (include-book \"projects/apply/top\" :dir :system)
-  (defun$ sq (n)
-    (declare (xargs :guard (natp n)))
-    (* n n))
-  (defun foo (lst)
-    (declare (xargs :guard (nat-listp lst)))
-    (loop$ for x of-type (satisfies nat-listp) on lst
-           when (consp x)
-           sum (sq (car x))))
-  })
-
-  <p>Guard verification fails for @('foo').  The summary says that a goal of
-  @('NIL') was generated.  Using @(':')@(tsee pso) we can see that the @('NIL')
-  goal came from:</p>
-
-  @({
-  Subgoal 1
-  (IMPLIES (NAT-LISTP X) (NATP (CAR X))).
-  })
-
-  <p>Let's see what is going on by looking at the following abbreviated
-  translation of the @('loop$') expression.</p>
-
-  @({
-  (sum$ '(lambda (x)
-           (declare (type (satisfies nat-listp) x)
-                    (xargs :guard (nat-listp x)
-                           :split-types t)
-                    (ignorable x))
-           (sq (car x)))
-        (when$ '(lambda ...) (tails lst)))
-  })
-
-  <p>Notice that the @('lambda') object supplied to @('sum$') cannot be guard
-  verified in isolation: @('nil') satisfies the @(':guard') and @('(car nil)')
-  violates the guard of @('sq').  The following modification, which adds a
-  @(':guard') directive after the @('sum') op keyword, solves the problem.</p>
-
-  @({
-  (defun foo (lst)
-    (declare (xargs :guard (nat-listp lst)))
-    (loop$ for x of-type (satisfies nat-listp) on lst
-           when (consp x)
-           sum :guard (consp x)  ; note new :guard
-           (sq (car x))))
-  })
-
-  <p>This new @(':guard') may feel redundant, coming as it does after the
-  @('when (consp x)') clause.  But it is necessary given the compositional
-  semantics.</p>
-
-  <p>The abbreviated translation of the @('defun') above shows that the
-  application @('(sq (car x))') is protected by a suitable guard in the
-  @('lambda') object.</p>
-
-  @({
-  (sum$ '(lambda (x)
-           (declare (type (satisfies nat-listp) x)
-                    (xargs :guard (if (nat-listp x) (consp x) 'nil)
-                           :split-types t)
-                    (ignorable x))
-           (sq (car x)))
-        (when$ '(lambda ...) (tails lst)))
-  })
-
-  <p>Naively we might have expected that the guard proof obligation for the
-  @('loop$') body @('(sq (car x))') could assume the @('when') clause, but that
-  expectation would be wrong because of the compositional semantics we use and
-  the fact that @(tsee lambda) object must be guard-verifiable on their own.
-  The reason for the latter requirement is that our implementation caches
-  guard-verified @('lambda') objects for evaluation in raw Lisp, which may take
-  place in other contexts different from that in which the @('lambda') first
-  appeared.</p>
-
-  <h4>Semantics of Fancy Loop$s</h4>
-
-  <p>An example of a fancy @('loop$') is</p>
-
-  @({
-  (loop$ for x in xlst as y in ylst collect (expr x y z))
-  })
-
-  <p>This loop exhibits both characteristics (a) and (b): it has an @('as')
-  clause and the variable @('z') appears in the loop body.  Either
-  characteristic is sufficient to classify the loop as fancy.  So fancy scions
-  are used.  Its semantic counterpart, i.e., its translation, is</p>
-
-  @({
-  (collect$+
-   (lambda$ (loop$-gvars loop$-ivars)
-            (declare (xargs :guard (and (true-listp loop$-gvars)
-                                        (equal (len loop$-gvars) 1)
-                                        (true-listp loop$-ivars)
-                                        (equal (len loop$-ivars) 2))))
-            (let ((z (car loop$-gvars))
-                  (x (car loop$-ivars))
-                  (y (car (cdr loop$-ivars))))
-              (declare (ignorable x y))
-              (expr x y z)))
-   (list z)
-   (loop$-as (list xlst ylst)))
-   })
-
-  <p>Before we show the definition of @('collect$+') note that the arguments
-  above to @('collect$+') are (i) a @('lambda$') expression that handles the
-  evaluation of the iterative form, in this case @('(expr x y z)'), where
-  @('x') and @('y') are iteration variables and @('z') is a ``global'' variable
-  not among the iteration variables; (ii) the list of values of the ``global''
-  variables, in this case the list containing @('z'); and (iii) a target list
-  constructed by @('loop$-as') from the various targets provided in the
-  @('loop$'), in this case @('xlst') and @('ylst'), supplying values for
-  iteration variables @('x') and @('y') respectively.  For example,
-  @('(loop$-as (list '(a b c d e) '(1 2 3)))') is @('((a 1) (b 2) (c 3))').
-  These tuples contain successive corresponding values of @('x') and
-  @('y').</p>
-
-  <p>The definition of @('collect$+') is essentially</p>
-  @({
-  (defun collect$+ (fn loop$-gvars lst)
-    (if (endp lst)
-        nil
-        (cons (apply$ fn (list loop$-gvars (car lst)))
-              (collect$+ fn loop$-gvars (cdr lst)))))
-  })
-
-  <p>We have omitted the guard and an @('MBE') form that makes it run more
-  efficiently.  All the fancy @('loop$') scions are defined analogously.</p>
-
-  <p>Inspection of the @('lambda$') expression above reveals that it takes a
-  list of global variable values and a list of iteration variable values,
-  unpacks them with a @('let') that binds the global variables, here just
-  @('z'), to their values and binds the iteration variables, here @('x') and
-  @('y'), to the corresponding pair of values from the target, and then
-  evaluates the @('loop$') body, @('(expr x y z)').</p>
-
-  <p>The names of the formals for the @('lambda$') expressions generated by
-  @('loop$') statements are always @('loop$-gvars') and @('loop$-ivars'), for
-  ``@('loop$') global variables'' and ``@('loop$') iteration variables.''</p>
-
-  <p>@('Until') and @('when') clauses in a fancy @('loop$') are handled exactly
-  as they are in simple @('loop$')s, except that the fancy scions are used
-  since the target list is a list of tuples of iteration variable values and
-  the @('until') and @('when') forms may refer to global variables.</p>
-
-  <h4>Special Guard Conjectures for LOOP$</h4>
-
-  <p>Since every @('loop$') expands to a call of a @('loop$') scion on a lambda
-  object and a target, one would expect that guard verification would generate
-  the guard conjectures for that scion and target.  Indeed, it does.  In
-  particular, the lambda object must have the correct number of formals (which
-  is guaranteed by translation) and the target must be a true-listp.</p>
-
-  <p>But in addition to the expected guard conjectures, we generate some
-  special ones for the terms produced by translating @('loop$') statements.  We
-  discuss the reasons in the next section, but here we just state what the
-  special conjectures are.  We limit ourselves to a simple @('loop$').  Fancy
-  @('loop$') generalize in the obvious way.  The three classes of ``special
-  guard conjectures'' for @('loop$') statements are:</p>
-
-  <p>First, every element (or tail, in the case of @('ON') @('loop$')s)
-  satisfies the type-spec, if any.  Note that in the case of @('ON')
-  @('loop$')s <i>every</i> tail, including the empty one, must satisfy the
-  type-spec.</p>
-
-  <p>Second, the type-spec, if any, implies the guards of the @('loop$')
-  body.</p>
-
-  <p>Third, the @('loop$') body produces a value acceptable to the @('loop$')
-  operator, e.g., the body of @('SUM') @('loop$') produces a number and
-  the body of an @('APPEND') @('loop$') produces a true list.</p>
-
-  <h4>Discussion of Why LOOP$s Have Special Guards</h4>
-
-  <p>All of the simple @('loop$') scions have the same guard, namely</p>
-
-  @({
-  (AND (APPLY$-GUARD FN '(NIL))
-       (TRUE-LISTP LST)),
-  })
-
-  <p>and all the fancy @('loop$') scions have the same guard, namely</p>
-
-  @({
-  (AND (APPLY$-GUARD FN '(NIL NIL))
-       (TRUE-LISTP LOOP$-GVARS)
-       (TRUE-LIST-LISTP LST)).
-  })
-
-  <p>In addition to the normal guard conjectures that would be generated by
-  calls of these scions, ACL2 generates some special guard conjectures because
-  the normal guard conjectures are insufficient to guarantee the error-free
-  execution of the corresponding Common Lisp @('loop') statements.</p>
-
-  <p>For example, the logical meaning of</p>
-
-  @({
-  (defun foo (lst)
-    (declare (xargs :guard (foo-guardp lst)))
-    (loop$ for x of-type (satisfies spec) on lst sum (expr x)))
-  })
-
-  <p>is</p>
-
-  @({
-  (defun foo (lst)
-    (declare (xargs :guard (foo-guardp lst)))
-    (sum$ (lambda$ (x)
-                   (declare (type (satisfies spec) x))
-                   (expr x))
-          (tails lst))).
-  })
-
-  <p>Prior to the provision for special guards, the normal guard conjectures
-  generated for @('foo') would be</p>
-
-  @({
-  (and (implies (foo-guardp lst)                                 ; [1]
-                (apply$-guard
-                 (lambda$ (x)
-                   (declare (type (satisfies spec) x))
-                   (expr x))
-                 '(nil)))
-       (implies (foo-guardp lst)                                 ; [2]
-                (true-listp (tails lst)))
-       (implies (foo-guardp lst)                                 ; [3]
-                (true-listp lst))
-       (implies (spec x) (expr-guardp x)))                       ; [4]
-  })
-
-  <p>Conjectures [1] and [2] stem from the guard for @('sum$') and establish
-  that the guard for @('foo') implies that @('sum$') is passed a function
-  object of one argument and a true-list.  Conjecture [3] establishes the guard
-  of @('tails').  And conjecture [4] establishes that the guard on the
-  @('lambda$') implies the guard of its body.</p>
-
-  <p>But consider the raw Lisp @('loop') generated by the @('loop$') in the raw
-  Lisp definition of @('foo'),</p>
-
-  @({
-  (loop for x of-type (satisfies spec) on lst sum (expr x)).
-  })
-
-  <p>For this @('loop') to execute without error we need to know that [5] every
-  non-empty tail of @('lst') satisfies @('spec'), [6] that for every tail,
-  @('x'), of @('lst'), @('(expr x)') returns a number, and [7] that @('nil')
-  satisfies @('spec').  The last is somewhat surprising but inspection of
-  Common Lisp reveals that even though @('(expr x)') is never called on the
-  empty tail of @('lst'), implementations running with high safety settings
-  check that the empty list satisfies @('spec').</p>
-
-  <p>So when ACL2's guard verification process encounters a @('sum$') like that
-  in the logical @('defun') of @('foo'), it generates three additional guard
-  conjectures</p>
-
-  @({
-       (implies (and (warrant ...) ; see below                   ; [5]
-                     (foo-guardp lst)
-                     (member-equal newv (tails lst)))
-                (spec newv))
-
-       (implies (and (warrant ...) ; see below                   ; [6]
-                     (foo-guardp lst)
-                     (member-equal newv (tails lst)))
-                (acl2-numberp
-                 (apply$ (lambda$ (x)
-                           (declare (type (satisfies spec) x))
-                           (expr x))
-                         (list newv))))
-
-       (implies (foo-guardp lst)                                 ; [7]
-                (spec nil))
-  })
-
-  <p>Notice the addition of hypotheses above of the form @('(warrant ...)').
-  ACL2 adds such <i>@(see warrant) hypotheses</i> for function symbols that
-  might be @(tsee apply$)ed during evaluation of a scion call (in this case,
-  @('sum$')).</p>
-
-  <p>In general, you may notice that ACL2 generates such ``special'' guard
-  conjectures for all calls of @('loop$') scions, whether or not they stemmed
-  from uses of @('loop$').  @('FROM/TO/BY') targets require that the bounds and
-  step all satisfy the @('of-type') specification, and the @('append') operator
-  requires that the loop body generate a @(tsee true-listp) (instead of an
-  @(tsee acl2-numberp) as required by the @('sum') operator).</p>
-
-  <h4>The Compromise Between Reasoning and Efficiency</h4>
-
-  <p>The translation of @('loop$') statements into formal terms reflects a
-  compromise between facilitating compositional reasoning and efficient
-  execution.</p>
-
-  <p>One sign of that compromise is our use of scions to handle @('until') and @('when')
-  clauses.  As noted above, by translating</p>
-
-  @({
-  (loop$ for x in lst until ... when ... collect ...)
-  })
-
-  <p>into</p>
-
-  @({
-  (collect$ ... (when$ ... (until$ ... lst)))
-  })
-
-  <p>we're forcing the evaluation of the formal semantics to copy the target
-  twice before collecting.  But it gives us the ability to reason
-  compositionally about @('collect$'), @('when$'), and @('until$').  We could
-  have defined a version of @('collect$') that took three @('lambda$')
-  expressions, one to terminate the collection, one to filter for the elements
-  we're interested in, and one to transform those elements into the values we
-  wish to collect.  This would avoid copying upon evaluation but make it more
-  difficult to reason.</p>
-
-  <p>Another example of compositionality is to consider a simple @('loop$')
-  over the @('in') target @('(append a b)').  There are 8 different ways you
-  can do a simple @('collect') over an @('(append a b)') target,</p>
-
-  @({
-  (loop$ for x in (append a b) collect (expr x))
-  (loop$ for x on (append a b) collect (expr x))
-  (loop$ for x in (append a b) until (stop x) collect (expr x))
-  (loop$ for x on (append a b) until (stop x) collect (expr x))
-  (loop$ for x in (append a b) when (test x) collect (expr x))
-  (loop$ for x on (append a b) when (test x) collect (expr x))
-  (loop$ for x in (append a b) until (stop x) when (test x)
-         collect (expr x))
-  (loop$ for x on (append a b) until (stop x) when (test x)
-         collect (expr x))
-  })
-
-  <p>Similarly, there are 8 ways to @('sum') over an @('(append a b)') target,
-  8 ways to @('append') over an @('(append a b)'), and 4 ways each to
-  @('always') or @('thereis') over an @('(append a b)') target.  Thus, there
-  are 32 different simple @('loop$')s over @('(append a b)').  And you can
-  arrange to distribute the @('loop$') over the @('(append a b)') with just
-  seven rewrite rules.</p>
-
-  @({
-  (equal (collect$ fn (append a b))
-         (append (collect$ fn a)
-                 (collect$ fn b)))
-
-  (equal (sum$ fn (append a b))
-         (+ (sum$ fn a)
-            (sum$ fn b)))
-
-  (equal (always$ fn (append a b))
-         (and (always$ fn a)
-              (always$ fn b)))
-
-  (equal (thereis$ fn (append a b))
-         (or (thereis$ fn a)
-             (thereis$ fn b)))
-
-  (equal (append$ fn (append a b))
-         (append (append$ fn a)
-                 (append$ fn b)))
-
-  (equal (until$ fn (append a b))
-         (if (exists$ fn a)
-             (until$ fn a)
-             (append a (until$ fn b))))
-
-  (equal (when$ fn (append a b))
-         (append (when$ fn a)
-                 (when$ fn b)))
-
-  })
-
-  <p>Thus, you can reason about @('when') and @('until') clauses without having
-  to consider how they are used in the superior @('loop$') statement.</p>
-
-  <p>To deal with fancy @('loop$') you need seven more rewrite rules, one for
-  each fancy @('loop$') scion.  But since every simple @('loop$') can be
-  expressed by an appropriate use of fancy scions, we could have translated
-  every @('loop$') to fancy scions.  We chose to break compositionality here
-  because we think simple @('loop$')s are most common and wanted to keep their
-  semantics simple.  I.e., we compromised.</p>
-
-  <p>By the way, if you want the prover to convert every simple scion to its
-  fancy counterpart you could prove rewrite rules like that below.</p>
-
-  @({
-  (defthm convert-collect$-to-collect$+
-    (implies (ok-fnp fn)
-             (equal (collect$ fn lst)
-                    (collect$+ `(lambda (loop$-gvars loop$-ivars)
-                                  (,fn (car loop$-ivars)))
-                               nil
-                               (loop$-as (list lst)))))
-    :hints ((\"[1]Goal\"
-             :expand ((tamep (cons fn '(x)))
-                      (tamep (cons fn '((car loop$-ivars))))))))
-  })")
+ primitive, @('loop').  This topic introduces the two classes of ACL2
+ $('loop$') expressions, @('FOR') @('loop$')s and @('DO') @('loop$')s; see
+ @(see for-loop$) and @(see do-loop$) (respectively) for their full
+ documentation.</p>
+
+ <p>The Introduction below is followed by a discussion of types and guards.
+ But before we get started we emphasize a few key points.</p>
+
+ <ul>
+
+ <li><b>Many examples</b> of @(tsee loop$) expressions may be found in @(see
+ community-book) @('projects/apply/loop-tests.lisp').</li>
+
+ <li>Before using @('loop$'), it is <b>strongly recommended</b> that you
+ include the same book as is typically included when using @(tsee apply$), as
+ follows.
+
+ @({
+ (include-book \"projects/apply/top\" :dir :system)
+ })</li>
+
+ <li><b>Warning:</b> @('Loop$') implements only a modest part of the
+ functionality of Common Lisp's @('loop').  Aside from the simple fact that
+ @('loop$') allows only a limited subset of the syntax of @('loop'), the main
+ restriction is that the subexpressions of the @('loop$') expression that are
+ evaluated repeatedly must be @(see tame)!  These expressions include not only
+ the loop body but, if present, the @('UNTIL') test, the @('WHEN') test, and
+ the @('FINALLY') clause (all discussed below).  Thus, all the function
+ symbols used in these expressions must be @(see badge)d (see @(tsee defbadge)
+ and @(tsee defwarrant)).  Further restrictions are enforced for @(tsee
+ defun)'d functions in which recursive calls appear in @('loop$') bodies, but
+ we say little about that in this documentation topic; see @(see
+ loop$-recursion).  We recommend that users unfamiliar with @('loop$')
+ acquaint themselves with the material below and in @(see for-loop$) before
+ wading into @('loop$-recursion')!</li>
+
+ </ul>
+
+ <h3>Introduction to @('loop$')</h3>
+
+ <p>As noted above, there are two classes of @('loop$') expressions.  These are
+ identified as follows.</p>
+
+ <ul>
+
+ <li>@('FOR') loop$ expressions:
+
+ @({
+ (loop$ FOR ...)
+ })
+
+ </li>
+
+ <li>@('DO') loop$ expressions:
+
+ @({
+ (loop$ WITH ... DO ...)
+ })
+
+ </li>
+
+ </ul>
+
+ <p>Below we introduce these two classes of @('loop$') expressions.  For full
+ documentation see the topic for each class: see @(see for-loop$) for @('FOR')
+ @('loop$')s and @(see do-loop$) for @('DO') @('loop$')s.  In particular
+ various restrictions are discussed in those topics, but for now we mention
+ just the following.  While @('FOR') @('loop$') expressions are often more
+ convenient to use than @('DO') @('loop$') expressions, their @('UNTIL'),
+ @('WHEN'), and body expressions are not permitted to reference @(tsee state)
+ or @(see stobj)s, and they always return a single value.  @('DO') @('loop$')
+ expressions do not have these restrictions, but they may not use the idioms of
+ @('FOR') @('loop$')s, like ``@('FOR x IN ...')'' or ``@('UNTIL p')''.</p>
+
+ <p>ACL2's @('loop$') is considerably more restrictive than Common Lisp's
+ @('loop'), but when an ACL2 @('loop$') expression is translated without error
+ it has the same meaning as the corresponding Common Lisp @('loop').
+ @('Loop$') supports @(':')@(tsee GUARD) expressions (discussed below) in
+ certain places and these are ignored by Common Lisp.</p>
+
+ <p>Next we present some @('FOR') @('loop$') examples.  They illustrate the
+ three supported forms of iteration: the use of @('IN'), to iterate over
+ elements of a list; the use of @('ON'), to iterate over the non-empty tails of
+ a list; and the use of @('FROM .. TO'), to iterate over a range of
+ integers (optionally with @('BY') to specify the increment at each step).
+ These examples also illustrate the use of @('WHEN') to restrict which
+ iterations are considered and the use of @('UNTIL') to terminate early.
+ Additional keywords illustrated are @('OF-TYPE') to specify types and @('AS')
+ to specify additional iteration variables.  They also illustrate some of the
+ operations permitted at each iteration, such as @('SUM') and @('COLLECT').</p>
+
+ @({
+ ACL2 !>(loop$ for x in '(1 2 3) sum (* x x))
+ 14
+ ACL2 !>(loop$ for x in '(1 2 3) collect (* x x))
+ (1 4 9)
+ ACL2 !>(loop$ for x on '(1 2 3) collect x)
+ ((1 2 3) (2 3) (3))
+ ACL2 !>(loop$ for x of-type integer from -10 to 10 by 2 collect x)
+ (-10 -8 -6 -4 -2 0 2 4 6 8 10)
+ ACL2 !>(loop$ for i from 1 to 10
+               as  x in '(a b c d e f g)
+               collect (cons i x))
+ ((1 . A)
+  (2 . B)
+  (3 . C)
+  (4 . D)
+  (5 . E)
+  (6 . F)
+  (7 . G))
+ ACL2 !>(loop$ for i from 1 to 10
+               as  x in '(a b c d e f g)
+               until (> i 6)
+               collect (cons i x))
+ ((1 . A)
+  (2 . B)
+  (3 . C)
+  (4 . D)
+  (5 . E)
+  (6 . F))
+ ACL2 !>(loop$ for i from 1 to 10
+               as  x in '(a b c d e f g)
+               until (> i 6)
+               when (evenp i)
+               collect (cons i x))
+ ((2 . B) (4 . D) (6 . F))
+ })
+
+ <p>Finally we present two @('DO') @('loop$') examples.  We explore them
+ further in the documentation specific to @('DO') @('loop$') expressions; see
+ @(see do-loop$).</p>
+
+ <p>Our first @('DO') @('loop$') example shows iteration with the indicated
+ initial values for local variables @('x') and @('y').  They are modified at
+ each iteration through the loop until @('x') is empty, at which point the
+ value of @('y') is returned.  (See @(see do-loop$) for more thorough
+ explanations.)</p>
+
+ @({
+ ACL2 !>(loop$ with x = '(a b c)
+               with y = nil
+               do (cond ((consp x)
+                         (progn (setq y (cons (car x) y))
+                                (setq x (cdr x))))
+                        (t (return y))))
+ (C B A)
+ ACL2 !>
+ })
+
+ <p>Our second example of a @('DO') @('loop$') expression illustrates more
+ features than the first.  Also, it illustrates the use of a @('loop$')
+ expression inside a definition, which is allowed for both @('FOR') @('loop$')s
+ and @('DO') @('loop$')s.  We see here that @(see stobj)s and @(see
+ multiple-value) returns are allowed for @('DO') @('loop$')s, where the
+ @(':VALUES') keyword specifies the shape of the return.  We also see here the
+ use of the optional @(':GUARD') keyword of a @('loop$') expression (legal for
+ both classes of @('loop$')s, as discussed further below) and the optional
+ @(':MEASURE') keyword of a @('DO') @('loop$') expression.  Notice the @(tsee
+ defwarrant) events: for a @(see guard)-verified function, warrants are
+ necessary for non-built-in functions called in the body of any @('loop$')
+ expression, in the @('FINALLY') clause of a @('DO') @('loop$'), or in the
+ @('UNTIL') or @('WHEN') test of a @('FOR') @('loop$') expression.  @(csee
+ Badge)s suffice in place of warrants if guards are not verified.</p>
+
+ @({
+
+ (defstobj st fld)
+ (include-book \"projects/apply/top\" :dir :system) ; needed for defwarrant
+ (defwarrant fld)
+ (defwarrant update-fld)
+
+ (defun test-loop$ (i0 max st)
+   (declare (xargs :guard (and (natp i0) (natp max))
+                   :stobjs st))
+   (loop$ with i of-type (satisfies natp) = i0
+          with cnt of-type integer = 0
+          do
+          :measure (nfix (- max i))
+          :guard (and (natp max)
+                      (natp cnt)
+                      (stp st))
+          :values (nil st) ; shape of return; can be omitted when it's (nil)
+          (if (>= i max)
+              (loop-finish)
+            (progn (setq st (update-fld i st))
+                   (mv-setq (cnt i)
+                            (mv (+ 1 cnt) (+ 1 i)))))
+          finally
+          :guard (stp st)
+          (return
+           (mv (list 'from i0 'to max 'is cnt 'steps 'and 'fld '= (fld st))
+               st))))
+
+ ACL2 !>(test-loop$ 3 8 st)
+ ((FROM 3 TO 8 IS 5 STEPS AND FLD = 7)
+  <st>)
+ ACL2 !>
+ })
+
+ <p>Both classes of @('loop$') expressions (@('FOR') and @('DO') @('loop$')s)
+ rely heavily on the ACL2 built-in function, @(tsee apply$): in each iteration
+ through the loop, a @(see lambda) object based on the body of the loop is
+ given as the function argument of @('apply$').  Because of this, and because
+ the value returned by @('apply$') is unspecified in the absence of @(see
+ warrant)s for relevant user-defined function symbols, such warrants are
+ needed for reasoning about @('loop$') expressions as well.  The documentation
+ for @(tsee apply$) illustrates a simple @('defun') that is inadmissible
+ because the measure theorem cannot be proved without a warrant and warrants
+ cannot be assumed during the proofs of the measure conjectures.  The same
+ issue arises for a @('loop$') when user-defined functions are involved
+ critically in measure conjectures.  We hope to address this issue in the
+ future.</p>
+
+ <h3>Types and guards in @('loop$') expressions</h3>
+
+ <p>In this section we document basic aspects of the @('OF-TYPE') and
+ @(':GUARD') keywords in @(tsee loop$) expressions.  See @(see for-loop$) and
+ @(see do-loop$) for detailed documentation on guards for @('FOR') and @('DO')
+ @('loop$') expressions, respectively.</p>
+
+ <p>@('Loop$') expressions execute fastest when they are @(see guard)
+ verified.  But the @('loop$') body raises interesting guard verification
+ problems, as do the @('UNTIL') and @('WHEN') tests of a @('FOR') @('loop$'),
+ because they are executed for many different values of the iteration
+ variables.  The @('FINALLY') clause of a @('DO') @('loop$') raises a similar
+ concern, since the values of its variables may be modified repeatedly by
+ execution of the @('loop$') body.  It may be necessary to provide type
+ information or even stronger invariants to verify guards for @('loop$')s.  We
+ now provide a few examples illustrating the handling of guards in
+ @('loop$').</p>
+
+ <p>The first example below is an acceptable @('loop$') expression but cannot
+ be guard verified, as would be necessary if it appeared in a @(tsee defun)
+ that was to be guard verified.  The problem is that @('(+ 1 x)') requires
+ @('x') to be numeric and, in general, we don't know anything about the value
+ of @('x') here.  (Actually, because the target range is just a constant
+ below, ACL2 could deduce information about each value @('x') takes on, but it
+ doesn't.)  The second example can be guard verified and has the advantage of
+ being standard Common Lisp so compilers might optimize the handing of @('(+ 1
+ x)').  The third example can also be guard verified but since the @(':GUARD')
+ directive used here is ignored by Common Lisp it does not inform the
+ compiler, so this example might execute more slowly than the previous one.
+ The last example shows the syntax and use of the ACL2-specific addition to
+ @('loop$'): the @(':GUARD') directive protecting, in this case, the
+ @('loop$') body.  @(':GUARD') is useful when you wish to add more guard
+ information than can be expressed with the Common Lisp @('of-type')
+ directive.  The @('of-type') and @(':GUARD') directives are conjoined to form
+ the actual guard protecting the @('loop$') body.</p>
+
+ @({
+ ACL2 !>(loop$ for x in '(1 2 3) collect (+ 1 x))
+ (2 3 4)
+ ACL2 !>(loop$ for x of-type integer in '(1 2 3) collect (+ 1 x))
+ (2 3 4)
+ ACL2 !>(loop$ for x in '(1 2 3) collect :guard (integerp x) (+ 1 x))
+ (2 3 4)
+ ACL2 !>(let ((max 10))
+         (loop$ for x of-type integer in '(1 2 3)
+                collect :guard (and (integerp max) (< x max)) (- max x)))
+ (9 8 7)
+ })
+
+ <p>The guard on the @('(- max x)') above is @('(and (integerp x) (integerp
+ max) (< x max))') and the compiler is informed that @('x') is an integer by
+ the @('of-type').</p>
+
+ <p>The examples just above are of @('FOR') @('loop$')s.  Here is a @('DO')
+ @('loop$') example that illustrates types and guards.</p>
+
+ @({
+ ACL2 !>(loop$ with i of-type integer = 7
+               with ans = nil
+               do
+               :guard (true-listp ans)
+               (progn (setq ans (cons i ans))
+                      (setq i (- i 2))
+                      (if (< i 0) (loop-finish) t))
+               finally
+               :guard (true-listp ans)
+               (return (reverse ans)))
+ (7 5 3 1)
+ ACL2 !>
+ })
+
+ <p>Neither @(':GUARD') is necessary in order for this execution to complete.
+ However, if this @('loop$') is put into a definition &mdash; @('(defun foo ()
+ (loop$ ...))') &mdash; then both @(':GUARD') expressions are necessary in
+ order for the definition to be @(see guard)-verified.</p>
+
+ <p>As suggested above, when a @('loop$') expression occurs in the body of a
+ @(see guard)-verified function, it will be executed as a Common Lisp
+ @('loop') expression, which can be much more efficient than executing without
+ such guard verification.  This efficiency can also be gained in top-level
+ @('loop$') expressions if the @(see tau-system) completes (silently) the
+ necessary guard verification.  See @(see print-cl-cache).</p>")
 
 (defxdoc loop$-recursion
   :parents (loop$)
-  :short "Defining functions that recur from within @('loop$') statements"
+  :short "Defining functions that recur from within @('FOR') @('loop$') expressions"
   :long "<h3>Examples</h3>
   @({
   (defun$ nat-treep (x)
@@ -54955,14 +56479,19 @@ forms allowed for a @('let') form are  @('ignore'), @('ignorable'), and
   })
 
   <p>Notice that @('nat-treep') and @('copy-nat-tree') each contain a simple
-  @(tsee loop$) in which the function being defined is called recursively.
-  @('Copy-nat-tree') is a little more complicated than @('nat-treep') because
-  @('copy-nat-tree') also contains a recursive call outside of any
-  @('loop$').  Notice also that both events specify the @(tsee xargs)
-  @(':loop$-recursion t') and explicitly provide a @(':measure').  The usual
-  other @('xargs') are optional but @(':loop$-recursion t') is required if
-  recursion is used inside a @('loop$') and the measure must be made
-  explicit.</p>
+  @('FOR') @(tsee loop$) (also see @(see for-loop$)) in which the function
+  being defined is called recursively.  @('Copy-nat-tree') is a little more
+  complicated than @('nat-treep') because @('copy-nat-tree') also contains a
+  recursive call outside of any @('loop$').  Notice also that both events
+  specify the @(tsee xargs) @(':loop$-recursion t') and explicitly provide a
+  @(':measure').  The usual other @('xargs') are optional but
+  @(':loop$-recursion t') is required if recursion is used inside a @('FOR')
+  @('loop$') and the measure must be made explicit.</p>
+
+  <p>Recursion is not allowed inside a @('DO') @('loop$') expression.  In fact,
+  ACL2 disallows the use of @(':loop-recursion') in the @('xargs') of any
+  definition whose body contains a @('DO') @('loop$').  So this topic is only
+  about @('FOR') @('loop$')s.</p>
 
   <p>Some examples of @('loop$')-recursive definitions may be found in the book
   @('projects/apply/loop-recursion-examples.lisp').</p>
@@ -54977,7 +56506,7 @@ forms allowed for a @('let') form are  @('ignore'), @('ignorable'), and
   <h3>Restrictions</h3>
 
   <p>If a function being defined exhibits recursion from within a @(tsee loop$)
-  body or within the @('when') or @('until') clauses of a @('loop$') in a
+  body or within the @('WHEN') or @('UNTIL') clauses of a @('loop$') in a
   @(tsee defun) of <i>fn</i>, then the @('defun') must include an @(tsee xargs)
   declaration with @(':loop$-recursion t').  In addition,</p>
 
@@ -55060,7 +56589,7 @@ forms allowed for a @('let') form are  @('ignore'), @('ignorable'), and
 
   <p>Measure conjectures must be generated for the recursive calls inside
   @('loop$') bodies.  (We also generate conjectures for the recursive calls the
-  other @('loop$')-expression components, e.g., the @('when') clause, exactly
+  other @('loop$')-expression components, e.g., the @('WHEN') clause, exactly
   analogously, but we speak of the @('loop$') body only below.  We also focus
   on simple @('loop$')s here but the conjectures decribed generalize to fancy
   @('loop$')s.)  Given a recursive call inside the body of a @('loop$') with
@@ -55771,10 +57300,10 @@ forms allowed for a @('let') form are  @('ignore'), @('ignorable'), and
 
  <p>In general, the result is either @('(mv t error-msg)') (if, e.g., the
  function was not defined, the arity was wrong, or the guards were violated) or
- @('(mv nil value)') on success.  In the case of a multiple-valued function the
- second return value is the list of values.  A non-nil error message,
- @('error-msg'), is a message suitable for printing with @(tsee fmt); see @(see
- msg).</p>
+ @('(mv nil value)') on success.  In the case of a @(see multiple-value)d
+ function the second return value is the list of values.  A non-nil error
+ message, @('error-msg'), is a message suitable for printing with @(tsee fmt);
+ see @(see msg).</p>
 
  <p>If a hard error is encountered during execution and
  @('hard-error-returns-nilp') is non-@('nil'), then the error is ignored and
@@ -61409,7 +62938,7 @@ it."
 
 (defxdoc mv-list
   :parents (mv acl2-built-ins)
-  :short "Converting multiple-valued result to a single-valued list"
+  :short "Converting @(see multiple-value) result to a single-value list"
   :long "@({
   Example Forms:
   ; Returns the list (3 4):
@@ -61805,7 +63334,7 @@ it."
 
  <p>The @(':initially') keyword is illegal for fields whose @(':type') is a
  stobj or an array of stobjs (or, not further discussed here, a @(see
- stobj-table).  Each such initial value is provided by a corresponding call of
+ stobj-table)).  Each such initial value is provided by a corresponding call of
  the stobj creator for that stobj.  In particular, in the case of an array of
  stobjs, the stobj creator is called once for each element of the array, so
  that the array elements are distinct.  For example, each element of
@@ -90352,10 +91881,44 @@ it."
  <p>The function @('the-check'), which is generated by calls of @(tsee the), is
  now a guard-holder.</p>
 
+ <p>Printing of checkpoints now takes place any time @('SUMMARY') output is
+ enabled (see @(see set-inhibit-output-lst).  Formerly, both @('SUMMARY') and
+ @('ERROR') output needed to be enabled.  Related tweaks, probably not
+ user-visible, were made in support of utilities for obtaining and displaying
+ checkpoints programmatically: see @(see checkpoint-list) (which mentions
+ related utilities as well), and we thank to Eric Smith for requesting such
+ utilities.</p>
+
+ <p>The guard formula utilities (see @(see guard-formula-utilities)) continue
+ to perform simplification as before, except that way to specify the level of
+ simplification has changed.  Thanks to Eric Smith for a query and subsequent
+ discussion that led to these changes.  See @(see guard-simplification) for a
+ detailed explanation; below is a summary.  (The reason for these changes is
+ that the value @('T') formerly meant different things in the two cases below
+ &mdash; all simplification and limited simplification, respectively &mdash;
+ and the value @('NIL') also meant different things in those two cases &mdash;
+ limited simplification and no simplification, respectively.)</p>
+
+ <ul>
+
+ <li>For @(tsee xargs) keyword @(':guard-simplify') and related utilities
+ @(tsee guard-obligation) and @(tsee verify-guards-formula):<br/>
+ The default value for simplification remains @('T').  However, the value is
+ now @(':LIMITED') for specifying reduced simplification; formerly it was
+ @('NIL'), which is now illegal.</li>
+
+ <li>For @(':')@(tsee guard-theorem) @(see lemma-instance)s and the related
+ utility @(tsee gthm) (also the low-level utility, @('guard-theorem')):<br/>
+ The default simplification is unchanged but now corresponds to a new default
+ value, @(':LIMITED'); formerly it was @('T'), which is now illegal.  The value
+ @('NIL') continues to be appropriate for avoiding simplification.</li>
+
+ </ul>
+
  <h3>New Features</h3>
 
  <p>A new @(tsee loop$) keyword, @('DO'), supports an imperative style of
- programming in loops.  In particular, @('DO loop$') expressions may use
+ programming in loops.  In particular, @('DO') @('loop$') expressions may use
  @('setq') and @('mv-setq') for assigning to one or several variables
  (respectively), they may reference and return @(see stobj)s, and they may
  return multiple values.  See @(see loop$).</p>
@@ -90404,6 +91967,10 @@ it."
  improved a couple of warnings and a bit of documentation pertaining to such
  rewriting.</p>
 
+ <p>The undocumented @('last-ld-result') feature has been replaced by a new
+ documented feature, a @(see ld-history) that records command input/output
+ history.  Thanks to Eric Smith for requesting this feature.</p>
+
  <h3>Heuristic and Efficiency Improvements</h3>
 
  <p>Improved the efficiency of some computations involving calls of @(tsee
@@ -90411,6 +91978,12 @@ it."
  events for books including such calls.  Thanks to Mertcan Temel for reporting
  this efficiency issue and sending an @('include-book') event, whose execution
  time was reduced from 24 seconds to 10 seconds by this change.</p>
+
+ <p>Evaluation of some large forms caused stack overflows (from ACL2 source
+ function @('bad-lisp-consp')).  This is probably much less likely now.  Thanks
+ to Eric Smith for reporting this issue to the acl2-help list with a helpful
+ example, which formerly caused a stack overflow for ACL2 built on SBCL but no
+ longer does so.</p>
 
  <h3>Bug Fixes</h3>
 
@@ -90462,6 +92035,10 @@ it."
  Coglio for the idea.</p>
 
  <h3>Experimental Versions</h3>
+
+ <p>An error could formerly occur when using the precomputed @(see
+ useless-runes) files in ACL2(r).  The @(see useless-runes) feature has now
+ been turned off for ACL2(r).  Thanks to Eric McCarthy for this change.</p>
 
  ")
 
@@ -97055,8 +98632,9 @@ arithmetic) for libraries of @(see books) for arithmetic reasoning.</p>")
  <p>BINDING VARIABLES USING ERROR TRIPLES</p>
 
  <p>In this section we discuss the macro @('er-let*'), which is a variant of
- the special form, @(tsee let*), that is useful when programming with
- state.</p>
+ the special form, @(tsee let*), that is useful when programming with state.  A
+ related utility that avoids the use of state is @('er-let*-cmp'); see @(see
+ context-message-pair).</p>
 
  <p>The macro @('er-let*') is useful when binding variables to the value
  components of error triples.  It is actually quite similar to @('er-progn'),
@@ -99306,11 +100884,11 @@ arithmetic) for libraries of @(see books) for arithmetic reasoning.</p>")
 
  <p>Of course, models of actual machines usually only accept a finite number of
  different inputs.  For example, engineers at Advanced Micro Devices (AMD),
- Centaur, and IBM have ACL2 models of floating point units that operate on
- double precision IEEE floating point numbers.  These are finite models.  But
- the size of their inputs is sufficiently large that they are verified by the
- same mathematical methods used to prove theorems about infinite state systems
- like our little @('mc').</p>
+ Centaur, and IBM have produced ACL2 models of floating point units that
+ operate on double precision IEEE floating point numbers.  These are finite
+ models.  But the size of their inputs is sufficiently large that they are
+ verified by the same mathematical methods used to prove theorems about
+ infinite state systems like our little @('mc').</p>
 
  <p><see topic='@(url |What is Required of the User(Q)|)'><img
  src='res/tours/flying.gif'></img></see></p>")
@@ -100004,7 +101582,8 @@ arithmetic) for libraries of @(see books) for arithmetic reasoning.</p>")
  })
 
  <p>The question is whether @('(implies (some-M) (min-M2))') is a theorem.  Can
- you prove it?  Can you disprove it?</p>")
+ you prove it?  Can you disprove it? See @(tsee
+ solution-to-ACL2-quantifier-exercise-2) for a solution.</p>")
 
 (defxdoc quantifiers
   :parents (defun-sk)
@@ -100969,8 +102548,8 @@ arithmetic) for libraries of @(see books) for arithmetic reasoning.</p>")
  <p>This will create an executable in your acl2-sources directory named
  @('saved_acl2r').</p>
 
- <p>Note that if you download @(see community-books) as tarfiles, then you will
- automatically be obtaining the books to be certified with ACL2(r).  They can
+ <p>Note that if you have fetched the @(see community-books), then you will
+ already have the books to be certified with ACL2(r).  They can
  be certified from your acl2-sources directory, shown here as @('<DIR>'):</p>
 
  @({
@@ -101000,7 +102579,9 @@ arithmetic) for libraries of @(see books) for arithmetic reasoning.</p>")
  <p>There is only limited documentation on the non-standard features of
  ACL2(r).  We hope to provide more documentation for such features in future
  releases.  Please feel free to query the authors if you are interested in
- learning more about ACL2(r).  Gamboa's dissertation may also be helpful.</p>")
+ learning more about ACL2(r).  Gamboa's dissertation may also be helpful.</p>
+
+<p>ACL2(r) does not currently support the @(see useless-runes) feature.</p>")
 
 (defxdoc real-listp
 
@@ -103881,9 +105462,9 @@ arithmetic) for libraries of @(see books) for arithmetic reasoning.</p>")
   eliminate the term @('(car (cdr loop$-gvars))').</p>
 
   <p>The application of the metafunction @('relink-fancy-scion') can easily but
-  mistakenly be attributed to the rewriting of @('lambda') objects but it is not!
-  The metafunction is applied to the whole @('collect$') term (and calls of every
-  other fancy scion), not just the @('lambda') object.</p>
+  mistakenly be attributed to the rewriting of @('lambda') objects but it is
+  not!  The metafunction is applied to the whole @('collect$+') term (and calls
+  of every other fancy scion), not just the @('lambda') object.</p>
 
   <p>If you want to avoid this normalization of the globals, disable the @(see
   rune) @('(:meta relink-fancy-scion-correct)').</p>")
@@ -111992,6 +113573,86 @@ arithmetic) for libraries of @(see books) for arithmetic reasoning.</p>")
  If the caller is going to make further use of the array, it must obtain the
  latest version, i.e., that produced by the function.</p>")
 
+(defxdoc solution-to-ACL2-quantifier-exercise-2
+  :parents (quantifier-tutorial)
+  :short "A solution to @(tsee quantifier-tutorial) Exercise 2"
+  :long "<p> In @(see quantifier-tutorial) exercise 2, it asks if we can prove
+  or disprove the conjecture below.</p>
+
+  <blockquote><b>Exercise 2</b>. If there is an ACL2 object @('x') which
+  satisfies @('M'), then there exists a least ACL2 object @('y') that satisfies
+  @('M').</blockquote>
+
+  <p>This hypothesis can be disproved. Here is one possible solution, provided
+  by Yan Peng..</p>
+
+  @({
+
+  (in-package \"ACL2\")
+  (include-book \"misc/total-order\" :dir :system)
+
+  ;; This hypothesis can be disproved.
+  ;; The intuition: find a function M that can be satisfied and does not have a
+  ;; minimal object that satisfies it.
+
+  ;; For example, if M is evenp, then for any ACL2 object that satisfies M, one
+  ;; can always construct a smaller object by subtracting 2 from it, which also
+  ;; satisfies M.
+
+  ;; Instead of using defstub, we provide an implementation for M which calls
+  ;; evenp.
+  (defun M (x) (evenp x))
+
+  ;; We prove a helper lemma that says if x satisfies M, then (- x 2) also
+  ;; satisfies M and it is a smaller object.
+  (defthm -2-satisfies-M-and-<<
+    (implies (M x)
+             (and (M (- x 2)) (<< (- x 2) x)))
+    :hints ((\"Goal\"
+             :in-theory (enable << lexorder alphorder))))
+  (in-theory (disable evenp M))
+
+  (defun-sk some-M () (exists x (M x)))
+  (in-theory (disable some-M some-M-suff))
+
+  ;; We prove M can be satisfied by providing a witness 0.
+  (defthm some-M-lemma
+    (some-M)
+    :hints ((\"Goal\" :use ((:instance some-M-suff (x 0))))))
+
+  ;; We negate none-below-2
+  (defun-sk exists-below (y)
+    (exists r (and (<< r y) (M r))))
+  (in-theory (disable exists-below exists-below-suff))
+
+  ;; We negate min-M2
+  (defun-sk not-min-M () (forall y (implies (M y) (exists-below y))))
+  (in-theory (disable not-min-M not-min-M-necc))
+
+  ;; We prove that forall y, if y satisfies M, then there exists another smaller
+  ;; object that satisfies M.
+  (defthm not-min-M-lemma
+    (not-min-M)
+    :hints ((\"Goal\"
+             :use (;; The definition of not-min-M provides a witness
+                   ;; (not-min-M-witness) that satisfies M but doesn't satisfy
+                   ;; exists-below.
+                   (:instance (:definition not-min-M))
+                   ;; By instantiating exists-below-suff, we provide a smaller
+                   ;; object r:(- (not-min-M-witness) 2) than
+                   ;; y:(not-min-M-witness), and satisfies M. This makes
+                   ;; (not-min-M-witness) vacuous, allowing us to prove the
+                   ;; forall.
+                   (:instance exists-below-suff
+                              (r (- (not-min-M-witness) 2))
+                              (y (not-min-M-witness)))))))
+
+  ;; We prove both some-M and not-min-M
+  (defthm |minimal does not exist|
+    (and (some-M) (not-min-M)))
+
+  })")
+
 (defxdoc solution-to-simple-example
   :parents (annotated-acl2-scripts)
   :short "Solution to a simple example"
@@ -112791,9 +114452,9 @@ arithmetic) for libraries of @(see books) for arithmetic reasoning.</p>")
  @({
  ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
  + ACL2 Version 8.3+ (a development snapshot based on ACL2 Version 8.3) +
- +   built April 21, 2021  15:56:37.                                    +
+ +   built April 21, 2022  15:56:37.                                    +
  +   (Git commit hash: 41bb85ab9dbf5ac7d4ed246847db8934b6a48f92)        +
- + Copyright (C) 2021, Regents of the University of Texas.              +
+ + Copyright (C) 2022, Regents of the University of Texas.              +
  + ACL2 comes with ABSOLUTELY NO WARRANTY.  This is free software and   +
  + you are welcome to redistribute it under certain conditions.  For    +
  + details, see the LICENSE file distributed with ACL2.                 +
@@ -112809,10 +114470,10 @@ arithmetic) for libraries of @(see books) for arithmetic reasoning.</p>")
  @({
  ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
  + ACL2 Version 8.3+ (a development snapshot based on ACL2 Version 8.3) +
- +   built April 21, 2021  15:56:37.                                    +
+ +   built April 21, 2022  15:56:37.                                    +
  +   (Note from the environment when this executable was saved:         +
  +    This is my private executable.)                                   +
- + Copyright (C) 2021, Regents of the University of Texas.              +
+ + Copyright (C) 2022, Regents of the University of Texas.              +
  + ACL2 comes with ABSOLUTELY NO WARRANTY.  This is free software and   +
  + you are welcome to redistribute it under certain conditions.  For    +
  + details, see the LICENSE file distributed with ACL2.                 +
@@ -112881,13 +114542,12 @@ arithmetic) for libraries of @(see books) for arithmetic reasoning.</p>")
  way.  Rigid syntactic rules governing the use of state objects are enforced by
  the function @('translate'), through which all ACL2 user input first passes.
  State objects can only be ``held'' in the formal parameter @('state'), never
- in any other formal parameter and never in any structure (excepting a
- multiple-value return list field which is always a state object).  State
- objects can only be accessed with the primitives we specifically permit.
- Thus, for example, one cannot ask, in code to be executed, for the length of
- @('state') or the @(tsee car) of @('state').  In the statement and proof of
- theorems, there are no syntactic rules prohibiting arbitrary treatment of
- state objects.</p>
+ in any other formal parameter and never in any structure (except as a state
+ value in a @(see multiple-value) return).  State objects can only be accessed
+ with the primitives we specifically permit.  Thus, for example, one cannot
+ ask, in code to be executed, for the length of @('state') or the @(tsee car)
+ of @('state').  In the statement and proof of theorems, there are no syntactic
+ rules prohibiting arbitrary treatment of state objects.</p>
 
  <p>Logically speaking, a state object is a true list whose members are as
  follows:</p>
@@ -114139,24 +115799,19 @@ arithmetic) for libraries of @(see books) for arithmetic reasoning.</p>")
 
   :parents (stobj nested-stobjs)
   :short "A @(see stobj) field mapping stobj names to stobjs"
-  :long "<p>WARNING: Stobj-table fields of @(see stobj)s should be considered
- experimental at this point!  This warning will probably be removed soon, and
- when it is, stobj-table fields may be considered not to be experimental any
- longer.</p>
+  :long "<p>See @(see stobj) for basic background on stobjs, and see @(see
+ defstobj) for detailed documentation on the syntax and semantics of stobjs,
+ including fields specified with @(':type (stobj-table)') or
+ @(':type (stobj-table SIZE)') for some natural number, @('SIZE').  We call
+ such fields ``stobj-table fields''; this documentation topic explains them,
+ and it assumes familiarity with stobj fields of stobjs as documented in @(see
+ nested-stobjs) &mdash; especially, the use of @(tsee stobj-let) to read and
+ write such fields.  Note that the documentation for @(see defstobj) shows the
+ default names for accessors and updaters; for a stobj-table field, @('TBL'),
+ these are @('TBL-GET') and @('TBL-PUT'), respectively.</p>
 
- <p>For examples of @('stobj-let') usage for stobj-tables, see
- @('books/system/tests/stobj-table-tests-input.lsp').</p>
-
- <p>See @(see stobj) for basic background on stobjs, and see @(see defstobj)
- for detailed documentation on the syntax and semantics of stobjs, including
- fields specified with @(':type (stobj-table)') or @(':type (stobj-table
- SIZE)') for some natural number, @('SIZE').  We call such fields ``stobj-table
- fields''; this documentation topic explains them, and it assumes familiarity
- with stobj fields of stobjs as documented in @(see nested-stobjs) &mdash;
- especially, the use of @(tsee stobj-let) to read and write such fields.  Note
- that the documentation for @(see defstobj) shows the default names for
- accessors and updaters; for a stobj-table field, @('TBL'), these are
- @('TBL-GET') and @('TBL-PUT'), respectively.</p>
+ <p>For examples of @('stobj-let') usage for stobj-tables, see @(see
+ community-book) @('books/system/tests/stobj-table-tests-input.lsp').</p>
 
  <p>A stobj-table field may be viewed as an association list mapping stobj
  names to corresponding stobjs, so that each stobj name maps to a stobj that
@@ -117728,8 +119383,8 @@ arithmetic) for libraries of @(see books) for arithmetic reasoning.</p>")
  </code>
 
  <p>This form of signature rule is just like form 1 except that it is useful
- for functions that return multiple-values and allows us to ``type-check''
- their individual outputs.</p>
+ for functions that return @(see multiple-value)s and allows us to
+ ``type-check'' their individual outputs.</p>
 
  <code>
  General Form: <i>Bounder Forms 1 and 2</i>:
@@ -121421,7 +123076,7 @@ arithmetic) for libraries of @(see books) for arithmetic reasoning.</p>")
  @('cons') pair whose @('car') is the @(tsee stobjs-out) &mdash; a list whose
  length is the number of values returned, with @('nil') in each position except
  when occupied by a returned @(see stobj) for that position &mdash; and whose
- @('cdr') is the returned value or list of values in the multiple-values
+ @('cdr') is the returned value or list of values in the @(see multiple-value)
  case.</p>
 
  <p>Also see @('simple-translate-and-eval-cmp') in the ACL2 sources, and see
@@ -125783,7 +127438,7 @@ introduction-to-the-tau-system) for more information about Tau.</dd>
   :short "Speed up proofs by disabling useless @(see rune)s"
   :long "<p>This topic documents the @(':useless-runes') option for @(tsee
  certify-book), which makes it possible to speed up repeated certification of a
- book.</p>
+ book.  This option is ignored in ACL2(r).</p>
 
  <h3>Introduction</h3>
 
@@ -125812,12 +127467,17 @@ introduction-to-the-tau-system) for more information about Tau.</dd>
  option @(':read') or @(':write') (respectively) of @('certify-book').
  @('ACL2_USELESS_RUNES') can also take on the numeric values permitted for the
  @(':useless-runes') option of @(tsee certify-book).  This is all discussed
- below.  Note that by default, certification of the @(see community-books), as
- laid out in documentation topic @(see books-certification), is performed with
- @('ACL2_USELESS_RUNES=-25'), which for each book @('foo.lisp') causes part of
- the corresponding @('.sys/foo@useless-runes.lsp'), if it exists, to be
- consulted (as described below).  This default behavior is only for ACL2, not
- ACL2(r) (see @(see real)) or ACL2(p) (see @(see parallelism)).</p>
+ below.</p>
+
+<p>By default, certification of the @(see community-books), using @('make')
+as laid out in documentation topic @(see books-certification),
+and certification using <see topic='@(url build::cert.pl)'>cert.pl</see>,
+are both performed with @('ACL2_USELESS_RUNES=-25').
+This setting, for each book @('foo.lisp'),
+causes part of the corresponding @('.sys/foo@useless-runes.lsp'), if it exists,
+to be consulted (as described below).  This default behavior is only for
+ACL2 and ACL2(p) (see @(see parallelism)),
+but not for ACL2(r) (see @(see real)).</p>
 
  <h3>Detailed Documentation</h3>
 
@@ -127724,15 +129384,15 @@ introduction-to-the-tau-system) for more information about Tau.</dd>
 
  <p>When @('stobjs-out') has its default value of @('nil'), which abbreviates
  the value @('(nil)'), the form supplied to @('value-triple') is expected to
- evaluate to a single, non-@(see stobj) value.  However, multiple-value
- return (see @(see mv-let)) is also allowed, including stobjs (user-defined
- stobjs as well as @('state')).  The return shape is specified by supplying
- @('stobjs-out') as a true list corresponding to the values returned, with
- stobj names in stobj positions and @('nil') elsewhere.  (The list has length
- one if a single value is returned.)  For example, if @('stobjs-out') is
- @('(nil st1 nil st2)') then the form should evaluate to a multiple-value
- return, with ordinary values in (zero-based) positions 0 and 2, stobj @('st1')
- in position 1, and stobj @('st2') in position 3.</p>
+ evaluate to a single, non-@(see stobj) value.  However, @(see multiple-value)
+ return is also allowed, including stobjs (user-defined stobjs as well as
+ @('state')).  The return shape is specified by supplying @('stobjs-out') as a
+ true list corresponding to the values returned, with stobj names in stobj
+ positions and @('nil') elsewhere.  (The list has length one if a single value
+ is returned.)  For example, if @('stobjs-out') is @('(nil st1 nil st2)') then
+ the form should evaluate to a @(see multiple-value) return, with ordinary
+ values in (zero-based) positions 0 and 2, stobj @('st1') in position 1, and
+ stobj @('st2') in position 3.</p>
 
  <p>@('Stobjs-out') may also be @(':auto'), which allows arbitrary returns.</p>
 
@@ -127935,13 +129595,13 @@ introduction-to-the-tau-system) for more information about Tau.</dd>
   :short "Verify the @(see guard)s of a function"
   :long "<p>See @(see guard) for a general discussion of guards.</p>
 
- <p>Before discussing the @('verify-guards') event, we first discuss guard
- verification, which can take place at definition time or, later, using
- @('verify-guards').  Typically, guard verification takes place at definition
- time if a guard (or type, or @(see stobjs)) has been supplied explicitly
- unless @(':verify-guards nil') has been specified; see @(see defun) and see
- @(see xargs), and see @(see set-verify-guards-eagerness) for how to change
- this default.  The point of guard verification is to ensure that during
+ <p>Before discussing the @('verify-guards') @(see event), we first discuss
+ @(see guard) verification, which can take place at definition time or, later,
+ using @('verify-guards').  Typically, guard verification takes place at
+ definition time if a guard (or type, or @(see stobjs)) has been supplied
+ explicitly unless @(':verify-guards nil') has been specified; see @(see defun)
+ and see @(see xargs), and see @(see set-verify-guards-eagerness) for how to
+ change this default.  The point of guard verification is to ensure that during
  evaluation of an expression without free variables, no guard violation takes
  place.</p>
 
@@ -128066,7 +129726,7 @@ introduction-to-the-tau-system) for more information about Tau.</dd>
   (verify-guards flatten
                  :hints ((\"Goal\" :use (:instance assoc-of-app)))
                  :guard-debug t ; default = nil
-                 :guard-simplify nil ; default = t
+                 :guard-simplify :limited ; default = t
                  :otf-flg t)
   (verify-guards (lambda$ (x)
                    (declare (xargs :guard (natp x)))
@@ -128084,7 +129744,7 @@ introduction-to-the-tau-system) for more information about Tau.</dd>
   (verify-guards name
           :hints          hints
           :guard-debug    gdbg   ; default is nil, but any value is legal
-          :guard-simplify gsmp ; default is t, may be set to nil
+          :guard-simplify gsmp ; default is t, may be set to :limited
           :otf-flg        otf-flg)
  })
 
@@ -128121,11 +129781,14 @@ introduction-to-the-tau-system) for more information about Tau.</dd>
  guard obligations are proved, @('name') is considered to have had its @(see
  guard)s verified.  The @(':guard-simplify') option controls certain
  simplifications that may be applied to the guard conjecture while generating
- the initial goal; setting it to @('nil') skips all simplifications that depend
- on the set of currently @(see enable)d rules.</p>
+ the initial goal: its default is @('t'), which doesn't restrict such
+ simplification, and the other legal value is @(':limited'), which skips all
+ simplifications that depend on the set of currently @(see enable)d rules.  See
+ also @(see guard-simplification).</p>
 
- <p>See @(see guard-formula-utilities) for utilities that let you view the
- formula to be proved by @('verify-guards'), but without creating an event.</p>
+ <p>See @(see guard-formula-utilities) for related utilities, including ones
+ that let you view the formula to be proved by @('verify-guards'), but without
+ creating an event.</p>
 
  <p>If @('name') is one of several functions in a mutually recursive clique,
  @('verify-guards') will attempt to verify the @(see guard)s of all of the
@@ -128558,30 +130221,28 @@ introduction-to-the-tau-system) for more information about Tau.</dd>
   :short "View the guard proof obligation, without proving it"
   :long "<p>See @(see verify-guards) and see @(see guard) for a discussion of
  guards.  This utility, which does not evaluate its argument, provides output
- showing the guard proof obligation as printed by @('verify-guards'), but
- without then carrying out a proof attempt.  If you simply want the guard proof
- obligation for a definition (without the prover's output), use @(see gthm).
- Note that @('gthm') has an option to avoid the simplification that is normally
- performed when generating the guard proof obligation.  For more about related
- utilities, see @(see guard-formula-utilities).</p>
+ showing the guard proof obligation (also known as the guard theorem) as
+ printed by @('verify-guards'), but without then carrying out a proof attempt.
+ See also @(see guard-formula-utilities) for related utilities.</p>
 
  @({
   Example Forms:
   (verify-guards-formula foo)
   (verify-guards-formula foo :guard-debug t)
-  (verify-guards-formula foo :guard-debug t :guard-simplify nil)
+  (verify-guards-formula foo :guard-debug t :guard-simplify :limited)
   (verify-guards-formula foo :rrp t :otf-flg dont-care :xyz whatever)
   (verify-guards-formula (+ (foo x) (bar y)) :guard-debug t)
  })
 
  <p>@('Verify-guards-formula') allows all keywords, but only pays attention to
  @(':guard-debug') and @(':guard-simplify'), which have the same effect as in
- @(tsee verify-guards) (see @(see guard-debug)), and to @(':rrp'), described
- below.  Apply @('verify-guards-formula') to a name just as you would use
- @(tsee verify-guards), but when you only want the output that shows the guard
- proof obligation, without attempting a proof or creating an event.  If the
- first argument is not a symbol, then it is treated as the body of a @(tsee
- defthm) event for which you want the guard proof obligation.</p>
+ @(tsee verify-guards) (also see @(see guard-debug) and @(see
+ guard-simplification)), and to @(':rrp'), described below.  Apply
+ @('verify-guards-formula') to a name just as you would use @(tsee
+ verify-guards), but when you only want the output that shows the guard proof
+ obligation, without attempting a proof or creating an event.  If the first
+ argument is not a symbol, then it is treated as the body of a @(tsee defthm)
+ event for which you want the guard proof obligation.</p>
 
  <p>The @(':rrp') argument (``return redundant p'') is @('nil') by default.  If
  its value is not @('nil'), then in the case that the first argument is a
@@ -132667,7 +134328,7 @@ created from the original fast alist during @('form') must be manually freed."
  @({
   (declare (xargs :guard (symbolp x)
                   :guard-debug t
-                  :guard-simplify nil
+                  :guard-simplify :limited
                   :guard-hints ((\"Goal\" :in-theory (theory batch1)))
                   :hints ((\"Goal\" :in-theory (theory batch1)))
                   :loop$-recursion t
@@ -132722,10 +134383,12 @@ created from the original fast alist during @('form') must be manually freed."
 
  <p>@(':guard-simplify')<br></br>
 
- @('Value'): @('t') by default, else directs ACL2 to skip certain
- simplifications that ACL2 typically applies while generating the guard
- proof obligation.  This has the same effect as the corresponding keyword
- argument to @(tsee verify-guards).</p>
+ @('Value'): @('t') by default, which supports simplification performed while
+ generating the guard proof obligation.  The value can also be @(':limited'),
+ which directs ACL2 to skip such simplification that depends on which rules are
+ currently @(see enable)d.  This has the same effect as the corresponding
+ keyword argument to @(tsee verify-guards).  Also see @(see
+ guard-simplification) and @(see guard-formula-utilities).</p>
 
  <p>@(':')@(tsee hints)<br></br>
 
@@ -136454,6 +138117,7 @@ expand function call at the current subterm, without simplifying"
 (defpointer add-to-set-eq add-to-set)
 (defpointer add-to-set-eql add-to-set) ; pre-v4-3 compatibility
 (defpointer add-to-set-equal add-to-set)
+(defpointer adjust-ld-history ld-history)
 (defpointer all-attachments system-utilities)
 (defpointer all-calls system-utilities)
 (defpointer all-fnnames system-utilities)
@@ -136493,12 +138157,14 @@ expand function call at the current subterm, without simplifying"
 (defpointer cons-term system-utilities)
 (defpointer cons-term* system-utilities)
 (defpointer context ctx)
+(defpointer d< l<)
 (defpointer declaration declare)
 (defpointer default-state-vars system-utilities)
 (defpointer default-verify-guards-eagerness set-verify-guards-eagerness)
 (defpointer defined-constant system-utilities)
 (defpointer disjoin system-utilities)
 (defpointer disjoin2 system-utilities)
+(defpointer do$ do-loop$)
 (defpointer do-not-induct hints t)
 (defpointer doublet-listp system-utilities)
 (defpointer dynamically-monitor-rewrites dmr)
@@ -136507,7 +138173,10 @@ expand function call at the current subterm, without simplifying"
 (defpointer dumb-occur-var system-utilities)
 (defpointer enabled-numep system-utilities)
 (defpointer enabled-runep system-utilities)
+(defpointer er-cmp context-message-pair)
 (defpointer er-let* programming-with-state)
+(defpointer er-let*-cmp context-message-pair)
+(defpointer er-progn-cmp context-message-pair)
 (defpointer error hints t)
 (defpointer ev$-list apply$)
 (defpointer event events)
@@ -136588,11 +138257,21 @@ expand function call at the current subterm, without simplifying"
 (defpointer lambda-applicationp system-utilities)
 (defpointer lambda-body system-utilities)
 (defpointer lambda-formals system-utilities)
+(defpointer ld-history-entry-error-flg ld-history)
+(defpointer ld-history-entry-input ld-history)
+(defpointer ld-history-entry-stobjs-out ld-history)
+(defpointer ld-history-entry-stobjs-out/value ld-history)
+(defpointer ld-history-entry-user-data ld-history)
+(defpointer ld-history-entry-value ld-history)
 (defpointer legal-constantp system-utilities)
 (defpointer legal-variablep system-utilities)
 (defpointer let-mbe equality-variants-details)
+(defpointer lex-fix l<)
+(defpointer lexp l<)
 (defpointer lisp-programmer-introduction introduction-to-programming-in-acl2-for-those-who-know-lisp)
 (defpointer logicp system-utilities)
+(defpointer loop$-do do-loop$)
+(defpointer loop$-for for-loop$)
 (defpointer make-lambda system-utilities)
 (defpointer make-lambda-application system-utilities)
 (defpointer make-lambda-term system-utilities)
@@ -136620,6 +138299,8 @@ expand function call at the current subterm, without simplifying"
 (defpointer mfc-unify-subst extended-metafunctions)
 (defpointer mfc-world extended-metafunctions)
 (defpointer mode xargs t)
+(defpointer multiple-value mv-let)
+(defpointer nfix-list l<)
 (defpointer no-duplicatesp-eq no-duplicatesp)
 (defpointer no-duplicatesp-equal no-duplicatesp)
 (defpointer no-op hints t)
@@ -136774,9 +138455,11 @@ expand function call at the current subterm, without simplifying"
 (defpointer untranslate-preprocess user-defined-functions-table)
 (defpointer use hints t)
 (defpointer value system-utilities)
+(defpointer value-cmp context-message-pair)
 (defpointer variablep system-utilities)
 (defpointer verify-guards-eagerness set-verify-guards-eagerness)
 (defpointer waterfall hints-and-the-waterfall)
+(defpointer weak-ld-history-entry-p ld-history)
 (defpointer when$ loop$)
 (defpointer when$+ loop$)
 (defpointer with-output! with-output)
