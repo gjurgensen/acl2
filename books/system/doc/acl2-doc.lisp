@@ -92036,16 +92036,9 @@ it."
 
  <h3>Experimental Versions</h3>
 
-<p>An error could occur when using the precomputed @(see useless-runes)
-files in ACL2(r).  The @(see useless-runes) feature has now been turned
-off for ACL2(r).</p>
-
-<p>The precomputed @(see useless-runes) files have been successfully used
-with ACL2(p), so the previous code that ignored the useless runes at the
-time of @(see books-certification) using @('make')
-has been removed, and ACL2(p) now works the same way as ACL2
-for the @(see useless-runes) feature.</p>
-
+ <p>An error could formerly occur when using the precomputed @(see
+ useless-runes) files in ACL2(r).  The @(see useless-runes) feature has now
+ been turned off for ACL2(r).  Thanks to Eric McCarthy for this change.</p>
 
  ")
 

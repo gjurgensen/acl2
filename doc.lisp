@@ -90130,7 +90130,12 @@ EMACS Support
   Alessandro Coglio for the idea.
 
 
-Experimental Versions")
+Experimental Versions
+
+  An error could formerly occur when using the precomputed
+  [useless-runes] files in ACL2(r).  The [useless-runes] feature has
+  now been turned off for ACL2(r).  Thanks to Eric McCarthy for this
+  change.")
  (NOTE1 (POINTERS) "See [note-1-1].")
  (NOTE2 (POINTERS) "See [note-1-2].")
  (NOTE3 (POINTERS) "See [note-1-3].")
@@ -103286,10 +103291,9 @@ Subtopics
   This will create an executable in your acl2-sources directory named
   saved_acl2r.
 
-  Note that if you download [community-books] as tarfiles, then you
-  will automatically be obtaining the books to be certified with
-  ACL2(r).  They can be certified from your acl2-sources directory,
-  shown here as <DIR>:
+  Note that if you have fetched the [community-books], then you will
+  already have the books to be certified with ACL2(r).  They can be
+  certified from your acl2-sources directory, shown here as <DIR>:
 
     make regression ACL2=<DIR>/saved_acl2r
 
@@ -103316,6 +103320,8 @@ Subtopics
   in future releases.  Please feel free to query the authors if you
   are interested in learning more about ACL2(r).  Gamboa's
   dissertation may also be helpful.
+
+  ACL2(r) does not currently support the [useless-runes] feature.
 
 
 Subtopics
@@ -128458,7 +128464,7 @@ Subtopics
 
   This topic documents the :useless-runes option for [certify-book],
   which makes it possible to speed up repeated certification of a
-  book.
+  book.  This option is ignored in ACL2(r).
 
 
 Introduction
@@ -128487,13 +128493,16 @@ Introduction
   \"read\" to be used in place of the :useless-runes option :read or
   :write (respectively) of certify-book.  ACL2_USELESS_RUNES can also
   take on the numeric values permitted for the :useless-runes option
-  of [certify-book].  This is all discussed below.  Note that by
-  default, certification of the [community-books], as laid out in
-  documentation topic [books-certification], is performed with
-  ACL2_USELESS_RUNES=-25, which for each book foo.lisp causes part of
-  the corresponding .sys/foo@useless-runes.lsp, if it exists, to be
-  consulted (as described below).  This default behavior is only for
-  ACL2, not ACL2(r) (see [real]) or ACL2(p) (see [parallelism]).
+  of [certify-book].  This is all discussed below.
+
+  By default, certification of the [community-books], using make as
+  laid out in documentation topic [books-certification], and
+  certification using [build::cert.pl], are both performed with
+  ACL2_USELESS_RUNES=-25.  This setting, for each book foo.lisp,
+  causes part of the corresponding .sys/foo@useless-runes.lsp, if it
+  exists, to be consulted (as described below).  This default
+  behavior is only for ACL2 and ACL2(p) (see [parallelism]), but not
+  for ACL2(r) (see [real]).
 
 
 Detailed Documentation
