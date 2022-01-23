@@ -91915,6 +91915,25 @@ it."
 
  </ul>
 
+ <p>Improved @(tsee untranslate) so that when untranslating a translated @(see
+ term), an attempt is made to call @(tsee mv) where appropriate.  Thanks to
+ Alessandro Coglio and Eric Smith for requesting this enhancement.  The
+ improvement also restores type declarations under @(tsee let), @(tsee let*),
+ and @(tsee mv-let) (see @(see declare) and @(see type-spec)); and it also
+ restores @(tsee ignore) declarations in @(tsee let) and @(tsee let*) forms,
+ where previously that was only the case for @(tsee mv-let) forms.  In
+ addition, a new utility, @(tsee maybe-convert-to-mv), may be called explicitly
+ to convert an untranslated term to one that calls @('mv') in leaves reached
+ via transversal of the true and false branches of its top-level @('IF') tree,
+ where the traversal appropriately passes through @(tsee let), @(tsee let*),
+ and @(tsee mv-let) forms, as well as calls of @(tsee prog2$), @(tsee mbe),
+ @(tsee mbt), @(tsee ec-call), @(tsee time$), and a few other macros related to
+ @(tsee return-last) as well as @('return-last') itself.  See examples under a
+ comment about ``preserving executability'' in the @(see community-book),
+ @('books/system/tests/untranslate.lisp').  (Note: The changes also include a
+ bug fix that avoids generating an @(tsee mv-let) expression when there are
+ fewer than two bound variables.)</p>
+
  <h3>New Features</h3>
 
  <p>A new @(tsee loop$) keyword, @('DO'), supports an imperative style of
@@ -118067,6 +118086,10 @@ arithmetic) for libraries of @(see books) for arithmetic reasoning.</p>")
  closed in ACL2.  A similar function is @('make-lambda-application'), but that
  one drops unused formals, while @('make-lambda-term') does not.</li>
 
+ <li>@('(maybe-convert-to-mv uterm)'): Given the untranslated @(see term)
+ @('uterm'), replace each of its top-level calls of @(tsee list) by a call oof
+ @(tsee mv) on the same arguments.</li>
+
  <li>@('(nvariablep x)'): For a @(tsee pseudo-termp) @('x'), return true iff
  @('x') is not a variable (i.e. it is a quoted constant or a function
  call).</li>
@@ -138277,6 +138300,7 @@ expand function call at the current subterm, without simplifying"
 (defpointer make-lambda-term system-utilities)
 (defpointer make-list-ac make-list)
 (defpointer match-free free-variables)
+(defpointer maybe-convert-to-mv system-utilities)
 (defpointer measure-theorem termination-theorem)
 (defpointer member-eq member)
 (defpointer member-equal member)

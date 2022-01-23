@@ -63413,6 +63413,8 @@ Subtopics
          maximum-length (name l)
          (declare (xargs :guard (or (array1p name l) (array2p name l))))
          (cadr (assoc-keyword :maximum-length (cdr (header name l)))))")
+ (MAYBE-CONVERT-TO-MV (POINTERS)
+                      "See [system-utilities].")
  (MAYBE-FLUSH-AND-COMPRESS1
   (ARRAYS ACL2-BUILT-INS)
   "Compress a one-dimensional array only if necessary
@@ -90001,6 +90003,25 @@ Changes to Existing Features
       illegal.  The value NIL continues to be appropriate for
       avoiding simplification.
 
+  Improved [untranslate] so that when untranslating a translated
+  [term], an attempt is made to call [mv] where appropriate.  Thanks
+  to Alessandro Coglio and Eric Smith for requesting this
+  enhancement.  The improvement also restores type declarations under
+  [let], [let*], and [mv-let] (see [declare] and [type-spec]); and it
+  also restores [ignore] declarations in [let] and [let*] forms,
+  where previously that was only the case for [mv-let] forms.  In
+  addition, a new utility, [maybe-convert-to-mv], may be called
+  explicitly to convert an untranslated term to one that calls mv in
+  leaves reached via transversal of the true and false branches of
+  its top-level IF tree, where the traversal appropriately passes
+  through [let], [let*], and [mv-let] forms, as well as calls of
+  [prog2$], [mbe], [mbt], [ec-call], [time$], and a few other macros
+  related to [return-last] as well as return-last itself.  See
+  examples under a comment about ``preserving executability'' in the
+  [community-book], books/system/tests/untranslate.lisp.  (Note: The
+  changes also include a bug fix that avoids generating an [mv-let]
+  expression when there are fewer than two bound variables.)
+
 
 New Features
 
@@ -95051,6 +95072,9 @@ Subtopics
 
   [Match-free]
       See [free-variables].
+
+  [Maybe-convert-to-mv]
+      See [system-utilities].
 
   [Measure-theorem]
       See [termination-theorem].
@@ -119121,6 +119145,9 @@ List of a few built-in system utilities
       formals, because lambdas must be closed in ACL2.  A similar
       function is make-lambda-application, but that one drops unused
       formals, while make-lambda-term does not.
+    * (maybe-convert-to-mv uterm): Given the untranslated [term] uterm,
+      replace each of its top-level calls of [list] by a call oof
+      [mv] on the same arguments.
     * (nvariablep x): For a [pseudo-termp] x, return true iff x is not a
       variable (i.e. it is a quoted constant or a function call).
     * (partition-rest-and-keyword-args x keys): x should be a list of the
