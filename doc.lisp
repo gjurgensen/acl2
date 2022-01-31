@@ -16825,9 +16825,9 @@ Subtopics
                   :ttagsx ttags           ; [default nil]
                   :pcert pcert            ; [default nil]
                   :write-port t/nil       ; [default t unless pcert is non-nil]
-                  :useless-runes :write/:read/:read?/n/-n/nil
-                                          ; (-100 < n < 0 or 0 < n <= 100)
-                                          ; [default nil]
+                  :useless-runes          ; :write/:read/:read?/n/-n/nil
+                                          ;   (-100 < n < 0 or 0 < n <= 100)
+                                          ;   [default nil or from environment]
                   )
 
   where book-name is a book name (see [book-name]), k is used to
@@ -55882,6 +55882,9 @@ About Guard Verification of Lambda Objects
         :standard-co        ...      ; open char out or file to open and close
         :proofs-co          ...      ; open char out or file to open and close
         :current-package    ...      ; known package name
+        :useless-runes      ...      ; :write/:read/:read?/n/-n/nil
+                                     ;   (-100 < n < 0 or 0 < n <= 100)
+                                     ;   (see [useless-runes])
         :ld-skip-proofsp    ...      ; nil, 'include-book, or t
                                      ;   (see [ld-skip-proofsp])
         :ld-redefinition-action ...  ; nil or '(:a . :b)
@@ -55918,9 +55921,11 @@ About Guard Verification of Lambda Objects
   ``binds'' these variables.  By ``binds'' we actually mean the
   variables are globally set but restored to their old values on
   exit.  Because ld provides the illusion of [state] global variables
-  being bound, they are called ``ld specials'' (after the Lisp
-  convention of calling a variable ``special'' if it is referenced
-  freely after having been bound).
+  being bound, they are generally called ``ld specials'' (after the
+  Lisp convention of calling a variable ``special'' if it is
+  referenced freely after having been bound).  (We say ``generally''
+  because technically, current-package and useless-runes are not
+  considered to be ld specials.)
 
   Note that all arguments but the first are passed via keyword.  Any
   variable not explicitly given a value in a call retains its
@@ -55945,7 +55950,7 @@ About Guard Verification of Lambda Objects
   However, ld has many bells and whistles controlled by the ld
   specials.  Each such special is documented individually.  For
   example, see the documentation for [standard-oi],
-  [current-package], [ld-pre-eval-print], etc.
+  [current-package], [useless-runes], [ld-pre-eval-print], etc.
 
   A more precise description of ld is as follows.  In the description
   below we use the ld specials as variables, e.g., we say ``a form is
@@ -90081,6 +90086,12 @@ New Features
   input/output history.  Thanks to Eric Smith for requesting this
   feature.
 
+  The [ld] utility accepts a new keyword argument, :useless-runes,
+  which functions much the same as does the :useless-runes keyword
+  argument of [certify-book].  See [useless-runes].  Thanks to Eric
+  Smith for requesting this feature (which may have been requested
+  previously as well).
+
 
 Heuristic and Efficiency Improvements
 
@@ -90116,6 +90127,10 @@ Bug Fixes
   event while including a book.  This has been fixed, by arranging
   that a defwarrant event always expands to the same [encapsulate]
   form.
+
+  An assertion error was fixed, occurring with a call of [certify-book]
+  when the value of environment variable \"ACL2_USELESS_RUNES\" was
+  (erroneously) \"0\".
 
 
 Changes at the System Level
@@ -105299,11 +105314,11 @@ Subtopics
     (reset-ld-specials nil)
 
   Roughly speaking, the [ld] specials are certain [state] global
-  variables, such as [current-package], [ld-prompt], and
-  [ld-pre-eval-filter], which are managed by [ld] as though they were
-  local variables.  These variables determine the channels on which
-  [ld] reads and prints and control many options of [ld].  See [ld]
-  for the details on what the [ld] specials are.
+  variables, such as [ld-prompt] and [ld-pre-eval-filter], which are
+  managed by [ld] as though they were local variables.  These
+  variables determine the channels on which [ld] reads and prints and
+  control many options of [ld].  See [ld] for the details on what the
+  [ld] specials are.
 
   This function, reset-ld-specials, takes one Boolean argument, flg.
   The function resets all of the [ld] specials to their initial,
@@ -128489,9 +128504,11 @@ Subtopics
   (CERTIFY-BOOK ACCUMULATED-PERSISTENCE)
   "Speed up proofs by disabling useless [rune]s
 
-  This topic documents the :useless-runes option for [certify-book],
-  which makes it possible to speed up repeated certification of a
-  book.  This option is ignored in ACL2(r).
+  This topic documents the :useless-runes keyword argument of
+  [certify-book] and [ld], which makes it possible to speed up
+  repeated running of a book's [events].  This option is ignored in
+  ACL2(r) (see [real]) and, when [waterfall-parallelism] is active,
+  in ACL2(p) (see [parallelism]).
 
 
 Introduction
@@ -128499,9 +128516,16 @@ Introduction
   For a given [event], the so-called ``useless'' rules are those that
   do not contribute to the progress of any proof supporting that
   event.  For more background see [accumulated-persistence], which is
-  typically used for finding rules to [disable] during proofs.  The
-  feature described in the present topic provides automation for the
-  discovery and effective disabling of useless rules.
+  typically used for finding rules (or more precisely, [rune]s) to
+  [disable] during proofs.  The feature described in the present
+  topic provides automation for the discovery and effective disabling
+  of useless rules.
+
+  Below, we focus first on the use of :useless-runes for [certify-book]
+  rather than for [ld].  The main time to use this option with [ld]
+  may be when developing a book that is to be certified eventually
+  with a :useless-runes option.  We return to discuss ld later in
+  this topic (in Section ``Modifications for [ld]'').
 
   To use the :useless-runes option of [certify-book], first certify
   your book --- say, foo.lisp --- by supplying option :useless-runes
@@ -128509,7 +128533,7 @@ Introduction
   directory, creating that directory if it does not already exist.
   This new file, .sys/foo@useless-runes.lsp, associates names of
   [defthm], [defun], and [verify-guards] [events] with sets of
-  ``useless'' [rune]s'': rule names (``runes'') not contributing to
+  ``useless'' [rune]s'': rule names (``[rune]s'') not contributing to
   the progress of the proof.  Then, future certifications can use
   option :useless-runes :read --- or some limited variations of :read
   using numeric values, as discussed below) --- which, during
@@ -128519,32 +128543,34 @@ Introduction
   Environment variable ACL2_USELESS_RUNES can take the value \"write\" or
   \"read\" to be used in place of the :useless-runes option :read or
   :write (respectively) of certify-book.  ACL2_USELESS_RUNES can also
-  take on the numeric values permitted for the :useless-runes option
-  of [certify-book].  This is all discussed below.
+  have value \"nil\" (case-insensitive) or a string representing a
+  legal numeric value for the :useless-runes option of
+  [certify-book].  This is all discussed below.
 
-  By default, certification of the [community-books], using make as
-  laid out in documentation topic [books-certification], and
-  certification using [build::cert.pl], are both performed with
-  ACL2_USELESS_RUNES=-25.  This setting, for each book foo.lisp,
-  causes part of the corresponding .sys/foo@useless-runes.lsp, if it
-  exists, to be consulted (as described below).  This default
-  behavior is only for ACL2 and ACL2(p) (see [parallelism]), but not
-  for ACL2(r) (see [real]).
+  By default, certification of the [community-books], when using either
+  make (as described elsewhere; see [books-certification]) or
+  [build::cert.pl], is performed with environment variable
+  ACL2_USELESS_RUNES set to \"-25\".  This setting, for each book
+  foo.lisp, causes part of the corresponding file
+  .sys/foo@useless-runes.lsp, if it exists, to be consulted as
+  described below.  However, useless runes are entirely ignored (both
+  their use and for writing to .sys/foo@useless-runes.lsp files) both
+  in ACL2(r) (see [real]) and, when [waterfall-parallelism] is
+  active, in ACL2(p) (see [parallelism]).
 
 
 Detailed Documentation
 
-  Again, the :useless-runes option of [certify-book] provides a way to
-  automate discovery and, in future certifications, disabling of
-  useless runes (as described above), which can speed up proofs.
-  Information about useless runes is communicated using a file, which
-  we call the ``@useless-runes.lsp file'' (or, sometimes,
-  ``useless-runes file''a), whose name is obtained by adding the
+  Again, the :useless-runes option provides a way to automate discovery
+  and, in subsequent uses, disabling of useless runes that can speed
+  up proofs.  Information about useless runes is communicated using a
+  file, which we call the ``@useless-runes.lsp file'' (or, sometimes,
+  ``useless-runes file''), whose name is obtained by adding the
   suffix \"@useless-runes.lsp\" to the book name, and which is placed
   in the .sys subdirectory of the book's directory, after creating
   that subdirectory if it does not already exist.  For example, if
-  the book's file is foo.lisp then the corresponding
-  @useless-runes.lsp file is .sys/foo@useless-runes.lsp.
+  the book's filename is \"foo.lisp\" then the corresponding
+  @useless-runes.lsp has filename \".sys/foo@useless-runes.lsp\".
 
   The following table summarizes the legal values for the option
   :useless-runes; further explanation follows.
@@ -128555,16 +128581,15 @@ Detailed Documentation
     N, -N    ; N is a positive integer not exceeding 100.  Then |N|% of the rules
              ;   indicated by the @useless-runes.lsp file are to be kept disabled.
              ;   The @useless-runes.lsp file needs to exist for N but not for -N.
-    nil      ; Certify without reading or writing the @useless-runes.lsp file.
+    nil      ; Do not read or write the @useless-runes.lsp file.
 
   Notice in particular that :useless-runes 100 is equivalent to
   :useless-runes :read, while :useless-runes -100 is equivalent to
   :useless-runes :read?.
 
-  When certify-book is supplied with option :useless-runes :write, the
-  result is to write out a corresponding @useless-runes.lsp file.
-  Each top-level entry of this file that is non-trivial (see below)
-  has the form
+  The option :useless-runes :write directs that a corresponding
+  @useless-runes.lsp file is to be written.  Each top-level entry of
+  this file that is non-trivial (see below) has the form
 
     (name
      (frames-1 tries-1 rune-1)
@@ -128592,11 +128617,11 @@ Detailed Documentation
   name, and each tuple is on a single line starting in column 1
   (i.e., after a single space), as is the final right parenthesis.
 
-  When certify-book is supplied with option :useless-runes :read or
-  :useless-runes :read?, then book certification takes advantage of
-  the existing @useless-runes.lsp file, if it exists.  If that file
-  does not exist, an error is caused when the option value is :read
-  but the option is simply ignored when the option value is :read?.
+  The option :useless-runes :read or :useless-runes :read? directs use
+  of the corresponding @useless-runes.lsp file, if it exists.  If
+  that file does not exist, an error is caused when the option value
+  is :read but the option is simply ignored when the option value is
+  :read?.
 
   The value of :useless-runes may also be a non-zero integer between
   -100 and 100, inclusive.  The absolute value of this number is the
@@ -128624,8 +128649,8 @@ Detailed Documentation
   :useless-runes gives the same behavior as the value :read, and the
   value -100 gives the same behavior as the value :read?.
 
-  The :useless-runes option of certify-book need not be given
-  explicitly.  Suppose that the environment variable
+  The :useless-runes option need not be given explicitly to
+  [certify-book].  Suppose that the environment variable
   ACL2_USELESS_RUNES has a non-empty value.  Then that value
   implicitly invokes the :useless-runes option as indicated by the
   following table, which shows how that environment variable value
@@ -128642,14 +128667,16 @@ Detailed Documentation
 
   Important.  An explicitly supplied :useless-runes value normally
   takes priority over the value of environment variable
-  ACL2_USELESS_RUNES.  However, the environment variable takes
-  priority if its (case insensitive) value is \"WRITE\" provided
-  :useless-runes nil is not supplied explicitly.
+  ACL2_USELESS_RUNES.  However, for certify-book the environment
+  variable takes priority if its (case insensitive) value is \"WRITE\"
+  provided :useless-runes nil is not supplied explicitly.  This
+  feature supports the use of the environment variable when using
+  make to update @useless-runes.lsp files for the community books.
 
   If you want certification to avoid reading the book's
   @useless-runes.lsp file even when this environment variable has a
-  non-empty value that specifies reading, call certify-book with
-  option :useless-runes nil.
+  non-empty value that specifies reading, use option :useless-runes
+  nil.
 
   A reason for allowing integer values, rather than only :read and
   :read?, is that the disabling of useless runes can cause a proof to
@@ -128710,13 +128737,70 @@ Subtleties
   lemmas other than the last is deleted from the book.  Then
   references to the later such lemmas will be wrong in the
   @useless-runes.lsp file.  If you run into this problem, then either
-  regenerate the @useless-runes.lsp file (e.g., by setting
-  environment variable ACL2_USELESS_RUNES to \"write\"), or give
-  distinct names to your book's lemmas, or even consider adding a
-  line like the following to a suitable .acl2 file (see
+  regenerate the @useless-runes.lsp file (e.g., using certify-book
+  with environment variable ACL2_USELESS_RUNES set to \"write\"), or
+  give distinct names to your book's lemmas, or even consider adding
+  a line like the following to a suitable .acl2 file (see
   [build::custom-certify-book-commands]).
 
     ; cert-flags: ? t :useless-runes nil
+
+
+Adaptations for [ld]
+
+  The :useless-runes keyword argument was originally developed for
+  [certify-book], and that is probably still where it is most useful.
+  But when developing or updating a book \"BK\", it may be convenient
+  to evaluate the book's [events] using (ld \"BK.lisp\" ..
+  :useless-runes ..).  In that case, it is probably a good idea to
+  run that ld command in the same certification [world] (i.e., the
+  world with the same sequence of [portcullis] commands) as will be
+  encountered when certifying the book, so that the accesses to the
+  @useless-runes.lsp will match up between the ld call and a
+  corresponding certify-book call.  The following observations may
+  help in that respect.
+
+    * If \"BK.lisp\" has previously been certified, there should be a file
+      \"BK.port\".  By executing (ld \"BK.port\"), you will put yourself
+      in the appropriate certification world (unless the book's
+      [portcullis] commands have changed since the time it was
+      certified).
+    * If your ld of the book ends prematurely in an error, then before you
+      call ld again with a :useless-runes argument, it would very
+      likely be best to back up (using :[ubt]) so that you are once
+      again in the intended certification world.
+
+  Here are a few differences between ld and certify-book with respect
+  to useless-runes.  For purposes of this discussion, let's say a
+  call of ld is ``a book-like call'' if the first argument is a
+  string ending with \".lisp\".
+
+    * Just as how certify-book consults environment variable
+      ACL2_USELESS_RUNES for an implicit value of omitted keyword
+      argument :useless-runes, a book-like call of ld consults
+      environment variable ACL2_USELESS_RUNES_LD.  For example, if
+      environment variable ACL2_USELESS_RUNES_LD has value \"50\", then
+      the call (ld \"foo.lisp\") will be treated as though it were the
+      call (ld \"foo.lisp\" :useless-runes 50).
+    * If environment variable ACL2_USELESS_RUNES_LD takes on the special
+      value \"cert\", case-insensitive, then ld will consult
+      environment variable ACL2_USELESS_RUNES just as certify-book
+      does.
+    * It is an error for a call of ld that is not book-like to have a
+      non-nil :useless-runes argument.  For a call of ld without a
+      :useless-runes argument, environment variables supply a
+      useless-runes value (as described above) only if it is a
+      book-like call.
+    * The value of keyword argument :useless-runes in a call of
+      certify-book or ld does not persist to a subsidiary call of
+      certify-book or ld.  If you want a useless-runes value to
+      persist, use environment variables.
+    * Recall that for certify-book, the environment variable takes priority
+      if its (case insensitive) value is \"write\" provided the
+      :useless-runes nil keyword argument is not supplied.  But for
+      ld, an explicit value of the :useless-runes keyword argument
+      always takes priority; environment variables, even with value
+      \"write\", do not override any such value.
 
 
 Performance
