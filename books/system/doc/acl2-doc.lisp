@@ -13966,9 +13966,9 @@ with any questions about building the community books.</p>")
                 :ttagsx ttags           ; [default nil]
                 :pcert pcert            ; [default nil]
                 :write-port t/nil       ; [default t unless pcert is non-nil]
-                :useless-runes :write/:read/:read?/n/-n/nil
-                                        ; (-100 < n < 0 or 0 < n <= 100)
-                                        ; [default nil]
+                :useless-runes          ; :write/:read/:read?/n/-n/nil
+                                        ;   (-100 < n < 0 or 0 < n <= 100)
+                                        ;   [default nil or from environment]
                 )
  })
 
@@ -52018,6 +52018,9 @@ tables in the current Hons Space."
      :standard-co        ...      ; open char out or file to open and close
      :proofs-co          ...      ; open char out or file to open and close
      :current-package    ...      ; known package name
+     :useless-runes      ...      ; :write/:read/:read?/n/-n/nil
+                                  ;   (-100 &lt; n &lt; 0 or 0 &lt; n &lt;= 100)
+                                  ;   (see @(see useless-runes))
      :ld-skip-proofsp    ...      ; nil, 'include-book, or t
                                   ;   (see @(see ld-skip-proofsp))
      :ld-redefinition-action ...  ; nil or '(:a . :b)
@@ -52055,8 +52058,10 @@ tables in the current Hons Space."
  ``binds'' these variables.  By ``binds'' we actually mean the variables are
  globally set but restored to their old values on exit.  Because @('ld')
  provides the illusion of @(see state) global variables being bound, they are
- called ``@('ld') specials'' (after the Lisp convention of calling a variable
- ``special'' if it is referenced freely after having been bound).</p>
+ generally called ``@('ld') specials'' (after the Lisp convention of calling a
+ variable ``special'' if it is referenced freely after having been bound).  (We
+ say ``generally'' because technically, @('current-package') and
+ @('useless-runes') are not considered to be @('ld') specials.)</p>
 
  <p>Note that all arguments but the first are passed via keyword.  Any variable
  not explicitly given a value in a call retains its pre-call value, with the
@@ -52082,8 +52087,8 @@ tables in the current Hons Space."
  component is @(':')@(tsee q), or until the input channel or list is emptied.
  However, @('ld') has many bells and whistles controlled by the @('ld')
  specials.  Each such special is documented individually.  For example, see the
- documentation for @(tsee standard-oi), @(tsee current-package), @(tsee
- ld-pre-eval-print), etc.</p>
+ documentation for @(tsee standard-oi), @(tsee current-package), @(see
+ useless-runes), @(tsee ld-pre-eval-print), etc.</p>
 
  <p>A more precise description of @('ld') is as follows.  In the description
  below we use the @('ld') specials as variables, e.g., we say ``a form is read
@@ -91990,6 +91995,12 @@ it."
  documented feature, a @(see ld-history) that records command input/output
  history.  Thanks to Eric Smith for requesting this feature.</p>
 
+ <p>The @(tsee ld) utility accepts a new keyword argument, @(':useless-runes'),
+ which functions much the same as does the @(':useless-runes') keyword argument
+ of @(tsee certify-book).  See @(see useless-runes).  Thanks to Eric Smith for
+ requesting this feature (which may have been requested previously as
+ well).</p>
+
  <h3>Heuristic and Efficiency Improvements</h3>
 
  <p>Improved the efficiency of some computations involving calls of @(tsee
@@ -92022,6 +92033,10 @@ it."
  defwarrant) event while including a book.  This has been fixed, by arranging
  that a @('defwarrant') event always expands to the same @(tsee encapsulate)
  form.</p>
+
+ <p>An assertion error was fixed, occurring with a call of @(tsee certify-book)
+ when the value of environment variable @('\"ACL2_USELESS_RUNES\"')
+ was (erroneously) @('\"0\"').</p>
 
  <h3>Changes at the System Level</h3>
 
@@ -104303,11 +104318,11 @@ arithmetic) for libraries of @(see books) for arithmetic reasoning.</p>")
  })
 
  <p>Roughly speaking, the @(tsee ld) specials are certain @(see state) global
- variables, such as @(tsee current-package), @(tsee ld-prompt), and @(tsee
- ld-pre-eval-filter), which are managed by @(tsee ld) as though they were local
- variables.  These variables determine the channels on which @(tsee ld) reads
- and prints and control many options of @(tsee ld).  See @(see ld) for the
- details on what the @(tsee ld) specials are.</p>
+ variables, such as @(tsee ld-prompt) and @(tsee ld-pre-eval-filter), which are
+ managed by @(tsee ld) as though they were local variables.  These variables
+ determine the channels on which @(tsee ld) reads and prints and control many
+ options of @(tsee ld).  See @(see ld) for the details on what the @(tsee ld)
+ specials are.</p>
 
  <p>This function, @('reset-ld-specials'), takes one Boolean argument,
  @('flg').  The function resets all of the @(tsee ld) specials to their
@@ -127459,18 +127474,26 @@ introduction-to-the-tau-system) for more information about Tau.</dd>
 
   :parents (certify-book accumulated-persistence)
   :short "Speed up proofs by disabling useless @(see rune)s"
-  :long "<p>This topic documents the @(':useless-runes') option for @(tsee
- certify-book), which makes it possible to speed up repeated certification of a
- book.  This option is ignored in ACL2(r).</p>
+  :long "<p>This topic documents the @(':useless-runes') keyword argument of
+ @(tsee certify-book) and @(tsee ld), which makes it possible to speed up
+ repeated running of a book's @(see events).  This option is ignored in
+ ACL2(r) (see @(see real)) and, when @(see waterfall-parallelism) is active, in
+ ACL2(p) (see @(see parallelism)).</p>
 
  <h3>Introduction</h3>
 
  <p>For a given @(see event), the so-called ``useless'' rules are those that do
  not contribute to the progress of any proof supporting that event.  For more
  background see @(see accumulated-persistence), which is typically used for
- finding rules to @(see disable) during proofs.  The feature described in the
- present topic provides automation for the discovery and effective disabling of
- useless rules.</p>
+ finding rules (or more precisely, @(see rune)s) to @(see disable) during
+ proofs.  The feature described in the present topic provides automation for
+ the discovery and effective disabling of useless rules.</p>
+
+ <p>Below, we focus first on the use of @(':useless-runes') for @(tsee
+ certify-book) rather than for @(tsee ld).  The main time to use this option
+ with @(tsee ld) may be when developing a book that is to be certified
+ eventually with a @(':useless-runes') option.  We return to discuss @('ld')
+ later in this topic (in Section ``Modifications for @(tsee ld)'').</p>
 
  <p>To use the @(':useless-runes') option of @(tsee certify-book), first
  certify your book &mdash; say, @('foo.lisp') &mdash; by supplying option
@@ -127478,8 +127501,8 @@ introduction-to-the-tau-system) for more information about Tau.</dd>
  of the book's directory, creating that directory if it does not already exist.
  This new file, @('.sys/foo@useless-runes.lsp'), associates names of @(tsee
  defthm), @(tsee defun), and @(tsee verify-guards) @(see events) with sets of
- ``useless'' @(see rune)s'': rule names (``runes'') not contributing to the
- progress of the proof.  Then, future certifications can use option
+ ``useless'' @(see rune)s'': rule names (``@(see rune)s'') not contributing to
+ the progress of the proof.  Then, future certifications can use option
  @(':useless-runes :read') &mdash; or some limited variations of @(':read')
  using numeric values, as discussed below) &mdash; which, during evaluation of
  an event, will effectively @(see disable) rules associated with that event in
@@ -127488,32 +127511,32 @@ introduction-to-the-tau-system) for more information about Tau.</dd>
  <p>Environment variable @('ACL2_USELESS_RUNES') can take the value
  @('\"write\"') or @('\"read\"') to be used in place of the @(':useless-runes')
  option @(':read') or @(':write') (respectively) of @('certify-book').
- @('ACL2_USELESS_RUNES') can also take on the numeric values permitted for the
- @(':useless-runes') option of @(tsee certify-book).  This is all discussed
- below.</p>
+ @('ACL2_USELESS_RUNES') can also have value @('\"nil\"') (case-insensitive) or
+ a string representing a legal numeric value for the @(':useless-runes') option
+ of @(tsee certify-book).  This is all discussed below.</p>
 
-<p>By default, certification of the @(see community-books), using @('make')
-as laid out in documentation topic @(see books-certification),
-and certification using <see topic='@(url build::cert.pl)'>cert.pl</see>,
-are both performed with @('ACL2_USELESS_RUNES=-25').
-This setting, for each book @('foo.lisp'),
-causes part of the corresponding @('.sys/foo@useless-runes.lsp'), if it exists,
-to be consulted (as described below).  This default behavior is only for
-ACL2 and ACL2(p) (see @(see parallelism)),
-but not for ACL2(r) (see @(see real)).</p>
+ <p>By default, certification of the @(see community-books), when using either
+ @('make') (as described elsewhere; see @(see books-certification)) or @(see
+ build::cert.pl), is performed with environment variable
+ @('ACL2_USELESS_RUNES') set to @('\"-25\"').  This setting, for each book
+ @('foo.lisp'), causes part of the corresponding file
+ @('.sys/foo@useless-runes.lsp'), if it exists, to be consulted as described
+ below.  However, useless runes are entirely ignored (both their use and for
+ writing to @('.sys/foo@useless-runes.lsp') files) both in ACL2(r) (see @(see
+ real)) and, when @(see waterfall-parallelism) is active, in ACL2(p) (see @(see
+ parallelism)).</p>
 
  <h3>Detailed Documentation</h3>
 
- <p>Again, the @(':useless-runes') option of @(tsee certify-book) provides a
- way to automate discovery and, in future certifications, disabling of useless
- runes (as described above), which can speed up proofs.  Information about
- useless runes is communicated using a file, which we call the
- ``@useless-runes.lsp file'' (or, sometimes, ``useless-runes file''a), whose
+ <p>Again, the @(':useless-runes') option provides a way to automate discovery
+ and, in subsequent uses, disabling of useless runes that can speed up proofs.
+ Information about useless runes is communicated using a file, which we call
+ the ``@useless-runes.lsp file'' (or, sometimes, ``useless-runes file''), whose
  name is obtained by adding the suffix @('\"@useless-runes.lsp\"') to the book
  name, and which is placed in the @('.sys') subdirectory of the book's
  directory, after creating that subdirectory if it does not already exist.  For
- example, if the book's file is @('foo.lisp') then the corresponding
- @useless-runes.lsp file is @('.sys/foo@useless-runes.lsp').</p>
+ example, if the book's filename is @('\"foo.lisp\"') then the corresponding
+ @useless-runes.lsp has filename @('\".sys/foo@useless-runes.lsp\"').</p>
 
  <p>The following table summarizes the legal values for the option
  @(':useless-runes'); further explanation follows.</p>
@@ -127525,16 +127548,16 @@ but not for ACL2(r) (see @(see real)).</p>
  N, -N    ; N is a positive integer not exceeding 100.  Then |N|% of the rules
           ;   indicated by the @useless-runes.lsp file are to be kept disabled.
           ;   The @useless-runes.lsp file needs to exist for N but not for -N.
- nil      ; Certify without reading or writing the @useless-runes.lsp file.
+ nil      ; Do not read or write the @useless-runes.lsp file.
  })
 
  <p>Notice in particular that @(':useless-runes 100') is equivalent to
  @(':useless-runes :read'), while @(':useless-runes -100') is equivalent to
  @(':useless-runes :read?').</p>
 
- <p>When @('certify-book') is supplied with option @(':useless-runes :write'),
- the result is to write out a corresponding @useless-runes.lsp file.  Each
- top-level entry of this file that is non-trivial (see below) has the form</p>
+ <p>The option @(':useless-runes :write') directs that a corresponding
+ @useless-runes.lsp file is to be written.  Each top-level entry of this file
+ that is non-trivial (see below) has the form</p>
 
  @({
  (name
@@ -127562,11 +127585,10 @@ but not for ACL2(r) (see @(see real)).</p>
  starting in column 1 (i.e., after a single space), as is the final right
  parenthesis.</p>
 
- <p>When @('certify-book') is supplied with option @(':useless-runes :read') or
- @(':useless-runes :read?'), then book certification takes advantage of the
- existing @useless-runes.lsp file, if it exists.  If that file does not exist,
- an error is caused when the option value is @(':read') but the option is
- simply ignored when the option value is @(':read?').</p>
+ <p>The option @(':useless-runes :read') or @(':useless-runes :read?') directs
+ use of the corresponding @useless-runes.lsp file, if it exists.  If that file
+ does not exist, an error is caused when the option value is @(':read') but the
+ option is simply ignored when the option value is @(':read?').</p>
 
  <p>The value of @(':useless-runes') may also be a non-zero integer between
  -100 and 100, inclusive.  The absolute value of this number is the percentage
@@ -127595,11 +127617,12 @@ but not for ACL2(r) (see @(see real)).</p>
  gives the same behavior as the value @(':read'), and the value @('-100') gives
  the same behavior as the value @(':read?').</p>
 
- <p>The @(':useless-runes') option of @('certify-book') need not be given
- explicitly.  Suppose that the environment variable @('ACL2_USELESS_RUNES') has
- a non-empty value.  Then that value implicitly invokes the @(':useless-runes')
- option as indicated by the following table, which shows how that environment
- variable value corresponds to a value for the @(':useless-runes') option.</p>
+ <p>The @(':useless-runes') option need not be given explicitly to @(tsee
+ certify-book).  Suppose that the environment variable @('ACL2_USELESS_RUNES')
+ has a non-empty value.  Then that value implicitly invokes the
+ @(':useless-runes') option as indicated by the following table, which shows
+ how that environment variable value corresponds to a value for the
+ @(':useless-runes') option.</p>
 
  @({
  ACL2_USELESS_RUNES value          :useless-runes value
@@ -127614,13 +127637,15 @@ but not for ACL2(r) (see @(see real)).</p>
 
  <p><b>Important</b>.  An explicitly supplied @(':useless-runes') value
  normally takes priority over the value of environment variable
- @('ACL2_USELESS_RUNES').  However, the environment variable takes priority if
- its (case insensitive) value is @('\"WRITE\"') provided @(':useless-runes
- nil') is not supplied explicitly.</p>
+ @('ACL2_USELESS_RUNES').  However, for @('certify-book') the environment
+ variable takes priority if its (case insensitive) value is @('\"WRITE\"')
+ provided @(':useless-runes nil') is not supplied explicitly.  This feature
+ supports the use of the environment variable when using @('make') to update
+ @useless-runes.lsp files for the community books.</p>
 
  <p>If you want certification to avoid reading the book's @useless-runes.lsp
  file even when this environment variable has a non-empty value that specifies
- reading, call @('certify-book') with option @(':useless-runes nil').</p>
+ reading, use option @(':useless-runes nil').</p>
 
  <p>A reason for allowing integer values, rather than only @(':read') and
  @(':read?'), is that the disabling of useless runes can cause a proof to fail.
@@ -127677,15 +127702,80 @@ but not for ACL2(r) (see @(see real)).</p>
  @(tsee encapsulate) event except perhaps the last), and one of those lemmas
  other than the last is deleted from the book.  Then references to the later
  such lemmas will be wrong in the @useless-runes.lsp file.  If you run into
- this problem, then either regenerate the @useless-runes.lsp file (e.g., by
- setting environment variable @('ACL2_USELESS_RUNES') to @('\"write\"')), or
- give distinct names to your book's lemmas, or even consider adding a line like
- the following to a suitable @('.acl2') file (see @(see
- build::custom-certify-book-commands)).</p>
+ this problem, then either regenerate the @useless-runes.lsp file (e.g., using
+ @('certify-book') with environment variable @('ACL2_USELESS_RUNES') set to
+ @('\"write\"')), or give distinct names to your book's lemmas, or even
+ consider adding a line like the following to a suitable @('.acl2') file (see
+ @(see build::custom-certify-book-commands)).</p>
 
  @({
  ; cert-flags: ? t :useless-runes nil
  })
+
+ <h3>Adaptations for @(tsee ld)</h3>
+
+ <p>The @(':useless-runes') keyword argument was originally developed for
+ @(tsee certify-book), and that is probably still where it is most useful.  But
+ when developing or updating a book @('\"BK\"'), it may be convenient to
+ evaluate the book's @(see events) using @('(ld \"BK.lisp\" .. :useless-runes
+ ..)').  In that case, it is probably a good idea to run that @('ld') command
+ in the same certification @(see world) (i.e., the world with the same sequence
+ of @(see portcullis) commands) as will be encountered when certifying the
+ book, so that the accesses to the @useless-runes.lsp will match up between the
+ @('ld') call and a corresponding @('certify-book') call.  The following
+ observations may help in that respect.</p>
+
+ <ul>
+
+ <li>If @('\"BK.lisp\"') has previously been certified, there should be a file
+ @('\"BK.port\"').  By executing @('(ld \"BK.port\")'), you will put yourself
+ in the appropriate certification world (unless the book's @(see portcullis)
+ commands have changed since the time it was certified).</li>
+
+ <li>If your @('ld') of the book ends prematurely in an error, then before you
+ call @('ld') again with a @(':useless-runes') argument, it would very likely
+ be best to back up (using @(':')@(tsee ubt)) so that you are once again in the
+ intended certification world.</li>
+
+ </ul>
+
+ <p>Here are a few differences between @('ld') and @('certify-book') with
+ respect to useless-runes.  For purposes of this discussion, let's say a call
+ of @('ld') is ``a book-like call'' if the first argument is a string ending
+ with @('\".lisp\"').</p>
+
+ <ul>
+
+ <li>Just as how @('certify-book') consults environment variable
+ @('ACL2_USELESS_RUNES') for an implicit value of omitted keyword argument
+ @(':useless-runes'), a book-like call of @('ld') consults environment variable
+ @('ACL2_USELESS_RUNES_LD').  For example, if environment variable
+ @('ACL2_USELESS_RUNES_LD') has value @('\"50\"'), then the call @('(ld
+ \"foo.lisp\")') will be treated as though it were the call @('(ld
+ \"foo.lisp\" :useless-runes 50)').</li>
+
+ <li>If environment variable @('ACL2_USELESS_RUNES_LD') takes on the special
+ value @('\"cert\"'), case-insensitive, then @('ld') will consult environment
+ variable @('ACL2_USELESS_RUNES') just as @('certify-book') does.</li>
+
+ <li>It is an error for a call of @('ld') that is not book-like to have a
+ non-@('nil') @(':useless-runes') argument.  For a call of @('ld') without a
+ @(':useless-runes') argument, environment variables supply a useless-runes
+ value (as described above) only if it is a book-like call.</li>
+
+ <li>The value of keyword argument @(':useless-runes') in a call of
+ @('certify-book') or @('ld') does not persist to a subsidiary call of
+ @('certify-book') or @('ld').  If you want a useless-runes value to persist,
+ use environment variables.</li>
+
+ <li>Recall that for @('certify-book'), the environment variable takes priority
+ if its (case insensitive) value is @('\"write\"') provided the
+ @(':useless-runes nil') keyword argument is not supplied.  But for @('ld'), an
+ explicit value of the @(':useless-runes') keyword argument always takes
+ priority; environment variables, even with value @('\"write\"'), do not
+ override any such value.</li>
+
+ </ul>
 
  <h3>Performance</h3>
 
