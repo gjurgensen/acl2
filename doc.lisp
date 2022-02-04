@@ -30380,9 +30380,14 @@ SYNTAX
     * An IF call whose first argument is an ordinary term (which
       necessarily returns a single, non-stobj value) and whose true
       and false branches are DO-body terms
-    * A LET, LET*, or MV-LET expression whose beta-reduction (i.e.,
-      subtituting actuals for formals) is a DO-body term, provided no
-      bound variable is WITH-bound or a known [stobj]
+    * A LET, LET*, or MV-LET expression, subject to the following
+      restrictions (unless the term is an ordinary term).
+        * The terms in the bindings are all ordinary terms.
+        * The body is a DO-body term.
+        * No variable bound in the bindings is WITH-bound, a known [stobj], or
+          a variable occurring free in the surrounding DO loop$
+          expression.
+
     * (PROGN term1 term2 ... termk), where each termi is a DO-body term;
       also (PROG2 term1 term2) in that case
     * (RETURN term), where term is an ordinary term

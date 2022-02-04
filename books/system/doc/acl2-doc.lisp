@@ -27110,9 +27110,20 @@ ld) and @(tsee include-book)"
  necessarily returns a single, non-stobj value) and whose true and false
  branches are DO-body terms</li>
 
- <li>A @('LET'), @('LET*'), or @('MV-LET') expression whose
- beta-reduction (i.e., subtituting actuals for formals) is a DO-body term,
- provided no bound variable is @('WITH')-bound or a known @(see stobj)</li>
+ <li>A @('LET'), @('LET*'), or @('MV-LET') expression, subject to the following
+ restrictions (unless the term is an ordinary term).
+
+ <ul>
+
+ <li>The terms in the bindings are all ordinary terms.</li>
+
+ <li>The body is a DO-body term.</li>
+
+ <li>No variable bound in the bindings is @('WITH')-bound, a known @(see
+ stobj), or a variable occurring free in the surrounding DO loop$
+ expression.</li>
+
+ </ul></li>
 
  <li>@('(PROGN term1 term2 ... termk)'), where each @('termi') is a DO-body
  term; also @('(PROG2 term1 term2)') in that case</li>
