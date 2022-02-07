@@ -60455,9 +60455,11 @@ Introduction to loop$
   The documentation for [apply$] illustrates a simple defun that is
   inadmissible because the measure theorem cannot be proved without a
   warrant and warrants cannot be assumed during the proofs of the
-  measure conjectures.  The same issue arises for a loop$ when
-  user-defined functions are involved critically in measure
-  conjectures.  We hope to address this issue in the future.
+  measure conjectures.  The same issue arises when one of the
+  functions critically involved in a measure conjecture is defined
+  using a loop$ whose body involves a user-defined function.  For a
+  simple example of this issue and how to work around it, see
+  [community-book] books/demos/measure-and-warrant.lisp.
 
 
 Types and guards in loop$ expressions
