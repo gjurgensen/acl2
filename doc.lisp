@@ -1658,14 +1658,17 @@ Subtopics
 
   {IMAGE} (see [What_Is_ACL2{Q}])
 
-  The ACL2 Home Page is integrated into the ACL2 online documentation.
-  Over 4 megabytes of hypertext is available here.
+  The {ACL2 Home Page | http://www.cs.utexas.edu/users/moore/acl2/} on
+  the web contains links to demos, publications, mailing lists,,
+  installation instructions, and more --- and, especially, to the
+  extensive {online documentation |
+  https://www.cs.utexas.edu/users/moore/acl2/v8-4/acl2-doc.html#User's-Manual}
+  for ACL2 and its libraries, known as ``books''.
 
-  The vast majority of the text is user-level documentation.  For
-  example, to find out about [rewrite] {ICON} (see
-  [A_Tiny_Warning_Sign]) rules you could click on the link.  (If you
-  do that, remember to use your browser's Back Button to come back
-  here.)
+  For example, to use the online documentation to find out about
+  [rewrite] {ICON} (see [A_Tiny_Warning_Sign]) rules you could click
+  on the link.  (If you do that, remember to use your browser's Back
+  Button to come back here.)
 
   The tiny warning signs {ICON} (see [A_Tiny_Warning_Sign]) mark links
   that lead out of the introductory-level material and into the user
@@ -6672,7 +6675,7 @@ Subtopics
       [arrays]
 
   [Program-wrapper]
-      Avoiding expensive guard checks using [program]-mode functions
+      Avoiding expensive [guard] checks using [program]-mode functions
 
   [Set-check-invariant-risk]
       Affect certain [program]-mode updates to [stobj]s or [arrays]
@@ -21592,7 +21595,7 @@ Subtopics
 
   Example:
 
-    (cw \"The goal is ~p0 and the alist is ~x1.~%\"
+    (cw \"The goal is ~x0 and the alist is ~x1.~%\"
         (untranslate term t nil)
         unify-subst)
 
@@ -21606,11 +21609,11 @@ Subtopics
   terminal screen with the standard character output [*standard-co*].
   Third, its fmt args are positional references, so that for example
 
-    (cw \"Answers: ~p0 and ~p1\" ans1 ans2)
+    (cw \"Answers: ~x0 and ~x1\" ans1 ans2)
 
   prints in the same manner as:
 
-    (fmt \"Answers: ~p0 and ~p1\"
+    (fmt \"Answers: ~x0 and ~x1\"
          (list (cons #\\0 ans1) (cons #\\1 ans2))
          *standard-co* state nil)
 
@@ -27691,6 +27694,10 @@ Subtopics
   [name]), and body is its body.  The definitional axiom is logically
   admissible provided certain restrictions are met.  These are
   sketched below.
+
+  See also [mutual-recursion] for how to use defun to make mutually
+  recursive definitions, including discussion of how the [xargs]
+  [declaration]s in one defun may affect the other definitions.
 
   Note that ACL2 does not support the use of lambda-list keywords (such
   as &optional) in the formals list of functions.  We do support some
@@ -37431,11 +37438,12 @@ Subtopics
     ACL2 !>
 
   Note: ~p, ~q, ~P, and ~Q are also currently supported, but are
-  deprecated.  These are respectively the same as ~x, ~y, ~X, and ~Y,
-  except that their arguments are expected to be terms, preferably
-  untranslated (user-level) terms, that could be printed using infix
-  notation in certain environments.  Infix printing is not currently
-  supported but may be if there is sufficient need for it.
+  deprecated and generally avoided in this manual.  These are
+  respectively the same as ~x, ~y, ~X, and ~Y, except that their
+  arguments are expected to be terms, preferably untranslated
+  (user-level) terms, that could be printed using infix notation in
+  certain environments.  Infix printing is not currently supported
+  but may be if there is sufficient need for it.
 
   ACL2's formatting functions print to the indicated channel, keeping
   track of which column they are in.  [Fmt1] can be used if the
@@ -56523,6 +56531,9 @@ Subtopics
           replaced by (take 7 h) and the length will actually thus be
           8 after the current command completes.
 
+  Note that a call of adjust-ld-history is not an [event] that can be
+  placed directly in [books] or [encapsulate] forms.
+
   Remark.  If (adjust-ld-history n state) is evaluated while in
   multiple-entry mode, where n is a positive integer less than the
   current length of the ld-history, then the new ld-history after
@@ -61246,18 +61257,28 @@ Subtopics
 
   The ``lambda-list'' of a macro definition may include simple formal
   parameter names as well as appropriate uses of the following
-  lambda-list keywords from CLTL (pp. 60 and 145), respecting the
-  order shown:
+  lambda-list keywords from Common Lisp, respecting the order shown:
 
-    &whole,
-    &optional,
-    &rest,
-    &body,
-    &key, and
-    &allow-other-keys.
+    * &whole x
+      X does not represent an actual parameter; rather, it is bound to the
+      entire macro call.
+    * &optional x1 x2 ...
+      The actual for any xi may be omitted, in which case the actual for
+      every xj with j > i must also be omitted.
+    * &rest x
+      X does not represent an actual parameter; rather, it is bound to the
+      list of all actuals provided from that position onward.
+    * &body x
+      This is identical to &rest x.
+    * &key x
+      The call may have a keyword argument for x by including :x val after
+      all required actual parameters, in which case the formal x is
+      bound to the actual val.
+    * &allow-other-keys
+      Keyword arguments not specified by &key are allowed but ignored.
 
-  ACL2 does not support &aux and &environment.  In addition, we make
-  the following restrictions:
+  ACL2 does not support the Common Lisp lambda-list keywords &aux and
+  &environment.  In addition, there are the following restrictions:
 
       (1) initialization forms in &optional and &key specifiers must be
       quoted values;
@@ -61298,9 +61319,10 @@ Subtopics
     (demo 1 2 :key1 3)        error:  non-even key/value arglist
                               (because :key1 is used as opt)
 
-  In particular, Common Lisp specifies that if you use both &rest and
-  &key, then both will be bound using the same list of arguments.
-  The following example should serve to illustrate how this works.
+  In particular, Common Lisp specifies (hence so does ACL2) that if you
+  use both &rest and &key, then both will be bound using the same
+  list of arguments.  The following example should serve to
+  illustrate how this works.
 
     ACL2 !>(defmacro foo (&rest args &key k1 k2 k3)
              (list 'quote (list args k1 k2 k3)))
@@ -62112,6 +62134,28 @@ Examples Illustrating How to Access State
     >L            (DEFUN FOO (X) (CONS X 72271))
     ACL2 !>
 
+  Because make-event creates [event] forms that can go into [books] and
+  [encapsulate] events, you can use make-event forms such as those
+  above to modify the ACL2 [state] using books and encapsulate
+  events.  The most common way to do this is for the make-event
+  expansion to be a trivial event form such as (value-triple nil),
+  such as the following.
+
+    (make-event (er-progn (assign my-list-of-10 (make-list 10))
+                          (value '(value-triple nil))))
+
+  The desired effect will take place during calls of [certify-book],
+  but it will generally not take place during [include-book] on a
+  certified book because the expansion is evaluated (it is stored in
+  the book's [certificate] for this purpose), but the expansion is
+  merely (value-triple nil).  To ensure that the original make-event
+  call is evaluated even when including the book, use
+  :check-expansion t, for example as follows.
+
+    (make-event (er-progn (assign my-list-of-10 (make-list 10))
+                          (value '(value-triple nil)))
+                :check-expansion t)
+
   Note that ACL2 [table] [events] may avoid the need to use [state]
   globals.  For example, instead of the example above, consider this
   example in a new session.
@@ -62135,9 +62179,11 @@ Examples Illustrating How to Access State
   state global (like my-global above) can be set during expansion,
   then the new value will persist.  But that persistence will fail
   for many state globals, specifically, those that are stored in the
-  list, *protected-system-state-globals*.  We advice users not to
+  list, *protected-system-state-globals*.  We advise users not to
   assume that system state modifications, such as the state of
-  guard-checking, will persist after executing a make-event form.
+  guard-checking, will persist after executing a make-event form;
+  persistence depends on the relevant state globals not being in the
+  list, *protected-system-state-globals*.
 
   That advice may suffice for most users.  But if you want to
   understand the point above more deeply, then consider the following
@@ -66712,6 +66758,8 @@ Subtopics
   (EVENTS PROGRAMMING DEFUN)
   "Define some mutually recursive functions
 
+  See [defun] for relevant background.
+
     Example:
     (mutual-recursion
      (defun evenlp (x)
@@ -66742,6 +66790,29 @@ Subtopics
   can put them in the [xargs] declaration of any of the [defun]
   forms, as the :[hints] from each form will be appended together, as
   will the :[guard-hints] from each form.
+
+  However, for the following [xargs] declarations, listed
+  alphabetically, it is illegal to specify more than one value,
+  though it is legal to specify the same value more than once.
+
+    :GUARD-DEBUG
+    :GUARD-SIMPLIFY
+    :LOOP$-RECURSION
+    :MEASURE-DEBUG
+    :MODE
+    :NON-EXECUTABLE
+    :NORMALIZE
+    :OTF-FLG
+    :SPLIT-TYPES
+    :VERIFY-GUARDS
+    :WELL-FOUNDED-RELATION
+
+  Thus, for example, you may specify :guard-debug t in two different
+  defun forms in your mutual-recursion call, in which case the
+  [guard-debug] feature will be active; but you must not specify
+  :guard-debug t in one defun but :guard-debug nil in another.  It
+  suffices to specify such a value once, as that will apply
+  throughout analysis of the mutual-recursion form.
 
   You may find it helpful to use a lexicographic order, the idea being
   to have a measure that returns a list of two arguments, where the
@@ -67030,8 +67101,7 @@ Subtopics
   expression that returns k results, where k is the number of local
   variables listed.  Often however it is simply the application of a
   k-valued function.  Mv-let is the standard way to invoke a
-  multi-valued function when the caller must manipulate the vector of
-  results returned.
+  multi-valued function and then manipulate the values returned.
 
     General Form:
     (mv-let (var1 ... vark)
@@ -67185,23 +67255,40 @@ Subtopics
   Mv-nth is equivalent to the Common Lisp function [nth] (although
   without the guard condition that the list is a [true-listp]), but
   is used by ACL2 to access the nth value returned by a multiply
-  valued expression.  For example, the following are logically
-  equivalent:
+  valued expression.  So, if you do proofs about functions that
+  involve [mv-let], you may see calls of mv-nth in the prover output.
+  For example, the following are logically equivalent:
+
+    (mv-let (n1 n2)
+            (mv (+ x y) (* x y))
+            (- n1 n2))
+
+    (let ((var (list (+ x y) (* x y))))
+      (let ((n1 (mv-nth 0 var))
+            (n2 (mv-nth 1 var)))
+        (- n1 n2)))
+
+  Here is a similar such example involving the ACL2 [state].  The
+  following two forms are logically equivalent, but the second is
+  only legal in contexts such as theorems (and proofs) rather than
+  function definitions, since it violates single-threadedness
+  restrictions (more on this below; also see [state] and see
+  [stobj]).
 
     (mv-let (erp val state)
             (read-object ch state)
             (value (list erp val)))
-
-  and
 
     (let ((erp (mv-nth 0 (read-object ch state)))
           (val (mv-nth 1 (read-object ch state)))
           (state (mv-nth 2 (read-object ch state))))
       (value (list erp val)))
 
-  To see the ACL2 definition of mv-nth, see [pf].
+  Mv-nth is given some special treatment by the prover.  To control
+  that behavior see [theories-and-primitives].
 
-  If EXPR is an expression that is multiply valued, then the form
+  Finally, we elaborate on the single-threadedness issue above.  If
+  EXPR is an expression that is multiply valued, then the form
   (mv-nth n EXPR) is illegal both in definitions and in forms
   submitted directly to the ACL2 loop.  Indeed, EXPR cannot be passed
   as an argument to any function (mv-nth or otherwise) in such an
@@ -67209,14 +67296,24 @@ Subtopics
   execution does not actually create a list for multiple value
   return; for example, the read-object call above logically returns a
   list of length 3, but when evaluated, it instead stores its three
-  returned values without constructing a list.  In such cases you can
-  use mv-nth to access the corresponding list by using mv-list,
-  writing (mv-nth n (mv-list k EXPR)) for suitable k, where mv-list
-  converts a multiple value result into the corresponding list; see
-  [mv-list].
+  returned values without constructing a list.  The upshot is that it
+  is generally best not to call mv-nth directly, but rather to use
+  [mv-let], which generates mv-nth calls for reasoning but not for
+  Lisp evaluation.  However, if you really want to use mv-nth
+  directly to access a multiply-valued result, then --- at the cost
+  of computational efficiency --- you can use [mv-list], writing
+  (mv-nth n (mv-list k EXPR)) for suitable k, where mv-list converts
+  a multiple value result into the corresponding list; see [mv-list].
 
-  Mv-nth is given some special treatment by the prover.  To control
-  that behavior see [theories-and-primitives].")
+  Function: <mv-nth>
+
+    (defun mv-nth (n l)
+           (declare (xargs :guard (and (integerp n) (>= n 0))))
+           (if (atom l)
+               nil
+               (if (zp n)
+                   (car l)
+                   (mv-nth (- n 1) (cdr l)))))")
  (MV?
   (MV ACL2-BUILT-INS)
   "Return one or more values
@@ -97548,7 +97645,7 @@ Remarks
       (prog2$
        (or (good-car-p (car x))
            (hard-error 'foo-a
-                       \"Bad value for x: ~p0\"
+                       \"Bad value for x: ~x0\"
                        (list (cons #\\0 x))))
        (bar x)))
 
@@ -97562,7 +97659,7 @@ Remarks
       (prog2$
        (or (good-car-p (car x))
            (illegal 'foo-b
-                    \"Bad value for x: ~p0\"
+                    \"Bad value for x: ~x0\"
                     (list (cons #\\0 x))))
        (bar x)))
 
@@ -97831,7 +97928,7 @@ Subtopics
 Subtopics
 
   [Program-wrapper]
-      Avoiding expensive guard checks using [program]-mode functions")
+      Avoiding expensive [guard] checks using [program]-mode functions")
  (PROGRAM-ONLY
   (GUARD)
   "Functions that cannot be in [logic] mode
@@ -97850,19 +97947,29 @@ Subtopics
   See [safe-mode-cheat-sheet] for possible workarounds.")
  (PROGRAM-WRAPPER
   (PROGRAM PROGRAMMING ADVANCED-FEATURES)
-  "Avoiding expensive guard checks using [program]-mode functions
+  "Avoiding expensive [guard] checks using [program]-mode functions
 
-  Application programs can benefit from the avoidance of expensive
-  [guard] checks, as illustrated by the following contrived example.
-  In this example, imagine that expensive-guard is a [guard] that is
-  expensive to evaluate, and that expensive-update is a function that
-  you want to run in a context where you know the guard is true, so
-  you want to avoid the expense of evaluating that guard.  Then when
-  you call expensive-update-wrapper, the call will be evaluated
-  directly in raw Lisp, hence without any subsidiary guard-checking
-  for the function expensive-update.
+  Application programs can benefit from avoiding expensive [guard]
+  checks.  Imagine that expensive-guard-fn is a function whose calls
+  may be slow to evaluate, and that expensive-fn is a function whose
+  guard calls expensive-guard-fn.  So, when you call expensive-fn at
+  the top level, whether directly in the ACL2 read-eval-print loop or
+  during [make-event] expansion, the guard check may be slow.  If you
+  are confident that the guard check will pass, you may thus prefer
+  to avoid it.
 
-    (defun fib (n)
+  The following contrived example shows how to avoid that guard check
+  by using a program-mode wrapper: a function in [program] mode that
+  calls the intended function directly.  The example below
+  illustrates that idea by defining expensive-fn-wrapper as a
+  program-mode wrapper for expensive-fn.  That wrapper has a
+  computationally inexpensive guard, typically t, which avoids any
+  expensive guard check: after the inexpensive guard check, the
+  remaining computation takes place using raw Lisp computation, which
+  doesn't do any guard checking.  (See [evaluation] for relevant
+  background.)
+
+    (defun fib (n) ; Fibonacci function, just for an example of slow computation
       (declare (xargs :guard (natp n)))
       (if (zp n)
           0
@@ -97871,27 +97978,57 @@ Subtopics
           (+ (fib (- n 1))
              (fib (- n 2))))))
 
-    (defun expensive-guard (n)
+    (defun expensive-guard-fn (n)
       (declare (xargs :guard t))
       (and (natp n)
            (natp (fib n))))
 
-    (defstobj st (fld :type integer :initially 0))
+    (defun expensive-fn (n)
+      (declare (xargs :guard (expensive-guard-fn n)))
+      (* 2 n))
 
-    (defun expensive-update (n st)
-      (declare (xargs :stobjs st
-                      :guard (expensive-guard n)))
-      (update-fld n st))
+    ; The following may take about a second, virtually all in the guard check.
+    (time$ (expensive-fn 40))
 
-    (defun expensive-update-wrapper (n st)
-      (declare (xargs :stobjs st :mode :program))
-      (expensive-update n st))
+    (defun expensive-fn-wrapper (n)
+      (declare (xargs :mode :program))
+      (expensive-fn n))
 
-  Remark.  The example was chosen to illustrates an additional point:
-  if you evaluate (for example) the form (expensive-update-wrapper 3
-  st), you will see an \"Invariant-risk\" warning, which could indicate
-  extra checks that slow down evaluation.  This might not be a
-  significant issue in practice.  See [invariant-risk].")
+    ; The following is virtually instantaneous.
+    (time$ (expensive-fn-wrapper 40))
+
+  This trick isn't necessary if your function call is made on behalf of
+  a superior call of a function that is guard-verified (or in program
+  mode, since that essentially brings us back to the wrapper
+  situation).  Consider the following definition, building on the
+  example above.
+
+    (defun f (n)
+      (declare (xargs :guard (natp n)))
+      (expensive-fn n))
+
+    ; The following is virtually instantaneous.
+    (time$ (f 40))
+
+  Then evaluation of (f 40) is virtually instantaneous, for the same
+  reason that evaluation of (expensive-fn-wrapper 40) is virtually
+  instantaneous: after the top-level guard check passes, the rest of
+  the computation takes place without guard checks.  Note however
+  that if we change the definition by removing guard verification,
+  then the trick is once again helpful, as shown by continuing the
+  examples above.
+
+    ; Define a logic-mode function that is not guard-verified:
+    (defun g (n)
+      (expensive-fn n))
+
+    ; The following may take about a second, virtually all in the guard check.
+    (time$ (g 40))
+
+  Remark.  This trick may be less effective if you see an
+  \"Invariant-risk\" warning, which prevents computation from taking
+  place within raw Lisp, thus avoiding guard checks; see
+  [invariant-risk].")
  (PROGRAMMING
   (ACL2)
   "Programming in ACL2
@@ -98030,7 +98167,7 @@ Subtopics
       Primitive functions built into ACL2 without definitions
 
   [Program-wrapper]
-      Avoiding expensive guard checks using [program]-mode functions
+      Avoiding expensive [guard] checks using [program]-mode functions
 
   [Programming-with-state]
       Programming using the von Neumannesque ACL2 [state] object
@@ -98526,6 +98663,12 @@ Subtopics
   only functions set-w and set-w! are available to write the world,
   but these are untouchable and should generally be avoided except by
   system implementors (see [remove-untouchable]).
+
+  You may wish to modify state globals within a book, but this can be
+  slightly problematic because only legal event forms (see
+  [embedded-event-form]) may go into [books].  Fortunately there is a
+  workaround using make-event; see [make-event], in particular the
+  section ``Examples Illustrating How to Access State''.
 
   A REMARK ON GUARDS
 
@@ -111880,7 +112023,7 @@ Example
 
   The ACL2 user can expect that the :downcase setting will have an
   effect for formatted output (see [fmt] and see [fms]) when the
-  directives are ~p, ~P, ~q, or ~Q, for built-in functions princ$ and
+  directives are ~x, ~X, ~y, or ~Y, for built-in functions princ$ and
   prin1$, and the ppr family of functions, and not for built-in
   function print-object$.  For other printing functions, the effect
   of :downcase is unspecified.
@@ -131118,15 +131261,18 @@ Subtopics
   Here we discuss how to put built-in functions into :[logic] mode.
   Since ACL2 insists that its built-in :logic mode functions are
   [guard]-verified, we actually explain how to arrange that built-in
-  :[program] mode functions become built in guard-verified :logic
+  :[program] mode functions become built-in guard-verified :logic
   mode functions.
 
-  To put a system function into :logic mode, you might first need or
-  want to modify ACL2, for example replacing (null lst) by (endp lst)
-  in a function's definition in support of the termination proof.
-  You don't need to become a system developer to do this, but see
-  [developers-guide] if you are an experienced ACL2 user and system
-  development interests you.
+  To put a system function into guard-verified :logic mode, you might
+  first need or want to modify your local copy of the ACL2 sources,
+  for example replacing (null lst) by (endp lst) in a function's
+  definition in support of the termination proof and then specifying
+  (true-listp lst) in its guard.  You don't need to become a system
+  developer to do this, but see [developers-guide] if you are an
+  experienced ACL2 user and system development interests you.
+  IMPORTANT: Eventually you will probably want to undo your changes;
+  this will be explained further below.
 
   After making such changes, build an ACL2 executable image containing
   your modified code.  The next step is typically to create a new
@@ -131140,11 +131286,17 @@ Subtopics
   books/system/top.lisp, rather than creating a new book and
   including it there.
 
-  The steps above can be done without touching the ACL2 source files.
-
-  Now it is time to modify the constant *system-verify-guards-alist*,
-  which specifies functions whose guard-verification is proved by
-  including that book.  Follow the steps below.
+  Now it is time to add entries to the value of constant
+  *system-verify-guards-alist* in your local copy of the ACL2
+  sources, which specifies functions whose guard-verification is
+  completed by including that book.  Each entry is of the form
+  (function-symbol . measure).  For example, the entry (ARITY-ALISTP
+  ACL2-COUNT ALIST) signifies that the function symbol arity-alistp
+  is to have measure (acl2-count alist), while the entry (ARGLISTP)
+  signifies that function symbol arglistp has no measure (i.e., we
+  use nil for the measure), presumably because its definition is not
+  recursive.  After you make those additions, then follow the steps
+  below.
 
    1. Build a so-called ``devel'' copy in which the functions in
       *system-verify-guards-alist* remain in :program mode.  For
@@ -131189,7 +131341,19 @@ Subtopics
           SUCCESS for check-system-events
           SUCCESS for devel-check
 
-   6. Ideally, you will finally do a normal build and regression.")
+   6. Now do a normal build and regression.
+   7. Finally, send your changes to Matt Kaufmann, with a request that they
+      be incorporated into the ACL2 sources and books.
+
+  We now return to the remark labeled ``IMPORTANT'' above: undoing your
+  changes.  This isn't necessary if you will not be using that local
+  copy of ACL2 in the future.  But otherwise you may run into
+  problems when you try to use git to merge changes into that local
+  ACL2+books copy.  One option is to throw your changes away by
+  standing in your local ACL2 directory and using the shell command:
+  git checkout -f.  But be careful --- this will throw away all your
+  work!  So you might want to wait until your changes make it into
+  the main (master) git branch.")
  (VERIFY-GUARDS-FORMULA
   (GUARD-FORMULA-UTILITIES)
   "View the guard proof obligation, without proving it
