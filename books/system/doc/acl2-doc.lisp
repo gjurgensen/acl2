@@ -7560,14 +7560,17 @@ and @(tsee include-book)"
   :long "<p><see topic='@(url |What Is ACL2(Q)|)'><img
  src='res/tours/flying.gif'></img></see></p>
 
- <p>The ACL2 Home Page is integrated into the ACL2 online documentation.  Over
- 4 megabytes of hypertext is available here.</p>
+ <p>The <a href='http://www.cs.utexas.edu/users/moore/acl2/'>ACL2 Home Page</a>
+ on the web contains links to demos, publications, mailing lists,, installation
+ instructions, and more &mdash; and, especially, to the extensive <a
+ href=\"https://www.cs.utexas.edu/users/moore/acl2/v8-4/acl2-doc.html#User's-Manual\">online
+ documentation</a> for ACL2 and its libraries, known as ``books''.</p>
 
- <p>The vast majority of the text is user-level documentation.  For example, to
- find out about @(see rewrite) <see
- topic='ACL2____A_02Tiny_02Warning_02Sign'><icon src='res/tours/twarning.gif'/></see>
- rules you could click on the link.  (If you do that, remember to use your
- browser's <b>Back Button</b> to come back here.)</p>
+ <p>For example, to use the online documentation to find out about @(see
+ rewrite) <see topic='ACL2____A_02Tiny_02Warning_02Sign'><icon
+ src='res/tours/twarning.gif'/></see> rules you could click on the link.  (If
+ you do that, remember to use your browser's <b>Back Button</b> to come back
+ here.)</p>
 
  <p>The tiny warning signs <see topic='ACL2____A_02Tiny_02Warning_02Sign'><icon
  src='res/tours/twarning.gif'/></see> mark links that lead out of the introductory-level
@@ -18261,7 +18264,7 @@ subtree of X with T, without duplication.</p>
  <p>Example:</p>
 
  @({
-  (cw \"The goal is ~p0 and the alist is ~x1.~%\"
+  (cw \"The goal is ~x0 and the alist is ~x1.~%\"
       (untranslate term t nil)
       unify-subst)
  })
@@ -18277,13 +18280,13 @@ subtree of X with T, without duplication.</p>
  @('fmt') args are positional references, so that for example</p>
 
  @({
-  (cw \"Answers: ~p0 and ~p1\" ans1 ans2)
+  (cw \"Answers: ~x0 and ~x1\" ans1 ans2)
  })
 
  <p>prints in the same manner as:</p>
 
  @({
-  (fmt \"Answers: ~p0 and ~p1\"
+  (fmt \"Answers: ~x0 and ~x1\"
        (list (cons #\\0 ans1) (cons #\\1 ans2))
        *standard-co* state nil)
  })
@@ -24519,6 +24522,10 @@ subtree of X with T, without duplication.</p>
  @(see name)), and @('body') is its body.  The definitional axiom is logically
  admissible provided certain restrictions are met.  These are sketched
  below.</p>
+
+ <p>See also @(see mutual-recursion) for how to use @('defun') to make mutually
+ recursive definitions, including discussion of how the @(tsee xargs) @(see
+ declaration)s in one @('defun') may affect the other definitions.</p>
 
  <p>Note that ACL2 does not support the use of @('lambda-list') keywords (such
  as @('&optional')) in the formals list of functions.  We do support some such
@@ -33910,11 +33917,12 @@ current fast alists."
  })
 
  <p>Note: @('~p'), @('~q'), @('~P'), and @('~Q') are also currently supported,
- but are deprecated.  These are respectively the same as @('~x'), @('~y'),
- @('~X'), and @('~Y'), except that their arguments are expected to be terms,
- preferably untranslated (user-level) terms, that could be printed using infix
- notation in certain environments.  Infix printing is not currently supported
- but may be if there is sufficient need for it.</p>
+ but are deprecated and generally avoided in this manual.  These are
+ respectively the same as @('~x'), @('~y'), @('~X'), and @('~Y'), except that
+ their arguments are expected to be terms, preferably untranslated (user-level)
+ terms, that could be printed using infix notation in certain environments.
+ Infix printing is not currently supported but may be if there is sufficient
+ need for it.</p>
 
  <p>ACL2's formatting functions print to the indicated channel, keeping track
  of which column they are in.  @(tsee Fmt1) can be used if the caller knows
@@ -52608,9 +52616,12 @@ tables in the current Hons Space."
  replaced by @('(take 7 h)') and the length will actually thus be 8 after the
  current command completes.</li>
 
- </ul></li>
-
  </ul>
+
+ </li></ul>
+
+ <p>Note that a call of @('adjust-ld-history') is not an @(see event) that can
+ be placed directly in @(see books) or @(tsee encapsulate) forms.</p>
 
  <p>Remark.  If @('(adjust-ld-history n state)') is evaluated while in
  multiple-entry mode, where n is a positive integer less than the current
@@ -57144,20 +57155,44 @@ forms allowed for a @('let') form are  @('ignore'), @('ignorable'), and
  })
 
  <p>The ``lambda-list'' of a macro definition may include simple formal
- parameter names as well as appropriate uses of the following @('lambda')-list
- keywords from CLTL (pp. 60 and 145), respecting the order shown:</p>
+ parameter names as well as appropriate uses of the following lambda-list
+ keywords from Common Lisp, respecting the order shown:</p>
 
- @({
-    &whole,
-    &optional,
-    &rest,
-    &body,
-    &key, and
-    &allow-other-keys.
- })
+ <ul>
 
- <p>ACL2 does not support @('&aux') and @('&environment').  In addition, we
- make the following restrictions:</p>
+ <li>@('&whole x')<br/>
+ @('X') does not represent an actual parameter; rather, it is bound to the
+ entire macro call.
+ </li>
+
+ <li>@('&optional x1 x2 ...')<br/>
+ The actual for any @('xi') may be omitted, in which case the actual for every
+ @('xj') with @('j > i') must also be omitted.
+ </li>
+
+ <li>@('&rest x')<br/>
+ @('X') does not represent an actual parameter; rather, it is bound to the list
+ of all actuals provided from that position onward.
+ </li>
+
+ <li>@('&body x')<br/>
+ This is identical to @('&rest x').
+ </li>
+
+ <li>@('&key x')<br/>
+ The call may have a keyword argument for @('x') by including @(':x val') after
+ all required actual parameters, in which case the formal @('x') is bound to
+ the actual @('val').
+ </li>
+
+ <li>@('&allow-other-keys')<br/>
+ Keyword arguments not specified by @('&key') are allowed but ignored.
+ </li>
+
+ </ul>
+
+ <p>ACL2 does not support the Common Lisp lambda-list keywords @('&aux') and
+ @('&environment').  In addition, there are the following restrictions:</p>
 
  <blockquote>
 
@@ -57212,9 +57247,10 @@ forms allowed for a @('let') form are  @('ignore'), @('ignorable'), and
                             (because :key1 is used as opt)
  })
 
- <p>In particular, Common Lisp specifies that if you use both @('&rest') and
- @('&key'), then both will be bound using the same list of arguments.  The
- following example should serve to illustrate how this works.</p>
+ <p>In particular, Common Lisp specifies (hence so does ACL2) that if you use
+ both @('&rest') and @('&key'), then both will be bound using the same list of
+ arguments.  The following example should serve to illustrate how this
+ works.</p>
 
  @({
   ACL2 !>(defmacro foo (&rest args &key k1 k2 k3)
@@ -58015,6 +58051,32 @@ forms allowed for a @('let') form are  @('ignore'), @('ignorable'), and
     ACL2 !>
  })
 
+ <p>Because @('make-event') creates @(see event) forms that can go into @(see
+ books) and @(tsee encapsulate) events, you can use @('make-event') forms such
+ as those above to modify the ACL2 @(see state) using books and
+ @('encapsulate') events.  The most common way to do this is for the
+ @('make-event') expansion to be a trivial event form such as @('(value-triple
+ nil)'), such as the following.</p>
+
+ @({
+ (make-event (er-progn (assign my-list-of-10 (make-list 10))
+                       (value '(value-triple nil))))
+ })
+
+ <p>The desired effect will take place during calls of @(tsee certify-book),
+ but it will generally <b>not</b> take place during @(tsee include-book) on a
+ certified book because the expansion is evaluated (it is stored in the book's
+ @(see certificate) for this purpose), but the expansion is merely
+ @('(value-triple nil)').  To ensure that the original @('make-event') call is
+ evaluated even when including the book, use @(':check-expansion t'), for
+ example as follows.</p>
+
+ @({
+ (make-event (er-progn (assign my-list-of-10 (make-list 10))
+                       (value '(value-triple nil)))
+             :check-expansion t)
+ })
+
  <p>Note that ACL2 @(see table) @(see events) may avoid the need to use @(see
  state) globals.  For example, instead of the example above, consider this
  example in a new session.</p>
@@ -58042,9 +58104,11 @@ forms allowed for a @('let') form are  @('ignore'), @('ignorable'), and
  state global (like @('my-global') above) can be set during expansion, then the
  new value will persist.  But that persistence will fail for many state
  globals, specifically, those that are stored in the list,
- @('*protected-system-state-globals*').  We advice users <b>not</b> to assume
+ @('*protected-system-state-globals*').  We advise users <b>not</b> to assume
  that system state modifications, such as the state of guard-checking, will
- persist after executing a @('make-event') form.</p>
+ persist after executing a @('make-event') form; persistence depends on the
+ relevant state globals not being in the list,
+ @('*protected-system-state-globals*').</p>
 
  <p>That advice may suffice for most users.  But if you want to understand the
  point above more deeply, then consider the following example.</p>
@@ -62536,7 +62600,8 @@ it."
 (defxdoc mutual-recursion
   :parents (events programming defun)
   :short "Define some mutually recursive functions"
-  :long "@({
+  :long "<p>See @(see defun) for relevant background.</p>
+ @({
   Example:
   (mutual-recursion
    (defun evenlp (x)
@@ -62567,6 +62632,31 @@ it."
  xargs)), you can put them in the @(tsee xargs) declaration of any of the
  @(tsee defun) forms, as the @(':')@(tsee hints) from each form will be
  appended together, as will the @(':')@(tsee guard-hints) from each form.</p>
+
+ <p>However, for the following @(tsee xargs) declarations, listed
+ alphabetically, it is illegal to specify more than one value, though it is
+ legal to specify the same value more than once.</p>
+
+ @({
+ :GUARD-DEBUG
+ :GUARD-SIMPLIFY
+ :LOOP$-RECURSION
+ :MEASURE-DEBUG
+ :MODE
+ :NON-EXECUTABLE
+ :NORMALIZE
+ :OTF-FLG
+ :SPLIT-TYPES
+ :VERIFY-GUARDS
+ :WELL-FOUNDED-RELATION
+ })
+
+ <p>Thus, for example, you may specify @(':guard-debug t') in two different
+ @('defun') forms in your @('mutual-recursion') call, in which case the @(see
+ guard-debug) feature will be active; but you must not specify @(':guard-debug
+ t') in one @('defun') but @(':guard-debug nil') in another.  It suffices to
+ specify such a value once, as that will apply throughout analysis of the
+ @('mutual-recursion') form.</p>
 
  <p>You may find it helpful to use a lexicographic order, the idea being to
  have a measure that returns a list of two arguments, where the first takes
@@ -62844,8 +62934,7 @@ it."
  expression that returns @('k') results, where @('k') is the number of local
  variables listed.  Often however it is simply the application of a
  @('k')-valued function.  @('Mv-let') is the standard way to invoke a
- multi-valued function when the caller must manipulate the vector of results
- returned.</p>
+ multi-valued function and then manipulate the values returned.</p>
 
  @({
   General Form:
@@ -63004,40 +63093,61 @@ it."
  <p>@('Mv-nth') is equivalent to the Common Lisp function @(tsee nth) (although
  without the guard condition that the list is a @(tsee true-listp)), but is
  used by ACL2 to access the nth value returned by a multiply valued expression.
- For example, the following are logically equivalent:</p>
+ So, if you do proofs about functions that involve @(tsee mv-let), you may see
+ calls of @('mv-nth') in the prover output.  For example, the following are
+ logically equivalent:</p>
+
+ @({
+  (mv-let (n1 n2)
+          (mv (+ x y) (* x y))
+          (- n1 n2))
+ })
+
+ @({
+  (let ((var (list (+ x y) (* x y))))
+    (let ((n1 (mv-nth 0 var))
+          (n2 (mv-nth 1 var)))
+      (- n1 n2)))
+ })
+
+ <p>Here is a similar such example involving the ACL2 @(see state).  The
+ following two forms are logically equivalent, but the second is only legal in
+ contexts such as theorems (and proofs) rather than function definitions, since
+ it violates single-threadedness restrictions (more on this below; also see
+ @(see state) and see @(see stobj)).</p>
 
  @({
   (mv-let (erp val state)
           (read-object ch state)
           (value (list erp val)))
- })
 
- <p>and</p>
-
- @({
   (let ((erp (mv-nth 0 (read-object ch state)))
         (val (mv-nth 1 (read-object ch state)))
         (state (mv-nth 2 (read-object ch state))))
     (value (list erp val)))
  })
 
- <p>To see the ACL2 definition of @('mv-nth'), see @(see pf).</p>
-
- <p>If @('EXPR') is an expression that is multiply valued, then the form
- @('(mv-nth n EXPR)') is illegal both in definitions and in forms submitted
- directly to the ACL2 loop.  Indeed, @('EXPR') cannot be passed as an argument
- to any function (@('mv-nth') or otherwise) in such an evaluation context.  The
- reason is that ACL2 code compiled for execution does not actually create a
- list for multiple value return; for example, the @('read-object') call above
- logically returns a list of length 3, but when evaluated, it instead stores
- its three returned values without constructing a list.  In such cases you can
- use @('mv-nth') to access the corresponding list by using @('mv-list'),
- writing @('(mv-nth n (mv-list k EXPR))') for suitable @('k'), where
- @('mv-list') converts a multiple value result into the corresponding list; see
- @(see mv-list).</p>
-
  <p>@('Mv-nth') is given some special treatment by the prover.  To control that
- behavior see @(see theories-and-primitives).</p>")
+ behavior see @(see theories-and-primitives).</p>
+
+ <p>Finally, we elaborate on the single-threadedness issue above.  If @('EXPR')
+ is an expression that is multiply valued, then the form @('(mv-nth n EXPR)')
+ is illegal both in definitions and in forms submitted directly to the ACL2
+ loop.  Indeed, @('EXPR') cannot be passed as an argument to any
+ function (@('mv-nth') or otherwise) in such an evaluation context.  The reason
+ is that ACL2 code compiled for execution does not actually create a list for
+ multiple value return; for example, the @('read-object') call above logically
+ returns a list of length 3, but when evaluated, it instead stores its three
+ returned values without constructing a list.  The upshot is that it is
+ generally best not to call @('mv-nth') directly, but rather to use @(tsee
+ mv-let), which generates @('mv-nth') calls for reasoning but not for Lisp
+ evaluation.  However, if you really want to use @('mv-nth') directly to access
+ a multiply-valued result, then &mdash; at the cost of computational efficiency
+ &mdash; you can use @(tsee mv-list), writing @('(mv-nth n (mv-list k EXPR))')
+ for suitable @('k'), where @('mv-list') converts a multiple value result into
+ the corresponding list; see @(see mv-list).</p>
+
+ @(def mv-nth)")
 
 (defxdoc mv?
   :parents (mv acl2-built-ins)
@@ -97498,7 +97608,7 @@ arithmetic) for libraries of @(see books) for arithmetic reasoning.</p>")
     (prog2$
      (or (good-car-p (car x))
          (hard-error 'foo-a
-                     \"Bad value for x: ~p0\"
+                     \"Bad value for x: ~x0\"
                      (list (cons #\\0 x))))
      (bar x)))
  })
@@ -97514,7 +97624,7 @@ arithmetic) for libraries of @(see books) for arithmetic reasoning.</p>")
     (prog2$
      (or (good-car-p (car x))
          (illegal 'foo-b
-                  \"Bad value for x: ~p0\"
+                  \"Bad value for x: ~x0\"
                   (list (cons #\\0 x))))
      (bar x)))
  })
@@ -97811,19 +97921,27 @@ arithmetic) for libraries of @(see books) for arithmetic reasoning.</p>")
 
 (defxdoc program-wrapper
   :parents (program programming advanced-features)
-  :short "Avoiding expensive guard checks using @(see program)-mode functions"
-  :long "<p>Application programs can benefit from the avoidance of expensive
- @(see guard) checks, as illustrated by the following contrived example.  In
- this example, imagine that @('expensive-guard') is a @(see guard) that is
- expensive to evaluate, and that @('expensive-update') is a function that you
- want to run in a context where you know the guard is true, so you want to
- avoid the expense of evaluating that guard.  Then when you call
- @('expensive-update-wrapper'), the call will be evaluated directly in raw
- Lisp, hence without any subsidiary guard-checking for the function
- @('expensive-update').</p>
+  :short "Avoiding expensive @(see guard) checks using @(see program)-mode functions"
+  :long "<p>Application programs can benefit from avoiding expensive @(see
+ guard) checks.  Imagine that @('expensive-guard-fn') is a function whose calls
+ may be slow to evaluate, and that @('expensive-fn') is a function whose guard
+ calls @('expensive-guard-fn').  So, when you call @('expensive-fn') at the top
+ level, whether directly in the ACL2 read-eval-print loop or during @(tsee
+ make-event) expansion, the guard check may be slow.  If you are confident that
+ the guard check will pass, you may thus prefer to avoid it.</p>
+
+ <p>The following contrived example shows how to avoid that guard check by
+ using a <i>program-mode wrapper</i>: a function in @(see program) mode that
+ calls the intended function directly.  The example below illustrates that idea
+ by defining @('expensive-fn-wrapper') as a program-mode wrapper for
+ @('expensive-fn').  That wrapper has a computationally inexpensive guard,
+ typically @('t'), which avoids any expensive guard check: after the
+ inexpensive guard check, the remaining computation takes place using raw Lisp
+ computation, which doesn't do any guard checking.  (See @(see evaluation) for
+ relevant background.)</p>
 
  @({
- (defun fib (n)
+ (defun fib (n) ; Fibonacci function, just for an example of slow computation
    (declare (xargs :guard (natp n)))
    (if (zp n)
        0
@@ -97832,28 +97950,59 @@ arithmetic) for libraries of @(see books) for arithmetic reasoning.</p>")
        (+ (fib (- n 1))
           (fib (- n 2))))))
 
- (defun expensive-guard (n)
+ (defun expensive-guard-fn (n)
    (declare (xargs :guard t))
    (and (natp n)
         (natp (fib n))))
 
- (defstobj st (fld :type integer :initially 0))
+ (defun expensive-fn (n)
+   (declare (xargs :guard (expensive-guard-fn n)))
+   (* 2 n))
 
- (defun expensive-update (n st)
-   (declare (xargs :stobjs st
-                   :guard (expensive-guard n)))
-   (update-fld n st))
+ ; The following may take about a second, virtually all in the guard check.
+ (time$ (expensive-fn 40))
 
- (defun expensive-update-wrapper (n st)
-   (declare (xargs :stobjs st :mode :program))
-   (expensive-update n st))
+ (defun expensive-fn-wrapper (n)
+   (declare (xargs :mode :program))
+   (expensive-fn n))
+
+ ; The following is virtually instantaneous.
+ (time$ (expensive-fn-wrapper 40))
  })
 
- <p>Remark.  The example was chosen to illustrates an additional point: if you
- evaluate (for example) the form @('(expensive-update-wrapper 3 st)'), you will
- see an @('\"Invariant-risk\"') warning, which could indicate extra checks that
- slow down evaluation.  This might not be a significant issue in practice.  See
- @(see invariant-risk).</p>")
+ <p>This trick isn't necessary if your function call is made on behalf of a
+ superior call of a function that is guard-verified (or in program mode, since
+ that essentially brings us back to the wrapper situation).  Consider the
+ following definition, building on the example above.</p>
+
+ @({
+ (defun f (n)
+   (declare (xargs :guard (natp n)))
+   (expensive-fn n))
+
+ ; The following is virtually instantaneous.
+ (time$ (f 40))
+ })
+
+ <p>Then evaluation of @('(f 40)') is virtually instantaneous, for the same
+ reason that evaluation of @('(expensive-fn-wrapper 40)') is virtually
+ instantaneous: after the top-level guard check passes, the rest of the
+ computation takes place without guard checks.  Note however that if we change
+ the definition by removing guard verification, then the trick is once again
+ helpful, as shown by continuing the examples above.</p>
+
+ @({
+ ; Define a logic-mode function that is not guard-verified:
+ (defun g (n)
+   (expensive-fn n))
+
+ ; The following may take about a second, virtually all in the guard check.
+ (time$ (g 40))
+ })
+
+ <p>Remark.  This trick may be less effective if you see an
+ @('\"Invariant-risk\"') warning, which prevents computation from taking place
+ within raw Lisp, thus avoiding guard checks; see @(see invariant-risk).</p>")
 
 (defxdoc programming
 
@@ -98368,6 +98517,12 @@ arithmetic) for libraries of @(see books) for arithmetic reasoning.</p>")
  it is common to read the world, only functions @('set-w') and @('set-w!') are
  available to write the world, but these are untouchable and should generally
  be avoided except by system implementors (see @(see remove-untouchable)).</p>
+
+ <p>You may wish to modify state globals within a book, but this can be
+ slightly problematic because only legal event forms (see @(see
+ embedded-event-form)) may go into @(see books).  Fortunately there is a
+ workaround using @('make-event'); see @(see make-event), in particular the
+ section ``Examples Illustrating How to Access State''.</p>
 
  <p>A REMARK ON GUARDS</p>
 
@@ -110891,7 +111046,7 @@ arithmetic) for libraries of @(see books) for arithmetic reasoning.</p>")
 
  <p>The ACL2 user can expect that the @(':downcase') setting will have an
  effect for formatted output (see @(see fmt) and see @(see fms)) when the
- directives are @('~p'), @('~P'), @('~q'), or @('~Q'), for built-in functions
+ directives are @('~x'), @('~X'), @('~y'), or @('~Y'), for built-in functions
  @('princ$') and @('prin1$'), and the @('ppr') family of functions, and
  <i>not</i> for built-in function @('print-object$').  For other printing
  functions, the effect of @(':downcase') is unspecified.</p>
@@ -130255,14 +130410,17 @@ introduction-to-the-tau-system) for more information about Tau.</dd>
  discuss how to put built-in functions into @(':')@(tsee logic) mode.  Since
  ACL2 insists that its built-in @(':logic') mode functions are @(see
  guard)-verified, we actually explain how to arrange that built-in @(':')@(tsee
- program) mode functions become built in guard-verified @(':logic') mode
+ program) mode functions become built-in guard-verified @(':logic') mode
  functions.</p>
 
- <p>To put a system function into @(':logic') mode, you might first need or
- want to modify ACL2, for example replacing @('(null lst)') by @('(endp lst)')
- in a function's definition in support of the termination proof.  You don't
- need to become a system developer to do this, but see @(see developers-guide)
- if you are an experienced ACL2 user and system development interests you.</p>
+ <p>To put a system function into guard-verified @(':logic') mode, you might
+ first need or want to modify your local copy of the ACL2 sources, for example
+ replacing @('(null lst)') by @('(endp lst)') in a function's definition in
+ support of the termination proof and then specifying @('(true-listp lst)') in
+ its guard.  You don't need to become a system developer to do this, but see
+ @(see developers-guide) if you are an experienced ACL2 user and system
+ development interests you.  IMPORTANT: Eventually you will probably want to
+ undo your changes; this will be explained further below.</p>
 
  <p>After making such changes, build an ACL2 executable image containing your
  modified code.  The next step is typically to create a new file, perhaps named
@@ -130275,11 +130433,16 @@ introduction-to-the-tau-system) for more information about Tau.</dd>
  @('books/system/top.lisp'), rather than creating a new book and including it
  there.</p>
 
- <p>The steps above can be done without touching the ACL2 source files.</p>
-
- <p>Now it is time to modify the constant @('*system-verify-guards-alist*'),
- which specifies functions whose guard-verification is proved by including that
- book.  Follow the steps below.</p>
+ <p>Now it is time to add entries to the value of constant
+ @('*system-verify-guards-alist*') in your local copy of the ACL2 sources,
+ which specifies functions whose guard-verification is completed by including
+ that book.  Each entry is of the form @('(function-symbol . measure)').  For
+ example, the entry @('(ARITY-ALISTP ACL2-COUNT ALIST)') signifies that the
+ function symbol @('arity-alistp') is to have measure @('(acl2-count alist)'),
+ while the entry @('(ARGLISTP)') signifies that function symbol @('arglistp')
+ has no measure (i.e., we use @('nil') for the measure), presumably because its
+ definition is not recursive.  After you make those additions, then follow the
+ steps below.</p>
 
  <ol>
 
@@ -130337,9 +130500,21 @@ introduction-to-the-tau-system) for more information about Tau.</dd>
  SUCCESS for devel-check
  })</li>
 
- <li>Ideally, you will finally do a normal build and regression.</li>
+ <li>Now do a normal build and regression.</li>
 
- </ol>")
+ <li>Finally, send your changes to Matt Kaufmann, with a request that they be
+ incorporated into the ACL2 sources and books.</li>
+
+ </ol>
+
+ <p>We now return to the remark labeled ``IMPORTANT'' above: undoing your
+ changes.  This isn't necessary if you will not be using that local copy of
+ ACL2 in the future.  But otherwise you may run into problems when you try to
+ use git to merge changes into that local ACL2+books copy.  One option is to
+ throw your changes away by standing in your local ACL2 directory and using the
+ shell command: @('git checkout -f').  But be careful &mdash; this will throw
+ away all your work!  So you might want to wait until your changes make it into
+ the main (master) git branch.</p>")
 
 (defxdoc verify-guards-formula
   :parents (guard-formula-utilities)
