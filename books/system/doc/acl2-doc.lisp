@@ -4129,8 +4129,9 @@ and @(tsee include-book)"
  <li>See @(see SET-GAG-MODE) and see @(see PSO) to abbreviate or restore proof
  output.</li>
 
- <li>See @(see SET-INHIBIT-OUTPUT-LST), see @(see SET-INHIBIT-WARNINGS), and
- see @(see SET-INHIBITED-SUMMARY-TYPES) to inhibit various types of output.</li>
+ <li>See @(see SET-INHIBIT-OUTPUT-LST), see @(see SET-INHIBIT-WARNINGS), see
+ @(see SET-INHIBIT-ER-SOFT), and see @(see SET-INHIBITED-SUMMARY-TYPES) to
+ inhibit various types of output.</li>
 
  <li>See @(see SET-RAW-PROOF-FORMAT) to make proof output display lists of
  @(see rune)s.</li>
@@ -30016,20 +30017,21 @@ ld) and @(tsee include-book)"
   (er hard? 'top-level \"Illegal inputs, ~x0 and ~x1.\" a b)
   (er hard! 'top-level \"Illegal inputs, ~x0 and ~x1.\" a b)
   (er soft  'top-level \"Illegal inputs, ~x0 and ~x1.\" a b)
+  (er-soft  'top-level \"Illegal-inputs\" \"Illegal inputs, ~x0 and ~x1.\" a b)
  })
 
  <p>The examples above all print an error message to standard output saying
  that @('a') and @('b') are illegal inputs.  However, the first three abort
  evaluation after printing an error message (while logically returning
  @('nil'), though in ordinary evaluation the return value is never seen); while
- the last returns @('(mv t nil state)') after printing an error message.  The
- result in the last case can be interpreted as an ``error'' when programming
- with the ACL2 @(tsee state), something most ACL2 users will probably not want
- to do unless they are building systems of some sort; see @(see
- programming-with-state).  If state is not available in the current context
- then you will probably want to use a call other than the last to cause an
- error; for example, if you are returning two values, you may write @('(mv (er
- hard ...) nil)').</p>
+ the last two return @('(mv t nil state)') after printing an error message.
+ The result in each of the last two cases can be interpreted as an ``error''
+ when programming with the ACL2 @(tsee state), something most ACL2 users will
+ probably not want to do unless they are building systems of some sort; see
+ @(see programming-with-state).  If state is not available in the current
+ context then you will probably want to use a call other than the last to cause
+ an error; for example, if you are returning two values, you may write
+ @('(mv (er hard ...) nil)').</p>
 
  <p>The difference between the @('hard') and @('hard?') forms is one of guards.
  Use @('hard') if you want the call to generate a (clearly impossible) guard
@@ -30056,7 +30058,7 @@ ld) and @(tsee include-book)"
  mode code, see @(see er-soft-logic) and @(see er-soft+).</p>
 
  @({
-  General forms:
+  General Forms:
   (er hard  ctx fmt-string arg1 arg2 ... argk)
     ==> {macroexpands, in essence, to:}
   (ILLEGAL    CTX FMT-STRING
@@ -30072,7 +30074,12 @@ ld) and @(tsee include-book)"
 
   (er soft  ctx fmt-string arg1 arg2 ... argk)
     ==> {macroexpands, in essence, to:}
-  (ERROR1     CTX FMT-STRING
+  (ERROR1     CTX NIL FMT-STRING
+              (LIST (CONS #\\0 ARG1) (CONS #\\1 ARG2) ... (CONS #\\k ARGk)))
+
+  (er-soft  ctx summary fmt-string arg1 arg2 ... argk)
+    ==> {macroexpands, in essence, to:}
+  (ERROR1     CTX SUMMARY FMT-STRING
               (LIST (CONS #\\0 ARG1) (CONS #\\1 ARG2) ... (CONS #\\k ARGk)))
  })
 
@@ -30125,6 +30132,23 @@ ld) and @(tsee include-book)"
                                                 (cond (erp (mv erp val state))
                                                       (t <exprk>)))))))))
  })")
+
+(defxdoc er-soft
+  :parents (errors acl2-built-ins)
+  :short "Print an error message and ``cause a soft error''"
+  :long "<p>See @(see er) for relevant background, which is assumed below.</p>
+
+ @({
+ General Form:
+ (er-soft context summary str &rest str-args)
+ })
+
+ <p>where context is a legal context (see @(see ctx)), @('summary') is @('nil')
+ or a string, @('str') is a string, and @('str-args') are @('tsee fmt')
+ arguments for @('str').  Note that @('(er-soft context summary str ...)') is
+ equivalent to @('(er soft context nil str ...)').  The use of a non-@('nil')
+ @('summary') allows suppression of this error message without suppressing all
+ error output; see @(see set-inhibit-er-soft).</p>")
 
 (defxdoc error-triple
   :parents (errors programming-with-state)
@@ -92123,6 +92147,15 @@ it."
  requesting this feature (which may have been requested previously as
  well).</p>
 
+ <p>A new @(see event), @(tsee set-inhibit-er-soft), allows the user to turn
+ off error output of various types.  The related utility @(tsee
+ toggle-inhibit-er-soft) can turn on or off a single type of error output.
+ Non-@(see local) versions of these utilities are @(tsee set-inhibit-er-soft!)
+ and @(tsee toggle-inhibit-er-soft!).  Many error messages cannot yet be
+ controlled this way, but this may be remedied somewhat with community
+ feedback.  Thanks to Eric Smith for a request to inhibit step-limit error
+ output, which led to this enhancement.</p>
+
  <h3>Heuristic and Efficiency Improvements</h3>
 
  <p>Improved the efficiency of some computations involving calls of @(tsee
@@ -110036,6 +110069,108 @@ arithmetic) for libraries of @(see books) for arithmetic reasoning.</p>")
  for wanting to export the effect of this event outside the enclosing @(tsee
  encapsulate) or book.</p>")
 
+(defxdoc set-inhibit-er-soft
+  :parents (prover-output errors)
+  :short "Control the error output"
+  :long "@({
+  Examples:
+  (set-inhibit-er-soft \"translate\" \"failure\")
+ })
+
+ <p>Note: This is an event!  It does not print the usual event @(see summary)
+ but nevertheless changes the ACL2 logical @(see world) and is so recorded.  It
+ is @(tsee local) to the book or @(tsee encapsulate) form in which it occurs;
+ see @(see set-inhibit-er-soft!) for a corresponding non-@(tsee local) event.
+ Indeed, @('(set-inhibit-er-soft ...)') is equivalent to @('(local
+ (set-inhibit-er-soft! ...))').</p>
+
+ @({
+  General Form:
+  (set-inhibit-er-soft string1 string2 ...)
+ })
+
+ <p>where each string is considered without regard to case.  This macro is is
+ essentially @('(local (table inhibit-er-soft-table nil 'alist :clear))'),
+ where @('alist') pairs each supplied string with @('nil'): that is, @('alist')
+ is @('(pairlis$ lst nil)') where @('lst') is the list of strings supplied.
+ This macro is an event (see @(see table)), but no output results from a
+ @('set-inhibit-er-soft') event.</p>
+
+ <p>ACL2 prints errors that are generally important to see.  This utility is
+ appropriate for situations where one prefers not to see all error messages.
+ to.  Individual ``labeled'' error output can be silenced.  Consider for
+ example</p>
+
+ @({
+  ACL2 Error [Failure] in ( DEFUN FOO ...):  See :DOC failure.
+ })
+
+ <p>Here, the label is \"Failure\".  The argument list for
+ @('set-inhibit-er-soft') is a list of such labels, each of which is a string.
+ Any error message is suppressed if its label is a member of this list, where
+ case is ignored.  Thus, for example, the error output above will be avoided
+ after a call of @('set-inhibit-er-soft') that contains the string,
+ @('\"Failure\"') (or any string that is @(tsee string-equal) to
+ @('\"Failure\"'), such as @('\"failure\"') or @('\"FAILURE\"')).  In summary:
+ the effect of this event is to suppress any error output whose label is a
+ member of the given argument list, where case is ignored.</p>
+
+ <p>At this time, many error messages are printed without a label, for example
+ (as of this writing) the following.</p>
+
+ @({
+ ACL2 !>(+ x 3)
+
+
+ ACL2 Error in TOP-LEVEL:  Global variables, such as X, are not allowed.
+ See :DOC ASSIGN and :DOC @.
+
+ ACL2 !>
+ })
+
+ <p>These can only be suppressed by turning off all error output; see @(see
+ set-inhibit-output-lst).  Feel free to ask the ACL2 implementors to add
+ labels; for example, you might ask for a label in the example above (which
+ could be @('\"Globals\"') or @('\"Global-variables\"')).</p>
+
+ <p><b>Remarks</b>.</p>
+
+ <ul>
+
+ <li>Only so-called ``soft'' errors may have labels, not ``hard'' errors.  Hard
+ errors can be identified by the use of ``@('HARD')'' at the start of the error
+ message, for example as follows.
+
+ @({
+ HARD ACL2 ERROR in SET-GAG-MODE:  Unknown set-gag-mode argument, ABC
+ })</li>
+
+ <li>@('Set-inhibit-er-soft') has no effect on the value(s) returned by an
+ expression (excepting the ACL2 @(see state) in that it formally includes
+ output).</li>
+
+ </ul>
+
+ <p>The list of currently inhibited error types is the list of keys in the
+ @(see table) named @('inhibit-er-soft-table').  (The values in the table are
+ irrelevant.)  One way to get that value is to get the result from evaluating
+ the following form: @('(table-alist 'inhibit-er-soft-table (w state))').  Of
+ course, if error output is inhibited overall &mdash; see @(see
+ set-inhibit-output-lst) &mdash; then this value is entirely irrelevant.</p>
+
+ <p>See @(tsee toggle-inhibit-er-soft) for a way to add or remove a single
+ string.</p>")
+
+(defxdoc set-inhibit-er-soft!
+  :parents (prover-output errors)
+  :short "Control error output non-@(tsee local)ly"
+  :long "<p>Please see @(see set-inhibit-er-soft), which is the same as
+ @('set-inhibit-er-soft!')  except that the latter is not @(tsee local) to the
+ @(tsee encapsulate) or the book in which it occurs.  Probably @(see
+ set-inhibit-er-soft) is to be preferred unless you have a good reason for
+ wanting to export the effect of this event outside the enclosing @(tsee
+ encapsulate) or book.</p>")
+
 (defxdoc set-inhibit-output-lst
   :parents (prover-output)
   :short "Control output"
@@ -110080,8 +110215,9 @@ arithmetic) for libraries of @(see books) for arithmetic reasoning.</p>")
  set-gag-mode).</p>
 
  <p>See @(see with-output) for a variant of this utility that can be used in
- @(see books).  Also see @(see set-inhibit-warnings) for how to inhibit
- individual warning types and see @(see set-inhibited-summary-types) for how to
+ @(see books).  Also see @(see set-inhibit-warnings) and @(see
+ set-inhibit-er-soft) for how to inhibit individual warning and error output
+ types, respectively, and see @(see set-inhibited-summary-types) for how to
  inhibit individual parts of the @(see summary).</p>
 
  <p>Printing of events on behalf of @(tsee certify-book) and @(tsee
@@ -122254,6 +122390,41 @@ arithmetic) for libraries of @(see books) for arithmetic reasoning.</p>")
  cross-fertilization, generalization, and elimination of irrelevance).  For
  example, you don't need to worry about prover output that mentions ``type
  reasoning'' or ``abbreviations,'' for example.</p>")
+
+(defxdoc toggle-inhibit-er-soft
+  :parents (prover-output errors)
+  :short "Add or delete an error output string from the @('inhibit-er-soft-table')"
+  :long "<p>See @(see set-inhibit-er-soft) for relevant background.</p>
+
+  @({
+  General Form:
+  (toggle-inhibit-er-soft string)
+  })
+
+  <p>where @('string') is the name of some error output like @('\"Translate\"')
+  or @('\"Failure\"').</p>
+
+  <p>Note: This is an event!  It does not print the usual event @(see summary)
+  but nevertheless changes the ACL2 logical @(see world) and is so recorded.
+  It is @(tsee local) to the book or @(tsee encapsulate) form in which it
+  occurs; see @(see toggle-inhibit-er-soft!) for a corresponding non-@(tsee
+  local) event.  Indeed, @('(toggle-inhibit-er-soft str)') is equivalent to
+  @('(local (toggle-inhibit-er-soft! str))').</p>
+
+  <p>The given string is added to the list of strings used for inhibiting error
+  output if it is not there already and is deleted from the list if it is
+  there.  Case is unimportant in @('string').  See @(tsee
+  set-inhibit-er-soft).</p>")
+
+(defxdoc toggle-inhibit-er-soft!
+  :parents (prover-output errors)
+  :short "Toggle an @('inhibit-er-soft-table') entry non-@(tsee local)ly"
+  :long "<p>Please see @(see toggle-inhibit-er-soft), which is the same as
+ @('toggle-inhibit-er-soft!') except that the latter is not @(tsee local) to
+ the @(tsee encapsulate) or the book in which it occurs.  Probably @(see
+ toggle-inhibit-er-soft) is to be preferred unless you have a good reason for
+ wanting to export the effect of this event outside the enclosing @(tsee
+ encapsulate) or book.</p>")
 
 (defxdoc toggle-inhibit-warning
   :parents (prover-output)

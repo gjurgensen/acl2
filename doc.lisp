@@ -3305,6 +3305,9 @@ Subtopics
   [Er-progn]
       Perform a sequence of state-changing ``error triples''
 
+  [Er-soft]
+      Print an error message and ``cause a soft error''
+
   [Error1]
       Print an error message and cause a ``soft error''
 
@@ -6512,9 +6515,9 @@ Proof debugging and output control:
       [certify-book].
     * See [set-gag-mode] and see [pso] to abbreviate or restore proof
       output.
-    * See [set-inhibit-output-lst], see [set-inhibit-warnings], and see
-      [set-inhibited-summary-types] to inhibit various types of
-      output.
+    * See [set-inhibit-output-lst], see [set-inhibit-warnings], see
+      [set-inhibit-er-soft], and see [set-inhibited-summary-types] to
+      inhibit various types of output.
     * See [set-raw-proof-format] to make proof output display lists of
       [rune]s.
     * See [set-raw-warning-format] to make some warnings display in a
@@ -33230,20 +33233,21 @@ Subtopics
     (er hard? 'top-level \"Illegal inputs, ~x0 and ~x1.\" a b)
     (er hard! 'top-level \"Illegal inputs, ~x0 and ~x1.\" a b)
     (er soft  'top-level \"Illegal inputs, ~x0 and ~x1.\" a b)
+    (er-soft  'top-level \"Illegal-inputs\" \"Illegal inputs, ~x0 and ~x1.\" a b)
 
   The examples above all print an error message to standard output
   saying that a and b are illegal inputs.  However, the first three
   abort evaluation after printing an error message (while logically
   returning nil, though in ordinary evaluation the return value is
-  never seen); while the last returns (mv t nil state) after printing
-  an error message.  The result in the last case can be interpreted
-  as an ``error'' when programming with the ACL2 [state], something
-  most ACL2 users will probably not want to do unless they are
-  building systems of some sort; see [programming-with-state].  If
-  state is not available in the current context then you will
-  probably want to use a call other than the last to cause an error;
-  for example, if you are returning two values, you may write (mv (er
-  hard ...) nil).
+  never seen); while the last two return (mv t nil state) after
+  printing an error message.  The result in each of the last two
+  cases can be interpreted as an ``error'' when programming with the
+  ACL2 [state], something most ACL2 users will probably not want to
+  do unless they are building systems of some sort; see
+  [programming-with-state].  If state is not available in the current
+  context then you will probably want to use a call other than the
+  last to cause an error; for example, if you are returning two
+  values, you may write (mv (er hard ...) nil).
 
   The difference between the hard and hard? forms is one of guards.
   Use hard if you want the call to generate a (clearly impossible)
@@ -33271,7 +33275,7 @@ Subtopics
   (er soft ...) that generate :[logic] mode code, see [er-soft-logic]
   and [er-soft+].
 
-    General forms:
+    General Forms:
     (er hard  ctx fmt-string arg1 arg2 ... argk)
       ==> {macroexpands, in essence, to:}
     (ILLEGAL    CTX FMT-STRING
@@ -33287,7 +33291,12 @@ Subtopics
 
     (er soft  ctx fmt-string arg1 arg2 ... argk)
       ==> {macroexpands, in essence, to:}
-    (ERROR1     CTX FMT-STRING
+    (ERROR1     CTX NIL FMT-STRING
+                (LIST (CONS #\\0 ARG1) (CONS #\\1 ARG2) ... (CONS #\\k ARGk)))
+
+    (er-soft  ctx summary fmt-string arg1 arg2 ... argk)
+      ==> {macroexpands, in essence, to:}
+    (ERROR1     CTX SUMMARY FMT-STRING
                 (LIST (CONS #\\0 ARG1) (CONS #\\1 ARG2) ... (CONS #\\k ARGk)))
 
   See [ctx] for the possible forms of the ctx argument.
@@ -33342,6 +33351,21 @@ Subtopics
                                                         (t <exprk>)))))))))")
  (ER-PROGN-CMP (POINTERS)
                "See [context-message-pair].")
+ (ER-SOFT
+  (ERRORS ACL2-BUILT-INS)
+  "Print an error message and ``cause a soft error''
+
+  See [er] for relevant background, which is assumed below.
+
+    General Form:
+    (er-soft context summary str &rest str-args)
+
+  where context is a legal context (see [ctx]), summary is nil or a
+  string, str is a string, and str-args are tsee fmt arguments for
+  str.  Note that (er-soft context summary str ...) is equivalent to
+  (er soft context nil str ...).  The use of a non-nil summary allows
+  suppression of this error message without suppressing all error
+  output; see [set-inhibit-er-soft].")
  (ERROR (POINTERS)
         "See [hints] for information about the keyword :error.")
  (ERROR-TRIPLE
@@ -33482,6 +33506,9 @@ Subtopics
   [Er-progn]
       Perform a sequence of state-changing ``error triples''
 
+  [Er-soft]
+      Print an error message and ``cause a soft error''
+
   [Error-triple]
       A common ACL2 programming idiom
 
@@ -33493,6 +33520,18 @@ Subtopics
 
   [Illegal]
       Print an error message and stop execution
+
+  [Set-inhibit-er-soft]
+      Control the error output
+
+  [Set-inhibit-er-soft!]
+      Control error output non-[local]ly
+
+  [Toggle-inhibit-er-soft]
+      Add or delete an error output string from the inhibit-er-soft-table
+
+  [Toggle-inhibit-er-soft!]
+      Toggle an inhibit-er-soft-table entry non-[local]ly
 
   [Value-triple]
       Compute a value, optionally checking that it is not nil")
@@ -90196,6 +90235,16 @@ New Features
   Smith for requesting this feature (which may have been requested
   previously as well).
 
+  A new [event], [set-inhibit-er-soft], allows the user to turn off
+  error output of various types.  The related utility
+  [toggle-inhibit-er-soft] can turn on or off a single type of error
+  output.  Non-[local] versions of these utilities are
+  [set-inhibit-er-soft!] and [toggle-inhibit-er-soft!].  Many error
+  messages cannot yet be controlled this way, but this may be
+  remedied somewhat with community feedback.  Thanks to Eric Smith
+  for a request to inhibit step-limit error output, which led to this
+  enhancement.
+
 
 Heuristic and Efficiency Improvements
 
@@ -100696,6 +100745,12 @@ Subtopics
   [Set-gag-mode]
       Modify the nature of proof output
 
+  [Set-inhibit-er-soft]
+      Control the error output
+
+  [Set-inhibit-er-soft!]
+      Control error output non-[local]ly
+
   [Set-inhibit-output-lst]
       Control output
 
@@ -100722,6 +100777,12 @@ Subtopics
 
   [Summary]
       The summary printed at the conclusion of an event
+
+  [Toggle-inhibit-er-soft]
+      Add or delete an error output string from the inhibit-er-soft-table
+
+  [Toggle-inhibit-er-soft!]
+      Toggle an inhibit-er-soft-table entry non-[local]ly
 
   [Toggle-inhibit-warning]
       Add or delete a warning string from the inhibit-warnings-table
@@ -111057,6 +111118,96 @@ Example
   [set-induction-depth-limit] is to be preferred unless you have a
   good reason for wanting to export the effect of this event outside
   the enclosing [encapsulate] or book.")
+ (SET-INHIBIT-ER-SOFT
+  (PROVER-OUTPUT ERRORS)
+  "Control the error output
+
+    Examples:
+    (set-inhibit-er-soft \"translate\" \"failure\")
+
+  Note: This is an event!  It does not print the usual event [summary]
+  but nevertheless changes the ACL2 logical [world] and is so
+  recorded.  It is [local] to the book or [encapsulate] form in which
+  it occurs; see [set-inhibit-er-soft!] for a corresponding
+  non-[local] event.  Indeed, (set-inhibit-er-soft ...) is equivalent
+  to (local (set-inhibit-er-soft! ...)).
+
+    General Form:
+    (set-inhibit-er-soft string1 string2 ...)
+
+  where each string is considered without regard to case.  This macro
+  is is essentially (local (table inhibit-er-soft-table nil 'alist
+  :clear)), where alist pairs each supplied string with nil: that is,
+  alist is (pairlis$ lst nil) where lst is the list of strings
+  supplied.  This macro is an event (see [table]), but no output
+  results from a set-inhibit-er-soft event.
+
+  ACL2 prints errors that are generally important to see.  This utility
+  is appropriate for situations where one prefers not to see all
+  error messages.  to.  Individual ``labeled'' error output can be
+  silenced.  Consider for example
+
+    ACL2 Error [Failure] in ( DEFUN FOO ...):  See :DOC failure.
+
+  Here, the label is \"Failure\".  The argument list for
+  set-inhibit-er-soft is a list of such labels, each of which is a
+  string.  Any error message is suppressed if its label is a member
+  of this list, where case is ignored.  Thus, for example, the error
+  output above will be avoided after a call of set-inhibit-er-soft
+  that contains the string, \"Failure\" (or any string that is
+  [string-equal] to \"Failure\", such as \"failure\" or \"FAILURE\").  In
+  summary: the effect of this event is to suppress any error output
+  whose label is a member of the given argument list, where case is
+  ignored.
+
+  At this time, many error messages are printed without a label, for
+  example (as of this writing) the following.
+
+    ACL2 !>(+ x 3)
+
+
+    ACL2 Error in TOP-LEVEL:  Global variables, such as X, are not allowed.
+    See :DOC ASSIGN and :DOC @.
+
+    ACL2 !>
+
+  These can only be suppressed by turning off all error output; see
+  [set-inhibit-output-lst].  Feel free to ask the ACL2 implementors
+  to add labels; for example, you might ask for a label in the
+  example above (which could be \"Globals\" or \"Global-variables\").
+
+  Remarks.
+
+    * Only so-called ``soft'' errors may have labels, not ``hard'' errors.
+      Hard errors can be identified by the use of ``HARD'' at the
+      start of the error message, for example as follows.
+
+          HARD ACL2 ERROR in SET-GAG-MODE:  Unknown set-gag-mode argument, ABC
+
+    * Set-inhibit-er-soft has no effect on the value(s) returned by an
+      expression (excepting the ACL2 [state] in that it formally
+      includes output).
+
+  The list of currently inhibited error types is the list of keys in
+  the [table] named inhibit-er-soft-table.  (The values in the table
+  are irrelevant.)  One way to get that value is to get the result
+  from evaluating the following form: (table-alist
+  'inhibit-er-soft-table (w state)).  Of course, if error output is
+  inhibited overall --- see [set-inhibit-output-lst] --- then this
+  value is entirely irrelevant.
+
+  See [toggle-inhibit-er-soft] for a way to add or remove a single
+  string.")
+ (SET-INHIBIT-ER-SOFT!
+  (PROVER-OUTPUT ERRORS)
+  "Control error output non-[local]ly
+
+  Please see [set-inhibit-er-soft], which is the same as
+  set-inhibit-er-soft! except that the latter is not [local] to the
+  [encapsulate] or the book in which it occurs.  Probably
+  [set-inhibit-er-soft] is to be preferred unless you have a good
+  reason for wanting to export the effect of this event outside the
+  enclosing [encapsulate] or book.")
  (SET-INHIBIT-OUTPUT-LST
   (PROVER-OUTPUT)
   "Control output
@@ -111099,9 +111250,10 @@ Example
   [set-gag-mode].
 
   See [with-output] for a variant of this utility that can be used in
-  [books].  Also see [set-inhibit-warnings] for how to inhibit
-  individual warning types and see [set-inhibited-summary-types] for
-  how to inhibit individual parts of the [summary].
+  [books].  Also see [set-inhibit-warnings] and [set-inhibit-er-soft]
+  for how to inhibit individual warning and error output types,
+  respectively, and see [set-inhibited-summary-types] for how to
+  inhibit individual parts of the [summary].
 
   Printing of events on behalf of [certify-book] and [encapsulate] is
   inhibited when both 'event and 'prove belong to lst.  Otherwise,
@@ -124230,6 +124382,39 @@ Subtopics
   generalization, and elimination of irrelevance).  For example, you
   don't need to worry about prover output that mentions ``type
   reasoning'' or ``abbreviations,'' for example.")
+ (TOGGLE-INHIBIT-ER-SOFT
+  (PROVER-OUTPUT ERRORS)
+  "Add or delete an error output string from the inhibit-er-soft-table
+
+  See [set-inhibit-er-soft] for relevant background.
+
+    General Form:
+    (toggle-inhibit-er-soft string)
+
+  where string is the name of some error output like \"Translate\" or
+  \"Failure\".
+
+  Note: This is an event!  It does not print the usual event [summary]
+  but nevertheless changes the ACL2 logical [world] and is so
+  recorded.  It is [local] to the book or [encapsulate] form in which
+  it occurs; see [toggle-inhibit-er-soft!] for a corresponding
+  non-[local] event.  Indeed, (toggle-inhibit-er-soft str) is
+  equivalent to (local (toggle-inhibit-er-soft! str)).
+
+  The given string is added to the list of strings used for inhibiting
+  error output if it is not there already and is deleted from the
+  list if it is there.  Case is unimportant in string.  See
+  [set-inhibit-er-soft].")
+ (TOGGLE-INHIBIT-ER-SOFT!
+  (PROVER-OUTPUT ERRORS)
+  "Toggle an inhibit-er-soft-table entry non-[local]ly
+
+  Please see [toggle-inhibit-er-soft], which is the same as
+  toggle-inhibit-er-soft! except that the latter is not [local] to
+  the [encapsulate] or the book in which it occurs.  Probably
+  [toggle-inhibit-er-soft] is to be preferred unless you have a good
+  reason for wanting to export the effect of this event outside the
+  enclosing [encapsulate] or book.")
  (TOGGLE-INHIBIT-WARNING
   (PROVER-OUTPUT)
   "Add or delete a warning string from the inhibit-warnings-table
