@@ -51992,38 +51992,74 @@ tables in the current Hons Space."
                                   acl2-built-ins)
   :short "The number of prover steps most recently taken"
   :long "<p>For discussions of prover step limits, See @(see
- set-prover-step-limit) and see @(see with-prover-step-limit).  The value of
- the form @('(last-prover-steps state)') indicates the number of prover steps
- taken, in the sense described below, for the most recent context in which an
- event @(see summary) would normally be printed.  Note that the value of
- @('(last-prover-steps state)') is updated for all @(see events), and for all
- other forms such as calls of @(tsee thm) or @(tsee certify-book), that would
- print a @(see summary) &mdash; regardless of whether or not such output is
- inhibited (see @(see set-inhibit-output-lst) and see @(see
- set-inhibited-summary-types)).  In particular, the value is updated (typically
- to @('nil')) for @(tsee table) @(see events), even when no summary is printed;
- for example, the value is updated to @('nil') for @('table') events such as
- @('(')@(tsee logic)@(')'), @('(')@(tsee program)@(')'), and even calls of
- @(tsee set-prover-step-limit).</p>
+ set-prover-step-limit) and see @(see with-prover-step-limit).</p>
+
+ <p>The @(see summary) printed for an @(see event) typically includes a line
+ showing the prover steps counted, for example as follows.</p>
+
+ @({
+ Prover steps counted:  7240
+ })
+
+ <p>The value of the form @('(last-prover-steps state)') indicates the number
+ of prover steps taken, in the sense described below, for the most recent
+ context in which an event @(see summary) would normally be printed.  Note that
+ the value of @('(last-prover-steps state)') is updated for all @(see events),
+ and more generally, for all forms that are set up to print a @(see summary),
+ such as calls of @(tsee thm) or @(tsee certify-book) &mdash; regardless of
+ whether or not summary output is inhibited (see @(see set-inhibit-output-lst)
+ and see @(see set-inhibited-summary-types)).  In particular, the value is
+ updated (typically to @('nil')) for @(tsee table) @(see events), even when no
+ summary is printed; for example, the value is updated to @('nil') for
+ @('table') events such as @('(')@(tsee logic)@(')'), @('(')@(tsee
+ program)@(')'), and even calls of @(tsee set-prover-step-limit).</p>
 
  <p>The value of @('(last-prover-steps state)') is determined as follows, based
  on the most recent summary context (as described above):</p>
 
  <blockquote>
 
- <p>@('nil'), if no prover steps were taken; else,</p>
+ <p>@('nil'), if no prover steps were taken, e.g., with @('(thm (equal x x))');
+ else,</p>
 
  <p>the (positive) number of steps taken, if the number of steps did not exceed
  the starting limit; else,</p>
 
  <p>the negative of the starting limit.</p></blockquote>
 
- <p>We conclude with a remark for advanced users who wish to invoke
+ <p>Note that the ``most recently completed event'' in this sense includes
+ compound events.  Consider the following example.</p>
+
+ @({
+ (progn (thm (equal (append (append x y) z) (append x y z)))
+        (thm (equal (car (cons x y)) x)))
+ })
+
+ <p>The summaries show (in some ACL2 versions, at least) 435 steps for the
+ first call of @('thm') and 7 steps for the second call of @('thm'), with 442
+ steps thus shown in the summary for the entire @('progn') call.  Subsequent
+ evaluation of @('(last-prover-steps state)') returns 442.  On the other hand,
+ suppose that @('(set-prover-step-limit 440)') is evaluated immediately before
+ evaluating the @('progn') call above.  Then the summaries show the following
+ for the two @('thm') calls and the @('progn') call, in order as follows.</p>
+
+ @({
+ Prover steps counted:  435
+ Prover steps counted:  More than 5
+ Prover steps counted:  More than 440
+ })
+
+ <p>Since the most recently completed event is the @('progn') call, then
+ @('(last-prover-steps state)') returns -440.</p>
+
+ <p>We conclude with two remarks for advanced users who wish to invoke
  @('last-prover-steps') in the development of utilities that track prover
- steps.  Suppose that you want to write a utility that takes some action based
- on the number of prover steps performed by the first @('defun') event that is
- generated, among others, for example the number of prover steps taken to admit
- @('f1') in the following example.</p>
+ steps.</p>
+
+ <p>Remark 1.  Suppose that you want to write a utility that takes some action
+ based on the number of prover steps performed by the first event that is
+ generated within a sequence of events, for example the number of prover steps
+ taken to admit @('f1') in the following example.</p>
 
  @({
   (progn (defun f1 ...)
@@ -52040,7 +52076,14 @@ tables in the current Hons Space."
                                            state)
                              (value '(value-triple nil))))
          (defun f2 ...))
- })")
+ })
+
+ <p>Remark 2.  It is possible to write utilities that are treated as @(see
+ events) for purposes of the discussion above; that is, their calls can be
+ followed by evaluating @('(last-prover-steps state)') as described above.  For
+ an example of how to do this using the ACL2 system macro
+ @('with-ctx-summarized'), see the implementation of @(tsee prove$) in @(see
+ community-book) @('books/tools/prove-dollar.lisp').</p>")
 
 (defxdoc ld
   :parents (miscellaneous)
