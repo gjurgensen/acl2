@@ -38866,7 +38866,8 @@ current fast alists."
  comments in ACL2 source function @('access-event-tuple-namex').</li>
 
  <li>@('PROVER-STEPS-COUNTED'): @('VAL') is as in the corresponding field of
- the event summary.</li>
+ the event summary.  Note: This value can be obtained using @(tsee
+ last-prover-steps).</li>
 
  <li>@('RULES'): @('VAL') is as in the corresponding field of the event
  summary.</li>

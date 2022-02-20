@@ -42179,7 +42179,8 @@ Subtopics
     * NAMEX: VAL is 0, a single name, or a list of names; see comments in
       ACL2 source function access-event-tuple-namex.
     * PROVER-STEPS-COUNTED: VAL is as in the corresponding field of the
-      event summary.
+      event summary.  Note: This value can be obtained using
+      [last-prover-steps].
     * RULES: VAL is as in the corresponding field of the event summary.
     * SPLITTER-RULES: VAL represents the corresponding field of the event
       summary, as the list (case-split immed-forced if-intro).
