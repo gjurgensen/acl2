@@ -33447,10 +33447,13 @@ Subtopics
   (ERRORS ACL2-BUILT-INS)
   "Print an error message and cause a ``soft error''
 
-  (Error1 ctx str alist) returns (mv t nil state).  An error message is
-  first printed using the the ``context'' ctx, as well as the string
-  str and alist alist that are of the same kind as expected by [fmt].
-  See [fmt].
+  (Error1 ctx summary str alist state) returns (mv t nil state).  An
+  error message is first printed using the the ``context'' ctx, as
+  well as the string str and alist alist that are of the same kind as
+  expected by [fmt] --- unless error output is inhibited (see
+  [set-inhibit-output-lst] and [with-output]) or summary is non-nil,
+  in which case it is a string, and error output of that type is
+  inhibited (see [set-inhibit-er-soft]).  See [fmt].
 
   Error1 can be interpreted as causing an ``error'' when programming
   with the ACL2 [state], something most ACL2 users will probably not
