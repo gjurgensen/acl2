@@ -30248,9 +30248,10 @@ ld) and @(tsee include-book)"
  way of signaling errors.</p>
 
  <p>As mentioned above, @('error1') always returns @('(mv t nil state)').  But
- if a call @('(error1 ctx str alist)') is encountered during evaluation, then
- the string @('str') is first printed using the association list @('alist') (as
- in @(tsee fmt)).  Here is a trivial, contrived example.</p>
+ if a call @('(error1 ctx summary str alist)') is encountered during
+ evaluation, then unless output is inhibited as described above, the string
+ @('str') is first printed using the association list @('alist') (as in @(tsee
+ fmt)).  Here is a trivial, contrived example.</p>
 
  @({
   ACL2 !>(error1 'my-context
