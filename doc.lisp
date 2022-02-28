@@ -33463,9 +33463,10 @@ Subtopics
   unified way of signaling errors.
 
   As mentioned above, error1 always returns (mv t nil state).  But if a
-  call (error1 ctx str alist) is encountered during evaluation, then
-  the string str is first printed using the association list alist
-  (as in [fmt]).  Here is a trivial, contrived example.
+  call (error1 ctx summary str alist) is encountered during
+  evaluation, then unless output is inhibited as described above, the
+  string str is first printed using the association list alist (as in
+  [fmt]).  Here is a trivial, contrived example.
 
     ACL2 !>(error1 'my-context
                    \"Printing 4: ~n0\"
