@@ -92204,6 +92204,10 @@ it."
  feedback.  Thanks to Eric Smith for a request to inhibit step-limit error
  output, which led to this enhancement.</p>
 
+ <p>The functions @(tsee l<), @('lexp'), and @('d<'), originally defined in
+ @(see community-book) @('books/ordinals/lexicographic-book.lisp'), are now
+ built into ACL2.</p>
+
  <h3>Heuristic and Efficiency Improvements</h3>
 
  <p>Improved the efficiency of some computations involving calls of @(tsee

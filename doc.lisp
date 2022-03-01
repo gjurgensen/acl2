@@ -90290,6 +90290,10 @@ New Features
   for a request to inhibit step-limit error output, which led to this
   enhancement.
 
+  The functions [l<], lexp, and d<, originally defined in
+  [community-book] books/ordinals/lexicographic-book.lisp, are now
+  built into ACL2.
+
 
 Heuristic and Efficiency Improvements
 
