@@ -30233,9 +30233,9 @@ ld) and @(tsee include-book)"
   :parents (errors acl2-built-ins)
   :short "Print an error message and cause a ``soft error''"
   :long "<p>@('(Error1 ctx summary str alist state)') returns @('(mv t nil
- state)').  An error message is first printed using the the ``context''
- @('ctx'), as well as the string @('str') and alist @('alist') that are of the
- same kind as expected by @(tsee fmt) &mdash; unless error output is inhibited
+ state)').  An error message is first printed using the ``context'' @('ctx'),
+ as well as the string @('str') and alist @('alist') that are of the same kind
+ as expected by @(tsee fmt) &mdash; unless error output is inhibited
  (see @(see set-inhibit-output-lst) and @(see with-output)) or @('summary') is
  non-@('nil'), in which case it is a string, and error output of that type is
  inhibited (see @(see set-inhibit-er-soft)).  See @(see fmt).</p>
