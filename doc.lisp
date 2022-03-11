@@ -33448,8 +33448,8 @@ Subtopics
   "Print an error message and cause a ``soft error''
 
   (Error1 ctx summary str alist state) returns (mv t nil state).  An
-  error message is first printed using the the ``context'' ctx, as
-  well as the string str and alist alist that are of the same kind as
+  error message is first printed using the ``context'' ctx, as well
+  as the string str and alist alist that are of the same kind as
   expected by [fmt] --- unless error output is inhibited (see
   [set-inhibit-output-lst] and [with-output]) or summary is non-nil,
   in which case it is a string, and error output of that type is
