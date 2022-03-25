@@ -1658,14 +1658,17 @@ Subtopics
 
   {IMAGE} (see [What_Is_ACL2{Q}])
 
-  The ACL2 Home Page is integrated into the ACL2 online documentation.
-  Over 4 megabytes of hypertext is available here.
+  The {ACL2 Home Page | http://www.cs.utexas.edu/users/moore/acl2/} on
+  the web contains links to demos, publications, mailing lists,,
+  installation instructions, and more --- and, especially, to the
+  extensive {online documentation |
+  https://www.cs.utexas.edu/users/moore/acl2/v8-4/acl2-doc.html#User's-Manual}
+  for ACL2 and its libraries, known as ``books''.
 
-  The vast majority of the text is user-level documentation.  For
-  example, to find out about [rewrite] {ICON} (see
-  [A_Tiny_Warning_Sign]) rules you could click on the link.  (If you
-  do that, remember to use your browser's Back Button to come back
-  here.)
+  For example, to use the online documentation to find out about
+  [rewrite] {ICON} (see [A_Tiny_Warning_Sign]) rules you could click
+  on the link.  (If you do that, remember to use your browser's Back
+  Button to come back here.)
 
   The tiny warning signs {ICON} (see [A_Tiny_Warning_Sign]) mark links
   that lead out of the introductory-level material and into the user
@@ -3301,6 +3304,9 @@ Subtopics
 
   [Er-progn]
       Perform a sequence of state-changing ``error triples''
+
+  [Er-soft]
+      Print an error message and ``cause a soft error''
 
   [Error1]
       Print an error message and cause a ``soft error''
@@ -6509,9 +6515,9 @@ Proof debugging and output control:
       [certify-book].
     * See [set-gag-mode] and see [pso] to abbreviate or restore proof
       output.
-    * See [set-inhibit-output-lst], see [set-inhibit-warnings], and see
-      [set-inhibited-summary-types] to inhibit various types of
-      output.
+    * See [set-inhibit-output-lst], see [set-inhibit-warnings], see
+      [set-inhibit-er-soft], and see [set-inhibited-summary-types] to
+      inhibit various types of output.
     * See [set-raw-proof-format] to make proof output display lists of
       [rune]s.
     * See [set-raw-warning-format] to make some warnings display in a
@@ -6672,7 +6678,7 @@ Subtopics
       [arrays]
 
   [Program-wrapper]
-      Avoiding expensive guard checks using [program]-mode functions
+      Avoiding expensive [guard] checks using [program]-mode functions
 
   [Set-check-invariant-risk]
       Affect certain [program]-mode updates to [stobj]s or [arrays]
@@ -16825,9 +16831,9 @@ Subtopics
                   :ttagsx ttags           ; [default nil]
                   :pcert pcert            ; [default nil]
                   :write-port t/nil       ; [default t unless pcert is non-nil]
-                  :useless-runes :write/:read/:read?/n/-n/nil
-                                          ; (-100 < n < 0 or 0 < n <= 100)
-                                          ; [default nil]
+                  :useless-runes          ; :write/:read/:read?/n/-n/nil
+                                          ;   (-100 < n < 0 or 0 < n <= 100)
+                                          ;   [default nil or from environment]
                   )
 
   where book-name is a book name (see [book-name]), k is used to
@@ -21592,7 +21598,7 @@ Subtopics
 
   Example:
 
-    (cw \"The goal is ~p0 and the alist is ~x1.~%\"
+    (cw \"The goal is ~x0 and the alist is ~x1.~%\"
         (untranslate term t nil)
         unify-subst)
 
@@ -21606,11 +21612,11 @@ Subtopics
   terminal screen with the standard character output [*standard-co*].
   Third, its fmt args are positional references, so that for example
 
-    (cw \"Answers: ~p0 and ~p1\" ans1 ans2)
+    (cw \"Answers: ~x0 and ~x1\" ans1 ans2)
 
   prints in the same manner as:
 
-    (fmt \"Answers: ~p0 and ~p1\"
+    (fmt \"Answers: ~x0 and ~x1\"
          (list (cons #\\0 ans1) (cons #\\1 ans2))
          *standard-co* state nil)
 
@@ -27692,6 +27698,10 @@ Subtopics
   admissible provided certain restrictions are met.  These are
   sketched below.
 
+  See also [mutual-recursion] for how to use defun to make mutually
+  recursive definitions, including discussion of how the [xargs]
+  [declaration]s in one defun may affect the other definitions.
+
   Note that ACL2 does not support the use of lambda-list keywords (such
   as &optional) in the formals list of functions.  We do support some
   such keywords in macros and often you can achieve the desired
@@ -30380,9 +30390,14 @@ SYNTAX
     * An IF call whose first argument is an ordinary term (which
       necessarily returns a single, non-stobj value) and whose true
       and false branches are DO-body terms
-    * A LET, LET*, or MV-LET expression whose beta-reduction (i.e.,
-      subtituting actuals for formals) is a DO-body term, provided no
-      bound variable is WITH-bound or a known [stobj]
+    * A LET, LET*, or MV-LET expression, subject to the following
+      restrictions (unless the term is an ordinary term).
+        * The terms in the bindings are all ordinary terms.
+        * The body is a DO-body term.
+        * No variable bound in the bindings is WITH-bound, a known [stobj], or
+          a variable occurring free in the surrounding DO loop$
+          expression.
+
     * (PROGN term1 term2 ... termk), where each termi is a DO-body term;
       also (PROG2 term1 term2) in that case
     * (RETURN term), where term is an ordinary term
@@ -33218,20 +33233,21 @@ Subtopics
     (er hard? 'top-level \"Illegal inputs, ~x0 and ~x1.\" a b)
     (er hard! 'top-level \"Illegal inputs, ~x0 and ~x1.\" a b)
     (er soft  'top-level \"Illegal inputs, ~x0 and ~x1.\" a b)
+    (er-soft  'top-level \"Illegal-inputs\" \"Illegal inputs, ~x0 and ~x1.\" a b)
 
   The examples above all print an error message to standard output
   saying that a and b are illegal inputs.  However, the first three
   abort evaluation after printing an error message (while logically
   returning nil, though in ordinary evaluation the return value is
-  never seen); while the last returns (mv t nil state) after printing
-  an error message.  The result in the last case can be interpreted
-  as an ``error'' when programming with the ACL2 [state], something
-  most ACL2 users will probably not want to do unless they are
-  building systems of some sort; see [programming-with-state].  If
-  state is not available in the current context then you will
-  probably want to use a call other than the last to cause an error;
-  for example, if you are returning two values, you may write (mv (er
-  hard ...) nil).
+  never seen); while the last two return (mv t nil state) after
+  printing an error message.  The result in each of the last two
+  cases can be interpreted as an ``error'' when programming with the
+  ACL2 [state], something most ACL2 users will probably not want to
+  do unless they are building systems of some sort; see
+  [programming-with-state].  If state is not available in the current
+  context then you will probably want to use a call other than the
+  last to cause an error; for example, if you are returning two
+  values, you may write (mv (er hard ...) nil).
 
   The difference between the hard and hard? forms is one of guards.
   Use hard if you want the call to generate a (clearly impossible)
@@ -33259,7 +33275,7 @@ Subtopics
   (er soft ...) that generate :[logic] mode code, see [er-soft-logic]
   and [er-soft+].
 
-    General forms:
+    General Forms:
     (er hard  ctx fmt-string arg1 arg2 ... argk)
       ==> {macroexpands, in essence, to:}
     (ILLEGAL    CTX FMT-STRING
@@ -33275,7 +33291,12 @@ Subtopics
 
     (er soft  ctx fmt-string arg1 arg2 ... argk)
       ==> {macroexpands, in essence, to:}
-    (ERROR1     CTX FMT-STRING
+    (ERROR1     CTX NIL FMT-STRING
+                (LIST (CONS #\\0 ARG1) (CONS #\\1 ARG2) ... (CONS #\\k ARGk)))
+
+    (er-soft  ctx summary fmt-string arg1 arg2 ... argk)
+      ==> {macroexpands, in essence, to:}
+    (ERROR1     CTX SUMMARY FMT-STRING
                 (LIST (CONS #\\0 ARG1) (CONS #\\1 ARG2) ... (CONS #\\k ARGk)))
 
   See [ctx] for the possible forms of the ctx argument.
@@ -33330,6 +33351,21 @@ Subtopics
                                                         (t <exprk>)))))))))")
  (ER-PROGN-CMP (POINTERS)
                "See [context-message-pair].")
+ (ER-SOFT
+  (ERRORS ACL2-BUILT-INS)
+  "Print an error message and ``cause a soft error''
+
+  See [er] for relevant background, which is assumed below.
+
+    General Form:
+    (er-soft context summary str &rest str-args)
+
+  where context is a legal context (see [ctx]), summary is nil or a
+  string, str is a string, and str-args are tsee fmt arguments for
+  str.  Note that (er-soft context summary str ...) is equivalent to
+  (er soft context nil str ...).  The use of a non-nil summary allows
+  suppression of this error message without suppressing all error
+  output; see [set-inhibit-er-soft].")
  (ERROR (POINTERS)
         "See [hints] for information about the keyword :error.")
  (ERROR-TRIPLE
@@ -33411,10 +33447,13 @@ Subtopics
   (ERRORS ACL2-BUILT-INS)
   "Print an error message and cause a ``soft error''
 
-  (Error1 ctx str alist) returns (mv t nil state).  An error message is
-  first printed using the the ``context'' ctx, as well as the string
-  str and alist alist that are of the same kind as expected by [fmt].
-  See [fmt].
+  (Error1 ctx summary str alist state) returns (mv t nil state).  An
+  error message is first printed using the ``context'' ctx, as well
+  as the string str and alist alist that are of the same kind as
+  expected by [fmt] --- unless error output is inhibited (see
+  [set-inhibit-output-lst] and [with-output]) or summary is non-nil,
+  in which case it is a string, and error output of that type is
+  inhibited (see [set-inhibit-er-soft]).  See [fmt].
 
   Error1 can be interpreted as causing an ``error'' when programming
   with the ACL2 [state], something most ACL2 users will probably not
@@ -33424,9 +33463,10 @@ Subtopics
   unified way of signaling errors.
 
   As mentioned above, error1 always returns (mv t nil state).  But if a
-  call (error1 ctx str alist) is encountered during evaluation, then
-  the string str is first printed using the association list alist
-  (as in [fmt]).  Here is a trivial, contrived example.
+  call (error1 ctx summary str alist) is encountered during
+  evaluation, then unless output is inhibited as described above, the
+  string str is first printed using the association list alist (as in
+  [fmt]).  Here is a trivial, contrived example.
 
     ACL2 !>(error1 'my-context
                    \"Printing 4: ~n0\"
@@ -33470,6 +33510,9 @@ Subtopics
   [Er-progn]
       Perform a sequence of state-changing ``error triples''
 
+  [Er-soft]
+      Print an error message and ``cause a soft error''
+
   [Error-triple]
       A common ACL2 programming idiom
 
@@ -33481,6 +33524,18 @@ Subtopics
 
   [Illegal]
       Print an error message and stop execution
+
+  [Set-inhibit-er-soft]
+      Control the error output
+
+  [Set-inhibit-er-soft!]
+      Control error output non-[local]ly
+
+  [Toggle-inhibit-er-soft]
+      Add or delete an error output string from the inhibit-er-soft-table
+
+  [Toggle-inhibit-er-soft!]
+      Toggle an inhibit-er-soft-table entry non-[local]ly
 
   [Value-triple]
       Compute a value, optionally checking that it is not nil")
@@ -37426,11 +37481,12 @@ Subtopics
     ACL2 !>
 
   Note: ~p, ~q, ~P, and ~Q are also currently supported, but are
-  deprecated.  These are respectively the same as ~x, ~y, ~X, and ~Y,
-  except that their arguments are expected to be terms, preferably
-  untranslated (user-level) terms, that could be printed using infix
-  notation in certain environments.  Infix printing is not currently
-  supported but may be if there is sufficient need for it.
+  deprecated and generally avoided in this manual.  These are
+  respectively the same as ~x, ~y, ~X, and ~Y, except that their
+  arguments are expected to be terms, preferably untranslated
+  (user-level) terms, that could be printed using infix notation in
+  certain environments.  Infix printing is not currently supported
+  but may be if there is sufficient need for it.
 
   ACL2's formatting functions print to the indicated channel, keeping
   track of which column they are in.  [Fmt1] can be used if the
@@ -42127,7 +42183,8 @@ Subtopics
     * NAMEX: VAL is 0, a single name, or a list of names; see comments in
       ACL2 source function access-event-tuple-namex.
     * PROVER-STEPS-COUNTED: VAL is as in the corresponding field of the
-      event summary.
+      event summary.  Note: This value can be obtained using
+      [last-prover-steps].
     * RULES: VAL is as in the corresponding field of the event summary.
     * SPLITTER-RULES: VAL represents the corresponding field of the event
       summary, as the list (case-split immed-forced if-intro).
@@ -55820,14 +55877,21 @@ About Guard Verification of Lambda Objects
   "The number of prover steps most recently taken
 
   For discussions of prover step limits, See [set-prover-step-limit]
-  and see [with-prover-step-limit].  The value of the form
-  (last-prover-steps state) indicates the number of prover steps
-  taken, in the sense described below, for the most recent context in
-  which an event [summary] would normally be printed.  Note that the
-  value of (last-prover-steps state) is updated for all [events], and
-  for all other forms such as calls of [thm] or [certify-book], that
-  would print a [summary] --- regardless of whether or not such
-  output is inhibited (see [set-inhibit-output-lst] and see
+  and see [with-prover-step-limit].
+
+  The [summary] printed for an [event] typically includes a line
+  showing the prover steps counted, for example as follows.
+
+    Prover steps counted:  7240
+
+  The value of the form (last-prover-steps state) indicates the number
+  of prover steps taken, in the sense described below, for the most
+  recent context in which an event [summary] would normally be
+  printed.  Note that the value of (last-prover-steps state) is
+  updated for all [events], and more generally, for all forms that
+  are set up to print a [summary], such as calls of [thm] or
+  [certify-book] --- regardless of whether or not summary output is
+  inhibited (see [set-inhibit-output-lst] and see
   [set-inhibited-summary-types]).  In particular, the value is
   updated (typically to nil) for [table] [events], even when no
   summary is printed; for example, the value is updated to nil for
@@ -55837,19 +55901,45 @@ About Guard Verification of Lambda Objects
   The value of (last-prover-steps state) is determined as follows,
   based on the most recent summary context (as described above):
 
-      nil, if no prover steps were taken; else,
+      nil, if no prover steps were taken, e.g., with (thm (equal x x));
+      else,
 
       the (positive) number of steps taken, if the number of steps did not
       exceed the starting limit; else,
 
       the negative of the starting limit.
 
-  We conclude with a remark for advanced users who wish to invoke
+  Note that the ``most recently completed event'' in this sense
+  includes compound events.  Consider the following example.
+
+    (progn (thm (equal (append (append x y) z) (append x y z)))
+           (thm (equal (car (cons x y)) x)))
+
+  The summaries show (in some ACL2 versions, at least) 435 steps for
+  the first call of thm and 7 steps for the second call of thm, with
+  442 steps thus shown in the summary for the entire progn call.
+  Subsequent evaluation of (last-prover-steps state) returns 442.  On
+  the other hand, suppose that (set-prover-step-limit 440) is
+  evaluated immediately before evaluating the progn call above.  Then
+  the summaries show the following for the two thm calls and the
+  progn call, in order as follows.
+
+    Prover steps counted:  435
+    Prover steps counted:  More than 5
+    Prover steps counted:  More than 440
+
+  Since the most recently completed event is the progn call, then
+  (last-prover-steps state) returns -440.
+
+  We conclude with two remarks for advanced users who wish to invoke
   last-prover-steps in the development of utilities that track prover
-  steps.  Suppose that you want to write a utility that takes some
+  steps.
+
+  Remark 1.  Suppose that you want to write a utility that takes some
   action based on the number of prover steps performed by the first
-  defun event that is generated, among others, for example the number
-  of prover steps taken to admit f1 in the following example.
+  event that is generated within a sequence of events, for example
+  the number of prover steps taken to admit f1 in the following
+  example.
 
     (progn (defun f1 ...)
            (defun f2 ...))
@@ -55862,7 +55952,14 @@ About Guard Verification of Lambda Objects
                                              (last-prover-steps state)
                                              state)
                                (value '(value-triple nil))))
-           (defun f2 ...))")
+           (defun f2 ...))
+
+  Remark 2.  It is possible to write utilities that are treated as
+  [events] for purposes of the discussion above; that is, their calls
+  can be followed by evaluating (last-prover-steps state) as
+  described above.  For an example of how to do this using the ACL2
+  system macro with-ctx-summarized, see the implementation of
+  [prove$] in [community-book] books/tools/prove-dollar.lisp.")
  (LD
   (MISCELLANEOUS)
   "The ACL2 read-eval-print loop, file loader, and [command] processor
@@ -55882,6 +55979,9 @@ About Guard Verification of Lambda Objects
         :standard-co        ...      ; open char out or file to open and close
         :proofs-co          ...      ; open char out or file to open and close
         :current-package    ...      ; known package name
+        :useless-runes      ...      ; :write/:read/:read?/n/-n/nil
+                                     ;   (-100 < n < 0 or 0 < n <= 100)
+                                     ;   (see [useless-runes])
         :ld-skip-proofsp    ...      ; nil, 'include-book, or t
                                      ;   (see [ld-skip-proofsp])
         :ld-redefinition-action ...  ; nil or '(:a . :b)
@@ -55918,9 +56018,11 @@ About Guard Verification of Lambda Objects
   ``binds'' these variables.  By ``binds'' we actually mean the
   variables are globally set but restored to their old values on
   exit.  Because ld provides the illusion of [state] global variables
-  being bound, they are called ``ld specials'' (after the Lisp
-  convention of calling a variable ``special'' if it is referenced
-  freely after having been bound).
+  being bound, they are generally called ``ld specials'' (after the
+  Lisp convention of calling a variable ``special'' if it is
+  referenced freely after having been bound).  (We say ``generally''
+  because technically, current-package and useless-runes are not
+  considered to be ld specials.)
 
   Note that all arguments but the first are passed via keyword.  Any
   variable not explicitly given a value in a call retains its
@@ -55945,7 +56047,7 @@ About Guard Verification of Lambda Objects
   However, ld has many bells and whistles controlled by the ld
   specials.  Each such special is documented individually.  For
   example, see the documentation for [standard-oi],
-  [current-package], [ld-pre-eval-print], etc.
+  [current-package], [useless-runes], [ld-pre-eval-print], etc.
 
   A more precise description of ld is as follows.  In the description
   below we use the ld specials as variables, e.g., we say ``a form is
@@ -56512,6 +56614,9 @@ Subtopics
           is no change; but if h has length 10, then it is to be
           replaced by (take 7 h) and the length will actually thus be
           8 after the current command completes.
+
+  Note that a call of adjust-ld-history is not an [event] that can be
+  placed directly in [books] or [encapsulate] forms.
 
   Remark.  If (adjust-ld-history n state) is evaluated while in
   multiple-entry mode, where n is a positive integer less than the
@@ -60445,9 +60550,11 @@ Introduction to loop$
   The documentation for [apply$] illustrates a simple defun that is
   inadmissible because the measure theorem cannot be proved without a
   warrant and warrants cannot be assumed during the proofs of the
-  measure conjectures.  The same issue arises for a loop$ when
-  user-defined functions are involved critically in measure
-  conjectures.  We hope to address this issue in the future.
+  measure conjectures.  The same issue arises when one of the
+  functions critically involved in a measure conjecture is defined
+  using a loop$ whose body involves a user-defined function.  For a
+  simple example of this issue and how to work around it, see
+  [community-book] books/demos/measure-and-warrant.lisp.
 
 
 Types and guards in loop$ expressions
@@ -61234,18 +61341,28 @@ Subtopics
 
   The ``lambda-list'' of a macro definition may include simple formal
   parameter names as well as appropriate uses of the following
-  lambda-list keywords from CLTL (pp. 60 and 145), respecting the
-  order shown:
+  lambda-list keywords from Common Lisp, respecting the order shown:
 
-    &whole,
-    &optional,
-    &rest,
-    &body,
-    &key, and
-    &allow-other-keys.
+    * &whole x
+      X does not represent an actual parameter; rather, it is bound to the
+      entire macro call.
+    * &optional x1 x2 ...
+      The actual for any xi may be omitted, in which case the actual for
+      every xj with j > i must also be omitted.
+    * &rest x
+      X does not represent an actual parameter; rather, it is bound to the
+      list of all actuals provided from that position onward.
+    * &body x
+      This is identical to &rest x.
+    * &key x
+      The call may have a keyword argument for x by including :x val after
+      all required actual parameters, in which case the formal x is
+      bound to the actual val.
+    * &allow-other-keys
+      Keyword arguments not specified by &key are allowed but ignored.
 
-  ACL2 does not support &aux and &environment.  In addition, we make
-  the following restrictions:
+  ACL2 does not support the Common Lisp lambda-list keywords &aux and
+  &environment.  In addition, there are the following restrictions:
 
       (1) initialization forms in &optional and &key specifiers must be
       quoted values;
@@ -61286,9 +61403,10 @@ Subtopics
     (demo 1 2 :key1 3)        error:  non-even key/value arglist
                               (because :key1 is used as opt)
 
-  In particular, Common Lisp specifies that if you use both &rest and
-  &key, then both will be bound using the same list of arguments.
-  The following example should serve to illustrate how this works.
+  In particular, Common Lisp specifies (hence so does ACL2) that if you
+  use both &rest and &key, then both will be bound using the same
+  list of arguments.  The following example should serve to
+  illustrate how this works.
 
     ACL2 !>(defmacro foo (&rest args &key k1 k2 k3)
              (list 'quote (list args k1 k2 k3)))
@@ -62100,6 +62218,28 @@ Examples Illustrating How to Access State
     >L            (DEFUN FOO (X) (CONS X 72271))
     ACL2 !>
 
+  Because make-event creates [event] forms that can go into [books] and
+  [encapsulate] events, you can use make-event forms such as those
+  above to modify the ACL2 [state] using books and encapsulate
+  events.  The most common way to do this is for the make-event
+  expansion to be a trivial event form such as (value-triple nil),
+  such as the following.
+
+    (make-event (er-progn (assign my-list-of-10 (make-list 10))
+                          (value '(value-triple nil))))
+
+  The desired effect will take place during calls of [certify-book],
+  but it will generally not take place during [include-book] on a
+  certified book because the expansion is evaluated (it is stored in
+  the book's [certificate] for this purpose), but the expansion is
+  merely (value-triple nil).  To ensure that the original make-event
+  call is evaluated even when including the book, use
+  :check-expansion t, for example as follows.
+
+    (make-event (er-progn (assign my-list-of-10 (make-list 10))
+                          (value '(value-triple nil)))
+                :check-expansion t)
+
   Note that ACL2 [table] [events] may avoid the need to use [state]
   globals.  For example, instead of the example above, consider this
   example in a new session.
@@ -62123,9 +62263,11 @@ Examples Illustrating How to Access State
   state global (like my-global above) can be set during expansion,
   then the new value will persist.  But that persistence will fail
   for many state globals, specifically, those that are stored in the
-  list, *protected-system-state-globals*.  We advice users not to
+  list, *protected-system-state-globals*.  We advise users not to
   assume that system state modifications, such as the state of
-  guard-checking, will persist after executing a make-event form.
+  guard-checking, will persist after executing a make-event form;
+  persistence depends on the relevant state globals not being in the
+  list, *protected-system-state-globals*.
 
   That advice may suffice for most users.  But if you want to
   understand the point above more deeply, then consider the following
@@ -63413,6 +63555,8 @@ Subtopics
          maximum-length (name l)
          (declare (xargs :guard (or (array1p name l) (array2p name l))))
          (cadr (assoc-keyword :maximum-length (cdr (header name l)))))")
+ (MAYBE-CONVERT-TO-MV (POINTERS)
+                      "See [system-utilities].")
  (MAYBE-FLUSH-AND-COMPRESS1
   (ARRAYS ACL2-BUILT-INS)
   "Compress a one-dimensional array only if necessary
@@ -66698,6 +66842,8 @@ Subtopics
   (EVENTS PROGRAMMING DEFUN)
   "Define some mutually recursive functions
 
+  See [defun] for relevant background.
+
     Example:
     (mutual-recursion
      (defun evenlp (x)
@@ -66728,6 +66874,29 @@ Subtopics
   can put them in the [xargs] declaration of any of the [defun]
   forms, as the :[hints] from each form will be appended together, as
   will the :[guard-hints] from each form.
+
+  However, for the following [xargs] declarations, listed
+  alphabetically, it is illegal to specify more than one value,
+  though it is legal to specify the same value more than once.
+
+    :GUARD-DEBUG
+    :GUARD-SIMPLIFY
+    :LOOP$-RECURSION
+    :MEASURE-DEBUG
+    :MODE
+    :NON-EXECUTABLE
+    :NORMALIZE
+    :OTF-FLG
+    :SPLIT-TYPES
+    :VERIFY-GUARDS
+    :WELL-FOUNDED-RELATION
+
+  Thus, for example, you may specify :guard-debug t in two different
+  defun forms in your mutual-recursion call, in which case the
+  [guard-debug] feature will be active; but you must not specify
+  :guard-debug t in one defun but :guard-debug nil in another.  It
+  suffices to specify such a value once, as that will apply
+  throughout analysis of the mutual-recursion form.
 
   You may find it helpful to use a lexicographic order, the idea being
   to have a measure that returns a list of two arguments, where the
@@ -67016,8 +67185,7 @@ Subtopics
   expression that returns k results, where k is the number of local
   variables listed.  Often however it is simply the application of a
   k-valued function.  Mv-let is the standard way to invoke a
-  multi-valued function when the caller must manipulate the vector of
-  results returned.
+  multi-valued function and then manipulate the values returned.
 
     General Form:
     (mv-let (var1 ... vark)
@@ -67171,23 +67339,40 @@ Subtopics
   Mv-nth is equivalent to the Common Lisp function [nth] (although
   without the guard condition that the list is a [true-listp]), but
   is used by ACL2 to access the nth value returned by a multiply
-  valued expression.  For example, the following are logically
-  equivalent:
+  valued expression.  So, if you do proofs about functions that
+  involve [mv-let], you may see calls of mv-nth in the prover output.
+  For example, the following are logically equivalent:
+
+    (mv-let (n1 n2)
+            (mv (+ x y) (* x y))
+            (- n1 n2))
+
+    (let ((var (list (+ x y) (* x y))))
+      (let ((n1 (mv-nth 0 var))
+            (n2 (mv-nth 1 var)))
+        (- n1 n2)))
+
+  Here is a similar such example involving the ACL2 [state].  The
+  following two forms are logically equivalent, but the second is
+  only legal in contexts such as theorems (and proofs) rather than
+  function definitions, since it violates single-threadedness
+  restrictions (more on this below; also see [state] and see
+  [stobj]).
 
     (mv-let (erp val state)
             (read-object ch state)
             (value (list erp val)))
-
-  and
 
     (let ((erp (mv-nth 0 (read-object ch state)))
           (val (mv-nth 1 (read-object ch state)))
           (state (mv-nth 2 (read-object ch state))))
       (value (list erp val)))
 
-  To see the ACL2 definition of mv-nth, see [pf].
+  Mv-nth is given some special treatment by the prover.  To control
+  that behavior see [theories-and-primitives].
 
-  If EXPR is an expression that is multiply valued, then the form
+  Finally, we elaborate on the single-threadedness issue above.  If
+  EXPR is an expression that is multiply valued, then the form
   (mv-nth n EXPR) is illegal both in definitions and in forms
   submitted directly to the ACL2 loop.  Indeed, EXPR cannot be passed
   as an argument to any function (mv-nth or otherwise) in such an
@@ -67195,14 +67380,24 @@ Subtopics
   execution does not actually create a list for multiple value
   return; for example, the read-object call above logically returns a
   list of length 3, but when evaluated, it instead stores its three
-  returned values without constructing a list.  In such cases you can
-  use mv-nth to access the corresponding list by using mv-list,
-  writing (mv-nth n (mv-list k EXPR)) for suitable k, where mv-list
-  converts a multiple value result into the corresponding list; see
-  [mv-list].
+  returned values without constructing a list.  The upshot is that it
+  is generally best not to call mv-nth directly, but rather to use
+  [mv-let], which generates mv-nth calls for reasoning but not for
+  Lisp evaluation.  However, if you really want to use mv-nth
+  directly to access a multiply-valued result, then --- at the cost
+  of computational efficiency --- you can use [mv-list], writing
+  (mv-nth n (mv-list k EXPR)) for suitable k, where mv-list converts
+  a multiple value result into the corresponding list; see [mv-list].
 
-  Mv-nth is given some special treatment by the prover.  To control
-  that behavior see [theories-and-primitives].")
+  Function: <mv-nth>
+
+    (defun mv-nth (n l)
+           (declare (xargs :guard (and (integerp n) (>= n 0))))
+           (if (atom l)
+               nil
+               (if (zp n)
+                   (car l)
+                   (mv-nth (- n 1) (cdr l)))))")
  (MV?
   (MV ACL2-BUILT-INS)
   "Return one or more values
@@ -90001,6 +90196,25 @@ Changes to Existing Features
       illegal.  The value NIL continues to be appropriate for
       avoiding simplification.
 
+  Improved [untranslate] so that when untranslating a translated
+  [term], an attempt is made to call [mv] where appropriate.  Thanks
+  to Alessandro Coglio and Eric Smith for requesting this
+  enhancement.  The improvement also restores type declarations under
+  [let], [let*], and [mv-let] (see [declare] and [type-spec]); and it
+  also restores [ignore] declarations in [let] and [let*] forms,
+  where previously that was only the case for [mv-let] forms.  In
+  addition, a new utility, [maybe-convert-to-mv], may be called
+  explicitly to convert an untranslated term to one that calls mv in
+  leaves reached via transversal of the true and false branches of
+  its top-level IF tree, where the traversal appropriately passes
+  through [let], [let*], and [mv-let] forms, as well as calls of
+  [prog2$], [mbe], [mbt], [ec-call], [time$], and a few other macros
+  related to [return-last] as well as return-last itself.  See
+  examples under a comment about ``preserving executability'' in the
+  [community-book], books/system/tests/untranslate.lisp.  (Note: The
+  changes also include a bug fix that avoids generating an [mv-let]
+  expression when there are fewer than two bound variables.)
+
 
 New Features
 
@@ -90060,6 +90274,26 @@ New Features
   input/output history.  Thanks to Eric Smith for requesting this
   feature.
 
+  The [ld] utility accepts a new keyword argument, :useless-runes,
+  which functions much the same as does the :useless-runes keyword
+  argument of [certify-book].  See [useless-runes].  Thanks to Eric
+  Smith for requesting this feature (which may have been requested
+  previously as well).
+
+  A new [event], [set-inhibit-er-soft], allows the user to turn off
+  error output of various types.  The related utility
+  [toggle-inhibit-er-soft] can turn on or off a single type of error
+  output.  Non-[local] versions of these utilities are
+  [set-inhibit-er-soft!] and [toggle-inhibit-er-soft!].  Many error
+  messages cannot yet be controlled this way, but this may be
+  remedied somewhat with community feedback.  Thanks to Eric Smith
+  for a request to inhibit step-limit error output, which led to this
+  enhancement.
+
+  The functions [l<], lexp, and d<, originally defined in
+  [community-book] books/ordinals/lexicographic-book.lisp, are now
+  built into ACL2.
+
 
 Heuristic and Efficiency Improvements
 
@@ -90095,6 +90329,10 @@ Bug Fixes
   event while including a book.  This has been fixed, by arranging
   that a defwarrant event always expands to the same [encapsulate]
   form.
+
+  An assertion error was fixed, occurring with a call of [certify-book]
+  when the value of environment variable \"ACL2_USELESS_RUNES\" was
+  (erroneously) \"0\".
 
 
 Changes at the System Level
@@ -95052,6 +95290,9 @@ Subtopics
   [Match-free]
       See [free-variables].
 
+  [Maybe-convert-to-mv]
+      See [system-utilities].
+
   [Measure-theorem]
       See [termination-theorem].
 
@@ -97502,7 +97743,7 @@ Remarks
       (prog2$
        (or (good-car-p (car x))
            (hard-error 'foo-a
-                       \"Bad value for x: ~p0\"
+                       \"Bad value for x: ~x0\"
                        (list (cons #\\0 x))))
        (bar x)))
 
@@ -97516,7 +97757,7 @@ Remarks
       (prog2$
        (or (good-car-p (car x))
            (illegal 'foo-b
-                    \"Bad value for x: ~p0\"
+                    \"Bad value for x: ~x0\"
                     (list (cons #\\0 x))))
        (bar x)))
 
@@ -97785,7 +98026,7 @@ Subtopics
 Subtopics
 
   [Program-wrapper]
-      Avoiding expensive guard checks using [program]-mode functions")
+      Avoiding expensive [guard] checks using [program]-mode functions")
  (PROGRAM-ONLY
   (GUARD)
   "Functions that cannot be in [logic] mode
@@ -97804,19 +98045,29 @@ Subtopics
   See [safe-mode-cheat-sheet] for possible workarounds.")
  (PROGRAM-WRAPPER
   (PROGRAM PROGRAMMING ADVANCED-FEATURES)
-  "Avoiding expensive guard checks using [program]-mode functions
+  "Avoiding expensive [guard] checks using [program]-mode functions
 
-  Application programs can benefit from the avoidance of expensive
-  [guard] checks, as illustrated by the following contrived example.
-  In this example, imagine that expensive-guard is a [guard] that is
-  expensive to evaluate, and that expensive-update is a function that
-  you want to run in a context where you know the guard is true, so
-  you want to avoid the expense of evaluating that guard.  Then when
-  you call expensive-update-wrapper, the call will be evaluated
-  directly in raw Lisp, hence without any subsidiary guard-checking
-  for the function expensive-update.
+  Application programs can benefit from avoiding expensive [guard]
+  checks.  Imagine that expensive-guard-fn is a function whose calls
+  may be slow to evaluate, and that expensive-fn is a function whose
+  guard calls expensive-guard-fn.  So, when you call expensive-fn at
+  the top level, whether directly in the ACL2 read-eval-print loop or
+  during [make-event] expansion, the guard check may be slow.  If you
+  are confident that the guard check will pass, you may thus prefer
+  to avoid it.
 
-    (defun fib (n)
+  The following contrived example shows how to avoid that guard check
+  by using a program-mode wrapper: a function in [program] mode that
+  calls the intended function directly.  The example below
+  illustrates that idea by defining expensive-fn-wrapper as a
+  program-mode wrapper for expensive-fn.  That wrapper has a
+  computationally inexpensive guard, typically t, which avoids any
+  expensive guard check: after the inexpensive guard check, the
+  remaining computation takes place using raw Lisp computation, which
+  doesn't do any guard checking.  (See [evaluation] for relevant
+  background.)
+
+    (defun fib (n) ; Fibonacci function, just for an example of slow computation
       (declare (xargs :guard (natp n)))
       (if (zp n)
           0
@@ -97825,27 +98076,57 @@ Subtopics
           (+ (fib (- n 1))
              (fib (- n 2))))))
 
-    (defun expensive-guard (n)
+    (defun expensive-guard-fn (n)
       (declare (xargs :guard t))
       (and (natp n)
            (natp (fib n))))
 
-    (defstobj st (fld :type integer :initially 0))
+    (defun expensive-fn (n)
+      (declare (xargs :guard (expensive-guard-fn n)))
+      (* 2 n))
 
-    (defun expensive-update (n st)
-      (declare (xargs :stobjs st
-                      :guard (expensive-guard n)))
-      (update-fld n st))
+    ; The following may take about a second, virtually all in the guard check.
+    (time$ (expensive-fn 40))
 
-    (defun expensive-update-wrapper (n st)
-      (declare (xargs :stobjs st :mode :program))
-      (expensive-update n st))
+    (defun expensive-fn-wrapper (n)
+      (declare (xargs :mode :program))
+      (expensive-fn n))
 
-  Remark.  The example was chosen to illustrates an additional point:
-  if you evaluate (for example) the form (expensive-update-wrapper 3
-  st), you will see an \"Invariant-risk\" warning, which could indicate
-  extra checks that slow down evaluation.  This might not be a
-  significant issue in practice.  See [invariant-risk].")
+    ; The following is virtually instantaneous.
+    (time$ (expensive-fn-wrapper 40))
+
+  This trick isn't necessary if your function call is made on behalf of
+  a superior call of a function that is guard-verified (or in program
+  mode, since that essentially brings us back to the wrapper
+  situation).  Consider the following definition, building on the
+  example above.
+
+    (defun f (n)
+      (declare (xargs :guard (natp n)))
+      (expensive-fn n))
+
+    ; The following is virtually instantaneous.
+    (time$ (f 40))
+
+  Then evaluation of (f 40) is virtually instantaneous, for the same
+  reason that evaluation of (expensive-fn-wrapper 40) is virtually
+  instantaneous: after the top-level guard check passes, the rest of
+  the computation takes place without guard checks.  Note however
+  that if we change the definition by removing guard verification,
+  then the trick is once again helpful, as shown by continuing the
+  examples above.
+
+    ; Define a logic-mode function that is not guard-verified:
+    (defun g (n)
+      (expensive-fn n))
+
+    ; The following may take about a second, virtually all in the guard check.
+    (time$ (g 40))
+
+  Remark.  This trick may be less effective if you see an
+  \"Invariant-risk\" warning, which prevents computation from taking
+  place within raw Lisp, thus avoiding guard checks; see
+  [invariant-risk].")
  (PROGRAMMING
   (ACL2)
   "Programming in ACL2
@@ -97984,7 +98265,7 @@ Subtopics
       Primitive functions built into ACL2 without definitions
 
   [Program-wrapper]
-      Avoiding expensive guard checks using [program]-mode functions
+      Avoiding expensive [guard] checks using [program]-mode functions
 
   [Programming-with-state]
       Programming using the von Neumannesque ACL2 [state] object
@@ -98480,6 +98761,12 @@ Subtopics
   only functions set-w and set-w! are available to write the world,
   but these are untouchable and should generally be avoided except by
   system implementors (see [remove-untouchable]).
+
+  You may wish to modify state globals within a book, but this can be
+  slightly problematic because only legal event forms (see
+  [embedded-event-form]) may go into [books].  Fortunately there is a
+  workaround using make-event; see [make-event], in particular the
+  section ``Examples Illustrating How to Access State''.
 
   A REMARK ON GUARDS
 
@@ -100507,6 +100794,12 @@ Subtopics
   [Set-gag-mode]
       Modify the nature of proof output
 
+  [Set-inhibit-er-soft]
+      Control the error output
+
+  [Set-inhibit-er-soft!]
+      Control error output non-[local]ly
+
   [Set-inhibit-output-lst]
       Control output
 
@@ -100533,6 +100826,12 @@ Subtopics
 
   [Summary]
       The summary printed at the conclusion of an event
+
+  [Toggle-inhibit-er-soft]
+      Add or delete an error output string from the inhibit-er-soft-table
+
+  [Toggle-inhibit-er-soft!]
+      Toggle an inhibit-er-soft-table entry non-[local]ly
 
   [Toggle-inhibit-warning]
       Add or delete a warning string from the inhibit-warnings-table
@@ -105275,11 +105574,11 @@ Subtopics
     (reset-ld-specials nil)
 
   Roughly speaking, the [ld] specials are certain [state] global
-  variables, such as [current-package], [ld-prompt], and
-  [ld-pre-eval-filter], which are managed by [ld] as though they were
-  local variables.  These variables determine the channels on which
-  [ld] reads and prints and control many options of [ld].  See [ld]
-  for the details on what the [ld] specials are.
+  variables, such as [ld-prompt] and [ld-pre-eval-filter], which are
+  managed by [ld] as though they were local variables.  These
+  variables determine the channels on which [ld] reads and prints and
+  control many options of [ld].  See [ld] for the details on what the
+  [ld] specials are.
 
   This function, reset-ld-specials, takes one Boolean argument, flg.
   The function resets all of the [ld] specials to their initial,
@@ -110868,6 +111167,96 @@ Example
   [set-induction-depth-limit] is to be preferred unless you have a
   good reason for wanting to export the effect of this event outside
   the enclosing [encapsulate] or book.")
+ (SET-INHIBIT-ER-SOFT
+  (PROVER-OUTPUT ERRORS)
+  "Control the error output
+
+    Examples:
+    (set-inhibit-er-soft \"translate\" \"failure\")
+
+  Note: This is an event!  It does not print the usual event [summary]
+  but nevertheless changes the ACL2 logical [world] and is so
+  recorded.  It is [local] to the book or [encapsulate] form in which
+  it occurs; see [set-inhibit-er-soft!] for a corresponding
+  non-[local] event.  Indeed, (set-inhibit-er-soft ...) is equivalent
+  to (local (set-inhibit-er-soft! ...)).
+
+    General Form:
+    (set-inhibit-er-soft string1 string2 ...)
+
+  where each string is considered without regard to case.  This macro
+  is is essentially (local (table inhibit-er-soft-table nil 'alist
+  :clear)), where alist pairs each supplied string with nil: that is,
+  alist is (pairlis$ lst nil) where lst is the list of strings
+  supplied.  This macro is an event (see [table]), but no output
+  results from a set-inhibit-er-soft event.
+
+  ACL2 prints errors that are generally important to see.  This utility
+  is appropriate for situations where one prefers not to see all
+  error messages.  to.  Individual ``labeled'' error output can be
+  silenced.  Consider for example
+
+    ACL2 Error [Failure] in ( DEFUN FOO ...):  See :DOC failure.
+
+  Here, the label is \"Failure\".  The argument list for
+  set-inhibit-er-soft is a list of such labels, each of which is a
+  string.  Any error message is suppressed if its label is a member
+  of this list, where case is ignored.  Thus, for example, the error
+  output above will be avoided after a call of set-inhibit-er-soft
+  that contains the string, \"Failure\" (or any string that is
+  [string-equal] to \"Failure\", such as \"failure\" or \"FAILURE\").  In
+  summary: the effect of this event is to suppress any error output
+  whose label is a member of the given argument list, where case is
+  ignored.
+
+  At this time, many error messages are printed without a label, for
+  example (as of this writing) the following.
+
+    ACL2 !>(+ x 3)
+
+
+    ACL2 Error in TOP-LEVEL:  Global variables, such as X, are not allowed.
+    See :DOC ASSIGN and :DOC @.
+
+    ACL2 !>
+
+  These can only be suppressed by turning off all error output; see
+  [set-inhibit-output-lst].  Feel free to ask the ACL2 implementors
+  to add labels; for example, you might ask for a label in the
+  example above (which could be \"Globals\" or \"Global-variables\").
+
+  Remarks.
+
+    * Only so-called ``soft'' errors may have labels, not ``hard'' errors.
+      Hard errors can be identified by the use of ``HARD'' at the
+      start of the error message, for example as follows.
+
+          HARD ACL2 ERROR in SET-GAG-MODE:  Unknown set-gag-mode argument, ABC
+
+    * Set-inhibit-er-soft has no effect on the value(s) returned by an
+      expression (excepting the ACL2 [state] in that it formally
+      includes output).
+
+  The list of currently inhibited error types is the list of keys in
+  the [table] named inhibit-er-soft-table.  (The values in the table
+  are irrelevant.)  One way to get that value is to get the result
+  from evaluating the following form: (table-alist
+  'inhibit-er-soft-table (w state)).  Of course, if error output is
+  inhibited overall --- see [set-inhibit-output-lst] --- then this
+  value is entirely irrelevant.
+
+  See [toggle-inhibit-er-soft] for a way to add or remove a single
+  string.")
+ (SET-INHIBIT-ER-SOFT!
+  (PROVER-OUTPUT ERRORS)
+  "Control error output non-[local]ly
+
+  Please see [set-inhibit-er-soft], which is the same as
+  set-inhibit-er-soft! except that the latter is not [local] to the
+  [encapsulate] or the book in which it occurs.  Probably
+  [set-inhibit-er-soft] is to be preferred unless you have a good
+  reason for wanting to export the effect of this event outside the
+  enclosing [encapsulate] or book.")
  (SET-INHIBIT-OUTPUT-LST
   (PROVER-OUTPUT)
   "Control output
@@ -110910,9 +111299,10 @@ Example
   [set-gag-mode].
 
   See [with-output] for a variant of this utility that can be used in
-  [books].  Also see [set-inhibit-warnings] for how to inhibit
-  individual warning types and see [set-inhibited-summary-types] for
-  how to inhibit individual parts of the [summary].
+  [books].  Also see [set-inhibit-warnings] and [set-inhibit-er-soft]
+  for how to inhibit individual warning and error output types,
+  respectively, and see [set-inhibited-summary-types] for how to
+  inhibit individual parts of the [summary].
 
   Printing of events on behalf of [certify-book] and [encapsulate] is
   inhibited when both 'event and 'prove belong to lst.  Otherwise,
@@ -111834,7 +112224,7 @@ Example
 
   The ACL2 user can expect that the :downcase setting will have an
   effect for formatted output (see [fmt] and see [fms]) when the
-  directives are ~p, ~P, ~q, or ~Q, for built-in functions princ$ and
+  directives are ~x, ~X, ~y, or ~Y, for built-in functions princ$ and
   prin1$, and the ppr family of functions, and not for built-in
   function print-object$.  For other printing functions, the effect
   of :downcase is unspecified.
@@ -119121,6 +119511,9 @@ List of a few built-in system utilities
       formals, because lambdas must be closed in ACL2.  A similar
       function is make-lambda-application, but that one drops unused
       formals, while make-lambda-term does not.
+    * (maybe-convert-to-mv uterm): Given the untranslated [term] uterm,
+      replace each of its top-level calls of [list] by a call oof
+      [mv] on the same arguments.
     * (nvariablep x): For a [pseudo-termp] x, return true iff x is not a
       variable (i.e. it is a quoted constant or a function call).
     * (partition-rest-and-keyword-args x keys): x should be a list of the
@@ -124038,6 +124431,39 @@ Subtopics
   generalization, and elimination of irrelevance).  For example, you
   don't need to worry about prover output that mentions ``type
   reasoning'' or ``abbreviations,'' for example.")
+ (TOGGLE-INHIBIT-ER-SOFT
+  (PROVER-OUTPUT ERRORS)
+  "Add or delete an error output string from the inhibit-er-soft-table
+
+  See [set-inhibit-er-soft] for relevant background.
+
+    General Form:
+    (toggle-inhibit-er-soft string)
+
+  where string is the name of some error output like \"Translate\" or
+  \"Failure\".
+
+  Note: This is an event!  It does not print the usual event [summary]
+  but nevertheless changes the ACL2 logical [world] and is so
+  recorded.  It is [local] to the book or [encapsulate] form in which
+  it occurs; see [toggle-inhibit-er-soft!] for a corresponding
+  non-[local] event.  Indeed, (toggle-inhibit-er-soft str) is
+  equivalent to (local (toggle-inhibit-er-soft! str)).
+
+  The given string is added to the list of strings used for inhibiting
+  error output if it is not there already and is deleted from the
+  list if it is there.  Case is unimportant in string.  See
+  [set-inhibit-er-soft].")
+ (TOGGLE-INHIBIT-ER-SOFT!
+  (PROVER-OUTPUT ERRORS)
+  "Toggle an inhibit-er-soft-table entry non-[local]ly
+
+  Please see [toggle-inhibit-er-soft], which is the same as
+  toggle-inhibit-er-soft! except that the latter is not [local] to
+  the [encapsulate] or the book in which it occurs.  Probably
+  [toggle-inhibit-er-soft] is to be preferred unless you have a good
+  reason for wanting to export the effect of this event outside the
+  enclosing [encapsulate] or book.")
  (TOGGLE-INHIBIT-WARNING
   (PROVER-OUTPUT)
   "Add or delete a warning string from the inhibit-warnings-table
@@ -128462,9 +128888,11 @@ Subtopics
   (CERTIFY-BOOK ACCUMULATED-PERSISTENCE)
   "Speed up proofs by disabling useless [rune]s
 
-  This topic documents the :useless-runes option for [certify-book],
-  which makes it possible to speed up repeated certification of a
-  book.  This option is ignored in ACL2(r).
+  This topic documents the :useless-runes keyword argument of
+  [certify-book] and [ld], which makes it possible to speed up
+  repeated running of a book's [events].  This option is ignored in
+  ACL2(r) (see [real]) and, when [waterfall-parallelism] is active,
+  in ACL2(p) (see [parallelism]).
 
 
 Introduction
@@ -128472,9 +128900,16 @@ Introduction
   For a given [event], the so-called ``useless'' rules are those that
   do not contribute to the progress of any proof supporting that
   event.  For more background see [accumulated-persistence], which is
-  typically used for finding rules to [disable] during proofs.  The
-  feature described in the present topic provides automation for the
-  discovery and effective disabling of useless rules.
+  typically used for finding rules (or more precisely, [rune]s) to
+  [disable] during proofs.  The feature described in the present
+  topic provides automation for the discovery and effective disabling
+  of useless rules.
+
+  Below, we focus first on the use of :useless-runes for [certify-book]
+  rather than for [ld].  The main time to use this option with [ld]
+  may be when developing a book that is to be certified eventually
+  with a :useless-runes option.  We return to discuss ld later in
+  this topic (in Section ``Modifications for [ld]'').
 
   To use the :useless-runes option of [certify-book], first certify
   your book --- say, foo.lisp --- by supplying option :useless-runes
@@ -128482,7 +128917,7 @@ Introduction
   directory, creating that directory if it does not already exist.
   This new file, .sys/foo@useless-runes.lsp, associates names of
   [defthm], [defun], and [verify-guards] [events] with sets of
-  ``useless'' [rune]s'': rule names (``runes'') not contributing to
+  ``useless'' [rune]s'': rule names (``[rune]s'') not contributing to
   the progress of the proof.  Then, future certifications can use
   option :useless-runes :read --- or some limited variations of :read
   using numeric values, as discussed below) --- which, during
@@ -128492,32 +128927,34 @@ Introduction
   Environment variable ACL2_USELESS_RUNES can take the value \"write\" or
   \"read\" to be used in place of the :useless-runes option :read or
   :write (respectively) of certify-book.  ACL2_USELESS_RUNES can also
-  take on the numeric values permitted for the :useless-runes option
-  of [certify-book].  This is all discussed below.
+  have value \"nil\" (case-insensitive) or a string representing a
+  legal numeric value for the :useless-runes option of
+  [certify-book].  This is all discussed below.
 
-  By default, certification of the [community-books], using make as
-  laid out in documentation topic [books-certification], and
-  certification using [build::cert.pl], are both performed with
-  ACL2_USELESS_RUNES=-25.  This setting, for each book foo.lisp,
-  causes part of the corresponding .sys/foo@useless-runes.lsp, if it
-  exists, to be consulted (as described below).  This default
-  behavior is only for ACL2 and ACL2(p) (see [parallelism]), but not
-  for ACL2(r) (see [real]).
+  By default, certification of the [community-books], when using either
+  make (as described elsewhere; see [books-certification]) or
+  [build::cert.pl], is performed with environment variable
+  ACL2_USELESS_RUNES set to \"-25\".  This setting, for each book
+  foo.lisp, causes part of the corresponding file
+  .sys/foo@useless-runes.lsp, if it exists, to be consulted as
+  described below.  However, useless runes are entirely ignored (both
+  their use and for writing to .sys/foo@useless-runes.lsp files) both
+  in ACL2(r) (see [real]) and, when [waterfall-parallelism] is
+  active, in ACL2(p) (see [parallelism]).
 
 
 Detailed Documentation
 
-  Again, the :useless-runes option of [certify-book] provides a way to
-  automate discovery and, in future certifications, disabling of
-  useless runes (as described above), which can speed up proofs.
-  Information about useless runes is communicated using a file, which
-  we call the ``@useless-runes.lsp file'' (or, sometimes,
-  ``useless-runes file''a), whose name is obtained by adding the
+  Again, the :useless-runes option provides a way to automate discovery
+  and, in subsequent uses, disabling of useless runes that can speed
+  up proofs.  Information about useless runes is communicated using a
+  file, which we call the ``@useless-runes.lsp file'' (or, sometimes,
+  ``useless-runes file''), whose name is obtained by adding the
   suffix \"@useless-runes.lsp\" to the book name, and which is placed
   in the .sys subdirectory of the book's directory, after creating
   that subdirectory if it does not already exist.  For example, if
-  the book's file is foo.lisp then the corresponding
-  @useless-runes.lsp file is .sys/foo@useless-runes.lsp.
+  the book's filename is \"foo.lisp\" then the corresponding
+  @useless-runes.lsp has filename \".sys/foo@useless-runes.lsp\".
 
   The following table summarizes the legal values for the option
   :useless-runes; further explanation follows.
@@ -128528,16 +128965,15 @@ Detailed Documentation
     N, -N    ; N is a positive integer not exceeding 100.  Then |N|% of the rules
              ;   indicated by the @useless-runes.lsp file are to be kept disabled.
              ;   The @useless-runes.lsp file needs to exist for N but not for -N.
-    nil      ; Certify without reading or writing the @useless-runes.lsp file.
+    nil      ; Do not read or write the @useless-runes.lsp file.
 
   Notice in particular that :useless-runes 100 is equivalent to
   :useless-runes :read, while :useless-runes -100 is equivalent to
   :useless-runes :read?.
 
-  When certify-book is supplied with option :useless-runes :write, the
-  result is to write out a corresponding @useless-runes.lsp file.
-  Each top-level entry of this file that is non-trivial (see below)
-  has the form
+  The option :useless-runes :write directs that a corresponding
+  @useless-runes.lsp file is to be written.  Each top-level entry of
+  this file that is non-trivial (see below) has the form
 
     (name
      (frames-1 tries-1 rune-1)
@@ -128565,11 +129001,11 @@ Detailed Documentation
   name, and each tuple is on a single line starting in column 1
   (i.e., after a single space), as is the final right parenthesis.
 
-  When certify-book is supplied with option :useless-runes :read or
-  :useless-runes :read?, then book certification takes advantage of
-  the existing @useless-runes.lsp file, if it exists.  If that file
-  does not exist, an error is caused when the option value is :read
-  but the option is simply ignored when the option value is :read?.
+  The option :useless-runes :read or :useless-runes :read? directs use
+  of the corresponding @useless-runes.lsp file, if it exists.  If
+  that file does not exist, an error is caused when the option value
+  is :read but the option is simply ignored when the option value is
+  :read?.
 
   The value of :useless-runes may also be a non-zero integer between
   -100 and 100, inclusive.  The absolute value of this number is the
@@ -128597,8 +129033,8 @@ Detailed Documentation
   :useless-runes gives the same behavior as the value :read, and the
   value -100 gives the same behavior as the value :read?.
 
-  The :useless-runes option of certify-book need not be given
-  explicitly.  Suppose that the environment variable
+  The :useless-runes option need not be given explicitly to
+  [certify-book].  Suppose that the environment variable
   ACL2_USELESS_RUNES has a non-empty value.  Then that value
   implicitly invokes the :useless-runes option as indicated by the
   following table, which shows how that environment variable value
@@ -128615,14 +129051,16 @@ Detailed Documentation
 
   Important.  An explicitly supplied :useless-runes value normally
   takes priority over the value of environment variable
-  ACL2_USELESS_RUNES.  However, the environment variable takes
-  priority if its (case insensitive) value is \"WRITE\" provided
-  :useless-runes nil is not supplied explicitly.
+  ACL2_USELESS_RUNES.  However, for certify-book the environment
+  variable takes priority if its (case insensitive) value is \"WRITE\"
+  provided :useless-runes nil is not supplied explicitly.  This
+  feature supports the use of the environment variable when using
+  make to update @useless-runes.lsp files for the community books.
 
   If you want certification to avoid reading the book's
   @useless-runes.lsp file even when this environment variable has a
-  non-empty value that specifies reading, call certify-book with
-  option :useless-runes nil.
+  non-empty value that specifies reading, use option :useless-runes
+  nil.
 
   A reason for allowing integer values, rather than only :read and
   :read?, is that the disabling of useless runes can cause a proof to
@@ -128683,13 +129121,70 @@ Subtleties
   lemmas other than the last is deleted from the book.  Then
   references to the later such lemmas will be wrong in the
   @useless-runes.lsp file.  If you run into this problem, then either
-  regenerate the @useless-runes.lsp file (e.g., by setting
-  environment variable ACL2_USELESS_RUNES to \"write\"), or give
-  distinct names to your book's lemmas, or even consider adding a
-  line like the following to a suitable .acl2 file (see
+  regenerate the @useless-runes.lsp file (e.g., using certify-book
+  with environment variable ACL2_USELESS_RUNES set to \"write\"), or
+  give distinct names to your book's lemmas, or even consider adding
+  a line like the following to a suitable .acl2 file (see
   [build::custom-certify-book-commands]).
 
     ; cert-flags: ? t :useless-runes nil
+
+
+Adaptations for [ld]
+
+  The :useless-runes keyword argument was originally developed for
+  [certify-book], and that is probably still where it is most useful.
+  But when developing or updating a book \"BK\", it may be convenient
+  to evaluate the book's [events] using (ld \"BK.lisp\" ..
+  :useless-runes ..).  In that case, it is probably a good idea to
+  run that ld command in the same certification [world] (i.e., the
+  world with the same sequence of [portcullis] commands) as will be
+  encountered when certifying the book, so that the accesses to the
+  @useless-runes.lsp will match up between the ld call and a
+  corresponding certify-book call.  The following observations may
+  help in that respect.
+
+    * If \"BK.lisp\" has previously been certified, there should be a file
+      \"BK.port\".  By executing (ld \"BK.port\"), you will put yourself
+      in the appropriate certification world (unless the book's
+      [portcullis] commands have changed since the time it was
+      certified).
+    * If your ld of the book ends prematurely in an error, then before you
+      call ld again with a :useless-runes argument, it would very
+      likely be best to back up (using :[ubt]) so that you are once
+      again in the intended certification world.
+
+  Here are a few differences between ld and certify-book with respect
+  to useless-runes.  For purposes of this discussion, let's say a
+  call of ld is ``a book-like call'' if the first argument is a
+  string ending with \".lisp\".
+
+    * Just as how certify-book consults environment variable
+      ACL2_USELESS_RUNES for an implicit value of omitted keyword
+      argument :useless-runes, a book-like call of ld consults
+      environment variable ACL2_USELESS_RUNES_LD.  For example, if
+      environment variable ACL2_USELESS_RUNES_LD has value \"50\", then
+      the call (ld \"foo.lisp\") will be treated as though it were the
+      call (ld \"foo.lisp\" :useless-runes 50).
+    * If environment variable ACL2_USELESS_RUNES_LD takes on the special
+      value \"cert\", case-insensitive, then ld will consult
+      environment variable ACL2_USELESS_RUNES just as certify-book
+      does.
+    * It is an error for a call of ld that is not book-like to have a
+      non-nil :useless-runes argument.  For a call of ld without a
+      :useless-runes argument, environment variables supply a
+      useless-runes value (as described above) only if it is a
+      book-like call.
+    * The value of keyword argument :useless-runes in a call of
+      certify-book or ld does not persist to a subsidiary call of
+      certify-book or ld.  If you want a useless-runes value to
+      persist, use environment variables.
+    * Recall that for certify-book, the environment variable takes priority
+      if its (case insensitive) value is \"write\" provided the
+      :useless-runes nil keyword argument is not supplied.  But for
+      ld, an explicit value of the :useless-runes keyword argument
+      always takes priority; environment variables, even with value
+      \"write\", do not override any such value.
 
 
 Performance
@@ -131000,15 +131495,18 @@ Subtopics
   Here we discuss how to put built-in functions into :[logic] mode.
   Since ACL2 insists that its built-in :logic mode functions are
   [guard]-verified, we actually explain how to arrange that built-in
-  :[program] mode functions become built in guard-verified :logic
+  :[program] mode functions become built-in guard-verified :logic
   mode functions.
 
-  To put a system function into :logic mode, you might first need or
-  want to modify ACL2, for example replacing (null lst) by (endp lst)
-  in a function's definition in support of the termination proof.
-  You don't need to become a system developer to do this, but see
-  [developers-guide] if you are an experienced ACL2 user and system
-  development interests you.
+  To put a system function into guard-verified :logic mode, you might
+  first need or want to modify your local copy of the ACL2 sources,
+  for example replacing (null lst) by (endp lst) in a function's
+  definition in support of the termination proof and then specifying
+  (true-listp lst) in its guard.  You don't need to become a system
+  developer to do this, but see [developers-guide] if you are an
+  experienced ACL2 user and system development interests you.
+  IMPORTANT: Eventually you will probably want to undo your changes;
+  this will be explained further below.
 
   After making such changes, build an ACL2 executable image containing
   your modified code.  The next step is typically to create a new
@@ -131022,11 +131520,17 @@ Subtopics
   books/system/top.lisp, rather than creating a new book and
   including it there.
 
-  The steps above can be done without touching the ACL2 source files.
-
-  Now it is time to modify the constant *system-verify-guards-alist*,
-  which specifies functions whose guard-verification is proved by
-  including that book.  Follow the steps below.
+  Now it is time to add entries to the value of constant
+  *system-verify-guards-alist* in your local copy of the ACL2
+  sources, which specifies functions whose guard-verification is
+  completed by including that book.  Each entry is of the form
+  (function-symbol . measure).  For example, the entry (ARITY-ALISTP
+  ACL2-COUNT ALIST) signifies that the function symbol arity-alistp
+  is to have measure (acl2-count alist), while the entry (ARGLISTP)
+  signifies that function symbol arglistp has no measure (i.e., we
+  use nil for the measure), presumably because its definition is not
+  recursive.  After you make those additions, then follow the steps
+  below.
 
    1. Build a so-called ``devel'' copy in which the functions in
       *system-verify-guards-alist* remain in :program mode.  For
@@ -131071,7 +131575,19 @@ Subtopics
           SUCCESS for check-system-events
           SUCCESS for devel-check
 
-   6. Ideally, you will finally do a normal build and regression.")
+   6. Now do a normal build and regression.
+   7. Finally, send your changes to Matt Kaufmann, with a request that they
+      be incorporated into the ACL2 sources and books.
+
+  We now return to the remark labeled ``IMPORTANT'' above: undoing your
+  changes.  This isn't necessary if you will not be using that local
+  copy of ACL2 in the future.  But otherwise you may run into
+  problems when you try to use git to merge changes into that local
+  ACL2+books copy.  One option is to throw your changes away by
+  standing in your local ACL2 directory and using the shell command:
+  git checkout -f.  But be careful --- this will throw away all your
+  work!  So you might want to wait until your changes make it into
+  the main (master) git branch.")
  (VERIFY-GUARDS-FORMULA
   (GUARD-FORMULA-UTILITIES)
   "View the guard proof obligation, without proving it
