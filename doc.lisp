@@ -77,7 +77,7 @@ Subtopics
   [defthm], [in-theory], [xargs], [state], etc., without an acl2::
   prefix.
 
-  The constant *acl2-exports* lists 1548 symbols, including most
+  The constant *acl2-exports* lists 1554 symbols, including most
   documented ACL2 system constants, functions, and macros.  You will
   typically also want to import many symbols from Common Lisp; see
   [*common-lisp-symbols-from-main-lisp-package*].
@@ -290,7 +290,7 @@ Subtopics
        eqlablep-recog equal equal-char-code
        er er-cmp er-let* er-let*-cmp er-progn
        er-progn-cmp er-progn-fn er-progn-fn@par
-       er-progn@par er-soft-logic ev$
+       er-progn@par er-soft er-soft-logic ev$
        ev$-list evenp evens event evisc-tuple
        executable-counterpart-theory
        exists exit explode-atom
@@ -415,14 +415,15 @@ Subtopics
        main-timer main-timer-type-prescription
        make make-character-list
        make-character-list-make-character-list
-       make-event make-fast-alist
-       make-fmt-bindings make-input-channel
-       make-list make-list-ac make-mv-nths
-       make-ord make-output-channel
-       make-summary-data make-tau-interval
-       make-var-lst make-var-lst1
-       make-wormhole-status makunbound-global
-       max maximum-length may-need-slashes
+       make-event
+       make-fast-alist make-fmt-bindings
+       make-input-channel make-list
+       make-list-ac make-mv-nths make-ord
+       make-output-channel make-summary-data
+       make-tau-interval make-var-lst
+       make-var-lst1 make-wormhole-status
+       makunbound-global max maximum-length
+       may-need-slashes maybe-convert-to-mv
        maybe-flush-and-compress1
        mbe mbt mbt* member member-eq
        member-equal member-symbol-name
@@ -596,6 +597,7 @@ Subtopics
        set-in-theory-redundant-okp
        set-induction-depth-limit
        set-induction-depth-limit!
+       set-inhibit-er-soft set-inhibit-er-soft!
        set-inhibit-output-lst
        set-inhibit-warnings
        set-inhibit-warnings!
@@ -722,6 +724,8 @@ Subtopics
        thereis$+ third thm time$ time-tracker
        time-tracker-tau timer-alistp
        timer-alistp-forward-to-true-list-listp-and-symbol-alistp
+       toggle-inhibit-er-soft
+       toggle-inhibit-er-soft!
        toggle-inhibit-warning
        toggle-inhibit-warning!
        toggle-pc-macro top-level
@@ -90333,6 +90337,22 @@ Bug Fixes
   An assertion error was fixed, occurring with a call of [certify-book]
   when the value of environment variable \"ACL2_USELESS_RUNES\" was
   (erroneously) \"0\".
+
+  When the [hints] specified for a goal include :do-not-induct NAME for
+  some symbol NAME other than t, :otf, :otf-flg-override, or nil,
+  then that goal is to be skipped, giving it a ``bye'' as with a :by
+  hint.  This would fail however when the [induction-depth-limit] is
+  reached: that is, the proof would fail immediately rather than
+  continuing so that the skipped goal is printed upon failure at the
+  end.  The following example now has the desired behavior; thanks to
+  Alessandro Coglio for raising this issue by sending a
+  [proof-builder] example, where the :induct command failed for (as
+  it turns out) the same reason.
+
+    (set-induction-depth-limit 1)
+    (thm (equal (append (append x y) z) (append x y z))
+         :hints ((\"Goal\"
+                  :induct t :do-not-induct foo :do-not *do-not-processes*)))
 
 
 Changes at the System Level
