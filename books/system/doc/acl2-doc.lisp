@@ -92245,6 +92245,23 @@ it."
  when the value of environment variable @('\"ACL2_USELESS_RUNES\"')
  was (erroneously) @('\"0\"').</p>
 
+ <p>When the @(see hints) specified for a goal include @(':do-not-induct NAME')
+ for some symbol @('NAME') other than @('t'), @(':otf'),
+ @(':otf-flg-override'), or @('nil'), then that goal is to be skipped, giving
+ it a ``bye'' as with a @(':by') hint.  This would fail however when the @(see
+ induction-depth-limit) is reached: that is, the proof would fail immediately
+ rather than continuing so that the skipped goal is printed upon failure at the
+ end.  The following example now has the desired behavior; thanks to Alessandro
+ Coglio for raising this issue by sending a @(see proof-builder) example, where
+ the @(':induct') command failed for (as it turns out) the same reason.</p>
+
+ @({
+ (set-induction-depth-limit 1)
+ (thm (equal (append (append x y) z) (append x y z))
+      :hints ((\"Goal\"
+               :induct t :do-not-induct foo :do-not *do-not-processes*)))
+ })
+
  <h3>Changes at the System Level</h3>
 
  <p>The @(see hons-enabled) features of ACL2 (@(tsee hons), @(see memoization),
