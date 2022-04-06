@@ -133802,6 +133802,12 @@ for the execution of @('form')."
 
  <p>where @('form') should evaluate to an @(see error-triple).</p>
 
+ <p>You can get the current serialize-character as foollows.</p>
+
+ @({
+ (get-serialize-character state)
+ })
+
  <p>Note that if you prefer to obtain the same behavior (as described below)
  globally, rather than only within the scope of @('with-serialize-character'),
  then use @('set-serialize-character') in a corresponding manner:</p>
@@ -138768,6 +138774,7 @@ expand function call at the current subterm, without simplifying"
 (defpointer get-in-theory-redundant-okp set-in-theory-redundant-okp)
 (defpointer get-output-stream-string$ io)
 (defpointer get-register-invariant-risk set-register-invariant-risk)
+(defpointer get-serialize-character with-serialize-character)
 (defpointer get-skipped-proofs-p system-utilities)
 (defpointer getting-started acl2-tutorial)
 (defpointer guards guard)

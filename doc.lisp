@@ -42268,6 +42268,8 @@ Subtopics
                             "See [io].")
  (GET-REGISTER-INVARIANT-RISK (POINTERS)
                               "See [set-register-invariant-risk].")
+ (GET-SERIALIZE-CHARACTER (POINTERS)
+                          "See [with-serialize-character].")
  (GET-SKIPPED-PROOFS-P (POINTERS)
                        "See [system-utilities].")
  (GET-WORMHOLE-STATUS
@@ -95163,6 +95165,9 @@ Subtopics
   [Get-register-invariant-risk]
       See [set-register-invariant-risk].
 
+  [Get-serialize-character]
+      See [with-serialize-character].
+
   [Get-skipped-proofs-p]
       See [system-utilities].
 
@@ -134659,6 +134664,10 @@ Subtopics
     (with-serialize-character #Z form)
 
   where form should evaluate to an [error-triple].
+
+  You can get the current serialize-character as foollows.
+
+    (get-serialize-character state)
 
   Note that if you prefer to obtain the same behavior (as described
   below) globally, rather than only within the scope of
