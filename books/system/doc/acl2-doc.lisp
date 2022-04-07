@@ -92275,6 +92275,16 @@ it."
  it has been removed (and @('#-acl2-mv-as-values') code has been
  eliminated).</p>
 
+ <p>For ACL2 builds when the host Lisp is SBCL, the Lisp optimization level is
+ now 1 for @('SPACE'), which apparently can result in more inlining than the
+ former level of 0, and which has been seen to speed up an application while
+ reducing memory bytes allocated.  The default optimization level for
+ @('SPACE') can be set to 1 for any Lisp at build time by running @('make')
+ with argument @('ACL2_SPACE=1'), and the level can be set similarly to any
+ legal value, for example by using @('ACL2_SPACE=3') for level 3.  We can
+ easily change the default for other Lisps as well, and might do so when there
+ is evidence that this would be useful.</p>
+
  <h3>EMACS Support</h3>
 
  <p>It is now possible to have more than one @(see acl2-doc) buffer.
