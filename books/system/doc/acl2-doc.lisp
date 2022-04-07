@@ -18537,13 +18537,18 @@ subtree of X with T, without duplication.</p>
 
  <p>* conses</p>
 
- <p>ACL2 is a very small subset of full Common Lisp.  ACL2 does not include the
- Common Lisp Object System (CLOS), higher order functions, circular structures,
- and other aspects of Common Lisp that are <b>non-applicative</b>.  Roughly
- speaking, a language is applicative if it follows the rules of function
- application.  For example, @('f(x)') must be equal to @('f(x)'), which means,
- among other things, that the value of @('f') must not be affected by ``global
- variables'' and the object @('x') must not change over time.</p>
+ <p>ACL2 is a large subset of the first-order <b>applicative</b> part of Common
+ Lisp.  (Roughly speaking, a language is applicative if it follows the rules of
+ function application.  For example, @('f(x)') must be equal to @('f(x)'),
+ which means, among other things, that the value of @('f') must not be affected
+ by ``global variables'' and the object @('x') must not change over time.)  It
+ does not support higher-order features of Common Lisp, like functional objects
+ and <tt>apply</tt>.  It does not support Common Lisp primitives that have
+ side-effects such as <tt>setq</tt>, <tt>setf</tt>, the Common Lisp Object
+ System, etc.  However, ACL2 does provide some special features that can be
+ used efficiently to do many of the same jobs as these omitted Common Lisp
+ primitives.  The ACL2 system is largely implemented in the language it
+ supports.</p>
 
  <p><see topic='@(url |An Example Common Lisp Function Definition|)'><img
  src='res/tours/walking.gif'></img></see></p>")

@@ -18721,14 +18721,18 @@ Subtopics
 
   * conses
 
-  ACL2 is a very small subset of full Common Lisp.  ACL2 does not
-  include the Common Lisp Object System (CLOS), higher order
-  functions, circular structures, and other aspects of Common Lisp
-  that are non-applicative.  Roughly speaking, a language is
-  applicative if it follows the rules of function application.  For
-  example, f(x) must be equal to f(x), which means, among other
-  things, that the value of f must not be affected by ``global
-  variables'' and the object x must not change over time.
+  ACL2 is a large subset of the first-order applicative part of Common
+  Lisp.  (Roughly speaking, a language is applicative if it follows
+  the rules of function application.  For example, f(x) must be equal
+  to f(x), which means, among other things, that the value of f must
+  not be affected by ``global variables'' and the object x must not
+  change over time.)  It does not support higher-order features of
+  Common Lisp, like functional objects and apply.  It does not
+  support Common Lisp primitives that have side-effects such as setq,
+  setf, the Common Lisp Object System, etc.  However, ACL2 does
+  provide some special features that can be used efficiently to do
+  many of the same jobs as these omitted Common Lisp primitives.  The
+  ACL2 system is largely implemented in the language it supports.
 
   {IMAGE} (see [An_Example_Common_Lisp_Function_Definition])")
  (COMMON_LISP_AS_A_MODELING_LANGUAGE
