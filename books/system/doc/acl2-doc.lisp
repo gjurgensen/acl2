@@ -133802,7 +133802,7 @@ for the execution of @('form')."
 
  <p>where @('form') should evaluate to an @(see error-triple).</p>
 
- <p>You can get the current serialize-character as foollows.</p>
+ <p>You can get the current serialize-character as follows.</p>
 
  @({
  (get-serialize-character state)
