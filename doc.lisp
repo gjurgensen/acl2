@@ -18721,14 +18721,18 @@ Subtopics
 
   * conses
 
-  ACL2 is a very small subset of full Common Lisp.  ACL2 does not
-  include the Common Lisp Object System (CLOS), higher order
-  functions, circular structures, and other aspects of Common Lisp
-  that are non-applicative.  Roughly speaking, a language is
-  applicative if it follows the rules of function application.  For
-  example, f(x) must be equal to f(x), which means, among other
-  things, that the value of f must not be affected by ``global
-  variables'' and the object x must not change over time.
+  ACL2 is a large subset of the first-order applicative part of Common
+  Lisp.  (Roughly speaking, a language is applicative if it follows
+  the rules of function application.  For example, f(x) must be equal
+  to f(x), which means, among other things, that the value of f must
+  not be affected by ``global variables'' and the object x must not
+  change over time.)  It does not support higher-order features of
+  Common Lisp, like functional objects and apply.  It does not
+  support Common Lisp primitives that have side-effects such as setq,
+  setf, the Common Lisp Object System, etc.  However, ACL2 does
+  provide some special features that can be used efficiently to do
+  many of the same jobs as these omitted Common Lisp primitives.  The
+  ACL2 system is largely implemented in the language it supports.
 
   {IMAGE} (see [An_Example_Common_Lisp_Function_Definition])")
  (COMMON_LISP_AS_A_MODELING_LANGUAGE
@@ -90370,6 +90374,17 @@ Changes at the System Level
   true when feature :hons was present, hence was always true; so it
   has been removed (and #-acl2-mv-as-values code has been
   eliminated).
+
+  For ACL2 builds when the host Lisp is SBCL, the Lisp optimization
+  level is now 1 for SPACE, which apparently can result in more
+  inlining than the former level of 0, and which has been seen to
+  speed up an application while reducing memory bytes allocated.  The
+  default optimization level for SPACE can be set to 1 for any Lisp
+  at build time by running make with argument ACL2_SPACE=1, and the
+  level can be set similarly to any legal value, for example by using
+  ACL2_SPACE=3 for level 3.  We can easily change the default for
+  other Lisps as well, and might do so when there is evidence that
+  this would be useful.
 
 
 EMACS Support
