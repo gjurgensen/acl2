@@ -134680,7 +134680,7 @@ Subtopics
 
   where form should evaluate to an [error-triple].
 
-  You can get the current serialize-character as foollows.
+  You can get the current serialize-character as follows.
 
     (get-serialize-character state)
 
