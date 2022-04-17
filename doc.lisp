@@ -90360,6 +90360,34 @@ Bug Fixes
          :hints ((\"Goal\"
                   :induct t :do-not-induct foo :do-not *do-not-processes*)))
 
+  Fixed a bug in processing macro arguments with more than one
+  occurrence of the symbol, :allow-other-keys.  Thanks to Eric Smith
+  for pointing out this bug and providing a fix.  Here is an example
+  that was failing but is now handled without error (notice that
+  :allow-other-keys is in a value position, not a keyword position,
+  so the duplication is legal).
+
+    ACL2 !>(defmacro foo (x &key y) `(list ,x ,y))
+
+    Summary
+    Form:  ( DEFMACRO FOO ...)
+    Rules: NIL
+    Time:  0.00 seconds (prove: 0.00, print: 0.00, other: 0.00)
+     FOO
+    ACL2 !>(foo 3 :y 4 :z 5 :allow-other-keys t :w :allow-other-keys)
+
+
+    ACL2 Error in macro expansion:  ACL2 prohibits multiple :allow-other-
+    keys because implementations differ significantly concerning which
+    value to take.
+
+    ACL2 !>:q
+
+    Exiting the ACL2 read-eval-print loop.  To re-enter, execute (LP).
+    ? (foo 3 :y 4 :z 5 :allow-other-keys t :w :allow-other-keys)
+    (3 4)
+    ?
+
 
 Changes at the System Level
 
