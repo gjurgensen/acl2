@@ -92227,6 +92227,8 @@ it."
  example, which formerly caused a stack overflow for ACL2 built on SBCL but no
  longer does so.</p>
 
+ <p>The function @(tsee princ$) now prints characters more rapidly.</p>
+
  <h3>Bug Fixes</h3>
 
  <p>Fixed an error that could occur when the @(see break-rewrite) utility is
@@ -92295,6 +92297,14 @@ it."
  (3 4)
  ?
  })
+
+ <p>Pretty-printed output could be misaligned when an output string specified
+ by the @(see evisc-table) contains a newline.  Such output is now printed a
+ bit differently, with reasonable alignment.</p>
+
+ <p>Printing of results has been improved in @(see raw-mode) in cases of @(see
+ multiple-value) return, so that @(see stobj) names are used even when at least
+ one returned value is not an ACL2 object.</p>
 
  <h3>Changes at the System Level</h3>
 
