@@ -90320,6 +90320,8 @@ Heuristic and Efficiency Improvements
   acl2-help list with a helpful example, which formerly caused a
   stack overflow for ACL2 built on SBCL but no longer does so.
 
+  The function [princ$] now prints characters more rapidly.
+
 
 Bug Fixes
 
@@ -90387,6 +90389,14 @@ Bug Fixes
     ? (foo 3 :y 4 :z 5 :allow-other-keys t :w :allow-other-keys)
     (3 4)
     ?
+
+  Pretty-printed output could be misaligned when an output string
+  specified by the [evisc-table] contains a newline.  Such output is
+  now printed a bit differently, with reasonable alignment.
+
+  Printing of results has been improved in [raw-mode] in cases of
+  [multiple-value] return, so that [stobj] names are used even when
+  at least one returned value is not an ACL2 object.
 
 
 Changes at the System Level
