@@ -90424,6 +90424,10 @@ Changes at the System Level
   other Lisps as well, and might do so when there is evidence that
   this would be useful.
 
+  The function bind-macro-args, and several of its subfunctions, are
+  now in :[logic] mode with verified [guard]s.  Thanks to Eric Smith
+  for verifying guards as per [verify-guards-for-system-functions].
+
 
 EMACS Support
 
