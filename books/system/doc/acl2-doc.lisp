@@ -92329,6 +92329,10 @@ it."
  easily change the default for other Lisps as well, and might do so when there
  is evidence that this would be useful.</p>
 
+ <p>The function @('bind-macro-args'), and several of its subfunctions, are now
+ in @(':')@(tsee logic) mode with verified @(see guard)s.  Thanks to Eric Smith
+ for verifying guards as per @(see verify-guards-for-system-functions).</p>
+
  <h3>EMACS Support</h3>
 
  <p>It is now possible to have more than one @(see acl2-doc) buffer.
