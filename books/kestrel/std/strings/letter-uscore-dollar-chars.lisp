@@ -15,17 +15,13 @@
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
-(str::defcharset letter
+(str::defcharset letter/uscore/dollar
   (b* ((code (char-code x)))
     (or (and (<= (char-code #\A) code)
              (<= code (char-code #\Z)))
         (and (<= (char-code #\a) code)
-             (<= code (char-code #\z)))))
+             (<= code (char-code #\z)))
+        (eql x #\_)
+        (eql x #\$)))
   :parents (character-kinds)
-  :short "Recognize ASCII letters."
-  :long
-  (xdoc::topstring
-   (xdoc::p
-    "The built-in @(tsee alpha-char-p)
-     has a guard requiring characters that are standard.
-     In contrast, this recognizer has guard @('t').")))
+  :short "Recognize ASCII letters, underscores, and dollar signs.")
