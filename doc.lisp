@@ -77,7 +77,7 @@ Subtopics
   [defthm], [in-theory], [xargs], [state], etc., without an acl2::
   prefix.
 
-  The constant *acl2-exports* lists 1548 symbols, including most
+  The constant *acl2-exports* lists 1554 symbols, including most
   documented ACL2 system constants, functions, and macros.  You will
   typically also want to import many symbols from Common Lisp; see
   [*common-lisp-symbols-from-main-lisp-package*].
@@ -290,7 +290,7 @@ Subtopics
        eqlablep-recog equal equal-char-code
        er er-cmp er-let* er-let*-cmp er-progn
        er-progn-cmp er-progn-fn er-progn-fn@par
-       er-progn@par er-soft-logic ev$
+       er-progn@par er-soft er-soft-logic ev$
        ev$-list evenp evens event evisc-tuple
        executable-counterpart-theory
        exists exit explode-atom
@@ -415,14 +415,15 @@ Subtopics
        main-timer main-timer-type-prescription
        make make-character-list
        make-character-list-make-character-list
-       make-event make-fast-alist
-       make-fmt-bindings make-input-channel
-       make-list make-list-ac make-mv-nths
-       make-ord make-output-channel
-       make-summary-data make-tau-interval
-       make-var-lst make-var-lst1
-       make-wormhole-status makunbound-global
-       max maximum-length may-need-slashes
+       make-event
+       make-fast-alist make-fmt-bindings
+       make-input-channel make-list
+       make-list-ac make-mv-nths make-ord
+       make-output-channel make-summary-data
+       make-tau-interval make-var-lst
+       make-var-lst1 make-wormhole-status
+       makunbound-global max maximum-length
+       may-need-slashes maybe-convert-to-mv
        maybe-flush-and-compress1
        mbe mbt mbt* member member-eq
        member-equal member-symbol-name
@@ -596,6 +597,7 @@ Subtopics
        set-in-theory-redundant-okp
        set-induction-depth-limit
        set-induction-depth-limit!
+       set-inhibit-er-soft set-inhibit-er-soft!
        set-inhibit-output-lst
        set-inhibit-warnings
        set-inhibit-warnings!
@@ -722,6 +724,8 @@ Subtopics
        thereis$+ third thm time$ time-tracker
        time-tracker-tau timer-alistp
        timer-alistp-forward-to-true-list-listp-and-symbol-alistp
+       toggle-inhibit-er-soft
+       toggle-inhibit-er-soft!
        toggle-inhibit-warning
        toggle-inhibit-warning!
        toggle-pc-macro top-level
@@ -18717,14 +18721,18 @@ Subtopics
 
   * conses
 
-  ACL2 is a very small subset of full Common Lisp.  ACL2 does not
-  include the Common Lisp Object System (CLOS), higher order
-  functions, circular structures, and other aspects of Common Lisp
-  that are non-applicative.  Roughly speaking, a language is
-  applicative if it follows the rules of function application.  For
-  example, f(x) must be equal to f(x), which means, among other
-  things, that the value of f must not be affected by ``global
-  variables'' and the object x must not change over time.
+  ACL2 is a large subset of the first-order applicative part of Common
+  Lisp.  (Roughly speaking, a language is applicative if it follows
+  the rules of function application.  For example, f(x) must be equal
+  to f(x), which means, among other things, that the value of f must
+  not be affected by ``global variables'' and the object x must not
+  change over time.)  It does not support higher-order features of
+  Common Lisp, like functional objects and apply.  It does not
+  support Common Lisp primitives that have side-effects such as setq,
+  setf, the Common Lisp Object System, etc.  However, ACL2 does
+  provide some special features that can be used efficiently to do
+  many of the same jobs as these omitted Common Lisp primitives.  The
+  ACL2 system is largely implemented in the language it supports.
 
   {IMAGE} (see [An_Example_Common_Lisp_Function_Definition])")
  (COMMON_LISP_AS_A_MODELING_LANGUAGE
@@ -42264,6 +42272,8 @@ Subtopics
                             "See [io].")
  (GET-REGISTER-INVARIANT-RISK (POINTERS)
                               "See [set-register-invariant-risk].")
+ (GET-SERIALIZE-CHARACTER (POINTERS)
+                          "See [with-serialize-character].")
  (GET-SKIPPED-PROOFS-P (POINTERS)
                        "See [system-utilities].")
  (GET-WORMHOLE-STATUS
@@ -90310,6 +90320,8 @@ Heuristic and Efficiency Improvements
   acl2-help list with a helpful example, which formerly caused a
   stack overflow for ACL2 built on SBCL but no longer does so.
 
+  The function [princ$] now prints characters more rapidly.
+
 
 Bug Fixes
 
@@ -90334,6 +90346,58 @@ Bug Fixes
   when the value of environment variable \"ACL2_USELESS_RUNES\" was
   (erroneously) \"0\".
 
+  When the [hints] specified for a goal include :do-not-induct NAME for
+  some symbol NAME other than t, :otf, :otf-flg-override, or nil,
+  then that goal is to be skipped, giving it a ``bye'' as with a :by
+  hint.  This would fail however when the [induction-depth-limit] is
+  reached: that is, the proof would fail immediately rather than
+  continuing so that the skipped goal is printed upon failure at the
+  end.  The following example now has the desired behavior; thanks to
+  Alessandro Coglio for raising this issue by sending a
+  [proof-builder] example, where the :induct command failed for (as
+  it turns out) the same reason.
+
+    (set-induction-depth-limit 1)
+    (thm (equal (append (append x y) z) (append x y z))
+         :hints ((\"Goal\"
+                  :induct t :do-not-induct foo :do-not *do-not-processes*)))
+
+  Fixed a bug in processing macro arguments with more than one
+  occurrence of the symbol, :allow-other-keys.  Thanks to Eric Smith
+  for pointing out this bug and providing a fix.  Here is an example
+  that was failing but is now handled without error (notice that
+  :allow-other-keys is in a value position, not a keyword position,
+  so the duplication is legal).
+
+    ACL2 !>(defmacro foo (x &key y) `(list ,x ,y))
+
+    Summary
+    Form:  ( DEFMACRO FOO ...)
+    Rules: NIL
+    Time:  0.00 seconds (prove: 0.00, print: 0.00, other: 0.00)
+     FOO
+    ACL2 !>(foo 3 :y 4 :z 5 :allow-other-keys t :w :allow-other-keys)
+
+
+    ACL2 Error in macro expansion:  ACL2 prohibits multiple :allow-other-
+    keys because implementations differ significantly concerning which
+    value to take.
+
+    ACL2 !>:q
+
+    Exiting the ACL2 read-eval-print loop.  To re-enter, execute (LP).
+    ? (foo 3 :y 4 :z 5 :allow-other-keys t :w :allow-other-keys)
+    (3 4)
+    ?
+
+  Pretty-printed output could be misaligned when an output string
+  specified by the [evisc-table] contains a newline.  Such output is
+  now printed a bit differently, with reasonable alignment.
+
+  Printing of results has been improved in [raw-mode] in cases of
+  [multiple-value] return, so that [stobj] names are used even when
+  at least one returned value is not an ACL2 object.
+
 
 Changes at the System Level
 
@@ -90348,6 +90412,21 @@ Changes at the System Level
   true when feature :hons was present, hence was always true; so it
   has been removed (and #-acl2-mv-as-values code has been
   eliminated).
+
+  For ACL2 builds when the host Lisp is SBCL, the Lisp optimization
+  level is now 1 for SPACE, which apparently can result in more
+  inlining than the former level of 0, and which has been seen to
+  speed up an application while reducing memory bytes allocated.  The
+  default optimization level for SPACE can be set to 1 for any Lisp
+  at build time by running make with argument ACL2_SPACE=1, and the
+  level can be set similarly to any legal value, for example by using
+  ACL2_SPACE=3 for level 3.  We can easily change the default for
+  other Lisps as well, and might do so when there is evidence that
+  this would be useful.
+
+  The function bind-macro-args, and several of its subfunctions, are
+  now in :[logic] mode with verified [guard]s.  Thanks to Eric Smith
+  for verifying guards as per [verify-guards-for-system-functions].
 
 
 EMACS Support
@@ -95142,6 +95221,9 @@ Subtopics
 
   [Get-register-invariant-risk]
       See [set-register-invariant-risk].
+
+  [Get-serialize-character]
+      See [with-serialize-character].
 
   [Get-skipped-proofs-p]
       See [system-utilities].
@@ -134639,6 +134721,10 @@ Subtopics
     (with-serialize-character #Z form)
 
   where form should evaluate to an [error-triple].
+
+  You can get the current serialize-character as follows.
+
+    (get-serialize-character state)
 
   Note that if you prefer to obtain the same behavior (as described
   below) globally, rather than only within the scope of

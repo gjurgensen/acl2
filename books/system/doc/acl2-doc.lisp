@@ -18537,13 +18537,18 @@ subtree of X with T, without duplication.</p>
 
  <p>* conses</p>
 
- <p>ACL2 is a very small subset of full Common Lisp.  ACL2 does not include the
- Common Lisp Object System (CLOS), higher order functions, circular structures,
- and other aspects of Common Lisp that are <b>non-applicative</b>.  Roughly
- speaking, a language is applicative if it follows the rules of function
- application.  For example, @('f(x)') must be equal to @('f(x)'), which means,
- among other things, that the value of @('f') must not be affected by ``global
- variables'' and the object @('x') must not change over time.</p>
+ <p>ACL2 is a large subset of the first-order <b>applicative</b> part of Common
+ Lisp.  (Roughly speaking, a language is applicative if it follows the rules of
+ function application.  For example, @('f(x)') must be equal to @('f(x)'),
+ which means, among other things, that the value of @('f') must not be affected
+ by ``global variables'' and the object @('x') must not change over time.)  It
+ does not support higher-order features of Common Lisp, like functional objects
+ and <tt>apply</tt>.  It does not support Common Lisp primitives that have
+ side-effects such as <tt>setq</tt>, <tt>setf</tt>, the Common Lisp Object
+ System, etc.  However, ACL2 does provide some special features that can be
+ used efficiently to do many of the same jobs as these omitted Common Lisp
+ primitives.  The ACL2 system is largely implemented in the language it
+ supports.</p>
 
  <p><see topic='@(url |An Example Common Lisp Function Definition|)'><img
  src='res/tours/walking.gif'></img></see></p>")
@@ -92222,6 +92227,8 @@ it."
  example, which formerly caused a stack overflow for ACL2 built on SBCL but no
  longer does so.</p>
 
+ <p>The function @(tsee princ$) now prints characters more rapidly.</p>
+
  <h3>Bug Fixes</h3>
 
  <p>Fixed an error that could occur when the @(see break-rewrite) utility is
@@ -92245,6 +92252,60 @@ it."
  when the value of environment variable @('\"ACL2_USELESS_RUNES\"')
  was (erroneously) @('\"0\"').</p>
 
+ <p>When the @(see hints) specified for a goal include @(':do-not-induct NAME')
+ for some symbol @('NAME') other than @('t'), @(':otf'),
+ @(':otf-flg-override'), or @('nil'), then that goal is to be skipped, giving
+ it a ``bye'' as with a @(':by') hint.  This would fail however when the @(see
+ induction-depth-limit) is reached: that is, the proof would fail immediately
+ rather than continuing so that the skipped goal is printed upon failure at the
+ end.  The following example now has the desired behavior; thanks to Alessandro
+ Coglio for raising this issue by sending a @(see proof-builder) example, where
+ the @(':induct') command failed for (as it turns out) the same reason.</p>
+
+ @({
+ (set-induction-depth-limit 1)
+ (thm (equal (append (append x y) z) (append x y z))
+      :hints ((\"Goal\"
+               :induct t :do-not-induct foo :do-not *do-not-processes*)))
+ })
+
+ <p>Fixed a bug in processing macro arguments with more than one occurrence of
+ the symbol, @(':allow-other-keys').  Thanks to Eric Smith for pointing out
+ this bug and providing a fix.  Here is an example that was failing but is now
+ handled without error (notice that @(':allow-other-keys') is in a value
+ position, not a keyword position, so the duplication is legal).</p>
+
+ @({
+ ACL2 !>(defmacro foo (x &key y) `(list ,x ,y))
+
+ Summary
+ Form:  ( DEFMACRO FOO ...)
+ Rules: NIL
+ Time:  0.00 seconds (prove: 0.00, print: 0.00, other: 0.00)
+  FOO
+ ACL2 !>(foo 3 :y 4 :z 5 :allow-other-keys t :w :allow-other-keys)
+
+
+ ACL2 Error in macro expansion:  ACL2 prohibits multiple :allow-other-
+ keys because implementations differ significantly concerning which
+ value to take.
+
+ ACL2 !>:q
+
+ Exiting the ACL2 read-eval-print loop.  To re-enter, execute (LP).
+ ? (foo 3 :y 4 :z 5 :allow-other-keys t :w :allow-other-keys)
+ (3 4)
+ ?
+ })
+
+ <p>Pretty-printed output could be misaligned when an output string specified
+ by the @(see evisc-table) contains a newline.  Such output is now printed a
+ bit differently, with reasonable alignment.</p>
+
+ <p>Printing of results has been improved in @(see raw-mode) in cases of @(see
+ multiple-value) return, so that @(see stobj) names are used even when at least
+ one returned value is not an ACL2 object.</p>
+
  <h3>Changes at the System Level</h3>
 
  <p>The @(see hons-enabled) features of ACL2 (@(tsee hons), @(see memoization),
@@ -92257,6 +92318,20 @@ it."
  was always true when feature @(':hons') was present, hence was always true; so
  it has been removed (and @('#-acl2-mv-as-values') code has been
  eliminated).</p>
+
+ <p>For ACL2 builds when the host Lisp is SBCL, the Lisp optimization level is
+ now 1 for @('SPACE'), which apparently can result in more inlining than the
+ former level of 0, and which has been seen to speed up an application while
+ reducing memory bytes allocated.  The default optimization level for
+ @('SPACE') can be set to 1 for any Lisp at build time by running @('make')
+ with argument @('ACL2_SPACE=1'), and the level can be set similarly to any
+ legal value, for example by using @('ACL2_SPACE=3') for level 3.  We can
+ easily change the default for other Lisps as well, and might do so when there
+ is evidence that this would be useful.</p>
+
+ <p>The function @('bind-macro-args'), and several of its subfunctions, are now
+ in @(':')@(tsee logic) mode with verified @(see guard)s.  Thanks to Eric Smith
+ for verifying guards as per @(see verify-guards-for-system-functions).</p>
 
  <h3>EMACS Support</h3>
 
@@ -133785,6 +133860,12 @@ for the execution of @('form')."
 
  <p>where @('form') should evaluate to an @(see error-triple).</p>
 
+ <p>You can get the current serialize-character as follows.</p>
+
+ @({
+ (get-serialize-character state)
+ })
+
  <p>Note that if you prefer to obtain the same behavior (as described below)
  globally, rather than only within the scope of @('with-serialize-character'),
  then use @('set-serialize-character') in a corresponding manner:</p>
@@ -138751,6 +138832,7 @@ expand function call at the current subterm, without simplifying"
 (defpointer get-in-theory-redundant-okp set-in-theory-redundant-okp)
 (defpointer get-output-stream-string$ io)
 (defpointer get-register-invariant-risk set-register-invariant-risk)
+(defpointer get-serialize-character with-serialize-character)
 (defpointer get-skipped-proofs-p system-utilities)
 (defpointer getting-started acl2-tutorial)
 (defpointer guards guard)
