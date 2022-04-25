@@ -23807,7 +23807,7 @@ subtree of X with T, without duplication.</p>
  the field descriptors in the event.</p>
 
  <p>Use of the @(':renaming') alist may be necessary to avoid name clashes
- between the default names and and pre-existing function symbols.</p>
+ between the default names and pre-existing function symbols.</p>
 
  <h3>Constants</h3>
 
