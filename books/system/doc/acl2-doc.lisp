@@ -92333,6 +92333,9 @@ it."
  in @(':')@(tsee logic) mode with verified @(see guard)s.  Thanks to Eric Smith
  for verifying guards as per @(see verify-guards-for-system-functions).</p>
 
+ <p>ACL2 will now generally signal an error if a filename contains consecutive
+ directory separators, i.e., @('\"//\"') (in non-Windows systems).</p>
+
  <h3>EMACS Support</h3>
 
  <p>It is now possible to have more than one @(see acl2-doc) buffer.

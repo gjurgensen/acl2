@@ -90428,6 +90428,10 @@ Changes at the System Level
   now in :[logic] mode with verified [guard]s.  Thanks to Eric Smith
   for verifying guards as per [verify-guards-for-system-functions].
 
+  ACL2 will now generally signal an error if a filename contains
+  consecutive directory separators, i.e., \"//\" (in non-Windows
+  systems).
+
 
 EMACS Support
 
