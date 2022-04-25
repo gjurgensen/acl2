@@ -57056,7 +57056,16 @@ forms allowed for a @('let') form are  @('ignore'), @('ignorable'), and
  functions @('fn') in @('lhs') with the property that @('u') or @('v') (or
  both) appears as a top-level argument of a subterm of @('lhs') with function
  symbol @('fn').  Then the loop-stopper for this rewrite rule is a list of all
- lists @('(u v . fns)').</p>")
+ lists @('(u v . fns)').</p>
+
+ <p><i>Remark.</i>The paragraph above mentions ``the conclusion of the rule''
+ as @('(equiv lhs rhs)').  The rule's conclusion is actually produced from a
+ naive version @('(equiv lhs0 rhs)') of the conclusion by expanding away all
+ @(see lambda) applications in @('lhs0').  If @('lhs0) and @('lhs') are
+ distinct (i.e., if there is any such lambda expansion) and also the
+ loop-stopper field is calculated as @('nil') as described above, then a second
+ attempt to calculate the loop-stopper is made using @('lhs0') in place of
+ @('lhs').</p>")
 
 (defxdoc lower-case-p
   :parents (characters acl2-built-ins)
@@ -92228,6 +92237,16 @@ it."
  longer does so.</p>
 
  <p>The function @(tsee princ$) now prints characters more rapidly.</p>
+
+ <p>In some cases, @(tsee include-book) calls may run a bit faster thanks to a
+ couple of small changes.  The primary change is for heuristic @(see
+ loop-stopper) generation when the conclusion of a @(see rewrite) rule contains
+ a @(see lambda) expression.  Formerly all such expressions were expanded away.
+ Now, they are expanded away in the left-hand side, and both the unexpanded and
+ expanded versions of the left-hand side are compared to the unexpanded
+ right-hand side (see the final Remark in the @(see loop-stopper)
+ documentation).  We have seen a 7% reduction of time for the event,
+ @('(include-book \"projects/x86isa/top\" :dir :system)').</p>
 
  <h3>Bug Fixes</h3>
 
