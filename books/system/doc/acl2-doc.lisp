@@ -130820,7 +130820,8 @@ introduction-to-the-tau-system) for more information about Tau.</dd>
  SUCCESS for devel-check
  })</li>
 
- <li>Now do a normal build and regression.</li>
+ <li>Now clean the books (see @('make clean-books') above) and then do a normal
+ build and regression.</li>
 
  <li>Finally, send your changes to Matt Kaufmann, with a request that they be
  incorporated into the ACL2 sources and books.</li>

@@ -26988,7 +26988,7 @@ Avoiding the Default Function Names
   names, not to the field descriptors in the event.
 
   Use of the :renaming alist may be necessary to avoid name clashes
-  between the default names and and pre-existing function symbols.
+  between the default names and pre-existing function symbols.
 
 
 Constants
@@ -131681,7 +131681,8 @@ Subtopics
           SUCCESS for check-system-events
           SUCCESS for devel-check
 
-   6. Now do a normal build and regression.
+   6. Now clean the books (see make clean-books above) and then do a normal
+      build and regression.
    7. Finally, send your changes to Matt Kaufmann, with a request that they
       be incorporated into the ACL2 sources and books.
 
