@@ -26951,8 +26951,8 @@ The Default Function Names
   make-hash-table in raw Lisp.  The :test argument of this function
   is the one specified in the :type specified in the defstobj event
   for the field, in this case EQ from the type (HASH-TABLE EQ); note
-  however that if the :type specifies the test (HASH-TABLE
-  HONS-EQUAL), then the :test is EQL.
+  however that if the :type is (HASH-TABLE HONS-EQUAL), then the
+  :test is EQL.
 
 
 Avoiding the Default Function Names
