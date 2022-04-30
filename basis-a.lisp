@@ -6440,6 +6440,7 @@
   (packn (list n1 n2)))
 
 (defun defstobj-fnname-key2 (type)
+  (declare (xargs :guard t))
 
 ; This function provides the value of the key2 argument of defstobj-fnname when
 ; it is not :top.
@@ -6452,7 +6453,23 @@
         (t :scalar))
     :scalar))
 
+(defun doublet-listp (x)
+  (declare (xargs :guard t))
+  (cond ((atom x) (equal x nil))
+        (t (and (true-listp (car x))
+                (eql (length (car x)) 2)
+                (doublet-listp (cdr x))))))
+
 (defun defstobj-fnname (root key1 key2 renaming-alist)
+  (declare (xargs :guard (and (symbolp root)
+                              (member-eq key1 '(:length
+                                                :resize
+                                                :recognizer
+                                                :accessor
+                                                :updater
+                                                :creator))
+                              (symbolp key2)
+                              (doublet-listp renaming-alist))))
 
 ; Warning: Keep this in sync with stobj-updater-guess-from-accessor.
 
