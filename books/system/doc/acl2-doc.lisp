@@ -23490,8 +23490,22 @@ subtree of X with T, without duplication.</p>
 
  <p>The @('typei') describes the objects which are expected to occupy the given
  field.  Those objects in @('fieldi') should satisfy @('typei').  We are more
- precise below about what we mean by ``expected.''  We first present the
+ precise below about what we mean by ``expected.''  Below we present the
  restrictions on @('typei') and @('vali').</p>
+
+ <p>Remark on @('SATISFIES').  As suggested above, each type indicator may be a
+ legal @(see type-spec).  But for a type-spec @('(SATISFIES pred)'), not only
+ must @('pred') be unary &mdash; it also must be a @(see guard)-verified
+ @(':')@(tsee logic) mode function whose guard is @('t').  For example, since
+ the guard of @(tsee evenp) specifies an integer, the type-spec @('(SATISFIES
+ evenp)') is not legal for a stobj field.  However, the following is legal.</p>
+
+ @({
+ (defun my-evenp (x)
+   (declare (xargs :guard t))
+   (and (integerp x) (evenp x)))
+ (defstobj st (fld :type (satisfies my-evenp) :initially 4))
+ })
 
  <h3>Scalar Types</h3>
 
@@ -92249,6 +92263,20 @@ it."
  @('(include-book \"projects/x86isa/top\" :dir :system)').</p>
 
  <h3>Bug Fixes</h3>
+
+ <p>A soundness bug in @(tsee defstobj) has been fixed that allowed a field to
+ contain the @(see type-spec) @('(SATISFIES pred)') when @('pred') has a @(see
+ guard) other than @('t'), which generated an unsound guard theorem.  Thanks to
+ Eric Smith for sending the following example.</p>
+
+ @({
+ (defstobj s (field :type (satisfies evenp) :initially 4))
+
+ (defthm bad
+   nil
+   :rule-classes nil
+   :hints ((\"Goal\" :use (:instance (:guard-theorem fieldp) (x t)))))
+ })
 
  <p>Fixed an error that could occur when the @(see break-rewrite) utility is
  displaying failure information for an attempt to apply a @(see linear) rule
