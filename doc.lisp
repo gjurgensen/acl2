@@ -26686,8 +26686,21 @@ Restrictions on the Field Descriptions in Defstobj
 
   The typei describes the objects which are expected to occupy the
   given field.  Those objects in fieldi should satisfy typei.  We are
-  more precise below about what we mean by ``expected.'' We first
+  more precise below about what we mean by ``expected.'' Below we
   present the restrictions on typei and vali.
+
+  Remark on SATISFIES.  As suggested above, each type indicator may be
+  a legal [type-spec].  But for a type-spec (SATISFIES pred), not
+  only must pred be unary --- it also must be a [guard]-verified
+  :[logic] mode function whose guard is t.  For example, since the
+  guard of [evenp] specifies an integer, the type-spec (SATISFIES
+  evenp) is not legal for a stobj field.  However, the following is
+  legal.
+
+    (defun my-evenp (x)
+      (declare (xargs :guard t))
+      (and (integerp x) (evenp x)))
+    (defstobj st (fld :type (satisfies my-evenp) :initially 4))
 
 
 Scalar Types
@@ -90344,6 +90357,18 @@ Heuristic and Efficiency Improvements
 
 
 Bug Fixes
+
+  A soundness bug in [defstobj] has been fixed that allowed a field to
+  contain the [type-spec] (SATISFIES pred) when pred has a [guard]
+  other than t, which generated an unsound guard theorem.  Thanks to
+  Eric Smith for sending the following example.
+
+    (defstobj s (field :type (satisfies evenp) :initially 4))
+
+    (defthm bad
+      nil
+      :rule-classes nil
+      :hints ((\"Goal\" :use (:instance (:guard-theorem fieldp) (x t)))))
 
   Fixed an error that could occur when the [break-rewrite] utility is
   displaying failure information for an attempt to apply a [linear]
