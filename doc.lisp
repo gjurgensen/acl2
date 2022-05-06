@@ -26547,7 +26547,7 @@ Subtopics
               halt   ; = (halt :type t :initially nil)
               (mem :type (array (unsigned-byte 31) (*mem-size*))
                    :initially 0 :resizable t)
-              (ht  :type (hash-table eq 70)))
+              (ht  :type (hash-table eq 70 integer)))
 
     General Form:
     (defstobj name
@@ -26563,36 +26563,37 @@ Subtopics
   where name is a new symbol; each fieldi is a symbol; each typei is
   either a type-indicator (a [type-spec] or [stobj] name), of the
   form (ARRAY type-indicator (max)), or of one of the forms
-  (HASH-TABLE test), (HASH-TABLE test size), (STOBJ-TABLE), or
-  (STOBJ-TABLE size); each vali is an object satisfying typei; and
-  each bi is t or nil.  Each pair :initially vali and :resizable bi
-  may be omitted; more on this below.  The :renaming alist argument
-  is optional and allows the user to override the default function
-  names introduced by this event.  The :inline flg Boolean argument
-  is also optional and declares to ACL2 that the generated access and
-  update functions for the stobj should be implemented as macros
-  under the hood (which has the effect of inlining the function
-  calls).  The optional :congruent-to old-stobj-name argument
-  specifies an existing stobj with exactly the same structure, and is
-  discussed below.  The optional :non-memoizable nm-flg and
-  :non-executable ne-flg Boolean arguments are ignored when nm-flg
-  and ne-flg are nil, but otherwise: the former instructs ACL2 to lay
-  down faster code for functions that return the new stobj but
-  disallows [memoization] of any function that takes the new stobj as
-  an argument; and the latter avoids actually creating the stobj
-  (details follow later below).  We describe further restrictions on
-  the fieldi, typei, vali, and on alist below.  We recommend that you
-  read about single-threaded objects (stobjs) in ACL2 before
-  proceeding; see [stobj].
+  (HASH-TABLE test), (HASH-TABLE test size), (HASH-TABLE test size
+  type-indicator), (STOBJ-TABLE), or (STOBJ-TABLE size); each vali is
+  an object satisfying typei; and each bi is t or nil.  Each pair
+  :initially vali and :resizable bi may be omitted; more on this
+  below.  The :renaming alist argument is optional and allows the
+  user to override the default function names introduced by this
+  event.  The :inline flg Boolean argument is also optional and
+  declares to ACL2 that the generated access and update functions for
+  the stobj should be implemented as macros under the hood (which has
+  the effect of inlining the function calls).  The optional
+  :congruent-to old-stobj-name argument specifies an existing stobj
+  with exactly the same structure, and is discussed below.  The
+  optional :non-memoizable nm-flg and :non-executable ne-flg Boolean
+  arguments are ignored when nm-flg and ne-flg are nil, but
+  otherwise: the former instructs ACL2 to lay down faster code for
+  functions that return the new stobj but disallows [memoization] of
+  any function that takes the new stobj as an argument; and the
+  latter avoids actually creating the stobj (details follow later
+  below).  We describe further restrictions on the fieldi, typei,
+  vali, and on alist below.  We recommend that you read about
+  single-threaded objects (stobjs) in ACL2 before proceeding; see
+  [stobj].
 
   The effect of this event is to introduce a new single-threaded object
   (i.e., a ``[stobj]''), named name, and the associated recognizers,
   creator, accessors, updaters, constants.  For fields of ARRAY type,
   this event also introduces length and resize functions.  For fields
   of HASH-TABLE type, this event also introduces boundp, get?,
-  remove, count, clear, and initialization functions; similarly for
-  STOBJ-TABLE type, except for the get? function, which is only for
-  the HASH-TABLE type.
+  remove, count, clear, and initialization functions.  Fields of
+  STOBJ-TABLE type introduce those functions as well except for the
+  get? function.
 
 
 The Single-Threaded Object Introduced
@@ -26601,10 +26602,12 @@ The Single-Threaded Object Introduced
   object, named name, which has as its initial logical value a list
   of k elements, where k is the number of ``field descriptors''
   provided.  This object has mutable updates: that is, the object is
-  actually modified in place, rather than copied.  This is only
-  possible because of syntactic restrictions enforced by ACL2 when
-  programming with stobjs, so that after modifying a stobj, its old
-  versions are no longer accessible.
+  actually modified in place, rather than copied, where for an array
+  or hash-table field the update is made to a corresponding raw Lisp
+  array or hash table (respectively).  This is only possible because
+  of syntactic restrictions enforced by ACL2 when programming with
+  stobjs, so that after modifying a stobj, its old versions are no
+  longer accessible.
 
   The elements are listed in the same order in which the field
   descriptors appear.  If the :type of a field is (ARRAY
@@ -26612,25 +26615,27 @@ The Single-Threaded Object Introduced
   symbol introduced by [defconst]) whose value is a non-negative
   integer, and the corresponding element of the stobj is initially of
   length specified by max.  If the :type of a field is (HASH-TABLE
-  test) or (HASH-TABLE test size), then test is one of the symbols
-  EQ, EQL, HONS-EQUAL, or EQUAL, while size, if supplied as above or
-  in (STOBJ-TABLE size), is a natural number.  In that case the test
-  is applied when looking up keys, where [hons-copy] is first applied
-  to the key in the HONS-EQUAL case; and the size is a hint to the
-  host Lisp for the initial size of the associated hash table in raw
-  Lisp.  (The size really is used only as a hint.  Indeed, at least
-  one host Lisp does not support size 0, so ACL2 simply treats size 0
-  as size 1; and even size 1 may result in a hash-table of
-  considerably larger size.)
+  test) or (HASH-TABLE test size), or (HASH-TABLE test size
+  type-indicator), then: test is one of the symbols EQ, EQL,
+  HONS-EQUAL, or EQUAL; size, if supplied as above or in (STOBJ-TABLE
+  size), is nil (handled the same as when size is omitted) or a
+  natural number; and type-indicator restrict the values that can be
+  stored, as discussed in the next paragraph.  The hash-table test is
+  applied when looking up keys in the associated raw Lisp hash table,
+  where [hons-copy] is first applied to the key in the HONS-EQUAL
+  case; and the size is a hint to the host Lisp for the initial size
+  of the associated hash table in raw Lisp.  (The size really is used
+  only as a hint.  Indeed, at least one host Lisp does not support
+  size 0, so ACL2 simply treats size 0 as size 1; and even size 1 may
+  result in a hash table of considerably larger size.)
 
-  If the value of :type is of the form (ARRAY type-indicator (max)) or
-  just type-indicator, then type-indicator is typically a type-spec;
-  see [type-spec].  However, type-indicator can also be the name of a
-  stobj that was previously introduced (by defstobj or
-  [defabsstobj]).  We ignore this ``nested stobj'' case below; see
-  [nested-stobjs] for a discussion of stobjs within stobjs.  Note
-  that HASH-TABLE types do not specify a type indicator; thus, a
-  hash-table field cannot contain stobjs as values.
+  If the value of :type is of the form (ARRAY type-indicator (max)),
+  (HASH-TABLE test size type-indicator), or just type-indicator, then
+  type-indicator is typically a type-spec; see [type-spec].  However,
+  type-indicator can also be the name of a stobj that was previously
+  introduced (by defstobj or [defabsstobj]).  We ignore this ``nested
+  stobj'' case below; see [nested-stobjs] for a discussion of stobjs
+  within stobjs.
 
   A field with a STOBJ-TABLE type is logically an association list
   whose keys are [stobj] names.  ACL2 maintains the execution
@@ -26638,11 +26643,16 @@ The Single-Threaded Object Introduced
   recognizer.  We say little more here about stobj-tables; see
   [stobj-table] for relevant discussion.
 
-  The keyword value :initially val specifies the initial value of a
-  field, except for the case of a :type (ARRAY type-indicator (max)),
-  in which case val is the initial value of the corresponding array.
-  Note that the :initially field is ignored for HASH-TABLE and
-  STOBJ-TABLE types; such tables are initially empty anyhow.
+  Below, we refer to scalar types as stobj field types that are neither
+  array types, hash-table types, nor stobj-table types.  Now consider
+  the keyword value :initially val for a stobj field.  If the stobj
+  field is of scalar type, then val is the initial value of the
+  field.  For an array type (ARRAY type-indicator (max)), val is the
+  initial value of the elements in the corresponding array.  For a
+  HASH-TABLE type, val is the value obtained when looking up a key
+  that is not bound in the hash table; think of it as the default
+  value for lookups.  Finally, the :initially keyword is illegal for
+  fields of STOBJ-TABLE type.
 
   Note that the actual representation of the stobj in the underlying
   Lisp may be quite different; see [stobj-example-2].  For the moment
@@ -26671,17 +26681,20 @@ Restrictions on the Field Descriptions in Defstobj
 
   Each typei must be either a [type-spec] or else a list of the form
   (ARRAY type-spec (max)), (HASH-TABLE test), (HASH-TABLE test size),
-  (STOBJ-TABLE), or (STOBJ-TABLE size).  (Again, we are ignoring the
-  case of nested stobjs, discussed elsewhere; see [nested-stobjs].)
-  The latter forms are said to be ``array types'', ``hash-table
-  types'', and stobj-table types (again, not discussed much here; see
-  [stobj-table]).  Examples of legal typei are:
+  (HASH-TABLE test size type-spec), (STOBJ-TABLE), or (STOBJ-TABLE
+  size).  (Again, we are ignoring the case of nested stobjs, ,
+  discussed elsewhere (see [nested-stobjs]), where a type-spec may be
+  replaced by a stobj name.)  The latter forms are said to be ``array
+  types'', ``hash-table types'', and stobj-table types (again, not
+  discussed much here; see [stobj-table]).  Examples of legal typei
+  are:
 
     (INTEGER 0 31)
     (SIGNED-BYTE 31)
     (ARRAY (SIGNED-BYTE 31) (16))
     (ARRAY (SIGNED-BYTE 31) (*c*)) ; where *c* has a non-negative integer value
     (HASH-TABLE HONS-EQUAL 70)
+    (HASH-TABLE EQL NIL (INTEGER 0 *))
     (STOBJ-TABLE 70)
 
   The typei describes the objects which are expected to occupy the
@@ -26791,23 +26804,30 @@ Array Types
 
 Hash-table Types
 
-  When typei is of the form (HASH-TABLE test size), where size is
-  optional, the field is logically an association list, initially
-  empty.  Under the hood in raw Lisp, however, there is a
-  corresponding hash table that represents the same association of
-  keys with values as does the association list.  Each key should be
-  comparable with arbitrary objects using the specified test: thus if
-  test is [equal] then there is no restriction on keys; if test is
-  [eq] or [eql] then the keys must be symbols or satisfy [eqlablep],
-  respectively; and if test is [hons-equal] then there is no
-  restriction on keys, but each proposed key is [hons]ed in raw Lisp
-  before it is used (whether for access or update) and before it is
-  put into the underlying hash table.  The size, if supplied, is a
-  positive integer that may be used by the host Lisp as a hint for
-  how to size the associated hash table in raw Lisp.
+  When typei is of the form (HASH-TABLE test size type-spec), where
+  size and type-spec are optional, the field is logically an
+  association list, initially empty, accessed using function
+  [hons-assoc-equal] (which is convenient simply because it has a
+  guard of t, as opposed to other flavors of [assoc]).  Under the
+  hood in raw Lisp, however, there is a corresponding hash table that
+  represents the same association of keys with values as does the
+  association list.  Each key should be comparable with arbitrary
+  objects using the specified test: thus if test is [equal] then
+  there is no restriction on keys; if test is [eq] or [eql] then the
+  keys must be symbols or satisfy [eqlablep], respectively; and if
+  test is [hons-equal] then there is no restriction on keys, but each
+  proposed key is [hons]ed in raw Lisp before it is used (whether for
+  access or update) and before it is put into the underlying hash
+  table.  The size, if supplied and not nil, is a positive integer
+  that may be used by the host Lisp as a hint for how to size the
+  associated hash table in raw Lisp.
+
+  For a hash-table field, the :initially keyword specifies a default
+  rather than an initial value: it provides the value (default nil)
+  returned by an accessor when a given key is not bound.
 
   A hash-table field is associated not only with a recognizer, an
-  accesor, and an updater, but also with the following functions,
+  accessor, and an updater, but also with the following functions,
   whose final argument is the stobj name but that may also take a key
   or, in the case of the ``init'' function, three other arguments, as
   follows:
@@ -26815,9 +26835,11 @@ Hash-table Types
     * a ``boundp'' function to check whether a given key is bound;
     * a ``get?'' function that, for a given key, returns two values (mv val
       boundp), where: if the given key is bound then val is its value
-      and boundp is t, else val and boundp are both nil;
+      and boundp is t, else val is as specified by the :initially
+      keyword (nil by defafult) and boundp is nil;
     * a ``remove'' function for removing a given key;
-    * a ``count'' function that returns the number of (distinct) keys;
+    * a ``count'' function that returns the number of (distinct) bound
+      keys;
     * a ``clear'' function that creates a new empty hash table (and
       logically, the empty alist);
     * an ``init'' function that takes a given size, rehash-size, and
@@ -26826,10 +26848,10 @@ Hash-table Types
       parameters to the raw Lisp function, (make-hash-table), that
       creates a hash table.
 
-  The clear and init functions both use the size argument, if supplied,
-  of the type of the field supplied in the defstobj event.  If no
-  size argument was supplied in that type, then the size of the hash
-  table depends on the host Lisp.
+  The clear and init functions both use the size argument, if supplied
+  and not nil, of the type of the field supplied in the defstobj
+  event.  If a non-nil size argument was not supplied in that type,
+  then the size of the hash table depends on the host Lisp.
 
 
 Stobj-table Types
@@ -26964,7 +26986,7 @@ The Default Function Names
   make-hash-table in raw Lisp.  The :test argument of this function
   is the one specified in the :type specified in the defstobj event
   for the field, in this case EQ from the type (HASH-TABLE EQ); note
-  however that if the :type is (HASH-TABLE HONS-EQUAL), then the
+  however that if the :type specifies the test HONS-EQUAL, then the
   :test is EQL.
 
 
@@ -67599,9 +67621,10 @@ Subtopics
   For this topic we assume that you already understand the basics of
   single-threaded objects in ACL2.  See [stobj], and in particular,
   see [defstobj], which notes that a stobj field can itself be a
-  stobj, an array of stobjs, or a [stobj-table].  The present
-  [documentation] topic expands on that point.  However, we ignore
-  stobj-table fields here; see [stobj-table] for such documentation.
+  stobj, an array or hash-tablle of stobjs, or a [stobj-table].  The
+  present [documentation] topic expands on that point.  However, we
+  ignore stobj-table fields here; see [stobj-table] for such
+  documentation.
 
   Our presentation is in five sections.  First we augment the
   documentation for [defstobj] by explaining how stobjs may be
@@ -67631,11 +67654,13 @@ SECTION: Extension of [defstobj] to permit [stobj]s within stobjs
   Recall that the :type keyword of a [defstobj] field descriptor can be
   a ``type-indicator'' that specifies the type of the field as a
   type-spec (see [type-spec]).  For example, the following specifies
-  an integer field and a field that is an array of bytes.
+  an integer field, a field that is an array of bytes, and a field
+  that is a hash table whose values are integers.
 
     (defstobj st
       (int-field :type integer :initially 0)
-      (ar-field :type (array unsigned-byte (10)) :initially 0))
+      (ar-field :type (array unsigned-byte (10)) :initially 0)
+      (ht-field :type (hash-table eql nil integer) :initially 0))
 
   But the :type of a stobj field descriptor may instead be based on a
   stobj.  For example, the following sequence of three [events] is
@@ -67645,40 +67670,51 @@ SECTION: Extension of [defstobj] to permit [stobj]s within stobjs
   descriptor of top, named sub2-ar-field, illustrates a second new
   kind of value for :type: an array whose elements are specified by
   the name of a previously-introduced stobj, in this case, the stobj
-  sub2.  (See [stobj-table] for the third new kind of value for
-  :type.)
+  sub2.  The third field descriptor is analogous to the second, but
+  with a hash table instead of an array.  (See [stobj-table] for the
+  fourth new kind of value for :type.)
 
     (defstobj sub1 fld1)
     (defstobj sub2 fld2)
     (defstobj top
       (sub1-field :type sub1)
-      (sub2-ar-field :type (array sub2 (10))))
+      (sub2-ar-field :type (array sub2 (10)))
+      (sub2-ht-field :type (hash-table equal nil sub2)))
 
-  The :initially keyword is illegal for fields whose :type is a stobj
-  or an array of stobjs (or, not further discussed here, a
-  [stobj-table]).  Each such initial value is provided by a
-  corresponding call of the stobj creator for that stobj.  In
-  particular, in the case of an array of stobjs, the stobj creator is
-  called once for each element of the array, so that the array
-  elements are distinct.  For example, each element of sub2-ar-field
-  in the example above is initially provided by a separate call of
-  create-sub2.  Each initial element is thus unique, and in
-  particular is distinct from the initial global value of the stobj.
-  Similarly, the initial global stobj for sub1 is distinct from the
-  initial sub1-field field of the global stobj for top, as these
-  result from separate calls of create-sub1.
+  The :initially keyword is illegal for fields whose :type is a stobj,
+  an array of stobjs, or a hash table of stobjs (or, not further
+  discussed here, a [stobj-table]).  For a stobj field, the initial
+  value is provided by a corresponding call of the stobj creator for
+  that stobj.  For a field that is an array of stobjs, the stobj
+  creator is called once for each element of the array, so that the
+  array elements are distinct.  For example, each element of
+  sub2-ar-field in the example above is initially provided by a
+  separate call of create-sub2.  Each initial element is thus unique,
+  and in particular is distinct from the initial global value of the
+  stobj.  Similarly, the initial global stobj for sub1 is distinct
+  from the initial sub1-field field of the global stobj for top, as
+  these result from separate calls of create-sub1.
+
+  For a hash-table field, the :initially keyword is not actually used
+  for the initial hash table, which is empty.  Instead, the
+  :initially keyword typically determines the value returned when an
+  accessor is applied to a key that is not bound --- but not for a
+  hash table with stobj values.  In that case, a fresh copy of the
+  indicated stobj is returned when applying the accessor to an
+  unbound key.
 
   When a stobj is used in a field of another stobj, we may refer to the
   former field as a ``child stobj'' and the latter stobj as a
   ``parent stobj''.  So in the example above, sub1-field is a child
-  stobj of type sub1 for parent stobj top, and sub2-ar-field is an
-  array of child stobjs of type sub2 for parent stobj top.  A child
-  stobj has the same structural shape as the global stobj of its
-  type, but as explained above, these are distinct structures.  We
-  follow standard terminology by saying ``isomorphic'' to indicate
-  the same structural shape.  So for example, (the value of)
-  sub1-field is isomorphic to sub1, though these are distinct
-  structures.
+  stobj of type sub1 for parent stobj top, sub2-ar-field is an array
+  of child stobjs of type sub2 for parent stobj top, and
+  sub2-ht-field is a hash table of child stobjs of type sub2 for
+  parent stobj top.  A child stobj has the same structural shape as
+  the global stobj of its type, but as explained above, these are
+  distinct structures.  We follow standard terminology by saying
+  ``isomorphic'' to indicate the same structural shape.  So for
+  example, (the value of) sub1-field is isomorphic to sub1, though
+  these are distinct structures.
 
   ACL2 enforces the following restriction, which can allow for greater
   efficiency in the raw Lisp code generated for stobj-let forms, as
@@ -67739,9 +67775,9 @@ SECTION: An aliasing problem
   unfettered accessing of stobj fields can result in logically
   inexplicable changes to the child stobj when the parent stobj is
   changed.  Thus, ACL2 disallows direct calls of stobj accessors and
-  updaters for fields whose :type is a stobj or an array of stobjs
-  (or a [stobj-table]).  Instead, ACL2 provides stobj-let for reading
-  and writing such fields in a sound manner.
+  updaters for fields whose :type is a stobj or an array or hash
+  table of stobjs (or a [stobj-table]).  Instead, ACL2 provides
+  stobj-let for reading and writing such fields in a sound manner.
 
 
 SECTION: Accessing and updating stobj fields of stobjs using
@@ -68096,7 +68132,10 @@ stobj-let
 
   The aforementioned community book,
   books/system/tests/nested-stobj-tests.lisp, contains a
-  corresponding checker immediately following this definition.
+  corresponding checker immediately following this definition.  Also
+  see that book for an analogous example using a hash-table field in
+  place of an array field; search there for ``hash tables with stobj
+  value types''.
 
 
 SECTION: Precise documentation for stobj-let
@@ -68122,26 +68161,28 @@ SECTION: Precise documentation for stobj-let
   stobj name (ST) for each binding.  Each of these accessors and (if
   supplied) updaters is a stobj accessor for the same stobj, which is
   typically ST but may be a stobj congruent to ST.  In the case (ACC
-  ST), ACC is the accessor for a scalar (hence not array) field.  In
-  the case (ACCi I ST), ACCi is the accessor for an array field and I
-  is either a variable, a natural number, a list (quote N) where N is
-  a natural number, or a symbol introduced by [defconst].  If UPDATER
-  is supplied, then it is a symbol that is the name of the stobj
-  updater for the field of ST accessed by ACCESSOR.  If UPDATER is
-  not supplied, then for the discussion below we consider it to be,
-  implicitly, the symbol in the same package as the function symbol
-  of ACCESSOR (i.e., ACC or ACCi), obtained by prepending the string
-  \"UPDATE-\" to the [symbol-name] of that function symbol.  Finally,
-  ACCESSOR has a [signature] specifying a return value that is either
-  VAL or is a stobj that is congruent to VAL. (This means that only
-  stobjs may be bound in these bindings.)
+  ST), ACC is the accessor for a scalar (hence not array, hash-table,
+  or stobj-table) field.  In the case (ACC I ST), ACC is the accessor
+  for an array or hash-table field and I is either a symbol, a
+  natural number, or a list (quote C).  If UPDATER is supplied, then
+  it is a symbol that is the name of the stobj updater for the field
+  of ST accessed by ACCESSOR.  If UPDATER is not supplied, then for
+  the discussion below we consider it to be, implicitly, the symbol
+  in the same package as the function symbol ACC of ACCESSOR,
+  obtained by prepending the string \"UPDATE-\" to the [symbol-name] of
+  ACC unless the name of ACC ends in \"-GET\" (suggesting a hash-table
+  field access), in which case the implicit UPDATER is obtained by
+  replacing the suffix \"-GET\" with \"-PUT\".  Finally, ACCESSOR has a
+  [signature] specifying a return value that is either VAL or is a
+  stobj that is congruent to VAL. (This means that only stobjs may be
+  bound in these bindings.)
 
   If the conditions above are met, then the General Form expands to one
   of the expressions below, depending on whether the list
   PRODUCER-VARIABLES has one member or more than one member,
-  respectively.  (But see below for extra code that may be inserted
-  if there are stobj array accesses in BINDINGS.)  We observe the
-  following conventions.
+  respectively.  (But see below for extra code, denoted ``<check>'',
+  that may be inserted if there are stobj array or hash-table
+  accesses in BINDINGS.)  We observe the following conventions.
 
     * Let BINDINGS' be the result of dropping each updater (if any) from
       BINDINGS, that is, replacing each tuple (VAR ACCESSOR UPDATER)
@@ -68187,15 +68228,15 @@ SECTION: Precise documentation for stobj-let
   [term] for a discussion of translation.)  The <check> expression
   generates an extra [guard] proof obligation, which guarantees that
   no aliasing occurs in BINDINGS for two variables bound to accesses
-  of the same stobj array, when at least one of the two variables is
-  a producer variable.  When ACL2 determines that no such aliasing is
-  possible, for example because all the array accesses use distinct
-  numeric indices or because there are no producer variables, then
-  FORM does not undergo such replacement.  Warning: The use of
-  :[trans1] will not show this addition of a check.  But you can see
-  it after admitting the definition of FN (perhaps using
-  [skip-proofs] if you are having difficult admitting the definition)
-  as follows.
+  of the same stobj array or hash table, when at least one of the two
+  variables is a producer variable.  When ACL2 determines that no
+  such aliasing is possible, for example because all the array or
+  hash-table accesses use distinct numeric indices or because there
+  are no producer variables, then FORM does not undergo such
+  replacement.  Warning: The use of :[trans1] will not show this
+  addition of a check.  But you can see it after admitting the
+  definition of FN (perhaps using [skip-proofs] if you are having
+  difficult admitting the definition) as follows.
 
     (untranslate (body 'FN nil (w state)) nil (w state))
 
@@ -68236,10 +68277,10 @@ SECTION: Using stobj-let with abstract stobjs
   for st$c.
 
   For acc and acc$c as above, acc is considered to be a scalar accessor
-  if acc$c is a scalar accessor, and otherwise acc is an array
-  accessor (unless it is a stobj-table accessor, discussed elsewhere;
-  see [stobj-table]); similarly for upd, which therefore is a scalar
-  accessor if and only if acc is a scalar accessor.
+  if acc$c is a scalar accessor, and otherwise acc is an array or
+  hash-table accessor (unless it is a stobj-table accessor, discussed
+  elsewhere; see [stobj-table]); similarly for upd, which therefore
+  is a scalar accessor if and only if acc is a scalar accessor.
 
   A child stobj accessor/updater pair may be used in stobj-let in the
   same way when the parent is an abstract stobj as when the parent is
@@ -68251,7 +68292,10 @@ SECTION: Using stobj-let with abstract stobjs
   books/system/tests/abstract-stobj-nesting/two-usuallyequal-nums-stobj-simpler.lisp,
   which is based on a book contributed by Sol Swords.  This example
   introduces an abstract stobj with child stobj fields, and uses
-  stobj-let to read and write those fields.
+  stobj-let to read and write those fields.  For even simpler
+  examples that illustrate array and hash-table fields, see community
+  books absstobj-with-arrays.lisp and absstobj-with-hash-tables.lisp
+  in the same directory as above.
 
   We start by introducing a concrete stobj with two child stobj fields,
   each of which represents a natural number, together with a ``valid
@@ -90325,6 +90369,21 @@ New Features
   The functions [l<], lexp, and d<, originally defined in
   [community-book] books/ordinals/lexicographic-book.lisp, are now
   built into ACL2.
+
+  A [stobj] field of HASH-TABLE type may now specify an element type;
+  for example, (hash-table eql nil integer) specifies a test of eql,
+  no size restriction, and the element type, integer, indicating that
+  only integers are stored in the hash table.  The :initially keyword
+  of such a field is no longer ignored, but instead provides the
+  value returned when looking up a key that is not bound in the hash
+  table.  Moreover, the element type may be a stobj, indicating that
+  the values in the hash table are all instances of that child stobj;
+  see [nested-stobjs].  In that case, the :initially keyword would be
+  meaningless because one always gets a fresh instance of the child
+  stobj when looking up an unbound key; hence :initially is illegal
+  for any hash-table field with a stobj element type.  Thanks to Rob
+  Sumners for requesting this enhancement and for helpful discussions
+  about its design.
 
 
 Heuristic and Efficiency Improvements
