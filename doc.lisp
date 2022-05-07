@@ -90414,6 +90414,17 @@ Heuristic and Efficiency Improvements
   reduction of time for the event, (include-book
   \"projects/x86isa/top\" :dir :system).
 
+  Book certification has (in the past, and still) an optimization that
+  avoids needless rolling back of the [world] during the
+  [include-book] phase; see [certify-book], in particular the
+  discussion of ``roll back''.  Any [local] event within an
+  [encapsulate] form was reason to roll back the world to before that
+  encapsulate event.  That is no longer the case unless the
+  [encapsulate] form introduces packages in the first pass through
+  that encapsulate form that are hidden or missing after the second
+  pass through it, presumably because of a [local] include-book event
+  in that encapsulate form.
+
 
 Bug Fixes
 
