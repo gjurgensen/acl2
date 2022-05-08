@@ -92315,6 +92315,16 @@ it."
  documentation).  We have seen a 7% reduction of time for the event,
  @('(include-book \"projects/x86isa/top\" :dir :system)').</p>
 
+ <p>Book certification has (in the past, and still) an optimization that avoids
+ needless rolling back of the @(see world) during the @(tsee include-book)
+ phase; see @(see certify-book), in particular the discussion of ``roll back''.
+ Any @(see local) event within an @(tsee encapsulate) form was reason to roll
+ back the world to before that @('encapsulate') event.  That is no longer the
+ case unless the @(tsee encapsulate) form introduces packages in the first pass
+ through that @('encapsulate') form that are hidden or missing after the second
+ pass through it, presumably because of a @(see local) @('include-book') event
+ in that @('encapsulate') form.</p>
+
  <h3>Bug Fixes</h3>
 
  <p>A soundness bug in @(tsee defstobj) has been fixed that allowed a field to
