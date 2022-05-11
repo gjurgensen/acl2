@@ -90321,12 +90321,12 @@ New Features
 
   You can now arrange that an interrupt will kill a proof immediately
   by evaluating (assign abort-soft nil), and you can restore the
-  default behavior --- where an interrupt instructs the proof to
-  quick cleanly at an appropriate opportunity --- by evaluating
-  (assign abort-soft t).  Note that this can interfere with
-  :[redo-flat]; see [abort-soft].  Thanks to Eric Smith for reporting
-  an inability to abort a series of proof attempts using the [prove$]
-  utility, which led to this enhancement.
+  default behavior --- where an interrupt instructs the proof to quit
+  cleanly at an appropriate opportunity --- by evaluating (assign
+  abort-soft t).  Note that this can interfere with :[redo-flat]; see
+  [abort-soft].  Thanks to Eric Smith for reporting an inability to
+  abort a series of proof attempts using the [prove$] utility, which
+  led to this enhancement.
 
   A [stobj] may now have a field of type STOBJ-TABLE, which associates
   arbitrary stobj names with corresponding stobjs.  As of this
