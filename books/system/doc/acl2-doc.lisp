@@ -92228,7 +92228,7 @@ it."
 
  <p>You can now arrange that an interrupt will kill a proof immediately by
  evaluating @('(assign abort-soft nil)'), and you can restore the default
- behavior &mdash; where an interrupt instructs the proof to quick cleanly at an
+ behavior &mdash; where an interrupt instructs the proof to quit cleanly at an
  appropriate opportunity &mdash; by evaluating @('(assign abort-soft t)').
  Note that this can interfere with @(':')@(tsee redo-flat); see @(see
  abort-soft).  Thanks to Eric Smith for reporting an inability to abort a
