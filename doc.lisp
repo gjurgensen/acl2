@@ -90513,6 +90513,11 @@ Bug Fixes
   [multiple-value] return, so that [stobj] names are used even when
   at least one returned value is not an ACL2 object.
 
+  The [trace] level is no longer reset when entering [break-rewrite] or
+  any other [wormhole].  Thanks to Khairul Azhar Kasmiran for raising
+  this issue and pointing to relevant source code ({GitHub Issue
+  #1395 | https://github.com/acl2/acl2/issues/1395}).
+
 
 Changes at the System Level
 

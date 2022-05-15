@@ -92416,6 +92416,11 @@ it."
  multiple-value) return, so that @(see stobj) names are used even when at least
  one returned value is not an ACL2 object.</p>
 
+ <p>The @(see trace) level is no longer reset when entering @(see
+ break-rewrite) or any other @(see wormhole).  Thanks to Khairul Azhar Kasmiran
+ for raising this issue and pointing to relevant source code (<a
+ href='https://github.com/acl2/acl2/issues/1395'>GitHub Issue #1395</a>).</p>
+
  <h3>Changes at the System Level</h3>
 
  <p>The @(see hons-enabled) features of ACL2 (@(tsee hons), @(see memoization),
