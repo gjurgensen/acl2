@@ -90406,7 +90406,10 @@ New Features
 
   The functions [l<], lexp, and d<, originally defined in
   [community-book] books/ordinals/lexicographic-book.lisp, are now
-  built into ACL2.
+  built into ACL2.  However, it is still useful to include an
+  ordinals book, for example [community-book]
+  books/ordinals/ordinals, if you want to reason about such
+  functions.
 
   A [stobj] field of HASH-TABLE type may now specify an element type;
   for example, (hash-table eql nil integer) specifies a test of eql,
