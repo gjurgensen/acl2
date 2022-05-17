@@ -56189,6 +56189,12 @@ About Guard Verification of Lambda Objects
   [ld-keyword-aliases].  See [ld-keyword-aliases].  Otherwise, the
   object read is treated as the command form.
 
+  Except, a special case is when ld has been called in the scope of
+  [local], as in (local (ld ...)).  In that case, the actual command
+  form is obtained by replacing the command form described above ---
+  say, C --- by (local C), unless C itself is already a form whose
+  car is the symbol, local.
+
   Ld next decides whether to evaluate or skip this form, depending on
   [ld-pre-eval-filter].  Initially, the filter must be either :all,
   :query, or a new name.  If it is :all, it means all forms are
@@ -90315,6 +90321,13 @@ Changes to Existing Features
   symbol, T, or any symbols whose [symbol-name] is \"T\".  (This option
   seems to have been essentially unused but it complicated the source
   code.)
+
+  Suppose [ld] is called in the scope of [local], in particular, as
+  with (local (ld ...)).  Then for each [command] C read by that call
+  of ld that is not already of the form (local ...), C is read as
+  though it had been (local C).  (This change has been made in
+  support of [local] [portcullis] [events], a new feature described
+  further below.)
 
 
 New Features
