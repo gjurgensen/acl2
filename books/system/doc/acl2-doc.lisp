@@ -52311,6 +52311,12 @@ tables in the current Hons Space."
  ld-keyword-aliases).  Otherwise, the object read is treated as the command
  form.</p>
 
+ <p>Except, a special case is when @('ld') has been called in the scope of
+ @(tsee local), as in @('(local (ld ...))').  In that case, the actual command
+ form is obtained by replacing the command form described above &mdash; say,
+ @('C') &mdash; by @('(local C)'), unless @('C') itself is already a form whose
+ @('car') is the symbol, @('local').</p>
+
  <p>@('Ld') next decides whether to evaluate or skip this form, depending on
  @(tsee ld-pre-eval-filter).  Initially, the filter must be either @(':all'),
  @(':query'), or a new name.  If it is @(':all'), it means all forms are
@@ -92065,9 +92071,9 @@ it."
 ;   ; (progn (local (defun f (x) x)) (defun h (x) x))
 ;   ; Then:
 ;   ; (certify-book "book1" 1)
-;   
+;
 ;   (in-package "ACL2")
-;   
+;
 ;   (defun g (x)
 ;     (f x))
 ;  ;;;;;;;;;;;;;;;;;;
@@ -92078,16 +92084,16 @@ it."
 ;  ;;; book2.lisp ;;;
 ;  ;;;;;;;;;;;;;;;;;;
 ;   (in-package "ACL2")
-;   
+;
 ;   (include-book "book1") ; no_port
-;   
+;
 ;   (encapsulate
 ;     ()
-;   
+;
 ;     (local (defun f (x)
 ;              (declare (ignore x))
 ;              t))
-;   
+;
 ;     (defthm g-is-t
 ;       (equal (g x) t)
 ;       :rule-classes nil))
@@ -92095,16 +92101,16 @@ it."
 ;  ;;; book3.lisp ;;;
 ;  ;;;;;;;;;;;;;;;;;;
 ;   (in-package "ACL2")
-;   
+;
 ;   (include-book "book1") ; no_port
-;   
+;
 ;   (encapsulate
 ;     ()
-;   
+;
 ;     (local (defun f (x)
 ;              (declare (ignore x))
 ;              nil))
-;   
+;
 ;     (defthm g-is-nil
 ;       (equal (g x) nil)
 ;       :rule-classes nil))
@@ -92112,17 +92118,17 @@ it."
 ;  ;;; bug.lisp ;;;
 ;  ;;;;;;;;;;;;;;;;;;
 ;   (in-package "ACL2")
-;   
+;
 ;   (include-book "book2") ; no_port
-;   
+;
 ;   (include-book "book3") ; no_port
-;   
+;
 ;   (defthm bug
 ;     nil
 ;     :hints (("Goal" :use (g-is-nil g-is-t)))
 ;     :rule-classes nil)
-;   ~/Dropbox/fh/acl2/patches/local-portcullis-events/bug$ 
-;   
+;   ~/Dropbox/fh/acl2/patches/local-portcullis-events/bug$
+;
   :parents (release-notes)
   :short "ACL2 Version  8.5 (xx, 20xx) Notes"
   :long "<p>NOTE!  New users can ignore these release notes, because the @(see
@@ -92293,6 +92299,13 @@ it."
  symbol, @('T'), or any symbols whose @(tsee symbol-name) is @('\"T\"').  (This
  option seems to have been essentially unused but it complicated the source
  code.)</p>
+
+ <p>Suppose @(tsee ld) is called in the scope of @(tsee local), in particular,
+ as with @('(local (ld ...))').  Then for each @(tsee command) @('C') read by
+ that call of @('ld') that is not already of the form @('(local ...)'), @('C')
+ is read as though it had been @('(local C)').  (This change has been made in
+ support of @(tsee local) @(see portcullis) @(see events), a new feature
+ described further below.)</p>
 
  <h3>New Features</h3>
 
