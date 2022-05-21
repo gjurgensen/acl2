@@ -23470,7 +23470,7 @@ Syntax and Semantics of Defattach.
 
     General Forms:
     (defattach f g)   ; single attach or, if g is nil, unattach
-    (defattach (f1 g1 :kwd11val11 ...)
+    (defattach (f1 g1 :kwd11 val11 ...)
                ...
                (fk gk :kwdk1 valk1 ...)
                :kwd1 val1 ...)
