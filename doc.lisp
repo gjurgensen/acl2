@@ -89520,13 +89520,13 @@ New Features
   requesting this feature.
 
   A new utility, [memoize-partial], allows memoization for functions
-  that were made admitted by adding a formal parameter that decreases
-  on each recursive call (sometimes called a ``limit'' or a
-  ``clock'').  Normally that extra parameter can severely impede the
-  utility of memoization; however, the function actually executed
-  does not have that extra parameter.  This allows for more
-  memoization hits.  Thanks to Mertcan Temel for an inquiry leading
-  to this enhancement, and for helpful discussions.
+  that were admitted by adding a formal parameter that decreases on
+  each recursive call (sometimes called a ``limit'' or a ``clock'').
+  Normally that extra parameter can severely impede the utility of
+  memoization; however, the function actually executed does not have
+  that extra parameter.  This allows for more memoization hits.
+  Thanks to Mertcan Temel for an inquiry leading to this enhancement,
+  and for helpful discussions.
 
   A new rule-class (see [rule-classes]) has been added, named
   :[rewrite-quoted-constant].  Rules in this class can cause the
@@ -90433,7 +90433,7 @@ New Features
   capability is to save an ACL2 executable (using [save-exec]) after
   [local]ly including set B of books at the top level, and then ---
   in fresh ACL2 sessions started by running that executable ---
-  certify other books that may include a some books of B.  Those
+  certify other books that may include some books of B.  Those
   inclusions would then be [redundant] during certification of a
   book, but not later when the book is included.  If B is a large set
   of large books, then this process can be much more efficient than

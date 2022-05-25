@@ -91372,7 +91372,7 @@ it."
  Alessandro Coglio for requesting this feature.</p>
 
  <p>A new utility, @(tsee memoize-partial), allows memoization for functions
- that were made admitted by adding a formal parameter that decreases on each
+ that were admitted by adding a formal parameter that decreases on each
  recursive call (sometimes called a ``limit'' or a ``clock'').  Normally that
  extra parameter can severely impede the utility of memoization; however, the
  function actually executed does not have that extra parameter.  This allows
@@ -92405,7 +92405,7 @@ it."
  to save an ACL2 executable (using @(tsee save-exec)) after @(see local)ly
  including set @('B') of books at the top level, and then &mdash; in fresh ACL2
  sessions started by running that executable &mdash; certify other books that
- may include a some books of @('B').  Those inclusions would then be @(see
+ may include some books of @('B').  Those inclusions would then be @(see
  redundant) during certification of a book, but not later when the book is
  included.  If @('B') is a large set of large books, then this process can be
  much more efficient than doing certifications from a basic ACL2 executable,
