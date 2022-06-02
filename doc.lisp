@@ -90634,6 +90634,11 @@ Changes at the System Level
   consecutive directory separators, i.e., \"//\" (in non-Windows
   systems).
 
+  (SBCL only) A build-time parameter was changed so that some non-x86
+  64-bit platforms, notably Arm, are built with --dynamic-space-size
+  32000, as for x86-64 platforms, instead of 2000.  Thanks to Stephen
+  Westfold for pointing out this oversight.
+
 
 EMACS Support
 
