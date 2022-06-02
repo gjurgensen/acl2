@@ -92129,6 +92129,11 @@ it."
 ;     :rule-classes nil)
 ;   ~/Dropbox/fh/acl2/patches/local-portcullis-events/bug$
 ;
+
+; ACL2 builds using SBCL now unconditionally use keyword argument :purify t
+; with sb-ext:save-lisp-and-die.  (But that probably makes no difference; see
+; comment in function save-acl2-in-sbcl-aux, ACL2 source file acl2-init.lisp.)
+
   :parents (release-notes)
   :short "ACL2 Version  8.5 (xx, 20xx) Notes"
   :long "<p>NOTE!  New users can ignore these release notes, because the @(see
@@ -92597,6 +92602,11 @@ it."
 
  <p>ACL2 will now generally signal an error if a filename contains consecutive
  directory separators, i.e., @('\"//\"') (in non-Windows systems).</p>
+
+ <p>(SBCL only) A build-time parameter was changed so that some non-x86 64-bit
+ platforms, notably Arm, are built with @('--dynamic-space-size 32000'), as for
+ x86-64 platforms, instead of @('2000').  Thanks to Stephen Westfold for
+ pointing out this oversight.</p>
 
  <h3>EMACS Support</h3>
 
