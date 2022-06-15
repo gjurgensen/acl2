@@ -10418,9 +10418,9 @@ changes that will go into the @(see community-books); for that, use the
 <li>arithmetic-5</li>
 <li>@(see ihs)</li>
 <li>misc</li>
-<li>tools</li>
+<li>tools (mostly)</li>
 <li>@(see std)</li>
-<li>@(see xdoc)</li>
+<li>@(see xdoc) (in part)</li>
 <li>data-structures</li>
 </ul>
 
@@ -10491,6 +10491,9 @@ Quicklisp libraries by setting @('USE_QUICKLISP=0') in your
 @('make') command.</p>
 
 <p>Using Quicklisp should definitely work if the host Lisp is CCL or SBCL.
+(Note however that certification of @(see books) that use
+Quicklisp may require @('openssl') to be installed if it is not already
+on your system.)
 There is some chance it will work with Allegro CL, LispWorks, and CMUCL.  It
 will almost certainly <b>not</b> work for GCL (at least as of 2018).</p>
 
