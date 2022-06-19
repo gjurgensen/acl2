@@ -13158,9 +13158,9 @@ A Basic Build
     * arithmetic-5
     * [ihs]
     * misc
-    * tools
+    * tools (mostly)
     * [std]
-    * [xdoc]
+    * [xdoc] (in part)
     * data-structures
 
   To certify these books, you should be able to run make as follows.
@@ -13225,9 +13225,11 @@ Books that Require Quicklisp
   in your make command.
 
   Using Quicklisp should definitely work if the host Lisp is CCL or
-  SBCL.  There is some chance it will work with Allegro CL,
-  LispWorks, and CMUCL.  It will almost certainly not work for GCL
-  (at least as of 2018).
+  SBCL.  (Note however that certification of [books] that use
+  Quicklisp may require openssl to be installed if it is not already
+  on your system.)  There is some chance it will work with Allegro
+  CL, LispWorks, and CMUCL.  It will almost certainly not work for
+  GCL (at least as of 2018).
 
 
 Books that Require Additional Software
