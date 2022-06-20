@@ -7828,7 +7828,7 @@ Glossary
   urge you not to follow those links until you've understood the big
   picture!
 
-    * apply$ -- the ACL2 function that takes two arguments, one
+    * apply$ --- the ACL2 function that takes two arguments, one
       representing a function and the other listing actuals to be fed
       to that function.  Under certain conditions, apply$ applies the
       function to the arguments and returns the result.  Apply$ is
@@ -7837,44 +7837,47 @@ Glossary
       its arity is 2, its ``out arity'' is 1 (i.e., it returns 1
       result), its first argument has ``ilk'' :FN and is thus treated
       as a ``function;'' its second argument has ilk NIL and is thus
-      treated as an ordinary object.  Initially, apply$ is the only
-      symbol in ACL2 with an ilk of :FN.
-    * [badge] -- an object associated with some function symbols indicating
-      that apply$ can ``handle'' them and under what conditions.  The
-      badge of a function symbol specifies its arity, its ``out
-      arity,'' (i.e., the number of results the function returns),
-      and the [ilk] of each argument position telling apply$ how each
-      argument is treated.  The ilks are :FN, :EXPR and NIL.  The
-      association between a non-primitive function symbol and its
-      badge is manged by [warrant]s.  In proofs, apply$ must have a
-      warrant for every non-primitive function symbol to be applied.
-      Those warrants are provided as hypotheses to the theorem being
-      proved.  Symbols without badges cannot be apply$d.  Badges are
-      generated, when possible, by [defwarrant].  (Badges can be
-      generated for :program mode functions by [defbadge], allowing
-      apply$ to handle such functions in top level evaluation not not
-      in proofs.)  Not every function symbol can have a badge.
-    * compiled LAMBDA cache (or simply cache in this context) -- a cache in
-      the raw Lisp under ACL2 that supports the application of apply$
-      on well-formed, guard verified LAMBDA objects.  Later in this
-      Glossary we define ``lambda expression,'' ``LAMBDA object,''
-      and ``lambda$ expression'' -- three similar looking phrases
-      with very different meanings.  See [print-cl-cache] for some
-      details of the cache.
-    * evaluation theory -- the logical theory in which expressions
+      treated as an ordinary object.
+    * [badge] --- an object associated with some function symbols
+      indicating that apply$ can ``handle'' them and under what
+      conditions.  The badge of a function symbol specifies its
+      arity, its ``out arity,'' (i.e., the number of results the
+      function returns), and the [ilk] of each argument position
+      telling apply$ how each argument is treated.  The ilks are :FN,
+      :EXPR and NIL.  The association between a non-primitive
+      function symbol and its badge is manged by [warrant]s.  In
+      proofs, apply$ must have a warrant for every non-primitive
+      function symbol to be applied.  Those warrants are provided as
+      hypotheses to the theorem being proved.  Symbols without badges
+      cannot be apply$d.  Badges are generated, when possible, by
+      [defwarrant].  (Badges can be generated for :program mode
+      functions by [defbadge], allowing apply$ to handle such
+      functions in top level evaluation not in proofs.)  Not every
+      function symbol can have a badge.
+    * compiled LAMBDA cache (or simply cache in this context) --- a cache
+      in the raw Lisp under ACL2 that supports the application of
+      apply$ on well-formed, guard verified LAMBDA objects.  Later in
+      this Glossary we define ``lambda expression,'' ``LAMBDA
+      object,'' and ``lambda$ expression'' --- three similar looking
+      phrases with very different meanings.  See [print-cl-cache] for
+      some details of the cache.
+    * evaluation theory --- the logical theory in which expressions
       submitted at the top level of the ACL2 read-eval-print loop are
       evaluated.  The evaluation theory is a consistent extension of
       the proof theory, the latter being the logical theory in which
-      the ACL2 theorem prover operates.  The evaluation theory is not
-      new to apply$; it was introduced when [defattach] was added.
-      But the evaluation theory changed with the introduction of
-      apply$.  All [warrant]s introduced by defwarrant are assumed
-      true in the evaluation theory but not in the proof theory.
-      This means ACL2 can execute calls of apply$ that arise in the
-      evaluation of top-level input, but ACL2 cannot evaluate all
-      calls of apply$ that arise in proofs unless the appropriate
-      warrants are available as hypotheses.
-    * lambda expression -- an integral part of ACL2's formal term syntax,
+      the ACL2 theorem prover operates.  The evaluation theory was
+      introduced in ACL2 when [defattach] was added, but it was
+      changed with the introduction of apply$.  All [warrant]s
+      introduced by defwarrant are assumed true in the evaluation
+      theory but not in the proof theory.  This means ACL2 can
+      execute calls of apply$ that arise in the evaluation of
+      top-level input, but ACL2 cannot evaluate all calls of apply$
+      that arise in proofs unless the appropriate warrants are
+      available as hypotheses.  See
+      [guarantees-of-the-top-level-loop] for some details of the
+      evaluation theory and how it differs from the proof theory
+      supported by the ACL2 theorem prover.
+    * lambda expression --- an integral part of ACL2's formal term syntax,
       lambda expressions are the way let expressions and other
       variable-binding idioms are translated into formal terms.
       Lambda expressions have nothing to do with apply$!  See
@@ -7882,22 +7885,22 @@ Glossary
       different concepts: lambda expressions, LAMBDA objects, and
       lambda$ expressions.  Read carefully anytime you see the word
       ``lambda!''
-    * LAMBDA object -- an ACL2 list constant, typically of the form (LAMBDA
-      vars body) or (LAMBDA vars dcl body) that may be used as a
-      ``function'' by apply$.  Apply$ treats any [consp] object in
-      its first argument position as though it were a LAMBDA object.
-      But it only gives sensible meanings to [tame] LAMBDA objects.
-      And only well-formed LAMBDA objects are executed efficiently.
-      But well-formed LAMBDA objects are hard to type by hand --
-      there are many constraints to keep in mind to guarantee
-      well-formedness.  See [well-formed-lambda-objectp] if you
-      really want to see all the rules.  But that is generally
+    * LAMBDA object --- an ACL2 list constant, typically of the form
+      (LAMBDA vars body) or (LAMBDA vars dcl body) that may be used
+      as a ``function'' by apply$.  Apply$ treats any [consp] object
+      in its first argument position as though it were a LAMBDA
+      object.  But it only gives sensible meanings to [tame] LAMBDA
+      objects.  And only well-formed LAMBDA objects are executed
+      efficiently.  But well-formed LAMBDA objects are hard to type
+      by hand --- there are many constraints to keep in mind to
+      guarantee well-formedness.  See [well-formed-lambda-objectp] if
+      you really want to see all the rules.  But that is generally
       unnecessary.  We strongly recommend not entering LAMBDA objects
-      as quoted constants, e.g., '(LAMBDA (X) (+ 1 X)) -- which is
+      as quoted constants, e.g., '(LAMBDA (X) (+ 1 X)) --- which is
       actually ill-formed!  Instead, use [lambda$], as in (lambda$
       (x) (+ 1 x)).  See also [lambda] for some clarifications.
-    * [lambda$] expression -- an ACL2 macro that allows you to enter quoted
-      well-formed LAMBDA objects into your terms by typing
+    * [lambda$] expression --- an ACL2 macro that allows you to enter
+      quoted well-formed LAMBDA objects into your terms by typing
       untranslated expressions that resemble lambda expressions.  The
       lambda$ expression (lambda$ (x) (+ 1 x)) essentially translates
       into the quoted LAMBDA object '(LAMBDA (X) (BINARY-+ '1 X)).
@@ -7906,8 +7909,8 @@ Glossary
       the body with a [return-last] form that indicates it came from
       a translated lambda$. See also [lambda] for some
       clarifications.
-    * [scion] -- a function that is ancestrally dependent on apply$.  In
-      the early days of apply$ we called scions ``mapping function''
+    * [scion] --- a function that is ancestrally dependent on apply$.  In
+      the early days of apply$ we called scions ``mapping functions''
       but in the Lisp community that implies iteration over a list
       and scions are more general.  Of course, a function that
       iterates over a list apply$ing a ``function'' to each element
@@ -7916,15 +7919,15 @@ Glossary
       special situation, e.g., as a test or base case.  Any function
       ancestrally dependent on apply$ is a scion whether or not it
       takes a ``function'' as an argument or maps over a domain.
-    * [tame] -- the class of functions that apply$ knows about; we actually
-      talk about ``tame functions,'' ``tame LAMBDA objects,'' and
-      ``tame expressions.'' The last are expressions that are
-      evaluable by an interpreter named [ev$] that is
+    * [tame] --- the class of functions that apply$ knows about; we
+      actually talk about ``tame functions,'' ``tame LAMBDA
+      objects,'' and ``tame expressions.'' The last are expressions
+      that are evaluable by an interpreter named [ev$] that is
       mutually-recursive with apply$.  Apply$ cannot handle all
       defineable functions: ACL2 is first order and if apply$ were
       able to ``handle'' certain functions the logic would be
       inconsistent.
-    * [warrant] -- a 0-ary predicate associated with some user-defined
+    * [warrant] --- a 0-ary predicate associated with some user-defined
       function symbols that must be a hypothesis of any theorem whose
       proof involves ``expanding'' apply$ on such symbols; the
       warrant gives apply$ ``permission'' to expand if the arguments
@@ -8073,12 +8076,12 @@ Examples
   unbadged functions, etc.  They are, after all, just arbitrary
   quoted objects and any value in ACL2 can be quoted.  But an
   ill-formed object can become well-formed if the world is
-  appropriately extended, e.g., the appropriate defuns or defwarrants
-  are made.  Perhaps worse, they can be well-formed and then become
-  ill-formed by an undo.  So at runtime apply$ has to check that the
-  function symbol or LAMBDA object is appropriate.  There is a
-  sophisticated cache behind the execution machinery for LAMBDA
-  objects in the evaluation theory.
+  appropriately extended, e.g., the appropriate defuns, defbadges,
+  and defwarrants are made.  Perhaps worse, they can be well-formed
+  and then become ill-formed by an undo.  So at runtime apply$ has to
+  check that the function symbol or LAMBDA object is appropriate.
+  There is a sophisticated cache behind the execution machinery for
+  LAMBDA objects in the evaluation theory.  See [print-cl-cache].
 
   Here are some theorems that can be proved about these concepts.  The
   last of the theorems shown below requires two lemmas, named
@@ -8158,16 +8161,17 @@ Specification of APPLY$
 
   The [ilk]s of apply$ are :FN and NIL respectively, telling us that
   apply$ treats its first argument as a ``function'' and its second
-  as an ordinary object (never as a function).  Initially apply$ is
-  the only symbol in ACL2 with an ilk of :FN.  However as
-  [defwarrant] is used successfully on [scion]s -- functions that
-  somehow call apply$ -- other symbols can have ilk :FN too.
+  as an ordinary object (never as a function).  Initially apply$ and
+  several functions used in the translation of loop$ statements are
+  the only symbols in ACL2 with an ilk of :FN.  However as
+  [defwarrant] is used successfully on [scion]s --- functions that
+  somehow call apply$ --- user-defined symbols can have ilk :FN too.
 
   Apply$ has a guard, namely (apply$-guard fn args).  This is an
   exceptionally weak guard, requiring only that args be a true-list
-  and, if fn is a cons -- which is automatically treated as a LAMBDA
-  object -- the length of args be the length of the second element of
-  fn.  We discuss guards and guard verification in a subsequent
+  and, if fn is a cons --- which is automatically treated as a LAMBDA
+  object --- the length of args be the length of the second element
+  of fn.  We discuss guards and guard verification in a subsequent
   section.
 
   Note for Experts: Technically, apply$ treats any consp object as a
@@ -8191,10 +8195,10 @@ Specification of APPLY$
   in some theorem, use tamep-functionp.  But when you write concrete
   LAMBDA constants, try to keep them well-formed.  We encourage this
   by providing [lambda$] and by enforcing full blown well-formedness
-  checks -- not just tameness checks -- in translate on every quoted
-  LAMBDA object entered in a :FN slot.  And we give you ways to
-  circumvent these checks -- see
-  [gratuitous-lambda-object-restrictions] -- if you really mean to
+  checks --- not just tameness checks --- in translate on every
+  quoted LAMBDA object entered in a :FN slot.  And we give you ways
+  to circumvent these checks --- see
+  [gratuitous-lambda-object-restrictions] --- if you really mean to
   supply ill-formed LAMBDA objects to :FN slots.
 
   Badges are assigned by [defwarrant], and also by [defbadge].  See
@@ -8227,7 +8231,7 @@ Specification of APPLY$
   you want to apply$ a :program mode function you should define it
   with defun and then call defbadge on its name.
 
-  We summarize specification of apply$ with an example.  Consider
+  We summarize the specification of apply$ with an example.  Consider
 
     (apply$ 'foldr
             '((1 2 3)     ; actual 1
@@ -8302,8 +8306,8 @@ Specification of APPLY$
   the function it analyzed.  Warrants are crucial to stating and
   proving theorems about function symbols being applied with apply$.
   We illustrated warrants in the ``Examples'' section above and
-  discuss them further in the secion on ``Theorems Involving Apply$''
-  below.  See also [warrant].
+  discuss them further in the section on ``Theorems Involving
+  Apply$'' below.  See also [warrant].
 
   Apply$ is a defined function in the ACL2 source code.  We exhibit its
   definition at the end of this documentation but you may also see
@@ -8353,7 +8357,7 @@ Definitions Involving on Apply$
   In one sense, apply$ is just an ordinary ACL2 function that takes two
   arguments and returns one result.  Like all ACL2 functions, apply$
   is untyped.  You can supply any two objects as arguments and the
-  axioms tell you what the result is -- though sometimes the result
+  axioms tell you what the result is --- though sometimes the result
   is delivered by an undefined function.
 
   But in a deeper sense, if you want apply$ to ``behave,'' and in
@@ -8374,19 +8378,20 @@ Definitions Involving on Apply$
   processed successfully by defwarrant?'' The full answer is given in
   the documentation for [defwarrant].  But here are some guidelines
   to follow:
-      * use :logic mode,
-      * use a measure that either returns a natural number or a lexicographic
-        combination of natural numbers as defined by the llist
-        function in the Community Books at books/ordinals/,
-      * make sure every function used in the definition has a badge,
-      * ensure that every :FN slot in the body is occupied either by a formal
-        parameter or a quoted, badged function symbol or [lambda$]
-        expression, and
-      * ensure that no parameter occupying a :FN slot is ever used in a slot
-        of any other ilk, and
-      * ensure that every parameter passed into a :FN slot is passed into the
-        same argument position in any recursive calls of the function
-        being defined.
+
+    * use :logic mode,
+    * use a measure that either returns a natural number or a lexicographic
+      combination of natural numbers as defined by the llist function
+      in the Community Books at books/ordinals/,
+    * make sure every function used in the definition has a badge,
+    * ensure that every :FN slot in the body is occupied either by a formal
+      parameter or a quoted, badged function symbol or [lambda$]
+      expression, and
+    * ensure that no parameter occupying a :FN slot is ever used in a slot
+      of any other ilk, and
+    * ensure that every parameter passed into a :FN slot is passed into the
+      same argument position in any recursive calls of the function
+      being defined.
 
   You can certainly violate some of these rules and still get an
   admissible definition.  For example (defun rus (x) (not (apply$ x
@@ -8394,6 +8399,16 @@ Definitions Involving on Apply$
   e.g., (rus 'consp) evaluates to T.  You can even prove (equal (rus
   'consp) t).  But (defwarrant rus) fails because rus violates the
   rules.  So you will not be able to apply$ 'rus.
+
+  Note for Experts: One may wonder why it is possible to warrant a
+  function, fn, that calls badged but unwarranted functions.  Naively
+  one might expect the semantics of (apply$ 'fn args would involve
+  the ev$ of the body of fn and therefore require the successful
+  application (via apply$) of subfunctions in the body.  But that
+  expectation is incorrect.  The semantics of (apply$ 'fn args) as
+  formalized by the warrant for fn says that (under restrictions on
+  the tameness of the arguments) (apply$ 'fn args) is (fn (car args)
+  (cadr args) ...).
 
 
 Theorems Involving Apply$
@@ -8484,10 +8499,13 @@ Theorems Involving Apply$
 
   Lesson 3: If a proof involving apply$ or a scion fails in a forcing
   round with a checkpoint whose conclusion is the warrant for some
-  function, you should remember Lesson 1 and include that function
-  symbol in the warrant for your conjecture!  That is, if you forget
-  to supply a warrant but your conjecture is otherwise provable,
-  ACL2's checkpoints will remind you.
+  function, you should remember Lesson 1 and include the warrant for
+  that function symbol in the hypotheses of your conjecture!  That
+  is, if you forget to supply a warrant but your conjecture is
+  otherwise provable, ACL2's checkpoints will often remind you.  (It
+  is possible, in the absence of an explict warrant hypothesis, for a
+  proof to fail before the prover detects that only the warrant is
+  missing.)
 
   Lesson 4: If a proof involving apply$ or a scion fails here are some
   things to think about.  The basic question is whether something is
@@ -8530,7 +8548,7 @@ Theorems Involving Apply$
   warrant for my-cdr we cannot prove that the measure decreases in
   the recursion above.  Unfortunately, there is no way to provide a
   warrant in a definition.  At the moment we advise users to avoid
-  the use of apply$ -- and functions that use apply$ -- in
+  the use of apply$ --- and functions that use apply$ --- in
   ``termination-critical'' roles.  By that we mean do not use apply$
   if its properties are important to proofs of your measure
   conjectures.  This is easy advice to implement in the case of
@@ -8615,10 +8633,10 @@ Guards and Guard Verification
   To what arguments will my-scion apply$ SQU?  And how can the
   definition of my-scion even specify what functional objects are
   acceptable in its first argument?  This is a limitation suffered by
-  ACL2 that a suitably expressive type system would not.  Our way of
-  coping with it is to ignore the guard here and make sure that when
-  apply$ applies the function symbol executes it checks the guard of
-  the symbol.
+  ACL2 that a logic with a suitably expressive type system would not
+  suffer.  Our way of coping with it is to ignore the guard here and
+  make sure that when apply$ applies the function symbol executes it
+  checks the guard of the symbol.
 
   Guard verification does not ignore guards of a quoted lambda object
   being apply$ed.  Thus, for example, while strange can be guard
@@ -8742,27 +8760,34 @@ Guards and Guard Verification
 Top-Level Evaluation of Apply$
 
   As noted, ACL2's evaluation theory implicitly assumes all warrants
-  produced by [defwarrant].  Since top-level evaluation in ACL2 is
-  conducted in the evaluation theory, ground calls of apply$ --
-  whether literally in top-level input to the ACL2 read-eval-print
-  loop or hidden inside scions called from the top-level -- can be
-  evaluated on quoted warranted function symbols and [lambda$]
-  expressions -- provided the [tame]ness restrictions are met.  This
-  is in contrast to opportunities for evaluation of ground apply$
-  expressions arising in proofs, where warrants must be explicit.
+  produced by [defwarrant].  See [guarantees-of-the-top-level-loop].
+  Since top-level evaluation in ACL2 is conducted in the evaluation
+  theory, ground calls of apply$ --- whether literally in top-level
+  input to the ACL2 read-eval-print loop or hidden inside scions
+  called from the top-level --- can be evaluated on quoted warranted
+  function symbols and [lambda$] expressions --- provided the
+  [tame]ness restrictions are met.  This is in contrast to
+  opportunities for evaluation of ground apply$ expressions arising
+  in proofs, where warrant hypotheses must be explicit.
 
   In this section we focus on calls of apply$ arising in the evaluation
   theory.  We start with a discussion of the use of apply$ with
-  badged :logic mode functions.  We then describe how apply$ handles
-  badged :program mode functions.
+  warranted :logic mode functions.  We then describe how apply$
+  handles badged :program mode functions.  Note that a mere badge is
+  not sufficient for evaluation when using apply$ on a :logic mode
+  function that is not warranted; see [defbadge] and
+  [guarantees-of-the-top-level-loop] for discussion of this case.  In
+  short: evaluation involving :logic mode functions is expected to
+  respect the evaluation theory, and while defwarrant extends the
+  evaluation theory appropriately, defbadge does not.
 
   Evaluation of apply$ terms in the evaluation theory respects guards
   on quoted function symbols and [lambda$] expressions (which is to
   say, on the quoted well-formed LAMBDA objects that [lambda$]
   produces).  So consider a call of apply$ on fn and args in the
-  evaluation theory, where fn is a badged function symbol or a
+  evaluation theory, where fn is a warranted function symbol or a
   well-formed (and thus tame) LAMBDA object.  Here's what happens.
-  Except where noted, the description below applies both to badged
+  Except where noted, the description below applies both to warranted
   :logic and badged :program mode functions.
 
   Apply$ determines whether fn's tameness restrictions are met by args.
@@ -8773,10 +8798,11 @@ Top-Level Evaluation of Apply$
   has been guard verified.  In the case of function symbols this is a
   simple lookup on the property list of fn.  (Of course, this check
   fails for :program mode functions.)  In the case of LAMBDA objects
-  it is a cache query and if the query reveals that we have not yet
-  tried to verify the guards of this LAMBDA object, apply$ uses tau
-  reasoning alone (see [introduction-to-the-tau-system]) to verify
-  the guard conjectures.
+  it is a cache query (see [print-cl-cache]) and if the query reveals
+  that we have not yet tried to verify the guards of this LAMBDA
+  object, apply$ uses tau reasoning alone (see
+  [introduction-to-the-tau-system]) to try to verify the guard
+  conjectures.
 
   Note:An important distinction between the runtime handling of
   function symbols versus LAMBDA objects by apply$ is that function
@@ -8805,7 +8831,9 @@ Top-Level Evaluation of Apply$
   We discuss the cache that supports LAMBDA application in
   [print-cl-cache].  See also the discussion of guard verification in
   [lambda$].  It should be noted that a LAMBDA object can also be
-  guard verified using the [verify-guards] event.
+  guard verified using the [verify-guards] event.  This brings the
+  full power of the prover to bear on the guard verification of the
+  LAMBDA object, instead of relying just on the tau system.
 
   Users are accustomed to executing :program mode functions at the
   top-level of the ACL2 read-eval-print loop.  Indeed, the prover
@@ -8815,23 +8843,29 @@ Top-Level Evaluation of Apply$
   And yet no part of that axiomatization explains how :program mode
   functions are run!  It simply isn't important.  The implementation
   supports it and no questions are asked.  We, the implementors of
-  ACL2, view top-level evaluation of both :logic mode and :program
-  mode functions as a convenience not affecting the consistency of
-  the proof theory.  No inconsistency results from starting a
-  non-terminating computation because you can never inspect the
-  result, whereas if you added the corresponding definition as an
-  axiom you might be able to prove something contradictory.  So we
-  regard the seamless execution of :program mode functions as a
-  convenience to the user who might use them to inspect the ACL2
-  logical world, gather data, experiment with constrained formal
-  models by attaching executable code to unspecified functions,
-  prototype something to be formalized, etc.  In that spirit, we have
-  arranged for apply$ to handle :program mode functions provided they
-  have badges.  Badges are critical because it means that execution
-  of the functions won't ``go outside the sandbox.'' However, apply$
-  runs :program mode functions in [safe-mode] to ensure the
-  functional substitutivity of apply$: identical calls must always
-  yield identical results.
+  ACL2, view top-level evaluation of :program mode functions as a
+  convenience not affecting the consistency of the proof theory.  No
+  inconsistency results from starting a non-terminating computation
+  because you can never inspect the result, whereas if you added the
+  corresponding definition as an axiom you might be able to prove
+  something contradictory.  So we regard the seamless execution of
+  :program mode functions as a convenience to the user who might use
+  them to inspect the ACL2 logical world, gather data, experiment
+  with constrained formal models by attaching executable code to
+  unspecified functions, prototype something to be formalized, etc.
+  In that spirit, we have arranged for apply$ to handle :program mode
+  functions provided they have badges.  Badges are critical because
+  it means that execution of the functions won't ``go outside the
+  sandbox.'' However, apply$ runs :program mode functions in
+  [safe-mode] to ensure the functional substitutivity of apply$:
+  identical calls must always yield identical results.
+
+  It may seem counterintuitive that a top-level apply$ of a :logic mode
+  function cannot be executed unless defwarrant has succeeded but a
+  top-level apply$ of a :program mode function can be executed.  As
+  noted earlier, the reason is simple: execution of :logic mode
+  functions is justified by the axioms of the evaluation theory while
+  no such assurances are offered for :program mode functions.
 
 
 Logical Definitions
@@ -24132,25 +24166,60 @@ Subtopics
 
 Badges versus Warrants
 
-  It is easy to confuse badges, which are issued by defbadge, with
-  warrants, which are issued by [defwarrant].  The thing to keep in
-  mind is that badges extend the syntax and evaluation capabilities
-  of ACL2, while warrants extend the proof theory.  Some user-defined
-  function symbols may be given badges even if they are in :[program]
-  mode (see [mixed-mode-functions]).  If fn has a badge, you are
-  allowed to write (apply$ 'fn (list a1 ... an)) and expect it
-  evaluate ``correctly'' at the top level of the ACL2 read-eval-print
-  loop, just as you expect (fn a1 ... an) to evaluate.  But you
-  cannot prove anything interesting about (apply$ 'fn (list a1 ...
-  an)) without the warrant for fn.  A badged but unwarranted function
-  symbol might as well be undefined as far as the prover is
-  concerned.  Warrants connect the quoted symbol to the axiomatic
-  behavior of apply$, in particular, they constrain (apply$ 'fn (list
-  a1 ... an)) to be (fn a1 ... an) under certain conditions.
-  Obviously, the very first requirement on fn to have a warrant is
-  that fn must be in :[logic] mode.  But there are other requirements
-  because defwarrant must make sure the extended proof theory is
-  consistent.
+  It is easy to confuse [badge]s, which are issued by defbadge, with
+  [warrant]s, which are issued by [defwarrant].  Badges and warrants
+  are necessary to ACL2's support of [apply$] because ACL2 is
+  actually first-order, functions cannot be passed around as objects,
+  ordinary symbols play the role of ``function objects,'' and somehow
+  the logic must allow the association of a symbol with the function
+  it names.  Furthermore, to insure the consistency of the logic
+  apply$ is not allowed to handle certain functions such as the
+  russell function illustrated in [introduction-to-apply$].  But to
+  determine whether a newly defined function is allowed to be known
+  to apply$, the ACL2 system must be able to determine, in some
+  sense, all the functions reachable from it.  And finally, to be
+  able to prove theorems about the application of such function
+  names, the link between the symbols and the functions and the
+  analyzed properties of the functions must available to the prover
+  in the form of axioms.  Particularly vexing is the so-called
+  ``local problem'' which raises the possibility of proving a theorem
+  about the application of a name in the context of a local
+  definition of the corresponding function and then exporting that
+  theorem to a context where the name is defined differently (see
+  Lesson 12 of [introduction-to-apply$]).
+
+  Roughly speaking, badges are about syntax and warrants are about
+  semantics.  The badge for a symbol is a data structure in the ACL2
+  system that records information like whether the symbol names a
+  known ACL2 function, how many arguments that function takes, how
+  many results it returns, which arguments are treated like function
+  objects to be [apply$]'d, which are treated like expressions to be
+  [ev$]'d, and which are treated like ordinary ACL2 objects to be
+  car'd, cdr'd, consed, etc.  The warrant for a function is in fact
+  another function (actually a 0-ary predicate) defined in the logic.
+  That predicate asserts some facts about the symbol.  In particular,
+  it specifies the badge of the symbol and it constrains the behavior
+  of apply$ on the symbol.
+
+  Defbadge analyzes the definition of a function and constructs the
+  badge if possible.  Defbadge does not affect the logic --- no
+  definitions or axioms are added.  Defbadge can analyze both
+  :program mode functions and :logic mode functions.  Defwarrant, on
+  the other hand, can only analyze :logic mode functions because it
+  must inspect the measure used to justify the termination of the
+  function and, if it is successful, it adds a :logic mode definition
+  of the warrant to the logic.  This definition links the symbol to
+  the function via badge and apply$ and if the warrant is a
+  hypothesis of a conjecture then the prover ``knows'' about the
+  linkage.
+
+  Both defbadge and defwarrant affect the top-level read-eval-print
+  loop because that loop treats :program and :logic functions
+  differently so that it can (a) allow :program mode terms to be
+  evaluated to carry out commands such as [defun] and [defthm], query
+  the world or build and test prototypes, and (b) allow :logic mode
+  terms to be evaluated while guaranteeing a certain correspondence
+  with what can be proved.  See [guarantees-of-the-top-level-loop].
 
 
 Requirements of Defbadge
@@ -24162,15 +24231,16 @@ Requirements of Defbadge
   mode.  This command analyzes the body of fn to determine whether it
   satisfies certain stringent syntactic conditions discussed below.
   If the conditions are not met, defbadge signals an error.
-  Otherwise, if records a [badge] for fn.  Badges record the input
+  Otherwise, it records a [badge] for fn.  Badges record the input
   and output arities of fn and specify which arguments are
   ``functions'' that may be applied with apply$, which are
   ``expressions'' that may be evaluated with [ev$], and which are
   neither.  The conditions checked are sufficient to allow [apply$]
   to run the function safely at the top level of the ACL2
-  read-eval-print loop.  However, in order to prove anything about
-  the behavior of apply$ on fn the function will need a [warrant] as
-  issued by [defwarrant].  Defbadge does not issue warrants, just
+  read-eval-print loop.  However, in order to prove anything about a
+  call of apply$ on fn --- or even to evaluate such a call if fn is
+  in :[logic] mode, as discussed above --- fn will need a [warrant]
+  as issued by [defwarrant].  Defbadge does not issue warrants, just
   badges.  Defwarrant can issue both badges and warrants.
 
   The first condition on fn is that it must be a defined function
@@ -24206,13 +24276,14 @@ Requirements of Defbadge
   is sometimes passed into a :FN (or :EXPR) slot in the body of fn
   and is never passed into any other kind of slot.  A formal can be
   be assigned ilk NIL iff it is never passed into a slot of ilk :FN
-  or :EXPR, i.e., if it is used as an ``ordinary'' object.  We are
-  more precise below.
+  or :EXPR, i.e., if it is used exclusively as an ``ordinary''
+  object.  We are more precise below.
 
   (b) Every :FN and :EXPR slot of every function called in the body of
   fn is occupied either by a formal of fn of the same ilk or, in the
   case of calls of functions other than fn, a quoted [tame] function
-  symbol or quoted tame (preferably well-formed) LAMBDA object.
+  symbol or quoted tame (preferably well-formed) LAMBDA object.  (See
+  [well-formed-lambda-objectp].)
 
   This completes the list of restrictions imposed by defbadge.
 
@@ -24221,14 +24292,16 @@ Discussion and Examples
 
   Note that if apply$ is not reachable from fn, the restrictions
   imposed on fn are comparatively generous.  Such a fn could be
-  badged despite being defined mutually recursively or in terms of
-  unbadged or even unbadgeable functions.
+  badged and warranted despite being defined mutually recursively or
+  in terms of unbadged or even unbadgeable functions.  Basically, if
+  fn doesn't depend on apply$ there is no danger that some argument
+  of fn will be treated like a function object or an expression.
 
   After a successful defbadge event for fn, the function [badge] will
-  return the computed badge and [apply$] will be able to accept the
-  fn as a functional argument.  Here is an annotated script.  First,
-  carry out these two events, defining foldr as a :program mode
-  function.
+  return the computed badge (when executed in the top-level loop) and
+  [apply$] will be able to accept the fn as a functional argument.
+  Here is an annotated script.  First, carry out these two events,
+  defining foldr as a :program mode function.
 
     (include-book \"projects/apply/top\" :dir :system)
 
@@ -24257,12 +24330,12 @@ Discussion and Examples
     ACL2 Error in TOP-LEVEL:  The value of APPLY$-USERFN is not specified
     on FOLDR because FOLDR has not been badged.
 
-  However, we can use defbadge to compute the badge for foldr.  The
-  badge says foldr has input arity 3, output arity 1, and treats its
-  middle argument as a function.  We can recover the badge by calling
-  the function [badge].  We can successfully apply foldr.  We can
-  even use it in a lambda expression that we pass as the middle
-  argument to foldr.
+  However, we can use defbadge to compute and store the badge for
+  foldr.  The badge says foldr has input arity 3, output arity 1, and
+  treats its middle argument as a function.  We can recover the badge
+  by calling the function [badge].  We can successfully apply foldr.
+  We can even use it in a lambda expression that we pass as the
+  middle argument to foldr.
 
     ACL2 !>(defbadge foldr)
 
@@ -24296,11 +24369,10 @@ The ``Reachability'' Test
   warrants, we think of this test colloquially as whether apply$ is
   ancestral in fn.
 
-  The test and the onerous conditions imposed when the apply$ is
-  reachable is crucial to the soundness of the ACL2 proof theory.  We
-  discuss this further in the background material for [apply$],
-  including {``Limited Second-Order Functionality in a First-Order
-  Setting'' |
+  The test and the onerous conditions imposed when apply$ is reachable
+  is crucial to the soundness of the ACL2 proof theory.  We discuss
+  this further in the background material for [apply$], including
+  {``Limited Second-Order Functionality in a First-Order Setting'' |
   http://www.cs.utexas.edu/users/kaufmann/papers/apply/index.html} by
   Matt Kaufmann and J Strother Moore and offer a fully fleshed out
   metalevel proof that apply$ and all :logic-mode scions can be
@@ -24308,10 +24380,11 @@ The ``Reachability'' Test
   Apply$ and the Functions that Use It in the ACL2 source file
   apply-raw.lisp.
 
-  But badges are more concerned with the evaluation theory than the
-  proof theory.  Even if we convert foldr to :logic mode we cannot
-  prove anything interesting about what happens when it is applied
-  with apply$.
+  But badges are more concerned with syntax (and, for :program mode
+  functions, evaluation) than the proof theory.  Even if we convert
+  foldr to :logic mode we cannot prove anything interesting about
+  what happens when it is applied with apply$.  We can't even prove
+  that foldr has a badge or what that badge is!
 
     ACL2 !>(verify-termination foldr)
     [Successful.  Output deleted.]
@@ -24323,8 +24396,16 @@ The ``Reachability'' Test
     [Unsuccessful.  Output deleted.]
     ******** FAILED ********
 
-  In order to prove anything about applying foldr we need the [warrant]
-  for foldr.  Warrants are issued by [defwarrant].
+    ACL2 !>(thm
+             (equal (badge 'foldr) '(APPLY$-BADGE 3 1 NIL :FN NIL)))
+    [Unsuccessful.  Output deleted.]
+    ******** FAILED ********
+
+  In order to prove anything nontrivial about foldr's badge or behavior
+  under apply$ we need the [warrant] for foldr.  Warrants are issued
+  by [defwarrant].  If we execute (defwarrant foldr) and then amend
+  the failed thm commands above by adding (warrant foldr) as a
+  hypothesis, both amended formulas are provable.
 
 
 How Ilks Are Assigned
@@ -24343,10 +24424,13 @@ How Ilks Are Assigned
   warranted.
 
   The key to the inductive correctness of the algorithm implicity
-  described below is the fact that initially the only function symbol
-  with a slot of ilk :FN is apply$ and the only function with a slot
-  of ilk :EXPR is ev$.  In both functions it is the first argument
-  slot that is so distinguished.
+  described below is the fact that when the ACL2 logic is being
+  booted up the only function symbol with a slot of ilk :FN is apply$
+  and the only function with a slot of ilk :EXPR is ev$.  In both
+  functions it is the first argument slot that is so distinguished.
+  All other ACL2 primitives that use apply$ or ev$, e.g., collect$,
+  are defined, admissible, badged, and warranted under the same
+  conditions user-defined functions are.
 
   Let v  be the i th formal parameter of a defined function fn.  Then
   the ilk of v  is :FN iff the value of v  eventually makes its way
@@ -29088,25 +29172,9 @@ Subtopics
 
 Badges versus Warrants
 
-  It is easy to confuse badges, which are issued by [defbadge], with
-  warrants, which are issued by defwarrant.  The thing to keep in
-  mind is that badges extend the syntax and evaluation capabilities
-  of ACL2, while warrants extend the proof theory.  Some user-defined
-  function symbols may be given badges even if they are in :[program]
-  mode (see [mixed-mode-functions]).  If fn has a badge, you are
-  allowed to write (apply$ 'fn (list a1 ... an)) and expect it
-  evaluate ``correctly'' at the top level of the ACL2 read-eval-print
-  loop, just as you expect (fn a1 ... an) to evaluate.  But you
-  cannot prove anything interesting about (apply$ 'fn (list a1 ...
-  an)) without the warrant for fn.  A badged but unwarranted function
-  symbol might as well be undefined as far as the prover is
-  concerned.  Warrants connect the quoted symbol to the axiomatic
-  behavior of apply$, in particular, they constrain (apply$ 'fn (list
-  a1 ... an)) to be (fn a1 ... an) under certain conditions.
-  Obviously, the very first requirement on fn to have a warrant is
-  that fn must be in :[logic] mode.  But there are other requirements
-  because defwarrant must make sure the extended proof theory is
-  consistent.
+  It is easy to confuse [badge]s, which are issued by [defbadge], with
+  [warrant]s, which are issued by defwarrant.  See the first section
+  of [defbadge] for an extended discussion.
 
 
 Requirements of Defwarrant
@@ -29118,11 +29186,11 @@ Requirements of Defwarrant
   of fn to determine whether it satisfies certain stringent syntactic
   and semantic conditions that allow the ACL2 proof theory to be
   extended so that the prover can simplify forms like (apply$ 'fn
-  ...).  The syntactic conditions are actually those of [defbadge],
-  which defwarrant essentially invokes if fn is not already badged.
-  But below we describe all the conditions --- those enforced by
-  defbadge and those unique to defwarrant --- since many users use
-  defwarrant to issue both a badge and a warrant.
+  ...).  The syntactic conditions include those of [defbadge], which
+  defwarrant essentially invokes if fn is a :[logic] mode function
+  that is not already badged.  But below we describe all the
+  conditions checked by defwarrant since many users use defwarrant to
+  issue both a badge and a warrant.
 
   Basic conditions include that fn is in :[logic]-mode and that its
   justification (i.e., the measure, well-founded relation, and domain
@@ -29146,11 +29214,12 @@ Requirements of Defwarrant
   the Community Books at books/ordinals/.
 
   (b) Every function called in the body of fn, except fn itself, must
-  already have a [badge].  If some subfunction doesn't already have a
-  badge, defwarrant will signal an error and report the unbadged
-  function.  You will have to call defwarrant on that function ---
-  and that call must succeed --- before any function using it is
-  successfully warranted.
+  already have a [badge] and a warrant.  If some subfunction doesn't
+  already have a badge, defwarrant will call [defbadge] and signal an
+  error if that fails.  If some subfunction doesn't already have a
+  warrant, defwarrant will signal an error and suggest that you call
+  defwarrant on the offending subfunction first.  Defwarrant will
+  continue to fail until all subfunctions have badges and warrants.
 
   (c) It must be possible for each formal of fn to be assigned one of
   three [ilk]s, :FN, :EXPR, or NIL, as described below.  The basic
@@ -29180,7 +29249,14 @@ Requirements of Defwarrant
   cannot be reached are comparatively generous.  If fn does not
   depend on apply$ then fn can be warranted despite (a) being defined
   mutually recursively or with an arbitrary ordinal measure, or (b)
-  calling unbadged or unbadgeable functions.
+  calling unbadged or unbadgeable functions.  Defwarrant can be
+  relaxed in this case because the warrant constrains (apply$ 'fn
+  ...) to be (fn ...) and fn is a well-defined :logic mode function
+  that is independent of apply$.  Thus, in the model of apply$ that
+  justifies the whole apply$ story, the handling of fn is just a base
+  case.  The situation would be more restrictive if the warrant
+  constrained (apply$ 'fn ...) to evaluate the body of fn with [ev$]
+  which would possibly raise termination issues.
 
   Regardless of whether apply$ is reachable, if the requisite
   conditions are not met, defwarrant causes an error.
@@ -38547,7 +38623,7 @@ Semantics
 
   Notice the addition of hypotheses above of the form (warrant ...).
   ACL2 adds such [warrant] hypotheses for function symbols that might
-  be [apply$]ed during evaluation of a scion call (in this case,
+  be [apply$]'d during evaluation of a scion call (in this case,
   sum$).
 
   In general, you may notice that ACL2 generates such ``special'' guard
@@ -43204,6 +43280,504 @@ Subtopics
   an untranslated term, that is, a user-level term; see [term].  The
   corresponding call (guard-theorem x simplify guard-debug (w state)
   state) returns a translated term.")
+ (GUARANTEES-OF-THE-TOP-LEVEL-LOOP
+  (LD)
+  "ACL2 interactive top-level read-eval-print loop
+
+  We often refer to the ``top-level loop,'' or just ``the loop'' when
+  the context is understood.  The loop is the interactive
+  read-eval-print loop with which the user interacts to issue
+  commands, query the ACL2 logical world, test functions,
+  conjectures, and systems, etc.  This documentation topic mainly
+  addresses the logical guarantees of the loop.  For practical advice
+  about interacting with and configuring the loop see [ld].  Ld is
+  the ACL2 implementation of the loop (as a macro that calls a
+  [state]-using function with many parameters which may be set by the
+  user).  Ld is called initially when ACL2 is fired up.
+
+  But here we are concerned with what it means, logically, when a term
+  tm evaluates without error to a value v in the loop.
+
+
+A Strawman Proposal on the Meaning of Top-Level Evaluation
+
+  One might like to think that for any term, tm, a non-erroneous
+  interaction like
+
+    ACL2 !>tm
+    v
+
+  means that the formula
+
+    (equal tm 'v)
+
+  is a theorem and can be proved by the prover.
+
+  For example, let sq be a :logic mode function that squares its
+  argument.  (For the sake of a later example, let us also make the
+  [guard] of sq be t and verify the guard by fixing (with [rfix]) the
+  argument to be a rational, but those aspects of sq are irrelevant
+  in our immediate use of it below.)
+
+    (defun sq (x)
+      (declare (xargs :guard t :verify-guards t))
+      (let ((x (rfix x)))
+        (* x x)))
+
+  then the evaluation
+
+    ACL2 !>(sq 3)
+    9
+
+  suggests that (equal (sq 3) 9) is a theorem and that is indeed
+  provable by the ACL2 theorem prover.
+
+  But the situation is quite subtle and deserves further discussion.
+  That is what this topic is about.
+
+  Spoiler Alert: We will not give logical semantics to every
+  non-erroneous evaluation in this discussion.  We only hint at how
+  it can be done for many terms.  Furthermore, even for those terms
+  whose evaluations do correspond to theorems, the logical theory in
+  which those theorems can be proved is not the theory supported by
+  the ACL2 prover but an extension of it.  We ultimately describe
+  below the so-called evaluation theory which is an extension of
+  ACL2's proof theory.  So this documentation topic discusses two
+  logical theories.  Because any theory in which proofs are done
+  might be called the ``proof theory'' and in this section we need to
+  clearly distinguish between the two theories being discussed, we'll
+  refer to the theory supported by the ACL2 theorem prover as the
+  prover's theory.
+
+
+Problems Raised by :Program Mode Functions
+
+  Suppose prog-sq is defined as a :[program] mode function that squares
+  its argument.  Then the top-level evaluation
+
+    ACL2 !>(prog-sq 3)
+    9
+
+  clearly should not suggest
+
+    (equal (prog-sq 3) 9)
+
+  is a theorem.  :Program mode functions are not defined in the
+  prover's theory.  (:Program mode functions may not terminate and
+  any naive attempt to add their definitions to the prover's theory
+  as axioms could result in unsoundness.)  The top-level loop has the
+  ability to evaluate :program mode expressions but it is ``magic,''
+  unsupported by proof.  (Non-termination by the evaluator can't
+  manifest unsoundness: such computations just never produce an
+  answer.)  The evaluation of :program mode expressions is supported
+  in the loop primarily as a way to execute commands like [defun] and
+  [defthm].  But it is also a convenience that allows ACL2 to be used
+  as a [programming] language (e.g., to prototype a system one might
+  eventually admit to the logic and prove theorems about).
+
+  Therefore, when attempting to define the logical meaning of top-level
+  evaluations we might restrict our attention to :[logic] mode terms
+  only.  But this is not sufficient for several reasons.
+
+  :Program mode functions raise another problem discussed below in
+  connection with apply$.
+
+
+Problems Raised by Single-Threaded Objects
+
+  Evaluation of terms involving single-threaded objects or ``[stobj]s''
+  raise problems, even if the terms involved are in :logic mode.
+  Here is a top-level evaluation sequence
+
+    ACL2 !>(defstobj st fld)
+    ...
+    ST
+    ACL2 !>(update-fld 3 st)
+    <st>
+    ACL2 !>(update-fld (sq (fld st)) st)
+    <st>
+    ACL2 !>(fld st)
+    9
+
+  but the strawman conjecture from the last evaluation, (equal (fld st)
+  9), is not a theorem.  However, a related formula is a theorem and
+  can be proved by the prover.
+
+    (implies (stp st)
+             (let* ((st (update-fld 3 st))
+                    (st (update-fld (sq (fld st)) st)))
+               (equal (fld st) 3)))
+
+  This reminds us that the top-level loop tracks changes to each
+  ``live'' stobj and records them in the ACL2 [state].  Those changes
+  must be reflected in any suggested theorems.
+
+
+Problems Raised by Apply$
+
+  [Apply$] calls [apply$-userfn] to handle the application of
+  user-defined function symbols.  Apply$-userfn is undefined but
+  might be constrained by [warrant] hypotheses (see [defwarrant]).
+  Recall that warrants link the functions approved by defwarrant to
+  their names and constrain (apply$ 'fn (list a1 ... an)) to be (fn
+  a1 ... an) under certain [tame]ness conditions.  As noted at the
+  bottom of the discussion of [defwarrant], there is a model of the
+  prover's theory in which all warrants issued by defwarrant are
+  true.  The top-level loop assumes that all those warrants are true.
+  But the prover's theory does not, because explicit warrant
+  hypotheses are essential to avoiding the so-called ``local
+  problem'' (see Lesson 12 of [introduction-to-apply$]).
+
+  One might wonder why we have warrants at all, aside from the local
+  problem.  The key reason is that inconsistency can result from
+  non-terminating recursion if we had the following axiom schema
+
+    Unsound Axiom Schema:
+    (equal (apply$ 'f (list a1 ... an)) (f a1 ... an))
+
+  for every defined function f.  See the russell example in
+  [introduction-to-apply$].  So warrants and the restrictions
+  enforced by [defwarrant] keep the prover's theory consistent.  One
+  might then ask ``how do we get away with letting the top-level loop
+  apply$ all badged :program mode functions?'' The answer is simple:
+  :program mode functions are not axiomatized so we don't have a
+  theory to worry about!
+
+  To illustrate the difference between the behavior of the top-level
+  loop and the prover, suppose the function sq, defined above, has
+  been warranted.
+
+    (defwarrant sq)
+
+  and then consider the top-level evaluation
+
+    ACL2 !>(apply$ 'sq '(3))
+    9
+
+  This is possible because the warrant for sq is assumed true in the
+  top-level loop and that warrant tells the loop that (apply$ 'sq
+  '(3)) = (sq 3).
+
+  However, (equal (apply$ 'sq '(3)) '9) is not a theorem in the
+  prover's theory.  Instead, this is a theorem
+
+    (implies (warrant sq)
+             (equal (apply$ 'sq '(3)) '9))
+
+  where (warrant sq) is just a convenient abbreviation for
+  (apply$-warrant-sq).
+
+  Thus, to extend the strawman conjecture to functions in which apply$
+  is ancestral would require tracking the warrants relevant to the
+  execution path (or punting and collecting all warrants) and
+  amending the conjecture to add those warrants as hypotheses to the
+  equality.
+
+  But apply$ introduces another source of complexity: mixed-mode
+  functions (see [mixed-mode-functions]).  Recall the :program mode
+  function prog-sq which squares its argument.  We can assign a badge
+  to prog-sq and then define a :logic mode function that apply$s it!
+
+    (defbadge prog-sq)
+
+    (defun logic-sq (x)
+      (declare (xargs :mode :logic))
+      (apply$ 'prog-sq (list x)))
+
+  Since the top-level loop can evaluate applications of :program mode
+  symbols we see the following evaluation.
+
+    ACL2 !>(logic-sq 3)
+    9
+
+  Note that (logic-sq 3) is a :logic mode term and logic-sq can even be
+  warranted with defwarrant.  But neither
+
+    (equal (logic-sq 3) '9)
+
+  nor
+
+    (implies (warrant logic-sq) (equal (logic-sq 3) '9))
+
+  is a theorem in the prover's theory because prog-sq is undefined in
+  that theory.  For what it is worth, the prover can prove
+
+    (implies (warrant logic-sq) (equal (logic-sq 3) (apply$ 'prog-sq '(3))))
+
+  This example contradicts the suggestion, just above, that if we
+  properly considered warrants we could give logical meaning to
+  evaluations of :logic mode terms involving apply$.
+
+
+Problems Raised by Constrained Functions
+
+  Constrained functions raise problems if they have been given
+  attachments (see [defattach]).  The top-level loop uses attachments
+  to compute values consistent with the constraints, but the prover's
+  theory does not.  Attachments are useful for building and testing
+  instances of models consistent with the constraints.
+
+  For example, let (nonneg-rat x) be constrained to return some
+  nonnegative rational.
+
+    (encapsulate (((nonneg-rat *) => *))
+      (local (defun nonneg-rat (x)
+               (declare (ignore x))
+               0))
+      (defthm nonneg-rat-constraint
+        (and (rationalp (nonneg-rat x))
+             (<= 0 (nonneg-rat x)))))
+
+  It is impossible to evaluate (nonneg-rat 3) in the top-level loop.
+  But we can attach another function to it provided we can prove that
+  function always returns a nonnegative rational.  Since sq, as
+  defined above to rfix its argument as a rational, satisfies that
+  constraint, we can attach sq to nonneg-rat.
+
+    (defattach nonneg-rat sq)
+
+  and then we can ``evaluate'' calls of nonneg-rat in the loop, getting
+  results that are consistent with its constraint (but overly
+  specific!).
+
+    ACL2 !>(nonneg-rat 3)
+    9
+
+  But of course the strawman conjecture (equal (nonneg-rat 3) '9) is
+  not a theorem of the prover's theory.
+
+
+The Prover's Theory
+
+  The ACL2 logic formalizes an applicative (functional and side-effect
+  free) extension of a subset of Common Lisp (see [common-lisp]).  It
+  is described in chapter 6 of {Computer-Aided Reasoning: An Approach
+  |
+  http://www.cs.utexas.edu/users/moore/publications/acl2-books/car/index.html},
+  by Kaufmann, Manolios, and Moore, as an extension of
+  quantifier-free first-order logic with equality (section 6.1).  The
+  syntax is that of translated [term]s though the user is allowed to
+  use a more flexible syntax which can be extended by defining
+  constant symbols and macros (see [defconst] and [defmacro]).  To
+  see the formal translation of such a term use the command :[trans].
+  In section 6.2 of the book, axioms are added to characterize the
+  basic data objects of numbers (integers, rationals, and complex
+  rationals), characters, strings, symbols, and ordered pairs.  In
+  section 6.3, the ordinals up to epsilon-0 are constructed from
+  ordered pairs and integers; a well-founded ``less than'' relation
+  is also defined.  But the book's construction of the ordinals is
+  now obsolete.  A new representation was implemented after the book
+  was published.  See [ordinals].  In Section 6.4, a conservative
+  Principle of Definition (see [defun] and [defuns] or
+  [mutual-recursion]) is introduced, allowing the addition of axioms
+  defining new function symbols.  In Section 6.5, a Principle of
+  Induction up to epsilon-0 is described.  Induction and recursion
+  are duals: every admissible recursive function suggests an
+  induction and vice versa and this duality is used by the ACL2
+  prover to select an often appropriate induction scheme for a
+  conjecture.  See [induction] and [hints] for ways to influence this
+  selection.  Finally, in section 6.6, the book introduces
+  [encapsulate] to introduce constrained functions and functional
+  instantiation (a derived rule of inference akin to second order
+  instantiation), and a variety of other ways of conservatively
+  adding new function symbols.
+
+  The ACl2 prover proves theorems in the extension of the above theory
+  obtained by adding the axioms introduced by [events] successfully
+  carried out in the user's session.  The most common such
+  axiom-adding events are [defun], [defchoose], and [encapsulate],
+  which all conservatively extend the theory by the addition of
+  axioms about new function symbols.  But defun is just a special
+  case of defuns which adds a mutually recursive clique of new names
+  (see also [mutual-recursion]).  [Defstobj] and [defabsstobj] add
+  recognizers, constructors, and accessors for single-threaded
+  objects (aka ``[stobj]s'') but logically just use defun to add new
+  functions and then syntactically restrict their use.  Finally, we
+  provide a means of adding an arbitrary formula as an axiom,
+  [defaxiom], but strongly discourage its use.  There are many other
+  events that add axioms, e.g., [defun-nx] and [defun-sk] but these
+  are defined as macros that expand into the primitives just listed.
+  In addition, there is a facility for including files of previously
+  admitted events, [include-book].
+
+  Given a user's session, we call the above described theory the
+  prover's theory.
+
+  Now recall the strawman proposal for what evaluation in the top-level
+  loop means, i.e., that the evaluation
+
+    ACL2 !>tm
+    v
+
+  might mean that the formula
+
+    (equal tm 'v)
+
+  is a theorem.  We have illustrated with :program mode functions, uses
+  of apply$, and of constrained functions that this strawman
+  conjecture is not necessarily a theorem of the prover's theory!
+
+  However, there is a theory in which many of these conjectures are
+  theorems.
+
+
+The Evaluation Theory
+
+  The evaluation theory is obtained from the prover's theory as
+  follows.
+
+    *
+        Instead of treating stobj names as variables, the evaluation theory p
+        treats them as abbreviations for the ``current value'' of the
+        stobj, specifically, the constant obtained by composing the
+        sequence of all updates to the stobj's fields carried out so
+        far in the top-level loop.  Thus, for example, in the
+        evaluation theories created by this sequence of top-level
+        evaluations
+
+          ACL2 !>(defstobj st fld)                           ; [1]
+          ST
+          ACL2 !>(update-fld 3 st)                           ; [2]
+          <st>
+          ACL2 !>(update-fld (* (fld st) (fld st)) st)       ; [3]
+          <st>
+
+        st is an abbreviation for (NIL) after evaluation [1], an abbreviation
+        for (3) after evaluation [2], and an abbreviation for (9)
+        after evaluation [3].
+
+    *
+        Every warrant created by defwarrant is assumed true as an axiom.
+
+    *
+        For every (defattach f g) event in the prover's theory the axiom
+        (i.e., constraints) on f is replaced by the axiom (equal (f
+        ...) (g ...)) in the evaluation theory.
+
+  Given the restrictions enforced by defun, defstobj, defwarrant,
+  apply$, encapsulate, and defattach, the evaluation theory is
+  consistent if the prover's theory is consistent and free of
+  defaxiom events.
+
+  Furthermore, the top-level evaluation
+
+    ACL2 !>tm
+    v
+
+  means that
+
+    (equal tm 'v)
+
+  is a theorem in the evaluation theory provided
+
+    * tm is a :logic mode term, and
+    * every symbol that reaches the first argument of any apply$-userfn in
+      the execution of tm is in :logic mode.
+
+  The ACL2 prover cannot generally prove these theorems, since it
+  operates in the prover's theory.  However, as noted, there are
+  often ways to encode the conjectures into ACL2 formulas that are
+  provable though the ACL2 system does not provide tools for doing
+  so.
+
+
+Some Examples of Top-Level Evaluations
+
+  In this section we illustrate some consequences of the guarantee that
+  for any term, tm, satisfying certain restrictions, if tm evaluates
+  to a value v, then the term
+
+    (equal tm 'v)
+
+  is a theorem of the evaluation theory.
+
+  Each command below is enumerated and after the entire sequence we
+  make observations about the results and implications.  It might
+  also help to read the section Top-Level Evaluation of Apply$ in the
+  documentation for [apply$], which describes how apply$ is
+  implemented in the top-level loop.
+
+    ACL2 !>(include-book \"projects/apply/top\" :dir :system)
+    ...
+    ACL2 !>(defun my-cons (x y)                                  ; [1]
+              (declare (xargs :mode :program))
+              (cons x y))
+    ...
+    ACL2 !>(defbadge my-cons)                                    ; [2]
+
+    MY-CONS now has the badge (APPLY$-BADGE 2 1 . T) but has
+    no warrant.
+
+     T
+    ACL2 !>(apply$ 'my-cons '(3 4))                              ; [3]
+    (3 . 4)
+    ACL2 !>(thm (equal (my-cons 3 4) '(3 . 4)))                  ; [4]
+    ...
+    ******** FAILED ********
+    ACL2 !>(verify-termination my-cons)                          ; [5]
+    ...
+    ACL2 !>(apply$ 'my-cons '(3 4))                              ; [6]
+
+
+    ACL2 Error in TOP-LEVEL:  The value of APPLY$-USERFN is not
+     specified on MY-CONS because MY-CONS has not been warranted.
+
+    ACL2 !>(defwarrant my-cons)                                  ; [7]
+
+    MY-CONS is now warranted by APPLY$-WARRANT-MY-CONS, with
+    badge (APPLY$-BADGE 2 1 . T).
+
+    ACL2 !>(apply$ 'my-cons '(3 4))                              ; [8]
+    (3 . 4)
+
+    ACL2 !>ACL2 !>(thm (equal (my-cons 3 4) '(3 . 4)))           ; [9]
+    ...
+    ******** FAILED ********
+    ACL2 !>(thm                                                  ;[10]
+            (implies (warrant my-cons)
+                     (equal (my-cons 3 4) '(3 . 4))))
+    ...
+    Q.E.D.
+    ...
+    Proof succeeded.
+
+  In events [1] and [2] my-cons is introduced as a badged :program mode
+  function.  Command [3] shows that we can apply$ 'my-cons in the
+  top-level loop and get the ``expected'' value.  This is ``magic''
+  on several levels!  There is no axiom in the evaluation theory
+  defining my-cons and there is no warrant connecting the symbol
+  'my-cons to the function my-cons.  The failure of the first thm
+  command, [4], shows that the prover's theory knows nothing of the
+  behavior of apply$ on 'my-cons.  After converting my-cons to :logic
+  mode with [verify-termination] in [5] we can no longer evaluate the
+  application of my-cons at the top-level, as shown by [6]!  This is
+  surprising because one might expect ACL2 to be able to do more with
+  a :logic mode function than its :program mode counterpart.  But in
+  the evolving evaluation theory as of [6], my-cons is a :logic mode
+  function with no warrant and so logically speaking (apply$ 'my-cons
+  ...) is undefined.  Computing a value for it at [6] would violate
+  the guarantee that values of :logic mode terms can be proved
+  correct in the evaluation theory --- i.e., that the computed value
+  can be derived logically.  Such a derivation is impossible without
+  a warrant.  However, after defwarrant, in [7], confirms that it is
+  sound to issue a warrant (linking the symbol 'my-cons to the
+  function my-cons via apply$), the evaluation of the 'my-cons term
+  in [8] succeeds.  The defwarrant soundly extends the proof theory
+  by adding a definition for the warrant function for my-cons and
+  extends the evaluation theory by assuming the warrant for my-cons
+  is true.  This latter extension is also sound.  However, [9] shows
+  that we still cannot prove (in the prover's theory) that the
+  evaluation of the apply$ term is correct, because we did not
+  provide the warrant as a hypothesis.  However, if we amend the
+  conjecture to include the warrant, as in [10], the proof (in the
+  prover's theory) succeeds.  While all warrants are assumed true in
+  the evaluation theory, they must be made explicit as hypotheses for
+  proofs in the prover's theory.  This is the mechanism whereby ACL2
+  can avoid the ``local problem'' illustrated Lesson 12 of
+  [introduction-to-apply$] and discussed more thoroughly in
+  {``Limited Second-Order Functionality in a First-Order Setting'' |
+  http://www.cs.utexas.edu/users/kaufmann/papers/apply/index.html} by
+  Matt Kaufmann and J Strother Moore.")
  (GUARD
   (PROGRAMMING XARGS)
   "Restricting the domain of a function
@@ -55701,7 +56275,7 @@ About LAMBDA Objects
   by an undo.  So at runtime apply$ has to check that the function
   symbol or LAMBDA object is appropriate.  There is a sophisticated
   cache behind the execution machinery for LAMBDA objects in the
-  evaluation theory.
+  evaluation theory.  See [print-cl-cache].
 
 
 About Lambda$ Expressions
@@ -56297,6 +56871,9 @@ Subtopics
 
   [Default-print-prompt]
       The default [prompt] printed by [ld]
+
+  [Guarantees-of-the-top-level-loop]
+      ACL2 interactive top-level read-eval-print loop
 
   [I-am-here]
       A convenient marker for use with [rebuild] or [ld]
@@ -60451,12 +61028,16 @@ Subtopics
 
     * Many examples of [loop$] expressions may be found in [community-book]
       projects/apply/loop-tests.lisp.
-    * Before using loop$, it is strongly recommended that you include the
-      same book as is typically included when using [apply$], as
-      follows.
+    * The semantics of loop$ involve apply$.  Therefore, before using
+      loop$, it is strongly recommended that you include the same
+      book as is typically included when using [apply$], as follows.
 
           (include-book \"projects/apply/top\" :dir :system)
 
+    * ACL2 loop$ statements are executed as Common Lisp loop statements
+      after the relevant [guard] conjectures are proved.  Common Lisp
+      loop statements generally execute much faster than equivalent
+      (tail-recursive) functions.
     * Warning: Loop$ implements only a modest part of the functionality of
       Common Lisp's loop.  Aside from the simple fact that loop$
       allows only a limited subset of the syntax of loop, the main
@@ -60505,16 +61086,16 @@ Introduction to loop$
   places and these are ignored by Common Lisp.
 
   Next we present some FOR loop$ examples.  They illustrate the three
-  supported forms of iteration: the use of IN, to iterate over
-  elements of a list; the use of ON, to iterate over the non-empty
-  tails of a list; and the use of FROM .. TO, to iterate over a range
-  of integers (optionally with BY to specify the increment at each
-  step).  These examples also illustrate the use of WHEN to restrict
-  which iterations are considered and the use of UNTIL to terminate
-  early.  Additional keywords illustrated are OF-TYPE to specify
-  types and AS to specify additional iteration variables.  They also
-  illustrate some of the operations permitted at each iteration, such
-  as SUM and COLLECT.
+  supported forms of FOR loop$ iteration: the use of IN, to iterate
+  over elements of a list; the use of ON, to iterate over the
+  non-empty tails of a list; and the use of FROM .. TO, to iterate
+  over a range of integers (optionally with BY to specify the
+  increment at each step).  These examples also illustrate the use of
+  WHEN to restrict which iterations are considered and the use of
+  UNTIL to terminate early.  Additional keywords illustrated are
+  OF-TYPE to specify types and AS to specify additional iteration
+  variables.  They also illustrate some of the operations permitted
+  at each iteration, such as SUM and COLLECT.
 
     ACL2 !>(loop$ for x in '(1 2 3) sum (* x x))
     14
@@ -60577,12 +61158,27 @@ Introduction to loop$
   shape of the return.  We also see here the use of the optional
   :GUARD keyword of a loop$ expression (legal for both classes of
   loop$s, as discussed further below) and the optional :MEASURE
-  keyword of a DO loop$ expression.  Notice the [defwarrant] events:
-  for a [guard]-verified function, warrants are necessary for
-  non-built-in functions called in the body of any loop$ expression,
-  in the FINALLY clause of a DO loop$, or in the UNTIL or WHEN test
-  of a FOR loop$ expression.  [Badge]s suffice in place of warrants
-  if guards are not verified.
+  keyword of a DO loop$ expression.
+
+  But notice the [defwarrant] events below!  They are required because
+  the functions fld and update-fld are not system primitives.  They
+  are introduced by the user's [defstobj] event below.  This is in
+  contrast to the DO loop$ in our first example above where no
+  warrants are required because all the functions in that example are
+  primitive.
+
+  The semantics of loop$ involve apply$ and thus loop$s inherit the
+  restrictions imposed on apply$ and its [scion]s.  Among those
+  restrictions are that (a) unwarranted :logic mode functions cannot
+  be apply$'d in the top-level read-eval-print loop and (b) proofs
+  about the applications of unwarranted functions are impossible.
+  Restriction (a) means you cannot even execute a :logic mode loop$
+  containing unwarranted functions.  Restriction (b) means you can't
+  verify the [guard]s of such loop$.  This last point obviates the
+  main reason for using loop$: its fast execution as a Common Lisp
+  loop once guards are verified.
+
+  Now here is our second example.
 
     (defstobj st fld)
     (include-book \"projects/apply/top\" :dir :system) ; needed for defwarrant
@@ -60618,11 +61214,17 @@ Introduction to loop$
 
   Both classes of loop$ expressions (FOR and DO loop$s) rely heavily on
   the ACL2 built-in function, [apply$]: in each iteration through the
-  loop, a [lambda] object based on the body of the loop is given as
-  the function argument of apply$.  Because of this, and because the
-  value returned by apply$ is unspecified in the absence of
-  [warrant]s for relevant user-defined function symbols, such
-  warrants are needed for reasoning about loop$ expressions as well.
+  loop, a [lambda] object based on the body of the loop$ is given as
+  the function argument of apply$.  Similarly, the UNTIL and WHEN
+  clauses of FOR loop$s and the :measure and FINALLY clauses of DO
+  loop$s are translated into lambda objects.  The functions in all
+  those lambda objects must be warranted to evaluate the loop$ and/or
+  prove its properties (including its guards) because logically the
+  application of an unwarranted function is undefined.  (However,
+  recall from [guarantees-of-the-top-level-loop] that :program mode
+  functions do not need warrants, just badges, for execution in the
+  evaluation theory.)
+
   The documentation for [apply$] illustrates a simple defun that is
   inadmissible because the measure theorem cannot be proved without a
   warrant and warrants cannot be assumed during the proofs of the
@@ -60678,7 +61280,9 @@ Types and guards in loop$ expressions
     (2 3 4)
     ACL2 !>(let ((max 10))
             (loop$ for x of-type integer in '(1 2 3)
-                   collect :guard (and (integerp max) (< x max)) (- max x)))
+                   collect
+                   :guard (and (integerp max) (< x max))
+                   (- max x)))
     (9 8 7)
 
   The guard on the (- max x) above is (and (integerp x) (integerp max)
@@ -60770,12 +61374,28 @@ Examples
   made explicit.
 
   Recursion is not allowed inside a DO loop$ expression.  In fact, ACL2
-  disallows the use of :loop-recursion in the xargs of any definition
-  whose body contains a DO loop$.  So this topic is only about FOR
-  loop$s.
+  disallows the use of :loop$-recursion in the xargs of any
+  definition whose body contains a DO loop$.  So this topic is only
+  about FOR loop$s.
 
   Some examples of loop$-recursive definitions may be found in the book
   projects/apply/loop-recursion-examples.lisp.
+
+  Warning: We advise you to use [defun$] rather than [defun] when
+  introducing a :logic mode loop$-recursive function.  When a
+  loop$-recursive function is introduced it is assigned a badge.
+  This is required because we cannot translate the body of a
+  loop$-recursive function without a badge.  However, no warrant is
+  assigned by defun.  But it is impossible to reason about
+  applications (with [apply$]) of unwarranted functions.  Indeed, it
+  is even impossible to execute such applications in the top-level
+  ACL2 read-eval-print loop.  See [guarantees-of-the-top-level-loop].
+  So a :logic mode loop$-recursive function --- which is guaranteed
+  to involve applications of itself with apply$ --- can't be reasoned
+  about or executed (except on data not exercising the recursive
+  calls inside loop$s).  These inconveniences can be avoided by using
+  defun$ when introducing :logic mode loop$-recursive functions
+  because defun$ expands to a defun followed by a [defwarrant].
 
   Warning: Even though the functions defined above are recursive, ACL2
   does not generate induction schemes for them!  If you want to do
@@ -90646,6 +91266,11 @@ Changes at the System Level
   32000, as for x86-64 platforms, instead of 2000.  Thanks to Stephen
   Westfold for pointing out this oversight.
 
+  A new documentation topic, [guarantees-of-the-top-level-loop],
+  explains the logical meaning of evaluation in the ACL2
+  read-eval-print loop, including discussion of attachments (see
+  [defattach]), [badge]s, [warrant]s.
+
 
 EMACS Support
 
@@ -97345,8 +97970,9 @@ Subtopics
           calls an undefined function (but perhaps it can be
           defined), the body contains a :program mode function (but
           perhaps that could be upgraded to :logic mode), the body
-          contains an unbadged function symbol (but perhaps
-          defwarrant could issue a warrant), etc.
+          contains an unbadged or unwarranted function symbol (but
+          perhaps defbadge or defwarrant could resolve the issue),
+          etc.
         * (GUARD-USES-NON-COMPLIANT-FNS . fns) - fns is a list of function
           symbols used in the guard of the LAMBDA object that have
           not yet had their guards verified.
@@ -120340,7 +120966,8 @@ Definitions
         with respect to the ilks of the function symbol, or the call
         of a tame LAMBDA expression on the correct number of tame
         expressions.  Formally, an object x is a tame expression iff
-        (tamep x).
+        (tamep x).  Note that tameness implies every function symbol
+        in the expression is badged but not necessarily warranted.
 
     *
         suitably tame with (respect to arity and ilks) aka
@@ -120351,18 +120978,20 @@ Definitions
         object is a quoted tame expression, and when an ilk is NIL
         the object is a tame expression.  Formally, an object x is
         suitably tame with respect to n and ilks iff
-        (suitably-tamep-listp n ilks x).
+        (suitably-tamep-listp n ilks x).  Note in particular our use
+        of the word ``quoted'' above.  We illustrate this in the
+        example below.
 
-  Note in particular our use of the word ``quoted'' above when defining
-  the concept of a suitably tame list of expressions.  We illustrate
-  this in a few examples below.
+  Note that the various notions of tameness make no mention of whether
+  the function symbols involved are in :program or :logic mode.  The
+  function symbols must have badges but need not have warrants.
 
   Intuitively, a tame expression can be built out of functions that are
   not themselves tame, e.g., scions, by making sure that every :FN
   slot is occupied by a quoted tame function.  Put another way, if we
   were to trace the calls of apply$ while evaluating a tame
   expression every branch eventually bottoms out on a call of a
-  primitive.
+  primitive.  This is illustrated below.
 
 
 Examples
@@ -120380,6 +121009,11 @@ Examples
                   (list (car lst)
                         (foldr (cdr lst) fn init)))))
 
+  Sq and foldr above are defined as :logic mode functions and are
+  badged and warranted (note the use of defun$).  But for our
+  purposes they could have been introduced by defun in :program mode
+  and then badged with two calls of defbadge.
+
   As a result, we see the following badges:
 
     symbol           badge
@@ -120388,17 +121022,48 @@ Examples
     SQ      (APPLY$-BADGE 1 1 . T)  ; . T means all args ordinary
     FOLDR   (APPLY$-BADGE 1 1 NIL :FN NIL)
 
-  We are going to investigate ``why'' the following expression is tame.
+  Consider the following expression.
 
     (foldr lst (lambda$ (x y) (foldr y 'cons (list (sq x)))) nil)
 
-  This expression uses foldr to square and reverse the order of the
-  elements of lst.  E.g., if lst is (1 2 3 4) the result is (16 9 4
-  1).
+  Forgetting about tameness for a moment, what does this term compute?
+  Study the definition of foldr if you're not familiar with it and
+  work it out!  Answer: It collects, in reverse order, the squares of
+  the elements of lst.  E.g., if lst is (1 2 3 4) the value of the
+  foldr expression above is (16 9 4 1).
 
-  The tameness functions do not expand macros and so one should
-  endeavor to present them with fully translated terms.  So we will
-  actually look at:
+  But we are interested in whether it is tame.  Tameness is a concept
+  applied to objects representing formal (fully translated) terms (or
+  components of terms in the case of ``tame functions,'' ``tame
+  lambdas,'' etc.).  Saying ``x is a tame expression'' is just a
+  colloquial way of saying ``(tamep x) = t.  So we can evaluate this
+  term in the top-level ACL2 loop,
+
+    (tamep '(foldr lst (lambda$ (x y) (foldr y 'cons (list (sq x)))) nil))
+
+  and the result is nil because lambda$ is not a ``badged function
+  symbol.'' In fact, lambda$ is not a function symbol.  It is a
+  macro.  We're really interested in the formal translation of the
+  foldr expression.  One way to understand the situation is that
+  tamep does not expand macros.
+
+  The translation of the above term is
+
+    (FOLDR LST
+           '(LAMBDA (X Y)
+                    (DECLARE (IGNORABLE X Y))
+                    (RETURN-LAST 'PROGN
+                                 '(LAMBDA$ (X Y)
+                                           (FOLDR Y 'CONS (LIST (SQ X))))
+                                 (FOLDR Y 'CONS (CONS (SQ X) 'NIL))))
+           'NIL)
+
+  The RETURN-LAST subterm is a marker that records the original
+  user-supplied lambda$ expression, which is needed during
+  compilation and execution in raw Lisp.  But the value of that
+  RETURN-LAST is the expected FOLDR expression in its last argument.
+  To simplify our discussion of tameness let's determine whether the
+  following equivalent term is tame.
 
     (FOLDR LST
            '(LAMBDA (X Y)
@@ -120407,18 +121072,27 @@ Examples
                      (CONS (SQ X) 'NIL)))
            'NIL)
 
-  Note: The quoted LAMBDA object above is not exactly the translation
-  of the corresponding lambda$ expression! When lambda$ expressions
-  are translated they are marked in a certain way for benefit of
-  execution without changing their semantics, which is accurately
-  reflected in the quoted LAMBDA above.  See [lambda$].
+  The answer is yes, it is a tame expression.  In particular
 
-  The FOLDR term above illustrates that even though FOLDR is not a tame
-  function it can be used in the construction of a tame expression
-  provided, mainly, that its second argument is a quoted tame
-  function.  Indeed, the example illustrates that we can even call
-  FOLDR within the LAMBDA expression passed to another FOLDR and
-  still have a tame expression.
+    (tamep '(FOLDR LST
+                   '(LAMBDA (X Y)
+                      (FOLDR Y
+                             'CONS
+                             (CONS (SQ X) 'NIL)))
+                   'NIL))
+    = T
+
+  By the way, tamep answers the same way on the quotation of the actual
+  translation of the foldr term.
+
+  We explain below how tamep computes this result.  But before we dive
+  into details consider what this example illustrates.  FOLDR is not
+  a tame function according to the definitions above. But it can be
+  used in the construction of tame expressions provided, mainly, that
+  its second argument is a quoted tame function.  Indeed, the example
+  illustrates that we can even call FOLDR within the LAMBDA
+  expression passed to another FOLDR and still have a tame
+  expression.
 
   If we were to [trace$] the functions tamep, tamep-functionp, and
   suitably-tamep-listp, and then call tamep on the FOLDR term above
@@ -120426,18 +121100,18 @@ Examples
   are selected calls from that tree.  All of the calls return T.  We
   discuss each of these calls below.
 
-    (TAMEP '(CONS (SQ X) 'NIL))                                    ; [1]
+    (tamep '(CONS (SQ X) 'NIL))                                    ; [1]
 
-    (SUITABLY-TAMEP-LISTP 3                                        ; [2]
+    (suitably-tamep-listp 3                                        ; [2]
                           '(NIL :FN NIL)
                           '(Y 'CONS (CONS (SQ X) 'NIL)))
 
-    (TAMEP '(FOLDR Y 'CONS (CONS (SQ X) 'NIL)))                    ; [3]
+    (tamep '(FOLDR Y 'CONS (CONS (SQ X) 'NIL)))                    ; [3]
 
-    (TAMEP-FUNCTIONP '(LAMBDA (X Y)                                ; [4]
+    (tamep-functionp '(LAMBDA (X Y)                                ; [4]
                               (FOLDR Y 'CONS (CONS (SQ X) 'NIL))))
 
-    (TAMEP '(FOLDR LST                                             ; [5]
+    (tamep '(FOLDR LST                                             ; [5]
                    '(LAMBDA (X Y)
                             (FOLDR Y 'CONS (CONS (SQ X) 'NIL)))
                    'NIL))
@@ -120545,7 +121219,7 @@ Logical Definitions
   terms of [badge] these notions of tameness are evaluable only in
   the evaluation theory (where [warrant]s are implicitly assumed).
   If you want to prove that an object is tame, you may need warrant
-  hypotheses.")
+  hypotheses.  See [guarantees-of-the-top-level-loop].")
  (TAMEP (POINTERS) "See [tame].")
  (TAMEP-FUNCTIONP (POINTERS)
                   "See [tame].")
@@ -132347,35 +133021,46 @@ Subtopics
 
   The discussion below mentions the concept of [badge]s, which are
   easily confused with warrants.  See the discussion of Badges versus
-  Warrants at the top of defwarrant.  But roughly put, badges extend
+  Warrants at the top of [defbadge].  But roughly put, badges extend
   the ACL2 syntax and warrants extend the proof theory.  You'll need
   a badge for fn to allow the system to syntactically analyze (apply$
   'fn ...).  You'll need a both a badge and a warrant for fn if you
-  wish to reason about that term with ACL2.
+  wish to reason about that term with ACL2.  Badges and warrants also
+  have impact on evaluation of forms in the top-level loop.  See
+  [guarantees-of-the-top-level-loop].
 
   In the ACL2 proof theory, the functions [badge] and [apply$] are
-  undefined on user-defined function symbols.  The meanings of those
-  functions can be specified by warrants.  If there is a warrant for
-  fn among the hypotheses of a theorem, (badge 'fn) and (apply$ 'fn
-  ...) can be simplified appropriately.  We think of the warrant for
-  fn giving badge and apply$ authority to expand on 'fn.  For reasons
-  of logical consistency not every fn can have a warrant.  Warrants
-  are issued, when possible, by [defwarrant].
+  undefined on user-defined function symbols.  To be precise, when
+  presented with a user-defined function symbol, badge calls the
+  weakly constrained function badge-userfn and apply$ calls the
+  weakly constrained function apply$-userfn.  Warrants are terms
+  that, if available as hypotheses in a conjecture, further constrain
+  those functions for specific function symbols.  If there is a
+  warrant for fn among the hypotheses of a conjecture, (badge 'fn)
+  and (apply$ 'fn ...) can be simplified appropriately.  In
+  particular, (badge 'fn) is simplified to the actual badge of fn and
+  (apply$ 'fn ...) is simplified to the appropriate application of fn
+  provided the arguments are suitably [tame].  We think of the
+  warrant for fn giving badge and apply$ authority to expand on 'fn.
+  For reasons of logical consistency not every fn can have a warrant.
+  Warrants are issued, when possible, by [defwarrant].
 
   In the ACL2 evaluation theory --- a consistent extension of the proof
   theory --- all warrants issued by defwarrant are implicitly
   assumed, meaning badge and apply$ can be executed on warranted
   user-defined function symbols at the top-level of the ACL2 loop
-  without explicit mention of the warrants.  (In fact, just as the
-  evaluation theory can -- inexplicably -- execute :program mode
+  without explicit mention of the warrants.  In fact, just as the
+  evaluation theory can --- ``magically'' --- execute :program mode
   functions despite the absence of any axioms about them, the
-  evaluation theory can execute a well-formed apply$ on any function
-  having a [badge] even if no warrant has been issued for the
-  function.  See [defbadge].)  For a discussion of the restrictions
-  on when a fn can be warranted, see [defwarrant].  This topic
-  discusses warrants per se, their names, their logical meaning, when
-  they must be explicitly added as hypotheses to theorems, and their
-  consistency.
+  evaluation theory can execute a well-formed apply$ on any :program
+  mode function that has a [badge].  However, for a :logic mode
+  function fn, the top-level loop cannot evaluate (apply$ 'fn ...)
+  unless (defwarrant fn) has previously succeeded.  See
+  [guarantees-of-the-top-level-loop].)  For a discussion of the
+  restrictions on when a fn can be warranted, see [defwarrant].  This
+  topic discusses warrants per se, their names, their logical
+  meaning, when they must be explicitly added as hypotheses to
+  conjectures, and their consistency.
 
 
 Logical Definition of the Warrant of a Function
@@ -132416,11 +133101,6 @@ Logical Definition of the Warrant of a Function
                                     (cadr args)
                                     (caddr args))))))
       :constrain t)
-
-  Notice that the warrant is phrased in terms of the undefined
-  functions badge-userfn and apply$-userfn.  Defwarrant will ``lift''
-  this warrant to badge and apply$ by proving rewrite rules discussed
-  below.
 
   Notice also that the tameness hypothesis involves the universally
   quantified variable args, but that the first conjunct of the
@@ -132491,9 +133171,9 @@ Rewrite Rules that Lift and Force the Warrant
                                   (car (cdr (cdr args))))))))
 
   Observe that these rules say that if (apply$-warrant-foldr) is
-  available, then (badge 'FOLDR) is (APPLY$-BADGE 3 1 NIL :FN NIL)
-  and (apply$ 'FOLDR args) has the naively expected behavior of
-  calling foldr, provided the second element of args is a
+  available as a hypothesis, then (badge 'FOLDR) is (APPLY$-BADGE 3 1
+  NIL :FN NIL) and (apply$ 'FOLDR args) has the naively expected
+  behavior of calling foldr, provided the second element of args is a
   tamep-functionp.  Also note that the warrant hypothesis is [force]d
   in both rules.
 
@@ -132504,6 +133184,9 @@ Rewrite Rules that Lift and Force the Warrant
   but if the warrant is not among the hypotheses and the proof is
   otherwise successful, the warrant for foldr will show up in a
   checkpoint.
+
+  If no warrant has been issued for foldr these terms will not
+  simplify.
 
 
 Determining the Necessary Warrants
@@ -132538,6 +133221,8 @@ Determining the Necessary Warrants
     (include-book \"projects/apply/top\" :dir :system)
 
     (defun$ sq (x) (* x x))
+
+  and recall that collect$ is [loop$] scion logically defined as
 
     (defun$ collect$ (fn lst)
       (if (endp lst)
@@ -132740,7 +133425,7 @@ Why Warrants Don't Render Theorems Vacuous
   explicit mention of warrants.  The crux of the proof is admitting a
   big mutually recursive clique containing versions of apply$ and all
   of its [scion]s, by inventing a measure that provably decreases as
-  apply$ and the scions call eachother.  The keys to that measure's
+  apply$ and the scions call each other.  The keys to that measure's
   existence are the restrictions imposed by [defwarrant] and
   [tame]ness.  See the paper for a sketch of the proof and see the
   comment titled Essay on Admitting a Model for Apply$ and the
