@@ -5036,7 +5036,9 @@ Silent loading of ACL2 customization files
 
     D
        Download the ``bleeding edge'' ACL2+Books Manual from the web; then
-       restart the ACL2-Doc browser to view that manual.
+       restart the ACL2-Doc browser to view that manual.  If this fails,
+       evaluate Emacs variable acl2-doc-download-error for information on
+       how to perform the download without Emacs.
 
     H             acl2-doc-history
        Visit a buffer that displays the names of all topics visited (in any
@@ -90661,6 +90663,17 @@ EMACS Support
   The key binding Control-TAB has been removed for the [ACL2-doc]
   browser, to avoid conflict with other uses of that key.  Thanks to
   Alessandro Coglio for the idea.
+
+  New [ACL2-doc] command G is similar to g, prompting for a topic name,
+  but puts that topic into a new buffer.  Thanks to Warren Hunt for
+  requesting this feature.
+
+  When [ACL2-doc] fails in an attempt to download the manual, a more
+  helpful error message says how to attempt the download outside
+  Emacs, and the minibuffer points to an Emacs variable holding that
+  message, acl2-doc-download-error (which is also described in the
+  [ACL2-doc] documentation topic).  Thanks to Warren Hunt for
+  discussion leading to this enhancement.
 
 
 Experimental Versions
