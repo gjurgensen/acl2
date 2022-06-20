@@ -26547,7 +26547,7 @@ Subtopics
               (field1 :type type1 :initially val1 :resizable b1)
               ...
               (fieldk :type typek :initially valk :resizable bk)
-              :renaming alist
+              :renaming doublets
               :inline flg
               :congruent-to old-stobj-name
               :non-memoizable nm-flg
@@ -26560,7 +26560,7 @@ Subtopics
   type-indicator), (STOBJ-TABLE), or (STOBJ-TABLE size); each vali is
   an object satisfying typei; and each bi is t or nil.  Each pair
   :initially vali and :resizable bi may be omitted; more on this
-  below.  The :renaming alist argument is optional and allows the
+  below.  The :renaming doublets argument is optional and allows the
   user to override the default function names introduced by this
   event.  The :inline flg Boolean argument is also optional and
   declares to ACL2 that the generated access and update functions for
@@ -26575,7 +26575,7 @@ Subtopics
   any function that takes the new stobj as an argument; and the
   latter avoids actually creating the stobj (details follow later
   below).  We describe further restrictions on the fieldi, typei,
-  vali, and on alist below.  We recommend that you read about
+  vali, and on doublets below.  We recommend that you read about
   single-threaded objects (stobjs) in ACL2 before proceeding; see
   [stobj].
 
@@ -26860,7 +26860,7 @@ The Default Function Names
               (field1 :type type1 :initially val1)
               ...
               (fieldk :type typek :initially valk)
-              :renaming alist
+              :renaming doublets
               :doc doc-string
               :inline inline-flag)
 
@@ -26986,9 +26986,10 @@ The Default Function Names
 Avoiding the Default Function Names
 
   If you do not like the default names listed above you may use the
-  optional :renaming alist to substitute names of your own choosing.
-  Each element of alist should be of the form (fn1 fn2), where fn1 is
-  a default name and fn2 is your choice for that name.
+  optional :renaming doublets to substitute names of your own
+  choosing.  Each element of doublets should be of the form (fn1
+  fn2), where fn1 is a default name and fn2 is your choice for that
+  name.
 
   For example
 
@@ -27010,12 +27011,12 @@ Avoiding the Default Function Names
     (DEFUN AI (I $S) ...)            ; accessor for A field at index I
     (DEFUN UPDATE-AI (I V $S) ...)   ; updater for A field at index I
 
-  Note that even though the renaming alist substitutes ``XACCESSOR''
+  Note that even though the renaming doublets substitutes ``XACCESSOR''
   for ``X'' the updater for the X field is still called ``UPDATE-X.''
   That is because the renaming is applied to the default function
   names, not to the field descriptors in the event.
 
-  Use of the :renaming alist may be necessary to avoid name clashes
+  Use of the :renaming doublets may be necessary to avoid name clashes
   between the default names and pre-existing function symbols.
 
 
@@ -64988,13 +64989,7 @@ Optional Technical Remarks.
 
   Note that by default, statistics might be inaccurate when calls of
   [memoize]d functions are aborted.  This issue can be avoided,
-  however; see [protect-memoize-statistics].
-
-  Function: <memoize-summary>
-
-    (defun memoize-summary
-           nil (declare (xargs :guard t))
-           nil)")
+  however; see [protect-memoize-statistics].")
  (MEMSUM
   (MEMOIZE)
   "Display all collected profiling and memoization info
@@ -66937,7 +66932,9 @@ Subtopics
     (mutual-recursion def1 ... defn)
 
   where each defi is a call of [defun], [defund], [defun-nx], or
-  defund-nx.
+  defund-nx.  Note that although one definition is acceptable, we
+  focus on the case of at least two definitions, since normally one
+  would not bother with mutual-recursion otherwise.
 
   When mutually recursive functions are introduced it is necessary to
   do the termination analysis on the entire clique of definitions.
@@ -90602,6 +90599,12 @@ Bug Fixes
   this issue and pointing to relevant source code ({GitHub Issue
   #1395 | https://github.com/acl2/acl2/issues/1395}).
 
+  When the :[pr!] command prints :[rewrite] rules about the
+  [pkg-imports] of one or more [packages], it now prints such rules
+  only for relevant packages, not ones introduced earlier than
+  specified by the argument of :pr! (as was done previously).  Thanks
+  to Eric Smith for bringing this bug to our attention.
+
 
 Changes at the System Level
 
@@ -113730,7 +113733,7 @@ Subtopics
 
     Example Forms:                        try guard verification?
     (set-verify-guards-eagerness 0) ; no, unless :verify-guards t
-    (set-verify-guards-eagerness 1) ; yes if a guard or type is supplied
+    (set-verify-guards-eagerness 1) ; yes if :guard, type or :stobjs is supplied
     (set-verify-guards-eagerness 2) ; yes, unless :verify-guards nil
 
   Note: This is an event!  It does not print the usual event [summary]
@@ -131821,14 +131824,15 @@ Subtopics
   Now it is time to add entries to the value of constant
   *system-verify-guards-alist* in your local copy of the ACL2
   sources, which specifies functions whose guard-verification is
-  completed by including that book.  Each entry is of the form
-  (function-symbol . measure).  For example, the entry (ARITY-ALISTP
-  ACL2-COUNT ALIST) signifies that the function symbol arity-alistp
-  is to have measure (acl2-count alist), while the entry (ARGLISTP)
-  signifies that function symbol arglistp has no measure (i.e., we
-  use nil for the measure), presumably because its definition is not
-  recursive.  After you make those additions, then follow the steps
-  below.
+  completed by including [community-book]
+  books/system/devel-check.lisp (which includes
+  books/system/top.lisp.  Each entry is of the form (function-symbol
+  . measure).  For example, the entry (ARITY-ALISTP ACL2-COUNT ALIST)
+  signifies that the function symbol arity-alistp is to have measure
+  (acl2-count alist), while the entry (ARGLISTP) signifies that
+  function symbol arglistp has no measure (i.e., we use nil for the
+  measure), presumably because its definition is not recursive.
+  After you make those additions, then follow the steps below.
 
    1. Build a so-called ``devel'' copy in which the functions in
       *system-verify-guards-alist* remain in :program mode.  For

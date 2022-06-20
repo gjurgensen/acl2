@@ -23354,7 +23354,7 @@ subtree of X with T, without duplication.</p>
             (field1 :type type1 :initially val1 :resizable b1)
             ...
             (fieldk :type typek :initially valk :resizable bk)
-            :renaming alist
+            :renaming doublets
             :inline flg
             :congruent-to old-stobj-name
             :non-memoizable nm-flg
@@ -23368,7 +23368,7 @@ subtree of X with T, without duplication.</p>
  type-indicator)'), @('(STOBJ-TABLE)'), or @('(STOBJ-TABLE size)'); each
  @('vali') is an object satisfying @('typei'); and each @('bi') is @('t') or
  @('nil').  Each pair @(':initially vali') and @(':resizable bi') may be
- omitted; more on this below.  The @(':renaming alist') argument is optional
+ omitted; more on this below.  The @(':renaming doublets') argument is optional
  and allows the user to override the default function names introduced by this
  event.  The @(':inline flg') Boolean argument is also optional and declares to
  ACL2 that the generated access and update functions for the stobj should be
@@ -23381,7 +23381,7 @@ subtree of X with T, without duplication.</p>
  functions that return the new stobj but disallows @(see memoization) of any
  function that takes the new stobj as an argument; and the latter avoids
  actually creating the stobj (details follow later below).  We describe further
- restrictions on the @('fieldi'), @('typei'), @('vali'), and on @('alist')
+ restrictions on the @('fieldi'), @('typei'), @('vali'), and on @('doublets')
  below.  We recommend that you read about single-threaded objects (stobjs) in
  ACL2 before proceeding; see @(see stobj).</p>
 
@@ -23669,7 +23669,7 @@ subtree of X with T, without duplication.</p>
             (field1 :type type1 :initially val1)
             ...
             (fieldk :type typek :initially valk)
-            :renaming alist
+            :renaming doublets
             :doc doc-string
             :inline inline-flag)
  })
@@ -23799,9 +23799,9 @@ subtree of X with T, without duplication.</p>
  <h3>Avoiding the Default Function Names</h3>
 
  <p>If you do not like the default names listed above you may use the optional
- @(':renaming') alist to substitute names of your own choosing.  Each element
- of @('alist') should be of the form @('(fn1 fn2)'), where @('fn1') is a
- default name and @('fn2') is your choice for that name.</p>
+ @(':renaming') doublets to substitute names of your own choosing.  Each
+ element of @('doublets') should be of the form @('(fn1 fn2)'), where @('fn1')
+ is a default name and @('fn2') is your choice for that name.</p>
 
  <p>For example</p>
 
@@ -23827,12 +23827,12 @@ subtree of X with T, without duplication.</p>
   (DEFUN UPDATE-AI (I V $S) ...)   ; updater for A field at index I
  })
 
- <p>Note that even though the renaming alist substitutes ``@('XACCESSOR')'' for
- ``@('X')'' the updater for the @('X') field is still called ``@('UPDATE-X').''
- That is because the renaming is applied to the default function names, not to
- the field descriptors in the event.</p>
+ <p>Note that even though the renaming doublets substitutes ``@('XACCESSOR')''
+ for ``@('X')'' the updater for the @('X') field is still called
+ ``@('UPDATE-X').''  That is because the renaming is applied to the default
+ function names, not to the field descriptors in the event.</p>
 
- <p>Use of the @(':renaming') alist may be necessary to avoid name clashes
+ <p>Use of the @(':renaming') doublets may be necessary to avoid name clashes
  between the default names and pre-existing function symbols.</p>
 
  <h3>Constants</h3>
@@ -60872,9 +60872,7 @@ it."
 
  <p>Note that by default, statistics might be inaccurate when calls of @(see
  memoize)d functions are aborted.  This issue can be avoided, however; see
- @(see protect-memoize-statistics).</p>
-
- @(def memoize-summary)")
+ @(see protect-memoize-statistics).</p>")
 
 (defxdoc memsum
   :parents (memoize)
@@ -62760,7 +62758,9 @@ it."
  })
 
  <p>where each @('defi') is a call of @(tsee defun), @(tsee defund), @(tsee
- defun-nx), or @('defund-nx').</p>
+ defun-nx), or @('defund-nx').  Note that although one definition is
+ acceptable, we focus on the case of at least two definitions, since normally
+ one would not bother with @('mutual-recursion') otherwise.</p>
 
  <p>When mutually recursive functions are introduced it is necessary to do the
  termination analysis on the entire clique of definitions.  Each @(tsee defun)
@@ -92137,6 +92137,10 @@ it."
 ; with sb-ext:save-lisp-and-die.  (But that probably makes no difference; see
 ; comment in function save-acl2-in-sbcl-aux, ACL2 source file acl2-init.lisp.)
 
+; Translate11-call now prints a signature violation without evisceration in
+; its "illegal to invoke" translation error message.  Thanks to Eric Smith for
+; suggesting this change.
+
   :parents (release-notes)
   :short "ACL2 Version  8.5 (xx, 20xx) Notes"
   :long "<p>NOTE!  New users can ignore these release notes, because the @(see
@@ -92575,6 +92579,12 @@ it."
  break-rewrite) or any other @(see wormhole).  Thanks to Khairul Azhar Kasmiran
  for raising this issue and pointing to relevant source code (<a
  href='https://github.com/acl2/acl2/issues/1395'>GitHub Issue #1395</a>).</p>
+
+ <p>When the @(':')@(tsee pr!) command prints @(':')@(tsee rewrite) rules about
+ the @(tsee pkg-imports) of one or more @(see packages), it now prints such
+ rules only for relevant packages, not ones introduced earlier than specified
+ by the argument of @(':pr!') (as was done previously).  Thanks to Eric Smith
+ for bringing this bug to our attention.</p>
 
  <h3>Changes at the System Level</h3>
 
@@ -112835,7 +112845,7 @@ arithmetic) for libraries of @(see books) for arithmetic reasoning.</p>")
   :long "@({
   Example Forms:                        try guard verification?
   (set-verify-guards-eagerness 0) ; no, unless :verify-guards t
-  (set-verify-guards-eagerness 1) ; yes if a guard or type is supplied
+  (set-verify-guards-eagerness 1) ; yes if :guard, type or :stobjs is supplied
   (set-verify-guards-eagerness 2) ; yes, unless :verify-guards nil
  })
 
@@ -131015,13 +131025,14 @@ introduction-to-the-tau-system) for more information about Tau.</dd>
  <p>Now it is time to add entries to the value of constant
  @('*system-verify-guards-alist*') in your local copy of the ACL2 sources,
  which specifies functions whose guard-verification is completed by including
- that book.  Each entry is of the form @('(function-symbol . measure)').  For
- example, the entry @('(ARITY-ALISTP ACL2-COUNT ALIST)') signifies that the
- function symbol @('arity-alistp') is to have measure @('(acl2-count alist)'),
- while the entry @('(ARGLISTP)') signifies that function symbol @('arglistp')
- has no measure (i.e., we use @('nil') for the measure), presumably because its
- definition is not recursive.  After you make those additions, then follow the
- steps below.</p>
+ @(see community-book) @('books/system/devel-check.lisp') (which includes
+ @('books/system/top.lisp').  Each entry is of the form @('(function-symbol
+ . measure)').  For example, the entry @('(ARITY-ALISTP ACL2-COUNT ALIST)')
+ signifies that the function symbol @('arity-alistp') is to have measure
+ @('(acl2-count alist)'), while the entry @('(ARGLISTP)') signifies that
+ function symbol @('arglistp') has no measure (i.e., we use @('nil') for the
+ measure), presumably because its definition is not recursive.  After you make
+ those additions, then follow the steps below.</p>
 
  <ol>
 
