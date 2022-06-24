@@ -35762,6 +35762,9 @@ Subtopics
   these details; see the ACL2 source code or email the [ACL2-help]
   list if you need more help.
 
+  To test your extended metafunctions outside of proof attempts, see
+  [trust-mfc].
+
   Additional hypotheses are supported, called ``meta-extract
   hypotheses'', that allow metafunctions to depend on the validity of
   certain terms extracted from the context or the logical [world].
@@ -36101,7 +36104,10 @@ Subtopics
 Subtopics
 
   [Metafunction-context]
-      A structure that holds data supporting extended meta reasoning")
+      A structure that holds data supporting extended meta reasoning
+
+  [Trust-mfc]
+      A macro that supports testing of extended metafunctions)")
  (EXTENDED-SYNTAXP (POINTERS)
                    "See [syntaxp].")
  (EXTERNAL-FORMAT (POINTERS)
@@ -91067,6 +91073,10 @@ New Features
   others at Intel Corp. for requesting this enhancement and engaging
   in initial discussions.
 
+  The new macro [trust-mfc] supports testing [extended-metafunctions]
+  outside the prover.  Thanks to Sol Swords for requesting such a
+  utility.
+
 
 Heuristic and Efficiency Improvements
 
@@ -126877,6 +126887,137 @@ Subtopics
                         (nonnegative-integer-quotient n d))
                        (t (- (nonnegative-integer-quotient (- n)
                                                            d))))))")
+ (TRUST-MFC
+  (EXTENDED-METAFUNCTIONS)
+  "A macro that supports testing of extended metafunctions)
+
+    Example Form:
+    (trust-mfc (mfc-ts term mfc state))
+
+    General Form:
+    (trust-mfc form)
+
+  where form is any form, but is typically a call of an extended
+  metafunction such as mfc-ts or mfc-rw.
+
+  Extended metafunctions (see [extended-metafunctions]) may normally
+  only be invoked during proofs.  Trust-mfc is an advanced utility
+  that relaxes that requirement, thus supporting the testing of
+  extended-metafunctions outside calls of the ACL2 prover.  When you
+  use trust-mfc, you are taking on the responsibility to pass only
+  well-formed [mfc] arguments to your calls of
+  extended-metafunctions, since otherwise raw Lisp errors may be
+  signaled.  Because of this danger, the logical definition of
+  trust-mfc causes an error, thus making it useless at the top level
+  and in :[logic]-mode code:
+
+  Macro: <trust-mfc>
+
+    (defmacro
+     trust-mfc (&whole whole form)
+     (cons
+      'prog2$
+      (cons
+       (cons
+        'er
+        (cons
+         'hard
+         (cons
+          (cons 'quote (cons 'trust-mfc 'nil))
+          (cons
+           '\"It is illegal to run ~x0 except in raw Lisp, ~
+                                     typically by way of a :program-mode function ~
+                                     body. ~ See :DOC trust-mfc.  Evaluation of ~
+                                     the form ~x1 has led to this error.\"
+           (cons (cons 'quote (cons 'trust-mfc 'nil))
+                 (cons (cons 'quote (cons whole 'nil))
+                       'nil))))))
+       (cons form 'nil))))
+
+  However, trust-mfc can be very useful when used in :[program]-mode
+  code that calls extended metafunctions, which makes it useful for
+  :logic-mode code as well; see [program-wrapper].  The log below
+  illustrates typical usage.
+
+    ACL2 !>(defun my-mfc (state)
+             ;; Define a simple metafunction-contextx.
+             (declare (xargs :mode :program :guard t :stobjs state))
+             (make metafunction-context
+                   :rdepth 10000
+                   :type-alist nil
+                   :obj '?
+                   :geneqv nil
+                   :wrld (w state)
+                   :fnstack nil
+                   :ancestors nil
+                   :backchain-limit nil
+                   :simplify-clause-pot-lst nil
+                   :rcnst (initial-rcnst-from-ens (ens state) (w state) state nil)
+                   :gstack nil
+                   :ttree nil
+                   :unify-subst nil))
+
+    Summary
+    Form:  ( DEFUN MY-MFC ...)
+    Rules: NIL
+    Time:  0.00 seconds (prove: 0.00, print: 0.00, other: 0.00)
+     MY-MFC
+    ACL2 !>(mfc-ts '(cons x y) (my-mfc state) state) ; error: not in prover
+
+
+    Meta-level function Problem:  This error can quite possibly be avoided;
+    see :DOC trust-mfc.  You or some meta-level function applied MFC-TS
+    but not from within the theorem prover's meta-level function handler.
+    This suggests you are trying to test a meta-level function and have
+    evidently manufactured an allegedly suitable context.  Perhaps so.
+    But that is so difficult to check that we don't bother.  Instead we
+    cause this error and urge you to test your meta-level function by having
+    the meta-level function handler invoke it as part of a test proof-
+    attempt. To do this, assume the metatheorem that you intend eventually
+    to prove.  You may do this by executing the appropriate DEFTHM event
+    embedded in a SKIP-PROOFS form.  Then use THM to submit conjectures
+    for proof and observe the behavior of your metafunction.  Remember
+    to undo the assumed metatheorem before you attempt genuine proofs!
+    If this suggestion isn't applicable to your situation, contact the
+    authors.
+
+
+
+    ACL2 Error in TOP-LEVEL:  ACL2 cannot ev the call of non-executable
+    function MFC-TS on argument list:
+
+    ((CONS X Y) MFC STATE)
+
+    To debug see :DOC print-gv, see :DOC trace, and see :DOC wet.
+
+    ACL2 !>(trust-mfc (mfc-ts '(cons x y) (my-mfc state) state)) ; top-level (bad)
+
+
+    HARD ACL2 ERROR in TRUST-MFC:  It is illegal to run TRUST-MFC except
+    in raw Lisp, typically by way of a :program-mode function body.  See
+    :DOC trust-mfc.  Evaluation of the form
+    (TRUST-MFC (MFC-TS '(CONS X Y) (MY-MFC STATE) STATE)) has led to this
+    error.
+
+
+
+    ACL2 Error in TOP-LEVEL:  Evaluation aborted.  To debug see :DOC print-
+    gv, see :DOC trace, and see :DOC wet.
+
+    ACL2 !>(defun my-mfc-ts (term mfc state)
+             (declare (xargs :mode :program :stobjs state))
+             (trust-mfc (mfc-ts term mfc state)))
+
+    Summary
+    Form:  ( DEFUN MY-MFC-TS ...)
+    Rules: NIL
+    Time:  0.00 seconds (prove: 0.00, print: 0.00, other: 0.00)
+     MY-MFC-TS
+    ACL2 !>(my-mfc-ts '(cons x y) (my-mfc state) state)
+    3072
+    ACL2 !>(decode-type-set 3072) ; let's see that the result above is reasonable
+    *TS-CONS*
+    ACL2 !>")
  (TRUST-TAG (POINTERS) "See [defttag].")
  (TTAG (POINTERS) "See [defttag].")
  (TTAGS-SEEN
