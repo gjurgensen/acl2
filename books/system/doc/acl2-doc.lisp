@@ -93294,6 +93294,11 @@ it."
  including discussion of attachments (see @(see defattach)), @(see badge)s,
  @(see warrant)s.</p>
 
+ <p>The implementation of backquote has been optimized to use quoted
+ expressions for constant subterms (other than @(see LAMBDA) objects) rather
+ than consing new structure.  This can give a significant reduction in code
+ size.  Thanks to Stephen Westfold for providing his implementation.</p>
+
  <h3>EMACS Support</h3>
 
  <p>It is now possible to have more than one @(see acl2-doc) buffer.

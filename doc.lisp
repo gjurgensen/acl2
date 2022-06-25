@@ -42477,17 +42477,15 @@ Subtopics
   Macro: <getpropc>
 
     (defmacro
-     getpropc
-     (symb key &optional
-           default (world-alist '(w state)))
-     (cons
-          'getprop
-          (cons symb
-                (cons key
-                      (cons default
-                            (cons (cons 'quote
-                                        (cons 'current-acl2-world 'nil))
-                                  (cons world-alist 'nil)))))))")
+         getpropc
+         (symb key &optional
+               default (world-alist '(w state)))
+         (cons 'getprop
+               (cons symb
+                     (cons key
+                           (cons default
+                                 (cons ''current-acl2-world
+                                       (cons world-alist 'nil)))))))")
  (GETTING-STARTED (POINTERS)
                   "See [ACL2-tutorial].")
  (GIT-QUICK-START
@@ -63984,8 +63982,7 @@ Subtopics
 
     (defmacro make-list (size &key initial-element)
               (cons 'make-list-ac
-                    (cons size
-                          (cons initial-element (cons 'nil 'nil)))))
+                    (cons size (cons initial-element '(nil)))))
 
   Function: <make-list-ac>
 
@@ -91281,6 +91278,12 @@ Changes at the System Level
   read-eval-print loop, including discussion of attachments (see
   [defattach]), [badge]s, [warrant]s.
 
+  The implementation of backquote has been optimized to use quoted
+  expressions for constant subterms (other than [lambda] objects)
+  rather than consing new structure.  This can give a significant
+  reduction in code size.  Thanks to Stephen Westfold for providing
+  his implementation.
+
 
 EMACS Support
 
@@ -96985,37 +96988,24 @@ Subtopics
   Macro: <position>
 
     (defmacro
-     position (x seq &key (test ''eql))
-     (declare (xargs :guard (or (equal test ''eq)
-                                (equal test ''eql)
-                                (equal test ''equal))))
-     (cond
-      ((equal test ''eq)
-       (cons
-         'let-mbe
-         (cons (cons (cons 'x (cons x 'nil))
-                     (cons (cons 'seq (cons seq 'nil)) 'nil))
-               (cons ':logic
-                     (cons (cons 'position-equal
-                                 (cons 'x (cons 'seq 'nil)))
-                           (cons ':exec
-                                 (cons (cons 'position-eq-exec
-                                             (cons 'x (cons 'seq 'nil)))
-                                       'nil)))))))
-      ((equal test ''eql)
-       (cons
-         'let-mbe
-         (cons (cons (cons 'x (cons x 'nil))
-                     (cons (cons 'seq (cons seq 'nil)) 'nil))
-               (cons ':logic
-                     (cons (cons 'position-equal
-                                 (cons 'x (cons 'seq 'nil)))
-                           (cons ':exec
-                                 (cons (cons 'position-eql-exec
-                                             (cons 'x (cons 'seq 'nil)))
-                                       'nil)))))))
-      (t (cons 'position-equal
-               (cons x (cons seq 'nil))))))
+       position (x seq &key (test ''eql))
+       (declare (xargs :guard (or (equal test ''eq)
+                                  (equal test ''eql)
+                                  (equal test ''equal))))
+       (cond ((equal test ''eq)
+              (cons 'let-mbe
+                    (cons (cons (cons 'x (cons x 'nil))
+                                (cons (cons 'seq (cons seq 'nil)) 'nil))
+                          '(:logic (position-equal x seq)
+                                   :exec (position-eq-exec x seq)))))
+             ((equal test ''eql)
+              (cons 'let-mbe
+                    (cons (cons (cons 'x (cons x 'nil))
+                                (cons (cons 'seq (cons seq 'nil)) 'nil))
+                          '(:logic (position-equal x seq)
+                                   :exec (position-eql-exec x seq)))))
+             (t (cons 'position-equal
+                      (cons x (cons seq 'nil))))))
 
   Function: <position-equal>
 
@@ -97046,38 +97036,22 @@ Subtopics
                                 (equal test ''equal))))
      (cond
       ((equal test ''eq)
-       (cons
-        'let-mbe
-        (cons
-            (cons (cons 'item (cons item 'nil))
-                  (cons (cons 'lst (cons lst 'nil))
-                        (cons (cons 'acc (cons acc 'nil))
-                              'nil)))
-            (cons ':logic
-                  (cons (cons 'position-equal-ac
-                              (cons 'item (cons 'lst 'nil)))
-                        (cons ':exec
-                              (cons (cons 'position-ac-eq-exec
-                                          (cons 'item (cons 'lst 'nil)))
-                                    'nil)))))))
+       (cons 'let-mbe
+             (cons (cons (cons 'item (cons item 'nil))
+                         (cons (cons 'lst (cons lst 'nil))
+                               (cons (cons 'acc (cons acc 'nil))
+                                     'nil)))
+                   '(:logic (position-equal-ac item lst)
+                            :exec (position-ac-eq-exec item lst)))))
       ((equal test ''eql)
        (cons
-        'let-mbe
-        (cons
-         (cons (cons 'item (cons item 'nil))
-               (cons (cons 'lst (cons lst 'nil))
-                     (cons (cons 'acc (cons acc 'nil))
-                           'nil)))
-         (cons
-            ':logic
-            (cons (cons 'position-equal-ac
-                        (cons 'item
-                              (cons 'lst (cons 'acc 'nil))))
-                  (cons ':exec
-                        (cons (cons 'position-ac-eql-exec
-                                    (cons 'item
-                                          (cons 'lst (cons 'acc 'nil))))
-                              'nil)))))))
+            'let-mbe
+            (cons (cons (cons 'item (cons item 'nil))
+                        (cons (cons 'lst (cons lst 'nil))
+                              (cons (cons 'acc (cons acc 'nil))
+                                    'nil)))
+                  '(:logic (position-equal-ac item lst acc)
+                           :exec (position-ac-eql-exec item lst acc)))))
       (t (cons 'position-equal-ac
                (cons item (cons lst 'nil))))))")
  (POSITION-EQ (POINTERS)
@@ -104362,8 +104336,7 @@ Subtopics
               (filename &key (start '0) bytes)
               (cons 'read-file-into-string2
                     (cons filename
-                          (cons start
-                                (cons bytes (cons 'state 'nil))))))")
+                          (cons start (cons bytes '(state))))))")
  (READ-OBJECT (POINTERS) "See [io].")
  (READ-OBJECT-SUPPRESS (POINTERS)
                        "See [io].")
@@ -126923,13 +126896,13 @@ Subtopics
         (cons
          'hard
          (cons
-          (cons 'quote (cons 'trust-mfc 'nil))
+          ''trust-mfc
           (cons
            '\"It is illegal to run ~x0 except in raw Lisp, ~
                                      typically by way of a :program-mode function ~
                                      body. ~ See :DOC trust-mfc.  Evaluation of ~
                                      the form ~x1 has led to this error.\"
-           (cons (cons 'quote (cons 'trust-mfc 'nil))
+           (cons ''trust-mfc
                  (cons (cons 'quote (cons whole 'nil))
                        'nil))))))
        (cons form 'nil))))
