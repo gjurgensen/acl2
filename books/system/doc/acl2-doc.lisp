@@ -52933,11 +52933,13 @@ tables in the current Hons Space."
  ld-keyword-aliases).  Otherwise, the object read is treated as the command
  form.</p>
 
- <p>Except, a special case is when @('ld') has been called in the scope of
- @(tsee local), as in @('(local (ld ...))').  In that case, the actual command
- form is obtained by replacing the command form described above &mdash; say,
- @('C') &mdash; by @('(local C)'), unless @('C') itself is already a form whose
- @('car') is the symbol, @('local').</p>
+ <p>(Technical Aside.  Some special handling takes place when @('ld') is called
+ in the scope of @(tsee local), as in @('(local (ld <C>))') for a command,
+ @('<C>').  In that case, after @('<C>') is evaluated, then if the result is an
+ @(see error-triple) and @('<C>') is not already of the form @('(local <C0>)'),
+ then when the command is stored in the ACL2 @(see world) it is stored as
+ @('(local <C>)') instead of @('<C>').  See @(see ld-history) for a similar
+ treatment of local commands.  End of Technical Aside.)</p>
 
  <p>@('Ld') next decides whether to evaluate or skip this form, depending on
  @(tsee ld-pre-eval-filter).  Initially, the filter must be either @(':all'),
@@ -53213,6 +53215,12 @@ tables in the current Hons Space."
  <li>Keyword commands are turned into s-expressions before saving an entry; see
  @(see keyword-commands).  For example, the input @(':ubt :x') is stored in an
  entry as the input @('(ubt ':x)').</li>
+
+ <li>When an entry is saved for a command @('C') that is evaluated in the
+ context of a call of @(tsee local), where @('C') evaluates to an @(see
+ error-triple), then @('C') is stored in the entry as @('(local C)') unless
+ @('C') is already a call of @('local').  (Technical Aside: This behavior
+ supports local @(see portcullis) commands.)</li>
 
  <li>The ld-history saves entries not only for commands issued in the original
  top-level loop, but also for commands issued in (recursive) calls of @(tsee
@@ -92975,13 +92983,6 @@ it."
  symbol, @('T'), or any symbols whose @(tsee symbol-name) is @('\"T\"').  (This
  option seems to have been essentially unused but it complicated the source
  code.)</p>
-
- <p>Suppose @(tsee ld) is called in the scope of @(tsee local), in particular,
- as with @('(local (ld ...))').  Then for each @(tsee command) @('C') read by
- that call of @('ld') that is not already of the form @('(local ...)'), @('C')
- is read as though it had been @('(local C)').  (This change has been made in
- support of @(tsee local) @(see portcullis) @(see events), a new feature
- described further below.)</p>
 
  <h3>New Features</h3>
 

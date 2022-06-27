@@ -56772,11 +56772,13 @@ About Guard Verification of Lambda Objects
   [ld-keyword-aliases].  See [ld-keyword-aliases].  Otherwise, the
   object read is treated as the command form.
 
-  Except, a special case is when ld has been called in the scope of
-  [local], as in (local (ld ...)).  In that case, the actual command
-  form is obtained by replacing the command form described above ---
-  say, C --- by (local C), unless C itself is already a form whose
-  car is the symbol, local.
+  (Technical Aside.  Some special handling takes place when ld is
+  called in the scope of [local], as in (local (ld <C>)) for a
+  command, <C>.  In that case, after <C> is evaluated, then if the
+  result is an [error-triple] and <C> is not already of the form
+  (local <C0>), then when the command is stored in the ACL2 [world]
+  it is stored as (local <C>) instead of <C>.  See [ld-history] for a
+  similar treatment of local commands.  End of Technical Aside.)
 
   Ld next decides whether to evaluate or skip this form, depending on
   [ld-pre-eval-filter].  Initially, the filter must be either :all,
@@ -57137,6 +57139,11 @@ Subtopics
     * Keyword commands are turned into s-expressions before saving an
       entry; see [keyword-commands].  For example, the input :ubt :x
       is stored in an entry as the input (ubt ':x).
+    * When an entry is saved for a command C that is evaluated in the
+      context of a call of [local], where C evaluates to an
+      [error-triple], then C is stored in the entry as (local C)
+      unless C is already a call of local.  (Technical Aside: This
+      behavior supports local [portcullis] commands.)
     * The ld-history saves entries not only for commands issued in the
       original top-level loop, but also for commands issued in
       (recursive) calls of [ld] --- but not during [make-event]
@@ -90945,13 +90952,6 @@ Changes to Existing Features
   symbol, T, or any symbols whose [symbol-name] is \"T\".  (This option
   seems to have been essentially unused but it complicated the source
   code.)
-
-  Suppose [ld] is called in the scope of [local], in particular, as
-  with (local (ld ...)).  Then for each [command] C read by that call
-  of ld that is not already of the form (local ...), C is read as
-  though it had been (local C).  (This change has been made in
-  support of [local] [portcullis] [events], a new feature described
-  further below.)
 
 
 New Features
