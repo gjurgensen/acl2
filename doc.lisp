@@ -134882,7 +134882,7 @@ More Examples
     (defstobj st2 fld2 :congruent-to st)
 
   Calls of with-global-stobj are illegal at the top level (as opposed
-  to occurrences in the bodies of a definition or a theorem.
+  to occurrences in the bodies of a definition or a theorem).
 
     (with-global-stobj st (fld st))
 
@@ -134890,9 +134890,9 @@ More Examples
 
     (top-level (with-global-stobj st (fld st)))
 
-  Normally, however, with-global-stobj is used inside definitions.
-  Here we read and write the stobj, st, directly from the ACL2
-  [state].
+  Normally, however, with-global-stobj is used inside definition
+  bodies.  Here we read and write the stobj, st, directly from the
+  ACL2 [state].
 
     (defun rd0 (state)
       (declare (xargs :stobjs state))
@@ -135011,7 +135011,8 @@ Syntax and Semantics
   that form returns an instance of that stobj; and otherwise form
   returns multiple values (x0 x1 ... xk) where k is N-1 and for each
   i, xi is either nil if the ith value is an ordinary value or else
-  is the name of a stobj returned in that position.
+  is the name of a stobj returned in that position (and one such
+  stobj name is the bound stobj).
 
   In each General Form above, st and form are called the ``bound
   stobj'' and ``body'' of the with-local-stobj call (respectively).
@@ -135047,11 +135048,11 @@ Syntax and Semantics
   except that this time the body of the with-global-stobj call does
   not return state; nevertheless, the entire call does return state.
   It illustrates that when state is not in the list given as the
-  second argument of a with-global-stobj call, then the
+  second argument of an updating with-global-stobj call, then the
   with-global-stobj form not only drops the bound stobj from its
   return values but also adds state as the last returned value (or,
   if the bound stobj was the sole symbol in the list, then the call
-  returns state).
+  returns state as the sole value).
 
     ACL2 !>:trans1 (with-global-stobj
                      st
@@ -135072,8 +135073,8 @@ Syntax and Semantics
 
 Syntactic Restrictions to Avoid Aliasing
 
-  For the examples in this section, we continue to assume the following
-  stobj declarations.
+  For the examples in this section, we continue to assume that the
+  following [defstobj] [events] have been evaluated.
 
     (defstobj st fld)
     (defstobj st2 fld2 :congruent-to st)
@@ -135083,8 +135084,8 @@ Syntactic Restrictions to Avoid Aliasing
     (defun foo (st state)
       (declare (xargs :stobjs (st state)))
       (let ((state (with-global-stobj st
-                                      (st)
-                                      (update-fld 3 st))))
+                     (st)
+                     (update-fld 3 st))))
         (mv (fld st) state)))
 
   ACL2 admits that form, but causes an error with the following call of
@@ -135153,8 +135154,8 @@ Syntactic Restrictions to Avoid Aliasing
     (defun foo2-sub (val state)
       (declare (xargs :stobjs state))
       (with-global-stobj st
-                         (st)
-                         (update-fld val st)))
+        (st)
+        (update-fld val st)))
 
     (defun foo2 (val st state)
       (declare (xargs :stobjs (st state)))
@@ -135162,8 +135163,9 @@ Syntactic Restrictions to Avoid Aliasing
         (mv (fld st) state val)))
 
   The error message is essentially the same, except that the chain of
-  calls leading to the problematic updating with-global-stobj is
-  shown.  The behavior on st2 instead of st is fine, as before.
+  calls is shown that leads to the problematic updating
+  with-global-stobj form.  The behavior on st2 instead of st is fine,
+  as before.
 
     ACL2 !>(foo2 3 st state)
 
@@ -135228,16 +135230,15 @@ Syntactic Restrictions to Avoid Aliasing
   calls.
 
     * In a form u that is legal at the top-level, where u has a free
-      occurrence of the stobj st, there is no updating
+      occurrence of stobj st, there is no updating with-global-stobj
+      call that binds st and is invoked during evaluation of u.
+    * In a form u that is legal at the top-level, where u returns stobj st,
+      there is no with-global-stobj call that binds st and is invoked
+      during evaluation of u.
+    * In a form (with-global-stobj st u), there is no updating
       with-global-stobj call that binds st and is invoked during
       evaluation of u.
-    * In a form u that is legal at the top-level, where u returns the stobj
-      st, there is no with-global-stobj call that binds st and is
-      invoked during evaluation of u.
-    * In a legal form (with-global-stobj st u), there is no updating
-      with-global-stobj call that binds st and is invoked during
-      evaluation of u.
-    * In any form (with-global-stobj st lst u), there is no
+    * In an updating form (with-global-stobj st lst u), there is no
       with-global-stobj call that binds st and is invoked during
       evaluation of u.
 
@@ -135320,7 +135321,7 @@ Constrained Functions and Defattach
 
   The solution is to note, in the signature of the constrained
   function, that it may lead to a with-global-stobj call.  This is
-  accomplished by using the keyword, :GLOBAl-STOBJS, in the signature
+  accomplished by using the keyword, :GLOBAL-STOBJS, in the signature
   of the function.  The value of that keyword is nil by default,
   indicating that there is no such call.  Otherwise the value is a
   cons of the form (r . w), where r and w are disjoint lists of
@@ -135346,8 +135347,8 @@ Constrained Functions and Defattach
   g may lead to with-global-stobj calls that bind, in addition to the
   wi, stobjs r1, r2, ..., rn.  Then the signature of f must specify a
   value (r . w) for the keyword :GLOBAL-STOBJS, where r and w are
-  lists of stobjs such that w includes all wi and the union of r and
-  w includes all ri.")
+  lists of stobjs such that: w includes all wi, and the union of r
+  and w includes all ri.")
  (WITH-GUARD-CHECKING
   (GUARD ACL2-BUILT-INS)
   "Suppress or enable guard-checking for a form
