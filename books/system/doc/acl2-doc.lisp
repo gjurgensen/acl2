@@ -93255,6 +93255,10 @@ it."
  by the argument of @(':pr!') (as was done previously).  Thanks to Eric Smith
  for bringing this bug to our attention.</p>
 
+ <p>A bug in @(tsee defattach) has been fixed, which was causing the keywords
+ within an argument @('(fi gi :kwdi1 vali1 ...)') to be associated with the
+ wrong such argument.</p>
+
  <h3>Changes at the System Level</h3>
 
  <p>The @(see hons-enabled) features of ACL2 (@(tsee hons), @(see memoization),
