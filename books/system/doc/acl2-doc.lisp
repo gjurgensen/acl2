@@ -92990,6 +92990,11 @@ it."
  option seems to have been essentially unused but it complicated the source
  code.)</p>
 
+ <p>When an @(see event) fails while @(see useless-runes) are being read, the
+ failure message now makes note of that fact.  See @(see
+ useless-runes-failures).  Thanks to Mertcan Temel for pointing out that such
+ failures may present a confusing problem for (especially) new users.</p>
+
  <h3>New Features</h3>
 
  <p>A new @(tsee loop$) keyword, @('DO'), supports an imperative style of
@@ -129432,6 +129437,62 @@ introduction-to-the-tau-system) for more information about Tau.</dd>
  found that the time was reduced from 17 minutes and 1.9 seconds down to 34.93
  seconds, thus eliminating 96.6% of the time.</p>")
 
+(defxdoc useless-runes-failures
+  :parents (failure useless-runes)
+  :short "Failures caused by @(see useless-runes)"
+  :long "<p>When an event fails you may see the following message:</p>
+
+ @({
+ *NOTE*: Useless-runes may have taken part in failed proofs.  See :DOC
+ useless-runes-failures.
+ })
+
+ <p>This message is printed as part of any @(see event) @(see failure) message
+ when a @(see useless-runes) file is being consulted, which is the default when
+ using build system tools (see @(see books-certification) and @(see
+ build::cert.pl)).  It is intended to suggest that you consider removing or
+ regenerating the associated @(see useless-runes) file in the situation
+ described below.</p>
+
+ <p>(Remark.  We hope that this message reduces confusion when a proof fails.
+ But if the event failure isn't from a failed proof attempt, please disregard
+ the @('*NOTE*') above and this documentation!)</p>
+
+ <p>Suppose that you have developed a book &mdash; say, @('foo.lisp') &mdash;
+ and placed it into the @(see community-books).  Then @(see regression) runs
+ may occasionally generate (or regenerate) the associated @(see useless-runes)
+ file.  Now suppose you modify @('foo.lisp') or some books that are included in
+ it.  You successfully run @('(certify-book \"foo\")'); yet, certification of
+ @('foo.lisp') subequently fails as part of a @(see regression) run or when you
+ use @(tsee build::cert.pl) to certify @('foo.lisp').  This could be
+ unsettling!</p>
+
+ <p>In that case, what is probably happening is that the @(see useless-runes)
+ file is no longer suitable.  You could simply remove it from the GitHub
+ repository as follows (followed by the usual actions to update the
+ repository).</p>
+
+ @({
+ git rm .sys/foo@useless-runes.lsp
+ })
+
+ <p>Or, if you like, you could regenerate the useless-runes file, for example
+ as follows.</p>
+
+ @({
+ (certify-book \"foo\" ? t :useless-runes :write)
+ })
+
+
+ <p>Or if you prefer to avoid this useless-runes file from now on, you could
+ add a line like the following to @('foo.acl2') (see @(see
+ build::custom-certify-book-commands)) and also, ideally, delete the
+ useless-runes file using the @('\"git rm\"') command displayed above.</p>
+
+ @({
+ ; cert-flags: ? t :useless-runes nil
+ })")
+
 (defxdoc user-defined-functions-table
   :parents (macros)
   :short "An advanced @(see table) used to replace certain system functions"
@@ -134032,7 +134093,7 @@ for the execution of @('form')."
     (let* ((st (update-fld x st))
            (st2 (update-fld2 x st2)))
       (mv (fld st) st (fld st2) state st2)))
-      
+
  })
 
  <p>In the forms above, we call @('st') the stobj that is ``bound by'' the
@@ -134124,7 +134185,7 @@ for the execution of @('form')."
  @({
  (defstobj st fld)
  (defstobj st2 fld2 :congruent-to st)
- }) 
+ })
 
  <p>Calls of @('with-global-stobj') are illegal at the top level (as opposed to
  occurrences in the bodies of a definition or a theorem).</p>
@@ -134568,7 +134629,7 @@ for the execution of @('form')."
           (mv st (call-rd0-in-guard state)))
 
 
- ACL2 Error in TOP-LEVEL:  Illegal top-level form, 
+ ACL2 Error in TOP-LEVEL:  Illegal top-level form,
  (LET ((ST (UPDATE-FLD 3 ST))) (LIST ST (CALL-RD0-IN-GUARD STATE))).
  The stobj ST is returned by evaluation of that form, yet is bound by
  a WITH-GLOBAL-STOBJ form, as the top-level form calls CALL-RD0-IN-GUARD,

@@ -36405,7 +36405,13 @@ Subtopics
   rules in ``A Computational Logic Handbook'' by Boyer and Moore
   (Academic Press, 1988).
 
-  If the failure occurred during a forcing round, see [failed-forcing].")
+  If the failure occurred during a forcing round, see [failed-forcing].
+
+
+Subtopics
+
+  [Useless-runes-failures]
+      Failures caused by [useless-runes]")
  (FAKE-RUNE (POINTERS) "See [rune].")
  (FANCY-STRING-READER
   (READER)
@@ -90963,6 +90969,12 @@ Changes to Existing Features
   seems to have been essentially unused but it complicated the source
   code.)
 
+  When an [event] fails while [useless-runes] are being read, the
+  failure message now makes note of that fact.  See
+  [useless-runes-failures].  Thanks to Mertcan Temel for pointing out
+  that such failures may present a confusing problem for (especially)
+  new users.
+
 
 New Features
 
@@ -130334,7 +130346,60 @@ Performance
   re-certified on standalone runs (i.e., on an otherwise unloaded
   machine) and found that the time was reduced from 17 minutes and
   1.9 seconds down to 34.93 seconds, thus eliminating 96.6% of the
-  time.")
+  time.
+
+
+Subtopics
+
+  [Useless-runes-failures]
+      Failures caused by [useless-runes]")
+ (USELESS-RUNES-FAILURES
+  (FAILURE USELESS-RUNES)
+  "Failures caused by [useless-runes]
+
+  When an event fails you may see the following message:
+
+    *NOTE*: Useless-runes may have taken part in failed proofs.  See :DOC
+    useless-runes-failures.
+
+  This message is printed as part of any [event] [failure] message when
+  a [useless-runes] file is being consulted, which is the default
+  when using build system tools (see [books-certification] and
+  [build::cert.pl]).  It is intended to suggest that you consider
+  removing or regenerating the associated [useless-runes] file in the
+  situation described below.
+
+  (Remark.  We hope that this message reduces confusion when a proof
+  fails.  But if the event failure isn't from a failed proof attempt,
+  please disregard the *NOTE* above and this documentation!)
+
+  Suppose that you have developed a book --- say, foo.lisp --- and
+  placed it into the [community-books].  Then [regression] runs may
+  occasionally generate (or regenerate) the associated
+  [useless-runes] file.  Now suppose you modify foo.lisp or some
+  books that are included in it.  You successfully run (certify-book
+  \"foo\"); yet, certification of foo.lisp subequently fails as part of
+  a [regression] run or when you use [build::cert.pl] to certify
+  foo.lisp.  This could be unsettling!
+
+  In that case, what is probably happening is that the [useless-runes]
+  file is no longer suitable.  You could simply remove it from the
+  GitHub repository as follows (followed by the usual actions to
+  update the repository).
+
+    git rm .sys/foo@useless-runes.lsp
+
+  Or, if you like, you could regenerate the useless-runes file, for
+  example as follows.
+
+    (certify-book \"foo\" ? t :useless-runes :write)
+
+  Or if you prefer to avoid this useless-runes file from now on, you
+  could add a line like the following to foo.acl2 (see
+  [build::custom-certify-book-commands]) and also, ideally, delete
+  the useless-runes file using the \"git rm\" command displayed above.
+
+    ; cert-flags: ? t :useless-runes nil")
  (USER-DEFINED-FUNCTIONS-TABLE
   (MACROS)
   "An advanced [table] used to replace certain system functions
