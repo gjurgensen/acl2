@@ -129463,7 +129463,7 @@ introduction-to-the-tau-system) for more information about Tau.</dd>
  may occasionally generate (or regenerate) the associated @(see useless-runes)
  file.  Now suppose you modify @('foo.lisp') or some books that are included in
  it.  You successfully run @('(certify-book \"foo\")'); yet, certification of
- @('foo.lisp') subequently fails as part of a @(see regression) run or when you
+ @('foo.lisp') subsequently fails as part of a @(see regression) run or when you
  use @(tsee build::cert.pl) to certify @('foo.lisp').  This could be
  unsettling!</p>
 

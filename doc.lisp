@@ -130378,8 +130378,8 @@ Subtopics
   occasionally generate (or regenerate) the associated
   [useless-runes] file.  Now suppose you modify foo.lisp or some
   books that are included in it.  You successfully run (certify-book
-  \"foo\"); yet, certification of foo.lisp subequently fails as part of
-  a [regression] run or when you use [build::cert.pl] to certify
+  \"foo\"); yet, certification of foo.lisp subsequently fails as part
+  of a [regression] run or when you use [build::cert.pl] to certify
   foo.lisp.  This could be unsettling!
 
   In that case, what is probably happening is that the [useless-runes]
