@@ -134076,6 +134076,7 @@ for the execution of @('form')."
 
   ; Read-only form (length 3)
   (with-global-stobj st
+    ;; body:
     (fld st))
 
   ; Updating form (length 4; (returns state))
@@ -134097,11 +134098,14 @@ for the execution of @('form')."
  })
 
  <p>In the forms above, we call @('st') the stobj that is ``bound by'' the
- @('with-global-stobj') call.  Each updating form specifies an output signature
- as a list, which must contain the stobj bound by the form, whose elements are
- all @('nil') (designating a non-stobj value) or a stobj name.  That output
- signature reflects the result of the body; the entire form does not return the
- bound stobj, but does return @(tsee state), as explained below.</p>
+ @('with-global-stobj') call, and the ``body'' of the form is the last
+ argument.  The read-only form above, like all read-only forms, has a body that
+ does not return the stobj bound by the form.  Each updating form above
+ specifies an output signature as a list, which must contain the stobj bound by
+ the form, whose elements are all @('nil') (designating a non-stobj value) or a
+ stobj name.  That output signature reflects the result of the body; the entire
+ form does not return the bound stobj, but does return @(tsee state), as
+ explained below.</p>
 
  <p>@('With-global-stobj') is a macro, and the example forms above expand as
  follows.</p>
@@ -134327,9 +134331,9 @@ for the execution of @('form')."
  @({
   General Forms:
   ; Read-only form (length 3):
-  (with-local-stobj st form)
+  (with-global-stobj st form)
   ; Updating form (length 4):
-  (with-local-stobj st lst form)
+  (with-global-stobj st lst form)
  })
 
  <p>where @('st') is the name of a @(see stobj) that is user-defined
@@ -134345,7 +134349,10 @@ for the execution of @('form')."
  stobj).</p>
 
  <p>In each General Form above, @('st') and @('form') are called the ``bound
- stobj'' and ``body'' of the @('with-local-stobj') call (respectively).</p>
+ stobj'' and ``body'' of the @('with-global-stobj') call (respectively).</p>
+
+ <p>For the read-only form, the bound stobj (which is @('st') above) must not
+ be returned by the body of the form.</p>
 
  <p>For the updating form, the values actually returned are obtained by
  removing @('st') from @('lst') and then, if @('state') is not already in
