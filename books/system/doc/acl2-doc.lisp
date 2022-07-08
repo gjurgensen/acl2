@@ -54740,7 +54740,22 @@ forms allowed for a @('let') form are  @('ignore'), @('ignorable'), and
 (defxdoc linear-arithmetic
   :parents (linear)
   :short "A description of the linear arithmetic decision procedure"
-  :long "<p>We describe the procedure very roughly here.  Fundamental to the
+  :long "<p>ACL2 incorporates a rational linear arithmetic decision procedure.
+ When the ACL2 prover attempts to simplify a goal, it first constructs a data
+ structure, called the ``linear pot list'' (see @(see linear)), that records
+ inequalities derived from the current goal, as an early step in the
+ simplification process.  The linear pot list is constructed as follows: first,
+ it is seeded with equalities and inequalities about arithmetic terms occurring
+ in the goal to be proved; then, it is extended by instantiating @(':')@(tsee
+ linear) lemmas about terms already in the pot list.  The resulting pot list is
+ then supplied to the decision procedure when the rewriter is trying to
+ establish or refute an arithmetic equality or inequality.  This happens, for
+ example, when an inequality occurs as a hypothesis of a rule being applied by
+ the rewriter.  (For discussion of the rewriter in general, see @(see
+ introduction-to-rewrite-rules-part-1) and @(see
+ introduction-to-rewrite-rules-part-2).)</p>
+
+ <p>We describe the procedure very roughly here.  Fundamental to the
  procedure is the notion of a linear polynomial inequality.  A ``linear
  polynomial'' is a sum of terms, each of which is the product of a rational
  constant and an ``unknown.''  The ``unknown'' is permitted to be @('1') simply
@@ -92818,6 +92833,12 @@ it."
 ; Translate11-call now prints a signature violation without evisceration in
 ; its "illegal to invoke" translation error message.  Thanks to Eric Smith for
 ; suggesting this change.
+
+; Added a new paragraph to the front of :doc linear, thanks to a query from
+; Eric Smith.
+
+; Changed the :obj argument from nil to the more appropriate '? in source
+; function multiply-alists2.
 
   :parents (release-notes)
   :short "ACL2 Version  8.5 (xx, 20xx) Notes"
