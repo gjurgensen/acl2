@@ -2685,6 +2685,9 @@ Subtopics
       A miscellany of documented functions and concepts (often cited in
       more accessible [documentation])
 
+  [Output-controls]
+      Methods for controlling the output produced by the ACL2 prover
+
   [Parallelism]
       Experimental extension for parallel execution and proofs
 
@@ -2693,9 +2696,6 @@ Subtopics
 
   [Proof-builder]
       An interactive tool for controlling ACL2's proof processes.
-
-  [Prover-output]
-      Methods for controlling the output produced by the ACL2 prover
 
   [Real]
       ACL2(r) support for real numbers
@@ -3933,7 +3933,7 @@ Subtopics
       [explode-nonnegative-integer] and [explode-atom].
 
   [Print-object$]
-      Print an an object to an open output channel
+      Print an an object to an open object output channel
 
   [Print-object$+]
       Print an an object to an open output channel in a specified manner
@@ -4858,16 +4858,11 @@ Silent loading of ACL2 customization files
   It should be very rare for square brackets to be intended simply as
   square brackets, not as link indicators.
 
-  In order to use ACL2-Doc, load the distributed file emacs/acl2-doc.el
-  into Emacs.  This will happen automatically if you load
-  emacs/emacs-acl2.el, which will happen automatically if you put the
-  following form in your ~/.emacs file, replacing DIR by a path to
-  your ACL2 installation.
-
-    (load \"DIR/emacs/emacs-acl2.el\")
-
-  Then to start the browser at the top-level topic, either execute the
-  Emacs command
+  In order to use ACL2-Doc, load into Emacs the distributed file
+  acl2-doc.el from an appropriate directory; see [emacs].  This will
+  happen automatically if you load emacs-acl2.el from an appropriate
+  directory; again, see [emacs].  Then to start the browser at the
+  top-level topic, either execute the Emacs command
 
     meta-x acl2-doc
 
@@ -10733,6 +10728,34 @@ Subtopics
 
   There is no such thing as a backchaining or backward-chaining rule
   class (see [rule-classes]) in ACL2.")
+ (BACKQUOTE
+  (READER)
+  "Variant of quotation introducing templates for data structures
+
+  ACL2 supports the backquote (`) construct of Common Lisp.  See any
+  Common Lisp documentation for details, for example, its {discussion
+  in the Common Lisp HyperSpec |
+  http://www.lispworks.com/documentation/HyperSpec/Body/02_df.htm}.
+  Here we give only a brief introduction.
+
+  Together with the use of comma (,) and comma-atsign (,@), backquote
+  provides a variant of quote that supports an escape mechanism, as
+  illustrated by the following examples.
+
+    ACL2 !>`(a b c)
+    (A B C)
+    ACL2 !>(let ((x '(a b c))) `(1 ,(cdr x) 2))
+    (1 (B C) 2)
+    ACL2 !>(let ((x '(a b c))) `(1 ,@(cdr x) 2))
+    (1 B C 2)
+    ACL2 !>
+
+  The first example above illustrates that backquote is much like
+  quote.  The second example shows how a comma escapes from the
+  quotation, inserting the value of the object that follows the
+  comma.  The third example is similar to the second, except that it
+  uses comma followed by an atsign, which splices in the value (which
+  must satisfy [true-listp]) rather than inserting it.")
  (BACKTRACK (POINTERS)
             "See [hints] for information about the keyword :backtrack.")
  (BADGE
@@ -17454,8 +17477,8 @@ Subtopics
     (setq save-buffer-coding-system 'iso-8859-1)
 
   before saving the buffer into a file.  This will happen automatically
-  for users who load distributed file emacs/emacs-acl2.el into their
-  Emacs sessions.
+  for users who load distributed file emacs-acl2.el (from a suitable
+  directory; see [emacs]) into their Emacs sessions.
 
   For an example of character encodings in action, see the community
   book books/misc/character-encoding-test.lisp.")
@@ -18317,6 +18340,9 @@ Subtopics
   '#\\c 'nil))).")
  (COLLECT$ (POINTERS) "See [loop$].")
  (COLLECT$+ (POINTERS) "See [loop$].")
+ (COMMA (POINTERS) "See [backquote].")
+ (COMMA-ATSIGN (POINTERS)
+               "See [backquote].")
  (COMMAND
   (HISTORY)
   "Forms you type at the top-level, but...
@@ -29820,16 +29846,12 @@ Subtopics
   visually give you a sense of where ACL2 is spending its time.
 
   The Emacs portion of this utility is already loaded if you load the
-  distributed Emacs file emacs/emacs-acl2.el.  Otherwise, invoke the
-  following Emacs command, say by typing Control-X Control-E after
-  the right parenthesis, where DIR is the directory of your ACL2
-  distribution.
-
-    (load \"<DIR>/emacs/monitor.el\") ; absolute pathnames might work best
-
-  You only need to do that once.  Then each time you want to observe
-  the rewriter in action, invoke the following to see it displayed in
-  a buffer, which we call the ``dmr buffer'':
+  distributed Emacs file emacs-acl2.el from a suitable directory; see
+  [emacs].  Otherwise, load into Emacs the file monitor.el from that
+  same directory.  (You only need to do that once in your Emacs
+  session.)  Then each time you want to observe the rewriter in
+  action, invoke the following to see it displayed in a buffer, which
+  we call the ``dmr buffer'':
 
     Control-t 1
 
@@ -31878,10 +31900,21 @@ Miscellaneous efficiency ideas
   (ACL2-TUTORIAL)
   "Emacs support for ACL2
 
-  Many successful users of ACL2 run it in a shell under the Emacs
-  editor.  If you do so, then you may wish to load the distributed
-  file emacs/emacs-acl2.el.  The file begins with considerable
-  comments describing what it offers.
+  Many successful users of ACL2 take advantage of the Emacs editor, for
+  example by running ACL2 in an Emacs shell buffer.  If you do so,
+  then you may wish to load the distributed file emacs-acl2.el from
+  one of two directories under the main ACL2 directory: books/emacs/
+  if you use a recent version of Emacs, or emacs/ if you use Emacs
+  24.  An easy way to arrange this is to put the load form into your
+  .emacs file; here, DIR denotes your main ACL2 directory.
+
+    (load \"DIR/books/emacs/emacs-acl2.el\") ; for recent Emacs versions
+
+  -OR-
+
+    (load \"DIR/emacs/emacs-acl2.el\") ; for Emacs 24
+
+  The file begins with considerable comments describing what it offers.
 
   In particular, the above file provides the ACL2-Doc browser, a
   convenient tool for viewing, in Emacs, documentation for both the
@@ -36979,7 +37012,7 @@ Subtopics
                    (mv (and (null erp) (posp val) val)
                        state)))")
  (FINALIZE-EVENT-USER
-  (PROVER-OUTPUT)
+  (OUTPUT-CONTROLS)
   "User-supplied code to complete [events], e.g., with extra [summary]
   output
 
@@ -41827,7 +41860,7 @@ Subtopics
   than more generally in ACL2.  (Many users have wanted such an
   assistant to suggest lemmas for the rewriter.)")
  (GAG-MODE
-  (PROVER-OUTPUT)
+  (OUTPUT-CONTROLS)
   "Verbosity of proof output
 
   Please see [set-gag-mode] for an explanation of gag-mode, which can
@@ -42295,7 +42328,7 @@ Subtopics
  (GET-EVENT (POINTERS)
             "See [system-utilities].")
  (GET-EVENT-DATA
-  (SYSTEM-UTILITIES PROVER-OUTPUT)
+  (SYSTEM-UTILITIES OUTPUT-CONTROLS)
   "Obtain data stored after at the conclusion of an event
 
   Warning: This is a low-level system utility that may change somewhat
@@ -42820,7 +42853,7 @@ Contribute Your Changes
     git commit -a -m '<some message, with descriptive first line>'
     git push origin testing")
  (GOAL-SPEC
-  (HINTS PROVER-OUTPUT)
+  (HINTS OUTPUT-CONTROLS)
   "To indicate where a hint is to be used
 
     Examples:
@@ -44820,14 +44853,16 @@ Subtopics
   If you want to run the script yourself, you may find it handy to use
   the following Emacs keyboard macro for running the tracing code in
   2-window mode, with the cursor in the window with the script and
-  ACL2 running in the other window.
+  ACL2 running in the other window.  The define-key command is
+  optional, in case you want to put that keyboard macro on a key ---
+  though in that case you'll need to have defined ctl-t-keymap, which
+  happens automatically if you load file emacs-acl2.el; see :DOC
+  emacs.
 
     (fset 'step-guard-script
        [?C-a ?C-  ?C-e ?M-w ?C-a ?C-n
         ?C-x ?o ?M-> ?C-y return ?C-x ?o])
 
-    ; Put it on a key (if you have defined the indicated keymap by using
-    ; emacs/emacs-acl2.el):
     (define-key ctl-t-keymap \"r\" 'step-guard-script)
 
   The script follows.
@@ -50476,7 +50511,7 @@ Subtopics
   address it.  Also see [constraint] for a general discussion of
   constraints introduced by an [encapsulate] event.")
  (INITIALIZE-EVENT-USER
-  (PROVER-OUTPUT)
+  (OUTPUT-CONTROLS)
   "User-supplied code to initiate [events]
 
   This utility is intended for system hackers, not standard ACL2 users.
@@ -55729,6 +55764,9 @@ Subtopics
   [Open-output-channel!]
       When trust tags are needed to open output channels
 
+  [Output-controls]
+      Methods for controlling the output produced by the ACL2 prover
+
   [Output-to-file]
       Redirecting output to a file
 
@@ -55743,7 +55781,7 @@ Subtopics
       Advanced controls of ACL2 printing
 
   [Print-object$]
-      Print an an object to an open output channel
+      Print an an object to an open object output channel
 
   [Print-object$+]
       Print an an object to an open output channel in a specified manner
@@ -55753,9 +55791,6 @@ Subtopics
 
   [Proofs-co]
       The proofs character output channel
-
-  [Prover-output]
-      Methods for controlling the output produced by the ACL2 prover
 
   [Read-file-into-string]
       The contents of a file (or part of it) as a string
@@ -58668,6 +58703,22 @@ Subtopics
  (LINEAR-ARITHMETIC
   (LINEAR)
   "A description of the linear arithmetic decision procedure
+
+  ACL2 incorporates a rational linear arithmetic decision procedure.
+  When the ACL2 prover attempts to simplify a goal, it first
+  constructs a data structure, called the ``linear pot list'' (see
+  [linear]), that records inequalities derived from the current goal,
+  as an early step in the simplification process.  The linear pot
+  list is constructed as follows: first, it is seeded with equalities
+  and inequalities about arithmetic terms occurring in the goal to be
+  proved; then, it is extended by instantiating :[linear] lemmas
+  about terms already in the pot list.  The resulting pot list is
+  then supplied to the decision procedure when the rewriter is trying
+  to establish or refute an arithmetic equality or inequality.  This
+  happens, for example, when an inequality occurs as a hypothesis of
+  a rule being applied by the rewriter.  (For discussion of the
+  rewriter in general, see [introduction-to-rewrite-rules-part-1] and
+  [introduction-to-rewrite-rules-part-2].)
 
   We describe the procedure very roughly here.  Fundamental to the
   procedure is the notion of a linear polynomial inequality.  A
@@ -90975,6 +91026,13 @@ Changes to Existing Features
   that such failures may present a confusing problem for (especially)
   new users.
 
+  Failed attempts to [memoize] or [profile] now generally result in
+  less noisy error output.  Also, a more useful error message is
+  printed when attempting to [memoize] or [profile] a function that
+  is introduced either by [defabsstobj] or by [defstobj] with keyword
+  argument :inline t, and hence is a macro in raw Lisp; thanks to
+  Shilpi Goel for suggesting this improvement.
+
 
 New Features
 
@@ -91142,6 +91200,13 @@ Heuristic and Efficiency Improvements
   that encapsulate form that are hidden or missing after the second
   pass through it, presumably because of a [local] include-book event
   in that encapsulate form.
+
+  The function [len] is significantly more efficient than before.
+  (Also, its raw Lisp implementation is simpler, though as before it
+  causes an error for extremely (impossibly?) long lists (in Lisp
+  parlance, whose length is not a fixnum).)  Thanks to Stephen
+  Westfold for encouraging this change and suggesting a suitable
+  declaim form, and thanks to Eric Smith for providing helpful tests.
 
 
 Bug Fixes
@@ -91326,7 +91391,8 @@ EMACS Support
   searching and going back) are buffer-local.  Thanks to Mayank
   Manjrekar for the idea and for supplying an implementation
   (including documentation), which has been incorporated into the
-  [ACL2-doc] source file, emacs/acl2-doc.el.
+  [ACL2-doc] source file, acl2-doc.el (loaded from a suitable
+  directory; see [emacs]).
 
   A bug has been fixed in [ACL2-doc] that would cause an error when
   attempting to bring up the acl2-only manual.
@@ -91345,6 +91411,16 @@ EMACS Support
   message, acl2-doc-download-error (which is also described in the
   [ACL2-doc] documentation topic).  Thanks to Warren Hunt for
   discussion leading to this enhancement.
+
+  Files from the emacs/ directory in the ACL2 distribution have been
+  copied to directory books/emacs/.  The original emacs/ directory
+  will continue to be maintained for Emacs 24 (though those who have
+  used it comfortably with more recent versions may wish to continue
+  to load files from the emacs/ directory).  The books/emacs/
+  directory is intended for use with recent versions of ACL2, and the
+  ACL2 community is welcome to modify it.  Thanks to Warren Hunt for
+  noting that users of recent Emacs versions could experience
+  problems using files maintained for Emacs 24.
 
 
 Experimental Versions
@@ -93144,6 +93220,104 @@ Subtopics
     * SBCL (Steel Bank Common Lisp)
 
   {IMAGE} (see [The_End_of_the_Flying_Tour])")
+ (OUTPUT-CONTROLS
+  (ACL2 IO)
+  "Methods for controlling the output produced by the ACL2 prover
+
+  This topic pertains primarily to processing of [events], often
+  involving the prover.  For a general discussion about redirection
+  of ACL2 output to a file, see [output-to-file].
+
+
+Subtopics
+
+  [Finalize-event-user]
+      User-supplied code to complete [events], e.g., with extra [summary]
+      output
+
+  [Gag-mode]
+      Verbosity of proof output
+
+  [Get-event-data]
+      Obtain data stored after at the conclusion of an event
+
+  [Goal-spec]
+      To indicate where a hint is to be used
+
+  [Initialize-event-user]
+      User-supplied code to initiate [events]
+
+  [Pso]
+      Show the most recently saved output
+
+  [Pso!]
+      Show the most recently saved output, including [proof-tree] output
+
+  [Psof]
+      Show the most recently saved output
+
+  [Psog]
+      Show the most recently saved output with [gag-mode]
+
+  [Set-duplicate-keys-action!]
+      Non-[local] version of [set-duplicate-keys-action]
+
+  [Set-gag-mode]
+      Modify the nature of proof output
+
+  [Set-inhibit-er-soft]
+      Control the error output
+
+  [Set-inhibit-er-soft!]
+      Control error output non-[local]ly
+
+  [Set-inhibit-output-lst]
+      Control output
+
+  [Set-inhibit-warnings]
+      Control warnings
+
+  [Set-inhibit-warnings!]
+      Control warnings non-[local]ly
+
+  [Set-inhibited-summary-types]
+      Control which parts of the [summary] are printed
+
+  [Set-let*-abstractionp]
+      To shorten many prettyprinted clauses
+
+  [Set-print-clause-ids]
+      Cause subgoal numbers to be printed when 'prove output is inhibited
+
+  [Set-raw-proof-format]
+      Print runes as lists in proof output from simplification
+
+  [Set-raw-warning-format]
+      Print some warnings in a ``raw'', s-expression format
+
+  [Summary]
+      The summary printed at the conclusion of an event
+
+  [Toggle-inhibit-er-soft]
+      Add or delete an error output string from the inhibit-er-soft-table
+
+  [Toggle-inhibit-er-soft!]
+      Toggle an inhibit-er-soft-table entry non-[local]ly
+
+  [Toggle-inhibit-warning]
+      Add or delete a warning string from the inhibit-warnings-table
+
+  [Toggle-inhibit-warning!]
+      Toggle an inhibit-warnings-table entry non-[local]ly
+
+  [Warnings]
+      Warnings emitted by the ACL2 proof process
+
+  [With-output]
+      Suppressing or turning on specified output for an event
+
+  [Wof]
+      Direct standard output and proofs output to a file")
  (OUTPUT-TO-FILE
   (IO)
   "Redirecting output to a file
@@ -95888,6 +96062,12 @@ Subtopics
   [Collect$+]
       See [loop$].
 
+  [Comma]
+      See [backquote].
+
+  [Comma-atsign]
+      See [backquote].
+
   [Community-book]
       See [community-books].
 
@@ -98511,13 +98691,13 @@ Subtopics
       Set default keyword values for [print-gv]")
  (PRINT-OBJECT$
   (IO ACL2-BUILT-INS)
-  "Print an an object to an open output channel
+  "Print an an object to an open object output channel
 
     General Form:
     (print-object$ x channel state)
 
-  where x is any ACL2 object and channel is an open output channel.
-  See [io].
+  where x is any ACL2 object and channel is an open object output
+  channel.  See [io].
 
 
 Remarks
@@ -98540,7 +98720,7 @@ Remarks
 
     General Form:
     (print-object$+ x       ; an ACL2 object
-                    channel ; an open output channel
+                    channel ; an open object output channel
                     &key
                     header ; nil or a comment string (see below)
                     serialize-character ; as in @(see with-serialize-character)
@@ -101213,7 +101393,8 @@ Subtopics
   customizes the emacs environment to provide window-based proof tree
   displays together with commands for traversing the proof
   transcript; see the discussion of ``ACL2 proof-tree support'' in
-  file emacs/emacs-acl2.el distributed with ACL2.
+  file emacs-acl2.el distributed with ACL2 (in either of two
+  directories; see [emacs]).
 
   The command :start-proof-tree enables proof-tree output, while
   :stop-proof-tree disables proof-tree output; see [start-proof-tree]
@@ -101706,104 +101887,6 @@ Subtopics
   seconds, because no time was recorded for the aborted call.
   However, if the ``OPTIONAL'' form above is included, then you will
   see statistics that look accurate.")
- (PROVER-OUTPUT
-  (ACL2 IO)
-  "Methods for controlling the output produced by the ACL2 prover
-
-  This topic pertains primarily to processing of [events], often
-  involving the prover.  For a general discussion about redirection
-  of ACL2 output to a file, see [output-to-file].
-
-
-Subtopics
-
-  [Finalize-event-user]
-      User-supplied code to complete [events], e.g., with extra [summary]
-      output
-
-  [Gag-mode]
-      Verbosity of proof output
-
-  [Get-event-data]
-      Obtain data stored after at the conclusion of an event
-
-  [Goal-spec]
-      To indicate where a hint is to be used
-
-  [Initialize-event-user]
-      User-supplied code to initiate [events]
-
-  [Pso]
-      Show the most recently saved output
-
-  [Pso!]
-      Show the most recently saved output, including [proof-tree] output
-
-  [Psof]
-      Show the most recently saved output
-
-  [Psog]
-      Show the most recently saved output with [gag-mode]
-
-  [Set-duplicate-keys-action!]
-      Non-[local] version of [set-duplicate-keys-action]
-
-  [Set-gag-mode]
-      Modify the nature of proof output
-
-  [Set-inhibit-er-soft]
-      Control the error output
-
-  [Set-inhibit-er-soft!]
-      Control error output non-[local]ly
-
-  [Set-inhibit-output-lst]
-      Control output
-
-  [Set-inhibit-warnings]
-      Control warnings
-
-  [Set-inhibit-warnings!]
-      Control warnings non-[local]ly
-
-  [Set-inhibited-summary-types]
-      Control which parts of the [summary] are printed
-
-  [Set-let*-abstractionp]
-      To shorten many prettyprinted clauses
-
-  [Set-print-clause-ids]
-      Cause subgoal numbers to be printed when 'prove output is inhibited
-
-  [Set-raw-proof-format]
-      Print runes as lists in proof output from simplification
-
-  [Set-raw-warning-format]
-      Print some warnings in a ``raw'', s-expression format
-
-  [Summary]
-      The summary printed at the conclusion of an event
-
-  [Toggle-inhibit-er-soft]
-      Add or delete an error output string from the inhibit-er-soft-table
-
-  [Toggle-inhibit-er-soft!]
-      Toggle an inhibit-er-soft-table entry non-[local]ly
-
-  [Toggle-inhibit-warning]
-      Add or delete a warning string from the inhibit-warnings-table
-
-  [Toggle-inhibit-warning!]
-      Toggle an inhibit-warnings-table entry non-[local]ly
-
-  [Warnings]
-      Warnings emitted by the ACL2 proof process
-
-  [With-output]
-      Suppressing or turning on specified output for an event
-
-  [Wof]
-      Direct standard output and proofs output to a file")
  (PROVING_THEOREMS_ABOUT_MODELS
   (PAGES_WRITTEN_ESPECIALLY_FOR_THE_TOURS)
   "Proving Theorems about Models
@@ -102197,7 +102280,7 @@ Subtopics
 
   Metafunctions may use pseudo-termp as a [guard].")
  (PSO
-  (PROVER-OUTPUT)
+  (OUTPUT-CONTROLS)
   "Show the most recently saved output
 
   Evaluate :pso in order to print output that was generated in an
@@ -102277,7 +102360,7 @@ Subtopics
   Also see [pso!], [psog], [psof], [set-gag-mode],
   [set-inhibit-output-lst], and [set-print-clause-ids].")
  (PSO!
-  (PROVER-OUTPUT)
+  (OUTPUT-CONTROLS)
   "Show the most recently saved output, including [proof-tree] output
 
   :Pso! provides output just like :pso, except that [proof-tree] is
@@ -102286,7 +102369,7 @@ Subtopics
   Pso! takes the same optional arguments as pso; see [pso], and also
   see [psog] and [psof].")
  (PSOF
-  (PROVER-OUTPUT)
+  (OUTPUT-CONTROLS)
   "Show the most recently saved output
 
   For a similar utility, see [pso].  But unlike :pso, :psof takes a
@@ -102304,7 +102387,7 @@ Subtopics
   Psof takes the same optional arguments as pso; see [pso], and also
   see [pso!] and [psog].")
  (PSOG
-  (PROVER-OUTPUT)
+  (OUTPUT-CONTROLS)
   "Show the most recently saved output with [gag-mode]
 
   :Psog is like :pso --- see [pso] --- but unlike :pso, :psog displays
@@ -104508,6 +104591,9 @@ Subtopics
 
 
 Subtopics
+
+  [Backquote]
+      Variant of quotation introducing templates for data structures
 
   [Fancy-string-reader]
       A friendly syntax for strings literals that have backslashes and
@@ -111235,7 +111321,7 @@ Subtopics
   non-[local] event.  Indeed, (set-duplicate-keys-action ...) is
   equivalent to (local (set-duplicate-keys-action! ...)).")
  (SET-DUPLICATE-KEYS-ACTION!
-  (PROVER-OUTPUT)
+  (OUTPUT-CONTROLS)
   "Non-[local] version of [set-duplicate-keys-action]
 
   Please see [set-duplicate-keys-action], which is the same as
@@ -111550,7 +111636,7 @@ Subtopics
   See [set-fmt-hard-right-margin] for a discussion of the soft and hard
   right margin for formatted output.")
  (SET-GAG-MODE
-  (PROVER-OUTPUT)
+  (OUTPUT-CONTROLS)
   "Modify the nature of proof output
 
     Examples:
@@ -112124,7 +112210,7 @@ Example
   good reason for wanting to export the effect of this event outside
   the enclosing [encapsulate] or book.")
  (SET-INHIBIT-ER-SOFT
-  (PROVER-OUTPUT ERRORS)
+  (OUTPUT-CONTROLS ERRORS)
   "Control the error output
 
     Examples:
@@ -112204,7 +112290,7 @@ Example
   See [toggle-inhibit-er-soft] for a way to add or remove a single
   string.")
  (SET-INHIBIT-ER-SOFT!
-  (PROVER-OUTPUT ERRORS)
+  (OUTPUT-CONTROLS ERRORS)
   "Control error output non-[local]ly
 
   Please see [set-inhibit-er-soft], which is the same as
@@ -112214,7 +112300,7 @@ Example
   reason for wanting to export the effect of this event outside the
   enclosing [encapsulate] or book.")
  (SET-INHIBIT-OUTPUT-LST
-  (PROVER-OUTPUT)
+  (OUTPUT-CONTROLS)
   "Control output
 
     Examples:
@@ -112278,7 +112364,7 @@ Example
   warnings not related to soundness will still be printed (which is
   probably not what was intended).")
  (SET-INHIBIT-WARNINGS
-  (PROVER-OUTPUT)
+  (OUTPUT-CONTROLS)
   "Control warnings
 
     Examples:
@@ -112328,7 +112414,7 @@ Example
   See [toggle-inhibit-warning] for a way to add or remove a single
   warning string.")
  (SET-INHIBIT-WARNINGS!
-  (PROVER-OUTPUT)
+  (OUTPUT-CONTROLS)
   "Control warnings non-[local]ly
 
   Please see [set-inhibit-warnings], which is the same as
@@ -112338,7 +112424,7 @@ Example
   reason for wanting to export the effect of this event outside the
   enclosing [encapsulate] or book.")
  (SET-INHIBITED-SUMMARY-TYPES
-  (PROVER-OUTPUT)
+  (OUTPUT-CONTROLS)
   "Control which parts of the [summary] are printed
 
     Example:
@@ -112864,7 +112950,7 @@ Example
  (SET-LET*-ABSTRACTION (POINTERS)
                        "See [set-let*-abstractionp].")
  (SET-LET*-ABSTRACTIONP
-  (PROVER-OUTPUT)
+  (OUTPUT-CONTROLS)
   "To shorten many prettyprinted clauses
 
   Note: This is an event!  It does not print the usual event [summary]
@@ -113189,7 +113275,7 @@ Example
  (SET-PRINT-CIRCLE (POINTERS)
                    "See [print-control].")
  (SET-PRINT-CLAUSE-IDS
-  (PROVER-OUTPUT)
+  (OUTPUT-CONTROLS)
   "Cause subgoal numbers to be printed when 'prove output is inhibited
 
     General Forms:
@@ -113698,7 +113784,7 @@ Subtopics
   introduces the required trust tag; see [defttag].  See
   [set-raw-mode] for a discussion of raw-mode.")
  (SET-RAW-PROOF-FORMAT
-  (PROVER-OUTPUT)
+  (OUTPUT-CONTROLS)
   "Print runes as lists in proof output from simplification
 
     General Forms:
@@ -113720,7 +113806,7 @@ Subtopics
   To obtain the current raw-proof-format (t if that format is active,
   nil if not), evaluate (@ raw-proof-format).")
  (SET-RAW-WARNING-FORMAT
-  (PROVER-OUTPUT)
+  (OUTPUT-CONTROLS)
   "Print some warnings in a ``raw'', s-expression format
 
     General Forms:
@@ -119090,7 +119176,7 @@ Subtopics
  (SUM$ (POINTERS) "See [loop$].")
  (SUM$+ (POINTERS) "See [loop$].")
  (SUMMARY
-  (PROVER-OUTPUT)
+  (OUTPUT-CONTROLS)
   "The summary printed at the conclusion of an event
 
   At the conclusion of an [event] form, ACL2 prints (by default)
@@ -125442,7 +125528,7 @@ Subtopics
   don't need to worry about prover output that mentions ``type
   reasoning'' or ``abbreviations,'' for example.")
  (TOGGLE-INHIBIT-ER-SOFT
-  (PROVER-OUTPUT ERRORS)
+  (OUTPUT-CONTROLS ERRORS)
   "Add or delete an error output string from the inhibit-er-soft-table
 
   See [set-inhibit-er-soft] for relevant background.
@@ -125465,7 +125551,7 @@ Subtopics
   list if it is there.  Case is unimportant in string.  See
   [set-inhibit-er-soft].")
  (TOGGLE-INHIBIT-ER-SOFT!
-  (PROVER-OUTPUT ERRORS)
+  (OUTPUT-CONTROLS ERRORS)
   "Toggle an inhibit-er-soft-table entry non-[local]ly
 
   Please see [toggle-inhibit-er-soft], which is the same as
@@ -125475,7 +125561,7 @@ Subtopics
   reason for wanting to export the effect of this event outside the
   enclosing [encapsulate] or book.")
  (TOGGLE-INHIBIT-WARNING
-  (PROVER-OUTPUT)
+  (OUTPUT-CONTROLS)
   "Add or delete a warning string from the inhibit-warnings-table
 
     General Form:
@@ -125495,7 +125581,7 @@ Subtopics
   not there already and is deleted from the list if it is there.
   Case is unimportant in string.  See [set-inhibit-warnings].")
  (TOGGLE-INHIBIT-WARNING!
-  (PROVER-OUTPUT)
+  (OUTPUT-CONTROLS)
   "Toggle an inhibit-warnings-table entry non-[local]ly
 
   Please see [toggle-inhibit-warning], which is the same as
@@ -133215,7 +133301,7 @@ Subtopics
     F
     :")
  (WARNINGS
-  (PROVER-OUTPUT)
+  (OUTPUT-CONTROLS)
   "Warnings emitted by the ACL2 proof process
 
   The prover can emit many warnings when processing [events].  See
@@ -134841,6 +134927,7 @@ Concluding Remark
 
     ; Read-only form (length 3)
     (with-global-stobj st
+      ;; body:
       (fld st))
 
     ; Updating form (length 4; (returns state))
@@ -134860,12 +134947,15 @@ Concluding Remark
         (mv (fld st) st (fld st2) state st2)))
 
   In the forms above, we call st the stobj that is ``bound by'' the
-  with-global-stobj call.  Each updating form specifies an output
-  signature as a list, which must contain the stobj bound by the
-  form, whose elements are all nil (designating a non-stobj value) or
-  a stobj name.  That output signature reflects the result of the
-  body; the entire form does not return the bound stobj, but does
-  return [state], as explained below.
+  with-global-stobj call, and the ``body'' of the form is the last
+  argument.  The read-only form above, like all read-only forms, has
+  a body that does not return the stobj bound by the form.  Each
+  updating form above specifies an output signature as a list, which
+  must contain the stobj bound by the form, whose elements are all
+  nil (designating a non-stobj value) or a stobj name.  That output
+  signature reflects the result of the body; the entire form does not
+  return the bound stobj, but does return [state], as explained
+  below.
 
   With-global-stobj is a macro, and the example forms above expand as
   follows.
@@ -135064,9 +135154,9 @@ Syntax and Semantics
 
     General Forms:
     ; Read-only form (length 3):
-    (with-local-stobj st form)
+    (with-global-stobj st form)
     ; Updating form (length 4):
-    (with-local-stobj st lst form)
+    (with-global-stobj st lst form)
 
   where st is the name of a [stobj] that is user-defined (i.e., not
   state), form is subject to syntactic restrictions discussed below,
@@ -135080,7 +135170,10 @@ Syntax and Semantics
   stobj name is the bound stobj).
 
   In each General Form above, st and form are called the ``bound
-  stobj'' and ``body'' of the with-local-stobj call (respectively).
+  stobj'' and ``body'' of the with-global-stobj call (respectively).
+
+  For the read-only form, the bound stobj (which is st above) must not
+  be returned by the body of the form.
 
   For the updating form, the values actually returned are obtained by
   removing st from lst and then, if state is not already in lst,
@@ -135784,7 +135877,7 @@ Constrained Functions and Defattach
 
     (thm (equal (foo) (mv 10 20))) ; succeeds")
  (WITH-OUTPUT
-  (PROVER-OUTPUT)
+  (OUTPUT-CONTROLS)
   "Suppressing or turning on specified output for an event
 
   The macro with-output can be used to control ACL2 output.  It can be
@@ -136548,7 +136641,7 @@ Subtopics
   objects using the ACL2 function (walkabout object state); see
   [walkabout].")
  (WOF
-  (PROVER-OUTPUT IO)
+  (OUTPUT-CONTROLS IO)
   "Direct standard output and proofs output to a file
 
     Example Form:
@@ -138622,14 +138715,15 @@ Remarks on defaults
   command dv if you want to dive according to the syntax displayed by
   the command p.  Note that (dv n) can be abbreviated by simply n.
 
-  Remark: Emacs users who load (into Emacs) the file emacs/acl2-doc.el
-  will have defined a command, Control-t Control-d, that avoids the
-  need to type dive commands.  After you print the current term using
-  the pp command, you may position the cursor on a subterm and type
-  Control-t Control-d.  Emacs will respond by pasting the appropriate
-  dive command immediately after the interactive proof-builder's
-  prompt.  You can then simply type <RETURN> in order to dive to the
-  desired subterm.")
+  Remark: Emacs users who load (into Emacs) the file emacs-acl2.el
+  (from a suitable directory; see [emacs]) will have defined a
+  command, Control-t Control-d, that avoids the need to type dive
+  commands.  After you print the current term using the pp command,
+  you may position the cursor on a subterm and type Control-t
+  Control-d.  Emacs will respond by pasting the appropriate dive
+  command immediately after the interactive proof-builder's prompt.
+  You can then simply type <RETURN> in order to dive to the desired
+  subterm.")
  (ACL2-PC::DO-ALL
   (PROOF-BUILDER-COMMANDS)
   "(macro) run the given instructions
@@ -138764,14 +138858,14 @@ Remarks on defaults
   Remark: (dv n) may be abbreviated by simply n, so we could have typed
   1 instead of (dv 1) in the first example above.
 
-  Remark: Emacs users who load (into Emacs) the file emacs/acl2-doc.el
-  will have defined a command, Control-t d, that avoids the need to
-  type dv commands.  After you print the current term using the p or
-  th command, you may position the cursor on a subterm and type
-  Control-t d.  Emacs will respond by pasting the appropriate dv
-  command immediately after the interactive proof-builder's prompt.
-  You can then simply type <RETURN> in order to dive to the desired
-  subterm.
+  Remark: Emacs users who load (into Emacs) the file emacs-acl2.el
+  (from a suitable directory; see [emacs]) will have defined a
+  command, Control-t d, that avoids the need to type dv commands.
+  After you print the current term using the p or th command, you may
+  position the cursor on a subterm and type Control-t d.  Emacs will
+  respond by pasting the appropriate dv command immediately after the
+  interactive proof-builder's prompt.  You can then simply type
+  <RETURN> in order to dive to the desired subterm.
 
   Remark: A similar command is dive, which is related to the command
   pp, in that the diving is done according to raw (translated,
