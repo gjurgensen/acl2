@@ -2575,18 +2575,11 @@
  <p>It should be very rare for square brackets to be intended simply as square
  brackets, not as link indicators.</p>
 
- <p>In order to use ACL2-Doc, load the distributed file
- <tt>emacs/acl2-doc.el</tt> into Emacs.  This will happen automatically if you
- load <tt>emacs/emacs-acl2.el</tt>, which will happen automatically if you put
- the following form in your <tt>~/.emacs</tt> file, replacing @('DIR') by a
- path to your ACL2 installation.</p>
-
- @({
- (load \"DIR/emacs/emacs-acl2.el\")
- })
-
- <p>Then to start the browser at the top-level topic, either execute the Emacs
- command</p>
+ <p>In order to use ACL2-Doc, load into Emacs the distributed file
+ <tt>acl2-doc.el</tt> from an appropriate directory; see @(see emacs).  This
+ will happen automatically if you load <tt>emacs-acl2.el</tt> from an
+ appropriate directory; again, see @(see emacs).  Then to start the browser at
+ the top-level topic, either execute the Emacs command</p>
 
  @({
  meta-x acl2-doc
@@ -8027,6 +8020,35 @@ and @(tsee include-book)"
   (backchain-limit wrld :ts) ; backchain limit for type-set reasoning
   (backchain-limit wrld :rewrite) ; backchain limit for rewriting
  })")
+
+(defxdoc backquote
+  :parents (reader)
+  :short "Variant of quotation introducing templates for data structures"
+  :long "<p>ACL2 supports the backquote (@('`')) construct of Common Lisp.  See
+ any Common Lisp documentation for details, for example, its <a
+ href='http://www.lispworks.com/documentation/HyperSpec/Body/02_df.htm'>discussion
+ in the Common Lisp HyperSpec</a>.  Here we give only a brief introduction.</p>
+
+ <p>Together with the use of comma (@(',')) and comma-atsign (@(',@')),
+ backquote provides a variant of quote that supports an escape mechanism, as
+ illustrated by the following examples.</p>
+
+ @({
+ ACL2 !>`(a b c)
+ (A B C)
+ ACL2 !>(let ((x '(a b c))) `(1 ,(cdr x) 2))
+ (1 (B C) 2)
+ ACL2 !>(let ((x '(a b c))) `(1 ,@(cdr x) 2))
+ (1 B C 2)
+ ACL2 !>
+ })
+
+ <p>The first example above illustrates that backquote is much like quote.  The
+ second example shows how a comma escapes from the quotation, inserting the
+ value of the object that follows the comma.  The third example is similar to
+ the second, except that it uses comma followed by an atsign, which splices in
+ the value (which must satisfy @(tsee true-listp)) rather than inserting
+ it.</p>")
 
 (defxdoc badge
   :parents (apply$)
@@ -14487,8 +14509,8 @@ with any questions about building the community books.</p>")
  })
 
  <p>before saving the buffer into a file.  This will happen automatically for
- users who load distributed file @('emacs/emacs-acl2.el') into their Emacs
- sessions.</p>
+ users who load distributed file @('emacs-acl2.el') (from a suitable directory;
+ see @(see emacs)) into their Emacs sessions.</p>
 
  <p>For an example of character encodings in action, see the community book
  @('books/misc/character-encoding-test.lisp').</p>")
@@ -26486,18 +26508,11 @@ ld) and @(tsee include-book)"
  ACL2 is spending its time.</p>
 
  <p>The Emacs portion of this utility is already loaded if you load the
- distributed Emacs file @('emacs/emacs-acl2.el').  Otherwise, invoke the
- following Emacs command, say by typing @('Control-X Control-E') after the
- right parenthesis, where @('DIR') is the directory of your ACL2
- distribution.</p>
-
- @({
-  (load \"<DIR>/emacs/monitor.el\") ; absolute pathnames might work best
- })
-
- <p>You only need to do that once.  Then each time you want to observe the
- rewriter in action, invoke the following to see it displayed in a buffer,
- which we call the ``dmr buffer'':</p>
+ distributed Emacs file @('emacs-acl2.el') from a suitable directory; see @(see
+ emacs).  Otherwise, load into Emacs the file @('monitor.el') from that same
+ directory.  (You only need to do that once in your Emacs session.)  Then each
+ time you want to observe the rewriter in action, invoke the following to see
+ it displayed in a buffer, which we call the ``dmr buffer'':</p>
 
  @({
   Control-t 1
@@ -27617,7 +27632,7 @@ ld) and @(tsee include-book)"
 ; - This file (books/system/doc/acl2-doc.lisp), in particular where it mentions
 ;   "ACL2+Books Manual" near the top
 ; - doc/home-page.lisp
-; - emacs/acl2-doc.el
+; - emacs/acl2-doc.el and books/emacs/acl2-doc.el
 ; - installation/*.html
 ; - At UT, /u/www/users/moore/publications/, in particular, hyper-card.html.
 ; - books/Readme.html
@@ -28630,10 +28645,25 @@ ld) and @(tsee include-book)"
 (defxdoc emacs
   :parents (acl2-tutorial)
   :short "Emacs support for ACL2"
-  :long "<p>Many successful users of ACL2 run it in a shell under the Emacs
-  editor.  If you do so, then you may wish to load the distributed file
-  @('emacs/emacs-acl2.el').  The file begins with considerable comments
-  describing what it offers.</p>
+  :long "<p>Many successful users of ACL2 take advantage of the Emacs editor,
+ for example by running ACL2 in an Emacs shell buffer.  If you do so, then you
+ may wish to load the distributed file @('emacs-acl2.el') from one of two
+ directories under the main ACL2 directory: @('books/emacs/') if you use a
+ recent version of Emacs, or @('emacs/') if you use Emacs 24.  An easy way to
+ arrange this is to put the load form into your @('.emacs') file; here,
+ @('DIR') denotes your main ACL2 directory.</p>
+
+ @({
+ (load \"DIR/books/emacs/emacs-acl2.el\") ; for recent Emacs versions
+ })
+
+ <p><b>-OR-</b></p>
+
+ @({
+ (load \"DIR/emacs/emacs-acl2.el\") ; for Emacs 24
+ })
+
+ <p>The file begins with considerable comments describing what it offers.</p>
 
  <p>In particular, the above file provides the ACL2-Doc browser, a convenient
  tool for viewing, in Emacs, documentation for both the ACL2 system and the
@@ -33403,7 +33433,7 @@ current fast alists."
  @(def file-write-date$)")
 
 (defxdoc finalize-event-user
-  :parents (prover-output)
+  :parents (output-controls)
   :short "User-supplied code to complete @(see events), e.g., with extra @(see
  summary) output"
   :long "<p>This utility is intended for system hackers, not standard ACL2
@@ -38477,7 +38507,7 @@ current fast alists."
  src='res/tours/flying.gif'></img></see></p>")
 
 (defxdoc gag-mode
-  :parents (prover-output)
+  :parents (output-controls)
   :short "Verbosity of proof output"
   :long "<p>Please see @(see set-gag-mode) for an explanation of gag-mode,
  which can take any of the following values:</p>
@@ -38958,7 +38988,7 @@ current fast alists."
  default.</p>")
 
 (defxdoc get-event-data
-  :parents (system-utilities prover-output)
+  :parents (system-utilities output-controls)
   :short "Obtain data stored after at the conclusion of an event"
   :long "<p>Warning: This is a low-level system utility that may change
  somewhat over time.  For more details, see the ACL2 source code.</p>
@@ -39523,7 +39553,7 @@ current fast alists."
  check that things seem to be in order, and then adopt your changes.")
 
 (defxdoc goal-spec
-  :parents (hints prover-output)
+  :parents (hints output-controls)
   :short "To indicate where a hint is to be used"
   :long "@({
   Examples:
@@ -41473,15 +41503,16 @@ p  treats them as abbreviations for the ``current value'' of the stobj,
  <p>If you want to run the script yourself, you may find it handy to use the
  following Emacs keyboard macro for running the tracing code in 2-window mode,
  with the cursor in the window with the script and ACL2 running in the other
- window.</p>
+ window.  The @('define-key') command is optional, in case you want to put that
+ keyboard macro on a key &mdash; though in that case you'll need to have
+ defined @('ctl-t-keymap'), which happens automatically if you load file
+ @('emacs-acl2.el'); see :DOC emacs.</p>
 
  @({
   (fset 'step-guard-script
      [?C-a ?C-  ?C-e ?M-w ?C-a ?C-n
       ?C-x ?o ?M-> ?C-y return ?C-x ?o])
 
-  ; Put it on a key (if you have defined the indicated keymap by using
-  ; emacs/emacs-acl2.el):
   (define-key ctl-t-keymap \"r\" 'step-guard-script)
  })
 
@@ -46916,7 +46947,7 @@ tables in the current Hons Space."
  introduced by an @(tsee encapsulate) event.</p>")
 
 (defxdoc initialize-event-user
-  :parents (prover-output)
+  :parents (output-controls)
   :short "User-supplied code to initiate @(see events)"
   :long "<p>This utility is intended for system hackers, not standard ACL2
  users.</p>
@@ -54740,7 +54771,22 @@ forms allowed for a @('let') form are  @('ignore'), @('ignorable'), and
 (defxdoc linear-arithmetic
   :parents (linear)
   :short "A description of the linear arithmetic decision procedure"
-  :long "<p>We describe the procedure very roughly here.  Fundamental to the
+  :long "<p>ACL2 incorporates a rational linear arithmetic decision procedure.
+ When the ACL2 prover attempts to simplify a goal, it first constructs a data
+ structure, called the ``linear pot list'' (see @(see linear)), that records
+ inequalities derived from the current goal, as an early step in the
+ simplification process.  The linear pot list is constructed as follows: first,
+ it is seeded with equalities and inequalities about arithmetic terms occurring
+ in the goal to be proved; then, it is extended by instantiating @(':')@(tsee
+ linear) lemmas about terms already in the pot list.  The resulting pot list is
+ then supplied to the decision procedure when the rewriter is trying to
+ establish or refute an arithmetic equality or inequality.  This happens, for
+ example, when an inequality occurs as a hypothesis of a rule being applied by
+ the rewriter.  (For discussion of the rewriter in general, see @(see
+ introduction-to-rewrite-rules-part-1) and @(see
+ introduction-to-rewrite-rules-part-2).)</p>
+
+ <p>We describe the procedure very roughly here.  Fundamental to the
  procedure is the notion of a linear polynomial inequality.  A ``linear
  polynomial'' is a sum of terms, each of which is the product of a rational
  constant and an ``unknown.''  The ``unknown'' is permitted to be @('1') simply
@@ -92819,6 +92865,14 @@ it."
 ; its "illegal to invoke" translation error message.  Thanks to Eric Smith for
 ; suggesting this change.
 
+; Added a new paragraph to the front of :doc linear, thanks to a query from
+; Eric Smith.
+
+; Changed the :obj argument from nil to the more appropriate '? in source
+; function multiply-alists2.
+
+; Changed :doc topic name, prover-output => output-controls.
+
   :parents (release-notes)
   :short "ACL2 Version  8.5 (xx, 20xx) Notes"
   :long "<p>NOTE!  New users can ignore these release notes, because the @(see
@@ -92995,6 +93049,13 @@ it."
  useless-runes-failures).  Thanks to Mertcan Temel for pointing out that such
  failures may present a confusing problem for (especially) new users.</p>
 
+ <p>Failed attempts to @(tsee memoize) or @(tsee profile) now generally result
+ in less noisy error output.  Also, a more useful error message is printed when
+ attempting to @(tsee memoize) or @(tsee profile) a function that is introduced
+ either by @(tsee defabsstobj) or by @(tsee defstobj) with keyword argument
+ @(':inline t'), and hence is a macro in raw Lisp; thanks to Shilpi Goel for
+ suggesting this improvement.</p>
+
  <h3>New Features</h3>
 
  <p>A new @(tsee loop$) keyword, @('DO'), supports an imperative style of
@@ -93150,6 +93211,13 @@ it."
  through that @('encapsulate') form that are hidden or missing after the second
  pass through it, presumably because of a @(see local) @('include-book') event
  in that @('encapsulate') form.</p>
+
+ <p>The function @(tsee len) is significantly more efficient than before.
+ (Also, its raw Lisp implementation is simpler, though as before it causes an
+ error for extremely (impossibly?) long lists (in Lisp parlance, whose length
+ is not a fixnum).)  Thanks to Stephen Westfold for encouraging this change and
+ suggesting a suitable @('declaim') form, and thanks to Eric Smith for
+ providing helpful tests.</p>
 
  <h3>Bug Fixes</h3>
 
@@ -93324,13 +93392,13 @@ it."
 
  <h3>EMACS Support</h3>
 
- <p>It is now possible to have more than one @(see acl2-doc) buffer.
- A new buffer is created by using @('Shift-<Return>') to follow a
- link.  Commands that are naturally specific to a given buffer
- (such as searching and going back) are buffer-local.  Thanks to
- Mayank Manjrekar for the idea and for supplying an implementation
- (including documentation), which has been incorporated into the @(see
- acl2-doc) source file, @('emacs/acl2-doc.el').</p>
+ <p>It is now possible to have more than one @(see acl2-doc) buffer.  A new
+ buffer is created by using @('Shift-<Return>') to follow a link.  Commands
+ that are naturally specific to a given buffer (such as searching and going
+ back) are buffer-local.  Thanks to Mayank Manjrekar for the idea and for
+ supplying an implementation (including documentation), which has been
+ incorporated into the @(see acl2-doc) source file, @('acl2-doc.el') (loaded
+ from a suitable directory; see @(see emacs)).</p>
 
  <p>A bug has been fixed in @(see acl2-doc) that would cause an error
  when attempting to bring up the acl2-only manual.</p>
@@ -93349,6 +93417,15 @@ it."
  @('acl2-doc-download-error') (which is also described in the @(see acl2-doc)
  documentation topic).  Thanks to Warren Hunt for discussion leading to this
  enhancement.</p>
+
+ <p>Files from the @('emacs/') directory in the ACL2 distribution have been
+ copied to directory @('books/emacs/').  The original @('emacs/') directory
+ will continue to be maintained for Emacs 24 (though those who have used it
+ comfortably with more recent versions may wish to continue to load files from
+ the @('emacs/') directory).  The @('books/emacs/') directory is intended for
+ use with recent versions of ACL2, and the ACL2 community is welcome to modify
+ it.  Thanks to Warren Hunt for noting that users of recent Emacs versions
+ could experience problems using files maintained for Emacs 24.</p>
 
  <h3>Experimental Versions</h3>
 
@@ -94685,6 +94762,13 @@ arithmetic) for libraries of @(see books) for arithmetic reasoning.</p>")
  <p>The @(':otf-flg') may be supplied to @(tsee defun) via the @(tsee xargs)
  declare option.  When you supply an @(':otf-flg') hint to @('defun'), the flag
  is effective for the termination proofs and the guard proofs, if any.</p>")
+
+(defxdoc output-controls
+  :parents (acl2 io)
+  :short "Methods for controlling the output produced by the ACL2 prover"
+  :long "<p>This topic pertains primarily to processing of @(see events), often
+ involving the prover.  For a general discussion about redirection of ACL2
+ output to a file, see @(see output-to-file).</p>")
 
 (defxdoc output-to-file
   :parents (io)
@@ -98572,14 +98656,14 @@ arithmetic) for libraries of @(see books) for arithmetic reasoning.</p>")
 
 (defxdoc print-object$
   :parents (io acl2-built-ins)
-  :short "Print an an object to an open output channel"
+  :short "Print an an object to an open object output channel"
   :long "
  @({
  General Form:
  (print-object$ x channel state)
  })
 
- <p>where @('x') is any ACL2 object and @('channel') is an open output
+ <p>where @('x') is any ACL2 object and @('channel') is an open object output
  channel.  See @(see io).</p>
 
  <h3>Remarks</h3>
@@ -98604,7 +98688,7 @@ arithmetic) for libraries of @(see books) for arithmetic reasoning.</p>")
  @({
  General Form:
  (print-object$+ x       ; an ACL2 object
-                 channel ; an open output channel
+                 channel ; an open object output channel
                  &key
                  header ; nil or a comment string (see below)
                  serialize-character ; as in @(see with-serialize-character)
@@ -100636,8 +100720,8 @@ arithmetic) for libraries of @(see books) for arithmetic reasoning.</p>")
  particular, a tool distributed with the ACL2 community books customizes the
  emacs environment to provide window-based proof tree displays together with
  commands for traversing the proof transcript; see the discussion of ``ACL2
- proof-tree support'' in file @('emacs/emacs-acl2.el') distributed with
- ACL2.</p>
+ proof-tree support'' in file @('emacs-acl2.el') distributed with
+ ACL2 (in either of two directories; see @(see emacs)).</p>
 
  <p>The command @(':start-proof-tree') enables proof-tree output, while
  @(':stop-proof-tree') disables proof-tree output; see @(see start-proof-tree)
@@ -101161,13 +101245,6 @@ arithmetic) for libraries of @(see books) for arithmetic reasoning.</p>")
  recorded for the aborted call.  However, if the ``OPTIONAL'' form above is
  included, then you will see statistics that look accurate.</p>")
 
-(defxdoc prover-output
-  :parents (acl2 io)
-  :short "Methods for controlling the output produced by the ACL2 prover"
-  :long "<p>This topic pertains primarily to processing of @(see events), often
- involving the prover.  For a general discussion about redirection of ACL2
- output to a file, see @(see output-to-file).</p>")
-
 (defxdoc provisional-certification
 
 ; Here we put random remarks about provisional certification that are not fully
@@ -101576,7 +101653,7 @@ arithmetic) for libraries of @(see books) for arithmetic reasoning.</p>")
  <p>Metafunctions may use @('pseudo-termp') as a @(see guard).</p>")
 
 (defxdoc pso
-  :parents (prover-output)
+  :parents (output-controls)
   :short "Show the most recently saved output"
   :long "<p>Evaluate @(':pso') in order to print output that was generated in
  an environment where output was being saved, as in @(see gag-mode), which is
@@ -101661,7 +101738,7 @@ arithmetic) for libraries of @(see books) for arithmetic reasoning.</p>")
  set-inhibit-output-lst), and @(see set-print-clause-ids).</p>")
 
 (defxdoc pso!
-  :parents (prover-output)
+  :parents (output-controls)
   :short "Show the most recently saved output, including @(see proof-tree) output"
   :long "<p>@(':Pso!') provides output just like @(':pso'), except that @(see
  proof-tree) is included; see @(tsee pso).</p>
@@ -101670,7 +101747,7 @@ arithmetic) for libraries of @(see books) for arithmetic reasoning.</p>")
  and also see @(see psog) and @(see psof).</p>")
 
 (defxdoc psof
-  :parents (prover-output)
+  :parents (output-controls)
   :short "Show the most recently saved output"
   :long "<p>For a similar utility, see @(see pso).  But unlike @(':pso'),
  @(':psof') takes a filename argument and writes output to that file, instead
@@ -101687,7 +101764,7 @@ arithmetic) for libraries of @(see books) for arithmetic reasoning.</p>")
  and also see @(see pso!) and @(see psog).</p>")
 
 (defxdoc psog
-  :parents (prover-output)
+  :parents (output-controls)
   :short "Show the most recently saved output with @(see gag-mode)"
   :long "<p>@(':Psog') is like @(':pso') &mdash; see @(see pso) &mdash; but
  unlike @(':pso'), @(':psog') displays the output in @(see gag-mode); more
@@ -110266,7 +110343,7 @@ arithmetic) for libraries of @(see books) for arithmetic reasoning.</p>")
  @('(local (set-duplicate-keys-action! ...))').</p>")
 
 (defxdoc set-duplicate-keys-action!
-  :parents (prover-output)
+  :parents (output-controls)
   :short "Non-@(tsee local) version of @(tsee set-duplicate-keys-action)"
 
   :long "<p>Please see @(see set-duplicate-keys-action), which is the same as
@@ -110596,7 +110673,7 @@ arithmetic) for libraries of @(see books) for arithmetic reasoning.</p>")
  and hard right margin for formatted output.</p>")
 
 (defxdoc set-gag-mode
-  :parents (prover-output)
+  :parents (output-controls)
   :short "Modify the nature of proof output"
   :long "@({
   Examples:
@@ -111201,7 +111278,7 @@ arithmetic) for libraries of @(see books) for arithmetic reasoning.</p>")
  encapsulate) or book.</p>")
 
 (defxdoc set-inhibit-er-soft
-  :parents (prover-output errors)
+  :parents (output-controls errors)
   :short "Control the error output"
   :long "@({
   Examples:
@@ -111293,7 +111370,7 @@ arithmetic) for libraries of @(see books) for arithmetic reasoning.</p>")
  string.</p>")
 
 (defxdoc set-inhibit-er-soft!
-  :parents (prover-output errors)
+  :parents (output-controls errors)
   :short "Control error output non-@(tsee local)ly"
   :long "<p>Please see @(see set-inhibit-er-soft), which is the same as
  @('set-inhibit-er-soft!')  except that the latter is not @(tsee local) to the
@@ -111303,7 +111380,7 @@ arithmetic) for libraries of @(see books) for arithmetic reasoning.</p>")
  encapsulate) or book.</p>")
 
 (defxdoc set-inhibit-output-lst
-  :parents (prover-output)
+  :parents (output-controls)
   :short "Control output"
   :long "@({
   Examples:
@@ -111370,7 +111447,7 @@ arithmetic) for libraries of @(see books) for arithmetic reasoning.</p>")
  intended).</p>")
 
 (defxdoc set-inhibit-warnings
-  :parents (prover-output)
+  :parents (output-controls)
   :short "Control warnings"
   :long "@({
   Examples:
@@ -111425,7 +111502,7 @@ arithmetic) for libraries of @(see books) for arithmetic reasoning.</p>")
  warning string.</p>")
 
 (defxdoc set-inhibit-warnings!
-  :parents (prover-output)
+  :parents (output-controls)
   :short "Control warnings non-@(tsee local)ly"
   :long "<p>Please see @(see set-inhibit-warnings), which is the same as
  @('set-inhibit-warnings!')  except that the latter is not @(tsee local) to the
@@ -111435,7 +111512,7 @@ arithmetic) for libraries of @(see books) for arithmetic reasoning.</p>")
  encapsulate) or book.</p>")
 
 (defxdoc set-inhibited-summary-types
-  :parents (prover-output)
+  :parents (output-controls)
   :short "Control which parts of the @(see summary) are printed"
   :long "@({
   Example:
@@ -111980,7 +112057,7 @@ arithmetic) for libraries of @(see books) for arithmetic reasoning.</p>")
  declare).</p>")
 
 (defxdoc set-let*-abstractionp
-  :parents (prover-output)
+  :parents (output-controls)
   :short "To shorten many prettyprinted clauses"
   :long "<p>Note: This is an event!  It does not print the usual event @(see
  summary) but nevertheless changes the ACL2 logical @(see world) and is so
@@ -112321,7 +112398,7 @@ arithmetic) for libraries of @(see books) for arithmetic reasoning.</p>")
  <p>Also see @(see print-control) for other user-settable print controls.</p>")
 
 (defxdoc set-print-clause-ids
-  :parents (prover-output)
+  :parents (output-controls)
   :short "Cause subgoal numbers to be printed when @(''prove') output is
   inhibited"
   :long "@({
@@ -112843,7 +112920,7 @@ arithmetic) for libraries of @(see books) for arithmetic reasoning.</p>")
  @(see set-raw-mode) for a discussion of raw-mode.</p>")
 
 (defxdoc set-raw-proof-format
-  :parents (prover-output)
+  :parents (output-controls)
   :short "Print runes as lists in proof output from simplification"
   :long "@({
   General Forms:
@@ -112866,7 +112943,7 @@ arithmetic) for libraries of @(see books) for arithmetic reasoning.</p>")
  @('nil') if not), evaluate @('(@ raw-proof-format)').</p>")
 
 (defxdoc set-raw-warning-format
-  :parents (prover-output)
+  :parents (output-controls)
   :short "Print some warnings in a ``raw'', s-expression format"
   :long "@({
   General Forms:
@@ -118096,7 +118173,7 @@ arithmetic) for libraries of @(see books) for arithmetic reasoning.</p>")
 
 ; Warning: Keep this topic in sync with *summary-types*.
 
-  :parents (prover-output)
+  :parents (output-controls)
   :short "The summary printed at the conclusion of an event"
   :long "<p>At the conclusion of an @(see event) form, ACL2 prints (by default)
  information summarizing the event.  The entire summary may be avoided &mdash;
@@ -123583,7 +123660,7 @@ arithmetic) for libraries of @(see books) for arithmetic reasoning.</p>")
  reasoning'' or ``abbreviations,'' for example.</p>")
 
 (defxdoc toggle-inhibit-er-soft
-  :parents (prover-output errors)
+  :parents (output-controls errors)
   :short "Add or delete an error output string from the @('inhibit-er-soft-table')"
   :long "<p>See @(see set-inhibit-er-soft) for relevant background.</p>
 
@@ -123608,7 +123685,7 @@ arithmetic) for libraries of @(see books) for arithmetic reasoning.</p>")
   set-inhibit-er-soft).</p>")
 
 (defxdoc toggle-inhibit-er-soft!
-  :parents (prover-output errors)
+  :parents (output-controls errors)
   :short "Toggle an @('inhibit-er-soft-table') entry non-@(tsee local)ly"
   :long "<p>Please see @(see toggle-inhibit-er-soft), which is the same as
  @('toggle-inhibit-er-soft!') except that the latter is not @(tsee local) to
@@ -123618,7 +123695,7 @@ arithmetic) for libraries of @(see books) for arithmetic reasoning.</p>")
  encapsulate) or book.</p>")
 
 (defxdoc toggle-inhibit-warning
-  :parents (prover-output)
+  :parents (output-controls)
   :short "Add or delete a warning string from the @('inhibit-warnings-table')"
   :long "@({
   General Form:
@@ -123640,7 +123717,7 @@ arithmetic) for libraries of @(see books) for arithmetic reasoning.</p>")
   unimportant in @('string').  See @(tsee set-inhibit-warnings).</p>")
 
 (defxdoc toggle-inhibit-warning!
-  :parents (prover-output)
+  :parents (output-controls)
   :short "Toggle an @('inhibit-warnings-table') entry non-@(tsee local)ly"
   :long "<p>Please see @(see toggle-inhibit-warning), which is the same as
  @('toggle-inhibit-warning!') except that the latter is not @(tsee local) to
@@ -132487,7 +132564,7 @@ introduction-to-the-tau-system) for more information about Tau.</dd>
  })")
 
 (defxdoc warnings
-  :parents (prover-output)
+  :parents (output-controls)
   :short "Warnings emitted by the ACL2 proof process"
   :long "<p>The prover can emit many warnings when processing @(see events).
  See @(see set-inhibit-warnings) and see @(see set-inhibit-output-lst) for how
@@ -135121,7 +135198,7 @@ for the execution of @('form')."
  })")
 
 (defxdoc with-output
-  :parents (prover-output)
+  :parents (output-controls)
   :short "Suppressing or turning on specified output for an event"
   :long "<p>The macro @('with-output') can be used to control ACL2 output.  It
  can be wrapped around an event to create a new event; see @(see
@@ -135900,7 +135977,7 @@ created from the original fast alist during @('form') must be manually freed."
  walkabout).</p>")
 
 (defxdoc wof
-  :parents (prover-output io)
+  :parents (output-controls io)
   :short "Direct standard output and proofs output to a file"
   :long "@({
   Example Form:
@@ -138136,13 +138213,13 @@ move to the indicated subterm"
  @('n').</p>
 
  <p><b>Remark:</b> Emacs users who load (into Emacs) the file
- @('emacs/acl2-doc.el') will have defined a command, @('Control-t Control-d'),
- that avoids the need to type @('dive') commands.  After you print the current
- term using the @('pp') command, you may position the cursor on a subterm and
- type @('Control-t Control-d').  Emacs will respond by pasting the appropriate
- @('dive') command immediately after the interactive proof-builder's prompt.
- You can then simply type @('<RETURN>') in order to dive to the desired
- subterm.</p>")
+ @('emacs-acl2.el') (from a suitable directory; see @(see emacs)) will have
+ defined a command, @('Control-t Control-d'), that avoids the need to type
+ @('dive') commands.  After you print the current term using the @('pp')
+ command, you may position the cursor on a subterm and type @('Control-t
+ Control-d').  Emacs will respond by pasting the appropriate @('dive') command
+ immediately after the interactive proof-builder's prompt.  You can then simply
+ type @('<RETURN>') in order to dive to the desired subterm.</p>")
 
 (defxdoc acl2-pc::do-all
   :parents (proof-builder-commands)
@@ -138301,13 +138378,13 @@ move to the indicated subterm"
  have typed @('1') instead of @('(dv 1)') in the first example above.</p>
 
  <p><b>Remark:</b> Emacs users who load (into Emacs) the file
- @('emacs/acl2-doc.el') will have defined a command, @('Control-t d'), that
- avoids the need to type @('dv') commands.  After you print the current term
- using the @('p') or @('th') command, you may position the cursor on a subterm
- and type @('Control-t d').  Emacs will respond by pasting the appropriate
- @('dv') command immediately after the interactive proof-builder's prompt.  You
- can then simply type @('<RETURN>') in order to dive to the desired
- subterm.</p>
+ @('emacs-acl2.el') (from a suitable directory; see @(see emacs)) will have
+ defined a command, @('Control-t d'), that avoids the need to type @('dv')
+ commands.  After you print the current term using the @('p') or @('th')
+ command, you may position the cursor on a subterm and type @('Control-t d').
+ Emacs will respond by pasting the appropriate @('dv') command immediately
+ after the interactive proof-builder's prompt.  You can then simply type
+ @('<RETURN>') in order to dive to the desired subterm.</p>
 
  <p><b>Remark:</b> A similar command is @('dive'), which is related to the
  command @('pp'), in that the diving is done according to raw (translated,
@@ -140680,6 +140757,8 @@ expand function call at the current subterm, without simplifying"
 (defpointer check-sum checksum)
 (defpointer collect$ loop$)
 (defpointer collect$+ loop$)
+(defpointer comma backquote)
+(defpointer comma-atsign backquote)
 (defpointer community-book community-books)
 (defpointer computed-hint computed-hints)
 (defpointer conjoin system-utilities)

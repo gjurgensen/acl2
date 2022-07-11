@@ -41,13 +41,13 @@
 (if (and (not (boundp '*acl2-sources-dir*))
          (file-name-absolute-p load-file-name))
     (let ((pattern (if (string-match "[\\]" load-file-name)
-                       "\[^\\]+\\*$"
-                     "/[^/]+/*$"))
-          (dir (file-name-directory load-file-name)))
+		       "\\books\\emacs\\*$"
+		     "/books/emacs/*$"))
+	  (dir (file-name-directory load-file-name)))
       (let ((posn (string-match pattern dir)))
-        (if posn
-            (setq *acl2-sources-dir*
-                  (substring dir 0 (1+ posn)))))))
+	(if posn
+	    (setq *acl2-sources-dir*
+		  (substring dir 0 (1+ posn)))))))
 
 (require 'etags) ; for "/" and "W" commands, e.g., tags-lazy-completion-table
 
