@@ -77,7 +77,7 @@ Subtopics
   [defthm], [in-theory], [xargs], [state], etc., without an acl2::
   prefix.
 
-  The constant *acl2-exports* lists 1554 symbols, including most
+  The constant *acl2-exports* lists 1557 symbols, including most
   documented ACL2 system constants, functions, and macros.  You will
   typically also want to import many symbols from Common Lisp; see
   [*common-lisp-symbols-from-main-lisp-package*].
@@ -332,6 +332,7 @@ Subtopics
        get-in-theory-redundant-okp
        get-output-stream-string$
        get-register-invariant-risk
+       get-serialize-character
        get-slow-alist-action get-timer
        get-wormhole-status getenv$ getprop
        getprop-default getpropc getprops
@@ -738,7 +739,7 @@ Subtopics
        true-list-listp-forward-to-true-listp-assoc-equal
        true-listp
        true-listp-cadr-assoc-eq-for-open-channels-p
-       true-listp-update-nth truncate
+       true-listp-update-nth truncate trust-mfc
        ttag ttags-seen tthm type typed-io-listp
        typed-io-listp-forward-to-true-listp
        typespec-check u ubt ubt! ubt-prehistory
@@ -774,8 +775,8 @@ Subtopics
        waterfall-parallelism waterfall-printing
        weak-ld-history-entry-p
        well-formed-lambda-objectp
-       wet when$ when$+
-       with-fast-alist with-guard-checking
+       wet when$ when$+ with-fast-alist
+       with-global-stobj with-guard-checking
        with-guard-checking-error-triple
        with-guard-checking-event
        with-live-state
@@ -22395,6 +22396,9 @@ Subtopics
 
   [Splitter]
       Reporting of rules whose application may have caused case splits
+
+  [Tail-biting]
+      Rewriting a true term to NIL
 
   [Time-tracker]
       Display time spent during specified evaluation
@@ -66410,6 +66414,24 @@ Subtopics
       object, (meta-extract-global-fact obj state) evaluates to the
       Nth such lemma (with zero-based indexing).
 
+      CASE obj = (list :linear-lemma FN N):
+
+      Assume N is a natural number; otherwise, treat N as 0.  Then
+      (meta-extract-global-fact obj state) is equal to the term
+      naturally constructed from the linear-lemma record structure
+      (nth N (getpropc FN 'linear-lemmas nil (w state))) if N is in
+      range, else *t*.  (The ACL2 source function linear-lemma-term
+      does this construction of a term from a linear-lemma record
+      structure.  It has a guard of t; a version that may execute
+      more quickly but has a less trivial guard is
+      linear-lemma-term-exec.)  Thus, if FN is a function symbol with
+      more than N associated linear-lemmas --- ``associated'' in the
+      sense of being a :[linear] rule that has a max-term whose top
+      function symbol is FN --- then when state is the actual ACL2
+      ``live'' [state] object, (meta-extract-global-fact obj state)
+      evaluates to the Nth such linear lemma (with zero-based
+      indexing).
+
       CASE obj = (list :fncall FN ARGLIST):
 
       Consider the term (magic-ev-fncall FN ARGLIST state t nil), which is
@@ -91033,6 +91055,10 @@ Changes to Existing Features
   argument :inline t, and hence is a macro in raw Lisp; thanks to
   Shilpi Goel for suggesting this improvement.
 
+  When the [break-rewrite] utility reports rewriting a hypothesis to
+  nil, it adds a note pointing to a new :doc topic, [tail-biting],
+  that explains a way that this can happen.
+
 
 New Features
 
@@ -91160,6 +91186,16 @@ New Features
   See [with-global-stobj].  Thanks to Rob Sumners and Sol Swords for
   requesting this feature (originally, to support a global
   [stobj-table]) and for helpful discussions about its design.
+
+  The [meta-extract] feature has been extended to allow [linear] lemmas
+  to be extracted from the [world] and trusted by clause processors
+  and metafunctions.  In particular, a new sort of value for the obj
+  argument is supported for meta-extract-global-fact (and
+  meta-extract-global-fact+), which results in a term representing a
+  linear lemma extracted from a function symbol's linear-lemmas
+  property.  See [meta-extract], in particular the discussion of
+  :linear-lemma.  Thanks to Sol Swords for providing this
+  enhancement.
 
 
 Heuristic and Efficiency Improvements
@@ -91332,6 +91368,15 @@ Bug Fixes
   within an argument (fi gi :kwdi1 vali1 ...) to be associated with
   the wrong such argument.
 
+  When printing the name of a symbol or package that consists entirely
+  of '.' (dot) characters, the name is escaped with vertical bars,
+  for example, |..|.  Note that the CL HyperSpec, Section 2.3.4
+  Symbols as Tokens says: ``Any token that is not a potential number,
+  does not contain a package marker, and does not consist entirely of
+  dots will always be interpreted as a symbol.'' Thanks to Eric
+  McCarthy and Eric Smith for pointing out that there can be errors
+  when reading such a name when it is not escaped.
+
 
 Changes at the System Level
 
@@ -91381,6 +91426,11 @@ Changes at the System Level
   rather than consing new structure.  This can give a significant
   reduction in code size.  Thanks to Stephen Westfold for providing
   his implementation.
+
+  When an error is encountered while reading an expression, the
+  remaining input is cleared.  Thanks to Eric McCarthy for pointing
+  out that this wasn't the case, giving the example, (LET ((. 3)) (+
+  . 4)), as one that was giving many errors.
 
 
 EMACS Support
@@ -120943,6 +120993,215 @@ Subtopics
       Notes on how to use tables efficiently")
  (TABLE-ALIST (POINTERS) "See [table].")
  (TAG-TREE (POINTERS) "See [ttree].")
+ (TAIL-BITING
+  (DEBUGGING)
+  "Rewriting a true term to NIL
+
+  On rare occasions, a true term can [rewrite] to NIL.  Such
+  ``tail-biting'' behavior can make the prover fail to prove a
+  theorem but will not make it ``prove'' a non-theorem.  This topic
+  explains this behavior, first with one paragraph explaining it in
+  high-level terms and then, for those interested in details, with a
+  specific example.  That example includes discussion that exposes
+  more of the ACL2 implementation than is usually exposed in
+  documentation topics, so we expect that most readers will skip it.
+
+  When backchaining to rewrite a hypothesis H of a [rewrite] or
+  [linear] rule, ACL2 uses the following heuristic: assume that H is
+  false when trying to prove it.  That is sound: proposition P is
+  equivalent to proposition (implies (not P) P).  We do not discuss
+  why ACL2 does this or why it rarely results in so-called
+  ``tail-biting'': rewriting the hypothesis to NIL by using the fact
+  that it has been assumed false.  But that can happen on rare
+  occasions.  So if you see a term rewrite to NIL when you know it to
+  be true, consider whether this is because it was encountered
+  earlier during the backchaining process, when it was assumed false.
+
+  ===== Maybe stop here (lower-level explanation follows)! =====
+
+  The example below shows how tail-biting can happen.  As noted above,
+  beware: this explanation is closer to the implementation than is
+  found in most of the ACL2 documentation.  We give the example in
+  full first, and then we conclude with a more concise summary.  Key
+  to this explanation is the notion of the ancestors-stack, which is
+  a data structure kept by the rewriter as it backchains through
+  hypotheses, to record the negation of each hypothesis encountered
+  during backchaining.
+
+  We begin with a very simple definition and theorem.  Note that we
+  treat [member] below as [member-equal], to simplify the exposition.
+
+    (defun copylist (x)
+      (if (endp x)
+          nil
+          (cons (car x) (copylist (cdr x)))))
+
+    (defthm key-rule
+      (implies
+       (not (member a lst)) ; hypothesis later denoted as ``H''
+       (not (member a (copylist lst)))))
+
+  The following ``weird'' rule backchains from (member a (cdr lst)) to
+  (member a lst), sort of un-opening member.
+
+    (defthm weird
+      (implies (and (consp lst)
+                    (member a lst)
+                    (not (equal a (car lst))))
+               (member a (cdr lst))))
+
+  Now here is our main theorem.  It ought to follow by simplification
+  from key-rule above, if we can just establish the hypothesis H of
+  key-rule from the hypotheses of main.  The instance of H is (not
+  (member aaa (cdr xxx))).  The rewriter cannot establish this
+  because it requires a proof by induction.  So the proof is bound to
+  fail here.
+
+    (defthm main
+      (implies (and (consp (cdr xxx))
+                    (nat-listp xxx)
+                    (symbolp aaa))
+               (not (member aaa (copylist (cdr xxx)))))
+      :hints ((\"Goal\"
+               :do-not-induct t
+               :do-not '(eliminate-destructors))))
+
+  So we decide to monitor key-rule and see why it failed:
+
+    (monitor! '(:rewrite key-rule) t)
+
+    (defthm main ...) ; exactly as above
+
+    :eval
+    :a!
+
+  And we see that [brr] reports that ``:HYP 1 rewrote to 'NIL'', i.e.,
+  that the relevant instance of H, (not (member aaa (cdr xxx))),
+  rewrote to NIL.  This seems to suggest aaa is in (cdr xxx).
+
+  But we know it can't be!  The hypotheses of main say aaa is a symbol
+  and xxx is a list of natural numbers.  So aaa can't be in (cdr
+  xxx). We can prove it:
+
+    (defthm hyps-of-main-imply-hyp-1
+      (implies (and (consp (cdr xxx))
+                    (nat-listp xxx)
+                    (symbolp aaa))
+               (not (member aaa (cdr xxx)))))
+
+  And using that rule we can now prove main:
+
+    (defthm main
+      (implies (and (consp (cdr xxx))
+                    (nat-listp xxx)
+                    (symbolp aaa))
+               (not (member aaa (copylist (cdr xxx)))))
+      :hints ((\"Goal\"
+               :do-not-induct t
+               :do-not '(eliminate-destructors))))
+
+  So the question is: why did the hypothesis of key-rule rewrite to
+  NIL?
+
+  Let's undo back through hyps-of-main-imply-hyp-1 and monitor
+  key-rule, weird, and the definition of [member-equal], and also
+  [trace] system function ancestors-check-builtin, which queries the
+  ancestor-stack, and then repeat the doomed proof attempt for main.
+
+    (ubt! 'hyps-of-main-imply-hyp-1)
+    (monitor '(:rewrite key-rule) ''(:go))
+    (monitor '(:rewrite weird) ''(:go))
+    (monitor '(:definition member-equal) ''(:go))
+    (trace$ ancestors-check-builtin)
+
+    (defthm main
+      (implies (and (consp (cdr xxx))
+                    (nat-listp xxx)
+                    (symbolp aaa))
+               (not (member aaa (copylist (cdr xxx)))))
+      :hints ((\"Goal\"
+               :do-not-induct t
+               :do-not '(eliminate-destructors))))
+
+  Here is the series of breaks on (:REWRITE WEIRD), except that the
+  second break is elided because you will see at the subsequent ``2x
+  (:REWRITE WEIRD) failed...'' that everything that goes on there is
+  irrelevant.  Also deleted are some irrelevant calls of
+  ancestors-check-builtin, but the important one remains.
+
+    (1 Breaking (:REWRITE KEY-RULE) on (MEMBER-EQUAL AAA (COPYLIST (CDR XXX))):
+    1 ACL2 >:GO
+
+    (2 Breaking (:REWRITE WEIRD) on (MEMBER-EQUAL AAA (CDR XXX)):
+    ...
+    2x (:REWRITE WEIRD) failed because :HYP 2 rewrote to
+    (MEMBER-EQUAL AAA (CDR XXX)).
+    2)
+
+    (2 Breaking (:DEFINITION MEMBER-EQUAL) on (MEMBER-EQUAL AAA (CDR XXX)):
+    2 ACL2 >:GO
+
+    (3 Breaking (:REWRITE WEIRD) on (MEMBER-EQUAL AAA (CDR (CDR XXX))):
+    3 ACL2 >:GO
+    1> (ANCESTORS-CHECK-BUILTIN (MEMBER-EQUAL AAA (CDR XXX))
+                                (((MEMBER-EQUAL AAA (CDR XXX))
+                                  (MEMBER-EQUAL AAA (CDR XXX))
+                                  2 2 0 ((:REWRITE KEY-RULE))
+                                  . 1))
+                                ((:REWRITE WEIRD)))
+    <1 (ANCESTORS-CHECK-BUILTIN T T)
+
+    3 (:REWRITE WEIRD) produced 'T.
+    3)
+
+    2 (:DEFINITION MEMBER-EQUAL) produced 'T.
+    2)
+
+    1x (:REWRITE KEY-RULE) failed because :HYP 1 rewrote to 'NIL.  (See
+    :DOC tail-biting if this surprises you.)
+    1)
+
+  So we've entered the break on key-rule and backchained to prove its
+  hypothesis, (not (member aaa (cdr xxx))).  We thus assume the
+  negation, (member aaa (cdr xxx)), on the ancestors stack and then
+  open (member aaa (cdr xxx)) with the definition.  That results in a
+  call of (member aaa (cdr (cdr xxx))) and we backchain through weird
+  to (member aaa (cdr xxx)) and find it assumed true (on the
+  ancestors-stack).  So weird rewrites (member-aaa (cdr (cdr xxx)))
+  to T (propositionally) and so member-equal returns T, so H rewrites
+  to NIL.
+
+  This is not unsound; it is just tail biting.  Here is a summary of
+  what has happened.
+
+  1. Attempt to rewrite (not (member aaa (copylist (cdr xxx)))) to T.
+
+  2. Attempt to rewrite (member aaa (copylist (cdr xxx))) to NIL.
+
+  3. Backchain with key-rule to (not (member aaa (cdr xxx))).
+
+  4. Assume (member aaa (cdr xxx)) by putting it on the
+  ancestors-stack.  This is sound because we are trying to prove (not
+  (member aaa (cdr xxx))), and it is sound to assume (not P) when
+  proving P.
+
+  5. Expand (member aaa (cdr xxx)), given (consp (cdr xxx)), to (or
+  (equal aaa (cadr xxx)) (member aaa (cddr xxx)))
+
+  6. Rewrite (member aaa (cddr xxx))) using weird.
+
+  7. Backchain with weird on (member aaa (cddr xxx)) and relieve its
+  hypotheses under the substitution a := aaa, lst := (cdr xxx).
+      * a. (consp (cdr xxx)) is true (hypothesis of main).
+      * b. (member aaa (cdr xxx)) is true (TAIL BITING!).
+      * c. (not (equal aaa (car (cdr xxx)))) is true, presumably from
+        expansion of hypotheses of main.
+
+  8. So weird applies, hence the following are true:
+      * From 6. (member aaa (cddr xxx))
+      * From 5. (member aaa (cdr xxx))
+
+  So 3 fails because (not (member aaa (cdr xxx))) rewrites to NIL.")
  (TAKE
   (LISTS ACL2-BUILT-INS)
   "Initial segment (first n elements) of a list

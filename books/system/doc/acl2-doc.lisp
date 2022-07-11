@@ -62305,6 +62305,22 @@ it."
  @('(meta-extract-global-fact obj state)') evaluates to the @('N')th such
  lemma (with zero-based indexing).</p>
 
+ <p>CASE @('obj') = @('(list :linear-lemma FN N)'):</p>
+
+ <p>Assume @('N') is a natural number; otherwise, treat @('N') as 0.  Then
+ @('(meta-extract-global-fact obj state)') is equal to the term naturally
+ constructed from the @('linear-lemma') record structure @('(nth N (getpropc FN
+ 'linear-lemmas nil (w state)))') if @('N') is in range, else @('*t*').
+ (The ACL2 source function @('linear-lemma-term') does this construction of a
+ term from a @('linear-lemma') record structure.  It has a guard of @('t'); a
+ version that may execute more quickly but has a less trivial guard is
+ @('linear-lemma-term-exec').)  Thus, if @('FN') is a function symbol with more
+ than @('N') associated linear-lemmas &mdash; ``associated'' in the sense of
+ being a @(':')@(tsee linear) rule that has a max-term whose top function
+ symbol is @('FN') &mdash; then when @('state') is the actual ACL2 ``live''
+ @(see state) object, @('(meta-extract-global-fact obj state)') evaluates to
+ the @('N')th such linear lemma (with zero-based indexing).</p>
+
  <p>CASE @('obj') = @('(list :fncall FN ARGLIST)'):</p>
 
  <p>Consider the term @('(magic-ev-fncall FN ARGLIST state t nil)'), which is
@@ -93056,6 +93072,10 @@ it."
  @(':inline t'), and hence is a macro in raw Lisp; thanks to Shilpi Goel for
  suggesting this improvement.</p>
 
+ <p>When the @(see break-rewrite) utility reports rewriting a hypothesis to
+ @('nil'), it adds a note pointing to a new :doc topic, @(see tail-biting),
+ that explains a way that this can happen.</p>
+
  <h3>New Features</h3>
 
  <p>A new @(tsee loop$) keyword, @('DO'), supports an imperative style of
@@ -93175,6 +93195,15 @@ it."
  with-global-stobj).  Thanks to Rob Sumners and Sol Swords for requesting this
  feature (originally, to support a global @(see stobj-table)) and for helpful
  discussions about its design.</p>
+
+ <p>The @(see meta-extract) feature has been extended to allow @(see linear)
+ lemmas to be extracted from the @(see world) and trusted by clause processors
+ and metafunctions.  In particular, a new sort of value for the @('obj')
+ argument is supported for @('meta-extract-global-fact') (and
+ @('meta-extract-global-fact+')), which results in a term representing a linear
+ lemma extracted from a function symbol's @('linear-lemmas') property.  See
+ @(see meta-extract), in particular the discussion of @(':linear-lemma').
+ Thanks to Sol Swords for providing this enhancement.</p>
 
  <h3>Heuristic and Efficiency Improvements</h3>
 
@@ -93345,6 +93374,15 @@ it."
  within an argument @('(fi gi :kwdi1 vali1 ...)') to be associated with the
  wrong such argument.</p>
 
+ <p>When printing the name of a symbol or package that consists entirely of
+ '@('.')' (dot) characters, the name is escaped with vertical bars, for
+ example, @('|..|').  Note that the CL HyperSpec, Section 2.3.4 Symbols as
+ Tokens says: ``Any token that is not a potential number, does not contain a
+ package marker, and does not consist entirely of dots will always be
+ interpreted as a symbol.''  Thanks to Eric McCarthy and Eric Smith for
+ pointing out that there can be errors when reading such a name when it is not
+ escaped.</p>
+
  <h3>Changes at the System Level</h3>
 
  <p>The @(see hons-enabled) features of ACL2 (@(tsee hons), @(see memoization),
@@ -93389,6 +93427,11 @@ it."
  expressions for constant subterms (other than @(see LAMBDA) objects) rather
  than consing new structure.  This can give a significant reduction in code
  size.  Thanks to Stephen Westfold for providing his implementation.</p>
+
+ <p>When an error is encountered while reading an expression, the remaining
+ input is cleared.  Thanks to Eric McCarthy for pointing out that this wasn't
+ the case, giving the example, @('(LET ((. 3)) (+ . 4))'), as one that was
+ giving many errors.</p>
 
  <h3>EMACS Support</h3>
 
@@ -120081,6 +120124,245 @@ arithmetic) for libraries of @(see books) for arithmetic reasoning.</p>")
  @('(defthm name ...)') or else @(':pe name') will cause an error indicating
  that @('name') is not a logical name.  This happens even if @('name') is in
  use as a table name.</p>")
+
+(defxdoc tail-biting
+  :parents (debugging)
+  :short "Rewriting a true term to @('NIL')"
+  :long "<p>On rare occasions, a true term can @(see rewrite) to @('NIL').
+ Such ``tail-biting'' behavior can make the prover fail to prove a theorem but
+ will not make it ``prove'' a non-theorem.  This topic explains this behavior,
+ first with one paragraph explaining it in high-level terms and then, for those
+ interested in details, with a specific example.  That example includes
+ discussion that exposes more of the ACL2 implementation than is usually
+ exposed in documentation topics, so we expect that most readers will skip
+ it.</p>
+
+ <p>When backchaining to rewrite a hypothesis @('H') of a @(see rewrite) or
+ @(see linear) rule, ACL2 uses the following heuristic: assume that @('H') is
+ false when trying to prove it.  That is sound: proposition @('P') is
+ equivalent to proposition @('(implies (not P) P)').  We do not discuss why
+ ACL2 does this or why it rarely results in so-called ``tail-biting'':
+ rewriting the hypothesis to @('NIL') by using the fact that it has been
+ assumed false.  But that can happen on rare occasions.  So if you see a term
+ rewrite to @('NIL') when you know it to be true, consider whether this is
+ because it was encountered earlier during the backchaining process, when it
+ was assumed false.</p>
+
+ <p>===== Maybe stop here (lower-level explanation follows)! =====</p>
+
+ <p>The example below shows how tail-biting can happen.  As noted above,
+ beware: this explanation is closer to the implementation than is found in most
+ of the ACL2 documentation.  We give the example in full first, and then we
+ conclude with a more concise summary.  Key to this explanation is the notion
+ of the <i>ancestors-stack</i>, which is a data structure kept by the rewriter
+ as it backchains through hypotheses, to record the negation of each hypothesis
+ encountered during backchaining.</p>
+
+ <p>We begin with a very simple definition and theorem.  Note that we treat
+ @(tsee member) below as @(tsee member-equal), to simplify the exposition.</p>
+
+ @({
+ (defun copylist (x)
+   (if (endp x)
+       nil
+       (cons (car x) (copylist (cdr x)))))
+
+ (defthm key-rule
+   (implies
+    (not (member a lst)) ; hypothesis later denoted as ``H''
+    (not (member a (copylist lst)))))
+ })
+
+ <p>The following ``weird'' rule backchains from @('(member a (cdr lst))') to
+ @('(member a lst)'), sort of un-opening @('member').</p>
+
+ @({
+ (defthm weird
+   (implies (and (consp lst)
+                 (member a lst)
+                 (not (equal a (car lst))))
+            (member a (cdr lst))))
+ })
+
+ <p>Now here is our main theorem.  It ought to follow by simplification from
+ @('key-rule') above, if we can just establish the hypothesis @('H') of
+ @('key-rule') from the hypotheses of @('main').  The instance of @('H') is
+ @('(not (member aaa (cdr xxx)))').  The rewriter cannot establish this because
+ it requires a proof by induction.  So the proof is bound to fail here.</p>
+
+ @({
+ (defthm main
+   (implies (and (consp (cdr xxx))
+                 (nat-listp xxx)
+                 (symbolp aaa))
+            (not (member aaa (copylist (cdr xxx)))))
+   :hints ((\"Goal\"
+            :do-not-induct t
+            :do-not '(eliminate-destructors))))
+ })
+
+ <p>So we decide to monitor key-rule and see why it failed:</p>
+
+ @({
+ (monitor! '(:rewrite key-rule) t)
+
+ (defthm main ...) ; exactly as above
+
+ :eval
+ :a!
+ })
+
+ <p>And we see that @(tsee brr) reports that ``@(':HYP 1 rewrote to 'NIL')'',
+ i.e., that the relevant instance of @('H'), @('(not (member aaa (cdr xxx)))'),
+ rewrote to @('NIL').  This seems to suggest @('aaa') is in @('(cdr xxx)').</p>
+
+ <p>But we know it can't be!  The hypotheses of main say @('aaa') is a symbol
+ and @('xxx') is a list of natural numbers.  So @('aaa') can't be in @('(cdr
+ xxx)'). We can prove it:</p>
+
+ @({
+ (defthm hyps-of-main-imply-hyp-1
+   (implies (and (consp (cdr xxx))
+                 (nat-listp xxx)
+                 (symbolp aaa))
+            (not (member aaa (cdr xxx)))))
+ })
+
+ <p>And using that rule we can now prove @('main'):</p>
+
+ @({
+ (defthm main
+   (implies (and (consp (cdr xxx))
+                 (nat-listp xxx)
+                 (symbolp aaa))
+            (not (member aaa (copylist (cdr xxx)))))
+   :hints ((\"Goal\"
+            :do-not-induct t
+            :do-not '(eliminate-destructors))))
+ })
+
+ <p>So the question is: why did the hypothesis of @('key-rule')
+ rewrite to @('NIL')?</p>
+
+ <p>Let's undo back through @('hyps-of-main-imply-hyp-1') and monitor
+ @('key-rule'), @('weird'), and the definition of @(tsee member-equal), and
+ also @(see trace) system function @('ancestors-check-builtin'), which queries
+ the ancestor-stack, and then repeat the doomed proof attempt for
+ @('main').</p>
+
+ @({
+ (ubt! 'hyps-of-main-imply-hyp-1)
+ (monitor '(:rewrite key-rule) ''(:go))
+ (monitor '(:rewrite weird) ''(:go))
+ (monitor '(:definition member-equal) ''(:go))
+ (trace$ ancestors-check-builtin)
+
+ (defthm main
+   (implies (and (consp (cdr xxx))
+                 (nat-listp xxx)
+                 (symbolp aaa))
+            (not (member aaa (copylist (cdr xxx)))))
+   :hints ((\"Goal\"
+            :do-not-induct t
+            :do-not '(eliminate-destructors))))
+ })
+
+ <p>Here is the series of breaks on (:REWRITE WEIRD), except that the second
+ break is elided because you will see at the subsequent ``2x (:REWRITE WEIRD)
+ failed...''  that everything that goes on there is irrelevant.  Also deleted
+ are some irrelevant calls of @('ancestors-check-builtin'), but the important
+ one remains.</p>
+
+ @({
+ (1 Breaking (:REWRITE KEY-RULE) on (MEMBER-EQUAL AAA (COPYLIST (CDR XXX))):
+ 1 ACL2 >:GO
+
+ (2 Breaking (:REWRITE WEIRD) on (MEMBER-EQUAL AAA (CDR XXX)):
+ ...
+ 2x (:REWRITE WEIRD) failed because :HYP 2 rewrote to
+ (MEMBER-EQUAL AAA (CDR XXX)).
+ 2)
+
+ (2 Breaking (:DEFINITION MEMBER-EQUAL) on (MEMBER-EQUAL AAA (CDR XXX)):
+ 2 ACL2 >:GO
+
+ (3 Breaking (:REWRITE WEIRD) on (MEMBER-EQUAL AAA (CDR (CDR XXX))):
+ 3 ACL2 >:GO
+ 1> (ANCESTORS-CHECK-BUILTIN (MEMBER-EQUAL AAA (CDR XXX))
+                             (((MEMBER-EQUAL AAA (CDR XXX))
+                               (MEMBER-EQUAL AAA (CDR XXX))
+                               2 2 0 ((:REWRITE KEY-RULE))
+                               . 1))
+                             ((:REWRITE WEIRD)))
+ <1 (ANCESTORS-CHECK-BUILTIN T T)
+
+ 3 (:REWRITE WEIRD) produced 'T.
+ 3)
+
+ 2 (:DEFINITION MEMBER-EQUAL) produced 'T.
+ 2)
+
+ 1x (:REWRITE KEY-RULE) failed because :HYP 1 rewrote to 'NIL.  (See
+ :DOC tail-biting if this surprises you.)
+ 1)
+ })
+
+ <p>So we've entered the break on @('key-rule') and backchained to prove its
+ hypothesis, @('(not (member aaa (cdr xxx)))').  We thus assume the negation,
+ @('(member aaa (cdr xxx))'), on the ancestors stack and then open @('(member
+ aaa (cdr xxx))') with the definition.  That results in a call of @('(member
+ aaa (cdr (cdr xxx)))') and we backchain through @('weird') to @('(member
+ aaa (cdr xxx))') and find it assumed true (on the ancestors-stack).  So
+ @('weird') rewrites @('(member-aaa (cdr (cdr xxx)))') to
+ @('T') (propositionally) and so @('member-equal') returns @('T'), so @('H')
+ rewrites to @('NIL').</p>
+
+ <p>This is not unsound; it is just tail biting.  Here is a summary of what has
+ happened.</p>
+
+ <p>1. Attempt to rewrite @('(not (member aaa (copylist (cdr xxx))))') to
+ @('T').</p>
+
+ <p>2. Attempt to rewrite @('(member aaa (copylist (cdr xxx)))') to
+ @('NIL').</p>
+
+ <p>3. Backchain with @('key-rule') to @('(not (member aaa (cdr xxx)))').</p>
+
+ <p>4. Assume @('(member aaa (cdr xxx))') by putting it on the ancestors-stack.
+ This is sound because we are trying to prove @('(not (member aaa (cdr
+ xxx)))'), and it is sound to assume @('(not P)') when proving @('P').</p>
+
+ <p>5. Expand @('(member aaa (cdr xxx))'), given @('(consp (cdr xxx))'), to
+ @('(or (equal aaa (cadr xxx)) (member aaa (cddr xxx)))')</p>
+
+ <p>6. Rewrite @('(member aaa (cddr xxx))')) using @('weird').</p>
+
+ <p>7. Backchain with weird on (member aaa (cddr xxx)) and relieve its
+ hypotheses under the substitution @('a := aaa'), @('lst := (cdr xxx)').
+
+ <ul>
+
+ <li>a. @('(consp (cdr xxx))') is true (hypothesis of @('main')).</li>
+
+ <li>b. @('(member aaa (cdr xxx))') is true (TAIL BITING!).</li>
+
+ <li>c. @('(not (equal aaa (car (cdr xxx))))') is true, presumably from
+ expansion of hypotheses of @('main').</li>
+
+ </ul></p>
+
+ <p>8. So @('weird') applies, hence the following are true:
+
+ <ul>
+
+ <li>From 6. @('(member aaa (cddr xxx))')</li>
+
+ <li>From 5. @('(member aaa (cdr xxx))')</li>
+
+ </ul>
+
+ So 3 fails because @('(not (member aaa (cdr xxx)))') rewrites to @('NIL').</p>
+ ")
 
 (defxdoc take
   :parents (lists acl2-built-ins)
