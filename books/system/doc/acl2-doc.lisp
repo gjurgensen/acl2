@@ -62305,6 +62305,22 @@ it."
  @('(meta-extract-global-fact obj state)') evaluates to the @('N')th such
  lemma (with zero-based indexing).</p>
 
+ <p>CASE @('obj') = @('(list :linear-lemma FN N)'):</p>
+
+ <p>Assume @('N') is a natural number; otherwise, treat @('N') as 0.  Then
+ @('(meta-extract-global-fact obj state)') is equal to the term naturally
+ constructed from the @('linear-lemma') record structure @('(nth N (getpropc FN
+ 'linear-lemmas nil (w state)))') if @('N') is in range, else @('*t*').
+ (The ACL2 source function @('linear-lemma-term') does this construction of a
+ term from a @('linear-lemma') record structure.  It has a guard of @('t'); a
+ version that may execute more quickly but has a less trivial guard is
+ @('linear-lemma-term-exec').)  Thus, if @('FN') is a function symbol with more
+ than @('N') associated linear-lemmas &mdash; ``associated'' in the sense of
+ being a @(':')@(tsee linear) rule that has a max-term whose top function
+ symbol is @('FN') &mdash; then when @('state') is the actual ACL2 ``live''
+ @(see state) object, @('(meta-extract-global-fact obj state)') evaluates to
+ the @('N')th such linear lemma (with zero-based indexing).</p>
+
  <p>CASE @('obj') = @('(list :fncall FN ARGLIST)'):</p>
 
  <p>Consider the term @('(magic-ev-fncall FN ARGLIST state t nil)'), which is
@@ -93179,6 +93195,15 @@ it."
  with-global-stobj).  Thanks to Rob Sumners and Sol Swords for requesting this
  feature (originally, to support a global @(see stobj-table)) and for helpful
  discussions about its design.</p>
+
+ <p>The @(see meta-extract) feature has been extended to allow @(see linear)
+ lemmas to be extracted from the @(see world) and trusted by clause processors
+ and metafunctions.  In particular, a new sort of value for the @('obj')
+ argument is supported for @('meta-extract-global-fact') (and
+ @('meta-extract-global-fact+')), which results in a term representing a linear
+ lemma extracted from a function symbol's @('linear-lemmas') property.  See
+ @(see meta-extract), in particular the discussion of @(':linear-lemma').
+ Thanks to Sol Swords for providing this enhancement.</p>
 
  <h3>Heuristic and Efficiency Improvements</h3>
 
