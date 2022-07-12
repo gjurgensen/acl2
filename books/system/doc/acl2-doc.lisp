@@ -93476,6 +93476,13 @@ it."
  useless-runes) files in ACL2(r).  The @(see useless-runes) feature has now
  been turned off for ACL2(r).  Thanks to Eric McCarthy for this change.</p>
 
+ <p>Warnings about ``fast alist discipline violated'' (see @(see
+ slow-alist-warning)) could appear in ACL2(p) when @(see useless-runes) were
+ being read, say using @(tsee certify-book) option @(':useless-runes :read').
+ These have been eliminated.  Note that they didn't show up during regressions
+ in Version 8.4 because the use of ``@('make')'' was set up to avoid using
+ useless-runes with ACL2(p).</p>
+
  ")
 
 (defxdoc nqthm-to-acl2
@@ -100521,8 +100528,11 @@ arithmetic) for libraries of @(see books) for arithmetic reasoning.</p>")
  @(':TERM') @(see evisc-tuple) described in that documentation.</p>
 
  <p>Individual proof-builder commands are documented in subsection @(see
- proof-builder-commands).  For a list of perhaps the most commonly used
- commands, see @(see proof-builder-commands-short-list).</p>
+ proof-builder-commands).  Note that the package name (see @(see
+ symbol-package-name) is irrelevant for these commands (though not their
+ arguments); for example @('(dive 3)'), @('(acl2::dive 3)'), @('(acl2-pc::dive
+ 3)'), and @('(:dive 3)') are all equivalent.  For a list of perhaps the most
+ commonly used commands, see @(see proof-builder-commands-short-list).</p>
 
  <p>The proof-builder supports user-defined macros, which are tactics that
  generate proof-builder instructions.  See @(see define-pc-macro).</p>

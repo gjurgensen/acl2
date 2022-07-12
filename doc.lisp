@@ -91478,7 +91478,14 @@ Experimental Versions
   An error could formerly occur when using the precomputed
   [useless-runes] files in ACL2(r).  The [useless-runes] feature has
   now been turned off for ACL2(r).  Thanks to Eric McCarthy for this
-  change.")
+  change.
+
+  Warnings about ``fast alist discipline violated'' (see
+  [slow-alist-warning]) could appear in ACL2(p) when [useless-runes]
+  were being read, say using [certify-book] option :useless-runes
+  :read.  These have been eliminated.  Note that they didn't show up
+  during regressions in Version 8.4 because the use of ``make'' was
+  set up to avoid using useless-runes with ACL2(p).")
  (NOTE1 (POINTERS) "See [note-1-1].")
  (NOTE2 (POINTERS) "See [note-1-2].")
  (NOTE3 (POINTERS) "See [note-1-3].")
@@ -100685,8 +100692,12 @@ Avoiding These Errors
   the :TERM [evisc-tuple] described in that documentation.
 
   Individual proof-builder commands are documented in subsection
-  [proof-builder-commands].  For a list of perhaps the most commonly
-  used commands, see [proof-builder-commands-short-list].
+  [proof-builder-commands].  Note that the package name (see
+  [symbol-package-name] is irrelevant for these commands (though not
+  their arguments); for example (dive 3), (acl2::dive 3),
+  (acl2-pc::dive 3), and (:dive 3) are all equivalent.  For a list of
+  perhaps the most commonly used commands, see
+  [proof-builder-commands-short-list].
 
   The proof-builder supports user-defined macros, which are tactics
   that generate proof-builder instructions.  See [define-pc-macro].
