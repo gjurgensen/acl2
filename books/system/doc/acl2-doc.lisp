@@ -20683,6 +20683,12 @@ subtree of X with T, without duplication.</p>
       ACL2 !>
  })
 
+ <p>The advanced feature, @(tsee with-global-stobj), imposes certain
+ restrictions on a @('defattach') event.  You can probably ignore this point
+ unless you get an error pertaining to @('with-global-stobj').  For relevant
+ documentation see @(see with-global-stobj), specifically the section on
+ ``Constrained Functions and Defattach''.</p>
+
  <p>We conclude with an example promised above, showing why it is necessary in
  general to unattach all function symbols in an existing attachment nest when
  unattaching any one of those function symbols.  Consider the following
@@ -52933,11 +52939,13 @@ tables in the current Hons Space."
  ld-keyword-aliases).  Otherwise, the object read is treated as the command
  form.</p>
 
- <p>Except, a special case is when @('ld') has been called in the scope of
- @(tsee local), as in @('(local (ld ...))').  In that case, the actual command
- form is obtained by replacing the command form described above &mdash; say,
- @('C') &mdash; by @('(local C)'), unless @('C') itself is already a form whose
- @('car') is the symbol, @('local').</p>
+ <p>(Technical Aside.  Some special handling takes place when @('ld') is called
+ in the scope of @(tsee local), as in @('(local (ld <C>))') for a command,
+ @('<C>').  In that case, after @('<C>') is evaluated, then if the result is an
+ @(see error-triple) and @('<C>') is not already of the form @('(local <C0>)'),
+ then when the command is stored in the ACL2 @(see world) it is stored as
+ @('(local <C>)') instead of @('<C>').  See @(see ld-history) for a similar
+ treatment of local commands.  End of Technical Aside.)</p>
 
  <p>@('Ld') next decides whether to evaluate or skip this form, depending on
  @(tsee ld-pre-eval-filter).  Initially, the filter must be either @(':all'),
@@ -53213,6 +53221,12 @@ tables in the current Hons Space."
  <li>Keyword commands are turned into s-expressions before saving an entry; see
  @(see keyword-commands).  For example, the input @(':ubt :x') is stored in an
  entry as the input @('(ubt ':x)').</li>
+
+ <li>When an entry is saved for a command @('C') that is evaluated in the
+ context of a call of @(tsee local), where @('C') evaluates to an @(see
+ error-triple), then @('C') is stored in the entry as @('(local C)') unless
+ @('C') is already a call of @('local').  (Technical Aside: This behavior
+ supports local @(see portcullis) commands.)</li>
 
  <li>The ld-history saves entries not only for commands issued in the original
  top-level loop, but also for commands issued in (recursive) calls of @(tsee
@@ -92976,12 +92990,10 @@ it."
  option seems to have been essentially unused but it complicated the source
  code.)</p>
 
- <p>Suppose @(tsee ld) is called in the scope of @(tsee local), in particular,
- as with @('(local (ld ...))').  Then for each @(tsee command) @('C') read by
- that call of @('ld') that is not already of the form @('(local ...)'), @('C')
- is read as though it had been @('(local C)').  (This change has been made in
- support of @(tsee local) @(see portcullis) @(see events), a new feature
- described further below.)</p>
+ <p>When an @(see event) fails while @(see useless-runes) are being read, the
+ failure message now makes note of that fact.  See @(see
+ useless-runes-failures).  Thanks to Mertcan Temel for pointing out that such
+ failures may present a confusing problem for (especially) new users.</p>
 
  <h3>New Features</h3>
 
@@ -93095,6 +93107,13 @@ it."
  <p>The new macro @(tsee trust-mfc) supports testing @(see
  extended-metafunctions) outside the prover.  Thanks to Sol Swords for
  requesting such a utility.</p>
+
+ <p>A new macro, @(tsee with-global-stobj), allows reading and writing of a
+ @(see stobj) in the body of a function without having to pass it as a formal
+ parameter, by accessing the stobj from the ACL2 @(see state).  See @(see
+ with-global-stobj).  Thanks to Rob Sumners and Sol Swords for requesting this
+ feature (originally, to support a global @(see stobj-table)) and for helpful
+ discussions about its design.</p>
 
  <h3>Heuristic and Efficiency Improvements</h3>
 
@@ -93254,6 +93273,10 @@ it."
  by the argument of @(':pr!') (as was done previously).  Thanks to Eric Smith
  for bringing this bug to our attention.</p>
 
+ <p>A bug in @(tsee defattach) has been fixed, which was causing the keywords
+ within an argument @('(fi gi :kwdi1 vali1 ...)') to be associated with the
+ wrong such argument.</p>
+
  <h3>Changes at the System Level</h3>
 
  <p>The @(see hons-enabled) features of ACL2 (@(tsee hons), @(see memoization),
@@ -93293,6 +93316,11 @@ it."
  explains the logical meaning of evaluation in the ACL2 read-eval-print loop,
  including discussion of attachments (see @(see defattach)), @(see badge)s,
  @(see warrant)s.</p>
+
+ <p>The implementation of backquote has been optimized to use quoted
+ expressions for constant subterms (other than @(see LAMBDA) objects) rather
+ than consing new structure.  This can give a significant reduction in code
+ size.  Thanks to Stephen Westfold for providing his implementation.</p>
 
  <h3>EMACS Support</h3>
 
@@ -114549,21 +114577,21 @@ arithmetic) for libraries of @(see books) for arithmetic reasoning.</p>")
  @('k') is a @(tsee keyword-value-listp), i.e., an alternating list of keywords
  and values starting with a keyword.  In this case @('((fn x1 ... xn) => val)')
  must be a legal signature as described above.  The legal keywords in @('k')
- are @(':GUARD') and @(':FORMALS') (except that for ACL2(r), also see the
- remark about @(':CLASSICALP') later in this topic).  The value following
- @(':FORMALS') is to be the list of formal parameters of @('fn'), which must be
- consistent with the parameters specified in @('(fn x1 ... xn)'): they must
- both specify the same arity (number of formal parameters) and the same @(see
- stobj) inputs.  The value following @(':GUARD') is a term that is to be the
- @(see guard) of @('fn').  Note that this guard is never actually evaluated,
- and is not subject to the guard verification performed on functions introduced
- by @(tsee defun) (see @(see verify-guards)).  Said differently: this guard
- need not itself have a guard of @('t').  Indeed, the guard is only used for
- attachments; see @(see defattach).  Note that if @(':GUARD') is supplied, then
- @(':FORMALS') must also be supplied as a list of distinct variables that
- includes all variables occurring free in the specified guard.  One final
- observation about guards: if the @(':GUARD') keyword is omitted, then the
- guard defaults to @('T').</p>
+ are normally @(':GUARD') and @(':FORMALS') (but see remarks at the end of this
+ topic regarding @(':GLOBAL-STOBJS') and, for ACL2(r), @(':CLASSICALP')).  The
+ value following @(':FORMALS') is to be the list of formal parameters of
+ @('fn'), which must be consistent with the parameters specified in @('(fn x1
+ ... xn)'): they must both specify the same arity (number of formal parameters)
+ and the same @(see stobj) inputs.  The value following @(':GUARD') is a term
+ that is to be the @(see guard) of @('fn').  Note that this guard is never
+ actually evaluated, and is not subject to the guard verification performed on
+ functions introduced by @(tsee defun) (see @(see verify-guards)).  Said
+ differently: this guard need not itself have a guard of @('t').  Indeed, the
+ guard is only used for attachments; see @(see defattach).  Note that if
+ @(':GUARD') is supplied, then @(':FORMALS') must also be supplied as a list of
+ distinct variables that includes all variables occurring free in the specified
+ guard.  One final observation about guards: if the @(':GUARD') keyword is
+ omitted, then the guard defaults to @('T').</p>
 
  <p>Before ACL2 supported user-declared single-threaded objects there was only
  one single-threaded object: ACL2's built-in notion of @(tsee state).  The
@@ -114603,8 +114631,11 @@ arithmetic) for libraries of @(see books) for arithmetic reasoning.</p>")
  else is a list of such names.  Every name in @('names') must have been
  previously defined as a stobj via @(tsee defstobj) or @(tsee defabsstobj).</p>
 
- <p>As promised above, we conclude with a remark about an additional keyword,
- @(':CLASSICALP'), that is legal for ACL2(r) (see @(see real)).  The value of
+ <p>As promised above, we conclude with a remark about additional keywords.
+ The keyword @(':GLOBAL-STOBJS') specifies the use of the macro,
+ @('with-global-stobj'), in attachments (see @(see defattach)); see @(tsee
+ with-global-stobj) for explanation of this keyword.  The keyword
+ @(':CLASSICALP') is legal for ACL2(r) only (see @(see real)).  The value of
  this keyword must be @('t') (the default) or @('nil'), indicating respectively
  whether @('fn') is classical or not.</p>")
 
@@ -119508,7 +119539,7 @@ arithmetic) for libraries of @(see books) for arithmetic reasoning.</p>")
  one drops unused formals, while @('make-lambda-term') does not.</li>
 
  <li>@('(maybe-convert-to-mv uterm)'): Given the untranslated @(see term)
- @('uterm'), replace each of its top-level calls of @(tsee list) by a call oof
+ @('uterm'), replace each of its top-level calls of @(tsee list) by a call of
  @(tsee mv) on the same arguments.</li>
 
  <li>@('(nvariablep x)'): For a @(tsee pseudo-termp) @('x'), return true iff
@@ -123702,6 +123733,10 @@ arithmetic) for libraries of @(see books) for arithmetic reasoning.</p>")
  normally results in no additional output.  (For details about ``caused an
  error'', see the definition of @('top-level') in the ACL2 source code, and see
  @(see ld-error-action).)</p>
+
+ <p>Since the defined function @('top-level') takes only @('state') as a
+ parameter, the given form should not include any user-defined @(see stobj)s
+ that occur free in the form.</p>
 
  <p>Finally, note that since @('top-level') runs a function that is defined in
  @(':')@(tsee program) mode, it is possible for a raw lisp error to occur.
@@ -129402,6 +129437,62 @@ introduction-to-the-tau-system) for more information about Tau.</dd>
  found that the time was reduced from 17 minutes and 1.9 seconds down to 34.93
  seconds, thus eliminating 96.6% of the time.</p>")
 
+(defxdoc useless-runes-failures
+  :parents (failure useless-runes)
+  :short "Failures caused by @(see useless-runes)"
+  :long "<p>When an event fails you may see the following message:</p>
+
+ @({
+ *NOTE*: Useless-runes may have taken part in failed proofs.  See :DOC
+ useless-runes-failures.
+ })
+
+ <p>This message is printed as part of any @(see event) @(see failure) message
+ when a @(see useless-runes) file is being consulted, which is the default when
+ using build system tools (see @(see books-certification) and @(see
+ build::cert.pl)).  It is intended to suggest that you consider removing or
+ regenerating the associated @(see useless-runes) file in the situation
+ described below.</p>
+
+ <p>(Remark.  We hope that this message reduces confusion when a proof fails.
+ But if the event failure isn't from a failed proof attempt, please disregard
+ the @('*NOTE*') above and this documentation!)</p>
+
+ <p>Suppose that you have developed a book &mdash; say, @('foo.lisp') &mdash;
+ and placed it into the @(see community-books).  Then @(see regression) runs
+ may occasionally generate (or regenerate) the associated @(see useless-runes)
+ file.  Now suppose you modify @('foo.lisp') or some books that are included in
+ it.  You successfully run @('(certify-book \"foo\")'); yet, certification of
+ @('foo.lisp') subequently fails as part of a @(see regression) run or when you
+ use @(tsee build::cert.pl) to certify @('foo.lisp').  This could be
+ unsettling!</p>
+
+ <p>In that case, what is probably happening is that the @(see useless-runes)
+ file is no longer suitable.  You could simply remove it from the GitHub
+ repository as follows (followed by the usual actions to update the
+ repository).</p>
+
+ @({
+ git rm .sys/foo@useless-runes.lsp
+ })
+
+ <p>Or, if you like, you could regenerate the useless-runes file, for example
+ as follows.</p>
+
+ @({
+ (certify-book \"foo\" ? t :useless-runes :write)
+ })
+
+
+ <p>Or if you prefer to avoid this useless-runes file from now on, you could
+ add a line like the following to @('foo.acl2') (see @(see
+ build::custom-certify-book-commands)) and also, ideally, delete the
+ useless-runes file using the @('\"git rm\"') command displayed above.</p>
+
+ @({
+ ; cert-flags: ? t :useless-runes nil
+ })")
+
 (defxdoc user-defined-functions-table
   :parents (macros)
   :short "An advanced @(see table) used to replace certain system functions"
@@ -133956,6 +134047,672 @@ for the execution of @('form')."
  <p>Note that @('with-fast-alist') will cause logically tail-recursive
  functions not to execute tail-recursively if its cleanup phase happens after
  the tail-recursive call returns.</p>")
+
+(defxdoc with-global-stobj
+
+; Don't use @(def ...) for read-user-stobj-alist and write-user-stobj-alist,
+; since the defun-nx form is expanded away with @(def ...).
+
+; This :doc discourages use of read-user-stobj-alist and write-user-stobj-alist
+; in code, but doesn't point out that use of read-user-stobj-alist in code is
+; illegal.  It's possible that we could allow read-user-stobj-alist calls in
+; code provided the first argument is a quoted stobj; maybe we'll make that
+; change if the need arises.  Allowing general read-user-stobj-alist calls in
+; code is problematic because of the indeterminate stobjs-out.
+
+  :parents (stobj acl2-built-ins)
+  :short "Operate on a global single-threaded object"
+  :long "<p>See @(see stobj) for an introduction to single-threaded
+ objects.  Also see @(see defstobj) for additional background.</p>
+
+ <p>The @('with-global-stobj') macro is a relatively advanced utility that
+ allows stobjs to be accessed directly from the ACL2 @(see state).  Examples
+ may be found in @(see community-book) file
+ @('books/system/tests/with-global-stobj-input.lsp'); we draw heavily from them
+ below.</p>
+
+ @({
+  Example Forms:
+
+  ; Read-only form (length 3)
+  (with-global-stobj st
+    (fld st))
+
+  ; Updating form (length 4; (returns state))
+  (with-global-stobj
+    st ; bound stobj
+    (st) ; output signature of body
+    ;; body:
+    (update-fld x st))
+
+  ; Updating form (length 4; returns (mv * * state st2))
+  (with-global-stobj
+    st ; bound stobj
+    (nil st nil state st2) ; output signature of body
+    ;; body:
+    (let* ((st (update-fld x st))
+           (st2 (update-fld2 x st2)))
+      (mv (fld st) st (fld st2) state st2)))
+
+ })
+
+ <p>In the forms above, we call @('st') the stobj that is ``bound by'' the
+ @('with-global-stobj') call.  Each updating form specifies an output signature
+ as a list, which must contain the stobj bound by the form, whose elements are
+ all @('nil') (designating a non-stobj value) or a stobj name.  That output
+ signature reflects the result of the body; the entire form does not return the
+ bound stobj, but does return @(tsee state), as explained below.</p>
+
+ <p>@('With-global-stobj') is a macro, and the example forms above expand as
+ follows.</p>
+
+ @({
+ ACL2 !>:trans1 (with-global-stobj st
+                  (fld st))
+  (LET ((ST (READ-USER-STOBJ-ALIST 'ST STATE)))
+       (FLD ST))
+ ACL2 !>:trans1 (with-global-stobj st
+                  (st)
+                  (update-fld x st))
+  (LET ((ST (READ-USER-STOBJ-ALIST 'ST STATE)))
+       (LET ((ST (UPDATE-FLD X ST)))
+            (WRITE-USER-STOBJ-ALIST 'ST ST STATE)))
+ ACL2 !>:trans1 (with-global-stobj st
+                  (nil st nil state st2)
+                  (let* ((st (update-fld x st))
+                         (st2 (update-fld2 x st2)))
+                    (mv (fld st) st (fld st2) state st2)))
+  (LET ((ST (READ-USER-STOBJ-ALIST 'ST STATE)))
+       (MV-LET ({WGS}0 ST {WGS}1 STATE ST2)
+               (LET* ((ST (UPDATE-FLD X ST))
+                      (ST2 (UPDATE-FLD2 X ST2)))
+                     (MV (FLD ST) ST (FLD ST2) STATE ST2))
+               (LET ((STATE (WRITE-USER-STOBJ-ALIST 'ST ST STATE)))
+                    (MV? {WGS}0 {WGS}1 STATE ST2))))
+ ACL2 !>
+ })
+
+ <p>The first illustrates that in the read-only form, the bound stobj, which is
+ @('st') in that example, is bound to its value in the @('user-stobj-alist')
+ field of the ACL2 @(see state).  The second and third similarly bind the
+ stobj, @('st'), but then update that stobj according to the body of the
+ @('with-global-stobj') call (its last argument) and then update the
+ @('user-stobj-alist') of the state with that stobj's resulting value.  You can
+ of course use @(':')@(tsee trans1) in this way to see expansions of other
+ @('with-global-stobj') calls.</p>
+
+ <p>Note that ACL2 expects you to use @('with-global-stobj'), not its
+ expansions in terms of the @(see non-executable) functions
+ @('read-user-stobj-alist'), which accesses the bound stobj from the
+ user-stobj-alist of @('state'), and @('write-user-stobj-alist'), which
+ completes the write for updating @('with-global-stobj') forms.  These are
+ defined as follows, in terms of the ACL2 state's user-stobj-alist field, which
+ maps stobj names to their values.</p>
+
+ @({
+ (defun-nx read-user-stobj-alist (st state)
+   (declare (xargs :guard (symbolp st)
+                   :stobjs state))
+   (cdr (assoc-eq st (user-stobj-alist1 state))))
+
+ (defun-nx write-user-stobj-alist (st val state)
+   (declare (xargs :guard (symbolp st)
+                   :stobjs state))
+   (update-user-stobj-alist1
+    (put-assoc-eq st val (user-stobj-alist1 state))
+    state))
+ })
+
+ <p>@('With-global-stobj') can be useful when you want a function to read or
+ write a stobj but you don't want to pass that stobj as a formal parameter.  As
+ long as you pass @('state') as a formal parameter, you can access the stobj
+ using @('with-global-stobj').</p>
+
+ <p>This topic is intended to be sufficient preparation for the use of
+ @('with-global-stobj').  Those who want to read more about design and
+ underlying theory are welcome to peruse the (long) ACL2 source code comments,
+ ``Essay on the Design of With-global-stobj'' and ``Essay on Correctness of
+ Evaluation with Stobjs''.</p>
+
+ <h3>More Examples</h3>
+
+ <p>As noted above, examples may be found in @(see community-book) file
+ @('books/system/tests/with-global-stobj-input.lsp').  Here we discuss some of
+ those examples.</p>
+
+ <p>Let us start by introducing a couple of stobjs.</p>
+
+ @({
+ (defstobj st fld)
+ (defstobj st2 fld2 :congruent-to st)
+ })
+
+ <p>Calls of @('with-global-stobj') are illegal at the top level (as opposed to
+ occurrences in the bodies of a definition or a theorem).</p>
+
+ @({
+ (with-global-stobj st (fld st))
+ })
+
+ <p>One solution may be to use @(tsee top-level).</p>
+
+ @({
+ (top-level (with-global-stobj st (fld st)))
+ })
+
+ <p>Normally, however, @('with-global-stobj') is used inside definition bodies.
+ Here we read and write the stobj, @('st'), directly from the ACL2 @(see
+ state).</p>
+
+ @({
+ (defun rd0 (state)
+   (declare (xargs :stobjs state))
+   (with-global-stobj st (fld st)))
+
+ (defun wr0 (x state)
+   (declare (xargs :stobjs state))
+   (with-global-stobj st (st) (update-fld x st)))
+ })
+
+ <p>Let's see these in action, first writing and then reading.</p>
+
+ @({
+ ACL2 !>(wr0 2 state)
+ <state>
+ ACL2 !>(rd0 state)
+ 2
+ ACL2 !>(fld st)
+ 2
+ ACL2 !>
+ })
+
+ <p>We can use various stobj operations, even the rather fancy @(tsee
+ swap-stobjs), in the body of a @('with-global-stobj') call.  The following
+ events are admissible.</p>
+
+ @({
+ (update-fld 1 st)
+ (update-fld 2 st2)
+
+ (defun f3 (st2 state)
+   (declare (xargs :stobjs (st2 state)))
+   (with-global-stobj
+     st
+     (st2 st)
+     (swap-stobjs st2 st)))
+
+ (f3 st2 state)
+
+ (assert-event (and (equal (fld st) 2)
+                    (equal (fld st2) 1)))
+ })
+
+ <p>The following function writes to both @('st') and @('st2') without passing
+ in either one (just @('state')).  Notice that the inner @('with-global-stobj')
+ call has a body that returns the indicated values @('st') and @('st2'), but
+ since @('st2') is bound by the call, it is dropped before returning from the
+ call, and @('state') is added &mdash; which explains the list @('(st state)')
+ supplied to the outer call.</p>
+
+ @({
+ (defun write-global-st-st2 (fld fld2 state)
+   (declare (xargs :stobjs state))
+   (with-global-stobj st
+     (st state)
+     (let ((st (update-fld fld st)))
+       (with-global-stobj st2
+         (st st2)
+         (let ((st2 (update-fld fld2 st2)))
+           (mv st st2))))))
+ })
+
+ <p>Let's check that this works as expected.</p>
+
+ @({
+ ACL2 !>(write-global-st-st2 'a 'b state)
+ <state>
+ ACL2 !>(fld st)
+ A
+ ACL2 !>(fld st2)
+ B
+ ACL2 !>
+ })
+
+ <p>We can also read both fields.</p>
+
+ @({
+ (defun read-global-st-st2 (state)
+   (declare (xargs :stobjs state))
+   (with-global-stobj st
+     (with-global-stobj st2
+       (list (fld st) (fld st2)))))
+ })
+
+ <p>Then, continuing with the session above:</p>
+
+ @({
+ ACL2 !>(read-global-st-st2 state)
+ (A B)
+ ACL2 !>
+ })
+
+ <p>We can reason about @('with-global-stobj') by reasoning about its
+ expansions.  Consider the following theorem (continuing the session
+ above).</p>
+
+ @({
+ (defthm rd0-of-wr0
+   (equal (rd0 (wr0 val state))
+          val))
+ })
+
+ <p>This fails to prove, but each of the two checkpoints has a term of the form
+ @('(ASSOC-EQUAL 'ST (PUT-ASSOC-EQUAL 'ST _ _))').  That suggests the following
+ lemma.</p>
+
+ @({
+ (defthm assoc-equal-put-assoc-equal
+   (equal (assoc-equal key (put-assoc-equal key val alist))
+          (cons key val)))
+ })
+
+ <p>This lemma proves automatically, after which @('rd0-of-wr0') proves
+ automatically.</p>
+
+ <h3>Syntax and Semantics</h3>
+
+ <p>This section provides a reference for @('with-global-stobj').  The next
+ section discusses restrictions that avoid aliasing problems.</p>
+
+ @({
+  General Forms:
+  ; Read-only form (length 3):
+  (with-local-stobj st form)
+  ; Updating form (length 4):
+  (with-local-stobj st lst form)
+ })
+
+ <p>where @('st') is the name of a @(see stobj) that is user-defined
+ (i.e., not @('state')), @('form') is subject to syntactic restrictions
+ discussed below, and @('lst') is a list, sometimes called an ``output
+ signature''.  That list indicates the list of @('N') values returned by
+ @('form'), which must include the bound stobj, @('st'): thus @('lst') is
+ @('(st)') if @('N') is 1, indicating that @('form') returns an instance of
+ that stobj; and otherwise @('form') returns multiple values @('(x0 x1
+ ... xk)') where @('k') is @('N-1') and for each @('i'), @('xi') is either
+ @('nil') if the @('i')th value is an ordinary value or else is the name of a
+ stobj returned in that position (and one such stobj name is the bound
+ stobj).</p>
+
+ <p>In each General Form above, @('st') and @('form') are called the ``bound
+ stobj'' and ``body'' of the @('with-local-stobj') call (respectively).</p>
+
+ <p>For the updating form, the values actually returned are obtained by
+ removing @('st') from @('lst') and then, if @('state') is not already in
+ @('lst'), adding @('state') at the end of @('lst').  Consider the following
+ example.</p>
+
+ @({
+ (defun f0 (st2 state)
+   (declare (xargs :stobjs (st2 state)))
+   (with-global-stobj
+     st
+     (st st2 nil state)
+     (mv st st2 nil state)))
+ })
+
+ <p>In this case, @('lst') is @('(st st2 nil state)'), and the following
+ expansion shows that @('st') has been dropped from the returned values.</p>
+
+ @({
+ ACL2 !>:trans1 (with-global-stobj
+                  st
+                  (st st2 nil state)
+                  (mv st st2 nil state))
+  (LET ((ST (READ-USER-STOBJ-ALIST 'ST STATE)))
+       (MV-LET (ST ST2 {WGS}0 STATE)
+               (MV ST ST2 NIL STATE)
+               (LET ((STATE (WRITE-USER-STOBJ-ALIST 'ST ST STATE)))
+                    (MV? ST2 {WGS}0 STATE))))
+ ACL2 !>
+ })
+
+ <p>Evaluation of an updating @('with-global-stobj') form always
+ updates @('state'): specifically it updates its @('user-stobj-alist') field
+ (see @(see state)).  The following example is similar to the one above, except
+ that this time the body of the @('with-global-stobj') call does not return
+ state; nevertheless, the entire call does return state.  It illustrates that
+ when @('state') is not in the list given as the second argument of an updating
+ @('with-global-stobj') call, then the @('with-global-stobj') form not only
+ drops the bound stobj from its return values but also adds @('state') as the
+ last returned value (or, if the bound stobj was the sole symbol in the list,
+ then the call returns @('state') as the sole value).</p>
+
+ @({
+ ACL2 !>:trans1 (with-global-stobj
+                  st
+                  (st st2 nil)
+                  (mv st st2 nil))
+  (LET ((ST (READ-USER-STOBJ-ALIST 'ST STATE)))
+       (MV-LET (ST ST2 {WGS}0)
+               (MV ST ST2 NIL)
+               (LET ((STATE (WRITE-USER-STOBJ-ALIST 'ST ST STATE)))
+                    (MV? ST2 {WGS}0 STATE))))
+ ACL2 !>
+ })
+
+ <p>Note that because @('with-global-stobj') updates @('state'), then
+ @('state') must be a known stobj when @('with-global-stobj') is called.  In
+ particular, in order to call @('with-global-stobj') in the body of a function,
+ @('state') should be a formal parameter of that function.</p>
+
+ <h3>Syntactic Restrictions to Avoid Aliasing</h3>
+
+ <p>For the examples in this section, we continue to assume that the following
+ @(tsee defstobj) @(see events) have been evaluated.</p>
+
+ @({
+ (defstobj st fld)
+ (defstobj st2 fld2 :congruent-to st)
+ })
+
+ <p>Consider the following definition.</p>
+
+ @({
+ (defun foo (st state)
+   (declare (xargs :stobjs (st state)))
+   (let ((state (with-global-stobj st
+                  (st)
+                  (update-fld 3 st))))
+     (mv (fld st) state)))
+ })
+
+ <p>ACL2 admits that form, but causes an error with the following call of
+ @('foo').</p>
+
+ @({
+ ACL2 !>(foo st state)
+
+
+ ACL2 Error in TOP-LEVEL:  Illegal top-level form, (FOO ST STATE).
+ The stobj ST occurs free, yet may be bound by an updating WITH-GLOBAL-
+ STOBJ form, as the top-level form calls FOO, which makes an updating
+ WITH-GLOBAL-STOBJ call that binds ST.  See :DOC with-global-stobj.
+
+ ACL2 !>
+ })
+
+ <p>Let us see why this call must be illegal; then we'll study the error
+ message.  The @('with-global-stobj') form above will set the field, @('fld'),
+ of @('st') to the value, 3.  Moreover, ACL2 uses destructive update on stobjs:
+ the actual Lisp object representing @('st') has value 3 in its field, and this
+ is the same object for which we return @('(fld st)') from @('foo').  So if
+ @('(foo st state)') were allowed to execute, it would return the multiple
+ values @('(3 <state>)').  However, ACL2 can prove that ACL2 returns @('(fld
+ st)') unchanged:</p>
+
+ @({
+ (thm (implies (stp st)
+               (equal (mv-nth 0 (foo st state))
+                      (fld st))))
+ })
+
+ <p>What we are seeing is a violation of single-threadedness.</p>
+
+ <p>Now let's look at the error message above.  It explains that ``the stobj ST
+ occurs free'' in @('(foo st state)'): indeed, @('st') is the first argument of
+ that call.  Therefore, @('st') can be accessed in that top-level form; indeed,
+ we have seen that it is returned as the first value.  However, @('st') can
+ also be destructively modified because of the updating @('with-global-stobj')
+ call in the body of @('foo'): ``the top-level form calls FOO, which makes an
+ updating WITH-GLOBAL-STOBJ call that binds ST.''  As we have discussed, that
+ updating call destroys single-threadedness, and hence must be avoided.  We may
+ call this an ``aliasing problem'', since the bound stobj shares structure with
+ the formal parameter.</p>
+
+ <p>By contrast, there is no such problem if we replace @('st') by its
+ congruent stobj, @('st2'), in the top-level call.</p>
+
+ @({
+ ACL2 !>(foo st2 state)
+ (NIL <state>)
+ ACL2 !>(fld st2)
+ NIL
+ ACL2 !>(fld st)
+ 3
+ ACL2 !>
+ })
+
+ <p>In this case there is no aliasing problem.  The formal parameter @('st') of
+ @('foo') is bound to the (global) value of @('st2'), which does not share
+ structure with the (global) value of stobj @('st') that is updated by the
+ @('with-global-stobj') form.</p>
+
+ <p>Note that the aliasing problem can be buried through a chain of function
+ calls, as we now illustrate.  Function @('foo2') is like @('foo') above, with
+ two changes: instead of updating the field with @('3') we update it with the
+ formal parameter, @('val'); and that update is done inside the called
+ function, @('foo2-sub'), rather than directly in the body of @('foo2').</p>
+
+ @({
+ (defun foo2-sub (val state)
+   (declare (xargs :stobjs state))
+   (with-global-stobj st
+     (st)
+     (update-fld val st)))
+
+ (defun foo2 (val st state)
+   (declare (xargs :stobjs (st state)))
+   (let ((state (foo2-sub val state)))
+     (mv (fld st) state val)))
+ })
+
+ <p>The error message is essentially the same, except that the chain of calls
+ is shown that leads to the problematic updating @('with-global-stobj') form.
+ The behavior on @('st2') instead of @('st') is fine, as before.</p>
+
+ @({
+ ACL2 !>(foo2 3 st state)
+
+
+ ACL2 Error in TOP-LEVEL:  Illegal top-level form, (FOO2 3 ST STATE).
+ The stobj ST occurs free, yet may be bound by an updating WITH-GLOBAL-
+ STOBJ form, as the top-level form calls FOO2, which calls FOO2-SUB,
+ which makes an updating WITH-GLOBAL-STOBJ call that binds ST.  See
+ :DOC with-global-stobj.
+
+ ACL2 !>(foo2 4 st2 state)
+ (NIL <state> 4)
+ ACL2 !>(fld st2)
+ NIL
+ ACL2 !>(fld st)
+ 4
+ ACL2 !>
+ })
+
+ <p>So far we have seen just one aliasing problem, i.e., between a free stobj
+ in a top-level form and a subsidiary updating @('with-global-stobj') form.
+ Another case is where the free stobj in a top-level form is actually
+ returned (we might say, updated) by that form; in that case, any subsidiary
+ @('with-global-stobj') form is problematic, even if it is read-only.  Here is
+ an example.</p>
+
+ @({
+ (defun g2 (val st state)
+   (declare (xargs :stobjs (st state)))
+   (let ((st (update-fld val st)))
+     (let ((f (with-global-stobj st (fld st))))
+       (mv f (fld st) st state))))
+
+ (g2 nil st state)
+ })
+
+ <p>As before, the definition is fine, but the ensuing top-level call is not.
+ And as before, if we replace the top-level stobj occurrence by one that is
+ congruent to @('st'), there is no error: @('(g2 5 st2 state)').</p>
+
+ <p>Note that there is no aliasing problem when there is no update of the
+ stobj, either in the top-level form or in the subsidiary
+ @('with-global-stobj') form.  The following are perfectly legal, for
+ example.</p>
+
+ @({
+ (defun g1 (st state)
+   (declare (xargs :stobjs (st state)))
+   (let ((f (with-global-stobj st (fld st))))
+     (mv f state (fld st))))
+
+ (g1 st state)
+ })
+
+ <p>So far we have seen two similar error cases due to aliasing: both are
+ top-level calls involving a stobj occurrence that has an occurrence below
+ bound by @('with-global-stobj'), where at least one of the two occurrences
+ updates the stobj.  Consider this: a top-level call like @('(foo st state)')
+ could be viewed as grabbing @('st') from the ACL2 state, hence could be viewed
+ as being @('(with-global-stobj st (foo st state))').  So we can think of the
+ restrictions as being about nested @('with-global-stobj') calls, and that
+ leads us to the final two cases.  Here is a summary of all the restrictions to
+ prevent aliasing, starting with the two discussed above about top-level
+ evaluation, and ending with the two new ones about nested
+ @('with-global-stobj') calls.</p>
+
+ <ul>
+
+ <li>In a form @('u') that is legal at the top-level, where @('u') has a free
+ occurrence of stobj @('st'), there is no updating @('with-global-stobj') call
+ that binds @('st') and is invoked during evaluation of @('u').</li>
+
+ <li>In a form @('u') that is legal at the top-level, where @('u') returns
+ stobj @('st'), there is no @('with-global-stobj') call that binds @('st') and
+ is invoked during evaluation of @('u').</li>
+
+ <li>In a form @('(with-global-stobj st u)'), there is no
+ updating @('with-global-stobj') call that binds @('st') and is invoked during
+ evaluation of @('u').</li>
+
+ <li>In an updating form @('(with-global-stobj st lst u)'), there is no
+ @('with-global-stobj') call that binds @('st') and is invoked during
+ evaluation of @('u').</li>
+
+ </ul>
+
+ <p>Our restrictions that prevent aliasing are syntactic ones, sufficient to
+ prevent the invocations described above.  They are implemented by searching
+ for calls of @('read-user-stobj-alist') to identify expansions of
+ @('with-global-stobj') calls, and by searing for calls of
+ @('write-user-stobj-alist') to identify expansions of updating
+ @('with-global-stobj') calls.</p>
+
+ <p>Finally, we note that the syntactic restrictions extend to @(see guard)s.
+ Consider again the function @('rd0') as defined above, and let's use it in the
+ guard of a function.</p>
+
+ @({
+ (defun rd0 (state)
+   (declare (xargs :stobjs state))
+   (with-global-stobj st (fld st)))
+
+ (defun call-rd0-in-guard (state)
+   (declare (xargs :stobjs state
+                   :guard (rd0 state))
+            (ignore state))
+   17)
+ })
+
+ <p>Then as before, it is an error for a top-level form to update @('st') and
+ also call a function that may lead to a @('with-global-stobj') call that binds
+ @('st').</p>
+
+ @({
+ ACL2 !>(let ((st (update-fld 3 st)))
+          (mv st (call-rd0-in-guard state)))
+
+
+ ACL2 Error in TOP-LEVEL:  Illegal top-level form,
+ (LET ((ST (UPDATE-FLD 3 ST))) (LIST ST (CALL-RD0-IN-GUARD STATE))).
+ The stobj ST is returned by evaluation of that form, yet is bound by
+ a WITH-GLOBAL-STOBJ form, as the top-level form calls CALL-RD0-IN-GUARD,
+ which calls RD0, which makes a WITH-GLOBAL-STOBJ call that binds ST.
+ See :DOC with-global-stobj.
+
+ ACL2 !>
+ })
+
+ <h3>Constrained Functions and Defattach</h3>
+
+ <p>Consider the following constrained function introduction.</p>
+
+ @({
+ (encapsulate
+   (((crn0 state) => *))
+   (local (defun crn0 (state)
+            (declare (xargs :stobjs state))
+            (state-p state))))
+ })
+
+ <p>If we try to attach @('rd0') (defined above) to @('crn0') we get an error,
+ as shown just below.  In short, this error says that since @('rd0') may lead
+ to a call of @('with-global-stobj') that binds @('st'), then with this
+ attachment, @('crn0') may lead to such a call; yet there is no record in the
+ @(see world) that @('crn0') may lead to such a call.</p>
+
+ @({
+ ACL2 !>(defattach crn0 rd0)
+
+
+ ACL2 Error in ( DEFATTACH CRN0 RD0):  The attachment of RD0 to CRN0
+ restricts stobjs bound by WITH-GLOBAL-STOBJ under calls of RD0, according
+ to the :GLOBAL-STOBJS keyword (default nil) in the signature introducing
+ CRN0.  But this restriction is violated for stobj ST:  the attempt
+ is to attach RD0, which makes a WITH-GLOBAL-STOBJ call that binds ST,
+ yet that stobj is not specified by the :GLOBAL-STOBJS keyword of CRN0.
+ See :DOC with-global-stobj.
+
+
+ Summary
+ Form:  ( DEFATTACH CRN0 RD0)
+ Rules: NIL
+ Time:  0.00 seconds (prove: 0.00, print: 0.00, other: 0.00)
+
+ ACL2 Error [Failure] in ( DEFATTACH CRN0 RD0):  See :DOC failure.
+
+ ******** FAILED ********
+ ACL2 !>
+ })
+
+ <p>The solution is to note, in the signature of the constrained function, that
+ it may lead to a @('with-global-stobj') call.  This is accomplished by using
+ the keyword, @(':GLOBAL-STOBJS'), in the signature of the function.  The value
+ of that keyword is @('nil') by default, indicating that there is no such call.
+ Otherwise the value is a cons of the form @('(r . w)'), where @('r') and
+ @('w') are disjoint lists of stobjs.  Their interpretation is as follows:
+ @('w') includes all stobjs for which an attachment may have an updating
+ @('with-global-stobj') call, and @('r') includes all stobjs not in @('w') for
+ which an attachment may have a @('with-global-stobj') call.  Consider the
+ following modification of the @(tsee encapsulate) form above.</p>
+
+ @({
+ (encapsulate
+   (((crn1 state) => * :global-stobjs ((st) . nil)))
+   (local (defun crn1 (state)
+            (declare (xargs :stobjs state))
+            (state-p state))))
+ })
+
+ <p>Then the form @('(defattach crn1 rd0)') is legal: unlike @('crn0'),
+ @('crn1') has specified that @('st') may be bound by @('with-global-stobj') in
+ an attachment.</p>
+
+ <p>The requirement is thus as follows.  Consider attachment of @('g') to a
+ constrained function @('f'), where @('g') may lead to updating
+ @('with-global-stobj') calls that bind stobjs @('w1'), @('w2'), ..., @('wk'),
+ and also @('g') may lead to @('with-global-stobj') calls that bind, in
+ addition to the @('wi'), stobjs @('r1'), @('r2'), ..., @('rn').  Then the
+ signature of @('f') must specify a value @('(r . w)') for the keyword
+ @(':GLOBAL-STOBJS'), where @('r') and @('w') are lists of stobjs such that:
+ @('w') includes all @('wi'), and the union of @('r') and @('w') includes all
+ @('ri').</p>")
 
 (defxdoc with-guard-checking
   :parents (guard acl2-built-ins)
