@@ -42,8 +42,8 @@
          (file-name-absolute-p load-file-name))
     (let ((pattern ; emacs/ and books/emacs/ differ here
            (if (string-match "[\\]" load-file-name)
-               "\[^\\]+\\*$"
-             "/[^/]+/*$"))
+               "\\books\\emacs\\*$"
+             "/books/emacs/*$"))
           (dir (file-name-directory load-file-name)))
       (let ((posn (string-match pattern dir)))
         (if posn
