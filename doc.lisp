@@ -15020,6 +15020,7 @@ Subtopics
        (make-termination-theorem
             \"[books]/kestrel/utilities/make-termination-theorem.lisp\")
        (memoized-prover-fns \"[books]/tools/memoize-prover-fns.lisp\")
+       (must-fail \"[books]/std/testing/must-fail.lisp\")
        (str::nat-to-dec-string \"[books]/std/strings/decimal.lisp\")
        (non-parallel-book \"[books]/std/system/non-parallel-book.lisp\")
        (note-6-4-books \"[books]/doc/relnotes.lisp\")
@@ -91376,6 +91377,10 @@ Bug Fixes
   dots will always be interpreted as a symbol.'' Thanks to Eric
   McCarthy and Eric Smith for pointing out that there can be errors
   when reading such a name when it is not escaped.
+
+  It was possible to get a violation of fast alist discipline (see
+  [slow-alist-warning] when certifying a book that uses [must-fail].
+  This has been fixed.
 
 
 Changes at the System Level
