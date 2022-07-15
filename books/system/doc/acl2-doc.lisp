@@ -112,6 +112,7 @@
     (MAKE-TERMINATION-THEOREM
      "[books]/kestrel/utilities/make-termination-theorem.lisp")
     (MEMOIZED-PROVER-FNS "[books]/tools/memoize-prover-fns.lisp")
+    (MUST-FAIL "[books]/std/testing/must-fail.lisp")
     (STR::NAT-TO-DEC-STRING "[books]/std/strings/decimal.lisp")
     (NON-PARALLEL-BOOK "[books]/std/system/non-parallel-book.lisp")
     (NOTE-6-4-BOOKS "[books]/doc/relnotes.lisp")
@@ -92889,6 +92890,16 @@ it."
 
 ; Changed :doc topic name, prover-output => output-controls.
 
+; Here is a book to certify that resulted in a violation of fast alist
+; discipline, as mentioned in a release note below.  Also fixed at the same
+; time was a bug in how source function store-cert-data looks for lambda
+; objects.
+;   (in-package "ACL2")
+;   (include-book "std/testing/must-fail" :dir :system)
+;   (defun foo (x) x)
+;   (must-fail (defun abc (x) y))
+;   (defun bar (lst) lst)
+
   :parents (release-notes)
   :short "ACL2 Version  8.5 (xx, 20xx) Notes"
   :long "<p>NOTE!  New users can ignore these release notes, because the @(see
@@ -93382,6 +93393,10 @@ it."
  interpreted as a symbol.''  Thanks to Eric McCarthy and Eric Smith for
  pointing out that there can be errors when reading such a name when it is not
  escaped.</p>
+
+ <p>It was possible to get a violation of fast alist discipline (see @(see
+ slow-alist-warning) when certifying a book that uses @(tsee must-fail).  This
+ has been fixed.</p>
 
  <h3>Changes at the System Level</h3>
 
