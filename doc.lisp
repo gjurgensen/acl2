@@ -14667,9 +14667,14 @@ Subtopics
 
     3 ACL2 !>:pe lemma12
 
-  More likely than typing a history or [disabledp] command, upon
-  entering break-rewrite you will determine the context of the
-  attempted application.  Here are some useful commands:
+  Exceptions are that :[ubt] and related commands such as :[ubu], as
+  well as [puff] and [puff*], are only allowed to touch [command]s
+  issued after entering the interactive break.  (Technical detail:
+  that is because [disable-ubt] is invoked when entering the break.)
+
+  More likely than typing a history command, upon entering
+  break-rewrite you will determine the context of the attempted
+  application.  Here are some useful commands:
 
     3 ACL2 >:target           ; the term being rewritten
     3 ACL2 >:unify-subst      ; the unifying substitution
@@ -14841,9 +14846,7 @@ Subtopics
   utilities: all effects of calling [trace$] and [untrace$] are
   erased when you proceed from a break in the break-rewrite loop.
 
-  There is a lot more to know about break-rewrite, most of which is
-  fairly easy to learn from looking at the code, since it is all
-  expressed in ACL2.  Feel free to ask questions of J Moore.
+  See the subtopics listed below to learn more about break-rewrite.
 
 
 Subtopics
@@ -29678,6 +29681,49 @@ Subtopics
 
     :in-theory (disable (:executable-counterpart immediate-force-modep))
     :in-theory (disable (immediate-force-modep))")
+ (DISABLE-UBT
+  (HISTORY)
+  "Make it illegal to undo back through the current [command]
+
+  The utility disable-ubt is probably only relevant to those who write
+  ACL2-based tools, in particular using [wormhole]s.  Its initial
+  application (and perhaps still its only application) is to arrange
+  that insider the [break-rewrite] interactive loop, it is impossible
+  to undo the [ld-keyword-aliases] supporting the [brr-commands].
+
+    General Forms:
+
+    :disable-ubt
+    (disable-ubt)     ; same as above
+    (disable-ubt arg) ; same as above if arg is not nil or :disable-ubt
+
+  where arg is evaluated, and if it is supplied and its value is
+  neither nil nor :disable-ubt, then its value satisfies [msgp].  In
+  that case, the message is printed after the usual message (except,
+  before ``See :DOC disable-ubt'').  The following example
+  illustrates the use of that optional message but, what is more
+  important, it illustrates the effect of disable-ubt: a [command]
+  that executes it cannot be undone.
+
+    ACL2 !>(disable-ubt (list \"Just a demo: ~x0.\" (cons #0 17)))
+
+    Summary
+    Form:  ( DISABLE-UBT ...)
+    Rules: NIL
+    Time:  0.00 seconds (prove: 0.00, print: 0.00, other: 0.00)
+     :DISABLE-UBT
+    ACL2 !>:ubt :x
+
+
+    ACL2 Error in :UBT:  Can't undo a :disable-ubt event (at command 1).
+    Just a demo: 17.  See :DOC disable-ubt.
+
+    ACL2 !>
+
+  Disable-ubt is similar to (reset-prehistory t), as both establish a
+  barrier to undoing.  However, for history commands such as :[pcb],
+  command numbers are not changed by disable-ubt.  Like
+  [reset-prehistory], disable-ubt is never [redundant].")
  (DISABLEDP
   (THEORIES)
   "Determine whether a given name or rune is disabled
@@ -48030,6 +48076,9 @@ Subtopics
 
   [Command-descriptor]
       An object describing a particular [command] typed by the user
+
+  [Disable-ubt]
+      Make it illegal to undo back through the current [command]
 
   [Enter-boot-strap-mode]
       The first millisecond of the Big Bang
@@ -91198,6 +91247,9 @@ New Features
   :linear-lemma.  Thanks to Sol Swords for providing this
   enhancement.
 
+  A new utility, [disable-ubt], is similar to (reset-prehistory t)
+  except that it does not change command numbering.
+
 
 Heuristic and Efficiency Improvements
 
@@ -91381,6 +91433,14 @@ Bug Fixes
   It was possible to get a violation of fast alist discipline (see
   [slow-alist-warning] when certifying a book that uses [must-fail].
   This has been fixed.
+
+  It had been possible to undo commands (for example, using :[ubt] when
+  inside the [break-rewrite] interactive loop.  This destroyed the
+  utility of that loop by erasing keyword aliases (see
+  [ld-keyword-aliases]).  Thanks to Warren Hunt for reporting this
+  problem.  The solution uses the new utility mentioned above,
+  [disable-ubt], which may be useful for other [wormhole] invocations
+  that take advantage of the [ld-keyword-aliases] [table].
 
 
 Changes at the System Level
@@ -106734,7 +106794,10 @@ Subtopics
   book, since that would probably not be what was intended.
 
   See [ubt-prehistory] for how to undo a reset-prehistory command that
-  does not have a permanent-p of t.")
+  does not have a permanent-p of t.  See [disable-ubt] for a variant
+  of (reset-prehistory t) that does not change command numbering and
+  is used by the [break-rewrite] utility.  Like disable-ubt,
+  reset-prehistory is never [redundant].")
  (RESET-PRINT-CONTROL (POINTERS)
                       "See [print-control].")
  (RESIZE-LIST
@@ -129434,8 +129497,10 @@ Type Specs
   The keyword [command] :ubt! is the same as :[ubt], but with a
   guarantee that it is ``error-free.'' More precisely, the value
   returned by :ubt! will always be of the form (mv nil val state).
-  :[Oops] will undo the last :ubt!.  See [ubt], [ubt?], [ubu!],
-  [ubu], [ubu?], and [u].")
+  Note that :ubt! will not print error messages.
+
+  :[Oops] will undo the last :ubt!.  See [ubt], [ubt?], [ubu!], [ubu],
+  [ubu?], and [u].")
  (UBT-PREHISTORY
   (HISTORY UNDO)
   "Undo the [command]s back through the last [reset-prehistory] event
@@ -129501,8 +129566,10 @@ Type Specs
   The keyword [command] :ubu! is the same as :[ubu], but with a
   guarantee that it is ``error-free.'' More precisely, the
   [error-triple] returned by :ubu! will always be of the form (mv nil
-  val state).  :[Oops] will undo the last :ubu!.  Also see [ubu],
-  [ubu?], [ubt], [ubt!], [ubt?], and [u].")
+  val state). Note that :ubu! will not print error messages.
+
+  :[Oops] will undo the last :ubu!.  Also see [ubu], [ubu?], [ubt],
+  [ubt!], [ubt?], and [u].")
  (UBU?
   (HISTORY UNDO)
   "Undo [command]s, with queries as appropriate
