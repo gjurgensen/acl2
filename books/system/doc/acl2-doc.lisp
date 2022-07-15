@@ -11880,9 +11880,15 @@ with any questions about building the community books.</p>")
   3 ACL2 !>:pe lemma12
  })
 
- <p>More likely than typing a history or @(tsee disabledp) command, upon
- entering break-rewrite you will determine the context of the attempted
- application.  Here are some useful commands:</p>
+ <p>Exceptions are that @(':')@(tsee ubt) and related commands such as
+ @(':')@(tsee ubu), as well as @(tsee puff) and @(tsee puff*), are only allowed
+ to touch @(see command)s issued after entering the interactive break.
+ (Technical detail: that is because @(tsee disable-ubt) is invoked when
+ entering the break.)</p>
+
+ <p>More likely than typing a history command, upon entering break-rewrite you
+ will determine the context of the attempted application.  Here are some useful
+ commands:</p>
 
  @({
   3 ACL2 >:target           ; the term being rewritten
@@ -12058,9 +12064,8 @@ with any questions about building the community books.</p>")
  calling @(tsee trace$) and @(tsee untrace$) are erased when you proceed from a
  break in the break-rewrite loop.</p>
 
- <p>There is a lot more to know about break-rewrite, most of which is fairly
- easy to learn from looking at the code, since it is all expressed in ACL2.
- Feel free to ask questions of J Moore.</p>")
+ <p>See the subtopics listed below to learn more about
+ @('break-rewrite').</p>")
 
 (defxdoc breaks
   :parents (errors)
@@ -26350,6 +26355,55 @@ ld) and @(tsee include-book)"
   :in-theory (disable (:executable-counterpart immediate-force-modep))
   :in-theory (disable (immediate-force-modep))
  })")
+
+(defxdoc disable-ubt
+  :parents (history)
+  :short "Make it illegal to undo back through the current @(see command)"
+  :long "<p>The utility @('disable-ubt') is probably only relevant to those who
+ write ACL2-based tools, in particular using @(see wormhole)s.  Its initial
+ application (and perhaps still its only application) is to arrange that
+ insider the @(see break-rewrite) interactive loop, it is impossible to undo
+ the @(see ld-keyword-aliases) supporting the @(see brr-commands).</p>
+
+ @({
+ General Forms:
+
+ :disable-ubt
+ (disable-ubt)     ; same as above
+ (disable-ubt arg) ; same as above if arg is not nil or :disable-ubt
+ })
+
+ <p>where @('arg') is evaluated, and if it is supplied and its value is neither
+ @('nil') nor @(':disable-ubt'), then its value satisfies @(tsee msgp).  In
+ that case, the message is printed after the usual message (except, before
+ ``See :DOC disable-ubt'').  The following example illustrates the use of that
+ optional message but, what is more important, it illustrates the effect of
+ @('disable-ubt'): a @(see command) that executes it cannot be undone.</p>
+ 
+
+ @({
+ ACL2 !>(disable-ubt (list \"Just a demo: ~x0.\" (cons #\0 17)))
+
+ Summary
+ Form:  ( DISABLE-UBT ...)
+ Rules: NIL
+ Time:  0.00 seconds (prove: 0.00, print: 0.00, other: 0.00)
+  :DISABLE-UBT
+ ACL2 !>:ubt :x
+
+
+ ACL2 Error in :UBT:  Can't undo a :disable-ubt event (at command 1).
+ Just a demo: 17.  See :DOC disable-ubt.
+
+ ACL2 !>
+ })
+
+ <p>@('Disable-ubt') is similar to @('(reset-prehistory t)'), as both establish
+ a barrier to undoing.  However, for history commands such as @(':')@(tsee
+ pcb), command numbers are not changed by @('disable-ubt').  Like @(tsee
+ reset-prehistory), @('disable-ubt') is never @(see redundant).</p>
+
+")
 
 (defxdoc disabledp
   :parents (theories)
@@ -92900,6 +92954,12 @@ it."
 ;   (must-fail (defun abc (x) y))
 ;   (defun bar (lst) lst)
 
+; The ACL2 constant *initial-event-defmacros* no longer has an entry for
+; reset-prehistory, because there seemed to be no reason to include it and its
+; inclusion raised the question of whether disable-ubt should be added as well.
+
+; Ev-for-trans-eval is now untouchable.
+
   :parents (release-notes)
   :short "ACL2 Version  8.5 (xx, 20xx) Notes"
   :long "<p>NOTE!  New users can ignore these release notes, because the @(see
@@ -93216,6 +93276,9 @@ it."
  @(see meta-extract), in particular the discussion of @(':linear-lemma').
  Thanks to Sol Swords for providing this enhancement.</p>
 
+ <p>A new utility, @(tsee disable-ubt), is similar to @('(reset-prehistory t)')
+ except that it does not change command numbering.</p>
+
  <h3>Heuristic and Efficiency Improvements</h3>
 
  <p>Improved the efficiency of some computations involving calls of @(tsee
@@ -93397,6 +93460,14 @@ it."
  <p>It was possible to get a violation of fast alist discipline (see @(see
  slow-alist-warning) when certifying a book that uses @(tsee must-fail).  This
  has been fixed.</p>
+
+ <p>It had been possible to undo commands (for example, using @(':')@(tsee ubt)
+ when inside the @(see break-rewrite) interactive loop.  This destroyed the
+ utility of that loop by erasing keyword aliases (see @(see
+ ld-keyword-aliases)).  Thanks to Warren Hunt for reporting this problem.  The
+ solution uses the new utility mentioned above, @(tsee disable-ubt), which may
+ be useful for other @(tsee wormhole) invocations that take advantage of the
+ @(tsee ld-keyword-aliases) @(see table).</p>
 
  <h3>Changes at the System Level</h3>
 
@@ -105848,7 +105919,10 @@ arithmetic) for libraries of @(see books) for arithmetic reasoning.</p>")
  book, since that would probably not be what was intended.</p>
 
  <p>See @(see ubt-prehistory) for how to undo a @('reset-prehistory') command
- that does not have a @('permanent-p') of @('t').</p>")
+ that does not have a @('permanent-p') of @('t').  See @(see disable-ubt) for a
+ variant of @('(reset-prehistory t)') that does not change command numbering
+ and is used by the @(see break-rewrite) utility.  Like @('disable-ubt'),
+ @('reset-prehistory') is never @(see redundant).</p>")
 
 (defxdoc resize-list
   :parents (stobj acl2-built-ins)
@@ -128554,7 +128628,9 @@ introduction-to-the-tau-system) for more information about Tau.</dd>
  <p>The keyword @(see command) @(':ubt!') is the same as @(':')@(tsee ubt), but
  with a guarantee that it is ``error-free.''  More precisely, the value
  returned by @(':ubt!')  will always be of the form @('(mv nil val state)').
- @(':')@(tsee Oops) will undo the last @(':ubt!').  See @(see ubt), @(see
+ Note that @(':ubt!') will not print error messages.</p>
+
+ <p>@(':')@(tsee Oops) will undo the last @(':ubt!').  See @(see ubt), @(see
  ubt?), @(see ubu!), @(see ubu), @(see ubu?), and @(see u).</p>")
 
 (defxdoc ubt?
@@ -128628,9 +128704,10 @@ introduction-to-the-tau-system) for more information about Tau.</dd>
  <p>The keyword @(see command) @(':ubu!') is the same as @(':')@(tsee ubu), but
  with a guarantee that it is ``error-free.''  More precisely, the @(see
  error-triple) returned by @(':ubu!')  will always be of the form @('(mv nil
- val state)').  @(':')@(tsee Oops) will undo the last @(':ubu!').  Also see
- @(see ubu), @(see ubu?), @(see ubt), @(see ubt!), @(see ubt?), and @(see
- u).</p>")
+ val state)'). Note that @(':ubu!') will not print error messages.</p>
+
+ <p>@(':')@(tsee Oops) will undo the last @(':ubu!').  Also see @(see ubu),
+ @(see ubu?), @(see ubt), @(see ubt!), @(see ubt?), and @(see u).</p>")
 
 (defxdoc ubu?
   :parents (history undo)
