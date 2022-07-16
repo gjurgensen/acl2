@@ -75,7 +75,7 @@
     (BUILD::CERT.PL "[books]/build/doc.lisp")
     (BUILD::CERT_PARAM "[books]/build/doc.lisp")
     (CGEN "[books]/acl2s/cgen/top.lisp")
-    (CHECKPOINT-LIST "[books]/kestrel/utilities/checkpoints.lisp")
+    (CHECKPOINT-LIST "[books]/kestrel/utilities/checkpoints-doc.lisp")
     (CONSIDERATION "[books]/hints/consider-hint.lisp")
     (BUILD::CUSTOM-CERTIFY-BOOK-COMMANDS "[books]/build/doc.lisp")
     (STD::DEFAGGREGATE "[books]/std/util/defaggregate.lisp")
@@ -125,6 +125,7 @@
     (NOTE-8-2-BOOKS "[books]/doc/relnotes.lisp")
     (NOTE-8-3-BOOKS "[books]/doc/relnotes.lisp")
     (NOTE-8-4-BOOKS "[books]/doc/relnotes.lisp")
+    (NOTE-8-5-BOOKS "[books]/doc/relnotes.lisp")
     (STR::NUMBERS "[books]/std/strings/top.lisp")
     (OPEN-TRACE-FILE! "[books]/tools/open-trace-file-bang.lisp")
     (ORACLE-TIMELIMIT "[books]/tools/oracle-timelimit.lisp")
@@ -2785,10 +2786,10 @@
      With numeric prefix argument, find the next matching definition;
      otherwise, the user is prompted, where the default is the name at
      the cursor, obtained after stripping off any enclosing square
-     brackets (@('[..]')), angle brackets (@('<..>')) as from srclink tags, and
-     package prefixes.  With @('control-u') prefix argument, search only
+     brackets ([..]), angle brackets (<..>) as from srclink tags, and
+     package prefixes.  With control-u prefix argument, search only
      ACL2 source definitions; otherwise, books are searched as well.
-     As with built-in Emacs command @('meta-.') , exact matches are given
+     As with built-in Emacs command meta-. , exact matches are given
      priority.  For more information, see the Section on \"Selecting a
      Manual\" in the acl2-doc online XDOC-based documentation.
 
@@ -27505,6 +27506,7 @@ ld) and @(tsee include-book)"
                               (cadr arglist) ; the alist
                         )))
  (f)
+ })
 
  <p>Here is the trace output from the final call of @('f') above; analysis
  follows.</p>
@@ -39954,7 +39956,7 @@ current fast alists."
   @({
 
   ; Here we show the error that occurs if you use an ill-formed
-  ; @('LAMBDA') object in a @(':FN') slot.
+  ; LAMBDA object in a :FN slot.
 
   ACL2 !>(apply$ '(lambda (t) (cons t t)) '(a))
 
@@ -57897,10 +57899,10 @@ forms allowed for a @('let') form are  @('ignore'), @('ignorable'), and
  symbol @('fn').  Then the loop-stopper for this rewrite rule is a list of all
  lists @('(u v . fns)').</p>
 
- <p><i>Remark.</i>The paragraph above mentions ``the conclusion of the rule''
+ <p><i>Remark.</i> The paragraph above mentions ``the conclusion of the rule''
  as @('(equiv lhs rhs)').  The rule's conclusion is actually produced from a
  naive version @('(equiv lhs0 rhs)') of the conclusion by expanding away all
- @(see lambda) applications in @('lhs0').  If @('lhs0) and @('lhs') are
+ @(see lambda) applications in @('lhs0').  If @('lhs0') and @('lhs') are
  distinct (i.e., if there is any such lambda expansion) and also the
  loop-stopper field is calculated as @('nil') as described above, then a second
  attempt to calculate the loop-stopper is made using @('lhs0') in place of

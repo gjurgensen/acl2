@@ -5058,10 +5058,10 @@ Silent loading of ACL2 customization files
        With numeric prefix argument, find the next matching definition;
        otherwise, the user is prompted, where the default is the name at
        the cursor, obtained after stripping off any enclosing square
-       brackets (@('[..]')), angle brackets (@('<..>')) as from srclink tags, and
-       package prefixes.  With @('control-u') prefix argument, search only
+       brackets ([..]), angle brackets (<..>) as from srclink tags, and
+       package prefixes.  With control-u prefix argument, search only
        ACL2 source definitions; otherwise, books are searched as well.
-       As with built-in Emacs command @('meta-.') , exact matches are given
+       As with built-in Emacs command meta-. , exact matches are given
        priority.  For more information, see the Section on \"Selecting a
        Manual\" in the acl2-doc online XDOC-based documentation.
 
@@ -14985,7 +14985,7 @@ Subtopics
        (build::cert.pl \"[books]/build/doc.lisp\")
        (build::cert_param \"[books]/build/doc.lisp\")
        (cgen \"[books]/acl2s/cgen/top.lisp\")
-       (checkpoint-list \"[books]/kestrel/utilities/checkpoints.lisp\")
+       (checkpoint-list \"[books]/kestrel/utilities/checkpoints-doc.lisp\")
        (consideration \"[books]/hints/consider-hint.lisp\")
        (build::custom-certify-book-commands \"[books]/build/doc.lisp\")
        (std::defaggregate \"[books]/std/util/defaggregate.lisp\")
@@ -15036,6 +15036,7 @@ Subtopics
        (note-8-2-books \"[books]/doc/relnotes.lisp\")
        (note-8-3-books \"[books]/doc/relnotes.lisp\")
        (note-8-4-books \"[books]/doc/relnotes.lisp\")
+       (note-8-5-books \"[books]/doc/relnotes.lisp\")
        (str::numbers \"[books]/std/strings/top.lisp\")
        (open-trace-file! \"[books]/tools/open-trace-file-bang.lisp\")
        (oracle-timelimit \"[books]/tools/oracle-timelimit.lisp\")
@@ -30773,10 +30774,9 @@ SEMANTICS
                            )))
     (f)
 
-    <p>Here is the trace output from the final call of @('f') above; analysis
-    follows.</p>
+  Here is the trace output from the final call of f above; analysis
+  follows.
 
-    @({
     ACL2 !>(f)
     1> (DO$ ((X A B C) (Y)))
       2> (APPLY$ (((X A B C) (Y))))
@@ -43254,7 +43254,7 @@ Subtopics
   these and other points below.
 
     ; Here we show the error that occurs if you use an ill-formed
-    ; @('LAMBDA') object in a @(':FN') slot.
+    ; LAMBDA object in a :FN slot.
 
     ACL2 !>(apply$ '(lambda (t) (cons t t)) '(a))
 
@@ -61980,14 +61980,14 @@ Functions
   subterm of lhs with function symbol fn.  Then the loop-stopper for
   this rewrite rule is a list of all lists (u v . fns).
 
-  Remark.The paragraph above mentions ``the conclusion of the rule'' as
-  (equiv lhs rhs).  The rule's conclusion is actually produced from a
-  naive version (equiv lhs0 rhs) of the conclusion by expanding away
-  all [lambda] applications in lhs0.  If lhs0) and @('lhs are
-  distinct (i.e., if there is any such lambda expansion) and also the
-  loop-stopper field is calculated as nil as described above, then a
-  second attempt to calculate the loop-stopper is made using lhs0 in
-  place of lhs.
+  Remark. The paragraph above mentions ``the conclusion of the rule''
+  as (equiv lhs rhs).  The rule's conclusion is actually produced
+  from a naive version (equiv lhs0 rhs) of the conclusion by
+  expanding away all [lambda] applications in lhs0.  If lhs0 and lhs
+  are distinct (i.e., if there is any such lambda expansion) and also
+  the loop-stopper field is calculated as nil as described above,
+  then a second attempt to calculate the loop-stopper is made using
+  lhs0 in place of lhs.
 
 
 Subtopics
@@ -90935,10 +90935,10 @@ Experimental Versions
   many changes could be placed in more than one category.
 
   Note that only ACL2 system changes are listed below.  See also
-  note-8-5-books for a summary of changes made to the ACL2 Community
-  Books since ACL2 8.4, including the build system.  Also note that
-  with each release, it is typical that the value of constant
-  [*ACL2-exports*] has been extended, and that some built-in
+  [note-8-5-books] for a summary of changes made to the ACL2
+  Community Books since ACL2 8.4, including the build system.  Also
+  note that with each release, it is typical that the value of
+  constant [*ACL2-exports*] has been extended, and that some built-in
   functions that were formerly in :[program] mode are now
   [guard]-verified :[logic] mode functions.
 
