@@ -92806,6 +92806,15 @@ it."
 
 (defxdoc note-8-5
 
+; Total number of release note items: 131, as follows.
+;   20 ; Changes to Existing Features
+;   17 ; New Features
+;    6 ; Heuristic and Efficiency Improvements
+;   18 ; Bug Fixes
+;    9 ; Changes at the System Level
+;    6 ; EMACS Support
+;    2 ; Experimental Versions
+
 ; The new state global pc-info has as its value a pc-info record, whose
 ; components replace the four state globals pc-print-macroexpansion-flg,
 ; pc-print-prompt-and-instr-flg, pc-prompt, and pc-prompt-depth-prefix.
