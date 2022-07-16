@@ -26379,7 +26379,7 @@ ld) and @(tsee include-book)"
  ``See :DOC disable-ubt'').  The following example illustrates the use of that
  optional message but, what is more important, it illustrates the effect of
  @('disable-ubt'): a @(see command) that executes it cannot be undone.</p>
- 
+
 
  @({
  ACL2 !>(disable-ubt (list \"Just a demo: ~x0.\" (cons #\0 17)))
@@ -93279,6 +93279,12 @@ it."
  <p>A new utility, @(tsee disable-ubt), is similar to @('(reset-prehistory t)')
  except that it does not change command numbering.</p>
 
+ <p>Added a built-in @(':')@(tsee forward-chaining) rule,
+ @('symbol-listp-forward-to-eqlable-listp'), which replaces the rule
+ @('symbol-listp-forward-to-true-listp').  Note that the old rule is
+ subsumed,together with other rules, by the new one.  Thanks to Warren Hunt for
+ observing that not built into ACL2 as a @(':forward-chaining') rule.</p>
+
  <h3>Heuristic and Efficiency Improvements</h3>
 
  <p>Improved the efficiency of some computations involving calls of @(tsee
@@ -93518,6 +93524,11 @@ it."
  input is cleared.  Thanks to Eric McCarthy for pointing out that this wasn't
  the case, giving the example, @('(LET ((. 3)) (+ . 4))'), as one that was
  giving many errors.</p>
+
+ <p>(CCL only) Disabled raw lisp compiler macro for @('memq').  For example,
+ the following definition no longer causes a raw Lisp error when submitted to
+ ACL2: @('(defun foo (x) (member-eq x 'a))').  Thanks to Shannon Spires for the
+ suggestion.</p>
 
  <h3>EMACS Support</h3>
 

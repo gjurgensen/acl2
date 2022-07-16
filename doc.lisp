@@ -77,7 +77,7 @@ Subtopics
   [defthm], [in-theory], [xargs], [state], etc., without an acl2::
   prefix.
 
-  The constant *acl2-exports* lists 1557 symbols, including most
+  The constant *acl2-exports* lists 1558 symbols, including most
   documented ACL2 system constants, functions, and macros.  You will
   typically also want to import many symbols from Common Lisp; see
   [*common-lisp-symbols-from-main-lisp-package*].
@@ -272,7 +272,7 @@ Subtopics
        denominator digit-char-p digit-to-char
        dimensions disable disable-forcing
        disable-immediate-force-modep
-       disabledp disassemble$
+       disable-ubt disabledp disassemble$
        distributivity dmr-start dmr-stop do$
        doc doc! docs doppelganger-apply$-userfn
        doppelganger-badge-userfn double-rewrite
@@ -91250,6 +91250,13 @@ New Features
   A new utility, [disable-ubt], is similar to (reset-prehistory t)
   except that it does not change command numbering.
 
+  Added a built-in :[forward-chaining] rule,
+  symbol-listp-forward-to-eqlable-listp, which replaces the rule
+  symbol-listp-forward-to-true-listp.  Note that the old rule is
+  subsumed,together with other rules, by the new one.  Thanks to
+  Warren Hunt for observing that not built into ACL2 as a
+  :forward-chaining rule.
+
 
 Heuristic and Efficiency Improvements
 
@@ -91496,6 +91503,11 @@ Changes at the System Level
   remaining input is cleared.  Thanks to Eric McCarthy for pointing
   out that this wasn't the case, giving the example, (LET ((. 3)) (+
   . 4)), as one that was giving many errors.
+
+  (CCL only) Disabled raw lisp compiler macro for memq.  For example,
+  the following definition no longer causes a raw Lisp error when
+  submitted to ACL2: (defun foo (x) (member-eq x 'a)).  Thanks to
+  Shannon Spires for the suggestion.
 
 
 EMACS Support
