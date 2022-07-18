@@ -1446,6 +1446,8 @@
 
  <li>IBM</li>
 
+ <li>Intel</li>
+
  <li>Kestrel Institute</li>
 
  <li>Kestrel Technology</li>
