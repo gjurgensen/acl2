@@ -2470,6 +2470,7 @@ Subtopics
     * EDS, which provided some time for Matt Kaufmann's ACL2 work 1998-1999
     * ForrestHunt and, more generally, Warren A. Hunt, Jr. (see below)
     * IBM
+    * Intel
     * Kestrel Institute
     * Kestrel Technology
     * NSF
