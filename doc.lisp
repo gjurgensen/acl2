@@ -91577,7 +91577,7 @@ Experimental Versions
   set up to avoid using useless-runes with ACL2(p).")
  (NOTE-8-6
   (RELEASE-NOTES)
-  "ACL2 Version 8.5 (xxx, 20xx) Notes
+  "ACL2 Version 8.6 (xxx, 20xx) Notes
 
   NOTE!  New users can ignore these release notes, because the
   [documentation] has been updated to reflect all changes that are
@@ -106205,7 +106205,7 @@ Subtopics
       ACL2 Version 8.5 (July, 2022) Notes
 
   [Note-8-6]
-      ACL2 Version 8.5 (xxx, 20xx) Notes")
+      ACL2 Version 8.6 (xxx, 20xx) Notes")
  (REM
   (NUMBERS ACL2-BUILT-INS)
   "Remainder using [truncate]
