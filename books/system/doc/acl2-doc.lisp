@@ -93613,7 +93613,7 @@ it."
 
 (defxdoc note-8-6
   :parents (release-notes)
-  :short "ACL2 Version  8.5 (xxx, 20xx) Notes"
+  :short "ACL2 Version  8.6 (xxx, 20xx) Notes"
   :long "<p>NOTE!  New users can ignore these release notes, because the @(see
  documentation) has been updated to reflect all changes that are recorded
  here.</p>
