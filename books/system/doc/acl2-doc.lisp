@@ -2,7 +2,7 @@
 ;
 ; acl2-doc.lisp - Documentation for the ACL2 Theorem Prover
 ;
-; ACL2 Version 8.4 -- A Computational Logic for Applicative Common Lisp
+; ACL2 Version 8.5 -- A Computational Logic for Applicative Common Lisp
 ; Copyright (C) 2022, Regents of the University of Texas
 ;
 ; This documentation was derived from the ACL2 system in October 2013, which
@@ -181,7 +181,7 @@
 ; who are looking at an older version of ACL2 will see the corresponding
 ; ACL2+Books Manual at this link.
 
-  "http://www.cs.utexas.edu/users/moore/acl2/v8-4/")
+  "http://www.cs.utexas.edu/users/moore/acl2/v8-5/")
 
 (defconst *installation-url*
 
@@ -1436,6 +1436,8 @@
 
  <li>Centaur Technology</li>
 
+ <li>Collins Aerospace</li>
+
  <li>DARPA</li>
 
  <li>Digital Equipment Corporation</li>
@@ -1452,18 +1454,32 @@
 
  <li>Kestrel Technology</li>
 
- <li>NSF</li>
+ <li>NSF (see below)</li>
 
  <li>ONR</li>
-
- <li>Rockwell Collins</li>
 
  <li>SRC</li>
 
  <li>Sun Microsystems</li>
 
+ <li>U.S. Army, in particular ARL</li>
+
  <li>University of Texas at Austin (in particular support to J Moore through the
  Admiral B. R.  Inman Chair of Computing Theory)</li>
+
+ </ul>
+
+ <p>Regarding NSF:</p>
+
+ <ul>
+
+  <li>This material is based upon work supported by the National Science
+      Foundation under Grant Nos. CCF-1526760, CNS-1525472, CCF-1153558,
+      EIA-0303609, CNS-0429591, ISS-0417413, CCF-0945316, and CNS-0910913.</li>
+
+  <li>Any opinions, findings and conclusions or recomendations expressed in
+      this material are those of the authors and do not necessarily reflect the
+      views of the National Science Foundation.</li>
 
  </ul>
 
@@ -7595,7 +7611,7 @@ and @(tsee include-book)"
  <p>The <a href='http://www.cs.utexas.edu/users/moore/acl2/'>ACL2 Home Page</a>
  on the web contains links to demos, publications, mailing lists,, installation
  instructions, and more &mdash; and, especially, to the extensive <a
- href=\"https://www.cs.utexas.edu/users/moore/acl2/v8-4/acl2-doc.html#User's-Manual\">online
+ href=\"https://www.cs.utexas.edu/users/moore/acl2/v8-5/acl2-doc.html#User's-Manual\">online
  documentation</a> for ACL2 and its libraries, known as ``books''.</p>
 
  <p>For example, to use the online documentation to find out about @(see
@@ -40469,7 +40485,7 @@ current fast alists."
   <ul>
 
   <li><p>Instead of treating stobj names as variables, the evaluation theory
-p  treats them as abbreviations for the ``current value'' of the stobj,
+  treats them as abbreviations for the ``current value'' of the stobj,
   specifically, the constant obtained by composing the sequence of all updates
   to the stobj's fields carried out so far in the top-level loop.  Thus, for
   example, in the evaluation theories created by this sequence of top-level
@@ -92974,7 +92990,7 @@ it."
 ; Ev-for-trans-eval is now untouchable.
 
   :parents (release-notes)
-  :short "ACL2 Version  8.5 (xx, 20xx) Notes"
+  :short "ACL2 Version  8.5 (July, 2022) Notes"
   :long "<p>NOTE!  New users can ignore these release notes, because the @(see
  documentation) has been updated to reflect all changes that are recorded
  here.</p>
@@ -93592,6 +93608,44 @@ it."
  These have been eliminated.  Note that they didn't show up during regressions
  in Version 8.4 because the use of ``@('make')'' was set up to avoid using
  useless-runes with ACL2(p).</p>
+
+ ")
+
+(defxdoc note-8-6
+  :parents (release-notes)
+  :short "ACL2 Version  8.6 (xxx, 20xx) Notes"
+  :long "<p>NOTE!  New users can ignore these release notes, because the @(see
+ documentation) has been updated to reflect all changes that are recorded
+ here.</p>
+
+ <p>Below we roughly organize the changes to ACL2 since Version 8.5 into the
+ following categories of changes: existing features, new features, heuristic
+ and efficiency improvements, bug fixes, changes at the system level, Emacs
+ support, and experimental versions.  Each change is described in just one
+ category, though of course many changes could be placed in more than one
+ category.</p>
+
+ <p>Note that only ACL2 system changes are listed below.  See also @(see
+ note-8-5-books) for a summary of changes made to the ACL2 Community Books
+ since ACL2 8.5, including the build system.  Also note that with each release,
+ it is typical that the value of constant @(tsee *acl2-exports*) has been
+ extended, and that some built-in functions that were formerly in @(':')@(tsee
+ program) mode are now @(see guard)-verified @(':')@(tsee logic) mode
+ functions.</p>
+
+ <h3>Changes to Existing Features</h3>
+
+ <h3>New Features</h3>
+
+ <h3>Heuristic and Efficiency Improvements</h3>
+
+ <h3>Bug Fixes</h3>
+
+ <h3>Changes at the System Level</h3>
+
+ <h3>EMACS Support</h3>
+
+ <h3>Experimental Versions</h3>
 
  ")
 
