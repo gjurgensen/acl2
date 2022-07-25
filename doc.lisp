@@ -3,7 +3,7 @@
 ; The contents of this file are derived from ACL2 Community Book
 ; books/system/doc/acl2-doc.lisp.
 
-; ACL2 Version 8.4 -- A Computational Logic for Applicative Common Lisp
+; ACL2 Version 8.5 -- A Computational Logic for Applicative Common Lisp
 ; Copyright (C) 2022, Regents of the University of Texas
 
 ; This version of ACL2 is a descendent of ACL2 Version 1.9, Copyright
@@ -1591,7 +1591,7 @@ Subtopics
   (ACL2)
   "General information About ACL2
 
-  This is ACL2 Version 8.4, [copyright] (C) 2022, Regents of the
+  This is ACL2 Version 8.5, [copyright] (C) 2022, Regents of the
   University of Texas, authored by Matt Kaufmann and J Strother
   Moore.
 
@@ -1667,7 +1667,7 @@ Subtopics
   the web contains links to demos, publications, mailing lists,,
   installation instructions, and more --- and, especially, to the
   extensive {online documentation |
-  https://www.cs.utexas.edu/users/moore/acl2/v8-4/acl2-doc.html#User's-Manual}
+  https://www.cs.utexas.edu/users/moore/acl2/v8-5/acl2-doc.html#User's-Manual}
   for ACL2 and its libraries, known as ``books''.
 
   For example, to use the online documentation to find out about
@@ -2465,20 +2465,32 @@ Subtopics
     * Computational Logic, Inc. and its president, Don Good, where the
       first eight years of ACL2 development occurred
     * Centaur Technology
+    * Collins Aerospace
     * DARPA
     * Digital Equipment Corporation
     * EDS, which provided some time for Matt Kaufmann's ACL2 work 1998-1999
     * ForrestHunt and, more generally, Warren A. Hunt, Jr. (see below)
     * IBM
+    * Intel
     * Kestrel Institute
     * Kestrel Technology
-    * NSF
+    * NSF (see below)
     * ONR
-    * Rockwell Collins
     * SRC
     * Sun Microsystems
+    * U.S. Army, in particular ARL
     * University of Texas at Austin (in particular support to J Moore
       through the Admiral B. R.  Inman Chair of Computing Theory)
+
+  Regarding NSF:
+
+    * This material is based upon work supported by the National Science
+      Foundation under Grant Nos. CCF-1526760, CNS-1525472,
+      CCF-1153558, EIA-0303609, CNS-0429591, ISS-0417413,
+      CCF-0945316, and CNS-0910913.
+    * Any opinions, findings and conclusions or recomendations expressed in
+      this material are those of the authors and do not necessarily
+      reflect the views of the National Science Foundation.
 
   We are especially grateful to Warren A. Hunt, Jr. for his unrivaled
   efforts in securing support for the entire ACL2 research group at
@@ -2638,7 +2650,7 @@ Subtopics
   This is the ACL2 documentation.  For the ACL2+Books Manual, which
   that includes both the ACL2 documentation and the ACL2
   [community-books], see the {ACL2+Books Manual |
-  http://www.cs.utexas.edu/users/moore/acl2/v8-4/combined-manual/index.html}.
+  http://www.cs.utexas.edu/users/moore/acl2/v8-5/combined-manual/index.html}.
 
 
 Subtopics
@@ -4829,7 +4841,7 @@ Silent loading of ACL2 customization files
 
   As discussed elsewhere (see [documentation]), the web-based
   {ACL2+Books Manual |
-  http://www.cs.utexas.edu/users/moore/acl2/v8-4/combined-manual/index.html}
+  http://www.cs.utexas.edu/users/moore/acl2/v8-5/combined-manual/index.html}
   provides a way to browse the combined documentation for the ACL2
   system and community books.  Such documentation can also be read at
   the terminal using the :[doc] command, though documentation for
@@ -5058,10 +5070,10 @@ Silent loading of ACL2 customization files
        With numeric prefix argument, find the next matching definition;
        otherwise, the user is prompted, where the default is the name at
        the cursor, obtained after stripping off any enclosing square
-       brackets (@('[..]')), angle brackets (@('<..>')) as from srclink tags, and
-       package prefixes.  With @('control-u') prefix argument, search only
+       brackets ([..]), angle brackets (<..>) as from srclink tags, and
+       package prefixes.  With control-u prefix argument, search only
        ACL2 source definitions; otherwise, books are searched as well.
-       As with built-in Emacs command @('meta-.') , exact matches are given
+       As with built-in Emacs command meta-. , exact matches are given
        priority.  For more information, see the Section on \"Selecting a
        Manual\" in the acl2-doc online XDOC-based documentation.
 
@@ -13187,7 +13199,7 @@ Prerequisites
 
   We assume that you have already downloaded and installed ACL2 as per
   the {ACL2 installation instructions |
-  http://www.cs.utexas.edu/users/moore/acl2/v8-4/HTML/installation/installation.html}
+  http://www.cs.utexas.edu/users/moore/acl2/v8-5/HTML/installation/installation.html}
   on the ACL2 home page.
 
   We assume you know the path to your ACL2 executable.  Typically this
@@ -13444,7 +13456,7 @@ Subtopics
 
   For more information about installing ACL2, see the {ACL2
   installation instructions |
-  http://www.cs.utexas.edu/users/moore/acl2/v8-4/HTML/installation/installation.html}.
+  http://www.cs.utexas.edu/users/moore/acl2/v8-5/HTML/installation/installation.html}.
   For information about so-called ``classic ACL2 `make'-based
   certification'', which provides support for certifying directories
   of books but may disappear in a future ACL2 release, see
@@ -14943,7 +14955,7 @@ Subtopics
   contains [documentation] only about the ACL2 system, and does not
   include documentation from the [community-books].  Please point
   your browser at the {ACL2+Books Manual |
-  http://www.cs.utexas.edu/users/moore/acl2/v8-4/combined-manual/index.html}
+  http://www.cs.utexas.edu/users/moore/acl2/v8-5/combined-manual/index.html}
   (or if browsing in [ACL2-Doc], switch to that manual with meta-0 I)
   to access the desired topic.
 
@@ -14985,7 +14997,7 @@ Subtopics
        (build::cert.pl \"[books]/build/doc.lisp\")
        (build::cert_param \"[books]/build/doc.lisp\")
        (cgen \"[books]/acl2s/cgen/top.lisp\")
-       (checkpoint-list \"[books]/kestrel/utilities/checkpoints.lisp\")
+       (checkpoint-list \"[books]/kestrel/utilities/checkpoints-doc.lisp\")
        (consideration \"[books]/hints/consider-hint.lisp\")
        (build::custom-certify-book-commands \"[books]/build/doc.lisp\")
        (std::defaggregate \"[books]/std/util/defaggregate.lisp\")
@@ -15036,6 +15048,7 @@ Subtopics
        (note-8-2-books \"[books]/doc/relnotes.lisp\")
        (note-8-3-books \"[books]/doc/relnotes.lisp\")
        (note-8-4-books \"[books]/doc/relnotes.lisp\")
+       (note-8-5-books \"[books]/doc/relnotes.lisp\")
        (str::numbers \"[books]/std/strings/top.lisp\")
        (open-trace-file! \"[books]/tools/open-trace-file-bang.lisp\")
        (oracle-timelimit \"[books]/tools/oracle-timelimit.lisp\")
@@ -21329,7 +21342,7 @@ Subtopics
   [documentation-copyright], which notes that there are many
   documentation authors.
 
-  ACL2 Version 8.4 --- A Computational Logic for Applicative Common
+  ACL2 Version 8.5 --- A Computational Logic for Applicative Common
   Lisp
 
   Copyright (C) 2022, Regents of the University of Texas
@@ -30773,10 +30786,9 @@ SEMANTICS
                            )))
     (f)
 
-    <p>Here is the trace output from the final call of @('f') above; analysis
-    follows.</p>
+  Here is the trace output from the final call of f above; analysis
+  follows.
 
-    @({
     ACL2 !>(f)
     1> (DO$ ((X A B C) (Y)))
       2> (APPLY$ (((X A B C) (Y))))
@@ -30937,7 +30949,7 @@ SEMANTICS
   users will probably access the ACL2 documentation in other ways;
   see [documentation].  In particular, consider using the {ACL2+Books
   Manual |
-  http://www.cs.utexas.edu/users/moore/acl2/v8-4/combined-manual/index.html},
+  http://www.cs.utexas.edu/users/moore/acl2/v8-5/combined-manual/index.html},
   for topics documented in the ACL2 community [books] or in the ACL2
   system (where the latter are rearranged).
 
@@ -30983,7 +30995,7 @@ Available Documentation
     * The online version (recommended). If you expect to have an internet
       connection while using the documentation, you may prefer to use
       the online version of the {ACL2+Books Manual |
-      http://www.cs.utexas.edu/users/moore/acl2/v8-4/combined-manual/index.html}.
+      http://www.cs.utexas.edu/users/moore/acl2/v8-5/combined-manual/index.html}.
     * A local version. If you sometimes work without an internet
       connection, you can {download | download/} a local copy of any
       web-based XDOC manual using the \"down arrow\" icon at the top of
@@ -37216,7 +37228,7 @@ Subtopics
   not included in the current ACL2 session?
 
   The [xdoc] {ACL2+Books Manual |
-  http://www.cs.utexas.edu/users/moore/acl2/v8-4/combined-manual/index.html}
+  http://www.cs.utexas.edu/users/moore/acl2/v8-5/combined-manual/index.html}
   includes documentation for both the ACL2 system and the
   [community-books].  For more information on this manual and how to
   view it, see [documentation].")
@@ -43254,7 +43266,7 @@ Subtopics
   these and other points below.
 
     ; Here we show the error that occurs if you use an ill-formed
-    ; @('LAMBDA') object in a @(':FN') slot.
+    ; LAMBDA object in a :FN slot.
 
     ACL2 !>(apply$ '(lambda (t) (cons t t)) '(a))
 
@@ -43730,7 +43742,7 @@ The Evaluation Theory
   follows.
 
     *
-        Instead of treating stobj names as variables, the evaluation theory p
+        Instead of treating stobj names as variables, the evaluation theory
         treats them as abbreviations for the ``current value'' of the
         stobj, specifically, the constant obtained by composing the
         sequence of all updates to the stobj's fields carried out so
@@ -61980,14 +61992,14 @@ Functions
   subterm of lhs with function symbol fn.  Then the loop-stopper for
   this rewrite rule is a list of all lists (u v . fns).
 
-  Remark.The paragraph above mentions ``the conclusion of the rule'' as
-  (equiv lhs rhs).  The rule's conclusion is actually produced from a
-  naive version (equiv lhs0 rhs) of the conclusion by expanding away
-  all [lambda] applications in lhs0.  If lhs0) and @('lhs are
-  distinct (i.e., if there is any such lambda expansion) and also the
-  loop-stopper field is calculated as nil as described above, then a
-  second attempt to calculate the loop-stopper is made using lhs0 in
-  place of lhs.
+  Remark. The paragraph above mentions ``the conclusion of the rule''
+  as (equiv lhs rhs).  The rule's conclusion is actually produced
+  from a naive version (equiv lhs0 rhs) of the conclusion by
+  expanding away all [lambda] applications in lhs0.  If lhs0 and lhs
+  are distinct (i.e., if there is any such lambda expansion) and also
+  the loop-stopper field is calculated as nil as described above,
+  then a second attempt to calculate the loop-stopper is made using
+  lhs0 in place of lhs.
 
 
 Subtopics
@@ -90921,7 +90933,7 @@ Experimental Versions
   discussing its resolution.")
  (NOTE-8-5
   (RELEASE-NOTES)
-  "ACL2 Version 8.5 (xx, 20xx) Notes
+  "ACL2 Version 8.5 (July, 2022) Notes
 
   NOTE!  New users can ignore these release notes, because the
   [documentation] has been updated to reflect all changes that are
@@ -90935,10 +90947,10 @@ Experimental Versions
   many changes could be placed in more than one category.
 
   Note that only ACL2 system changes are listed below.  See also
-  note-8-5-books for a summary of changes made to the ACL2 Community
-  Books since ACL2 8.4, including the build system.  Also note that
-  with each release, it is typical that the value of constant
-  [*ACL2-exports*] has been extended, and that some built-in
+  [note-8-5-books] for a summary of changes made to the ACL2
+  Community Books since ACL2 8.4, including the build system.  Also
+  note that with each release, it is typical that the value of
+  constant [*ACL2-exports*] has been extended, and that some built-in
   functions that were formerly in :[program] mode are now
   [guard]-verified :[logic] mode functions.
 
@@ -91563,6 +91575,49 @@ Experimental Versions
   :read.  These have been eliminated.  Note that they didn't show up
   during regressions in Version 8.4 because the use of ``make'' was
   set up to avoid using useless-runes with ACL2(p).")
+ (NOTE-8-6
+  (RELEASE-NOTES)
+  "ACL2 Version 8.6 (xxx, 20xx) Notes
+
+  NOTE!  New users can ignore these release notes, because the
+  [documentation] has been updated to reflect all changes that are
+  recorded here.
+
+  Below we roughly organize the changes to ACL2 since Version 8.5 into
+  the following categories of changes: existing features, new
+  features, heuristic and efficiency improvements, bug fixes, changes
+  at the system level, Emacs support, and experimental versions.
+  Each change is described in just one category, though of course
+  many changes could be placed in more than one category.
+
+  Note that only ACL2 system changes are listed below.  See also
+  [note-8-5-books] for a summary of changes made to the ACL2
+  Community Books since ACL2 8.5, including the build system.  Also
+  note that with each release, it is typical that the value of
+  constant [*ACL2-exports*] has been extended, and that some built-in
+  functions that were formerly in :[program] mode are now
+  [guard]-verified :[logic] mode functions.
+
+
+Changes to Existing Features
+
+
+New Features
+
+
+Heuristic and Efficiency Improvements
+
+
+Bug Fixes
+
+
+Changes at the System Level
+
+
+EMACS Support
+
+
+Experimental Versions")
  (NOTE1 (POINTERS) "See [note-1-1].")
  (NOTE2 (POINTERS) "See [note-1-2].")
  (NOTE3 (POINTERS) "See [note-1-3].")
@@ -106147,7 +106202,10 @@ Subtopics
       ACL2 Version 8.4 (August, 2021) Notes
 
   [Note-8-5]
-      ACL2 Version 8.5 (xx, 20xx) Notes")
+      ACL2 Version 8.5 (July, 2022) Notes
+
+  [Note-8-6]
+      ACL2 Version 8.6 (xxx, 20xx) Notes")
  (REM
   (NUMBERS ACL2-BUILT-INS)
   "Remainder using [truncate]
