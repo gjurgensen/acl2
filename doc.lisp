@@ -15049,6 +15049,7 @@ Subtopics
        (note-8-3-books \"[books]/doc/relnotes.lisp\")
        (note-8-4-books \"[books]/doc/relnotes.lisp\")
        (note-8-5-books \"[books]/doc/relnotes.lisp\")
+       (note-8-6-books \"[books]/doc/relnotes.lisp\")
        (str::numbers \"[books]/std/strings/top.lisp\")
        (open-trace-file! \"[books]/tools/open-trace-file-bang.lisp\")
        (oracle-timelimit \"[books]/tools/oracle-timelimit.lisp\")
@@ -79142,7 +79143,7 @@ Subtopics
   Bob Boyer and others have contributed numerous changes for the
   experimental ``hons'' version of ACL2 (see [hons-and-memoization]).
 
-  The ACL2 [state] can now be queried with (@ hons-enabledp) so that a
+  The ACL2 [state] can now be queried with hons-enabledp so that a
   result of t says that one is in the experimental hons version,
   while nil says the opposite.")
  (NOTE-3-5{R}
@@ -91600,6 +91601,15 @@ Experimental Versions
 
 
 Changes to Existing Features
+
+  The function hons-enabledp is no longer defined, and :hons has been
+  removed from the Lisp global, *features* (so, readtime conditionals
+  #+hons and #-hons should be avoided, especially since #+hons is
+  always false even though the system is [hons-enabled]).  These were
+  both deprecated in the preceding release (ACL2 Version 8.5).  Note
+  that the [hons-enabled] features of ACL2 have been included in all
+  builds by default since Version 7.0 (January, 2015) and in all
+  builds since Version 7.2 (January, 2016).
 
 
 New Features

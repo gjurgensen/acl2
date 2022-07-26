@@ -126,6 +126,7 @@
     (NOTE-8-3-BOOKS "[books]/doc/relnotes.lisp")
     (NOTE-8-4-BOOKS "[books]/doc/relnotes.lisp")
     (NOTE-8-5-BOOKS "[books]/doc/relnotes.lisp")
+    (NOTE-8-6-BOOKS "[books]/doc/relnotes.lisp")
     (STR::NUMBERS "[books]/std/strings/top.lisp")
     (OPEN-TRACE-FILE! "[books]/tools/open-trace-file-bang.lisp")
     (ORACLE-TIMELIMIT "[books]/tools/oracle-timelimit.lisp")
@@ -76882,7 +76883,7 @@ it."
  <p>Bob Boyer and others have contributed numerous changes for the experimental
  ``@('hons')'' version of ACL2 (see @(see hons-and-memoization)).</p>
 
- <p>The ACL2 @(tsee state) can now be queried with @('(@ hons-enabledp)') so
+ <p>The ACL2 @(tsee state) can now be queried with @('hons-enabledp') so
  that a result of @('t') says that one is in the experimental @('hons')
  version, while @('nil') says the opposite.</p>")
 
@@ -93634,6 +93635,15 @@ it."
  functions.</p>
 
  <h3>Changes to Existing Features</h3>
+
+ <p>The function @('hons-enabledp') is no longer defined, and @(':hons') has
+ been removed from the Lisp global, @('*features*') (so, readtime conditionals
+ @('#+hons') and @('#-hons') should be avoided, especially since @('#+hons') is
+ always false even though the system is @(see hons-enabled)).  These were both
+ deprecated in the preceding release (ACL2 Version 8.5).  Note that the @(see
+ hons-enabled) features of ACL2 have been included in all builds by default
+ since Version 7.0 (January, 2015) and in all builds since Version
+ 7.2 (January, 2016).</p>
 
  <h3>New Features</h3>
 
