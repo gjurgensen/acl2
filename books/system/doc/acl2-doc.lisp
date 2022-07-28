@@ -103908,6 +103908,10 @@ arithmetic) for libraries of @(see books) for arithmetic reasoning.</p>")
  <li>Calls of @(':logic') mode functions whose @(see guard)s were verified
  using @(tsee skip-proofs)</li>
 
+ <li>Resource errors, e.g., when attempting to evaluate @('(expt 2 (expt 2
+ 1000000))').  (We have seen raw Lisp errors when evaluating that expression in
+ ACL2 built on host Lisps CCL, SBCL, and Allegro CL.)</li>
+
  <li>Illegal calls of certain functions and macros with special ``under the
  hood'' raw Lisp code, such as @(tsee read-file-into-string) and @(tsee
  return-last)</li>
