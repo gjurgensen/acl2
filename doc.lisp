@@ -104421,6 +104421,10 @@ Subtopics
     * Calls of :program mode functions
     * Calls of :logic mode functions whose [guard]s were verified using
       [skip-proofs]
+    * Resource errors, e.g., when attempting to evaluate (expt 2 (expt 2
+      1000000)).  (We have seen raw Lisp errors when evaluating that
+      expression in ACL2 built on host Lisps CCL, SBCL, and Allegro
+      CL.)
     * Illegal calls of certain functions and macros with special ``under
       the hood'' raw Lisp code, such as [read-file-into-string] and
       [return-last]
