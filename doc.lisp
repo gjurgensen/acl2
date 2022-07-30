@@ -38307,20 +38307,27 @@ General Form
 
   The most elaborate loop$ expression is of the form
 
-  (LOOP$ FOR v1 OF-TYPE spec1 target1
-  AS    v2 OF-TYPE spec2 target2
-  ...
-  AS    vn OF-TYPE specn targetn
-  UNTIL :GUARD guard1 until-expr
-  WHEN    :GUARD guard2 when-expr
-  ; Note the ALWAYS/THEREIS Exceptions below!
-  op :GUARD guard3 body-expr)
+  .   .   .   .  (LOOP$ FOR v1 OF-TYPE spec1 target1
+  .   .   .   .   .   .   .   .   .   .   .   .  AS   .  v2 OF-TYPE
+  spec2 target2
+  .   .   .   .   .   .   .   .   .   .   .   .  ...
+  .   .   .   .   .   .   .   .   .   .   .   .  AS   .  vn OF-TYPE
+  specn targetn
+  .   .   .   .   .   .   .   .   .   .   .   .  UNTIL :GUARD guard1
+  until-expr
+  .   .   .   .   .   .   .   .   .   .   .   .  WHEN   .  :GUARD
+  guard2 when-expr
+  .   .   .   .   .   .   .   .   .   .   .   .  ; Note the
+  ALWAYS/THEREIS Exceptions below!
+  .   .   .   .   .   .   .   .   .   .   .   .  op :GUARD guard3
+  body-expr)
 
-  where each vi   is a legal variable symbol and they are all distinct,
-  each type-speci   is a [type-spec], each targeti   is a target
-  clause, each guardi, until-expr, and when-expr   is a term, op   is
-  an operator, and body-expr   is a term.  Furthermore, until-expr,
-  when-expr, and body-expr   must be [tame]!
+  where each vi  .  is a legal variable symbol and they are all
+  distinct, each type-speci  .  is a [type-spec], each targeti  .  is
+  a target clause, each guardi, until-expr, and when-expr  .  is a
+  term, op  .  is an operator, and body-expr  .  is a term.
+  Furthermore, until-expr, when-expr, and body-expr  .  must be
+  [tame]!
 
   The ALWAYS/THEREIS Exception: Common Lisp prohibits loops with both a
   WHEN clause and either an ALWAYS or a THEREIS operator.  For
@@ -91611,8 +91618,26 @@ Changes to Existing Features
   builds by default since Version 7.0 (January, 2015) and in all
   builds since Version 7.2 (January, 2016).
 
+  The [proof-builder] now takes into account various aspects of
+  rewriting specified by the logical [world] that it formerly ignored
+  (pertaining to [match-free], [case-split-limitations],
+  [untouchable] functions, non-linear arithmetic (see
+  [set-non-linearp]), the [backchain-limit] for rewriting, and the
+  [rw-cache-state]).
+
 
 New Features
+
+  The new zero-ary attachable system function, heavy-linear-p, allows
+  for enhanced use of [linear-arithmetic] during rewriting,
+  specifically with the test (first) argument of a call of IF.  To
+  get this additional power, possibly at considerable loss of
+  efficiency, evaluate (defattach-system heavy-linear-p
+  constant-t-function-arity-0).  To restore the default behavior,
+  evaluate (defattach-system heavy-linear-p
+  constant-nil-function-arity-0).  Thanks to Eric Smith for
+  suggesting the development of such a feature, which can be useful
+  in rewriting-based tools.
 
 
 Heuristic and Efficiency Improvements
