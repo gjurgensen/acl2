@@ -93645,7 +93645,23 @@ it."
  since Version 7.0 (January, 2015) and in all builds since Version
  7.2 (January, 2016).</p>
 
+ <p>The @(see proof-builder) now takes into account various aspects of
+ rewriting specified by the logical @(see world) that it formerly
+ ignored (pertaining to @(see match-free), @(see case-split-limitations), @(see
+ untouchable) functions, non-linear arithmetic (see @(see set-non-linearp)),
+ the @(see backchain-limit) for rewriting, and the @(see rw-cache-state)).</p>
+
  <h3>New Features</h3>
+
+ <p>The new zero-ary attachable system function, @('heavy-linear-p'), allows
+ for enhanced use of @(see linear-arithmetic) during rewriting, specifically
+ with the test (first) argument of a call of @('IF').  To get this additional
+ power, possibly at considerable loss of efficiency, evaluate
+ @('(defattach-system heavy-linear-p constant-t-function-arity-0)').  To
+ restore the default behavior, evaluate @('(defattach-system heavy-linear-p
+ constant-nil-function-arity-0)').  Thanks to Eric Smith for suggesting the
+ development of such a feature, which can be useful in rewriting-based
+ tools.</p>
 
  <h3>Heuristic and Efficiency Improvements</h3>
 
