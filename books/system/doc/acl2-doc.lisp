@@ -12480,7 +12480,10 @@ with any questions about building the community books.</p>")
  in....\".  These may be safely ignored.</p>
 
  <p>Note that you will want to certify @(see books) in order to take full
- advantage of ACL2.  See @(see books-certification).</p>")
+ advantage of ACL2.  See @(see books-certification).</p>
+
+ <p>See @(see save-exec) for how to build an ACL2 executable from a state
+ resulting from the running of specified @(see command)s.</p>")
 
 (defxdoc built-in-clause
   :parents (rule-classes)
@@ -93663,6 +93666,10 @@ it."
  development of such a feature, which can be useful in rewriting-based
  tools.</p>
 
+ <p>There is a new `@('make')' target to build an ACL2 executable using
+ @('save-exec').  See @(see save-exec), in particular the new discussion at the
+ end of that topic.  Thanks to Eric Smith for requesting such a utility.</p>
+
  <h3>Heuristic and Efficiency Improvements</h3>
 
  <h3>Bug Fixes</h3>
@@ -108889,6 +108896,9 @@ arithmetic) for libraries of @(see books) for arithmetic reasoning.</p>")
  to the host Lisp executable.  All arguments of a call of @('save-exec') are
  evaluated.</p>
 
+ <p>At the end of this topic we discuss how to use the `@('make')' utility to
+ invoke @('save-exec').</p>
+
  @({
   Examples:
 
@@ -109203,7 +109213,37 @@ arithmetic) for libraries of @(see books) for arithmetic reasoning.</p>")
  at the shell), additional command-line arguments provided at that time are
  passed to Lisp if and only if @('inert-args') is @('nil').  For SBCL, when
  they are passed to Lisp they are passed as toplevel options, not as runtime
- options.</p>")
+ options.</p>
+
+
+ <p>Finally, note that @('save-exec') can be invoked using the `@('make')'
+ utility in the main ACL2 directory by using the @('save-exec') target.  That
+ target will first build an ACL2 executable in the normal way if it is out of
+ date.  Then it will start that executable, using the value of
+ @('ACL2_CUSTOMIZATION') (as a `@('make')' or environment variable) &mdash;
+ which must be specified &mdash; as the @(see acl2-customization) file, before
+ making a @('save-exec') call.  By default, that call is @('(save-exec
+ \"custom-saved_acl2\" \"Saved with additions from <file>\")'), where
+ @('<file>') is the value of @('ACL2_CUSTOMIZATION').
+ (Except, in ACL2(p) and ACL2(r), @('\"custom-saved_acl2\"') is replaced by
+ @('\"custom-saved_acl2p\"') and @('\"custom-saved_acl2r\"'), respectively.)
+ However, you can specify the first argument as the value of @('ACL2_SAVED')
+ (as a `@('make')' or environment variable), and you can specify the remaining
+ arguments as the value of @('ACL2_SAVED_ARGS') (also as a `@('make')' or
+ environment variable).  Here is an example one could run at the shell prompt;
+ notice the careful quoting.</p>
+
+ @({
+ make save-exec \\
+   ACL2_CUSTOMIZATION=~/temp/foo.lsp \\
+   ACL2_SAVED=my-acl2 \\
+   ACL2_SAVED_ARGS='\"My custom image\" \\
+                    :init-forms (quote ((defun foo (x) (reverse x))))'
+ })
+
+ <p>WARNING: It is a good idea to look at the log file noted in the `@('make')'
+ output, to check that your customization file loaded as intended (presumably,
+ without errors).</p>")
 
 (defxdoc scion
   :parents (apply$)
