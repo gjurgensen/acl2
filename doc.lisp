@@ -15439,6 +15439,9 @@ Subtopics
   Note that you will want to certify [books] in order to take full
   advantage of ACL2.  See [books-certification].
 
+  See [save-exec] for how to build an ACL2 executable from a state
+  resulting from the running of specified [command]s.
+
 
 Subtopics
 
@@ -38307,27 +38310,20 @@ General Form
 
   The most elaborate loop$ expression is of the form
 
-  .   .   .   .  (LOOP$ FOR v1 OF-TYPE spec1 target1
-  .   .   .   .   .   .   .   .   .   .   .   .  AS   .  v2 OF-TYPE
-  spec2 target2
-  .   .   .   .   .   .   .   .   .   .   .   .  ...
-  .   .   .   .   .   .   .   .   .   .   .   .  AS   .  vn OF-TYPE
-  specn targetn
-  .   .   .   .   .   .   .   .   .   .   .   .  UNTIL :GUARD guard1
-  until-expr
-  .   .   .   .   .   .   .   .   .   .   .   .  WHEN   .  :GUARD
-  guard2 when-expr
-  .   .   .   .   .   .   .   .   .   .   .   .  ; Note the
-  ALWAYS/THEREIS Exceptions below!
-  .   .   .   .   .   .   .   .   .   .   .   .  op :GUARD guard3
-  body-expr)
+  (LOOP$ FOR v1 OF-TYPE spec1 target1
+  AS    v2 OF-TYPE spec2 target2
+  ...
+  AS    vn OF-TYPE specn targetn
+  UNTIL :GUARD guard1 until-expr
+  WHEN    :GUARD guard2 when-expr
+  ; Note the ALWAYS/THEREIS Exceptions below!
+  op :GUARD guard3 body-expr)
 
-  where each vi  .  is a legal variable symbol and they are all
-  distinct, each type-speci  .  is a [type-spec], each targeti  .  is
-  a target clause, each guardi, until-expr, and when-expr  .  is a
-  term, op  .  is an operator, and body-expr  .  is a term.
-  Furthermore, until-expr, when-expr, and body-expr  .  must be
-  [tame]!
+  where each vi   is a legal variable symbol and they are all distinct,
+  each type-speci   is a [type-spec], each targeti   is a target
+  clause, each guardi, until-expr, and when-expr   is a term, op   is
+  an operator, and body-expr   is a term.  Furthermore, until-expr,
+  when-expr, and body-expr   must be [tame]!
 
   The ALWAYS/THEREIS Exception: Common Lisp prohibits loops with both a
   WHEN clause and either an ALWAYS or a THEREIS operator.  For
@@ -91639,6 +91635,11 @@ New Features
   suggesting the development of such a feature, which can be useful
   in rewriting-based tools.
 
+  There is a new `make' target to build an ACL2 executable using
+  save-exec.  See [save-exec], in particular the new discussion at
+  the end of that topic.  Thanks to Eric Smith for requesting such a
+  utility.
+
 
 Heuristic and Efficiency Improvements
 
@@ -109839,6 +109840,9 @@ Subtopics
   the host Lisp executable.  All arguments of a call of save-exec are
   evaluated.
 
+  At the end of this topic we discuss how to use the `make' utility to
+  invoke save-exec.
+
     Examples:
 
     ; Save an executable script named my-saved_acl2, with the indicated message
@@ -110131,7 +110135,34 @@ Subtopics
   example, at the shell), additional command-line arguments provided
   at that time are passed to Lisp if and only if inert-args is nil.
   For SBCL, when they are passed to Lisp they are passed as toplevel
-  options, not as runtime options.")
+  options, not as runtime options.
+
+  Finally, note that save-exec can be invoked using the `make' utility
+  in the main ACL2 directory by using the save-exec target.  That
+  target will first build an ACL2 executable in the normal way if it
+  is out of date.  Then it will start that executable, using the
+  value of ACL2_CUSTOMIZATION (as a `make' or environment variable)
+  --- which must be specified --- as the [ACL2-customization] file,
+  before making a save-exec call.  By default, that call is
+  (save-exec \"custom-saved_acl2\" \"Saved with additions from <file>\"),
+  where <file> is the value of ACL2_CUSTOMIZATION.  (Except, in
+  ACL2(p) and ACL2(r), \"custom-saved_acl2\" is replaced by
+  \"custom-saved_acl2p\" and \"custom-saved_acl2r\", respectively.)
+  However, you can specify the first argument as the value of
+  ACL2_SAVED (as a `make' or environment variable), and you can
+  specify the remaining arguments as the value of ACL2_SAVED_ARGS
+  (also as a `make' or environment variable).  Here is an example one
+  could run at the shell prompt; notice the careful quoting.
+
+    make save-exec \\
+      ACL2_CUSTOMIZATION=~/temp/foo.lsp \\
+      ACL2_SAVED=my-acl2 \\
+      ACL2_SAVED_ARGS='\"My custom image\" \\
+                       :init-forms (quote ((defun foo (x) (reverse x))))'
+
+  WARNING: It is a good idea to look at the log file noted in the
+  `make' output, to check that your customization file loaded as
+  intended (presumably, without errors).")
  (SAVING-AND-RESTORING (POINTERS)
                        "See [save-exec].")
  (SCION
