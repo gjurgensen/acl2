@@ -2,7 +2,7 @@
 ;
 ; acl2-doc.lisp - Documentation for the ACL2 Theorem Prover
 ;
-; ACL2 Version 8.4 -- A Computational Logic for Applicative Common Lisp
+; ACL2 Version 8.5 -- A Computational Logic for Applicative Common Lisp
 ; Copyright (C) 2022, Regents of the University of Texas
 ;
 ; This documentation was derived from the ACL2 system in October 2013, which
@@ -75,7 +75,7 @@
     (BUILD::CERT.PL "[books]/build/doc.lisp")
     (BUILD::CERT_PARAM "[books]/build/doc.lisp")
     (CGEN "[books]/acl2s/cgen/top.lisp")
-    (CHECKPOINT-LIST "[books]/kestrel/utilities/checkpoints.lisp")
+    (CHECKPOINT-LIST "[books]/kestrel/utilities/checkpoints-doc.lisp")
     (CONSIDERATION "[books]/hints/consider-hint.lisp")
     (BUILD::CUSTOM-CERTIFY-BOOK-COMMANDS "[books]/build/doc.lisp")
     (STD::DEFAGGREGATE "[books]/std/util/defaggregate.lisp")
@@ -125,6 +125,8 @@
     (NOTE-8-2-BOOKS "[books]/doc/relnotes.lisp")
     (NOTE-8-3-BOOKS "[books]/doc/relnotes.lisp")
     (NOTE-8-4-BOOKS "[books]/doc/relnotes.lisp")
+    (NOTE-8-5-BOOKS "[books]/doc/relnotes.lisp")
+    (NOTE-8-6-BOOKS "[books]/doc/relnotes.lisp")
     (STR::NUMBERS "[books]/std/strings/top.lisp")
     (OPEN-TRACE-FILE! "[books]/tools/open-trace-file-bang.lisp")
     (ORACLE-TIMELIMIT "[books]/tools/oracle-timelimit.lisp")
@@ -180,7 +182,7 @@
 ; who are looking at an older version of ACL2 will see the corresponding
 ; ACL2+Books Manual at this link.
 
-  "http://www.cs.utexas.edu/users/moore/acl2/v8-4/")
+  "http://www.cs.utexas.edu/users/moore/acl2/v8-5/")
 
 (defconst *installation-url*
 
@@ -1435,6 +1437,8 @@
 
  <li>Centaur Technology</li>
 
+ <li>Collins Aerospace</li>
+
  <li>DARPA</li>
 
  <li>Digital Equipment Corporation</li>
@@ -1445,22 +1449,38 @@
 
  <li>IBM</li>
 
+ <li>Intel</li>
+
  <li>Kestrel Institute</li>
 
  <li>Kestrel Technology</li>
 
- <li>NSF</li>
+ <li>NSF (see below)</li>
 
  <li>ONR</li>
-
- <li>Rockwell Collins</li>
 
  <li>SRC</li>
 
  <li>Sun Microsystems</li>
 
+ <li>U.S. Army, in particular ARL</li>
+
  <li>University of Texas at Austin (in particular support to J Moore through the
  Admiral B. R.  Inman Chair of Computing Theory)</li>
+
+ </ul>
+
+ <p>Regarding NSF:</p>
+
+ <ul>
+
+  <li>This material is based upon work supported by the National Science
+      Foundation under Grant Nos. CCF-1526760, CNS-1525472, CCF-1153558,
+      EIA-0303609, CNS-0429591, ISS-0417413, CCF-0945316, and CNS-0910913.</li>
+
+  <li>Any opinions, findings and conclusions or recomendations expressed in
+      this material are those of the authors and do not necessarily reflect the
+      views of the National Science Foundation.</li>
 
  </ul>
 
@@ -2785,10 +2805,10 @@
      With numeric prefix argument, find the next matching definition;
      otherwise, the user is prompted, where the default is the name at
      the cursor, obtained after stripping off any enclosing square
-     brackets (@('[..]')), angle brackets (@('<..>')) as from srclink tags, and
-     package prefixes.  With @('control-u') prefix argument, search only
+     brackets ([..]), angle brackets (<..>) as from srclink tags, and
+     package prefixes.  With control-u prefix argument, search only
      ACL2 source definitions; otherwise, books are searched as well.
-     As with built-in Emacs command @('meta-.') , exact matches are given
+     As with built-in Emacs command meta-. , exact matches are given
      priority.  For more information, see the Section on \"Selecting a
      Manual\" in the acl2-doc online XDOC-based documentation.
 
@@ -7592,7 +7612,7 @@ and @(tsee include-book)"
  <p>The <a href='http://www.cs.utexas.edu/users/moore/acl2/'>ACL2 Home Page</a>
  on the web contains links to demos, publications, mailing lists,, installation
  instructions, and more &mdash; and, especially, to the extensive <a
- href=\"https://www.cs.utexas.edu/users/moore/acl2/v8-4/acl2-doc.html#User's-Manual\">online
+ href=\"https://www.cs.utexas.edu/users/moore/acl2/v8-5/acl2-doc.html#User's-Manual\">online
  documentation</a> for ACL2 and its libraries, known as ``books''.</p>
 
  <p>For example, to use the online documentation to find out about @(see
@@ -11880,9 +11900,15 @@ with any questions about building the community books.</p>")
   3 ACL2 !>:pe lemma12
  })
 
- <p>More likely than typing a history or @(tsee disabledp) command, upon
- entering break-rewrite you will determine the context of the attempted
- application.  Here are some useful commands:</p>
+ <p>Exceptions are that @(':')@(tsee ubt) and related commands such as
+ @(':')@(tsee ubu), as well as @(tsee puff) and @(tsee puff*), are only allowed
+ to touch @(see command)s issued after entering the interactive break.
+ (Technical detail: that is because @(tsee disable-ubt) is invoked when
+ entering the break.)</p>
+
+ <p>More likely than typing a history command, upon entering break-rewrite you
+ will determine the context of the attempted application.  Here are some useful
+ commands:</p>
 
  @({
   3 ACL2 >:target           ; the term being rewritten
@@ -12058,9 +12084,8 @@ with any questions about building the community books.</p>")
  calling @(tsee trace$) and @(tsee untrace$) are erased when you proceed from a
  break in the break-rewrite loop.</p>
 
- <p>There is a lot more to know about break-rewrite, most of which is fairly
- easy to learn from looking at the code, since it is all expressed in ACL2.
- Feel free to ask questions of J Moore.</p>")
+ <p>See the subtopics listed below to learn more about
+ @('break-rewrite').</p>")
 
 (defxdoc breaks
   :parents (errors)
@@ -26351,6 +26376,55 @@ ld) and @(tsee include-book)"
   :in-theory (disable (immediate-force-modep))
  })")
 
+(defxdoc disable-ubt
+  :parents (history)
+  :short "Make it illegal to undo back through the current @(see command)"
+  :long "<p>The utility @('disable-ubt') is probably only relevant to those who
+ write ACL2-based tools, in particular using @(see wormhole)s.  Its initial
+ application (and perhaps still its only application) is to arrange that
+ insider the @(see break-rewrite) interactive loop, it is impossible to undo
+ the @(see ld-keyword-aliases) supporting the @(see brr-commands).</p>
+
+ @({
+ General Forms:
+
+ :disable-ubt
+ (disable-ubt)     ; same as above
+ (disable-ubt arg) ; same as above if arg is not nil or :disable-ubt
+ })
+
+ <p>where @('arg') is evaluated, and if it is supplied and its value is neither
+ @('nil') nor @(':disable-ubt'), then its value satisfies @(tsee msgp).  In
+ that case, the message is printed after the usual message (except, before
+ ``See :DOC disable-ubt'').  The following example illustrates the use of that
+ optional message but, what is more important, it illustrates the effect of
+ @('disable-ubt'): a @(see command) that executes it cannot be undone.</p>
+
+
+ @({
+ ACL2 !>(disable-ubt (list \"Just a demo: ~x0.\" (cons #\0 17)))
+
+ Summary
+ Form:  ( DISABLE-UBT ...)
+ Rules: NIL
+ Time:  0.00 seconds (prove: 0.00, print: 0.00, other: 0.00)
+  :DISABLE-UBT
+ ACL2 !>:ubt :x
+
+
+ ACL2 Error in :UBT:  Can't undo a :disable-ubt event (at command 1).
+ Just a demo: 17.  See :DOC disable-ubt.
+
+ ACL2 !>
+ })
+
+ <p>@('Disable-ubt') is similar to @('(reset-prehistory t)'), as both establish
+ a barrier to undoing.  However, for history commands such as @(':')@(tsee
+ pcb), command numbers are not changed by @('disable-ubt').  Like @(tsee
+ reset-prehistory), @('disable-ubt') is never @(see redundant).</p>
+
+")
+
 (defxdoc disabledp
   :parents (theories)
   :short "Determine whether a given name or rune is disabled"
@@ -27451,6 +27525,7 @@ ld) and @(tsee include-book)"
                               (cadr arglist) ; the alist
                         )))
  (f)
+ })
 
  <p>Here is the trace output from the final call of @('f') above; analysis
  follows.</p>
@@ -39900,7 +39975,7 @@ current fast alists."
   @({
 
   ; Here we show the error that occurs if you use an ill-formed
-  ; @('LAMBDA') object in a @(':FN') slot.
+  ; LAMBDA object in a :FN slot.
 
   ACL2 !>(apply$ '(lambda (t) (cons t t)) '(a))
 
@@ -40411,7 +40486,7 @@ current fast alists."
   <ul>
 
   <li><p>Instead of treating stobj names as variables, the evaluation theory
-p  treats them as abbreviations for the ``current value'' of the stobj,
+  treats them as abbreviations for the ``current value'' of the stobj,
   specifically, the constant obtained by composing the sequence of all updates
   to the stobj's fields carried out so far in the top-level loop.  Thus, for
   example, in the evaluation theories created by this sequence of top-level
@@ -57843,10 +57918,10 @@ forms allowed for a @('let') form are  @('ignore'), @('ignorable'), and
  symbol @('fn').  Then the loop-stopper for this rewrite rule is a list of all
  lists @('(u v . fns)').</p>
 
- <p><i>Remark.</i>The paragraph above mentions ``the conclusion of the rule''
+ <p><i>Remark.</i> The paragraph above mentions ``the conclusion of the rule''
  as @('(equiv lhs rhs)').  The rule's conclusion is actually produced from a
  naive version @('(equiv lhs0 rhs)') of the conclusion by expanding away all
- @(see lambda) applications in @('lhs0').  If @('lhs0) and @('lhs') are
+ @(see lambda) applications in @('lhs0').  If @('lhs0') and @('lhs') are
  distinct (i.e., if there is any such lambda expansion) and also the
  loop-stopper field is calculated as @('nil') as described above, then a second
  attempt to calculate the loop-stopper is made using @('lhs0') in place of
@@ -76808,7 +76883,7 @@ it."
  <p>Bob Boyer and others have contributed numerous changes for the experimental
  ``@('hons')'' version of ACL2 (see @(see hons-and-memoization)).</p>
 
- <p>The ACL2 @(tsee state) can now be queried with @('(@ hons-enabledp)') so
+ <p>The ACL2 @(tsee state) can now be queried with @('hons-enabledp') so
  that a result of @('t') says that one is in the experimental @('hons')
  version, while @('nil') says the opposite.</p>")
 
@@ -92752,6 +92827,15 @@ it."
 
 (defxdoc note-8-5
 
+; Total number of release note items: 131, as follows.
+;   20 ; Changes to Existing Features
+;   17 ; New Features
+;    6 ; Heuristic and Efficiency Improvements
+;   18 ; Bug Fixes
+;    9 ; Changes at the System Level
+;    6 ; EMACS Support
+;    2 ; Experimental Versions
+
 ; The new state global pc-info has as its value a pc-info record, whose
 ; components replace the four state globals pc-print-macroexpansion-flg,
 ; pc-print-prompt-and-instr-flg, pc-prompt, and pc-prompt-depth-prefix.
@@ -92900,8 +92984,14 @@ it."
 ;   (must-fail (defun abc (x) y))
 ;   (defun bar (lst) lst)
 
+; The ACL2 constant *initial-event-defmacros* no longer has an entry for
+; reset-prehistory, because there seemed to be no reason to include it and its
+; inclusion raised the question of whether disable-ubt should be added as well.
+
+; Ev-for-trans-eval is now untouchable.
+
   :parents (release-notes)
-  :short "ACL2 Version  8.5 (xx, 20xx) Notes"
+  :short "ACL2 Version  8.5 (July, 2022) Notes"
   :long "<p>NOTE!  New users can ignore these release notes, because the @(see
  documentation) has been updated to reflect all changes that are recorded
  here.</p>
@@ -93216,6 +93306,15 @@ it."
  @(see meta-extract), in particular the discussion of @(':linear-lemma').
  Thanks to Sol Swords for providing this enhancement.</p>
 
+ <p>A new utility, @(tsee disable-ubt), is similar to @('(reset-prehistory t)')
+ except that it does not change command numbering.</p>
+
+ <p>Added a built-in @(':')@(tsee forward-chaining) rule,
+ @('symbol-listp-forward-to-eqlable-listp'), which replaces the rule
+ @('symbol-listp-forward-to-true-listp').  Note that the old rule is
+ subsumed,together with other rules, by the new one.  Thanks to Warren Hunt for
+ observing that not built into ACL2 as a @(':forward-chaining') rule.</p>
+
  <h3>Heuristic and Efficiency Improvements</h3>
 
  <p>Improved the efficiency of some computations involving calls of @(tsee
@@ -93398,6 +93497,14 @@ it."
  slow-alist-warning) when certifying a book that uses @(tsee must-fail).  This
  has been fixed.</p>
 
+ <p>It had been possible to undo commands (for example, using @(':')@(tsee ubt)
+ when inside the @(see break-rewrite) interactive loop.  This destroyed the
+ utility of that loop by erasing keyword aliases (see @(see
+ ld-keyword-aliases)).  Thanks to Warren Hunt for reporting this problem.  The
+ solution uses the new utility mentioned above, @(tsee disable-ubt), which may
+ be useful for other @(tsee wormhole) invocations that take advantage of the
+ @(tsee ld-keyword-aliases) @(see table).</p>
+
  <h3>Changes at the System Level</h3>
 
  <p>The @(see hons-enabled) features of ACL2 (@(tsee hons), @(see memoization),
@@ -93448,6 +93555,11 @@ it."
  the case, giving the example, @('(LET ((. 3)) (+ . 4))'), as one that was
  giving many errors.</p>
 
+ <p>(CCL only) Disabled raw lisp compiler macro for @('memq').  For example,
+ the following definition no longer causes a raw Lisp error when submitted to
+ ACL2: @('(defun foo (x) (member-eq x 'a))').  Thanks to Shannon Spires for the
+ suggestion.</p>
+
  <h3>EMACS Support</h3>
 
  <p>It is now possible to have more than one @(see acl2-doc) buffer.  A new
@@ -93497,6 +93609,69 @@ it."
  These have been eliminated.  Note that they didn't show up during regressions
  in Version 8.4 because the use of ``@('make')'' was set up to avoid using
  useless-runes with ACL2(p).</p>
+
+ ")
+
+(defxdoc note-8-6
+  :parents (release-notes)
+  :short "ACL2 Version  8.6 (xxx, 20xx) Notes"
+  :long "<p>NOTE!  New users can ignore these release notes, because the @(see
+ documentation) has been updated to reflect all changes that are recorded
+ here.</p>
+
+ <p>Below we roughly organize the changes to ACL2 since Version 8.5 into the
+ following categories of changes: existing features, new features, heuristic
+ and efficiency improvements, bug fixes, changes at the system level, Emacs
+ support, and experimental versions.  Each change is described in just one
+ category, though of course many changes could be placed in more than one
+ category.</p>
+
+ <p>Note that only ACL2 system changes are listed below.  See also @(see
+ note-8-5-books) for a summary of changes made to the ACL2 Community Books
+ since ACL2 8.5, including the build system.  Also note that with each release,
+ it is typical that the value of constant @(tsee *acl2-exports*) has been
+ extended, and that some built-in functions that were formerly in @(':')@(tsee
+ program) mode are now @(see guard)-verified @(':')@(tsee logic) mode
+ functions.</p>
+
+ <h3>Changes to Existing Features</h3>
+
+ <p>The function @('hons-enabledp') is no longer defined, and @(':hons') has
+ been removed from the Lisp global, @('*features*') (so, readtime conditionals
+ @('#+hons') and @('#-hons') should be avoided, especially since @('#+hons') is
+ always false even though the system is @(see hons-enabled)).  These were both
+ deprecated in the preceding release (ACL2 Version 8.5).  Note that the @(see
+ hons-enabled) features of ACL2 have been included in all builds by default
+ since Version 7.0 (January, 2015) and in all builds since Version
+ 7.2 (January, 2016).</p>
+
+ <p>The @(see proof-builder) now takes into account various aspects of
+ rewriting specified by the logical @(see world) that it formerly
+ ignored (pertaining to @(see match-free), @(see case-split-limitations), @(see
+ untouchable) functions, non-linear arithmetic (see @(see set-non-linearp)),
+ the @(see backchain-limit) for rewriting, and the @(see rw-cache-state)).</p>
+
+ <h3>New Features</h3>
+
+ <p>The new zero-ary attachable system function, @('heavy-linear-p'), allows
+ for enhanced use of @(see linear-arithmetic) during rewriting, specifically
+ with the test (first) argument of a call of @('IF').  To get this additional
+ power, possibly at considerable loss of efficiency, evaluate
+ @('(defattach-system heavy-linear-p constant-t-function-arity-0)').  To
+ restore the default behavior, evaluate @('(defattach-system heavy-linear-p
+ constant-nil-function-arity-0)').  Thanks to Eric Smith for suggesting the
+ development of such a feature, which can be useful in rewriting-based
+ tools.</p>
+
+ <h3>Heuristic and Efficiency Improvements</h3>
+
+ <h3>Bug Fixes</h3>
+
+ <h3>Changes at the System Level</h3>
+
+ <h3>EMACS Support</h3>
+
+ <h3>Experimental Versions</h3>
 
  ")
 
@@ -103749,6 +103924,10 @@ arithmetic) for libraries of @(see books) for arithmetic reasoning.</p>")
  <li>Calls of @(':logic') mode functions whose @(see guard)s were verified
  using @(tsee skip-proofs)</li>
 
+ <li>Resource errors, e.g., when attempting to evaluate @('(expt 2 (expt 2
+ 1000000))').  (We have seen raw Lisp errors when evaluating that expression in
+ ACL2 built on host Lisps CCL, SBCL, and Allegro CL.)</li>
+
  <li>Illegal calls of certain functions and macros with special ``under the
  hood'' raw Lisp code, such as @(tsee read-file-into-string) and @(tsee
  return-last)</li>
@@ -105848,7 +106027,10 @@ arithmetic) for libraries of @(see books) for arithmetic reasoning.</p>")
  book, since that would probably not be what was intended.</p>
 
  <p>See @(see ubt-prehistory) for how to undo a @('reset-prehistory') command
- that does not have a @('permanent-p') of @('t').</p>")
+ that does not have a @('permanent-p') of @('t').  See @(see disable-ubt) for a
+ variant of @('(reset-prehistory t)') that does not change command numbering
+ and is used by the @(see break-rewrite) utility.  Like @('disable-ubt'),
+ @('reset-prehistory') is never @(see redundant).</p>")
 
 (defxdoc resize-list
   :parents (stobj acl2-built-ins)
@@ -128554,7 +128736,9 @@ introduction-to-the-tau-system) for more information about Tau.</dd>
  <p>The keyword @(see command) @(':ubt!') is the same as @(':')@(tsee ubt), but
  with a guarantee that it is ``error-free.''  More precisely, the value
  returned by @(':ubt!')  will always be of the form @('(mv nil val state)').
- @(':')@(tsee Oops) will undo the last @(':ubt!').  See @(see ubt), @(see
+ Note that @(':ubt!') will not print error messages.</p>
+
+ <p>@(':')@(tsee Oops) will undo the last @(':ubt!').  See @(see ubt), @(see
  ubt?), @(see ubu!), @(see ubu), @(see ubu?), and @(see u).</p>")
 
 (defxdoc ubt?
@@ -128628,9 +128812,10 @@ introduction-to-the-tau-system) for more information about Tau.</dd>
  <p>The keyword @(see command) @(':ubu!') is the same as @(':')@(tsee ubu), but
  with a guarantee that it is ``error-free.''  More precisely, the @(see
  error-triple) returned by @(':ubu!')  will always be of the form @('(mv nil
- val state)').  @(':')@(tsee Oops) will undo the last @(':ubu!').  Also see
- @(see ubu), @(see ubu?), @(see ubt), @(see ubt!), @(see ubt?), and @(see
- u).</p>")
+ val state)'). Note that @(':ubu!') will not print error messages.</p>
+
+ <p>@(':')@(tsee Oops) will undo the last @(':ubu!').  Also see @(see ubu),
+ @(see ubu?), @(see ubt), @(see ubt!), @(see ubt?), and @(see u).</p>")
 
 (defxdoc ubu?
   :parents (history undo)
