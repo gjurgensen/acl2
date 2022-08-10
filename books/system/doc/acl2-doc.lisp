@@ -132567,15 +132567,23 @@ introduction-to-the-tau-system) for more information about Tau.</dd>
  undo your changes; this will be explained further below.</p>
 
  <p>After making such changes, build an ACL2 executable image containing your
- modified code.  The next step is typically to create a new file, perhaps named
- after the main function(s) whose guards you want to verify, in directory
- @('books/system').  Community book @('books/system/too-many-ifs.lisp') is a
- good example.  Ultimately, this file should be a certifiable book that
- verifies the desired termination and guards.  Include this book in
- @('books/system/top.lisp').  Of course, you can instead add to some existing
- file in the same directory that is already included in
+ modified code, to test that the modified code builds.  The next step is
+ typically to create a new file, perhaps named after the main function(s) whose
+ guards you want to verify, in directory @('books/system').  Community book
+ @('books/system/too-many-ifs.lisp') is a good example.  Ultimately, this file
+ should be a certifiable book that verifies the desired termination and guards.
+ Include this book in @('books/system/top.lisp').  Of course, you can instead
+ add to some existing file in the same directory that is already included in
  @('books/system/top.lisp'), rather than creating a new book and including it
  there.</p>
+
+ <p>When verifying termination and guards of system functions in interactive
+ sessions, it is necessary to use both @(tsee verify-termination) and @(tsee
+ verify-guards), as with any non-built-in function.  However, the aforementioned
+ files under @('[books]/system/') only need @(tsee verify-termination), because
+ these are treated in a special way; it is good practice to add a comment @(';
+ and guards') just after the @(tsee verify-termination) form, on the same
+ line.</p>
 
  <p>Now it is time to add entries to the value of constant
  @('*system-verify-guards-alist*') in your local copy of the ACL2 sources,
