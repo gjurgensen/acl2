@@ -133275,16 +133275,26 @@ Subtopics
   this will be explained further below.
 
   After making such changes, build an ACL2 executable image containing
-  your modified code.  The next step is typically to create a new
-  file, perhaps named after the main function(s) whose guards you
-  want to verify, in directory books/system.  Community book
-  books/system/too-many-ifs.lisp is a good example.  Ultimately, this
-  file should be a certifiable book that verifies the desired
-  termination and guards.  Include this book in
-  books/system/top.lisp.  Of course, you can instead add to some
-  existing file in the same directory that is already included in
-  books/system/top.lisp, rather than creating a new book and
+  your modified code, to test that the modified code builds.  The
+  next step is typically to create a new file, perhaps named after
+  the main function(s) whose guards you want to verify, in directory
+  books/system.  Community book books/system/too-many-ifs.lisp is a
+  good example.  Ultimately, this file should be a certifiable book
+  that verifies the desired termination and guards.  Include this
+  book in books/system/top.lisp.  Of course, you can instead add to
+  some existing file in the same directory that is already included
+  in books/system/top.lisp, rather than creating a new book and
   including it there.
+
+  In general, in this new file or new file addition, it is necessary to
+  use both [verify-termination] and [verify-guards] on the system
+  functions in question, in order to both put them in logic mode and
+  verify their guards. However, as explained in the documentation of
+  [verify-termination], sometimes [verify-termination] also verifies
+  the guards (see also [set-verify-guards-eagerness]).  In this case,
+  it is good practice to add a comment `; and guards' just after the
+  [verify-termination] form, on the same line, as can be seen in some
+  of the files under [books]/system/.
 
   Now it is time to add entries to the value of constant
   *system-verify-guards-alist* in your local copy of the ACL2
