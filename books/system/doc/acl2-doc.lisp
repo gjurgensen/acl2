@@ -132577,13 +132577,15 @@ introduction-to-the-tau-system) for more information about Tau.</dd>
  @('books/system/top.lisp'), rather than creating a new book and including it
  there.</p>
 
- <p>When verifying termination and guards of system functions in interactive
- sessions, it is necessary to use both @(tsee verify-termination) and @(tsee
- verify-guards), as with any non-built-in function.  However, the aforementioned
- files under @('[books]/system/') only need @(tsee verify-termination), because
- these are treated in a special way; it is good practice to add a comment @(';
- and guards') just after the @(tsee verify-termination) form, on the same
- line.</p>
+ <p>In general, in this new file or new file addition, it is necessary to use
+ both @(tsee verify-termination) and @(tsee verify-guards) on the system
+ functions in question, in order to both put them in logic mode and verify their
+ guards. However, as explained in the documentation of @(tsee
+ verify-termination), sometimes @(tsee verify-termination) also verifies the
+ guards (see also @(tsee set-verify-guards-eagerness)).  In this case, it is
+ good practice to add a comment `@('; and guards')' just after the @(tsee
+ verify-termination) form, on the same line, as can be seen in some of the files
+ under @('[books]/system/').</p>
 
  <p>Now it is time to add entries to the value of constant
  @('*system-verify-guards-alist*') in your local copy of the ACL2 sources,
