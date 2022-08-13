@@ -93674,6 +93674,10 @@ it."
 
  <h3>Bug Fixes</h3>
 
+ <p>Fixed a bug in system function @('bounded-integer-listp'), which may have
+ allowed illegal @(see proof-builder) commands to be attempted.  Thanks to
+ Grant Jurgensen for pointing out this bug.</p>
+
  <h3>Changes at the System Level</h3>
 
  <h3>EMACS Support</h3>

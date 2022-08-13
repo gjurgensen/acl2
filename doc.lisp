@@ -91646,6 +91646,10 @@ Heuristic and Efficiency Improvements
 
 Bug Fixes
 
+  Fixed a bug in system function bounded-integer-listp, which may have
+  allowed illegal [proof-builder] commands to be attempted.  Thanks
+  to Grant Jurgensen for pointing out this bug.
+
 
 Changes at the System Level
 
