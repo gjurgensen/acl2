@@ -39057,6 +39057,15 @@ current fast alists."
  if @('erp') is not @('nil'), then @('val') is the desired list of
  commands.</p>")
 
+(defxdoc get-cpu-time
+  :parents (programming-with-state acl2-built-ins read-run-time)
+  :short "Read elapsed cpu time"
+  :long "<p>@('(Get-cpu-time state)') returns the elapsed cpu time in seconds
+ since the start of the current ACL2 session.  See @(see read-run-time) for
+ further documentation.</p>
+
+ @(def get-cpu-time)")
+
 (defxdoc get-enforce-redundancy
   :parents (redundant-events)
   :short "Query the @(see world) on whether redundancy is being enforced"
@@ -39128,19 +39137,20 @@ current fast alists."
   :parents (programming acl2-built-ins)
   :short "Runtime vs. realtime in ACL2 timings"
   :long "<p>The ACL2 system provides utilities that deal with elapsed time.
- The most visible of these is in the time summaries printed when completing
- evaluation of @(see events).  For others, see @(see with-prover-time-limit),
- see @(see read-run-time), see @(see time-tracker), see @(see
- time-tracker-tau), and see @(see pstack).</p>
+ These are most visibly used in reporting the time summaries when completing
+ evaluation of @(see events).  For utilities that return elapsed cpu or run
+ time, see @(see read-run-time), @(see get-cpu-time), and @(see get-real-time).
+ Other time-related utilities include @(see with-prover-time-limit), @(see
+ time-tracker), @(see time-tracker-tau), see @(see pstack).</p>
 
  <p>By default, these utilities all use an underlying notion of run time
  provided by the host Common Lisp implementation: specifically, the Common Lisp
- function @('get-internal-run-time').  However, Common Lisp also provides the
- function @('get-internal-real-time'), which returns the real time (wall clock
- time).  While the latter is specified to measure elapsed time, the former is
- left to the implementation, which might well only measure time spent in the
- Lisp process.  Consider the following example, which is a bit arcane but
- basically sleeps for 2 seconds.</p>
+ functions @('get-internal-run-time') for cpu time and
+ @('get-internal-real-time') for real (wall clock) time.  While the latter is
+ specified to measure elapsed time, the former is left to the implementation,
+ which might well only measure time spent in the Lisp process.  Consider the
+ following example, which is a bit arcane but basically sleeps for 2
+ seconds.</p>
 
  @({
     (defttag t) ; to allow sys-call
@@ -39150,7 +39160,7 @@ current fast alists."
  })
 
  <p>A typical time @(see summary) might be as follows, drastically
- under-reporting the elapsed time.</p>
+ under-reporting the actual elapsed (real, wall clock) time.</p>
 
  @({
     Time:  0.01 seconds (prove: 0.00, print: 0.00, other: 0.01)
@@ -39176,15 +39186,17 @@ current fast alists."
  <p>Note that a function @('get-internal-time') is defined in raw Lisp but is
  not available inside the ACL2 loop.  However, the expression @('(read-run-time
  state)') provides an interface to this function that is available inside the
- ACL2 loop; see @(see read-run-time).</p>
+ ACL2 loop; see @(see read-run-time), and also see @(see get-cpu-time) and
+ @(see get-real-time).</p>")
 
- <p>We are open to changing the default to elapsed wall-clock time (realtime),
- and may do so in future ACL2 releases.</p>
+(defxdoc get-real-time
+  :parents (programming-with-state acl2-built-ins read-run-time)
+  :short "Read elapsed real time"
+  :long "<p>@('(Get-real-time state)') returns the elapsed real (wall clock)
+ time in seconds since the start of the current ACL2 session.  See @(see
+ read-run-time) for further documentation.</p>
 
- <p>Implementation note (GCL only): If the host Lisp is Gnu Common Lisp, then
- @('get-internal-run-time') has a multiple value return, and the first two
- values (runtime and child runtime) are added together to produce a result for
- @('get-internal-time').</p>")
+ @(def get-real-time)")
 
 (defxdoc get-wormhole-status
   :parents (wormhole)
@@ -93670,6 +93682,11 @@ it."
  @('save-exec').  See @(see save-exec), in particular the new discussion at the
  end of that topic.  Thanks to Eric Smith for requesting such a utility.</p>
 
+ <p>New utilities @(tsee get-cpu-time) and @(tsee get-real-time) return the cpu
+ time and real (wall clock) time that has elapsed since the start of the ACL2
+ session.  Thanks to Eric McCarthy for suggesting the addition of such
+ utilities.</p>
+
  <h3>Heuristic and Efficiency Improvements</h3>
 
  <h3>Bug Fixes</h3>
@@ -104107,20 +104124,42 @@ arithmetic) for libraries of @(see books) for arithmetic reasoning.</p>")
 (defxdoc read-run-time
   :parents (programming-with-state acl2-built-ins)
   :short "Read elapsed runtime"
-  :long "<p>By default, @('(read-run-time state)') returns @('(mv runtime
- state)'), where runtime is the elapsed runtime in seconds since the start of
- the current ACL2 session and @('state') is the resulting ACL2 @(see state).
- But @('read-run-time') can be made to return elapsed realtime (wall clock
- time) instead; see @(see get-internal-time).  In both cases, the precision
- depends on the host Common Lisp; for example, in CCL as of this writing, the
- result is accurate to the microsecond.</p>
+  :long "<p>By default, @('(read-run-time state)') returns @('(mv cpu-time
+ state)'), where @('cpu-time') is the elapsed cpu time in seconds since the
+ start of the current ACL2 session and @('state') is the resulting ACL2 @(see
+ state).  Thus, @('(read-run-time state)') is, by default, equivalent to
+ @('(get-cpu-time state)').  But @('read-run-time') can be made to return
+ elapsed real time (wall clock time) instead, thus making it equivalent to
+ @('(get-real-time state)').  Note that time is returned in seconds in all of
+ these cases.</p>
+
+ <p>To specify that @('read-run-time') shall use cpu time or real time:</p>
+
+ @({
+ (assign get-internal-time-as-realtime t)   ; use real time
+ (assign get-internal-time-as-realtime nil) ; use cpu time
+ })
+
+ <p>See @(see get-internal-time) for more discussion of cpu time vs. real time.
+ In both cases, the precision depends on the host Common Lisp; for example, in
+ CCL as of this writing, the result is accurate to the microsecond.</p>
 
  <p>The logical definition probably won't concern many users, but for
  completeness, we say a word about it here.  That definition uses the function
- @(tsee read-acl2-oracle), which modifies state by popping the value to return
- from its acl2-oracle field.</p>
+ @(tsee read-acl2-oracle), which modifies @(see state) by popping the value to
+ return from its acl2-oracle field.</p>
 
- @(def read-run-time)")
+ @(def read-run-time)
+
+ <p>Note that logically @('(read-run-time state)'), @('(get-real-time state)'),
+ and @('(get-cpu-time state)') are all equal (defined using the acl2-oracle),
+ so for example ACL2 succeeds in the proof of @('(thm (equal (get-real-time
+ state) (get-cpu-time state)))'), even though the first returns elapsed real
+ time and the second returns elapsed cpu time.  However, there is no
+ contradiction: either way, we are logically just reading the oracle of
+ @('state').  In the ACL2 loop, successive calls of @('(get-real-time state)')
+ and @('(get-cpu-time state)') would be operating on different values of
+ @('state') (because their oracles differ).</p>")
 
 (defxdoc reader
   :parents (miscellaneous)

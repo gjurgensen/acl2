@@ -77,7 +77,7 @@ Subtopics
   [defthm], [in-theory], [xargs], [state], etc., without an acl2::
   prefix.
 
-  The constant *acl2-exports* lists 1558 symbols, including most
+  The constant *acl2-exports* lists 1560 symbols, including most
   documented ACL2 system constants, functions, and macros.  You will
   typically also want to import many symbols from Common Lisp; see
   [*common-lisp-symbols-from-main-lisp-package*].
@@ -326,11 +326,12 @@ Subtopics
        fourth function-symbolp function-theory
        gag-mode gc$ gc-strategy gc-verbose
        gcs generalize get-check-invariant-risk
-       get-command-sequence get-defun-event
+       get-command-sequence
+       get-cpu-time get-defun-event
        get-enforce-redundancy get-event-data
        get-global get-guard-checking
        get-in-theory-redundant-okp
-       get-output-stream-string$
+       get-output-stream-string$ get-real-time
        get-register-invariant-risk
        get-serialize-character
        get-slow-alist-action get-timer
@@ -3457,8 +3458,14 @@ Subtopics
   [Gc-strategy]
       The garbage collection strategy
 
+  [Get-cpu-time]
+      Read elapsed cpu time
+
   [Get-internal-time]
       Runtime vs. realtime in ACL2 timings
+
+  [Get-real-time]
+      Read elapsed real time
 
   [Getenv$]
       Read an environment variable
@@ -42382,6 +42389,19 @@ Subtopics
   it simply returns the corresponding list of commands.  More
   precisely, it returns an [error-triple] (mv erp val state) such
   that if erp is not nil, then val is the desired list of commands.")
+ (GET-CPU-TIME
+  (PROGRAMMING-WITH-STATE ACL2-BUILT-INS READ-RUN-TIME)
+  "Read elapsed cpu time
+
+  (Get-cpu-time state) returns the elapsed cpu time in seconds since
+  the start of the current ACL2 session.  See [read-run-time] for
+  further documentation.
+
+  Function: <get-cpu-time>
+
+    (defun get-cpu-time (state)
+           (declare (xargs :stobjs state))
+           (read-run-time state))")
  (GET-DEFUN-EVENT (POINTERS)
                   "See [system-utilities].")
  (GET-ENFORCE-REDUNDANCY
@@ -42444,21 +42464,22 @@ Subtopics
   (PROGRAMMING ACL2-BUILT-INS)
   "Runtime vs. realtime in ACL2 timings
 
-  The ACL2 system provides utilities that deal with elapsed time.  The
-  most visible of these is in the time summaries printed when
-  completing evaluation of [events].  For others, see
-  [with-prover-time-limit], see [read-run-time], see [time-tracker],
-  see [time-tracker-tau], and see [pstack].
+  The ACL2 system provides utilities that deal with elapsed time.
+  These are most visibly used in reporting the time summaries when
+  completing evaluation of [events].  For utilities that return
+  elapsed cpu or run time, see [read-run-time], [get-cpu-time], and
+  [get-real-time].  Other time-related utilities include
+  [with-prover-time-limit], [time-tracker], [time-tracker-tau], see
+  [pstack].
 
   By default, these utilities all use an underlying notion of run time
   provided by the host Common Lisp implementation: specifically, the
-  Common Lisp function get-internal-run-time.  However, Common Lisp
-  also provides the function get-internal-real-time, which returns
-  the real time (wall clock time).  While the latter is specified to
-  measure elapsed time, the former is left to the implementation,
-  which might well only measure time spent in the Lisp process.
-  Consider the following example, which is a bit arcane but basically
-  sleeps for 2 seconds.
+  Common Lisp functions get-internal-run-time for cpu time and
+  get-internal-real-time for real (wall clock) time.  While the
+  latter is specified to measure elapsed time, the former is left to
+  the implementation, which might well only measure time spent in the
+  Lisp process.  Consider the following example, which is a bit
+  arcane but basically sleeps for 2 seconds.
 
     (defttag t) ; to allow sys-call
     (make-event
@@ -42466,7 +42487,7 @@ Subtopics
              (value '(value-triple nil))))
 
   A typical time [summary] might be as follows, drastically
-  under-reporting the elapsed time.
+  under-reporting the actual elapsed (real, wall clock) time.
 
     Time:  0.01 seconds (prove: 0.00, print: 0.00, other: 0.01)
 
@@ -42487,17 +42508,23 @@ Subtopics
   Note that a function get-internal-time is defined in raw Lisp but is
   not available inside the ACL2 loop.  However, the expression
   (read-run-time state) provides an interface to this function that
-  is available inside the ACL2 loop; see [read-run-time].
-
-  We are open to changing the default to elapsed wall-clock time
-  (realtime), and may do so in future ACL2 releases.
-
-  Implementation note (GCL only): If the host Lisp is Gnu Common Lisp,
-  then get-internal-run-time has a multiple value return, and the
-  first two values (runtime and child runtime) are added together to
-  produce a result for get-internal-time.")
+  is available inside the ACL2 loop; see [read-run-time], and also
+  see [get-cpu-time] and [get-real-time].")
  (GET-OUTPUT-STREAM-STRING$ (POINTERS)
                             "See [io].")
+ (GET-REAL-TIME
+  (PROGRAMMING-WITH-STATE ACL2-BUILT-INS READ-RUN-TIME)
+  "Read elapsed real time
+
+  (Get-real-time state) returns the elapsed real (wall clock) time in
+  seconds since the start of the current ACL2 session.  See
+  [read-run-time] for further documentation.
+
+  Function: <get-real-time>
+
+    (defun get-real-time (state)
+           (declare (xargs :stobjs state))
+           (read-run-time state))")
  (GET-REGISTER-INVARIANT-RISK (POINTERS)
                               "See [set-register-invariant-risk].")
  (GET-SERIALIZE-CHARACTER (POINTERS)
@@ -91640,6 +91667,11 @@ New Features
   the end of that topic.  Thanks to Eric Smith for requesting such a
   utility.
 
+  New utilities [get-cpu-time] and [get-real-time] return the cpu time
+  and real (wall clock) time that has elapsed since the start of the
+  ACL2 session.  Thanks to Eric McCarthy for suggesting the addition
+  of such utilities.
+
 
 Heuristic and Efficiency Improvements
 
@@ -100573,6 +100605,12 @@ Subtopics
   [F-put-global]
       Assign to a global variable in [state]
 
+  [Get-cpu-time]
+      Read elapsed cpu time
+
+  [Get-real-time]
+      Read elapsed real time
+
   [Getenv$]
       Read an environment variable
 
@@ -104699,17 +104737,28 @@ Subtopics
   (PROGRAMMING-WITH-STATE ACL2-BUILT-INS)
   "Read elapsed runtime
 
-  By default, (read-run-time state) returns (mv runtime state), where
-  runtime is the elapsed runtime in seconds since the start of the
-  current ACL2 session and state is the resulting ACL2 [state].  But
-  read-run-time can be made to return elapsed realtime (wall clock
-  time) instead; see [get-internal-time].  In both cases, the
-  precision depends on the host Common Lisp; for example, in CCL as
-  of this writing, the result is accurate to the microsecond.
+  By default, (read-run-time state) returns (mv cpu-time state), where
+  cpu-time is the elapsed cpu time in seconds since the start of the
+  current ACL2 session and state is the resulting ACL2 [state].
+  Thus, (read-run-time state) is, by default, equivalent to
+  (get-cpu-time state).  But read-run-time can be made to return
+  elapsed real time (wall clock time) instead, thus making it
+  equivalent to (get-real-time state).  Note that time is returned in
+  seconds in all of these cases.
+
+  To specify that read-run-time shall use cpu time or real time:
+
+    (assign get-internal-time-as-realtime t)   ; use real time
+    (assign get-internal-time-as-realtime nil) ; use cpu time
+
+  See [get-internal-time] for more discussion of cpu time vs. real
+  time.  In both cases, the precision depends on the host Common
+  Lisp; for example, in CCL as of this writing, the result is
+  accurate to the microsecond.
 
   The logical definition probably won't concern many users, but for
   completeness, we say a word about it here.  That definition uses
-  the function [read-ACL2-oracle], which modifies state by popping
+  the function [read-ACL2-oracle], which modifies [state] by popping
   the value to return from its acl2-oracle field.
 
   Function: <read-run-time>
@@ -104722,7 +104771,27 @@ Subtopics
                   0)
                  (t (car (acl2-oracle state-state))))
            (update-acl2-oracle (cdr (acl2-oracle state-state))
-                               state-state)))")
+                               state-state)))
+
+  Note that logically (read-run-time state), (get-real-time state), and
+  (get-cpu-time state) are all equal (defined using the acl2-oracle),
+  so for example ACL2 succeeds in the proof of (thm (equal
+  (get-real-time state) (get-cpu-time state))), even though the first
+  returns elapsed real time and the second returns elapsed cpu time.
+  However, there is no contradiction: either way, we are logically
+  just reading the oracle of state.  In the ACL2 loop, successive
+  calls of (get-real-time state) and (get-cpu-time state) would be
+  operating on different values of state (because their oracles
+  differ).
+
+
+Subtopics
+
+  [Get-cpu-time]
+      Read elapsed cpu time
+
+  [Get-real-time]
+      Read elapsed real time")
  (READER
   (MISCELLANEOUS)
   "Reading expressions in the ACL2 read-eval-print loop
