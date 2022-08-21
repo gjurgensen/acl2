@@ -93695,6 +93695,23 @@ it."
  allowed illegal @(see proof-builder) commands to be attempted.  Thanks to
  Grant Jurgensen for pointing out this bug.</p>
 
+ <p>Consider calls of @(tsee defthm) and @(tsee thm) that create subgoals
+ before reverting to prove the original goal by induction.  The Rules summary
+ printed at the end should exclude rules used only before the start of that
+ induction proof.  That was formerly the case for @('defthm') but not @('thm'),
+ but now it is the case for both.  You can see the change for the following
+ call, whose Rules summmary formerly included @('(:ELIM CAR-CDR-ELIM)') but no
+ longer does so.</p>
+
+ @({
+ (thm
+  (equal (append (append x y) z)
+         (append x y z))
+  :hints ((\"Goal\"
+           :expand ((:free (b) (append x b))
+                    (:free (a b) (append (cons (car x) a) b))))))
+ })
+
  <h3>Changes at the System Level</h3>
 
  <h3>EMACS Support</h3>
