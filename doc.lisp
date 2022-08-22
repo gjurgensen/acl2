@@ -91682,6 +91682,21 @@ Bug Fixes
   allowed illegal [proof-builder] commands to be attempted.  Thanks
   to Grant Jurgensen for pointing out this bug.
 
+  Consider calls of [defthm] and [thm] that create subgoals before
+  reverting to prove the original goal by induction.  The Rules
+  summary printed at the end should exclude rules used only before
+  the start of that induction proof.  That was formerly the case for
+  defthm but not thm, but now it is the case for both.  You can see
+  the change for the following call, whose Rules summmary formerly
+  included (:ELIM CAR-CDR-ELIM) but no longer does so.
+
+    (thm
+     (equal (append (append x y) z)
+            (append x y z))
+     :hints ((\"Goal\"
+              :expand ((:free (b) (append x b))
+                       (:free (a b) (append (cons (car x) a) b))))))
+
 
 Changes at the System Level
 
