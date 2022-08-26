@@ -33542,7 +33542,20 @@ Subtopics
   (ERRORS ACL2-BUILT-INS)
   "Print an error message and ``cause a hard error''
 
-  This documentation topic is currently a stub.")
+  See [er] for relevant background, which is assumed below, and related
+  utilities.
+
+    General Form:
+    (er-hard context summary str &rest str-args)
+
+  where context is a legal context (see [ctx]), summary is nil or a
+  string, str is a string, and str-args are tsee fmt arguments for
+  str.  Note that (er-hard context summary str ...) is equivalent to
+  (er hard context (cons summary str) ...).  The use of a non-nil
+  summary allows suppression of this error message without
+  suppressing all error output; see [set-inhibit-er].
+
+  See [er-soft] for a similar utility pertaining to ``soft'' errors.")
  (ER-LET* (POINTERS)
           "See [programming-with-state].")
  (ER-LET*-CMP (POINTERS)
@@ -33593,17 +33606,18 @@ Subtopics
   (ERRORS ACL2-BUILT-INS)
   "Print an error message and ``cause a soft error''
 
-  See [er] for relevant background, which is assumed below.
+  See [er] for relevant background, which is assumed below, and related
+  utilities.
 
     General Form:
     (er-soft context summary str &rest str-args)
 
   where context is a legal context (see [ctx]), summary is nil or a
   string, str is a string, and str-args are tsee fmt arguments for
-  str.  Note that (er-soft context summary str ...) is equivalent to
-  (er soft context nil str ...).  The use of a non-nil summary allows
-  suppression of this error message without suppressing all error
-  output; see [set-inhibit-er].")
+  str.  The use of a non-nil summary allows suppression of this error
+  message without suppressing all error output; see [set-inhibit-er].
+
+  See [er-hard] for a similar utility pertaining to ``hard'' errors.")
  (ERROR (POINTERS)
         "See [hints] for information about the keyword :error.")
  (ERROR-TRIPLE
@@ -91657,6 +91671,15 @@ Changes to Existing Features
   [set-non-linearp]), the [backchain-limit] for rewriting, and the
   [rw-cache-state]).
 
+  The utilities set-inhibit-er-soft, set-inhibit-er-soft!,
+  toggle-inhibit-er-soft, and toggle-inhibit-er-soft! have been
+  renamed by dropping the suffix ``-soft'', hence they are now the
+  following, respectively: set-inhibit-er, set-inhibit-er!,
+  toggle-inhibit-er, and toggle-inhibit-er!.  The relevant table has
+  similarly been renamed from inhibit-er-soft-table to
+  inhibit-er-table.  These changes reflect their relevance for the
+  new utility, [er-hard], in addition to [er-soft].
+
 
 New Features
 
@@ -91680,6 +91703,12 @@ New Features
   and real (wall clock) time that has elapsed since the start of the
   ACL2 session.  Thanks to Eric McCarthy for suggesting the addition
   of such utilities.
+
+  The new utility [er-hard] is analogous to [er-soft], but for hard
+  errors instead of soft errors (see [er]).  At the moment the only
+  summary string used for inhibiting hard errors is \"Call depth\", for
+  rewriter stack overflows.  On a related note, a new soft error
+  summary string is used for inhibiting soft errors, \"Evaluation\".
 
 
 Heuristic and Efficiency Improvements
@@ -112632,17 +112661,9 @@ Example
   to add labels; for example, you might ask for a label in the
   example above (which could be \"Globals\" or \"Global-variables\").
 
-  Remarks.
-
-    * Only so-called ``soft'' errors may have labels, not ``hard'' errors.
-      Hard errors can be identified by the use of ``HARD'' at the
-      start of the error message, for example as follows.
-
-          HARD ACL2 ERROR in SET-GAG-MODE:  Unknown set-gag-mode argument, ABC
-
-    * Set-inhibit-er has no effect on the value(s) returned by an
-      expression (excepting the ACL2 [state] in that it formally
-      includes output).
+  Note that set-inhibit-er has no effect on the value(s) returned by an
+  expression (excepting the ACL2 [state] since it formally includes
+  output).
 
   The list of currently inhibited error types is the list of keys in
   the [table] named inhibit-er-table.  (The values in the table are
