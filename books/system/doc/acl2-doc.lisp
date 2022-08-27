@@ -30313,7 +30313,23 @@ ld) and @(tsee include-book)"
 (defxdoc er-hard
   :parents (errors acl2-built-ins)
   :short "Print an error message and ``cause a hard error''"
-  :long "<p>This documentation topic is currently a stub.</p>")
+  :long "<p>See @(see er) for relevant background, which is assumed below, and
+ related utilities.</p>
+
+ @({
+ General Form:
+ (er-hard context summary str &rest str-args)
+ })
+
+ <p>where context is a legal context (see @(see ctx)), @('summary') is @('nil')
+ or a string, @('str') is a string, and @('str-args') are @('tsee fmt')
+ arguments for @('str').  Note that @('(er-hard context summary str ...)') is
+ equivalent to @('(er hard context (cons summary str) ...)').  The use of a
+ non-@('nil') @('summary') allows suppression of this error message without
+ suppressing all error output; see @(see set-inhibit-er).</p>
+
+ <p>See @(tsee er-soft) for a similar utility pertaining to ``soft''
+ errors.</p>")
 
 (defxdoc er-progn
   :parents (errors programming-with-state acl2-built-ins)
@@ -30363,7 +30379,8 @@ ld) and @(tsee include-book)"
 (defxdoc er-soft
   :parents (errors acl2-built-ins)
   :short "Print an error message and ``cause a soft error''"
-  :long "<p>See @(see er) for relevant background, which is assumed below.</p>
+  :long "<p>See @(see er) for relevant background, which is assumed below, and
+ related utilities.</p>
 
  @({
  General Form:
@@ -30372,10 +30389,12 @@ ld) and @(tsee include-book)"
 
  <p>where context is a legal context (see @(see ctx)), @('summary') is @('nil')
  or a string, @('str') is a string, and @('str-args') are @('tsee fmt')
- arguments for @('str').  Note that @('(er-soft context summary str ...)') is
- equivalent to @('(er soft context nil str ...)').  The use of a non-@('nil')
- @('summary') allows suppression of this error message without suppressing all
- error output; see @(see set-inhibit-er).</p>")
+ arguments for @('str').  The use of a non-@('nil') @('summary') allows
+ suppression of this error message without suppressing all error output; see
+ @(see set-inhibit-er).</p>
+
+ <p>See @(tsee er-hard) for a similar utility pertaining to ``hard''
+ errors.</p>")
 
 (defxdoc error-triple
   :parents (errors programming-with-state)
@@ -93671,6 +93690,15 @@ it."
  untouchable) functions, non-linear arithmetic (see @(see set-non-linearp)),
  the @(see backchain-limit) for rewriting, and the @(see rw-cache-state)).</p>
 
+ <p>The utilities @('set-inhibit-er-soft'), @('set-inhibit-er-soft!'),
+ @('toggle-inhibit-er-soft'), and @('toggle-inhibit-er-soft!') have been
+ renamed by dropping the suffix ``@('-soft')'', hence they are now the
+ following, respectively: @('set-inhibit-er'), @('set-inhibit-er!'),
+ @('toggle-inhibit-er'), and @('toggle-inhibit-er!').  The relevant table has
+ similarly been renamed from @('inhibit-er-soft-table') to
+ @('inhibit-er-table').  These changes reflect their relevance for the new
+ utility, @(tsee er-hard), in addition to @(tsee er-soft).</p>
+
  <h3>New Features</h3>
 
  <p>The new zero-ary attachable system function, @('heavy-linear-p'), allows
@@ -93691,6 +93719,12 @@ it."
  time and real (wall clock) time that has elapsed since the start of the ACL2
  session.  Thanks to Eric McCarthy for suggesting the addition of such
  utilities.</p>
+
+ <p>The new utility @(tsee er-hard) is analogous to @(tsee er-soft), but for
+ hard errors instead of soft errors (see @(see er)).  At the moment the only
+ summary string used for inhibiting hard errors is @('\"Call depth\"'), for
+ rewriter stack overflows.  On a related note, a new soft error summary string
+ is used for inhibiting soft errors, @('\"Evaluation\"').</p>
 
  <h3>Heuristic and Efficiency Improvements</h3>
 
@@ -111696,23 +111730,9 @@ arithmetic) for libraries of @(see books) for arithmetic reasoning.</p>")
  labels; for example, you might ask for a label in the example above (which
  could be @('\"Globals\"') or @('\"Global-variables\"')).</p>
 
- <p><b>Remarks</b>.</p>
-
- <ul>
-
- <li>Only so-called ``soft'' errors may have labels, not ``hard'' errors.  Hard
- errors can be identified by the use of ``@('HARD')'' at the start of the error
- message, for example as follows.
-
- @({
- HARD ACL2 ERROR in SET-GAG-MODE:  Unknown set-gag-mode argument, ABC
- })</li>
-
- <li>@('Set-inhibit-er') has no effect on the value(s) returned by an
- expression (excepting the ACL2 @(see state) in that it formally includes
- output).</li>
-
- </ul>
+ <p>Note that @('set-inhibit-er') has no effect on the value(s) returned by an
+ expression (excepting the ACL2 @(see state) since it formally includes
+ output).</p>
 
  <p>The list of currently inhibited error types is the list of keys in the
  @(see table) named @('inhibit-er-table').  (The values in the table are
