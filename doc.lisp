@@ -91830,6 +91830,11 @@ Bug Fixes
 
 Changes at the System Level
 
+  The `make' target, save-exec, now builds custom-saved_acl2
+  unconditionally.  Thanks to Grant Jurgensen for pointing out (in
+  GitHub Issue #1422) that there can be untracked implicit
+  dependencies that make this necessary.
+
 
 EMACS Support
 

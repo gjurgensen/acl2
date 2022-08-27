@@ -93845,6 +93845,11 @@ it."
 
  <h3>Changes at the System Level</h3>
 
+ <p>The `@('make')' target, @('save-exec'), now builds @('custom-saved_acl2')
+ unconditionally.  Thanks to Grant Jurgensen for pointing out (in GitHub Issue
+ #1422) that there can be untracked implicit dependencies that make this
+ necessary.</p>
+
  <h3>EMACS Support</h3>
 
  <h3>Experimental Versions</h3>
