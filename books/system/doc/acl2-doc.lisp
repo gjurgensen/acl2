@@ -5870,15 +5870,21 @@ and @(tsee include-book)"
   @({
       (warrant sq)
     <-->
-      (apply$-warrant-sq)
+      (force (apply$-warrant-sq))
     <-->
       (((badge 'SQ) = '(APPLY$-BADGE 1 1 . T))
        &
        ((apply$ 'SQ args) = (sq (car args))))
    })
 
+  <p>Note that the @(tsee warrant) macro @(tsee force)s the warrants for the
+  functions listed.  But logically @('force') is just the identity.</p>
+
   <p>Thus, the warrant for @('sq') specifies the value of @('(badge 'sq)') and
-  of @('(apply$ 'sq ...)').</p>
+  of @('(apply$ 'sq ...)').  Operationally, by forcing the warrant it means the
+  absence of a warrant among the hypotheses of a conjecture which is otherwise
+  provable just results in a forcing round that highlights the need for the
+  warrant.</p>
 
   <p>If you try to prove the unwarranted version of the little theorem about
   @(''sq') it fails in a forcing round with</p>
@@ -15726,13 +15732,19 @@ with any questions about building the community books.</p>")
  <p>Here is the resulting checkpoint.</p>
 
  @({
- (EQUAL
-  (HIDE
-      (COMMENT
-           \"Call failed because the warrant for HELLO is not known to be true\"
-           (EV$ '(HELLO LOOP$-IVAR)
-                '((LOOP$-IVAR . JOHN)))))
-  '(HI JOHN))
+  (EQUAL
+   (HIDE
+    (COMMENT
+     \"Call failed because the warrant for HELLO is not known to be true\"
+     (EV$ '(RETURN-LAST 'PROGN
+                        '(LAMBDA$ (LOOP$-IVAR)
+                                  (LET ((NAME LOOP$-IVAR))
+                                    (DECLARE (IGNORABLE NAME))
+                                    (HELLO NAME)))
+                        ((LAMBDA (NAME) (HELLO NAME))
+                         LOOP$-IVAR))
+          '((LOOP$-IVAR . JOHN)))))
+   '(HI JOHN))
  })")
 
 (defxdoc common-lisp
@@ -20614,7 +20626,7 @@ subtree of X with T, without duplication.</p>
 
  <p>(Of interest only to users of @(tsee apply$).)  Special handling is applied
  when attempting to attach to a so-called <i>warrant</i>, which is produced by
- an appication of @(tsee defwarrant) (or @(tsee defun$)).  In that case it is
+ an application of @(tsee defwarrant) (or @(tsee defun$)).  In that case it is
  legal to attach the function @('true-apply$-warrant') to the warrant, without
  any proof obligation.  This attachment is actually performed automatically by
  @('defwarrant'), so users (even users of @('apply$')) need not deal
@@ -27484,7 +27496,8 @@ ld) and @(tsee include-book)"
  irrelevant clutter such as @(tsee declare) forms and it shows only arguments
  of @('do$') relevant to our discussion of the example above.  Also, the
  display employs user-level syntax (i.e., an <i>untranslated term</i>; see
- @(see term)).</p>
+ @(see term)).  See also the subsection of @(tsee lambda$) entitled ``About
+ @('Lambda$')s and Prover Output.''</p>
 
  <p>The definition of @('do$') is given at the end of this topic, for those who
  care to explore it, but this discussion is intended to be self-contained.
@@ -39977,7 +39990,7 @@ current fast alists."
   insists that the object satisfy @(tsee well-formed-lambda-objectp).
   Well-formedness implies tameness, so any @('LAMBDA') object that passes this
   translate-time test will have the ``expected behavior'' under @('apply$').
-  If an quoted ill-formed ``LAMBDA-like'' object is passed into a @(':FN')
+  If a quoted ill-formed ``LAMBDA-like'' object is passed into a @(':FN')
   slot, an error is signalled.</p>
 
   <p>This is logically unnecessary because, like all ACL2 functions,
@@ -40350,7 +40363,7 @@ current fast alists."
   </code>
 
   <p>where @('(warrant sq)') is just a convenient abbreviation for
-  @('(apply$-warrant-sq)').</p>
+  @('(force (apply$-warrant-sq))').</p>
 
   <p>Thus, to extend the strawman conjecture to functions in which @('apply$')
   is ancestral would require tracking the warrants relevant to the execution
@@ -52697,6 +52710,72 @@ tables in the current Hons Space."
   @(':guard') and @(':split-types').  The other @('XARGS') keywords, such as
   @(':measure'), @(':hints') or @(':guard-hints'), play no role.</p>
 
+  <h3>About @('Lambda$')s and Prover Output</h3>
+
+  <p>The translated form of a @('lambda$') expression is a quoted @(tsee
+  lambda) object.  For example, @('(collect$ (lambda$ (x) (+ 1 x)) lst)')
+  translates to</p>
+
+  @({
+  (COLLECT$ '(LAMBDA (X)
+                   (DECLARE (IGNORABLE X))
+                   (RETURN-LAST 'PROGN
+                                '(LAMBDA$ (X) (+ 1 X))
+                                (BINARY-+ '1 X)))
+            LST)
+  })
+
+  <p>The @('lambda$') has been replaced by a quoted @('lambda').</p>
+
+  <p>The prover tries to print each quoted @('lambda') object (that occurs
+  an argument position of @(see ilk) :@('FN')) as a @('lambda$')
+  expression that is (provably) functionally equal (see @(tsee fn-equal)) to
+  the original @('lambda') object assuming the necessary warrants.  If the
+  quoted @('lambda') object was produced by the expansion of a @('lambda$')
+  expression and has not been simplified by subsequent rewriting, it will print
+  as the original @('lambda$') expression.  This can be unfortunate if the
+  original @('lambda$') expression was itself produced by a macro and contains
+  logically irrelevant (but operationally important) tags.  This phenomenon
+  occurs most often when @(tsee do-loop$)s are involved.</p>
+
+  <p>Furthermore, since you are allowed to type in quoted @('lambda') objects
+  directly, you may &mdash; or may not &mdash; see them printed by the prover
+  as @('lambda$') expressions, depending on whether a suitable @('lambda$') is
+  found.  If a quoted @('lambda') object contains a reference to a function
+  symbol for which no @(tsee warrant) has been issued there is probably no
+  provably equivalent @('lambda$').</p>
+
+  <p>The main lessons here are</p>
+
+  <ul>
+
+  <li>you should use @('lambda$') rather than quoted @('lambda') objects in
+  your prover input,</li>
+
+  <li>you should make sure to warrant every user-defined function in your
+  @('lambda$') expressions, and</li>
+
+  <li>if you see a quoted @('lambda') object rather than a @('lambda$')
+  expression in your prover output, that quoted @('lambda') object probably
+  involves unwarranted symbols which will make it impossible to prove anything
+  interesting about it.</li>
+
+  </ul>
+
+  <p>If you do not want the prover output to give special treatment to quoted
+  @('lambda') objects in :@('FN') slots, do</p>
+
+  @({
+  (defattach-system (untranslate-lambda-object-p
+                    constant-nil-function-arity-0))
+  })
+
+  <p>With this attachment, the prover will print all quoted @('lambda') objects
+  as it would any other quoted constant.  You will see what is actually there.
+  One drawback is that the resulting formulas cannot always be read back in
+  and translated because of a prohibition on ``counterfeiting'' expansions of
+  @('lambda$').  See @(see gratuitous-lambda-object-restrictions).</p>
+
   <h3>About Guard Verification of Lambda Objects</h3>
 
   <p>Quoted @('LAMBDA') objects, whether produced by hand (don't!) or by
@@ -52768,9 +52847,9 @@ tables in the current Hons Space."
   <p>While this functionality is available to you, deciding that you need to
   use it is problematic.  @('Apply$') prints no warning that it has failed to
   verify the guards of a @('LAMBDA') object and is running interpreted code.
-  However, the utility @(tsee print-cl-cache) provides basic information about the
-  cache and its documentation may help you discover which @('LAMBDA') objects
-  in use are unverified.</p>")
+  However, the utility @(tsee print-cl-cache) provides basic information about
+  the cache and its documentation may help you discover which @('LAMBDA')
+  objects in use are unverified.</p>")
 
 (defxdoc last
   :parents (lists acl2-built-ins)
@@ -93699,6 +93778,11 @@ it."
  @('inhibit-er-table').  These changes reflect their relevance for the new
  utility, @(tsee er-hard), in addition to @(tsee er-soft).</p>
 
+ <p>The macro @(tsee warrant) now @(tsee force)s the warrants listed.</p>
+
+ <p>@(':')@(tsee Induction) rules now support the use of @(tsee syntaxp)
+ hypotheses.</p>
+
  <h3>New Features</h3>
 
  <p>The new zero-ary attachable system function, @('heavy-linear-p'), allows
@@ -93725,6 +93809,14 @@ it."
  summary string used for inhibiting hard errors is @('\"Call depth\"'), for
  rewriter stack overflows.  On a related note, a new soft error summary string
  is used for inhibiting soft errors, @('\"Evaluation\"').</p>
+
+ <p>A new command, @(':')@(tsee tc) (translate and clean), has been added.  It
+ translates a given form and then ``cleans it up'', returning a logically
+ equivalent but often simpler term in which logically irrelevant but
+ operationally important tags have been removed.  The variants @(':')@(tsee
+ tca) and @(':')@(tsee tcp) use different degrees of ``cleaning.''  These are
+ particularly useful for seeing the logical meanings of @(tsee loop$) terms as
+ well as terms involving @(tsee mbe) and @(tsee return-last).</p>
 
  <h3>Heuristic and Efficiency Improvements</h3>
 
@@ -121698,6 +121790,330 @@ arithmetic) for libraries of @(see books) for arithmetic reasoning.</p>")
  synonym has been introduced you allow Signature rules of Form 2 to be
  used.</p>")
 
+(defxdoc tc
+  :parents (macros)
+  :short "translate form and clean it up"
+  :long "@({
+
+  Examples:
+  :tc  (member e a)
+  :tc  (list (cadr x) (loop$ for e in lst collect (+ 1 e)))
+  :tcp (list (cadr x) (loop$ for e in lst collect (+ 1 e)))
+  :tca (list (cadr x) (loop$ for e in lst collect (+ 1 e)))
+
+  General Form:
+  :tc form
+  :tca form
+  :tcp form
+  (tc 'form)
+  (tca 'form)
+  (tcp 'form)
+  })
+
+  <p>The @(':')@(tsee trans) command prints the translation of a form into a
+  formal term.  However, sometimes the translation can be hard to understand
+  because various tags and declarations are included, usually for execution
+  efficiency.</p>
+
+  <p>For example, consider @(':trans') versus @(':tcp') of @('(member e a)').</p>
+
+  @({
+  ACL2 !>:trans (member e a)
+
+  ((LAMBDA (X L)
+     (RETURN-LAST 'MBE1-RAW
+                  (MEMBER-EQL-EXEC X L)
+                  (RETURN-LAST 'PROGN
+                               (MEMBER-EQL-EXEC$GUARD-CHECK X L)
+                               (MEMBER-EQUAL X L))))
+   E A)
+
+  => *
+
+  ACL2 !>:tcp (member e a)
+   (MEMBER-EQUAL E A)
+  })
+
+  <p>The @(':tc') command and its variants, @(':tca') and @(':tcp'), translate
+  the given form and then ``clean'' it up, returning the result in an @(see
+  error-triple).  These commands are especially useful when @(tsee loop$),
+  @(see scion)s or @(tsee lambda$) forms are involved in the form to be
+  translated.  But they are also useful when @(tsee mbe), @(tsee return-last),
+  @(tsee progn$) and other special forms are used or show up in the
+  translation.  The @('tc') commands are macros that expand into terms
+  involving @(tsee state), since errors are signaled when ill-formed forms are
+  submitted.</p>
+
+  <ul>
+
+  <li>@(':tc') <i>form</i> &mdash; translate <i>form</i> and remove everything
+    not relevant to the logical value.  This is the logical semantics
+    <i>form</i> and is returned in the ``internal format'' of ACL2 terms, i.e.,
+    macros have been expanded and all constants are quoted.  The prover will
+    reduce <i>form</i> to this term almost immediately.  Typically, this is the
+    term that the rewriter will encounter during a proof involving this
+    <i>form</i>.  Of course, rewrite rules can further change the form.
+    However, see the note below concerning warrants.</li>
+
+  <li>@(':tcp') <i>form</i> &mdash; translate <i>form</i> and remove everything
+     not relevant to the logical value as above, and then @(tsee untranslate),
+     restoring the use of such system macros as @(tsee lambda$), @(tsee let),
+     @(tsee and), @(tsee list), @(tsee cadr), and @(tsee +) and @(tsee *).
+     This is the semantics of <i>form</i> in a ``user friendly'' syntax.  The
+     suffix ``p'' in @(':tcp') stands for ``pretty.''</li>
+
+  <li>@(':tca') <i>form</i> &mdash; translate <i>form</i> and then
+     @('untranslate') as noted above.  This effectively leaves ``annotations''
+     in place such as a @('prog2$') joining each @('loop$') in <i>form</i> to
+     its semantics, @('declare') forms in @('lambda') objects, and @(tsee let)
+     forms associating user variable names to values.  This term is mainly
+     meant as a pedagogical device to help you understand how @('loop$')s are
+     translated.  The suffix ``a'' in @(':tca') stands for ``annotated.''</li>
+
+  </ul>
+
+  <p>The terms returned by the three flavors of @('tc') are all provably
+  equivalent to eachother and to the original <i>form</i> provided the
+  necessary warrants are assumed.</p>
+
+  <p>For example, if @('sq') is a user-defined function of arity 1 and
+  @('(defwarrant sq)') has issued a warrant for @('sq'), then</p>
+
+  @({
+  ACL2 !>:tc (loop$ for e in lst collect (sq e))    ; sq is warranted
+  (COLLECT$ '(LAMBDA (LOOP$-IVAR) (SQ LOOP$-IVAR))
+           LST)
+  })
+
+  <p>Nevertheless, the equivalence of the input and output of @(':tc') above
+  cannot be proved unless the warrants are assumed.  That is,</p>
+
+  @({
+  (thm
+    (equal (loop$ for e in lst collect (sq e))
+           (COLLECT$ '(LAMBDA (LOOP$-IVAR) (SQ LOOP$-IVAR))
+                     LST)))
+  })
+
+  <p>will fail with a checkpoint indicating that the warrant for @('sq') must
+  be provided.  However,</p>
+
+  @({
+  (thm
+    (implies (warrant sq)
+             (equal (loop$ for e in lst collect (sq e))
+                    (COLLECT$ '(LAMBDA (LOOP$-IVAR) (SQ LOOP$-IVAR))
+                              LST))))
+  })
+
+  <p>succeeds.</p>
+
+  <p>If there is no warrant for @('sq') but there is a badge, then @(':tc') cannot
+  clean up the translation because without a warrant the @('lambda') object calling
+  @('sq') is not @(see tame).  Thus,</p>
+
+  @({
+  ACL2 !>:tc (loop$ for e in lst collect (sq e))   ; sq is badged not warranted
+  (COLLECT$ '(LAMBDA (LOOP$-IVAR)
+                     (RETURN-LAST 'PROGN
+                                  '(LAMBDA$ (LOOP$-IVAR)
+                                            (LET ((E LOOP$-IVAR))
+                                                 (DECLARE (IGNORABLE E))
+                                                 (SQ E)))
+                                  ((LAMBDA (E) (SQ E)) LOOP$-IVAR)))
+            LST)
+  })
+
+  <p>By the way, if you see a quoted @('lambda') objects like that above in
+  output from the prover, it probably means the @('lambda') object contains
+  unwarranted user-defined symbols!</p>
+
+  <p>The differences between @(':trans') and the three commands (@(':tc'),
+  @(':tcp'), and @(':tca')) are perhaps best illustrated by considering their
+  respective outputs on a single @(tsee loop$) statement.</p>
+
+  @({
+  ACL2 !>:trans (list (cadr x) (loop$ for e in lst collect (+ 1 e)))
+
+  (CONS (CAR (CDR X))
+        (CONS (RETURN-LAST
+               'PROGN
+               '(LOOP$ FOR E IN LST COLLECT (+ 1 E))
+               (COLLECT$ '(LAMBDA (LOOP$-IVAR)
+                                  (DECLARE (IGNORABLE LOOP$-IVAR))
+                                  (RETURN-LAST 'PROGN
+                                               '(LAMBDA$ (LOOP$-IVAR)
+                                                  (LET ((E LOOP$-IVAR))
+                                                    (DECLARE (IGNORABLE E))
+                                                    (+ 1 E)))
+                                               ((LAMBDA (E) (BINARY-+ '1 E))
+                                                LOOP$-IVAR)))
+                         LST))
+              'NIL))
+
+  => *
+
+  ACL2 !>:tc  (list (cadr x) (loop$ for e in lst collect (+ 1 e)))
+   (CONS (CAR (CDR X))
+         (CONS (COLLECT$ '(LAMBDA (LOOP$-IVAR)
+                                  (BINARY-+ '1 LOOP$-IVAR))
+                         LST)
+               'NIL))
+
+  ACL2 !>:tcp (list (cadr x) (loop$ for e in lst collect (+ 1 e)))
+   (LIST (CADR X)
+         (COLLECT$ (LAMBDA$ (LOOP$-IVAR) (+ 1 LOOP$-IVAR))
+                   LST))
+
+  ACL2 !>:tca (list (cadr x) (loop$ for e in lst collect (+ 1 e)))
+   (LIST (CADR X)
+         (PROG2$ '(LOOP$ FOR E IN LST COLLECT (+ 1 E))
+                 (COLLECT$ (LAMBDA$ (LOOP$-IVAR)
+                                    (LET ((E LOOP$-IVAR)) (+ 1 E)))
+                           LST)))
+  })
+
+  <p>First, notice that @(':trans') also reports the output signature of the
+  term but the @(':tc') commands do not.  They all return the cleaned up
+  translation in an error triple.  Second, @(':tc') returns a term in the
+  internal format: the @('lambda') objects are quoted list constants and their
+  bodies are in internal format, e.g., note the @('binary-+') and quoted
+  constant @('1') in the output of @(':tc') above.  If you use the @(':tc')
+  command on the left-hand side of the conclusion of a @(':rewrite') rule the
+  term you see is the term under which the rule is stored, i.e., the rule will
+  be tried to rewrite instances of that term.</p>
+
+  <p>The other two commands have ``prettied up'' the output into a more
+  user-friendly format.  Third, the @(':tca') command uses a @('prog2$') to
+  show the untranslated @('loop$') as a list constant and then show its pretty
+  semantics, with a @('let') form in the body of the @('lambda$') reminding you
+  that @('loop$-ivar') is what was called @('e').</p>
+
+  <p>It is often helpful to look at the semantics of fancy @('loop$')s.</p>
+
+  @({
+  ACL2 !>:tca (loop$ for x in xlst
+                     as  y in ylst
+                     collect (+ (* a x) (* b y)))
+   (PROG2$
+      '(LOOP$ FOR X IN XLST
+              AS  Y IN YLST
+              COLLECT (+ (* A X) (* B Y)))
+      (COLLECT$+
+           (LAMBDA$ (LOOP$-GVARS LOOP$-IVARS)
+                    (DECLARE (XARGS :GUARD (AND (TRUE-LISTP LOOP$-GVARS)
+                                                (EQUAL (LEN LOOP$-GVARS) 2)
+                                                (TRUE-LISTP LOOP$-IVARS)
+                                                (EQUAL (LEN LOOP$-IVARS) 2))
+                                    :SPLIT-TYPES T))
+                    (LET ((A (CAR LOOP$-GVARS))
+                          (B (CADR LOOP$-GVARS))
+                          (X (CAR LOOP$-IVARS))
+                          (Y (CADR LOOP$-IVARS)))
+                         (+ (* A X) (* B Y))))
+           (LIST A B)
+           (LOOP$-AS (LIST XLST YLST))))
+  })
+
+  <p>Notice what happens to the @(':guard') of the @('lambda$') if we insert
+  type specifications with @('of-type').</p>
+
+  @({
+  ACL2 !>:tca (loop$ for x of-type (satisfies natp) in xlst
+                     as  y of-type integer in ylst
+                     collect (+ (* a x) (* b y)))
+
+   (PROG2$
+     '(LOOP$ FOR X OF-TYPE (SATISFIES NATP)
+             IN XLST AS Y OF-TYPE INTEGER
+             IN YLST COLLECT (+ (* A X) (* B Y)))
+     (COLLECT$+
+          (LAMBDA$ (LOOP$-GVARS LOOP$-IVARS)
+                   (DECLARE (XARGS :GUARD (AND (TRUE-LISTP LOOP$-GVARS)
+                                               (EQUAL (LEN LOOP$-GVARS) 2)
+                                               (TRUE-LISTP LOOP$-IVARS)
+                                               (EQUAL (LEN LOOP$-IVARS) 2)
+                                               (NATP (CAR LOOP$-IVARS))
+                                               (INTEGERP (CADR LOOP$-IVARS)))
+                                   :SPLIT-TYPES T))
+                   (LET ((A (CAR LOOP$-GVARS))
+                         (B (CADR LOOP$-GVARS))
+                         (X (CAR LOOP$-IVARS))
+                         (Y (CADR LOOP$-IVARS)))
+                        (+ (* A X) (* B Y))))
+          (LIST A B)
+          (LOOP$-AS (LIST XLST YLST))))
+  })
+
+  <p>And notice how the @(':guard') keyword after the @('collect') in the
+  @('loop$') statement is added to the @(':guard') of the generated
+  @('lambda$').</p>
+
+  @({
+  ACL2 !>:tca (loop$ for x of-type (satisfies natp) in xlst
+                     as  y of-type integer in ylst
+                     collect
+                     :guard (and (rationalp a)
+                                 (complex-rationalp b))
+                     (+ (* a x) (* b y)))
+   (PROG2$
+    '(LOOP$ FOR X OF-TYPE (SATISFIES NATP) IN XLST
+            AS  Y OF-TYPE INTEGER IN YLST
+            COLLECT
+            :GUARD (AND (RATIONALP A)
+                        (COMPLEX-RATIONALP B))
+            (+ (* A X) (* B Y)))
+    (COLLECT$+
+     (LAMBDA$
+      (LOOP$-GVARS LOOP$-IVARS)
+      (DECLARE (XARGS :GUARD (AND (TRUE-LISTP LOOP$-GVARS)
+                                  (EQUAL (LEN LOOP$-GVARS) 2)
+                                  (TRUE-LISTP LOOP$-IVARS)
+                                  (EQUAL (LEN LOOP$-IVARS) 2)
+                                  (NATP (CAR LOOP$-IVARS))
+                                  (INTEGERP (CADR LOOP$-IVARS))
+                                  (RATIONALP (CAR LOOP$-GVARS))
+                                  (COMPLEX-RATIONALP (CADR LOOP$-GVARS)))
+                      :SPLIT-TYPES T))
+      (LET ((A (CAR LOOP$-GVARS))
+            (B (CADR LOOP$-GVARS))
+            (X (CAR LOOP$-IVARS))
+            (Y (CADR LOOP$-IVARS)))
+        (+ (* A X) (* B Y))))
+     (LIST A B)
+     (LOOP$-AS (LIST XLST YLST))))
+  })
+
+  <p>Of course, while these declarations play a role in @(':guard') verification
+  and execution in raw Lisp, they are irrelevant to the formal semantics, as made
+  clear by @(':tcp').</p>
+
+  @({
+  ACL2 !>:tcp (loop$ for x of-type (satisfies natp) in xlst
+                     as  y of-type integer in ylst
+                     collect
+                     :guard (and (rationalp a)
+                                 (complex-rationalp b))
+                     (+ (* a x) (* b y)))
+   (COLLECT$+ (LAMBDA$ (LOOP$-GVARS LOOP$-IVARS)
+                       (+ (* (CAR LOOP$-GVARS)
+                             (CAR LOOP$-IVARS))
+                          (* (CADR LOOP$-GVARS)
+                             (CADR LOOP$-IVARS))))
+              (LIST A B)
+              (LOOP$-AS (LIST XLST YLST)))
+  })")
+
+(defxdoc tca
+  :parents (macros)
+  :short "translate a form and clean it up into an annotated pretty term"
+  :long "<p>See @(tsee tc).</p>")
+
+(defxdoc tcp
+  :parents (macros)
+  :short "translate a form and clean it up into a pretty term"
+  :long "<p>See @(tsee tc).</p>")
+
 (defxdoc tenth
   :parents (nth acl2-built-ins)
   :short "Tenth member of the list"
@@ -133596,10 +134012,10 @@ introduction-to-the-tau-system) for more information about Tau.</dd>
   ... fnk)') expands to:</p>
 
   @({
-  (AND (APPLY$-WARRANT-fn1)
-       (APPLY$-WARRANT-fn2)
+  (AND (FORCE (APPLY$-WARRANT-fn1))
+       (FORCE (APPLY$-WARRANT-fn2))
        ...
-       (APPLY$-WARRANT-fnk))
+       (FORCE (APPLY$-WARRANT-fnk)))
   })
 
   <p>Because there are over 800 ACL2 primitives built into @('apply$'), it can
@@ -133616,6 +134032,16 @@ introduction-to-the-tau-system) for more information about Tau.</dd>
   possessing a warrant.  Instead, the @('warrant') macro ignores those @('fni')
   built into @('apply$').  It does cause an error if one of the @('fni') has no
   warrant and is not built in.</p>
+
+  <p>The @('(warrant fn1 fn2 ... fnk)') macro @(tsee force)s the warrants
+  because (a) we assume the only use of the macro is to add warrant hypotheses
+  to conjectures and (b) by forcing warrants agressively the prover ``almost
+  completes'' more proofs and enters a forcing round that highlights the need
+  to assume those warrants.  When a rewrite rule, for example, is conditioned
+  on a warrant that is not forced (as would happen if you added the hyps
+  @('(apply$-warrant-fn1)'), @('(apply$-warrant-fn2)'), etc.), then the rule
+  will not fire if a subsequent conjecture omitted the warrants.  Of course,
+  this raises the question ``But are all the warrants really true?''</p>
 
   <h3>Why Warrants Don't Render Theorems Vacuous</h3>
 

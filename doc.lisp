@@ -77,7 +77,7 @@ Subtopics
   [defthm], [in-theory], [xargs], [state], etc., without an acl2::
   prefix.
 
-  The constant *acl2-exports* lists 1561 symbols, including most
+  The constant *acl2-exports* lists 1564 symbols, including most
   documented ACL2 system constants, functions, and macros.  You will
   typically also want to import many symbols from Common Lisp; see
   [*common-lisp-symbols-from-main-lisp-package*].
@@ -718,8 +718,8 @@ Subtopics
        tau-data tau-database tau-interval-dom
        tau-interval-hi tau-interval-hi-rel
        tau-interval-lo tau-interval-lo-rel
-       tau-intervalp tau-status tau-system
-       tenth term-list-listp term-listp
+       tau-intervalp tau-status tau-system tc
+       tca tcp tenth term-list-listp term-listp
        term-order termination-theorem termp
        the the-check the-fixnum the-fixnum!
        theory theory-invariant thereis$
@@ -8469,14 +8469,20 @@ Theorems Involving Apply$
 
       (warrant sq)
     <-->
-      (apply$-warrant-sq)
+      (force (apply$-warrant-sq))
     <-->
       (((badge 'SQ) = '(APPLY$-BADGE 1 1 . T))
        &
        ((apply$ 'SQ args) = (sq (car args))))
 
+  Note that the [warrant] macro [force]s the warrants for the functions
+  listed.  But logically force is just the identity.
+
   Thus, the warrant for sq specifies the value of (badge 'sq) and of
-  (apply$ 'sq ...).
+  (apply$ 'sq ...).  Operationally, by forcing the warrant it means
+  the absence of a warrant among the hypotheses of a conjecture which
+  is otherwise provable just results in a forcing round that
+  highlights the need for the warrant.
 
   If you try to prove the unwarranted version of the little theorem
   about 'sq it fails in a forcing round with
@@ -18713,10 +18719,16 @@ Failure due to disabled or missing warrants
 
     (EQUAL
      (HIDE
-         (COMMENT
-              \"Call failed because the warrant for HELLO is not known to be true\"
-              (EV$ '(HELLO LOOP$-IVAR)
-                   '((LOOP$-IVAR . JOHN)))))
+      (COMMENT
+       \"Call failed because the warrant for HELLO is not known to be true\"
+       (EV$ '(RETURN-LAST 'PROGN
+                          '(LAMBDA$ (LOOP$-IVAR)
+                                    (LET ((NAME LOOP$-IVAR))
+                                      (DECLARE (IGNORABLE NAME))
+                                      (HELLO NAME)))
+                          ((LAMBDA (NAME) (HELLO NAME))
+                           LOOP$-IVAR))
+            '((LOOP$-IVAR . JOHN)))))
      '(HI JOHN))")
  (COMMON-LISP
   (ABOUT-ACL2)
@@ -23825,8 +23837,8 @@ Miscellaneous Remarks, with discussion of possible user errors.
 
   (Of interest only to users of [apply$].)  Special handling is applied
   when attempting to attach to a so-called warrant, which is produced
-  by an appication of [defwarrant] (or [defun$]).  In that case it is
-  legal to attach the function true-apply$-warrant to the warrant,
+  by an application of [defwarrant] (or [defun$]).  In that case it
+  is legal to attach the function true-apply$-warrant to the warrant,
   without any proof obligation.  This attachment is actually
   performed automatically by defwarrant, so users (even users of
   apply$) need not deal explicitly with such attachments.  However,
@@ -30754,7 +30766,8 @@ SEMANTICS
   logically irrelevant clutter such as [declare] forms and it shows
   only arguments of do$ relevant to our discussion of the example
   above.  Also, the display employs user-level syntax (i.e., an
-  untranslated term; see [term]).
+  untranslated term; see [term]).  See also the subsection of
+  [lambda$] entitled ``About Lambda$s and Prover Output.''
 
   The definition of do$ is given at the end of this topic, for those
   who care to explore it, but this discussion is intended to be
@@ -43285,7 +43298,7 @@ Subtopics
   that the object satisfy [well-formed-lambda-objectp].
   Well-formedness implies tameness, so any LAMBDA object that passes
   this translate-time test will have the ``expected behavior'' under
-  apply$.  If an quoted ill-formed ``LAMBDA-like'' object is passed
+  apply$.  If a quoted ill-formed ``LAMBDA-like'' object is passed
   into a :FN slot, an error is signalled.
 
   This is logically unnecessary because, like all ACL2 functions,
@@ -43634,8 +43647,8 @@ Problems Raised by Apply$
     (implies (warrant sq)
              (equal (apply$ 'sq '(3)) '9))
 
-  where (warrant sq) is just a convenient abbreviation for
-  (apply$-warrant-sq).
+  where (warrant sq) is just a convenient abbreviation for (force
+  (apply$-warrant-sq)).
 
   Thus, to extend the strawman conjecture to functions in which apply$
   is ancestral would require tracking the warrants relevant to the
@@ -56558,6 +56571,64 @@ About Lambda$ Expressions
   or :guard-hints, play no role.
 
 
+About Lambda$s and Prover Output
+
+  The translated form of a lambda$ expression is a quoted [lambda]
+  object.  For example, (collect$ (lambda$ (x) (+ 1 x)) lst)
+  translates to
+
+    (COLLECT$ '(LAMBDA (X)
+                     (DECLARE (IGNORABLE X))
+                     (RETURN-LAST 'PROGN
+                                  '(LAMBDA$ (X) (+ 1 X))
+                                  (BINARY-+ '1 X)))
+              LST)
+
+  The lambda$ has been replaced by a quoted lambda.
+
+  The prover tries to print each quoted lambda object (that occurs an
+  argument position of [ilk] :FN) as a lambda$ expression that is
+  (provably) functionally equal (see [fn-equal]) to the original
+  lambda object assuming the necessary warrants.  If the quoted
+  lambda object was produced by the expansion of a lambda$ expression
+  and has not been simplified by subsequent rewriting, it will print
+  as the original lambda$ expression.  This can be unfortunate if the
+  original lambda$ expression was itself produced by a macro and
+  contains logically irrelevant (but operationally important) tags.
+  This phenomenon occurs most often when [do-loop$]s are involved.
+
+  Furthermore, since you are allowed to type in quoted lambda objects
+  directly, you may --- or may not --- see them printed by the prover
+  as lambda$ expressions, depending on whether a suitable lambda$ is
+  found.  If a quoted lambda object contains a reference to a
+  function symbol for which no [warrant] has been issued there is
+  probably no provably equivalent lambda$.
+
+  The main lessons here are
+
+    * you should use lambda$ rather than quoted lambda objects in your
+      prover input,
+    * you should make sure to warrant every user-defined function in your
+      lambda$ expressions, and
+    * if you see a quoted lambda object rather than a lambda$ expression in
+      your prover output, that quoted lambda object probably involves
+      unwarranted symbols which will make it impossible to prove
+      anything interesting about it.
+
+  If you do not want the prover output to give special treatment to
+  quoted lambda objects in :FN slots, do
+
+    (defattach-system (untranslate-lambda-object-p
+                      constant-nil-function-arity-0))
+
+  With this attachment, the prover will print all quoted lambda objects
+  as it would any other quoted constant.  You will see what is
+  actually there.  One drawback is that the resulting formulas cannot
+  always be read back in and translated because of a prohibition on
+  ``counterfeiting'' expansions of lambda$.  See
+  [gratuitous-lambda-object-restrictions].
+
+
 About Guard Verification of Lambda Objects
 
   Quoted LAMBDA objects, whether produced by hand (don't!) or by
@@ -62431,6 +62502,15 @@ Subtopics
 
   [Set-duplicate-keys-action]
       Control action for macro calls with duplicate keyword arguments
+
+  [Tc]
+      translate form and clean it up
+
+  [Tca]
+      translate a form and clean it up into an annotated pretty term
+
+  [Tcp]
+      translate a form and clean it up into a pretty term
 
   [Trans]
       Print the macroexpansion of a form
@@ -91680,6 +91760,10 @@ Changes to Existing Features
   inhibit-er-table.  These changes reflect their relevance for the
   new utility, [er-hard], in addition to [er-soft].
 
+  The macro [warrant] now [force]s the warrants listed.
+
+  :[Induction] rules now support the use of [syntaxp] hypotheses.
+
 
 New Features
 
@@ -91709,6 +91793,14 @@ New Features
   summary string used for inhibiting hard errors is \"Call depth\", for
   rewriter stack overflows.  On a related note, a new soft error
   summary string is used for inhibiting soft errors, \"Evaluation\".
+
+  A new command, :[tc] (translate and clean), has been added.  It
+  translates a given form and then ``cleans it up'', returning a
+  logically equivalent but often simpler term in which logically
+  irrelevant but operationally important tags have been removed.  The
+  variants :[tca] and :[tcp] use different degrees of ``cleaning.''
+  These are particularly useful for seeing the logical meanings of
+  [loop$] terms as well as terms involving [mbe] and [return-last].
 
 
 Heuristic and Efficiency Improvements
@@ -122587,6 +122679,300 @@ Subtopics
 
   [Time-tracker-tau]
       Messages about expensive use of the [tau-system]")
+ (TC
+  (MACROS)
+  "translate form and clean it up
+
+    Examples:
+    :tc  (member e a)
+    :tc  (list (cadr x) (loop$ for e in lst collect (+ 1 e)))
+    :tcp (list (cadr x) (loop$ for e in lst collect (+ 1 e)))
+    :tca (list (cadr x) (loop$ for e in lst collect (+ 1 e)))
+
+    General Form:
+    :tc form
+    :tca form
+    :tcp form
+    (tc 'form)
+    (tca 'form)
+    (tcp 'form)
+
+  The :[trans] command prints the translation of a form into a formal
+  term.  However, sometimes the translation can be hard to understand
+  because various tags and declarations are included, usually for
+  execution efficiency.
+
+  For example, consider :trans versus :tcp of (member e a).
+
+    ACL2 !>:trans (member e a)
+
+    ((LAMBDA (X L)
+       (RETURN-LAST 'MBE1-RAW
+                    (MEMBER-EQL-EXEC X L)
+                    (RETURN-LAST 'PROGN
+                                 (MEMBER-EQL-EXEC$GUARD-CHECK X L)
+                                 (MEMBER-EQUAL X L))))
+     E A)
+
+    => *
+
+    ACL2 !>:tcp (member e a)
+     (MEMBER-EQUAL E A)
+
+  The :tc command and its variants, :tca and :tcp, translate the given
+  form and then ``clean'' it up, returning the result in an
+  [error-triple].  These commands are especially useful when [loop$],
+  [scion]s or [lambda$] forms are involved in the form to be
+  translated.  But they are also useful when [mbe], [return-last],
+  [progn$] and other special forms are used or show up in the
+  translation.  The tc commands are macros that expand into terms
+  involving [state], since errors are signaled when ill-formed forms
+  are submitted.
+
+    * :tc form --- translate form and remove everything not relevant to the
+      logical value.  This is the logical semantics form and is
+      returned in the ``internal format'' of ACL2 terms, i.e., macros
+      have been expanded and all constants are quoted.  The prover
+      will reduce form to this term almost immediately.  Typically,
+      this is the term that the rewriter will encounter during a
+      proof involving this form.  Of course, rewrite rules can
+      further change the form.  However, see the note below
+      concerning warrants.
+    * :tcp form --- translate form and remove everything not relevant to
+      the logical value as above, and then [untranslate], restoring
+      the use of such system macros as [lambda$], [let], [and],
+      [list], [cadr], and [+] and [*].  This is the semantics of form
+      in a ``user friendly'' syntax.  The suffix ``p'' in :tcp stands
+      for ``pretty.''
+    * :tca form --- translate form and then untranslate as noted above.
+      This effectively leaves ``annotations'' in place such as a
+      prog2$ joining each loop$ in form to its semantics, declare
+      forms in lambda objects, and [let] forms associating user
+      variable names to values.  This term is mainly meant as a
+      pedagogical device to help you understand how loop$s are
+      translated.  The suffix ``a'' in :tca stands for ``annotated.''
+
+  The terms returned by the three flavors of tc are all provably
+  equivalent to eachother and to the original form provided the
+  necessary warrants are assumed.
+
+  For example, if sq is a user-defined function of arity 1 and
+  (defwarrant sq) has issued a warrant for sq, then
+
+    ACL2 !>:tc (loop$ for e in lst collect (sq e))    ; sq is warranted
+    (COLLECT$ '(LAMBDA (LOOP$-IVAR) (SQ LOOP$-IVAR))
+             LST)
+
+  Nevertheless, the equivalence of the input and output of :tc above
+  cannot be proved unless the warrants are assumed.  That is,
+
+    (thm
+      (equal (loop$ for e in lst collect (sq e))
+             (COLLECT$ '(LAMBDA (LOOP$-IVAR) (SQ LOOP$-IVAR))
+                       LST)))
+
+  will fail with a checkpoint indicating that the warrant for sq must
+  be provided.  However,
+
+    (thm
+      (implies (warrant sq)
+               (equal (loop$ for e in lst collect (sq e))
+                      (COLLECT$ '(LAMBDA (LOOP$-IVAR) (SQ LOOP$-IVAR))
+                                LST))))
+
+  succeeds.
+
+  If there is no warrant for sq but there is a badge, then :tc cannot
+  clean up the translation because without a warrant the lambda
+  object calling sq is not [tame].  Thus,
+
+    ACL2 !>:tc (loop$ for e in lst collect (sq e))   ; sq is badged not warranted
+    (COLLECT$ '(LAMBDA (LOOP$-IVAR)
+                       (RETURN-LAST 'PROGN
+                                    '(LAMBDA$ (LOOP$-IVAR)
+                                              (LET ((E LOOP$-IVAR))
+                                                   (DECLARE (IGNORABLE E))
+                                                   (SQ E)))
+                                    ((LAMBDA (E) (SQ E)) LOOP$-IVAR)))
+              LST)
+
+  By the way, if you see a quoted lambda objects like that above in
+  output from the prover, it probably means the lambda object
+  contains unwarranted user-defined symbols!
+
+  The differences between :trans and the three commands (:tc, :tcp, and
+  :tca) are perhaps best illustrated by considering their respective
+  outputs on a single [loop$] statement.
+
+    ACL2 !>:trans (list (cadr x) (loop$ for e in lst collect (+ 1 e)))
+
+    (CONS (CAR (CDR X))
+          (CONS (RETURN-LAST
+                 'PROGN
+                 '(LOOP$ FOR E IN LST COLLECT (+ 1 E))
+                 (COLLECT$ '(LAMBDA (LOOP$-IVAR)
+                                    (DECLARE (IGNORABLE LOOP$-IVAR))
+                                    (RETURN-LAST 'PROGN
+                                                 '(LAMBDA$ (LOOP$-IVAR)
+                                                    (LET ((E LOOP$-IVAR))
+                                                      (DECLARE (IGNORABLE E))
+                                                      (+ 1 E)))
+                                                 ((LAMBDA (E) (BINARY-+ '1 E))
+                                                  LOOP$-IVAR)))
+                           LST))
+                'NIL))
+
+    => *
+
+    ACL2 !>:tc  (list (cadr x) (loop$ for e in lst collect (+ 1 e)))
+     (CONS (CAR (CDR X))
+           (CONS (COLLECT$ '(LAMBDA (LOOP$-IVAR)
+                                    (BINARY-+ '1 LOOP$-IVAR))
+                           LST)
+                 'NIL))
+
+    ACL2 !>:tcp (list (cadr x) (loop$ for e in lst collect (+ 1 e)))
+     (LIST (CADR X)
+           (COLLECT$ (LAMBDA$ (LOOP$-IVAR) (+ 1 LOOP$-IVAR))
+                     LST))
+
+    ACL2 !>:tca (list (cadr x) (loop$ for e in lst collect (+ 1 e)))
+     (LIST (CADR X)
+           (PROG2$ '(LOOP$ FOR E IN LST COLLECT (+ 1 E))
+                   (COLLECT$ (LAMBDA$ (LOOP$-IVAR)
+                                      (LET ((E LOOP$-IVAR)) (+ 1 E)))
+                             LST)))
+
+  First, notice that :trans also reports the output signature of the
+  term but the :tc commands do not.  They all return the cleaned up
+  translation in an error triple.  Second, :tc returns a term in the
+  internal format: the lambda objects are quoted list constants and
+  their bodies are in internal format, e.g., note the binary-+ and
+  quoted constant 1 in the output of :tc above.  If you use the :tc
+  command on the left-hand side of the conclusion of a :rewrite rule
+  the term you see is the term under which the rule is stored, i.e.,
+  the rule will be tried to rewrite instances of that term.
+
+  The other two commands have ``prettied up'' the output into a more
+  user-friendly format.  Third, the :tca command uses a prog2$ to
+  show the untranslated loop$ as a list constant and then show its
+  pretty semantics, with a let form in the body of the lambda$
+  reminding you that loop$-ivar is what was called e.
+
+  It is often helpful to look at the semantics of fancy loop$s.
+
+    ACL2 !>:tca (loop$ for x in xlst
+                       as  y in ylst
+                       collect (+ (* a x) (* b y)))
+     (PROG2$
+        '(LOOP$ FOR X IN XLST
+                AS  Y IN YLST
+                COLLECT (+ (* A X) (* B Y)))
+        (COLLECT$+
+             (LAMBDA$ (LOOP$-GVARS LOOP$-IVARS)
+                      (DECLARE (XARGS :GUARD (AND (TRUE-LISTP LOOP$-GVARS)
+                                                  (EQUAL (LEN LOOP$-GVARS) 2)
+                                                  (TRUE-LISTP LOOP$-IVARS)
+                                                  (EQUAL (LEN LOOP$-IVARS) 2))
+                                      :SPLIT-TYPES T))
+                      (LET ((A (CAR LOOP$-GVARS))
+                            (B (CADR LOOP$-GVARS))
+                            (X (CAR LOOP$-IVARS))
+                            (Y (CADR LOOP$-IVARS)))
+                           (+ (* A X) (* B Y))))
+             (LIST A B)
+             (LOOP$-AS (LIST XLST YLST))))
+
+  Notice what happens to the :guard of the lambda$ if we insert type
+  specifications with of-type.
+
+    ACL2 !>:tca (loop$ for x of-type (satisfies natp) in xlst
+                       as  y of-type integer in ylst
+                       collect (+ (* a x) (* b y)))
+
+     (PROG2$
+       '(LOOP$ FOR X OF-TYPE (SATISFIES NATP)
+               IN XLST AS Y OF-TYPE INTEGER
+               IN YLST COLLECT (+ (* A X) (* B Y)))
+       (COLLECT$+
+            (LAMBDA$ (LOOP$-GVARS LOOP$-IVARS)
+                     (DECLARE (XARGS :GUARD (AND (TRUE-LISTP LOOP$-GVARS)
+                                                 (EQUAL (LEN LOOP$-GVARS) 2)
+                                                 (TRUE-LISTP LOOP$-IVARS)
+                                                 (EQUAL (LEN LOOP$-IVARS) 2)
+                                                 (NATP (CAR LOOP$-IVARS))
+                                                 (INTEGERP (CADR LOOP$-IVARS)))
+                                     :SPLIT-TYPES T))
+                     (LET ((A (CAR LOOP$-GVARS))
+                           (B (CADR LOOP$-GVARS))
+                           (X (CAR LOOP$-IVARS))
+                           (Y (CADR LOOP$-IVARS)))
+                          (+ (* A X) (* B Y))))
+            (LIST A B)
+            (LOOP$-AS (LIST XLST YLST))))
+
+  And notice how the :guard keyword after the collect in the loop$
+  statement is added to the :guard of the generated lambda$.
+
+    ACL2 !>:tca (loop$ for x of-type (satisfies natp) in xlst
+                       as  y of-type integer in ylst
+                       collect
+                       :guard (and (rationalp a)
+                                   (complex-rationalp b))
+                       (+ (* a x) (* b y)))
+     (PROG2$
+      '(LOOP$ FOR X OF-TYPE (SATISFIES NATP) IN XLST
+              AS  Y OF-TYPE INTEGER IN YLST
+              COLLECT
+              :GUARD (AND (RATIONALP A)
+                          (COMPLEX-RATIONALP B))
+              (+ (* A X) (* B Y)))
+      (COLLECT$+
+       (LAMBDA$
+        (LOOP$-GVARS LOOP$-IVARS)
+        (DECLARE (XARGS :GUARD (AND (TRUE-LISTP LOOP$-GVARS)
+                                    (EQUAL (LEN LOOP$-GVARS) 2)
+                                    (TRUE-LISTP LOOP$-IVARS)
+                                    (EQUAL (LEN LOOP$-IVARS) 2)
+                                    (NATP (CAR LOOP$-IVARS))
+                                    (INTEGERP (CADR LOOP$-IVARS))
+                                    (RATIONALP (CAR LOOP$-GVARS))
+                                    (COMPLEX-RATIONALP (CADR LOOP$-GVARS)))
+                        :SPLIT-TYPES T))
+        (LET ((A (CAR LOOP$-GVARS))
+              (B (CADR LOOP$-GVARS))
+              (X (CAR LOOP$-IVARS))
+              (Y (CADR LOOP$-IVARS)))
+          (+ (* A X) (* B Y))))
+       (LIST A B)
+       (LOOP$-AS (LIST XLST YLST))))
+
+  Of course, while these declarations play a role in :guard
+  verification and execution in raw Lisp, they are irrelevant to the
+  formal semantics, as made clear by :tcp.
+
+    ACL2 !>:tcp (loop$ for x of-type (satisfies natp) in xlst
+                       as  y of-type integer in ylst
+                       collect
+                       :guard (and (rationalp a)
+                                   (complex-rationalp b))
+                       (+ (* a x) (* b y)))
+     (COLLECT$+ (LAMBDA$ (LOOP$-GVARS LOOP$-IVARS)
+                         (+ (* (CAR LOOP$-GVARS)
+                               (CAR LOOP$-IVARS))
+                            (* (CADR LOOP$-GVARS)
+                               (CADR LOOP$-IVARS))))
+                (LIST A B)
+                (LOOP$-AS (LIST XLST YLST)))")
+ (TCA
+  (MACROS)
+  "translate a form and clean it up into an annotated pretty term
+
+  See [tc].")
+ (TCP (MACROS)
+      "translate a form and clean it up into a pretty term
+
+  See [tc].")
  (TENTH
   (NTH ACL2-BUILT-INS)
   "Tenth member of the list
@@ -134281,10 +134667,10 @@ A Convenient Macro for Conjoining Warrants
   such symbols among the arguments to warrant.)  (Warrant fn1 fn2 ...
   fnk) expands to:
 
-    (AND (APPLY$-WARRANT-fn1)
-         (APPLY$-WARRANT-fn2)
+    (AND (FORCE (APPLY$-WARRANT-fn1))
+         (FORCE (APPLY$-WARRANT-fn2))
          ...
-         (APPLY$-WARRANT-fnk))
+         (FORCE (APPLY$-WARRANT-fnk)))
 
   Because there are over 800 ACL2 primitives built into apply$, it can
   be hard to look at a conjecture involving, say, a [lambda$] term,
@@ -134301,6 +134687,17 @@ A Convenient Macro for Conjoining Warrants
   Instead, the warrant macro ignores those fni built into apply$.  It
   does cause an error if one of the fni has no warrant and is not
   built in.
+
+  The (warrant fn1 fn2 ... fnk) macro [force]s the warrants because (a)
+  we assume the only use of the macro is to add warrant hypotheses to
+  conjectures and (b) by forcing warrants agressively the prover
+  ``almost completes'' more proofs and enters a forcing round that
+  highlights the need to assume those warrants.  When a rewrite rule,
+  for example, is conditioned on a warrant that is not forced (as
+  would happen if you added the hyps (apply$-warrant-fn1),
+  (apply$-warrant-fn2), etc.), then the rule will not fire if a
+  subsequent conjecture omitted the warrants.  Of course, this raises
+  the question ``But are all the warrants really true?''
 
 
 Why Warrants Don't Render Theorems Vacuous
