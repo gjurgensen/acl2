@@ -30341,8 +30341,33 @@ ld) and @(tsee include-book)"
  non-@('nil') @('summary') allows suppression of this error message without
  suppressing all error output; see @(see set-inhibit-er).</p>
 
+ <p>Calls of @('er-hard') expand much like calls @('(er hard ...)'), in the
+ sense that both expand to calls of the function, @(tsee illegal), which has a
+ @(see guard) equivalent to @('nil').  See @(see er-hard?) for a similar
+ utility that avoids generating guard obligations.</p>
+
  <p>See @(tsee er-soft) for a similar utility pertaining to ``soft''
  errors.</p>")
+
+(defxdoc er-hard?
+  :parents (errors acl2-built-ins)
+  :short "Print an error message and ``cause a hard error''"
+  :long "<p>See @(see er-hard) for a nearly identical utility that is aligned
+  with @('(er hard ...)'), generating a @(see guard) obligation of @('nil').
+  By contrast, @('(er-hard? ...)') is aligned with @('(er hard? ...)')): these
+  do not generate guard obligations.  This distinction is due to the fact that
+  a call of @('(er-hard ...)') macroexpands to a call of the function, @(tsee
+  illegal), while a call of @('(er-hard? ...)') macroexpands to a call of the
+  function, @(tsee hard-error).</p>
+
+ @({
+ General Form:
+ (er-hard? context summary str &rest str-args)
+ })
+
+ <p>Other than the difference in guard obligations generated, as discussed
+ above, @('er-hard?') behaves identically to @('er-hard').  See @(see er-hard)
+ and for relevant background, see @(see er).</p>")
 
 (defxdoc er-progn
   :parents (errors programming-with-state acl2-built-ins)
@@ -93776,7 +93801,8 @@ it."
  @('toggle-inhibit-er'), and @('toggle-inhibit-er!').  The relevant table has
  similarly been renamed from @('inhibit-er-soft-table') to
  @('inhibit-er-table').  These changes reflect their relevance for the new
- utility, @(tsee er-hard), in addition to @(tsee er-soft).</p>
+ utilities, @(tsee er-hard) and @(tsee er-hard), in addition to @(tsee
+ er-soft).</p>
 
  <p>The macro @(tsee warrant) now @(tsee force)s the warrants listed.</p>
 
