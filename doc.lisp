@@ -3322,6 +3322,9 @@ Subtopics
   [Er-hard]
       Print an error message and ``cause a hard error''
 
+  [Er-hard?]
+      Print an error message and ``cause a hard error''
+
   [Er-progn]
       Perform a sequence of state-changing ``error triples''
 
@@ -33568,7 +33571,30 @@ Subtopics
   summary allows suppression of this error message without
   suppressing all error output; see [set-inhibit-er].
 
+  Calls of er-hard expand much like calls (er hard ...), in the sense
+  that both expand to calls of the function, [illegal], which has a
+  [guard] equivalent to nil.  See [er-hard?] for a similar utility
+  that avoids generating guard obligations.
+
   See [er-soft] for a similar utility pertaining to ``soft'' errors.")
+ (ER-HARD?
+  (ERRORS ACL2-BUILT-INS)
+  "Print an error message and ``cause a hard error''
+
+  See [er-hard] for a nearly identical utility that is aligned with (er
+  hard ...), generating a [guard] obligation of nil.  By contrast,
+  (er-hard? ...) is aligned with (er hard? ...)): these do not
+  generate guard obligations.  This distinction is due to the fact
+  that a call of (er-hard ...) macroexpands to a call of the
+  function, [illegal], while a call of (er-hard? ...) macroexpands to
+  a call of the function, [hard-error].
+
+    General Form:
+    (er-hard? context summary str &rest str-args)
+
+  Other than the difference in guard obligations generated, as
+  discussed above, er-hard? behaves identically to er-hard.  See
+  [er-hard] and for relevant background, see [er].")
  (ER-LET* (POINTERS)
           "See [programming-with-state].")
  (ER-LET*-CMP (POINTERS)
@@ -33773,6 +33799,9 @@ Subtopics
       Print an error message and ``cause an error''
 
   [Er-hard]
+      Print an error message and ``cause a hard error''
+
+  [Er-hard?]
       Print an error message and ``cause a hard error''
 
   [Er-progn]
@@ -91758,7 +91787,7 @@ Changes to Existing Features
   toggle-inhibit-er, and toggle-inhibit-er!.  The relevant table has
   similarly been renamed from inhibit-er-soft-table to
   inhibit-er-table.  These changes reflect their relevance for the
-  new utility, [er-hard], in addition to [er-soft].
+  new utilities, [er-hard] and [er-hard], in addition to [er-soft].
 
   The macro [warrant] now [force]s the warrants listed.
 
