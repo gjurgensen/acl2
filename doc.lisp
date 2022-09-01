@@ -3958,10 +3958,10 @@ Subtopics
       [explode-nonnegative-integer] and [explode-atom].
 
   [Print-object$]
-      Print an an object to an open object output channel
+      Print an object to an open object output channel
 
   [Print-object$+]
-      Print an an object to an open output channel in a specified manner
+      Print an object to an open output channel in a specified manner
 
   [Prog2$]
       Execute two forms and return the value of the second one
@@ -4660,10 +4660,11 @@ Silent loading of ACL2 customization files
     :include-book-dir-alist
 
   This key's value is used by [include-book]'s :DIR argument to
-  associate a directory with a keyword.  An exception is the keyword
-  :SYSTEM for the books/ directory; see [include-book], in particular
-  the section on ``Books Directory.'' Also see [add-include-book-dir]
-  and [add-include-book-dir!].
+  associate a directory with a keyword.  It need not associate a
+  value with :SYSTEM, to denote the books/ directory (see
+  [community-books]; see [include-book], in particular the section on
+  ``Books Directory.'' Also see [add-include-book-dir] and
+  [add-include-book-dir!].
 
     :match-free-default
 
@@ -6060,7 +6061,7 @@ Subtopics
     (add-include-book-dir kwd dir)
 
   where kwd is a [keywordp] and dir is a relative or absolute
-  [pathname] for a directory, optionally using the syntax (:system .
+  [pathname] for a directory, optionally using the syntax (:keyword .
   filename) described in [full-book-name].  If the final '/' is
   missing for the resulting directory, ACL2 will add it for you.  The
   effect of this event is to modify the meaning of the :dir keyword
@@ -6087,7 +6088,7 @@ Subtopics
   the absolute pathname of the system books directory, which by
   default is immediately under the directory where the ACL2
   executable was originally built (see [include-book], in particular
-  the discussion there of ``books directory'').
+  the discussion there of ``Books Directory'').
 
   This macro generates a [table] event that updates the table
   include-book-dir!-table, which associates keywords with absolute
@@ -17077,14 +17078,14 @@ Subtopics
 
   Technical Remark.  Step 3 above mentions rolling the logical [world]
   back to check for local incompatibilities.  For efficiency, this
-  retraction to an initial segment of the the world is skipped if a
-  local event is not encountered, and otherwise the world is rolled
-  back through the first local event past the boot-strap world ---
-  see [local-incompatibility] --- before the book is included to
-  check for local incompatibilities.  Note that if that first local
-  event is in the certification world, then all commands from that
-  event onward will be undone by the certify-book call.  End of
-  Technical Remark.
+  retraction to an initial segment of the world is skipped if a local
+  event is not encountered, and otherwise the world is rolled back
+  through the first local event past the boot-strap world --- see
+  [local-incompatibility] --- before the book is included to check
+  for local incompatibilities.  Note that if that first local event
+  is in the certification world, then all commands from that event
+  onward will be undone by the certify-book call.  End of Technical
+  Remark.
 
   A utility is provided to assist in debugging failures of
   certify-book; see [redo-flat].)
@@ -25194,7 +25195,7 @@ Subtopics
       (local local-def)
       (local local-thm))
 
-  The purpose of encap is to ensure the the executable version of name
+  The purpose of encap is to ensure that the executable version of name
   terminates on all arguments.  Thus, local-def and local-thm are as
   follows, where the xargs of the [declare] form are the result of
   adding :VERIFY-GUARDS NIL to the result of removing the :test and
@@ -27112,10 +27113,10 @@ The Default Function Names
       (H :TYPE (HASH-TABLE EQ)))
 
   introduces a stobj named $S.  The stobj has three fields: X, A, and
-  H.  The A field is an array and the the A field is a hash table.
-  The X field contains an integer and is initially 0.  The A field
-  contains a list of integers, each between 0 and 9, inclusive.
-  Initially, each of the three elements of the A field is 9.
+  H.  The A field is an array and the A field is a hash table.  The X
+  field contains an integer and is initially 0.  The A field contains
+  a list of integers, each between 0 and 9, inclusive.  Initially,
+  each of the three elements of the A field is 9.
 
   This event introduces the following sequence of definitions:
 
@@ -30200,10 +30201,10 @@ INFORMAL INTRODUCTION
   FINALLY, is also supported.  Here is a variant of the preceding
   example that illustrates the use of FINALLY.  The iteration stops
   with the (loop-finish) form this time, rather than with a call of
-  return.  Execution of (loop-finish) passes control to the the
-  FINALLY clause, which is executed just like the DO body but with a
-  single pass, thus determining the value of the loop$ --- in this
-  example, returning the final value of y.
+  return.  Execution of (loop-finish) passes control to the FINALLY
+  clause, which is executed just like the DO body but with a single
+  pass, thus determining the value of the loop$ --- in this example,
+  returning the final value of y.
 
     ACL2 !>(loop$ with x = '(a b c)
                   with y = nil
@@ -34750,6 +34751,9 @@ Subtopics
 
   [Progn!]
       Evaluate some forms, not necessarily [events]
+
+  [Project-dir-alist]
+      Support for moving project directories and :dir arguments
 
   [Redundant-events]
       Allowing a name to be introduced ``twice''
@@ -50272,7 +50276,7 @@ Subtopics
   not evaluated.  Invariant is just a macro that expands into a term
   that checks that not both [rune]s are enabled.  See
   [theory-invariant].  Also see [incompatible!] for a variant that
-  insists the the arguments are indeed runes, not merely having the
+  insists the arguments are indeed runes, not merely having the
   shapes of runes.")
  (INCOMPATIBLE!
   (THEORIES)
@@ -50375,8 +50379,8 @@ Subtopics
   may further involve induction rules, though the applied rule is
   removed from consideration during that further analysis, in order
   to avoid looping.)  If rec-fn has a recursive definition, then the
-  the definition's dual induction scheme is suggested (i.e.,
-  unwinding the function).
+  definition's dual induction scheme is suggested (i.e., unwinding
+  the function).
 
   (Remark.  Unlike :induct [hints], the :scheme of an :induction rule
   only introduces induction schemes based on the top-level function
@@ -55944,10 +55948,10 @@ Subtopics
       Advanced controls of ACL2 printing
 
   [Print-object$]
-      Print an an object to an open object output channel
+      Print an object to an open object output channel
 
   [Print-object$+]
-      Print an an object to an open output channel in a specified manner
+      Print an object to an open output channel in a specified manner
 
   [Printing-to-strings]
       Printing to strings instead of files or standard output
@@ -60463,7 +60467,7 @@ Subtopics
              (implies (true-listp z)
                       (equal (rev (rev z)) z)))
 
-  The second hypothesis above is the the induction hypothesis.  The
+  The second hypothesis above is the induction hypothesis.  The
   conclusion above is the formula we are trying to prove.  Each
   induction hypothesis is always an instance (see
   [LOGIC-KNOWLEDGE-TAKEN-FOR-GRANTED-INSTANCE]) of the formula being
@@ -67569,7 +67573,7 @@ Subtopics
   exists only in the [wormhole] [state] with which you interact when
   a break occurs.  This allows you to change the [monitor]ed [rune]s
   and their conditions during the course of a proof attempt without
-  changing the [state] in which the the proof is being constructed.
+  changing the [state] in which the proof is being constructed.
 
   Unconditional break points are obtained by using the break condition
   t.  We now discuss conditional break points.  The break condition,
@@ -70274,8 +70278,8 @@ Subtopics
   (if any); see [table].
 
   We have relaxed the translation rules for :measure [hints] to
-  [defun], so that the the same rules apply to these terms that apply
-  to terms in [defthm] [events].  In particular, in :measure [hints]
+  [defun], so that the same rules apply to these terms that apply to
+  terms in [defthm] [events].  In particular, in :measure [hints]
   [mv] is treated just like [list], and [state] receives no special
   handling.
 
@@ -89525,7 +89529,7 @@ EMACS Support
   Fixed the [ACL2-doc] browser so that it can handle topic names with
   the single-quote (') and comma (,) characters, by escaping them.
 
-  Fixed Emacs support for the the [proof-builder] dive command (see
+  Fixed Emacs support for the [proof-builder] dive command (see
   [ACL2-pc::dive]), control-t control-d, to eliminate trailing zeros,
   since those are (and have been) disallowed by that command.
 
@@ -91830,6 +91834,19 @@ New Features
   variants :[tca] and :[tcp] use different degrees of ``cleaning.''
   These are particularly useful for seeing the logical meanings of
   [loop$] terms as well as terms involving [mbe] and [return-last].
+
+  It is now possible to move directories of certified books, including
+  the [certificate] (.cert) files.  The key idea is to set up an
+  ``ACL2 projects'' file that associates keywords with directory
+  names, where each keyword indicates a movable project and the
+  associated directory name is the top-level directory of the
+  project.  Up till now, a sysfile was a pair of the form (:SYSTEM .
+  \"directory-name\"); now, a sysfile may have an arbitrary keyword as
+  its first component (i.e., its car).  The environment variable
+  ACL2_PROJECTS may be used to specify a file containing associations
+  of keywords with directory names.  See [project-dir-alist].  Thanks
+  to Sol Swords for requesting such a capability and for helpful
+  design discussions.
 
 
 Heuristic and Efficiency Improvements
@@ -99131,7 +99148,7 @@ Subtopics
       Set default keyword values for [print-gv]")
  (PRINT-OBJECT$
   (IO ACL2-BUILT-INS)
-  "Print an an object to an open object output channel
+  "Print an object to an open object output channel
 
     General Form:
     (print-object$ x channel state)
@@ -99156,7 +99173,7 @@ Remarks
   For a related utility, see [write-list].")
  (PRINT-OBJECT$+
   (IO ACL2-BUILT-INS)
-  "Print an an object to an open output channel in a specified manner
+  "Print an object to an open output channel in a specified manner
 
     General Form:
     (print-object$+ x       ; an ACL2 object
@@ -101016,6 +101033,27 @@ Avoiding These Errors
   efficiency doesn't matter, and the loop$ scion translation of a
   loop$ is as perspicuous as the loop$ itself.  So don't dismiss this
   approach out of hand.")
+ (PROJECT-DIR-ALIST
+  (EVENTS)
+  "Support for moving project directories and :dir arguments
+
+  This topic is currently only a stub, but should be fleshed out soon.
+
+  In short, you can set environment variable ACL2_PROJECTS to be the
+  name of a file that contains lines of the following form, as well
+  as any number of comment lines for which the first non-whitespace
+  character is a semicolon (;).
+
+    :KEYWORD \"directory-name\"
+
+  Then :KEYWORD will be interpreted to represent \"directory-name\" when
+  used with the :DIR argument of [include-book] or [ld], just as is
+  the case when using [add-include-book-dir!].  But an additional
+  property is as follows.  Suppose a book and its certificate
+  \"directory-name/.../bk.{lisp,cert}\" are moved (or copied) to
+  \"directory-name-2/.../bk.{lisp,cert}\".  Then in any session where
+  :KEYWORD is similarly bound to \"directory-name-2\" instead of
+  \"directory-name\", that book will be treated as certified.")
  (PROMPT
   (LD)
   "The prompt printed by [ld]
@@ -103081,7 +103119,7 @@ Subtopics
     * An attempt to puff an [include-book] command may fail for a book that
       has been modified, as described later in this documentation
       topic.
-    * The puff of an an [include-book] command for an uncertified book will
+    * The puff of an [include-book] command for an uncertified book will
       simply expose the contents of the book.  However, if the book
       is certified then the puff will replace each event by its
       [make-event] expansion.  Also, ACL2 considers that (certified)
@@ -105793,7 +105831,7 @@ Subtopics
   "Allowing a name to be introduced ``twice''
 
   Sometimes an event will announce that it is ``redundant'', meaning
-  that the the form is not evaluated because ACL2 determines that its
+  that the form is not evaluated because ACL2 determines that its
   effect is already incorporated into the logical [world].  Thus,
   when this happens, no change to the logical [world] takes place.
   This feature permits two independent [books], each of which defines
@@ -115336,7 +115374,7 @@ Subtopics
   [certify-book]: a [local-incompatibility] check, writing of a
   [certificate] file, and possibly [compilation].  Another effect is
   that proofs may be skipped when processing [events] assuming that
-  the the certify-book command does not explicitly specify
+  the certify-book command does not explicitly specify
   :skip-proofs-okp nil, as we now explain.  A non-nil value of
   'write-acl2x should either be t or a one-element list (x), where x
   is a legal value for the [state] global 'ld-skip-proofsp (see
@@ -121112,7 +121150,7 @@ List of a few built-in system utilities
       been defined as a stobj in w, use known-stobjs = t.
       Technicality: if known-stobjs is a list then it is allowed to
       contain any number of nil elements (as may be the case for the
-      the stobjs-in or stobjs-out of a symbol), which are ignored.
+      stobjs-in or stobjs-out of a symbol), which are ignored.
     * (stobjs-in fn w): For a function symbol fn of [world] w, return the
       stobjs-in of fn, which is the result of modifying the list of
       formal parameters of fn by replacing with nil each symbol that
@@ -129655,7 +129693,7 @@ Subtopics
   Here is the detail promised above, for parsing a term into a
   :type-prescription rule.  There are two steps.  (1) ACL2 first
   translates the term, expanding all macros (see [trans]) and also
-  removing [guard-holders].  (2) Then the the translated term is
+  removing [guard-holders].  (2) Then the translated term is
   traversed top-down, expanding away lambdas ([let], [let*], and
   [mv-let] expressions) and flattening the [implies] structure, until
   the conclusion is exposed; then the conclusion's lambdas are also
@@ -132406,7 +132444,7 @@ Subtopics
 
   As an exercise, let's arrange for the hint to stay around and be
   applied indefinitely but with a simplification between each use of
-  the the hint.  To do this we need to pass information from one
+  the hint.  To do this we need to pass information from one
   application of the hint to the next, essentially to say ``stay
   around but don't fire.''
 
@@ -136778,8 +136816,8 @@ Constrained Functions and Defattach
   channels are closed and state global variables are returned to
   their original values, or else be willing to live with changes made
   to state that are not justified by the code that has been
-  evaluated.  You are welcome to look in the the ACL2 source code at
-  the definition of macro channel-to-string, which employs
+  evaluated.  You are welcome to look in the ACL2 source code at the
+  definition of macro channel-to-string, which employs
   with-local-state to create a local [state] for the purpose of
   creating a string.
 
@@ -137075,10 +137113,10 @@ Keyword arguments
   is specified, then then every output type is turned on except for
   those in the set specified by the value of :off.  Otherwise, if
   :off :all is specified, then every output type is inhibited except
-  as specified by the the value of :on.  Otherwise :all is not
-  specified for either :on or :off, and the currently-inhibited
-  output types are reduced as specified by the value of :on and then
-  extended as specified by the value of :off.
+  as specified by the value of :on.  Otherwise :all is not specified
+  for either :on or :off, and the currently-inhibited output types
+  are reduced as specified by the value of :on and then extended as
+  specified by the value of :off.
 
   :summary-on, :summary-off
 
@@ -137711,8 +137749,8 @@ Subtopics
   undone (see [ubt]).  Thus in particular, the world includes a
   representation of the current logical theory, as well as some
   extra-logical information such as the values of ACL2 [table]s.  The
-  rest of this topic focuses on the structure of the the ACL2 world
-  and, more generally, the ``world'' data structure.
+  rest of this topic focuses on the structure of the ACL2 world and,
+  more generally, the ``world'' data structure.
 
   A ``world'' is a list of triples, each of the form (sym prop . val),
   implementing the ACL2 notion of property lists.  ACL2 permits the
@@ -138487,7 +138525,7 @@ Subtopics
   status and whose body is the lambda body.  Guard clauses are
   generated from the body, with one exception: the lambda formal is
   replaced by a new variable so that no prior assumptions are
-  available about the value of the the wormhole status.
+  available about the value of the wormhole status.
 
   If the newly computed status has an entry code of :ENTER [ld] will be
   invoked.  But we don't really copy state, of course.  Instead we
@@ -140600,10 +140638,10 @@ Subtopics
   the current subterm is (p y), then p-top will print (equal (and x
   (*** (p y) ***)) (foo z)).
 
-  Prettyprint the the conclusion, highlighting the current term.  The
-  usual user syntax is used, as with the command p (as opposed to
-  pp).  This is illustrated in the example above, where one would
-  *not* see (equal (if x (*** (p y) ***) 'nil) (foo z)).
+  Prettyprint the conclusion, highlighting the current term.  The usual
+  user syntax is used, as with the command p (as opposed to pp).
+  This is illustrated in the example above, where one would *not* see
+  (equal (if x (*** (p y) ***) 'nil) (foo z)).
 
   Remark (obscure): In some situations, a term of the form (if x t y)
   occurring inside the current subterm will not print as (or x y),
@@ -141885,8 +141923,8 @@ Subtopics
   If kept-goal-names is not nil, the current goal is replaced by
   conjoining it with all goals other than the current goal and those
   indicated by kept-goal-names, and those other goals are deleted.
-  If kept-goal-names is omitted, then the the current goal must be of
-  the form (name . n), and the goals to conjoin into the current goal
+  If kept-goal-names is omitted, then the current goal must be of the
+  form (name . n), and the goals to conjoin into the current goal
   (and delete) are those with names of the form (name . k) for k >=
   n.
 
