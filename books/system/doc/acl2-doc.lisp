@@ -2332,10 +2332,10 @@
  })
 
  <p>This key's value is used by @(tsee include-book)'s @(':DIR') argument to
- associate a directory with a keyword.  An exception is the keyword
- @(':SYSTEM') for the @('books/') directory; see @(see include-book), in
- particular the section on ``Books Directory.''  Also see @(tsee
- add-include-book-dir) and @(tsee add-include-book-dir!).</p>
+ associate a directory with a keyword.  It need not associate a value with
+ @(':SYSTEM'), to denote the @('books/') directory (see @(see community-books);
+ see @(see include-book), in particular the section on ``Books Directory.''
+ Also see @(tsee add-include-book-dir) and @(tsee add-include-book-dir!).</p>
 
  @({
   :match-free-default
@@ -3605,7 +3605,7 @@ include-book)"
  })
 
  <p>where @('kwd') is a @(tsee keywordp) and @('dir') is a relative or absolute
- @(see pathname) for a directory, optionally using the syntax @('(:system
+ @(see pathname) for a directory, optionally using the syntax @('(:keyword
  . filename)') described in @(see full-book-name).  If the final '@('/')' is
  missing for the resulting directory, ACL2 will add it for you.  The effect of
  this event is to modify the meaning of the @(':dir') keyword argument of
@@ -3629,8 +3629,8 @@ include-book)"
  <p>The keyword @(':system') can never be redefined.  It will always point to
  the absolute pathname of the system books directory, which by default is
  immediately under the directory where the ACL2 executable was originally built
- (see @(see include-book), in particular the discussion there of ``books
- directory'').</p>
+ (see @(see include-book), in particular the discussion there of ``Books
+ Directory'').</p>
 
  <p>This macro generates a @(tsee table) event that updates the table
  @('include-book-dir!-table'), which associates keywords with absolute
@@ -4146,7 +4146,7 @@ and @(tsee include-book)"
  output.</li>
 
  <li>See @(see SET-INHIBIT-OUTPUT-LST), see @(see SET-INHIBIT-WARNINGS), see
- @(see SET-INHIBIT-ER-SOFT), and see @(see SET-INHIBITED-SUMMARY-TYPES) to
+ @(see SET-INHIBIT-ER), and see @(see SET-INHIBITED-SUMMARY-TYPES) to
  inhibit various types of output.</li>
 
  <li>See @(see SET-RAW-PROOF-FORMAT) to make proof output display lists of
@@ -5870,15 +5870,21 @@ and @(tsee include-book)"
   @({
       (warrant sq)
     <-->
-      (apply$-warrant-sq)
+      (force (apply$-warrant-sq))
     <-->
       (((badge 'SQ) = '(APPLY$-BADGE 1 1 . T))
        &
        ((apply$ 'SQ args) = (sq (car args))))
    })
 
+  <p>Note that the @(tsee warrant) macro @(tsee force)s the warrants for the
+  functions listed.  But logically @('force') is just the identity.</p>
+
   <p>Thus, the warrant for @('sq') specifies the value of @('(badge 'sq)') and
-  of @('(apply$ 'sq ...)').</p>
+  of @('(apply$ 'sq ...)').  Operationally, by forcing the warrant it means the
+  absence of a warrant among the hypotheses of a conjecture which is otherwise
+  provable just results in a forcing round that highlights the need for the
+  warrant.</p>
 
   <p>If you try to prove the unwarranted version of the little theorem about
   @(''sq') it fails in a forcing round with</p>
@@ -12480,7 +12486,10 @@ with any questions about building the community books.</p>")
  in....\".  These may be safely ignored.</p>
 
  <p>Note that you will want to certify @(see books) in order to take full
- advantage of ACL2.  See @(see books-certification).</p>")
+ advantage of ACL2.  See @(see books-certification).</p>
+
+ <p>See @(see save-exec) for how to build an ACL2 executable from a state
+ resulting from the running of specified @(see command)s.</p>")
 
 (defxdoc built-in-clause
   :parents (rule-classes)
@@ -14188,7 +14197,7 @@ with any questions about building the community books.</p>")
 
  <p>Technical Remark.  Step 3 above mentions rolling the logical @(see world)
  back to check for local incompatibilities.  For efficiency, this retraction to
- an initial segment of the the world is skipped if a local event is not
+ an initial segment of the world is skipped if a local event is not
  encountered, and otherwise the world is rolled back through the first local
  event past the boot-strap world &mdash; see @(see local-incompatibility)
  &mdash; before the book is included to check for local incompatibilities.
@@ -15723,13 +15732,19 @@ with any questions about building the community books.</p>")
  <p>Here is the resulting checkpoint.</p>
 
  @({
- (EQUAL
-  (HIDE
-      (COMMENT
-           \"Call failed because the warrant for HELLO is not known to be true\"
-           (EV$ '(HELLO LOOP$-IVAR)
-                '((LOOP$-IVAR . JOHN)))))
-  '(HI JOHN))
+  (EQUAL
+   (HIDE
+    (COMMENT
+     \"Call failed because the warrant for HELLO is not known to be true\"
+     (EV$ '(RETURN-LAST 'PROGN
+                        '(LAMBDA$ (LOOP$-IVAR)
+                                  (LET ((NAME LOOP$-IVAR))
+                                    (DECLARE (IGNORABLE NAME))
+                                    (HELLO NAME)))
+                        ((LAMBDA (NAME) (HELLO NAME))
+                         LOOP$-IVAR))
+          '((LOOP$-IVAR . JOHN)))))
+   '(HI JOHN))
  })")
 
 (defxdoc common-lisp
@@ -20611,7 +20626,7 @@ subtree of X with T, without duplication.</p>
 
  <p>(Of interest only to users of @(tsee apply$).)  Special handling is applied
  when attempting to attach to a so-called <i>warrant</i>, which is produced by
- an appication of @(tsee defwarrant) (or @(tsee defun$)).  In that case it is
+ an application of @(tsee defwarrant) (or @(tsee defun$)).  In that case it is
  legal to attach the function @('true-apply$-warrant') to the warrant, without
  any proof obligation.  This attachment is actually performed automatically by
  @('defwarrant'), so users (even users of @('apply$')) need not deal
@@ -21987,7 +22002,7 @@ subtree of X with T, without duplication.</p>
     (local local-thm))
  })
 
- <p>The purpose of @('encap') is to ensure the the executable version of
+ <p>The purpose of @('encap') is to ensure that the executable version of
  @('name') terminates on all arguments.  Thus, @('local-def') and
  @('local-thm') are as follows, where the @('xargs') of the @(tsee declare)
  form are the result of adding @(':VERIFY-GUARDS NIL') to the result of
@@ -23890,7 +23905,7 @@ subtree of X with T, without duplication.</p>
  })
 
  <p>introduces a stobj named @('$S').  The stobj has three fields: @('X'),
- @('A'), and @('H').  The @('A') field is an array and the the @('A') field is
+ @('A'), and @('H').  The @('A') field is an array and the @('A') field is
  a hash table.  The @('X') field contains an integer and is initially 0.  The
  @('A') field contains a list of integers, each between 0 and 9, inclusive.
  Initially, each of the three elements of the @('A') field is 9.</p>
@@ -26866,7 +26881,7 @@ ld) and @(tsee include-book)"
  @('loop$') keyword, @('FINALLY'), is also supported.  Here is a variant of the
  preceding example that illustrates the use of @('FINALLY').  The iteration
  stops with the @('(loop-finish)') form this time, rather than with a call of
- @('return').  Execution of @('(loop-finish)') passes control to the the
+ @('return').  Execution of @('(loop-finish)') passes control to the
  @('FINALLY') clause, which is executed just like the @('DO') body but with a
  single pass, thus determining the value of the @('loop$') &mdash; in this
  example, returning the final value of @('y').</p>
@@ -27481,7 +27496,8 @@ ld) and @(tsee include-book)"
  irrelevant clutter such as @(tsee declare) forms and it shows only arguments
  of @('do$') relevant to our discussion of the example above.  Also, the
  display employs user-level syntax (i.e., an <i>untranslated term</i>; see
- @(see term)).</p>
+ @(see term)).  See also the subsection of @(tsee lambda$) entitled ``About
+ @('Lambda$')s and Prover Output.''</p>
 
  <p>The definition of @('do$') is given at the end of this topic, for those who
  care to explore it, but this discussion is intended to be self-contained.
@@ -30307,6 +30323,52 @@ ld) and @(tsee include-book)"
  <p>Technical note for raw Lisp programmers only: It is possible to cause hard
  errors to signal actual raw Lisp errors.  See @(see hard-error).</p>")
 
+(defxdoc er-hard
+  :parents (errors acl2-built-ins)
+  :short "Print an error message and ``cause a hard error''"
+  :long "<p>See @(see er) for relevant background, which is assumed below, and
+ related utilities.</p>
+
+ @({
+ General Form:
+ (er-hard context summary str &rest str-args)
+ })
+
+ <p>where context is a legal context (see @(see ctx)), @('summary') is @('nil')
+ or a string, @('str') is a string, and @('str-args') are @('tsee fmt')
+ arguments for @('str').  Note that @('(er-hard context summary str ...)') is
+ equivalent to @('(er hard context (cons summary str) ...)').  The use of a
+ non-@('nil') @('summary') allows suppression of this error message without
+ suppressing all error output; see @(see set-inhibit-er).</p>
+
+ <p>Calls of @('er-hard') expand much like calls @('(er hard ...)'), in the
+ sense that both expand to calls of the function, @(tsee illegal), which has a
+ @(see guard) equivalent to @('nil').  See @(see er-hard?) for a similar
+ utility that avoids generating guard obligations.</p>
+
+ <p>See @(tsee er-soft) for a similar utility pertaining to ``soft''
+ errors.</p>")
+
+(defxdoc er-hard?
+  :parents (errors acl2-built-ins)
+  :short "Print an error message and ``cause a hard error''"
+  :long "<p>See @(see er-hard) for a nearly identical utility that is aligned
+  with @('(er hard ...)'), generating a @(see guard) obligation of @('nil').
+  By contrast, @('(er-hard? ...)') is aligned with @('(er hard? ...)')): these
+  do not generate guard obligations.  This distinction is due to the fact that
+  a call of @('(er-hard ...)') macroexpands to a call of the function, @(tsee
+  illegal), while a call of @('(er-hard? ...)') macroexpands to a call of the
+  function, @(tsee hard-error).</p>
+
+ @({
+ General Form:
+ (er-hard? context summary str &rest str-args)
+ })
+
+ <p>Other than the difference in guard obligations generated, as discussed
+ above, @('er-hard?') behaves identically to @('er-hard').  See @(see er-hard)
+ and for relevant background, see @(see er).</p>")
+
 (defxdoc er-progn
   :parents (errors programming-with-state acl2-built-ins)
   :short "Perform a sequence of state-changing ``error triples''"
@@ -30355,7 +30417,8 @@ ld) and @(tsee include-book)"
 (defxdoc er-soft
   :parents (errors acl2-built-ins)
   :short "Print an error message and ``cause a soft error''"
-  :long "<p>See @(see er) for relevant background, which is assumed below.</p>
+  :long "<p>See @(see er) for relevant background, which is assumed below, and
+ related utilities.</p>
 
  @({
  General Form:
@@ -30364,10 +30427,12 @@ ld) and @(tsee include-book)"
 
  <p>where context is a legal context (see @(see ctx)), @('summary') is @('nil')
  or a string, @('str') is a string, and @('str-args') are @('tsee fmt')
- arguments for @('str').  Note that @('(er-soft context summary str ...)') is
- equivalent to @('(er soft context nil str ...)').  The use of a non-@('nil')
- @('summary') allows suppression of this error message without suppressing all
- error output; see @(see set-inhibit-er-soft).</p>")
+ arguments for @('str').  The use of a non-@('nil') @('summary') allows
+ suppression of this error message without suppressing all error output; see
+ @(see set-inhibit-er).</p>
+
+ <p>See @(tsee er-hard) for a similar utility pertaining to ``hard''
+ errors.</p>")
 
 (defxdoc error-triple
   :parents (errors programming-with-state)
@@ -30457,7 +30522,7 @@ ld) and @(tsee include-book)"
  as expected by @(tsee fmt) &mdash; unless error output is inhibited
  (see @(see set-inhibit-output-lst) and @(see with-output)) or @('summary') is
  non-@('nil'), in which case it is a string, and error output of that type is
- inhibited (see @(see set-inhibit-er-soft)).  See @(see fmt).</p>
+ inhibited (see @(see set-inhibit-er)).  See @(see fmt).</p>
 
  <p>@('Error1') can be interpreted as causing an ``error'' when programming
  with the ACL2 @(tsee state), something most ACL2 users will probably not want
@@ -39054,6 +39119,15 @@ current fast alists."
  if @('erp') is not @('nil'), then @('val') is the desired list of
  commands.</p>")
 
+(defxdoc get-cpu-time
+  :parents (programming-with-state acl2-built-ins read-run-time)
+  :short "Read elapsed cpu time"
+  :long "<p>@('(Get-cpu-time state)') returns the elapsed cpu time in seconds
+ since the start of the current ACL2 session.  See @(see read-run-time) for
+ further documentation.</p>
+
+ @(def get-cpu-time)")
+
 (defxdoc get-enforce-redundancy
   :parents (redundant-events)
   :short "Query the @(see world) on whether redundancy is being enforced"
@@ -39125,19 +39199,20 @@ current fast alists."
   :parents (programming acl2-built-ins)
   :short "Runtime vs. realtime in ACL2 timings"
   :long "<p>The ACL2 system provides utilities that deal with elapsed time.
- The most visible of these is in the time summaries printed when completing
- evaluation of @(see events).  For others, see @(see with-prover-time-limit),
- see @(see read-run-time), see @(see time-tracker), see @(see
- time-tracker-tau), and see @(see pstack).</p>
+ These are most visibly used in reporting the time summaries when completing
+ evaluation of @(see events).  For utilities that return elapsed cpu or run
+ time, see @(see read-run-time), @(see get-cpu-time), and @(see get-real-time).
+ Other time-related utilities include @(see with-prover-time-limit), @(see
+ time-tracker), @(see time-tracker-tau), see @(see pstack).</p>
 
  <p>By default, these utilities all use an underlying notion of run time
  provided by the host Common Lisp implementation: specifically, the Common Lisp
- function @('get-internal-run-time').  However, Common Lisp also provides the
- function @('get-internal-real-time'), which returns the real time (wall clock
- time).  While the latter is specified to measure elapsed time, the former is
- left to the implementation, which might well only measure time spent in the
- Lisp process.  Consider the following example, which is a bit arcane but
- basically sleeps for 2 seconds.</p>
+ functions @('get-internal-run-time') for cpu time and
+ @('get-internal-real-time') for real (wall clock) time.  While the latter is
+ specified to measure elapsed time, the former is left to the implementation,
+ which might well only measure time spent in the Lisp process.  Consider the
+ following example, which is a bit arcane but basically sleeps for 2
+ seconds.</p>
 
  @({
     (defttag t) ; to allow sys-call
@@ -39147,7 +39222,7 @@ current fast alists."
  })
 
  <p>A typical time @(see summary) might be as follows, drastically
- under-reporting the elapsed time.</p>
+ under-reporting the actual elapsed (real, wall clock) time.</p>
 
  @({
     Time:  0.01 seconds (prove: 0.00, print: 0.00, other: 0.01)
@@ -39173,15 +39248,17 @@ current fast alists."
  <p>Note that a function @('get-internal-time') is defined in raw Lisp but is
  not available inside the ACL2 loop.  However, the expression @('(read-run-time
  state)') provides an interface to this function that is available inside the
- ACL2 loop; see @(see read-run-time).</p>
+ ACL2 loop; see @(see read-run-time), and also see @(see get-cpu-time) and
+ @(see get-real-time).</p>")
 
- <p>We are open to changing the default to elapsed wall-clock time (realtime),
- and may do so in future ACL2 releases.</p>
+(defxdoc get-real-time
+  :parents (programming-with-state acl2-built-ins read-run-time)
+  :short "Read elapsed real time"
+  :long "<p>@('(Get-real-time state)') returns the elapsed real (wall clock)
+ time in seconds since the start of the current ACL2 session.  See @(see
+ read-run-time) for further documentation.</p>
 
- <p>Implementation note (GCL only): If the host Lisp is Gnu Common Lisp, then
- @('get-internal-run-time') has a multiple value return, and the first two
- values (runtime and child runtime) are added together to produce a result for
- @('get-internal-time').</p>")
+ @(def get-real-time)")
 
 (defxdoc get-wormhole-status
   :parents (wormhole)
@@ -39938,7 +40015,7 @@ current fast alists."
   insists that the object satisfy @(tsee well-formed-lambda-objectp).
   Well-formedness implies tameness, so any @('LAMBDA') object that passes this
   translate-time test will have the ``expected behavior'' under @('apply$').
-  If an quoted ill-formed ``LAMBDA-like'' object is passed into a @(':FN')
+  If a quoted ill-formed ``LAMBDA-like'' object is passed into a @(':FN')
   slot, an error is signalled.</p>
 
   <p>This is logically unnecessary because, like all ACL2 functions,
@@ -40311,7 +40388,7 @@ current fast alists."
   </code>
 
   <p>where @('(warrant sq)') is just a convenient abbreviation for
-  @('(apply$-warrant-sq)').</p>
+  @('(force (apply$-warrant-sq))').</p>
 
   <p>Thus, to extend the strawman conjecture to functions in which @('apply$')
   is ancestral would require tracking the warrants relevant to the execution
@@ -46614,8 +46691,7 @@ tables in the current Hons Space."
  arguments are not evaluated.  @('Invariant') is just a macro that expands into
  a term that checks that not both @(see rune)s are enabled.  See @(see
  theory-invariant).  Also see @(see incompatible!) for a variant that insists
- the the arguments are indeed runes, not merely having the shapes of
- runes.</p>")
+ the arguments are indeed runes, not merely having the shapes of runes.</p>")
 
 (defxdoc incompatible!
   :parents (theories)
@@ -46714,7 +46790,7 @@ tables in the current Hons Space."
  term.  (Analysis of that term may further involve induction rules, though the
  applied rule is removed from consideration during that further analysis, in
  order to avoid looping.)  If @('rec-fn') has a recursive definition, then the
- the definition's dual induction scheme is suggested (i.e., unwinding the
+ definition's dual induction scheme is suggested (i.e., unwinding the
  function).</p>
 
  <p>(Remark.  Unlike @(':induct') @(see hints), the @(':scheme') of an
@@ -52658,6 +52734,72 @@ tables in the current Hons Space."
   @(':guard') and @(':split-types').  The other @('XARGS') keywords, such as
   @(':measure'), @(':hints') or @(':guard-hints'), play no role.</p>
 
+  <h3>About @('Lambda$')s and Prover Output</h3>
+
+  <p>The translated form of a @('lambda$') expression is a quoted @(tsee
+  lambda) object.  For example, @('(collect$ (lambda$ (x) (+ 1 x)) lst)')
+  translates to</p>
+
+  @({
+  (COLLECT$ '(LAMBDA (X)
+                   (DECLARE (IGNORABLE X))
+                   (RETURN-LAST 'PROGN
+                                '(LAMBDA$ (X) (+ 1 X))
+                                (BINARY-+ '1 X)))
+            LST)
+  })
+
+  <p>The @('lambda$') has been replaced by a quoted @('lambda').</p>
+
+  <p>The prover tries to print each quoted @('lambda') object (that occurs
+  an argument position of @(see ilk) :@('FN')) as a @('lambda$')
+  expression that is (provably) functionally equal (see @(tsee fn-equal)) to
+  the original @('lambda') object assuming the necessary warrants.  If the
+  quoted @('lambda') object was produced by the expansion of a @('lambda$')
+  expression and has not been simplified by subsequent rewriting, it will print
+  as the original @('lambda$') expression.  This can be unfortunate if the
+  original @('lambda$') expression was itself produced by a macro and contains
+  logically irrelevant (but operationally important) tags.  This phenomenon
+  occurs most often when @(tsee do-loop$)s are involved.</p>
+
+  <p>Furthermore, since you are allowed to type in quoted @('lambda') objects
+  directly, you may &mdash; or may not &mdash; see them printed by the prover
+  as @('lambda$') expressions, depending on whether a suitable @('lambda$') is
+  found.  If a quoted @('lambda') object contains a reference to a function
+  symbol for which no @(tsee warrant) has been issued there is probably no
+  provably equivalent @('lambda$').</p>
+
+  <p>The main lessons here are</p>
+
+  <ul>
+
+  <li>you should use @('lambda$') rather than quoted @('lambda') objects in
+  your prover input,</li>
+
+  <li>you should make sure to warrant every user-defined function in your
+  @('lambda$') expressions, and</li>
+
+  <li>if you see a quoted @('lambda') object rather than a @('lambda$')
+  expression in your prover output, that quoted @('lambda') object probably
+  involves unwarranted symbols which will make it impossible to prove anything
+  interesting about it.</li>
+
+  </ul>
+
+  <p>If you do not want the prover output to give special treatment to quoted
+  @('lambda') objects in :@('FN') slots, do</p>
+
+  @({
+  (defattach-system (untranslate-lambda-object-p
+                    constant-nil-function-arity-0))
+  })
+
+  <p>With this attachment, the prover will print all quoted @('lambda') objects
+  as it would any other quoted constant.  You will see what is actually there.
+  One drawback is that the resulting formulas cannot always be read back in
+  and translated because of a prohibition on ``counterfeiting'' expansions of
+  @('lambda$').  See @(see gratuitous-lambda-object-restrictions).</p>
+
   <h3>About Guard Verification of Lambda Objects</h3>
 
   <p>Quoted @('LAMBDA') objects, whether produced by hand (don't!) or by
@@ -52729,9 +52871,9 @@ tables in the current Hons Space."
   <p>While this functionality is available to you, deciding that you need to
   use it is problematic.  @('Apply$') prints no warning that it has failed to
   verify the guards of a @('LAMBDA') object and is running interpreted code.
-  However, the utility @(tsee print-cl-cache) provides basic information about the
-  cache and its documentation may help you discover which @('LAMBDA') objects
-  in use are unverified.</p>")
+  However, the utility @(tsee print-cl-cache) provides basic information about
+  the cache and its documentation may help you discover which @('LAMBDA')
+  objects in use are unverified.</p>")
 
 (defxdoc last
   :parents (lists acl2-built-ins)
@@ -56203,7 +56345,7 @@ forms allowed for a @('let') form are  @('ignore'), @('ignorable'), and
                    (equal (rev (rev z)) z)))
  </code>
 
- <p>The second hypothesis above is the the <i>induction hypothesis</i>.  The
+ <p>The second hypothesis above is the <i>induction hypothesis</i>.  The
  conclusion above is the formula we are trying to prove.  Each induction
  hypothesis is <i>always</i> an <see topic='@(url
  LOGIC-KNOWLEDGE-TAKEN-FOR-GRANTED-INSTANCE)'>instance</see> of the formula
@@ -63257,7 +63399,7 @@ it."
  exists only in the @(see wormhole) @(see state) with which you interact when a
  break occurs.  This allows you to change the @(see monitor)ed @(see rune)s and
  their conditions during the course of a proof attempt without changing the
- @(see state) in which the the proof is being constructed.</p>
+ @(see state) in which the proof is being constructed.</p>
 
  <p>Unconditional break points are obtained by using the break condition
  @('t').  We now discuss conditional break points.  The break condition,
@@ -66059,7 +66201,7 @@ it."
  guards (if any); see @(see table).</p>
 
  <p>We have relaxed the translation rules for @(':measure') @(see hints) to
- @(tsee defun), so that the the same rules apply to these terms that apply to
+ @(tsee defun), so that the same rules apply to these terms that apply to
  terms in @(tsee defthm) @(see events).  In particular, in @(':measure') @(see
  hints) @(tsee mv) is treated just like @(tsee list), and @(tsee state)
  receives no special handling.</p>
@@ -77490,7 +77632,7 @@ it."
 ; stobj with :guard-checking :none, to suggest (set-guard-checking nil).
 ; Thanks to Harsh Raju Chamarthi for related helpful conversations.
 
-; In support of the new :case-split-limitations hint (see :doc below), the the
+; In support of the new :case-split-limitations hint (see :doc below), the
 ; rewrite-constant record was modified, and clausify now takes an sr-limit
 ; instead of the world.
 
@@ -90763,7 +90905,7 @@ it."
  <p>Fixed the @(see acl2-doc) browser so that it can handle topic names with
  the single-quote (@(''')) and comma (@(',')) characters, by escaping them.</p>
 
- <p>Fixed Emacs support for the the @(see proof-builder) dive command (see
+ <p>Fixed Emacs support for the @(see proof-builder) dive command (see
  @(see acl2-pc::dive)), @('control-t control-d'), to eliminate trailing zeros,
  since those are (and have been) disallowed by that command.</p>
 
@@ -93239,11 +93381,11 @@ it."
  requesting this feature (which may have been requested previously as
  well).</p>
 
- <p>A new @(see event), @(tsee set-inhibit-er-soft), allows the user to turn
+ <p>A new @(see event), @(tsee set-inhibit-er), allows the user to turn
  off error output of various types.  The related utility @(tsee
- toggle-inhibit-er-soft) can turn on or off a single type of error output.
- Non-@(see local) versions of these utilities are @(tsee set-inhibit-er-soft!)
- and @(tsee toggle-inhibit-er-soft!).  Many error messages cannot yet be
+ toggle-inhibit-er) can turn on or off a single type of error output.
+ Non-@(see local) versions of these utilities are @(tsee set-inhibit-er!)
+ and @(tsee toggle-inhibit-er!).  Many error messages cannot yet be
  controlled this way, but this may be remedied somewhat with community
  feedback.  Thanks to Eric Smith for a request to inhibit step-limit error
  output, which led to this enhancement.</p>
@@ -93651,6 +93793,21 @@ it."
  untouchable) functions, non-linear arithmetic (see @(see set-non-linearp)),
  the @(see backchain-limit) for rewriting, and the @(see rw-cache-state)).</p>
 
+ <p>The utilities @('set-inhibit-er-soft'), @('set-inhibit-er-soft!'),
+ @('toggle-inhibit-er-soft'), and @('toggle-inhibit-er-soft!') have been
+ renamed by dropping the suffix ``@('-soft')'', hence they are now the
+ following, respectively: @('set-inhibit-er'), @('set-inhibit-er!'),
+ @('toggle-inhibit-er'), and @('toggle-inhibit-er!').  The relevant table has
+ similarly been renamed from @('inhibit-er-soft-table') to
+ @('inhibit-er-table').  These changes reflect their relevance for the new
+ utilities, @(tsee er-hard) and @(tsee er-hard), in addition to @(tsee
+ er-soft).</p>
+
+ <p>The macro @(tsee warrant) now @(tsee force)s the warrants listed.</p>
+
+ <p>@(':')@(tsee Induction) rules now support the use of @(tsee syntaxp)
+ hypotheses.</p>
+
  <h3>New Features</h3>
 
  <p>The new zero-ary attachable system function, @('heavy-linear-p'), allows
@@ -93663,11 +93820,72 @@ it."
  development of such a feature, which can be useful in rewriting-based
  tools.</p>
 
+ <p>There is a new `@('make')' target to build an ACL2 executable using
+ @('save-exec').  See @(see save-exec), in particular the new discussion at the
+ end of that topic.  Thanks to Eric Smith for requesting such a utility.</p>
+
+ <p>New utilities @(tsee get-cpu-time) and @(tsee get-real-time) return the cpu
+ time and real (wall clock) time that has elapsed since the start of the ACL2
+ session.  Thanks to Eric McCarthy for suggesting the addition of such
+ utilities.</p>
+
+ <p>The new utility @(tsee er-hard) is analogous to @(tsee er-soft), but for
+ hard errors instead of soft errors (see @(see er)).  At the moment the only
+ summary string used for inhibiting hard errors is @('\"Call depth\"'), for
+ rewriter stack overflows.  On a related note, a new soft error summary string
+ is used for inhibiting soft errors, @('\"Evaluation\"').</p>
+
+ <p>A new command, @(':')@(tsee tc) (translate and clean), has been added.  It
+ translates a given form and then ``cleans it up'', returning a logically
+ equivalent but often simpler term in which logically irrelevant but
+ operationally important tags have been removed.  The variants @(':')@(tsee
+ tca) and @(':')@(tsee tcp) use different degrees of ``cleaning.''  These are
+ particularly useful for seeing the logical meanings of @(tsee loop$) terms as
+ well as terms involving @(tsee mbe) and @(tsee return-last).</p>
+
+ <p>It is now possible to move directories of certified books, including the
+ @(see certificate) (@('.cert')) files.  The key idea is to set up an ``ACL2
+ projects'' file that associates keywords with directory names, where each
+ keyword indicates a movable project and the associated directory name is the
+ top-level directory of the project.  Up till now, a <i>sysfile</i> was a pair
+ of the form @('(:SYSTEM . \"directory-name\")'); now, a sysfile may have an
+ arbitrary keyword as its first component (i.e., its @('car')).  The
+ environment variable @('ACL2_PROJECTS') may be used to specify a file
+ containing associations of keywords with directory names.  See @(see
+ project-dir-alist).  Thanks to Sol Swords for requesting such a capability and
+ for helpful design discussions.</p>
+
  <h3>Heuristic and Efficiency Improvements</h3>
 
  <h3>Bug Fixes</h3>
 
+ <p>Fixed a bug in system function @('bounded-integer-listp'), which may have
+ allowed illegal @(see proof-builder) commands to be attempted.  Thanks to
+ Grant Jurgensen for pointing out this bug.</p>
+
+ <p>Consider calls of @(tsee defthm) and @(tsee thm) that create subgoals
+ before reverting to prove the original goal by induction.  The Rules summary
+ printed at the end should exclude rules used only before the start of that
+ induction proof.  That was formerly the case for @('defthm') but not @('thm'),
+ but now it is the case for both.  You can see the change for the following
+ call, whose Rules summmary formerly included @('(:ELIM CAR-CDR-ELIM)') but no
+ longer does so.</p>
+
+ @({
+ (thm
+  (equal (append (append x y) z)
+         (append x y z))
+  :hints ((\"Goal\"
+           :expand ((:free (b) (append x b))
+                    (:free (a b) (append (cons (car x) a) b))))))
+ })
+
  <h3>Changes at the System Level</h3>
+
+ <p>The `@('make')' target, @('save-exec'), now builds @('custom-saved_acl2')
+ unconditionally.  Thanks to Grant Jurgensen for pointing out (in GitHub Issue
+ #1422) that there can be untracked implicit dependencies that make this
+ necessary.</p>
 
  <h3>EMACS Support</h3>
 
@@ -98896,7 +99114,7 @@ arithmetic) for libraries of @(see books) for arithmetic reasoning.</p>")
 
 (defxdoc print-object$
   :parents (io acl2-built-ins)
-  :short "Print an an object to an open object output channel"
+  :short "Print an object to an open object output channel"
   :long "
  @({
  General Form:
@@ -98923,7 +99141,7 @@ arithmetic) for libraries of @(see books) for arithmetic reasoning.</p>")
 
 (defxdoc print-object$+
   :parents (io acl2-built-ins)
-  :short "Print an an object to an open output channel in a specified manner"
+  :short "Print an object to an open output channel in a specified manner"
   :long "
  @({
  General Form:
@@ -99070,6 +99288,30 @@ arithmetic) for libraries of @(see books) for arithmetic reasoning.</p>")
 
  <p>Functions @(tsee profile-all) and @(tsee profile-acl2) are available for
  profiling all functions or all ACL2 functions, respectively.</p>")
+
+(defxdoc project-dir-alist
+  :parents (events)
+  :short "Support for moving project directories and @(':dir') arguments"
+  :long "<p>This topic is currently only a stub, but should be fleshed out
+ soon.</p>
+
+ <p>In short, you can set environment variable @('ACL2_PROJECTS') to be the
+ name of a file that contains lines of the following form, as well as any
+ number of comment lines for which the first non-whitespace character is a
+ semicolon (@(';')).</p>
+
+ @({
+ :KEYWORD \"directory-name\"
+ })
+
+ <p>Then @(':KEYWORD') will be interpreted to represent @('\"directory-name\"')
+ when used with the @(':DIR') argument of @(tsee include-book) or @(tsee ld),
+ just as is the case when using @(tsee add-include-book-dir!).  But an
+ additional property is as follows.  Suppose a book and its certificate
+ @('\"directory-name/.../bk.{lisp,cert}\"') are moved (or copied) to
+ @('\"directory-name-2/.../bk.{lisp,cert}\"').  Then in any session where
+ @(':KEYWORD') is similarly bound to @('\"directory-name-2\"') instead of
+ @('\"directory-name\"'), that book will be treated as certified.</p>")
 
 (defxdoc prog2$
   :parents (progn$ acl2-built-ins)
@@ -102260,7 +102502,7 @@ arithmetic) for libraries of @(see books) for arithmetic reasoning.</p>")
  book that has been modified, as described later in this documentation
  topic.</li>
 
- <li>The @('puff') of an an @(tsee include-book) command for an uncertified
+ <li>The @('puff') of an @(tsee include-book) command for an uncertified
  book will simply expose the contents of the book.  However, if the book is
  certified then the @('puff') will replace each event by its @(tsee make-event)
  expansion.  Also, ACL2 considers that (certified) book to have been included;
@@ -104096,20 +104338,42 @@ arithmetic) for libraries of @(see books) for arithmetic reasoning.</p>")
 (defxdoc read-run-time
   :parents (programming-with-state acl2-built-ins)
   :short "Read elapsed runtime"
-  :long "<p>By default, @('(read-run-time state)') returns @('(mv runtime
- state)'), where runtime is the elapsed runtime in seconds since the start of
- the current ACL2 session and @('state') is the resulting ACL2 @(see state).
- But @('read-run-time') can be made to return elapsed realtime (wall clock
- time) instead; see @(see get-internal-time).  In both cases, the precision
- depends on the host Common Lisp; for example, in CCL as of this writing, the
- result is accurate to the microsecond.</p>
+  :long "<p>By default, @('(read-run-time state)') returns @('(mv cpu-time
+ state)'), where @('cpu-time') is the elapsed cpu time in seconds since the
+ start of the current ACL2 session and @('state') is the resulting ACL2 @(see
+ state).  Thus, @('(read-run-time state)') is, by default, equivalent to
+ @('(get-cpu-time state)').  But @('read-run-time') can be made to return
+ elapsed real time (wall clock time) instead, thus making it equivalent to
+ @('(get-real-time state)').  Note that time is returned in seconds in all of
+ these cases.</p>
+
+ <p>To specify that @('read-run-time') shall use cpu time or real time:</p>
+
+ @({
+ (assign get-internal-time-as-realtime t)   ; use real time
+ (assign get-internal-time-as-realtime nil) ; use cpu time
+ })
+
+ <p>See @(see get-internal-time) for more discussion of cpu time vs. real time.
+ In both cases, the precision depends on the host Common Lisp; for example, in
+ CCL as of this writing, the result is accurate to the microsecond.</p>
 
  <p>The logical definition probably won't concern many users, but for
  completeness, we say a word about it here.  That definition uses the function
- @(tsee read-acl2-oracle), which modifies state by popping the value to return
- from its acl2-oracle field.</p>
+ @(tsee read-acl2-oracle), which modifies @(see state) by popping the value to
+ return from its acl2-oracle field.</p>
 
- @(def read-run-time)")
+ @(def read-run-time)
+
+ <p>Note that logically @('(read-run-time state)'), @('(get-real-time state)'),
+ and @('(get-cpu-time state)') are all equal (defined using the acl2-oracle),
+ so for example ACL2 succeeds in the proof of @('(thm (equal (get-real-time
+ state) (get-cpu-time state)))'), even though the first returns elapsed real
+ time and the second returns elapsed cpu time.  However, there is no
+ contradiction: either way, we are logically just reading the oracle of
+ @('state').  In the ACL2 loop, successive calls of @('(get-real-time state)')
+ and @('(get-cpu-time state)') would be operating on different values of
+ @('state') (because their oracles differ).</p>")
 
 (defxdoc reader
   :parents (miscellaneous)
@@ -104924,7 +105188,7 @@ arithmetic) for libraries of @(see books) for arithmetic reasoning.</p>")
   :parents (events)
   :short "Allowing a name to be introduced ``twice''"
   :long "<p>Sometimes an event will announce that it is ``redundant'', meaning
- that the the form is not evaluated because ACL2 determines that its effect is
+ that the form is not evaluated because ACL2 determines that its effect is
  already incorporated into the logical @(see world).  Thus, when this happens,
  no change to the logical @(see world) takes place.  This feature permits two
  independent @(see books), each of which defines some name, to be included
@@ -108889,6 +109153,9 @@ arithmetic) for libraries of @(see books) for arithmetic reasoning.</p>")
  to the host Lisp executable.  All arguments of a call of @('save-exec') are
  evaluated.</p>
 
+ <p>At the end of this topic we discuss how to use the `@('make')' utility to
+ invoke @('save-exec').</p>
+
  @({
   Examples:
 
@@ -109203,7 +109470,37 @@ arithmetic) for libraries of @(see books) for arithmetic reasoning.</p>")
  at the shell), additional command-line arguments provided at that time are
  passed to Lisp if and only if @('inert-args') is @('nil').  For SBCL, when
  they are passed to Lisp they are passed as toplevel options, not as runtime
- options.</p>")
+ options.</p>
+
+
+ <p>Finally, note that @('save-exec') can be invoked using the `@('make')'
+ utility in the main ACL2 directory by using the @('save-exec') target.  That
+ target will first build an ACL2 executable in the normal way if it is out of
+ date.  Then it will start that executable, using the value of
+ @('ACL2_CUSTOMIZATION') (as a `@('make')' or environment variable) &mdash;
+ which must be specified &mdash; as the @(see acl2-customization) file, before
+ making a @('save-exec') call.  By default, that call is @('(save-exec
+ \"custom-saved_acl2\" \"Saved with additions from <file>\")'), where
+ @('<file>') is the value of @('ACL2_CUSTOMIZATION').
+ (Except, in ACL2(p) and ACL2(r), @('\"custom-saved_acl2\"') is replaced by
+ @('\"custom-saved_acl2p\"') and @('\"custom-saved_acl2r\"'), respectively.)
+ However, you can specify the first argument as the value of @('ACL2_SAVED')
+ (as a `@('make')' or environment variable), and you can specify the remaining
+ arguments as the value of @('ACL2_SAVED_ARGS') (also as a `@('make')' or
+ environment variable).  Here is an example one could run at the shell prompt;
+ notice the careful quoting.</p>
+
+ @({
+ make save-exec \\
+   ACL2_CUSTOMIZATION=~/temp/foo.lsp \\
+   ACL2_SAVED=my-acl2 \\
+   ACL2_SAVED_ARGS='\"My custom image\" \\
+                    :init-forms (quote ((defun foo (x) (reverse x))))'
+ })
+
+ <p>WARNING: It is a good idea to look at the log file noted in the `@('make')'
+ output, to check that your customization file loaded as intended (presumably,
+ without errors).</p>")
 
 (defxdoc scion
   :parents (apply$)
@@ -111527,32 +111824,32 @@ arithmetic) for libraries of @(see books) for arithmetic reasoning.</p>")
  for wanting to export the effect of this event outside the enclosing @(tsee
  encapsulate) or book.</p>")
 
-(defxdoc set-inhibit-er-soft
+(defxdoc set-inhibit-er
   :parents (output-controls errors)
   :short "Control the error output"
   :long "@({
   Examples:
-  (set-inhibit-er-soft \"translate\" \"failure\")
+  (set-inhibit-er \"translate\" \"failure\")
  })
 
  <p>Note: This is an event!  It does not print the usual event @(see summary)
  but nevertheless changes the ACL2 logical @(see world) and is so recorded.  It
  is @(tsee local) to the book or @(tsee encapsulate) form in which it occurs;
- see @(see set-inhibit-er-soft!) for a corresponding non-@(tsee local) event.
- Indeed, @('(set-inhibit-er-soft ...)') is equivalent to @('(local
- (set-inhibit-er-soft! ...))').</p>
+ see @(see set-inhibit-er!) for a corresponding non-@(tsee local) event.
+ Indeed, @('(set-inhibit-er ...)') is equivalent to @('(local
+ (set-inhibit-er! ...))').</p>
 
  @({
   General Form:
-  (set-inhibit-er-soft string1 string2 ...)
+  (set-inhibit-er string1 string2 ...)
  })
 
  <p>where each string is considered without regard to case.  This macro is is
- essentially @('(local (table inhibit-er-soft-table nil 'alist :clear))'),
+ essentially @('(local (table inhibit-er-table nil 'alist :clear))'),
  where @('alist') pairs each supplied string with @('nil'): that is, @('alist')
  is @('(pairlis$ lst nil)') where @('lst') is the list of strings supplied.
  This macro is an event (see @(see table)), but no output results from a
- @('set-inhibit-er-soft') event.</p>
+ @('set-inhibit-er') event.</p>
 
  <p>ACL2 prints errors that are generally important to see.  This utility is
  appropriate for situations where one prefers not to see all error messages.
@@ -111564,10 +111861,10 @@ arithmetic) for libraries of @(see books) for arithmetic reasoning.</p>")
  })
 
  <p>Here, the label is \"Failure\".  The argument list for
- @('set-inhibit-er-soft') is a list of such labels, each of which is a string.
+ @('set-inhibit-er') is a list of such labels, each of which is a string.
  Any error message is suppressed if its label is a member of this list, where
  case is ignored.  Thus, for example, the error output above will be avoided
- after a call of @('set-inhibit-er-soft') that contains the string,
+ after a call of @('set-inhibit-er') that contains the string,
  @('\"Failure\"') (or any string that is @(tsee string-equal) to
  @('\"Failure\"'), such as @('\"failure\"') or @('\"FAILURE\"')).  In summary:
  the effect of this event is to suppress any error output whose label is a
@@ -111591,41 +111888,27 @@ arithmetic) for libraries of @(see books) for arithmetic reasoning.</p>")
  labels; for example, you might ask for a label in the example above (which
  could be @('\"Globals\"') or @('\"Global-variables\"')).</p>
 
- <p><b>Remarks</b>.</p>
-
- <ul>
-
- <li>Only so-called ``soft'' errors may have labels, not ``hard'' errors.  Hard
- errors can be identified by the use of ``@('HARD')'' at the start of the error
- message, for example as follows.
-
- @({
- HARD ACL2 ERROR in SET-GAG-MODE:  Unknown set-gag-mode argument, ABC
- })</li>
-
- <li>@('Set-inhibit-er-soft') has no effect on the value(s) returned by an
- expression (excepting the ACL2 @(see state) in that it formally includes
- output).</li>
-
- </ul>
+ <p>Note that @('set-inhibit-er') has no effect on the value(s) returned by an
+ expression (excepting the ACL2 @(see state) since it formally includes
+ output).</p>
 
  <p>The list of currently inhibited error types is the list of keys in the
- @(see table) named @('inhibit-er-soft-table').  (The values in the table are
+ @(see table) named @('inhibit-er-table').  (The values in the table are
  irrelevant.)  One way to get that value is to get the result from evaluating
- the following form: @('(table-alist 'inhibit-er-soft-table (w state))').  Of
+ the following form: @('(table-alist 'inhibit-er-table (w state))').  Of
  course, if error output is inhibited overall &mdash; see @(see
  set-inhibit-output-lst) &mdash; then this value is entirely irrelevant.</p>
 
- <p>See @(tsee toggle-inhibit-er-soft) for a way to add or remove a single
+ <p>See @(tsee toggle-inhibit-er) for a way to add or remove a single
  string.</p>")
 
-(defxdoc set-inhibit-er-soft!
+(defxdoc set-inhibit-er!
   :parents (output-controls errors)
   :short "Control error output non-@(tsee local)ly"
-  :long "<p>Please see @(see set-inhibit-er-soft), which is the same as
- @('set-inhibit-er-soft!')  except that the latter is not @(tsee local) to the
+  :long "<p>Please see @(see set-inhibit-er), which is the same as
+ @('set-inhibit-er!')  except that the latter is not @(tsee local) to the
  @(tsee encapsulate) or the book in which it occurs.  Probably @(see
- set-inhibit-er-soft) is to be preferred unless you have a good reason for
+ set-inhibit-er) is to be preferred unless you have a good reason for
  wanting to export the effect of this event outside the enclosing @(tsee
  encapsulate) or book.</p>")
 
@@ -111674,7 +111957,7 @@ arithmetic) for libraries of @(see books) for arithmetic reasoning.</p>")
 
  <p>See @(see with-output) for a variant of this utility that can be used in
  @(see books).  Also see @(see set-inhibit-warnings) and @(see
- set-inhibit-er-soft) for how to inhibit individual warning and error output
+ set-inhibit-er) for how to inhibit individual warning and error output
  types, respectively, and see @(see set-inhibited-summary-types) for how to
  inhibit individual parts of the @(see summary).</p>
 
@@ -114257,7 +114540,7 @@ arithmetic) for libraries of @(see books) for arithmetic reasoning.</p>")
  other subsequent actions typically performed by @(tsee certify-book): a @(see
  local-incompatibility) check, writing of a @(see certificate) file, and
  possibly @(see compilation).  Another effect is that proofs may be skipped
- when processing @(see events) assuming that the the @('certify-book') command
+ when processing @(see events) assuming that the @('certify-book') command
  does not explicitly specify @(':skip-proofs-okp nil'), as we now explain.  A
  non-@('nil') value of @(''write-acl2x') should either be @('t') or a
  one-element list @('(x)'), where @('x') is a legal value for the @(see state)
@@ -119916,7 +120199,7 @@ arithmetic) for libraries of @(see books) for arithmetic reasoning.</p>")
  all stobj names in the @(see world), @('w').  If you want to know whether
  @('x') has been defined as a stobj in @('w'), use @('known-stobjs') = @('t').
  Technicality: if @('known-stobjs') is a list then it is allowed to contain any
- number of @('nil') elements (as may be the case for the the @('stobjs-in') or
+ number of @('nil') elements (as may be the case for the @('stobjs-in') or
  @('stobjs-out') of a symbol), which are ignored.</li>
 
  <li>@('(stobjs-in fn w)'): For a function symbol @('fn') of @(see world)
@@ -121572,6 +121855,330 @@ arithmetic) for libraries of @(see books) for arithmetic reasoning.</p>")
  them and control rewriting better.  By revealing to the tau system that such a
  synonym has been introduced you allow Signature rules of Form 2 to be
  used.</p>")
+
+(defxdoc tc
+  :parents (macros)
+  :short "translate form and clean it up"
+  :long "@({
+
+  Examples:
+  :tc  (member e a)
+  :tc  (list (cadr x) (loop$ for e in lst collect (+ 1 e)))
+  :tcp (list (cadr x) (loop$ for e in lst collect (+ 1 e)))
+  :tca (list (cadr x) (loop$ for e in lst collect (+ 1 e)))
+
+  General Form:
+  :tc form
+  :tca form
+  :tcp form
+  (tc 'form)
+  (tca 'form)
+  (tcp 'form)
+  })
+
+  <p>The @(':')@(tsee trans) command prints the translation of a form into a
+  formal term.  However, sometimes the translation can be hard to understand
+  because various tags and declarations are included, usually for execution
+  efficiency.</p>
+
+  <p>For example, consider @(':trans') versus @(':tcp') of @('(member e a)').</p>
+
+  @({
+  ACL2 !>:trans (member e a)
+
+  ((LAMBDA (X L)
+     (RETURN-LAST 'MBE1-RAW
+                  (MEMBER-EQL-EXEC X L)
+                  (RETURN-LAST 'PROGN
+                               (MEMBER-EQL-EXEC$GUARD-CHECK X L)
+                               (MEMBER-EQUAL X L))))
+   E A)
+
+  => *
+
+  ACL2 !>:tcp (member e a)
+   (MEMBER-EQUAL E A)
+  })
+
+  <p>The @(':tc') command and its variants, @(':tca') and @(':tcp'), translate
+  the given form and then ``clean'' it up, returning the result in an @(see
+  error-triple).  These commands are especially useful when @(tsee loop$),
+  @(see scion)s or @(tsee lambda$) forms are involved in the form to be
+  translated.  But they are also useful when @(tsee mbe), @(tsee return-last),
+  @(tsee progn$) and other special forms are used or show up in the
+  translation.  The @('tc') commands are macros that expand into terms
+  involving @(tsee state), since errors are signaled when ill-formed forms are
+  submitted.</p>
+
+  <ul>
+
+  <li>@(':tc') <i>form</i> &mdash; translate <i>form</i> and remove everything
+    not relevant to the logical value.  This is the logical semantics
+    <i>form</i> and is returned in the ``internal format'' of ACL2 terms, i.e.,
+    macros have been expanded and all constants are quoted.  The prover will
+    reduce <i>form</i> to this term almost immediately.  Typically, this is the
+    term that the rewriter will encounter during a proof involving this
+    <i>form</i>.  Of course, rewrite rules can further change the form.
+    However, see the note below concerning warrants.</li>
+
+  <li>@(':tcp') <i>form</i> &mdash; translate <i>form</i> and remove everything
+     not relevant to the logical value as above, and then @(tsee untranslate),
+     restoring the use of such system macros as @(tsee lambda$), @(tsee let),
+     @(tsee and), @(tsee list), @(tsee cadr), and @(tsee +) and @(tsee *).
+     This is the semantics of <i>form</i> in a ``user friendly'' syntax.  The
+     suffix ``p'' in @(':tcp') stands for ``pretty.''</li>
+
+  <li>@(':tca') <i>form</i> &mdash; translate <i>form</i> and then
+     @('untranslate') as noted above.  This effectively leaves ``annotations''
+     in place such as a @('prog2$') joining each @('loop$') in <i>form</i> to
+     its semantics, @('declare') forms in @('lambda') objects, and @(tsee let)
+     forms associating user variable names to values.  This term is mainly
+     meant as a pedagogical device to help you understand how @('loop$')s are
+     translated.  The suffix ``a'' in @(':tca') stands for ``annotated.''</li>
+
+  </ul>
+
+  <p>The terms returned by the three flavors of @('tc') are all provably
+  equivalent to eachother and to the original <i>form</i> provided the
+  necessary warrants are assumed.</p>
+
+  <p>For example, if @('sq') is a user-defined function of arity 1 and
+  @('(defwarrant sq)') has issued a warrant for @('sq'), then</p>
+
+  @({
+  ACL2 !>:tc (loop$ for e in lst collect (sq e))    ; sq is warranted
+  (COLLECT$ '(LAMBDA (LOOP$-IVAR) (SQ LOOP$-IVAR))
+           LST)
+  })
+
+  <p>Nevertheless, the equivalence of the input and output of @(':tc') above
+  cannot be proved unless the warrants are assumed.  That is,</p>
+
+  @({
+  (thm
+    (equal (loop$ for e in lst collect (sq e))
+           (COLLECT$ '(LAMBDA (LOOP$-IVAR) (SQ LOOP$-IVAR))
+                     LST)))
+  })
+
+  <p>will fail with a checkpoint indicating that the warrant for @('sq') must
+  be provided.  However,</p>
+
+  @({
+  (thm
+    (implies (warrant sq)
+             (equal (loop$ for e in lst collect (sq e))
+                    (COLLECT$ '(LAMBDA (LOOP$-IVAR) (SQ LOOP$-IVAR))
+                              LST))))
+  })
+
+  <p>succeeds.</p>
+
+  <p>If there is no warrant for @('sq') but there is a badge, then @(':tc') cannot
+  clean up the translation because without a warrant the @('lambda') object calling
+  @('sq') is not @(see tame).  Thus,</p>
+
+  @({
+  ACL2 !>:tc (loop$ for e in lst collect (sq e))   ; sq is badged not warranted
+  (COLLECT$ '(LAMBDA (LOOP$-IVAR)
+                     (RETURN-LAST 'PROGN
+                                  '(LAMBDA$ (LOOP$-IVAR)
+                                            (LET ((E LOOP$-IVAR))
+                                                 (DECLARE (IGNORABLE E))
+                                                 (SQ E)))
+                                  ((LAMBDA (E) (SQ E)) LOOP$-IVAR)))
+            LST)
+  })
+
+  <p>By the way, if you see a quoted @('lambda') objects like that above in
+  output from the prover, it probably means the @('lambda') object contains
+  unwarranted user-defined symbols!</p>
+
+  <p>The differences between @(':trans') and the three commands (@(':tc'),
+  @(':tcp'), and @(':tca')) are perhaps best illustrated by considering their
+  respective outputs on a single @(tsee loop$) statement.</p>
+
+  @({
+  ACL2 !>:trans (list (cadr x) (loop$ for e in lst collect (+ 1 e)))
+
+  (CONS (CAR (CDR X))
+        (CONS (RETURN-LAST
+               'PROGN
+               '(LOOP$ FOR E IN LST COLLECT (+ 1 E))
+               (COLLECT$ '(LAMBDA (LOOP$-IVAR)
+                                  (DECLARE (IGNORABLE LOOP$-IVAR))
+                                  (RETURN-LAST 'PROGN
+                                               '(LAMBDA$ (LOOP$-IVAR)
+                                                  (LET ((E LOOP$-IVAR))
+                                                    (DECLARE (IGNORABLE E))
+                                                    (+ 1 E)))
+                                               ((LAMBDA (E) (BINARY-+ '1 E))
+                                                LOOP$-IVAR)))
+                         LST))
+              'NIL))
+
+  => *
+
+  ACL2 !>:tc  (list (cadr x) (loop$ for e in lst collect (+ 1 e)))
+   (CONS (CAR (CDR X))
+         (CONS (COLLECT$ '(LAMBDA (LOOP$-IVAR)
+                                  (BINARY-+ '1 LOOP$-IVAR))
+                         LST)
+               'NIL))
+
+  ACL2 !>:tcp (list (cadr x) (loop$ for e in lst collect (+ 1 e)))
+   (LIST (CADR X)
+         (COLLECT$ (LAMBDA$ (LOOP$-IVAR) (+ 1 LOOP$-IVAR))
+                   LST))
+
+  ACL2 !>:tca (list (cadr x) (loop$ for e in lst collect (+ 1 e)))
+   (LIST (CADR X)
+         (PROG2$ '(LOOP$ FOR E IN LST COLLECT (+ 1 E))
+                 (COLLECT$ (LAMBDA$ (LOOP$-IVAR)
+                                    (LET ((E LOOP$-IVAR)) (+ 1 E)))
+                           LST)))
+  })
+
+  <p>First, notice that @(':trans') also reports the output signature of the
+  term but the @(':tc') commands do not.  They all return the cleaned up
+  translation in an error triple.  Second, @(':tc') returns a term in the
+  internal format: the @('lambda') objects are quoted list constants and their
+  bodies are in internal format, e.g., note the @('binary-+') and quoted
+  constant @('1') in the output of @(':tc') above.  If you use the @(':tc')
+  command on the left-hand side of the conclusion of a @(':rewrite') rule the
+  term you see is the term under which the rule is stored, i.e., the rule will
+  be tried to rewrite instances of that term.</p>
+
+  <p>The other two commands have ``prettied up'' the output into a more
+  user-friendly format.  Third, the @(':tca') command uses a @('prog2$') to
+  show the untranslated @('loop$') as a list constant and then show its pretty
+  semantics, with a @('let') form in the body of the @('lambda$') reminding you
+  that @('loop$-ivar') is what was called @('e').</p>
+
+  <p>It is often helpful to look at the semantics of fancy @('loop$')s.</p>
+
+  @({
+  ACL2 !>:tca (loop$ for x in xlst
+                     as  y in ylst
+                     collect (+ (* a x) (* b y)))
+   (PROG2$
+      '(LOOP$ FOR X IN XLST
+              AS  Y IN YLST
+              COLLECT (+ (* A X) (* B Y)))
+      (COLLECT$+
+           (LAMBDA$ (LOOP$-GVARS LOOP$-IVARS)
+                    (DECLARE (XARGS :GUARD (AND (TRUE-LISTP LOOP$-GVARS)
+                                                (EQUAL (LEN LOOP$-GVARS) 2)
+                                                (TRUE-LISTP LOOP$-IVARS)
+                                                (EQUAL (LEN LOOP$-IVARS) 2))
+                                    :SPLIT-TYPES T))
+                    (LET ((A (CAR LOOP$-GVARS))
+                          (B (CADR LOOP$-GVARS))
+                          (X (CAR LOOP$-IVARS))
+                          (Y (CADR LOOP$-IVARS)))
+                         (+ (* A X) (* B Y))))
+           (LIST A B)
+           (LOOP$-AS (LIST XLST YLST))))
+  })
+
+  <p>Notice what happens to the @(':guard') of the @('lambda$') if we insert
+  type specifications with @('of-type').</p>
+
+  @({
+  ACL2 !>:tca (loop$ for x of-type (satisfies natp) in xlst
+                     as  y of-type integer in ylst
+                     collect (+ (* a x) (* b y)))
+
+   (PROG2$
+     '(LOOP$ FOR X OF-TYPE (SATISFIES NATP)
+             IN XLST AS Y OF-TYPE INTEGER
+             IN YLST COLLECT (+ (* A X) (* B Y)))
+     (COLLECT$+
+          (LAMBDA$ (LOOP$-GVARS LOOP$-IVARS)
+                   (DECLARE (XARGS :GUARD (AND (TRUE-LISTP LOOP$-GVARS)
+                                               (EQUAL (LEN LOOP$-GVARS) 2)
+                                               (TRUE-LISTP LOOP$-IVARS)
+                                               (EQUAL (LEN LOOP$-IVARS) 2)
+                                               (NATP (CAR LOOP$-IVARS))
+                                               (INTEGERP (CADR LOOP$-IVARS)))
+                                   :SPLIT-TYPES T))
+                   (LET ((A (CAR LOOP$-GVARS))
+                         (B (CADR LOOP$-GVARS))
+                         (X (CAR LOOP$-IVARS))
+                         (Y (CADR LOOP$-IVARS)))
+                        (+ (* A X) (* B Y))))
+          (LIST A B)
+          (LOOP$-AS (LIST XLST YLST))))
+  })
+
+  <p>And notice how the @(':guard') keyword after the @('collect') in the
+  @('loop$') statement is added to the @(':guard') of the generated
+  @('lambda$').</p>
+
+  @({
+  ACL2 !>:tca (loop$ for x of-type (satisfies natp) in xlst
+                     as  y of-type integer in ylst
+                     collect
+                     :guard (and (rationalp a)
+                                 (complex-rationalp b))
+                     (+ (* a x) (* b y)))
+   (PROG2$
+    '(LOOP$ FOR X OF-TYPE (SATISFIES NATP) IN XLST
+            AS  Y OF-TYPE INTEGER IN YLST
+            COLLECT
+            :GUARD (AND (RATIONALP A)
+                        (COMPLEX-RATIONALP B))
+            (+ (* A X) (* B Y)))
+    (COLLECT$+
+     (LAMBDA$
+      (LOOP$-GVARS LOOP$-IVARS)
+      (DECLARE (XARGS :GUARD (AND (TRUE-LISTP LOOP$-GVARS)
+                                  (EQUAL (LEN LOOP$-GVARS) 2)
+                                  (TRUE-LISTP LOOP$-IVARS)
+                                  (EQUAL (LEN LOOP$-IVARS) 2)
+                                  (NATP (CAR LOOP$-IVARS))
+                                  (INTEGERP (CADR LOOP$-IVARS))
+                                  (RATIONALP (CAR LOOP$-GVARS))
+                                  (COMPLEX-RATIONALP (CADR LOOP$-GVARS)))
+                      :SPLIT-TYPES T))
+      (LET ((A (CAR LOOP$-GVARS))
+            (B (CADR LOOP$-GVARS))
+            (X (CAR LOOP$-IVARS))
+            (Y (CADR LOOP$-IVARS)))
+        (+ (* A X) (* B Y))))
+     (LIST A B)
+     (LOOP$-AS (LIST XLST YLST))))
+  })
+
+  <p>Of course, while these declarations play a role in @(':guard') verification
+  and execution in raw Lisp, they are irrelevant to the formal semantics, as made
+  clear by @(':tcp').</p>
+
+  @({
+  ACL2 !>:tcp (loop$ for x of-type (satisfies natp) in xlst
+                     as  y of-type integer in ylst
+                     collect
+                     :guard (and (rationalp a)
+                                 (complex-rationalp b))
+                     (+ (* a x) (* b y)))
+   (COLLECT$+ (LAMBDA$ (LOOP$-GVARS LOOP$-IVARS)
+                       (+ (* (CAR LOOP$-GVARS)
+                             (CAR LOOP$-IVARS))
+                          (* (CADR LOOP$-GVARS)
+                             (CADR LOOP$-IVARS))))
+              (LIST A B)
+              (LOOP$-AS (LIST XLST YLST)))
+  })")
+
+(defxdoc tca
+  :parents (macros)
+  :short "translate a form and clean it up into an annotated pretty term"
+  :long "<p>See @(tsee tc).</p>")
+
+(defxdoc tcp
+  :parents (macros)
+  :short "translate a form and clean it up into a pretty term"
+  :long "<p>See @(tsee tc).</p>")
 
 (defxdoc tenth
   :parents (nth acl2-built-ins)
@@ -124148,14 +124755,14 @@ arithmetic) for libraries of @(see books) for arithmetic reasoning.</p>")
  example, you don't need to worry about prover output that mentions ``type
  reasoning'' or ``abbreviations,'' for example.</p>")
 
-(defxdoc toggle-inhibit-er-soft
+(defxdoc toggle-inhibit-er
   :parents (output-controls errors)
-  :short "Add or delete an error output string from the @('inhibit-er-soft-table')"
-  :long "<p>See @(see set-inhibit-er-soft) for relevant background.</p>
+  :short "Add or delete an error output string from the @('inhibit-er-table')"
+  :long "<p>See @(see set-inhibit-er) for relevant background.</p>
 
   @({
   General Form:
-  (toggle-inhibit-er-soft string)
+  (toggle-inhibit-er string)
   })
 
   <p>where @('string') is the name of some error output like @('\"Translate\"')
@@ -124164,22 +124771,22 @@ arithmetic) for libraries of @(see books) for arithmetic reasoning.</p>")
   <p>Note: This is an event!  It does not print the usual event @(see summary)
   but nevertheless changes the ACL2 logical @(see world) and is so recorded.
   It is @(tsee local) to the book or @(tsee encapsulate) form in which it
-  occurs; see @(see toggle-inhibit-er-soft!) for a corresponding non-@(tsee
-  local) event.  Indeed, @('(toggle-inhibit-er-soft str)') is equivalent to
-  @('(local (toggle-inhibit-er-soft! str))').</p>
+  occurs; see @(see toggle-inhibit-er!) for a corresponding non-@(tsee
+  local) event.  Indeed, @('(toggle-inhibit-er str)') is equivalent to
+  @('(local (toggle-inhibit-er! str))').</p>
 
   <p>The given string is added to the list of strings used for inhibiting error
   output if it is not there already and is deleted from the list if it is
   there.  Case is unimportant in @('string').  See @(tsee
-  set-inhibit-er-soft).</p>")
+  set-inhibit-er).</p>")
 
-(defxdoc toggle-inhibit-er-soft!
+(defxdoc toggle-inhibit-er!
   :parents (output-controls errors)
-  :short "Toggle an @('inhibit-er-soft-table') entry non-@(tsee local)ly"
-  :long "<p>Please see @(see toggle-inhibit-er-soft), which is the same as
- @('toggle-inhibit-er-soft!') except that the latter is not @(tsee local) to
+  :short "Toggle an @('inhibit-er-table') entry non-@(tsee local)ly"
+  :long "<p>Please see @(see toggle-inhibit-er), which is the same as
+ @('toggle-inhibit-er!') except that the latter is not @(tsee local) to
  the @(tsee encapsulate) or the book in which it occurs.  Probably @(see
- toggle-inhibit-er-soft) is to be preferred unless you have a good reason for
+ toggle-inhibit-er) is to be preferred unless you have a good reason for
  wanting to export the effect of this event outside the enclosing @(tsee
  encapsulate) or book.</p>")
 
@@ -127291,7 +127898,7 @@ introduction-to-the-tau-system) for more information about Tau.</dd>
  <p>Here is the detail promised above, for parsing a term into a
  @(':type-prescription') rule.  There are two steps.  (1) ACL2 first translates
  the term, expanding all macros (see @(see trans)) and also removing @(see
- guard-holders).  (2) Then the the translated term is traversed top-down,
+ guard-holders).  (2) Then the translated term is traversed top-down,
  expanding away @('lambda')s (@(tsee let), @(tsee let*), and @(tsee mv-let)
  expressions) and flattening the @(tsee IMPLIES) structure, until the
  conclusion is exposed; then the conclusion's @('lambda')s are also expanded
@@ -131016,7 +131623,7 @@ introduction-to-the-tau-system) for more information about Tau.</dd>
  itself unless it is removed from the list of hints.</p>
 
  <p>As an exercise, let's arrange for the hint to stay around and be applied
- indefinitely but with a simplification between each use of the the hint.  To
+ indefinitely but with a simplification between each use of the hint.  To
  do this we need to pass information from one application of the hint to the
  next, essentially to say ``stay around but don't fire.''</p>
 
@@ -132527,15 +133134,25 @@ introduction-to-the-tau-system) for more information about Tau.</dd>
  undo your changes; this will be explained further below.</p>
 
  <p>After making such changes, build an ACL2 executable image containing your
- modified code.  The next step is typically to create a new file, perhaps named
- after the main function(s) whose guards you want to verify, in directory
- @('books/system').  Community book @('books/system/too-many-ifs.lisp') is a
- good example.  Ultimately, this file should be a certifiable book that
- verifies the desired termination and guards.  Include this book in
- @('books/system/top.lisp').  Of course, you can instead add to some existing
- file in the same directory that is already included in
+ modified code, to test that the modified code builds.  The next step is
+ typically to create a new file, perhaps named after the main function(s) whose
+ guards you want to verify, in directory @('books/system').  Community book
+ @('books/system/too-many-ifs.lisp') is a good example.  Ultimately, this file
+ should be a certifiable book that verifies the desired termination and guards.
+ Include this book in @('books/system/top.lisp').  Of course, you can instead
+ add to some existing file in the same directory that is already included in
  @('books/system/top.lisp'), rather than creating a new book and including it
  there.</p>
+
+ <p>In general, in this new file or new file addition, it is necessary to use
+ both @(tsee verify-termination) and @(tsee verify-guards) on the system
+ functions in question, in order to both put them in logic mode and verify their
+ guards. However, as explained in the documentation of @(tsee
+ verify-termination), sometimes @(tsee verify-termination) also verifies the
+ guards (see also @(tsee set-verify-guards-eagerness)).  In this case, it is
+ good practice to add a comment `@('; and guards')' just after the @(tsee
+ verify-termination) form, on the same line, as can be seen in some of the files
+ under @('[books]/system/').</p>
 
  <p>Now it is time to add entries to the value of constant
  @('*system-verify-guards-alist*') in your local copy of the ACL2 sources,
@@ -133461,10 +134078,10 @@ introduction-to-the-tau-system) for more information about Tau.</dd>
   ... fnk)') expands to:</p>
 
   @({
-  (AND (APPLY$-WARRANT-fn1)
-       (APPLY$-WARRANT-fn2)
+  (AND (FORCE (APPLY$-WARRANT-fn1))
+       (FORCE (APPLY$-WARRANT-fn2))
        ...
-       (APPLY$-WARRANT-fnk))
+       (FORCE (APPLY$-WARRANT-fnk)))
   })
 
   <p>Because there are over 800 ACL2 primitives built into @('apply$'), it can
@@ -133481,6 +134098,16 @@ introduction-to-the-tau-system) for more information about Tau.</dd>
   possessing a warrant.  Instead, the @('warrant') macro ignores those @('fni')
   built into @('apply$').  It does cause an error if one of the @('fni') has no
   warrant and is not built in.</p>
+
+  <p>The @('(warrant fn1 fn2 ... fnk)') macro @(tsee force)s the warrants
+  because (a) we assume the only use of the macro is to add warrant hypotheses
+  to conjectures and (b) by forcing warrants agressively the prover ``almost
+  completes'' more proofs and enters a forcing round that highlights the need
+  to assume those warrants.  When a rewrite rule, for example, is conditioned
+  on a warrant that is not forced (as would happen if you added the hyps
+  @('(apply$-warrant-fn1)'), @('(apply$-warrant-fn2)'), etc.), then the rule
+  will not fire if a subsequent conjecture omitted the warrants.  Of course,
+  this raises the question ``But are all the warrants really true?''</p>
 
   <h3>Why Warrants Don't Render Theorems Vacuous</h3>
 
@@ -135543,7 +136170,7 @@ for the execution of @('form')."
  channels are closed and state global variables are returned to their original
  values, or else be willing to live with changes made to state that are not
  justified by the code that has been evaluated.  You are welcome to look in the
- the ACL2 source code at the definition of macro @('channel-to-string'), which
+ ACL2 source code at the definition of macro @('channel-to-string'), which
  employs @('with-local-state') to create a local @(see state) for the purpose
  of creating a string.</p>
 
@@ -135853,7 +136480,7 @@ for the execution of @('form')."
  specs for these keywords (as discussed above).  If @(':on :all') is specified,
  then then every output type is turned on except for those in the set specified
  by the value of @(':off').  Otherwise, if @(':off :all') is specified, then
- every output type is inhibited except as specified by the the value of
+ every output type is inhibited except as specified by the value of
  @(':on').  Otherwise @(':all') is not specified for either @(':on') or
  @(':off'), and the currently-inhibited output types are reduced as specified
  by the value of @(':on') and then extended as specified by the value of
@@ -136502,7 +137129,7 @@ created from the original fast alist during @('form') must be manually freed."
  undone (see @(see ubt)).  Thus in particular, the world includes a
  representation of the current logical theory, as well as some extra-logical
  information such as the values of ACL2 @(see table)s.  The rest of this topic
- focuses on the structure of the the ACL2 world and, more generally, the
+ focuses on the structure of the ACL2 world and, more generally, the
  ``world'' data structure.</p>
 
  <p>A ``world'' is a list of triples, each of the form @('(sym prop . val)'),
@@ -137233,7 +137860,7 @@ created from the original fast alist during @('form') must be manually freed."
  the current status and whose body is the @('lambda') body.  Guard clauses are
  generated from the body, with one exception: the @('lambda') formal is
  replaced by a new variable so that no prior assumptions are available about
- the value of the the wormhole status.</p>
+ the value of the wormhole status.</p>
 
  <p>If the newly computed status has an entry code of @(':ENTER') @(tsee ld)
  will be invoked.  But we don't really copy state, of course.  Instead we will
@@ -139653,7 +140280,7 @@ prettyprint the conclusion, highlighting the current term"
  the current subterm is @('(p y)'), then @('p-top') will print @('(equal (and x
  (*** (p y) ***)) (foo z))').</p>
 
- <p>Prettyprint the the conclusion, highlighting the current term.  The usual
+ <p>Prettyprint the conclusion, highlighting the current term.  The usual
  user syntax is used, as with the command @('p') (as opposed to @('pp')).  This
  is illustrated in the example above, where one would <i>*not*</i> see
  @('(equal (if x (*** (p y) ***) 'nil) (foo z))').</p>
@@ -141108,7 +141735,7 @@ combine goals into a single goal"
  <p>If @('kept-goal-names') is not @('nil'), the current goal is replaced by
  conjoining it with all goals other than the current goal and those indicated
  by @('kept-goal-names'), and those other goals are deleted.  If
- @('kept-goal-names') is omitted, then the the current goal must be of the form
+ @('kept-goal-names') is omitted, then the current goal must be of the form
  @('(name . n)'), and the goals to conjoin into the current goal (and delete)
  are those with names of the form @('(name . k)') for @('k') &gt;= @('n').</p>
 
