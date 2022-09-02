@@ -2332,10 +2332,10 @@
  })
 
  <p>This key's value is used by @(tsee include-book)'s @(':DIR') argument to
- associate a directory with a keyword.  An exception is the keyword
- @(':SYSTEM') for the @('books/') directory; see @(see include-book), in
- particular the section on ``Books Directory.''  Also see @(tsee
- add-include-book-dir) and @(tsee add-include-book-dir!).</p>
+ associate a directory with a keyword.  It need not associate a value with
+ @(':SYSTEM'), to denote the @('books/') directory (see @(see community-books);
+ see @(see include-book), in particular the section on ``Books Directory.''
+ Also see @(tsee add-include-book-dir) and @(tsee add-include-book-dir!).</p>
 
  @({
   :match-free-default
@@ -3605,7 +3605,7 @@ include-book)"
  })
 
  <p>where @('kwd') is a @(tsee keywordp) and @('dir') is a relative or absolute
- @(see pathname) for a directory, optionally using the syntax @('(:system
+ @(see pathname) for a directory, optionally using the syntax @('(:keyword
  . filename)') described in @(see full-book-name).  If the final '@('/')' is
  missing for the resulting directory, ACL2 will add it for you.  The effect of
  this event is to modify the meaning of the @(':dir') keyword argument of
@@ -3629,8 +3629,8 @@ include-book)"
  <p>The keyword @(':system') can never be redefined.  It will always point to
  the absolute pathname of the system books directory, which by default is
  immediately under the directory where the ACL2 executable was originally built
- (see @(see include-book), in particular the discussion there of ``books
- directory'').</p>
+ (see @(see include-book), in particular the discussion there of ``Books
+ Directory'').</p>
 
  <p>This macro generates a @(tsee table) event that updates the table
  @('include-book-dir!-table'), which associates keywords with absolute
@@ -14197,7 +14197,7 @@ with any questions about building the community books.</p>")
 
  <p>Technical Remark.  Step 3 above mentions rolling the logical @(see world)
  back to check for local incompatibilities.  For efficiency, this retraction to
- an initial segment of the the world is skipped if a local event is not
+ an initial segment of the world is skipped if a local event is not
  encountered, and otherwise the world is rolled back through the first local
  event past the boot-strap world &mdash; see @(see local-incompatibility)
  &mdash; before the book is included to check for local incompatibilities.
@@ -22002,7 +22002,7 @@ subtree of X with T, without duplication.</p>
     (local local-thm))
  })
 
- <p>The purpose of @('encap') is to ensure the the executable version of
+ <p>The purpose of @('encap') is to ensure that the executable version of
  @('name') terminates on all arguments.  Thus, @('local-def') and
  @('local-thm') are as follows, where the @('xargs') of the @(tsee declare)
  form are the result of adding @(':VERIFY-GUARDS NIL') to the result of
@@ -23905,7 +23905,7 @@ subtree of X with T, without duplication.</p>
  })
 
  <p>introduces a stobj named @('$S').  The stobj has three fields: @('X'),
- @('A'), and @('H').  The @('A') field is an array and the the @('A') field is
+ @('A'), and @('H').  The @('A') field is an array and the @('A') field is
  a hash table.  The @('X') field contains an integer and is initially 0.  The
  @('A') field contains a list of integers, each between 0 and 9, inclusive.
  Initially, each of the three elements of the @('A') field is 9.</p>
@@ -26881,7 +26881,7 @@ ld) and @(tsee include-book)"
  @('loop$') keyword, @('FINALLY'), is also supported.  Here is a variant of the
  preceding example that illustrates the use of @('FINALLY').  The iteration
  stops with the @('(loop-finish)') form this time, rather than with a call of
- @('return').  Execution of @('(loop-finish)') passes control to the the
+ @('return').  Execution of @('(loop-finish)') passes control to the
  @('FINALLY') clause, which is executed just like the @('DO') body but with a
  single pass, thus determining the value of the @('loop$') &mdash; in this
  example, returning the final value of @('y').</p>
@@ -46691,8 +46691,7 @@ tables in the current Hons Space."
  arguments are not evaluated.  @('Invariant') is just a macro that expands into
  a term that checks that not both @(see rune)s are enabled.  See @(see
  theory-invariant).  Also see @(see incompatible!) for a variant that insists
- the the arguments are indeed runes, not merely having the shapes of
- runes.</p>")
+ the arguments are indeed runes, not merely having the shapes of runes.</p>")
 
 (defxdoc incompatible!
   :parents (theories)
@@ -46791,7 +46790,7 @@ tables in the current Hons Space."
  term.  (Analysis of that term may further involve induction rules, though the
  applied rule is removed from consideration during that further analysis, in
  order to avoid looping.)  If @('rec-fn') has a recursive definition, then the
- the definition's dual induction scheme is suggested (i.e., unwinding the
+ definition's dual induction scheme is suggested (i.e., unwinding the
  function).</p>
 
  <p>(Remark.  Unlike @(':induct') @(see hints), the @(':scheme') of an
@@ -56346,7 +56345,7 @@ forms allowed for a @('let') form are  @('ignore'), @('ignorable'), and
                    (equal (rev (rev z)) z)))
  </code>
 
- <p>The second hypothesis above is the the <i>induction hypothesis</i>.  The
+ <p>The second hypothesis above is the <i>induction hypothesis</i>.  The
  conclusion above is the formula we are trying to prove.  Each induction
  hypothesis is <i>always</i> an <see topic='@(url
  LOGIC-KNOWLEDGE-TAKEN-FOR-GRANTED-INSTANCE)'>instance</see> of the formula
@@ -63400,7 +63399,7 @@ it."
  exists only in the @(see wormhole) @(see state) with which you interact when a
  break occurs.  This allows you to change the @(see monitor)ed @(see rune)s and
  their conditions during the course of a proof attempt without changing the
- @(see state) in which the the proof is being constructed.</p>
+ @(see state) in which the proof is being constructed.</p>
 
  <p>Unconditional break points are obtained by using the break condition
  @('t').  We now discuss conditional break points.  The break condition,
@@ -66202,7 +66201,7 @@ it."
  guards (if any); see @(see table).</p>
 
  <p>We have relaxed the translation rules for @(':measure') @(see hints) to
- @(tsee defun), so that the the same rules apply to these terms that apply to
+ @(tsee defun), so that the same rules apply to these terms that apply to
  terms in @(tsee defthm) @(see events).  In particular, in @(':measure') @(see
  hints) @(tsee mv) is treated just like @(tsee list), and @(tsee state)
  receives no special handling.</p>
@@ -77633,7 +77632,7 @@ it."
 ; stobj with :guard-checking :none, to suggest (set-guard-checking nil).
 ; Thanks to Harsh Raju Chamarthi for related helpful conversations.
 
-; In support of the new :case-split-limitations hint (see :doc below), the the
+; In support of the new :case-split-limitations hint (see :doc below), the
 ; rewrite-constant record was modified, and clausify now takes an sr-limit
 ; instead of the world.
 
@@ -90906,7 +90905,7 @@ it."
  <p>Fixed the @(see acl2-doc) browser so that it can handle topic names with
  the single-quote (@(''')) and comma (@(',')) characters, by escaping them.</p>
 
- <p>Fixed Emacs support for the the @(see proof-builder) dive command (see
+ <p>Fixed Emacs support for the @(see proof-builder) dive command (see
  @(see acl2-pc::dive)), @('control-t control-d'), to eliminate trailing zeros,
  since those are (and have been) disallowed by that command.</p>
 
@@ -93843,6 +93842,18 @@ it."
  tca) and @(':')@(tsee tcp) use different degrees of ``cleaning.''  These are
  particularly useful for seeing the logical meanings of @(tsee loop$) terms as
  well as terms involving @(tsee mbe) and @(tsee return-last).</p>
+
+ <p>It is now possible to move directories of certified books, including the
+ @(see certificate) (@('.cert')) files.  The key idea is to set up an ``ACL2
+ projects'' file that associates keywords with directory names, where each
+ keyword indicates a movable project and the associated directory name is the
+ top-level directory of the project.  Up till now, a <i>sysfile</i> was a pair
+ of the form @('(:SYSTEM . \"directory-name\")'); now, a sysfile may have an
+ arbitrary keyword as its first component (i.e., its @('car')).  The
+ environment variable @('ACL2_PROJECTS') may be used to specify a file
+ containing associations of keywords with directory names.  See @(see
+ project-dir-alist).  Thanks to Sol Swords for requesting such a capability and
+ for helpful design discussions.</p>
 
  <h3>Heuristic and Efficiency Improvements</h3>
 
@@ -99103,7 +99114,7 @@ arithmetic) for libraries of @(see books) for arithmetic reasoning.</p>")
 
 (defxdoc print-object$
   :parents (io acl2-built-ins)
-  :short "Print an an object to an open object output channel"
+  :short "Print an object to an open object output channel"
   :long "
  @({
  General Form:
@@ -99130,7 +99141,7 @@ arithmetic) for libraries of @(see books) for arithmetic reasoning.</p>")
 
 (defxdoc print-object$+
   :parents (io acl2-built-ins)
-  :short "Print an an object to an open output channel in a specified manner"
+  :short "Print an object to an open output channel in a specified manner"
   :long "
  @({
  General Form:
@@ -99277,6 +99288,30 @@ arithmetic) for libraries of @(see books) for arithmetic reasoning.</p>")
 
  <p>Functions @(tsee profile-all) and @(tsee profile-acl2) are available for
  profiling all functions or all ACL2 functions, respectively.</p>")
+
+(defxdoc project-dir-alist
+  :parents (events)
+  :short "Support for moving project directories and @(':dir') arguments"
+  :long "<p>This topic is currently only a stub, but should be fleshed out
+ soon.</p>
+
+ <p>In short, you can set environment variable @('ACL2_PROJECTS') to be the
+ name of a file that contains lines of the following form, as well as any
+ number of comment lines for which the first non-whitespace character is a
+ semicolon (@(';')).</p>
+
+ @({
+ :KEYWORD \"directory-name\"
+ })
+
+ <p>Then @(':KEYWORD') will be interpreted to represent @('\"directory-name\"')
+ when used with the @(':DIR') argument of @(tsee include-book) or @(tsee ld),
+ just as is the case when using @(tsee add-include-book-dir!).  But an
+ additional property is as follows.  Suppose a book and its certificate
+ @('\"directory-name/.../bk.{lisp,cert}\"') are moved (or copied) to
+ @('\"directory-name-2/.../bk.{lisp,cert}\"').  Then in any session where
+ @(':KEYWORD') is similarly bound to @('\"directory-name-2\"') instead of
+ @('\"directory-name\"'), that book will be treated as certified.</p>")
 
 (defxdoc prog2$
   :parents (progn$ acl2-built-ins)
@@ -102467,7 +102502,7 @@ arithmetic) for libraries of @(see books) for arithmetic reasoning.</p>")
  book that has been modified, as described later in this documentation
  topic.</li>
 
- <li>The @('puff') of an an @(tsee include-book) command for an uncertified
+ <li>The @('puff') of an @(tsee include-book) command for an uncertified
  book will simply expose the contents of the book.  However, if the book is
  certified then the @('puff') will replace each event by its @(tsee make-event)
  expansion.  Also, ACL2 considers that (certified) book to have been included;
@@ -105153,7 +105188,7 @@ arithmetic) for libraries of @(see books) for arithmetic reasoning.</p>")
   :parents (events)
   :short "Allowing a name to be introduced ``twice''"
   :long "<p>Sometimes an event will announce that it is ``redundant'', meaning
- that the the form is not evaluated because ACL2 determines that its effect is
+ that the form is not evaluated because ACL2 determines that its effect is
  already incorporated into the logical @(see world).  Thus, when this happens,
  no change to the logical @(see world) takes place.  This feature permits two
  independent @(see books), each of which defines some name, to be included
@@ -114505,7 +114540,7 @@ arithmetic) for libraries of @(see books) for arithmetic reasoning.</p>")
  other subsequent actions typically performed by @(tsee certify-book): a @(see
  local-incompatibility) check, writing of a @(see certificate) file, and
  possibly @(see compilation).  Another effect is that proofs may be skipped
- when processing @(see events) assuming that the the @('certify-book') command
+ when processing @(see events) assuming that the @('certify-book') command
  does not explicitly specify @(':skip-proofs-okp nil'), as we now explain.  A
  non-@('nil') value of @(''write-acl2x') should either be @('t') or a
  one-element list @('(x)'), where @('x') is a legal value for the @(see state)
@@ -120164,7 +120199,7 @@ arithmetic) for libraries of @(see books) for arithmetic reasoning.</p>")
  all stobj names in the @(see world), @('w').  If you want to know whether
  @('x') has been defined as a stobj in @('w'), use @('known-stobjs') = @('t').
  Technicality: if @('known-stobjs') is a list then it is allowed to contain any
- number of @('nil') elements (as may be the case for the the @('stobjs-in') or
+ number of @('nil') elements (as may be the case for the @('stobjs-in') or
  @('stobjs-out') of a symbol), which are ignored.</li>
 
  <li>@('(stobjs-in fn w)'): For a function symbol @('fn') of @(see world)
@@ -127863,7 +127898,7 @@ introduction-to-the-tau-system) for more information about Tau.</dd>
  <p>Here is the detail promised above, for parsing a term into a
  @(':type-prescription') rule.  There are two steps.  (1) ACL2 first translates
  the term, expanding all macros (see @(see trans)) and also removing @(see
- guard-holders).  (2) Then the the translated term is traversed top-down,
+ guard-holders).  (2) Then the translated term is traversed top-down,
  expanding away @('lambda')s (@(tsee let), @(tsee let*), and @(tsee mv-let)
  expressions) and flattening the @(tsee IMPLIES) structure, until the
  conclusion is exposed; then the conclusion's @('lambda')s are also expanded
@@ -131588,7 +131623,7 @@ introduction-to-the-tau-system) for more information about Tau.</dd>
  itself unless it is removed from the list of hints.</p>
 
  <p>As an exercise, let's arrange for the hint to stay around and be applied
- indefinitely but with a simplification between each use of the the hint.  To
+ indefinitely but with a simplification between each use of the hint.  To
  do this we need to pass information from one application of the hint to the
  next, essentially to say ``stay around but don't fire.''</p>
 
@@ -136135,7 +136170,7 @@ for the execution of @('form')."
  channels are closed and state global variables are returned to their original
  values, or else be willing to live with changes made to state that are not
  justified by the code that has been evaluated.  You are welcome to look in the
- the ACL2 source code at the definition of macro @('channel-to-string'), which
+ ACL2 source code at the definition of macro @('channel-to-string'), which
  employs @('with-local-state') to create a local @(see state) for the purpose
  of creating a string.</p>
 
@@ -136445,7 +136480,7 @@ for the execution of @('form')."
  specs for these keywords (as discussed above).  If @(':on :all') is specified,
  then then every output type is turned on except for those in the set specified
  by the value of @(':off').  Otherwise, if @(':off :all') is specified, then
- every output type is inhibited except as specified by the the value of
+ every output type is inhibited except as specified by the value of
  @(':on').  Otherwise @(':all') is not specified for either @(':on') or
  @(':off'), and the currently-inhibited output types are reduced as specified
  by the value of @(':on') and then extended as specified by the value of
@@ -137094,7 +137129,7 @@ created from the original fast alist during @('form') must be manually freed."
  undone (see @(see ubt)).  Thus in particular, the world includes a
  representation of the current logical theory, as well as some extra-logical
  information such as the values of ACL2 @(see table)s.  The rest of this topic
- focuses on the structure of the the ACL2 world and, more generally, the
+ focuses on the structure of the ACL2 world and, more generally, the
  ``world'' data structure.</p>
 
  <p>A ``world'' is a list of triples, each of the form @('(sym prop . val)'),
@@ -137825,7 +137860,7 @@ created from the original fast alist during @('form') must be manually freed."
  the current status and whose body is the @('lambda') body.  Guard clauses are
  generated from the body, with one exception: the @('lambda') formal is
  replaced by a new variable so that no prior assumptions are available about
- the value of the the wormhole status.</p>
+ the value of the wormhole status.</p>
 
  <p>If the newly computed status has an entry code of @(':ENTER') @(tsee ld)
  will be invoked.  But we don't really copy state, of course.  Instead we will
@@ -140245,7 +140280,7 @@ prettyprint the conclusion, highlighting the current term"
  the current subterm is @('(p y)'), then @('p-top') will print @('(equal (and x
  (*** (p y) ***)) (foo z))').</p>
 
- <p>Prettyprint the the conclusion, highlighting the current term.  The usual
+ <p>Prettyprint the conclusion, highlighting the current term.  The usual
  user syntax is used, as with the command @('p') (as opposed to @('pp')).  This
  is illustrated in the example above, where one would <i>*not*</i> see
  @('(equal (if x (*** (p y) ***) 'nil) (foo z))').</p>
@@ -141700,7 +141735,7 @@ combine goals into a single goal"
  <p>If @('kept-goal-names') is not @('nil'), the current goal is replaced by
  conjoining it with all goals other than the current goal and those indicated
  by @('kept-goal-names'), and those other goals are deleted.  If
- @('kept-goal-names') is omitted, then the the current goal must be of the form
+ @('kept-goal-names') is omitted, then the current goal must be of the form
  @('(name . n)'), and the goals to conjoin into the current goal (and delete)
  are those with names of the form @('(name . k)') for @('k') &gt;= @('n').</p>
 
