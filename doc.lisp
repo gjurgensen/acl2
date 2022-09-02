@@ -77,7 +77,7 @@ Subtopics
   [defthm], [in-theory], [xargs], [state], etc., without an acl2::
   prefix.
 
-  The constant *acl2-exports* lists 1558 symbols, including most
+  The constant *acl2-exports* lists 1564 symbols, including most
   documented ACL2 system constants, functions, and macros.  You will
   typically also want to import many symbols from Common Lisp; see
   [*common-lisp-symbols-from-main-lisp-package*].
@@ -286,9 +286,9 @@ Subtopics
        eqlable-alistp-forward-to-alistp
        eqlable-listp
        eqlable-listp-forward-to-atom-listp
-       eqlablep
-       eqlablep-recog equal equal-char-code
-       er er-cmp er-let* er-let*-cmp er-progn
+       eqlablep eqlablep-recog
+       equal equal-char-code er er-cmp
+       er-hard er-let* er-let*-cmp er-progn
        er-progn-cmp er-progn-fn er-progn-fn@par
        er-progn@par er-soft er-soft-logic ev$
        ev$-list evenp evens event evisc-tuple
@@ -326,11 +326,12 @@ Subtopics
        fourth function-symbolp function-theory
        gag-mode gc$ gc-strategy gc-verbose
        gcs generalize get-check-invariant-risk
-       get-command-sequence get-defun-event
+       get-command-sequence
+       get-cpu-time get-defun-event
        get-enforce-redundancy get-event-data
        get-global get-guard-checking
        get-in-theory-redundant-okp
-       get-output-stream-string$
+       get-output-stream-string$ get-real-time
        get-register-invariant-risk
        get-serialize-character
        get-slow-alist-action get-timer
@@ -598,8 +599,8 @@ Subtopics
        set-in-theory-redundant-okp
        set-induction-depth-limit
        set-induction-depth-limit!
-       set-inhibit-er-soft set-inhibit-er-soft!
-       set-inhibit-output-lst
+       set-inhibit-er
+       set-inhibit-er! set-inhibit-output-lst
        set-inhibit-warnings
        set-inhibit-warnings!
        set-inhibited-summary-types
@@ -717,16 +718,15 @@ Subtopics
        tau-data tau-database tau-interval-dom
        tau-interval-hi tau-interval-hi-rel
        tau-interval-lo tau-interval-lo-rel
-       tau-intervalp tau-status tau-system
-       tenth term-list-listp term-listp
+       tau-intervalp tau-status tau-system tc
+       tca tcp tenth term-list-listp term-listp
        term-order termination-theorem termp
        the the-check the-fixnum the-fixnum!
        theory theory-invariant thereis$
        thereis$+ third thm time$ time-tracker
        time-tracker-tau timer-alistp
        timer-alistp-forward-to-true-list-listp-and-symbol-alistp
-       toggle-inhibit-er-soft
-       toggle-inhibit-er-soft!
+       toggle-inhibit-er toggle-inhibit-er!
        toggle-inhibit-warning
        toggle-inhibit-warning!
        toggle-pc-macro top-level
@@ -3319,6 +3319,12 @@ Subtopics
   [Er]
       Print an error message and ``cause an error''
 
+  [Er-hard]
+      Print an error message and ``cause a hard error''
+
+  [Er-hard?]
+      Print an error message and ``cause a hard error''
+
   [Er-progn]
       Perform a sequence of state-changing ``error triples''
 
@@ -3457,8 +3463,14 @@ Subtopics
   [Gc-strategy]
       The garbage collection strategy
 
+  [Get-cpu-time]
+      Read elapsed cpu time
+
   [Get-internal-time]
       Runtime vs. realtime in ACL2 timings
+
+  [Get-real-time]
+      Read elapsed real time
 
   [Getenv$]
       Read an environment variable
@@ -3946,10 +3958,10 @@ Subtopics
       [explode-nonnegative-integer] and [explode-atom].
 
   [Print-object$]
-      Print an an object to an open object output channel
+      Print an object to an open object output channel
 
   [Print-object$+]
-      Print an an object to an open output channel in a specified manner
+      Print an object to an open output channel in a specified manner
 
   [Prog2$]
       Execute two forms and return the value of the second one
@@ -4648,10 +4660,11 @@ Silent loading of ACL2 customization files
     :include-book-dir-alist
 
   This key's value is used by [include-book]'s :DIR argument to
-  associate a directory with a keyword.  An exception is the keyword
-  :SYSTEM for the books/ directory; see [include-book], in particular
-  the section on ``Books Directory.'' Also see [add-include-book-dir]
-  and [add-include-book-dir!].
+  associate a directory with a keyword.  It need not associate a
+  value with :SYSTEM, to denote the books/ directory (see
+  [community-books]; see [include-book], in particular the section on
+  ``Books Directory.'' Also see [add-include-book-dir] and
+  [add-include-book-dir!].
 
     :match-free-default
 
@@ -6048,7 +6061,7 @@ Subtopics
     (add-include-book-dir kwd dir)
 
   where kwd is a [keywordp] and dir is a relative or absolute
-  [pathname] for a directory, optionally using the syntax (:system .
+  [pathname] for a directory, optionally using the syntax (:keyword .
   filename) described in [full-book-name].  If the final '/' is
   missing for the resulting directory, ACL2 will add it for you.  The
   effect of this event is to modify the meaning of the :dir keyword
@@ -6075,7 +6088,7 @@ Subtopics
   the absolute pathname of the system books directory, which by
   default is immediately under the directory where the ACL2
   executable was originally built (see [include-book], in particular
-  the discussion there of ``books directory'').
+  the discussion there of ``Books Directory'').
 
   This macro generates a [table] event that updates the table
   include-book-dir!-table, which associates keywords with absolute
@@ -6533,7 +6546,7 @@ Proof debugging and output control:
     * See [set-gag-mode] and see [pso] to abbreviate or restore proof
       output.
     * See [set-inhibit-output-lst], see [set-inhibit-warnings], see
-      [set-inhibit-er-soft], and see [set-inhibited-summary-types] to
+      [set-inhibit-er], and see [set-inhibited-summary-types] to
       inhibit various types of output.
     * See [set-raw-proof-format] to make proof output display lists of
       [rune]s.
@@ -8460,14 +8473,20 @@ Theorems Involving Apply$
 
       (warrant sq)
     <-->
-      (apply$-warrant-sq)
+      (force (apply$-warrant-sq))
     <-->
       (((badge 'SQ) = '(APPLY$-BADGE 1 1 . T))
        &
        ((apply$ 'SQ args) = (sq (car args))))
 
+  Note that the [warrant] macro [force]s the warrants for the functions
+  listed.  But logically force is just the identity.
+
   Thus, the warrant for sq specifies the value of (badge 'sq) and of
-  (apply$ 'sq ...).
+  (apply$ 'sq ...).  Operationally, by forcing the warrant it means
+  the absence of a warrant among the hypotheses of a conjecture which
+  is otherwise provable just results in a forcing round that
+  highlights the need for the warrant.
 
   If you try to prove the unwarranted version of the little theorem
   about 'sq it fails in a forcing round with
@@ -15439,6 +15458,9 @@ Subtopics
   Note that you will want to certify [books] in order to take full
   advantage of ACL2.  See [books-certification].
 
+  See [save-exec] for how to build an ACL2 executable from a state
+  resulting from the running of specified [command]s.
+
 
 Subtopics
 
@@ -17056,14 +17078,14 @@ Subtopics
 
   Technical Remark.  Step 3 above mentions rolling the logical [world]
   back to check for local incompatibilities.  For efficiency, this
-  retraction to an initial segment of the the world is skipped if a
-  local event is not encountered, and otherwise the world is rolled
-  back through the first local event past the boot-strap world ---
-  see [local-incompatibility] --- before the book is included to
-  check for local incompatibilities.  Note that if that first local
-  event is in the certification world, then all commands from that
-  event onward will be undone by the certify-book call.  End of
-  Technical Remark.
+  retraction to an initial segment of the world is skipped if a local
+  event is not encountered, and otherwise the world is rolled back
+  through the first local event past the boot-strap world --- see
+  [local-incompatibility] --- before the book is included to check
+  for local incompatibilities.  Note that if that first local event
+  is in the certification world, then all commands from that event
+  onward will be undone by the certify-book call.  End of Technical
+  Remark.
 
   A utility is provided to assist in debugging failures of
   certify-book; see [redo-flat].)
@@ -18701,10 +18723,16 @@ Failure due to disabled or missing warrants
 
     (EQUAL
      (HIDE
-         (COMMENT
-              \"Call failed because the warrant for HELLO is not known to be true\"
-              (EV$ '(HELLO LOOP$-IVAR)
-                   '((LOOP$-IVAR . JOHN)))))
+      (COMMENT
+       \"Call failed because the warrant for HELLO is not known to be true\"
+       (EV$ '(RETURN-LAST 'PROGN
+                          '(LAMBDA$ (LOOP$-IVAR)
+                                    (LET ((NAME LOOP$-IVAR))
+                                      (DECLARE (IGNORABLE NAME))
+                                      (HELLO NAME)))
+                          ((LAMBDA (NAME) (HELLO NAME))
+                           LOOP$-IVAR))
+            '((LOOP$-IVAR . JOHN)))))
      '(HI JOHN))")
  (COMMON-LISP
   (ABOUT-ACL2)
@@ -23813,8 +23841,8 @@ Miscellaneous Remarks, with discussion of possible user errors.
 
   (Of interest only to users of [apply$].)  Special handling is applied
   when attempting to attach to a so-called warrant, which is produced
-  by an appication of [defwarrant] (or [defun$]).  In that case it is
-  legal to attach the function true-apply$-warrant to the warrant,
+  by an application of [defwarrant] (or [defun$]).  In that case it
+  is legal to attach the function true-apply$-warrant to the warrant,
   without any proof obligation.  This attachment is actually
   performed automatically by defwarrant, so users (even users of
   apply$) need not deal explicitly with such attachments.  However,
@@ -25167,7 +25195,7 @@ Subtopics
       (local local-def)
       (local local-thm))
 
-  The purpose of encap is to ensure the the executable version of name
+  The purpose of encap is to ensure that the executable version of name
   terminates on all arguments.  Thus, local-def and local-thm are as
   follows, where the xargs of the [declare] form are the result of
   adding :VERIFY-GUARDS NIL to the result of removing the :test and
@@ -27085,10 +27113,10 @@ The Default Function Names
       (H :TYPE (HASH-TABLE EQ)))
 
   introduces a stobj named $S.  The stobj has three fields: X, A, and
-  H.  The A field is an array and the the A field is a hash table.
-  The X field contains an integer and is initially 0.  The A field
-  contains a list of integers, each between 0 and 9, inclusive.
-  Initially, each of the three elements of the A field is 9.
+  H.  The A field is an array and the A field is a hash table.  The X
+  field contains an integer and is initially 0.  The A field contains
+  a list of integers, each between 0 and 9, inclusive.  Initially,
+  each of the three elements of the A field is 9.
 
   This event introduces the following sequence of definitions:
 
@@ -30173,10 +30201,10 @@ INFORMAL INTRODUCTION
   FINALLY, is also supported.  Here is a variant of the preceding
   example that illustrates the use of FINALLY.  The iteration stops
   with the (loop-finish) form this time, rather than with a call of
-  return.  Execution of (loop-finish) passes control to the the
-  FINALLY clause, which is executed just like the DO body but with a
-  single pass, thus determining the value of the loop$ --- in this
-  example, returning the final value of y.
+  return.  Execution of (loop-finish) passes control to the FINALLY
+  clause, which is executed just like the DO body but with a single
+  pass, thus determining the value of the loop$ --- in this example,
+  returning the final value of y.
 
     ACL2 !>(loop$ with x = '(a b c)
                   with y = nil
@@ -30742,7 +30770,8 @@ SEMANTICS
   logically irrelevant clutter such as [declare] forms and it shows
   only arguments of do$ relevant to our discussion of the example
   above.  Also, the display employs user-level syntax (i.e., an
-  untranslated term; see [term]).
+  untranslated term; see [term]).  See also the subsection of
+  [lambda$] entitled ``About Lambda$s and Prover Output.''
 
   The definition of do$ is given at the end of this topic, for those
   who care to explore it, but this discussion is intended to be
@@ -33526,6 +33555,47 @@ Subtopics
   hard errors to signal actual raw Lisp errors.  See [hard-error].")
  (ER-CMP (POINTERS)
          "See [context-message-pair].")
+ (ER-HARD
+  (ERRORS ACL2-BUILT-INS)
+  "Print an error message and ``cause a hard error''
+
+  See [er] for relevant background, which is assumed below, and related
+  utilities.
+
+    General Form:
+    (er-hard context summary str &rest str-args)
+
+  where context is a legal context (see [ctx]), summary is nil or a
+  string, str is a string, and str-args are tsee fmt arguments for
+  str.  Note that (er-hard context summary str ...) is equivalent to
+  (er hard context (cons summary str) ...).  The use of a non-nil
+  summary allows suppression of this error message without
+  suppressing all error output; see [set-inhibit-er].
+
+  Calls of er-hard expand much like calls (er hard ...), in the sense
+  that both expand to calls of the function, [illegal], which has a
+  [guard] equivalent to nil.  See [er-hard?] for a similar utility
+  that avoids generating guard obligations.
+
+  See [er-soft] for a similar utility pertaining to ``soft'' errors.")
+ (ER-HARD?
+  (ERRORS ACL2-BUILT-INS)
+  "Print an error message and ``cause a hard error''
+
+  See [er-hard] for a nearly identical utility that is aligned with (er
+  hard ...), generating a [guard] obligation of nil.  By contrast,
+  (er-hard? ...) is aligned with (er hard? ...)): these do not
+  generate guard obligations.  This distinction is due to the fact
+  that a call of (er-hard ...) macroexpands to a call of the
+  function, [illegal], while a call of (er-hard? ...) macroexpands to
+  a call of the function, [hard-error].
+
+    General Form:
+    (er-hard? context summary str &rest str-args)
+
+  Other than the difference in guard obligations generated, as
+  discussed above, er-hard? behaves identically to er-hard.  See
+  [er-hard] and for relevant background, see [er].")
  (ER-LET* (POINTERS)
           "See [programming-with-state].")
  (ER-LET*-CMP (POINTERS)
@@ -33576,17 +33646,18 @@ Subtopics
   (ERRORS ACL2-BUILT-INS)
   "Print an error message and ``cause a soft error''
 
-  See [er] for relevant background, which is assumed below.
+  See [er] for relevant background, which is assumed below, and related
+  utilities.
 
     General Form:
     (er-soft context summary str &rest str-args)
 
   where context is a legal context (see [ctx]), summary is nil or a
   string, str is a string, and str-args are tsee fmt arguments for
-  str.  Note that (er-soft context summary str ...) is equivalent to
-  (er soft context nil str ...).  The use of a non-nil summary allows
-  suppression of this error message without suppressing all error
-  output; see [set-inhibit-er-soft].")
+  str.  The use of a non-nil summary allows suppression of this error
+  message without suppressing all error output; see [set-inhibit-er].
+
+  See [er-hard] for a similar utility pertaining to ``hard'' errors.")
  (ERROR (POINTERS)
         "See [hints] for information about the keyword :error.")
  (ERROR-TRIPLE
@@ -33674,7 +33745,7 @@ Subtopics
   expected by [fmt] --- unless error output is inhibited (see
   [set-inhibit-output-lst] and [with-output]) or summary is non-nil,
   in which case it is a string, and error output of that type is
-  inhibited (see [set-inhibit-er-soft]).  See [fmt].
+  inhibited (see [set-inhibit-er]).  See [fmt].
 
   Error1 can be interpreted as causing an ``error'' when programming
   with the ACL2 [state], something most ACL2 users will probably not
@@ -33728,6 +33799,12 @@ Subtopics
   [Er]
       Print an error message and ``cause an error''
 
+  [Er-hard]
+      Print an error message and ``cause a hard error''
+
+  [Er-hard?]
+      Print an error message and ``cause a hard error''
+
   [Er-progn]
       Perform a sequence of state-changing ``error triples''
 
@@ -33746,17 +33823,17 @@ Subtopics
   [Illegal]
       Print an error message and stop execution
 
-  [Set-inhibit-er-soft]
+  [Set-inhibit-er]
       Control the error output
 
-  [Set-inhibit-er-soft!]
+  [Set-inhibit-er!]
       Control error output non-[local]ly
 
-  [Toggle-inhibit-er-soft]
-      Add or delete an error output string from the inhibit-er-soft-table
+  [Toggle-inhibit-er]
+      Add or delete an error output string from the inhibit-er-table
 
-  [Toggle-inhibit-er-soft!]
-      Toggle an inhibit-er-soft-table entry non-[local]ly
+  [Toggle-inhibit-er!]
+      Toggle an inhibit-er-table entry non-[local]ly
 
   [Value-triple]
       Compute a value, optionally checking that it is not nil")
@@ -34674,6 +34751,9 @@ Subtopics
 
   [Progn!]
       Evaluate some forms, not necessarily [events]
+
+  [Project-dir-alist]
+      Support for moving project directories and :dir arguments
 
   [Redundant-events]
       Allowing a name to be introduced ``twice''
@@ -38307,27 +38387,20 @@ General Form
 
   The most elaborate loop$ expression is of the form
 
-  .   .   .   .  (LOOP$ FOR v1 OF-TYPE spec1 target1
-  .   .   .   .   .   .   .   .   .   .   .   .  AS   .  v2 OF-TYPE
-  spec2 target2
-  .   .   .   .   .   .   .   .   .   .   .   .  ...
-  .   .   .   .   .   .   .   .   .   .   .   .  AS   .  vn OF-TYPE
-  specn targetn
-  .   .   .   .   .   .   .   .   .   .   .   .  UNTIL :GUARD guard1
-  until-expr
-  .   .   .   .   .   .   .   .   .   .   .   .  WHEN   .  :GUARD
-  guard2 when-expr
-  .   .   .   .   .   .   .   .   .   .   .   .  ; Note the
-  ALWAYS/THEREIS Exceptions below!
-  .   .   .   .   .   .   .   .   .   .   .   .  op :GUARD guard3
-  body-expr)
+  (LOOP$ FOR v1 OF-TYPE spec1 target1
+  AS    v2 OF-TYPE spec2 target2
+  ...
+  AS    vn OF-TYPE specn targetn
+  UNTIL :GUARD guard1 until-expr
+  WHEN    :GUARD guard2 when-expr
+  ; Note the ALWAYS/THEREIS Exceptions below!
+  op :GUARD guard3 body-expr)
 
-  where each vi  .  is a legal variable symbol and they are all
-  distinct, each type-speci  .  is a [type-spec], each targeti  .  is
-  a target clause, each guardi, until-expr, and when-expr  .  is a
-  term, op  .  is an operator, and body-expr  .  is a term.
-  Furthermore, until-expr, when-expr, and body-expr  .  must be
-  [tame]!
+  where each vi   is a legal variable symbol and they are all distinct,
+  each type-speci   is a [type-spec], each targeti   is a target
+  clause, each guardi, until-expr, and when-expr   is a term, op   is
+  an operator, and body-expr   is a term.  Furthermore, until-expr,
+  when-expr, and body-expr   must be [tame]!
 
   The ALWAYS/THEREIS Exception: Common Lisp prohibits loops with both a
   WHEN clause and either an ALWAYS or a THEREIS operator.  For
@@ -42386,6 +42459,19 @@ Subtopics
   it simply returns the corresponding list of commands.  More
   precisely, it returns an [error-triple] (mv erp val state) such
   that if erp is not nil, then val is the desired list of commands.")
+ (GET-CPU-TIME
+  (PROGRAMMING-WITH-STATE ACL2-BUILT-INS READ-RUN-TIME)
+  "Read elapsed cpu time
+
+  (Get-cpu-time state) returns the elapsed cpu time in seconds since
+  the start of the current ACL2 session.  See [read-run-time] for
+  further documentation.
+
+  Function: <get-cpu-time>
+
+    (defun get-cpu-time (state)
+           (declare (xargs :stobjs state))
+           (read-run-time state))")
  (GET-DEFUN-EVENT (POINTERS)
                   "See [system-utilities].")
  (GET-ENFORCE-REDUNDANCY
@@ -42448,21 +42534,22 @@ Subtopics
   (PROGRAMMING ACL2-BUILT-INS)
   "Runtime vs. realtime in ACL2 timings
 
-  The ACL2 system provides utilities that deal with elapsed time.  The
-  most visible of these is in the time summaries printed when
-  completing evaluation of [events].  For others, see
-  [with-prover-time-limit], see [read-run-time], see [time-tracker],
-  see [time-tracker-tau], and see [pstack].
+  The ACL2 system provides utilities that deal with elapsed time.
+  These are most visibly used in reporting the time summaries when
+  completing evaluation of [events].  For utilities that return
+  elapsed cpu or run time, see [read-run-time], [get-cpu-time], and
+  [get-real-time].  Other time-related utilities include
+  [with-prover-time-limit], [time-tracker], [time-tracker-tau], see
+  [pstack].
 
   By default, these utilities all use an underlying notion of run time
   provided by the host Common Lisp implementation: specifically, the
-  Common Lisp function get-internal-run-time.  However, Common Lisp
-  also provides the function get-internal-real-time, which returns
-  the real time (wall clock time).  While the latter is specified to
-  measure elapsed time, the former is left to the implementation,
-  which might well only measure time spent in the Lisp process.
-  Consider the following example, which is a bit arcane but basically
-  sleeps for 2 seconds.
+  Common Lisp functions get-internal-run-time for cpu time and
+  get-internal-real-time for real (wall clock) time.  While the
+  latter is specified to measure elapsed time, the former is left to
+  the implementation, which might well only measure time spent in the
+  Lisp process.  Consider the following example, which is a bit
+  arcane but basically sleeps for 2 seconds.
 
     (defttag t) ; to allow sys-call
     (make-event
@@ -42470,7 +42557,7 @@ Subtopics
              (value '(value-triple nil))))
 
   A typical time [summary] might be as follows, drastically
-  under-reporting the elapsed time.
+  under-reporting the actual elapsed (real, wall clock) time.
 
     Time:  0.01 seconds (prove: 0.00, print: 0.00, other: 0.01)
 
@@ -42491,17 +42578,23 @@ Subtopics
   Note that a function get-internal-time is defined in raw Lisp but is
   not available inside the ACL2 loop.  However, the expression
   (read-run-time state) provides an interface to this function that
-  is available inside the ACL2 loop; see [read-run-time].
-
-  We are open to changing the default to elapsed wall-clock time
-  (realtime), and may do so in future ACL2 releases.
-
-  Implementation note (GCL only): If the host Lisp is Gnu Common Lisp,
-  then get-internal-run-time has a multiple value return, and the
-  first two values (runtime and child runtime) are added together to
-  produce a result for get-internal-time.")
+  is available inside the ACL2 loop; see [read-run-time], and also
+  see [get-cpu-time] and [get-real-time].")
  (GET-OUTPUT-STREAM-STRING$ (POINTERS)
                             "See [io].")
+ (GET-REAL-TIME
+  (PROGRAMMING-WITH-STATE ACL2-BUILT-INS READ-RUN-TIME)
+  "Read elapsed real time
+
+  (Get-real-time state) returns the elapsed real (wall clock) time in
+  seconds since the start of the current ACL2 session.  See
+  [read-run-time] for further documentation.
+
+  Function: <get-real-time>
+
+    (defun get-real-time (state)
+           (declare (xargs :stobjs state))
+           (read-run-time state))")
  (GET-REGISTER-INVARIANT-RISK (POINTERS)
                               "See [set-register-invariant-risk].")
  (GET-SERIALIZE-CHARACTER (POINTERS)
@@ -43238,7 +43331,7 @@ Subtopics
   that the object satisfy [well-formed-lambda-objectp].
   Well-formedness implies tameness, so any LAMBDA object that passes
   this translate-time test will have the ``expected behavior'' under
-  apply$.  If an quoted ill-formed ``LAMBDA-like'' object is passed
+  apply$.  If a quoted ill-formed ``LAMBDA-like'' object is passed
   into a :FN slot, an error is signalled.
 
   This is logically unnecessary because, like all ACL2 functions,
@@ -43587,8 +43680,8 @@ Problems Raised by Apply$
     (implies (warrant sq)
              (equal (apply$ 'sq '(3)) '9))
 
-  where (warrant sq) is just a convenient abbreviation for
-  (apply$-warrant-sq).
+  where (warrant sq) is just a convenient abbreviation for (force
+  (apply$-warrant-sq)).
 
   Thus, to extend the strawman conjecture to functions in which apply$
   is ancestral would require tracking the warrants relevant to the
@@ -50183,7 +50276,7 @@ Subtopics
   not evaluated.  Invariant is just a macro that expands into a term
   that checks that not both [rune]s are enabled.  See
   [theory-invariant].  Also see [incompatible!] for a variant that
-  insists the the arguments are indeed runes, not merely having the
+  insists the arguments are indeed runes, not merely having the
   shapes of runes.")
  (INCOMPATIBLE!
   (THEORIES)
@@ -50286,8 +50379,8 @@ Subtopics
   may further involve induction rules, though the applied rule is
   removed from consideration during that further analysis, in order
   to avoid looping.)  If rec-fn has a recursive definition, then the
-  the definition's dual induction scheme is suggested (i.e.,
-  unwinding the function).
+  definition's dual induction scheme is suggested (i.e., unwinding
+  the function).
 
   (Remark.  Unlike :induct [hints], the :scheme of an :induction rule
   only introduces induction schemes based on the top-level function
@@ -55855,10 +55948,10 @@ Subtopics
       Advanced controls of ACL2 printing
 
   [Print-object$]
-      Print an an object to an open object output channel
+      Print an object to an open object output channel
 
   [Print-object$+]
-      Print an an object to an open output channel in a specified manner
+      Print an object to an open output channel in a specified manner
 
   [Printing-to-strings]
       Printing to strings instead of files or standard output
@@ -56509,6 +56602,64 @@ About Lambda$ Expressions
   Furthermore, the only [xargs] keywords allowed are :guard and
   :split-types.  The other XARGS keywords, such as :measure, :hints
   or :guard-hints, play no role.
+
+
+About Lambda$s and Prover Output
+
+  The translated form of a lambda$ expression is a quoted [lambda]
+  object.  For example, (collect$ (lambda$ (x) (+ 1 x)) lst)
+  translates to
+
+    (COLLECT$ '(LAMBDA (X)
+                     (DECLARE (IGNORABLE X))
+                     (RETURN-LAST 'PROGN
+                                  '(LAMBDA$ (X) (+ 1 X))
+                                  (BINARY-+ '1 X)))
+              LST)
+
+  The lambda$ has been replaced by a quoted lambda.
+
+  The prover tries to print each quoted lambda object (that occurs an
+  argument position of [ilk] :FN) as a lambda$ expression that is
+  (provably) functionally equal (see [fn-equal]) to the original
+  lambda object assuming the necessary warrants.  If the quoted
+  lambda object was produced by the expansion of a lambda$ expression
+  and has not been simplified by subsequent rewriting, it will print
+  as the original lambda$ expression.  This can be unfortunate if the
+  original lambda$ expression was itself produced by a macro and
+  contains logically irrelevant (but operationally important) tags.
+  This phenomenon occurs most often when [do-loop$]s are involved.
+
+  Furthermore, since you are allowed to type in quoted lambda objects
+  directly, you may --- or may not --- see them printed by the prover
+  as lambda$ expressions, depending on whether a suitable lambda$ is
+  found.  If a quoted lambda object contains a reference to a
+  function symbol for which no [warrant] has been issued there is
+  probably no provably equivalent lambda$.
+
+  The main lessons here are
+
+    * you should use lambda$ rather than quoted lambda objects in your
+      prover input,
+    * you should make sure to warrant every user-defined function in your
+      lambda$ expressions, and
+    * if you see a quoted lambda object rather than a lambda$ expression in
+      your prover output, that quoted lambda object probably involves
+      unwarranted symbols which will make it impossible to prove
+      anything interesting about it.
+
+  If you do not want the prover output to give special treatment to
+  quoted lambda objects in :FN slots, do
+
+    (defattach-system (untranslate-lambda-object-p
+                      constant-nil-function-arity-0))
+
+  With this attachment, the prover will print all quoted lambda objects
+  as it would any other quoted constant.  You will see what is
+  actually there.  One drawback is that the resulting formulas cannot
+  always be read back in and translated because of a prohibition on
+  ``counterfeiting'' expansions of lambda$.  See
+  [gratuitous-lambda-object-restrictions].
 
 
 About Guard Verification of Lambda Objects
@@ -60316,7 +60467,7 @@ Subtopics
              (implies (true-listp z)
                       (equal (rev (rev z)) z)))
 
-  The second hypothesis above is the the induction hypothesis.  The
+  The second hypothesis above is the induction hypothesis.  The
   conclusion above is the formula we are trying to prove.  Each
   induction hypothesis is always an instance (see
   [LOGIC-KNOWLEDGE-TAKEN-FOR-GRANTED-INSTANCE]) of the formula being
@@ -62384,6 +62535,15 @@ Subtopics
 
   [Set-duplicate-keys-action]
       Control action for macro calls with duplicate keyword arguments
+
+  [Tc]
+      translate form and clean it up
+
+  [Tca]
+      translate a form and clean it up into an annotated pretty term
+
+  [Tcp]
+      translate a form and clean it up into a pretty term
 
   [Trans]
       Print the macroexpansion of a form
@@ -67413,7 +67573,7 @@ Subtopics
   exists only in the [wormhole] [state] with which you interact when
   a break occurs.  This allows you to change the [monitor]ed [rune]s
   and their conditions during the course of a proof attempt without
-  changing the [state] in which the the proof is being constructed.
+  changing the [state] in which the proof is being constructed.
 
   Unconditional break points are obtained by using the break condition
   t.  We now discuss conditional break points.  The break condition,
@@ -70118,8 +70278,8 @@ Subtopics
   (if any); see [table].
 
   We have relaxed the translation rules for :measure [hints] to
-  [defun], so that the the same rules apply to these terms that apply
-  to terms in [defthm] [events].  In particular, in :measure [hints]
+  [defun], so that the same rules apply to these terms that apply to
+  terms in [defthm] [events].  In particular, in :measure [hints]
   [mv] is treated just like [list], and [state] receives no special
   handling.
 
@@ -89369,7 +89529,7 @@ EMACS Support
   Fixed the [ACL2-doc] browser so that it can handle topic names with
   the single-quote (') and comma (,) characters, by escaping them.
 
-  Fixed Emacs support for the the [proof-builder] dive command (see
+  Fixed Emacs support for the [proof-builder] dive command (see
   [ACL2-pc::dive]), control-t control-d, to eliminate trailing zeros,
   since those are (and have been) disallowed by that command.
 
@@ -91194,15 +91354,14 @@ New Features
   Smith for requesting this feature (which may have been requested
   previously as well).
 
-  A new [event], [set-inhibit-er-soft], allows the user to turn off
-  error output of various types.  The related utility
-  [toggle-inhibit-er-soft] can turn on or off a single type of error
-  output.  Non-[local] versions of these utilities are
-  [set-inhibit-er-soft!] and [toggle-inhibit-er-soft!].  Many error
-  messages cannot yet be controlled this way, but this may be
-  remedied somewhat with community feedback.  Thanks to Eric Smith
-  for a request to inhibit step-limit error output, which led to this
-  enhancement.
+  A new [event], [set-inhibit-er], allows the user to turn off error
+  output of various types.  The related utility [toggle-inhibit-er]
+  can turn on or off a single type of error output.  Non-[local]
+  versions of these utilities are [set-inhibit-er!] and
+  [toggle-inhibit-er!].  Many error messages cannot yet be controlled
+  this way, but this may be remedied somewhat with community
+  feedback.  Thanks to Eric Smith for a request to inhibit step-limit
+  error output, which led to this enhancement.
 
   The functions [l<], lexp, and d<, originally defined in
   [community-book] books/ordinals/lexicographic-book.lisp, are now
@@ -91625,6 +91784,19 @@ Changes to Existing Features
   [set-non-linearp]), the [backchain-limit] for rewriting, and the
   [rw-cache-state]).
 
+  The utilities set-inhibit-er-soft, set-inhibit-er-soft!,
+  toggle-inhibit-er-soft, and toggle-inhibit-er-soft! have been
+  renamed by dropping the suffix ``-soft'', hence they are now the
+  following, respectively: set-inhibit-er, set-inhibit-er!,
+  toggle-inhibit-er, and toggle-inhibit-er!.  The relevant table has
+  similarly been renamed from inhibit-er-soft-table to
+  inhibit-er-table.  These changes reflect their relevance for the
+  new utilities, [er-hard] and [er-hard], in addition to [er-soft].
+
+  The macro [warrant] now [force]s the warrants listed.
+
+  :[Induction] rules now support the use of [syntaxp] hypotheses.
+
 
 New Features
 
@@ -91639,14 +91811,75 @@ New Features
   suggesting the development of such a feature, which can be useful
   in rewriting-based tools.
 
+  There is a new `make' target to build an ACL2 executable using
+  save-exec.  See [save-exec], in particular the new discussion at
+  the end of that topic.  Thanks to Eric Smith for requesting such a
+  utility.
+
+  New utilities [get-cpu-time] and [get-real-time] return the cpu time
+  and real (wall clock) time that has elapsed since the start of the
+  ACL2 session.  Thanks to Eric McCarthy for suggesting the addition
+  of such utilities.
+
+  The new utility [er-hard] is analogous to [er-soft], but for hard
+  errors instead of soft errors (see [er]).  At the moment the only
+  summary string used for inhibiting hard errors is \"Call depth\", for
+  rewriter stack overflows.  On a related note, a new soft error
+  summary string is used for inhibiting soft errors, \"Evaluation\".
+
+  A new command, :[tc] (translate and clean), has been added.  It
+  translates a given form and then ``cleans it up'', returning a
+  logically equivalent but often simpler term in which logically
+  irrelevant but operationally important tags have been removed.  The
+  variants :[tca] and :[tcp] use different degrees of ``cleaning.''
+  These are particularly useful for seeing the logical meanings of
+  [loop$] terms as well as terms involving [mbe] and [return-last].
+
+  It is now possible to move directories of certified books, including
+  the [certificate] (.cert) files.  The key idea is to set up an
+  ``ACL2 projects'' file that associates keywords with directory
+  names, where each keyword indicates a movable project and the
+  associated directory name is the top-level directory of the
+  project.  Up till now, a sysfile was a pair of the form (:SYSTEM .
+  \"directory-name\"); now, a sysfile may have an arbitrary keyword as
+  its first component (i.e., its car).  The environment variable
+  ACL2_PROJECTS may be used to specify a file containing associations
+  of keywords with directory names.  See [project-dir-alist].  Thanks
+  to Sol Swords for requesting such a capability and for helpful
+  design discussions.
+
 
 Heuristic and Efficiency Improvements
 
 
 Bug Fixes
 
+  Fixed a bug in system function bounded-integer-listp, which may have
+  allowed illegal [proof-builder] commands to be attempted.  Thanks
+  to Grant Jurgensen for pointing out this bug.
+
+  Consider calls of [defthm] and [thm] that create subgoals before
+  reverting to prove the original goal by induction.  The Rules
+  summary printed at the end should exclude rules used only before
+  the start of that induction proof.  That was formerly the case for
+  defthm but not thm, but now it is the case for both.  You can see
+  the change for the following call, whose Rules summmary formerly
+  included (:ELIM CAR-CDR-ELIM) but no longer does so.
+
+    (thm
+     (equal (append (append x y) z)
+            (append x y z))
+     :hints ((\"Goal\"
+              :expand ((:free (b) (append x b))
+                       (:free (a b) (append (cons (car x) a) b))))))
+
 
 Changes at the System Level
+
+  The `make' target, save-exec, now builds custom-saved_acl2
+  unconditionally.  Thanks to Grant Jurgensen for pointing out (in
+  GitHub Issue #1422) that there can be untracked implicit
+  dependencies that make this necessary.
 
 
 EMACS Support
@@ -93489,10 +93722,10 @@ Subtopics
   [Set-gag-mode]
       Modify the nature of proof output
 
-  [Set-inhibit-er-soft]
+  [Set-inhibit-er]
       Control the error output
 
-  [Set-inhibit-er-soft!]
+  [Set-inhibit-er!]
       Control error output non-[local]ly
 
   [Set-inhibit-output-lst]
@@ -93522,11 +93755,11 @@ Subtopics
   [Summary]
       The summary printed at the conclusion of an event
 
-  [Toggle-inhibit-er-soft]
-      Add or delete an error output string from the inhibit-er-soft-table
+  [Toggle-inhibit-er]
+      Add or delete an error output string from the inhibit-er-table
 
-  [Toggle-inhibit-er-soft!]
-      Toggle an inhibit-er-soft-table entry non-[local]ly
+  [Toggle-inhibit-er!]
+      Toggle an inhibit-er-table entry non-[local]ly
 
   [Toggle-inhibit-warning]
       Add or delete a warning string from the inhibit-warnings-table
@@ -98915,7 +99148,7 @@ Subtopics
       Set default keyword values for [print-gv]")
  (PRINT-OBJECT$
   (IO ACL2-BUILT-INS)
-  "Print an an object to an open object output channel
+  "Print an object to an open object output channel
 
     General Form:
     (print-object$ x channel state)
@@ -98940,7 +99173,7 @@ Remarks
   For a related utility, see [write-list].")
  (PRINT-OBJECT$+
   (IO ACL2-BUILT-INS)
-  "Print an an object to an open output channel in a specified manner
+  "Print an object to an open output channel in a specified manner
 
     General Form:
     (print-object$+ x       ; an ACL2 object
@@ -100568,6 +100801,12 @@ Subtopics
   [F-put-global]
       Assign to a global variable in [state]
 
+  [Get-cpu-time]
+      Read elapsed cpu time
+
+  [Get-real-time]
+      Read elapsed real time
+
   [Getenv$]
       Read an environment variable
 
@@ -100794,6 +101033,27 @@ Avoiding These Errors
   efficiency doesn't matter, and the loop$ scion translation of a
   loop$ is as perspicuous as the loop$ itself.  So don't dismiss this
   approach out of hand.")
+ (PROJECT-DIR-ALIST
+  (EVENTS)
+  "Support for moving project directories and :dir arguments
+
+  This topic is currently only a stub, but should be fleshed out soon.
+
+  In short, you can set environment variable ACL2_PROJECTS to be the
+  name of a file that contains lines of the following form, as well
+  as any number of comment lines for which the first non-whitespace
+  character is a semicolon (;).
+
+    :KEYWORD \"directory-name\"
+
+  Then :KEYWORD will be interpreted to represent \"directory-name\" when
+  used with the :DIR argument of [include-book] or [ld], just as is
+  the case when using [add-include-book-dir!].  But an additional
+  property is as follows.  Suppose a book and its certificate
+  \"directory-name/.../bk.{lisp,cert}\" are moved (or copied) to
+  \"directory-name-2/.../bk.{lisp,cert}\".  Then in any session where
+  :KEYWORD is similarly bound to \"directory-name-2\" instead of
+  \"directory-name\", that book will be treated as certified.")
  (PROMPT
   (LD)
   "The prompt printed by [ld]
@@ -102859,7 +103119,7 @@ Subtopics
     * An attempt to puff an [include-book] command may fail for a book that
       has been modified, as described later in this documentation
       topic.
-    * The puff of an an [include-book] command for an uncertified book will
+    * The puff of an [include-book] command for an uncertified book will
       simply expose the contents of the book.  However, if the book
       is certified then the puff will replace each event by its
       [make-event] expansion.  Also, ACL2 considers that (certified)
@@ -104694,17 +104954,28 @@ Subtopics
   (PROGRAMMING-WITH-STATE ACL2-BUILT-INS)
   "Read elapsed runtime
 
-  By default, (read-run-time state) returns (mv runtime state), where
-  runtime is the elapsed runtime in seconds since the start of the
-  current ACL2 session and state is the resulting ACL2 [state].  But
-  read-run-time can be made to return elapsed realtime (wall clock
-  time) instead; see [get-internal-time].  In both cases, the
-  precision depends on the host Common Lisp; for example, in CCL as
-  of this writing, the result is accurate to the microsecond.
+  By default, (read-run-time state) returns (mv cpu-time state), where
+  cpu-time is the elapsed cpu time in seconds since the start of the
+  current ACL2 session and state is the resulting ACL2 [state].
+  Thus, (read-run-time state) is, by default, equivalent to
+  (get-cpu-time state).  But read-run-time can be made to return
+  elapsed real time (wall clock time) instead, thus making it
+  equivalent to (get-real-time state).  Note that time is returned in
+  seconds in all of these cases.
+
+  To specify that read-run-time shall use cpu time or real time:
+
+    (assign get-internal-time-as-realtime t)   ; use real time
+    (assign get-internal-time-as-realtime nil) ; use cpu time
+
+  See [get-internal-time] for more discussion of cpu time vs. real
+  time.  In both cases, the precision depends on the host Common
+  Lisp; for example, in CCL as of this writing, the result is
+  accurate to the microsecond.
 
   The logical definition probably won't concern many users, but for
   completeness, we say a word about it here.  That definition uses
-  the function [read-ACL2-oracle], which modifies state by popping
+  the function [read-ACL2-oracle], which modifies [state] by popping
   the value to return from its acl2-oracle field.
 
   Function: <read-run-time>
@@ -104717,7 +104988,27 @@ Subtopics
                   0)
                  (t (car (acl2-oracle state-state))))
            (update-acl2-oracle (cdr (acl2-oracle state-state))
-                               state-state)))")
+                               state-state)))
+
+  Note that logically (read-run-time state), (get-real-time state), and
+  (get-cpu-time state) are all equal (defined using the acl2-oracle),
+  so for example ACL2 succeeds in the proof of (thm (equal
+  (get-real-time state) (get-cpu-time state))), even though the first
+  returns elapsed real time and the second returns elapsed cpu time.
+  However, there is no contradiction: either way, we are logically
+  just reading the oracle of state.  In the ACL2 loop, successive
+  calls of (get-real-time state) and (get-cpu-time state) would be
+  operating on different values of state (because their oracles
+  differ).
+
+
+Subtopics
+
+  [Get-cpu-time]
+      Read elapsed cpu time
+
+  [Get-real-time]
+      Read elapsed real time")
  (READER
   (MISCELLANEOUS)
   "Reading expressions in the ACL2 read-eval-print loop
@@ -105540,7 +105831,7 @@ Subtopics
   "Allowing a name to be introduced ``twice''
 
   Sometimes an event will announce that it is ``redundant'', meaning
-  that the the form is not evaluated because ACL2 determines that its
+  that the form is not evaluated because ACL2 determines that its
   effect is already incorporated into the logical [world].  Thus,
   when this happens, no change to the logical [world] takes place.
   This feature permits two independent [books], each of which defines
@@ -109839,6 +110130,9 @@ Subtopics
   the host Lisp executable.  All arguments of a call of save-exec are
   evaluated.
 
+  At the end of this topic we discuss how to use the `make' utility to
+  invoke save-exec.
+
     Examples:
 
     ; Save an executable script named my-saved_acl2, with the indicated message
@@ -110131,7 +110425,34 @@ Subtopics
   example, at the shell), additional command-line arguments provided
   at that time are passed to Lisp if and only if inert-args is nil.
   For SBCL, when they are passed to Lisp they are passed as toplevel
-  options, not as runtime options.")
+  options, not as runtime options.
+
+  Finally, note that save-exec can be invoked using the `make' utility
+  in the main ACL2 directory by using the save-exec target.  That
+  target will first build an ACL2 executable in the normal way if it
+  is out of date.  Then it will start that executable, using the
+  value of ACL2_CUSTOMIZATION (as a `make' or environment variable)
+  --- which must be specified --- as the [ACL2-customization] file,
+  before making a save-exec call.  By default, that call is
+  (save-exec \"custom-saved_acl2\" \"Saved with additions from <file>\"),
+  where <file> is the value of ACL2_CUSTOMIZATION.  (Except, in
+  ACL2(p) and ACL2(r), \"custom-saved_acl2\" is replaced by
+  \"custom-saved_acl2p\" and \"custom-saved_acl2r\", respectively.)
+  However, you can specify the first argument as the value of
+  ACL2_SAVED (as a `make' or environment variable), and you can
+  specify the remaining arguments as the value of ACL2_SAVED_ARGS
+  (also as a `make' or environment variable).  Here is an example one
+  could run at the shell prompt; notice the careful quoting.
+
+    make save-exec \\
+      ACL2_CUSTOMIZATION=~/temp/foo.lsp \\
+      ACL2_SAVED=my-acl2 \\
+      ACL2_SAVED_ARGS='\"My custom image\" \\
+                       :init-forms (quote ((defun foo (x) (reverse x))))'
+
+  WARNING: It is a good idea to look at the log file noted in the
+  `make' output, to check that your customization file loaded as
+  intended (presumably, without errors).")
  (SAVING-AND-RESTORING (POINTERS)
                        "See [save-exec].")
  (SCION
@@ -112447,29 +112768,29 @@ Example
   [set-induction-depth-limit] is to be preferred unless you have a
   good reason for wanting to export the effect of this event outside
   the enclosing [encapsulate] or book.")
- (SET-INHIBIT-ER-SOFT
+ (SET-INHIBIT-ER
   (OUTPUT-CONTROLS ERRORS)
   "Control the error output
 
     Examples:
-    (set-inhibit-er-soft \"translate\" \"failure\")
+    (set-inhibit-er \"translate\" \"failure\")
 
   Note: This is an event!  It does not print the usual event [summary]
   but nevertheless changes the ACL2 logical [world] and is so
   recorded.  It is [local] to the book or [encapsulate] form in which
-  it occurs; see [set-inhibit-er-soft!] for a corresponding
-  non-[local] event.  Indeed, (set-inhibit-er-soft ...) is equivalent
-  to (local (set-inhibit-er-soft! ...)).
+  it occurs; see [set-inhibit-er!] for a corresponding non-[local]
+  event.  Indeed, (set-inhibit-er ...) is equivalent to (local
+  (set-inhibit-er! ...)).
 
     General Form:
-    (set-inhibit-er-soft string1 string2 ...)
+    (set-inhibit-er string1 string2 ...)
 
   where each string is considered without regard to case.  This macro
-  is is essentially (local (table inhibit-er-soft-table nil 'alist
+  is is essentially (local (table inhibit-er-table nil 'alist
   :clear)), where alist pairs each supplied string with nil: that is,
   alist is (pairlis$ lst nil) where lst is the list of strings
   supplied.  This macro is an event (see [table]), but no output
-  results from a set-inhibit-er-soft event.
+  results from a set-inhibit-er event.
 
   ACL2 prints errors that are generally important to see.  This utility
   is appropriate for situations where one prefers not to see all
@@ -112478,16 +112799,15 @@ Example
 
     ACL2 Error [Failure] in ( DEFUN FOO ...):  See :DOC failure.
 
-  Here, the label is \"Failure\".  The argument list for
-  set-inhibit-er-soft is a list of such labels, each of which is a
-  string.  Any error message is suppressed if its label is a member
-  of this list, where case is ignored.  Thus, for example, the error
-  output above will be avoided after a call of set-inhibit-er-soft
-  that contains the string, \"Failure\" (or any string that is
-  [string-equal] to \"Failure\", such as \"failure\" or \"FAILURE\").  In
-  summary: the effect of this event is to suppress any error output
-  whose label is a member of the given argument list, where case is
-  ignored.
+  Here, the label is \"Failure\".  The argument list for set-inhibit-er
+  is a list of such labels, each of which is a string.  Any error
+  message is suppressed if its label is a member of this list, where
+  case is ignored.  Thus, for example, the error output above will be
+  avoided after a call of set-inhibit-er that contains the string,
+  \"Failure\" (or any string that is [string-equal] to \"Failure\", such
+  as \"failure\" or \"FAILURE\").  In summary: the effect of this event
+  is to suppress any error output whose label is a member of the
+  given argument list, where case is ignored.
 
   At this time, many error messages are printed without a label, for
   example (as of this writing) the following.
@@ -112505,38 +112825,28 @@ Example
   to add labels; for example, you might ask for a label in the
   example above (which could be \"Globals\" or \"Global-variables\").
 
-  Remarks.
-
-    * Only so-called ``soft'' errors may have labels, not ``hard'' errors.
-      Hard errors can be identified by the use of ``HARD'' at the
-      start of the error message, for example as follows.
-
-          HARD ACL2 ERROR in SET-GAG-MODE:  Unknown set-gag-mode argument, ABC
-
-    * Set-inhibit-er-soft has no effect on the value(s) returned by an
-      expression (excepting the ACL2 [state] in that it formally
-      includes output).
+  Note that set-inhibit-er has no effect on the value(s) returned by an
+  expression (excepting the ACL2 [state] since it formally includes
+  output).
 
   The list of currently inhibited error types is the list of keys in
-  the [table] named inhibit-er-soft-table.  (The values in the table
-  are irrelevant.)  One way to get that value is to get the result
-  from evaluating the following form: (table-alist
-  'inhibit-er-soft-table (w state)).  Of course, if error output is
-  inhibited overall --- see [set-inhibit-output-lst] --- then this
-  value is entirely irrelevant.
+  the [table] named inhibit-er-table.  (The values in the table are
+  irrelevant.)  One way to get that value is to get the result from
+  evaluating the following form: (table-alist 'inhibit-er-table (w
+  state)).  Of course, if error output is inhibited overall --- see
+  [set-inhibit-output-lst] --- then this value is entirely
+  irrelevant.
 
-  See [toggle-inhibit-er-soft] for a way to add or remove a single
-  string.")
- (SET-INHIBIT-ER-SOFT!
+  See [toggle-inhibit-er] for a way to add or remove a single string.")
+ (SET-INHIBIT-ER!
   (OUTPUT-CONTROLS ERRORS)
   "Control error output non-[local]ly
 
-  Please see [set-inhibit-er-soft], which is the same as
-  set-inhibit-er-soft! except that the latter is not [local] to the
-  [encapsulate] or the book in which it occurs.  Probably
-  [set-inhibit-er-soft] is to be preferred unless you have a good
-  reason for wanting to export the effect of this event outside the
-  enclosing [encapsulate] or book.")
+  Please see [set-inhibit-er], which is the same as set-inhibit-er!
+  except that the latter is not [local] to the [encapsulate] or the
+  book in which it occurs.  Probably [set-inhibit-er] is to be
+  preferred unless you have a good reason for wanting to export the
+  effect of this event outside the enclosing [encapsulate] or book.")
  (SET-INHIBIT-OUTPUT-LST
   (OUTPUT-CONTROLS)
   "Control output
@@ -112579,8 +112889,8 @@ Example
   [set-gag-mode].
 
   See [with-output] for a variant of this utility that can be used in
-  [books].  Also see [set-inhibit-warnings] and [set-inhibit-er-soft]
-  for how to inhibit individual warning and error output types,
+  [books].  Also see [set-inhibit-warnings] and [set-inhibit-er] for
+  how to inhibit individual warning and error output types,
   respectively, and see [set-inhibited-summary-types] for how to
   inhibit individual parts of the [summary].
 
@@ -115064,7 +115374,7 @@ Subtopics
   [certify-book]: a [local-incompatibility] check, writing of a
   [certificate] file, and possibly [compilation].  Another effect is
   that proofs may be skipped when processing [events] assuming that
-  the the certify-book command does not explicitly specify
+  the certify-book command does not explicitly specify
   :skip-proofs-okp nil, as we now explain.  A non-nil value of
   'write-acl2x should either be t or a one-element list (x), where x
   is a legal value for the [state] global 'ld-skip-proofsp (see
@@ -120840,7 +121150,7 @@ List of a few built-in system utilities
       been defined as a stobj in w, use known-stobjs = t.
       Technicality: if known-stobjs is a list then it is allowed to
       contain any number of nil elements (as may be the case for the
-      the stobjs-in or stobjs-out of a symbol), which are ignored.
+      stobjs-in or stobjs-out of a symbol), which are ignored.
     * (stobjs-in fn w): For a function symbol fn of [world] w, return the
       stobjs-in of fn, which is the result of modifying the list of
       formal parameters of fn by replacing with nil each symbol that
@@ -122441,6 +122751,300 @@ Subtopics
 
   [Time-tracker-tau]
       Messages about expensive use of the [tau-system]")
+ (TC
+  (MACROS)
+  "translate form and clean it up
+
+    Examples:
+    :tc  (member e a)
+    :tc  (list (cadr x) (loop$ for e in lst collect (+ 1 e)))
+    :tcp (list (cadr x) (loop$ for e in lst collect (+ 1 e)))
+    :tca (list (cadr x) (loop$ for e in lst collect (+ 1 e)))
+
+    General Form:
+    :tc form
+    :tca form
+    :tcp form
+    (tc 'form)
+    (tca 'form)
+    (tcp 'form)
+
+  The :[trans] command prints the translation of a form into a formal
+  term.  However, sometimes the translation can be hard to understand
+  because various tags and declarations are included, usually for
+  execution efficiency.
+
+  For example, consider :trans versus :tcp of (member e a).
+
+    ACL2 !>:trans (member e a)
+
+    ((LAMBDA (X L)
+       (RETURN-LAST 'MBE1-RAW
+                    (MEMBER-EQL-EXEC X L)
+                    (RETURN-LAST 'PROGN
+                                 (MEMBER-EQL-EXEC$GUARD-CHECK X L)
+                                 (MEMBER-EQUAL X L))))
+     E A)
+
+    => *
+
+    ACL2 !>:tcp (member e a)
+     (MEMBER-EQUAL E A)
+
+  The :tc command and its variants, :tca and :tcp, translate the given
+  form and then ``clean'' it up, returning the result in an
+  [error-triple].  These commands are especially useful when [loop$],
+  [scion]s or [lambda$] forms are involved in the form to be
+  translated.  But they are also useful when [mbe], [return-last],
+  [progn$] and other special forms are used or show up in the
+  translation.  The tc commands are macros that expand into terms
+  involving [state], since errors are signaled when ill-formed forms
+  are submitted.
+
+    * :tc form --- translate form and remove everything not relevant to the
+      logical value.  This is the logical semantics form and is
+      returned in the ``internal format'' of ACL2 terms, i.e., macros
+      have been expanded and all constants are quoted.  The prover
+      will reduce form to this term almost immediately.  Typically,
+      this is the term that the rewriter will encounter during a
+      proof involving this form.  Of course, rewrite rules can
+      further change the form.  However, see the note below
+      concerning warrants.
+    * :tcp form --- translate form and remove everything not relevant to
+      the logical value as above, and then [untranslate], restoring
+      the use of such system macros as [lambda$], [let], [and],
+      [list], [cadr], and [+] and [*].  This is the semantics of form
+      in a ``user friendly'' syntax.  The suffix ``p'' in :tcp stands
+      for ``pretty.''
+    * :tca form --- translate form and then untranslate as noted above.
+      This effectively leaves ``annotations'' in place such as a
+      prog2$ joining each loop$ in form to its semantics, declare
+      forms in lambda objects, and [let] forms associating user
+      variable names to values.  This term is mainly meant as a
+      pedagogical device to help you understand how loop$s are
+      translated.  The suffix ``a'' in :tca stands for ``annotated.''
+
+  The terms returned by the three flavors of tc are all provably
+  equivalent to eachother and to the original form provided the
+  necessary warrants are assumed.
+
+  For example, if sq is a user-defined function of arity 1 and
+  (defwarrant sq) has issued a warrant for sq, then
+
+    ACL2 !>:tc (loop$ for e in lst collect (sq e))    ; sq is warranted
+    (COLLECT$ '(LAMBDA (LOOP$-IVAR) (SQ LOOP$-IVAR))
+             LST)
+
+  Nevertheless, the equivalence of the input and output of :tc above
+  cannot be proved unless the warrants are assumed.  That is,
+
+    (thm
+      (equal (loop$ for e in lst collect (sq e))
+             (COLLECT$ '(LAMBDA (LOOP$-IVAR) (SQ LOOP$-IVAR))
+                       LST)))
+
+  will fail with a checkpoint indicating that the warrant for sq must
+  be provided.  However,
+
+    (thm
+      (implies (warrant sq)
+               (equal (loop$ for e in lst collect (sq e))
+                      (COLLECT$ '(LAMBDA (LOOP$-IVAR) (SQ LOOP$-IVAR))
+                                LST))))
+
+  succeeds.
+
+  If there is no warrant for sq but there is a badge, then :tc cannot
+  clean up the translation because without a warrant the lambda
+  object calling sq is not [tame].  Thus,
+
+    ACL2 !>:tc (loop$ for e in lst collect (sq e))   ; sq is badged not warranted
+    (COLLECT$ '(LAMBDA (LOOP$-IVAR)
+                       (RETURN-LAST 'PROGN
+                                    '(LAMBDA$ (LOOP$-IVAR)
+                                              (LET ((E LOOP$-IVAR))
+                                                   (DECLARE (IGNORABLE E))
+                                                   (SQ E)))
+                                    ((LAMBDA (E) (SQ E)) LOOP$-IVAR)))
+              LST)
+
+  By the way, if you see a quoted lambda objects like that above in
+  output from the prover, it probably means the lambda object
+  contains unwarranted user-defined symbols!
+
+  The differences between :trans and the three commands (:tc, :tcp, and
+  :tca) are perhaps best illustrated by considering their respective
+  outputs on a single [loop$] statement.
+
+    ACL2 !>:trans (list (cadr x) (loop$ for e in lst collect (+ 1 e)))
+
+    (CONS (CAR (CDR X))
+          (CONS (RETURN-LAST
+                 'PROGN
+                 '(LOOP$ FOR E IN LST COLLECT (+ 1 E))
+                 (COLLECT$ '(LAMBDA (LOOP$-IVAR)
+                                    (DECLARE (IGNORABLE LOOP$-IVAR))
+                                    (RETURN-LAST 'PROGN
+                                                 '(LAMBDA$ (LOOP$-IVAR)
+                                                    (LET ((E LOOP$-IVAR))
+                                                      (DECLARE (IGNORABLE E))
+                                                      (+ 1 E)))
+                                                 ((LAMBDA (E) (BINARY-+ '1 E))
+                                                  LOOP$-IVAR)))
+                           LST))
+                'NIL))
+
+    => *
+
+    ACL2 !>:tc  (list (cadr x) (loop$ for e in lst collect (+ 1 e)))
+     (CONS (CAR (CDR X))
+           (CONS (COLLECT$ '(LAMBDA (LOOP$-IVAR)
+                                    (BINARY-+ '1 LOOP$-IVAR))
+                           LST)
+                 'NIL))
+
+    ACL2 !>:tcp (list (cadr x) (loop$ for e in lst collect (+ 1 e)))
+     (LIST (CADR X)
+           (COLLECT$ (LAMBDA$ (LOOP$-IVAR) (+ 1 LOOP$-IVAR))
+                     LST))
+
+    ACL2 !>:tca (list (cadr x) (loop$ for e in lst collect (+ 1 e)))
+     (LIST (CADR X)
+           (PROG2$ '(LOOP$ FOR E IN LST COLLECT (+ 1 E))
+                   (COLLECT$ (LAMBDA$ (LOOP$-IVAR)
+                                      (LET ((E LOOP$-IVAR)) (+ 1 E)))
+                             LST)))
+
+  First, notice that :trans also reports the output signature of the
+  term but the :tc commands do not.  They all return the cleaned up
+  translation in an error triple.  Second, :tc returns a term in the
+  internal format: the lambda objects are quoted list constants and
+  their bodies are in internal format, e.g., note the binary-+ and
+  quoted constant 1 in the output of :tc above.  If you use the :tc
+  command on the left-hand side of the conclusion of a :rewrite rule
+  the term you see is the term under which the rule is stored, i.e.,
+  the rule will be tried to rewrite instances of that term.
+
+  The other two commands have ``prettied up'' the output into a more
+  user-friendly format.  Third, the :tca command uses a prog2$ to
+  show the untranslated loop$ as a list constant and then show its
+  pretty semantics, with a let form in the body of the lambda$
+  reminding you that loop$-ivar is what was called e.
+
+  It is often helpful to look at the semantics of fancy loop$s.
+
+    ACL2 !>:tca (loop$ for x in xlst
+                       as  y in ylst
+                       collect (+ (* a x) (* b y)))
+     (PROG2$
+        '(LOOP$ FOR X IN XLST
+                AS  Y IN YLST
+                COLLECT (+ (* A X) (* B Y)))
+        (COLLECT$+
+             (LAMBDA$ (LOOP$-GVARS LOOP$-IVARS)
+                      (DECLARE (XARGS :GUARD (AND (TRUE-LISTP LOOP$-GVARS)
+                                                  (EQUAL (LEN LOOP$-GVARS) 2)
+                                                  (TRUE-LISTP LOOP$-IVARS)
+                                                  (EQUAL (LEN LOOP$-IVARS) 2))
+                                      :SPLIT-TYPES T))
+                      (LET ((A (CAR LOOP$-GVARS))
+                            (B (CADR LOOP$-GVARS))
+                            (X (CAR LOOP$-IVARS))
+                            (Y (CADR LOOP$-IVARS)))
+                           (+ (* A X) (* B Y))))
+             (LIST A B)
+             (LOOP$-AS (LIST XLST YLST))))
+
+  Notice what happens to the :guard of the lambda$ if we insert type
+  specifications with of-type.
+
+    ACL2 !>:tca (loop$ for x of-type (satisfies natp) in xlst
+                       as  y of-type integer in ylst
+                       collect (+ (* a x) (* b y)))
+
+     (PROG2$
+       '(LOOP$ FOR X OF-TYPE (SATISFIES NATP)
+               IN XLST AS Y OF-TYPE INTEGER
+               IN YLST COLLECT (+ (* A X) (* B Y)))
+       (COLLECT$+
+            (LAMBDA$ (LOOP$-GVARS LOOP$-IVARS)
+                     (DECLARE (XARGS :GUARD (AND (TRUE-LISTP LOOP$-GVARS)
+                                                 (EQUAL (LEN LOOP$-GVARS) 2)
+                                                 (TRUE-LISTP LOOP$-IVARS)
+                                                 (EQUAL (LEN LOOP$-IVARS) 2)
+                                                 (NATP (CAR LOOP$-IVARS))
+                                                 (INTEGERP (CADR LOOP$-IVARS)))
+                                     :SPLIT-TYPES T))
+                     (LET ((A (CAR LOOP$-GVARS))
+                           (B (CADR LOOP$-GVARS))
+                           (X (CAR LOOP$-IVARS))
+                           (Y (CADR LOOP$-IVARS)))
+                          (+ (* A X) (* B Y))))
+            (LIST A B)
+            (LOOP$-AS (LIST XLST YLST))))
+
+  And notice how the :guard keyword after the collect in the loop$
+  statement is added to the :guard of the generated lambda$.
+
+    ACL2 !>:tca (loop$ for x of-type (satisfies natp) in xlst
+                       as  y of-type integer in ylst
+                       collect
+                       :guard (and (rationalp a)
+                                   (complex-rationalp b))
+                       (+ (* a x) (* b y)))
+     (PROG2$
+      '(LOOP$ FOR X OF-TYPE (SATISFIES NATP) IN XLST
+              AS  Y OF-TYPE INTEGER IN YLST
+              COLLECT
+              :GUARD (AND (RATIONALP A)
+                          (COMPLEX-RATIONALP B))
+              (+ (* A X) (* B Y)))
+      (COLLECT$+
+       (LAMBDA$
+        (LOOP$-GVARS LOOP$-IVARS)
+        (DECLARE (XARGS :GUARD (AND (TRUE-LISTP LOOP$-GVARS)
+                                    (EQUAL (LEN LOOP$-GVARS) 2)
+                                    (TRUE-LISTP LOOP$-IVARS)
+                                    (EQUAL (LEN LOOP$-IVARS) 2)
+                                    (NATP (CAR LOOP$-IVARS))
+                                    (INTEGERP (CADR LOOP$-IVARS))
+                                    (RATIONALP (CAR LOOP$-GVARS))
+                                    (COMPLEX-RATIONALP (CADR LOOP$-GVARS)))
+                        :SPLIT-TYPES T))
+        (LET ((A (CAR LOOP$-GVARS))
+              (B (CADR LOOP$-GVARS))
+              (X (CAR LOOP$-IVARS))
+              (Y (CADR LOOP$-IVARS)))
+          (+ (* A X) (* B Y))))
+       (LIST A B)
+       (LOOP$-AS (LIST XLST YLST))))
+
+  Of course, while these declarations play a role in :guard
+  verification and execution in raw Lisp, they are irrelevant to the
+  formal semantics, as made clear by :tcp.
+
+    ACL2 !>:tcp (loop$ for x of-type (satisfies natp) in xlst
+                       as  y of-type integer in ylst
+                       collect
+                       :guard (and (rationalp a)
+                                   (complex-rationalp b))
+                       (+ (* a x) (* b y)))
+     (COLLECT$+ (LAMBDA$ (LOOP$-GVARS LOOP$-IVARS)
+                         (+ (* (CAR LOOP$-GVARS)
+                               (CAR LOOP$-IVARS))
+                            (* (CADR LOOP$-GVARS)
+                               (CADR LOOP$-IVARS))))
+                (LIST A B)
+                (LOOP$-AS (LIST XLST YLST)))")
+ (TCA
+  (MACROS)
+  "translate a form and clean it up into an annotated pretty term
+
+  See [tc].")
+ (TCP (MACROS)
+      "translate a form and clean it up into a pretty term
+
+  See [tc].")
  (TENTH
   (NTH ACL2-BUILT-INS)
   "Tenth member of the list
@@ -125974,14 +126578,14 @@ Subtopics
   generalization, and elimination of irrelevance).  For example, you
   don't need to worry about prover output that mentions ``type
   reasoning'' or ``abbreviations,'' for example.")
- (TOGGLE-INHIBIT-ER-SOFT
+ (TOGGLE-INHIBIT-ER
   (OUTPUT-CONTROLS ERRORS)
-  "Add or delete an error output string from the inhibit-er-soft-table
+  "Add or delete an error output string from the inhibit-er-table
 
-  See [set-inhibit-er-soft] for relevant background.
+  See [set-inhibit-er] for relevant background.
 
     General Form:
-    (toggle-inhibit-er-soft string)
+    (toggle-inhibit-er string)
 
   where string is the name of some error output like \"Translate\" or
   \"Failure\".
@@ -125989,22 +126593,22 @@ Subtopics
   Note: This is an event!  It does not print the usual event [summary]
   but nevertheless changes the ACL2 logical [world] and is so
   recorded.  It is [local] to the book or [encapsulate] form in which
-  it occurs; see [toggle-inhibit-er-soft!] for a corresponding
-  non-[local] event.  Indeed, (toggle-inhibit-er-soft str) is
-  equivalent to (local (toggle-inhibit-er-soft! str)).
+  it occurs; see [toggle-inhibit-er!] for a corresponding non-[local]
+  event.  Indeed, (toggle-inhibit-er str) is equivalent to (local
+  (toggle-inhibit-er! str)).
 
   The given string is added to the list of strings used for inhibiting
   error output if it is not there already and is deleted from the
   list if it is there.  Case is unimportant in string.  See
-  [set-inhibit-er-soft].")
- (TOGGLE-INHIBIT-ER-SOFT!
+  [set-inhibit-er].")
+ (TOGGLE-INHIBIT-ER!
   (OUTPUT-CONTROLS ERRORS)
-  "Toggle an inhibit-er-soft-table entry non-[local]ly
+  "Toggle an inhibit-er-table entry non-[local]ly
 
-  Please see [toggle-inhibit-er-soft], which is the same as
-  toggle-inhibit-er-soft! except that the latter is not [local] to
-  the [encapsulate] or the book in which it occurs.  Probably
-  [toggle-inhibit-er-soft] is to be preferred unless you have a good
+  Please see [toggle-inhibit-er], which is the same as
+  toggle-inhibit-er! except that the latter is not [local] to the
+  [encapsulate] or the book in which it occurs.  Probably
+  [toggle-inhibit-er] is to be preferred unless you have a good
   reason for wanting to export the effect of this event outside the
   enclosing [encapsulate] or book.")
  (TOGGLE-INHIBIT-WARNING
@@ -129089,7 +129693,7 @@ Subtopics
   Here is the detail promised above, for parsing a term into a
   :type-prescription rule.  There are two steps.  (1) ACL2 first
   translates the term, expanding all macros (see [trans]) and also
-  removing [guard-holders].  (2) Then the the translated term is
+  removing [guard-holders].  (2) Then the translated term is
   traversed top-down, expanding away lambdas ([let], [let*], and
   [mv-let] expressions) and flattening the [implies] structure, until
   the conclusion is exposed; then the conclusion's lambdas are also
@@ -131840,7 +132444,7 @@ Subtopics
 
   As an exercise, let's arrange for the hint to stay around and be
   applied indefinitely but with a simplification between each use of
-  the the hint.  To do this we need to pass information from one
+  the hint.  To do this we need to pass information from one
   application of the hint to the next, essentially to say ``stay
   around but don't fire.''
 
@@ -133244,16 +133848,26 @@ Subtopics
   this will be explained further below.
 
   After making such changes, build an ACL2 executable image containing
-  your modified code.  The next step is typically to create a new
-  file, perhaps named after the main function(s) whose guards you
-  want to verify, in directory books/system.  Community book
-  books/system/too-many-ifs.lisp is a good example.  Ultimately, this
-  file should be a certifiable book that verifies the desired
-  termination and guards.  Include this book in
-  books/system/top.lisp.  Of course, you can instead add to some
-  existing file in the same directory that is already included in
-  books/system/top.lisp, rather than creating a new book and
+  your modified code, to test that the modified code builds.  The
+  next step is typically to create a new file, perhaps named after
+  the main function(s) whose guards you want to verify, in directory
+  books/system.  Community book books/system/too-many-ifs.lisp is a
+  good example.  Ultimately, this file should be a certifiable book
+  that verifies the desired termination and guards.  Include this
+  book in books/system/top.lisp.  Of course, you can instead add to
+  some existing file in the same directory that is already included
+  in books/system/top.lisp, rather than creating a new book and
   including it there.
+
+  In general, in this new file or new file addition, it is necessary to
+  use both [verify-termination] and [verify-guards] on the system
+  functions in question, in order to both put them in logic mode and
+  verify their guards. However, as explained in the documentation of
+  [verify-termination], sometimes [verify-termination] also verifies
+  the guards (see also [set-verify-guards-eagerness]).  In this case,
+  it is good practice to add a comment `; and guards' just after the
+  [verify-termination] form, on the same line, as can be seen in some
+  of the files under [books]/system/.
 
   Now it is time to add entries to the value of constant
   *system-verify-guards-alist* in your local copy of the ACL2
@@ -134125,10 +134739,10 @@ A Convenient Macro for Conjoining Warrants
   such symbols among the arguments to warrant.)  (Warrant fn1 fn2 ...
   fnk) expands to:
 
-    (AND (APPLY$-WARRANT-fn1)
-         (APPLY$-WARRANT-fn2)
+    (AND (FORCE (APPLY$-WARRANT-fn1))
+         (FORCE (APPLY$-WARRANT-fn2))
          ...
-         (APPLY$-WARRANT-fnk))
+         (FORCE (APPLY$-WARRANT-fnk)))
 
   Because there are over 800 ACL2 primitives built into apply$, it can
   be hard to look at a conjecture involving, say, a [lambda$] term,
@@ -134145,6 +134759,17 @@ A Convenient Macro for Conjoining Warrants
   Instead, the warrant macro ignores those fni built into apply$.  It
   does cause an error if one of the fni has no warrant and is not
   built in.
+
+  The (warrant fn1 fn2 ... fnk) macro [force]s the warrants because (a)
+  we assume the only use of the macro is to add warrant hypotheses to
+  conjectures and (b) by forcing warrants agressively the prover
+  ``almost completes'' more proofs and enters a forcing round that
+  highlights the need to assume those warrants.  When a rewrite rule,
+  for example, is conditioned on a warrant that is not forced (as
+  would happen if you added the hyps (apply$-warrant-fn1),
+  (apply$-warrant-fn2), etc.), then the rule will not fire if a
+  subsequent conjecture omitted the warrants.  Of course, this raises
+  the question ``But are all the warrants really true?''
 
 
 Why Warrants Don't Render Theorems Vacuous
@@ -136191,8 +136816,8 @@ Constrained Functions and Defattach
   channels are closed and state global variables are returned to
   their original values, or else be willing to live with changes made
   to state that are not justified by the code that has been
-  evaluated.  You are welcome to look in the the ACL2 source code at
-  the definition of macro channel-to-string, which employs
+  evaluated.  You are welcome to look in the ACL2 source code at the
+  definition of macro channel-to-string, which employs
   with-local-state to create a local [state] for the purpose of
   creating a string.
 
@@ -136488,10 +137113,10 @@ Keyword arguments
   is specified, then then every output type is turned on except for
   those in the set specified by the value of :off.  Otherwise, if
   :off :all is specified, then every output type is inhibited except
-  as specified by the the value of :on.  Otherwise :all is not
-  specified for either :on or :off, and the currently-inhibited
-  output types are reduced as specified by the value of :on and then
-  extended as specified by the value of :off.
+  as specified by the value of :on.  Otherwise :all is not specified
+  for either :on or :off, and the currently-inhibited output types
+  are reduced as specified by the value of :on and then extended as
+  specified by the value of :off.
 
   :summary-on, :summary-off
 
@@ -137124,8 +137749,8 @@ Subtopics
   undone (see [ubt]).  Thus in particular, the world includes a
   representation of the current logical theory, as well as some
   extra-logical information such as the values of ACL2 [table]s.  The
-  rest of this topic focuses on the structure of the the ACL2 world
-  and, more generally, the ``world'' data structure.
+  rest of this topic focuses on the structure of the ACL2 world and,
+  more generally, the ``world'' data structure.
 
   A ``world'' is a list of triples, each of the form (sym prop . val),
   implementing the ACL2 notion of property lists.  ACL2 permits the
@@ -137900,7 +138525,7 @@ Subtopics
   status and whose body is the lambda body.  Guard clauses are
   generated from the body, with one exception: the lambda formal is
   replaced by a new variable so that no prior assumptions are
-  available about the value of the the wormhole status.
+  available about the value of the wormhole status.
 
   If the newly computed status has an entry code of :ENTER [ld] will be
   invoked.  But we don't really copy state, of course.  Instead we
@@ -140013,10 +140638,10 @@ Subtopics
   the current subterm is (p y), then p-top will print (equal (and x
   (*** (p y) ***)) (foo z)).
 
-  Prettyprint the the conclusion, highlighting the current term.  The
-  usual user syntax is used, as with the command p (as opposed to
-  pp).  This is illustrated in the example above, where one would
-  *not* see (equal (if x (*** (p y) ***) 'nil) (foo z)).
+  Prettyprint the conclusion, highlighting the current term.  The usual
+  user syntax is used, as with the command p (as opposed to pp).
+  This is illustrated in the example above, where one would *not* see
+  (equal (if x (*** (p y) ***) 'nil) (foo z)).
 
   Remark (obscure): In some situations, a term of the form (if x t y)
   occurring inside the current subterm will not print as (or x y),
@@ -141298,8 +141923,8 @@ Subtopics
   If kept-goal-names is not nil, the current goal is replaced by
   conjoining it with all goals other than the current goal and those
   indicated by kept-goal-names, and those other goals are deleted.
-  If kept-goal-names is omitted, then the the current goal must be of
-  the form (name . n), and the goals to conjoin into the current goal
+  If kept-goal-names is omitted, then the current goal must be of the
+  form (name . n), and the goals to conjoin into the current goal
   (and delete) are those with names of the form (name . k) for k >=
   n.
 
