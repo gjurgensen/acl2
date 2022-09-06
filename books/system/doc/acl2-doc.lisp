@@ -51997,12 +51997,22 @@ tables in the current Hons Space."
  and Allegro CL, but it is printed as @('|1u|') in SBCL, LispWorks, and CMUCL
  &mdash; at least in the implementations that we tested!</p>
 
- <p>File-names are strings.  ACL2 does not support the Common Lisp type @(tsee
- pathname).  However, for the @('file-name') argument of the output-related
- functions listed below, ACL2 supports a special value, @(':STRING').  For this
- value, the channel connects (by way of a Common Lisp output string stream) to
- a string rather than to a file: as characters are written to the channel they
- can be retrieved by using @('get-output-stream-string$').</p>
+ <p>@('File-name') arguments are strings (except for the @(':STRING') case
+ discussed below).  ACL2 does not support the Common Lisp type @(tsee
+ pathname); rather, the underlying host Lisp will interpret the given string as
+ a pathname.  If the string represents a relative pathname, the host Lisp will
+ generally interpret that with respect to the directory where your ACL2
+ executable was invoked.  If you want to avoid depending on Lisp to interpret a
+ relative pathname, use an absolute pathname, for example by concatenating
+ @('(')@(tsee cbd)@(')') with the relative pathname.  (A fancy way to do such
+ concatenation is with @('(extend-pathname dir file-name state)'), where
+ @('dir') is the appropriate directory, possibly @('(cbd)').)</p>
+
+ <p>For the @('file-name') argument of the output-related functions listed
+ below, ACL2 supports a special value, @(':STRING').  For this value, the
+ channel connects (by way of a Common Lisp output string stream) to a string
+ rather than to a file: as characters are written to the channel they can be
+ retrieved by using @('get-output-stream-string$').</p>
 
  <p>Here are the names, formals and output descriptions of the ACL2 io
  functions.</p>
