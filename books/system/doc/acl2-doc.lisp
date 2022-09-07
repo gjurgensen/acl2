@@ -3608,9 +3608,9 @@ include-book)"
  <p>where @('kwd') is a @(tsee keywordp) and @('dir') is a relative or absolute
  @(see pathname) for a directory, optionally using the syntax @('(:keyword
  . filename)') where @(':keyword') is @(':system') or, more generally, is
- assigned in the @(see project-dir-alist); also @(see full-book-name).  If the
- final '@('/')' is missing for the resulting directory, ACL2 will add it for
- you.  The effect of this event is to modify the meaning of the @(':dir')
+ assigned in the @(see project-dir-alist); also see @(see full-book-name).  If
+ the final '@('/')' is missing for the resulting directory, ACL2 will add it
+ for you.  The effect of this event is to modify the meaning of the @(':dir')
  keyword argument of @(tsee include-book) and @(tsee ld) as indicated by the
  examples above, that is, by associating the indicated directory with the
  indicated keyword for purposes of the @(':dir') argument.  By the ``indicated

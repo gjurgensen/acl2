@@ -6063,11 +6063,11 @@ Subtopics
   where kwd is a [keywordp] and dir is a relative or absolute
   [pathname] for a directory, optionally using the syntax (:keyword .
   filename) where :keyword is :system or, more generally, is assigned
-  in the [project-dir-alist]; also [full-book-name].  If the final
-  '/' is missing for the resulting directory, ACL2 will add it for
-  you.  The effect of this event is to modify the meaning of the :dir
-  keyword argument of [include-book] and [ld] as indicated by the
-  examples above, that is, by associating the indicated directory
+  in the [project-dir-alist]; also see [full-book-name].  If the
+  final '/' is missing for the resulting directory, ACL2 will add it
+  for you.  The effect of this event is to modify the meaning of the
+  :dir keyword argument of [include-book] and [ld] as indicated by
+  the examples above, that is, by associating the indicated directory
   with the indicated keyword for purposes of the :dir argument.  By
   the ``indicated directory'' we mean, in the case that the pathname
   is a relative pathname, the directory relative to the current
