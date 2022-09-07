@@ -99337,8 +99337,7 @@ arithmetic) for libraries of @(see books) for arithmetic reasoning.</p>")
  <p>Such a line associates the project name @('K') with the project directory
  @('\"dir\"').  Each remaining line in a projects file should either be
  blank (i.e., contain only whitespace) or else be a comment line, that is, a
- lines for which the first non-whitespace character is a
- semicolon (@(';')).</p>
+ line for which the first non-whitespace character is a semicolon (@(';')).</p>
 
  <p>The projects file is read when ACL2 starts up.  ACL2 creates the
  @('project-dir-alist') by using each line as above to associate the keyword

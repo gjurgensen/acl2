@@ -101083,7 +101083,7 @@ What is the project-dir-alist and how is it established?
   Such a line associates the project name K with the project directory
   \"dir\".  Each remaining line in a projects file should either be
   blank (i.e., contain only whitespace) or else be a comment line,
-  that is, a lines for which the first non-whitespace character is a
+  that is, a line for which the first non-whitespace character is a
   semicolon (;).
 
   The projects file is read when ACL2 starts up.  ACL2 creates the
