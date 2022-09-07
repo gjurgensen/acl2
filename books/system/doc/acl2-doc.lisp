@@ -120565,8 +120565,9 @@ arithmetic) for libraries of @(see books) for arithmetic reasoning.</p>")
   (table-alist 'tests world)
  })
 
- <p>returns the alist representation of the table named @('test') in the given
- @(tsee world).  Often you have access to @('world').</p>
+ <p>returns the alist representation of the table named @('tests') in the given
+ @(tsee world).  Often you can provide a suitable expression for @('world'),
+ for example, @('(w state)').</p>
 
  <p>The ACL2 system provides ``tables'' by which the user can associate one
  object with another.  Tables are in essence just conventional association
