@@ -30348,8 +30348,8 @@ INFORMAL INTRODUCTION
   To understand these checkpoints we need to understand a bit about how
   ACL2 gives a semantics to DO loop$ expressions (as we explain in
   more detail in the section on Semantics below).  In the ACL2 logic,
-  a DO loop$ expression is represented as a transformation on the
-  variable, alist, an association list that assigns a value to every
+  a DO loop$ expression is represented as a transformation on an
+  association list, named alist, that assigns values to every
   variable in the expression.  This alist is transformed by each
   iteration through the loop.
 
@@ -30450,7 +30450,7 @@ INFORMAL INTRODUCTION
   Of course, no measure decreases in the example above, because the
   values of the variables don't change with each iteration.  We can
   see what happens when we supply an explicit measure: the body is
-  evaluated, as evidenced by the appeaance of 100 in the output, but
+  evaluated, as evidenced by the appearance of 100 in the output, but
   then the measure is evaluated and is seen not to have decreased
   from what it was at the start of the previous iteration.
 
