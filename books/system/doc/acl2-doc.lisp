@@ -3186,8 +3186,7 @@
   :long "<p>Many successful ACL2 users run in an shell under Emacs; see @(see
  emacs).  However, those not familiar with Emacs may prefer to start with an
  Eclipse-based interface initially developed by Peter Dillinger and Pete
- Manolios called the <a href='http://acl2s.ccs.neu.edu/acl2s/doc/'>ACL2
- Sedan</a> or ``ACL2s''.</p>
+ Manolios called the ACL2 Sedan or ``ACL2s''.</p>
 
  <p>ACL2 sessions in the ACL2 Sedan can utilize non-standard extensions and
  enhancements, especially geared toward new users, termination reasoning, and
