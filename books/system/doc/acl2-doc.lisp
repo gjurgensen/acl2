@@ -99312,6 +99312,15 @@ arithmetic) for libraries of @(see books) for arithmetic reasoning.</p>")
  project.  The @('project-dir-alist') also provides one way to interpret the
  @(':dir') keyword argument of @(tsee include-book) and @(tsee ld).</p>
 
+ <p>It is theoretically possible to undermine soundness by using this
+ capability inappropriately (see below for some discussion of appropriate
+ usage).  For the utmost security, certify your books without using this
+ capability.  See @(see certificate), specifically the discussion there about
+ placing a ``burden'' on the user.</p>
+
+ <p>To see the value of the @('project-dir-alist') in your session, evaluate
+ the form @('(project-dir-alist (w state))').</p>
+
  <p>We start below by introducing the @('project-dir-alist') and explaining how
  to set it up.  Next we describe its effects.  We conclude by discussing some
  details, limitations, and restrictions.</p>
@@ -99362,12 +99371,6 @@ arithmetic) for libraries of @(see books) for arithmetic reasoning.</p>")
 
  <p>The @('project-dir-alist') must have no duplicate keys and no duplicate
  directory names.</p>
-
- <p>Technical Remark (<i>skip this note if it's not helpful</i>).  When we talk
- about the @('project-dir-alist'), we are actually referencing the value of the
- so-called ``@(see state) global'' with that name, in the @('\"ACL2\"')
- package.  See @(see state) for a discussion of the <i>global-table</i> of the
- ACL2 state, which maps names to values.  End of Technical Remark.</p>
 
  <h3>Effects of the @('project-dir-alist')</h3>
 

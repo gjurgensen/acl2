@@ -77,7 +77,7 @@ Subtopics
   [defthm], [in-theory], [xargs], [state], etc., without an acl2::
   prefix.
 
-  The constant *acl2-exports* lists 1564 symbols, including most
+  The constant *acl2-exports* lists 1566 symbols, including most
   documented ACL2 system constants, functions, and macros.  You will
   typically also want to import many symbols from Common Lisp; see
   [*common-lisp-symbols-from-main-lisp-package*].
@@ -287,8 +287,8 @@ Subtopics
        eqlable-listp
        eqlable-listp-forward-to-atom-listp
        eqlablep eqlablep-recog
-       equal equal-char-code er er-cmp
-       er-hard er-let* er-let*-cmp er-progn
+       equal equal-char-code er er-cmp er-hard
+       er-hard? er-let* er-let*-cmp er-progn
        er-progn-cmp er-progn-fn er-progn-fn@par
        er-progn@par er-soft er-soft-logic ev$
        ev$-list evenp evens event evisc-tuple
@@ -496,8 +496,8 @@ Subtopics
        print-object$+ print-object$-fn
        print-object$-preserving-case
        print-rational-as-decimal
-       print-timer profile
-       prog2$ progn progn! progn$ program
+       print-timer profile prog2$ progn
+       progn! progn$ program project-dir-alist
        proof-tree proofs-co proper-consp
        props prove pseudo-term-listp
        pseudo-term-listp-forward-to-true-listp
@@ -101060,6 +101060,15 @@ Avoiding These Errors
   project.  The project-dir-alist also provides one way to interpret
   the :dir keyword argument of [include-book] and [ld].
 
+  It is theoretically possible to undermine soundness by using this
+  capability inappropriately (see below for some discussion of
+  appropriate usage).  For the utmost security, certify your books
+  without using this capability.  See [certificate], specifically the
+  discussion there about placing a ``burden'' on the user.
+
+  To see the value of the project-dir-alist in your session, evaluate
+  the form (project-dir-alist (w state)).
+
   We start below by introducing the project-dir-alist and explaining
   how to set it up.  Next we describe its effects.  We conclude by
   discussing some details, limitations, and restrictions.
@@ -101111,12 +101120,6 @@ What is the project-dir-alist and how is it established?
 
   The project-dir-alist must have no duplicate keys and no duplicate
   directory names.
-
-  Technical Remark (skip this note if it's not helpful).  When we talk
-  about the project-dir-alist, we are actually referencing the value
-  of the so-called ``[state] global'' with that name, in the \"ACL2\"
-  package.  See [state] for a discussion of the global-table of the
-  ACL2 state, which maps names to values.  End of Technical Remark.
 
 
 Effects of the project-dir-alist
