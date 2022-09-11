@@ -5433,8 +5433,7 @@ Silent loading of ACL2 customization files
   Many successful ACL2 users run in an shell under Emacs; see [emacs].
   However, those not familiar with Emacs may prefer to start with an
   Eclipse-based interface initially developed by Peter Dillinger and
-  Pete Manolios called the {ACL2 Sedan |
-  http://acl2s.ccs.neu.edu/acl2s/doc/} or ``ACL2s''.
+  Pete Manolios called the ACL2 Sedan or ``ACL2s''.
 
   ACL2 sessions in the ACL2 Sedan can utilize non-standard extensions
   and enhancements, especially geared toward new users, termination
@@ -91888,6 +91887,9 @@ Bug Fixes
               :expand ((:free (b) (append x b))
                        (:free (a b) (append (cons (car x) a) b))))))
 
+  Fixed bugs in the definition of source macro position-ac.  Thanks to
+  Eric Smith for pointing them out.
+
 
 Changes at the System Level
 
@@ -97726,8 +97728,8 @@ Subtopics
                          (cons (cons 'lst (cons lst 'nil))
                                (cons (cons 'acc (cons acc 'nil))
                                      'nil)))
-                   '(:logic (position-equal-ac item lst)
-                            :exec (position-ac-eq-exec item lst)))))
+                   '(:logic (position-equal-ac item lst acc)
+                            :exec (position-ac-eq-exec item lst acc)))))
       ((equal test ''eql)
        (cons
             'let-mbe
@@ -97738,7 +97740,7 @@ Subtopics
                   '(:logic (position-equal-ac item lst acc)
                            :exec (position-ac-eql-exec item lst acc)))))
       (t (cons 'position-equal-ac
-               (cons item (cons lst 'nil))))))")
+               (cons item (cons lst (cons acc 'nil)))))))")
  (POSITION-EQ (POINTERS)
               "See [position].")
  (POSITION-EQUAL (POINTERS)

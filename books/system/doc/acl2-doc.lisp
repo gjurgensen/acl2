@@ -93892,6 +93892,9 @@ it."
                     (:free (a b) (append (cons (car x) a) b))))))
  })
 
+ <p>Fixed bugs in the definition of source macro @('position-ac').  Thanks
+ to Eric Smith for pointing them out.</p>
+
  <h3>Changes at the System Level</h3>
 
  <p>The `@('make')' target, @('save-exec'), now builds @('custom-saved_acl2')
