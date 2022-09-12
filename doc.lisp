@@ -77,7 +77,7 @@ Subtopics
   [defthm], [in-theory], [xargs], [state], etc., without an acl2::
   prefix.
 
-  The constant *acl2-exports* lists 1564 symbols, including most
+  The constant *acl2-exports* lists 1566 symbols, including most
   documented ACL2 system constants, functions, and macros.  You will
   typically also want to import many symbols from Common Lisp; see
   [*common-lisp-symbols-from-main-lisp-package*].
@@ -287,8 +287,8 @@ Subtopics
        eqlable-listp
        eqlable-listp-forward-to-atom-listp
        eqlablep eqlablep-recog
-       equal equal-char-code er er-cmp
-       er-hard er-let* er-let*-cmp er-progn
+       equal equal-char-code er er-cmp er-hard
+       er-hard? er-let* er-let*-cmp er-progn
        er-progn-cmp er-progn-fn er-progn-fn@par
        er-progn@par er-soft er-soft-logic ev$
        ev$-list evenp evens event evisc-tuple
@@ -496,8 +496,8 @@ Subtopics
        print-object$+ print-object$-fn
        print-object$-preserving-case
        print-rational-as-decimal
-       print-timer profile
-       prog2$ progn progn! progn$ program
+       print-timer profile prog2$ progn
+       progn! progn$ program project-dir-alist
        proof-tree proofs-co proper-consp
        props prove pseudo-term-listp
        pseudo-term-listp-forward-to-true-listp
@@ -5433,8 +5433,7 @@ Silent loading of ACL2 customization files
   Many successful ACL2 users run in an shell under Emacs; see [emacs].
   However, those not familiar with Emacs may prefer to start with an
   Eclipse-based interface initially developed by Peter Dillinger and
-  Pete Manolios called the {ACL2 Sedan |
-  http://acl2s.ccs.neu.edu/acl2s/doc/} or ``ACL2s''.
+  Pete Manolios called the ACL2 Sedan or ``ACL2s''.
 
   ACL2 sessions in the ACL2 Sedan can utilize non-standard extensions
   and enhancements, especially geared toward new users, termination
@@ -6063,11 +6062,11 @@ Subtopics
   where kwd is a [keywordp] and dir is a relative or absolute
   [pathname] for a directory, optionally using the syntax (:keyword .
   filename) where :keyword is :system or, more generally, is assigned
-  in the [project-dir-alist]; also [full-book-name].  If the final
-  '/' is missing for the resulting directory, ACL2 will add it for
-  you.  The effect of this event is to modify the meaning of the :dir
-  keyword argument of [include-book] and [ld] as indicated by the
-  examples above, that is, by associating the indicated directory
+  in the [project-dir-alist]; also see [full-book-name].  If the
+  final '/' is missing for the resulting directory, ACL2 will add it
+  for you.  The effect of this event is to modify the meaning of the
+  :dir keyword argument of [include-book] and [ld] as indicated by
+  the examples above, that is, by associating the indicated directory
   with the indicated keyword for purposes of the :dir argument.  By
   the ``indicated directory'' we mean, in the case that the pathname
   is a relative pathname, the directory relative to the current
@@ -30348,8 +30347,8 @@ INFORMAL INTRODUCTION
   To understand these checkpoints we need to understand a bit about how
   ACL2 gives a semantics to DO loop$ expressions (as we explain in
   more detail in the section on Semantics below).  In the ACL2 logic,
-  a DO loop$ expression is represented as a transformation on the
-  variable, alist, an association list that assigns a value to every
+  a DO loop$ expression is represented as a transformation on an
+  association list, named alist, that assigns values to every
   variable in the expression.  This alist is transformed by each
   iteration through the loop.
 
@@ -30450,7 +30449,7 @@ INFORMAL INTRODUCTION
   Of course, no measure decreases in the example above, because the
   values of the variables don't change with each iteration.  We can
   see what happens when we supply an explicit measure: the body is
-  evaluated, as evidenced by the appeaance of 100 in the output, but
+  evaluated, as evidenced by the appearance of 100 in the output, but
   then the measure is evaluated and is seen not to have decreased
   from what it was at the start of the previous iteration.
 
@@ -55644,13 +55643,23 @@ Subtopics
   Allegro CL, but it is printed as |1u| in SBCL, LispWorks, and CMUCL
   --- at least in the implementations that we tested!
 
-  File-names are strings.  ACL2 does not support the Common Lisp type
-  [pathname].  However, for the file-name argument of the
-  output-related functions listed below, ACL2 supports a special
-  value, :STRING.  For this value, the channel connects (by way of a
-  Common Lisp output string stream) to a string rather than to a
-  file: as characters are written to the channel they can be
-  retrieved by using get-output-stream-string$.
+  File-name arguments are strings (except for the :STRING case
+  discussed below).  ACL2 does not support the Common Lisp type
+  [pathname]; rather, the underlying host Lisp will interpret the
+  given string as a pathname.  If the string represents a relative
+  pathname, the host Lisp will generally interpret that with respect
+  to the directory where your ACL2 executable was invoked.  If you
+  want to avoid depending on Lisp to interpret a relative pathname,
+  use an absolute pathname, for example by concatenating ([cbd]) with
+  the relative pathname.  (A fancy way to do such concatenation is
+  with (extend-pathname dir file-name state), where dir is the
+  appropriate directory, possibly (cbd).)
+
+  For the file-name argument of the output-related functions listed
+  below, ACL2 supports a special value, :STRING.  For this value, the
+  channel connects (by way of a Common Lisp output string stream) to
+  a string rather than to a file: as characters are written to the
+  channel they can be retrieved by using get-output-stream-string$.
 
   Here are the names, formals and output descriptions of the ACL2 io
   functions.
@@ -91878,6 +91887,9 @@ Bug Fixes
               :expand ((:free (b) (append x b))
                        (:free (a b) (append (cons (car x) a) b))))))
 
+  Fixed bugs in the definition of source macro position-ac.  Thanks to
+  Eric Smith for pointing them out.
+
 
 Changes at the System Level
 
@@ -97716,8 +97728,8 @@ Subtopics
                          (cons (cons 'lst (cons lst 'nil))
                                (cons (cons 'acc (cons acc 'nil))
                                      'nil)))
-                   '(:logic (position-equal-ac item lst)
-                            :exec (position-ac-eq-exec item lst)))))
+                   '(:logic (position-equal-ac item lst acc)
+                            :exec (position-ac-eq-exec item lst acc)))))
       ((equal test ''eql)
        (cons
             'let-mbe
@@ -97728,7 +97740,7 @@ Subtopics
                   '(:logic (position-equal-ac item lst acc)
                            :exec (position-ac-eql-exec item lst acc)))))
       (t (cons 'position-equal-ac
-               (cons item (cons lst 'nil))))))")
+               (cons item (cons lst (cons acc 'nil)))))))")
  (POSITION-EQ (POINTERS)
               "See [position].")
  (POSITION-EQUAL (POINTERS)
@@ -101050,6 +101062,15 @@ Avoiding These Errors
   project.  The project-dir-alist also provides one way to interpret
   the :dir keyword argument of [include-book] and [ld].
 
+  It is theoretically possible to undermine soundness by using this
+  capability inappropriately (see below for some discussion of
+  appropriate usage).  For the utmost security, certify your books
+  without using this capability.  See [certificate], specifically the
+  discussion there about placing a ``burden'' on the user.
+
+  To see the value of the project-dir-alist in your session, evaluate
+  the form (project-dir-alist (w state)).
+
   We start below by introducing the project-dir-alist and explaining
   how to set it up.  Next we describe its effects.  We conclude by
   discussing some details, limitations, and restrictions.
@@ -101073,7 +101094,7 @@ What is the project-dir-alist and how is it established?
   Such a line associates the project name K with the project directory
   \"dir\".  Each remaining line in a projects file should either be
   blank (i.e., contain only whitespace) or else be a comment line,
-  that is, a lines for which the first non-whitespace character is a
+  that is, a line for which the first non-whitespace character is a
   semicolon (;).
 
   The projects file is read when ACL2 starts up.  ACL2 creates the
@@ -101101,12 +101122,6 @@ What is the project-dir-alist and how is it established?
 
   The project-dir-alist must have no duplicate keys and no duplicate
   directory names.
-
-  Technical Remark (skip this note if it's not helpful).  When we talk
-  about the project-dir-alist, we are actually referencing the value
-  of the so-called ``[state] global'' with that name, in the \"ACL2\"
-  package.  See [state] for a discussion of the global-table of the
-  ACL2 state, which maps names to values.  End of Technical Remark.
 
 
 Effects of the project-dir-alist
@@ -121423,8 +121438,9 @@ Subtopics
 
     (table-alist 'tests world)
 
-  returns the alist representation of the table named test in the given
-  [world].  Often you have access to world.
+  returns the alist representation of the table named tests in the
+  given [world].  Often you can provide a suitable expression for
+  world, for example, (w state).
 
   The ACL2 system provides ``tables'' by which the user can associate
   one object with another.  Tables are in essence just conventional

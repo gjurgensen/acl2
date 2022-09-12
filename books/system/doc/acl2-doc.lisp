@@ -3186,8 +3186,7 @@
   :long "<p>Many successful ACL2 users run in an shell under Emacs; see @(see
  emacs).  However, those not familiar with Emacs may prefer to start with an
  Eclipse-based interface initially developed by Peter Dillinger and Pete
- Manolios called the <a href='http://acl2s.ccs.neu.edu/acl2s/doc/'>ACL2
- Sedan</a> or ``ACL2s''.</p>
+ Manolios called the ACL2 Sedan or ``ACL2s''.</p>
 
  <p>ACL2 sessions in the ACL2 Sedan can utilize non-standard extensions and
  enhancements, especially geared toward new users, termination reasoning, and
@@ -3608,9 +3607,9 @@ include-book)"
  <p>where @('kwd') is a @(tsee keywordp) and @('dir') is a relative or absolute
  @(see pathname) for a directory, optionally using the syntax @('(:keyword
  . filename)') where @(':keyword') is @(':system') or, more generally, is
- assigned in the @(see project-dir-alist); also @(see full-book-name).  If the
- final '@('/')' is missing for the resulting directory, ACL2 will add it for
- you.  The effect of this event is to modify the meaning of the @(':dir')
+ assigned in the @(see project-dir-alist); also see @(see full-book-name).  If
+ the final '@('/')' is missing for the resulting directory, ACL2 will add it
+ for you.  The effect of this event is to modify the meaning of the @(':dir')
  keyword argument of @(tsee include-book) and @(tsee ld) as indicated by the
  examples above, that is, by associating the indicated directory with the
  indicated keyword for purposes of the @(':dir') argument.  By the ``indicated
@@ -27037,8 +27036,8 @@ ld) and @(tsee include-book)"
  <p>To understand these checkpoints we need to understand a bit about how ACL2
  gives a semantics to @('DO') @('loop$') expressions (as we explain in more
  detail in the section on Semantics below).  In the ACL2 logic, a @('DO')
- @('loop$') expression is represented as a transformation on the variable,
- @('alist'), an association list that assigns a value to every variable in the
+ @('loop$') expression is represented as a transformation on an association
+ list, named @('alist'), that assigns values to every variable in the
  expression.  This alist is transformed by each iteration through the loop.</p>
 
  <p>The value of the variable @('temp') in @('alist') is @('(assoc-eq-safe
@@ -27141,7 +27140,7 @@ ld) and @(tsee include-book)"
  <p>Of course, no measure decreases in the example above, because the values of
  the variables don't change with each iteration.  We can see what happens when
  we supply an explicit measure: the body is evaluated, as evidenced by the
- appeaance of @('100') in the output, but then the measure is evaluated and is
+ appearance of @('100') in the output, but then the measure is evaluated and is
  seen not to have decreased from what it was at the start of the previous
  iteration.</p>
 
@@ -51997,12 +51996,22 @@ tables in the current Hons Space."
  and Allegro CL, but it is printed as @('|1u|') in SBCL, LispWorks, and CMUCL
  &mdash; at least in the implementations that we tested!</p>
 
- <p>File-names are strings.  ACL2 does not support the Common Lisp type @(tsee
- pathname).  However, for the @('file-name') argument of the output-related
- functions listed below, ACL2 supports a special value, @(':STRING').  For this
- value, the channel connects (by way of a Common Lisp output string stream) to
- a string rather than to a file: as characters are written to the channel they
- can be retrieved by using @('get-output-stream-string$').</p>
+ <p>@('File-name') arguments are strings (except for the @(':STRING') case
+ discussed below).  ACL2 does not support the Common Lisp type @(tsee
+ pathname); rather, the underlying host Lisp will interpret the given string as
+ a pathname.  If the string represents a relative pathname, the host Lisp will
+ generally interpret that with respect to the directory where your ACL2
+ executable was invoked.  If you want to avoid depending on Lisp to interpret a
+ relative pathname, use an absolute pathname, for example by concatenating
+ @('(')@(tsee cbd)@(')') with the relative pathname.  (A fancy way to do such
+ concatenation is with @('(extend-pathname dir file-name state)'), where
+ @('dir') is the appropriate directory, possibly @('(cbd)').)</p>
+
+ <p>For the @('file-name') argument of the output-related functions listed
+ below, ACL2 supports a special value, @(':STRING').  For this value, the
+ channel connects (by way of a Common Lisp output string stream) to a string
+ rather than to a file: as characters are written to the channel they can be
+ retrieved by using @('get-output-stream-string$').</p>
 
  <p>Here are the names, formals and output descriptions of the ACL2 io
  functions.</p>
@@ -93883,6 +93892,9 @@ it."
                     (:free (a b) (append (cons (car x) a) b))))))
  })
 
+ <p>Fixed bugs in the definition of source macro @('position-ac').  Thanks
+ to Eric Smith for pointing them out.</p>
+
  <h3>Changes at the System Level</h3>
 
  <p>The `@('make')' target, @('save-exec'), now builds @('custom-saved_acl2')
@@ -99303,6 +99315,15 @@ arithmetic) for libraries of @(see books) for arithmetic reasoning.</p>")
  project.  The @('project-dir-alist') also provides one way to interpret the
  @(':dir') keyword argument of @(tsee include-book) and @(tsee ld).</p>
 
+ <p>It is theoretically possible to undermine soundness by using this
+ capability inappropriately (see below for some discussion of appropriate
+ usage).  For the utmost security, certify your books without using this
+ capability.  See @(see certificate), specifically the discussion there about
+ placing a ``burden'' on the user.</p>
+
+ <p>To see the value of the @('project-dir-alist') in your session, evaluate
+ the form @('(project-dir-alist (w state))').</p>
+
  <p>We start below by introducing the @('project-dir-alist') and explaining how
  to set it up.  Next we describe its effects.  We conclude by discussing some
  details, limitations, and restrictions.</p>
@@ -99327,8 +99348,7 @@ arithmetic) for libraries of @(see books) for arithmetic reasoning.</p>")
  <p>Such a line associates the project name @('K') with the project directory
  @('\"dir\"').  Each remaining line in a projects file should either be
  blank (i.e., contain only whitespace) or else be a comment line, that is, a
- lines for which the first non-whitespace character is a
- semicolon (@(';')).</p>
+ line for which the first non-whitespace character is a semicolon (@(';')).</p>
 
  <p>The projects file is read when ACL2 starts up.  ACL2 creates the
  @('project-dir-alist') by using each line as above to associate the keyword
@@ -99354,12 +99374,6 @@ arithmetic) for libraries of @(see books) for arithmetic reasoning.</p>")
 
  <p>The @('project-dir-alist') must have no duplicate keys and no duplicate
  directory names.</p>
-
- <p>Technical Remark (<i>skip this note if it's not helpful</i>).  When we talk
- about the @('project-dir-alist'), we are actually referencing the value of the
- so-called ``@(see state) global'' with that name, in the @('\"ACL2\"')
- package.  See @(see state) for a discussion of the <i>global-table</i> of the
- ACL2 state, which maps names to values.  End of Technical Remark.</p>
 
  <h3>Effects of the @('project-dir-alist')</h3>
 
@@ -120556,8 +120570,9 @@ arithmetic) for libraries of @(see books) for arithmetic reasoning.</p>")
   (table-alist 'tests world)
  })
 
- <p>returns the alist representation of the table named @('test') in the given
- @(tsee world).  Often you have access to @('world').</p>
+ <p>returns the alist representation of the table named @('tests') in the given
+ @(tsee world).  Often you can provide a suitable expression for @('world'),
+ for example, @('(w state)').</p>
 
  <p>The ACL2 system provides ``tables'' by which the user can associate one
  object with another.  Tables are in essence just conventional association
