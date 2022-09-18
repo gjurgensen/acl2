@@ -93820,6 +93820,25 @@ it."
  <p>@(':')@(tsee Induction) rules now support the use of @(tsee syntaxp)
  hypotheses.</p>
 
+ <p>The utility @(tsee read-file-into-string) has been improved in the
+ following ways.</p>
+
+ <ul>
+
+ <li>The value of the @(':start') argument may now be any natural number less
+ than the length of the input file.  (Formerly one needed to use this utility
+ to read the preceding bytes first, which can be much slower.)  Thanks to Eric
+ McCarthy, Eric Smith, and Grant Jurgensen for requesting this improvement and
+ for helpful discussions.</li>
+
+ <li>While the default behavior is the same for when the corresponding Lisp
+ stream is closed, a new keyword argument, @(':close'), can be supplied to
+ control that behavior.</li>
+
+ <li>Miscellaneous clean-up has been made in the implementation.</li>
+
+ </ul>
+
  <h3>New Features</h3>
 
  <p>The new zero-ary attachable system function, @('heavy-linear-p'), allows
@@ -104360,9 +104379,11 @@ arithmetic) for libraries of @(see books) for arithmetic reasoning.</p>")
 (defxdoc read-file-into-string
   :parents (io)
   :short "The contents of a file (or part of it) as a string"
-  :long "<p>When this macro is passed a valid filename (and the ACL2 @(see
- state)), it generally returns the contents of the file (or a specified part of
- the file) as a string.  Otherwise, it returns @('nil') or causes an error.</p>
+  :long "<p>When this macro is passed a valid filename and the ACL2 @(see
+ state), it generally returns the contents of the file (or a specified part of
+ the file) as a string.  Otherwise, it returns @('nil') or causes an error.
+ Unlike other ACL2 functions for reading a file, this one does not return the
+ ACL2 @('state'), and it is generally much faster.</p>
 
  @({
  Example Forms:
@@ -104370,112 +104391,120 @@ arithmetic) for libraries of @(see books) for arithmetic reasoning.</p>")
  (read-file-into-string \"foo.lisp\")
  (read-file-into-string \"foo.lisp\" :start 0 :bytes nil) ; same as above
  (read-file-into-string \"foo.lisp\" :start 20000 :bytes 10000)
+ (read-file-into-string \"foo.lisp\" :start 20000 :bytes 10000 :close t)
 
  General Form:
 
- (read-file-into-string filename :start s :bytes b)
+ (read-file-into-string filename ; a filename relative to the current directory
+                        :start s ; default 0
+                        :bytes b ; default nil
+                        :close c ; default :default
+                        )
  })
 
- <p>where @('filename') is a string, which is typically the name of a file; and
- where @(':start s') and @(':bytes b') are optional, where @('s') has default
- @('0') and @('b') has default @('nil'), @('s') is a natural number, and @('b')
- is either a natural number or @('nil').</p>
+ <p>where @('filename') is a string, which is typically the name of a file, and
+ the keyword argument are optional and evaluated, as follows: @('s') has
+ default @('0') and its value is a natural number (except, an error occurs if
+ that number exceeds the length of the given file), @('b') has default @('nil')
+ and its value is either a natural number or @('nil'), and @('c') has default
+ @(':default') and its value is otherwise considered to be false (when
+ @('nil')) or true (when not @('nil')).</p>
 
  <p>For examples, see @(see community-books) file
  @('books/system/tests/read-file-into-string.lisp').</p>
 
  <p>The result, when not @('nil') or an error, is a string representing the
  specified file contents.  For the default of @(':start 0') and @(':bytes
- nil'), or equivalently, when no keyword arguments are specified, then the
- entire file contents are returned as a string.  In general, @(':start s')
- specifies the part of the file starting at the @('s')-th byte, and @(':bytes
- b') specifies that only the first @('b') bytes are to be read starting at that
- position, stopping at end of file in what we call the ``truncation case'':
- where @('b+s') exceeds the length of the file.</p>
+ nil'), or equivalently, when no keyword arguments are specified, the entire
+ file contents are returned as a string.  In general, @(':start s') specifies
+ the part of the file starting at byte position @('s') of the file, and
+ @(':bytes b') specifies that only the first @('b') bytes are to be read
+ starting at that position &mdash; however, stopping at the end of the file if
+ @('b+s') exceeds the length @('L') of the file.  Below we call this case that
+ @('b+s>L') the ``truncation case''.</p>
 
- <p>If @(':start s') is specified where @('s > 0'), then the next read must
- start where the previous read left off.  More precisely: in this case ACL2
- expects that there was an earlier call of read-file-into-string on the same
- file, where the most recent such call must not have been the ``truncation
- case'' (see above) and must have have specified @(':bytes') such that the
- first unread byte position is @('s').  Otherwise, an error occurs.  Note that
- if @('s') is @('0') then there is no such restriction; the read is viewed as a
- new ``first'' read of the file.</p>
+ <p>Note that ACL2 characters always fit into a single byte, which is why we
+ can talk about ``bytes'' here.</p>
 
- <p>WARNING: A Lisp stream is created for the specified file, and is left open
- until a call of @('read-file-into-string') is either made with @(':bytes')
- having value @('nil') (the default) or is in the ``truncation case'' described
- above.  Operating systems can complain when too many streams are open at the
- same time.  In particular, consider the case that @(':start s') and @(':bytes
- b') are specified where @('s > 0'), and where @('s+b') is exactly the length
- of the file.  Thus we are barely not in the ``truncation case'' described
- above, so one more read will be necessary in order to close that stream.  Your
- code might thus include code such as the following (for example) after a call
- of @('read-file-into-string') with non-@('nil') @(':bytes'):</p>
+ <p>The @(':close') argument affects handling of the Lisp stream that is
+ created for the specified file.  When the value of @(':close') is the default,
+ @(':default'), this stream is closed immediately after the read exactly when
+ either @(':bytes') has value @('nil') (the default) or we are in the
+ truncation case @('b+s>L') described above.  But otherwise the stream remains
+ open, which could cause a problem since operating systems can complain when
+ too many streams are open at the same time.  If the value of @(':bytes') is
+ non-@('nil') (hence, a natural number), then you may want to specify @(':close
+ t') to prevent that problem, unless you plan to read more bytes from the same
+ file.  If you decide to close the file later, this can be accomplished
+ efficiently by evaluating the following form for your file,
+ @('\"<file>\"').</p>
 
  @({
- (prog2$
-  (and (= (+ position bytes) file-length)
-
- ; Then close the stream:
-
-       (read-file-into-string
-        filename
-        :start file-length
-        :bytes 1))
-  <more_code>)
+ (time$ (read-file-into-string \"<file>\" :start 0 :bytes 0 :close t))
  })
 
- <p>End of warning.</p>
+ <p>Compared with the usual @(see IO) routines provided by ACL2,
+ @('read-file-into-string') is generally much more efficient, and also it does
+ not return @(tsee state).  Note that the expansion of a call of this macro
+ takes @('state') as an argument; so if you call it in the body of a function
+ definition, then &mdash; as usual for functions that take @('state') &mdash;
+ either @('(set-state-ok t)') must have been evaluated or else a suitable
+ @(':stobjs') declaration, typically @(':stobjs state'), must be provided (see
+ @(see xargs)).</p>
 
- <p>This macro provides functionality that can be obtained through the usual
- @(see IO) routines provided by ACL2, as shown by the sequence of definitions
- below.  However, under-the-hood raw Lisp code provides an implementation that
- not only is efficient, but also does not return @(tsee state).  Note that the
- expansion of a call of this macro does take @('state') as an argument,
- which (as usual for functions that take @('state')) necessitates either that
- @('(set-state-ok t)') has already been evaluated, or else that a suitable
- @(':stobjs') declaration, typically @(':stobjs state'), is provided (see @(see
- xargs)).</p>
-
- <p>The value of the constant @('*read-file-into-string-bound*')
- (see the definition below) is a strict upper bound on the size of the string
- returned.  If the file (or portion thereof) contains more bytes than this,
- then @('nil') is returned.</p>
+ <p>The constant @('*read-file-into-string-bound*') (see the definition below)
+ establishes a strict upper bound on the size of the string returned.  If the
+ file (or specified portion thereof) contains more bytes than this, then
+ @('nil') is returned.</p>
 
  <p>There are two checks to guarantee that @('read-file-into-string') is truly
  a function &mdash; that is, it returns the same value for two calls with the
- same inputs.  One check ensures that the write date of the file has not
- changed between two such calls; otherwise ACL2 will cause a raw Lisp error of
- the following form.</p>
+ same inputs.  The primary check ensures that the write date of the file has
+ not changed in the interval between two such calls unless the @('file-clock')
+ component of the ACL2 state has been updated within that interval.  That
+ update takes place when an input or output channel is opened or closed in the
+ usual way (that is, using @('open-input-channel'), @('open-output-channel'),
+ @('close-input-channel'), or @('close-output-channel'); see @(see IO)).
+ However, it suffices to evaluate the following form, which returns the @(tsee
+ state) obtained by incrementing its @('file-clock').</p>
 
  @({
+ (increment-file-clock state)
+ })
+
+ <p>If however you make illegal successive reads as described above, a Lisp
+ error will occur with a message of the following form.</p>
+
+ @({
+ ***********************************************
  ************ ABORTING from raw Lisp ***********
  ********** (see :DOC raw-lisp-error) **********
- Error:  Illegal consecutive reads from file \"MY-FILE\".
+ Error:  Illegal consecutive reads from file
+ \"<some_filename>\",
+ which appears to have been written between the two reads.
+ Execute (INCREMENT-FILE-CLOCK STATE) to avoid this error.
  See :DOC read-file-into-string.
+ While executing: READ-FILE-INTO-STRING2
  ***********************************************
  })
+
+ <p>A similar error may occur when a call of @('read-file-into-string') is
+ followed by a call of @(tsee open-input-channel) on the same filename when
+ that file is modified between the two calls.  For low-level details about
+ logical issues being addressed by such errors, see the comment in the
+ definition of @('*read-file-into-string-alist*') in the ACL2 sources.</p>
 
  <p>The other check ensures that the write date of the file has not changed
- while the second call is in progress.  For simplicity, ACL2 actually makes
- this check even for the first call.  When the check fails the corresponding
- raw Lisp error is of the following form.</p>
+ while a call is in progress.  When that check fails the corresponding Lisp
+ error is of the following form.</p>
 
  @({
  ************ ABORTING from raw Lisp ***********
  ********** (see :DOC raw-lisp-error) **********
- Error:  Illegal attempt to call READ-FILE-INTO-STRING concurrently with some write to that file!
- See :DOC read-file-into-string.
+ Error:  Illegal attempt to call READ-FILE-INTO-STRING concurrently
+ with some write to that file!  See :DOC read-file-into-string.
  ***********************************************
  })
-
- <p>The first of these errors can actually occur when the second read is
- performed by @(tsee open-input-channel) of type @(':character').  But we
- expect all such errors to be rare, since they only occur when there are two
- reads to the same file with an intervening external write, in the case that
- the two ACL2 states have the same @('file-clock') field (see @(see state)).
- That field is updated any time a channel is opened or closed.</p>
 
  <p>We close by showing the relevant ACL2 definitions in the logic, that is,
  not including the special raw Lisp (under the hood) code in the definition of
