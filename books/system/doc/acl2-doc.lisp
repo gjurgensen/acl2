@@ -93767,6 +93767,9 @@ it."
  ")
 
 (defxdoc note-8-6
+
+; Fixed error when attempting to use #@ reader in a book being certified.
+
   :parents (release-notes)
   :short "ACL2 Version  8.6 (xxx, 20xx) Notes"
   :long "<p>NOTE!  New users can ignore these release notes, because the @(see
