@@ -93842,6 +93842,20 @@ it."
 
  </ul>
 
+ <p>The @(tsee trace$) option @(':evisc-tuple :print'), which continues to use
+ raw Lisp printing, has undergone the following improvements when printing
+ entry and exit values.  Thanks to Eric McCarthy for a query that led to these
+ improvements.</p>
+
+ <ul>
+
+ <li>Values are now pretty-printed.</li>
+
+ <li>Array values are no longer displayed as @(see stobj)s.  (This includes
+ stobjs themselves, since they are arrays.)</li>
+
+ </ul>
+
  <h3>New Features</h3>
 
  <p>The new zero-ary attachable system function, @('heavy-linear-p'), allows
@@ -125767,8 +125781,10 @@ arithmetic) for libraries of @(see books) for arithmetic reasoning.</p>")
  arrays or objects in supporting packages not visible in the ACL2
  read-eval-print loop.  If you supply @(':evisc-tuple :print'), then the
  printing described above will be done with raw Lisp printing rather than ACL2
- printing: specifically, with @('(format *trace-output* \"s%\" x)'), where
- @('x') is the value to be printed.</p>
+ printing.  Note that @(see stobj)s will be printed as vectors (rather than
+ their usual hiding with symbols such as @('<st>')) when using
+ @(':evisc-tuple :print'), but other structures will still be hidden unless
+ @(':hide nil') is supplied.</p>
 
  <p>A second special value for @(':evisc-tuple'), @(':no-print'), avoids
  printing the values of the @(':entry') and @(':exit') forms (or their
@@ -125818,16 +125834,18 @@ arithmetic) for libraries of @(see books) for arithmetic reasoning.</p>")
  <p>The default value for this advanced option is @('t'), which causes @(see
  stobj)s and the logical @(see world) to be printed as single symbols, along
  with certain large structures of interest to developers (rewrite constants,
- enabled structures, and event and command index structures).  If however the
- value @('nil') is supplied, then this default behavior is defeated.  In that
- case, you can still arrange to print the logical world as a symbol and to
- print @(see stobj)s without breaking the trace printing: see @(see
- set-trace-evisc-tuple) for how to do this globally, or similarly use the
- @(':evisc-tuple') option to @('trace$') to do this with a single trace spec.
- Note however that with value @('nil') specified for @(':hide'), such use of an
- evisc-tuple will not deal properly with local stobjs (see @(see
- with-local-stobj)) or stobjs bound by @(tsee stobj-let), or with the
- aforementioned large structures other than the logical @(see world).</p>
+ enabled structures, and event and command index structures).
+ (For an exception regarding stobjs, see the discussion of @(':evisc-tuple
+ :print') above.)  If however the value @('nil') is supplied, then this default
+ behavior is defeated.  In that case, you can still arrange to print the
+ logical world as a symbol and to print @(see stobj)s without breaking the
+ trace printing: see @(see set-trace-evisc-tuple) for how to do this globally,
+ or similarly use the @(':evisc-tuple') option to @('trace$') to do this with a
+ single trace spec.  Note however that with value @('nil') specified for
+ @(':hide'), such use of an evisc-tuple will not deal properly with local
+ stobjs (see @(see with-local-stobj)) or stobjs bound by @(tsee stobj-let), or
+ with the aforementioned large structures other than the logical @(see
+ world).</p>
 
  <p>@(':NATIVE')</p>
 
