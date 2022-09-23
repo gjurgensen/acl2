@@ -24535,21 +24535,21 @@ subtree of X with T, without duplication.</p>
  always printed for a non-nil @(':tag-name') (unless deferred; see @(see
  set-deferred-ttag-notes)).</p>
 
- <p><b>Active ttags.</b> Suppose @('tag-name') is a non-@('nil') symbol.  Then
- @('(defttag :tag-name)') sets @(':tag-name') to be the (unique) ``active
+ <p><b>Active ttags.</b> Suppose @('tag-name') names a non-@('nil') symbol.
+ Then @('(defttag :tag-name)') sets @(':tag-name') to be the (unique) ``active
  ttag.''  There must be an active ttag in order for there to be any mention of
- certain function, including @(tsee sys-call); evaluate the form @('(strip-cars
- *ttag-fns*)') to see the full list of such symbols.  The macro @(tsee progn!)
- similarly requires an active ttag.  On the other hand, @('(defttag nil)')
- removes the active ttag, if any; there is then no active ttag.  The scope of a
- @('defttag') form in a book being certified or included is limited to
- subsequent forms in the same book before the next @('defttag') (if any) in
- that book.  Similarly, if a @('defttag') form is evaluated in the top-level
- loop, then its effect is limited to subsequent forms in the top-level loop
- before the next @('defttag') in the top-level loop (if any).  Moreover, @(tsee
- certify-book) is illegal when a ttag is active; of course, in such a
- circumstance one can execute @('(defttag nil)') in order to allow book
- certification.</p>
+ certain functions, including @(tsee sys-call); evaluate the form
+ @('(strip-cars *ttag-fns*)') to see the full list of such symbols.  The macro
+ @(tsee progn!)  similarly requires an active ttag.  On the other hand,
+ @('(defttag nil)') removes the active ttag, if any; there is then no active
+ ttag.  The scope of a @('defttag') form in a book being certified or included
+ is limited to subsequent forms in the same book before the next
+ @('defttag') (if any) in that book.  Similarly, if a @('defttag') form is
+ evaluated in the top-level loop, then its effect is limited to subsequent
+ forms in the top-level loop before the next @('defttag') in the top-level
+ loop (if any).  Moreover, @(tsee certify-book) is illegal when a ttag is
+ active; of course, in such a circumstance one can execute @('(defttag nil)')
+ in order to allow book certification.</p>
 
  <p><b>Ttag notes and the ``certifier.''</b> When a @('defttag') is executed
  with an argument other than @('nil'), output is printed, starting on a fresh
