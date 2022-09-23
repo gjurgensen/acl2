@@ -27718,10 +27718,10 @@ Subtopics
   discussed below, is always printed for a non-nil :tag-name (unless
   deferred; see [set-deferred-ttag-notes]).
 
-  Active ttags. Suppose tag-name is a non-nil symbol.  Then (defttag
+  Active ttags. Suppose tag-name names a non-nil symbol.  Then (defttag
   :tag-name) sets :tag-name to be the (unique) ``active ttag.'' There
   must be an active ttag in order for there to be any mention of
-  certain function, including [sys-call]; evaluate the form
+  certain functions, including [sys-call]; evaluate the form
   (strip-cars *ttag-fns*) to see the full list of such symbols.  The
   macro [progn!] similarly requires an active ttag.  On the other
   hand, (defttag nil) removes the active ttag, if any; there is then
