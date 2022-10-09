@@ -6043,12 +6043,19 @@ Subtopics
 
     Example Forms:
 
-    ; For (include-book \"foo\" :dir :smith), prepend \"/u/smith/\" to \"foo\".
+    ; For (include-book \"foo\" :dir :smith), prepend to \"foo\" the absolute
+    ; directory pathmame \"/u/smith/\":
     (add-include-book-dir :smith \"/u/smith/\")
 
-    ; For (include-book \"bar\" :dir :util), prepend absolute directory pathname
-    ; corresponding to the relative pathname, \"utilities/\".
+    ; For (include-book \"bar\" :dir :util), prepend to \"bar\" the absolute
+    ; directory pathname corresponding to the interpretation of \"utilities/\"
+    ; with respect to the current connected-book-directory (cbd):
     (add-include-book-dir :util \"utilities\")
+
+    ; For (include-book \"lib/floor-mod/top\" :dir :arith), prepend to
+    ; \"lib/floor-mod/top\" the community books directory pathname string
+    ; \"arithmetic-5/lib/floor-mod/top/\"
+    (add-include-book-dir :arith (:system . \"arithmetic-5\"))
 
   Note: This is an event!  It does not print the usual event [summary]
   but nevertheless changes the ACL2 logical [world] and is so
@@ -6059,19 +6066,17 @@ Subtopics
     General Form:
     (add-include-book-dir kwd dir)
 
-  where kwd is a [keywordp] and dir is a relative or absolute
-  [pathname] for a directory, optionally using the syntax (:keyword .
-  filename) where :keyword is :system or, more generally, is assigned
-  in the [project-dir-alist]; also see [full-book-name].  If the
+  where kwd is a [keywordp] and dir represents a directory: either a
+  relative or absolute [pathname] string or a [sysfile].  If the
   final '/' is missing for the resulting directory, ACL2 will add it
   for you.  The effect of this event is to modify the meaning of the
   :dir keyword argument of [include-book] and [ld] as indicated by
   the examples above, that is, by associating the indicated directory
   with the indicated keyword for purposes of the :dir argument.  By
-  the ``indicated directory'' we mean, in the case that the pathname
-  is a relative pathname, the directory relative to the current
-  connected book directory; see [cbd].  See [delete-include-book-dir]
-  for how to undo this effect.
+  the ``indicated directory'' we mean, when a relative pathname is
+  supplied, the directory relative to the current connected book
+  directory; see [cbd].  See [delete-include-book-dir] for how to
+  undo this effect.
 
   For a keyword already associated with a directory string by a
   previous invocation of add-include-book-dir or
@@ -6091,10 +6096,10 @@ Subtopics
   same directory.
 
   The keyword :system can never be redefined.  It will always point to
-  the absolute pathname of the system books directory, which by
-  default is immediately under the directory where the ACL2
-  executable was originally built (see [include-book], in particular
-  the discussion there of ``Books Directory'').
+  the absolute pathname of the [community-books] directory, which by
+  default is the subdirectory \"books/\" of the directory where the
+  ACL2 executable was built (see [include-book], in particular the
+  discussion there of ``Books Directory'').
 
   This macro generates a [table] event that updates the
   [ACL2-defaults-table] and thus is automcatically [local] to the
@@ -12391,15 +12396,15 @@ Subtopics
   file can only be produced if there is already an expansion file
   that is at least as recent as the book's [certificate].  Such a
   file, whose name happens to be the result of concatenating the
-  string \"@expansion.lsp\" to the book name (without the \".lisp\"
-  suffix), is created by [certify-book] when state global variable
-  'save-expansion-file has a non-nil value.  That will be the case if
-  ACL2 started up when environment variable ACL2_SAVE_EXPANSION was t
-  (or any value that is not the empty string and whose
-  [string-upcase] is not \"NIL\"), until the time (if any) that
-  'save-expansion-file is assigned a different value by the user.  In
-  most respects, the :comp setting is treated exactly the same as
-  :warn; but after all events in the book are processed, the
+  string \"@expansion.lsp\" to the book's filename after removing the
+  \".lisp\" suffix, is created by [certify-book] when state global
+  variable 'save-expansion-file has a non-nil value.  That will be
+  the case if ACL2 started up when environment variable
+  ACL2_SAVE_EXPANSION was t (or any value that is not the empty
+  string and whose [string-upcase] is not \"NIL\"), until the time (if
+  any) that 'save-expansion-file is assigned a different value by the
+  user.  In most respects, the :comp setting is treated exactly the
+  same as :warn; but after all events in the book are processed, the
   expansion file is compiled if a compiled file was not loaded, after
   which the resulting compiled file is loaded.
 
@@ -12894,25 +12899,24 @@ Subtopics
                  "See [books-certification].")
  (BOOK-NAME
   (BOOKS-TOUR)
-  "Conventions associated with book names
+  "Conventions associated with book-names
 
     Examples:
     \"list-processing\"
     \"/usr/home/smith/my-arith\"
 
-  Book names are string constants that can be elaborated into file
-  names.  We elaborate book names by concatenating the ``connected
-  book directory'' (see [cbd]) string on the left and some
-  ``extension,'' such as \".lisp\", on the right.  However, the
-  connected book directory is not added if the book name itself
-  already represents an absolute file name.  Furthermore,
-  [include-book] and [certify-book] temporarily reset the connected
-  book directory to be the directory of the book being processed.
-  This allows [include-book] forms to use file names without explicit
-  mention of the enclosing book's directory.  This in turn allows
-  [books] (together with those that they include, using
-  [include-book]) to be moved between directories while maintaining
-  their certification and utility.
+  A book-name is typically a string constant that represents a file.
+  (Much later below we discuss other book-names that are not strings,
+  namely, [sysfile]s; but till then we consider only strings.)  We
+  elaborate book names by concatenating the ``connected book
+  directory'' (see [cbd]) string on the left and perhaps a \".lisp\"
+  ``extension'' on the right.  However, the connected book directory
+  is not added if the book-name itself already represents an absolute
+  file name.  Furthermore, [include-book] and [certify-book]
+  temporarily reset the connected book directory to be the directory
+  of the book being processed.  This allows [include-book] forms to
+  use relative pathnames without explicit mention of the enclosing
+  book's directory.
 
   You may wish to read elsewhere for details of ACL2 file name
   conventions (see [pathname]), for a discussion of the filename that
@@ -12922,32 +12926,32 @@ Subtopics
   [include-book]) and [certify-book] (see [certify-book]) use these
   concepts, see below.
 
-  Often a book name is simply the familiar name of the file.  (See
+  Often a book-name is simply the familiar name of the file.  (See
   [full-book-name] for discussion of the notions of ``directory
   string,'' ``familiar name,'' and ``extension''.  These concepts are
   not on the guided tour through [books] and you should read them
-  separately.)  However, it is permitted for book names to include a
-  directory or part of a directory name.  Book names never include
-  the extension, since ACL2 must routinely tack several different
-  extensions onto the name during [include-book].  For example,
-  [include-book] uses the \".lisp\", \".cert\" and possibly the \".o\" or
-  \".lbin\" extensions of the book name.
+  separately.)  However, it is permitted for a book-name to include a
+  directory or part of a directory name.  Book-names often do not
+  include the extension, since ACL2 must routinely tack several
+  different extensions onto the name during [include-book].  For
+  example, [include-book] uses the \".lisp\", \".cert\" and possibly a
+  compiled file extension (like \".fasl\") of the book-name.
 
-  Book names are elaborated into full file names by [include-book] and
-  [certify-book].  This elaboration is sensitive to the ``connected
-  book directory.'' The connected book directory is an absolute
-  filename string (see [pathname]) that is part of the ACL2 [state].
-  (You may wish to see [cbd] and to see [set-cbd] --- note that these
-  are not on the guided tour).  If a book name is an absolute
-  filename string, ACL2 elaborates it simply by appending the desired
-  extension to the right.  If a book name is a relative filename
-  string, ACL2 appends the connected book directory on the left and
-  the desired extension on the right.
+  A book-name is elaborated into a [full-book-name] by [include-book]
+  and [certify-book].  This elaboration is sensitive to the
+  ``connected book directory.'' The connected book directory is an
+  absolute filename string (see [pathname]) that is part of the ACL2
+  [state].  (You may wish to see [cbd] and to see [set-cbd] --- note
+  that these are not on the guided tour).  If a book-name is an
+  absolute filename string, ACL2 elaborates it simply by appending
+  the desired extension to the right.  If a book-name is a relative
+  filename string, ACL2 appends the connected book directory on the
+  left and the desired extension on the right.
 
-  Note that it is possible that the book name includes some partial
+  Note that it is possible that the book-name includes some partial
   specification of the directory.  For example, if the connected book
-  directory is \"/usr/home/smith/\" then the book name
-  \"project/task-1/arith\" is a book name that will be elaborated to
+  directory is \"/usr/home/smith/\" then the book-name
+  \"project/task-1/arith\" is a book-name that will be elaborated to
 
     \"/usr/home/smith/project/task-1/arith.lisp\".
 
@@ -12974,6 +12978,13 @@ Subtopics
   The \".cert\" extension of a book, if it exists, is presumed to contain
   the most recent [certificate] for the book.  See [certificate] (or,
   if you are on the guided tour, wait until the tour gets there).
+
+  Finally we mention another kind of book-name: a [sysfile], which is a
+  pair that associates a keyword with a directory pathname.  This
+  kind of book-name is used by the implementation, for example in
+  [certificate] files, but is rarely visible to users.  If you run
+  across a sysfile and want to understand more about it, see
+  [sysfile].
 
   See [book-contents] to continue the guided tour.")
  (BOOKDATA
@@ -13021,8 +13032,8 @@ Subtopics
      :PORT-THMS     port-thms-val
 
 )
-  The first entry in the form will always be the full book name (see
-  [full-book-name]) of the certified book, BK.
+  The first entry in the form will always be the [full-book-name] of
+  the certified book, BK, possibly in [sysfile] format.
 
   Subsequent values in the form are based on [events] introduced by
   including BK.  For various values of xxx as described below,
@@ -13033,16 +13044,16 @@ Subtopics
   ``top-level'' events, not those that are introduced by a book
   included either in BK or its certification world.
 
-  pkgs-val is a list of names of packages introduced in the
+  Pkgs-val is a list of names of packages introduced in the
   certification world (at the top level, not in an included book).
   Note that no packages are introduced in a book itself, so no
   distinction is made between pkgs-val and port-pkgs-val.  Both
-  port-book-val and book-val are lists of full book names (see
-  [full-book-name]) of included books.  The values associated with
-  the other keywords are, themselves, association lists (see
-  [alistp]) such that each key is a package name, which is associated
-  with a list of [symbol-name]s for symbols in that package that are
-  introduced for that keyword.  For example, fns-val may be the alist
+  port-book-val and book-val are lists of [full-book-name]s of
+  included books.  The values associated with the other keywords are,
+  themselves, association lists (see [alistp]) such that each key is
+  a package name, which is associated with a list of [symbol-name]s
+  for symbols in that package that are introduced for that keyword.
+  For example, fns-val may be the alist
 
     ((\"ACL2\" \"F1\" \"F2\")
      (\"MY-PKG\" \"G1\" \"G2\"))
@@ -13164,6 +13175,12 @@ Subtopics
 
   [Community-books]
       Libraries of ACL2 [books] developed by the ACL2 community.
+
+  [Project-dir-alist]
+      Support for moving project directories (also :dir arguments)
+
+  [Sysfile]
+      File representation using ACL2 project directories
 
   [Uncertified-books]
       Invalid [certificate]s and uncertified [books]")
@@ -14016,7 +14033,7 @@ Subtopics
       How to create, certify, and use a simple book
 
   [Book-name]
-      Conventions associated with book names
+      Conventions associated with book-names
 
   [Certificate]
       A file specifying validity of a given book
@@ -16126,18 +16143,18 @@ Subtopics
   The connected book directory is a nonempty string that specifies a
   directory as an absolute pathname.  (See [pathname] for a
   discussion of file naming conventions.)  When [include-book] is
-  given a relative book name it elaborates it into a full book name,
-  essentially by appending the connected book directory string to the
-  left and \".lisp\" to the right.  (For details, see [book-name] and
-  also see [full-book-name].)  Similarly, [ld] elaborates relative
-  pathnames into full pathnames using the connected book directory
-  string.  (The effect of the cbd on ld carries over to utilities
-  that invoke ld as well, notably, [rebuild].)  Furthermore,
-  [include-book] and [ld] temporarily set the connected book
-  directory to the directory string of the resulting full pathname so
-  that references to files in the same directory may omit the
-  directory.  See [set-cbd] for how to set the connected book
-  directory string.
+  given a relative pathname it elaborates it into a canonical
+  absolute pathname, essentially by appending the connected book
+  directory string to the left and \".lisp\" to the right.  (For
+  details, see [book-name] and also see [full-book-name].)
+  Similarly, [ld] elaborates relative pathnames into full pathnames
+  using the connected book directory string.  (The effect of the cbd
+  on ld carries over to utilities that invoke ld as well, notably,
+  [rebuild].)  Furthermore, [include-book] and [ld] temporarily set
+  the connected book directory to the directory string of the
+  resulting full pathname so that references to files in the same
+  directory may omit the directory.  See [set-cbd] for how to set the
+  connected book directory string.
 
     General Form:
     (cbd)
@@ -16146,12 +16163,13 @@ Subtopics
   variable [state].  It returns the connected book directory string.
 
   The connected book directory (henceforth called the ``cbd'') is used
-  by [include-book] to elaborate the supplied book name into a full
-  book name (see [full-book-name]); similarly for [ld].  For example,
-  if the cbd is \"/usr/home/smith/\" then the elaboration of the
-  [book-name] \"project/task-1/arith\" (to the \".lisp\" extension) is
-  \"/usr/home/smith/project/task-1/arith.lisp\".  That [full-book-name]
-  is what [include-book] opens to read the source text for the book.
+  by [include-book] to elaborate the supplied book-name into a
+  canonical absolute pathname (see [full-book-name]); similarly for
+  [ld].  For example, if the cbd is \"/usr/home/smith/\" then the
+  elaboration of the [book-name] \"project/task-1/arith\" (to the
+  \".lisp\" extension) is \"/usr/home/smith/project/task-1/arith.lisp\".
+  That [full-book-name] is what [include-book] opens to read the
+  source text for the book.
 
   The cbd may be changed using [set-cbd] (see [set-cbd]).  Furthermore,
   during the processing of the [events] in a book, [include-book]
@@ -16181,47 +16199,7 @@ Subtopics
   maintaining their [certificate]s and utility.  Certified [books]
   that reference inferiors by absolute file names are unusable (and
   rendered uncertified) if the inferiors are moved to new
-  directories.
-
-  Technical Note and a Challenge to Users:
-
-  After elaborating the book name to a full book name, [include-book]
-  opens a channel to the file to process the [events] in it.  In some
-  host Common Lisps, the actual file opened depends upon a notion of
-  ``connected directory'' similar to our connected book directory.
-  Our intention in always elaborating book names into absolute
-  filename strings (see [pathname] for terminology) is to circumvent
-  the sensitivity to the connected directory.  But we may have
-  insufficient control over this since the ultimate file naming
-  conventions are determined by the host operating system rather than
-  Common Lisp (though, we do check that the operating system
-  ``appears'' to be one that we ``know'' about).  Here is a question,
-  which we'll pose assuming that we have an operating system that
-  calls itself ``Unix.'' Suppose we have a file name, filename, that
-  begins with a slash, e.g., \"/usr/home/smith/...\".  Consider two
-  successive invocations of CLTL's
-
-    (open filename :direction :input)
-
-  separated only by a change to the operating system's notion of
-  connected directory.  Must these two invocations produce streams to
-  the same file?  A candidate string might be something like
-  \"/usr/home/smith/*/usr/local/src/foo.lisp\" which includes some
-  operating system-specific special character to mean ``here insert
-  the connected directory'' or, more generally, ``here make the name
-  dependent on some non-ACL2 aspect of the host's state.'' If such
-  ``tricky'' name strings beginning with a slash exist, then we have
-  failed to isolate ACL2 adequately from the operating system's file
-  naming conventions.  Once upon a time, ACL2 did not insist that the
-  cbd begin with a slash and that allowed the string \"foo.lisp\" to be
-  tricky because if one were connected to \"/usr/home/smith/\" then
-  with the empty cbd \"foo.lisp\" is a full book name that names the
-  same file as \"/usr/home/smith/foo.lisp\".  If the actual file one
-  reads is determined by the operating system's state then it is
-  possible for ACL2 to have two distinct ``full book names'' for the
-  same file, the ``real'' name and the ``tricky'' name.  This can
-  cause ACL2 to include the same book twice, not recognizing the
-  second one as redundant.")
+  directories.")
  (CCL-INSTALLATION
   (BUILDING-ACL2)
   "Installing Clozure Common Lisp (CCL)
@@ -16939,13 +16917,13 @@ Subtopics
                                           ;   [default nil or from environment]
                   )
 
-  where book-name is a book name (see [book-name]), k is used to
-  indicate your approval of the ``certification [world],'' and
-  compile-flg can control whether the book is to be compiled.  The
-  defaults for compile-flg, skip-proofs-okp, acl2x, write-port,
-  pcert, and :useless-runes can be affected by environment variables.
-  All of these arguments are described in detail below, except for
-  :pcert and :useless-runes: see [provisional-certification] and
+  where book-name is a book filename, k is used to indicate your
+  approval of the ``certification [world],'' and compile-flg can
+  control whether the book is to be compiled.  The defaults for
+  compile-flg, skip-proofs-okp, acl2x, write-port, pcert, and
+  :useless-runes can be affected by environment variables.  All of
+  these arguments are described in detail below, except for :pcert
+  and :useless-runes: see [provisional-certification] and
   [useless-runes], respectively, for the effects of these two
   arguments and their corresponding environment variables, as we
   ignore those effects in the present topic.
@@ -17004,9 +16982,9 @@ Subtopics
   compiled, or else nil.  (Note that compilation initially creates a
   compiled file with a temporary file name, and then moves that
   temporary file to the final compiled file name obtained by adding a
-  suitable extension to the book name.  Thus, a compiled file will
-  appear atomically in its intended location.)  Finally, suppose that
-  compile-flg is not supplied (or is :default).  If environment
+  suitable extension to the book's filename.  Thus, a compiled file
+  will appear atomically in its intended location.)  Finally, suppose
+  that compile-flg is not supplied (or is :default).  If environment
   variable ACL2_COMPILE_FLG is defined and not the empty string, then
   its value should be T, NIL, or ALL after converting to upper case,
   in which case compile-flg is considered to have value t, nil, or
@@ -17124,8 +17102,8 @@ Subtopics
   mislead [include-book] into loading the now outdated compiled file.
   Otherwise, certify-book will create a temporary ``expansion file''
   to compile, obtained by appending the string \"@expansion.lsp\" to
-  the end of the book name.  Remark: Users may ignore that file,
-  which is automatically deleted unless [state] global variable
+  the end of the book's filename.  Remark: Users may ignore that
+  file, which is automatically deleted unless [state] global variable
   'save-expansion-file has been set, presumably by a system
   developer, to a non-nil value; see [book-compiled-file] for more
   information about hit issue, including the role of environment
@@ -17168,10 +17146,9 @@ Subtopics
     General Form:
     (certify-book! book-name k compile-flg)
 
-  where book-name is a book name (see [book-name]), k is a nonnegative
-  integer used to indicate the ``certification [world],'' and
-  compile-flg indicates whether you wish to compile the (functions in
-  the) book.
+  where book-name is a book filename, k is a nonnegative integer used
+  to indicate the ``certification [world],'' and compile-flg
+  indicates whether you wish to compile the (functions in the) book.
 
   This [command] is identical to [certify-book], except that the second
   argument k may not be t in certify-book! and if k exceeds the
@@ -27820,7 +27797,7 @@ Subtopics
   [certify-book]).  Then ACL2 immediately associates the ttag :foo
   with nil, where again, nil refers to the top-level loop.  If ACL2
   then encounters (defttag foo) inside that book, you will get the
-  following error (using the full book name for the book, as shown):
+  following error (using the book's absolute pathname, as shown):
 
     ACL2 Error in ( TABLE ACL2-DEFAULTS-TABLE ...):  The ttag :FOO associated
     with file /u/smith/work/my-book.lisp is not among the set of ttags permitted
@@ -30995,7 +30972,7 @@ SEMANTICS
   package of the topic being displayed.  Such links can thus take you
   to topics in the acl2-doc Emacs browser (see [ACL2-doc]).
 
-  Note that [books]/xdoc/top redefines :doc (using
+  Note that [community-book] xdoc/top redefines :doc (using
   [add-ld-keyword-alias!]) to invoke the similar macro xdoc, which
   can access documentation topics defined in books.")
  (DOCUMENTATION
@@ -41465,8 +41442,14 @@ Subtopics
 
   See [pathname] for background on ACL2 pathnames.
 
-  ACL2 defines a ``full book name'' to be an ``absolute filename
-  string,'' which may be divided into contiguous sections: a
+  ACL2 defines a ``full-book-name'' to represent an absolute filename
+  of a book.  This is typically a ``full-book-name string'' or simply
+  ``full-book-string'': an absolute filename for the book.  At the
+  end of this topic we mention a second representation, the
+  [sysfile]; but until then, our discussion of full-book-names is
+  restricted to the special (but common) case of full-book-strings.
+
+  A full-book-name string may be divided into contiguous sections: a
   ``directory string'', a ``familiar name'' and an ``extension''.
   See [pathname] for the definitions of ``absolute,'' ``filename
   string,'' and other notions pertaining to naming files.  Below we
@@ -41494,39 +41477,14 @@ Subtopics
   The dot must be strictly to the right of the slash so that the
   familiar name is well-defined and nonempty.
 
-  If you are using ACL2 on a system in which file names do not have
-  this form, please contact the authors and we'll see what we can do
-  about generalizing ACL2's conventions.
-
-  We conclude with a remark about a representation of full book names
-  that is used in [certificate] files and [make-event] expansions.
-  When the system books directory is a prefix of a full book name,
-  ACL2 may choose to write a full book name as (:system . \"suffix\"),
-  where \"suffix\" is the result of removing the system books directory
-  from the front of the full book name.  Here is an example.
-
-    ; full book name:
-    \"/Users/smith/acl2/acl2/books/std/portcullis.lisp\"
-
-    ; alternate representation
-    ; (where \"/Users/smith/acl2/acl2/books/\" is the system books directory):
-    (:SYSTEM . \"std/portcullis.lisp\")
-
-  This behavior is actually more general: it applies to the entire
-  [project-dir-alist].  If that alist associates keyword :K with
-  absolute directory name \"<dir>\", then a full-book-name with prefix
-  \"<dir>\" is actually printed in a [certificate] file as (:K .
-  \"<dir>\").  This capability supports relocating book directories;
-  see [project-dir-alist].
-
-  Conversely, in some contexts ACL2 will convert (:K . \"suffix\") to an
-  absolute pathname.  Generally \"suffix\" will be a relative pathname,
-  such as \"dir/filename.lisp\"; in that case, the directory associated
-  with :K in the [project-dir-alist] --- in particular, the system
-  books directory when :K is :system --- will be concatenated with
-  \"suffix\" to form a corresponding full book name.  However, if
-  \"suffix\" is an absolute pathname, such as \"/u/smith/foo.lisp\", then
-  the corresponding full book name will remain unchanged.")
+  We conclude by discussing the other representation of full-book-names
+  as promised above: the sysfile, which is a pair of the form (:kwd .
+  \"relpath\") where :kwd is a [keyword] and \"relpath\" is a relative
+  pathname string.  See [sysfile] for a discussion of sysfiles.
+  Here, we simply remark that sysfiles are used primarily by the
+  implementation; as an ACL2 user you might never see one.  Sysfiles
+  are used in [certificate] files and in various data structures in
+  the ACL2 logical [world].")
  (FUNCTION-SYMBOLP (POINTERS)
                    "See [system-utilities].")
  (FUNCTION-THEORY
@@ -50092,36 +50050,36 @@ Subtopics
                        :ttags ttags                          ; [default nil]
                        :dir directory)
 
-  where file is a book name.  See [books] for general information, see
-  [book-name] for information about book names, and see [pathname]
-  for information about file names.  Action is one of t, nil,
-  :default, :warn, or :comp; these values are explained below, and
-  the default is :default.  The three -okp keyword arguments, which
-  default to t, determine whether errors or warnings are generated
-  under certain conditions explained below; when the argument is t,
-  warnings are generated.  The :dir argument, if supplied, is a
-  keyword that represents an absolute [pathname] for a directory, to
-  be used instead of the current book directory (see [cbd]) for
-  resolving the given file argument to an absolute pathname.  In
-  particular, by default :dir :system resolves the given file using
-  the books/ directory of your ACL2 installation; see ``Books
-  Directory'' below.  To define other keywords that can be used with
-  :dir, see [add-include-book-dir], [add-include-book-dir!], and
-  [project-dir-alist].  If the book has no [certificate], if its
-  certificate is invalid (say, because its [book-hash] shows that
-  books have changed after their certification), or if the
-  certificate was produced by a different [version] of ACL2, a
-  warning is printed and the book is included anyway; see
-  [certificate].  This can lead to serious errors, perhaps mitigated
-  by the presence of a .port file from an earlier certification; see
-  [uncertified-books].  If the portcullis of the [certificate] (see
-  [portcullis]) cannot be raised in the host logical [world], an
-  error is caused and no change occurs to the logic.  Otherwise, the
-  non-[local] [events] in file are assumed.  Then the [keep] of the
-  [certificate] is checked to ensure that the correct files were
-  read; see [keep].  A warning is printed if uncertified [books] were
-  included.  Even if no warning is printed, include-book places a
-  burden on you; see [certificate].
+  where file is a book-name without the \".lisp\" extension.  See [books]
+  for general information, see [book-name] for information about
+  book-names, and see [pathname] for information about file names.
+  Action is one of t, nil, :default, :warn, or :comp; these values
+  are explained below, and the default is :default.  The three -okp
+  keyword arguments, which default to t, determine whether errors or
+  warnings are generated under certain conditions explained below;
+  when the argument is t, warnings are generated.  The :dir argument,
+  if supplied, is a keyword that represents an absolute [pathname]
+  for a directory, to be used instead of the current book directory
+  (see [cbd]) for resolving the given file argument to an absolute
+  pathname.  In particular, by default :dir :system resolves the
+  given file using the books/ directory of your ACL2 installation;
+  see ``Books Directory'' below.  To define other keywords that can
+  be used with :dir, see [add-include-book-dir],
+  [add-include-book-dir!], and [project-dir-alist].  If the book has
+  no [certificate], if its certificate is invalid (say, because its
+  [book-hash] shows that books have changed after their
+  certification), or if the certificate was produced by a different
+  [version] of ACL2, a warning is printed and the book is included
+  anyway; see [certificate].  This can lead to serious errors,
+  perhaps mitigated by the presence of a .port file from an earlier
+  certification; see [uncertified-books].  If the portcullis of the
+  [certificate] (see [portcullis]) cannot be raised in the host
+  logical [world], an error is caused and no change occurs to the
+  logic.  Otherwise, the non-[local] [events] in file are assumed.
+  Then the [keep] of the [certificate] is checked to ensure that the
+  correct files were read; see [keep].  A warning is printed if
+  uncertified [books] were included.  Even if no warning is printed,
+  include-book places a burden on you; see [certificate].
 
   If you use [guard]s, please note include-book is executed as though
   (set-guard-checking t) has been evaluated; see
@@ -56123,8 +56081,8 @@ Subtopics
   read the event forms therein.  The non-[local] event forms are in
   fact executed, extending the host theory.  That may read in other
   [books].  When that has been finished, the keep of the
-  [certificate] is inspected.  The keep is a list of the book names
-  which are included (hereditarily through all sub-books) in the
+  [certificate] is inspected.  The keep is a list indicating all of
+  the included books (hereditarily through all sub-books) in the
   certified book (including the certified book itself) together with
   the [book-hash] values for those [books] at the time of
   certification.  We compare the book-hash values of the [books] just
@@ -61107,51 +61065,16 @@ Subtopics
     caddr
     +
     \"ACL2-USER\"
-    \"arith\"
-    \"project/task-1/arith.lisp\"
     :here
 
   A logical name is either a name introduced by some event, such as
-  [defun], [defthm], or [include-book], or else is the keyword :here,
-  which refers to the most recent such event.  See [events].  Every
-  logical name is either a symbol or a string.  For the syntactic
-  rules on names, see [name].  The symbols name functions, macros,
-  constants, axioms, theorems, labels, and [theories].  The strings
-  name packages or [books].  We permit the keyword symbol :here to be
+  [defun], [defthm], or [defpkg], or else is the keyword :here, which
+  refers to the most recent such event.  See [events].  Every logical
+  name is either a symbol or a package name (a string).  For the
+  syntactic rules on names, see [name].  The symbols name functions,
+  macros, constants, axioms, theorems, labels, and [theories].  The
+  strings name packages.  We permit the keyword symbol :here to be
   used as a logical name denoting the most recently completed event.
-
-  The logical name introduced by an [include-book] is the full book
-  name string for the book (see [full-book-name]).  Thus, under the
-  appropriate setting for the current book directory (see [cbd]) the
-  event (include-book \"arith\") may introduce the logical name
-
-    \"/usr/home/smith/project/task-1/arith.lisp\" .
-
-  Under a different [cbd] setting, it may introduce a different logical
-  name, perhaps
-
-    \"/local/src/acl2/library/arith.lisp\" .
-
-  It is possible that identical [include-book] events forms in a
-  session introduce two different logical names because of the
-  current book directory.
-
-  A logical name that is a string is either a package name or a book
-  name.  If it is not a package name, we support various conventions
-  to interpret it as a book name.  If it does not end with the string
-  \".lisp\" we extend it appropriately.  Then, we search for any book
-  name that has the given logical name as a terminal substring.
-  Suppose (include-book \"arith\") is the only [include-book] so far
-  and that \"/usr/home/smith/project/task-1/arith.lisp\" is the source
-  file it processed.  Then \"arith\", \"arith.lisp\" and
-  \"task-1/arith.lisp\" are all logical names identifying that
-  [include-book] event (unless they are package names).  Now suppose
-  a second (include-book \"arith\") is executed and processes
-  \"/local/src/acl2/library/arith.lisp\".  Then \"arith\" is no longer a
-  logical name, because it is ambiguous.  However, \"task-1/arith\" is
-  a logical name for the first [include-book] and \"library/arith\" is
-  a logical name for the second.  Indeed, the first can be named by
-  \"1/arith\" and the second by \"y/arith\".
 
   Logical names are used primarily in the theory manipulation
   functions, e.g., [universal-theory] and [current-theory] with which
@@ -63011,11 +62934,10 @@ Detailed Documentation
       under ``Error Reporting'' below.
       (Technical remark: The expansion result described above may be
       modified for [include-book], [add-include-book-dir], and
-      [add-include-book-dir!], replacing book names by full
-      pathnames, using syntax (:system . relative-pathname) for
-      [community-books] (i.e., system books); see [full-book-name],
-      and for further details see comments in source function
-      make-include-books-absolute.  End of technical remark.)
+      [add-include-book-dir!], replacing [book-name]s to indicate
+      [full-book-name]s.  For further details see comments in source
+      function make-include-books-absolute.  End of technical
+      remark.)
 
       ``evaluated again'' --- the expansion result is evaluated in place of
       the original make-event.
@@ -73816,8 +73738,8 @@ Subtopics
   \"book1\") occurs in book2, then the compiled file for book1 will not
   be loaded again when book2 is included.  Thanks to Dave Greve for
   bringing our attention to these problems, and to Eric Smith for
-  bringing up a special case earlier (where \"//\" occurred in the book
-  name).
+  bringing up a special case earlier (where \"//\" occurred in the
+  book-name).
 
   The summary printed at the end of a proof had not listed :[induction]
   rules used in a proof.  This has been corrected.
@@ -80155,7 +80077,7 @@ Subtopics
   soft links are resolved; see [canonical-pathname].  Moreover, ACL2
   uses this utility in its own sources, which can eliminate some
   issues.  In particular, [include-book] with argument :ttags :all no
-  longer breaks when given a book name differing from the book name
+  longer breaks when given a book-name differing from the book-name
   that was used at certification time; thanks to Sol Swords for
   reporting that problem.  Also, certain errors have been eliminated
   involving the combination of packages in the certification world
@@ -91872,18 +91794,20 @@ New Features
   These are particularly useful for seeing the logical meanings of
   [loop$] terms as well as terms involving [mbe] and [return-last].
 
-  It is now possible to move directories of [books] and their
-  [certificate] files so that those books will still be considered
-  certified in future ACL2 sessions.  The key idea is to designate an
-  ``ACL2 projects'' file, using environment variable ACL2_PROJECTS:
-  see [project-dir-alist] for the resulting association of keywords
-  with names of directories that may be moved.  The project-dir-alist
-  also assigns meaning to the :dir argument of [include-book] and
-  [ld], much like the utilities [add-include-book-dir] and
-  [add-include-book-dir!]; morover, those two utilities now interpret
-  keywords provided by the project-dir-alist, in addition to :SYSTEM.
+  A directory of [books] may now be relocated so that those books are
+  still treated as certified.  This is supported by a new
+  [project-dir-alist], which associates keywords with ``project
+  directories'' and is set using environment variable ACL2_PROJECTS;
+  see [project-dir-alist].  By default, the project-dir-alist has
+  only one entry, which associates the keyword :SYSTEM with the
+  [community-books] directory, books/.  The project-dir-alist
+  generalizes the notion of system books directory, assigning meaning
+  to the :dir argument of [include-book] and [ld] and to [sysfile]
+  arguments of [add-include-book-dir] and [add-include-book-dir!].
   Thanks to Sol Swords for requesting such a capability and for
-  helpful design discussions.
+  helpful design discussions.  (Technical Note: Implementation-level
+  changes are summarized in comments in the form (defxdoc note-8-6
+  ...) in [community-book] system/doc/acl2-doc.lisp.)
 
 
 Heuristic and Efficiency Improvements
@@ -101074,25 +100998,26 @@ Avoiding These Errors
   loop$ is as perspicuous as the loop$ itself.  So don't dismiss this
   approach out of hand.")
  (PROJECT-DIR-ALIST
-  (EVENTS)
+  (BOOKS EVENTS)
   "Support for moving project directories (also :dir arguments)
 
   This topic describes the project-dir-alist, which supports the
-  relocation of directories that contain both [books] and their
-  [certificate]s (i.e., .cert files).  Each such directory is treated
-  as a project, which is represented by a [keyword].  In particular,
-  the keyword, :SYSTEM, represents the [community-books] as such a
-  project.  The project-dir-alist also provides one way to interpret
-  the :dir keyword argument of [include-book] and [ld].
+  relocation of book directories so that their [books] are still
+  treated as certified.  Each such directory is treated as a project,
+  which is represented by a [keyword].  In particular, the keyword,
+  :SYSTEM, represents the [community-books] as such a project.  The
+  project-dir-alist also provides one way to interpret the :dir
+  keyword argument of [include-book] and [ld].
 
   It is theoretically possible to undermine soundness by using this
   capability inappropriately (see below for some discussion of
-  appropriate usage).  For the utmost security, certify your books
-  without using this capability.  See [certificate], specifically the
-  discussion there about placing a ``burden'' on the user.
+  appropriate usage).  For the utmost security, perform a fresh
+  certification of your entire collection of books without using this
+  capability.  See [certificate], specifically the discussion there
+  about placing a ``burden'' on the user.
 
-  To see the value of the project-dir-alist in your session, evaluate
-  the form (project-dir-alist (w state)).
+  To see the project-dir-alist in your session, evaluate the form
+  (project-dir-alist (w state)).
 
   We start below by introducing the project-dir-alist and explaining
   how to set it up.  Next we describe its effects.  We conclude by
@@ -101122,15 +101047,18 @@ What is the project-dir-alist and how is it established?
 
   The projects file is read when ACL2 starts up.  ACL2 creates the
   project-dir-alist by using each line as above to associate the
-  keyword :K with \"<dir>\".  If the special keyword :SYSTEM is not one
-  such keyword, then the project-dir-alist will additionally include
-  a pair that associates :SYSTEM with the system books directory.  By
-  default, the system books directory is the books/ subdirectory of
-  your ACL2 distribution.  That value for the system books directory
-  can be overridden either by specifying it explicitly with :SYSTEM
-  in the projects file or by setting environment variable
-  ACL2_SYSTEM_BOOKS to that value --- where if both overrides are
-  used, they must not conflict.
+  keyword :K with the directory represented by \"<dir>\", which may be
+  a relative or absolute pathname.  Relative pathnames are
+  interpreted with respect to the directory of the projects file.
+
+  If the keyword :SYSTEM is not specified in the projects file, then
+  the project-dir-alist will additionally include a pair that
+  associates :SYSTEM with the [community-books] directory, which is
+  generally the books/ subdirectory of your ACL2 distribution.  That
+  value for :SYSTEM can be overridden either by specifying it
+  explicitly with :SYSTEM in the projects file or by setting
+  environment variable ACL2_SYSTEM_BOOKS to that value --- where if
+  both overrides are used, they must not conflict.
 
   The values of the environment variables mentioned above,
   ACL2_PROJECTS and ACL2_SYSTEM_BOOKS, are pathnames that can be
@@ -101138,10 +101066,6 @@ What is the project-dir-alist and how is it established?
   with respect to the directory in which ACL2 is invoked.  The final
   character need not be ``/''; if it's not, then that character will
   be added at the end before adding to the project-dir-alist.
-
-  The directories in the projects file are pathnames that may be
-  relative or absolute.  Each relative pathname is interpreted with
-  respect to the directory of the projects file.
 
   The project-dir-alist must have no duplicate keys and no duplicate
   directory names.
@@ -101162,7 +101086,8 @@ Effects of the project-dir-alist
       project-dir-alist associates :SYSTEM with \"<dir>\", the
       relocated community books will still be treated as certified.
 
-      For the general case, let S be a set of books certified with a given
+      The case of :SYSTEM described above generalizes naturally, as
+      follows.  Let S be a set of books certified with a given
       project-dir-alist, each of which includes only other books in
       S.  (For example, S contains just the community books directory
       in the special case above.)  Also assume that the absolute
@@ -101211,8 +101136,8 @@ Additional details
 
 Additional Limitations and Restrictions
 
-      No duplicates. There must be no duplicate keys or duplicate directory
-      names in the project-dir-alist.
+      (Already noted above) No duplicates. There must be no duplicate keys
+      or duplicate directory names in the project-dir-alist.
 
       No overlap. No keyword may be bound with [add-include-book-dir] or
       [add-include-book-dir!] that is also bound in the
@@ -101227,7 +101152,13 @@ Additional Limitations and Restrictions
       project directory is OK in an [include-book] form among the
       [portcullis] commands for a book, in the following sense: it is
       replaced in that book's [certificate] by referencing the
-      project's keyword name to avoid using an absolute pathname.")
+      project's keyword name to avoid using an absolute pathname.
+
+
+Subtopics
+
+  [Sysfile]
+      File representation using ACL2 project directories")
  (PROMPT
   (LD)
   "The prompt printed by [ld]
@@ -120850,6 +120781,52 @@ Subtopics
   that Lisp function, which may well be the numeric value returned by
   the host operating system for the underlying system call.  For more
   information, see [sys-call].")
+ (SYSFILE
+  (BOOKS PROJECT-DIR-ALIST)
+  "File representation using ACL2 project directories
+
+  ACL2 supports relocation of book directories so that those books are
+  still treated as certified.  See [project-dir-alist].
+
+  A key data structure to support this feature is the sysfile, which is
+  a pair of the form (:kwd . \"relpath\").  Here, :kwd is a key of the
+  project-dir-alist, bound to some absolute pathname \"D/\" of a
+  directory, and \"relpath\" is a string that denotes a pathname
+  relative to directory \"D/\".  Thus, the sysfile (:kwd . \"relpath\")
+  represents the same pathname as \"D/relpath\".
+
+  (Remark.  The name ``sysfile'' was originally coined to suggest
+  ``system file'', suggesting the use of keyword :SYSTEM to indicate
+  a file residing in the [community-books].  It now extends to (:kwd
+  . \"relpath\") even for :kwd values other than :SYSTEM.  But
+  ``sysfile'' is a convenient name, and it still seems reasonable
+  since ``system file'' can suggest a file of the filesystem.)
+
+  ACL2 rarely generates output that includes sysfiles; they are mostly
+  used in the implementation, for example to denote included books in
+  [certificate] files.  But they are occasionally relevant at the
+  user level; for example see [add-include-book-dir].
+
+  Finally we discuss the use of sysfiles in [certificate] files.  When
+  the [community-books] directory is a prefix of a [full-book-name]
+  string, ACL2 may choose to represent that full-book-name as
+  (:system . \"relpath\"), where \"relpath\" is the result of removing
+  the community-books directory from the front of the full-book-name.
+  Here is an example.
+
+    ; full-book-name:
+    \"/Users/smith/acl2/acl2/books/std/portcullis.lisp\"
+
+    ; sysfile representation
+    ; (where \"/Users/smith/acl2/acl2/books/\" is the community-books directory):
+    (:SYSTEM . \"std/portcullis.lisp\")
+
+  This behavior applies to more than the community-books: it applies to
+  the entire [project-dir-alist].  If that alist associates keyword
+  :K with absolute directory name \"<dir>\", then a full-book-name with
+  prefix \"<dir>\" is written to a [certificate] file as (:K .
+  \"<dir>\").  This capability supports relocating book directories;
+  see [project-dir-alist] for a more complete discussion.")
  (SYSTEM-ATTACHMENTS
   (PROGRAMMING DEFATTACH)
   "System-level algorithms that users can modify with attachments
@@ -134055,7 +134032,7 @@ Subtopics
   the guards (see also [set-verify-guards-eagerness]).  In this case,
   it is good practice to add a comment `; and guards' just after the
   [verify-termination] form, on the same line, as can be seen in some
-  of the files under [books]/system/.
+  of the files under [community-books] directory system/.
 
   Now it is time to add entries to the value of constant
   *system-verify-guards-alist* in your local copy of the ACL2
