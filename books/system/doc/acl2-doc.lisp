@@ -3585,12 +3585,19 @@ include-book)"
   :long "@({
  Example Forms:
 
- ; For (include-book \"foo\" :dir :smith), prepend \"/u/smith/\" to \"foo\".
+ ; For (include-book \"foo\" :dir :smith), prepend to \"foo\" the absolute
+ ; directory pathmame \"/u/smith/\":
  (add-include-book-dir :smith \"/u/smith/\")
 
- ; For (include-book \"bar\" :dir :util), prepend absolute directory pathname
- ; corresponding to the relative pathname, \"utilities/\".
+ ; For (include-book \"bar\" :dir :util), prepend to \"bar\" the absolute
+ ; directory pathname corresponding to the interpretation of \"utilities/\"
+ ; with respect to the current connected-book-directory (cbd):
  (add-include-book-dir :util \"utilities\")
+
+ ; For (include-book \"lib/floor-mod/top\" :dir :arith), prepend to
+ ; \"lib/floor-mod/top\" the community books directory pathname string
+ ; \"arithmetic-5/lib/floor-mod/top/\"
+ (add-include-book-dir :arith (:system . \"arithmetic-5\"))
  })
 
  <p>Note: This is an event!  It does not print the usual event @(see summary)
@@ -3604,18 +3611,16 @@ include-book)"
   (add-include-book-dir kwd dir)
  })
 
- <p>where @('kwd') is a @(tsee keywordp) and @('dir') is a relative or absolute
- @(see pathname) for a directory, optionally using the syntax @('(:keyword
- . filename)') where @(':keyword') is @(':system') or, more generally, is
- assigned in the @(see project-dir-alist); also see @(see full-book-name).  If
+ <p>where @('kwd') is a @(tsee keywordp) and @('dir') represents a directory:
+ either a relative or absolute @(see pathname) string or a @(see sysfile).  If
  the final '@('/')' is missing for the resulting directory, ACL2 will add it
  for you.  The effect of this event is to modify the meaning of the @(':dir')
  keyword argument of @(tsee include-book) and @(tsee ld) as indicated by the
  examples above, that is, by associating the indicated directory with the
  indicated keyword for purposes of the @(':dir') argument.  By the ``indicated
- directory'' we mean, in the case that the pathname is a relative pathname, the
- directory relative to the current connected book directory; see @(see cbd).
- See @(see delete-include-book-dir) for how to undo this effect.</p>
+ directory'' we mean, when a relative pathname is supplied, the directory
+ relative to the current connected book directory; see @(see cbd).  See @(see
+ delete-include-book-dir) for how to undo this effect.</p>
 
  <p>For a keyword already associated with a directory string by a previous
  invocation of @('add-include-book-dir') or @(tsee add-include-book-dir!), it
@@ -3634,10 +3639,10 @@ include-book)"
  directory.</p>
 
  <p>The keyword @(':system') can never be redefined.  It will always point to
- the absolute pathname of the system books directory, which by default is
- immediately under the directory where the ACL2 executable was originally built
- (see @(see include-book), in particular the discussion there of ``Books
- Directory'').</p>
+ the absolute pathname of the @(see community-books) directory, which by
+ default is the subdirectory @('\"books/\"') of the directory where the ACL2
+ executable was built (see @(see include-book), in particular the discussion
+ there of ``Books Directory'').</p>
 
  <p>This macro generates a @(tsee table) event that updates the @(tsee
  acl2-defaults-table) and thus is automcatically @(see local) to the book or
@@ -9622,16 +9627,16 @@ and @(tsee include-book)"
  file can only be produced if there is already an <i>expansion file</i> that is
  at least as recent as the book's @(see certificate).  Such a file, whose name
  happens to be the result of concatenating the string @('\"@expansion.lsp\"')
- to the book name (without the @('\".lisp\"') suffix), is created by @(tsee
- certify-book) when state global variable @(''save-expansion-file') has a
- non-@('nil') value.  That will be the case if ACL2 started up when environment
- variable @('ACL2_SAVE_EXPANSION') was @('t') (or any value that is not the
- empty string and whose @(tsee string-upcase) is not @('\"NIL\"')), until the
- time (if any) that @(''save-expansion-file') is assigned a different value by
- the user.  In most respects, the @(':comp') setting is treated exactly the
- same as @(':warn'); but after all events in the book are processed, the
- expansion file is compiled if a compiled file was not loaded, after which the
- resulting compiled file is loaded.</p>
+ to the book's filename after removing the @('\".lisp\"') suffix, is created by
+ @(tsee certify-book) when state global variable @(''save-expansion-file') has
+ a non-@('nil') value.  That will be the case if ACL2 started up when
+ environment variable @('ACL2_SAVE_EXPANSION') was @('t') (or any value that is
+ not the empty string and whose @(tsee string-upcase) is not @('\"NIL\"')),
+ until the time (if any) that @(''save-expansion-file') is assigned a different
+ value by the user.  In most respects, the @(':comp') setting is treated
+ exactly the same as @(':warn'); but after all events in the book are
+ processed, the expansion file is compiled if a compiled file was not loaded,
+ after which the resulting compiled file is loaded.</p>
 
  <p>One can thus, for example, compile books for several different host Lisps
  &mdash; useful when installing ACL2 executables at the same site that are
@@ -10139,24 +10144,24 @@ and @(tsee include-book)"
 
 (defxdoc book-name
   :parents (books-tour)
-  :short "Conventions associated with book names"
+  :short "Conventions associated with book-names"
   :long "@({
   Examples:
   \"list-processing\"
   \"/usr/home/smith/my-arith\"
  })
 
- <p>Book names are string constants that can be elaborated into file names.  We
- elaborate book names by concatenating the ``connected book directory'' (see
- @(see cbd)) string on the left and some ``extension,'' such as @('\".lisp\"'),
- on the right.  However, the connected book directory is not added if the book
- name itself already represents an absolute file name.  Furthermore, @(tsee
- include-book) and @(tsee certify-book) temporarily reset the connected book
- directory to be the directory of the book being processed.  This allows @(tsee
- include-book) forms to use file names without explicit mention of the
- enclosing book's directory.  This in turn allows @(see books) (together with
- those that they include, using @(tsee include-book)) to be moved between
- directories while maintaining their certification and utility.</p>
+ <p>A <i>book-name</i> is typically a string constant that represents a file.
+ (Much later below we discuss other book-names that are not strings, namely,
+ @(see sysfile)s; but till then we consider only strings.)  We elaborate book
+ names by concatenating the ``connected book directory'' (see @(see cbd))
+ string on the left and perhaps a @('\".lisp\"') ``extension'' on the right.
+ However, the connected book directory is not added if the book-name itself
+ already represents an absolute file name.  Furthermore, @(tsee include-book)
+ and @(tsee certify-book) temporarily reset the connected book directory to be
+ the directory of the book being processed.  This allows @(tsee include-book)
+ forms to use relative pathnames without explicit mention of the enclosing
+ book's directory.</p>
 
  <p>You may wish to read elsewhere for details of ACL2 file name conventions
  (see @(see pathname)), for a discussion of the filename that is the result of
@@ -10165,30 +10170,32 @@ and @(tsee include-book)"
  how @(tsee include-book) (see @(see include-book)) and @(tsee certify-book)
  (see @(see certify-book)) use these concepts, see below.</p>
 
- <p>Often a book name is simply the familiar name of the file.  (See @(see
+ <p>Often a book-name is simply the familiar name of the file.  (See @(see
  full-book-name) for discussion of the notions of ``directory string,''
  ``familiar name,'' and ``extension''.  These concepts are not on the guided
  tour through @(see books) and you should read them separately.)  However, it
- is permitted for book names to include a directory or part of a directory
- name.  Book names never include the extension, since ACL2 must routinely tack
- several different extensions onto the name during @(tsee include-book).  For
- example, @(tsee include-book) uses the @('\".lisp\"'), @('\".cert\"') and
- possibly the @('\".o\"') or @('\".lbin\"') extensions of the book name.</p>
+ is permitted for a book-name to include a directory or part of a directory
+ name.  Book-names often do not include the extension, since ACL2 must
+ routinely tack several different extensions onto the name during @(tsee
+ include-book).  For example, @(tsee include-book) uses the @('\".lisp\"'),
+ @('\".cert\"') and possibly a compiled file extension (like @('\".fasl\"')) of
+ the book-name.</p>
 
- <p>Book names are elaborated into full file names by @(tsee include-book) and
- @(tsee certify-book).  This elaboration is sensitive to the ``connected book
- directory.'' The connected book directory is an absolute filename string (see
- @(see pathname)) that is part of the ACL2 @(tsee state).  (You may wish to see
- @(see cbd) and to see @(see set-cbd) &mdash; note that these are not on the
- guided tour).  If a book name is an absolute filename string, ACL2 elaborates
- it simply by appending the desired extension to the right.  If a book name is
- a relative filename string, ACL2 appends the connected book directory on the
- left and the desired extension on the right.</p>
+ <p>A book-name is elaborated into a @(see full-book-name) by @(tsee
+ include-book) and @(tsee certify-book).  This elaboration is sensitive to the
+ ``connected book directory.'' The connected book directory is an absolute
+ filename string (see @(see pathname)) that is part of the ACL2 @(tsee
+ state).  (You may wish to see @(see cbd) and to see @(see set-cbd) &mdash;
+ note that these are not on the guided tour).  If a book-name is an absolute
+ filename string, ACL2 elaborates it simply by appending the desired extension
+ to the right.  If a book-name is a relative filename string, ACL2 appends the
+ connected book directory on the left and the desired extension on the
+ right.</p>
 
- <p>Note that it is possible that the book name includes some partial
+ <p>Note that it is possible that the book-name includes some partial
  specification of the directory.  For example, if the connected book directory
- is @('\"/usr/home/smith/\"') then the book name @('\"project/task-1/arith\"')
- is a book name that will be elaborated to</p>
+ is @('\"/usr/home/smith/\"') then the book-name @('\"project/task-1/arith\"')
+ is a book-name that will be elaborated to</p>
 
  @({
   \"/usr/home/smith/project/task-1/arith.lisp\".
@@ -10221,6 +10228,12 @@ and @(tsee include-book)"
  contain the most recent @(see certificate) for the book.  See @(see
  certificate) (or, if you are on the guided tour, wait until the tour gets
  there).</p>
+
+ <p>Finally we mention another kind of book-name: a @(see sysfile), which is a
+ pair that associates a keyword with a directory pathname.  This kind of
+ book-name is used by the implementation, for example in @(see certificate)
+ files, but is rarely visible to users.  If you run across a sysfile and want
+ to understand more about it, see @(see sysfile).</p>
 
  <p>See @(see book-contents) to continue the guided tour.</p>")
 
@@ -10271,8 +10284,8 @@ and @(tsee include-book)"
    :PORT-THMS     port-thms-val
  }))
 
- <p>The first entry in the form will always be the full book name (see @(see
- full-book-name)) of the certified book, @('BK').</p>
+ <p>The first entry in the form will always be the @(see full-book-name) of the
+ certified book, @('BK'), possibly in @(see sysfile) format.</p>
 
  <p>Subsequent values in the form are based on @(see events) introduced by
  including @('BK').  For various values of @('xxx') as described below,
@@ -10283,16 +10296,16 @@ and @(tsee include-book)"
  only ``top-level'' events, not those that are introduced by a book included
  either in @('BK') or its certification world.</p>
 
- <p>@('pkgs-val') is a list of names of packages introduced in the
+ <p>@('Pkgs-val') is a list of names of packages introduced in the
  certification world (at the top level, not in an included book).  Note that no
  packages are introduced in a book itself, so no distinction is made between
  @('pkgs-val') and @('port-pkgs-val').  Both @('port-book-val') and
- @('book-val') are lists of full book names (see @(see full-book-name)) of
- included books.  The values associated with the other keywords are,
- themselves, association lists (see @(see alistp)) such that each key is a
- package name, which is associated with a list of @(see symbol-name)s for
- symbols in that package that are introduced for that keyword.  For example,
- @('fns-val') may be the alist</p>
+ @('book-val') are lists of @(see full-book-name)s of included books.  The
+ values associated with the other keywords are, themselves, association
+ lists (see @(see alistp)) such that each key is a package name, which is
+ associated with a list of @(see symbol-name)s for symbols in that package that
+ are introduced for that keyword.  For example, @('fns-val') may be the
+ alist</p>
 
  @({
   ((\"ACL2\" \"F1\" \"F2\")
@@ -13185,6 +13198,53 @@ with any questions about building the community books.</p>")
  <p>See @(see set-case-split-limitations) for a more general discussion.</p>")
 
 (defxdoc cbd
+
+; Before October 2022 this topic ended with the following note.  But we have
+; decided that it's potentially distracting, so we have relegated it to a
+; comment.
+
+#|
+ <p><i>Technical Note and a Challenge to Users:</i></p>
+
+ <p>After elaborating the book-name to a @(see full book name), @(tsee
+ include-book) opens a channel to the file to process the @(see events) in it.
+ In some host Common Lisps, the actual file opened depends upon a notion of
+ ``connected directory'' similar to our connected book directory.  Our
+ intention in always elaborating book-names into absolute filename strings (see
+ @(see pathname) for terminology) is to circumvent the sensitivity to the
+ connected directory.  But we may have insufficient control over this since the
+ ultimate file naming conventions are determined by the host operating system
+ rather than Common Lisp (though, we do check that the operating system
+ ``appears'' to be one that we ``know'' about).  Here is a question, which
+ we'll pose assuming that we have an operating system that calls itself
+ ``Unix.''  Suppose we have a file name, filename, that begins with a slash,
+ e.g., @('\"/usr/home/smith/...\"').  Consider two successive invocations of
+ CLTL's</p>
+
+ @({
+  (open filename :direction :input)
+ })
+
+ <p>separated only by a change to the operating system's notion of connected
+ directory.  Must these two invocations produce streams to the same file?  A
+ candidate string might be something like
+ @('\"/usr/home/smith/*/usr/local/src/foo.lisp\"') which includes some
+ operating system-specific special character to mean ``here insert the
+ connected directory'' or, more generally, ``here make the name dependent on
+ some non-ACL2 aspect of the host's state.''  If such ``tricky'' name strings
+ beginning with a slash exist, then we have failed to isolate ACL2 adequately
+ from the operating system's file naming conventions.  Once upon a time, ACL2
+ did not insist that the @('cbd') begin with a slash and that allowed the
+ string @('\"foo.lisp\"') to be tricky because if one were connected to
+ @('\"/usr/home/smith/\"') then with the empty @('cbd') @('\"foo.lisp\"') is a
+ full book name that names the same file as @('\"/usr/home/smith/foo.lisp\"').
+ If the actual file one reads is determined by the operating system's state
+ then it is possible for ACL2 to have two distinct ``full book names'' for the
+ same file, the ``real'' name and the ``tricky'' name.  This can cause ACL2 to
+ include the same book twice, not recognizing the second one as
+ redundant.</p>
+|#
+
   :parents (books-reference programming-with-state acl2-built-ins)
   :short "Connected book directory string"
   :long "@({
@@ -13195,18 +13255,18 @@ with any questions about building the community books.</p>")
 
  <p>The connected book directory is a nonempty string that specifies a
  directory as an absolute pathname.  (See @(see pathname) for a discussion of
- file naming conventions.)  When @(tsee include-book) is given a relative book
- name it elaborates it into a full book name, essentially by appending the
- connected book directory string to the left and @('\".lisp\"') to the right.
- (For details, see @(see book-name) and also see @(see full-book-name).)
- Similarly, @(tsee ld) elaborates relative pathnames into full pathnames using
- the connected book directory string.  (The effect of the @('cbd') on @('ld')
- carries over to utilities that invoke @('ld') as well, notably, @(tsee
- rebuild).)  Furthermore, @(tsee include-book) and @(tsee ld) temporarily set
- the connected book directory to the directory string of the resulting full
- pathname so that references to files in the same directory may omit the
- directory.  See @(see set-cbd) for how to set the connected book directory
- string.</p>
+ file naming conventions.)  When @(tsee include-book) is given a relative
+ pathname it elaborates it into a canonical absolute pathname, essentially by
+ appending the connected book directory string to the left and @('\".lisp\"')
+ to the right.  (For details, see @(see book-name) and also see @(see
+ full-book-name).)  Similarly, @(tsee ld) elaborates relative pathnames into
+ full pathnames using the connected book directory string.  (The effect of the
+ @('cbd') on @('ld') carries over to utilities that invoke @('ld') as well,
+ notably, @(tsee rebuild).)  Furthermore, @(tsee include-book) and @(tsee ld)
+ temporarily set the connected book directory to the directory string of the
+ resulting full pathname so that references to files in the same directory may
+ omit the directory.  See @(see set-cbd) for how to set the connected book
+ directory string.</p>
 
  @({
   General Form:
@@ -13217,11 +13277,11 @@ with any questions about building the community books.</p>")
  @(tsee state).  It returns the connected book directory string.</p>
 
  <p>The connected book directory (henceforth called the ``@('cbd')'') is used
- by @(tsee include-book) to elaborate the supplied book name into a full book
- name (see @(see full-book-name)); similarly for @(tsee ld).  For example, if
- the @('cbd') is @('\"/usr/home/smith/\"') then the elaboration of the @(see
- book-name) @('\"project/task-1/arith\"') (to the @('\".lisp\"') extension) is
- @('\"/usr/home/smith/project/task-1/arith.lisp\"').  That @(see
+ by @(tsee include-book) to elaborate the supplied book-name into a canonical
+ absolute pathname (see @(see full-book-name)); similarly for @(tsee ld).  For
+ example, if the @('cbd') is @('\"/usr/home/smith/\"') then the elaboration of
+ the @(see book-name) @('\"project/task-1/arith\"') (to the @('\".lisp\"')
+ extension) is @('\"/usr/home/smith/project/task-1/arith.lisp\"').  That @(see
  full-book-name) is what @(see include-book) opens to read the source text for
  the book.</p>
 
@@ -13256,46 +13316,7 @@ with any questions about building the community books.</p>")
  accompanying inferiors) to be moved between directories while maintaining
  their @(see certificate)s and utility.  Certified @(see books) that reference
  inferiors by absolute file names are unusable (and rendered uncertified) if
- the inferiors are moved to new directories.</p>
-
- <p><i>Technical Note and a Challenge to Users:</i></p>
-
- <p>After elaborating the book name to a full book name, @(tsee include-book)
- opens a channel to the file to process the @(see events) in it.  In some host
- Common Lisps, the actual file opened depends upon a notion of ``connected
- directory'' similar to our connected book directory.  Our intention in always
- elaborating book names into absolute filename strings (see @(see pathname) for
- terminology) is to circumvent the sensitivity to the connected directory.  But
- we may have insufficient control over this since the ultimate file naming
- conventions are determined by the host operating system rather than Common
- Lisp (though, we do check that the operating system ``appears'' to be one that
- we ``know'' about).  Here is a question, which we'll pose assuming that we
- have an operating system that calls itself ``Unix.''  Suppose we have a file
- name, filename, that begins with a slash, e.g., @('\"/usr/home/smith/...\"').
- Consider two successive invocations of CLTL's</p>
-
- @({
-  (open filename :direction :input)
- })
-
- <p>separated only by a change to the operating system's notion of connected
- directory.  Must these two invocations produce streams to the same file?  A
- candidate string might be something like
- @('\"/usr/home/smith/*/usr/local/src/foo.lisp\"') which includes some
- operating system-specific special character to mean ``here insert the
- connected directory'' or, more generally, ``here make the name dependent on
- some non-ACL2 aspect of the host's state.''  If such ``tricky'' name strings
- beginning with a slash exist, then we have failed to isolate ACL2 adequately
- from the operating system's file naming conventions.  Once upon a time, ACL2
- did not insist that the @('cbd') begin with a slash and that allowed the
- string @('\"foo.lisp\"') to be tricky because if one were connected to
- @('\"/usr/home/smith/\"') then with the empty @('cbd') @('\"foo.lisp\"') is a
- full book name that names the same file as @('\"/usr/home/smith/foo.lisp\"').
- If the actual file one reads is determined by the operating system's state
- then it is possible for ACL2 to have two distinct ``full book names'' for the
- same file, the ``real'' name and the ``tricky'' name.  This can cause ACL2 to
- include the same book twice, not recognizing the second one as
- redundant.</p>")
+ the inferiors are moved to new directories.</p>")
 
 (defxdoc ccl-installation
   :parents (building-acl2)
@@ -14064,10 +14085,10 @@ with any questions about building the community books.</p>")
                 )
  })
 
- <p>where @('book-name') is a book name (see @(see book-name)), @('k') is used
- to indicate your approval of the ``certification @(see world),'' and
- @('compile-flg') can control whether the book is to be compiled.  The defaults
- for @('compile-flg'), @('skip-proofs-okp'), @('acl2x'), @('write-port'),
+ <p>where @('book-name') is a book filename, @('k') is used to indicate your
+ approval of the ``certification @(see world),'' and @('compile-flg') can
+ control whether the book is to be compiled.  The defaults for
+ @('compile-flg'), @('skip-proofs-okp'), @('acl2x'), @('write-port'),
  @('pcert'), and @(':useless-runes') can be affected by environment variables.
  All of these arguments are described in detail below, except for @(':pcert')
  and @(':useless-runes'): see @(see provisional-certification) and @(see
@@ -14127,7 +14148,7 @@ with any questions about building the community books.</p>")
  is to be compiled, or else @('nil').  (Note that compilation initially creates
  a compiled file with a temporary file name, and then moves that temporary file
  to the final compiled file name obtained by adding a suitable extension to the
- book name.  Thus, a compiled file will appear atomically in its intended
+ book's filename.  Thus, a compiled file will appear atomically in its intended
  location.)  Finally, suppose that @('compile-flg') is not supplied (or is
  @(':default')).  If environment variable @('ACL2_COMPILE_FLG') is defined and
  not the empty string, then its value should be @('T'), @('NIL'), or @('ALL')
@@ -14240,8 +14261,8 @@ with any questions about building the community books.</p>")
  delete any existing compiled file for the book, so as not to mislead @(tsee
  include-book) into loading the now outdated compiled file.  Otherwise,
  @('certify-book') will create a temporary ``expansion file'' to compile,
- obtained by appending the string \"@@expansion.lsp\" to the end of the book
- name.  Remark: Users may ignore that file, which is automatically deleted
+ obtained by appending the string \"@@expansion.lsp\" to the end of the book's
+ filename.  Remark: Users may ignore that file, which is automatically deleted
  unless @(see state) global variable @(''save-expansion-file') has been set,
  presumably by a system developer, to a non-@('nil') value; see @(see
  book-compiled-file) for more information about hit issue, including the role
@@ -14314,10 +14335,9 @@ with any questions about building the community books.</p>")
   (certify-book! book-name k compile-flg)
  })
 
- <p>where @('book-name') is a book name (see @(see book-name)), @('k') is a
- nonnegative integer used to indicate the ``certification @(see world),'' and
- @('compile-flg') indicates whether you wish to compile the (functions in the)
- book.</p>
+ <p>where @('book-name') is a book filename, @('k') is a nonnegative integer
+ used to indicate the ``certification @(see world),'' and @('compile-flg')
+ indicates whether you wish to compile the (functions in the) book.</p>
 
  <p>This @(see command) is identical to @(tsee certify-book), except that the
  second argument @('k') may not be @('t') in @('certify-book!') and if @('k')
@@ -24639,8 +24659,8 @@ subtree of X with T, without duplication.</p>
  certification world (i.e., before calling @(tsee certify-book)).  Then ACL2
  immediately associates the ttag @(':foo') with @('nil'), where again, @('nil')
  refers to the top-level loop.  If ACL2 then encounters @('(defttag foo)')
- inside that book, you will get the following error (using the full book name
- for the book, as shown):</p>
+ inside that book, you will get the following error (using the book's absolute
+ pathname, as shown):</p>
 
  @({
   ACL2 Error in ( TABLE ACL2-DEFAULTS-TABLE ...):  The ttag :FOO associated
@@ -27704,8 +27724,8 @@ ld) and @(tsee include-book)"
  topic being displayed.  Such links can thus take you to topics in the acl2-doc
  Emacs browser (see @(see acl2-doc)).</p>
 
- <p>Note that @('[books]/xdoc/top') redefines @(':doc') (using @(see
- add-ld-keyword-alias!)) to invoke the similar macro @('xdoc'), which can
+ <p>Note that @(see community-book) @('xdoc/top') redefines @(':doc') (using
+ @(see add-ld-keyword-alias!)) to invoke the similar macro @('xdoc'), which can
  access documentation topics defined in books.</p>")
 
 (defxdoc documentation
@@ -38021,11 +38041,18 @@ current fast alists."
   :short "Book naming conventions assumed by ACL2"
   :long "<p>See @(see pathname) for background on ACL2 pathnames.</p>
 
- <p>ACL2 defines a ``full book name'' to be an ``absolute filename string,''
- which may be divided into contiguous sections: a ``directory string'', a
- ``familiar name'' and an ``extension''.  See @(see pathname) for the
- definitions of ``absolute,'' ``filename string,'' and other notions pertaining
- to naming files.  Below we exhibit the three sections of one such string:</p>
+ <p>ACL2 defines a ``full-book-name'' to represent an absolute filename of a
+ book.  This is typically a ``full-book-name string'' or simply
+ ``full-book-string'': an absolute filename for the book.  At the end of this
+ topic we mention a second representation, the <i>@(see sysfile)</i>; but until
+ then, our discussion of full-book-names is restricted to the special (but
+ common) case of full-book-strings.</p>
+
+ <p>A full-book-name string may be divided into contiguous sections: a
+ ``directory string'', a ``familiar name'' and an ``extension''.  See @(see
+ pathname) for the definitions of ``absolute,'' ``filename string,'' and other
+ notions pertaining to naming files.  Below we exhibit the three sections of
+ one such string:</p>
 
  @({
   \"/usr/home/smith/project/arith.lisp\"
@@ -38053,42 +38080,14 @@ current fast alists."
  strictly to the right of the slash so that the familiar name is well-defined
  and nonempty.</p>
 
- <p>If you are using ACL2 on a system in which file names do not have this
- form, please contact the authors and we'll see what we can do about
- generalizing ACL2's conventions.</p>
-
- <p>We conclude with a remark about a representation of full book names that is
- used in @(see certificate) files and @(tsee make-event) expansions.  When the
- system books directory is a prefix of a full book name, ACL2 may choose to
- write a full book name as @('(:system . \"suffix\")'), where @('\"suffix\"')
- is the result of removing the system books directory from the front of the
- full book name.  Here is an example.</p>
-
- @({
-  ; full book name:
-  \"/Users/smith/acl2/acl2/books/std/portcullis.lisp\"
-
-  ; alternate representation
-  ; (where \"/Users/smith/acl2/acl2/books/\" is the system books directory):
-  (:SYSTEM . \"std/portcullis.lisp\")
- })
-
- <p>This behavior is actually more general: it applies to the entire @(tsee
- project-dir-alist).  If that alist associates keyword @(':K') with absolute
- directory name @('\"<dir>\"'), then a full-book-name with prefix
- @('\"<dir>\"') is actually printed in a @(see certificate) file as @('(:K
- . \"<dir>\")').  This capability supports relocating book directories; see
- @(see project-dir-alist).</p>
-
- <p>Conversely, in some contexts ACL2 will convert @('(:K . \"suffix\")') to an
- absolute pathname.  Generally @('\"suffix\"') will be a relative pathname,
- such as @('\"dir/filename.lisp\"'); in that case, the directory associated
- with @(':K') in the @(tsee project-dir-alist) &mdash; in particular, the
- system books directory when @(':K') is @(':system') &mdash; will be
- concatenated with @('\"suffix\"') to form a corresponding full book name.
- However, if @('\"suffix\"') is an absolute pathname, such as
- @('\"/u/smith/foo.lisp\"'), then the corresponding full book name will remain
- unchanged.</p>")
+ <p>We conclude by discussing the other representation of full-book-names as
+ promised above: the sysfile, which is a pair of the form @('(:kwd
+ . \"relpath\")') where @(':kwd') is a @(see keyword) and @('\"relpath\"') is a
+ relative pathname string.  See @(see sysfile) for a discussion of sysfiles.
+ Here, we simply remark that sysfiles are used primarily by the implementation;
+ as an ACL2 user you might never see one.  Sysfiles are used in @(see
+ certificate) files and in various data structures in the ACL2 logical @(see
+ world).</p>")
 
 (defxdoc function-theory
   :parents (theories theory-functions)
@@ -46510,34 +46509,35 @@ tables in the current Hons Space."
                      :dir directory)
  })
 
- <p>where @('file') is a book name.  See @(see books) for general information,
- see @(see book-name) for information about book names, and see @(see pathname)
- for information about file names.  @('Action') is one of @('t'), @('nil'),
- @(':default'), @(':warn'), or @(':comp'); these values are explained below,
- and the default is @(':default').  The three @('-okp') keyword arguments,
- which default to @('t'), determine whether errors or warnings are generated
- under certain conditions explained below; when the argument is @('t'),
- warnings are generated.  The @(':dir') argument, if supplied, is a keyword
- that represents an absolute @(see pathname) for a directory, to be used
- instead of the current book directory (see @(see cbd)) for resolving the given
- @('file') argument to an absolute pathname.  In particular, by default
- @(':dir :system') resolves the given @('file') using the @('books/') directory
- of your ACL2 installation; see ``Books Directory'' below.  To define other
- keywords that can be used with @(':dir'), see @(see add-include-book-dir),
- @(see add-include-book-dir!), and @(see project-dir-alist).  If the book has
- no @(see certificate), if its certificate is invalid (say, because its @(see
- book-hash) shows that books have changed after their certification), or if the
- certificate was produced by a different @(see version) of ACL2, a warning is
- printed and the book is included anyway; see @(see certificate).  This can
- lead to serious errors, perhaps mitigated by the presence of a @('.port') file
- from an earlier certification; see @(see uncertified-books).  If the
- portcullis of the @(see certificate) (see @(see portcullis)) cannot be raised
- in the host logical @(see world), an error is caused and no change occurs to
- the logic.  Otherwise, the non-@(tsee local) @(see events) in file are
- assumed.  Then the @(see keep) of the @(see certificate) is checked to ensure
- that the correct files were read; see @(see keep).  A warning is printed if
- uncertified @(see books) were included.  Even if no warning is printed,
- @('include-book') places a burden on you; see @(see certificate).</p>
+ <p>where @('file') is a book-name without the @('\".lisp\"') extension.  See
+ @(see books) for general information, see @(see book-name) for information
+ about book-names, and see @(see pathname) for information about file names.
+ @('Action') is one of @('t'), @('nil'), @(':default'), @(':warn'), or
+ @(':comp'); these values are explained below, and the default is
+ @(':default').  The three @('-okp') keyword arguments, which default to
+ @('t'), determine whether errors or warnings are generated under certain
+ conditions explained below; when the argument is @('t'), warnings are
+ generated.  The @(':dir') argument, if supplied, is a keyword that represents
+ an absolute @(see pathname) for a directory, to be used instead of the current
+ book directory (see @(see cbd)) for resolving the given @('file') argument to
+ an absolute pathname.  In particular, by default @(':dir :system') resolves
+ the given @('file') using the @('books/') directory of your ACL2 installation;
+ see ``Books Directory'' below.  To define other keywords that can be used with
+ @(':dir'), see @(see add-include-book-dir), @(see add-include-book-dir!), and
+ @(see project-dir-alist).  If the book has no @(see certificate), if its
+ certificate is invalid (say, because its @(see book-hash) shows that books
+ have changed after their certification), or if the certificate was produced by
+ a different @(see version) of ACL2, a warning is printed and the book is
+ included anyway; see @(see certificate).  This can lead to serious errors,
+ perhaps mitigated by the presence of a @('.port') file from an earlier
+ certification; see @(see uncertified-books).  If the portcullis of the @(see
+ certificate) (see @(see portcullis)) cannot be raised in the host logical
+ @(see world), an error is caused and no change occurs to the logic.
+ Otherwise, the non-@(tsee local) @(see events) in file are assumed.  Then the
+ @(see keep) of the @(see certificate) is checked to ensure that the correct
+ files were read; see @(see keep).  A warning is printed if uncertified @(see
+ books) were included.  Even if no warning is printed, @('include-book') places
+ a burden on you; see @(see certificate).</p>
 
  <p>If you use @(see guard)s, please note @('include-book') is executed as
  though @('(set-guard-checking t)') has been evaluated; see @(see
@@ -52317,9 +52317,9 @@ tables in the current Hons Space."
  and read the event forms therein.  The non-@(tsee local) event forms are in
  fact executed, extending the host theory.  That may read in other @(see
  books).  When that has been finished, the keep of the @(see certificate) is
- inspected.  The keep is a list of the book names which are included
- (hereditarily through all sub-books) in the certified book (including the
- certified book itself) together with the @(see book-hash) values for those
+ inspected.  The keep is a list indicating all of the included
+ books (hereditarily through all sub-books) in the certified book (including
+ the certified book itself) together with the @(see book-hash) values for those
  @(see books) at the time of certification.  We compare the book-hash values of
  the @(see books) just included to those of the @(see books) stored in the
  keep.  If differences are found then we know that the book or one of its
@@ -57042,56 +57042,17 @@ forms allowed for a @('let') form are  @('ignore'), @('ignorable'), and
   caddr
   +
   \"ACL2-USER\"
-  \"arith\"
-  \"project/task-1/arith.lisp\"
   :here
  })
 
  <p>A logical name is either a name introduced by some event, such as @(tsee
- defun), @(tsee defthm), or @(tsee include-book), or else is the keyword
- @(':here'), which refers to the most recent such event.  See @(see events).
- Every logical name is either a symbol or a string.  For the syntactic rules on
- names, see @(see name).  The symbols name functions, macros, constants,
- axioms, theorems, labels, and @(see theories).  The strings name packages or
- @(see books).  We permit the keyword symbol @(':here') to be used as a logical
- name denoting the most recently completed event.</p>
-
- <p>The logical name introduced by an @(see include-book) is the full book name
- string for the book (see @(see full-book-name)).  Thus, under the appropriate
- setting for the current book directory (see @(see cbd)) the event
- @('(include-book \"arith\")') may introduce the logical name</p>
-
- @({
-  \"/usr/home/smith/project/task-1/arith.lisp\" .
- })
-
- <p>Under a different @(tsee cbd) setting, it may introduce a different logical
- name, perhaps</p>
-
- @({
-  \"/local/src/acl2/library/arith.lisp\" .
- })
-
- <p>It is possible that identical @(tsee include-book) events forms in a
- session introduce two different logical names because of the current book
- directory.</p>
-
- <p>A logical name that is a string is either a package name or a book name.
- If it is not a package name, we support various conventions to interpret it as
- a book name.  If it does not end with the string @('\".lisp\"') we extend it
- appropriately.  Then, we search for any book name that has the given logical
- name as a terminal substring.  Suppose @('(include-book \"arith\")') is the
- only @(see include-book) so far and that
- @('\"/usr/home/smith/project/task-1/arith.lisp\"') is the source file it
- processed.  Then @('\"arith\"'), @('\"arith.lisp\"') and
- @('\"task-1/arith.lisp\"') are all logical names identifying that @(tsee
- include-book) event (unless they are package names).  Now suppose a second
- @('(include-book \"arith\")') is executed and processes
- @('\"/local/src/acl2/library/arith.lisp\"').  Then @('\"arith\"') is no longer
- a logical name, because it is ambiguous.  However, @('\"task-1/arith\"') is a
- logical name for the first @(tsee include-book) and @('\"library/arith\"') is
- a logical name for the second.  Indeed, the first can be named by
- @('\"1/arith\"') and the second by @('\"y/arith\"').</p>
+ defun), @(tsee defthm), or @(tsee defpkg), or else is the keyword @(':here'),
+ which refers to the most recent such event.  See @(see events).  Every logical
+ name is either a symbol or a package name (a string).  For the syntactic rules
+ on names, see @(see name).  The symbols name functions, macros, constants,
+ axioms, theorems, labels, and @(see theories).  The strings name packages.  We
+ permit the keyword symbol @(':here') to be used as a logical name denoting the
+ most recently completed event.</p>
 
  <p>Logical names are used primarily in the theory manipulation functions,
  e.g., @(tsee universal-theory) and @(tsee current-theory) with which you may
@@ -58884,11 +58845,9 @@ forms allowed for a @('let') form are  @('ignore'), @('ignorable'), and
  below.<br/>
  (<i>Technical remark</i>: The expansion result described above may be modified
  for @(tsee include-book), @(tsee add-include-book-dir), and @(tsee
- add-include-book-dir!), replacing book names by full pathnames, using syntax
- @('(:system . relative-pathname)') for @(see community-books) (i.e., system
- books); see @(see full-book-name), and for further details see comments in
- source function @('make-include-books-absolute').  End of technical
- remark.)</p>
+ add-include-book-dir!), replacing @(see book-name)s to indicate @(see
+ full-book-name)s.  For further details see comments in source function
+ @('make-include-books-absolute').  End of technical remark.)</p>
 
  <p>``evaluated again'' &mdash; the expansion result is evaluated in place of
  the original @('make-event').</p>
@@ -69926,7 +69885,7 @@ it."
  the compiled file for @('book1') will not be loaded again when @('book2') is
  included.  Thanks to Dave Greve for bringing our attention to these problems,
  and to Eric Smith for bringing up a special case earlier (where \"//\"
- occurred in the book name).</p>
+ occurred in the book-name).</p>
 
  <p>The summary printed at the end of a proof had not listed @(':')@(tsee
  induction) rules used in a proof.  This has been corrected.</p>
@@ -78248,7 +78207,7 @@ it."
  links are resolved; see @(see canonical-pathname).  Moreover, ACL2 uses this
  utility in its own sources, which can eliminate some issues.  In particular,
  @(tsee include-book) with argument @(':ttags :all') no longer breaks when
- given a book name differing from the book name that was used at certification
+ given a book-name differing from the book-name that was used at certification
  time; thanks to Sol Swords for reporting that problem.  Also, certain errors
  have been eliminated involving the combination of packages in the
  certification world and trust tags; thanks to Jared Davis for sending an
@@ -93770,6 +93729,169 @@ it."
 
 ; Fixed error when attempting to use #@ reader in a book being certified.
 
+; Fixed a bug in the error message when using #@ in a book being certified.
+
+; Slightly improved the certification failure error message due to the use of
+; skip-proofs in a book included in the certification world.
+
+; Here is a summary of implementation-level changes and considerations in
+; support of relocatability of project directories.
+
+; - Book-names are no longer considered logical names (as recognized by
+;   functions decode-logical-name and er-decode-logical-name).  This behavior
+;   is consistent with what was already documented in :DOC name (but :DOC
+;   logical-name has been updated).  This eliminates odd behavior in
+;   recognizing which book is referenced by an ambiguous string.
+
+; - The source code is now clearer with regard to the notions of
+;   full-book-string, which is a pathname string, and full-book-name, which may
+;   be a full-book-string but also may be a sysfile (:kwd
+;   . "relative-pathname").
+
+;   - Variables whose names contain "full-book-name" or "full-book-string"
+;     represent full-book-names and full-book-strings, respectively.
+
+;   - Variables whose names contain "book-name" may generally be sysfiles, as
+;     per the recognizer, book-name-p.
+
+; - Parse-book-name returns an extra value, a full-book-string.  Also, its
+;   implementation has been improved, in particular to make it more likely that
+;   full-book-names stored in certificates are canonical (hence with soft links
+;   resolved).
+
+; - Definitions of many of the basic functions pertaining to sysfiles and
+;   book-names may be found near the end of basis-a.lisp, starting with macro
+;   make-sysfile.  For example, utilities book-name-to-filename and
+;   filename-to-book-name may be found there.
+
+; - We generally avoid printing sysfiles in user-level output.
+
+; - The following structures use full-book-names, not merely book-names or
+;   full-book-strings (list is sorted alphabetically).
+;     *hcomp-book-ht*
+;     *load-compiled-stack*
+;     active-book-name
+;     book-path (including include-book-path and package-entry-book-path)
+;     bookdata file headers (see maybe-write-bookdata)
+;     cert-obj record fields :pre-alist and :post-alist
+;     ee-entry: the cadr, when the car is include-book
+;     ignore-cert-files (state global)
+;     include-book-alist
+;     pcert-books (world global)
+;     puff-included-books table
+;     skip-proofs-seen
+;     ttags-allowed
+;     ttags-seen
+
+; - The following source functions have been deleted (list is sorted
+;   alphabetically).
+;     chk-book-name
+;     convert-non-nil-symbols-to-keywords
+;     filename-to-sysfile
+;     filename-to-sysfile-cert-annotations
+;     filename-to-sysfile-include-book-alist
+;     filename-to-sysfile-include-book-alist1
+;     filename-to-sysfile-include-book-entry
+;     filename-to-sysfile-ttag-alist-val
+;     filename-to-sysfile-ttag-alistp
+;     relativize-book-path [related is filename-to-book-name]
+;     relativize-book-path-lst
+;     scan-to-include-book
+;     sysfile-to-filename-cert-annotations
+;     sysfile-to-filename-include-book-alist [essentially replaced by
+;       include-book-alistp] 
+;     sysfile-to-filename-include-book-alist1 [essentially replaced by
+;       include-book-alistp-1] 
+;     sysfile-to-filename-include-book-entry
+;     sysfile-to-filename-ttag-alist-val
+;     sysfile-to-filename-ttag-alistp
+;     unrelativize-book-path [replaced by book-name-lst-to-filename-lst]
+
+; - The following source functions have been replaced as shown.
+;     convert-book-name-to-cert-name => convert-book-string-to-cert
+;     convert-book-name-to-compiled-name => convert-book-string-to-compiled
+;     convert-book-name-to-acl2x-name => convert-book-string-to-acl2x
+;     convert-book-name-to-port-name => convert-book-string-to-port
+;     filename-to-sysfile => filename-to-book-name
+;     sysfile-or-string-listp => book-name-listp
+
+; - Simplified project-dir-lookup and project-dir-alist-from-file-rec by
+;   eliminating the fixnum-bound calls.
+
+; - In definitions of the following functions, an argument full-book-name has
+;   been changed to full-book-string (list is sorted alphabetically).
+;     acl2-compile-file
+;     book-hash
+;     book-hash-alist
+;     cert-annotations-and-checksum-from-cert-file
+;     cert-obj-for-convert
+;     certificate-file
+;     certificate-file-and-input-channel
+;     certificate-file-and-input-channel1
+;     certify-book-finish-convert
+;     check-certificate-file-exists
+;     chk-cert-annotations
+;     chk-cert-annotations-post-alist
+;     compile-certified-file
+;     compile-for-include-book
+;     delete-auxiliary-book-files
+;     delete-cert-files
+;     delete-expansion-file
+;     eval-port-file
+;     extend-hcomp-loop$-alist
+;     handle-hcomp-loop$-alist
+;     initial-useless-runes
+;     load-compiled-book
+;     make-certificate-files
+;     maybe-write-bookdata
+;     print-certify-book-guards-warning
+;     print-certify-book-step-4
+;     print-certify-book-step-5
+;     read-acl2x-file
+;     read-useless-runes
+;     tilde-@-cert-post-alist-phrase
+;     useless-runes-filename
+;     write-port-file
+
+; - Definitions of the following functions already had an argument
+;   full-book-name, but now additionally have a full-book-string argument (list
+;   is sorted alphabetically).
+;     certify-book-finish-complete
+;     chk-acceptable-certify-book
+;     chk-acceptable-certify-book1 [file1 replaced by the two args]
+;     include-book-fn1
+;     include-book-raw
+;     include-book-raw-top
+
+; - Definitions of following functions have additional (and sometimes modified)
+;   arguments (list is sorted alphabetically).
+;     defpkg-items-rec
+;     fix-ttags
+;     hidden-defpkg-events1
+;     include-book-alist-uncertified-books
+;     print-book-path
+;     tilde-@-book-stack-msg
+;     tilde-@-defpkg-error-phrase
+;     translate-book-names
+
+; - In chk-certificate-file and chk-raise-portcullis, argument file1 remains a
+;   full-book-string rather than a full-book-name.
+
+; - Added functions substring-p and string-suffixp.
+
+; - The sysfile-okp argument has been eliminated for
+;   ttag-alistp, cert-annotationsp, and include-book-alist-entry-p.
+
+; - In (defrec cert-obj ...), fields :pre-alist-sysfile and :pre-alist-abs have
+;   been deleted in favor of just :pre-alist, and fields :post-alist-sysfile
+;   annd :post-alist-abs have been deleted in favor of just :post-alist.
+
+; - The :book field of theory-invariant-record is now a book-name (not
+;   necessarily a full-book-name) or nil, but the former :full-book-name field
+;   of the useless-runes record is now :full-book-string.
+
+; - In chk-acceptable-ttags2, argument book-names replaces filenames.
+
   :parents (release-notes)
   :short "ACL2 Version  8.6 (xxx, 20xx) Notes"
   :long "<p>NOTE!  New users can ignore these release notes, because the @(see
@@ -93891,17 +94013,20 @@ it."
  particularly useful for seeing the logical meanings of @(tsee loop$) terms as
  well as terms involving @(tsee mbe) and @(tsee return-last).</p>
 
- <p>It is now possible to move directories of @(see books) and their @(see
- certificate) files so that those books will still be considered certified in
- future ACL2 sessions.  The key idea is to designate an ``ACL2 projects'' file,
- using environment variable @('ACL2_PROJECTS'): see @(tsee project-dir-alist)
- for the resulting association of keywords with names of directories that may
- be moved.  The @('project-dir-alist') also assigns meaning to the @(':dir')
- argument of @(tsee include-book) and @(tsee ld), much like the utilities
- @(tsee add-include-book-dir) and @(tsee add-include-book-dir!); morover, those
- two utilities now interpret keywords provided by the @('project-dir-alist'),
- in addition to @(':SYSTEM').  Thanks to Sol Swords for requesting such a
- capability and for helpful design discussions.</p>
+ <p>A directory of @(see books) may now be relocated so that those books are
+ still treated as certified.  This is supported by a new @(tsee
+ project-dir-alist), which associates keywords with ``project directories'' and
+ is set using environment variable @('ACL2_PROJECTS'); see @(see
+ project-dir-alist).  By default, the @('project-dir-alist') has only one
+ entry, which associates the keyword @(':SYSTEM') with the @(see
+ community-books) directory, @('books/').  The @('project-dir-alist')
+ generalizes the notion of system books directory, assigning meaning to the
+ @(':dir') argument of @(tsee include-book) and @(tsee ld) and to @(see
+ sysfile) arguments of @(tsee add-include-book-dir) and @(tsee
+ add-include-book-dir!).  Thanks to Sol Swords for requesting such a capability
+ and for helpful design discussions.  (Technical Note: Implementation-level
+ changes are summarized in comments in the form @('(defxdoc note-8-6 ...')) in
+ @(see community-book) @('system/doc/acl2-doc.lisp').)</p>
 
  <h3>Heuristic and Efficiency Improvements</h3>
 
@@ -99341,24 +99466,24 @@ arithmetic) for libraries of @(see books) for arithmetic reasoning.</p>")
  profiling all functions or all ACL2 functions, respectively.</p>")
 
 (defxdoc project-dir-alist
-  :parents (events)
+  :parents (books events)
   :short "Support for moving project directories (also @(':dir') arguments)"
   :long "<p>This topic describes the @('project-dir-alist'), which supports the
- relocation of directories that contain both @(see books) and their @(see
- certificate)s (i.e., @('.cert') files).  Each such directory is treated as a
- <i>project</i>, which is represented by a @(see keyword).  In particular, the
- keyword, @(':SYSTEM'), represents the @(see community-books) as such a
- project.  The @('project-dir-alist') also provides one way to interpret the
- @(':dir') keyword argument of @(tsee include-book) and @(tsee ld).</p>
+ relocation of book directories so that their @(see books) are still treated as
+ certified.  Each such directory is treated as a <i>project</i>, which is
+ represented by a @(see keyword).  In particular, the keyword, @(':SYSTEM'),
+ represents the @(see community-books) as such a project.  The
+ @('project-dir-alist') also provides one way to interpret the @(':dir')
+ keyword argument of @(tsee include-book) and @(tsee ld).</p>
 
  <p>It is theoretically possible to undermine soundness by using this
  capability inappropriately (see below for some discussion of appropriate
- usage).  For the utmost security, certify your books without using this
- capability.  See @(see certificate), specifically the discussion there about
- placing a ``burden'' on the user.</p>
+ usage).  For the utmost security, perform a fresh certification of your entire
+ collection of books without using this capability.  See @(see certificate),
+ specifically the discussion there about placing a ``burden'' on the user.</p>
 
- <p>To see the value of the @('project-dir-alist') in your session, evaluate
- the form @('(project-dir-alist (w state))').</p>
+ <p>To see the @('project-dir-alist') in your session, evaluate the form
+ @('(project-dir-alist (w state))').</p>
 
  <p>We start below by introducing the @('project-dir-alist') and explaining how
  to set it up.  Next we describe its effects.  We conclude by discussing some
@@ -99388,14 +99513,18 @@ arithmetic) for libraries of @(see books) for arithmetic reasoning.</p>")
 
  <p>The projects file is read when ACL2 starts up.  ACL2 creates the
  @('project-dir-alist') by using each line as above to associate the keyword
- @(':K') with @('\"<dir>\"').  If the special keyword @(':SYSTEM') is not one
- such keyword, then the @('project-dir-alist') will additionally include a pair
- that associates @(':SYSTEM') with the system books directory.  By default, the
- system books directory is the @('books/') subdirectory of your ACL2
- distribution.  That value for the system books directory can be overridden
- either by specifying it explicitly with @(':SYSTEM') in the projects file or
- by setting environment variable @('ACL2_SYSTEM_BOOKS') to that value &mdash;
- where if both overrides are used, they must not conflict.</p>
+ @(':K') with the directory represented by @('\"<dir>\"'), which may be a
+ relative or absolute pathname.  Relative pathnames are interpreted with
+ respect to the directory of the projects file.</p>
+
+ <p>If the keyword @(':SYSTEM') is not specified in the projects file, then the
+ @('project-dir-alist') will additionally include a pair that associates
+ @(':SYSTEM') with the @(see community-books) directory, which is generally the
+ @('books/') subdirectory of your ACL2 distribution.  That value for
+ @(':SYSTEM') can be overridden either by specifying it explicitly with
+ @(':SYSTEM') in the projects file or by setting environment variable
+ @('ACL2_SYSTEM_BOOKS') to that value &mdash; where if both overrides are used,
+ they must not conflict.</p>
 
  <p>The values of the environment variables mentioned above, @('ACL2_PROJECTS')
  and @('ACL2_SYSTEM_BOOKS'), are pathnames that can be either relative or
@@ -99403,10 +99532,6 @@ arithmetic) for libraries of @(see books) for arithmetic reasoning.</p>")
  which ACL2 is invoked.  The final character need not be ``@('/')''; if it's
  not, then that character will be added at the end before adding to the
  @('project-dir-alist').</p>
-
- <p>The directories in the projects file are pathnames that may be relative or
- absolute.  Each relative pathname is interpreted with respect to the directory
- of the projects file.</p>
 
  <p>The @('project-dir-alist') must have no duplicate keys and no duplicate
  directory names.</p>
@@ -99428,18 +99553,18 @@ arithmetic) for libraries of @(see books) for arithmetic reasoning.</p>")
  @(':SYSTEM') with @('\"<dir>\"'), the relocated community books will still be
  treated as certified.</p>
 
- <p>For the general case, let @('S') be a set of books certified with a given
- @('project-dir-alist'), each of which includes only other books in @('S').
- (For example, @('S') contains just the community books directory in the
- special case above.)  Also assume that the absolute pathname of every book in
- @('S') has a prefix among the directories in that @('project-dir-alist').
- Then all books in @('S'), along with their @(see certificate) files, can be
- moved and those books will still be considered to be certified in any ACL2
- session with a suitable @('project-dir-alist'), as follows.  For every keyword
- @(':K') mapped to directory @('\"<dir>\"') in the original
- @('project-dir-alist') (the one at certification time), the new
- @('project-dir-alist') should map @(':K') to the directory @('\"<dir2>\"') to
- which @('\"<dir>\"') was moved.</p>
+ <p>The case of @(':SYSTEM') described above generalizes naturally, as follows.
+ Let @('S') be a set of books certified with a given @('project-dir-alist'),
+ each of which includes only other books in @('S').  (For example, @('S')
+ contains just the community books directory in the special case above.)  Also
+ assume that the absolute pathname of every book in @('S') has a prefix among
+ the directories in that @('project-dir-alist').  Then all books in @('S'),
+ along with their @(see certificate) files, can be moved and those books will
+ still be considered to be certified in any ACL2 session with a suitable
+ @('project-dir-alist'), as follows.  For every keyword @(':K') mapped to
+ directory @('\"<dir>\"') in the original @('project-dir-alist') (the one at
+ certification time), the new @('project-dir-alist') should map @(':K') to the
+ directory @('\"<dir2>\"') to which @('\"<dir>\"') was moved.</p>
 
  </blockquote>
 
@@ -99485,8 +99610,8 @@ arithmetic) for libraries of @(see books) for arithmetic reasoning.</p>")
 
  <blockquote>
 
- <p><b>No duplicates.</b> There must be no duplicate keys or duplicate
- directory names in the @('project-dir-alist').</p>
+ <p>(Already noted above) <b>No duplicates.</b> There must be no duplicate keys
+ or duplicate directory names in the @('project-dir-alist').</p>
 
  <p><b>No overlap.</b> No keyword may be bound with @(tsee
  add-include-book-dir) or @(tsee add-include-book-dir!) that is also bound in
@@ -119830,6 +119955,54 @@ arithmetic) for libraries of @(see books) for arithmetic reasoning.</p>")
  be the numeric value returned by the host operating system for the underlying
  system call.  For more information, see @(see sys-call).</p>")
 
+(defxdoc sysfile
+  :parents (books project-dir-alist)
+  :short "File representation using ACL2 project directories"
+  :long "<p>ACL2 supports relocation of book directories so that those
+ books are still treated as certified.  See @(see project-dir-alist).</p>
+
+ <p>A key data structure to support this feature is the <i>sysfile</i>, which
+ is a pair of the form @('(:kwd . \"relpath\")').  Here, @(':kwd') is a key of
+ the @('project-dir-alist'), bound to some absolute pathname @('\"D/\"') of a
+ directory, and @('\"relpath\"') is a string that denotes a pathname relative
+ to directory @('\"D/\"').  Thus, the sysfile @('(:kwd . \"relpath\")')
+ represents the same pathname as @('\"D/relpath\"').</p>
+
+ <p>(Remark.  The name ``sysfile'' was originally coined to suggest ``system
+ file'', suggesting the use of keyword @(':SYSTEM') to indicate a file residing
+ in the @(see community-books).  It now extends to @('(:kwd . \"relpath\")')
+ even for @(':kwd') values other than @(':SYSTEM').  But ``sysfile'' is a
+ convenient name, and it still seems reasonable since ``system file'' can
+ suggest a file of the filesystem.)</p>
+
+ <p>ACL2 rarely generates output that includes sysfiles; they are mostly used
+ in the implementation, for example to denote included books in @(see
+ certificate) files.  But they are occasionally relevant at the user level; for
+ example see @(see add-include-book-dir).</p>
+
+ <p>Finally we discuss the use of sysfiles in @(see certificate) files.  When
+ the @(see community-books) directory is a prefix of a @(see full-book-name)
+ string, ACL2 may choose to represent that full-book-name as @('(:system
+ . \"relpath\")'), where @('\"relpath\"') is the result of removing the
+ community-books directory from the front of the full-book-name.  Here is an
+ example.</p>
+
+ @({
+  ; full-book-name:
+  \"/Users/smith/acl2/acl2/books/std/portcullis.lisp\"
+
+  ; sysfile representation
+  ; (where \"/Users/smith/acl2/acl2/books/\" is the community-books directory):
+  (:SYSTEM . \"std/portcullis.lisp\")
+ })
+
+ <p>This behavior applies to more than the community-books: it applies to the
+ entire @(tsee project-dir-alist).  If that alist associates keyword @(':K')
+ with absolute directory name @('\"<dir>\"'), then a full-book-name with prefix
+ @('\"<dir>\"') is written to a @(see certificate) file as @('(:K
+ . \"<dir>\")').  This capability supports relocating book directories; see
+ @(see project-dir-alist) for a more complete discussion.</p>")
+
 (defxdoc system-attachments
   :parents (programming defattach)
   :short "System-level algorithms that users can modify with attachments"
@@ -133359,7 +133532,7 @@ introduction-to-the-tau-system) for more information about Tau.</dd>
  guards (see also @(tsee set-verify-guards-eagerness)).  In this case, it is
  good practice to add a comment `@('; and guards')' just after the @(tsee
  verify-termination) form, on the same line, as can be seen in some of the files
- under @('[books]/system/').</p>
+ under @(see community-books) directory @('system/').</p>
 
  <p>Now it is time to add entries to the value of constant
  @('*system-verify-guards-alist*') in your local copy of the ACL2 sources,
