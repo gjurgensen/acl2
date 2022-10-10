@@ -77,7 +77,7 @@ Subtopics
   [defthm], [in-theory], [xargs], [state], etc., without an acl2::
   prefix.
 
-  The constant *acl2-exports* lists 1567 symbols, including most
+  The constant *acl2-exports* lists 1571 symbols, including most
   documented ACL2 system constants, functions, and macros.  You will
   typically also want to import many symbols from Common Lisp; see
   [*common-lisp-symbols-from-main-lisp-package*].
@@ -334,14 +334,16 @@ Subtopics
        get-output-stream-string$ get-real-time
        get-register-invariant-risk
        get-serialize-character
-       get-slow-alist-action get-timer
-       get-wormhole-status getenv$ getprop
-       getprop-default getpropc getprops
-       getprops1 global-table global-table-cars
-       global-table-cars1 global-val
-       good-atom-listp good-bye granularity
-       ground-zero gthm guard guard-obligation
-       guard-theorem hard-error
+       get-slow-alist-action
+       get-timer get-wormhole-status
+       getenv$ getprop getprop-default
+       getpropc getprops getprops1 global-table
+       global-table-cars global-table-cars1
+       global-val good-atom-listp
+       good-bye granularity ground-zero gthm
+       guard guard-obligation guard-theorem
+       hands-off-lambda-objects-theory
+       hard-error
        has-propsp has-propsp1 header help
        hide hist hons hons-acons hons-acons!
        hons-assoc-equal hons-clear hons-clear!
@@ -564,7 +566,9 @@ Subtopics
        retract-world
        retrieve return-last return-last-table
        revappend reverse revert-world
-       rewrite-equiv rewrite-quoted-constant
+       rewrite-equiv rewrite-lambda-modep
+       rewrite-lambda-objects-theory
+       rewrite-quoted-constant
        rewrite-stack-limit
        rfix round rw-cache satisfies
        save-and-clear-memoization-settings
@@ -711,6 +715,7 @@ Subtopics
        symbol<-irreflexive symbol<-transitive
        symbol<-trichotomy symbolp
        symbolp-intern-in-package-of-symbol synp
+       syntactically-clean-lambda-objects-theory
        syntaxp sys-call sys-call* sys-call+
        sys-call-status t t-stack t-stack-length
        t-stack-length1 table table-alist
@@ -30591,11 +30596,13 @@ SYNTAX
   [warrant]ed if proofs are to be done about them or if they are in
   [logic] mode and are called during evaluation.
 
-  The do- and fin- bodies allow a sort of ``DO-body term''.  These
-  DO-body terms are as follows, informally (in particular we are
-  ignoring here distinctions between translated and untranslated
-  terms; see [term]).  As usual, the restrictions on return values
-  apply only to code, not to terms occurring in theorem statements.
+  The do-body and fin-body positions are to be what we call ``DO-body
+  term''.  These are not, in general, normal ACL2 terms!  They allow
+  restricted uses of RETURN, PROGN, SETQ, MV-SETQ, and LOOP-FINISH as
+  described below. In the descriptions below we ignore the
+  distinctions between translated and untranslated terms; see
+  [term]).  As usual, the restrictions on return values apply only to
+  code, not to terms occurring in theorem statements.
 
     * Every ordinary term that returns a single, non-stobj value
     * An IF call whose first argument is an ordinary term (which
@@ -46599,6 +46606,71 @@ Subtopics
   {IMAGE} (see [ACL2_as_an_Interactive_Theorem_Prover_{cont}])")
  (HANDS-OFF (POINTERS)
             "See [hints] for information about the keyword :hands-off.")
+ (HANDS-OFF-LAMBDA-OBJECTS-THEORY
+  (THEORIES THEORY-FUNCTIONS REWRITE)
+  "how to specify no modification of lambda objects
+
+  The enabled status of two rewrite-lambda-modep runes are used as
+  flags to determine the action taken when eligible lambda objects
+  are encountered by the ACL2 rewriter.  See [rewrite-lambda-object]
+  and [rewrite-lambda-object-actions].  To prevent the rewriter even
+  considering changing a quoted lambda object, the rune
+  (:executable-counterpart rewrite-lambda-modep) must be disabled in
+  the then-current theory.  The 0-ary function
+  hands-off-lambda-objects-theory returns such a theory.
+
+  In fact, diving into eligible quoted lambda object constants to
+  rewrite the body is the default action when ACL2 starts up.  See
+  [rewriting-versus-cleaning-up-lambda-objects] for why you might
+  want to change the default action when eligible lambda objects are
+  encountered by the rewriter.
+
+  The expression (hands-off-lambda-objects-theory) macroexpands to the
+  theory expression
+
+    (e/d nil
+         ((:executable-counterpart rewrite-lambda-modep)))
+
+  which is a theory equal to then current theory except that the
+  executable-counterpart rune of rewrite-lambda-modep is disabled.
+  This expansion is suitable for use in an [in-theory] event or
+  :in-theory hint (see :[hints]).
+
+  This rune is initally enabled, so eligible lambda object bodies are
+  either rewritten or syntactically cleaned by default (depending on
+  the status of (:definition rewrite-lambda-modep)) until and unless
+  some event (e.g., an [in-theory] or [include-book]) or a superior
+  local subgoal hint changes the status of this rune.
+
+  For example, if lambda object rewriting is active and you wish it not
+  to be (so that lambda objects remain unchanged) in Subgoal 3 of
+  some proof, you could use the :[hints]
+
+    (\"Subgoal 3\"
+     :in-theory (hands-off-lambda-objects-theory))
+
+  Note that if you also wish to enable or disable other runes in the
+  same subgoal you must construct an appropriate theory.
+
+  For example, if in Subgoal 3 of some proof you wanted to enable
+  LEMMA1 and disable LEMMA2 in a theory that will also specify
+  syntactic cleaning of lambda objects, you might write
+
+    (\"Subgoal 3\"
+     :in-theory (set-difference-theories
+                   (union-theories (hands-off-lambda-objects-theory)
+                                   '(LEMMA1))
+                   '(LEMMA2)))
+
+  Some users might prefer
+
+    (\"Subgoal 3\"
+     :in-theory (e/d (LEMMA1)
+                     ((:executable-counterpart rewrite-lambda-modep)
+                      LEMMA2)))
+
+  See [theories] for general information about theories and how to
+  create and use them.")
  (HARD-ERROR
   (ERRORS ACL2-BUILT-INS)
   "Print an error message and stop execution
@@ -91756,6 +91828,10 @@ Changes to Existing Features
     * Array values are no longer displayed as [stobj]s.  (This includes
       stobjs themselves, since they are arrays.)
 
+  The use of (:executable-counterpart rewrite-lambda-modep) to control
+  the behavior of lambda object rewriting by the prover (see
+  [rewrite-lambda-object]) has been elaborated.
+
 
 New Features
 
@@ -108276,6 +108352,9 @@ Subtopics
   [Free-variables]
       Free variables in rules
 
+  [Hands-off-lambda-objects-theory]
+      how to specify no modification of lambda objects
+
   [Hide]
       Hide a term from the rewriter
 
@@ -108289,11 +108368,23 @@ Subtopics
       Force ACL2 to perform substitution using a stylized [equivalence]
       hypothesis
 
+  [Rewrite-lambda-modep]
+      switch controlling rewriting of lambda objects
+
   [Rewrite-lambda-object]
       rewriting lambda objects in :FN slots
 
+  [Rewrite-lambda-object-actions]
+      actions available when rewriting lambda objects
+
+  [Rewrite-lambda-objects-theory]
+      how to specify rewriting of lambda objects
+
   [Rewrite-stack-limit]
       Limiting the stack depth of the ACL2 rewriter
+
+  [Rewriting-versus-cleaning-up-lambda-objects]
+      why change the default action on rewriting lambda objects
 
   [Set-rw-cache-state]
       Set the default rw-cache-state
@@ -108303,6 +108394,9 @@ Subtopics
 
   [Simple]
       :[definition] and :[rewrite] rules used in preprocessing
+
+  [Syntactically-clean-lambda-objects-theory]
+      how to specify syntactic cleaning of lambda objects
 
   [Syntaxp]
       Attach a heuristic filter on a rule")
@@ -108332,44 +108426,58 @@ Subtopics
   For an example of a [clause-processor] that leverages Rewrite-equiv
   to induce substitution using equivalence relations appearing in the
   hypothesis, see [rewrite-equiv-hint].")
+ (REWRITE-LAMBDA-MODEP
+  (REWRITE)
+  "switch controlling rewriting of lambda objects
+
+  Rewrite-lambda-modep is an identity function with no purpose other
+  than to serve as a switch controlling whether and how the ACL2
+  prover rewrites quoted lambda objects in argument positions of
+  [ilk] :FN.  Behavior is determined by the enabled status of two
+  runes associated with rewrite-lambda-modep, the
+  executable-counterpart rune and the definition rune.  See
+  [rewrite-lambda-object].")
  (REWRITE-LAMBDA-OBJECT
   (REWRITE)
   "rewriting lambda objects in :FN slots
 
   [Lambda] objects are quoted constants passed to [scion]s and applied
-  as functions by [apply$].  The ACL2 rewriter rewrites the bodies of
-  quoted lambda objects when they occur in slots of [ilk] :FN.
-  However, there are restrictions on which lambda objects are
-  rewritten, restrictions on the techniques available to the rewriter
-  during the rewriting of lambda bodies, and restrictions controlling
-  whether the rewritten object replaces the original object or is is
-  ignored.  We explain below.
+  as functions by [apply$].  The ACL2 rewriter can be made to replace
+  the bodies of quoted lambda objects with (supposedly) simpler
+  bodies that are [ev$] equivalent, when the lambda objects occur in
+  slots of [ilk] :FN.  However, there are restrictions on which
+  lambda objects can be so simplified, restrictions on the techniques
+  available to the rewriter during the simplification of lambda
+  bodies, and restrictions controlling whether the simplified body
+  replaces the original or is ignored.  We explain below.
 
 
-When Rewriting of lambda Objects Is Attempted
+When an Occurrence of a lambda Objects Is Eligible
 
-  The rewriter attempts to rewrite the body of a quoted lambda constant
+  An occurrence of a quoted lambda object is eligible to be simplified
   provided
 
     * (a) it occurs in a :FN position of a call of a [scion],
-    * (b) the [rune] (:executable-counterpart rewrite-lambda-modep)) is
-      [enable]d (which it is by default),
-    * (c) the lambda object is well-formed (see
+    * (b) the lambda object is well-formed (see
       [well-formed-lambda-objectp]),
-    * (d) every function symbol mentioned in the body has been warranted
+    * (c) every function symbol mentioned in the body has been warranted
 
-  Condition (c) implies the body of the lambda is in fact a well-formed
+  However, eligible quoted lambda objects are not modified at all if
+  the [rune] (:executable-counterpart rewrite-lambda-modep) is
+  [disable]d.  That rune is enabled by default.
+
+  Condition (b) implies the body of the lambda is in fact a well-formed
   ACL2 term (so the rewriter can explore it), every function symbol
-  in it is [warrant]ed (so that function objects mentioned are used
+  in it is [badge]d (so that function objects mentioned are used
   properly), that every variable symbol occurring freely in the body
-  is among the formals of the lambda object, and together with (d)
+  is among the formals of the lambda object, and together with (c)
   implies that the term ``behaves'' as expected if the appropriate
   warrant hypotheses govern this occurrence of the object.  This last
   implication means that [ev$] of the body is equal to unquoted body
-  (under a suitable assignment), which means we can rewrite the
+  (under a suitable assignment), which means we can replace the
   unquoted body.
 
-  If (a) and (b) above hold but either (c) or (d) fails, then a
+  If (a) holds but either (b) or (c) fails, then a
   \"rewrite-lambda-object\" warning message is printed during the
   proof.  However, this message is only printed once per lambda
   object per proof attempt because otherwise the presence of
@@ -108380,9 +108488,23 @@ When Rewriting of lambda Objects Is Attempted
 
 Restrictions During Rewriting of a Lambda Body
 
-  The rewriter is restricted in two ways when rewriting lambda bodies.
+  The rewriter is restricted in three ways when rewriting the bodies of
+  eligible occurrences of lambda objects.
 
-  First, warrant hypotheses in the goal clause are the only contextual
+  First, the user can specify one of two actions the rewriter can take
+  on an eligible lambda object occurrence (in addition to taking no
+  action as controlled by the rewrite-lambda-modep rune mentioned
+  above).  The available actions are to recursively call the rewriter
+  and normalize the result, or to do syntactic cleaning only.  The
+  default is recursive rewriting, with the restrictions explained in
+  below.  Syntactic cleaning just eliminates declarations, guards,
+  and various tags irrelevant to the logical value of the body.  We
+  describe how the user specifies the action to be used in
+  [rewrite-lambda-object-actions].  We give more details about these
+  two kinds of lambda body simplification in
+  [rewriting-versus-cleaning-up-lambda-objects].
+
+  Second, warrant hypotheses in the goal clause are the only contextual
   information ``imported'' from the goal clause and made available
   while rewriting a lambda body.  That means type information about
   variables and other terms is forgotten, as are any linear
@@ -108406,7 +108528,7 @@ Restrictions During Rewriting of a Lambda Body
   But that more sophisticated handling of contextual information has
   not been implemented.)
 
-  Second, recursive functions are never opened when rewriting lambda
+  Third, recursive functions are never opened when rewriting lambda
   bodies.  For example, if (len (cons e x)) occurs in a lambda body,
   you might expect it to be simplified to (+ 1 (len x)), because that
   is what generally happens to that term when occurrences outside
@@ -108422,15 +108544,25 @@ Restrictions During Rewriting of a Lambda Body
   The ACL2 implementors hope to address both of the above problems in
   eventual future releases.
 
+  Syntactic cleaning, in contrast to the restricted rewriting just
+  described, eliminates declarations, guards, and other
+  compiler-related tags introduced by translation of lambda$ and
+  loop$.  It does beta reduction, which eliminates local variable
+  names (other than the formals of the lambda object).  And it
+  replaces the last two arguments of calls of [do$] by nil if those
+  two arguments are quoted constants other than nil.  (Those two
+  arguments are irrelevant to the value of the do$ term and only used
+  in error reporting.)
+
 
 What Happens After Rewriting a Lambda Body
 
-  Upon rewriting the body, b, of (lambda(v1...vn)b) to produce b' the
-  decision must be made as to whether to return the lambda with the
-  rewritten body, (lambda(v1...vn)b'), or to ignore the rewrite and
-  return the original (unrewritten) object.  ACL2 ignores the rewrite
-  and returns the original lambda object if any of the following
-  three cases obtains:
+  After the specified action on the body, b, of (lambda(v1...vn)b) to
+  produce b' the decision must be made as to whether to return the
+  lambda with the rewritten body, (lambda(v1...vn)b'), or to ignore
+  the rewrite and return the original (unrewritten) object.  ACL2
+  ignores the rewrite and returns the original lambda object if any
+  of the following three cases obtains:
 
     * (a) b' contains variables other than the lambda formals v1,...,vn,
     * (b) b' is not tame, or
@@ -108444,9 +108576,7 @@ What Happens After Rewriting a Lambda Body
   which of the three conditions above was violated.  However, this
   message is only printed once per lambda object per proof attempt
   because otherwise the presence of a lambda object that rewrites
-  inappropriately will litter the output with repeated warnings.  You
-  may turn these warnings off with ([toggle-inhibit-warning]
-  \"Rewrite-lambda-object\").
+  inappropriately will litter the output with repeated warnings.
 
   Condition (a) can arise if a rewrite rule introduces a free variable;
   disabling that rewrite rule is recommended.  Condition (b) can
@@ -108456,13 +108586,13 @@ What Happens After Rewriting a Lambda Body
   issue a warrant for the offending function symbol and then supply
   that warrant as a hypothesis to the goal; the latter response is
   perhaps better because it means all the ``usual'' rewriting is
-  done, normalizing terms as expected.  Condition (c) arises when
-  forcing has been disabled and the offending function symbol's
-  warrant is not among the hypotheses; enabling forcing or adding the
-  warrant as a hypothesis is recommended.
+  done, normalizing terms as expected.  Condition (c) can be
+  addressed by using defwarrant to issue a warrant for the offending
+  function symbol and enabling forcing (see [force]).
 
-  The warning message noted above can become annoying.  It can be
-  inhibited with (toggle-inhibit-warning \"Rewrite-lambda-object\").
+  The warning message noted above can become annoying.  You may turn
+  these warnings off with ([toggle-inhibit-warning]
+  \"Rewrite-lambda-object\").
 
   Be advised that if the \"rewrite-lambda-object\" warning has been
   inhibited (by you or some book included in your session) and then,
@@ -108527,6 +108657,138 @@ A Possible Confusion
 
   If you want to avoid this normalization of the globals, disable the
   [rune] (:meta relink-fancy-scion-correct).")
+ (REWRITE-LAMBDA-OBJECT-ACTIONS
+  (REWRITE)
+  "actions available when rewriting lambda objects
+
+  As explained in [rewrite-lambda-object] the rewriter can be applied
+  to eligible occurrences of quoted lambda objects.  That
+  documentation also describes eligibility, what happens during, and
+  what happens after the specified action, with a focus on
+  recursively rewriting the lambda body.  This topic discusses how to
+  specify the desired action.
+
+  The user can specify one of three actions by manipulating the enabled
+  status of the [rune] (:executable-counterpart rewrite-lambda-modep)
+  and the enabled status of (:definition rewrite-lambda-modep).
+  Recall that such runes can be abbreviated (:e rewrite-lambda-modep)
+  and (:d rewrite-lambda-modep).  But in this discussion, we'll
+  abbreviate them still further by e and d, respectively.
+
+  The actions available on the body of an eligible lambda object
+  occurrence are
+
+    * rewrite: e and d enabled
+    * syntactically clean: e enabled and d disabled
+    * hands-off (no action): e disabled
+
+  Since the action is determined by the enabled status of runes, it can
+  be specified by the user by appropriate global [in-theory] events
+  or by goal-specific, local :in-theory :[hints].  There are three
+  0-ary macros that expand into appropriate theories provided the
+  only runes you wish to affect are our so-called e and d.
+
+  The three macros are [rewrite-lambda-objects-theory],
+  [syntactically-clean-lambda-objects-theory], and
+  [hands-off-lambda-objects-theory], with the obvious meanings.  For
+  example, (syntactically-clean-lambda-objects-theory) macroexpands
+  to
+
+    (e/d ((:executable-counterpart rewrite-lambda-modep))   ; enable ``e''
+         ((:definition rewrite-lambda-modep)))              ; disable ``d''
+
+  Since e and d are both initially enabled in ACL2, eligible lambda
+  objects are rewritten by default unless you change the status of e
+  and/or d.
+
+  For example, to make the prover just syntactically clean eligible
+  lambda objects in Subgoal 3 of some proof attempt you could provide
+  the :hint
+
+      (\"Subgoal 3\"
+        :in-theory (syntactically-clean-lambda-objects-theory))
+
+  Note however that if you also need to adjust the status of some other
+  rune in that same hint you must create a theory expression that
+  includes the appropriate use of e and d.  For example, to also
+  enable LEMMA1 but disable LEMMA2 while specifying use of syntactic
+  cleaning you could write:
+
+    (\"Subgoal 3\"
+     :in-theory (e/d ((:executable-counterpart rewrite-lambda-modep)
+                      LEMMA1)
+                     ((:definition rewrite-lambda-modep)
+                      LEMMA2)))
+
+  For details on what syntactic cleaning is and why it is sometimes
+  useful, see [rewriting-versus-cleaning-up-lambda-objects].")
+ (REWRITE-LAMBDA-OBJECTS-THEORY
+  (THEORIES THEORY-FUNCTIONS REWRITE)
+  "how to specify rewriting of lambda objects
+
+  The enabled status of two rewrite-lambda-modep runes are used as
+  flags to determine the action taken when eligible lambda objects
+  are encountered by the ACL2 rewriter.  See [rewrite-lambda-object]
+  and [rewrite-lambda-object-actions].  To make the rewriter dive
+  into the body of an eligible lambda object, both
+  (:executable-counterpart rewrite-lambda-modep) and (:definition
+  rewrite-lambda-modep) must be enabled in the then-current theory.
+  The 0-ary function rewrite-lambda-objects-theory returns such a
+  theory.
+
+  In fact, diving into eligible quoted lambda object constants to
+  rewrite the body is the default action when ACL2 starts up.  See
+  [rewriting-versus-cleaning-up-lambda-objects] for why you might
+  want to change the default action when eligible lambda objects are
+  encountered by the rewriter.
+
+  The expression (rewrite-lambda-objects-theory) macroexpands to the
+  theory expression
+
+    (e/d ((:executable-counterpart rewrite-lambda-modep)
+          (:definition rewrite-lambda-modep))
+         nil)
+
+  which is a theory equal to then current theory except that the
+  executable-counterpart rune and the definition rune of
+  rewrite-lambda-modep are enabled.  This expansion is suitable for
+  use in an [in-theory] event or :in-theory hint (see :[hints]).
+
+  Both these two runes are initally enabled, so eligible lambda object
+  bodies are rewritten by default until and unless some event (e.g.,
+  an [in-theory] or [include-book]) or a superior local subgoal hint
+  changes the status of those runes.
+
+  For example, if lambda object rewriting has been disabled globally
+  and you wish to enable it for Subgoal 3 of some proof, you could
+  use the :[hints]
+
+    (\"Subgoal 3\"
+     :in-theory (rewrite-lambda-objects-theory))
+
+  Note that if you also wish to enable or disable other runes in the
+  same subgoal you must construct an appropriate theory.
+
+  For example, if in Subgoal 3 of some proof you wanted to enable
+  LEMMA1 and disable LEMMA2 in a theory that will also allow
+  rewriting of lambda objects, you might write
+
+    (\"Subgoal 3\"
+     :in-theory (set-difference-theories
+                   (union-theories (rewrite-lambda-objects-theory)
+                                   '(LEMMA1))
+                   '(LEMMA2)))
+
+  Some users might prefer
+
+    (\"Subgoal 3\"
+     :in-theory (e/d ((:executable-counterpart rewrite-lambda-modep)
+                      (:definition rewrite-lambda-modep)
+                      LEMMA1)
+                     (LEMMA2)))
+
+  See [theories] for general information about theories and how to
+  create and use them.")
  (REWRITE-QUOTED-CONSTANT
   (RULE-CLASSES)
   "Make a rule to rewrite a quoted constant
@@ -108822,6 +109084,506 @@ Subtopics
     (app x (app y z))!
 
   {IMAGE} (see [You_Must_Think_about_the_Use_of_a_Formula_as_a_Rule])")
+ (REWRITING-VERSUS-CLEANING-UP-LAMBDA-OBJECTS
+  (REWRITE)
+  "why change the default action on rewriting lambda objects
+
+  See [rewrite-lambda-object] and [rewrite-lambda-object-actions] for
+  background information on how the ACL2 rewriter behaves on certain
+  quoted lambda objects.  In this topic we discuss why you might want
+  to change that behavior.
+
+  There are three basic actions the rewriter might take when it
+  encounters a suitable lambda object.
+
+    * recursively rewrite the body to get a new body,
+      by rewriting in the theory described in
+      [rewrite-lambda-objects-theory]
+    * just clean it up syntactically,
+      by rewriting in the theory described by
+      [syntactically-clean-lambda-objects-theory], or
+    * do nothing --- leave lambda object constants untouched.
+      by rewriting in the theory described by
+      [hands-off-lambda-objects-theory].
+
+  The reason we have several options has to do with the representation
+  of lambda objects as quoted constants in ACL2's first order logic.
+  Distinct lambda objects are unequal and yet sometimes by rewriting
+  their bodies to functionally equivalent terms under [ev$] they can
+  become identical.
+
+  For example, '(lambda (x) (+ 1 x)) and '(lambda (x) (+ x 1)) are
+  unequal list constants.  But they are functionally equal and by
+  rewriting their bodies we can make them identical.
+
+  The problem is greatly magnified by the way lambda$ and loop$
+  expressions macroexpand into formal terms.  Their expansions are
+  complicated with guards and tags that play key roles in their
+  Common Lisp compilation and execution efficiency within the ACL2
+  top-level read-eval-print loop.  But those guards and tags are
+  irrelevant to their logical meanings.  By eliminating the guards
+  and tags from quoted lambda objects in slots of [ilk] :FN we
+  increase the chances that different objects become identical.
+
+  Consider the translation of a thereis loop$ statement.  The thereis
+  loop$ operand looks for an element of the range that satisfies a
+  given predicate and returns the first non-nil value of that
+  predicate.  The predicate is formally a lambda object.  Below we
+  translate a thereis loop$ and show the result.
+
+    ACL2 !>:trans (loop$ for x on a
+                         thereis
+                         (if (equal (car x) b) x nil))
+
+    (RETURN-LAST
+     'PROGN
+     '(LOOP$ FOR X ON A
+             THEREIS
+             (IF (EQUAL (CAR X) B) X NIL))
+     (THEREIS$+
+      '(LAMBDA
+        (LOOP$-GVARS LOOP$-IVARS)
+        (DECLARE (XARGS :GUARD (IF (TRUE-LISTP LOOP$-GVARS)
+                                   (IF (EQUAL (LEN LOOP$-GVARS) '1)
+                                       (IF (TRUE-LISTP LOOP$-IVARS)
+                                           (EQUAL (LEN LOOP$-IVARS) '1)
+                                           'NIL)
+                                       'NIL)
+                                   'NIL)
+                        :SPLIT-TYPES T)
+                 (IGNORABLE LOOP$-GVARS LOOP$-IVARS))
+        (RETURN-LAST
+             'PROGN
+             '(LAMBDA$ (LOOP$-GVARS LOOP$-IVARS)
+                       (DECLARE (XARGS :GUARD (AND (TRUE-LISTP LOOP$-GVARS)
+                                                   (EQUAL (LEN LOOP$-GVARS) 1)
+                                                   (TRUE-LISTP LOOP$-IVARS)
+                                                   (EQUAL (LEN LOOP$-IVARS) 1))))
+                       (LET ((B (CAR LOOP$-GVARS))
+                             (X (CAR LOOP$-IVARS)))
+                            (DECLARE (IGNORABLE E X))
+                            (IF (EQUAL (CAR X) B) X NIL)))
+             ((LAMBDA (B X)
+                      (IF (EQUAL (CAR X) B) X 'NIL))
+              (CAR LOOP$-GVARS)
+              (CAR LOOP$-IVARS))))
+      (CONS B 'NIL)
+      (LOOP$-AS (CONS (TAILS A) 'NIL))))
+
+    => *
+
+  The predicate being mapped is the quoted lambda object in the first
+  argument of the thereis$+.  When shorn of the logically irrelevant
+  DECLARE and RETURN-LAST forms this particular quoted lambda object
+  becomes
+
+    '(LAMBDA
+      (LOOP$-GVARS LOOP$-IVARS)
+      ((LAMBDA (B X)
+               (IF (EQUAL (CAR X) B) X 'NIL))
+       (CAR LOOP$-GVARS)
+       (CAR LOOP$-IVARS)))
+
+  But now consider the closely related thereis loop$ which is like the
+  one translated above but uses different names for the variables.
+
+    (loop$ for y on aaa
+           thereis
+           (if (equal (car y) bbb) y nil))
+
+  The lambda object representing the predicate in this loop$, when
+  shorn of logically irrelevant material, is
+
+    '(LAMBDA
+      (LOOP$-GVARS LOOP$-IVARS)
+      ((LAMBDA (BBB Y)
+               (IF (EQUAL (CAR Y) BBB) Y 'NIL))
+       (CAR LOOP$-GVARS)
+       (CAR LOOP$-IVARS)))
+
+  But note that this lambda object contains the ``variables'' BBB and Y
+  where the earlier one contained B and X.  However, they are not
+  really variables!  They are symbol constants because they occur in
+  quoted list constants.  Thus, the lambda object generated for the
+  first thereis loop$ is different from the lambda object generated
+  from the ``closely related'' one.  They are just two different list
+  constants.
+
+  Thus, the translations of those two thereis loop$s are not instances
+  of one another.  So if you proved a rewrite rule about the (loop$
+  for x on ...B...) and then the rewriter encountered (loop$ for y on
+  ...BBB...) the rule would not match.  (By the way, this problem has
+  nothing special to do with thereis loop$s.  It happens on every
+  kind of loop$ because the problem has everything to do with
+  representing lambda expressions as list constants.)
+
+  Fortunately, it is sound to replace the body of a lambda object with
+  one that is equivalent under [ev$].  That can be done either by
+  rewriting the body or by syntactically cleaning the body.  It turns
+  out that both rewriting and syntactic cleaning produce the same
+  result in this case and reduce these two distinct lambda objects to
+  this one.
+
+    '(LAMBDA
+      (LOOP$-GVARS LOOP$-IVARS)
+      (IF (EQUAL (CAR (CAR LOOP$-IVARS))
+                 (CAR LOOP$-GVARS))
+          (CAR LOOP$-IVARS)
+          'NIL))
+
+  Actually, all that is needed in this case is the beta reduction of
+  the two bodies.
+
+  Syntactic cleaning eliminates declarations, guards, and other
+  compiler-related tags introduced by translation of lambda$ and
+  loop$.  It does beta reduction, which eliminates local variable
+  names (other than the formals of the lambda object).  And it
+  replaces the last two arguments of calls of [do$] by nil if those
+  two arguments are quoted constants other than nil.  (Those two
+  arguments are irrelevant to the value of the do$ term and only used
+  in error reporting.)  The logical semantics of loop$ is best
+  understood not by looking at its translation as we did above but by
+  looking at the result of syntactically cleaning its translation.
+  That is done by the command :[tc].  Tc translates its argument, in
+  this case the loop$ statement we've been studying, obtaining the
+  large form shown above, and then syntactically cleans it, returning
+  the internal representation of the logical semantics.
+
+    ACL2 !>:tc (loop$ for x on a
+                      thereis
+                      (if (equal (car x) b) x nil))
+    (THEREIS$+ '(LAMBDA
+                 (LOOP$-GVARS LOOP$-IVARS)
+                 (IF (EQUAL (CAR (CAR LOOP$-IVARS))
+                            (CAR LOOP$-GVARS))
+                     (CAR LOOP$-IVARS)
+                     'NIL))
+               (CONS B 'NIL)
+               (LOOP$-AS (CONS (TAILS A) 'NIL)))
+
+  Note that the free variables of the term are A and B.  The iteration
+  variable, x of the loop$ does not appear.  Instances of this term
+  are formed by choosing instantiations of A and B.
+
+  (Note: The related command :[tcp] translates, cleans, and then
+  converts the internal form of the term into the ``pretty''
+  user-level syntax.  E.g., it converts the quoted LAMBDA constant
+  above to a lambda$ expression, converts the IF expression to an
+  AND, and converts the CONS terms into LIST terms.  But for this
+  discussion it is really better to see the internal form.  That
+  LAMBDA object above is really a list constant!)
+
+  Before a newly proved :[rewrite] or :[linear] rule is stored, the
+  conclusion is syntactically cleaned.
+
+  Like syntactic cleaning, rewriting eliminates declarations, guards,
+  and other compiler-related tags and does beta reduction --- but
+  these transformations are generally carried out by rules whose
+  enabled status can be altered.  Furthermore, rewriting applies
+  :rewrite and other rules which might commute terms, open function
+  definitions, etc.  We don't rewrite the conclusions of newly proved
+  rules simply because the enabled rules may change from one event
+  (or subgoal) to another.
+
+  As noted earlier, there are three basic actions the rewriter might
+  take when it encounters a suitable lambda object.
+
+    * recursively rewrite the body to get a new body,
+    * just clean it up syntactically, or
+    * do nothing --- leave lambda object constants untouched.
+
+  Since rules are cleaned before storage, it is almost always the case
+  that you will want the prover either to rewrite lambda objects or
+  syntactically clean them.  In simple cases, like a rule about the
+  first thereis loop$ above and a conjecture about the second, either
+  action by the prover reduces ``closely related'' lambda objects to
+  identical objects, making it more likely that rules will fire.
+
+  So which of the three actions do you want the rewriter to take when
+  it encounters an eligible lambda object?
+
+    * rewrite the body --- best if there are multiple lambda objects in the
+      conjecture that need to be written to be identified, and in
+      simple cases rewriting is equivalent to syntactic cleaning
+    * syntactic cleaning --- best if you want the lambda objects in the
+      conjecture to match :rewrite or :linear rules containing
+      closely related lambda objects, but you find that otherwise
+      necessary :rewrite rules cause the rewriter to ``overshoot''
+      the syntactically cleaned term as illustrated further below
+    * hands off --- fairly unuseful since rules are cleaned up before
+      storage.  However, one use of this is if you prove a lemma
+      containing a lambda object but store it with :rule-classes nil
+      and then :use an instance of it in the :hints for some
+      conjecture that involves the very same lambda objects.
+
+  We now illstrate some typical problems that arise when proving
+  theorems about loop$s.  These examples are documented in the book
+  books/projects/apply/rewriting-versus-cleaning-examples.
+
+  Why you might want to use syntactic cleaning: Suppose you prove the
+  :rewrite rule below.  It says that a certain thereis loop$ computes
+  the same answer as the function [last].
+
+    (defthm loop$-can-be-last
+      (implies (listp a)
+               (equal (loop$ for x on a
+                             thereis
+                             (if (atom (cdr x)) x nil))
+                      (last a))))
+
+  What term does this rule target?  We can answer that by using the
+  :[tc] command.
+
+    ACL2 !>:tc (loop$ for x on a
+                      thereis
+                      (if (atom (cdr x)) x nil))
+     (THEREIS$ '(LAMBDA (LOOP$-IVAR)
+                        (IF (ATOM (CDR LOOP$-IVAR))
+                            LOOP$-IVAR 'NIL))
+               (TAILS A))
+
+  By the way, a more common way to see the rules created by an event is
+  to use the :[pr] command.  But that command displays the terms of
+  the rule in user-level syntax and we want to see the internal form
+  here.  The ``lambda expression'' is really a quoted constant.
+
+  Now imagine you are proving a conjecture that involves that identical
+  (!)  loop$.  Of course, translation will replace the loop$ by a
+  rather large tagged term containing compiler directives, etc.
+  Shorn of that material the term would become the thereis$ term
+  above, but the translation is what is in the initial Goal.  Imagine
+  further that you're doing this proof in a theory that allows the
+  rewriter to recursively rewrite the bodies of quoted lambda
+  objects, i.e., you are in a theory as described by
+  [rewrite-lambda-objects-theory].  ACL2 starts up in such a theory
+  and unless you've changed the enabled status of the
+  rewrite-lambda-modep runes rewriting lambda objects is the default
+  behavior.
+
+  You might expect the loop$-can-be-last rule to fire and replace the
+  thereis$ term in the Goal by (last a).  But that will not happen!
+  The rule won't fire!
+
+  The reason is that before the rewriter rewrites the thereis$ term it
+  rewrites its arguments.  The quoted lambda object in the Goal is
+  rewritten first.  That is necessary because the translated loop$
+  contains tags, etc.  But the rewriter does more than just clean up
+  the body.  It ``overshoots'' and opens the nonrecursive function
+  atom and swaps the branches of the if to eliminate the not thus
+  introduced.  The quoted lambda object becomes
+
+    '(LAMBDA (LOOP$-IVAR)
+             (IF (CONSP (CDR LOOP$-IVAR))
+                 'NIL
+                 LOOP$-IVAR))
+
+  So when the rewriter then tries to rewrite the thereis$ terms the
+  quoted lambda object in the rule does not match the one in the
+  rewritten Goal.
+
+  If the rewritten goal is printed, as it is likely to be a checkpoint,
+  you will see the rewritten body with the consp instead of atom in
+  it.  As usual, pay attention to the checkpoints.
+
+  One way to respond to this problem would be to ``hobble'' the
+  rewriter by shifting over to syntactic cleaning of quoted lambda
+  objects.  This could be done by providing a local subgoal hint in
+  which you specify
+
+    :in-theory (syntactically-clean-lambda-objects-theory)
+
+  which would prevent the rewriter from diving into the bodies of
+  lambda objects and just clean them instead.
+
+  Why you should probably use rewriting: There is a deeper lesson here
+  than just that you might want to hobble the rewriter to prevent it
+  from diving into quoted lambda bodies.  In our view the actual
+  problem is with the loop$-can-be-last rule itself.  ACL2 users are
+  taught to express rules in maximally rewritten terms.  No
+  experienced user would pose a rule with a non-recursive function
+  like atom in its lefthand side.  The best response to this
+  situation, which may or may not be practical depending on how
+  loop$-can-be-last came to be a rule in the session, is to change
+  that rule to
+
+    (defthm loop$-can-be-last
+      (implies (listp a)
+               (equal (loop$ for x on a
+                             thereis
+                             (if (consp (cdr x)) nil x))
+                      (last a))))
+
+  This version of the rule would not only rewrite the thereis loop$
+  above but rewrites
+
+    (loop$ for x on a
+           thereis
+           (if (atom (cdr x)) x nil))
+
+  because, as illustrated above, the rewriter by default dives into the
+  translated loop$ and ``normalizes'' the resulting thereis$.
+
+  Furthermore, because and macroexpands to an if-term and beta
+  reduction eliminates local variable names it would rewrite
+
+    (loop$ for rest on (aaa aa)
+           thereis
+           (let ((z (cdr rest)))
+             (and (atom z) rest))
+
+  But not all such problems can be solved by switching between
+  rewriting quoted lambda objects and just cleaning them up!
+
+  Consider this rewrite rule.  The thereis loop$ in the lefthand side
+  of the rule below is exactly the loop$ whose translation we showed
+  at the beginning of this topic.  The cleaned up internal form of
+  the lefthand side is the thereis$+ term shown by the first :tc
+  display in this topic.  The rule below says that the thereis loop$
+  in question computes member.
+
+    (defthm loop$-can-be-member
+       (equal (loop$ for x on a
+                     thereis
+                     (if (equal (car x) b) x nil))
+              (member b a)))
+
+  You might expect that when the rewriter encounters (an instance of)
+  such a loop$ it will replace it by a member term.  That is actually
+  true!
+
+  For example, if we then tried to prove a conjecture mentioning
+
+    (loop$ for x on aaa
+           thereis
+           (if (equal (car x) bbb) x nil))
+
+  the loop$-can-be-member rule would fire and replace that loop$ by
+  (member bbb aaa).
+
+  But it is easy to misjudge whether a given loop$ is an instance of
+  another.
+
+  Suppose our goal conjecture contained
+
+    (loop$ for x on (aaa aa)
+           thereis (if (equal (car x) (bbb bb)) x nil))
+
+  This loop$ looks like the loop$ in loop$-can-be-member except we've
+  used (aaa aa) instead of a, and (bbb bb) instead of b.
+
+  Will that loop$ be rewritten to (member (bbb v) (aaa u))?  No!
+
+  To understand why not, we first have to compare the internal forms of
+  the two loop$s.  Recall that the lefthand side of rewrite rules are
+  cleaned up before storage, so the internal form of the lefthand
+  side of loop$-can-be-member is in fact the thereis$+ term produced
+  by :tc above.  If we are either rewriting lambda objects or just
+  syntactically cleaning lambda objects in the proof we're looking
+  at, the the internal forms of the loop$ in the conjecture will be
+  just the :tc of that loop$ (because there's nothing interesting to
+  rewrite here).  So here is the lefthand side of the rule
+  side-by-side with the rewritten target in the conjecture.  We have
+  highlighted the differences in uppercase and numbered the lines
+  that contain differences.
+
+    lhs of rule                   target
+    (thereis$+                    (thereis$+
+     '(lambda                      '(lambda
+        (loop$-gvars loop$-ivars)     (loop$-gvars loop$-ivars)
+        (if (equal                    (if (equal
+             (car (car loop$-ivars))       (car (car loop$-ivars))
+             (CAR LOOP$-GVARS))            (BBB (CAR LOOP$-GVARS))) ; [1]
+            (car loop$-ivars)             (car loop$-ivars)
+            'nil))                        'nil))
+     (cons B 'nil)                 (cons BB 'nil)                   ; [2]
+     (loop$-as                     (loop$-as
+      (cons (tails A) 'nil)))       (cons (tails (AAA AA)) 'nil)))  ; [3]
+
+  Note that the target is not an instance of the lefthand side of the
+  rule --- but only because of the difference on line [1].  Lines [2]
+  and [3] of the lefthand side can be instantiated to become those
+  lines in the target.  But because of [1] our loop$-can-be-member
+  rule will not rewrite the target shown here.
+
+  This kind of problem cannot be fixed by fiddling with how the prover
+  treats lambda objects.  Instead, we need to transform the target
+  lambda object into the functionally different lambda object in the
+  rule while simultaneously changing how thereis$+ applies it.  In
+  particular we need to transform target to target' below by moving
+  the BBB out of [1] and into [2] as shown below.
+
+    target                         target'
+    (thereis$+                     (thereis$+
+     '(lambda                       '(lambda
+        (loop$-gvars loop$-ivars)      (loop$-gvars loop$-ivars)
+        (if (equal                     (if (equal
+             (car (car loop$-ivars))        (car (car loop$-ivars))
+             (BBB (CAR LOOP$-GVARS)))       (CAR LOOP$-GVARS))      ; [1]
+            (car loop$-ivars)              (car loop$-ivars)
+            'nil))                         'nil))
+     (cons BB 'nil)                 (cons (BBB BB) 'nil)            ; [2]
+     (loop$-as                      (loop$-as
+      (cons (tails (aaa aa)) 'nil))) (cons (tails (aaa aa)) 'nil)))
+
+  Note that target' is in fact an instance of the lefthand side of the
+  rule.  But we've changed the semantics of the lambda object and
+  changed the way thereis$+ uses it by moving the BBB from the inside
+  to the outside of the lambda.  No lambda rewriting can do this.
+  Instead, we need a rule that rewrites thereis$+.  (In fact, a great
+  project would be to implement a metafunction that does this kind of
+  optimization for all loop$ scions.  We just haven't done that yet.
+  Let us know if you do!)
+
+  Here is a suitable rewrite rule for this particular instance of this
+  phenomenon.  We write it as a thereis loop$ rule rather than a
+  thereis$+, but they're the same.
+
+    (defthm example-of-constant-subterm-abstraction
+    (implies (warrant bbb)
+             (equal (loop$ for xxx on a
+                           thereis
+                           (if (equal (car xxx) (bbb bb)) xxx nil))
+                    (let ((zzz (bbb bb)))
+                      (loop$ for xxx on a
+                             thereis
+                             (if (equal (car xxx) zzz) xxx nil))))))
+
+  This illustrates another lesson.  Remember that we're imagining a
+  proof of some conjecture that involves a thereis loop$ mentioning
+  BBB and wondering whether our rewrite rule loop$-can-be-member will
+  hit it.  Had the thereis loop$ in the conjecture been written in
+  the style of the let expression above, where a variable is bound to
+  (bbb bb) and then that variable used in the loop$ body, we wouldn't
+  need to move the (bbb bb) out.  Instead, the lambda generated by
+  translating the loop$ would contain a variable instead of (bbb bb).
+  The name of the let-bound variable outside the lambda is irrelevant
+  since it won't appear in the cleaned up lambda object where it is
+  replaced by a component of the global variables LOOP$-GVARS.  In
+  the containing thereis$+ the value of that global variable will be
+  (bbb bb), which means the free variable b in our
+  loop$-can-be-member rule can be instantiated with (bbb bb) to allow
+  the rule to match.
+
+  Put another way, by writing the loop$ in the inefficient way
+  (requiring (bbb bb) to be recomputed on every iteration) we
+  implicitly produce lambda object that is less general than one with
+  the (bbb bb) on the outside.
+
+  Keep unchanging subterms of loop$ bodies as variables and compute
+  their values outside of the lambda. Basically, try to write the
+  most general lambda objects you can.
+
+  Finally, these difficulties are exacerbated by the ease with which
+  loop$ statements can be written and the difference between their
+  appearance and the formal terms they denote.  You might be more
+  successful at learning to use loop$s in lemmas and theorems if you
+  simply don't use loop$! Instead, learn to write the corresponding
+  terms, e.g., try writing a thereis$ or a thereis$+ term instead of
+  a thereis loop$ statement in your lemmas and theorems.  Since the
+  prover's output contains such terms (rather than loop$ statements),
+  it will be easier to see where lemmas differ from the targets they
+  were intended to hit.  After enough practice you can write loop$
+  statements with a better appreciation of what they actually denote.")
  (RFIX
   (NUMBERS ACL2-BUILT-INS)
   "Coerce to a rational number
@@ -120112,6 +120874,73 @@ Subtopics
 
   [Symbolp]
       Recognizer for symbols")
+ (SYNTACTICALLY-CLEAN-LAMBDA-OBJECTS-THEORY
+  (THEORIES THEORY-FUNCTIONS REWRITE)
+  "how to specify syntactic cleaning of lambda objects
+
+  The enabled status of two rewrite-lambda-modep runes are used as
+  flags to determine the action taken when eligible lambda objects
+  are encountered by the ACL2 rewriter.  See [rewrite-lambda-object]
+  and [rewrite-lambda-object-actions].  To prevent the rewriter from
+  diving recursively into the body of an eligible lambda object but
+  use a simpler syntactic cleaning process instead, the rune
+  (:executable-counterpart rewrite-lambda-modep) must be enabled and
+  the rune (:definition rewrite-lambda-modep) must be disabled in the
+  then-current theory.  The 0-ary function
+  syntactically-clean-lambda-objects-theory returns such a theory.
+
+  In fact, diving into eligible quoted lambda object constants to
+  rewrite the body is the default action when ACL2 starts up.  See
+  [rewriting-versus-cleaning-up-lambda-objects] for why you might
+  want to change the default action when eligible lambda objects are
+  encountered by the rewriter.
+
+  The expression (syntactically-clean-lambda-objects-theory)
+  macroexpands to the theory expression
+
+    (e/d ((:executable-counterpart rewrite-lambda-modep))
+         ((:definition rewrite-lambda-modep)))
+
+  which is a theory equal to then current theory except that the
+  executable-counterpart rune of rewrite-lambda-modep but the
+  definition rune is disabled.  This expansion is suitable for use in
+  an [in-theory] event or :in-theory hint (see :[hints]).
+
+  Both these two runes are initally enabled, so eligible lambda object
+  bodies are rewritten by default until and unless some event (e.g.,
+  an [in-theory] or [include-book]) or a superior local subgoal hint
+  changes the status of those runes.
+
+  For example, if lambda object rewriting is active you wish to just
+  syntactically clean the lambda objects in Subgoal 3 of some proof,
+  you could use the :[hints]
+
+    (\"Subgoal 3\"
+     :in-theory (syntactically-clean-lambda-objects-theory))
+
+  Note that if you also wish to enable or disable other runes in the
+  same subgoal you must construct an appropriate theory.
+
+  For example, if in Subgoal 3 of some proof you wanted to enable
+  LEMMA1 and disable LEMMA2 in a theory that will also specify
+  syntactic cleaning of lambda objects, you might write
+
+    (\"Subgoal 3\"
+     :in-theory (set-difference-theories
+                   (union-theories (syntactically-clean-lambda-objects-theory)
+                                   '(LEMMA1))
+                   '(LEMMA2)))
+
+  Some users might prefer
+
+    (\"Subgoal 3\"
+     :in-theory (e/d ((:executable-counterpart rewrite-lambda-modep)
+                      LEMMA1)
+                     ((:definition rewrite-lambda-modep)
+                      LEMMA2)))
+
+  See [theories] for general information about theories and how to
+  create and use them.")
  (SYNTAX
   (MISCELLANEOUS)
   "The syntax of ACL2 is that of Common Lisp
@@ -124426,6 +125255,9 @@ Subtopics
   [Ground-zero]
       [enable]d rules in the [startup] theory
 
+  [Hands-off-lambda-objects-theory]
+      how to specify no modification of lambda objects
+
   [In-theory]
       Designate ``current'' theory (enabling its rules)
 
@@ -124441,6 +125273,9 @@ Subtopics
   [Minimal-theory]
       A minimal theory to enable
 
+  [Rewrite-lambda-objects-theory]
+      how to specify rewriting of lambda objects
+
   [Rule-names]
       How rules are named.
 
@@ -124449,6 +125284,9 @@ Subtopics
 
   [Set-difference-theories]
       Difference of two [theories]
+
+  [Syntactically-clean-lambda-objects-theory]
+      how to specify syntactic cleaning of lambda objects
 
   [Theories-and-primitives]
       Warnings from disabling or enabling certain built-in functions
@@ -124707,14 +125545,23 @@ Subtopics
   [Ground-zero]
       [enable]d rules in the [startup] theory
 
+  [Hands-off-lambda-objects-theory]
+      how to specify no modification of lambda objects
+
   [Intersection-theories]
       Intersect two [theories]
 
   [Minimal-theory]
       A minimal theory to enable
 
+  [Rewrite-lambda-objects-theory]
+      how to specify rewriting of lambda objects
+
   [Set-difference-theories]
       Difference of two [theories]
+
+  [Syntactically-clean-lambda-objects-theory]
+      how to specify syntactic cleaning of lambda objects
 
   [Theory]
       Retrieve named theory
