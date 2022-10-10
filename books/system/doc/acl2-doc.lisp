@@ -27337,10 +27337,12 @@ ld) and @(tsee include-book)"
  @(see warrant)ed if proofs are to be done about them or if they are in @(see
  logic) mode and are called during evaluation.</p>
 
- <p>The do- and fin- bodies allow a sort of ``DO-body term''.  These DO-body
- terms are as follows, informally (in particular we are ignoring here
- distinctions between translated and untranslated terms; see @(see term)).  As
- usual, the restrictions on return values apply only to code, not to terms
+ <p>The @('do-body') and @('fin-body') positions are to be what we call
+ ``DO-body term''.  <b>These are not, in general, normal ACL2 terms!  They
+ allow restricted uses of @('RETURN'), @('PROGN'), @('SETQ'), @('MV-SETQ'), and
+ @('LOOP-FINISH') as described below.</b> In the descriptions below we ignore
+ the distinctions between translated and untranslated terms; see @(see term)).
+ As usual, the restrictions on return values apply only to code, not to terms
  occurring in theorem statements.</p>
 
  <ul>
@@ -43321,6 +43323,79 @@ current fast alists."
 
  <p><see topic='@(url |ACL2 as an Interactive Theorem Prover (cont)|)'><img
  src='res/tours/walking.gif'></img></see></p>")
+
+(defxdoc hands-off-lambda-objects-theory
+  :parents (theories theory-functions rewrite)
+  :short "how to specify no modification of lambda objects"
+  :long "<p>The enabled status of two @('rewrite-lambda-modep') runes are used
+  as flags to determine the action taken when eligible @('lambda') objects are
+  encountered by the ACL2 rewriter.  See @(see rewrite-lambda-object) and
+  @(tsee rewrite-lambda-object-actions).  To prevent the rewriter even
+  considering changing a quoted @('lambda') object, the rune
+  @('(:executable-counterpart rewrite-lambda-modep)') must be disabled in the
+  then-current theory.  The 0-ary function @('hands-off-lambda-objects-theory')
+  returns such a theory.</p>
+
+  <p>In fact, diving into eligible quoted @('lambda') object constants to
+  rewrite the body is the default action when ACL2 starts up.  See @(see
+  rewriting-versus-cleaning-up-lambda-objects) for why you might want to change
+  the default action when eligible @('lambda') objects are encountered by the
+  rewriter.</p>
+
+  <p>The expression @('(hands-off-lambda-objects-theory)') macroexpands to the
+  theory expression</p>
+
+  @({
+  (e/d nil
+       ((:executable-counterpart rewrite-lambda-modep)))
+  })
+
+  <p>which is a theory equal to then current theory except that the
+  executable-counterpart rune of @('rewrite-lambda-modep') is disabled.  This
+  expansion is suitable for use in an @(tsee in-theory) event or
+  @(':in-theory') hint (see @(':')@(tsee hints)).</p>
+
+  <p>This rune is initally enabled, so eligible @('lambda') object bodies are
+  either rewritten or syntactically cleaned by default (depending on the status
+  of @('(:definition rewrite-lambda-modep)')) until and unless some
+  event (e.g., an @(tsee in-theory) or @(tsee include-book)) or a superior
+  local subgoal hint changes the status of this rune.</p>
+
+  <p>For example, if @('lambda') object rewriting is active and you wish it not
+  to be (so that @('lambda') objects remain unchanged) in @('Subgoal 3') of
+  some proof, you could use the @(':')@(tsee hints)</p>
+
+  @({
+  (\"Subgoal 3\"
+   :in-theory (hands-off-lambda-objects-theory))
+  })
+
+  <p>Note that if you also wish to enable or disable other runes in the same
+  subgoal you must construct an appropriate theory.</p>
+
+  <p>For example, if in @('Subgoal 3') of some proof you wanted to enable
+  @('LEMMA1') and disable @('LEMMA2') in a theory that will also specify
+  syntactic cleaning of @('lambda') objects, you might write</p>
+
+  @({
+  (\"Subgoal 3\"
+   :in-theory (set-difference-theories
+                 (union-theories (hands-off-lambda-objects-theory)
+                                 '(LEMMA1))
+                 '(LEMMA2)))
+  })
+
+  <p>Some users might prefer</p>
+
+  @({
+  (\"Subgoal 3\"
+   :in-theory (e/d (LEMMA1)
+                   ((:executable-counterpart rewrite-lambda-modep)
+                    LEMMA2)))
+  })
+
+  <p>See @(see theories) for general information about theories and how to
+  create and use them.</p>")
 
 (defxdoc hard-error
   :parents (errors acl2-built-ins)
@@ -93978,6 +94053,10 @@ it."
 
  </ul>
 
+ <p>The use of @('(:executable-counterpart rewrite-lambda-modep)') to control
+ the behavior of lambda object rewriting by the prover (see @(see
+ rewrite-lambda-object)) has been elaborated.</p>
+
  <h3>New Features</h3>
 
  <p>The new zero-ary attachable system function, @('heavy-linear-p'), allows
@@ -99465,171 +99544,6 @@ arithmetic) for libraries of @(see books) for arithmetic reasoning.</p>")
  <p>Functions @(tsee profile-all) and @(tsee profile-acl2) are available for
  profiling all functions or all ACL2 functions, respectively.</p>")
 
-(defxdoc project-dir-alist
-  :parents (books events)
-  :short "Support for moving project directories (also @(':dir') arguments)"
-  :long "<p>This topic describes the @('project-dir-alist'), which supports the
- relocation of book directories so that their @(see books) are still treated as
- certified.  Each such directory is treated as a <i>project</i>, which is
- represented by a @(see keyword).  In particular, the keyword, @(':SYSTEM'),
- represents the @(see community-books) as such a project.  The
- @('project-dir-alist') also provides one way to interpret the @(':dir')
- keyword argument of @(tsee include-book) and @(tsee ld).</p>
-
- <p>It is theoretically possible to undermine soundness by using this
- capability inappropriately (see below for some discussion of appropriate
- usage).  For the utmost security, perform a fresh certification of your entire
- collection of books without using this capability.  See @(see certificate),
- specifically the discussion there about placing a ``burden'' on the user.</p>
-
- <p>To see the @('project-dir-alist') in your session, evaluate the form
- @('(project-dir-alist (w state))').</p>
-
- <p>We start below by introducing the @('project-dir-alist') and explaining how
- to set it up.  Next we describe its effects.  We conclude by discussing some
- details, limitations, and restrictions.</p>
-
- <h3>What is the @('project-dir-alist') and how is it established?</h3>
-
- <p>The @('project-dir-alist') is an association list that maps keywords to
- directory names.  If we map keyword @(':K') to directory @('\"<dir>\"'), we
- say that the project name @('K') is associated with project directory
- @('\"<dir>\"').</p>
-
- <p>The way to establish the @('project-dir-alist') is to set environment
- variable @('ACL2_PROJECTS') to the name of a file, which we will call the
- ``projects file''.  The projects file may have lines of the following form,
- where we write @(':K') to denote an arbitrary keyword and @('\"<dir>\"') to
- denote a directory name inside double-quotes.</p>
-
- @({
- :K \"<dir>\"
- })
-
- <p>Such a line associates the project name @('K') with the project directory
- @('\"dir\"').  Each remaining line in a projects file should either be
- blank (i.e., contain only whitespace) or else be a comment line, that is, a
- line for which the first non-whitespace character is a semicolon (@(';')).</p>
-
- <p>The projects file is read when ACL2 starts up.  ACL2 creates the
- @('project-dir-alist') by using each line as above to associate the keyword
- @(':K') with the directory represented by @('\"<dir>\"'), which may be a
- relative or absolute pathname.  Relative pathnames are interpreted with
- respect to the directory of the projects file.</p>
-
- <p>If the keyword @(':SYSTEM') is not specified in the projects file, then the
- @('project-dir-alist') will additionally include a pair that associates
- @(':SYSTEM') with the @(see community-books) directory, which is generally the
- @('books/') subdirectory of your ACL2 distribution.  That value for
- @(':SYSTEM') can be overridden either by specifying it explicitly with
- @(':SYSTEM') in the projects file or by setting environment variable
- @('ACL2_SYSTEM_BOOKS') to that value &mdash; where if both overrides are used,
- they must not conflict.</p>
-
- <p>The values of the environment variables mentioned above, @('ACL2_PROJECTS')
- and @('ACL2_SYSTEM_BOOKS'), are pathnames that can be either relative or
- absolute.  A relative pathname is interpreted with respect to the directory in
- which ACL2 is invoked.  The final character need not be ``@('/')''; if it's
- not, then that character will be added at the end before adding to the
- @('project-dir-alist').</p>
-
- <p>The @('project-dir-alist') must have no duplicate keys and no duplicate
- directory names.</p>
-
- <h3>Effects of the @('project-dir-alist')</h3>
-
- <p>There are the following two effects of the association of a keyword @(':K')
- with a directory @('\"<dir>\"') in the @('project-dir-alist').</p>
-
- <p><b>(1) @(':K') specifies a project directory that may be moved.</b></p>
-
- <blockquote>
-
- <p>Consider first the default case, where there is a single association in the
- @('project-dir-alist'): @(':SYSTEM') is associated with the @(see
- community-books) directory.  Suppose that the community books and their
- certificates are moved to a new directory, @('\"<dir>\"').  Then if you run
- ACL2 in an environment where the @('project-dir-alist') associates
- @(':SYSTEM') with @('\"<dir>\"'), the relocated community books will still be
- treated as certified.</p>
-
- <p>The case of @(':SYSTEM') described above generalizes naturally, as follows.
- Let @('S') be a set of books certified with a given @('project-dir-alist'),
- each of which includes only other books in @('S').  (For example, @('S')
- contains just the community books directory in the special case above.)  Also
- assume that the absolute pathname of every book in @('S') has a prefix among
- the directories in that @('project-dir-alist').  Then all books in @('S'),
- along with their @(see certificate) files, can be moved and those books will
- still be considered to be certified in any ACL2 session with a suitable
- @('project-dir-alist'), as follows.  For every keyword @(':K') mapped to
- directory @('\"<dir>\"') in the original @('project-dir-alist') (the one at
- certification time), the new @('project-dir-alist') should map @(':K') to the
- directory @('\"<dir2>\"') to which @('\"<dir>\"') was moved.</p>
-
- </blockquote>
-
- <p><b>(2) @(':K') can be used as a @(':dir') keyword, to reference
- @('\"<dir>\"').</b></p>
-
- <blockquote>
-
- <p>The optional @(':dir') keyword argument of @(tsee include-book) and @(tsee
- ld) can have value @(':K'), in which case the pathname argument is interpreted
- with respect to @('\"<dir>\"').  This behavior is the same as when @(':K') is
- bound to @('\"<dir>\"') using @(tsee add-include-book-dir) or @(tsee
- add-include-book-dir!).</p>
-
- </blockquote>
-
- <h3>Additional details</h3>
-
- <blockquote>
-
- <p><b>Prefixes.</b> Suppose @(':K1') and @(':K2') are keywords bound in the
- @('project-dir-alist') to @('\"<dir1>\"') and @('\"<dir2>\"'), respectively,
- where @('\"<dir1>\"') is a prefix of @('\"<dir2>\"') (hence is stricly
- shorter, since duplicates are disallowed, as noted above).  Then it may be
- simplest to maintain that property &mdash; that the value of @(':K1') is a
- prefix of the value of @(':K2') &mdash; when creating a new @('ACL2_PROJECTS')
- directory to reflect relocation of these directories of books.  The actual
- requirement is that directories under the old value of @(':K2') need to be
- moved to the same relative locations under the new value of @(':K2'), and all
- other directories under the old value of @(':K1') need to be moved to the same
- relative locations under the new value of @(':K1').</p>
-
- <p><b>@(tsee Save-exec).</b> By default, an executable created with @(tsee
- save-exec) will have an unchanged @('project-dir-alist').  However, a new
- @('project-dir-alist') will be created as described above if environment
- variable @('ACL2_PROJECTS') is set; also, if environment variable
- @('ACL2_SYSTEM_BOOKS') is set, then the existing @('project-dir-alist') will
- be modified to map @(':SYSTEM') to the value of @('ACL2_SYSTEM_BOOKS').</p>
-
- </blockquote>
-
- <h3>Additional Limitations and Restrictions</h3>
-
- <blockquote>
-
- <p>(Already noted above) <b>No duplicates.</b> There must be no duplicate keys
- or duplicate directory names in the @('project-dir-alist').</p>
-
- <p><b>No overlap.</b> No keyword may be bound with @(tsee
- add-include-book-dir) or @(tsee add-include-book-dir!) that is also bound in
- the @('project-dir-alist').</p>
-
- <p><b>Avoid using absolute pathnames in books.</b> Consider a form that
- contains an absolute pathname, such as @('(defconst *c*
- \"/u/home/jones/bk\")').  If that form is in a book @('B') that is moved, then
- of course it remain in @('B') after the move.  That is certainly fine, unless
- one expects this pathname to change as @('B') is moved.  That said, an
- absolute pathname that extends a project directory is OK in an @(tsee
- include-book) form among the @(see portcullis) commands for a book, in the
- following sense: it is replaced in that book's @(see certificate) by
- referencing the project's keyword name to avoid using an absolute
- pathname.</p>
-
- </blockquote>")
-
 (defxdoc prog2$
   :parents (progn$ acl2-built-ins)
   :short "Execute two forms and return the value of the second one"
@@ -101210,6 +101124,171 @@ arithmetic) for libraries of @(see books) for arithmetic reasoning.</p>")
   efficiency doesn't matter, and the @('loop$') scion translation of a
   @('loop$') is as perspicuous as the @('loop$') itself.  So don't dismiss this
   approach out of hand.</p>")
+
+(defxdoc project-dir-alist
+  :parents (books events)
+  :short "Support for moving project directories (also @(':dir') arguments)"
+  :long "<p>This topic describes the @('project-dir-alist'), which supports the
+ relocation of book directories so that their @(see books) are still treated as
+ certified.  Each such directory is treated as a <i>project</i>, which is
+ represented by a @(see keyword).  In particular, the keyword, @(':SYSTEM'),
+ represents the @(see community-books) as such a project.  The
+ @('project-dir-alist') also provides one way to interpret the @(':dir')
+ keyword argument of @(tsee include-book) and @(tsee ld).</p>
+
+ <p>It is theoretically possible to undermine soundness by using this
+ capability inappropriately (see below for some discussion of appropriate
+ usage).  For the utmost security, perform a fresh certification of your entire
+ collection of books without using this capability.  See @(see certificate),
+ specifically the discussion there about placing a ``burden'' on the user.</p>
+
+ <p>To see the @('project-dir-alist') in your session, evaluate the form
+ @('(project-dir-alist (w state))').</p>
+
+ <p>We start below by introducing the @('project-dir-alist') and explaining how
+ to set it up.  Next we describe its effects.  We conclude by discussing some
+ details, limitations, and restrictions.</p>
+
+ <h3>What is the @('project-dir-alist') and how is it established?</h3>
+
+ <p>The @('project-dir-alist') is an association list that maps keywords to
+ directory names.  If we map keyword @(':K') to directory @('\"<dir>\"'), we
+ say that the project name @('K') is associated with project directory
+ @('\"<dir>\"').</p>
+
+ <p>The way to establish the @('project-dir-alist') is to set environment
+ variable @('ACL2_PROJECTS') to the name of a file, which we will call the
+ ``projects file''.  The projects file may have lines of the following form,
+ where we write @(':K') to denote an arbitrary keyword and @('\"<dir>\"') to
+ denote a directory name inside double-quotes.</p>
+
+ @({
+ :K \"<dir>\"
+ })
+
+ <p>Such a line associates the project name @('K') with the project directory
+ @('\"dir\"').  Each remaining line in a projects file should either be
+ blank (i.e., contain only whitespace) or else be a comment line, that is, a
+ line for which the first non-whitespace character is a semicolon (@(';')).</p>
+
+ <p>The projects file is read when ACL2 starts up.  ACL2 creates the
+ @('project-dir-alist') by using each line as above to associate the keyword
+ @(':K') with the directory represented by @('\"<dir>\"'), which may be a
+ relative or absolute pathname.  Relative pathnames are interpreted with
+ respect to the directory of the projects file.</p>
+
+ <p>If the keyword @(':SYSTEM') is not specified in the projects file, then the
+ @('project-dir-alist') will additionally include a pair that associates
+ @(':SYSTEM') with the @(see community-books) directory, which is generally the
+ @('books/') subdirectory of your ACL2 distribution.  That value for
+ @(':SYSTEM') can be overridden either by specifying it explicitly with
+ @(':SYSTEM') in the projects file or by setting environment variable
+ @('ACL2_SYSTEM_BOOKS') to that value &mdash; where if both overrides are used,
+ they must not conflict.</p>
+
+ <p>The values of the environment variables mentioned above, @('ACL2_PROJECTS')
+ and @('ACL2_SYSTEM_BOOKS'), are pathnames that can be either relative or
+ absolute.  A relative pathname is interpreted with respect to the directory in
+ which ACL2 is invoked.  The final character need not be ``@('/')''; if it's
+ not, then that character will be added at the end before adding to the
+ @('project-dir-alist').</p>
+
+ <p>The @('project-dir-alist') must have no duplicate keys and no duplicate
+ directory names.</p>
+
+ <h3>Effects of the @('project-dir-alist')</h3>
+
+ <p>There are the following two effects of the association of a keyword @(':K')
+ with a directory @('\"<dir>\"') in the @('project-dir-alist').</p>
+
+ <p><b>(1) @(':K') specifies a project directory that may be moved.</b></p>
+
+ <blockquote>
+
+ <p>Consider first the default case, where there is a single association in the
+ @('project-dir-alist'): @(':SYSTEM') is associated with the @(see
+ community-books) directory.  Suppose that the community books and their
+ certificates are moved to a new directory, @('\"<dir>\"').  Then if you run
+ ACL2 in an environment where the @('project-dir-alist') associates
+ @(':SYSTEM') with @('\"<dir>\"'), the relocated community books will still be
+ treated as certified.</p>
+
+ <p>The case of @(':SYSTEM') described above generalizes naturally, as follows.
+ Let @('S') be a set of books certified with a given @('project-dir-alist'),
+ each of which includes only other books in @('S').  (For example, @('S')
+ contains just the community books directory in the special case above.)  Also
+ assume that the absolute pathname of every book in @('S') has a prefix among
+ the directories in that @('project-dir-alist').  Then all books in @('S'),
+ along with their @(see certificate) files, can be moved and those books will
+ still be considered to be certified in any ACL2 session with a suitable
+ @('project-dir-alist'), as follows.  For every keyword @(':K') mapped to
+ directory @('\"<dir>\"') in the original @('project-dir-alist') (the one at
+ certification time), the new @('project-dir-alist') should map @(':K') to the
+ directory @('\"<dir2>\"') to which @('\"<dir>\"') was moved.</p>
+
+ </blockquote>
+
+ <p><b>(2) @(':K') can be used as a @(':dir') keyword, to reference
+ @('\"<dir>\"').</b></p>
+
+ <blockquote>
+
+ <p>The optional @(':dir') keyword argument of @(tsee include-book) and @(tsee
+ ld) can have value @(':K'), in which case the pathname argument is interpreted
+ with respect to @('\"<dir>\"').  This behavior is the same as when @(':K') is
+ bound to @('\"<dir>\"') using @(tsee add-include-book-dir) or @(tsee
+ add-include-book-dir!).</p>
+
+ </blockquote>
+
+ <h3>Additional details</h3>
+
+ <blockquote>
+
+ <p><b>Prefixes.</b> Suppose @(':K1') and @(':K2') are keywords bound in the
+ @('project-dir-alist') to @('\"<dir1>\"') and @('\"<dir2>\"'), respectively,
+ where @('\"<dir1>\"') is a prefix of @('\"<dir2>\"') (hence is stricly
+ shorter, since duplicates are disallowed, as noted above).  Then it may be
+ simplest to maintain that property &mdash; that the value of @(':K1') is a
+ prefix of the value of @(':K2') &mdash; when creating a new @('ACL2_PROJECTS')
+ directory to reflect relocation of these directories of books.  The actual
+ requirement is that directories under the old value of @(':K2') need to be
+ moved to the same relative locations under the new value of @(':K2'), and all
+ other directories under the old value of @(':K1') need to be moved to the same
+ relative locations under the new value of @(':K1').</p>
+
+ <p><b>@(tsee Save-exec).</b> By default, an executable created with @(tsee
+ save-exec) will have an unchanged @('project-dir-alist').  However, a new
+ @('project-dir-alist') will be created as described above if environment
+ variable @('ACL2_PROJECTS') is set; also, if environment variable
+ @('ACL2_SYSTEM_BOOKS') is set, then the existing @('project-dir-alist') will
+ be modified to map @(':SYSTEM') to the value of @('ACL2_SYSTEM_BOOKS').</p>
+
+ </blockquote>
+
+ <h3>Additional Limitations and Restrictions</h3>
+
+ <blockquote>
+
+ <p>(Already noted above) <b>No duplicates.</b> There must be no duplicate keys
+ or duplicate directory names in the @('project-dir-alist').</p>
+
+ <p><b>No overlap.</b> No keyword may be bound with @(tsee
+ add-include-book-dir) or @(tsee add-include-book-dir!) that is also bound in
+ the @('project-dir-alist').</p>
+
+ <p><b>Avoid using absolute pathnames in books.</b> Consider a form that
+ contains an absolute pathname, such as @('(defconst *c*
+ \"/u/home/jones/bk\")').  If that form is in a book @('B') that is moved, then
+ of course it remain in @('B') after the move.  That is certainly fine, unless
+ one expects this pathname to change as @('B') is moved.  That said, an
+ absolute pathname that extends a project directory is OK in an @(tsee
+ include-book) form among the @(see portcullis) commands for a book, in the
+ following sense: it is replaced in that book's @(see certificate) by
+ referencing the project's keyword name to avoid using an absolute
+ pathname.</p>
+
+ </blockquote>")
 
 (defxdoc prompt
   :parents (ld)
@@ -107547,47 +107626,59 @@ arithmetic) for libraries of @(see books) for arithmetic reasoning.</p>")
  @('Rewrite-equiv') to induce substitution using equivalence relations
  appearing in the hypothesis, see @(see rewrite-equiv-hint).</p>")
 
+(defxdoc rewrite-lambda-modep
+  :parents (rewrite)
+  :short "switch controlling rewriting of lambda objects"
+  :long "<p>@('Rewrite-lambda-modep') is an identity function with no purpose
+  other than to serve as a switch controlling whether and how the ACL2 prover
+  rewrites quoted @('lambda') objects in argument positions of @(see ilk)
+  @(':FN').  Behavior is determined by the enabled status of two runes
+  associated with @('rewrite-lambda-modep'), the executable-counterpart rune
+  and the definition rune.  See @(see rewrite-lambda-object).</p>")
+
 (defxdoc rewrite-lambda-object
   :parents (rewrite)
   :short "rewriting lambda objects in :FN slots"
   :long "<p>@(tsee Lambda) objects are quoted constants passed to @(see scion)s
-  and applied as functions by @(tsee apply$).  The ACL2 rewriter rewrites the
-  bodies of quoted @('lambda') objects when they occur in slots of @(see ilk)
-  @(':FN').  However, there are restrictions on which lambda objects are
-  rewritten, restrictions on the techniques available to the rewriter during
-  the rewriting of @('lambda') bodies, and restrictions controlling whether the
-  rewritten object replaces the original object or is is ignored.  We explain
-  below.</p>
+  and applied as functions by @(tsee apply$).  The ACL2 rewriter can be made to
+  replace the bodies of quoted @('lambda') objects with (supposedly) simpler
+  bodies that are @(tsee ev$) equivalent, when the lambda objects occur in
+  slots of @(see ilk) @(':FN').  However, there are restrictions on which
+  lambda objects can be so simplified, restrictions on the techniques available
+  to the rewriter during the simplification of @('lambda') bodies, and
+  restrictions controlling whether the simplified body replaces the original or
+  is ignored.  We explain below.</p>
 
-  <h3>When Rewriting of @('lambda') Objects Is Attempted</h3>
+  <h3>When an Occurrence of a @('lambda') Objects Is Eligible</h3>
 
-  <p>The rewriter attempts to rewrite the body of a quoted @('lambda') constant
+  <p>An occurrence of a quoted @('lambda') object is eligible to be simplified
   provided</p>
 
   <ul>
   <li>(a) it occurs in a @(':FN') position of a call of a @(see scion),</li>
 
-  <li>(b) the @(see rune) @('(:executable-counterpart rewrite-lambda-modep)'))
-  is @(see enable)d (which it is by default),</li>
-
-  <li>(c) the @('lambda') object is well-formed (see @(tsee
+  <li>(b) the @('lambda') object is well-formed (see @(tsee
   well-formed-lambda-objectp)),</li>
 
-  <li>(d) every function symbol mentioned in the body has been warranted</li>
+  <li>(c) every function symbol mentioned in the body has been warranted</li>
 
   </ul>
 
-  <p>Condition (c) implies the body of the @('lambda') is in fact a well-formed
+  <p>However, eligible quoted @('lambda') objects are not modified at all if
+  the @(see rune) @('(:executable-counterpart rewrite-lambda-modep)') is @(see
+  disable)d.  That rune is enabled by default.</p>
+
+  <p>Condition (b) implies the body of the @('lambda') is in fact a well-formed
   ACL2 term (so the rewriter can explore it), every function symbol in it is
-  @(see warrant)ed (so that function objects mentioned are used properly), that
+  @(see badge)d (so that function objects mentioned are used properly), that
   every variable symbol occurring freely in the body is among the formals of
-  the @('lambda') object, and together with (d) implies that the term
+  the @('lambda') object, and together with (c) implies that the term
   ``behaves'' as expected if the appropriate warrant hypotheses govern this
   occurrence of the object.  This last implication means that @(tsee ev$) of
   the body is equal to unquoted body (under a suitable assignment), which means
-  we can rewrite the unquoted body.</p>
+  we can replace the unquoted body.</p>
 
-  <p>If (a) and (b) above hold but either (c) or (d) fails, then a
+  <p>If (a) holds but either (b) or (c) fails, then a
   @('\"rewrite-lambda-object\"') warning message is printed during the proof.
   However, this message is only printed once per @('lambda') object per proof
   attempt because otherwise the presence of ill-formed @('lambda')-like objects
@@ -107597,10 +107688,22 @@ arithmetic) for libraries of @(see books) for arithmetic reasoning.</p>")
 
   <h3>Restrictions During Rewriting of a @('Lambda') Body</h3>
 
-  <p>The rewriter is restricted in two ways when rewriting @('lambda')
-  bodies.</p>
+  <p>The rewriter is restricted in three ways when rewriting the bodies of
+  eligible occurrences of @('lambda') objects.</p>
 
-  <p>First, warrant hypotheses in the goal clause are the only contextual
+  <p>First, the user can specify one of two actions the rewriter can take on an
+  eligible @('lambda') object occurrence (in addition to taking no action as
+  controlled by the @('rewrite-lambda-modep') rune mentioned above).  The
+  available actions are to recursively call the rewriter and normalize the
+  result, or to do syntactic cleaning only.  The default is recursive
+  rewriting, with the restrictions explained in below.  Syntactic cleaning just
+  eliminates declarations, guards, and various tags irrelevant to the logical
+  value of the body.  We describe how the user specifies the action to be used
+  in @(see rewrite-lambda-object-actions).  We give more details about these
+  two kinds of @('lambda') body simplification in @(see
+  rewriting-versus-cleaning-up-lambda-objects).</p>
+
+  <p>Second, warrant hypotheses in the goal clause are the only contextual
   information ``imported'' from the goal clause and made available while
   rewriting a @('lambda') body.  That means type information about variables
   and other terms is forgotten, as are any linear arithmetic relationships.
@@ -107623,7 +107726,7 @@ arithmetic) for libraries of @(see books) for arithmetic reasoning.</p>")
   sophisticated handling of contextual information has not been
   implemented.)</p>
 
-  <p>Second, recursive functions are never opened when rewriting @('lambda')
+  <p>Third, recursive functions are never opened when rewriting @('lambda')
   bodies.  For example, if @('(len (cons e x))') occurs in a @('lambda') body,
   you might expect it to be simplified to @('(+ 1 (len x))'), because that is
   what generally happens to that term when occurrences outside @('lambda')
@@ -107638,9 +107741,18 @@ arithmetic) for libraries of @(see books) for arithmetic reasoning.</p>")
   <p>The ACL2 implementors hope to address both of the above problems in
   eventual future releases.</p>
 
+  <p>Syntactic cleaning, in contrast to the restricted rewriting just
+  described, eliminates declarations, guards, and other compiler-related tags
+  introduced by translation of @('lambda$') and @('loop$').  It does beta
+  reduction, which eliminates local variable names (other than the formals of
+  the @('lambda') object).  And it replaces the last two arguments of calls of
+  @(tsee do$) by @('nil') if those two arguments are quoted constants other
+  than @('nil').  (Those two arguments are irrelevant to the value of the
+  @('do$') term and only used in error reporting.)</p>
+
   <h3>What Happens After Rewriting a @('Lambda') Body</h3>
 
-  <p>Upon rewriting the body, <i>b</i>, of
+  <p>After the specified action on the body, <i>b</i>, of
   @('(lambda(')<i>v1...vn</i>@(')')<i>b</i>@(')') to produce <i>b'</i> the
   decision must be made as to whether to return the @('lambda') with the
   rewritten body, @('(lambda(')<i>v1...vn</i>@(')')<i>b'</i>@(')'), or to
@@ -107665,8 +107777,7 @@ arithmetic) for libraries of @(see books) for arithmetic reasoning.</p>")
   conditions above was violated.  However, this message is only printed once
   per @('lambda') object per proof attempt because otherwise the presence of a
   @('lambda') object that rewrites inappropriately will litter the output with
-  repeated warnings.  You may turn these warnings off with @('(')@(tsee
-  toggle-inhibit-warning) @('\"Rewrite-lambda-object\")').</p>
+  repeated warnings.</p>
 
   <p>Condition (a) can arise if a rewrite rule introduces a free variable;
   disabling that rewrite rule is recommended.  Condition (b) can arise if some
@@ -107675,13 +107786,13 @@ arithmetic) for libraries of @(see books) for arithmetic reasoning.</p>")
   response is to use @(tsee defwarrant) to issue a warrant for the offending
   function symbol and then supply that warrant as a hypothesis to the goal; the
   latter response is perhaps better because it means all the ``usual''
-  rewriting is done, normalizing terms as expected.  Condition (c) arises when
-  forcing has been disabled and the offending function symbol's warrant is not
-  among the hypotheses; enabling forcing or adding the warrant as a hypothesis
-  is recommended.</p>
+  rewriting is done, normalizing terms as expected.  Condition (c) can be
+  addressed by using @('defwarrant') to issue a warrant for the offending
+  function symbol and enabling forcing (see @(tsee force)).</p>
 
-  <p>The warning message noted above can become annoying.  It can be inhibited
-  with @('(toggle-inhibit-warning \"Rewrite-lambda-object\")').</p>
+  <p>The warning message noted above can become annoying.  You may turn these
+  warnings off with @('(')@(tsee toggle-inhibit-warning)
+  @('\"Rewrite-lambda-object\")').</p>
 
   <p>Be advised that if the @('\"rewrite-lambda-object\"') warning has been
   inhibited (by you or some book included in your session) and then, when
@@ -107751,6 +107862,158 @@ arithmetic) for libraries of @(see books) for arithmetic reasoning.</p>")
 
   <p>If you want to avoid this normalization of the globals, disable the @(see
   rune) @('(:meta relink-fancy-scion-correct)').</p>")
+
+(defxdoc rewrite-lambda-object-actions
+  :parents (rewrite)
+  :short "actions available when rewriting lambda objects"
+  :long "<p>As explained in @(see rewrite-lambda-object) the rewriter can be
+  applied to eligible occurrences of quoted @('lambda') objects.  That
+  documentation also describes eligibility, what happens during, and what
+  happens after the specified action, with a focus on recursively rewriting the
+  @('lambda') body.  This topic discusses how to specify the desired
+  action.</p>
+
+  <p>The user can specify one of three actions by manipulating the enabled
+  status of the @(see rune) @('(:executable-counterpart rewrite-lambda-modep)')
+  and the enabled status of @('(:definition rewrite-lambda-modep)').  Recall
+  that such runes can be abbreviated @('(:e rewrite-lambda-modep)') and @('(:d
+  rewrite-lambda-modep)').  But in this discussion, we'll abbreviate them still
+  further by <i>e</i> and <i>d</i>, respectively.</p>
+
+  <p>The actions available on the body of an eligible @('lambda') object
+  occurrence are</p>
+
+  <ul>
+  <li>rewrite:  <i>e</i> and <i>d</i> enabled</li>
+
+  <li>syntactically clean: <i>e</i> enabled and <i>d</i> disabled</li>
+
+  <li>hands-off (no action): <i>e</i> disabled</li>
+
+  </ul>
+
+  <p>Since the action is determined by the enabled status of runes, it can be
+  specified by the user by appropriate global @(tsee in-theory) events or by
+  goal-specific, local @(':in-theory') @(':')@(tsee hints).  There are three
+  0-ary macros that expand into appropriate theories <i>provided</i> the only
+  runes you wish to affect are our so-called <i>e</i> and <i>d</i>.</p>
+
+  <p> The three macros are @(tsee rewrite-lambda-objects-theory), @(tsee
+  syntactically-clean-lambda-objects-theory), and @(tsee
+  hands-off-lambda-objects-theory), with the obvious meanings.  For example,
+  @('(syntactically-clean-lambda-objects-theory)') macroexpands to</p>
+
+  @({
+  (e/d ((:executable-counterpart rewrite-lambda-modep))   ; enable ``e''
+       ((:definition rewrite-lambda-modep)))              ; disable ``d''
+  })
+
+  <p>Since <i>e</i> and <i>d</i> are both initially enabled in ACL2, eligible
+  @('lambda') objects are rewritten by default unless you change the status of
+  <i>e</i> and/or <i>d</i>.</p>
+
+  <p>For example, to make the prover just syntactically clean eligible
+  @('lambda') objects in @('Subgoal 3') of some proof attempt you could provide
+  the @(':hint')
+
+   @({
+
+  (\"Subgoal 3\"
+    :in-theory (syntactically-clean-lambda-objects-theory))
+
+  })</p>
+
+  <p>Note however that if you also need to adjust the status of some other rune
+  in that same hint you must create a theory expression that includes the
+  appropriate use of <i>e</i> and <i>d</i>.  For example, to also enable
+  @('LEMMA1') but disable @('LEMMA2') while specifying use of syntactic
+  cleaning you could write:</p>
+
+  @({
+  (\"Subgoal 3\"
+   :in-theory (e/d ((:executable-counterpart rewrite-lambda-modep)
+                    LEMMA1)
+                   ((:definition rewrite-lambda-modep)
+                    LEMMA2)))
+  })
+
+  <p>For details on what syntactic cleaning is and why it is sometimes
+  useful, see @(see rewriting-versus-cleaning-up-lambda-objects).</p>")
+
+(defxdoc rewrite-lambda-objects-theory
+  :parents (theories theory-functions rewrite)
+  :short "how to specify rewriting of lambda objects"
+  :long "<p>The enabled status of two @('rewrite-lambda-modep') runes are used
+  as flags to determine the action taken when eligible @('lambda') objects are
+  encountered by the ACL2 rewriter.  See @(see rewrite-lambda-object) and
+  @(tsee rewrite-lambda-object-actions).  To make the rewriter dive into the
+  body of an eligible @('lambda') object, both @('(:executable-counterpart
+  rewrite-lambda-modep)') and @('(:definition rewrite-lambda-modep)') must be
+  enabled in the then-current theory.  The 0-ary function
+  @('rewrite-lambda-objects-theory') returns such a theory.</p>
+
+  <p>In fact, diving into eligible quoted @('lambda') object constants to
+  rewrite the body is the default action when ACL2 starts up.  See @(see
+  rewriting-versus-cleaning-up-lambda-objects) for why you might want to change
+  the default action when eligible @('lambda') objects are encountered by the
+  rewriter.</p>
+
+  <p>The expression @('(rewrite-lambda-objects-theory)') macroexpands to the
+  theory expression</p>
+
+  @({
+  (e/d ((:executable-counterpart rewrite-lambda-modep)
+        (:definition rewrite-lambda-modep))
+       nil)
+  })
+
+  <p>which is a theory equal to then current theory except that the
+  executable-counterpart rune and the definition rune of
+  @('rewrite-lambda-modep') are enabled.  This expansion is suitable for use in
+  an @(tsee in-theory) event or @(':in-theory') hint (see @(':')@(tsee
+  hints)).</p>
+
+  <p>Both these two runes are initally enabled, so eligible @('lambda') object
+  bodies are rewritten by default until and unless some event (e.g., an @(tsee
+  in-theory) or @(tsee include-book)) or a superior local subgoal hint changes
+  the status of those runes.</p>
+
+  <p>For example, if @('lambda') object rewriting has been disabled globally
+  and you wish to enable it for @('Subgoal 3') of some proof, you could use
+  the @(':')@(tsee hints)</p>
+
+  @({
+  (\"Subgoal 3\"
+   :in-theory (rewrite-lambda-objects-theory))
+  })
+
+  <p>Note that if you also wish to enable or disable other runes in the same
+  subgoal you must construct an appropriate theory.</p>
+
+  <p>For example, if in @('Subgoal 3') of some proof you wanted to enable
+  @('LEMMA1') and disable @('LEMMA2') in a theory that will also allow
+  rewriting of @('lambda') objects, you might write</p>
+
+  @({
+  (\"Subgoal 3\"
+   :in-theory (set-difference-theories
+                 (union-theories (rewrite-lambda-objects-theory)
+                                 '(LEMMA1))
+                 '(LEMMA2)))
+  })
+
+  <p>Some users might prefer</p>
+
+  @({
+  (\"Subgoal 3\"
+   :in-theory (e/d ((:executable-counterpart rewrite-lambda-modep)
+                    (:definition rewrite-lambda-modep)
+                    LEMMA1)
+                   (LEMMA2)))
+  })
+
+  <p>See @(see theories) for general information about theories and how to
+  create and use them.</p>")
 
 (defxdoc rewrite-quoted-constant
   :parents (rule-classes)
@@ -108024,6 +108287,554 @@ arithmetic) for libraries of @(see books) for arithmetic reasoning.</p>")
  <p>This limit can be changed; see @(see set-rewrite-stack-limit).</p>
 
  <p>For a related limit, see @(see backchain-limit).</p>")
+
+(defxdoc rewriting-versus-cleaning-up-lambda-objects
+  :parents (rewrite)
+  :short "why change the default action on rewriting @('lambda') objects"
+  :long "<p>See @(see rewrite-lambda-object) and @(tsee
+  rewrite-lambda-object-actions) for background information on how the ACL2
+  rewriter behaves on certain quoted @('lambda') objects.  In this topic we
+  discuss why you might want to change that behavior.</p>
+
+  <p>There are three basic actions the rewriter might take when it encounters
+  a suitable @('lambda') object.</p>
+
+  <ul>
+
+  <li>recursively rewrite the body to get a new body,<br></br> by rewriting in
+  the theory described in @(tsee rewrite-lambda-objects-theory) </li>
+
+  <li>just clean it up syntactically,<br></br> by rewriting in the theory
+  described by @(tsee syntactically-clean-lambda-objects-theory), or</li>
+
+  <li>do nothing &mdash; leave @('lambda') object constants untouched.<br></br>
+  by rewriting in the theory described by @(tsee
+  hands-off-lambda-objects-theory).</li>
+
+  </ul>
+
+  <p>The reason we have several options has to do with the representation of
+  @('lambda') objects as quoted constants in ACL2's first order logic.  Distinct
+  @('lambda') objects are unequal and yet sometimes by rewriting their bodies
+  to functionally equivalent terms under @(tsee ev$) they can become identical.</p>
+
+  <p>For example, @(''(lambda (x) (+ 1 x))') and @(''(lambda (x) (+ x 1))') are
+  unequal list constants.  But they are functionally equal and by rewriting
+  their bodies we can make them identical.</p>
+
+  <p>The problem is greatly magnified by the way @('lambda$') and @('loop$')
+  expressions macroexpand into formal terms.  Their expansions are complicated
+  with guards and tags that play key roles in their Common Lisp compilation and
+  execution efficiency within the ACL2 top-level read-eval-print loop.  But
+  those guards and tags are irrelevant to their logical meanings.  By
+  eliminating the guards and tags from quoted @('lambda') objects in slots of
+  @(tsee ilk) @(':FN') we increase the chances that different objects become
+  identical.</p>
+
+  <p>Consider the translation of a @('thereis') @('loop$') statement.  The
+  @('thereis') @('loop$') operand looks for an element of the range that
+  satisfies a given predicate and returns the first non-@('nil') value of that
+  predicate.  The predicate is formally a @('lambda') object.  Below we
+  translate a @('thereis') @('loop$') and show the result.</p>
+
+  @({
+  ACL2 !>:trans (loop$ for x on a
+                       thereis
+                       (if (equal (car x) b) x nil))
+
+  (RETURN-LAST
+   'PROGN
+   '(LOOP$ FOR X ON A
+           THEREIS
+           (IF (EQUAL (CAR X) B) X NIL))
+   (THEREIS$+
+    '(LAMBDA
+      (LOOP$-GVARS LOOP$-IVARS)
+      (DECLARE (XARGS :GUARD (IF (TRUE-LISTP LOOP$-GVARS)
+                                 (IF (EQUAL (LEN LOOP$-GVARS) '1)
+                                     (IF (TRUE-LISTP LOOP$-IVARS)
+                                         (EQUAL (LEN LOOP$-IVARS) '1)
+                                         'NIL)
+                                     'NIL)
+                                 'NIL)
+                      :SPLIT-TYPES T)
+               (IGNORABLE LOOP$-GVARS LOOP$-IVARS))
+      (RETURN-LAST
+           'PROGN
+           '(LAMBDA$ (LOOP$-GVARS LOOP$-IVARS)
+                     (DECLARE (XARGS :GUARD (AND (TRUE-LISTP LOOP$-GVARS)
+                                                 (EQUAL (LEN LOOP$-GVARS) 1)
+                                                 (TRUE-LISTP LOOP$-IVARS)
+                                                 (EQUAL (LEN LOOP$-IVARS) 1))))
+                     (LET ((B (CAR LOOP$-GVARS))
+                           (X (CAR LOOP$-IVARS)))
+                          (DECLARE (IGNORABLE E X))
+                          (IF (EQUAL (CAR X) B) X NIL)))
+           ((LAMBDA (B X)
+                    (IF (EQUAL (CAR X) B) X 'NIL))
+            (CAR LOOP$-GVARS)
+            (CAR LOOP$-IVARS))))
+    (CONS B 'NIL)
+    (LOOP$-AS (CONS (TAILS A) 'NIL))))
+
+  => *
+  })
+
+  <p>The predicate being mapped is the quoted @('lambda') object in the first
+  argument of the @('thereis$+').  When shorn of the logically irrelevant
+  @('DECLARE') and @('RETURN-LAST') forms this particular quoted @('lambda')
+  object becomes</p>
+
+  @({
+  '(LAMBDA
+    (LOOP$-GVARS LOOP$-IVARS)
+    ((LAMBDA (B X)
+             (IF (EQUAL (CAR X) B) X 'NIL))
+     (CAR LOOP$-GVARS)
+     (CAR LOOP$-IVARS)))
+  })
+
+  <p>But now consider the closely related @('thereis') @('loop$') which is like
+  the one translated above but uses different names for the variables.</p>
+
+  @({
+  (loop$ for y on aaa
+         thereis
+         (if (equal (car y) bbb) y nil))
+  })
+
+  <p>The @('lambda') object representing the predicate in this @('loop$'), when
+  shorn of logically irrelevant material, is</p>
+
+  @({
+  '(LAMBDA
+    (LOOP$-GVARS LOOP$-IVARS)
+    ((LAMBDA (BBB Y)
+             (IF (EQUAL (CAR Y) BBB) Y 'NIL))
+     (CAR LOOP$-GVARS)
+     (CAR LOOP$-IVARS)))
+  })
+
+  <p>But note that this @('lambda') object contains the ``variables'' @('BBB')
+  and @('Y') where the earlier one contained @('B') and @('X').  However, they
+  are not really variables!  They are symbol constants because they occur in
+  quoted list constants.  Thus, the @('lambda') object generated for the first
+  @('thereis') @('loop$') is different from the @('lambda') object generated
+  from the &ldquo;closely related&rdquo; one.  They are just two different list
+  constants.</p>
+
+  <p>Thus, the translations of those two @('thereis') @('loop$')s are not
+  instances of one another.  So if you proved a rewrite rule about the
+  @('(loop$ for x on ...B...)')  and then the rewriter encountered @('(loop$ for y
+  on ...BBB...)') the rule would not match.  (By the way, this problem has nothing
+  special to do with @('thereis') @('loop$')s.  It happens on every kind of
+  @('loop$') because the problem has everything to do with representing
+  @('lambda') expressions as list constants.)</p>
+
+  <p>Fortunately, it is sound to replace the body of a @('lambda') object with
+  one that is equivalent under @(tsee ev$).  That can be done either by
+  rewriting the body or by syntactically cleaning the body.  It turns out that
+  both rewriting and syntactic cleaning produce the same result in this case
+  and reduce these two distinct @('lambda') objects to this one.</p>
+
+
+  @({
+  '(LAMBDA
+    (LOOP$-GVARS LOOP$-IVARS)
+    (IF (EQUAL (CAR (CAR LOOP$-IVARS))
+               (CAR LOOP$-GVARS))
+        (CAR LOOP$-IVARS)
+        'NIL))
+  })
+
+  <p>Actually, all that is needed in this case is the beta reduction of the
+  two bodies.</p>
+
+  <p>Syntactic cleaning eliminates declarations, guards, and other
+  compiler-related tags introduced by translation of @('lambda$') and
+  @('loop$').  It does beta reduction, which eliminates local variable
+  names (other than the formals of the @('lambda') object).  And it replaces
+  the last two arguments of calls of @(tsee do$) by @('nil') if those two
+  arguments are quoted constants other than @('nil').  (Those two arguments are
+  irrelevant to the value of the @('do$') term and only used in error
+  reporting.)  The logical semantics of @('loop$') is best understood not by
+  looking at its translation as we did above but by looking at the result of
+  syntactically cleaning its translation.  That is done by the command
+  @(':')@(tsee tc).  @('Tc') translates its argument, in this case the
+  @('loop$') statement we've been studying, obtaining the large form shown
+  above, and then syntactically cleans it, returning the internal
+  representation of the logical semantics. </p>
+
+  @({
+  ACL2 !>:tc (loop$ for x on a
+                    thereis
+                    (if (equal (car x) b) x nil))
+  (THEREIS$+ '(LAMBDA
+               (LOOP$-GVARS LOOP$-IVARS)
+               (IF (EQUAL (CAR (CAR LOOP$-IVARS))
+                          (CAR LOOP$-GVARS))
+                   (CAR LOOP$-IVARS)
+                   'NIL))
+             (CONS B 'NIL)
+             (LOOP$-AS (CONS (TAILS A) 'NIL)))
+  })
+
+  <p>Note that the free variables of the term are @('A') and @('B').  The
+  iteration variable, @('x') of the @('loop$') does not appear.  Instances of
+  this term are formed by choosing instantiations of @('A') and @('B').</p>
+
+  <p>(Note: The related command @(':')@(tsee tcp) translates, cleans, and then
+  converts the internal form of the term into the &ldquo;pretty&rdquo;
+  user-level syntax.  E.g., it converts the quoted @('LAMBDA') constant above
+  to a @('lambda$') expression, converts the @('IF') expression to an @('AND'),
+  and converts the @('CONS') terms into @('LIST') terms.  But for this
+  discussion it is really better to see the internal form.  That @('LAMBDA')
+  object above is really a list constant!)</p>
+
+  <p><b>Before a newly proved @(':')@(tsee rewrite) or @(':')@(tsee linear)
+  rule is stored, the conclusion is syntactically cleaned.</b></p>
+
+  <p>Like syntactic cleaning, rewriting eliminates declarations, guards, and
+  other compiler-related tags and does beta reduction &mdash; but these
+  transformations are generally carried out by rules whose enabled status can
+  be altered.  Furthermore, rewriting applies @(':rewrite') and other rules
+  which might commute terms, open function definitions, etc.  We don't rewrite
+  the conclusions of newly proved rules simply because the enabled rules may
+  change from one event (or subgoal) to another.</p>
+
+  <p>As noted earlier, there are three basic actions the rewriter might take
+  when it encounters a suitable @('lambda') object.</p>
+
+  <ul>
+  <li>recursively rewrite the body to get a new body,</li>
+
+  <li>just clean it up syntactically, or</li>
+
+  <li>do nothing &mdash; leave @('lambda') object constants untouched.</li>
+
+  </ul>
+
+  <p>Since rules are cleaned before storage, it is almost always the case that
+  you will want the prover either to rewrite @('lambda') objects or
+  syntactically clean them.  In simple cases, like a rule about the first
+  @('thereis') @('loop$') above and a conjecture about the @('second'), either
+  action by the prover reduces &ldquo;closely related&rdquo; @('lambda')
+  objects to identical objects, making it more likely that rules will fire.</p>
+
+  <p>So which of the three actions do you want the rewriter to take when it
+  encounters an eligible @('lambda') object?</p>
+
+  <ul>
+
+  <li>rewrite the body &mdash; best if there are multiple @('lambda') objects
+  in the conjecture that need to be written to be identified, and in simple
+  cases rewriting is equivalent to syntactic cleaning</li>
+
+  <li>syntactic cleaning &mdash; best if you want the @('lambda') objects in
+  the conjecture to match @(':rewrite') or @(':linear') rules containing
+  closely related @('lambda') objects, but you find that otherwise necessary
+  @(':rewrite') rules cause the rewriter to &ldquo;overshoot&rdquo; the
+  syntactically cleaned term as illustrated further below</li>
+
+  <li>hands off &mdash; fairly unuseful since rules are cleaned up before
+  storage.  However, one use of this is if you prove a lemma containing a
+  @('lambda') object but store it with @(':rule-classes nil') and then
+  @(':use') an instance of it in the @(':hints') for some conjecture that
+  involves the very same @('lambda') objects.</li>
+
+  </ul>
+
+  <p>We now illstrate some typical problems that arise when proving theorems
+  about @('loop$')s.  These examples are documented in the book
+  @('books/projects/apply/rewriting-versus-cleaning-examples').</p>
+
+  <p><b>Why you might want to use syntactic cleaning:</b> Suppose you prove the
+  @(':rewrite') rule below.  It says that a certain @('thereis') @('loop$')
+  computes the same answer as the function @(tsee last).</p>
+
+  @({
+  (defthm loop$-can-be-last
+    (implies (listp a)
+             (equal (loop$ for x on a
+                           thereis
+                           (if (atom (cdr x)) x nil))
+                    (last a))))
+  })
+
+  <p>What term does this rule target?  We can answer that by using the
+  @(':')@(tsee tc) command.</p>
+
+  @({
+  ACL2 !>:tc (loop$ for x on a
+                    thereis
+                    (if (atom (cdr x)) x nil))
+   (THEREIS$ '(LAMBDA (LOOP$-IVAR)
+                      (IF (ATOM (CDR LOOP$-IVAR))
+                          LOOP$-IVAR 'NIL))
+             (TAILS A))
+  })
+
+  <p>By the way, a more common way to see the rules created by an event is to
+  use the @(':')@(tsee pr) command.  But that command displays the terms of the
+  rule in user-level syntax and we want to see the internal form here.  The
+  &ldquo;@('lambda') expression&rdquo; is really a quoted constant.</p>
+
+  <p>Now imagine you are proving a conjecture that involves that identical (!)
+  @('loop$').  Of course, translation will replace the @('loop$') by a rather
+  large tagged term containing compiler directives, etc.  Shorn of that
+  material the term would become the @('thereis$') term above, but the
+  translation is what is in the initial @('Goal').  Imagine further that you're
+  doing this proof in a theory that allows the rewriter to recursively rewrite
+  the bodies of quoted @('lambda') objects, i.e., you are in a theory as
+  described by @(tsee rewrite-lambda-objects-theory).  ACL2 starts up in such a
+  theory and unless you've changed the enabled status of the
+  @('rewrite-lambda-modep') runes rewriting @('lambda') objects is the default
+  behavior.</p>
+
+  <p>You might expect the @('loop$-can-be-last') rule to fire and replace the
+  @('thereis$') term in the @('Goal') by @('(last a)').  But that will not
+  happen!  The rule won't fire!</p>
+
+  <p>The reason is that before the rewriter rewrites the @('thereis$') term it
+  rewrites its arguments.  The quoted @('lambda') object in the Goal is
+  rewritten first.  That is necessary because the translated @('loop$')
+  contains tags, etc.  But the rewriter does more than just clean up the body.
+  It &ldquo;overshoots&rdquo; and opens the nonrecursive function @('atom') and
+  swaps the branches of the @('if') to eliminate the @('not') thus introduced.
+  The quoted @('lambda') object becomes</p>
+
+  @({
+  '(LAMBDA (LOOP$-IVAR)
+           (IF (CONSP (CDR LOOP$-IVAR))
+               'NIL
+               LOOP$-IVAR))
+  })
+
+  <p>So when the rewriter then tries to rewrite the @('thereis$') terms the
+  quoted @('lambda') object in the rule does not match the one in the rewritten
+  @('Goal').</p>
+
+  <p>If the rewritten goal is printed, as it is likely to be a checkpoint, you
+  will see the rewritten body with the @('consp') instead of @('atom') in it.
+  As usual, pay attention to the checkpoints.</p>
+
+  <p>One way to respond to this problem would be to &ldquo;hobble&rdquo; the rewriter
+  by shifting over to syntactic cleaning of quoted @('lambda') objects.  This could
+  be done by providing a local subgoal hint in which you specify</p>
+
+  @({
+  :in-theory (syntactically-clean-lambda-objects-theory)
+  })
+
+  <p>which would prevent the rewriter from diving into the bodies of
+  @('lambda') objects and just clean them instead.</p>
+
+  <p><b>Why you should probably use rewriting:</b> There is a deeper lesson
+  here than just that you might want to hobble the rewriter to prevent it from
+  diving into quoted @('lambda') bodies.  In our view the actual problem is
+  with the @('loop$-can-be-last') rule itself.  ACL2 users are taught to
+  express rules in maximally rewritten terms.  No experienced user would pose a
+  rule with a non-recursive function like @('atom') in its lefthand side.  The
+  best response to this situation, which may or may not be practical depending
+  on how @('loop$-can-be-last') came to be a rule in the session, is to change
+  that rule to</p>
+
+  @({
+  (defthm loop$-can-be-last
+    (implies (listp a)
+             (equal (loop$ for x on a
+                           thereis
+                           (if (consp (cdr x)) nil x))
+                    (last a))))
+  })
+
+  <p>This version of the rule would not only rewrite the @('thereis') @('loop$') above
+  but rewrites</p>
+
+  @({
+  (loop$ for x on a
+         thereis
+         (if (atom (cdr x)) x nil))
+  })
+
+  <p>because, as illustrated above, the rewriter by default dives into the
+  translated @('loop$') and &ldquo;normalizes&rdquo; the resulting
+  @('thereis$').</p>
+
+  <p>Furthermore, because @('and') macroexpands to an @('if')-term and beta
+  reduction eliminates local variable names it would rewrite</p>
+
+  @({
+  (loop$ for rest on (aaa aa)
+         thereis
+         (let ((z (cdr rest)))
+           (and (atom z) rest))
+  })
+
+  <p><b>But not all such problems can be solved by switching between rewriting
+  quoted @('lambda') objects and just cleaning them up!</b></p>
+
+  <p>Consider this rewrite rule.  The @('thereis') @('loop$') in the lefthand
+  side of the rule below is exactly the @('loop$') whose translation we showed
+  at the beginning of this topic.  The cleaned up internal form of the lefthand
+  side is the @('thereis$+') term shown by the first @(':tc') display in this
+  topic.  The rule below says that the @('thereis') @('loop$') in question
+  computes @('member').</p>
+
+  @({
+  (defthm loop$-can-be-member
+     (equal (loop$ for x on a
+                   thereis
+                   (if (equal (car x) b) x nil))
+            (member b a)))
+  })
+
+  <p>You might expect that when the rewriter encounters (an instance of) such a
+  @('loop$') it will replace it by a @('member') term.  That is actually
+  true!</p> <p>For example, if we then tried to prove a conjecture
+  mentioning</p>
+
+  @({
+  (loop$ for x on aaa
+         thereis
+         (if (equal (car x) bbb) x nil))
+  })
+
+  <p>the @('loop$-can-be-member') rule would fire and replace that @('loop$')
+  by @('(member bbb aaa)').</p>
+
+  <p>But it is easy to misjudge whether a given @('loop$') is an instance of
+  another.</p>
+
+  <p>Suppose our goal conjecture contained</p>
+
+  @({
+  (loop$ for x on (aaa aa)
+         thereis (if (equal (car x) (bbb bb)) x nil))
+  })
+
+  <p>This @('loop$') looks like the @('loop$') in @('loop$-can-be-member')
+  except we've used @('(aaa aa)') instead of @('a'), and @('(bbb bb)') instead
+  of @('b').</p>
+
+  <p>Will that @('loop$') be rewritten to @('(member (bbb v) (aaa u))')?
+  No!</p>
+
+  <p>To understand why not, we first have to compare the internal forms of the
+  two @('loop$')s.  Recall that the lefthand side of rewrite rules are cleaned up
+  before storage, so the internal form of the lefthand side of
+  @('loop$-can-be-member') is in fact the @('thereis$+') term produced by
+  @(':tc') above.  If we are either rewriting @('lambda') objects or just
+  syntactically cleaning @('lambda') objects in the proof we're looking at, the
+  the internal forms of the @('loop$') in the conjecture will be just the
+  @(':tc') of that @('loop$') (because there's nothing interesting to rewrite
+  here).  So here is the lefthand side of the rule side-by-side with the
+  rewritten target in the conjecture.  We have highlighted the differences in
+  uppercase and numbered the lines that contain differences.</p>
+
+  @({
+  lhs of rule                   target
+  (thereis$+                    (thereis$+
+   '(lambda                      '(lambda
+      (loop$-gvars loop$-ivars)     (loop$-gvars loop$-ivars)
+      (if (equal                    (if (equal
+           (car (car loop$-ivars))       (car (car loop$-ivars))
+           (CAR LOOP$-GVARS))            (BBB (CAR LOOP$-GVARS))) ; [1]
+          (car loop$-ivars)             (car loop$-ivars)
+          'nil))                        'nil))
+   (cons B 'nil)                 (cons BB 'nil)                   ; [2]
+   (loop$-as                     (loop$-as
+    (cons (tails A) 'nil)))       (cons (tails (AAA AA)) 'nil)))  ; [3]
+  })
+
+  <p>Note that the target is not an instance of the lefthand side of the rule
+  &mdash; but only because of the difference on line [1].  Lines [2] and [3] of
+  the lefthand side can be instantiated to become those lines in the target.
+  But because of [1] our @('loop$-can-be-member') rule will not rewrite the
+  target shown here.</p>
+
+  <p>This kind of problem cannot be fixed by fiddling with how the prover
+  treats @('lambda') objects.  Instead, we need to transform the target
+  @('lambda') object into the functionally different @('lambda') object in the
+  rule while simultaneously changing how @('thereis$+') applies it.  In
+  particular we need to transform @('target') to @('target'') below by moving
+  the @('BBB') out of [1] and into [2] as shown below.</p>
+
+  @({
+  target                         target'
+  (thereis$+                     (thereis$+
+   '(lambda                       '(lambda
+      (loop$-gvars loop$-ivars)      (loop$-gvars loop$-ivars)
+      (if (equal                     (if (equal
+           (car (car loop$-ivars))        (car (car loop$-ivars))
+           (BBB (CAR LOOP$-GVARS)))       (CAR LOOP$-GVARS))      ; [1]
+          (car loop$-ivars)              (car loop$-ivars)
+          'nil))                         'nil))
+   (cons BB 'nil)                 (cons (BBB BB) 'nil)            ; [2]
+   (loop$-as                      (loop$-as
+    (cons (tails (aaa aa)) 'nil))) (cons (tails (aaa aa)) 'nil)))
+  })
+
+  <p>Note that @('target'') is in fact an instance of the lefthand side of the
+  rule.  But we've changed the semantics of the @('lambda') object and changed
+  the way @('thereis$+') uses it by moving the @('BBB') from the inside to the
+  outside of the @('lambda').  No @('lambda') rewriting can do this.  Instead,
+  we need a rule that rewrites @('thereis$+').  (In fact, a great project would
+  be to implement a metafunction that does this kind of optimization for all
+  @('loop$') scions.  We just haven't done that yet.  Let us know if you
+  do!)</p>
+
+  <p>Here is a suitable rewrite rule for this particular instance of this
+  phenomenon.  We write it as a @('thereis') @('loop$') rule rather than a
+  @('thereis$+'), but they're the same.</p>
+
+  @({
+  (defthm example-of-constant-subterm-abstraction
+  (implies (warrant bbb)
+           (equal (loop$ for xxx on a
+                         thereis
+                         (if (equal (car xxx) (bbb bb)) xxx nil))
+                  (let ((zzz (bbb bb)))
+                    (loop$ for xxx on a
+                           thereis
+                           (if (equal (car xxx) zzz) xxx nil))))))
+  })
+
+  <p>This illustrates another lesson.  Remember that we're imagining a proof of
+  some conjecture that involves a @('thereis') @('loop$') mentioning @('BBB')
+  and wondering whether our rewrite rule @('loop$-can-be-member') will hit it.
+  Had the @('thereis') @('loop$') in the conjecture been written in the style
+  of the @('let') expression above, where a variable is bound to @('(bbb bb)')
+  and then that variable used in the @('loop$') body, we wouldn't need to move
+  the @('(bbb bb)') out.  Instead, the @('lambda') generated by translating the
+  @('loop$') would contain a variable instead of @('(bbb bb)').  The name of
+  the @('let')-bound variable outside the @('lambda') is irrelevant since it
+  won't appear in the cleaned up @('lambda') object where it is replaced by a
+  component of the global variables @('LOOP$-GVARS').  In the containing
+  @('thereis$+') the value of that global variable will be @('(bbb bb)'), which
+  means the free variable @('b') in our @('loop$-can-be-member') rule can be
+  instantiated with @('(bbb bb)') to allow the rule to match.</p>
+
+  <p>Put another way, by writing the @('loop$') in the inefficient
+  way (requiring @('(bbb bb)') to be recomputed on every iteration) we
+  implicitly produce @('lambda') object that is less general than one with the
+  @('(bbb bb)') on the outside.</p>
+
+  <p><b>Keep unchanging subterms of @('loop$') bodies as variables and compute
+  their values outside of the @('lambda').</b> Basically, try to write the most
+  general @('lambda') objects you can.</p>
+
+  <p>Finally, these difficulties are exacerbated by the ease with which
+  @('loop$') statements can be written and the difference between their
+  appearance and the formal terms they denote.  You might be more successful at
+  learning to use @('loop$')s in lemmas and theorems if you simply <b>don't use
+  @('loop$')!</b> Instead, learn to write the corresponding terms, e.g., try
+  writing a @('thereis$') or a @('thereis$+') term instead of a @('thereis')
+  @('loop$') statement in your lemmas and theorems.  Since the prover's output
+  contains such terms (rather than @('loop$') statements), it will be easier to
+  see where lemmas differ from the targets they were intended to hit.  After
+  enough practice you can write @('loop$') statements with a better
+  appreciation of what they actually denote.</p>")
 
 (defxdoc rfix
   :parents (numbers acl2-built-ins)
@@ -119228,6 +120039,81 @@ arithmetic) for libraries of @(see books) for arithmetic reasoning.</p>")
   :long "<p>Symbols are a basic datatype in ACL2 and Common Lisp.  Every symbol
   has two components: its name (see @(see symbol-name)) and its package name
   (see @(see symbol-package-name)).</p>")
+
+(defxdoc syntactically-clean-lambda-objects-theory
+  :parents (theories theory-functions rewrite)
+  :short "how to specify syntactic cleaning of lambda objects"
+  :long "<p>The enabled status of two @('rewrite-lambda-modep') runes are used
+  as flags to determine the action taken when eligible @('lambda') objects are
+  encountered by the ACL2 rewriter.  See @(see rewrite-lambda-object) and
+  @(tsee rewrite-lambda-object-actions).  To prevent the rewriter from diving
+  recursively into the body of an eligible @('lambda') object but use a simpler
+  syntactic cleaning process instead, the rune @('(:executable-counterpart
+  rewrite-lambda-modep)') must be enabled and the rune @('(:definition
+  rewrite-lambda-modep)') must be disabled in the then-current theory.  The
+  0-ary function @('syntactically-clean-lambda-objects-theory') returns such a
+  theory.</p>
+
+  <p>In fact, diving into eligible quoted @('lambda') object constants to
+  rewrite the body is the default action when ACL2 starts up.  See @(see
+  rewriting-versus-cleaning-up-lambda-objects) for why you might want to change
+  the default action when eligible @('lambda') objects are encountered by the
+  rewriter.</p>
+
+  <p>The expression @('(syntactically-clean-lambda-objects-theory)')
+  macroexpands to the theory expression</p>
+
+  @({
+  (e/d ((:executable-counterpart rewrite-lambda-modep))
+       ((:definition rewrite-lambda-modep)))
+  })
+
+  <p>which is a theory equal to then current theory except that the
+  executable-counterpart rune of @('rewrite-lambda-modep') but the definition
+  rune is disabled.  This expansion is suitable for use in an @(tsee in-theory)
+  event or @(':in-theory') hint (see @(':')@(tsee hints)).</p>
+
+  <p>Both these two runes are initally enabled, so eligible @('lambda') object
+  bodies are rewritten by default until and unless some event (e.g., an @(tsee
+  in-theory) or @(tsee include-book)) or a superior local subgoal hint changes
+  the status of those runes.</p>
+
+  <p>For example, if @('lambda') object rewriting is active you wish to just
+  syntactically clean the @('lambda') objects in @('Subgoal 3') of some proof,
+  you could use the @(':')@(tsee hints)</p>
+
+  @({
+  (\"Subgoal 3\"
+   :in-theory (syntactically-clean-lambda-objects-theory))
+  })
+
+  <p>Note that if you also wish to enable or disable other runes in the same
+  subgoal you must construct an appropriate theory.</p>
+
+  <p>For example, if in @('Subgoal 3') of some proof you wanted to enable
+  @('LEMMA1') and disable @('LEMMA2') in a theory that will also specify
+  syntactic cleaning of @('lambda') objects, you might write</p>
+
+  @({
+  (\"Subgoal 3\"
+   :in-theory (set-difference-theories
+                 (union-theories (syntactically-clean-lambda-objects-theory)
+                                 '(LEMMA1))
+                 '(LEMMA2)))
+  })
+
+  <p>Some users might prefer</p>
+
+  @({
+  (\"Subgoal 3\"
+   :in-theory (e/d ((:executable-counterpart rewrite-lambda-modep)
+                    LEMMA1)
+                   ((:definition rewrite-lambda-modep)
+                    LEMMA2)))
+  })
+
+  <p>See @(see theories) for general information about theories and how to
+  create and use them.</p>")
 
 (defxdoc syntax
   :parents (miscellaneous)
