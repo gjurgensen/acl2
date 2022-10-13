@@ -77,7 +77,7 @@ Subtopics
   [defthm], [in-theory], [xargs], [state], etc., without an acl2::
   prefix.
 
-  The constant *acl2-exports* lists 1564 symbols, including most
+  The constant *acl2-exports* lists 1571 symbols, including most
   documented ACL2 system constants, functions, and macros.  You will
   typically also want to import many symbols from Common Lisp; see
   [*common-lisp-symbols-from-main-lisp-package*].
@@ -287,8 +287,8 @@ Subtopics
        eqlable-listp
        eqlable-listp-forward-to-atom-listp
        eqlablep eqlablep-recog
-       equal equal-char-code er er-cmp
-       er-hard er-let* er-let*-cmp er-progn
+       equal equal-char-code er er-cmp er-hard
+       er-hard? er-let* er-let*-cmp er-progn
        er-progn-cmp er-progn-fn er-progn-fn@par
        er-progn@par er-soft er-soft-logic ev$
        ev$-list evenp evens event evisc-tuple
@@ -334,14 +334,16 @@ Subtopics
        get-output-stream-string$ get-real-time
        get-register-invariant-risk
        get-serialize-character
-       get-slow-alist-action get-timer
-       get-wormhole-status getenv$ getprop
-       getprop-default getpropc getprops
-       getprops1 global-table global-table-cars
-       global-table-cars1 global-val
-       good-atom-listp good-bye granularity
-       ground-zero gthm guard guard-obligation
-       guard-theorem hard-error
+       get-slow-alist-action
+       get-timer get-wormhole-status
+       getenv$ getprop getprop-default
+       getpropc getprops getprops1 global-table
+       global-table-cars global-table-cars1
+       global-val good-atom-listp
+       good-bye granularity ground-zero gthm
+       guard guard-obligation guard-theorem
+       hands-off-lambda-objects-theory
+       hard-error
        has-propsp has-propsp1 header help
        hide hist hons hons-acons hons-acons!
        hons-assoc-equal hons-clear hons-clear!
@@ -359,9 +361,9 @@ Subtopics
        ignore illegal imagpart imagpart-complex
        immediate-force-modep implies
        improper-consp in-arithmetic-theory
-       in-package in-tau-intervalp
-       in-theory include-book incompatible
-       incompatible! increment-timer
+       in-package in-tau-intervalp in-theory
+       include-book incompatible incompatible!
+       increment-file-clock increment-timer
        induct induction-depth-limit
        initialize-event-user
        int= integer integer-0 integer-1
@@ -496,8 +498,8 @@ Subtopics
        print-object$+ print-object$-fn
        print-object$-preserving-case
        print-rational-as-decimal
-       print-timer profile
-       prog2$ progn progn! progn$ program
+       print-timer profile prog2$ progn
+       progn! progn$ program project-dir-alist
        proof-tree proofs-co proper-consp
        props prove pseudo-term-listp
        pseudo-term-listp-forward-to-true-listp
@@ -564,7 +566,9 @@ Subtopics
        retract-world
        retrieve return-last return-last-table
        revappend reverse revert-world
-       rewrite-equiv rewrite-quoted-constant
+       rewrite-equiv rewrite-lambda-modep
+       rewrite-lambda-objects-theory
+       rewrite-quoted-constant
        rewrite-stack-limit
        rfix round rw-cache satisfies
        save-and-clear-memoization-settings
@@ -711,6 +715,7 @@ Subtopics
        symbol<-irreflexive symbol<-transitive
        symbol<-trichotomy symbolp
        symbolp-intern-in-package-of-symbol synp
+       syntactically-clean-lambda-objects-theory
        syntaxp sys-call sys-call* sys-call+
        sys-call-status t t-stack t-stack-length
        t-stack-length1 table table-alist
@@ -4663,8 +4668,8 @@ Silent loading of ACL2 customization files
   associate a directory with a keyword.  It need not associate a
   value with :SYSTEM, to denote the books/ directory (see
   [community-books]; see [include-book], in particular the section on
-  ``Books Directory.'' Also see [add-include-book-dir] and
-  [add-include-book-dir!].
+  ``Books Directory.'' Also see [add-include-book-dir],
+  [add-include-book-dir!], and [project-dir-alist].
 
     :match-free-default
 
@@ -5433,8 +5438,7 @@ Silent loading of ACL2 customization files
   Many successful ACL2 users run in an shell under Emacs; see [emacs].
   However, those not familiar with Emacs may prefer to start with an
   Eclipse-based interface initially developed by Peter Dillinger and
-  Pete Manolios called the {ACL2 Sedan |
-  http://acl2s.ccs.neu.edu/acl2s/doc/} or ``ACL2s''.
+  Pete Manolios called the ACL2 Sedan or ``ACL2s''.
 
   ACL2 sessions in the ACL2 Sedan can utilize non-standard extensions
   and enhancements, especially geared toward new users, termination
@@ -6044,12 +6048,19 @@ Subtopics
 
     Example Forms:
 
-    ; For (include-book \"foo\" :dir :smith), prepend \"/u/smith/\" to \"foo\".
+    ; For (include-book \"foo\" :dir :smith), prepend to \"foo\" the absolute
+    ; directory pathmame \"/u/smith/\":
     (add-include-book-dir :smith \"/u/smith/\")
 
-    ; For (include-book \"bar\" :dir :util), prepend absolute directory pathname
-    ; corresponding to the relative pathname, \"utilities/\".
+    ; For (include-book \"bar\" :dir :util), prepend to \"bar\" the absolute
+    ; directory pathname corresponding to the interpretation of \"utilities/\"
+    ; with respect to the current connected-book-directory (cbd):
     (add-include-book-dir :util \"utilities\")
+
+    ; For (include-book \"lib/floor-mod/top\" :dir :arith), prepend to
+    ; \"lib/floor-mod/top\" the community books directory pathname string
+    ; \"arithmetic-5/lib/floor-mod/top/\"
+    (add-include-book-dir :arith (:system . \"arithmetic-5\"))
 
   Note: This is an event!  It does not print the usual event [summary]
   but nevertheless changes the ACL2 logical [world] and is so
@@ -6060,18 +6071,17 @@ Subtopics
     General Form:
     (add-include-book-dir kwd dir)
 
-  where kwd is a [keywordp] and dir is a relative or absolute
-  [pathname] for a directory, optionally using the syntax (:keyword .
-  filename) described in [full-book-name].  If the final '/' is
-  missing for the resulting directory, ACL2 will add it for you.  The
-  effect of this event is to modify the meaning of the :dir keyword
-  argument of [include-book] or [ld] as indicated by the examples
-  above, that is, by associating the indicated directory with the
-  indicated keyword for purposes of the :dir argument.  By the
-  ``indicated directory'' we mean, in the case that the pathname is a
-  relative pathname, the directory relative to the current connected
-  book directory; see [cbd].  See [delete-include-book-dir] for how
-  to undo this effect.
+  where kwd is a [keywordp] and dir represents a directory: either a
+  relative or absolute [pathname] string or a [sysfile].  If the
+  final '/' is missing for the resulting directory, ACL2 will add it
+  for you.  The effect of this event is to modify the meaning of the
+  :dir keyword argument of [include-book] and [ld] as indicated by
+  the examples above, that is, by associating the indicated directory
+  with the indicated keyword for purposes of the :dir argument.  By
+  the ``indicated directory'' we mean, when a relative pathname is
+  supplied, the directory relative to the current connected book
+  directory; see [cbd].  See [delete-include-book-dir] for how to
+  undo this effect.
 
   For a keyword already associated with a directory string by a
   previous invocation of add-include-book-dir or
@@ -6084,51 +6094,39 @@ Subtopics
   new call of add-include-book-dir will be redundant (see
   [redundant-events]).
 
+  See [project-dir-alist] for another way to associate keywords with
+  directory names, to take place only at the time ACL2 starts up.
+  Note that a keyword bound in the project-dir-alist may also be
+  bound by add-include-book-dir, but only if both bindings are to the
+  same directory.
+
   The keyword :system can never be redefined.  It will always point to
-  the absolute pathname of the system books directory, which by
-  default is immediately under the directory where the ACL2
-  executable was originally built (see [include-book], in particular
-  the discussion there of ``Books Directory'').
+  the absolute pathname of the [community-books] directory, which by
+  default is the subdirectory \"books/\" of the directory where the
+  ACL2 executable was built (see [include-book], in particular the
+  discussion there of ``Books Directory'').
 
-  This macro generates a [table] event that updates the table
-  include-book-dir!-table, which associates keywords with absolute
-  pathnames.  However, as with [add-include-book-dir], direct table
-  updates are disallowed; you must use add-include-book-dir! to add
-  to the table and [delete-include-book-dir!] to remove from the
-  table.
+  This macro generates a [table] event that updates the
+  [ACL2-defaults-table] and thus is automcatically [local] to the
+  book or [encapsulate] event in which it occurs (and, it is thus
+  illegal to call add-include-book-dir in an explicitly [local]
+  context).  See [add-include-book-dir!] for a corresponding
+  non-[local] event.
 
-  It is illegal to call add-include-book-dir! in a [local] context.
-  (If you are tempted to do that, consider using
-  [add-include-book-dir] instead.)  To understand this restriction,
-  imagine a book that contains the following sequence of [events].
-
-    (add-include-book-dir! :my-dir \"path/to/BAD/dir\")
-    (local (delete-include-book-dir! :my-dir))
-    (local (add-include-book-dir! :my-dir \"path/to/GOOD/dir\"))
-    (include-book \"foo\" :dir :my-dir)
-    (defthm f-def
-      (equal (f x) x))
-
-  During the first (proof) pass of [certify-book], the book
-  path/to/GOOD/dir/foo.lisp will be included.  But on the second
-  pass, the book path/to/BAD/dir/foo.lisp will be included.  Now
-  imagine that the ``good'' version contains the event (defun f (x)
-  x) but the ``bad'' version instead contains the event (defun f (x)
-  (not x)).  Then we can easily prove nil from the theorem f-def!
-  Although it is likely that [book-hash] values could catch this
-  error at [include-book] time, we prefer not to rely on these for
-  soundness.")
+  As with [add-include-book-dir!], direct table updates are disallowed;
+  you must use add-include-book-dir to add to the acl2-defaults-table
+  and [delete-include-book-dir] to remove from it.")
  (ADD-INCLUDE-BOOK-DIR!
   (BOOKS-REFERENCE)
   "Non-[local]ly link keyword for :dir argument of [ld] and
   [include-book]
 
-  Please see [add-include-book-dir], which has completely analogous
-  syntax and semantics, except that add-include-book-dir! is not
-  [local] to the [encapsulate] or the book in which it occurs.
-  Probably [add-include-book-dir] is to be preferred unless you have
-  a good reason for wanting to export the effect of this event
-  outside the enclosing [encapsulate] or book.
+  This topic assumes familiarity with [add-include-book-dir], which has
+  completely analogous syntax and semantics, except that
+  add-include-book-dir! is not [local] to the [encapsulate] or the
+  book in which it occurs.  Probably [add-include-book-dir] is to be
+  preferred unless you have a good reason for wanting to export the
+  effect of this event outside the enclosing [encapsulate] or book.
 
   Note: This is an event!  It does not print the usual event [summary]
   but nevertheless changes the ACL2 logical [world] and is so
@@ -6140,6 +6138,12 @@ Subtopics
   updates are disallowed; you must use add-include-book-dir! to add
   to the table and [delete-include-book-dir!] to remove from the
   table.
+
+  See [project-dir-alist] for another way to associate keywords with
+  directory names, to take place only at the time ACL2 starts up.
+  Note that a keyword bound in the project-dir-alist may also be
+  bound by add-include-book-dir!, but only if both bindings are to
+  the same directory.
 
   It is illegal to call add-include-book-dir! in a [local] context.
   (If you are tempted to do that, consider using
@@ -6474,7 +6478,8 @@ Top-level commands and utilities:
     * To query and manage the database, see [history] (which discusses many
       useful utilities, such as :[pbt] and :[pl]), and see
       [dead-events].
-    * See [add-include-book-dir] for linking keyword for :dir argument of
+    * See [add-include-book-dir], [add-include-book-dir!], and
+      [project-dir-alist] for linking keyword for :dir argument of
       [ld] and [include-book].
     * See [rebuild] for a fast way to load a file without waiting for
       proofs.
@@ -12396,15 +12401,15 @@ Subtopics
   file can only be produced if there is already an expansion file
   that is at least as recent as the book's [certificate].  Such a
   file, whose name happens to be the result of concatenating the
-  string \"@expansion.lsp\" to the book name (without the \".lisp\"
-  suffix), is created by [certify-book] when state global variable
-  'save-expansion-file has a non-nil value.  That will be the case if
-  ACL2 started up when environment variable ACL2_SAVE_EXPANSION was t
-  (or any value that is not the empty string and whose
-  [string-upcase] is not \"NIL\"), until the time (if any) that
-  'save-expansion-file is assigned a different value by the user.  In
-  most respects, the :comp setting is treated exactly the same as
-  :warn; but after all events in the book are processed, the
+  string \"@expansion.lsp\" to the book's filename after removing the
+  \".lisp\" suffix, is created by [certify-book] when state global
+  variable 'save-expansion-file has a non-nil value.  That will be
+  the case if ACL2 started up when environment variable
+  ACL2_SAVE_EXPANSION was t (or any value that is not the empty
+  string and whose [string-upcase] is not \"NIL\"), until the time (if
+  any) that 'save-expansion-file is assigned a different value by the
+  user.  In most respects, the :comp setting is treated exactly the
+  same as :warn; but after all events in the book are processed, the
   expansion file is compiled if a compiled file was not loaded, after
   which the resulting compiled file is loaded.
 
@@ -12899,25 +12904,24 @@ Subtopics
                  "See [books-certification].")
  (BOOK-NAME
   (BOOKS-TOUR)
-  "Conventions associated with book names
+  "Conventions associated with book-names
 
     Examples:
     \"list-processing\"
     \"/usr/home/smith/my-arith\"
 
-  Book names are string constants that can be elaborated into file
-  names.  We elaborate book names by concatenating the ``connected
-  book directory'' (see [cbd]) string on the left and some
-  ``extension,'' such as \".lisp\", on the right.  However, the
-  connected book directory is not added if the book name itself
-  already represents an absolute file name.  Furthermore,
-  [include-book] and [certify-book] temporarily reset the connected
-  book directory to be the directory of the book being processed.
-  This allows [include-book] forms to use file names without explicit
-  mention of the enclosing book's directory.  This in turn allows
-  [books] (together with those that they include, using
-  [include-book]) to be moved between directories while maintaining
-  their certification and utility.
+  A book-name is typically a string constant that represents a file.
+  (Much later below we discuss other book-names that are not strings,
+  namely, [sysfile]s; but till then we consider only strings.)  We
+  elaborate book names by concatenating the ``connected book
+  directory'' (see [cbd]) string on the left and perhaps a \".lisp\"
+  ``extension'' on the right.  However, the connected book directory
+  is not added if the book-name itself already represents an absolute
+  file name.  Furthermore, [include-book] and [certify-book]
+  temporarily reset the connected book directory to be the directory
+  of the book being processed.  This allows [include-book] forms to
+  use relative pathnames without explicit mention of the enclosing
+  book's directory.
 
   You may wish to read elsewhere for details of ACL2 file name
   conventions (see [pathname]), for a discussion of the filename that
@@ -12927,32 +12931,32 @@ Subtopics
   [include-book]) and [certify-book] (see [certify-book]) use these
   concepts, see below.
 
-  Often a book name is simply the familiar name of the file.  (See
+  Often a book-name is simply the familiar name of the file.  (See
   [full-book-name] for discussion of the notions of ``directory
   string,'' ``familiar name,'' and ``extension''.  These concepts are
   not on the guided tour through [books] and you should read them
-  separately.)  However, it is permitted for book names to include a
-  directory or part of a directory name.  Book names never include
-  the extension, since ACL2 must routinely tack several different
-  extensions onto the name during [include-book].  For example,
-  [include-book] uses the \".lisp\", \".cert\" and possibly the \".o\" or
-  \".lbin\" extensions of the book name.
+  separately.)  However, it is permitted for a book-name to include a
+  directory or part of a directory name.  Book-names often do not
+  include the extension, since ACL2 must routinely tack several
+  different extensions onto the name during [include-book].  For
+  example, [include-book] uses the \".lisp\", \".cert\" and possibly a
+  compiled file extension (like \".fasl\") of the book-name.
 
-  Book names are elaborated into full file names by [include-book] and
-  [certify-book].  This elaboration is sensitive to the ``connected
-  book directory.'' The connected book directory is an absolute
-  filename string (see [pathname]) that is part of the ACL2 [state].
-  (You may wish to see [cbd] and to see [set-cbd] --- note that these
-  are not on the guided tour).  If a book name is an absolute
-  filename string, ACL2 elaborates it simply by appending the desired
-  extension to the right.  If a book name is a relative filename
-  string, ACL2 appends the connected book directory on the left and
-  the desired extension on the right.
+  A book-name is elaborated into a [full-book-name] by [include-book]
+  and [certify-book].  This elaboration is sensitive to the
+  ``connected book directory.'' The connected book directory is an
+  absolute filename string (see [pathname]) that is part of the ACL2
+  [state].  (You may wish to see [cbd] and to see [set-cbd] --- note
+  that these are not on the guided tour).  If a book-name is an
+  absolute filename string, ACL2 elaborates it simply by appending
+  the desired extension to the right.  If a book-name is a relative
+  filename string, ACL2 appends the connected book directory on the
+  left and the desired extension on the right.
 
-  Note that it is possible that the book name includes some partial
+  Note that it is possible that the book-name includes some partial
   specification of the directory.  For example, if the connected book
-  directory is \"/usr/home/smith/\" then the book name
-  \"project/task-1/arith\" is a book name that will be elaborated to
+  directory is \"/usr/home/smith/\" then the book-name
+  \"project/task-1/arith\" is a book-name that will be elaborated to
 
     \"/usr/home/smith/project/task-1/arith.lisp\".
 
@@ -12979,6 +12983,13 @@ Subtopics
   The \".cert\" extension of a book, if it exists, is presumed to contain
   the most recent [certificate] for the book.  See [certificate] (or,
   if you are on the guided tour, wait until the tour gets there).
+
+  Finally we mention another kind of book-name: a [sysfile], which is a
+  pair that associates a keyword with a directory pathname.  This
+  kind of book-name is used by the implementation, for example in
+  [certificate] files, but is rarely visible to users.  If you run
+  across a sysfile and want to understand more about it, see
+  [sysfile].
 
   See [book-contents] to continue the guided tour.")
  (BOOKDATA
@@ -13026,8 +13037,8 @@ Subtopics
      :PORT-THMS     port-thms-val
 
 )
-  The first entry in the form will always be the full book name (see
-  [full-book-name]) of the certified book, BK.
+  The first entry in the form will always be the [full-book-name] of
+  the certified book, BK, possibly in [sysfile] format.
 
   Subsequent values in the form are based on [events] introduced by
   including BK.  For various values of xxx as described below,
@@ -13038,16 +13049,16 @@ Subtopics
   ``top-level'' events, not those that are introduced by a book
   included either in BK or its certification world.
 
-  pkgs-val is a list of names of packages introduced in the
+  Pkgs-val is a list of names of packages introduced in the
   certification world (at the top level, not in an included book).
   Note that no packages are introduced in a book itself, so no
   distinction is made between pkgs-val and port-pkgs-val.  Both
-  port-book-val and book-val are lists of full book names (see
-  [full-book-name]) of included books.  The values associated with
-  the other keywords are, themselves, association lists (see
-  [alistp]) such that each key is a package name, which is associated
-  with a list of [symbol-name]s for symbols in that package that are
-  introduced for that keyword.  For example, fns-val may be the alist
+  port-book-val and book-val are lists of [full-book-name]s of
+  included books.  The values associated with the other keywords are,
+  themselves, association lists (see [alistp]) such that each key is
+  a package name, which is associated with a list of [symbol-name]s
+  for symbols in that package that are introduced for that keyword.
+  For example, fns-val may be the alist
 
     ((\"ACL2\" \"F1\" \"F2\")
      (\"MY-PKG\" \"G1\" \"G2\"))
@@ -13169,6 +13180,12 @@ Subtopics
 
   [Community-books]
       Libraries of ACL2 [books] developed by the ACL2 community.
+
+  [Project-dir-alist]
+      Support for moving project directories (also :dir arguments)
+
+  [Sysfile]
+      File representation using ACL2 project directories
 
   [Uncertified-books]
       Invalid [certificate]s and uncertified [books]")
@@ -14021,7 +14038,7 @@ Subtopics
       How to create, certify, and use a simple book
 
   [Book-name]
-      Conventions associated with book names
+      Conventions associated with book-names
 
   [Certificate]
       A file specifying validity of a given book
@@ -16131,18 +16148,18 @@ Subtopics
   The connected book directory is a nonempty string that specifies a
   directory as an absolute pathname.  (See [pathname] for a
   discussion of file naming conventions.)  When [include-book] is
-  given a relative book name it elaborates it into a full book name,
-  essentially by appending the connected book directory string to the
-  left and \".lisp\" to the right.  (For details, see [book-name] and
-  also see [full-book-name].)  Similarly, [ld] elaborates relative
-  pathnames into full pathnames using the connected book directory
-  string.  (The effect of the cbd on ld carries over to utilities
-  that invoke ld as well, notably, [rebuild].)  Furthermore,
-  [include-book] and [ld] temporarily set the connected book
-  directory to the directory string of the resulting full pathname so
-  that references to files in the same directory may omit the
-  directory.  See [set-cbd] for how to set the connected book
-  directory string.
+  given a relative pathname it elaborates it into a canonical
+  absolute pathname, essentially by appending the connected book
+  directory string to the left and \".lisp\" to the right.  (For
+  details, see [book-name] and also see [full-book-name].)
+  Similarly, [ld] elaborates relative pathnames into full pathnames
+  using the connected book directory string.  (The effect of the cbd
+  on ld carries over to utilities that invoke ld as well, notably,
+  [rebuild].)  Furthermore, [include-book] and [ld] temporarily set
+  the connected book directory to the directory string of the
+  resulting full pathname so that references to files in the same
+  directory may omit the directory.  See [set-cbd] for how to set the
+  connected book directory string.
 
     General Form:
     (cbd)
@@ -16151,12 +16168,13 @@ Subtopics
   variable [state].  It returns the connected book directory string.
 
   The connected book directory (henceforth called the ``cbd'') is used
-  by [include-book] to elaborate the supplied book name into a full
-  book name (see [full-book-name]); similarly for [ld].  For example,
-  if the cbd is \"/usr/home/smith/\" then the elaboration of the
-  [book-name] \"project/task-1/arith\" (to the \".lisp\" extension) is
-  \"/usr/home/smith/project/task-1/arith.lisp\".  That [full-book-name]
-  is what [include-book] opens to read the source text for the book.
+  by [include-book] to elaborate the supplied book-name into a
+  canonical absolute pathname (see [full-book-name]); similarly for
+  [ld].  For example, if the cbd is \"/usr/home/smith/\" then the
+  elaboration of the [book-name] \"project/task-1/arith\" (to the
+  \".lisp\" extension) is \"/usr/home/smith/project/task-1/arith.lisp\".
+  That [full-book-name] is what [include-book] opens to read the
+  source text for the book.
 
   The cbd may be changed using [set-cbd] (see [set-cbd]).  Furthermore,
   during the processing of the [events] in a book, [include-book]
@@ -16186,47 +16204,7 @@ Subtopics
   maintaining their [certificate]s and utility.  Certified [books]
   that reference inferiors by absolute file names are unusable (and
   rendered uncertified) if the inferiors are moved to new
-  directories.
-
-  Technical Note and a Challenge to Users:
-
-  After elaborating the book name to a full book name, [include-book]
-  opens a channel to the file to process the [events] in it.  In some
-  host Common Lisps, the actual file opened depends upon a notion of
-  ``connected directory'' similar to our connected book directory.
-  Our intention in always elaborating book names into absolute
-  filename strings (see [pathname] for terminology) is to circumvent
-  the sensitivity to the connected directory.  But we may have
-  insufficient control over this since the ultimate file naming
-  conventions are determined by the host operating system rather than
-  Common Lisp (though, we do check that the operating system
-  ``appears'' to be one that we ``know'' about).  Here is a question,
-  which we'll pose assuming that we have an operating system that
-  calls itself ``Unix.'' Suppose we have a file name, filename, that
-  begins with a slash, e.g., \"/usr/home/smith/...\".  Consider two
-  successive invocations of CLTL's
-
-    (open filename :direction :input)
-
-  separated only by a change to the operating system's notion of
-  connected directory.  Must these two invocations produce streams to
-  the same file?  A candidate string might be something like
-  \"/usr/home/smith/*/usr/local/src/foo.lisp\" which includes some
-  operating system-specific special character to mean ``here insert
-  the connected directory'' or, more generally, ``here make the name
-  dependent on some non-ACL2 aspect of the host's state.'' If such
-  ``tricky'' name strings beginning with a slash exist, then we have
-  failed to isolate ACL2 adequately from the operating system's file
-  naming conventions.  Once upon a time, ACL2 did not insist that the
-  cbd begin with a slash and that allowed the string \"foo.lisp\" to be
-  tricky because if one were connected to \"/usr/home/smith/\" then
-  with the empty cbd \"foo.lisp\" is a full book name that names the
-  same file as \"/usr/home/smith/foo.lisp\".  If the actual file one
-  reads is determined by the operating system's state then it is
-  possible for ACL2 to have two distinct ``full book names'' for the
-  same file, the ``real'' name and the ``tricky'' name.  This can
-  cause ACL2 to include the same book twice, not recognizing the
-  second one as redundant.")
+  directories.")
  (CCL-INSTALLATION
   (BUILDING-ACL2)
   "Installing Clozure Common Lisp (CCL)
@@ -16944,13 +16922,13 @@ Subtopics
                                           ;   [default nil or from environment]
                   )
 
-  where book-name is a book name (see [book-name]), k is used to
-  indicate your approval of the ``certification [world],'' and
-  compile-flg can control whether the book is to be compiled.  The
-  defaults for compile-flg, skip-proofs-okp, acl2x, write-port,
-  pcert, and :useless-runes can be affected by environment variables.
-  All of these arguments are described in detail below, except for
-  :pcert and :useless-runes: see [provisional-certification] and
+  where book-name is a book filename, k is used to indicate your
+  approval of the ``certification [world],'' and compile-flg can
+  control whether the book is to be compiled.  The defaults for
+  compile-flg, skip-proofs-okp, acl2x, write-port, pcert, and
+  :useless-runes can be affected by environment variables.  All of
+  these arguments are described in detail below, except for :pcert
+  and :useless-runes: see [provisional-certification] and
   [useless-runes], respectively, for the effects of these two
   arguments and their corresponding environment variables, as we
   ignore those effects in the present topic.
@@ -17009,9 +16987,9 @@ Subtopics
   compiled, or else nil.  (Note that compilation initially creates a
   compiled file with a temporary file name, and then moves that
   temporary file to the final compiled file name obtained by adding a
-  suitable extension to the book name.  Thus, a compiled file will
-  appear atomically in its intended location.)  Finally, suppose that
-  compile-flg is not supplied (or is :default).  If environment
+  suitable extension to the book's filename.  Thus, a compiled file
+  will appear atomically in its intended location.)  Finally, suppose
+  that compile-flg is not supplied (or is :default).  If environment
   variable ACL2_COMPILE_FLG is defined and not the empty string, then
   its value should be T, NIL, or ALL after converting to upper case,
   in which case compile-flg is considered to have value t, nil, or
@@ -17129,8 +17107,8 @@ Subtopics
   mislead [include-book] into loading the now outdated compiled file.
   Otherwise, certify-book will create a temporary ``expansion file''
   to compile, obtained by appending the string \"@expansion.lsp\" to
-  the end of the book name.  Remark: Users may ignore that file,
-  which is automatically deleted unless [state] global variable
+  the end of the book's filename.  Remark: Users may ignore that
+  file, which is automatically deleted unless [state] global variable
   'save-expansion-file has been set, presumably by a system
   developer, to a non-nil value; see [book-compiled-file] for more
   information about hit issue, including the role of environment
@@ -17173,10 +17151,9 @@ Subtopics
     General Form:
     (certify-book! book-name k compile-flg)
 
-  where book-name is a book name (see [book-name]), k is a nonnegative
-  integer used to indicate the ``certification [world],'' and
-  compile-flg indicates whether you wish to compile the (functions in
-  the) book.
+  where book-name is a book filename, k is a nonnegative integer used
+  to indicate the ``certification [world],'' and compile-flg
+  indicates whether you wish to compile the (functions in the) book.
 
   This [command] is identical to [certify-book], except that the second
   argument k may not be t in certify-book! and if k exceeds the
@@ -27723,10 +27700,10 @@ Subtopics
   discussed below, is always printed for a non-nil :tag-name (unless
   deferred; see [set-deferred-ttag-notes]).
 
-  Active ttags. Suppose tag-name is a non-nil symbol.  Then (defttag
+  Active ttags. Suppose tag-name names a non-nil symbol.  Then (defttag
   :tag-name) sets :tag-name to be the (unique) ``active ttag.'' There
   must be an active ttag in order for there to be any mention of
-  certain function, including [sys-call]; evaluate the form
+  certain functions, including [sys-call]; evaluate the form
   (strip-cars *ttag-fns*) to see the full list of such symbols.  The
   macro [progn!] similarly requires an active ttag.  On the other
   hand, (defttag nil) removes the active ttag, if any; there is then
@@ -27825,7 +27802,7 @@ Subtopics
   [certify-book]).  Then ACL2 immediately associates the ttag :foo
   with nil, where again, nil refers to the top-level loop.  If ACL2
   then encounters (defttag foo) inside that book, you will get the
-  following error (using the full book name for the book, as shown):
+  following error (using the book's absolute pathname, as shown):
 
     ACL2 Error in ( TABLE ACL2-DEFAULTS-TABLE ...):  The ttag :FOO associated
     with file /u/smith/work/my-book.lisp is not among the set of ttags permitted
@@ -30352,8 +30329,8 @@ INFORMAL INTRODUCTION
   To understand these checkpoints we need to understand a bit about how
   ACL2 gives a semantics to DO loop$ expressions (as we explain in
   more detail in the section on Semantics below).  In the ACL2 logic,
-  a DO loop$ expression is represented as a transformation on the
-  variable, alist, an association list that assigns a value to every
+  a DO loop$ expression is represented as a transformation on an
+  association list, named alist, that assigns values to every
   variable in the expression.  This alist is transformed by each
   iteration through the loop.
 
@@ -30454,7 +30431,7 @@ INFORMAL INTRODUCTION
   Of course, no measure decreases in the example above, because the
   values of the variables don't change with each iteration.  We can
   see what happens when we supply an explicit measure: the body is
-  evaluated, as evidenced by the appeaance of 100 in the output, but
+  evaluated, as evidenced by the appearance of 100 in the output, but
   then the measure is evaluated and is seen not to have decreased
   from what it was at the start of the previous iteration.
 
@@ -30619,11 +30596,13 @@ SYNTAX
   [warrant]ed if proofs are to be done about them or if they are in
   [logic] mode and are called during evaluation.
 
-  The do- and fin- bodies allow a sort of ``DO-body term''.  These
-  DO-body terms are as follows, informally (in particular we are
-  ignoring here distinctions between translated and untranslated
-  terms; see [term]).  As usual, the restrictions on return values
-  apply only to code, not to terms occurring in theorem statements.
+  The do-body and fin-body positions are to be what we call ``DO-body
+  term''.  These are not, in general, normal ACL2 terms!  They allow
+  restricted uses of RETURN, PROGN, SETQ, MV-SETQ, and LOOP-FINISH as
+  described below. In the descriptions below we ignore the
+  distinctions between translated and untranslated terms; see
+  [term]).  As usual, the restrictions on return values apply only to
+  code, not to terms occurring in theorem statements.
 
     * Every ordinary term that returns a single, non-stobj value
     * An IF call whose first argument is an ordinary term (which
@@ -31000,7 +30979,7 @@ SEMANTICS
   package of the topic being displayed.  Such links can thus take you
   to topics in the acl2-doc Emacs browser (see [ACL2-doc]).
 
-  Note that [books]/xdoc/top redefines :doc (using
+  Note that [community-book] xdoc/top redefines :doc (using
   [add-ld-keyword-alias!]) to invoke the similar macro xdoc, which
   can access documentation topics defined in books.")
  (DOCUMENTATION
@@ -34753,7 +34732,7 @@ Subtopics
       Evaluate some forms, not necessarily [events]
 
   [Project-dir-alist]
-      Support for moving project directories and :dir arguments
+      Support for moving project directories (also :dir arguments)
 
   [Redundant-events]
       Allowing a name to be introduced ``twice''
@@ -41468,12 +41447,16 @@ Subtopics
   (BOOKS-REFERENCE)
   "Book naming conventions assumed by ACL2
 
-  For this discussion we assume that the resident operating system is
-  Unix (trademark of AT&T), but analogous remarks apply to other
-  operating systems supported by ACL2; see [pathname].
+  See [pathname] for background on ACL2 pathnames.
 
-  ACL2 defines a ``full book name'' to be an ``absolute filename
-  string,'' that may be divided into contiguous sections: a
+  ACL2 defines a ``full-book-name'' to represent an absolute filename
+  of a book.  This is typically a ``full-book-name string'' or simply
+  ``full-book-string'': an absolute filename for the book.  At the
+  end of this topic we mention a second representation, the
+  [sysfile]; but until then, our discussion of full-book-names is
+  restricted to the special (but common) case of full-book-strings.
+
+  A full-book-name string may be divided into contiguous sections: a
   ``directory string'', a ``familiar name'' and an ``extension''.
   See [pathname] for the definitions of ``absolute,'' ``filename
   string,'' and other notions pertaining to naming files.  Below we
@@ -41501,32 +41484,14 @@ Subtopics
   The dot must be strictly to the right of the slash so that the
   familiar name is well-defined and nonempty.
 
-  If you are using ACL2 on a system in which file names do not have
-  this form, please contact the authors and we'll see what we can do
-  about generalizing ACL2's conventions.
-
-  We conclude with a remark about a representation of full book names
-  that is used in [certificate] files and [make-event] expansions.
-  When the system books directory is a prefix of a full book name,
-  ACL2 may choose to write a full book name as (:system . \"suffix\"),
-  where \"suffix\" is the result of removing the system books directory
-  from the front of the full book name.  Here is an example.
-
-    ; full book name:
-    \"/Users/smith/acl2/acl2/books/std/portcullis.lisp\"
-
-    ; alternate representation
-    ; (where \"/Users/smith/acl2/acl2/books/\" is the system books directory):
-    (:SYSTEM . \"std/portcullis.lisp\")
-
-  Conversely, in some contexts ACL2 will convert :system . \"suffix\" to
-  an absolute pathname.  Generally \"suffix\" will be a relative
-  pathname, such as \"dir/filename.lisp\"; in that case, the system
-  books directory will be concatenated with \"suffix\" to form a
-  corresponding full book name.  However, if \"suffix\" is an absolute
-  pathname, such as \"/u/smith/foo.lisp\", then the corresponding full
-  book name is simply that absolute pathname; essentially, the
-  :system prefix is dropped.")
+  We conclude by discussing the other representation of full-book-names
+  as promised above: the sysfile, which is a pair of the form (:kwd .
+  \"relpath\") where :kwd is a [keyword] and \"relpath\" is a relative
+  pathname string.  See [sysfile] for a discussion of sysfiles.
+  Here, we simply remark that sysfiles are used primarily by the
+  implementation; as an ACL2 user you might never see one.  Sysfiles
+  are used in [certificate] files and in various data structures in
+  the ACL2 logical [world].")
  (FUNCTION-SYMBOLP (POINTERS)
                    "See [system-utilities].")
  (FUNCTION-THEORY
@@ -46641,6 +46606,71 @@ Subtopics
   {IMAGE} (see [ACL2_as_an_Interactive_Theorem_Prover_{cont}])")
  (HANDS-OFF (POINTERS)
             "See [hints] for information about the keyword :hands-off.")
+ (HANDS-OFF-LAMBDA-OBJECTS-THEORY
+  (THEORIES THEORY-FUNCTIONS REWRITE)
+  "how to specify no modification of lambda objects
+
+  The enabled status of two rewrite-lambda-modep runes are used as
+  flags to determine the action taken when eligible lambda objects
+  are encountered by the ACL2 rewriter.  See [rewrite-lambda-object]
+  and [rewrite-lambda-object-actions].  To prevent the rewriter even
+  considering changing a quoted lambda object, the rune
+  (:executable-counterpart rewrite-lambda-modep) must be disabled in
+  the then-current theory.  The 0-ary function
+  hands-off-lambda-objects-theory returns such a theory.
+
+  In fact, diving into eligible quoted lambda object constants to
+  rewrite the body is the default action when ACL2 starts up.  See
+  [rewriting-versus-cleaning-up-lambda-objects] for why you might
+  want to change the default action when eligible lambda objects are
+  encountered by the rewriter.
+
+  The expression (hands-off-lambda-objects-theory) macroexpands to the
+  theory expression
+
+    (e/d nil
+         ((:executable-counterpart rewrite-lambda-modep)))
+
+  which is a theory equal to then current theory except that the
+  executable-counterpart rune of rewrite-lambda-modep is disabled.
+  This expansion is suitable for use in an [in-theory] event or
+  :in-theory hint (see :[hints]).
+
+  This rune is initally enabled, so eligible lambda object bodies are
+  either rewritten or syntactically cleaned by default (depending on
+  the status of (:definition rewrite-lambda-modep)) until and unless
+  some event (e.g., an [in-theory] or [include-book]) or a superior
+  local subgoal hint changes the status of this rune.
+
+  For example, if lambda object rewriting is active and you wish it not
+  to be (so that lambda objects remain unchanged) in Subgoal 3 of
+  some proof, you could use the :[hints]
+
+    (\"Subgoal 3\"
+     :in-theory (hands-off-lambda-objects-theory))
+
+  Note that if you also wish to enable or disable other runes in the
+  same subgoal you must construct an appropriate theory.
+
+  For example, if in Subgoal 3 of some proof you wanted to enable
+  LEMMA1 and disable LEMMA2 in a theory that will also specify
+  syntactic cleaning of lambda objects, you might write
+
+    (\"Subgoal 3\"
+     :in-theory (set-difference-theories
+                   (union-theories (hands-off-lambda-objects-theory)
+                                   '(LEMMA1))
+                   '(LEMMA2)))
+
+  Some users might prefer
+
+    (\"Subgoal 3\"
+     :in-theory (e/d (LEMMA1)
+                     ((:executable-counterpart rewrite-lambda-modep)
+                      LEMMA2)))
+
+  See [theories] for general information about theories and how to
+  create and use them.")
  (HARD-ERROR
   (ERRORS ACL2-BUILT-INS)
   "Print an error message and stop execution
@@ -50081,6 +50111,9 @@ Subtopics
     ; Include a community book:
     (include-book \"arithmetic/top-with-meta\" :dir :system)
 
+    ; Include a project book:
+    (include-book \"my-subdir/my-book\" :dir :my-project)
+
     General Form:
     (include-book file :load-compiled-file action
                        :uncertified-okp t/nil/:ignore-certs  ; [default t]
@@ -50089,24 +50122,24 @@ Subtopics
                        :ttags ttags                          ; [default nil]
                        :dir directory)
 
-  where file is a book name.  See [books] for general information, see
-  [book-name] for information about book names, and see [pathname]
-  for information about file names.  Action is one of t, nil,
-  :default, :warn, or :comp; these values are explained below, and
-  the default is :default.  The three -okp keyword arguments, which
-  default to t, determine whether errors or warnings are generated
-  under certain conditions explained below; when the argument is t,
-  warnings are generated.  The dir argument, if supplied, is a
-  keyword that represents an absolute pathname for a directory (see
-  [pathname]), to be used instead of the current book directory (see
-  [cbd]) for resolving the given file argument to an absolute
-  pathname.  In particular, by default :dir :system resolves file
-  using the books/ directory of your ACL2 installation, unless your
-  ACL2 executable was built somewhere other than where it currently
-  resides; please see the ``Books Directory'' below.  To define other
-  keywords that can be used for dir, see [add-include-book-dir].  If
-  the book has no [certificate], if its certificate is invalid (say,
-  because its [book-hash] shows that books have changed after their
+  where file is a book-name without the \".lisp\" extension.  See [books]
+  for general information, see [book-name] for information about
+  book-names, and see [pathname] for information about file names.
+  Action is one of t, nil, :default, :warn, or :comp; these values
+  are explained below, and the default is :default.  The three -okp
+  keyword arguments, which default to t, determine whether errors or
+  warnings are generated under certain conditions explained below;
+  when the argument is t, warnings are generated.  The :dir argument,
+  if supplied, is a keyword that represents an absolute [pathname]
+  for a directory, to be used instead of the current book directory
+  (see [cbd]) for resolving the given file argument to an absolute
+  pathname.  In particular, by default :dir :system resolves the
+  given file using the books/ directory of your ACL2 installation;
+  see ``Books Directory'' below.  To define other keywords that can
+  be used with :dir, see [add-include-book-dir],
+  [add-include-book-dir!], and [project-dir-alist].  If the book has
+  no [certificate], if its certificate is invalid (say, because its
+  [book-hash] shows that books have changed after their
   certification), or if the certificate was produced by a different
   [version] of ACL2, a warning is printed and the book is included
   anyway; see [certificate].  This can lead to serious errors,
@@ -50242,20 +50275,20 @@ Subtopics
   image as the full pathname string of the directory associated with
   include-book keyword option :dir :system for that image.  By
   default, it is the books/ subdirectory of the directory where the
-  sources reside and the executable image is thus built (except for
-  ACL2(r) --- see [real] ---, where it is books/nonstd/).  If those
+  sources reside and the executable image is thus built).  If those
   books reside elsewhere, the environment variable ACL2_SYSTEM_BOOKS
-  can be set to the books/ directory under which they reside (a
-  Unix-style pathname, typically ending in books/ or books, is
-  permissible).  In most cases, your ACL2 executable is a small
-  script in which you can set this environment variable just above
-  the line on which the actual ACL2 image is invoked, for example:
+  can be set to the directory under which they reside.  In most
+  cases, your ACL2 executable is a small script in which you can set
+  this environment variable just above the line on which the actual
+  ACL2 image is invoked, for example:
 
     export ACL2_SYSTEM_BOOKS
     ACL2_SYSTEM_BOOKS=/home/acl2/4-0/acl2-sources/books
 
   If you follow suggestions in the installation instructions, these
-  books will be the ACL2 community books; see [community-books].
+  books will be the ACL2 community books; see [community-books].  For
+  another way to set the system books directory, which also permits
+  similar handling for other directories, see [project-dir-alist].
 
   This concludes the guided tour through [books].  See
   [set-compile-fns] for a subtle point about the interaction between
@@ -55640,13 +55673,23 @@ Subtopics
   Allegro CL, but it is printed as |1u| in SBCL, LispWorks, and CMUCL
   --- at least in the implementations that we tested!
 
-  File-names are strings.  ACL2 does not support the Common Lisp type
-  [pathname].  However, for the file-name argument of the
-  output-related functions listed below, ACL2 supports a special
-  value, :STRING.  For this value, the channel connects (by way of a
-  Common Lisp output string stream) to a string rather than to a
-  file: as characters are written to the channel they can be
-  retrieved by using get-output-stream-string$.
+  File-name arguments are strings (except for the :STRING case
+  discussed below).  ACL2 does not support the Common Lisp type
+  [pathname]; rather, the underlying host Lisp will interpret the
+  given string as a pathname.  If the string represents a relative
+  pathname, the host Lisp will generally interpret that with respect
+  to the directory where your ACL2 executable was invoked.  If you
+  want to avoid depending on Lisp to interpret a relative pathname,
+  use an absolute pathname, for example by concatenating ([cbd]) with
+  the relative pathname.  (A fancy way to do such concatenation is
+  with (extend-pathname dir file-name state), where dir is the
+  appropriate directory, possibly (cbd).)
+
+  For the file-name argument of the output-related functions listed
+  below, ACL2 supports a special value, :STRING.  For this value, the
+  channel connects (by way of a Common Lisp output string stream) to
+  a string rather than to a file: as characters are written to the
+  channel they can be retrieved by using get-output-stream-string$.
 
   Here are the names, formals and output descriptions of the ACL2 io
   functions.
@@ -56110,8 +56153,8 @@ Subtopics
   read the event forms therein.  The non-[local] event forms are in
   fact executed, extending the host theory.  That may read in other
   [books].  When that has been finished, the keep of the
-  [certificate] is inspected.  The keep is a list of the book names
-  which are included (hereditarily through all sub-books) in the
+  [certificate] is inspected.  The keep is a list indicating all of
+  the included books (hereditarily through all sub-books) in the
   certified book (including the certified book itself) together with
   the [book-hash] values for those [books] at the time of
   certification.  We compare the book-hash values of the [books] just
@@ -56971,9 +57014,10 @@ About Guard Verification of Lambda Objects
   file, only one channel to that file is opened and is used for both.
 
   As a special convenience, when [standard-oi] is a string and the :dir
-  argument is provided and not nil, we look up :dir in the table of
-  directories maintained by [add-include-book-dir], and prepend this
-  directory to [standard-oi] to create the filename.  Note that
+  argument is provided and not nil, we look up :dir just as is done
+  for [include-book]; also see [add-include-book-dir],
+  [add-include-book-dir!], and [project-dir-alist].  Thus a suitable
+  directory is prepended to create the filename.  Note that
   standard-oi must be a string that is a relative pathname, not an
   absolute pathname.  For example, one can write (ld
   \"arithmetic/top-with-meta.lisp\" :dir :system) to ld that particular
@@ -61093,51 +61137,16 @@ Subtopics
     caddr
     +
     \"ACL2-USER\"
-    \"arith\"
-    \"project/task-1/arith.lisp\"
     :here
 
   A logical name is either a name introduced by some event, such as
-  [defun], [defthm], or [include-book], or else is the keyword :here,
-  which refers to the most recent such event.  See [events].  Every
-  logical name is either a symbol or a string.  For the syntactic
-  rules on names, see [name].  The symbols name functions, macros,
-  constants, axioms, theorems, labels, and [theories].  The strings
-  name packages or [books].  We permit the keyword symbol :here to be
+  [defun], [defthm], or [defpkg], or else is the keyword :here, which
+  refers to the most recent such event.  See [events].  Every logical
+  name is either a symbol or a package name (a string).  For the
+  syntactic rules on names, see [name].  The symbols name functions,
+  macros, constants, axioms, theorems, labels, and [theories].  The
+  strings name packages.  We permit the keyword symbol :here to be
   used as a logical name denoting the most recently completed event.
-
-  The logical name introduced by an [include-book] is the full book
-  name string for the book (see [full-book-name]).  Thus, under the
-  appropriate setting for the current book directory (see [cbd]) the
-  event (include-book \"arith\") may introduce the logical name
-
-    \"/usr/home/smith/project/task-1/arith.lisp\" .
-
-  Under a different [cbd] setting, it may introduce a different logical
-  name, perhaps
-
-    \"/local/src/acl2/library/arith.lisp\" .
-
-  It is possible that identical [include-book] events forms in a
-  session introduce two different logical names because of the
-  current book directory.
-
-  A logical name that is a string is either a package name or a book
-  name.  If it is not a package name, we support various conventions
-  to interpret it as a book name.  If it does not end with the string
-  \".lisp\" we extend it appropriately.  Then, we search for any book
-  name that has the given logical name as a terminal substring.
-  Suppose (include-book \"arith\") is the only [include-book] so far
-  and that \"/usr/home/smith/project/task-1/arith.lisp\" is the source
-  file it processed.  Then \"arith\", \"arith.lisp\" and
-  \"task-1/arith.lisp\" are all logical names identifying that
-  [include-book] event (unless they are package names).  Now suppose
-  a second (include-book \"arith\") is executed and processes
-  \"/local/src/acl2/library/arith.lisp\".  Then \"arith\" is no longer a
-  logical name, because it is ambiguous.  However, \"task-1/arith\" is
-  a logical name for the first [include-book] and \"library/arith\" is
-  a logical name for the second.  Indeed, the first can be named by
-  \"1/arith\" and the second by \"y/arith\".
 
   Logical names are used primarily in the theory manipulation
   functions, e.g., [universal-theory] and [current-theory] with which
@@ -62997,11 +63006,10 @@ Detailed Documentation
       under ``Error Reporting'' below.
       (Technical remark: The expansion result described above may be
       modified for [include-book], [add-include-book-dir], and
-      [add-include-book-dir!], replacing book names by full
-      pathnames, using syntax (:system . relative-pathname) for
-      [community-books] (i.e., system books); see [full-book-name],
-      and for further details see comments in source function
-      make-include-books-absolute.  End of technical remark.)
+      [add-include-book-dir!], replacing [book-name]s to indicate
+      [full-book-name]s.  For further details see comments in source
+      function make-include-books-absolute.  End of technical
+      remark.)
 
       ``evaluated again'' --- the expansion result is evaluated in place of
       the original make-event.
@@ -73802,8 +73810,8 @@ Subtopics
   \"book1\") occurs in book2, then the compiled file for book1 will not
   be loaded again when book2 is included.  Thanks to Dave Greve for
   bringing our attention to these problems, and to Eric Smith for
-  bringing up a special case earlier (where \"//\" occurred in the book
-  name).
+  bringing up a special case earlier (where \"//\" occurred in the
+  book-name).
 
   The summary printed at the end of a proof had not listed :[induction]
   rules used in a proof.  This has been corrected.
@@ -80141,7 +80149,7 @@ Subtopics
   soft links are resolved; see [canonical-pathname].  Moreover, ACL2
   uses this utility in its own sources, which can eliminate some
   issues.  In particular, [include-book] with argument :ttags :all no
-  longer breaks when given a book name differing from the book name
+  longer breaks when given a book-name differing from the book-name
   that was used at certification time; thanks to Sol Swords for
   reporting that problem.  Also, certain errors have been eliminated
   involving the combination of packages in the certification world
@@ -91797,6 +91805,33 @@ Changes to Existing Features
 
   :[Induction] rules now support the use of [syntaxp] hypotheses.
 
+  The utility [read-file-into-string] has been improved in the
+  following ways.
+
+    * The value of the :start argument may now be any natural number less
+      than the length of the input file.  (Formerly one needed to use
+      this utility to read the preceding bytes first, which can be
+      much slower.)  Thanks to Eric McCarthy, Eric Smith, and Grant
+      Jurgensen for requesting this improvement and for helpful
+      discussions.
+    * While the default behavior is the same for when the corresponding
+      Lisp stream is closed, a new keyword argument, :close, can be
+      supplied to control that behavior.
+    * Miscellaneous clean-up has been made in the implementation.
+
+  The [trace$] option :evisc-tuple :print, which continues to use raw
+  Lisp printing, has undergone the following improvements when
+  printing entry and exit values.  Thanks to Eric McCarthy for a
+  query that led to these improvements.
+
+    * Values are now pretty-printed.
+    * Array values are no longer displayed as [stobj]s.  (This includes
+      stobjs themselves, since they are arrays.)
+
+  The use of (:executable-counterpart rewrite-lambda-modep) to control
+  the behavior of lambda object rewriting by the prover (see
+  [rewrite-lambda-object]) has been elaborated.
+
 
 New Features
 
@@ -91835,18 +91870,20 @@ New Features
   These are particularly useful for seeing the logical meanings of
   [loop$] terms as well as terms involving [mbe] and [return-last].
 
-  It is now possible to move directories of certified books, including
-  the [certificate] (.cert) files.  The key idea is to set up an
-  ``ACL2 projects'' file that associates keywords with directory
-  names, where each keyword indicates a movable project and the
-  associated directory name is the top-level directory of the
-  project.  Up till now, a sysfile was a pair of the form (:SYSTEM .
-  \"directory-name\"); now, a sysfile may have an arbitrary keyword as
-  its first component (i.e., its car).  The environment variable
-  ACL2_PROJECTS may be used to specify a file containing associations
-  of keywords with directory names.  See [project-dir-alist].  Thanks
-  to Sol Swords for requesting such a capability and for helpful
-  design discussions.
+  A directory of [books] may now be relocated so that those books are
+  still treated as certified.  This is supported by a new
+  [project-dir-alist], which associates keywords with ``project
+  directories'' and is set using environment variable ACL2_PROJECTS;
+  see [project-dir-alist].  By default, the project-dir-alist has
+  only one entry, which associates the keyword :SYSTEM with the
+  [community-books] directory, books/.  The project-dir-alist
+  generalizes the notion of system books directory, assigning meaning
+  to the :dir argument of [include-book] and [ld] and to [sysfile]
+  arguments of [add-include-book-dir] and [add-include-book-dir!].
+  Thanks to Sol Swords for requesting such a capability and for
+  helpful design discussions.  (Technical Note: Implementation-level
+  changes are summarized in comments in the form (defxdoc note-8-6
+  ...) in [community-book] system/doc/acl2-doc.lisp.)
 
 
 Heuristic and Efficiency Improvements
@@ -91872,6 +91909,9 @@ Bug Fixes
      :hints ((\"Goal\"
               :expand ((:free (b) (append x b))
                        (:free (a b) (append (cons (car x) a) b))))))
+
+  Fixed bugs in the definition of source macro position-ac.  Thanks to
+  Eric Smith for pointing them out.
 
 
 Changes at the System Level
@@ -97711,8 +97751,8 @@ Subtopics
                          (cons (cons 'lst (cons lst 'nil))
                                (cons (cons 'acc (cons acc 'nil))
                                      'nil)))
-                   '(:logic (position-equal-ac item lst)
-                            :exec (position-ac-eq-exec item lst)))))
+                   '(:logic (position-equal-ac item lst acc)
+                            :exec (position-ac-eq-exec item lst acc)))))
       ((equal test ''eql)
        (cons
             'let-mbe
@@ -97723,7 +97763,7 @@ Subtopics
                   '(:logic (position-equal-ac item lst acc)
                            :exec (position-ac-eql-exec item lst acc)))))
       (t (cons 'position-equal-ac
-               (cons item (cons lst 'nil))))))")
+               (cons item (cons lst (cons acc 'nil)))))))")
  (POSITION-EQ (POINTERS)
               "See [position].")
  (POSITION-EQUAL (POINTERS)
@@ -101034,26 +101074,167 @@ Avoiding These Errors
   loop$ is as perspicuous as the loop$ itself.  So don't dismiss this
   approach out of hand.")
  (PROJECT-DIR-ALIST
-  (EVENTS)
-  "Support for moving project directories and :dir arguments
+  (BOOKS EVENTS)
+  "Support for moving project directories (also :dir arguments)
 
-  This topic is currently only a stub, but should be fleshed out soon.
+  This topic describes the project-dir-alist, which supports the
+  relocation of book directories so that their [books] are still
+  treated as certified.  Each such directory is treated as a project,
+  which is represented by a [keyword].  In particular, the keyword,
+  :SYSTEM, represents the [community-books] as such a project.  The
+  project-dir-alist also provides one way to interpret the :dir
+  keyword argument of [include-book] and [ld].
 
-  In short, you can set environment variable ACL2_PROJECTS to be the
-  name of a file that contains lines of the following form, as well
-  as any number of comment lines for which the first non-whitespace
-  character is a semicolon (;).
+  It is theoretically possible to undermine soundness by using this
+  capability inappropriately (see below for some discussion of
+  appropriate usage).  For the utmost security, perform a fresh
+  certification of your entire collection of books without using this
+  capability.  See [certificate], specifically the discussion there
+  about placing a ``burden'' on the user.
 
-    :KEYWORD \"directory-name\"
+  To see the project-dir-alist in your session, evaluate the form
+  (project-dir-alist (w state)).
 
-  Then :KEYWORD will be interpreted to represent \"directory-name\" when
-  used with the :DIR argument of [include-book] or [ld], just as is
-  the case when using [add-include-book-dir!].  But an additional
-  property is as follows.  Suppose a book and its certificate
-  \"directory-name/.../bk.{lisp,cert}\" are moved (or copied) to
-  \"directory-name-2/.../bk.{lisp,cert}\".  Then in any session where
-  :KEYWORD is similarly bound to \"directory-name-2\" instead of
-  \"directory-name\", that book will be treated as certified.")
+  We start below by introducing the project-dir-alist and explaining
+  how to set it up.  Next we describe its effects.  We conclude by
+  discussing some details, limitations, and restrictions.
+
+
+What is the project-dir-alist and how is it established?
+
+  The project-dir-alist is an association list that maps keywords to
+  directory names.  If we map keyword :K to directory \"<dir>\", we say
+  that the project name K is associated with project directory
+  \"<dir>\".
+
+  The way to establish the project-dir-alist is to set environment
+  variable ACL2_PROJECTS to the name of a file, which we will call
+  the ``projects file''.  The projects file may have lines of the
+  following form, where we write :K to denote an arbitrary keyword
+  and \"<dir>\" to denote a directory name inside double-quotes.
+
+    :K \"<dir>\"
+
+  Such a line associates the project name K with the project directory
+  \"dir\".  Each remaining line in a projects file should either be
+  blank (i.e., contain only whitespace) or else be a comment line,
+  that is, a line for which the first non-whitespace character is a
+  semicolon (;).
+
+  The projects file is read when ACL2 starts up.  ACL2 creates the
+  project-dir-alist by using each line as above to associate the
+  keyword :K with the directory represented by \"<dir>\", which may be
+  a relative or absolute pathname.  Relative pathnames are
+  interpreted with respect to the directory of the projects file.
+
+  If the keyword :SYSTEM is not specified in the projects file, then
+  the project-dir-alist will additionally include a pair that
+  associates :SYSTEM with the [community-books] directory, which is
+  generally the books/ subdirectory of your ACL2 distribution.  That
+  value for :SYSTEM can be overridden either by specifying it
+  explicitly with :SYSTEM in the projects file or by setting
+  environment variable ACL2_SYSTEM_BOOKS to that value --- where if
+  both overrides are used, they must not conflict.
+
+  The values of the environment variables mentioned above,
+  ACL2_PROJECTS and ACL2_SYSTEM_BOOKS, are pathnames that can be
+  either relative or absolute.  A relative pathname is interpreted
+  with respect to the directory in which ACL2 is invoked.  The final
+  character need not be ``/''; if it's not, then that character will
+  be added at the end before adding to the project-dir-alist.
+
+  The project-dir-alist must have no duplicate keys and no duplicate
+  directory names.
+
+
+Effects of the project-dir-alist
+
+  There are the following two effects of the association of a keyword
+  :K with a directory \"<dir>\" in the project-dir-alist.
+
+  (1) :K specifies a project directory that may be moved.
+
+      Consider first the default case, where there is a single association
+      in the project-dir-alist: :SYSTEM is associated with the
+      [community-books] directory.  Suppose that the community books
+      and their certificates are moved to a new directory, \"<dir>\".
+      Then if you run ACL2 in an environment where the
+      project-dir-alist associates :SYSTEM with \"<dir>\", the
+      relocated community books will still be treated as certified.
+
+      The case of :SYSTEM described above generalizes naturally, as
+      follows.  Let S be a set of books certified with a given
+      project-dir-alist, each of which includes only other books in
+      S.  (For example, S contains just the community books directory
+      in the special case above.)  Also assume that the absolute
+      pathname of every book in S has a prefix among the directories
+      in that project-dir-alist.  Then all books in S, along with
+      their [certificate] files, can be moved and those books will
+      still be considered to be certified in any ACL2 session with a
+      suitable project-dir-alist, as follows.  For every keyword :K
+      mapped to directory \"<dir>\" in the original project-dir-alist
+      (the one at certification time), the new project-dir-alist
+      should map :K to the directory \"<dir2>\" to which \"<dir>\" was
+      moved.
+
+  (2) :K can be used as a :dir keyword, to reference \"<dir>\".
+
+      The optional :dir keyword argument of [include-book] and [ld] can
+      have value :K, in which case the pathname argument is
+      interpreted with respect to \"<dir>\".  This behavior is the same
+      as when :K is bound to \"<dir>\" using [add-include-book-dir] or
+      [add-include-book-dir!].
+
+
+Additional details
+
+      Prefixes. Suppose :K1 and :K2 are keywords bound in the
+      project-dir-alist to \"<dir1>\" and \"<dir2>\", respectively, where
+      \"<dir1>\" is a prefix of \"<dir2>\" (hence is stricly shorter,
+      since duplicates are disallowed, as noted above).  Then it may
+      be simplest to maintain that property --- that the value of :K1
+      is a prefix of the value of :K2 --- when creating a new
+      ACL2_PROJECTS directory to reflect relocation of these
+      directories of books.  The actual requirement is that
+      directories under the old value of :K2 need to be moved to the
+      same relative locations under the new value of :K2, and all
+      other directories under the old value of :K1 need to be moved
+      to the same relative locations under the new value of :K1.
+
+      [Save-exec]. By default, an executable created with [save-exec] will
+      have an unchanged project-dir-alist.  However, a new
+      project-dir-alist will be created as described above if
+      environment variable ACL2_PROJECTS is set; also, if environment
+      variable ACL2_SYSTEM_BOOKS is set, then the existing
+      project-dir-alist will be modified to map :SYSTEM to the value
+      of ACL2_SYSTEM_BOOKS.
+
+
+Additional Limitations and Restrictions
+
+      (Already noted above) No duplicates. There must be no duplicate keys
+      or duplicate directory names in the project-dir-alist.
+
+      No overlap. No keyword may be bound with [add-include-book-dir] or
+      [add-include-book-dir!] that is also bound in the
+      project-dir-alist.
+
+      Avoid using absolute pathnames in books. Consider a form that
+      contains an absolute pathname, such as (defconst *c*
+      \"/u/home/jones/bk\").  If that form is in a book B that is
+      moved, then of course it remain in B after the move.  That is
+      certainly fine, unless one expects this pathname to change as B
+      is moved.  That said, an absolute pathname that extends a
+      project directory is OK in an [include-book] form among the
+      [portcullis] commands for a book, in the following sense: it is
+      replaced in that book's [certificate] by referencing the
+      project's keyword name to avoid using an absolute pathname.
+
+
+Subtopics
+
+  [Sysfile]
+      File representation using ACL2 project directories")
  (PROMPT
   (LD)
   "The prompt printed by [ld]
@@ -104751,118 +104932,125 @@ Subtopics
   (IO)
   "The contents of a file (or part of it) as a string
 
-  When this macro is passed a valid filename (and the ACL2 [state]), it
+  When this macro is passed a valid filename and the ACL2 [state], it
   generally returns the contents of the file (or a specified part of
   the file) as a string.  Otherwise, it returns nil or causes an
-  error.
+  error.  Unlike other ACL2 functions for reading a file, this one
+  does not return the ACL2 state, and it is generally much faster.
 
     Example Forms:
 
     (read-file-into-string \"foo.lisp\")
     (read-file-into-string \"foo.lisp\" :start 0 :bytes nil) ; same as above
     (read-file-into-string \"foo.lisp\" :start 20000 :bytes 10000)
+    (read-file-into-string \"foo.lisp\" :start 20000 :bytes 10000 :close t)
 
     General Form:
 
-    (read-file-into-string filename :start s :bytes b)
+    (read-file-into-string filename ; a filename relative to the current directory
+                           :start s ; default 0
+                           :bytes b ; default nil
+                           :close c ; default :default
+                           )
 
-  where filename is a string, which is typically the name of a file;
-  and where :start s and :bytes b are optional, where s has default 0
-  and b has default nil, s is a natural number, and b is either a
-  natural number or nil.
+  where filename is a string, which is typically the name of a file,
+  and the keyword argument are optional and evaluated, as follows: s
+  has default 0 and its value is a natural number (except, an error
+  occurs if that number exceeds the length of the given file), b has
+  default nil and its value is either a natural number or nil, and c
+  has default :default and its value is otherwise considered to be
+  false (when nil) or true (when not nil).
 
   For examples, see [community-books] file
   books/system/tests/read-file-into-string.lisp.
 
   The result, when not nil or an error, is a string representing the
   specified file contents.  For the default of :start 0 and :bytes
-  nil, or equivalently, when no keyword arguments are specified, then
-  the entire file contents are returned as a string.  In general,
-  :start s specifies the part of the file starting at the s-th byte,
-  and :bytes b specifies that only the first b bytes are to be read
-  starting at that position, stopping at end of file in what we call
-  the ``truncation case'': where b+s exceeds the length of the file.
+  nil, or equivalently, when no keyword arguments are specified, the
+  entire file contents are returned as a string.  In general, :start
+  s specifies the part of the file starting at byte position s of the
+  file, and :bytes b specifies that only the first b bytes are to be
+  read starting at that position --- however, stopping at the end of
+  the file if b+s exceeds the length L of the file.  Below we call
+  this case that b+s>L the ``truncation case''.
 
-  If :start s is specified where s > 0, then the next read must start
-  where the previous read left off.  More precisely: in this case
-  ACL2 expects that there was an earlier call of
-  read-file-into-string on the same file, where the most recent such
-  call must not have been the ``truncation case'' (see above) and
-  must have have specified :bytes such that the first unread byte
-  position is s.  Otherwise, an error occurs.  Note that if s is 0
-  then there is no such restriction; the read is viewed as a new
-  ``first'' read of the file.
+  Note that ACL2 characters always fit into a single byte, which is why
+  we can talk about ``bytes'' here.
 
-  WARNING: A Lisp stream is created for the specified file, and is left
-  open until a call of read-file-into-string is either made with
-  :bytes having value nil (the default) or is in the ``truncation
-  case'' described above.  Operating systems can complain when too
-  many streams are open at the same time.  In particular, consider
-  the case that :start s and :bytes b are specified where s > 0, and
-  where s+b is exactly the length of the file.  Thus we are barely
-  not in the ``truncation case'' described above, so one more read
-  will be necessary in order to close that stream.  Your code might
-  thus include code such as the following (for example) after a call
-  of read-file-into-string with non-nil :bytes:
+  The :close argument affects handling of the Lisp stream that is
+  created for the specified file.  When the value of :close is the
+  default, :default, this stream is closed immediately after the read
+  exactly when either :bytes has value nil (the default) or we are in
+  the truncation case b+s>L described above.  But otherwise the
+  stream remains open, which could cause a problem since operating
+  systems can complain when too many streams are open at the same
+  time.  If the value of :bytes is non-nil (hence, a natural number),
+  then you may want to specify :close t to prevent that problem,
+  unless you plan to read more bytes from the same file.  If you
+  decide to close the file later, this can be accomplished
+  efficiently by evaluating the following form for your file,
+  \"<file>\".
 
-    (prog2$
-     (and (= (+ position bytes) file-length)
+    (time$ (read-file-into-string \"<file>\" :start 0 :bytes 0 :close t))
 
-    ; Then close the stream:
+  Compared with the usual [io] routines provided by ACL2,
+  read-file-into-string is generally much more efficient, and also it
+  does not return [state].  Note that the expansion of a call of this
+  macro takes state as an argument; so if you call it in the body of
+  a function definition, then --- as usual for functions that take
+  state --- either (set-state-ok t) must have been evaluated or else
+  a suitable :stobjs declaration, typically :stobjs state, must be
+  provided (see [xargs]).
 
-          (read-file-into-string
-           filename
-           :start file-length
-           :bytes 1))
-     <more_code>)
-
-  End of warning.
-
-  This macro provides functionality that can be obtained through the
-  usual [io] routines provided by ACL2, as shown by the sequence of
-  definitions below.  However, under-the-hood raw Lisp code provides
-  an implementation that not only is efficient, but also does not
-  return [state].  Note that the expansion of a call of this macro
-  does take state as an argument, which (as usual for functions that
-  take state) necessitates either that (set-state-ok t) has already
-  been evaluated, or else that a suitable :stobjs declaration,
-  typically :stobjs state, is provided (see [xargs]).
-
-  The value of the constant *read-file-into-string-bound* (see the
-  definition below) is a strict upper bound on the size of the string
-  returned.  If the file (or portion thereof) contains more bytes
-  than this, then nil is returned.
+  The constant *read-file-into-string-bound* (see the definition below)
+  establishes a strict upper bound on the size of the string
+  returned.  If the file (or specified portion thereof) contains more
+  bytes than this, then nil is returned.
 
   There are two checks to guarantee that read-file-into-string is truly
   a function --- that is, it returns the same value for two calls
-  with the same inputs.  One check ensures that the write date of the
-  file has not changed between two such calls; otherwise ACL2 will
-  cause a raw Lisp error of the following form.
+  with the same inputs.  The primary check ensures that the write
+  date of the file has not changed in the interval between two such
+  calls unless the file-clock component of the ACL2 state has been
+  updated within that interval.  That update takes place when an
+  input or output channel is opened or closed in the usual way (that
+  is, using open-input-channel, open-output-channel,
+  close-input-channel, or close-output-channel; see [io]).  However,
+  it suffices to evaluate the following form, which returns the
+  [state] obtained by incrementing its file-clock.
 
+    (increment-file-clock state)
+
+  If however you make illegal successive reads as described above, a
+  Lisp error will occur with a message of the following form.
+
+    ***********************************************
     ************ ABORTING from raw Lisp ***********
     ********** (see :DOC raw-lisp-error) **********
-    Error:  Illegal consecutive reads from file \"MY-FILE\".
+    Error:  Illegal consecutive reads from file
+    \"<some_filename>\",
+    which appears to have been written between the two reads.
+    Execute (INCREMENT-FILE-CLOCK STATE) to avoid this error.
     See :DOC read-file-into-string.
+    While executing: READ-FILE-INTO-STRING2
     ***********************************************
+
+  A similar error may occur when a call of read-file-into-string is
+  followed by a call of [open-input-channel] on the same filename
+  when that file is modified between the two calls.  For low-level
+  details about logical issues being addressed by such errors, see
+  the comment in the definition of *read-file-into-string-alist* in
+  the ACL2 sources.
 
   The other check ensures that the write date of the file has not
-  changed while the second call is in progress.  For simplicity, ACL2
-  actually makes this check even for the first call.  When the check
-  fails the corresponding raw Lisp error is of the following form.
+  changed while a call is in progress.  When that check fails the
+  corresponding Lisp error is of the following form.
 
     ************ ABORTING from raw Lisp ***********
     ********** (see :DOC raw-lisp-error) **********
-    Error:  Illegal attempt to call READ-FILE-INTO-STRING concurrently with some write to that file!
-    See :DOC read-file-into-string.
+    Error:  Illegal attempt to call READ-FILE-INTO-STRING concurrently
+    with some write to that file!  See :DOC read-file-into-string.
     ***********************************************
-
-  The first of these errors can actually occur when the second read is
-  performed by [open-input-channel] of type :character.  But we
-  expect all such errors to be rare, since they only occur when there
-  are two reads to the same file with an intervening external write,
-  in the case that the two ACL2 states have the same file-clock field
-  (see [state]).  That field is updated any time a channel is opened
-  or closed.
 
   We close by showing the relevant ACL2 definitions in the logic, that
   is, not including the special raw Lisp (under the hood) code in the
@@ -104931,20 +105119,23 @@ Subtopics
   Function: <read-file-into-string2>
 
     (defun read-file-into-string2
-           (filename start bytes state)
+           (filename start bytes close state)
            (declare (xargs :stobjs state
                            :guard (and (stringp filename)
                                        (natp start)
                                        (or (null bytes) (natp bytes)))))
+           (declare (ignore close))
            (read-file-into-string2-logical filename start bytes state))
 
   Macro: <read-file-into-string>
 
     (defmacro read-file-into-string
-              (filename &key (start '0) bytes)
+              (filename &key (start '0)
+                        bytes (close ':default))
               (cons 'read-file-into-string2
                     (cons filename
-                          (cons start (cons bytes '(state))))))")
+                          (cons start
+                                (cons bytes (cons close '(state)))))))")
  (READ-OBJECT (POINTERS) "See [io].")
  (READ-OBJECT-SUPPRESS (POINTERS)
                        "See [io].")
@@ -108161,6 +108352,9 @@ Subtopics
   [Free-variables]
       Free variables in rules
 
+  [Hands-off-lambda-objects-theory]
+      how to specify no modification of lambda objects
+
   [Hide]
       Hide a term from the rewriter
 
@@ -108174,11 +108368,23 @@ Subtopics
       Force ACL2 to perform substitution using a stylized [equivalence]
       hypothesis
 
+  [Rewrite-lambda-modep]
+      switch controlling rewriting of lambda objects
+
   [Rewrite-lambda-object]
       rewriting lambda objects in :FN slots
 
+  [Rewrite-lambda-object-actions]
+      actions available when rewriting lambda objects
+
+  [Rewrite-lambda-objects-theory]
+      how to specify rewriting of lambda objects
+
   [Rewrite-stack-limit]
       Limiting the stack depth of the ACL2 rewriter
+
+  [Rewriting-versus-cleaning-up-lambda-objects]
+      why change the default action on rewriting lambda objects
 
   [Set-rw-cache-state]
       Set the default rw-cache-state
@@ -108188,6 +108394,9 @@ Subtopics
 
   [Simple]
       :[definition] and :[rewrite] rules used in preprocessing
+
+  [Syntactically-clean-lambda-objects-theory]
+      how to specify syntactic cleaning of lambda objects
 
   [Syntaxp]
       Attach a heuristic filter on a rule")
@@ -108217,44 +108426,58 @@ Subtopics
   For an example of a [clause-processor] that leverages Rewrite-equiv
   to induce substitution using equivalence relations appearing in the
   hypothesis, see [rewrite-equiv-hint].")
+ (REWRITE-LAMBDA-MODEP
+  (REWRITE)
+  "switch controlling rewriting of lambda objects
+
+  Rewrite-lambda-modep is an identity function with no purpose other
+  than to serve as a switch controlling whether and how the ACL2
+  prover rewrites quoted lambda objects in argument positions of
+  [ilk] :FN.  Behavior is determined by the enabled status of two
+  runes associated with rewrite-lambda-modep, the
+  executable-counterpart rune and the definition rune.  See
+  [rewrite-lambda-object].")
  (REWRITE-LAMBDA-OBJECT
   (REWRITE)
   "rewriting lambda objects in :FN slots
 
   [Lambda] objects are quoted constants passed to [scion]s and applied
-  as functions by [apply$].  The ACL2 rewriter rewrites the bodies of
-  quoted lambda objects when they occur in slots of [ilk] :FN.
-  However, there are restrictions on which lambda objects are
-  rewritten, restrictions on the techniques available to the rewriter
-  during the rewriting of lambda bodies, and restrictions controlling
-  whether the rewritten object replaces the original object or is is
-  ignored.  We explain below.
+  as functions by [apply$].  The ACL2 rewriter can be made to replace
+  the bodies of quoted lambda objects with (supposedly) simpler
+  bodies that are [ev$] equivalent, when the lambda objects occur in
+  slots of [ilk] :FN.  However, there are restrictions on which
+  lambda objects can be so simplified, restrictions on the techniques
+  available to the rewriter during the simplification of lambda
+  bodies, and restrictions controlling whether the simplified body
+  replaces the original or is ignored.  We explain below.
 
 
-When Rewriting of lambda Objects Is Attempted
+When an Occurrence of a lambda Objects Is Eligible
 
-  The rewriter attempts to rewrite the body of a quoted lambda constant
+  An occurrence of a quoted lambda object is eligible to be simplified
   provided
 
     * (a) it occurs in a :FN position of a call of a [scion],
-    * (b) the [rune] (:executable-counterpart rewrite-lambda-modep)) is
-      [enable]d (which it is by default),
-    * (c) the lambda object is well-formed (see
+    * (b) the lambda object is well-formed (see
       [well-formed-lambda-objectp]),
-    * (d) every function symbol mentioned in the body has been warranted
+    * (c) every function symbol mentioned in the body has been warranted
 
-  Condition (c) implies the body of the lambda is in fact a well-formed
+  However, eligible quoted lambda objects are not modified at all if
+  the [rune] (:executable-counterpart rewrite-lambda-modep) is
+  [disable]d.  That rune is enabled by default.
+
+  Condition (b) implies the body of the lambda is in fact a well-formed
   ACL2 term (so the rewriter can explore it), every function symbol
-  in it is [warrant]ed (so that function objects mentioned are used
+  in it is [badge]d (so that function objects mentioned are used
   properly), that every variable symbol occurring freely in the body
-  is among the formals of the lambda object, and together with (d)
+  is among the formals of the lambda object, and together with (c)
   implies that the term ``behaves'' as expected if the appropriate
   warrant hypotheses govern this occurrence of the object.  This last
   implication means that [ev$] of the body is equal to unquoted body
-  (under a suitable assignment), which means we can rewrite the
+  (under a suitable assignment), which means we can replace the
   unquoted body.
 
-  If (a) and (b) above hold but either (c) or (d) fails, then a
+  If (a) holds but either (b) or (c) fails, then a
   \"rewrite-lambda-object\" warning message is printed during the
   proof.  However, this message is only printed once per lambda
   object per proof attempt because otherwise the presence of
@@ -108265,9 +108488,23 @@ When Rewriting of lambda Objects Is Attempted
 
 Restrictions During Rewriting of a Lambda Body
 
-  The rewriter is restricted in two ways when rewriting lambda bodies.
+  The rewriter is restricted in three ways when rewriting the bodies of
+  eligible occurrences of lambda objects.
 
-  First, warrant hypotheses in the goal clause are the only contextual
+  First, the user can specify one of two actions the rewriter can take
+  on an eligible lambda object occurrence (in addition to taking no
+  action as controlled by the rewrite-lambda-modep rune mentioned
+  above).  The available actions are to recursively call the rewriter
+  and normalize the result, or to do syntactic cleaning only.  The
+  default is recursive rewriting, with the restrictions explained in
+  below.  Syntactic cleaning just eliminates declarations, guards,
+  and various tags irrelevant to the logical value of the body.  We
+  describe how the user specifies the action to be used in
+  [rewrite-lambda-object-actions].  We give more details about these
+  two kinds of lambda body simplification in
+  [rewriting-versus-cleaning-up-lambda-objects].
+
+  Second, warrant hypotheses in the goal clause are the only contextual
   information ``imported'' from the goal clause and made available
   while rewriting a lambda body.  That means type information about
   variables and other terms is forgotten, as are any linear
@@ -108291,7 +108528,7 @@ Restrictions During Rewriting of a Lambda Body
   But that more sophisticated handling of contextual information has
   not been implemented.)
 
-  Second, recursive functions are never opened when rewriting lambda
+  Third, recursive functions are never opened when rewriting lambda
   bodies.  For example, if (len (cons e x)) occurs in a lambda body,
   you might expect it to be simplified to (+ 1 (len x)), because that
   is what generally happens to that term when occurrences outside
@@ -108307,15 +108544,25 @@ Restrictions During Rewriting of a Lambda Body
   The ACL2 implementors hope to address both of the above problems in
   eventual future releases.
 
+  Syntactic cleaning, in contrast to the restricted rewriting just
+  described, eliminates declarations, guards, and other
+  compiler-related tags introduced by translation of lambda$ and
+  loop$.  It does beta reduction, which eliminates local variable
+  names (other than the formals of the lambda object).  And it
+  replaces the last two arguments of calls of [do$] by nil if those
+  two arguments are quoted constants other than nil.  (Those two
+  arguments are irrelevant to the value of the do$ term and only used
+  in error reporting.)
+
 
 What Happens After Rewriting a Lambda Body
 
-  Upon rewriting the body, b, of (lambda(v1...vn)b) to produce b' the
-  decision must be made as to whether to return the lambda with the
-  rewritten body, (lambda(v1...vn)b'), or to ignore the rewrite and
-  return the original (unrewritten) object.  ACL2 ignores the rewrite
-  and returns the original lambda object if any of the following
-  three cases obtains:
+  After the specified action on the body, b, of (lambda(v1...vn)b) to
+  produce b' the decision must be made as to whether to return the
+  lambda with the rewritten body, (lambda(v1...vn)b'), or to ignore
+  the rewrite and return the original (unrewritten) object.  ACL2
+  ignores the rewrite and returns the original lambda object if any
+  of the following three cases obtains:
 
     * (a) b' contains variables other than the lambda formals v1,...,vn,
     * (b) b' is not tame, or
@@ -108329,9 +108576,7 @@ What Happens After Rewriting a Lambda Body
   which of the three conditions above was violated.  However, this
   message is only printed once per lambda object per proof attempt
   because otherwise the presence of a lambda object that rewrites
-  inappropriately will litter the output with repeated warnings.  You
-  may turn these warnings off with ([toggle-inhibit-warning]
-  \"Rewrite-lambda-object\").
+  inappropriately will litter the output with repeated warnings.
 
   Condition (a) can arise if a rewrite rule introduces a free variable;
   disabling that rewrite rule is recommended.  Condition (b) can
@@ -108341,13 +108586,13 @@ What Happens After Rewriting a Lambda Body
   issue a warrant for the offending function symbol and then supply
   that warrant as a hypothesis to the goal; the latter response is
   perhaps better because it means all the ``usual'' rewriting is
-  done, normalizing terms as expected.  Condition (c) arises when
-  forcing has been disabled and the offending function symbol's
-  warrant is not among the hypotheses; enabling forcing or adding the
-  warrant as a hypothesis is recommended.
+  done, normalizing terms as expected.  Condition (c) can be
+  addressed by using defwarrant to issue a warrant for the offending
+  function symbol and enabling forcing (see [force]).
 
-  The warning message noted above can become annoying.  It can be
-  inhibited with (toggle-inhibit-warning \"Rewrite-lambda-object\").
+  The warning message noted above can become annoying.  You may turn
+  these warnings off with ([toggle-inhibit-warning]
+  \"Rewrite-lambda-object\").
 
   Be advised that if the \"rewrite-lambda-object\" warning has been
   inhibited (by you or some book included in your session) and then,
@@ -108412,6 +108657,138 @@ A Possible Confusion
 
   If you want to avoid this normalization of the globals, disable the
   [rune] (:meta relink-fancy-scion-correct).")
+ (REWRITE-LAMBDA-OBJECT-ACTIONS
+  (REWRITE)
+  "actions available when rewriting lambda objects
+
+  As explained in [rewrite-lambda-object] the rewriter can be applied
+  to eligible occurrences of quoted lambda objects.  That
+  documentation also describes eligibility, what happens during, and
+  what happens after the specified action, with a focus on
+  recursively rewriting the lambda body.  This topic discusses how to
+  specify the desired action.
+
+  The user can specify one of three actions by manipulating the enabled
+  status of the [rune] (:executable-counterpart rewrite-lambda-modep)
+  and the enabled status of (:definition rewrite-lambda-modep).
+  Recall that such runes can be abbreviated (:e rewrite-lambda-modep)
+  and (:d rewrite-lambda-modep).  But in this discussion, we'll
+  abbreviate them still further by e and d, respectively.
+
+  The actions available on the body of an eligible lambda object
+  occurrence are
+
+    * rewrite: e and d enabled
+    * syntactically clean: e enabled and d disabled
+    * hands-off (no action): e disabled
+
+  Since the action is determined by the enabled status of runes, it can
+  be specified by the user by appropriate global [in-theory] events
+  or by goal-specific, local :in-theory :[hints].  There are three
+  0-ary macros that expand into appropriate theories provided the
+  only runes you wish to affect are our so-called e and d.
+
+  The three macros are [rewrite-lambda-objects-theory],
+  [syntactically-clean-lambda-objects-theory], and
+  [hands-off-lambda-objects-theory], with the obvious meanings.  For
+  example, (syntactically-clean-lambda-objects-theory) macroexpands
+  to
+
+    (e/d ((:executable-counterpart rewrite-lambda-modep))   ; enable ``e''
+         ((:definition rewrite-lambda-modep)))              ; disable ``d''
+
+  Since e and d are both initially enabled in ACL2, eligible lambda
+  objects are rewritten by default unless you change the status of e
+  and/or d.
+
+  For example, to make the prover just syntactically clean eligible
+  lambda objects in Subgoal 3 of some proof attempt you could provide
+  the :hint
+
+      (\"Subgoal 3\"
+        :in-theory (syntactically-clean-lambda-objects-theory))
+
+  Note however that if you also need to adjust the status of some other
+  rune in that same hint you must create a theory expression that
+  includes the appropriate use of e and d.  For example, to also
+  enable LEMMA1 but disable LEMMA2 while specifying use of syntactic
+  cleaning you could write:
+
+    (\"Subgoal 3\"
+     :in-theory (e/d ((:executable-counterpart rewrite-lambda-modep)
+                      LEMMA1)
+                     ((:definition rewrite-lambda-modep)
+                      LEMMA2)))
+
+  For details on what syntactic cleaning is and why it is sometimes
+  useful, see [rewriting-versus-cleaning-up-lambda-objects].")
+ (REWRITE-LAMBDA-OBJECTS-THEORY
+  (THEORIES THEORY-FUNCTIONS REWRITE)
+  "how to specify rewriting of lambda objects
+
+  The enabled status of two rewrite-lambda-modep runes are used as
+  flags to determine the action taken when eligible lambda objects
+  are encountered by the ACL2 rewriter.  See [rewrite-lambda-object]
+  and [rewrite-lambda-object-actions].  To make the rewriter dive
+  into the body of an eligible lambda object, both
+  (:executable-counterpart rewrite-lambda-modep) and (:definition
+  rewrite-lambda-modep) must be enabled in the then-current theory.
+  The 0-ary function rewrite-lambda-objects-theory returns such a
+  theory.
+
+  In fact, diving into eligible quoted lambda object constants to
+  rewrite the body is the default action when ACL2 starts up.  See
+  [rewriting-versus-cleaning-up-lambda-objects] for why you might
+  want to change the default action when eligible lambda objects are
+  encountered by the rewriter.
+
+  The expression (rewrite-lambda-objects-theory) macroexpands to the
+  theory expression
+
+    (e/d ((:executable-counterpart rewrite-lambda-modep)
+          (:definition rewrite-lambda-modep))
+         nil)
+
+  which is a theory equal to then current theory except that the
+  executable-counterpart rune and the definition rune of
+  rewrite-lambda-modep are enabled.  This expansion is suitable for
+  use in an [in-theory] event or :in-theory hint (see :[hints]).
+
+  Both these two runes are initally enabled, so eligible lambda object
+  bodies are rewritten by default until and unless some event (e.g.,
+  an [in-theory] or [include-book]) or a superior local subgoal hint
+  changes the status of those runes.
+
+  For example, if lambda object rewriting has been disabled globally
+  and you wish to enable it for Subgoal 3 of some proof, you could
+  use the :[hints]
+
+    (\"Subgoal 3\"
+     :in-theory (rewrite-lambda-objects-theory))
+
+  Note that if you also wish to enable or disable other runes in the
+  same subgoal you must construct an appropriate theory.
+
+  For example, if in Subgoal 3 of some proof you wanted to enable
+  LEMMA1 and disable LEMMA2 in a theory that will also allow
+  rewriting of lambda objects, you might write
+
+    (\"Subgoal 3\"
+     :in-theory (set-difference-theories
+                   (union-theories (rewrite-lambda-objects-theory)
+                                   '(LEMMA1))
+                   '(LEMMA2)))
+
+  Some users might prefer
+
+    (\"Subgoal 3\"
+     :in-theory (e/d ((:executable-counterpart rewrite-lambda-modep)
+                      (:definition rewrite-lambda-modep)
+                      LEMMA1)
+                     (LEMMA2)))
+
+  See [theories] for general information about theories and how to
+  create and use them.")
  (REWRITE-QUOTED-CONSTANT
   (RULE-CLASSES)
   "Make a rule to rewrite a quoted constant
@@ -108707,6 +109084,506 @@ Subtopics
     (app x (app y z))!
 
   {IMAGE} (see [You_Must_Think_about_the_Use_of_a_Formula_as_a_Rule])")
+ (REWRITING-VERSUS-CLEANING-UP-LAMBDA-OBJECTS
+  (REWRITE)
+  "why change the default action on rewriting lambda objects
+
+  See [rewrite-lambda-object] and [rewrite-lambda-object-actions] for
+  background information on how the ACL2 rewriter behaves on certain
+  quoted lambda objects.  In this topic we discuss why you might want
+  to change that behavior.
+
+  There are three basic actions the rewriter might take when it
+  encounters a suitable lambda object.
+
+    * recursively rewrite the body to get a new body,
+      by rewriting in the theory described in
+      [rewrite-lambda-objects-theory]
+    * just clean it up syntactically,
+      by rewriting in the theory described by
+      [syntactically-clean-lambda-objects-theory], or
+    * do nothing --- leave lambda object constants untouched.
+      by rewriting in the theory described by
+      [hands-off-lambda-objects-theory].
+
+  The reason we have several options has to do with the representation
+  of lambda objects as quoted constants in ACL2's first order logic.
+  Distinct lambda objects are unequal and yet sometimes by rewriting
+  their bodies to functionally equivalent terms under [ev$] they can
+  become identical.
+
+  For example, '(lambda (x) (+ 1 x)) and '(lambda (x) (+ x 1)) are
+  unequal list constants.  But they are functionally equal and by
+  rewriting their bodies we can make them identical.
+
+  The problem is greatly magnified by the way lambda$ and loop$
+  expressions macroexpand into formal terms.  Their expansions are
+  complicated with guards and tags that play key roles in their
+  Common Lisp compilation and execution efficiency within the ACL2
+  top-level read-eval-print loop.  But those guards and tags are
+  irrelevant to their logical meanings.  By eliminating the guards
+  and tags from quoted lambda objects in slots of [ilk] :FN we
+  increase the chances that different objects become identical.
+
+  Consider the translation of a thereis loop$ statement.  The thereis
+  loop$ operand looks for an element of the range that satisfies a
+  given predicate and returns the first non-nil value of that
+  predicate.  The predicate is formally a lambda object.  Below we
+  translate a thereis loop$ and show the result.
+
+    ACL2 !>:trans (loop$ for x on a
+                         thereis
+                         (if (equal (car x) b) x nil))
+
+    (RETURN-LAST
+     'PROGN
+     '(LOOP$ FOR X ON A
+             THEREIS
+             (IF (EQUAL (CAR X) B) X NIL))
+     (THEREIS$+
+      '(LAMBDA
+        (LOOP$-GVARS LOOP$-IVARS)
+        (DECLARE (XARGS :GUARD (IF (TRUE-LISTP LOOP$-GVARS)
+                                   (IF (EQUAL (LEN LOOP$-GVARS) '1)
+                                       (IF (TRUE-LISTP LOOP$-IVARS)
+                                           (EQUAL (LEN LOOP$-IVARS) '1)
+                                           'NIL)
+                                       'NIL)
+                                   'NIL)
+                        :SPLIT-TYPES T)
+                 (IGNORABLE LOOP$-GVARS LOOP$-IVARS))
+        (RETURN-LAST
+             'PROGN
+             '(LAMBDA$ (LOOP$-GVARS LOOP$-IVARS)
+                       (DECLARE (XARGS :GUARD (AND (TRUE-LISTP LOOP$-GVARS)
+                                                   (EQUAL (LEN LOOP$-GVARS) 1)
+                                                   (TRUE-LISTP LOOP$-IVARS)
+                                                   (EQUAL (LEN LOOP$-IVARS) 1))))
+                       (LET ((B (CAR LOOP$-GVARS))
+                             (X (CAR LOOP$-IVARS)))
+                            (DECLARE (IGNORABLE E X))
+                            (IF (EQUAL (CAR X) B) X NIL)))
+             ((LAMBDA (B X)
+                      (IF (EQUAL (CAR X) B) X 'NIL))
+              (CAR LOOP$-GVARS)
+              (CAR LOOP$-IVARS))))
+      (CONS B 'NIL)
+      (LOOP$-AS (CONS (TAILS A) 'NIL))))
+
+    => *
+
+  The predicate being mapped is the quoted lambda object in the first
+  argument of the thereis$+.  When shorn of the logically irrelevant
+  DECLARE and RETURN-LAST forms this particular quoted lambda object
+  becomes
+
+    '(LAMBDA
+      (LOOP$-GVARS LOOP$-IVARS)
+      ((LAMBDA (B X)
+               (IF (EQUAL (CAR X) B) X 'NIL))
+       (CAR LOOP$-GVARS)
+       (CAR LOOP$-IVARS)))
+
+  But now consider the closely related thereis loop$ which is like the
+  one translated above but uses different names for the variables.
+
+    (loop$ for y on aaa
+           thereis
+           (if (equal (car y) bbb) y nil))
+
+  The lambda object representing the predicate in this loop$, when
+  shorn of logically irrelevant material, is
+
+    '(LAMBDA
+      (LOOP$-GVARS LOOP$-IVARS)
+      ((LAMBDA (BBB Y)
+               (IF (EQUAL (CAR Y) BBB) Y 'NIL))
+       (CAR LOOP$-GVARS)
+       (CAR LOOP$-IVARS)))
+
+  But note that this lambda object contains the ``variables'' BBB and Y
+  where the earlier one contained B and X.  However, they are not
+  really variables!  They are symbol constants because they occur in
+  quoted list constants.  Thus, the lambda object generated for the
+  first thereis loop$ is different from the lambda object generated
+  from the ``closely related'' one.  They are just two different list
+  constants.
+
+  Thus, the translations of those two thereis loop$s are not instances
+  of one another.  So if you proved a rewrite rule about the (loop$
+  for x on ...B...) and then the rewriter encountered (loop$ for y on
+  ...BBB...) the rule would not match.  (By the way, this problem has
+  nothing special to do with thereis loop$s.  It happens on every
+  kind of loop$ because the problem has everything to do with
+  representing lambda expressions as list constants.)
+
+  Fortunately, it is sound to replace the body of a lambda object with
+  one that is equivalent under [ev$].  That can be done either by
+  rewriting the body or by syntactically cleaning the body.  It turns
+  out that both rewriting and syntactic cleaning produce the same
+  result in this case and reduce these two distinct lambda objects to
+  this one.
+
+    '(LAMBDA
+      (LOOP$-GVARS LOOP$-IVARS)
+      (IF (EQUAL (CAR (CAR LOOP$-IVARS))
+                 (CAR LOOP$-GVARS))
+          (CAR LOOP$-IVARS)
+          'NIL))
+
+  Actually, all that is needed in this case is the beta reduction of
+  the two bodies.
+
+  Syntactic cleaning eliminates declarations, guards, and other
+  compiler-related tags introduced by translation of lambda$ and
+  loop$.  It does beta reduction, which eliminates local variable
+  names (other than the formals of the lambda object).  And it
+  replaces the last two arguments of calls of [do$] by nil if those
+  two arguments are quoted constants other than nil.  (Those two
+  arguments are irrelevant to the value of the do$ term and only used
+  in error reporting.)  The logical semantics of loop$ is best
+  understood not by looking at its translation as we did above but by
+  looking at the result of syntactically cleaning its translation.
+  That is done by the command :[tc].  Tc translates its argument, in
+  this case the loop$ statement we've been studying, obtaining the
+  large form shown above, and then syntactically cleans it, returning
+  the internal representation of the logical semantics.
+
+    ACL2 !>:tc (loop$ for x on a
+                      thereis
+                      (if (equal (car x) b) x nil))
+    (THEREIS$+ '(LAMBDA
+                 (LOOP$-GVARS LOOP$-IVARS)
+                 (IF (EQUAL (CAR (CAR LOOP$-IVARS))
+                            (CAR LOOP$-GVARS))
+                     (CAR LOOP$-IVARS)
+                     'NIL))
+               (CONS B 'NIL)
+               (LOOP$-AS (CONS (TAILS A) 'NIL)))
+
+  Note that the free variables of the term are A and B.  The iteration
+  variable, x of the loop$ does not appear.  Instances of this term
+  are formed by choosing instantiations of A and B.
+
+  (Note: The related command :[tcp] translates, cleans, and then
+  converts the internal form of the term into the ``pretty''
+  user-level syntax.  E.g., it converts the quoted LAMBDA constant
+  above to a lambda$ expression, converts the IF expression to an
+  AND, and converts the CONS terms into LIST terms.  But for this
+  discussion it is really better to see the internal form.  That
+  LAMBDA object above is really a list constant!)
+
+  Before a newly proved :[rewrite] or :[linear] rule is stored, the
+  conclusion is syntactically cleaned.
+
+  Like syntactic cleaning, rewriting eliminates declarations, guards,
+  and other compiler-related tags and does beta reduction --- but
+  these transformations are generally carried out by rules whose
+  enabled status can be altered.  Furthermore, rewriting applies
+  :rewrite and other rules which might commute terms, open function
+  definitions, etc.  We don't rewrite the conclusions of newly proved
+  rules simply because the enabled rules may change from one event
+  (or subgoal) to another.
+
+  As noted earlier, there are three basic actions the rewriter might
+  take when it encounters a suitable lambda object.
+
+    * recursively rewrite the body to get a new body,
+    * just clean it up syntactically, or
+    * do nothing --- leave lambda object constants untouched.
+
+  Since rules are cleaned before storage, it is almost always the case
+  that you will want the prover either to rewrite lambda objects or
+  syntactically clean them.  In simple cases, like a rule about the
+  first thereis loop$ above and a conjecture about the second, either
+  action by the prover reduces ``closely related'' lambda objects to
+  identical objects, making it more likely that rules will fire.
+
+  So which of the three actions do you want the rewriter to take when
+  it encounters an eligible lambda object?
+
+    * rewrite the body --- best if there are multiple lambda objects in the
+      conjecture that need to be written to be identified, and in
+      simple cases rewriting is equivalent to syntactic cleaning
+    * syntactic cleaning --- best if you want the lambda objects in the
+      conjecture to match :rewrite or :linear rules containing
+      closely related lambda objects, but you find that otherwise
+      necessary :rewrite rules cause the rewriter to ``overshoot''
+      the syntactically cleaned term as illustrated further below
+    * hands off --- fairly unuseful since rules are cleaned up before
+      storage.  However, one use of this is if you prove a lemma
+      containing a lambda object but store it with :rule-classes nil
+      and then :use an instance of it in the :hints for some
+      conjecture that involves the very same lambda objects.
+
+  We now illstrate some typical problems that arise when proving
+  theorems about loop$s.  These examples are documented in the book
+  books/projects/apply/rewriting-versus-cleaning-examples.
+
+  Why you might want to use syntactic cleaning: Suppose you prove the
+  :rewrite rule below.  It says that a certain thereis loop$ computes
+  the same answer as the function [last].
+
+    (defthm loop$-can-be-last
+      (implies (listp a)
+               (equal (loop$ for x on a
+                             thereis
+                             (if (atom (cdr x)) x nil))
+                      (last a))))
+
+  What term does this rule target?  We can answer that by using the
+  :[tc] command.
+
+    ACL2 !>:tc (loop$ for x on a
+                      thereis
+                      (if (atom (cdr x)) x nil))
+     (THEREIS$ '(LAMBDA (LOOP$-IVAR)
+                        (IF (ATOM (CDR LOOP$-IVAR))
+                            LOOP$-IVAR 'NIL))
+               (TAILS A))
+
+  By the way, a more common way to see the rules created by an event is
+  to use the :[pr] command.  But that command displays the terms of
+  the rule in user-level syntax and we want to see the internal form
+  here.  The ``lambda expression'' is really a quoted constant.
+
+  Now imagine you are proving a conjecture that involves that identical
+  (!)  loop$.  Of course, translation will replace the loop$ by a
+  rather large tagged term containing compiler directives, etc.
+  Shorn of that material the term would become the thereis$ term
+  above, but the translation is what is in the initial Goal.  Imagine
+  further that you're doing this proof in a theory that allows the
+  rewriter to recursively rewrite the bodies of quoted lambda
+  objects, i.e., you are in a theory as described by
+  [rewrite-lambda-objects-theory].  ACL2 starts up in such a theory
+  and unless you've changed the enabled status of the
+  rewrite-lambda-modep runes rewriting lambda objects is the default
+  behavior.
+
+  You might expect the loop$-can-be-last rule to fire and replace the
+  thereis$ term in the Goal by (last a).  But that will not happen!
+  The rule won't fire!
+
+  The reason is that before the rewriter rewrites the thereis$ term it
+  rewrites its arguments.  The quoted lambda object in the Goal is
+  rewritten first.  That is necessary because the translated loop$
+  contains tags, etc.  But the rewriter does more than just clean up
+  the body.  It ``overshoots'' and opens the nonrecursive function
+  atom and swaps the branches of the if to eliminate the not thus
+  introduced.  The quoted lambda object becomes
+
+    '(LAMBDA (LOOP$-IVAR)
+             (IF (CONSP (CDR LOOP$-IVAR))
+                 'NIL
+                 LOOP$-IVAR))
+
+  So when the rewriter then tries to rewrite the thereis$ terms the
+  quoted lambda object in the rule does not match the one in the
+  rewritten Goal.
+
+  If the rewritten goal is printed, as it is likely to be a checkpoint,
+  you will see the rewritten body with the consp instead of atom in
+  it.  As usual, pay attention to the checkpoints.
+
+  One way to respond to this problem would be to ``hobble'' the
+  rewriter by shifting over to syntactic cleaning of quoted lambda
+  objects.  This could be done by providing a local subgoal hint in
+  which you specify
+
+    :in-theory (syntactically-clean-lambda-objects-theory)
+
+  which would prevent the rewriter from diving into the bodies of
+  lambda objects and just clean them instead.
+
+  Why you should probably use rewriting: There is a deeper lesson here
+  than just that you might want to hobble the rewriter to prevent it
+  from diving into quoted lambda bodies.  In our view the actual
+  problem is with the loop$-can-be-last rule itself.  ACL2 users are
+  taught to express rules in maximally rewritten terms.  No
+  experienced user would pose a rule with a non-recursive function
+  like atom in its lefthand side.  The best response to this
+  situation, which may or may not be practical depending on how
+  loop$-can-be-last came to be a rule in the session, is to change
+  that rule to
+
+    (defthm loop$-can-be-last
+      (implies (listp a)
+               (equal (loop$ for x on a
+                             thereis
+                             (if (consp (cdr x)) nil x))
+                      (last a))))
+
+  This version of the rule would not only rewrite the thereis loop$
+  above but rewrites
+
+    (loop$ for x on a
+           thereis
+           (if (atom (cdr x)) x nil))
+
+  because, as illustrated above, the rewriter by default dives into the
+  translated loop$ and ``normalizes'' the resulting thereis$.
+
+  Furthermore, because and macroexpands to an if-term and beta
+  reduction eliminates local variable names it would rewrite
+
+    (loop$ for rest on (aaa aa)
+           thereis
+           (let ((z (cdr rest)))
+             (and (atom z) rest))
+
+  But not all such problems can be solved by switching between
+  rewriting quoted lambda objects and just cleaning them up!
+
+  Consider this rewrite rule.  The thereis loop$ in the lefthand side
+  of the rule below is exactly the loop$ whose translation we showed
+  at the beginning of this topic.  The cleaned up internal form of
+  the lefthand side is the thereis$+ term shown by the first :tc
+  display in this topic.  The rule below says that the thereis loop$
+  in question computes member.
+
+    (defthm loop$-can-be-member
+       (equal (loop$ for x on a
+                     thereis
+                     (if (equal (car x) b) x nil))
+              (member b a)))
+
+  You might expect that when the rewriter encounters (an instance of)
+  such a loop$ it will replace it by a member term.  That is actually
+  true!
+
+  For example, if we then tried to prove a conjecture mentioning
+
+    (loop$ for x on aaa
+           thereis
+           (if (equal (car x) bbb) x nil))
+
+  the loop$-can-be-member rule would fire and replace that loop$ by
+  (member bbb aaa).
+
+  But it is easy to misjudge whether a given loop$ is an instance of
+  another.
+
+  Suppose our goal conjecture contained
+
+    (loop$ for x on (aaa aa)
+           thereis (if (equal (car x) (bbb bb)) x nil))
+
+  This loop$ looks like the loop$ in loop$-can-be-member except we've
+  used (aaa aa) instead of a, and (bbb bb) instead of b.
+
+  Will that loop$ be rewritten to (member (bbb v) (aaa u))?  No!
+
+  To understand why not, we first have to compare the internal forms of
+  the two loop$s.  Recall that the lefthand side of rewrite rules are
+  cleaned up before storage, so the internal form of the lefthand
+  side of loop$-can-be-member is in fact the thereis$+ term produced
+  by :tc above.  If we are either rewriting lambda objects or just
+  syntactically cleaning lambda objects in the proof we're looking
+  at, the the internal forms of the loop$ in the conjecture will be
+  just the :tc of that loop$ (because there's nothing interesting to
+  rewrite here).  So here is the lefthand side of the rule
+  side-by-side with the rewritten target in the conjecture.  We have
+  highlighted the differences in uppercase and numbered the lines
+  that contain differences.
+
+    lhs of rule                   target
+    (thereis$+                    (thereis$+
+     '(lambda                      '(lambda
+        (loop$-gvars loop$-ivars)     (loop$-gvars loop$-ivars)
+        (if (equal                    (if (equal
+             (car (car loop$-ivars))       (car (car loop$-ivars))
+             (CAR LOOP$-GVARS))            (BBB (CAR LOOP$-GVARS))) ; [1]
+            (car loop$-ivars)             (car loop$-ivars)
+            'nil))                        'nil))
+     (cons B 'nil)                 (cons BB 'nil)                   ; [2]
+     (loop$-as                     (loop$-as
+      (cons (tails A) 'nil)))       (cons (tails (AAA AA)) 'nil)))  ; [3]
+
+  Note that the target is not an instance of the lefthand side of the
+  rule --- but only because of the difference on line [1].  Lines [2]
+  and [3] of the lefthand side can be instantiated to become those
+  lines in the target.  But because of [1] our loop$-can-be-member
+  rule will not rewrite the target shown here.
+
+  This kind of problem cannot be fixed by fiddling with how the prover
+  treats lambda objects.  Instead, we need to transform the target
+  lambda object into the functionally different lambda object in the
+  rule while simultaneously changing how thereis$+ applies it.  In
+  particular we need to transform target to target' below by moving
+  the BBB out of [1] and into [2] as shown below.
+
+    target                         target'
+    (thereis$+                     (thereis$+
+     '(lambda                       '(lambda
+        (loop$-gvars loop$-ivars)      (loop$-gvars loop$-ivars)
+        (if (equal                     (if (equal
+             (car (car loop$-ivars))        (car (car loop$-ivars))
+             (BBB (CAR LOOP$-GVARS)))       (CAR LOOP$-GVARS))      ; [1]
+            (car loop$-ivars)              (car loop$-ivars)
+            'nil))                         'nil))
+     (cons BB 'nil)                 (cons (BBB BB) 'nil)            ; [2]
+     (loop$-as                      (loop$-as
+      (cons (tails (aaa aa)) 'nil))) (cons (tails (aaa aa)) 'nil)))
+
+  Note that target' is in fact an instance of the lefthand side of the
+  rule.  But we've changed the semantics of the lambda object and
+  changed the way thereis$+ uses it by moving the BBB from the inside
+  to the outside of the lambda.  No lambda rewriting can do this.
+  Instead, we need a rule that rewrites thereis$+.  (In fact, a great
+  project would be to implement a metafunction that does this kind of
+  optimization for all loop$ scions.  We just haven't done that yet.
+  Let us know if you do!)
+
+  Here is a suitable rewrite rule for this particular instance of this
+  phenomenon.  We write it as a thereis loop$ rule rather than a
+  thereis$+, but they're the same.
+
+    (defthm example-of-constant-subterm-abstraction
+    (implies (warrant bbb)
+             (equal (loop$ for xxx on a
+                           thereis
+                           (if (equal (car xxx) (bbb bb)) xxx nil))
+                    (let ((zzz (bbb bb)))
+                      (loop$ for xxx on a
+                             thereis
+                             (if (equal (car xxx) zzz) xxx nil))))))
+
+  This illustrates another lesson.  Remember that we're imagining a
+  proof of some conjecture that involves a thereis loop$ mentioning
+  BBB and wondering whether our rewrite rule loop$-can-be-member will
+  hit it.  Had the thereis loop$ in the conjecture been written in
+  the style of the let expression above, where a variable is bound to
+  (bbb bb) and then that variable used in the loop$ body, we wouldn't
+  need to move the (bbb bb) out.  Instead, the lambda generated by
+  translating the loop$ would contain a variable instead of (bbb bb).
+  The name of the let-bound variable outside the lambda is irrelevant
+  since it won't appear in the cleaned up lambda object where it is
+  replaced by a component of the global variables LOOP$-GVARS.  In
+  the containing thereis$+ the value of that global variable will be
+  (bbb bb), which means the free variable b in our
+  loop$-can-be-member rule can be instantiated with (bbb bb) to allow
+  the rule to match.
+
+  Put another way, by writing the loop$ in the inefficient way
+  (requiring (bbb bb) to be recomputed on every iteration) we
+  implicitly produce lambda object that is less general than one with
+  the (bbb bb) on the outside.
+
+  Keep unchanging subterms of loop$ bodies as variables and compute
+  their values outside of the lambda. Basically, try to write the
+  most general lambda objects you can.
+
+  Finally, these difficulties are exacerbated by the ease with which
+  loop$ statements can be written and the difference between their
+  appearance and the formal terms they denote.  You might be more
+  successful at learning to use loop$s in lemmas and theorems if you
+  simply don't use loop$! Instead, learn to write the corresponding
+  terms, e.g., try writing a thereis$ or a thereis$+ term instead of
+  a thereis loop$ statement in your lemmas and theorems.  Since the
+  prover's output contains such terms (rather than loop$ statements),
+  it will be easier to see where lemmas differ from the targets they
+  were intended to hit.  After enough practice you can write loop$
+  statements with a better appreciation of what they actually denote.")
  (RFIX
   (NUMBERS ACL2-BUILT-INS)
   "Coerce to a rational number
@@ -119997,6 +120874,73 @@ Subtopics
 
   [Symbolp]
       Recognizer for symbols")
+ (SYNTACTICALLY-CLEAN-LAMBDA-OBJECTS-THEORY
+  (THEORIES THEORY-FUNCTIONS REWRITE)
+  "how to specify syntactic cleaning of lambda objects
+
+  The enabled status of two rewrite-lambda-modep runes are used as
+  flags to determine the action taken when eligible lambda objects
+  are encountered by the ACL2 rewriter.  See [rewrite-lambda-object]
+  and [rewrite-lambda-object-actions].  To prevent the rewriter from
+  diving recursively into the body of an eligible lambda object but
+  use a simpler syntactic cleaning process instead, the rune
+  (:executable-counterpart rewrite-lambda-modep) must be enabled and
+  the rune (:definition rewrite-lambda-modep) must be disabled in the
+  then-current theory.  The 0-ary function
+  syntactically-clean-lambda-objects-theory returns such a theory.
+
+  In fact, diving into eligible quoted lambda object constants to
+  rewrite the body is the default action when ACL2 starts up.  See
+  [rewriting-versus-cleaning-up-lambda-objects] for why you might
+  want to change the default action when eligible lambda objects are
+  encountered by the rewriter.
+
+  The expression (syntactically-clean-lambda-objects-theory)
+  macroexpands to the theory expression
+
+    (e/d ((:executable-counterpart rewrite-lambda-modep))
+         ((:definition rewrite-lambda-modep)))
+
+  which is a theory equal to then current theory except that the
+  executable-counterpart rune of rewrite-lambda-modep but the
+  definition rune is disabled.  This expansion is suitable for use in
+  an [in-theory] event or :in-theory hint (see :[hints]).
+
+  Both these two runes are initally enabled, so eligible lambda object
+  bodies are rewritten by default until and unless some event (e.g.,
+  an [in-theory] or [include-book]) or a superior local subgoal hint
+  changes the status of those runes.
+
+  For example, if lambda object rewriting is active you wish to just
+  syntactically clean the lambda objects in Subgoal 3 of some proof,
+  you could use the :[hints]
+
+    (\"Subgoal 3\"
+     :in-theory (syntactically-clean-lambda-objects-theory))
+
+  Note that if you also wish to enable or disable other runes in the
+  same subgoal you must construct an appropriate theory.
+
+  For example, if in Subgoal 3 of some proof you wanted to enable
+  LEMMA1 and disable LEMMA2 in a theory that will also specify
+  syntactic cleaning of lambda objects, you might write
+
+    (\"Subgoal 3\"
+     :in-theory (set-difference-theories
+                   (union-theories (syntactically-clean-lambda-objects-theory)
+                                   '(LEMMA1))
+                   '(LEMMA2)))
+
+  Some users might prefer
+
+    (\"Subgoal 3\"
+     :in-theory (e/d ((:executable-counterpart rewrite-lambda-modep)
+                      LEMMA1)
+                     ((:definition rewrite-lambda-modep)
+                      LEMMA2)))
+
+  See [theories] for general information about theories and how to
+  create and use them.")
  (SYNTAX
   (MISCELLANEOUS)
   "The syntax of ACL2 is that of Common Lisp
@@ -120666,6 +121610,52 @@ Subtopics
   that Lisp function, which may well be the numeric value returned by
   the host operating system for the underlying system call.  For more
   information, see [sys-call].")
+ (SYSFILE
+  (BOOKS PROJECT-DIR-ALIST)
+  "File representation using ACL2 project directories
+
+  ACL2 supports relocation of book directories so that those books are
+  still treated as certified.  See [project-dir-alist].
+
+  A key data structure to support this feature is the sysfile, which is
+  a pair of the form (:kwd . \"relpath\").  Here, :kwd is a key of the
+  project-dir-alist, bound to some absolute pathname \"D/\" of a
+  directory, and \"relpath\" is a string that denotes a pathname
+  relative to directory \"D/\".  Thus, the sysfile (:kwd . \"relpath\")
+  represents the same pathname as \"D/relpath\".
+
+  (Remark.  The name ``sysfile'' was originally coined to suggest
+  ``system file'', suggesting the use of keyword :SYSTEM to indicate
+  a file residing in the [community-books].  It now extends to (:kwd
+  . \"relpath\") even for :kwd values other than :SYSTEM.  But
+  ``sysfile'' is a convenient name, and it still seems reasonable
+  since ``system file'' can suggest a file of the filesystem.)
+
+  ACL2 rarely generates output that includes sysfiles; they are mostly
+  used in the implementation, for example to denote included books in
+  [certificate] files.  But they are occasionally relevant at the
+  user level; for example see [add-include-book-dir].
+
+  Finally we discuss the use of sysfiles in [certificate] files.  When
+  the [community-books] directory is a prefix of a [full-book-name]
+  string, ACL2 may choose to represent that full-book-name as
+  (:system . \"relpath\"), where \"relpath\" is the result of removing
+  the community-books directory from the front of the full-book-name.
+  Here is an example.
+
+    ; full-book-name:
+    \"/Users/smith/acl2/acl2/books/std/portcullis.lisp\"
+
+    ; sysfile representation
+    ; (where \"/Users/smith/acl2/acl2/books/\" is the community-books directory):
+    (:SYSTEM . \"std/portcullis.lisp\")
+
+  This behavior applies to more than the community-books: it applies to
+  the entire [project-dir-alist].  If that alist associates keyword
+  :K with absolute directory name \"<dir>\", then a full-book-name with
+  prefix \"<dir>\" is written to a [certificate] file as (:K .
+  \"<dir>\").  This capability supports relocating book directories;
+  see [project-dir-alist] for a more complete discussion.")
  (SYSTEM-ATTACHMENTS
   (PROGRAMMING DEFATTACH)
   "System-level algorithms that users can modify with attachments
@@ -121287,8 +122277,9 @@ Subtopics
 
     (table-alist 'tests world)
 
-  returns the alist representation of the table named test in the given
-  [world].  Often you have access to world.
+  returns the alist representation of the table named tests in the
+  given [world].  Often you can provide a suitable expression for
+  world, for example, (w state).
 
   The ACL2 system provides ``tables'' by which the user can associate
   one object with another.  Tables are in essence just conventional
@@ -124264,6 +125255,9 @@ Subtopics
   [Ground-zero]
       [enable]d rules in the [startup] theory
 
+  [Hands-off-lambda-objects-theory]
+      how to specify no modification of lambda objects
+
   [In-theory]
       Designate ``current'' theory (enabling its rules)
 
@@ -124279,6 +125273,9 @@ Subtopics
   [Minimal-theory]
       A minimal theory to enable
 
+  [Rewrite-lambda-objects-theory]
+      how to specify rewriting of lambda objects
+
   [Rule-names]
       How rules are named.
 
@@ -124287,6 +125284,9 @@ Subtopics
 
   [Set-difference-theories]
       Difference of two [theories]
+
+  [Syntactically-clean-lambda-objects-theory]
+      how to specify syntactic cleaning of lambda objects
 
   [Theories-and-primitives]
       Warnings from disabling or enabling certain built-in functions
@@ -124545,14 +125545,23 @@ Subtopics
   [Ground-zero]
       [enable]d rules in the [startup] theory
 
+  [Hands-off-lambda-objects-theory]
+      how to specify no modification of lambda objects
+
   [Intersection-theories]
       Intersect two [theories]
 
   [Minimal-theory]
       A minimal theory to enable
 
+  [Rewrite-lambda-objects-theory]
+      how to specify rewriting of lambda objects
+
   [Set-difference-theories]
       Difference of two [theories]
+
+  [Syntactically-clean-lambda-objects-theory]
+      how to specify syntactic cleaning of lambda objects
 
   [Theory]
       Retrieve named theory
@@ -127409,8 +128418,10 @@ Advanced Options (alphabetical list)
   raw Lisp arrays or objects in supporting packages not visible in
   the ACL2 read-eval-print loop.  If you supply :evisc-tuple :print,
   then the printing described above will be done with raw Lisp
-  printing rather than ACL2 printing: specifically, with (format
-  *trace-output* \"s%\" x), where x is the value to be printed.
+  printing rather than ACL2 printing.  Note that [stobj]s will be
+  printed as vectors (rather than their usual hiding with symbols
+  such as <st>) when using :evisc-tuple :print, but other structures
+  will still be hidden unless :hide nil is supplied.
 
   A second special value for :evisc-tuple, :no-print, avoids printing
   the values of the :entry and :exit forms (or their defaults, if not
@@ -127459,16 +128470,17 @@ Advanced Options (alphabetical list)
   [stobj]s and the logical [world] to be printed as single symbols,
   along with certain large structures of interest to developers
   (rewrite constants, enabled structures, and event and command index
-  structures).  If however the value nil is supplied, then this
-  default behavior is defeated.  In that case, you can still arrange
-  to print the logical world as a symbol and to print [stobj]s
-  without breaking the trace printing: see [set-trace-evisc-tuple]
-  for how to do this globally, or similarly use the :evisc-tuple
-  option to trace$ to do this with a single trace spec.  Note however
-  that with value nil specified for :hide, such use of an evisc-tuple
-  will not deal properly with local stobjs (see [with-local-stobj])
-  or stobjs bound by [stobj-let], or with the aforementioned large
-  structures other than the logical [world].
+  structures).  (For an exception regarding stobjs, see the
+  discussion of :evisc-tuple :print above.)  If however the value nil
+  is supplied, then this default behavior is defeated.  In that case,
+  you can still arrange to print the logical world as a symbol and to
+  print [stobj]s without breaking the trace printing: see
+  [set-trace-evisc-tuple] for how to do this globally, or similarly
+  use the :evisc-tuple option to trace$ to do this with a single
+  trace spec.  Note however that with value nil specified for :hide,
+  such use of an evisc-tuple will not deal properly with local stobjs
+  (see [with-local-stobj]) or stobjs bound by [stobj-let], or with
+  the aforementioned large structures other than the logical [world].
 
   :NATIVE
 
@@ -133867,7 +134879,7 @@ Subtopics
   the guards (see also [set-verify-guards-eagerness]).  In this case,
   it is good practice to add a comment `; and guards' just after the
   [verify-termination] form, on the same line, as can be seen in some
-  of the files under [books]/system/.
+  of the files under [community-books] directory system/.
 
   Now it is time to add entries to the value of constant
   *system-verify-guards-alist* in your local copy of the ACL2
