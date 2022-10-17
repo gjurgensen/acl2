@@ -94058,6 +94058,11 @@ it."
  the behavior of lambda object rewriting by the prover (see @(see
  rewrite-lambda-object)) has been elaborated.</p>
 
+ <p>Warnings for non-recursive functions in left-hand sides of rewrite rules
+ (similarly for linear, forward-chaining, and type-prescription rules) now
+ consider bodies of lambda objects that could be rewritten (see @(see
+ rewrite-lambda-object)).</p>
+
  <h3>New Features</h3>
 
  <p>The new zero-ary attachable system function, @('heavy-linear-p'), allows

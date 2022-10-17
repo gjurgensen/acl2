@@ -91833,6 +91833,11 @@ Changes to Existing Features
   the behavior of lambda object rewriting by the prover (see
   [rewrite-lambda-object]) has been elaborated.
 
+  Warnings for non-recursive functions in left-hand sides of rewrite
+  rules (similarly for linear, forward-chaining, and
+  type-prescription rules) now consider bodies of lambda objects that
+  could be rewritten (see [rewrite-lambda-object]).
+
 
 New Features
 
