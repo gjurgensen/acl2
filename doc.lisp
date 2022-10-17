@@ -6058,8 +6058,8 @@ Subtopics
     (add-include-book-dir :util \"utilities\")
 
     ; For (include-book \"lib/floor-mod/top\" :dir :arith), prepend to
-    ; \"lib/floor-mod/top\" the community books directory pathname string
-    ; \"arithmetic-5/lib/floor-mod/top/\"
+    ; \"lib/floor-mod/top\" the string \"<dir>/arithmetic-5/\" where \"<dir>\"
+    ; is the community books directory pathname string:
     (add-include-book-dir :arith (:system . \"arithmetic-5\"))
 
   Note: This is an event!  It does not print the usual event [summary]
@@ -42551,9 +42551,10 @@ Subtopics
   (PROGRAMMING-WITH-STATE ACL2-BUILT-INS READ-RUN-TIME)
   "Read elapsed real time
 
-  (Get-real-time state) returns the elapsed real (wall clock) time in
-  seconds since the start of the current ACL2 session.  See
-  [read-run-time] for further documentation.
+  (Get-real-time state) returns (mv rtime state) where rtime is the
+  elapsed real (wall clock) time in seconds since the start of the
+  current ACL2 session.  See [read-run-time] for further
+  documentation.
 
   Function: <get-real-time>
 

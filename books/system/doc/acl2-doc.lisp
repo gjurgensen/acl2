@@ -3595,8 +3595,8 @@ include-book)"
  (add-include-book-dir :util \"utilities\")
 
  ; For (include-book \"lib/floor-mod/top\" :dir :arith), prepend to
- ; \"lib/floor-mod/top\" the community books directory pathname string
- ; \"arithmetic-5/lib/floor-mod/top/\"
+ ; \"lib/floor-mod/top\" the string \"<dir>/arithmetic-5/\" where \"<dir>\"
+ ; is the community books directory pathname string:
  (add-include-book-dir :arith (:system . \"arithmetic-5\"))
  })
 
@@ -39256,9 +39256,10 @@ current fast alists."
 (defxdoc get-real-time
   :parents (programming-with-state acl2-built-ins read-run-time)
   :short "Read elapsed real time"
-  :long "<p>@('(Get-real-time state)') returns the elapsed real (wall clock)
- time in seconds since the start of the current ACL2 session.  See @(see
- read-run-time) for further documentation.</p>
+  :long "<p>@('(Get-real-time state)') returns @('(mv rtime state)') where
+  @('rtime') is the elapsed real (wall clock) time in seconds since the start
+  of the current ACL2 session.  See @(see read-run-time) for further
+  documentation.</p>
 
  @(def get-real-time)")
 
@@ -93874,9 +93875,9 @@ it."
 ;     scan-to-include-book
 ;     sysfile-to-filename-cert-annotations
 ;     sysfile-to-filename-include-book-alist [essentially replaced by
-;       include-book-alistp] 
+;       include-book-alistp]
 ;     sysfile-to-filename-include-book-alist1 [essentially replaced by
-;       include-book-alistp-1] 
+;       include-book-alistp-1]
 ;     sysfile-to-filename-include-book-entry
 ;     sysfile-to-filename-ttag-alist-val
 ;     sysfile-to-filename-ttag-alistp
