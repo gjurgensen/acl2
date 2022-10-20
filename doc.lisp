@@ -58191,9 +58191,9 @@ Subtopics
   determines the thoroughness with which ACL2 processes your
   [command]s.  This variable may take on one of three values: t, nil
   or '[include-book].  When ld-skip-proofsp is non-nil, the system
-  assumes that which ought to be proved and is thus unsound.  The
-  form (set-ld-skip-proofsp flg state) is the general-purpose way of
-  setting ld-skip-proofsp.  This global variable is an ``[ld]
+  skips all proofs, which of course can render the system unsound.
+  The form (set-ld-skip-proofsp flg state) is the general-purpose way
+  of setting ld-skip-proofsp.  This global variable is an ``[ld]
   special,'' which is to say, you may call [ld] in such a way as to
   ``bind'' this variable for the dynamic extent of the [ld].
 
