@@ -54340,11 +54340,11 @@ tables in the current Hons Space."
  determines the thoroughness with which ACL2 processes your @(see command)s.
  This variable may take on one of three values: @('t'), @('nil') or
  @(''')@(tsee include-book).  When @('ld-skip-proofsp') is non-@('nil'), the
- system assumes that which ought to be proved and is thus unsound.  The form
- @('(set-ld-skip-proofsp flg state)') is the general-purpose way of setting
- @('ld-skip-proofsp').  This global variable is an ``@(tsee ld) special,''
- which is to say, you may call @(tsee ld) in such a way as to ``bind'' this
- variable for the dynamic extent of the @(tsee ld).</p>
+ system skips all proofs, which of course can render the system unsound.  The
+ form @('(set-ld-skip-proofsp flg state)') is the general-purpose way of
+ setting @('ld-skip-proofsp').  This global variable is an ``@(tsee ld)
+ special,'' which is to say, you may call @(tsee ld) in such a way as to
+ ``bind'' this variable for the dynamic extent of the @(tsee ld).</p>
 
  <p>When @('ld-skip-proofsp') is non-@('nil'), the default @(see prompt)
  displays the character @('s').  Thus, the @(see prompt)</p>
