@@ -15464,6 +15464,10 @@ Subtopics
   (ABOUT-ACL2)
   "How to build an ACL2 executable
 
+  This topic summarizes steps for building an ACL2 executable.  For
+  more details see the {ACL2 installation page |
+  https://www.cs.utexas.edu/users/moore/acl2/current/HTML/installation/installation.html}.
+
   To build an ACL2 executable, submit the following command while
   standing in the main ACL2 directory, where <my-lisp> invokes your
   Lisp executable (default: ccl).
@@ -18892,6 +18896,10 @@ Subtopics
 
   See [git-quick-start] for information about how to download the
   ``bleeding edge'' ACL2 system and community books.
+
+  The communinty books are also available with ACL2 releases.  See the
+  ``Installing'' link from the {ACL2 home page |
+  http://www.cs.utexas.edu/users/moore/acl2/}.
 
 
 Subtopics
@@ -121448,8 +121456,8 @@ Subtopics
   expansion, such as when executing the form (sys-call \"ls\"
   '(\"*.lisp\")).  For ACL2 built on Allegro CL, CCL, CMUCL, GCL, or
   SBCL, we have seen this result in an error message such as \"No such
-  file or directory\", even though file of with names of the form
-  *.lisp are present in the current directory; but for ACL2 built on
+  file or directory\", even though files with names of the form *.lisp
+  are present in the current directory; but for ACL2 built on
   LispWorks, a list of such filenames is printed.
 
   More generally, we note that sys-call does not provide some features
