@@ -12485,8 +12485,13 @@ with any questions about building the community books.</p>")
 (defxdoc building-acl2
   :parents (about-acl2)
   :short "How to build an ACL2 executable"
-  :long "<p>To build an ACL2 executable, submit the following command while
- standing in the main ACL2 directory, where @('<my-lisp>') invokes your Lisp
+  :long "<p>This topic summarizes steps for building an ACL2 executable.  For
+ more details see the <a
+ href='https://www.cs.utexas.edu/users/moore/acl2/current/HTML/installation/installation.html'>ACL2
+ installation page</a>.</p>
+
+ <p>To build an ACL2 executable, submit the following command while standing in
+ the main ACL2 directory, where @('<my-lisp>') invokes your Lisp
  executable (default: @('ccl')).</p>
 
  @({
@@ -15841,7 +15846,11 @@ with any questions about building the community books.</p>")
  </ul>
 
  <p>See @(see git-quick-start) for information about how to download the
- ``bleeding edge'' ACL2 system and community books.</p>")
+ ``bleeding edge'' ACL2 system and community books.</p>
+
+ <p>The communinty books are also available with ACL2 releases.  See the
+ ``Installing'' link from the <a
+ href='http://www.cs.utexas.edu/users/moore/acl2/'>ACL2 home page</a>.</p>")
 
 (defxdoc comp
   :parents (compilation events acl2-built-ins)
@@ -120677,7 +120686,7 @@ arithmetic) for libraries of @(see books) for arithmetic reasoning.</p>")
  such as when executing the form @('(sys-call \"ls\" '(\"*.lisp\"))').  For
  ACL2 built on Allegro CL, CCL, CMUCL, GCL, or SBCL, we have seen this result
  in an error message such as @('\"No such file or directory\"'), even though
- file of with names of the form @('*.lisp') are present in the current
+ files with names of the form @('*.lisp') are present in the current
  directory; but for ACL2 built on LispWorks, a list of such filenames is
  printed.</p>
 
