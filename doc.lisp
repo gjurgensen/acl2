@@ -106180,6 +106180,19 @@ Subtopics
       values while the other does not, regardless of whether or not
       [set-state-ok] has been evaluated.  That is, they only need to
       agree on the user-defined stobjs.
+   6. Redundancy may fail with an error about a name being ``already
+      defined using special raw Lisp code'' or ``predefined in the
+      \"COMMON-LISP\" package''.  This applies to certain functions
+      that are built into ACL2; it may also apply when definitions
+      are overridden in raw Lisp using trust tags (see [defttag]),
+      typically in books.  The reason for causing an error is that if
+      the proposed redundant definition is in a book, then when later
+      including that book after it is certified, the compiled code
+      for that definition will replace the original code, which is
+      generally undesirable when the original code has special raw
+      Lisp optimizations.  If the earlier definition is in a book,
+      then the error message will suggest including that book rather
+      than trying to define the function redundantly.
 
   An [encapsulate] event is most commonly redundant when a
   syntactically identical [encapsulate] has already been executed

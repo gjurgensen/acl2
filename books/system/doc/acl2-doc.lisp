@@ -93990,6 +93990,14 @@ it."
 
 ; - In chk-acceptable-ttags2, argument book-names replaces filenames.
 
+; Removed unnecessary first argument (which comes from arity) of
+; warrants-for-suitably-tamep-listp.
+
+; Improved the error message for an attempted redundant event that is illegal
+; because of special raw Lisp code or because the name is in the main Lisp
+; package (generally, "COMMON-LISP").  Thanks to Eric Smith for a query leading
+; to this improvement.
+
   :parents (release-notes)
   :short "ACL2 Version  8.6 (xxx, 20xx) Notes"
   :long "<p>NOTE!  New users can ignore these release notes, because the @(see
@@ -105761,6 +105769,18 @@ arithmetic) for libraries of @(see books) for arithmetic reasoning.</p>")
  values while the other does not, regardless of whether or not @(tsee
  set-state-ok) has been evaluated.  That is, they only need to agree on the
  <i>user-defined</i> stobjs.</li>
+
+ <li>Redundancy may fail with an error about a name being &ldquo;already
+ defined using special raw Lisp code&rdquo; or &ldquo;predefined in the
+ \"COMMON-LISP\" package&rdquo;.  This applies to certain functions that are
+ built into ACL2; it may also apply when definitions are overridden in raw Lisp
+ using trust tags (see @(see defttag)), typically in books.  The reason for
+ causing an error is that if the proposed redundant definition is in a book,
+ then when later including that book after it is certified, the compiled code
+ for that definition will replace the original code, which is generally
+ undesirable when the original code has special raw Lisp optimizations.  If the
+ earlier definition is in a book, then the error message will suggest including
+ that book rather than trying to define the function redundantly.</li>
 
  </ol>
 
