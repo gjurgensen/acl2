@@ -63089,9 +63089,9 @@ Detailed Documentation
       preserved).  So, for example, events might be evaluated during
       expansion, but they will disappear from the logical [world]
       after expansion returns its result.  Moreover, proofs are
-      enabled by default at the start of expansion (see
-      [ld-skip-proofsp]) if keyword :CHECK-EXPANSION is supplied and
-      has a non-nil value.
+      enabled by default during expansion (see [ld-skip-proofsp]) if
+      keyword :CHECK-EXPANSION is supplied a non-nil value or a
+      certain attachment is made (see (4) below).
 
       ``expansion result'' --- The above expansion may result in an
       ordinary (non-[state], non-[stobj]) value, which we call the
@@ -63441,11 +63441,11 @@ Examples Illustrating How to Access State
 
 Advanced Expansion Control
 
-  We conclude this [documentation] section by discussing three kinds of
-  additional control over make-event expansion.  These are all
-  illustrated in community book
-  books/make-event/make-event-keywords-or-exp.lisp.  The discussion
-  below is split into the following three parts.
+  We conclude this [documentation] section by discussing additional
+  control over make-event expansion.  The discussion below is split
+  into the following parts; further discussion follows.  The first
+  three parts are illustrated in community book
+  books/make-event/make-event-keywords-or-exp.lisp.
 
   (1) The value produced by expansion may have the form (:DO-PROOFS
   exp), which specifies exp as the expansion result, to be evaluated
@@ -63458,6 +63458,13 @@ Advanced Expansion Control
   (3) The keyword argument :EXPANSION? can serve to eliminate the
   storing of make-event replacements, as described above for the
   ``book expansion'' of a book.
+
+  (4) In contexts where proofs are normally skipped (see
+  [ld-skip-proofsp]), the expansion phase normally takes place with
+  proofs skipped unless the :CHECK-EXPANSION keyword is supplied a
+  non-nil value.  However, proofs can be made to take place
+  unconditionally during the expansion phase by using an attachment,
+  as discussed below.
 
   We now elaborate on each of these.
 
@@ -63600,6 +63607,36 @@ Advanced Expansion Control
   the same as :CHECK-EXPANSION t, modified to accommodate the effect
   of :EXPANSION? as discussed above: if the expansion is indeed the
   value of :EXPANSION?, then no make-event replacement is generated.
+
+  (4) Unconditionally enabling proofs during the expansion phase using
+  an attachment.
+
+  Proofs are normally skipped during the expansion phase unless the
+  :CHECK-EXPANSION keyword is supplied a non-nil value.  To cause
+  proofs to take place unconditionally during the expansion phase,
+  evaluate one of the following two forms, as explained below.
+
+    (defattach (always-do-proofs-during-make-event-expansion
+                constant-t-function-arity-0)
+      :system-ok t)
+
+    (defattach (always-do-proofs-during-make-event-expansion
+                constant-all-function-arity-0)
+      :system-ok t)
+
+  The first of these is probably preferred in most cases, since it does
+  not have any effect while evaluating an [include-book] form (more
+  precisely, when (ld-skip-proofsp state) is 'include-book).  The
+  second removes that restriction.
+
+  To restore the default behavior, evaluate the following.
+
+    (defattach (always-do-proofs-during-make-event-expansion
+                constant-nil-function-arity-0)
+      :system-ok t)
+
+  (If you would like an explanation of defattach in general, see
+  [defattach].)
 
 
 Subtopics
@@ -92000,6 +92037,12 @@ New Features
   polynomials that are assumed in the current context.  See
   [brr-commands] and see [brr@].  Thanks to Alessandro Coglio and
   Eric Smith for conversations leading to this enhancement.
+
+  It is now possible to cause [make-event] to do proofs during its
+  expansion phase even in a context where proofs are generally
+  skipped (see [ld-skip-proofsp]).  See [make-event], in particular
+  the discussion there labeled as ``(4)''.  Thanks to Eric Smith for
+  requesting such a feature.
 
 
 Heuristic and Efficiency Improvements
