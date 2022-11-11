@@ -77,7 +77,7 @@ Subtopics
   [defthm], [in-theory], [xargs], [state], etc., without an acl2::
   prefix.
 
-  The constant *acl2-exports* lists 1571 symbols, including most
+  The constant *acl2-exports* lists 1574 symbols, including most
   documented ACL2 system constants, functions, and macros.  You will
   typically also want to import many symbols from Common Lisp; see
   [*common-lisp-symbols-from-main-lisp-package*].
@@ -386,7 +386,8 @@ Subtopics
        keywordp keywordp-forward-to-symbolp
        known-package-alist known-package-alistp
        known-package-alistp-forward-to-true-list-listp-and-alistp
-       kwote kwote-lst l< lambda lambda$ last
+       kwote kwote-lst
+       l< lambda lambda$ last last-cdr
        last-prover-steps ld ld-error-action
        ld-error-triples ld-evisc-tuple
        ld-history ld-history-entry-error-flg
@@ -725,8 +726,9 @@ Subtopics
        tau-interval-lo tau-interval-lo-rel
        tau-intervalp tau-status tau-system tc
        tca tcp tenth term-list-listp term-listp
-       term-order termination-theorem termp
-       the the-check the-fixnum the-fixnum!
+       term-order termination-theorem
+       termp the the-check the-fixnum
+       the-fixnum! the-number the-true-list
        theory theory-invariant thereis$
        thereis$+ third thm time$ time-tracker
        time-tracker-tau timer-alistp
@@ -3635,6 +3637,9 @@ Subtopics
   [Last]
       The last [cons] (not element) of a list
 
+  [Last-cdr]
+      The last [cdr] of a list
+
   [Last-prover-steps]
       The number of prover steps most recently taken
 
@@ -4261,6 +4266,12 @@ Subtopics
       frequently) to carry out a low-level run-time type checks.
       (Advanced)
 
+  [The-number]
+      Coerce an expected number to a number
+
+  [The-true-list]
+      Coerce an expected true list to a true list
+
   [Third]
       Third member of the list
 
@@ -4269,6 +4280,9 @@ Subtopics
 
   [Time-tracker]
       Display time spent during specified evaluation
+
+  [True-list-fix]
+      Coerce to a true list
 
   [True-list-listp]
       Recognizer for true (proper) lists of true lists
@@ -16241,8 +16255,9 @@ Subtopics
     * [ccl-installation-mac-elaborate]
 
   You may prefer instead to look at the {CCL Releases |
-  https://github.com/Clozure/ccl/releases} page, using links above
-  only as needed (e.g., for Linux-specific information or for
+  https://github.com/Clozure/ccl/releases} page, which has
+  potentially more up-to-date information; then you can use the links
+  above only as needed (e.g., for Linux-specific information or for
   discussion of CCL_DEFAULT_DIRECTORY).
 
   One of the links listed above should generally suffice.  But if you
@@ -16269,6 +16284,10 @@ Subtopics
  (CCL-INSTALLATION-EXTRA
   (CCL-INSTALLATION)
   "Clozure Common Lisp (CCL) installation and implementation details
+
+  NOTESee {the Clozure CL releases page |
+  https://github.com/Clozure/ccl/releases/} for the latest
+  information, which may supersede some of what is included below.
 
   This topic, contributed by Warren A. Hunt, Jr., extends the basic
   information given in [ccl-installation].  It may be useful to some,
@@ -16457,6 +16476,10 @@ configure-ccl.lisp
   (CCL-INSTALLATION)
   "Installing Clozure Common Lisp (CCL) on Linux (brief version)
 
+  NOTESee {the Clozure CL releases page |
+  https://github.com/Clozure/ccl/releases/} for the latest
+  information, which may supersede some of what is included below.
+
   See [ccl-installation] for introductory remarks.  The instructions
   below describe how to install CCL on Linux.  For more elaborate
   ``cookbook'' instructions see [ccl-installation-linux-elaborate].
@@ -16499,6 +16522,10 @@ configure-ccl.lisp
  (CCL-INSTALLATION-LINUX-ELABORATE
   (CCL-INSTALLATION)
   "Installing Clozure Common Lisp (CCL) on Linux (elaborate version)
+
+  NOTESee {the Clozure CL releases page |
+  https://github.com/Clozure/ccl/releases/} for the latest
+  information, which may supersede some of what is included below.
 
   See [ccl-installation] for introductory remarks.  The ``cookbook''
   instructions below give you one way to install CCL on Linux without
@@ -16562,6 +16589,10 @@ configure-ccl.lisp
   (CCL-INSTALLATION)
   "Installing Clozure Common Lisp (CCL) on Mac (brief version)
 
+  NOTESee {the Clozure CL releases page |
+  https://github.com/Clozure/ccl/releases/} for the latest
+  information, which may supersede some of what is included below.
+
   See [ccl-installation] for introductory remarks.  The instructions
   below describe how to install CCL on a Mac (Darwin).  For more
   elaborate ``cookbook'' instructions see
@@ -16608,6 +16639,10 @@ configure-ccl.lisp
  (CCL-INSTALLATION-MAC-ELABORATE
   (CCL-INSTALLATION)
   "Installing Clozure Common Lisp (CCL) on Mac (elaborate version)
+
+  NOTESee {the Clozure CL releases page |
+  https://github.com/Clozure/ccl/releases/} for the latest
+  information, which may supersede some of what is included below.
 
   See [ccl-installation] for introductory remarks.  The ``cookbook''
   instructions below give you one way to install CCL on a Mac
@@ -37330,7 +37365,8 @@ Subtopics
   Fix simply returns any numeric argument unchanged, returning 0 on a
   non-numeric argument.  Also see [nfix], see [ifix], and see [rfix]
   for analogous functions that coerce to a natural number, an
-  integer, and a rational number, respectively.
+  integer, and a rational number, respectively.  See [the-number] for
+  a variant of fix whose guard specifies a numeric argument.
 
   Fix has a [guard] of t.
 
@@ -38304,8 +38340,8 @@ Subtopics
 
   You may have as many iteration clauses as you wish, connected with
   AS.  Each must introduce a unique iteration variable and that
-  variable may be optionally followed by an of-type [type-spec]
-  specification.  Of-type is a Common Lisp feature that allows the
+  variable may be optionally followed by an OF-TYPE [type-spec]
+  specification.  OF-TYPE is a Common Lisp feature that allows the
   compiler to optimize operations on the variable in question.  Here
   is an example.
 
@@ -38556,7 +38592,7 @@ Semantics
 
     (loop$ for i from 1 to max by step collect (expr x))
 
-  becomes
+  logically becomes
 
     (collect$ (lambda$ (x) (expr x))
               (from-to-by 1 max step))
@@ -38589,18 +38625,16 @@ Semantics
   NIL was generated.  Using :[pso] we can see that the NIL goal came
   from:
 
-    Subgoal 1
-    (IMPLIES (NAT-LISTP X) (NATP (CAR X))).
+    Subgoal 1.2
+    (IMPLIES (NAT-LISTP LOOP$-IVAR)
+             (INTEGERP (CAR LOOP$-IVAR))).
 
-  Let's see what is going on by looking at the following abbreviated
+  Let's see what is going on by looking at the following simplified
   translation of the loop$ expression.
 
-    (sum$ '(lambda (x)
-             (declare (type (satisfies nat-listp) x)
-                      (xargs :guard (nat-listp x)
-                             :split-types t)
-                      (ignorable x))
-             (sq (car x)))
+    (sum$ '(lambda (loop$-ivar)
+             (declare (type (satisfies nat-listp) loop$-ivar))
+             (sq (car loop$-ivar)))
           (when$ '(lambda ...) (tails lst)))
 
   Notice that the lambda object supplied to sum$ cannot be guard
@@ -38619,16 +38653,14 @@ Semantics
   (consp x) clause.  But it is necessary given the compositional
   semantics.
 
-  The abbreviated translation of the defun above shows that the
+  A simplified translation of the defun above shows that the
   application (sq (car x)) is protected by a suitable guard in the
   lambda object.
 
-    (sum$ '(lambda (x)
-             (declare (type (satisfies nat-listp) x)
-                      (xargs :guard (if (nat-listp x) (consp x) 'nil)
-                             :split-types t)
-                      (ignorable x))
-             (sq (car x)))
+    (sum$ '(lambda (loop$-ivar)
+             (declare (type (satisfies nat-listp) loop$-ivar)
+                      (xargs :guard (consp loop$-ivar)))
+             (sq (car loop$-ivar)))
           (when$ '(lambda ...) (tails lst)))
 
   Naively we might have expected that the guard proof obligation for
@@ -38650,7 +38682,7 @@ Semantics
   clause and the variable z appears in the loop body.  Either
   characteristic is sufficient to classify the loop as fancy.  So
   fancy scions are used.  Here is its semantic counterpart, i.e., its
-  translation.
+  simplified translation.
 
     (collect$+
      (lambda$ (loop$-gvars loop$-ivars)
@@ -38666,7 +38698,7 @@ Semantics
      (list z)
      (loop$-as (list xlst ylst)))
 
-  Before we show the definition of collect$+ note that the arguments
+  Before we show the definition of collect$+, note that the arguments
   above to collect$+ are (i) a lambda$ expression that handles the
   evaluation of the iterative form, in this case (expr x y z), where
   x and y are iteration variables and z is a ``global'' variable not
@@ -38718,19 +38750,15 @@ Semantics
   special ones for the terms produced by translating FOR loop$
   expressions.  We discuss the reasons in the next section, but here
   we just state what the special conjectures are.  We limit ourselves
-  to a simple loop$.  Fancy loop$ generalize in the obvious way.  The
-  three classes of ``special guard conjectures'' for FOR loop$
-  expressions are:
+  to a simple loop$.  Fancy loop$s generalize in the obvious way.
+  The two classes of ``special guard conjectures'' for FOR loop$
+  expressions are as follows.
 
-  First, every element (or tail, in the case of ON loop$s) satisfies
-  the type-spec, if any.  Note that in the case of ON loop$s every
-  tail, including the empty one, must satisfy the type-spec.
-
-  Second, the type-spec, if any, implies the guards of the loop$ body.
-
-  Third, the loop$ body produces a value acceptable to the loop$
-  operator, e.g., the body of SUM loop$ produces a number and the
-  body of an APPEND loop$ produces a true list.
+    * First, every element (or tail, in the case of ON loop$s)) satisfies
+      the type-spec, if any, and the loop$ body's :GUARD, if any.
+    * Second, the loop$ body produces a value acceptable to the loop$
+      operator, e.g., the body of a SUM loop$ produces a number and
+      the body of an APPEND loop$ produces a true list.
 
   Discussion of Why LOOP$s Have Special Guards
 
@@ -38751,41 +38779,79 @@ Semantics
   to guarantee the error-free execution of the corresponding Common
   Lisp loop expressions.
 
-  For example, the logical meaning of
+  For example, the simplified translation of the body of
 
     (defun foo (lst)
       (declare (xargs :guard (foo-guardp lst)))
       (loop$ for x of-type (satisfies spec) on lst sum (expr x)))
 
-  is
+  is as follows.  (One might expect the second argument of the sum$
+  call to be (tails lst), and of course that is what it equals,
+  logically; the change is to support guards, as discussed in the
+  Technical Note below.)
 
-    (defun foo (lst)
-      (declare (xargs :guard (foo-guardp lst)))
-      (sum$ (lambda$ (x)
-                     (declare (type (satisfies spec) x))
-                     (expr x))
-            (tails lst))).
+    (sum$ (lambda$ (loop$-ivar)
+                   (declare (type (satisfies spec) loop$-ivar))
+                   (expr loop$-ivar))
+          (tails (prog2$ (let ((loop$-last-cdr (last-cdr lst)))
+                           (declare (type (satisfies spec) loop$-last-cdr))
+                           loop$-last-cdr)
+                         lst)))
 
   Prior to the provision for special guards, the normal guard
   conjectures generated for foo would be
 
     (and (implies (foo-guardp lst)                                 ; [1]
                   (apply$-guard
-                   (lambda$ (x)
-                     (declare (type (satisfies spec) x))
-                     (expr x))
+                   (lambda$ (loop$-ivar)
+                     (expr loop$-ivar))
                    '(nil)))
          (implies (foo-guardp lst)                                 ; [2]
                   (true-listp (tails lst)))
-         (implies (foo-guardp lst)                                 ; [3]
-                  (true-listp lst))
-         (implies (spec x) (expr-guardp x)))                       ; [4]
+         (implies (spec loop$-ivar) (expr-guardp loop$-ivar)))     ; [3]
+         (implies (foo-guardp lst)                                 ; [4]
+                  (let ((loop$-last-cdr (last-cdr lst)))
+                       (spec loop$-last-cdr)))
 
   Conjectures [1] and [2] stem from the guard for sum$ and establish
   that the guard for foo implies that sum$ is passed a function
   object of one argument and a true-list.  Conjecture [3] establishes
-  the guard of tails.  And conjecture [4] establishes that the guard
-  on the lambda$ implies the guard of its body.
+  that the guard on the lambda$ implies the guard of its body.
+  Conjecture [4] says that the final tail of lst (which is nil if lst
+  is a true list; see [last-cdr]) satisfies spec.  At first [4] may
+  be surprising, but inspection of Common Lisp reveals that even
+  though (expr x) is never called on the final tail of lst,
+  implementations running with high safety settings check that the
+  final tail satisfies spec.  If you see a runtime guard violation
+  involving variable loop$-last-cdr, you can reasonably assume that
+  you are seeing case [4] above.  A guard proof failure involving a
+  call of [last-cdr] may also be from [4].
+
+  (Technical Note.  The production of [4] is accomplished as follows
+  for an expression (loop for var of-type type-spec on lst ...): for
+  the translation to a scion call, the target term, lst, is replaced
+  by the following expression (simplifying slightly).
+
+    (prog2$ (let ((loop$-last-cdr (last-cdr lst)))
+              (declare (type type-spec loop$-last-cdr))
+              loop$-last-cdr)
+            lst)
+
+  The [declare] form causes formula [4] above to be generated as a
+  guard proof obligation.  End of Technical Note.)
+
+  The guard proof obligation shown as [4] above, for an expression
+  (loop$ for ... on ...), has a variant for an expression (loop$ for
+  n from i to j by k ...), where ``by k'' may be implicit if k is 1.
+  Instead of the requirement in [4] above that the bound variable
+  loop$-last-cdr satisfy the type-spec, variables loop$-lo, loop$-hi,
+  and loop$-by, which are bound respectively to i, j, and k, are
+  required to satisfy the type-spec.  A fourth requirement is that
+  the last value tested must also satisfy the type-spec.  That last
+  value tested is (+ loop$-lo loop$-by (* loop$-by (floor (- loop$-hi
+  loop$-lo) loop$-by))).  If you see a runtime guard violation
+  involving variable loop$-lo, loop$-hi, loop$-by, or loop$-final,
+  you can reasonably assume that you are seeing this variant of [4].
 
   But consider the raw Lisp loop generated by the loop$ in the raw Lisp
   definition of foo,
@@ -38793,16 +38859,14 @@ Semantics
     (loop for x of-type (satisfies spec) on lst sum (expr x)).
 
   For this loop to execute without error we need to know that [5] every
-  non-empty tail of lst satisfies spec, [6] that for every tail, x,
-  of lst, (expr x) returns a number, and [7] that nil satisfies spec.
-  The last is somewhat surprising but inspection of Common Lisp
-  reveals that even though (expr x) is never called on the empty tail
-  of lst, implementations running with high safety settings check
-  that the empty list satisfies spec.
+  non-empty tail of lst satisfies spec, and [6] every non-empty tail
+  x of lst is such that (expr x) returns a number.
 
   So when ACL2's guard verification process encounters a sum$ like that
-  in the logical defun of foo, it generates three additional guard
-  conjectures
+  in the logical defun of foo, it generates two additional guard
+  conjectures as described above.  These are as mentioned above: [5]
+  every element (or tail) satisfies the type-spec, and [6] the value
+  of the loop$ body is acceptable to the loop$ operator.
 
     (implies (and (warrant ...) ; see below                   ; [5]
                   (foo-guardp lst)
@@ -38813,13 +38877,8 @@ Semantics
                   (foo-guardp lst)
                   (member-equal newv (tails lst)))
              (acl2-numberp
-              (apply$ (lambda$ (x)
-                        (declare (type (satisfies spec) x))
-                        (expr x))
+              (apply$ (lambda$ (loop$-ivar) (expr loop$-ivar))
                       (list newv))))
-
-    (implies (foo-guardp lst)                                 ; [7]
-             (spec nil))
 
   Notice the addition of hypotheses above of the form (warrant ...).
   ACL2 adds such [warrant] hypotheses for function symbols that might
@@ -38829,9 +38888,9 @@ Semantics
   In general, you may notice that ACL2 generates such ``special'' guard
   conjectures for all calls of FOR loop$ scions, whether or not they
   stemmed from uses of loop$.  FROM/TO/BY targets require that the
-  bounds and step all satisfy the of-type specification, and the
-  append operator requires that the loop body generate a [true-listp]
-  (instead of an [ACL2-numberp] as required by the sum operator).
+  bounds and step all satisfy the OF-TYPE specification, and the
+  APPEND operator requires that the loop body generate a [true-listp]
+  (instead of an [ACL2-numberp] as required by the SUM operator).
 
   The Compromise Between Reasoning and Efficiency
 
@@ -56809,7 +56868,7 @@ About Guard Verification of Lambda Objects
   (LISTS ACL2-BUILT-INS)
   "The last [cons] (not element) of a list
 
-  (Last l) is the last [cons] of a list.  Here are examples.
+  (Last l) is the last [cons] of a list, l.  Here are examples.
 
     ACL2 !>(last '(a b . c))
     (B . C)
@@ -56828,6 +56887,25 @@ About Guard Verification of Lambda Objects
     (defun last (l)
            (declare (xargs :guard (listp l)))
            (if (atom (cdr l)) l (last (cdr l))))")
+ (LAST-CDR
+  (LISTS ACL2-BUILT-INS)
+  "The last [cdr] of a list
+
+  (Last-cdr x) is x if x is an [atom], and otherwise is the last [cdr]
+  of a list.  Here are examples.
+
+    ACL2 !>(last-cdr '(a b . c))
+    C
+    ACL2 !>(last-cdr '(a b c))
+    NIL
+
+  (Last-cdr x) has a [guard] of t.
+
+  Function: <last-cdr>
+
+    (defun last-cdr (x)
+           (declare (xargs :guard t))
+           (if (atom x) x (cdr (last x))))")
  (LAST-PROVER-STEPS
   (SET-PROVER-STEP-LIMIT WITH-PROVER-STEP-LIMIT
                          PROGRAMMING-WITH-STATE ACL2-BUILT-INS)
@@ -59222,6 +59300,9 @@ Subtopics
   [Last]
       The last [cons] (not element) of a list
 
+  [Last-cdr]
+      The last [cdr] of a list
+
   [Len]
       Length of a list
 
@@ -61599,8 +61680,8 @@ Types and guards in loop$ expressions
   example shows the syntax and use of the ACL2-specific addition to
   loop$: the :GUARD directive protecting, in this case, the loop$
   body.  :GUARD is useful when you wish to add more guard information
-  than can be expressed with the Common Lisp of-type directive.  The
-  of-type and :GUARD directives are conjoined to form the actual
+  than can be expressed with the Common Lisp OF-TYPE directive.  The
+  OF-TYPE and :GUARD directives are conjoined to form the actual
   guard protecting the loop$ body.
 
     ACL2 !>(loop$ for x in '(1 2 3) collect (+ 1 x))
@@ -61618,7 +61699,7 @@ Types and guards in loop$ expressions
 
   The guard on the (- max x) above is (and (integerp x) (integerp max)
   (< x max)) and the compiler is informed that x is an integer by the
-  of-type.
+  OF-TYPE.
 
   The examples just above are of FOR loop$s.  Here is a DO loop$
   example that illustrates types and guards.
@@ -91952,6 +92033,45 @@ Bug Fixes
   argument of the resulting [do$] call quotes the untranslated
   measure instead of the translated measure.
 
+  Several improvements were made to the FOR [loop$] utility (also see
+  [for-loop$], to reflect more accurately the Common Lisp loop
+  utility.  This matters because in [guard]-verified code, loop$
+  becomes loop.  Here are the most user-visible such changes.
+
+    * Run-time [guard]-checking for [loop$] operators SUM and APPEND did
+      not include a check that the value produced at each iteration
+      is a number or true list, respectively.  That has been fixed so
+      that, for example, the expression (loop$ for v in '(1 a 2) sum
+      v) now causes a guard violation (because a is not a number),
+      where previously it did not.
+    * For a form (loop$ for tail on lst ...), the target term, lst, no
+      longer needs to satisfy [true-listp].  For example, the form
+      (loop$ for tail on '(a b . c) collect tail) no longer causes a
+      @(see guard) violation.</li> <li>Run-time @(see guard)-checking
+      for an expression @('(loop$ for tail on lst ...) now includes a
+      check for the target, lst, that its final tail (i.e., ,
+      (last-cdr lst) satisfies the declared type of the corresponding
+      iteration variable.  For example, evaluation of the [loop$]
+      expression below now produces a guard violation as shown, but
+      it formerly did not produce a guard violation.
+
+          ACL2 !>(loop$ for tail of-type cons on '(a b c) collect tail)
+
+
+          ACL2 Error [Evaluation] in TOP-LEVEL:  The guard condition
+          (CONSP LOOP$-LAST-CDR), which was generated from a type declaration,
+          has failed.
+          See :DOC set-guard-checking for information about suppressing this
+          check with (set-guard-checking :none), as recommended for new users.
+          To debug see :DOC print-gv, see :DOC trace, and see :DOC wet.
+
+          ACL2 !>
+
+      Corresponding run-time checking was added for the types of the lower
+      and upper bounds lo and hi, the increment inc, and the last
+      value tested, in expressions (loop$ for i from lo to hi by inc
+      ...).
+
 
 Changes at the System Level
 
@@ -92584,6 +92704,9 @@ Subtopics
 
   [Signum]
       Indicator for positive, negative, or zero
+
+  [The-number]
+      Coerce an expected number to a number
 
   [Truncate]
       Division returning an integer by truncating toward 0
@@ -123959,7 +124082,9 @@ Subtopics
      (LIST (CADR X)
            (PROG2$ '(LOOP$ FOR E IN LST COLLECT (+ 1 E))
                    (COLLECT$ (LAMBDA$ (LOOP$-IVAR)
-                                      (LET ((E LOOP$-IVAR)) (+ 1 E)))
+                                      (LET ((E LOOP$-IVAR))
+                                           (DECLARE (IGNORABLE E))
+                                           (+ 1 E)))
                              LST)))
 
   First, notice that :trans also reports the output signature of the
@@ -123984,23 +124109,22 @@ Subtopics
                        as  y in ylst
                        collect (+ (* a x) (* b y)))
      (PROG2$
-        '(LOOP$ FOR X IN XLST
-                AS  Y IN YLST
-                COLLECT (+ (* A X) (* B Y)))
-        (COLLECT$+
-             (LAMBDA$ (LOOP$-GVARS LOOP$-IVARS)
-                      (DECLARE (XARGS :GUARD (AND (TRUE-LISTP LOOP$-GVARS)
-                                                  (EQUAL (LEN LOOP$-GVARS) 2)
-                                                  (TRUE-LISTP LOOP$-IVARS)
-                                                  (EQUAL (LEN LOOP$-IVARS) 2))
-                                      :SPLIT-TYPES T))
-                      (LET ((A (CAR LOOP$-GVARS))
-                            (B (CADR LOOP$-GVARS))
-                            (X (CAR LOOP$-IVARS))
-                            (Y (CADR LOOP$-IVARS)))
-                           (+ (* A X) (* B Y))))
-             (LIST A B)
-             (LOOP$-AS (LIST XLST YLST))))
+         '(LOOP$ FOR X IN XLST AS
+                 Y IN YLST COLLECT (+ (* A X) (* B Y)))
+         (COLLECT$+
+              (LAMBDA$ (LOOP$-GVARS LOOP$-IVARS)
+                       (DECLARE (XARGS :GUARD (AND (TRUE-LISTP LOOP$-GVARS)
+                                                   (EQUAL (LEN LOOP$-GVARS) 2)
+                                                   (TRUE-LISTP LOOP$-IVARS)
+                                                   (EQUAL (LEN LOOP$-IVARS) 2))))
+                       (LET ((A (CAR LOOP$-GVARS))
+                             (B (CAR (CDR LOOP$-GVARS)))
+                             (X (CAR LOOP$-IVARS))
+                             (Y (CAR (CDR LOOP$-IVARS))))
+                            (DECLARE (IGNORABLE A B X Y))
+                            (+ (* A X) (* B Y))))
+              (LIST A B)
+              (LOOP$-AS (LIST XLST YLST))))
 
   Notice what happens to the :guard of the lambda$ if we insert type
   specifications with of-type.
@@ -124008,27 +124132,28 @@ Subtopics
     ACL2 !>:tca (loop$ for x of-type (satisfies natp) in xlst
                        as  y of-type integer in ylst
                        collect (+ (* a x) (* b y)))
-
      (PROG2$
-       '(LOOP$ FOR X OF-TYPE (SATISFIES NATP)
-               IN XLST AS Y OF-TYPE INTEGER
-               IN YLST COLLECT (+ (* A X) (* B Y)))
-       (COLLECT$+
-            (LAMBDA$ (LOOP$-GVARS LOOP$-IVARS)
-                     (DECLARE (XARGS :GUARD (AND (TRUE-LISTP LOOP$-GVARS)
-                                                 (EQUAL (LEN LOOP$-GVARS) 2)
-                                                 (TRUE-LISTP LOOP$-IVARS)
-                                                 (EQUAL (LEN LOOP$-IVARS) 2)
-                                                 (NATP (CAR LOOP$-IVARS))
-                                                 (INTEGERP (CADR LOOP$-IVARS)))
-                                     :SPLIT-TYPES T))
-                     (LET ((A (CAR LOOP$-GVARS))
-                           (B (CADR LOOP$-GVARS))
-                           (X (CAR LOOP$-IVARS))
-                           (Y (CADR LOOP$-IVARS)))
-                          (+ (* A X) (* B Y))))
-            (LIST A B)
-            (LOOP$-AS (LIST XLST YLST))))
+      '(LOOP$ FOR X OF-TYPE (SATISFIES NATP)
+              IN XLST AS Y OF-TYPE INTEGER
+              IN YLST COLLECT (+ (* A X) (* B Y)))
+      (COLLECT$+
+       (LAMBDA$ (LOOP$-GVARS LOOP$-IVARS)
+                (DECLARE (XARGS :GUARD (AND (TRUE-LISTP LOOP$-GVARS)
+                                            (EQUAL (LEN LOOP$-GVARS) 2)
+                                            (TRUE-LISTP LOOP$-IVARS)
+                                            (EQUAL (LEN LOOP$-IVARS) 2)
+                                            (NATP (CAR LOOP$-IVARS))
+                                            (INTEGERP (CAR (CDR LOOP$-IVARS))))))
+                (LET ((A (CAR LOOP$-GVARS))
+                      (B (CAR (CDR LOOP$-GVARS)))
+                      (X (CAR LOOP$-IVARS))
+                      (Y (CAR (CDR LOOP$-IVARS))))
+                     (DECLARE (TYPE (SATISFIES NATP) X)
+                              (TYPE INTEGER Y)
+                              (IGNORABLE A B X Y))
+                     (+ (* A X) (* B Y))))
+       (LIST A B)
+       (LOOP$-AS (LIST XLST YLST))))
 
   And notice how the :guard keyword after the collect in the loop$
   statement is added to the :guard of the generated lambda$.
@@ -124040,29 +124165,32 @@ Subtopics
                                    (complex-rationalp b))
                        (+ (* a x) (* b y)))
      (PROG2$
-      '(LOOP$ FOR X OF-TYPE (SATISFIES NATP) IN XLST
-              AS  Y OF-TYPE INTEGER IN YLST
-              COLLECT
-              :GUARD (AND (RATIONALP A)
-                          (COMPLEX-RATIONALP B))
+      '(LOOP$ FOR X OF-TYPE (SATISFIES NATP)
+              IN XLST AS
+              Y OF-TYPE INTEGER IN YLST COLLECT :GUARD
+              (AND (RATIONALP A)
+                   (COMPLEX-RATIONALP B))
               (+ (* A X) (* B Y)))
       (COLLECT$+
        (LAMBDA$
         (LOOP$-GVARS LOOP$-IVARS)
-        (DECLARE (XARGS :GUARD (AND (TRUE-LISTP LOOP$-GVARS)
-                                    (EQUAL (LEN LOOP$-GVARS) 2)
-                                    (TRUE-LISTP LOOP$-IVARS)
-                                    (EQUAL (LEN LOOP$-IVARS) 2)
-                                    (NATP (CAR LOOP$-IVARS))
-                                    (INTEGERP (CADR LOOP$-IVARS))
-                                    (RATIONALP (CAR LOOP$-GVARS))
-                                    (COMPLEX-RATIONALP (CADR LOOP$-GVARS)))
-                        :SPLIT-TYPES T))
+        (DECLARE
+          (XARGS :GUARD (AND (TRUE-LISTP LOOP$-GVARS)
+                             (EQUAL (LEN LOOP$-GVARS) 2)
+                             (TRUE-LISTP LOOP$-IVARS)
+                             (EQUAL (LEN LOOP$-IVARS) 2)
+                             (NATP (CAR LOOP$-IVARS))
+                             (INTEGERP (CAR (CDR LOOP$-IVARS)))
+                             (AND (RATIONALP (CAR LOOP$-GVARS))
+                                  (COMPLEX-RATIONALP (CAR (CDR LOOP$-GVARS)))))))
         (LET ((A (CAR LOOP$-GVARS))
-              (B (CADR LOOP$-GVARS))
+              (B (CAR (CDR LOOP$-GVARS)))
               (X (CAR LOOP$-IVARS))
-              (Y (CADR LOOP$-IVARS)))
-          (+ (* A X) (* B Y))))
+              (Y (CAR (CDR LOOP$-IVARS))))
+             (DECLARE (TYPE (SATISFIES NATP) X)
+                      (TYPE INTEGER Y)
+                      (IGNORABLE A B X Y))
+             (+ (* A X) (* B Y))))
        (LIST A B)
        (LOOP$-AS (LIST XLST YLST))))
 
@@ -125108,6 +125236,37 @@ Subtopics
 
   See [proof-tree] for a discussion of a tool to help you navigate
   through ACL2 proofs.")
+ (THE-NUMBER
+  (NUMBERS ACL2-BUILT-INS)
+  "Coerce an expected number to a number
+
+  Like [fix], the-number logically returns its argument unchanged if
+  that argument is numeric and 0 otherwise.  Unlike fix, the [guard]
+  for (the-number x) is (acl2-numberp x), and (the-number x)
+  evaluates to x in raw Lisp (see [guards-and-evaluation] for
+  relevant discussion).
+
+  Function: <the-number>
+
+    (defun the-number (x)
+           (declare (xargs :guard (acl2-numberp x)))
+           (mbe :logic (fix x) :exec x))")
+ (THE-TRUE-LIST
+  (TRUE-LISTP ACL2-BUILT-INS)
+  "Coerce an expected true list to a true list
+
+  Like [true-list-fix], the-true-list logically returns its argument
+  unchanged if that argument satisfies [true-listp] and otherwise
+  returns a corrsponding ``fixed'' true list.  Unlike true-list-fix,
+  the [guard] for (the-true-list x) is (true-listp x), and
+  (the-true-list x) evaluates immediately to x in raw Lisp (see
+  [guards-and-evaluation] for relevant discussion).
+
+  Function: <the-true-list>
+
+    (defun the-true-list (x)
+           (declare (xargs :guard (true-listp x)))
+           (mbe :logic (true-list-fix x) :exec x))")
  (THEORIES
   (ACL2)
   "Sets of [rune]s to [enable]/[disable] in concert
@@ -128973,7 +129132,7 @@ Subtopics
  (TRANSLATE11 (POINTERS)
               "See [system-utilities].")
  (TRUE-LIST-FIX
-  (TRUE-LISTP)
+  (TRUE-LISTP ACL2-BUILT-INS)
   "Coerce to a true list
 
   Many functions that process lists follows the true-list-fix
@@ -129002,6 +129161,10 @@ Subtopics
   optimization, true-list-fix tries to avoid any consing by first
   checking whether its argument is a [true-listp], and, in that case,
   it simply returns its argument unchanged.
+
+  For a logically equivalent utility that returns its argument
+  unchanged (with no checking) during normal evaluation, see
+  [the-true-list].
 
   Function: <true-list-fix-exec>
 
@@ -129055,6 +129218,9 @@ right for you, see [std::strict-list-recognizers].
 
 
 Subtopics
+
+  [The-true-list]
+      Coerce an expected true list to a true list
 
   [True-list-fix]
       Coerce to a true list
