@@ -58999,9 +58999,9 @@ forms allowed for a @('let') form are  @('ignore'), @('ignorable'), and
  @(tsee state) global variables (see @(see assign)) are preserved).  So, for
  example, events might be evaluated during expansion, but they will disappear
  from the logical @(see world) after expansion returns its result.  Moreover,
- proofs are enabled by default at the start of expansion (see @(see
- ld-skip-proofsp)) if keyword @(':CHECK-EXPANSION') is supplied and has a
- non-@('nil') value.</p>
+ proofs are enabled by default during expansion (see @(see ld-skip-proofsp)) if
+ keyword @(':CHECK-EXPANSION') is supplied a non-@('nil') value or a certain
+ attachment is made (see (4) below).</p>
 
  <p>``expansion result'' &mdash; The above expansion may result in an ordinary
  (non-@(tsee state), non-@(tsee stobj)) value, which we call the ``expansion
@@ -59388,10 +59388,11 @@ forms allowed for a @('let') form are  @('ignore'), @('ignorable'), and
 
  <h3>Advanced Expansion Control</h3>
 
- <p>We conclude this @(see documentation) section by discussing three kinds of
- additional control over @('make-event') expansion.  These are all illustrated
- in community book @('books/make-event/make-event-keywords-or-exp.lisp').  The
- discussion below is split into the following three parts.</p>
+ <p>We conclude this @(see documentation) section by discussing additional
+ control over @('make-event') expansion.  The discussion below is split into
+ the following parts; further discussion follows.  The first three parts are
+ illustrated in community book
+ @('books/make-event/make-event-keywords-or-exp.lisp').</p>
 
  <p>(1) The value produced by expansion may have the form @('(:DO-PROOFS
  exp)'), which specifies @('exp') as the expansion result, to be evaluated
@@ -59404,6 +59405,12 @@ forms allowed for a @('let') form are  @('ignore'), @('ignorable'), and
  <p>(3) The keyword argument @(':EXPANSION?') can serve to eliminate the
  storing of @('make-event') replacements, as described above for the ``book
  expansion'' of a book.</p>
+
+ <p>(4) In contexts where proofs are normally skipped (see @(see
+ ld-skip-proofsp)), the expansion phase normally takes place with proofs
+ skipped unless the @(':CHECK-EXPANSION') keyword is supplied a non-@('nil')
+ value.  However, proofs can be made to take place unconditionally during the
+ expansion phase by using an attachment, as discussed below.</p>
 
  <p>We now elaborate on each of these.</p>
 
@@ -59548,7 +59555,41 @@ forms allowed for a @('let') form are  @('ignore'), @('ignorable'), and
  treated the same as @(':CHECK-EXPANSION t'), modified to accommodate the
  effect of @(':EXPANSION?')  as discussed above: if the expansion is indeed the
  value of @(':EXPANSION?'), then no @('make-event') replacement is
- generated.</p>")
+ generated.</p>
+
+ <p>(4) Unconditionally enabling proofs during the expansion phase using an
+ attachment.</p>
+
+ <p>Proofs are normally skipped during the expansion phase unless the
+ @(':CHECK-EXPANSION') keyword is supplied a non-@('nil') value.  To cause
+ proofs to take place unconditionally during the expansion phase, evaluate one
+ of the following two forms, as explained below.</p>
+
+ @({
+ (defattach (always-do-proofs-during-make-event-expansion
+             constant-t-function-arity-0)
+   :system-ok t)
+
+ (defattach (always-do-proofs-during-make-event-expansion
+             constant-all-function-arity-0)
+   :system-ok t)
+ })
+
+ <p>The first of these is probably preferred in most cases, since it does not
+ have any effect while evaluating an @(tsee include-book) form (more precisely,
+ when @('(ld-skip-proofsp state)') is @(''include-book')).  The second removes
+ that restriction.</p>
+
+ <p>To restore the default behavior, evaluate the following.</p>
+
+ @({
+ (defattach (always-do-proofs-during-make-event-expansion
+             constant-nil-function-arity-0)
+   :system-ok t)
+ })
+
+ <p>(If you would like an explanation of @('defattach') in general, see @(see
+ defattach).)</p>")
 
 (defxdoc make-event-details
   :parents (make-event)
@@ -94226,6 +94267,12 @@ it."
  and see @(see brr@).  Thanks to Alessandro Coglio and Eric Smith for
  conversations leading to this enhancement.</p>
 
+ <p>It is now possible to cause @(tsee make-event) to do proofs during its
+ expansion phase even in a context where proofs are generally skipped (see
+ @(see ld-skip-proofsp)).  See @(see make-event), in particular the discussion
+ there labeled as &ldquo;(4)&rdquo;.  Thanks to Eric Smith for requesting such
+ a feature.</p>
+
  <h3>Heuristic and Efficiency Improvements</h3>
 
  <h3>Bug Fixes</h3>
@@ -94288,7 +94335,7 @@ it."
  ACL2 !>(loop$ for tail of-type cons on '(a b c) collect tail)
 
 
- ACL2 Error [Evaluation] in TOP-LEVEL:  The guard condition 
+ ACL2 Error [Evaluation] in TOP-LEVEL:  The guard condition
  (CONSP LOOP$-LAST-CDR), which was generated from a type declaration,
  has failed.
  See :DOC set-guard-checking for information about suppressing this
