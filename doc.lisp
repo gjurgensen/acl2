@@ -30136,7 +30136,8 @@ Subtopics
   expressions in ACL2; see [loop$].  Here we give more complete
   documentation on DO loop$ expressions, beginning with an informal
   introduction based largely on examples and then continuing with
-  detailed syntax and semantics.
+  detailed syntax and semantics.  For a discussion of proofs about
+  loop$s, see [loop$-proofs].
 
   More examples of [loop$] expressions, including DO loop$s, may be
   found in [community-book] projects/apply/loop-tests.lisp.
@@ -38326,7 +38327,8 @@ Subtopics
   expressions in ACL2; see [loop$].  Here we give more complete
   documentation on FOR loop$ expressions, beginning with informal
   discussion and then continuing with detailed syntax (General Form)
-  and semantics.
+  and semantics.  For a discussion of proofs about loop$s, see
+  [loop$-proofs].
 
   Examples of [loop$] expressions, including FOR loop$s, may be found
   in [community-book] projects/apply/loop-tests.lisp.
@@ -61431,12 +61433,14 @@ Subtopics
   "Iteration with an analogue of the Common Lisp loop macro
 
   Loop$ is the ACL2 analogue of the Common Lisp's iteration primitive,
-  loop.  This topic introduces the two classes of ACL2 $('loop$')
+  loop.  This topic introduces the two classes of ACL2 loop$
   expressions, FOR loop$s and DO loop$s; see [for-loop$] and
   [do-loop$] (respectively) for their full documentation.
 
   The Introduction below is followed by a discussion of types and
-  guards.  But before we get started we emphasize a few key points.
+  guards.  For a discussion of how to prove inductive theorems about
+  loop$s see [loop$-proofs].  But before we get started we emphasize
+  a few key points.
 
     * Many examples of [loop$] expressions may be found in [community-book]
       projects/apply/loop-tests.lisp.
@@ -61738,6 +61742,9 @@ Subtopics
   [For-loop$]
       Iteration with [loop$] over an interval of integers or a list
 
+  [Loop$-proofs]
+      Proving inductive theorems about loop$s
+
   [Loop$-recursion]
       Defining functions that recur from within FOR loop$ expressions
 
@@ -61746,6 +61753,95 @@ Subtopics
  (LOOP$-DO (POINTERS) "See [do-loop$].")
  (LOOP$-FOR (POINTERS)
             "See [for-loop$].")
+ (LOOP$-PROOFS
+  (LOOP$)
+  "Proving inductive theorems about loop$s
+
+  ACL2's prover can derive induction schemes suggested by some loop$
+  statements, just as it can from some calls of recursive functions.
+  The key issue is whether appropriate arguments are variables.  For
+  example (nth n lst) suggests induction on lst by cdr, and
+  instantiates n with (- n 1) in the induction hypothesis.  But (nth
+  n (foo lst)) does not suggest such an induction because the
+  controlling argument --- the second argument of nth --- is not a
+  variable symbol.  The same principle is at play when loop$
+  statements are analyzed for inductive suggestions.
+
+  This documentation topic is merely a stub for a more elaborate
+  discussion about proving theorems about loop$s that we intend to
+  produce.  But here are the highpoints.
+
+  The FOR loop$ in the following conjecture
+
+    (equal (loop$ for x in keys as y in vals collect (cons x y))
+           (pairlis$ keys vals))
+
+  suggests simultaneous induction on keys and vals, reinforcing the
+  suggestion from the pairlis$ term.  (By the way, the above
+  conjecture is not a theorem as stated.)  But if the variable vals
+  is replaced by a non-variable term, the loop$ no longer suggests an
+  induction.
+
+  Similarly, the DO loop$ below suggests an induction on lst by cdr
+  with the simultaneous instantiation of ans by (cons (car lst) ans)
+  in the induction hypothesis.
+
+    (loop$ with ans = ans
+           with lst = lst
+           do
+           (if (endp lst)
+               (return ans)
+               (progn (setq ans (cons (car lst) ans))
+                      (setq lst (cdr lst)))))
+
+  But if ans is replaced by a non-variable, an ineffective induction on
+  lst alone is suggested.
+
+  The lesson is clear: If you want a loop$ to suggest an induction, you
+  must generalize the targets to be variables just as you would a
+  recursive function call.
+
+  Because you often have to generalize loop$ theorems to prove them by
+  induction, and, consequently, expect the resulting lemma to match
+  some instance of the loop$ in a subsequent theorem, you have to
+  remember that (a) all loop$ statements are translated into terms
+  involving lambda objects and (b) lambda objects are rewritten (by
+  default) during proofs.  Thus, for example, if you prove an
+  inductive lemma about the generalized DO loop$ above and try to
+  prove your ``main theorem'' about this instance of that loop$
+
+    (loop$ with ans = NIL
+           with lst = lst
+           do
+           (if (endp lst)
+               (return ans)
+               (progn (setq ans (cons (car lst) ans))
+                      (setq lst (cdr lst)))))
+
+  you will be disappointed!  During the proof of the instance, the
+  lambda object that is the body of the loop$ will be rewritten,
+  expanding the non-recursive function endp, so that the target
+  instance becomes
+
+    (loop$ with ans = NIL
+           with lst = lst
+           do
+           (if (consp lst)
+               (progn (setq ans (cons (car lst) ans))
+                      (setq lst (cdr lst)))
+               (return ans))).
+
+  So your generalized lemma, which used endp, will not match.
+
+  You would never create a rewrite rule whose left-hand side contained
+  a non-recursive function call, unless you were planning
+  subsequently to disable the function or (in the case of loop$s)
+  disable lambda object rewriting (see
+  [rewrite-lambda-object-actions]).
+
+  So the lesson here should be clear: When stating generalized loop$
+  lemmas make sure your loop$ bodies are in the ``normal'' form
+  imposed by your rewrite rules.")
  (LOOP$-RECURSION
   (LOOP$)
   "Defining functions that recur from within FOR loop$ expressions
@@ -92043,6 +92139,10 @@ New Features
   skipped (see [ld-skip-proofsp]).  See [make-event], in particular
   the discussion there labeled as ``(4)''.  Thanks to Eric Smith for
   requesting such a feature.
+
+  The induction mechanism in the prover can now deduce induction
+  suggestions from some DO loop$s.  See [loop$-proofs] for a brief
+  discussion.
 
 
 Heuristic and Efficiency Improvements
