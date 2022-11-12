@@ -26831,7 +26831,8 @@ ld) and @(tsee include-book)"
  @('loop$') expressions in ACL2; see @(see loop$).  Here we give more complete
  documentation on @('DO') @('loop$') expressions, beginning with an informal
  introduction based largely on examples and then continuing with detailed
- syntax and semantics.</p>
+ syntax and semantics.  For a discussion of proofs about @('loop$')s, see @(see
+ loop$-proofs).</p>
 
  <p>More examples of @(tsee loop$) expressions, including @('DO') @('loop$')s,
  may be found in @(see community-book) @('projects/apply/loop-tests.lisp').</p>
@@ -34816,7 +34817,8 @@ current fast alists."
   @('loop$') expressions in ACL2; see @(see loop$).  Here we give more complete
   documentation on @('FOR') @('loop$') expressions, beginning with informal
   discussion and then continuing with detailed syntax (General Form) and
-  semantics.</p>
+  semantics.  For a discussion of proofs about @('loop$')s, see @(see
+  loop$-proofs).</p>
 
   <p>Examples of @(tsee loop$) expressions, including @('FOR') @('loop$')s, may
   be found in @(see community-book) @('projects/apply/loop-tests.lisp').</p>
@@ -57360,12 +57362,14 @@ forms allowed for a @('let') form are  @('ignore'), @('ignorable'), and
   :short "Iteration with an analogue of the Common Lisp @('loop') macro"
   :long "<p>@('Loop$') is the ACL2 analogue of the Common Lisp's iteration
  primitive, @('loop').  This topic introduces the two classes of ACL2
- $('loop$') expressions, @('FOR') @('loop$')s and @('DO') @('loop$')s; see
+ @('loop$') expressions, @('FOR') @('loop$')s and @('DO') @('loop$')s; see
  @(see for-loop$) and @(see do-loop$) (respectively) for their full
  documentation.</p>
 
  <p>The Introduction below is followed by a discussion of types and guards.
- But before we get started we emphasize a few key points.</p>
+ For a discussion of how to prove inductive theorems about @('loop$')s see
+ @(see loop$-proofs).  But before we get started we emphasize a few key
+ points.</p>
 
  <ul>
 
@@ -57684,6 +57688,102 @@ forms allowed for a @('let') form are  @('ignore'), @('ignorable'), and
  such guard verification.  This efficiency can also be gained in top-level
  @('loop$') expressions if the @(see tau-system) completes (silently) the
  necessary guard verification.  See @(see print-cl-cache).</p>")
+
+(defxdoc loop$-proofs
+  :parents (loop$)
+  :short "Proving inductive theorems about @('loop$')s"
+  :long "<p>ACL2's prover can derive induction schemes suggested by some
+  @('loop$') statements, just as it can from some calls of recursive functions.
+  The key issue is whether appropriate arguments are variables.  For example
+  @('(nth n lst)') suggests induction on @('lst') by @('cdr'), and instantiates
+  @('n') with @('(- n 1)') in the induction hypothesis.  But @('(nth n (foo
+  lst))') does not suggest such an induction because the controlling argument
+  &mdash; the second argument of @('nth') &mdash; is not a variable symbol.
+  The same principle is at play when @('loop$') statements are analyzed for
+  inductive suggestions.</p>
+
+  <p>This documentation topic is merely a stub for a more elaborate discussion
+  about proving theorems about @('loop$')s that we intend to produce.  But here
+  are the highpoints.</p>
+
+  <p>The @('FOR') @('loop$') in the following conjecture</p>
+
+  @({
+  (equal (loop$ for x in keys as y in vals collect (cons x y))
+         (pairlis$ keys vals))
+  })
+
+  <p>suggests simultaneous induction on @('keys') and @('vals'), reinforcing
+  the suggestion from the @('pairlis$') term.  (By the way, the above
+  conjecture is not a theorem as stated.)  But if the variable @('vals') is
+  replaced by a non-variable term, the @('loop$') no longer suggests an
+  induction.</p>
+
+  <p>Similarly, the @('DO') @('loop$') below suggests an induction on @('lst')
+  by @('cdr') with the simultaneous instantiation of @('ans') by @('(cons (car
+  lst) ans)') in the induction hypothesis.</p>
+
+  @({
+  (loop$ with ans = ans
+         with lst = lst
+         do
+         (if (endp lst)
+             (return ans)
+             (progn (setq ans (cons (car lst) ans))
+                    (setq lst (cdr lst)))))
+  })
+
+  <p>But if @('ans') is replaced by a non-variable, an ineffective induction on
+  @('lst') alone is suggested.</p>
+
+  <p>The lesson is clear: <b>If you want a @('loop$') to suggest an induction,
+  you must generalize the targets to be variables</b> just as you would a
+  recursive function call.</p>
+
+  <p>Because you often have to generalize @('loop$') theorems to prove them by
+  induction, and, consequently, expect the resulting lemma to match some
+  instance of the @('loop$') in a subsequent theorem, you have to remember
+  that (a) all @('loop$') statements are translated into terms involving
+  @('lambda') objects and (b) @('lambda') objects are rewritten (by default)
+  during proofs.  Thus, for example, if you prove an inductive lemma about the
+  generalized @('DO') @('loop$') above and try to prove your &ldquo;main theorem&rdquo; about this instance
+  of that @('loop$')</p>
+
+  @({
+  (loop$ with ans = NIL
+         with lst = lst
+         do
+         (if (endp lst)
+             (return ans)
+             (progn (setq ans (cons (car lst) ans))
+                    (setq lst (cdr lst)))))
+  })
+
+  <p>you will be disappointed!  During the proof of the instance, the
+  @('lambda') object that is the body of the @('loop$') will be rewritten,
+  expanding the non-recursive function @('endp'), so that the target instance
+  becomes</p>
+
+  @({
+  (loop$ with ans = NIL
+         with lst = lst
+         do
+         (if (consp lst)
+             (progn (setq ans (cons (car lst) ans))
+                    (setq lst (cdr lst)))
+             (return ans))).
+  })
+
+  <p>So your generalized lemma, which used @('endp'), will not match.</p>
+
+  <p>You would never create a rewrite rule whose left-hand side contained a
+  non-recursive function call, unless you were planning subsequently to disable
+  the function or (in the case of @('loop$')s) disable @('lambda') object
+  rewriting (see @(see rewrite-lambda-object-actions)).</p>
+
+  <p>So the lesson here should be clear: <b>When stating generalized @('loop$')
+  lemmas make sure your @('loop$') bodies are in the &ldquo;normal&rdquo; form
+  imposed by your rewrite rules.</b></p>")
 
 (defxdoc loop$-recursion
   :parents (loop$)
@@ -94272,6 +94372,10 @@ it."
  @(see ld-skip-proofsp)).  See @(see make-event), in particular the discussion
  there labeled as &ldquo;(4)&rdquo;.  Thanks to Eric Smith for requesting such
  a feature.</p>
+
+ <p>The induction mechanism in the prover can now deduce induction suggestions
+ from some @('DO') @('loop$')s.  See @(see loop$-proofs) for a brief
+ discussion.</p>
 
  <h3>Heuristic and Efficiency Improvements</h3>
 
