@@ -34910,7 +34910,7 @@ current fast alists."
 
   <li>@('IN') <i>list-expr</i></li>
 
-  <li>@('ON') <i>list-expr</i></li>
+  <li>@('ON') <i>expr</i></li>
 
   <li>@('FROM') <i>lo-expr</i> @('TO') <i>hi-expr</i></li>
 
@@ -34920,9 +34920,9 @@ current fast alists."
   </ul>
 
   <p>where <i>list-expr</i> is a term (which is expected to evaluate to a true
-  list), <i>lo-expr</i> and <i>hi-expr</i> are terms (which are expected to
-  evaluate to integers), and <i>step-expr</i> is a term (which is expected to
-  evaluate to a positive integer).</p>
+  list), <i>expr</i> is a term, <i>lo-expr</i> and <i>hi-expr</i> are
+  terms (which are expected to evaluate to integers), and <i>step-expr</i> is a
+  term (which is expected to evaluate to a positive integer).</p>
 
   <p>The legal <i>type-specs</i> are listed in @(tsee type-spec).</p>
 
@@ -34985,11 +34985,11 @@ current fast alists."
   term</i> about its variable in the sense that ``@('X OF-TYPE (SATISFIES
   NATP)')'' gives rise to the type term @('(NATP X)') and ``@('I OF-TYPE
   INTEGER')'' gives rise to the type term @('(INTEGERP I)').  The terms
-  involved in the target expressions, e.g., the <i>list-expr</i> in ``@('IN')
-  <i>list-expr</i>'' and ``@('ON') <i>list-expr</i>'' and the <i>lo-expr</i>,
-  <i>hi-expr</i> and optional <i>step-expr</i> in the ``@('FROM')
-  <i>lo-expr</i> @('TO') <i>hi-expr</i> @('BY') <i>step-expr</i>'' targets are
-  called <i>target terms</i>.  Finally, the <i>until-expr</i>,
+  involved in the target expressions, e.g., the <i>list-expr</i> and
+  <i>expr</i> in ``@('IN') <i>list-expr</i>'' and ``@('ON') <i>expr</i>'' and
+  the <i>lo-expr</i>, <i>hi-expr</i> and optional <i>step-expr</i> in the
+  ``@('FROM') <i>lo-expr</i> @('TO') <i>hi-expr</i> @('BY') <i>step-expr</i>''
+  targets are called <i>target terms</i>.  Finally, the <i>until-expr</i>,
   <i>when-expr</i>, and <i>body-expr</i> are called <i>iterative forms</i>.</p>
 
   <p>We distinguish the target terms from the iterative forms because they are

@@ -38412,14 +38412,14 @@ General Form
   A target clause has one of four forms
 
     * IN list-expr
-    * ON list-expr
+    * ON expr
     * FROM lo-expr TO hi-expr
     * FROM lo-expr TO hi-expr BY step-expr
 
   where list-expr is a term (which is expected to evaluate to a true
-  list), lo-expr and hi-expr are terms (which are expected to
-  evaluate to integers), and step-expr is a term (which is expected
-  to evaluate to a positive integer).
+  list), expr is a term, lo-expr and hi-expr are terms (which are
+  expected to evaluate to integers), and step-expr is a term (which
+  is expected to evaluate to a positive integer).
 
   The legal type-specs are listed in [type-spec].
 
@@ -38465,8 +38465,8 @@ General Form
   variable in the sense that ``X OF-TYPE (SATISFIES NATP)'' gives
   rise to the type term (NATP X) and ``I OF-TYPE INTEGER'' gives rise
   to the type term (INTEGERP I).  The terms involved in the target
-  expressions, e.g., the list-expr in ``IN list-expr'' and ``ON
-  list-expr'' and the lo-expr, hi-expr and optional step-expr in the
+  expressions, e.g., the list-expr and expr in ``IN list-expr'' and
+  ``ON expr'' and the lo-expr, hi-expr and optional step-expr in the
   ``FROM lo-expr TO hi-expr BY step-expr'' targets are called target
   terms.  Finally, the until-expr, when-expr, and body-expr are
   called iterative forms.
