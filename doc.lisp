@@ -3358,6 +3358,9 @@ Subtopics
   [Expt]
       Exponential function
 
+  [Extend-pathname]
+      Extend a relative pathname to an absolute pathname
+
   [F-boundp-global]
       Check whether a global variable in [state] has a value
 
@@ -15039,6 +15042,7 @@ Subtopics
        (assert!-stobj \"[books]/std/testing/assert-bang-stobj.lisp\")
        (b* \"[books]/std/util/bstar.lisp\")
        (bridge \"[books]/centaur/bridge/top.lisp\")
+       (oslib::argv \"[books]/oslib/catpath.lisp\")
        (build::cert.pl \"[books]/build/doc.lisp\")
        (build::cert_param \"[books]/build/doc.lisp\")
        (cgen \"[books]/acl2s/cgen/top.lisp\")
@@ -35702,6 +35706,58 @@ Subtopics
                  ((= (fix r) 0) 0)
                  ((> i 0) (* r (expt r (+ i -1))))
                  (t (* (/ r) (expt r (+ i 1))))))")
+ (EXTEND-PATHNAME
+  (IO ACL2-BUILT-INS)
+  "Extend a relative pathname to an absolute pathname
+
+  Extend-pathname is a :[program] mode function that takes a directory
+  name and a filename (a string) and returns a corresponding pathname
+  for the given file that is relative to the specified directory.  If
+  the filename is already an absolute pathname then the return value
+  is that filename, uncchanged.
+
+    General Form:
+
+    (extend-pathname dir filename state)
+
+  where dir is either a non-empty string, representing a directory's
+  pathname, or a keyword, representing a project directory (see
+  [project-dir-alist]; filename is a string representing a relative
+  or absolute pathname; and state is the ACL2 [state].
+
+  The following examples flesh out the behavior of extend-pathname.
+
+    Examples (comments added)
+
+    ACL2 !>(extend-pathname \"~/temp\" \"foo.lisp\" state)
+    ; where the user is \"bubba\" here an in the remaining examples
+    \"/home/bubba/temp/foo.lisp\"
+    ACL2 !>(extend-pathname \"~/temp/\" \"foo.lisp\" state)
+    ; the final / is optional for the directory name
+    \"/home/bubba/temp/foo.lisp\"
+    ACL2 !>(extend-pathname \"~/temp/\" \"no-such-file\" state)
+    ; name of non-existent file is still extended
+    \"/home/bubba/temp/no-such-file\"
+    ACL2 !>(extend-pathname \".\" \"no-such-file\" state)
+    ; assumes that the current working directory is \"/home/joe\"
+    \"/home/joe/no-such-file\"
+    ACL2 !>(extend-pathname (cbd) \"no-such-file\" state)
+    ; assumes that the connected book directory (see :DOC cbd) is \"/data/santa\"
+    \"/data/santa/no-such-file\"
+    ACL2 !>(extend-pathname :system \"no-such-file\" state)
+    ; assumes that system books directory is \"/data/acl2/books\"
+    \"/data/acl2/books/no-such-file\"
+    ACL2 !>(extend-pathname \"/data/acl2\" \"~/temp/foo.lisp\" state)
+    ; directory is ignored when filename is already absolute
+    \"/home/bubba/temp/foo.lisp\"
+    ACL2 !>(extend-pathname :system \"~/temp/foo.lisp\" state)
+    ; directory is ignored when filename is already absolute
+    \"/home/bubba/temp/foo.lisp\"
+
+  Note that when the indicated file exists, extend-pathname resolves
+  symbolic links by using [canonical-pathname].  If you don't want
+  symbolic links to be resolved there are simpler alternatives; for
+  example, see oslib::catpath.")
  (EXTEND-PE-TABLE
   (HISTORY)
   "Replace [events] displayed by [history] commands
@@ -55764,7 +55820,8 @@ Subtopics
   use an absolute pathname, for example by concatenating ([cbd]) with
   the relative pathname.  (A fancy way to do such concatenation is
   with (extend-pathname dir file-name state), where dir is the
-  appropriate directory, possibly (cbd).)
+  appropriate directory, possibly (cbd).  See [extend-pathname] and
+  see [cbd].))
 
   For the file-name argument of the output-related functions listed
   below, ACL2 supports a special value, :STRING.  For this value, the
@@ -55997,6 +56054,9 @@ Subtopics
 
   [Eviscerate-hide-terms]
       To print (hide ...) as <hidden>
+
+  [Extend-pathname]
+      Extend a relative pathname to an absolute pathname
 
   [File-length$]
       The size of a file in bytes
