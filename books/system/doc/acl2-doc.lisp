@@ -72,6 +72,7 @@
     (ASSERT!-STOBJ "[books]/std/testing/assert-bang-stobj.lisp")
     (B* "[books]/std/util/bstar.lisp")
     (BRIDGE "[books]/centaur/bridge/top.lisp")
+    (OSLIB::ARGV "[books]/oslib/catpath.lisp")
     (BUILD::CERT.PL "[books]/build/doc.lisp")
     (BUILD::CERT_PARAM "[books]/build/doc.lisp")
     (CGEN "[books]/acl2s/cgen/top.lisp")
@@ -32235,6 +32236,62 @@ ld) and @(tsee include-book)"
 
  @(def expt)")
 
+(defxdoc extend-pathname
+  :parents (io acl2-built-ins)
+  :short "Extend a relative pathname to an absolute pathname"
+  :long "<p>@('Extend-pathname') is a @(':')@(tsee program) mode function that
+ takes a directory name and a filename (a string) and returns a corresponding
+ pathname for the given file that is relative to the specified directory.  If
+ the filename is already an absolute pathname then the return value is that
+ filename, uncchanged.</p>
+
+ @({
+ General Form:
+
+ (extend-pathname dir filename state)
+ })
+
+ <p>where @('dir') is either a non-empty string, representing a directory's
+ pathname, or a keyword, representing a project directory (see @(see
+ project-dir-alist); filename is a string representing a relative or absolute
+ pathname; and @('state') is the ACL2 @(see state).</p>
+
+ <p>The following examples flesh out the behavior of @('extend-pathname').</p>
+
+ @({
+ Examples (comments added)
+
+ ACL2 !>(extend-pathname \"~/temp\" \"foo.lisp\" state)
+ ; where the user is \"bubba\" here an in the remaining examples
+ \"/home/bubba/temp/foo.lisp\"
+ ACL2 !>(extend-pathname \"~/temp/\" \"foo.lisp\" state)
+ ; the final / is optional for the directory name
+ \"/home/bubba/temp/foo.lisp\"
+ ACL2 !>(extend-pathname \"~/temp/\" \"no-such-file\" state)
+ ; name of non-existent file is still extended
+ \"/home/bubba/temp/no-such-file\"
+ ACL2 !>(extend-pathname \".\" \"no-such-file\" state)
+ ; assumes that the current working directory is \"/home/joe\"
+ \"/home/joe/no-such-file\"
+ ACL2 !>(extend-pathname (cbd) \"no-such-file\" state)
+ ; assumes that the connected book directory (see :DOC cbd) is \"/data/santa\"
+ \"/data/santa/no-such-file\"
+ ACL2 !>(extend-pathname :system \"no-such-file\" state)
+ ; assumes that system books directory is \"/data/acl2/books\"
+ \"/data/acl2/books/no-such-file\"
+ ACL2 !>(extend-pathname \"/data/acl2\" \"~/temp/foo.lisp\" state)
+ ; directory is ignored when filename is already absolute
+ \"/home/bubba/temp/foo.lisp\"
+ ACL2 !>(extend-pathname :system \"~/temp/foo.lisp\" state)
+ ; directory is ignored when filename is already absolute
+ \"/home/bubba/temp/foo.lisp\"
+ })
+
+ <p>Note that when the indicated file exists, @('extend-pathname') resolves
+ symbolic links by using @(tsee canonical-pathname).  If you don't want
+ symbolic links to be resolved there are simpler alternatives; for example, see
+ @(see oslib::catpath).</p>")
+
 (defxdoc extend-pe-table
   :parents (history)
   :short "Replace @(see events) displayed by @(see history) commands"
@@ -52161,7 +52218,8 @@ tables in the current Hons Space."
  relative pathname, use an absolute pathname, for example by concatenating
  @('(')@(tsee cbd)@(')') with the relative pathname.  (A fancy way to do such
  concatenation is with @('(extend-pathname dir file-name state)'), where
- @('dir') is the appropriate directory, possibly @('(cbd)').)</p>
+ @('dir') is the appropriate directory, possibly @('(cbd)').  See @(see
+ extend-pathname) and see @(see cbd).))</p>
 
  <p>For the @('file-name') argument of the output-related functions listed
  below, ACL2 supports a special value, @(':STRING').  For this value, the
