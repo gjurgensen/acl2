@@ -94435,6 +94435,12 @@ it."
  from some @('DO') @('loop$')s.  See @(see loop$-proofs) for a brief
  discussion.</p>
 
+ <p>A new @(':')@(tsee linear) rule, @('acl2-count-car-cdr-linear'), is now
+ built into ACL2, as follows.  Thanks to Eric Smith for suggesting this
+ improvement (slightly renamed here) to what we originally added.</p>
+
+ @(def acl2-count-car-cdr-linear)
+
  <h3>Heuristic and Efficiency Improvements</h3>
 
  <h3>Bug Fixes</h3>
