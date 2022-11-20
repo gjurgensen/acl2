@@ -92204,10 +92204,18 @@ New Features
   suggestions from some DO loop$s.  See [loop$-proofs] for a brief
   discussion.
 
-  Two new :[linear] rules are now built into ACL2, acl2-count-car and
-  acl2-count-cdr.  These state that the [ACL2-count] of the [car]
-  (respectively, [cdr]) of a [cons] pair, x, is smaller than
-  (acl2-count x).
+  A new :[linear] rule, acl2-count-car-cdr-linear, is now built into
+  ACL2, as follows.  Thanks to Eric Smith for suggesting this
+  improvement (slightly renamed here) to what we originally added.
+
+  Theorem: <acl2-count-car-cdr-linear>
+
+    (defthm acl2-count-car-cdr-linear
+            (implies (consp x)
+                     (equal (acl2-count x)
+                            (+ 1 (acl2-count (car x))
+                               (acl2-count (cdr x)))))
+            :rule-classes :linear)
 
 
 Heuristic and Efficiency Improvements

@@ -94435,10 +94435,11 @@ it."
  from some @('DO') @('loop$')s.  See @(see loop$-proofs) for a brief
  discussion.</p>
 
- <p>Two new @(':')@(tsee linear) rules are now built into ACL2,
- @('acl2-count-car') and @('acl2-count-cdr').  These state that the @(tsee
- acl2-count) of the @(tsee car) (respectively, @(tsee cdr)) of a @(see cons)
- pair, @('x'), is smaller than @('(acl2-count x)').</p>
+ <p>A new @(':')@(tsee linear) rule, @('acl2-count-car-cdr-linear'), is now
+ built into ACL2, as follows.  Thanks to Eric Smith for suggesting this
+ improvement (slightly renamed here) to what we originally added.</p>
+
+ @(def acl2-count-car-cdr-linear)
 
  <h3>Heuristic and Efficiency Improvements</h3>
 
