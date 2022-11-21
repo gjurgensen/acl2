@@ -77,7 +77,7 @@ Subtopics
   [defthm], [in-theory], [xargs], [state], etc., without an acl2::
   prefix.
 
-  The constant *acl2-exports* lists 1574 symbols, including most
+  The constant *acl2-exports* lists 1575 symbols, including most
   documented ACL2 system constants, functions, and macros.  You will
   typically also want to import many symbols from Common Lisp; see
   [*common-lisp-symbols-from-main-lisp-package*].
@@ -297,7 +297,7 @@ Subtopics
        explode-nonnegative-integer expt
        expt-type-prescription-non-zero-base
        extend-32-bit-integer-stack
-       extend-pe-table
+       extend-pathname extend-pe-table
        extend-t-stack extend-world
        extra-info f-boundp-global f-get-global
        f-put-global fast-alist-clean
@@ -92203,6 +92203,19 @@ New Features
   The induction mechanism in the prover can now deduce induction
   suggestions from some DO loop$s.  See [loop$-proofs] for a brief
   discussion.
+
+  A new :[linear] rule, acl2-count-car-cdr-linear, is now built into
+  ACL2, as follows.  Thanks to Eric Smith for suggesting this
+  improvement (slightly renamed here) to what we originally added.
+
+  Theorem: <acl2-count-car-cdr-linear>
+
+    (defthm acl2-count-car-cdr-linear
+            (implies (consp x)
+                     (equal (acl2-count x)
+                            (+ 1 (acl2-count (car x))
+                               (acl2-count (cdr x)))))
+            :rule-classes :linear)
 
 
 Heuristic and Efficiency Improvements
