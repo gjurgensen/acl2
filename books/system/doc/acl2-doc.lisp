@@ -39025,7 +39025,13 @@ current fast alists."
     (declare (type (signed-byte 28) x y z))
     (imin (i+ x y)
           (i+ y (imin x z))))
- })")
+ })
+
+ <p>7. You may want to set environment variable @('GCL_MEM_MULTIPLE') when
+ running regression tests using ACL2 built on GCL, to keep memory from
+ exceeding what is available.  Consider dividing 1.0 by the number of threads;
+ so for example, for 4 threads (i.e., using &ldquo;@('-j 4')&rdquo; in your
+ @('make') command), you may want to specify @('GCL_MEM_MULTIPLE=0.25').</p>")
 
 (defxdoc generalize
   :parents (rule-classes)
@@ -94438,9 +94444,9 @@ it."
  the cbd, where formerly it was generally interpreted relative to the directory
  in which ACL2 was invoked.  (Technical note: ACL2 accomplishes the new
  behavior by arranging that @(tsee set-cbd) modifies not only the cbd but also
- the Lisp global, @('*default-pathname-defaults*').)  Thanks to Eric McCarthy
- and Eric Smith for suggesting consideration of such a change and for helpful
- discussions.</p>
+ the Lisp global, @('*default-pathname-defaults*').)  Thanks to Alessandro
+ Coglio, Eric McCarthy, and Eric Smith for suggesting consideration of such a
+ change and for helpful discussions.</p>
 
  <p>The function @('hons-enabledp') is no longer defined, and @(':hons') has
  been removed from the Lisp global, @('*features*') (so, readtime conditionals

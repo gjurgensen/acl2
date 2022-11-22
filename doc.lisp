@@ -42329,7 +42329,14 @@ Subtopics
     (defun big-test (x y z)
       (declare (type (signed-byte 28) x y z))
       (imin (i+ x y)
-            (i+ y (imin x z))))")
+            (i+ y (imin x z))))
+
+  7. You may want to set environment variable GCL_MEM_MULTIPLE when
+  running regression tests using ACL2 built on GCL, to keep memory
+  from exceeding what is available.  Consider dividing 1.0 by the
+  number of threads; so for example, for 4 threads (i.e., using ``-j
+  4'' in your make command), you may want to specify
+  GCL_MEM_MULTIPLE=0.25.")
  (GCS (POINTERS)
       "See [get-command-sequence].")
  (GENERALIZE
@@ -92194,9 +92201,9 @@ Changes to Existing Features
   interpreted relative to the directory in which ACL2 was invoked.
   (Technical note: ACL2 accomplishes the new behavior by arranging
   that [set-cbd] modifies not only the cbd but also the Lisp global,
-  *default-pathname-defaults*.)  Thanks to Eric McCarthy and Eric
-  Smith for suggesting consideration of such a change and for helpful
-  discussions.
+  *default-pathname-defaults*.)  Thanks to Alessandro Coglio, Eric
+  McCarthy, and Eric Smith for suggesting consideration of such a
+  change and for helpful discussions.
 
   The function hons-enabledp is no longer defined, and :hons has been
   removed from the Lisp global, *features* (so, readtime conditionals
