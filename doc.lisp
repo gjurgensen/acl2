@@ -3741,6 +3741,9 @@ Subtopics
   [Lower-case-p]
       Recognizer for lower case characters
 
+  [Macrolet]
+      Local binding of macro symbols
+
   [Make]
       Constructor macro for [defrec] structures.
 
@@ -6609,7 +6612,8 @@ Programming and evaluation idioms, support, utilities
     * See [ec-call] to execute a call in the ACL2 logic instead of raw
       Lisp.
     * See [er] to print an error message and ``cause an error''.
-    * See [flet] to provide local binding of function symbols.
+    * See [flet] and [macrolet] to provide local binding of function and
+      macro names.
     * See [gc$] to invoke the garbage collector.
     * See [mbe] to attach code for execution.
     * See [mv-list] to convert a [multiple-value] result to a single-value
@@ -11031,6 +11035,9 @@ Subtopics
 
   [Let*]
       Binding of lexically scoped (local) variables
+
+  [Macrolet]
+      Local binding of macro symbols
 
   [Mv]
       Returning a multiple value
@@ -22586,6 +22593,7 @@ Usage
     * (LET ((v1 t1) ...) dcl ... dcl body)
     * (MV-LET (v1 ...) term dcl ... dcl body)
     * (FLET ((name args dcl ... dcl body) ...))
+    * (MACROLET ((name args dcl ... dcl body) ...))
 
   Each of the cases above permits certain declarations, as follows.
 
@@ -22594,6 +22602,7 @@ Usage
     * LET: (ignore ignorable type)
     * MV-LET: (ignore ignorable type)
     * FLET: (ignore ignorable type)
+    * MACROLET: (ignore ignorable type)
 
   Of course, declarations are permitted in macro calls to the extent
   that they are permitted in the macroexpansions.  For example,
@@ -30751,7 +30760,7 @@ SYNTAX
   replacement of a stobj by a stobj that is congruent to it.
 
   It is illegal for a loop$ expression to be in the scope of function
-  bindings of an [flet] expression.
+  bindings of an [flet] or [macrolet] expression.
 
   As noted above, the measure, body, and FINALLY clauses of a DO loop$
   must be fully [badge]d.
@@ -37472,6 +37481,8 @@ Subtopics
   (BASICS ACL2-BUILT-INS)
   "Local binding of function symbols
 
+  See [macrolet] for an analogous utility for defining macros locally.
+
     Example Form:
     ; The following evaluates to (mv 7 10):
     (flet ((f (x)
@@ -37497,10 +37508,11 @@ Subtopics
   Lisp compiler.  The declarations are otherwise ignored by ACL2, so
   we mainly ignore them in the discussion below.
 
-  The innermost flet-binding of a function symbol, f, above a call of
-  f, is the one that provides the definition of f for that call.
-  Note that flet does not provide recursion.  Consider the following
-  example.
+  The innermost flet or [macrolet] binding of a symbol, f, above a call
+  of f, is the one that provides the definition of f for that call.
+  Note that neither flet nor macrolet provide recursion: that is, the
+  definition of f in an flet or macrolet binding of f is ignored in
+  the body of that binding.  Consider the following example.
 
     ; Give a global definition of f:
     (defun f (x) (+ x 3))
@@ -62750,6 +62762,109 @@ Subtopics
 
   Also see [toggle-pc-macro] for how to change a macro command to an
   atomic macro command, and vice versa.")
+ (MACROLET
+  (BASICS ACL2-BUILT-INS)
+  "Local binding of macro symbols
+
+  See [flet] for an analogous utility for defining functions locally.
+
+    Example Form:
+    (defun f1 (x)
+      (macrolet ((mac (a) (list 'quote a)))
+        (cons x (mac x))))
+
+  The Example Form above is equivalent to the following, in which the
+  call of local macro mac has been expanded.
+
+    (defun f1-alt (x)
+      (cons x (quote x)))
+
+  The General Forms are similar to those of [flet].
+
+    General Forms:
+    (macrolet (def1 ... defk) body)
+    (macrolet (def1 ... defk) declare-form1 .. declare-formk body)
+
+  where body is a term, and each defi is a definition as in [defmacro]
+  but with the leading defmacro symbol omitted.  See [defmacro], but
+  see [declare] for the declarations permitted directly under the
+  defi.  On the other hand, regarding the declare-formi (if any are
+  supplied): each must be of the form (declare decl1 ... decln),
+  where each decli is of the form (inline g1 ... gm) or (notinline g1
+  ... gm), and each gi is defined by some defi.  Unlike the related
+  utility [flet], those inline and notinline declarations are
+  unlikely to have any effect.
+
+  The innermost [flet] or macrolet binding of a symbol, f, above a call
+  of f, is the one that provides the definition of f for that call.
+  Note that neither flet nor macrolet provide recursion: that is, the
+  definition of f in an flet or macrolet binding of f is ignored in
+  the body of that binding.
+
+  The following requirements are imposed by Common Lisp and enforced by
+  ACL2.
+
+    * Every variable occurring in the body of a defi must be a formal
+      parameter name of that defi.
+    * No function or macro symbol called in the body of a defi may be
+      defined by a superior flet or macrolet binding.  (Not every
+      Common Lisp implementation includes this restriction for
+      superior macrolet bindings, but at least one (GCL) does so we
+      include it in ACL2.)
+
+  Although macrolet behaves in ACL2 essentially as it does in Common
+  Lisp, ACL2 imposes the following restrictions and qualifications.
+
+    * Every [declare] form for a local definition (def1 through defk,
+      above) must be an ignore, ignorable, or type expression.
+    * Each defi must bind a different symbol.
+    * Each defi must bind a symbol that is a legal name for an ACL2 macro.
+      In particular, the symbol may not be in the keyword package or
+      the main Lisp package.  Moreover, the symbol may not be a
+      built-in ACL2 function or macro.
+
+  Macrolet bindings are evaluated in parallel.  Consider the following
+  example.
+
+    (defun f1 (x) (cons x 'x))
+    (macrolet ((f1 (x) x)
+               (f2 () (list 'quote
+    ; The following reference is to the global f1,
+    ; not to the identity macro just above.
+                            (f1 3))))
+      (f2))
+
+  The macrolet form above evaluates to (3 . x), not to 3, as explained
+  in the comment above.  Here is a somewhat analogous form that one
+  might expect to evaluate to 3, but that is not the case; see below.
+
+    (macrolet ((f1 (x) x))
+      (macrolet ((f2 () (list 'quote (f1 3))))
+        (f2)))
+
+  The body of f2 calls a symbol, f1, that is bound by a superior
+  macrolet binding.  As noted above, this is illegal (also for
+  superior flet bindings).
+
+  Under the hood, ACL2 expands away macrolet bindings.  The following
+  example illustrates this point.
+
+    ACL2 !>:trans (macrolet ((mac (a) (list 'cons a a)))
+                    (car (mac b)))
+
+    (CAR (CONS B B))
+
+    => *
+
+    ACL2 !>
+
+  Macrolet is part of Common Lisp.  See any Common Lisp documentation
+  for more information.  We conclude by pointing out an important
+  aspect of macrolet shared by ACL2 and Common Lisp: The binding is
+  lexical, not dynamic.  That is, the macrolet binding of a symbol
+  only applies to calls of that symbol in the body of the macrolet,
+  not other calls made in the course of evaluation.  See [flet] for
+  discussion of this point.")
  (MACROS
   (ACL2)
   "Macros allow you to extend the syntax of ACL2.
@@ -92204,10 +92319,22 @@ New Features
   suggestions from some DO loop$s.  See [loop$-proofs] for a brief
   discussion.
 
-  Two new :[linear] rules are now built into ACL2, acl2-count-car and
-  acl2-count-cdr.  These state that the [ACL2-count] of the [car]
-  (respectively, [cdr]) of a [cons] pair, x, is smaller than
-  (acl2-count x).
+  A new :[linear] rule, acl2-count-car-cdr-linear, is now built into
+  ACL2, as follows.  Thanks to Eric Smith for suggesting this
+  improvement (slightly renamed here) to what we originally added.
+
+  Theorem: <acl2-count-car-cdr-linear>
+
+    (defthm acl2-count-car-cdr-linear
+            (implies (consp x)
+                     (equal (acl2-count x)
+                            (+ 1 (acl2-count (car x))
+                               (acl2-count (cdr x)))))
+            :rule-classes :linear)
+
+  The Common Lisp utility, [macrolet], is now supported in ACL2.
+  Thanks to Alessandro Coglio for discussion leading us to make this
+  addition.  See [macrolet].
 
 
 Heuristic and Efficiency Improvements
@@ -108409,11 +108536,11 @@ Subtopics
   trust tag; see [defttag].  If a key is associated with the value
   nil, then that key is treated as though it were not in the table.
 
-  Note that keys of this table are not eligible to be bound by [flet].
-  The current value of this table may be obtained by evaluating the
-  form (table-alist 'return-last-table (w state)).  The built-in
-  constant *initial-return-last-table* holds the initial value of
-  this table.")
+  Note that keys of this table are not eligible to be bound by [flet]
+  or [macrolet].  The current value of this table may be obtained by
+  evaluating the form (table-alist 'return-last-table (w state)).
+  The built-in constant *initial-return-last-table* holds the initial
+  value of this table.")
  (REVAPPEND
   (LISTS ACL2-BUILT-INS)
   "Concatenate the [reverse] of one list to another
