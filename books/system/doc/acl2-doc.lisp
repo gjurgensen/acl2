@@ -32243,7 +32243,7 @@ ld) and @(tsee include-book)"
  takes a directory name and a filename (a string) and returns a corresponding
  pathname for the given file that is relative to the specified directory.  If
  the filename is already an absolute pathname then the return value is that
- filename, uncchanged.</p>
+ filename, unchanged.</p>
 
  @({
  General Form:
@@ -32253,7 +32253,7 @@ ld) and @(tsee include-book)"
 
  <p>where @('dir') is either a non-empty string, representing a directory's
  pathname, or a keyword, representing a project directory (see @(see
- project-dir-alist); filename is a string representing a relative or absolute
+ project-dir-alist)); filename is a string representing a relative or absolute
  pathname; and @('state') is the ACL2 @(see state).</p>
 
  <p>The following examples flesh out the behavior of @('extend-pathname').</p>
@@ -32262,7 +32262,7 @@ ld) and @(tsee include-book)"
  Examples (comments added)
 
  ACL2 !>(extend-pathname \"~/temp\" \"foo.lisp\" state)
- ; where the user is \"bubba\" here an in the remaining examples
+ ; where the user is \"bubba\" here and in the remaining examples
  \"/home/bubba/temp/foo.lisp\"
  ACL2 !>(extend-pathname \"~/temp/\" \"foo.lisp\" state)
  ; the final / is optional for the directory name
