@@ -16182,21 +16182,29 @@ Subtopics
     ACL2 !>:cbd
     \"/usr/home/smith/\"
 
-  The connected book directory is a nonempty string that specifies a
-  directory as an absolute pathname.  (See [pathname] for a
-  discussion of file naming conventions.)  When [include-book] is
-  given a relative pathname it elaborates it into a canonical
-  absolute pathname, essentially by appending the connected book
-  directory string to the left and \".lisp\" to the right.  (For
-  details, see [book-name] and also see [full-book-name].)
-  Similarly, [ld] elaborates relative pathnames into full pathnames
-  using the connected book directory string.  (The effect of the cbd
-  on ld carries over to utilities that invoke ld as well, notably,
-  [rebuild].)  Furthermore, [include-book] and [ld] temporarily set
-  the connected book directory to the directory string of the
-  resulting full pathname so that references to files in the same
-  directory may omit the directory.  See [set-cbd] for how to set the
-  connected book directory string.
+  The connected book directory (``cbd'') is a nonempty string that
+  specifies a directory as an absolute pathname.  (See [pathname] for
+  a discussion of file naming conventions.)  When utilities that take
+  a filename argument, such as [include-book], are given a relative
+  pathname, it is elaborated it into an absolute pathname,
+  essentially by appending the connected book directory string to the
+  left and \".lisp\" to the right.  (This absolute pathname is
+  actuallly canonical when elaborating book names.  For more details
+  on book names, see [book-name] and also see [full-book-name].)
+  Furthermore, [include-book] and [ld] temporarily set the connected
+  book directory to the directory string of the resulting full
+  pathname so that references to files in the same directory may omit
+  the directory.  See [set-cbd] for how to set the connected book
+  directory string.
+
+  Note that the cbd is used for elaborating every [pathname] argument,
+  not just a pathname that represents a book.  (Technical remark:
+  Some utilities, such as [open-input-channel], use the cbd
+  indirectly as follows.  That utility uses the Common Lisp utility,
+  open, which knows nothing about the cbd.  However, ACL2 arranges
+  that the Lisp global *default-pathname-defaults* always has the cbd
+  as its value, and Lisp uses that global to elaborate relative
+  pathnames much as ACL2 uses the cbd.)
 
     General Form:
     (cbd)
@@ -16204,20 +16212,17 @@ Subtopics
   This is a macro that expands into a term involving the single free
   variable [state].  It returns the connected book directory string.
 
-  The connected book directory (henceforth called the ``cbd'') is used
-  by [include-book] to elaborate the supplied book-name into a
-  canonical absolute pathname (see [full-book-name]); similarly for
-  [ld].  For example, if the cbd is \"/usr/home/smith/\" then the
-  elaboration of the [book-name] \"project/task-1/arith\" (to the
-  \".lisp\" extension) is \"/usr/home/smith/project/task-1/arith.lisp\".
-  That [full-book-name] is what [include-book] opens to read the
-  source text for the book.
+  For example, if the cbd is \"/usr/home/smith/\" then the [book-name]
+  \"project/task-1/arith\" is elaborated using the cbd to the
+  [full-book-name] \"/usr/home/smith/project/task-1/arith.lisp\", which
+  is what [include-book] opens to read the source text for the book.
 
-  The cbd may be changed using [set-cbd] (see [set-cbd]).  Furthermore,
-  during the processing of the [events] in a book, [include-book]
-  sets the cbd to be the directory string of the [full-book-name] of
-  the book; similarly for [ld].  Thus, if the cbd is
-  \"/usr/home/smith/\" then during the processing of [events] by
+  The cbd may be changed using [set-cbd].
+
+  As noted above, during the processing of the [events] in a book,
+  [include-book] sets the cbd to be the directory string of the
+  [full-book-name] of the book; similarly for [ld].  Thus, if the cbd
+  is \"/usr/home/smith/\" then during the processing of [events] by
 
     (include-book \"project/task-1/arith\")
 
@@ -55814,14 +55819,10 @@ Subtopics
   discussed below).  ACL2 does not support the Common Lisp type
   [pathname]; rather, the underlying host Lisp will interpret the
   given string as a pathname.  If the string represents a relative
-  pathname, the host Lisp will generally interpret that with respect
-  to the directory where your ACL2 executable was invoked.  If you
-  want to avoid depending on Lisp to interpret a relative pathname,
-  use an absolute pathname, for example by concatenating ([cbd]) with
-  the relative pathname.  (A fancy way to do such concatenation is
-  with (extend-pathname dir file-name state), where dir is the
-  appropriate directory, possibly (cbd).  See [extend-pathname] and
-  see [cbd].))
+  pathname, it will be elaborated to a full pathname using the
+  connected book directory; see [cbd].  You can do that elaboration
+  yourself with a directory dir using (extend-pathname dir file-name
+  state); see [extend-pathname].
 
   For the file-name argument of the output-related functions listed
   below, ACL2 supports a special value, :STRING.  For this value, the
@@ -92070,6 +92071,18 @@ Experimental Versions
 
 Changes to Existing Features
 
+  The connected book directory (that is, the [cbd]) now elaborates
+  relative [pathname]s to absolute pathnames not only for book
+  operations, but for all file operations.  For example,
+  (open-input-channel \"foo\" :character state) now interprets filename
+  \"foo\" relative to the cbd, where formerly it was generally
+  interpreted relative to the directory in which ACL2 was invoked.
+  (Technical note: ACL2 accomplishes the new behavior by arranging
+  that [set-cbd] modifies not only the cbd but also the Lisp global,
+  *default-pathname-defaults*.)  Thanks to Eric McCarthy and Eric
+  Smith for suggesting consideration of such a change and for helpful
+  discussions.
+
   The function hons-enabledp is no longer defined, and :hons has been
   removed from the Lisp global, *features* (so, readtime conditionals
   #+hons and #-hons should be avoided, especially since #+hons is
@@ -96025,10 +96038,11 @@ Implementation
   character / is used to terminate directory names.  Some file names
   are ``absolute'' (complete) descriptions of a file or directory;
   others are ``relative'' to the current working directory or to the
-  connected book directory (see [cbd]).  We emphasize that even for
-  users of Windows-based systems or Macintosh computers, ACL2 file
-  names are in the Unix style.  We will call these ACL2 pathnames,
-  often omitting the ``ACL2.''
+  connected book directory.  See [cbd] for how relative pathnames are
+  elaborated to absolute pathnames.  We emphasize that even for users
+  of Windows-based systems or Macintosh computers, ACL2 file names
+  are in the Unix style.  We will call these ACL2 pathnames, often
+  omitting the ``ACL2.''
 
   Pathnames starting with the directory separator (/) or the tilde
   character (~) are absolute pathnames.  All other pathnames are
@@ -112474,11 +112488,11 @@ Subtopics
 
   where str is a nonempty string that represents the desired directory
   (see [pathname]).  This command sets the connected book directory
-  (see [cbd]) to the string representing the indicated directory.
+  to the string representing the indicated directory; see [cbd].
   Thus, this command may determine which files are processed by
   [include-book] and [certify-book] [command]s typed at the
-  top-level.  However, the [cbd] is also temporarily set by those two
-  book processing [command]s.
+  top-level, as well as by file operations such as
+  [open-input-channel].
 
   IMPORTANT: Pathnames in ACL2 are in the Unix (trademark of AT&T)
   style.  That is, the character ``/'' separates directory components
