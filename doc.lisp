@@ -77,7 +77,7 @@ Subtopics
   [defthm], [in-theory], [xargs], [state], etc., without an acl2::
   prefix.
 
-  The constant *acl2-exports* lists 1575 symbols, including most
+  The constant *acl2-exports* lists 1576 symbols, including most
   documented ACL2 system constants, functions, and macros.  You will
   typically also want to import many symbols from Common Lisp; see
   [*common-lisp-symbols-from-main-lisp-package*].
@@ -415,8 +415,8 @@ Subtopics
        logorc1 logorc2 logtest logxor loop$
        lower-case-p lower-case-p-char-downcase
        lower-case-p-forward-to-alpha-char-p
-       lowest-terms lp
-       macro-aliases macro-args magic-ev-fncall
+       lowest-terms lp macro-aliases
+       macro-args macrolet magic-ev-fncall
        main-timer main-timer-type-prescription
        make make-character-list
        make-character-list-make-character-list
