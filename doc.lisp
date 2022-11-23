@@ -77,7 +77,7 @@ Subtopics
   [defthm], [in-theory], [xargs], [state], etc., without an acl2::
   prefix.
 
-  The constant *acl2-exports* lists 1575 symbols, including most
+  The constant *acl2-exports* lists 1576 symbols, including most
   documented ACL2 system constants, functions, and macros.  You will
   typically also want to import many symbols from Common Lisp; see
   [*common-lisp-symbols-from-main-lisp-package*].
@@ -415,8 +415,8 @@ Subtopics
        logorc1 logorc2 logtest logxor loop$
        lower-case-p lower-case-p-char-downcase
        lower-case-p-forward-to-alpha-char-p
-       lowest-terms lp
-       macro-aliases macro-args magic-ev-fncall
+       lowest-terms lp macro-aliases
+       macro-args macrolet magic-ev-fncall
        main-timer main-timer-type-prescription
        make make-character-list
        make-character-list-make-character-list
@@ -3741,6 +3741,9 @@ Subtopics
   [Lower-case-p]
       Recognizer for lower case characters
 
+  [Macrolet]
+      Local binding of macro symbols
+
   [Make]
       Constructor macro for [defrec] structures.
 
@@ -6609,7 +6612,8 @@ Programming and evaluation idioms, support, utilities
     * See [ec-call] to execute a call in the ACL2 logic instead of raw
       Lisp.
     * See [er] to print an error message and ``cause an error''.
-    * See [flet] to provide local binding of function symbols.
+    * See [flet] and [macrolet] to provide local binding of function and
+      macro names.
     * See [gc$] to invoke the garbage collector.
     * See [mbe] to attach code for execution.
     * See [mv-list] to convert a [multiple-value] result to a single-value
@@ -11031,6 +11035,9 @@ Subtopics
 
   [Let*]
       Binding of lexically scoped (local) variables
+
+  [Macrolet]
+      Local binding of macro symbols
 
   [Mv]
       Returning a multiple value
@@ -16182,21 +16189,29 @@ Subtopics
     ACL2 !>:cbd
     \"/usr/home/smith/\"
 
-  The connected book directory is a nonempty string that specifies a
-  directory as an absolute pathname.  (See [pathname] for a
-  discussion of file naming conventions.)  When [include-book] is
-  given a relative pathname it elaborates it into a canonical
-  absolute pathname, essentially by appending the connected book
-  directory string to the left and \".lisp\" to the right.  (For
-  details, see [book-name] and also see [full-book-name].)
-  Similarly, [ld] elaborates relative pathnames into full pathnames
-  using the connected book directory string.  (The effect of the cbd
-  on ld carries over to utilities that invoke ld as well, notably,
-  [rebuild].)  Furthermore, [include-book] and [ld] temporarily set
-  the connected book directory to the directory string of the
-  resulting full pathname so that references to files in the same
-  directory may omit the directory.  See [set-cbd] for how to set the
-  connected book directory string.
+  The connected book directory (``cbd'') is a nonempty string that
+  specifies a directory as an absolute pathname.  (See [pathname] for
+  a discussion of file naming conventions.)  When utilities that take
+  a filename argument, such as [include-book], are given a relative
+  pathname, it is elaborated it into an absolute pathname,
+  essentially by appending the connected book directory string to the
+  left and \".lisp\" to the right.  (This absolute pathname is
+  actuallly canonical when elaborating book names.  For more details
+  on book names, see [book-name] and also see [full-book-name].)
+  Furthermore, [include-book] and [ld] temporarily set the connected
+  book directory to the directory string of the resulting full
+  pathname so that references to files in the same directory may omit
+  the directory.  See [set-cbd] for how to set the connected book
+  directory string.
+
+  Note that the cbd is used for elaborating every [pathname] argument,
+  not just a pathname that represents a book.  (Technical remark:
+  Some utilities, such as [open-input-channel], use the cbd
+  indirectly as follows.  That utility uses the Common Lisp utility,
+  open, which knows nothing about the cbd.  However, ACL2 arranges
+  that the Lisp global *default-pathname-defaults* always has the cbd
+  as its value, and Lisp uses that global to elaborate relative
+  pathnames much as ACL2 uses the cbd.)
 
     General Form:
     (cbd)
@@ -16204,20 +16219,17 @@ Subtopics
   This is a macro that expands into a term involving the single free
   variable [state].  It returns the connected book directory string.
 
-  The connected book directory (henceforth called the ``cbd'') is used
-  by [include-book] to elaborate the supplied book-name into a
-  canonical absolute pathname (see [full-book-name]); similarly for
-  [ld].  For example, if the cbd is \"/usr/home/smith/\" then the
-  elaboration of the [book-name] \"project/task-1/arith\" (to the
-  \".lisp\" extension) is \"/usr/home/smith/project/task-1/arith.lisp\".
-  That [full-book-name] is what [include-book] opens to read the
-  source text for the book.
+  For example, if the cbd is \"/usr/home/smith/\" then the [book-name]
+  \"project/task-1/arith\" is elaborated using the cbd to the
+  [full-book-name] \"/usr/home/smith/project/task-1/arith.lisp\", which
+  is what [include-book] opens to read the source text for the book.
 
-  The cbd may be changed using [set-cbd] (see [set-cbd]).  Furthermore,
-  during the processing of the [events] in a book, [include-book]
-  sets the cbd to be the directory string of the [full-book-name] of
-  the book; similarly for [ld].  Thus, if the cbd is
-  \"/usr/home/smith/\" then during the processing of [events] by
+  The cbd may be changed using [set-cbd].
+
+  As noted above, during the processing of the [events] in a book,
+  [include-book] sets the cbd to be the directory string of the
+  [full-book-name] of the book; similarly for [ld].  Thus, if the cbd
+  is \"/usr/home/smith/\" then during the processing of [events] by
 
     (include-book \"project/task-1/arith\")
 
@@ -22586,6 +22598,7 @@ Usage
     * (LET ((v1 t1) ...) dcl ... dcl body)
     * (MV-LET (v1 ...) term dcl ... dcl body)
     * (FLET ((name args dcl ... dcl body) ...))
+    * (MACROLET ((name args dcl ... dcl body) ...))
 
   Each of the cases above permits certain declarations, as follows.
 
@@ -22594,6 +22607,7 @@ Usage
     * LET: (ignore ignorable type)
     * MV-LET: (ignore ignorable type)
     * FLET: (ignore ignorable type)
+    * MACROLET: (ignore ignorable type)
 
   Of course, declarations are permitted in macro calls to the extent
   that they are permitted in the macroexpansions.  For example,
@@ -30751,7 +30765,7 @@ SYNTAX
   replacement of a stobj by a stobj that is congruent to it.
 
   It is illegal for a loop$ expression to be in the scope of function
-  bindings of an [flet] expression.
+  bindings of an [flet] or [macrolet] expression.
 
   As noted above, the measure, body, and FINALLY clauses of a DO loop$
   must be fully [badge]d.
@@ -37472,6 +37486,8 @@ Subtopics
   (BASICS ACL2-BUILT-INS)
   "Local binding of function symbols
 
+  See [macrolet] for an analogous utility for defining macros locally.
+
     Example Form:
     ; The following evaluates to (mv 7 10):
     (flet ((f (x)
@@ -37497,10 +37513,11 @@ Subtopics
   Lisp compiler.  The declarations are otherwise ignored by ACL2, so
   we mainly ignore them in the discussion below.
 
-  The innermost flet-binding of a function symbol, f, above a call of
-  f, is the one that provides the definition of f for that call.
-  Note that flet does not provide recursion.  Consider the following
-  example.
+  The innermost flet or [macrolet] binding of a symbol, f, above a call
+  of f, is the one that provides the definition of f for that call.
+  Note that neither flet nor macrolet provide recursion: that is, the
+  definition of f in an flet or macrolet binding of f is ignored in
+  the body of that binding.  Consider the following example.
 
     ; Give a global definition of f:
     (defun f (x) (+ x 3))
@@ -42312,7 +42329,14 @@ Subtopics
     (defun big-test (x y z)
       (declare (type (signed-byte 28) x y z))
       (imin (i+ x y)
-            (i+ y (imin x z))))")
+            (i+ y (imin x z))))
+
+  7. You may want to set environment variable GCL_MEM_MULTIPLE when
+  running regression tests using ACL2 built on GCL, to keep memory
+  from exceeding what is available.  Consider dividing 1.0 by the
+  number of threads; so for example, for 4 threads (i.e., using ``-j
+  4'' in your make command), you may want to specify
+  GCL_MEM_MULTIPLE=0.25.")
  (GCS (POINTERS)
       "See [get-command-sequence].")
  (GENERALIZE
@@ -55814,14 +55838,10 @@ Subtopics
   discussed below).  ACL2 does not support the Common Lisp type
   [pathname]; rather, the underlying host Lisp will interpret the
   given string as a pathname.  If the string represents a relative
-  pathname, the host Lisp will generally interpret that with respect
-  to the directory where your ACL2 executable was invoked.  If you
-  want to avoid depending on Lisp to interpret a relative pathname,
-  use an absolute pathname, for example by concatenating ([cbd]) with
-  the relative pathname.  (A fancy way to do such concatenation is
-  with (extend-pathname dir file-name state), where dir is the
-  appropriate directory, possibly (cbd).  See [extend-pathname] and
-  see [cbd].))
+  pathname, it will be elaborated to a full pathname using the
+  connected book directory; see [cbd].  You can do that elaboration
+  yourself with a directory dir using (extend-pathname dir file-name
+  state); see [extend-pathname].
 
   For the file-name argument of the output-related functions listed
   below, ACL2 supports a special value, :STRING.  For this value, the
@@ -62750,6 +62770,109 @@ Subtopics
 
   Also see [toggle-pc-macro] for how to change a macro command to an
   atomic macro command, and vice versa.")
+ (MACROLET
+  (BASICS ACL2-BUILT-INS)
+  "Local binding of macro symbols
+
+  See [flet] for an analogous utility for defining functions locally.
+
+    Example Form:
+    (defun f1 (x)
+      (macrolet ((mac (a) (list 'quote a)))
+        (cons x (mac x))))
+
+  The Example Form above is equivalent to the following, in which the
+  call of local macro mac has been expanded.
+
+    (defun f1-alt (x)
+      (cons x (quote x)))
+
+  The General Forms are similar to those of [flet].
+
+    General Forms:
+    (macrolet (def1 ... defk) body)
+    (macrolet (def1 ... defk) declare-form1 .. declare-formk body)
+
+  where body is a term, and each defi is a definition as in [defmacro]
+  but with the leading defmacro symbol omitted.  See [defmacro], but
+  see [declare] for the declarations permitted directly under the
+  defi.  On the other hand, regarding the declare-formi (if any are
+  supplied): each must be of the form (declare decl1 ... decln),
+  where each decli is of the form (inline g1 ... gm) or (notinline g1
+  ... gm), and each gi is defined by some defi.  Unlike the related
+  utility [flet], those inline and notinline declarations are
+  unlikely to have any effect.
+
+  The innermost [flet] or macrolet binding of a symbol, f, above a call
+  of f, is the one that provides the definition of f for that call.
+  Note that neither flet nor macrolet provide recursion: that is, the
+  definition of f in an flet or macrolet binding of f is ignored in
+  the body of that binding.
+
+  The following requirements are imposed by Common Lisp and enforced by
+  ACL2.
+
+    * Every variable occurring in the body of a defi must be a formal
+      parameter name of that defi.
+    * No function or macro symbol called in the body of a defi may be
+      defined by a superior flet or macrolet binding.  (Not every
+      Common Lisp implementation includes this restriction for
+      superior macrolet bindings, but at least one (GCL) does so we
+      include it in ACL2.)
+
+  Although macrolet behaves in ACL2 essentially as it does in Common
+  Lisp, ACL2 imposes the following restrictions and qualifications.
+
+    * Every [declare] form for a local definition (def1 through defk,
+      above) must be an ignore, ignorable, or type expression.
+    * Each defi must bind a different symbol.
+    * Each defi must bind a symbol that is a legal name for an ACL2 macro.
+      In particular, the symbol may not be in the keyword package or
+      the main Lisp package.  Moreover, the symbol may not be a
+      built-in ACL2 function or macro.
+
+  Macrolet bindings are evaluated in parallel.  Consider the following
+  example.
+
+    (defun f1 (x) (cons x 'x))
+    (macrolet ((f1 (x) x)
+               (f2 () (list 'quote
+    ; The following reference is to the global f1,
+    ; not to the identity macro just above.
+                            (f1 3))))
+      (f2))
+
+  The macrolet form above evaluates to (3 . x), not to 3, as explained
+  in the comment above.  Here is a somewhat analogous form that one
+  might expect to evaluate to 3, but that is not the case; see below.
+
+    (macrolet ((f1 (x) x))
+      (macrolet ((f2 () (list 'quote (f1 3))))
+        (f2)))
+
+  The body of f2 calls a symbol, f1, that is bound by a superior
+  macrolet binding.  As noted above, this is illegal (also for
+  superior flet bindings).
+
+  Under the hood, ACL2 expands away macrolet bindings.  The following
+  example illustrates this point.
+
+    ACL2 !>:trans (macrolet ((mac (a) (list 'cons a a)))
+                    (car (mac b)))
+
+    (CAR (CONS B B))
+
+    => *
+
+    ACL2 !>
+
+  Macrolet is part of Common Lisp.  See any Common Lisp documentation
+  for more information.  We conclude by pointing out an important
+  aspect of macrolet shared by ACL2 and Common Lisp: The binding is
+  lexical, not dynamic.  That is, the macrolet binding of a symbol
+  only applies to calls of that symbol in the body of the macrolet,
+  not other calls made in the course of evaluation.  See [flet] for
+  discussion of this point.")
  (MACROS
   (ACL2)
   "Macros allow you to extend the syntax of ACL2.
@@ -92070,6 +92193,18 @@ Experimental Versions
 
 Changes to Existing Features
 
+  The connected book directory (that is, the [cbd]) now elaborates
+  relative [pathname]s to absolute pathnames not only for book
+  operations, but for all file operations.  For example,
+  (open-input-channel \"foo\" :character state) now interprets filename
+  \"foo\" relative to the cbd, where formerly it was generally
+  interpreted relative to the directory in which ACL2 was invoked.
+  (Technical note: ACL2 accomplishes the new behavior by arranging
+  that [set-cbd] modifies not only the cbd but also the Lisp global,
+  *default-pathname-defaults*.)  Thanks to Alessandro Coglio, Eric
+  McCarthy, and Eric Smith for suggesting consideration of such a
+  change and for helpful discussions.
+
   The function hons-enabledp is no longer defined, and :hons has been
   removed from the Lisp global, *features* (so, readtime conditionals
   #+hons and #-hons should be avoided, especially since #+hons is
@@ -92216,6 +92351,10 @@ New Features
                             (+ 1 (acl2-count (car x))
                                (acl2-count (cdr x)))))
             :rule-classes :linear)
+
+  The Common Lisp utility, [macrolet], is now supported in ACL2.
+  Thanks to Alessandro Coglio for discussion leading us to make this
+  addition.  See [macrolet].
 
 
 Heuristic and Efficiency Improvements
@@ -96038,10 +96177,11 @@ Implementation
   character / is used to terminate directory names.  Some file names
   are ``absolute'' (complete) descriptions of a file or directory;
   others are ``relative'' to the current working directory or to the
-  connected book directory (see [cbd]).  We emphasize that even for
-  users of Windows-based systems or Macintosh computers, ACL2 file
-  names are in the Unix style.  We will call these ACL2 pathnames,
-  often omitting the ``ACL2.''
+  connected book directory.  See [cbd] for how relative pathnames are
+  elaborated to absolute pathnames.  We emphasize that even for users
+  of Windows-based systems or Macintosh computers, ACL2 file names
+  are in the Unix style.  We will call these ACL2 pathnames, often
+  omitting the ``ACL2.''
 
   Pathnames starting with the directory separator (/) or the tilde
   character (~) are absolute pathnames.  All other pathnames are
@@ -108417,11 +108557,11 @@ Subtopics
   trust tag; see [defttag].  If a key is associated with the value
   nil, then that key is treated as though it were not in the table.
 
-  Note that keys of this table are not eligible to be bound by [flet].
-  The current value of this table may be obtained by evaluating the
-  form (table-alist 'return-last-table (w state)).  The built-in
-  constant *initial-return-last-table* holds the initial value of
-  this table.")
+  Note that keys of this table are not eligible to be bound by [flet]
+  or [macrolet].  The current value of this table may be obtained by
+  evaluating the form (table-alist 'return-last-table (w state)).
+  The built-in constant *initial-return-last-table* holds the initial
+  value of this table.")
  (REVAPPEND
   (LISTS ACL2-BUILT-INS)
   "Concatenate the [reverse] of one list to another
@@ -112487,11 +112627,11 @@ Subtopics
 
   where str is a nonempty string that represents the desired directory
   (see [pathname]).  This command sets the connected book directory
-  (see [cbd]) to the string representing the indicated directory.
+  to the string representing the indicated directory; see [cbd].
   Thus, this command may determine which files are processed by
   [include-book] and [certify-book] [command]s typed at the
-  top-level.  However, the [cbd] is also temporarily set by those two
-  book processing [command]s.
+  top-level, as well as by file operations such as
+  [open-input-channel].
 
   IMPORTANT: Pathnames in ACL2 are in the Unix (trademark of AT&T)
   style.  That is, the character ``/'' separates directory components
