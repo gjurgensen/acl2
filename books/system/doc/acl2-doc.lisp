@@ -13225,7 +13225,9 @@ with any questions about building the community books.</p>")
 
 ; Before October 2022 this topic ended with the following note.  But we have
 ; decided that it's potentially distracting, so we have relegated it to a
-; comment.
+; comment.  It's a bit obsolete anyhow; starting 11/22/2022 we arrange that
+; Lisp global *default-pathname-defaults* tracks the cbd, and the sentence
+; starting with "In some host Common Lisps" can probably be strengthened.
 
 #|
  <p><i>Technical Note and a Challenge to Users:</i></p>
@@ -13277,20 +13279,27 @@ with any questions about building the community books.</p>")
   \"/usr/home/smith/\"
  })
 
- <p>The connected book directory is a nonempty string that specifies a
- directory as an absolute pathname.  (See @(see pathname) for a discussion of
- file naming conventions.)  When @(tsee include-book) is given a relative
- pathname it elaborates it into a canonical absolute pathname, essentially by
- appending the connected book directory string to the left and @('\".lisp\"')
- to the right.  (For details, see @(see book-name) and also see @(see
- full-book-name).)  Similarly, @(tsee ld) elaborates relative pathnames into
- full pathnames using the connected book directory string.  (The effect of the
- @('cbd') on @('ld') carries over to utilities that invoke @('ld') as well,
- notably, @(tsee rebuild).)  Furthermore, @(tsee include-book) and @(tsee ld)
- temporarily set the connected book directory to the directory string of the
- resulting full pathname so that references to files in the same directory may
- omit the directory.  See @(see set-cbd) for how to set the connected book
- directory string.</p>
+ <p>The connected book directory (``cbd'') is a nonempty string that specifies
+ a directory as an absolute pathname.  (See @(see pathname) for a discussion of
+ file naming conventions.)  When utilities that take a filename argument, such
+ as @(tsee include-book), are given a relative pathname, it is elaborated it
+ into an absolute pathname, essentially by appending the connected book
+ directory string to the left and @('\".lisp\"') to the right.  (This absolute
+ pathname is actuallly canonical when elaborating book names.  For more details
+ on book names, see @(see book-name) and also see @(see full-book-name).)
+ Furthermore, @(tsee include-book) and @(tsee ld) temporarily set the connected
+ book directory to the directory string of the resulting full pathname so that
+ references to files in the same directory may omit the directory.  See @(see
+ set-cbd) for how to set the connected book directory string.</p>
+
+ <p>Note that the cbd is used for elaborating every @(see pathname) argument,
+ not just a pathname that represents a book.  (Technical remark: Some
+ utilities, such as @(tsee open-input-channel), use the cbd indirectly as
+ follows.  That utility uses the Common Lisp utility, @('open'), which knows
+ nothing about the cbd.  However, ACL2 arranges that the Lisp global
+ @('*default-pathname-defaults*') always has the cbd as its value, and Lisp
+ uses that global to elaborate relative pathnames much as ACL2 uses the
+ cbd.)</p>
 
  @({
   General Form:
@@ -13300,18 +13309,16 @@ with any questions about building the community books.</p>")
  <p>This is a macro that expands into a term involving the single free variable
  @(tsee state).  It returns the connected book directory string.</p>
 
- <p>The connected book directory (henceforth called the ``@('cbd')'') is used
- by @(tsee include-book) to elaborate the supplied book-name into a canonical
- absolute pathname (see @(see full-book-name)); similarly for @(tsee ld).  For
- example, if the @('cbd') is @('\"/usr/home/smith/\"') then the elaboration of
- the @(see book-name) @('\"project/task-1/arith\"') (to the @('\".lisp\"')
- extension) is @('\"/usr/home/smith/project/task-1/arith.lisp\"').  That @(see
- full-book-name) is what @(see include-book) opens to read the source text for
- the book.</p>
+ <p>For example, if the @('cbd') is @('\"/usr/home/smith/\"') then the @(see
+ book-name) @('\"project/task-1/arith\"') is elaborated using the @('cbd') to
+ the @(see full-book-name) @('\"/usr/home/smith/project/task-1/arith.lisp\"'),
+ which is what @(see include-book) opens to read the source text for the
+ book.</p>
 
- <p>The @('cbd') may be changed using @(tsee set-cbd) (see @(see set-cbd)).
- Furthermore, during the processing of the @(see events) in a book, @(tsee
- include-book) sets the @('cbd') to be the directory string of the @(see
+ <p>The @('cbd') may be changed using @(tsee set-cbd).</p>
+
+ <p>As noted above, during the processing of the @(see events) in a book,
+ @(tsee include-book) sets the @('cbd') to be the directory string of the @(see
  full-book-name) of the book; similarly for @(tsee ld).  Thus, if the @('cbd')
  is @('\"/usr/home/smith/\"') then during the processing of @(see events)
  by</p>
@@ -32246,7 +32253,7 @@ ld) and @(tsee include-book)"
  takes a directory name and a filename (a string) and returns a corresponding
  pathname for the given file that is relative to the specified directory.  If
  the filename is already an absolute pathname then the return value is that
- filename, uncchanged.</p>
+ filename, unchanged.</p>
 
  @({
  General Form:
@@ -32256,7 +32263,7 @@ ld) and @(tsee include-book)"
 
  <p>where @('dir') is either a non-empty string, representing a directory's
  pathname, or a keyword, representing a project directory (see @(see
- project-dir-alist); filename is a string representing a relative or absolute
+ project-dir-alist)); filename is a string representing a relative or absolute
  pathname; and @('state') is the ACL2 @(see state).</p>
 
  <p>The following examples flesh out the behavior of @('extend-pathname').</p>
@@ -32265,7 +32272,7 @@ ld) and @(tsee include-book)"
  Examples (comments added)
 
  ACL2 !>(extend-pathname \"~/temp\" \"foo.lisp\" state)
- ; where the user is \"bubba\" here an in the remaining examples
+ ; where the user is \"bubba\" here and in the remaining examples
  \"/home/bubba/temp/foo.lisp\"
  ACL2 !>(extend-pathname \"~/temp/\" \"foo.lisp\" state)
  ; the final / is optional for the directory name
@@ -39018,7 +39025,13 @@ current fast alists."
     (declare (type (signed-byte 28) x y z))
     (imin (i+ x y)
           (i+ y (imin x z))))
- })")
+ })
+
+ <p>7. You may want to set environment variable @('GCL_MEM_MULTIPLE') when
+ running regression tests using ACL2 built on GCL, to keep memory from
+ exceeding what is available.  Consider dividing 1.0 by the number of threads;
+ so for example, for 4 threads (i.e., using &ldquo;@('-j 4')&rdquo; in your
+ @('make') command), you may want to specify @('GCL_MEM_MULTIPLE=0.25').</p>")
 
 (defxdoc generalize
   :parents (rule-classes)
@@ -52221,14 +52234,10 @@ tables in the current Hons Space."
  <p>@('File-name') arguments are strings (except for the @(':STRING') case
  discussed below).  ACL2 does not support the Common Lisp type @(tsee
  pathname); rather, the underlying host Lisp will interpret the given string as
- a pathname.  If the string represents a relative pathname, the host Lisp will
- generally interpret that with respect to the directory where your ACL2
- executable was invoked.  If you want to avoid depending on Lisp to interpret a
- relative pathname, use an absolute pathname, for example by concatenating
- @('(')@(tsee cbd)@(')') with the relative pathname.  (A fancy way to do such
- concatenation is with @('(extend-pathname dir file-name state)'), where
- @('dir') is the appropriate directory, possibly @('(cbd)').  See @(see
- extend-pathname) and see @(see cbd).))</p>
+ a pathname.  If the string represents a relative pathname, it will be
+ elaborated to a full pathname using the connected book directory; see @(see
+ cbd).  You can do that elaboration yourself with a directory @('dir') using
+ @('(extend-pathname dir file-name state)'); see @(see extend-pathname).</p>
 
  <p>For the @('file-name') argument of the output-related functions listed
  below, ACL2 supports a special value, @(':STRING').  For this value, the
@@ -94428,6 +94437,17 @@ it."
 
  <h3>Changes to Existing Features</h3>
 
+ <p>The connected book directory (that is, the @(see cbd)) now elaborates
+ relative @(see pathname)s to absolute pathnames not only for book operations,
+ but for all file operations.  For example, @('(open-input-channel
+ \"foo\" :character state)') now interprets filename @('\"foo\"') relative to
+ the cbd, where formerly it was generally interpreted relative to the directory
+ in which ACL2 was invoked.  (Technical note: ACL2 accomplishes the new
+ behavior by arranging that @(tsee set-cbd) modifies not only the cbd but also
+ the Lisp global, @('*default-pathname-defaults*').)  Thanks to Alessandro
+ Coglio, Eric McCarthy, and Eric Smith for suggesting consideration of such a
+ change and for helpful discussions.</p>
+
  <p>The function @('hons-enabledp') is no longer defined, and @(':hons') has
  been removed from the Lisp global, @('*features*') (so, readtime conditionals
  @('#+hons') and @('#-hons') should be avoided, especially since @('#+hons') is
@@ -97392,10 +97412,11 @@ arithmetic) for libraries of @(see books) for arithmetic reasoning.</p>")
  Unix (trademark of AT&amp;T) operating system, so that the character @('/') is
  used to terminate directory names.  Some file names are ``absolute''
  (complete) descriptions of a file or directory; others are ``relative'' to the
- current working directory or to the connected book directory (see @(see cbd)).
- We emphasize that even for users of Windows-based systems or Macintosh
- computers, ACL2 file names are in the Unix style.  We will call these <i>ACL2
- pathnames</i>, often omitting the ``ACL2.''</p>
+ current working directory or to the connected book directory.  See @(see cbd)
+ for how relative pathnames are elaborated to absolute pathnames.  We emphasize
+ that even for users of Windows-based systems or Macintosh computers, ACL2 file
+ names are in the Unix style.  We will call these <i>ACL2 pathnames</i>, often
+ omitting the ``ACL2.''</p>
 
  <p>Pathnames starting with the directory separator (@('/')) or the tilde
  character (@('~')) are absolute pathnames.  All other pathnames are relative
@@ -111867,12 +111888,11 @@ arithmetic) for libraries of @(see books) for arithmetic reasoning.</p>")
  })
 
  <p>where @('str') is a nonempty string that represents the desired directory
- (see @(see pathname)).  This command sets the connected book directory (see
- @(see cbd)) to the string representing the indicated directory.  Thus, this
+ (see @(see pathname)).  This command sets the connected book directory to the
+ string representing the indicated directory; see @(see cbd).  Thus, this
  command may determine which files are processed by @(tsee include-book) and
- @(tsee certify-book) @(see command)s typed at the top-level.  However, the
- @(tsee cbd) is also temporarily set by those two book processing @(see
- command)s.</p>
+ @(tsee certify-book) @(see command)s typed at the top-level, as well as by
+ file operations such as @(tsee open-input-channel).</p>
 
  <p>IMPORTANT: Pathnames in ACL2 are in the Unix (trademark of AT&amp;T) style.
  That is, the character ``@('/')'' separates directory components of a
