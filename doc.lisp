@@ -35728,7 +35728,7 @@ Subtopics
   name and a filename (a string) and returns a corresponding pathname
   for the given file that is relative to the specified directory.  If
   the filename is already an absolute pathname then the return value
-  is that filename, uncchanged.
+  is that filename, unchanged.
 
     General Form:
 
@@ -35736,7 +35736,7 @@ Subtopics
 
   where dir is either a non-empty string, representing a directory's
   pathname, or a keyword, representing a project directory (see
-  [project-dir-alist]; filename is a string representing a relative
+  [project-dir-alist]); filename is a string representing a relative
   or absolute pathname; and state is the ACL2 [state].
 
   The following examples flesh out the behavior of extend-pathname.
@@ -35744,7 +35744,7 @@ Subtopics
     Examples (comments added)
 
     ACL2 !>(extend-pathname \"~/temp\" \"foo.lisp\" state)
-    ; where the user is \"bubba\" here an in the remaining examples
+    ; where the user is \"bubba\" here and in the remaining examples
     \"/home/bubba/temp/foo.lisp\"
     ACL2 !>(extend-pathname \"~/temp/\" \"foo.lisp\" state)
     ; the final / is optional for the directory name
