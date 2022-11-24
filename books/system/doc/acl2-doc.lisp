@@ -94414,6 +94414,10 @@ it."
 ; package (generally, "COMMON-LISP").  Thanks to Eric Smith for a query leading
 ; to this improvement.
 
+; Dropped an unnecessary true-listp check from the definition of pseudo-termp,
+; following suggestion from Eric Smith.  Added lemma pseudo-termp-consp-forward
+; to prevent some existing proofs from then failing.
+
   :parents (release-notes)
   :short "ACL2 Version  8.6 (xxx, 20xx) Notes"
   :long "<p>NOTE!  New users can ignore these release notes, because the @(see
