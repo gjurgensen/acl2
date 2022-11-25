@@ -92271,6 +92271,12 @@ Changes to Existing Features
   those, such as +.  Thanks to Eric Smith for pointing out odd output
   for examples like :pr binary-+.
 
+  The definition of [pseudo-termp] has been simplified by dropping a
+  superfluous [true-listp] check.  Thanks for the suggestion from
+  Eric Smith.  A new lemma, pseudo-termp-consp-forward, has been
+  added to prevent some existing proofs from failing due to the
+  change.
+
 
 New Features
 
