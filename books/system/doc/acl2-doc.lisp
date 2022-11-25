@@ -94530,6 +94530,11 @@ it."
  Smith.  A new lemma, @('pseudo-termp-consp-forward'), has been added to
  prevent some existing proofs from failing due to the change.</p>
 
+ <p>The failure message regarding @(see useless-runes) (see @(see
+ useless-runes-failures)) has been restricted to the case that a proof was
+ attempted by the event (though there may be rare exceptions).  Thanks to Eric
+ Smith for requesting such a change.</p>
+
  <h3>New Features</h3>
 
  <p>The new zero-ary attachable system function, @('heavy-linear-p'), allows
@@ -132485,20 +132490,16 @@ introduction-to-the-tau-system) for more information about Tau.</dd>
   :long "<p>When an event fails you may see the following message:</p>
 
  @({
- *NOTE*: Useless-runes may have taken part in failed proofs.  See :DOC
- useless-runes-failures.
+ *NOTE*: Useless-runes were in use and can affect proof attempts.  See
+ :DOC useless-runes-failures.
  })
 
- <p>This message is printed as part of any @(see event) @(see failure) message
- when a @(see useless-runes) file is being consulted, which is the default when
- using build system tools (see @(see books-certification) and @(see
+ <p>This message may be printed after the usual failure message when a @(see
+ useless-runes) file has been consulted during proofs, as is usually the case
+ when using build system tools (see @(see books-certification) and @(see
  build::cert.pl)).  It is intended to suggest that you consider removing or
  regenerating the associated @(see useless-runes) file in the situation
  described below.</p>
-
- <p>(Remark.  We hope that this message reduces confusion when a proof fails.
- But if the event failure isn't from a failed proof attempt, please disregard
- the @('*NOTE*') above and this documentation!)</p>
 
  <p>Suppose that you have developed a book &mdash; say, @('foo.lisp') &mdash;
  and placed it into the @(see community-books).  Then @(see regression) runs
@@ -132510,8 +132511,9 @@ introduction-to-the-tau-system) for more information about Tau.</dd>
  unsettling!</p>
 
  <p>In that case, what is probably happening is that the @(see useless-runes)
- file is no longer suitable.  You could simply remove it from the GitHub
- repository as follows (followed by the usual actions to update the
+ file is no longer suitable.  If you are a contributor to the ``ACL2 System and
+ Community Books'' GitHub project (see @(see git-quick-start)), you can update
+ repository as follows (followed by the usual actions when updating the
  repository).</p>
 
  @({

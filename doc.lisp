@@ -92277,6 +92277,11 @@ Changes to Existing Features
   added to prevent some existing proofs from failing due to the
   change.
 
+  The failure message regarding [useless-runes] (see
+  [useless-runes-failures]) has been restricted to the case that a
+  proof was attempted by the event (though there may be rare
+  exceptions).  Thanks to Eric Smith for requesting such a change.
+
 
 New Features
 
@@ -133096,19 +133101,15 @@ Subtopics
 
   When an event fails you may see the following message:
 
-    *NOTE*: Useless-runes may have taken part in failed proofs.  See :DOC
-    useless-runes-failures.
+    *NOTE*: Useless-runes were in use and can affect proof attempts.  See
+    :DOC useless-runes-failures.
 
-  This message is printed as part of any [event] [failure] message when
-  a [useless-runes] file is being consulted, which is the default
-  when using build system tools (see [books-certification] and
-  [build::cert.pl]).  It is intended to suggest that you consider
-  removing or regenerating the associated [useless-runes] file in the
-  situation described below.
-
-  (Remark.  We hope that this message reduces confusion when a proof
-  fails.  But if the event failure isn't from a failed proof attempt,
-  please disregard the *NOTE* above and this documentation!)
+  This message may be printed after the usual failure message when a
+  [useless-runes] file has been consulted during proofs, as is
+  usually the case when using build system tools (see
+  [books-certification] and [build::cert.pl]).  It is intended to
+  suggest that you consider removing or regenerating the associated
+  [useless-runes] file in the situation described below.
 
   Suppose that you have developed a book --- say, foo.lisp --- and
   placed it into the [community-books].  Then [regression] runs may
@@ -133120,9 +133121,10 @@ Subtopics
   foo.lisp.  This could be unsettling!
 
   In that case, what is probably happening is that the [useless-runes]
-  file is no longer suitable.  You could simply remove it from the
-  GitHub repository as follows (followed by the usual actions to
-  update the repository).
+  file is no longer suitable.  If you are a contributor to the ``ACL2
+  System and Community Books'' GitHub project (see
+  [git-quick-start]), you can update repository as follows (followed
+  by the usual actions when updating the repository).
 
     git rm .sys/foo@useless-runes.lsp
 
