@@ -13619,7 +13619,7 @@ with any questions about building the community books.</p>")
 
   :parents (ccl-installation)
   :short "Installing Clozure Common Lisp (CCL) on Linux (brief version)"
-  :long "<p><b>NOTE</b>See <a
+  :long "<p><b>NOTE:</b> See <a
  href='https://github.com/Clozure/ccl/releases/'>the Clozure CL releases
  page</a> for the latest information, which may supersede some of what is
  included below.</p>
@@ -13680,7 +13680,7 @@ with any questions about building the community books.</p>")
 
   :parents (ccl-installation)
   :short "Installing Clozure Common Lisp (CCL) on Linux (elaborate version)"
-  :long "<p><b>NOTE</b>See <a
+  :long "<p><b>NOTE:</b> See <a
  href='https://github.com/Clozure/ccl/releases/'>the Clozure CL releases
  page</a> for the latest information, which may supersede some of what is
  included below.</p>
@@ -13760,7 +13760,7 @@ with any questions about building the community books.</p>")
 
   :parents (ccl-installation)
   :short "Installing Clozure Common Lisp (CCL) on Mac (brief version)"
-  :long "<p><b>NOTE</b>See <a
+  :long "<p><b>NOTE:</b> See <a
  href='https://github.com/Clozure/ccl/releases/'>the Clozure CL releases
  page</a> for the latest information, which may supersede some of what is
  included below.</p>
@@ -13826,7 +13826,7 @@ with any questions about building the community books.</p>")
 
   :parents (ccl-installation)
   :short "Installing Clozure Common Lisp (CCL) on Mac (elaborate version)"
-  :long "<p><b>NOTE</b>See <a
+  :long "<p><b>NOTE:</b> See <a
  href='https://github.com/Clozure/ccl/releases/'>the Clozure CL releases
  page</a> for the latest information, which may supersede some of what is
  included below.</p>
