@@ -94713,6 +94713,21 @@ it."
 
  </ul>
 
+ <p>Fixed a low-level bug in source function
+ @('translate-declaration-to-guard1-gen') that was incorrectly creating
+ untranslated @(see term)s in some cases from @(see type) declarations of the
+ form @('(type (signed-byte _) _)') or @('(type (unsigned-byte _) _)').  Here
+ is an example of an event that is rejected without the bug fix.</p>
+
+ @({
+ (defun foo (n)
+   (apply$ (lambda$ (x)
+                    (declare (type (signed-byte 8) x)
+                             (xargs :guard (signed-byte-p 8 x) :split-types t))
+                    (+ 3 x))
+           (nfix n)))
+ })
+
  <h3>Changes at the System Level</h3>
 
  <p>The `@('make')' target, @('save-exec'), now builds @('custom-saved_acl2')

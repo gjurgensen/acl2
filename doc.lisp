@@ -92469,6 +92469,19 @@ Bug Fixes
       value tested, in expressions (loop$ for i from lo to hi by inc
       ...).
 
+  Fixed a low-level bug in source function
+  translate-declaration-to-guard1-gen that was incorrectly creating
+  untranslated [term]s in some cases from [type] declarations of the
+  form (type (signed-byte _) _) or (type (unsigned-byte _) _).  Here
+  is an example of an event that is rejected without the bug fix.
+
+    (defun foo (n)
+      (apply$ (lambda$ (x)
+                       (declare (type (signed-byte 8) x)
+                                (xargs :guard (signed-byte-p 8 x) :split-types t))
+                       (+ 3 x))
+              (nfix n)))
+
 
 Changes at the System Level
 
