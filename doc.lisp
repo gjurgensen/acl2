@@ -16509,7 +16509,7 @@ configure-ccl.lisp
   (CCL-INSTALLATION)
   "Installing Clozure Common Lisp (CCL) on Linux (brief version)
 
-  NOTESee {the Clozure CL releases page |
+  NOTE: See {the Clozure CL releases page |
   https://github.com/Clozure/ccl/releases/} for the latest
   information, which may supersede some of what is included below.
 
@@ -16556,7 +16556,7 @@ configure-ccl.lisp
   (CCL-INSTALLATION)
   "Installing Clozure Common Lisp (CCL) on Linux (elaborate version)
 
-  NOTESee {the Clozure CL releases page |
+  NOTE: See {the Clozure CL releases page |
   https://github.com/Clozure/ccl/releases/} for the latest
   information, which may supersede some of what is included below.
 
@@ -16622,7 +16622,7 @@ configure-ccl.lisp
   (CCL-INSTALLATION)
   "Installing Clozure Common Lisp (CCL) on Mac (brief version)
 
-  NOTESee {the Clozure CL releases page |
+  NOTE: See {the Clozure CL releases page |
   https://github.com/Clozure/ccl/releases/} for the latest
   information, which may supersede some of what is included below.
 
@@ -16673,7 +16673,7 @@ configure-ccl.lisp
   (CCL-INSTALLATION)
   "Installing Clozure Common Lisp (CCL) on Mac (elaborate version)
 
-  NOTESee {the Clozure CL releases page |
+  NOTE: See {the Clozure CL releases page |
   https://github.com/Clozure/ccl/releases/} for the latest
   information, which may supersede some of what is included below.
 
