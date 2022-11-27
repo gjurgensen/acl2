@@ -94443,6 +94443,10 @@ it."
 ; package (generally, "COMMON-LISP").  Thanks to Eric Smith for a query leading
 ; to this improvement.
 
+; Replaced most of the SBCL instructions at installation/requirements.html with
+; new topic, :DOC sbcl-installation.  Thanks to David Russinoff for helpful
+; suggestions and to Eric Smith for the idea of making such a :DOC topic.
+
   :parents (release-notes)
   :short "ACL2 Version  8.6 (xxx, 20xx) Notes"
   :long "<p>NOTE!  New users can ignore these release notes, because the @(see
@@ -111295,6 +111299,137 @@ arithmetic) for libraries of @(see books) for arithmetic reasoning.</p>")
  <p>WARNING: It is a good idea to look at the log file noted in the `@('make')'
  output, to check that your customization file loaded as intended (presumably,
  without errors).</p>")
+
+(defxdoc sbcl-installation
+
+; This :DOC topic replaces what was in the section on "Obtaining SBCL" in ACL2
+; file installation/requirements.html.  That material contained some
+; information that is probably now obsolete.  Here is that material, in case
+; some of it turns out to be useful down the road.
+
+#|
+
+ <P><B><A NAME="Obtaining-SBCL">Obtaining SBCL</A></B></P>
+
+ <p>SBCL (Steel Bank Common Lisp) is a non-commercial Common Lisp
+ implementation, available
+ from <code><a href="http://sbcl.sourceforge.net/">http://sbcl.sourceforge.net/</a></code>.
+ You may be able to download a suitable binary distribution from that
+ website, but for some of the older versions (such as 1.2.11, which as
+ of August 2021 has been the latest binary available for MacOS from
+ that website for some years), you will not be able to certify some of
+ the community books.  If you download a binary, you can check that the
+ form <code>(member :sb-thread *features*)</code> evaluates to a value
+ other than <code>NIL</code>.  To avoid this issue you can build from
+ source, following instructions from the <code>INSTALL</code> file of
+ the SBCL distribution using this command:</p>
+
+ <pre>
+ sh make.sh --with-sb-thread
+ </pre>
+
+ <p>If you try to run large jobs using ACL2 built on SBCL (version
+   1.2.11 or later), such as building the ACL2+books combined manual,
+   you may fail with an error, "Immobile space exhausted".  We have
+   avoided this error by building SBCL from source rather than
+   obtaining a binary, using options as follows.  (Note: The use of
+   "--with-sb-thread" hasn't generally been necessary, but we have
+   seen the need for it when building on FreeBSD.)</p>
+
+ <pre>
+ sh make.sh --without-immobile-space --without-immobile-code --without-compact-instance-header --with-sb-thread
+ </pre>
+
+ <p>Rather comparable test runs produced a significant speed-up when
+ building with the options above, as shown by the following results
+ when using the "time" command for such runs.</p>
+
+ <pre>
+ ;;; before using the options above in the build
+ 85597.939u 1357.892s 3:27:15.73 699.2%  0+0k 1677680+7635408io 607pf+0w
+
+ ;;; after using the options above in the build
+ 72693.740u 1565.148s 2:58:36.10 692.9%  0+0k 3778176+7630768io 1250pf+0w
+ </pre>
+
+ <p><i>Creating an SBCL executable</i></p>
+
+ <p>If you build SBCL from source as discussed above, you can make an
+   SBCL executable by creating an executable file on your path, as
+   follows.  Note that the option <code>--dynamic-space-size
+   2000</code> may be necessary so that there is sufficient heap memory
+   to build ACL2.</p>
+
+ <pre>
+ #!/bin/sh
+ &lt;sbcl-dir-path&gt;/run-sbcl.sh --dynamic-space-size 2000 "$@"
+ </pre>
+
+ <p><i>Further troubleshooting with SBCL</i></p>
+
+ <p>We have seen the error, "An mprotect call failed with ENOMEM."
+ This error has been observed to have disappeared in SBCL 2.1.11
+ (perhaps simply because of a change to the books in a github version
+ of ACL2 in Fall 2021).  Before that, a solution was to rebuild the
+ SBCL executable after editing the SBCL source
+ file <code>src/compiler/x86-64/parms.lisp</code>, replacing the
+ line<br/>
+ <code>(defconstant gencgc-card-bytes +backend-page-bytes+)</code><br/>
+ by the following line.<br/>
+ <code>(defconstant gencgc-card-bytes (* 2 +backend-page-bytes+))</code></p>
+
+|#
+
+  :parents (building-acl2)
+  :short "Installing Steel Bank Common Lisp (SBCL)"
+  :long "<p>SBCL is available from <tt><a
+ href='https://www.sbcl.org'>https://www.sbcl.org</a></tt>.  You can of course
+ go to that website to find download and installation instructions for SBCL,
+ but here is a concise summary that includes build options appropriate for
+ ACL2.</p>
+
+ <ol>
+
+ <li>Download SBCL from <tt><a
+ href='https://www.sbcl.org'>https://www.sbcl.org</a></tt>.  A shortcut may be
+ to follow the &ldquo;<b>Source</b>&rdquo; link near the top of the page,
+ <tt><a
+ href='https://www.sbcl.org/platform-table.html'>https://www.sbcl.org/platform-table.html</a></tt>.</li>
+
+ <li>The downloaded file will have a name like
+ &ldquo;@('sbcl-2.2.10-source.tar.bz2')&rdquo;, where &ldquo;@('2.2.10')&rdquo;
+ is replaced by the current SBCL version.  Change to a directory just above
+ where you want SBCL to reside and move the downloaded file there.</li>
+
+ <li>Extract the downloaded file (where it now resides), for example as follows
+ (again, where &ldquo;@('2.2.10')&rdquo; is replaced by the current SBCL
+ version number).
+
+ @({
+ tar xfj sbcl-2.2.10-source.tar.bz2
+ })</li>
+
+ <li>Change to the new directory and build SBCL with options appropriate for
+ ACL2, as follows (again, replacing &ldquo;@('2.2.10')&rdquo; as appropriate).
+
+ @({
+ cd sbcl-2.2.10
+ sh make.sh --without-immobile-space --without-immobile-code --without-compact-instance-header
+ })</li>
+
+ <li>Create a script file in a directory that is on your path (or, if you are
+ updating your sbcl, just replace your current sbcl script; you can find its
+ location by executing the command, &ldquo;@('which sbcl')&rdquo;).  If you are
+ in directory @('<DIR>') from the preceding step (e.g., a path ending in
+ &ldquo;@('sbcl-2.2.10')&rdquo;), then that script file should contain the
+ following lines.
+
+ @({
+ #!/bin/sh
+ <DIR>/run-sbcl.sh --dynamic-space-size 2000 \"$@\"
+ })</li>
+
+ </ol>")
 
 (defxdoc scion
   :parents (apply$)
