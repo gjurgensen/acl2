@@ -77,7 +77,7 @@ Subtopics
   [defthm], [in-theory], [xargs], [state], etc., without an acl2::
   prefix.
 
-  The constant *acl2-exports* lists 1571 symbols, including most
+  The constant *acl2-exports* lists 1576 symbols, including most
   documented ACL2 system constants, functions, and macros.  You will
   typically also want to import many symbols from Common Lisp; see
   [*common-lisp-symbols-from-main-lisp-package*].
@@ -297,7 +297,7 @@ Subtopics
        explode-nonnegative-integer expt
        expt-type-prescription-non-zero-base
        extend-32-bit-integer-stack
-       extend-pe-table
+       extend-pathname extend-pe-table
        extend-t-stack extend-world
        extra-info f-boundp-global f-get-global
        f-put-global fast-alist-clean
@@ -386,7 +386,8 @@ Subtopics
        keywordp keywordp-forward-to-symbolp
        known-package-alist known-package-alistp
        known-package-alistp-forward-to-true-list-listp-and-alistp
-       kwote kwote-lst l< lambda lambda$ last
+       kwote kwote-lst
+       l< lambda lambda$ last last-cdr
        last-prover-steps ld ld-error-action
        ld-error-triples ld-evisc-tuple
        ld-history ld-history-entry-error-flg
@@ -414,8 +415,8 @@ Subtopics
        logorc1 logorc2 logtest logxor loop$
        lower-case-p lower-case-p-char-downcase
        lower-case-p-forward-to-alpha-char-p
-       lowest-terms lp
-       macro-aliases macro-args magic-ev-fncall
+       lowest-terms lp macro-aliases
+       macro-args macrolet magic-ev-fncall
        main-timer main-timer-type-prescription
        make make-character-list
        make-character-list-make-character-list
@@ -725,8 +726,9 @@ Subtopics
        tau-interval-lo tau-interval-lo-rel
        tau-intervalp tau-status tau-system tc
        tca tcp tenth term-list-listp term-listp
-       term-order termination-theorem termp
-       the the-check the-fixnum the-fixnum!
+       term-order termination-theorem
+       termp the the-check the-fixnum
+       the-fixnum! the-number the-true-list
        theory theory-invariant thereis$
        thereis$+ third thm time$ time-tracker
        time-tracker-tau timer-alistp
@@ -3356,6 +3358,9 @@ Subtopics
   [Expt]
       Exponential function
 
+  [Extend-pathname]
+      Extend a relative pathname to an absolute pathname
+
   [F-boundp-global]
       Check whether a global variable in [state] has a value
 
@@ -3635,6 +3640,9 @@ Subtopics
   [Last]
       The last [cons] (not element) of a list
 
+  [Last-cdr]
+      The last [cdr] of a list
+
   [Last-prover-steps]
       The number of prover steps most recently taken
 
@@ -3732,6 +3740,9 @@ Subtopics
 
   [Lower-case-p]
       Recognizer for lower case characters
+
+  [Macrolet]
+      Local binding of macro symbols
 
   [Make]
       Constructor macro for [defrec] structures.
@@ -4261,6 +4272,12 @@ Subtopics
       frequently) to carry out a low-level run-time type checks.
       (Advanced)
 
+  [The-number]
+      Coerce an expected number to a number
+
+  [The-true-list]
+      Coerce an expected true list to a true list
+
   [Third]
       Third member of the list
 
@@ -4269,6 +4286,9 @@ Subtopics
 
   [Time-tracker]
       Display time spent during specified evaluation
+
+  [True-list-fix]
+      Coerce to a true list
 
   [True-list-listp]
       Recognizer for true (proper) lists of true lists
@@ -6058,8 +6078,8 @@ Subtopics
     (add-include-book-dir :util \"utilities\")
 
     ; For (include-book \"lib/floor-mod/top\" :dir :arith), prepend to
-    ; \"lib/floor-mod/top\" the community books directory pathname string
-    ; \"arithmetic-5/lib/floor-mod/top/\"
+    ; \"lib/floor-mod/top\" the string \"<dir>/arithmetic-5/\" where \"<dir>\"
+    ; is the community books directory pathname string:
     (add-include-book-dir :arith (:system . \"arithmetic-5\"))
 
   Note: This is an event!  It does not print the usual event [summary]
@@ -6592,7 +6612,8 @@ Programming and evaluation idioms, support, utilities
     * See [ec-call] to execute a call in the ACL2 logic instead of raw
       Lisp.
     * See [er] to print an error message and ``cause an error''.
-    * See [flet] to provide local binding of function symbols.
+    * See [flet] and [macrolet] to provide local binding of function and
+      macro names.
     * See [gc$] to invoke the garbage collector.
     * See [mbe] to attach code for execution.
     * See [mv-list] to convert a [multiple-value] result to a single-value
@@ -10418,6 +10439,23 @@ Subtopics
                  ((string-equal str (car (car alist)))
                   (car alist))
                  (t (assoc-string-equal str (cdr alist)))))")
+ (ASSUME-TRUE-FALSE-AGGRESSIVE-P
+  (REWRITE SYSTEM-ATTACHMENTS)
+  "Control rewriter's use of the [type-alist] with IF calls
+
+  This topic concerns an advanced control for the ACL2 prover.
+
+  This zero-ary attachable system function controls the rewriter's use
+  of the [type-alist] when diving into calls of IF.  By default, when
+  ACL2 rewrites what amounts to (if (or test1 test2) (if test1 _ x)
+  _), the type-alist will fail to note that test2 is true when
+  rewriting x.  Attach the function constant-t-function-arity-0 to
+  strengthen the use of the type-alist so that test2 is instead noted
+  as true in that case.  Note that this strengthening may slow down
+  ACL2 considerably in some cases, and should rarely if ever be
+  necessary when calling the prover; but it can be useful in
+  applications that call the rewriter directly.  Attach the function
+  constant-nil-function-arity-0 to restore the default behavior.")
  (ATOM
   (CONSES ACL2-BUILT-INS)
   "Recognizer for atoms
@@ -11014,6 +11052,9 @@ Subtopics
 
   [Let*]
       Binding of lexically scoped (local) variables
+
+  [Macrolet]
+      Local binding of macro symbols
 
   [Mv]
       Returning a multiple value
@@ -14767,20 +14808,19 @@ Subtopics
   question, you would usually :eval the rule and if break-rewrite
   reports that the rule failed then you are in a position to
   determine why, for example by carefully inspecting the
-  :[type-alist] of governing assumptions or why some hypothesis of
-  the rule could not be established.
-
-  It is often the case that when you are in break-rewrite you wish to
-  change the set of [monitor]ed [rune]s.  This can be done by using
-  :[monitor] and :[unmonitor] as noted above.  For example, you might
-  want to [monitor] a certain rule, say hyp-reliever, just when it is
-  being used while attempting to apply another rule, say main-lemma.
-  Typically then you would [monitor] main-lemma at the ACL2
-  top-level, start the proof-attempt, and then in the break-rewrite
-  in which main-lemma is about to be tried, you would install a
-  [monitor] on hyp-reliever.  If during the ensuing :eval
-  hyp-reliever is broken you will know it is being used under the
-  attempt to apply main-lemma.
+  :[type-alist] and perhaps the [linear-arithmetic] :pot-list) of
+  governing assumptions or why some hypothesis of the rule could not
+  be established.</p> <p>It is often the case that when you are in
+  break-rewrite you wish to change the set of @(see monitor)ed @(see
+  rune)s.  This can be done by using @(':[monitor] and :[unmonitor]
+  as noted above.  For example, you might want to [monitor] a certain
+  rule, say hyp-reliever, just when it is being used while attempting
+  to apply another rule, say main-lemma.  Typically then you would
+  [monitor] main-lemma at the ACL2 top-level, start the
+  proof-attempt, and then in the break-rewrite in which main-lemma is
+  about to be tried, you would install a [monitor] on hyp-reliever.
+  If during the ensuing :eval hyp-reliever is broken you will know it
+  is being used under the attempt to apply main-lemma.
 
   However, once hyp-reliever is being [monitor]ed it will be
   [monitor]ed even after main-lemma has been tried.  That is, if you
@@ -14851,10 +14891,6 @@ Subtopics
   those commands, the function [disabledp] is also evaluated inside
   break-rewrite with respect to the current enabled state of the
   prover.
-
-  ACL2 users who wish to know more about break-rewrite so that they can
-  develop more convenient ways to [monitor] rules are encouraged to
-  speak to J Moore.
 
   The rest of this [documentation] discusses a few implementation
   details of break-rewrite and may not be interesting to the typical
@@ -15030,6 +15066,7 @@ Subtopics
        (assert!-stobj \"[books]/std/testing/assert-bang-stobj.lisp\")
        (b* \"[books]/std/util/bstar.lisp\")
        (bridge \"[books]/centaur/bridge/top.lisp\")
+       (oslib::argv \"[books]/oslib/catpath.lisp\")
        (build::cert.pl \"[books]/build/doc.lisp\")
        (build::cert_param \"[books]/build/doc.lisp\")
        (cgen \"[books]/acl2s/cgen/top.lisp\")
@@ -15266,6 +15303,8 @@ Subtopics
     :poly-list[+]      list of polynomials (after :eval) of a linear rule,
                          where the leading term of each is enclosed in an
                          extra set of parentheses
+    :pot-list[+]       set of polynomials governing :target,
+                         organized by maximal term
     :rewritten-rhs[+]  rewritten :rhs (after :eval) of a rewrite rule
     :rhs               right-hand side of rule's conclusion (or, in the case
                          of :rewrite-quoted-constant rules of form [2], the
@@ -15391,6 +15430,11 @@ Subtopics
                         term of each polynomial is enclosed in an extra
                         set of parentheses.
 
+    :pot-list        *  the pot-list, which is the set of polynomials
+                        that are assumed in the current context,
+                        organized by maximal term.  Each polynomial in
+                        the list is a linear-pot record.
+
     :failure-reason     some non-nil lisp object indicating why the rule
                         was not applied or else nil.  Before the rule is
                         :EVALed, (brr@ :failure-reason) is nil.  After
@@ -15462,6 +15506,10 @@ Subtopics
   (ABOUT-ACL2)
   "How to build an ACL2 executable
 
+  This topic summarizes steps for building an ACL2 executable.  For
+  more details see the {ACL2 installation page |
+  https://www.cs.utexas.edu/users/moore/acl2/current/HTML/installation/installation.html}.
+
   To build an ACL2 executable, submit the following command while
   standing in the main ACL2 directory, where <my-lisp> invokes your
   Lisp executable (default: ccl).
@@ -15482,7 +15530,10 @@ Subtopics
 Subtopics
 
   [Ccl-installation]
-      Installing Clozure Common Lisp (CCL)")
+      Installing Clozure Common Lisp (CCL)
+
+  [Sbcl-installation]
+      Installing Steel Bank Common Lisp (SBCL)")
  (BUILT-IN-CLAUSE
   (RULE-CLASSES)
   "To build a clause into the simplifier
@@ -15872,7 +15923,7 @@ Subtopics
   Notice the quotations that appear in the example above: '(:character
   foo) and 'bar.  Indeed, a case expression expands to a [cond]
   expression in which each tested form is quoted, and [eql] is used
-  as the test.
+  to test equality, as described below..
 
     General Forms:
     (case expr
@@ -15893,7 +15944,20 @@ Subtopics
       (xk val-k))
 
   where each xi is either [eqlablep] or a true list of [eqlablep]
-  objects.  The final otherwise or t case is optional.
+  objects.  The final otherwise or t case is optional; if neither is
+  present, then an equivalent expression results from adding the
+  final case (t nil)..
+
+  As suggested above, each case (xi val-i) generates an if-then-else
+  expression as follows.  If xi is a non-nil atom (i.e., xi is not
+  nil or a cons pair), then that case generates the expression (if
+  (eql expr (quote xi)) vali ...) where `...' denotes the expression
+  generated by the rest of the cases.  If however xi is a list, then
+  instead the generated expression is (if (member expr (quote xi))
+  vali ...).  The final case (t val-k) or (otherwise val-k) generates
+  nil.  Note that t and otherwise here must be in the \"ACL2\" package.
+  Also note that to compare expr with nil, you should write the case
+  as ((nil) val-i) rather than (nil val-i).
 
   Case is defined in Common Lisp.  See any Common Lisp documentation
   for more information.")
@@ -16145,21 +16209,29 @@ Subtopics
     ACL2 !>:cbd
     \"/usr/home/smith/\"
 
-  The connected book directory is a nonempty string that specifies a
-  directory as an absolute pathname.  (See [pathname] for a
-  discussion of file naming conventions.)  When [include-book] is
-  given a relative pathname it elaborates it into a canonical
-  absolute pathname, essentially by appending the connected book
-  directory string to the left and \".lisp\" to the right.  (For
-  details, see [book-name] and also see [full-book-name].)
-  Similarly, [ld] elaborates relative pathnames into full pathnames
-  using the connected book directory string.  (The effect of the cbd
-  on ld carries over to utilities that invoke ld as well, notably,
-  [rebuild].)  Furthermore, [include-book] and [ld] temporarily set
-  the connected book directory to the directory string of the
-  resulting full pathname so that references to files in the same
-  directory may omit the directory.  See [set-cbd] for how to set the
-  connected book directory string.
+  The connected book directory (``cbd'') is a nonempty string that
+  specifies a directory as an absolute pathname.  (See [pathname] for
+  a discussion of file naming conventions.)  When utilities that take
+  a filename argument, such as [include-book], are given a relative
+  pathname, it is elaborated it into an absolute pathname,
+  essentially by appending the connected book directory string to the
+  left and \".lisp\" to the right.  (This absolute pathname is
+  actuallly canonical when elaborating book names.  For more details
+  on book names, see [book-name] and also see [full-book-name].)
+  Furthermore, [include-book] and [ld] temporarily set the connected
+  book directory to the directory string of the resulting full
+  pathname so that references to files in the same directory may omit
+  the directory.  See [set-cbd] for how to set the connected book
+  directory string.
+
+  Note that the cbd is used for elaborating every [pathname] argument,
+  not just a pathname that represents a book.  (Technical remark:
+  Some utilities, such as [open-input-channel], use the cbd
+  indirectly as follows.  That utility uses the Common Lisp utility,
+  open, which knows nothing about the cbd.  However, ACL2 arranges
+  that the Lisp global *default-pathname-defaults* always has the cbd
+  as its value, and Lisp uses that global to elaborate relative
+  pathnames much as ACL2 uses the cbd.)
 
     General Form:
     (cbd)
@@ -16167,20 +16239,17 @@ Subtopics
   This is a macro that expands into a term involving the single free
   variable [state].  It returns the connected book directory string.
 
-  The connected book directory (henceforth called the ``cbd'') is used
-  by [include-book] to elaborate the supplied book-name into a
-  canonical absolute pathname (see [full-book-name]); similarly for
-  [ld].  For example, if the cbd is \"/usr/home/smith/\" then the
-  elaboration of the [book-name] \"project/task-1/arith\" (to the
-  \".lisp\" extension) is \"/usr/home/smith/project/task-1/arith.lisp\".
-  That [full-book-name] is what [include-book] opens to read the
-  source text for the book.
+  For example, if the cbd is \"/usr/home/smith/\" then the [book-name]
+  \"project/task-1/arith\" is elaborated using the cbd to the
+  [full-book-name] \"/usr/home/smith/project/task-1/arith.lisp\", which
+  is what [include-book] opens to read the source text for the book.
 
-  The cbd may be changed using [set-cbd] (see [set-cbd]).  Furthermore,
-  during the processing of the [events] in a book, [include-book]
-  sets the cbd to be the directory string of the [full-book-name] of
-  the book; similarly for [ld].  Thus, if the cbd is
-  \"/usr/home/smith/\" then during the processing of [events] by
+  The cbd may be changed using [set-cbd].
+
+  As noted above, during the processing of the [events] in a book,
+  [include-book] sets the cbd to be the directory string of the
+  [full-book-name] of the book; similarly for [ld].  Thus, if the cbd
+  is \"/usr/home/smith/\" then during the processing of [events] by
 
     (include-book \"project/task-1/arith\")
 
@@ -16222,8 +16291,9 @@ Subtopics
     * [ccl-installation-mac-elaborate]
 
   You may prefer instead to look at the {CCL Releases |
-  https://github.com/Clozure/ccl/releases} page, using links above
-  only as needed (e.g., for Linux-specific information or for
+  https://github.com/Clozure/ccl/releases} page, which has
+  potentially more up-to-date information; then you can use the links
+  above only as needed (e.g., for Linux-specific information or for
   discussion of CCL_DEFAULT_DIRECTORY).
 
   One of the links listed above should generally suffice.  But if you
@@ -16250,6 +16320,10 @@ Subtopics
  (CCL-INSTALLATION-EXTRA
   (CCL-INSTALLATION)
   "Clozure Common Lisp (CCL) installation and implementation details
+
+  NOTESee {the Clozure CL releases page |
+  https://github.com/Clozure/ccl/releases/} for the latest
+  information, which may supersede some of what is included below.
 
   This topic, contributed by Warren A. Hunt, Jr., extends the basic
   information given in [ccl-installation].  It may be useful to some,
@@ -16438,6 +16512,10 @@ configure-ccl.lisp
   (CCL-INSTALLATION)
   "Installing Clozure Common Lisp (CCL) on Linux (brief version)
 
+  NOTE: See {the Clozure CL releases page |
+  https://github.com/Clozure/ccl/releases/} for the latest
+  information, which may supersede some of what is included below.
+
   See [ccl-installation] for introductory remarks.  The instructions
   below describe how to install CCL on Linux.  For more elaborate
   ``cookbook'' instructions see [ccl-installation-linux-elaborate].
@@ -16480,6 +16558,10 @@ configure-ccl.lisp
  (CCL-INSTALLATION-LINUX-ELABORATE
   (CCL-INSTALLATION)
   "Installing Clozure Common Lisp (CCL) on Linux (elaborate version)
+
+  NOTE: See {the Clozure CL releases page |
+  https://github.com/Clozure/ccl/releases/} for the latest
+  information, which may supersede some of what is included below.
 
   See [ccl-installation] for introductory remarks.  The ``cookbook''
   instructions below give you one way to install CCL on Linux without
@@ -16543,6 +16625,10 @@ configure-ccl.lisp
   (CCL-INSTALLATION)
   "Installing Clozure Common Lisp (CCL) on Mac (brief version)
 
+  NOTE: See {the Clozure CL releases page |
+  https://github.com/Clozure/ccl/releases/} for the latest
+  information, which may supersede some of what is included below.
+
   See [ccl-installation] for introductory remarks.  The instructions
   below describe how to install CCL on a Mac (Darwin).  For more
   elaborate ``cookbook'' instructions see
@@ -16589,6 +16675,10 @@ configure-ccl.lisp
  (CCL-INSTALLATION-MAC-ELABORATE
   (CCL-INSTALLATION)
   "Installing Clozure Common Lisp (CCL) on Mac (elaborate version)
+
+  NOTE: See {the Clozure CL releases page |
+  https://github.com/Clozure/ccl/releases/} for the latest
+  information, which may supersede some of what is included below.
 
   See [ccl-installation] for introductory remarks.  The ``cookbook''
   instructions below give you one way to install CCL on a Mac
@@ -18877,6 +18967,10 @@ Subtopics
 
   See [git-quick-start] for information about how to download the
   ``bleeding edge'' ACL2 system and community books.
+
+  The communinty books are also available with ACL2 releases.  See the
+  ``Installing'' link from the {ACL2 home page |
+  http://www.cs.utexas.edu/users/moore/acl2/}.
 
 
 Subtopics
@@ -22524,6 +22618,7 @@ Usage
     * (LET ((v1 t1) ...) dcl ... dcl body)
     * (MV-LET (v1 ...) term dcl ... dcl body)
     * (FLET ((name args dcl ... dcl body) ...))
+    * (MACROLET ((name args dcl ... dcl body) ...))
 
   Each of the cases above permits certain declarations, as follows.
 
@@ -22532,6 +22627,7 @@ Usage
     * LET: (ignore ignorable type)
     * MV-LET: (ignore ignorable type)
     * FLET: (ignore ignorable type)
+    * MACROLET: (ignore ignorable type)
 
   Of course, declarations are permitted in macro calls to the extent
   that they are permitted in the macroexpansions.  For example,
@@ -23765,12 +23861,12 @@ Three Primary Uses of Defattach.
    1. The example at the beginning of this [documentation] illustrates
       constrained function execution.
    2. ACL2 is written essentially in itself.  Thus, there is an opportunity
-      to attaching to system functions.  For example, encapsulated
+      to attach to system functions.  For example, encapsulated
       function too-many-ifs-post-rewrite, in the ACL2 source code,
       receives an attachment of too-many-ifs-post-rewrite-builtin,
-      which implements a heuristic used in the rewriter.  To find all
-      such examples, search the source code for the string
-      `-builtin'.
+      which implements a heuristic used in the rewriter.  See
+      [system-attachments].  To find all such examples, search the
+      source code for the string `-builtin'.
       Over time, we expect to continue replacing ACL2 source code in a
       similar manner.  We invite the ACL2 community to assist in this
       ``open architecture'' enterprise; feel free to email the ACL2
@@ -28116,8 +28212,8 @@ Subtopics
                       :normalize nil
                       :verify-guards nil
                       :non-executable t
-                      :type-prescription (natp (example x y z a b c i j))
-                      :otf-flg t))
+                      :otf-flg t ; the default
+                      :type-prescription (natp (example x y z a b c i j))))
       (example-body x y z i j))
 
 
@@ -30078,7 +30174,8 @@ Subtopics
   expressions in ACL2; see [loop$].  Here we give more complete
   documentation on DO loop$ expressions, beginning with an informal
   introduction based largely on examples and then continuing with
-  detailed syntax and semantics.
+  detailed syntax and semantics.  For a discussion of proofs about
+  loop$s, see [loop$-proofs].
 
   More examples of [loop$] expressions, including DO loop$s, may be
   found in [community-book] projects/apply/loop-tests.lisp.
@@ -30688,7 +30785,7 @@ SYNTAX
   replacement of a stobj by a stobj that is congruent to it.
 
   It is illegal for a loop$ expression to be in the scope of function
-  bindings of an [flet] expression.
+  bindings of an [flet] or [macrolet] expression.
 
   As noted above, the measure, body, and FINALLY clauses of a DO loop$
   must be fully [badge]d.
@@ -35643,6 +35740,58 @@ Subtopics
                  ((= (fix r) 0) 0)
                  ((> i 0) (* r (expt r (+ i -1))))
                  (t (* (/ r) (expt r (+ i 1))))))")
+ (EXTEND-PATHNAME
+  (IO ACL2-BUILT-INS)
+  "Extend a relative pathname to an absolute pathname
+
+  Extend-pathname is a :[program] mode function that takes a directory
+  name and a filename (a string) and returns a corresponding pathname
+  for the given file that is relative to the specified directory.  If
+  the filename is already an absolute pathname then the return value
+  is that filename, unchanged.
+
+    General Form:
+
+    (extend-pathname dir filename state)
+
+  where dir is either a non-empty string, representing a directory's
+  pathname, or a keyword, representing a project directory (see
+  [project-dir-alist]); filename is a string representing a relative
+  or absolute pathname; and state is the ACL2 [state].
+
+  The following examples flesh out the behavior of extend-pathname.
+
+    Examples (comments added)
+
+    ACL2 !>(extend-pathname \"~/temp\" \"foo.lisp\" state)
+    ; where the user is \"bubba\" here and in the remaining examples
+    \"/home/bubba/temp/foo.lisp\"
+    ACL2 !>(extend-pathname \"~/temp/\" \"foo.lisp\" state)
+    ; the final / is optional for the directory name
+    \"/home/bubba/temp/foo.lisp\"
+    ACL2 !>(extend-pathname \"~/temp/\" \"no-such-file\" state)
+    ; name of non-existent file is still extended
+    \"/home/bubba/temp/no-such-file\"
+    ACL2 !>(extend-pathname \".\" \"no-such-file\" state)
+    ; assumes that the current working directory is \"/home/joe\"
+    \"/home/joe/no-such-file\"
+    ACL2 !>(extend-pathname (cbd) \"no-such-file\" state)
+    ; assumes that the connected book directory (see :DOC cbd) is \"/data/santa\"
+    \"/data/santa/no-such-file\"
+    ACL2 !>(extend-pathname :system \"no-such-file\" state)
+    ; assumes that system books directory is \"/data/acl2/books\"
+    \"/data/acl2/books/no-such-file\"
+    ACL2 !>(extend-pathname \"/data/acl2\" \"~/temp/foo.lisp\" state)
+    ; directory is ignored when filename is already absolute
+    \"/home/bubba/temp/foo.lisp\"
+    ACL2 !>(extend-pathname :system \"~/temp/foo.lisp\" state)
+    ; directory is ignored when filename is already absolute
+    \"/home/bubba/temp/foo.lisp\"
+
+  Note that when the indicated file exists, extend-pathname resolves
+  symbolic links by using [canonical-pathname].  If you don't want
+  symbolic links to be resolved there are simpler alternatives; for
+  example, see oslib::catpath.")
  (EXTEND-PE-TABLE
   (HISTORY)
   "Replace [events] displayed by [history] commands
@@ -37307,7 +37456,8 @@ Subtopics
   Fix simply returns any numeric argument unchanged, returning 0 on a
   non-numeric argument.  Also see [nfix], see [ifix], and see [rfix]
   for analogous functions that coerce to a natural number, an
-  integer, and a rational number, respectively.
+  integer, and a rational number, respectively.  See [the-number] for
+  a variant of fix whose guard specifies a numeric argument.
 
   Fix has a [guard] of t.
 
@@ -37356,6 +37506,8 @@ Subtopics
   (BASICS ACL2-BUILT-INS)
   "Local binding of function symbols
 
+  See [macrolet] for an analogous utility for defining macros locally.
+
     Example Form:
     ; The following evaluates to (mv 7 10):
     (flet ((f (x)
@@ -37381,10 +37533,11 @@ Subtopics
   Lisp compiler.  The declarations are otherwise ignored by ACL2, so
   we mainly ignore them in the discussion below.
 
-  The innermost flet-binding of a function symbol, f, above a call of
-  f, is the one that provides the definition of f for that call.
-  Note that flet does not provide recursion.  Consider the following
-  example.
+  The innermost flet or [macrolet] binding of a symbol, f, above a call
+  of f, is the one that provides the definition of f for that call.
+  Note that neither flet nor macrolet provide recursion: that is, the
+  definition of f in an flet or macrolet binding of f is ignored in
+  the body of that binding.  Consider the following example.
 
     ; Give a global definition of f:
     (defun f (x) (+ x 3))
@@ -38267,7 +38420,8 @@ Subtopics
   expressions in ACL2; see [loop$].  Here we give more complete
   documentation on FOR loop$ expressions, beginning with informal
   discussion and then continuing with detailed syntax (General Form)
-  and semantics.
+  and semantics.  For a discussion of proofs about loop$s, see
+  [loop$-proofs].
 
   Examples of [loop$] expressions, including FOR loop$s, may be found
   in [community-book] projects/apply/loop-tests.lisp.
@@ -38281,8 +38435,8 @@ Subtopics
 
   You may have as many iteration clauses as you wish, connected with
   AS.  Each must introduce a unique iteration variable and that
-  variable may be optionally followed by an of-type [type-spec]
-  specification.  Of-type is a Common Lisp feature that allows the
+  variable may be optionally followed by an OF-TYPE [type-spec]
+  specification.  OF-TYPE is a Common Lisp feature that allows the
   compiler to optimize operations on the variable in question.  Here
   is an example.
 
@@ -38351,14 +38505,14 @@ General Form
   A target clause has one of four forms
 
     * IN list-expr
-    * ON list-expr
+    * ON expr
     * FROM lo-expr TO hi-expr
     * FROM lo-expr TO hi-expr BY step-expr
 
   where list-expr is a term (which is expected to evaluate to a true
-  list), lo-expr and hi-expr are terms (which are expected to
-  evaluate to integers), and step-expr is a term (which is expected
-  to evaluate to a positive integer).
+  list), expr is a term, lo-expr and hi-expr are terms (which are
+  expected to evaluate to integers), and step-expr is a term (which
+  is expected to evaluate to a positive integer).
 
   The legal type-specs are listed in [type-spec].
 
@@ -38404,8 +38558,8 @@ General Form
   variable in the sense that ``X OF-TYPE (SATISFIES NATP)'' gives
   rise to the type term (NATP X) and ``I OF-TYPE INTEGER'' gives rise
   to the type term (INTEGERP I).  The terms involved in the target
-  expressions, e.g., the list-expr in ``IN list-expr'' and ``ON
-  list-expr'' and the lo-expr, hi-expr and optional step-expr in the
+  expressions, e.g., the list-expr and expr in ``IN list-expr'' and
+  ``ON expr'' and the lo-expr, hi-expr and optional step-expr in the
   ``FROM lo-expr TO hi-expr BY step-expr'' targets are called target
   terms.  Finally, the until-expr, when-expr, and body-expr are
   called iterative forms.
@@ -38533,7 +38687,7 @@ Semantics
 
     (loop$ for i from 1 to max by step collect (expr x))
 
-  becomes
+  logically becomes
 
     (collect$ (lambda$ (x) (expr x))
               (from-to-by 1 max step))
@@ -38566,18 +38720,16 @@ Semantics
   NIL was generated.  Using :[pso] we can see that the NIL goal came
   from:
 
-    Subgoal 1
-    (IMPLIES (NAT-LISTP X) (NATP (CAR X))).
+    Subgoal 1.2
+    (IMPLIES (NAT-LISTP LOOP$-IVAR)
+             (INTEGERP (CAR LOOP$-IVAR))).
 
-  Let's see what is going on by looking at the following abbreviated
+  Let's see what is going on by looking at the following simplified
   translation of the loop$ expression.
 
-    (sum$ '(lambda (x)
-             (declare (type (satisfies nat-listp) x)
-                      (xargs :guard (nat-listp x)
-                             :split-types t)
-                      (ignorable x))
-             (sq (car x)))
+    (sum$ '(lambda (loop$-ivar)
+             (declare (type (satisfies nat-listp) loop$-ivar))
+             (sq (car loop$-ivar)))
           (when$ '(lambda ...) (tails lst)))
 
   Notice that the lambda object supplied to sum$ cannot be guard
@@ -38596,16 +38748,14 @@ Semantics
   (consp x) clause.  But it is necessary given the compositional
   semantics.
 
-  The abbreviated translation of the defun above shows that the
+  A simplified translation of the defun above shows that the
   application (sq (car x)) is protected by a suitable guard in the
   lambda object.
 
-    (sum$ '(lambda (x)
-             (declare (type (satisfies nat-listp) x)
-                      (xargs :guard (if (nat-listp x) (consp x) 'nil)
-                             :split-types t)
-                      (ignorable x))
-             (sq (car x)))
+    (sum$ '(lambda (loop$-ivar)
+             (declare (type (satisfies nat-listp) loop$-ivar)
+                      (xargs :guard (consp loop$-ivar)))
+             (sq (car loop$-ivar)))
           (when$ '(lambda ...) (tails lst)))
 
   Naively we might have expected that the guard proof obligation for
@@ -38627,7 +38777,7 @@ Semantics
   clause and the variable z appears in the loop body.  Either
   characteristic is sufficient to classify the loop as fancy.  So
   fancy scions are used.  Here is its semantic counterpart, i.e., its
-  translation.
+  simplified translation.
 
     (collect$+
      (lambda$ (loop$-gvars loop$-ivars)
@@ -38643,7 +38793,7 @@ Semantics
      (list z)
      (loop$-as (list xlst ylst)))
 
-  Before we show the definition of collect$+ note that the arguments
+  Before we show the definition of collect$+, note that the arguments
   above to collect$+ are (i) a lambda$ expression that handles the
   evaluation of the iterative form, in this case (expr x y z), where
   x and y are iteration variables and z is a ``global'' variable not
@@ -38695,19 +38845,15 @@ Semantics
   special ones for the terms produced by translating FOR loop$
   expressions.  We discuss the reasons in the next section, but here
   we just state what the special conjectures are.  We limit ourselves
-  to a simple loop$.  Fancy loop$ generalize in the obvious way.  The
-  three classes of ``special guard conjectures'' for FOR loop$
-  expressions are:
+  to a simple loop$.  Fancy loop$s generalize in the obvious way.
+  The two classes of ``special guard conjectures'' for FOR loop$
+  expressions are as follows.
 
-  First, every element (or tail, in the case of ON loop$s) satisfies
-  the type-spec, if any.  Note that in the case of ON loop$s every
-  tail, including the empty one, must satisfy the type-spec.
-
-  Second, the type-spec, if any, implies the guards of the loop$ body.
-
-  Third, the loop$ body produces a value acceptable to the loop$
-  operator, e.g., the body of SUM loop$ produces a number and the
-  body of an APPEND loop$ produces a true list.
+    * First, every element (or tail, in the case of ON loop$s)) satisfies
+      the type-spec, if any, and the loop$ body's :GUARD, if any.
+    * Second, the loop$ body produces a value acceptable to the loop$
+      operator, e.g., the body of a SUM loop$ produces a number and
+      the body of an APPEND loop$ produces a true list.
 
   Discussion of Why LOOP$s Have Special Guards
 
@@ -38728,41 +38874,79 @@ Semantics
   to guarantee the error-free execution of the corresponding Common
   Lisp loop expressions.
 
-  For example, the logical meaning of
+  For example, the simplified translation of the body of
 
     (defun foo (lst)
       (declare (xargs :guard (foo-guardp lst)))
       (loop$ for x of-type (satisfies spec) on lst sum (expr x)))
 
-  is
+  is as follows.  (One might expect the second argument of the sum$
+  call to be (tails lst), and of course that is what it equals,
+  logically; the change is to support guards, as discussed in the
+  Technical Note below.)
 
-    (defun foo (lst)
-      (declare (xargs :guard (foo-guardp lst)))
-      (sum$ (lambda$ (x)
-                     (declare (type (satisfies spec) x))
-                     (expr x))
-            (tails lst))).
+    (sum$ (lambda$ (loop$-ivar)
+                   (declare (type (satisfies spec) loop$-ivar))
+                   (expr loop$-ivar))
+          (tails (prog2$ (let ((loop$-last-cdr (last-cdr lst)))
+                           (declare (type (satisfies spec) loop$-last-cdr))
+                           loop$-last-cdr)
+                         lst)))
 
   Prior to the provision for special guards, the normal guard
   conjectures generated for foo would be
 
     (and (implies (foo-guardp lst)                                 ; [1]
                   (apply$-guard
-                   (lambda$ (x)
-                     (declare (type (satisfies spec) x))
-                     (expr x))
+                   (lambda$ (loop$-ivar)
+                     (expr loop$-ivar))
                    '(nil)))
          (implies (foo-guardp lst)                                 ; [2]
                   (true-listp (tails lst)))
-         (implies (foo-guardp lst)                                 ; [3]
-                  (true-listp lst))
-         (implies (spec x) (expr-guardp x)))                       ; [4]
+         (implies (spec loop$-ivar) (expr-guardp loop$-ivar)))     ; [3]
+         (implies (foo-guardp lst)                                 ; [4]
+                  (let ((loop$-last-cdr (last-cdr lst)))
+                       (spec loop$-last-cdr)))
 
   Conjectures [1] and [2] stem from the guard for sum$ and establish
   that the guard for foo implies that sum$ is passed a function
   object of one argument and a true-list.  Conjecture [3] establishes
-  the guard of tails.  And conjecture [4] establishes that the guard
-  on the lambda$ implies the guard of its body.
+  that the guard on the lambda$ implies the guard of its body.
+  Conjecture [4] says that the final tail of lst (which is nil if lst
+  is a true list; see [last-cdr]) satisfies spec.  At first [4] may
+  be surprising, but inspection of Common Lisp reveals that even
+  though (expr x) is never called on the final tail of lst,
+  implementations running with high safety settings check that the
+  final tail satisfies spec.  If you see a runtime guard violation
+  involving variable loop$-last-cdr, you can reasonably assume that
+  you are seeing case [4] above.  A guard proof failure involving a
+  call of [last-cdr] may also be from [4].
+
+  (Technical Note.  The production of [4] is accomplished as follows
+  for an expression (loop for var of-type type-spec on lst ...): for
+  the translation to a scion call, the target term, lst, is replaced
+  by the following expression (simplifying slightly).
+
+    (prog2$ (let ((loop$-last-cdr (last-cdr lst)))
+              (declare (type type-spec loop$-last-cdr))
+              loop$-last-cdr)
+            lst)
+
+  The [declare] form causes formula [4] above to be generated as a
+  guard proof obligation.  End of Technical Note.)
+
+  The guard proof obligation shown as [4] above, for an expression
+  (loop$ for ... on ...), has a variant for an expression (loop$ for
+  n from i to j by k ...), where ``by k'' may be implicit if k is 1.
+  Instead of the requirement in [4] above that the bound variable
+  loop$-last-cdr satisfy the type-spec, variables loop$-lo, loop$-hi,
+  and loop$-by, which are bound respectively to i, j, and k, are
+  required to satisfy the type-spec.  A fourth requirement is that
+  the last value tested must also satisfy the type-spec.  That last
+  value tested is (+ loop$-lo loop$-by (* loop$-by (floor (- loop$-hi
+  loop$-lo) loop$-by))).  If you see a runtime guard violation
+  involving variable loop$-lo, loop$-hi, loop$-by, or loop$-final,
+  you can reasonably assume that you are seeing this variant of [4].
 
   But consider the raw Lisp loop generated by the loop$ in the raw Lisp
   definition of foo,
@@ -38770,16 +38954,14 @@ Semantics
     (loop for x of-type (satisfies spec) on lst sum (expr x)).
 
   For this loop to execute without error we need to know that [5] every
-  non-empty tail of lst satisfies spec, [6] that for every tail, x,
-  of lst, (expr x) returns a number, and [7] that nil satisfies spec.
-  The last is somewhat surprising but inspection of Common Lisp
-  reveals that even though (expr x) is never called on the empty tail
-  of lst, implementations running with high safety settings check
-  that the empty list satisfies spec.
+  non-empty tail of lst satisfies spec, and [6] every non-empty tail
+  x of lst is such that (expr x) returns a number.
 
   So when ACL2's guard verification process encounters a sum$ like that
-  in the logical defun of foo, it generates three additional guard
-  conjectures
+  in the logical defun of foo, it generates two additional guard
+  conjectures as described above.  These are as mentioned above: [5]
+  every element (or tail) satisfies the type-spec, and [6] the value
+  of the loop$ body is acceptable to the loop$ operator.
 
     (implies (and (warrant ...) ; see below                   ; [5]
                   (foo-guardp lst)
@@ -38790,13 +38972,8 @@ Semantics
                   (foo-guardp lst)
                   (member-equal newv (tails lst)))
              (acl2-numberp
-              (apply$ (lambda$ (x)
-                        (declare (type (satisfies spec) x))
-                        (expr x))
+              (apply$ (lambda$ (loop$-ivar) (expr loop$-ivar))
                       (list newv))))
-
-    (implies (foo-guardp lst)                                 ; [7]
-             (spec nil))
 
   Notice the addition of hypotheses above of the form (warrant ...).
   ACL2 adds such [warrant] hypotheses for function symbols that might
@@ -38806,9 +38983,9 @@ Semantics
   In general, you may notice that ACL2 generates such ``special'' guard
   conjectures for all calls of FOR loop$ scions, whether or not they
   stemmed from uses of loop$.  FROM/TO/BY targets require that the
-  bounds and step all satisfy the of-type specification, and the
-  append operator requires that the loop body generate a [true-listp]
-  (instead of an [ACL2-numberp] as required by the sum operator).
+  bounds and step all satisfy the OF-TYPE specification, and the
+  APPEND operator requires that the loop body generate a [true-listp]
+  (instead of an [ACL2-numberp] as required by the SUM operator).
 
   The Compromise Between Reasoning and Efficiency
 
@@ -42172,7 +42349,14 @@ Subtopics
     (defun big-test (x y z)
       (declare (type (signed-byte 28) x y z))
       (imin (i+ x y)
-            (i+ y (imin x z))))")
+            (i+ y (imin x z))))
+
+  7. You may want to set environment variable GCL_MEM_MULTIPLE when
+  running regression tests using ACL2 built on GCL, to keep memory
+  from exceeding what is available.  Consider dividing 1.0 by the
+  number of threads; so for example, for 4 threads (i.e., using ``-j
+  4'' in your make command), you may want to specify
+  GCL_MEM_MULTIPLE=0.25.")
  (GCS (POINTERS)
       "See [get-command-sequence].")
  (GENERALIZE
@@ -42551,9 +42735,10 @@ Subtopics
   (PROGRAMMING-WITH-STATE ACL2-BUILT-INS READ-RUN-TIME)
   "Read elapsed real time
 
-  (Get-real-time state) returns the elapsed real (wall clock) time in
-  seconds since the start of the current ACL2 session.  See
-  [read-run-time] for further documentation.
+  (Get-real-time state) returns (mv rtime state) where rtime is the
+  elapsed real (wall clock) time in seconds since the start of the
+  current ACL2 session.  See [read-run-time] for further
+  documentation.
 
   Function: <get-real-time>
 
@@ -46775,6 +46960,19 @@ Subtopics
          header (name l)
          (declare (xargs :guard (or (array1p name l) (array2p name l))))
          (prog2$ name (assoc-eq :header l)))")
+ (HEAVY-LINEAR-P
+  (LINEAR-ARITHMETIC SYSTEM-ATTACHMENTS)
+  "Extend the use of [linear-arithmetic] during rewriting
+
+  This topic concerns an advanced control for the ACL2 prover.
+
+  This zero-ary attachable system function supports extending the usual
+  use of [linear-arithmetic] during rewriting, specifically with the
+  test (first) argument of a call of IF.  To get this additional
+  power, possibly at considerable loss of efficiency, evaluate
+  (defattach-system heavy-linear-p constant-t-function-arity-0).  To
+  restore the default behavior, evaluate (defattach-system
+  heavy-linear-p constant-nil-function-arity-0).")
  (HEY_WAIT!__IS_ACL2_TYPED_OR_UNTYPED{Q}
   (PAGES_WRITTEN_ESPECIALLY_FOR_THE_TOURS)
   "Hey Wait!  Is ACL2 Typed or Untyped?
@@ -46819,18 +47017,14 @@ Subtopics
      \"PKG0\"
     ACL2 !>:pr! \"PKG0\"
 
-    Rune:       (:REWRITE PKG0-PACKAGE)
-    Status:     Enabled
-    Lhs:        (SYMBOL-PACKAGE-NAME (INTERN-IN-PACKAGE-OF-SYMBOL X Y))
-    Rhs:        \"PKG0\"
-    Hyps:       (AND (STRINGP X)
-                     (NOT (MEMBER-SYMBOL-NAME X '(A B)))
-                     (SYMBOLP Y)
-                     (EQUAL (SYMBOL-PACKAGE-NAME Y) \"PKG0\"))
-    Equiv:      EQUAL
-    Backchain-limit-lst:    NIL
-    Subclass:   BACKCHAIN
-    Loop-stopper: NIL
+    Rune:         (:REWRITE PKG0-PACKAGE)
+    Enabled:      T
+    Hyps:         T
+    Equiv:        EQUAL
+    Lhs:          (PKG-IMPORTS \"PKG0\")
+    Rhs:          '(A B)
+    Backchain-limit-lst: NIL
+    Subclass:     ABBREVIATION
     ACL2 !>
 
   Now, a [defpkg] event may be executed underneath an [encapsulate] or
@@ -55677,13 +55871,10 @@ Subtopics
   discussed below).  ACL2 does not support the Common Lisp type
   [pathname]; rather, the underlying host Lisp will interpret the
   given string as a pathname.  If the string represents a relative
-  pathname, the host Lisp will generally interpret that with respect
-  to the directory where your ACL2 executable was invoked.  If you
-  want to avoid depending on Lisp to interpret a relative pathname,
-  use an absolute pathname, for example by concatenating ([cbd]) with
-  the relative pathname.  (A fancy way to do such concatenation is
-  with (extend-pathname dir file-name state), where dir is the
-  appropriate directory, possibly (cbd).)
+  pathname, it will be elaborated to a full pathname using the
+  connected book directory; see [cbd].  You can do that elaboration
+  yourself with a directory dir using (extend-pathname dir file-name
+  state); see [extend-pathname].
 
   For the file-name argument of the output-related functions listed
   below, ACL2 supports a special value, :STRING.  For this value, the
@@ -55916,6 +56107,9 @@ Subtopics
 
   [Eviscerate-hide-terms]
       To print (hide ...) as <hidden>
+
+  [Extend-pathname]
+      Extend a relative pathname to an absolute pathname
 
   [File-length$]
       The size of a file in bytes
@@ -56789,7 +56983,7 @@ About Guard Verification of Lambda Objects
   (LISTS ACL2-BUILT-INS)
   "The last [cons] (not element) of a list
 
-  (Last l) is the last [cons] of a list.  Here are examples.
+  (Last l) is the last [cons] of a list, l.  Here are examples.
 
     ACL2 !>(last '(a b . c))
     (B . C)
@@ -56808,6 +57002,25 @@ About Guard Verification of Lambda Objects
     (defun last (l)
            (declare (xargs :guard (listp l)))
            (if (atom (cdr l)) l (last (cdr l))))")
+ (LAST-CDR
+  (LISTS ACL2-BUILT-INS)
+  "The last [cdr] of a list
+
+  (Last-cdr x) is x if x is an [atom], and otherwise is the last [cdr]
+  of a list.  Here are examples.
+
+    ACL2 !>(last-cdr '(a b . c))
+    C
+    ACL2 !>(last-cdr '(a b c))
+    NIL
+
+  (Last-cdr x) has a [guard] of t.
+
+  Function: <last-cdr>
+
+    (defun last-cdr (x)
+           (declare (xargs :guard t))
+           (if (atom x) x (cdr (last x))))")
  (LAST-PROVER-STEPS
   (SET-PROVER-STEP-LIMIT WITH-PROVER-STEP-LIMIT
                          PROGRAMMING-WITH-STATE ACL2-BUILT-INS)
@@ -58179,9 +58392,9 @@ Subtopics
   determines the thoroughness with which ACL2 processes your
   [command]s.  This variable may take on one of three values: t, nil
   or '[include-book].  When ld-skip-proofsp is non-nil, the system
-  assumes that which ought to be proved and is thus unsound.  The
-  form (set-ld-skip-proofsp flg state) is the general-purpose way of
-  setting ld-skip-proofsp.  This global variable is an ``[ld]
+  skips all proofs, which of course can render the system unsound.
+  The form (set-ld-skip-proofsp flg state) is the general-purpose way
+  of setting ld-skip-proofsp.  This global variable is an ``[ld]
   special,'' which is to say, you may call [ld] in such a way as to
   ``bind'' this variable for the dynamic extent of the [ld].
 
@@ -59061,7 +59274,13 @@ Subtopics
   for a description of how :[linear] rules are used.
 
   See also [non-linear-arithmetic] for a description of an extension to
-  the linear-arithmetic procedure described here.")
+  the linear-arithmetic procedure described here.
+
+
+Subtopics
+
+  [Heavy-linear-p]
+      Extend the use of [linear-arithmetic] during rewriting")
  (LISP-PROGRAMMER-INTRODUCTION
       (POINTERS)
       "See [introduction-to-programming-in-ACL2-for-those-who-know-lisp].")
@@ -59201,6 +59420,9 @@ Subtopics
 
   [Last]
       The last [cons] (not element) of a list
+
+  [Last-cdr]
+      The last [cdr] of a list
 
   [Len]
       Length of a list
@@ -61330,12 +61552,14 @@ Subtopics
   "Iteration with an analogue of the Common Lisp loop macro
 
   Loop$ is the ACL2 analogue of the Common Lisp's iteration primitive,
-  loop.  This topic introduces the two classes of ACL2 $('loop$')
+  loop.  This topic introduces the two classes of ACL2 loop$
   expressions, FOR loop$s and DO loop$s; see [for-loop$] and
   [do-loop$] (respectively) for their full documentation.
 
   The Introduction below is followed by a discussion of types and
-  guards.  But before we get started we emphasize a few key points.
+  guards.  For a discussion of how to prove inductive theorems about
+  loop$s see [loop$-proofs].  But before we get started we emphasize
+  a few key points.
 
     * Many examples of [loop$] expressions may be found in [community-book]
       projects/apply/loop-tests.lisp.
@@ -61579,8 +61803,8 @@ Types and guards in loop$ expressions
   example shows the syntax and use of the ACL2-specific addition to
   loop$: the :GUARD directive protecting, in this case, the loop$
   body.  :GUARD is useful when you wish to add more guard information
-  than can be expressed with the Common Lisp of-type directive.  The
-  of-type and :GUARD directives are conjoined to form the actual
+  than can be expressed with the Common Lisp OF-TYPE directive.  The
+  OF-TYPE and :GUARD directives are conjoined to form the actual
   guard protecting the loop$ body.
 
     ACL2 !>(loop$ for x in '(1 2 3) collect (+ 1 x))
@@ -61598,7 +61822,7 @@ Types and guards in loop$ expressions
 
   The guard on the (- max x) above is (and (integerp x) (integerp max)
   (< x max)) and the compiler is informed that x is an integer by the
-  of-type.
+  OF-TYPE.
 
   The examples just above are of FOR loop$s.  Here is a DO loop$
   example that illustrates types and guards.
@@ -61637,6 +61861,9 @@ Subtopics
   [For-loop$]
       Iteration with [loop$] over an interval of integers or a list
 
+  [Loop$-proofs]
+      Proving inductive theorems about loop$s
+
   [Loop$-recursion]
       Defining functions that recur from within FOR loop$ expressions
 
@@ -61645,6 +61872,95 @@ Subtopics
  (LOOP$-DO (POINTERS) "See [do-loop$].")
  (LOOP$-FOR (POINTERS)
             "See [for-loop$].")
+ (LOOP$-PROOFS
+  (LOOP$)
+  "Proving inductive theorems about loop$s
+
+  ACL2's prover can derive induction schemes suggested by some loop$
+  statements, just as it can from some calls of recursive functions.
+  The key issue is whether appropriate arguments are variables.  For
+  example (nth n lst) suggests induction on lst by cdr, and
+  instantiates n with (- n 1) in the induction hypothesis.  But (nth
+  n (foo lst)) does not suggest such an induction because the
+  controlling argument --- the second argument of nth --- is not a
+  variable symbol.  The same principle is at play when loop$
+  statements are analyzed for inductive suggestions.
+
+  This documentation topic is merely a stub for a more elaborate
+  discussion about proving theorems about loop$s that we intend to
+  produce.  But here are the highpoints.
+
+  The FOR loop$ in the following conjecture
+
+    (equal (loop$ for x in keys as y in vals collect (cons x y))
+           (pairlis$ keys vals))
+
+  suggests simultaneous induction on keys and vals, reinforcing the
+  suggestion from the pairlis$ term.  (By the way, the above
+  conjecture is not a theorem as stated.)  But if the variable vals
+  is replaced by a non-variable term, the loop$ no longer suggests an
+  induction.
+
+  Similarly, the DO loop$ below suggests an induction on lst by cdr
+  with the simultaneous instantiation of ans by (cons (car lst) ans)
+  in the induction hypothesis.
+
+    (loop$ with ans = ans
+           with lst = lst
+           do
+           (if (endp lst)
+               (return ans)
+               (progn (setq ans (cons (car lst) ans))
+                      (setq lst (cdr lst)))))
+
+  But if ans is replaced by a non-variable, an ineffective induction on
+  lst alone is suggested.
+
+  The lesson is clear: If you want a loop$ to suggest an induction, you
+  must generalize the targets to be variables just as you would a
+  recursive function call.
+
+  Because you often have to generalize loop$ theorems to prove them by
+  induction, and, consequently, expect the resulting lemma to match
+  some instance of the loop$ in a subsequent theorem, you have to
+  remember that (a) all loop$ statements are translated into terms
+  involving lambda objects and (b) lambda objects are rewritten (by
+  default) during proofs.  Thus, for example, if you prove an
+  inductive lemma about the generalized DO loop$ above and try to
+  prove your ``main theorem'' about this instance of that loop$
+
+    (loop$ with ans = NIL
+           with lst = lst
+           do
+           (if (endp lst)
+               (return ans)
+               (progn (setq ans (cons (car lst) ans))
+                      (setq lst (cdr lst)))))
+
+  you will be disappointed!  During the proof of the instance, the
+  lambda object that is the body of the loop$ will be rewritten,
+  expanding the non-recursive function endp, so that the target
+  instance becomes
+
+    (loop$ with ans = NIL
+           with lst = lst
+           do
+           (if (consp lst)
+               (progn (setq ans (cons (car lst) ans))
+                      (setq lst (cdr lst)))
+               (return ans))).
+
+  So your generalized lemma, which used endp, will not match.
+
+  You would never create a rewrite rule whose left-hand side contained
+  a non-recursive function call, unless you were planning
+  subsequently to disable the function or (in the case of loop$s)
+  disable lambda object rewriting (see
+  [rewrite-lambda-object-actions]).
+
+  So the lesson here should be clear: When stating generalized loop$
+  lemmas make sure your loop$ bodies are in the ``normal'' form
+  imposed by your rewrite rules.")
  (LOOP$-RECURSION
   (LOOP$)
   "Defining functions that recur from within FOR loop$ expressions
@@ -62493,6 +62809,109 @@ Subtopics
 
   Also see [toggle-pc-macro] for how to change a macro command to an
   atomic macro command, and vice versa.")
+ (MACROLET
+  (BASICS ACL2-BUILT-INS)
+  "Local binding of macro symbols
+
+  See [flet] for an analogous utility for defining functions locally.
+
+    Example Form:
+    (defun f1 (x)
+      (macrolet ((mac (a) (list 'quote a)))
+        (cons x (mac x))))
+
+  The Example Form above is equivalent to the following, in which the
+  call of local macro mac has been expanded.
+
+    (defun f1-alt (x)
+      (cons x (quote x)))
+
+  The General Forms are similar to those of [flet].
+
+    General Forms:
+    (macrolet (def1 ... defk) body)
+    (macrolet (def1 ... defk) declare-form1 .. declare-formk body)
+
+  where body is a term, and each defi is a definition as in [defmacro]
+  but with the leading defmacro symbol omitted.  See [defmacro], but
+  see [declare] for the declarations permitted directly under the
+  defi.  On the other hand, regarding the declare-formi (if any are
+  supplied): each must be of the form (declare decl1 ... decln),
+  where each decli is of the form (inline g1 ... gm) or (notinline g1
+  ... gm), and each gi is defined by some defi.  Unlike the related
+  utility [flet], those inline and notinline declarations are
+  unlikely to have any effect.
+
+  The innermost [flet] or macrolet binding of a symbol, f, above a call
+  of f, is the one that provides the definition of f for that call.
+  Note that neither flet nor macrolet provide recursion: that is, the
+  definition of f in an flet or macrolet binding of f is ignored in
+  the body of that binding.
+
+  The following requirements are imposed by Common Lisp and enforced by
+  ACL2.
+
+    * Every variable occurring in the body of a defi must be a formal
+      parameter name of that defi.
+    * No function or macro symbol called in the body of a defi may be
+      defined by a superior flet or macrolet binding.  (Not every
+      Common Lisp implementation includes this restriction for
+      superior macrolet bindings, but at least one (GCL) does so we
+      include it in ACL2.)
+
+  Although macrolet behaves in ACL2 essentially as it does in Common
+  Lisp, ACL2 imposes the following restrictions and qualifications.
+
+    * Every [declare] form for a local definition (def1 through defk,
+      above) must be an ignore, ignorable, or type expression.
+    * Each defi must bind a different symbol.
+    * Each defi must bind a symbol that is a legal name for an ACL2 macro.
+      In particular, the symbol may not be in the keyword package or
+      the main Lisp package.  Moreover, the symbol may not be a
+      built-in ACL2 function or macro.
+
+  Macrolet bindings are evaluated in parallel.  Consider the following
+  example.
+
+    (defun f1 (x) (cons x 'x))
+    (macrolet ((f1 (x) x)
+               (f2 () (list 'quote
+    ; The following reference is to the global f1,
+    ; not to the identity macro just above.
+                            (f1 3))))
+      (f2))
+
+  The macrolet form above evaluates to (3 . x), not to 3, as explained
+  in the comment above.  Here is a somewhat analogous form that one
+  might expect to evaluate to 3, but that is not the case; see below.
+
+    (macrolet ((f1 (x) x))
+      (macrolet ((f2 () (list 'quote (f1 3))))
+        (f2)))
+
+  The body of f2 calls a symbol, f1, that is bound by a superior
+  macrolet binding.  As noted above, this is illegal (also for
+  superior flet bindings).
+
+  Under the hood, ACL2 expands away macrolet bindings.  The following
+  example illustrates this point.
+
+    ACL2 !>:trans (macrolet ((mac (a) (list 'cons a a)))
+                    (car (mac b)))
+
+    (CAR (CONS B B))
+
+    => *
+
+    ACL2 !>
+
+  Macrolet is part of Common Lisp.  See any Common Lisp documentation
+  for more information.  We conclude by pointing out an important
+  aspect of macrolet shared by ACL2 and Common Lisp: The binding is
+  lexical, not dynamic.  That is, the macrolet binding of a symbol
+  only applies to calls of that symbol in the body of the macrolet,
+  not other calls made in the course of evaluation.  See [flet] for
+  discussion of this point.")
  (MACROS
   (ACL2)
   "Macros allow you to extend the syntax of ACL2.
@@ -62988,9 +63407,9 @@ Detailed Documentation
       preserved).  So, for example, events might be evaluated during
       expansion, but they will disappear from the logical [world]
       after expansion returns its result.  Moreover, proofs are
-      enabled by default at the start of expansion (see
-      [ld-skip-proofsp]) if keyword :CHECK-EXPANSION is supplied and
-      has a non-nil value.
+      enabled by default during expansion (see [ld-skip-proofsp]) if
+      keyword :CHECK-EXPANSION is supplied a non-nil value or a
+      certain attachment is made (see (4) below).
 
       ``expansion result'' --- The above expansion may result in an
       ordinary (non-[state], non-[stobj]) value, which we call the
@@ -63340,11 +63759,11 @@ Examples Illustrating How to Access State
 
 Advanced Expansion Control
 
-  We conclude this [documentation] section by discussing three kinds of
-  additional control over make-event expansion.  These are all
-  illustrated in community book
-  books/make-event/make-event-keywords-or-exp.lisp.  The discussion
-  below is split into the following three parts.
+  We conclude this [documentation] section by discussing additional
+  control over make-event expansion.  The discussion below is split
+  into the following parts; further discussion follows.  The first
+  three parts are illustrated in community book
+  books/make-event/make-event-keywords-or-exp.lisp.
 
   (1) The value produced by expansion may have the form (:DO-PROOFS
   exp), which specifies exp as the expansion result, to be evaluated
@@ -63357,6 +63776,13 @@ Advanced Expansion Control
   (3) The keyword argument :EXPANSION? can serve to eliminate the
   storing of make-event replacements, as described above for the
   ``book expansion'' of a book.
+
+  (4) In contexts where proofs are normally skipped (see
+  [ld-skip-proofsp]), the expansion phase normally takes place with
+  proofs skipped unless the :CHECK-EXPANSION keyword is supplied a
+  non-nil value.  However, proofs can be made to take place
+  unconditionally during the expansion phase by using an attachment,
+  as discussed below.
 
   We now elaborate on each of these.
 
@@ -63499,6 +63925,36 @@ Advanced Expansion Control
   the same as :CHECK-EXPANSION t, modified to accommodate the effect
   of :EXPANSION? as discussed above: if the expansion is indeed the
   value of :EXPANSION?, then no make-event replacement is generated.
+
+  (4) Unconditionally enabling proofs during the expansion phase using
+  an attachment.
+
+  Proofs are normally skipped during the expansion phase unless the
+  :CHECK-EXPANSION keyword is supplied a non-nil value.  To cause
+  proofs to take place unconditionally during the expansion phase,
+  evaluate one of the following two forms, as explained below.
+
+    (defattach (always-do-proofs-during-make-event-expansion
+                constant-t-function-arity-0)
+      :system-ok t)
+
+    (defattach (always-do-proofs-during-make-event-expansion
+                constant-all-function-arity-0)
+      :system-ok t)
+
+  The first of these is probably preferred in most cases, since it does
+  not have any effect while evaluating an [include-book] form (more
+  precisely, when (ld-skip-proofsp state) is 'include-book).  The
+  second removes that restriction.
+
+  To restore the default behavior, evaluate the following.
+
+    (defattach (always-do-proofs-during-make-event-expansion
+                constant-nil-function-arity-0)
+      :system-ok t)
+
+  (If you would like an explanation of defattach in general, see
+  [defattach].)
 
 
 Subtopics
@@ -91776,6 +92232,18 @@ Experimental Versions
 
 Changes to Existing Features
 
+  The connected book directory (that is, the [cbd]) now elaborates
+  relative [pathname]s to absolute pathnames not only for book
+  operations, but for all file operations.  For example,
+  (open-input-channel \"foo\" :character state) now interprets filename
+  \"foo\" relative to the cbd, where formerly it was generally
+  interpreted relative to the directory in which ACL2 was invoked.
+  (Technical note: ACL2 accomplishes the new behavior by arranging
+  that [set-cbd] modifies not only the cbd but also the Lisp global,
+  *default-pathname-defaults*.)  Thanks to Alessandro Coglio, Eric
+  McCarthy, and Eric Smith for suggesting consideration of such a
+  change and for helpful discussions.
+
   The function hons-enabledp is no longer defined, and :hons has been
   removed from the Lisp global, *features* (so, readtime conditionals
   #+hons and #-hons should be avoided, especially since #+hons is
@@ -91832,19 +92300,35 @@ Changes to Existing Features
   the behavior of lambda object rewriting by the prover (see
   [rewrite-lambda-object]) has been elaborated.
 
+  Warnings for non-recursive functions in left-hand sides of rewrite
+  rules (similarly for linear, forward-chaining, and
+  type-prescription rules) now consider bodies of lambda objects that
+  could be rewritten (see [rewrite-lambda-object]).
+
+  The output is more informative when :[pr] is applied to an undefined
+  primitive, such as car or binary-+, or a macro-alias for one of
+  those, such as +.  Thanks to Eric Smith for pointing out odd output
+  for examples like :pr binary-+.
+
+  The definition of [pseudo-termp] has been simplified by dropping a
+  superfluous [true-listp] check.  Thanks for the suggestion from
+  Eric Smith.  A new lemma, pseudo-termp-consp-forward, has been
+  added to prevent some existing proofs from failing due to the
+  change.
+
+  The failure message regarding [useless-runes] (see
+  [useless-runes-failures]) has been restricted to the case that a
+  proof was attempted by the event (though there may be rare
+  exceptions).  Thanks to Eric Smith for requesting such a change.
+
 
 New Features
 
-  The new zero-ary attachable system function, heavy-linear-p, allows
+  The new zero-ary attachable system function, [heavy-linear-p], allows
   for enhanced use of [linear-arithmetic] during rewriting,
-  specifically with the test (first) argument of a call of IF.  To
-  get this additional power, possibly at considerable loss of
-  efficiency, evaluate (defattach-system heavy-linear-p
-  constant-t-function-arity-0).  To restore the default behavior,
-  evaluate (defattach-system heavy-linear-p
-  constant-nil-function-arity-0).  Thanks to Eric Smith for
-  suggesting the development of such a feature, which can be useful
-  in rewriting-based tools.
+  specifically with the test (first) argument of a call of IF.
+  Thanks to Eric Smith for suggesting the development of such a
+  feature, which can be useful in rewriting-based tools.
 
   There is a new `make' target to build an ACL2 executable using
   save-exec.  See [save-exec], in particular the new discussion at
@@ -91885,6 +92369,38 @@ New Features
   changes are summarized in comments in the form (defxdoc note-8-6
   ...) in [community-book] system/doc/acl2-doc.lisp.)
 
+  A new [break-rewrite] command, :pot-list, shows the list of the
+  polynomials that are assumed in the current context.  See
+  [brr-commands] and see [brr@].  Thanks to Alessandro Coglio and
+  Eric Smith for conversations leading to this enhancement.
+
+  It is now possible to cause [make-event] to do proofs during its
+  expansion phase even in a context where proofs are generally
+  skipped (see [ld-skip-proofsp]).  See [make-event], in particular
+  the discussion there labeled as ``(4)''.  Thanks to Eric Smith for
+  requesting such a feature.
+
+  The induction mechanism in the prover can now deduce induction
+  suggestions from some DO loop$s.  See [loop$-proofs] for a brief
+  discussion.
+
+  A new :[linear] rule, acl2-count-car-cdr-linear, is now built into
+  ACL2, as follows.  Thanks to Eric Smith for suggesting this
+  improvement (slightly renamed here) to what we originally added.
+
+  Theorem: <acl2-count-car-cdr-linear>
+
+    (defthm acl2-count-car-cdr-linear
+            (implies (consp x)
+                     (equal (acl2-count x)
+                            (+ 1 (acl2-count (car x))
+                               (acl2-count (cdr x)))))
+            :rule-classes :linear)
+
+  The Common Lisp utility, [macrolet], is now supported in ACL2.
+  Thanks to Alessandro Coglio for discussion leading us to make this
+  addition.  See [macrolet].
+
 
 Heuristic and Efficiency Improvements
 
@@ -91913,6 +92429,62 @@ Bug Fixes
   Fixed bugs in the definition of source macro position-ac.  Thanks to
   Eric Smith for pointing them out.
 
+  Fixed translation of DO [loop$] expressions, so that the next-to-last
+  argument of the resulting [do$] call quotes the untranslated
+  measure instead of the translated measure.
+
+  Several improvements were made to the FOR [loop$] utility (also see
+  [for-loop$], to reflect more accurately the Common Lisp loop
+  utility.  This matters because in [guard]-verified code, loop$
+  becomes loop.  Here are the most user-visible such changes.
+
+    * Run-time [guard]-checking for [loop$] operators SUM and APPEND did
+      not include a check that the value produced at each iteration
+      is a number or true list, respectively.  That has been fixed so
+      that, for example, the expression (loop$ for v in '(1 a 2) sum
+      v) now causes a guard violation (because a is not a number),
+      where previously it did not.
+    * For a form (loop$ for tail on lst ...), the target term, lst, no
+      longer needs to satisfy [true-listp].  For example, the form
+      (loop$ for tail on '(a b . c) collect tail) no longer causes a
+      @(see guard) violation.</li> <li>Run-time @(see guard)-checking
+      for an expression @('(loop$ for tail on lst ...) now includes a
+      check for the target, lst, that its final tail (i.e., ,
+      (last-cdr lst) satisfies the declared type of the corresponding
+      iteration variable.  For example, evaluation of the [loop$]
+      expression below now produces a guard violation as shown, but
+      it formerly did not produce a guard violation.
+
+          ACL2 !>(loop$ for tail of-type cons on '(a b c) collect tail)
+
+
+          ACL2 Error [Evaluation] in TOP-LEVEL:  The guard condition
+          (CONSP LOOP$-LAST-CDR), which was generated from a type declaration,
+          has failed.
+          See :DOC set-guard-checking for information about suppressing this
+          check with (set-guard-checking :none), as recommended for new users.
+          To debug see :DOC print-gv, see :DOC trace, and see :DOC wet.
+
+          ACL2 !>
+
+      Corresponding run-time checking was added for the types of the lower
+      and upper bounds lo and hi, the increment inc, and the last
+      value tested, in expressions (loop$ for i from lo to hi by inc
+      ...).
+
+  Fixed a low-level bug in source function
+  translate-declaration-to-guard1-gen that was incorrectly creating
+  untranslated [term]s in some cases from [type] declarations of the
+  form (type (signed-byte _) _) or (type (unsigned-byte _) _).  Here
+  is an example of an event that is rejected without the bug fix.
+
+    (defun foo (n)
+      (apply$ (lambda$ (x)
+                       (declare (type (signed-byte 8) x)
+                                (xargs :guard (signed-byte-p 8 x) :split-types t))
+                       (+ 3 x))
+              (nfix n)))
+
 
 Changes at the System Level
 
@@ -91920,6 +92492,19 @@ Changes at the System Level
   unconditionally.  Thanks to Grant Jurgensen for pointing out (in
   GitHub Issue #1422) that there can be untracked implicit
   dependencies that make this necessary.
+
+  Implementations underlying the functions [sys-call], [sys-call+], and
+  [sys-call*] have been cleaned up.  In particular, we now expect
+  them to indicate precisely the case of a non-error process return
+  as follows: 0 for [sys-call-status], and nil for the first return
+  value of sys-call+ and sys-call*.  Also, a bug has been fixed for
+  sys-call+ in the case of GCL as the host Lisp.  Thanks to Eric
+  Smith for queries leading to these changes.
+
+  Significantly extended documentation topic [system-attachments],
+  which now lists all built-in system attachments, many with brief
+  documentation.  Thanks to Eric Smith for suggesting this
+  enhancement.
 
 
 EMACS Support
@@ -92537,6 +93122,9 @@ Subtopics
 
   [Signum]
       Indicator for positive, negative, or zero
+
+  [The-number]
+      Coerce an expected number to a number
 
   [Truncate]
       Division returning an integer by truncating toward 0
@@ -93659,9 +94247,22 @@ Subtopics
   (DEFTHM THM XARGS)
   "Allow more than one initial subgoal to be pushed for induction
 
-  The value of this flag is normally nil.  If you want to prevent the
-  theorem prover from abandoning its initial work upon pushing the
-  second subgoal, set :otf-flg to t.
+  This keyword argument for certain [events] controls whether the
+  theorem prover will abandon its initial work upon encountering the
+  second subgoal to push for proof by induction: :otf-flg is nil for
+  that behavior, but t if it should instead continue ``Onward Through
+  the Fog'' and complete [waterfall] processing before starting any
+  proof by induction.
+
+  The default value for :otf-flg is nil except during processing of
+  [defun] events, where the default is t for both termination and
+  [guard] proofs (see [defun]).  Note that the default for :otf-flg
+  is thus t for processing [verify-termination] events, since they
+  abbreviate defun events.  However, the default for :otf-flg is nil
+  for processing [verify-guards] events.
+
+
+Further Explanation
 
   Suppose you submit a conjecture to the theorem prover and the system
   splits it up into many subgoals.  Any subgoal not proved by other
@@ -95652,10 +96253,11 @@ Implementation
   character / is used to terminate directory names.  Some file names
   are ``absolute'' (complete) descriptions of a file or directory;
   others are ``relative'' to the current working directory or to the
-  connected book directory (see [cbd]).  We emphasize that even for
-  users of Windows-based systems or Macintosh computers, ACL2 file
-  names are in the Unix style.  We will call these ACL2 pathnames,
-  often omitting the ``ACL2.''
+  connected book directory.  See [cbd] for how relative pathnames are
+  elaborated to absolute pathnames.  We emphasize that even for users
+  of Windows-based systems or Macintosh computers, ACL2 file names
+  are in the Unix style.  We will call these ACL2 pathnames, often
+  omitting the ``ACL2.''
 
   Pathnames starting with the directory separator (/) or the tilde
   character (~) are absolute pathnames.  All other pathnames are
@@ -106133,6 +106735,19 @@ Subtopics
       values while the other does not, regardless of whether or not
       [set-state-ok] has been evaluated.  That is, they only need to
       agree on the user-defined stobjs.
+   6. Redundancy may fail with an error about a name being ``already
+      defined using special raw Lisp code'' or ``predefined in the
+      \"COMMON-LISP\" package''.  This applies to certain functions
+      that are built into ACL2; it may also apply when definitions
+      are overridden in raw Lisp using trust tags (see [defttag]),
+      typically in books.  The reason for causing an error is that if
+      the proposed redundant definition is in a book, then when later
+      including that book after it is certified, the compiled code
+      for that definition will replace the original code, which is
+      generally undesirable when the original code has special raw
+      Lisp optimizations.  If the earlier definition is in a book,
+      then the error message will suggest including that book rather
+      than trying to define the function redundantly.
 
   An [encapsulate] event is most commonly redundant when a
   syntactically identical [encapsulate] has already been executed
@@ -107106,6 +107721,20 @@ Subtopics
   that the former is not [local] to [books] or [encapsulate] [events]
   in which it occurs.  See [remove-override-hints]; also see
   [add-override-hints] and see [set-override-hints].")
+ (REMOVE-TRIVIAL-EQUIVALENCES-ENABLED-P
+  (REWRITE SYSTEM-ATTACHMENTS)
+  "Avoid removal of trivial equivalences during rewriting
+
+  This topic concerns an advanced control for the ACL2 prover.
+
+  This zero-ary attachable system function controls the
+  ``remove-trivial-equivalences'' heuristic, which uses an equality
+  hypothesis (and, when appropriate, an [equivalence] hypothesis) to
+  replace a variable by a term in the rest of the goal.  (However,
+  perhaps similar heuristics will still be used, for example as part
+  of the [tau-system].)  Attach the function
+  constant-nil-function-arity-0 to avoid this heuristic, and attach
+  the function constant-t-function-arity-0 to restore it.")
  (REMOVE-UNTOUCHABLE
   (DEFTTAG)
   "Remove names from lists of untouchable symbols
@@ -108018,11 +108647,11 @@ Subtopics
   trust tag; see [defttag].  If a key is associated with the value
   nil, then that key is treated as though it were not in the table.
 
-  Note that keys of this table are not eligible to be bound by [flet].
-  The current value of this table may be obtained by evaluating the
-  form (table-alist 'return-last-table (w state)).  The built-in
-  constant *initial-return-last-table* holds the initial value of
-  this table.")
+  Note that keys of this table are not eligible to be bound by [flet]
+  or [macrolet].  The current value of this table may be obtained by
+  evaluating the form (table-alist 'return-last-table (w state)).
+  The built-in constant *initial-return-last-table* holds the initial
+  value of this table.")
  (REVAPPEND
   (LISTS ACL2-BUILT-INS)
   "Concatenate the [reverse] of one list to another
@@ -108333,6 +108962,9 @@ Subtopics
 
 Subtopics
 
+  [Assume-true-false-aggressive-p]
+      Control rewriter's use of the [type-alist] with IF calls
+
   [Backchain-limit]
       Limiting the effort expended on relieving hypotheses
 
@@ -108364,9 +108996,15 @@ Subtopics
   [Random-remarks-on-rewriting]
       Some basic facts about the ACL2 rewriter
 
+  [Remove-trivial-equivalences-enabled-p]
+      Avoid removal of trivial equivalences during rewriting
+
   [Rewrite-equiv]
       Force ACL2 to perform substitution using a stylized [equivalence]
       hypothesis
+
+  [Rewrite-if-avoid-swap]
+      Control rewriter's swapping of branches of IF calls
 
   [Rewrite-lambda-modep]
       switch controlling rewriting of lambda objects
@@ -108426,6 +109064,17 @@ Subtopics
   For an example of a [clause-processor] that leverages Rewrite-equiv
   to induce substitution using equivalence relations appearing in the
   hypothesis, see [rewrite-equiv-hint].")
+ (REWRITE-IF-AVOID-SWAP
+  (REWRITE SYSTEM-ATTACHMENTS)
+  "Control rewriter's swapping of branches of IF calls
+
+  This topic concerns an advanced control for the ACL2 prover.
+
+  By default, the ACL2 rewriter may swap true and false branches of a
+  call of IF, in particular when the test is a call of NOT.  Attach
+  the function constant-t-function-arity-0 to defeat this behavior.
+  Attach the function constant-nil-function-arity-0 to restore the
+  default behavior.")
  (REWRITE-LAMBDA-MODEP
   (REWRITE)
   "switch controlling rewriting of lambda objects
@@ -111332,6 +111981,46 @@ Subtopics
   intended (presumably, without errors).")
  (SAVING-AND-RESTORING (POINTERS)
                        "See [save-exec].")
+ (SBCL-INSTALLATION
+  (BUILDING-ACL2)
+  "Installing Steel Bank Common Lisp (SBCL)
+
+  SBCL is available from {https://www.sbcl.org | https://www.sbcl.org}.
+  You can of course go to that website to find download and
+  installation instructions for SBCL, but here is a concise summary
+  that includes build options appropriate for ACL2.
+
+   1. Download SBCL from {https://www.sbcl.org | https://www.sbcl.org}.  A
+      shortcut may be to follow the ``Source'' link near the top of
+      the page, {https://www.sbcl.org/platform-table.html |
+      https://www.sbcl.org/platform-table.html}.
+   2. The downloaded file will have a name like
+      ``sbcl-2.2.10-source.tar.bz2'', where ``2.2.10'' is replaced by
+      the current SBCL version.  Change to a directory just above
+      where you want SBCL to reside and move the downloaded file
+      there.
+   3. Extract the downloaded file (where it now resides), for example as
+      follows (again, where ``2.2.10'' is replaced by the current
+      SBCL version number).
+
+          tar xfj sbcl-2.2.10-source.tar.bz2
+
+   4. Change to the new directory and build SBCL with options appropriate
+      for ACL2, as follows (again, replacing ``2.2.10'' as
+      appropriate).
+
+          cd sbcl-2.2.10
+          sh make.sh --without-immobile-space --without-immobile-code --without-compact-instance-header
+
+   5. Create a script file in a directory that is on your path (or, if you
+      are updating your sbcl, just replace your current sbcl script;
+      you can find its location by executing the command, ``which
+      sbcl'').  If you are in directory <DIR> from the preceding step
+      (e.g., a path ending in ``sbcl-2.2.10''), then that script file
+      should contain the following lines.
+
+          #!/bin/sh
+          <DIR>/run-sbcl.sh --dynamic-space-size 2000 \"$@\"")
  (SCION
   (APPLY$)
   "A function ancestrally dependent on apply$
@@ -112088,11 +112777,11 @@ Subtopics
 
   where str is a nonempty string that represents the desired directory
   (see [pathname]).  This command sets the connected book directory
-  (see [cbd]) to the string representing the indicated directory.
+  to the string representing the indicated directory; see [cbd].
   Thus, this command may determine which files are processed by
   [include-book] and [certify-book] [command]s typed at the
-  top-level.  However, the [cbd] is also temporarily set by those two
-  book processing [command]s.
+  top-level, as well as by file operations such as
+  [open-input-channel].
 
   IMPORTANT: Pathnames in ACL2 are in the Unix (trademark of AT&T)
   style.  That is, the character ``/'' separates directory components
@@ -121409,12 +122098,9 @@ Subtopics
   expansion, such as when executing the form (sys-call \"ls\"
   '(\"*.lisp\")).  For ACL2 built on Allegro CL, CCL, CMUCL, GCL, or
   SBCL, we have seen this result in an error message such as \"No such
-  file or directory\", even though file of with names of the form
-  *.lisp are present in the current directory; but for ACL2 built on
-  LispWorks, a list of such filenames is printed.  For another
-  example, in GCL and perhaps some other lisps, you can put the
-  arguments with the command; but this is not the case, for example,
-  in Allegro CL running on Linux.
+  file or directory\", even though files with names of the form *.lisp
+  are present in the current directory; but for ACL2 built on
+  LispWorks, a list of such filenames is printed.
 
   More generally, we note that sys-call does not provide some features
   that one may expect of a shell.  We mentioned wildcard expansion
@@ -121533,8 +122219,9 @@ Subtopics
   following two differences between between sys-call* and sys-call+.
 
     * Both return an [error-triple] (mv erp val state), but for sys-call*,
-      val is always nil.  (For sys-call+, val is the string produced
-      as output by the command.)
+      val is always nil after printing as a side effect like
+      [sys-call].  (For sys-call+, val is the string produced as
+      output by the command.)
     * Logically, sys-call* pops the oracle once, not twice.")
  (SYS-CALL+
   (SYS-CALL ACL2-BUILT-INS)
@@ -121566,9 +122253,10 @@ Subtopics
   system-call+, whose output is converted by replacing an erp of nil
   by 0.)
 
-      Erp is either nil or a non-zero integer.  Normally, nil indicates
-      that the command ran without error, and otherwise erp is the
-      exit status.
+      Erp can be nil, indicating that after the command executes the
+      process status returned is 0, indicating a normal exit.
+      Otherwise erp is a non-zero integer, which is the status
+      returned by the process when it completes.
 
       Val is a string, typically the output generated by the call of cmd.
 
@@ -121599,17 +122287,14 @@ Subtopics
 
   This function returns two values, (mv status state).  The first is
   the status resulting from the most recent call to the operating
-  system by invoking function sys-call; see [sys-call].  The second
-  is the ACL2 [state] object, which is also the input to this
-  function.
+  system by invoking function [sys-call].  The second is the ACL2
+  [state] object, which is also the input to this function.
 
   The function [sys-call] provides a command to be executed by the host
   operating system (except when invoked during a proof; see
   [sys-call]) using a function supplied ``under the hood'' by the
-  underlying Lisp system.  The status value is the value returned by
-  that Lisp function, which may well be the numeric value returned by
-  the host operating system for the underlying system call.  For more
-  information, see [sys-call].")
+  underlying Lisp system.  The status value is an integer, which is
+  the status returned by the process when it completes.")
  (SYSFILE
   (BOOKS PROJECT-DIR-ALIST)
   "File representation using ACL2 project directories
@@ -121660,23 +122345,19 @@ Subtopics
   (PROGRAMMING DEFATTACH)
   "System-level algorithms that users can modify with attachments
 
-  For background on attachments, see [defattach].
+  This topic concerns advanced methods for modifying the behavior of
+  ACL2.  See [defattach] for some relevant background.
 
   If you evaluate the form (global-val 'attachments-at-ground-zero (w
   state)), you will see a list of pairs of the form (f . g), where f
-  is a built-in constrained utility and g is its attachment.  Here is
-  one such pair.
+  is a built-in constrained utility and g is its attachment.  At the
+  end of this topic is a list that associates each such f with brief
+  documentation (often, just a link).  Users are permitted to modify
+  these attachments using [defattach-system], even without a trust
+  tag (see [defttag]), because they do not affect soundness.
 
-    (ASSUME-TRUE-FALSE-AGGRESSIVE-P . CONSTANT-NIL-FUNCTION-ARITY-0)
-
-  Users are permitted to modify these attachments, even without a trust
-  tag (see [defttag]), because they do not affect soundness.  See
-  [defattach-system].
-
-  We do not attempt to explain how to define functions to attach to
-  system functions.  We do however point out these two useful
-  functions, for attaching to some constant functions (functions with
-  arity 0).
+  Here are two functions that are useful for attaching to many
+  attachable 0-ary system functions.
 
   Function: <constant-t-function-arity-0>
 
@@ -121690,23 +122371,158 @@ Subtopics
            nil (declare (xargs :guard t))
            nil)
 
-  To see how to use one of these functions, consider again the example
-  above, where constrained system function
-  assume-true-false-aggressive-p has the attachment,
-  constant-nil-function-arity-0.  Here we make the so-called
-  ``assume-true-false'' algorithm more aggressive.
+  To see how to use one of these functions, consider the following
+  example of a pair (f . g) as described above, i.e., a system
+  function f that comes with attachment g.
+
+    (ASSUME-TRUE-FALSE-AGGRESSIVE-P . CONSTANT-NIL-FUNCTION-ARITY-0)
+
+  Here is how we can make the so-called ``assume-true-false'' algorithm
+  more aggressive; see [assume-true-false-aggressive-p].
 
     (defattach-system assume-true-false-aggressive-p constant-t-function-arity-0)
 
-  Note that we are not explaining here what it means to make that
-  algorithm more aggressive!  We expect those who want to use these
-  attachments to be comfortable as ``system programmers'', as they
-  peruse the ACL2 source code and its comments in order to see how to
-  modify system behavior with attachments.  Perhaps more user-level
-  documentation will be written to help with that process.
+  The following brief explanations are intentionally brief.  We expect
+  that those who want to use such system attachments are comfortable
+  as ``system programmers'', so that the brief documentation below is
+  sufficient for getting started.  Perusal of the ACL2 source code
+  and its comments can fill in details as needed.
 
-  Also see [efficiency] for more about using attachments to modify the
-  prover's behavior.")
+  Also see [efficiency] for further discussion on making system
+  attachments that modify ACL2's default behavior.
+
+
+Summary of attachable system functions
+
+  ACL2X-EXPANSION-ALIST
+  Built-in attachment: IDENTITY-WITH-STATE
+  [Undocumented: low-level system utility]
+
+  ALWAYS-DO-PROOFS-DURING-MAKE-EVENT-EXPANSION
+  Built-in attachment: CONSTANT-NIL-FUNCTION-ARITY-0
+  Documentation: See [make-event].
+
+  ANCESTORS-CHECK
+  Built-in attachment: ANCESTORS-CHECK-BUILTIN
+  Documentation: Backchaining control; see
+  [use-trivial-ancestors-check].  Source function
+  strip-ancestor-literals might also be useful.
+
+  APPLY$-USERFN
+  Built-in attachment: DOPPELGANGER-APPLY$-USERFN
+  [Undocumented: low-level system utility]
+
+  ASSUME-TRUE-FALSE-AGGRESSIVE-P
+  Built-in attachment: CONSTANT-NIL-FUNCTION-ARITY-0
+  Documentation: See [assume-true-false-aggressive-p].
+
+  BADGE-USERFN
+  Built-in attachment: DOPPELGANGER-BADGE-USERFN
+  [Undocumented: low-level system utility]
+
+  BEING-OPENEDP-LIMITED-FOR-NONREC
+  Built-in attachment: CONSTANT-T-FUNCTION-ARITY-0
+  Documentation: Attach to constant-nil-function-arity-0 to extend to
+  non-recursively defined functions the stack-based limitation on
+  opening recursively-defined functions.
+
+  HEAVY-LINEAR-P
+  Built-in attachment: CONSTANT-NIL-FUNCTION-ARITY-0
+  Documentation: See [heavy-linear-p].
+
+  HIDE-WITH-COMMENT-P
+  Built-in attachment: CONSTANT-T-FUNCTION-ARITY-0
+  Documentation: See [hide].
+
+  ONCEP-TP
+  Built-in attachment: ONCEP-TP-BUILTIN
+  Documentation: See [free-variables-type-prescription].
+
+  PRINT-CLAUSE-ID-OKP
+  Built-in attachment: PRINT-CLAUSE-ID-OKP-BUILTIN
+  Documentation: See [set-print-clause-ids].
+
+  QUICK-AND-DIRTY-SRS
+  Built-in attachment: QUICK-AND-DIRTY-SRS-BUILTIN
+  Documentation: See [quick-and-dirty-subsumption-replacement-step].
+
+  RELIEVE-HYP-FAILURE-ENTRY-SKIP-P
+  Built-in attachment: RELIEVE-HYP-FAILURE-ENTRY-SKIP-P-BUILTIN
+  [Undocumented: low-level system utility]
+
+  REMOVE-GUARD-HOLDERS-BLOCKED-BY-HIDE-P
+  Built-in attachment: CONSTANT-T-FUNCTION-ARITY-0
+  Documentation: See [guard-holders].
+
+  REMOVE-GUARD-HOLDERS-LAMP
+  Built-in attachment: CONSTANT-T-FUNCTION-ARITY-0
+  Documentation: See [guard-holders].
+
+  REMOVE-TRIVIAL-EQUIVALENCES-ENABLED-P
+  Built-in attachment: CONSTANT-T-FUNCTION-ARITY-0
+  Documentation: See [remove-trivial-equivalences-enabled-p].
+
+  REWRITE-IF-AVOID-SWAP
+  Built-in attachment: CONSTANT-NIL-FUNCTION-ARITY-0
+  Documentation: See [rewrite-if-avoid-swap].
+
+  RW-CACHE-DEBUG
+  Built-in attachment: RW-CACHE-DEBUG-BUILTIN
+  [Undocumented: low-level system utility]
+
+  RW-CACHE-DEBUG-ACTION
+  Built-in attachment: RW-CACHE-DEBUG-ACTION-BUILTIN
+  [Undocumented: low-level system utility]
+
+  RW-CACHEABLE-FAILURE-REASON
+  Built-in attachment: RW-CACHEABLE-FAILURE-REASON-BUILTIN
+  [Undocumented: low-level system utility]
+
+  SET-LD-HISTORY-ENTRY-USER-DATA
+  Built-in attachment: SET-LD-HISTORY-ENTRY-USER-DATA-DEFAULT
+  Documentation: See [ld-history].
+
+  SIMPLIFIABLE-MV-NTH-P
+  Built-in attachment: CONSTANT-T-FUNCTION-ARITY-0
+  Documentation: See [theories-and-primitives].
+
+  TOO-MANY-IFS-POST-REWRITE
+  Built-in attachment: TOO-MANY-IFS-POST-REWRITE-BUILTIN
+  Documentation: Heuristic for discarding rewriter result with ``too
+  many IFs''.  Defeat by attaching constant-nil-function-arity-2.
+
+  TOO-MANY-IFS-PRE-REWRITE
+  Built-in attachment: TOO-MANY-IFS-PRE-REWRITE-BUILTIN
+  Documentation: Heuristic for skipping rewrite when unrewritten result
+  has ``too many IFs''.  Defeat by attaching
+  constant-nil-function-arity-2.
+
+  UNTRANSLATE-LAMBDA-OBJECT-P
+  Built-in attachment: CONSTANT-T-FUNCTION-ARITY-0
+  Documentation: See [lambda$].
+
+  WORSE-THAN
+  Built-in attachment: WORSE-THAN-BUILTIN
+  [Undocumented: low-level system utility]
+
+  WORSE-THAN-OR-EQUAL
+  Built-in attachment: WORSE-THAN-OR-EQUAL-BUILTIN
+  [Undocumented: low-level system utility]
+
+
+Subtopics
+
+  [Assume-true-false-aggressive-p]
+      Control rewriter's use of the [type-alist] with IF calls
+
+  [Heavy-linear-p]
+      Extend the use of [linear-arithmetic] during rewriting
+
+  [Remove-trivial-equivalences-enabled-p]
+      Avoid removal of trivial equivalences during rewriting
+
+  [Rewrite-if-avoid-swap]
+      Control rewriter's swapping of branches of IF calls")
  (SYSTEM-UTILITIES
   (PROGRAMMING)
   "Some built-in programming utilities pertaining to the ACL2 system
@@ -123903,7 +124719,9 @@ Subtopics
      (LIST (CADR X)
            (PROG2$ '(LOOP$ FOR E IN LST COLLECT (+ 1 E))
                    (COLLECT$ (LAMBDA$ (LOOP$-IVAR)
-                                      (LET ((E LOOP$-IVAR)) (+ 1 E)))
+                                      (LET ((E LOOP$-IVAR))
+                                           (DECLARE (IGNORABLE E))
+                                           (+ 1 E)))
                              LST)))
 
   First, notice that :trans also reports the output signature of the
@@ -123928,23 +124746,22 @@ Subtopics
                        as  y in ylst
                        collect (+ (* a x) (* b y)))
      (PROG2$
-        '(LOOP$ FOR X IN XLST
-                AS  Y IN YLST
-                COLLECT (+ (* A X) (* B Y)))
-        (COLLECT$+
-             (LAMBDA$ (LOOP$-GVARS LOOP$-IVARS)
-                      (DECLARE (XARGS :GUARD (AND (TRUE-LISTP LOOP$-GVARS)
-                                                  (EQUAL (LEN LOOP$-GVARS) 2)
-                                                  (TRUE-LISTP LOOP$-IVARS)
-                                                  (EQUAL (LEN LOOP$-IVARS) 2))
-                                      :SPLIT-TYPES T))
-                      (LET ((A (CAR LOOP$-GVARS))
-                            (B (CADR LOOP$-GVARS))
-                            (X (CAR LOOP$-IVARS))
-                            (Y (CADR LOOP$-IVARS)))
-                           (+ (* A X) (* B Y))))
-             (LIST A B)
-             (LOOP$-AS (LIST XLST YLST))))
+         '(LOOP$ FOR X IN XLST AS
+                 Y IN YLST COLLECT (+ (* A X) (* B Y)))
+         (COLLECT$+
+              (LAMBDA$ (LOOP$-GVARS LOOP$-IVARS)
+                       (DECLARE (XARGS :GUARD (AND (TRUE-LISTP LOOP$-GVARS)
+                                                   (EQUAL (LEN LOOP$-GVARS) 2)
+                                                   (TRUE-LISTP LOOP$-IVARS)
+                                                   (EQUAL (LEN LOOP$-IVARS) 2))))
+                       (LET ((A (CAR LOOP$-GVARS))
+                             (B (CAR (CDR LOOP$-GVARS)))
+                             (X (CAR LOOP$-IVARS))
+                             (Y (CAR (CDR LOOP$-IVARS))))
+                            (DECLARE (IGNORABLE A B X Y))
+                            (+ (* A X) (* B Y))))
+              (LIST A B)
+              (LOOP$-AS (LIST XLST YLST))))
 
   Notice what happens to the :guard of the lambda$ if we insert type
   specifications with of-type.
@@ -123952,27 +124769,28 @@ Subtopics
     ACL2 !>:tca (loop$ for x of-type (satisfies natp) in xlst
                        as  y of-type integer in ylst
                        collect (+ (* a x) (* b y)))
-
      (PROG2$
-       '(LOOP$ FOR X OF-TYPE (SATISFIES NATP)
-               IN XLST AS Y OF-TYPE INTEGER
-               IN YLST COLLECT (+ (* A X) (* B Y)))
-       (COLLECT$+
-            (LAMBDA$ (LOOP$-GVARS LOOP$-IVARS)
-                     (DECLARE (XARGS :GUARD (AND (TRUE-LISTP LOOP$-GVARS)
-                                                 (EQUAL (LEN LOOP$-GVARS) 2)
-                                                 (TRUE-LISTP LOOP$-IVARS)
-                                                 (EQUAL (LEN LOOP$-IVARS) 2)
-                                                 (NATP (CAR LOOP$-IVARS))
-                                                 (INTEGERP (CADR LOOP$-IVARS)))
-                                     :SPLIT-TYPES T))
-                     (LET ((A (CAR LOOP$-GVARS))
-                           (B (CADR LOOP$-GVARS))
-                           (X (CAR LOOP$-IVARS))
-                           (Y (CADR LOOP$-IVARS)))
-                          (+ (* A X) (* B Y))))
-            (LIST A B)
-            (LOOP$-AS (LIST XLST YLST))))
+      '(LOOP$ FOR X OF-TYPE (SATISFIES NATP)
+              IN XLST AS Y OF-TYPE INTEGER
+              IN YLST COLLECT (+ (* A X) (* B Y)))
+      (COLLECT$+
+       (LAMBDA$ (LOOP$-GVARS LOOP$-IVARS)
+                (DECLARE (XARGS :GUARD (AND (TRUE-LISTP LOOP$-GVARS)
+                                            (EQUAL (LEN LOOP$-GVARS) 2)
+                                            (TRUE-LISTP LOOP$-IVARS)
+                                            (EQUAL (LEN LOOP$-IVARS) 2)
+                                            (NATP (CAR LOOP$-IVARS))
+                                            (INTEGERP (CAR (CDR LOOP$-IVARS))))))
+                (LET ((A (CAR LOOP$-GVARS))
+                      (B (CAR (CDR LOOP$-GVARS)))
+                      (X (CAR LOOP$-IVARS))
+                      (Y (CAR (CDR LOOP$-IVARS))))
+                     (DECLARE (TYPE (SATISFIES NATP) X)
+                              (TYPE INTEGER Y)
+                              (IGNORABLE A B X Y))
+                     (+ (* A X) (* B Y))))
+       (LIST A B)
+       (LOOP$-AS (LIST XLST YLST))))
 
   And notice how the :guard keyword after the collect in the loop$
   statement is added to the :guard of the generated lambda$.
@@ -123984,29 +124802,32 @@ Subtopics
                                    (complex-rationalp b))
                        (+ (* a x) (* b y)))
      (PROG2$
-      '(LOOP$ FOR X OF-TYPE (SATISFIES NATP) IN XLST
-              AS  Y OF-TYPE INTEGER IN YLST
-              COLLECT
-              :GUARD (AND (RATIONALP A)
-                          (COMPLEX-RATIONALP B))
+      '(LOOP$ FOR X OF-TYPE (SATISFIES NATP)
+              IN XLST AS
+              Y OF-TYPE INTEGER IN YLST COLLECT :GUARD
+              (AND (RATIONALP A)
+                   (COMPLEX-RATIONALP B))
               (+ (* A X) (* B Y)))
       (COLLECT$+
        (LAMBDA$
         (LOOP$-GVARS LOOP$-IVARS)
-        (DECLARE (XARGS :GUARD (AND (TRUE-LISTP LOOP$-GVARS)
-                                    (EQUAL (LEN LOOP$-GVARS) 2)
-                                    (TRUE-LISTP LOOP$-IVARS)
-                                    (EQUAL (LEN LOOP$-IVARS) 2)
-                                    (NATP (CAR LOOP$-IVARS))
-                                    (INTEGERP (CADR LOOP$-IVARS))
-                                    (RATIONALP (CAR LOOP$-GVARS))
-                                    (COMPLEX-RATIONALP (CADR LOOP$-GVARS)))
-                        :SPLIT-TYPES T))
+        (DECLARE
+          (XARGS :GUARD (AND (TRUE-LISTP LOOP$-GVARS)
+                             (EQUAL (LEN LOOP$-GVARS) 2)
+                             (TRUE-LISTP LOOP$-IVARS)
+                             (EQUAL (LEN LOOP$-IVARS) 2)
+                             (NATP (CAR LOOP$-IVARS))
+                             (INTEGERP (CAR (CDR LOOP$-IVARS)))
+                             (AND (RATIONALP (CAR LOOP$-GVARS))
+                                  (COMPLEX-RATIONALP (CAR (CDR LOOP$-GVARS)))))))
         (LET ((A (CAR LOOP$-GVARS))
-              (B (CADR LOOP$-GVARS))
+              (B (CAR (CDR LOOP$-GVARS)))
               (X (CAR LOOP$-IVARS))
-              (Y (CADR LOOP$-IVARS)))
-          (+ (* A X) (* B Y))))
+              (Y (CAR (CDR LOOP$-IVARS))))
+             (DECLARE (TYPE (SATISFIES NATP) X)
+                      (TYPE INTEGER Y)
+                      (IGNORABLE A B X Y))
+             (+ (* A X) (* B Y))))
        (LIST A B)
        (LOOP$-AS (LIST XLST YLST))))
 
@@ -125052,6 +125873,37 @@ Subtopics
 
   See [proof-tree] for a discussion of a tool to help you navigate
   through ACL2 proofs.")
+ (THE-NUMBER
+  (NUMBERS ACL2-BUILT-INS)
+  "Coerce an expected number to a number
+
+  Like [fix], the-number logically returns its argument unchanged if
+  that argument is numeric and 0 otherwise.  Unlike fix, the [guard]
+  for (the-number x) is (acl2-numberp x), and (the-number x)
+  evaluates to x in raw Lisp (see [guards-and-evaluation] for
+  relevant discussion).
+
+  Function: <the-number>
+
+    (defun the-number (x)
+           (declare (xargs :guard (acl2-numberp x)))
+           (mbe :logic (fix x) :exec x))")
+ (THE-TRUE-LIST
+  (TRUE-LISTP ACL2-BUILT-INS)
+  "Coerce an expected true list to a true list
+
+  Like [true-list-fix], the-true-list logically returns its argument
+  unchanged if that argument satisfies [true-listp] and otherwise
+  returns a corrsponding ``fixed'' true list.  Unlike true-list-fix,
+  the [guard] for (the-true-list x) is (true-listp x), and
+  (the-true-list x) evaluates immediately to x in raw Lisp (see
+  [guards-and-evaluation] for relevant discussion).
+
+  Function: <the-true-list>
+
+    (defun the-true-list (x)
+           (declare (xargs :guard (true-listp x)))
+           (mbe :logic (true-list-fix x) :exec x))")
  (THEORIES
   (ACL2)
   "Sets of [rune]s to [enable]/[disable] in concert
@@ -128917,7 +129769,7 @@ Subtopics
  (TRANSLATE11 (POINTERS)
               "See [system-utilities].")
  (TRUE-LIST-FIX
-  (TRUE-LISTP)
+  (TRUE-LISTP ACL2-BUILT-INS)
   "Coerce to a true list
 
   Many functions that process lists follows the true-list-fix
@@ -128946,6 +129798,10 @@ Subtopics
   optimization, true-list-fix tries to avoid any consing by first
   checking whether its argument is a [true-listp], and, in that case,
   it simply returns its argument unchanged.
+
+  For a logically equivalent utility that returns its argument
+  unchanged (with no checking) during normal evaluation, see
+  [the-true-list].
 
   Function: <true-list-fix-exec>
 
@@ -128999,6 +129855,9 @@ right for you, see [std::strict-list-recognizers].
 
 
 Subtopics
+
+  [The-true-list]
+      Coerce an expected true list to a true list
 
   [True-list-fix]
       Coerce to a true list
@@ -132512,19 +133371,15 @@ Subtopics
 
   When an event fails you may see the following message:
 
-    *NOTE*: Useless-runes may have taken part in failed proofs.  See :DOC
-    useless-runes-failures.
+    *NOTE*: Useless-runes were in use and can affect proof attempts.  See
+    :DOC useless-runes-failures.
 
-  This message is printed as part of any [event] [failure] message when
-  a [useless-runes] file is being consulted, which is the default
-  when using build system tools (see [books-certification] and
-  [build::cert.pl]).  It is intended to suggest that you consider
-  removing or regenerating the associated [useless-runes] file in the
-  situation described below.
-
-  (Remark.  We hope that this message reduces confusion when a proof
-  fails.  But if the event failure isn't from a failed proof attempt,
-  please disregard the *NOTE* above and this documentation!)
+  This message may be printed after the usual failure message when a
+  [useless-runes] file has been consulted during proofs, as is
+  usually the case when using build system tools (see
+  [books-certification] and [build::cert.pl]).  It is intended to
+  suggest that you consider removing or regenerating the associated
+  [useless-runes] file in the situation described below.
 
   Suppose that you have developed a book --- say, foo.lisp --- and
   placed it into the [community-books].  Then [regression] runs may
@@ -132536,9 +133391,10 @@ Subtopics
   foo.lisp.  This could be unsettling!
 
   In that case, what is probably happening is that the [useless-runes]
-  file is no longer suitable.  You could simply remove it from the
-  GitHub repository as follows (followed by the usual actions to
-  update the repository).
+  file is no longer suitable.  If you are a contributor to the ``ACL2
+  System and Community Books'' GitHub project (see
+  [git-quick-start]), you can update repository as follows (followed
+  by the usual actions when updating the repository).
 
     git rm .sys/foo@useless-runes.lsp
 
@@ -139724,9 +140580,11 @@ Subtopics
   value supplied is only of interest when it is nil.  (See [defun]).
 
   :[otf-flg]
-  Value is a flag indicating ``onward through the fog'' (see
-  [otf-flg]).  It applies to the [guard] verification, as it is
-  effectively t during the termination proof.
+  Value is a flag indicating ``Onward Through the Fog'', to keep the
+  prover from starting over when it encounters a second subgoal to be
+  pushed for later proof by induction.  See [otf-flg]).  The default
+  is t when processing a [defun] or [verify-termination] event and
+  nil otherwise.
 
   :ruler-extenders
   For recursive definitions (possibly mutually recursive), value
