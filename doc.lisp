@@ -15530,7 +15530,10 @@ Subtopics
 Subtopics
 
   [Ccl-installation]
-      Installing Clozure Common Lisp (CCL)")
+      Installing Clozure Common Lisp (CCL)
+
+  [Sbcl-installation]
+      Installing Steel Bank Common Lisp (SBCL)")
  (BUILT-IN-CLAUSE
   (RULE-CLASSES)
   "To build a clause into the simplifier
@@ -16509,7 +16512,7 @@ configure-ccl.lisp
   (CCL-INSTALLATION)
   "Installing Clozure Common Lisp (CCL) on Linux (brief version)
 
-  NOTESee {the Clozure CL releases page |
+  NOTE: See {the Clozure CL releases page |
   https://github.com/Clozure/ccl/releases/} for the latest
   information, which may supersede some of what is included below.
 
@@ -16556,7 +16559,7 @@ configure-ccl.lisp
   (CCL-INSTALLATION)
   "Installing Clozure Common Lisp (CCL) on Linux (elaborate version)
 
-  NOTESee {the Clozure CL releases page |
+  NOTE: See {the Clozure CL releases page |
   https://github.com/Clozure/ccl/releases/} for the latest
   information, which may supersede some of what is included below.
 
@@ -16622,7 +16625,7 @@ configure-ccl.lisp
   (CCL-INSTALLATION)
   "Installing Clozure Common Lisp (CCL) on Mac (brief version)
 
-  NOTESee {the Clozure CL releases page |
+  NOTE: See {the Clozure CL releases page |
   https://github.com/Clozure/ccl/releases/} for the latest
   information, which may supersede some of what is included below.
 
@@ -16673,7 +16676,7 @@ configure-ccl.lisp
   (CCL-INSTALLATION)
   "Installing Clozure Common Lisp (CCL) on Mac (elaborate version)
 
-  NOTESee {the Clozure CL releases page |
+  NOTE: See {the Clozure CL releases page |
   https://github.com/Clozure/ccl/releases/} for the latest
   information, which may supersede some of what is included below.
 
@@ -111978,6 +111981,46 @@ Subtopics
   intended (presumably, without errors).")
  (SAVING-AND-RESTORING (POINTERS)
                        "See [save-exec].")
+ (SBCL-INSTALLATION
+  (BUILDING-ACL2)
+  "Installing Steel Bank Common Lisp (SBCL)
+
+  SBCL is available from {https://www.sbcl.org | https://www.sbcl.org}.
+  You can of course go to that website to find download and
+  installation instructions for SBCL, but here is a concise summary
+  that includes build options appropriate for ACL2.
+
+   1. Download SBCL from {https://www.sbcl.org | https://www.sbcl.org}.  A
+      shortcut may be to follow the ``Source'' link near the top of
+      the page, {https://www.sbcl.org/platform-table.html |
+      https://www.sbcl.org/platform-table.html}.
+   2. The downloaded file will have a name like
+      ``sbcl-2.2.10-source.tar.bz2'', where ``2.2.10'' is replaced by
+      the current SBCL version.  Change to a directory just above
+      where you want SBCL to reside and move the downloaded file
+      there.
+   3. Extract the downloaded file (where it now resides), for example as
+      follows (again, where ``2.2.10'' is replaced by the current
+      SBCL version number).
+
+          tar xfj sbcl-2.2.10-source.tar.bz2
+
+   4. Change to the new directory and build SBCL with options appropriate
+      for ACL2, as follows (again, replacing ``2.2.10'' as
+      appropriate).
+
+          cd sbcl-2.2.10
+          sh make.sh --without-immobile-space --without-immobile-code --without-compact-instance-header
+
+   5. Create a script file in a directory that is on your path (or, if you
+      are updating your sbcl, just replace your current sbcl script;
+      you can find its location by executing the command, ``which
+      sbcl'').  If you are in directory <DIR> from the preceding step
+      (e.g., a path ending in ``sbcl-2.2.10''), then that script file
+      should contain the following lines.
+
+          #!/bin/sh
+          <DIR>/run-sbcl.sh --dynamic-space-size 2000 \"$@\"")
  (SCION
   (APPLY$)
   "A function ancestrally dependent on apply$
