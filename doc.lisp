@@ -10439,6 +10439,23 @@ Subtopics
                  ((string-equal str (car (car alist)))
                   (car alist))
                  (t (assoc-string-equal str (cdr alist)))))")
+ (ASSUME-TRUE-FALSE-AGGRESSIVE-P
+  (REWRITE SYSTEM-ATTACHMENTS)
+  "Control rewriter's use of the [type-alist] with IF calls
+
+  This topic concerns an advanced control for the ACL2 prover.
+
+  This zero-ary attachable system function controls the rewriter's use
+  of the [type-alist] when diving into calls of IF.  By default, when
+  ACL2 rewrites what amounts to (if (or test1 test2) (if test1 _ x)
+  _), the type-alist will fail to note that test2 is true when
+  rewriting x.  Attach the function constant-t-function-arity-0 to
+  strengthen the use of the type-alist so that test2 is instead noted
+  as true in that case.  Note that this strengthening may slow down
+  ACL2 considerably in some cases, and should rarely if ever be
+  necessary when calling the prover; but it can be useful in
+  applications that call the rewriter directly.  Attach the function
+  constant-nil-function-arity-0 to restore the default behavior.")
  (ATOM
   (CONSES ACL2-BUILT-INS)
   "Recognizer for atoms
@@ -15513,7 +15530,10 @@ Subtopics
 Subtopics
 
   [Ccl-installation]
-      Installing Clozure Common Lisp (CCL)")
+      Installing Clozure Common Lisp (CCL)
+
+  [Sbcl-installation]
+      Installing Steel Bank Common Lisp (SBCL)")
  (BUILT-IN-CLAUSE
   (RULE-CLASSES)
   "To build a clause into the simplifier
@@ -16492,7 +16512,7 @@ configure-ccl.lisp
   (CCL-INSTALLATION)
   "Installing Clozure Common Lisp (CCL) on Linux (brief version)
 
-  NOTESee {the Clozure CL releases page |
+  NOTE: See {the Clozure CL releases page |
   https://github.com/Clozure/ccl/releases/} for the latest
   information, which may supersede some of what is included below.
 
@@ -16539,7 +16559,7 @@ configure-ccl.lisp
   (CCL-INSTALLATION)
   "Installing Clozure Common Lisp (CCL) on Linux (elaborate version)
 
-  NOTESee {the Clozure CL releases page |
+  NOTE: See {the Clozure CL releases page |
   https://github.com/Clozure/ccl/releases/} for the latest
   information, which may supersede some of what is included below.
 
@@ -16605,7 +16625,7 @@ configure-ccl.lisp
   (CCL-INSTALLATION)
   "Installing Clozure Common Lisp (CCL) on Mac (brief version)
 
-  NOTESee {the Clozure CL releases page |
+  NOTE: See {the Clozure CL releases page |
   https://github.com/Clozure/ccl/releases/} for the latest
   information, which may supersede some of what is included below.
 
@@ -16656,7 +16676,7 @@ configure-ccl.lisp
   (CCL-INSTALLATION)
   "Installing Clozure Common Lisp (CCL) on Mac (elaborate version)
 
-  NOTESee {the Clozure CL releases page |
+  NOTE: See {the Clozure CL releases page |
   https://github.com/Clozure/ccl/releases/} for the latest
   information, which may supersede some of what is included below.
 
@@ -23841,12 +23861,12 @@ Three Primary Uses of Defattach.
    1. The example at the beginning of this [documentation] illustrates
       constrained function execution.
    2. ACL2 is written essentially in itself.  Thus, there is an opportunity
-      to attaching to system functions.  For example, encapsulated
+      to attach to system functions.  For example, encapsulated
       function too-many-ifs-post-rewrite, in the ACL2 source code,
       receives an attachment of too-many-ifs-post-rewrite-builtin,
-      which implements a heuristic used in the rewriter.  To find all
-      such examples, search the source code for the string
-      `-builtin'.
+      which implements a heuristic used in the rewriter.  See
+      [system-attachments].  To find all such examples, search the
+      source code for the string `-builtin'.
       Over time, we expect to continue replacing ACL2 source code in a
       similar manner.  We invite the ACL2 community to assist in this
       ``open architecture'' enterprise; feel free to email the ACL2
@@ -28192,8 +28212,8 @@ Subtopics
                       :normalize nil
                       :verify-guards nil
                       :non-executable t
-                      :type-prescription (natp (example x y z a b c i j))
-                      :otf-flg t))
+                      :otf-flg t ; the default
+                      :type-prescription (natp (example x y z a b c i j))))
       (example-body x y z i j))
 
 
@@ -46940,6 +46960,19 @@ Subtopics
          header (name l)
          (declare (xargs :guard (or (array1p name l) (array2p name l))))
          (prog2$ name (assoc-eq :header l)))")
+ (HEAVY-LINEAR-P
+  (LINEAR-ARITHMETIC SYSTEM-ATTACHMENTS)
+  "Extend the use of [linear-arithmetic] during rewriting
+
+  This topic concerns an advanced control for the ACL2 prover.
+
+  This zero-ary attachable system function supports extending the usual
+  use of [linear-arithmetic] during rewriting, specifically with the
+  test (first) argument of a call of IF.  To get this additional
+  power, possibly at considerable loss of efficiency, evaluate
+  (defattach-system heavy-linear-p constant-t-function-arity-0).  To
+  restore the default behavior, evaluate (defattach-system
+  heavy-linear-p constant-nil-function-arity-0).")
  (HEY_WAIT!__IS_ACL2_TYPED_OR_UNTYPED{Q}
   (PAGES_WRITTEN_ESPECIALLY_FOR_THE_TOURS)
   "Hey Wait!  Is ACL2 Typed or Untyped?
@@ -59241,7 +59274,13 @@ Subtopics
   for a description of how :[linear] rules are used.
 
   See also [non-linear-arithmetic] for a description of an extension to
-  the linear-arithmetic procedure described here.")
+  the linear-arithmetic procedure described here.
+
+
+Subtopics
+
+  [Heavy-linear-p]
+      Extend the use of [linear-arithmetic] during rewriting")
  (LISP-PROGRAMMER-INTRODUCTION
       (POINTERS)
       "See [introduction-to-programming-in-ACL2-for-those-who-know-lisp].")
@@ -92271,19 +92310,25 @@ Changes to Existing Features
   those, such as +.  Thanks to Eric Smith for pointing out odd output
   for examples like :pr binary-+.
 
+  The definition of [pseudo-termp] has been simplified by dropping a
+  superfluous [true-listp] check.  Thanks for the suggestion from
+  Eric Smith.  A new lemma, pseudo-termp-consp-forward, has been
+  added to prevent some existing proofs from failing due to the
+  change.
+
+  The failure message regarding [useless-runes] (see
+  [useless-runes-failures]) has been restricted to the case that a
+  proof was attempted by the event (though there may be rare
+  exceptions).  Thanks to Eric Smith for requesting such a change.
+
 
 New Features
 
-  The new zero-ary attachable system function, heavy-linear-p, allows
+  The new zero-ary attachable system function, [heavy-linear-p], allows
   for enhanced use of [linear-arithmetic] during rewriting,
-  specifically with the test (first) argument of a call of IF.  To
-  get this additional power, possibly at considerable loss of
-  efficiency, evaluate (defattach-system heavy-linear-p
-  constant-t-function-arity-0).  To restore the default behavior,
-  evaluate (defattach-system heavy-linear-p
-  constant-nil-function-arity-0).  Thanks to Eric Smith for
-  suggesting the development of such a feature, which can be useful
-  in rewriting-based tools.
+  specifically with the test (first) argument of a call of IF.
+  Thanks to Eric Smith for suggesting the development of such a
+  feature, which can be useful in rewriting-based tools.
 
   There is a new `make' target to build an ACL2 executable using
   save-exec.  See [save-exec], in particular the new discussion at
@@ -92427,6 +92472,19 @@ Bug Fixes
       value tested, in expressions (loop$ for i from lo to hi by inc
       ...).
 
+  Fixed a low-level bug in source function
+  translate-declaration-to-guard1-gen that was incorrectly creating
+  untranslated [term]s in some cases from [type] declarations of the
+  form (type (signed-byte _) _) or (type (unsigned-byte _) _).  Here
+  is an example of an event that is rejected without the bug fix.
+
+    (defun foo (n)
+      (apply$ (lambda$ (x)
+                       (declare (type (signed-byte 8) x)
+                                (xargs :guard (signed-byte-p 8 x) :split-types t))
+                       (+ 3 x))
+              (nfix n)))
+
 
 Changes at the System Level
 
@@ -92442,6 +92500,11 @@ Changes at the System Level
   value of sys-call+ and sys-call*.  Also, a bug has been fixed for
   sys-call+ in the case of GCL as the host Lisp.  Thanks to Eric
   Smith for queries leading to these changes.
+
+  Significantly extended documentation topic [system-attachments],
+  which now lists all built-in system attachments, many with brief
+  documentation.  Thanks to Eric Smith for suggesting this
+  enhancement.
 
 
 EMACS Support
@@ -94184,9 +94247,22 @@ Subtopics
   (DEFTHM THM XARGS)
   "Allow more than one initial subgoal to be pushed for induction
 
-  The value of this flag is normally nil.  If you want to prevent the
-  theorem prover from abandoning its initial work upon pushing the
-  second subgoal, set :otf-flg to t.
+  This keyword argument for certain [events] controls whether the
+  theorem prover will abandon its initial work upon encountering the
+  second subgoal to push for proof by induction: :otf-flg is nil for
+  that behavior, but t if it should instead continue ``Onward Through
+  the Fog'' and complete [waterfall] processing before starting any
+  proof by induction.
+
+  The default value for :otf-flg is nil except during processing of
+  [defun] events, where the default is t for both termination and
+  [guard] proofs (see [defun]).  Note that the default for :otf-flg
+  is thus t for processing [verify-termination] events, since they
+  abbreviate defun events.  However, the default for :otf-flg is nil
+  for processing [verify-guards] events.
+
+
+Further Explanation
 
   Suppose you submit a conjecture to the theorem prover and the system
   splits it up into many subgoals.  Any subgoal not proved by other
@@ -107645,6 +107721,20 @@ Subtopics
   that the former is not [local] to [books] or [encapsulate] [events]
   in which it occurs.  See [remove-override-hints]; also see
   [add-override-hints] and see [set-override-hints].")
+ (REMOVE-TRIVIAL-EQUIVALENCES-ENABLED-P
+  (REWRITE SYSTEM-ATTACHMENTS)
+  "Avoid removal of trivial equivalences during rewriting
+
+  This topic concerns an advanced control for the ACL2 prover.
+
+  This zero-ary attachable system function controls the
+  ``remove-trivial-equivalences'' heuristic, which uses an equality
+  hypothesis (and, when appropriate, an [equivalence] hypothesis) to
+  replace a variable by a term in the rest of the goal.  (However,
+  perhaps similar heuristics will still be used, for example as part
+  of the [tau-system].)  Attach the function
+  constant-nil-function-arity-0 to avoid this heuristic, and attach
+  the function constant-t-function-arity-0 to restore it.")
  (REMOVE-UNTOUCHABLE
   (DEFTTAG)
   "Remove names from lists of untouchable symbols
@@ -108872,6 +108962,9 @@ Subtopics
 
 Subtopics
 
+  [Assume-true-false-aggressive-p]
+      Control rewriter's use of the [type-alist] with IF calls
+
   [Backchain-limit]
       Limiting the effort expended on relieving hypotheses
 
@@ -108903,9 +108996,15 @@ Subtopics
   [Random-remarks-on-rewriting]
       Some basic facts about the ACL2 rewriter
 
+  [Remove-trivial-equivalences-enabled-p]
+      Avoid removal of trivial equivalences during rewriting
+
   [Rewrite-equiv]
       Force ACL2 to perform substitution using a stylized [equivalence]
       hypothesis
+
+  [Rewrite-if-avoid-swap]
+      Control rewriter's swapping of branches of IF calls
 
   [Rewrite-lambda-modep]
       switch controlling rewriting of lambda objects
@@ -108965,6 +109064,17 @@ Subtopics
   For an example of a [clause-processor] that leverages Rewrite-equiv
   to induce substitution using equivalence relations appearing in the
   hypothesis, see [rewrite-equiv-hint].")
+ (REWRITE-IF-AVOID-SWAP
+  (REWRITE SYSTEM-ATTACHMENTS)
+  "Control rewriter's swapping of branches of IF calls
+
+  This topic concerns an advanced control for the ACL2 prover.
+
+  By default, the ACL2 rewriter may swap true and false branches of a
+  call of IF, in particular when the test is a call of NOT.  Attach
+  the function constant-t-function-arity-0 to defeat this behavior.
+  Attach the function constant-nil-function-arity-0 to restore the
+  default behavior.")
  (REWRITE-LAMBDA-MODEP
   (REWRITE)
   "switch controlling rewriting of lambda objects
@@ -111871,6 +111981,46 @@ Subtopics
   intended (presumably, without errors).")
  (SAVING-AND-RESTORING (POINTERS)
                        "See [save-exec].")
+ (SBCL-INSTALLATION
+  (BUILDING-ACL2)
+  "Installing Steel Bank Common Lisp (SBCL)
+
+  SBCL is available from {https://www.sbcl.org | https://www.sbcl.org}.
+  You can of course go to that website to find download and
+  installation instructions for SBCL, but here is a concise summary
+  that includes build options appropriate for ACL2.
+
+   1. Download SBCL from {https://www.sbcl.org | https://www.sbcl.org}.  A
+      shortcut may be to follow the ``Source'' link near the top of
+      the page, {https://www.sbcl.org/platform-table.html |
+      https://www.sbcl.org/platform-table.html}.
+   2. The downloaded file will have a name like
+      ``sbcl-2.2.10-source.tar.bz2'', where ``2.2.10'' is replaced by
+      the current SBCL version.  Change to a directory just above
+      where you want SBCL to reside and move the downloaded file
+      there.
+   3. Extract the downloaded file (where it now resides), for example as
+      follows (again, where ``2.2.10'' is replaced by the current
+      SBCL version number).
+
+          tar xfj sbcl-2.2.10-source.tar.bz2
+
+   4. Change to the new directory and build SBCL with options appropriate
+      for ACL2, as follows (again, replacing ``2.2.10'' as
+      appropriate).
+
+          cd sbcl-2.2.10
+          sh make.sh --without-immobile-space --without-immobile-code --without-compact-instance-header
+
+   5. Create a script file in a directory that is on your path (or, if you
+      are updating your sbcl, just replace your current sbcl script;
+      you can find its location by executing the command, ``which
+      sbcl'').  If you are in directory <DIR> from the preceding step
+      (e.g., a path ending in ``sbcl-2.2.10''), then that script file
+      should contain the following lines.
+
+          #!/bin/sh
+          <DIR>/run-sbcl.sh --dynamic-space-size 2000 \"$@\"")
  (SCION
   (APPLY$)
   "A function ancestrally dependent on apply$
@@ -122195,23 +122345,19 @@ Subtopics
   (PROGRAMMING DEFATTACH)
   "System-level algorithms that users can modify with attachments
 
-  For background on attachments, see [defattach].
+  This topic concerns advanced methods for modifying the behavior of
+  ACL2.  See [defattach] for some relevant background.
 
   If you evaluate the form (global-val 'attachments-at-ground-zero (w
   state)), you will see a list of pairs of the form (f . g), where f
-  is a built-in constrained utility and g is its attachment.  Here is
-  one such pair.
+  is a built-in constrained utility and g is its attachment.  At the
+  end of this topic is a list that associates each such f with brief
+  documentation (often, just a link).  Users are permitted to modify
+  these attachments using [defattach-system], even without a trust
+  tag (see [defttag]), because they do not affect soundness.
 
-    (ASSUME-TRUE-FALSE-AGGRESSIVE-P . CONSTANT-NIL-FUNCTION-ARITY-0)
-
-  Users are permitted to modify these attachments, even without a trust
-  tag (see [defttag]), because they do not affect soundness.  See
-  [defattach-system].
-
-  We do not attempt to explain how to define functions to attach to
-  system functions.  We do however point out these two useful
-  functions, for attaching to some constant functions (functions with
-  arity 0).
+  Here are two functions that are useful for attaching to many
+  attachable 0-ary system functions.
 
   Function: <constant-t-function-arity-0>
 
@@ -122225,23 +122371,158 @@ Subtopics
            nil (declare (xargs :guard t))
            nil)
 
-  To see how to use one of these functions, consider again the example
-  above, where constrained system function
-  assume-true-false-aggressive-p has the attachment,
-  constant-nil-function-arity-0.  Here we make the so-called
-  ``assume-true-false'' algorithm more aggressive.
+  To see how to use one of these functions, consider the following
+  example of a pair (f . g) as described above, i.e., a system
+  function f that comes with attachment g.
+
+    (ASSUME-TRUE-FALSE-AGGRESSIVE-P . CONSTANT-NIL-FUNCTION-ARITY-0)
+
+  Here is how we can make the so-called ``assume-true-false'' algorithm
+  more aggressive; see [assume-true-false-aggressive-p].
 
     (defattach-system assume-true-false-aggressive-p constant-t-function-arity-0)
 
-  Note that we are not explaining here what it means to make that
-  algorithm more aggressive!  We expect those who want to use these
-  attachments to be comfortable as ``system programmers'', as they
-  peruse the ACL2 source code and its comments in order to see how to
-  modify system behavior with attachments.  Perhaps more user-level
-  documentation will be written to help with that process.
+  The following brief explanations are intentionally brief.  We expect
+  that those who want to use such system attachments are comfortable
+  as ``system programmers'', so that the brief documentation below is
+  sufficient for getting started.  Perusal of the ACL2 source code
+  and its comments can fill in details as needed.
 
-  Also see [efficiency] for more about using attachments to modify the
-  prover's behavior.")
+  Also see [efficiency] for further discussion on making system
+  attachments that modify ACL2's default behavior.
+
+
+Summary of attachable system functions
+
+  ACL2X-EXPANSION-ALIST
+  Built-in attachment: IDENTITY-WITH-STATE
+  [Undocumented: low-level system utility]
+
+  ALWAYS-DO-PROOFS-DURING-MAKE-EVENT-EXPANSION
+  Built-in attachment: CONSTANT-NIL-FUNCTION-ARITY-0
+  Documentation: See [make-event].
+
+  ANCESTORS-CHECK
+  Built-in attachment: ANCESTORS-CHECK-BUILTIN
+  Documentation: Backchaining control; see
+  [use-trivial-ancestors-check].  Source function
+  strip-ancestor-literals might also be useful.
+
+  APPLY$-USERFN
+  Built-in attachment: DOPPELGANGER-APPLY$-USERFN
+  [Undocumented: low-level system utility]
+
+  ASSUME-TRUE-FALSE-AGGRESSIVE-P
+  Built-in attachment: CONSTANT-NIL-FUNCTION-ARITY-0
+  Documentation: See [assume-true-false-aggressive-p].
+
+  BADGE-USERFN
+  Built-in attachment: DOPPELGANGER-BADGE-USERFN
+  [Undocumented: low-level system utility]
+
+  BEING-OPENEDP-LIMITED-FOR-NONREC
+  Built-in attachment: CONSTANT-T-FUNCTION-ARITY-0
+  Documentation: Attach to constant-nil-function-arity-0 to extend to
+  non-recursively defined functions the stack-based limitation on
+  opening recursively-defined functions.
+
+  HEAVY-LINEAR-P
+  Built-in attachment: CONSTANT-NIL-FUNCTION-ARITY-0
+  Documentation: See [heavy-linear-p].
+
+  HIDE-WITH-COMMENT-P
+  Built-in attachment: CONSTANT-T-FUNCTION-ARITY-0
+  Documentation: See [hide].
+
+  ONCEP-TP
+  Built-in attachment: ONCEP-TP-BUILTIN
+  Documentation: See [free-variables-type-prescription].
+
+  PRINT-CLAUSE-ID-OKP
+  Built-in attachment: PRINT-CLAUSE-ID-OKP-BUILTIN
+  Documentation: See [set-print-clause-ids].
+
+  QUICK-AND-DIRTY-SRS
+  Built-in attachment: QUICK-AND-DIRTY-SRS-BUILTIN
+  Documentation: See [quick-and-dirty-subsumption-replacement-step].
+
+  RELIEVE-HYP-FAILURE-ENTRY-SKIP-P
+  Built-in attachment: RELIEVE-HYP-FAILURE-ENTRY-SKIP-P-BUILTIN
+  [Undocumented: low-level system utility]
+
+  REMOVE-GUARD-HOLDERS-BLOCKED-BY-HIDE-P
+  Built-in attachment: CONSTANT-T-FUNCTION-ARITY-0
+  Documentation: See [guard-holders].
+
+  REMOVE-GUARD-HOLDERS-LAMP
+  Built-in attachment: CONSTANT-T-FUNCTION-ARITY-0
+  Documentation: See [guard-holders].
+
+  REMOVE-TRIVIAL-EQUIVALENCES-ENABLED-P
+  Built-in attachment: CONSTANT-T-FUNCTION-ARITY-0
+  Documentation: See [remove-trivial-equivalences-enabled-p].
+
+  REWRITE-IF-AVOID-SWAP
+  Built-in attachment: CONSTANT-NIL-FUNCTION-ARITY-0
+  Documentation: See [rewrite-if-avoid-swap].
+
+  RW-CACHE-DEBUG
+  Built-in attachment: RW-CACHE-DEBUG-BUILTIN
+  [Undocumented: low-level system utility]
+
+  RW-CACHE-DEBUG-ACTION
+  Built-in attachment: RW-CACHE-DEBUG-ACTION-BUILTIN
+  [Undocumented: low-level system utility]
+
+  RW-CACHEABLE-FAILURE-REASON
+  Built-in attachment: RW-CACHEABLE-FAILURE-REASON-BUILTIN
+  [Undocumented: low-level system utility]
+
+  SET-LD-HISTORY-ENTRY-USER-DATA
+  Built-in attachment: SET-LD-HISTORY-ENTRY-USER-DATA-DEFAULT
+  Documentation: See [ld-history].
+
+  SIMPLIFIABLE-MV-NTH-P
+  Built-in attachment: CONSTANT-T-FUNCTION-ARITY-0
+  Documentation: See [theories-and-primitives].
+
+  TOO-MANY-IFS-POST-REWRITE
+  Built-in attachment: TOO-MANY-IFS-POST-REWRITE-BUILTIN
+  Documentation: Heuristic for discarding rewriter result with ``too
+  many IFs''.  Defeat by attaching constant-nil-function-arity-2.
+
+  TOO-MANY-IFS-PRE-REWRITE
+  Built-in attachment: TOO-MANY-IFS-PRE-REWRITE-BUILTIN
+  Documentation: Heuristic for skipping rewrite when unrewritten result
+  has ``too many IFs''.  Defeat by attaching
+  constant-nil-function-arity-2.
+
+  UNTRANSLATE-LAMBDA-OBJECT-P
+  Built-in attachment: CONSTANT-T-FUNCTION-ARITY-0
+  Documentation: See [lambda$].
+
+  WORSE-THAN
+  Built-in attachment: WORSE-THAN-BUILTIN
+  [Undocumented: low-level system utility]
+
+  WORSE-THAN-OR-EQUAL
+  Built-in attachment: WORSE-THAN-OR-EQUAL-BUILTIN
+  [Undocumented: low-level system utility]
+
+
+Subtopics
+
+  [Assume-true-false-aggressive-p]
+      Control rewriter's use of the [type-alist] with IF calls
+
+  [Heavy-linear-p]
+      Extend the use of [linear-arithmetic] during rewriting
+
+  [Remove-trivial-equivalences-enabled-p]
+      Avoid removal of trivial equivalences during rewriting
+
+  [Rewrite-if-avoid-swap]
+      Control rewriter's swapping of branches of IF calls")
  (SYSTEM-UTILITIES
   (PROGRAMMING)
   "Some built-in programming utilities pertaining to the ACL2 system
@@ -133090,19 +133371,15 @@ Subtopics
 
   When an event fails you may see the following message:
 
-    *NOTE*: Useless-runes may have taken part in failed proofs.  See :DOC
-    useless-runes-failures.
+    *NOTE*: Useless-runes were in use and can affect proof attempts.  See
+    :DOC useless-runes-failures.
 
-  This message is printed as part of any [event] [failure] message when
-  a [useless-runes] file is being consulted, which is the default
-  when using build system tools (see [books-certification] and
-  [build::cert.pl]).  It is intended to suggest that you consider
-  removing or regenerating the associated [useless-runes] file in the
-  situation described below.
-
-  (Remark.  We hope that this message reduces confusion when a proof
-  fails.  But if the event failure isn't from a failed proof attempt,
-  please disregard the *NOTE* above and this documentation!)
+  This message may be printed after the usual failure message when a
+  [useless-runes] file has been consulted during proofs, as is
+  usually the case when using build system tools (see
+  [books-certification] and [build::cert.pl]).  It is intended to
+  suggest that you consider removing or regenerating the associated
+  [useless-runes] file in the situation described below.
 
   Suppose that you have developed a book --- say, foo.lisp --- and
   placed it into the [community-books].  Then [regression] runs may
@@ -133114,9 +133391,10 @@ Subtopics
   foo.lisp.  This could be unsettling!
 
   In that case, what is probably happening is that the [useless-runes]
-  file is no longer suitable.  You could simply remove it from the
-  GitHub repository as follows (followed by the usual actions to
-  update the repository).
+  file is no longer suitable.  If you are a contributor to the ``ACL2
+  System and Community Books'' GitHub project (see
+  [git-quick-start]), you can update repository as follows (followed
+  by the usual actions when updating the repository).
 
     git rm .sys/foo@useless-runes.lsp
 
@@ -140302,9 +140580,11 @@ Subtopics
   value supplied is only of interest when it is nil.  (See [defun]).
 
   :[otf-flg]
-  Value is a flag indicating ``onward through the fog'' (see
-  [otf-flg]).  It applies to the [guard] verification, as it is
-  effectively t during the termination proof.
+  Value is a flag indicating ``Onward Through the Fog'', to keep the
+  prover from starting over when it encounters a second subgoal to be
+  pushed for later proof by induction.  See [otf-flg]).  The default
+  is t when processing a [defun] or [verify-termination] event and
+  nil otherwise.
 
   :ruler-extenders
   For recursive definitions (possibly mutually recursive), value
