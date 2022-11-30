@@ -7506,6 +7506,22 @@ and @(tsee include-book)"
 
  @(def assoc-string-equal)")
 
+(defxdoc assume-true-false-aggressive-p
+  :parents (rewrite system-attachments)
+  :short "Control rewriter's use of the @(see type-alist) with @('IF') calls"
+  :long "<p>This topic concerns an advanced control for the ACL2 prover.</p>
+
+ <p>This zero-ary attachable system function controls the rewriter's use of the
+ @(see type-alist) when diving into calls of @('IF').  By default, when ACL2
+ rewrites what amounts to @('(if (or test1 test2) (if test1 _ x) _)'), the
+ type-alist will fail to note that @('test2') is true when rewriting @('x').
+ Attach the function @('constant-t-function-arity-0') to strengthen the use of
+ the type-alist so that @('test2') is instead noted as true in that case.  Note
+ that this strengthening may slow down ACL2 considerably in some cases, and
+ should rarely if ever be necessary when calling the prover; but it can be
+ useful in applications that call the rewriter directly.  Attach the function
+ @('constant-nil-function-arity-0') to restore the default behavior.</p>")
+
 (defxdoc atom
   :parents (conses acl2-built-ins)
   :short "Recognizer for atoms"
@@ -20648,12 +20664,12 @@ subtree of X with T, without duplication.</p>
  <li>The example at the beginning of this @(see documentation) illustrates
  constrained function execution.</li>
 
- <li>ACL2 is written essentially in itself.  Thus, there is an opportunity
- to attaching to system functions.  For example, encapsulated function
+ <li>ACL2 is written essentially in itself.  Thus, there is an opportunity to
+ attach to system functions.  For example, encapsulated function
  @('too-many-ifs-post-rewrite'), in the ACL2 source code, receives an
  attachment of @('too-many-ifs-post-rewrite-builtin'), which implements a
- heuristic used in the rewriter.  To find all such examples, search the source
- code for the string `-builtin'.<br/>
+ heuristic used in the rewriter.  See @(see system-attachments).  To find all
+ such examples, search the source code for the string `-builtin'.<br/>
 
  Over time, we expect to continue replacing ACL2 source code in a similar
  manner.  We invite the ACL2 community to assist in this ``open architecture''
@@ -25020,8 +25036,8 @@ subtree of X with T, without duplication.</p>
                     :normalize nil
                     :verify-guards nil
                     :non-executable t
-                    :type-prescription (natp (example x y z a b c i j))
-                    :otf-flg t))
+                    :otf-flg t ; the default
+                    :type-prescription (natp (example x y z a b c i j))))
     (example-body x y z i j))
  })")
 
@@ -43659,6 +43675,19 @@ current fast alists."
  @('name').  See @(see arrays).</p>
 
  @(def header)")
+
+(defxdoc heavy-linear-p
+  :parents (linear-arithmetic system-attachments)
+  :short "Extend the use of @(see linear-arithmetic) during rewriting"
+  :long "<p>This topic concerns an advanced control for the ACL2 prover.</p>
+
+ <p>This zero-ary attachable system function supports extending the usual use
+ of @(see linear-arithmetic) during rewriting, specifically with the
+ test (first) argument of a call of @('IF').  To get this additional power,
+ possibly at considerable loss of efficiency, evaluate @('(defattach-system
+ heavy-linear-p constant-t-function-arity-0)').  To restore the default
+ behavior, evaluate @('(defattach-system heavy-linear-p
+ constant-nil-function-arity-0)').</p>")
 
 (defxdoc hidden-death-package
   :parents (packages defpkg)
@@ -94414,9 +94443,9 @@ it."
 ; package (generally, "COMMON-LISP").  Thanks to Eric Smith for a query leading
 ; to this improvement.
 
-; Dropped an unnecessary true-listp check from the definition of pseudo-termp,
-; following suggestion from Eric Smith.  Added lemma pseudo-termp-consp-forward
-; to prevent some existing proofs from then failing.
+; Replaced most of the SBCL instructions at installation/requirements.html with
+; new topic, :DOC sbcl-installation.  Thanks to David Russinoff for helpful
+; suggestions and to Eric Smith for the idea of making such a :DOC topic.
 
   :parents (release-notes)
   :short "ACL2 Version  8.6 (xxx, 20xx) Notes"
@@ -94529,17 +94558,23 @@ it."
  one of those, such as @('+').  Thanks to Eric Smith for pointing out odd
  output for examples like @(':pr binary-+').</p>
 
+ <p>The definition of @(tsee pseudo-termp) has been simplified by dropping a
+ superfluous @(tsee true-listp) check.  Thanks for the suggestion from Eric
+ Smith.  A new lemma, @('pseudo-termp-consp-forward'), has been added to
+ prevent some existing proofs from failing due to the change.</p>
+
+ <p>The failure message regarding @(see useless-runes) (see @(see
+ useless-runes-failures)) has been restricted to the case that a proof was
+ attempted by the event (though there may be rare exceptions).  Thanks to Eric
+ Smith for requesting such a change.</p>
+
  <h3>New Features</h3>
 
- <p>The new zero-ary attachable system function, @('heavy-linear-p'), allows
+ <p>The new zero-ary attachable system function, @(tsee heavy-linear-p), allows
  for enhanced use of @(see linear-arithmetic) during rewriting, specifically
- with the test (first) argument of a call of @('IF').  To get this additional
- power, possibly at considerable loss of efficiency, evaluate
- @('(defattach-system heavy-linear-p constant-t-function-arity-0)').  To
- restore the default behavior, evaluate @('(defattach-system heavy-linear-p
- constant-nil-function-arity-0)').  Thanks to Eric Smith for suggesting the
- development of such a feature, which can be useful in rewriting-based
- tools.</p>
+ with the test (first) argument of a call of @('IF').  Thanks to Eric Smith for
+ suggesting the development of such a feature, which can be useful in
+ rewriting-based tools.</p>
 
  <p>There is a new `@('make')' target to build an ACL2 executable using
  @('save-exec').  See @(see save-exec), in particular the new discussion at the
@@ -94682,6 +94717,21 @@ it."
 
  </ul>
 
+ <p>Fixed a low-level bug in source function
+ @('translate-declaration-to-guard1-gen') that was incorrectly creating
+ untranslated @(see term)s in some cases from @(see type) declarations of the
+ form @('(type (signed-byte _) _)') or @('(type (unsigned-byte _) _)').  Here
+ is an example of an event that is rejected without the bug fix.</p>
+
+ @({
+ (defun foo (n)
+   (apply$ (lambda$ (x)
+                    (declare (type (signed-byte 8) x)
+                             (xargs :guard (signed-byte-p 8 x) :split-types t))
+                    (+ 3 x))
+           (nfix n)))
+ })
+
  <h3>Changes at the System Level</h3>
 
  <p>The `@('make')' target, @('save-exec'), now builds @('custom-saved_acl2')
@@ -94696,6 +94746,10 @@ it."
  value of @('sys-call+') and @('sys-call*').  Also, a bug has been fixed for
  @('sys-call+') in the case of GCL as the host Lisp.  Thanks to Eric Smith
  for queries leading to these changes.</p>
+
+ <p>Significantly extended documentation topic @(see system-attachments), which
+ now lists all built-in system attachments, many with brief documentation.
+ Thanks to Eric Smith for suggesting this enhancement.</p>
 
  <h3>EMACS Support</h3>
 
@@ -95995,9 +96049,21 @@ arithmetic) for libraries of @(see books) for arithmetic reasoning.</p>")
 (defxdoc otf-flg
   :parents (defthm thm xargs)
   :short "Allow more than one initial subgoal to be pushed for induction"
-  :long "<p>The value of this flag is normally @('nil').  If you want to
- prevent the theorem prover from abandoning its initial work upon pushing the
- second subgoal, set @(':otf-flg') to @('t').</p>
+  :long "<p>This keyword argument for certain @(see events) controls whether
+ the theorem prover will abandon its initial work upon encountering the second
+ subgoal to push for proof by induction: @(':otf-flg') is @('nil') for that
+ behavior, but @('t') if it should instead continue &ldquo;Onward Through the
+ Fog&rdquo; and complete @(see waterfall) processing before starting any proof
+ by induction.</p>
+
+ <p>The default value for @(':otf-flg') is @('nil') except during processing of
+ @(tsee defun) events, where the default is @('t') for both termination and
+ @(see guard) proofs (see @(see defun)).  Note that the default for
+ @(':otf-flg') is thus @('t') for processing @(tsee verify-termination) events,
+ since they abbreviate @('defun') events.  However, the default for
+ @(':otf-flg') is @('nil') for processing @(tsee verify-guards) events.</p>
+
+ <h3>Further Explanation</h3>
 
  <p>Suppose you submit a conjecture to the theorem prover and the system splits
  it up into many subgoals.  Any subgoal not proved by other methods is
@@ -106994,6 +107060,20 @@ arithmetic) for libraries of @(see books) for arithmetic reasoning.</p>")
  remove-override-hints); also see @(see add-override-hints) and see @(see
  set-override-hints).</p>")
 
+(defxdoc remove-trivial-equivalences-enabled-p
+  :parents (rewrite system-attachments)
+  :short "Avoid removal of trivial equivalences during rewriting"
+  :long "<p>This topic concerns an advanced control for the ACL2 prover.</p>
+
+ <p>This zero-ary attachable system function controls the
+ &ldquo;remove-trivial-equivalences&rdquo; heuristic, which uses an equality
+ hypothesis (and, when appropriate, an @(see equivalence) hypothesis) to
+ replace a variable by a term in the rest of the goal.  (However, perhaps
+ similar heuristics will still be used, for example as part of the @(see
+ tau-system).)  Attach the function @('constant-nil-function-arity-0') to avoid
+ this heuristic, and attach the function @('constant-t-function-arity-0') to
+ restore it.</p>")
+
 (defxdoc remove-untouchable
   :parents (defttag)
   :short "Remove names from lists of untouchable symbols"
@@ -108194,6 +108274,17 @@ arithmetic) for libraries of @(see books) for arithmetic reasoning.</p>")
  <p>For an example of a @(see clause-processor) that leverages
  @('Rewrite-equiv') to induce substitution using equivalence relations
  appearing in the hypothesis, see @(see rewrite-equiv-hint).</p>")
+
+(defxdoc rewrite-if-avoid-swap
+  :parents (rewrite system-attachments)
+  :short "Control rewriter's swapping of branches of @('IF') calls"
+  :long "<p>This topic concerns an advanced control for the ACL2 prover.</p>
+
+ <p>By default, the ACL2 rewriter may swap true and false branches of a call of
+ @('IF'), in particular when the test is a call of @('NOT').  Attach the
+ function @('constant-t-function-arity-0') to defeat this behavior.  Attach the
+ function @('constant-nil-function-arity-0') to restore the default
+ behavior.</p>")
 
 (defxdoc rewrite-lambda-modep
   :parents (rewrite)
@@ -111208,6 +111299,137 @@ arithmetic) for libraries of @(see books) for arithmetic reasoning.</p>")
  <p>WARNING: It is a good idea to look at the log file noted in the `@('make')'
  output, to check that your customization file loaded as intended (presumably,
  without errors).</p>")
+
+(defxdoc sbcl-installation
+
+; This :DOC topic replaces what was in the section on "Obtaining SBCL" in ACL2
+; file installation/requirements.html.  That material contained some
+; information that is probably now obsolete.  Here is that material, in case
+; some of it turns out to be useful down the road.
+
+#|
+
+ <P><B><A NAME="Obtaining-SBCL">Obtaining SBCL</A></B></P>
+
+ <p>SBCL (Steel Bank Common Lisp) is a non-commercial Common Lisp
+ implementation, available
+ from <code><a href="http://sbcl.sourceforge.net/">http://sbcl.sourceforge.net/</a></code>.
+ You may be able to download a suitable binary distribution from that
+ website, but for some of the older versions (such as 1.2.11, which as
+ of August 2021 has been the latest binary available for MacOS from
+ that website for some years), you will not be able to certify some of
+ the community books.  If you download a binary, you can check that the
+ form <code>(member :sb-thread *features*)</code> evaluates to a value
+ other than <code>NIL</code>.  To avoid this issue you can build from
+ source, following instructions from the <code>INSTALL</code> file of
+ the SBCL distribution using this command:</p>
+
+ <pre>
+ sh make.sh --with-sb-thread
+ </pre>
+
+ <p>If you try to run large jobs using ACL2 built on SBCL (version
+   1.2.11 or later), such as building the ACL2+books combined manual,
+   you may fail with an error, "Immobile space exhausted".  We have
+   avoided this error by building SBCL from source rather than
+   obtaining a binary, using options as follows.  (Note: The use of
+   "--with-sb-thread" hasn't generally been necessary, but we have
+   seen the need for it when building on FreeBSD.)</p>
+
+ <pre>
+ sh make.sh --without-immobile-space --without-immobile-code --without-compact-instance-header --with-sb-thread
+ </pre>
+
+ <p>Rather comparable test runs produced a significant speed-up when
+ building with the options above, as shown by the following results
+ when using the "time" command for such runs.</p>
+
+ <pre>
+ ;;; before using the options above in the build
+ 85597.939u 1357.892s 3:27:15.73 699.2%  0+0k 1677680+7635408io 607pf+0w
+
+ ;;; after using the options above in the build
+ 72693.740u 1565.148s 2:58:36.10 692.9%  0+0k 3778176+7630768io 1250pf+0w
+ </pre>
+
+ <p><i>Creating an SBCL executable</i></p>
+
+ <p>If you build SBCL from source as discussed above, you can make an
+   SBCL executable by creating an executable file on your path, as
+   follows.  Note that the option <code>--dynamic-space-size
+   2000</code> may be necessary so that there is sufficient heap memory
+   to build ACL2.</p>
+
+ <pre>
+ #!/bin/sh
+ &lt;sbcl-dir-path&gt;/run-sbcl.sh --dynamic-space-size 2000 "$@"
+ </pre>
+
+ <p><i>Further troubleshooting with SBCL</i></p>
+
+ <p>We have seen the error, "An mprotect call failed with ENOMEM."
+ This error has been observed to have disappeared in SBCL 2.1.11
+ (perhaps simply because of a change to the books in a github version
+ of ACL2 in Fall 2021).  Before that, a solution was to rebuild the
+ SBCL executable after editing the SBCL source
+ file <code>src/compiler/x86-64/parms.lisp</code>, replacing the
+ line<br/>
+ <code>(defconstant gencgc-card-bytes +backend-page-bytes+)</code><br/>
+ by the following line.<br/>
+ <code>(defconstant gencgc-card-bytes (* 2 +backend-page-bytes+))</code></p>
+
+|#
+
+  :parents (building-acl2)
+  :short "Installing Steel Bank Common Lisp (SBCL)"
+  :long "<p>SBCL is available from <tt><a
+ href='https://www.sbcl.org'>https://www.sbcl.org</a></tt>.  You can of course
+ go to that website to find download and installation instructions for SBCL,
+ but here is a concise summary that includes build options appropriate for
+ ACL2.</p>
+
+ <ol>
+
+ <li>Download SBCL from <tt><a
+ href='https://www.sbcl.org'>https://www.sbcl.org</a></tt>.  A shortcut may be
+ to follow the &ldquo;<b>Source</b>&rdquo; link near the top of the page,
+ <tt><a
+ href='https://www.sbcl.org/platform-table.html'>https://www.sbcl.org/platform-table.html</a></tt>.</li>
+
+ <li>The downloaded file will have a name like
+ &ldquo;@('sbcl-2.2.10-source.tar.bz2')&rdquo;, where &ldquo;@('2.2.10')&rdquo;
+ is replaced by the current SBCL version.  Change to a directory just above
+ where you want SBCL to reside and move the downloaded file there.</li>
+
+ <li>Extract the downloaded file (where it now resides), for example as follows
+ (again, where &ldquo;@('2.2.10')&rdquo; is replaced by the current SBCL
+ version number).
+
+ @({
+ tar xfj sbcl-2.2.10-source.tar.bz2
+ })</li>
+
+ <li>Change to the new directory and build SBCL with options appropriate for
+ ACL2, as follows (again, replacing &ldquo;@('2.2.10')&rdquo; as appropriate).
+
+ @({
+ cd sbcl-2.2.10
+ sh make.sh --without-immobile-space --without-immobile-code --without-compact-instance-header
+ })</li>
+
+ <li>Create a script file in a directory that is on your path (or, if you are
+ updating your sbcl, just replace your current sbcl script; you can find its
+ location by executing the command, &ldquo;@('which sbcl')&rdquo;).  If you are
+ in directory @('<DIR>') from the preceding step (e.g., a path ending in
+ &ldquo;@('sbcl-2.2.10')&rdquo;), then that script file should contain the
+ following lines.
+
+ @({
+ #!/bin/sh
+ <DIR>/run-sbcl.sh --dynamic-space-size 2000 \"$@\"
+ })</li>
+
+ </ol>")
 
 (defxdoc scion
   :parents (apply$)
@@ -121456,50 +121678,168 @@ arithmetic) for libraries of @(see books) for arithmetic reasoning.</p>")
  . \"<dir>\")').  This capability supports relocating book directories; see
  @(see project-dir-alist) for a more complete discussion.</p>")
 
-(defxdoc system-attachments
-  :parents (programming defattach)
-  :short "System-level algorithms that users can modify with attachments"
-  :long "<p>For background on attachments, see @(see defattach).</p>
+; Start support for :DOC system-attachments
+
+(defconst *system-attachments-long-prefix*
+  "<p>This topic concerns advanced methods for modifying the behavior
+ of ACL2.  See @(see defattach) for some relevant background.</p>
 
  <p>If you evaluate the form @('(global-val 'attachments-at-ground-zero (w
  state))'), you will see a list of pairs of the form @('(f . g)'), where @('f')
- is a built-in constrained utility and @('g') is its attachment.  Here is one
- such pair.</p>
+ is a built-in constrained utility and @('g') is its attachment.  At the end of
+ this topic is a list that associates each such @('f') with brief
+ documentation (often, just a link).  Users are permitted to modify these
+ attachments using @(tsee defattach-system), even without a trust tag (see
+ @(see defttag)), because they do not affect soundness.</p>
 
- @({
- (ASSUME-TRUE-FALSE-AGGRESSIVE-P . CONSTANT-NIL-FUNCTION-ARITY-0)
- })
-
- <p>Users are permitted to modify these attachments, even without a trust tag
- (see @(see defttag)), because they do not affect soundness.  See @(see
- defattach-system).</p>
-
- <p>We do not attempt to explain how to define functions to attach to system
- functions.  We do however point out these two useful functions, for attaching
- to some constant functions (functions with arity 0).</p>
+ <p>Here are two functions that are useful for attaching to many attachable
+ 0-ary system functions.</p>
 
  @(def constant-t-function-arity-0)
 
  @(def constant-nil-function-arity-0)
 
- <p>To see how to use one of these functions, consider again the example above,
- where constrained system function @('assume-true-false-aggressive-p') has the
- attachment, @('constant-nil-function-arity-0').  Here we make the so-called
- ``assume-true-false'' algorithm more aggressive.</p>
+ <p>To see how to use one of these functions, consider the following example of
+ a pair @('(f . g)') as described above, i.e., a system function @('f') that
+ comes with attachment @('g').</p>
+
+ @({
+ (ASSUME-TRUE-FALSE-AGGRESSIVE-P . CONSTANT-NIL-FUNCTION-ARITY-0)
+ })
+
+ <p>Here is how we can make the so-called ``assume-true-false'' algorithm more
+ aggressive; see @(see assume-true-false-aggressive-p).</p>
 
  @({
  (defattach-system assume-true-false-aggressive-p constant-t-function-arity-0)
  })
 
- <p>Note that we are not explaining here what it means to make that algorithm
- more aggressive!  We expect those who want to use these attachments to be
- comfortable as ``system programmers'', as they peruse the ACL2 source code and
- its comments in order to see how to modify system behavior with attachments.
- Perhaps more user-level documentation will be written to help with that
- process.</p>
+ <p>The following brief explanations are intentionally brief.  We expect that
+ those who want to use such system attachments are comfortable as &ldquo;system
+ programmers&rdquo;, so that the brief documentation below is sufficient for
+ getting started.  Perusal of the ACL2 source code and its comments can fill in
+ details as needed.</p>
 
- <p>Also see @(see efficiency) for more about using attachments to modify the
- prover's behavior.</p>")
+ <p>Also see @(see efficiency) for further discussion on making system
+ attachments that modify ACL2's default behavior.</p>
+")
+
+(defconst *attachments-at-ground-zero-doc-alist*
+
+; Keep this list sorted by key.
+
+  '((ACL2X-EXPANSION-ALIST IDENTITY-WITH-STATE)
+    (ALWAYS-DO-PROOFS-DURING-MAKE-EVENT-EXPANSION CONSTANT-NIL-FUNCTION-ARITY-0
+                                                  make-event)
+    (ANCESTORS-CHECK ANCESTORS-CHECK-BUILTIN
+                     "Backchaining control; see @(see
+                      use-trivial-ancestors-check).  Source function
+                      @('strip-ancestor-literals') might also be useful.")
+    (APPLY$-USERFN DOPPELGANGER-APPLY$-USERFN)
+    (ASSUME-TRUE-FALSE-AGGRESSIVE-P CONSTANT-NIL-FUNCTION-ARITY-0
+                                    assume-true-false-aggressive-p)
+    (BADGE-USERFN DOPPELGANGER-BADGE-USERFN)
+    (BEING-OPENEDP-LIMITED-FOR-NONREC
+     CONSTANT-T-FUNCTION-ARITY-0
+     "Attach to @('constant-nil-function-arity-0') to extend to non-recursively
+      defined functions the stack-based limitation on opening
+      recursively-defined functions.")
+    (HEAVY-LINEAR-P CONSTANT-NIL-FUNCTION-ARITY-0 heavy-linear-p)
+    (HIDE-WITH-COMMENT-P CONSTANT-T-FUNCTION-ARITY-0 hide)
+    (ONCEP-TP ONCEP-TP-BUILTIN
+              free-variables-type-prescription)
+    (PRINT-CLAUSE-ID-OKP PRINT-CLAUSE-ID-OKP-BUILTIN set-print-clause-ids)
+    (QUICK-AND-DIRTY-SRS
+     QUICK-AND-DIRTY-SRS-BUILTIN
+     quick-and-dirty-subsumption-replacement-step)
+    (RELIEVE-HYP-FAILURE-ENTRY-SKIP-P RELIEVE-HYP-FAILURE-ENTRY-SKIP-P-BUILTIN)
+    (REMOVE-GUARD-HOLDERS-BLOCKED-BY-HIDE-P CONSTANT-T-FUNCTION-ARITY-0
+                                            guard-holders)
+    (REMOVE-GUARD-HOLDERS-LAMP CONSTANT-T-FUNCTION-ARITY-0
+                               guard-holders)
+    (REMOVE-TRIVIAL-EQUIVALENCES-ENABLED-P
+     CONSTANT-T-FUNCTION-ARITY-0
+     remove-trivial-equivalences-enabled-p)
+    (REWRITE-IF-AVOID-SWAP CONSTANT-NIL-FUNCTION-ARITY-0 rewrite-if-avoid-swap)
+    (RW-CACHE-DEBUG RW-CACHE-DEBUG-BUILTIN)
+    (RW-CACHE-DEBUG-ACTION RW-CACHE-DEBUG-ACTION-BUILTIN)
+    (RW-CACHEABLE-FAILURE-REASON RW-CACHEABLE-FAILURE-REASON-BUILTIN)
+    (SET-LD-HISTORY-ENTRY-USER-DATA SET-LD-HISTORY-ENTRY-USER-DATA-DEFAULT
+                                    ld-history)
+    (SIMPLIFIABLE-MV-NTH-P CONSTANT-T-FUNCTION-ARITY-0
+                           theories-and-primitives)
+    (TOO-MANY-IFS-POST-REWRITE TOO-MANY-IFS-POST-REWRITE-BUILTIN
+                               "Heuristic for discarding rewriter result with
+                                &ldquo;too many IFs&rdquo;.  Defeat by
+                                attaching @('constant-nil-function-arity-2').")
+    (TOO-MANY-IFS-PRE-REWRITE TOO-MANY-IFS-PRE-REWRITE-BUILTIN
+                              "Heuristic for skipping rewrite when unrewritten
+                               result has &ldquo;too many IFs&rdquo;.  Defeat
+                               by attaching
+                               @('constant-nil-function-arity-2').")
+    (UNTRANSLATE-LAMBDA-OBJECT-P CONSTANT-T-FUNCTION-ARITY-0
+                                 lambda$)
+    (WORSE-THAN WORSE-THAN-BUILTIN)
+    (WORSE-THAN-OR-EQUAL WORSE-THAN-OR-EQUAL-BUILTIN)))
+
+(assert-event
+ (let ((from-doc (strip-cars *attachments-at-ground-zero-doc-alist*))
+       (from-wrld (merge-sort-symbol< (strip-cars
+                                       (global-val 'attachments-at-ground-zero
+                                                   (w state))))))
+   (or (equal from-doc from-wrld)
+       (cw "ERROR: Failed check on *attachments-at-ground-zero-doc-alist* in ~
+            books/system/doc/acl2-doc.lisp.~|~%Missing from ~
+            *attachments-at-ground-zero-doc-alist*:~|~x0~|~%To be deleted ~
+            from *attachments-at-ground-zero-doc-alist*:~|~x1"
+           (set-difference-eq from-wrld from-doc)
+           (set-difference-eq from-doc from-wrld)))))
+
+(defun system-attachments-xdoc-details (alist)
+
+; At the top level, alist is *attachments-at-ground-zero-doc-alist*.
+
+  (cond
+   ((endp alist) "")
+   (t
+    (let* ((tuple (car alist))
+           (f (car tuple))
+           (g (cadr tuple))
+           (doc (cond ((null (cddr tuple))
+                       "[Undocumented: low-level system utility]")
+                      ((symbolp (caddr tuple))
+                       (concatenate 'string
+                                    "Documentation: See @(see "
+                                    (symbol-name (caddr tuple))
+                                    ")."))
+                      ((stringp (caddr tuple))
+                       (concatenate 'string "Documentation: " (caddr tuple)))
+                      (t (er hard 'system-attachments-xdoc-details
+                             "Unexpected shape for tuple ~x0"
+                             (car alist))))))
+      (concatenate
+       'string
+       "
+ <p>@('"
+       (symbol-name f)
+       "')<br/>Built-in attachment: @('"
+       (symbol-name g)
+       "')<br/>"
+       doc
+       "</p>"
+       (system-attachments-xdoc-details (cdr alist)))))))
+
+(make-event `
+(defxdoc system-attachments
+  :parents (programming defattach)
+  :short "System-level algorithms that users can modify with attachments"
+  :long
+  ,(concatenate 'string
+                *system-attachments-long-prefix*
+                " <h3>Summary of attachable system functions</h3>"
+                (system-attachments-xdoc-details
+                 *attachments-at-ground-zero-doc-alist*)))
+)
 
 (defxdoc system-utilities
 
@@ -132484,20 +132824,16 @@ introduction-to-the-tau-system) for more information about Tau.</dd>
   :long "<p>When an event fails you may see the following message:</p>
 
  @({
- *NOTE*: Useless-runes may have taken part in failed proofs.  See :DOC
- useless-runes-failures.
+ *NOTE*: Useless-runes were in use and can affect proof attempts.  See
+ :DOC useless-runes-failures.
  })
 
- <p>This message is printed as part of any @(see event) @(see failure) message
- when a @(see useless-runes) file is being consulted, which is the default when
- using build system tools (see @(see books-certification) and @(see
+ <p>This message may be printed after the usual failure message when a @(see
+ useless-runes) file has been consulted during proofs, as is usually the case
+ when using build system tools (see @(see books-certification) and @(see
  build::cert.pl)).  It is intended to suggest that you consider removing or
  regenerating the associated @(see useless-runes) file in the situation
  described below.</p>
-
- <p>(Remark.  We hope that this message reduces confusion when a proof fails.
- But if the event failure isn't from a failed proof attempt, please disregard
- the @('*NOTE*') above and this documentation!)</p>
 
  <p>Suppose that you have developed a book &mdash; say, @('foo.lisp') &mdash;
  and placed it into the @(see community-books).  Then @(see regression) runs
@@ -132509,8 +132845,9 @@ introduction-to-the-tau-system) for more information about Tau.</dd>
  unsettling!</p>
 
  <p>In that case, what is probably happening is that the @(see useless-runes)
- file is no longer suitable.  You could simply remove it from the GitHub
- repository as follows (followed by the usual actions to update the
+ file is no longer suitable.  If you are a contributor to the ``ACL2 System and
+ Community Books'' GitHub project (see @(see git-quick-start)), you can update
+ repository as follows (followed by the usual actions when updating the
  repository).</p>
 
  @({
@@ -140045,9 +140382,11 @@ created from the original fast alist during @('form') must be manually freed."
 
  <p>@(':')@(tsee otf-flg)<br></br>
 
- Value is a flag indicating ``onward through the fog''
- (see @(see otf-flg)).  It applies to the @(see guard) verification, as it is
- effectively @('t') during the termination proof.</p>
+ Value is a flag indicating &ldquo;Onward Through the Fog&rdquo;, to keep the
+ prover from starting over when it encounters a second subgoal to be pushed for
+ later proof by induction.  See @(see otf-flg)).  The default is @('t') when
+ processing a @(tsee defun) or @(tsee verify-termination) event and @('nil')
+ otherwise.</p>
 
  <p>@(':ruler-extenders')<br></br>
 
