@@ -8138,6 +8138,9 @@ Examples
   weird-little-lemma1 and weird-little-lemma2, shown in
   books/projects/apply/report.lisp.
 
+  For a summary of how the rewriter handles apply$, ev$, and loop$
+  [scion]s, see [rewriting-calls-of-apply$-ev$-and-loop$-scions].
+
     ; [1] SQ squares, if you have the warrant for sq!  Imagine for a moment that
     ; we could prove (equal (apply$ 'SQ (list i)) (* i i)) without the warrant
     ; hypothesis shown below.  And imagine that we did so in an encapsulated
@@ -8585,6 +8588,9 @@ Theorems Involving Apply$
     * If you see (apply$ 'fn ...) then perhaps the rewrite rule APPLY$-fn
       is disabled.  That rule is the one that forces the warrant for
       fn and it was proved when fn was warranted.
+    * Consider how the rewriter handles apply$ terms, by reading
+      [rewriting-calls-of-apply$-ev$-and-loop$-scions] and inspecting
+      the enabled/disabled status of the runes mentioned there.
 
   These issues are discussed further in the documentation for
   [warrant].
@@ -9087,6 +9093,9 @@ Subtopics
 
   [Print-cl-cache]
       Information about the cache supporting apply$
+
+  [Rewriting-calls-of-apply$-ev$-and-loop$-scions]
+      How the rewriter handles apply$, ev$, and loop$ terms
 
   [Scion]
       A function ancestrally dependent on apply$
@@ -33939,7 +33948,9 @@ Subtopics
   expected'' on [tame] expressions and requires [warrant]s, explicit
   in the proof theory or implicit in the evaluation theory, to
   determine [badge]s and thus tameness.  See [apply$] for details,
-  including the formal definitions of ev$ and ev$-list.")
+  including the formal definitions of ev$ and ev$-list.  For a
+  summary of how the rewriter handles apply$, ev$, and loop$
+  [scion]s, see [rewriting-calls-of-apply$-ev$-and-loop$-scions].")
  (EV$-LIST (POINTERS) "See [apply$].")
  (EVALUATING_APP_ON_SAMPLE_INPUT
   (PAGES_WRITTEN_ESPECIALLY_FOR_THE_TOURS)
@@ -61558,8 +61569,11 @@ Subtopics
 
   The Introduction below is followed by a discussion of types and
   guards.  For a discussion of how to prove inductive theorems about
-  loop$s see [loop$-proofs].  But before we get started we emphasize
-  a few key points.
+  loop$s see [loop$-proofs].  Also, for a summary of how the rewriter
+  handles apply$, ev$, and loop$ [scion]s, see
+  [rewriting-calls-of-apply$-ev$-and-loop$-scions].
+
+  But before we get started we emphasize a few key points.
 
     * Many examples of [loop$] expressions may be found in [community-book]
       projects/apply/loop-tests.lisp.
@@ -61878,13 +61892,39 @@ Subtopics
 
   ACL2's prover can derive induction schemes suggested by some loop$
   statements, just as it can from some calls of recursive functions.
-  The key issue is whether appropriate arguments are variables.  For
-  example (nth n lst) suggests induction on lst by cdr, and
-  instantiates n with (- n 1) in the induction hypothesis.  But (nth
-  n (foo lst)) does not suggest such an induction because the
-  controlling argument --- the second argument of nth --- is not a
-  variable symbol.  The same principle is at play when loop$
-  statements are analyzed for inductive suggestions.
+  The key issue is whether appropriate arguments are variables.
+
+  For example, consider
+
+  Function: <nth>
+
+    (defun nth (n l)
+           (declare (xargs :guard (and (integerp n)
+                                       (>= n 0)
+                                       (true-listp l))))
+           (if (endp l)
+               nil
+               (if (zp n)
+                   (car l)
+                   (nth (- n 1) (cdr l)))))
+
+  Note that the second argument, l, controls the recursion and the
+  first argument, n, is decremented in recursion.  Thus, if induction
+  is to be tried on a conjecture, (p n l), involving the term (nth n
+  l), that term would suggest the induction
+
+    (and (implies (endl l) (p n l))
+         (implies (and (not (endp l))
+                       (p (- n 1) (cdr l)))
+                  (p n l))).
+
+  But if the conjecture did not mention (nth n l) but mentioned (nth n
+  (foo l)) instead, the nth term would not suggest an induction
+  because the controlling argument of the nth term is not a variable
+  symbol.
+
+  The same principle is at play when loop$ statements are analyzed for
+  inductive suggestions.
 
   This documentation topic is merely a stub for a more elaborate
   discussion about proving theorems about loop$s that we intend to
@@ -92321,6 +92361,19 @@ Changes to Existing Features
   proof was attempted by the event (though there may be rare
   exceptions).  Thanks to Eric Smith for requesting such a change.
 
+  Certain guard proof obligations for DO [loop$]s (so-called special
+  conjectures (e), (f), and (g)) have been combined into one
+  conjecture with a conjunction of three conditions in the conclusion
+  to speed up proofs.  See the comment starting with ``Special
+  conjectures (e), (f), and (g)'' in the function special-conjectures
+  in the source file history-management.lisp.
+
+  The rewriter has been changed to handle certain calls of ev$ faster.
+  See [rewriting-calls-of-apply$-ev$-and-loop$-scions].
+
+  A few new lemmas have been added to the standard apply$ book to
+  simplify applications of assoc-equal-safe faster.
+
 
 New Features
 
@@ -109733,6 +109786,185 @@ Subtopics
     (app x (app y z))!
 
   {IMAGE} (see [You_Must_Think_about_the_Use_of_a_Formula_as_a_Rule])")
+ (REWRITING-CALLS-OF-APPLY$-EV$-AND-LOOP$-SCIONS
+  (APPLY$)
+  "How the rewriter handles apply$, ev$, and loop$ terms
+
+  This section focuses on how ACL2 rewrites calls of apply$, ev$, and
+  loop$ scions.  Our purpose is to explain the various ways the user
+  can control that rewriting.  We do so by taking you through a
+  particularly simple example, starting with a loop$ expression.
+
+  We assume that the standard apply$ book has been included,
+
+    (include-book \"projects/apply/top\" :dir :system).
+
+  and we suppose the function sq, of one argument, has been defined and
+  warranted (see [defwarrant].
+
+  Recall that each [loop$] statement is translated into a call of some
+  loop$ [scion] involving lambda objects formed from the iterated
+  expressions in the loop$ statement.  Thus, for example,
+
+    (loop$ for x in (cons a (cdr (cons x b))) collect (* (sq x) 3))
+
+  is essentially translated into
+
+    (COLLECT$ '(LAMBDA (LOOP$-IVAR)
+                       (BINARY-* (SQ LOOP$-IVAR) '3))
+               (CONS A (CDR (CONS X B)))).
+
+  Recall that you can view the cleaned up translation with :[tc], and
+  the discussion at [tc] explains what we mean by ``cleaned up''
+  here.
+
+  So loop$ statements just introduce lambda objects and scions into any
+  conjecture using loop$.  These are rewritten like any other term in
+  ACL2: the arguments are rewritten recursively and then enabled
+  :[rewrite] rules (including the definition of the scion) are tried.
+  Recall that ACL2 can rewrite lambda constants. (See
+  [rewrite-lambda-object] for when that can occur and how to control
+  it.)
+
+  So now consider what happens when the rewriter encounters the
+  translation of the loop$ above.
+
+    (collect$ '(lambda (x) (binary-* (sq x) '3))  ; note where 3 occurs
+              (cons a (cdr (cons x b)))
+
+  it will rewrite the lambda object and the cons term, effectively
+  turning the collect$ term into
+
+    (collect$ '(lambda (x) (binary-* '3 (sq x)))  ; note where 3 occurs now
+              (cons a b))
+
+  Then, if other rewrite rules about collect$ don't rewrite that, the
+  the definition of collect$ will be tentatively tried.  By that we
+  mean the body of the definition of collect$ is rewritten (in an
+  enviroment binding locals to actuals) and then the rewriter decides
+  heuristically whether to use the original call (with its rewritten
+  arguments) or the rewritten body.  We do not discuss those
+  heuristics here because they're the same for loop$ scions as for
+  all other recursive functions in ACL2.
+
+  The logical definition of collect$ is
+
+    (defun collect$ (fn lst)
+      (if (endp lst)
+          nil
+          (cons (apply$ fn (list (car lst)))
+                (collect$ fn (cdr lst))))).
+
+  And in this case, the body will be tentatively rewritten in the
+  environment where the locals fn and lst are bound as follows.
+
+    fn:  '(lambda (x) (binary-* '3 (sq x)))
+    lst: (cons a b).
+
+  As the rewriter descends through the body of collect$ it eventually
+  encounters the apply$ term.  After rewriting its arguments, the
+  apply$ term effectively becomes
+
+    (apply$ '(lambda (x) (binary-* 3 '(sq x)))
+            (cons a 'nil))
+
+  and then rules about apply$ are tried.
+
+  Unless you disable it, the rule beta-reduction, from the standard
+  apply$ book above, will fire, transforming the above apply$ term to
+
+    (ev$ '(binary-* '3 (sq x))
+         (cons (cons 'x a) 'nil)).
+
+  (Beta-reduction is enabled by default.  If you disable it, the apply$
+  term will not change unless you enable (:definition apply$), which
+  is disabled by default.)
+
+  But we recommend leaving beta-reduction enabled and thus converting
+  every apply$ of a lambda object into an ev$ term.  There is a
+  special feature of the rewriter for simplifying certain ev$ terms.
+  It is based on the fact that that (roughly speaking) the ev$ of a
+  quoted tame term under an alist is the unquoted term with the alist
+  applied as a substitution.  That is, the ev$ term above is equal to
+  (binary-* '3 (sq a)).
+
+  More precisely, if a x is a [tame] term and every non-primitive
+  function symbol in x has been warranted (see [defwarrant]) and a is
+  a cons nest term representing a substitution sigma pairing the
+  variable symbols occurring freely in x with terms, then (ev$ 'x  a)
+  is equal to x/sigma, provided the warrants of all the non-primitive
+  function symbols in x are assumed.
+
+  This is implemented in the rewriter so that when an (ev$ 'x a) is
+  encountered and the following conditions hold
+
+    * the standard apply$ book has been included,
+    * the rune (:rewrite ev$-opener) is enabled
+    * x is a tame term
+    * all non-primitive function symbols in x have been warranted (whether
+      the warrants are assumed or not), and
+    * a is a cons term representng an alist on variables,
+
+  then the following three actions are taken,
+
+    * The cons term a is converted to a substitution, sigma, and that
+      substitution is extended to a substitution, sigma', by pairing
+      with nil each variable of x that is unbound in sigma.  It
+      should be observed that an unbound variable is assigned the
+      value nil by the definitions of ev$ (actually, of assoc).
+    * The warrant for each non-primitive function in x is [force]d if
+      possible unless the warrant is already assumed in the current
+      context.
+    * The (ev$ x a) term is rewritten to the result of recursively
+      rewriting x under the substitution sigma'.
+
+  Note that this eliminates ev$.
+
+  If you see an ev$ of a quoted term in a checkpoint produced by the
+  prover, you will know that one of the conditions above is not
+  satisfied or that a necessary warrant could not be forced because
+  forcing was disallowed or the warrant was assumed false in the
+  context.
+
+  If you would rather ev$ did not just disappear like this, disable
+  (:rewrite ev$-opener).  This might be desirable if the expansion
+  produces a lot of cases and you can prove the theorem without
+  exposing them.
+
+  Sometimes you may wish for ev$ to expand, but to do so step-by-step,
+  gradually working its way down through x. Such behavior can be
+  achieved by disabling ev$-opener but enabling (:definition ev$),
+  which is disabled by default.  However, the tentative application
+  of the mutually recursive definitions of ev$ and apply$ can be
+  quite slow when dealing with moderately large lambda objects.
+  Step-by-step expansion of ev$ can be accomplished by the
+  alternative but generally faster method of disabling (:rewrite
+  ev$-opener), leaving (:definition ev$) disabled, but proving your
+  own version of ev$-opener under a different name.
+
+    (defthm my-version-of-ev$-opener
+      (and (implies (symbolp x)
+                    (equal (ev$ x a) (cdr (assoc x a))))
+           (equal (ev$ (list 'quote obj) a) obj)
+           (implies (suitably-tamep-listp 3 nil args)
+                    (equal (ev$ (cons 'if args) a)
+                           (if (ev$ (car args) a)
+                               (ev$ (cadr args) a)
+                               (ev$ (caddr args) a))))
+           (implies (and (not (eq fn 'quote))
+                         (not (eq fn 'if))
+                         (tamep (cons fn args)))
+                    (equal (ev$ (cons fn args) a)
+                           (apply$ fn (ev$-list args a)))))
+      :hints ((\"Goal\" :use ev$-opener))).
+
+  By having the apply$ book's ev$-opener disabled you shut off the
+  special feature described above, and by having your own version of
+  ev$-opener enabled you push the ev$ through the quoted term with
+  rewrite rules.  This can sometimes help narrow down which of the
+  conditiions above is unsatisfied, especially if you modify your
+  version of the rule so that the tamep and suitably-tamep-listp
+  hypotheses are [force]d.")
  (REWRITING-VERSUS-CLEANING-UP-LAMBDA-OBJECTS
   (REWRITE)
   "why change the default action on rewriting lambda objects

@@ -5489,6 +5489,10 @@ and @(tsee include-book)"
   @('weird-little-lemma1') and @('weird-little-lemma2'), shown in
   @('books/projects/apply/report.lisp').</p>
 
+  <p>For a summary of how the rewriter handles @('apply$'), @('ev$'), and
+  @('loop$') @(see scion)s, see @(see
+  rewriting-calls-of-apply$-ev$-and-loop$-scions).</p>
+
   @({
 
   ; [1] SQ squares, if you have the warrant for sq!  Imagine for a moment that
@@ -5966,6 +5970,10 @@ and @(tsee include-book)"
   @('APPLY$-fn') is disabled.  That rule is the one that forces the warrant for
   @('fn') and it was proved when @('fn') was warranted.</li>
 
+  <li>Consider how the rewriter handles @('apply$') terms, by reading
+  @(see rewriting-calls-of-apply$-ev$-and-loop$-scions) and inspecting
+  the enabled/disabled status of the runes mentioned there.</li>
+  
   </ul>
 
   <p>These issues are discussed further in the documentation for @(tsee
@@ -30675,7 +30683,9 @@ ld) and @(tsee include-book)"
   expected'' on @(see tame) expressions and requires @(tsee warrant)s, explicit
   in the proof theory or implicit in the evaluation theory, to determine @(see
   badge)s and thus tameness.  See @(tsee apply$) for details, including the
-  formal definitions of @('ev$') and @('ev$-list').</p>")
+  formal definitions of @('ev$') and @('ev$-list').  For a summary of how the
+  rewriter handles @('apply$'), @('ev$'), and @('loop$') @(see scion)s, see
+  @(see rewriting-calls-of-apply$-ev$-and-loop$-scions).</p>")
 
 (defxdoc evaluation
   :parents (programming)
@@ -57473,8 +57483,11 @@ forms allowed for a @('let') form are  @('ignore'), @('ignorable'), and
 
  <p>The Introduction below is followed by a discussion of types and guards.
  For a discussion of how to prove inductive theorems about @('loop$')s see
- @(see loop$-proofs).  But before we get started we emphasize a few key
- points.</p>
+ @(see loop$-proofs).  Also, for a summary of how the rewriter handles
+ @('apply$'), @('ev$'), and @('loop$') @(see scion)s, see @(see
+ rewriting-calls-of-apply$-ev$-and-loop$-scions).</p>
+
+ <p>But before we get started we emphasize a few key points.</p>
 
  <ul>
 
@@ -57799,12 +57812,30 @@ forms allowed for a @('let') form are  @('ignore'), @('ignorable'), and
   :short "Proving inductive theorems about @('loop$')s"
   :long "<p>ACL2's prover can derive induction schemes suggested by some
   @('loop$') statements, just as it can from some calls of recursive functions.
-  The key issue is whether appropriate arguments are variables.  For example
-  @('(nth n lst)') suggests induction on @('lst') by @('cdr'), and instantiates
-  @('n') with @('(- n 1)') in the induction hypothesis.  But @('(nth n (foo
-  lst))') does not suggest such an induction because the controlling argument
-  &mdash; the second argument of @('nth') &mdash; is not a variable symbol.
-  The same principle is at play when @('loop$') statements are analyzed for
+  The key issue is whether appropriate arguments are variables.</p>
+
+  <p>For example, consider</p>
+
+  @(def nth)
+
+  <p>Note that the second argument, @('l'), controls the recursion and the
+  first argument, @('n'), is decremented in recursion.  Thus, if induction is
+  to be tried on a conjecture, @('(p n l)'), involving the term @('(nth n l)'),
+  that term would suggest the induction</p>
+
+  @({
+  (and (implies (endl l) (p n l))
+       (implies (and (not (endp l))
+                     (p (- n 1) (cdr l)))
+                (p n l))).
+  })
+
+  <p>But if the conjecture did not mention @('(nth n l)') but mentioned @('(nth
+  n (foo l))') instead, the @('nth') term would not suggest an induction
+  because the controlling argument of the @('nth') term is not a variable
+  symbol.</p>
+
+  <p>The same principle is at play when @('loop$') statements are analyzed for
   inductive suggestions.</p>
 
   <p>This documentation topic is merely a stub for a more elaborate discussion
@@ -57851,8 +57882,8 @@ forms allowed for a @('let') form are  @('ignore'), @('ignorable'), and
   that (a) all @('loop$') statements are translated into terms involving
   @('lambda') objects and (b) @('lambda') objects are rewritten (by default)
   during proofs.  Thus, for example, if you prove an inductive lemma about the
-  generalized @('DO') @('loop$') above and try to prove your &ldquo;main theorem&rdquo; about this instance
-  of that @('loop$')</p>
+  generalized @('DO') @('loop$') above and try to prove your &ldquo;main
+  theorem&rdquo; about this instance of that @('loop$')</p>
 
   @({
   (loop$ with ans = NIL
@@ -94568,6 +94599,19 @@ it."
  attempted by the event (though there may be rare exceptions).  Thanks to Eric
  Smith for requesting such a change.</p>
 
+ <p>Certain guard proof obligations for @('DO') @(tsee loop$)s (so-called
+ special conjectures (e), (f), and (g)) have been combined into one conjecture
+ with a conjunction of three conditions in the conclusion to speed up proofs.
+ See the comment starting with ``Special conjectures (e), (f), and (g)'' in the
+ function @('special-conjectures') in the source file
+ @('history-management.lisp').</p>
+
+ <p>The rewriter has been changed to handle certain calls of @('ev$') faster.
+ See @(see rewriting-calls-of-apply$-ev$-and-loop$-scions).</p>
+
+ <p>A few new lemmas have been added to the standard @('apply$') book to
+ simplify applications of @('assoc-equal-safe') faster.</p>
+
  <h3>New Features</h3>
 
  <p>The new zero-ary attachable system function, @(tsee heavy-linear-p), allows
@@ -108947,6 +108991,214 @@ arithmetic) for libraries of @(see books) for arithmetic reasoning.</p>")
  <p>This limit can be changed; see @(see set-rewrite-stack-limit).</p>
 
  <p>For a related limit, see @(see backchain-limit).</p>")
+
+(defxdoc rewriting-calls-of-apply$-ev$-and-loop$-scions
+  :parents (apply$)
+  :short "How the rewriter handles @('apply$'), @('ev$'), and @('loop$') terms"
+  :long "<p>This section focuses on how ACL2 rewrites calls of @('apply$'),
+  @('ev$'), and @('loop$') scions.  Our purpose is to explain the various ways
+  the user can control that rewriting.  We do so by taking you through a
+  particularly simple example, starting with a @('loop$') expression.</p>
+
+  <p>We assume that the standard @('apply$') book has been included,</p>
+
+  @({
+  (include-book \"projects/apply/top\" :dir :system).
+  })
+
+  <p>and we suppose the function @('sq'), of one argument, has been defined
+  and warranted (see @(tsee defwarrant).</p>
+  
+  <p>Recall that each @(tsee loop$) statement is translated
+  into a call of some @('loop$') @(see scion) involving @('lambda') objects formed
+  from the iterated expressions in the @('loop$') statement.  Thus, for example,</p>
+
+  @({
+  (loop$ for x in (cons a (cdr (cons x b))) collect (* (sq x) 3))
+  })
+
+  <p>is essentially translated into</p>
+
+  @({
+  (COLLECT$ '(LAMBDA (LOOP$-IVAR)
+                     (BINARY-* (SQ LOOP$-IVAR) '3))
+             (CONS A (CDR (CONS X B)))).
+  })
+
+  <p>Recall that you can view the cleaned up translation with @(':')@(tsee tc),
+  and the discussion at @(tsee tc) explains what we mean by &ldquo;cleaned
+  up&rdquo; here.</p>
+
+  <p>So @('loop$') statements just introduce @('lambda') objects and scions
+  into any conjecture using @('loop$').  These are rewritten like any other
+  term in ACL2: the arguments are rewritten recursively and then enabled
+  @(':')@(tsee rewrite) rules (including the definition of the scion) are
+  tried.  Recall that ACL2 can rewrite @('lambda') constants. (See @(see
+  rewrite-lambda-object) for when that can occur and how to control it.)</p>
+
+  <p>So now consider what happens when the rewriter encounters the translation
+  of the @('loop$') above.</p>
+
+  @({
+  (collect$ '(lambda (x) (binary-* (sq x) '3))  ; note where 3 occurs
+            (cons a (cdr (cons x b)))
+  })
+
+  <p>it will rewrite the @('lambda') object and the @('cons') term, effectively
+  turning the @('collect$') term into</p>
+
+  @({
+  (collect$ '(lambda (x) (binary-* '3 (sq x)))  ; note where 3 occurs now
+            (cons a b))
+  })
+
+  <p>Then, if other rewrite rules about @('collect$') don't rewrite that, the
+  the definition of @('collect$') will be tentatively tried.  By that we mean
+  the body of the definition of @('collect$') is rewritten (in an enviroment
+  binding locals to actuals) and then the rewriter decides heuristically
+  whether to use the original call (with its rewritten arguments) or the
+  rewritten body.  We do not discuss those heuristics here because they're the
+  same for @('loop$') scions as for all other recursive functions in ACL2.</p>
+
+  <p>The logical definition of @('collect$') is</p>
+
+  @({
+  (defun collect$ (fn lst)
+    (if (endp lst)
+        nil
+        (cons (apply$ fn (list (car lst)))
+              (collect$ fn (cdr lst))))).
+  })
+
+  <p>And in this case, the body will be tentatively rewritten in the
+  environment where the locals @('fn') and @('lst') are bound as follows.</p>
+
+  @({
+  fn:  '(lambda (x) (binary-* '3 (sq x)))
+  lst: (cons a b).
+  })
+
+  <p>As the rewriter descends through the body of @('collect$') it eventually
+  encounters the @('apply$') term.  After rewriting its arguments, the
+  @('apply$') term effectively becomes</p>
+
+  @({
+  (apply$ '(lambda (x) (binary-* 3 '(sq x)))
+          (cons a 'nil))
+  })
+
+  <p>and then rules about @('apply$') are tried.</p>
+
+  <p>Unless you disable it, the rule @('beta-reduction'), from the standard @('apply$') book above, will fire,
+  transforming the above @('apply$') term to</p>
+
+  @({
+  (ev$ '(binary-* '3 (sq x))
+       (cons (cons 'x a) 'nil)).
+  })
+
+  <p>(@('Beta-reduction') is enabled by default.  If you disable it, the
+  @('apply$') term will not change unless you enable @('(:definition apply$)'),
+  which is disabled by default.)</p>
+
+  <p>But we recommend leaving @('beta-reduction') enabled and thus converting
+  every @('apply$') of a @('lambda') object into an @('ev$') term.  There is a
+  special feature of the rewriter for simplifying certain @('ev$') terms.  It
+  is based on the fact that that (roughly speaking) the @('ev$') of a quoted
+  tame term under an alist is the unquoted term with the alist applied as a
+  substitution.  That is, the @('ev$') term above is equal to @('(binary-*
+  '3 (sq a))').</p>
+
+  <p>More precisely, if a <i>x</i> is a @(see tame) term and every
+  non-primitive function symbol in <i>x</i> has been warranted (see @(tsee
+  defwarrant)) and <i>a</i> is a @('cons') nest term representing a
+  substitution <i>sigma</i> pairing the variable symbols occurring freely in
+  <i>x</i> with terms, then @('(ev$ '')<i>x&nbsp;&nbsp;a</i>@(')') is equal to
+  <i>x</i>/<i>sigma</i>, provided the warrants of all the non-primitive
+  function symbols in <i>x</i> are assumed.</p>
+
+  <p>This is implemented in the rewriter so that when an @('(ev$ 'x a)') is
+  encountered and the following conditions hold</p>
+
+  <ul>
+  <li>the standard @('apply$') book has been included,</li>
+
+  <li>the rune @('(:rewrite ev$-opener)') is enabled</li>
+
+  <li>@('x') is a tame term</li>
+
+  <li>all non-primitive function symbols in @('x') have been warranted (whether
+  the warrants are assumed or not), and</li>
+
+  <li>@('a') is a @('cons') term representng an alist on variables,</li>
+
+  </ul>
+
+  <p>then the following three actions are taken,</p>
+
+  <ul>
+
+  <li>The @('cons') term @('a') is converted to a substitution, @('sigma'), and
+  that substitution is extended to a substitution, @('sigma''), by pairing with
+  @('nil') each variable of @('x') that is unbound in @('sigma').  It should be
+  observed that an unbound variable is assigned the value @('nil') by the
+  definitions of @('ev$') (actually, of @('assoc')).</li>
+
+  <li>The warrant for each non-primitive function in @('x') is @(see force)d if
+  possible unless the warrant is already assumed in the current context.</li>
+
+  <li>The @('(ev$ x a)') term is rewritten to the result of recursively
+  rewriting @('x') under the substitution @('sigma'').</li>
+
+  </ul>
+
+  <p>Note that this eliminates @('ev$').</p>
+
+  <p>If you see an @('ev$') of a quoted term in a checkpoint produced by the
+  prover, you will know that one of the conditions above is not satisfied or
+  that a necessary warrant could not be forced because forcing was disallowed
+  or the warrant was assumed false in the context.</p>
+
+  <p>If you would rather @('ev$') did not just disappear like this, disable
+  @('(:rewrite ev$-opener)').  This might be desirable if the expansion
+  produces a lot of cases and you can prove the theorem without exposing them.</p>
+
+  <p>Sometimes you may wish for @('ev$') to expand, but to do so step-by-step,
+  gradually working its way down through @('x'). Such behavior can be achieved
+  by disabling @('ev$-opener') but enabling @('(:definition ev$)'), which is
+  disabled by default.  However, the tentative application of the mutually
+  recursive definitions of @('ev$') and @('apply$') can be quite slow when
+  dealing with moderately large @('lambda') objects.  Step-by-step expansion of
+  @('ev$') can be accomplished by the alternative but generally faster method
+  of disabling @('(:rewrite ev$-opener)'), leaving @('(:definition ev$)')
+  disabled, but proving your own version of @('ev$-opener') under a different
+  name.</p>
+
+  @({
+  (defthm my-version-of-ev$-opener
+    (and (implies (symbolp x)
+                  (equal (ev$ x a) (cdr (assoc x a))))
+         (equal (ev$ (list 'quote obj) a) obj)
+         (implies (suitably-tamep-listp 3 nil args)
+                  (equal (ev$ (cons 'if args) a)
+                         (if (ev$ (car args) a)
+                             (ev$ (cadr args) a)
+                             (ev$ (caddr args) a))))
+         (implies (and (not (eq fn 'quote))
+                       (not (eq fn 'if))
+                       (tamep (cons fn args)))
+                  (equal (ev$ (cons fn args) a)
+                         (apply$ fn (ev$-list args a)))))
+    :hints ((\"Goal\" :use ev$-opener))).
+  })
+
+  <p>By having the @('apply$') book's @('ev$-opener') disabled you shut off the
+  special feature described above, and by having your own version of
+  @('ev$-opener') enabled you push the @('ev$') through the quoted term with
+  rewrite rules.  This can sometimes help narrow down which of the conditiions
+  above is unsatisfied, especially if you modify your version of the rule so
+  that the @('tamep') and @('suitably-tamep-listp') hypotheses are @(tsee
+  force)d.</p>")
 
 (defxdoc rewriting-versus-cleaning-up-lambda-objects
   :parents (rewrite)
