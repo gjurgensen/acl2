@@ -5995,7 +5995,7 @@ and @(tsee include-book)"
   <li>Consider how the rewriter handles @('apply$') terms, by reading
   @(see rewriting-calls-of-apply$-ev$-and-loop$-scions) and inspecting
   the enabled/disabled status of the runes mentioned there.</li>
-  
+
   </ul>
 
   <p>These issues are discussed further in the documentation for @(tsee
@@ -39435,7 +39435,7 @@ current fast alists."
  is written in the ACL2 subset of Common Lisp.  The examples provided here were
  prepared under ACL2 Version 8.5.  Your output should be logically equivalent
  though the text may look a little different.</p>
- 
+
  <p>Now fire up your ACL2.  You should see a prompt that looks like this</p>
 
  <code>
@@ -39910,7 +39910,7 @@ current fast alists."
   .
   (1254 .                       ; balance in cents
     ((DEPOSIT (1 21 1999) 1000) ; transactions
-     (WITHDRL (1 30 1999)  850)    
+     (WITHDRL (1 30 1999)  850)
      (WITHDRL (2  5 1999)  215))))
  </code>
 
@@ -40100,7 +40100,7 @@ current fast alists."
 
  <li> @('(INTEGERP x)') &mdash; @('t') if @('x') is an integer and @('nil') otherwise </li>
 
- <li> @('(RATIONALP x)') &mdash; @('t') if @('x') is a rational number and @('nil') otherwise </li> 
+ <li> @('(RATIONALP x)') &mdash; @('t') if @('x') is a rational number and @('nil') otherwise </li>
 
  <li> @('(ZP x)') &mdash; @('nil') if @('x') is a positive integer and @('t') otherwise </li>
 
@@ -40186,7 +40186,7 @@ current fast alists."
                (visit (cdr lst) ...)   ; <i>and visit the rest.</i>
               .
              .
-            .)))      
+            .)))
  </code>
  <p>
  We illustrate this scheme in the next section.</p>
@@ -40440,7 +40440,7 @@ current fast alists."
  (defun mem (e x)
    (if (endp x)
        nil
-       (if (equal e (car x)) 
+       (if (equal e (car x))
            t
            (mem e (cdr x)))))
  </code>
@@ -40822,7 +40822,7 @@ current fast alists."
 
  <p>However, often you can just code up a more efficient algorithm.  For
  example, the following tail-recursive version of @('nils') won't overflow the stack.</p>
- 
+
  <code>
  (defun nils (n ans)
    (if (zp n)
@@ -40858,7 +40858,7 @@ current fast alists."
  ...
  ACL2 !&gt;(defthm lemma-about-nils
          (implies (natp n)
-                  (equal (len (nils n ans)) 
+                  (equal (len (nils n ans))
                          (+ n (len ans)))))
  ...
  ACL2 !&gt;(defthm main-theorem-about-nils
@@ -59419,7 +59419,7 @@ forms allowed for a @('let') form are  @('ignore'), @('ignorable'), and
 ; WARNING: Don’t change the name of this topic without also changing its
 ; reference in :DOC acknowledgments!
 
-  :parents (top) ; planned to be (loop$ programming)
+  :parents (loop$ programming)
   :short "Primer for using @(tsee loop$)"
   :long "<h1>The Loop$ Primer</h1>
 
@@ -59626,7 +59626,7 @@ forms allowed for a @('let') form are  @('ignore'), @('ignorable'), and
   Time:  1.00 seconds (prove: 0.00, print: 0.00, other: 1.00)
    \"/Users/demo/books/projects/apply/top.lisp\"
 
-  ACL2 !>(loop$ for x in '(a b c) 
+  ACL2 !>(loop$ for x in '(a b c)
                 collect (cons 'hi x))
   ((HI . A) (HI . B) (HI . C))
 
@@ -59640,11 +59640,11 @@ forms allowed for a @('let') form are  @('ignore'), @('ignorable'), and
                 collect x)
   (A B C)
 
-  ACL2 !>(loop$ for x on '(a b c) 
+  ACL2 !>(loop$ for x on '(a b c)
                 collect x)
   ((A B C) (B C) (C))
 
-  ACL2 !>(loop$ for x on '(a b c) 
+  ACL2 !>(loop$ for x on '(a b c)
                 collect (cons (car x) (len x)))
   ((A . 3) (B . 2) (C . 1))
 
@@ -59663,7 +59663,7 @@ forms allowed for a @('let') form are  @('ignore'), @('ignorable'), and
                 append (cons 'hi x))
   (HI A B C HI D E F HI G H I)
 
-  ACL2 !>(loop$ for x in '(2 4 6) 
+  ACL2 !>(loop$ for x in '(2 4 6)
                 always (evenp x))
   T
 
@@ -60443,7 +60443,7 @@ forms allowed for a @('let') form are  @('ignore'), @('ignorable'), and
   (same-mod-wildcard '(a * c d *) '(a x c * d))
   =
   T
-  })  
+  })
 
   &mdash;&mdash;&mdash;&mdash;&mdash;&mdash;&mdash;&mdash;&mdash;&mdash;
 
@@ -60847,7 +60847,7 @@ forms allowed for a @('let') form are  @('ignore'), @('ignorable'), and
   (AU_0
    GX_24
    IZ_30).
-  })  
+  })
 
   <p>The ACL2 semantics of the @('loop$') statement reflects this understanding
   of the statement.  (The display below is the output of @(':tca') on the
@@ -61044,10 +61044,10 @@ forms allowed for a @('let') form are  @('ignore'), @('ignorable'), and
 
   ACL2 Error [Translate] in ( DEFUN ALL-PAIRS-LOOP$ ...):  The body of
   a LAMBDA object, lambda$ term, or loop$ statement should be fully badged
-  but MAKE-PAIR is used in 
+  but MAKE-PAIR is used in
   ((LAMBDA (I J) (MAKE-PAIR I J)) (CAR LOOP$-GVARS) (CAR LOOP$-IVARS))
-  and has no badge. ... 
-  ... Note:  this error occurred in the context 
+  and has no badge. ...
+  ... Note:  this error occurred in the context
   (LAMBDA$ (LOOP$-GVARS LOOP$-IVARS)
            (DECLARE (XARGS :GUARD (AND (TRUE-LISTP LOOP$-GVARS)
                                        (EQUAL # 1)
@@ -62136,7 +62136,7 @@ forms allowed for a @('let') form are  @('ignore'), @('ignorable'), and
      (LAMBDA$ (ALIST)
        (ACL2-COUNT (CDR (ASSOC-EQ-SAFE 'I ALIST))))
 
-;    initial alist: 
+;    initial alist:
      (LIST (CONS 'I N)
            (CONS 'ANS 0))
 
@@ -62268,7 +62268,7 @@ forms allowed for a @('let') form are  @('ignore'), @('ignorable'), and
   theorem so this lemma can be used to hit the rewritten @('loop$') in the
   proof of the main theorem later.</li>
 
-  <li>Prove that the function satisfies the specification.  We 
+  <li>Prove that the function satisfies the specification.  We
   frequently refer to this as &ldquo;lemma 2&rdquo;.</li>
 
   <li>Prove that the @('loop$') satisfies the specification by chaining
@@ -62409,7 +62409,7 @@ forms allowed for a @('let') form are  @('ignore'), @('ignorable'), and
   the normal form, @('lemma1') rewrites the new form of the @('loop$') after
   instantiating @('ans0') to @('0'), to @('(copy-nat-ac n 0)'), then
   @('lemma2') hits that to @('(+ n 0)'), and arithmetic does the rest.</p>
- 
+
   <p>As we noted, our recipe is overly rigid.  Here is another sequence of
   events that proves @('main').  The user defines a function, @('my-induct'),
   to suggest the right induction, but the function does not return the same
@@ -62819,8 +62819,8 @@ forms allowed for a @('let') form are  @('ignore'), @('ignorable'), and
                                         ans))
                            (setq lst (cdr lst)))))))
 
-  ; Now I drop into raw Lisp so we execute the compiled code without 
-  ; checking the guard, which is probably about as expensive as 
+  ; Now I drop into raw Lisp so we execute the compiled code without
+  ; checking the guard, which is probably about as expensive as
   ; summing the squares!  Each test ran its respective function 10
   ; times and after doing all three tests I repeated all three tests.
   ; So I show two times for each test.
@@ -112389,7 +112389,7 @@ arithmetic) for libraries of @(see books) for arithmetic reasoning.</p>")
  the right component.  Thus, the operations were <tt>car</tt> (&ldquo;contents of
  address of register&rdquo;) and <tt>cdr</tt> (&ldquo;contents of decrement of
  register&rdquo;).)
- Lisp provides three conventions for writing parenthesized 
+ Lisp provides three conventions for writing parenthesized
  constants.
  </p>
 
@@ -112437,7 +112437,7 @@ arithmetic) for libraries of @(see books) for arithmetic reasoning.</p>")
  </p>
 
  <p>(Maybe explore &lt;&lt;@(see conses)&gt;&gt;?)</p>
- 
+
  <p>Next: <see topic='@(url r-and-i-identity)'>identity</see> (or <see topic='@(url r-and-i-table-of-contents)'>Table of Contents</see>)</p>")
 
 (defxdoc r-and-i-identity
@@ -113178,7 +113178,7 @@ Definitional Principle imposes restrictions that may not make sense just yet.)</
  given the value true under every possible assignment to the variable symbols.
  A <i>model</i> of a theory is an interpretation that makes all the axioms valid.
  Provided the rules of inference are validity preserving, every theorem is
- valid, i.e., <i>always true</i>.  
+ valid, i.e., <i>always true</i>.
  </p>
 
  <p>
@@ -113332,8 +113332,8 @@ Definitional Principle imposes restrictions that may not make sense just yet.)</
 
  <p>
  <code>
- <b>Theorem.</b> 
- (consp x) = t &and; x = (car z) &rarr; (consp (car z)) &ne; nil 
+ <b>Theorem.</b>
+ (consp x) = t &and; x = (car z) &rarr; (consp (car z)) &ne; nil
 
  <b>Proof.</b></code>
  </p>
@@ -113433,7 +113433,7 @@ Definitional Principle imposes restrictions that may not make sense just yet.)</
  </p>
 
  <p>
- For example, we might say that 
+ For example, we might say that
  <code>
  (implies (and (consp x)
                (not (consp y)))
@@ -113484,7 +113484,7 @@ formulas).</p>
  </p>
 
  <p>
- Case 1. 
+ Case 1.
  <br/><tt>(not p)</tt> &ne; <tt>nil</tt> &rarr; &not; (<tt>p</tt> &ne; <tt>nil</tt>).
  </p>
 
@@ -113502,7 +113502,7 @@ formulas).</p>
  </p>
 
  <p>
- Case 2. 
+ Case 2.
  <br/>&not; (<tt>p</tt> &ne; <tt>nil</tt>) &rarr; <tt>(not p)</tt> &ne; <tt>nil</tt>.
  </p>
 
@@ -113573,8 +113573,8 @@ formulas).</p>
 
  <p>
  <code>
-  ((p &and; &not; q) &rarr; s) 
- &and; 
+  ((p &and; &not; q) &rarr; s)
+ &and;
   ((p &and; q &and; r) &rarr; s)</code>
  </p>
 
@@ -114085,7 +114085,7 @@ ACL2's Definitional Principle allows all the definitions described above.)</p>
  (if t
      (cons (tree-copy (car x))
            (tree-copy (cdr x)))
-     x) 
+     x)
  =                      <i>{Axioms 2 and 1}</i>
  (cons (tree-copy (car x))
        (tree-copy (cdr x)))
@@ -114272,7 +114272,7 @@ work on <tt>(q x)</tt>.</p>
  <code>
  (and (&lt;&lt;= x x)                 ; Reflexive
       (implies (and (&lt;&lt;= x y)   ; Anti-symmetric
-                    (&lt;&lt;= y x))  
+                    (&lt;&lt;= y x))
                (equal x y))
       (implies (and (&lt;&lt;= x y)   ; Transitive
                     (&lt;&lt;= y z))
@@ -114296,7 +114296,7 @@ work on <tt>(q x)</tt>.</p>
  </p>
 
  <p>
- <b>Problem 57. <br/></b> Define <tt>(isort x)</tt> to take an arbitrary list and return an 
+ <b>Problem 57. <br/></b> Define <tt>(isort x)</tt> to take an arbitrary list and return an
  <tt>ordered</tt> permutation of it.
  </p>
 
@@ -114905,7 +114905,7 @@ work on <tt>(q x)</tt>.</p>
 
  <p>
  The limit of that progression is the ordinal <i>&omega;</i>, an infinite sequence of
- strokes.  
+ strokes.
  </p>
 
  <p>
@@ -114931,7 +114931,7 @@ work on <tt>(q x)</tt>.</p>
  replacing each stroke in <i>&omega;</i>&nbsp; by <i>&omega;</i>.  This is also written as <i>&omega;</i>^2.
 
  <code>
-   &omega;^2           &mid; &mid; &mid; &mid; &mid; &nbsp;&hellip;&nbsp; &mid; &mid; &mid; &mid; &mid; &nbsp;&hellip;&nbsp; &mid; &mid; &mid; &mid; &mid; &nbsp;&hellip;&nbsp; &mid; &mid; &mid; &mid; &mid; &nbsp;&hellip;&nbsp; &mid; &mid; &mid; &mid; &mid; &nbsp;&hellip;&nbsp; &nbsp;&hellip;&nbsp; 
+   &omega;^2           &mid; &mid; &mid; &mid; &mid; &nbsp;&hellip;&nbsp; &mid; &mid; &mid; &mid; &mid; &nbsp;&hellip;&nbsp; &mid; &mid; &mid; &mid; &mid; &nbsp;&hellip;&nbsp; &mid; &mid; &mid; &mid; &mid; &nbsp;&hellip;&nbsp; &mid; &mid; &mid; &mid; &mid; &nbsp;&hellip;&nbsp; &nbsp;&hellip;&nbsp;
  </code>
  </p>
 
@@ -115064,7 +115064,7 @@ work on <tt>(q x)</tt>.</p>
  <tt>(o-finp x)</tt> to recognize finite ordinals.  Of course, if <tt>x</tt> is an
  ordinal and finite, it is a natural number.  But by defining <tt>o-finp</tt>
  this way we ensure that if an ordinal is not finite we can recur into it with
- <tt>cdr</tt>.  
+ <tt>cdr</tt>.
  </p>
 
  <p>
@@ -115193,7 +115193,7 @@ work on <tt>(q x)</tt>.</p>
  <p>
  <b>Problem 92. <br/></b> What is the longest decreasing chain of ordinals starting from the ordinal
  <tt>10</tt>?  What is the longest decreasing chain of ordinals starting
- from the ordinal <tt>((1 . 1) . 0)</tt>?  
+ from the ordinal <tt>((1 . 1) . 0)</tt>?
  </p>
 
  <p>
@@ -115280,7 +115280,7 @@ work on <tt>(q x)</tt>.</p>
  </li>
  <li><i>Measure Conjecture(s)</i>&nbsp;
  For each recursive call of <tt>(</tt><i>f a_1</i>&nbsp;&hellip;&nbsp;<i>a_n</i><tt>)</tt> in <i>&beta;</i>&nbsp; and
- the conjunction <i>q</i>&nbsp; of tests ruling it, 
+ the conjunction <i>q</i>&nbsp; of tests ruling it,
 
  <p/>
  <tt>(implies</tt> <i>q</i>&nbsp; <tt>(o&lt;</tt> <i>m</i>/<i>&sigma;</i>&nbsp; <i>m</i><tt>))</tt>
@@ -115507,7 +115507,7 @@ work on <tt>(q x)</tt>.</p>
  But the key insight is: <i>Every ok definition suggests an ok induction</i>!
  We call this the induction <i>suggested by</i>&nbsp; the definition.  It is easiest
  to see this by considering a particular, generic definition and thinking
- about what had to be proved to admit it, what induction it suggests, 
+ about what had to be proved to admit it, what induction it suggests,
  what has to be proved for that induction to be legal, and when the suggested
  induction might be useful.
  </p>
@@ -115649,7 +115649,7 @@ work on <tt>(q x)</tt>.</p>
  </p>
 
  <p>
- Now consider Induction Step 1.  The <tt>(f x a)</tt> occurring in <tt>(p x a)</tt> 
+ Now consider Induction Step 1.  The <tt>(f x a)</tt> occurring in <tt>(p x a)</tt>
  can be replaced by tip 1 of the definition of <tt>f</tt>, namely
  <code>
            (h                         ; tip 1
@@ -115792,7 +115792,7 @@ work on <tt>(q x)</tt>.</p>
  </code>
  </p>
  <p>
- where 
+ where
  <code>
  (defun gopher (x)
    (if (or (atom x)
@@ -115854,7 +115854,7 @@ work on <tt>(q x)</tt>.</p>
  </p>
 
  <p>
- <b>Problem 112. <br/></b> Prove that the length of a list of distinct natural numbers 
+ <b>Problem 112. <br/></b> Prove that the length of a list of distinct natural numbers
  is no greater than its maximum element plus one.  This is sometimes
  called the Pigeon Hole Principle.
  </p>
@@ -115909,7 +115909,7 @@ work on <tt>(q x)</tt>.</p>
  Since <tt>deref-cnt</tt> returns the non-number <tt>infinite</tt> if it
  is a loop, and since ACL2 arithmetic treats non-numbers as <tt>0</tt>,
  this theorem is trivial when the process loops.  You may therefore
- explicitly add the hypothesis <tt>(integerp (deref-cnt ptr mem nil))</tt> 
+ explicitly add the hypothesis <tt>(integerp (deref-cnt ptr mem nil))</tt>
  if you are uncomfortable dealing with the non-numeric defaults.
  </p>
 
@@ -119841,7 +119841,7 @@ work on <tt>(q x)</tt>.</p>
 
   <p>and we suppose the function @('sq'), of one argument, has been defined
   and warranted (see @(tsee defwarrant).</p>
-  
+
   <p>Recall that each @(tsee loop$) statement is translated
   into a call of some @('loop$') @(see scion) involving @('lambda') objects formed
   from the iterated expressions in the @('loop$') statement.  Thus, for example,</p>
