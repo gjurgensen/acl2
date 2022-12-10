@@ -63275,6 +63275,9 @@ Subtopics
   [For-loop$]
       Iteration with [loop$] over an interval of integers or a list
 
+  [Loop$-primer]
+      Primer for using [loop$]
+
   [Loop$-proofs]
       Proving inductive theorems about loop$s
 
@@ -63287,7 +63290,7 @@ Subtopics
  (LOOP$-FOR (POINTERS)
             "See [for-loop$].")
  (LOOP$-PRIMER
-  (TOP)
+  (LOOP$ PROGRAMMING)
   "Primer for using [loop$]
 
 
@@ -106176,6 +106179,9 @@ Subtopics
 
   [Loop$]
       Iteration with an analogue of the Common Lisp loop macro
+
+  [Loop$-primer]
+      Primer for using [loop$]
 
   [Mbe]
       Attach code for execution
