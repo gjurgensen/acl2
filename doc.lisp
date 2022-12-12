@@ -1595,7 +1595,7 @@ Subtopics
       (specifically, the definition of prove$-fn in [community-book]
       books/tools/prove-dollar.lisp) for an example.")
  (ABOUT-ACL2
-  (ACL2)
+  (START-HERE)
   "General information About ACL2
 
   This is ACL2 Version 8.5, [copyright] (C) 2022, Regents of the
@@ -2489,7 +2489,21 @@ Subtopics
     * University of Texas at Austin (in particular support to J Moore
       through the Admiral B. R.  Inman Chair of Computing Theory)
 
-  Regarding NSF:
+  Regarding DARPA support: We thank DARPA for approving release of the
+  following documentation topics and support with ``DISTRIBUTION
+  STATEMENT A. Approved for public release. Distribution is
+  unlimited.''
+
+    * [Recursion-and-induction] together with its subtopics and its answer
+      key ([community-books] files demos/r-and-i-answer-key-input.lsp
+      and demos/r-and-i-answer-key-log.txt)
+    * [Gentle-introduction-to-ACL2-programming]
+    * [Loop$-primer] together with its subtopics and its answer key
+      ([community-books] files lp6.lisp, lp8.lisp, lp12.lisp,
+      lp14.lisp, lp17-11-lemma2.lisp, and lp17.lisp)
+    * [Start-here]
+
+  Regarding NSF support:
 
     * This material is based upon work supported by the National Science
       Foundation under Grant Nos. CCF-1526760, CNS-1525472,
@@ -2662,12 +2676,6 @@ Subtopics
 
 Subtopics
 
-  [About-ACL2]
-      General information About ACL2
-
-  [ACL2-tutorial]
-      Tutorial introduction to ACL2
-
   [Bdd]
       Ordered binary decision diagrams with rewriting
 
@@ -2722,6 +2730,9 @@ Subtopics
 
   [Rule-classes]
       Adding rules to the database
+
+  [Start-here]
+      Introductory information about ACL2
 
   [Theories]
       Sets of [rune]s to [enable]/[disable] in concert")
@@ -5471,7 +5482,7 @@ Silent loading of ACL2 customization files
   and Harsh Raju Chamarthi for their work on the ACL2 Sedan and for
   making their books available to ACL2 users.")
  (ACL2-TUTORIAL
-  (ACL2)
+  (START-HERE)
   "Tutorial introduction to ACL2
 
   To learn about ACL2, read at least the following two links.
@@ -42596,6 +42607,1395 @@ Subtopics
   If you have been working your way through the tutorial introduction
   to the theorem prover, use your browser's Back Button now to return
   to [introduction-to-key-checkpoints].")
+ (GENTLE-INTRODUCTION-TO-ACL2-PROGRAMMING
+  (START-HERE)
+  "A Gentle Introduction to ACL2 Programming
+
+
+A Gentle Introduction to ACL2 Programming
+
+
+by
+
+
+J Strother Moore
+
+
+Abstract
+
+  ACL2 is a logic and programming language in which you can model
+  computer systems, together with a tool to help you prove properties
+  of those models. ``ACL2'' denotes ``A Computational Logic for
+  Applicative Common Lisp''.  The ACL2 programming language is a
+  subet of side-effect free Common Lisp.  Mathematically speaking,
+  all ACL2 programs are functions.  When two calls of a function
+  supply the same objects as inputs the calls return the same
+  results.  If all you want to do is define ACL2 functions and run
+  them, you don't need to know how to use ACL2 as a theorem prover.
+  This introduction is all you need.
+
+
+Getting Started
+
+  If you haven't installed ACL2 on your machine, do so, by following
+  the instructions at ``Obtaining, Installing, and License'' on the
+  {ACL2 Home Page | https://www.cs.utexas.edu/users/moore/acl2}.  As
+  those instructions make clear, to run ACL2 you'll need a Common
+  Lisp implementation.  The instructions name several suitable ones.
+
+  In addition to the installation instructions, the Home Page has a
+  wealth of documentation.  You should visit ``The User's Manuals''.
+  There you'll see several versions of the manual, depending on
+  whether you want information about utilities developed by users.
+  But we recommend that newcomers just look at the basic ``ACL2
+  User's Manual''.  Explore it briefly just so you know how to find
+  more information.  For example, type ``defun'' into the Jump to box
+  and hit return.  You'll see details of how to define functions and
+  there are many links in that discussion to related topics.  But
+  don't try to understand defun by reading all that.  The manual is
+  basically for users who are looking for technical information about
+  features they basically know how to use.  Having learned how to
+  explore the manual, put it aside for now and focus on this
+  document!
+
+  The interface to the ACL2 system is a read-eval-print loop.  It
+  prints a prompt.  You type some command and hit return.  It reads
+  and evaluates your command.  It prints the results.  And then it
+  prompts you for your next input.
+
+  You could use ACL2 with no other interface.  But most users prefer an
+  enviroment in which they can prepare a command by editing the text
+  before submitting it.  We use an Emacs shell buffer for that.
+  Other users use {ACL2s | http://acl2s.ccs.neu.edu/acl2s/doc/},
+  which is an Eclipse plug-in.  This guide doesn't discuss the
+  interface further and we just assume you can submit commands and
+  see the output.  The examples we provide are from our Emacs
+  interface.
+
+  ACL2 is implemented (largely) in ACL2.  That is, almost all the
+  system code is written in the ACL2 subset of Common Lisp.  The
+  examples provided here were prepared under ACL2 Version 8.5.  Your
+  output should be logically equivalent though the text may look a
+  little different.
+
+  Now fire up your ACL2.  You should see a prompt that looks like this
+
+    ACL2 !>
+
+  Type ``:program'' and a return.
+
+    ACL2 !>:program
+    ACL2 p!>
+
+  The :program command tells ACL2 that subsequent definitions should
+  merely be treated as ACL2 programs and not admitted into the logic.
+  (To admit a program into the logic requires proving that the
+  program terminates.  We do not want to deal with proofs of any sort
+  in this guide, so we'll stay in :program mode.)
+
+  Now type ``(+ 2 2)''.  You should see the answer, 4 printed on the
+  next line.  This illustrates the basic behavior of ACL2's
+  read-eval-print loop.  The display below shows several other
+  examples too.
+
+    ACL2 !>:program
+    ACL2 p!>(+ 2 2)
+    4
+    ACL2 p!>(+ 1 2 3 4)
+    10
+    ACL2 p!>(car '(hello world))
+    HELLO
+    ACL2 p!>(cdr '(hello world))
+    (WORLD)
+    ACL2 p!>(cons 'hello '(world))
+    (HELLO WORLD)
+    ACL2 p!>
+
+  Sometimes computations cause errors, most commonly due to type
+  violations or resource limitations.  See the sections Type Errors
+  and Stack Overflow below.
+
+  Here is an ACL2 program that takes a linear list of numbers and
+  constructs a linear list of their squares.  We've annotated it with
+  Lisp comments.  ACL2 ignores the comments.  We'll explain the
+  syntax later.  For now we'll just interpret what this whole
+  definition means.
+
+    (defun square-all (x)
+
+    ; Make a list of the squares of the elements of the list x.
+
+      (cond
+       ((endp x)                       ; If x is empty,
+        nil)                           ; return the empty list.
+
+       (t                              ; Otherwise,
+        (cons (* (car x) (car x))      ; square the first element and
+              (square-all (cdr x)))))) ; cons it onto the front of
+                                       ; the squares of the rest.
+
+  If you aren't sure what a ``linear list'' is just hang in and we'll
+  get to it.  But you've probably figured out that nil is the empty
+  list, that cons constructs a list by ``adding'' an element to the
+  front of another list, that car returns the first element of a
+  non-empty list, and that cdr returns all but the first element of a
+  non-empty list.  Those deductions are right, as far as they go.
+
+  Here is what it looks like if you submit the square-all definition to
+  the read-eval-print loop.  We have omitted most of the previous
+  commands and their output, and we have omitted the comments we
+  included in the display above.
+
+    ACL2 !>:program
+    ...
+    ACL2 p!>(cons 'hello '(world))
+    (HELLO WORLD)
+    ACL2 p!>(defun square-all (x)
+      (cond ((endp x) nil)
+            (t (cons (* (car x) (car x))
+                     (square-all (cdr x))))))
+
+    Summary
+    Form:  ( DEFUN SQUARE-ALL ...)
+    Rules: NIL
+    Time:  0.00 seconds (prove: 0.00, print: 0.00, other: 0.00)
+     SQUARE-ALL
+    ACL2 p!>
+
+  Once square-all is defined we can run it.  Here are some tests.
+
+    ACL2 p!>(square-all '(1 2 3 4 5))
+    (1 4 9 16 25)
+    ACL2 p!>(square-all nil)
+    NIL
+    ACL2 p!>(square-all '(-9 3/4 #c(0 5)))
+    (81 9/16 -25)
+    ACL2 p!>
+
+
+Data Types
+
+  ACL2 supports five very simple but rather abstract types of data:
+
+    * numbers,
+    * characters,
+    * strings,
+    * symbols (which includes the two Booleans T and NIL), and
+    * pairs or ``conses''.
+
+  Objects of each type are distinct.  That is, no number is a character
+  or a string or a symbol or a pair.  Etc.
+
+  All of these objects are ``first class'' in the sense that you can
+  pass them in as values to functions, return them as values from
+  functions, and store them in lists and trees.
+
+  Many operators are provided for each type.  Each operator is a
+  function.
+
+  No ACL2 operator or function can modify, mutate, or otherwise alter
+  the objects passed in as arguments.
+
+  Since you're probably more familiar with conventional programming
+  languages than functional (side-effect free) ones, let's talk
+  operationally for a moment.  (This is a disservice to you!  The
+  operational view is more complicated than the abstract mathematical
+  view!)  ACL2 is implemented on top of a von Neumann architecture.
+  So what happens ``behind the scenes'' when the ACL2 function cons
+  is called on 4 and 5?  Mathematically it returns the pair < 4, 5 >
+  which is printed in ACL2 as (4 . 5).  But operationally, some
+  memory is allocated for a new object, then the representations of 4
+  and 5 are stored in two fields (called the car and cdr fields) of
+  that object, that region of memory is effectively tagged to
+  indicate that it represents a cons pair, and a pointer to the newly
+  allocated object is returned as the result of the call of cons.
+  When that result is printed by ACL2 it appears as (4 . 5).  The
+  italicized sentence above means nothing you can do in ACL2 will
+  change the contents of that newly allocated memory. In most
+  programming languages you could invoke some procedure or method to
+  overwrite the contents of the car field of that object, changing it
+  from 4 to 3.  No such procedure or method exists in ACL2.  The
+  object returned by that call of cons will print as the pair (4 . 5)
+  --- will be the pair (4 . 5) --- for as long as you have access to
+  the pointer returned by that call of cons.
+
+  ACL2 expressions are just nests of function calls.  For example
+  (factors (+ x (* 3 y))) calls the function factors on the value of
+  x+3y.  (We define factors below to return the list of prime factors
+  of its input.)  The functions + and * are examples of functions
+  that operate on numbers.
+
+  Before we discuss ACL2 expressions further we must discuss the
+  important issue of how you write down constants of each of the five
+  types.
+
+  A few examples suffice to illustrate the common ways to enter
+  numeric constants: 123, 22/7 and #c(3 5).  Note that ACL2 provides
+  ``infinitely precise'' rational numbers like 1/3 and 22/7.  These
+  are not floating point numbers; we don't provide floating point
+  numbers.  The rational 2/3 could also be written 4/6 --- they are
+  two different ways of writing the same number.  The ACL2 number
+  #c(3 5) is more conventionally written as the complex number 3+5i.
+  ACL2 also supports writing numeric constants in binary, octal and
+  hexadecimal notation, but we do not use that here.
+
+  We will list some operations on numbers later.
+
+  Here are examples of how to write character objects: #\\A and #\\a and
+  #\\Space.  Character objects are primarily used to build up strings.
+  While ACL2 provides functions for manipulating character objects
+  (e.g., to recover their ASCII codes) we won't be using them here.
+
+  Strings are delimited by the double quote mark, e.g., \"This is an
+  error message.\" Again, there are functions more manipulating
+  strings but we won't use them in this guide.
+
+  This leaves us with symbols and conses.  Two symbols are easy to
+  understand because they have counterparts in most programming
+  languages: T is a symbol but it is also ACL2's Boolean ``true''
+  object.  NIL is a symbol and is ACL2's Boolean ``false'' object.
+  When an ACL2 predicate is said to be false, we mean the predicate
+  returns NIL.  When an ACL2 predicate is said to be true, it usually
+  means it returns T, but more precisely it means it returns anything
+  but NIL.  Oddly, Lisp and ACL2 also use the symbol NIL as the
+  ``empty list''.
+
+  Before we discuss other ACL2 functions however we must deal at
+  length with symbols and conses.  Many first-time Lisp programmers
+  do not really understand the idea of symbols as data or the idea of
+  lists and trees as data.
+
+
+Symbols
+
+  Symbols are sequences of alphabetic letters, signs and digits.  So
+  X, X*, and ABC23 are symbols.  So are CAR, IF, and TRUE-LISTP.
+  Note that dashes and other signs do not ``break'' symbols into
+  pieces.  TRUE-LISTP is one symbol, not two symbols separated by a
+  minus sign.
+
+  Technically, a symbol can contain any sequence of characters and
+  there are rules for writing symbols down so as to distinguish them
+  from other constants.  Using certain ``escape'' conventions you can
+  actually write symbols containing spaces and parentheses, symbols
+  composed entirely of digits, and symbols with other ``weird''
+  characters.  But we will not go into these conventions in this
+  introduction.  We will limit ourselves to symbols that ``look
+  like'' what you probably expect.  Most often, symbols start with an
+  alphabetic character and then contain just alphabetic characters,
+  signs and digits.  The first space, newline or parenthesis you
+  encounter while reading a symbol marks the end of the symbol and
+  isn't part of it.
+
+  All programming languages (except binary machine code) have symbols
+  at the syntactic level.  Symbols are used to denote variables,
+  functions, operations, keywords, etc., in the syntax of most
+  programming languages.  This is true in ACL2 too.  But ACL2 is a
+  little different in that it also provides symbols as data objects.
+  That is, in addition to familiar data objects like numbers and
+  strings, ACL2 provides symbols as a kind of data structure that can
+  be manipulated.  For example, a symbol can be converted to a string
+  object, or decomposed into its constituent characters, or several
+  symbols can be concatenated to create a longer symbol.  But in this
+  introduction we will just pass symbols around, compare them to
+  other objects, and create lists (conses) containing symbols as
+  elements.
+
+  As noted, T and NIL are symbols with special significance.  They are
+  our ``Booleans'' data objects and NIL is used as the ``empty
+  list''.
+
+  Symbols are more complicated than described above because in
+  addition to their names they belong to ``packages.'' For example,
+  there might be a symbol named ABS in a package named \"MATH\" and a
+  symbol named ABS in a package named \"VECTORS\".  There is always one
+  ``current package'' in ACL2 --- you can select any package as the
+  current package.  If \"MATH\" were the current package, then when you
+  write ABS you denote the symbol ABS in the \"MATH\" package.  If you
+  mean the symbol ABS in the \"VECTORS\" package you would have to
+  write VECTORS::ABS.  We will not use packages here.
+
+  There is a special package called the \"KEYWORD\" package.  The symbol
+  ABS in the \"KEYWORD\" package can, of course, be written
+  KEYWORD::ABS.  But special syntactic sugar also allows us to write
+  :ABS for that symbol.
+
+  When we write symbols, case is unimportant (unless that previously
+  mentioned ``escape'' convention is used).  When reading a symbol
+  all characters are all uppercased.  That is, ACL2 reads the symbol
+  x as X.  The symbol The is read as THE and True-Listp is read as
+  TRUE-LISTP.  Thus, the choice of whether to write a symbol in
+  uppercase, lowercase, or some mixture of cases is just a stylistic
+  one.
+
+    ACL2 p!>'(Here is a list of SymBols!)
+    (HERE IS A LIST OF SYMBOLS!)
+    ACL2 p!>'(This list contains a |Weird Symbol|)
+    (THIS LIST CONTAINS A |Weird Symbol|)
+    ACL2 p>
+
+  ACL2 provides ways to construct symbols from strings, ways to
+  construct strings from lists of character objects, and ways to
+  construct character objects from integers.  But elementary ACL2
+  programs rarely construct new symbols, strings and characters
+  dynamically.  The symbols, strings and characters manipulated
+  during most program executions are entered initially in the input
+  data (e.g., by reading a command line or input file).  Therefore,
+  we do not bother to describe how to ``create'' symbols, strings and
+  characters and none of our examples create these objects
+  dynamically.
+
+
+Lists
+
+  We first discuss how to write down ``cons pairs'' and `` list
+  objects''.  Later we will describe the operations on them.  There
+  are many ways to write the same list constant.  This should not be
+  surprising; the same thing is true of numeric constants.  Consider
+  the fact that 123, 000123, +0123, 246/2 and #b1111011 are all ways
+  to write down the same numeric constant.  The form you choose when
+  writing a numeric constant is up to you and is often chosen to
+  emphasize some aspect of the data.  For example, I might pad an
+  integer with insignificant 0s to emphasize that it fits in a field
+  of six digits, or I might unnecessarily write a + sign on the only
+  positive integer in a data set.  Like numbers in other programming
+  languages, lists are so common in ACL2 that there are many ways to
+  write the same list constant but the choice of ``style'' is just
+  that: stylistic.
+
+  Most programming languages support the idea of some kind of record
+  structure with fields containing other objects.  The only such
+  record structure in ACL2 is the ordered pair or cons pair.  A cons
+  pair is just a pair of two objects.  Sometimes we call a cons pair
+  a ``list pair'' or a ``dotted pair'' or simply a ``list.''
+
+  Any two objects may be put together into a cons pair.  The cons pair
+  containing the integer 1 and the integer 2 might be drawn as:
+
+      *
+     / \\
+    1   2
+
+  or might be written in Cartesian coordinate notation as <1,2>.  But
+  in ACL2 it is written as the object (1 . 2).  This is a single cons
+  object in ACL2, with two integer objects as constituents.  The
+  left-hand constitutent is called the car of the pair.  The
+  right-hand constituent is called the cdr.
+
+  The tree we might draw as
+
+      *
+     / \\
+    1   *
+       / \\
+      2   3
+
+  or write in coordinate notation as <1, <2, 3>>, in ACL2 is written
+  the object (1 . (2 . 3)).  The car of this object is the integer 1.
+  The cdr of this object is the object (2 . 3).
+
+  Similarly,
+
+         *
+        / \\
+       /   \\
+      *     *
+     / \\   / \\
+    1   2 3   4
+
+  or <<1, 2>,<3, 4>> is written ((1 . 2) . (3 . 4)).  Suppose x is the
+  cons object just mentioned.  Then the car of x is the object (1 .
+  2) and the cdr is the object (3 . 4).  Obviously, the car of the
+  car of x is 1.  The cdr of the car of x is 2, etc.
+
+  The notation we are using to write list objects is called dot
+  notation. It is a straightforward translation of the familiar
+  coordinate notation in which parentheses replace the brackets and a
+  dot replaces the comma.
+
+  But there are other ways to write these conses.  This should not be
+  surprising.  How many ways can you think of to write the number 5?
+  There are an infinite number!  5, 05, 005, +000005, etc., not to
+  mention possibly #B101 and others.  Those are all just ``syntactic
+  sugar'' for denoting one familiar object.  The sugars above might
+  be described as ``you can add a leading 0'' and ``you can add a
+  single leading plus sign on a positive number.''
+
+  Similarly, ACL2 has two rules that allow us to write cons pairs in a
+  variety of ways.  The first rule provides a special way to write
+  trees like:
+
+      *
+     / \\
+    1   nil
+
+  namely, you can write (1 . nil) or you can write (1).  That is: if a
+  cons pair has NIL as its cdr, you can drop the ``dot'' and the NIL.
+
+  The second rule provides a special way to write a cons pair that
+  contains another cons pair in the cdr.  The rule allows us to write
+  (x . (...)) as (x ...).  That is, when the cdr is a cons, you can
+  drop the dot and the pair of balanced parentheses following it.
+
+  Thus, the tree
+
+      *
+     / \\
+    1   *
+       / \\
+      2   *
+         / \\
+        3   nil
+
+  can be written in any of the following ways.
+
+    (1 . (2 . (3 . nil)))
+    (1 . (2 . (3)))
+    (1 . (2 3))
+    (1 2 3)
+
+  It can also be written in many other ways, e.g., (1 2 . (3 . nil))
+  and (1 . (2 3)).
+
+  Binary trees that terminate in nil on the right-most branch, such as
+  the one above, are often called linear lists.  The elements of a
+  list are the successive cars along the ``cdr chain.'' That is, the
+  elements are the car, the car of the cdr, the car of the cdr of the
+  cdr, etc.  The elements of the list above are 1, 2, and 3, in that
+  order.  If we let x denote that tree, i.e., let x be (1 2 3), then
+  the car of x is 1.  The cdr of x is the linear list (2 3).  The car
+  of the cdr of x is thus 2.  The cdr of the cdr of x is the linear
+  list (3).  The car of the cdr of the cdr of x is 3.  And the
+  ``third cdr'' of x is nil.
+
+  The linear list (A (B C D) E) has three elements.  B is not an
+  element of that list, it is an element of an element.
+
+  The following is a linear list of pairs.
+
+        *
+       / \\
+      *   \\
+     / \\   \\
+    A   1   *
+           / \\
+          *   \\
+         / \\   \\
+        B   2   *
+               / \\
+              *   \\
+             / \\   \\
+            C   3   nil
+
+  This list can be written ((A . 1) (B . 2) (C . 3)).  In full dot
+  notation it is written
+
+    ((A . 1) . ((B . 2) . ((C . 3) . NIL))).
+
+  By the way, lists such as the one above are so common they have a
+  name.  They are called association lists or alists and are used as
+  keyed tables.  The list above associates the key A with the value
+  1, the key B with the value 2, etc.  Later we show functions for
+  manipulating alists.
+
+  Lists are often used to represent more elaborate data structures.
+  For example, an ``account'' might consist of a name, an id number,
+  a balance and a list of transactions, laid out like this:
+
+            *
+           / \\
+          /   \\
+         /     \\
+        *       *
+       / \\     / \\
+      /   \\   /   \\
+    name  id bal  trans
+
+  An example of an account object might be
+
+    ((\"John Smith\" . 123456789)    ; Name and id
+     .
+     (1254 .                       ; balance in cents
+       ((DEPOSIT (1 21 1999) 1000) ; transactions
+        (WITHDRL (1 30 1999)  850)
+        (WITHDRL (2  5 1999)  215))))
+
+  Rather than refer to these four components in terms of the car and
+  cdr of the account object most programmers would define functions
+  with application-specific names like account-name, account-id, etc.
+  Instead of building each account object with a nest of cons
+  expressions they would define (make-account name id bal trans) to
+  do the consing.
+
+
+Expressions
+
+  We've seen that the basic idiom for defining a new function in ACL2
+  is to write
+
+    (defun f (v1 ... vn) body)
+
+  where f is the name of the function, the vi are its input parameters,
+  and body is an expression that computes the value of the function
+  in terms of the parameters.  The n parameters must be distinct
+  variable names and we say that n is the arity of the new function
+  f.  But what are expressions?
+
+  With a few exceptions, an expression is either
+
+    * a variable symbol,
+    * a constant expression,
+    * a call of a function of arity n on n argument expressions (sometimes
+      called the actuals).
+
+  Variable symbols are written in the same way that symbol objects are
+  written, except T, NIL, and keywords may not be used as variable
+  symbols.  Examples of variable symbols are thus X, k, temp3, and
+  init-val.
+
+  There are two kinds of constant expressions: those that can just be
+  written as ordinary objects and those that must be quoted.
+  Character objects, strings, numbers, T, NIL, and keywords are of
+  the first kind.  They may be used as constant expressions without
+  any additional signifying mark.  All other symbols and all list
+  objects must be preceded by a single quote mark (') to be used as
+  constants in an expression.  Examples of constant expressions of
+  the first kind are thus #\\Space, \"EOF Error\", 128, T, NIL, and
+  :element.  Constant expressions of the second kind include 'X,
+  'HELLO, and '(MON WED FRI).
+
+  Function calls are written by writing an open parenthesis, the name
+  of the function and the n argument expressions, all separated by
+  whitespace, followed by a close parenthesis.  For example (cons (*
+  (car x) (car x)) (square-all (cdr x))) is a function call of the
+  function cons on two argument expressions.  The first argument is a
+  call of * on two expressions, both of which are calls of car on the
+  variable symbol x.  The second argument to the call of cons is
+  (square-all (cdr x)), which is a call of square-all on a call of
+  cdr on x.
+
+  Consider the list object (CAR X), which we can draw as
+
+      *
+     / \\
+    CAR \\
+         *
+        / \\
+       X  NIL.
+
+  This object can be written as (CAR X).  But that is also the way we
+  write the expression that denotes a call of the function CAR on X.
+  So if we want to use that object in an expression we have to quote
+  it to make it clear we mean the object rather than the expression.
+
+  We have said that an expression is either a variable, a constant, or
+  a function call of a function symbol of arity n on n argument
+  expressions.  But there are exceptions to this simple
+  characterization of expressions.  One exception is that some
+  functions appear to take varying numbers of arguments.  For
+  example, ACL2 allows + and * to take more than two arguments.  So
+  (+ (* x x) (* 2 x y) (* y y)) is allowed.  We'll note other such
+  functions when we use them here.  Another exception is a special
+  notation for nested if-then-else expressions described below.
+  These exceptions are actually facilitated by a macro facility
+  allowing the user to define new notation, but we will not discuss
+  macros here even though we will use and explain some macros in our
+  examples.  Finally, ACL2 permits calls of unnamed functions, called
+  lambda expressions, but we won't use them explicitly in this
+  introduction.  The reason we say ``explicitly'' is that we will use
+  so-called let expressions to introduce some local temporary
+  variables and ACL2 understands let expressions as applications of
+  lambda expressions.  We'll explain when we introduce let.
+
+  An example expression is
+
+    (cons (cons 'square-all (cons x nil))
+          (cons '=
+                (cons (square-all x) nil)))
+
+  provided square-all has been defined as a function of arity 1.  Note
+  that case is actually unimportant in symbols, whether they are
+  function or variable names or data objects.  Unless special
+  conventions are employed all symbols are read in uppercase.
+
+  Expressions have values computed with respect to an environment
+  assigning values to variable symbols.  For example, if square-all
+  is defined as previously shown and x has the value (1 2 3) then the
+  value of the expression above is
+
+    ((SQUARE-ALL (1 2 3)) = (1 4 9)).
+
+  Here is the algorithm for determining the value of an expression in
+  an environment. The value of a variable is just looked up in the
+  environment.  The value of a constant expression is the obvious
+  object.  The value of a call of a defined function is computed by
+  (a) evaluating the n argument expressions to obtain a sequence of n
+  objects, (b) creating a new environment in which the function's n
+  parameters are assigned those respective objects, and then (c)
+  evaluating the body expression of the function in that new
+  environment.  The value of a call of a primitive function, like *
+  or cons, is determined by running special code on the values of the
+  arguments.
+
+  For example, suppose we have added this definition
+
+    (defun sq (x) (* x x))
+
+  and we are in an environment where x has value 5.  Then here is an
+  annotated computation of the value of (sq (+ 1 x)).
+
+    (sq (+ 1 x))
+    =                ; evaluate argument of sq, when x = 5
+    (sq 6)
+    =                ; evaluate body of sq, when x = 6
+    36.
+
+
+Primitive Functions
+
+  The ACL2 system starts up with over eight thousand known functions,
+  32 of which are primitive (defined by special code rather than
+  definitions).  The rest are defined.  Here is a brief summary of a
+  few useful primitives.  We have biased this list to encourage
+  merely integer arithmetic and list processing.  Some of the
+  functions mentioned below are not actually primitive but are
+  defined as simple compositions of primitives.  For example, (natp
+  x) is defined to be (and (integerp x) (<= 0 x)).  Other
+  ``functions'' mentioned below are actually macros that expand into
+  primitive expressions.
+
+    * (EQUAL x y) --- t if x and y are the same object and nil otherwise
+    * (IF x y z) --- y if x is non-NIL and z if x is NIL.  Put more
+      colloquially, (IF x y z) means ``if x is true, return y,
+      otherwise return z''
+    * (COND (p1 x1) (p2 x2) ... (T xn)) --- an abbreviation for
+
+          (IF p1
+              x1
+              (IF p2
+                  x2
+                  (IF ...
+                      ...
+                      y)))
+
+    * (AND x1 ... xn) --- xn if each xi is non-nil, and nil otherwise
+    * (OR x1 ... xn) --- xi for the first xi that is non-nil, nil
+      otherwise
+    * (NOT x) --- t if x is nil and nil otherwise
+    * (NATP x) --- t if x is a non-negative integer and nil otherwise
+    * (INTEGERP x) --- t if x is an integer and nil otherwise
+    * (RATIONALP x) --- t if x is a rational number and nil otherwise
+    * (ZP x) --- nil if x is a positive integer and t otherwise
+    * (+ x1 ... xn) --- sum of the xi
+    * (* x1 ... xn) --- product of the xi
+    * (- x y) --- x minus y
+    * (/ x y) --- quotient of x divided by y
+    * (< x y) --- t if x is less than y and nil otherwise
+    * (<= x y) --- t if x is less than or equal to y and nil otherwise
+    * (CONSP x) --- t if x is a cons pair and nil otherwise
+    * (ATOM x) --- t if x is a not cons pair and nil otherwise
+    * (ENDP x) --- t if x is nil or a not cons pair and nil otherwise
+    * (CONS x y) --- the ordered pair whose left-hand component is x and
+      whose right-hand component is y
+    * (CAR x) --- left-hand component of x if x is a cons pair and nil
+      otherwise
+    * (CDR x) --- right-hand component of x if x is a cons pair and nil
+      otherwise
+    * (CADR x) --- (CAR (CDR X))
+    * (CDDR x) --- (CDR (CDR X))
+    * (LIST x1 x2 ... xn) --- (CONS x1 (CONS x2 ... (CONS xn NIL)))
+    * (LIST* x1 x2 ... xn) --- (CONS x1 (CONS x2 ... xn))
+    * (SYMBOLP x) --- t if x is a symbol and nil otherwise
+    * (STRINGP x) --- t if x is a string and nil otherwise
+    * (CHARACTERP x) --- t if x is a character and nil otherwise
+
+  You can learn more about these functions by executing them on some
+  sample data.  For example, the value of (AND T 23 33) is 33, (+ 1 2
+  3) is 6, (ZP 0) is T but (ZP 3) is false (i.e., NIL).  (LIST 1 (+ 2
+  2) (+ 3 3)) has the value (1 4 6) but (LIST* 1 (+ 2 2) (+ 3 3)) has
+  the value (1 4 . 6).
+
+  Perhaps more interestingly, the value of (EQUAL (CONS (- 6 1) 7)
+  (CONS 5 (+ 5 2))) is T.  ``Behind the scenes'' those two calls of
+  CONS return two different pointers to two different newly allocated
+  regions of memory, but the car and cdr fields of both objects are
+  the same, namely 5 and 7 respectively.  ACL2 cannot tell those two
+  pointers apart.  Operationally, EQUAL checks equality recursively
+  down to the tips of both objects.  But logically, both CONS
+  expressions here return the pair (5 . 7).
+
+
+Common Patterns of Recursion
+
+  Most of your function definitions in ACL2 will fall into certain
+  common schemes.  Here is an informal description of the three most
+  common schemes.  We define the function visit several different
+  ways to illustrate common recursions.  (In ACL2 you are not allowed
+  to define a function more than one way; there is no ``overriding,''
+  ``hiding,'' or ``overloading.'' These multiple definitions are just
+  a device for illustrating a lot of definitions without burdening
+  you with many different names.)
+
+
+Visiting every element of a linear list
+
+    (defun visit (lst ...)
+      (cond ((endp lst) ...)              ; No elements left to process.
+            (t .                          ; Some elements to process:
+                .
+                 .
+                  (car lst)               ; do something with this element
+
+                  (visit (cdr lst) ...)   ; and visit the rest.
+                 .
+                .
+               .)))
+
+  We illustrate this scheme in the next section.
+
+
+Visiting every node and leaf in a binary tree
+
+    (defun visit (tree ...)
+      (cond ((atom tree) ...)             ; The tree is a leaf: do something.
+
+            (t .                          ; The tree is an interior node:
+                . tree                    ; do something with it,
+                 .
+                   (visit (car tree) ...) ;  visit nodes in left branch, and
+
+                 . (visit (cdr tree) ...) ;  visit nodes in right branch.
+                .
+               .)))
+
+  Visiting every element of a linear list is just the special case of
+  exploring a binary tree in which we visit only the successive
+  subtrees along the cdr chain and consider the car of each such
+  subtree as the ``data,'' or element, to be processed.  We
+  illustrate this recursion below.
+
+
+Visiting all the natural numbers from n to 0
+
+    (defun visit (n ...)
+      (cond ((zp n) ...)                  ; N ``is'' 0: finish up!
+            (t .                          ; N is a positive integer:
+                . n                       ; do something with it, and
+                 .
+                  (visit (- n 1) ...)     ; visit the naturals below it.
+                 .
+                .
+               .)))
+
+  The reason ``is'' is in quotation marks above is that (zp n) is true
+  if either n is 0 or n is not a natural number.  For example, (zp
+  -3) and (zp 1/3) both return true!  So when (zp n) is true you
+  don't really know n is 0 but you do know there is nothing more to
+  do, if you're thinking of n as a natural number.  When (zp n) is
+  false, you know n is a positive integer.  The predicate zp is just
+  a convenient way to recur through natural numbers and guarantees to
+  halt the recursion even if you call the function on ``unexpected''
+  input, whether numeric or not.
+
+
+Computing Results
+
+  When you define a recursive function you often have the choice of
+  computing the results ``on the way up'' or ``on the way down.''
+
+  Suppose x is a linear list of numbers and you wish to sum them.
+  Here are two ways:
+
+    (defun sum-up (x)
+      (cond ((endp x) 0)
+            (t (+ (car x) (sum-up (cdr x))))))
+
+    (defun sum-down (x temp)
+      (cond ((endp x) temp)
+            (t (sum-down (cdr x) (+ (car x) temp)))))
+
+  For example (sum-up '(1 2 3 4)) is 10 and (sum-down '(1 2 3 4) 7) is
+  17.  Both definitions fit within the ``visiting every element of a
+  linear list'' recurrence scheme.
+
+  Note that sum-up takes a list of numbers and returns their sum while
+  sum-down takes a list of numbers and some initial value and adds
+  the numbers in the list to the initial value.  Of course, (sum-up
+  x) is equal to (sum-down x 0) --- but only because the operation of
+  addition is insensitive to the order in which the additions are
+  done.
+
+  In many applications, the sum-up style is clearer, as it is obvious
+  how each element of the list is contributing to the final value.
+  In particular, each element is handled in exactly the same way
+  regardless of what elements came before.  In the sum-down style,
+  the value of the temporary variable can, in principle, be used to
+  affect the processing of subsequent elements.  Information about
+  the previous elements is being passed down.  In more complicated
+  functions written in the sum-down style, one must carefully inspect
+  how temp is used to determine if it is just the final answer or is
+  being used to direct the computation.
+
+  Of course, sometimes information about the elements already visited
+  is necessary to decide how to process subsequent ones, in which
+  case the sum-down style might be the appropriate choice.
+
+  Finally, when these two functions are compiled in a straightforward
+  way, the recursion in  sum-up may a call stack while the recursion
+  in  sum-down does not: sum-down is tail recursive.  This means that
+  the value of the recursive call is returned as the final answer and
+  there is no need for the execution engine to ``remember'' to come
+  back after the call to ``do something.'' In sum-up the execution
+  engine must ``remember'' to add the two intermediate results
+  together.  Tail recursive calls can be compiled as simple jumps or
+  ``gotos'' and often result in faster executions and use of no
+  additional stack space.  But all such considerations depend
+  critically on the sophistication of the compiler.
+
+
+Saving Intermediate Results
+
+  ACL2 is applicative so it does not have assignment statements.  But
+  it is possible to use ``local variables'' to save intermediate
+  results.  Here is a function that computes x^4 + y^4, i.e., the sum
+  of the fourth powers of x and y.
+
+    (defun x4y4 (x y)
+      (let ((x2 (* x x))            ; Let x2 be x^2 and, ``simultaneously,''
+            (y2 (* y y)))           ; let y2 be y^2.
+        (+ (* x2 x2)                ; Compute x^4 by squaring x^2 and
+           (* y2 y2))))             ; add it to y^4 computed similarly.
+
+  For example, (x4y4 2 3) is 16 + 81 or 97.  The let expression has
+  two parts, a list of variable bindings followed by a body.  The
+  bindings are written as a list of elements.  Each element lists a
+  variable name and a term.  The terms are evaluated in parallel and
+  then all the variables are bound to the values of the corresponding
+  terms.  Then the body is evaluated.  The value of the body is the
+  value of the let.
+
+  Let expressions are formalized in ACL2 as applications of anonymous
+  functions.  For example, (let ((v1 a1) (v2 a2)) (g v1 v2)) is
+  actually transformed into ((lambda (v1 v2) (g v1 v2)) a1 a2) where
+  the lambda expression is an anonymous function with two parameters,
+  v1 and v2, and body (g v1 v2).  The terms a1 and a2 that determine
+  the values of the local variables in the let become the argument
+  expressions on which the anonymous function is called.
+
+  While let binds its variables in parallel, let* binds its variables
+  sequentially.  The expression
+
+    (let* ((x2 (* x x))             ; Let x2 be x^2, and then
+           (x4 (* x2 x2))           ; let x4 be x2^2, and then
+           (x8 (* x4 x4)))          ; let x8 be x4^2.
+          x8)                       ; Return x8.
+
+  computes x^8.
+
+  Here is an example of a common use of let.  Suppose you wish to find
+  the length of the longest branchs in a binary tree.  The function
+  depth does that.  It is an example of the ``visit every node in a
+  binary tree'' scheme.
+
+    (defun depth (x)
+      (cond ((atom x) 0)
+            (t (let ((left-depth (depth (car x)))
+                     (right-depth (depth (cdr x))))
+                  (if (< left-depth right-depth)
+                      (+ 1 right-depth)
+                      (+ 1 left-depth))))))
+
+  Just to illustrate the definition and list notation, consider the
+  tree
+
+         *
+        / \\
+       /   \\
+      *     *
+     / \\   / \\
+    a   * e   *
+       / \\   / \\
+      b   * f   g
+         / \\
+        c   d
+
+  The longest branches in this tree have length four and terminate in
+  either c or d.  This tree can be written
+
+    ((a . (b . (c . d))) . (e . (f . g)))
+
+  or equivalently as ((a b c . d) e f . g).
+
+  The expression (depth '((a b c . d) e f . g)) has value 4.
+
+  We could have defined this function this way:
+
+    (defun depth (x)
+      (cond ((atom x) 0)
+            (t (if (< (depth (car x))
+                      (depth (cdr x)))
+                   (+ 1 (depth (cdr x)))
+                   (+ 1 (depth (car x)))))))
+
+  But this would execute less efficiently because after recurring into
+  both the car and cdr of x to determine which is deepest it recurs
+  into one of them again to return the answer.  The use of let
+  eliminates this duplication of effort by saving the results of the
+  earlier calls.
+
+  Still a third way to define depth might be
+
+    (defun depth (x)
+      (cond ((atom x) 0)
+            (t (+ 1 (max (depth (car x))
+                         (depth (cdr x)))))))
+
+  where (max i j) is defined to be (if (&lt; i j) j i).  This
+  definition executes almost as efficiently as the first one.  The
+  values of the two recursive calls are passed to the subroutine max.
+  Max uses i twice and j twice but now that ``duplication of effort''
+  only requires looking up the values of variables, just as in the
+  let case.
+
+
+Sample Definitions
+
+
+Functions on Linear Lists
+
+  The next several functions all illustrate the ``visiting every
+  element of a linear list'' recurrence scheme.
+
+    (defun mem (e x)
+
+    ; Return t or nil according to whether e is an element of x.
+
+      (cond ((endp x) nil)
+            ((equal e (car x)) t)
+            (t (mem e (cdr x)))))
+
+  Equivalently:
+
+    (defun mem (e x)
+      (if (endp x)
+          nil
+          (if (equal e (car x))
+              t
+              (mem e (cdr x)))))
+
+  or even
+
+    (defun mem (e x)
+      (and (not (endp x))
+           (or (equal e (car x))
+               (mem e (cdr x)))))
+
+  (Recall our caveat about multiple definitions of the same function.
+  If you want to try one of these definitions in ACL2, fine.  If you
+  want to try all three, you'll have to give them distinct names.)
+
+  For all three of the above definitions, the following examples hold:
+
+    ACL2 p!>(mem 'd '(a b c d e f g))
+    T
+    ACL2 p!>(mem 'd '(a b c   e f g))
+    NIL
+    ACL2 p!>
+
+  Here is a function to concatenate two lists together:
+
+    (defun app (x y)
+      (if (endp x)       ;;; If x is exhausted,
+          y              ;;;    then return y
+          (cons (car x)  ;;;  else, cons the first element of x onto
+                (app     ;;;     the list obtained by recursively appending
+                 (cdr x) ;;;     the rest of x
+                 y))))   ;;;     to y.
+
+  Here are some examples of app.
+
+    ACL2 p!>(app '(1 2 3) '(a b c d))
+    (1 2 3 A B C D)
+    ACL2 p!>(app '(1 2 3) nil)
+    (1 2 3)
+    ACL2 p!>(app (app '(1 2 3) '(4 5 6)) '(7 8 9))
+    (1 2 3 4 5 6 7 8 9)
+    ACL2 p!>
+
+  Here is a function to find the first pair in an alist (if any) that
+  binds a given key.
+
+    (defun lookup (key alist)
+      (cond ((endp alist) nil)             ;;; If alist empty, return nil,
+            ((equal key (car (car alist))) ;;; elseif the first pair contains key,
+             (car alist))                  ;;;    then return the first pair,
+            (t (lookup key (cdr alist))))) ;;; else look in the rest of alist.
+
+  Here are some examples.
+
+    ACL2 p!>(lookup 'b '((a . 1)(b . 2) (c . 3)))
+    (B . 2)
+    ACL2 p!>(lookup 'd '((a . 1)(b . 2) (c . 3)))
+    NIL
+    ACL2 p!>(lookup 'b '((a . 1)(b . 2) (b . 3)))
+    (B . 2)
+    ACL2 p!>
+
+  Note that only the first binding of the key matters.
+
+  Here is a function to ``change'' the value of a key in an alist.
+  Note that it does not modify the alist but produces a new alist.
+
+    (defun store (key val alist)
+      (cond
+        ((endp alist)                 ;;; If alist is empty,
+         (list (cons key val)))       ;;;  then return an alist with one binding,
+        ((equal key (caar alist))     ;;; elseif the first pair binds key,
+         (cons (cons key val)         ;;;  then add the new binding to
+               (cdr alist)))          ;;;  the rest of the alist,
+        (t (cons (car alist)          ;;; else cons this pair onto the result
+                 (store               ;;;  of recursively putting a new binding
+                   key val            ;;;  of key to val in
+                   (cdr alist))))))   ;;;  the rest of alist.
+
+    ACL2 p!>(store 'b 7 '((a . 1) (b . 2) (c . 3)))
+    ((A . 1) (B . 7) (C . 3))
+    ACL2 p!>(store 'x 26 '((a . 1) (b . 2)))
+    ((A . 1) (B . 2) (X . 26))
+    ACL2 p!>(store 'c 3 '((a . 1) (b . 2) (x . 26)))
+    ((A . 1) (B . 2) (X . 26) (C . 3))
+
+  It is important to recall that ACL2 is functional (side-effect
+  free)!  Despite its name, store does not change the alist it is
+  given but returns a new one.  Consider
+
+    ACL2 p!>(let* ((alist1 '((a . 1) (b . 2) (c . 3)))
+                   (alist2 (store 'b 7 alist1)))
+             (list (lookup 'b alist1)
+                   (lookup 'b alist2)))
+    ((B . 2) (B . 7))
+    ACL2 p!>
+
+  The above expression binds alist1 to an alist in which b is
+  associated with 2.  Then it uses store to bind b in alist1 to the
+  new value 7 and calls the result alist2.  Then it returns the list
+  containing the values of looking up b in each of the alists.  You
+  might think the answer would be ((B . 7) (B . 7)) and it would be
+  if store actually changed alist1 to create alist2.  But in fact
+  alist1 is not changed.  The answer is ((B . 2) (B . 7)).
+
+
+Functions on Binary Trees
+
+  Here is a function to count the number of tips of a binary tree.
+  This function illustrates the ``visiting every node of a binary
+  tree'' scheme.
+
+    (defun count-tips (x)
+      (cond ((atom x) 1)                   ;;; X is a tip: it counts 1.
+            (t (+ (count-tips (car x))     ;;; X is a node: sum the counts
+                  (count-tips (cdr x)))))) ;;; of the left and right subtrees.
+
+  The function above does the computation ``on the way up.''
+
+  Here is a version that does it ``on the way down.''
+
+    (defun count-tips (x temp)
+      (cond ((atom x) (+ 1 temp))          ;;; X is a tip: add its count to temp.
+            (t                             ;;; Otherwise, x is a node:  Read the
+                                           ;;; nest of two calls below inside-out:
+                                           ;;; Count the tips in (car x) and add
+                                           ;;; that into temp.  Use the result as
+                                           ;;; temp when you count the tips in
+                                           ;;; (cdr x).
+             (count-tips (cdr x)
+                         (count-tips (car x)
+                                     temp)))))
+
+  This function has one tail recursive call.
+
+  Let x be the tree
+
+         *
+        / \\
+       /   \\
+      *     *
+     / \\   / \\
+    a   * e   *
+       / \\   / \\
+      b   * f   g
+         / \\
+        c   d
+
+  which we can write as '((a b c . d) e f . g).  Then (count-tips x)
+  is 7 (here we mean to use the first version of the definition).
+  Similarly, (count-tips x 0) is also 7 (here we mean to use the
+  second version).
+
+
+Mutual Recursion
+
+  ACL2 requires that subroutines be defined before they are used in
+  other definitions.  So what do you do if you have two functions, f
+  and g, and f calls g and g calls f?  You define them together.
+  This is called mutual recursion.
+
+  The example below shows a very inefficient way to factor a number
+  into a list of primes.
+
+    (mutual-recursion
+
+    (defun factors (n)
+
+    ; Collect the prime factors of n.
+
+      (factors-below n (- n 1)))
+
+    (defun factors-below (n m)
+
+    ; Return the prime factors of n that are less than or equal to m.
+
+      (cond ((or (zp m)
+                 (equal m 1))
+             (list n))
+            ((integerp (/ n m))
+             (app (factors (/ n m))
+                  (factors m)))
+            (t (factors-below n (- m 1)))))
+    )
+
+  We can read this as follows.  To determine the factors of n, call
+  factors-below on n and n-1 to collect all the factors of n less
+  than or equal to n-1.  To find all the factors of n less than or
+  equal to m, consider three cases.  First, if m is 0 or 1, return
+  the list containing just n.  Second, if n/m is an integer (i.e., m
+  divides n), then use app to concatenate the factors of n/m to the
+  factors of m.  Third (and otherwise), find the factors of n below
+  m-1.
+
+  We can run factors.  For example (factors 12) returns (2 2 3).  If we
+  call (factors 123456789) the computation takes a while (27 seconds
+  on my laptop) and returns (3 3 3607 3803).  (Factors (- (expt 2 31)
+  1)) takes about 500 seconds and returns (2147483647).
+
+
+Returning and Using Multiple Values
+
+  It is sometimes useful to define functions that return more than one
+  result.  Here is an example of a function that produces and uses
+  multiple values.  The function explores a binary tree and counts
+  (in its second argument, nodes) how many cons nodes it sees and
+  counts (in its third argument, tips) how many tips it sees.  It
+  returns both numbers as a list of length 2 (without actually
+  creating the intermediate lists).
+
+    (defun node-and-tip-count (x nodes tips)
+      (cond
+       ((atom x)                ;;; X is a tip.  Return a vector (list) of
+        (mv nodes               ;;; two results: the number of nodes seen
+            (+ 1 tips))         ;;; and the number of tips seen (plus 1 for x).
+        )
+       (t                       ;;; X is a cons node.
+
+          (mv-let (nodes-in-car tips-in-car)
+                  (node-and-tip-count (car x) nodes tips)
+
+                  ;;; The two lines above locally bind the variables
+                  ;;; nodes-in-car and tips-in-car to the number of
+                  ;;; nodes and tips, respectively, computed by the
+                  ;;; recursive call of this function on (car x)
+                  ;;; and the current running counts of nodes and tips.
+
+                  ;;; Then, below, we count the number of nodes and
+                  ;;; tips in (cdr x), starting with the counts for
+                  ;;; the car (and adding one for the node x).
+
+                  (node-and-tip-count (cdr x)
+                                      (+ 1 nodes-in-car)
+                                      tips-in-car)))))
+
+  For example,
+
+    (node-and-tip-count '((a . b) . (c . d)) 0 0)
+    = (3 4)
+
+  Thus, the tree in question has 3 cons nodes and 4 (non-cons) tips.
+
+  If you want to use multiple values you should read the ACL2
+  documentation on that topic.
+
+
+Type Errors
+
+  The ACL2 programming language is untyped.  Objects have types that
+  can be checked at runtime with predicates like integerp, consp,
+  etc., but there is no syntactic typing.  Any function can be
+  applied to any object and ACL2 comes up with some value.  It does
+  this by defaulting ill-typed inputs to default values of the
+  expected type.  For example, + expects its arguments to be numbers.
+  If you supply a non-numeric input to + it will use 0 instead.
+  Thus, the value of (+ 3 T) is 3.  Car and cdr expect their
+  arguments to be either a cons pair or nil.  (A special case in Lisp
+  is that car and cdr return nil on nil.)  If called on objects of
+  the wrong type, car and cdr default the argument to nil.
+
+  But when you start up ACL2, the read-eval-print loop is configured to
+  check types as it evaluates.  Errors are signaled if types are
+  violated.  However, if you want it to just plow into ill-typed data
+  and get whatever result the defaults produce, you can use the
+  :set-guard-checking nil command as shown in the session below.
+
+    ACL2 p!>(+ 2 2)
+    4
+    ACL2 p!>(+ 2 T)
+
+
+    ACL2 Error in TOP-LEVEL:  The guard for the function call (BINARY-+ X Y),
+    which is (AND (ACL2-NUMBERP X) (ACL2-NUMBERP Y)), is violated by the
+    arguments in the call (BINARY-+ 2 T).
+    See :DOC set-guard-checking for information about suppressing this
+    check with (set-guard-checking :none), as recommended for new users.
+    To debug see :DOC print-gv, see :DOC trace, and see :DOC wet.
+
+    ACL2 p!>:set-guard-checking nil
+
+    Masking guard violations but still checking guards except for self-
+    recursive calls.  To avoid guard checking entirely, :SET-GUARD-CHECKING
+    :NONE.  See :DOC set-guard-checking.
+
+    ACL2 p>(+ 2 T)
+    2
+    ACL2 p>(CAR 'ABC)
+    NIL
+    ACL2 p>
+
+  Note that the prompt changes after the :set-guard-checking command
+  above.  The exclamation mark (!) in the standard prompt indicates
+  that types are being checked.
+
+
+Stack Overflow
+
+  Sometimes a computation will consume more space than your machine
+  has.  For example, the following function constructs a list of n
+  nils.
+
+    (defun nils (n)
+      (if (zp n)
+          nil
+          (cons nil (nils (- n 1)))))
+
+  We can run it on small values of n.
+
+    (nils 10) = (nil nil nil nil nil nil nil nil nil nil)
+
+  So that we don't have to read long lists of nils below we just take
+  the length of the result with the ACL2 function len.
+
+    ACL2 p!>(len (nils 10))
+    10
+    ACL2 p!>(len (nils 100))
+    100
+    ACL2 p!>(len (nils 1000))
+    1000
+    ACL2 p!>(len (nils 10000))
+    10000
+    ACL2 p!>(len (nils 100000))
+    100000
+    ACL2 p!>(len (nils 1000000))
+    1000000
+    ACL2 p!>(len (nils 10000000))
+    ***********************************************
+    ************ ABORTING from raw Lisp ***********
+    ********** (see :DOC raw-lisp-error) **********
+    Error:  Stack overflow on value stack.
+    ...
+    :q
+    ACL2 p!>
+
+  But that last test, where we attempt to produce a list of ten million
+  nils, causes a stack overflow in the Common Lisp configuration I'm
+  running.  (If your Lisp causes a Lisp error and enters an
+  interactive break you'll need to exit the break to return to ACL2.
+  Exactly how you do that depends on what Common Lisp you're running.
+  For example, in GCL and CCL, you type :q followed by return, but in
+  Allegro CL you type :reset followed by return, and in CMU CL you
+  type q followed by return.)
+
+  If you are interested in doing ``large'' calculations with ACL2 you
+  will have to learn about how to compile definitions and how to use
+  declarations to optimize code.  Those topics are beyond the scope
+  of this document.
+
+  However, often you can just code up a more efficient algorithm.  For
+  example, the following tail-recursive version of nils won't
+  overflow the stack.
+
+    (defun nils (n ans)
+      (if (zp n)
+          ans
+          (nils (- n 1) (cons nil ans))))
+
+  So now
+
+    ACL2 p!>(len (nils 10000000 nil))
+    10000000
+    ACL2 p!>(len (nils 100000000 nil))
+    100000000
+    ACL2 p!>(len (nils 1000000000 nil))
+    1000000000
+    ACL2 p!>
+
+  Of course, it will eventually use up all the memory.
+
+  The tests above sort of suggest we're interested in the question
+  ``Does (nils n nil) always return a list of length n?'' If that is
+  the question, then (a) you'll never answer it by running all
+  possible tests, and (b) you are using exactly the right tool!
+
+  The ACL2 system includes a theorem prover.  Below we show the
+  commands you need to execute to answer the question in the
+  affirmative.  We've elided the output from these commands.
+
+    ACL2 p!>:logic
+    ACL2 !>(verify-termination nils)
+    ...
+    ACL2 !>(defthm lemma-about-nils
+            (implies (natp n)
+                     (equal (len (nils n ans))
+                            (+ n (len ans)))))
+    ...
+    ACL2 !>(defthm main-theorem-about-nils
+            (implies (natp n)
+                     (equal (len (nils n nil)) n)))
+    ...
+
+  That is, switch back into logic mode, admit nils to the logic by
+  proving termination, prove the general theorem that (nils n ans)
+  returns a list whose length is n plus the length of ans, when n is
+  natural number, and then prove the main theorem.  Your job as an
+  ACL2 ``theorem prover driver'' is to think of the commands.  The
+  prover does the work to complete each of those steps.
+
+  So maybe you should learn to prove theorems about your functions?  If
+  so, see ``Recursion and Induction''.
+
+
+Conclusion
+
+  You should be ready at this point to use ACL2 as a programming
+  language to implement lots of simple list processing algorithms.
+  Remember to go to the ACL2 User's Manual on the {ACL2 Home Page |
+  https://www.cs.utexas.edu/users/moore/acl2} to learn about other
+  functions and features.  If you need advice, check out the ACL2
+  Help list under the Mailing Lists link.  The users who have
+  volunteered to help are very responsive.
+
+  One final piece of advice: it is always best to code the simplest
+  algorithm you can.  Do not needlessly complicate your code.
+  Optimize for performance only after confirming that the
+  straightforward implementation is too inefficient for your
+  application.")
  (GENVAR (POINTERS)
          "See [system-utilities].")
  (GET-BRR-LOCAL (POINTERS)
@@ -61875,6 +63275,9 @@ Subtopics
   [For-loop$]
       Iteration with [loop$] over an interval of integers or a list
 
+  [Loop$-primer]
+      Primer for using [loop$]
+
   [Loop$-proofs]
       Proving inductive theorems about loop$s
 
@@ -61886,6 +63289,153 @@ Subtopics
  (LOOP$-DO (POINTERS) "See [do-loop$].")
  (LOOP$-FOR (POINTERS)
             "See [for-loop$].")
+ (LOOP$-PRIMER
+  (LOOP$ PROGRAMMING)
+  "Primer for using [loop$]
+
+
+The Loop$ Primer
+
+
+Preface
+
+  This primer was created at the request of and with the support of
+  Warren Hunt.  It was originally conceived as a standalone document,
+  but it has been integrated into the ACL2 documentation to increase
+  its utility.
+
+  The ACL2 [loop$] feature is an iteration primitive modeled on a small
+  subset of the Common Lisp loop facility.  This documentation is an
+  elementary introduction to loop$ for use in both programming and
+  proofs.  We assume the reader is already an experienced ACL2 user
+  who is just new to loop$.
+
+  Loop$ exploits ACL2's ``higher order'' capability using [apply$].
+  Logically, loop$ expressions are translated into calls of [scion]s
+  or ``mapping functions'' that map one or more [lambda] objects over
+  ranges.  When loop$ expressions are typed into the ACL2 top-level
+  loop these formal semantics are executed, which can be inefficient.
+  When loop$ expressions are in [guard] verified (see
+  [verify-guards]) functions they are compiled into Common Lisp loop
+  expressions and are executed very efficiently.
+
+  Two issues complicate the situation.  First, Common Lisp's loop
+  facility is extraordinarily complex, requiring a full chapter of
+  the reference manual to explain.  See {loop |
+  http://www.lispworks.com/documentation/HyperSpec/Body/m_loop.htm#loop}
+  in the Common Lisp HyperSpec or Chapter 26 (pages 709-747) of Guy
+  Steele's monumental Common Lisp The Language, Second Edition.
+  Second, ACL2's logic is first-order, not higher-order, and so the
+  apply$-based semantics imposes restrictions that new users of ACL2
+  may find hard to deal with.
+
+  This primer focuses on how to write loop$ expressions and how to
+  prove things about them.  We start by asking you some questions
+  that test your basic knowledge of ACL2, so that you can decide
+  whether this primer is right for you.  Then we discuss the
+  so-called ``FOR'' loop$ and later move on to the ``DO'' loop$.  We
+  follow the ``monkey see, monkey do'' teaching style.  We informally
+  and incompletely sketch the syntax and semantics, but we provide
+  lots of examples and we offer many challenge problems for you to
+  solve.  Answers are also provided.
+
+  There are two glaring omissions in this primer: [guard] verification
+  and the use of [stobj]s in DO loop$.
+
+  While guard verification is crucial to the efficient execution of
+  loop$s by Common Lisp, we omitted much discussion of it because
+  guard obligations are generated automatically and are generally
+  just ``ordinary'' conjectures that we assume the experienced user
+  can figure out how to prove.  The newcomer to loop$ may wonder
+  ``why am I having to prove this?'' but the answer is always the
+  same: ``the Common Lisp compiler requires this in order for loop$
+  to behave like loop.'' Often the ``fix'' to a loop$ guard
+  verification problem is to add a :guard to the loop$ body,
+  remembering that it is translated into a lambda object that must be
+  guard verified in isolation since it might be passed around and
+  applied in many contexts.  We include the syntax for loop$ guards.
+
+  We omitted much discussion of stobjs --- which are allowed in DO
+  loop$s but not in other kinds of loop$s --- because they raise the
+  same problems in DO loop$s as they do in ``ordinary'' uses:
+  syntactic single-threadedness into, through, and out of
+  expressions.  We assume the experienced user knows how to deal with
+  these issues.
+
+  There is a strong emphasis in this primer on problems for you to work
+  on.  The best way to learn how to do something is to practice doing
+  it!
+
+  The primer is divided into subjects listed in the Table of Contents
+  which is at the link [lp-section-0].  We recommend you read these
+  sections in the order shown.  Each section ends with a pointer to
+  the next section but also includes a link to the Table of Contents.
+
+  Now go to [lp-section-1].  The  Table of Contents (see
+  [LP-SECTION-0]) is at [lp-section-0].
+
+
+Subtopics
+
+  [Lp-section-0]
+      Loop$ Primer Table of Contents)
+
+  [Lp-section-1]
+      Background Reviews
+
+  [Lp-section-10]
+      The Evaluation of the Formal Semantics of a Fancy Loop$
+
+  [Lp-section-11]
+      Proving Theorems about FOR Loop$s
+
+  [Lp-section-12]
+      Challenge Proof Problems about FOR Loop$s
+
+  [Lp-section-13]
+      Examples of DO Loop$s
+
+  [Lp-section-14]
+      Challenge Problems about DO Loop$s
+
+  [Lp-section-15]
+      Informal Syntax and Semantics of DO Loop$s
+
+  [Lp-section-16]
+      Proving Theorems about DO Loop$s
+
+  [Lp-section-17]
+      Challenge Proof Problems for DO Loop$s
+
+  [Lp-section-18]
+      Conclusion
+
+  [Lp-section-2]
+      Loop in Common Lisp and loop$ in ACL2
+
+  [Lp-section-3]
+      Examples of FOR Loop$s
+
+  [Lp-section-4]
+      Syntax of FOR Loop$s
+
+  [Lp-section-5]
+      Informal Semantics of FOR Loop$s
+
+  [Lp-section-6]
+      Challenge Problems about FOR Loop$s
+
+  [Lp-section-7]
+      Using Loop$s and Guards in Defuns
+
+  [Lp-section-8]
+      Challenge Problems about FOR Loop$ in Defuns
+
+  [Lp-section-9]
+      Semantics of FOR Loop$s
+
+  [Lp-section-todo]
+      Things We Might Add or Change")
  (LOOP$-PROOFS
   (LOOP$)
   "Proving inductive theorems about loop$s
@@ -62634,6 +64184,4079 @@ Subtopics
 
   [Q]
       Quit ACL2 (type :q) --- reenter with (lp)")
+ (LP-BACKGROUND-REVIEW-1
+  (LP-SECTION-1)
+  "Background review of basic ACL2 knowledge
+
+  Here are some questions to review basic features of ACL2.
+
+------------------------------
+  Consider the expression below and answer the following questions
+  about it, without running ACL2!  We're looking for informal answers
+  largely in agreement with ours, not perfect answers.  If you want
+  to see the questions together with our answers, see
+  [lp-background-review-1-answers].
+
+    (defun abc (x)
+      (declare (xargs :mode :program
+                      :guard (true-listp x)))
+      (cond
+       ((endp x) nil)
+       (t (cons (cons '? (car x))
+                (abc (cdr x))))))
+
+------------------------------
+  1: Informally, what happens if you type that expression at the
+  top-level of the ACL2 read-eval-print loop?
+
+------------------------------
+  2: More formally, how does the utterance above affect the ACL2 logic?
+
+------------------------------
+  3: A little bit of Lisp knowledge will tell you that all terms are
+  either variables, constants (usually quoted), or calls of
+  functions, where calls are of the form (fn a1 ... an), where fn is
+  a function symbol or lambda object that takes n arguments and the
+  ai are terms.  But the cond expression above is not of this form.
+  Cond is a macro that translates into a formal term.  What formal
+  term does it translate to?  And if you didn't know, how would you
+  find out?
+
+------------------------------
+  4: Let x be the object that prints as ((A . 1) (B . 2) (C . 3)).
+  What is the value of (car x) or is that a nonsensical question?
+  Several of the questions below are nonsensical!
+
+------------------------------
+  5: Given the value of x in question 4, what is the value of
+  (true-listp x)?
+
+------------------------------
+  6: Given the value of x in question 4, what is the value of (cons '?
+  (car x))?
+
+------------------------------
+  7: Given the value of x in question 4, what is the value of (cdr x)?
+
+------------------------------
+  8: Recall we defined abc above.  What is the value (abc '((a . 1) (b
+  . 2) (c . 3)))?
+
+------------------------------
+  9: What is the difference between '((a . 1) (b . 2) (c . 3)) and ((A
+  . 1) (B . 2) (C . 3))?
+
+------------------------------
+  10: What is the value of (abc ((a . 1) (b . 2) (c . 3)))?
+
+------------------------------
+  11: How would you explain what abc is, i.e., how it ``works'' or what
+  it ``does?''
+
+------------------------------
+  12: What is the value of (abc 3 4 5)?
+
+------------------------------
+  13: What is the value of (abc '(3 . 4))?
+
+------------------------------
+  14: How do you get ACL2 to print the value of (abc '(3 . 4))?
+
+------------------------------
+  15: How can you upgrade abc from a :program mode function to a :logic
+  mode function?
+
+------------------------------
+  16: What is the axiom added to ACL2 when abc is upgraded?
+
+------------------------------
+  17: Is (true-listp (abc x)) a theorem in ACL2?
+
+------------------------------
+  18: What would you type to get ACL2 to try to prove it?
+
+------------------------------
+  19: How would you describe the behavior of the :logic function def
+  below?  By the way, we're naming certain functions in these reviews
+  with consecutive letters of the alphabet, e.g., abc, def, ghi, jkl,
+  mno, etc.  These names are not mnemonic or acronyms.  Don't read
+  anything into the names!
+
+    (defun def (x)
+      (if (endp x)
+          nil
+          (append (def (cdr x)) (list (car x)))))
+
+------------------------------
+  20: Define sq to square a number.  E.g., (sq 9) returns 81 and (sq
+  -1/2) returns 1/4.
+
+------------------------------
+  21: How would you describe the behavior of sq* below?
+
+    (defun sq* (x)
+      (if (endp x)
+          nil
+          (cons (sq (car x))
+                (sq* (cdr x)))))
+
+------------------------------
+  22: What would you type to make ACL2 prove the following conjecture?
+
+    (equal (sq* (def x)) (def (sq* x)))
+
+------------------------------
+  23: Prove (nat-listp (ghi 0 max)), where
+
+    (defun ghi (i max)
+      (declare (xargs :measure (nfix (- (+ 1 (nfix max)) (nfix i)))))
+      (let ((i (nfix i))
+            (max (nfix max)))
+        (cond ((> i max) nil)
+              (t (cons i (ghi (+ 1 i) max))))))
+
+------------------------------
+  For our answers see [lp-background-review-1-answers].  If your
+  answers don't basically agree with ours, you're probably not yet
+  ready to read this material on [loop$].  We recommend that you read
+  the topic, [recursion-and-induction].
+
+  If your answers largely agree with ours, go back to the
+  [lp-section-1].
+
+  (Return to the Table of Contents (see [LP-SECTION-0]).)")
+ (LP-BACKGROUND-REVIEW-1-ANSWERS
+  (LP-SECTION-1)
+  "Answers to background review of basic ACL2 knowledge
+
+    (defun abc (x)
+      (declare (xargs :mode :program
+                      :guard (true-listp x)))
+      (cond
+       ((endp x) nil)
+       (t (cons (cons '? (car x))
+                (abc (cdr x))))))
+
+------------------------------
+  1: Informally, what happens if you type that expression at the
+  top-level of the ACL2 read-eval-print loop?
+
+  Answer: It defines abc as a Lisp program.  Note the declare that says
+  the :mode is :program.  By the way, when Lisp and ACL2 read
+  symbols, like abc, x, declare, etc., they automatically convert
+  them to UPPERCASE.  So it doesn't matter if we write abc or ABC, or
+  Abc, etc.
+
+------------------------------
+  2: More formally, how does the utterance above affect the ACL2 logic?
+
+  Answer: It doesn't.  Defining a :program introduces no axioms into
+  the logic.
+
+------------------------------
+  3: A little bit of Lisp knowledge will tell you that all terms are
+  either variables, constants (usually quoted), or calls of
+  functions, where calls are of the form (fn a1 ... an), where fn is
+  a function symbol or lambda object that takes n arguments and the
+  ai are terms.  But the cond expression above is not of this form.
+  Cond is a macro that translates into a formal term.  What formal
+  term does the cond expression translate to?  And if you didn't
+  know, how would you find out?
+
+  Answer: The expression
+
+    (cond
+     ((endp x) nil)
+     (t (cons (cons '? (car x))
+              (abc (cdr x)))))
+
+  translates to
+
+    (if (endp x)
+        'nil
+        (cons (cons '? (car x))
+              (abc (cdr x))))
+
+  To see the translation of an expression use [trans].
+
+------------------------------
+  4: Let x be the object that prints as ((A . 1) (B . 2) (C . 3)).
+  What is the value of (car x) or is that a nonsensical question?
+  Several of the questions below are nonsensical!
+
+  Answer: (car x) is (A . 1) if x is ((A . 1) (B . 2) (C . 3)).
+
+------------------------------
+  5: Given the value of x in question 4, what is the value of
+  (true-listp x)?
+
+  Answer: T, because x is a nest of conses whose rightmost terminal is
+  NIL.
+
+------------------------------
+  6: Given the value of x in question 4, what is the value of (cons '?
+  (car x))?
+
+  Answer: (? A . 1)
+
+------------------------------
+  7: Given the value of x in question 4, what is the value of (cdr x)?
+
+  Answer: ((B . 2) (C . 3))
+
+------------------------------
+  8: What is the value (abc '((a . 1) (b . 2) (c . 3)))?
+
+  Answer: ((? A . 1) (? B . 2) (? C . 3))
+
+------------------------------
+  9: What is the difference between '((a . 1) (b . 2) (c . 3)) and ((A
+  . 1) (B . 2) (C . 3))?
+
+  Answer: '((a . 1) (b . 2) (c . 3)) is a constant term that evaluates
+  to the list ((A . 1) (B . 2) (C . 3)).  The quote mark in front an
+  object forms a term that evaluates to that object.  And remember,
+  case is generally irrelevant in symbols.
+
+------------------------------
+  10: What is the value of (abc ((a . 1) (b . 2) (c . 3)))?
+
+  Answer: That's a nonsensical question.  (abc ((a . 1) (b . 2) (c .
+  3))) is not a well-formed term.  For example, (a . 1) is not a
+  function symbol or a lambda expression, or a macro.
+
+------------------------------
+  11: How would you explain what abc is, i.e., how it ``works'' or what
+  it ``does?''
+
+  Answer: The symbol ABC is the name of a Lisp program that takes one
+  argument and returns one result.  It can be run, but nothing can be
+  proved about it because there are no axioms defining it.  When abc
+  is called on x it copys the cdr-chain of x, adding the question
+  mark symbol to each new element.
+
+------------------------------
+  12: What is the value of (abc 3 4 5)?
+
+  Answer: Nonsensical. ABC takes only one argument, not three.
+
+------------------------------
+  13: What is the value of (abc '(3 . 4))?
+
+  Answer: Actually, it is ((? . 3)), but ACL2 won't evaluate (abc '(3 .
+  4)) in the default configuration of the top-level read-eval-print
+  loop because (3 . 4) is not a [true-listp].  The guard on ABC
+  stipulates that the argument to ABC is ``supposed'' to be a
+  true-listp.  So the read-eval-print loop causes a guard violation
+  error.  We explain why the value of (abc '(3 . 4)) is actually ((?
+  . 3)) in the next answer.
+
+------------------------------
+  14: How do you get ACL2 to compute and print the value of (abc '(3 .
+  4))?
+
+  Answer: The top-level read-eval-print loop has a parameter that
+  controls whether ACL2 checks the guards or not.  By default, that
+  parameter is set to T, meaning it does check guards.  But by
+  executing (set-guard-checking nil) the parameter is set to NIL and
+  then guards are not checked.  With that setting, ACL2 evaluation
+  just ignores the guard and runs the body of the program.
+
+  So here is how (abc '(3 . 4)) is evaluated.  First, it checks whether
+  [endp] holds on (3 . 4).  The definition of endp is atom, which
+  means ``is not a [cons] pair,'' and (3 . 4) is a cons pair.  So the
+  answer to the endp test is NIL and the execution of (abc '(3 . 4))
+  branches to the (cons (cons '? (car x)) (abc (cdr x))), where x is
+  (3 . 4).
+
+  But the car and cdr of the pair (3 . 4) are 3 and 4 respectively.  So
+  the value of (abc '(3 . 4)) is (cons (cons '? 3) (abc 4)).
+
+  But what is the value of (abc 4)?  (Endp 4) is T because 4 is an
+  atom.  So the value of (cons (cons '? 3) (abc 4)) is (cons (cons '?
+  3) NIL), which is printed as ((? . 3)).
+
+------------------------------
+  15: How can you upgrade abc from a :program mode function to a :logic
+  mode function?
+
+  Answer: Invoke [verify-termination] like this (verify-termination
+  abc).
+
+------------------------------
+  16: What is the axiom added to the ACL2 logic when abc is upgraded?
+
+  Answer:
+
+    <b>Definitional Axiom for ABC</b>
+    (abc x)
+    =
+    (if (endp x)
+        nil
+        (cons (cons '? (car x))
+              (abc (cdr x)))).
+
+  Note that the guard is irrelevant in the logic.  (Abc x) is always
+  equal to the right-hand side of the axiom above (the ``body'' of
+  abc), regardless of what x is.
+
+------------------------------
+  17: Is (true-listp (abc x)) a theorem in ACL2?
+
+  Answer: Yes!  It may not seem so because the defun of abc mentions
+  the :guard of (true-listp x) and yet the conjecture here doesn't
+  constrain x.  But guards of ACL2 functions are logically
+  irrelevant.  The Definitional Axiom added for abc does not mention
+  the guard.  So (true-listp (abc x)) is a theorem no matter what x
+  is!
+
+  Proof of (true-listp (abc x)) by induction on x:
+
+    Base Case: (atom x)                  ; i.e., x is not a consp
+    (true-listp (abc x))
+    =                                    ; def abc
+    (true-listp (if (endp x) nil ...))
+    =                                    ; def endp and (atom x).
+    (true-listp (if T nil ...))
+    =                                    ; axiom about IF
+    (true-listp nil)
+    =                                    ; def true-listp
+    T
+
+    Induction Step: (consp x)
+    Induction Hyp:  (true-listp (abc (cdr x)))
+
+    (true-listp (abc x))
+    =                                    ; def abc
+    (true-listp (if (endp x) nil (cons (cons '? (car x)) (abc (cdr x)))))
+    =                                    ; def endp and (consp x)
+    (true-listp (if NIL nil (cons (cons '? (car x)) (abc (cdr x)))))
+    =                                    ; axiom about IF
+    (true-listp (cons (cons '? (car x)) (abc (cdr x))))
+    =                                    ; def true-listp
+    (true-listp (abc (cdr x)))
+    =                                    ; Induction Hyp
+    T
+
+    Q.E.D.
+
+  If you ask ACL2 to do the proof (see the next question) its proof
+  doesn't mention induction.  That's because when abc was defined
+  ACL2 does a little inductive reasoning to deduce the ``type'' of
+  the output and deduced that it is always a true-listp.  That type
+  inference essentially does the inductive proof above.
+
+------------------------------
+  18: What would you type to get ACL2 to try to prove it?
+
+  Answer:
+
+    (thm (true-listp (abc x)))
+
+  or
+
+    (defthm little-theorem-about-abc
+      (true-listp (abc x)))
+
+------------------------------
+  19: How would you describe the behavior of the :logic function def
+  below?  By the way, we're naming certain functions in these reviews
+  with consecutive letters of the alphabet, e.g., abc, def, ghi, jkl,
+  mno, etc.  These names are not mnemonic or acronyms.  Don't read
+  anything into the names!
+
+    (defun def (x)
+      (if (endp x)
+          nil
+          (append (def (cdr x)) (list (car x)))))
+
+  Answer: It reverses x, i.e., it returns a list containing the
+  elements of x in reverse order.  E.g., (def '(a b c)) returns (C B
+  A).
+
+------------------------------
+  20: Define sq to square a number.  E.g., (sq 9) returns 81 and (sq
+  -1/2) returns 1/4.
+
+  Answer:
+
+    (defun sq (x) (* x x))
+
+  We could add a declaration, like (declare (xargs :guard (rationalp
+  x))) or (declare (xargs :guard (acl2-numberp x))).  But we've
+  chosen to keep things simple here.
+
+------------------------------
+  21: How would you describe the behavior of sq* below?
+
+    (defun sq* (x)
+      (if (endp x)
+          nil
+          (cons (sq (car x))
+                (sq* (cdr x)))))
+
+  Answer: It squares every element of x and returns the list of those
+  results in the same order.  E.g., (sq* '(1 2 3 -1/2 #c(0 1))) is (1
+  4 9 1/4) -1.
+
+------------------------------
+  22: What would you type to make ACL2 prove the following conjecture?
+
+    (equal (sq* (def x)) (def (sq* x)))
+
+  Answer: To get ACL2 to try to prove the theorem you could type
+
+    (defthm sq*-def
+      (equal (sq* (def x)) (def (sq* x))))
+
+  But ACL2 would fail to find the proof unless you'd proved some lemmas
+  about def.  You might see a ``checkpoint'' like
+
+    *** Key checkpoint under a top-level induction
+        before generating a goal of NIL (see :DOC nil-goal): ***
+
+    Subgoal *1/2''
+    (IMPLIES (AND (CONSP X)
+                  (EQUAL (DEF (SQ* (CDR X)))
+                         (SQ* (DEF (CDR X)))))
+             (EQUAL (APPEND (SQ* (DEF (CDR X)))
+                            (LIST (* (CAR X) (CAR X))))
+                    (SQ* (APPEND (DEF (CDR X)) (LIST (CAR X))))))
+
+  What would that suggest you do?
+
+  What we'd do is prove the following lemma first and then try sq*-def.
+
+    (defthm sq*-append
+      (equal (sq* (append a b))
+             (append (sq* a) (sq* b))))
+
+  When that lemma is available as a :[rewrite] rule during the proof of
+  sq*-def the checkpoint above would be further simplified, the
+  induction hypothesis of the sq*-def conjecture would be used, and
+  the proof of sq*-def would succeed.
+
+  The experienced ACL2 user would anticipate this in a simple problem
+  like this one.  But in a messier problem the experienced user would
+  just be emotionally prepared for the proof attempt to fail and
+  inspect the checkpoints to try to figure out how to complete the
+  proof.  See [the-method].
+
+------------------------------
+  23: Prove (nat-listp (ghi 0 max)), where
+
+    (defun ghi (i max)
+      (declare (xargs :measure (nfix (- (+ 1 (nfix max)) (nfix i)))))
+      (let ((i (nfix i))
+            (max (nfix max)))
+        (cond ((> i max) nil)
+              (t (cons i (ghi (+ 1 i) max))))))
+
+  Answer: You can't prove (nat-listp (ghi 0 max)) by induction with
+  that 0 in one of the controlling arguments.  You have to generalize
+  first.
+
+    (defthm nat-listp-ghi-lemma
+       (nat-listp (ghi i max)))
+
+    (defthm nat-listp-ghi
+       (nat-listp (ghi 0 max)))
+
+------------------------------
+  That completes the answers to this review of basic ACL2 knowledge.
+  If your answers don't largely agree with ours, you're probably not
+  yet ready to read the material in the [loop$-primer].  We recommend
+  that you take the ``Recursion and Induction'' course (which should
+  be somehow linked in here!).
+
+  (Return to the Table of Contents (see [LP-SECTION-0]).)")
+ (LP-BACKGROUND-REVIEW-2
+  (LP-SECTION-1)
+  "Review of [apply$] and related concepts
+
+  Below are some questions designed to review basic knowledge of
+  [apply$] and related concepts used in the semantics of loop$.  For
+  our answers see [lp-background-review-2-answers].
+
+  But our answers are sometimes quite long and elaborate --- more like
+  little lectures on the subject than just answers.  So don't expect
+  to reproduce our answers.  It's up to you to decide if you know
+  this stuff.  As you use loop$, ACL2 will print warnings and error
+  messages about functions not having badges or warrants or
+  expression not being tame.  We don't want your reaction to be
+  ``Ack! What's that all about?'' We want it to be at least ``Oh yes,
+  I remember now.'' We recommend that after you've read and answered
+  the questions, you read our answers even if you're pretty confident
+  in your answers.
+
+------------------------------
+  Consider these events, executed as the first three events in new ACL2
+  sessions.
+
+    (include-book \"projects/apply/top\" :dir :system)
+
+    (defun sq (x)
+      (declare (xargs :guard (natp x)))
+      (* x x))
+
+    (defun ghi (fn lst)
+      (declare (xargs :guard (and (apply$-guard fn '(nil))
+                                  (true-listp lst))))
+      (cond
+        ((endp lst) nil)
+        (t (cons (apply$ fn (list (car lst)))
+                 (ghi fn (cdr lst))))))
+
+  The three events are executed without error and sq and ghi are
+  admitted in :logic mode.  By the way, we're naming certain
+  functions in these reviews with consecutive letters of the
+  alphabet, e.g., abc, def, ghi, jkl, mno, etc.  These names are not
+  mnemonic or acronyms.  Don't read anything into the names!  Note
+  that unlike the review of elementary ACL2 features (see
+  [lp-background-review-1]), here we define (sq x) with a guard of
+  (natp x).  Both sq and ghi are guard verified upon admission.
+
+------------------------------
+  1: What is the value of (ghi 'sq '(1 2 3))?  Hint: This is a trick
+  question!
+
+------------------------------
+  2: How do you assign a badge and warrant to sq?
+
+------------------------------
+  3: What is the name of the ``warrant function for sq?'' What does
+  (warrant sq) abbreviate?  What does (warrant sq) imply about badge
+  and apply$?
+
+------------------------------
+  4: Can ghi be warranted?  If so, what command do you type?
+
+------------------------------
+  5: What is the name of the warrant function for ghi?  Explain what
+  the warrant for ghi tells us.
+
+------------------------------
+  6: The following definition is admissible.  Can it be warranted?
+
+    (defun mno (x y z)
+      (if (endp x)
+          z
+          (apply$ y
+                  (list (car x)
+                        (mno (cdr x) y z)))))
+
+------------------------------
+  7: Is (equal (mno x 'cons y) (append x y)) a theorem?
+
+------------------------------
+  8: The following defun is admissible but cannot be warranted.  Why?
+
+    (defun xyz (x) (apply$ x (list x)))
+
+------------------------------
+  9: Recall ghi as defined at the beginning of this review.  Assume sq
+  has been warranted.  What is the value of (ghi 'sq '(1 2 3))?
+
+------------------------------
+  10: Is (nat-listp (ghi 'sq lst)) a theorem?  If not, what theorem
+  does this suggest?
+
+------------------------------
+  11: What is the value of the term below?
+
+    (ghi (lambda$ (e) (ghi 'sq e))
+         '((1 2 3)
+           (4 5 6)
+           (7 8 9)))
+
+------------------------------
+  12: Suppose you want to define jkl to be something like what's shown
+  below and you want the guards verified.
+
+    (defun jkl (lst)
+      (declare (xargs :guard ...))
+      (ghi (lambda$ (e) (ghi 'sq e)) lst)))
+
+  Notice that the body of jkl is the doubly nested ghi term just
+  tested, except now instead of applying it to a constant list we're
+  applying it to the argument of jkl.
+
+  What is the appropriate :[guard] and do you have to make other
+  modifications to the suggested defun of jkl?
+
+------------------------------
+  13: Can jkl be warranted?
+
+------------------------------
+  14: Is this a theorem?  If not, what theorem does it suggest?
+
+    (implies (nat-listp-listp lst)
+             (nat-listp-listp (jkl lst)))
+
+------------------------------
+  See [lp-background-review-2-answers] for our answers.  If your
+  answers basically agree with ours we think you're ready to learn
+  about loop$, so go back to the [loop$-primer].  Otherwise, we
+  strongly recommend that you read [introduction-to-apply$] and then
+  [apply$] before reading about loop$.
+
+  (Return to the Table of Contents (see [LP-SECTION-0]).)")
+ (LP-BACKGROUND-REVIEW-2-ANSWERS
+  (LP-SECTION-1)
+  "Answers to the review of [apply$] and related concepts
+
+  Below are our answers to the Review of [apply$] and related concepts.
+  If your answers basically agree with ours, we think you're ready to
+  follow the discussion in [loop$-primer].  If not, we recommend that
+  you read [introduction-to-apply$] and then [apply$] before reading
+  about loop$.
+
+  But our answers are sometimes quite long and elaborate --- more like
+  little lectures on the subject than just answers.  So don't expect
+  to reproduce our answers.  It's up to you to decide if you know
+  this stuff.  As you use loop$, ACL2 will print warnings and error
+  messages about functions not having badges or warrants or
+  expression not being tame.  We don't want your reaction to be
+  ``Ack! What's that all about?'' We want it to be at least ``Oh yes,
+  I remember now.'' So we recommend that you read these little
+  mini-lectures in full.
+
+------------------------------
+  Consider these events, executed as the first three events in new ACL2
+  sessions.
+
+    (include-book \"projects/apply/top\" :dir :system)
+
+    (defun sq (x)
+      (declare (xargs :guard (natp x)))
+      (* x x))
+
+    (defun ghi (fn lst)
+      (declare (xargs :guard (and (apply$-guard fn '(nil))
+                                  (true-listp lst))))
+      (cond
+        ((endp lst) nil)
+        (t (cons (apply$ fn (list (car lst)))
+                 (ghi fn (cdr lst))))))
+
+  The three events are executed without error and sq and ghi are
+  admitted in :logic mode.  By the way, we're naming certain
+  functions in these reviews with consecutive letters of the
+  alphabet, e.g., abc, def, ghi, jkl, mno, etc.  These names are not
+  mnemonic or acronyms.  Don't read anything into the names!  Note
+  that unlike the review of elementary ACL2 features (see
+  [lp-background-review-1]), here we define (sq x) with a guard of
+  (natp x).  Both sq and ghi are guard verified upon admission.
+
+------------------------------
+  1: What is the value of (ghi 'sq '(1 2 3))?  Hint: This is a trick
+  question!
+
+  Answer: Note that ghi is a [scion] of apply$.  It calls apply$,
+  passing in the first argument of ghi as the ``function'' to apply$.
+  The evaluation of the above term fails with an error message
+  because sq is a user-defined :[logic] mode function but has not
+  been [warrant]ed (see [defwarrant]).  :Logic mode functions must be
+  warranted to be applied (with apply$) at the top-level of the ACL2
+  read-eval-print loop.  Furthermore, if you ever try to prove a
+  theorem whose proof requires expansion of the applications (with
+  apply$) of such functions, their warrants must be provided as
+  hypotheses.  We'll get to that later.
+
+  By the way, :[program] mode functions must be [badge]d (see
+  [defbadge]) to be applied at the top-level, but they need not be
+  warranted (because :program mode functions cannot be warranted or
+  used meaningfully in conjectures to be proved).  See
+  [guarantees-of-the-top-level-loop] for a discussion of the badge
+  and warrant restrictions enforced by top-level evaluation.
+
+------------------------------
+  2: How do you assign a badge and warrant to sq?
+
+  Answer: (defwarrant sq).
+
+  [Defwarrant] assigns both a badge and a warrant to its argument,
+  which must be a :logic mode function satisfying certain
+  restrictions on how it uses its arguments and how the termination
+  of the function is justified.  If the function cannot be badged or
+  cannot be warranted, an error is printed.
+
+  [Defbadge] just assigns a badge and can work on :program or :logic
+  mode functions.
+
+------------------------------
+  3: What is the name of the ``warrant function for sq?'' What does
+  (warrant sq) abbreviate?  What does (warrant sq) imply about badge
+  and apply$?
+
+  Answer: The warrant function for sq is named apply$-warrant-sq, which
+  is a 0-ary predicate.  (Warrant sq) is just an abbreviation for a
+  call of apply$-warrant-sq and if more than one function symbol
+  appears after the symbol warrant then it expands to the conjunction
+  of each of their predicates.  We'll show an example later.
+
+  Apply$-warrant-sq is introduced as a constrained function using
+  [defun-sk].  Here is the event in question, but the details here
+  are not critical to the present discussion.
+
+    (defun-sk apply$-warrant-sq ()
+      (forall (args)
+        (and
+         (equal (badge-userfn 'sq) '(apply$-badge 1 1 . t))
+         (equal (apply$-userfn 'sq args)
+                (sq (car args)))))
+      :constrain t)
+
+  What is critical is the role that (apply$-warrant-sq) plays in the
+  following theorem, which is proved as a :[rewrite] rule by
+  (defwarrant sq).
+
+    (defthm apply$-sq
+      (implies (force (apply$-warrant-sq))
+               (and (equal (badge 'sq)
+                           '(apply$-badge 1 1 . t))
+                    (equal (apply$ 'sq args)
+                           (sq (car args))))))
+
+  which allows the prover to reduce (badge 'sq) to (apply$-badge 1 1 .
+  t) and to reduce any instance of (apply$ 'sq args) to (sq (car
+  args)).
+
+  The [badge] of sq tells the prover that sq is a function of one
+  argument that returns one result.  The `` . t'' means ``all the
+  arguments are ordinary objects,'' i.e., never treated like
+  ``functions.''
+
+  The second part of the rule above will reduce the typical application
+  of sq, e.g., (apply$ 'sq (list e)), to (sq e).
+
+  Finally, note that name of the rule is apply$-sq, both the badge and
+  apply$ reductions are conditionall on the warrant hypothesis for
+  sq, and that the warrant hypothesis is [force]d.
+
+------------------------------
+  4: Can ghi be warranted?  If so, what command do you type?
+
+  Answer: Yes!  Just type (defwarrant ghi).
+
+------------------------------
+  5: What is the name of the warrant function for ghi?  Explain what
+  the warrant for ghi tells us.
+
+  Answer: The warrant function for ghi is named apply$-warrant-ghi.
+  (warrant ghi) abbreviates (apply$-warrant-ghi), and, by the way,
+  (warrant sq ghi ...) expands to
+
+    (and (apply$-warrant-sq)
+         (apply$-warrant-ghi)
+         ...).
+
+  The rule apply$-ghi is proved by defwarrant.
+
+    (defthm apply$-ghi
+      (and (implies (force (apply$-warrant-ghi))
+    		(equal (badge 'ghi)
+    		       '(apply$-badge 2 1 :fn nil)))
+           (implies (and (force (apply$-warrant-ghi))
+    		     (tamep-functionp (car args)))
+    		(equal (apply$ 'ghi args)
+    		       (ghi (car args) (car (cdr args)))))))
+
+  Notice that apply$-ghi is really two :rewrite rules, both conditioned
+  on the forced warrant for ghi.
+
+  The first rule tells us what the [badge] of ghi is.  In particular we
+  see that the first argument of ghi has ``[ilk]'' :fn, which means
+  that argument is treated as a function and can eventually be
+  applied with apply$.  Arguments of ilk :fn are never treated as
+  ordinary objects.  The badge of ghi also tells us the second
+  argument has ilk nil, which means it is an ordinary object (and is
+  never treated as a function).  The details are in [defbadge].
+
+  Note that the second conjunct of the apply$-ghi rule above rewrites
+  instances of (apply$ 'ghi args) and would rewrite (apply$ 'ghi
+  (list x y)) to (ghi x y).  However, it can only be used if the
+  first argument passed to ghi, namely x above, is a [tame] function.
+  Ilks, warrants, and tameness are concepts that are critical to the
+  soundness of ACL2's handling of apply$.  For details see [apply$].
+
+------------------------------
+  6: The following definition is admissible.  Can it be warranted?
+
+    (defun mno (x y z)
+      (if (endp x)
+          z
+          (apply$ y
+                  (list (car x)
+                        (mno (cdr x) y z)))))
+
+  Answer: Yes.  Its badge is determined to be (apply$-badge 3 1 nil :fn
+  nil).
+
+  For example,
+
+    (mno '(1 2 3) 'cons '(4 5 6))
+    =
+    (cons 1 (mno '(2 3) 'cons '(4 5 6)))
+    =
+    (cons 1 (cons 2 (mno '(3) 'cons '(4 5 6))))
+    =
+    (cons 1 (cons 2 (cons 3 (mno 'nil 'cons '(4 5 6)))))
+    =
+    (cons 1 (cons 2 (cons 3 '(4 5 6))))
+    =
+    '(1 2 3 4 5 6)
+
+  In fact, mno is more often named ``foldr'' in the functional
+  programming literature.
+
+------------------------------
+  7: Is (equal (mno x 'cons y) (append x y)) a theorem?
+
+  Answer: Yes!  You might think we need to add the warrant hypothesis
+  for cons since (apply$ 'cons ...) must be expanded to do the proof.
+  However, most ACL2 primitives, like cons, are built into the
+  definition of apply$ and warrants are not necessary for them.  In
+  fact, the primitives don't have warrant functions.  E.g., (apply$
+  'cons (list x y)) is (cons x y), unconditionally.  The complete
+  list of apply$ primitives may be exhibited by evaluating
+
+    (append '(BADGE TAMEP TAMEP-FUNCTIONP SUITABLY-TAMEP-LISTP
+                    APPLY$ EV$)
+            (strip-cars *badge-prim-falist*)).
+
+  However, user-defined function symbols need warrants in order to be
+  applied (with apply$).  But not all user-defined symbols can be
+  warranted.
+
+------------------------------
+  8: The following defun is admissible but cannot be warranted.  Why?
+
+    (defun xyz (x) (apply$ x (list x)))
+
+  Answer: It is impossible to classify the argument x.  Is it a
+  function or is it an ordinary object?  It's used both ways.
+  (Defwarrant xyz) fails.
+
+  In order for apply$ to be able to handle a function symbol certains
+  restrictions must hold.  These restrictions guarantee that there is
+  a model that makes all warrants true.  Here's a way to think about
+  it.  Imagine that apply$ is defined as a big case analysis that
+  enumerates all the functions that apply$ can handle and calls them
+  appropriately.  That big definition of apply$ has some measure that
+  explains why it terminates --- a fairly messy measure given that
+  apply$ can all ghi which calls apply$.  Now imagine you want to
+  define a new function, e.g., xyz, and change the definition of that
+  big apply$ to include all the old functions plus xyz.  You'll need
+  to weave the measure of xyz into the measure of the big apply$.
+  Defwarrant enforces restrictions that tell us this is possible.  Of
+  course, the restrictions are overly restrictive: to be perfect
+  defwarrant would have to solve the halting problem.
+
+  While the failure of (defwarrant xyz) prevents us from being able to
+  use apply$ to apply xyz, it is possible to evaluate some calls of
+  xyz and to prove theorems about them.
+
+    (thm
+      (equal (xyz '(lambda (x) (len x))) 3)
+
+  In the proof of the theorem above, xyz applied the given lambda
+  object to itself and computed that its length is 3.
+
+------------------------------
+  9: Recall ghi as defined at the beginning of this review.  Assume sq
+  has been warranted.  What is the value of (ghi 'sq '(1 2 3))?
+
+  Answer: (1 4 9).
+
+  Recall that an earlier question established that ghi can be warranted
+  and one might think warranting ghi is necessary for (ghi 'sq '(1 2
+  3)) to be evaluated without error.  But that's untrue.  Ghi is not
+  being applied (with apply$) here, so whether it has been warranted
+  or not is irrelevant.  However, sq is being applied.
+
+------------------------------
+  10: Is (nat-listp (ghi 'sq lst)) a theorem?  If not, what theorem
+  does this suggest?
+
+  Answer: No, it's not a theorem as written.  For example (ghi 'sq
+  '(-1/2 #c(0 1))) has the value (1/4 -1), although to get that value
+  computed by the top-level read-eval-print loop you have to turn off
+  guard checking (see [set-guard-checking]).
+
+  The following is a theorem.
+
+    (implies (and (warrant sq)
+                  (nat-listp lst))
+             (nat-listp (ghi 'sq lst)))
+
+  The warrant hypothesis for sq is necessary because to prove anything
+  interesting about (apply$ 'sq ...) we need the warrant for sq.  The
+  nat-listp hypothesis is necessary because otherwise sq may not
+  return a natural number.
+
+------------------------------
+  11: What is the value of the term below?
+
+    (ghi (lambda$ (e) (ghi 'sq e))
+         '((1 2 3)
+           (4 5 6)
+           (7 8 9)))
+
+  Answer: ((1 4 9) (16 25 36) (49 64 81)).
+
+  [Lambda$] is an interesting ACL2 feature.  It translates the body
+  term and constructs a lambda object suitable for apply$.
+
+  The ghi term above is also interesting.  It shows that the outer call
+  of ghi can successfully apply$ the lambda object which itself calls
+  ghi on sq.
+
+------------------------------
+  12: Suppose you want to define jkl to be something like what's shown
+  below and you want the guards verified.
+
+    (defun jkl (lst)
+      (declare (xargs :guard ...))
+      (ghi (lambda$ (e) (ghi 'sq e)) lst)))
+
+  Notice that the body of jkl is the doubly nested ghi term just
+  tested, except now instead of applying it to a constant list we're
+  applying it to the argument of jkl.
+
+  What is the appropriate :[guard] and do you have to make other
+  modifications to the suggested defun of jkl?
+
+  Answer: First, we define a predicate that recognizes a list of
+  nat-listps, i.e., a list of lists, where each element of each of
+  the inner lists is a natural number.
+
+    (defun nat-list-listp (lst)
+      (declare (xargs :guard (true-listp lst)))
+      (if (endp lst)
+          t
+          (and (nat-listp (car lst))
+               (nat-list-listp (cdr lst)))))
+
+  We could warrant nat-list-listp with (defwarrant nat-list-listp) if
+  we wanted to, but because it is only used in a guard below, a
+  warrant is not necessary.  If we intend to apply it with apply$ we
+  would need a warrant and we can always warrant it when needed.
+
+  We can then define jkl with the :guard shown below.  The true-listp
+  conjunct of the guard below is necessary because nat-list-listp has
+  true-listp as its guard.  But note that we also modified the
+  [lambda$] expression to express the guard on its local variable e.
+
+    (defun jkl (lst)
+      (declare (xargs :guard (and (true-listp lst)
+    			      (nat-list-listp lst))))
+      (ghi (lambda$ (e)
+                    (declare (xargs :guard (nat-listp e)))
+                    (ghi 'sq e))
+           lst))
+
+  Jkl is guard verified upon admission.  Consider what that means.  In
+  particular, every time sq is called it is called on something
+  satisfying the guard of sq.  The guard proof obligations generated
+  for a nest of functions using apply$ can be quite messy.
+
+------------------------------
+  13: Can jkl be warranted?
+
+  Answer: Yes.  (defwarrant jkl) succeeds.  A key observation is that
+  the lambda$ expression in its definition is a tame function (see
+  tame).  That is syntactically determined because the body of the
+  lambda$ is (ghi 'sq e), ghi requires a tame function as its first
+  argument, and sq is a tame function.
+
+------------------------------
+  14: Is this a theorem?  If not, what theorem does it suggest?
+
+    (implies (nat-list-listp lst)
+             (nat-list-listp (jkl lst)))
+
+  Answer: It is not quite a theorem as written.  We need to add warrant
+  hypotheses for the functions being applied with apply$.  Note that
+  jkl is not being applied, so we don't need its warrant.  The outer
+  ghi in the definition of jkl is also not being applied.  But the
+  [lambda$] expression passed as an argument to the outer ghi is
+  being applied by the outer ghi, and to evaluate the body of that
+  lambda object we apply$ ghi, so we need the warrant for ghi there.
+  Furthermore, that inner ghi will apply sq.  So we need the warrant
+  for that.
+
+  Thus, the following is indeed a theorem.
+
+    (implies (and (warrant ghi sq)
+                  (nat-list-listp lst))
+             (nat-list-listp (jkl lst)))
+
+  For some heuristic advice on how to figure out the necessary
+  warrants, see the section ``Determining the Necessary Warrants'' in
+  see [warrant].
+
+  However, if you omit the warrant hypotheses ACL2 will often
+  ``remind'' you at the end of failed proof attempts by exhibiting
+  checkpoints derived from forcing the warrants when apply$ rules are
+  applied.  If the warrants are omitted in this particular theorem
+  checkpoints require proving both (apply$-warrant-sq) and
+  (apply$-warrant-ghi).
+
+  Finally, one might worry that it is impossible for all the listed
+  warrants to be true at once, so perhaps listing a bunch of warrants
+  might make your theorems vacuously valid.  But defwarrant ensures
+  that there is a model of the ACL2 logic in which all warrants are
+  valid.  Thus, adding warrant hypotheses in no way makes your
+  theorems less meaningful.
+
+------------------------------
+  If your answers basically agree with ours you should proceed on to
+  [lp-section-2].  Otherwise, we strongly recommend that you read
+  [introduction-to-apply$] and then [apply$] before reading about
+  loop$.
+
+  (Return to the Table of Contents (see [LP-SECTION-0]).)")
+ (LP-SECTION-0
+  (LOOP$-PRIMER)
+  "Loop$ Primer Table of Contents)
+
+
+The Loop$ Primer Table of Contents
+
+    * [loop$-primer]:   Preface
+    * lp-section-0:   Table of Contents
+    * [lp-section-1]:   Background Reviews
+    * [lp-section-2]:   Loop in Common Lisp and loop$ in ACL2
+    * [lp-section-3]:   Examples of FOR Loop$s
+    * [lp-section-4]:   Syntax of FOR Loop$s
+    * [lp-section-5]:   Informal Semantics of FOR Loop$s
+    * [lp-section-6]:   Challenge Problems about FOR Loop$s
+    * [lp-section-7]:   Using Loop$s and Guards in Defuns
+    * [lp-section-8]:   Challenge Problems about FOR Loop$ in Defuns
+    * [lp-section-9]:   Semantics of FOR Loop$s
+    * [lp-section-10]: The Evaluation of the Formal Semantics of a Fancy
+      Loop$
+    * [lp-section-11]: Proving Theorems about FOR Loop$s
+    * [lp-section-12]: Challenge Proof Problems about FOR Loop$s
+    * [lp-section-13]: Examples of DO Loop$s
+    * [lp-section-14]: Challenge Problems about DO Loop$s
+    * [lp-section-15]: Informal Syntax and Semantics of DO Loop$s
+    * [lp-section-16]: Proving Theorems about DO Loop$s
+    * [lp-section-17]: Challenge Proof Problems for DO Loop$s
+    * [lp-section-18]: Conclusion
+    * lp-section-0:   Table of Contents")
+ (LP-SECTION-1
+  (LOOP$-PRIMER)
+  "Background Reviews
+
+
+LP1: Background Reviews
+
+  We assume you're familiar with elementary Common Lisp and ACL2.  The
+  questions and answers in [lp-background-review-1] offer a quick
+  review.  Come back here when you're comfortable with such
+  questions.
+
+  Loop$ makes extensive use of ACL2's limited second order
+  functionality.  The questions and answers in
+  [lp-background-review-2] offer a quick review of the main features
+  and limitations of apply$ and the related concepts.  We assume
+  you're comfortable with these features too.
+
+  Now go to [lp-section-2] (or return to the  Table of Contents (see
+  [LP-SECTION-0])).
+
+
+Subtopics
+
+  [Lp-background-review-1]
+      Background review of basic ACL2 knowledge
+
+  [Lp-background-review-1-answers]
+      Answers to background review of basic ACL2 knowledge
+
+  [Lp-background-review-2]
+      Review of [apply$] and related concepts
+
+  [Lp-background-review-2-answers]
+      Answers to the review of [apply$] and related concepts")
+ (LP-SECTION-10
+  (LOOP$-PRIMER)
+  "The Evaluation of the Formal Semantics of a Fancy Loop$
+
+
+LP10: The Evaluation of the Formal Semantics of a Fancy Loop$
+
+  Below we show the evaluation of a fancy loop$ that uses the function
+  packn to create a list of symbols.  We start with an example of
+  packn so you can infer its behavior.  But our real interest is the
+  behavior of the loop$.
+
+    ACL2 !>(packn (list 'R2 '- 'D 2))
+    R2-D2
+    ACL2 !>(let ((mark '*))
+             (loop$ for x in '(a * b c d e * f g h i j * k)
+                    as  y in '(u v * w * u v * x y z)
+                    as  i from 0 to 100 by 3
+                    when (and (evenp i)
+                              (not (eq x mark))
+                              (not (eq y mark)))
+                    collect (packn (list x y '_ i))))
+    (AU_0 GX_24 IZ_30)
+    ACL2 !>
+
+  We now explain carefully the evaluation of the loop$ expression above
+  in an environment in which mark is bound to the asterisk symbol, *.
+
+  The first three lines of the loop$ introduce the so-called iteration
+  variables, x, y, and i, and their respective ranges.
+
+  The when clause specifies a predicate on the iteration variables,
+  identifying the ``good'' cases, i.e., the values of the iteration
+  variables that we care about.  However, note that the predicate
+  above mentions the variable mark, which is not one of the iteration
+  variables.  We call such variables globals because their values are
+  not set within the scope of the loop.
+
+  The collect clause specifies an expression to be evaluated on the
+  ``good'' iteration variable values and collects the results of
+  those evaluations.
+
+  If you replace the symbol loop$ above by loop you get a legal Common
+  Lisp loop expression with the same value (if executed when mark is
+  bound to *).
+
+  For our purposes, the easiest way to think about this particular
+  statement is to decompose it into three steps.
+
+  Step 1: The lines introducing the iteration variables and their
+  ranges cause us to make a table of corresponding values of x, y,
+  and i, as shown below in the form of a list of triples.  This list
+  is as long as the shortest individual range.
+
+    ; x y  i
+    ((A U  0)
+     (* V  3)
+     (B *  6)
+     (C W  9)
+     (D * 12)
+     (E U 15)
+     (* V 18)
+     (F * 21)
+     (G X 24)
+     (H Y 27)
+     (I Z 30)).
+
+  Step 2: the when clause maps over the above table and identifies the
+  entries as ``good'' or ``bad'', where the good ones have an even
+  value for i and values for x and y that are not the asterisk mark,
+  *.  We annotate the table accordingly below.
+
+    ; x y  i
+    ((A U  0)        ; GOOD!
+     (* V  3)        ; bad: odd i (and asterisk)
+     (B *  6)        ; bad: asterisk
+     (C W  9)        ; bad: odd i
+     (D * 12)        ; bad: asterisk
+     (E U 15)        ; bad: odd i
+     (* V 18)        ; bad: asterisk
+     (F * 21)        ; bad: odd i (and asterisk)
+     (G X 24)        ; GOOD!
+     (H Y 27)        ; bad: odd i
+     (I Z 30)).      ; GOOD!
+
+  Effectively the when clause pares down the table to just the good
+  entries.
+
+    ; x y  i
+    ((A U  0)        ; GOOD!
+     (G X 24)        ; GOOD!
+     (I Z 30)).      ; GOOD!
+
+  Step 3: the collect clause maps over pared-down table, evaluating and
+  collecting the results of (packn (list x y '_ i)) for each triple
+  in the table.
+
+    (AU_0
+     GX_24
+     IZ_30).
+
+  The ACL2 semantics of the loop$ statement reflects this understanding
+  of the statement.  (The display below is the output of :tca on the
+  loop$, but with the DECLARE forms deleted and the three comments
+  added.)
+
+      (collect$+                                        ; step 3
+       (lambda$ (loop$-gvars loop$-ivars)
+                (let ((x (car loop$-ivars))
+                      (y (cadr loop$-ivars))
+                      (i (caddr loop$-ivars)))
+                  (packn (list x y '_ i))))
+       nil
+       (when$+                                          ; step 2
+        (lambda$ (loop$-gvars loop$-ivars)
+                 (let ((mark (car loop$-gvars))
+                       (x (car loop$-ivars))
+                       (y (cadr loop$-ivars))
+                       (i (caddr loop$-ivars)))
+                   (and (evenp i)
+                        (not (eq x mark))
+    		    (not (eq y mark)))))
+        (list mark)
+        (loop$-as (list '(a * b c d e * f g h i j * k)  ; step 1
+                        '(u v * w * u v * x y z)
+                        (from-to-by 0 100 3)))))
+
+  In step 1, the loop$-as function takes a list of the individual
+  ranges and builds the first version of the iteration variable
+  table.  The function from-to-by just enumerates the integers from
+  its first argument to its second argument in steps of size given by
+  its third argument.
+
+  In step 2, the when$+ function takes three arguments.  Note that the
+  last argument of the when$+ function is the iteration variable
+  table computed by step 1.  The first argument of the when$+
+  function is a lambda$ expression representing the predicate used to
+  identify the ``good'' entries.  But that predicate may also require
+  the value of any global variables used.  So the lambda$ expression
+  has two arguments, loop$-gvars, the list of values of the global
+  variables, and loop$-ivars, a tuple of values corresponding to a
+  line in the iteration variable table.  The middle argument of the
+  when$+ provides the values of the global variables and, as noted
+  earlier, the last argument is the iteration variable table.  The
+  when$+ maps over the iteration variable table and collects the
+  ``good'' lines, returning them as a list.
+
+  In step 3, the collect$+ takes three arguments.  The first is a
+  lambda$ expression on the loop$-gvars and loop$-ivars as above.
+  The second and third arguments are the global variable values and
+  the ``good'' lines from the pared-down iteration variable table as
+  computed by step 2.  Note that since the collect clause does not
+  mention any global variables the global variable tuple in the
+  second argument of the collect$+ is nil.
+
+  Of course, Common Lisp does not decompose the corresponding loop
+  statement this way but generates much more efficient compiled code.
+
+  The ACL2 semantics is rendered compositionally to make it easier to
+  reason about loop$ statements.  If the guards of the loop$
+  statement --- which we haven't discussed yet --- are verified then
+  the ACL2 loop$ statement is rendered into the corresponding Common
+  Lisp loop statement, compiled, and efficiently executed.
+
+  Now go to [lp-section-11] (or return to the Table of Contents (see
+  [LP-SECTION-0])).")
+ (LP-SECTION-11
+  (LOOP$-PRIMER)
+  "Proving Theorems about FOR Loop$s
+
+
+LP11: Proving Theorems about FOR Loop$s
+
+  Proving theorems about FOR loop$ in ACL2 is essentially no different
+  than proving theorems about other constructs in ACL2.  Indeed,
+  since loop$s turn into calls of [scion]s of [apply$], proving
+  things about them is exactly the problem of proving things about
+  scions.  However, loop$s raise some problems that are not fully
+  technical.
+
+    * Iteration is so common in programming --- and the meaning of loop$
+      statements are intuitively obvious --- that you often don't
+      think anything logically complicated is going on!  But when
+      proofs are desired you must keep induction in mind and you must
+      train yourself to see the need for generalization in order to
+      allow the necessary inductions.
+    * You're not syntactically aware of the presence of apply$ and the
+      concomitant need for [tame]ness and [warrant]s.
+    * You don't see the translations of loop$s when you type them but they
+      appear ``unexpectedly'' in the checkpoints of failing proofs
+      and that can throw you for a loop (so to speak).
+    * The translations of loop$s, especially of fancy loop$, are pretty
+      complicated in and of themselves and can be difficult to
+      understand, much less generalize and manipulate formally.
+    * The ACL2 user rarely has to think about local variable bindings, but
+      those issues arise quite often in dealing with loop$s (and
+      nested lambda objects in general).
+
+  With these points in mind we will now work through a proof about a
+  fancy loop$.  In the next section we'll challenge you to do some
+  proofs about other loop$s.  The proof description below is rather
+  long because we cast it as a narrative of the proof discovery
+  process and the actual chronology of events submitted, including
+  failed events and our thoughts about the failures.
+
+  Sample Question: Define the function all-pairs recursively so that
+  (all-pairs imax jmax) creates a list of all pairs (i . j) where 1
+  <= i <= imax and 1 <= j <= jmax.  Then define the loop$ version of
+  all-pairs and prove it is equivalent to all-pairs.  Both versions
+  must be guard verified.
+
+  Sample Solution (as a narrative of the discovery).
+
+  As usual, we make sure we're operating in a session where
+
+    (include-book \"projects/apply/top\" :dir :system)
+
+  We will construct our pairs with
+
+    (defun make-pair (i j)
+      (declare (xargs :guard t))
+      (cons i j))
+
+  Here is our recursive definition.  It involves two helper functions.
+  All-pairs-helper2 keeps i fixed and runs j from 1 to jmax to
+  compute the list of pairs ((i . 1) (i . 2) ... (i . jmax)).
+  All-pairs-helper1 just calls the former helper for each i from 1 to
+  imax and appends the lists together.  The top-level all-pairs calls
+  all-pairs-helper1 with i properly initialized to 1.
+
+    (defun all-pairs-helper2 (i j jmax)
+      (declare (xargs :measure (nfix (- (+ (nfix jmax) 1) (nfix j)))
+                      :guard (and (natp i) (natp j) (natp jmax))))
+      (let ((j (nfix j))
+            (jmax (nfix jmax)))
+        (cond
+         ((> j jmax) nil)
+         (t (cons (make-pair i j)
+                  (all-pairs-helper2 i (+ 1 j) jmax))))))
+
+    (defun all-pairs-helper1 (i imax jmax)
+      (declare (xargs :measure (nfix (- (+ (nfix imax) 1) (nfix i)))
+                      :guard (and (natp i) (natp imax) (natp jmax))))
+      (let ((i (nfix i))
+            (imax (nfix imax)))
+        (cond
+         ((> i imax) nil)
+         (t (append (all-pairs-helper2 i 1 jmax)
+                    (all-pairs-helper1 (+ 1 i) imax jmax))))))
+
+    (defun all-pairs (imax jmax)
+      (declare (xargs :guard (and (natp imax) (natp jmax))))
+      (all-pairs-helper1 1 imax jmax))
+
+  Here is a simple test.
+
+    ACL2 !>(all-pairs 2 4)
+    ((1 . 1)
+     (1 . 2)
+     (1 . 3)
+     (1 . 4)
+     (2 . 1)
+     (2 . 2)
+     (2 . 3)
+     (2 . 4))
+
+  And here is our first attempt to define the loop$ version, which is
+  considerably ``simpler'' (or, at least, shorter).  But this will
+  fail!  Can you say why without reading the error message?
+
+    (defun all-pairs-loop$ (imax jmax)
+      (declare (xargs :guard (and (natp imax) (natp jmax))))
+      (loop$ for i from 1 to imax
+             append
+             (loop$ for j from 1 to jmax
+                    collect (make-pair i j)))))
+
+    ACL2 Error [Translate] in ( DEFUN ALL-PAIRS-LOOP$ ...):  The body of
+    a LAMBDA object, lambda$ term, or loop$ statement should be fully badged
+    but MAKE-PAIR is used in
+    ((LAMBDA (I J) (MAKE-PAIR I J)) (CAR LOOP$-GVARS) (CAR LOOP$-IVARS))
+    and has no badge. ...
+    ... Note:  this error occurred in the context
+    (LAMBDA$ (LOOP$-GVARS LOOP$-IVARS)
+             (DECLARE (XARGS :GUARD (AND (TRUE-LISTP LOOP$-GVARS)
+                                         (EQUAL # 1)
+                                         (TRUE-LISTP LOOP$-IVARS)
+                                        (EQUAL # 1))))
+             (LET ((I (CAR LOOP$-GVARS))
+                   (J (CAR LOOP$-IVARS)))
+                  (DECLARE (IGNORABLE I J))
+                  (MAKE-PAIR I J))).
+
+  The error message above includes some extraneous possible explanation
+  of the error which we've omitted.
+
+  The error tells us we forgot to assign a badge to make-pair.  We
+  could call (defbadge make-pair) at this point.  But since we intend
+  to prove things about all-pairs-loop$ we'll actually need the
+  warrant for the make-pair, since make-pair is user-defined and is
+  used in the body of a loop$.  So we'll go ahead and create the
+  warrant.
+
+    (defwarrant make-pair)
+
+  (Had we just badged make-pair at this point and proceeded another
+  error message would crop up in due course and tell us to warrant
+  it.)
+
+  Trying the defun again causes another failure with the checkpoint
+  shown below.
+
+    (defun all-pairs-loop$ (imax jmax)
+      (declare (xargs :guard (and (natp imax) (natp jmax))))
+      (loop$ for i from 1 to imax
+             append
+             (loop$ for j from 1 to jmax
+                    collect (make-pair i j)))))
+
+    *** Key checkpoint at the top level: ***
+
+    Subgoal 1.2'
+    (IMPLIES (AND (CONSP LOOP$-IVARS)
+                  (NOT (CDR LOOP$-IVARS))
+                  (CONSP LOOP$-GVARS)
+                  (NOT (CDR LOOP$-GVARS)))
+             (INTEGERP (CAR LOOP$-GVARS)))
+
+    ACL2 Error [Failure] in ( DEFUN ALL-PAIRS-LOOP$ ...):  The proof of
+    the guard conjecture for ALL-PAIRS-LOOP$ has failed; see the discussion
+    above about :VERIFY-GUARDS and :GUARD-DEBUG.  See :DOC failure.
+
+  We need to prove, as part of the guard verification, that (CAR
+  LOOP$-GVARS) is an integer.  At this point we might want to refresh
+  our idea of what the formal semantics of that nested loop$ is!
+
+  We do not recommend using :trans for that refreshment!  You can try
+  it and you'll see 67 lines of output with a lot of extra stuff in
+  it used to help evaluate such forms efficiently.  Instead we'll use
+  :tca (``translate, clean, and annotate'') which produces about half
+  as much output and shows the original form of each loop$ together
+  with formal semantics, complete with :guard declarations on the
+  LAMBDA objects and correspondences between the variable names used
+  in the original statement with the components of the formals
+  LOOP$-GVARS and LOOP$-IVARS in the lambda$ terms generated.
+
+  (Note: We have manually inserted some comments to identify certain
+  lines of the display below.)
+
+    ACL2 !>:tca (loop$ for i from 1 to imax
+                       append
+                       (loop$ for j from 1 to jmax
+                              collect (make-pair i j)))
+    (PROG2$
+      '(LOOP$ FOR I FROM 1 TO IMAX
+              APPEND
+              (LOOP$ FOR J FROM 1 TO JMAX
+                     COLLECT (MAKE-PAIR I J)))
+      (APPEND$+                                                      ; [0]
+       (LAMBDA$ (LOOP$-GVARS LOOP$-IVARS)                            ; [1]
+         (DECLARE (XARGS :GUARD (AND (TRUE-LISTP LOOP$-GVARS)        ; [2]
+                                     (EQUAL (LEN LOOP$-GVARS) 1)
+                                     (TRUE-LISTP LOOP$-IVARS)
+                                     (EQUAL (LEN LOOP$-IVARS) 1))
+                         :SPLIT-TYPES T))
+         (LET ((JMAX (CAR LOOP$-GVARS))                              ; [3]
+               (I (CAR LOOP$-IVARS)))
+           (PROG2$
+            '(LOOP$ FOR J FROM 1 TO JMAX COLLECT (MAKE-PAIR I J))
+            (COLLECT$+
+             (LAMBDA$ (LOOP$-GVARS LOOP$-IVARS)
+               (DECLARE (XARGS :GUARD (AND (TRUE-LISTP LOOP$-GVARS)
+                                           (EQUAL (LEN LOOP$-GVARS) 1)
+                                           (TRUE-LISTP LOOP$-IVARS)
+                                           (EQUAL (LEN LOOP$-IVARS) 1))
+                               :SPLIT-TYPES T))
+               (LET ((I (CAR LOOP$-GVARS))
+                     (J (CAR LOOP$-IVARS)))
+                 (MAKE-PAIR I J)))
+             (LIST I)
+             (LOOP$-AS (LIST (FROM-TO-BY 1 JMAX 1)))))))             ; [4]
+       (LIST JMAX)                                                   ; [5]
+       (LOOP$-AS (LIST (FROM-TO-BY 1 IMAX 1)))))                     ; [6]
+
+  We're trying to verify the guards all the functions in that
+  expression, and we have the :guard in the defun of all-pairs-loop$
+  to work with.  That :guard is (and (natp imax) (natp jmax)).
+
+  So what functions above require an argument to be an integer?  Hint:
+  There is only one such function but it occurs in two places.
+
+  From-to-by requires all three of its arguments to be integers and
+  that function appears on lines [4] and [6].  Line [4] requires jmax
+  to be an integer and line [6] requires imax to be an integer.  But
+  line [6] is the formal term representing the ``from 1 to imax''
+  range of the append loop$ formalized with the fancy scion APPEND$+
+  at line [0].  That imax is literally the first formal variable of
+  the defun of all-pairs-loop$ whose :guard says imax and jmax are a
+  naturals.  So [6] is not the problem.
+
+  The jmax in line [4], on the other hand, is actually a let-bound
+  variable (see line [3]) within the lambda object (line [1]) that is
+  the body of the append loop$ [line 0].  jmax is bound inside that
+  lambda on line [3] to (car loop$-gvars) and the :guard (line [2])
+  of that lambda does not require (car loop$-gvars) to be an integer.
+  We need to add that requirement to [2].
+
+  So how do we change the :guard of a lambda generated by the
+  translation of the append loop$?  We add ``:guard (natp jmax)''
+  after the append operator.  (Note that (integerp jmax) would
+  suffice here but we added the stronger condition ensured by the
+  all-pairs-loop$'s guard.)
+
+  Using :tca again on the modified loop$ confirms our change.
+
+    ACL2 !>:tca (loop$ for i from 1 to imax
+                            append
+                            :guard (natp jmax)                   ; [new]
+                            (loop$ for j from 1 to jmax
+                                   collect (make-pair i j)))
+    (PROG2$
+      '(LOOP$ FOR I FROM 1 TO IMAX
+              APPEND
+              (LOOP$ FOR J FROM 1 TO JMAX
+                     COLLECT (MAKE-PAIR I J)))
+      (APPEND$+                                                  ; [0]
+       (LAMBDA$ (LOOP$-GVARS LOOP$-IVARS)                        ; [1]
+         (DECLARE (XARGS :GUARD (AND (TRUE-LISTP LOOP$-GVARS)    ; [2']
+                                     (EQUAL (LEN LOOP$-GVARS) 1)
+                                     (TRUE-LISTP LOOP$-IVARS)
+                                     (EQUAL (LEN LOOP$-IVARS) 1)
+                                     (NATP (CAR LOOP$-GVARS)))   ; [new]
+                         :SPLIT-TYPES T))
+         (LET ((JMAX (CAR LOOP$-GVARS))                          ; [3]
+               (I (CAR LOOP$-IVARS)))
+           (PROG2$
+            '(LOOP$ FOR J FROM 1 TO JMAX COLLECT (MAKE-PAIR I J))
+            (COLLECT$+
+             (LAMBDA$ (LOOP$-GVARS LOOP$-IVARS)
+               (DECLARE (XARGS :GUARD (AND (TRUE-LISTP LOOP$-GVARS)
+                                           (EQUAL (LEN LOOP$-GVARS) 1)
+                                           (TRUE-LISTP LOOP$-IVARS)
+                                           (EQUAL (LEN LOOP$-IVARS) 1))
+                               :SPLIT-TYPES T))
+               (LET ((I (CAR LOOP$-GVARS))
+                     (J (CAR LOOP$-IVARS)))
+                 (MAKE-PAIR I J)))
+             (LIST I)
+             (LOOP$-AS (LIST (FROM-TO-BY 1 JMAX 1)))))))         ; [4]
+       (LIST JMAX)                                               ; [5]
+       (LOOP$-AS (LIST (FROM-TO-BY 1 IMAX 1)))))                 ; [6]
+
+  Observe the difference between the :guard on the original line [2]
+  and the :guard on the new line [2'].  The latter includes (natp
+  (car loop$-gvars)).
+
+  If we think in terms of scions, we're saying ``Every time this lambda
+  object is applied, its two formals must satisfy the conjunction
+  beginning at line [2'].''
+
+  Finally, how do we know every application of the lambda by the fancy
+  scion append$+ (line [0]) will satisfy this guard?  We know from
+  the definition of append$+ that every application supplies the
+  (list jmax) from line [5] as the value of loop$-gvars.  That
+  occurrence of jmax is at the top-level of the body and in the scope
+  of the guard of all-pairs-loop$, which says jmax is a natural.  So
+  the guards can be proved now.
+
+  So now we can admit and verify the guards of our loop$ version of
+  all-pairs.
+
+    (defun all-pairs-loop$ (imax jmax)
+      (declare (xargs :guard (and (natp imax) (natp jmax))))
+      (loop$ for i from 1 to imax
+             append
+             :guard (natp jmax)
+             (loop$ for j from 1 to jmax
+                    collect (make-pair i j))))
+
+  Our goal is to prove the theorem below.  We use [The-Method], with
+  which we assume you're familiar but which we narrate below.
+
+  First we try to prove our main goal.  It fails with the checkpoint
+  shown.
+
+    (defthm main
+      (implies (and (natp imax)
+                    (natp jmax))
+               (equal (all-pairs-loop$ imax jmax)
+                      (all-pairs imax jmax)))))
+
+    *** Key checkpoint at the top level: ***
+
+    Goal''
+    (IMPLIES
+     (AND (INTEGERP IMAX)
+          (<= 0 IMAX)
+          (INTEGERP JMAX)
+          (<= 0 JMAX))
+     (EQUAL
+      (APPEND$+
+       (LAMBDA$ (LOOP$-GVARS LOOP$-IVARS)
+                (COLLECT$+ (LAMBDA$ (LOOP$-GVARS LOOP$-IVARS)
+                                    (CONS (CAR LOOP$-GVARS)
+                                          (CAR LOOP$-IVARS)))
+                           (LIST (CAR LOOP$-IVARS))
+                           (LOOP$-AS (LIST (FROM-TO-BY 1 (CAR LOOP$-GVARS) 1)))))
+       (LIST JMAX)
+       (LOOP$-AS (LIST (FROM-TO-BY 1 IMAX 1))))
+      (ALL-PAIRS-HELPER1 1 IMAX JMAX)))
+
+  Looking at the conclusion we see need to prove that the append$+ term
+  is equal to the all-pairs-helper1 term.  From our ACL2 experience
+  with recursive functions like all-pairs-helper1 we know this is an
+  inductive proof.  But no induction is suggested by
+  (all-pairs-helper1 1 imax jmax) because the constant 1 is in a
+  controller position.  We need to generalize the 1 by replacing it
+  with i0, a general initial value of i.  Note that we replace the 1
+  in two places, namely, the first 1 in (loop$-as (list (from-to-by 1
+  imax 1))), and the 1 in (all-pairs-helper1 1 imax jmax).  Those two
+  1s are the concrete initial values of two i counters on opposite
+  sides of the equality.  There are three other occurrences of the
+  number 1 in the conjecture.  The first one is the initial value of
+  the variable j, the second is the step size for counting up from j
+  to jmax, and the third one is the step size for counting up from i
+  to imax.  We do not change those three occurrences of i.
+
+  We submit the proposed generalization as lemma1.  The conclusion of
+  lemma1 is exactly the equality conclusion above except for the
+  replacement of those two 1s by the new variable i0.  The hypothesis
+  of lemma1 requires all the variables to be naturals.  But the proof
+  attempt fails!  The checkpoint is shown below.
+
+    (defthm lemma1
+      (implies
+       (and (natp imax)
+            (natp jmax)
+            (natp i0))
+       (equal
+        (append$+
+         (lambda$ (loop$-gvars loop$-ivars)
+                  (collect$+ (lambda$ (loop$-gvars loop$-ivars)
+                                      (cons (car loop$-gvars)
+                                            (car loop$-ivars)))
+                             (list (car loop$-ivars))
+                             (loop$-as (list (from-to-by 1 (car loop$-gvars) 1)))))
+         (list jmax)
+         (loop$-as (list (from-to-by i0 imax 1))))
+        (all-pairs-helper1 i0 imax jmax)))))
+
+    *** Key checkpoint under a top-level induction: ***
+
+    Subgoal *1/6''
+    (IMPLIES
+     (AND
+      (<= I0 IMAX)
+      (EQUAL
+       (APPEND$+
+           (LAMBDA$
+                (LOOP$-GVARS LOOP$-IVARS)
+                (COLLECT$+ (LAMBDA$ (LOOP$-GVARS LOOP$-IVARS)
+                                    (CONS (CAR LOOP$-GVARS)
+                                          (CAR LOOP$-IVARS)))
+                           (LIST (CAR LOOP$-IVARS))
+                           (LOOP$-AS (LIST (FROM-TO-BY 1 (CAR LOOP$-GVARS) 1)))))
+           (LIST JMAX)
+           (LOOP$-AS (LIST (FROM-TO-BY (+ 1 I0) IMAX 1))))
+       (ALL-PAIRS-HELPER1 (+ 1 I0) IMAX JMAX))
+      (INTEGERP IMAX)
+      (<= 0 IMAX)
+      (INTEGERP JMAX)
+      (<= 0 JMAX)
+      (INTEGERP I0)
+      (<= 0 I0))
+     (EQUAL (APPEND (COLLECT$+ (LAMBDA$ (LOOP$-GVARS LOOP$-IVARS)
+                                        (CONS (CAR LOOP$-GVARS)
+                                              (CAR LOOP$-IVARS)))
+                               (LIST I0)
+                               (LOOP$-AS (LIST (FROM-TO-BY 1 JMAX 1))))
+                    (ALL-PAIRS-HELPER1 (+ 1 I0) IMAX JMAX))
+            (APPEND (ALL-PAIRS-HELPER2 I0 1 JMAX)
+                    (ALL-PAIRS-HELPER1 (+ 1 I0) IMAX JMAX))))
+
+  Notice that we're trying to prove something of the form
+
+    (EQUAL (APPEND a1 b1)
+           (APPEND a2 b2))
+
+  where b1 and b2 are identical.  So we will prove (EQUAL a1 a2).
+
+  But again, this is inductive.  The (from-to-by 1 jmax 1) and the
+  (all-pairs-helper2 i0 1 jmax) are both counting up from 1 as the
+  initial value of j.  We need to generalize those 1s to j0.  So we
+  submit the following as lemma2.  And it succeeds!
+
+    (defthm lemma2
+      (implies (and (natp imax)
+                    (natp jmax)
+                    (natp i0)
+                    (natp j0))
+               (equal (collect$+ (lambda$ (loop$-gvars loop$-ivars)
+                                          (cons (car loop$-gvars)
+                                                (car loop$-ivars)))
+                                 (list i0)
+                                 (loop$-as (list (from-to-by j0 jmax 1))))
+                      (all-pairs-helper2 i0 j0 jmax))))
+
+  So now we return to lemma1, whose checkpoint suggested lemma2.  But
+  it fails again, this time with a different checkpoint
+
+    (defthm lemma1
+      (implies
+       (and (natp imax)
+            (natp jmax)
+            (natp i0))
+       (equal
+        (append$+
+         (lambda$ (loop$-gvars loop$-ivars)
+                  (collect$+ (lambda$ (loop$-gvars loop$-ivars)
+                                      (cons (car loop$-gvars)
+                                            (car loop$-ivars)))
+                             (list (car loop$-ivars))
+                             (loop$-as (list (from-to-by 1 (car loop$-gvars) 1)))))
+         (list jmax)
+         (loop$-as (list (from-to-by i0 imax 1))))
+        (all-pairs-helper1 i0 imax jmax)))))
+
+    *** Key checkpoint at the top level: ***
+
+    [1]Goal
+    (APPLY$-WARRANT-COLLECT$+)
+
+  Note that this checkpoint comes from a forcing round (the clue is the
+  ``[1] prefix to the Goal), which means the proof succeeded except
+  for some hypotheses that were forced so that certain lemmas could
+  fire and now have to be proved.  But the hypothesis above is the
+  warrant for collect$+.  We need the warrant for collect$+ because
+  that function is being applied with apply$ every time append$+
+  iterates.  This is easy to fix.  We just add the warrant as a
+  hypothesis to lemma1.
+
+    (defthm lemma1
+      (IMPLIES
+       (AND (warrant collect$+)
+            (natp imax)
+            (natp jmax)
+            (natp i0))
+       (equal
+        (append$+
+         (lambda$ (loop$-gvars loop$-ivars)
+                  (collect$+ (lambda$ (loop$-gvars loop$-ivars)
+                                      (cons (car loop$-gvars)
+                                            (car loop$-ivars)))
+                             (list (car loop$-ivars))
+                             (loop$-as (list (from-to-by 1 (car loop$-gvars) 1)))))
+         (list jmax)
+         (loop$-as (list (from-to-by i0 imax 1))))
+        (all-pairs-helper1 i0 imax jmax))))
+
+  This proof succeeds.
+
+  So now we return to main.  By the way, because we expect the theorem
+  to be proved by applying lemma1, we provide the hint that tells the
+  prover not to even try induction.  This just reduces the output if
+  the proof fails.
+
+  Unfortunately this attempt fails, but with two easy-to-fix
+  checkpoints.
+
+    (defthm main
+      (implies (and (natp imax)
+                    (natp jmax))
+               (equal (all-pairs-loop$ imax jmax)
+                      (all-pairs imax jmax)))
+      :hints ((\"Goal\" :do-not-induct t))))
+
+    *** Key checkpoints at the top level: ***
+
+    [1]Subgoal 2
+    (APPLY$-WARRANT-MAKE-PAIR)
+
+    [1]Subgoal 1
+    (APPLY$-WARRANT-COLLECT$+)
+
+  Note that the checkpoints are forcing round subgoals showing that we
+  need two warrants.  So we add both warrants to main's hypotheses.
+  And we're done.
+
+    (defthm main
+      (implies (and (warrant collect$+ make-pair)
+                    (natp imax)
+                    (natp jmax))
+               (equal (all-pairs-loop$ imax jmax)
+                      (all-pairs imax jmax)))
+      :hints ((\"Goal\" :do-not-induct t)))
+
+  Note: The :do-not-induct hint could be deleted because the theorem is
+  proved without appealing to induction anyway.
+
+  You might wonder why we need the warrant on make-pairs.  It never
+  arose in any checkpoint except in the very last failed proof.
+
+  The first time we tried to prove main we failed, and got this
+  checkpoint.
+
+    Goal''
+    (IMPLIES
+     (AND (INTEGERP IMAX)
+          (<= 0 IMAX)
+          (INTEGERP JMAX)
+          (<= 0 JMAX))
+     (EQUAL
+      (APPEND$+
+       (LAMBDA$ (LOOP$-GVARS LOOP$-IVARS)
+                (COLLECT$+ (LAMBDA$ (LOOP$-GVARS LOOP$-IVARS)
+                                    (CONS (CAR LOOP$-GVARS)
+                                          (CAR LOOP$-IVARS)))
+                           (LIST (CAR LOOP$-IVARS))
+                           (LOOP$-AS (LIST (FROM-TO-BY 1 (CAR LOOP$-GVARS) 1)))))
+       (LIST JMAX)
+       (LOOP$-AS (LIST (FROM-TO-BY 1 IMAX 1))))
+      (ALL-PAIRS-HELPER1 1 IMAX JMAX)))
+
+  The innermost lambda$ is the body of the innermost loop$ statement,
+  (loop$ for j from 1 to jmax collect (make-pair i j)), except it has
+  been simplified by the expansion of (make-pair i j) to (cons i j).
+  That expansion of make-pair inside a lambda$ required the warrant
+  for make-pair and that was forced to produce the cons.
+
+  Had that first proof attempt at main succeeded except for that forced
+  subgoal, a forcing round would have brought to our attention the
+  need for the warrant on make-pair.  But that proof attempt failed
+  because the prover could not do a suitable induction to prove
+  Goal''.  Indeed, that is what led us to lemma1.
+
+  But forced subgoals are not reported if the proof fails for other
+  reasons.  So we were left unaware that we were depending on the
+  warrant for make-pair.  In the penultimate failed proof main just
+  above, the same forced expansion of make-pair occurred and this
+  time the proof succeeded except for the forced subgoals requiring
+  warrants for make-pair and collect$+.  That finally brought the
+  make-pair expansion to our attention.
+
+  The more experienced ACL2 user would have noticed (indeed, did
+  notice!)  the expansion of make-pair in Goal'' above and understood
+  the warrant for make-pair was needed but wanted to see what would
+  happen if that fact was overlooked.
+
+  The final series of events to solve this problem is shown below.
+
+    ; Include standard apply$ book.
+    (include-book \"projects/apply/top\" :dir :system)}
+
+    ; Define and verify the guards of the recursive all-pairs.
+    (defun make-pair (i j)
+      (declare (xargs :guard t))
+      (cons i j))
+
+    (defun all-pairs-helper2 (i j jmax)
+      (declare (xargs :measure (nfix (- (+ (nfix jmax) 1) (nfix j)))
+                      :guard (and (natp i) (natp j) (natp jmax))))
+      (let ((j (nfix j))
+            (jmax (nfix jmax)))
+        (cond
+         ((> j jmax) nil)
+         (t (cons (make-pair i j)
+                  (all-pairs-helper2 i (+ 1 j) jmax))))))
+
+    (defun all-pairs-helper1 (i imax jmax)
+      (declare (xargs :measure (nfix (- (+ (nfix imax) 1) (nfix i)))
+                      :guard (and (natp i) (natp imax) (natp jmax))))
+      (let ((i (nfix i))
+            (imax (nfix imax)))
+        (cond
+         ((> i imax) nil)
+         (t (append (all-pairs-helper2 i 1 jmax)
+                    (all-pairs-helper1 (+ 1 i) imax jmax))))))
+
+    (defun all-pairs (imax jmax)
+      (declare (xargs :guard (and (natp imax) (natp jmax))))
+      (all-pairs-helper1 1 imax jmax))
+
+    ; Warrant make-pair so we can use it in a loop$.
+    (defwarrant make-pair)
+
+    ; Define and verify the guards of the loop$ version.
+    (defun all-pairs-loop$ (imax jmax)
+      (declare (xargs :guard (and (natp imax) (natp jmax))))
+      (loop$ for i from 1 to imax
+             append
+             :guard (natp jmax)
+             (loop$ for j from 1 to jmax
+                    collect (make-pair i j))))
+
+    ; Prove that the generalized inner loop$ is all-pairs-helper2.
+    (defthm lemma2
+      (implies (and (natp imax)
+                    (natp jmax)
+                    (natp i0)
+                    (natp j0))
+               (equal (collect$+ (lambda$ (loop$-gvars loop$-ivars)
+                                          (cons (car loop$-gvars)
+                                                (car loop$-ivars)))
+                                 (list i0)
+                                 (loop$-as (list (from-to-by j0 jmax 1))))
+                      (all-pairs-helper2 i0 j0 jmax))))
+
+    ; Prove that the generalized outer loop$ is all-pairs-helper1.
+    (defthm lemma1
+      (implies
+       (and (warrant collect$+)
+            (natp imax)
+            (natp jmax)
+            (natp i0))
+       (equal
+        (append$+
+         (lambda$ (loop$-gvars loop$-ivars)
+                  (collect$+ (lambda$ (loop$-gvars loop$-ivars)
+                                      (cons (car loop$-gvars)
+                                            (car loop$-ivars)))
+                             (list (car loop$-ivars))
+                             (loop$-as (list (from-to-by 1 (car loop$-gvars) 1)))))
+         (list jmax)
+         (loop$-as (list (from-to-by i0 imax 1))))
+        (all-pairs-helper1 i0 imax jmax))))
+
+    ; Main theorem
+    (defthm main
+      (implies (and (warrant collect$+ make-pair)
+                    (natp imax)
+                    (natp jmax))
+               (equal (all-pairs-loop$ imax jmax)
+                      (all-pairs imax jmax))))
+
+  Now go to [lp-section-12] (or return to the Table of Contents (see
+  [LP-SECTION-0])).")
+ (LP-SECTION-12
+  (LOOP$-PRIMER)
+  "Challenge Proof Problems about FOR Loop$s
+
+
+LP12: Challenge Proof Problems about FOR Loop$s
+
+  If you have not already, warm up by proving the correctness of your
+  solutions to the problems in [lp-section-8].
+
+  Remember to operate in a session in which you have included the
+  standard loop$ book.
+
+    (include-book \"projects/apply/top\" :dir :system)
+
+  Our answers to the problems in [lp-section-8] are in
+  [community-books] file demos/loop-primer/lp8.lisp, and our answers
+  to the problems below are in [community-books] file
+  demos/loop-primer/lp12.lisp.
+
+------------------------------
+  LP12-1 Define (assoc-equal-loop$ x alist) to be equal to (assoc-equal
+  x alist) when (alistp alist).  Verify the guards of
+  assoc-equal-loop$ and prove that your function satisfies the
+  specification above.  Is your function in fact unconditionally
+  equal to assoc-equal?  If so, prove it; if not, show a
+  counterexample.
+
+------------------------------
+  LP12-2 Under what conditions is the following a theorem?  Fill in the
+  blank and prove the theorem.
+
+    (defthm LP12-2
+      (implies ...
+               (equal (loop$ for x in keys as y in vals collect (cons x y))
+                      (pairlis$ keys vals)))
+      :rule-classes nil)
+
+------------------------------
+  LP12-3 Prove
+
+    (defthm LP12-3
+      (equal (* 2 (len (loop$ for tl on lst append tl)))
+             (* (len lst) (+ (len lst) 1))))
+
+  Hint: By phrasing the challenge with the multiplication by 2 on the
+  left-hand side, we produce a conjecture that can be proved (perhaps
+  with a few lemmas) without the need for ``heavy duty'' arithmetic
+  books.  Had we divided by 2 on the right-hand side, we'd have
+  brought division into the problem which we intentionally avoided.
+  You will still need a lemma or two, discoverable by The Method.
+
+------------------------------
+  LP12-4 Define
+
+    (defun nats (n)
+      (cond ((zp n) (list 0))
+            (t (append (nats (- n 1)) (list n)))))
+
+  and prove that the obvious loop$ statement is equivalent to (nats n)
+  when n is a natural.  Make your defthm have :rule-classes nil so as
+  not to interfere with your work on the next problem.
+
+------------------------------
+  LP12-5 Define
+
+    (defun nats-up (i n)
+      (declare (xargs :measure (nfix (- (+ (nfix n) 1) (nfix i)))))
+      (let ((i (nfix i))
+            (n (nfix n)))
+        (cond ((> i n) nil)
+              (t (cons i (nats-up (+ i 1) n))))))
+
+  Prove
+
+    (defthm LP12-5
+      (implies (natp n)
+               (equal (loop$ for i from 0 to n collect i)
+                      (nats-up 0 n)))
+      :rule-classes nil)
+
+------------------------------
+  LP12-6 Fill in the blanks below and prove the theorem.  You may need
+  hints.  If not, just delete the :hints setting.
+
+    (defthm LP12-6
+      (implies (true-listp lst)
+               (equal (loop$ ...)
+                      (strip-cars lst)))
+      :hints ...
+      :rule-classes nil)
+
+------------------------------
+  LP12-7 Prove the following, adding hints if necessary.  Otherwise,
+  just delete the :hints setting.
+
+    (defthm LP12-7
+      (loop$ for pair in (loop$ for key in keys
+                                as  val from 0 to (+ (len keys) -1)
+                                collect (cons key val))
+             always (integerp (cdr pair)))
+      :hints ...)
+
+------------------------------
+  LP12-8 Fill in the blanks below and then prove the theorem.  You may
+  need hints.  If not, just delete the :hints setting.
+
+    (defthm LP12-8
+      (implies (natp n)
+               (equal (loop$ ...)
+                      (nth n lst)))
+      :hints ...
+      :rule-classes nil)
+
+  Now go to [lp-section-13] (or return to the Table of Contents (see
+  [LP-SECTION-0])).")
+ (LP-SECTION-13
+  (LOOP$-PRIMER)
+  "Examples of DO Loop$s
+
+
+LP13: Examples of DO Loop$s
+
+  Below is a log of an ACL2 session demonstrating the behavior of a few
+  DO loop$s.  As usual with loop$s, one should always work in a
+  session in which the book shown below is included.  The examples
+  below do not illustrate guards or proofs about DO loop$s.
+
+  We'll describe the syntax and semantics of DO loop$s later.  But we
+  expect you can intuit the syntax and semantics of these loop$
+  statements from these examples.  The following may help if you're
+  unfamiliar with the following Common Lisp primitives.
+
+  In ACL2, These primitives may only be used within DO loop$s!
+
+    * (RETURN expr) terminates the loop$ and returns the value of expr as
+      the value.
+    * (SETQ var expr) evaluates expr and assigns the value to the variable
+      var.  Parallel assignment with mv-setq is also supported but
+      not illustrated here.
+    * (PROGN stmt_1 ... stmt_n) evaluates each stmt_i in turn and returns
+      the value of the last one.
+    * (LOOP-FINISH) terminates the iteration in the loop$ and passes
+      control to the FINALLY clause, if any.
+
+  We start the session with the following commands, whose output we do
+  not display here.  Note that we use [defstobj] to introduce a
+  single-threaded object, st, with one field, fld1.  We initialize
+  (fld1 st) to 0. In addition, we warrant two of the functions
+  introduced by the [defstobj].  We warrant those functions because
+  they are user-defined :logic mode functions that we'll use in a DO
+  loop$.  Defstobj does not automatically badge or warrant the
+  functions it defines but they are warrantable.
+
+    (include-book \"projects/apply/top\" :dir :system)
+    (defstobj st fld1)
+    (update-fld1 0 st)
+    (defwarrant fld1)
+    (defwarrant update-fld1)
+
+  So having set up our session, we now experiment with DO loop$s.
+
+    ; Reverse the elements of the initial value of temp.
+
+    ACL2 !>(loop$ with temp = '(a b c)
+                  with  ans = nil
+                  do
+                  (cond ((endp temp) (return ans))
+                        (t (progn (setq ans (cons (car temp) ans))
+                                  (setq temp (cdr temp))))))
+    (C B A)
+
+    ; Reverse the elements of lst down to the first xxx, or return
+    ; not-found if there is no xxx in lst.
+
+    ACL2 !>(defun reverse-to-xxx (lst)
+             (loop$ with temp = lst
+                    with  ans = nil
+                    do
+                    (cond ((endp temp) (return 'not-found))
+                          (t (progn (cond ((eq (car temp) 'xxx) (loop-finish))
+                                          (t (setq ans (cons (car temp) ans))))
+                                    (setq temp (cdr temp)))))
+                    finally
+                    (return ans)))
+
+    Since REVERSE-TO-XXX is non-recursive, its admission is trivial.  We
+    could deduce no constraints on the type of REVERSE-TO-XXX.
+
+    Summary
+    Form:  ( DEFUN REVERSE-TO-XXX ...)
+    Rules: NIL
+    Time:  0.00 seconds (prove: 0.00, print: 0.00, other: 0.00)
+     REVERSE-TO-XXX
+
+    ACL2 !>(reverse-to-xxx '(a b c xxx d e f))
+    (C B A)
+
+    ACL2 !>(reverse-to-xxx '(a b c d e f))
+    NOT-FOUND
+
+    ; In the next example we will reverse the elements of the initial value of
+    ; temp, except for the xxx's which we just drop but count.  We use (fld1 st)
+    ; to store the accumulated count.  This loop$ returns the reversed elements
+    ; and the final value of st.  But first we'll show that (fld1 st) is
+    ; initially 0.
+
+    ACL2 !>(fld1 st)
+    0
+
+    ACL2 !>(loop$ with temp = '(a b c xxx d e xxx f g)
+                  with ans = nil
+                  do
+                  :values (nil st)
+                  (cond ((endp temp) (return (mv ans st)))
+                        (t (progn
+                             (cond ((eq (car temp) 'xxx)
+                                    (setq st (update-fld1 (+ 1 (fld1 st)) st)))
+                                   (t (setq ans (cons (car temp) ans))))
+                             (setq temp (cdr temp))))))
+    ((G F E D C B A) <st>)
+
+    ACL2 !>(fld1 st)
+    2
+
+  We included the last example showing that stobjs can be used inside
+  of DO loop$s just to alert you to that feature.  However, in the
+  rest of this primer we do not deal with stobjs in loop$ because
+  there is enough to cover without that!
+
+  See the ACL2 documentation topic [DO-loop$] for a more thorough
+  discussion of DO loop$s.
+
+  Now go to [lp-section-14] (or return to the Table of Contents (see
+  [LP-SECTION-0])).")
+ (LP-SECTION-14
+  (LOOP$-PRIMER)
+  "Challenge Problems about DO Loop$s
+
+
+LP14: Challenge Problems about DO Loop$s
+
+  In this section you'll be asked to write and evaluate some DO loop$s
+  based entirely on the examples given in the previous section.
+  We'll deal with termination, guards, proofs, etc., later.
+
+  We want all iteration in your answers to be done with DO loop$s even
+  if the problem could be solved with a FOR loop$.
+
+  Our answers to the problems in this section are in [community-books]
+  file demos/loop-primer/lp14.lisp.
+
+------------------------------
+  LP14-1: Make a list of the integers from 10 down to 0.
+
+  Expected Value:(10 9 8 7 6 5 4 3 2 1 0)
+
+  Ok, we know this is a silly question if taken literally!  Why use
+  iteration at all if the answer is a constant?  If you want to
+  cheat, just enter
+
+    (loop$ with ans = '(10 9 8 7 6 5 4 3 2 1 0) do (return ans))
+
+  But the spirit of these questions is to use iteration and, if it
+  helps, imagine we'd asked you to write a loop$ that returns the
+  list of integers from 1000000 down to 0!
+
+------------------------------
+  LP14-2: Sum the naturals less than or equal to 100.
+
+  Expected Value: 5050
+
+  Hint: Write the loop$ so that it counts down!  If you count up you'll
+  have to provide a measure term, which can be done by including
+  :measure measure-term immediately after the DO operand and before
+  the body.
+
+------------------------------
+  LP14-3: Sum the squares of the naturals less than or equal to 100,
+  using the following function to square.
+
+    (defun sq (x) (* x x))
+
+  Expected Value: 338350
+
+------------------------------
+  LP14-4: Write a DO that finds the first occurrence of the symbol XXX
+  in the list '(A B C XXX D E F) and returns the tail of the list
+  starting with that occurrence.
+
+  Expected Value: (XXX D E F)
+
+------------------------------
+  LP14-5: Fill in the blank below so that the next form is a theorem.
+  You do not have to prove the theorem (but it shouldn't be hard).
+
+    (defun do-loop$-member (e lst)
+      (loop$ ...))
+
+    (defthm lp14-5
+      (equal (do-loop$-member e lst)
+             (member e lst))
+      :rule-classes nil)
+
+------------------------------
+  LP14-6: Given the following
+
+    (defun steps-for-member (e lst steps)
+      (cond ((endp lst) (list steps nil))
+            ((equal (car lst) e) (list steps lst))
+            (t (steps-for-member e (cdr lst) (+ 1 steps)))))
+
+  fill in the blank so that this is a theorem.
+
+    (defthm lp14-6
+      (equal (loop$ ...)
+             (steps-for-member e lst steps))
+      :rule-classes nil)
+
+------------------------------
+  LP14-7:Write a DO to compute the list of all pairs (i . j) such that
+  1 <= i <= 3 and 1 <= j <= 4.
+
+  Expected Value:
+
+    ((1 . 1)
+     (1 . 2)
+     (1 . 3)
+     (1 . 4)
+     (2 . 1)
+     (2 . 2)
+     (2 . 3)
+     (2 . 4)
+     (3 . 1)
+     (3 . 2)
+     (3 . 3)
+     (3 . 4))
+
+------------------------------
+  Now go to [lp-section-15] (or return to the Table of Contents (see
+  [LP-SECTION-0])).")
+ (LP-SECTION-15
+  (LOOP$-PRIMER)
+  "Informal Syntax and Semantics of DO Loop$s
+
+
+LP15: Informal Syntax and Semantics of DO Loop$s
+
+  The ``most elaborate'' DO loop$ looks like this.
+
+    (LOOP$ WITH var1 OF-TYPE spec1 = init1 ; a WITH declaration
+           WITH var2 OF-TYPE spec2 = init2
+           ...
+           DO
+           :measure m
+           :guard do-guard
+           :values v
+           do-body
+           FINALLY
+           :guard fin-guard
+           fin-body)
+
+  where much of that is optional: ``OF-TYPE speci'', ``= initi'' (when
+  ``OF-TYPE speci'' is present), ``:MEASURE m'', the two ``:GUARD
+  ...'' clauses, ``:VALUES v'', and ``FINALLY fin-body''.  If the
+  :MEASURE is omitted, ACL2 tries to guess a likely measure using the
+  same heuristic it does with recursive [defun]s.  If :VALUES is
+  omitted then v defaults to (nil).
+
+  All ACL2 function symbols in m, do-body, and fin-body must be
+  [badge]d so [apply$] can handle them.  Furthermore, they must be
+  [warrant]ed if proofs are to be done about them or if they are in
+  [logic] mode and are called during evaluation.
+
+  As you've already inferred from our examples, do-body and fin-body
+  are not normal ACL2 terms!  They allow restricted uses of RETURN,
+  PROGN, SETQ, MV-SETQ, and LOOP-FINISH.
+
+  As for semantics, every legal DO loop$ translates into a term of the
+  form
+
+    (DO$ m-lambda
+         alist
+         do-body-lambda
+         fin-body-lambda
+         a5
+         a6
+         a7)
+
+  where m-lambda, do-body-lambda, and fin-body-lambda are quoted LAMBDA
+  objects derived from the respective terms in the loop$ statement.
+  Alist is an association list that maps the variables of those terms
+  to their initial values.  We discuss the other three arguments
+  later.
+
+  All three of these LAMBDA objects operate on alist.  The m-lambda may
+  return a natural, and otherwise must return a list of naturals
+  which is treated as a lexicographic tuple whose first component is
+  the most significant.  The other two LAMBDA objects return a triple
+  of the form (exit-token value new-alist).  The exit-token is
+  :RETURN, :LOOP-FINISH, or NIL, and indicates what happens next: the
+  value is to be returned as the value of the loop$, the
+  fin-body-lambda is to be applied to the new-alist, or the loop$ is
+  to iterate again on new-alist.  But before the iteration, the
+  m-lambda is applied to the new-alist and must be of smaller measure
+  according to [l<] for iteration to continue.
+
+  If the given measure fails to decrease, then, logically speaking, a5
+  is returned.  But actually, in execution, an error is signaled.
+  Such runtime errors (including OF-TYPE and guard violations if
+  guards are being checked) are reported using a6 and a7 which are
+  just quoted constants about the original loop$ statement.  (In
+  fact, a6 and a7 are logically irrelevant and the theorem prover
+  replaces those quoted constants by nil in proofs as part of the
+  cleaning-up process.)
+
+  Consider this simple DO loop$ and its cleaned-up semantics as shown
+  by the :[tcp] command.  (We have re-pretty-printed it to add
+  comments and highlight some symmetries.)
+
+      ACL2 !>:tcp (loop$ with i = n
+                         with ans = 0
+                         do
+                         (if (zp i)
+                             (return ans)
+                             (progn (setq ans (+ 1 ans))
+                                    (setq i (- i 1)))))
+       (DO$
+    ;    measure lambda:
+         (LAMBDA$ (ALIST)
+           (ACL2-COUNT (CDR (ASSOC-EQ-SAFE 'I ALIST))))
+
+    ;    initial alist:
+         (LIST (CONS 'I N)
+               (CONS 'ANS 0))
+
+    ;    do-body lambda:
+         (LAMBDA$ (ALIST)
+           (IF (ZP (CDR (ASSOC-EQ-SAFE 'I ALIST)))
+               (LIST :RETURN
+                     (CDR (ASSOC-EQ-SAFE 'ANS ALIST))
+                     (LIST (CONS 'I (CDR (ASSOC-EQ-SAFE 'I ALIST)))
+                           (CONS 'ANS (CDR (ASSOC-EQ-SAFE 'ANS ALIST)))))
+               (LIST NIL
+                     NIL
+                     (LIST (CONS 'I (+ -1 (CDR (ASSOC-EQ-SAFE 'I ALIST))))
+                           (CONS 'ANS (+ 1 (CDR (ASSOC-EQ-SAFE 'ANS ALIST))))))))
+
+    ;    fin-body lambda (irrelevant here)
+         (LAMBDA$ (ALIST)
+           (LIST NIL
+                 NIL
+                 (LIST (CONS 'I (CDR (ASSOC-EQ-SAFE 'I ALIST)))
+                       (CONS 'ANS (CDR (ASSOC-EQ-SAFE 'ANS ALIST))))))
+
+    ;    irrelevant args a5, a6, a7
+         NIL NIL NIL)
+
+  ASSOC-EQ-SAFE is just ASSOC-EQ with a slightly weaker guard.  Think
+  of (CDR (ASSOC-EQ-SAFE 'var ALIST)) as the current value of the
+  local variable var.  The measure is that the ACL2-COUNT of the
+  current value of I decreases.  The output of the do-body lambda is
+  a triple.  The true branch of the IF indicate iteration is to stop
+  and return the current value of ANS.  The false branch indicates
+  iteration is to continue with the new alist given as the third
+  element of the triple.  The fin-body lambda is irrelevant because
+  there is no :LOOP-FINISH exit in the do-body.
+
+  Of course, the semantics of do$ is explicit in its definition.  So
+  you might want to execute :pe do$ in your ACL2 session and just
+  read how do$ operates.
+
+  We realize the above descriptions are pretty sketchy.  But in the
+  coming discussions and proof problems we'll limit ourselves to DO
+  loop$s without of-types or guards, they'll all return single
+  non-[stobj] values so the :values option won't be needed, and you
+  won't really need to use the finally clause or any fancier bodies
+  than we show in our examples.
+
+  For more details about both the syntax and semantics of DO loop$s see
+  [do-loop$].  But beware!  That link takes you out of the loop$
+  primer! To get back here either use your browser's ``back'' button
+  or remember to return to lp-section-15!
+
+  Now go to [lp-section-16] (or return to the Table of Contents (see
+  [LP-SECTION-0])).")
+ (LP-SECTION-16
+  (LOOP$-PRIMER)
+  "Proving Theorems about DO Loop$s
+
+
+LP16: Proving Theorems about DO Loop$s
+
+  Let's prove a theorem about a DO loop$.  Specifically, let's prove
+
+    (defthm main
+      (implies (natp n)
+               (equal (loop$ with i = n
+                             with ans = 0
+                             do
+                             (if (zp i)
+                                 (return ans)
+                                 (progn (setq ans (+ 1 ans))
+                                        (setq i (- i 1)))))
+                      n)))
+
+  A few words of warning are appropriate.
+
+    * The Method (see [the-method]) is a good way to proceed: try to prove
+      the theorem expecting it to fail and look at the checkpoints.
+    * Do loop$s, unlike recursive functions and FOR loop$, do not suggest
+      inductions to ACL2.  So some other term or a hint must suggest
+      an appropriate induction.
+    * Unsurprisingly, the theorem above has to be generalized before it can
+      be proved.  But it can feel strange to generalize a loop$.
+    * If we prove a lemma that rewrites a loop$ expression we have to
+      remember that before rewrite rules are applied the interior
+      terms are rewritten.  In particular, ACL2 can rewrite the
+      bodies of the lambda objects.  The most common changes are that
+      non-recursive functions are generally expanded (depending on
+      the theory in use) and IF expressions are normalized.  That
+      means we need to normalize the bodies of any loop$ we use in a
+      lemma if we expect that lemma to match a term being rewritten!
+    * ACL2 does not display do$ terms as DO loop$s.  So get used to reading
+      do$ terms and thinking of loop$ statements!  (We may fix this
+      someday but at the moment we find it advantageous to really see
+      the terms the prover is dealing with!)
+
+  A Recipe for Proving Theorems about DO Loop$s
+
+    * Use The Method to find the normal form of the loop$.
+    * Define a recursive function that computes the value of the loop$
+      using the same algorithm as the loop$. This function can serve
+      two purposes.  First, it can be an intermediate stop on the way
+      to proving that the loop$ satisfies your specification.  We'll
+      make this clear in the next point.  Second, it can suggest an
+      induction scheme that is probably useful.  We'll return to this
+      point at the end of our recipe for proving things about DO
+      loop$s.
+    * Prove that the loop$ computes the same value as the function.  We
+      frequently refer to this as ``lemma 1'' in the recipe.
+      Generally you will have to generalize the loop$ to prove it by
+      the induction suggested by the function.  And you will have to
+      write the normal form of the loop$ body instead of the
+      ``pretty'' form in the main theorem so this lemma can be used
+      to hit the rewritten loop$ in the proof of the main theorem
+      later.
+    * Prove that the function satisfies the specification.  We frequently
+      refer to this as ``lemma 2''.
+    * Prove that the loop$ satisfies the specification by chaining together
+      the two lemmas.
+
+  Of course, as with all ``recipes'', sometimes you have to adjust
+  depending on the ingredients at hand.  Sometimes you do not have to
+  define a special function because a function already in the
+  conjecture suggests an appropriate induction.  Sometimes you may
+  find it easier to copy the do$ form revealed by The Method into
+  your statement of lemma 1 and generalize that form, rather than try
+  to express lemma 1 as a loop$.  You may also be content to skip the
+  ``intermediate stop'' of lemma 1 altogether and prove that the
+  loop$ satisfies a generalized specification, sometimes providing an
+  :induct hint instead of inserting the special function into the
+  lemma.  Sometimes you do not have to generalize.  Sometimes instead
+  of proving lemma 1 and lemma 2 you can just prove the main goal
+  directly.  As an experienced ACL2 user you will recognize when you
+  can skip steps in this recipe.  We spell the recipe out rigidly
+  here just to give you one promising way to proceed.
+
+  So here goes!  Following the recipe to prove main above, we first try
+  The Method.  We get this checkpoint after no inductions are
+  suggested.
+
+    Goal''
+    (IMPLIES
+     (AND (INTEGERP N) (<= 0 N))
+     (EQUAL
+      (DO$
+        (LAMBDA$ (ALIST)
+          (ACL2-COUNT (CDR (ASSOC-EQ-SAFE 'I ALIST))))
+        (CONS (CONS 'I N) '((ANS . 0)))
+        (LAMBDA$ (ALIST)
+          (IF (INTEGERP (CDR (ASSOC-EQ-SAFE 'I ALIST)))
+              (IF (< 0 (CDR (ASSOC-EQ-SAFE 'I ALIST)))
+                  (LIST NIL
+                        NIL
+                        (LIST (CONS 'I (+ -1 (CDR (ASSOC-EQ-SAFE 'I ALIST))))
+                              (CONS 'ANS (+ 1 (CDR (ASSOC-EQ-SAFE 'ANS ALIST))))))
+                  (LIST :RETURN
+                        (CDR (ASSOC-EQ-SAFE 'ANS ALIST))
+                        (LIST (CONS 'I (CDR (ASSOC-EQ-SAFE 'I ALIST)))
+                              (CONS 'ANS (CDR (ASSOC-EQ-SAFE 'ANS ALIST))))))
+              (LIST :RETURN
+                    (CDR (ASSOC-EQ-SAFE 'ANS ALIST))
+                    (LIST (CONS 'I (CDR (ASSOC-EQ-SAFE 'I ALIST)))
+                          (CONS 'ANS (CDR (ASSOC-EQ-SAFE 'ANS ALIST)))))))
+         (LAMBDA$ (ALIST)
+           (LIST NIL
+                 NIL
+                 (LIST (CONS 'I (CDR (ASSOC-EQ-SAFE 'I ALIST)))
+                       (CONS 'ANS (CDR (ASSOC-EQ-SAFE 'ANS ALIST))))))
+         NIL NIL NIL)
+      N))
+
+  Look carefully at the do-body lambda, the second lambda object in the
+  do$.  The (ZP I) in our original DO loop$ has opened up,
+  introducing (INTEGERP i) and (< 0 i) and IF normalization -- except
+  instead of seeing the simple variable I we see its current value in
+  ALIST.
+
+  This is valuable information! It tells us what the rewritten body of
+  the loop$ looks like in the theory in which our proof is being
+  conducted.  If we prove a :rewrite rule expecting it to fire during
+  the proof of our main theorem, its body must match that shown
+  above!
+
+  Now we define the recursive function is that is supposed to be
+  operationally equivalent to the loop$.  This will suggest the
+  induction.
+
+    (defun copy-nat-ac (i ans)
+      (if (zp i)
+          ans
+          (copy-nat-ac (- i 1)
+                       (+ 1 ans))))
+
+  Next comes the hard part.  We state the lemma that equates the loop$
+  to the function, but we have to generalize it so it can be proved
+  by induction and we have to use the normal form of the body.  We
+  could state the lemma in terms of DO$ of course, but with a little
+  practice you can usually ``reverse engineer'' the desired lemma
+  into a loop$.
+
+    (defthm lemma1
+      (implies (and (natp n)
+                    (natp ans0))
+               (equal (loop$ with i = n
+                             with ans = ans0
+                             do
+                             (if (integerp i)
+                                 (if (< 0 i)
+                                     (progn (setq ans (+ 1 ans))
+                                            (setq i (- i 1)))
+                                     (return ans))
+                                 (return ans)))
+                      (copy-nat-ac n ans0))))
+
+  Note that we generalized the initial value of ans in the loop$ from 0
+  to ans0 and used ans0 as the accumulator in (copy-nat-ac n ans0).
+  Note also that instead of writing the loop$ body with (zp i) we
+  used the normalized expanded version we saw in the checkpoint.
+
+  Next we prove the lemma equating the recursive function with the
+  (generalized) specification.  This theorem does not involve loop$
+  and its proof should be utterly familiar to you.
+
+    (defthm lemma2
+      (implies (and (natp n)
+                    (natp ans0))
+               (equal (copy-nat-ac n ans0)
+                      (+ n ans0))))
+
+  Finally, we prove our main theorem.
+
+    (defthm main
+      (implies (natp n)
+               (equal (loop$ with i = n
+                             with ans = 0
+                             do
+                             (if (zp i)
+                                 (return ans)
+                                 (progn (setq ans (+ 1 ans))
+                                        (setq i (- i 1)))))
+                      n)))
+
+  The proof rewrites the ``pretty'' do-body lambda into the normal
+  form, lemma1 rewrites the new form of the loop$ after instantiating
+  ans0 to 0, to (copy-nat-ac n 0), then lemma2 hits that to (+ n 0),
+  and arithmetic does the rest.
+
+  As we noted, our recipe is overly rigid.  Here is another sequence of
+  events that proves main.  The user defines a function, my-induct,
+  to suggest the right induction, but the function does not return
+  the same thing as the loop$.  It just recurs the way the loop$
+  iterates.  My-induct is not used in the statement of our lemma,
+  instead it is given as an :induct hint.  A single lemma, named
+  lemma below, replaces the recipe's lemmas 1 and 2.  Lemma does not
+  use a loop$ statement.  It uses the very do$ term we saw in the
+  checkpoint, with one tiny change at line [1] below: the initial
+  value of ans was 0 in the checkpoint and is ans0 here.  The
+  right-hand side of the equality at line [2] in lemma is (+ n ans0),
+  the generalized answer.  Once lemma is proved, main is proved.
+
+    (defun my-induct (n ans0)
+      (if (zp n)
+          (list n ans0)
+          (my-induct (1- n) (1+ ans0))))
+
+    (defthm lemma
+      (implies
+       (and (integerp n) (<= 0 n) (integerp ans0) (<= 0 ans0))
+       (equal
+        (do$
+         (lambda$ (alist)
+                  (acl2-count (cdr (assoc-eq-safe 'i alist))))
+         (cons (cons 'i n) `((ans . ,ans0)))                       ; [1]
+         (lambda$
+          (alist)
+          (if (integerp (cdr (assoc-eq-safe 'i alist)))
+              (if (< 0 (cdr (assoc-eq-safe 'i alist)))
+                  (list nil nil
+                        (list (cons 'i
+                                    (+ -1 (cdr (assoc-eq-safe 'i alist))))
+                              (cons 'ans
+                                    (+ 1 (cdr (assoc-eq-safe 'ans alist))))))
+                (list :return (cdr (assoc-eq-safe 'ans alist))
+                      (list (cons 'i (cdr (assoc-eq-safe 'i alist)))
+                            (cons 'ans
+                                  (cdr (assoc-eq-safe 'ans alist))))))
+            (list :return (cdr (assoc-eq-safe 'ans alist))
+                  (list (cons 'i (cdr (assoc-eq-safe 'i alist)))
+                        (cons 'ans
+                              (cdr (assoc-eq-safe 'ans alist)))))))
+         (lambda$ (alist)
+                  (list nil nil
+                        (list (cons 'i (cdr (assoc-eq-safe 'i alist)))
+                              (cons 'ans
+                                    (cdr (assoc-eq-safe 'ans alist))))))
+         nil nil nil)
+        (+ n ans0)))                                               ; [2]
+      :hints ((\"Goal\" :induct (my-induct n ans0))))
+
+    (defthm main
+      (implies (natp n)
+               (equal (loop$ with i = n
+                             with ans = 0
+                             do
+                             (if (zp i)
+                                 (return ans)
+    			   (progn (setq ans (+ 1 ans))
+    				  (setq i (- i 1)))))
+                      n)))
+
+  For more details about rewriting lambda objects you can leave the
+  loop$ primer and read [rewrite-lambda-object] and
+  [rewriting-versus-cleaning-up-lambda-objects].  But remember to
+  come back here to lp-section-16!
+
+  Now go to [lp-section-17] (or return to the Table of Contents (see
+  [LP-SECTION-0])).")
+ (LP-SECTION-17
+  (LOOP$-PRIMER)
+  "Challenge Proof Problems for DO Loop$s
+
+
+LP17: Challenge Proof Problems for DO Loop$s
+
+  In the following problems please write DO loop$s even though some of
+  the problems can be solved with FOR loop$s.
+
+  Our answers to the problems in this section are in [community-books]
+  file demos/loop-primer/lp17.lisp.
+
+------------------------------
+  LP17-1: Write a DO loop$ that reverses the list lst.  For example, if
+  lst is (A B C) the result should be (C B A).  Prove that your DO
+  loop$ is equal to (rev lst), where
+
+    (defun rev (x)
+      (if (endp x)
+          nil
+          (append (rev (cdr x)) (list (car x)))))
+
+------------------------------
+  LP17-2: Write a DO loop$ that computes (member e lst) and prove it
+  correct.
+
+  Hint: Sometimes the main theorem suggests the right induction on its
+  own.
+
+------------------------------
+  LP17-3: Prove the following:
+
+    (defthm lp17-3-main
+      (equal (loop$ with x = lst
+                    with ans = 0
+                    do
+                     (cond ((endp x) (return ans))
+                           (t (progn (setq ans (+ 1 ans))
+                                     (setq x (cdr x))))))
+             (len lst)))
+
+------------------------------
+  LP17-4: Write a DO loop$ that computes (nth n lst), when n is a
+  natural number.  Prove it correct.
+
+------------------------------
+  LP17-5: Prove the following.
+
+    (defthm lp17-5-main
+      (implies (true-listp lst)
+               (equal (loop$ with x = lst
+                             with ans = nil
+                             do
+                             (cond
+                              ((endp x) (return ans))
+                              (t (progn (setq ans (append ans (list (car x))))
+                                        (setq x (cdr x))))))
+                      lst)))
+
+------------------------------
+  LP17-6: Prove the following.
+
+    (defthm lp17-6-main
+      (implies (and (natp m)
+                    (natp n))
+               (equal (loop$ with i = m
+                             with j = n
+                             do
+                             (if (zp i)
+                                 (return j)
+                                 (progn (setq i (- i 1))
+                                        (setq j (+ j 1)))))
+                      (+ m n))))
+
+------------------------------
+  LP17-7: Write a DO loop$ that computes (fact n), for natural number
+  n, where
+
+    (defun fact (n)
+      (if (zp n)
+          1
+          (* n (fact (- n 1)))))
+
+------------------------------
+  LP17-8: Write a DO loop$ that scans a list of numbers, lst, once and
+  returns the sum of the elements and the sum of the squares (with sq
+  as defined below) of the elements of lst as a cons pair.  E.g.,
+  given (1 2 3 4 5) return (cons (+ 1 2 3 4 5) (+ (sq 1) (sq 2) (sq
+  3) (sq 4) (sq 5))) = (15 . 55).
+
+  Prove that your do loop$ is equal to
+
+    (cons (loop$ for e in lst sum e)
+          (loop$ for e in lst sum (sq e)))
+
+  Use the following definition of sq.
+
+    (defun sq (x) (* x x))
+
+------------------------------
+  LP17-9: Define (partition-symbols lst) with a DO loop$ that
+  partitions lst into two lists, one containing all the symbols in
+  lst and the other containing all the non-symbols.  Return the cons
+  of the two partitions and prove partition-symbols correct.
+
+  Hint: Since you are likely to collect the elements in reverse order,
+  a suitable specification for these purposes is that
+  partition-symbols is equal to
+
+    (cons (rev (loop$ for e in lst when (symbolp e) collect e))
+          (rev (loop$ for e in lst when (not (symbolp e)) collect e)))
+
+------------------------------
+  LP17-10: Write a DO loop$ that returns the list of naturals from n
+  down to 0, where n is a natural.  For example, if n is 10 the
+  answer is (10 9 8 7 6 5 4 3 2 1 0).  Prove that when n is a
+  natural, your DO loop$ returns the same thing as (loop$ for i from
+  0 to n collect (- n i)).
+
+  Hints: Remember that in order for your ``lemma1'' to be applied in
+  the proof of your main theorem it must match the rewritten lambda
+  objects of the main theorem.  We've focused on matching the do-body
+  lambda.  But it must also match the measure lambda.  So when you
+  formulate your ``lemma1'', pay attention to how your measure term
+  normalizes under rewrite.  And by the way, if you use non-recursive
+  functions in a term and you don't want them opened up when the
+  lambda objects are rewritten in the main theorem, try disabling
+  them.  (Some non-recursive functions cannot be disabled.  But
+  another workaround is to define the whole measure as a function and
+  disable it when appropriate.)
+
+------------------------------
+  LP17-11: Define (all-pairs-do-loop$ imax jmax) to compute the same
+  (all-pairs imax jmax) as was defined in section 11 (and below).
+  But use DO loop$s instead of FOR loop$s in your definition of
+  all-pairs-do-loop$.  Below we comment on what you should prove.
+
+  The definition of all-pairs was as follows.
+
+    (defun make-pair (i j)
+      (declare (xargs :guard t))
+      (cons i j))
+
+    (defwarrant make-pair)
+
+    (defun all-pairs-helper2 (i j jmax)
+      (declare (xargs :measure (nfix (- (+ (nfix jmax) 1) (nfix j)))
+                      :guard (and (natp i) (natp j) (natp jmax))))
+      (let ((j (nfix j))
+            (jmax (nfix jmax)))
+        (cond
+         ((> j jmax) nil)
+         (t (cons (make-pair i j)
+                  (all-pairs-helper2 i (+ 1 j) jmax))))))
+
+    (defun all-pairs-helper1 (i imax jmax)
+      (declare (xargs :measure (nfix (- (+ (nfix imax) 1) (nfix i)))
+                      :guard (and (natp i) (natp imax) (natp jmax))))
+      (let ((i (nfix i))
+            (imax (nfix imax)))
+        (cond
+         ((> i imax) nil)
+         (t (append (all-pairs-helper2 i 1 jmax)
+                    (all-pairs-helper1 (+ 1 i) imax jmax))))))
+
+    (defun all-pairs (imax jmax)
+      (declare (xargs :guard (and (natp imax) (natp jmax))))
+      (all-pairs-helper1 1 imax jmax))
+
+  Hints: In following our advice on proving do loop$s you will define
+  functions that compute the same things as your DO loop$s.  In our
+  solution we called these two functions apdh1 and apdh2, where
+  ``apdh'' stands for @ldquo;all-pairs-do-helper''.  You will prove
+  two ``lemma1'' theorems, one for each loop$.  The second of those
+  theorems will establish allow you to prove that your
+  all-pairs-do-loop$ is apdh1.
+
+  The next step in our recipe is to prove that the apdh1 is all-pairs
+  as above.  This will not involve loop$s of any sort.  It's just a
+  normal proof about the relation between some recursively defined
+  functions.  But we found this step surprisingly challenging!
+
+  Since that second step does not involve loop$s, you may consider your
+  answer correct if you just prove the two ``lemma1'' theorems!  But
+  if you want a non-loop$ challenge, finish the proof all the way to
+  all-pairs.
+
+  Now go to [lp-section-18] (or return to the Table of Contents (see
+  [LP-SECTION-0])).")
+ (LP-SECTION-18
+  (LOOP$-PRIMER)
+  "Conclusion
+
+
+LP18: Conclusion
+
+  Here are two pieces of advice.
+
+  First, if you can think of a good name for the concept implemented by
+  a loop$ statement, use defun to define that name.  This is
+  especially the case if you intend to reason about that loop$
+  statement or to write more than one instance of it.
+
+  For example, rather than write instances of
+
+    (loop$ for a in x as b in y sum (* a b))
+
+  it is better to define (dot-product x y) with that loop$ as its body
+  and then write calls of dot-product.
+
+  Basically, names are good as long as you can remember them.  They
+  give you a place to hang lemmas and the lemmas match without having
+  to think about rewriting lambdas, local variables, etc.  Not all
+  loop$s compute concepts with obvious, memorable names, but just
+  because you can write ``anonymous'' iterations doesn't mean you
+  should!
+
+  Second, remember when you create a lemma intended to rewrite a loop$
+  statement you should normalize the body under your intended rewrite
+  theory.  As an experienced ACL2 user you would never write a lemma
+  that tried to rewrite an endp or nfix or zp term.  The lemma will
+  never ``see'' such terms because the rewriter will have opened them
+  up.  You should apply that same kind of thinking when you write
+  lemmas intended to rewrite loop$s.
+
+  That's it.  We can't think of anything else to say!  We urge you to
+  resort to the ACL2 user's manual for further information.
+
+  Some relevant topics are
+
+    * [loop$]
+    * [for-loop$]
+    * [do-loop$]
+    * [lambda$]
+    * [rewrite-lambda-object]
+
+  Now go to [lp-section-todo] (or return to the Table of Contents (see
+  [LP-SECTION-0])).")
+ (LP-SECTION-2
+  (LOOP$-PRIMER)
+  "Loop in Common Lisp and loop$ in ACL2
+
+
+LP2: Loop in Common Lisp and loop$ in ACL2
+
+  The loop macro of Common Lisp was inspired by the ``iterative
+  statements'' in Warren Teitelman's CLISP package of Interlisp
+  (1974).  But programming languages have had iterative statements
+  since early in the development of compilers.  The first release of
+  a FORTRAN compiler (1957) supported what is probably the most
+  well-known iterative construct, the ``DO loop.'' But CLISP added
+  many additional features including simultaneous looping over
+  multiple ranges, structured ways to filter the elements, structured
+  exit control mechanisms, and multiple ways to accumulate the
+  results.  Common Lisp supports these and many other features.
+
+  ACL2's loop$ facility supports a tiny subset of Common Lisp's loop
+  statements.  It is hard to overstate how small the ACL2 subset is!
+  For example, to manage iteration over a range of numbers, ACL2
+  provides FROM, TO, and BY, but Common Lisp additionally provides
+  DOWNFROM,UPFROM,DOWNTO,UPTO,BELOW,and ABOVE.  For value
+  accumulation, ACL2 supports SUM, COLLECT, APPEND, ALWAYS, and
+  THEREIS, while Common Lisp also supports NCONC, COUNT, MAXIMIZE,
+  and MINIMIZE.  Even within its restricted subset, ACL2 syntax is
+  less flexible regarding the order of the various ``clauses'' and
+  the presence of, say, multiple accumulators.  The list of
+  differences could go on and on because the Common Lisp facility is
+  so elaborate.
+
+  While many more Common Lisp loop features could be supported in ACL2,
+  we believe it is best to test and refine the techniques reasoning
+  about loop$ before elaborating it further.
+
+  Now go to [lp-section-3] (or return to the  Table of Contents (see
+  [LP-SECTION-0])).")
+ (LP-SECTION-3
+  (LOOP$-PRIMER)
+  "Examples of FOR Loop$s
+
+
+LP3: Examples of FOR Loop$s
+
+  Below is the complete log of an ACL2 session demonstrating the
+  behavior of FOR loop$s.  ACL2 also supports DO loop$s but they are
+  not illustrated here.  Note that to use loop$ one should always
+  work in a session in which the book shown below is included.  The
+  examples below do not illustrate guards, the use of user defined
+  functions in loop$ expressions, or proofs about loop$s.
+
+  We'll describe the syntax and semantics of loop$ in the next two
+  sections. But we expect you can intuit the syntax and semantics of
+  loop$ statements from these examples alone.  Please try!
+
+    ACL2 !>(include-book \"projects/apply/top\" :dir :system)
+
+    Summary
+    Form:  ( INCLUDE-BOOK \"projects/apply/top\" ...)
+    Rules: NIL
+    Time:  1.00 seconds (prove: 0.00, print: 0.00, other: 1.00)
+     \"/Users/demo/books/projects/apply/top.lisp\"
+
+    ACL2 !>(loop$ for x in '(a b c)
+                  collect (cons 'hi x))
+    ((HI . A) (HI . B) (HI . C))
+
+    ACL2 !>(loop$ for x in '(a b c)
+                  when (not (eq x 'b))
+                  collect (cons 'hi x))
+    ((HI . A) (HI . C))
+
+    ACL2 !>(loop$ for x in '(a b c d e f g)
+                  until (eq x 'd)
+                  collect x)
+    (A B C)
+
+    ACL2 !>(loop$ for x on '(a b c)
+                  collect x)
+    ((A B C) (B C) (C))
+
+    ACL2 !>(loop$ for x on '(a b c)
+                  collect (cons (car x) (len x)))
+    ((A . 3) (B . 2) (C . 1))
+
+    ACL2 !>(loop$ for i from 1 to 10 sum i)
+    55
+
+    ACL2 !>(loop$ for i from 1 to 12 by 3
+                  collect (* i i))
+    (1 16 49 100)
+
+    ACL2 !>(loop$ for x in '((a b c) (d e f) (g h i))
+                  collect (cons 'hi x))
+    ((HI A B C) (HI D E F) (HI G H I))
+
+    ACL2 !>(loop$ for x in '((a b c) (d e f) (g h i))
+                  append (cons 'hi x))
+    (HI A B C HI D E F HI G H I)
+
+    ACL2 !>(loop$ for x in '(2 4 6)
+                  always (evenp x))
+    T
+
+    ACL2 !>(loop$ for x in '(2 4 5 6)
+                  always (evenp x))
+    NIL
+
+    ACL2 !>(loop$ for x in '(2 4 5 6)
+                  thereis (if (evenp x) nil x))
+    5
+
+    ACL2 !>(let ((greeting 'hi))
+             (loop$ for x in '(a b c)
+                    collect (cons greeting x)))
+    ((HI . A) (HI . B) (HI . C))
+
+    ACL2 !>(loop$ for x in '(a b c)
+                  as  y in '(65 66 67 68)
+                  collect (cons x y))
+    ((A . 65) (B . 66) (C . 67))
+
+    ACL2 !>(loop$ for x in '(a b c d)
+                  as  y in '(65 66 67)
+                  collect (cons x y))
+    ((A . 65) (B . 66) (C . 67))
+
+    ACL2 !>(loop$ for x in '((1 2 3) (4 5 6) (7 8 9))
+                  collect
+                  (loop$ for i in x collect (* i i)))
+    ((1 4 9) (16 25 36) (49 64 81))
+
+  Now go to [lp-section-4] (or return to the Table of Contents (see
+  [LP-SECTION-0])).")
+ (LP-SECTION-4
+  (LOOP$-PRIMER)
+  "Syntax of FOR Loop$s
+
+
+LP4: Syntax of FOR Loop$s
+
+  To describe the syntax of FOR loop$s we first describe the most
+  elaborate FOR loop$.  Then we note which elements can be omitted.
+  The most elaborate FOR loop$ is of the form
+
+  (LOOP$ FOR v1 OF-TYPE spec1 target1
+  AS    v2 OF-TYPE spec2 target2
+  ...
+  AS    vn OF-TYPE specn targetn
+  UNTIL :GUARD guard1 until-expr
+  WHEN    :GUARD guard2 when-expr
+  op :GUARD guard3 body-expr)
+
+  where
+
+    * each vi   is a legal variable symbol, they are all distinct, and are
+      collectively called the iteration variables,
+    * each speci   is a [type-spec] for the corresponding variable vi,
+    * each targeti is of one of the forms below and specifies the range of
+      values to be taken by the corresponding variable vi.
+      Abstractly you may think of the ``range'' here simply as a list
+      of the values as described below, where list-expr is a term
+      (which is expected to evaluate to a true list), lo-expr and
+      hi-expr are terms (which are expected to evaluate to integers),
+      and step-expr is a term (which is expected to evaluate to a
+      positive integer).  In the examples given below, let rv be the
+      list reverse function, so (rv '(a b c)) is (C B A).
+        * IN list-expr --- range is the value of list-expr.  For example, the
+          range of ``IN (rv '(a b c))'' is (C B A).
+        * ON list-expr --- range is the list of successive non-nil tails of the
+          value of list-expr.  For example, the range of ``ON (rv '(a
+          b c))'' is ((C B A) (B A) (A)).  The range value is
+          produced by (TAILS list-expr).
+        * FROM lo-expr TO hi-expr BY step-expr --- If ``BY step-expr'' is
+          omitted, ``BY 1'' is used.  The range contains all the
+          integers from the value of lo-expr to the greatest integer
+          less than or equal to the value of hi-expr such that each
+          is separated from its higher neighbor by the value of
+          step-expr.  For example, the range of ``FROM 1 TO 10 BY 2''
+          is (1 3 5 7 9).  The range value is produced by (FROM-TO-BY
+          lo-expr hi-expr step-expr).
+
+    * each guardi is a term,
+    * each until-expr, when-expr, and body-expr   is a [tame] term, and
+    * op   is one of the operators   SUM, COLLECT, APPEND, ALWAYS, or
+      THEREIS.
+
+  The symbols FOR, IN, ON, FROM, TO, BY, OF-TYPE, WHEN, UNTIL, SUM,
+  COLLECT, APPEND, ALWAYS, and THEREIS when used in loop$ statements
+  may be in any package.
+
+  Common Lisp prohibits loops with both a WHEN clause and either an
+  ALWAYS or a THEREIS operator.  For example, if you are tempted to
+  write ``WHEN p ALWAYS q'' you can instead write ``ALWAYS (if p q
+  t).''
+
+  The following elements may be omitted from the most elaborate form
+  and still produce legal loop$ statements:
+
+    * any line beginning with AS, UNTIL or WHEN,
+    * any OF-TYPE speci, and
+    * any :GUARD guardi.
+
+  A FOR loop$ expression with just one iteration variable and in which
+  the iterative expressions mention no free variable other than the
+  iteration variable is called a simple loop$ (or, sometimes, a
+  simple loop).  An example of a simple loop is
+
+    (loop$ for x in lst when (evenp x) collect (+ 1 (sq x))).
+
+  A FOR loop$ expression is called a fancy loop$ if it is not simple.
+  Both of the following loop$s are fancy.
+
+    (loop$ for x in xlst as y on ylst collect (expr x y))
+
+    (loop$ for x in xlst collect (expr x z))
+
+  The first is fancy because it has two iteration variables, x and y.
+  The second is fancy because the body freely uses the variable z
+  which is not the iteration variable.
+
+  Now go to [lp-section-5] (or return to the Table of Contents (see
+  [LP-SECTION-0])).")
+ (LP-SECTION-5
+  (LOOP$-PRIMER)
+  "Informal Semantics of FOR Loop$s
+
+
+LP5: Informal Semantics of FOR Loop$s
+
+  The value returned by a FOR loop$ can be specified as follows --- but
+  we hasten to add that this is not how Common Lisp compilers
+  implement loop$!  We think this description is easier to
+  understand.
+
+  The first step in evaluating a FOR loop$ is to determine the range of
+  each iteration variable by evaluating the target expressions as
+  previously described.
+
+  Next, repeat the following steps until the process stops.  (1) If any
+  range is empty, stop.  (2) Otherwise, assign each iteration
+  variable the first value in its range and shorten the range by one,
+  by removing that first element.  (3) If the until-expr evaluates to
+  non-nil under the current values of the global and iteration
+  variables, stop.  Otherwise, if the when-expr evaluates to non-nil
+  under the current values of the variables, then evaluate the
+  body-expr under the current values.  Otherwise, do not evaluate the
+  body-expr.
+
+  When the repetition stops, the body-expr will have been evaluated n
+  times, each time producing a value vali, 0 <= i < n, where the vali
+  are listed in the order in which they were produced.  The result
+  returned by the loop$ is determined by the operator, op, of the
+  loop$ as follows.
+
+    * SUM          --- return the sum of the vali
+    * COLLECT --- return (LIST val1 ... valn)
+    * APPEND   --- return (APPEND val1 ... valn)
+    * ALWAYS   --- return (AND val1 ... valn T)
+    * THEREIS --- return (OR val1 ... valn)
+
+  Note that if op is ALWAYS, iteration can stop the first time a vali
+  is nil.  Similarly, if op is THEREIS, iteration can stop the first
+  time a vali is non-nil.  Note also that an ALWAYS loop$ returns NIL
+  or T but a THEREIS loop$ returns nil or the first non-nil value
+  produced by the evaluation of the body.
+
+  Now go to [lp-section-6] (or return to the Table of Contents (see
+  [LP-SECTION-0])).")
+ (LP-SECTION-6
+  (LOOP$-PRIMER)
+  "Challenge Problems about FOR Loop$s
+
+
+LP6: Challenge Problems about FOR Loop$s
+
+  The questions below ask you to write and evaluate some FOR loop$s at
+  the top-level of ACL2.
+
+  Our answers to the problems in this section are in [community-books]
+  file demos/loop-primer/lp6.lisp.  Feel free to look at our answers
+  after you have worked on a problem.  But remember: reading an
+  answer is not as helpful as finding it yourself.  If you give up on
+  a problem, look at our answer for just that problem, so maybe you
+  take a little more insight into your work on subsequent problems.
+
+  Don't forget to start your session by including the standard book for
+  apply$.
+
+    (include-book \"projects/apply/top\" :dir :system)
+
+  Don't bother with adding :guard expressions and don't define any
+  functions of your own yet.  All of these questions can be answered
+  by loop$ expressions involving only ACL2 primitives and the
+  constant function bags which we introduce below for convenience.
+
+  Let a ``bag'' be a true list of symbols.  The function below returns
+  a constant list of bags.  You may use (bags) in your solutions.
+  Notice that some elements of (bags) contain the symbol x and other
+  do not.
+
+    (defun bags ()
+      '((a b c)
+        (d x e f)
+        (g h i x)
+        (j)
+        (x k l)))
+
+  Here is a sample question and how you might check that your loop$
+  computes the expected value.
+
+------------------------------
+  Sample Question: Build an alist that pairs the first symbol in every
+  bag of (bags) with the number of other symbols in the bag.  The
+  expected value is ((A . 2) (D . 3) (G . 3) (J . 0) (X . 2)).
+
+  Sample Check of a Solution:
+
+    (equal (loop$ for bag in (bags)
+                  collect (cons (car bag) (len (cdr bag))))
+           '((A . 2) (D . 3) (G . 3) (J . 0) (X . 2)))
+
+  Of course, you could just type the loop$ statement at the top-level
+  of your ACL2 session and visually inspect the answer.  If you want
+  to make a certified book out of your answers we recommend
+  expressing the checks as defthm events of :rule-classes nil, as in
+
+    (defthm check-sample-question
+      (equal (loop$ for bag in (bags)
+                    collect (cons (car bag) (len (cdr bag))))
+             '((A . 2) (D . 3) (G . 3) (J . 0) (X . 2)))
+      :rule-classes nil)
+
+  However, if your loop$ involves a user-defined function and you
+  express your answers as defthms then each theorem will need to have
+  appropriate warrant hypotheses, as illustrated below.
+
+    (defun my-len (x) (if (atom x) 0 (+ 1 (my-len (cdr x)))))
+    (defwarrant my-len)
+    (defthm check-my-sample-question
+      (implies (warrant my-len)
+               (equal (loop$ for bag in (bags)
+                             collect (cons (car bag) (my-len (cdr bag))))
+                      '((A . 2) (D . 3) (G . 3) (J . 0) (X . 2))))
+      :rule-classes nil)
+
+------------------------------
+  LP6-1: Concatenate all the bags in (bags).
+
+  Expected Value:(A B C D X E F G H I X J X K L)
+
+------------------------------
+  LP6-2: Collect the bags that contain the symbol x.
+
+  Expected Value:((D X E F) (G H I X) (X K L))
+
+------------------------------
+  LP6-3: If you used some version of member in your solution to LP6-2,
+  now do it without using any version of member.
+
+  Expected Value:((D X E F) (G H I X) (X K L))
+
+  Don't use any version of member in your answers to the remaining
+  questions in this section.
+
+------------------------------
+  LP6-4: Remove all the xs from each bag in (bags) and concatenate the
+  resulting bags.
+
+  Expected Value:(A B C D E F G H I J K L)
+
+------------------------------
+  LP6-5: Collect the first symbol of each of the bags in (bags) that
+  contains an x.
+
+  Expected Value:(D G X)
+
+------------------------------
+  LP6-6: From each bag in (bags), remove the elements preceding the
+  first x and collect the resulting bags.
+
+  Expected Value:(NIL (X E F) (X) NIL (X K L))
+
+------------------------------
+  LP6-7: Let's say the ``alternating sum of signed squares'' of a list
+  of numbers is the sum of the squares of the elements, except the
+  squares of elements in even positions (0-based) are added and the
+  squares in odd positions are subtracted.  So the alternating sum of
+  signed squares of (1 2 3 4 5) is (+ 1 -4 9 -16 25) = 15.  Compute
+  the alternating sum of signed squares of the lengths of the bags in
+  (bags)
+
+  Expected Value:(+ 9 -16 16 -1 9) = 17.
+
+------------------------------
+  LP6-8: Collect all the function symbols in the current ACL2 world
+  with an arity greater than 9.
+
+  Three Hints: First, the term (function-theory :here) returns a list
+  of the runes of all the :logic mode functions currently in the ACL2
+  world.  However, it expands to an expression involving the variable
+  world which can be obtained by (w state).  And [state] may not be
+  used in FOR loop$!  So you'll have to [let] bind world to (w state)
+  and write your loop$ inside the scope of that let.
+
+  Second, every [rune] returned by function-theory is of the form
+  (:DEFINITION fn . x), where fn is the name of a function.
+
+  Third, the arity of a symbol fn is obtained from the world by (arity
+  fn world), except sometimes (for reasons we won't go into!) it
+  returns nil.
+
+  Expected Value: As of ACL2 Version 8.5 (after including the
+  \"projects/apply/top\" book) the answer was (MEMOIZE-FORM SEARCH-FN
+  SEARCH-FN-GUARD BUILD-STATE1), but that may change.
+
+------------------------------
+  LP6-9: Collect the name of every theorem about EXPT in the current
+  world.
+
+  Three More Hints: First, the ACL2 world is a list of triples of the
+  form (name property . val) representing the current property lists.
+  In ACL2 Version 8.5, the length of the world (after including the
+  \"projects/apply/top\" book) is 137,846, so it's too big to just look
+  at!
+
+  Second, each event that named a theorem has a triple of the form
+  (name THEOREM . val), where name is the event name and val is the
+  translated version of the theorem.  (Thus, you won't find macros
+  like + or append in val!  Instead it would contain the function
+  symbols appearing in their expansions, e.g., binary-+ and
+  binary-append.  But since we're looking for expt and it is not a
+  macro, this doesn't matter.)
+
+  Third, the ACL2 term (all-fnnames term) returns a list of all the
+  function symbols used in the fully translated term term.
+
+  Expected Value: As of ACL2 Version 8.5 (after including the
+  \"projects/apply/top\" book) the answer was
+  (APPLY$-PRIM-META-FN-EV-CONSTRAINT-462
+  RATIONALP-EXPT-TYPE-PRESCRIPTION
+  EXPT-TYPE-PRESCRIPTION-NON-ZERO-BASE)
+
+------------------------------
+  These exercises highlight three important lessons about loop$.
+
+  The first is that with loop$ you can avoid defining a lot of
+  recursive functions.  Imagine doing these same exercises without
+  loop$.
+
+  The second is that it is not always a good idea to ``inline'' loop$s
+  instead of defining functions.  The clearest example of that arises
+  above when we prohibited you from using member!  Just because
+  member can be replaced by a loop$ doesn't mean it should be!
+  Member is an exceptionally useful function that enjoys a lot of
+  elegant properties.  By introducing the name member and proving its
+  properties we can use it conveniently and appeal to those
+  properties often.  Of course, member is a Common Lisp primitive, so
+  we're not free to define it, but if we were to define a function
+  like that we could use a loop$ in its definition.
+
+  Another example of this second lesson is in question LP6-7.
+  Depending on the project at hand, the notion of ``alternating sum
+  of signed squares'' might be a useful one in its own right.  So
+  perhaps if such a problem came up you might define
+  (alternating-sum-of-signed-squares lst), perhaps using loop$ in the
+  defun, and then use
+
+    (alternating-sum-of-signed-squares
+      (loop$ for bag in (bags) collect (len bag)))
+
+  to compute the quantity requested in LP6-7.
+
+  The question raised by this second lesson isn't so much whether you
+  use a loop$ to express the concept but whether you use a defun to
+  give the concept a name.  A good rule of thumb is: if the concept
+  has a natural name, define it!
+
+  Of course, there is the usual trade-off between execution efficiency
+  and modularity.  There are various ways to deal with this trade-off
+  in ACL2 but since they are not unique to loop$ we won't discuss
+  them.
+
+  The third lesson is highlighted by LP6-8 and LP6-9.  Loop$ can be
+  very useful in extracting data about your current ACL2 session, if
+  you are familiar with the ACL2 system-level utilities (see
+  [system-utilities] for some of them).  Perhaps more relevant is the
+  observation that if you are building a big model involving lots of
+  data, you might find loop$ handy in querying your own data.
+
+  Now go to [lp-section-7] (or return to the Table of Contents (see
+  [LP-SECTION-0])).")
+ (LP-SECTION-7
+  (LOOP$-PRIMER)
+  "Using Loop$s and Guards in Defuns
+
+
+LP7: Using Loop$s and Guards in Defuns
+
+  Loop$ statements are most efficient when they are guard verified.
+  Loop$s typed at the top-level are typically not guard verified and
+  so they are not executed by running compiled Common Lisp loops.
+  Instead, their formal semantics is executed which is akin to saying
+  they are interpreted.  But execution efficiency was one of the
+  motivational factors in the introduction of loop$ and that is best
+  achieved by using loop$s in guard verified function definitions.
+
+  Here is an example.  We've already discussed member and the fact that
+  calls of member can be replaced by loop$s.  Member is a macro that
+  expands logically to member-equal, where
+
+    (defun member-equal (x lst)
+      (declare (xargs :guard (true-listp lst)))
+      (cond ((endp lst) nil)
+            ((equal x (car lst)) lst)
+            (t (member-equal x (cdr lst)))))
+
+  Let's define an equivalent function, named member-equal-loop$, using
+  loop$.
+
+    (defun member-equal-loop$ (x lst)
+      (declare (xargs :guard (true-listp lst)))
+      (loop$ for tail of-type (satisfies true-listp) on lst
+             thereis
+             (if (equal x (car tail)) tail nil)))
+
+    (defthm member-equal-loop$-is-member-equal
+       (equal (member-equal-loop$ x lst)
+              (member-equal x lst)))
+
+  Member-equal-loop$ has a :guard of (true-listp lst).  This is
+  expected by Common Lisp when running a loop with range on lst.  But
+  in our loop$ above we also wrote that the iteration variable tail
+  satisfies true-listp.  We do that so that ACL2 can prove the guard
+  on (car tail) in the thereis clause.  (We could change ACL2 to
+  infer this type for tail in this special case, but more generally,
+  if some property p holds for lst what property holds for every tail
+  of lst?)
+
+  The guard obligations for member-equal-loop$ are obscure because we
+  haven't explained the formal semantics of loop$ yet.  But we do not
+  discuss the guard obligations of loop$s in the primer.  If you
+  define a function containing a loop$ and try to verify its guards
+  the system will generate the necessary obligations and try to prove
+  them.  Our solutions to all the exercises in this primer can be
+  guard verified automatically.  For more details on FOR loop$ guards
+  and the guard obligations they generate, see [for-loop$],
+  specifically, the sections ``Special Guard Conjectures for FOR
+  Loop$s'' and ``Discussion of Why Loop$s Have Special Guards.''
+
+  After admitting member-equal-loop$ ACL2 can prove inductively that it
+  is equal to member-equal.  We'll come back to that later too.
+
+  An alternative way to specify the type of tail would be to write
+
+    (defun member-equal-loop$ (x lst)
+      (declare (xargs :guard (true-listp lst)))
+      (loop$ for tail on lst
+             thereis
+             :guard (true-listp tail)
+             (if (equal x (car tail)) tail nil)))
+
+  Adding a :guard after the thereis or other loop$ operator is more
+  general than adding Common Lisp's of-type to an iteration variable.
+  The of-type construct only allows you to express a constraint
+  involving the one variable it's associated with, e.g., you can say
+  `` lst is a true-listp.'' But with :guard you can relate different
+  variables, e.g., ``lst is a true-listp and its len is the same as
+  the len of ylst.''
+
+  When you use a loop$ in a defun to be guard verified, be sure to
+  constrain its iteration variables (and global variables)
+  appropriately for their use in subsequent expressions.  Sometimes
+  you can constrain an iteration variable with an of-type but other
+  times you may need to write a :guard expression after the when, the
+  until, and/or the loop$ operator.  ACL2 will take any of-type
+  information and conjoin it to any :guard.
+
+  The reason you might want to write of-type specifications when you
+  can is that Common Lisp compilers ``understand'' them and may
+  produce optimized code.  :Guards are an ACL2 idiom that compilers
+  just ignore.  But :guards are often necessary to verify that a
+  loop$ satisfies all the restrictions Common Lisp imposes.
+
+  Now go to [lp-section-8] (or return to the Table of Contents (see
+  [LP-SECTION-0])).")
+ (LP-SECTION-8
+  (LOOP$-PRIMER)
+  "Challenge Problems about FOR Loop$ in Defuns
+
+
+LP8: Challenge Problems about FOR Loop$ in Defuns
+
+  Do the problems below, starting in a fresh ACL2 session that starts
+  with the standard (include-book \"projects/apply/top\" :dir :system).
+  Each problem starts with one or more recursive functions.  Admit
+  those functions in your session.  Then define equivalent versions
+  using loop$s instead of recursion.  Make sure each of your defuns
+  is admitted and guard verified.  Try to ensure that the loop$
+  version is equal to the recursive version of each function.
+  Ideally, the equivalence should be unconditional, but sometimes it
+  is impossible to achieve unconditional equivalence with FOR loop$
+  and you'll have to add some hypotheses to the equivalence theorem,
+  like (true-listp x).
+
+  Since a main motivation for using loop$ is the runtime efficiency of
+  the compiled raw Lisp, and since no ACL2 function is executed in
+  raw Lisp unless the guards are verified, you may condition your
+  equivalences on the guard of the recursive function you're
+  implementing with loop$s.
+
+  Finally, you need not use ACL2 to prove that your loop$ functions
+  correctly implement their recursive counterparts.  But you should
+  be aware that with a few exceptions the proofs of our solutions
+  were completely automatic.  We'll focus on proving theorems about
+  loop$s later in the primer.
+
+  Our answers to the problems in this section are in [community-books]
+  file demos/loop-primer/lp8.lisp.
+
+------------------------------
+  Sample Question: (Sum-vals alist) sums the value components of an
+  alist.  Note its guard.
+
+    (defun symbol-to-integer-alistp (x)
+      (declare (xargs :guard t))
+      (if (atom x)
+          (equal x nil)
+          (and (consp (car x))
+               (symbolp (caar x))
+               (integerp (cdar x))
+               (symbol-to-integer-alistp (cdr x)))))
+
+    (defun sum-vals (alist)
+      (declare (xargs :guard (symbol-to-integer-alistp alist)))
+      (cond ((endp alist) 0)
+            (t (+ (cdar alist) (sum-vals (cdr alist))))))
+
+  E.g., (sum-vals '((a . 1) (b . 2) (c . 3))) = 6.
+
+  Define sum-vals-loop$ so that it is unconditionally equivalent to
+  sum-vals but uses loop$ instead of recursion.
+
+  Sample Solution:
+
+    (defun sum-vals-loop$ (alist)
+      (declare (xargs :guard (symbol-to-integer-alistp alist)))
+      (loop$ for pair in alist
+             sum
+             :guard (and (consp pair)
+                         (integerp (cdr pair)))
+             (cdr pair)))
+
+  The (consp pair) in the loop$ :guard is necessary because the loop$
+  body contains (cdr pair) and Common Lisp expects cdr to be applied
+  to a consp or nil.  The (integerp (cdr pair)) is necessary because
+  the value of the loop$ body is being summed and so must be (at
+  least) a number to satisfy Common Lisp's expectation on +.
+
+  Verification of Sample Solution:
+
+    (defthm sum-vals-loop$-is-sum-vals
+      (equal (sum-vals-loop$ alist)
+             (sum-vals alist))
+      :rule-classes nil)
+
+  It is conceivable in some Common Lisps that the following would
+  compile into more efficient code.
+
+    (defun sum-vals-loop$ (alist)
+      (declare (xargs :guard (symbol-to-integer-alistp alist)))
+      (loop$ for pair of-type cons in alist
+             sum
+             :guard (integerp (cdr pair))
+             (the integer (cdr pair))))
+
+  The thinking is that the of-type cons and (the integer (cdr pair))
+  could in principle allow the compiler to do type checking that
+  could eliminate runtime tests to avoid errors.  That's because
+  of-type and the are Common Lisp primitives, as are the particular
+  [type-spec]s used in sum-vals-loop$.  Whether such a well-declared
+  version of sum-vals-loop$ would actually run faster on your Common
+  Lisp depends on the compiler and the optimization proclamations.
+  In CCL and SBCL with ACL2's default proclamations, this
+  well-declared version runs no faster than the original sample
+  solution does.  We raise this point simply to alert the reader to
+  the difference between compiler directives and :guards.
+
+------------------------------
+  LP8-1 Define sum-vals-loop$ which is like our solution shown for
+  sum-vals above, except instead of using symbol-to-integer-alist as
+  the :guard write the :guard as (and (true-listp alist) (loop$
+  ...)).  Be sure your definition is admitted and guard verified.
+
+  The annoying conjunct (true-listp alist) in the new :guard is due to
+  the fact that there is no way to write a FOR loop$ in ACL2 that
+  checks whether something is a true-listp.
+
+------------------------------
+  LP8-2 The recursive function below is in the ACL2 sources (therefore,
+  you will not have to define it in your session).  Define an
+  equivalent function, named arglistp1-loop$ that uses loop$ instead
+  of recursion.
+
+    (defun arglistp1 (lst)
+      (declare (xargs :guard t))
+      (cond ((atom lst) (null lst))
+            (t (and (legal-variablep (car lst))
+                    (arglistp1 (cdr lst))))))
+
+  Why is arglistp1-loop$ a little less efficient than arglistp?
+
+------------------------------
+  LP8-3 The two recursive functions below are used in the ACL2 sources
+  (thus, you won't have to define them in your session).  Define
+  packn1-loop$ that is equivalent to packn1 but so that it uses
+  loop$s and does not mention good-atom-listp.
+
+    (defun good-atom-listp (lst)
+      (declare (xargs :guard t
+                      :mode :logic))
+      (cond ((atom lst) (eq lst nil))
+            (t (and (or (acl2-numberp (car lst))
+                        (symbolp (car lst))
+                        (characterp (car lst))
+                        (stringp (car lst)))
+                    (good-atom-listp (cdr lst))))))
+
+    (defun packn1 (lst)
+      (declare (xargs :guard (good-atom-listp lst)))
+      (cond ((endp lst) nil)
+            (t (append (explode-atom (car lst) 10)
+                       (packn1 (cdr lst))))))
+
+------------------------------
+  LP8-4 Define select-corresponding-element-loop$ so that it is
+  equivalent to select-corresponding-element, below, but using a
+  loop$ statement.
+
+    (defun select-corresponding-element (e lst1 lst2)
+      (declare (xargs :guard (and (true-listp lst1)
+                                  (true-listp lst2)
+                                  (not (member nil lst2)))))
+      (cond
+       ((endp lst1) nil)
+       ((endp lst2) nil)
+       ((equal e (car lst1)) (car lst2))
+       (t (select-corresponding-element e (cdr lst1) (cdr lst2)))))
+
+  For example,
+
+    (select-corresponding-element
+      'wednesday
+      '(sunday monday tueday wednesday thursday friday saturday)
+      '(dimanche lundi mardi mercredi jeudi vendredi samedi))
+    =
+    'MERCREDI
+
+------------------------------
+  LP8-5 Define same-mod-wildcard-loop$ to be equivalent to
+  same-mod-wildcard, below, but using a loop$ statement.
+
+    (defun same-mod-wildcard (lst1 lst2)
+      (declare (xargs :guard (and (true-listp lst1)
+                                  (true-listp lst2)
+                                  (equal (len lst1) (len lst2)))))
+      (cond ((endp lst1) t)
+            ((or (eq (car lst1) '*)
+                 (eq (car lst2) '*))
+             (same-mod-wildcard (cdr lst1) (cdr lst2)))
+            ((equal (car lst1) (car lst2))
+             (same-mod-wildcard (cdr lst1) (cdr lst2)))
+            (t nil)))
+
+  For example,
+
+    (same-mod-wildcard '(a * c d *) '(a x c * d))
+    =
+    T
+
+------------------------------
+  LP8-6 The following function is part of the ACL2 source code, so you
+  don't have to define it in your session.
+
+    (defun getprops1 (alist)
+      (declare (xargs :guard (true-list-listp alist)))
+      (cond ((endp alist) nil)
+            ((or (null (cdar alist))
+                 (eq (car (cdar alist))
+                     *acl2-property-unbound*))
+             (getprops1 (cdr alist)))
+            (t (cons (cons (caar alist) (cadar alist))
+                     (getprops1 (cdr alist))))))
+
+  Define getprops1-loop$ to do the same thing using loop$.
+
+------------------------------
+  Now go to [lp-section-9] (or return to the Table of Contents (see
+  [LP-SECTION-0])).")
+ (LP-SECTION-9
+  (LOOP$-PRIMER)
+  "Semantics of FOR Loop$s
+
+
+LP9: Semantics of FOR Loop$s
+
+  For a thorough discussion of the semantics of FOR loop$s see
+  [for-loop$], specifically the section ``Semantics'' which includes
+  two subsections, ``Semantics of Simple Loop$s'' and ``Semantics of
+  Fancy Loop$s.'' We discuss DO loop$s later.  In this section of the
+  primer we just present some examples to drive home a few important
+  points about FOR loop$s, namely
+
+    * The semantics of a loop$ statement is obtained by translating the
+      loop$ statement, as with the command :[trans].
+    * However, translation inserts a lot of tags into the formal term it
+      produced.  These tags allow us to execute loop$ statements more
+      efficiently in the top-level ACL2 read-eval-print loop$.  The
+      tags on a translated loop$, term, can be removed the :[tc]
+      (``translate and clean'') command and its variants :tca and
+      :tcp.  When we exhibit semantics we typically show these
+      simplified, equivalent terms produced by one of these commands.
+    * The semantics of FOR loop$s look quite different from the semantics
+      of DO loop$s.  Furthermore, the semantics of simple loop$s have
+      a different form than those of fancy loop$.  So ``minor''
+      changes in the syntax of a loop$ statement --- the addition of
+      an AS clause, the use of global variable in the body of the
+      loop$, or the use of DO instead of, say, collect --- can cause
+      radical changes in the form of the semantics.
+    * The semantics of loop$s always involve calls of [scion]s on lambda
+      objects derived from the when, until, and loop$ body clauses.
+      The scions for simple FOR loop$s are sum$, collect$, always$,
+      thereis$, append$, until$, and when$; the scions for fancy FOR
+      loop$s are sum$+, collect$+, always$+, thereis$+, append$+,
+      until$+, and when$+; and the scion for DO loop$s is do$.
+    * The iteration variables become formals of the lambda objects and
+      standard names are used in place of the user's names.
+
+  Now we drive home these points with some examples.  The next section
+  (see [LP-SECTION-10]) elaborates further.
+
+  Here is the full, formal translation of a simple FOR loop$.
+
+    ACL2 !>:trans (loop$ for x of-type integer in lst
+                         when (evenp x)
+                         collect (* x x))
+
+    (RETURN-LAST
+     'PROGN
+     '(LOOP$ FOR X OF-TYPE INTEGER IN LST
+             WHEN (EVENP X)
+             COLLECT (* X X))
+     (COLLECT$
+       '(LAMBDA (LOOP$-IVAR)
+                (DECLARE (TYPE INTEGER LOOP$-IVAR)
+                         (XARGS :GUARD (INTEGERP LOOP$-IVAR)
+                                :SPLIT-TYPES T)
+                         (IGNORABLE LOOP$-IVAR))
+                (RETURN-LAST 'PROGN
+                             '(LAMBDA$ (LOOP$-IVAR)
+                                       (DECLARE (TYPE INTEGER LOOP$-IVAR))
+                                       (LET ((X LOOP$-IVAR))
+                                            (DECLARE (IGNORABLE X))
+                                            (* X X)))
+                             ((LAMBDA (X) (BINARY-* X X))
+                              LOOP$-IVAR)))
+       (WHEN$ '(LAMBDA (LOOP$-IVAR)
+                       (DECLARE (TYPE INTEGER LOOP$-IVAR)
+                                (XARGS :GUARD (INTEGERP LOOP$-IVAR)
+                                       :SPLIT-TYPES T)
+                                (IGNORABLE LOOP$-IVAR))
+                       (RETURN-LAST 'PROGN
+                                    '(LAMBDA$ (LOOP$-IVAR)
+                                              (DECLARE (TYPE INTEGER LOOP$-IVAR))
+                                              (LET ((X LOOP$-IVAR))
+                                                   (DECLARE (IGNORABLE X))
+                                                   (EVENP X)))
+                                    ((LAMBDA (X) (EVENP X)) LOOP$-IVAR)))
+              LST)))
+
+  However, the logical meaning of this is easier to understand by
+  looking at one of the tc variations.
+
+    ACL2 !>:tc (loop$ for x of-type integer in lst
+                          when (evenp x)
+                          collect (* x x))
+     (COLLECT$ '(LAMBDA (LOOP$-IVAR)
+                        (BINARY-* LOOP$-IVAR LOOP$-IVAR))
+               (WHEN$ '(LAMBDA (LOOP$-IVAR) (EVENP LOOP$-IVAR))
+                      LST))
+    ACL2 !>:tcp (loop$ for x of-type integer in lst
+                           when (evenp x)
+                           collect (* x x))
+     (COLLECT$ (LAMBDA$ (LOOP$-IVAR)
+                        (* LOOP$-IVAR LOOP$-IVAR))
+               (WHEN$ (LAMBDA$ (LOOP$-IVAR)
+                               (EVENP LOOP$-IVAR))
+                      LST))
+    ACL2 !>:tca (loop$ for x of-type integer in lst
+                           when (evenp x)
+                           collect (* x x))
+     (PROG2$
+       '(LOOP$ FOR X OF-TYPE INTEGER IN LST
+               WHEN (EVENP X)
+               COLLECT (* X X))
+       (COLLECT$ (LAMBDA$ (LOOP$-IVAR)
+                    (DECLARE (TYPE INTEGER LOOP$-IVAR)
+                             (XARGS :GUARD (INTEGERP LOOP$-IVAR)
+                                    :SPLIT-TYPES T))
+                    (LET ((X LOOP$-IVAR))
+                         (* X X)))
+                 (WHEN$ (LAMBDA$ (LOOP$-IVAR)
+                           (DECLARE (TYPE INTEGER LOOP$-IVAR)
+                                    (XARGS :GUARD (INTEGERP LOOP$-IVAR)
+                                           :SPLIT-TYPES T))
+                           (LET ((X LOOP$-IVAR))
+                                (EVENP X)))
+                        LST)))
+
+  Note that :tc prints the term generated by translating the loop$ and
+  then removing all tags.  The guard and type declarations are
+  logically irrelevant.  What you see is what the theorem prover will
+  see (if all the necessary warrants are assumed) before it starts to
+  rewrite the term.  Note that the lambda object is just a quoted
+  list constant and the body has been translated so that the * macro
+  was expanded in terms of binary-*.
+
+  :Tcp (``p'' for ``pretty'') introduces familiar system macros.
+
+  :Tca (``a'' for ``annotations'') includes the original loop$
+  statement and shows declarations (if any) and the correspondence
+  between the user's iteration variable (x here) and the formal
+  variable used in the lambda objects generated (loop$-ivar here).
+
+  The translation of loop$ bodies into lambda objects standardizes the
+  variable name, either as loop$-ivar for simple loop$s which have
+  just one iteration variable, or as loop$-gvars and loop$-ivars for
+  fancy loop$s which may have one or more global variables and one or
+  more iteration variables.  We'll deal with fancy loop$s immediately
+  below, but values are passed for loop$-gvars and loop$-ivars as
+  tuples listing all the global values and all the current iteration
+  variable values.
+
+  The advantage of this standardization is that choosing different
+  names for the iteration variables does not affect the formal
+  semantics.
+
+  However, if we make a simple syntactic change, like introducing a
+  global variable by changing the body of the loop$ from (* x x) to
+  (* x a), where a is not an iteration variable, we drastically
+  change the semantics because we've converted the simple loop$ into
+  a fancy loop$.  The (clean and pretty) semantics of
+
+    (loop$ for x in lst when (evenp x) collect (* x a))
+
+  is
+
+    (COLLECT$+ (LAMBDA$ (LOOP$-GVARS LOOP$-IVARS)
+                        (* (CAR LOOP$-IVARS) (CAR LOOP$-GVARS)))
+               (LIST A)
+               (WHEN$+ (LAMBDA$ (LOOP$-GVARS LOOP$-IVARS)
+                                (EVENP (CAR LOOP$-IVARS)))
+                       NIL
+                       (LOOP$-AS (LIST LST))))
+
+  The annotated semantics of that loop$ is
+
+    (PROG2$
+     '(LOOP$ FOR X IN LST
+             WHEN (EVENP X)
+             COLLECT (* X A))
+     (COLLECT$+
+       (LAMBDA$ (LOOP$-GVARS LOOP$-IVARS)
+                (DECLARE (XARGS :GUARD (AND (TRUE-LISTP LOOP$-GVARS)
+                                            (EQUAL (LEN LOOP$-GVARS) 1)
+                                            (TRUE-LISTP LOOP$-IVARS)
+                                            (EQUAL (LEN LOOP$-IVARS) 1))
+                                :SPLIT-TYPES T))
+                (LET ((A (CAR LOOP$-GVARS))
+                      (X (CAR LOOP$-IVARS)))
+                     (* X A)))
+       (LIST A)
+       (WHEN$+ (LAMBDA$ (LOOP$-GVARS LOOP$-IVARS)
+                        (DECLARE (XARGS :GUARD (AND (TRUE-LISTP LOOP$-GVARS)
+                                                    (EQUAL (LEN LOOP$-GVARS) 0)
+                                                    (TRUE-LISTP LOOP$-IVARS)
+                                                    (EQUAL (LEN LOOP$-IVARS) 1))
+                                        :SPLIT-TYPES T))
+                        (LET ((X (CAR LOOP$-IVARS)))
+                             (EVENP X)))
+               NIL
+               (LOOP$-AS (LIST LST)))))
+
+  Logically, we could have typed either of the above terms instead of
+  the fancy loop$.  But operationally, the loop$ executes faster
+  (when guards are verified).
+
+  Notice that the simple scions COLLECT$ and WHEN$ have been replaced
+  by their fancy counterparts, COLLECT$+ and WHEN$+.  The lambda
+  objects now have two formals, one for holding a tuple containing
+  all of the global variable values and one for a tuple holding all
+  of the current iteration variable values.  The global variable
+  value tuple, (LIST A), is passed into the fancy scions if the
+  corresponding lambda object uses globals (as for the collect$+ but
+  not for the when$+ lambda where NIL is passed instead).  The list
+  over which the iteration variable ranges, LST, is now a list of
+  tuples constructed by LOOP$-AS.  Finally, the bodies of the lambdas
+  now access the relevant values with CAR and CDR nests around the
+  global and iteration tuples. (No CDRs appear above because there is
+  only one global and one iteration variable in this example.)
+
+  The following similar but still fancier loop$ illustrates the general
+  situation.  This loop$ has two iteration variables, x and y taking
+  on values from two ranges, xlst, and ylst, and uses two global
+  variables, a and b, in the body.  We've added comments to name the
+  components of the two tuples.
+
+    ACL2 !>:tcp (loop$ for x in xlst
+                       as  y in ylst
+                       when (evenp x)
+                       collect (* x y a b))
+     (COLLECT$+ (LAMBDA$ (LOOP$-GVARS LOOP$-IVARS)
+                         (* (CAR LOOP$-IVARS)               ; x
+                            (CADR LOOP$-IVARS)              ; y
+                            (CAR LOOP$-GVARS)               ; a
+                            (CADR LOOP$-GVARS)))            ; b
+                (LIST A B)
+                (WHEN$+ (LAMBDA$ (LOOP$-GVARS LOOP$-IVARS)
+                                 (EVENP (CAR LOOP$-IVARS))) ; x
+                        NIL
+                        (LOOP$-AS (LIST XLST YLST))))
+
+  Notice how the bodies of the lambda objects now use components of the
+  loop$-gvars and loop$-ivars) for the current values of the global
+  variables a and b and the iteration variables x and y.  The values
+  of x and y are corresponding elements of xlst and ylst as grouped
+  together by (loop$-as (list xlst ylst)).
+
+  For a still-more elaborate FOR loop$ and a step-by-step description
+  of how the value of the formal semantics is computed, go to
+  [lp-section-10].")
+ (LP-SECTION-TODO
+  (LOOP$-PRIMER)
+  "Things We Might Add or Change
+
+
+Notes on Things We Might Want to Add or Change
+
+  I've thought it might be good to add a problem like: define max-loop$
+  with a do loop$ to compute the maximal value in a list of numbers
+  (or nil if the list is empty) and prove that when it returns a
+  non-nil answer that result is at least as large as any element in
+  the list.  But I haven't added that problem yet.
+
+------------------------------
+  Do we want to discuss loop$ performance versus recursive function
+  performance?  If so, do we want to discuss it in the primer or in
+  the general ACL2 documentation?  FYI, here is a simple test of
+  summing the squares of one million integers.  We see that a FOR
+  loop$ beats a DO loop$ which beats a tail-recursive (accumulator
+  using) function.  But this is just one test in CCL.  A true
+  discussion of performance requires more tests, several Common
+  Lisps, and an analysis of the compiled code and experimentation
+  with the declarations.  I haven't done that.
+
+    (include-book \"projects/apply/top\" :dir :system)
+
+    (defconst *one-million-twos* (make-list 1000000 :initial-element 2))
+
+    (defun tail-recursive-sum-squares (lst ans)
+      (declare (type (satisfies integer-listp) lst)
+               (type integer ans))
+      (cond ((endp lst) ans)
+            (t (tail-recursive-sum-squares
+                (cdr lst)
+                (+ (* (the integer (car lst))
+                      (the integer (car lst)))
+                   ans)))))
+
+    (defun for-loop$-sum-squares (lst ans)
+      (declare (type (satisfies integer-listp) lst)
+               (type integer ans))
+      (+ (loop$ for e of-type integer in lst sum (* e e))
+         ans))
+
+    (defun do-loop$-sum-squares (lst ans)
+      (declare (type (satisfies integer-listp) lst)
+               (type integer ans))
+      (loop$ with lst of-type (satisfies integer-listp) = lst
+             with ans of-type integer = ans
+             do
+             (cond ((endp lst) (return ans))
+                   (t (progn (setq ans (+ (* (the integer (car lst))
+                                             (the integer (car lst)))
+                                          ans))
+                             (setq lst (cdr lst)))))))
+
+    ; Now I drop into raw Lisp so we execute the compiled code without
+    ; checking the guard, which is probably about as expensive as
+    ; summing the squares!  Each test ran its respective function 10
+    ; times and after doing all three tests I repeated all three tests.
+    ; So I show two times for each test.
+
+    (value :q)
+
+    (time (progn (tail-recursive-sum-squares *one-million-twos* 0)
+                 (tail-recursive-sum-squares *one-million-twos* 0)
+                 (tail-recursive-sum-squares *one-million-twos* 0)
+                 (tail-recursive-sum-squares *one-million-twos* 0)
+                 (tail-recursive-sum-squares *one-million-twos* 0)
+                 (tail-recursive-sum-squares *one-million-twos* 0)
+                 (tail-recursive-sum-squares *one-million-twos* 0)
+                 (tail-recursive-sum-squares *one-million-twos* 0)
+                 (tail-recursive-sum-squares *one-million-twos* 0)
+                 (tail-recursive-sum-squares *one-million-twos* 0)))
+    ; took 47,278 microseconds (0.047278 seconds) to run.
+    ; took 46,885 microseconds (0.046885 seconds) to run.
+
+    (time (progn (for-loop$-sum-squares *one-million-twos* 0)
+                 (for-loop$-sum-squares *one-million-twos* 0)
+                 (for-loop$-sum-squares *one-million-twos* 0)
+                 (for-loop$-sum-squares *one-million-twos* 0)
+                 (for-loop$-sum-squares *one-million-twos* 0)
+                 (for-loop$-sum-squares *one-million-twos* 0)
+                 (for-loop$-sum-squares *one-million-twos* 0)
+                 (for-loop$-sum-squares *one-million-twos* 0)
+                 (for-loop$-sum-squares *one-million-twos* 0)
+                 (for-loop$-sum-squares *one-million-twos* 0)))
+    ; took 38,910 microseconds (0.038910 seconds) to run.
+    ; took 39,213 microseconds (0.039213 seconds) to run.
+
+    (time (progn (do-loop$-sum-squares *one-million-twos* 0)
+                 (do-loop$-sum-squares *one-million-twos* 0)
+                 (do-loop$-sum-squares *one-million-twos* 0)
+                 (do-loop$-sum-squares *one-million-twos* 0)
+                 (do-loop$-sum-squares *one-million-twos* 0)
+                 (do-loop$-sum-squares *one-million-twos* 0)
+                 (do-loop$-sum-squares *one-million-twos* 0)
+                 (do-loop$-sum-squares *one-million-twos* 0)
+                 (do-loop$-sum-squares *one-million-twos* 0)
+                 (do-loop$-sum-squares *one-million-twos* 0)))
+    ; took 44,545 microseconds (0.044545 seconds) to run.
+    ; took 43,769 microseconds (0.043769 seconds) to run.
+
+------------------------------
+  I feel like pointing out that prior to the creation of this primer
+  there were over 60 pages of documentation directly describing
+  loop$, specifically the topics [loop$], [for-loop$], [do-loop$],
+  [loop$-recursion], and [loop$-recursion-induction].  I think this
+  primer is valuable because of the examples and problems, and
+  perhaps it is easier to get started than to wade straight in.  But
+  I'm not convinced it's worth saying.")
  (MACRO-ALIASES-TABLE
   (MACROS)
   "A [table] used to associate function names with macro names
@@ -92559,8 +98182,30 @@ Changes at the System Level
   documentation.  Thanks to Eric Smith for suggesting this
   enhancement.
 
+  Significant new [documentation] topics, together with subtopics and
+  books supporting those topics, include the following.  Note that
+  their release was approved by DARPA with ``DISTRIBUTION STATEMENT
+  A. Approved for public release. Distribution is unlimited.''
+
+    * [Start-here] provides a guide for those getting started with ACL2.
+    * [Recursion-and-induction] has been extensively modified from past,
+      standalone versions by J Moore, and is now integrated with the
+      rest of the [documentation].  Thanks to Vivek Ramanathan for
+      helpful feedback.
+    * [Gentle-introduction-to-acl2-programming] has also been updated from
+      past standalone versions and integrated into the rest of the
+      documentation.
+    * [Loop$-primer] provides an extensive primer on the the ACL2 [loop$]
+      feature.
+
 
 EMACS Support
+
+  A set of tools for assisting in the conversion of certain HTML to
+  [xdoc] may be found, without much documentation, in
+  emacs/html-to-xdoc.el.  Note that its release was approved by DARPA
+  with ``DISTRIBUTION STATEMENT A. Approved for public release.
+  Distribution is unlimited.''
 
 
 Experimental Versions")
@@ -100535,6 +106180,9 @@ Subtopics
   [Loop$]
       Iteration with an analogue of the Common Lisp loop macro
 
+  [Loop$-primer]
+      Primer for using [loop$]
+
   [Mbe]
       Attach code for execution
 
@@ -105105,6 +110753,3257 @@ Subtopics
       Obtain the object being quoted")
  (QUOTEP (POINTERS)
          "See [system-utilities].")
+ (R-AND-I-ABBREVIATIONS-FOR-TERMS
+  (RECURSION-AND-INDUCTION)
+  "Recursion and Induction: Abbreviations for Terms
+
+  If x  is t, nil, an integer, a character object, or a string, and x
+  is used where a term is expected, then x  abbreviates the quoted
+  constant 'x.  Recall that a single quote mark followed by a symbol,
+  e.g., 'load, is a quoted constant.
+
+  In the following, an expression  is an integer, a character object,
+  a string, a symbol, an optionally dotted parenthesized sequence of
+  expressions, or a single quote mark followed by an expression.  By
+  optionally dotted parenthesized sequence of expressions we mean a
+  parenthesized non-empty sequence of expressions, optionally
+  containing a dot (.) between the last two expressions in the
+  sequence.  For example ``(A 123 . B)'' and ``(A (123 B) 'C)'' are
+  both optionally dotted parenthesized sequences of expressions.
+
+  A single quote mark followed by an optionally dotted parenthesized
+  sequence of expressions, when used as a term, denotes a cons term
+  as follows, using these four rules:
+
+  NULL Rule:  If '() is used as a term, it abbreviates 'nil.
+
+  Singleton Rule:  If '(x) is used as a term it abbreviates (cons 'x
+  'nil).
+
+  Dotted Pair Rule:  If '(x  . y) is used as a term it abbreviates
+  (cons 'x  'y).
+
+  List Rule:  If '(x  \\alpha) is used as a term and \\alpha  is any
+  non-empty sequence of expressions it abbreviates (cons 'x
+  '(\\alpha)).  Note the new pair of parentheses around \\alpha.
+
+  Thus, for example, the rules above mean that if '(A B C) is used as
+  a term then it denotes (cons 'A '(B C)), which denotes (cons 'A
+  (cons 'B '(C))), which denotes (cons 'A (cons 'B (cons 'C 'nil))).
+
+  If '(A B . C) is used as a term it denotes (cons 'A (cons 'B 'C)).
+
+  It remains to deal with cases like ''A and ''(A 'B) involving
+  multiple single quote marks.  We do not expect to use such
+  expressions in this course but we specify their meaning just for
+  completeness.
+
+  Let \\alpha  be an expression that does not start with a single quote
+  mark.  Consider a sequence of two or more single quote marks
+  followed by \\alpha and suppose it is used as a term.  It denotes a
+  cons derived as follows.  Replace \\alpha  and the single quote mark
+  immediately before it with (quote \\alpha).  Repeat that replacement
+  until all but the first single quote mark remains.  Then apply the
+  four rules above.
+
+  Thus, ''(A 'B), when used as a term, denotes the term derived by the
+  following sequence of steps
+
+  ''(A 'B)
+  '(quote (A 'B))
+  (cons 'quote '((A 'B)))
+  (cons 'quote (cons '(A 'B) 'nil))
+  (cons 'quote (cons (cons 'A '('B)) 'nil))
+  (cons 'quote (cons (cons 'A (cons ''B 'nil)) 'nil))
+  (cons 'quote (cons (cons 'A (cons '(quote B) 'nil)) 'nil))
+  (cons 'quote (cons (cons 'A (cons (cons 'quote '(B)) 'nil)) 'nil))
+  (cons 'quote (cons (cons 'A (cons (cons 'quote (cons 'B 'nil)) 'nil))
+  'nil))
+
+  Note that every occurrence of single quote now marks a quoted
+  constant.
+
+  When (list x_1   ... ) is used as a term, it abbreviates (cons x_1
+  (list  ... )).  When (list) is used as a term, it abbreviates nil.
+  Thus (list a b c) abbreviates (cons a (cons b (cons c nil))).
+
+  And and or will be defined as function symbols of two arguments.
+  But if and is used as though it were a function symbol of more than
+  two arguments, then it abbreviates the corresponding
+  right-associated nest of ands.  Thus, (and p q r s), when used
+  where a term is expected, abbreviates (and p (and q (and r s))).
+
+  If or is used as though it were a function symbol of more than two
+  arguments, then it abbreviates the corresponding right-associated
+  nest of ors.
+
+  (Maybe explore term abbreviation in ACL2?  But abbreviation is
+  complicated in ACL2 by the presence of a powerful macro facility.
+  To learn about ACL2 term abbreviation, explore <<[term]>>, paying
+  special attention to ``untranslated'' terms.  Maybe also explore
+  <<[macros]>>.)
+
+  Problem 7.
+  Show the term abbreviated by each of the following:
+
+   1. (cons 1 '(2 3))
+   2. (equal \"Hello\" hello)
+   3. (and (or a1 a2 a3) (or b1 b2 b3) (or c1 c2 c3))
+   4. (equal x '(or a1 a2 a3))
+   5. (cons cons '(cons cons 'cons))
+
+  The art of displaying a Lisp term in a way that it can be easily
+  read by a person is called pretty printing.  We recommend the
+  following heuristics.  First, write clearly and count your
+  parentheses.  Second, try never to write a single line with more
+  than about 30 non-blank characters on it.  Third, if a function
+  call will not fit on a line, break it into multiple lines,
+  indenting each argument the same amount.
+
+  Below we show one term pretty printed with successively narrower
+  margins.  (Note that the display is a term only if app is a
+  function symbol of arity two.)  We find the second and third lines
+  of the first display below excessively long.  Each display shows
+  exactly the same term.  Note how we break terms to indent arguments
+  the same amount and how we sometimes slide the arguments under the
+  function symbol to save horizontal space.  Personally, we find the
+  second display below (the one labeled ``width 46'') the easiest to
+  read.  We show the others merely to illustrate how more space can
+  be saved when one finds oneself close to the right margin.
+
+      |<---------------------------- width 70 ---------------------------->|
+
+      (IMPLIES (AND (CONSP A)
+                    (EQUAL (APP (APP (CDR A) B) C) (APP (CDR A) (APP B C))))
+               (EQUAL (APP (APP A B) C) (APP A (APP B C))))
+
+      |<---------------- width 46 ---------------->|
+
+      (IMPLIES (AND (CONSP A)
+                    (EQUAL (APP (APP (CDR A) B) C)
+                           (APP (CDR A) (APP B C))))
+               (EQUAL (APP (APP A B) C)
+                      (APP A (APP B C))))
+
+      |<------------ width 38 ------------>|
+
+      (IMPLIES
+       (AND (CONSP A)
+            (EQUAL (APP (APP (CDR A) B) C)
+                   (APP (CDR A) (APP B C))))
+       (EQUAL (APP (APP A B) C)
+              (APP A (APP B C))))
+
+      |<---------- width 34 ---------->|
+
+      (IMPLIES
+       (AND
+        (CONSP A)
+        (EQUAL (APP (APP (CDR A) B) C)
+               (APP (CDR A) (APP B C))))
+       (EQUAL (APP (APP A B) C)
+              (APP A (APP B C))))
+
+      |<------- width 28 ------->|
+
+      (IMPLIES
+       (AND
+        (CONSP A)
+        (EQUAL
+         (APP (APP (CDR A) B) C)
+         (APP (CDR A) (APP B C))))
+       (EQUAL
+        (APP (APP A B) C)
+        (APP A (APP B C))))
+
+      |<---- width 23 ----->|
+
+      (IMPLIES
+       (AND
+        (CONSP A)
+        (EQUAL
+         (APP (APP (CDR A) B)
+              C)
+         (APP (CDR A)
+              (APP B C))))
+       (EQUAL
+        (APP (APP A B) C)
+        (APP A (APP B C))))
+
+  Next: Function Definitions (see [R-AND-I-FUNCTION-DEFINITIONS]) (or
+  Table of Contents (see [R-AND-I-TABLE-OF-CONTENTS]))")
+ (R-AND-I-ACL2-ARITHMETIC
+  (R-AND-I-ARITHMETIC)
+  "Recursion and Induction: ACL2 Arithmetic
+
+  The techniques we have studied so far suffice to prove the most
+  elementary facts of natural number arithmetic.  In fact, we could
+  conduct our entire study of recursion and induction in the domain
+  of number theory.  But it is more fun to deal with less familiar
+  ``data structures'' where basic properties can be discovered.  So
+  we will skip past formal arithmetic with a few brief remarks.
+
+  ACL2 provides the numbers as a data type distinct from conses,
+  symbols, strings, and characters.  They are not lists of nils!  The
+  naturals are among the integers, the integers are among the
+  rationals, and the rationals are among the ACL2 numbers.  The
+  complex rationals are also among the ACL2 numbers; in fact they are
+  complex numbers whose real and imaginary parts are rational and
+  whose imaginary parts are non-0.
+
+  Here are a few commonly used functions in ACL2.
+
+      (natp x) - recognizes natural numbers
+
+      (integerp x) - recognizes integers
+
+      (rationalp x) - recognizes rationals
+
+      (zp x) - t if x is 0 or not a natural; nil otherwise
+
+      (nfix x) - x if x is a natural; 0 otherwise
+
+      (+ x y) - sum of the numbers x and y
+
+      (- x y) - difference of the numbers x and y
+
+      (* x y) - product of the numbers x and y
+
+      (/ x y) - rational quotient of the numbers x and y
+
+      (< x y) - predicate recognizing that the number x is less than the
+      number y
+
+      (<= x y) - predicate recognizing that the number x is less than or
+      equal to the number y
+
+  The functions +, -, *, /, <, and <= default their arguments to 0 in
+  the sense that if some argument is not an ACL2 number then 0 is
+  used instead.
+
+  The predicate zp is commonly used in recursive definitions that
+  treat an argument as though it were a natural number and count it
+  down to zero.
+
+  Here is a ``definition'' that accesses the nth element of a list,
+  treating n as a natural.  (This definition is unacceptable under
+  our current Principle of Structural Recursion because (consp x)
+  does not rule the recursive call.  We will return to this point
+  momentarily.)
+
+      (defun nth (n x)
+        (if (zp n)
+            (car x)
+            (nth (- n 1) (cdr x))))
+
+  Thus, (nth 2 '(A B C D)) is C.  (Nth 0 '(A B C D)) is A.
+  Interestingly, (nth -1 '(A B C D)) is also A, because -1 satisfies
+  zp.  Thus, we can use nth with any first argument.  (In ACL2, nth
+  is defined differently, but equivalently.)
+
+  The numbers are axiomatized with the standard axioms for rational
+  fields.  See [reference 3] (see [R-AND-I-ANNOTATED-BIBLIOGRAPHY]).
+
+  Henceforth, you may use arithmetic freely in your proofs and assume
+  any theorem of ACL2 arithmetic.  That is, you may assume any ACL2
+  theorem that can be written with the function symbols described
+  above and use it in routine arithmetic simplification.  But be
+  careful about what you assume!
+
+  For example, the following familiar arithmetic facts are not (quite)
+  theorems:
+
+      (equal (+ x 0) x)                ; Additive Identity
+
+      (iff (equal (+ x y) (+ x z))     ; Additive Cancellation
+           (equal y z))
+
+    Why aren't the formulas above theorems?
+
+  In addition, the following strange fact is a theorem:
+
+      (not (equal (* x x) 2))
+
+  That is, we can prove that the square root of 2 is not rational and
+  hence not in ACL2.
+
+  (Maybe explore ACL2 arithmetic?  You won't need ACL2 arithmetic
+  libraries to do the problems here.  But that is good because there
+  is probably not an area of mathematics that the typical computer
+  science student knows better than arithmetic.  Furthermore, you
+  likely know much more about arithmetic than ACL2 does when it is
+  first fired up.  Its performance can be improved by including
+  ``certified books'' of definitions and theorems about arithmetic.
+  The ACL2 Community Books Repository [4] contains thousands of books
+  created by the community.  To load a book into an ACL2 session the
+  command <<[include-book]>> is used.  But there are many kinds of
+  arithmetic books to choose from depending on what sort of
+  operations are involved in your conjectures.  You might explore
+  books on elementary <<[arithmetic]>> including some number theory
+  books, or books on the arithmetic of <<bit-vectors>> (which deal
+  with concepts like shifting or bitwise logical operations on
+  number), or floating point books (see <<rtl>>; these are useful for
+  verifying implementations of floating point operations) or a book
+  on the <<[gl]>> utility (which provides a bit-blaster for finite
+  arithmetic), or <<algebra>> books (e.g., properties of rings and
+  fields), to name a few.)
+
+  Next: Inadequacies of Structural Recursion (see
+  [R-AND-I-INADEQUACIES-OF-STRUCTURAL-RECURSION]) (or Table of
+  Contents (see [R-AND-I-TABLE-OF-CONTENTS]))")
+ (R-AND-I-ANNOTATED-BIBLIOGRAPHY
+  (RECURSION-AND-INDUCTION)
+  "Recursion and Induction: Annotated Bibliography
+
+
+Annotated Bibliography
+
+  The following resources are useful for understanding the ACL2 logic
+  and theorem prover, as well as its relation to both the earlier
+  Nqthm logic and the Common Lisp programming language.  These
+  resources are not necessary for you to do the exercises in these
+  notes.  But if you are considering learning how to use the ACL2 or
+  just wondering why anyone would bother, you might browse this
+  annotated bibliography.
+
+    * [0] R. S. Boyer and J S. Moore.
+      A Computational Logic Handbook.
+      Academic Press, London, 1997 (Second Edition).
+      See {https://www.cs.utexas.edu/users/boyer/ftp/nqthm/ |
+      https://www.cs.utexas.edu/users/boyer/ftp/nqthm/}
+      for source code and regression suite
+      This book is the user's manual for the Boyer-Moore theorem prover,
+      Nqthm, of the 1980s.  The ACL2 project started in 1989, when
+      Boyer and Moore set themselves the goal of re-implementing
+      Nqthm so that it supported an efficient, functional
+      (applicative) subset of Common Lisp and was coded in that same
+      subset.  (They almost succeeded but had to use imperative code
+      to implement functional versions of some utilities.)  So this
+      reference, [0], describes the precursor of ACL2.  This book is
+      the second edition of the Nqthm manual which was first
+      published in 1988.  The url above contains the Nqthm source
+      code and input and output files for the prover.  Most of these
+      files were developed by the Nqthm user community.  The files
+      include many proofs of classic list-processing and elementary
+      number theory theorems but also proofs of Goedel's
+      incompleteness theorem, Gauss's law of quadratic reciprocity,
+      the Paris-Harrington Ramsey theorem, and the ``verified stack''
+      of Computational Logic, Inc.  The verified stack, completed in
+      1992, consisted of a gate-level implementation of a
+      microprocessor, an assembler, linker, and loader, several
+      compilers, an operating system, and some applications, all of
+      which were verified with Nqthm to ``stack'' so that a theorem
+      proved about an application written in one of two high level
+      languages and proved correct with respect to that high-level
+      semantics runs correctly on the microprocessor.  These results
+      are only briefly mentioned in [0] but that book does contain
+      citations that describe them in detail.  Further development of
+      Nqthm was halted because Nqthm users were building formal
+      models that were so big they strained the capacity of the
+      prover and were too slow to run as simulators for the modeled
+      systems.  For example, when the ACL2 project was getting
+      started, a student of Boyer was formalizing the Motorola 68020
+      micrprocessor with the goal of verifying the Berkeley C String
+      Library.  (That Nqthm project was completed successfully in
+      1993 and the files are available at the url above.)
+
+    * [1] M. Kaufmann, P. Manolios, and J S. Moore, editors.
+      Computer-Aided Reasoning: ACL2 Case Studies.
+      Kluwer Academic Press, Boston, MA., 2000.
+      See
+      {https://www.cs.utexas.edu/users/moore/publications/acl2-books/acs/index.html
+      |
+      https://www.cs.utexas.edu/users/moore/publications/acl2-books/acs/index.html}.
+      This book is a collection of papers by ACL2 users, assembled in
+      2000, describing, in a textbook-like style. applications of
+      ACL2.  It contains examples from graph theory, calculus, model
+      checking, language simulators, microprocessor design including
+      hardware description languages, floating-point implementations,
+      compiler verification, and other topics.  While the Kluwer
+      hardback edition of the book is out of print, the url above
+      includes instructions for obtaining a paperback copy (for which
+      the authors of [1] and [2] hold the copyright).
+
+    * [2] M. Kaufmann, P. Manolios, and J S. Moore.
+      Computer-Aided Reasoning: An Approach.
+      Kluwer Academic Press, Boston, MA., 2000.
+      
+      {https://www.cs.utexas.edu/users/moore/publications/acl2-books/car/index.html
+      |
+      https://www.cs.utexas.edu/users/moore/publications/acl2-books/car/index.html}.
+      This book is essentially a textbook for students wishing to learn
+      how to use the ACL2 system.  It starts with a description of
+      the ACL2 programming language, then formalizes the logic with
+      axioms and rules of inference, and then discusses how to prove
+      theorems with the system.  The book includes exercises.  While
+      the Kluwer hardback edition of the book is out of print, the
+      url above includes instructions for obtaining a paperback copy
+      (for which the authors of [1] and [2] hold the copyright).
+
+    * [3] M. Kaufmann and J S. Moore.
+      A precise description of the ACL2 logic.
+      In
+      {https://www.cs.utexas.edu/users/moore/publications/km97a.pdf |
+      https://www.cs.utexas.edu/users/moore/publications/km97a.pdf}
+      Dept. of Computer Science, University of Texas at Austin,
+      1997.
+      The title says it all.  The ACL2 logic is a first-order logic of
+      total recursive functions providing mathematical induction and
+      several extension principles including symbol package
+      definition and recursive function definition.  The logic is a
+      formalization of an extension of a functional subset of Common
+      Lisp.  This paper describes the logic in detail, more in the
+      style of a logic book than the style used in these notes.  The
+      paper also explains the connection between theorems in the
+      logic and evaluation in Common Lisp, which very roughly
+      speaking is that, given enough time and computing resources,
+      any instance of a guard-verified (aka a ``gold'' theorem in the
+      terminology of this 1997 paper) will compute to non-nil in
+      Common Lisp.  (Maybe explore <<[verify-guards]>>?)
+
+    * [4] M. Kaufmann and J S. Moore.
+      The ACL2 home page.
+      {http://www.cs.utexas.edu/users/moore/acl2/ |
+      http://www.cs.utexas.edu/users/moore/acl2/}
+      Dept. of Computer Science, University of Texas at Austin,
+      2022.
+      This web page contains the latest release of the ACL2 system in
+      Common Lisp source code form.  The system is largely
+      implemented in the subset of Common Lisp the prover supports.
+      ACL2 is distributed without fee under a 3-clause BSD license.
+      A new release is currently made about once per year and the web
+      page also contains links to all past releases going back to
+      1996.  The home page includes instructions for installing any
+      of several Common Lisp implementations and instructions for
+      downloading and building ACL2.  The web page contains the
+      online user's manual and instructions for how to download the
+      regression suite from {the ACL2 GitHub repository |
+      https://github.com/acl2/acl2}.  The regression suite, called
+      the ACL2 <<[Community-Books]>>, contains thousands of verified
+      files created by the ACL2 user community containing definitions
+      and theorems.  If you scan down to the Subtopics section of the
+      <<top>> node of the manual you will find a list of many topics
+      for which certified <<[books]>> are available.  To take just
+      one example from that top-level list of Subtopics, scroll down
+      to Hardware Verification.  In that Subtopic you find
+      directories dealing with symbolic simulation, register transfer
+      logic (including tools for reasoning about floating point
+      implementations), a Verilog translator, an x86 ISA model, and
+      many other topics.  There are many other nodes besides Hardware
+      Verification.  In fact, the tree of books listed among the
+      Subtopics is simply too big and too rapidly changing to try to
+      summarize here.  We encourage you to explore, or ask
+      <<[ACL2-help]>> about resources (if any) for a particular
+      topic.
+
+    * [5] P. Manolios and D. Vroon.
+      Ordinal arithmetic in acl2.
+      In ACL2 Workshop 2003, Boulder, Colorado, July 2003.
+      {http://www.cs.utexas.edu/users/moore/acl2/workshop-2003/ |
+      http://www.cs.utexas.edu/users/moore/acl2/workshop-2003/}.
+      The termination of recursive functions in ACL2 and the induction
+      principle are both based on the ordinals and the
+      well-foundedness of ordinal ``less than''.  The description of
+      ACL2 in [2] above includes a formalization of the ordinals up
+      to \\epsilon_0 (``epsilon naught'') represented in ACL2 with
+      conses and natural numbers based on a version of Cantor Normal
+      Form.  That representation was superceded in 2004 by the
+      representation described in this paper, which implements a
+      slightly different version of the normal form that is
+      exponentially more efficient.  The paper also describes
+      algorithms for manipulating ordinals in this representation.
+
+    * [6] K. Pitman (editor).
+      Common Lisp Hyper Spec.
+      LispWorks, Ltd, 1996.
+      {http://www.lispworks.com/documentation/HyperSpec/Front/ |
+      http://www.lispworks.com/documentation/HyperSpec/Front/}.
+      This is an online hypertext presentation of the Common Lisp
+      specification as described in [7].
+
+    * [7] G. L. Steele, Jr.
+      Common Lisp The Language, Second Edition.
+      Digital Press, 30 North Avenue, Burlington, MA.  01803, 1990.
+      This is the definitive specification of Common Lisp.  ACL2 only
+      formalizes a small subset of the language described by Steele.
+      But ACL2's documentation of some primitives refers to Steele's
+      descriptions.  By the way, we do not recommend the ACL2
+      documentation as a way to learn to how to program in full
+      Common Lisp.  Indeed, we don't recommend [6] or [7] for that
+      purpose either.  Many good introductions to Common Lisp are
+      available via the web.  There are many implementations of
+      Common Lisp available and the installation instructions on the
+      {ACL2 home page | http://www.cs.utexas.edu/users/moore/acl2/}
+      list several.
+    * [8] W. A. Hunt, Jr., M. Kaufmann, J S. Moore and A. Slobodova.
+      Industrial Hardware and Software Verification with ACL2.
+      In Verified Trustworthy Software Systems, P. Gardner, P.
+      O'Hearn, M. Gordon,
+      G. Morrisett and F. B. Schneider, Phil. Trans. R. Soc. A,
+      375, The Royal Society,
+      ISSN 1364-503X, DOI 10.1098/rsta.2015.0399 (Article Number
+      20150399), 2017.
+      The ACL2 system has seen sustained industrial use since the
+      mid-1990s. Companies that have used ACL2 regularly include AMD,
+      Centaur Technology, IBM, Intel, Kestrel Institute,
+      Motorola/Freescale, Oracle and Collins (formerly Rockwell
+      Collins).  This paper describes how ACL2 came to be used in
+      industry, what it is used for, and how it is used.  The paper
+      highlights ACL2's use in the microprocessor industry,
+      specifically by Centaur Technology on modules in their x86
+      microprocessors.  The paper was written in 2017.  Since then
+      the formal verification team at Centaur Technology has moved to
+      Intel, where ACL2 is used in the same way today (2022).
+
+Table of Contents (see [R-AND-I-TABLE-OF-CONTENTS])")
+ (R-AND-I-ARITHMETIC
+  (RECURSION-AND-INDUCTION)
+  "Recursion and Induction: Arithmetic
+
+  We will next discuss arithmetic, in two steps.  First, we'll
+  challenge you to use what we have already got to define ``natural
+  numbers'' (non-negative integers) and the elementary operations on
+  them.  This is called ``Peano'' arithmetic after the 19th century
+  Italian mathematician Giuseppe Peano who first wrote down formal
+  axioms describing the natural numbers.
+
+  After you've explored the foundations of arithmetic, we'll talk about
+  briefly about the more familiar arithmetic of integers and
+  rationals.
+
+  Next: Peano Arithmetic (see [R-AND-I-PEANO-ARITHMETIC]) (or Table of
+  Contents (see [R-AND-I-TABLE-OF-CONTENTS]))
+
+
+Subtopics
+
+  [R-and-i-peano-arithmetic]
+      Recursion and Induction: Peano Arithmetic
+
+  [R-and-i-ACL2-arithmetic]
+      Recursion and Induction: ACL2 Arithmetic")
+ (R-AND-I-AXIOMS
+  (RECURSION-AND-INDUCTION)
+  "Recursion and Induction: Axioms
+
+  A formal mathematical theory is given by a formal syntax for
+  formulas, a set of formulas designated as axioms, and some formula
+  manipulation rules of inference that allow one to derive new
+  formulas from old ones.  A proof  of a formula p  is a derivation
+  of p  from the given axioms using the given rules of inference.  If
+  a formula can be proved, it is said to be a theorem.  Formulas are
+  given semantics similar to those described for terms.  Given an
+  assignment of values to variable symbols and an interpretation of
+  the function symbols, every formula is given a truthvalue by the
+  semantics.  Given an interpretation, a formula is valid if it is
+  given the value true under every possible assignment to the
+  variable symbols.  A model of a theory is an interpretation that
+  makes all the axioms valid.  Provided the rules of inference are
+  validity preserving, every theorem is valid, i.e., always true.
+
+  We assume you know all that, and won't go into it further.  The
+  whole point of a practical formal theory is to use proof to
+  determine truth: one way to determine if a formula is true is to
+  prove it.
+
+  If \\alpha  and \\beta  are terms, then \\alpha  = \\beta  is a formula.
+  If p  and q  are formulas, then each of the following is a formula:
+
+    * p --> q
+    * p & q
+    * p \\/ q
+    * ~p
+    * p <-> q.
+
+  If \\alpha  and \\beta  are terms, then \\alpha != \\beta  is just an
+  abbreviation for the formula ~(\\alpha  = \\beta).
+
+  We extend the notation term/\\sigma  in the obvious way so that we
+  can apply substitution \\sigma  to formulas, replacing all the
+  variables bound by \\sigma  in all the terms of the formula.
+
+  The axioms we will use for the initial part of our study are given
+  below.  Note that Axioms 1 and 8 are actually axiom schemas, i.e.,
+  they describe an infinite number of axioms.
+
+      Axiom	|  1.	|  '\\alpha  != '\\beta,	|
+      	|  	|  where \\alpha  and \\beta  are distinct integers, characters, strings,
+      or symbols	|
+      Axiom	|  2.	|  x != nil --> (if x y z) = y	|
+      Axiom	|  3.	|  x = nil --> (if x y z) = z	|
+      Axiom	|  4.	|  (equal x y) = nil \\/ (equal x y) = t	|
+      Axiom	|  5.	|  x = y <-> (equal x y) = t	|
+      Axiom	|  6.	|  (consp x) = nil \\/ (consp x) = t	|
+      Axiom	|  7.	|  (consp (cons x y)) = t	|
+      Axiom	|  8.	|  (consp '\\alpha) = nil,	|
+      	|  	|  where \\alpha  is an integer, character, string, or symbol	|
+      Axiom	|  9.	|  (car (cons x y)) = x	|
+      Axiom	|  10.	|  (cdr (cons x y)) = y	|
+      Axiom	|  11.	|  (consp x) = t --> (cons (car x) (cdr x)) = x	|
+      Axiom	|  12.	|  (consp x) = nil --> (car x) = nil	|
+      Axiom	|  13.	|  (consp x) = nil --> (cdr x) = nil	|
+
+  One axiom described by Axiom (schema) 1 is 't != 'nil.  Others are
+  'nil != '3 and '\"Hello\" != 'Hello.  We refer to all of these as
+  Axiom 1.
+
+  One axiom described by Axiom (schema) 8 is (consp 'nil) = nil.
+  Others are (consp '3) = nil and (consp 'Hello) = nil.  We refer to
+  all of these as Axiom 8.
+
+  Note that if \\phi  is an axiom or theorem and \\sigma  is a
+  substitution, then \\phi/\\sigma  is a theorem, by the Rule of
+  Instantiation.
+
+  We assume you are familiar with the rules of inference for
+  propositional calculus and for equality.  For example, we take for
+  granted that you can recognize simple proposititional tautologies,
+  reason by cases, and substitute equals for equals.
+
+  For example, we show a theorem below that you should be able to
+  prove, using nothing but your knowledge of propositional calculus
+  and equality (and Axiom 1).
+
+  The proof shown below uses the Deduction Law of propositional
+  calculus: we can prove p --> q  by assuming p  as a ``Given'' and
+  deriving q.
+
+      Theorem.
+      (consp x) = t & x = (car z) --> (consp (car z)) != nil
+
+      Proof.
+
+      1.	|  	|  (consp x) = t	|  	|  {Given}	|
+      2.	|  	|  x = (car z)	|  	|  {Given}	|
+      3.	|  	|  t != nil	|  	|  {Axiom 1}	|
+      4.	|  	|  (consp x) != nil	|  	|  {Equality Substitution, line 1 into line 3}	|
+      5.	|  	|  (consp (car z)) != nil	|  	|  {Equality Substitution, line 2 into line 4}	|
+      	|  	|  Q.E.D.	|  	|  	|
+
+  We will not write proofs in this style.  We will simply say that the
+  formula is a theorem ``by propositional calculus, equality, and
+  Axiom 1.''
+
+  Recall that each function definition adds an axiom.  The definition
+
+      (defun tree-copy (x)
+        (if (consp x)
+            (cons (tree-copy (car x))
+                  (tree-copy (cdr x)))
+            x))
+
+  adds the axiom
+
+      Axiom tree-copy
+      (tree-copy x)
+      =
+      (if (consp x)
+          (cons (tree-copy (car x))
+                (tree-copy (cdr x)))
+          x)
+
+  Thus, by the Rule of Instantiation
+
+      Theorem.
+      (tree-copy (cons a b))
+      =
+      (if (consp (cons a b))
+          (cons (tree-copy (car (cons a b)))
+                (tree-copy (cdr (cons a b))))
+          (cons a b))
+
+  Next: Terms as Formulas (see [R-AND-I-TERMS-AS-FORMULAS]) (or Table
+  of Contents (see [R-AND-I-TABLE-OF-CONTENTS]))")
+ (R-AND-I-CHARACTERS
+  (R-AND-I-DATA-TYPES)
+  "Recursion and Induction: Characters
+
+  We will not use character objects in this document.  In case you
+  come across such an object in your exploration of ACL2, some
+  characters are #\\a, #\\A, #\\Newline and #\\Space.  It is actually
+  possible in ACL2 to ``construct'' and ``deconstruct'' characters in
+  terms of naturals.  For example, one can construct #\\A from 65, the
+  ASCII code for uppercase `A'.
+
+  (Maybe explore <<[characters]>>?)
+
+  Next: Strings (see [R-AND-I-STRINGS]) (or Table of Contents (see
+  [R-AND-I-TABLE-OF-CONTENTS]))")
+ (R-AND-I-DATA-TYPES
+  (RECURSION-AND-INDUCTION)
+  "Recursion and Induction: Data Types
+
+  ACL2 provides five data types: numbers, characters, strings, symbols,
+  and ordered pairs.
+
+  Next: Numbers (see [R-AND-I-NUMBERS]) (or Table of Contents (see
+  [R-AND-I-TABLE-OF-CONTENTS]))
+
+
+Subtopics
+
+  [R-and-i-numbers]
+      Recursion and Induction: Numbers
+
+  [R-and-i-characters]
+      Recursion and Induction: Characters
+
+  [R-and-i-strings]
+      Recursion and Induction: Strings
+
+  [R-and-i-symbols]
+      Recursion and Induction: Symbols
+
+  [R-and-i-pairs]
+      Recursion and Induction: Pairs
+
+  [R-and-i-identity]
+      Recursion and Induction: Identity
+
+  [R-and-i-data-types-exercises]
+      Recursion and Induction: Data Types Exercises")
+ (R-AND-I-DATA-TYPES-EXERCISES
+  (R-AND-I-DATA-TYPES)
+  "Recursion and Induction: Data Types Exercises
+
+  Problem 1.
+  Each of the utterances below is supposed to be a single object.  Say
+  whether it is a number, string, symbol, pair, or ill-formed (i.e.,
+  does not represent a single object in our language).
+
+   1. Monday
+   2. \\pi
+   3. HelloWorld!
+   4. --1
+   5. -1
+   6. *PI*
+   7. 31415x10**-4
+   8. (A . B . C)
+   9. Hello World!
+  10. if
+  11. invokevirtual
+  12. ((1) . (2))
+  13. <=
+  14. ((A . 1) (B . 2) (C . 3))
+  15. Hello_World!
+  16. +
+  17. lo-part
+  18. 31415926535897932384626433832795028841971693993751058209749445923
+  19. (1 . (2 . 3))
+  20. (1 . 2 3)
+  21. \"Hello World!\"
+  22. ((1) (2) . 3)
+  23. ()
+
+  Problem 2.
+  Group the constants below into equivalence classes.  That is, some
+  items below are equal to others even though they are displayed
+  differently; group equal constants together.
+
+   1. (1 . (2 3))
+   2. (nil . (nil nil))
+   3. ((nil nil) . nil)
+   4. (1 (2 . 3) 4)
+   5. (nil nil)
+   6. (1 (2 . 3) . (4 . ()))
+   7. (HelloWorld !)
+   8. (1 (2 3 . ()) 4)
+   9. ((A . t) (B . nil)(C . nil))
+  10. (()())
+  11. (1 2 3)
+  12. (() () . nil)
+  13. (A B C)
+  14. (a . (b . (c)))
+  15. (HELLO WORLD !)
+  16. ((a . t) (b) . ((c)))
+
+  Next: Terms (see [R-AND-I-TERMS]) (or Table of Contents (see
+  [R-AND-I-TABLE-OF-CONTENTS]))")
+ (R-AND-I-DEFINITIONAL-PRINCIPLE
+  (RECURSION-AND-INDUCTION)
+  "Recursion and Induction: The Definitional Principle
+
+  Below we give a new definitional principle that subsumes the
+  previously given Principle of Structural Recursion.
+
+  The definition
+
+  (defun f  (v_1 ... v_n) \\beta)
+
+  is admissible  if and only if
+
+   1. f  is a new function symbol,
+   2. the v_i  are distinct variable symbols,
+   3. \\beta  is a term that mentions no variable other than the v_i  and
+      calls no new function symbol other than (possibly) f, and
+   4. there is a term m  (called the measure) such that the following are
+      theorems:
+
+        * Ordinal Conjecture
+
+          (o-p m)
+
+        * Measure Conjecture(s)  For each recursive call of (f a_1 ... a_n) in
+          \\beta  and the conjunction q  of tests ruling it,
+
+          (implies q  (o< m/\\sigma  m))
+
+          where \\sigma  is {v_1<--a_1,  ... , v_n<--a_n}.
+
+  If that definition is admissible, then it adds the axiom:
+
+  (f  v_1 ... v_n) = \\beta.
+
+  In each of the problems below, admit the proposed definition, i.e.,
+  identify the measure and prove the required theorems.
+
+  (Maybe explore <<[defun]>>?  Note in particular how the user can
+  explicitly specify the measure and well-founded relation alleged to
+  decrease.  When specified, the system will attempt to prove it
+  decreases as per the Definitional Principle.  If no measure is
+  specified by the user, the system attempts to find an argument
+  whose [ACL2-count] decreases according to [o<].)
+
+  Problem 95.
+
+      (defun tree-copy (x)
+        (if (atom x)
+            x
+            (cons (tree-copy (first x))
+                  (tree-copy (rest x)))))
+
+  Problem 96.
+
+      (defun ack (x y)
+        (if (zp x)
+            1
+            (if (zp y)
+                (if (equal x 1) 2 (+ x 2))
+                (ack (ack (- x 1) y) (- y 1)))))
+
+  Problem 97.
+  Recursion like that in ack allows us to define functions that cannot
+  be defined if we are limited to ``primitive recursion'' where a
+  given argument is decremented in every recursive call.  That is,
+  the new definitional principle is strictly more powerful than the
+  old one.  This can be formalized and proved within our system
+  (after we extend the principle of induction below).  If you are
+  inclined towards metamathematics, feel free to pursue the
+  formalization and ACL2 proof of this.  The existence of
+  non-primitive recursive functions, dating from 1928, by Wilhelm
+  Ackermann, a student of David Hilbert, was one of the important
+  milestones in our understanding of the power and limitations of
+  formal mathematics culminating in Goedel's results of the early
+  1930s.
+
+  Problem 98.
+
+      (defun f1 (i j)
+        (if (and (natp i)
+                 (natp j)
+                 (< i j))
+            (f1 (+ 1 i) j)
+            1))
+
+  Problem 99.
+
+      (defun f2 (x)
+        (if (equal x nil)
+            2
+            (and (f2 (car x))
+                 (f2 (cdr x)))))
+
+  Problem 100.
+
+      (defun f3 (x y)
+        (if (and (endp x)
+                 (endp y))
+            3
+            (f3 (cdr x) (cdr y))))
+
+  Problem 101.
+  Suppose p, m, up, and dn (``down'') are undefined functions.
+  Suppose however that you know this about p, m, and dn:
+
+      Theorem dn-spec
+      (and (o-p (m x))
+           (implies (p x)
+                    (o< (m (dn x)) (m x))))
+
+  Then admit
+
+      (defun f4 (x y q)
+        (if (p x)
+            (if q
+                (f4 y (dn x) (not q))
+                (f4 y (up x) (not q)))
+            4))
+
+  Note that f4 is swapping its arguments.  Thus, if q starts at t,
+  say, then in successive calls the first argument is x, y, (dn x),
+  (up y), (dn (dn x)), (up (up y)), etc.  I thank Anand Padmanaban
+  for helping me think of and solve this problem.
+
+  Next: The Induction Principle (see [R-AND-I-INDUCTION-PRINCIPLE]) (or
+  Table of Contents (see [R-AND-I-TABLE-OF-CONTENTS]))")
+ (R-AND-I-DEFINITIONS-REVISITED
+  (RECURSION-AND-INDUCTION)
+  "Recursion and Induction: Definitions Revisited
+
+  Problem 27.
+  Suppose we define
+
+      (defun f (x) 1)
+
+  and then prove some theorems and then ``redefine'' f with
+
+      (defun f (x) 2)
+
+  Now prove that (equal 'June' 'July), using the theorems that (equal
+  (f x) 1), proved before redefining f, and (equal (f x) 2), proved
+  after.
+
+  Flesh out your argument using axioms presented earlier (see
+  [r-and-i-axioms] and see [r-and-i-definitions-revisited]).
+
+  A consequence is that since anything provable is valid, then the
+  formula (equal 'June 'July) != nil is true, hence 'June = 'July, a
+  contradiction!  In the following Problems we explore further such
+  consequences of permitting ``bad'' definitions.
+
+  Problem 28.
+  Suppose we define
+
+      (defun f (x) (cons x y))
+
+  Prove (equal 1 2).  (Remark.  The definition f in this problem has
+  nothing to do with the definition of f in the previous problem!  We
+  tend to ``re-use'' function names like f, g and h from time to time
+  simply to avoid inventing new names.)
+
+  Problem 29.
+  Suppose we define
+
+      (defun f (x) (not (f x)))
+
+  Prove (equal t nil).
+
+  These problems should disturb you!  We often think of
+  ``definitions'' as being logically innocuous, allowing us to
+  abbreviate complicated expressions.  And we think of proof as a way
+  to determine truth.  So it is disturbing if after making a
+  ``definition'' we are suddenly able to prove things we know aren't
+  true, like that June is July or that t is nil!  Something has gone
+  terribly wrong.
+
+  To prevent this kind of logical inconsistency, we impose some
+  restrictions on our ability to introduce definitions.  The
+  restrictions we'll impose will prevent us from defining many useful
+  functions but guarantee that we don't ruin the logic with
+  ``definitions'' like those shown above.  ACL2 is much more generous
+  in its restrictions but they are spiritually similar: both here and
+  in ACL2 the restrictions on definitions will guarantee that every
+  defined function terminates.  We do not explain in this document
+  why termination is enough to avoid inconsistencies.
+
+  One way to make sure a function terminates is to insist that there
+  is an argument that is being car'd and/or cdr'd at least once every
+  time the function recurs and that before it recurs the definition
+  tests that the argument is a cons-pair.  For example, (defun f (x)
+  (not (f x))) is disallowed by this restriction, and so is (defun f
+  (x) (not (f (cdr x)))).  But
+
+      (defun f (x)
+        (if (consp x)
+            (and (not (f (car x)))
+                 (not (f (cdr (cdr x)))))
+            t))
+
+  is allowed because x is car'd and/or cdr'd in every recursion and
+  the function tests (consp x) before recurring.  We say (consp x)
+  ``rules'' the two recursive calls above.
+
+  So we have to define the notions of a ``car/cdr'' nest and what
+  terms ``rule'' the recursive calls.
+
+  A car/cdr nest around  v  is (car v), (cdr v), or a car/cdr nest
+  around (car v) or (cdr v).  Thus, (car (cdr (car x))) is a car/cdr
+  nest around x.
+
+  The idea in this next definition is to take a term \\beta  and a
+  particular occurrence r  of some subterm in \\beta  and define the
+  set of tests that rule r.  Then, if you have a function definition
+  like (defun f  (v_1 ... v_k) \\beta) you can let r  be a particular
+  recursive call of f  in \\beta  and then determine which tests rule
+  that call.
+
+  The rulers  of an occurrence of a term r  in another term \\beta  is
+  the set defined as follows:
+
+   1. if \\beta  is (if p x y) and r  is in x, then the rulers of r  in
+      \\beta  is the set obtained by adding p  to the set of rulers of
+      r  in x;
+
+   2. if \\beta  is (if p x y) and r  is in y, then the rulers of r  in
+      \\beta  is the set obtained by adding (NOT p) to the set of
+      rulers of r  in y;
+
+   3. otherwise, the rulers of r  in \\beta  is the empty set.
+
+  Thus, in the term (if a (if b (h c) (h d)) (g c)), both a and b rule
+  the first occurrence of c and the occurrence of (h c).  In
+  addition, a and (not b) rule the occurrences of d and (h d).
+  Finally, (not a) rules the second occurrence of c and (g c).
+
+  Note that our definition of ``rulers'' does not include every test
+  that has to be true in order to reach the occurrence in question.
+  For example, p does not rule the occurrence of a in (car (if p a
+  b)) even though the only way evaluation can reach a is if p is
+  true.  The rulers of the occurrence of a in that term is the empty
+  set, because that term is not a call of if.  However, p does rule
+  the occurrence of a in the equivalent term (if p (car a) (car b)).
+  The reason we've defined rulers this way has to do with heuristics
+  in the ACL2 theorem prover.
+
+  Principle of Structural Recursion: A definition, (defun f  (v_1 ...
+  v_n) \\beta) will be allowed (for now) only if it satisfies these
+  four restrictions:
+
+   1. The symbol being defined, f, must be ``new,'' i.e., not already in
+      use as a function symbol in any axiom.
+
+   2. The formal variables, v_1, ... , v_n, must be distinct variable
+      symbols.
+
+   3. The body, \\beta, must be a term, it must use no new function symbol
+      other than (possibly) f, and the only variable symbols in it
+      are among the formals.
+
+   4. There is an i  such that (consp v_i) rules every recursive call of f
+      in \\beta  and for every recursive call (f  a_1 ... a_n) in
+      \\beta, a_i  is a car/cdr nest around v_i.  We call v_i a
+      measured formal.
+
+  An acceptable definition adds the axiom (f  v_1   ...  v_n) = \\beta.
+
+  (Maybe explore <<[defun]>>?  Be advised, however, that ACL2's
+  Definitional Principle does not insist on the last condition above,
+  about there being a car/cdr nest in a certain argument of every
+  recursive call.  Instead it insists that ``some measure of the
+  arguments decreases'' in every recursive call.  We'll make that
+  clearer later.  But ACL2's Definitional Principle allows all the
+  definitions described above.)
+
+  Problem 30.
+  Explain why these restrictions rule out the spurious definitions of
+  f in the problems above.
+
+  Problem 31.
+  Is the following definition allowed under the above restrictions?
+
+      (defun f (x)
+        (if (consp x)
+            (if (consp (cdr x))
+                (f (cdr (cdr x)))
+                nil)
+            t))
+
+  Problem 32.
+  Is the following definition allowed?
+
+      (defun f (x y)
+        (if (consp x)
+            (f (cons nil x) (cdr y))
+            y))
+
+  Problem 33.
+  Is the following definition allowed?
+
+      (defun f (x y)
+        (if (consp x)
+            (f (cons nil y) (cdr x))
+            y))
+
+  Problem 34.
+  Is the following definition allowed?
+
+      (defun f (x)
+        (if (not (consp x))
+            x
+            (f (cdr (cdr x)))))
+
+  Problem 35.
+  Is the following sequence of definitions allowed?
+
+      (defun endp (x) (not (consp x)))
+
+      (defun f (x)
+        (if (endp x)
+            nil
+            (cons nil (f (cdr x)))))
+
+  Problem 36.
+  Is the following definition allowed?
+
+      (defun f (x y)
+        (if (consp x)
+            (f (cdr x) (cons nil y))
+            y))
+
+  Problem 37.
+  Is the following definition allowed?
+
+      (defun f (x y)
+        (if (consp x)
+            (f (cdr x)
+               (f (cdr x) y))
+            y))
+
+  Problem 38.
+  Is the following sequence of definitions allowed?
+
+      (defun f (x)
+        (if (consp x)
+            (g (cdr x))
+            x))
+
+      (defun g (x)
+        (if (consp x)
+            (f (cdr x))
+            x))
+
+  Next: Structural Induction (see [R-AND-I-STRUCTURAL-INDUCTION]) (or
+  Table of Contents (see [R-AND-I-TABLE-OF-CONTENTS]))")
+ (R-AND-I-FUNCTION-DEFINITIONS
+  (RECURSION-AND-INDUCTION)
+  "Recursion and Induction: Function Definitions
+
+  To define a function, we use the form (defun f  (v_1  ...  v_n)
+  \\beta) where f  is the function symbol being defined, the v_i  are
+  the formal variables or simply formals, and \\beta  is the body of
+  the function.
+
+  Operationally, a definition means that to compute (f  a_1   ...
+  a_n) one can evaluate the actuals, a_i, bind the formals, v_i , to
+  those values, and compute \\beta  instead.  Logically speaking, a
+  definition adds the axiom that (f  v_1   ...  v_n) is equal to
+  \\beta.
+
+  Here are the Lisp definitions of the standard propositional logic
+  connectives:
+
+      (defun not (p) (if p nil t))
+
+      (defun and (p q) (if p q nil))
+
+      (defun or (p q) (if p p q))
+
+      (defun implies (p q) (if p (if q t nil) t))
+
+      (defun iff (p q) (and (implies p q) (implies q p)))
+
+  Note that in Lisp, and and or are not Boolean valued.  E.g., (and t
+  3) and (or nil 3) both return 3.  This is unimportant if they are
+  only used propositionally, e.g., (and t 3) <-> (and 3 t) <-> t, if
+  ``<->'' means iff.  In Lisp, any non-nil value is propositionally
+  equivalent to t.
+
+  Here is a recursive definition that copies a cons-structure.
+
+      (defun tree-copy (x)
+        (if (consp x)
+            (cons (tree-copy (car x))
+                  (tree-copy (cdr x)))
+            x))
+
+  For example, the term (tree-copy '((1 . 2) . 3)) has the value ((1 .
+  2) . 3).
+
+  (Maybe explore <<[defun]>>?  Be advised, however, that ACL2's
+  Definitional Principle imposes restrictions that may not make sense
+  just yet.)
+
+  In the exercises below you may wish to define auxiliary (``helper'')
+  functions as part of your solutions.
+
+  Problem 8.
+  Define app to concatenate two lists.  For example (app '(1 2 3) '(4
+  5 6)) evaluates to (1 2 3 4 5 6).
+
+  Problem 9.
+  Define rev to reverse a list.  For example, (rev '(1 2 3)) evaluates
+  to (3 2 1).
+
+  Problem 10.
+  Define mapnil to ``copy'' a list, replacing each element by nil.
+  Thus, (mapnil '(1 2 3)) evaluates to (nil nil nil).
+
+  Problem 11.
+  The result of ``swapping'' the pair (x  . y) is the pair (y  . x).
+  Define swap-tree to swap every cons in a binary tree.  Thus,
+  (swap-tree '((1 . 2) . (3 . 4))) evaluates to ((4 . 3) . (2 . 1)).
+
+  Problem 12.
+  Define mem to take two arguments and determine if the first one
+  occurs as an element of the second.  Thus, (mem '2 '(1 2 3))
+  evaluates to t and (mem '4 '(1 2 3)) evaluates to nil.
+
+  Problem 13.
+  Define the list analogue of subset, i.e., (sub x y) returns t or nil
+  according to whether every element of x is an element of y.
+
+  Problem 14.
+  Define int to take two lists and to return the list of elements that
+  appear in both.  Thus (int '(1 2 3 4) '(2 4 6)) evaluates to (2 4).
+
+  Problem 15.
+  Define (tip e x) to determine whether e occurs as a tip of the
+  binary tree x.
+
+  Problem 16.
+  Define (flatten x) to make a list containing the tips of the binary
+  tree x.  Thus, (flatten '((1 . 2) . (3 . 4))) evaluates to (1 2 3
+  4).
+
+  Problem 17.
+  Define evenlen to recognize lists of even length.  Thus, (evenlen
+  '(1 2 3)) evaluates to nil and (evenlen '(1 2 3 4)) evaluates to t.
+
+  Next: Axioms (see [R-AND-I-AXIOMS]) (or Table of Contents (see
+  [R-AND-I-TABLE-OF-CONTENTS]))")
+ (R-AND-I-IDENTITY
+  (R-AND-I-DATA-TYPES)
+  "Recursion and Induction: Identity
+
+  Since a pair can typically be written down in several different
+  ways, you might ask how can you tell whether one display is equal
+  to another?  For example, how can you determine that (1 . (2 . (3 .
+  nil))) is the same pair as (1 2 3), which is also the same pair as
+  (1 . (2 3))?
+
+  One way is to write each constant in a canonical form.  If their
+  canonical forms are different, the two constants are different.
+  For integers, the standard canonical form is to use base 10 and to
+  drop leading 0s and ``+'' signs.  For symbols, it is to write
+  everything in upper case.  For conses, the canonical form is to
+  eschew the use of the three conventions noted in the previous
+  section and to use dot notation exclusively.
+
+  Next: Data Types Exercises (see [R-AND-I-DATA-TYPES-EXERCISES]) (or
+  Table of Contents (see [R-AND-I-TABLE-OF-CONTENTS]))")
+ (R-AND-I-INADEQUACIES-OF-STRUCTURAL-RECURSION
+  (RECURSION-AND-INDUCTION)
+  "Recursion and Induction: Inadequacies of Structural Recursion
+
+  Recall that to avoid logical contradictions introduced by ``bad''
+  definitions, we imposed four restrictions.  The fourth restriction
+  is very constraining: we can only recur on a car/cdr component of
+  some argument and must ensure that that argument satisfies consp
+  before the recursion.
+
+  The intent of this restriction was to guarantee that the newly
+  defined function terminates.  It is beyond the scope of these notes
+  to explain why termination is linked to consistency, but the
+  intuitive explanation is that if the recursion cannot go on forever
+  then, for every combination of constants to which we apply the
+  function, we could compute a value satisfying the definitional
+  equation (given enough computational resources).  From this
+  observation we can conclude there exists a mathematical function
+  satisfying the definitional equation -- namely, the one that maps
+  inputs to the computed outputs.  Thus, given a model of the theory
+  before we added the definition, we could extend it to a model of
+  the theory with the new definition added.  This establishes the
+  consistency of the extended theory.  (Remark.  In fact, our
+  definitions produce conservative extensions, which we will briefly
+  discuss below.)  The problem with the current version of our fourth
+  restriction is that it is too syntactic -- it insists, literally,
+  on the use of consp, car, and cdr.  In the ACL2 definitional
+  principle, the fourth restriction is less syntactic: it requires
+  that we be able to prove  that the recursion terminates.  That is,
+  when we propose a new definition, a conjecture is generated and if
+  this conjecture can be proved as a theorem, then we know the
+  function terminates.
+
+  The basic idea of this conjecture is to establish that some measure
+  of the function's arguments decreases in size as the function
+  recurs, and this decreasing cannot go on forever.  If the size
+  were, say, a natural number, then we would know the decreasing
+  could not go on forever, because the arithmetic less-than relation,
+  <, is well-founded  on the natural numbers.  We discuss
+  well-foundedness more in the next section.
+
+  Problem 82.
+  Define (cc x) to return the number of conses in x.  The name stands
+  for ``cons count.''
+
+  Problem 83.
+  Prove that cc always returns a non-negative integer.
+
+  Problem 84.
+  If we define
+
+      (defun atom (x) (not (consp x)))
+      (defun first (x) (car x))
+      (defun rest (x) (cdr x))
+
+  then the following ``definition'' of tree-copy is logically
+  equivalent to the acceptable version, but it is considered
+  unacceptable by our syntactic fourth restriction:
+
+      (defun tree-copy (x)
+        (if (atom x)
+            x
+            (cons (tree-copy (first x))
+                  (tree-copy (rest x)))))
+
+  Write down a conjecture that captures the idea that the argument to
+  tree-copy is getting smaller (as measured by cc) as the function
+  recurs.
+
+  Problem 85.
+  Prove the conjecture above.  Note that since cc is a natural number,
+  this proof establishes that tree-copy terminates on all objects.
+
+  Problem 86.
+  Define (rm e x) to return the result of removing the first
+  occurrence (if any) of e from x.  Thus, (rm 3 '(1 2 3 4 3 2 1)) is
+  (1 2 4 3 2 1).
+
+  Problem 87.
+  Show that the following function terminates.
+
+      (defun f23 (e x)
+        (if (mem e x)
+            (f23 e (rm e x))
+            23))
+
+  Note that no car/cdr nest around x is equal to the result of (rm 3
+  '(1 2 3)).  Thus, f23 exhibits a kind of recursion we have not seen
+  previously -- but we know it terminates.
+
+  Problem 88.
+  It is obvious that (f23 e x) always return 23.  Can you prove that
+  with our current logical machinery?
+
+  The key to these termination proofs is that the less-than relation
+  is well-founded on the natural numbers.  But consider this famous
+  function, known as Ackermann's function,
+
+      (defun ack (x y)
+        (if (zp x)
+            1
+            (if (zp y)
+                (if (equal x 1) 2 (+ x 2))
+                (ack (ack (- x 1) y) (- y 1)))))
+
+  Observe that ack can generate some very large numbers.  For example,
+  (ack 4 3) is 65536.
+
+  Problem 89.
+  Ack always terminates.  Why?  Don't feel compelled to give a formal
+  proof, just an informal explanation.
+
+  In the next three sections of this document we will discuss a
+  well-founded relation far more powerful than less-than on the
+  natural numbers.  We will then connect that well-foundedness
+  machinery to a new version of the Definitional Principle, so that
+  we can admit many interesting recursive functions, including ack.
+  We will also connect the well-foundedness machinery to a new
+  version of the Induction Principle, so that we can prove that (f23
+  e x) is 23 -- and far more interesting theorems.
+
+  Next: The Ordinals (see [R-AND-I-ORDINALS]) (or Table of Contents
+  (see [R-AND-I-TABLE-OF-CONTENTS]))")
+ (R-AND-I-INDUCTION-PRINCIPLE
+  (RECURSION-AND-INDUCTION)
+  "Recursion and Induction: The Induction Principle
+
+  The Induction Principle allows one to derive an arbitrary formula,
+  \\psi, from
+
+    * Base Case : (implies (and (not q_1) ... (not q_k)) \\psi), and
+
+    * Induction Step(s) : For each 1<=i<=k,
+      (implies (and q_i \\psi/\\sigma_{i,1} ... \\psi/\\sigma_{i,h_i})
+      \\psi),
+
+  provided that for terms m, q_1,...q_k, and substitutions
+  \\sigma_{i,j}  (1<=i<=k, 1<=j<=h_i), the following are theorems:
+
+    * Ordinal Conjecture : (o-p m), and
+
+    * Measure Conjecture(s) : For each 1<=i<=k and 1<=j<=h_i,
+      (implies q_i (o< m/\\sigma_{i,j}  m)).
+
+  Next: Relations Between Recursion and Induction (see
+  [R-AND-I-RELATIONS-BETWEEN-RECURSION-AND-INDUCTION]) (or Table of
+  Contents (see [R-AND-I-TABLE-OF-CONTENTS]))")
+ (R-AND-I-INTRODUCTION
+  (RECURSION-AND-INDUCTION)
+  "Recursion and Induction: Introduction
+
+  The language we will use is a subset of Lisp called ACL2.  ACL2,
+  which stands for A Computational Logic for Applicative Common Lisp,
+  is both a functional programming language based on Common Lisp and
+  a first-order mathematical theory with induction.  There is a
+  mechanical theorem prover for ACL2, but we do not discuss it here.
+  A good way to learn to use that theorem prover is first to master
+  the art of recursive definition and inductive proof.
+
+  This course on Recursion and Induction uses a tiny fragment of full
+  ACL2.  We describe just enough formal machinery to study recursion
+  and induction in an interesting context.  This document is
+  self-contained.  You'll need nothing besides this document, a
+  pencil and paper (or a computer), and time and space to think.  In
+  the interest of scholarly completeness, we provide an annotated
+  bibliography; see [r-and-i-annotated-bibliography].  But none of
+  the documents listed there is necessary for the problems here.
+
+  These notes are meant to be read linearly, like a text book.  Each
+  section ends with a link to the next section.  For example, the
+  link to the section after this one looks like this, Data Types (see
+  [R-AND-I-DATA-TYPES]); but don't go there yet!
+
+  Throughout these notes you will see see links to resources on the web
+  and some of those links take you out of the Recursion and Induction
+  notes and into ACL2's online manual.  Those ``external'' links
+  appear like this, ``(Maybe explore <<...>>?)''.  These links lead
+  to related discussions of issues and features of the ACL2 system.
+  You'll need to be connected to the web to access some of these
+  pages, unless you have installed ACL2 on your system and built the
+  full manual and books documentation.  See the installation
+  instructions on the ACL2 home page [4].  We provide this material
+  for students who want to explore further.  But these links are
+  technically irrelevant to the student who is focused on working the
+  exercises here, even if your ultimate goal is to learn how to use
+  ACL2.  First, learn how to do the exercises here.  In a second
+  pass, where you're trying to get ACL2 to do your proofs, you might
+  want to explore.  And remember, it is easy for explorers to get
+  lost!
+
+  If you are working your way through Recursion and Induction and
+  decide to follow one of these explorer links be sure to use the
+  ``Back'' feature of your browser to return to these notes.
+
+  Next: Data Types (see [R-AND-I-DATA-TYPES]) (or Table of Contents
+  (see [R-AND-I-TABLE-OF-CONTENTS]))")
+ (R-AND-I-MORE-INADEQUACIES-OF-THE-DEFINITIONAL-PRINCIPLE
+  (RECURSION-AND-INDUCTION)
+  "Recursion and Induction: More Inadequacies of the Definitional
+  Principle
+
+  Next: Mutual Recursion Inadequacies (see
+  [R-AND-I-MUTUAL-RECURSION-INADEQUACIES]) (or Table of Contents (see
+  [R-AND-I-TABLE-OF-CONTENTS]))
+
+
+Subtopics
+
+  [R-and-i-mutual-recursion-inadequacies]
+      Recursion and Induction: Mutual Recursion Inadequacies
+
+  [R-and-i-problematic-nested-recursion]
+      Recursion and Induction: Problematic Nested Recursion")
+ (R-AND-I-MORE-PROBLEMS
+  (RECURSION-AND-INDUCTION)
+  "Recursion and Induction: More Problems
+
+  Problem 106.
+  Here is a way to flatten a binary tree without using an auxiliary
+  function.  Admit this definition.
+
+      (defun flatten! (x)
+        (if (atom x)
+            (cons x nil)
+            (if (atom (car x))
+                (cons (car x) (flatten! (cdr x)))
+                (flatten! (cons (caar x) (cons (cdar x) (cdr x)))))))
+
+  Problem 107.
+  Prove (equal (flatten! x) (flatten x)).
+
+  Problem 108.
+  Here is a clever way to determine if two binary trees have the same
+  fringe.  Admit this function (and its subroutine).
+
+      (defun samefringe (x y)
+       (if (or (atom x)
+               (atom y))
+           (equal x y)
+           (and (equal (car (gopher x))
+                       (car (gopher y)))
+                (samefringe (cdr (gopher x))
+                            (cdr (gopher y))))))
+
+  where
+
+      (defun gopher (x)
+        (if (or (atom x)
+                (atom (car x)))
+            x
+            (gopher (cons (caar x) (cons (cdar x) (cdr x))))))
+
+  Problem 109.
+  Prove
+
+      (equal (samefringe x y)
+             (equal (flatten x)
+                    (flatten y)))
+
+  Problem 110.
+  The curious recursions in gopher and samefringe are due to John
+  McCarthy, who viewed gopher as a model of a co-routine.  Explain
+  what he was thinking.
+
+  Problem 111.
+  Below is a model of the functional behavior of QuickSort.  Note that
+  rel is defined as a ``higher order'' function that can apply any of
+  four relations.
+
+      (defun rel (fn x y)
+        (if (equal fn '<<=)
+            (<<= x y)
+            (if (equal fn '>>=)
+                (<<= y x)
+                (if (equal fn '<<)
+                    (and (<<= x y) (not (equal x y)))
+                    (and (<<= y x) (not (equal x y)))))))
+
+      (defun filter (fn x e)
+        (if (endp x)
+            nil
+            (if (rel fn (car x) e)
+                (cons (car x) (filter fn (cdr x) e))
+                (filter fn (cdr x) e))))
+
+      (defun qsort (x)
+        (if (endp x)
+            nil
+            (if (endp (cdr x))
+                x
+                (app (qsort (filter '<< (cdr x) (car x)))
+                     (cons (car x)
+                           (qsort (filter '>>= (cdr x) (car x))))))))
+
+  Prove that qsort produces an ordered permutation of its input.
+
+  Problem 112.
+  Prove that the length of a list of distinct natural numbers is no
+  greater than its maximum element plus one.  This is sometimes
+  called the Pigeon Hole Principle.
+
+  Problem 113.
+  Imagine a simple list being treated as a ``memory.'' If a  is a
+  natural number less than the length of the memory, then a  is an
+  ``address'' and we can use nth to fetch the contents.  This is
+  ``dereferencing'' a.  If a  is not an address, we will say it is
+  ``data.'' Now consider the idea of taking an object and a memory
+  and dereferencing until we get to data.  The following function
+  counts the steps; it returns the symbol infinite if a loop is
+  detected.
+
+      (defun deref-cnt (ptr mem seen)
+        (if (addressp ptr mem)
+            (if (mem ptr seen)
+                'infinite
+                (inc (deref-cnt (nth ptr mem) mem (cons ptr seen))))
+            0))
+
+  where
+
+      (defun len (x)
+        (if (consp x)
+            (+ 1 (len (cdr x)))
+            0))
+
+      (defun inc (x)
+        (if (integerp x) (+ 1 x) 'infinite))
+
+      (defun addressp (ptr m)
+        (and (natp ptr)
+             (< ptr (len m))))
+
+  Admit deref-cnt.
+
+  Problem 114.
+  This is a fact every undergraduate knows.  The number of times you
+  can dereference (without being in a loop) is bounded by the size of
+  the memory (plus one for the initial probe).  Prove it.
+
+      (<= (deref-cnt ptr mem nil)
+          (+ 1 (len mem)))
+
+  Since deref-cnt returns the non-number infinite if it is a loop, and
+  since ACL2 arithmetic treats non-numbers as 0, this theorem is
+  trivial when the process loops.  You may therefore explicitly add
+  the hypothesis (integerp (deref-cnt ptr mem nil)) if you are
+  uncomfortable dealing with the non-numeric defaults.
+
+  Problem 115.
+  Here is the familiar definition of the Fibonacci function and a more
+  efficient one (``fast Fibonacci'').
+
+      (defun fib (i)
+        (if (zp i)
+            0
+            (if (equal i 1)
+                1
+                (+ (fib (- i 1))
+                   (fib (- i 2))))))
+
+      (defun ffib (i j k)
+        (if (zp i)
+            j
+            (if (equal i 1)
+                k
+                (ffib (- i 1) k (+ j k)))))
+
+  Prove they are equal in the following sense
+
+      (equal (ffib n 0 1) (fib n))
+
+  Problem 116.
+  Prove
+
+      (equal (rotn (len x) x) x)
+
+  where
+
+      (defun rot (x)
+        (if (endp x)
+            nil
+            (app (cdr x) (cons (car x) nil))))
+
+      (defun rotn (n x)
+        (if (zp n)
+            x
+            (rotn (- n 1) (rot x))))
+
+  Problem 117.
+  In this problem we explore binary arithmetic.  Let a bit vector  be
+  a list of Booleans; it is convenient to suppose that the least
+  significant bit is the car.  A bit vector represents a natural
+  number in the usual binary encoding.  Define (vadd x y) to return a
+  bit vector representing the sum of the numbers represented by the
+  bit vectors x and y.  Formally specify and prove that vadd is
+  correct.  Obviously, this problem can be expanded to include other
+  binary arithmetic operations and implementations.
+
+  Next: More Inadequacies of the Definitional Principle (see
+  [R-AND-I-MORE-INADEQUACIES-OF-THE-DEFINITIONAL-PRINCIPLE]) (or
+  Table of Contents (see [R-AND-I-TABLE-OF-CONTENTS]))")
+ (R-AND-I-MUTUAL-RECURSION-INADEQUACIES
+  (R-AND-I-MORE-INADEQUACIES-OF-THE-DEFINITIONAL-PRINCIPLE)
+  "Recursion and Induction: Mutual Recursion Inadequacies
+
+  Problem 118.
+  Mutual recursion is (still) not allowed by our statement of the
+  Definitional Principle.  However, suppose that somehow the axioms
+  produced by the following pair of definitions were available.
+
+      (defun fx (x)
+        (if (consp x)
+            (cons (fx (car x))
+                  (gx (cdr x)))
+            x))
+
+      (defun gx (x)
+        (if (consp x)
+            (cons (gx (car x))
+                  (fx (cdr x)))
+            x))
+
+  Prove
+
+      (equal (fx x) x)
+
+  Problem 119.
+  Develop a methodology for dealing with mutual recursion.  That is,
+  explain how you can use our Definitional Principle to introduce two
+  functions fx and gx that can be shown to satisfy the ``defining
+  equations'' for fx and gx above.  Your methodology should work for
+  any clique of mutually recursive functions that can be shown to
+  terminate under the o< relation.
+
+  Problem 120.
+  We say x is an expression  if (a) x is a symbol or (b) x is a list
+  of the form (f  e_1   ...  e_n), where f  is a symbol and the e_i
+  are expressions.  Define (expr x) to recognize expressions.
+
+  Problem 121.
+  An expression substitution  is a list of 2-tuples of the form (v
+  expr), where v  is a symbol and expr  is an expression.  Define
+  substitution to recognize expression substitutions.
+
+  Problem 122.
+  Define (slash x s) so that it substitutes the expression
+  substitution s into the expression x, e.g., it returns x/s.
+
+  Problem 123.
+  Prove that if s is an expression substitution and x is an
+  expression, then (slash x s) is an expression.
+
+  (Maybe explore <<[mutual-recursion]>>?)
+
+  Next: Problematic Nested Recursion (see
+  [R-AND-I-PROBLEMATIC-NESTED-RECURSION]) (or Table of Contents (see
+  [R-AND-I-TABLE-OF-CONTENTS]))")
+ (R-AND-I-NUMBERS
+  (R-AND-I-DATA-TYPES)
+  "Recursion and Induction: Numbers
+
+  The only numbers we will use are the integers, written in the usual
+  way, e.g., -3, 0, and 123.  ACL2 allows integers to be written in
+  other ways, e.g., 00123, +123, 246/2, #b1111011, #o173 and #x7B are
+  all ways to write 123.  However, we will always write them in
+  conventional decimal notation.
+
+  ACL2 also supports rationals, e.g., 1/3 and 22/7, and complex
+  rationals, e.g., #c(5 2), which is more commonly written 5 + 2i.
+  Lisp, but not ACL2, supports floating point numbers, e.g., 3.1415
+  and 31415E-4.
+
+  (Maybe explore <<[numbers]>>?)
+
+  Next: Characters (see [R-AND-I-CHARACTERS]) (or Table of Contents
+  (see [R-AND-I-TABLE-OF-CONTENTS]))")
+ (R-AND-I-ORDINALS
+  (RECURSION-AND-INDUCTION)
+  "Recursion and Induction: The Ordinals
+
+  The ordinals are an extension of the naturals that captures an
+  essential notion of ordering.  They were invented by Georg Cantor
+  in the late nineteen century.  While controversial during Cantor's
+  lifetime, ordinals are among the richest and deepest mines of
+  mathematics.  We only scratch the surface here.
+
+  Think of each natural number as denoted by a sequence of strokes,
+  i.e.,
+
+      0             0
+      1             |
+      2             | |
+      3             | | |
+      4             | | | |
+       ...               ...
+      \\omega             | | | | |  ...
+
+  The limit of that progression is the ordinal \\omega, an infinite
+  sequence of strokes.
+
+  Ordinal addition is just concatenation.  Observe that adding one to
+  the front of \\omega  produces \\omega  again, which gives rise to a
+  standard definition of \\omega: the least ordinal such that adding
+  another stroke at the beginning does not change the ordinal.
+
+  We denote by \\omega  + \\omega  or \\omega\\times2 the ``doubly
+  infinite'' sequence that we might write as follows.
+
+      \\omega \\times 2         | | | | |  ...  | | | | |  ...
+
+  One way to think of \\omega\\times2 is that it is obtained by
+  replacing each stroke in 2 (| |) by \\omega.  Thus, one can imagine
+  \\omega\\times3, \\omega\\times4, etc., which leads ultimately to the
+  idea of \\omega\\times\\omega, the ordinal obtained by replacing each
+  stroke in \\omega  by \\omega.  This is also written as \\omega^2.
+
+      \\omega^2           | | | | |  ...  | | | | |  ...  | | | | |  ...  | | | | |  ...  | | | | |  ...   ...
+
+  We can analogously construct \\omega^3 by replacing each stroke in
+  \\omega  by \\omega^2 (which, it turns out, is the same as replacing
+  each stroke in \\omega^2 by \\omega).  That is, we can construct
+  \\omega^3 as \\omega  copies of \\omega^2, and so on.  This ultimately
+  suggests \\omega^\\omega.  We can then stack \\omegas, i.e.,
+  \\omega^(\\omega^\\omega), etc.  Consider the limit of all of those
+  stacks,
+
+  \\omega^(\\omega^(\\omega^(\\omega^(\\omega^(\\omega^(\\omega^ ... )))))).
+
+  That limit is \\epsilon_0.  (As the subscript suggests, there are
+  lots more ordinals!  But ACL2 stops with \\epsilon_0.)
+
+  Despite the plethora of ordinals, we can represent all the ones
+  below \\epsilon_0  in ACL2, using lists.  Below we begin listing
+  some ordinals up to \\epsilon_0; the reader can fill in the gaps at
+  his or her leisure.  We show in the left column the conventional
+  notation and in the right column the ACL2 object representing the
+  corresponding ordinal.
+
+    ordinal	|  	|  ACL2 representation	|
+    	|  	|  	|
+    0	|  	|  0	|
+    1	|  	|  1	|
+    2	|  	|  2	|
+    3	|  	|  3	|
+    ...	|  	|  ...	|
+    \\omega	|  	|  ((1 . 1) . 0)	|
+    \\omega  + 1	|  	|  ((1 . 1) . 1)	|
+    \\omega  + 2	|  	|  ((1 . 1) . 2)	|
+    ...	|  	|  ...	|
+    \\omega\\times2	|  	|  ((1 . 2) . 0)	|
+    (\\omega\\times2) + 1	|  	|  ((1 . 2) . 1)	|
+    ...	|  	|  ...	|
+    \\omega\\times3	|  	|  ((1 . 3) . 0)	|
+    (\\omega\\times3) + 1	|  	|  ((1 . 3) . 1)	|
+    ...	|  	|  ...	|
+    \\omega^2	|  	|  ((2 . 1) . 0)	|
+    ...	|  	|  ...	|
+    \\omega^2 + \\omega\\times4 + 3	|  	|  ((2 . 1) (1 . 4) . 3)	|
+    ...	|  	|  ...	|
+    \\omega^3	|  	|  ((3 . 1) . 0)	|
+    ...	|  	|  ...	|
+    \\omega^\\omega	|  	|  ((((1 . 1) . 0) . 1) . 0)	|
+    ...	|  	|  ...	|
+    \\omega^\\omega  + \\omega^99 + \\omega\\times4 + 3	|  	|  ((((1 . 1) . 0) . 1) (99 . 1) (1 . 4) . 3)	|
+    ...	|  	|  ...	|
+    \\omega^(\\omega^2)	|  	|  ((((2 . 1) . 0) . 1) . 0)	|
+    ...	|  	|  ...	|
+    \\omega^(\\omega^\\omega)	|  	|  ((((((1 . 1) . 0) . 1) . 0) . 1) . 0)	|
+    ...	|  	|  ...	|
+
+  We say an ordinal is ``finite'' if it is not a cons and we define
+  (o-finp x) to recognize finite ordinals.  Of course, if x is an
+  ordinal and finite, it is a natural number.  But by defining o-finp
+  this way we ensure that if an ordinal is not finite we can recur
+  into it with cdr.
+
+  To manipulate ordinals we define functions that access the first
+  exponent, the first coefficient, and the rest of the ordinal:
+
+      (defun o-first-expt (x)
+        (if (o-finp x) 0 (car (car x))))
+
+      (defun o-first-coeff (x)
+        (if (o-finp x) x (cdr (car x))))
+
+      (defun o-rst (x) (cdr x))
+
+  For example, if x is the representation of \\omega^e\\timesc  + r
+  then (o-first-expt x) is e, (o-first-coeff x) is c  and (o-rst x)
+  is r.
+
+  Here is the definition of o-p, the function that recognizes
+  ordinals.
+
+      (defun o-p (x)
+        (if (o-finp x)
+            (natp x)
+            (and (consp (car x))
+                 (o-p (o-first-expt x))
+                 (not (equal 0 (o-first-expt x)))
+                 (natp (o-first-coeff x))
+                 (< 0 (o-first-coeff x))
+                 (o-p (o-rst x))
+                 (o< (o-first-expt (o-rst x))
+                     (o-first-expt x)))))
+
+  (The ACL2 definition is syntactically different but equivalent.)
+
+  The function o< is the ``less than'' relation on ordinals.  We show
+  its definition below.  But study the definition of o-p first.  It
+  says that an ordinal is a list of pairs, terminated by a natural
+  number.  Each pair (e . c) consists of an exponent e and a
+  coefficient c and represents (\\omega^e)\\timesc.  The exponents are
+  themselves ordinals and the coefficients are non-0 naturals.
+  Importantly, the exponents are listed in strictly descending order.
+  The list represents the ordinal sum of its elements plus the final
+  natural number.  Thus, ordinals can be viewed as polynomials.
+
+  By insisting on the ordering of exponents we can readily compare two
+  ordinals, using o< below, in much the same way we can compare
+  polynomials.
+
+      (defun o< (x y)
+        (if (o-finp x)
+            (or (not (o-finp y))
+                (< x y))
+            (if (o-finp y)
+                nil
+                (if (equal (o-first-expt x)
+                           (o-first-expt y))
+                    (if (equal (o-first-coeff x)
+                               (o-first-coeff y))
+                        (o< (o-rst x)
+                            (o-rst y))
+                        (< (o-first-coeff x)
+                           (o-first-coeff y)))
+                    (o< (o-first-expt x)
+                        (o-first-expt y))))))
+
+  (The ACL2 definition is syntactically different but equivalent.)
+
+  Problem 90.
+  Which is smaller, ordinal a or ordinal b?
+
+   1. a = 23, b = 100
+   2. a = 1000000, b = ((1 . 1) . 0)
+   3. a = ((2 . 1) . 0), b = ((1 . 2) . 0)
+   4. a = ((3 . 5) (1 . 25) . 7), b = ((3 . 5) (2 . 1) . 3)
+   5. a = ((((2 . 1) . 0) . 5) . 3), b = ((((1 . 1) . 0) . 5) (1 . 25) . 7)
+
+  Problem 91.
+  The o< operation can be reduced to lexicographic comparison.  Define
+  m2 so that it constructs ``lexicographic ordinals'' from two
+  arbitrary natural numbers.  Specifically, show that the following
+  is a theorem:
+
+      (implies (and (natp i1)
+                    (natp j1)
+                    (natp i2)
+                    (natp j2))
+               (and (o-p (m2 i1 j1))
+                    (iff (o< (m2 i1 j1)
+                             (m2 i2 j2))
+                         (if (equal i1 i2)
+                             (< j1 j2)
+                             (< i1 i2)))))
+
+  The crucial property of o< is that it is well-founded on the
+  ordinals.  That is, there is no infinite sequence of ordinals, x_i
+  such that  ...  x_3  o< x_2  o< x_1  o< x_0.
+
+  Problem 92.
+  What is the longest decreasing chain of ordinals starting from the
+  ordinal 10?  What is the longest decreasing chain of ordinals
+  starting from the ordinal ((1 . 1) . 0)?
+
+  Problem 93.
+  Construct an infinitely descending o< chain of objects.  Note that
+  by the well-foundedness of o< on the ordinals, your chain will not
+  consist entirely of ordinals!
+
+  Problem 94.
+  Prove that o< is well-founded on our ordinals, i.e., those
+  recognized by o-p.
+
+  Caution: Using the logical machinery we have developed here, it is
+  not possible to state that o< is well-founded on the ordinals: that
+  requires an existential quantifier and infinite sequences.
+  However, it can be done in a traditional set theoretic setting.
+  That is, the theorem that o< is well-founded is a ``meta-theorem'',
+  it can be proved about our system but it cannot be proved within
+  our system.
+
+  Our definitional and induction principles are built on the
+  assumption that o< is well-founded on the ordinals recognized by
+  o-p.  Thus, if some ordinal measure of the arguments of a recursive
+  function decreases according to o< in every recursive call, the
+  recursion cannot go on forever.
+
+  The representation of ordinals described here is a version of
+  Cantor's Normal Form.  See [reference 5] (see
+  [R-AND-I-ANNOTATED-BIBLIOGRAPHY]) or the online documentation
+  topics <<[ordinals]>> and <<[o-p]>>, from which some of the
+  examples above have been chosen.
+
+  Next: The Definitional Principle (see
+  [R-AND-I-DEFINITIONAL-PRINCIPLE]) (or Table of Contents (see
+  [R-AND-I-TABLE-OF-CONTENTS]))")
+ (R-AND-I-PAIRS
+  (R-AND-I-DATA-TYPES)
+  "Recursion and Induction: Pairs
+
+  Pairs are written in Lisp's dot notation.  Instead of conventional
+  Cartesian notation, e.g., < 1, 2 >, Lisp replaces the angle
+  brackets with parentheses and the comma with a dot, (1 . 2).  Thus,
+  ((1 . 2) . (3 . 4)) is the pair containing the pair (1 . 2) in its
+  left component and the pair (3 . 4) in its right.  In high school,
+  you might have written this object as <<1, 2>,<3, 4>>.
+
+  In Lisp, pairs are called conses.  Non-conses are called atoms.  The
+  left component is called the car  and the right component is called
+  the cdr  (pronounced ``cudder'').  (Remark.  The names come from
+  the original implementation of Lisp on the IBM 704.  That machine
+  had a 36-bit word that was logically divided into two parts, the
+  ``address'' and the ``decrement.'' Lisp used such words to
+  represent a cons cell.  The address part pointed to the left
+  component and the decrement part pointed to the right component.
+  Thus, the operations were car (``contents of address of register'')
+  and cdr (``contents of decrement of register'').)  Lisp provides
+  three conventions for writing parenthesized constants.
+
+    * Nil can be written ().
+
+    * A pair of the form (x  . nil) may be written (x).
+
+    * A pair of the form (x  . (y  ...)) may be written (x y  ...).
+
+  Thus, the cons (1 . (2 . (3 . nil))) may be written (1 2 3).  This
+  suggests the most common use of conses: to represent linked lists
+  or sequences.  The special role of nil in these conventions is the
+  only sense in which nil is ``the empty list.''
+
+  Any object can be treated as a list!  If a cons is being treated as
+  a list, then its car is the first element and its cdr is treated as
+  a list of the remaining elements.  If an atom is treated as a list,
+  it is treated as the empty list.  Nil is just the most common atom
+  used in this way.
+
+  Thus, the elements of (1 . (2 . (3 . nil))) are 1, 2, and 3,
+  respectively.  The length of this list is three.  If ((1 . 2) . (3
+  . 4)) is treated as a list, its elements are (1 . 2) and 3; its
+  length is two.  The 4 is just the terminal atom.  ((1 . 2) . (3 .
+  nil)) and ((1 . 2) . (3 . 4)) are different objects, but when
+  treated as lists they have the same two elements.
+
+  Here is a list of the symbols naming the summer months: (June July
+  August).  It could also be written (JUNE . (JULY . (AUGUST . NIL)))
+  and many other ways.
+
+  (Maybe explore <<[conses]>>?)
+
+  Next: identity (see [R-AND-I-IDENTITY]) (or Table of Contents (see
+  [R-AND-I-TABLE-OF-CONTENTS]))")
+ (R-AND-I-PEANO-ARITHMETIC
+  (R-AND-I-ARITHMETIC)
+  "Recursion and Induction: Peano Arithmetic
+
+  Recall that the integers are being treated as atomic objects in this
+  document.  But we can explore elementary arithmetic by thinking of
+  a list of n  nils as a representation for the natural number n.  We
+  will call such a list a ``nat.'' Thus, (nil nil nil) is a nat, but
+  3 is a natural number.
+
+  Problem 65.
+  Define (nat x) to recognize nats.
+
+  Problem 66.
+  Define (plus x y) to take two arbitrary lists (even ones that are
+  not nats) and to return the nat representing the sum of their
+  lengths.  By defining plus this way we ensure that it always
+  returns a nat and that it is commutative.
+
+  Problem 67.
+  Define (times x y) to take two arbitrary lists and to return the nat
+  representing the product of their lengths.
+
+  Problem 68.
+  Define (power x y) to take two arbitrary lists and to return the nat
+  representing the exponentiation of their lengths, i.e., if x and y
+  are of lengths i  and j, then (power x y) should return the nat
+  representing i^j.
+
+  Problem 69.
+  Define (lesseqp x y) to return t or nil according to whether the
+  length of x is less than or equal to that of y.
+
+  Problem 70.
+  Define (evennat x) to return t or nil according to whether the
+  length of x is even.
+
+  Problem 71.
+  Prove
+
+      (implies (nat i)
+               (equal (plus i nil) i))
+
+  Problem 72.
+  Prove
+
+      (equal (plus (plus i j) k)
+             (plus i (plus j k)))
+
+  Problem 73.
+  Prove
+
+      (equal (plus i j) (plus j i))
+
+  Problem 74.
+  Prove
+
+      (equal (times (times i j) k)
+             (times i (times j k)))
+
+  Problem 75.
+  Prove
+
+      (equal (times i j) (times j i))
+
+  Problem 76.
+  Prove
+
+      (equal (power b (plus i j))
+             (times (power b i) (power b j)))
+
+  Problem 77.
+  Prove
+
+      (equal (power (power b i) j)
+             (power b (times i j)))
+
+  Problem 78.
+  Prove
+
+      (lesseqp i i)
+
+  Problem 79.
+  Prove
+
+      (implies (and (lesseqp i j)
+                    (lesseqp j k))
+               (lesseqp i k))
+
+  Problem 80.
+  Prove
+
+      (equal (lesseqp (plus i j) (plus i k))
+             (lesseqp j k))
+
+  Problem 81.
+  Prove
+
+      (implies (and (evennat i)
+                    (evennat j))
+               (evennat (plus i j)))
+
+  Next: ACL2 Arithmetic (see [R-AND-I-ACL2-ARITHMETIC]) (or Table of
+  Contents (see [R-AND-I-TABLE-OF-CONTENTS]))")
+ (R-AND-I-PROBLEMATIC-NESTED-RECURSION
+  (R-AND-I-MORE-INADEQUACIES-OF-THE-DEFINITIONAL-PRINCIPLE)
+  "Recursion and Induction: Problematic Nested Recursion
+
+  Problem 124.
+  The following function cannot be admitted.  Explain why.
+
+      (defun f5 (x)
+        (if (zp x)
+            0
+            (+ 1 (f5 (f5 (- x 1))))))
+
+  When the function being defined, f, is called recursively on the
+  value of a nested recursive call, e.g., (f   ...  (f   ... )), we
+  say the definition exhibits nested recursion.  We have already seen
+  some examples of nested recursion:
+
+      (defun mcflatten (x a)
+        (if (consp x)
+            (mcflatten (car x)
+                       (mcflatten (cdr x) a))
+            (cons x a)))
+
+      (defun ack (x y)
+        (if (zp x)
+            1
+            (if (zp y)
+                (if (equal x 1) 2 (+ x 2))
+                (ack (ack (- x 1) y) (- y 1)))))
+
+  Problem 125.
+  What makes the recursion in f5, which cannot be admitted, different
+  from that in mcflatten and ack, which can be admitted?
+
+  It is often possible to deal with problematic nested recursion, by
+  admitting a different but related definition and then proving that
+  it is equivalent to the one you wanted.  The next few problems
+  illustrate this.
+
+  Problem 126.
+  Admit the following
+
+      (defun f5 (x)
+        (if (zp x)
+            0
+            (if (< (nfix (f5 (- x 1))) (nfix x))
+                (+ 1 (f5 (f5 (- x 1))))
+                'undef)))
+
+  Problem 127.
+  Prove
+
+      (implies (natp x) (<= (f5 x) x))
+
+  Problem 128.
+  Prove
+
+      (equal (f5 x)
+             (if (zp x)
+                 0
+                 (+ 1 (f5 (f5 (- x 1))))))
+
+  You may think that problematic nested recursion never arises in
+  actual formal models.  Think again!  Consider a graph reachability
+  algorithm, as might be implemented in the mark phase of a garbage
+  collector.  Suppose a memory location can hold a pair of addresses,
+  a single address, or data.  Given an initial address, mark all the
+  reachable addresses, avoiding any possible cycles in the data.
+  When the mark algorithm arrives at an address, ptr, containing a
+  pair, it marks that address, explores and marks one of the
+  addresses, and then explores and marks the other.  The algorithm
+  terminates because marking increases the number of marked addresses
+  in memory and the number of addresses is bounded.  But note that
+  when the algorithm explores and marks the second address it does so
+  on the memory produced by exploring and marking the first address
+  and the parent.  This is problematic nested recursion: if the inner
+  recursion unmarked  some of the marked addresses, the outer sweep
+  might get caught in a cycle.  But we cannot prove that the
+  algorithm does not unmark things until we have admitted the model!
+
+  Problem 129.
+  Let m be a list representing a RAM, with 0-based addressing modeled
+  by nth.  An address is legal if it is a natural less than the
+  length of the memory.  If an address contains a pair, we explore
+  both the car and the cdr.  If an address contains an address, we
+  explore that address.  Cycles may be present.  The function below
+  collects the list of all addresses reachable from a given one.
+  This definition exhibits problematic nested recursion.
+
+      (defun reachables (ptr m seen)
+        (if (addressp ptr m)
+            (if (mem ptr seen)
+                seen
+                (if (consp (nth ptr m))
+                    (reachables (car (nth ptr m))
+                                m
+                                (reachables (cdr (nth ptr m))
+                                            m
+                                            (cons ptr seen)))
+                    (reachables (nth ptr m) m (cons ptr seen))))
+            seen))
+
+  Use the method suggested by the f5 problems to define a function
+  satisfying the equation above.
+
+  Problem 130.
+  Consider the problem of reversing a list.  Our standard definition,
+  rev, uses an auxiliary function, app.  The tail-recursive version,
+  rev1, uses an additional formal parameter.  Below is a definition
+  of reverse that has only one parameter and no auxiliary functions.
+  This definition was proposed by Rod M. Burstall in the early 1970s
+  as an entertaining puzzle.  It exhibits problematic nested
+  recursion.
+
+      (defun rmb (x)
+        (if (consp x)
+            (if (consp (cdr x))
+                (cons (car (rmb (cdr x)))
+                      (rmb (cons (car x)
+                                 (rmb (cdr (rmb (cdr x)))))))
+                (cons (car x) nil))
+            nil))
+
+  Show how this definition can be derived from an admissible one.
+
+  Problem 131.
+  Suppose rmb is known to satisfy the ``defining equation'' that would
+  be added by the defun above had it been admissible.  That is,
+  suppose that is the only equation known for rmb.  Prove
+
+      (equal (rmb x) (rev x))
+
+  Next: Still More Problems (see [R-AND-I-STILL-MORE-PROBLEMS]) (or
+  Table of Contents (see [R-AND-I-TABLE-OF-CONTENTS]))")
+ (R-AND-I-RELATIONS-BETWEEN-RECURSION-AND-INDUCTION
+  (RECURSION-AND-INDUCTION)
+  "Recursion and Induction: Relations Between Recursion and Induction
+
+  Informally speaking, a recursive definition is ``ok'' if there is an
+  ordinal measure that decreases in every recursive call.  Thus, the
+  recursion cannot go on forever.  In a simple recursion on naturals
+  down to 0 by -1, the value of the function on 5 is determined
+  recursively by its value on 4, which is determined recursively by
+  its value on 3, which is determined recursively by its value on 2,
+  which is determined recursively by its value on 1, which is
+  determined recursively by its value on 0, which is specified
+  explicitly in the definition.
+
+  An inductive proof is ``ok'' if there is an ordinal measure that
+  decreases in every induction hypothesis.  Thus, any concrete
+  instance of the conjecture could be proved by ``pumping'' forward a
+  finite number of times from the base cases.  Given a simple
+  inductive proof over the naturals, the conjecture is true on 0
+  because it was proved explicitly in the base case, so it is true on
+  1 by the induction step, so it is true on 2 by the induction step,
+  so it is true on 3 by the induction step, so it is true on 4 by the
+  induction step, so it is true on 5 by the induction step.
+
+  Clearly these two concepts are duals.  The formal statements of the
+  two principles look more different than they are.  They both
+  require us to prove that a measure returns an ordinal and that some
+  substitutions make the measure decrease under some tests.  But
+  there seems to be a lot less indexing going on in the Definitional
+  Principle than in the Induction Principle.  That is due to language
+  and the two different uses of the principles.  The Definitional
+  Principle is designed to tell us whether a definitional equation is
+  ok.  The Induction Principle is designed to tell us whether a set
+  of formulas is an ok inductive argument.  So the Definitional
+  Principle talks about the tests in IFs and the substitution built
+  from each recursive call, whereas the Induction Principle talks
+  about the tests in the ith formula and the substitution that
+  created the jth induction hypothesis of the ith formula.
+
+  But the key insight is: Every ok definition suggests an ok
+  induction!  We call this the induction suggested by  the
+  definition.  It is easiest to see this by considering a particular,
+  generic definition and thinking about what had to be proved to
+  admit it, what induction it suggests, what has to be proved for
+  that induction to be legal, and when the suggested induction might
+  be useful.
+
+  Suppose the following definition has been admitted, justified by
+  measure term (m x a).  Note that the body is an IF-tree, and there
+  are three tips in the IF-tree; the first tip contains two recursive
+  calls, the second tip contains one recursive call, and the third
+  tip contains no recursive calls.
+
+      (defun f (x a)
+        (if (test1 x a)
+            (if (test2 x a)
+                (h                         ; tip 1
+                 (f (d1 x a) (a1 x a))     ;   rec call 1,1
+                 (f (d2 x a) (a2 x a)))    ;   rec call 1,2
+                (g                         ; tip 2
+                 (f (d3 x a) (a3 x a))))   ;   rec call 2,1
+            (b x a)))                      ; tip 3
+
+  To admit this definition we had to prove:
+
+      Ordinal Conjecture
+      (o-p (m x a))
+
+      Measure Conjecture 1,1
+      (implies (and (test1 x a) (test2 x a))
+               (o< (m (d1 x a) (a1 x a))
+                   (m x a)))
+
+      Measure Conjecture 1,2
+      (implies (and (test1 x a) (test2 x a))
+               (o< (m (d2 x a) (a2 x a))
+                   (m x a)))
+
+      Measure Conjecture 2,1
+      (implies (and (test1 x a) (not (test2 x a)))
+               (o< (m (d3 x a) (a3 x a))
+                   (m x a)))
+
+  Suppose we want to prove (p x a), by induction according to the
+  scheme ``suggested'' by (f x a).  Here is the scheme:
+
+      Base Case                               ; for tip 3
+      (implies (not (test1 x a))
+               (p x a))
+
+      Induction Step 1                        ; for tip 1
+      (implies (and (test1 x a)
+                    (test2 x a)
+                    (p (d1 x a) (a1 x a))    ;   for rec call 1,1
+                    (p (d2 x a) (a2 x a)))   ;   for rec call 1,2
+               (p x a))
+
+      Induction Step 2                        ; for tip 2
+      (implies (and (test1 x a)
+                    (not (test2 x a))
+                    (p (d3 x a) (a3 x a)))   ;   for rec call 2,1
+               (p x a))
+
+  This induction is produced by the following parameter choices in the
+  Induction Principle:
+
+      \\psi	|  (p x a)	|
+      m	|  (m x a)	|
+      q_1	|  (and (test1 x a) (test2 x a))	|
+      q_2	|  (and (test1 x a) (not (test2 x a)))	|
+      \\sigma_{1,1}	|  {x <-- (d1 x a), a <-- (a1 x a)}	|
+      \\sigma_{1,2}	|  {x <-- (d2 x a), a <-- (a2 x a)}	|
+      \\sigma_{2,1}	|  {x <-- (d3 x a), a <-- (a3 x a)}	|
+
+  It should be obvious to you how these choices are determined from
+  the definition of f with measure (m x a).  For example, q_1  is the
+  conjunction of the tests leading to the first tip containing
+  recursive calls of f, and the substitutions \\sigma_{1,j}  are the
+  substitutions derived from the recursive calls in that tip.
+
+  The measure conjectures required by the Induction Principle for this
+  choice of parameters are exactly the same as the measure
+  conjectures verified when the Definitional Principle was used to
+  admit f!  That is, to use an induction suggested by an
+  already-admitted recursive function, no additional measure
+  conjectures have to be proved.
+
+  (Remark on ``exactly the same'' above.  We have propositionally
+  simplified the defining condition for the Base Case.  The Induction
+  Principle says it is (and (not q_1) (not q_2)) and the literal
+  instantiation of that here would be (and (not (and (test1 x a)
+  (test2 x a))) (not (and (test1 x a) (not (test2 x a))))), but that
+  is propositionally equivalent to (not (test1 x a)).)
+
+  But why might this induction be interesting or useful for proving (p
+  x a)?  The answer depends on (p x a), of course.  But the most
+  common situation is that we choose the induction scheme suggested
+  by some recursive function used in the conjecture to be proved.  So
+  suppose (f x a) occurs in (p x a).  Why is the suggested induction
+  likely to be helpful?  Consider the Base Case and the two Induction
+  Steps.
+
+  In the Base Case, the (f x a) occurring in (p x a) can be replaced
+  by tip 3 of the definition of f, (b x a) because the test in the
+  Base Case of the induction is the test leading to the non-recursive
+  exit from the definition.  So f has been eliminated from the proof
+  of the Base Case.
+
+  Now consider Induction Step 1.  The (f x a) occurring in (p x a) can
+  be replaced by tip 1 of the definition of f, namely
+
+      (h                         ; tip 1
+       (f (d1 x a) (a1 x a))     ;   rec call 1,1
+       (f (d2 x a) (a2 x a)))    ;   rec call 1,2
+
+  because the tests in Induction Step 1 are the tests leading to tip 1
+  of the definition.  But notice that the induction hypothesis
+  labeled ``for rec call 1,1'' in Induction Step 1 gives us a
+  hypothesis about recursive call 1,1 --- because the occurrence of
+  (f x a) in (p x a) becomes an occurrence of (f (d1 x a) (a1 x a))
+  when we apply the substitution \\sigma_{1,1} to it.  Similarly, the
+  induction hypothesis labeled ``for rec call 1,2'' gives us a
+  hypothesis about call 1,2.  Thus, the proof of Induction Step 1
+  boils down to proving, ``if the two recursive calls in this tip
+  have the property we're proving, then h of those two calls has the
+  property.'' While not exactly eliminating f from the proof, it
+  provides us with all the information that we have a right to
+  suppose about f in this case.  Usually the proof of this step
+  requires a lemma about p and h, e.g., ``if a and b have property p,
+  then so does (h a b).'' Such a lemma would eliminate f, and if we
+  had that lemma the proof of Induction Step 1 would be done.  The
+  proof of Induction Step 2 is analogous.
+
+  Thus, we see that there may well be some heuristic value in using
+  the induction suggested by (f x a) whenever you are trying to prove
+  a property of (f x a).  Occasionally it is necessary to use an
+  induction suggested by a function not appearing in the conjecture,
+  but when that occurs it is usually some easily recognized ``mash
+  up'' of other functions appearing in the conjecture.
+
+  Problem 102.
+  Recall the previously admitted
+
+      (defun f1 (i j)
+        (if (and (natp i)
+                 (natp j)
+                 (< i j))
+            (f1 (+ 1 i) j)
+            1))
+
+  Prove (equal (f1 i j) 1).
+
+  Problem 103.
+  Recall the previously admitted
+
+      (defun f2 (x)
+        (if (equal x nil)
+            2
+            (and (f2 (car x))
+                 (f2 (cdr x)))))
+
+  Prove (equal (f2 x) 2).
+
+  Problem 104.
+  Recall the previously admitted
+
+      (defun f3 (x y)
+        (if (and (endp x)
+                 (endp y))
+            3
+            (f3 (cdr x) (cdr y))))
+
+  Prove (equal (f3 x y) 3).
+
+  Problem 105.
+  Recall the previously admitted
+
+      (defun f4 (x y q)
+        (if (p x)
+            (if q
+                (f4 y (dn x) (not q))
+                (f4 y (up x) (not q)))
+            4))
+
+  Prove (equal (f4 x y q) 4).
+
+  These simple inductive exercises drive home the point that once a
+  function has been admitted (proved to terminate) then we can do
+  inductions to ``unwind'' it.  Students so frequently see induction
+  limited to ``p(n)  implies p(n+1) '' that it is easy to forget that
+  every total recursive function gives rise to an induction that is
+  appropriate for it.
+
+  Next: More Problems (see [R-AND-I-MORE-PROBLEMS]) (or Table of
+  Contents (see [R-AND-I-TABLE-OF-CONTENTS]))")
+ (R-AND-I-STILL-MORE-PROBLEMS
+  (RECURSION-AND-INDUCTION)
+  "Recursion and Induction: Still More Problems
+
+  The next several problems will lead you to define a tautology
+  checker in ACL2 and to prove that it is sound and complete.  This
+  is an excellent exercise if you are interested in theorem proving.
+
+  Problem 132.
+  An IF-expression  is a cons whose car is IF.  A quote  is a cons
+  whose car is QUOTE.  A variable  is anything besides an
+  IF-expression or a quote.  An expression  is a variable, a quote,
+  or an IF-expression.
+
+  Note: By these definitions, any object is an expression.  But we
+  typically think of IF-expressions as being of the form (IF a_1 a_2
+  a_3) and quotes being of the form (QUOTE a).  But rather than check
+  that they are of this form we will just use car and cdr to chew
+  into IFs and quotes to access the desired substructure, which we
+  will call ``arguments'' one, two, and three.
+
+  An assignment  is a list of pairs, (var . val), where var  is a
+  variable and val  is an arbitrary object (but is typically a
+  Boolean).
+
+  We define the value  of an expression under an assignment as
+  follows.  The value  of a variable is the val  associated with that
+  variable, or nil if the variable is not bound.  The value  of a
+  quote is the first argument of the quote.  The value of an
+  IF-expression depends on the value, v, of the first argument.  If v
+  is nil, the value of the IF-expression is the value of its third
+  argument; otherwise, it is the value of its second argument.
+
+  Define these concepts.
+
+  Problem 133.
+  An expression is said to be in IF-normal form  if no IF-expression
+  in the expression has an IF-expression in its first argument.
+  Thus, (IF A (IF B C D) D) is in IF-normal form, but (IF (IF A B
+  'NIL) C D) is not.  It is possible to put an expression into
+  IF-normal form while preserving its value, by repeatedly
+  transforming it with the rule:
+
+      (IF (IF a b c) x y) = (IF a (IF b x y) (IF c x y))
+
+  Define the notion of IF-normal form and admit the function norm that
+  normalizes an expression while preserving its value.
+
+  Problem 134.
+  Given an expression in IF-normal form, define the function tautp
+  that explores all feasible branches through the expression and
+  determines that every output is non-nil.  We say a branch is
+  infeasible if, in order to traverse it during evaluation under an
+  assignment, the assignment would have to assign some variable both
+  nil and non-nil.
+
+  Problem 135.
+  Define tautology-checker to recognize whether an expression has a
+  non-nil value under all possible assignments.
+
+  Problem 136.
+  Prove that your tautology-checker is sound: if it says an expression
+  is a tautology, then the value of the expression is non-nil, under
+  any assignment.
+
+  Problem 137.
+  Prove that your tautology-checker is complete: if it fails to
+  recognize an expression, then some assignment falsifies the
+  expression.
+
+  This concludes Recursion and Induction.  Are you interested in
+  learning how to use the ACL2 theorem prover?  (Maybe explore
+  <<[introduction-to-the-theorem-prover]>>?)
+
+  Next: Annotated Bibliography (see [R-AND-I-ANNOTATED-BIBLIOGRAPHY])
+  (or Table of Contents (see [R-AND-I-TABLE-OF-CONTENTS]))")
+ (R-AND-I-STRINGS
+  (R-AND-I-DATA-TYPES)
+  "Recursion and Induction: Strings
+
+  Strings in our subset of ACL2 are written as sequences of ASCII
+  characters between successive string quotes.  For example, here is
+  a string: \"Hello, World!\".  For the purposes of this document, we
+  will treat strings as atomic objects, though it is actually
+  possible to construct and deconstruct them in terms of lists of
+  character objects.
+
+  (Maybe explore <<[strings]>>?)
+
+  Next: Symbols (see [R-AND-I-SYMBOLS]) (or Table of Contents (see
+  [R-AND-I-TABLE-OF-CONTENTS]))")
+ (R-AND-I-STRUCTURAL-INDUCTION
+  (RECURSION-AND-INDUCTION)
+  "Recursion and Induction: Structural Induction
+
+  Problem 39.
+  Given the definition
+
+      (defun f (x)
+        (if (consp x)
+            (f (cdr x))
+            t))
+
+  can you prove the theorem (equal (f x) t) using the logical
+  machinery we have described so far?
+
+  ACL2 supports inductive proofs.  Its Induction Principle is quite
+  general and involves the notion of the ordinals and
+  well-foundedness.  We use a much simpler principle for now.
+
+  A substitution \\sigma  is a car/cdr substitution  on v  if the
+  binding (image) of v  under \\sigma  is a car/cdr nest around v.
+  The other bindings of \\sigma  are unrestricted.  For example,
+  \\sigma  = {x <-- (car x), y <-- (cons (cdr x) y)} is a car/cdr
+  substitution on x.
+
+  Principle of Structural Induction: Let \\psi be the term representing
+  a conjecture.  \\psi may be proved by selecting an ``induction''
+  variable x, selecting a set of car/cdr substitutions on x \\sigma_1,
+  ... , \\sigma_n, and by proving the following subgoals:
+
+      Base Case:
+      (implies (not (consp x))
+               \\psi)
+
+  and
+
+      Induction Step:
+      (implies (and (consp x)   ; test
+                    \\psi/\\sigma_1   ; induction hypothesis 1
+                    .
+                    .
+                    .
+                    \\psi/\\sigma_n)  ; induction hypothesis n
+               \\psi)  ; induction conclusion
+
+  Here is an example Induction Step.
+
+      (implies (and (consp x)
+                    \\psi/{x <-- (car x), y <-- (app x y)}
+                    \\psi/{x <-- (cdr (cdr x)), y <-- (cons x y)}
+                    \\psi/{x <-- (cdr (cdr x)), y <-- y})
+               \\psi)
+
+  Let us use structural induction to prove a theorem about tree-copy.
+  Recall the definition.
+
+      (defun tree-copy (x)
+        (if (consp x)
+            (cons (tree-copy (car x))
+                  (tree-copy (cdr x)))
+            x))
+
+  Theorem (equal (tree-copy x) x).
+
+  Proof.
+
+  Name the formula above *1.
+
+  We prove *1 by induction.  One induction scheme is suggested by this
+  conjecture -- namely the one that unwinds the recursion in
+  tree-copy.
+
+  If we let \\psi  denote *1 above then the induction scheme we'll use
+  is
+
+      (and (implies (not (consp x))
+                    \\psi)
+           (implies (and (consp x)
+                         \\psi/{x <-- (car x)}
+                         \\psi/{x <-- (cdr x)})
+                    \\psi)).
+
+  When applied to the goal at hand the above induction scheme produces
+  the following two nontautological subgoals.
+
+      Subgoal *1/2
+      (implies (not (consp x))
+               (equal (tree-copy x) x)).
+
+  But simplification reduces this to t, using the definition of
+  tree-copy and the primitive axioms.
+
+      Subgoal *1/1
+      (implies (and (consp x)                             ; hyp 1
+                    (equal (tree-copy (car x)) (car x))   ; hyp 2
+                    (equal (tree-copy (cdr x)) (cdr x)))  ; hyp 3
+               (equal (tree-copy x) x)).
+
+  But simplification reduces this to t, using the definition of
+  tree-copy and the primitive axioms.
+
+  That completes the proof of *1.
+
+  Q.E.D.
+
+  Let us look more closely at the reduction of Subgoal *1/1.  Consider
+  the left-hand side of the concluding equality.  Here is how it
+  reduces to the right-hand side under the hypotheses.
+
+      (tree-copy x)
+      =                      {def tree-copy}
+      (if (consp x)
+          (cons (tree-copy (car x))
+                (tree-copy (cdr x)))
+          x)
+      =                      {hyp 1 and Axiom 6}
+      (if t
+          (cons (tree-copy (car x))
+                (tree-copy (cdr x)))
+          x)
+      =                      {Axioms 2 and 1}
+      (cons (tree-copy (car x))
+            (tree-copy (cdr x)))
+      =                      {hyp 2}
+      (cons (car x)
+            (tree-copy (cdr x)))
+      =                      {hyp 3}
+      (cons (car x)
+            (cdr x))
+      =                      {Axioms 11 and 6 and hyp 1}
+      x
+
+  This proof is of a very routine nature: induct so as to unwind some
+  particular function appearing in the conjecture and then use the
+  axioms and definitions to simplify each case to t.
+
+  The problems below refer to function symbols defined in previous
+  exercises.  Try to prove them for the definitions you wrote.  But
+  if you cannot, then use the definitions we use in our solutions.
+  For each conjecture below that is not a theorem, show a
+  counterexample and then try to write the theorem ``suggested'' by
+  the conjecture.  For example, add a hypothesis that restricts some
+  variable so that the conjecture holds; you may even need to
+  introduce new concepts.
+
+  Warning: Proving implications by induction is a little tricky.
+  Suppose you're trying to prove (implies (p x) (q x)) by induction
+  and you choose the substitution that replaces x by (cdr x).  So the
+  Induction Step will be
+
+    Induction Step.
+    (implies (and (consp x)
+                  (implies (p (cdr x)) (q (cdr x))))
+             (implies (p x) (q x))).
+
+  By propositional calculus, this is the same as
+
+    (implies (and (consp x)
+                  (implies (p (cdr x)) (q (cdr x)))
+                  (p x))
+             (q x)).
+
+  Many students act like the induction hypothesis is that (q (cdr x))
+  is true and use that to show (q x) is true.  But the induction
+  hypothesis is actually (implies (p (cdr x)) (q (cdr x))).  It tells
+  us that (q (cdr x)) is true if (p (cdr x)) is true!  So it often
+  happens that you will use the (p x) hypothesis to prove (p (cdr x))
+  is true.  Only then can you use (q (cdr x)) to work on (q x).
+
+  Problem 40.
+  Prove
+
+      (equal (app (app a b) c) (app a (app b c))).
+
+  Problem 41.
+  Prove
+
+      (equal (app a nil) a)
+
+  Problem 42.
+  Prove
+
+      (equal (mapnil (app a b)) (app (mapnil a) (mapnil b)))
+
+  Problem 43.
+  Prove
+
+      (equal (rev (mapnil x)) (mapnil (rev x)))
+
+  Problem 44.
+  Prove
+
+      (equal (rev (rev x)) x)
+
+  Problem 45.
+  Prove
+
+      (equal (swap-tree (swap-tree x)) x)
+
+  Problem 46.
+  Prove
+
+      (equal (mem e (app a b)) (or (mem e a) (mem e b)))
+
+  Problem 47.
+  Prove
+
+      (equal (mem e (int a b)) (and (mem e a) (mem e b)))
+
+  Problem 48.
+  Prove
+
+      (sub a a)
+
+  Problem 49.
+  Prove
+
+      (implies (and (sub a b)
+                    (sub b c))
+               (sub a c))
+
+  Problem 50.
+  Prove
+
+      (sub (app a a) a)
+
+  Problem 51.
+  Define
+
+      (defun mapnil1 (x a)
+         (if (consp x)
+             (mapnil1 (cdr x) (cons nil a))
+             a))
+
+  Formalize and then prove the remark ``On lists of nils, mapnil1 is
+  commutative.''
+
+  Problem 52.
+  Define (perm x y) so that it returns t if lists x and y are
+  permutations of each other; otherwise it returns nil.
+
+  Problem 53.
+  Prove
+
+      (perm x x)
+
+  Problem 54.
+  Prove
+
+      (implies (perm x y) (perm y x)).
+
+  Problem 55.
+  Prove
+
+      (implies (and (perm x y)
+                    (perm y z))
+               (perm x z))
+
+  For several of the problems below it is necessary to have a total
+  ordering relation.  Let <<= be a non-strict total order, i.e., a
+  Boolean function that enjoys the following properties:
+
+      (and (<<= x x)                 ; Reflexive
+           (implies (and (<<= x y)   ; Anti-symmetric
+                         (<<= y x))
+                    (equal x y))
+           (implies (and (<<= x y)   ; Transitive
+                         (<<= y z))
+                    (<<= x z))
+           (or (<<= x y)             ; Total
+               (<<= y x)))
+
+  Actually, there is such a function in ACL2 and it is called
+  lexorder.  But we use the more suggestive name ``<<='' here.  On
+  the integers, <<= is just <=, but it orders all ACL2 objects.
+
+  Problem 56.
+  Define (ordered x) so that it returns t or nil according to whether
+  each pair of adjacent elements of x are in the relation <<=.  For
+  example, (ordered '(1 3 3 7 12)) would evauluate to t and (ordered
+  '(1 3 7 3 12)) would evaluate to nil.
+
+  Problem 57.
+  Define (isort x) to take an arbitrary list and return an ordered
+  permutation of it.
+
+  Problem 58.
+  Prove
+
+      (ordered (isort x)).
+
+  Problem 59.
+  Prove
+
+      (perm (isort x) x).
+
+  Problem 60.
+  Prove
+
+      (equal (isort (rev (isort x)))
+             (isort x)).
+
+  We thank Pete Manolios for suggesting this problem.
+
+  Problem 61.
+  Define
+
+      (defun rev1 (x a)
+        (if (consp x)
+            (rev1 (cdr x) (cons (car x) a))
+            a))
+
+  Prove
+
+      (equal (rev1 x nil) (rev x))
+
+  Problem 62.
+  Prove
+
+      (equal (mapnil1 x nil) (mapnil x))
+
+  Problem 63.
+  Prove
+
+      (not (equal x (cons x y)))
+
+  Problem 64.
+  Define
+
+      (defun mcflatten (x a)
+        (if (consp x)
+            (mcflatten (car x)
+                       (mcflatten (cdr x) a))
+            (cons x a)))
+
+  Prove
+
+      (equal (mcflatten x nil) (flatten x))
+
+  Next: Arithmetic (see [R-AND-I-ARITHMETIC]) (or Table of Contents
+  (see [R-AND-I-TABLE-OF-CONTENTS]))")
+ (R-AND-I-SUBSTITUTIONS
+  (RECURSION-AND-INDUCTION)
+  "Recursion and Induction: Substitutions
+
+  A substitution  is a set {v_0  <-- t_0, v_1  <-- t_1,  ...} where
+  each v_i  is a distinct variable symbol and each t_i  is a term.
+  If, for a given substitution \\sigma  and variable v, there is an i
+  such that v  is v_i, we say v  is bound  by \\sigma.  If v  is bound
+  by \\sigma, then the binding  of v  in \\sigma  is t_i, for the i
+  such that v_i  is v.  (In set theory, a substitution is just a
+  finite function that maps the v_i  to their respective t_i.)
+
+  The result of applying  a substitution \\sigma  to a term term  is
+  denoted term/\\sigma  and is defined as follows.  If term is a
+  variable, then term/\\sigma  is either the binding of term  in
+  \\sigma  or is term  itself, depending on whether term  is bound in
+  \\sigma.  If term  is a quoted constant, term/\\sigma  is term.
+  Otherwise, term  is (f  a_1   ...  a_n) and term/\\sigma  is (f
+  a_1/\\sigma   ...  a_n/\\sigma).
+
+  Problem 6.
+  Suppose \\sigma  is
+
+      {x <-- (car a),
+       y <-- (cdr x)}
+
+  What term is (car (cons x (cons y (cons '\"Hello\" z))))/\\sigma?
+
+  Next: Abbreviations for Terms (see [R-AND-I-ABBREVIATIONS-FOR-TERMS])
+  (or Table of Contents (see [R-AND-I-TABLE-OF-CONTENTS]))")
+ (R-AND-I-SYMBOLS
+  (R-AND-I-DATA-TYPES)
+  "Recursion and Induction: Symbols
+
+  Unlike many languages, Lisp provides symbols as primitive data
+  objects.  Some example symbols are t, nil, LOAD, STORE, ICONST_0,
+  prime-factors, ++, and file77.  For the purposes of this document,
+  we will treat symbols as atomic objects, though it is actually
+  possible to construct and deconstruct them in terms of strings.
+
+  For the purposes of this document, a symbol is a sequence of
+  alphabetic characters, digits, and/or certain signs (specifically,
+  +, -, *, /, =, <, >, ?, !, $, &, and _ (underscore)) that cannot be
+  read as a number.  Case is unimportant.  Symbols are parsed to have
+  the greatest length possible under the rules above.  Thus, xy is
+  one symbol, not two symbols (x and y) written without intervening
+  whitespace!
+
+  Note that t and T are different ways to write the same symbol, as
+  are nil, Nil, and NIL.  T and nil are called the Boolean symbols.
+  T is frequently used to denote true and nil is used to denote
+  false.  For reasons that will become apparent, nil is also used as
+  the empty list.
+
+  (Maybe explore <<[symbols]>>?)
+
+  Next: Pairs (see [R-AND-I-PAIRS]) (or Table of Contents (see
+  [R-AND-I-TABLE-OF-CONTENTS]))")
+ (R-AND-I-TABLE-OF-CONTENTS
+  (RECURSION-AND-INDUCTION)
+  "Recursion and Induction Table of Contents)
+
+
+Recursion and Induction Table of Contents
+
+    * Preface and Acknowledgments (see [RECURSION-AND-INDUCTION])
+    * Introduction (see [R-AND-I-INTRODUCTION])
+    * Data Types (see [R-AND-I-DATA-TYPES])
+    * Terms (see [R-AND-I-TERMS])
+    * Substitutions (see [R-AND-I-SUBSTITUTIONS])
+    * Abbreviations for Terms (see [R-AND-I-ABBREVIATIONS-FOR-TERMS])
+    * Function Definitions (see [R-AND-I-FUNCTION-DEFINITIONS])
+    * Axioms (see [R-AND-I-AXIOMS])
+    * Terms as Formulas (see [R-AND-I-TERMS-AS-FORMULAS])
+    * Definitions Revisited (see [R-AND-I-DEFINITIONS-REVISITED])
+    * Structural Induction (see [R-AND-I-STRUCTURAL-INDUCTION])
+    * Arithmetic (see [R-AND-I-ARITHMETIC])
+    * Inadequacies of Structural Recursion (see
+      [R-AND-I-INADEQUACIES-OF-STRUCTURAL-RECURSION])
+    * The Ordinals (see [R-AND-I-ORDINALS])
+    * The Definitional Principle (see [R-AND-I-DEFINITIONAL-PRINCIPLE])
+    * The Induction Principle (see [R-AND-I-INDUCTION-PRINCIPLE])
+    * Relations Between Recursion and Induction (see
+      [R-AND-I-RELATIONS-BETWEEN-RECURSION-AND-INDUCTION])
+    * More Problems (see [R-AND-I-MORE-PROBLEMS])
+    * More Inadequacies of the Definitional Principle (see
+      [R-AND-I-MORE-INADEQUACIES-OF-THE-DEFINITIONAL-PRINCIPLE])
+    * Still More Problems (see [R-AND-I-STILL-MORE-PROBLEMS])
+    * Annotated Bibliography (see [R-AND-I-ANNOTATED-BIBLIOGRAPHY])")
+ (R-AND-I-TERMS
+  (RECURSION-AND-INDUCTION)
+  "Recursion and Induction: Terms
+
+  For the purposes of this document, a term  is a variable symbol, a
+  quoted constant, or a function application written as a sequence,
+  enclosed in parenthesis, consisting of a function symbol of arity n
+  followed by n  terms.
+
+  Since car is a function symbol of arity one and cons is a function
+  symbol of arity two, then (cons (car x) y) is a term.  In more
+  conventional notation this term would be written cons (car (x ), y
+  ).  We call (car x) and y the actual expressions  or actuals  of
+  the function call  (cons (car x) y).
+
+  Semantically, terms are interpreted with respect to (i) an
+  assignment binding variable symbols to constants and (ii) an
+  interpretation of function symbols as mathematical functions.  For
+  example, suppose the variables x and y are bound, respectively, to
+  the constants 1 and (2 3 4), and suppose the function symbol cons
+  is interpreted as the function that constructs ordered pairs (as it
+  always is).  Then the meaning or value  of the term (cons x y) is
+  (1 . (2 3 4)) or, equivalently, (1 2 3 4).  That is, the value of a
+  variable is determined by the variable assignment; the value of a
+  quoted constant is that constant; and the value of a function
+  application, (f  a_1  ...  a_n), is the result of applying the
+  mathematical function assigned to f  to the values of the actuals,
+  a_i.
+
+  ACL2 provides an infinite number of variable symbols, whose syntax
+  is that of symbols.  Some example variable symbols are x, a1, and
+  temp.  The symbols t and nil are not legal variable symbols.
+
+  A quoted constant  is written by prefixing an integer, a character
+  object, a string, or a symbol by a single quote mark.  For example,
+  't, 'nil, '-3, '#\\A, '\"Hello World!\" and 'LOAD are quoted
+  constants.  Note that we do not consider '(1 2 3) a quoted
+  constant.  This is a mere technicality.  We will shortly introduce
+  some abbreviations that allow us to write '(1 2 3) as an
+  abbreviation for (cons '1 (cons '2 (cons '3 'nil))).
+
+  ACL2 also has an infinite number of function symbols  each of which
+  has an associated arity  or number of arguments.  For the moment we
+  will concern ourselves with six primitive function symbols: cons,
+  car, cdr, consp, if, and equal, described below.  Note that we
+  implicitly specify the arity of each primitive function symbol.
+
+      (cons x y) - construct and return the ordered pair (x . y).
+
+      (car x) - return the left component of x, if x  is a pair; otherwise,
+      return nil.
+
+      (cdr x) - return the right component of x, if x  is a pair;
+      otherwise, return nil.
+
+      (consp x) - return t if x  is a pair; otherwise return nil.
+
+      (if x y z) - return z  if x  is nil; otherwise return y.
+
+      (equal x y) - return t if x  and y  are identical; otherwise return
+      nil.
+
+  With these primitives we cannot do anything interesting with
+  numbers, characters, strings, and symbols.  They are just tokens to
+  put into or take out of pairs.  But we can explore most of the
+  interesting issues in recursion and induction in this setting!
+
+  (Maybe explore <<[term]>>?)
+
+  Note that if the terms \\alpha and \\beta both evaluate to the same
+  value, v, then the term (equal \\alpha \\beta) evaluates to t.  For
+  example, the terms (car (cons '3 '4)) and '3 both evaluate to the
+  value 3, so the term (equal (car (cons '3 '4)) '3) evaluates to t.
+
+  Problem 3.
+  Which of the utterances below are terms?
+
+   1. (car (cdr x))
+   2. (cons (car x y) z)
+   3. (cons 1 2)
+   4. (cons '1 '2)
+   5. (cons one two)
+   6. (cons 'one 'two)
+   7. (equal '1 (car (cons '2 '3)))
+   8. (if t 1 2)
+   9. (if 't '1 '2)
+  10. (car (cons (cdr hi-part) (car lo-part)))
+  11. car(cons x y)
+  12. car(cons(x,y))
+  13. (cons 1 (2 3 4))
+
+  Problem 4.
+  For each constant below, write a term whose value is the constant.
+
+   1. ((1 . 2) . (3 . 4))
+   2. (1 2 3)
+   3. ((1 . t) (2 . nil) (3 . t))
+   4. ((A . 1) (B . 2))
+
+  Problem 5.
+  For each term below, write the constant to which it evaluates.
+
+   1. (cons (cons '1 '2) (cons (cons '3 '4) 'nil))
+   2. (cons '1 (cons '2 '3))
+   3. (cons 'nil (cons (cons 'nil 'nil) 'nil))
+   4. (if 'nil '1 '2)
+   5. (if '1 '2 '3)
+   6. (equal 'nil (cons 'nil 'nil))
+   7. (equal 'Hello 'HELLO)
+   8. (equal (cons '1 '2) (cons '1 'two))
+
+  Next: Substitutions (see [R-AND-I-SUBSTITUTIONS]) (or Table of
+  Contents (see [R-AND-I-TABLE-OF-CONTENTS]))")
+ (R-AND-I-TERMS-AS-FORMULAS
+  (RECURSION-AND-INDUCTION)
+  "Recursion and Induction: Terms as Formulas
+
+  Logicians typically make a careful distinction between terms (whose
+  values range over objects in the domain, like the integers, etc.)
+  and formulas (whose values range over the truthvalues).  We have
+  set up two systems of propositional calculus.  At the level of
+  formulas we have the traditional equality relation, =, and the
+  logical operators &, \\/, ~, -->, and <->.  At the level of terms,
+  we have the primitive function equal and the defined propositional
+  functions and, or, not, implies, and iff.  In our term-level
+  propositional calculus, t and nil play the role of truthvalues.
+  Because terms can be written entirely with ASCII symbols (and
+  easily entered on a keyboard!) we tend to write terms and use them
+  as formulas.
+
+  For example, we might say that
+
+      (implies (and (consp x)
+                    (not (consp y)))
+               (not (equal x y)))
+
+  is a theorem, or even say
+
+      ((consp x) & ~(consp y))
+    -->
+      x != y
+
+  is a theorem.
+
+  But of course, the former cannot be a theorem because it is a term
+  and only formulas are theorems, and the latter cannot be a theorem
+  because it is not even a well-formed formula (it uses some terms as
+  though they were formulas).
+
+  If we use an ACL2 term p as though it were a formula then the term
+  should be understood as an abbreviation for the formula p != nil.
+  Thus, if we say term p is a theorem we mean it is a theorem that p
+  is not nil.
+
+  Since we assume the reader here is familiar with programming, we
+  assume this isomorphism between one syntactic category and another
+  is very familiar.  If this makes sense to you, we suggest you just
+  skip the rest of this section, including the problems below, and go
+  to Definitions Revisited (see [R-AND-I-DEFINITIONS-REVISITED]).
+  But if not, read on.
+
+  This abuse of terminology is justified by the following theorems.
+
+  Theorem. NOT is Logical Negation:
+  (not p) != nil <-> ~ (p != nil).
+
+  Proof. We handle the two directions of the <->.
+
+  Case 1.
+  (not p) != nil --> ~ (p != nil).
+
+  This is equivalent to its contrapositive:
+
+  p != nil --> (not p) = nil.
+
+  By the definition of not and Axiom 2 and the hypothesis p!= nil,
+  (not p) = (if p nil t) = nil.
+
+  Case 2.
+  ~ (p != nil) --> (not p) != nil.
+
+  The hypothesis is propositionally equivalent to p = nil.  By
+  substitution of equals for equals, the conclusion is (not nil) !=
+  nil.  By the definition of not and Axioms 3 and 1, (not nil) = (if
+  nil nil t) = t != nil.
+
+  Q.E.D.
+
+  Problem 18.
+  Prove
+  (and p q) != nil <-> (p != nil) & (q != nil).
+
+  Problem 19.
+  Prove
+  (or p q) != nil <-> (p != nil) \\/ (q != nil).
+
+  Problem 20.
+  Prove
+  (implies p q) != nil <-> (p != nil) --> (q != nil).
+
+  Problem 21.
+  Prove
+  (iff p q) != nil <-> (p != nil) <-> (q != nil).
+
+  Problem 22.
+  Prove
+  (equal x y) != nil <-> (x = y)
+
+  Note that these theorems allow us to change the propositional
+  functions to their logical counterparts as we move the ``!= nil''
+  into the term.  Furthermore, we can always drop a ``!= nil''
+  anywhere it occurs in a formula since the term with which it
+  appears would then be used as a formula and would mean the same
+  thing.
+
+  Problem 23.
+  Using the theorems above, prove that
+
+      (implies (and p (implies q r))
+               s)
+
+  is equivalent to
+
+  (p & (q --> r)) --> s
+
+  which is equivalent to
+
+       ((p & ~ q) --> s)
+      &
+       ((p & q & r) --> s)
+
+  When writing proofs on paper or the board, we tend to use formulas
+  and the short symbols =, &, \\/, ~, -->, <-> instead of the longer
+  term notation.
+
+  Problem 24.
+  Prove
+
+      (equal (car (if a b c)) (if a (car b) (car c)))
+
+  that is, prove  (car (if a b c)) = (if a (car b) (car c))
+
+  Problem 25.
+  Prove
+
+      (equal (if (if a b c) x y)
+             (if a (if b x y) (if c x y)))
+
+  Problem 26.
+  Prove
+
+      (equal (tree-copy (cons a b))
+             (cons (tree-copy a) (tree-copy b)))
+
+  Next: Definitions Revisited (see [R-AND-I-DEFINITIONS-REVISITED]) (or
+  Table of Contents (see [R-AND-I-TABLE-OF-CONTENTS]))")
  (R-EQLABLE-ALISTP
   (ALISTS ACL2-BUILT-INS)
   "Recognizer for a true list of pairs whose [cdr]s are suitable for
@@ -106147,6 +115046,186 @@ Subtopics
 
   If you supply the above ``filter'' argument, then you may also supply
   the keyword argument :dir, which is then passed to ld; see [ld].")
+ (RECURSION-AND-INDUCTION
+  (TOP)
+  "Recursion and Induction
+
+
+Recursion and Induction
+
+
+by
+
+
+Matt Kaufmann, J Strother Moore, and Warren A. Hunt, Jr.
+
+
+November 8, 2022
+
+
+Preface and Acknowledgments
+
+  These notes are for teaching yourself how to prove theorems about
+  recursively defined functions using mathematical induction.  Think
+  of this as a college-level practical math course that just happens
+  to focus on issues of concern in computing.  We assume you're
+  passingly familiar with notions from formal mathematical logic,
+  like ``axioms'' and ``rules of inference'' (like instantiation and
+  substitution of equals for equals) to derive ``new'' truths from
+  ``old'' ones.  We describe a very simple logical system and present
+  many exercises for you to do.
+
+  Our presentation is less formal than formal logicians would expect,
+  and the ``proofs'' we expect of you would be considered just
+  ``proof sketches'' by formal logicians.  But we believe we're
+  precise enough that if you follow our rules your ``proofs'' could
+  be turned into formal proofs in conventional first-order
+  mathematical logic.
+
+  Unlike a traditional course in logic, we do not focus on metatheory
+  but on lots of proofs about elementary algorithms expressed
+  recursively.  It helps if you're familiar with computer programming
+  because our logic is a subset of the programming language Lisp and
+  the exercises involve conjectures about simple list processing
+  algorithms like member, union, reverse, etc.  We do not assume
+  prior familiarity with Lisp.
+
+  In fact, the logic is a subset of the mechanized logic of the ACL2
+  system. ACL2 stands for ``A Computational Logic for Applicative
+  Common Lisp'' and the ACL2 system includes a programming language
+  and an ``automatic'' theorem prover.  But this is not a course in
+  mechanical theorem proving or how to use ACL2.  In fact, we
+  recommend that you not use the ACL2 system while doing these
+  exercises.  A good way to learn to use ACL2 --- or any of today's
+  mechanical proof systems --- is to learn to do proofs by hand.  It
+  will teach you how to define functions that are convenient to
+  analyze, how to state inductively provable theorems, how to
+  decompose theorems into simpler ``lemmas'', and how to simplify
+  terms using previously proved results.
+
+  If your goal is to learn to prove theorems about recursively defined
+  functions, work your way through these notes and do the exercises.
+  It can help if you partner with someone else so you have someone to
+  double-check your proofs.  If your goal is learn to use the ACL2
+  system to prove theorems, we recommend that you start exactly the
+  same way: work through these exercises by hand (ideally, all of
+  them).  Only then should you fire up the prover and try to use it
+  to prove the same theorems you've proved by hand.  It will be
+  educational.  The ACL2 system is a very attentive partner.
+
+  Our answers to all the exercises are available in the Answer Key,
+  which may be found in the [community-books], file
+  demos/r-and-i-answer-key-log.txt.  We urge you not to refer to the
+  Answer Key except as a last resort (and, of course, to check your
+  answers).  That file is generated by ACL2 and has a certain amount
+  of unavoidable boilerplate in it.  You should read the Lisp comment
+  at the top of the file for instructions on how to explore and
+  interpret the file.
+
+  This document started as course notes for CS389R Recursion and
+  Induction, in the Department of Computer Science of the University
+  of Texas at Austin.  The course was created in 1981 by Robert S.
+  Boyer and J Strother Moore.  It has been offered almost every year
+  since 1981, taught by Boyer, Moore, or Warren A. Hunt, Jr.
+  Initially, the course used a subset of the logic of the Nqthm
+  theorem prover [0], but around 2000 it was changed to a subset of
+  the logic of the ACL2 prover [1,2,4].  (See
+  [r-and-i-annotated-bibliography] for an annotated bibliography that
+  elaborates references in square brackets, such as ``[0]''.)
+  Mechanical theorem proving tools were not taught or used in the
+  course.
+
+  In the early 1980s, when Boyer and Moore co-taught the course, the
+  logic was presented in a bare-bones style in a few pages.  Several
+  more pages listed problems for the students to work on.  Students
+  were expected to formalize concepts and come to the blackboard and
+  present definitions and proofs.  Their classmates were expected to
+  question and critique what was being said.  Often these classroom
+  discussions just raised new problems that the students addressed in
+  subsequent class meetings.
+
+  Over time, the course notes were expanded to include explanations,
+  examples, and more problems.  Moore wrote the first version of this
+  ACL2-based document in the early 2000s, building on joint work with
+  Matt Kaufmann.  That document was edited still further by all three
+  of us after Hunt began teaching the course in 2004.  In 2022, it
+  was converted from LaTeX pdf to the hypertext format of ACL2's
+  online documentation and further tied into ACL2's documentation.
+
+  Finally, we thank the many sponsors and supporters of the Nqthm and
+  ACL2 projects over the last 40 years, as well as the many students
+  who have so carefully studied and corrected these notes and the
+  many users of Nqthm and ACL2.  See the ACL2 [Acknowledgments] page.
+
+  Next: Introduction (see [R-AND-I-INTRODUCTION]) (or Table of Contents
+  (see [R-AND-I-TABLE-OF-CONTENTS]))
+
+
+Subtopics
+
+  [R-and-i-introduction]
+      Recursion and Induction: Introduction
+
+  [R-and-i-data-types]
+      Recursion and Induction: Data Types
+
+  [R-and-i-terms]
+      Recursion and Induction: Terms
+
+  [R-and-i-substitutions]
+      Recursion and Induction: Substitutions
+
+  [R-and-i-abbreviations-for-terms]
+      Recursion and Induction: Abbreviations for Terms
+
+  [R-and-i-function-definitions]
+      Recursion and Induction: Function Definitions
+
+  [R-and-i-axioms]
+      Recursion and Induction: Axioms
+
+  [R-and-i-terms-as-formulas]
+      Recursion and Induction: Terms as Formulas
+
+  [R-and-i-definitions-revisited]
+      Recursion and Induction: Definitions Revisited
+
+  [R-and-i-structural-induction]
+      Recursion and Induction: Structural Induction
+
+  [R-and-i-arithmetic]
+      Recursion and Induction: Arithmetic
+
+  [R-and-i-inadequacies-of-structural-recursion]
+      Recursion and Induction: Inadequacies of Structural Recursion
+
+  [R-and-i-ordinals]
+      Recursion and Induction: The Ordinals
+
+  [R-and-i-definitional-principle]
+      Recursion and Induction: The Definitional Principle
+
+  [R-and-i-induction-principle]
+      Recursion and Induction: The Induction Principle
+
+  [R-and-i-relations-between-recursion-and-induction]
+      Recursion and Induction: Relations Between Recursion and Induction
+
+  [R-and-i-more-problems]
+      Recursion and Induction: More Problems
+
+  [R-and-i-more-inadequacies-of-the-definitional-principle]
+      Recursion and Induction: More Inadequacies of the Definitional
+      Principle
+
+  [R-and-i-still-more-problems]
+      Recursion and Induction: Still More Problems
+
+  [R-and-i-annotated-bibliography]
+      Recursion and Induction: Annotated Bibliography
+
+  [R-and-i-table-of-contents]
+      Recursion and Induction Table of Contents)")
  (RECURSIVEP (POINTERS)
              "See [system-utilities].")
  (REDEF
@@ -119026,6 +128105,103 @@ Subtopics
   what is called ``limited'' (see [i-limited]).
 
   This predicate is only defined in ACL2(r) (see [real]).")
+ (START-HERE
+  (ACL2)
+  "Introductory information about ACL2
+
+  This [documentation] topic provides a starting point for those who
+  are new to ACL2 or want to learn more about it.  It accommodates
+  different goals (ranging from mild curiosity about ACL2 to the
+  desire to become an expert user) and different learning styles.  A
+  quick scan should help you find a place to start that suits you.
+
+    * The ACL2 home page, at { http://www.cs.utexas.edu/users/moore/acl2/ |
+      http://www.cs.utexas.edu/users/moore/acl2/}, provides links
+      that can take you to good places to start learning about ACL2.
+    * See [about-ACL2] for basic ``administrative'' information such as how
+      to obtain and build ACL2, copyright and license material,
+      mailing lists, connection with GitHub, and so on.
+    * Overviews at a high level may be found in {The Tours |
+      https://www.cs.utexas.edu/users/moore/acl2/v8-5/combined-manual/index.html?topic=ACL2____The_02Tours}.
+      The paper {Industrial Proofs with ACL2 |
+      https://www.cs.utexas.edu/users/moore/publications/how-to-prove-thms/intro-to-acl2.pdf}
+      was written in the 1990s but is still useful for providing a
+      brief overview of what can be done with ACL2.
+    * Tutorial Introductions at various levels are available at the
+      [ACL2-tutorial] documentation topic and especially its
+      subtopics.  (There is some overlap with the present topic.)
+    * Books include the following.
+          * {Computer-Aided Reasoning: An Approach |
+            http://www.cs.utexas.edu/users/moore/publications/acl2-books/car/index.html}
+            provides a detailed introduction to ACL2 and contains
+            many exercises.
+          * {Computer-Aided Reasoning: ACL2 Case Studies |
+            http://www.cs.utexas.edu/users/moore/publications/acl2-books/acs/index.html}
+            describes some relatively early applications of ACL2,
+            including scripts as well as answers to the exercises.
+
+    * There are many projects that use ACL2.
+        * See [interesting-applications] for an overview of some projects that
+          have used ACL2.
+        * A {publications page |
+          https://www.cs.utexas.edu/users/moore/publications/acl2-papers.html}
+          has links to many books and papers.  You can also follow
+          links starting at the {ACL2 Workshops page |
+          https://www.cs.utexas.edu/users/moore/acl2/workshops.html}
+          to see programs, talks, and papers presented at ACL2
+          Workshops (25 and counting as of 2022).
+        * The {Community Books |
+          https://github.com/acl2/acl2/tree/master/books} is a
+          repository of many projects, processed virtually
+          continuously by virtue of constituting the ACL2 regression
+          suite.  Many of those projects are descried in the
+          {ACL2+books online manual |
+          http://www.cs.utexas.edu/users/moore/acl2/manuals/latest/index.html}.
+
+    * Programming with ACL2 is introduced gently in the documentation
+      topic, [gentle-introduction-to-ACL2-programming].
+    * Logical basics are presented in the [recursion-and-induction]
+      documentation topic, for teaching yourself how to prove
+      theorems about recursively defined functions using mathematical
+      induction.  There are lots of exercises.  Some may find this a
+      good way to get into ACL2, by understanding its proof system
+      before attempting to use the tool.
+    * The theorem prover is something perhaps best learned after studying
+      the logical basics above, or at least giving them a quick
+      glance.  Then you can just dive in or you can first study how
+      to use it.
+        * See [the-method] for concise guidance on the key technique for using
+          the ACL2 prover effectively.
+        * See [introduction-to-the-theorem-prover] for a detailed discussion of
+          how to be an effective user of the ACL2 theorem prover,
+          including a focus on its primary proof technique,
+          rewriting.
+        * The paper ``{How to Prove Theorems Formally |
+          https://www.cs.utexas.edu/users/moore/publications/how-to-prove-thms/main.pdf}
+          guides the reader towards effective use of ACL2, with
+          exercises included.  Quoting the abstract: ``The real
+          purpose of this paper is to answer the question how does
+          one construct and manage large mechanically checked proofs
+          (in ACL2)?''.
+
+    * {The ACL2 Sedan | http://acl2s.ccs.neu.edu/acl2s/} (see [ACL2-sedan])
+      is an Eclipse-based plug-in that provides a modern development
+      environment and other capabilities that may be helpful for new
+      ACL2 users.
+    * A basic web-based interface to ACL2 is {Proof Pad |
+      http://new.proofpad.org}.
+
+
+Subtopics
+
+  [About-ACL2]
+      General information About ACL2
+
+  [ACL2-tutorial]
+      Tutorial introduction to ACL2
+
+  [Gentle-introduction-to-ACL2-programming]
+      A Gentle Introduction to ACL2 Programming")
  (START-PROOF-TREE
   (PROOF-TREE)
   "Start displaying proof trees during proofs
