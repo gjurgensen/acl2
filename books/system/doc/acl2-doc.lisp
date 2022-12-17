@@ -26881,6 +26881,40 @@ ld) and @(tsee include-book)"
  (see @(see set-waterfall-parallelism)), statistics about parallel execution
  are printed instead of the usual information.</p>")
 
+(defxdoc do$
+  :parents (loop$ do-loop$)
+  :short "Definition of @('do$')"
+  :long "<p>@('Do$') is the logical function that interprets @('do')
+  @('loop$')s.  See @(see do-loop$) for a discussion of @('do$').</p>
+
+  <p>The function takes seven arguments but only the first five are
+  relevant to its logical value.</p>
+
+  <ul>
+
+  <li>@('measure-fn') &mdash; a @(tsee lambda) object that computes the measure
+  that supposedly decreases (under @(tsee l<)) on each iteration of the
+  @('do-fn') and is checked after each iteration, </li>
+
+  <li>@('alist') &mdash; an alist the binds the variable symbols used in the
+  body and @('finally') clause (if any) to their values,</li>
+
+  <li>@('do-fn') &mdash; a @('lambda') object that computes the results of one
+  iteration, where the results are represented by a triple consisting of an
+  exit token that indicates where control goes next, the value (if a
+  @('return') was executed), and a new @('alist'),</li>
+
+  <li>@('finally-fn')&mdash; a @('lambda') object that computes the value of
+  the @('finally') clause, and</li>
+
+  <li>@('default') &mdash; the value to be returned if the @('measure') fails
+  to decrease.</li>
+
+  </ul>
+
+  @(def do$)
+  ")
+
 (defxdoc do-loop$
   :parents (loop$)
   :short "Iteration with @(tsee loop$) using local variables and @(see stobj)s"
@@ -26889,7 +26923,7 @@ ld) and @(tsee include-book)"
  documentation on @('DO') @('loop$') expressions, beginning with an informal
  introduction based largely on examples and then continuing with detailed
  syntax and semantics.  For a discussion of proofs about @('loop$')s, see @(see
- loop$-proofs).</p>
+ stating-and-proving-lemmas-about-loop$s).</p>
 
  <p>More examples of @(tsee loop$) expressions, including @('DO') @('loop$')s,
  may be found in @(see community-book) @('projects/apply/loop-tests.lisp').</p>
@@ -26973,6 +27007,10 @@ ld) and @(tsee include-book)"
  (120)
  ACL2 !>
  })
+
+ <p>See @(see lp-section-14) of the @('Loop$') Primer for some exerices in
+ writing and executing @('DO') @('Loop$')s (with answers in a Community Book).
+ But remember to come back here when you get to the end of that section.</p>
 
  <p><b>Parallel Assignment Using @('Mv-setq')</b></p>
 
@@ -27302,7 +27340,7 @@ ld) and @(tsee include-book)"
  603
  to
  603.
- Logically, do$ returns ACL2_INVISIBLE::|The Live State Itself| in this
+ Logically, @('do$') returns ACL2_INVISIBLE::|The Live State Itself| in this
  situation.
 
 
@@ -34939,7 +34977,7 @@ current fast alists."
   documentation on @('FOR') @('loop$') expressions, beginning with informal
   discussion and then continuing with detailed syntax (General Form) and
   semantics.  For a discussion of proofs about @('loop$')s, see @(see
-  loop$-proofs).</p>
+  stating-and-proving-lemmas-about-loop$s).</p>
 
   <p>Examples of @(tsee loop$) expressions, including @('FOR') @('loop$')s, may
   be found in @(see community-book) @('projects/apply/loop-tests.lisp').</p>
@@ -35010,6 +35048,10 @@ current fast alists."
   <p>This is sometimes necessary in the verification of the @(see guard)s for
   the @('loop$') body because Common Lisp's @('OF-TYPE') clauses do not permit
   you to relate one variable to another.</p>
+
+  <p>See @(see lp-section-6) of the @('Loop$') Primer for some exercises in
+  writing @('FOR') @('Loop$')s (with answers in a Community Book).  But
+  remember to come back here when you get to the end of that section.</p>
 
   <h3>General Form</h3>
 
@@ -35414,6 +35456,11 @@ current fast alists."
   since the target list is a list of tuples of iteration variable values and
   the @('UNTIL') and @('WHEN') forms may refer to global variables.</p>
 
+  <p>See @(see lp-section-10) of the @('Loop$') Primer for a step-by-step
+  discussion of the evaluation of the formal semantics of an example of a fancy
+  @('Loop$').  But remember to come back here when you get to the end of that
+  section.</p>
+
   <h4>Special Guard Conjectures for @('FOR') @('loop$')s</h4>
 
   <p>Since every @('loop$') expands to a call of a @('loop$') scion on a lambda
@@ -35442,6 +35489,11 @@ current fast alists."
   the body of an @('APPEND') @('loop$') produces a true list.</li>
 
   </ul>
+
+  <p>See @(see lp-section-8) of the @('Loop$') Primer for some exercises in
+  converting recursive functions to guard verified functions using @('FOR')
+  @('loop$')s rather than recursion (with answers in a Community Book).  But
+  remember to come back here when you get to the end of that section.</p>
 
   <h4>Discussion of Why LOOP$s Have Special Guards</h4>
 
@@ -39454,8 +39506,8 @@ current fast alists."
  that the program terminates.  We do not want to deal with proofs of any sort in this guide, so
  we'll stay in @(':program') mode.)</p>
 
- <p>Now type &ldquo;(+ 2 2)&rdquo;.  You should see the answer, @('4') printed
- on the next line.  This illustrates the basic behavior of ACL2's
+ <p>Now type &ldquo;@('(+ 2 2)')&rdquo;.  You should see the answer, @('4')
+ printed on the next line.  This illustrates the basic behavior of ACL2's
  read-eval-print loop.  The display below shows several other examples too.</p>
 
  <code>
@@ -52270,12 +52322,15 @@ tables in the current Hons Space."
  programming language that you can define simple functions, run them, and read
  and write ACL2 constants and terms.  For some examples of what we'll take for
  granted about ACL2 programming, see @(see
- programming-knowledge-taken-for-granted).</p>
+ programming-knowledge-taken-for-granted).  If you want a brief tutorial on the
+ ACL2 programming language see @(see
+ gentle-introduction-to-acl2-programming).</p>
 
  <p>We also assume you know enough about logic to understand, for example, the
  words we use to talk about formulas and proofs.  To see some examples of what
  we'll take for granted about your knowledge of logic terminology, see @(see
- logic-knowledge-taken-for-granted).</p>
+ logic-knowledge-taken-for-granted).  If you want an introduction to the ACL2
+ logic work your way through @(see recursion-and-induction).</p>
 
  <p>When you give the theorem prover a goal formula to prove, it tries to prove
  it by breaking it down into subgoals, each of which must be proved in order to
@@ -59085,15 +59140,41 @@ forms allowed for a @('let') form are  @('ignore'), @('ignorable'), and
  @(see for-loop$) and @(see do-loop$) (respectively) for their full
  documentation.</p>
 
+ <p>@('Loop$') was introduced into ACL2 in Version 8.2 (May, 2019), over 20
+ years after ACL2 was first released.  So there are many experienced ACL2 users
+ have never used @('loop$').  The @('Loop$') Primer, see @(see loop$-primer),
+ is textbook-style introduction, meant to be read linearly and may be a good
+ starting place for you.  The primer follows a &ldquo;monkey-see
+ monkey-do&rdquo; approach, showing lots of examples.  Sample proofs are worked
+ out in detail and then the reader is challenged to apply those lessons to
+ exercises.  Solutions to the exercises are provided in books among the
+ Community Books.  Depending on your preferred learning style and familiarity
+ with @('loop$') and ACL2 in general, you might want to work your way through
+ the primer (see @(see loop$-primer)) instead of bouncing around the hypertext
+ user's manual.</p>
+
  <p>The Introduction below is followed by a discussion of types and guards.
- For a discussion of how to prove inductive theorems about @('loop$')s see
- @(see loop$-proofs).  Also, for a summary of how the rewriter handles
- @('apply$'), @('ev$'), and @('loop$') @(see scion)s, see @(see
- rewriting-calls-of-apply$-ev$-and-loop$-scions).</p>
+ For a discussion of how to state effective lemmas about @('loop$')s and how to
+ prove inductive theorems about @('loop$')s see @(see
+ stating-and-proving-lemmas-about-loop$s).  Also, for a summary of how the
+ rewriter handles @('apply$'), @('ev$'), and @('loop$') @(see scion)s, see
+ @(see rewriting-calls-of-apply$-ev$-and-loop$-scions).</p>
 
  <p>But before we get started we emphasize a few key points.</p>
 
  <ul>
+
+ <li>As noted, The Loop$ Primer (see @(see loop$-primer)) may be a good place
+ to start if you're using ACL2 @('loop$')s for the first time.</li>
+
+ <li>The Table of Contents of the Loop$ Primer (see @(see lp-section-0)) lists
+ some sensible entry points to primer.  You'll see sections devoted to
+ examples, sample proofs, exercises, etc.  Keep the primer in mind as an
+ additional resource.  For example, you might visit @('Loop$') Primer Section
+ 6 (@(see lp-section-6)) for some exercises on writing @('loop$')s and, when
+ you get to the end, ignore the &ldquo;Now go to @(see lp-section-7),&rdquo;
+ and use your browser's Back key to return to the general hypertext user's
+ manual.</li>
 
  <li><b>Many examples</b> of @(tsee loop$) expressions may be found in @(see
  community-book) @('projects/apply/loop-tests.lisp').</li>
@@ -60165,14 +60246,14 @@ forms allowed for a @('let') form are  @('ignore'), @('ignorable'), and
             (member-equal x lst)))
   })
 
-  <p>@('Member-equal-loop$') has a @(':guard') of @('(true-listp lst)').  This is
-  expected by Common Lisp when running a @('loop') with range @('on lst').  But
-  in our @('loop$') above we also wrote that the iteration variable @('tail')
-  satisfies @('true-listp').  We do that so that ACL2 can prove the guard on
-  @('(car tail)') in the @('thereis') clause.  (We could change ACL2 to infer
-  this type for @('tail') in this special case, but more generally, if some
-  property <i>p</i> holds for @('lst') what property holds for every tail of
-  @('lst')?)</p>
+  <p>Since @('member-equal') has a guard of @('(true-listp lst)'), we will give
+  our @('member-equal-loop$') the same guard.  But in our @('loop$') above we
+  also wrote that the iteration variable @('tail') satisfies @('true-listp').
+  We do that so that ACL2 can prove the guard on @('(car tail)') in the
+  @('thereis') clause.  (We could change ACL2 to infer this type for @('tail')
+  in this special case, but more generally we would prefer to have an effective
+  heuristic for transfering arbitrary properties of @('lst') to relevant
+  properties of @('tail').)</p>
 
   <p>The guard obligations for @('member-equal-loop$') are obscure because we
   haven't explained the formal semantics of @('loop$') yet.  But we do not
@@ -60188,7 +60269,8 @@ forms allowed for a @('let') form are  @('ignore'), @('ignorable'), and
   <p>After admitting @('member-equal-loop$') ACL2 can prove inductively that it is
   equal to @('member-equal').  We'll come back to that later too.</p>
 
-  <p>An alternative way to specify the type of @('tail') would be to write</p>
+  <p>An alternative way to specify the type of @('tail') would be to add a @(':guard')
+  rather than an @('of-type') expression.</p>
 
   @({
   (defun member-equal-loop$ (x lst)
@@ -60199,27 +60281,24 @@ forms allowed for a @('let') form are  @('ignore'), @('ignorable'), and
            (if (equal x (car tail)) tail nil)))
   })
 
-  <p>Adding a @(':guard') after the @('thereis') or other @('loop$') operator
-  is more general than adding Common Lisp's @('of-type') to an iteration
-  variable.  The @('of-type') construct only allows you to express a constraint
-  involving the one variable it's associated with, e.g., you can say &ldquo;
-  @('lst') is a @('true-listp').&rdquo;  But with @(':guard') you can relate
-  different variables, e.g., &ldquo;@('lst') is a @('true-listp') and its @('len')
-  is the same as the @('len') of @('ylst').&rdquo;</p>
+  <p>The @(':guard') feature of ACL2 is more flexible than @('of-type') because
+  guards allow you to use multiple variables to express a constraint, while
+  @('of-type') implicitly limits the assertion to the variable being
+  introduced.  For example, with a guard you could say @('(subsetp-equal tail
+  lst)') while you cannot express such a constraint with @('of-type').
+  However, @('of-type') is understood by the Common Lisp compiler which might
+  optimize the compiled code using that type information, while guards are not
+  seen by the compiler.</p>
 
   <p>When you use a @('loop$') in a @('defun') to be guard verified, be sure to
-  constrain its iteration variables (and global variables) appropriately for
-  their use in subsequent expressions.  Sometimes you can constrain an
-  iteration variable with an @('of-type') but other times you may need to write
-  a @(':guard') expression after the @('when'), the @('until'), and/or the
-  @('loop$') operator.  ACL2 will take any @('of-type') information and conjoin
-  it to any @(':guard').</p>
-
-  <p>The reason you might want to write @('of-type') specifications when you
-  can is that Common Lisp compilers &ldquo;understand&rdquo; them and may produce
-  optimized code.  @(':Guard')s are an ACL2 idiom that compilers just ignore.
-  But @(':guard')s are often necessary to verify that a @('loop$') satisfies
-  all the restrictions Common Lisp imposes.</p>
+  constrain its iteration variables (and global variables) appropriately so you
+  can verify the guards of the body.  (You are also allowed to specify
+  different guards for any @('when') and @('until') expressions.)  We generally
+  split our constraints between @('of-type') and @(':guard') to inform the
+  compiler of simple types, while more elaborate guard conditions are sometimes
+  necessary to verify the guards of the body, etc.  ACL2 will take any
+  @('of-type') information and conjoin it to any @(':guard') when doing guard
+  verification.</p>
 
   <p>Now go to @(see lp-section-8) (or return to the <see topic='@(url
   lp-section-0)'>Table of Contents</see>).</p>")
@@ -60238,16 +60317,12 @@ forms allowed for a @('let') form are  @('ignore'), @('ignorable'), and
   problem starts with one or more recursive functions.  Admit those functions
   in your session.  Then define equivalent versions using @('loop$')s instead
   of recursion.  Make sure each of your @('defun')s is admitted and guard
-  verified.  Try to ensure that the @('loop$') version is equal to the
-  recursive version of each function.  Ideally, the equivalence should be
-  unconditional, but sometimes it is impossible to achieve unconditional
-  equivalence with @('FOR') @('loop$') and you'll have to add some hypotheses
-  to the equivalence theorem, like @('(true-listp x)').</p>
-
-  <p>Since a main motivation for using @('loop$') is the runtime efficiency of
-  the compiled raw Lisp, and since no ACL2 function is executed in raw Lisp
-  unless the guards are verified, you may condition your equivalences on the
-  guard of the recursive function you're implementing with @('loop$')s.</p>
+  verified.  Try to ensure that the @('loop$') version is unconditionally equal
+  to the recursive version of each function.  But you might find more elegant
+  solutions if you're willing to condition your equivalences on the guards of
+  the recursive versions.  After all, a main motivation for using @('loop$') is
+  the runtime efficiency of the compiled raw Lisp, and since no ACL2 function
+  is executed in raw Lisp unless the guards are verified.</p>
 
   <p>Finally, you need not use ACL2 to prove that your @('loop$') functions
   correctly implement their recursive counterparts.  But you should be aware
@@ -60340,12 +60415,19 @@ forms allowed for a @('let') form are  @('ignore'), @('ignorable'), and
 
   <p><b>LP8-1</b> Define @('sum-vals-loop$') which is like our solution shown
   for @('sum-vals') above, except instead of using @('symbol-to-integer-alist')
-  as the @(':guard') write the :guard as @('(and (true-listp alist) (loop$
+  as the @(':guard') write the @(':guard') as @('(and (true-listp alist) (loop$
   ...))').  Be sure your definition is admitted and guard verified.</p>
 
-  <p>The annoying conjunct @('(true-listp alist)') in the new @(':guard') is
-  due to the fact that there is no way to write a @('FOR') @('loop$') in ACL2
-  that checks whether something is a @('true-listp').</p>
+  <p>If you want a slightly more challenging problem, omit the @('(true-listp
+  alist)') from the @(':guard') and use a @('FOR') @('loop$')
+  &ldquo;@('ON')&rdquo; @('alist').  FYI: Common Lisp requires
+  &ldquo;@('IN')&rdquo; @('loop$')s to be over a @('true-listp') target, but
+  there is no such requirement for &ldquo;@('ON')&rdquo; @('loop$')s.</p>
+
+  <p>You can always convert an &ldquo;@('IN')&rdquo; @('loop$') governed by a
+  @('true-listp') check to an &ldquo;@('ON')&rdquo; @('loop$') without the
+  check.  See our solutions.  But because of that, we'll use the more elegant
+  &ldquo;@('IN')&rdquo; solutions in the rest of these problems.</p>
 
   &mdash;&mdash;&mdash;&mdash;&mdash;&mdash;&mdash;&mdash;&mdash;&mdash;
 
@@ -60479,24 +60561,28 @@ forms allowed for a @('let') form are  @('ignore'), @('ignorable'), and
   :long "<h3>LP9: Semantics of @('FOR') @('Loop$')s</h3>
 
   <p>For a thorough discussion of the semantics of @('FOR') @('loop$')s see
-  @(see for-loop$), specifically the section &ldquo;Semantics&rdquo; which includes two
-  subsections, &ldquo;Semantics of Simple @('Loop$')s&rdquo; and &ldquo;Semantics of Fancy
-  @('Loop$')s.&rdquo;  We discuss @('DO') @('loop$')s later.  In this section of the
-  primer we just present some examples to drive home a few important points
-  about @('FOR') @('loop$')s, namely</p>
+  @(see for-loop$), specifically the section &ldquo;Semantics&rdquo; which
+  includes two subsections, &ldquo;Semantics of Simple @('Loop$')s&rdquo; and
+  &ldquo;Semantics of Fancy @('Loop$')s.&rdquo; &ldquo;Fancy&rdquo; @('FOR')
+  @('loop$')s are @('FOR') @('loop$')s involving multiple iteration variables
+  and/or use of &ldquo;global&rdquo; (i.e., non-iteration) variables in the
+  @('loop$') body or the @('until') or @('when') clauses. We discuss @('DO')
+  @('loop$')s later.  In this section of the primer we just present some
+  examples to drive home a few important points about @('FOR') @('loop$')s,
+  namely</p>
 
   <ul>
 
   <li>The semantics of a @('loop$') statement is obtained by translating the
   @('loop$') statement, as with the command @(':')@(tsee trans).</li>
 
-  <li>However, translation inserts a lot of tags into the formal term it produced.
-  These tags allow us to execute @('loop$') statements more efficiently in the
-  top-level ACL2 read-eval-print @('loop$').  The tags on a translated
-  @('loop$'), <i>term</i>, can be removed the @(':')@(tsee tc) (&ldquo;translate and
-  clean&rdquo;) command and its variants @(':tca') and @(':tcp').  When we exhibit
-  semantics we typically show these simplified, equivalent terms produced by
-  one of these commands.</li>
+  <li>However, translation inserts a lot of tags into the formal term it
+  produced.  These tags allow us to execute @('loop$') statements more
+  efficiently in the top-level ACL2 read-eval-print @('loop$').  The tags on a
+  translated @('loop$'), <i>term</i>, can be removed by the @(':')@(tsee
+  tc) (&ldquo;translate and clean&rdquo;) command and its variants @(':tca')
+  and @(':tcp').  When we exhibit semantics we typically show these simplified,
+  equivalent terms produced by one of these commands.</li>
 
   <li>The semantics of @('FOR') @('loop$')s look quite different from the
   semantics of @('DO') @('loop$')s.  Furthermore, the semantics of simple
@@ -60732,7 +60818,10 @@ forms allowed for a @('let') form are  @('ignore'), @('ignorable'), and
 
   <p>For a still-more elaborate @('FOR') @('loop$') and a step-by-step
   description of how the value of the formal semantics is computed, go to @(see
-  lp-section-10).</p>")
+  lp-section-10).</p>
+
+  <p>Now go to @(see lp-section-10) (or return to the <see topic='@(url
+  lp-section-0)'>Table of Contents</see>).</p>")
 
 (defxdoc lp-section-10
 
@@ -62224,10 +62313,6 @@ forms allowed for a @('let') form are  @('ignore'), @('ignorable'), and
   <li>The Method (see @(see the-method)) is a good way to proceed:  try to
   prove the theorem expecting it to fail and look at the checkpoints.</li>
 
-  <li>@('Do') @('loop$')s, unlike recursive functions and @('FOR') @('loop$'),
-  do not suggest inductions to ACL2.  So some other term or a hint must suggest
-  an appropriate induction.</li>
-
   <li>Unsurprisingly, the theorem above has to be <i>generalized</i> before it
   can be proved.  But it can feel strange to generalize a @('loop$').</li>
 
@@ -62235,10 +62320,12 @@ forms allowed for a @('let') form are  @('ignore'), @('ignorable'), and
   remember that before rewrite rules are applied the interior terms are
   rewritten.  In particular, ACL2 can rewrite the bodies of the @('lambda')
   objects.  The most common changes are that non-recursive functions are
-  generally expanded (depending on the theory in use) and @('IF') expressions
+  generally expanded (depending on the theory in use) and @('IF')s
   are normalized.  That means we need to normalize the bodies of any @('loop$')
-  we use in a lemma if we expect that lemma to match a term being
-  rewritten!</li>
+  we use in a lemma if we expect that lemma to match a term being rewritten!
+  This observation is relevant here because @(tsee zp) is non-recursively
+  defined and so will expand when the body of the @('loop$') above is
+  rewritten.</li>
 
   <li>ACL2 does not display @('do$') terms as @('DO') @('loop$')s.  So get
   used to reading @('do$') terms and thinking of @('loop$') statements!
@@ -62247,7 +62334,14 @@ forms allowed for a @('let') form are  @('ignore'), @('ignorable'), and
 
   </ul>
 
-  <p><b>A Recipe for Proving Theorems about @('DO') @('Loop$')s</b></p>
+  <p><b>A Tedious Recipe for Proving Theorems about @('DO') @('Loop$')s</b></p>
+
+  <p>When you first start proving theorems about @('DO') @('loop$')s it might
+  be helpful to follow the tedious recipe below.  It will familiarize you with
+  the semantics of @('DO') @('loop$')s and teach you certain techniques that
+  are easy applications of lessons you've already internalized as an
+  experienced ACL2 user, albeit one unfamiliar with @('loop$').  But after a
+  little experience you'll find it straightforward to skip some steps!</p>
 
   <ul>
   <li>Use The Method to find the normal form of the @('loop$').</li>
@@ -62261,10 +62355,10 @@ forms allowed for a @('let') form are  @('ignore'), @('ignorable'), and
   things about @('DO') @('loop$')s.</li>
 
   <li>Prove that the @('loop$') computes the same value as the function.  We
-  frequently refer to this as &ldquo;lemma 1&rdquo; in the recipe.
-  Generally you will have to generalize the @('loop$') to prove it by the
-  induction suggested by the function.  And you will have to write the normal
-  form of the @('loop$') body instead of the &ldquo;pretty&rdquo; form in the main
+  frequently refer to this as &ldquo;lemma 1&rdquo; in the recipe.  Generally
+  you will have to generalize the @('loop$') to prove it by the induction
+  suggested by the function.  And you will have to write the normal form of the
+  @('loop$') body instead of the &ldquo;pretty&rdquo; form used in the main
   theorem so this lemma can be used to hit the rewritten @('loop$') in the
   proof of the main theorem later.</li>
 
@@ -62277,52 +62371,79 @@ forms allowed for a @('let') form are  @('ignore'), @('ignorable'), and
   </ul>
 
   <p>Of course, as with all &ldquo;recipes&rdquo;, sometimes you have to adjust
-  depending on the ingredients at hand.  Sometimes you do not have to define a
-  special function because a function already in the conjecture suggests an
-  appropriate induction.  Sometimes you may find it easier to copy the @('do$')
-  form revealed by The Method into your statement of lemma 1 and generalize
-  that form, rather than try to express lemma 1 as a @('loop$').  You may also
-  be content to skip the &ldquo;intermediate stop&rdquo; of lemma 1 altogether
-  and prove that the @('loop$') satisfies a generalized specification,
-  sometimes providing an @(':induct') hint instead of inserting the special
-  function into the lemma.  Sometimes you do not have to generalize.  Sometimes
-  instead of proving lemma 1 and lemma 2 you can just prove the main goal
-  directly.  As an experienced ACL2 user you will recognize when you can skip
-  steps in this recipe.  We spell the recipe out rigidly here just to give you
-  one promising way to proceed.</p>
+  depending on the ingredients at hand.  Sometimes you can just write the body of
+  the @('loop$') in normal form to begin with.   Sometimes you do not have to define a
+  special function because the @('loop$') itself or a function already in the
+  conjecture suggests an appropriate induction.  Sometimes you may find it
+  easier to copy the @('do$') form revealed by The Method into your statement
+  of lemma 1 and generalize that form, rather than try to express lemma 1 as a
+  @('loop$').  You may also be content to skip the &ldquo;intermediate
+  stop&rdquo; of lemma 1 altogether and prove that the @('loop$') satisfies a
+  generalized specification, sometimes providing an @(':induct') hint instead
+  of inserting the special function into the lemma.  Sometimes you do not have
+  to generalize.  Sometimes instead of proving lemma 1 and lemma 2 you can just
+  prove the main goal directly.  As an experienced ACL2 user you will recognize
+  when you can skip steps in this recipe.  We spell the recipe out rigidly here
+  just to give you one promising way to proceed.</p>
 
-  <p>So here goes!  Following the recipe to prove @('main') above, we first try
-  The Method.  We get this checkpoint after no inductions are suggested.</p>
+  <p>We're going to prove the theorem</p>
 
   @({
+  (defthm main
+    (implies (natp n)
+             (equal (loop$ with i = n
+                           with ans = 0
+                           do
+                           (if (zp i)
+                               (return ans)
+                               (progn (setq ans (+ 1 ans))
+                                      (setq i (- i 1)))))
+                    n)))
+  })
+
+  <p>both ways, first by following the tedious recipe, and then the way a user
+  familiar with @('DO') @('loop$') proofs might do it.</p>
+
+  <p>So here goes!  Following the recipe to prove @('main') above, we first try
+  The Method.  The prover tries an induction suggested by the @('DO')
+  @('loop$'), namely induction on @('N') by @('-1'), but without instantiating
+  @('ANS') because the initial value of @('ANS') is the constant @('0').  We
+  know this proof will fail and it does.  The pre-induction checkpoint is shown
+  below.</p>
+
+  @({
+  *** Key checkpoint at the top level: ***
+
   Goal''
   (IMPLIES
    (AND (INTEGERP N) (<= 0 N))
    (EQUAL
     (DO$
-      (LAMBDA$ (ALIST)
-        (ACL2-COUNT (CDR (ASSOC-EQ-SAFE 'I ALIST))))
-      (CONS (CONS 'I N) '((ANS . 0)))
-      (LAMBDA$ (ALIST)
-        (IF (INTEGERP (CDR (ASSOC-EQ-SAFE 'I ALIST)))
-            (IF (< 0 (CDR (ASSOC-EQ-SAFE 'I ALIST)))
-                (LIST NIL
-                      NIL
-                      (LIST (CONS 'I (+ -1 (CDR (ASSOC-EQ-SAFE 'I ALIST))))
-                            (CONS 'ANS (+ 1 (CDR (ASSOC-EQ-SAFE 'ANS ALIST))))))
-                (LIST :RETURN
-                      (CDR (ASSOC-EQ-SAFE 'ANS ALIST))
-                      (LIST (CONS 'I (CDR (ASSOC-EQ-SAFE 'I ALIST)))
-                            (CONS 'ANS (CDR (ASSOC-EQ-SAFE 'ANS ALIST))))))
-            (LIST :RETURN
-                  (CDR (ASSOC-EQ-SAFE 'ANS ALIST))
-                  (LIST (CONS 'I (CDR (ASSOC-EQ-SAFE 'I ALIST)))
-                        (CONS 'ANS (CDR (ASSOC-EQ-SAFE 'ANS ALIST)))))))
        (LAMBDA$ (ALIST)
-         (LIST NIL
-               NIL
-               (LIST (CONS 'I (CDR (ASSOC-EQ-SAFE 'I ALIST)))
-                     (CONS 'ANS (CDR (ASSOC-EQ-SAFE 'ANS ALIST))))))
+                (ACL2-COUNT (CDR (ASSOC-EQ-SAFE 'I ALIST))))
+       (CONS (CONS 'I N) '((ANS . 0)))
+       (LAMBDA$
+            (ALIST)
+            (IF (INTEGERP (CDR (ASSOC-EQ-SAFE 'I ALIST)))
+                (IF (< 0 (CDR (ASSOC-EQ-SAFE 'I ALIST)))
+                    (LIST NIL NIL
+                          (LIST (CONS 'I
+                                      (+ -1 (CDR (ASSOC-EQ-SAFE 'I ALIST))))
+                                (CONS 'ANS
+                                      (+ 1 (CDR (ASSOC-EQ-SAFE 'ANS ALIST))))))
+                    (LIST :RETURN (CDR (ASSOC-EQ-SAFE 'ANS ALIST))
+                          (LIST (CONS 'I (CDR (ASSOC-EQ-SAFE 'I ALIST)))
+                                (CONS 'ANS
+                                      (CDR (ASSOC-EQ-SAFE 'ANS ALIST))))))
+                (LIST :RETURN (CDR (ASSOC-EQ-SAFE 'ANS ALIST))
+                      (LIST (CONS 'I (CDR (ASSOC-EQ-SAFE 'I ALIST)))
+                            (CONS 'ANS
+                                  (CDR (ASSOC-EQ-SAFE 'ANS ALIST)))))))
+       (LAMBDA$ (ALIST)
+                (LIST NIL NIL
+                      (LIST (CONS 'I (CDR (ASSOC-EQ-SAFE 'I ALIST)))
+                            (CONS 'ANS
+                                  (CDR (ASSOC-EQ-SAFE 'ANS ALIST))))))
        NIL NIL NIL)
     N))
   })
@@ -62331,7 +62452,7 @@ forms allowed for a @('let') form are  @('ignore'), @('ignorable'), and
   object in the @('do$').  The @('(ZP I)') in our original @('DO') @('loop$')
   has opened up, introducing @('(INTEGERP i)') and @('(< 0 i)') and @('IF')
   normalization -- except instead of seeing the simple variable @('I') we see
-  its current value in @('ALIST').</p>
+  its current value in the @('ALIST') being computed on each iteration.</p>
 
   <p><b>This is valuable information! It tells us what the rewritten body of
   the @('loop$') looks like in the theory in which our proof is being
@@ -62354,7 +62475,8 @@ forms allowed for a @('let') form are  @('ignore'), @('ignorable'), and
   to the function, but we have to generalize it so it can be proved by induction
   and we have to use the normal form of the body.  We could state the lemma
   in terms of @('DO$') of course, but with a little practice you can usually
-  &ldquo;reverse engineer&rdquo; the desired lemma into a @('loop$').</p>
+  &ldquo;reverse engineer&rdquo; the desired lemma into a @('loop$').  So here
+  is the so-called &ldquo;lemma 1&rdquo;.</p>
 
   @({
   (defthm lemma1
@@ -62374,11 +62496,58 @@ forms allowed for a @('let') form are  @('ignore'), @('ignorable'), and
 
   <p>Note that we generalized the initial value of @('ans') in the @('loop$')
   from @('0') to @('ans0') and used @('ans0') as the accumulator in
-  @('(copy-nat-ac n ans0)').  Note also that instead of writing the
-  @('loop$') body with @('(zp i)') we used the normalized expanded version we
-  saw in the checkpoint.</p>
+  @('(copy-nat-ac n ans0)').</p>
 
-  <p>Next we prove the lemma equating the recursive function with
+  <p>By the way, we could have written @('lemma1') in terms of the @('DO$')
+  term shown in the checkpoint, rather than as a @('loop$').  But we have to
+  generalize that @('0') whether we use a @('loop$') or the @('DO$') term.
+  The generalized @('DO$') form of @('lemma1') is</p>
+
+  @({
+  (defthm lemma1
+    (implies
+     (and (natp n)
+          (natp ans0))
+     (equal
+      (DO$
+       (LAMBDA$ (ALIST)
+                (ACL2-COUNT (CDR (ASSOC-EQ-SAFE 'I ALIST))))
+       (CONS (CONS 'I N) (cons 'ans ans0)) ; note generalization of 0!
+       (LAMBDA$
+        (ALIST)
+        (IF (INTEGERP (CDR (ASSOC-EQ-SAFE 'I ALIST)))
+            (IF (< 0 (CDR (ASSOC-EQ-SAFE 'I ALIST)))
+                (LIST NIL NIL
+                      (LIST (CONS 'I
+                                  (+ -1 (CDR (ASSOC-EQ-SAFE 'I ALIST))))
+                            (CONS 'ANS
+                                  (+ 1 (CDR (ASSOC-EQ-SAFE 'ANS ALIST))))))
+                (LIST :RETURN (CDR (ASSOC-EQ-SAFE 'ANS ALIST))
+                      (LIST (CONS 'I (CDR (ASSOC-EQ-SAFE 'I ALIST)))
+                            (CONS 'ANS
+                                  (CDR (ASSOC-EQ-SAFE 'ANS ALIST))))))
+            (LIST :RETURN (CDR (ASSOC-EQ-SAFE 'ANS ALIST))
+                  (LIST (CONS 'I (CDR (ASSOC-EQ-SAFE 'I ALIST)))
+                        (CONS 'ANS
+                              (CDR (ASSOC-EQ-SAFE 'ANS ALIST)))))))
+       (LAMBDA$ (ALIST)
+                (LIST NIL NIL
+                      (LIST (CONS 'I (CDR (ASSOC-EQ-SAFE 'I ALIST)))
+                            (CONS 'ANS
+                                  (CDR (ASSOC-EQ-SAFE 'ANS ALIST))))))
+       NIL NIL NIL)
+      (copy-nat-ac n ans0)))).
+  })
+
+  <p>The UPPERCASE part above was just copied from the checkpoint and then the
+  pair in the initial alist binding @('ANS'), which was @(''(ANS . 0)'), was
+  replaced by @('(cons 'ans ans0)').  So while it looks messy, it's not hard to
+  enter.  Furthermore, it saves us from having to figure out the normal form
+  &mdash; it's already in the checkpoint.  The @('DO$') term in this version of
+  @('lemma1') is just the formal translation of the generalized @('DO')
+  @('loop$') we wrote in the earlier version of @('lemma1').</p>
+
+  <p>Next we prove &ldquo;lemma 2&rdquo; equating the recursive function with
   the (generalized) specification.  This theorem does not involve @('loop$')
   and its proof should be utterly familiar to you.</p>
 
@@ -62411,57 +62580,27 @@ forms allowed for a @('let') form are  @('ignore'), @('ignorable'), and
   @('lemma2') hits that to @('(+ n 0)'), and arithmetic does the rest.</p>
 
   <p>As we noted, our recipe is overly rigid.  Here is another sequence of
-  events that proves @('main').  The user defines a function, @('my-induct'),
-  to suggest the right induction, but the function does not return the same
-  thing as the @('loop$').  It just recurs the way the @('loop$') iterates.
-  @('My-induct') is not used in the statement of our lemma, instead it is given
-  as an @(':induct') hint.  A single lemma, named @('lemma') below, replaces
-  the recipe's lemmas 1 and 2.  @('Lemma') does not use a @('loop$') statement.
-  It uses the very @('do$') term we saw in the checkpoint, with one tiny change
-  at line @('[1]') below: the initial value of @('ans') was @('0') in the
-  checkpoint and is @('ans0') here.  The right-hand side of the equality at
-  line @('[2]') in @('lemma') is @('(+ n ans0)'), the generalized answer.  Once
-  @('lemma') is proved, @('main') is proved.</p>
+  events that proves @('main').  The experienced user realizes that the
+  generalized @('DO') @('loop$') will in fact suggest the appropriate induction
+  to ACL2.  So no special function is introduced.  Furthermore, the user
+  &mdash; who has proved several theorems about @('loop$')s involving @('IF')
+  and @('ZP') will know how to write the normal form.  That user would just do
+  this.</p>
 
   @({
-  (defun my-induct (n ans0)
-    (if (zp n)
-        (list n ans0)
-        (my-induct (1- n) (1+ ans0))))
-
   (defthm lemma
     (implies
-     (and (integerp n) (<= 0 n) (integerp ans0) (<= 0 ans0))
-     (equal
-      (do$
-       (lambda$ (alist)
-                (acl2-count (cdr (assoc-eq-safe 'i alist))))
-       (cons (cons 'i n) `((ans . ,ans0)))                       ; [1]
-       (lambda$
-        (alist)
-        (if (integerp (cdr (assoc-eq-safe 'i alist)))
-            (if (< 0 (cdr (assoc-eq-safe 'i alist)))
-                (list nil nil
-                      (list (cons 'i
-                                  (+ -1 (cdr (assoc-eq-safe 'i alist))))
-                            (cons 'ans
-                                  (+ 1 (cdr (assoc-eq-safe 'ans alist))))))
-              (list :return (cdr (assoc-eq-safe 'ans alist))
-                    (list (cons 'i (cdr (assoc-eq-safe 'i alist)))
-                          (cons 'ans
-                                (cdr (assoc-eq-safe 'ans alist))))))
-          (list :return (cdr (assoc-eq-safe 'ans alist))
-                (list (cons 'i (cdr (assoc-eq-safe 'i alist)))
-                      (cons 'ans
-                            (cdr (assoc-eq-safe 'ans alist)))))))
-       (lambda$ (alist)
-                (list nil nil
-                      (list (cons 'i (cdr (assoc-eq-safe 'i alist)))
-                            (cons 'ans
-                                  (cdr (assoc-eq-safe 'ans alist))))))
-       nil nil nil)
-      (+ n ans0)))                                               ; [2]
-    :hints ((\"Goal\" :induct (my-induct n ans0))))
+     (and (natp n) (natp ans0))
+     (equal (loop$ with i = n
+                   with ans = ans0
+                   do
+                   (if (integerp i)
+                       (if (< 0 i)
+                           (progn (setq ans (+ 1 ans))
+                                  (setq i (- i 1)))
+                           (return ans))
+                       (return ans)))
+            (+ n ans0))))
 
   (defthm main
     (implies (natp n)
@@ -62755,130 +62894,11 @@ forms allowed for a @('let') form are  @('ignore'), @('ignorable'), and
   <li>@(see do-loop$)</li>
   <li>@(tsee lambda$)</li>
   <li>@(see rewrite-lambda-object)</li>
+  <li>@(see stating-and-proving-lemmas-about-loop$s)</li>
   </ul>
 
-  <p>Now go to @(see lp-section-todo) (or return to the <see topic='@(url
+  <p>The End of the @('Loop$') Primer. (Return to the <see topic='@(url
   lp-section-0)'>Table of Contents</see>).</p>")
-
-(defxdoc lp-section-todo
-
-; Release approved by DARPA with "DISTRIBUTION STATEMENT A. Approved
-; for public release. Distribution is unlimited."
-
-  :parents (loop$-primer)
-  :short "Things We Might Add or Change"
-  :long "<h3>Notes on Things We Might Want to Add or Change</h3>
-
-  <p>I've thought it might be good to add a problem like: define max-loop$ with
-  a do loop$ to compute the maximal value in a list of numbers (or nil if the
-  list is empty) and prove that when it returns a non-nil answer that result is
-  at least as large as any element in the list.  But I haven't added that
-  problem yet.</p>
-
-  &mdash;&mdash;&mdash;&mdash;&mdash;&mdash;&mdash;&mdash;&mdash;&mdash;
-
-  <p>Do we want to discuss @('loop$') performance versus recursive function
-  performance?  If so, do we want to discuss it in the primer or in the general
-  ACL2 documentation?  FYI, here is a simple test of summing the squares of one
-  million integers.  We see that a @('FOR') @('loop$') beats a @('DO')
-  @('loop$') which beats a tail-recursive (accumulator using) function.  But
-  this is just one test in CCL.  A true discussion of performance requires more
-  tests, several Common Lisps, and an analysis of the compiled code and
-  experimentation with the declarations.  I haven't done that.</p>
-
-  @({
-  (include-book \"projects/apply/top\" :dir :system)
-
-  (defconst *one-million-twos* (make-list 1000000 :initial-element 2))
-
-  (defun tail-recursive-sum-squares (lst ans)
-    (declare (type (satisfies integer-listp) lst)
-             (type integer ans))
-    (cond ((endp lst) ans)
-          (t (tail-recursive-sum-squares
-              (cdr lst)
-              (+ (* (the integer (car lst))
-                    (the integer (car lst)))
-                 ans)))))
-
-  (defun for-loop$-sum-squares (lst ans)
-    (declare (type (satisfies integer-listp) lst)
-             (type integer ans))
-    (+ (loop$ for e of-type integer in lst sum (* e e))
-       ans))
-
-  (defun do-loop$-sum-squares (lst ans)
-    (declare (type (satisfies integer-listp) lst)
-             (type integer ans))
-    (loop$ with lst of-type (satisfies integer-listp) = lst
-           with ans of-type integer = ans
-           do
-           (cond ((endp lst) (return ans))
-                 (t (progn (setq ans (+ (* (the integer (car lst))
-                                           (the integer (car lst)))
-                                        ans))
-                           (setq lst (cdr lst)))))))
-
-  ; Now I drop into raw Lisp so we execute the compiled code without
-  ; checking the guard, which is probably about as expensive as
-  ; summing the squares!  Each test ran its respective function 10
-  ; times and after doing all three tests I repeated all three tests.
-  ; So I show two times for each test.
-
-  (value :q)
-
-  (time (progn (tail-recursive-sum-squares *one-million-twos* 0)
-               (tail-recursive-sum-squares *one-million-twos* 0)
-               (tail-recursive-sum-squares *one-million-twos* 0)
-               (tail-recursive-sum-squares *one-million-twos* 0)
-               (tail-recursive-sum-squares *one-million-twos* 0)
-               (tail-recursive-sum-squares *one-million-twos* 0)
-               (tail-recursive-sum-squares *one-million-twos* 0)
-               (tail-recursive-sum-squares *one-million-twos* 0)
-               (tail-recursive-sum-squares *one-million-twos* 0)
-               (tail-recursive-sum-squares *one-million-twos* 0)))
-  ; took 47,278 microseconds (0.047278 seconds) to run.
-  ; took 46,885 microseconds (0.046885 seconds) to run.
-
-  (time (progn (for-loop$-sum-squares *one-million-twos* 0)
-               (for-loop$-sum-squares *one-million-twos* 0)
-               (for-loop$-sum-squares *one-million-twos* 0)
-               (for-loop$-sum-squares *one-million-twos* 0)
-               (for-loop$-sum-squares *one-million-twos* 0)
-               (for-loop$-sum-squares *one-million-twos* 0)
-               (for-loop$-sum-squares *one-million-twos* 0)
-               (for-loop$-sum-squares *one-million-twos* 0)
-               (for-loop$-sum-squares *one-million-twos* 0)
-               (for-loop$-sum-squares *one-million-twos* 0)))
-  ; took 38,910 microseconds (0.038910 seconds) to run.
-  ; took 39,213 microseconds (0.039213 seconds) to run.
-
-  (time (progn (do-loop$-sum-squares *one-million-twos* 0)
-               (do-loop$-sum-squares *one-million-twos* 0)
-               (do-loop$-sum-squares *one-million-twos* 0)
-               (do-loop$-sum-squares *one-million-twos* 0)
-               (do-loop$-sum-squares *one-million-twos* 0)
-               (do-loop$-sum-squares *one-million-twos* 0)
-               (do-loop$-sum-squares *one-million-twos* 0)
-               (do-loop$-sum-squares *one-million-twos* 0)
-               (do-loop$-sum-squares *one-million-twos* 0)
-               (do-loop$-sum-squares *one-million-twos* 0)))
-  ; took 44,545 microseconds (0.044545 seconds) to run.
-  ; took 43,769 microseconds (0.043769 seconds) to run.
-
-  })
-
-  &mdash;&mdash;&mdash;&mdash;&mdash;&mdash;&mdash;&mdash;&mdash;&mdash;
-
-  <p>I feel like pointing out that prior to the creation of this primer there
-  were over 60 pages of documentation directly describing @('loop$'),
-  specifically the topics @(tsee loop$), @(tsee for-loop$), @(tsee do-loop$),
-  @(tsee loop$-recursion), and @(tsee loop$-recursion-induction).  I think this
-  primer is valuable because of the examples and problems, and perhaps it is
-  easier to get started than to wade straight in.  But I'm not convinced it's
-  worth saying.</p>
-
-  ")
 
 (defxdoc lp-background-review-2
 
@@ -64098,120 +64118,6 @@ forms allowed for a @('let') form are  @('ignore'), @('ignorable'), and
 
   <p>(Return to the <see topic='@(url lp-section-0)'>Table of
   Contents</see>.)</p>")
-
-(defxdoc loop$-proofs
-  :parents (loop$)
-  :short "Proving inductive theorems about @('loop$')s"
-  :long "<p>ACL2's prover can derive induction schemes suggested by some
-  @('loop$') statements, just as it can from some calls of recursive functions.
-  The key issue is whether appropriate arguments are variables.</p>
-
-  <p>For example, consider</p>
-
-  @(def nth)
-
-  <p>Note that the second argument, @('l'), controls the recursion and the
-  first argument, @('n'), is decremented in recursion.  Thus, if induction is
-  to be tried on a conjecture, @('(p n l)'), involving the term @('(nth n l)'),
-  that term would suggest the induction</p>
-
-  @({
-  (and (implies (endl l) (p n l))
-       (implies (and (not (endp l))
-                     (p (- n 1) (cdr l)))
-                (p n l))).
-  })
-
-  <p>But if the conjecture did not mention @('(nth n l)') but mentioned @('(nth
-  n (foo l))') instead, the @('nth') term would not suggest an induction
-  because the controlling argument of the @('nth') term is not a variable
-  symbol.</p>
-
-  <p>The same principle is at play when @('loop$') statements are analyzed for
-  inductive suggestions.</p>
-
-  <p>This documentation topic is merely a stub for a more elaborate discussion
-  about proving theorems about @('loop$')s that we intend to produce.  But here
-  are the highpoints.</p>
-
-  <p>The @('FOR') @('loop$') in the following conjecture</p>
-
-  @({
-  (equal (loop$ for x in keys as y in vals collect (cons x y))
-         (pairlis$ keys vals))
-  })
-
-  <p>suggests simultaneous induction on @('keys') and @('vals'), reinforcing
-  the suggestion from the @('pairlis$') term.  (By the way, the above
-  conjecture is not a theorem as stated.)  But if the variable @('vals') is
-  replaced by a non-variable term, the @('loop$') no longer suggests an
-  induction.</p>
-
-  <p>Similarly, the @('DO') @('loop$') below suggests an induction on @('lst')
-  by @('cdr') with the simultaneous instantiation of @('ans') by @('(cons (car
-  lst) ans)') in the induction hypothesis.</p>
-
-  @({
-  (loop$ with ans = ans
-         with lst = lst
-         do
-         (if (endp lst)
-             (return ans)
-             (progn (setq ans (cons (car lst) ans))
-                    (setq lst (cdr lst)))))
-  })
-
-  <p>But if @('ans') is replaced by a non-variable, an ineffective induction on
-  @('lst') alone is suggested.</p>
-
-  <p>The lesson is clear: <b>If you want a @('loop$') to suggest an induction,
-  you must generalize the targets to be variables</b> just as you would a
-  recursive function call.</p>
-
-  <p>Because you often have to generalize @('loop$') theorems to prove them by
-  induction, and, consequently, expect the resulting lemma to match some
-  instance of the @('loop$') in a subsequent theorem, you have to remember
-  that (a) all @('loop$') statements are translated into terms involving
-  @('lambda') objects and (b) @('lambda') objects are rewritten (by default)
-  during proofs.  Thus, for example, if you prove an inductive lemma about the
-  generalized @('DO') @('loop$') above and try to prove your &ldquo;main
-  theorem&rdquo; about this instance of that @('loop$')</p>
-
-  @({
-  (loop$ with ans = NIL
-         with lst = lst
-         do
-         (if (endp lst)
-             (return ans)
-             (progn (setq ans (cons (car lst) ans))
-                    (setq lst (cdr lst)))))
-  })
-
-  <p>you will be disappointed!  During the proof of the instance, the
-  @('lambda') object that is the body of the @('loop$') will be rewritten,
-  expanding the non-recursive function @('endp'), so that the target instance
-  becomes</p>
-
-  @({
-  (loop$ with ans = NIL
-         with lst = lst
-         do
-         (if (consp lst)
-             (progn (setq ans (cons (car lst) ans))
-                    (setq lst (cdr lst)))
-             (return ans))).
-  })
-
-  <p>So your generalized lemma, which used @('endp'), will not match.</p>
-
-  <p>You would never create a rewrite rule whose left-hand side contained a
-  non-recursive function call, unless you were planning subsequently to disable
-  the function or (in the case of @('loop$')s) disable @('lambda') object
-  rewriting (see @(see rewrite-lambda-object-actions)).</p>
-
-  <p>So the lesson here should be clear: <b>When stating generalized @('loop$')
-  lemmas make sure your @('loop$') bodies are in the &ldquo;normal&rdquo; form
-  imposed by your rewrite rules.</b></p>")
 
 (defxdoc loop$-recursion
   :parents (loop$)
@@ -100962,8 +100868,8 @@ it."
  a feature.</p>
 
  <p>The induction mechanism in the prover can now deduce induction suggestions
- from some @('DO') @('loop$')s.  See @(see loop$-proofs) for a brief
- discussion.</p>
+ from some @('DO') @('loop$')s.  See @(see
+ stating-and-proving-lemmas-about-loop$s) for a brief discussion.</p>
 
  <p>A new @(':')@(tsee linear) rule, @('acl2-count-car-cdr-linear'), is now
  built into ACL2, as follows.  Thanks to Eric Smith for suggesting this
@@ -106968,6 +106874,9 @@ arithmetic) for libraries of @(see books) for arithmetic reasoning.</p>")
  topics in the @(see documentation) hierarchy that appear under this
  `programming' topic.</p>
 
+ <p>If you are unfamiliar with Lisp, we suggest you start by reading @(see
+ gentle-introduction-to-acl2-programming).</p>
+
  <p>If you are already familiar with Common Lisp (or even some other Lisp
  variant), then you may find it helpful to start with the topic, @(see
  introduction-to-programming-in-acl2-for-those-who-know-lisp).</p>
@@ -106980,8 +106889,7 @@ arithmetic) for libraries of @(see books) for arithmetic reasoning.</p>")
   :long "<p>This brief review of the programming language is presented as a
  sequence of questions and answers meant to test your knowledge of the ACL2
  programming language.  If you want a gentle introduction to the programming
- language, see <a
- href='http://www.cs.utexas.edu/users/moore/publications/gentle-intro-to-acl2-programming.html'>http://www.cs.utexas.edu/users/moore/publications/gentle-intro-to-acl2-programming.html</a>.</p>
+ language, see @(see gentle-introduction-to-acl2-programming).</p>
 
  <p>Before we get started with the programming drill, let us remind you that
  all we're interested in here is the language, not the ``program development
@@ -107300,8 +107208,7 @@ arithmetic) for libraries of @(see books) for arithmetic reasoning.</p>")
  to @(see introduction-to-the-theorem-prover).</p>
 
  <p>If you are uncomfortable with ACL2 programming, we recommend that you study
- <a
- href='http://www.cs.utexas.edu/users/moore/publications/gentle-intro-to-acl2-programming.html'>http://www.cs.utexas.edu/users/moore/publications/gentle-intro-to-acl2-programming.html</a>
+ @(see gentle-introduction-to-acl2-programming)
  and <a
  href='http://www.cs.utexas.edu/users/moore/publications/acl2-programming-exercises1.html'>http://www.cs.utexas.edu/users/moore/publications/acl2-programming-exercises1.html</a>.</p>
 
@@ -112053,10 +111960,6 @@ arithmetic) for libraries of @(see books) for arithmetic reasoning.</p>")
   :short "Recursion and Induction"
   :long "<h3>Recursion and Induction</h3>
 
- <h3><i>by</i></h3>
- <h3>Matt Kaufmann, J Strother Moore, and Warren A. Hunt, Jr.</h3>
- <h2>November 8, 2022</h2>
-
  <h3>Preface and Acknowledgments</h3>
 
  <p>These notes are for teaching yourself how to prove theorems about
@@ -112132,10 +112035,10 @@ arithmetic) for libraries of @(see books) for arithmetic reasoning.</p>")
  <p>Over time, the course notes were expanded to include explanations,
  examples, and more problems.  Moore wrote the first version of this ACL2-based
  document in the early 2000s, building on joint work with Matt Kaufmann.  That
- document was edited still further by all three of us after Hunt began teaching
- the course in 2004.  In 2022, it was converted from LaTeX pdf to the hypertext
- format of ACL2's online documentation and further tied into ACL2's
- documentation.</p>
+ document was edited still further by Kaufmann, Moore, and Hunt after Hunt
+ began teaching the course in 2004.  In 2022, Kaufmann converted it from LaTeX
+ pdf to the hypertext format of ACL2's online documentation and tied it into
+ ACL2's documentation.</p>
 
  <p>Finally, we thank the many sponsors and supporters of the Nqthm and ACL2
  projects over the last 40 years, as well as the many students who have so
@@ -129951,6 +129854,773 @@ work on <tt>(q x)</tt>.</p>
    10
   ACL2 !>
  })")
+
+(defxdoc stating-and-proving-lemmas-about-loop$s
+  :parents (loop$)
+  :short "Stating and proving theorems about @('loop$')s"
+
+  :long "<p>In this topic we give some advice about how to state and prove
+  theorems involving @('loop$')s, especially stating lemmas that are intended
+  to rewrite @('loop$') statements and proving theorems about @('loop$')
+  statements inductively.</p>
+
+  <h3>Name @('Loop$')s When Memorable Names Come to Mind</h3>
+
+  <p>Just because you can write iterative computations inline, don't get carried
+  away!</p>
+
+  <p>If you can think of a good name for the concept implemented by a
+  @('loop$') statement, use @('defun') to define that name.  This is especially
+  the case if you intend to reason about that @('loop$') statement or to write
+  more than one instance of it.</p>
+
+  <p>For example, rather than write instances of</p>
+
+  @({
+  (loop$ for a in x as b in y sum (* a b))
+  })
+
+  <p>it is better to define @('(dot-product x y)') with that @('loop$') as its
+  body and then write calls of @('dot-product') and lemmas about
+  @('dot-product') rather than that @('loop$').</p>
+
+  <p>Basically, names are good as long as you can remember them.  They give you
+  a place to hang lemmas and the lemmas match without you having to think about
+  how lambda objects rewrite, local variables, etc.  Not all @('loop$')s
+  compute concepts with obvious, memorable names, but just because you can
+  write &ldquo;anonymous&rdquo; iterations doesn't mean you should!</p>
+
+  <h3>Generalizing the Initial Values</h3>
+
+  <p>Let's start with the most common issue raised by any inductive proof: the
+  conjecture to be proved must be general enough to permit the provision of
+  an appropriate inductive hypothesis.</p>
+
+  <p>Consider how you would prove the conjecture below after defining @('rev')
+  and @('rev1').</p>
+
+  @({
+  (defun rev (x)
+    (if (endp x)
+        nil
+        (append (rev (cdr x)) (list (car x)))))
+
+  (defun rev1 (x a)
+    (if (endp x)
+        a
+        (rev1 (cdr x) (cons (car x) a))))
+
+  (defthm rev1-is-rev
+    (equal (rev1 x nil) (rev x)))
+  })
+
+  <p>The experienced ACL2 user would not attempt to prove @('rev1-is-rev') by induction
+  because the @('nil') prevents the provision of an appropriate induction hypothesis.
+  Instead, the user would first prove a generalization obtained by replacing that
+  @('nil') by a variable and &ldquo;explaining&rdquo; the role of that variable on the
+  right-hand side.</p>
+
+  @({
+  (defthm rev1-is-rev-generalized
+    (equal (rev1 x a)
+           (append (rev x) a)))
+  })
+
+  <p>The proof of the generalized theorem succeeds (though the prover must
+  &ldquo;discover&rdquo; and then prove that @('append') is associative).</p>
+
+  <p>With that theorem available, the proof of @('rev1-is-rev') is trivial,
+  given that @('nil') is the right-identity for @('append') on true-lists and
+  that @('rev') returns a true-list.</p>
+
+  <p>Now consider defining reverse with a @('do') @('loop$').</p>
+
+  @({
+  (defun rev-loop$ (x)
+    (loop$ with tail = x
+           with a = nil
+           do
+           (if (endp tail)
+               (return a)
+              (progn (setq a (cons (car tail) a))
+                      (setq tail (cdr tail))))))
+  })
+
+  <p>The experienced ACL2 user would not attept to prove that @('(rev-loop$
+  x)') is @('(rev x)') by induction!  The problem is the same as before: the
+  @('nil') initialization of the iterative variable @('a') in the @('do')
+  @('loop$') does not permit an appropriate inductive hypothesis.  Instead, the
+  user needs to prove a more general theorem that cannot be stated in terms of
+  @('rev-loop$') because that @('nil') is built into the definition.  We need
+  to lift the @('loop$') out of the definition, generalize it, and prove a
+  theorem about the generalized @('loop$').  Ideally we'd prove</p>
+
+  @({
+  (defthm rev-loop$-is-rev-generalized 
+    (equal (loop$ with tail = x
+                  with a = a
+                  do
+                  (if (endp tail)
+                      (return a)
+                      (progn (setq a (cons (car tail) a))
+                             (setq tail (cdr tail)))))
+           (append (rev x) a))).
+  })
+
+  <p>ACL2's prover can derive induction schemes suggested by some @('loop$')
+  statements, just as it can from some calls of recursive functions.  Because
+  both iterative variables, @('tail') and @('a'), are initialized to variables,
+  the @('DO') @('loop$') above suggests an appropriate induction.  But
+  inductions for @('loop$')s raise some new issues as well as some traditional
+  ones.</p>
+
+  <p>ACL2 will prove the lemma above, if the associativity of @('append') has
+  first been proved explicitly as a rewrite rule.  (The presence of the
+  @('loop$') confuses the heuristics that enable the prover to
+  &ldquo;discover&rdquo; the associativity of @('append').)</p>
+
+  <p><b>Lesson 1</b>:  If a @('loop$') has iterative variables initialized to
+  non-variables, generalize them before expecting an induction to work!  If the
+  @('loop$') is buried in a definition you'll have to lift the @('loop$') out of
+  the definition to generalize it and prove a theorem about the the generalized
+  @('loop$').</p>
+
+  <h3>Normal Forms in @('Loop$') Bodies</h3> 
+
+  <p>The lemma above, @('rev-loop$-is-rev-generalized'), is adequate to
+  subsequently prove the main theorem,</p>
+
+  @({
+  (defthm rev-loop$-is-rev
+    (equal (rev-loop$ x)
+           (rev x))).
+  })
+
+  <p>But as stated, @('rev-loop$-is-rev-generalized') is fragile because
+  it mentions the non-recursively defined function @('endp').  To explain this
+  remark we need to walk through the proof of the main theorem.</p>
+
+  <p>Recall that the prover always expands enabled functions that are not
+  explicitly recursive.  And @('rev-loop$') is not explicitly recursive.  So
+  the proof attempt of @('rev-loop$-is-rev') will expand the call of
+  @('rev-loop$') and produce</p>
+
+  @({
+  Goal'
+  (equal (loop$ with tail = x
+                with a = nil
+                do
+                (if (endp tail)
+                    (return a)
+                    (progn (setq a (cons (car tail) a))
+                           (setq tail (cdr tail)))))
+         (rev x))
+  })
+
+  <p>If the @('loop$') term above is immediately rewritten, our generalized
+  lemma would fire and reduce the goal to</p>
+
+  @({
+  Goal''
+  (equal (append (rev x) nil)
+         (rev x))
+  })
+
+  <p>and the proof would be completed as before with the right-identity
+  rule.</p>
+
+  <p>Indeed, this is what happens in this particular case, but the reason it
+  works is completely unrelated to @('loop$')s!  Our generalized lemma has no
+  hypotheses &mdash; it is an unconditional rewrite rule that is applied early
+  in the &ldquo;preprocessing&rdquo; phase of simplification.</p>
+
+  <p>Let's suppose the generalized lemma did have some hypotheses or otherwise
+  failed to apply during preprocessing.  You can cause this to happen by
+  restating the generalized lemma and the main theorem to have the (unnecessary
+  but easily dealt with) hypothesis @('(true-listp x)').  The proof of the
+  conditional generalized lemma still goes through, but the proof of the
+  conditional main theorem fails because the generalized lemma never fires!</p>
+
+  <p>The reason it never fires is that it is not tried during prepreprocessing
+  (because preprocessing doesn't deal with conditional rules because
+  preprocessing doesn't support backchaining) and @('Goal'') above enters the
+  rewriter, which <i>rewrites every subterm of the term before trying to apply
+  rules to the term itself</i>.  In particular, before the rewriter tries to
+  apply our generalized rule it rewrites the subterms of the @('loop$')
+  statement, including the body.  (Technically, it rewrites the @('lambda')
+  object in the translation of the @('loop$').  See @(see
+  rewrite-lambda-object).)</p>
+
+  <p>This transforms</p>
+
+  @({
+  (loop$ with tail = x
+         with a = nil
+         do
+         (if (endp tail)
+             (return a)
+             (progn (setq a (cons (car tail) a))
+                    (setq tail (cdr tail)))))
+  })
+
+  <p>to</p>
+
+  @({
+  (loop$ with tail = x
+         with a = nil
+         do
+         (if (consp tail)
+             (progn (setq a (cons (car tail) a))
+                    (setq tail (cdr tail)))
+             (return a)))
+  })
+
+  <p>because @('(endp x)') expands to @('(not (consp x))') and the branches of
+  the @('if') are swapped to eliminate the @('not').</p>
+
+  <p>After this rewrite, our generalized lemma no longer matches.</p>
+
+  <p><b>Lesson 2</b>: Do not prove rewrite rules that target @('loop$')
+  statements containing terms in non-normal form!  That is, as with all other
+  rewrite rules, make sure your target is normalized under your intended
+  rewrite regime.</p>
+
+  <p>So for example, in addition to watching out for non-recursive functions in
+  the body, be alert for things like expressions that are rearranged by
+  associativity and commutativity rules.  You wouldn't write a rewrite rule
+  containing a subterm like @('(append (append a b) c)') if you're
+  right-associating @('append') nests, nor would you include a subterm like
+  @('(+ x 1)') if you're normalizing arithmetic expressions (in this case to
+  @('(+ 1 x)')).  So don't use such non-normal terms in lemmas about
+  @('loop$')s!</p>
+
+  <p>The entire robust script for the @('rev-loop$') proof is given below.</p>
+
+  @({
+  (defun rev (x)
+    (if (endp x)
+        nil
+        (append (rev (cdr x)) (list (car x)))))
+
+  (defun rev-loop$ (x)
+    (loop$ with tail = x
+           with a = nil
+           do
+           (if (endp tail)
+               (return a)
+               (progn (setq a (cons (car tail) a))
+                      (setq tail (cdr tail))))))
+
+  (defthm assoc-of-append
+    (equal (append (append a b) c)
+           (append a (append b c))))
+
+  (defthm rev-loop$-is-rev-generalized
+    (equal (loop$ with tail = x
+                  with a = a
+                  do
+                  (if (consp tail)
+                      (progn (setq a (cons (car tail) a))
+                             (setq tail (cdr tail)))
+                      (return a)))
+           (append (rev x) a)))
+
+  (defthm rev-loop$-is-rev
+    (equal (rev-loop$ x)
+           (rev x)))
+  })
+
+  <p>The script is robust in the sense that even if you conditionalize the
+  generalized lemma with a hypothesis that can be relieved in the main theorem
+  the lemma will fire and rewrite the @('loop$') exposed when @('rev-loop$') is
+  expanded.  Note that the @('loop$') was written with @('(endp tail)') in the
+  @('defun') of @('rev-loop$') but lemma deals with the normalized form of that
+  body.</p>
+
+  <h3>The Secret @('Setq') Problem</h3>
+
+  <p>Another issue that comes up when posing lemmas about @('loop$')s is called
+  the <i>secret @('setq') problem</i> and is best illustrated by example.</p>
+
+  <p>Define the following function.</p>
+
+  @({
+  (defun secret-setq-problem (k x)
+    (loop$ with x = x
+           with j = 0
+           do
+           (cond ((endp x) (return 'bad))
+                 ((equal j k) (return 'good))
+                 (t (progn (setq x (cdr x))
+                           (setq j (+ 1 j)))))))
+  })
+
+  <p>The function counts @('j') up from @('0') until it is equal to @('k'),
+  while @('cdr')ing @('x').  It returns @('good') if it @('j') reaches @('k')
+  before the list is exhausted, and returns @('bad') otherwise.  Thus, this is
+  a theorem.</p>
+
+  @({
+  (defthm secret-setq-problem-main
+    (implies (and (natp k)
+                  (< k (len x)))
+             (equal (secret-setq-problem k x)
+                    'good)))
+  })
+
+  <p>While @('secret-setq-problem-main') is provable by ACL2, it should be
+  clear from Lessons 1 and 2 above that we first need to prove a lemma about
+  the generalized, normalized loop$.  Here is a candidate lemma, which is
+  proved by ACL2.</p>
+
+  @({
+  (defthm secret-setq-problem-lemma
+    (implies (and (natp j)
+                  (natp k)
+                  (< k (+ j (len x)))
+                  (<= j k))
+             (equal (loop$ with x = x
+                           with j = j
+                           do
+                           (if (consp x)
+                               (if (equal j k)
+                                   (return 'good)
+                                   (progn (setq x (cdr x))
+                                          (setq j (+ 1 j))))
+                               (return 'bad)))
+                    'good)))
+  })
+
+  <p>Following Lesson 1, we generalized the initial value of @('j'), which was
+  @('0'), to @('j'), and we added the hypotheses that @('j') is a natural less
+  than or equal to @('k').  We generalized the @('(< k (len x))') which we see
+  in the main theorem to @('(< k (+ j (len x)))').  This accommodates the
+  arbitrary initial @('j') and simplifies to @('(len x)') when @('j') is
+  @('0').  Furthermore, as @('j') goes up and @('x') gets shorter, their sum
+  stays fixed, which is necessary if the generalized hypothesis is going to
+  survive induction.</p>
+
+  <p>Following Lesson 2, we normalized the body.  We replaced the @('(endp x)') by @('(not (consp x))')
+  and normalized the resulting @('IF') nest.</p>
+
+  <p>The lemma is proved automatically by ACL2, using the induction suggested
+  by the @('loop$').</p>
+
+  <p>However, the attempt to prove the main theorem above will fail!  The lemma
+  doesn't fire because the @('loop$') target still doesn't match.  (Note: we
+  could forget about the lemma firing automatically.  Instead, we could give a
+  @(':hint') that disables the lamma and @(':use')s the instance of it with
+  @('j') replaced by @('0').  That succeeds.  But it is valuable for us to
+  explore why it didn't work as a rewrite rule.)</p>
+
+  <p>Sometimes to debug a failed proof it helps to compare the term that a
+  lemma targets with its intended target in the checkpoint of the failed proof.
+  This is especially true for @('loop$')s because their translations are so
+  different from their outward appearance.  (See the sections titled
+  &ldquo;Semantics&rdquo; in @(see for-loop$) and @(see do-loop$).)  The
+  following use of the @(':')@(tsee pr) command shows our lemma's true form.
+  It is the left-hand side, @('Lhs'), we are interested in because it is the
+  target pattern of the rewrite rule.</p>
+
+  @({
+  ACL2 !>:pr secret-setq-problem-lemma
+
+  Rune:    (:REWRITE SECRET-SETQ-PROBLEM-LEMMA)
+  Enabled: T
+  Hyps:    (AND (NATP J)
+                (NATP K)
+                (< K (+ J (LEN X)))
+                (<= J K))
+  Equiv:   EQUAL
+  Lhs:     (DO$
+            (LAMBDA$ (ALIST)
+              (ACL2-COUNT (CDR (ASSOC-EQ-SAFE 'X ALIST))))
+            (LIST (CONS 'X X)
+                  (CONS 'J J)
+                  (CONS 'K K))
+            (LAMBDA$ (ALIST)
+             (IF (CONSP (CDR (ASSOC-EQ-SAFE 'X ALIST)))
+                 (IF (EQUAL (CDR (ASSOC-EQ-SAFE 'J ALIST))
+                            (CDR (ASSOC-EQ-SAFE 'K ALIST)))
+                     (LIST :RETURN 'GOOD
+                           (LIST (CONS 'X (CDR (ASSOC-EQ-SAFE 'X ALIST)))
+                                 (CONS 'J (CDR (ASSOC-EQ-SAFE 'J ALIST)))
+                                 (CONS 'K (CDR (ASSOC-EQ-SAFE 'K ALIST)))))
+                     (LIST NIL NIL
+                           (LIST (CONS 'X (CDDR (ASSOC-EQ-SAFE 'X ALIST)))
+                                 (CONS 'J (+ 1 (CDR (ASSOC-EQ-SAFE 'J ALIST))))
+                                 (CONS 'K (CDR (ASSOC-EQ-SAFE 'K ALIST))))))
+                 (LIST :RETURN 'BAD
+                       (LIST (CONS 'X (CDR (ASSOC-EQ-SAFE 'X ALIST)))
+                             (CONS 'J (CDR (ASSOC-EQ-SAFE 'J ALIST)))
+                             (CONS 'K (CDR (ASSOC-EQ-SAFE 'K ALIST)))))))
+              (LAMBDA$ (ALIST)
+               (LIST NIL NIL
+                    (LIST (CONS 'X (CDR (ASSOC-EQ-SAFE 'X ALIST)))
+                          (CONS 'J (CDR (ASSOC-EQ-SAFE 'J ALIST)))
+                          (CONS 'K (CDR (ASSOC-EQ-SAFE 'K ALIST))))))
+              NIL NIL NIL)
+  Rhs:     'GOOD
+  Backchain-limit-lst: NIL
+  Subclass: BACKCHAIN
+  Loop-stopper: NIL
+  })
+
+  <p>The actual @('do$') term term you'll see in the checkpoint of the failed
+  proof attempt is:</p>
+
+  @({
+  (DO$
+   (LAMBDA$ (ALIST)
+     (ACL2-COUNT (CDR (ASSOC-EQ-SAFE 'X ALIST))))
+   (LIST (CONS 'X X)
+         '(J . 0)
+         (CONS 'K K))
+   (LAMBDA$ (ALIST)
+    (IF (CONSP (CDR (ASSOC-EQ-SAFE 'X ALIST)))
+        (IF (EQUAL (CDR (ASSOC-EQ-SAFE 'J ALIST))
+                   (CDR (ASSOC-EQ-SAFE 'K ALIST)))
+            (LIST :RETURN 'GOOD
+                  (LIST (CONS 'X (CDR (ASSOC-EQ-SAFE 'X ALIST)))
+                        (CONS 'J (CDR (ASSOC-EQ-SAFE 'J ALIST)))
+                        (CONS 'K (CDR (ASSOC-EQ-SAFE 'J ALIST)))))
+            (LIST NIL NIL
+                  (LIST (CONS 'X (CDDR (ASSOC-EQ-SAFE 'X ALIST)))
+                        (CONS 'J (+ 1 (CDR (ASSOC-EQ-SAFE 'J ALIST))))
+                        (CONS 'K (CDR (ASSOC-EQ-SAFE 'K ALIST))))))
+        (LIST :RETURN 'BAD
+              (LIST (CONS 'X (CDR (ASSOC-EQ-SAFE 'X ALIST)))
+                    (CONS 'J (CDR (ASSOC-EQ-SAFE 'J ALIST)))
+                    (CONS 'K (CDR (ASSOC-EQ-SAFE 'K ALIST)))))))
+     (LAMBDA$ (ALIST)
+      (LIST NIL NIL
+           (LIST (CONS 'X (CDR (ASSOC-EQ-SAFE 'X ALIST)))
+                 (CONS 'J (CDR (ASSOC-EQ-SAFE 'J ALIST)))
+                 (CONS 'K (CDR (ASSOC-EQ-SAFE 'K ALIST))))))
+     NIL NIL NIL)  
+  })
+
+  <p>Note that the @('Lhs') matches the actual term, when @('J') is
+  instantiated with @('0'), <i>except</i> in one place: the alist constructed
+  in the @('(LIST :RETURN 'GOOD ...)') triple binds @(''K') to the value of
+  @(''K') in @('Lhs') but binds @(''K') to the value of @(''J') in the actual
+  term.  This happens because the actual term was rewritten under the
+  assumption that the @('IF') test equating the value of @(''J') to the value
+  of @(''K'), and the rewriter substituted the value of @(''J') for that of
+  @(''K') because of term ordering.  The ACL2 pattern matching routine does
+  not take account of tests.</p>
+
+  <p>We could possibly fix this problem by changing how ACL2 stores lemmas or
+  how the pattern matcher works.  But such changes could have far reaching
+  consequences across the entire ACL2 regression suite, so we have made no such
+  changes.</p>
+
+  <p>Absent such changes, it's incumbent on the user to phrase the rewrite
+  rule appropriately.  The question is, &ldquo;How can you make that particular
+  @(''K') in @('Lhs') be @(''J')?&rdquo;</p>
+
+  <p>One way would be to rephrase the rewrite rule by using the @('DO$') term
+  from the checkpoint in place of the @('loop$') statement we wrote in
+  @('secret-setq-problem-lemma').</p>
+
+  <p>Another way to accomplish the same effect is to rewrite the @('loop$')
+  statement as shown below.</p>
+
+  @({
+  (defthm secret-setq-problem-lemma
+    (implies (and (natp j)
+                  (natp k)
+                  (< k (+ j (len x)))
+                  (<= j k))
+             (equal (loop$ with x = x
+                           with j = j
+                           with k = k                     ; ``new'' var 
+                           do
+                           (if (consp x)
+                               (if (equal j k)
+                                   (progn (setq k j)      ; new setq!
+                                          (return 'good))
+                                   (progn (setq x (cdr x))
+                                          (setq j (+ 1 j))))
+                               (return 'bad)))
+                    'good)))
+  })
+
+  <p>You can use @(':')@(tsee tcp) to confirm that the translation of the above
+  @('loop$') matches the actual term in the checkpoint.</p>
+
+  <p>Note that the inclusion of the new &ldquo;@('with k = k')&rdquo; does not
+  add any new subterms to the translation, it merely allows assignment to a
+  previously used but never assigned variable.  The order of the @('with')
+  clauses determines the order of the alists being constructed, so this pay
+  attention to where @(''k') is bound in the alists.  Also note that the new
+  @('setq') does not add any new subterms to the translation, just affects the
+  final value of @(''k') on that branch of the @('if') tree.  Finally note that
+  we phrase the @('loop$') this way in the lemma <i>without changing how we
+  write the @('loop$') in the @('defun').</i>  Writing the @('loop$') this way in
+  the @('defun') would add an unnecessary @('setq') in the Common Lisp
+  execution.  But there is no need to change how we write the @('loop$') in the
+  defun.  This lemma matches what comes up when we prove things about the
+  @('loop$') in the @('defun').</p>
+
+  <p>Because this matching problem can repaired by adding an unnecessary @('setq')
+  in the lemma, we call this the &ldquo;secret @('setq') problem.&rdquo;</p>
+
+  <p><b>Lesson 3:</b> If the left-hand side of a rewrite rule contains an
+  @('loop$') with an @('if') in the body, remember the secret @('setq')
+  problem.  More practically, if a @('loop$') lemma you've proved fails to
+  rewrite its target, compare the output of @(':')@('pr'), specifically the
+  @('Lhs'), to the intended target printed in the checkpoint, and remember the
+  secret @('setq') problem.</p>
+
+  <h3>The Hidden Hypothesis Problem</h3>
+
+  <p>Another issue you may occasionally confront when dealing with inductions
+  suggested by @('do') @('loop$')s is indicated when the prover fails to prove
+  the measure conjecture even though you &ldquo;know&rdquo; it is proveable.
+  To explain, we have to explain a little about how induction suggested by
+  @('do') @('loop$')s are done.</p>
+
+  <p>From every @('do') @('loop$') we can derive a proposed recursive function
+  definition.  When the prover sees a @('do') @('loop$') in a conjecture that
+  it has decided requires inductions, it generates that derived function, does
+  an induction analysis for it, and adds any suggestions it gets to the set of
+  candidate inductions to consider.  However, the derived function may not
+  terminate &ldquo;normally.&rdquo; Recall that @(tsee do$) checks that the
+  measure goes down before each iteration and returns a default value if that
+  check fails.  Thus, to justify the induction suggested by the generated
+  function the proof obligations include those that establish that the measure
+  decreases <i>under the tests leading to further iterations in the @('loop$')
+  body</i>.</p>
+
+  <p>Those tests are not always sufficient to guarantee termination!  If the
+  @('loop$') came from a guard verified function definition, termination was
+  proved.  But it was proved as part of guard verification.  Remember the main
+  purpose of guards in @('loop$')s: to allow us to execute the @('loop$') as a
+  Common Lisp @('loop').  But that execution only happens when we know guards
+  hold.  But @('loop$')s seen by the prover may not come from guard verified
+  statements and, besides, guards are stripped out of conjectures to be proved
+  because they're irrelevant to the logical meaning.</p>
+
+  <p>However, it is logically valid to condition the induction-time measure
+  conjectures on hypotheses from the conjecture being proved &mdash; and it is
+  often ineffective to include all of those hypotheses.  So ACL2's induction
+  mechanism chooses some of the available hypotheses and may not choose enough.
+  This is the &ldquo;hidden hypothesis problem.&rdquo;  An example is below.</p>
+
+  <p>The following function can be admitted and guard verified, meaning the
+  termination obligation is proved as part of guard verification.</p>
+
+  @({
+  (defun hidden-hyp-problem (lo j)
+    (declare (xargs :guard (and (natp lo) (natp j) (<= lo j))))
+    (loop$ with j = j
+           do
+           :guard (and (natp lo) (natp j) (<= lo j))
+           (if (equal lo j)
+               (return 'good)
+               (setq j (- j 1)))))
+  })
+
+  <p>Since since @('lo') and @('j') are both natural numbers and @('j')
+  is (weakly) above @('lo') and is decremented on iteration, @('j') will
+  eventually reach @('lo') and the @('loop$') will stop.</p>
+
+  <p>The derived recursive function corresponding to this @('loop$'), which
+  we'll call @('derived-fn') here, is</p>
+
+  @({
+  (defun derived-fn (lo j)
+    (if (equal lo j)
+        'good
+        (derived-fn lo (- j 1)))).
+  })
+
+  <p>That derived function doesn't terminate.</p>
+
+  <p>Now let's try to prove that the @('loop$') always returns @(''good').
+  Note that it doesn't matter if we include guards in the conjecture or not.
+  They're logically irrelevant and will be eliminated.</p>
+
+  <p>However, the following proof attempt fails.  The prover chooses to induct
+  as suggested by the @('do') @('loop$').  The induction scheme selected is
+  shown.</p>
+
+  @({
+  ACL2 !>(defthm hidden-hyp-problem-main
+           (implies (and (natp lo)
+                         (natp j)
+                         (<= lo j))
+                    (equal (loop$ with j = j
+                                  do
+                                  :guard (and (natp lo) (natp j) (<= lo j))
+                                  (if (equal lo j)
+                                      (return 'good)
+                                      (setq j (- j 1))))
+                           'good)))
+
+  ...
+
+  This suggestion was produced using the :induction rule DO$.  If we
+  let (:P J LO) denote *1 above then the induction scheme we'll use is
+  (AND (IMPLIES (AND (NOT (EQUAL LO J))
+                     (:P (+ -1 J) LO)
+                     (INTEGERP J)
+                     (<= 0 J))
+                (:P J LO))
+       (IMPLIES (AND (NOT (EQUAL LO J))
+                     (< (+ -1 J) 0)
+                     (INTEGERP J)
+                     (<= 0 J))
+                (:P J LO))
+       (IMPLIES (AND (NOT (EQUAL LO J))
+                     (NOT (INTEGERP (+ -1 J)))
+                     (INTEGERP J)
+                     (<= 0 J))
+                (:P J LO))
+       (IMPLIES (AND (EQUAL LO J) (INTEGERP J) (<= 0 J))
+                (:P J LO))
+       (IMPLIES (AND (INTEGERP J)
+                     (<= 0 J)
+                     (NOT (EQUAL LO J)))
+                (L< (LEX-FIX (ACL2-COUNT (+ -1 J)))
+                    (LEX-FIX (ACL2-COUNT J))))).
+  Note that one or more measure conjectures included in the scheme above
+  justify this induction if they are provable.  When applied to the goal
+  at hand the above induction scheme produces six nontautological subgoals.
+
+  ...
+  })
+
+  <p>The first four proof obligations, which are all proved by the prover,
+  implicitly include the hypotheses that @('LO') is a natural below @('J')
+  because they're hypotheses in the four conclusions, @('(:P J LO)').  But the
+  last proof obligation has no hypotheses about @('LO') other than the test in
+  the body of the @('loop$'), @('(NOT (EQUAL LO J))').  This proof obligation
+  is not a theorem and the proof attempt will fail.</p>
+
+  <p>If the prover had just generated the measure conjecture from the
+  @('derived-fn') the last proof obligation would be even more inadequate!</p>
+
+  @({
+  (IMPLIES (NOT (EQUAL LO J))
+           (L< (LEX-FIX (ACL2-COUNT (+ -1 J)))
+               (LEX-FIX (ACL2-COUNT J)))).
+  })
+
+  <p>But we see that the prover actually augmented the hypothesis from the body
+  with two literals it assumed were relevant from the conjecture being proved,
+  namely @('(INTEGERP J)') and @('(<= 0 J)').  (The legality of such
+  augmentation is illustrated by the book
+  @('projects/apply/justification-of-do-induction.lisp').)  However, it did not
+  include any facts about @('LO') other than the test in the @('loop$') body.
+  This is a manifestation of the hidden hypothesis problem.  In this case, we
+  wish it had included @('(NATP LO)') and @('(<= LO J)').  (One can regard this
+  as a heuristic inadequacy, but enlarging the set of hypotheses can cause
+  proofs to fail and we've been conservative in our heuristics for augmenting
+  @('do') @('loop$') inductions.)</p>
+
+  <p>You can fix this by providing an @(':induct') hint.  The @('loop$')
+  statement in the hint below is exactly the @('loop$') statement in the
+  theorem except we've added the UPPERCASE text.  This proof succeeds.</p>
+
+
+  @({
+  (defthm hidden-hyp-problem-main
+    (implies (and (natp lo)
+                  (natp j)
+                  (<= lo j))
+             (equal (loop$ with j = j
+                           do
+                           (if (equal lo j)
+                               (return 'good)
+                               (setq j (- j 1))))
+                    'good))
+    :hints ((\"Goal\"
+             :induct
+             (loop$ with j = j
+                    do
+                    (IF (AND (NATP LO) (<= LO J))
+                        (if (equal lo j)
+                            (return 'good)
+                            (setq j (- j 1)))
+                        (RETURN 'IRRELEVANT-BASE-CASE))))))
+  })
+
+  <p><b>Lesson 4</b>: You can use @('loop$') to provide induction hints and
+  those @('loop$')s don't have to be identical to ones in your goal theorem.
+  In particular, your hint @('loop$') might contain more case analysis than
+  the @('loop$')s in your conjecture.  You can use this fact to overcome the
+  hidden hypothesis problem.</p>
+
+  <p>Note that the derived function from the @('loop$') in the hint doesn't
+  terminate either (because no mention is made that @('J') is a natural).  But
+  the induction-time proof obligation is provable because it is still augmented
+  by @('(INTEGERP J)') and @('(<= 0 J)') as before.</p>
+
+  <h3>Avoiding Some Specially Defined Hint Functions</h3>
+
+  <p>Another lesson suggested by the example above is that you don't always
+  have to define a recursive function to suggest certain inductions.  Here is
+  an example.  Recall the function @('rev1') from the beginning of this topic.
+  Now define the functions that &ldquo;mark&rdquo; every element of a list and
+  that check that every element is &ldquo;marked&rdquo;.</p>
+
+  @({
+  (defun mark-all (x)
+    (if (consp x)
+        (cons (list 'mark (car x))
+              (mark-all (cdr x)))
+        nil))
+
+  (defun all-markedp (x)
+    (if (consp x)
+        (and (consp (car x))
+             (eq (car (car x)) 'mark)
+             (all-markedp (cdr x)))
+        t)).
+  })
+
+  <p>Now prove</p>
+
+  @({
+  (thm (implies (all-markedp a)
+                (all-markedp (rev1 (mark-all x) a))))
+  })
+
+  <p>No induction suggested by the functions in this theorem is appropriate.
+  The appropriate induction assumes the theorem for @('x') replaced by @('(cdr
+  x)') and @('a') replaced by @('(cons (list 'mark (car x)) a)').  (This is an
+  example of rippling as discussed by Bundy, Basin, Hutter and Ireland, in the
+  book <i>Rippling: Meta-Level Guidance for Mathematical Reasoning</i>,
+  Cambridge University, UK, 2005.  But ACL2's induction heuristics don't
+  implement rippling.)  We could, of course, define a recursive function that
+  suggests the appropriate induction and provide it as a hint.  But in this case
+  we needn't define a new function.  We can just use a @('loop$').</p>
+
+  @({
+  (thm (implies (all-markedp a)
+                (all-markedp (rev1 (mark-all x) a)))
+       :hints ((\"Goal\" :induct
+                (loop$ with x = x
+                       with a = a
+                       do
+                       (if (consp x)
+                           (progn (setq a (cons (list 'mark (car x)) a))
+                                  (setq x (cdr x)))
+                           (return 'base-case)))))).
+  })
+
+  <p>See @(see lp-section-11) of the @('Loop$') Primer for a narrative of how
+  we might solve a certain computational problem with a nest of two @('FOR')
+  @('loop$').  We also show how we verify the guards and then prove that the
+  @('loop$') solution is equivalent to a recursive solution.  In
+  @(see lp-section-12) of the primer you'll find some exercises in
+  proving theorems about @('FOR') @('Loop$')s
+  (with answers in a Community Book).  In @(see lp-section-16) you'll find a
+  narrative of how we might go about proving a theorem about a @('DO')
+  @('Loop$').  And in @(see lp-section-17) you'll find exercises in proving
+  theorems about @('DO') @('Loop$')s (with answers in a Community Book).</p>")
 
 (defxdoc stobj
   :parents (programming)
@@ -155306,7 +155976,6 @@ expand function call at the current subterm, without simplifying"
 (defpointer defined-constant system-utilities)
 (defpointer disjoin system-utilities)
 (defpointer disjoin2 system-utilities)
-(defpointer do$ do-loop$)
 (defpointer do-not-induct hints t)
 (defpointer doublet-listp system-utilities)
 (defpointer dynamically-monitor-rewrites dmr)

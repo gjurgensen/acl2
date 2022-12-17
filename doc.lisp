@@ -30185,7 +30185,73 @@ Subtopics
   [parallelism]): when waterfall-parallelism has been set to a
   non-nil value (see [set-waterfall-parallelism]), statistics about
   parallel execution are printed instead of the usual information.")
- (DO$ (POINTERS) "See [do-loop$].")
+ (DO$
+  (LOOP$ DO-LOOP$)
+  "Definition of do$
+
+  Do$ is the logical function that interprets do loop$s.  See
+  [do-loop$] for a discussion of do$.
+
+  The function takes seven arguments but only the first five are
+  relevant to its logical value.
+
+    * measure-fn --- a [lambda] object that computes the measure that
+      supposedly decreases (under [l<]) on each iteration of the
+      do-fn and is checked after each iteration,
+    * alist --- an alist the binds the variable symbols used in the body
+      and finally clause (if any) to their values,
+    * do-fn --- a lambda object that computes the results of one iteration,
+      where the results are represented by a triple consisting of an
+      exit token that indicates where control goes next, the value
+      (if a return was executed), and a new alist,
+    * finally-fn--- a lambda object that computes the value of the finally
+      clause, and
+    * default --- the value to be returned if the measure fails to
+      decrease.
+
+  Function: <do$>
+
+    (defun
+     do$
+     (measure-fn alist do-fn finally-fn default
+                 untrans-measure untrans-do-loop$)
+     (declare (xargs :guard (and (apply$-guard measure-fn '(nil))
+                                 (apply$-guard do-fn '(nil))
+                                 (apply$-guard finally-fn '(nil)))))
+     (let*
+      ((triple (true-list-fix (apply$ do-fn (list alist))))
+       (exit-token (car triple))
+       (val (cadr triple))
+       (new-alist (caddr triple)))
+      (cond
+       ((eq exit-token :return) val)
+       ((eq exit-token :loop-finish)
+        (let*
+          ((triple (true-list-fix (apply$ finally-fn (list new-alist))))
+           (exit-token (car triple))
+           (val (cadr triple)))
+          (if (eq exit-token :return) val nil)))
+       ((l< (lex-fix (apply$ measure-fn (list new-alist)))
+            (lex-fix (apply$ measure-fn (list alist))))
+        (do$ measure-fn
+             new-alist do-fn finally-fn default
+             untrans-measure untrans-do-loop$))
+       (t
+        (prog2$
+         (er
+          hard? 'do$
+          \"The measure, ~x0, used in the do loop$ statement~%~Y12~%failed to ~
+                decrease!  In particular, when the incoming alist (an alist of ~
+                dotted pairs specifying the values of all the variables) ~
+                was~%~Y32the alist produced by the do body was~%~Y42and the ~
+                measure went from~%~x5~%to~%~x6.~%Logically, do$ returns ~x7 ~
+                in this situation.\"
+          untrans-measure
+          untrans-do-loop$ nil alist new-alist
+          (apply$ measure-fn (list alist))
+          (apply$ measure-fn (list new-alist))
+          default)
+         default)))))")
  (DO-LOOP$
   (LOOP$)
   "Iteration with [loop$] using local variables and [stobj]s
@@ -30195,7 +30261,7 @@ Subtopics
   documentation on DO loop$ expressions, beginning with an informal
   introduction based largely on examples and then continuing with
   detailed syntax and semantics.  For a discussion of proofs about
-  loop$s, see [loop$-proofs].
+  loop$s, see [stating-and-proving-lemmas-about-loop$s].
 
   More examples of [loop$] expressions, including DO loop$s, may be
   found in [community-book] projects/apply/loop-tests.lisp.
@@ -30265,6 +30331,10 @@ INFORMAL INTRODUCTION
     ACL2 !>(loop$ with x = (* 3 4) with y = (* 10 x) do (return (list y)))
     (120)
     ACL2 !>
+
+  See [lp-section-14] of the Loop$ Primer for some exerices in writing
+  and executing DO Loop$s (with answers in a Community Book).  But
+  remember to come back here when you get to the end of that section.
 
   Parallel Assignment Using Mv-setq
 
@@ -30580,7 +30650,7 @@ INFORMAL INTRODUCTION
     603
     to
     603.
-    Logically, do$ returns ACL2_INVISIBLE::|The Live State Itself| in this
+    Logically, @('do$') returns ACL2_INVISIBLE::|The Live State Itself| in this
     situation.
 
 
@@ -31050,7 +31120,13 @@ SEMANTICS
           (apply$ measure-fn (list alist))
           (apply$ measure-fn (list new-alist))
           default)
-         default)))))")
+         default)))))
+
+
+Subtopics
+
+  [Do$]
+      Definition of do$")
  (DO-NOT
   (HINTS)
   "Instruct the theorem prover not to do certain things.
@@ -38443,7 +38519,7 @@ Subtopics
   documentation on FOR loop$ expressions, beginning with informal
   discussion and then continuing with detailed syntax (General Form)
   and semantics.  For a discussion of proofs about loop$s, see
-  [loop$-proofs].
+  [stating-and-proving-lemmas-about-loop$s].
 
   Examples of [loop$] expressions, including FOR loop$s, may be found
   in [community-book] projects/apply/loop-tests.lisp.
@@ -38507,6 +38583,10 @@ Subtopics
   This is sometimes necessary in the verification of the [guard]s for
   the loop$ body because Common Lisp's OF-TYPE clauses do not permit
   you to relate one variable to another.
+
+  See [lp-section-6] of the Loop$ Primer for some exercises in writing
+  FOR Loop$s (with answers in a Community Book).  But remember to
+  come back here when you get to the end of that section.
 
 
 General Form
@@ -38854,6 +38934,11 @@ Semantics
   the target list is a list of tuples of iteration variable values
   and the UNTIL and WHEN forms may refer to global variables.
 
+  See [lp-section-10] of the Loop$ Primer for a step-by-step discussion
+  of the evaluation of the formal semantics of an example of a fancy
+  Loop$.  But remember to come back here when you get to the end of
+  that section.
+
   Special Guard Conjectures for FOR loop$s
 
   Since every loop$ expands to a call of a loop$ scion on a lambda
@@ -38876,6 +38961,12 @@ Semantics
     * Second, the loop$ body produces a value acceptable to the loop$
       operator, e.g., the body of a SUM loop$ produces a number and
       the body of an APPEND loop$ produces a true list.
+
+  See [lp-section-8] of the Loop$ Primer for some exercises in
+  converting recursive functions to guard verified functions using
+  FOR loop$s rather than recursion (with answers in a Community
+  Book).  But remember to come back here when you get to the end of
+  that section.
 
   Discussion of Why LOOP$s Have Special Guards
 
@@ -55552,13 +55643,16 @@ Subtopics
   ACL2 programming language that you can define simple functions, run
   them, and read and write ACL2 constants and terms.  For some
   examples of what we'll take for granted about ACL2 programming, see
-  [programming-knowledge-taken-for-granted].
+  [programming-knowledge-taken-for-granted].  If you want a brief
+  tutorial on the ACL2 programming language see
+  [gentle-introduction-to-ACL2-programming].
 
   We also assume you know enough about logic to understand, for
   example, the words we use to talk about formulas and proofs.  To
   see some examples of what we'll take for granted about your
   knowledge of logic terminology, see
-  [logic-knowledge-taken-for-granted].
+  [logic-knowledge-taken-for-granted].  If you want an introduction
+  to the ACL2 logic work your way through [recursion-and-induction].
 
   When you give the theorem prover a goal formula to prove, it tries to
   prove it by breaking it down into subgoals, each of which must be
@@ -62967,14 +63061,39 @@ Subtopics
   expressions, FOR loop$s and DO loop$s; see [for-loop$] and
   [do-loop$] (respectively) for their full documentation.
 
+  Loop$ was introduced into ACL2 in Version 8.2 (May, 2019), over 20
+  years after ACL2 was first released.  So there are many experienced
+  ACL2 users have never used loop$.  The Loop$ Primer, see
+  [loop$-primer], is textbook-style introduction, meant to be read
+  linearly and may be a good starting place for you.  The primer
+  follows a ``monkey-see monkey-do'' approach, showing lots of
+  examples.  Sample proofs are worked out in detail and then the
+  reader is challenged to apply those lessons to exercises.
+  Solutions to the exercises are provided in books among the
+  Community Books.  Depending on your preferred learning style and
+  familiarity with loop$ and ACL2 in general, you might want to work
+  your way through the primer (see [loop$-primer]) instead of
+  bouncing around the hypertext user's manual.
+
   The Introduction below is followed by a discussion of types and
-  guards.  For a discussion of how to prove inductive theorems about
-  loop$s see [loop$-proofs].  Also, for a summary of how the rewriter
-  handles apply$, ev$, and loop$ [scion]s, see
+  guards.  For a discussion of how to state effective lemmas about
+  loop$s and how to prove inductive theorems about loop$s see
+  [stating-and-proving-lemmas-about-loop$s].  Also, for a summary of
+  how the rewriter handles apply$, ev$, and loop$ [scion]s, see
   [rewriting-calls-of-apply$-ev$-and-loop$-scions].
 
   But before we get started we emphasize a few key points.
 
+    * As noted, The Loop$ Primer (see [loop$-primer]) may be a good place
+      to start if you're using ACL2 loop$s for the first time.
+    * The Table of Contents of the Loop$ Primer (see [lp-section-0]) lists
+      some sensible entry points to primer.  You'll see sections
+      devoted to examples, sample proofs, exercises, etc.  Keep the
+      primer in mind as an additional resource.  For example, you
+      might visit Loop$ Primer Section 6 ([lp-section-6]) for some
+      exercises on writing loop$s and, when you get to the end,
+      ignore the ``Now go to [lp-section-7],'' and use your browser's
+      Back key to return to the general hypertext user's manual.
     * Many examples of [loop$] expressions may be found in [community-book]
       projects/apply/loop-tests.lisp.
     * The semantics of loop$ involve apply$.  Therefore, before using
@@ -63269,6 +63388,9 @@ Types and guards in loop$ expressions
 
 Subtopics
 
+  [Do$]
+      Definition of do$
+
   [Do-loop$]
       Iteration with [loop$] using local variables and [stobj]s
 
@@ -63278,14 +63400,14 @@ Subtopics
   [Loop$-primer]
       Primer for using [loop$]
 
-  [Loop$-proofs]
-      Proving inductive theorems about loop$s
-
   [Loop$-recursion]
       Defining functions that recur from within FOR loop$ expressions
 
   [Loop$-recursion-induction]
-      Advice on inductive theorems about [loop$]-recursive functions")
+      Advice on inductive theorems about [loop$]-recursive functions
+
+  [Stating-and-proving-lemmas-about-loop$s]
+      Stating and proving theorems about loop$s")
  (LOOP$-DO (POINTERS) "See [do-loop$].")
  (LOOP$-FOR (POINTERS)
             "See [for-loop$].")
@@ -63432,125 +63554,7 @@ Subtopics
       Challenge Problems about FOR Loop$ in Defuns
 
   [Lp-section-9]
-      Semantics of FOR Loop$s
-
-  [Lp-section-todo]
-      Things We Might Add or Change")
- (LOOP$-PROOFS
-  (LOOP$)
-  "Proving inductive theorems about loop$s
-
-  ACL2's prover can derive induction schemes suggested by some loop$
-  statements, just as it can from some calls of recursive functions.
-  The key issue is whether appropriate arguments are variables.
-
-  For example, consider
-
-  Function: <nth>
-
-    (defun nth (n l)
-           (declare (xargs :guard (and (integerp n)
-                                       (>= n 0)
-                                       (true-listp l))))
-           (if (endp l)
-               nil
-               (if (zp n)
-                   (car l)
-                   (nth (- n 1) (cdr l)))))
-
-  Note that the second argument, l, controls the recursion and the
-  first argument, n, is decremented in recursion.  Thus, if induction
-  is to be tried on a conjecture, (p n l), involving the term (nth n
-  l), that term would suggest the induction
-
-    (and (implies (endl l) (p n l))
-         (implies (and (not (endp l))
-                       (p (- n 1) (cdr l)))
-                  (p n l))).
-
-  But if the conjecture did not mention (nth n l) but mentioned (nth n
-  (foo l)) instead, the nth term would not suggest an induction
-  because the controlling argument of the nth term is not a variable
-  symbol.
-
-  The same principle is at play when loop$ statements are analyzed for
-  inductive suggestions.
-
-  This documentation topic is merely a stub for a more elaborate
-  discussion about proving theorems about loop$s that we intend to
-  produce.  But here are the highpoints.
-
-  The FOR loop$ in the following conjecture
-
-    (equal (loop$ for x in keys as y in vals collect (cons x y))
-           (pairlis$ keys vals))
-
-  suggests simultaneous induction on keys and vals, reinforcing the
-  suggestion from the pairlis$ term.  (By the way, the above
-  conjecture is not a theorem as stated.)  But if the variable vals
-  is replaced by a non-variable term, the loop$ no longer suggests an
-  induction.
-
-  Similarly, the DO loop$ below suggests an induction on lst by cdr
-  with the simultaneous instantiation of ans by (cons (car lst) ans)
-  in the induction hypothesis.
-
-    (loop$ with ans = ans
-           with lst = lst
-           do
-           (if (endp lst)
-               (return ans)
-               (progn (setq ans (cons (car lst) ans))
-                      (setq lst (cdr lst)))))
-
-  But if ans is replaced by a non-variable, an ineffective induction on
-  lst alone is suggested.
-
-  The lesson is clear: If you want a loop$ to suggest an induction, you
-  must generalize the targets to be variables just as you would a
-  recursive function call.
-
-  Because you often have to generalize loop$ theorems to prove them by
-  induction, and, consequently, expect the resulting lemma to match
-  some instance of the loop$ in a subsequent theorem, you have to
-  remember that (a) all loop$ statements are translated into terms
-  involving lambda objects and (b) lambda objects are rewritten (by
-  default) during proofs.  Thus, for example, if you prove an
-  inductive lemma about the generalized DO loop$ above and try to
-  prove your ``main theorem'' about this instance of that loop$
-
-    (loop$ with ans = NIL
-           with lst = lst
-           do
-           (if (endp lst)
-               (return ans)
-               (progn (setq ans (cons (car lst) ans))
-                      (setq lst (cdr lst)))))
-
-  you will be disappointed!  During the proof of the instance, the
-  lambda object that is the body of the loop$ will be rewritten,
-  expanding the non-recursive function endp, so that the target
-  instance becomes
-
-    (loop$ with ans = NIL
-           with lst = lst
-           do
-           (if (consp lst)
-               (progn (setq ans (cons (car lst) ans))
-                      (setq lst (cdr lst)))
-               (return ans))).
-
-  So your generalized lemma, which used endp, will not match.
-
-  You would never create a rewrite rule whose left-hand side contained
-  a non-recursive function call, unless you were planning
-  subsequently to disable the function or (in the case of loop$s)
-  disable lambda object rewriting (see
-  [rewrite-lambda-object-actions]).
-
-  So the lesson here should be clear: When stating generalized loop$
-  lemmas make sure your loop$ bodies are in the ``normal'' form
-  imposed by your rewrite rules.")
+      Semantics of FOR Loop$s")
  (LOOP$-RECURSION
   (LOOP$)
   "Defining functions that recur from within FOR loop$ expressions
@@ -66627,9 +66631,6 @@ LP16: Proving Theorems about DO Loop$s
 
     * The Method (see [the-method]) is a good way to proceed: try to prove
       the theorem expecting it to fail and look at the checkpoints.
-    * Do loop$s, unlike recursive functions and FOR loop$, do not suggest
-      inductions to ACL2.  So some other term or a hint must suggest
-      an appropriate induction.
     * Unsurprisingly, the theorem above has to be generalized before it can
       be proved.  But it can feel strange to generalize a loop$.
     * If we prove a lemma that rewrites a loop$ expression we have to
@@ -66637,15 +66638,26 @@ LP16: Proving Theorems about DO Loop$s
       terms are rewritten.  In particular, ACL2 can rewrite the
       bodies of the lambda objects.  The most common changes are that
       non-recursive functions are generally expanded (depending on
-      the theory in use) and IF expressions are normalized.  That
-      means we need to normalize the bodies of any loop$ we use in a
-      lemma if we expect that lemma to match a term being rewritten!
+      the theory in use) and IFs are normalized.  That means we need
+      to normalize the bodies of any loop$ we use in a lemma if we
+      expect that lemma to match a term being rewritten!  This
+      observation is relevant here because [zp] is non-recursively
+      defined and so will expand when the body of the loop$ above is
+      rewritten.
     * ACL2 does not display do$ terms as DO loop$s.  So get used to reading
       do$ terms and thinking of loop$ statements!  (We may fix this
       someday but at the moment we find it advantageous to really see
       the terms the prover is dealing with!)
 
-  A Recipe for Proving Theorems about DO Loop$s
+  A Tedious Recipe for Proving Theorems about DO Loop$s
+
+  When you first start proving theorems about DO loop$s it might be
+  helpful to follow the tedious recipe below.  It will familiarize
+  you with the semantics of DO loop$s and teach you certain
+  techniques that are easy applications of lessons you've already
+  internalized as an experienced ACL2 user, albeit one unfamiliar
+  with loop$.  But after a little experience you'll find it
+  straightforward to skip some steps!
 
     * Use The Method to find the normal form of the loop$.
     * Define a recursive function that computes the value of the loop$
@@ -66661,62 +66673,87 @@ LP16: Proving Theorems about DO Loop$s
       Generally you will have to generalize the loop$ to prove it by
       the induction suggested by the function.  And you will have to
       write the normal form of the loop$ body instead of the
-      ``pretty'' form in the main theorem so this lemma can be used
-      to hit the rewritten loop$ in the proof of the main theorem
-      later.
+      ``pretty'' form used in the main theorem so this lemma can be
+      used to hit the rewritten loop$ in the proof of the main
+      theorem later.
     * Prove that the function satisfies the specification.  We frequently
       refer to this as ``lemma 2''.
     * Prove that the loop$ satisfies the specification by chaining together
       the two lemmas.
 
   Of course, as with all ``recipes'', sometimes you have to adjust
-  depending on the ingredients at hand.  Sometimes you do not have to
-  define a special function because a function already in the
-  conjecture suggests an appropriate induction.  Sometimes you may
-  find it easier to copy the do$ form revealed by The Method into
-  your statement of lemma 1 and generalize that form, rather than try
-  to express lemma 1 as a loop$.  You may also be content to skip the
-  ``intermediate stop'' of lemma 1 altogether and prove that the
-  loop$ satisfies a generalized specification, sometimes providing an
-  :induct hint instead of inserting the special function into the
-  lemma.  Sometimes you do not have to generalize.  Sometimes instead
-  of proving lemma 1 and lemma 2 you can just prove the main goal
+  depending on the ingredients at hand.  Sometimes you can just write
+  the body of the loop$ in normal form to begin with.  Sometimes you
+  do not have to define a special function because the loop$ itself
+  or a function already in the conjecture suggests an appropriate
+  induction.  Sometimes you may find it easier to copy the do$ form
+  revealed by The Method into your statement of lemma 1 and
+  generalize that form, rather than try to express lemma 1 as a
+  loop$.  You may also be content to skip the ``intermediate stop''
+  of lemma 1 altogether and prove that the loop$ satisfies a
+  generalized specification, sometimes providing an :induct hint
+  instead of inserting the special function into the lemma.
+  Sometimes you do not have to generalize.  Sometimes instead of
+  proving lemma 1 and lemma 2 you can just prove the main goal
   directly.  As an experienced ACL2 user you will recognize when you
   can skip steps in this recipe.  We spell the recipe out rigidly
   here just to give you one promising way to proceed.
 
+  We're going to prove the theorem
+
+    (defthm main
+      (implies (natp n)
+               (equal (loop$ with i = n
+                             with ans = 0
+                             do
+                             (if (zp i)
+                                 (return ans)
+                                 (progn (setq ans (+ 1 ans))
+                                        (setq i (- i 1)))))
+                      n)))
+
+  both ways, first by following the tedious recipe, and then the way a
+  user familiar with DO loop$ proofs might do it.
+
   So here goes!  Following the recipe to prove main above, we first try
-  The Method.  We get this checkpoint after no inductions are
-  suggested.
+  The Method.  The prover tries an induction suggested by the DO
+  loop$, namely induction on N by -1, but without instantiating ANS
+  because the initial value of ANS is the constant 0.  We know this
+  proof will fail and it does.  The pre-induction checkpoint is shown
+  below.
+
+    *** Key checkpoint at the top level: ***
 
     Goal''
     (IMPLIES
      (AND (INTEGERP N) (<= 0 N))
      (EQUAL
       (DO$
-        (LAMBDA$ (ALIST)
-          (ACL2-COUNT (CDR (ASSOC-EQ-SAFE 'I ALIST))))
-        (CONS (CONS 'I N) '((ANS . 0)))
-        (LAMBDA$ (ALIST)
-          (IF (INTEGERP (CDR (ASSOC-EQ-SAFE 'I ALIST)))
-              (IF (< 0 (CDR (ASSOC-EQ-SAFE 'I ALIST)))
-                  (LIST NIL
-                        NIL
-                        (LIST (CONS 'I (+ -1 (CDR (ASSOC-EQ-SAFE 'I ALIST))))
-                              (CONS 'ANS (+ 1 (CDR (ASSOC-EQ-SAFE 'ANS ALIST))))))
-                  (LIST :RETURN
-                        (CDR (ASSOC-EQ-SAFE 'ANS ALIST))
-                        (LIST (CONS 'I (CDR (ASSOC-EQ-SAFE 'I ALIST)))
-                              (CONS 'ANS (CDR (ASSOC-EQ-SAFE 'ANS ALIST))))))
-              (LIST :RETURN
-                    (CDR (ASSOC-EQ-SAFE 'ANS ALIST))
-                    (LIST (CONS 'I (CDR (ASSOC-EQ-SAFE 'I ALIST)))
-                          (CONS 'ANS (CDR (ASSOC-EQ-SAFE 'ANS ALIST)))))))
          (LAMBDA$ (ALIST)
-           (LIST NIL
-                 NIL
-                 (LIST (CONS 'I (CDR (ASSOC-EQ-SAFE 'I ALIST)))
-                       (CONS 'ANS (CDR (ASSOC-EQ-SAFE 'ANS ALIST))))))
+                  (ACL2-COUNT (CDR (ASSOC-EQ-SAFE 'I ALIST))))
+         (CONS (CONS 'I N) '((ANS . 0)))
+         (LAMBDA$
+              (ALIST)
+              (IF (INTEGERP (CDR (ASSOC-EQ-SAFE 'I ALIST)))
+                  (IF (< 0 (CDR (ASSOC-EQ-SAFE 'I ALIST)))
+                      (LIST NIL NIL
+                            (LIST (CONS 'I
+                                        (+ -1 (CDR (ASSOC-EQ-SAFE 'I ALIST))))
+                                  (CONS 'ANS
+                                        (+ 1 (CDR (ASSOC-EQ-SAFE 'ANS ALIST))))))
+                      (LIST :RETURN (CDR (ASSOC-EQ-SAFE 'ANS ALIST))
+                            (LIST (CONS 'I (CDR (ASSOC-EQ-SAFE 'I ALIST)))
+                                  (CONS 'ANS
+                                        (CDR (ASSOC-EQ-SAFE 'ANS ALIST))))))
+                  (LIST :RETURN (CDR (ASSOC-EQ-SAFE 'ANS ALIST))
+                        (LIST (CONS 'I (CDR (ASSOC-EQ-SAFE 'I ALIST)))
+                              (CONS 'ANS
+                                    (CDR (ASSOC-EQ-SAFE 'ANS ALIST)))))))
+         (LAMBDA$ (ALIST)
+                  (LIST NIL NIL
+                        (LIST (CONS 'I (CDR (ASSOC-EQ-SAFE 'I ALIST)))
+                              (CONS 'ANS
+                                    (CDR (ASSOC-EQ-SAFE 'ANS ALIST))))))
          NIL NIL NIL)
       N))
 
@@ -66724,7 +66761,7 @@ LP16: Proving Theorems about DO Loop$s
   do$.  The (ZP I) in our original DO loop$ has opened up,
   introducing (INTEGERP i) and (< 0 i) and IF normalization -- except
   instead of seeing the simple variable I we see its current value in
-  ALIST.
+  the ALIST being computed on each iteration.
 
   This is valuable information! It tells us what the rewritten body of
   the loop$ looks like in the theory in which our proof is being
@@ -66747,7 +66784,7 @@ LP16: Proving Theorems about DO Loop$s
   by induction and we have to use the normal form of the body.  We
   could state the lemma in terms of DO$ of course, but with a little
   practice you can usually ``reverse engineer'' the desired lemma
-  into a loop$.
+  into a loop$.  So here is the so-called ``lemma 1''.
 
     (defthm lemma1
       (implies (and (natp n)
@@ -66765,10 +66802,55 @@ LP16: Proving Theorems about DO Loop$s
 
   Note that we generalized the initial value of ans in the loop$ from 0
   to ans0 and used ans0 as the accumulator in (copy-nat-ac n ans0).
-  Note also that instead of writing the loop$ body with (zp i) we
-  used the normalized expanded version we saw in the checkpoint.
 
-  Next we prove the lemma equating the recursive function with the
+  By the way, we could have written lemma1 in terms of the DO$ term
+  shown in the checkpoint, rather than as a loop$.  But we have to
+  generalize that 0 whether we use a loop$ or the DO$ term.  The
+  generalized DO$ form of lemma1 is
+
+    (defthm lemma1
+      (implies
+       (and (natp n)
+            (natp ans0))
+       (equal
+        (DO$
+         (LAMBDA$ (ALIST)
+                  (ACL2-COUNT (CDR (ASSOC-EQ-SAFE 'I ALIST))))
+         (CONS (CONS 'I N) (cons 'ans ans0)) ; note generalization of 0!
+         (LAMBDA$
+          (ALIST)
+          (IF (INTEGERP (CDR (ASSOC-EQ-SAFE 'I ALIST)))
+              (IF (< 0 (CDR (ASSOC-EQ-SAFE 'I ALIST)))
+                  (LIST NIL NIL
+                        (LIST (CONS 'I
+                                    (+ -1 (CDR (ASSOC-EQ-SAFE 'I ALIST))))
+                              (CONS 'ANS
+                                    (+ 1 (CDR (ASSOC-EQ-SAFE 'ANS ALIST))))))
+                  (LIST :RETURN (CDR (ASSOC-EQ-SAFE 'ANS ALIST))
+                        (LIST (CONS 'I (CDR (ASSOC-EQ-SAFE 'I ALIST)))
+                              (CONS 'ANS
+                                    (CDR (ASSOC-EQ-SAFE 'ANS ALIST))))))
+              (LIST :RETURN (CDR (ASSOC-EQ-SAFE 'ANS ALIST))
+                    (LIST (CONS 'I (CDR (ASSOC-EQ-SAFE 'I ALIST)))
+                          (CONS 'ANS
+                                (CDR (ASSOC-EQ-SAFE 'ANS ALIST)))))))
+         (LAMBDA$ (ALIST)
+                  (LIST NIL NIL
+                        (LIST (CONS 'I (CDR (ASSOC-EQ-SAFE 'I ALIST)))
+                              (CONS 'ANS
+                                    (CDR (ASSOC-EQ-SAFE 'ANS ALIST))))))
+         NIL NIL NIL)
+        (copy-nat-ac n ans0)))).
+
+  The UPPERCASE part above was just copied from the checkpoint and then
+  the pair in the initial alist binding ANS, which was '(ANS . 0),
+  was replaced by (cons 'ans ans0).  So while it looks messy, it's
+  not hard to enter.  Furthermore, it saves us from having to figure
+  out the normal form --- it's already in the checkpoint.  The DO$
+  term in this version of lemma1 is just the formal translation of
+  the generalized DO loop$ we wrote in the earlier version of lemma1.
+
+  Next we prove ``lemma 2'' equating the recursive function with the
   (generalized) specification.  This theorem does not involve loop$
   and its proof should be utterly familiar to you.
 
@@ -66797,56 +66879,26 @@ LP16: Proving Theorems about DO Loop$s
   and arithmetic does the rest.
 
   As we noted, our recipe is overly rigid.  Here is another sequence of
-  events that proves main.  The user defines a function, my-induct,
-  to suggest the right induction, but the function does not return
-  the same thing as the loop$.  It just recurs the way the loop$
-  iterates.  My-induct is not used in the statement of our lemma,
-  instead it is given as an :induct hint.  A single lemma, named
-  lemma below, replaces the recipe's lemmas 1 and 2.  Lemma does not
-  use a loop$ statement.  It uses the very do$ term we saw in the
-  checkpoint, with one tiny change at line [1] below: the initial
-  value of ans was 0 in the checkpoint and is ans0 here.  The
-  right-hand side of the equality at line [2] in lemma is (+ n ans0),
-  the generalized answer.  Once lemma is proved, main is proved.
-
-    (defun my-induct (n ans0)
-      (if (zp n)
-          (list n ans0)
-          (my-induct (1- n) (1+ ans0))))
+  events that proves main.  The experienced user realizes that the
+  generalized DO loop$ will in fact suggest the appropriate induction
+  to ACL2.  So no special function is introduced.  Furthermore, the
+  user --- who has proved several theorems about loop$s involving IF
+  and ZP will know how to write the normal form.  That user would
+  just do this.
 
     (defthm lemma
       (implies
-       (and (integerp n) (<= 0 n) (integerp ans0) (<= 0 ans0))
-       (equal
-        (do$
-         (lambda$ (alist)
-                  (acl2-count (cdr (assoc-eq-safe 'i alist))))
-         (cons (cons 'i n) `((ans . ,ans0)))                       ; [1]
-         (lambda$
-          (alist)
-          (if (integerp (cdr (assoc-eq-safe 'i alist)))
-              (if (< 0 (cdr (assoc-eq-safe 'i alist)))
-                  (list nil nil
-                        (list (cons 'i
-                                    (+ -1 (cdr (assoc-eq-safe 'i alist))))
-                              (cons 'ans
-                                    (+ 1 (cdr (assoc-eq-safe 'ans alist))))))
-                (list :return (cdr (assoc-eq-safe 'ans alist))
-                      (list (cons 'i (cdr (assoc-eq-safe 'i alist)))
-                            (cons 'ans
-                                  (cdr (assoc-eq-safe 'ans alist))))))
-            (list :return (cdr (assoc-eq-safe 'ans alist))
-                  (list (cons 'i (cdr (assoc-eq-safe 'i alist)))
-                        (cons 'ans
-                              (cdr (assoc-eq-safe 'ans alist)))))))
-         (lambda$ (alist)
-                  (list nil nil
-                        (list (cons 'i (cdr (assoc-eq-safe 'i alist)))
-                              (cons 'ans
-                                    (cdr (assoc-eq-safe 'ans alist))))))
-         nil nil nil)
-        (+ n ans0)))                                               ; [2]
-      :hints ((\"Goal\" :induct (my-induct n ans0))))
+       (and (natp n) (natp ans0))
+       (equal (loop$ with i = n
+                     with ans = ans0
+                     do
+                     (if (integerp i)
+                         (if (< 0 i)
+                             (progn (setq ans (+ 1 ans))
+                                    (setq i (- i 1)))
+                             (return ans))
+                         (return ans)))
+              (+ n ans0))))
 
     (defthm main
       (implies (natp n)
@@ -67102,8 +67154,9 @@ LP18: Conclusion
     * [do-loop$]
     * [lambda$]
     * [rewrite-lambda-object]
+    * [stating-and-proving-lemmas-about-loop$s]
 
-  Now go to [lp-section-todo] (or return to the Table of Contents (see
+  The End of the Loop$ Primer. (Return to the Table of Contents (see
   [LP-SECTION-0])).")
  (LP-SECTION-2
   (LOOP$-PRIMER)
@@ -67635,14 +67688,14 @@ LP7: Using Loop$s and Guards in Defuns
        (equal (member-equal-loop$ x lst)
               (member-equal x lst)))
 
-  Member-equal-loop$ has a :guard of (true-listp lst).  This is
-  expected by Common Lisp when running a loop with range on lst.  But
-  in our loop$ above we also wrote that the iteration variable tail
-  satisfies true-listp.  We do that so that ACL2 can prove the guard
-  on (car tail) in the thereis clause.  (We could change ACL2 to
-  infer this type for tail in this special case, but more generally,
-  if some property p holds for lst what property holds for every tail
-  of lst?)
+  Since member-equal has a guard of (true-listp lst), we will give our
+  member-equal-loop$ the same guard.  But in our loop$ above we also
+  wrote that the iteration variable tail satisfies true-listp.  We do
+  that so that ACL2 can prove the guard on (car tail) in the thereis
+  clause.  (We could change ACL2 to infer this type for tail in this
+  special case, but more generally we would prefer to have an
+  effective heuristic for transfering arbitrary properties of lst to
+  relevant properties of tail.)
 
   The guard obligations for member-equal-loop$ are obscure because we
   haven't explained the formal semantics of loop$ yet.  But we do not
@@ -67658,7 +67711,8 @@ LP7: Using Loop$s and Guards in Defuns
   After admitting member-equal-loop$ ACL2 can prove inductively that it
   is equal to member-equal.  We'll come back to that later too.
 
-  An alternative way to specify the type of tail would be to write
+  An alternative way to specify the type of tail would be to add a
+  :guard rather than an of-type expression.
 
     (defun member-equal-loop$ (x lst)
       (declare (xargs :guard (true-listp lst)))
@@ -67667,27 +67721,24 @@ LP7: Using Loop$s and Guards in Defuns
              :guard (true-listp tail)
              (if (equal x (car tail)) tail nil)))
 
-  Adding a :guard after the thereis or other loop$ operator is more
-  general than adding Common Lisp's of-type to an iteration variable.
-  The of-type construct only allows you to express a constraint
-  involving the one variable it's associated with, e.g., you can say
-  `` lst is a true-listp.'' But with :guard you can relate different
-  variables, e.g., ``lst is a true-listp and its len is the same as
-  the len of ylst.''
+  The :guard feature of ACL2 is more flexible than of-type because
+  guards allow you to use multiple variables to express a constraint,
+  while of-type implicitly limits the assertion to the variable being
+  introduced.  For example, with a guard you could say (subsetp-equal
+  tail lst) while you cannot express such a constraint with of-type.
+  However, of-type is understood by the Common Lisp compiler which
+  might optimize the compiled code using that type information, while
+  guards are not seen by the compiler.
 
   When you use a loop$ in a defun to be guard verified, be sure to
   constrain its iteration variables (and global variables)
-  appropriately for their use in subsequent expressions.  Sometimes
-  you can constrain an iteration variable with an of-type but other
-  times you may need to write a :guard expression after the when, the
-  until, and/or the loop$ operator.  ACL2 will take any of-type
-  information and conjoin it to any :guard.
-
-  The reason you might want to write of-type specifications when you
-  can is that Common Lisp compilers ``understand'' them and may
-  produce optimized code.  :Guards are an ACL2 idiom that compilers
-  just ignore.  But :guards are often necessary to verify that a
-  loop$ satisfies all the restrictions Common Lisp imposes.
+  appropriately so you can verify the guards of the body.  (You are
+  also allowed to specify different guards for any when and until
+  expressions.)  We generally split our constraints between of-type
+  and :guard to inform the compiler of simple types, while more
+  elaborate guard conditions are sometimes necessary to verify the
+  guards of the body, etc.  ACL2 will take any of-type information
+  and conjoin it to any :guard when doing guard verification.
 
   Now go to [lp-section-8] (or return to the Table of Contents (see
   [LP-SECTION-0])).")
@@ -67704,17 +67755,13 @@ LP8: Challenge Problems about FOR Loop$ in Defuns
   those functions in your session.  Then define equivalent versions
   using loop$s instead of recursion.  Make sure each of your defuns
   is admitted and guard verified.  Try to ensure that the loop$
-  version is equal to the recursive version of each function.
-  Ideally, the equivalence should be unconditional, but sometimes it
-  is impossible to achieve unconditional equivalence with FOR loop$
-  and you'll have to add some hypotheses to the equivalence theorem,
-  like (true-listp x).
-
-  Since a main motivation for using loop$ is the runtime efficiency of
-  the compiled raw Lisp, and since no ACL2 function is executed in
-  raw Lisp unless the guards are verified, you may condition your
-  equivalences on the guard of the recursive function you're
-  implementing with loop$s.
+  version is unconditionally equal to the recursive version of each
+  function.  But you might find more elegant solutions if you're
+  willing to condition your equivalences on the guards of the
+  recursive versions.  After all, a main motivation for using loop$
+  is the runtime efficiency of the compiled raw Lisp, and since no
+  ACL2 function is executed in raw Lisp unless the guards are
+  verified.
 
   Finally, you need not use ACL2 to prove that your loop$ functions
   correctly implement their recursive counterparts.  But you should
@@ -67799,9 +67846,15 @@ LP8: Challenge Problems about FOR Loop$ in Defuns
   the :guard write the :guard as (and (true-listp alist) (loop$
   ...)).  Be sure your definition is admitted and guard verified.
 
-  The annoying conjunct (true-listp alist) in the new :guard is due to
-  the fact that there is no way to write a FOR loop$ in ACL2 that
-  checks whether something is a true-listp.
+  If you want a slightly more challenging problem, omit the (true-listp
+  alist) from the :guard and use a FOR loop$ ``ON'' alist.  FYI:
+  Common Lisp requires ``IN'' loop$s to be over a true-listp target,
+  but there is no such requirement for ``ON'' loop$s.
+
+  You can always convert an ``IN'' loop$ governed by a true-listp check
+  to an ``ON'' loop$ without the check.  See our solutions.  But
+  because of that, we'll use the more elegant ``IN'' solutions in the
+  rest of these problems.
 
 ------------------------------
   LP8-2 The recursive function below is in the ACL2 sources (therefore,
@@ -67914,16 +67967,19 @@ LP9: Semantics of FOR Loop$s
   For a thorough discussion of the semantics of FOR loop$s see
   [for-loop$], specifically the section ``Semantics'' which includes
   two subsections, ``Semantics of Simple Loop$s'' and ``Semantics of
-  Fancy Loop$s.'' We discuss DO loop$s later.  In this section of the
-  primer we just present some examples to drive home a few important
-  points about FOR loop$s, namely
+  Fancy Loop$s.'' ``Fancy'' FOR loop$s are FOR loop$s involving
+  multiple iteration variables and/or use of ``global'' (i.e.,
+  non-iteration) variables in the loop$ body or the until or when
+  clauses. We discuss DO loop$s later.  In this section of the primer
+  we just present some examples to drive home a few important points
+  about FOR loop$s, namely
 
     * The semantics of a loop$ statement is obtained by translating the
       loop$ statement, as with the command :[trans].
     * However, translation inserts a lot of tags into the formal term it
       produced.  These tags allow us to execute loop$ statements more
       efficiently in the top-level ACL2 read-eval-print loop$.  The
-      tags on a translated loop$, term, can be removed the :[tc]
+      tags on a translated loop$, term, can be removed by the :[tc]
       (``translate and clean'') command and its variants :tca and
       :tcp.  When we exhibit semantics we typically show these
       simplified, equivalent terms produced by one of these commands.
@@ -68145,118 +68201,10 @@ LP9: Semantics of FOR Loop$s
 
   For a still-more elaborate FOR loop$ and a step-by-step description
   of how the value of the formal semantics is computed, go to
-  [lp-section-10].")
- (LP-SECTION-TODO
-  (LOOP$-PRIMER)
-  "Things We Might Add or Change
+  [lp-section-10].
 
-
-Notes on Things We Might Want to Add or Change
-
-  I've thought it might be good to add a problem like: define max-loop$
-  with a do loop$ to compute the maximal value in a list of numbers
-  (or nil if the list is empty) and prove that when it returns a
-  non-nil answer that result is at least as large as any element in
-  the list.  But I haven't added that problem yet.
-
-------------------------------
-  Do we want to discuss loop$ performance versus recursive function
-  performance?  If so, do we want to discuss it in the primer or in
-  the general ACL2 documentation?  FYI, here is a simple test of
-  summing the squares of one million integers.  We see that a FOR
-  loop$ beats a DO loop$ which beats a tail-recursive (accumulator
-  using) function.  But this is just one test in CCL.  A true
-  discussion of performance requires more tests, several Common
-  Lisps, and an analysis of the compiled code and experimentation
-  with the declarations.  I haven't done that.
-
-    (include-book \"projects/apply/top\" :dir :system)
-
-    (defconst *one-million-twos* (make-list 1000000 :initial-element 2))
-
-    (defun tail-recursive-sum-squares (lst ans)
-      (declare (type (satisfies integer-listp) lst)
-               (type integer ans))
-      (cond ((endp lst) ans)
-            (t (tail-recursive-sum-squares
-                (cdr lst)
-                (+ (* (the integer (car lst))
-                      (the integer (car lst)))
-                   ans)))))
-
-    (defun for-loop$-sum-squares (lst ans)
-      (declare (type (satisfies integer-listp) lst)
-               (type integer ans))
-      (+ (loop$ for e of-type integer in lst sum (* e e))
-         ans))
-
-    (defun do-loop$-sum-squares (lst ans)
-      (declare (type (satisfies integer-listp) lst)
-               (type integer ans))
-      (loop$ with lst of-type (satisfies integer-listp) = lst
-             with ans of-type integer = ans
-             do
-             (cond ((endp lst) (return ans))
-                   (t (progn (setq ans (+ (* (the integer (car lst))
-                                             (the integer (car lst)))
-                                          ans))
-                             (setq lst (cdr lst)))))))
-
-    ; Now I drop into raw Lisp so we execute the compiled code without
-    ; checking the guard, which is probably about as expensive as
-    ; summing the squares!  Each test ran its respective function 10
-    ; times and after doing all three tests I repeated all three tests.
-    ; So I show two times for each test.
-
-    (value :q)
-
-    (time (progn (tail-recursive-sum-squares *one-million-twos* 0)
-                 (tail-recursive-sum-squares *one-million-twos* 0)
-                 (tail-recursive-sum-squares *one-million-twos* 0)
-                 (tail-recursive-sum-squares *one-million-twos* 0)
-                 (tail-recursive-sum-squares *one-million-twos* 0)
-                 (tail-recursive-sum-squares *one-million-twos* 0)
-                 (tail-recursive-sum-squares *one-million-twos* 0)
-                 (tail-recursive-sum-squares *one-million-twos* 0)
-                 (tail-recursive-sum-squares *one-million-twos* 0)
-                 (tail-recursive-sum-squares *one-million-twos* 0)))
-    ; took 47,278 microseconds (0.047278 seconds) to run.
-    ; took 46,885 microseconds (0.046885 seconds) to run.
-
-    (time (progn (for-loop$-sum-squares *one-million-twos* 0)
-                 (for-loop$-sum-squares *one-million-twos* 0)
-                 (for-loop$-sum-squares *one-million-twos* 0)
-                 (for-loop$-sum-squares *one-million-twos* 0)
-                 (for-loop$-sum-squares *one-million-twos* 0)
-                 (for-loop$-sum-squares *one-million-twos* 0)
-                 (for-loop$-sum-squares *one-million-twos* 0)
-                 (for-loop$-sum-squares *one-million-twos* 0)
-                 (for-loop$-sum-squares *one-million-twos* 0)
-                 (for-loop$-sum-squares *one-million-twos* 0)))
-    ; took 38,910 microseconds (0.038910 seconds) to run.
-    ; took 39,213 microseconds (0.039213 seconds) to run.
-
-    (time (progn (do-loop$-sum-squares *one-million-twos* 0)
-                 (do-loop$-sum-squares *one-million-twos* 0)
-                 (do-loop$-sum-squares *one-million-twos* 0)
-                 (do-loop$-sum-squares *one-million-twos* 0)
-                 (do-loop$-sum-squares *one-million-twos* 0)
-                 (do-loop$-sum-squares *one-million-twos* 0)
-                 (do-loop$-sum-squares *one-million-twos* 0)
-                 (do-loop$-sum-squares *one-million-twos* 0)
-                 (do-loop$-sum-squares *one-million-twos* 0)
-                 (do-loop$-sum-squares *one-million-twos* 0)))
-    ; took 44,545 microseconds (0.044545 seconds) to run.
-    ; took 43,769 microseconds (0.043769 seconds) to run.
-
-------------------------------
-  I feel like pointing out that prior to the creation of this primer
-  there were over 60 pages of documentation directly describing
-  loop$, specifically the topics [loop$], [for-loop$], [do-loop$],
-  [loop$-recursion], and [loop$-recursion-induction].  I think this
-  primer is valuable because of the examples and problems, and
-  perhaps it is easier to get started than to wade straight in.  But
-  I'm not convinced it's worth saying.")
+  Now go to [lp-section-10] (or return to the Table of Contents (see
+  [LP-SECTION-0])).")
  (MACRO-ALIASES-TABLE
   (MACROS)
   "A [table] used to associate function names with macro names
@@ -98057,8 +98005,8 @@ New Features
   requesting such a feature.
 
   The induction mechanism in the prover can now deduce induction
-  suggestions from some DO loop$s.  See [loop$-proofs] for a brief
-  discussion.
+  suggestions from some DO loop$s.  See
+  [stating-and-proving-lemmas-about-loop$s] for a brief discussion.
 
   A new :[linear] rule, acl2-count-car-cdr-linear, is now built into
   ACL2, as follows.  Thanks to Eric Smith for suggesting this
@@ -102907,9 +102855,6 @@ Subtopics
   [Disjoin2]
       See [system-utilities].
 
-  [Do$]
-      See [do-loop$].
-
   [Do-not-induct]
       See [hints] for information about the keyword :do-not-induct.
 
@@ -106076,6 +106021,9 @@ Subtopics
   [documentation] hierarchy that appear under this `programming'
   topic.
 
+  If you are unfamiliar with Lisp, we suggest you start by reading
+  [gentle-introduction-to-ACL2-programming].
+
   If you are already familiar with Common Lisp (or even some other Lisp
   variant), then you may find it helpful to start with the topic,
   [introduction-to-programming-in-ACL2-for-those-who-know-lisp].
@@ -106257,9 +106205,7 @@ Subtopics
   sequence of questions and answers meant to test your knowledge of
   the ACL2 programming language.  If you want a gentle introduction
   to the programming language, see
-  {http://www.cs.utexas.edu/users/moore/publications/gentle-intro-to-acl2-programming.html
-  |
-  http://www.cs.utexas.edu/users/moore/publications/gentle-intro-to-acl2-programming.html}.
+  [gentle-introduction-to-ACL2-programming].
 
   Before we get started with the programming drill, let us remind you
   that all we're interested in here is the language, not the
@@ -106538,11 +106484,7 @@ Subtopics
   now to return to [introduction-to-the-theorem-prover].
 
   If you are uncomfortable with ACL2 programming, we recommend that you
-  study
-  {http://www.cs.utexas.edu/users/moore/publications/gentle-intro-to-acl2-programming.html
-  |
-  http://www.cs.utexas.edu/users/moore/publications/gentle-intro-to-acl2-programming.html}
-  and
+  study [gentle-introduction-to-ACL2-programming] and
   {http://www.cs.utexas.edu/users/moore/publications/acl2-programming-exercises1.html
   |
   http://www.cs.utexas.edu/users/moore/publications/acl2-programming-exercises1.html}.
@@ -115054,15 +114996,6 @@ Subtopics
 Recursion and Induction
 
 
-by
-
-
-Matt Kaufmann, J Strother Moore, and Warren A. Hunt, Jr.
-
-
-November 8, 2022
-
-
 Preface and Acknowledgments
 
   These notes are for teaching yourself how to prove theorems about
@@ -115147,10 +115080,11 @@ Preface and Acknowledgments
   Over time, the course notes were expanded to include explanations,
   examples, and more problems.  Moore wrote the first version of this
   ACL2-based document in the early 2000s, building on joint work with
-  Matt Kaufmann.  That document was edited still further by all three
-  of us after Hunt began teaching the course in 2004.  In 2022, it
-  was converted from LaTeX pdf to the hypertext format of ACL2's
-  online documentation and further tied into ACL2's documentation.
+  Matt Kaufmann.  That document was edited still further by Kaufmann,
+  Moore, and Hunt after Hunt began teaching the course in 2004.  In
+  2022, Kaufmann converted it from LaTeX pdf to the hypertext format
+  of ACL2's online documentation and tied it into ACL2's
+  documentation.
 
   Finally, we thank the many sponsors and supporters of the Nqthm and
   ACL2 projects over the last 40 years, as well as the many students
@@ -128598,6 +128532,733 @@ Subtopics
     #xA
      10
     ACL2 !>")
+ (STATING-AND-PROVING-LEMMAS-ABOUT-LOOP$S
+  (LOOP$)
+  "Stating and proving theorems about loop$s
+
+  In this topic we give some advice about how to state and prove
+  theorems involving loop$s, especially stating lemmas that are
+  intended to rewrite loop$ statements and proving theorems about
+  loop$ statements inductively.
+
+
+Name Loop$s When Memorable Names Come to Mind
+
+  Just because you can write iterative computations inline, don't get
+  carried away!
+
+  If you can think of a good name for the concept implemented by a
+  loop$ statement, use defun to define that name.  This is especially
+  the case if you intend to reason about that loop$ statement or to
+  write more than one instance of it.
+
+  For example, rather than write instances of
+
+    (loop$ for a in x as b in y sum (* a b))
+
+  it is better to define (dot-product x y) with that loop$ as its body
+  and then write calls of dot-product and lemmas about dot-product
+  rather than that loop$.
+
+  Basically, names are good as long as you can remember them.  They
+  give you a place to hang lemmas and the lemmas match without you
+  having to think about how lambda objects rewrite, local variables,
+  etc.  Not all loop$s compute concepts with obvious, memorable
+  names, but just because you can write ``anonymous'' iterations
+  doesn't mean you should!
+
+
+Generalizing the Initial Values
+
+  Let's start with the most common issue raised by any inductive proof:
+  the conjecture to be proved must be general enough to permit the
+  provision of an appropriate inductive hypothesis.
+
+  Consider how you would prove the conjecture below after defining rev
+  and rev1.
+
+    (defun rev (x)
+      (if (endp x)
+          nil
+          (append (rev (cdr x)) (list (car x)))))
+
+    (defun rev1 (x a)
+      (if (endp x)
+          a
+          (rev1 (cdr x) (cons (car x) a))))
+
+    (defthm rev1-is-rev
+      (equal (rev1 x nil) (rev x)))
+
+  The experienced ACL2 user would not attempt to prove rev1-is-rev by
+  induction because the nil prevents the provision of an appropriate
+  induction hypothesis.  Instead, the user would first prove a
+  generalization obtained by replacing that nil by a variable and
+  ``explaining'' the role of that variable on the right-hand side.
+
+    (defthm rev1-is-rev-generalized
+      (equal (rev1 x a)
+             (append (rev x) a)))
+
+  The proof of the generalized theorem succeeds (though the prover must
+  ``discover'' and then prove that append is associative).
+
+  With that theorem available, the proof of rev1-is-rev is trivial,
+  given that nil is the right-identity for append on true-lists and
+  that rev returns a true-list.
+
+  Now consider defining reverse with a do loop$.
+
+    (defun rev-loop$ (x)
+      (loop$ with tail = x
+             with a = nil
+             do
+             (if (endp tail)
+                 (return a)
+                (progn (setq a (cons (car tail) a))
+                        (setq tail (cdr tail))))))
+
+  The experienced ACL2 user would not attept to prove that (rev-loop$
+  x) is (rev x) by induction!  The problem is the same as before: the
+  nil initialization of the iterative variable a in the do loop$ does
+  not permit an appropriate inductive hypothesis.  Instead, the user
+  needs to prove a more general theorem that cannot be stated in
+  terms of rev-loop$ because that nil is built into the definition.
+  We need to lift the loop$ out of the definition, generalize it, and
+  prove a theorem about the generalized loop$.  Ideally we'd prove
+
+    (defthm rev-loop$-is-rev-generalized
+      (equal (loop$ with tail = x
+                    with a = a
+                    do
+                    (if (endp tail)
+                        (return a)
+                        (progn (setq a (cons (car tail) a))
+                               (setq tail (cdr tail)))))
+             (append (rev x) a))).
+
+  ACL2's prover can derive induction schemes suggested by some loop$
+  statements, just as it can from some calls of recursive functions.
+  Because both iterative variables, tail and a, are initialized to
+  variables, the DO loop$ above suggests an appropriate induction.
+  But inductions for loop$s raise some new issues as well as some
+  traditional ones.
+
+  ACL2 will prove the lemma above, if the associativity of append has
+  first been proved explicitly as a rewrite rule.  (The presence of
+  the loop$ confuses the heuristics that enable the prover to
+  ``discover'' the associativity of append.)
+
+  Lesson 1: If a loop$ has iterative variables initialized to
+  non-variables, generalize them before expecting an induction to
+  work!  If the loop$ is buried in a definition you'll have to lift
+  the loop$ out of the definition to generalize it and prove a
+  theorem about the the generalized loop$.
+
+
+Normal Forms in Loop$ Bodies
+
+  The lemma above, rev-loop$-is-rev-generalized, is adequate to
+  subsequently prove the main theorem,
+
+    (defthm rev-loop$-is-rev
+      (equal (rev-loop$ x)
+             (rev x))).
+
+  But as stated, rev-loop$-is-rev-generalized is fragile because it
+  mentions the non-recursively defined function endp.  To explain
+  this remark we need to walk through the proof of the main theorem.
+
+  Recall that the prover always expands enabled functions that are not
+  explicitly recursive.  And rev-loop$ is not explicitly recursive.
+  So the proof attempt of rev-loop$-is-rev will expand the call of
+  rev-loop$ and produce
+
+    Goal'
+    (equal (loop$ with tail = x
+                  with a = nil
+                  do
+                  (if (endp tail)
+                      (return a)
+                      (progn (setq a (cons (car tail) a))
+                             (setq tail (cdr tail)))))
+           (rev x))
+
+  If the loop$ term above is immediately rewritten, our generalized
+  lemma would fire and reduce the goal to
+
+    Goal''
+    (equal (append (rev x) nil)
+           (rev x))
+
+  and the proof would be completed as before with the right-identity
+  rule.
+
+  Indeed, this is what happens in this particular case, but the reason
+  it works is completely unrelated to loop$s!  Our generalized lemma
+  has no hypotheses --- it is an unconditional rewrite rule that is
+  applied early in the ``preprocessing'' phase of simplification.
+
+  Let's suppose the generalized lemma did have some hypotheses or
+  otherwise failed to apply during preprocessing.  You can cause this
+  to happen by restating the generalized lemma and the main theorem
+  to have the (unnecessary but easily dealt with) hypothesis
+  (true-listp x).  The proof of the conditional generalized lemma
+  still goes through, but the proof of the conditional main theorem
+  fails because the generalized lemma never fires!
+
+  The reason it never fires is that it is not tried during
+  prepreprocessing (because preprocessing doesn't deal with
+  conditional rules because preprocessing doesn't support
+  backchaining) and Goal' above enters the rewriter, which rewrites
+  every subterm of the term before trying to apply rules to the term
+  itself.  In particular, before the rewriter tries to apply our
+  generalized rule it rewrites the subterms of the loop$ statement,
+  including the body.  (Technically, it rewrites the lambda object in
+  the translation of the loop$.  See [rewrite-lambda-object].)
+
+  This transforms
+
+    (loop$ with tail = x
+           with a = nil
+           do
+           (if (endp tail)
+               (return a)
+               (progn (setq a (cons (car tail) a))
+                      (setq tail (cdr tail)))))
+
+  to
+
+    (loop$ with tail = x
+           with a = nil
+           do
+           (if (consp tail)
+               (progn (setq a (cons (car tail) a))
+                      (setq tail (cdr tail)))
+               (return a)))
+
+  because (endp x) expands to (not (consp x)) and the branches of the
+  if are swapped to eliminate the not.
+
+  After this rewrite, our generalized lemma no longer matches.
+
+  Lesson 2: Do not prove rewrite rules that target loop$ statements
+  containing terms in non-normal form!  That is, as with all other
+  rewrite rules, make sure your target is normalized under your
+  intended rewrite regime.
+
+  So for example, in addition to watching out for non-recursive
+  functions in the body, be alert for things like expressions that
+  are rearranged by associativity and commutativity rules.  You
+  wouldn't write a rewrite rule containing a subterm like (append
+  (append a b) c) if you're right-associating append nests, nor would
+  you include a subterm like (+ x 1) if you're normalizing arithmetic
+  expressions (in this case to (+ 1 x)).  So don't use such
+  non-normal terms in lemmas about loop$s!
+
+  The entire robust script for the rev-loop$ proof is given below.
+
+    (defun rev (x)
+      (if (endp x)
+          nil
+          (append (rev (cdr x)) (list (car x)))))
+
+    (defun rev-loop$ (x)
+      (loop$ with tail = x
+             with a = nil
+             do
+             (if (endp tail)
+                 (return a)
+                 (progn (setq a (cons (car tail) a))
+                        (setq tail (cdr tail))))))
+
+    (defthm assoc-of-append
+      (equal (append (append a b) c)
+             (append a (append b c))))
+
+    (defthm rev-loop$-is-rev-generalized
+      (equal (loop$ with tail = x
+                    with a = a
+                    do
+                    (if (consp tail)
+                        (progn (setq a (cons (car tail) a))
+                               (setq tail (cdr tail)))
+                        (return a)))
+             (append (rev x) a)))
+
+    (defthm rev-loop$-is-rev
+      (equal (rev-loop$ x)
+             (rev x)))
+
+  The script is robust in the sense that even if you conditionalize the
+  generalized lemma with a hypothesis that can be relieved in the
+  main theorem the lemma will fire and rewrite the loop$ exposed when
+  rev-loop$ is expanded.  Note that the loop$ was written with (endp
+  tail) in the defun of rev-loop$ but lemma deals with the normalized
+  form of that body.
+
+
+The Secret Setq Problem
+
+  Another issue that comes up when posing lemmas about loop$s is called
+  the secret setq problem and is best illustrated by example.
+
+  Define the following function.
+
+    (defun secret-setq-problem (k x)
+      (loop$ with x = x
+             with j = 0
+             do
+             (cond ((endp x) (return 'bad))
+                   ((equal j k) (return 'good))
+                   (t (progn (setq x (cdr x))
+                             (setq j (+ 1 j)))))))
+
+  The function counts j up from 0 until it is equal to k, while cdring
+  x.  It returns good if it j reaches k before the list is exhausted,
+  and returns bad otherwise.  Thus, this is a theorem.
+
+    (defthm secret-setq-problem-main
+      (implies (and (natp k)
+                    (< k (len x)))
+               (equal (secret-setq-problem k x)
+                      'good)))
+
+  While secret-setq-problem-main is provable by ACL2, it should be
+  clear from Lessons 1 and 2 above that we first need to prove a
+  lemma about the generalized, normalized loop$.  Here is a candidate
+  lemma, which is proved by ACL2.
+
+    (defthm secret-setq-problem-lemma
+      (implies (and (natp j)
+                    (natp k)
+                    (< k (+ j (len x)))
+                    (<= j k))
+               (equal (loop$ with x = x
+                             with j = j
+                             do
+                             (if (consp x)
+                                 (if (equal j k)
+                                     (return 'good)
+                                     (progn (setq x (cdr x))
+                                            (setq j (+ 1 j))))
+                                 (return 'bad)))
+                      'good)))
+
+  Following Lesson 1, we generalized the initial value of j, which was
+  0, to j, and we added the hypotheses that j is a natural less than
+  or equal to k.  We generalized the (< k (len x)) which we see in
+  the main theorem to (< k (+ j (len x))).  This accommodates the
+  arbitrary initial j and simplifies to (len x) when j is 0.
+  Furthermore, as j goes up and x gets shorter, their sum stays
+  fixed, which is necessary if the generalized hypothesis is going to
+  survive induction.
+
+  Following Lesson 2, we normalized the body.  We replaced the (endp x)
+  by (not (consp x)) and normalized the resulting IF nest.
+
+  The lemma is proved automatically by ACL2, using the induction
+  suggested by the loop$.
+
+  However, the attempt to prove the main theorem above will fail!  The
+  lemma doesn't fire because the loop$ target still doesn't match.
+  (Note: we could forget about the lemma firing automatically.
+  Instead, we could give a :hint that disables the lamma and :uses
+  the instance of it with j replaced by 0.  That succeeds.  But it is
+  valuable for us to explore why it didn't work as a rewrite rule.)
+
+  Sometimes to debug a failed proof it helps to compare the term that a
+  lemma targets with its intended target in the checkpoint of the
+  failed proof.  This is especially true for loop$s because their
+  translations are so different from their outward appearance.  (See
+  the sections titled ``Semantics'' in [for-loop$] and [do-loop$].)
+  The following use of the :[pr] command shows our lemma's true form.
+  It is the left-hand side, Lhs, we are interested in because it is
+  the target pattern of the rewrite rule.
+
+    ACL2 !>:pr secret-setq-problem-lemma
+
+    Rune:    (:REWRITE SECRET-SETQ-PROBLEM-LEMMA)
+    Enabled: T
+    Hyps:    (AND (NATP J)
+                  (NATP K)
+                  (< K (+ J (LEN X)))
+                  (<= J K))
+    Equiv:   EQUAL
+    Lhs:     (DO$
+              (LAMBDA$ (ALIST)
+                (ACL2-COUNT (CDR (ASSOC-EQ-SAFE 'X ALIST))))
+              (LIST (CONS 'X X)
+                    (CONS 'J J)
+                    (CONS 'K K))
+              (LAMBDA$ (ALIST)
+               (IF (CONSP (CDR (ASSOC-EQ-SAFE 'X ALIST)))
+                   (IF (EQUAL (CDR (ASSOC-EQ-SAFE 'J ALIST))
+                              (CDR (ASSOC-EQ-SAFE 'K ALIST)))
+                       (LIST :RETURN 'GOOD
+                             (LIST (CONS 'X (CDR (ASSOC-EQ-SAFE 'X ALIST)))
+                                   (CONS 'J (CDR (ASSOC-EQ-SAFE 'J ALIST)))
+                                   (CONS 'K (CDR (ASSOC-EQ-SAFE 'K ALIST)))))
+                       (LIST NIL NIL
+                             (LIST (CONS 'X (CDDR (ASSOC-EQ-SAFE 'X ALIST)))
+                                   (CONS 'J (+ 1 (CDR (ASSOC-EQ-SAFE 'J ALIST))))
+                                   (CONS 'K (CDR (ASSOC-EQ-SAFE 'K ALIST))))))
+                   (LIST :RETURN 'BAD
+                         (LIST (CONS 'X (CDR (ASSOC-EQ-SAFE 'X ALIST)))
+                               (CONS 'J (CDR (ASSOC-EQ-SAFE 'J ALIST)))
+                               (CONS 'K (CDR (ASSOC-EQ-SAFE 'K ALIST)))))))
+                (LAMBDA$ (ALIST)
+                 (LIST NIL NIL
+                      (LIST (CONS 'X (CDR (ASSOC-EQ-SAFE 'X ALIST)))
+                            (CONS 'J (CDR (ASSOC-EQ-SAFE 'J ALIST)))
+                            (CONS 'K (CDR (ASSOC-EQ-SAFE 'K ALIST))))))
+                NIL NIL NIL)
+    Rhs:     'GOOD
+    Backchain-limit-lst: NIL
+    Subclass: BACKCHAIN
+    Loop-stopper: NIL
+
+  The actual do$ term term you'll see in the checkpoint of the failed
+  proof attempt is:
+
+    (DO$
+     (LAMBDA$ (ALIST)
+       (ACL2-COUNT (CDR (ASSOC-EQ-SAFE 'X ALIST))))
+     (LIST (CONS 'X X)
+           '(J . 0)
+           (CONS 'K K))
+     (LAMBDA$ (ALIST)
+      (IF (CONSP (CDR (ASSOC-EQ-SAFE 'X ALIST)))
+          (IF (EQUAL (CDR (ASSOC-EQ-SAFE 'J ALIST))
+                     (CDR (ASSOC-EQ-SAFE 'K ALIST)))
+              (LIST :RETURN 'GOOD
+                    (LIST (CONS 'X (CDR (ASSOC-EQ-SAFE 'X ALIST)))
+                          (CONS 'J (CDR (ASSOC-EQ-SAFE 'J ALIST)))
+                          (CONS 'K (CDR (ASSOC-EQ-SAFE 'J ALIST)))))
+              (LIST NIL NIL
+                    (LIST (CONS 'X (CDDR (ASSOC-EQ-SAFE 'X ALIST)))
+                          (CONS 'J (+ 1 (CDR (ASSOC-EQ-SAFE 'J ALIST))))
+                          (CONS 'K (CDR (ASSOC-EQ-SAFE 'K ALIST))))))
+          (LIST :RETURN 'BAD
+                (LIST (CONS 'X (CDR (ASSOC-EQ-SAFE 'X ALIST)))
+                      (CONS 'J (CDR (ASSOC-EQ-SAFE 'J ALIST)))
+                      (CONS 'K (CDR (ASSOC-EQ-SAFE 'K ALIST)))))))
+       (LAMBDA$ (ALIST)
+        (LIST NIL NIL
+             (LIST (CONS 'X (CDR (ASSOC-EQ-SAFE 'X ALIST)))
+                   (CONS 'J (CDR (ASSOC-EQ-SAFE 'J ALIST)))
+                   (CONS 'K (CDR (ASSOC-EQ-SAFE 'K ALIST))))))
+       NIL NIL NIL)
+
+  Note that the Lhs matches the actual term, when J is instantiated
+  with 0, except in one place: the alist constructed in the (LIST
+  :RETURN 'GOOD ...) triple binds 'K to the value of 'K in Lhs but
+  binds 'K to the value of 'J in the actual term.  This happens
+  because the actual term was rewritten under the assumption that the
+  IF test equating the value of 'J to the value of 'K, and the
+  rewriter substituted the value of 'J for that of 'K because of term
+  ordering.  The ACL2 pattern matching routine does not take account
+  of tests.
+
+  We could possibly fix this problem by changing how ACL2 stores lemmas
+  or how the pattern matcher works.  But such changes could have far
+  reaching consequences across the entire ACL2 regression suite, so
+  we have made no such changes.
+
+  Absent such changes, it's incumbent on the user to phrase the rewrite
+  rule appropriately.  The question is, ``How can you make that
+  particular 'K in Lhs be 'J?''
+
+  One way would be to rephrase the rewrite rule by using the DO$ term
+  from the checkpoint in place of the loop$ statement we wrote in
+  secret-setq-problem-lemma.
+
+  Another way to accomplish the same effect is to rewrite the loop$
+  statement as shown below.
+
+    (defthm secret-setq-problem-lemma
+      (implies (and (natp j)
+                    (natp k)
+                    (< k (+ j (len x)))
+                    (<= j k))
+               (equal (loop$ with x = x
+                             with j = j
+                             with k = k                     ; ``new'' var
+                             do
+                             (if (consp x)
+                                 (if (equal j k)
+                                     (progn (setq k j)      ; new setq!
+                                            (return 'good))
+                                     (progn (setq x (cdr x))
+                                            (setq j (+ 1 j))))
+                                 (return 'bad)))
+                      'good)))
+
+  You can use :[tcp] to confirm that the translation of the above loop$
+  matches the actual term in the checkpoint.
+
+  Note that the inclusion of the new ``with k = k'' does not add any
+  new subterms to the translation, it merely allows assignment to a
+  previously used but never assigned variable.  The order of the with
+  clauses determines the order of the alists being constructed, so
+  this pay attention to where 'k is bound in the alists.  Also note
+  that the new setq does not add any new subterms to the translation,
+  just affects the final value of 'k on that branch of the if tree.
+  Finally note that we phrase the loop$ this way in the lemma without
+  changing how we write the loop$ in the defun. Writing the loop$
+  this way in the defun would add an unnecessary setq in the Common
+  Lisp execution.  But there is no need to change how we write the
+  loop$ in the defun.  This lemma matches what comes up when we prove
+  things about the loop$ in the defun.
+
+  Because this matching problem can repaired by adding an unnecessary
+  setq in the lemma, we call this the ``secret setq problem.''
+
+  Lesson 3: If the left-hand side of a rewrite rule contains an loop$
+  with an if in the body, remember the secret setq problem.  More
+  practically, if a loop$ lemma you've proved fails to rewrite its
+  target, compare the output of :pr, specifically the Lhs, to the
+  intended target printed in the checkpoint, and remember the secret
+  setq problem.
+
+
+The Hidden Hypothesis Problem
+
+  Another issue you may occasionally confront when dealing with
+  inductions suggested by do loop$s is indicated when the prover
+  fails to prove the measure conjecture even though you ``know'' it
+  is proveable.  To explain, we have to explain a little about how
+  induction suggested by do loop$s are done.
+
+  From every do loop$ we can derive a proposed recursive function
+  definition.  When the prover sees a do loop$ in a conjecture that
+  it has decided requires inductions, it generates that derived
+  function, does an induction analysis for it, and adds any
+  suggestions it gets to the set of candidate inductions to consider.
+  However, the derived function may not terminate ``normally.''
+  Recall that [do$] checks that the measure goes down before each
+  iteration and returns a default value if that check fails.  Thus,
+  to justify the induction suggested by the generated function the
+  proof obligations include those that establish that the measure
+  decreases under the tests leading to further iterations in the
+  loop$ body.
+
+  Those tests are not always sufficient to guarantee termination!  If
+  the loop$ came from a guard verified function definition,
+  termination was proved.  But it was proved as part of guard
+  verification.  Remember the main purpose of guards in loop$s: to
+  allow us to execute the loop$ as a Common Lisp loop.  But that
+  execution only happens when we know guards hold.  But loop$s seen
+  by the prover may not come from guard verified statements and,
+  besides, guards are stripped out of conjectures to be proved
+  because they're irrelevant to the logical meaning.
+
+  However, it is logically valid to condition the induction-time
+  measure conjectures on hypotheses from the conjecture being proved
+  --- and it is often ineffective to include all of those hypotheses.
+  So ACL2's induction mechanism chooses some of the available
+  hypotheses and may not choose enough.  This is the ``hidden
+  hypothesis problem.'' An example is below.
+
+  The following function can be admitted and guard verified, meaning
+  the termination obligation is proved as part of guard verification.
+
+    (defun hidden-hyp-problem (lo j)
+      (declare (xargs :guard (and (natp lo) (natp j) (<= lo j))))
+      (loop$ with j = j
+             do
+             :guard (and (natp lo) (natp j) (<= lo j))
+             (if (equal lo j)
+                 (return 'good)
+                 (setq j (- j 1)))))
+
+  Since since lo and j are both natural numbers and j is (weakly) above
+  lo and is decremented on iteration, j will eventually reach lo and
+  the loop$ will stop.
+
+  The derived recursive function corresponding to this loop$, which
+  we'll call derived-fn here, is
+
+    (defun derived-fn (lo j)
+      (if (equal lo j)
+          'good
+          (derived-fn lo (- j 1)))).
+
+  That derived function doesn't terminate.
+
+  Now let's try to prove that the loop$ always returns 'good.  Note
+  that it doesn't matter if we include guards in the conjecture or
+  not.  They're logically irrelevant and will be eliminated.
+
+  However, the following proof attempt fails.  The prover chooses to
+  induct as suggested by the do loop$.  The induction scheme selected
+  is shown.
+
+    ACL2 !>(defthm hidden-hyp-problem-main
+             (implies (and (natp lo)
+                           (natp j)
+                           (<= lo j))
+                      (equal (loop$ with j = j
+                                    do
+                                    :guard (and (natp lo) (natp j) (<= lo j))
+                                    (if (equal lo j)
+                                        (return 'good)
+                                        (setq j (- j 1))))
+                             'good)))
+
+    ...
+
+    This suggestion was produced using the :induction rule DO$.  If we
+    let (:P J LO) denote *1 above then the induction scheme we'll use is
+    (AND (IMPLIES (AND (NOT (EQUAL LO J))
+                       (:P (+ -1 J) LO)
+                       (INTEGERP J)
+                       (<= 0 J))
+                  (:P J LO))
+         (IMPLIES (AND (NOT (EQUAL LO J))
+                       (< (+ -1 J) 0)
+                       (INTEGERP J)
+                       (<= 0 J))
+                  (:P J LO))
+         (IMPLIES (AND (NOT (EQUAL LO J))
+                       (NOT (INTEGERP (+ -1 J)))
+                       (INTEGERP J)
+                       (<= 0 J))
+                  (:P J LO))
+         (IMPLIES (AND (EQUAL LO J) (INTEGERP J) (<= 0 J))
+                  (:P J LO))
+         (IMPLIES (AND (INTEGERP J)
+                       (<= 0 J)
+                       (NOT (EQUAL LO J)))
+                  (L< (LEX-FIX (ACL2-COUNT (+ -1 J)))
+                      (LEX-FIX (ACL2-COUNT J))))).
+    Note that one or more measure conjectures included in the scheme above
+    justify this induction if they are provable.  When applied to the goal
+    at hand the above induction scheme produces six nontautological subgoals.
+
+    ...
+
+  The first four proof obligations, which are all proved by the prover,
+  implicitly include the hypotheses that LO is a natural below J
+  because they're hypotheses in the four conclusions, (:P J LO).  But
+  the last proof obligation has no hypotheses about LO other than the
+  test in the body of the loop$, (NOT (EQUAL LO J)).  This proof
+  obligation is not a theorem and the proof attempt will fail.
+
+  If the prover had just generated the measure conjecture from the
+  derived-fn the last proof obligation would be even more inadequate!
+
+    (IMPLIES (NOT (EQUAL LO J))
+             (L< (LEX-FIX (ACL2-COUNT (+ -1 J)))
+                 (LEX-FIX (ACL2-COUNT J)))).
+
+  But we see that the prover actually augmented the hypothesis from the
+  body with two literals it assumed were relevant from the conjecture
+  being proved, namely (INTEGERP J) and (<= 0 J).  (The legality of
+  such augmentation is illustrated by the book
+  projects/apply/justification-of-do-induction.lisp.)  However, it
+  did not include any facts about LO other than the test in the loop$
+  body.  This is a manifestation of the hidden hypothesis problem.
+  In this case, we wish it had included (NATP LO) and (<= LO J).
+  (One can regard this as a heuristic inadequacy, but enlarging the
+  set of hypotheses can cause proofs to fail and we've been
+  conservative in our heuristics for augmenting do loop$ inductions.)
+
+  You can fix this by providing an :induct hint.  The loop$ statement
+  in the hint below is exactly the loop$ statement in the theorem
+  except we've added the UPPERCASE text.  This proof succeeds.
+
+    (defthm hidden-hyp-problem-main
+      (implies (and (natp lo)
+                    (natp j)
+                    (<= lo j))
+               (equal (loop$ with j = j
+                             do
+                             (if (equal lo j)
+                                 (return 'good)
+                                 (setq j (- j 1))))
+                      'good))
+      :hints ((\"Goal\"
+               :induct
+               (loop$ with j = j
+                      do
+                      (IF (AND (NATP LO) (<= LO J))
+                          (if (equal lo j)
+                              (return 'good)
+                              (setq j (- j 1)))
+                          (RETURN 'IRRELEVANT-BASE-CASE))))))
+
+  Lesson 4: You can use loop$ to provide induction hints and those
+  loop$s don't have to be identical to ones in your goal theorem.  In
+  particular, your hint loop$ might contain more case analysis than
+  the loop$s in your conjecture.  You can use this fact to overcome
+  the hidden hypothesis problem.
+
+  Note that the derived function from the loop$ in the hint doesn't
+  terminate either (because no mention is made that J is a natural).
+  But the induction-time proof obligation is provable because it is
+  still augmented by (INTEGERP J) and (<= 0 J) as before.
+
+
+Avoiding Some Specially Defined Hint Functions
+
+  Another lesson suggested by the example above is that you don't
+  always have to define a recursive function to suggest certain
+  inductions.  Here is an example.  Recall the function rev1 from the
+  beginning of this topic.  Now define the functions that ``mark''
+  every element of a list and that check that every element is
+  ``marked''.
+
+    (defun mark-all (x)
+      (if (consp x)
+          (cons (list 'mark (car x))
+                (mark-all (cdr x)))
+          nil))
+
+    (defun all-markedp (x)
+      (if (consp x)
+          (and (consp (car x))
+               (eq (car (car x)) 'mark)
+               (all-markedp (cdr x)))
+          t)).
+
+  Now prove
+
+    (thm (implies (all-markedp a)
+                  (all-markedp (rev1 (mark-all x) a))))
+
+  No induction suggested by the functions in this theorem is
+  appropriate.  The appropriate induction assumes the theorem for x
+  replaced by (cdr x) and a replaced by (cons (list 'mark (car x))
+  a).  (This is an example of rippling as discussed by Bundy, Basin,
+  Hutter and Ireland, in the book Rippling: Meta-Level Guidance for
+  Mathematical Reasoning, Cambridge University, UK, 2005.  But ACL2's
+  induction heuristics don't implement rippling.)  We could, of
+  course, define a recursive function that suggests the appropriate
+  induction and provide it as a hint.  But in this case we needn't
+  define a new function.  We can just use a loop$.
+
+    (thm (implies (all-markedp a)
+                  (all-markedp (rev1 (mark-all x) a)))
+         :hints ((\"Goal\" :induct
+                  (loop$ with x = x
+                         with a = a
+                         do
+                         (if (consp x)
+                             (progn (setq a (cons (list 'mark (car x)) a))
+                                    (setq x (cdr x)))
+                             (return 'base-case)))))).
+
+  See [lp-section-11] of the Loop$ Primer for a narrative of how we
+  might solve a certain computational problem with a nest of two FOR
+  loop$.  We also show how we verify the guards and then prove that
+  the loop$ solution is equivalent to a recursive solution.  In
+  [lp-section-12] of the primer you'll find some exercises in proving
+  theorems about FOR Loop$s (with answers in a Community Book).  In
+  [lp-section-16] you'll find a narrative of how we might go about
+  proving a theorem about a DO Loop$.  And in [lp-section-17] you'll
+  find exercises in proving theorems about DO Loop$s (with answers in
+  a Community Book).")
  (STEP-LIMIT (POINTERS)
              "See [with-prover-step-limit].")
  (STOBJ
