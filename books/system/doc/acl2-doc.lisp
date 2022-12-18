@@ -100810,6 +100810,11 @@ it."
  <p>A few new lemmas have been added to the standard @('apply$') book to
  simplify applications of @('assoc-equal-safe') faster.</p>
 
+ <p>@(Csee Time-limit) errors may now be inhibited much as @(see step-limit)
+ errors, by using @('(set-inhibit-er \"Time-limit\")').  Thanks to Eric Smith
+ for requesting this enhancement and its use in the implementation of the
+ utility, @(tsee prove$).</p>
+
  <h3>New Features</h3>
 
  <p>The new zero-ary attachable system function, @(tsee heavy-linear-p), allows
@@ -129956,7 +129961,7 @@ work on <tt>(q x)</tt>.</p>
   theorem about the generalized @('loop$').  Ideally we'd prove</p>
 
   @({
-  (defthm rev-loop$-is-rev-generalized 
+  (defthm rev-loop$-is-rev-generalized
     (equal (loop$ with tail = x
                   with a = a
                   do
@@ -129985,7 +129990,7 @@ work on <tt>(q x)</tt>.</p>
   the definition to generalize it and prove a theorem about the the generalized
   @('loop$').</p>
 
-  <h3>Normal Forms in @('Loop$') Bodies</h3> 
+  <h3>Normal Forms in @('Loop$') Bodies</h3>
 
   <p>The lemma above, @('rev-loop$-is-rev-generalized'), is adequate to
   subsequently prove the main theorem,</p>
@@ -130297,7 +130302,7 @@ work on <tt>(q x)</tt>.</p>
            (LIST (CONS 'X (CDR (ASSOC-EQ-SAFE 'X ALIST)))
                  (CONS 'J (CDR (ASSOC-EQ-SAFE 'J ALIST)))
                  (CONS 'K (CDR (ASSOC-EQ-SAFE 'K ALIST))))))
-     NIL NIL NIL)  
+     NIL NIL NIL)
   })
 
   <p>Note that the @('Lhs') matches the actual term, when @('J') is
@@ -130334,7 +130339,7 @@ work on <tt>(q x)</tt>.</p>
                   (<= j k))
              (equal (loop$ with x = x
                            with j = j
-                           with k = k                     ; ``new'' var 
+                           with k = k                     ; ``new'' var
                            do
                            (if (consp x)
                                (if (equal j k)
