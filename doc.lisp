@@ -1671,7 +1671,7 @@ Subtopics
   {IMAGE} (see [What_Is_ACL2{Q}])
 
   The {ACL2 Home Page | http://www.cs.utexas.edu/users/moore/acl2/} on
-  the web contains links to demos, publications, mailing lists,,
+  the web contains links to demos, publications, mailing lists,
   installation instructions, and more --- and, especially, to the
   extensive {online documentation |
   https://www.cs.utexas.edu/users/moore/acl2/v8-5/acl2-doc.html#User's-Manual}
@@ -148983,7 +148983,7 @@ General Form
 On-off specs
 
   Before discussing the keywords we introduce the notion of ``on-off
-  specs'', which are the legal values of the keywords :on, :off,,
+  specs'', which are the legal values of the keywords :on, :off,
   :summary-on, and :summary-off.  An on-off spec has one of the
   following forms, where each symi is a symbol, and subject to
   restrictions discussed below
