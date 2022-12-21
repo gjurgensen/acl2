@@ -100676,6 +100676,15 @@ it."
 ; new topic, :DOC sbcl-installation.  Thanks to David Russinoff for helpful
 ; suggestions and to Eric Smith for the idea of making such a :DOC topic.
 
+; Modified source function primordial-event-macro-and-fn, which plays some
+; tricks to support the boot-strap for functions in support of certain built-in
+; macros, such as in-package-fn in support of in-package.  Two changes were
+; made: the temporary symbol-class property is now :program instead of
+; :common-lisp-compliant, and the 'def-bodies property is (therefore) no longer
+; laid down.  Thanks to Eric Smith for pointing out that in-package-fn had
+; three symbol-class tuples in the world.  (It still has two, but now both are
+; :program: the temporary one and the final one.)
+
   :parents (release-notes)
   :short "ACL2 Version  8.6 (xxx, 20xx) Notes"
   :long "<p>NOTE!  New users can ignore these release notes, because the @(see
