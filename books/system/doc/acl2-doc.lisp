@@ -7664,7 +7664,7 @@ and @(tsee include-book)"
  src='res/tours/flying.gif'></img></see></p>
 
  <p>The <a href='http://www.cs.utexas.edu/users/moore/acl2/'>ACL2 Home Page</a>
- on the web contains links to demos, publications, mailing lists,, installation
+ on the web contains links to demos, publications, mailing lists, installation
  instructions, and more &mdash; and, especially, to the extensive <a
  href=\"https://www.cs.utexas.edu/users/moore/acl2/v8-5/acl2-doc.html#User's-Manual\">online
  documentation</a> for ACL2 and its libraries, known as ``books''.</p>
@@ -150501,7 +150501,7 @@ for the execution of @('form')."
  <h3>On-off specs</h3>
 
  <p>Before discussing the keywords we introduce the notion of ``on-off specs'',
- which are the legal values of the keywords @(':on'), @(':off'),,
+ which are the legal values of the keywords @(':on'), @(':off'),
  @(':summary-on'), and @(':summary-off').  An on-off spec has one of the
  following forms, where each @('symi') is a symbol, and subject to restrictions
  discussed below</p>
