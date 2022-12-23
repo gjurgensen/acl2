@@ -66027,12 +66027,13 @@ forms allowed for a @('let') form are  @('ignore'), @('ignorable'), and
  expansion result &mdash; and a repeat evaluation is avoided.  If evaluation of
  each @('ev-i') results in an error, then so does the @('make-event') call.</p>
 
- <p>This special use of @(':OR') in a value produced by expansion is only
- supported at the top level.  That is, the result can be @('(:OR ev-1 ev-2
- ... ev-k)') but then each @('ev-i') must be a legal expansion result, without
- such further use of @(':OR') &mdash; except, @('ev-i') may be <tt>(:DO-PROOFS
- ev-i')</tt>, where @('ev-i'') then would serve as the expansion rather than
- @('ev-i').</p>
+ <p>This special use of @(':OR') in a value produced by expansion does not
+ permit nesting such as @('(:OR ev-1 (:OR ev-2 ev-3))').  That is, when an
+ expansion result is @('(:OR ev-1 ev-2 ... ev-k)'), none of the @('ev-i') may
+ be of the form @('(:OR ...)').  Note that it is allowed for @('ev-i') to be a
+ call of @('make-event'), even one involving this special use of @(':OR').  If
+ @('ev-i') is <tt>(:DO-PROOFS ev-i')</tt>, then @('ev-i'') is considered to be
+ the expansion in place of @('ev-i').</p>
 
  <p>(3) The @(':EXPANSION?') keyword argument.</p>
 
