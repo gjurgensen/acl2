@@ -98115,6 +98115,12 @@ Bug Fixes
                        (+ 3 x))
               (nfix n)))
 
+  Suppose a book is certified in a [world] where a [portcullis]
+  [command] generates a [local] call of [make-event].  Then that
+  event is now ignored when subsequently including that book.
+  Previously it may not have been ignored, because the local wrapper
+  could be ignored when writing the book's [certificate].
+
 
 Changes at the System Level
 

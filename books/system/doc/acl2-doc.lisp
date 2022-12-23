@@ -100989,6 +100989,12 @@ it."
            (nfix n)))
  })
 
+ <p>Suppose a book is certified in a @(see world) where a @(see portcullis)
+ @(see command) generates a @(tsee local) call of @(tsee make-event).  Then
+ that event is now ignored when subsequently including that book.  Previously
+ it may not have been ignored, because the @('local') wrapper could be ignored
+ when writing the book's @(see certificate).</p>
+
  <h3>Changes at the System Level</h3>
 
  <p>The `@('make')' target, @('save-exec'), now builds @('custom-saved_acl2')
