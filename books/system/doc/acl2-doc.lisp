@@ -10278,7 +10278,7 @@ and @(tsee include-book)"
  there).</p>
 
  <p>Finally we mention another kind of book-name: a @(see sysfile), which is a
- pair that associates a keyword with a directory pathname.  This kind of
+ pair that associates a keyword with a relative pathname.  This kind of
  book-name is used by the implementation, for example in @(see certificate)
  files, but is rarely visible to users.  If you run across a sysfile and want
  to understand more about it, see @(see sysfile).</p>
@@ -38344,9 +38344,9 @@ current fast alists."
  . \"relpath\")') where @(':kwd') is a @(see keyword) and @('\"relpath\"') is a
  relative pathname string.  See @(see sysfile) for a discussion of sysfiles.
  Here, we simply remark that sysfiles are used primarily by the implementation;
- as an ACL2 user you might never see one.  Sysfiles are used in @(see
- certificate) files and in various data structures in the ACL2 logical @(see
- world).</p>")
+ as an ACL2 user you might never see one.  Sysfiles are used for
+ full-book-names in @(see certificate) files and in various data structures in
+ the ACL2 logical @(see world).</p>")
 
 (defxdoc function-theory
   :parents (theories theory-functions)
@@ -133576,9 +133576,10 @@ work on <tt>(q x)</tt>.</p>
  <p>This behavior applies to more than the community-books: it applies to the
  entire @(tsee project-dir-alist).  If that alist associates keyword @(':K')
  with absolute directory name @('\"<dir>\"'), then a full-book-name with prefix
- @('\"<dir>\"') is written to a @(see certificate) file as @('(:K
- . \"<dir>\")').  This capability supports relocating book directories; see
- @(see project-dir-alist) for a more complete discussion.</p>")
+ @('\"<dir>\"'), say, @('\"<dir>/relpath\"'), is written to a @(see
+ certificate) file as @('(:K . \"relpath\")').  This capability supports
+ relocating book directories; see @(see project-dir-alist) for a more complete
+ discussion.</p>")
 
 ; Start support for :DOC system-attachments
 

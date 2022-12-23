@@ -13046,8 +13046,8 @@ Subtopics
   if you are on the guided tour, wait until the tour gets there).
 
   Finally we mention another kind of book-name: a [sysfile], which is a
-  pair that associates a keyword with a directory pathname.  This
-  kind of book-name is used by the implementation, for example in
+  pair that associates a keyword with a relative pathname.  This kind
+  of book-name is used by the implementation, for example in
   [certificate] files, but is rarely visible to users.  If you run
   across a sysfile and want to understand more about it, see
   [sysfile].
@@ -41780,8 +41780,8 @@ Subtopics
   pathname string.  See [sysfile] for a discussion of sysfiles.
   Here, we simply remark that sysfiles are used primarily by the
   implementation; as an ACL2 user you might never see one.  Sysfiles
-  are used in [certificate] files and in various data structures in
-  the ACL2 logical [world].")
+  are used for full-book-names in [certificate] files and in various
+  data structures in the ACL2 logical [world].")
  (FUNCTION-SYMBOLP (POINTERS)
                    "See [system-utilities].")
  (FUNCTION-THEORY
@@ -132420,9 +132420,10 @@ Subtopics
   This behavior applies to more than the community-books: it applies to
   the entire [project-dir-alist].  If that alist associates keyword
   :K with absolute directory name \"<dir>\", then a full-book-name with
-  prefix \"<dir>\" is written to a [certificate] file as (:K .
-  \"<dir>\").  This capability supports relocating book directories;
-  see [project-dir-alist] for a more complete discussion.")
+  prefix \"<dir>\", say, \"<dir>/relpath\", is written to a [certificate]
+  file as (:K . \"relpath\").  This capability supports relocating book
+  directories; see [project-dir-alist] for a more complete
+  discussion.")
  (SYSTEM-ATTACHMENTS
   (PROGRAMMING DEFATTACH)
   "System-level algorithms that users can modify with attachments
