@@ -69634,13 +69634,36 @@ Introduction
   replacement takes place.
 
   Expansion for (encapsulate ... (make-event form ...) ...) is similar
-  to the case for progn, except that for if the expansion of form is
-  exp, then what is stored is (record-expansion (make-event form ...)
+  to the case for progn, except that if the expansion of form is exp,
+  then what is stored is (record-expansion (make-event form ...)
   exp).  Also as for progn, the exception is that when
   :check-expansion exp is supplied explicitly, no such replacement
   takes place.  Here, record-expansion is a macro that simply returns
   its second argument, but is used for checking redundancy of
   encapsulate forms (see [redundant-encapsulate]).
+
+  Certain ``wrappers'' around a make-event are restored as the last
+  part of the expansion process, in particular for make-event calls
+  that are inside calls of [encapsulate] or [progn], as well as in
+  events processed during a book's certification, including
+  [portcullis] commands from the certification [world].  For example,
+  if you evaluate a form (local (with-prover-step-limit 100
+  (make-event ...))) where the make-event call has expansion <exp>,
+  and then you certify a book, the book's [certificate] file will
+  include among its portcullis commands the form (local
+  (with-prover-step-limit 100 <exp>)).  Macroexpansion is performed
+  to determine the wrappers.  The wrappers thus restored are as
+  follows.
+
+    local
+    skip-proofs
+    with-guard-checking-event
+    with-output
+    with-prover-step-limit
+    with-prover-time-limit
+
+  The discussion below references this process as the final expansion
+  being ``rebuilt from'' the form.
 
 
 Detailed semantics
@@ -69679,19 +69702,15 @@ Detailed semantics
   expansion, since they are not in that list.
 
   We recursively define the combination of evaluation and expansion of
-  an embedded event form, as follows.  We also simultaneously define
-  the notion of ``expansion takes place,'' which is assumed to
+  an embedded event form as shown below.  We also simultaneously
+  define the notion of ``expansion takes place,'' which is assumed to
   propagate upward (in a sense that will be obvious), such that if no
   expansion takes place, then the expansion of the given form is
   considered to be itself.  It is useful to keep in mind a goal that
   we will consider later: Every make-event subterm of an expansion
   result has a :check-expansion field that is a [consp], where for
   this purpose make-event is viewed as a macro that returns its
-  :check-expansion field.  (Implementation note: The latest expansion
-  of a [make-event], [progn], [progn!], or [encapsulate] is stored in
-  state global 'last-make-event-expansion, except that if no
-  expansion has taken place for that form then
-  'last-make-event-expansion has value nil.)
+  :check-expansion field.
 
       If the given form is not an embedded event form, then simply cause a
       soft error, (mv erp val state) where erp is not nil.
@@ -69743,19 +69762,32 @@ Detailed semantics
 
       Otherwise, the expansion of the original form is itself.
 
+  (Optional Implementation Notes.  The latest expansion of a
+  [make-event], [progn], [progn!], or [encapsulate] is temporarily
+  stored in state global 'last-make-event-expansion, except that if
+  no expansion has taken place for that form then
+  'last-make-event-expansion has value nil.  Expansions ultimately
+  show up in the world's [command] tuples; for example, immediately
+  after processing a command its expansion is
+  (access-command-tuple-last-make-event-expansion (cddr (car (w
+  state)))).  Top-level expansions do not include rebuilding of
+  wrappers, although such wrappers are restored when constructing
+  [portcullis] commands as discussed above.  End of Implementation
+  Notes.)
+
   Similarly to the [progn] and [encapsulate] cases above, book
   certification causes a book to be replaced by its so-called ``book
   expansion,'' where each event ev for which expansion took place
   during the proof pass of certification is replaced by its
   expansion, but with certain [local] events elided.
 
-  Implementation Note.  The book expansion is actually implemented by
-  way of the :expansion-alist field of its [certificate], which
-  associates 0-based positions of top-level forms in the book (not
-  including the initial [in-package] form) with their expansions.
-  Thus, the book's source file is not overwritten; rather, the
-  certificate's expansion-alist is applied when the book is included
-  or compiled.  End of Implementation Note.
+  Optional Implementation Note.  The book expansion is actually
+  implemented by way of the :expansion-alist field of its
+  [certificate], which associates 0-based positions of top-level
+  forms in the book (not including the initial [in-package] form)
+  with their expansions.  Thus, the book's source file is not
+  overwritten; rather, the certificate's expansion-alist is applied
+  when the book is included or compiled.  End of Implementation Note.
 
   It is straightforward by computational induction to see that for any
   expansion of an embedded event form, every make-event sub-event has
