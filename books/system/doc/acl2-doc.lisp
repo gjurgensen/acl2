@@ -100820,10 +100820,11 @@ it."
  <p>A few new lemmas have been added to the standard @('apply$') book to
  simplify applications of @('assoc-equal-safe') faster.</p>
 
- <p>@(Csee Time-limit) errors may now be inhibited much as @(see step-limit)
- errors, by using @('(set-inhibit-er \"Time-limit\")').  Thanks to Eric Smith
- for requesting this enhancement and its use in the implementation of the
- utility, @(tsee prove$).</p>
+ <p>@(Csee Time-limit) and @(see theory-invariant) errors may now be inhibited
+ much as @(see step-limit) errors, by using @('(set-inhibit-er
+ \"Time-limit\")') or @('(set-inhibit-er \"Theory\")'), respectively.  Thanks
+ to Eric Smith for requesting this enhancement and its use in the
+ implementation of the utility, @(tsee prove$).</p>
 
  <h3>New Features</h3>
 

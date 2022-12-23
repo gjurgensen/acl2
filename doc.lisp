@@ -97946,8 +97946,9 @@ Changes to Existing Features
   A few new lemmas have been added to the standard apply$ book to
   simplify applications of assoc-equal-safe faster.
 
-  [Time-limit] errors may now be inhibited much as [step-limit] errors,
-  by using (set-inhibit-er \"Time-limit\").  Thanks to Eric Smith for
+  [Time-limit] and [theory-invariant] errors may now be inhibited much
+  as [step-limit] errors, by using (set-inhibit-er \"Time-limit\") or
+  (set-inhibit-er \"Theory\"), respectively.  Thanks to Eric Smith for
   requesting this enhancement and its use in the implementation of
   the utility, [prove$].
 
