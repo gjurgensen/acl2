@@ -1671,7 +1671,7 @@ Subtopics
   {IMAGE} (see [What_Is_ACL2{Q}])
 
   The {ACL2 Home Page | http://www.cs.utexas.edu/users/moore/acl2/} on
-  the web contains links to demos, publications, mailing lists,,
+  the web contains links to demos, publications, mailing lists,
   installation instructions, and more --- and, especially, to the
   extensive {online documentation |
   https://www.cs.utexas.edu/users/moore/acl2/v8-5/acl2-doc.html#User's-Manual}
@@ -69450,12 +69450,13 @@ Advanced Expansion Control
   is avoided.  If evaluation of each ev-i results in an error, then
   so does the make-event call.
 
-  This special use of :OR in a value produced by expansion is only
-  supported at the top level.  That is, the result can be (:OR ev-1
-  ev-2 ... ev-k) but then each ev-i must be a legal expansion result,
-  without such further use of :OR --- except, ev-i may be (:DO-PROOFS
-  ev-i'), where ev-i' then would serve as the expansion rather than
-  ev-i.
+  This special use of :OR in a value produced by expansion does not
+  permit nesting such as (:OR ev-1 (:OR ev-2 ev-3)).  That is, when
+  an expansion result is (:OR ev-1 ev-2 ... ev-k), none of the ev-i
+  may be of the form (:OR ...).  Note that it is allowed for ev-i to
+  be a call of make-event, even one involving this special use of
+  :OR.  If ev-i is (:DO-PROOFS ev-i'), then ev-i' is considered to be
+  the expansion in place of ev-i.
 
   (3) The :EXPANSION? keyword argument.
 
@@ -148983,7 +148984,7 @@ General Form
 On-off specs
 
   Before discussing the keywords we introduce the notion of ``on-off
-  specs'', which are the legal values of the keywords :on, :off,,
+  specs'', which are the legal values of the keywords :on, :off,
   :summary-on, and :summary-off.  An on-off spec has one of the
   following forms, where each symi is a symbol, and subject to
   restrictions discussed below
