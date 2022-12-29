@@ -10278,7 +10278,7 @@ and @(tsee include-book)"
  there).</p>
 
  <p>Finally we mention another kind of book-name: a @(see sysfile), which is a
- pair that associates a keyword with a directory pathname.  This kind of
+ pair that associates a keyword with a relative pathname.  This kind of
  book-name is used by the implementation, for example in @(see certificate)
  files, but is rarely visible to users.  If you run across a sysfile and want
  to understand more about it, see @(see sysfile).</p>
@@ -38344,9 +38344,9 @@ current fast alists."
  . \"relpath\")') where @(':kwd') is a @(see keyword) and @('\"relpath\"') is a
  relative pathname string.  See @(see sysfile) for a discussion of sysfiles.
  Here, we simply remark that sysfiles are used primarily by the implementation;
- as an ACL2 user you might never see one.  Sysfiles are used in @(see
- certificate) files and in various data structures in the ACL2 logical @(see
- world).</p>")
+ as an ACL2 user you might never see one.  Sysfiles are used for
+ full-book-names in @(see certificate) files and in various data structures in
+ the ACL2 logical @(see world).</p>")
 
 (defxdoc function-theory
   :parents (theories theory-functions)
@@ -66027,12 +66027,13 @@ forms allowed for a @('let') form are  @('ignore'), @('ignorable'), and
  expansion result &mdash; and a repeat evaluation is avoided.  If evaluation of
  each @('ev-i') results in an error, then so does the @('make-event') call.</p>
 
- <p>This special use of @(':OR') in a value produced by expansion is only
- supported at the top level.  That is, the result can be @('(:OR ev-1 ev-2
- ... ev-k)') but then each @('ev-i') must be a legal expansion result, without
- such further use of @(':OR') &mdash; except, @('ev-i') may be <tt>(:DO-PROOFS
- ev-i')</tt>, where @('ev-i'') then would serve as the expansion rather than
- @('ev-i').</p>
+ <p>This special use of @(':OR') in a value produced by expansion does not
+ permit nesting such as @('(:OR ev-1 (:OR ev-2 ev-3))').  That is, when an
+ expansion result is @('(:OR ev-1 ev-2 ... ev-k)'), none of the @('ev-i') may
+ be of the form @('(:OR ...)').  Note that it is allowed for @('ev-i') to be a
+ call of @('make-event'), even one involving this special use of @(':OR').  If
+ @('ev-i') is <tt>(:DO-PROOFS ev-i')</tt>, then @('ev-i'') is considered to be
+ the expansion in place of @('ev-i').</p>
 
  <p>(3) The @(':EXPANSION?') keyword argument.</p>
 
@@ -66201,13 +66202,37 @@ forms allowed for a @('let') form are  @('ignore'), @('ignorable'), and
  takes place.</p>
 
  <p>Expansion for @('(encapsulate ... (make-event form ...) ...)') is similar
- to the case for @('progn'), except that for if the expansion of @('form') is
+ to the case for @('progn'), except that if the expansion of @('form') is
  @('exp'), then what is stored is @('(record-expansion (make-event form ...)
  exp)').  Also as for @('progn'), the exception is that when
  @(':check-expansion exp') is supplied explicitly, no such replacement takes
  place.  Here, @('record-expansion') is a macro that simply returns its second
  argument, but is used for checking redundancy of @('encapsulate') forms (see
  @(see redundant-encapsulate)).</p>
+
+ <p>Certain ``wrappers'' around a @('make-event') are restored as the last part
+ of the expansion process, in particular for @('make-event') calls that are
+ inside calls of @(tsee encapsulate) or @(tsee progn), as well as in events
+ processed during a book's certification, including @(see portcullis) commands
+ from the certification @(see world).  For example, if you evaluate a form
+ @('(local (with-prover-step-limit 100 (make-event ...)))')  where the
+ @('make-event') call has expansion @('<exp>'), and then you certify a book,
+ the book's @(see certificate) file will include among its portcullis commands
+ the form @('(local (with-prover-step-limit 100 <exp>))').  Macroexpansion is
+ performed to determine the wrappers.  The wrappers thus restored are as
+ follows.</p>
+
+ @({
+ local
+ skip-proofs
+ with-guard-checking-event
+ with-output
+ with-prover-step-limit
+ with-prover-time-limit
+ })
+
+ <p>The discussion below references this process as the final expansion being
+ ``rebuilt from'' the form.</p>
 
  <h3>Detailed semantics</h3>
 
@@ -66244,18 +66269,14 @@ forms allowed for a @('let') form are  @('ignore'), @('ignorable'), and
  not in that list.</p>
 
  <p>We recursively define the combination of evaluation and expansion of an
- embedded event form, as follows.  We also simultaneously define the notion of
- ``expansion takes place,'' which is assumed to propagate upward (in a sense
+ embedded event form as shown below.  We also simultaneously define the notion
+ of ``expansion takes place,'' which is assumed to propagate upward (in a sense
  that will be obvious), such that if no expansion takes place, then the
  expansion of the given form is considered to be itself.  It is useful to keep
  in mind a goal that we will consider later: Every @('make-event') subterm of
  an expansion result has a @(':check-expansion') field that is a @(tsee consp),
  where for this purpose @('make-event') is viewed as a macro that returns its
- @(':check-expansion') field.  (Implementation note: The latest expansion of a
- @(tsee make-event), @(tsee progn), @(tsee progn!), or @(tsee encapsulate) is
- stored in state global @(''last-make-event-expansion'), except that if no
- expansion has taken place for that form then @(''last-make-event-expansion')
- has value @('nil').)</p>
+ @(':check-expansion') field.</p>
 
  <blockquote>
 
@@ -66308,18 +66329,31 @@ forms allowed for a @('let') form are  @('ignore'), @('ignorable'), and
 
  </blockquote>
 
+ <p>(Optional Implementation Notes.  The latest expansion of a @(tsee
+ make-event), @(tsee progn), @(tsee progn!), or @(tsee encapsulate) is
+ temporarily stored in state global @(''last-make-event-expansion'), except
+ that if no expansion has taken place for that form then
+ @(''last-make-event-expansion') has value @('nil').  Expansions ultimately
+ show up in the world's @(tsee command) tuples; for example, immediately after
+ processing a command its expansion is
+ @('(access-command-tuple-last-make-event-expansion (cddr (car (w state))))').
+ Top-level expansions do not include rebuilding of wrappers, although such
+ wrappers are restored when constructing @(see portcullis) commands as
+ discussed above.  End of Implementation Notes.)</p>
+
  <p>Similarly to the @(tsee progn) and @(tsee encapsulate) cases above, book
  certification causes a book to be replaced by its so-called ``book
  expansion,'' where each event @('ev') for which expansion took place during
  the proof pass of certification is replaced by its expansion, but with certain
  @(tsee local) events elided.</p>
 
- <p>Implementation Note.  The book expansion is actually implemented by way of
- the @(':expansion-alist') field of its @(see certificate), which associates
- 0-based positions of top-level forms in the book (not including the initial
- @(tsee in-package) form) with their expansions.  Thus, the book's source file
- is not overwritten; rather, the certificate's expansion-alist is applied when
- the book is included or compiled.  End of Implementation Note.</p>
+ <p>Optional Implementation Note.  The book expansion is actually implemented
+ by way of the @(':expansion-alist') field of its @(see certificate), which
+ associates 0-based positions of top-level forms in the book (not including the
+ initial @(tsee in-package) form) with their expansions.  Thus, the book's
+ source file is not overwritten; rather, the certificate's expansion-alist is
+ applied when the book is included or compiled.  End of Implementation
+ Note.</p>
 
  <p>It is straightforward by computational induction to see that for any
  expansion of an embedded event form, every @('make-event') sub-event has a
@@ -100819,10 +100853,11 @@ it."
  <p>A few new lemmas have been added to the standard @('apply$') book to
  simplify applications of @('assoc-equal-safe') faster.</p>
 
- <p>@(Csee Time-limit) errors may now be inhibited much as @(see step-limit)
- errors, by using @('(set-inhibit-er \"Time-limit\")').  Thanks to Eric Smith
- for requesting this enhancement and its use in the implementation of the
- utility, @(tsee prove$).</p>
+ <p>@(Csee Time-limit) and @(see theory-invariant) errors may now be inhibited
+ much as @(see step-limit) errors, by using @('(set-inhibit-er
+ \"Time-limit\")') or @('(set-inhibit-er \"Theory\")'), respectively.  Thanks
+ to Eric Smith for requesting this enhancement and its use in the
+ implementation of the utility, @(tsee prove$).</p>
 
  <h3>New Features</h3>
 
@@ -100987,6 +101022,12 @@ it."
                     (+ 3 x))
            (nfix n)))
  })
+
+ <p>Suppose a book is certified in a @(see world) where a @(see portcullis)
+ @(see command) generates a @(tsee local) call of @(tsee make-event).  Then
+ that event is now ignored when subsequently including that book.  Previously
+ it may not have been ignored, because the @('local') wrapper could be ignored
+ when writing the book's @(see certificate).</p>
 
  <h3>Changes at the System Level</h3>
 
@@ -133568,9 +133609,10 @@ work on <tt>(q x)</tt>.</p>
  <p>This behavior applies to more than the community-books: it applies to the
  entire @(tsee project-dir-alist).  If that alist associates keyword @(':K')
  with absolute directory name @('\"<dir>\"'), then a full-book-name with prefix
- @('\"<dir>\"') is written to a @(see certificate) file as @('(:K
- . \"<dir>\")').  This capability supports relocating book directories; see
- @(see project-dir-alist) for a more complete discussion.</p>")
+ @('\"<dir>\"'), say, @('\"<dir>/relpath\"'), is written to a @(see
+ certificate) file as @('(:K . \"relpath\")').  This capability supports
+ relocating book directories; see @(see project-dir-alist) for a more complete
+ discussion.</p>")
 
 ; Start support for :DOC system-attachments
 

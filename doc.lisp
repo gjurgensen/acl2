@@ -13046,8 +13046,8 @@ Subtopics
   if you are on the guided tour, wait until the tour gets there).
 
   Finally we mention another kind of book-name: a [sysfile], which is a
-  pair that associates a keyword with a directory pathname.  This
-  kind of book-name is used by the implementation, for example in
+  pair that associates a keyword with a relative pathname.  This kind
+  of book-name is used by the implementation, for example in
   [certificate] files, but is rarely visible to users.  If you run
   across a sysfile and want to understand more about it, see
   [sysfile].
@@ -41780,8 +41780,8 @@ Subtopics
   pathname string.  See [sysfile] for a discussion of sysfiles.
   Here, we simply remark that sysfiles are used primarily by the
   implementation; as an ACL2 user you might never see one.  Sysfiles
-  are used in [certificate] files and in various data structures in
-  the ACL2 logical [world].")
+  are used for full-book-names in [certificate] files and in various
+  data structures in the ACL2 logical [world].")
  (FUNCTION-SYMBOLP (POINTERS)
                    "See [system-utilities].")
  (FUNCTION-THEORY
@@ -69450,12 +69450,13 @@ Advanced Expansion Control
   is avoided.  If evaluation of each ev-i results in an error, then
   so does the make-event call.
 
-  This special use of :OR in a value produced by expansion is only
-  supported at the top level.  That is, the result can be (:OR ev-1
-  ev-2 ... ev-k) but then each ev-i must be a legal expansion result,
-  without such further use of :OR --- except, ev-i may be (:DO-PROOFS
-  ev-i'), where ev-i' then would serve as the expansion rather than
-  ev-i.
+  This special use of :OR in a value produced by expansion does not
+  permit nesting such as (:OR ev-1 (:OR ev-2 ev-3)).  That is, when
+  an expansion result is (:OR ev-1 ev-2 ... ev-k), none of the ev-i
+  may be of the form (:OR ...).  Note that it is allowed for ev-i to
+  be a call of make-event, even one involving this special use of
+  :OR.  If ev-i is (:DO-PROOFS ev-i'), then ev-i' is considered to be
+  the expansion in place of ev-i.
 
   (3) The :EXPANSION? keyword argument.
 
@@ -69633,13 +69634,36 @@ Introduction
   replacement takes place.
 
   Expansion for (encapsulate ... (make-event form ...) ...) is similar
-  to the case for progn, except that for if the expansion of form is
-  exp, then what is stored is (record-expansion (make-event form ...)
+  to the case for progn, except that if the expansion of form is exp,
+  then what is stored is (record-expansion (make-event form ...)
   exp).  Also as for progn, the exception is that when
   :check-expansion exp is supplied explicitly, no such replacement
   takes place.  Here, record-expansion is a macro that simply returns
   its second argument, but is used for checking redundancy of
   encapsulate forms (see [redundant-encapsulate]).
+
+  Certain ``wrappers'' around a make-event are restored as the last
+  part of the expansion process, in particular for make-event calls
+  that are inside calls of [encapsulate] or [progn], as well as in
+  events processed during a book's certification, including
+  [portcullis] commands from the certification [world].  For example,
+  if you evaluate a form (local (with-prover-step-limit 100
+  (make-event ...))) where the make-event call has expansion <exp>,
+  and then you certify a book, the book's [certificate] file will
+  include among its portcullis commands the form (local
+  (with-prover-step-limit 100 <exp>)).  Macroexpansion is performed
+  to determine the wrappers.  The wrappers thus restored are as
+  follows.
+
+    local
+    skip-proofs
+    with-guard-checking-event
+    with-output
+    with-prover-step-limit
+    with-prover-time-limit
+
+  The discussion below references this process as the final expansion
+  being ``rebuilt from'' the form.
 
 
 Detailed semantics
@@ -69678,19 +69702,15 @@ Detailed semantics
   expansion, since they are not in that list.
 
   We recursively define the combination of evaluation and expansion of
-  an embedded event form, as follows.  We also simultaneously define
-  the notion of ``expansion takes place,'' which is assumed to
+  an embedded event form as shown below.  We also simultaneously
+  define the notion of ``expansion takes place,'' which is assumed to
   propagate upward (in a sense that will be obvious), such that if no
   expansion takes place, then the expansion of the given form is
   considered to be itself.  It is useful to keep in mind a goal that
   we will consider later: Every make-event subterm of an expansion
   result has a :check-expansion field that is a [consp], where for
   this purpose make-event is viewed as a macro that returns its
-  :check-expansion field.  (Implementation note: The latest expansion
-  of a [make-event], [progn], [progn!], or [encapsulate] is stored in
-  state global 'last-make-event-expansion, except that if no
-  expansion has taken place for that form then
-  'last-make-event-expansion has value nil.)
+  :check-expansion field.
 
       If the given form is not an embedded event form, then simply cause a
       soft error, (mv erp val state) where erp is not nil.
@@ -69742,19 +69762,32 @@ Detailed semantics
 
       Otherwise, the expansion of the original form is itself.
 
+  (Optional Implementation Notes.  The latest expansion of a
+  [make-event], [progn], [progn!], or [encapsulate] is temporarily
+  stored in state global 'last-make-event-expansion, except that if
+  no expansion has taken place for that form then
+  'last-make-event-expansion has value nil.  Expansions ultimately
+  show up in the world's [command] tuples; for example, immediately
+  after processing a command its expansion is
+  (access-command-tuple-last-make-event-expansion (cddr (car (w
+  state)))).  Top-level expansions do not include rebuilding of
+  wrappers, although such wrappers are restored when constructing
+  [portcullis] commands as discussed above.  End of Implementation
+  Notes.)
+
   Similarly to the [progn] and [encapsulate] cases above, book
   certification causes a book to be replaced by its so-called ``book
   expansion,'' where each event ev for which expansion took place
   during the proof pass of certification is replaced by its
   expansion, but with certain [local] events elided.
 
-  Implementation Note.  The book expansion is actually implemented by
-  way of the :expansion-alist field of its [certificate], which
-  associates 0-based positions of top-level forms in the book (not
-  including the initial [in-package] form) with their expansions.
-  Thus, the book's source file is not overwritten; rather, the
-  certificate's expansion-alist is applied when the book is included
-  or compiled.  End of Implementation Note.
+  Optional Implementation Note.  The book expansion is actually
+  implemented by way of the :expansion-alist field of its
+  [certificate], which associates 0-based positions of top-level
+  forms in the book (not including the initial [in-package] form)
+  with their expansions.  Thus, the book's source file is not
+  overwritten; rather, the certificate's expansion-alist is applied
+  when the book is included or compiled.  End of Implementation Note.
 
   It is straightforward by computational induction to see that for any
   expansion of an embedded event form, every make-event sub-event has
@@ -97945,8 +97978,9 @@ Changes to Existing Features
   A few new lemmas have been added to the standard apply$ book to
   simplify applications of assoc-equal-safe faster.
 
-  [Time-limit] errors may now be inhibited much as [step-limit] errors,
-  by using (set-inhibit-er \"Time-limit\").  Thanks to Eric Smith for
+  [Time-limit] and [theory-invariant] errors may now be inhibited much
+  as [step-limit] errors, by using (set-inhibit-er \"Time-limit\") or
+  (set-inhibit-er \"Theory\"), respectively.  Thanks to Eric Smith for
   requesting this enhancement and its use in the implementation of
   the utility, [prove$].
 
@@ -98113,6 +98147,12 @@ Bug Fixes
                                 (xargs :guard (signed-byte-p 8 x) :split-types t))
                        (+ 3 x))
               (nfix n)))
+
+  Suppose a book is certified in a [world] where a [portcullis]
+  [command] generates a [local] call of [make-event].  Then that
+  event is now ignored when subsequently including that book.
+  Previously it may not have been ignored, because the local wrapper
+  could be ignored when writing the book's [certificate].
 
 
 Changes at the System Level
@@ -132412,9 +132452,10 @@ Subtopics
   This behavior applies to more than the community-books: it applies to
   the entire [project-dir-alist].  If that alist associates keyword
   :K with absolute directory name \"<dir>\", then a full-book-name with
-  prefix \"<dir>\" is written to a [certificate] file as (:K .
-  \"<dir>\").  This capability supports relocating book directories;
-  see [project-dir-alist] for a more complete discussion.")
+  prefix \"<dir>\", say, \"<dir>/relpath\", is written to a [certificate]
+  file as (:K . \"relpath\").  This capability supports relocating book
+  directories; see [project-dir-alist] for a more complete
+  discussion.")
  (SYSTEM-ATTACHMENTS
   (PROGRAMMING DEFATTACH)
   "System-level algorithms that users can modify with attachments
