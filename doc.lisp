@@ -31599,17 +31599,25 @@ Subtopics
     (e/d enables-0 disables-0 ... enables-n disables-n)
 
   where each enables-i and disables-i is a list of runic designators;
-  see [theories], see [enable], and see [disable].
+  see [theories], see [enable], and see [disable].  Note that the
+  concluding disables-n may be omitted.
 
   The e/d macro takes any number of lists suitable for the [enable] and
-  [disable] macros, and creates a theory that is equal to
-  (current-theory :here) after executing the following commands.
+  [disable] macros.  The event
 
-    (in-theory (enable . enables-0))
-    (in-theory (disable . disables-0))
+    (in-theory (e/d (e00 e01 e02 ...) (d00 d01 d02 ...)
+                    ...
+                    (en0 en1 en2 ...) (dn0 dn1 dn2 ...)
+
+  creates a theory that is equivalent to the following sequence of
+  [in-theory] events.  (An analogous similar effect takes place for
+  :in-theory [hints].
+
+    (in-theory (enable e00 e01 e02 ...))
+    (in-theory (disable d00 d01 d02 ...))
     ...
-    (in-theory (enable . enables-n))
-    (in-theory (disable . disables-n))")
+    (in-theory (enable en0 en1 en2 ...))
+    (in-theory (disable dn0 dn1 dn2 ...))")
  (EARLY-TERMINATION
   (PARALLEL-PROGRAMMING)
   "Early termination for [pand] and [por].
@@ -48798,14 +48806,23 @@ Subtopics
   this topic are such hints implemented in books; for an example of
   so-called :consider hints, see [consideration].
 
-  Only the first hint applicable to a goal, as specified in the
-  user-supplied list of :hints followed by the default hints (see
-  [default-hints-table]), will be applied to that goal.  For an
-  advanced exception, see [override-hints].  For a detailed
-  discussion of how hints fit into the ACL2 waterfall, see
-  [hints-and-the-waterfall].  For examples of the sophisticated use
-  of hints, primarily for experts, see community book
-  books/hints/basic-tests.lisp.
+  When the ACL2 prover encounters a goal \"G\", then the first hint of
+  the form (\"G\" :kwd1 val1 ...) is applied to that goal.  This
+  usually means that all hints for the goal \"G\" after the first such
+  hint are ignored, and ACL2 produces a warning about that.  (Note
+  however that (\"G\") is simply dropped; such an empty hint is
+  considered not to be there, for purposes of this discussion.)  If
+  there are default hints (see [set-default-hints]) then this
+  behavior applies to the user-supplied list of :hints followed by
+  the default hints; see [hints-and-the-waterfall] for a detailed
+  discussion of how hints fit into the ACL2 waterfall, which in
+  particular has a ``slightly tricky example'' illustrating the
+  unusual case when a goal can be encountered more than once, thus
+  applying more than one hint on that goal.  Also see
+  [override-hints] for an advanced feature that can modify the
+  ``first hint'' behavior described above.  For examples of the
+  sophisticated use of hints, primarily for experts, see community
+  book books/hints/basic-tests.lisp.
 
   Background: Hints are allowed in all [events] that use the theorem
   prover.  During [defun] [events] there are two different uses of
@@ -49353,15 +49370,12 @@ Subtopics
 
     :no-op
 
-        Value is any object and is irrelevant.  This hint does nothing.  But
-        empty hints, such as (\"Goal\"), are illegal and there are
-        occasions, especially when writing custom keyword hints (see
-        [custom-keyword-hints]) and computed hints (see
-        [computed-hints]) where it is convenient to be able to
-        generate a non-empty no-op hint.  The standard idiom is
-        (\"Goal\" :NO-OP T) but the T is completely ignored.  Unlike
-        other hint keywords, multiple occurrences of the keyword
-        :NO-OP are tolerated.
+        Value is any object and is irrelevant.  This hint has no effect,
+        although unlike an empty hint such as (\"Goal\"), it is not
+        dropped.  Thus, (\"Goal\") :do-not t will shadow any later (or
+        default) hint on \"Goal\", but (\"Goal\") will not.  Unlike other
+        hint keywords, multiple occurrences of the keyword :no-op are
+        tolerated.
 
     :no-thanks
 
@@ -49844,36 +49858,39 @@ Subtopics
 
     ACL2 !>(set-default-hints '((\"Goal\" :do-not '(preprocess))))
      ((\"Goal\" :DO-NOT '(PREPROCESS)))
+    ACL2 !>(set-gag-mode nil)
+    <state>
     ACL2 !>(thm (equal (append (append x y) z) (append x y z))
                 :hints ((\"Goal\" :in-theory (disable car-cons))))
 
-    ACL2 Warning [Hints] in ( THM ...):  The goal-spec \"Goal\" is explicitly
-    associated with more than one hint.  All but the first of these hints
-    may be ignored.  If you intended to give all of these hints, combine
-    them into a single hint of the form (\"Goal\" :kwd1 val1 :kwd2 val2 ...).
-    See :DOC hints-and-the-waterfall.
+     ACL2 Warning [Hints] in ( THM ...):  The goal-spec \"Goal\" is explicitly
+     associated with more than one hint.  All but the first of these hints
+     may be ignored.  If you intended to give all of these hints, consider
+     combining them into a single hint of the form (\"Goal\" :kwd1 val1 :kwd2
+     val2 ...). See :DOC hints and :DOC hints-and-the-waterfall; community
+     book books/hints/merge-hint.lisp might also be helpful.
 
-    [Note:  A hint was supplied for our processing of the goal above.
-    Thanks!]
+     [Note:  A hint was supplied for our processing of the goal above.
+     Thanks!]
 
-    [Note:  A hint was supplied for our processing of the goal above.
-    Thanks!]
+     [Note:  A hint was supplied for our processing of the goal above.
+     Thanks!]
 
-    Name the formula above *1.
+     Name the formula above *1.
 
   The warning above is printed because \"Goal\" is associated with two
   pending hints: one given by the [set-default-hints] call and one
   supplied by the :[hints] keyword of the [thm] form.  The :in-theory
-  hint is selected because user-supplied hints are ahead of default
-  hints in the list of pending hints; we then get the first ``Note''
-  above.  The goal progresses through the waterfall without any proof
-  process applying to the goal; in particular, it cannot be further
-  simplified.  After the simplification process, a ``settled-down''
-  process applies, as discussed above, immediately causing another
-  trip through the waterfall.  Since the :in-theory hint was earlier
-  removed from the list of pending hints when it was applied, the
-  default (:do-not) hint is now the only pending hint.  That hint is
-  applied, resulting in the second ``Note'' above.
+  hint is selected first because user-supplied hints are ahead of
+  default hints in the list of pending hints; we then get the first
+  ``Note'' above.  The goal progresses through the waterfall without
+  any proof process applying to the goal; in particular, it cannot be
+  further simplified.  After the simplification process, a
+  ``settled-down'' process applies, as discussed above, immediately
+  causing another trip through the waterfall.  Since the :in-theory
+  hint was earlier removed from the list of pending hints when it was
+  applied, the default (:do-not) hint is now the only pending hint.
+  That hint is applied, resulting in the second ``Note'' above.
 
   Again, more examples may be found in the community book
   books/hints/basic-tests.lisp.  A particularly tricky but
@@ -98153,6 +98170,25 @@ Bug Fixes
   event is now ignored when subsequently including that book.
   Previously it may not have been ignored, because the local wrapper
   could be ignored when writing the book's [certificate].
+
+  Some handling of exceptional cases in [hints] has been cleaned up, as
+  follows.  Thanks to Eric Smith for a discussion that led to these
+  changes.
+
+    * [Warnings] for repeating a goal name in the hints now appear even
+      when the repetition is only up to case.  For example, such a
+      warning is generated now for :hints ((\"Goal\" :use foo) (\"GOAL\"
+      :use bar)) where formerly it was not.  The discussion of this
+      situation in documentation topic [hints] has been improved.
+    * It was incorrectly documentated in topic [hints], in the discussion
+      of :do-not hints, that it is illegal to associate a goal name
+      with the empty list of [hints], as in (\"Goal\").  This behavior
+      was actually allowed; an empty such hint was simply ignored.
+      This continues to be allowed (for backward compatibility) but
+      the documentation has been updated; also, these empty hints are
+      now ignored for purposes of the warnings mentioned above
+      (formerly they were considered when looking for repetition of
+      goal names).
 
 
 Changes at the System Level
