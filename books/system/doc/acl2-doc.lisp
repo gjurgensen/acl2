@@ -152932,11 +152932,11 @@ attempt an equality (or equivalence) substitution"
   (= x) -- replace the current subterm by x, assuming that the prover
            can show that they are equal
   (= (+ x y) z)
-        -- replace the term (+ x y) by the term z inside the current
-           subterm, assuming that the prover can prove
-           (equal (+ x y) z) from the current top-level hypotheses
-           or that this term or (equal z (+ x y)) is among the
-           current top-level hypotheses or the current governors
+        -- replace all occurrences of the term (+ x y) by the term z
+           inside the current subterm, assuming that the prover can
+           prove (equal (+ x y) z) from the current top-level
+           hypotheses or that this term or (equal z (+ x y)) is among
+           the current top-level hypotheses or the current governors
   (= & z)
         -- exactly the same as above, if (+ x y) is the current
            subterm
@@ -152973,9 +152973,9 @@ attempt an equality (or equivalence) substitution"
  goal is created.</p>
 
  <p>If terms @('x') and @('y') are supplied, then replace @('x') by @('y')
- inside the current subterm if they are ``known'' to be equal, or more
- generally, equivalent in the sense described below.  Here ``known'' means the
- following: except in the cases that no arguments are provided or else
+ everywhere inside the current subterm if they are ``known'' to be equal, or
+ more generally, equivalent in the sense described below.  Here ``known'' means
+ the following: except in the cases that no arguments are provided or else
  @(':hints atom') is provided as described above, the prover is called as in
  the @('prove') command (using keyword arguments @(':otf') and @(':hints'), if
  supplied, where the value of @(':hints') is not an atom) to prove equivalence

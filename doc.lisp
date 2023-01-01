@@ -151300,11 +151300,11 @@ Subtopics
     (= x) -- replace the current subterm by x, assuming that the prover
              can show that they are equal
     (= (+ x y) z)
-          -- replace the term (+ x y) by the term z inside the current
-             subterm, assuming that the prover can prove
-             (equal (+ x y) z) from the current top-level hypotheses
-             or that this term or (equal z (+ x y)) is among the
-             current top-level hypotheses or the current governors
+          -- replace all occurrences of the term (+ x y) by the term z
+             inside the current subterm, assuming that the prover can
+             prove (equal (+ x y) z) from the current top-level
+             hypotheses or that this term or (equal z (+ x y)) is among
+             the current top-level hypotheses or the current governors
     (= & z)
           -- exactly the same as above, if (+ x y) is the current
              subterm
@@ -151339,19 +151339,19 @@ Subtopics
   two indicated terms (as described below) are suitably equivalent, a
   new such goal is created.
 
-  If terms x and y are supplied, then replace x by y inside the current
-  subterm if they are ``known'' to be equal, or more generally,
-  equivalent in the sense described below.  Here ``known'' means the
-  following: except in the cases that no arguments are provided or
-  else :hints atom is provided as described above, the prover is
-  called as in the prove command (using keyword arguments :otf and
-  :hints, if supplied, where the value of :hints is not an atom) to
-  prove equivalence of x and y under the current governors and
-  top-level hypotheses.  By default, this equivalence is equality;
-  however the keyword argument :equiv can specify a known equivalence
-  relation.  In cases other than equality, substitution only takes
-  place where justified by the equivlance maintained at the current
-  subterm.
+  If terms x and y are supplied, then replace x by y everywhere inside
+  the current subterm if they are ``known'' to be equal, or more
+  generally, equivalent in the sense described below.  Here ``known''
+  means the following: except in the cases that no arguments are
+  provided or else :hints atom is provided as described above, the
+  prover is called as in the prove command (using keyword arguments
+  :otf and :hints, if supplied, where the value of :hints is not an
+  atom) to prove equivalence of x and y under the current governors
+  and top-level hypotheses.  By default, this equivalence is
+  equality; however the keyword argument :equiv can specify a known
+  equivalence relation.  In cases other than equality, substitution
+  only takes place where justified by the equivlance maintained at
+  the current subterm.
 
   For the keyword arguments, :equiv defaults to equal if not supplied
   or nil; if it is not equal (either explicitly or by default), then
