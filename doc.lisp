@@ -9078,6 +9078,9 @@ Subtopics
   [Ev$]
       Evaluate a tame expression using apply$
 
+  [Explain-giant-lambda-object]
+      print data related to a large lambda object
+
   [Fn-equal]
       Equivalence relation on tame functions
 
@@ -35733,6 +35736,139 @@ Subtopics
   the completion of the boot-strapping.")
  (EXPAND (POINTERS)
          "See [hints] for information about the keyword :expand.")
+ (EXPLAIN-GIANT-LAMBDA-OBJECT
+  (APPLY$)
+  "print data related to a large lambda object
+
+  When a [lambda] object is translated we [hons-copy] it so that it is
+  uniquely represented.  This speeds up the performance of the
+  compiled lambda cache (see [print-cl-cache]).
+
+  However, if the number of conses in the lambda object is greater than
+  or equal to (lambda-object-count-max-val), we cause an error.  If
+  this error has been signalled in your session we recommend that you
+  evaluate (explain-giant-lambda-object), which will tell you more
+  about the excessively large lambda object.  The current value of
+  (lambda-object-count-max-val) is 200,000.  For reference, the
+  largest function definition in the ACL2 sources (as of Version 8.6)
+  is the [mutual-recursion] event defining rewrite and its 51
+  mutually recursive subfunctions.  The total number of conses in
+  that clique is 14,656.
+
+  There are generally two ways excessively large lambda objects come
+  into existence: (1) they are generated automatically, as by macros,
+  functions, or [make-event], or (2) you wrote a small lambda object
+  but used a big quoted constant in it.
+
+  (1) If the offending lambda object was built mechanically, we
+  recommend that you redefine the generation process so that it
+  introduces a named function.  For example, suppose the lambda
+  object sketched below is excessively large.
+
+    (lambda (x y)
+      (if (eq x 'FOO1)
+          (my-foo1 y)
+          (if (eq x 'FOO2)
+              (my-foo2 y)
+              ...)))
+
+  Then perhaps instead of generating that object you could generate the
+  definition
+
+    (defun my-big-switch (x y)
+      (if (eq x 'FOO1)
+          (my-foo1 y)
+          (if (eq x 'FOO2)
+              (my-foo2 y)
+              ...)))
+
+  And then use the quite small (lambda$ (x y) (my-big-switch x y)) in
+  place of the offending lambda object.  Of course, this is not
+  always easy to carry out, since it would also require calling
+  [defwarrant] on my-big-switch and providing that warrant as a
+  hypothesis to any theorem involving the new lambda object.
+
+  (2) If the offending lambda object just contains large quoted
+  constants perhaps you can bind a variable to the large value
+  outside of the lambda object and pass that variable into the lambda
+  object in a new formal.
+
+  For example, suppose the term (regression-suite) returns is a list of
+  pairs of sample inputs and correct output for testing some software
+  system whose binary machine code is in the constant declared below.
+
+    (defconst *system*
+      '(#x488b55f0
+        #x31ff
+        #xff142570081050
+        #xf84995b0000
+        #xf645f801
+        #xf8573100000
+        #x807df019
+        ...))
+
+  Then we might wish to execute something like the following.
+
+    ACL2 !>(loop$ for pair in (regression-suite)
+                  always (equal (sim *system* (car pair)) (cdr pair)))
+
+  which simulates the *system* on every input in the regression suite
+  and compares the result to the known correct answer.
+
+  The formal translation of this term is
+
+    (always$ '(lambda (loop$-ivar)
+                (equal (sim '(#x488b55f0
+                              #x31ff
+                              #xff142570081050
+                              #xf84995b0000
+                              #xf645f801
+                              #xf8573100000
+                              #x807df019
+                              ...)
+                            (car loop$-ivar))
+                       (cdr loop$-ivar)))
+             (regression-suite))
+
+  Note that the constant *system* has been rendered as its quoted value
+  and that it is inside of the lambda object.  If *system* is a very
+  large constant, that lambda object may be excessively large.
+
+  But we can avoid that by writing this instead.
+
+    ACL2 !>(let ((sys *system*))
+             (loop$ for pair in (regression-suite)
+                    always (equal (sim sys (car pair)) (cdr pair))))
+
+  which essentially translates to
+
+    (let ((sys '(#x488b55f0
+                 #x31ff
+                 #xff142570081050
+                 #xf84995b0000
+                 #xf645f801
+                 #xf8573100000
+                 #x807df019
+                 dots)))
+      (always$+ '(lambda (loop$-gvars loop$-ivars)
+                   (equal (sim (car loop$-gvars)
+                               (car (car loop$-ivars)))
+                          (cdr (car loop$-ivars))))
+                (list sys)
+                (loop$-as (list (regression-suite)))))
+
+  Note that the lambda object no longer contains the large constant.
+  It now refers to a ``global'' variable whose value is that of
+  *system*.  The lambda object is quite small.
+
+  For what it is worth, the largest single object in the ACL2 image (as
+  of Version 8.6) is the value of (w state), the logical world.  Upon
+  starting the system (w state) contains 128,784 elements, but
+  contains multiple pointers to shared substructures (e.g., to tails
+  of itself).  The total number of conses is on the order of (expt 10
+  655) when counted naively, but the total number of distinct conses
+  is 1,875,653.  So if you build a lambda object containing the value
+  of (w state) it will be ``excessively large.''")
  (EXPLODE-ATOM
   (CHARACTERS ACL2-BUILT-INS)
   "Convert any [atom] into a [character-listp] that contains its printed
@@ -98001,6 +98137,8 @@ Changes to Existing Features
   requesting this enhancement and its use in the implementation of
   the utility, [prove$].
 
+  A new command, (cmds c1 c2 ... cn), has been added to [walkabout].
+
 
 New Features
 
@@ -98080,6 +98218,9 @@ New Features
   The Common Lisp utility, [macrolet], is now supported in ACL2.
   Thanks to Alessandro Coglio for discussion leading us to make this
   addition.  See [macrolet].
+
+  Lambda objects in positions of [ilk] :FN are now subjected to a size
+  limitation.  See [explain-giant-lambda-object].
 
 
 Heuristic and Efficiency Improvements
@@ -129330,6 +129471,9 @@ Avoiding Some Specially Defined Hint Functions
                                     (setq x (cdr x)))
                              (return 'base-case)))))).
 
+
+Other Relevant :DOC Topics
+
   See [lp-section-11] of the Loop$ Primer for a narrative of how we
   might solve a certain computational problem with a nest of two FOR
   loop$.  We also show how we verify the guards and then prove that
@@ -146296,7 +146440,8 @@ Subtopics
   printed before you enter an interactive loop.
 
     Commands:
-    0, 1, 2, ..., nx, bk, pp, (pp n), (pp lev len), =, (= symb), and q.
+    0, 1, 2, ..., nx, bk, pp, (pp n), (pp lev len), =, (= symb),
+    (cmds c1 c2 ... cn), and q.
 
   In the interactive walkabout loop, a positive integer n takes you to
   the nth position, while 0 takes you up a level.  The commands nx
@@ -146305,18 +146450,19 @@ Subtopics
   while (pp level length) hides sub-objects below the indicated level
   and past the indicated length, if non-nil; see [evisc-tuple].  The
   command (pp n) abbreviates (pp n n), so in particular (pp nil) is
-  equivalent to pp.
+  equivalent to pp.  The commands = and cmds are described below.
 
-  Note that the commands above work in any package: nx, bk, pp, =, and
-  q are converted to the \"ACL2\" package if the current package is not
-  \"ACL2\".
+  Note that the commands above work in any package: nx, bk, pp, =,
+  cmds, and q are converted to the \"ACL2\" package if the current
+  package is not \"ACL2\".
 
   The following example illustrates the commands described above.
 
     ACL2 !>(walkabout (append '(a (b1 b2 b3)) '(c d e f)) state)
 
     Commands:
-    0, 1, 2, ..., nx, bk, pp, (pp n), (pp lev len), =, (= symb), and q.
+    0, 1, 2, ..., nx, bk, pp, (pp n), (pp lev len), =, (= symb),
+    (cmds c1 c2 ... cn), and q.
 
     (A (B1 B2 B3) C ...)
     :2
@@ -146342,14 +146488,20 @@ Subtopics
     :q
     ACL2 !>
 
-  Finally we describe the commands q, =, and (= symb), where symb is a
-  symbol.  The command q simply causes an exit from the walkabout
-  loop.  The command = also exits, but causes the current object to
-  be printed in full.  The command (= symb) saves an association of
-  symb with the current object, which can be retrieved outside the
-  walkabout loop using the macro walkabout=, as illustrated below.
+  The command (cmds c1 c2 ... cn) just executes each of the ci,
+  sequentially.
 
-    :2
+  The command q simply causes an exit from the walkabout loop.
+
+  The command = also exits, but returns the current object as the value
+  in an ACL2 [error-triple].
+
+  The command (= symb) saves an association of symb with the current
+  object, which can be retrieved outside the walkabout loop using the
+  macro walkabout=, as illustrated below.
+
+    ...
+    :pp
     (B1 B2 B3)
     :(= my-list)
     (walkabout= MY-LIST) is
@@ -146366,7 +146518,8 @@ Subtopics
     ACL2 !>(walkabout '(c d e . f) state)
 
     Commands:
-    0, 1, 2, ..., nx, bk, pp, (pp n), (pp lev len), =, (= symb), and q.
+    0, 1, 2, ..., nx, bk, pp, (pp n), (pp lev len), =, (= symb),
+    (cmds c1 c2 ... cn), and q.
 
     (C D E . F)
     :3
