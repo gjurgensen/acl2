@@ -32277,6 +32277,152 @@ ld) and @(tsee include-book)"
  complete.  @('exit-boot-strap-mode') has only one job: to signal the
  completion of the boot-strapping.</p>")
 
+(defxdoc explain-giant-lambda-object
+  :parents (apply$)
+  :short "print data related to a large lambda object"
+  :long "<p>When a @(tsee lambda) object is translated we @(tsee hons-copy) it
+  so that it is uniquely represented.  This speeds up the performance of the
+  compiled @('lambda') cache (see @(tsee print-cl-cache)).</p>
+
+  <p>However, if the number of conses in the @('lambda') object is greater than
+  or equal to @('(lambda-object-count-max-val)'), we cause an error.  If this
+  error has been signalled in your session we recommend that you evaluate
+  @('(explain-giant-lambda-object)'), which will tell you more about the
+  excessively large @('lambda') object.  The current value of
+  @('(lambda-object-count-max-val)') is 200,000.  For reference, the largest
+  function definition in the ACL2 sources (as of Version 8.6) is the @(tsee
+  mutual-recursion) event defining @('rewrite') and its 51 mutually recursive
+  subfunctions.  The total number of conses in that clique is 14,656.</p>
+
+  <p>There are generally two ways excessively large @('lambda') objects come
+  into existence: (1) they are generated automatically, as by macros,
+  functions, or @(tsee make-event), or (2) you wrote a small @('lambda') object
+  but used a big quoted constant in it.</p>
+
+  <p>(1) If the offending @('lambda') object was built mechanically, we
+  recommend that you redefine the generation process so that it introduces a
+  named function.  For example, suppose the @('lambda') object sketched below
+  is excessively large.</p>
+
+  @({
+  (lambda (x y)
+    (if (eq x 'FOO1)
+        (my-foo1 y)
+        (if (eq x 'FOO2)
+            (my-foo2 y)
+            ...)))
+  })
+
+  <p>Then perhaps instead of generating that object you could generate
+  the definition</p>
+
+  @({
+  (defun my-big-switch (x y)
+    (if (eq x 'FOO1)
+        (my-foo1 y)
+        (if (eq x 'FOO2)
+            (my-foo2 y)
+            ...)))
+  })
+
+  <p>And then use the quite small @('(lambda$ (x y) (my-big-switch x y))') in
+  place of the offending @('lambda') object.  Of course, this is not always
+  easy to carry out, since it would also require calling @(tsee defwarrant) on
+  @('my-big-switch') and providing that warrant as a hypothesis to any theorem
+  involving the new @('lambda') object.</p>
+
+  <p>(2) If the offending @('lambda') object just contains large quoted
+  constants perhaps you can bind a variable to the large value outside of the
+  @('lambda') object and pass that variable into the @('lambda') object in a
+  new formal.</p>
+
+  <p>For example, suppose the term @('(regression-suite)') returns is a list of
+  pairs of sample inputs and correct output for testing some software system
+  whose binary machine code is in the constant declared below.</p>
+
+  @({
+  (defconst *system*
+    '(#x488b55f0
+      #x31ff
+      #xff142570081050
+      #xf84995b0000
+      #xf645f801
+      #xf8573100000
+      #x807df019
+      ...))
+  })
+
+  <p>Then we might wish to execute something like the following.</p>
+
+  @({
+  ACL2 !>(loop$ for pair in (regression-suite)
+                always (equal (sim *system* (car pair)) (cdr pair)))
+  })
+
+  <p>which simulates the @('*system*') on every input in the regression suite
+  and compares the result to the known correct answer.</p>
+
+  <p>The formal translation of this term is</p>
+
+  @({
+   (always$ '(lambda (loop$-ivar)
+               (equal (sim '(#x488b55f0
+                             #x31ff
+                             #xff142570081050
+                             #xf84995b0000
+                             #xf645f801
+                             #xf8573100000
+                             #x807df019
+                             ...)
+                           (car loop$-ivar))
+                      (cdr loop$-ivar)))
+            (regression-suite))
+  })
+
+  <p>Note that the constant @('*system*') has been rendered as its quoted value
+  and that it is inside of the @('lambda') object.  If @('*system*') is a very
+  large constant, that @('lambda') object may be excessively large.</p>
+
+  <p>But we can avoid that by writing this instead.</p>
+
+  @({
+  ACL2 !>(let ((sys *system*))
+           (loop$ for pair in (regression-suite)
+                  always (equal (sim sys (car pair)) (cdr pair))))
+  })
+
+  <p>which essentially translates to</p>
+
+  @({
+  (let ((sys '(#x488b55f0
+               #x31ff
+               #xff142570081050
+               #xf84995b0000
+               #xf645f801
+               #xf8573100000
+               #x807df019
+               dots)))
+    (always$+ '(lambda (loop$-gvars loop$-ivars)
+                 (equal (sim (car loop$-gvars)
+                             (car (car loop$-ivars)))
+                        (cdr (car loop$-ivars))))
+              (list sys)
+              (loop$-as (list (regression-suite)))))
+  })
+
+  <p>Note that the @('lambda') object no longer contains the large constant.
+  It now refers to a &ldquo;global&rdquo; variable whose value is that of
+  @('*system*').  The @('lambda') object is quite small.</p>
+
+  <p>For what it is worth, the largest single object in the ACL2 image (as of
+  Version 8.6) is the value of @('(w state)'), the logical world.  Upon
+  starting the system @('(w state)') contains 128,784 elements, but contains
+  multiple pointers to shared substructures (e.g., to tails of itself).  The
+  total number of conses is on the order of @('(expt 10 655)') when counted
+  naively, but the total number of distinct conses is 1,875,653.  So if you
+  build a @('lambda') object containing the value of @('(w state)') it will be
+  &ldquo;excessively large.&rdquo;</p>")
+
 (defxdoc explode-atom
   :parents (characters acl2-built-ins)
   :short "Convert any @(see atom) into a @(see character-listp) that contains
@@ -100878,6 +101024,9 @@ it."
  to Eric Smith for requesting this enhancement and its use in the
  implementation of the utility, @(tsee prove$).</p>
 
+ <p>A new command, @('(cmds c1 c2 ... cn)'), has been added to @(tsee
+ walkabout).</p>
+
  <h3>New Features</h3>
 
  <p>The new zero-ary attachable system function, @(tsee heavy-linear-p), allows
@@ -100948,6 +101097,9 @@ it."
  <p>The Common Lisp utility, @(tsee macrolet), is now supported in ACL2.
  Thanks to Alessandro Coglio for discussion leading us to make this addition.
  See @(see macrolet).</p>
+
+ <p>@('Lambda') objects in positions of @(see ilk) @(':FN') are now subjected
+ to a size limitation.  See @(tsee explain-giant-lambda-object).</p>
 
  <h3>Heuristic and Efficiency Improvements</h3>
 
@@ -130707,6 +130859,8 @@ work on <tt>(q x)</tt>.</p>
                            (return 'base-case)))))).
   })
 
+  <h3>Other Relevant :DOC Topics</h3>
+
   <p>See @(see lp-section-11) of the @('Loop$') Primer for a narrative of how
   we might solve a certain computational problem with a nest of two @('FOR')
   @('loop$').  We also show how we verify the guards and then prove that the
@@ -147755,7 +147909,8 @@ introduction-to-the-tau-system) for more information about Tau.</dd>
 
  @({
   Commands:
-  0, 1, 2, ..., nx, bk, pp, (pp n), (pp lev len), =, (= symb), and q.
+  0, 1, 2, ..., nx, bk, pp, (pp n), (pp lev len), =, (= symb),
+  (cmds c1 c2 ... cn), and q.
  })
 
  <p>In the interactive @('walkabout') loop, a positive integer n takes you to
@@ -147765,11 +147920,11 @@ introduction-to-the-tau-system) for more information about Tau.</dd>
  level length)') hides sub-objects below the indicated level and past the
  indicated length, if non-@('nil'); see @(see evisc-tuple).  The command @('(pp
  n)') abbreviates @('(pp n n)'), so in particular @('(pp nil)') is equivalent
- to @('pp').</p>
+ to @('pp').  The commands @('=') and @('cmds') are described below.</p>
 
  <p>Note that the commands above work in any package: @('nx'), @('bk'),
- @('pp'), @('='), and @('q') are converted to the @('\"ACL2\"') package if the
- current package is not @('\"ACL2\"').</p>
+ @('pp'), @('='), @('cmds'), and @('q') are converted to the @('\"ACL2\"')
+ package if the current package is not @('\"ACL2\"').</p>
 
  <p>The following example illustrates the commands described above.</p>
 
@@ -147777,7 +147932,8 @@ introduction-to-the-tau-system) for more information about Tau.</dd>
   ACL2 !>(walkabout (append '(a (b1 b2 b3)) '(c d e f)) state)
 
   Commands:
-  0, 1, 2, ..., nx, bk, pp, (pp n), (pp lev len), =, (= symb), and q.
+  0, 1, 2, ..., nx, bk, pp, (pp n), (pp lev len), =, (= symb),
+  (cmds c1 c2 ... cn), and q.
 
   (A (B1 B2 B3) C ...)
   :2
@@ -147804,15 +147960,22 @@ introduction-to-the-tau-system) for more information about Tau.</dd>
   ACL2 !>
  })
 
- <p>Finally we describe the commands @('q'), @('='), and @('(= symb)'), where
- @('symb') is a symbol.  The command @('q') simply causes an exit from the
- @('walkabout') loop.  The command @('=') also exits, but causes the current
- object to be printed in full.  The command @('(= symb)') saves an association
- of @('symb') with the current object, which can be retrieved outside the
- @('walkabout') loop using the macro @('walkabout='), as illustrated below.</p>
+ <p>The command @('(cmds c1 c2 ... cn)') just executes each of the @('ci'),
+ sequentially.</p>
+
+ <p>The command @('q') simply causes an exit from the
+ @('walkabout') loop.</p>
+
+ <p>The command @('=') also exits, but returns the current object as the value in
+ an ACL2 @(see error-triple).</p>
+
+ <p>The command @('(= symb)') saves an association of @('symb') with the
+ current object, which can be retrieved outside the @('walkabout') loop using
+ the macro @('walkabout='), as illustrated below.</p>
 
  @({
-  :2
+  ...
+  :pp
   (B1 B2 B3)
   :(= my-list)
   (walkabout= MY-LIST) is
@@ -147831,7 +147994,8 @@ introduction-to-the-tau-system) for more information about Tau.</dd>
   ACL2 !>(walkabout '(c d e . f) state)
 
   Commands:
-  0, 1, 2, ..., nx, bk, pp, (pp n), (pp lev len), =, (= symb), and q.
+  0, 1, 2, ..., nx, bk, pp, (pp n), (pp lev len), =, (= symb),
+  (cmds c1 c2 ... cn), and q.
 
   (C D E . F)
   :3
@@ -152768,11 +152932,11 @@ attempt an equality (or equivalence) substitution"
   (= x) -- replace the current subterm by x, assuming that the prover
            can show that they are equal
   (= (+ x y) z)
-        -- replace the term (+ x y) by the term z inside the current
-           subterm, assuming that the prover can prove
-           (equal (+ x y) z) from the current top-level hypotheses
-           or that this term or (equal z (+ x y)) is among the
-           current top-level hypotheses or the current governors
+        -- replace all occurrences of the term (+ x y) by the term z
+           inside the current subterm, assuming that the prover can
+           prove (equal (+ x y) z) from the current top-level
+           hypotheses or that this term or (equal z (+ x y)) is among
+           the current top-level hypotheses or the current governors
   (= & z)
         -- exactly the same as above, if (+ x y) is the current
            subterm
@@ -152809,9 +152973,9 @@ attempt an equality (or equivalence) substitution"
  goal is created.</p>
 
  <p>If terms @('x') and @('y') are supplied, then replace @('x') by @('y')
- inside the current subterm if they are ``known'' to be equal, or more
- generally, equivalent in the sense described below.  Here ``known'' means the
- following: except in the cases that no arguments are provided or else
+ everywhere inside the current subterm if they are ``known'' to be equal, or
+ more generally, equivalent in the sense described below.  Here ``known'' means
+ the following: except in the cases that no arguments are provided or else
  @(':hints atom') is provided as described above, the prover is called as in
  the @('prove') command (using keyword arguments @(':otf') and @(':hints'), if
  supplied, where the value of @(':hints') is not an atom) to prove equivalence
