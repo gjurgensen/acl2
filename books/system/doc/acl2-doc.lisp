@@ -21732,13 +21732,6 @@ subtree of X with T, without duplication.</p>
  This guarantee disappears if the term in the @('defconst') form is not a
  quoted object, i.e., if it is not of the form @('(quote OBJ)').</p>")
 
-(defxdoc defdoc
-  :parents (events)
-  :short "Deprecated event (formerly for adding documentation)"
-  :long "<p>This event is deprecated; see @(see xdoc) for information about
- @(see documentation) in ACL2.  @('Defdoc') @(see events) are never considered
- redundant (see @(see redundant-events)).</p>")
-
 (defxdoc defequiv
   :parents (events)
   :short "Prove that a function is an @(see equivalence) relation"
