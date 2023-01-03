@@ -24921,13 +24921,6 @@ Subtopics
 
   [Sharp-dot-reader]
       Read-time evaluation of constants")
- (DEFDOC
-  (EVENTS)
-  "Deprecated event (formerly for adding documentation)
-
-  This event is deprecated; see [xdoc] for information about
-  [documentation] in ACL2.  Defdoc [events] are never considered
-  redundant (see [redundant-events]).")
  (DEFEQUIV
   (EVENTS)
   "Prove that a function is an [equivalence] relation
@@ -34787,9 +34780,6 @@ Subtopics
 
   [Defconst]
       Define a constant
-
-  [Defdoc]
-      Deprecated event (formerly for adding documentation)
 
   [Defequiv]
       Prove that a function is an [equivalence] relation
