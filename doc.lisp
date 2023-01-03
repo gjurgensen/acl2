@@ -19680,9 +19680,9 @@ Subtopics
   include both the primitive hints and user-defined custom keyword
   hints (see [custom-keyword-hints]).
 
-  A computed hint may be a function symbol, fn, of three, four or seven
-  arguments.  Otherwise, a computed hint is a term with the following
-  properties:
+  A computed hint may be a symbol, in which case it must be a function
+  symbol of three, four or seven arguments.  Otherwise, a computed
+  hint is a term with the following properties:
 
   (a) the only free variables allowed in the term are ID, CLAUSE,
   WORLD, STABLE-UNDER-SIMPLIFICATIONP, HIST, PSPV, CTX, and [state];
