@@ -16595,9 +16595,9 @@ with any questions about building the community books.</p>")
  hints'' we include both the primitive hints and user-defined custom keyword
  hints (see @(see custom-keyword-hints)).</p>
 
- <p>A computed hint may be a function symbol, @('fn'), of three, four or seven
- arguments.  Otherwise, a computed hint is a term with the following
- properties:</p>
+ <p>A computed hint may be a symbol, in which case it must be a function symbol
+ of three, four or seven arguments.  Otherwise, a computed hint is a term with
+ the following properties:</p>
 
  <p>(a) the only free variables allowed in the term are @('ID'), @('CLAUSE'),
  @('WORLD'), @('STABLE-UNDER-SIMPLIFICATIONP'), @('HIST'), @('PSPV'), @('CTX'),
