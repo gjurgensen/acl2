@@ -16595,9 +16595,9 @@ with any questions about building the community books.</p>")
  hints'' we include both the primitive hints and user-defined custom keyword
  hints (see @(see custom-keyword-hints)).</p>
 
- <p>A computed hint may be a function symbol, @('fn'), of three, four or seven
- arguments.  Otherwise, a computed hint is a term with the following
- properties:</p>
+ <p>A computed hint may be a symbol, in which case it must be a function symbol
+ of three, four or seven arguments.  Otherwise, a computed hint is a term with
+ the following properties:</p>
 
  <p>(a) the only free variables allowed in the term are @('ID'), @('CLAUSE'),
  @('WORLD'), @('STABLE-UNDER-SIMPLIFICATIONP'), @('HIST'), @('PSPV'), @('CTX'),
@@ -21731,13 +21731,6 @@ subtree of X with T, without duplication.</p>
  alist (see @(see fast-alists)), then the value of @('*C*') is a fast alist.
  This guarantee disappears if the term in the @('defconst') form is not a
  quoted object, i.e., if it is not of the form @('(quote OBJ)').</p>")
-
-(defxdoc defdoc
-  :parents (events)
-  :short "Deprecated event (formerly for adding documentation)"
-  :long "<p>This event is deprecated; see @(see xdoc) for information about
- @(see documentation) in ACL2.  @('Defdoc') @(see events) are never considered
- redundant (see @(see redundant-events)).</p>")
 
 (defxdoc defequiv
   :parents (events)
@@ -28307,18 +28300,27 @@ ld) and @(tsee include-book)"
 
  <p>where each @('enables-i') and @('disables-i') is a list of runic
  designators; see @(see theories), see @(see enable), and see @(see
- disable).</p>
+ disable).  Note that the concluding @('disables-n') may be omitted.</p>
 
  <p>The @('e/d') macro takes any number of lists suitable for the @(tsee
- enable) and @(tsee disable) macros, and creates a theory that is equal to
- @('(current-theory :here)') after executing the following commands.</p>
+ enable) and @(tsee disable) macros.  The event</p>
 
  @({
-  (in-theory (enable . enables-0))
-  (in-theory (disable . disables-0))
-  ...
-  (in-theory (enable . enables-n))
-  (in-theory (disable . disables-n))
+ (in-theory (e/d (e00 e01 e02 ...) (d00 d01 d02 ...)
+                 ...
+                 (en0 en1 en2 ...) (dn0 dn1 dn2 ...)
+ })
+
+ <p>creates a theory that is equivalent to the following sequence of @(tsee
+ in-theory) events.  (An analogous similar effect takes place for
+ @(':in-theory') @(see hints).</p>
+
+ @({
+ (in-theory (enable e00 e01 e02 ...))
+ (in-theory (disable d00 d01 d02 ...))
+ ...
+ (in-theory (enable en0 en1 en2 ...))
+ (in-theory (disable dn0 dn1 dn2 ...))
  })")
 
 (defxdoc early-termination
@@ -32267,6 +32269,152 @@ ld) and @(tsee include-book)"
  our source code has been processed under ACL2 and the @(see world) is all but
  complete.  @('exit-boot-strap-mode') has only one job: to signal the
  completion of the boot-strapping.</p>")
+
+(defxdoc explain-giant-lambda-object
+  :parents (apply$)
+  :short "print data related to a large lambda object"
+  :long "<p>When a @(tsee lambda) object is translated we @(tsee hons-copy) it
+  so that it is uniquely represented.  This speeds up the performance of the
+  compiled @('lambda') cache (see @(tsee print-cl-cache)).</p>
+
+  <p>However, if the number of conses in the @('lambda') object is greater than
+  or equal to @('(lambda-object-count-max-val)'), we cause an error.  If this
+  error has been signalled in your session we recommend that you evaluate
+  @('(explain-giant-lambda-object)'), which will tell you more about the
+  excessively large @('lambda') object.  The current value of
+  @('(lambda-object-count-max-val)') is 200,000.  For reference, the largest
+  function definition in the ACL2 sources (as of Version 8.6) is the @(tsee
+  mutual-recursion) event defining @('rewrite') and its 51 mutually recursive
+  subfunctions.  The total number of conses in that clique is 14,656.</p>
+
+  <p>There are generally two ways excessively large @('lambda') objects come
+  into existence: (1) they are generated automatically, as by macros,
+  functions, or @(tsee make-event), or (2) you wrote a small @('lambda') object
+  but used a big quoted constant in it.</p>
+
+  <p>(1) If the offending @('lambda') object was built mechanically, we
+  recommend that you redefine the generation process so that it introduces a
+  named function.  For example, suppose the @('lambda') object sketched below
+  is excessively large.</p>
+
+  @({
+  (lambda (x y)
+    (if (eq x 'FOO1)
+        (my-foo1 y)
+        (if (eq x 'FOO2)
+            (my-foo2 y)
+            ...)))
+  })
+
+  <p>Then perhaps instead of generating that object you could generate
+  the definition</p>
+
+  @({
+  (defun my-big-switch (x y)
+    (if (eq x 'FOO1)
+        (my-foo1 y)
+        (if (eq x 'FOO2)
+            (my-foo2 y)
+            ...)))
+  })
+
+  <p>And then use the quite small @('(lambda$ (x y) (my-big-switch x y))') in
+  place of the offending @('lambda') object.  Of course, this is not always
+  easy to carry out, since it would also require calling @(tsee defwarrant) on
+  @('my-big-switch') and providing that warrant as a hypothesis to any theorem
+  involving the new @('lambda') object.</p>
+
+  <p>(2) If the offending @('lambda') object just contains large quoted
+  constants perhaps you can bind a variable to the large value outside of the
+  @('lambda') object and pass that variable into the @('lambda') object in a
+  new formal.</p>
+
+  <p>For example, suppose the term @('(regression-suite)') returns is a list of
+  pairs of sample inputs and correct output for testing some software system
+  whose binary machine code is in the constant declared below.</p>
+
+  @({
+  (defconst *system*
+    '(#x488b55f0
+      #x31ff
+      #xff142570081050
+      #xf84995b0000
+      #xf645f801
+      #xf8573100000
+      #x807df019
+      ...))
+  })
+
+  <p>Then we might wish to execute something like the following.</p>
+
+  @({
+  ACL2 !>(loop$ for pair in (regression-suite)
+                always (equal (sim *system* (car pair)) (cdr pair)))
+  })
+
+  <p>which simulates the @('*system*') on every input in the regression suite
+  and compares the result to the known correct answer.</p>
+
+  <p>The formal translation of this term is</p>
+
+  @({
+   (always$ '(lambda (loop$-ivar)
+               (equal (sim '(#x488b55f0
+                             #x31ff
+                             #xff142570081050
+                             #xf84995b0000
+                             #xf645f801
+                             #xf8573100000
+                             #x807df019
+                             ...)
+                           (car loop$-ivar))
+                      (cdr loop$-ivar)))
+            (regression-suite))
+  })
+
+  <p>Note that the constant @('*system*') has been rendered as its quoted value
+  and that it is inside of the @('lambda') object.  If @('*system*') is a very
+  large constant, that @('lambda') object may be excessively large.</p>
+
+  <p>But we can avoid that by writing this instead.</p>
+
+  @({
+  ACL2 !>(let ((sys *system*))
+           (loop$ for pair in (regression-suite)
+                  always (equal (sim sys (car pair)) (cdr pair))))
+  })
+
+  <p>which essentially translates to</p>
+
+  @({
+  (let ((sys '(#x488b55f0
+               #x31ff
+               #xff142570081050
+               #xf84995b0000
+               #xf645f801
+               #xf8573100000
+               #x807df019
+               dots)))
+    (always$+ '(lambda (loop$-gvars loop$-ivars)
+                 (equal (sim (car loop$-gvars)
+                             (car (car loop$-ivars)))
+                        (cdr (car loop$-ivars))))
+              (list sys)
+              (loop$-as (list (regression-suite)))))
+  })
+
+  <p>Note that the @('lambda') object no longer contains the large constant.
+  It now refers to a &ldquo;global&rdquo; variable whose value is that of
+  @('*system*').  The @('lambda') object is quite small.</p>
+
+  <p>For what it is worth, the largest single object in the ACL2 image (as of
+  Version 8.6) is the value of @('(w state)'), the logical world.  Upon
+  starting the system @('(w state)') contains 128,784 elements, but contains
+  multiple pointers to shared substructures (e.g., to tails of itself).  The
+  total number of conses is on the order of @('(expt 10 655)') when counted
+  naively, but the total number of distinct conses is 1,875,653.  So if you
+  build a @('lambda') object containing the value of @('(w state)') it will be
+  &ldquo;excessively large.&rdquo;</p>")
 
 (defxdoc explode-atom
   :parents (characters acl2-built-ins)
@@ -45666,12 +45814,21 @@ current fast alists."
  such hints implemented in books; for an example of so-called @(':consider')
  hints, see @(see consideration).</p>
 
- <p>Only the first hint applicable to a goal, as specified in the user-supplied
- list of @(':hints') followed by the default hints (see @(see
- default-hints-table)), will be applied to that goal.  For an advanced
- exception, see @(see override-hints).  For a detailed discussion of how hints
- fit into the ACL2 waterfall, see @(see hints-and-the-waterfall).  For examples
- of the sophisticated use of hints, primarily for experts, see community book
+ <p>When the ACL2 prover encounters a goal @('\"G\"'), then the first hint of
+ the form @('(\"G\" :kwd1 val1 ...)') is applied to that goal.  This usually
+ means that all hints for the goal @('\"G\"') after the first such hint are
+ ignored, and ACL2 produces a warning about that.  (Note however that
+ @('(\"G\")') is simply dropped; such an empty hint is considered not to be
+ there, for purposes of this discussion.)  If there are default hints (see
+ @(see set-default-hints)) then this behavior applies to the user-supplied list
+ of @(':hints') followed by the default hints; see @(see
+ hints-and-the-waterfall) for a detailed discussion of how hints fit into the
+ ACL2 waterfall, which in particular has a &ldquo;slightly tricky
+ example&rdquo; illustrating the unusual case when a goal can be encountered
+ more than once, thus applying more than one hint on that goal.  Also see @(see
+ override-hints) for an advanced feature that can modify the &ldquo;first
+ hint&rdquo; behavior described above.  For examples of the sophisticated use
+ of hints, primarily for experts, see community book
  @('books/hints/basic-tests.lisp').</p>
 
  <p>Background: @('Hints') are allowed in all @(see events) that use the
@@ -46220,14 +46377,11 @@ current fast alists."
 
  <dt>@(':no-op')</dt><p/>
 
- <dd><p>@('Value') is any object and is irrelevant.  This hint does nothing.
- But empty hints, such as @('(\"Goal\")'), are illegal and there are occasions,
- especially when writing custom keyword hints
- (see @(see custom-keyword-hints)) and computed hints (see @(see
- computed-hints)) where it is convenient to be able to generate a non-empty
- no-op hint.  The standard idiom is @('(\"Goal\" :NO-OP T)') but the @('T') is
- completely ignored.  Unlike other hint keywords, multiple occurrences of the
- keyword @(':NO-OP') are tolerated.</p></dd>
+ <dd><p>@('Value') is any object and is irrelevant.  This hint has no effect,
+ although unlike an empty hint such as @('(\"Goal\")'), it is not dropped.
+ Thus, @('(\"Goal\") :do-not t') will shadow any later (or default) hint on
+ @('\"Goal\"'), but @('(\"Goal\")') will not.  Unlike other hint keywords,
+ multiple occurrences of the keyword @(':no-op') are tolerated.</p></dd>
 
  <dt>@(':no-thanks')</dt><p/>
 
@@ -46653,16 +46807,19 @@ current fast alists."
  <p>The following slightly tricky example illustrates handling of hints.</p>
 
  @({
-  ACL2 !>(set-default-hints '((\"Goal\" :do-not '(preprocess))))
-   ((\"Goal\" :DO-NOT '(PREPROCESS)))
-  ACL2 !>(thm (equal (append (append x y) z) (append x y z))
-              :hints ((\"Goal\" :in-theory (disable car-cons))))
+ ACL2 !>(set-default-hints '((\"Goal\" :do-not '(preprocess))))
+  ((\"Goal\" :DO-NOT '(PREPROCESS)))
+ ACL2 !>(set-gag-mode nil)
+ <state>
+ ACL2 !>(thm (equal (append (append x y) z) (append x y z))
+             :hints ((\"Goal\" :in-theory (disable car-cons))))
 
   ACL2 Warning [Hints] in ( THM ...):  The goal-spec \"Goal\" is explicitly
   associated with more than one hint.  All but the first of these hints
-  may be ignored.  If you intended to give all of these hints, combine
-  them into a single hint of the form (\"Goal\" :kwd1 val1 :kwd2 val2 ...).
-  See :DOC hints-and-the-waterfall.
+  may be ignored.  If you intended to give all of these hints, consider
+  combining them into a single hint of the form (\"Goal\" :kwd1 val1 :kwd2
+  val2 ...). See :DOC hints and :DOC hints-and-the-waterfall; community
+  book books/hints/merge-hint.lisp might also be helpful.
 
   [Note:  A hint was supplied for our processing of the goal above.
   Thanks!]
@@ -46676,15 +46833,16 @@ current fast alists."
  <p>The warning above is printed because @('\"Goal\"') is associated with two
  pending hints: one given by the @(tsee set-default-hints) call and one
  supplied by the @(':')@(tsee hints) keyword of the @(tsee thm) form.  The
- @(':in-theory') hint is selected because user-supplied hints are ahead of
- default hints in the list of pending hints; we then get the first ``Note''
- above.  The goal progresses through the waterfall without any proof process
- applying to the goal; in particular, it cannot be further simplified.  After
- the simplification process, a ``settled-down'' process applies, as discussed
- above, immediately causing another trip through the waterfall.  Since the
- @(':in-theory') hint was earlier removed from the list of pending hints when
- it was applied, the default (@(':do-not')) hint is now the only pending hint.
- That hint is applied, resulting in the second ``Note'' above.</p>
+ @(':in-theory') hint is selected first because user-supplied hints are ahead
+ of default hints in the list of pending hints; we then get the first
+ &ldquo;Note&rdquo; above.  The goal progresses through the waterfall without
+ any proof process applying to the goal; in particular, it cannot be further
+ simplified.  After the simplification process, a &ldquo;settled-down&rdquo;
+ process applies, as discussed above, immediately causing another trip through
+ the waterfall.  Since the @(':in-theory') hint was earlier removed from the
+ list of pending hints when it was applied, the default (@(':do-not')) hint is
+ now the only pending hint.  That hint is applied, resulting in the second
+ &ldquo;Note&rdquo; above.</p>
 
  <p>Again, more examples may be found in the community book
  @('books/hints/basic-tests.lisp').  A particularly tricky but informative
@@ -100859,6 +101017,9 @@ it."
  to Eric Smith for requesting this enhancement and its use in the
  implementation of the utility, @(tsee prove$).</p>
 
+ <p>A new command, @('(cmds c1 c2 ... cn)'), has been added to @(tsee
+ walkabout).</p>
+
  <h3>New Features</h3>
 
  <p>The new zero-ary attachable system function, @(tsee heavy-linear-p), allows
@@ -100929,6 +101090,9 @@ it."
  <p>The Common Lisp utility, @(tsee macrolet), is now supported in ACL2.
  Thanks to Alessandro Coglio for discussion leading us to make this addition.
  See @(see macrolet).</p>
+
+ <p>@('Lambda') objects in positions of @(see ilk) @(':FN') are now subjected
+ to a size limitation.  See @(tsee explain-giant-lambda-object).</p>
 
  <h3>Heuristic and Efficiency Improvements</h3>
 
@@ -101028,6 +101192,28 @@ it."
  that event is now ignored when subsequently including that book.  Previously
  it may not have been ignored, because the @('local') wrapper could be ignored
  when writing the book's @(see certificate).</p>
+
+ <p>Some handling of exceptional cases in @(see hints) has been cleaned up, as
+ follows.  Thanks to Eric Smith for a discussion that led to these changes.</p>
+
+ <ul>
+
+ <li>@(csee Warnings) for repeating a goal name in the hints now appear even
+ when the repetition is only up to case.  For example, such a warning is
+ generated now for @(':hints ((\"Goal\" :use foo) (\"GOAL\" :use bar))') where
+ formerly it was not.  The discussion of this situation in documentation topic
+ @(see hints) has been improved.</li>
+
+ <li>It was incorrectly documentated in topic @(see hints), in the discussion
+ of @(':do-not') hints, that it is illegal to associate a goal name with the
+ empty list of @(see hints), as in @('(\"Goal\")').  This behavior was actually
+ allowed; an empty such hint was simply ignored.  This continues to be
+ allowed (for backward compatibility) but the documentation has been updated;
+ also, these empty hints are now ignored for purposes of the warnings mentioned
+ above (formerly they were considered when looking for repetition of goal
+ names).</li>
+
+ </ul>
 
  <h3>Changes at the System Level</h3>
 
@@ -130666,6 +130852,8 @@ work on <tt>(q x)</tt>.</p>
                            (return 'base-case)))))).
   })
 
+  <h3>Other Relevant :DOC Topics</h3>
+
   <p>See @(see lp-section-11) of the @('Loop$') Primer for a narrative of how
   we might solve a certain computational problem with a nest of two @('FOR')
   @('loop$').  We also show how we verify the guards and then prove that the
@@ -147714,7 +147902,8 @@ introduction-to-the-tau-system) for more information about Tau.</dd>
 
  @({
   Commands:
-  0, 1, 2, ..., nx, bk, pp, (pp n), (pp lev len), =, (= symb), and q.
+  0, 1, 2, ..., nx, bk, pp, (pp n), (pp lev len), =, (= symb),
+  (cmds c1 c2 ... cn), and q.
  })
 
  <p>In the interactive @('walkabout') loop, a positive integer n takes you to
@@ -147724,11 +147913,11 @@ introduction-to-the-tau-system) for more information about Tau.</dd>
  level length)') hides sub-objects below the indicated level and past the
  indicated length, if non-@('nil'); see @(see evisc-tuple).  The command @('(pp
  n)') abbreviates @('(pp n n)'), so in particular @('(pp nil)') is equivalent
- to @('pp').</p>
+ to @('pp').  The commands @('=') and @('cmds') are described below.</p>
 
  <p>Note that the commands above work in any package: @('nx'), @('bk'),
- @('pp'), @('='), and @('q') are converted to the @('\"ACL2\"') package if the
- current package is not @('\"ACL2\"').</p>
+ @('pp'), @('='), @('cmds'), and @('q') are converted to the @('\"ACL2\"')
+ package if the current package is not @('\"ACL2\"').</p>
 
  <p>The following example illustrates the commands described above.</p>
 
@@ -147736,7 +147925,8 @@ introduction-to-the-tau-system) for more information about Tau.</dd>
   ACL2 !>(walkabout (append '(a (b1 b2 b3)) '(c d e f)) state)
 
   Commands:
-  0, 1, 2, ..., nx, bk, pp, (pp n), (pp lev len), =, (= symb), and q.
+  0, 1, 2, ..., nx, bk, pp, (pp n), (pp lev len), =, (= symb),
+  (cmds c1 c2 ... cn), and q.
 
   (A (B1 B2 B3) C ...)
   :2
@@ -147763,15 +147953,22 @@ introduction-to-the-tau-system) for more information about Tau.</dd>
   ACL2 !>
  })
 
- <p>Finally we describe the commands @('q'), @('='), and @('(= symb)'), where
- @('symb') is a symbol.  The command @('q') simply causes an exit from the
- @('walkabout') loop.  The command @('=') also exits, but causes the current
- object to be printed in full.  The command @('(= symb)') saves an association
- of @('symb') with the current object, which can be retrieved outside the
- @('walkabout') loop using the macro @('walkabout='), as illustrated below.</p>
+ <p>The command @('(cmds c1 c2 ... cn)') just executes each of the @('ci'),
+ sequentially.</p>
+
+ <p>The command @('q') simply causes an exit from the
+ @('walkabout') loop.</p>
+
+ <p>The command @('=') also exits, but returns the current object as the value in
+ an ACL2 @(see error-triple).</p>
+
+ <p>The command @('(= symb)') saves an association of @('symb') with the
+ current object, which can be retrieved outside the @('walkabout') loop using
+ the macro @('walkabout='), as illustrated below.</p>
 
  @({
-  :2
+  ...
+  :pp
   (B1 B2 B3)
   :(= my-list)
   (walkabout= MY-LIST) is
@@ -147790,7 +147987,8 @@ introduction-to-the-tau-system) for more information about Tau.</dd>
   ACL2 !>(walkabout '(c d e . f) state)
 
   Commands:
-  0, 1, 2, ..., nx, bk, pp, (pp n), (pp lev len), =, (= symb), and q.
+  0, 1, 2, ..., nx, bk, pp, (pp n), (pp lev len), =, (= symb),
+  (cmds c1 c2 ... cn), and q.
 
   (C D E . F)
   :3
@@ -152727,11 +152925,11 @@ attempt an equality (or equivalence) substitution"
   (= x) -- replace the current subterm by x, assuming that the prover
            can show that they are equal
   (= (+ x y) z)
-        -- replace the term (+ x y) by the term z inside the current
-           subterm, assuming that the prover can prove
-           (equal (+ x y) z) from the current top-level hypotheses
-           or that this term or (equal z (+ x y)) is among the
-           current top-level hypotheses or the current governors
+        -- replace all occurrences of the term (+ x y) by the term z
+           inside the current subterm, assuming that the prover can
+           prove (equal (+ x y) z) from the current top-level
+           hypotheses or that this term or (equal z (+ x y)) is among
+           the current top-level hypotheses or the current governors
   (= & z)
         -- exactly the same as above, if (+ x y) is the current
            subterm
@@ -152768,9 +152966,9 @@ attempt an equality (or equivalence) substitution"
  goal is created.</p>
 
  <p>If terms @('x') and @('y') are supplied, then replace @('x') by @('y')
- inside the current subterm if they are ``known'' to be equal, or more
- generally, equivalent in the sense described below.  Here ``known'' means the
- following: except in the cases that no arguments are provided or else
+ everywhere inside the current subterm if they are ``known'' to be equal, or
+ more generally, equivalent in the sense described below.  Here ``known'' means
+ the following: except in the cases that no arguments are provided or else
  @(':hints atom') is provided as described above, the prover is called as in
  the @('prove') command (using keyword arguments @(':otf') and @(':hints'), if
  supplied, where the value of @(':hints') is not an atom) to prove equivalence
