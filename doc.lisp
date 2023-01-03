@@ -9078,6 +9078,9 @@ Subtopics
   [Ev$]
       Evaluate a tame expression using apply$
 
+  [Explain-giant-lambda-object]
+      print data related to a large lambda object
+
   [Fn-equal]
       Equivalence relation on tame functions
 
@@ -19677,9 +19680,9 @@ Subtopics
   include both the primitive hints and user-defined custom keyword
   hints (see [custom-keyword-hints]).
 
-  A computed hint may be a function symbol, fn, of three, four or seven
-  arguments.  Otherwise, a computed hint is a term with the following
-  properties:
+  A computed hint may be a symbol, in which case it must be a function
+  symbol of three, four or seven arguments.  Otherwise, a computed
+  hint is a term with the following properties:
 
   (a) the only free variables allowed in the term are ID, CLAUSE,
   WORLD, STABLE-UNDER-SIMPLIFICATIONP, HIST, PSPV, CTX, and [state];
@@ -24918,13 +24921,6 @@ Subtopics
 
   [Sharp-dot-reader]
       Read-time evaluation of constants")
- (DEFDOC
-  (EVENTS)
-  "Deprecated event (formerly for adding documentation)
-
-  This event is deprecated; see [xdoc] for information about
-  [documentation] in ACL2.  Defdoc [events] are never considered
-  redundant (see [redundant-events]).")
  (DEFEQUIV
   (EVENTS)
   "Prove that a function is an [equivalence] relation
@@ -31599,17 +31595,25 @@ Subtopics
     (e/d enables-0 disables-0 ... enables-n disables-n)
 
   where each enables-i and disables-i is a list of runic designators;
-  see [theories], see [enable], and see [disable].
+  see [theories], see [enable], and see [disable].  Note that the
+  concluding disables-n may be omitted.
 
   The e/d macro takes any number of lists suitable for the [enable] and
-  [disable] macros, and creates a theory that is equal to
-  (current-theory :here) after executing the following commands.
+  [disable] macros.  The event
 
-    (in-theory (enable . enables-0))
-    (in-theory (disable . disables-0))
+    (in-theory (e/d (e00 e01 e02 ...) (d00 d01 d02 ...)
+                    ...
+                    (en0 en1 en2 ...) (dn0 dn1 dn2 ...)
+
+  creates a theory that is equivalent to the following sequence of
+  [in-theory] events.  (An analogous similar effect takes place for
+  :in-theory [hints].
+
+    (in-theory (enable e00 e01 e02 ...))
+    (in-theory (disable d00 d01 d02 ...))
     ...
-    (in-theory (enable . enables-n))
-    (in-theory (disable . disables-n))")
+    (in-theory (enable en0 en1 en2 ...))
+    (in-theory (disable dn0 dn1 dn2 ...))")
  (EARLY-TERMINATION
   (PARALLEL-PROGRAMMING)
   "Early termination for [pand] and [por].
@@ -34777,9 +34781,6 @@ Subtopics
   [Defconst]
       Define a constant
 
-  [Defdoc]
-      Deprecated event (formerly for adding documentation)
-
   [Defequiv]
       Prove that a function is an [equivalence] relation
 
@@ -35725,6 +35726,139 @@ Subtopics
   the completion of the boot-strapping.")
  (EXPAND (POINTERS)
          "See [hints] for information about the keyword :expand.")
+ (EXPLAIN-GIANT-LAMBDA-OBJECT
+  (APPLY$)
+  "print data related to a large lambda object
+
+  When a [lambda] object is translated we [hons-copy] it so that it is
+  uniquely represented.  This speeds up the performance of the
+  compiled lambda cache (see [print-cl-cache]).
+
+  However, if the number of conses in the lambda object is greater than
+  or equal to (lambda-object-count-max-val), we cause an error.  If
+  this error has been signalled in your session we recommend that you
+  evaluate (explain-giant-lambda-object), which will tell you more
+  about the excessively large lambda object.  The current value of
+  (lambda-object-count-max-val) is 200,000.  For reference, the
+  largest function definition in the ACL2 sources (as of Version 8.6)
+  is the [mutual-recursion] event defining rewrite and its 51
+  mutually recursive subfunctions.  The total number of conses in
+  that clique is 14,656.
+
+  There are generally two ways excessively large lambda objects come
+  into existence: (1) they are generated automatically, as by macros,
+  functions, or [make-event], or (2) you wrote a small lambda object
+  but used a big quoted constant in it.
+
+  (1) If the offending lambda object was built mechanically, we
+  recommend that you redefine the generation process so that it
+  introduces a named function.  For example, suppose the lambda
+  object sketched below is excessively large.
+
+    (lambda (x y)
+      (if (eq x 'FOO1)
+          (my-foo1 y)
+          (if (eq x 'FOO2)
+              (my-foo2 y)
+              ...)))
+
+  Then perhaps instead of generating that object you could generate the
+  definition
+
+    (defun my-big-switch (x y)
+      (if (eq x 'FOO1)
+          (my-foo1 y)
+          (if (eq x 'FOO2)
+              (my-foo2 y)
+              ...)))
+
+  And then use the quite small (lambda$ (x y) (my-big-switch x y)) in
+  place of the offending lambda object.  Of course, this is not
+  always easy to carry out, since it would also require calling
+  [defwarrant] on my-big-switch and providing that warrant as a
+  hypothesis to any theorem involving the new lambda object.
+
+  (2) If the offending lambda object just contains large quoted
+  constants perhaps you can bind a variable to the large value
+  outside of the lambda object and pass that variable into the lambda
+  object in a new formal.
+
+  For example, suppose the term (regression-suite) returns is a list of
+  pairs of sample inputs and correct output for testing some software
+  system whose binary machine code is in the constant declared below.
+
+    (defconst *system*
+      '(#x488b55f0
+        #x31ff
+        #xff142570081050
+        #xf84995b0000
+        #xf645f801
+        #xf8573100000
+        #x807df019
+        ...))
+
+  Then we might wish to execute something like the following.
+
+    ACL2 !>(loop$ for pair in (regression-suite)
+                  always (equal (sim *system* (car pair)) (cdr pair)))
+
+  which simulates the *system* on every input in the regression suite
+  and compares the result to the known correct answer.
+
+  The formal translation of this term is
+
+    (always$ '(lambda (loop$-ivar)
+                (equal (sim '(#x488b55f0
+                              #x31ff
+                              #xff142570081050
+                              #xf84995b0000
+                              #xf645f801
+                              #xf8573100000
+                              #x807df019
+                              ...)
+                            (car loop$-ivar))
+                       (cdr loop$-ivar)))
+             (regression-suite))
+
+  Note that the constant *system* has been rendered as its quoted value
+  and that it is inside of the lambda object.  If *system* is a very
+  large constant, that lambda object may be excessively large.
+
+  But we can avoid that by writing this instead.
+
+    ACL2 !>(let ((sys *system*))
+             (loop$ for pair in (regression-suite)
+                    always (equal (sim sys (car pair)) (cdr pair))))
+
+  which essentially translates to
+
+    (let ((sys '(#x488b55f0
+                 #x31ff
+                 #xff142570081050
+                 #xf84995b0000
+                 #xf645f801
+                 #xf8573100000
+                 #x807df019
+                 dots)))
+      (always$+ '(lambda (loop$-gvars loop$-ivars)
+                   (equal (sim (car loop$-gvars)
+                               (car (car loop$-ivars)))
+                          (cdr (car loop$-ivars))))
+                (list sys)
+                (loop$-as (list (regression-suite)))))
+
+  Note that the lambda object no longer contains the large constant.
+  It now refers to a ``global'' variable whose value is that of
+  *system*.  The lambda object is quite small.
+
+  For what it is worth, the largest single object in the ACL2 image (as
+  of Version 8.6) is the value of (w state), the logical world.  Upon
+  starting the system (w state) contains 128,784 elements, but
+  contains multiple pointers to shared substructures (e.g., to tails
+  of itself).  The total number of conses is on the order of (expt 10
+  655) when counted naively, but the total number of distinct conses
+  is 1,875,653.  So if you build a lambda object containing the value
+  of (w state) it will be ``excessively large.''")
  (EXPLODE-ATOM
   (CHARACTERS ACL2-BUILT-INS)
   "Convert any [atom] into a [character-listp] that contains its printed
@@ -48798,14 +48932,23 @@ Subtopics
   this topic are such hints implemented in books; for an example of
   so-called :consider hints, see [consideration].
 
-  Only the first hint applicable to a goal, as specified in the
-  user-supplied list of :hints followed by the default hints (see
-  [default-hints-table]), will be applied to that goal.  For an
-  advanced exception, see [override-hints].  For a detailed
-  discussion of how hints fit into the ACL2 waterfall, see
-  [hints-and-the-waterfall].  For examples of the sophisticated use
-  of hints, primarily for experts, see community book
-  books/hints/basic-tests.lisp.
+  When the ACL2 prover encounters a goal \"G\", then the first hint of
+  the form (\"G\" :kwd1 val1 ...) is applied to that goal.  This
+  usually means that all hints for the goal \"G\" after the first such
+  hint are ignored, and ACL2 produces a warning about that.  (Note
+  however that (\"G\") is simply dropped; such an empty hint is
+  considered not to be there, for purposes of this discussion.)  If
+  there are default hints (see [set-default-hints]) then this
+  behavior applies to the user-supplied list of :hints followed by
+  the default hints; see [hints-and-the-waterfall] for a detailed
+  discussion of how hints fit into the ACL2 waterfall, which in
+  particular has a ``slightly tricky example'' illustrating the
+  unusual case when a goal can be encountered more than once, thus
+  applying more than one hint on that goal.  Also see
+  [override-hints] for an advanced feature that can modify the
+  ``first hint'' behavior described above.  For examples of the
+  sophisticated use of hints, primarily for experts, see community
+  book books/hints/basic-tests.lisp.
 
   Background: Hints are allowed in all [events] that use the theorem
   prover.  During [defun] [events] there are two different uses of
@@ -49353,15 +49496,12 @@ Subtopics
 
     :no-op
 
-        Value is any object and is irrelevant.  This hint does nothing.  But
-        empty hints, such as (\"Goal\"), are illegal and there are
-        occasions, especially when writing custom keyword hints (see
-        [custom-keyword-hints]) and computed hints (see
-        [computed-hints]) where it is convenient to be able to
-        generate a non-empty no-op hint.  The standard idiom is
-        (\"Goal\" :NO-OP T) but the T is completely ignored.  Unlike
-        other hint keywords, multiple occurrences of the keyword
-        :NO-OP are tolerated.
+        Value is any object and is irrelevant.  This hint has no effect,
+        although unlike an empty hint such as (\"Goal\"), it is not
+        dropped.  Thus, (\"Goal\") :do-not t will shadow any later (or
+        default) hint on \"Goal\", but (\"Goal\") will not.  Unlike other
+        hint keywords, multiple occurrences of the keyword :no-op are
+        tolerated.
 
     :no-thanks
 
@@ -49844,36 +49984,39 @@ Subtopics
 
     ACL2 !>(set-default-hints '((\"Goal\" :do-not '(preprocess))))
      ((\"Goal\" :DO-NOT '(PREPROCESS)))
+    ACL2 !>(set-gag-mode nil)
+    <state>
     ACL2 !>(thm (equal (append (append x y) z) (append x y z))
                 :hints ((\"Goal\" :in-theory (disable car-cons))))
 
-    ACL2 Warning [Hints] in ( THM ...):  The goal-spec \"Goal\" is explicitly
-    associated with more than one hint.  All but the first of these hints
-    may be ignored.  If you intended to give all of these hints, combine
-    them into a single hint of the form (\"Goal\" :kwd1 val1 :kwd2 val2 ...).
-    See :DOC hints-and-the-waterfall.
+     ACL2 Warning [Hints] in ( THM ...):  The goal-spec \"Goal\" is explicitly
+     associated with more than one hint.  All but the first of these hints
+     may be ignored.  If you intended to give all of these hints, consider
+     combining them into a single hint of the form (\"Goal\" :kwd1 val1 :kwd2
+     val2 ...). See :DOC hints and :DOC hints-and-the-waterfall; community
+     book books/hints/merge-hint.lisp might also be helpful.
 
-    [Note:  A hint was supplied for our processing of the goal above.
-    Thanks!]
+     [Note:  A hint was supplied for our processing of the goal above.
+     Thanks!]
 
-    [Note:  A hint was supplied for our processing of the goal above.
-    Thanks!]
+     [Note:  A hint was supplied for our processing of the goal above.
+     Thanks!]
 
-    Name the formula above *1.
+     Name the formula above *1.
 
   The warning above is printed because \"Goal\" is associated with two
   pending hints: one given by the [set-default-hints] call and one
   supplied by the :[hints] keyword of the [thm] form.  The :in-theory
-  hint is selected because user-supplied hints are ahead of default
-  hints in the list of pending hints; we then get the first ``Note''
-  above.  The goal progresses through the waterfall without any proof
-  process applying to the goal; in particular, it cannot be further
-  simplified.  After the simplification process, a ``settled-down''
-  process applies, as discussed above, immediately causing another
-  trip through the waterfall.  Since the :in-theory hint was earlier
-  removed from the list of pending hints when it was applied, the
-  default (:do-not) hint is now the only pending hint.  That hint is
-  applied, resulting in the second ``Note'' above.
+  hint is selected first because user-supplied hints are ahead of
+  default hints in the list of pending hints; we then get the first
+  ``Note'' above.  The goal progresses through the waterfall without
+  any proof process applying to the goal; in particular, it cannot be
+  further simplified.  After the simplification process, a
+  ``settled-down'' process applies, as discussed above, immediately
+  causing another trip through the waterfall.  Since the :in-theory
+  hint was earlier removed from the list of pending hints when it was
+  applied, the default (:do-not) hint is now the only pending hint.
+  That hint is applied, resulting in the second ``Note'' above.
 
   Again, more examples may be found in the community book
   books/hints/basic-tests.lisp.  A particularly tricky but
@@ -97984,6 +98127,8 @@ Changes to Existing Features
   requesting this enhancement and its use in the implementation of
   the utility, [prove$].
 
+  A new command, (cmds c1 c2 ... cn), has been added to [walkabout].
+
 
 New Features
 
@@ -98063,6 +98208,9 @@ New Features
   The Common Lisp utility, [macrolet], is now supported in ACL2.
   Thanks to Alessandro Coglio for discussion leading us to make this
   addition.  See [macrolet].
+
+  Lambda objects in positions of [ilk] :FN are now subjected to a size
+  limitation.  See [explain-giant-lambda-object].
 
 
 Heuristic and Efficiency Improvements
@@ -98153,6 +98301,25 @@ Bug Fixes
   event is now ignored when subsequently including that book.
   Previously it may not have been ignored, because the local wrapper
   could be ignored when writing the book's [certificate].
+
+  Some handling of exceptional cases in [hints] has been cleaned up, as
+  follows.  Thanks to Eric Smith for a discussion that led to these
+  changes.
+
+    * [Warnings] for repeating a goal name in the hints now appear even
+      when the repetition is only up to case.  For example, such a
+      warning is generated now for :hints ((\"Goal\" :use foo) (\"GOAL\"
+      :use bar)) where formerly it was not.  The discussion of this
+      situation in documentation topic [hints] has been improved.
+    * It was incorrectly documentated in topic [hints], in the discussion
+      of :do-not hints, that it is illegal to associate a goal name
+      with the empty list of [hints], as in (\"Goal\").  This behavior
+      was actually allowed; an empty such hint was simply ignored.
+      This continues to be allowed (for backward compatibility) but
+      the documentation has been updated; also, these empty hints are
+      now ignored for purposes of the warnings mentioned above
+      (formerly they were considered when looking for repetition of
+      goal names).
 
 
 Changes at the System Level
@@ -129294,6 +129461,9 @@ Avoiding Some Specially Defined Hint Functions
                                     (setq x (cdr x)))
                              (return 'base-case)))))).
 
+
+Other Relevant :DOC Topics
+
   See [lp-section-11] of the Loop$ Primer for a narrative of how we
   might solve a certain computational problem with a nest of two FOR
   loop$.  We also show how we verify the guards and then prove that
@@ -146260,7 +146430,8 @@ Subtopics
   printed before you enter an interactive loop.
 
     Commands:
-    0, 1, 2, ..., nx, bk, pp, (pp n), (pp lev len), =, (= symb), and q.
+    0, 1, 2, ..., nx, bk, pp, (pp n), (pp lev len), =, (= symb),
+    (cmds c1 c2 ... cn), and q.
 
   In the interactive walkabout loop, a positive integer n takes you to
   the nth position, while 0 takes you up a level.  The commands nx
@@ -146269,18 +146440,19 @@ Subtopics
   while (pp level length) hides sub-objects below the indicated level
   and past the indicated length, if non-nil; see [evisc-tuple].  The
   command (pp n) abbreviates (pp n n), so in particular (pp nil) is
-  equivalent to pp.
+  equivalent to pp.  The commands = and cmds are described below.
 
-  Note that the commands above work in any package: nx, bk, pp, =, and
-  q are converted to the \"ACL2\" package if the current package is not
-  \"ACL2\".
+  Note that the commands above work in any package: nx, bk, pp, =,
+  cmds, and q are converted to the \"ACL2\" package if the current
+  package is not \"ACL2\".
 
   The following example illustrates the commands described above.
 
     ACL2 !>(walkabout (append '(a (b1 b2 b3)) '(c d e f)) state)
 
     Commands:
-    0, 1, 2, ..., nx, bk, pp, (pp n), (pp lev len), =, (= symb), and q.
+    0, 1, 2, ..., nx, bk, pp, (pp n), (pp lev len), =, (= symb),
+    (cmds c1 c2 ... cn), and q.
 
     (A (B1 B2 B3) C ...)
     :2
@@ -146306,14 +146478,20 @@ Subtopics
     :q
     ACL2 !>
 
-  Finally we describe the commands q, =, and (= symb), where symb is a
-  symbol.  The command q simply causes an exit from the walkabout
-  loop.  The command = also exits, but causes the current object to
-  be printed in full.  The command (= symb) saves an association of
-  symb with the current object, which can be retrieved outside the
-  walkabout loop using the macro walkabout=, as illustrated below.
+  The command (cmds c1 c2 ... cn) just executes each of the ci,
+  sequentially.
 
-    :2
+  The command q simply causes an exit from the walkabout loop.
+
+  The command = also exits, but returns the current object as the value
+  in an ACL2 [error-triple].
+
+  The command (= symb) saves an association of symb with the current
+  object, which can be retrieved outside the walkabout loop using the
+  macro walkabout=, as illustrated below.
+
+    ...
+    :pp
     (B1 B2 B3)
     :(= my-list)
     (walkabout= MY-LIST) is
@@ -146330,7 +146508,8 @@ Subtopics
     ACL2 !>(walkabout '(c d e . f) state)
 
     Commands:
-    0, 1, 2, ..., nx, bk, pp, (pp n), (pp lev len), =, (= symb), and q.
+    0, 1, 2, ..., nx, bk, pp, (pp n), (pp lev len), =, (= symb),
+    (cmds c1 c2 ... cn), and q.
 
     (C D E . F)
     :3
@@ -151111,11 +151290,11 @@ Subtopics
     (= x) -- replace the current subterm by x, assuming that the prover
              can show that they are equal
     (= (+ x y) z)
-          -- replace the term (+ x y) by the term z inside the current
-             subterm, assuming that the prover can prove
-             (equal (+ x y) z) from the current top-level hypotheses
-             or that this term or (equal z (+ x y)) is among the
-             current top-level hypotheses or the current governors
+          -- replace all occurrences of the term (+ x y) by the term z
+             inside the current subterm, assuming that the prover can
+             prove (equal (+ x y) z) from the current top-level
+             hypotheses or that this term or (equal z (+ x y)) is among
+             the current top-level hypotheses or the current governors
     (= & z)
           -- exactly the same as above, if (+ x y) is the current
              subterm
@@ -151150,19 +151329,19 @@ Subtopics
   two indicated terms (as described below) are suitably equivalent, a
   new such goal is created.
 
-  If terms x and y are supplied, then replace x by y inside the current
-  subterm if they are ``known'' to be equal, or more generally,
-  equivalent in the sense described below.  Here ``known'' means the
-  following: except in the cases that no arguments are provided or
-  else :hints atom is provided as described above, the prover is
-  called as in the prove command (using keyword arguments :otf and
-  :hints, if supplied, where the value of :hints is not an atom) to
-  prove equivalence of x and y under the current governors and
-  top-level hypotheses.  By default, this equivalence is equality;
-  however the keyword argument :equiv can specify a known equivalence
-  relation.  In cases other than equality, substitution only takes
-  place where justified by the equivlance maintained at the current
-  subterm.
+  If terms x and y are supplied, then replace x by y everywhere inside
+  the current subterm if they are ``known'' to be equal, or more
+  generally, equivalent in the sense described below.  Here ``known''
+  means the following: except in the cases that no arguments are
+  provided or else :hints atom is provided as described above, the
+  prover is called as in the prove command (using keyword arguments
+  :otf and :hints, if supplied, where the value of :hints is not an
+  atom) to prove equivalence of x and y under the current governors
+  and top-level hypotheses.  By default, this equivalence is
+  equality; however the keyword argument :equiv can specify a known
+  equivalence relation.  In cases other than equality, substitution
+  only takes place where justified by the equivlance maintained at
+  the current subterm.
 
   For the keyword arguments, :equiv defaults to equal if not supplied
   or nil; if it is not equal (either explicitly or by default), then
