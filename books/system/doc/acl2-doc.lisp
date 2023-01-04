@@ -100877,6 +100877,12 @@ it."
 ; three symbol-class tuples in the world.  (It still has two, but now both are
 ; :program: the temporary one and the final one.)
 
+; Implementation-level only change: The existing definitions of
+; redundant-or-reclassifying-defunp and redundant-or-reclassifying-defunsp1
+; (which were dead code) were deleted, and redundant-or-reclassifying-defunp0
+; and redundant-or-reclassifying-defunsp10 were renamed to those repectively
+; (i.e., the trailing "0" was deleted).
+
   :parents (release-notes)
   :short "ACL2 Version  8.6 (xxx, 20xx) Notes"
   :long "<p>NOTE!  New users can ignore these release notes, because the @(see
@@ -101019,6 +101025,16 @@ it."
 
  <p>A new command, @('(cmds c1 c2 ... cn)'), has been added to @(tsee
  walkabout).</p>
+
+ <p>The documentation for @(see redundant-events) includes the following, which
+ however was not enforced when the new event is in @(':')@(tsee program) mode;
+ that has been fixed.</p>
+
+ @({
+   4. If either the old or new event is a @(tsee mutual-recursion) event, then
+      redundancy requires that both are @(tsee mutual-recursion) events
+      that define the same set of function symbols.
+ })
 
  <h3>New Features</h3>
 
