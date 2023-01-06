@@ -98129,6 +98129,14 @@ Changes to Existing Features
 
   A new command, (cmds c1 c2 ... cn), has been added to [walkabout].
 
+  The documentation for [redundant-events] includes the following,
+  which however was not enforced when the new event is in :[program]
+  mode; that has been fixed.
+
+    4. If either the old or new event is a @(tsee mutual-recursion) event, then
+       redundancy requires that both are @(tsee mutual-recursion) events
+       that define the same set of function symbols.
+
 
 New Features
 
