@@ -3,7 +3,7 @@
 ; acl2-doc.lisp - Documentation for the ACL2 Theorem Prover
 ;
 ; ACL2 Version 8.5 -- A Computational Logic for Applicative Common Lisp
-; Copyright (C) 2022, Regents of the University of Texas
+; Copyright (C) 2023, Regents of the University of Texas
 ;
 ; This documentation was derived from the ACL2 system in October 2013, which
 ; was a descendant of ACL2 Version 1.9, Copyright (C) 1997 Computational Logic,
@@ -803,7 +803,7 @@
 (defxdoc about-acl2
   :parents (start-here)
   :short "General information About ACL2"
-  :long "<p>This is @(`(:raw (@ acl2-version))`), @(see copyright) (C) 2022,
+  :long "<p>This is @(`(:raw (@ acl2-version))`), @(see copyright) (C) 2023,
  Regents of the University of Texas, authored by Matt Kaufmann and J Strother
  Moore.</p>
 
@@ -18220,7 +18220,7 @@ subtree of X with T, without duplication.</p>
  <p>@(`(:raw (@ acl2-version))`) &mdash; A Computational Logic for Applicative
  Common Lisp</p>
 
- <p>Copyright (C) 2022, Regents of the University of Texas</p>
+ <p>Copyright (C) 2023, Regents of the University of Texas</p>
 
  <p>This version of ACL2 is a descendant of ACL2 Version 1.9, Copyright (C)
  1997 Computational Logic, Inc.  See the documentation topic NOTE-2-0.</p>
@@ -101231,6 +101231,10 @@ it."
 
  </ul>
 
+ <p>A bug in the @(see brr) commands @(':eval$'), @(':go$'), and @(':ok$') was
+ fixed so they now behave as described in the documentation for @(see
+ brr-commands).</p>
+
  <h3>Changes at the System Level</h3>
 
  <p>The `@('make')' target, @('save-exec'), now builds @('custom-saved_acl2')
@@ -129830,14 +129834,15 @@ work on <tt>(q x)</tt>.</p>
 
  @({
  ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
- + ACL2 Version 8.3+ (a development snapshot based on ACL2 Version 8.3) +
- +   built April 21, 2022  15:56:37.                                    +
- +   (Git commit hash: 41bb85ab9dbf5ac7d4ed246847db8934b6a48f92)        +
- + Copyright (C) 2022, Regents of the University of Texas.              +
+ + ACL2 Version 8.5+ (a development snapshot based on ACL2 Version 8.5) +
+ +   built January 6, 2023  16:13:03.                                   +
+ +   (Git commit hash: e9790bdb14922c9a88e423781b5d8bdf080fb05d)        +
+ + Copyright (C) 2023, Regents of the University of Texas.              +
  + ACL2 comes with ABSOLUTELY NO WARRANTY.  This is free software and   +
  + you are welcome to redistribute it under certain conditions.  For    +
  + details, see the LICENSE file distributed with ACL2.                 +
  ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
  })
 
  <p>The third line of that banner can be modified by setting environment
@@ -129848,11 +129853,10 @@ work on <tt>(q x)</tt>.</p>
 
  @({
  ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
- + ACL2 Version 8.3+ (a development snapshot based on ACL2 Version 8.3) +
- +   built April 21, 2022  15:56:37.                                    +
- +   (Note from the environment when this executable was saved:         +
- +    This is my private executable.)                                   +
- + Copyright (C) 2022, Regents of the University of Texas.              +
+ + ACL2 Version 8.5+ (a development snapshot based on ACL2 Version 8.5) +
+ +   built January 6, 2023  16:13:03.                                   +
+ +   (Git commit hash: e9790bdb14922c9a88e423781b5d8bdf080fb05d)        +
+ + Copyright (C) 2023, Regents of the University of Texas.              +
  + ACL2 comes with ABSOLUTELY NO WARRANTY.  This is free software and   +
  + you are welcome to redistribute it under certain conditions.  For    +
  + details, see the LICENSE file distributed with ACL2.                 +
