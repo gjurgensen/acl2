@@ -4,7 +4,7 @@
 ; books/system/doc/acl2-doc.lisp.
 
 ; ACL2 Version 8.5 -- A Computational Logic for Applicative Common Lisp
-; Copyright (C) 2022, Regents of the University of Texas
+; Copyright (C) 2023, Regents of the University of Texas
 
 ; This version of ACL2 is a descendent of ACL2 Version 1.9, Copyright
 ; (C) 1997 Computational Logic, Inc.  See the documentation topic NOTE-2-0.
@@ -1598,7 +1598,7 @@ Subtopics
   (START-HERE)
   "General information About ACL2
 
-  This is ACL2 Version 8.5, [copyright] (C) 2022, Regents of the
+  This is ACL2 Version 8.5, [copyright] (C) 2023, Regents of the
   University of Texas, authored by Matt Kaufmann and J Strother
   Moore.
 
@@ -21468,7 +21468,7 @@ Subtopics
   ACL2 Version 8.5 --- A Computational Logic for Applicative Common
   Lisp
 
-  Copyright (C) 2022, Regents of the University of Texas
+  Copyright (C) 2023, Regents of the University of Texas
 
   This version of ACL2 is a descendant of ACL2 Version 1.9, Copyright
   (C) 1997 Computational Logic, Inc.  See the documentation topic
@@ -98329,6 +98329,9 @@ Bug Fixes
       (formerly they were considered when looking for repetition of
       goal names).
 
+  A bug in the [brr] commands :eval$, :go$, and :ok$ was fixed so they
+  now behave as described in the documentation for [brr-commands].
+
 
 Changes at the System Level
 
@@ -128448,10 +128451,10 @@ Subtopics
   like this:
 
     ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-    + ACL2 Version 8.3+ (a development snapshot based on ACL2 Version 8.3) +
-    +   built April 21, 2022  15:56:37.                                    +
-    +   (Git commit hash: 41bb85ab9dbf5ac7d4ed246847db8934b6a48f92)        +
-    + Copyright (C) 2022, Regents of the University of Texas.              +
+    + ACL2 Version 8.5+ (a development snapshot based on ACL2 Version 8.5) +
+    +   built January 6, 2023  16:13:03.                                   +
+    +   (Git commit hash: e9790bdb14922c9a88e423781b5d8bdf080fb05d)        +
+    + Copyright (C) 2023, Regents of the University of Texas.              +
     + ACL2 comes with ABSOLUTELY NO WARRANTY.  This is free software and   +
     + you are welcome to redistribute it under certain conditions.  For    +
     + details, see the LICENSE file distributed with ACL2.                 +
@@ -128464,11 +128467,10 @@ Subtopics
   executable.\".
 
     ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-    + ACL2 Version 8.3+ (a development snapshot based on ACL2 Version 8.3) +
-    +   built April 21, 2022  15:56:37.                                    +
-    +   (Note from the environment when this executable was saved:         +
-    +    This is my private executable.)                                   +
-    + Copyright (C) 2022, Regents of the University of Texas.              +
+    + ACL2 Version 8.5+ (a development snapshot based on ACL2 Version 8.5) +
+    +   built January 6, 2023  16:13:03.                                   +
+    +   (Git commit hash: e9790bdb14922c9a88e423781b5d8bdf080fb05d)        +
+    + Copyright (C) 2023, Regents of the University of Texas.              +
     + ACL2 comes with ABSOLUTELY NO WARRANTY.  This is free software and   +
     + you are welcome to redistribute it under certain conditions.  For    +
     + details, see the LICENSE file distributed with ACL2.                 +
