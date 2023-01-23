@@ -101137,6 +101137,10 @@ it."
  <p>@('Lambda') objects in positions of @(see ilk) @(':FN') are now subjected
  to a size limitation.  See @(tsee explain-giant-lambda-object).</p>
 
+ <p>The keyword @(':off') for the utility @(tsee with-output) (also @(tsee
+ with-output!)) can take on a new value, @(':off!'), which is treated exactly
+ the same as using arguments @(':off :all :gag-mode nil').</p>
+
  <h3>Heuristic and Efficiency Improvements</h3>
 
  <h3>Bug Fixes</h3>
@@ -117326,12 +117330,16 @@ work on <tt>(q x)</tt>.</p>
  that @('defattach') events do not define any names.</p>
 
  <p>A @(tsee defaxiom) or @(tsee defthm) event is redundant if there is already
- an axiom or theorem of the given name and either the two @(see events) are
- syntactically identical, or both the formula (after macroexpansion) and the
- resulting @(see rule-classes) are syntactically identical.  Note that because
- of the second of these two criteria, a @(tsee defaxiom) can make a subsequent
- @(tsee defthm) redundant, and a @(tsee defthm) can make a subsequent @(tsee
- defaxiom) redundant as well.</p>
+ an axiom or theorem of the given name and the two @(see events) are
+ syntactically identical.  But there is the following more generous criterion:
+ both the formula (after macroexpansion) and the @(see rule-classes) (after
+ translation and certain ``truncation'') are syntactically identical.  This
+ ``truncation'' involves removing the @(':HINTS') and @(':INSTRUCTIONS') fields
+ from a rule-class, and also removing the @(':COROLLARY') field when it
+ specifies the same term as the event.  Note that a @(tsee defaxiom) can be
+ redundant with a @(tsee defthm) and vice-versa.  (Remark for system hackers:
+ @('defthm')/@('defaxiom') redundancy is implemented in ACL2 source function,
+ @('redundant-theoremp').)</p>
 
  <p>A @(tsee defconst) is redundant if the name is already defined either with
  a syntactically identical @('defconst') event or one that defines it to have
@@ -150724,10 +150732,15 @@ for the execution of @('form')."
  <h3>Examples</h3>
 
  @({
-  ; Turn off all output during evaluation of the indicated thm form.
+  ; Turn off all controllable output during evaluation of the indicated thm form.
   (with-output
    :off :all
    :gag-mode nil
+   (thm (equal (app (app x y) z) (app x (app y z)))))
+
+  ; Equivalent to the example just above.
+  (with-output
+   :off :all!
    (thm (equal (app (app x y) z) (app x (app y z)))))
 
   ; Prove the indicated theorem with the event summary turned off and
@@ -150748,11 +150761,11 @@ for the execution of @('form')."
   (with-output
      :on summary
      :summary-off (:other-than time rules)
-     :gag-mode :goals  ; use gag-mode, with goal names printed
+     :gag-mode :goals ; default: use gag-mode, with goal names printed
      (defthm app-assoc (equal (app (app x y) z) (app x (app y z)))))
 
-  ; Same as specifying :off :all, but showing all output types
-  ; (i.e., the value of constant *valid-output-names*):
+  ; Same as specifying :off :all!, but with output types made explicit
+  ; (that is, using the value of constant *valid-output-names*):
   (with-output
    :off (error warning warning! observation prove proof-builder event history
                summary proof-tree)
@@ -150798,13 +150811,18 @@ for the execution of @('form')."
  and summary inhibition, @(tsee gag-mode), and @(see evisc-tuple)s.  Each
  keyword may occur at most once.</p>
 
+ <p>Use of the argument @(':off :all!') is treated exactly the same as using
+ arguments @(':off :all :gag-mode nil').  We assume below that any use of
+ @(':off :all!')  has been expanded away in that manner.</p>
+
  <h3>On-off specs</h3>
 
  <p>Before discussing the keywords we introduce the notion of ``on-off specs'',
  which are the legal values of the keywords @(':on'), @(':off'),
- @(':summary-on'), and @(':summary-off').  An on-off spec has one of the
- following forms, where each @('symi') is a symbol, and subject to restrictions
- discussed below</p>
+ @(':summary-on'), and @(':summary-off').  (As noted above, we  ignore
+ @(':off :all!') below, as it is just an abbreviation for @(':off :all
+ :gag-mode nil').)  An on-off spec has one of the following forms, where each
+ @('symi') is a symbol, and subject to restrictions discussed below</p>
 
  <ul>
 

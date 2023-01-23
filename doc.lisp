@@ -98240,6 +98240,10 @@ New Features
   Lambda objects in positions of [ilk] :FN are now subjected to a size
   limitation.  See [explain-giant-lambda-object].
 
+  The keyword :off for the utility [with-output] (also [with-output!])
+  can take on a new value, :off!, which is treated exactly the same
+  as using arguments :off :all :gag-mode nil.
+
 
 Heuristic and Efficiency Improvements
 
@@ -115974,12 +115978,17 @@ Subtopics
   logic.)  Note that defattach events do not define any names.
 
   A [defaxiom] or [defthm] event is redundant if there is already an
-  axiom or theorem of the given name and either the two [events] are
-  syntactically identical, or both the formula (after macroexpansion)
-  and the resulting [rule-classes] are syntactically identical.  Note
-  that because of the second of these two criteria, a [defaxiom] can
-  make a subsequent [defthm] redundant, and a [defthm] can make a
-  subsequent [defaxiom] redundant as well.
+  axiom or theorem of the given name and the two [events] are
+  syntactically identical.  But there is the following more generous
+  criterion: both the formula (after macroexpansion) and the
+  [rule-classes] (after translation and certain ``truncation'') are
+  syntactically identical.  This ``truncation'' involves removing the
+  :HINTS and :INSTRUCTIONS fields from a rule-class, and also
+  removing the :COROLLARY field when it specifies the same term as
+  the event.  Note that a [defaxiom] can be redundant with a [defthm]
+  and vice-versa.  (Remark for system hackers: defthm/defaxiom
+  redundancy is implemented in ACL2 source function,
+  redundant-theoremp.)
 
   A [defconst] is redundant if the name is already defined either with
   a syntactically identical defconst event or one that defines it to
@@ -149170,10 +149179,15 @@ Constrained Functions and Defattach
 
 Examples
 
-    ; Turn off all output during evaluation of the indicated thm form.
+    ; Turn off all controllable output during evaluation of the indicated thm form.
     (with-output
      :off :all
      :gag-mode nil
+     (thm (equal (app (app x y) z) (app x (app y z)))))
+
+    ; Equivalent to the example just above.
+    (with-output
+     :off :all!
      (thm (equal (app (app x y) z) (app x (app y z)))))
 
     ; Prove the indicated theorem with the event summary turned off and
@@ -149194,11 +149208,11 @@ Examples
     (with-output
        :on summary
        :summary-off (:other-than time rules)
-       :gag-mode :goals  ; use gag-mode, with goal names printed
+       :gag-mode :goals ; default: use gag-mode, with goal names printed
        (defthm app-assoc (equal (app (app x y) z) (app x (app y z)))))
 
-    ; Same as specifying :off :all, but showing all output types
-    ; (i.e., the value of constant *valid-output-names*):
+    ; Same as specifying :off :all!, but with output types made explicit
+    ; (that is, using the value of constant *valid-output-names*):
     (with-output
      :off (error warning warning! observation prove proof-builder event history
                  summary proof-tree)
@@ -149242,14 +149256,19 @@ General Form
   of output and summary inhibition, [gag-mode], and [evisc-tuple]s.
   Each keyword may occur at most once.
 
+  Use of the argument :off :all! is treated exactly the same as using
+  arguments :off :all :gag-mode nil.  We assume below that any use of
+  :off :all! has been expanded away in that manner.
+
 
 On-off specs
 
   Before discussing the keywords we introduce the notion of ``on-off
   specs'', which are the legal values of the keywords :on, :off,
-  :summary-on, and :summary-off.  An on-off spec has one of the
-  following forms, where each symi is a symbol, and subject to
-  restrictions discussed below
+  :summary-on, and :summary-off.  (As noted above, we ignore :off
+  :all! below, as it is just an abbreviation for :off :all :gag-mode
+  nil.)  An on-off spec has one of the following forms, where each
+  symi is a symbol, and subject to restrictions discussed below
 
     * :all
     * sym ; a symbol that is not :all
