@@ -4,7 +4,7 @@
 ; books/system/doc/acl2-doc.lisp.
 
 ; ACL2 Version 8.5 -- A Computational Logic for Applicative Common Lisp
-; Copyright (C) 2022, Regents of the University of Texas
+; Copyright (C) 2023, Regents of the University of Texas
 
 ; This version of ACL2 is a descendent of ACL2 Version 1.9, Copyright
 ; (C) 1997 Computational Logic, Inc.  See the documentation topic NOTE-2-0.
@@ -1598,7 +1598,7 @@ Subtopics
   (START-HERE)
   "General information About ACL2
 
-  This is ACL2 Version 8.5, [copyright] (C) 2022, Regents of the
+  This is ACL2 Version 8.5, [copyright] (C) 2023, Regents of the
   University of Texas, authored by Matt Kaufmann and J Strother
   Moore.
 
@@ -21468,7 +21468,7 @@ Subtopics
   ACL2 Version 8.5 --- A Computational Logic for Applicative Common
   Lisp
 
-  Copyright (C) 2022, Regents of the University of Texas
+  Copyright (C) 2023, Regents of the University of Texas
 
   This version of ACL2 is a descendant of ACL2 Version 1.9, Copyright
   (C) 1997 Computational Logic, Inc.  See the documentation topic
@@ -34673,7 +34673,9 @@ Subtopics
       :rule-classes nil)
 
   To see why this restriction is sufficient, see a comment in the ACL2
-  source code entitled ``; Essay on Correctness of Meta Reasoning.''")
+  source code entitled ``; Essay on Correctness of Meta Reasoning.''
+
+  TO DO: Explain transparent functions.")
  (EVENP
   (NUMBERS ACL2-BUILT-INS)
   "Test whether an integer is even
@@ -98129,6 +98131,32 @@ Changes to Existing Features
 
   A new command, (cmds c1 c2 ... cn), has been added to [walkabout].
 
+  The documentation for [redundant-events] includes the following,
+  which however was not enforced when the new event is in :[program]
+  mode; that has been fixed.
+
+    4. If either the old or new event is a @(tsee mutual-recursion) event, then
+       redundancy requires that both are @(tsee mutual-recursion) events
+       that define the same set of function symbols.
+
+  A new feature, called ``transparent'' signature functions, can allow
+  one to avoid the restriction on a rule of class :[meta] or
+  :[clause-processor] that there are no common ancestors of its
+  evaluator and meta function.  See [evaluator-restrictions].  Thanks
+  to Mertcan Temel for requesting a way to work around that
+  restriction, and thanks to Sol Swords for suggesting (and naming)
+  the notion of transparent functions.  We are also grateful to Sol
+  for providing a very helpful sketch of a correctness proof.  The
+  [community-books] file,
+  books/system/tests/transparent-functions-input.lsp has examples of
+  the use of transparent functions and related errors.
+
+  When there an attachment to a common ancestor of the evaluator and
+  meta function of a proposed rule of class :[meta] or
+  :[clause-processor], the resulting error message now includes
+  ancestor paths leading from the evaluator or meta function to a
+  common ancestor.
+
 
 New Features
 
@@ -98217,6 +98245,19 @@ Heuristic and Efficiency Improvements
 
 
 Bug Fixes
+
+  Fixed a soundness bug based on rules of class :[meta] or
+  :[clause-processor] that would be exported from an [encapsulate]
+  event with a non-nil [signature] list.  A proof of nil in
+  Version_8.5 may be found in the [community-books] file,
+  books/system/tests/transparent-functions-input.lsp; search for this
+  paragraph there.
+
+  It was probably a soundness bug to allow a [defaxiom] event to
+  designate a rule of class :[meta] or :[clause-processor] in its
+  :[rule-classes].  That is no longer allowed; [skip-proofs] may be
+  used instead if one believes that the proposed formula is a
+  theorem.
 
   Fixed a bug in system function bounded-integer-listp, which may have
   allowed illegal [proof-builder] commands to be attempted.  Thanks
@@ -98320,6 +98361,9 @@ Bug Fixes
       now ignored for purposes of the warnings mentioned above
       (formerly they were considered when looking for repetition of
       goal names).
+
+  A bug in the [brr] commands :eval$, :go$, and :ok$ was fixed so they
+  now behave as described in the documentation for [brr-commands].
 
 
 Changes at the System Level
@@ -128440,10 +128484,10 @@ Subtopics
   like this:
 
     ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-    + ACL2 Version 8.3+ (a development snapshot based on ACL2 Version 8.3) +
-    +   built April 21, 2022  15:56:37.                                    +
-    +   (Git commit hash: 41bb85ab9dbf5ac7d4ed246847db8934b6a48f92)        +
-    + Copyright (C) 2022, Regents of the University of Texas.              +
+    + ACL2 Version 8.5+ (a development snapshot based on ACL2 Version 8.5) +
+    +   built January 6, 2023  16:13:03.                                   +
+    +   (Git commit hash: e9790bdb14922c9a88e423781b5d8bdf080fb05d)        +
+    + Copyright (C) 2023, Regents of the University of Texas.              +
     + ACL2 comes with ABSOLUTELY NO WARRANTY.  This is free software and   +
     + you are welcome to redistribute it under certain conditions.  For    +
     + details, see the LICENSE file distributed with ACL2.                 +
@@ -128456,11 +128500,10 @@ Subtopics
   executable.\".
 
     ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-    + ACL2 Version 8.3+ (a development snapshot based on ACL2 Version 8.3) +
-    +   built April 21, 2022  15:56:37.                                    +
-    +   (Note from the environment when this executable was saved:         +
-    +    This is my private executable.)                                   +
-    + Copyright (C) 2022, Regents of the University of Texas.              +
+    + ACL2 Version 8.5+ (a development snapshot based on ACL2 Version 8.5) +
+    +   built January 6, 2023  16:13:03.                                   +
+    +   (Git commit hash: e9790bdb14922c9a88e423781b5d8bdf080fb05d)        +
+    + Copyright (C) 2023, Regents of the University of Texas.              +
     + ACL2 comes with ABSOLUTELY NO WARRANTY.  This is free software and   +
     + you are welcome to redistribute it under certain conditions.  For    +
     + details, see the LICENSE file distributed with ACL2.                 +
