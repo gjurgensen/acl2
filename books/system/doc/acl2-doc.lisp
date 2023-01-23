@@ -31358,7 +31358,9 @@ ld) and @(tsee include-book)"
  })
 
  <p>To see why this restriction is sufficient, see a comment in the ACL2 source
- code entitled ``; Essay on Correctness of Meta Reasoning.''</p>")
+ code entitled ``; Essay on Correctness of Meta Reasoning.''</p>
+
+ <p>TO DO: Explain transparent functions.</p>")
 
 (defxdoc evenp
   :parents (numbers acl2-built-ins)
@@ -100883,6 +100885,15 @@ it."
 ; and redundant-or-reclassifying-defunsp10 were renamed to those repectively
 ; (i.e., the trailing "0" was deleted).
 
+; Fixed defrec to allow a single field even when the cheap flg
+; is t.
+
+; Fixed a bug, perhaps not user-visible, involving the 'constrainedp property
+; in ev-fncall-rec-logical.
+
+; Significantly extended the Essay on Correctness of Meta Reasoning by adding
+; Appendices on the theory and implementation of transparent functions.
+
   :parents (release-notes)
   :short "ACL2 Version  8.6 (xxx, 20xx) Notes"
   :long "<p>NOTE!  New users can ignore these release notes, because the @(see
@@ -101036,6 +101047,22 @@ it."
       that define the same set of function symbols.
  })
 
+ <p>A new feature, called ``transparent'' signature functions, can allow one to
+ avoid the restriction on a rule of class @(':')@(tsee meta) or @(':')@(tsee
+ clause-processor) that there are no common ancestors of its evaluator and meta
+ function.  See @(see evaluator-restrictions).  Thanks to Mertcan Temel for
+ requesting a way to work around that restriction, and thanks to Sol Swords for
+ suggesting (and naming) the notion of transparent functions.  We are also
+ grateful to Sol for providing a very helpful sketch of a correctness proof.
+ The @(see community-books) file,
+ @('books/system/tests/transparent-functions-input.lsp') has examples of the
+ use of transparent functions and related errors.</p>
+
+ <p>When there an attachment to a common ancestor of the evaluator and meta
+ function of a proposed rule of class @(':')@(tsee meta) or @(':')@(tsee
+ clause-processor), the resulting error message now includes ancestor paths
+ leading from the evaluator or meta function to a common ancestor.</p>
+
  <h3>New Features</h3>
 
  <p>The new zero-ary attachable system function, @(tsee heavy-linear-p), allows
@@ -101113,6 +101140,19 @@ it."
  <h3>Heuristic and Efficiency Improvements</h3>
 
  <h3>Bug Fixes</h3>
+
+ <p>Fixed a soundness bug based on rules of class @(':')@(tsee meta) or
+ @(':')@(tsee clause-processor) that would be exported from an @(tsee
+ encapsulate) event with a non-@('nil') @(see signature) list.  A proof of
+ @('nil') in Version_8.5 may be found in the @(see community-books) file,
+ @('books/system/tests/transparent-functions-input.lsp'); search for
+ this paragraph there.</p>
+
+ <p>It was probably a soundness bug to allow a @(tsee defaxiom) event to
+ designate a rule of class @(':')@(tsee meta) or @(':')@(tsee clause-processor)
+ in its @(':')@(tsee rule-classes).  That is no longer allowed; @(tsee
+ skip-proofs) may be used instead if one believes that the proposed formula is
+ a theorem.</p>
 
  <p>Fixed a bug in system function @('bounded-integer-listp'), which may have
  allowed illegal @(see proof-builder) commands to be attempted.  Thanks to

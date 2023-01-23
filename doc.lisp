@@ -34673,7 +34673,9 @@ Subtopics
       :rule-classes nil)
 
   To see why this restriction is sufficient, see a comment in the ACL2
-  source code entitled ``; Essay on Correctness of Meta Reasoning.''")
+  source code entitled ``; Essay on Correctness of Meta Reasoning.''
+
+  TO DO: Explain transparent functions.")
  (EVENP
   (NUMBERS ACL2-BUILT-INS)
   "Test whether an integer is even
@@ -98137,6 +98139,24 @@ Changes to Existing Features
        redundancy requires that both are @(tsee mutual-recursion) events
        that define the same set of function symbols.
 
+  A new feature, called ``transparent'' signature functions, can allow
+  one to avoid the restriction on a rule of class :[meta] or
+  :[clause-processor] that there are no common ancestors of its
+  evaluator and meta function.  See [evaluator-restrictions].  Thanks
+  to Mertcan Temel for requesting a way to work around that
+  restriction, and thanks to Sol Swords for suggesting (and naming)
+  the notion of transparent functions.  We are also grateful to Sol
+  for providing a very helpful sketch of a correctness proof.  The
+  [community-books] file,
+  books/system/tests/transparent-functions-input.lsp has examples of
+  the use of transparent functions and related errors.
+
+  When there an attachment to a common ancestor of the evaluator and
+  meta function of a proposed rule of class :[meta] or
+  :[clause-processor], the resulting error message now includes
+  ancestor paths leading from the evaluator or meta function to a
+  common ancestor.
+
 
 New Features
 
@@ -98225,6 +98245,19 @@ Heuristic and Efficiency Improvements
 
 
 Bug Fixes
+
+  Fixed a soundness bug based on rules of class :[meta] or
+  :[clause-processor] that would be exported from an [encapsulate]
+  event with a non-nil [signature] list.  A proof of nil in
+  Version_8.5 may be found in the [community-books] file,
+  books/system/tests/transparent-functions-input.lsp; search for this
+  paragraph there.
+
+  It was probably a soundness bug to allow a [defaxiom] event to
+  designate a rule of class :[meta] or :[clause-processor] in its
+  :[rule-classes].  That is no longer allowed; [skip-proofs] may be
+  used instead if one believes that the proposed formula is a
+  theorem.
 
   Fixed a bug in system function bounded-integer-listp, which may have
   allowed illegal [proof-builder] commands to be attempted.  Thanks
