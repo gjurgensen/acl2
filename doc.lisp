@@ -98241,7 +98241,7 @@ New Features
   limitation.  See [explain-giant-lambda-object].
 
   The keyword :off for the utility [with-output] (also [with-output!])
-  can take on a new value, :off!, which is treated exactly the same
+  can take on a new value, :all!, which is treated exactly the same
   as using arguments :off :all :gag-mode nil.
 
 
