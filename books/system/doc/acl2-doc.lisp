@@ -3,7 +3,7 @@
 ; acl2-doc.lisp - Documentation for the ACL2 Theorem Prover
 ;
 ; ACL2 Version 8.5 -- A Computational Logic for Applicative Common Lisp
-; Copyright (C) 2022, Regents of the University of Texas
+; Copyright (C) 2023, Regents of the University of Texas
 ;
 ; This documentation was derived from the ACL2 system in October 2013, which
 ; was a descendant of ACL2 Version 1.9, Copyright (C) 1997 Computational Logic,
@@ -803,7 +803,7 @@
 (defxdoc about-acl2
   :parents (start-here)
   :short "General information About ACL2"
-  :long "<p>This is @(`(:raw (@ acl2-version))`), @(see copyright) (C) 2022,
+  :long "<p>This is @(`(:raw (@ acl2-version))`), @(see copyright) (C) 2023,
  Regents of the University of Texas, authored by Matt Kaufmann and J Strother
  Moore.</p>
 
@@ -18220,7 +18220,7 @@ subtree of X with T, without duplication.</p>
  <p>@(`(:raw (@ acl2-version))`) &mdash; A Computational Logic for Applicative
  Common Lisp</p>
 
- <p>Copyright (C) 2022, Regents of the University of Texas</p>
+ <p>Copyright (C) 2023, Regents of the University of Texas</p>
 
  <p>This version of ACL2 is a descendant of ACL2 Version 1.9, Copyright (C)
  1997 Computational Logic, Inc.  See the documentation topic NOTE-2-0.</p>
@@ -31358,7 +31358,9 @@ ld) and @(tsee include-book)"
  })
 
  <p>To see why this restriction is sufficient, see a comment in the ACL2 source
- code entitled ``; Essay on Correctness of Meta Reasoning.''</p>")
+ code entitled ``; Essay on Correctness of Meta Reasoning.''</p>
+
+ <p>TO DO: Explain transparent functions.</p>")
 
 (defxdoc evenp
   :parents (numbers acl2-built-ins)
@@ -100877,6 +100879,21 @@ it."
 ; three symbol-class tuples in the world.  (It still has two, but now both are
 ; :program: the temporary one and the final one.)
 
+; Implementation-level only change: The existing definitions of
+; redundant-or-reclassifying-defunp and redundant-or-reclassifying-defunsp1
+; (which were dead code) were deleted, and redundant-or-reclassifying-defunp0
+; and redundant-or-reclassifying-defunsp10 were renamed to those repectively
+; (i.e., the trailing "0" was deleted).
+
+; Fixed defrec to allow a single field even when the cheap flg
+; is t.
+
+; Fixed a bug, perhaps not user-visible, involving the 'constrainedp property
+; in ev-fncall-rec-logical.
+
+; Significantly extended the Essay on Correctness of Meta Reasoning by adding
+; Appendices on the theory and implementation of transparent functions.
+
   :parents (release-notes)
   :short "ACL2 Version  8.6 (xxx, 20xx) Notes"
   :long "<p>NOTE!  New users can ignore these release notes, because the @(see
@@ -101020,6 +101037,32 @@ it."
  <p>A new command, @('(cmds c1 c2 ... cn)'), has been added to @(tsee
  walkabout).</p>
 
+ <p>The documentation for @(see redundant-events) includes the following, which
+ however was not enforced when the new event is in @(':')@(tsee program) mode;
+ that has been fixed.</p>
+
+ @({
+   4. If either the old or new event is a @(tsee mutual-recursion) event, then
+      redundancy requires that both are @(tsee mutual-recursion) events
+      that define the same set of function symbols.
+ })
+
+ <p>A new feature, called ``transparent'' signature functions, can allow one to
+ avoid the restriction on a rule of class @(':')@(tsee meta) or @(':')@(tsee
+ clause-processor) that there are no common ancestors of its evaluator and meta
+ function.  See @(see evaluator-restrictions).  Thanks to Mertcan Temel for
+ requesting a way to work around that restriction, and thanks to Sol Swords for
+ suggesting (and naming) the notion of transparent functions.  We are also
+ grateful to Sol for providing a very helpful sketch of a correctness proof.
+ The @(see community-books) file,
+ @('books/system/tests/transparent-functions-input.lsp') has examples of the
+ use of transparent functions and related errors.</p>
+
+ <p>When there an attachment to a common ancestor of the evaluator and meta
+ function of a proposed rule of class @(':')@(tsee meta) or @(':')@(tsee
+ clause-processor), the resulting error message now includes ancestor paths
+ leading from the evaluator or meta function to a common ancestor.</p>
+
  <h3>New Features</h3>
 
  <p>The new zero-ary attachable system function, @(tsee heavy-linear-p), allows
@@ -101097,6 +101140,19 @@ it."
  <h3>Heuristic and Efficiency Improvements</h3>
 
  <h3>Bug Fixes</h3>
+
+ <p>Fixed a soundness bug based on rules of class @(':')@(tsee meta) or
+ @(':')@(tsee clause-processor) that would be exported from an @(tsee
+ encapsulate) event with a non-@('nil') @(see signature) list.  A proof of
+ @('nil') in Version_8.5 may be found in the @(see community-books) file,
+ @('books/system/tests/transparent-functions-input.lsp'); search for
+ this paragraph there.</p>
+
+ <p>It was probably a soundness bug to allow a @(tsee defaxiom) event to
+ designate a rule of class @(':')@(tsee meta) or @(':')@(tsee clause-processor)
+ in its @(':')@(tsee rule-classes).  That is no longer allowed; @(tsee
+ skip-proofs) may be used instead if one believes that the proposed formula is
+ a theorem.</p>
 
  <p>Fixed a bug in system function @('bounded-integer-listp'), which may have
  allowed illegal @(see proof-builder) commands to be attempted.  Thanks to
@@ -101214,6 +101270,10 @@ it."
  names).</li>
 
  </ul>
+
+ <p>A bug in the @(see brr) commands @(':eval$'), @(':go$'), and @(':ok$') was
+ fixed so they now behave as described in the documentation for @(see
+ brr-commands).</p>
 
  <h3>Changes at the System Level</h3>
 
@@ -129814,14 +129874,15 @@ work on <tt>(q x)</tt>.</p>
 
  @({
  ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
- + ACL2 Version 8.3+ (a development snapshot based on ACL2 Version 8.3) +
- +   built April 21, 2022  15:56:37.                                    +
- +   (Git commit hash: 41bb85ab9dbf5ac7d4ed246847db8934b6a48f92)        +
- + Copyright (C) 2022, Regents of the University of Texas.              +
+ + ACL2 Version 8.5+ (a development snapshot based on ACL2 Version 8.5) +
+ +   built January 6, 2023  16:13:03.                                   +
+ +   (Git commit hash: e9790bdb14922c9a88e423781b5d8bdf080fb05d)        +
+ + Copyright (C) 2023, Regents of the University of Texas.              +
  + ACL2 comes with ABSOLUTELY NO WARRANTY.  This is free software and   +
  + you are welcome to redistribute it under certain conditions.  For    +
  + details, see the LICENSE file distributed with ACL2.                 +
  ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
  })
 
  <p>The third line of that banner can be modified by setting environment
@@ -129832,11 +129893,10 @@ work on <tt>(q x)</tt>.</p>
 
  @({
  ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
- + ACL2 Version 8.3+ (a development snapshot based on ACL2 Version 8.3) +
- +   built April 21, 2022  15:56:37.                                    +
- +   (Note from the environment when this executable was saved:         +
- +    This is my private executable.)                                   +
- + Copyright (C) 2022, Regents of the University of Texas.              +
+ + ACL2 Version 8.5+ (a development snapshot based on ACL2 Version 8.5) +
+ +   built January 6, 2023  16:13:03.                                   +
+ +   (Git commit hash: e9790bdb14922c9a88e423781b5d8bdf080fb05d)        +
+ + Copyright (C) 2023, Regents of the University of Texas.              +
  + ACL2 comes with ABSOLUTELY NO WARRANTY.  This is free software and   +
  + you are welcome to redistribute it under certain conditions.  For    +
  + details, see the LICENSE file distributed with ACL2.                 +
