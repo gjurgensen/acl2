@@ -101138,7 +101138,7 @@ it."
  to a size limitation.  See @(tsee explain-giant-lambda-object).</p>
 
  <p>The keyword @(':off') for the utility @(tsee with-output) (also @(tsee
- with-output!)) can take on a new value, @(':off!'), which is treated exactly
+ with-output!)) can take on a new value, @(':all!'), which is treated exactly
  the same as using arguments @(':off :all :gag-mode nil').</p>
 
  <h3>Heuristic and Efficiency Improvements</h3>
