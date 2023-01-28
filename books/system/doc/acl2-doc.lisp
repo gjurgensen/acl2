@@ -100894,6 +100894,14 @@ it."
 ; Significantly extended the Essay on Correctness of Meta Reasoning by adding
 ; Appendices on the theory and implementation of transparent functions.
 
+; Fixed a bug in how type-specs are converted to terms.  This is unlikely to
+; show up at the user level, hence this note isn't being put into :DOC
+; note-8-6.  The problem was that quoted constants appearing in type
+; expressions were being unquoted before sublis-var was applied to replace
+; variables by suitable terms, yet sublis-var expects to substitute into a
+; pseudo-termp.  This bug was found by the final LD in the multi-line comment
+; in community book system/check-system-guards.lisp.
+
   :parents (release-notes)
   :short "ACL2 Version  8.6 (xxx, 20xx) Notes"
   :long "<p>NOTE!  New users can ignore these release notes, because the @(see
