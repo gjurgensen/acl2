@@ -2,27 +2,34 @@
 ; Written by Matt Kaufmann
 ; License: A 3-clause BSD license.  See the LICENSE file distributed with ACL2.
 
+; This book was renamed from file remove-guard-holders-strong-2.lisp in late
+; January, 2023 and also expanded.
+
+; Anyone is welcome to complete this work, BUT: first inform Matt Kaufmann,
+; matthew.j.kaufmann@gmail.com, both to avoid potential duplication of effort
+; and to ensure that Matt is available to complete integration of this work
+; into ACL2.  The latter is especially important if you just ship Matt this and
+; modified files, rather than going through the full process described in :doc
+; verify-guards-for-system-functions and then either (a) sending Matt a tarball
+; with the new and changed files and suitable instructions, or (b) going
+; through the additional process described in :doc
+; developers-guide-contributing.
+
 ; WARNING!  This book has an invalid skip-proofs!  This is explained below.  We
 ; are nevertheless making this a book, simply so that it continues to be
-; certified during regression.  It should certify both in normal ACL2 and in
-; ACL2 built for the "make devel-check" test.
-
-; See remove-guard-holders-strong-1.lisp for background.  Also consider looking
-; at remove-guard-holders-strong-3.lsp for further progress towards verifying
-; guards for remove-guard-holders.
+; certified during regression.  It should certify in normal ACL2 and may
+; certify in ACL2 built for the "make devel-check" test.  It makes a start
+; towards completing termination and guard verification for
+; remove-guard-holders, building on the book remove-guard-holders.lisp.
 
 ; The function term-measure was inspired by ACL2 community book
 ; centaur/meta/lambda-measure.lisp.  It is an attempt to create a suitable
 ; measure for function clean-up-dirty-lambda-objects.  Unfortunately, it
 ; doesn't work; this may be close, though, and further explanation is below.
 
-; I'd be happy for someone to finish this work!  Please inform me if you work
-; on that, to avoid duplication of effort.
-
 (in-package "ACL2")
 
-(include-book "remove-guard-holders-strong-1")
-(include-book "remove-guard-holders-strong-ideal-mode")
+(include-book "remove-guard-holders")
 
 (defun sumlist (lst)
   (cond ((atom lst) 0)
@@ -603,6 +610,9 @@
                                (len terms))
                    :hints (("Goal" :expand ((term-measure nil term nil))))
                    :verify-guards nil))))
+
+(verify-termination may-contain-dirty-lambda-objectsp
+	 (declare (xargs :verify-guards nil)))
 
 (verify-termination possibly-clean-up-dirty-lambda-objects)
 (verify-termination remove-guard-holders

@@ -125156,12 +125156,12 @@ work on <tt>(q x)</tt>.</p>
   :set-inhibit-output-lst (proof-tree prove)
 
   General Form:
-  (set-inhibit-output-lst lst)
+  (set-inhibit-output-lst x)
  })
 
- <p>where @('lst') is a form (which may mention @(tsee state)) that evaluates
- to a list of names, each of which is the name of one of the following
- ``kinds'' of output produced by ACL2.</p>
+ <p>where @('x') is a form (which may mention @(tsee state)) that evaluates to
+ a list of names, each of which is the name of one of the following ``kinds''
+ of output produced by ACL2.</p>
 
  @({
     error          error messages (but for hard errors, see below)
@@ -125179,8 +125179,8 @@ work on <tt>(q x)</tt>.</p>
  })
 
  <p>It is possible to inhibit each kind of output by putting the corresponding
- name into @('lst').  For example, if @(''warning') is included in (the value
- of) @('lst'), then no warnings are printed except those related to soundness,
+ name into @('x').  For example, if @(''warning') is included in (the value
+ of) @('x'), then no warnings are printed except those related to soundness,
  e.g., the inclusion of an uncertified book.  Note that @(see proof-tree)
  output is affected by @('set-inhibit-output-lst'); see @(see proof-tree).</p>
 
@@ -125195,22 +125195,25 @@ work on <tt>(q x)</tt>.</p>
  inhibit individual parts of the @(see summary).</p>
 
  <p>Printing of events on behalf of @(tsee certify-book) and @(tsee
- encapsulate) is inhibited when both @(''event') and @(''prove') belong to
- @('lst').  Otherwise, printing of events is controlled by the @(tsee ld)
- special @(tsee ld-pre-eval-print).</p>
+ encapsulate) is inhibited when both @(''event') and @(''prove') belong to the
+ value of the input.  Otherwise, printing of events is controlled by the @(tsee
+ ld) special @(tsee ld-pre-eval-print).</p>
 
  <p>Normally, hard error messages (see @(see er)) are not inhibited.  To
  inhibit those as well when @('ERROR') output is inhibited: @('(assign
  inhibit-er-hard t)').  To restore the original behavior: @('(assign
  inhibit-er-hard nil)').</p>
 
- <p><i>Note for advanced users.</i> By including @('warning!') in @('lst'), you
- are automatically including @('warning') as well: all warnings will be
- inhibited.  This is not the case if you modify value of state global variable
- @(''inhibit-output-lst') directly (with @(tsee assign) or @('f-put-global'));
- then, if you include @('warning!') but not @('warning'), then warnings not
- related to soundness will still be printed (which is probably not what was
- intended).</p>")
+ <p>To get the current of names representing kinds of inhibit output, evaluate
+ @('(@ inhibit-output-lst)').</p>
+
+ <p><i>Note for advanced users.</i> By including @('warning!') in the value of
+ the input, you are automatically including @('warning') as well: all warnings
+ will be inhibited.  This is not the case if you modify value of state global
+ variable @(''inhibit-output-lst') directly (with @(tsee assign) or
+ @('f-put-global')); then, if you include @('warning!') but not @('warning'),
+ then warnings not related to soundness will still be printed (which is
+ probably not what was intended).</p>")
 
 (defxdoc set-inhibit-warnings
   :parents (output-controls)
@@ -138178,7 +138181,7 @@ work on <tt>(q x)</tt>.</p>
 
 (defxdoc time$
   :parents (programming acl2-built-ins)
-  :short "Time an evaluation"
+  :short "Time the evaluation of a given form"
   :long "<p>Semantically, @('(time$ x ...)') equals @('x').  However, its
  evaluation writes timing output to the trace output (which is usually the
  terminal), as explained further below.</p>
