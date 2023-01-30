@@ -2,23 +2,21 @@
 ; Written by Matt Kaufmann
 ; License: A 3-clause BSD license.  See the LICENSE file distributed with ACL2.
 
-; This book supports remove-guard-holders.lisp.  Normally this book would
-; therefore be called remove-guard-holders-support.lisp.  However, some of the
-; lemmas in it may be useful; in fact, originally all of this work was
-; contained in remove-guard-holders.lisp, but Eric Smith requested that we
-; separate out such lemmas into this book.
+; This book was called remove-guard-holders-lemmas.lisp through late January,
+; 2023.
 
 (in-package "ACL2")
 
 (include-book "subcor-var")
 (local (include-book "tools/flag" :dir :system))
 (local (include-book "pseudo-termp-lemmas"))
-; Why again?
-; (local (include-book "subcor-var"))
 
-(verify-termination weak-badge-userfn-structure-alistp) ; and guards
-
+(verify-termination apply$-badge-p) ; and guards
+(verify-termination badge-userfn-structure-alistp) ; and guards
+(verify-termination apply$-badge-alistp-ilks-t) ; and guards
+#+acl2-devel
 (verify-termination ilks-plist-worldp) ; and guards
+(verify-termination weak-badge-userfn-structure-alistp) ; and guards
 
 (local (defthm weak-badge-userfn-structure-alistp-forward-to-alistp
          (implies (weak-badge-userfn-structure-alistp x)
@@ -38,6 +36,11 @@
                         (access-badge-userfn-structure-tuple-badge
                          (assoc-equal fn x)))))
          :rule-classes nil))
+
+(defthm badge-userfn-structure-alistp-forward-to-weak-badge-userfn-structure-alistp
+  (implies (badge-userfn-structure-alistp x)
+           (weak-badge-userfn-structure-alistp x))
+  :rule-classes :forward-chaining)
 
 (verify-termination ilks-per-argument-slot
   (declare (xargs :guard-hints
@@ -63,7 +66,8 @@
 (verify-termination (remove-guard-holders1
                      (declare (xargs :verify-guards nil))))
 
-(local (make-flag remove-guard-holders1))
+(local (with-output :off :all :on summary
+         (make-flag remove-guard-holders1)))
 
 (local (defthm equal-len-0-rewrite
          (equal (equal 0 (len x))
@@ -92,21 +96,22 @@
          (implies (pseudo-term-listp terms)
                   (pseudo-term-listp (take n terms)))))
 
-(local (defthm-flag-remove-guard-holders1
-         (defthm pseudo-termp-remove-guard-holders1
-           (implies (pseudo-termp term)
-                    (pseudo-termp
-                     (mv-nth 1 (remove-guard-holders1 changedp0 term lamp))))
-           :flag remove-guard-holders1)
-         (defthm pseudo-term-listp-remove-guard-holders1-lst
-           (implies (pseudo-term-listp lst)
-                    (pseudo-term-listp
-                     (mv-nth 1 (remove-guard-holders1-lst lst lamp))))
-           :flag remove-guard-holders1-lst)
-         :hints (("Goal" :in-theory (disable member-equal
-                                             pseudo-termp-lambda-lemma
-                                             take
-                                             quote-listp)))))
+(local (with-output :off :all :on summary
+         (defthm-flag-remove-guard-holders1
+           (defthm pseudo-termp-remove-guard-holders1
+             (implies (pseudo-termp term)
+                      (pseudo-termp
+                       (mv-nth 1 (remove-guard-holders1 changedp0 term lamp))))
+             :flag remove-guard-holders1)
+           (defthm pseudo-term-listp-remove-guard-holders1-lst
+             (implies (pseudo-term-listp lst)
+                      (pseudo-term-listp
+                       (mv-nth 1 (remove-guard-holders1-lst lst lamp))))
+             :flag remove-guard-holders1-lst)
+           :hints (("Goal" :in-theory (disable member-equal
+                                               pseudo-termp-lambda-lemma
+                                               take
+                                               quote-listp))))))
 
 (defthm pseudo-termp-remove-guard-holders1 ; redundant
   (implies (pseudo-termp term)
@@ -127,6 +132,4 @@
                    :trigger-terms
                    ((mv-nth 1 (remove-guard-holders1-lst lst lamp)))))))
 
-; It was tempting to avoid the following, but the approach in the
-; remove-guard-holders.lisp requires it.
 (verify-guards remove-guard-holders1)
