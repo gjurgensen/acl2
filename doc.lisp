@@ -4293,7 +4293,7 @@ Subtopics
       Third member of the list
 
   [Time$]
-      Time an evaluation
+      Time the evaluation of a given form
 
   [Time-tracker]
       Display time spent during specified evaluation
@@ -98157,6 +98157,12 @@ Changes to Existing Features
   ancestor paths leading from the evaluator or meta function to a
   common ancestor.
 
+  A new [walkabout] command, up, moves up a level and exits the
+  walkabout loop when already at the top level.  It is thus
+  equivalent to the existing command, 0, which is still supported
+  although up is highlighted in the documentation; see [walkabout]).
+  Thanks to Eric Smith for suggesting up.
+
 
 New Features
 
@@ -106453,7 +106459,7 @@ Subtopics
       Some built-in programming utilities pertaining to the ACL2 system
 
   [Time$]
-      Time an evaluation
+      Time the evaluation of a given form
 
   [Unmemoize]
       Turn off memoization for the specified function")
@@ -123934,9 +123940,9 @@ Example
     :set-inhibit-output-lst (proof-tree prove)
 
     General Form:
-    (set-inhibit-output-lst lst)
+    (set-inhibit-output-lst x)
 
-  where lst is a form (which may mention [state]) that evaluates to a
+  where x is a form (which may mention [state]) that evaluates to a
   list of names, each of which is the name of one of the following
   ``kinds'' of output produced by ACL2.
 
@@ -123954,11 +123960,11 @@ Example
     comment        output from cw, cw!, and utilities like time$ that use them
 
   It is possible to inhibit each kind of output by putting the
-  corresponding name into lst.  For example, if 'warning is included
-  in (the value of) lst, then no warnings are printed except those
-  related to soundness, e.g., the inclusion of an uncertified book.
-  Note that [proof-tree] output is affected by
-  set-inhibit-output-lst; see [proof-tree].
+  corresponding name into x.  For example, if 'warning is included in
+  (the value of) x, then no warnings are printed except those related
+  to soundness, e.g., the inclusion of an uncertified book.  Note
+  that [proof-tree] output is affected by set-inhibit-output-lst; see
+  [proof-tree].
 
   Note that proof output can be controlled without inhibiting it using
   this utility, and indeed is already quite limited by default.  See
@@ -123971,22 +123977,25 @@ Example
   inhibit individual parts of the [summary].
 
   Printing of events on behalf of [certify-book] and [encapsulate] is
-  inhibited when both 'event and 'prove belong to lst.  Otherwise,
-  printing of events is controlled by the [ld] special
-  [ld-pre-eval-print].
+  inhibited when both 'event and 'prove belong to the value of the
+  input.  Otherwise, printing of events is controlled by the [ld]
+  special [ld-pre-eval-print].
 
   Normally, hard error messages (see [er]) are not inhibited.  To
   inhibit those as well when ERROR output is inhibited: (assign
   inhibit-er-hard t).  To restore the original behavior: (assign
   inhibit-er-hard nil).
 
-  Note for advanced users. By including warning! in lst, you are
-  automatically including warning as well: all warnings will be
-  inhibited.  This is not the case if you modify value of state
-  global variable 'inhibit-output-lst directly (with [assign] or
-  f-put-global); then, if you include warning! but not warning, then
-  warnings not related to soundness will still be printed (which is
-  probably not what was intended).")
+  To get the current of names representing kinds of inhibit output,
+  evaluate (@ inhibit-output-lst).
+
+  Note for advanced users. By including warning! in the value of the
+  input, you are automatically including warning as well: all
+  warnings will be inhibited.  This is not the case if you modify
+  value of state global variable 'inhibit-output-lst directly (with
+  [assign] or f-put-global); then, if you include warning! but not
+  warning, then warnings not related to soundness will still be
+  printed (which is probably not what was intended).")
  (SET-INHIBIT-WARNINGS
   (OUTPUT-CONTROLS)
   "Control warnings
@@ -137838,7 +137847,7 @@ Subtopics
   syntactic restrictions, see [stobj].")
  (TIME$
   (PROGRAMMING ACL2-BUILT-INS)
-  "Time an evaluation
+  "Time the evaluation of a given form
 
   Semantically, (time$ x ...) equals x.  However, its evaluation writes
   timing output to the trace output (which is usually the terminal),
@@ -146482,11 +146491,11 @@ Subtopics
   printed before you enter an interactive loop.
 
     Commands:
-    0, 1, 2, ..., nx, bk, pp, (pp n), (pp lev len), =, (= symb),
+    1, 2, ..., up, nx, bk, pp, (pp n), (pp lev len), =, (= symb),
     (cmds c1 c2 ... cn), and q.
 
   In the interactive walkabout loop, a positive integer n takes you to
-  the nth position, while 0 takes you up a level.  The commands nx
+  the nth position, while up takes you up a level.  The commands nx
   and bk take you to the next and previous position, respectively, at
   the same level.  The command pp prints the current object in full,
   while (pp level length) hides sub-objects below the indicated level
@@ -146494,16 +146503,17 @@ Subtopics
   command (pp n) abbreviates (pp n n), so in particular (pp nil) is
   equivalent to pp.  The commands = and cmds are described below.
 
-  Note that the commands above work in any package: nx, bk, pp, =,
+  Note that the commands above work in any package: up, nx, bk, pp, =,
   cmds, and q are converted to the \"ACL2\" package if the current
-  package is not \"ACL2\".
+  package is not \"ACL2\".  Also, as a convenience, the single
+  character 0 is accepted as equivalent to up.
 
   The following example illustrates the commands described above.
 
     ACL2 !>(walkabout (append '(a (b1 b2 b3)) '(c d e f)) state)
 
     Commands:
-    0, 1, 2, ..., nx, bk, pp, (pp n), (pp lev len), =, (= symb),
+    1, 2, ..., up, nx, bk, pp, (pp n), (pp lev len), =, (= symb),
     (cmds c1 c2 ... cn), and q.
 
     (A (B1 B2 B3) C ...)
@@ -146511,13 +146521,13 @@ Subtopics
     (B1 B2 B3)
     :3
     B3
-    :0
+    :up
     (B1 B2 B3)
     :nx
     C
     :nx
     D
-    :0
+    :up
     (A (B1 B2 B3) C ...)
     :pp
     (A (B1 B2 B3) C D E F)
@@ -146560,7 +146570,7 @@ Subtopics
     ACL2 !>(walkabout '(c d e . f) state)
 
     Commands:
-    0, 1, 2, ..., nx, bk, pp, (pp n), (pp lev len), =, (= symb),
+    1, 2, ..., up, nx, bk, pp, (pp n), (pp lev len), =, (= symb),
     (cmds c1 c2 ... cn), and q.
 
     (C D E . F)
@@ -146570,11 +146580,11 @@ Subtopics
     .
     :nx
     F
-    :0
+    :up
     (C D E . F)
     :4
     .
-    :0
+    :up
     (C D E . F)
     :5
     F

@@ -101071,6 +101071,12 @@ it."
  clause-processor), the resulting error message now includes ancestor paths
  leading from the evaluator or meta function to a common ancestor.</p>
 
+ <p>A new @(tsee walkabout) command, @('up'), moves up a level and exits the
+ @('walkabout') loop when already at the top level.  It is thus equivalent to
+ the existing command, @('0'), which is still supported although @('up') is
+ highlighted in the documentation; see @(see walkabout)).  Thanks to Eric Smith
+ for suggesting @('up').</p>
+
  <h3>New Features</h3>
 
  <p>The new zero-ary attachable system function, @(tsee heavy-linear-p), allows
@@ -147981,22 +147987,25 @@ introduction-to-the-tau-system) for more information about Tau.</dd>
 
  @({
   Commands:
-  0, 1, 2, ..., nx, bk, pp, (pp n), (pp lev len), =, (= symb),
+  1, 2, ..., up, nx, bk, pp, (pp n), (pp lev len), =, (= symb),
   (cmds c1 c2 ... cn), and q.
  })
 
  <p>In the interactive @('walkabout') loop, a positive integer n takes you to
- the nth position, while 0 takes you up a level.  The commands @('nx') and
- @('bk') take you to the next and previous position, respectively, at the same
- level.  The command @('pp') prints the current object in full, while @('(pp
- level length)') hides sub-objects below the indicated level and past the
- indicated length, if non-@('nil'); see @(see evisc-tuple).  The command @('(pp
- n)') abbreviates @('(pp n n)'), so in particular @('(pp nil)') is equivalent
- to @('pp').  The commands @('=') and @('cmds') are described below.</p>
+ the nth position, while @('up') takes you up a level.  The commands @('nx')
+ and @('bk') take you to the next and previous position, respectively, at the
+ same level.  The command @('pp') prints the current object in full, while
+ @('(pp level length)') hides sub-objects below the indicated level and past
+ the indicated length, if non-@('nil'); see @(see evisc-tuple).  The command
+ @('(pp n)') abbreviates @('(pp n n)'), so in particular @('(pp nil)') is
+ equivalent to @('pp').  The commands @('=') and @('cmds') are described
+ below.</p>
 
- <p>Note that the commands above work in any package: @('nx'), @('bk'),
- @('pp'), @('='), @('cmds'), and @('q') are converted to the @('\"ACL2\"')
- package if the current package is not @('\"ACL2\"').</p>
+ <p>Note that the commands above work in any package: @('up'), @('nx'),
+ @('bk'), @('pp'), @('='), @('cmds'), and @('q') are converted to the
+ @('\"ACL2\"') package if the current package is not @('\"ACL2\"').  Also, as a
+ convenience, the single character @('0') is accepted as equivalent to
+ @('up').</p>
 
  <p>The following example illustrates the commands described above.</p>
 
@@ -148004,7 +148013,7 @@ introduction-to-the-tau-system) for more information about Tau.</dd>
   ACL2 !>(walkabout (append '(a (b1 b2 b3)) '(c d e f)) state)
 
   Commands:
-  0, 1, 2, ..., nx, bk, pp, (pp n), (pp lev len), =, (= symb),
+  1, 2, ..., up, nx, bk, pp, (pp n), (pp lev len), =, (= symb),
   (cmds c1 c2 ... cn), and q.
 
   (A (B1 B2 B3) C ...)
@@ -148012,13 +148021,13 @@ introduction-to-the-tau-system) for more information about Tau.</dd>
   (B1 B2 B3)
   :3
   B3
-  :0
+  :up
   (B1 B2 B3)
   :nx
   C
   :nx
   D
-  :0
+  :up
   (A (B1 B2 B3) C ...)
   :pp
   (A (B1 B2 B3) C D E F)
@@ -148066,7 +148075,7 @@ introduction-to-the-tau-system) for more information about Tau.</dd>
   ACL2 !>(walkabout '(c d e . f) state)
 
   Commands:
-  0, 1, 2, ..., nx, bk, pp, (pp n), (pp lev len), =, (= symb),
+  1, 2, ..., up, nx, bk, pp, (pp n), (pp lev len), =, (= symb),
   (cmds c1 c2 ... cn), and q.
 
   (C D E . F)
@@ -148076,11 +148085,11 @@ introduction-to-the-tau-system) for more information about Tau.</dd>
   .
   :nx
   F
-  :0
+  :up
   (C D E . F)
   :4
   .
-  :0
+  :up
   (C D E . F)
   :5
   F
