@@ -142180,10 +142180,10 @@ introduction-to-the-tau-system) for more information about Tau.</dd>
      (characterp (nth n lst)))
     :rule-classes ((:type-prescription :typed-term (nth n lst))))
 
-  (defthm demodulize-type-for-quote-value  ; (Demodulize a lst 'value ans) is ;
-    (implies                               ; either a nonnegative integer or ;
-     (and (atom a)                         ; of the same type as ans, provided ;
-          (true-listp lst)                 ; the hyps can be established by type ;
+  (defthm demodulize-type-for-quote-value  ; (Demodulize a lst 'value ans) is
+    (implies                               ; either a nonnegative integer or
+     (and (atom a)                         ; of the same type as ans, provided
+          (true-listp lst)                 ; the hyps can be established by type
           (member-equal a lst))            ; reasoning ;
      (or (and (integerp (demodulize a lst 'value ans))
               (>= (demodulize a lst 'value ans) 0))
