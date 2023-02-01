@@ -25804,17 +25804,17 @@ Restrictions
   or ``generalized definitions''.
 
   Consider the general form above.  Generalized definitions are stored
-  among the :[rewrite] rules for the function ``defined,'' fn above,
+  much as :[rewrite] rules for the function ``defined,'' fn above,
   but the procedure for applying them is a little different.  During
   rewriting, instances of (fn a1 ... an) are replaced by
   corresponding instances of body provided the hyps can be
-  established as for a :[rewrite] rule and the result of rewriting
-  body satisfies the criteria for function expansion.  There are two
-  primary criteria, either of which permits expansion.  The first is
-  that the ``recursive'' calls of fn in the rewritten body have
-  arguments that already occur in the goal conjecture.  The second is
-  that the ``controlling'' arguments to fn are simpler in the
-  rewritten body.
+  established, as for a :[rewrite] rule; but when applying a
+  :definition rule, the result of rewriting body must also satisfy
+  the criteria for function expansion.  There are two primary
+  criteria, either of which permits expansion.  The first is that the
+  ``recursive'' calls of fn in the rewritten body have arguments that
+  already occur in the goal conjecture.  The second is that the
+  ``controlling'' arguments to fn are simpler in the rewritten body.
 
   The notions of ``recursive call'' and ``controllers'' are complicated
   by the provisions for mutually recursive definitions.  Consider a
@@ -49428,23 +49428,23 @@ Subtopics
         are ``terms'' of the form (:with name term), where name is a
         function symbol, a macro name that denotes a function symbol
         (see [macro-aliases-table]), or a [rune].  The corresponding
-        rule of class :rewrite, which is often a [definition] rule
-        but need not be, is then used in place of the current body
-        for the function symbol of term; see [show-bodies] and see
-        [set-body].  If the rule is of the form (implies hyp (equiv
-        lhs rhs)), then after matching lhs to the current term in a
-        context that is maintaining equivalence relation equiv, ACL2
-        will replace the current term with (if hyp rhs (hide term)),
-        or just rhs if the rule is just (equal lhs rhs).  (3) A
-        combination of both :free and :with, as described above, is
-        legal.  (4) The term :LAMBDAS is treated specially.  It
-        denotes the list of all lambda applications (i.e., [let]
-        expressions) encountered during the proof.  Conceptually,
-        this use of :LAMBDAS tells ACL2 to treat lambda applications
-        as a notation for substitutions, rather than as function
-        calls whose opening is subject to the ACL2 rewriter's
-        heuristics (specifically, not allowing lambda applications to
-        open when they introduce ``too many'' if terms).
+        [definition] rule or (less often) [rewrite] rule is then used
+        in place of the current body for the function symbol of term;
+        see [show-bodies] and see [set-body].  If the rule is of the
+        form (implies hyp (equiv lhs rhs)), then after matching lhs
+        to the current term in a context that is maintaining
+        equivalence relation equiv, ACL2 will replace the current
+        term with (if hyp rhs (hide term)), or just rhs if the rule
+        is just (equal lhs rhs).  (3) A combination of both :free and
+        :with, as described above, is legal.  (4) The term :LAMBDAS
+        is treated specially.  It denotes the list of all lambda
+        applications (i.e., [let] expressions) encountered during the
+        proof.  Conceptually, this use of :LAMBDAS tells ACL2 to
+        treat lambda applications as a notation for substitutions,
+        rather than as function calls whose opening is subject to the
+        ACL2 rewriter's heuristics (specifically, not allowing lambda
+        applications to open when they introduce ``too many'' if
+        terms).
 
     :hands-off
 
