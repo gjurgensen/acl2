@@ -14085,7 +14085,10 @@ Subtopics
       To set the connected book directory
 
   [Set-write-ACL2x]
-      Cause [certify-book] to write out a .acl2x file")
+      Cause [certify-book] to write out a .acl2x file
+
+  [With-cbd]
+      To set the connected book directory")
  (BOOKS-TOUR
   (BOOKS)
   "The guided tour of concepts related to ACL2 [books].
@@ -32208,18 +32211,20 @@ Miscellaneous efficiency ideas
 
     * x is a call of an event function other than [defpkg] (see [events]
       for a listing of the event functions);
+    * x is a call of [encapsulate], [progn], [progn!], or [include-book];
     * x is of the form (LOCAL x1) where x1 is an embedded event form;
-    * x is of the form (SKIP-PROOFS x1) where x1 is an embedded event form;
     * x is of the form (MAKE-EVENT &), where & is any term whose expansion
       is an embedded event (see [make-event]);
-    * x is of the form (WITH-OUTPUT ... x1), (WITH-PROVER-STEP-LIMIT ... x1
-      ...), or (WITH-PROVER-TIME-LIMIT ... x1), where x1 is an
-      embedded event form;
+    * x is of the form (SKIP-PROOFS x1) where x1 is an embedded event form;
+    * x is of the form (WITH-CBD str x1), where x1 is an embedded event
+      form;
     * x is of the form (WITH-GUARD-CHECKING-EVENT c x1) or
       (WITH-GUARD-CHECKING-EVENT (QUOTE c) form), where c is a member
       of the list (t nil :nowarn :all :none) and x1 is an embedded
       event form;
-    * x is a call of [encapsulate], [progn], [progn!], or [include-book];
+    * x is of the form (WITH-OUTPUT ... x1), (WITH-PROVER-STEP-LIMIT ... x1
+      ...), or (WITH-PROVER-TIME-LIMIT ... x1), where x1 is an
+      embedded event form;
     * x macroexpands to one of the forms above; or
     * [intended only for the implementation] x is (RECORD-EXPANSION x1 x2),
       where x1 and x2 are embedded event forms.
@@ -69819,6 +69824,7 @@ Introduction
 
     local
     skip-proofs
+    with-cbd
     with-guard-checking-event
     with-output
     with-prover-step-limit
@@ -98267,6 +98273,12 @@ New Features
   can take on a new value, :all!, which is treated exactly the same
   as using arguments :off :all :gag-mode nil.
 
+  The new utility [with-cbd] creates a scope for an indicated value of
+  the connected book directory (see [cbd]).  Calls of with-cbd are
+  allowed in [books] as well as in [encapsulate] and [progn]
+  [events]; see [embedded-event-form].  Thanks to Sol Swords for
+  requesting that with-cbd be legal in embedded events.
+
 
 Heuristic and Efficiency Improvements
 
@@ -122308,13 +122320,12 @@ Subtopics
     General Form:
     (set-cbd str)
 
-  where str is a nonempty string that represents the desired directory
-  (see [pathname]).  This command sets the connected book directory
-  to the string representing the indicated directory; see [cbd].
-  Thus, this command may determine which files are processed by
-  [include-book] and [certify-book] [command]s typed at the
-  top-level, as well as by file operations such as
-  [open-input-channel].
+  where str evaluates to a nonempty string that represents the desired
+  directory (see [pathname]).  This command sets the connected book
+  directory according to that string; see [cbd].  Thus, this command
+  may determine which files are processed by [include-book],
+  [certify-book], and [ld] [command]s, as well as by file operations
+  such as [open-input-channel].
 
   IMPORTANT: Pathnames in ACL2 are in the Unix (trademark of AT&T)
   style.  That is, the character ``/'' separates directory components
@@ -148166,6 +148177,35 @@ Concluding Remark
   http://www.cs.utexas.edu/users/moore/acl2/v3-6/distrib/windows/},
   which mimics some of Linux and provides Emacs.  Updated ACL2
   binaries have been successfully installed in such an environment.")
+ (WITH-CBD
+  (BOOKS-REFERENCE)
+  "To set the connected book directory
+
+  With-cbd provides a way to set the connected book directory (see
+  [cbd]) within a given scope.  For example, evaluation of the
+  following form is equivalent to evaluation of the form,
+  (include-book \"arithmetic/top\" :dir :system).
+
+    (with-cbd (cdr (assoc-eq :system (project-dir-alist (w state))))
+              (include-book \"arithmetic/top\"))
+
+  See [cbd] for a description of the connected book directory.
+
+    General Form:
+    (with-cbd str form)
+
+  where str evaluates to a nonempty string that represents the desired
+  directory (see [pathname]) and form evaluates to an [error-triple].
+  Thus, the effect of (with-cbd str form) is to evaluate first
+  (set-cbd str) and then to evaluate form, after which the connected
+  book directory is restored to the value it had before that
+  evaluation of set-cbd.  However, the implementation is designed so
+  that the connected book directory is restored even when the
+  evaluation of form causes an error.
+
+  The form (with-cbd str ev) is an [event] form if ev is an event form;
+  thus, it may occur in [books] as well as [encapsulate] and [progn]
+  events.  See [embedded-event-form].")
  (WITH-FAST-ALIST
   (FAST-ALISTS ACL2-BUILT-INS)
   "(with-fast-alist name form) causes name to be a fast alist for the
