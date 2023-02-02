@@ -28951,26 +28951,29 @@ ld) and @(tsee include-book)"
  <li>@('x') is a call of an event function other than @(tsee DEFPKG) (see
  @(see events) for a listing of the event functions);</li>
 
+ <li>@('x') is a call of @(tsee ENCAPSULATE), @(tsee PROGN), @(tsee PROGN!),
+ or @(tsee INCLUDE-BOOK);</li>
+
  <li>@('x') is of the form @('(LOCAL x1)') where @('x1') is an
  embedded event form;</li>
-
- <li>@('x') is of the form @('(SKIP-PROOFS x1)') where @('x1') is
- an embedded event form;</li>
 
  <li>@('x') is of the form @('(MAKE-EVENT &)'), where @('&') is any term whose
  expansion is an embedded event (see @(see make-event));</li>
 
- <li>@('x') is of the form @('(WITH-OUTPUT ... x1)'),
- @('(WITH-PROVER-STEP-LIMIT ... x1 ...)'), or @('(WITH-PROVER-TIME-LIMIT
- ... x1)'), where @('x1') is an embedded event form;</li>
+ <li>@('x') is of the form @('(SKIP-PROOFS x1)') where @('x1') is
+ an embedded event form;</li>
+
+ <li>@('x') is of the form @('(WITH-CBD str x1)'), where @('x1') is an embedded
+ event form;</li>
 
  <li>@('x') is of the form @('(WITH-GUARD-CHECKING-EVENT c x1)') or
  @('(WITH-GUARD-CHECKING-EVENT (QUOTE c) form)'), where @('c') is a member of
  the list @(`*guard-checking-values*`) and @('x1') is an embedded event
  form;</li>
 
- <li>@('x') is a call of @(tsee ENCAPSULATE), @(tsee PROGN), @(tsee PROGN!),
- or @(tsee INCLUDE-BOOK);</li>
+ <li>@('x') is of the form @('(WITH-OUTPUT ... x1)'),
+ @('(WITH-PROVER-STEP-LIMIT ... x1 ...)'), or @('(WITH-PROVER-TIME-LIMIT
+ ... x1)'), where @('x1') is an embedded event form;</li>
 
  <li>@('x') macroexpands to one of the forms above; or</li>
 
@@ -66407,6 +66410,7 @@ forms allowed for a @('let') form are  @('ignore'), @('ignorable'), and
  @({
  local
  skip-proofs
+ with-cbd
  with-guard-checking-event
  with-output
  with-prover-step-limit
@@ -101177,6 +101181,12 @@ it."
  with-output!)) can take on a new value, @(':all!'), which is treated exactly
  the same as using arguments @(':off :all :gag-mode nil').</p>
 
+ <p>The new utility @(tsee with-cbd) creates a scope for an indicated value of
+ the connected book directory (see @(see cbd)).  Calls of @('with-cbd') are
+ allowed in @(see books) as well as in @(tsee encapsulate) and @(tsee progn)
+ @(see events); see @(see embedded-event-form).  Thanks to Sol Swords for
+ requesting that @('with-cbd') be legal in embedded events.</p>
+
  <h3>Heuristic and Efficiency Improvements</h3>
 
  <h3>Bug Fixes</h3>
@@ -123446,12 +123456,12 @@ work on <tt>(q x)</tt>.</p>
   (set-cbd str)
  })
 
- <p>where @('str') is a nonempty string that represents the desired directory
- (see @(see pathname)).  This command sets the connected book directory to the
- string representing the indicated directory; see @(see cbd).  Thus, this
- command may determine which files are processed by @(tsee include-book) and
- @(tsee certify-book) @(see command)s typed at the top-level, as well as by
- file operations such as @(tsee open-input-channel).</p>
+ <p>where @('str') evaluates to a nonempty string that represents the desired
+ directory (see @(see pathname)).  This command sets the connected book
+ directory according to that string; see @(see cbd).  Thus, this command may
+ determine which files are processed by @(tsee include-book), @(tsee
+ certify-book), and @(tsee ld) @(see command)s, as well as by file operations
+ such as @(tsee open-input-channel).</p>
 
  <p>IMPORTANT: Pathnames in ACL2 are in the Unix (trademark of AT&amp;T) style.
  That is, the character ``@('/')'' separates directory components of a
@@ -149623,6 +149633,40 @@ introduction-to-the-tau-system) for more information about Tau.</dd>
  a Windows installer for a previous ACL2 release</a>, which mimics some of
  Linux and provides Emacs.  Updated ACL2 binaries have been successfully
  installed in such an environment.</p>")
+
+(defxdoc with-cbd
+  :parents (books-reference)
+  :short "To set the connected book directory"
+  :long "<p>@('With-cbd') provides a way to set the connected book directory
+ (see @(see cbd)) within a given scope.  For example, evaluation of the
+ following form is equivalent to evaluation of the form, @('(include-book
+ \"arithmetic/top\" :dir :system)').</p>
+
+ @({
+ (with-cbd (cdr (assoc-eq :system (project-dir-alist (w state))))
+           (include-book \"arithmetic/top\"))
+
+ })
+
+ <p>See @(see cbd) for a description of the connected book directory.</p>
+
+ @({
+ General Form:
+ (with-cbd str form)
+ })
+
+ <p>where @('str') evaluates to a nonempty string that represents the desired
+ directory (see @(see pathname)) and @('form') evaluates to an @(see
+ error-triple).  Thus, the effect of @('(with-cbd str form)') is to evaluate
+ first @('(set-cbd str)') and then to evaluate @('form'), after which the
+ connected book directory is restored to the value it had before that
+ evaluation of @('set-cbd').  However, the implementation is designed so that
+ the connected book directory is restored even when the evaluation of @('form')
+ causes an error.</p>
+
+ <p>The form @('(with-cbd str ev)') is an @(see event) form if @('ev') is an
+ event form; thus, it may occur in @(see books) as well as @(tsee encapsulate)
+ and @(tsee progn) events.  See @(see embedded-event-form).</p>")
 
 (defxdoc with-fast-alist
   :parents (fast-alists acl2-built-ins)
