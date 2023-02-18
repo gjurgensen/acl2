@@ -17153,8 +17153,8 @@ Subtopics
   [world]; (2) does the full admissibility checks on each form
   (proving termination of recursive functions, proving theorems,
   etc.), checking as it goes that each form is an embedded event form
-  (see [embedded-event-form]); (3) may roll back the [world] (how
-  far? --- see below) and perform an [include-book] to check for
+  (see [embedded-event-form]); (3) may roll back the logical [world]
+  (how far? --- see below) and perform an [include-book] to check for
   [local] incompatibilities (see [local-incompatibility]); (4) writes
   a [certificate] recording not only that the book was certified but
   also recording the [command]s necessary to recreate the
@@ -17170,16 +17170,16 @@ Subtopics
   If you don't want the included book's [events] in your present
   [world], simply execute :[u].
 
-  Technical Remark.  Step 3 above mentions rolling the logical [world]
-  back to check for local incompatibilities.  For efficiency, this
-  retraction to an initial segment of the world is skipped if a local
-  event is not encountered, and otherwise the world is rolled back
+  Remark.  Step (3) above mentions rolling back the logical [world] to
+  check for local incompatibilities.  This process is skipped if no
+  [local] event is encountered.  Otherwise, the world is rolled back
   through the first local event past the boot-strap world --- see
-  [local-incompatibility] --- before the book is included to check
-  for local incompatibilities.  Note that if that first local event
-  is in the certification world, then all commands from that event
-  onward will be undone by the certify-book call.  End of Technical
-  Remark.
+  [local-incompatibility] --- before the book is included.  Note that
+  if that first local event is in the certification world, then all
+  commands from that event onward will be rolled back.  See
+  [fast-cert] for a way to skip entirely this process of roll-back
+  and check, regardless of local events, but with a risk to
+  soundness.  End of Remark.
 
   A utility is provided to assist in debugging failures of
   certify-book; see [redo-flat].)
@@ -17251,6 +17251,9 @@ Subtopics
 
   [Certify-book-debug]
       Some possible ways to work around [certify-book] failures
+
+  [Fast-cert]
+      A mode for faster, but possibly unsound, book certification
 
   [Useless-runes]
       Speed up proofs by disabling useless [rune]s")
@@ -37393,6 +37396,429 @@ Subtopics
       form, that table is restored.  Note that any extended table
       created from the original fast alist during form must be
       manually freed.")
+ (FAST-CERT
+  (CERTIFY-BOOK INCLUDE-BOOK)
+  "A mode for faster, but possibly unsound, book certification
+
+  See [certify-book] and [include-book] for background on certifying
+  and including [books].
+
+  By default, [certify-book] includes a ``Step 3'' that does a
+  [local-incompatibility] check.  That check can be expensive for
+  some ``industrial-size'' books if there are [local] events early in
+  the book or in its [portcullis] commands.  Fast-cert mode provides
+  a way to avoid the [local-incompatibility] check.  There are the
+  following two drawbacks to using fast-cert mode.
+
+    * It may be unsound!  See Section ``Unsoundness'' below.
+    * Therefore, after a book is certified while in fast-cert mode, then
+      any subsequent attempt to include that book will consider it to
+      be uncertified unless the [include-book] event is executed in
+      fast-cert mode.  See Section ``Effects of fast-cert mode...''
+      below.
+
+    General Forms:
+
+    (set-fast-cert t state)   ; enter fast-cert mode (fast-cert mode is active)
+    (set-fast-cert nil state) ; exit fast-cert mode (fast-cert mode is inactive)
+
+  When a form (set-fast-cert expr state) is evaluated, expr should
+  evaluate to a Boolean value, val.  If val is t then fast-cert mode
+  is entered (or maintained when already in fast-cert mode); while if
+  val is nil then fast-cert mode is exited (or maintained when not
+  already in fast-cert mode).
+
+  Another way to enter fast-cert mode is to set environment variable
+  ACL2_FAST_CERT to a non-empty value before starting ACL2.
+
+  We turn now to the two sections promised above, on unsoundness and
+  effects of fast-cert mode, followed by a section on miscellaneous
+  restrictions, and concluding with a suggested application of
+  fast-cert mode.
+
+
+Potential for unsoundness
+
+  Consider the proof of nil constructed by the following two books.
+
+    ;;; fast-cert-unsound-sub.lisp
+    (in-package \"ACL2\")
+    (local (defun f () t))
+    (defun g () (f))
+    (defthm g-is-t
+      (equal (g) t))
+
+    ;;; fast-cert-unsound.lisp
+    (in-package \"ACL2\")
+    (defun f () nil)
+    (include-book \"fast-cert-unsound-sub\")
+    (thm nil
+         :hints ((\"Goal\" :use g-is-t)))
+
+  Now execute the following commands to prove nil!
+
+    (set-fast-cert t state)
+    (certify-book \"fast-cert-unsound-sub\")
+    :u
+    (certify-book \"fast-cert-unsound\")
+
+  To see what went wrong, consider what happens if we try this without
+  evaluating (set-fast-cert t state).  In that case, we can see that
+  an attempt to certify \"fast-cert-unsound-sub\" fails the
+  [local-incompatibility] check.
+
+    * Step 3:  That completes the admissibility check.  Each form read
+    was an embedded event form and was admissible.  We now retract back
+    to the initial world and try to include the book; see :DOC
+    local-incompatibility.
+
+
+    ACL2 Error [Translate] in ( DEFUN G ...):  The symbol F (in package
+    \"ACL2\") has neither a function nor macro definition in ACL2.  Please
+    define it.  See :DOC near-misses.  Note:  this error occurred in the
+    context (F).
+
+  That is, the attempt in Step 3 to include
+  \"fast-cert-unsound-sub.lisp\" fails the local-incompatibility check
+  because the definition of f is local, hence skipped, so the
+  definition of g is illegal.  Without the use of fast-cert mode, the
+  local-incompatibility check would catch this problem.
+
+  (Technical note: if fast-cert mode is used to certify the book, then
+  when we subsequently include \"fast-cert-unsound-sub\" in fast-cert
+  mode, there is --- perhaps surprisingly --- no error.  That is
+  because the translation (see [term]) of the definition of g is
+  cached in the book's [certificate].)
+
+  Such unsoundness with fast-cert mode is probably rare in practice.
+  But because unsoundness is possible with fast-cert mode, a ``TTAG
+  NOTE'' message is printed when fast-cert mode is entered, as
+  follows.
+
+    ACL2 !>(set-fast-cert t state)
+
+    TTAG NOTE: Fast-cert mode is active (see :DOC fast-cert).
+     T
+    ACL2 !>
+
+  The message above may seem a bit misleading, since there is no actual
+  trust tag (ttag) involved.  The ``TTAG NOTE'' message is simply
+  ACL2's way of conveying that there is a trust issue --- typically
+  with the use of [defttag] but also when entering fast-cert mode.
+
+  We conclude this section by mentioning other potential sources of
+  unsoundness when using fast-cert mode.  There are probably others,
+  but again, it is probably rare for fast-cert mode to exhibit
+  unsoundness.  These behaviors are due to avoiding the
+  [local-incompatibility] check during certification in fast-cert
+  mode.  Here are two key potential sources of unsoundness.
+
+    * Hidden [defpkg] events are not recorded in a book's [certificate]
+      (see [hidden-death-package]).
+    * Information about sub-books that is normally recorded in a
+      [certificate], including the [book-hash] values in the
+      [portcullis] and the [keep], is omitted.  This prevents ACL2
+      from noticing when sub-books are uncertified or have changed
+      since the time of the parent book's certification.
+
+  Here are some necessary checks that may be omitted when the
+  local-incompatibility check is skipped.
+
+    * A non-local [congruence] rule needs its alleged equivalence relation
+      to be an equivalence relation non-locally.  Generally this
+      means that the supporting [defequiv] event must be non-local.
+    * A non-local rule of class :[meta] or :[clause-processor] needs its
+      evaluators to be evaluators non-locally.
+    * A [defattach] event imposes requirements on function symbols to be
+      [guard]-verified.  So if a defattach event is non-local, each
+      necessary guard verification status must hold non-locally.
+
+  Because of potential unsoundness of fast-cert mode, and especiallly
+  the item above regarding status of books that are included in a
+  parent book, it is strongly recommended that you eventually certify
+  your collection of books without using fast-cert mode.  Otherwise
+  there is no sort of guarantee that your proofs are valid!
+
+
+Effects of fast-cert mode on [certify-book] and [include-book]
+
+  Here are interactions between fast-cert mode, [certify-book], and
+  [include-book].
+
+    * When a book is certified in fast-cert mode, its [certificate] records
+      this fact.  Let's call such a certificate a ``fast-cert
+      certificate''; otherwise it is a ``normal`` certificate.
+    * When include-book is performed on a book with a valid fast-cert
+      certificate, that book is considered to be certified if
+      fast-cert mode is active and otherwise is considered to be
+      uncertified.
+    * When include-book is performed on a book with a valid normal
+      certificate, that book is considered to be certified regardless
+      of whether or not fast-cert mode is active at include-book
+      time.
+    * When [provisional-certification] is used during certify-book,
+      fast-cert mode is essentially ignored (in particular, regarding
+      the local-incompatibility check) except that it results in a
+      fast-cert certificate.
+    * Normally certify-book warns about functions that have not had their
+      [guard]s verified.  This message is suppressed during fast-cert
+      mode, because local include-book forms in the certification
+      world can make that message very long.
+    * When a book is included while fast-cert mode is active, and that book
+      has a fast-cert certificate, then the rest of that ACL2 session
+      must remain in fast-cert mode.  This restriction guarantees
+      that any book then certified during that session will be given
+      a fast-mode certificate.
+
+  See [fast-cert-anomalies] for some possibly surprising (and more
+  obscure) consequences of using fast-cert mode.
+
+
+Miscellaneous restrictions
+
+  It is illegal to call set-fast-cert during make-event expansion (see
+  [make-event]).  There is also an explicit check to prohibit calls
+  of set-fast-cert during certify-book, though that is probably
+  unnecessary because of the make-event restriction unless that
+  restriction is subverted using a trust tag.
+
+
+Fast-cert mode and [save-exec]
+
+  The motivation for adding the option of fast-cert mode was to provide
+  faster certification based on executables created with [save-exec].
+  We illustrate with an example, which starts by [local]ly including
+  a book that brings in many definitions and rules (it may take about
+  a minute to include) and then saving an executable.  The initial
+  (non-local) include-book forms below might not be necessary for all
+  uses of the executable.
+
+    (include-book \"centaur/sv/portcullis\" :dir :system)
+    (include-book \"std/util/define\" :dir :system)
+    (local (include-book \"centaur/sv/top\" :dir :system))
+    :q
+    (save-exec \"sv-top\" \"Locally includes centaur/sv/top\")
+
+  Now suppose we want to create a book that is based on a tiny part of
+  what is provided by the book included above, as follows (comments
+  omitted here).
+
+    (in-package \"SV\")
+
+    (define name-p (x)
+      :parents (name)
+      (or (stringp x)
+          (integerp x)
+          (eq x :self)
+          (and (consp x)
+               (eq (car x) :anonymous))))
+
+    (define name-fix ((x name-p))
+      :parents (name)
+      :returns (xx name-p)
+      :hooks nil
+      (mbe :logic (if (name-p x) x '(:anonymous))
+           :exec x)
+      ///
+      (defthm name-fix-when-name-p
+        (implies (name-p x)
+                 (equal (name-fix x) x))))
+
+  We now invoke the resulting executable, ./sv-top.
+
+    ; Start ./sv-top, then:
+    (set-fast-cert t state)
+    (certify-book \"name\" ? t :ttags :all)
+
+  In this little example, the certification time has been cut in half
+  by using fast-cert mode.  In many cases the reduction may be less
+  than that, but in large industrial examples the reduction might be
+  much, much greater --- -- especially when the book contains
+  time-consuming events, in particular include-book events.
+
+
+Subtopics
+
+  [Fast-cert-anomalies]
+      Potentially surprising consequences of using [fast-cert] mode")
+ (FAST-CERT-ANOMALIES
+  (FAST-CERT)
+  "Potentially surprising consequences of using [fast-cert] mode
+
+  See [fast-cert] for relevant background.  This topic discusses some
+  surprises one may encounter when using fast-cert mode.
+
+  When fast-cert mode was developed in February 2023, a call of
+  ``make'' was made with ``ACL2_FAST_CERT=t'' and target
+  ``regression-everything'', to certify the [community-books] in
+  fast-cert mode.  There were only two failures (out of thousands of
+  books), both of which are discussed below along with their fixes.
+  There is no plan to continue to test certification of the community
+  books using fast-cert mode, but we expect future failures to
+  continue to be rare.
+
+
+Example 1
+
+  Community book system/tests/early-load-of-compiled/ttag.lisp
+  certifies regardless of whether or not fast-cert mode is used.
+  However, when it is certified in fast-cert mode, a later attempt to
+  include the book fails.  That failure is due to the way ACL2
+  handles raw-Lisp redefinition (using a trust tag), as explained in
+  a comment in the book.  To avoid this problem, the form
+  (set-fast-cert nil state) is in file ttag.acl2 in the same
+  directory.  Key events in the book are as follows, in this order;
+  the first forces a [local-incompatibility] check, and you can see
+  comments in ttag.lisp for why that is crucial.
+
+    (local (defun loc (x) x))
+
+    (defun ttag-f (x)
+      (declare (xargs :guard t))
+      x)
+
+    ; An assertion is here of (equal (ttag-f 3) 3), to be evaluated during both
+    ; certify-book and include-book, basically of the form:
+    (make-event ...) ; asserts (equal (ttag-f 3) 3)
+
+    (progn!
+     (set-raw-mode t)
+     (defun ttag-f (x) (cons x x)))
+
+
+Example 2
+
+  The second example is rather subtle.  Our starting point is the
+  following, from community book
+  rtl/rel9/support/lib2.delta1/add-new-proofs.lisp.
+
+    ; Matt K. addition: The following lemma, natp-lamz, is not normally necessary.
+    ; But in fast-cert mode we need it for the proof of lam1_alt-is-lam1.
+    ; See :DOC fast-cert-anomalies if you want an explanation.
+    (local
+     (defthm natp-lamz
+       (natp (lamz a b e))
+       :rule-classes :type-prescription))
+
+  To see why this lemma is needed when certifying in fast-cert mode,
+  let us start by re-creating the environment where the definition of
+  lamz has been introduced.  We assume here that the sub-books that
+  are included were certified using fast-cert mode.
+
+    (set-fast-cert t state) ; so that sub-books are included as certified
+    (ld \"rtl/rel9/support/lib2.delta1/add-new-proofs.lisp\"
+        :dir :system
+        ;; to speed things up:
+        :ld-skip-proofsp t)
+
+  We see that the built-in [type-prescription] rule for lamz says only
+  that lamz returns a rational number, not necessarily a non-negative
+  integer.
+
+    ACL2 !>:pr lamz
+
+    Rune:         (:TYPE-PRESCRIPTION LAMZ)
+    Enabled:      T
+    Hyps:         T
+    Term:         (LAMZ A B E)
+    Backchain-limit-lst: NIL
+    Basic-ts:     *TS-RATIONAL*
+    Vars:         NIL
+    Corollary:    (RATIONALP (LAMZ A B E))
+
+    ...
+
+  If we do the same experiment when sub-books were certified without
+  fast-cert mode, the :[pr] output will instead show a built-in
+  [type-prescription] rule for lamz saying that lamz returns a
+  non-negative integer.  This discrepancy in that built-in rule
+  explains why the additional lemma above, natp-lamz, was necessary
+  when certifying the [community-books] using fast-cert mode.
+
+  So now let us investigate why certifying books in fast-cert mode
+  weakens the built-in type-prescription rule for lamz.  After
+  running the set-fast-cert and [ld] commands displayed above, we see
+  where lamz is defined.
+
+    ACL2 !>:pe lamz
+       d       2  (LOCAL (INCLUDE-BOOK \"../lib2/top\"))
+
+                  [Included books, outermost to innermost:
+                   \"/Users/kaufmann/acl2/acl2/books/rtl/rel9/support/lib2/top.lisp\"
+                   \"/Users/kaufmann/acl2/acl2/books/rtl/rel9/support/lib2/add.lisp\"
+                  ]
+
+    >L             (DEFUN LAMZ (A B E)
+                          (LNOT (LIOR A (LNOT B (1+ E)) (1+ E))
+                                (1+ E)))
+    ACL2 !>
+
+  But we need to work harder to find the real source of the definition
+  of lamz.  In rtl/rel9/support/lib2/add.lisp we see that the
+  definition of lamz is preceded by (set-enforce-redundancy t) as
+  well as (local (include-book \"base\")).  When we invoke :ubt 1 and
+  then (include-book \"base\"), we can evaluate :pe lamz to see that
+  lamz is defined in rtl/rel9/support/lib1/add.lisp, which contains
+  (set-enforce-redundancy t) and the local event, (local
+  (include-book \"../support/top\")).  So we include that book after
+  invoking :ubt 1, then (again) invoke :pe lamz, and finally find the
+  true source of the definition of lamz:
+  rtl/rel9/support/support/lextra.lisp.
+
+  So now consider what happens when we start ACL2 and evaluate the
+  following commands.  For now, assume that we have used ACL2 without
+  fast-cert mode to certify all books being included.  We use
+  :ld-skip-proofsp 'include-book to simulate what happens when
+  including the book.
+
+    ; without fast-cert mode
+    (ld \"rtl/rel9/support/support/lextra.lisp\"
+        :dir :system
+        :ld-skip-proofsp 'include-book)
+    :ubt lamz
+    (defun lamz (a b e)
+      (lnot (lior a (lnot b (1+ e)) (1+ e)) (1+ e)))
+
+  Then :pr lamz shows a :type-prescription rule for lamz that this
+  function returns a non-negative integer.  That is explained in part
+  by the following output, which mentions a rule stating that lnot
+  returns a non-negative integer, which was used to compute the
+  built-in type for lamz that it returns a non-negative integer.
+
+    We used the :type-prescription rule LNOT-NONNEGATIVE-INTEGER-TYPE.
+
+  Now repeat the same experiment but where we assume that fast-cert
+  mode has been used for all book certification and we start with
+  (set-fast-cert t state).  This time there is no such output about
+  LNOT-NONNEGATIVE-INTEGER-TYPE.  Aha!  The culprit is the following
+  form near the top of \"rtl/rel9/support/support/lextra.lisp\".
+
+    (local (in-theory (current-theory 'lextra0-start)))
+
+  That form disables the :type-prescription rule
+  LNOT-NONNEGATIVE-INTEGER-TYPE, which is necessary for computing a
+  non-negative integer (i.e., natp) type for the built-in
+  :type-prescription rule for lamz.  By contrast, without fast-cert
+  mode, the world is rolled back past local events for the
+  local-incompatibility check, and then when events in the book are
+  processed during the include-book phase of certification, the rule
+  LNOT-NONNEGATIVE-INTEGER-TYPE is available for computing the
+  built-in type-prescription for lamz, which is stored in the book's
+  [certificate].  But in fast-cert mode, the world is not rolled
+  back, so the built-in type-prescription for lamz remains as
+  originally computed, where the rule LNOT-NONNEGATIVE-INTEGER-TYPE
+  is disabled.
+
+  Indeed, if you read the certificate file for the lextra.lisp book
+  above, you'll see that the :TYPE-PRESCRIPTION entry for lamz
+  indicates a rational type when books are certified with fast-cert
+  mode but a non-negative integer type when certified without
+  fast-cert mode.  You can read that certificate file as follows.
+
+    (read-file (concatenate 'string
+                            (system-books-dir state)
+                            \"rtl/rel9/support/support/lextra.cert\")
+               state)")
  (FC-REPORT
   (FORWARD-CHAINING-REPORTS)
   "To report on the forward chaining activity in the most recent proof
@@ -52156,7 +52582,13 @@ Subtopics
   This concludes the guided tour through [books].  See
   [set-compile-fns] for a subtle point about the interaction between
   include-book and on-the-fly [compilation].  See [certify-book] for
-  a discussion of how to certify a book.")
+  a discussion of how to certify a book.
+
+
+Subtopics
+
+  [Fast-cert]
+      A mode for faster, but possibly unsound, book certification")
  (INCOMPATIBLE
   (THEORIES)
   "Declaring that two rules should not both be [enable]d
@@ -61345,6 +61777,9 @@ Subtopics
   encapsulate, but see final Remark below) --- and then including the
   book.  But all that is skipped in the absence of either kind of
   local event.
+
+  See [fast-cert] for a way to skip the local incompatibility check,
+  although that may compromise soundness.
 
   Here is a subtle example of [local] incompatibility.  The problem is
   that in order for foo-type-prescription to be admitted using the
@@ -98279,6 +98714,11 @@ New Features
   [events]; see [embedded-event-form].  Thanks to Sol Swords for
   requesting that with-cbd be legal in embedded events.
 
+  See [fast-cert] for a ``fast-cert'' mode for faster, but possibly
+  unsound, book certification, in particular when using a saved
+  executable that contains [local] events.  Thanks to Sol Swords for
+  requesting such a capability and for helpful design discussions.
+
 
 Heuristic and Efficiency Improvements
 
@@ -103800,6 +104240,9 @@ Subtopics
 
   [Set-difference-equal]
       See [set-difference$].
+
+  [Set-fast-cert]
+      See [fast-cert].
 
   [Set-ld-keyword-aliases]
       See [ld-keyword-aliases].
@@ -123192,6 +123635,8 @@ Subtopics
 
   [Set-brr-evisc-tuple]
       Set the [brr-evisc-tuple]")
+ (SET-FAST-CERT (POINTERS)
+                "See [fast-cert].")
  (SET-FC-CRITERIA
   (FORWARD-CHAINING-REPORTS)
   "To set the tracking criteria for forward chaining reports
