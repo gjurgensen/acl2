@@ -23112,7 +23112,23 @@ subtree of X with T, without duplication.</p>
 
  <p>Upon admission of a @('defpkg') event, the function @('pkg-imports') is
  extended to compute a list of all symbols imported into the given package,
- without duplicates.</p>
+ without duplicates.  If @('\"MY-PKG\"') is the name of the new package and
+ @('symb') is the symbol returned by @('(intern (concatenate 'string \"MY-PKG\"
+ \"-PACKAGE\") \"ACL2\")'), then @('symb') denotes the @(see rewrite) rule
+ added for the package.  For example, here is a display of that rule for the
+ event @('(defpkg \"MY-PKG\" '(a b))').</p>
+
+ @({
+ ACL2 !>:pl (pkg-imports \"MY-PKG\")
+
+ (:REWRITE MY-PKG-PACKAGE)
+   New term: '(A B)
+   Hypotheses: <none>
+   Equiv: EQUAL
+   Substitution: NIL
+
+ ....
+ })
 
  <p>@('Defpkg') is the only means by which an ACL2 user can create a new
  package or specify what it imports.  That is, ACL2 does not support the Common
@@ -119770,7 +119786,7 @@ work on <tt>(q x)</tt>.</p>
  reach this form, and then we eliminate @('lambdas') from the first argument of
  @('equiv') but not the second argument.  Here @('equiv') is a known @(see
  equivalence) relation.  If we do not reach an equivalence relation, even after
- eliminating @('lamdas'), then we replace the resulting term, @('term') by
+ eliminating @('lambdas'), then we replace the resulting term, @('term') by
  @('(iff term t)'), except that we replace @('(not term)') by @('(iff term
  nil)').  By these steps we reduce the given @(':')@(tsee corollary) to a
  sequence of conjuncts, each of which is of the form</p>
@@ -134878,7 +134894,8 @@ work on <tt>(q x)</tt>.</p>
  not a variable, return @('t') if it is a function call whose function symbol
  is a @('lambda') expression, else return @('nil').</li>
 
- <li>@('(flambdap fn)'): True when @('fn') is a @('lambda') expression.</li>
+ <li>@('(flambdap fn)'): For a @(tsee pseudo-termp) @('(fn arg1 ... argk)'),
+ true when @('fn') is a @(tsee lambda) expression</li>
 
  <li>@('(flatten-ands-in-lit term)'): Returns a list of terms whose conjunction
  is equivalent to the given term (which satisfies @(tsee pseudo-termp)),
@@ -138172,10 +138189,11 @@ work on <tt>(q x)</tt>.</p>
  denotes the set of the names of all rules introduced by the named event.</li>
 
  <li>If @('str') is the string naming some @(tsee defpkg) event and @('symb')
- is the symbol returned by @('(intern str \"ACL2\")'), then @('symb') is a
- runic designator and denotes the singleton set containing @('(:rewrite
- symb)'), which is the name of the rule stating the conditions under which the
- @(tsee symbol-package-name) of @('(intern x str)') is @('str').</li>
+ is the symbol returned by @('(intern (concatenate 'string str \"-PACKAGE\")
+ \"ACL2\")'), then @('symb') is a runic designator and denotes the singleton
+ set containing @('(:rewrite symb)'), which is the name of the rule stating the
+ conditions under which the @(tsee symbol-package-name) of @('(intern x str)')
+ is @('str').</li>
 
  <li>If @('symb') is the name of a @(tsee deftheory) event, then @('symb') is a
  runic designator and denotes the runic theory (as defined below) corresponding

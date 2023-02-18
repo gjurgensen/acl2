@@ -77,7 +77,7 @@ Subtopics
   [defthm], [in-theory], [xargs], [state], etc., without an acl2::
   prefix.
 
-  The constant *acl2-exports* lists 1576 symbols, including most
+  The constant *acl2-exports* lists 1579 symbols, including most
   documented ACL2 system constants, functions, and macros.  You will
   typically also want to import many symbols from Common Lisp; see
   [*common-lisp-symbols-from-main-lisp-package*].
@@ -293,7 +293,8 @@ Subtopics
        er-progn@par er-soft er-soft-logic ev$
        ev$-list evenp evens event evisc-tuple
        executable-counterpart-theory
-       exists exit explode-atom
+       exists exit
+       explain-giant-lambda-object explode-atom
        explode-nonnegative-integer expt
        expt-type-prescription-non-zero-base
        extend-32-bit-integer-stack
@@ -594,8 +595,8 @@ Subtopics
        set-difference-theories
        set-duplicate-keys-action
        set-duplicate-keys-action!
-       set-enforce-redundancy
-       set-equalp-equal set-evisc-tuple
+       set-enforce-redundancy set-equalp-equal
+       set-evisc-tuple set-fast-cert
        set-fc-criteria set-fc-report-on-the-fly
        set-fmt-hard-right-margin
        set-fmt-soft-right-margin set-gag-mode
@@ -781,8 +782,8 @@ Subtopics
        w walkabout warning! warrant
        waterfall-parallelism waterfall-printing
        weak-ld-history-entry-p
-       well-formed-lambda-objectp
-       wet when$ when$+ with-fast-alist
+       well-formed-lambda-objectp wet
+       when$ when$+ with-cbd with-fast-alist
        with-global-stobj with-guard-checking
        with-guard-checking-error-triple
        with-guard-checking-event
@@ -26305,7 +26306,21 @@ Subtopics
 
   Upon admission of a defpkg event, the function pkg-imports is
   extended to compute a list of all symbols imported into the given
-  package, without duplicates.
+  package, without duplicates.  If \"MY-PKG\" is the name of the new
+  package and symb is the symbol returned by (intern (concatenate
+  'string \"MY-PKG\" \"-PACKAGE\") \"ACL2\"), then symb denotes the
+  [rewrite] rule added for the package.  For example, here is a
+  display of that rule for the event (defpkg \"MY-PKG\" '(a b)).
+
+    ACL2 !>:pl (pkg-imports \"MY-PKG\")
+
+    (:REWRITE MY-PKG-PACKAGE)
+      New term: '(A B)
+      Hypotheses: <none>
+      Equiv: EQUAL
+      Substitution: NIL
+
+    ....
 
   Defpkg is the only means by which an ACL2 user can create a new
   package or specify what it imports.  That is, ACL2 does not support
@@ -104702,11 +104717,11 @@ Subtopics
 
   Function: <position-equal>
 
-    (defun position-equal (item lst)
-           (declare (xargs :guard (or (stringp lst) (true-listp lst))))
-           (if (stringp lst)
-               (position-ac item (coerce lst 'list) 0)
-               (position-equal-ac item lst 0)))
+    (defun position-equal (x seq)
+           (declare (xargs :guard (or (stringp seq) (true-listp seq))))
+           (if (stringp seq)
+               (position-ac x (coerce seq 'list) 0)
+               (position-equal-ac x seq 0)))
 
   Function: <position-equal-ac>
 
@@ -118680,7 +118695,7 @@ Subtopics
   lambdas until we reach this form, and then we eliminate lambdas
   from the first argument of equiv but not the second argument.  Here
   equiv is a known [equivalence] relation.  If we do not reach an
-  equivalence relation, even after eliminating lamdas, then we
+  equivalence relation, even after eliminating lambdas, then we
   replace the resulting term, term by (iff term t), except that we
   replace (not term) by (iff term nil).  By these steps we reduce the
   given :[corollary] to a sequence of conjuncts, each of which is of
@@ -133616,7 +133631,8 @@ List of a few built-in system utilities
     * (flambda-applicationp x): For a [pseudo-termp] x that is not a
       variable, return t if it is a function call whose function
       symbol is a lambda expression, else return nil.
-    * (flambdap fn): True when fn is a lambda expression.
+    * (flambdap fn): For a [pseudo-termp] (fn arg1 ... argk), true when fn
+      is a [lambda] expression
     * (flatten-ands-in-lit term): Returns a list of terms whose conjunction
       is equivalent to the given term (which satisfies
       [pseudo-termp]), obtained by flattening its conjunctive
@@ -136837,10 +136853,11 @@ Subtopics
       and denotes the set of the names of all rules introduced by the
       named event.
     * If str is the string naming some [defpkg] event and symb is the
-      symbol returned by (intern str \"ACL2\"), then symb is a runic
-      designator and denotes the singleton set containing (:rewrite
-      symb), which is the name of the rule stating the conditions
-      under which the [symbol-package-name] of (intern x str) is str.
+      symbol returned by (intern (concatenate 'string str \"-PACKAGE\")
+      \"ACL2\"), then symb is a runic designator and denotes the
+      singleton set containing (:rewrite symb), which is the name of
+      the rule stating the conditions under which the
+      [symbol-package-name] of (intern x str) is str.
     * If symb is the name of a [deftheory] event, then symb is a runic
       designator and denotes the runic theory (as defined below)
       corresponding to symb.
