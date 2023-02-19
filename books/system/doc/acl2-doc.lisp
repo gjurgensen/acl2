@@ -34127,7 +34127,7 @@ current fast alists."
  @({
  ; Start ./sv-top, then:
  (set-fast-cert t state)
- (certify-book \"name\" ? t :ttags :all) 
+ (certify-book \"name\" ? t :ttags :all)
  })
 
  <p>In this little example, the certification time has been cut in half by
@@ -34223,7 +34223,7 @@ current fast alists."
  Basic-ts:     *TS-RATIONAL*
  Vars:         NIL
  Corollary:    (RATIONALP (LAMZ A B E))
- 
+
  ...
  })
 
@@ -34277,7 +34277,7 @@ current fast alists."
      :ld-skip-proofsp 'include-book)
  :ubt lamz
  (defun lamz (a b e)
-   (lnot (lior a (lnot b (1+ e)) (1+ e)) (1+ e))) 
+   (lnot (lior a (lnot b (1+ e)) (1+ e)) (1+ e)))
  })
 
  <p>Then @(':pr lamz') shows a @(':type-prescription') rule for @('lamz') that
@@ -101412,6 +101412,8 @@ it."
 ; The defthm function-symbolp-ev-fncall+-fns-strictp is no longer stored as a
 ; rewrite rule.  Thanks to Warren Hunt for pointing out that rule hung on IF.
 
+; Eliminated most traces of "akcl" in favor of "gcl".
+
   :parents (release-notes)
   :short "ACL2 Version  8.6 (xxx, 20xx) Notes"
   :long "<p>NOTE!  New users can ignore these release notes, because the @(see
@@ -103673,8 +103675,8 @@ arithmetic) for libraries of @(see books) for arithmetic reasoning.</p>")
  Suppose we allowed that and implemented it simply by setting the imports of
  @('\"pkg\"') to the new subset.  Then consider the conjecture @('(eq a::sym
  pkg::sym)').  This ought not be a theorem because we did not import
- @('a::sym') into @('\"pkg\"').  But in fact in AKCL it is a theorem because
- @('pkg::sym') is read as @('a::sym') because of the old imports.</p>")
+ @('a::sym') into @('\"pkg\"').  But in fact in AKCL it was a theorem because
+ @('pkg::sym') was read as @('a::sym') because of the old imports.</p>")
 
 (defxdoc packages
   :parents (programming)
@@ -130596,7 +130598,7 @@ work on <tt>(q x)</tt>.</p>
  essentially gives ACL2 access to what is provided by CLTL's
  @('list-all-packages').  @(tsee Defpkg) uses this feature to ensure that the
  about-to-be-created package is new in this lisp.  Thus, for example, in
- @('akcl') it is impossible to create the package @('\"COMPILER\"') with @(tsee
+ @('gcl') it is impossible to create the package @('\"COMPILER\"') with @(tsee
  defpkg) because it is on the list, while in Lucid that package name is not
  initially on the list.</p>
 
@@ -134242,7 +134244,8 @@ work on <tt>(q x)</tt>.</p>
  @(tsee defttag) form before you can use @('sys-call'); see @(see defttag).
  (Note: The setting of the raw Lisp variable @('*features*') below is just to
  illustrate that any such mischief is possible.  Normally @('*features*') is a
- list with more than a few elements.)</p>
+ list with more than a few elements.  Also, note that this log is from many
+ years ago; the feature shown, @(':AKCL-SET-MV'), is no longer present.)</p>
 
  @({
   % cat foo
@@ -138693,11 +138696,11 @@ work on <tt>(q x)</tt>.</p>
  <p>See @(see arrays) to read about applicative, fast @(see arrays) in
  ACL2.</p>
 
- <p>To quit the ACL2 @(see command) loop, or (in akcl) to return to the ACL2
+ <p>To quit the ACL2 @(see command) loop, or (in gcl) to return to the ACL2
  @(see command) loop after an interrupt, type @(':')@(tsee q).  To continue
- (resume) after an interrupt (in akcl), type @(':r').  To cause an interrupt
- (in akcl under Unix (trademark of AT&amp;T)), hit control-C (twice, if inside
- Emacs).  To exit ACL2 altogether, type @(':')@(tsee quit).</p>
+ (resume) after an interrupt (in gcl), type @(':r').  To cause an interrupt hit
+ control-C (twice, if inside Emacs).  To exit ACL2 altogether, type
+ @(':')@(tsee quit).</p>
 
  <p>See @(see state) to read about the von Neumannesque ACL2 @(see state)
  object that records the ``current state'' of the ACL2 session.  Also see @(see
@@ -155157,8 +155160,8 @@ run the given instructions, and ``succeed'' if and only if they ``fail''"
 
  <p>(or, @('control-d')).</p>
 
- <p>The whole point of this command is that in some Lisps (including akcl), if
- you type @('control-d') then it seems, on occasion, to get interpreted as
+ <p>The whole point of this command is that there have been Lisps where if you
+ type @('control-d') then it seems, on occasion, to get interpreted as
  @('nil').  Without this command, one seems to get into an infinite loop.</p>")
 
 (defxdoc acl2-pc::noise
