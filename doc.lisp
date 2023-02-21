@@ -23926,10 +23926,14 @@ Miscellaneous Remarks, with discussion of possible user errors.
   code during the proof process, essentially when the ``program
   refinement'' is on theorem prover code rather than on functions we
   are reasoning about.  The attachment to too-many-ifs-post-rewrite
-  described above provides one example of such attachments.  Meta
-  functions and clause-processor functions can also have attachments,
-  with the restriction that no common ancestor with the evaluator can
-  have an attachment; see [evaluator-restrictions].
+  described above provides one example of such attachments.  Another
+  example is that a meta function or clause-processor function can
+  call functions that have attachments, with a restriction that those
+  attached functions must not also be ancestral in a corresponding
+  evaluator.  See [evaluator-restrictions] for a discussion of that
+  restriction, and see [transparent-functions] for a device that can
+  relax the restriction (while imposing additional requirements on
+  attachments).
 
   For an attachment pair <f,g>, evaluation of f never consults the
   [guard] of f.  Rather, control passes to g, whose guard is checked
@@ -32785,7 +32789,7 @@ Subtopics
       previous theorems.  See [hints] and see [lemma-instance].
 
   [Infected-constraints]
-      [Defun]s affecting [constraint]s of [encapsulate]s
+      [Events] affecting [constraint]s of [encapsulate]s
 
   [Partial-encapsulate]
       Introduce functions with some constraints unspecified
@@ -34341,7 +34345,9 @@ Subtopics
   non-trivial encapsulate.  We also require that no function has an
   attachment (see [defattach]) that is both ancestral in the
   evaluator and also ancestral in the meta or clause-processor
-  functions.  We explain these restrictions in detail below.
+  functions.  We explain these restrictions in detail below,
+  including the notion of one function symbol being ``ancestral in'',
+  also expressed as ``an ancestor of'', in another function symbol.
 
   An argument given elsewhere (see [meta], in particular ``Aside for
   the logic-minded'') explains that the correctness argument for
@@ -34698,7 +34704,8 @@ Subtopics
   To see why this restriction is sufficient, see a comment in the ACL2
   source code entitled ``; Essay on Correctness of Meta Reasoning.''
 
-  TO DO: Explain transparent functions.")
+  One can sometimes work around this restriction; see
+  [transparent-functions].")
  (EVENP
   (NUMBERS ACL2-BUILT-INS)
   "Test whether an integer is even
@@ -52884,7 +52891,7 @@ Subtopics
   schemes.")
  (INFECTED-CONSTRAINTS
   (ENCAPSULATE)
-  "[Defun]s affecting [constraint]s of [encapsulate]s
+  "[Events] affecting [constraint]s of [encapsulate]s
 
   Here we explain briefly the two kinds of \"Infected\" [warnings] that
   are sometimes printed near the end of the output from [encapsulate]
@@ -52894,10 +52901,15 @@ Subtopics
   second kind of \"Infected\" warning mentioned below, in the last
   example.
 
-  An \"Infected\" warning indicates that a [defun] event inside an
-  encapsulate event affects the constraint exported for the function
-  introduced in the [signature] of that encapsulate.  Let's compare
-  the following three examples.
+  An \"Infected\" warning indicates that an event introducing a function
+  symbol inside encapsulate event affects the constraint exported for
+  the function introduced in the [signature] of that encapsulate.
+  That function is typically introduced with [defun], but it could be
+  introduced in a signatures of a subsidiary encapsulate event or in
+  a [defchoose] event.  Below we'll discuss the case of defun, but
+  the others are completely analogous for an \"Infected\" warning.
+
+  Let's compare the following three examples.
 
   EXAMPLE 1.
 
@@ -61153,11 +61165,6 @@ Introduction
    2. If concl is (not (not concl2)), replace concl by concl2.
    3. For the resulting concl, replace [=] and [/=] by [equal] and not
       equal, respectively.
-   4. Finally, the resulting concl is processed (``linearized'') to attempt
-      to create a corresponding polynomial or disjunction of two
-      polynomials.  This process includes the evaluation of ground
-      subexpressions, for example replacing (* '3 '4) by '12, and
-      employs techniques that include [type-set] reasoning.
 
   Each rule has one or more ``trigger terms'' which may be specified by
   the user using the :trigger-terms field of the rule class or which
@@ -73111,7 +73118,11 @@ Subtopics
       Attach a heuristic filter on a rule
 
   [Term-table]
-      A table used to validate meta rules")
+      A table used to validate meta rules
+
+  [Transparent-functions]
+      Working around restrictions on the use of evaluators in meta-level
+      rules")
  (META-EXTRACT
   (META CLAUSE-PROCESSOR)
   "Meta reasoning using valid terms extracted from context or [world]
@@ -98612,17 +98623,16 @@ Changes to Existing Features
        redundancy requires that both are @(tsee mutual-recursion) events
        that define the same set of function symbols.
 
-  A new feature, called ``transparent'' signature functions, can allow
-  one to avoid the restriction on a rule of class :[meta] or
+  A new feature, called ``transparent'' functions, can allow one to
+  avoid the restriction on a rule of class :[meta] or
   :[clause-processor] that there are no common ancestors of its
-  evaluator and meta function.  See [evaluator-restrictions].  Thanks
-  to Mertcan Temel for requesting a way to work around that
-  restriction, and thanks to Sol Swords for suggesting (and naming)
-  the notion of transparent functions.  We are also grateful to Sol
-  for providing a very helpful sketch of a correctness proof.  The
-  [community-books] file,
-  books/system/tests/transparent-functions-input.lsp has examples of
-  the use of transparent functions and related errors.
+  evaluator and meta function.  See [evaluator-restrictions] for
+  relevant background, and see [transparent-functions] for
+  documentation of the new feature.  Thanks to Mertcan Temel for
+  requesting a way to work around that restriction, and thanks to Sol
+  Swords for suggesting (and naming) the notion of transparent
+  functions.  We are also grateful to Sol for providing a very
+  helpful sketch of a correctness proof.
 
   When there an attachment to a common ancestor of the evaluator and
   meta function of a proposed rule of class :[meta] or
@@ -101207,8 +101217,8 @@ Subtopics
   Suppose we allowed that and implemented it simply by setting the
   imports of \"pkg\" to the new subset.  Then consider the conjecture
   (eq a::sym pkg::sym).  This ought not be a theorem because we did
-  not import a::sym into \"pkg\".  But in fact in AKCL it is a theorem
-  because pkg::sym is read as a::sym because of the old imports.")
+  not import a::sym into \"pkg\".  But in fact in AKCL it was a theorem
+  because pkg::sym was read as a::sym because of the old imports.")
  (PACKAGES
   (PROGRAMMING)
   "Collections of symbols that act as namespaces.
@@ -127553,22 +127563,22 @@ Subtopics
   a [keyword-value-listp], i.e., an alternating list of keywords and
   values starting with a keyword.  In this case ((fn x1 ... xn) =>
   val) must be a legal signature as described above.  The legal
-  keywords in k are normally :GUARD and :FORMALS (but see remarks at
-  the end of this topic regarding :GLOBAL-STOBJS and, for ACL2(r),
-  :CLASSICALP).  The value following :FORMALS is to be the list of
-  formal parameters of fn, which must be consistent with the
-  parameters specified in (fn x1 ... xn): they must both specify the
-  same arity (number of formal parameters) and the same [stobj]
-  inputs.  The value following :GUARD is a term that is to be the
-  [guard] of fn.  Note that this guard is never actually evaluated,
-  and is not subject to the guard verification performed on functions
-  introduced by [defun] (see [verify-guards]).  Said differently:
-  this guard need not itself have a guard of t.  Indeed, the guard is
-  only used for attachments; see [defattach].  Note that if :GUARD is
-  supplied, then :FORMALS must also be supplied as a list of distinct
-  variables that includes all variables occurring free in the
-  specified guard.  One final observation about guards: if the :GUARD
-  keyword is omitted, then the guard defaults to T.
+  keywords in k are generally :GUARD and :FORMALS, but see remarks at
+  the end of this topic regarding :GLOBAL-STOBJS and :TRANSPARENT
+  and, for ACL2(r), :CLASSICALP.  The value following :FORMALS is to
+  be the list of formal parameters of fn, which must be consistent
+  with the parameters specified in (fn x1 ... xn): they must both
+  specify the same arity (number of formal parameters) and the same
+  [stobj] inputs.  The value following :GUARD is a term that is to be
+  the [guard] of fn.  Note that this guard is never actually
+  evaluated, and is not subject to the guard verification performed
+  on functions introduced by [defun] (see [verify-guards]).  Said
+  differently: this guard need not itself have a guard of t.  Indeed,
+  the guard is only used for attachments; see [defattach].  Note that
+  if :GUARD is supplied, then :FORMALS must also be supplied as a
+  list of distinct variables that includes all variables occurring
+  free in the specified guard.  One final observation about guards:
+  if the :GUARD keyword is omitted, then the guard defaults to T.
 
   Before ACL2 supported user-declared single-threaded objects there was
   only one single-threaded object: ACL2's built-in notion of [state].
@@ -127609,9 +127619,11 @@ Subtopics
   keywords.  The keyword :GLOBAL-STOBJS specifies the use of the
   macro, with-global-stobj, in attachments (see [defattach]); see
   [with-global-stobj] for explanation of this keyword.  The keyword
-  :CLASSICALP is legal for ACL2(r) only (see [real]).  The value of
-  this keyword must be t (the default) or nil, indicating
-  respectively whether fn is classical or not.")
+  :TRANSPARENT specifies transparent functions; see
+  [transparent-functions].  Finally, the keyword :CLASSICALP is legal
+  for ACL2(r) only (see [real]).  The value of this keyword must be t
+  (the default) or nil, indicating respectively whether fn is
+  classical or not.")
  (SIGNED-BYTE-P
   (NUMBERS ACL2-BUILT-INS)
   "Recognizer for signed integers that fit in a specified bit width
@@ -129168,7 +129180,7 @@ Subtopics
       new state too).  This essentially gives ACL2 access to what is
       provided by CLTL's list-all-packages.  [Defpkg] uses this
       feature to ensure that the about-to-be-created package is new
-      in this lisp.  Thus, for example, in akcl it is impossible to
+      in this lisp.  Thus, for example, in gcl it is impossible to
       create the package \"COMPILER\" with [defpkg] because it is on
       the list, while in Lucid that package name is not initially on
       the list.
@@ -129262,10 +129274,11 @@ Subtopics
   suggested above, the following form is evaluated at the conclusion
   of the evaluation of the state-global-let* form, whether or not an
   error has occurred: (f-put-global 'vari 'old-vali state).  However,
-  if set-vari is supplied, then instead the form evaluated will be
-  (set-vari 'old-vali state).  This capability is particularly useful
-  if vari is untouchable (see [push-untouchable]), since the above
-  call of [f-put-global] is illegal.
+  if set-vari is supplied, it is a function symbol that we may call a
+  ``setter'', and the form evaluated will instead be (set-vari
+  'old-vali state).  This capability is particularly useful if vari
+  is untouchable (see [push-untouchable]), since the above call of
+  [f-put-global] is illegal.
 
   Note that the scope of the bindings of a state-global-let* form is
   the body of that form.  This may seem obvious, but to drive the
@@ -133014,7 +133027,8 @@ Subtopics
   can use sys-call; see [defttag].  (Note: The setting of the raw
   Lisp variable *features* below is just to illustrate that any such
   mischief is possible.  Normally *features* is a list with more than
-  a few elements.)
+  a few elements.  Also, note that this log is from many years ago;
+  the feature shown, :AKCL-SET-MV, is no longer present.)
 
     % cat foo
     print *0x85d2064=0x838E920
@@ -138321,11 +138335,11 @@ Subtopics
 
   See [arrays] to read about applicative, fast [arrays] in ACL2.
 
-  To quit the ACL2 [command] loop, or (in akcl) to return to the ACL2
+  To quit the ACL2 [command] loop, or (in gcl) to return to the ACL2
   [command] loop after an interrupt, type :[q].  To continue (resume)
-  after an interrupt (in akcl), type :r.  To cause an interrupt (in
-  akcl under Unix (trademark of AT&T)), hit control-C (twice, if
-  inside Emacs).  To exit ACL2 altogether, type :[quit].
+  after an interrupt (in gcl), type :r.  To cause an interrupt hit
+  control-C (twice, if inside Emacs).  To exit ACL2 altogether, type
+  :[quit].
 
   See [state] to read about the von Neumannesque ACL2 [state] object
   that records the ``current state'' of the ACL2 session.  Also see
@@ -140604,6 +140618,125 @@ Subtopics
                  "See [system-utilities].")
  (TRANSLATE11 (POINTERS)
               "See [system-utilities].")
+ (TRANSPARENT-FUNCTIONS
+  (META)
+  "Working around restrictions on the use of evaluators in meta-level
+  rules
+
+  See [evaluator-restrictions] for relevant background.  For examples
+  of the use of transparent functions, see [community-book] file
+  books/system/tests/transparent-functions-input.lsp, with
+  corresponding output in file transparent-functions-log.txt in the
+  same directory.
+
+  A function is called a ``transparent function symbol'' when it is
+  declared with :transparent t in a [signature] of an [encapsulate]
+  event.  By thus declaring a function to be transparent, you are
+  modifying the notion of ``ancestor'' of a meta-level function as
+  follows, for purposes of the ancestor restriction described in
+  [evaluator-restrictions]: when a transparent function f has an
+  attachment g (see [defattach]), then g is the sole ancestor
+  (supporter) of f.
+
+  We illustrate with a (contrived) example, which shows how declaring a
+  function to be transparent can avoid an error.  Consider what
+  happens when we submit the following events in a fresh ACL2
+  session.
+
+    (defstub f0 (x) t)
+
+    (encapsulate
+      (((f1 *) => *)
+       ((f2 *) => *))
+      (local (defun f1 (x) (f0 x)))
+      (local (defun f2 (x) (f0 x)))
+      (defthm f2-is-f1
+        (implies (f0 x)
+                 (equal (f2 x) (f1 x)))
+        :rule-classes nil))
+
+    (defn g0 (x) x)
+
+    (defattach f0 g0)
+
+    (with-output :off :all ; avoid noisy output
+      (defevaluator evl evl-list
+        ((f0 x))))
+
+    (defn meta-fn1 (x)
+      (if (f1 x)
+          x
+        x))
+
+    (defattach (f1 consp) (f2 consp))
+
+    (defthm thm1
+      (equal (evl x a)
+             (evl (meta-fn1 x) a))
+      :rule-classes ((:meta :trigger-fns (nth))))
+
+  The final ([defthm]) event results in the following error.
+
+    ACL2 Error in ( DEFTHM THM1 ...):  The proposed :META rule, THM1, is
+    illegal because the attached function F0 is ancestral in both the evaluator
+    and meta functions.  See :DOC evaluator-restrictions and see :DOC transparent-
+    functions.
+
+    The following is an ancestor path from F0 to the meta function META-FN1,
+    i.e., each function symbol is a supporter of the next:
+
+    (F0 F1 META-FN1)
+
+    The following is an ancestor path from F0 to the evaluator function
+    EVL, i.e., each function symbol is a supporter of the next:
+
+    (F0 EVL)
+
+  The events above make it clear that the alleged ancestor paths are
+  indeed ancestor paths, in the sense that each function symbol in
+  the path occurs in the definition or [constraint] for the function
+  symbol immediately after it.
+
+  To avoid this error, we need to arrange that f0 is no longer a common
+  ancestor of meta-fn1 and evl.  The notion of ancestor doesn't
+  change for the path leading to the evaluator function; but for the
+  path leading to the meta function, a transparent function symbol
+  has its attachment as its ancestor instead of the function symbols
+  in its [constraint].  In particular, f1 normally has f0 as an
+  ancestor, since f0 occurs in the constraint on f1; but if f1 is
+  transparent and has an attachment, then its attachment is the sole
+  ancestor of f0, as though f1 had been defined to be f0.  Thus, if
+  we replace the [encapsulate] event in our example simply by
+  declaring its [signature] functions to be transparent, as follows,
+  then the error disappears.
+
+    (encapsulate
+      (((f1 *) => * :transparent t)
+       ((f2 *) => * :transparent t))
+      (local (defun f1 (x) (f0 x)))
+      (local (defun f2 (x) (f0 x)))
+      (defthm f2-is-f1
+        (implies (f0 x)
+                 (equal (f2 x) (f1 x)))
+        :rule-classes nil))
+
+  We close with some restrictions pertaining to transparent function
+  symbols.
+
+    * If any function is declared with :transparent t in the signatures of
+      an encapsulate event, then all must be.
+    * If any function is declared with :transparent t in the signatures of
+      an encapsulate event, then every signature in a superior or
+      inferior encapsulate event must also specify :transparent t.
+    * The value of the :transparent keyword in a signature must be t or the
+      default, nil.
+    * The signatures of a [partial-encapsulate] (or of any encapsulate with
+      a call of set-unknown-constraints-supporters) must not specify
+      :transparent t in its signatures.
+    * When a [defattach] event attaches to a transparent function symbol f,
+      that event must attach to every function symbol constrained in
+      an encapsulate with f, and only to such function symbols.  The
+      same holds for unattaching in place of attaching.")
  (TRUE-LIST-FIX
   (TRUE-LISTP ACL2-BUILT-INS)
   "Coerce to a true list
@@ -153292,8 +153425,8 @@ Subtopics
 
   (or, control-d).
 
-  The whole point of this command is that in some Lisps (including
-  akcl), if you type control-d then it seems, on occasion, to get
+  The whole point of this command is that there have been Lisps where
+  if you type control-d then it seems, on occasion, to get
   interpreted as nil.  Without this command, one seems to get into an
   infinite loop.")
  (ACL2-PC::NOISE
