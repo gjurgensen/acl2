@@ -20731,9 +20731,12 @@ subtree of X with T, without duplication.</p>
  the proof process, essentially when the ``program refinement'' is on theorem
  prover code rather than on functions we are reasoning about.  The attachment
  to @('too-many-ifs-post-rewrite') described above provides one example of such
- attachments.  Meta functions and clause-processor functions can also have
- attachments, with the restriction that no common ancestor with the evaluator
- can have an attachment; see @(see evaluator-restrictions).</p>
+ attachments.  Another example is that a meta function or clause-processor
+ function can call functions that have attachments, with a restriction that
+ those attached functions must not also be ancestral in a corresponding
+ evaluator.  See @(see evaluator-restrictions) for a discussion of that
+ restriction, and see @(see transparent-functions) for a device that can relax
+ the restriction (while imposing additional requirements on attachments).</p>
 
  <p>For an attachment pair @('<f,g>'), evaluation of @('f') never consults the
  @(see guard) of @('f').  Rather, control passes to @('g'), whose guard is
@@ -31014,7 +31017,9 @@ ld) and @(tsee include-book)"
  encapsulate.  We also require that no function has an attachment (see @(see
  defattach)) that is both ancestral in the evaluator and also ancestral in the
  meta or clause-processor functions.  We explain these restrictions in detail
- below.</p>
+ below, including the notion of one function symbol being &ldquo;ancestral
+ in&rdquo;, also expressed as &ldquo;an ancestor of&rdquo;, in another function
+ symbol.</p>
 
  <p>An argument given elsewhere (see @(see meta), in particular ``Aside for the
  logic-minded'') explains that the correctness argument for applying
@@ -31379,7 +31384,8 @@ ld) and @(tsee include-book)"
  <p>To see why this restriction is sufficient, see a comment in the ACL2 source
  code entitled ``; Essay on Correctness of Meta Reasoning.''</p>
 
- <p>TO DO: Explain transparent functions.</p>")
+ <p>One can sometimes work around this restriction; see @(see
+ transparent-functions).</p>")
 
 (defxdoc evenp
   :parents (numbers acl2-built-ins)
@@ -49542,7 +49548,7 @@ tables in the current Hons Space."
 
 (defxdoc infected-constraints
   :parents (encapsulate)
-  :short "@(tsee Defun)s affecting @(see constraint)s of @(tsee encapsulate)s"
+  :short "@(tsee Events) affecting @(see constraint)s of @(tsee encapsulate)s"
   :long "<p>Here we explain briefly the two kinds of @('\"Infected\"') @(see
  warnings) that are sometimes printed near the end of the output from @(tsee
  encapsulate) @(see events).  Also see @(see constraint) for a more complete
@@ -49550,10 +49556,15 @@ tables in the current Hons Space."
  subversive-recursions) for a more complete discussion of the second kind of
  @('\"Infected\"') warning mentioned below, in the last example.</p>
 
- <p>An @('\"Infected\"') warning indicates that a @(tsee defun) event inside an
- @('encapsulate') event affects the constraint exported for the function
- introduced in the @(see signature) of that @('encapsulate').  Let's compare
- the following three examples.</p>
+ <p>An @('\"Infected\"') warning indicates that an event introducing a function
+ symbol inside @('encapsulate') event affects the constraint exported for the
+ function introduced in the @(see signature) of that @('encapsulate').  That
+ function is typically introduced with @(tsee defun), but it could be
+ introduced in a signatures of a subsidiary @('encapsulate') event or in a
+ @(tsee defchoose) event.  Below we'll discuss the case of @('defun'), but the
+ others are completely analogous for an @('\"Infected\"') warning.</p>
+
+ <p>Let's compare the following three examples.</p>
 
  <p><b>EXAMPLE 1</b>.</p>
 
@@ -57489,12 +57500,6 @@ forms allowed for a @('let') form are  @('ignore'), @('ignorable'), and
 
  <li>For the resulting @('concl'), replace @(tsee =) and @(tsee /=) by @(tsee
  equal) and @('not equal'), respectively.</li>
-
- <li>Finally, the resulting @('concl') is processed (``linearized'') to attempt
- to create a corresponding polynomial or disjunction of two polynomials.  This
- process includes the evaluation of ground subexpressions, for example
- replacing @('(* '3 '4)') by @(''12'), and employs techniques that include
- @(see type-set) reasoning.</li>
 
  </ol>
 
@@ -101414,6 +101419,32 @@ it."
 
 ; Eliminated most traces of "akcl" in favor of "gcl".
 
+; Fixed bogus handling of meta rule names in :with instances of :expand hints.
+; Here are (contrived) examples of the change in behavior.  First execute:
+
+;   (include-book "meta/meta-plus-equal" :dir :system)
+
+; Then execute either of the following, which differ only in whether the meta
+; rule supplied to :with is represented with a symbol or with a rune.
+
+;   (thm (equal (nth (1+ n) x) (nth n (cdr x)))
+;        :hints (("Goal"
+;                 :expand ((:with cancel_plus-equal-correct
+;                                 (equal (nth (1+ n) x) (nth n (cdr x))))))))
+
+;   (thm (equal (nth (1+ n) x) (nth n (cdr x)))
+;        :hints (("Goal"
+;                 :expand ((:with (:meta cancel_plus-equal-correct)
+;                                 (equal (nth (1+ n) x) (nth n (cdr x))))))))
+
+; The error now says "Unable to find a lemma....".  But before the fix we got
+; this nonsensical error.
+
+;   ACL2 Error in ( THM ...):  The left-hand side of a rule given to :with
+;   in an :expand hint must not contain free variables that are not among
+;   the variables on its left-hand side.  The variable NIL violates this
+;   requirement.
+
   :parents (release-notes)
   :short "ACL2 Version  8.6 (xxx, 20xx) Notes"
   :long "<p>NOTE!  New users can ignore these release notes, because the @(see
@@ -101567,16 +101598,15 @@ it."
       that define the same set of function symbols.
  })
 
- <p>A new feature, called ``transparent'' signature functions, can allow one to
- avoid the restriction on a rule of class @(':')@(tsee meta) or @(':')@(tsee
+ <p>A new feature, called ``transparent'' functions, can allow one to avoid the
+ restriction on a rule of class @(':')@(tsee meta) or @(':')@(tsee
  clause-processor) that there are no common ancestors of its evaluator and meta
- function.  See @(see evaluator-restrictions).  Thanks to Mertcan Temel for
- requesting a way to work around that restriction, and thanks to Sol Swords for
- suggesting (and naming) the notion of transparent functions.  We are also
- grateful to Sol for providing a very helpful sketch of a correctness proof.
- The @(see community-books) file,
- @('books/system/tests/transparent-functions-input.lsp') has examples of the
- use of transparent functions and related errors.</p>
+ function.  See @(see evaluator-restrictions) for relevant background, and see
+ @(see transparent-functions) for documentation of the new feature.  Thanks to
+ Mertcan Temel for requesting a way to work around that restriction, and thanks
+ to Sol Swords for suggesting (and naming) the notion of transparent functions.
+ We are also grateful to Sol for providing a very helpful sketch of a
+ correctness proof.</p>
 
  <p>When there an attachment to a common ancestor of the evaluator and meta
  function of a proposed rule of class @(':')@(tsee meta) or @(':')@(tsee
@@ -128952,21 +128982,22 @@ work on <tt>(q x)</tt>.</p>
  @('k') is a @(tsee keyword-value-listp), i.e., an alternating list of keywords
  and values starting with a keyword.  In this case @('((fn x1 ... xn) => val)')
  must be a legal signature as described above.  The legal keywords in @('k')
- are normally @(':GUARD') and @(':FORMALS') (but see remarks at the end of this
- topic regarding @(':GLOBAL-STOBJS') and, for ACL2(r), @(':CLASSICALP')).  The
- value following @(':FORMALS') is to be the list of formal parameters of
- @('fn'), which must be consistent with the parameters specified in @('(fn x1
- ... xn)'): they must both specify the same arity (number of formal parameters)
- and the same @(see stobj) inputs.  The value following @(':GUARD') is a term
- that is to be the @(see guard) of @('fn').  Note that this guard is never
- actually evaluated, and is not subject to the guard verification performed on
- functions introduced by @(tsee defun) (see @(see verify-guards)).  Said
- differently: this guard need not itself have a guard of @('t').  Indeed, the
- guard is only used for attachments; see @(see defattach).  Note that if
- @(':GUARD') is supplied, then @(':FORMALS') must also be supplied as a list of
- distinct variables that includes all variables occurring free in the specified
- guard.  One final observation about guards: if the @(':GUARD') keyword is
- omitted, then the guard defaults to @('T').</p>
+ are generally @(':GUARD') and @(':FORMALS'), but see remarks at the end of
+ this topic regarding @(':GLOBAL-STOBJS') and @(':TRANSPARENT') and, for
+ ACL2(r), @(':CLASSICALP').  The value following @(':FORMALS') is to be the
+ list of formal parameters of @('fn'), which must be consistent with the
+ parameters specified in @('(fn x1 ... xn)'): they must both specify the same
+ arity (number of formal parameters) and the same @(see stobj) inputs.  The
+ value following @(':GUARD') is a term that is to be the @(see guard) of
+ @('fn').  Note that this guard is never actually evaluated, and is not subject
+ to the guard verification performed on functions introduced by @(tsee
+ defun) (see @(see verify-guards)).  Said differently: this guard need not
+ itself have a guard of @('t').  Indeed, the guard is only used for
+ attachments; see @(see defattach).  Note that if @(':GUARD') is supplied, then
+ @(':FORMALS') must also be supplied as a list of distinct variables that
+ includes all variables occurring free in the specified guard.  One final
+ observation about guards: if the @(':GUARD') keyword is omitted, then the
+ guard defaults to @('T').</p>
 
  <p>Before ACL2 supported user-declared single-threaded objects there was only
  one single-threaded object: ACL2's built-in notion of @(tsee state).  The
@@ -129010,9 +129041,11 @@ work on <tt>(q x)</tt>.</p>
  The keyword @(':GLOBAL-STOBJS') specifies the use of the macro,
  @('with-global-stobj'), in attachments (see @(see defattach)); see @(tsee
  with-global-stobj) for explanation of this keyword.  The keyword
- @(':CLASSICALP') is legal for ACL2(r) only (see @(see real)).  The value of
- this keyword must be @('t') (the default) or @('nil'), indicating respectively
- whether @('fn') is classical or not.</p>")
+ @(':TRANSPARENT') specifies transparent functions; see @(see
+ transparent-functions).  Finally, the keyword @(':CLASSICALP') is legal for
+ ACL2(r) only (see @(see real)).  The value of this keyword must be @('t') (the
+ default) or @('nil'), indicating respectively whether @('fn') is classical or
+ not.</p>")
 
 (defxdoc signed-byte-p
   :parents (numbers acl2-built-ins)
@@ -130668,10 +130701,11 @@ work on <tt>(q x)</tt>.</p>
  suggested above, the following form is evaluated at the conclusion of the
  evaluation of the @('state-global-let*') form, whether or not an error has
  occurred: @('(f-put-global 'vari 'old-vali state)').  However, if
- @('set-vari') is supplied, then instead the form evaluated will be
- @('(set-vari 'old-vali state)').  This capability is particularly useful if
- @('vari') is untouchable (see @(see push-untouchable)), since the above call
- of @(tsee f-put-global) is illegal.</p>
+ @('set-vari') is supplied, it is a function symbol that we may call a
+ &ldquo;setter&rdquo;, and the form evaluated will instead be @('(set-vari
+ 'old-vali state)').  This capability is particularly useful if @('vari') is
+ untouchable (see @(see push-untouchable)), since the above call of @(tsee
+ f-put-global) is illegal.</p>
 
  <p>Note that the scope of the bindings of a @('state-global-let*') form is the
  body of that form.  This may seem obvious, but to drive the point home, let's
@@ -141021,6 +141055,145 @@ work on <tt>(q x)</tt>.</p>
   quoted well-formed @('LAMBDA') object is complicated so that @('apply$') can
   rapidly identify the parts, generate guard conditions, compile the object,
   recognize objects coming from @('lambda$') terms, etc.</p>")
+
+(defxdoc transparent-functions
+
+; Where we "close with some restrictions pertaining to transparent function
+; symbols" as mentioned below, there is a restriction discussed about "attach
+; to every function symbol constrained in an encapsulate with @('f')."  This
+; restriction incudes subsidiary and superior encapsulates, and it also
+; includes infectious functions (see the comment at the call of
+; transparent-mismatch in encapsulate-pass-2).  That seemed more complex to say
+; than is worthwhile for those unusual cases; and, it's technically covered by
+; what is actually said below, so we leave that alone.
+
+  :parents (meta)
+  :short "Working around restrictions on the use of evaluators in meta-level rules"
+  :long "<p>See @(see evaluator-restrictions) for relevant background.  For
+ examples of the use of transparent functions, see @(see community-book) file
+ @('books/system/tests/transparent-functions-input.lsp'), with corresponding
+ output in file @('transparent-functions-log.txt') in the same directory.</p>
+
+ <p>A function is called a &ldquo;transparent function symbol&rdquo; when it is
+ declared with @(':transparent t') in a @(see signature) of an @(tsee
+ encapsulate) event.  By thus declaring a function to be transparent, you are
+ modifying the notion of &ldquo;ancestor&rdquo; of a meta-level function as
+ follows, for purposes of the ancestor restriction described in @(see
+ evaluator-restrictions): when a transparent function @('f') has an attachment
+ @('g') (see @(see defattach)), then @('g') is the sole ancestor (supporter) of
+ @('f').</p>
+
+ <p>We illustrate with a (contrived) example, which shows how declaring a
+ function to be transparent can avoid an error.  Consider what happens when we
+ submit the following events in a fresh ACL2 session.</p>
+
+ @({
+ (defstub f0 (x) t)
+
+ (encapsulate
+   (((f1 *) => *)
+    ((f2 *) => *))
+   (local (defun f1 (x) (f0 x)))
+   (local (defun f2 (x) (f0 x)))
+   (defthm f2-is-f1
+     (implies (f0 x)
+              (equal (f2 x) (f1 x)))
+     :rule-classes nil))
+
+ (defn g0 (x) x)
+
+ (defattach f0 g0)
+
+ (with-output :off :all ; avoid noisy output
+   (defevaluator evl evl-list
+     ((f0 x))))
+
+ (defn meta-fn1 (x)
+   (if (f1 x)
+       x
+     x))
+
+ (defattach (f1 consp) (f2 consp))
+
+ (defthm thm1
+   (equal (evl x a)
+          (evl (meta-fn1 x) a))
+   :rule-classes ((:meta :trigger-fns (nth))))
+ })
+
+ <p>The final (@(tsee defthm)) event results in the following error.</p>
+
+ @({
+ ACL2 Error in ( DEFTHM THM1 ...):  The proposed :META rule, THM1, is
+ illegal because the attached function F0 is ancestral in both the evaluator
+ and meta functions.  See :DOC evaluator-restrictions and see :DOC transparent-
+ functions.
+
+ The following is an ancestor path from F0 to the meta function META-FN1,
+ i.e., each function symbol is a supporter of the next:
+
+ (F0 F1 META-FN1)
+
+ The following is an ancestor path from F0 to the evaluator function
+ EVL, i.e., each function symbol is a supporter of the next:
+
+ (F0 EVL)
+ })
+
+ <p>The events above make it clear that the alleged ancestor paths are indeed
+ ancestor paths, in the sense that each function symbol in the path occurs in
+ the definition or @(see constraint) for the function symbol immediately after
+ it.</p>
+
+ <p>To avoid this error, we need to arrange that @('f0') is no longer a common
+ ancestor of @('meta-fn1') and @('evl').  The notion of ancestor doesn't change
+ for the path leading to the evaluator function; but for the path leading to
+ the meta function, a transparent function symbol has its attachment as its
+ ancestor instead of the function symbols in its @(see constraint).  In
+ particular, @('f1') normally has @('f0') as an ancestor, since @('f0') occurs
+ in the constraint on @('f1'); but if @('f1') is transparent and has an
+ attachment, then its attachment is the sole ancestor of @('f0'), as though
+ @('f1') had been defined to be @('f0').  Thus, if we replace the @(tsee
+ encapsulate) event in our example simply by declaring its @(see signature)
+ functions to be transparent, as follows, then the error disappears.</p>
+
+ @({
+ (encapsulate
+   (((f1 *) => * :transparent t)
+    ((f2 *) => * :transparent t))
+   (local (defun f1 (x) (f0 x)))
+   (local (defun f2 (x) (f0 x)))
+   (defthm f2-is-f1
+     (implies (f0 x)
+              (equal (f2 x) (f1 x)))
+     :rule-classes nil))
+ })
+
+ <p>We close with some restrictions pertaining to transparent function
+ symbols.</p>
+
+ <ul>
+
+ <li>If any function is declared with @(':transparent t') in the signatures of
+ an @('encapsulate') event, then all must be.</li>
+
+ <li>If any function is declared with @(':transparent t') in the signatures of
+ an @('encapsulate') event, then every signature in a superior or inferior
+ @('encapsulate') event must also specify @(':transparent t').</li>
+
+ <li>The value of the @(':transparent') keyword in a signature must be @('t')
+ or the default, @('nil').</li>
+
+ <li>The signatures of a @(tsee partial-encapsulate) (or of any encapsulate
+ with a call of @('set-unknown-constraints-supporters')) must not specify
+ @(':transparent t') in its signatures.</li>
+
+ <li>When a @(tsee defattach) event attaches to a transparent function symbol
+ @('f'), that event must attach to every function symbol constrained in an
+ encapsulate with @('f'), and only to such function symbols.  The same holds
+ for unattaching in place of attaching.</li>
+
+ </ul>")
 
 (defxdoc true-list-fix
   :parents (true-listp acl2-built-ins)
