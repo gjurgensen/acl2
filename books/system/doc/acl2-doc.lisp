@@ -101710,6 +101710,16 @@ it."
 
  <h3>Heuristic and Efficiency Improvements</h3>
 
+ <p>Added a &ldquo;desperation heuristic&rdquo; to compute a stronger context,
+ for the extra try at simplification made after a goal is not changed by
+ simplification.  Thanks to Warren Hunt and Vivek Ramanathan for supplying an
+ example of a theorem whose proof had a surprising failure but now
+ succeeds.  (Technical Remark describing this change: When a clause has most
+ recently settled down at the time that the simplify process is invoked (a
+ so-called &ldquo;desperation heuristics&rdquo; attempt), then the literals are
+ reordered before building the @(see type-alist), so that the literals that
+ involve at most one variable precede the other literals.)</p>
+
  <h3>Bug Fixes</h3>
 
  <p>Fixed a soundness bug based on rules of class @(':')@(tsee meta) or
