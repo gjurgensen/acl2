@@ -98747,6 +98747,17 @@ New Features
 
 Heuristic and Efficiency Improvements
 
+  Added a ``desperation heuristic'' to compute a stronger context, for
+  the extra try at simplification made after a goal is not changed by
+  simplification.  Thanks to Warren Hunt and Vivek Ramanathan for
+  supplying an example of a theorem whose proof had a surprising
+  failure but now succeeds.  (Technical Remark describing this
+  change: When a clause has most recently settled down at the time
+  that the simplify process is invoked (a so-called ``desperation
+  heuristics'' attempt), then the literals are reordered before
+  building the [type-alist], so that the literals that involve at
+  most one variable precede the other literals.)
+
 
 Bug Fixes
 
