@@ -34634,10 +34634,6 @@ current fast alists."
 
 (defxdoc flet
 
-; Not mentioned here is the fact that ACL2 source function oneify-flet-bindings
-; drops type declarations in the *1* functions.  That point is so low-level
-; that explaining it in the :doc topic is likely to do more harm than good.
-
 ; Regarding "Every variable occurring in the body of a @('defi') must be a
 ; formal parameter of that @('defi')": the following example shows that if we
 ; were to remove that restriction, we would need to be very careful about the
@@ -34691,10 +34687,6 @@ current fast alists."
  @('decli') is of the form @('(inline g1 ... gm)') or @('(notinline g1
  ... gm)'), and each @('gi') is defined by some @('defi').</p>
 
- <p>The only effect of the declarations is to provide advice to the host Lisp
- compiler.  The declarations are otherwise ignored by ACL2, so we mainly ignore
- them in the discussion below.</p>
-
  <p>The innermost @('flet') or @(tsee macrolet) binding of a symbol, @('f'),
  above a call of @('f'), is the one that provides the definition of @('f') for
  that call.  Note that neither @('flet') nor @('macrolet') provide recursion:
@@ -34723,9 +34715,12 @@ current fast alists."
 
  <ul>
 
- <li>Every @(tsee declare) form for a local definition (@('def1')
- through @('defk'), above) must be an @('ignore'), @('ignorable'), or @('type')
- expression.</li>
+ <li>Every @(tsee declare) form for a local definition (@('def1') through
+ @('defk'), above) must be an @('ignore'), @('ignorable'), or @('type')
+ expression.  Such @('type') declarations affect evaluation and @(see
+ guard)-checking in a way that is completely analogous to such declarations
+ that occur between the formal parameters and the body in a @(tsee defun)
+ form.</li>
 
  <li>Each @('defi') must bind a different function symbol.</li>
 
@@ -101445,6 +101440,46 @@ it."
 ;   the variables on its left-hand side.  The variable NIL violates this
 ;   requirement.
 
+; Modified raw Lisp macros state-free-global-let* and
+; state-free-global-let*-safe to cause errors when any binding includes a
+; setter (i.e., when a binding is of the form (var val set-var)).  Modified
+; channel-to-string accordingly.
+
+; Here is the "example on iprinting" promised in :DOC note-8-6, to show how
+; iprinting behaves better with break-rewrite.  We start as follows.
+
+;   (monitor! 'len t)
+;   (iprint-enabledp state)
+;   (f-get-global 'iprint-ar state)
+;   (set-evisc-tuple (evisc-tuple 5 6 nil nil) :iprint :same :sites :all)
+;   (mv-let (step-limit term ttree)
+;     (rewrite '(len (cons a b))
+;               nil 1 20 100 nil '? nil nil (w state)
+;               state nil nil nil nil
+;               (make-rcnst (ens state) (w state) state
+;                           :force-info t)
+;               nil nil)
+;     (declare (ignore step-limit term ttree))
+;     (make-list 10))
+
+; When we then turn on iprinting during the break, we may have been surprised
+; in Version_8.5 to see that the result is printed without iprinting.
+
+;   (1 Breaking (:DEFINITION LEN) on (LEN (CONS A B)):
+;   1 ACL2 !>(set-iprint t)
+;   
+;   ACL2 Observation in SET-IPRINT:  Iprinting has been enabled.
+;   1 ACL2 !>:go!
+;   
+;   1 (:DEFINITION LEN) produced (BINARY-+ '1 (LEN B)).
+;   1)
+;   (NIL NIL NIL NIL NIL NIL ...)
+;   ACL2 !>
+
+; Now the final value is printed appropriately, as follows.
+
+;   (NIL NIL NIL NIL NIL NIL . #@1#)
+
   :parents (release-notes)
   :short "ACL2 Version  8.6 (xxx, 20xx) Notes"
   :long "<p>NOTE!  New users can ignore these release notes, because the @(see
@@ -101618,6 +101653,20 @@ it."
  the existing command, @('0'), which is still supported although @('up') is
  highlighted in the documentation; see @(see walkabout)).  Thanks to Eric Smith
  for suggesting @('up').</p>
+
+ <p>Arranged that @(see iprinting) that takes place during @(see break-rewrite)
+ is better reflected outside break-rewrite.  For an example, see the example on
+ iprinting in a comment in the form @('(defxdoc note-8-6 ...)') in @(see
+ community-book) @('books/system/doc/acl2-doc.lisp').</p>
+
+ <p>When a defined function has a @(tsee declare) form with @('(optimize
+ ...)'), that is now included in a declare form of the executable-counterpart
+ function (see @(see evaluation)), which had not been the case.</p>
+
+ <p>It had been the case that for type @(see declaration)s of @(tsee flet)
+ definitions in a surrounding @(tsee defun) form, they were dropped in the
+ @('defun') form's executable-counterpart (see @(see evaluation)).  Now they
+ are included.</p>
 
  <h3>New Features</h3>
 
@@ -151772,32 +151821,35 @@ for the execution of @('form')."
 
  <h3>Concluding remarks</h3>
 
- <p>Remark 1.  <b>Warning</b>: @('With-output') has no effect in raw
- Lisp (other than to expand to the provided @('form') argument), and hence is
- disallowed in function bodies.  However, you can probably get the effect you
- want as illustrated below, where @('<form>') must return an error-triple
- @('(mv erp val state)'); see @(see ld) and see @(see error-triple).</p>
-
- <p>Remark 2.  Here are examples avoiding @('with-output'), for use in function
- definitions.  But note that @('with-output!') can be used in function
- definitions.</p>
+ <p>@('With-output') has no effect in raw Lisp, in the sense that a call
+ @('(with-output ... form)') macroexpands to @('form') in raw Lisp.  Normally
+ this produces desired behavior, but occasionally you may be a bit surprised.
+ Consider for example the following book.</p>
 
  @({
-  ; Inhibit all output:
-  (state-global-let*
-   ((inhibit-output-lst *valid-output-names*))
-   <form>)
+ (in-package \"ACL2\")
 
-  ; Inhibit all warning output:
-  (state-global-let*
-   ((inhibit-output-lst
-     (union-eq (f-get-global 'inhibit-output-lst state)
-               '(warning warning!))))
-   <form>)
+ (with-output
+   :off :all
+   (make-event (prog2$ (cw \"@@@ NOISE @@@\")
+                       '(defun f (x) x))
+               :check-expansion t))
+
+ (make-event (with-output!
+               :off :all
+               (value (prog2$ (cw \"@@@ QUIET @@@\")
+                              '(defun g (x) x))))
+             :check-expansion t)
  })
 
- <p>Note that @('with-output') is allowed in books.  See @(see
- embedded-event-form).</p>")
+ <p>When certifying this book, we do not see either &lsquo;@('NOISE')&rsquo; or
+ &lsquo;@('QUIET')&rsquo;.  But then when we include this book, we see
+ &lsquo;@('NOISE')&rsquo; (but not &lsquo;@('QUIET')&rsquo;).  To see why, we
+ first note that both events are evaluated in raw Lisp when including the
+ book (as discussed briefly in the documentaion topic, @(see
+ book-compiled-file)).  The first calls @('with-output'), which (as noted
+ above) disappears during macroexpansion.  The second calls @('with-output!'),
+ which has the desired effect of suppressing output.</p>")
 
 (defxdoc with-output-lock
 
