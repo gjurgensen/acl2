@@ -38216,10 +38216,6 @@ Example 2
   where each decli is of the form (inline g1 ... gm) or (notinline g1
   ... gm), and each gi is defined by some defi.
 
-  The only effect of the declarations is to provide advice to the host
-  Lisp compiler.  The declarations are otherwise ignored by ACL2, so
-  we mainly ignore them in the discussion below.
-
   The innermost flet or [macrolet] binding of a symbol, f, above a call
   of f, is the one that provides the definition of f for that call.
   Note that neither flet nor macrolet provide recursion: that is, the
@@ -38244,7 +38240,11 @@ Example 2
   ACL2 imposes the following restrictions and qualifications.
 
     * Every [declare] form for a local definition (def1 through defk,
-      above) must be an ignore, ignorable, or type expression.
+      above) must be an ignore, ignorable, or type expression.  Such
+      type declarations affect evaluation and [guard]-checking in a
+      way that is completely analogous to such declarations that
+      occur between the formal parameters and the body in a [defun]
+      form.
     * Each defi must bind a different function symbol.
     * Each defi must bind a symbol that is a legal name for an ACL2
       function symbol.  In particular, the symbol may not be in the
@@ -98646,6 +98646,21 @@ Changes to Existing Features
   although up is highlighted in the documentation; see [walkabout]).
   Thanks to Eric Smith for suggesting up.
 
+  Arranged that [iprinting] that takes place during [break-rewrite] is
+  better reflected outside break-rewrite.  For an example, see the
+  example on iprinting in a comment in the form (defxdoc note-8-6
+  ...) in [community-book] books/system/doc/acl2-doc.lisp.
+
+  When a defined function has a [declare] form with (optimize ...),
+  that is now included in a declare form of the
+  executable-counterpart function (see [evaluation]), which had not
+  been the case.
+
+  It had been the case that for type [declaration]s of [flet]
+  definitions in a surrounding [defun] form, they were dropped in the
+  defun form's executable-counterpart (see [evaluation]).  Now they
+  are included.
+
 
 New Features
 
@@ -150121,30 +150136,33 @@ More about the stack argument
 
 Concluding remarks
 
-  Remark 1.  Warning: With-output has no effect in raw Lisp (other than
-  to expand to the provided form argument), and hence is disallowed
-  in function bodies.  However, you can probably get the effect you
-  want as illustrated below, where <form> must return an error-triple
-  (mv erp val state); see [ld] and see [error-triple].
+  With-output has no effect in raw Lisp, in the sense that a call
+  (with-output ... form) macroexpands to form in raw Lisp.  Normally
+  this produces desired behavior, but occasionally you may be a bit
+  surprised.  Consider for example the following book.
 
-  Remark 2.  Here are examples avoiding with-output, for use in
-  function definitions.  But note that with-output! can be used in
-  function definitions.
+    (in-package \"ACL2\")
 
-    ; Inhibit all output:
-    (state-global-let*
-     ((inhibit-output-lst *valid-output-names*))
-     <form>)
+    (with-output
+      :off :all
+      (make-event (prog2$ (cw \"@@@ NOISE @@@\")
+                          '(defun f (x) x))
+                  :check-expansion t))
 
-    ; Inhibit all warning output:
-    (state-global-let*
-     ((inhibit-output-lst
-       (union-eq (f-get-global 'inhibit-output-lst state)
-                 '(warning warning!))))
-     <form>)
+    (make-event (with-output!
+                  :off :all
+                  (value (prog2$ (cw \"@@@ QUIET @@@\")
+                                 '(defun g (x) x))))
+                :check-expansion t)
 
-  Note that with-output is allowed in books.  See
-  [embedded-event-form].")
+  When certifying this book, we do not see either `NOISE' or `QUIET'.
+  But then when we include this book, we see `NOISE' (but not
+  `QUIET').  To see why, we first note that both events are evaluated
+  in raw Lisp when including the book (as discussed briefly in the
+  documentaion topic, [book-compiled-file]).  The first calls
+  with-output, which (as noted above) disappears during
+  macroexpansion.  The second calls with-output!, which has the
+  desired effect of suppressing output.")
  (WITH-OUTPUT! (POINTERS)
                "See [with-output].")
  (WITH-OUTPUT-LOCK
