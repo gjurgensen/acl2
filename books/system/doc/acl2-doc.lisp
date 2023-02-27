@@ -101480,6 +101480,32 @@ it."
 
 ;   (NIL NIL NIL NIL NIL NIL . #@1#)
 
+; We now avoid a raw Lisp error when not catching tag RAW-EV-FNCALL because
+; hard-error is called outside the scope of raw-ev-fncall, e.g.:
+;   (flet ((lambda$ (x) (cons x x))) (lambda$ 3))
+
+; Added periods at ends of sentences about popping up 0 or more LD levels,
+; e.g.: "Abort to ACL2 top-level."
+
+; Fixed an error in the interaction of loop$ with untouchables and
+; temp-touchables.  For example, the following caused an error in Version_8.5.
+;
+;   (include-book "projects/apply/top" :dir :system)
+;   (defttag t)
+;   (set-state-ok t)
+;   (set-temp-touchable-vars t state)
+;   (defwarrant put-global)
+;   (defun foo (state)
+;     (loop$ with val = 3 do
+;            :values (state)
+;            (return (f-put-global 'axiomsp nil state))))
+
+; Avoided potential repeated consing when computing of (default-state-vars
+; nil); now this macroexpands to *default-state-vars*.
+
+; Eliminated obsolete world global, documentation-alist, and fixed related bug
+; in :pr and :pe so that now the output refers to the :DOC, as intended.
+
   :parents (release-notes)
   :short "ACL2 Version  8.6 (xxx, 20xx) Notes"
   :long "<p>NOTE!  New users can ignore these release notes, because the @(see
