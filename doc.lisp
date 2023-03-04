@@ -126729,6 +126729,13 @@ General Form
   set-warnings-as-errors is a function, so all arguments are
   evaluated.  The warnings thus affected are determined as follows.
 
+    * No warning whose type specified by constant
+      *uninhibited-warning-summaries* is converted to an error.
+      Those types are the ones that belong, with a case-insensitive
+      check, to the list (\"Uncertified\" \"Provisionally certified\"
+      \"Skip-proofs\" \"Defaxioms\" \"Ttags\" \"Compiled file\"
+      \"User-stobjs-modified\").  This exception overrides all
+      discussion below.
     * The behavior of [warnings] is affected for every warning type
       specified by the types argument.  When its value is :all, then
       all warnings are affected.  Otherwise the value of types is a
