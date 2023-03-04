@@ -101467,10 +101467,10 @@ it."
 
 ;   (1 Breaking (:DEFINITION LEN) on (LEN (CONS A B)):
 ;   1 ACL2 !>(set-iprint t)
-;   
+;
 ;   ACL2 Observation in SET-IPRINT:  Iprinting has been enabled.
 ;   1 ACL2 !>:go!
-;   
+;
 ;   1 (:DEFINITION LEN) produced (BINARY-+ '1 (LEN B)).
 ;   1)
 ;   (NIL NIL NIL NIL NIL NIL ...)
@@ -128152,6 +128152,12 @@ work on <tt>(q x)</tt>.</p>
  evaluated.  The warnings thus affected are determined as follows.</p>
 
  <ul>
+
+ <li>No warning whose type specified by constant
+ @('*uninhibited-warning-summaries*') is converted to an error.  Those types
+ are the ones that belong, with a case-insensitive check, to the list
+ @(`*uninhibited-warning-summaries*`).  This exception overrides all discussion
+ below.</li>
 
  <li>The behavior of @(see warnings) is affected for every warning type
  specified by the @('types') argument.  When its value is @(':all'), then all
