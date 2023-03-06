@@ -59553,6 +59553,9 @@ Subtopics
   [Keyword-commands]
       How keyword commands like :u and :pbt are processed
 
+  [Ld-always-skip-top-level-locals]
+      Determines whether [ld] skips [local] top-level forms
+
   [Ld-error-action]
       Determines [ld]'s response to an error
 
@@ -59569,7 +59572,7 @@ Subtopics
       Abbreviation of some keyword commands
 
   [Ld-missing-input-ok]
-      Determines which forms [ld] evaluates
+      Determine whether [ld] causes an error for a missing file
 
   [Ld-post-eval-print]
       Determines whether and how [ld] prints the result of evaluation
@@ -59624,6 +59627,23 @@ Subtopics
 
   [Wormhole]
       [ld] without [state] --- a short-cut to a parallel universe")
+ (LD-ALWAYS-SKIP-TOP-LEVEL-LOCALS
+  (LD)
+  "Determines whether [ld] skips [local] top-level forms
+
+  Ld-always-skip-top-level-locals is an [ld] special (see [ld]).  The
+  accessor is (ld-always-skip-top-level-locals state) and the updater
+  is (set-ld-always-skip-top-level-locals val state).  The value of
+  ld-always-skip-top-level-locals must be either nil, or t.  The
+  initial value of ld-always-skip-top-level-locals is nil.
+
+  The general-purpose ACL2 read-eval-print loop, [ld], is controlled by
+  various flags that control its behavior, and
+  ld-always-skip-top-level-locals is one of them.  When the value is
+  t, [local] [events] are skipped when they are at the top level in
+  the following sense: they are not evaluated in the scope of either
+  a call of [certify-book], [include-book], or [encapsulate], or else
+  during [make-event] expansion.")
  (LD-ERROR-ACTION
   (LD)
   "Determines [ld]'s response to an error
@@ -60089,13 +60109,13 @@ Subtopics
   above, for the keywords bound in the ld-keyword-aliases [table].")
  (LD-MISSING-INPUT-OK
   (LD)
-  "Determines which forms [ld] evaluates
+  "Determine whether [ld] causes an error for a missing file
 
-  ld-missing-input-ok is an [ld] special (see [ld]).  The accessor is
+  Ld-missing-input-ok is an [ld] special (see [ld]).  The accessor is
   (ld-missing-input-ok state) and the updater is
-  (set-ld-missing-input-ok val state).  ld-missing-input-ok must be
-  either nil, t, or :warn.  The initial value of ld-missing-input-ok
-  is nil.
+  (set-ld-missing-input-ok val state).  The value of
+  ld-missing-input-ok must be either nil, t, or :warn.  The initial
+  value of ld-missing-input-ok is nil.
 
   The general-purpose ACL2 read-eval-print loop, [ld], is controlled by
   various flags that control its behavior, and ld-missing-input-ok is
@@ -98785,6 +98805,11 @@ New Features
   to hard [errors].  Thanks to Mark Greenstreet for the idea and for
   discussions that were helpful in refining it.
 
+  A new [ld] special, [ld-always-skip-top-level-locals], has the effect
+  of skipping [local] top-level forms.  Thanks to Sol Swords for
+  requesting such a capability, to support faster loading of .port
+  files by the build system (see [build::cert.pl]).
+
 
 Heuristic and Efficiency Improvements
 
@@ -98921,13 +98946,17 @@ Bug Fixes
   A bug in the [brr] commands :eval$, :go$, and :ok$ was fixed so they
   now behave as described in the documentation for [brr-commands].
 
-
-Changes at the System Level
-
-  The `make' target, save-exec, now builds custom-saved_acl2
-  unconditionally.  Thanks to Grant Jurgensen for pointing out (in
-  GitHub Issue #1422) that there can be untracked implicit
-  dependencies that make this necessary.
+  When a certified book is included, the logical [world] will no longer
+  be marked as having seen a [skip-proofs] call, even when the value
+  of [ld] special [ld-skip-proofsp] is non-nil at that time.  Thus,
+  that situation no longer disqualifies such a world from supplying
+  the [portcullis] commands to a book to be certified without keyword
+  argument :skip-proofs-okp t) of @(tsee certify-book).  Thanks to
+  Sol Swords for pointing out this bug.</p> <h3>Changes at the System
+  Level</h3> <p>The `@('make' target, save-exec, now builds
+  custom-saved_acl2 unconditionally.  Thanks to Grant Jurgensen for
+  pointing out (in GitHub Issue #1422) that there can be untracked
+  implicit dependencies that make this necessary.
 
   Implementations underlying the functions [sys-call], [sys-call+], and
   [sys-call*] have been cleaned up.  In particular, we now expect
