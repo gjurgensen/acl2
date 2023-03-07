@@ -77,7 +77,7 @@ Subtopics
   [defthm], [in-theory], [xargs], [state], etc., without an acl2::
   prefix.
 
-  The constant *acl2-exports* lists 1579 symbols, including most
+  The constant *acl2-exports* lists 1596 symbols, including most
   documented ACL2 system constants, functions, and macros.  You will
   typically also want to import many symbols from Common Lisp; see
   [*common-lisp-symbols-from-main-lisp-package*].
@@ -387,9 +387,10 @@ Subtopics
        keywordp keywordp-forward-to-symbolp
        known-package-alist known-package-alistp
        known-package-alistp-forward-to-true-list-listp-and-alistp
-       kwote kwote-lst
-       l< lambda lambda$ last last-cdr
-       last-prover-steps ld ld-error-action
+       kwote kwote-lst l< lambda
+       lambda$ last last-cdr last-prover-steps
+       ld ld-always-skip-top-level-locals
+       ld-error-action
        ld-error-triples ld-evisc-tuple
        ld-history ld-history-entry-error-flg
        ld-history-entry-input
@@ -402,6 +403,7 @@ Subtopics
        ld-pre-eval-filter ld-pre-eval-print
        ld-prompt ld-query-control-alist
        ld-redefinition-action ld-skip-proofsp
+       ld-user-stobjs-modified-warning
        ld-verbose legal-case-clausesp
        len len-update-nth length let
        let* let-mbe lex-fix lexorder lexp list
@@ -612,11 +614,20 @@ Subtopics
        set-inhibited-summary-types
        set-invisible-fns-table
        set-iprint set-irrelevant-formals-ok
+       set-ld-always-skip-top-level-locals
+       set-ld-error-action
+       set-ld-error-triples set-ld-evisc-tuple
        set-ld-keyword-aliases
        set-ld-keyword-aliases!
-       set-ld-prompt set-ld-redefinition-action
-       set-ld-skip-proofs
-       set-ld-skip-proofsp set-let*-abstraction
+       set-ld-missing-input-ok
+       set-ld-post-eval-print
+       set-ld-pre-eval-filter
+       set-ld-pre-eval-print
+       set-ld-prompt set-ld-query-control-alist
+       set-ld-redefinition-action
+       set-ld-skip-proofs set-ld-skip-proofsp
+       set-ld-user-stobjs-modified-warning
+       set-ld-verbose set-let*-abstraction
        set-let*-abstractionp
        set-match-free-default
        set-match-free-error
@@ -631,7 +642,7 @@ Subtopics
        set-print-level set-print-lines
        set-print-radix set-print-readably
        set-print-right-margin
-       set-prover-step-limit
+       set-proofs-co set-prover-step-limit
        set-raw-mode set-raw-mode-on
        set-raw-mode-on! set-raw-proof-format
        set-raw-warning-format
@@ -644,14 +655,16 @@ Subtopics
        set-skip-meta-termp-checks
        set-skip-meta-termp-checks!
        set-slow-alist-action
-       set-splitter-output set-state-ok
+       set-splitter-output set-standard-co
+       set-standard-oi set-state-ok
        set-tau-auto-mode set-temp-touchable-fns
        set-temp-touchable-vars set-timer
        set-total-parallelism-work-limit
        set-total-parallelism-work-limit-error
        set-trace-evisc-tuple
        set-verify-guards-eagerness
-       set-w set-waterfall-parallelism
+       set-w set-warnings-as-errors
+       set-waterfall-parallelism
        set-waterfall-parallelism-hacks-enabled
        set-waterfall-parallelism-hacks-enabled!
        set-waterfall-printing
@@ -59553,6 +59566,9 @@ Subtopics
   [Keyword-commands]
       How keyword commands like :u and :pbt are processed
 
+  [Ld-always-skip-top-level-locals]
+      Determines whether [ld] skips [local] top-level forms
+
   [Ld-error-action]
       Determines [ld]'s response to an error
 
@@ -59569,7 +59585,7 @@ Subtopics
       Abbreviation of some keyword commands
 
   [Ld-missing-input-ok]
-      Determines which forms [ld] evaluates
+      Determine whether [ld] causes an error for a missing file
 
   [Ld-post-eval-print]
       Determines whether and how [ld] prints the result of evaluation
@@ -59624,6 +59640,23 @@ Subtopics
 
   [Wormhole]
       [ld] without [state] --- a short-cut to a parallel universe")
+ (LD-ALWAYS-SKIP-TOP-LEVEL-LOCALS
+  (LD)
+  "Determines whether [ld] skips [local] top-level forms
+
+  Ld-always-skip-top-level-locals is an [ld] special (see [ld]).  The
+  accessor is (ld-always-skip-top-level-locals state) and the updater
+  is (set-ld-always-skip-top-level-locals val state).  The value of
+  ld-always-skip-top-level-locals must be either nil, or t.  The
+  initial value of ld-always-skip-top-level-locals is nil.
+
+  The general-purpose ACL2 read-eval-print loop, [ld], is controlled by
+  various flags that control its behavior, and
+  ld-always-skip-top-level-locals is one of them.  When the value is
+  t, [local] [events] are skipped when they are at the top level in
+  the following sense: they are not evaluated in the scope of either
+  a call of [certify-book], [include-book], or [encapsulate], or else
+  during [make-event] expansion.")
  (LD-ERROR-ACTION
   (LD)
   "Determines [ld]'s response to an error
@@ -60089,13 +60122,13 @@ Subtopics
   above, for the keywords bound in the ld-keyword-aliases [table].")
  (LD-MISSING-INPUT-OK
   (LD)
-  "Determines which forms [ld] evaluates
+  "Determine whether [ld] causes an error for a missing file
 
-  ld-missing-input-ok is an [ld] special (see [ld]).  The accessor is
+  Ld-missing-input-ok is an [ld] special (see [ld]).  The accessor is
   (ld-missing-input-ok state) and the updater is
-  (set-ld-missing-input-ok val state).  ld-missing-input-ok must be
-  either nil, t, or :warn.  The initial value of ld-missing-input-ok
-  is nil.
+  (set-ld-missing-input-ok val state).  The value of
+  ld-missing-input-ok must be either nil, t, or :warn.  The initial
+  value of ld-missing-input-ok is nil.
 
   The general-purpose ACL2 read-eval-print loop, [ld], is controlled by
   various flags that control its behavior, and ld-missing-input-ok is
@@ -60617,6 +60650,8 @@ Subtopics
   [make-event] expansion).  We provide access to it simply to allow
   experimentation and rapid reconstruction of lost or modified
   logical [world]s.")
+ (LD-USER-STOBJS-MODIFIED-WARNING (POINTERS)
+                                  "See [user-stobjs-modified-warnings].")
  (LD-VERBOSE
   (LD)
   "Determines whether [ld] prints ``ACL2 Loading ...''
@@ -98785,6 +98820,11 @@ New Features
   to hard [errors].  Thanks to Mark Greenstreet for the idea and for
   discussions that were helpful in refining it.
 
+  A new [ld] special, [ld-always-skip-top-level-locals], has the effect
+  of skipping [local] top-level forms.  Thanks to Sol Swords for
+  requesting such a capability, to support faster loading of .port
+  files by the build system (see [build::cert.pl]).
+
 
 Heuristic and Efficiency Improvements
 
@@ -98921,13 +98961,17 @@ Bug Fixes
   A bug in the [brr] commands :eval$, :go$, and :ok$ was fixed so they
   now behave as described in the documentation for [brr-commands].
 
-
-Changes at the System Level
-
-  The `make' target, save-exec, now builds custom-saved_acl2
-  unconditionally.  Thanks to Grant Jurgensen for pointing out (in
-  GitHub Issue #1422) that there can be untracked implicit
-  dependencies that make this necessary.
+  When a certified book is included, the logical [world] will no longer
+  be marked as having seen a [skip-proofs] call, even when the value
+  of [ld] special [ld-skip-proofsp] is non-nil at that time.  Thus,
+  that situation no longer disqualifies such a world from supplying
+  the [portcullis] commands to a book to be certified without keyword
+  argument :skip-proofs-okp t) of @(tsee certify-book).  Thanks to
+  Sol Swords for pointing out this bug.</p> <h3>Changes at the System
+  Level</h3> <p>The `@('make' target, save-exec, now builds
+  custom-saved_acl2 unconditionally.  Thanks to Grant Jurgensen for
+  pointing out (in GitHub Issue #1422) that there can be untracked
+  implicit dependencies that make this necessary.
 
   Implementations underlying the functions [sys-call], [sys-call+], and
   [sys-call*] have been cleaned up.  In particular, we now expect
@@ -103967,6 +104011,9 @@ Subtopics
   [Ld-history-entry-value]
       See [ld-history].
 
+  [Ld-user-stobjs-modified-warning]
+      See [user-stobjs-modified-warnings].
+
   [Legal-constantp]
       See [system-utilities].
 
@@ -104324,14 +104371,41 @@ Subtopics
   [Set-fast-cert]
       See [fast-cert].
 
+  [Set-ld-always-skip-top-level-locals]
+      See [ld-always-skip-top-level-locals].
+
+  [Set-ld-error-action]
+      See [ld-error-action].
+
+  [Set-ld-error-triples]
+      See [ld-error-triples].
+
+  [Set-ld-evisc-tuple]
+      See [ld-evisc-tuple].
+
   [Set-ld-keyword-aliases]
       See [ld-keyword-aliases].
 
   [Set-ld-keyword-aliases!]
       See [ld-keyword-aliases].
 
+  [Set-ld-missing-input-ok]
+      See [ld-missing-input-ok].
+
+  [Set-ld-post-eval-print]
+      See [ld-post-eval-print].
+
+  [Set-ld-pre-eval-filter]
+      See [ld-pre-eval-filter].
+
+  [Set-ld-pre-eval-print]
+      See [ld-pre-eval-print].
+
   [Set-ld-prompt]
       See [ld-prompt].
+
+  [Set-ld-query-control-alist]
+      See [ld-query-control-alist].
 
   [Set-ld-redefinition-action]
       See [ld-redefinition-action].
@@ -104341,6 +104415,12 @@ Subtopics
 
   [Set-ld-skip-proofsp]
       See [ld-skip-proofsp].
+
+  [Set-ld-user-stobjs-modified-warning]
+      See [user-stobjs-modified-warnings].
+
+  [Set-ld-verbose]
+      See [ld-verbose].
 
   [Set-let*-abstraction]
       See [set-let*-abstractionp].
@@ -104369,6 +104449,9 @@ Subtopics
   [Set-print-right-margin]
       See [print-control].
 
+  [Set-proofs-co]
+      See [proofs-co].
+
   [Set-ruler-extenders]
       See [rulers].
 
@@ -104377,6 +104460,12 @@ Subtopics
 
   [Set-slow-alist-action]
       See [slow-alist-warning].
+
+  [Set-standard-co]
+      See [standard-co].
+
+  [Set-standard-oi]
+      See [standard-oi].
 
   [Set-temp-touchable-fns]
       See [remove-untouchable].
@@ -125121,18 +125210,41 @@ Example
 
   For a way to permit irrelevant formals in a specific definition, see
   [declare].")
+ (SET-LD-ALWAYS-SKIP-TOP-LEVEL-LOCALS
+      (POINTERS)
+      "See [ld-always-skip-top-level-locals].")
+ (SET-LD-ERROR-ACTION (POINTERS)
+                      "See [ld-error-action].")
+ (SET-LD-ERROR-TRIPLES (POINTERS)
+                       "See [ld-error-triples].")
+ (SET-LD-EVISC-TUPLE (POINTERS)
+                     "See [ld-evisc-tuple].")
  (SET-LD-KEYWORD-ALIASES (POINTERS)
                          "See [ld-keyword-aliases].")
  (SET-LD-KEYWORD-ALIASES! (POINTERS)
                           "See [ld-keyword-aliases].")
+ (SET-LD-MISSING-INPUT-OK (POINTERS)
+                          "See [ld-missing-input-ok].")
+ (SET-LD-POST-EVAL-PRINT (POINTERS)
+                         "See [ld-post-eval-print].")
+ (SET-LD-PRE-EVAL-FILTER (POINTERS)
+                         "See [ld-pre-eval-filter].")
+ (SET-LD-PRE-EVAL-PRINT (POINTERS)
+                        "See [ld-pre-eval-print].")
  (SET-LD-PROMPT (POINTERS)
                 "See [ld-prompt].")
+ (SET-LD-QUERY-CONTROL-ALIST (POINTERS)
+                             "See [ld-query-control-alist].")
  (SET-LD-REDEFINITION-ACTION (POINTERS)
                              "See [ld-redefinition-action].")
  (SET-LD-SKIP-PROOFS (POINTERS)
                      "See [ld-skip-proofsp].")
  (SET-LD-SKIP-PROOFSP (POINTERS)
                       "See [ld-skip-proofsp].")
+ (SET-LD-USER-STOBJS-MODIFIED-WARNING (POINTERS)
+                                      "See [user-stobjs-modified-warnings].")
+ (SET-LD-VERBOSE (POINTERS)
+                 "See [ld-verbose].")
  (SET-LET*-ABSTRACTION (POINTERS)
                        "See [set-let*-abstractionp].")
  (SET-LET*-ABSTRACTIONP
@@ -125606,6 +125718,8 @@ Example
                      "See [print-control].")
  (SET-PRINT-RIGHT-MARGIN (POINTERS)
                          "See [print-control].")
+ (SET-PROOFS-CO (POINTERS)
+                "See [proofs-co].")
  (SET-PROVER-STEP-LIMIT
   (MISCELLANEOUS)
   "Sets the step-limit used by the ACL2 prover
@@ -126326,6 +126440,10 @@ Subtopics
 
   Again, see [splitter] for the effects of turning on the reporting of
   splitter rules.")
+ (SET-STANDARD-CO (POINTERS)
+                  "See [standard-co].")
+ (SET-STANDARD-OI (POINTERS)
+                  "See [standard-oi].")
  (SET-STATE-OK
   (STATE)
   "Allow the use of STATE as a formal parameter
