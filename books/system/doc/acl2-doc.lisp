@@ -55903,6 +55903,24 @@ tables in the current Hons Space."
  @(''')@(tsee ld-error-action) was @(':RETURN!').  See @(see ld-error-action)
  for details of this last case.</p>")
 
+(defxdoc ld-always-skip-top-level-locals
+  :parents (ld)
+  :short "Determines whether @(tsee ld) skips @(tsee local) top-level forms"
+  :long "<p>@('Ld-always-skip-top-level-locals') is an @(tsee ld) special (see
+ @(see ld)).  The accessor is @('(ld-always-skip-top-level-locals state)') and
+ the updater is @('(set-ld-always-skip-top-level-locals val state)').  The
+ value of @('ld-always-skip-top-level-locals') must be either @('nil'), or
+ @('t').  The initial value of @('ld-always-skip-top-level-locals') is
+ @('nil').</p>
+
+ <p>The general-purpose ACL2 read-eval-print loop, @(tsee ld), is controlled by
+ various flags that control its behavior, and
+ @('ld-always-skip-top-level-locals') is one of them.  When the value is
+ @('t'), @(tsee local) @(see events) are skipped when they are at the top level
+ in the following sense: they are not evaluated in the scope of either a call
+ of @(tsee certify-book), @(tsee include-book), or @(tsee encapsulate), or else
+ during @(tsee make-event) expansion.</p>")
+
 (defxdoc ld-error-action
   :parents (ld)
   :short "Determines @(tsee ld)'s response to an error"
@@ -56425,12 +56443,12 @@ tables in the current Hons Space."
 
 (defxdoc ld-missing-input-ok
   :parents (ld)
-  :short "Determines which forms @(tsee ld) evaluates"
-  :long "<p>@('ld-missing-input-ok') is an @(tsee ld) special (see @(see ld)).
+  :short "Determine whether @(tsee ld) causes an error for a missing file"
+  :long "<p>@('Ld-missing-input-ok') is an @(tsee ld) special (see @(see ld)).
  The accessor is @('(ld-missing-input-ok state)') and the updater is
- @('(set-ld-missing-input-ok val state)').  @('ld-missing-input-ok') must be
- either @('nil'), @('t'), or @(':warn').  The initial value of
- @('ld-missing-input-ok') is @('nil').</p>
+ @('(set-ld-missing-input-ok val state)').  The value of
+ @('ld-missing-input-ok') must be either @('nil'), @('t'), or @(':warn').  The
+ initial value of @('ld-missing-input-ok') is @('nil').</p>
 
  <p>The general-purpose ACL2 read-eval-print loop, @(tsee ld), is controlled by
  various flags that control its behavior, and @('ld-missing-input-ok') is one
@@ -101814,6 +101832,11 @@ it."
  warnings) to hard @(see errors).  Thanks to Mark Greenstreet for the idea and
  for discussions that were helpful in refining it.</p>
 
+ <p>A new @(tsee LD) special, @(tsee ld-always-skip-top-level-locals), has the
+ effect of skipping @(tsee local) top-level forms.  Thanks to Sol Swords for
+ requesting such a capability, to support faster loading of @('.port') files by
+ the build system (see @(tsee build::cert.pl)).</p>
+
  <h3>Heuristic and Efficiency Improvements</h3>
 
  <p>Added a &ldquo;desperation heuristic&rdquo; to compute a stronger context,
@@ -101961,6 +101984,14 @@ it."
  <p>A bug in the @(see brr) commands @(':eval$'), @(':go$'), and @(':ok$') was
  fixed so they now behave as described in the documentation for @(see
  brr-commands).</p>
+
+ <p>When a certified book is included, the logical @(see world) will no longer
+ be marked as having seen a @(tsee skip-proofs) call, even when the value of
+ @(tsee LD) special @(tsee ld-skip-proofsp) is non-@('nil') at that time.
+ Thus, that situation no longer disqualifies such a world from supplying the
+ @(see portcullis) commands to a book to be certified without keyword argument
+ @(':skip-proofs-okp t) of @(tsee certify-book).  Thanks to Sol Swords for
+ pointing out this bug.</p>
 
  <h3>Changes at the System Level</h3>
 
@@ -157431,6 +157462,7 @@ expand function call at the current subterm, without simplifying"
 (defpointer ld-history-entry-stobjs-out/value ld-history)
 (defpointer ld-history-entry-user-data ld-history)
 (defpointer ld-history-entry-value ld-history)
+(defpointer ld-user-stobjs-modified-warning user-stobjs-modified-warnings)
 (defpointer legal-constantp system-utilities)
 (defpointer legal-variablep system-utilities)
 (defpointer let-mbe equality-variants-details)
@@ -157550,12 +157582,23 @@ expand function call at the current subterm, without simplifying"
 (defpointer set-difference-eq set-difference$)
 (defpointer set-difference-equal set-difference$)
 (defpointer set-fast-cert fast-cert)
+(defpointer set-ld-always-skip-top-level-locals ld-always-skip-top-level-locals)
+(defpointer set-ld-error-action ld-error-action)
+(defpointer set-ld-error-triples ld-error-triples)
+(defpointer set-ld-evisc-tuple ld-evisc-tuple)
 (defpointer set-ld-keyword-aliases ld-keyword-aliases)
 (defpointer set-ld-keyword-aliases! ld-keyword-aliases)
+(defpointer set-ld-missing-input-ok ld-missing-input-ok)
+(defpointer set-ld-post-eval-print ld-post-eval-print)
+(defpointer set-ld-pre-eval-filter ld-pre-eval-filter)
+(defpointer set-ld-pre-eval-print ld-pre-eval-print)
 (defpointer set-ld-prompt ld-prompt)
+(defpointer set-ld-query-control-alist ld-query-control-alist)
 (defpointer set-ld-redefinition-action ld-redefinition-action)
 (defpointer set-ld-skip-proofs ld-skip-proofsp)
 (defpointer set-ld-skip-proofsp ld-skip-proofsp)
+(defpointer set-ld-user-stobjs-modified-warning user-stobjs-modified-warnings)
+(defpointer set-ld-verbose ld-verbose)
 (defpointer set-let*-abstraction set-let*-abstractionp)
 (defpointer set-non-linear set-non-linearp)
 (defpointer set-print-circle print-control)
@@ -157565,9 +157608,12 @@ expand function call at the current subterm, without simplifying"
 (defpointer set-print-lines print-control)
 (defpointer set-print-readably print-control)
 (defpointer set-print-right-margin print-control)
+(defpointer set-proofs-co proofs-co)
 (defpointer set-ruler-extenders rulers)
 (defpointer set-serialize-character with-serialize-character)
 (defpointer set-slow-alist-action slow-alist-warning)
+(defpointer set-standard-co standard-co)
+(defpointer set-standard-oi standard-oi)
 (defpointer set-temp-touchable-fns remove-untouchable)
 (defpointer set-temp-touchable-vars remove-untouchable)
 (defpointer show-accumulated-persistence accumulated-persistence)
