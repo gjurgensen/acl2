@@ -56615,8 +56615,9 @@ tables in the current Hons Space."
  last line output).  You may define your own @(see prompt) printing function,
  @('fn'), and install it with @('(set-ld-prompt 'fn state)').  However, a trust
  tag must be active (see @(see defttag)) when you set @('ld-prompt') to other
- than @('t') or @('nil') (with one exception: the function @('brr-prompt'),
- which prints the prompt in the @(see break-rewrite) loop).</p>
+ than @('t') or @('nil') (with two exceptions: the functions @('brr-prompt')
+ and @('wormhole-prompt'), which print the prompt in the @(see break-rewrite)
+ loop and the general @(see wormhole) loop, respectively).</p>
 
  <p>If you supply an inappropriate @(see prompt) function, i.e., one that
  causes an error or does not return the correct number and type of results, the
@@ -101528,6 +101529,9 @@ it."
 
 ; Fixed guard for warning1-cw (warning$, ...?) to allow summary of ("foo").
 
+; Changed er-soft-off-p[1] to er-off-p[1]: just a name change, since this is
+; about hard errors too, not just soft errors.
+
   :parents (release-notes)
   :short "ACL2 Version  8.6 (xxx, 20xx) Notes"
   :long "<p>NOTE!  New users can ignore these release notes, because the @(see
@@ -101739,6 +101743,19 @@ it."
  ACL2 Error [Failure] in ( THM ...):  See :DOC failure.
  })
 
+ <p>When an event fails, then if it involves definition @(see rune)s for @(tsee
+ loop$) @(see scion)s, the failure message may suggest including the book
+ @('projects/apply/top') if it hasn't already been included.  That book
+ provides quite a few lemmas about @(tsee loop$) scions.</p>
+
+ <p>Replaced @(tsee length) calls in the defun of @(tsee pseudo-termp) with
+ calls of a new macro, @('len$'), which is a call of @(tsee mbe) that invokes
+ @(tsee length) in the @(':exec') code and @(tsee len) in the @(':logic') code.
+ Thanks to Eric Smith for requesting such an enhancement, and for discussing
+ specifics of it, so as to avoid the need for at least one unfortunate rule
+ that if @('(pseudo-termp term)') then @('(not (stringp (cdr term)))'),
+ apparently needed because @('length') behaves specially on strings.</p>
+
  <h3>New Features</h3>
 
  <p>The new zero-ary attachable system function, @(tsee heavy-linear-p), allows
@@ -101836,6 +101853,8 @@ it."
  effect of skipping @(tsee local) top-level forms.  Thanks to Sol Swords for
  requesting such a capability, to support faster loading of @('.port') files by
  the build system (see @(tsee build::cert.pl)).</p>
+
+ <p>The symbol, @('number'), is now a legal @(see type-spec).</p>
 
  <h3>Heuristic and Efficiency Improvements</h3>
 
@@ -101990,8 +102009,11 @@ it."
  @(tsee LD) special @(tsee ld-skip-proofsp) is non-@('nil') at that time.
  Thus, that situation no longer disqualifies such a world from supplying the
  @(see portcullis) commands to a book to be certified without keyword argument
- @(':skip-proofs-okp t) of @(tsee certify-book).  Thanks to Sol Swords for
+ @(':skip-proofs-okp t') of @(tsee certify-book).  Thanks to Sol Swords for
  pointing out this bug.</p>
+
+ <p>Fixed a bug that was causing calls of @(tsee wormhole) to signal an
+ error.</p>
 
  <h3>Changes at the System Level</h3>
 
@@ -143708,6 +143730,7 @@ introduction-to-the-tau-system) for more information about Tau.</dd>
   (NOT type)             (NOT (p X))
                          where (p x) is the meaning for type-spec type
   NULL                   (EQ X NIL)
+  NUMBER                 (ACL2-NUMBERP x)
   (OR type1 ... typek)   (OR (p1 X) ... (pk X))
                          where (pj x) is the meaning for type-spec typej
   RATIO                  (AND (RATIONALP X) (NOT (INTEGERP X)))
