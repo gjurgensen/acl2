@@ -60295,8 +60295,9 @@ Subtopics
   define your own [prompt] printing function, fn, and install it with
   (set-ld-prompt 'fn state).  However, a trust tag must be active
   (see [defttag]) when you set ld-prompt to other than t or nil (with
-  one exception: the function brr-prompt, which prints the prompt in
-  the [break-rewrite] loop).
+  two exceptions: the functions brr-prompt and wormhole-prompt, which
+  print the prompt in the [break-rewrite] loop and the general
+  [wormhole] loop, respectively).
 
   If you supply an inappropriate [prompt] function, i.e., one that
   causes an error or does not return the correct number and type of
@@ -98718,6 +98719,20 @@ Changes to Existing Features
 
     ACL2 Error [Failure] in ( THM ...):  See :DOC failure.
 
+  When an event fails, then if it involves definition [rune]s for
+  [loop$] [scion]s, the failure message may suggest including the
+  book projects/apply/top if it hasn't already been included.  That
+  book provides quite a few lemmas about [loop$] scions.
+
+  Replaced [length] calls in the defun of [pseudo-termp] with calls of
+  a new macro, len$, which is a call of [mbe] that invokes [length]
+  in the :exec code and [len] in the :logic code.  Thanks to Eric
+  Smith for requesting such an enhancement, and for discussing
+  specifics of it, so as to avoid the need for at least one
+  unfortunate rule that if (pseudo-termp term) then (not (stringp
+  (cdr term))), apparently needed because length behaves specially on
+  strings.
+
 
 New Features
 
@@ -98824,6 +98839,8 @@ New Features
   of skipping [local] top-level forms.  Thanks to Sol Swords for
   requesting such a capability, to support faster loading of .port
   files by the build system (see [build::cert.pl]).
+
+  The symbol, number, is now a legal [type-spec].
 
 
 Heuristic and Efficiency Improvements
@@ -98966,12 +98983,18 @@ Bug Fixes
   of [ld] special [ld-skip-proofsp] is non-nil at that time.  Thus,
   that situation no longer disqualifies such a world from supplying
   the [portcullis] commands to a book to be certified without keyword
-  argument :skip-proofs-okp t) of @(tsee certify-book).  Thanks to
-  Sol Swords for pointing out this bug.</p> <h3>Changes at the System
-  Level</h3> <p>The `@('make' target, save-exec, now builds
-  custom-saved_acl2 unconditionally.  Thanks to Grant Jurgensen for
-  pointing out (in GitHub Issue #1422) that there can be untracked
-  implicit dependencies that make this necessary.
+  argument :skip-proofs-okp t of [certify-book].  Thanks to Sol
+  Swords for pointing out this bug.
+
+  Fixed a bug that was causing calls of [wormhole] to signal an error.
+
+
+Changes at the System Level
+
+  The `make' target, save-exec, now builds custom-saved_acl2
+  unconditionally.  Thanks to Grant Jurgensen for pointing out (in
+  GitHub Issue #1422) that there can be untracked implicit
+  dependencies that make this necessary.
 
   Implementations underlying the functions [sys-call], [sys-call+], and
   [sys-call*] have been cleaned up.  In particular, we now expect
@@ -143248,6 +143271,7 @@ Type Specs
     (NOT type)             (NOT (p X))
                            where (p x) is the meaning for type-spec type
     NULL                   (EQ X NIL)
+    NUMBER                 (ACL2-NUMBERP x)
     (OR type1 ... typek)   (OR (p1 X) ... (pk X))
                            where (pj x) is the meaning for type-spec typej
     RATIO                  (AND (RATIONALP X) (NOT (INTEGERP X)))
