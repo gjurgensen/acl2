@@ -59689,7 +59689,9 @@ Subtopics
   error to its caller by returning an error triple with non-nil error
   component, and reverting the logical [world] to its value just
   before that call of [ld].  If it is (:exit N), then ACL2 quits with
-  exit status N.
+  exit status N.  Later in this topic we discuss another case in
+  which an error is said to have occurred: when the value component
+  of an error triple is of the form (:STOP-LD . x).
 
   To see this effect of :ERROR for ld-error-action, consider the
   following example.
@@ -59716,10 +59718,12 @@ Subtopics
   evaluation of a form returns an error triple (mv nil val state),
   where nil is the error component and whose ``value component'', val
   is a [cons] pair whose [car] is the symbol :STOP-LD.  Let val be
-  the pair (:STOP-LD . x).  Then the call of ld returns the error
-  triple (mv nil (:STOP-LD n . x) state), where n is the value of
-  [state] global variable 'ld-level at the time of termination.  The
-  following example illustrates how this works.
+  the pair (:STOP-LD . x).  If ld-error-action is of the form (:EXIT
+  N), then ACL2 quits with exit status N.  Otherwise (i.e., when
+  ld-error-action is :RETURN, :RETURN!, or :ERROR), the call of ld
+  returns the error triple (mv nil (:STOP-LD n . x) state), where n
+  is the value of [state] global variable 'ld-level at the time of
+  termination.  The following example illustrates how this works.
 
     (ld '((defun f1 (x) x)
           (ld '((defun f2 (x) x)
@@ -98733,6 +98737,55 @@ Changes to Existing Features
   (cdr term))), apparently needed because length behaves specially on
   strings.
 
+  When there is an error from evaluation of a form encountered by [ld],
+  in a session where the value of [ld-error-triples] is the default
+  of t and the value of [ld-error-action] is of the form (:EXIT N),
+  then ACL2 quits with exit status N in some cases where formerly it
+  did not.  The following explanation is rather technical; see
+  [ld-error-action] for relevant background.
+
+      This behavior was already present in the case that the ``error on
+      evaluation'' was from an evaluation result (mv erp val state)
+      where erp is non-nil; but it has been extended to the case that
+      erp is nil and val is of the form (:STOP-LD . x), as is
+      returned by default by ld upon an evaluation error.  A key
+      effect of this change is for the case that a .acl2 file
+      produces an error from a call of [build::cert.pl].  The
+      following example illustrates; explanation follows below.
+
+        ;;; foo.acl2
+        (ld '((defun g (x) y)) :ld-error-action :return!)
+
+        ;;; foo.lisp
+        (in-package \"ACL2\")
+
+      Before this change, the command `cert.pl foo' resulted in a hard Lisp
+      error (as seen in foo.cert.out).  To see why, first note that
+      cert.pl executes a sequence of commands as follows (several
+      omitted as shown with ``...'').
+
+        ...
+        (set-ld-error-action (quote (:exit 1)) state)
+        ...
+        ; instructions from .acl2 file foo.acl2:
+        (ld '((defun g (x) y)) :ld-error-action :return!)
+        ...
+        #!ACL2 (set-ld-error-action (quote :continue) state)
+        ...
+
+      The call of ld above returns (mv nil (:STOP-LD 2) state).  Because
+      ld-error-action at the top level no longer has the default
+      value of :CONTINUE, that result is considered an error (see
+      [ld-error-action]) and top-level evaluation halts.  Before this
+      change, then ACL2 did not quit since the value was of the form
+      (mv nil _ state); instead, ACL2 would quit the top-level call
+      of ld, leaving us in raw Lisp.  But in raw Lisp, the #! reader
+      macro (see [sharp-bang-reader]) is undefined; hence an error
+      would be signalled.  After the fix, the return value of (mv nil
+      (:STOP-LD 2) state) is treated as an error, so because
+      ld-error-action is (:EXIT N), ACL2 immediately exits with
+      status N.
+
 
 New Features
 
@@ -99035,7 +99088,12 @@ EMACS Support
   Distribution is unlimited.''
 
 
-Experimental Versions")
+Experimental Versions
+
+  The note ``Note: No checkpoints to print.'' that might be printed on
+  proof failure is now the same in ACL2(p) as in ACL2, unless
+  [waterfall-parallelism] is enabled (in which case ``no
+  checkpoints'' is followed by `` from gag-mode'' as before).")
  (NOTE1 (POINTERS) "See [note-1-1].")
  (NOTE2 (POINTERS) "See [note-1-2].")
  (NOTE3 (POINTERS) "See [note-1-3].")
