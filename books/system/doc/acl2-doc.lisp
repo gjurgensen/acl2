@@ -101618,6 +101618,10 @@ it."
 
  <li>Miscellaneous clean-up has been made in the implementation.</li>
 
+ <li>Restrictions have been tightened a bit to avoid what could be considered a
+ soundness bug.  See discussion about that in the section on &ldquo;Bugs&rdquo;
+ below.</li>
+
  </ul>
 
  <p>The @(tsee trace$) option @(':evisc-tuple :print'), which continues to use
@@ -101943,6 +101947,61 @@ it."
  in its @(':')@(tsee rule-classes).  That is no longer allowed; @(tsee
  skip-proofs) may be used instead if one believes that the proposed formula is
  a theorem.</p>
+
+ <p>The function @(tsee read-file-into-string) has been modified to avoid what
+ might be considered a soundness bug.  The change involves causing an error for
+ two reads of the same file without first incrementing the file-clock of the
+ @(see state).  See @(see read-file-into-string) for details, in particular for
+ how to avoid that error by evaluating @('(increment-file-clock state)') after
+ calling @('read-file-into-string').  Formerly the error was avoided if the
+ write-date of the file didn't change between the two reads, but the following
+ example shows how this permitted two calls with identical arguments to produce
+ different results, logically causing @('read-file-into-string') to violate the
+ axiom @('x = x').</p>
+
+ <blockquote>
+
+ <p>First run the following shell commands.</p>
+
+ @({
+ echo 'test1' > tmp1.txt ; echo 'test2' > tmp2.txt
+ cp -p tmp1.txt tmp.txt
+ })
+
+ <p>Then start ACL2 and run a command as follows.</p>
+
+ @({
+ ACL2 !>(read-file-into-string \"tmp.txt\")
+ \"test1
+ \"
+ ACL2 !>
+ })
+
+ <p>Now suspend ACL2 with @('control-Z') and run the following shell
+ command.</p>
+
+ @({
+ cp -p tmp2.txt tmp.txt
+ })
+
+ <p>Now resume ACL2 with @('fg'), and optionally submit some trivial form (say,
+ @('3')) just to get the prompt back.  Note that the file-clock of the
+ @('state') hasn't changed.  (Probably the @('state') hasn't changed; at any
+ rate, the parts of the state relevant to @('read-file-into-string') haven't
+ changed.)  So the following call has arguments identical to those in the
+ corresponding call above, yet yields a different result.</p>
+
+ @({
+ ACL2 !>(read-file-into-string \"tmp.txt\")
+ \"test2
+ \"
+ ACL2 !>
+ })
+
+ <p>After the change to @('read-file-into-string'), its call just above causes
+ an error.</p>
+
+ </blockquote>
 
  <p>Fixed a bug in system function @('bounded-integer-listp'), which may have
  allowed illegal @(see proof-builder) commands to be attempted.  Thanks to
