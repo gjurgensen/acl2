@@ -55953,7 +55953,9 @@ tables in the current Hons Space."
  error to its caller by returning an error triple with non-@('nil') error
  component, and reverting the logical @(see world) to its value just before
  that call of @(tsee ld).  If it is @('(:exit N)'), then ACL2 quits with exit
- status @('N').</p>
+ status @('N').  Later in this topic we discuss another case in which an error
+ is said to have occurred: when the value component of an error triple is of
+ the form @('(:STOP-LD . x)').</p>
 
  <p>To see this effect of @(':ERROR') for @('ld-error-action'), consider the
  following example.</p>
@@ -55982,10 +55984,13 @@ tables in the current Hons Space."
  @('t'), and evaluation of a form returns an error triple @('(mv nil val
  state)'), where @('nil') is the error component and whose ``value component'',
  @('val') is a @(tsee cons) pair whose @(tsee car) is the symbol @(':STOP-LD').
- Let @('val') be the pair @('(:STOP-LD . x)').  Then the call of @('ld')
- returns the error triple @('(mv nil (:STOP-LD n . x) state)'), where @('n') is
- the value of @(tsee state) global variable @(''ld-level') at the time of
- termination.  The following example illustrates how this works.</p>
+ Let @('val') be the pair @('(:STOP-LD . x)').  If @('ld-error-action') is of
+ the form @('(:EXIT N)'), then ACL2 quits with exit status @('N').
+ Otherwise (i.e., when @('ld-error-action') is @(':RETURN'), @(':RETURN!'), or
+ @(':ERROR')), the call of @('ld') returns the error triple @('(mv
+ nil (:STOP-LD n . x) state)'), where @('n') is the value of @(tsee state)
+ global variable @(''ld-level') at the time of termination.  The following
+ example illustrates how this works.</p>
 
  @({
   (ld '((defun f1 (x) x)
@@ -101756,6 +101761,62 @@ it."
  that if @('(pseudo-termp term)') then @('(not (stringp (cdr term)))'),
  apparently needed because @('length') behaves specially on strings.</p>
 
+ <p>When there is an error from evaluation of a form encountered by @(tsee ld),
+ in a session where the value of @(tsee ld-error-triples) is the default of
+ @('t') and the value of @(tsee ld-error-action) is of the form @('(:EXIT N)'),
+ then ACL2 quits with exit status @('N') in some cases where formerly it did
+ not.  The following explanation is rather technical; see @(see
+ ld-error-action) for relevant background.</p>
+
+ <blockquote>
+
+ <p>This behavior was already present in the case that the &ldquo;error on
+ evaluation&rdquo; was from an evaluation result @('(mv erp val state)') where
+ @('erp') is non-@('nil'); but it has been extended to the case that @('erp')
+ is @('nil') and @('val') is of the form @('(:STOP-LD . x)'), as is returned by
+ default by @('ld') upon an evaluation error.  A key effect of this change is
+ for the case that a @('.acl2') file produces an error from a call of @(tsee
+ build::cert.pl).  The following example illustrates; explanation follows
+ below.</p>
+
+ @({
+ ;;; foo.acl2
+ (ld '((defun g (x) y)) :ld-error-action :return!)
+
+ ;;; foo.lisp
+ (in-package \"ACL2\")
+ })
+
+ <p>Before this change, the command &lsquo;@('cert.pl foo')&rsquo; resulted in
+ a hard Lisp error (as seen in @('foo.cert.out')).  To see why, first note that
+ @('cert.pl') executes a sequence of commands as follows (several omitted as
+ shown with &ldquo;@('...')&rdquo;).</p>
+
+ @({
+ ...
+ (set-ld-error-action (quote (:exit 1)) state)
+ ...
+ ; instructions from .acl2 file foo.acl2:
+ (ld '((defun g (x) y)) :ld-error-action :return!)
+ ...
+ #!ACL2 (set-ld-error-action (quote :continue) state)
+ ...
+ })
+
+ <p>The call of @('ld') above returns @('(mv nil (:STOP-LD 2) state)').
+ Because @('ld-error-action') at the top level no longer has the default value
+ of @(':CONTINUE'), that result is considered an error (see @(see
+ ld-error-action)) and top-level evaluation halts.  Before this change, then
+ ACL2 did not quit since the value was of the form @('(mv nil _ state)');
+ instead, ACL2 would quit the top-level call of @('ld'), leaving us in raw
+ Lisp.  But in raw Lisp, the @('#!') reader macro (see @(see
+ sharp-bang-reader)) is undefined; hence an error would be signalled.  After
+ the fix, the return value of @('(mv nil (:STOP-LD 2) state)') is treated as an
+ error, so because @('ld-error-action') is @('(:EXIT N)'), ACL2 immediately
+ exits with status @('N').</p>
+
+ </blockquote>
+
  <h3>New Features</h3>
 
  <p>The new zero-ary attachable system function, @(tsee heavy-linear-p), allows
@@ -102065,6 +102126,11 @@ it."
  A. Approved for public release. Distribution is unlimited.&rdquo;</p>
 
  <h3>Experimental Versions</h3>
+
+ <p>The note &ldquo;Note: No checkpoints to print.&rdquo; that might be printed
+ on proof failure is now the same in ACL2(p) as in ACL2, unless @(see
+ waterfall-parallelism) is enabled (in which case &ldquo;no checkpoints&rdquo;
+ is followed by &ldquo; from gag-mode&rdquo; as before).</p>
 
  ")
 
