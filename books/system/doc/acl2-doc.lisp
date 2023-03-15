@@ -101921,6 +101921,13 @@ it."
 
  <p>The symbol, @('number'), is now a legal @(see type-spec).</p>
 
+ <p>It is now permitted for a @(see stobj) @('s') to occur more than once as an
+ actual parameter in a function call, provided each such occurrence is in a
+ position where a stobj congruent to @('s') is expected (possibly @('s')
+ itself).  Thanks to Sol Swords for providing a relevant example, which appears
+ in a comment in the definition of function @('stobjs-in-out') in the ACL2
+ sources.</p>
+
  <h3>Heuristic and Efficiency Improvements</h3>
 
  <p>Added a &ldquo;desperation heuristic&rdquo; to compute a stronger context,
