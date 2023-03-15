@@ -59689,7 +59689,9 @@ Subtopics
   error to its caller by returning an error triple with non-nil error
   component, and reverting the logical [world] to its value just
   before that call of [ld].  If it is (:exit N), then ACL2 quits with
-  exit status N.
+  exit status N.  Later in this topic we discuss another case in
+  which an error is said to have occurred: when the value component
+  of an error triple is of the form (:STOP-LD . x).
 
   To see this effect of :ERROR for ld-error-action, consider the
   following example.
@@ -59716,10 +59718,12 @@ Subtopics
   evaluation of a form returns an error triple (mv nil val state),
   where nil is the error component and whose ``value component'', val
   is a [cons] pair whose [car] is the symbol :STOP-LD.  Let val be
-  the pair (:STOP-LD . x).  Then the call of ld returns the error
-  triple (mv nil (:STOP-LD n . x) state), where n is the value of
-  [state] global variable 'ld-level at the time of termination.  The
-  following example illustrates how this works.
+  the pair (:STOP-LD . x).  If ld-error-action is of the form (:EXIT
+  N), then ACL2 quits with exit status N.  Otherwise (i.e., when
+  ld-error-action is :RETURN, :RETURN!, or :ERROR), the call of ld
+  returns the error triple (mv nil (:STOP-LD n . x) state), where n
+  is the value of [state] global variable 'ld-level at the time of
+  termination.  The following example illustrates how this works.
 
     (ld '((defun f1 (x) x)
           (ld '((defun f2 (x) x)
@@ -98598,6 +98602,9 @@ Changes to Existing Features
       Lisp stream is closed, a new keyword argument, :close, can be
       supplied to control that behavior.
     * Miscellaneous clean-up has been made in the implementation.
+    * Restrictions have been tightened a bit to avoid what could be
+      considered a soundness bug.  See discussion about that in the
+      section on ``Bugs'' below.
 
   The [trace$] option :evisc-tuple :print, which continues to use raw
   Lisp printing, has undergone the following improvements when
@@ -98733,6 +98740,55 @@ Changes to Existing Features
   (cdr term))), apparently needed because length behaves specially on
   strings.
 
+  When there is an error from evaluation of a form encountered by [ld],
+  in a session where the value of [ld-error-triples] is the default
+  of t and the value of [ld-error-action] is of the form (:EXIT N),
+  then ACL2 quits with exit status N in some cases where formerly it
+  did not.  The following explanation is rather technical; see
+  [ld-error-action] for relevant background.
+
+      This behavior was already present in the case that the ``error on
+      evaluation'' was from an evaluation result (mv erp val state)
+      where erp is non-nil; but it has been extended to the case that
+      erp is nil and val is of the form (:STOP-LD . x), as is
+      returned by default by ld upon an evaluation error.  A key
+      effect of this change is for the case that a .acl2 file
+      produces an error from a call of [build::cert.pl].  The
+      following example illustrates; explanation follows below.
+
+        ;;; foo.acl2
+        (ld '((defun g (x) y)) :ld-error-action :return!)
+
+        ;;; foo.lisp
+        (in-package \"ACL2\")
+
+      Before this change, the command `cert.pl foo' resulted in a hard Lisp
+      error (as seen in foo.cert.out).  To see why, first note that
+      cert.pl executes a sequence of commands as follows (several
+      omitted as shown with ``...'').
+
+        ...
+        (set-ld-error-action (quote (:exit 1)) state)
+        ...
+        ; instructions from .acl2 file foo.acl2:
+        (ld '((defun g (x) y)) :ld-error-action :return!)
+        ...
+        #!ACL2 (set-ld-error-action (quote :continue) state)
+        ...
+
+      The call of ld above returns (mv nil (:STOP-LD 2) state).  Because
+      ld-error-action at the top level no longer has the default
+      value of :CONTINUE, that result is considered an error (see
+      [ld-error-action]) and top-level evaluation halts.  Before this
+      change, then ACL2 did not quit since the value was of the form
+      (mv nil _ state); instead, ACL2 would quit the top-level call
+      of ld, leaving us in raw Lisp.  But in raw Lisp, the #! reader
+      macro (see [sharp-bang-reader]) is undefined; hence an error
+      would be signalled.  After the fix, the return value of (mv nil
+      (:STOP-LD 2) state) is treated as an error, so because
+      ld-error-action is (:EXIT N), ACL2 immediately exits with
+      status N.
+
 
 New Features
 
@@ -98842,6 +98898,13 @@ New Features
 
   The symbol, number, is now a legal [type-spec].
 
+  It is now permitted for a [stobj] s to occur more than once as an
+  actual parameter in a function call, provided each such occurrence
+  is in a position where a stobj congruent to s is expected (possibly
+  s itself).  Thanks to Sol Swords for providing a relevant example,
+  which appears in a comment in the definition of function
+  stobjs-in-out in the ACL2 sources.
+
 
 Heuristic and Efficiency Improvements
 
@@ -98871,6 +98934,50 @@ Bug Fixes
   :[rule-classes].  That is no longer allowed; [skip-proofs] may be
   used instead if one believes that the proposed formula is a
   theorem.
+
+  The function [read-file-into-string] has been modified to avoid what
+  might be considered a soundness bug.  The change involves causing
+  an error for two reads of the same file without first incrementing
+  the file-clock of the [state].  See [read-file-into-string] for
+  details, in particular for how to avoid that error by evaluating
+  (increment-file-clock state) after calling read-file-into-string.
+  Formerly the error was avoided if the write-date of the file didn't
+  change between the two reads, but the following example shows how
+  this permitted two calls with identical arguments to produce
+  different results, logically causing read-file-into-string to
+  violate the axiom x = x.
+
+      First run the following shell commands.
+
+        echo 'test1' > tmp1.txt ; echo 'test2' > tmp2.txt
+        cp -p tmp1.txt tmp.txt
+
+      Then start ACL2 and run a command as follows.
+
+        ACL2 !>(read-file-into-string \"tmp.txt\")
+        \"test1
+        \"
+        ACL2 !>
+
+      Now suspend ACL2 with control-Z and run the following shell command.
+
+        cp -p tmp2.txt tmp.txt
+
+      Now resume ACL2 with fg, and optionally submit some trivial form
+      (say, 3) just to get the prompt back.  Note that the file-clock
+      of the state hasn't changed.  (Probably the state hasn't
+      changed; at any rate, the parts of the state relevant to
+      read-file-into-string haven't changed.)  So the following call
+      has arguments identical to those in the corresponding call
+      above, yet yields a different result.
+
+        ACL2 !>(read-file-into-string \"tmp.txt\")
+        \"test2
+        \"
+        ACL2 !>
+
+      After the change to read-file-into-string, its call just above causes
+      an error.
 
   Fixed a bug in system function bounded-integer-listp, which may have
   allowed illegal [proof-builder] commands to be attempted.  Thanks
@@ -99035,7 +99142,12 @@ EMACS Support
   Distribution is unlimited.''
 
 
-Experimental Versions")
+Experimental Versions
+
+  The note ``Note: No checkpoints to print.'' that might be printed on
+  proof failure is now the same in ACL2(p) as in ACL2, unless
+  [waterfall-parallelism] is enabled (in which case ``no
+  checkpoints'' is followed by `` from gag-mode'' as before).")
  (NOTE1 (POINTERS) "See [note-1-1].")
  (NOTE2 (POINTERS) "See [note-1-2].")
  (NOTE3 (POINTERS) "See [note-1-3].")
@@ -115549,8 +115661,8 @@ Recursion and Induction Table of Contents
            (declare (xargs :stobjs state
                            :guard (and (stringp filename)
                                        (natp start)
-                                       (or (null bytes) (natp bytes)))))
-           (declare (ignore close))
+                                       (or (null bytes) (natp bytes))))
+                    (ignore close))
            (read-file-into-string2-logical filename start bytes state))
 
   Macro: <read-file-into-string>
