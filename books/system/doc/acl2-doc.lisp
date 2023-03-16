@@ -33881,38 +33881,84 @@ current fast alists."
  &ldquo;industrial-size&rdquo; books if there are @(see local) events early in
  the book or in its @(see portcullis) commands.  Fast-cert mode provides a way
  to avoid the @(see local-incompatibility) check.  There are the following two
- drawbacks to using fast-cert mode.</p>
+ drawbacks to using ACL2 with fast-cert mode enabled (as described further
+ below).</p>
 
  <ul>
 
  <li>It may be unsound!  See Section &ldquo;Unsoundness&rdquo; below.</li>
 
- <li>Therefore, after a book is certified while in fast-cert mode, then any
+ <li>Therefore, after a book is certified with fast-cert mode enabled, then any
  subsequent attempt to include that book will consider it to be uncertified
- unless the @(tsee include-book) event is executed in fast-cert mode.  See
- Section &ldquo;Effects of fast-cert mode...&rdquo; below.</li>
+ unless the @(tsee include-book) event is executed with fast-cert mode enabled.
+ See Section &ldquo;Effects of fast-cert mode...&rdquo; below.</li>
 
  </ul>
 
  @({
  General Forms:
 
- (set-fast-cert t state)   ; enter fast-cert mode (fast-cert mode is active)
- (set-fast-cert nil state) ; exit fast-cert mode (fast-cert mode is inactive)
+ (set-fast-cert t state)       ; enter fast-cert active mode
+ (set-fast-cert nil state)     ; disable fast-cert mode
+ (set-fast-cert :accept state) ; enter fast-cert ACCEPT mode
  })
 
  <p>When a form @('(set-fast-cert expr state)') is evaluated, @('expr') should
  evaluate to a Boolean value, @('val').  If @('val') is @('t') then fast-cert
- mode is entered (or maintained when already in fast-cert mode); while if
- @('val') is @('nil') then fast-cert mode is exited (or maintained when not
- already in fast-cert mode).</p>
+ mode becomes (or remains) active.  If @('val') is @('nil'), then fast-cert
+ mode becomes (or remains) disabled.  The other legal value for @('val') is
+ @(':accept'), which is a sort of intermediate mode: ACL2 behaves as though
+ fast-cert mode is disabled &mdash; we also say ``not enabled'' for
+ ``disabled'' &mdash; but books can be considered certified even if they were
+ certified with fast-cert mode enabled.  We say more about these three modes in
+ Section &ldquo;Fast-cert modes&rdquo; below.</p>
 
  <p>Another way to enter fast-cert mode is to set environment variable
- @('ACL2_FAST_CERT') to a non-empty value before starting ACL2.</p>
+ @('ACL2_FAST_CERT') to a non-empty value before starting ACL2.  The
+ case-insensitive value, @('\"accept\"'), causes @('(set-fast-cert :accept
+ state)') is evaluated at startup; otherwise, a non-empty value causes
+ @('(set-fast-cert t state)') to be evaluated at startup.</p>
 
  <p>We turn now to the two sections promised above, on unsoundness and effects
  of fast-cert mode, followed by a section on miscellaneous restrictions, and
  concluding with a suggested application of fast-cert mode.</p>
+
+ <h3>Fast-cert modes</h3>
+
+ <p>There are the following fast-cert modes.</p>
+
+ <ul>
+
+ <li><b>Active</b>: entered with @('(set-fast-cert t state)').  When ACL2 is in
+ this mode, the @(see local-incompatibility) check is skipped when certifying a
+ book, and the book's @(see certificate) marks it as a &ldquo;fast-cert
+ book&rdquo;.</li>
+
+ <li><b>Disabled</b>: entered with @('(set-fast-cert t state)'), though this is
+ the default mode.  In this mode the usual @(see local-incompatibility) checks
+ are performed during book certification, and every fast-cert book is
+ considered to be uncertified.</li>
+
+ <li><b>ACCEPT</b>: entered with @('(set-fast-cert :accept state)').  When ACL2
+ is in this mode, @(see local-incompatibility) checks are performed just as
+ when fast-cert mode is disabled, but a fast-cert book is treated as certified
+ just like any other book.</li>
+
+ </ul>
+
+ <p>Fast-cert mode is considered to be &ldquo;enabled&rdquo; exactly when it is
+ not disabled.</p>
+
+ <p>The discussion above leaves open the question of whether a book that is
+ certified in ACCEPT mode is marked as a fast-cert book.  That happens only if
+ at least one fast-cert book has been included during the session, either
+ before the book's certification began or during evaluation of the book's
+ events.</p>
+
+ <p>It is always legal to change fast-cert mode from disabled to enabled (using
+ @('set-fast-cert')).  It is legal to change fast-cert mode from enabled to
+ disabled provided there has been no attempt during the session to include a
+ fast-cert book while fast-cert mode is enabled.</p>
 
  <h3>Potential for unsoundness</h3>
 
@@ -33967,16 +34013,24 @@ current fast alists."
  @('g') is illegal.  Without the use of fast-cert mode, the
  local-incompatibility check would catch this problem.</p>
 
- <p>(Technical note: if fast-cert mode is used to certify the book, then when
- we subsequently include @('\"fast-cert-unsound-sub\"') in fast-cert mode,
- there is &mdash; perhaps surprisingly &mdash; no error.  That is because the
- translation (see @(see term)) of the definition of @('g') is cached in the
- book's @(see certificate).)</p>
+ <p>(Technical note: if the book is certified while fast-cert mode is active,
+ then when we subsequently include @('\"fast-cert-unsound-sub\"') when
+ fast-cert mode is enabled, there is &mdash; perhaps surprisingly &mdash; no
+ error.  That is because the translation (see @(see term)) of the definition of
+ @('g') is cached in the book's @(see certificate).)</p>
 
- <p>Such unsoundness with fast-cert mode is probably rare in practice.  But
- because unsoundness is possible with fast-cert mode, a &ldquo;@('TTAG
- NOTE')&rdquo; message is printed when fast-cert mode is entered, as
- follows.</p>
+ <p>Note that unsoundness can occur even when fast-cert is in accept mode, not
+ just in active mode.  That's because one may include a book in accept mode
+ that was certified in a previous session while fast-cert was in active mode,
+ and that book could prove @('nil') as in the example above.  In short,
+ unsoundness can occur when fast-cert mode is enabled (i.e., fast-cert is in
+ accept or active mode).</p>
+
+ <p>Unsoundness when fast-cert mode is enabled is probably rare in practice.
+ But because unsoundness is possible with fast-cert mode enabled, a
+ &ldquo;@('TTAG NOTE')&rdquo; message is printed when fast-cert mode is
+ enabled, for example as follows when fast-cert mode transitions from disabled
+ to active.</p>
 
  @({
  ACL2 !>(set-fast-cert t state)
@@ -33992,22 +34046,23 @@ current fast alists."
  use of @(tsee defttag) but also when entering fast-cert mode.</p>
 
  <p>We conclude this section by mentioning other potential sources of
- unsoundness when using fast-cert mode.  There are probably others, but again,
- it is probably rare for fast-cert mode to exhibit unsoundness.  These
+ unsoundness when fast-cert mode is enabled.  There are probably others, but
+ again, it is probably rare for fast-cert mode to exhibit unsoundness.  These
  behaviors are due to avoiding the @(see local-incompatibility) check during
- certification in fast-cert mode.  Here are two key potential sources of
- unsoundness.</p>
+ certification when fast-cert mode is active.  Here are two key potential
+ sources of unsoundness.</p>
 
  <ul>
 
  <li>Hidden @(tsee defpkg) events are not recorded in a book's @(see
- certificate) (see @(see hidden-death-package)).</li>
+ certificate) when fast-cert mode is active.  See @(see
+ hidden-death-package).</li>
 
  <li>Information about sub-books that is normally recorded in a @(see
  certificate), including the @(see book-hash) values in the @(see portcullis)
- and the @(see keep), is omitted.  This prevents ACL2 from noticing when
- sub-books are uncertified or have changed since the time of the parent book's
- certification.</li>
+ and the @(see keep), is omitted by certification when fast-cert mode is
+ active.  This prevents ACL2 from noticing when sub-books are uncertified or
+ have changed since the time of the parent book's certification.</li>
 
  </ul>
 
@@ -34029,64 +34084,63 @@ current fast alists."
 
  </ul>
 
- <p>Because of potential unsoundness of fast-cert mode, and especiallly the
- item above regarding status of books that are included in a parent book, it is
- strongly recommended that you eventually certify your collection of books
- without using fast-cert mode.  Otherwise there is no sort of guarantee that
- your proofs are valid!</p>
+ <p>Because of potential unsoundness when fast-cert mode is enabled, especially
+ as explained in the item above regarding status of books that are included in
+ a parent book, it is strongly recommended that you eventually certify your
+ collection of books with fast-cert mode disabled.  Otherwise there is no sort
+ of guarantee that your proofs are valid!</p>
 
- <h3>Effects of fast-cert mode on @(tsee certify-book) and @(tsee
- include-book)</h3>
-
- <p>Here are interactions between fast-cert mode, @(tsee certify-book), and
- @(tsee include-book).</p>
+ <h3>Interactions involving fast-cert mode</h3>
 
  <ul>
 
- <li>When a book is certified in fast-cert mode, its @(see certificate) records
- this fact.  Let's call such a certificate a &ldquo;fast-cert
- certificate&rdquo;; otherwise it is a &ldquo;normal&ldquo; certificate.</li>
+ <li>When a book is successfully certified with fast-cert mode active, its
+ @(see certificate) records this fact.  Let's call such a certificate (or book)
+ a &ldquo;fast-cert certificate&rdquo; (or&ldquo;fast-cert book&rdquo;);
+ otherwise it is a &ldquo;normal&ldquo; certificate.</li>
+
+ <li>When a book is successfully certified with fast-cert in accept mode, the
+ book is a normal book only if no fast-cert book is included before or during
+ certification.</li>
 
  <li>When @('include-book') is performed on a book with a valid fast-cert
  certificate, that book is considered to be certified if fast-cert mode is
- active and otherwise is considered to be uncertified.</li>
+ enabled and otherwise is considered to be uncertified.</li>
 
  <li>When @('include-book') is performed on a book with a valid normal
  certificate, that book is considered to be certified regardless of whether or
- not fast-cert mode is active at @('include-book') time.</li>
+ not fast-cert mode is enabled at @('include-book') time.</li>
 
- <li>When @(see provisional-certification) is used during @('certify-book'),
- fast-cert mode is essentially ignored (in particular, regarding the
- local-incompatibility check) except that it results in a fast-cert
- certificate.</li>
+ <li>When @(see provisional-certification) is used during @('certify-book')
+ while fast-cert mode is active, then fast-cert is treated as being in accept
+ mode; in particular, the local-incompatibility check) is performed in the
+ normal way.</li>
 
  <li>Normally @('certify-book') warns about functions that have not had their
- @(see guard)s verified.  This message is suppressed during fast-cert mode,
- because local @('include-book') forms in the certification world can make that
- message very long.</li>
+ @(see guard)s verified.  This message is suppressed when fast-cert mode is
+ active, because local @('include-book') forms in the certification world can
+ make that message very long.</li>
 
- <li>When a book is included while fast-cert mode is active, and that book has
- a fast-cert certificate, then the rest of that ACL2 session must remain in
- fast-cert mode.  This restriction guarantees that any book then certified
- during that session will be given a fast-mode certificate.</li>
+ <li>When a fast-cert book is included while fast-cert mode is enabled, then
+ the rest of that ACL2 session must remain in fast-cert mode.  This restriction
+ guarantees that any book then certified during that session will be given a
+ fast-mode certificate.</li>
+
+ <li>It is illegal to call @('set-fast-cert') during @('make-event') expansion
+ (see @(see make-event)).  There is also an explicit check to prohibit calls of
+ @('set-fast-cert') during @('certify-book'), though that is probably
+ unnecessary because of the @('make-event') restriction unless that restriction
+ is subverted using a trust tag.</li>
 
  </ul>
 
  <p>See @(see fast-cert-anomalies) for some possibly surprising (and more
  obscure) consequences of using fast-cert mode.</p>
 
- <h3>Miscellaneous restrictions</h3>
-
- <p>It is illegal to call @('set-fast-cert') during @('make-event') expansion
- (see @(see make-event)).  There is also an explicit check to prohibit calls of
- @('set-fast-cert') during @('certify-book'), though that is probably
- unnecessary because of the @('make-event') restriction unless that restriction
- is subverted using a trust tag.</p>
-
  <h3>Fast-cert mode and @(tsee save-exec)</h3>
 
- <p>The motivation for adding the option of fast-cert mode was to provide
- faster certification based on executables created with @(tsee save-exec).  We
+ <p>The motivation for adding fast-cert mode was to provide faster
+ certification based on executables created with @(tsee save-exec).  We
  illustrate with an example, which starts by @(see local)ly including a book
  that brings in many definitions and rules (it may take about a minute to
  include) and then saving an executable.  The initial (non-local)
@@ -34136,8 +34190,8 @@ current fast alists."
  (certify-book \"name\" ? t :ttags :all)
  })
 
- <p>In this little example, the certification time has been cut in half by
- using fast-cert mode.  In many cases the reduction may be less than that, but
+ <p>In this little example, the certification time has been cut in half with
+ fast-cert mode active.  In many cases the reduction may be less than that, but
  in large industrial examples the reduction might be much, much greater &mdash;
  -- especially when the book contains time-consuming events, in particular
  @('include-book') events.</p>")
@@ -34151,23 +34205,23 @@ current fast alists."
  <p>When fast-cert mode was developed in February 2023, a call of
  &ldquo;@('make')&rdquo; was made with &ldquo;@('ACL2_FAST_CERT=t')&rdquo; and
  target &ldquo;@('regression-everything')&rdquo;, to certify the @(see
- community-books) in fast-cert mode.  There were only two failures (out of
- thousands of books), both of which are discussed below along with their fixes.
- There is no plan to continue to test certification of the community books
- using fast-cert mode, but we expect future failures to continue to be
- rare.</p>
+ community-books) with fast-cert mode active.  There were only two
+ failures (out of thousands of books), both of which are discussed below along
+ with their fixes.  There is no plan to continue to test certification of the
+ community books with fast-cert mode enabled, but we expect future failures to
+ continue to be rare.</p>
 
  <h3>Example 1</h3>
 
- <p>Community book @('system/tests/early-load-of-compiled/ttag.lisp')
- certifies regardless of whether or not fast-cert mode is used.  However, when
- it is certified in fast-cert mode, a later attempt to include the book fails.
- That failure is due to the way ACL2 handles raw-Lisp redefinition (using a
- trust tag), as explained in a comment in the book.  To avoid this problem, the
- form @('(set-fast-cert nil state)') is in file @('ttag.acl2') in the same
- directory.  Key events in the book are as follows, in this order; the first
- forces a @(see local-incompatibility) check, and you can see comments in
- @('ttag.lisp') for why that is crucial.</p>
+ <p>Community book @('system/tests/early-load-of-compiled/ttag.lisp') has
+ certified regardless of whether or not fast-cert mode is used.  However, when
+ it was certified with fast-cert mode active, a later attempt to include the
+ book failed.  That failure was due to the way ACL2 handles raw-Lisp
+ redefinition (using a trust tag), as explained in a comment in the book.  To
+ avoid this problem, the form @('(set-fast-cert nil state)') is in file
+ @('ttag.acl2') in the same directory.  Key events in the book are as follows,
+ in this order; the first forces a @(see local-incompatibility) check, and you
+ can see comments in @('ttag.lisp') for why that is crucial.</p>
 
  @({
  (local (defun loc (x) x))
@@ -34193,7 +34247,7 @@ current fast alists."
 
  @({
  ; Matt K. addition: The following lemma, natp-lamz, is not normally necessary.
- ; But in fast-cert mode we need it for the proof of lam1_alt-is-lam1.
+ ; But with fast-cert mode active, we need it for the proof of lam1_alt-is-lam1.
  ; See :DOC fast-cert-anomalies if you want an explanation.
  (local
   (defthm natp-lamz
@@ -34204,7 +34258,7 @@ current fast alists."
  <p>To see why this lemma is needed when certifying in fast-cert mode, let us
  start by re-creating the environment where the definition of @('lamz') has
  been introduced.  We assume here that the sub-books that are included were
- certified using fast-cert mode.</p>
+ certified with fast-cert mode active.</p>
 
  @({
  (set-fast-cert t state) ; so that sub-books are included as certified
@@ -34233,15 +34287,15 @@ current fast alists."
  ...
  })
 
- <p>If we do the same experiment when sub-books were certified without
- fast-cert mode, the @(':')@(tsee pr) output will instead show a built-in @(see
+ <p>If we do the same experiment when sub-books were certified with fast-cert
+ mode disabled, the @(':')@(tsee pr) output will instead show a built-in @(see
  type-prescription) rule for @('lamz') saying that @('lamz') returns a
  non-negative integer.  This discrepancy in that built-in rule explains why the
  additional lemma above, @('natp-lamz'), was necessary when certifying the
- @(see community-books) using fast-cert mode.</p>
+ @(see community-books) with fast-cert mode active.</p>
 
- <p>So now let us investigate why certifying books in fast-cert mode weakens
- the built-in type-prescription rule for @('lamz').  After running the
+ <p>So now let us investigate why certifying books with fast-cert mode active
+ weakens the built-in type-prescription rule for @('lamz').  After running the
  @('set-fast-cert') and @(tsee ld) commands displayed above, we see where
  @('lamz') is defined.</p>
 
@@ -34272,12 +34326,12 @@ current fast alists."
  the definition of @('lamz'): @('rtl/rel9/support/support/lextra.lisp').</p>
 
  <p>So now consider what happens when we start ACL2 and evaluate the following
- commands.  For now, assume that we have used ACL2 <i>without</i> fast-cert
- mode to certify all books being included.  We use @(':ld-skip-proofsp
- 'include-book') to simulate what happens when including the book.</p>
+ commands.  For now, assume that we have used ACL2 fast-cert mode disabled to
+ certify all books being included.  We use @(':ld-skip-proofsp 'include-book')
+ to simulate what happens when including the book.</p>
 
  @({
- ; without fast-cert mode
+ ; with fast-cert mode disabled
  (ld \"rtl/rel9/support/support/lextra.lisp\"
      :dir :system
      :ld-skip-proofsp 'include-book)
@@ -34297,7 +34351,7 @@ current fast alists."
  })
 
  <p>Now repeat the same experiment but where we assume that fast-cert mode has
- been used for all book certification and we start with @('(set-fast-cert t
+ been active for all book certification and we start with @('(set-fast-cert t
  state)').  This time there is no such output about
  @('LNOT-NONNEGATIVE-INTEGER-TYPE').  Aha!  The culprit is the following form
  near the top of @('\"rtl/rel9/support/support/lextra.lisp\"').</p>
@@ -34310,20 +34364,20 @@ current fast alists."
  @('LNOT-NONNEGATIVE-INTEGER-TYPE'), which is necessary for computing a
  non-negative integer (i.e., @('natp')) type for the built-in
  @(':type-prescription') rule for @('lamz').  By contrast, without fast-cert
- mode, the world is rolled back past local events for the local-incompatibility
- check, and then when events in the book are processed during the
- @('include-book') phase of certification, the rule
+ mode active, the world is rolled back past local events for the
+ local-incompatibility check, and then when events in the book are processed
+ during the @('include-book') phase of certification, the rule
  @('LNOT-NONNEGATIVE-INTEGER-TYPE') is available for computing the built-in
  type-prescription for @('lamz'), which is stored in the book's @(see
- certificate).  But in fast-cert mode, the world is not rolled back, so the
- built-in type-prescription for lamz remains as originally computed, where the
- rule @('LNOT-NONNEGATIVE-INTEGER-TYPE') is disabled.</p>
+ certificate).  But with fast-cert mode active, the world is not rolled back,
+ so the built-in type-prescription for lamz remains as originally computed,
+ where the rule @('LNOT-NONNEGATIVE-INTEGER-TYPE') is disabled.</p>
 
  <p>Indeed, if you read the certificate file for the @('lextra.lisp') book
  above, you'll see that the @(':TYPE-PRESCRIPTION') entry for @('lamz')
- indicates a rational type when books are certified with fast-cert mode but a
- non-negative integer type when certified without fast-cert mode.  You can read
- that certificate file as follows.</p>
+ indicates a rational type when books are certified with fast-cert mode active
+ but a non-negative integer type when certified with fast-cert mode disabled.
+ You can read that certificate file as follows.</p>
 
  @({
  (read-file (concatenate 'string
@@ -101535,7 +101589,9 @@ it."
 ; Fixed guard for warning1-cw (warning$, ...?) to allow summary of ("foo").
 
 ; Changed er-soft-off-p[1] to er-off-p[1]: just a name change, since this is
-; about hard errors too, not just soft errors.
+; about hard errors too, not just soft errors.  Also added a new soft error
+; summary string, "Evaluation"; there may be others as well, as we probably
+; won't track all summary strings that have been added.
 
   :parents (release-notes)
   :short "ACL2 Version  8.6 (xxx, 20xx) Notes"
@@ -101839,10 +101895,7 @@ it."
  utilities.</p>
 
  <p>The new utility @(tsee er-hard) is analogous to @(tsee er-soft), but for
- hard errors instead of soft errors (see @(see er)).  At the moment the only
- summary string used for inhibiting hard errors is @('\"Call depth\"'), for
- rewriter stack overflows.  On a related note, a new soft error summary string
- is used for inhibiting soft errors, @('\"Evaluation\"').</p>
+ hard errors instead of soft errors (see @(see er)).</p>
 
  <p>A new command, @(':')@(tsee tc) (translate and clean), has been added.  It
  translates a given form and then ``cleans it up'', returning a logically
