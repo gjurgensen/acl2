@@ -99186,6 +99186,10 @@ Changes at the System Level
     * [Loop$-primer] provides an extensive primer on the the ACL2 [loop$]
       feature.
 
+  Allow [ld] output in [raw-mode] to go to other than the channel,
+  *standard-co*.  Thanks to Vivek Ramanathan and Warren Hunt for an
+  example illustrating the issue.
+
 
 EMACS Support
 
