@@ -98965,6 +98965,14 @@ Heuristic and Efficiency Improvements
   building the [type-alist], so that the literals that involve at
   most one variable precede the other literals.)
 
+  Generation of guard clauses (and, probably rarely, other goals) has
+  been sped up in certain extreme cases.  For details, see
+  [system-attachments], specifically the discussion of
+  CONJOIN-CLAUSE-SETS-BOUND in the ``Summary of attachable system
+  functions''.  Thanks to Alessandro Coglio for sending an example
+  that led to our discovery of the quadratic behavior eliminated by
+  this change.
+
 
 Bug Fixes
 
@@ -133763,6 +133771,14 @@ Summary of attachable system functions
   Documentation: Attach to constant-nil-function-arity-0 to extend to
   non-recursively defined functions the stack-based limitation on
   opening recursively-defined functions.
+
+  CONJOIN-CLAUSE-SETS-BOUND
+  Built-in attachment: CONJOIN-CLAUSE-SETS-BOUND-BUILTIN
+  Documentation: Attach to a constant function that returns a natural
+  number (default 50) bounding how large a clause-set can be to do
+  smart merging into another clause-set; see comments in the
+  definition of conjoin-clause-sets in the ACL2 sources for more
+  explanation.
 
   HEAVY-LINEAR-P
   Built-in attachment: CONSTANT-NIL-FUNCTION-ARITY-0
