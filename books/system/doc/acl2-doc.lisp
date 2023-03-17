@@ -101993,6 +101993,13 @@ it."
  reordered before building the @(see type-alist), so that the literals that
  involve at most one variable precede the other literals.)</p>
 
+ <p>Generation of guard clauses (and, probably rarely, other goals) has been
+ sped up in certain extreme cases.  For details, see @(see system-attachments),
+ specifically the discussion of CONJOIN-CLAUSE-SETS-BOUND in the &ldquo;Summary
+ of attachable system functions&rdquo;.  Thanks to Alessandro Coglio for
+ sending an example that led to our discovery of the quadratic behavior
+ eliminated by this change.</p>
+
  <h3>Bug Fixes</h3>
 
  <p>Fixed a soundness bug based on rules of class @(':')@(tsee meta) or
@@ -135016,6 +135023,13 @@ work on <tt>(q x)</tt>.</p>
      "Attach to @('constant-nil-function-arity-0') to extend to non-recursively
       defined functions the stack-based limitation on opening
       recursively-defined functions.")
+    (CONJOIN-CLAUSE-SETS-BOUND
+     CONJOIN-CLAUSE-SETS-BOUND-BUILTIN
+     "Attach to a constant function that returns a natural number (default
+      @(`(conjoin-clause-sets-bound-builtin)`)) bounding how large a clause-set
+      can be to do smart merging into another clause-set; see comments in the
+      definition of conjoin-clause-sets in the ACL2 sources for more
+      explanation.")
     (HEAVY-LINEAR-P CONSTANT-NIL-FUNCTION-ARITY-0 heavy-linear-p)
     (HIDE-WITH-COMMENT-P CONSTANT-T-FUNCTION-ARITY-0 hide)
     (ONCEP-TP ONCEP-TP-BUILTIN
