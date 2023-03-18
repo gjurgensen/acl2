@@ -37446,33 +37446,75 @@ Subtopics
   some ``industrial-size'' books if there are [local] events early in
   the book or in its [portcullis] commands.  Fast-cert mode provides
   a way to avoid the [local-incompatibility] check.  There are the
-  following two drawbacks to using fast-cert mode.
+  following two drawbacks to using ACL2 with fast-cert mode enabled
+  (as described further below).
 
     * It may be unsound!  See Section ``Unsoundness'' below.
-    * Therefore, after a book is certified while in fast-cert mode, then
-      any subsequent attempt to include that book will consider it to
-      be uncertified unless the [include-book] event is executed in
-      fast-cert mode.  See Section ``Effects of fast-cert mode...''
-      below.
+    * Therefore, after a book is certified with fast-cert mode enabled,
+      then any subsequent attempt to include that book will consider
+      it to be uncertified unless the [include-book] event is
+      executed with fast-cert mode enabled.  See Section ``Effects of
+      fast-cert mode...'' below.
 
     General Forms:
 
-    (set-fast-cert t state)   ; enter fast-cert mode (fast-cert mode is active)
-    (set-fast-cert nil state) ; exit fast-cert mode (fast-cert mode is inactive)
+    (set-fast-cert t state)       ; enter fast-cert active mode
+    (set-fast-cert nil state)     ; disable fast-cert mode
+    (set-fast-cert :accept state) ; enter fast-cert ACCEPT mode
 
   When a form (set-fast-cert expr state) is evaluated, expr should
   evaluate to a Boolean value, val.  If val is t then fast-cert mode
-  is entered (or maintained when already in fast-cert mode); while if
-  val is nil then fast-cert mode is exited (or maintained when not
-  already in fast-cert mode).
+  becomes (or remains) active.  If val is nil, then fast-cert mode
+  becomes (or remains) disabled.  The other legal value for val is
+  :accept, which is a sort of intermediate mode: ACL2 behaves as
+  though fast-cert mode is disabled --- we also say ``not enabled''
+  for ``disabled'' --- but books can be considered certified even if
+  they were certified with fast-cert mode enabled.  We say more about
+  these three modes in Section ``Fast-cert modes'' below.
 
   Another way to enter fast-cert mode is to set environment variable
-  ACL2_FAST_CERT to a non-empty value before starting ACL2.
+  ACL2_FAST_CERT to a non-empty value before starting ACL2.  The
+  case-insensitive value, \"accept\", causes (set-fast-cert :accept
+  state) is evaluated at startup; otherwise, a non-empty value causes
+  (set-fast-cert t state) to be evaluated at startup.
 
   We turn now to the two sections promised above, on unsoundness and
   effects of fast-cert mode, followed by a section on miscellaneous
   restrictions, and concluding with a suggested application of
   fast-cert mode.
+
+
+Fast-cert modes
+
+  There are the following fast-cert modes.
+
+    * Active: entered with (set-fast-cert t state).  When ACL2 is in this
+      mode, the [local-incompatibility] check is skipped when
+      certifying a book, and the book's [certificate] marks it as a
+      ``fast-cert book''.
+    * Disabled: entered with (set-fast-cert t state), though this is the
+      default mode.  In this mode the usual [local-incompatibility]
+      checks are performed during book certification, and every
+      fast-cert book is considered to be uncertified.
+    * ACCEPT: entered with (set-fast-cert :accept state).  When ACL2 is in
+      this mode, [local-incompatibility] checks are performed just as
+      when fast-cert mode is disabled, but a fast-cert book is
+      treated as certified just like any other book.
+
+  Fast-cert mode is considered to be ``enabled'' exactly when it is not
+  disabled.
+
+  The discussion above leaves open the question of whether a book that
+  is certified in ACCEPT mode is marked as a fast-cert book.  That
+  happens only if at least one fast-cert book has been included
+  during the session, either before the book's certification began or
+  during evaluation of the book's events.
+
+  It is always legal to change fast-cert mode from disabled to enabled
+  (using set-fast-cert).  It is legal to change fast-cert mode from
+  enabled to disabled provided there has been no attempt during the
+  session to include a fast-cert book while fast-cert mode is
+  enabled.
 
 
 Potential for unsoundness
@@ -37522,16 +37564,24 @@ Potential for unsoundness
   definition of g is illegal.  Without the use of fast-cert mode, the
   local-incompatibility check would catch this problem.
 
-  (Technical note: if fast-cert mode is used to certify the book, then
-  when we subsequently include \"fast-cert-unsound-sub\" in fast-cert
-  mode, there is --- perhaps surprisingly --- no error.  That is
-  because the translation (see [term]) of the definition of g is
-  cached in the book's [certificate].)
+  (Technical note: if the book is certified while fast-cert mode is
+  active, then when we subsequently include \"fast-cert-unsound-sub\"
+  when fast-cert mode is enabled, there is --- perhaps surprisingly
+  --- no error.  That is because the translation (see [term]) of the
+  definition of g is cached in the book's [certificate].)
 
-  Such unsoundness with fast-cert mode is probably rare in practice.
-  But because unsoundness is possible with fast-cert mode, a ``TTAG
-  NOTE'' message is printed when fast-cert mode is entered, as
-  follows.
+  Note that unsoundness can occur even when fast-cert is in accept
+  mode, not just in active mode.  That's because one may include a
+  book in accept mode that was certified in a previous session while
+  fast-cert was in active mode, and that book could prove nil as in
+  the example above.  In short, unsoundness can occur when fast-cert
+  mode is enabled (i.e., fast-cert is in accept or active mode).
+
+  Unsoundness when fast-cert mode is enabled is probably rare in
+  practice.  But because unsoundness is possible with fast-cert mode
+  enabled, a ``TTAG NOTE'' message is printed when fast-cert mode is
+  enabled, for example as follows when fast-cert mode transitions
+  from disabled to active.
 
     ACL2 !>(set-fast-cert t state)
 
@@ -37545,19 +37595,20 @@ Potential for unsoundness
   with the use of [defttag] but also when entering fast-cert mode.
 
   We conclude this section by mentioning other potential sources of
-  unsoundness when using fast-cert mode.  There are probably others,
-  but again, it is probably rare for fast-cert mode to exhibit
-  unsoundness.  These behaviors are due to avoiding the
-  [local-incompatibility] check during certification in fast-cert
-  mode.  Here are two key potential sources of unsoundness.
+  unsoundness when fast-cert mode is enabled.  There are probably
+  others, but again, it is probably rare for fast-cert mode to
+  exhibit unsoundness.  These behaviors are due to avoiding the
+  [local-incompatibility] check during certification when fast-cert
+  mode is active.  Here are two key potential sources of unsoundness.
 
     * Hidden [defpkg] events are not recorded in a book's [certificate]
-      (see [hidden-death-package]).
+      when fast-cert mode is active.  See [hidden-death-package].
     * Information about sub-books that is normally recorded in a
       [certificate], including the [book-hash] values in the
-      [portcullis] and the [keep], is omitted.  This prevents ACL2
-      from noticing when sub-books are uncertified or have changed
-      since the time of the parent book's certification.
+      [portcullis] and the [keep], is omitted by certification when
+      fast-cert mode is active.  This prevents ACL2 from noticing
+      when sub-books are uncertified or have changed since the time
+      of the parent book's certification.
 
   Here are some necessary checks that may be omitted when the
   local-incompatibility check is skipped.
@@ -37571,63 +37622,60 @@ Potential for unsoundness
       [guard]-verified.  So if a defattach event is non-local, each
       necessary guard verification status must hold non-locally.
 
-  Because of potential unsoundness of fast-cert mode, and especiallly
-  the item above regarding status of books that are included in a
-  parent book, it is strongly recommended that you eventually certify
-  your collection of books without using fast-cert mode.  Otherwise
-  there is no sort of guarantee that your proofs are valid!
+  Because of potential unsoundness when fast-cert mode is enabled,
+  especially as explained in the item above regarding status of books
+  that are included in a parent book, it is strongly recommended that
+  you eventually certify your collection of books with fast-cert mode
+  disabled.  Otherwise there is no sort of guarantee that your proofs
+  are valid!
 
 
-Effects of fast-cert mode on [certify-book] and [include-book]
+Interactions involving fast-cert mode
 
-  Here are interactions between fast-cert mode, [certify-book], and
-  [include-book].
-
-    * When a book is certified in fast-cert mode, its [certificate] records
-      this fact.  Let's call such a certificate a ``fast-cert
-      certificate''; otherwise it is a ``normal`` certificate.
+    * When a book is successfully certified with fast-cert mode active, its
+      [certificate] records this fact.  Let's call such a certificate
+      (or book) a ``fast-cert certificate'' (or``fast-cert book'');
+      otherwise it is a ``normal`` certificate.
+    * When a book is successfully certified with fast-cert in accept mode,
+      the book is a normal book only if no fast-cert book is included
+      before or during certification.
     * When include-book is performed on a book with a valid fast-cert
       certificate, that book is considered to be certified if
-      fast-cert mode is active and otherwise is considered to be
+      fast-cert mode is enabled and otherwise is considered to be
       uncertified.
     * When include-book is performed on a book with a valid normal
       certificate, that book is considered to be certified regardless
-      of whether or not fast-cert mode is active at include-book
+      of whether or not fast-cert mode is enabled at include-book
       time.
-    * When [provisional-certification] is used during certify-book,
-      fast-cert mode is essentially ignored (in particular, regarding
-      the local-incompatibility check) except that it results in a
-      fast-cert certificate.
+    * When [provisional-certification] is used during certify-book while
+      fast-cert mode is active, then fast-cert is treated as being in
+      accept mode; in particular, the local-incompatibility check) is
+      performed in the normal way.
     * Normally certify-book warns about functions that have not had their
-      [guard]s verified.  This message is suppressed during fast-cert
-      mode, because local include-book forms in the certification
-      world can make that message very long.
-    * When a book is included while fast-cert mode is active, and that book
-      has a fast-cert certificate, then the rest of that ACL2 session
-      must remain in fast-cert mode.  This restriction guarantees
-      that any book then certified during that session will be given
-      a fast-mode certificate.
+      [guard]s verified.  This message is suppressed when fast-cert
+      mode is active, because local include-book forms in the
+      certification world can make that message very long.
+    * When a fast-cert book is included while fast-cert mode is enabled,
+      then the rest of that ACL2 session must remain in fast-cert
+      mode.  This restriction guarantees that any book then certified
+      during that session will be given a fast-mode certificate.
+    * It is illegal to call set-fast-cert during make-event expansion (see
+      [make-event]).  There is also an explicit check to prohibit
+      calls of set-fast-cert during certify-book, though that is
+      probably unnecessary because of the make-event restriction
+      unless that restriction is subverted using a trust tag.
 
   See [fast-cert-anomalies] for some possibly surprising (and more
   obscure) consequences of using fast-cert mode.
 
 
-Miscellaneous restrictions
-
-  It is illegal to call set-fast-cert during make-event expansion (see
-  [make-event]).  There is also an explicit check to prohibit calls
-  of set-fast-cert during certify-book, though that is probably
-  unnecessary because of the make-event restriction unless that
-  restriction is subverted using a trust tag.
-
-
 Fast-cert mode and [save-exec]
 
-  The motivation for adding the option of fast-cert mode was to provide
-  faster certification based on executables created with [save-exec].
-  We illustrate with an example, which starts by [local]ly including
-  a book that brings in many definitions and rules (it may take about
-  a minute to include) and then saving an executable.  The initial
+  The motivation for adding fast-cert mode was to provide faster
+  certification based on executables created with [save-exec].  We
+  illustrate with an example, which starts by [local]ly including a
+  book that brings in many definitions and rules (it may take about a
+  minute to include) and then saving an executable.  The initial
   (non-local) include-book forms below might not be necessary for all
   uses of the executable.
 
@@ -37669,10 +37717,10 @@ Fast-cert mode and [save-exec]
     (certify-book \"name\" ? t :ttags :all)
 
   In this little example, the certification time has been cut in half
-  by using fast-cert mode.  In many cases the reduction may be less
-  than that, but in large industrial examples the reduction might be
-  much, much greater --- -- especially when the book contains
-  time-consuming events, in particular include-book events.
+  with fast-cert mode active.  In many cases the reduction may be
+  less than that, but in large industrial examples the reduction
+  might be much, much greater --- -- especially when the book
+  contains time-consuming events, in particular include-book events.
 
 
 Subtopics
@@ -37688,23 +37736,23 @@ Subtopics
 
   When fast-cert mode was developed in February 2023, a call of
   ``make'' was made with ``ACL2_FAST_CERT=t'' and target
-  ``regression-everything'', to certify the [community-books] in
-  fast-cert mode.  There were only two failures (out of thousands of
-  books), both of which are discussed below along with their fixes.
-  There is no plan to continue to test certification of the community
-  books using fast-cert mode, but we expect future failures to
-  continue to be rare.
+  ``regression-everything'', to certify the [community-books] with
+  fast-cert mode active.  There were only two failures (out of
+  thousands of books), both of which are discussed below along with
+  their fixes.  There is no plan to continue to test certification of
+  the community books with fast-cert mode enabled, but we expect
+  future failures to continue to be rare.
 
 
 Example 1
 
-  Community book system/tests/early-load-of-compiled/ttag.lisp
-  certifies regardless of whether or not fast-cert mode is used.
-  However, when it is certified in fast-cert mode, a later attempt to
-  include the book fails.  That failure is due to the way ACL2
-  handles raw-Lisp redefinition (using a trust tag), as explained in
-  a comment in the book.  To avoid this problem, the form
-  (set-fast-cert nil state) is in file ttag.acl2 in the same
+  Community book system/tests/early-load-of-compiled/ttag.lisp has
+  certified regardless of whether or not fast-cert mode is used.
+  However, when it was certified with fast-cert mode active, a later
+  attempt to include the book failed.  That failure was due to the
+  way ACL2 handles raw-Lisp redefinition (using a trust tag), as
+  explained in a comment in the book.  To avoid this problem, the
+  form (set-fast-cert nil state) is in file ttag.acl2 in the same
   directory.  Key events in the book are as follows, in this order;
   the first forces a [local-incompatibility] check, and you can see
   comments in ttag.lisp for why that is crucial.
@@ -37731,7 +37779,7 @@ Example 2
   rtl/rel9/support/lib2.delta1/add-new-proofs.lisp.
 
     ; Matt K. addition: The following lemma, natp-lamz, is not normally necessary.
-    ; But in fast-cert mode we need it for the proof of lam1_alt-is-lam1.
+    ; But with fast-cert mode active, we need it for the proof of lam1_alt-is-lam1.
     ; See :DOC fast-cert-anomalies if you want an explanation.
     (local
      (defthm natp-lamz
@@ -37741,7 +37789,7 @@ Example 2
   To see why this lemma is needed when certifying in fast-cert mode,
   let us start by re-creating the environment where the definition of
   lamz has been introduced.  We assume here that the sub-books that
-  are included were certified using fast-cert mode.
+  are included were certified with fast-cert mode active.
 
     (set-fast-cert t state) ; so that sub-books are included as certified
     (ld \"rtl/rel9/support/lib2.delta1/add-new-proofs.lisp\"
@@ -37766,15 +37814,15 @@ Example 2
 
     ...
 
-  If we do the same experiment when sub-books were certified without
-  fast-cert mode, the :[pr] output will instead show a built-in
-  [type-prescription] rule for lamz saying that lamz returns a
-  non-negative integer.  This discrepancy in that built-in rule
+  If we do the same experiment when sub-books were certified with
+  fast-cert mode disabled, the :[pr] output will instead show a
+  built-in [type-prescription] rule for lamz saying that lamz returns
+  a non-negative integer.  This discrepancy in that built-in rule
   explains why the additional lemma above, natp-lamz, was necessary
-  when certifying the [community-books] using fast-cert mode.
+  when certifying the [community-books] with fast-cert mode active.
 
-  So now let us investigate why certifying books in fast-cert mode
-  weakens the built-in type-prescription rule for lamz.  After
+  So now let us investigate why certifying books with fast-cert mode
+  active weakens the built-in type-prescription rule for lamz.  After
   running the set-fast-cert and [ld] commands displayed above, we see
   where lamz is defined.
 
@@ -37804,12 +37852,12 @@ Example 2
   rtl/rel9/support/support/lextra.lisp.
 
   So now consider what happens when we start ACL2 and evaluate the
-  following commands.  For now, assume that we have used ACL2 without
-  fast-cert mode to certify all books being included.  We use
-  :ld-skip-proofsp 'include-book to simulate what happens when
+  following commands.  For now, assume that we have used ACL2
+  fast-cert mode disabled to certify all books being included.  We
+  use :ld-skip-proofsp 'include-book to simulate what happens when
   including the book.
 
-    ; without fast-cert mode
+    ; with fast-cert mode disabled
     (ld \"rtl/rel9/support/support/lextra.lisp\"
         :dir :system
         :ld-skip-proofsp 'include-book)
@@ -37826,7 +37874,7 @@ Example 2
     We used the :type-prescription rule LNOT-NONNEGATIVE-INTEGER-TYPE.
 
   Now repeat the same experiment but where we assume that fast-cert
-  mode has been used for all book certification and we start with
+  mode has been active for all book certification and we start with
   (set-fast-cert t state).  This time there is no such output about
   LNOT-NONNEGATIVE-INTEGER-TYPE.  Aha!  The culprit is the following
   form near the top of \"rtl/rel9/support/support/lextra.lisp\".
@@ -37837,21 +37885,22 @@ Example 2
   LNOT-NONNEGATIVE-INTEGER-TYPE, which is necessary for computing a
   non-negative integer (i.e., natp) type for the built-in
   :type-prescription rule for lamz.  By contrast, without fast-cert
-  mode, the world is rolled back past local events for the
+  mode active, the world is rolled back past local events for the
   local-incompatibility check, and then when events in the book are
   processed during the include-book phase of certification, the rule
   LNOT-NONNEGATIVE-INTEGER-TYPE is available for computing the
   built-in type-prescription for lamz, which is stored in the book's
-  [certificate].  But in fast-cert mode, the world is not rolled
-  back, so the built-in type-prescription for lamz remains as
+  [certificate].  But with fast-cert mode active, the world is not
+  rolled back, so the built-in type-prescription for lamz remains as
   originally computed, where the rule LNOT-NONNEGATIVE-INTEGER-TYPE
   is disabled.
 
   Indeed, if you read the certificate file for the lextra.lisp book
   above, you'll see that the :TYPE-PRESCRIPTION entry for lamz
   indicates a rational type when books are certified with fast-cert
-  mode but a non-negative integer type when certified without
-  fast-cert mode.  You can read that certificate file as follows.
+  mode active but a non-negative integer type when certified with
+  fast-cert mode disabled.  You can read that certificate file as
+  follows.
 
     (read-file (concatenate 'string
                             (system-books-dir state)
@@ -59689,7 +59738,9 @@ Subtopics
   error to its caller by returning an error triple with non-nil error
   component, and reverting the logical [world] to its value just
   before that call of [ld].  If it is (:exit N), then ACL2 quits with
-  exit status N.
+  exit status N.  Later in this topic we discuss another case in
+  which an error is said to have occurred: when the value component
+  of an error triple is of the form (:STOP-LD . x).
 
   To see this effect of :ERROR for ld-error-action, consider the
   following example.
@@ -59716,10 +59767,12 @@ Subtopics
   evaluation of a form returns an error triple (mv nil val state),
   where nil is the error component and whose ``value component'', val
   is a [cons] pair whose [car] is the symbol :STOP-LD.  Let val be
-  the pair (:STOP-LD . x).  Then the call of ld returns the error
-  triple (mv nil (:STOP-LD n . x) state), where n is the value of
-  [state] global variable 'ld-level at the time of termination.  The
-  following example illustrates how this works.
+  the pair (:STOP-LD . x).  If ld-error-action is of the form (:EXIT
+  N), then ACL2 quits with exit status N.  Otherwise (i.e., when
+  ld-error-action is :RETURN, :RETURN!, or :ERROR), the call of ld
+  returns the error triple (mv nil (:STOP-LD n . x) state), where n
+  is the value of [state] global variable 'ld-level at the time of
+  termination.  The following example illustrates how this works.
 
     (ld '((defun f1 (x) x)
           (ld '((defun f2 (x) x)
@@ -98598,6 +98651,9 @@ Changes to Existing Features
       Lisp stream is closed, a new keyword argument, :close, can be
       supplied to control that behavior.
     * Miscellaneous clean-up has been made in the implementation.
+    * Restrictions have been tightened a bit to avoid what could be
+      considered a soundness bug.  See discussion about that in the
+      section on ``Bugs'' below.
 
   The [trace$] option :evisc-tuple :print, which continues to use raw
   Lisp printing, has undergone the following improvements when
@@ -98733,6 +98789,55 @@ Changes to Existing Features
   (cdr term))), apparently needed because length behaves specially on
   strings.
 
+  When there is an error from evaluation of a form encountered by [ld],
+  in a session where the value of [ld-error-triples] is the default
+  of t and the value of [ld-error-action] is of the form (:EXIT N),
+  then ACL2 quits with exit status N in some cases where formerly it
+  did not.  The following explanation is rather technical; see
+  [ld-error-action] for relevant background.
+
+      This behavior was already present in the case that the ``error on
+      evaluation'' was from an evaluation result (mv erp val state)
+      where erp is non-nil; but it has been extended to the case that
+      erp is nil and val is of the form (:STOP-LD . x), as is
+      returned by default by ld upon an evaluation error.  A key
+      effect of this change is for the case that a .acl2 file
+      produces an error from a call of [build::cert.pl].  The
+      following example illustrates; explanation follows below.
+
+        ;;; foo.acl2
+        (ld '((defun g (x) y)) :ld-error-action :return!)
+
+        ;;; foo.lisp
+        (in-package \"ACL2\")
+
+      Before this change, the command `cert.pl foo' resulted in a hard Lisp
+      error (as seen in foo.cert.out).  To see why, first note that
+      cert.pl executes a sequence of commands as follows (several
+      omitted as shown with ``...'').
+
+        ...
+        (set-ld-error-action (quote (:exit 1)) state)
+        ...
+        ; instructions from .acl2 file foo.acl2:
+        (ld '((defun g (x) y)) :ld-error-action :return!)
+        ...
+        #!ACL2 (set-ld-error-action (quote :continue) state)
+        ...
+
+      The call of ld above returns (mv nil (:STOP-LD 2) state).  Because
+      ld-error-action at the top level no longer has the default
+      value of :CONTINUE, that result is considered an error (see
+      [ld-error-action]) and top-level evaluation halts.  Before this
+      change, then ACL2 did not quit since the value was of the form
+      (mv nil _ state); instead, ACL2 would quit the top-level call
+      of ld, leaving us in raw Lisp.  But in raw Lisp, the #! reader
+      macro (see [sharp-bang-reader]) is undefined; hence an error
+      would be signalled.  After the fix, the return value of (mv nil
+      (:STOP-LD 2) state) is treated as an error, so because
+      ld-error-action is (:EXIT N), ACL2 immediately exits with
+      status N.
+
 
 New Features
 
@@ -98753,10 +98858,7 @@ New Features
   of such utilities.
 
   The new utility [er-hard] is analogous to [er-soft], but for hard
-  errors instead of soft errors (see [er]).  At the moment the only
-  summary string used for inhibiting hard errors is \"Call depth\", for
-  rewriter stack overflows.  On a related note, a new soft error
-  summary string is used for inhibiting soft errors, \"Evaluation\".
+  errors instead of soft errors (see [er]).
 
   A new command, :[tc] (translate and clean), has been added.  It
   translates a given form and then ``cleans it up'', returning a
@@ -98842,6 +98944,13 @@ New Features
 
   The symbol, number, is now a legal [type-spec].
 
+  It is now permitted for a [stobj] s to occur more than once as an
+  actual parameter in a function call, provided each such occurrence
+  is in a position where a stobj congruent to s is expected (possibly
+  s itself).  Thanks to Sol Swords for providing a relevant example,
+  which appears in a comment in the definition of function
+  stobjs-in-out in the ACL2 sources.
+
 
 Heuristic and Efficiency Improvements
 
@@ -98855,6 +98964,14 @@ Heuristic and Efficiency Improvements
   heuristics'' attempt), then the literals are reordered before
   building the [type-alist], so that the literals that involve at
   most one variable precede the other literals.)
+
+  Generation of guard clauses (and, probably rarely, other goals) has
+  been sped up in certain extreme cases.  For details, see
+  [system-attachments], specifically the discussion of
+  CONJOIN-CLAUSE-SETS-BOUND in the ``Summary of attachable system
+  functions''.  Thanks to Alessandro Coglio for sending an example
+  that led to our discovery of the quadratic behavior eliminated by
+  this change.
 
 
 Bug Fixes
@@ -98871,6 +98988,50 @@ Bug Fixes
   :[rule-classes].  That is no longer allowed; [skip-proofs] may be
   used instead if one believes that the proposed formula is a
   theorem.
+
+  The function [read-file-into-string] has been modified to avoid what
+  might be considered a soundness bug.  The change involves causing
+  an error for two reads of the same file without first incrementing
+  the file-clock of the [state].  See [read-file-into-string] for
+  details, in particular for how to avoid that error by evaluating
+  (increment-file-clock state) after calling read-file-into-string.
+  Formerly the error was avoided if the write-date of the file didn't
+  change between the two reads, but the following example shows how
+  this permitted two calls with identical arguments to produce
+  different results, logically causing read-file-into-string to
+  violate the axiom x = x.
+
+      First run the following shell commands.
+
+        echo 'test1' > tmp1.txt ; echo 'test2' > tmp2.txt
+        cp -p tmp1.txt tmp.txt
+
+      Then start ACL2 and run a command as follows.
+
+        ACL2 !>(read-file-into-string \"tmp.txt\")
+        \"test1
+        \"
+        ACL2 !>
+
+      Now suspend ACL2 with control-Z and run the following shell command.
+
+        cp -p tmp2.txt tmp.txt
+
+      Now resume ACL2 with fg, and optionally submit some trivial form
+      (say, 3) just to get the prompt back.  Note that the file-clock
+      of the state hasn't changed.  (Probably the state hasn't
+      changed; at any rate, the parts of the state relevant to
+      read-file-into-string haven't changed.)  So the following call
+      has arguments identical to those in the corresponding call
+      above, yet yields a different result.
+
+        ACL2 !>(read-file-into-string \"tmp.txt\")
+        \"test2
+        \"
+        ACL2 !>
+
+      After the change to read-file-into-string, its call just above causes
+      an error.
 
   Fixed a bug in system function bounded-integer-listp, which may have
   allowed illegal [proof-builder] commands to be attempted.  Thanks
@@ -99025,6 +99186,10 @@ Changes at the System Level
     * [Loop$-primer] provides an extensive primer on the the ACL2 [loop$]
       feature.
 
+  Allow [ld] output in [raw-mode] to go to other than the channel,
+  *standard-co*.  Thanks to Vivek Ramanathan and Warren Hunt for an
+  example illustrating the issue.
+
 
 EMACS Support
 
@@ -99035,7 +99200,12 @@ EMACS Support
   Distribution is unlimited.''
 
 
-Experimental Versions")
+Experimental Versions
+
+  The note ``Note: No checkpoints to print.'' that might be printed on
+  proof failure is now the same in ACL2(p) as in ACL2, unless
+  [waterfall-parallelism] is enabled (in which case ``no
+  checkpoints'' is followed by `` from gag-mode'' as before).")
  (NOTE1 (POINTERS) "See [note-1-1].")
  (NOTE2 (POINTERS) "See [note-1-2].")
  (NOTE3 (POINTERS) "See [note-1-3].")
@@ -115549,8 +115719,8 @@ Recursion and Induction Table of Contents
            (declare (xargs :stobjs state
                            :guard (and (stringp filename)
                                        (natp start)
-                                       (or (null bytes) (natp bytes)))))
-           (declare (ignore close))
+                                       (or (null bytes) (natp bytes))))
+                    (ignore close))
            (read-file-into-string2-logical filename start bytes state))
 
   Macro: <read-file-into-string>
@@ -133605,6 +133775,14 @@ Summary of attachable system functions
   Documentation: Attach to constant-nil-function-arity-0 to extend to
   non-recursively defined functions the stack-based limitation on
   opening recursively-defined functions.
+
+  CONJOIN-CLAUSE-SETS-BOUND
+  Built-in attachment: CONJOIN-CLAUSE-SETS-BOUND-BUILTIN
+  Documentation: Attach to a constant function that returns a natural
+  number (default 50) bounding how large a clause-set can be to do
+  smart merging into another clause-set; see comments in the
+  definition of conjoin-clause-sets in the ACL2 sources for more
+  explanation.
 
   HEAVY-LINEAR-P
   Built-in attachment: CONSTANT-NIL-FUNCTION-ARITY-0
