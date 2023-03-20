@@ -102244,6 +102244,10 @@ it."
 
  </ul>
 
+ <p>Allow @(tsee ld) output in @(see raw-mode) to go to other than the channel,
+ @('*standard-co*').  Thanks to Vivek Ramanathan and Warren Hunt for an example
+ illustrating the issue.</p>
+
  <h3>EMACS Support</h3>
 
  <p>A set of tools for assisting in the conversion of certain HTML to @(tsee
