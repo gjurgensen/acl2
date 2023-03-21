@@ -101877,6 +101877,15 @@ it."
 
  </blockquote>
 
+ <p>The pretty-printer has been improved by a contribution from Stephen
+ Westfold to support appropriate indentation, including more conventional
+ pretty-printing for calls of common macros such as @(tsee defun) and @(tsee
+ defmacro).  See @(see pp-special-syms); we thank Stephen also for supplying
+ the substance of that documentation.  Thanks too to Stephen for suggesting
+ several user-defined macros to be pretty-printed with this mechanism, which we
+ have modified by adding suitable @(tsee table) events (e.g., for @(tsee
+ define)).</p>
+
  <h3>New Features</h3>
 
  <p>The new zero-ary attachable system function, @(tsee heavy-linear-p), allows
@@ -106016,6 +106025,71 @@ arithmetic) for libraries of @(see books) for arithmetic reasoning.</p>")
  <p>If you have been working your way through the tutorial introduction to the
  theorem prover, use your browser's <b>Back Button</b> now to @(see
  introduction-to-key-checkpoints).</p>")
+
+(defxdoc pp-special-syms
+  :parents (io)
+  :short "A @(see table) to control indentation for pretty-printing"
+  :long "<p>ACL2 output is generally pretty-printed: that is, spacing and
+ indentation are controlled to enhance readability and aesthetics of the
+ output.  Indentation may be controlled by using the table,
+ @('pp-special-syms') as described below.  We thank Stephen Westfold for
+ enhancing the pretty-printer with support for @('pp-special-syms').</p>
+
+ <p>The initial value of the @('pp-special-syms') table is given by the
+ constant @('*pp-special-syms*') as follows.  It associates each key, a symbol,
+ with a corresponding <i>special-term-num</i> as discussed below.</p>
+
+ @(def *pp-special-syms*)
+
+ <p>The @('pp-special-syms') table is extended for some common macros in the
+ files where they are defined, for example for @(tsee define) and @(tsee
+ b*).</p>
+
+ <p>For calls of special forms and macros in the @('pp-special-syms') table,
+ their bodies are indented by 2 rather than in the usual default manner.  To
+ support this we allow a <i>special-term-num</i> to be associated with a
+ symbol.  Arguments of such symbols in the function position beyond the
+ special-term-num position are indented by 2.  Earlier arguments are printed
+ normally.  For example, the symbol, @('let'), has a special-term-num of 1, so
+ the first argument is printed normally and subsequent arguments are indented
+ by 2, as follows.</p>
+
+ @({
+ (LET ((A B)
+       (C D))
+   (F A C))
+ })
+
+ <p>Since `if' has a special-term-num of 2, the first two arguments are printed
+ normally and the other is indented by 2, for example as follows.</p>
+
+ @({
+ (IF (P A B)
+     (F A B)
+   (G A B))
+ })
+
+ <p>Macros often have as their first argument a symbol, so these are treated
+ specially by putting them on the first line and any remaining arguments before
+ the body arguments begin on the same line if there is space.  For example,
+ @('defun') has special-term-num 2, which is evident in the following
+ output.</p>
+
+ @({
+ (DEFUN FOO (X Y Z)
+   (F X Y Z))
+ })
+
+ <p>Keyword pairs in macro calls can occur in other places than at the end of
+ an argument list, so keyword pairing is done more aggressively, as in the
+ following output.</p>
+
+ @({
+ (DEFINE FOO ((X P1)
+              (Y P2))
+   :GUARD (P3 X Y)
+   (F X Y Z))
+ })")
 
 (defxdoc pprogn
   :parents (programming-with-state acl2-built-ins)

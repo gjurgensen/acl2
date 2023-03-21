@@ -15932,8 +15932,7 @@ Subtopics
     (or (consp x) (equal x nil))
 
   Notice that in the ACL2 logic, car returns nil for every [atom].")
- (CASE
-  (BASICS ACL2-BUILT-INS)
+ (CASE (BASICS ACL2-BUILT-INS)
   "Conditional based on if-then-else using [eql]
 
     Example Form:
@@ -16001,8 +16000,7 @@ Subtopics
 
   Case is defined in Common Lisp.  See any Common Lisp documentation
   for more information.")
- (CASE-MATCH
-  (BASICS ACL2-BUILT-INS)
+ (CASE-MATCH (BASICS ACL2-BUILT-INS)
   "Pattern matching or destructuring
 
     General Form:
@@ -22833,8 +22831,7 @@ Subtopics
   of expr2 may even cause an error, for example in :[program] mode if
   the expression expr2 has been constructed in a manner that could
   cause a guard violation unless test holds of expr1.")
- (DEFABSSTOBJ
-  (EVENTS STOBJ)
+ (DEFABSSTOBJ (EVENTS STOBJ)
   "Define a new abstract single-threaded object
 
   We assume familiarity with single-threaded objects; see [stobj] and
@@ -24328,8 +24325,7 @@ Subtopics
   See [set-total-parallelism-work-limit].")
  (DEFAULT-VERIFY-GUARDS-EAGERNESS (POINTERS)
                                   "See [set-verify-guards-eagerness].")
- (DEFAXIOM
-  (EVENTS)
+ (DEFAXIOM (EVENTS)
   "Add an axiom
 
   WARNING: We strongly recommend that you not add axioms.  If at all
@@ -24879,9 +24875,9 @@ Subtopics
 
     (defun f (x y) (and x y))
     (defmacro g (x) `(f ,x t))
-    (defcong iff equal (g x) 1)")
- (DEFCONST
-  (EVENTS PROGRAMMING)
+    (defcong iff equal (g x) 1)"
+)
+ (DEFCONST (EVENTS PROGRAMMING)
   "Define a constant
 
     Examples:
@@ -26190,7 +26186,8 @@ Subtopics
       Why attachments are sometimes not used
 
   [Prohibition-of-loop$-and-lambda$]
-      Certain events do not allow [loop$]s or [lambda$]s")
+      Certain events do not allow [loop$]s or [lambda$]s"
+)
  (DEFMACRO-LAST
   (EVENTS)
   "Define a macro that returns its last argument, but with side effects
@@ -26816,8 +26813,7 @@ Subtopics
   generated [defthm] form are as specified by the other keyword
   arguments above.  The term generated for the [defthm] event states
   that equiv1 refines equiv2.")
- (DEFSTOBJ
-  (EVENTS STOBJ)
+ (DEFSTOBJ (EVENTS STOBJ)
   "Define a new single-threaded object
 
   Note: Novices are advised to avoid defstobj, perhaps instead using
@@ -27636,8 +27632,7 @@ Subtopics
   [rune]s in current theory.  If this form is in a book being
   certified, then the resulting deftheory form is stored in the
   book's certificate, and is used when the book is included later.")
- (DEFTHM
-  (EVENTS)
+ (DEFTHM (EVENTS)
   "Prove and name a theorem
 
     Examples:
@@ -27699,8 +27694,7 @@ Subtopics
 
   [Otf-flg]
       Allow more than one initial subgoal to be pushed for induction")
- (DEFTHMD
-  (DEFTHM EVENTS)
+ (DEFTHMD (DEFTHM EVENTS)
   "Prove and name a theorem and then disable it
 
   Use defthmd instead of [defthm] when you want to disable a theorem
@@ -28334,7 +28328,8 @@ Subtopics
       Set the default well-founded relation
 
   [Xargs]
-      Extra arguments, for example to give [hints] to [defun]")
+      Extra arguments, for example to give [hints] to [defun]"
+)
  (DEFUN$
   (DEFUN EVENTS APPLY$)
   "Define a function symbol and generate a warrant
@@ -28449,7 +28444,8 @@ Subtopics
   sessions, including that book with the second host Lisp will not
   result in any inline or notinline behavior for functions defined in
   the book.  This may be fixed in a future release if someone
-  complains.")
+  complains."
+)
  (DEFUN-MODE
   (DEFUN)
   "Determines whether a function definition is a logical act
@@ -29181,7 +29177,8 @@ Subtopics
       A Beginner's Guide to Reasoning about Quantification in ACL2
 
   [Quantifiers]
-      Issues about quantification in ACL2")
+      Issues about quantification in ACL2"
+)
  (DEFUN-SK-EXAMPLE
   (DEFUN-SK)
   "A simple example using [defun-sk]
@@ -29313,7 +29310,8 @@ Subtopics
   [in-theory] event is not redundant.  This default can be changed;
   see [set-in-theory-redundant-okp].
 
-  See [defun] for documentation of defun.")
+  See [defun] for documentation of defun."
+)
  (DEFUND-INLINE
   (DEFUN EVENTS)
   "Define a potentially disabled, inlined function symbol and associated
@@ -32456,8 +32454,7 @@ Miscellaneous efficiency ideas
                 "See [system-utilities].")
  (ENABLED-RUNEP (POINTERS)
                 "See [system-utilities].")
- (ENCAPSULATE
-  (EVENTS)
+ (ENCAPSULATE (EVENTS)
   "Hide some [events] and/or constrain some functions
 
   Encapsulate provides a way to execute a sequence of [events] and then
@@ -51822,7 +51819,8 @@ Subtopics
   If has a [guard] of t.
 
   If is part of Common Lisp.  See any Common Lisp documentation for
-  more information.")
+  more information."
+)
  (IF*
   (BDD)
   "For conditional rewriting with BDDs
@@ -58370,6 +58368,9 @@ Subtopics
   [Output-to-file]
       Redirecting output to a file
 
+  [Pp-special-syms]
+      A [table] to control indentation for pretty-printing
+
   [Princ$]
       Print an atom
 
@@ -58758,8 +58759,7 @@ Subtopics
                (cons (nfix (car list))
                      (nfix-list (cdr list)))
                nil))")
- (LAMBDA
-  (TERM APPLY$)
+ (LAMBDA (TERM APPLY$)
   "Lambda expressions, LAMBDA objects, and lambda$ expressions
 
   The word ``lambda'' occurs in several different contexts in ACL2.
@@ -58968,8 +58968,7 @@ About Lambda$ Expressions
   objects.
 
   Finally, to see how a lambda$ expression translates, see [translam].")
- (LAMBDA$
-  (APPLY$)
+ (LAMBDA$ (APPLY$)
   "Lambda object constructor for use with apply$
 
   Lambda$ is a built-in ACL2 ``macro'' that allows you to enter
@@ -61003,8 +61002,7 @@ Subtopics
            (if (stringp x)
                (len (coerce x 'list))
                (len x)))")
- (LET
-  (BASICS ACL2-BUILT-INS)
+ (LET (BASICS ACL2-BUILT-INS)
   "Binding of lexically scoped (local) variables
 
 
@@ -61133,8 +61131,7 @@ Introduction
 
   Let is part of Common Lisp.  See any Common Lisp documentation for
   more information.")
- (LET*
-  (BASICS ACL2-BUILT-INS)
+ (LET* (BASICS ACL2-BUILT-INS)
   "Binding of lexically scoped (local) variables
 
   Examples
@@ -75144,7 +75141,8 @@ Subtopics
   ACL2 does not support the Common Lisp construct multiple-value-bind,
   whose logical meaning seems difficult to characterize.  Mv-let is
   the ACL2 analogue of that construct.  Also see [mv] and see
-  [mv-list].")
+  [mv-list]."
+)
  (MV-LIST
   (MV ACL2-BUILT-INS)
   "Converting [multiple-value] result to a single-value list
@@ -98838,6 +98836,15 @@ Changes to Existing Features
       ld-error-action is (:EXIT N), ACL2 immediately exits with
       status N.
 
+  The pretty-printer has been improved by a contribution from Stephen
+  Westfold to support appropriate indentation, including more
+  conventional pretty-printing for calls of common macros such as
+  [defun] and [defmacro].  See [pp-special-syms]; we thank Stephen
+  also for supplying the substance of that documentation.  Thanks too
+  to Stephen for suggesting several user-defined macros to be
+  pretty-printed with this mechanism, which we have modified by
+  adding suitable [table] events (e.g., for [define]).
+
 
 New Features
 
@@ -105183,6 +105190,90 @@ Subtopics
                    "See [sharp-dot-reader].")
  (POUND-U-READER (POINTERS)
                  "See [sharp-u-reader].")
+ (PP-SPECIAL-SYMS
+  (IO)
+  "A [table] to control indentation for pretty-printing
+
+  ACL2 output is generally pretty-printed: that is, spacing and
+  indentation are controlled to enhance readability and aesthetics of
+  the output.  Indentation may be controlled by using the table,
+  pp-special-syms as described below.  We thank Stephen Westfold for
+  enhancing the pretty-printer with support for pp-special-syms.
+
+  The initial value of the pp-special-syms table is given by the
+  constant *pp-special-syms* as follows.  It associates each key, a
+  symbol, with a corresponding special-term-num as discussed below.
+
+  Definition: <*pp-special-syms*>
+
+    (defconst *pp-special-syms*
+              '((case . 1)
+                (case-match . 1)
+                (defabsstobj . 1)
+                (defaxiom . 1)
+                (defchoose . 3)
+                (defcong . 2)
+                (defconst . 1)
+                (defmacro . 2)
+                (defstobj . 1)
+                (defthm . 1)
+                (defthmd . 1)
+                (defun . 2)
+                (defun-inline . 2)
+                (defun-sk . 2)
+                (defund . 2)
+                (encapsulate . 1)
+                (if . 2)
+                (lambda . 1)
+                (lambda$ . 1)
+                (let . 1)
+                (let* . 1)
+                (mutual-recursion . 0)
+                (mv-let . 2)
+                (table . 1)))
+
+  The pp-special-syms table is extended for some common macros in the
+  files where they are defined, for example for [define] and [b*].
+
+  For calls of special forms and macros in the pp-special-syms table,
+  their bodies are indented by 2 rather than in the usual default
+  manner.  To support this we allow a special-term-num to be
+  associated with a symbol.  Arguments of such symbols in the
+  function position beyond the special-term-num position are indented
+  by 2.  Earlier arguments are printed normally.  For example, the
+  symbol, let, has a special-term-num of 1, so the first argument is
+  printed normally and subsequent arguments are indented by 2, as
+  follows.
+
+    (LET ((A B)
+          (C D))
+      (F A C))
+
+  Since `if' has a special-term-num of 2, the first two arguments are
+  printed normally and the other is indented by 2, for example as
+  follows.
+
+    (IF (P A B)
+        (F A B)
+      (G A B))
+
+  Macros often have as their first argument a symbol, so these are
+  treated specially by putting them on the first line and any
+  remaining arguments before the body arguments begin on the same
+  line if there is space.  For example, defun has special-term-num 2,
+  which is evident in the following output.
+
+    (DEFUN FOO (X Y Z)
+      (F X Y Z))
+
+  Keyword pairs in macro calls can occur in other places than at the
+  end of an argument list, so keyword pairing is done more
+  aggressively, as in the following output.
+
+    (DEFINE FOO ((X P1)
+                 (Y P2))
+      :GUARD (P3 X Y)
+      (F X Y Z))")
  (PPROGN
   (PROGRAMMING-WITH-STATE ACL2-BUILT-INS)
   "Evaluate a sequence of forms that return [state]
@@ -134419,8 +134510,7 @@ Subtopics
 
   [Untranslate]
       Show a user-level representation of a term")
- (TABLE
-  (EVENTS)
+ (TABLE (EVENTS)
   "User-managed tables
 
     Examples:
