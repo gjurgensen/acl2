@@ -16005,16 +16005,16 @@ Subtopics
 
     General Form:
     (case-match x
-      (pat1 dcl1 body1)
+      (pat1 dcl1 ... body1)
       ...
-      (patk dclk bodyk))
+      (patk dclk ... bodyk))
 
   where x is a variable symbol, the pati are structural patterns as
-  described below, the dcli are optional [declare] forms and the
-  bodyi are terms.  The legal declare forms are the same as for
-  [let]: ignore, ignorable, and type.  Return the value(s) of the
-  bodyi corresponding to the first pati matching x, or nil if none
-  matches.
+  described below, each ``dcli ...'' indicates 0 or more [declare]
+  forms, and the bodyi are terms.  The legal declare forms are the
+  same as for [let]: ignore, ignorable, and type.  Return the
+  value(s) of the bodyi corresponding to the first pati matching x,
+  or nil if none matches.
 
   Pattern Language:
   With the few special exceptions described below, matching requires
@@ -127115,8 +127115,8 @@ Subtopics
   It is common for ACL2 users not to notice warnings.  That problem can
   be avoided by using the utility set-warnings-as-errors to convert
   warnings to errors.  We start below with a general specification,
-  followed by examples forms, and concluding with an extended
-  example.
+  followed by example forms, a detailed specification, and finally an
+  extended example.
 
 
 General Form
@@ -127129,7 +127129,36 @@ General Form
   strings.  The effect is to turn certain [warnings] into hard
   [errors], aborting the computation in progress.  Note that
   set-warnings-as-errors is a function, so all arguments are
-  evaluated.  The warnings thus affected are determined as follows.
+  evaluated.  Details are described in the section below entitled
+  ``Detailed Specification''.
+
+
+Example Forms
+
+    ; When a [Subsume] or [Use] warning is to be printed, cause a hard error
+    ; instead with a similar message.
+    (set-warnings-as-errors t '(\"Subsume\" \"Use\") state)
+
+    ; As above, but cause a hard error even if the warning is not to be printed,
+    ; i.e., even if by default it would be suppressed as a warning because of
+    ; prior use of set-inhibit-output-lst or set-inhibit-warnings.
+    (set-warnings-as-errors :always '(\"Subsume\" \"Use\") state)
+
+    ; Restore the treatment of [Use] warnings as warnings.
+    (set-warnings-as-errors nil '(\"Use\") state)
+
+    ; Treat a warning as a hard error, but only if the warning is to be printed
+    ; (hence not suppressed by set-inhibit-output-lst or set-inhibit-warnings).
+    (set-warnings-as-errors t :all state)
+
+    ; Treat a warning as a hard error, whether the warning is printed or not.
+    (set-warnings-as-errors :always :all state)
+
+    ; Restore the default behavior, treating warnings as warnings, not errors.
+    (set-warnings-as-errors nil :all state)
+
+
+Detailed Specification
 
     * No warning whose type specified by constant
       *uninhibited-warning-summaries* is converted to an error.
@@ -127165,31 +127194,6 @@ General Form
       during [certify-book] and [include-book].  The handling of
       warnings as errors is restored at the end of these operations
       to what it was at the beginning.
-
-
-Example Forms
-
-    ; When a [Subsume] or [Use] warning is to be printed, cause a hard error
-    ; instead with a similar message.
-    (set-warnings-as-errors t '(\"Subsume\" \"Use\") state)
-
-    ; As above, but cause a hard error even if the warning is not to be printed,
-    ; i.e., even if by default it would be suppressed as a warning because of
-    ; prior use of set-inhibit-output-lst or set-inhibit-warnings.
-    (set-warnings-as-errors :always '(\"Subsume\" \"Use\") state)
-
-    ; Restore the treatment of [Use] warnings as warnings.
-    (set-warnings-as-errors nil '(\"Use\") state)
-
-    ; Treat a warning as a hard error, but only if the warning is to be printed
-    ; (hence not suppressed by set-inhibit-output-lst or set-inhibit-warnings).
-    (set-warnings-as-errors t :all state)
-
-    ; Treat a warning as a hard error, whether the warning is printed or not.
-    (set-warnings-as-errors :always :all state)
-
-    ; Restore the default behavior, treating warnings as warnings, not errors.
-    (set-warnings-as-errors nil :all state)
 
 
 Extended Example
