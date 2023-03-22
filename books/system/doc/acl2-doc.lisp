@@ -13023,17 +13023,17 @@ with any questions about building the community books.</p>")
   :long "@({
   General Form:
   (case-match x
-    (pat1 dcl1 body1)
+    (pat1 dcl1 ... body1)
     ...
-    (patk dclk bodyk))
+    (patk dclk ... bodyk))
  })
 
  <p>where @('x') is a variable symbol, the @('pati') are structural patterns as
- described below, the @('dcli') are optional @(tsee declare) forms and the
- @('bodyi') are terms.  The legal @('declare') forms are the same as for @(tsee
- let): @('ignore'), @('ignorable'), and @('type').  Return the value(s) of the
- @('bodyi') corresponding to the first @('pati') matching @('x'), or @('nil')
- if none matches.</p>
+ described below, each &ldquo;@('dcli ...')&rdquo; indicates 0 or more @(tsee
+ declare) forms, and the @('bodyi') are terms.  The legal @('declare') forms
+ are the same as for @(tsee let): @('ignore'), @('ignorable'), and @('type').
+ Return the value(s) of the @('bodyi') corresponding to the first @('pati')
+ matching @('x'), or @('nil') if none matches.</p>
 
  <p>Pattern Language:<br></br>
 
