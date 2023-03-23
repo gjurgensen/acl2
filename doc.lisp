@@ -16009,12 +16009,12 @@ Subtopics
       ...
       (patk dclk ... bodyk))
 
-  where x is a variable symbol, the pati are structural patterns as
-  described below, each ``dcli ...'' indicates 0 or more [declare]
-  forms, and the bodyi are terms.  The legal declare forms are the
-  same as for [let]: ignore, ignorable, and type.  Return the
-  value(s) of the bodyi corresponding to the first pati matching x,
-  or nil if none matches.
+  where x is a symbol, the pati are structural patterns as described
+  below, each ``dcli ...'' indicates 0 or more [declare] forms, and
+  the bodyi are terms.  The legal declare forms are the same as for
+  [let]: ignore, ignorable, and type.  Return the value(s) of the
+  bodyi corresponding to the first pati matching x, or nil if none
+  matches.
 
   Pattern Language:
   With the few special exceptions described below, matching requires
@@ -99155,6 +99155,25 @@ Bug Fixes
   Swords for pointing out this bug.
 
   Fixed a bug that was causing calls of [wormhole] to signal an error.
+
+  Fixed a bug that could cause a [do-loop$] expressions to be
+  inappropriately rejected due to an allegedly ignored variable.  An
+  example is below.
+
+    (include-book \"projects/apply/top\" :dir :system)
+    ; BUG: The following was formerly necessary, but no longer is.
+    (set-ignore-ok t)
+    (defun f (a b)
+      (loop$ with x = a with y = b
+             do
+    ; The use of (set-ignore-ok t) was needed, but shouldn't have been,
+    ; whether or not the next line is included.
+             :measure (+ (len x) (len y))
+             (cond ((consp y)
+                    (let ((z y))
+                      (progn (setq y (cdr x))
+                             (setq x (cdr z)))))
+                   (t (return y)))))
 
 
 Changes at the System Level

@@ -13028,7 +13028,7 @@ with any questions about building the community books.</p>")
     (patk dclk ... bodyk))
  })
 
- <p>where @('x') is a variable symbol, the @('pati') are structural patterns as
+ <p>where @('x') is a symbol, the @('pati') are structural patterns as
  described below, each &ldquo;@('dcli ...')&rdquo; indicates 0 or more @(tsee
  declare) forms, and the @('bodyi') are terms.  The legal @('declare') forms
  are the same as for @(tsee let): @('ignore'), @('ignorable'), and @('type').
@@ -102210,6 +102210,27 @@ it."
 
  <p>Fixed a bug that was causing calls of @(tsee wormhole) to signal an
  error.</p>
+
+ <p>Fixed a bug that could cause a @(tsee do-loop$) expressions to be
+ inappropriately rejected due to an allegedly ignored variable.  An example is
+ below.</p>
+
+ @({
+ (include-book \"projects/apply/top\" :dir :system)
+ ; BUG: The following was formerly necessary, but no longer is.
+ (set-ignore-ok t)
+ (defun f (a b)
+   (loop$ with x = a with y = b
+          do
+ ; The use of (set-ignore-ok t) was needed, but shouldn't have been,
+ ; whether or not the next line is included.
+          :measure (+ (len x) (len y))
+          (cond ((consp y)
+                 (let ((z y))
+                   (progn (setq y (cdr x))
+                          (setq x (cdr z)))))
+                (t (return y)))))
+ })
 
  <h3>Changes at the System Level</h3>
 
