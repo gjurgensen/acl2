@@ -99146,6 +99146,13 @@ Heuristic and Efficiency Improvements
   that led to our discovery of the quadratic behavior eliminated by
   this change.
 
+  Duplicate entries in [type-alist]s (proof contexts) are now avoided
+  in many cases.  (Implementation note: some calls extending the
+  type-alist with an existing term/type-set pair are now avoided in
+  source function assume-true-false-rec.)  Thanks to Eric Smith for
+  pointing out that there can be type-alists with many consecutive
+  identical entries.
+
 
 Bug Fixes
 

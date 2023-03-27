@@ -14198,6 +14198,13 @@ with any questions about building the community books.</p>")
  corresponding environment variables, as we ignore those effects in the present
  topic.</p>
 
+ <p>NOTE: If a given book includes some books (see @(see include-book)), then
+ those included books need to be certified before the given book is certified.
+ See @(see build::cert.pl) for a tool that certifies not only a given book but
+ also all of the books that it includes, as well as all the books that those
+ books include, and so on &mdash; all in the proper order, and with parallelism
+ by using the @('-j') option.</p>
+
  <p>Certification occurs in some logical @(see world), called the
  ``certification @(see world).''  That @(see world) must contain the @(tsee
  defpkg)s needed to read and execute the forms in the book.  The @(see
@@ -27943,7 +27950,7 @@ ld) and @(tsee include-book)"
               (AND (ALISTP ALIST)
                    (CONSP (CDR (ASSOC-EQ-SAFE 'X ALIST)))))))
      ((LAMBDA (X) (ACL2-COUNT X))
-      (CDR (ASSOC-EQ-SAFE 'X ALIST)))) 
+      (CDR (ASSOC-EQ-SAFE 'X ALIST))))
    ;; alist:
    (LIST (CONS 'X LST))
    ;; body:
@@ -102180,6 +102187,12 @@ it."
  of attachable system functions&rdquo;.  Thanks to Alessandro Coglio for
  sending an example that led to our discovery of the quadratic behavior
  eliminated by this change.</p>
+
+ <p>Duplicate entries in @(see type-alist)s (proof contexts) are now avoided in
+ many cases.  (Implementation note: some calls extending the type-alist with an
+ existing term/type-set pair are now avoided in source function
+ @('assume-true-false-rec').)  Thanks to Eric Smith for pointing out
+ that there can be type-alists with many consecutive identical entries.</p>
 
  <h3>Bug Fixes</h3>
 
