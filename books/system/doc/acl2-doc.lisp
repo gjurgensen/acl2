@@ -13023,17 +13023,17 @@ with any questions about building the community books.</p>")
   :long "@({
   General Form:
   (case-match x
-    (pat1 dcl1 body1)
+    (pat1 dcl1 ... body1)
     ...
-    (patk dclk bodyk))
+    (patk dclk ... bodyk))
  })
 
- <p>where @('x') is a variable symbol, the @('pati') are structural patterns as
- described below, the @('dcli') are optional @(tsee declare) forms and the
- @('bodyi') are terms.  The legal @('declare') forms are the same as for @(tsee
- let): @('ignore'), @('ignorable'), and @('type').  Return the value(s) of the
- @('bodyi') corresponding to the first @('pati') matching @('x'), or @('nil')
- if none matches.</p>
+ <p>where @('x') is a symbol, the @('pati') are structural patterns as
+ described below, each &ldquo;@('dcli ...')&rdquo; indicates 0 or more @(tsee
+ declare) forms, and the @('bodyi') are terms.  The legal @('declare') forms
+ are the same as for @(tsee let): @('ignore'), @('ignorable'), and @('type').
+ Return the value(s) of the @('bodyi') corresponding to the first @('pati')
+ matching @('x'), or @('nil') if none matches.</p>
 
  <p>Pattern Language:<br></br>
 
@@ -33881,38 +33881,84 @@ current fast alists."
  &ldquo;industrial-size&rdquo; books if there are @(see local) events early in
  the book or in its @(see portcullis) commands.  Fast-cert mode provides a way
  to avoid the @(see local-incompatibility) check.  There are the following two
- drawbacks to using fast-cert mode.</p>
+ drawbacks to using ACL2 with fast-cert mode enabled (as described further
+ below).</p>
 
  <ul>
 
  <li>It may be unsound!  See Section &ldquo;Unsoundness&rdquo; below.</li>
 
- <li>Therefore, after a book is certified while in fast-cert mode, then any
+ <li>Therefore, after a book is certified with fast-cert mode enabled, then any
  subsequent attempt to include that book will consider it to be uncertified
- unless the @(tsee include-book) event is executed in fast-cert mode.  See
- Section &ldquo;Effects of fast-cert mode...&rdquo; below.</li>
+ unless the @(tsee include-book) event is executed with fast-cert mode enabled.
+ See Section &ldquo;Effects of fast-cert mode...&rdquo; below.</li>
 
  </ul>
 
  @({
  General Forms:
 
- (set-fast-cert t state)   ; enter fast-cert mode (fast-cert mode is active)
- (set-fast-cert nil state) ; exit fast-cert mode (fast-cert mode is inactive)
+ (set-fast-cert t state)       ; enter fast-cert active mode
+ (set-fast-cert nil state)     ; disable fast-cert mode
+ (set-fast-cert :accept state) ; enter fast-cert ACCEPT mode
  })
 
  <p>When a form @('(set-fast-cert expr state)') is evaluated, @('expr') should
  evaluate to a Boolean value, @('val').  If @('val') is @('t') then fast-cert
- mode is entered (or maintained when already in fast-cert mode); while if
- @('val') is @('nil') then fast-cert mode is exited (or maintained when not
- already in fast-cert mode).</p>
+ mode becomes (or remains) active.  If @('val') is @('nil'), then fast-cert
+ mode becomes (or remains) disabled.  The other legal value for @('val') is
+ @(':accept'), which is a sort of intermediate mode: ACL2 behaves as though
+ fast-cert mode is disabled &mdash; we also say ``not enabled'' for
+ ``disabled'' &mdash; but books can be considered certified even if they were
+ certified with fast-cert mode enabled.  We say more about these three modes in
+ Section &ldquo;Fast-cert modes&rdquo; below.</p>
 
  <p>Another way to enter fast-cert mode is to set environment variable
- @('ACL2_FAST_CERT') to a non-empty value before starting ACL2.</p>
+ @('ACL2_FAST_CERT') to a non-empty value before starting ACL2.  The
+ case-insensitive value, @('\"accept\"'), causes @('(set-fast-cert :accept
+ state)') is evaluated at startup; otherwise, a non-empty value causes
+ @('(set-fast-cert t state)') to be evaluated at startup.</p>
 
  <p>We turn now to the two sections promised above, on unsoundness and effects
  of fast-cert mode, followed by a section on miscellaneous restrictions, and
  concluding with a suggested application of fast-cert mode.</p>
+
+ <h3>Fast-cert modes</h3>
+
+ <p>There are the following fast-cert modes.</p>
+
+ <ul>
+
+ <li><b>Active</b>: entered with @('(set-fast-cert t state)').  When ACL2 is in
+ this mode, the @(see local-incompatibility) check is skipped when certifying a
+ book, and the book's @(see certificate) marks it as a &ldquo;fast-cert
+ book&rdquo;.</li>
+
+ <li><b>Disabled</b>: entered with @('(set-fast-cert t state)'), though this is
+ the default mode.  In this mode the usual @(see local-incompatibility) checks
+ are performed during book certification, and every fast-cert book is
+ considered to be uncertified.</li>
+
+ <li><b>ACCEPT</b>: entered with @('(set-fast-cert :accept state)').  When ACL2
+ is in this mode, @(see local-incompatibility) checks are performed just as
+ when fast-cert mode is disabled, but a fast-cert book is treated as certified
+ just like any other book.</li>
+
+ </ul>
+
+ <p>Fast-cert mode is considered to be &ldquo;enabled&rdquo; exactly when it is
+ not disabled.</p>
+
+ <p>The discussion above leaves open the question of whether a book that is
+ certified in ACCEPT mode is marked as a fast-cert book.  That happens only if
+ at least one fast-cert book has been included during the session, either
+ before the book's certification began or during evaluation of the book's
+ events.</p>
+
+ <p>It is always legal to change fast-cert mode from disabled to enabled (using
+ @('set-fast-cert')).  It is legal to change fast-cert mode from enabled to
+ disabled provided there has been no attempt during the session to include a
+ fast-cert book while fast-cert mode is enabled.</p>
 
  <h3>Potential for unsoundness</h3>
 
@@ -33967,16 +34013,24 @@ current fast alists."
  @('g') is illegal.  Without the use of fast-cert mode, the
  local-incompatibility check would catch this problem.</p>
 
- <p>(Technical note: if fast-cert mode is used to certify the book, then when
- we subsequently include @('\"fast-cert-unsound-sub\"') in fast-cert mode,
- there is &mdash; perhaps surprisingly &mdash; no error.  That is because the
- translation (see @(see term)) of the definition of @('g') is cached in the
- book's @(see certificate).)</p>
+ <p>(Technical note: if the book is certified while fast-cert mode is active,
+ then when we subsequently include @('\"fast-cert-unsound-sub\"') when
+ fast-cert mode is enabled, there is &mdash; perhaps surprisingly &mdash; no
+ error.  That is because the translation (see @(see term)) of the definition of
+ @('g') is cached in the book's @(see certificate).)</p>
 
- <p>Such unsoundness with fast-cert mode is probably rare in practice.  But
- because unsoundness is possible with fast-cert mode, a &ldquo;@('TTAG
- NOTE')&rdquo; message is printed when fast-cert mode is entered, as
- follows.</p>
+ <p>Note that unsoundness can occur even when fast-cert is in accept mode, not
+ just in active mode.  That's because one may include a book in accept mode
+ that was certified in a previous session while fast-cert was in active mode,
+ and that book could prove @('nil') as in the example above.  In short,
+ unsoundness can occur when fast-cert mode is enabled (i.e., fast-cert is in
+ accept or active mode).</p>
+
+ <p>Unsoundness when fast-cert mode is enabled is probably rare in practice.
+ But because unsoundness is possible with fast-cert mode enabled, a
+ &ldquo;@('TTAG NOTE')&rdquo; message is printed when fast-cert mode is
+ enabled, for example as follows when fast-cert mode transitions from disabled
+ to active.</p>
 
  @({
  ACL2 !>(set-fast-cert t state)
@@ -33992,22 +34046,23 @@ current fast alists."
  use of @(tsee defttag) but also when entering fast-cert mode.</p>
 
  <p>We conclude this section by mentioning other potential sources of
- unsoundness when using fast-cert mode.  There are probably others, but again,
- it is probably rare for fast-cert mode to exhibit unsoundness.  These
+ unsoundness when fast-cert mode is enabled.  There are probably others, but
+ again, it is probably rare for fast-cert mode to exhibit unsoundness.  These
  behaviors are due to avoiding the @(see local-incompatibility) check during
- certification in fast-cert mode.  Here are two key potential sources of
- unsoundness.</p>
+ certification when fast-cert mode is active.  Here are two key potential
+ sources of unsoundness.</p>
 
  <ul>
 
  <li>Hidden @(tsee defpkg) events are not recorded in a book's @(see
- certificate) (see @(see hidden-death-package)).</li>
+ certificate) when fast-cert mode is active.  See @(see
+ hidden-death-package).</li>
 
  <li>Information about sub-books that is normally recorded in a @(see
  certificate), including the @(see book-hash) values in the @(see portcullis)
- and the @(see keep), is omitted.  This prevents ACL2 from noticing when
- sub-books are uncertified or have changed since the time of the parent book's
- certification.</li>
+ and the @(see keep), is omitted by certification when fast-cert mode is
+ active.  This prevents ACL2 from noticing when sub-books are uncertified or
+ have changed since the time of the parent book's certification.</li>
 
  </ul>
 
@@ -34029,64 +34084,63 @@ current fast alists."
 
  </ul>
 
- <p>Because of potential unsoundness of fast-cert mode, and especiallly the
- item above regarding status of books that are included in a parent book, it is
- strongly recommended that you eventually certify your collection of books
- without using fast-cert mode.  Otherwise there is no sort of guarantee that
- your proofs are valid!</p>
+ <p>Because of potential unsoundness when fast-cert mode is enabled, especially
+ as explained in the item above regarding status of books that are included in
+ a parent book, it is strongly recommended that you eventually certify your
+ collection of books with fast-cert mode disabled.  Otherwise there is no sort
+ of guarantee that your proofs are valid!</p>
 
- <h3>Effects of fast-cert mode on @(tsee certify-book) and @(tsee
- include-book)</h3>
-
- <p>Here are interactions between fast-cert mode, @(tsee certify-book), and
- @(tsee include-book).</p>
+ <h3>Interactions involving fast-cert mode</h3>
 
  <ul>
 
- <li>When a book is certified in fast-cert mode, its @(see certificate) records
- this fact.  Let's call such a certificate a &ldquo;fast-cert
- certificate&rdquo;; otherwise it is a &ldquo;normal&ldquo; certificate.</li>
+ <li>When a book is successfully certified with fast-cert mode active, its
+ @(see certificate) records this fact.  Let's call such a certificate (or book)
+ a &ldquo;fast-cert certificate&rdquo; (or&ldquo;fast-cert book&rdquo;);
+ otherwise it is a &ldquo;normal&ldquo; certificate.</li>
+
+ <li>When a book is successfully certified with fast-cert in accept mode, the
+ book is a normal book only if no fast-cert book is included before or during
+ certification.</li>
 
  <li>When @('include-book') is performed on a book with a valid fast-cert
  certificate, that book is considered to be certified if fast-cert mode is
- active and otherwise is considered to be uncertified.</li>
+ enabled and otherwise is considered to be uncertified.</li>
 
  <li>When @('include-book') is performed on a book with a valid normal
  certificate, that book is considered to be certified regardless of whether or
- not fast-cert mode is active at @('include-book') time.</li>
+ not fast-cert mode is enabled at @('include-book') time.</li>
 
- <li>When @(see provisional-certification) is used during @('certify-book'),
- fast-cert mode is essentially ignored (in particular, regarding the
- local-incompatibility check) except that it results in a fast-cert
- certificate.</li>
+ <li>When @(see provisional-certification) is used during @('certify-book')
+ while fast-cert mode is active, then fast-cert is treated as being in accept
+ mode; in particular, the local-incompatibility check) is performed in the
+ normal way.</li>
 
  <li>Normally @('certify-book') warns about functions that have not had their
- @(see guard)s verified.  This message is suppressed during fast-cert mode,
- because local @('include-book') forms in the certification world can make that
- message very long.</li>
+ @(see guard)s verified.  This message is suppressed when fast-cert mode is
+ active, because local @('include-book') forms in the certification world can
+ make that message very long.</li>
 
- <li>When a book is included while fast-cert mode is active, and that book has
- a fast-cert certificate, then the rest of that ACL2 session must remain in
- fast-cert mode.  This restriction guarantees that any book then certified
- during that session will be given a fast-mode certificate.</li>
+ <li>When a fast-cert book is included while fast-cert mode is enabled, then
+ the rest of that ACL2 session must remain in fast-cert mode.  This restriction
+ guarantees that any book then certified during that session will be given a
+ fast-mode certificate.</li>
+
+ <li>It is illegal to call @('set-fast-cert') during @('make-event') expansion
+ (see @(see make-event)).  There is also an explicit check to prohibit calls of
+ @('set-fast-cert') during @('certify-book'), though that is probably
+ unnecessary because of the @('make-event') restriction unless that restriction
+ is subverted using a trust tag.</li>
 
  </ul>
 
  <p>See @(see fast-cert-anomalies) for some possibly surprising (and more
  obscure) consequences of using fast-cert mode.</p>
 
- <h3>Miscellaneous restrictions</h3>
-
- <p>It is illegal to call @('set-fast-cert') during @('make-event') expansion
- (see @(see make-event)).  There is also an explicit check to prohibit calls of
- @('set-fast-cert') during @('certify-book'), though that is probably
- unnecessary because of the @('make-event') restriction unless that restriction
- is subverted using a trust tag.</p>
-
  <h3>Fast-cert mode and @(tsee save-exec)</h3>
 
- <p>The motivation for adding the option of fast-cert mode was to provide
- faster certification based on executables created with @(tsee save-exec).  We
+ <p>The motivation for adding fast-cert mode was to provide faster
+ certification based on executables created with @(tsee save-exec).  We
  illustrate with an example, which starts by @(see local)ly including a book
  that brings in many definitions and rules (it may take about a minute to
  include) and then saving an executable.  The initial (non-local)
@@ -34136,8 +34190,8 @@ current fast alists."
  (certify-book \"name\" ? t :ttags :all)
  })
 
- <p>In this little example, the certification time has been cut in half by
- using fast-cert mode.  In many cases the reduction may be less than that, but
+ <p>In this little example, the certification time has been cut in half with
+ fast-cert mode active.  In many cases the reduction may be less than that, but
  in large industrial examples the reduction might be much, much greater &mdash;
  -- especially when the book contains time-consuming events, in particular
  @('include-book') events.</p>")
@@ -34151,23 +34205,23 @@ current fast alists."
  <p>When fast-cert mode was developed in February 2023, a call of
  &ldquo;@('make')&rdquo; was made with &ldquo;@('ACL2_FAST_CERT=t')&rdquo; and
  target &ldquo;@('regression-everything')&rdquo;, to certify the @(see
- community-books) in fast-cert mode.  There were only two failures (out of
- thousands of books), both of which are discussed below along with their fixes.
- There is no plan to continue to test certification of the community books
- using fast-cert mode, but we expect future failures to continue to be
- rare.</p>
+ community-books) with fast-cert mode active.  There were only two
+ failures (out of thousands of books), both of which are discussed below along
+ with their fixes.  There is no plan to continue to test certification of the
+ community books with fast-cert mode enabled, but we expect future failures to
+ continue to be rare.</p>
 
  <h3>Example 1</h3>
 
- <p>Community book @('system/tests/early-load-of-compiled/ttag.lisp')
- certifies regardless of whether or not fast-cert mode is used.  However, when
- it is certified in fast-cert mode, a later attempt to include the book fails.
- That failure is due to the way ACL2 handles raw-Lisp redefinition (using a
- trust tag), as explained in a comment in the book.  To avoid this problem, the
- form @('(set-fast-cert nil state)') is in file @('ttag.acl2') in the same
- directory.  Key events in the book are as follows, in this order; the first
- forces a @(see local-incompatibility) check, and you can see comments in
- @('ttag.lisp') for why that is crucial.</p>
+ <p>Community book @('system/tests/early-load-of-compiled/ttag.lisp') has
+ certified regardless of whether or not fast-cert mode is used.  However, when
+ it was certified with fast-cert mode active, a later attempt to include the
+ book failed.  That failure was due to the way ACL2 handles raw-Lisp
+ redefinition (using a trust tag), as explained in a comment in the book.  To
+ avoid this problem, the form @('(set-fast-cert nil state)') is in file
+ @('ttag.acl2') in the same directory.  Key events in the book are as follows,
+ in this order; the first forces a @(see local-incompatibility) check, and you
+ can see comments in @('ttag.lisp') for why that is crucial.</p>
 
  @({
  (local (defun loc (x) x))
@@ -34193,7 +34247,7 @@ current fast alists."
 
  @({
  ; Matt K. addition: The following lemma, natp-lamz, is not normally necessary.
- ; But in fast-cert mode we need it for the proof of lam1_alt-is-lam1.
+ ; But with fast-cert mode active, we need it for the proof of lam1_alt-is-lam1.
  ; See :DOC fast-cert-anomalies if you want an explanation.
  (local
   (defthm natp-lamz
@@ -34204,7 +34258,7 @@ current fast alists."
  <p>To see why this lemma is needed when certifying in fast-cert mode, let us
  start by re-creating the environment where the definition of @('lamz') has
  been introduced.  We assume here that the sub-books that are included were
- certified using fast-cert mode.</p>
+ certified with fast-cert mode active.</p>
 
  @({
  (set-fast-cert t state) ; so that sub-books are included as certified
@@ -34233,15 +34287,15 @@ current fast alists."
  ...
  })
 
- <p>If we do the same experiment when sub-books were certified without
- fast-cert mode, the @(':')@(tsee pr) output will instead show a built-in @(see
+ <p>If we do the same experiment when sub-books were certified with fast-cert
+ mode disabled, the @(':')@(tsee pr) output will instead show a built-in @(see
  type-prescription) rule for @('lamz') saying that @('lamz') returns a
  non-negative integer.  This discrepancy in that built-in rule explains why the
  additional lemma above, @('natp-lamz'), was necessary when certifying the
- @(see community-books) using fast-cert mode.</p>
+ @(see community-books) with fast-cert mode active.</p>
 
- <p>So now let us investigate why certifying books in fast-cert mode weakens
- the built-in type-prescription rule for @('lamz').  After running the
+ <p>So now let us investigate why certifying books with fast-cert mode active
+ weakens the built-in type-prescription rule for @('lamz').  After running the
  @('set-fast-cert') and @(tsee ld) commands displayed above, we see where
  @('lamz') is defined.</p>
 
@@ -34272,12 +34326,12 @@ current fast alists."
  the definition of @('lamz'): @('rtl/rel9/support/support/lextra.lisp').</p>
 
  <p>So now consider what happens when we start ACL2 and evaluate the following
- commands.  For now, assume that we have used ACL2 <i>without</i> fast-cert
- mode to certify all books being included.  We use @(':ld-skip-proofsp
- 'include-book') to simulate what happens when including the book.</p>
+ commands.  For now, assume that we have used ACL2 fast-cert mode disabled to
+ certify all books being included.  We use @(':ld-skip-proofsp 'include-book')
+ to simulate what happens when including the book.</p>
 
  @({
- ; without fast-cert mode
+ ; with fast-cert mode disabled
  (ld \"rtl/rel9/support/support/lextra.lisp\"
      :dir :system
      :ld-skip-proofsp 'include-book)
@@ -34297,7 +34351,7 @@ current fast alists."
  })
 
  <p>Now repeat the same experiment but where we assume that fast-cert mode has
- been used for all book certification and we start with @('(set-fast-cert t
+ been active for all book certification and we start with @('(set-fast-cert t
  state)').  This time there is no such output about
  @('LNOT-NONNEGATIVE-INTEGER-TYPE').  Aha!  The culprit is the following form
  near the top of @('\"rtl/rel9/support/support/lextra.lisp\"').</p>
@@ -34310,20 +34364,20 @@ current fast alists."
  @('LNOT-NONNEGATIVE-INTEGER-TYPE'), which is necessary for computing a
  non-negative integer (i.e., @('natp')) type for the built-in
  @(':type-prescription') rule for @('lamz').  By contrast, without fast-cert
- mode, the world is rolled back past local events for the local-incompatibility
- check, and then when events in the book are processed during the
- @('include-book') phase of certification, the rule
+ mode active, the world is rolled back past local events for the
+ local-incompatibility check, and then when events in the book are processed
+ during the @('include-book') phase of certification, the rule
  @('LNOT-NONNEGATIVE-INTEGER-TYPE') is available for computing the built-in
  type-prescription for @('lamz'), which is stored in the book's @(see
- certificate).  But in fast-cert mode, the world is not rolled back, so the
- built-in type-prescription for lamz remains as originally computed, where the
- rule @('LNOT-NONNEGATIVE-INTEGER-TYPE') is disabled.</p>
+ certificate).  But with fast-cert mode active, the world is not rolled back,
+ so the built-in type-prescription for lamz remains as originally computed,
+ where the rule @('LNOT-NONNEGATIVE-INTEGER-TYPE') is disabled.</p>
 
  <p>Indeed, if you read the certificate file for the @('lextra.lisp') book
  above, you'll see that the @(':TYPE-PRESCRIPTION') entry for @('lamz')
- indicates a rational type when books are certified with fast-cert mode but a
- non-negative integer type when certified without fast-cert mode.  You can read
- that certificate file as follows.</p>
+ indicates a rational type when books are certified with fast-cert mode active
+ but a non-negative integer type when certified with fast-cert mode disabled.
+ You can read that certificate file as follows.</p>
 
  @({
  (read-file (concatenate 'string
@@ -55903,6 +55957,24 @@ tables in the current Hons Space."
  @(''')@(tsee ld-error-action) was @(':RETURN!').  See @(see ld-error-action)
  for details of this last case.</p>")
 
+(defxdoc ld-always-skip-top-level-locals
+  :parents (ld)
+  :short "Determines whether @(tsee ld) skips @(tsee local) top-level forms"
+  :long "<p>@('Ld-always-skip-top-level-locals') is an @(tsee ld) special (see
+ @(see ld)).  The accessor is @('(ld-always-skip-top-level-locals state)') and
+ the updater is @('(set-ld-always-skip-top-level-locals val state)').  The
+ value of @('ld-always-skip-top-level-locals') must be either @('nil'), or
+ @('t').  The initial value of @('ld-always-skip-top-level-locals') is
+ @('nil').</p>
+
+ <p>The general-purpose ACL2 read-eval-print loop, @(tsee ld), is controlled by
+ various flags that control its behavior, and
+ @('ld-always-skip-top-level-locals') is one of them.  When the value is
+ @('t'), @(tsee local) @(see events) are skipped when they are at the top level
+ in the following sense: they are not evaluated in the scope of either a call
+ of @(tsee certify-book), @(tsee include-book), or @(tsee encapsulate), or else
+ during @(tsee make-event) expansion.</p>")
+
 (defxdoc ld-error-action
   :parents (ld)
   :short "Determines @(tsee ld)'s response to an error"
@@ -55935,7 +56007,9 @@ tables in the current Hons Space."
  error to its caller by returning an error triple with non-@('nil') error
  component, and reverting the logical @(see world) to its value just before
  that call of @(tsee ld).  If it is @('(:exit N)'), then ACL2 quits with exit
- status @('N').</p>
+ status @('N').  Later in this topic we discuss another case in which an error
+ is said to have occurred: when the value component of an error triple is of
+ the form @('(:STOP-LD . x)').</p>
 
  <p>To see this effect of @(':ERROR') for @('ld-error-action'), consider the
  following example.</p>
@@ -55964,10 +56038,13 @@ tables in the current Hons Space."
  @('t'), and evaluation of a form returns an error triple @('(mv nil val
  state)'), where @('nil') is the error component and whose ``value component'',
  @('val') is a @(tsee cons) pair whose @(tsee car) is the symbol @(':STOP-LD').
- Let @('val') be the pair @('(:STOP-LD . x)').  Then the call of @('ld')
- returns the error triple @('(mv nil (:STOP-LD n . x) state)'), where @('n') is
- the value of @(tsee state) global variable @(''ld-level') at the time of
- termination.  The following example illustrates how this works.</p>
+ Let @('val') be the pair @('(:STOP-LD . x)').  If @('ld-error-action') is of
+ the form @('(:EXIT N)'), then ACL2 quits with exit status @('N').
+ Otherwise (i.e., when @('ld-error-action') is @(':RETURN'), @(':RETURN!'), or
+ @(':ERROR')), the call of @('ld') returns the error triple @('(mv
+ nil (:STOP-LD n . x) state)'), where @('n') is the value of @(tsee state)
+ global variable @(''ld-level') at the time of termination.  The following
+ example illustrates how this works.</p>
 
  @({
   (ld '((defun f1 (x) x)
@@ -56425,12 +56502,12 @@ tables in the current Hons Space."
 
 (defxdoc ld-missing-input-ok
   :parents (ld)
-  :short "Determines which forms @(tsee ld) evaluates"
-  :long "<p>@('ld-missing-input-ok') is an @(tsee ld) special (see @(see ld)).
+  :short "Determine whether @(tsee ld) causes an error for a missing file"
+  :long "<p>@('Ld-missing-input-ok') is an @(tsee ld) special (see @(see ld)).
  The accessor is @('(ld-missing-input-ok state)') and the updater is
- @('(set-ld-missing-input-ok val state)').  @('ld-missing-input-ok') must be
- either @('nil'), @('t'), or @(':warn').  The initial value of
- @('ld-missing-input-ok') is @('nil').</p>
+ @('(set-ld-missing-input-ok val state)').  The value of
+ @('ld-missing-input-ok') must be either @('nil'), @('t'), or @(':warn').  The
+ initial value of @('ld-missing-input-ok') is @('nil').</p>
 
  <p>The general-purpose ACL2 read-eval-print loop, @(tsee ld), is controlled by
  various flags that control its behavior, and @('ld-missing-input-ok') is one
@@ -56597,8 +56674,9 @@ tables in the current Hons Space."
  last line output).  You may define your own @(see prompt) printing function,
  @('fn'), and install it with @('(set-ld-prompt 'fn state)').  However, a trust
  tag must be active (see @(see defttag)) when you set @('ld-prompt') to other
- than @('t') or @('nil') (with one exception: the function @('brr-prompt'),
- which prints the prompt in the @(see break-rewrite) loop).</p>
+ than @('t') or @('nil') (with two exceptions: the functions @('brr-prompt')
+ and @('wormhole-prompt'), which print the prompt in the @(see break-rewrite)
+ loop and the general @(see wormhole) loop, respectively).</p>
 
  <p>If you supply an inappropriate @(see prompt) function, i.e., one that
  causes an error or does not return the correct number and type of results, the
@@ -101510,6 +101588,11 @@ it."
 
 ; Fixed guard for warning1-cw (warning$, ...?) to allow summary of ("foo").
 
+; Changed er-soft-off-p[1] to er-off-p[1]: just a name change, since this is
+; about hard errors too, not just soft errors.  Also added a new soft error
+; summary string, "Evaluation"; there may be others as well, as we probably
+; won't track all summary strings that have been added.
+
   :parents (release-notes)
   :short "ACL2 Version  8.6 (xxx, 20xx) Notes"
   :long "<p>NOTE!  New users can ignore these release notes, because the @(see
@@ -101590,6 +101673,10 @@ it."
  control that behavior.</li>
 
  <li>Miscellaneous clean-up has been made in the implementation.</li>
+
+ <li>Restrictions have been tightened a bit to avoid what could be considered a
+ soundness bug.  See discussion about that in the section on &ldquo;Bugs&rdquo;
+ below.</li>
 
  </ul>
 
@@ -101721,6 +101808,84 @@ it."
  ACL2 Error [Failure] in ( THM ...):  See :DOC failure.
  })
 
+ <p>When an event fails, then if it involves definition @(see rune)s for @(tsee
+ loop$) @(see scion)s, the failure message may suggest including the book
+ @('projects/apply/top') if it hasn't already been included.  That book
+ provides quite a few lemmas about @(tsee loop$) scions.</p>
+
+ <p>Replaced @(tsee length) calls in the defun of @(tsee pseudo-termp) with
+ calls of a new macro, @('len$'), which is a call of @(tsee mbe) that invokes
+ @(tsee length) in the @(':exec') code and @(tsee len) in the @(':logic') code.
+ Thanks to Eric Smith for requesting such an enhancement, and for discussing
+ specifics of it, so as to avoid the need for at least one unfortunate rule
+ that if @('(pseudo-termp term)') then @('(not (stringp (cdr term)))'),
+ apparently needed because @('length') behaves specially on strings.</p>
+
+ <p>When there is an error from evaluation of a form encountered by @(tsee ld),
+ in a session where the value of @(tsee ld-error-triples) is the default of
+ @('t') and the value of @(tsee ld-error-action) is of the form @('(:EXIT N)'),
+ then ACL2 quits with exit status @('N') in some cases where formerly it did
+ not.  The following explanation is rather technical; see @(see
+ ld-error-action) for relevant background.</p>
+
+ <blockquote>
+
+ <p>This behavior was already present in the case that the &ldquo;error on
+ evaluation&rdquo; was from an evaluation result @('(mv erp val state)') where
+ @('erp') is non-@('nil'); but it has been extended to the case that @('erp')
+ is @('nil') and @('val') is of the form @('(:STOP-LD . x)'), as is returned by
+ default by @('ld') upon an evaluation error.  A key effect of this change is
+ for the case that a @('.acl2') file produces an error from a call of @(tsee
+ build::cert.pl).  The following example illustrates; explanation follows
+ below.</p>
+
+ @({
+ ;;; foo.acl2
+ (ld '((defun g (x) y)) :ld-error-action :return!)
+
+ ;;; foo.lisp
+ (in-package \"ACL2\")
+ })
+
+ <p>Before this change, the command &lsquo;@('cert.pl foo')&rsquo; resulted in
+ a hard Lisp error (as seen in @('foo.cert.out')).  To see why, first note that
+ @('cert.pl') executes a sequence of commands as follows (several omitted as
+ shown with &ldquo;@('...')&rdquo;).</p>
+
+ @({
+ ...
+ (set-ld-error-action (quote (:exit 1)) state)
+ ...
+ ; instructions from .acl2 file foo.acl2:
+ (ld '((defun g (x) y)) :ld-error-action :return!)
+ ...
+ #!ACL2 (set-ld-error-action (quote :continue) state)
+ ...
+ })
+
+ <p>The call of @('ld') above returns @('(mv nil (:STOP-LD 2) state)').
+ Because @('ld-error-action') at the top level no longer has the default value
+ of @(':CONTINUE'), that result is considered an error (see @(see
+ ld-error-action)) and top-level evaluation halts.  Before this change, then
+ ACL2 did not quit since the value was of the form @('(mv nil _ state)');
+ instead, ACL2 would quit the top-level call of @('ld'), leaving us in raw
+ Lisp.  But in raw Lisp, the @('#!') reader macro (see @(see
+ sharp-bang-reader)) is undefined; hence an error would be signalled.  After
+ the fix, the return value of @('(mv nil (:STOP-LD 2) state)') is treated as an
+ error, so because @('ld-error-action') is @('(:EXIT N)'), ACL2 immediately
+ exits with status @('N').</p>
+
+ </blockquote>
+
+ <p>The pretty-printer has been improved by a contribution from Stephen
+ Westfold to support appropriate indentation, including more conventional
+ pretty-printing for calls of common macros such as @(tsee defun) and @(tsee
+ defmacro).  See @(see pp-special-syms); we thank Stephen also for supplying
+ the substance of that documentation.  Thanks too to Stephen for suggesting
+ several user-defined macros to be pretty-printed with this mechanism, which we
+ have modified by adding suitable @(tsee table) events (e.g., for @(tsee
+ define)).</p>
+
  <h3>New Features</h3>
 
  <p>The new zero-ary attachable system function, @(tsee heavy-linear-p), allows
@@ -101739,10 +101904,7 @@ it."
  utilities.</p>
 
  <p>The new utility @(tsee er-hard) is analogous to @(tsee er-soft), but for
- hard errors instead of soft errors (see @(see er)).  At the moment the only
- summary string used for inhibiting hard errors is @('\"Call depth\"'), for
- rewriter stack overflows.  On a related note, a new soft error summary string
- is used for inhibiting soft errors, @('\"Evaluation\"').</p>
+ hard errors instead of soft errors (see @(see er)).</p>
 
  <p>A new command, @(':')@(tsee tc) (translate and clean), has been added.  It
  translates a given form and then ``cleans it up'', returning a logically
@@ -101814,6 +101976,20 @@ it."
  warnings) to hard @(see errors).  Thanks to Mark Greenstreet for the idea and
  for discussions that were helpful in refining it.</p>
 
+ <p>A new @(tsee LD) special, @(tsee ld-always-skip-top-level-locals), has the
+ effect of skipping @(tsee local) top-level forms.  Thanks to Sol Swords for
+ requesting such a capability, to support faster loading of @('.port') files by
+ the build system (see @(tsee build::cert.pl)).</p>
+
+ <p>The symbol, @('number'), is now a legal @(see type-spec).</p>
+
+ <p>It is now permitted for a @(see stobj) @('s') to occur more than once as an
+ actual parameter in a function call, provided each such occurrence is in a
+ position where a stobj congruent to @('s') is expected (possibly @('s')
+ itself).  Thanks to Sol Swords for providing a relevant example, which appears
+ in a comment in the definition of function @('stobjs-in-out') in the ACL2
+ sources.</p>
+
  <h3>Heuristic and Efficiency Improvements</h3>
 
  <p>Added a &ldquo;desperation heuristic&rdquo; to compute a stronger context,
@@ -101825,6 +102001,13 @@ it."
  so-called &ldquo;desperation heuristics&rdquo; attempt), then the literals are
  reordered before building the @(see type-alist), so that the literals that
  involve at most one variable precede the other literals.)</p>
+
+ <p>Generation of guard clauses (and, probably rarely, other goals) has been
+ sped up in certain extreme cases.  For details, see @(see system-attachments),
+ specifically the discussion of CONJOIN-CLAUSE-SETS-BOUND in the &ldquo;Summary
+ of attachable system functions&rdquo;.  Thanks to Alessandro Coglio for
+ sending an example that led to our discovery of the quadratic behavior
+ eliminated by this change.</p>
 
  <h3>Bug Fixes</h3>
 
@@ -101840,6 +102023,61 @@ it."
  in its @(':')@(tsee rule-classes).  That is no longer allowed; @(tsee
  skip-proofs) may be used instead if one believes that the proposed formula is
  a theorem.</p>
+
+ <p>The function @(tsee read-file-into-string) has been modified to avoid what
+ might be considered a soundness bug.  The change involves causing an error for
+ two reads of the same file without first incrementing the file-clock of the
+ @(see state).  See @(see read-file-into-string) for details, in particular for
+ how to avoid that error by evaluating @('(increment-file-clock state)') after
+ calling @('read-file-into-string').  Formerly the error was avoided if the
+ write-date of the file didn't change between the two reads, but the following
+ example shows how this permitted two calls with identical arguments to produce
+ different results, logically causing @('read-file-into-string') to violate the
+ axiom @('x = x').</p>
+
+ <blockquote>
+
+ <p>First run the following shell commands.</p>
+
+ @({
+ echo 'test1' > tmp1.txt ; echo 'test2' > tmp2.txt
+ cp -p tmp1.txt tmp.txt
+ })
+
+ <p>Then start ACL2 and run a command as follows.</p>
+
+ @({
+ ACL2 !>(read-file-into-string \"tmp.txt\")
+ \"test1
+ \"
+ ACL2 !>
+ })
+
+ <p>Now suspend ACL2 with @('control-Z') and run the following shell
+ command.</p>
+
+ @({
+ cp -p tmp2.txt tmp.txt
+ })
+
+ <p>Now resume ACL2 with @('fg'), and optionally submit some trivial form (say,
+ @('3')) just to get the prompt back.  Note that the file-clock of the
+ @('state') hasn't changed.  (Probably the @('state') hasn't changed; at any
+ rate, the parts of the state relevant to @('read-file-into-string') haven't
+ changed.)  So the following call has arguments identical to those in the
+ corresponding call above, yet yields a different result.</p>
+
+ @({
+ ACL2 !>(read-file-into-string \"tmp.txt\")
+ \"test2
+ \"
+ ACL2 !>
+ })
+
+ <p>After the change to @('read-file-into-string'), its call just above causes
+ an error.</p>
+
+ </blockquote>
 
  <p>Fixed a bug in system function @('bounded-integer-listp'), which may have
  allowed illegal @(see proof-builder) commands to be attempted.  Thanks to
@@ -101962,6 +102200,38 @@ it."
  fixed so they now behave as described in the documentation for @(see
  brr-commands).</p>
 
+ <p>When a certified book is included, the logical @(see world) will no longer
+ be marked as having seen a @(tsee skip-proofs) call, even when the value of
+ @(tsee LD) special @(tsee ld-skip-proofsp) is non-@('nil') at that time.
+ Thus, that situation no longer disqualifies such a world from supplying the
+ @(see portcullis) commands to a book to be certified without keyword argument
+ @(':skip-proofs-okp t') of @(tsee certify-book).  Thanks to Sol Swords for
+ pointing out this bug.</p>
+
+ <p>Fixed a bug that was causing calls of @(tsee wormhole) to signal an
+ error.</p>
+
+ <p>Fixed a bug that could cause a @(tsee do-loop$) expressions to be
+ inappropriately rejected due to an allegedly ignored variable.  An example is
+ below.</p>
+
+ @({
+ (include-book \"projects/apply/top\" :dir :system)
+ ; BUG: The following was formerly necessary, but no longer is.
+ (set-ignore-ok t)
+ (defun f (a b)
+   (loop$ with x = a with y = b
+          do
+ ; The use of (set-ignore-ok t) was needed, but shouldn't have been,
+ ; whether or not the next line is included.
+          :measure (+ (len x) (len y))
+          (cond ((consp y)
+                 (let ((z y))
+                   (progn (setq y (cdr x))
+                          (setq x (cdr z)))))
+                (t (return y)))))
+ })
+
  <h3>Changes at the System Level</h3>
 
  <p>The `@('make')' target, @('save-exec'), now builds @('custom-saved_acl2')
@@ -102004,6 +102274,10 @@ it."
 
  </ul>
 
+ <p>Allow @(tsee ld) output in @(see raw-mode) to go to other than the channel,
+ @('*standard-co*').  Thanks to Vivek Ramanathan and Warren Hunt for an example
+ illustrating the issue.</p>
+
  <h3>EMACS Support</h3>
 
  <p>A set of tools for assisting in the conversion of certain HTML to @(tsee
@@ -102012,6 +102286,11 @@ it."
  A. Approved for public release. Distribution is unlimited.&rdquo;</p>
 
  <h3>Experimental Versions</h3>
+
+ <p>The note &ldquo;Note: No checkpoints to print.&rdquo; that might be printed
+ on proof failure is now the same in ACL2(p) as in ACL2, unless @(see
+ waterfall-parallelism) is enabled (in which case &ldquo;no checkpoints&rdquo;
+ is followed by &ldquo; from gag-mode&rdquo; as before).</p>
 
  ")
 
@@ -105767,6 +106046,71 @@ arithmetic) for libraries of @(see books) for arithmetic reasoning.</p>")
  <p>If you have been working your way through the tutorial introduction to the
  theorem prover, use your browser's <b>Back Button</b> now to @(see
  introduction-to-key-checkpoints).</p>")
+
+(defxdoc pp-special-syms
+  :parents (io)
+  :short "A @(see table) to control indentation for pretty-printing"
+  :long "<p>ACL2 output is generally pretty-printed: that is, spacing and
+ indentation are controlled to enhance readability and aesthetics of the
+ output.  Indentation may be controlled by using the table,
+ @('pp-special-syms') as described below.  We thank Stephen Westfold for
+ enhancing the pretty-printer with support for @('pp-special-syms').</p>
+
+ <p>The initial value of the @('pp-special-syms') table is given by the
+ constant @('*pp-special-syms*') as follows.  It associates each key, a symbol,
+ with a corresponding <i>special-term-num</i> as discussed below.</p>
+
+ @(def *pp-special-syms*)
+
+ <p>The @('pp-special-syms') table is extended for some common macros in the
+ files where they are defined, for example for @(tsee define) and @(tsee
+ b*).</p>
+
+ <p>For calls of special forms and macros in the @('pp-special-syms') table,
+ their bodies are indented by 2 rather than in the usual default manner.  To
+ support this we allow a <i>special-term-num</i> to be associated with a
+ symbol.  Arguments of such symbols in the function position beyond the
+ special-term-num position are indented by 2.  Earlier arguments are printed
+ normally.  For example, the symbol, @('let'), has a special-term-num of 1, so
+ the first argument is printed normally and subsequent arguments are indented
+ by 2, as follows.</p>
+
+ @({
+ (LET ((A B)
+       (C D))
+   (F A C))
+ })
+
+ <p>Since `if' has a special-term-num of 2, the first two arguments are printed
+ normally and the other is indented by 2, for example as follows.</p>
+
+ @({
+ (IF (P A B)
+     (F A B)
+   (G A B))
+ })
+
+ <p>Macros often have as their first argument a symbol, so these are treated
+ specially by putting them on the first line and any remaining arguments before
+ the body arguments begin on the same line if there is space.  For example,
+ @('defun') has special-term-num 2, which is evident in the following
+ output.</p>
+
+ @({
+ (DEFUN FOO (X Y Z)
+   (F X Y Z))
+ })
+
+ <p>Keyword pairs in macro calls can occur in other places than at the end of
+ an argument list, so keyword pairing is done more aggressively, as in the
+ following output.</p>
+
+ @({
+ (DEFINE FOO ((X P1)
+              (Y P2))
+   :GUARD (P3 X Y)
+   (F X Y Z))
+ })")
 
 (defxdoc pprogn
   :parents (programming-with-state acl2-built-ins)
@@ -128135,7 +128479,7 @@ work on <tt>(q x)</tt>.</p>
   :long "<p>It is common for ACL2 users not to notice warnings.  That problem
  can be avoided by using the utility @('set-warnings-as-errors') to convert
  warnings to errors.  We start below with a general specification, followed by
- examples forms, and concluding with an extended example.</p>
+ example forms, a detailed specification, and finally an extended example.</p>
 
  <h3>General Form</h3>
 
@@ -128149,7 +128493,36 @@ work on <tt>(q x)</tt>.</p>
  either @(':all') or a list of strings.  The effect is to turn certain @(see
  warnings) into hard @(see errors), aborting the computation in progress.  Note
  that @('set-warnings-as-errors') is a function, so all arguments are
- evaluated.  The warnings thus affected are determined as follows.</p>
+ evaluated.  Details are described in the section below entitled
+ &ldquo;Detailed Specification&rdquo;.</p>
+
+ <h3>Example Forms</h3>
+
+ @({
+ ; When a [Subsume] or [Use] warning is to be printed, cause a hard error
+ ; instead with a similar message.
+ (set-warnings-as-errors t '(\"Subsume\" \"Use\") state)
+
+ ; As above, but cause a hard error even if the warning is not to be printed,
+ ; i.e., even if by default it would be suppressed as a warning because of
+ ; prior use of set-inhibit-output-lst or set-inhibit-warnings.
+ (set-warnings-as-errors :always '(\"Subsume\" \"Use\") state)
+
+ ; Restore the treatment of [Use] warnings as warnings.
+ (set-warnings-as-errors nil '(\"Use\") state)
+
+ ; Treat a warning as a hard error, but only if the warning is to be printed
+ ; (hence not suppressed by set-inhibit-output-lst or set-inhibit-warnings).
+ (set-warnings-as-errors t :all state)
+
+ ; Treat a warning as a hard error, whether the warning is printed or not.
+ (set-warnings-as-errors :always :all state)
+
+ ; Restore the default behavior, treating warnings as warnings, not errors.
+ (set-warnings-as-errors nil :all state)
+ })
+
+ <h3>Detailed Specification</h3>
 
  <ul>
 
@@ -128191,32 +128564,6 @@ work on <tt>(q x)</tt>.</p>
  at the beginning.</li>
 
  </ul>
-
- <h3>Example Forms</h3>
-
- @({
- ; When a [Subsume] or [Use] warning is to be printed, cause a hard error
- ; instead with a similar message.
- (set-warnings-as-errors t '(\"Subsume\" \"Use\") state)
-
- ; As above, but cause a hard error even if the warning is not to be printed,
- ; i.e., even if by default it would be suppressed as a warning because of
- ; prior use of set-inhibit-output-lst or set-inhibit-warnings.
- (set-warnings-as-errors :always '(\"Subsume\" \"Use\") state)
-
- ; Restore the treatment of [Use] warnings as warnings.
- (set-warnings-as-errors nil '(\"Use\") state)
-
- ; Treat a warning as a hard error, but only if the warning is to be printed
- ; (hence not suppressed by set-inhibit-output-lst or set-inhibit-warnings).
- (set-warnings-as-errors t :all state)
-
- ; Treat a warning as a hard error, whether the warning is printed or not.
- (set-warnings-as-errors :always :all state)
-
- ; Restore the default behavior, treating warnings as warnings, not errors.
- (set-warnings-as-errors nil :all state)
- })
 
  <h3>Extended Example</h3>
 
@@ -134778,6 +135125,13 @@ work on <tt>(q x)</tt>.</p>
      "Attach to @('constant-nil-function-arity-0') to extend to non-recursively
       defined functions the stack-based limitation on opening
       recursively-defined functions.")
+    (CONJOIN-CLAUSE-SETS-BOUND
+     CONJOIN-CLAUSE-SETS-BOUND-BUILTIN
+     "Attach to a constant function that returns a natural number (default
+      @(`(conjoin-clause-sets-bound-builtin)`)) bounding how large a clause-set
+      can be to do smart merging into another clause-set; see comments in the
+      definition of conjoin-clause-sets in the ACL2 sources for more
+      explanation.")
     (HEAVY-LINEAR-P CONSTANT-NIL-FUNCTION-ARITY-0 heavy-linear-p)
     (HIDE-WITH-COMMENT-P CONSTANT-T-FUNCTION-ARITY-0 hide)
     (ONCEP-TP ONCEP-TP-BUILTIN
@@ -143677,6 +144031,7 @@ introduction-to-the-tau-system) for more information about Tau.</dd>
   (NOT type)             (NOT (p X))
                          where (p x) is the meaning for type-spec type
   NULL                   (EQ X NIL)
+  NUMBER                 (ACL2-NUMBERP x)
   (OR type1 ... typek)   (OR (p1 X) ... (pk X))
                          where (pj x) is the meaning for type-spec typej
   RATIO                  (AND (RATIONALP X) (NOT (INTEGERP X)))
@@ -157431,6 +157786,7 @@ expand function call at the current subterm, without simplifying"
 (defpointer ld-history-entry-stobjs-out/value ld-history)
 (defpointer ld-history-entry-user-data ld-history)
 (defpointer ld-history-entry-value ld-history)
+(defpointer ld-user-stobjs-modified-warning user-stobjs-modified-warnings)
 (defpointer legal-constantp system-utilities)
 (defpointer legal-variablep system-utilities)
 (defpointer let-mbe equality-variants-details)
@@ -157550,12 +157906,23 @@ expand function call at the current subterm, without simplifying"
 (defpointer set-difference-eq set-difference$)
 (defpointer set-difference-equal set-difference$)
 (defpointer set-fast-cert fast-cert)
+(defpointer set-ld-always-skip-top-level-locals ld-always-skip-top-level-locals)
+(defpointer set-ld-error-action ld-error-action)
+(defpointer set-ld-error-triples ld-error-triples)
+(defpointer set-ld-evisc-tuple ld-evisc-tuple)
 (defpointer set-ld-keyword-aliases ld-keyword-aliases)
 (defpointer set-ld-keyword-aliases! ld-keyword-aliases)
+(defpointer set-ld-missing-input-ok ld-missing-input-ok)
+(defpointer set-ld-post-eval-print ld-post-eval-print)
+(defpointer set-ld-pre-eval-filter ld-pre-eval-filter)
+(defpointer set-ld-pre-eval-print ld-pre-eval-print)
 (defpointer set-ld-prompt ld-prompt)
+(defpointer set-ld-query-control-alist ld-query-control-alist)
 (defpointer set-ld-redefinition-action ld-redefinition-action)
 (defpointer set-ld-skip-proofs ld-skip-proofsp)
 (defpointer set-ld-skip-proofsp ld-skip-proofsp)
+(defpointer set-ld-user-stobjs-modified-warning user-stobjs-modified-warnings)
+(defpointer set-ld-verbose ld-verbose)
 (defpointer set-let*-abstraction set-let*-abstractionp)
 (defpointer set-non-linear set-non-linearp)
 (defpointer set-print-circle print-control)
@@ -157565,9 +157932,12 @@ expand function call at the current subterm, without simplifying"
 (defpointer set-print-lines print-control)
 (defpointer set-print-readably print-control)
 (defpointer set-print-right-margin print-control)
+(defpointer set-proofs-co proofs-co)
 (defpointer set-ruler-extenders rulers)
 (defpointer set-serialize-character with-serialize-character)
 (defpointer set-slow-alist-action slow-alist-warning)
+(defpointer set-standard-co standard-co)
+(defpointer set-standard-oi standard-oi)
 (defpointer set-temp-touchable-fns remove-untouchable)
 (defpointer set-temp-touchable-vars remove-untouchable)
 (defpointer show-accumulated-persistence accumulated-persistence)
