@@ -102194,6 +102194,10 @@ it."
  @('assume-true-false-rec').)  Thanks to Eric Smith for pointing out
  that there can be type-alists with many consecutive identical entries.</p>
 
+ <p>Sped up macroexpansion for several common macros, with roughly a 2% to 3%
+ speedup observed for including several large books during development of this
+ change.</p>
+
  <h3>Bug Fixes</h3>
 
  <p>Fixed a soundness bug based on rules of class @(':')@(tsee meta) or

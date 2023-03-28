@@ -17061,6 +17061,13 @@ Subtopics
   arguments and their corresponding environment variables, as we
   ignore those effects in the present topic.
 
+  NOTE: If a given book includes some books (see [include-book]), then
+  those included books need to be certified before the given book is
+  certified.  See [build::cert.pl] for a tool that certifies not only
+  a given book but also all of the books that it includes, as well as
+  all the books that those books include, and so on --- all in the
+  proper order, and with parallelism by using the -j option.
+
   Certification occurs in some logical [world], called the
   ``certification [world].'' That [world] must contain the [defpkg]s
   needed to read and execute the forms in the book.  The [command]s
@@ -99152,6 +99159,10 @@ Heuristic and Efficiency Improvements
   source function assume-true-false-rec.)  Thanks to Eric Smith for
   pointing out that there can be type-alists with many consecutive
   identical entries.
+
+  Sped up macroexpansion for several common macros, with roughly a 2%
+  to 3% speedup observed for including several large books during
+  development of this change.
 
 
 Bug Fixes
