@@ -30616,6 +30616,46 @@ INFORMAL INTRODUCTION
              (AND (ALISTP NEW-ALIST)
                   (INTEGER-LISTP (CDR (ASSOC-EQ-SAFE 'TEMP NEW-ALIST)))))
 
+  The :guard is generally ignored when it is within the definition's
+  body for a guard-verified or a :[program]-mode function.  The
+  reason is that in these cases, the loop$ expression is converted to
+  a Common Lisp loop expression.  (There are exceptions involving
+  [set-guard-checking] and [invariant-risk].)  However, in other
+  cases the :guard is checked at runtime.  Consider the following
+  example.
+
+    (defun f (lst)
+      (loop$ with x = lst
+             do
+             :guard (consp x)
+             (cond ((consp x)
+                    (setq x (cdr x)))
+                   (t (return x)))))
+
+  Here we see a runtime guard violation.
+
+    ACL2 !>(f '(a b c d))
+
+
+    ACL2 Error [Evaluation] in TOP-LEVEL:  The guard for a DO$ form,
+    (AND (ALISTP ALIST) (CONSP (CDR (ASSOC-EQ-SAFE 'X ALIST)))),
+     has been violated by the following alist:
+    ((X)).
+    See :DOC do-loop$.
+
+    ACL2 !>
+
+  As noted in the preceding section (on ``The OF-TYPE Keyword''), a
+  call of do$ transforms an alist with each iteration through the
+  loop.  The alist initially binds the symbol X to the list (A B C
+  D), and each iteration modifies that binding by cdring the value of
+  X, until finally that value is nil --- and then a guard check fails
+  for the value of X, i.e., (CONSP (CDR (ASSOC-EQ-SAFE 'X ALIST))) is
+  nil.
+
+  A more detailed explanation may be found in the final section,
+  ``Semantics''.
+
   The :MEASURE Keyword
 
   The discussion above doesn't address the obvious possibility that a
@@ -30971,8 +31011,8 @@ SEMANTICS
   untranslated term; see [term]).  See also the subsection of
   [lambda$] entitled ``About Lambda$s and Prover Output.''
 
-  The definition of do$ is given at the end of this topic, for those
-  who care to explore it, but this discussion is intended to be
+  The definition of do$ is given later in this topic, for those who
+  care to explore it, but this discussion is intended to be
   self-contained.  Do$ operates by maintaining an alist that maps
   variables to values, for all variables referenced in the loop$
   expression --- though only variables that are declared in WITH
@@ -31109,7 +31149,8 @@ SEMANTICS
   to decrease; it can however be relevant when reasoning about do$
   calls.
 
-})
+  Here is the definition of [do$].
+
   Function: <do$>
 
     (defun
@@ -31153,6 +31194,126 @@ SEMANTICS
           (apply$ measure-fn (list new-alist))
           default)
          default)))))
+
+  We conclude by returning to an earlier example that illustrates
+  runtime guard-checking.  But this time we do some tracing, as
+  indicated.
+
+    (defun f (lst)
+      (loop$ with x = lst
+             do
+             :guard (consp x)
+             (cond ((consp x)
+                    (setq x (cdr x)))
+                   (t (return x)))))
+    (trace! (do$ :entry (list traced-fn alist) :notinline t))
+    (trace$ do-body-guard-wrapper)
+
+  As before, we have a guard violation.  The trace output is explained
+  below.
+
+    ACL2 !>(f '(a b c d))
+    1> (ACL2_*1*_ACL2::DO$ ((X A B C D)))
+      2> (DO$ ((X A B C D)))
+        3> (DO-BODY-GUARD-WRAPPER T)
+        <3 (DO-BODY-GUARD-WRAPPER T)
+        3> (DO-BODY-GUARD-WRAPPER T)
+        <3 (DO-BODY-GUARD-WRAPPER T)
+        3> (DO-BODY-GUARD-WRAPPER T)
+        <3 (DO-BODY-GUARD-WRAPPER T)
+        3> (DO$ ((X B C D)))
+          4> (DO-BODY-GUARD-WRAPPER T)
+          <4 (DO-BODY-GUARD-WRAPPER T)
+          4> (DO-BODY-GUARD-WRAPPER T)
+          <4 (DO-BODY-GUARD-WRAPPER T)
+          4> (DO-BODY-GUARD-WRAPPER T)
+          <4 (DO-BODY-GUARD-WRAPPER T)
+          4> (DO$ ((X C D)))
+            5> (DO-BODY-GUARD-WRAPPER T)
+            <5 (DO-BODY-GUARD-WRAPPER T)
+            5> (DO-BODY-GUARD-WRAPPER T)
+            <5 (DO-BODY-GUARD-WRAPPER T)
+            5> (DO-BODY-GUARD-WRAPPER T)
+            <5 (DO-BODY-GUARD-WRAPPER T)
+            5> (DO$ ((X D)))
+              6> (DO-BODY-GUARD-WRAPPER T)
+              <6 (DO-BODY-GUARD-WRAPPER T)
+              6> (DO-BODY-GUARD-WRAPPER NIL)
+              <6 (DO-BODY-GUARD-WRAPPER NIL)
+
+
+    ACL2 Error [Evaluation] in TOP-LEVEL:  The guard for a DO$ form,
+    (AND (ALISTP ALIST) (CONSP (CDR (ASSOC-EQ-SAFE 'X ALIST)))),
+     has been violated by the following alist:
+    ((X)).
+    See :DOC do-loop$.
+
+    ACL2 !>
+
+  To understand the trace output above, we first take a look at the
+  translation of the loop$ expression above.  This time we show the
+  corresponding do$ form with [declare] forms included, but as before
+  some parts of this form are simplified, untranslated, or elided.
+  (You can see the exact translation by applying :[trans] to the do$
+  call.)  Note that do-body-guard-wrapper is just an identity
+  function used by the implementation, but it is handy here for the
+  explanation that follows.
+
+    (DO$
+      ;; measure:
+      '(LAMBDA (ALIST)
+        (DECLARE
+         (XARGS :GUARD
+                (DO-BODY-GUARD-WRAPPER
+                 (AND (ALISTP ALIST)
+                      (CONSP (CDR (ASSOC-EQ-SAFE 'X ALIST)))))))
+        ((LAMBDA (X) (ACL2-COUNT X))
+         (CDR (ASSOC-EQ-SAFE 'X ALIST))))
+      ;; alist:
+      (LIST (CONS 'X LST))
+      ;; body:
+      '(LAMBDA (ALIST)
+        (DECLARE
+         (XARGS :GUARD
+                (DO-BODY-GUARD-WRAPPER
+                 (AND (ALISTP ALIST)
+                      (CONSP (CDR (ASSOC-EQ-SAFE 'X ALIST)))))))
+        ((LAMBDA (X)
+                 (IF (CONSP X)
+                     (LIST NIL NIL
+                           (LET ((X (CDR X))) (LIST (CONS 'X X))))
+                     (LIST :RETURN X (LIST (CONS 'X X)))))
+         (CDR (ASSOC-EQ-SAFE 'X ALIST))))
+      .....)
+
+  Recall that do$ works by repeatedly applying the given lambda to its
+  alist argument, which initially binds 'X to LST as shown above.
+  Do$ recurs when that application returns a triple (mv nil nil
+  new-alist), where new-alist is the alist returned by the body of
+  the loop$ expression.  But when do$ applies the given [lambda]
+  object, it first checks the :guard of that lambda.  We also see
+  that before do$ recurs, it applies its measure-fn argument to the
+  input alist and to new-alist.
+
+  So let's focus on the following from the end of the trace output
+  above.
+
+    5> (DO$ ((X D)))
+      6> (DO-BODY-GUARD-WRAPPER T)
+      <6 (DO-BODY-GUARD-WRAPPER T)
+      6> (DO-BODY-GUARD-WRAPPER NIL)
+      <6 (DO-BODY-GUARD-WRAPPER NIL)
+
+  The first DO-BODY-GUARD-WRAPPER call comes from the guard of the
+  lambda that represents the body of the do$ loop, from the
+  expression (apply$ do-fn (list alist)) in the definition of do$
+  (above).  Here alist is ((X D)), so the conjunct (CONSP (CDR
+  (ASSOC-EQ-SAFE 'X ALIST))) from that lambda's guard is true.  The
+  second call of DO-BODY-GUARD-WRAPPER comes from the expression
+  (apply$ measure-fn (list new-alist)) in the definition of do$.  But
+  new-alist is nil, so the conjunct (CONSP (CDR (ASSOC-EQ-SAFE 'X
+  ALIST))) from the measure lambda's guard is false, so the guard
+  evaluates to nil.
 
 
 Subtopics
@@ -98845,6 +99006,11 @@ Changes to Existing Features
   pretty-printed with this mechanism, which we have modified by
   adding suitable [table] events (e.g., for [define]).
 
+  Runtime [guard] violation messages from DO [loop$] expressions are
+  now much more readable.  They also now include a pointer to the
+  [do-loop$] documentation, which has new, relevant explanation
+  (first in brief, later in detail) regarding such messages.
+
 
 New Features
 
@@ -98979,6 +99145,13 @@ Heuristic and Efficiency Improvements
   functions''.  Thanks to Alessandro Coglio for sending an example
   that led to our discovery of the quadratic behavior eliminated by
   this change.
+
+  Duplicate entries in [type-alist]s (proof contexts) are now avoided
+  in many cases.  (Implementation note: some calls extending the
+  type-alist with an existing term/type-set pair are now avoided in
+  source function assume-true-false-rec.)  Thanks to Eric Smith for
+  pointing out that there can be type-alists with many consecutive
+  identical entries.
 
 
 Bug Fixes
