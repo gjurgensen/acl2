@@ -77,7 +77,7 @@ Subtopics
   [defthm], [in-theory], [xargs], [state], etc., without an acl2::
   prefix.
 
-  The constant *acl2-exports* lists 1596 symbols, including most
+  The constant *acl2-exports* lists 1573 symbols, including most
   documented ACL2 system constants, functions, and macros.  You will
   typically also want to import many symbols from Common Lisp; see
   [*common-lisp-symbols-from-main-lisp-package*].
@@ -93,14 +93,7 @@ Subtopics
        *main-lisp-package-name*
        *standard-chars* *standard-ci*
        *standard-co* *standard-oi*
-       + - / /= 1+ 1- 32-bit-integer-listp
-       32-bit-integer-listp-forward-to-integer-listp
-       32-bit-integer-stack
-       32-bit-integer-stack-length
-       32-bit-integer-stack-length1
-       32-bit-integerp
-       32-bit-integerp-forward-to-integerp
-       < <-on-others
+       + - / /= 1+ 1- < <-on-others
        <= = > >= ?-fn @ a! abort! abort-soft
        abs access accumulated-persistence
        accumulated-persistence-oops
@@ -132,12 +125,10 @@ Subtopics
        and and-macro append append$ append$+
        apply$ apply$-guard apply$-lambda
        apply$-lambda-guard apply$-userfn
-       aref-32-bit-integer-stack aref-t-stack
        aref1 aref2 args arities-okp arity
        array1p array1p-cons array1p-forward
        array1p-linear array2p array2p-cons
        array2p-forward array2p-linear
-       aset-32-bit-integer-stack aset-t-stack
        aset1 aset1-trusted aset2 ash assert$
        assert* assert-event assign assoc
        assoc-add-pair assoc-eq assoc-eq-equal
@@ -297,9 +288,8 @@ Subtopics
        explain-giant-lambda-object explode-atom
        explode-nonnegative-integer expt
        expt-type-prescription-non-zero-base
-       extend-32-bit-integer-stack
-       extend-pathname extend-pe-table
-       extend-t-stack extend-world
+       extend-pathname
+       extend-pe-table extend-world
        extra-info f-boundp-global f-get-global
        f-put-global fast-alist-clean
        fast-alist-clean! fast-alist-fork
@@ -404,11 +394,10 @@ Subtopics
        ld-prompt ld-query-control-alist
        ld-redefinition-action ld-skip-proofsp
        ld-user-stobjs-modified-warning
-       ld-verbose legal-case-clausesp
-       len len-update-nth length let
-       let* let-mbe lex-fix lexorder lexp list
-       list* list*-macro list-all-package-names
-       list-all-package-names-lst
+       ld-verbose
+       legal-case-clausesp len len-update-nth
+       length let let* let-mbe lex-fix
+       lexorder lexp list list* list*-macro
        list-macro listp local logand
        logandc1 logandc2 logbitp logcount
        logeqv logic logic-fns-list-listp
@@ -675,9 +664,7 @@ Subtopics
        show-accumulated-persistence show-bdd
        show-bodies show-brr-evisc-tuple
        show-custom-keyword-hint-expansion
-       show-fc-criteria
-       shrink-32-bit-integer-stack
-       shrink-t-stack signed-byte
+       show-fc-criteria signed-byte
        signed-byte-p signum simplify
        sixth skip-proofs sleep some-slashable
        spec-mv-let splitter-output
@@ -732,8 +719,7 @@ Subtopics
        symbolp-intern-in-package-of-symbol synp
        syntactically-clean-lambda-objects-theory
        syntaxp sys-call sys-call* sys-call+
-       sys-call-status t t-stack t-stack-length
-       t-stack-length1 table table-alist
+       sys-call-status t table table-alist
        take tamep tamep-functionp tamep-lambdap
        tau-data tau-database tau-interval-dom
        tau-interval-hi tau-interval-hi-rel
@@ -772,17 +758,15 @@ Subtopics
        unsave unsigned-byte unsigned-byte-p
        until$ until$+ untouchable-marker
        untrace$ untrans-table
-       untranslate update-32-bit-integer-stack
-       update-acl2-oracle
+       untranslate update-acl2-oracle
        update-acl2-oracle-preserves-state-p1
        update-big-clock-entry update-file-clock
        update-global-table update-idates
-       update-list-all-package-names-lst
        update-nth update-nth-array
        update-open-input-channels
        update-open-output-channels
        update-read-files
-       update-t-stack update-user-stobj-alist
+       update-user-stobj-alist
        update-user-stobj-alist1
        update-written-files
        upper-case-p upper-case-p-char-upcase
@@ -99018,6 +99002,11 @@ Changes to Existing Features
   [do-loop$] documentation, which has new, relevant explanation
   (first in brief, later in detail) regarding such messages.
 
+  Three obsolete fields of the ACL2 [state] have been removed: t-stack,
+  32-bit-integer-stack, and list-all-package-names, as have some
+  related built-in, undocumented definitions and theorems, including
+  old-check-sum-obj and supporting functions.
+
 
 New Features
 
@@ -119956,6 +119945,9 @@ A Possible Confusion
       which can match numeric constants.  See
       [random-remarks-on-rewriting] for some examples.
 
+  If a rule meets the criteria for both a form [2] rule and a form [3]
+  rule, then it is considered to be a form [2] rule.
+
   The function, fn, in a form [2] rule is called the ``normalizer.'' We
   explain this terminology as we discuss how such rules are used.
 
@@ -129921,13 +129913,6 @@ Subtopics
       Global-table, an alist associating symbols (to be used as ``global
       variables'') with values.  See [@], and see [assign].
 
-      T-stack, a list of arbitrary objects accessed and changed by the
-      functions aref-t-stack and aset-t-stack.
-
-      32-bit-integer-stack, a list of arbitrary 32-bit-integers accessed
-      and changed by the functions aref-32-bit-integer-stack and
-      aset-32-bit-integer-stack.
-
       Big-clock-entry, an integer, that is used logically to bound the
       amount of effort spent to evaluate a quoted form.
 
@@ -129970,20 +129955,6 @@ Subtopics
       Writeable-files, an alist whose keys have the form (string type
       time).  To open a file for output, we require that the name,
       type, and time be on this list.
-
-      List-all-package-names-lst, a list of true-listps.  Roughly speaking,
-      the [car] of this list is the list of all package names known
-      to this Common Lisp right now and the [cdr] of this list is the
-      value of this state variable after you look at its [car].  The
-      function, list-all-package-names, which takes the state as an
-      argument, returns the [car] and [cdr]s the list (returning a
-      new state too).  This essentially gives ACL2 access to what is
-      provided by CLTL's list-all-packages.  [Defpkg] uses this
-      feature to ensure that the about-to-be-created package is new
-      in this lisp.  Thus, for example, in gcl it is impossible to
-      create the package \"COMPILER\" with [defpkg] because it is on
-      the list, while in Lucid that package name is not initially on
-      the list.
 
       User-stobj-alist, an alist which associates user-defined
       single-threaded objects (see [stobj]) with their values.
