@@ -14198,6 +14198,13 @@ with any questions about building the community books.</p>")
  corresponding environment variables, as we ignore those effects in the present
  topic.</p>
 
+ <p>NOTE: If a given book includes some books (see @(see include-book)), then
+ those included books need to be certified before the given book is certified.
+ See @(see build::cert.pl) for a tool that certifies not only a given book but
+ also all of the books that it includes, as well as all the books that those
+ books include, and so on &mdash; all in the proper order, and with parallelism
+ by using the @('-j') option.</p>
+
  <p>Certification occurs in some logical @(see world), called the
  ``certification @(see world).''  That @(see world) must contain the @(tsee
  defpkg)s needed to read and execute the forms in the book.  The @(see
@@ -27284,6 +27291,49 @@ ld) and @(tsee include-book)"
                (INTEGER-LISTP (CDR (ASSOC-EQ-SAFE 'TEMP NEW-ALIST)))))
  })
 
+ <p>The @(':guard') is generally ignored when it is within the definition's
+ body for a guard-verified or a @(':')@(tsee program)-mode function.  The
+ reason is that in these cases, the @('loop$') expression is converted to a
+ Common Lisp @('loop') expression.  (There are exceptions involving @(tsee
+ set-guard-checking) and @(see invariant-risk).)  However, in other cases the
+ @(':guard') is checked at runtime.  Consider the following example.</p>
+
+ @({
+ (defun f (lst)
+   (loop$ with x = lst
+          do
+          :guard (consp x)
+          (cond ((consp x)
+                 (setq x (cdr x)))
+                (t (return x)))))
+ })
+
+ <p>Here we see a runtime guard violation.</p>
+
+ @({
+ ACL2 !>(f '(a b c d))
+
+
+ ACL2 Error [Evaluation] in TOP-LEVEL:  The guard for a DO$ form,
+ (AND (ALISTP ALIST) (CONSP (CDR (ASSOC-EQ-SAFE 'X ALIST)))),
+  has been violated by the following alist:
+ ((X)).
+ See :DOC do-loop$.
+
+ ACL2 !>
+ })
+
+ <p>As noted in the preceding section (on &ldquo;The @('OF-TYPE')
+ Keyword&rdquo;), a call of @('do$') transforms an alist with each iteration
+ through the loop.  The alist initially binds the symbol @('X') to the list
+ @('(A B C D)'), and each iteration modifies that binding by @('cdr')ing the
+ value of @('X'), until finally that value is @('nil') &mdash; and then a guard
+ check fails for the value of @('X'), i.e., @('(CONSP (CDR (ASSOC-EQ-SAFE 'X
+ ALIST)))') is @('nil').</p>
+
+ <p>A more detailed explanation may be found in the final section,
+ &ldquo;Semantics&rdquo;.</p>
+
  <p><b>The @(':MEASURE') Keyword</b></p>
 
  <p>The discussion above doesn't address the obvious possibility that a @('DO')
@@ -27675,10 +27725,10 @@ ld) and @(tsee include-book)"
  @(see term)).  See also the subsection of @(tsee lambda$) entitled ``About
  @('Lambda$')s and Prover Output.''</p>
 
- <p>The definition of @('do$') is given at the end of this topic, for those who
- care to explore it, but this discussion is intended to be self-contained.
- @('Do$') operates by maintaining an alist that maps variables to values, for
- all variables referenced in the @('loop$') expression &mdash; though only
+ <p>The definition of @('do$') is given later in this topic, for those who care
+ to explore it, but this discussion is intended to be self-contained.  @('Do$')
+ operates by maintaining an alist that maps variables to values, for all
+ variables referenced in the @('loop$') expression &mdash; though only
  variables that are declared in @('WITH') clauses or are stobjs may be
  modified.  This alist is updated on each iteration by calling @(tsee apply$)
  on the ``Body Function'' above, producing a 3-element list @('(exit-token val
@@ -27819,11 +27869,135 @@ ld) and @(tsee include-book)"
  occurs when the measure fails to decrease; it can however be relevant when
  reasoning about @('do$') calls.</p>
 
- })
+ <p>Here is the definition of @(tsee do$).</p>
 
  @(def do$)
 
- ")
+ <p>We conclude by returning to an earlier example that illustrates runtime
+ guard-checking.  But this time we do some tracing, as indicated.</p>
+
+ @({
+ (defun f (lst)
+   (loop$ with x = lst
+          do
+          :guard (consp x)
+          (cond ((consp x)
+                 (setq x (cdr x)))
+                (t (return x)))))
+ (trace! (do$ :entry (list traced-fn alist) :notinline t))
+ (trace$ do-body-guard-wrapper)
+ })
+
+ <p>As before, we have a guard violation.  The trace output is explained
+ below.</p>
+
+ @({
+ ACL2 !>(f '(a b c d))
+ 1> (ACL2_*1*_ACL2::DO$ ((X A B C D)))
+   2> (DO$ ((X A B C D)))
+     3> (DO-BODY-GUARD-WRAPPER T)
+     <3 (DO-BODY-GUARD-WRAPPER T)
+     3> (DO-BODY-GUARD-WRAPPER T)
+     <3 (DO-BODY-GUARD-WRAPPER T)
+     3> (DO-BODY-GUARD-WRAPPER T)
+     <3 (DO-BODY-GUARD-WRAPPER T)
+     3> (DO$ ((X B C D)))
+       4> (DO-BODY-GUARD-WRAPPER T)
+       <4 (DO-BODY-GUARD-WRAPPER T)
+       4> (DO-BODY-GUARD-WRAPPER T)
+       <4 (DO-BODY-GUARD-WRAPPER T)
+       4> (DO-BODY-GUARD-WRAPPER T)
+       <4 (DO-BODY-GUARD-WRAPPER T)
+       4> (DO$ ((X C D)))
+         5> (DO-BODY-GUARD-WRAPPER T)
+         <5 (DO-BODY-GUARD-WRAPPER T)
+         5> (DO-BODY-GUARD-WRAPPER T)
+         <5 (DO-BODY-GUARD-WRAPPER T)
+         5> (DO-BODY-GUARD-WRAPPER T)
+         <5 (DO-BODY-GUARD-WRAPPER T)
+         5> (DO$ ((X D)))
+           6> (DO-BODY-GUARD-WRAPPER T)
+           <6 (DO-BODY-GUARD-WRAPPER T)
+           6> (DO-BODY-GUARD-WRAPPER NIL)
+           <6 (DO-BODY-GUARD-WRAPPER NIL)
+
+
+ ACL2 Error [Evaluation] in TOP-LEVEL:  The guard for a DO$ form,
+ (AND (ALISTP ALIST) (CONSP (CDR (ASSOC-EQ-SAFE 'X ALIST)))),
+  has been violated by the following alist:
+ ((X)).
+ See :DOC do-loop$.
+
+ ACL2 !>
+ })
+
+ <p>To understand the trace output above, we first take a look at the
+ translation of the @('loop$') expression above.  This time we show the
+ corresponding @('do$') form with @(tsee declare) forms included, but as
+ before some parts of this form are simplified, untranslated, or elided.  (You
+ can see the exact translation by applying @(':')@(tsee trans) to the @('do$')
+ call.)  Note that @('do-body-guard-wrapper') is just an identity function used
+ by the implementation, but it is handy here for the explanation that
+ follows.</p>
+
+ @({
+ (DO$
+   ;; measure:
+   '(LAMBDA (ALIST)
+     (DECLARE
+      (XARGS :GUARD
+             (DO-BODY-GUARD-WRAPPER
+              (AND (ALISTP ALIST)
+                   (CONSP (CDR (ASSOC-EQ-SAFE 'X ALIST)))))))
+     ((LAMBDA (X) (ACL2-COUNT X))
+      (CDR (ASSOC-EQ-SAFE 'X ALIST))))
+   ;; alist:
+   (LIST (CONS 'X LST))
+   ;; body:
+   '(LAMBDA (ALIST)
+     (DECLARE
+      (XARGS :GUARD
+             (DO-BODY-GUARD-WRAPPER
+              (AND (ALISTP ALIST)
+                   (CONSP (CDR (ASSOC-EQ-SAFE 'X ALIST)))))))
+     ((LAMBDA (X)
+              (IF (CONSP X)
+                  (LIST NIL NIL
+                        (LET ((X (CDR X))) (LIST (CONS 'X X))))
+                  (LIST :RETURN X (LIST (CONS 'X X)))))
+      (CDR (ASSOC-EQ-SAFE 'X ALIST))))
+   .....)
+ })
+
+ <p>Recall that @('do$') works by repeatedly applying the given lambda to its
+ alist argument, which initially binds @(''X') to @('LST') as shown above.
+ @('Do$') recurs when that application returns a triple @('(mv nil nil
+ new-alist)'), where @('new-alist') is the alist returned by the body of the
+ @('loop$') expression.  But when @('do$') applies the given @(see lambda)
+ object, it first checks the @(':guard') of that lambda.  We also see that
+ before @('do$') recurs, it applies its @('measure-fn') argument to the input
+ alist and to @('new-alist').</p>
+
+ <p>So let's focus on the following from the end of the trace output above.</p>
+
+ @({
+         5> (DO$ ((X D)))
+           6> (DO-BODY-GUARD-WRAPPER T)
+           <6 (DO-BODY-GUARD-WRAPPER T)
+           6> (DO-BODY-GUARD-WRAPPER NIL)
+           <6 (DO-BODY-GUARD-WRAPPER NIL)
+ })
+
+ <p>The first @('DO-BODY-GUARD-WRAPPER') call comes from the guard of the
+ lambda that represents the body of the @('do$') loop, from the expression
+ @('(apply$ do-fn (list alist))') in the definition of @('do$') (above).  Here
+ @('alist') is @('((X D))'), so the conjunct @('(CONSP (CDR (ASSOC-EQ-SAFE 'X
+ ALIST)))') from that lambda's guard is true.  The second call of
+ @('DO-BODY-GUARD-WRAPPER') comes from the expression @('(apply$
+ measure-fn (list new-alist))') in the definition of @('do$').  But
+ @('new-alist') is @('nil'), so the conjunct @('(CONSP (CDR (ASSOC-EQ-SAFE 'X
+ ALIST)))') from the measure lambda's guard is false, so the guard evaluates to
+ @('nil').</p>")
 
 (defxdoc do-not
   :parents (hints)
@@ -101886,6 +102060,16 @@ it."
  have modified by adding suitable @(tsee table) events (e.g., for @(tsee
  define)).</p>
 
+ <p>Runtime @(see guard) violation messages from @('DO') @(tsee loop$)
+ expressions are now much more readable.  They also now include a pointer to
+ the @(see do-loop$) documentation, which has new, relevant explanation (first
+ in brief, later in detail) regarding such messages.</p>
+
+ <p>Three obsolete fields of the ACL2 @(see state) have been removed:
+ @('t-stack'), @('32-bit-integer-stack'), and @('list-all-package-names'), as
+ have some related built-in, undocumented definitions and theorems, including
+ @('old-check-sum-obj') and supporting functions.</p>
+
  <h3>New Features</h3>
 
  <p>The new zero-ary attachable system function, @(tsee heavy-linear-p), allows
@@ -102008,6 +102192,16 @@ it."
  of attachable system functions&rdquo;.  Thanks to Alessandro Coglio for
  sending an example that led to our discovery of the quadratic behavior
  eliminated by this change.</p>
+
+ <p>Duplicate entries in @(see type-alist)s (proof contexts) are now avoided in
+ many cases.  (Implementation note: some calls extending the type-alist with an
+ existing term/type-set pair are now avoided in source function
+ @('assume-true-false-rec').)  Thanks to Eric Smith for pointing out
+ that there can be type-alists with many consecutive identical entries.</p>
+
+ <p>Sped up macroexpansion for several common macros, with roughly a 2% to 3%
+ speedup observed for including several large books during development of this
+ change.</p>
 
  <h3>Bug Fixes</h3>
 
@@ -120851,6 +121045,9 @@ work on <tt>(q x)</tt>.</p>
 
   </ul>
 
+  <p>If a rule meets the criteria for both a form @('[2]') rule and a form
+  @('[3]') rule, then it is considered to be a form @('[2]') rule.</p>
+
   <p>The function, @('fn'), in a form @('[2]') rule is called the
   ``normalizer.''  We explain this terminology as we discuss how such rules are
   used.</p>
@@ -131187,13 +131384,6 @@ work on <tt>(q x)</tt>.</p>
  <p>@('Global-table'), an alist associating symbols (to be used as ``global
  variables'') with values.  See @(see @), and see @(see assign).</p>
 
- <p>@('T-stack'), a list of arbitrary objects accessed and changed by the
- functions @('aref-t-stack') and @('aset-t-stack').</p>
-
- <p>@('32-bit-integer-stack'), a list of arbitrary 32-bit-integers accessed and
- changed by the functions @('aref-32-bit-integer-stack') and
- @('aset-32-bit-integer-stack').</p>
-
  <p>@('Big-clock-entry'), an integer, that is used logically to bound the
  amount of effort spent to evaluate a quoted form.</p>
 
@@ -131235,19 +131425,6 @@ work on <tt>(q x)</tt>.</p>
  <p>@('Writeable-files'), an alist whose keys have the form @('(string type
  time)').  To open a file for output, we require that the name, type, and time
  be on this list.</p>
-
- <p>@('List-all-package-names-lst'), a list of @('true-listps').  Roughly
- speaking, the @(tsee car) of this list is the list of all package names known
- to this Common Lisp right now and the @(tsee cdr) of this list is the value of
- this @('state') variable after you look at its @(tsee car).  The function,
- @('list-all-package-names'), which takes the state as an argument, returns the
- @(tsee car) and @(tsee cdr)s the list (returning a new state too).  This
- essentially gives ACL2 access to what is provided by CLTL's
- @('list-all-packages').  @(tsee Defpkg) uses this feature to ensure that the
- about-to-be-created package is new in this lisp.  Thus, for example, in
- @('gcl') it is impossible to create the package @('\"COMPILER\"') with @(tsee
- defpkg) because it is on the list, while in Lucid that package name is not
- initially on the list.</p>
 
  <p>@('User-stobj-alist'), an alist which associates user-defined
  single-threaded objects (see @(see stobj)) with their values.</p></blockquote>

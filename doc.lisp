@@ -77,7 +77,7 @@ Subtopics
   [defthm], [in-theory], [xargs], [state], etc., without an acl2::
   prefix.
 
-  The constant *acl2-exports* lists 1596 symbols, including most
+  The constant *acl2-exports* lists 1573 symbols, including most
   documented ACL2 system constants, functions, and macros.  You will
   typically also want to import many symbols from Common Lisp; see
   [*common-lisp-symbols-from-main-lisp-package*].
@@ -93,14 +93,7 @@ Subtopics
        *main-lisp-package-name*
        *standard-chars* *standard-ci*
        *standard-co* *standard-oi*
-       + - / /= 1+ 1- 32-bit-integer-listp
-       32-bit-integer-listp-forward-to-integer-listp
-       32-bit-integer-stack
-       32-bit-integer-stack-length
-       32-bit-integer-stack-length1
-       32-bit-integerp
-       32-bit-integerp-forward-to-integerp
-       < <-on-others
+       + - / /= 1+ 1- < <-on-others
        <= = > >= ?-fn @ a! abort! abort-soft
        abs access accumulated-persistence
        accumulated-persistence-oops
@@ -132,12 +125,10 @@ Subtopics
        and and-macro append append$ append$+
        apply$ apply$-guard apply$-lambda
        apply$-lambda-guard apply$-userfn
-       aref-32-bit-integer-stack aref-t-stack
        aref1 aref2 args arities-okp arity
        array1p array1p-cons array1p-forward
        array1p-linear array2p array2p-cons
        array2p-forward array2p-linear
-       aset-32-bit-integer-stack aset-t-stack
        aset1 aset1-trusted aset2 ash assert$
        assert* assert-event assign assoc
        assoc-add-pair assoc-eq assoc-eq-equal
@@ -297,9 +288,8 @@ Subtopics
        explain-giant-lambda-object explode-atom
        explode-nonnegative-integer expt
        expt-type-prescription-non-zero-base
-       extend-32-bit-integer-stack
-       extend-pathname extend-pe-table
-       extend-t-stack extend-world
+       extend-pathname
+       extend-pe-table extend-world
        extra-info f-boundp-global f-get-global
        f-put-global fast-alist-clean
        fast-alist-clean! fast-alist-fork
@@ -404,11 +394,10 @@ Subtopics
        ld-prompt ld-query-control-alist
        ld-redefinition-action ld-skip-proofsp
        ld-user-stobjs-modified-warning
-       ld-verbose legal-case-clausesp
-       len len-update-nth length let
-       let* let-mbe lex-fix lexorder lexp list
-       list* list*-macro list-all-package-names
-       list-all-package-names-lst
+       ld-verbose
+       legal-case-clausesp len len-update-nth
+       length let let* let-mbe lex-fix
+       lexorder lexp list list* list*-macro
        list-macro listp local logand
        logandc1 logandc2 logbitp logcount
        logeqv logic logic-fns-list-listp
@@ -675,9 +664,7 @@ Subtopics
        show-accumulated-persistence show-bdd
        show-bodies show-brr-evisc-tuple
        show-custom-keyword-hint-expansion
-       show-fc-criteria
-       shrink-32-bit-integer-stack
-       shrink-t-stack signed-byte
+       show-fc-criteria signed-byte
        signed-byte-p signum simplify
        sixth skip-proofs sleep some-slashable
        spec-mv-let splitter-output
@@ -732,8 +719,7 @@ Subtopics
        symbolp-intern-in-package-of-symbol synp
        syntactically-clean-lambda-objects-theory
        syntaxp sys-call sys-call* sys-call+
-       sys-call-status t t-stack t-stack-length
-       t-stack-length1 table table-alist
+       sys-call-status t table table-alist
        take tamep tamep-functionp tamep-lambdap
        tau-data tau-database tau-interval-dom
        tau-interval-hi tau-interval-hi-rel
@@ -772,17 +758,15 @@ Subtopics
        unsave unsigned-byte unsigned-byte-p
        until$ until$+ untouchable-marker
        untrace$ untrans-table
-       untranslate update-32-bit-integer-stack
-       update-acl2-oracle
+       untranslate update-acl2-oracle
        update-acl2-oracle-preserves-state-p1
        update-big-clock-entry update-file-clock
        update-global-table update-idates
-       update-list-all-package-names-lst
        update-nth update-nth-array
        update-open-input-channels
        update-open-output-channels
        update-read-files
-       update-t-stack update-user-stobj-alist
+       update-user-stobj-alist
        update-user-stobj-alist1
        update-written-files
        upper-case-p upper-case-p-char-upcase
@@ -17061,6 +17045,13 @@ Subtopics
   arguments and their corresponding environment variables, as we
   ignore those effects in the present topic.
 
+  NOTE: If a given book includes some books (see [include-book]), then
+  those included books need to be certified before the given book is
+  certified.  See [build::cert.pl] for a tool that certifies not only
+  a given book but also all of the books that it includes, as well as
+  all the books that those books include, and so on --- all in the
+  proper order, and with parallelism by using the -j option.
+
   Certification occurs in some logical [world], called the
   ``certification [world].'' That [world] must contain the [defpkg]s
   needed to read and execute the forms in the book.  The [command]s
@@ -30616,6 +30607,46 @@ INFORMAL INTRODUCTION
              (AND (ALISTP NEW-ALIST)
                   (INTEGER-LISTP (CDR (ASSOC-EQ-SAFE 'TEMP NEW-ALIST)))))
 
+  The :guard is generally ignored when it is within the definition's
+  body for a guard-verified or a :[program]-mode function.  The
+  reason is that in these cases, the loop$ expression is converted to
+  a Common Lisp loop expression.  (There are exceptions involving
+  [set-guard-checking] and [invariant-risk].)  However, in other
+  cases the :guard is checked at runtime.  Consider the following
+  example.
+
+    (defun f (lst)
+      (loop$ with x = lst
+             do
+             :guard (consp x)
+             (cond ((consp x)
+                    (setq x (cdr x)))
+                   (t (return x)))))
+
+  Here we see a runtime guard violation.
+
+    ACL2 !>(f '(a b c d))
+
+
+    ACL2 Error [Evaluation] in TOP-LEVEL:  The guard for a DO$ form,
+    (AND (ALISTP ALIST) (CONSP (CDR (ASSOC-EQ-SAFE 'X ALIST)))),
+     has been violated by the following alist:
+    ((X)).
+    See :DOC do-loop$.
+
+    ACL2 !>
+
+  As noted in the preceding section (on ``The OF-TYPE Keyword''), a
+  call of do$ transforms an alist with each iteration through the
+  loop.  The alist initially binds the symbol X to the list (A B C
+  D), and each iteration modifies that binding by cdring the value of
+  X, until finally that value is nil --- and then a guard check fails
+  for the value of X, i.e., (CONSP (CDR (ASSOC-EQ-SAFE 'X ALIST))) is
+  nil.
+
+  A more detailed explanation may be found in the final section,
+  ``Semantics''.
+
   The :MEASURE Keyword
 
   The discussion above doesn't address the obvious possibility that a
@@ -30971,8 +31002,8 @@ SEMANTICS
   untranslated term; see [term]).  See also the subsection of
   [lambda$] entitled ``About Lambda$s and Prover Output.''
 
-  The definition of do$ is given at the end of this topic, for those
-  who care to explore it, but this discussion is intended to be
+  The definition of do$ is given later in this topic, for those who
+  care to explore it, but this discussion is intended to be
   self-contained.  Do$ operates by maintaining an alist that maps
   variables to values, for all variables referenced in the loop$
   expression --- though only variables that are declared in WITH
@@ -31109,7 +31140,8 @@ SEMANTICS
   to decrease; it can however be relevant when reasoning about do$
   calls.
 
-})
+  Here is the definition of [do$].
+
   Function: <do$>
 
     (defun
@@ -31153,6 +31185,126 @@ SEMANTICS
           (apply$ measure-fn (list new-alist))
           default)
          default)))))
+
+  We conclude by returning to an earlier example that illustrates
+  runtime guard-checking.  But this time we do some tracing, as
+  indicated.
+
+    (defun f (lst)
+      (loop$ with x = lst
+             do
+             :guard (consp x)
+             (cond ((consp x)
+                    (setq x (cdr x)))
+                   (t (return x)))))
+    (trace! (do$ :entry (list traced-fn alist) :notinline t))
+    (trace$ do-body-guard-wrapper)
+
+  As before, we have a guard violation.  The trace output is explained
+  below.
+
+    ACL2 !>(f '(a b c d))
+    1> (ACL2_*1*_ACL2::DO$ ((X A B C D)))
+      2> (DO$ ((X A B C D)))
+        3> (DO-BODY-GUARD-WRAPPER T)
+        <3 (DO-BODY-GUARD-WRAPPER T)
+        3> (DO-BODY-GUARD-WRAPPER T)
+        <3 (DO-BODY-GUARD-WRAPPER T)
+        3> (DO-BODY-GUARD-WRAPPER T)
+        <3 (DO-BODY-GUARD-WRAPPER T)
+        3> (DO$ ((X B C D)))
+          4> (DO-BODY-GUARD-WRAPPER T)
+          <4 (DO-BODY-GUARD-WRAPPER T)
+          4> (DO-BODY-GUARD-WRAPPER T)
+          <4 (DO-BODY-GUARD-WRAPPER T)
+          4> (DO-BODY-GUARD-WRAPPER T)
+          <4 (DO-BODY-GUARD-WRAPPER T)
+          4> (DO$ ((X C D)))
+            5> (DO-BODY-GUARD-WRAPPER T)
+            <5 (DO-BODY-GUARD-WRAPPER T)
+            5> (DO-BODY-GUARD-WRAPPER T)
+            <5 (DO-BODY-GUARD-WRAPPER T)
+            5> (DO-BODY-GUARD-WRAPPER T)
+            <5 (DO-BODY-GUARD-WRAPPER T)
+            5> (DO$ ((X D)))
+              6> (DO-BODY-GUARD-WRAPPER T)
+              <6 (DO-BODY-GUARD-WRAPPER T)
+              6> (DO-BODY-GUARD-WRAPPER NIL)
+              <6 (DO-BODY-GUARD-WRAPPER NIL)
+
+
+    ACL2 Error [Evaluation] in TOP-LEVEL:  The guard for a DO$ form,
+    (AND (ALISTP ALIST) (CONSP (CDR (ASSOC-EQ-SAFE 'X ALIST)))),
+     has been violated by the following alist:
+    ((X)).
+    See :DOC do-loop$.
+
+    ACL2 !>
+
+  To understand the trace output above, we first take a look at the
+  translation of the loop$ expression above.  This time we show the
+  corresponding do$ form with [declare] forms included, but as before
+  some parts of this form are simplified, untranslated, or elided.
+  (You can see the exact translation by applying :[trans] to the do$
+  call.)  Note that do-body-guard-wrapper is just an identity
+  function used by the implementation, but it is handy here for the
+  explanation that follows.
+
+    (DO$
+      ;; measure:
+      '(LAMBDA (ALIST)
+        (DECLARE
+         (XARGS :GUARD
+                (DO-BODY-GUARD-WRAPPER
+                 (AND (ALISTP ALIST)
+                      (CONSP (CDR (ASSOC-EQ-SAFE 'X ALIST)))))))
+        ((LAMBDA (X) (ACL2-COUNT X))
+         (CDR (ASSOC-EQ-SAFE 'X ALIST))))
+      ;; alist:
+      (LIST (CONS 'X LST))
+      ;; body:
+      '(LAMBDA (ALIST)
+        (DECLARE
+         (XARGS :GUARD
+                (DO-BODY-GUARD-WRAPPER
+                 (AND (ALISTP ALIST)
+                      (CONSP (CDR (ASSOC-EQ-SAFE 'X ALIST)))))))
+        ((LAMBDA (X)
+                 (IF (CONSP X)
+                     (LIST NIL NIL
+                           (LET ((X (CDR X))) (LIST (CONS 'X X))))
+                     (LIST :RETURN X (LIST (CONS 'X X)))))
+         (CDR (ASSOC-EQ-SAFE 'X ALIST))))
+      .....)
+
+  Recall that do$ works by repeatedly applying the given lambda to its
+  alist argument, which initially binds 'X to LST as shown above.
+  Do$ recurs when that application returns a triple (mv nil nil
+  new-alist), where new-alist is the alist returned by the body of
+  the loop$ expression.  But when do$ applies the given [lambda]
+  object, it first checks the :guard of that lambda.  We also see
+  that before do$ recurs, it applies its measure-fn argument to the
+  input alist and to new-alist.
+
+  So let's focus on the following from the end of the trace output
+  above.
+
+    5> (DO$ ((X D)))
+      6> (DO-BODY-GUARD-WRAPPER T)
+      <6 (DO-BODY-GUARD-WRAPPER T)
+      6> (DO-BODY-GUARD-WRAPPER NIL)
+      <6 (DO-BODY-GUARD-WRAPPER NIL)
+
+  The first DO-BODY-GUARD-WRAPPER call comes from the guard of the
+  lambda that represents the body of the do$ loop, from the
+  expression (apply$ do-fn (list alist)) in the definition of do$
+  (above).  Here alist is ((X D)), so the conjunct (CONSP (CDR
+  (ASSOC-EQ-SAFE 'X ALIST))) from that lambda's guard is true.  The
+  second call of DO-BODY-GUARD-WRAPPER comes from the expression
+  (apply$ measure-fn (list new-alist)) in the definition of do$.  But
+  new-alist is nil, so the conjunct (CONSP (CDR (ASSOC-EQ-SAFE 'X
+  ALIST))) from the measure lambda's guard is false, so the guard
+  evaluates to nil.
 
 
 Subtopics
@@ -98845,6 +98997,16 @@ Changes to Existing Features
   pretty-printed with this mechanism, which we have modified by
   adding suitable [table] events (e.g., for [define]).
 
+  Runtime [guard] violation messages from DO [loop$] expressions are
+  now much more readable.  They also now include a pointer to the
+  [do-loop$] documentation, which has new, relevant explanation
+  (first in brief, later in detail) regarding such messages.
+
+  Three obsolete fields of the ACL2 [state] have been removed: t-stack,
+  32-bit-integer-stack, and list-all-package-names, as have some
+  related built-in, undocumented definitions and theorems, including
+  old-check-sum-obj and supporting functions.
+
 
 New Features
 
@@ -98979,6 +99141,17 @@ Heuristic and Efficiency Improvements
   functions''.  Thanks to Alessandro Coglio for sending an example
   that led to our discovery of the quadratic behavior eliminated by
   this change.
+
+  Duplicate entries in [type-alist]s (proof contexts) are now avoided
+  in many cases.  (Implementation note: some calls extending the
+  type-alist with an existing term/type-set pair are now avoided in
+  source function assume-true-false-rec.)  Thanks to Eric Smith for
+  pointing out that there can be type-alists with many consecutive
+  identical entries.
+
+  Sped up macroexpansion for several common macros, with roughly a 2%
+  to 3% speedup observed for including several large books during
+  development of this change.
 
 
 Bug Fixes
@@ -119772,6 +119945,9 @@ A Possible Confusion
       which can match numeric constants.  See
       [random-remarks-on-rewriting] for some examples.
 
+  If a rule meets the criteria for both a form [2] rule and a form [3]
+  rule, then it is considered to be a form [2] rule.
+
   The function, fn, in a form [2] rule is called the ``normalizer.'' We
   explain this terminology as we discuss how such rules are used.
 
@@ -129737,13 +129913,6 @@ Subtopics
       Global-table, an alist associating symbols (to be used as ``global
       variables'') with values.  See [@], and see [assign].
 
-      T-stack, a list of arbitrary objects accessed and changed by the
-      functions aref-t-stack and aset-t-stack.
-
-      32-bit-integer-stack, a list of arbitrary 32-bit-integers accessed
-      and changed by the functions aref-32-bit-integer-stack and
-      aset-32-bit-integer-stack.
-
       Big-clock-entry, an integer, that is used logically to bound the
       amount of effort spent to evaluate a quoted form.
 
@@ -129786,20 +129955,6 @@ Subtopics
       Writeable-files, an alist whose keys have the form (string type
       time).  To open a file for output, we require that the name,
       type, and time be on this list.
-
-      List-all-package-names-lst, a list of true-listps.  Roughly speaking,
-      the [car] of this list is the list of all package names known
-      to this Common Lisp right now and the [cdr] of this list is the
-      value of this state variable after you look at its [car].  The
-      function, list-all-package-names, which takes the state as an
-      argument, returns the [car] and [cdr]s the list (returning a
-      new state too).  This essentially gives ACL2 access to what is
-      provided by CLTL's list-all-packages.  [Defpkg] uses this
-      feature to ensure that the about-to-be-created package is new
-      in this lisp.  Thus, for example, in gcl it is impossible to
-      create the package \"COMPILER\" with [defpkg] because it is on
-      the list, while in Lucid that package name is not initially on
-      the list.
 
       User-stobj-alist, an alist which associates user-defined
       single-threaded objects (see [stobj]) with their values.
