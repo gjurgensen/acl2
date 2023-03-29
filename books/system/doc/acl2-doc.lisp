@@ -102065,6 +102065,11 @@ it."
  the @(see do-loop$) documentation, which has new, relevant explanation (first
  in brief, later in detail) regarding such messages.</p>
 
+ <p>Three obsolete fields of the ACL2 @(see state) have been removed:
+ @('t-stack'), @('32-bit-integer-stack'), and @('list-all-package-names'), as
+ have some related built-in, undocumented definitions and theorems, including
+ @('old-check-sum-obj') and supporting functions.</p>
+
  <h3>New Features</h3>
 
  <p>The new zero-ary attachable system function, @(tsee heavy-linear-p), allows
@@ -102193,6 +102198,10 @@ it."
  existing term/type-set pair are now avoided in source function
  @('assume-true-false-rec').)  Thanks to Eric Smith for pointing out
  that there can be type-alists with many consecutive identical entries.</p>
+
+ <p>Sped up macroexpansion for several common macros, with roughly a 2% to 3%
+ speedup observed for including several large books during development of this
+ change.</p>
 
  <h3>Bug Fixes</h3>
 
@@ -121036,6 +121045,9 @@ work on <tt>(q x)</tt>.</p>
 
   </ul>
 
+  <p>If a rule meets the criteria for both a form @('[2]') rule and a form
+  @('[3]') rule, then it is considered to be a form @('[2]') rule.</p>
+
   <p>The function, @('fn'), in a form @('[2]') rule is called the
   ``normalizer.''  We explain this terminology as we discuss how such rules are
   used.</p>
@@ -131372,13 +131384,6 @@ work on <tt>(q x)</tt>.</p>
  <p>@('Global-table'), an alist associating symbols (to be used as ``global
  variables'') with values.  See @(see @), and see @(see assign).</p>
 
- <p>@('T-stack'), a list of arbitrary objects accessed and changed by the
- functions @('aref-t-stack') and @('aset-t-stack').</p>
-
- <p>@('32-bit-integer-stack'), a list of arbitrary 32-bit-integers accessed and
- changed by the functions @('aref-32-bit-integer-stack') and
- @('aset-32-bit-integer-stack').</p>
-
  <p>@('Big-clock-entry'), an integer, that is used logically to bound the
  amount of effort spent to evaluate a quoted form.</p>
 
@@ -131420,19 +131425,6 @@ work on <tt>(q x)</tt>.</p>
  <p>@('Writeable-files'), an alist whose keys have the form @('(string type
  time)').  To open a file for output, we require that the name, type, and time
  be on this list.</p>
-
- <p>@('List-all-package-names-lst'), a list of @('true-listps').  Roughly
- speaking, the @(tsee car) of this list is the list of all package names known
- to this Common Lisp right now and the @(tsee cdr) of this list is the value of
- this @('state') variable after you look at its @(tsee car).  The function,
- @('list-all-package-names'), which takes the state as an argument, returns the
- @(tsee car) and @(tsee cdr)s the list (returning a new state too).  This
- essentially gives ACL2 access to what is provided by CLTL's
- @('list-all-packages').  @(tsee Defpkg) uses this feature to ensure that the
- about-to-be-created package is new in this lisp.  Thus, for example, in
- @('gcl') it is impossible to create the package @('\"COMPILER\"') with @(tsee
- defpkg) because it is on the list, while in Lucid that package name is not
- initially on the list.</p>
 
  <p>@('User-stobj-alist'), an alist which associates user-defined
  single-threaded objects (see @(see stobj)) with their values.</p></blockquote>
