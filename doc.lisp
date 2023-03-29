@@ -77,7 +77,7 @@ Subtopics
   [defthm], [in-theory], [xargs], [state], etc., without an acl2::
   prefix.
 
-  The constant *acl2-exports* lists 1596 symbols, including most
+  The constant *acl2-exports* lists 1573 symbols, including most
   documented ACL2 system constants, functions, and macros.  You will
   typically also want to import many symbols from Common Lisp; see
   [*common-lisp-symbols-from-main-lisp-package*].
@@ -93,14 +93,7 @@ Subtopics
        *main-lisp-package-name*
        *standard-chars* *standard-ci*
        *standard-co* *standard-oi*
-       + - / /= 1+ 1- 32-bit-integer-listp
-       32-bit-integer-listp-forward-to-integer-listp
-       32-bit-integer-stack
-       32-bit-integer-stack-length
-       32-bit-integer-stack-length1
-       32-bit-integerp
-       32-bit-integerp-forward-to-integerp
-       < <-on-others
+       + - / /= 1+ 1- < <-on-others
        <= = > >= ?-fn @ a! abort! abort-soft
        abs access accumulated-persistence
        accumulated-persistence-oops
@@ -132,12 +125,10 @@ Subtopics
        and and-macro append append$ append$+
        apply$ apply$-guard apply$-lambda
        apply$-lambda-guard apply$-userfn
-       aref-32-bit-integer-stack aref-t-stack
        aref1 aref2 args arities-okp arity
        array1p array1p-cons array1p-forward
        array1p-linear array2p array2p-cons
        array2p-forward array2p-linear
-       aset-32-bit-integer-stack aset-t-stack
        aset1 aset1-trusted aset2 ash assert$
        assert* assert-event assign assoc
        assoc-add-pair assoc-eq assoc-eq-equal
@@ -297,9 +288,8 @@ Subtopics
        explain-giant-lambda-object explode-atom
        explode-nonnegative-integer expt
        expt-type-prescription-non-zero-base
-       extend-32-bit-integer-stack
-       extend-pathname extend-pe-table
-       extend-t-stack extend-world
+       extend-pathname
+       extend-pe-table extend-world
        extra-info f-boundp-global f-get-global
        f-put-global fast-alist-clean
        fast-alist-clean! fast-alist-fork
@@ -404,11 +394,10 @@ Subtopics
        ld-prompt ld-query-control-alist
        ld-redefinition-action ld-skip-proofsp
        ld-user-stobjs-modified-warning
-       ld-verbose legal-case-clausesp
-       len len-update-nth length let
-       let* let-mbe lex-fix lexorder lexp list
-       list* list*-macro list-all-package-names
-       list-all-package-names-lst
+       ld-verbose
+       legal-case-clausesp len len-update-nth
+       length let let* let-mbe lex-fix
+       lexorder lexp list list* list*-macro
        list-macro listp local logand
        logandc1 logandc2 logbitp logcount
        logeqv logic logic-fns-list-listp
@@ -675,9 +664,7 @@ Subtopics
        show-accumulated-persistence show-bdd
        show-bodies show-brr-evisc-tuple
        show-custom-keyword-hint-expansion
-       show-fc-criteria
-       shrink-32-bit-integer-stack
-       shrink-t-stack signed-byte
+       show-fc-criteria signed-byte
        signed-byte-p signum simplify
        sixth skip-proofs sleep some-slashable
        spec-mv-let splitter-output
@@ -732,8 +719,7 @@ Subtopics
        symbolp-intern-in-package-of-symbol synp
        syntactically-clean-lambda-objects-theory
        syntaxp sys-call sys-call* sys-call+
-       sys-call-status t t-stack t-stack-length
-       t-stack-length1 table table-alist
+       sys-call-status t table table-alist
        take tamep tamep-functionp tamep-lambdap
        tau-data tau-database tau-interval-dom
        tau-interval-hi tau-interval-hi-rel
@@ -772,17 +758,15 @@ Subtopics
        unsave unsigned-byte unsigned-byte-p
        until$ until$+ untouchable-marker
        untrace$ untrans-table
-       untranslate update-32-bit-integer-stack
-       update-acl2-oracle
+       untranslate update-acl2-oracle
        update-acl2-oracle-preserves-state-p1
        update-big-clock-entry update-file-clock
        update-global-table update-idates
-       update-list-all-package-names-lst
        update-nth update-nth-array
        update-open-input-channels
        update-open-output-channels
        update-read-files
-       update-t-stack update-user-stobj-alist
+       update-user-stobj-alist
        update-user-stobj-alist1
        update-written-files
        upper-case-p upper-case-p-char-upcase
@@ -15932,8 +15916,7 @@ Subtopics
     (or (consp x) (equal x nil))
 
   Notice that in the ACL2 logic, car returns nil for every [atom].")
- (CASE
-  (BASICS ACL2-BUILT-INS)
+ (CASE (BASICS ACL2-BUILT-INS)
   "Conditional based on if-then-else using [eql]
 
     Example Form:
@@ -16001,19 +15984,18 @@ Subtopics
 
   Case is defined in Common Lisp.  See any Common Lisp documentation
   for more information.")
- (CASE-MATCH
-  (BASICS ACL2-BUILT-INS)
+ (CASE-MATCH (BASICS ACL2-BUILT-INS)
   "Pattern matching or destructuring
 
     General Form:
     (case-match x
-      (pat1 dcl1 body1)
+      (pat1 dcl1 ... body1)
       ...
-      (patk dclk bodyk))
+      (patk dclk ... bodyk))
 
-  where x is a variable symbol, the pati are structural patterns as
-  described below, the dcli are optional [declare] forms and the
-  bodyi are terms.  The legal declare forms are the same as for
+  where x is a symbol, the pati are structural patterns as described
+  below, each ``dcli ...'' indicates 0 or more [declare] forms, and
+  the bodyi are terms.  The legal declare forms are the same as for
   [let]: ignore, ignorable, and type.  Return the value(s) of the
   bodyi corresponding to the first pati matching x, or nil if none
   matches.
@@ -17062,6 +17044,13 @@ Subtopics
   [useless-runes], respectively, for the effects of these two
   arguments and their corresponding environment variables, as we
   ignore those effects in the present topic.
+
+  NOTE: If a given book includes some books (see [include-book]), then
+  those included books need to be certified before the given book is
+  certified.  See [build::cert.pl] for a tool that certifies not only
+  a given book but also all of the books that it includes, as well as
+  all the books that those books include, and so on --- all in the
+  proper order, and with parallelism by using the -j option.
 
   Certification occurs in some logical [world], called the
   ``certification [world].'' That [world] must contain the [defpkg]s
@@ -22833,8 +22822,7 @@ Subtopics
   of expr2 may even cause an error, for example in :[program] mode if
   the expression expr2 has been constructed in a manner that could
   cause a guard violation unless test holds of expr1.")
- (DEFABSSTOBJ
-  (EVENTS STOBJ)
+ (DEFABSSTOBJ (EVENTS STOBJ)
   "Define a new abstract single-threaded object
 
   We assume familiarity with single-threaded objects; see [stobj] and
@@ -24328,8 +24316,7 @@ Subtopics
   See [set-total-parallelism-work-limit].")
  (DEFAULT-VERIFY-GUARDS-EAGERNESS (POINTERS)
                                   "See [set-verify-guards-eagerness].")
- (DEFAXIOM
-  (EVENTS)
+ (DEFAXIOM (EVENTS)
   "Add an axiom
 
   WARNING: We strongly recommend that you not add axioms.  If at all
@@ -24879,9 +24866,9 @@ Subtopics
 
     (defun f (x y) (and x y))
     (defmacro g (x) `(f ,x t))
-    (defcong iff equal (g x) 1)")
- (DEFCONST
-  (EVENTS PROGRAMMING)
+    (defcong iff equal (g x) 1)"
+)
+ (DEFCONST (EVENTS PROGRAMMING)
   "Define a constant
 
     Examples:
@@ -26190,7 +26177,8 @@ Subtopics
       Why attachments are sometimes not used
 
   [Prohibition-of-loop$-and-lambda$]
-      Certain events do not allow [loop$]s or [lambda$]s")
+      Certain events do not allow [loop$]s or [lambda$]s"
+)
  (DEFMACRO-LAST
   (EVENTS)
   "Define a macro that returns its last argument, but with side effects
@@ -26816,8 +26804,7 @@ Subtopics
   generated [defthm] form are as specified by the other keyword
   arguments above.  The term generated for the [defthm] event states
   that equiv1 refines equiv2.")
- (DEFSTOBJ
-  (EVENTS STOBJ)
+ (DEFSTOBJ (EVENTS STOBJ)
   "Define a new single-threaded object
 
   Note: Novices are advised to avoid defstobj, perhaps instead using
@@ -27636,8 +27623,7 @@ Subtopics
   [rune]s in current theory.  If this form is in a book being
   certified, then the resulting deftheory form is stored in the
   book's certificate, and is used when the book is included later.")
- (DEFTHM
-  (EVENTS)
+ (DEFTHM (EVENTS)
   "Prove and name a theorem
 
     Examples:
@@ -27699,8 +27685,7 @@ Subtopics
 
   [Otf-flg]
       Allow more than one initial subgoal to be pushed for induction")
- (DEFTHMD
-  (DEFTHM EVENTS)
+ (DEFTHMD (DEFTHM EVENTS)
   "Prove and name a theorem and then disable it
 
   Use defthmd instead of [defthm] when you want to disable a theorem
@@ -28334,7 +28319,8 @@ Subtopics
       Set the default well-founded relation
 
   [Xargs]
-      Extra arguments, for example to give [hints] to [defun]")
+      Extra arguments, for example to give [hints] to [defun]"
+)
  (DEFUN$
   (DEFUN EVENTS APPLY$)
   "Define a function symbol and generate a warrant
@@ -28449,7 +28435,8 @@ Subtopics
   sessions, including that book with the second host Lisp will not
   result in any inline or notinline behavior for functions defined in
   the book.  This may be fixed in a future release if someone
-  complains.")
+  complains."
+)
  (DEFUN-MODE
   (DEFUN)
   "Determines whether a function definition is a logical act
@@ -29181,7 +29168,8 @@ Subtopics
       A Beginner's Guide to Reasoning about Quantification in ACL2
 
   [Quantifiers]
-      Issues about quantification in ACL2")
+      Issues about quantification in ACL2"
+)
  (DEFUN-SK-EXAMPLE
   (DEFUN-SK)
   "A simple example using [defun-sk]
@@ -29313,7 +29301,8 @@ Subtopics
   [in-theory] event is not redundant.  This default can be changed;
   see [set-in-theory-redundant-okp].
 
-  See [defun] for documentation of defun.")
+  See [defun] for documentation of defun."
+)
  (DEFUND-INLINE
   (DEFUN EVENTS)
   "Define a potentially disabled, inlined function symbol and associated
@@ -30618,6 +30607,46 @@ INFORMAL INTRODUCTION
              (AND (ALISTP NEW-ALIST)
                   (INTEGER-LISTP (CDR (ASSOC-EQ-SAFE 'TEMP NEW-ALIST)))))
 
+  The :guard is generally ignored when it is within the definition's
+  body for a guard-verified or a :[program]-mode function.  The
+  reason is that in these cases, the loop$ expression is converted to
+  a Common Lisp loop expression.  (There are exceptions involving
+  [set-guard-checking] and [invariant-risk].)  However, in other
+  cases the :guard is checked at runtime.  Consider the following
+  example.
+
+    (defun f (lst)
+      (loop$ with x = lst
+             do
+             :guard (consp x)
+             (cond ((consp x)
+                    (setq x (cdr x)))
+                   (t (return x)))))
+
+  Here we see a runtime guard violation.
+
+    ACL2 !>(f '(a b c d))
+
+
+    ACL2 Error [Evaluation] in TOP-LEVEL:  The guard for a DO$ form,
+    (AND (ALISTP ALIST) (CONSP (CDR (ASSOC-EQ-SAFE 'X ALIST)))),
+     has been violated by the following alist:
+    ((X)).
+    See :DOC do-loop$.
+
+    ACL2 !>
+
+  As noted in the preceding section (on ``The OF-TYPE Keyword''), a
+  call of do$ transforms an alist with each iteration through the
+  loop.  The alist initially binds the symbol X to the list (A B C
+  D), and each iteration modifies that binding by cdring the value of
+  X, until finally that value is nil --- and then a guard check fails
+  for the value of X, i.e., (CONSP (CDR (ASSOC-EQ-SAFE 'X ALIST))) is
+  nil.
+
+  A more detailed explanation may be found in the final section,
+  ``Semantics''.
+
   The :MEASURE Keyword
 
   The discussion above doesn't address the obvious possibility that a
@@ -30973,8 +31002,8 @@ SEMANTICS
   untranslated term; see [term]).  See also the subsection of
   [lambda$] entitled ``About Lambda$s and Prover Output.''
 
-  The definition of do$ is given at the end of this topic, for those
-  who care to explore it, but this discussion is intended to be
+  The definition of do$ is given later in this topic, for those who
+  care to explore it, but this discussion is intended to be
   self-contained.  Do$ operates by maintaining an alist that maps
   variables to values, for all variables referenced in the loop$
   expression --- though only variables that are declared in WITH
@@ -31111,7 +31140,8 @@ SEMANTICS
   to decrease; it can however be relevant when reasoning about do$
   calls.
 
-})
+  Here is the definition of [do$].
+
   Function: <do$>
 
     (defun
@@ -31155,6 +31185,126 @@ SEMANTICS
           (apply$ measure-fn (list new-alist))
           default)
          default)))))
+
+  We conclude by returning to an earlier example that illustrates
+  runtime guard-checking.  But this time we do some tracing, as
+  indicated.
+
+    (defun f (lst)
+      (loop$ with x = lst
+             do
+             :guard (consp x)
+             (cond ((consp x)
+                    (setq x (cdr x)))
+                   (t (return x)))))
+    (trace! (do$ :entry (list traced-fn alist) :notinline t))
+    (trace$ do-body-guard-wrapper)
+
+  As before, we have a guard violation.  The trace output is explained
+  below.
+
+    ACL2 !>(f '(a b c d))
+    1> (ACL2_*1*_ACL2::DO$ ((X A B C D)))
+      2> (DO$ ((X A B C D)))
+        3> (DO-BODY-GUARD-WRAPPER T)
+        <3 (DO-BODY-GUARD-WRAPPER T)
+        3> (DO-BODY-GUARD-WRAPPER T)
+        <3 (DO-BODY-GUARD-WRAPPER T)
+        3> (DO-BODY-GUARD-WRAPPER T)
+        <3 (DO-BODY-GUARD-WRAPPER T)
+        3> (DO$ ((X B C D)))
+          4> (DO-BODY-GUARD-WRAPPER T)
+          <4 (DO-BODY-GUARD-WRAPPER T)
+          4> (DO-BODY-GUARD-WRAPPER T)
+          <4 (DO-BODY-GUARD-WRAPPER T)
+          4> (DO-BODY-GUARD-WRAPPER T)
+          <4 (DO-BODY-GUARD-WRAPPER T)
+          4> (DO$ ((X C D)))
+            5> (DO-BODY-GUARD-WRAPPER T)
+            <5 (DO-BODY-GUARD-WRAPPER T)
+            5> (DO-BODY-GUARD-WRAPPER T)
+            <5 (DO-BODY-GUARD-WRAPPER T)
+            5> (DO-BODY-GUARD-WRAPPER T)
+            <5 (DO-BODY-GUARD-WRAPPER T)
+            5> (DO$ ((X D)))
+              6> (DO-BODY-GUARD-WRAPPER T)
+              <6 (DO-BODY-GUARD-WRAPPER T)
+              6> (DO-BODY-GUARD-WRAPPER NIL)
+              <6 (DO-BODY-GUARD-WRAPPER NIL)
+
+
+    ACL2 Error [Evaluation] in TOP-LEVEL:  The guard for a DO$ form,
+    (AND (ALISTP ALIST) (CONSP (CDR (ASSOC-EQ-SAFE 'X ALIST)))),
+     has been violated by the following alist:
+    ((X)).
+    See :DOC do-loop$.
+
+    ACL2 !>
+
+  To understand the trace output above, we first take a look at the
+  translation of the loop$ expression above.  This time we show the
+  corresponding do$ form with [declare] forms included, but as before
+  some parts of this form are simplified, untranslated, or elided.
+  (You can see the exact translation by applying :[trans] to the do$
+  call.)  Note that do-body-guard-wrapper is just an identity
+  function used by the implementation, but it is handy here for the
+  explanation that follows.
+
+    (DO$
+      ;; measure:
+      '(LAMBDA (ALIST)
+        (DECLARE
+         (XARGS :GUARD
+                (DO-BODY-GUARD-WRAPPER
+                 (AND (ALISTP ALIST)
+                      (CONSP (CDR (ASSOC-EQ-SAFE 'X ALIST)))))))
+        ((LAMBDA (X) (ACL2-COUNT X))
+         (CDR (ASSOC-EQ-SAFE 'X ALIST))))
+      ;; alist:
+      (LIST (CONS 'X LST))
+      ;; body:
+      '(LAMBDA (ALIST)
+        (DECLARE
+         (XARGS :GUARD
+                (DO-BODY-GUARD-WRAPPER
+                 (AND (ALISTP ALIST)
+                      (CONSP (CDR (ASSOC-EQ-SAFE 'X ALIST)))))))
+        ((LAMBDA (X)
+                 (IF (CONSP X)
+                     (LIST NIL NIL
+                           (LET ((X (CDR X))) (LIST (CONS 'X X))))
+                     (LIST :RETURN X (LIST (CONS 'X X)))))
+         (CDR (ASSOC-EQ-SAFE 'X ALIST))))
+      .....)
+
+  Recall that do$ works by repeatedly applying the given lambda to its
+  alist argument, which initially binds 'X to LST as shown above.
+  Do$ recurs when that application returns a triple (mv nil nil
+  new-alist), where new-alist is the alist returned by the body of
+  the loop$ expression.  But when do$ applies the given [lambda]
+  object, it first checks the :guard of that lambda.  We also see
+  that before do$ recurs, it applies its measure-fn argument to the
+  input alist and to new-alist.
+
+  So let's focus on the following from the end of the trace output
+  above.
+
+    5> (DO$ ((X D)))
+      6> (DO-BODY-GUARD-WRAPPER T)
+      <6 (DO-BODY-GUARD-WRAPPER T)
+      6> (DO-BODY-GUARD-WRAPPER NIL)
+      <6 (DO-BODY-GUARD-WRAPPER NIL)
+
+  The first DO-BODY-GUARD-WRAPPER call comes from the guard of the
+  lambda that represents the body of the do$ loop, from the
+  expression (apply$ do-fn (list alist)) in the definition of do$
+  (above).  Here alist is ((X D)), so the conjunct (CONSP (CDR
+  (ASSOC-EQ-SAFE 'X ALIST))) from that lambda's guard is true.  The
+  second call of DO-BODY-GUARD-WRAPPER comes from the expression
+  (apply$ measure-fn (list new-alist)) in the definition of do$.  But
+  new-alist is nil, so the conjunct (CONSP (CDR (ASSOC-EQ-SAFE 'X
+  ALIST))) from the measure lambda's guard is false, so the guard
+  evaluates to nil.
 
 
 Subtopics
@@ -32456,8 +32606,7 @@ Miscellaneous efficiency ideas
                 "See [system-utilities].")
  (ENABLED-RUNEP (POINTERS)
                 "See [system-utilities].")
- (ENCAPSULATE
-  (EVENTS)
+ (ENCAPSULATE (EVENTS)
   "Hide some [events] and/or constrain some functions
 
   Encapsulate provides a way to execute a sequence of [events] and then
@@ -51822,7 +51971,8 @@ Subtopics
   If has a [guard] of t.
 
   If is part of Common Lisp.  See any Common Lisp documentation for
-  more information.")
+  more information."
+)
  (IF*
   (BDD)
   "For conditional rewriting with BDDs
@@ -58370,6 +58520,9 @@ Subtopics
   [Output-to-file]
       Redirecting output to a file
 
+  [Pp-special-syms]
+      A [table] to control indentation for pretty-printing
+
   [Princ$]
       Print an atom
 
@@ -58758,8 +58911,7 @@ Subtopics
                (cons (nfix (car list))
                      (nfix-list (cdr list)))
                nil))")
- (LAMBDA
-  (TERM APPLY$)
+ (LAMBDA (TERM APPLY$)
   "Lambda expressions, LAMBDA objects, and lambda$ expressions
 
   The word ``lambda'' occurs in several different contexts in ACL2.
@@ -58968,8 +59120,7 @@ About Lambda$ Expressions
   objects.
 
   Finally, to see how a lambda$ expression translates, see [translam].")
- (LAMBDA$
-  (APPLY$)
+ (LAMBDA$ (APPLY$)
   "Lambda object constructor for use with apply$
 
   Lambda$ is a built-in ACL2 ``macro'' that allows you to enter
@@ -61003,8 +61154,7 @@ Subtopics
            (if (stringp x)
                (len (coerce x 'list))
                (len x)))")
- (LET
-  (BASICS ACL2-BUILT-INS)
+ (LET (BASICS ACL2-BUILT-INS)
   "Binding of lexically scoped (local) variables
 
 
@@ -61133,8 +61283,7 @@ Introduction
 
   Let is part of Common Lisp.  See any Common Lisp documentation for
   more information.")
- (LET*
-  (BASICS ACL2-BUILT-INS)
+ (LET* (BASICS ACL2-BUILT-INS)
   "Binding of lexically scoped (local) variables
 
   Examples
@@ -75144,7 +75293,8 @@ Subtopics
   ACL2 does not support the Common Lisp construct multiple-value-bind,
   whose logical meaning seems difficult to characterize.  Mv-let is
   the ACL2 analogue of that construct.  Also see [mv] and see
-  [mv-list].")
+  [mv-list]."
+)
  (MV-LIST
   (MV ACL2-BUILT-INS)
   "Converting [multiple-value] result to a single-value list
@@ -98838,6 +98988,25 @@ Changes to Existing Features
       ld-error-action is (:EXIT N), ACL2 immediately exits with
       status N.
 
+  The pretty-printer has been improved by a contribution from Stephen
+  Westfold to support appropriate indentation, including more
+  conventional pretty-printing for calls of common macros such as
+  [defun] and [defmacro].  See [pp-special-syms]; we thank Stephen
+  also for supplying the substance of that documentation.  Thanks too
+  to Stephen for suggesting several user-defined macros to be
+  pretty-printed with this mechanism, which we have modified by
+  adding suitable [table] events (e.g., for [define]).
+
+  Runtime [guard] violation messages from DO [loop$] expressions are
+  now much more readable.  They also now include a pointer to the
+  [do-loop$] documentation, which has new, relevant explanation
+  (first in brief, later in detail) regarding such messages.
+
+  Three obsolete fields of the ACL2 [state] have been removed: t-stack,
+  32-bit-integer-stack, and list-all-package-names, as have some
+  related built-in, undocumented definitions and theorems, including
+  old-check-sum-obj and supporting functions.
+
 
 New Features
 
@@ -98972,6 +99141,17 @@ Heuristic and Efficiency Improvements
   functions''.  Thanks to Alessandro Coglio for sending an example
   that led to our discovery of the quadratic behavior eliminated by
   this change.
+
+  Duplicate entries in [type-alist]s (proof contexts) are now avoided
+  in many cases.  (Implementation note: some calls extending the
+  type-alist with an existing term/type-set pair are now avoided in
+  source function assume-true-false-rec.)  Thanks to Eric Smith for
+  pointing out that there can be type-alists with many consecutive
+  identical entries.
+
+  Sped up macroexpansion for several common macros, with roughly a 2%
+  to 3% speedup observed for including several large books during
+  development of this change.
 
 
 Bug Fixes
@@ -99148,6 +99328,25 @@ Bug Fixes
   Swords for pointing out this bug.
 
   Fixed a bug that was causing calls of [wormhole] to signal an error.
+
+  Fixed a bug that could cause a [do-loop$] expressions to be
+  inappropriately rejected due to an allegedly ignored variable.  An
+  example is below.
+
+    (include-book \"projects/apply/top\" :dir :system)
+    ; BUG: The following was formerly necessary, but no longer is.
+    (set-ignore-ok t)
+    (defun f (a b)
+      (loop$ with x = a with y = b
+             do
+    ; The use of (set-ignore-ok t) was needed, but shouldn't have been,
+    ; whether or not the next line is included.
+             :measure (+ (len x) (len y))
+             (cond ((consp y)
+                    (let ((z y))
+                      (progn (setq y (cdr x))
+                             (setq x (cdr z)))))
+                   (t (return y)))))
 
 
 Changes at the System Level
@@ -105183,6 +105382,90 @@ Subtopics
                    "See [sharp-dot-reader].")
  (POUND-U-READER (POINTERS)
                  "See [sharp-u-reader].")
+ (PP-SPECIAL-SYMS
+  (IO)
+  "A [table] to control indentation for pretty-printing
+
+  ACL2 output is generally pretty-printed: that is, spacing and
+  indentation are controlled to enhance readability and aesthetics of
+  the output.  Indentation may be controlled by using the table,
+  pp-special-syms as described below.  We thank Stephen Westfold for
+  enhancing the pretty-printer with support for pp-special-syms.
+
+  The initial value of the pp-special-syms table is given by the
+  constant *pp-special-syms* as follows.  It associates each key, a
+  symbol, with a corresponding special-term-num as discussed below.
+
+  Definition: <*pp-special-syms*>
+
+    (defconst *pp-special-syms*
+              '((case . 1)
+                (case-match . 1)
+                (defabsstobj . 1)
+                (defaxiom . 1)
+                (defchoose . 3)
+                (defcong . 2)
+                (defconst . 1)
+                (defmacro . 2)
+                (defstobj . 1)
+                (defthm . 1)
+                (defthmd . 1)
+                (defun . 2)
+                (defun-inline . 2)
+                (defun-sk . 2)
+                (defund . 2)
+                (encapsulate . 1)
+                (if . 2)
+                (lambda . 1)
+                (lambda$ . 1)
+                (let . 1)
+                (let* . 1)
+                (mutual-recursion . 0)
+                (mv-let . 2)
+                (table . 1)))
+
+  The pp-special-syms table is extended for some common macros in the
+  files where they are defined, for example for [define] and [b*].
+
+  For calls of special forms and macros in the pp-special-syms table,
+  their bodies are indented by 2 rather than in the usual default
+  manner.  To support this we allow a special-term-num to be
+  associated with a symbol.  Arguments of such symbols in the
+  function position beyond the special-term-num position are indented
+  by 2.  Earlier arguments are printed normally.  For example, the
+  symbol, let, has a special-term-num of 1, so the first argument is
+  printed normally and subsequent arguments are indented by 2, as
+  follows.
+
+    (LET ((A B)
+          (C D))
+      (F A C))
+
+  Since `if' has a special-term-num of 2, the first two arguments are
+  printed normally and the other is indented by 2, for example as
+  follows.
+
+    (IF (P A B)
+        (F A B)
+      (G A B))
+
+  Macros often have as their first argument a symbol, so these are
+  treated specially by putting them on the first line and any
+  remaining arguments before the body arguments begin on the same
+  line if there is space.  For example, defun has special-term-num 2,
+  which is evident in the following output.
+
+    (DEFUN FOO (X Y Z)
+      (F X Y Z))
+
+  Keyword pairs in macro calls can occur in other places than at the
+  end of an argument list, so keyword pairing is done more
+  aggressively, as in the following output.
+
+    (DEFINE FOO ((X P1)
+                 (Y P2))
+      :GUARD (P3 X Y)
+      (F X Y Z))")
  (PPROGN
   (PROGRAMMING-WITH-STATE ACL2-BUILT-INS)
   "Evaluate a sequence of forms that return [state]
@@ -119662,6 +119945,9 @@ A Possible Confusion
       which can match numeric constants.  See
       [random-remarks-on-rewriting] for some examples.
 
+  If a rule meets the criteria for both a form [2] rule and a form [3]
+  rule, then it is considered to be a form [2] rule.
+
   The function, fn, in a form [2] rule is called the ``normalizer.'' We
   explain this terminology as we discuss how such rules are used.
 
@@ -127024,8 +127310,8 @@ Subtopics
   It is common for ACL2 users not to notice warnings.  That problem can
   be avoided by using the utility set-warnings-as-errors to convert
   warnings to errors.  We start below with a general specification,
-  followed by examples forms, and concluding with an extended
-  example.
+  followed by example forms, a detailed specification, and finally an
+  extended example.
 
 
 General Form
@@ -127038,7 +127324,36 @@ General Form
   strings.  The effect is to turn certain [warnings] into hard
   [errors], aborting the computation in progress.  Note that
   set-warnings-as-errors is a function, so all arguments are
-  evaluated.  The warnings thus affected are determined as follows.
+  evaluated.  Details are described in the section below entitled
+  ``Detailed Specification''.
+
+
+Example Forms
+
+    ; When a [Subsume] or [Use] warning is to be printed, cause a hard error
+    ; instead with a similar message.
+    (set-warnings-as-errors t '(\"Subsume\" \"Use\") state)
+
+    ; As above, but cause a hard error even if the warning is not to be printed,
+    ; i.e., even if by default it would be suppressed as a warning because of
+    ; prior use of set-inhibit-output-lst or set-inhibit-warnings.
+    (set-warnings-as-errors :always '(\"Subsume\" \"Use\") state)
+
+    ; Restore the treatment of [Use] warnings as warnings.
+    (set-warnings-as-errors nil '(\"Use\") state)
+
+    ; Treat a warning as a hard error, but only if the warning is to be printed
+    ; (hence not suppressed by set-inhibit-output-lst or set-inhibit-warnings).
+    (set-warnings-as-errors t :all state)
+
+    ; Treat a warning as a hard error, whether the warning is printed or not.
+    (set-warnings-as-errors :always :all state)
+
+    ; Restore the default behavior, treating warnings as warnings, not errors.
+    (set-warnings-as-errors nil :all state)
+
+
+Detailed Specification
 
     * No warning whose type specified by constant
       *uninhibited-warning-summaries* is converted to an error.
@@ -127074,31 +127389,6 @@ General Form
       during [certify-book] and [include-book].  The handling of
       warnings as errors is restored at the end of these operations
       to what it was at the beginning.
-
-
-Example Forms
-
-    ; When a [Subsume] or [Use] warning is to be printed, cause a hard error
-    ; instead with a similar message.
-    (set-warnings-as-errors t '(\"Subsume\" \"Use\") state)
-
-    ; As above, but cause a hard error even if the warning is not to be printed,
-    ; i.e., even if by default it would be suppressed as a warning because of
-    ; prior use of set-inhibit-output-lst or set-inhibit-warnings.
-    (set-warnings-as-errors :always '(\"Subsume\" \"Use\") state)
-
-    ; Restore the treatment of [Use] warnings as warnings.
-    (set-warnings-as-errors nil '(\"Use\") state)
-
-    ; Treat a warning as a hard error, but only if the warning is to be printed
-    ; (hence not suppressed by set-inhibit-output-lst or set-inhibit-warnings).
-    (set-warnings-as-errors t :all state)
-
-    ; Treat a warning as a hard error, whether the warning is printed or not.
-    (set-warnings-as-errors :always :all state)
-
-    ; Restore the default behavior, treating warnings as warnings, not errors.
-    (set-warnings-as-errors nil :all state)
 
 
 Extended Example
@@ -129623,13 +129913,6 @@ Subtopics
       Global-table, an alist associating symbols (to be used as ``global
       variables'') with values.  See [@], and see [assign].
 
-      T-stack, a list of arbitrary objects accessed and changed by the
-      functions aref-t-stack and aset-t-stack.
-
-      32-bit-integer-stack, a list of arbitrary 32-bit-integers accessed
-      and changed by the functions aref-32-bit-integer-stack and
-      aset-32-bit-integer-stack.
-
       Big-clock-entry, an integer, that is used logically to bound the
       amount of effort spent to evaluate a quoted form.
 
@@ -129672,20 +129955,6 @@ Subtopics
       Writeable-files, an alist whose keys have the form (string type
       time).  To open a file for output, we require that the name,
       type, and time be on this list.
-
-      List-all-package-names-lst, a list of true-listps.  Roughly speaking,
-      the [car] of this list is the list of all package names known
-      to this Common Lisp right now and the [cdr] of this list is the
-      value of this state variable after you look at its [car].  The
-      function, list-all-package-names, which takes the state as an
-      argument, returns the [car] and [cdr]s the list (returning a
-      new state too).  This essentially gives ACL2 access to what is
-      provided by CLTL's list-all-packages.  [Defpkg] uses this
-      feature to ensure that the about-to-be-created package is new
-      in this lisp.  Thus, for example, in gcl it is impossible to
-      create the package \"COMPILER\" with [defpkg] because it is on
-      the list, while in Lucid that package name is not initially on
-      the list.
 
       User-stobj-alist, an alist which associates user-defined
       single-threaded objects (see [stobj]) with their values.
@@ -134419,8 +134688,7 @@ Subtopics
 
   [Untranslate]
       Show a user-level representation of a term")
- (TABLE
-  (EVENTS)
+ (TABLE (EVENTS)
   "User-managed tables
 
     Examples:

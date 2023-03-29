@@ -13023,17 +13023,17 @@ with any questions about building the community books.</p>")
   :long "@({
   General Form:
   (case-match x
-    (pat1 dcl1 body1)
+    (pat1 dcl1 ... body1)
     ...
-    (patk dclk bodyk))
+    (patk dclk ... bodyk))
  })
 
- <p>where @('x') is a variable symbol, the @('pati') are structural patterns as
- described below, the @('dcli') are optional @(tsee declare) forms and the
- @('bodyi') are terms.  The legal @('declare') forms are the same as for @(tsee
- let): @('ignore'), @('ignorable'), and @('type').  Return the value(s) of the
- @('bodyi') corresponding to the first @('pati') matching @('x'), or @('nil')
- if none matches.</p>
+ <p>where @('x') is a symbol, the @('pati') are structural patterns as
+ described below, each &ldquo;@('dcli ...')&rdquo; indicates 0 or more @(tsee
+ declare) forms, and the @('bodyi') are terms.  The legal @('declare') forms
+ are the same as for @(tsee let): @('ignore'), @('ignorable'), and @('type').
+ Return the value(s) of the @('bodyi') corresponding to the first @('pati')
+ matching @('x'), or @('nil') if none matches.</p>
 
  <p>Pattern Language:<br></br>
 
@@ -14197,6 +14197,13 @@ with any questions about building the community books.</p>")
  useless-runes), respectively, for the effects of these two arguments and their
  corresponding environment variables, as we ignore those effects in the present
  topic.</p>
+
+ <p>NOTE: If a given book includes some books (see @(see include-book)), then
+ those included books need to be certified before the given book is certified.
+ See @(see build::cert.pl) for a tool that certifies not only a given book but
+ also all of the books that it includes, as well as all the books that those
+ books include, and so on &mdash; all in the proper order, and with parallelism
+ by using the @('-j') option.</p>
 
  <p>Certification occurs in some logical @(see world), called the
  ``certification @(see world).''  That @(see world) must contain the @(tsee
@@ -27284,6 +27291,49 @@ ld) and @(tsee include-book)"
                (INTEGER-LISTP (CDR (ASSOC-EQ-SAFE 'TEMP NEW-ALIST)))))
  })
 
+ <p>The @(':guard') is generally ignored when it is within the definition's
+ body for a guard-verified or a @(':')@(tsee program)-mode function.  The
+ reason is that in these cases, the @('loop$') expression is converted to a
+ Common Lisp @('loop') expression.  (There are exceptions involving @(tsee
+ set-guard-checking) and @(see invariant-risk).)  However, in other cases the
+ @(':guard') is checked at runtime.  Consider the following example.</p>
+
+ @({
+ (defun f (lst)
+   (loop$ with x = lst
+          do
+          :guard (consp x)
+          (cond ((consp x)
+                 (setq x (cdr x)))
+                (t (return x)))))
+ })
+
+ <p>Here we see a runtime guard violation.</p>
+
+ @({
+ ACL2 !>(f '(a b c d))
+
+
+ ACL2 Error [Evaluation] in TOP-LEVEL:  The guard for a DO$ form,
+ (AND (ALISTP ALIST) (CONSP (CDR (ASSOC-EQ-SAFE 'X ALIST)))),
+  has been violated by the following alist:
+ ((X)).
+ See :DOC do-loop$.
+
+ ACL2 !>
+ })
+
+ <p>As noted in the preceding section (on &ldquo;The @('OF-TYPE')
+ Keyword&rdquo;), a call of @('do$') transforms an alist with each iteration
+ through the loop.  The alist initially binds the symbol @('X') to the list
+ @('(A B C D)'), and each iteration modifies that binding by @('cdr')ing the
+ value of @('X'), until finally that value is @('nil') &mdash; and then a guard
+ check fails for the value of @('X'), i.e., @('(CONSP (CDR (ASSOC-EQ-SAFE 'X
+ ALIST)))') is @('nil').</p>
+
+ <p>A more detailed explanation may be found in the final section,
+ &ldquo;Semantics&rdquo;.</p>
+
  <p><b>The @(':MEASURE') Keyword</b></p>
 
  <p>The discussion above doesn't address the obvious possibility that a @('DO')
@@ -27675,10 +27725,10 @@ ld) and @(tsee include-book)"
  @(see term)).  See also the subsection of @(tsee lambda$) entitled ``About
  @('Lambda$')s and Prover Output.''</p>
 
- <p>The definition of @('do$') is given at the end of this topic, for those who
- care to explore it, but this discussion is intended to be self-contained.
- @('Do$') operates by maintaining an alist that maps variables to values, for
- all variables referenced in the @('loop$') expression &mdash; though only
+ <p>The definition of @('do$') is given later in this topic, for those who care
+ to explore it, but this discussion is intended to be self-contained.  @('Do$')
+ operates by maintaining an alist that maps variables to values, for all
+ variables referenced in the @('loop$') expression &mdash; though only
  variables that are declared in @('WITH') clauses or are stobjs may be
  modified.  This alist is updated on each iteration by calling @(tsee apply$)
  on the ``Body Function'' above, producing a 3-element list @('(exit-token val
@@ -27819,11 +27869,135 @@ ld) and @(tsee include-book)"
  occurs when the measure fails to decrease; it can however be relevant when
  reasoning about @('do$') calls.</p>
 
- })
+ <p>Here is the definition of @(tsee do$).</p>
 
  @(def do$)
 
- ")
+ <p>We conclude by returning to an earlier example that illustrates runtime
+ guard-checking.  But this time we do some tracing, as indicated.</p>
+
+ @({
+ (defun f (lst)
+   (loop$ with x = lst
+          do
+          :guard (consp x)
+          (cond ((consp x)
+                 (setq x (cdr x)))
+                (t (return x)))))
+ (trace! (do$ :entry (list traced-fn alist) :notinline t))
+ (trace$ do-body-guard-wrapper)
+ })
+
+ <p>As before, we have a guard violation.  The trace output is explained
+ below.</p>
+
+ @({
+ ACL2 !>(f '(a b c d))
+ 1> (ACL2_*1*_ACL2::DO$ ((X A B C D)))
+   2> (DO$ ((X A B C D)))
+     3> (DO-BODY-GUARD-WRAPPER T)
+     <3 (DO-BODY-GUARD-WRAPPER T)
+     3> (DO-BODY-GUARD-WRAPPER T)
+     <3 (DO-BODY-GUARD-WRAPPER T)
+     3> (DO-BODY-GUARD-WRAPPER T)
+     <3 (DO-BODY-GUARD-WRAPPER T)
+     3> (DO$ ((X B C D)))
+       4> (DO-BODY-GUARD-WRAPPER T)
+       <4 (DO-BODY-GUARD-WRAPPER T)
+       4> (DO-BODY-GUARD-WRAPPER T)
+       <4 (DO-BODY-GUARD-WRAPPER T)
+       4> (DO-BODY-GUARD-WRAPPER T)
+       <4 (DO-BODY-GUARD-WRAPPER T)
+       4> (DO$ ((X C D)))
+         5> (DO-BODY-GUARD-WRAPPER T)
+         <5 (DO-BODY-GUARD-WRAPPER T)
+         5> (DO-BODY-GUARD-WRAPPER T)
+         <5 (DO-BODY-GUARD-WRAPPER T)
+         5> (DO-BODY-GUARD-WRAPPER T)
+         <5 (DO-BODY-GUARD-WRAPPER T)
+         5> (DO$ ((X D)))
+           6> (DO-BODY-GUARD-WRAPPER T)
+           <6 (DO-BODY-GUARD-WRAPPER T)
+           6> (DO-BODY-GUARD-WRAPPER NIL)
+           <6 (DO-BODY-GUARD-WRAPPER NIL)
+
+
+ ACL2 Error [Evaluation] in TOP-LEVEL:  The guard for a DO$ form,
+ (AND (ALISTP ALIST) (CONSP (CDR (ASSOC-EQ-SAFE 'X ALIST)))),
+  has been violated by the following alist:
+ ((X)).
+ See :DOC do-loop$.
+
+ ACL2 !>
+ })
+
+ <p>To understand the trace output above, we first take a look at the
+ translation of the @('loop$') expression above.  This time we show the
+ corresponding @('do$') form with @(tsee declare) forms included, but as
+ before some parts of this form are simplified, untranslated, or elided.  (You
+ can see the exact translation by applying @(':')@(tsee trans) to the @('do$')
+ call.)  Note that @('do-body-guard-wrapper') is just an identity function used
+ by the implementation, but it is handy here for the explanation that
+ follows.</p>
+
+ @({
+ (DO$
+   ;; measure:
+   '(LAMBDA (ALIST)
+     (DECLARE
+      (XARGS :GUARD
+             (DO-BODY-GUARD-WRAPPER
+              (AND (ALISTP ALIST)
+                   (CONSP (CDR (ASSOC-EQ-SAFE 'X ALIST)))))))
+     ((LAMBDA (X) (ACL2-COUNT X))
+      (CDR (ASSOC-EQ-SAFE 'X ALIST))))
+   ;; alist:
+   (LIST (CONS 'X LST))
+   ;; body:
+   '(LAMBDA (ALIST)
+     (DECLARE
+      (XARGS :GUARD
+             (DO-BODY-GUARD-WRAPPER
+              (AND (ALISTP ALIST)
+                   (CONSP (CDR (ASSOC-EQ-SAFE 'X ALIST)))))))
+     ((LAMBDA (X)
+              (IF (CONSP X)
+                  (LIST NIL NIL
+                        (LET ((X (CDR X))) (LIST (CONS 'X X))))
+                  (LIST :RETURN X (LIST (CONS 'X X)))))
+      (CDR (ASSOC-EQ-SAFE 'X ALIST))))
+   .....)
+ })
+
+ <p>Recall that @('do$') works by repeatedly applying the given lambda to its
+ alist argument, which initially binds @(''X') to @('LST') as shown above.
+ @('Do$') recurs when that application returns a triple @('(mv nil nil
+ new-alist)'), where @('new-alist') is the alist returned by the body of the
+ @('loop$') expression.  But when @('do$') applies the given @(see lambda)
+ object, it first checks the @(':guard') of that lambda.  We also see that
+ before @('do$') recurs, it applies its @('measure-fn') argument to the input
+ alist and to @('new-alist').</p>
+
+ <p>So let's focus on the following from the end of the trace output above.</p>
+
+ @({
+         5> (DO$ ((X D)))
+           6> (DO-BODY-GUARD-WRAPPER T)
+           <6 (DO-BODY-GUARD-WRAPPER T)
+           6> (DO-BODY-GUARD-WRAPPER NIL)
+           <6 (DO-BODY-GUARD-WRAPPER NIL)
+ })
+
+ <p>The first @('DO-BODY-GUARD-WRAPPER') call comes from the guard of the
+ lambda that represents the body of the @('do$') loop, from the expression
+ @('(apply$ do-fn (list alist))') in the definition of @('do$') (above).  Here
+ @('alist') is @('((X D))'), so the conjunct @('(CONSP (CDR (ASSOC-EQ-SAFE 'X
+ ALIST)))') from that lambda's guard is true.  The second call of
+ @('DO-BODY-GUARD-WRAPPER') comes from the expression @('(apply$
+ measure-fn (list new-alist))') in the definition of @('do$').  But
+ @('new-alist') is @('nil'), so the conjunct @('(CONSP (CDR (ASSOC-EQ-SAFE 'X
+ ALIST)))') from the measure lambda's guard is false, so the guard evaluates to
+ @('nil').</p>")
 
 (defxdoc do-not
   :parents (hints)
@@ -101877,6 +102051,25 @@ it."
 
  </blockquote>
 
+ <p>The pretty-printer has been improved by a contribution from Stephen
+ Westfold to support appropriate indentation, including more conventional
+ pretty-printing for calls of common macros such as @(tsee defun) and @(tsee
+ defmacro).  See @(see pp-special-syms); we thank Stephen also for supplying
+ the substance of that documentation.  Thanks too to Stephen for suggesting
+ several user-defined macros to be pretty-printed with this mechanism, which we
+ have modified by adding suitable @(tsee table) events (e.g., for @(tsee
+ define)).</p>
+
+ <p>Runtime @(see guard) violation messages from @('DO') @(tsee loop$)
+ expressions are now much more readable.  They also now include a pointer to
+ the @(see do-loop$) documentation, which has new, relevant explanation (first
+ in brief, later in detail) regarding such messages.</p>
+
+ <p>Three obsolete fields of the ACL2 @(see state) have been removed:
+ @('t-stack'), @('32-bit-integer-stack'), and @('list-all-package-names'), as
+ have some related built-in, undocumented definitions and theorems, including
+ @('old-check-sum-obj') and supporting functions.</p>
+
  <h3>New Features</h3>
 
  <p>The new zero-ary attachable system function, @(tsee heavy-linear-p), allows
@@ -101999,6 +102192,16 @@ it."
  of attachable system functions&rdquo;.  Thanks to Alessandro Coglio for
  sending an example that led to our discovery of the quadratic behavior
  eliminated by this change.</p>
+
+ <p>Duplicate entries in @(see type-alist)s (proof contexts) are now avoided in
+ many cases.  (Implementation note: some calls extending the type-alist with an
+ existing term/type-set pair are now avoided in source function
+ @('assume-true-false-rec').)  Thanks to Eric Smith for pointing out
+ that there can be type-alists with many consecutive identical entries.</p>
+
+ <p>Sped up macroexpansion for several common macros, with roughly a 2% to 3%
+ speedup observed for including several large books during development of this
+ change.</p>
 
  <h3>Bug Fixes</h3>
 
@@ -102201,6 +102404,27 @@ it."
 
  <p>Fixed a bug that was causing calls of @(tsee wormhole) to signal an
  error.</p>
+
+ <p>Fixed a bug that could cause a @(tsee do-loop$) expressions to be
+ inappropriately rejected due to an allegedly ignored variable.  An example is
+ below.</p>
+
+ @({
+ (include-book \"projects/apply/top\" :dir :system)
+ ; BUG: The following was formerly necessary, but no longer is.
+ (set-ignore-ok t)
+ (defun f (a b)
+   (loop$ with x = a with y = b
+          do
+ ; The use of (set-ignore-ok t) was needed, but shouldn't have been,
+ ; whether or not the next line is included.
+          :measure (+ (len x) (len y))
+          (cond ((consp y)
+                 (let ((z y))
+                   (progn (setq y (cdr x))
+                          (setq x (cdr z)))))
+                (t (return y)))))
+ })
 
  <h3>Changes at the System Level</h3>
 
@@ -106016,6 +106240,71 @@ arithmetic) for libraries of @(see books) for arithmetic reasoning.</p>")
  <p>If you have been working your way through the tutorial introduction to the
  theorem prover, use your browser's <b>Back Button</b> now to @(see
  introduction-to-key-checkpoints).</p>")
+
+(defxdoc pp-special-syms
+  :parents (io)
+  :short "A @(see table) to control indentation for pretty-printing"
+  :long "<p>ACL2 output is generally pretty-printed: that is, spacing and
+ indentation are controlled to enhance readability and aesthetics of the
+ output.  Indentation may be controlled by using the table,
+ @('pp-special-syms') as described below.  We thank Stephen Westfold for
+ enhancing the pretty-printer with support for @('pp-special-syms').</p>
+
+ <p>The initial value of the @('pp-special-syms') table is given by the
+ constant @('*pp-special-syms*') as follows.  It associates each key, a symbol,
+ with a corresponding <i>special-term-num</i> as discussed below.</p>
+
+ @(def *pp-special-syms*)
+
+ <p>The @('pp-special-syms') table is extended for some common macros in the
+ files where they are defined, for example for @(tsee define) and @(tsee
+ b*).</p>
+
+ <p>For calls of special forms and macros in the @('pp-special-syms') table,
+ their bodies are indented by 2 rather than in the usual default manner.  To
+ support this we allow a <i>special-term-num</i> to be associated with a
+ symbol.  Arguments of such symbols in the function position beyond the
+ special-term-num position are indented by 2.  Earlier arguments are printed
+ normally.  For example, the symbol, @('let'), has a special-term-num of 1, so
+ the first argument is printed normally and subsequent arguments are indented
+ by 2, as follows.</p>
+
+ @({
+ (LET ((A B)
+       (C D))
+   (F A C))
+ })
+
+ <p>Since `if' has a special-term-num of 2, the first two arguments are printed
+ normally and the other is indented by 2, for example as follows.</p>
+
+ @({
+ (IF (P A B)
+     (F A B)
+   (G A B))
+ })
+
+ <p>Macros often have as their first argument a symbol, so these are treated
+ specially by putting them on the first line and any remaining arguments before
+ the body arguments begin on the same line if there is space.  For example,
+ @('defun') has special-term-num 2, which is evident in the following
+ output.</p>
+
+ @({
+ (DEFUN FOO (X Y Z)
+   (F X Y Z))
+ })
+
+ <p>Keyword pairs in macro calls can occur in other places than at the end of
+ an argument list, so keyword pairing is done more aggressively, as in the
+ following output.</p>
+
+ @({
+ (DEFINE FOO ((X P1)
+              (Y P2))
+   :GUARD (P3 X Y)
+   (F X Y Z))
+ })")
 
 (defxdoc pprogn
   :parents (programming-with-state acl2-built-ins)
@@ -120756,6 +121045,9 @@ work on <tt>(q x)</tt>.</p>
 
   </ul>
 
+  <p>If a rule meets the criteria for both a form @('[2]') rule and a form
+  @('[3]') rule, then it is considered to be a form @('[2]') rule.</p>
+
   <p>The function, @('fn'), in a form @('[2]') rule is called the
   ``normalizer.''  We explain this terminology as we discuss how such rules are
   used.</p>
@@ -128384,7 +128676,7 @@ work on <tt>(q x)</tt>.</p>
   :long "<p>It is common for ACL2 users not to notice warnings.  That problem
  can be avoided by using the utility @('set-warnings-as-errors') to convert
  warnings to errors.  We start below with a general specification, followed by
- examples forms, and concluding with an extended example.</p>
+ example forms, a detailed specification, and finally an extended example.</p>
 
  <h3>General Form</h3>
 
@@ -128398,7 +128690,36 @@ work on <tt>(q x)</tt>.</p>
  either @(':all') or a list of strings.  The effect is to turn certain @(see
  warnings) into hard @(see errors), aborting the computation in progress.  Note
  that @('set-warnings-as-errors') is a function, so all arguments are
- evaluated.  The warnings thus affected are determined as follows.</p>
+ evaluated.  Details are described in the section below entitled
+ &ldquo;Detailed Specification&rdquo;.</p>
+
+ <h3>Example Forms</h3>
+
+ @({
+ ; When a [Subsume] or [Use] warning is to be printed, cause a hard error
+ ; instead with a similar message.
+ (set-warnings-as-errors t '(\"Subsume\" \"Use\") state)
+
+ ; As above, but cause a hard error even if the warning is not to be printed,
+ ; i.e., even if by default it would be suppressed as a warning because of
+ ; prior use of set-inhibit-output-lst or set-inhibit-warnings.
+ (set-warnings-as-errors :always '(\"Subsume\" \"Use\") state)
+
+ ; Restore the treatment of [Use] warnings as warnings.
+ (set-warnings-as-errors nil '(\"Use\") state)
+
+ ; Treat a warning as a hard error, but only if the warning is to be printed
+ ; (hence not suppressed by set-inhibit-output-lst or set-inhibit-warnings).
+ (set-warnings-as-errors t :all state)
+
+ ; Treat a warning as a hard error, whether the warning is printed or not.
+ (set-warnings-as-errors :always :all state)
+
+ ; Restore the default behavior, treating warnings as warnings, not errors.
+ (set-warnings-as-errors nil :all state)
+ })
+
+ <h3>Detailed Specification</h3>
 
  <ul>
 
@@ -128440,32 +128761,6 @@ work on <tt>(q x)</tt>.</p>
  at the beginning.</li>
 
  </ul>
-
- <h3>Example Forms</h3>
-
- @({
- ; When a [Subsume] or [Use] warning is to be printed, cause a hard error
- ; instead with a similar message.
- (set-warnings-as-errors t '(\"Subsume\" \"Use\") state)
-
- ; As above, but cause a hard error even if the warning is not to be printed,
- ; i.e., even if by default it would be suppressed as a warning because of
- ; prior use of set-inhibit-output-lst or set-inhibit-warnings.
- (set-warnings-as-errors :always '(\"Subsume\" \"Use\") state)
-
- ; Restore the treatment of [Use] warnings as warnings.
- (set-warnings-as-errors nil '(\"Use\") state)
-
- ; Treat a warning as a hard error, but only if the warning is to be printed
- ; (hence not suppressed by set-inhibit-output-lst or set-inhibit-warnings).
- (set-warnings-as-errors t :all state)
-
- ; Treat a warning as a hard error, whether the warning is printed or not.
- (set-warnings-as-errors :always :all state)
-
- ; Restore the default behavior, treating warnings as warnings, not errors.
- (set-warnings-as-errors nil :all state)
- })
 
  <h3>Extended Example</h3>
 
@@ -131089,13 +131384,6 @@ work on <tt>(q x)</tt>.</p>
  <p>@('Global-table'), an alist associating symbols (to be used as ``global
  variables'') with values.  See @(see @), and see @(see assign).</p>
 
- <p>@('T-stack'), a list of arbitrary objects accessed and changed by the
- functions @('aref-t-stack') and @('aset-t-stack').</p>
-
- <p>@('32-bit-integer-stack'), a list of arbitrary 32-bit-integers accessed and
- changed by the functions @('aref-32-bit-integer-stack') and
- @('aset-32-bit-integer-stack').</p>
-
  <p>@('Big-clock-entry'), an integer, that is used logically to bound the
  amount of effort spent to evaluate a quoted form.</p>
 
@@ -131137,19 +131425,6 @@ work on <tt>(q x)</tt>.</p>
  <p>@('Writeable-files'), an alist whose keys have the form @('(string type
  time)').  To open a file for output, we require that the name, type, and time
  be on this list.</p>
-
- <p>@('List-all-package-names-lst'), a list of @('true-listps').  Roughly
- speaking, the @(tsee car) of this list is the list of all package names known
- to this Common Lisp right now and the @(tsee cdr) of this list is the value of
- this @('state') variable after you look at its @(tsee car).  The function,
- @('list-all-package-names'), which takes the state as an argument, returns the
- @(tsee car) and @(tsee cdr)s the list (returning a new state too).  This
- essentially gives ACL2 access to what is provided by CLTL's
- @('list-all-packages').  @(tsee Defpkg) uses this feature to ensure that the
- about-to-be-created package is new in this lisp.  Thus, for example, in
- @('gcl') it is impossible to create the package @('\"COMPILER\"') with @(tsee
- defpkg) because it is on the list, while in Lucid that package name is not
- initially on the list.</p>
 
  <p>@('User-stobj-alist'), an alist which associates user-defined
  single-threaded objects (see @(see stobj)) with their values.</p></blockquote>
