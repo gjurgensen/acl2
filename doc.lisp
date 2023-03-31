@@ -59493,6 +59493,7 @@ About Guard Verification of Lambda Objects
                                      ;   or (:exit N)
         :ld-query-control-alist ...  ; alist supplying default responses
         :ld-verbose         ...)     ; nil or t
+        :ld-always-skip-top-level-locals      ; nil or t
         :ld-user-stobjs-modified-warning ...) ; nil, t, or :same
 
   Ld is the top-level ACL2 read-eval-print loop.  (When you call [lp],
@@ -59847,7 +59848,7 @@ Subtopics
   Ld-always-skip-top-level-locals is an [ld] special (see [ld]).  The
   accessor is (ld-always-skip-top-level-locals state) and the updater
   is (set-ld-always-skip-top-level-locals val state).  The value of
-  ld-always-skip-top-level-locals must be either nil, or t.  The
+  ld-always-skip-top-level-locals must be either nil or t.  The
   initial value of ld-always-skip-top-level-locals is nil.
 
   The general-purpose ACL2 read-eval-print loop, [ld], is controlled by

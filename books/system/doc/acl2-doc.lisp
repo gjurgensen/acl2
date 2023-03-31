@@ -55887,6 +55887,7 @@ tables in the current Hons Space."
                                   ;   or (:exit N)
      :ld-query-control-alist ...  ; alist supplying default responses
      :ld-verbose         ...)     ; nil or t
+     :ld-always-skip-top-level-locals      ; nil or t
      :ld-user-stobjs-modified-warning ...) ; nil, t, or :same
 
  </code>
@@ -56137,7 +56138,7 @@ tables in the current Hons Space."
   :long "<p>@('Ld-always-skip-top-level-locals') is an @(tsee ld) special (see
  @(see ld)).  The accessor is @('(ld-always-skip-top-level-locals state)') and
  the updater is @('(set-ld-always-skip-top-level-locals val state)').  The
- value of @('ld-always-skip-top-level-locals') must be either @('nil'), or
+ value of @('ld-always-skip-top-level-locals') must be either @('nil') or
  @('t').  The initial value of @('ld-always-skip-top-level-locals') is
  @('nil').</p>
 
