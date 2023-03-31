@@ -99003,7 +99003,7 @@ Changes to Existing Features
   (first in brief, later in detail) regarding such messages.
 
   Three obsolete fields of the ACL2 [state] have been removed: t-stack,
-  32-bit-integer-stack, and list-all-package-names, as have some
+  32-bit-integer-stack, and list-all-package-names-lst, as have some
   related built-in, undocumented definitions and theorems, including
   old-check-sum-obj and supporting functions.
 
