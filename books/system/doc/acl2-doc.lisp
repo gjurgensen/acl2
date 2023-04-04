@@ -101767,6 +101767,20 @@ it."
 ; summary string, "Evaluation"; there may be others as well, as we probably
 ; won't track all summary strings that have been added.
 
+; Added a comment to the definition of record-macros, discussing an experiment
+; to avoid the use of defabbrev when the cheap flag is nil.
+
+; As noted in a release note, state global variables inhibit-output-lst,
+; inhibited-summary-types, and ld-level are now untouchable.
+; Inhibit-output-lst-stack is not untouchable (that would have caused problems
+; for the implementation of with-output), but pop-inhibit-output-lst-stack now
+; protects against bad settings of that variable.  Related changes include
+; the following.
+; - Removed "Unexpected error." from message for error-free-triple-to-state.
+; - Made defun-for-state work for macros that do not take state.
+; - Slightly simplified implementation of with-ubt! to avoid unnecessary
+;   binding of inhibit-output-lst.
+
   :parents (release-notes)
   :short "ACL2 Version  8.6 (xxx, 20xx) Notes"
   :long "<p>NOTE!  New users can ignore these release notes, because the @(see
@@ -102070,6 +102084,38 @@ it."
  as have some related built-in, undocumented definitions and theorems,
  including @('old-check-sum-obj') and supporting functions.</p>
 
+ <p>Improved @(tsee hide) calls in prover output from failed execution of @(see
+ warrant)s, by adding suitable notes about attachments or warrant functions not
+ being executable during proofs.  Thanks to Eric McCarthy for a remark that led
+ to this change.</p>
+
+ <p>State globals @('inhibit-output-lst'), @('inhibited-summary-types'), and
+ @('ld-level') are now @(see untouchable).  The macros @(tsee
+ set-inhibit-output-lst) and @(tsee set-inhibited-summary-types) still allow
+ you to modify the values of these variables.  Thanks to Peter Dillinger for
+ correspondence (years ago!) leading to these changes.</p>
+
+ <p>The macro @(tsee state-global-let*) no longer requires explicitly supplying
+ a setter for certain built-in @(see state) global variables.  See @(tsee
+ state-global-let*).</p>
+
+ <p>A proposed @(tsee defaxiom) @(see event) is no longer @(see redundant) with
+ an existing @(tsee defthm) event.  Before this change, the following book
+ could (perhaps unfortunately) be certified, even without @(tsee certify-book)
+ option @(':skip-proofs-okp t').</p>
+
+ @({
+ (in-package \"ACL2\")
+ (local (defthm foo (equal (car (cons x x)) x)))
+ (defaxiom foo (equal (car (cons x x)) x))
+ })
+
+ <p>The prover sometimes reduces a goal without hypotheses (technically
+ speaking, a one-element clause) to @('nil') using @(see type-set) reasoning.
+ This heuristic has not changed, but formerly there was no explanation given.
+ Now ACL2 reports the rules (of class @(':')@(tsee type-prescription)) that
+ were used.</p>
+
  <h3>New Features</h3>
 
  <p>The new zero-ary attachable system function, @(tsee heavy-linear-p), allows
@@ -102202,6 +102248,10 @@ it."
  <p>Sped up macroexpansion for several common macros, with roughly a 2% to 3%
  speedup observed for including several large books during development of this
  change.</p>
+
+ <p>Tweaked @(see linear-arithmetic) to avoid consideration of an equality
+ between two terms that are both known (via their @(see type-set)s) to be
+ non-numeric.</p>
 
  <h3>Bug Fixes</h3>
 
@@ -118552,15 +118602,16 @@ work on <tt>(q x)</tt>.</p>
 
  <p>A @(tsee defaxiom) or @(tsee defthm) event is redundant if there is already
  an axiom or theorem of the given name and the two @(see events) are
- syntactically identical.  But there is the following more generous criterion:
- both the formula (after macroexpansion) and the @(see rule-classes) (after
- translation and certain ``truncation'') are syntactically identical.  This
- ``truncation'' involves removing the @(':HINTS') and @(':INSTRUCTIONS') fields
- from a rule-class, and also removing the @(':COROLLARY') field when it
- specifies the same term as the event.  Note that a @(tsee defaxiom) can be
- redundant with a @(tsee defthm) and vice-versa.  (Remark for system hackers:
- @('defthm')/@('defaxiom') redundancy is implemented in ACL2 source function,
- @('redundant-theoremp').)</p>
+ syntactically identical.  But there is the following more generous criterion,
+ which applies unless the older event is a @('defthm') event and the newer
+ event is a @('defaxiom') event: both the formula (after macroexpansion) and
+ the @(see rule-classes) (after translation and certain ``truncation'') are
+ syntactically identical.  This ``truncation'' involves removing the
+ @(':HINTS') and @(':INSTRUCTIONS') fields from a rule-class, and also removing
+ the @(':COROLLARY') field when it specifies the same term as the event.  Note
+ that a @(tsee defthm) can be redundant with a @(tsee defaxiom) but not
+ vice-versa.  (Remark for system hackers: @('defthm')/@('defaxiom') redundancy
+ is implemented in ACL2 source function, @('redundant-theoremp').)</p>
 
  <p>A @(tsee defconst) is redundant if the name is already defined either with
  a syntactically identical @('defconst') event or one that defines it to have
@@ -131472,31 +131523,49 @@ work on <tt>(q x)</tt>.</p>
  <p>where: each @('vari') is a variable; each @('formi') is an expression whose
  value is a single ordinary object (i.e. not multiple values, and not @(see
  state) or any other @(see stobj)); @('set-vari'), if supplied, is a function
- with @(see signature) @('((set-vari * state) => state)'); and @('body') is an
- expression that evaluates to an @(see error-triple).  Each @('formi') is
- evaluated in order, starting with @('form1'), and with each such binding the
- state global variable @('vari') is bound to the value of @('formi'),
- sequentially in the style of @(tsee let*).  More precisely, then meaning of
- this form is to set (in order) the global values of the indicated @(see state)
- global variables @('vari') to the values of @('formi') using @(tsee
- f-put-global), execute @('body'), restore the @('vari') to their previous
- values (but see the discussion of setters below), and return the triple
- produced by body (with its state as modified by the restoration).  The
- restoration is guaranteed even in the face of aborts.  The ``bound'' variables
- may initially be unbound in state and restoration means to make them unbound
- again.</p>
+ or macro such that @('(set-vari _ state)') returns @(tsee state); and
+ @('body') is an expression that evaluates to an @(see error-triple).  Each
+ @('formi') is evaluated in order, starting with @('form1'), and with each such
+ binding the state global variable @('vari') is bound to the value of
+ @('formi'), sequentially in the style of @(tsee let*).  More precisely, the
+ meaning of this form is to perform the following actions, in order.</p>
 
- <p>Still referring to the General Form above, let @('old-vali') be the value
- of state global variable @('vari') at the time @('vari') is about to be
- assigned the value of @('formi').  If @('set-vari') is not supplied, then as
- suggested above, the following form is evaluated at the conclusion of the
- evaluation of the @('state-global-let*') form, whether or not an error has
- occurred: @('(f-put-global 'vari 'old-vali state)').  However, if
- @('set-vari') is supplied, it is a function symbol that we may call a
- &ldquo;setter&rdquo;, and the form evaluated will instead be @('(set-vari
- 'old-vali state)').  This capability is particularly useful if @('vari') is
- untouchable (see @(see push-untouchable)), since the above call of @(tsee
- f-put-global) is illegal.</p>
+ <ol>
+
+ <li>Set (in order) the global values of the indicated @(see state) global
+ variables @('vari') to the values of @('formi').  Exception: This is skipped
+ when @('vari') is a built-in state global and @('formi') is @('(f-get-global
+ 'vari state)').</li>
+
+ <li>Execute @('body').</li>
+
+ <li>Restore the @('vari') to their previous values.</li>
+
+ <li>Return the @(see error-triple) produced by @('body'), where @(tsee state)
+ reflects the modifications of the preceding step.</li>
+
+ </ol>
+
+ <p>The restoration is guaranteed even in the face of aborts.  The ``bound''
+ variables may initially be unbound in state and restoration means to make them
+ unbound again.</p>
+
+ <p>Still referring to the General Form above, we next discuss how the values
+ are set and restored.  Let @('old-vali') be the value of state global variable
+ @('vari') at the time @('vari') is about to be assigned the value of
+ @('formi').  We say that a &ldquo;setter is supplied&rdquo; for @('vari') if
+ @('set-vari') is supplied, either explicitly as in the General Form above, or
+ implicitly by being associated with @('vari') in the value of the constant,
+ @('*state-global-let*-untouchable-alist*')
+ (whose definition appears at the end of this topic).  If no setter is supplied
+ then @('vari') is set or restored to a value @('<val>') by evaluating
+ @('(f-put-global 'vari <val> state)').  However, if a setter @('set-vari') is
+ supplied, then the form evaluated will instead be @('(set-vari <val> state)').
+ Having a setter supplied is particularly useful if @('vari') is @(see
+ untouchable), since the call above of @(tsee f-put-global) is illegal.
+ However, the use of @('*state-global-let*-untouchable-alist*') (mentioned
+ above) avoids the need for supplying @('set-vari') explicitly for certain
+ built-in @(see untouchable) state global variables, @('vari').</p>
 
  <p>Note that the scope of the bindings of a @('state-global-let*') form is the
  body of that form.  This may seem obvious, but to drive the point home, let's
@@ -131520,14 +131589,19 @@ work on <tt>(q x)</tt>.</p>
   ACL2 !>(state-global-let* ((print-base 16 set-print-base)
                              (print-radix t set-print-radix))
                             (pprogn (fms \"~x0~%\"
-                                         (list (cons #0 10))
+                                         (list (cons #\\0 10))
                                          *standard-co* state nil)
                                     (mv nil 10 state)))
 
   #xA
    10
   ACL2 !>
- })")
+ })
+
+ <p>Finally, as promised above, here is the definition of the constant that
+ maps certain built-in untouchable variables to setters.</p>
+
+ @(def *state-global-let*-untouchable-alist*)")
 
 (defxdoc stating-and-proving-lemmas-about-loop$s
   :parents (loop$)
