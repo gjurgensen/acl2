@@ -102069,7 +102069,7 @@ it."
  <p>The pretty-printer has been improved by a contribution from Stephen
  Westfold to support appropriate indentation, including more conventional
  pretty-printing for calls of common macros such as @(tsee defun) and @(tsee
- defmacro).  See @(see pp-special-syms); we thank Stephen also for supplying
+ defmacro).  See @(see ppr-special-syms); we thank Stephen also for supplying
  the substance of that documentation.  Thanks too to Stephen for suggesting
  several user-defined macros to be pretty-printed with this mechanism, which we
  have modified by adding suitable @(tsee table) events (e.g., for @(tsee
@@ -106292,26 +106292,26 @@ arithmetic) for libraries of @(see books) for arithmetic reasoning.</p>")
  theorem prover, use your browser's <b>Back Button</b> now to @(see
  introduction-to-key-checkpoints).</p>")
 
-(defxdoc pp-special-syms
+(defxdoc ppr-special-syms
   :parents (io)
   :short "A @(see table) to control indentation for pretty-printing"
   :long "<p>ACL2 output is generally pretty-printed: that is, spacing and
  indentation are controlled to enhance readability and aesthetics of the
  output.  Indentation may be controlled by using the table,
- @('pp-special-syms') as described below.  We thank Stephen Westfold for
- enhancing the pretty-printer with support for @('pp-special-syms').</p>
+ @('ppr-special-syms') as described below.  We thank Stephen Westfold for
+ enhancing the pretty-printer with support for @('ppr-special-syms').</p>
 
- <p>The initial value of the @('pp-special-syms') table is given by the
- constant @('*pp-special-syms*') as follows.  It associates each key, a symbol,
+ <p>The initial value of the @('ppr-special-syms') table is given by the
+ constant @('*ppr-special-syms*') as follows.  It associates each key, a symbol,
  with a corresponding <i>special-term-num</i> as discussed below.</p>
 
- @(def *pp-special-syms*)
+ @(def *ppr-special-syms*)
 
- <p>The @('pp-special-syms') table is extended for some common macros in the
+ <p>The @('ppr-special-syms') table is extended for some common macros in the
  files where they are defined, for example for @(tsee define) and @(tsee
  b*).</p>
 
- <p>For calls of special forms and macros in the @('pp-special-syms') table,
+ <p>For calls of special forms and macros in the @('ppr-special-syms') table,
  their bodies are indented by 2 rather than in the usual default manner.  To
  support this we allow a <i>special-term-num</i> to be associated with a
  symbol.  Arguments of such symbols in the function position beyond the

@@ -58491,7 +58491,7 @@ Subtopics
   [Output-to-file]
       Redirecting output to a file
 
-  [Pp-special-syms]
+  [Ppr-special-syms]
       A [table] to control indentation for pretty-printing
 
   [Princ$]
@@ -98959,7 +98959,7 @@ Changes to Existing Features
   The pretty-printer has been improved by a contribution from Stephen
   Westfold to support appropriate indentation, including more
   conventional pretty-printing for calls of common macros such as
-  [defun] and [defmacro].  See [pp-special-syms]; we thank Stephen
+  [defun] and [defmacro].  See [ppr-special-syms]; we thank Stephen
   also for supplying the substance of that documentation.  Thanks too
   to Stephen for suggesting several user-defined macros to be
   pretty-printed with this mechanism, which we have modified by
@@ -105381,23 +105381,23 @@ Subtopics
                    "See [sharp-dot-reader].")
  (POUND-U-READER (POINTERS)
                  "See [sharp-u-reader].")
- (PP-SPECIAL-SYMS
+ (PPR-SPECIAL-SYMS
   (IO)
   "A [table] to control indentation for pretty-printing
 
   ACL2 output is generally pretty-printed: that is, spacing and
   indentation are controlled to enhance readability and aesthetics of
   the output.  Indentation may be controlled by using the table,
-  pp-special-syms as described below.  We thank Stephen Westfold for
-  enhancing the pretty-printer with support for pp-special-syms.
+  ppr-special-syms as described below.  We thank Stephen Westfold for
+  enhancing the pretty-printer with support for ppr-special-syms.
 
-  The initial value of the pp-special-syms table is given by the
-  constant *pp-special-syms* as follows.  It associates each key, a
+  The initial value of the ppr-special-syms table is given by the
+  constant *ppr-special-syms* as follows.  It associates each key, a
   symbol, with a corresponding special-term-num as discussed below.
 
-  Definition: <*pp-special-syms*>
+  Definition: <*ppr-special-syms*>
 
-    (defconst *pp-special-syms*
+    (defconst *ppr-special-syms*
       '((case . 1)
         (case-match . 1)
         (defabsstobj . 1)
@@ -105423,10 +105423,10 @@ Subtopics
         (mv-let . 2)
         (table . 1)))
 
-  The pp-special-syms table is extended for some common macros in the
+  The ppr-special-syms table is extended for some common macros in the
   files where they are defined, for example for [define] and [b*].
 
-  For calls of special forms and macros in the pp-special-syms table,
+  For calls of special forms and macros in the ppr-special-syms table,
   their bodies are indented by 2 rather than in the usual default
   manner.  To support this we allow a special-term-num to be
   associated with a symbol.  Arguments of such symbols in the
