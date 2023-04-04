@@ -55887,6 +55887,7 @@ tables in the current Hons Space."
                                   ;   or (:exit N)
      :ld-query-control-alist ...  ; alist supplying default responses
      :ld-verbose         ...)     ; nil or t
+     :ld-always-skip-top-level-locals      ; nil or t
      :ld-user-stobjs-modified-warning ...) ; nil, t, or :same
 
  </code>
@@ -56137,7 +56138,7 @@ tables in the current Hons Space."
   :long "<p>@('Ld-always-skip-top-level-locals') is an @(tsee ld) special (see
  @(see ld)).  The accessor is @('(ld-always-skip-top-level-locals state)') and
  the updater is @('(set-ld-always-skip-top-level-locals val state)').  The
- value of @('ld-always-skip-top-level-locals') must be either @('nil'), or
+ value of @('ld-always-skip-top-level-locals') must be either @('nil') or
  @('t').  The initial value of @('ld-always-skip-top-level-locals') is
  @('nil').</p>
 
@@ -101933,8 +101934,8 @@ it."
  that has been fixed.</p>
 
  @({
-   4. If either the old or new event is a @(tsee mutual-recursion) event, then
-      redundancy requires that both are @(tsee mutual-recursion) events
+   4. If either the old or new event is a mutual-recursion event, then
+      redundancy requires that both are mutual-recursion events
       that define the same set of function symbols.
  })
 
@@ -102367,7 +102368,7 @@ it."
 
  <li>For a form @('(loop$ for tail on lst ...)'), the target term, @('lst'), no
  longer needs to satisfy @(tsee true-listp).  For example, the form @('(loop$
- for tail on '(a b . c) collect tail) no longer causes a @(see guard)
+ for tail on '(a b . c) collect tail)') no longer causes a @(see guard)
  violation.</li>
 
  <li>Run-time @(see guard)-checking for an expression @('(loop$ for tail on lst
