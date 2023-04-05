@@ -68710,7 +68710,7 @@ it."
            :recursive    t/nil        ; optional (default t)
            :stats        t/nil        ; optional (default t (unless :invoke))
            :total        ; see :DOC memoize-partial
-           :verbose      t/nil        ; optional (default t)
+           :verbose      t/nil        ; optional (default nil)
            )
  })
 
@@ -68871,7 +68871,9 @@ it."
  @('\"-COMMUTATIVE\"') to the @(tsee symbol-name) of @('fn').  If the proof
  attempt fails, then you may want first to prove the lemma yourself with
  appropriate hints and perhaps supporting lemmas, and then supply the name of
- that lemma as the value of @(':commutative').</p>
+ that lemma as the value of @(':commutative').  Note that because most output
+ is inhibited by default, you might wish to supply keyword argument @(':verbose
+ t') if the event fails.</p>
 
  <p>If @(':commutative') is supplied, and a non-commutative condition is
  provided by @(':condition') or @(':condition-fn'), then although the results
@@ -68949,7 +68951,6 @@ it."
  [[ .. output omitted .. ]]
   FIB
  ACL2 !>(memoize 'fib :ideal-okp t)
- [[ .. output omitted .. ]]
   FIB
  ACL2 !>(time$ (fib 38)) ; slow: uses only executable-counterpart
 
@@ -68983,7 +68984,6 @@ it."
  [[ .. output omitted .. ]]
   FIB-LOGIC-WRAPPER
  ACL2 !>(memoize 'fib-logic-wrapper)
- [[ .. output omitted .. ]]
   FIB-LOGIC-WRAPPER
  ACL2 !>(time$ (fib-logic-wrapper 38)) ; slow; no fib results are stored
 
@@ -69042,16 +69042,20 @@ it."
  if parameter @(':ideal-okp') is supplied, the @(tsee acl2-defaults-table)
  value is ignored.</p>
 
- <p>If @(':verbose') is supplied, it should either be @('nil'), which will
- inhibit proof, event, and @(see summary) output (see @(see with-output)), or
- else @('t') (the default), which does not inhibit output.  If the output
- baffles you, try</p>
+ <p>The value of @(':verbose') is @('nil') by default, which avoids output that
+ is typically distracting.  Otherwise @('verbose') should be @('t').  We can
+ see the types of output that are inhibited by default by using @(':')@(tsee
+ trans1) as follows follows (most output elided here); see @(see
+ with-output).</p>
 
  @({
-  :trans1 (memoize ...)
+ ACL2 !>:trans1 (memoize 'nth :verbose nil)
+  (WITH-OUTPUT
+      :OFF (SUMMARY PROVE EVENT)
+      :GAG-MODE NIL
+      ...
+ ACL2 !>
  })
-
- <p>to see the single-step macroexpansion of your @('memoize') call.</p>
 
  <p>The default for @(':forget') is @('nil').  If @(':forget') is supplied, and
  not @('nil'), then it must be @('t'), which causes all memoization done for a
@@ -102116,6 +102120,10 @@ it."
  This heuristic has not changed, but formerly there was no explanation given.
  Now ACL2 reports the rules (of class @(':')@(tsee type-prescription)) that
  were used.</p>
+
+ <p>The default for @(tsee memoize) keyword argument @(':verbose') has been
+ changed from @('t') to @('nil'), which (by default) eliminates noise from the
+ output.</p>
 
  <h3>New Features</h3>
 

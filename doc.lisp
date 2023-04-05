@@ -72041,7 +72041,7 @@ Subtopics
              :recursive    t/nil        ; optional (default t)
              :stats        t/nil        ; optional (default t (unless :invoke))
              :total        ; see :DOC memoize-partial
-             :verbose      t/nil        ; optional (default t)
+             :verbose      t/nil        ; optional (default nil)
              )
 
   where fn evaluates to a user-defined function symbol; condition is
@@ -72209,7 +72209,9 @@ Subtopics
   [symbol-name] of fn.  If the proof attempt fails, then you may want
   first to prove the lemma yourself with appropriate hints and
   perhaps supporting lemmas, and then supply the name of that lemma
-  as the value of :commutative.
+  as the value of :commutative.  Note that because most output is
+  inhibited by default, you might wish to supply keyword argument
+  :verbose t if the event fails.
 
   If :commutative is supplied, and a non-commutative condition is
   provided by :condition or :condition-fn, then although the results
@@ -72285,7 +72287,6 @@ Subtopics
     [[ .. output omitted .. ]]
      FIB
     ACL2 !>(memoize 'fib :ideal-okp t)
-    [[ .. output omitted .. ]]
      FIB
     ACL2 !>(time$ (fib 38)) ; slow: uses only executable-counterpart
 
@@ -72319,7 +72320,6 @@ Subtopics
     [[ .. output omitted .. ]]
      FIB-LOGIC-WRAPPER
     ACL2 !>(memoize 'fib-logic-wrapper)
-    [[ .. output omitted .. ]]
      FIB-LOGIC-WRAPPER
     ACL2 !>(time$ (fib-logic-wrapper 38)) ; slow; no fib results are stored
 
@@ -72377,14 +72377,18 @@ Subtopics
   but if parameter :ideal-okp is supplied, the [ACL2-defaults-table]
   value is ignored.
 
-  If :verbose is supplied, it should either be nil, which will inhibit
-  proof, event, and [summary] output (see [with-output]), or else t
-  (the default), which does not inhibit output.  If the output
-  baffles you, try
+  The value of :verbose is nil by default, which avoids output that is
+  typically distracting.  Otherwise verbose should be t.  We can see
+  the types of output that are inhibited by default by using
+  :[trans1] as follows follows (most output elided here); see
+  [with-output].
 
-    :trans1 (memoize ...)
-
-  to see the single-step macroexpansion of your memoize call.
+    ACL2 !>:trans1 (memoize 'nth :verbose nil)
+     (WITH-OUTPUT
+         :OFF (SUMMARY PROVE EVENT)
+         :GAG-MODE NIL
+         ...
+    ACL2 !>
 
   The default for :forget is nil.  If :forget is supplied, and not nil,
   then it must be t, which causes all memoization done for a
@@ -99004,6 +99008,9 @@ Changes to Existing Features
   This heuristic has not changed, but formerly there was no
   explanation given.  Now ACL2 reports the rules (of class
   :[type-prescription]) that were used.
+
+  The default for [memoize] keyword argument :verbose has been changed
+  from t to nil, which (by default) eliminates noise from the output.
 
 
 New Features
