@@ -1270,12 +1270,11 @@ Subtopics
   Macro: <+>
 
     (defmacro + (&rest rst)
-              (if rst
-                  (if (cdr rst)
-                      (xxxjoin 'binary-+ rst)
-                      (cons 'binary-+
-                            (cons 0 (cons (car rst) nil))))
-                  0))
+      (if rst (if (cdr rst)
+                  (xxxjoin 'binary-+ rst)
+                (cons 'binary-+
+                      (cons 0 (cons (car rst) nil))))
+        0))
 
 
 Subtopics
@@ -1310,33 +1309,31 @@ Subtopics
 
   Macro: <->
 
-    (defmacro
-         - (x &optional (y 'nil binary-casep))
-         (if binary-casep
-             (let ((y (if (and (consp y)
-                               (eq (car y) 'quote)
-                               (consp (cdr y))
-                               (acl2-numberp (car (cdr y)))
-                               (eq (cdr (cdr y)) nil))
-                          (car (cdr y))
-                          y)))
-                  (if (acl2-numberp y)
-                      (cons 'binary-+
-                            (cons (unary-- y) (cons x nil)))
-                      (cons 'binary-+
-                            (cons x
-                                  (cons (cons 'unary-- (cons y nil))
-                                        nil)))))
-             (let ((x (if (and (consp x)
-                               (eq (car x) 'quote)
-                               (consp (cdr x))
-                               (acl2-numberp (car (cdr x)))
-                               (eq (cdr (cdr x)) nil))
-                          (car (cdr x))
-                          x)))
-                  (if (acl2-numberp x)
-                      (unary-- x)
-                      (cons 'unary-- (cons x nil))))))")
+    (defmacro - (x &optional (y 'nil binary-casep))
+     (if binary-casep (let ((y (if (and (consp y)
+                                        (eq (car y) 'quote)
+                                        (consp (cdr y))
+                                        (acl2-numberp (car (cdr y)))
+                                        (eq (cdr (cdr y)) nil))
+                                   (car (cdr y))
+                                 y)))
+                        (if (acl2-numberp y)
+                            (cons 'binary-+
+                                  (cons (unary-- y) (cons x nil)))
+                          (cons 'binary-+
+                                (cons x
+                                      (cons (cons 'unary-- (cons y nil))
+                                            nil)))))
+       (let ((x (if (and (consp x)
+                         (eq (car x) 'quote)
+                         (consp (cdr x))
+                         (acl2-numberp (car (cdr x)))
+                         (eq (cdr (cdr x)) nil))
+                    (car (cdr x))
+                  x)))
+         (if (acl2-numberp x)
+             (unary-- x)
+           (cons 'unary-- (cons x nil))))))")
  (/
   (NUMBERS ACL2-BUILT-INS)
   "Macro for division and reciprocal
@@ -1369,8 +1366,8 @@ Subtopics
   Macro: </>
 
     (defmacro / (x &optional (y 'nil binary-casep))
-              (cond (binary-casep (list 'binary-* x (list 'unary-/ y)))
-                    (t (list 'unary-/ x))))")
+      (cond (binary-casep (list 'binary-* x (list 'unary-/ y)))
+            (t (list 'unary-/ x))))")
  (/=
   (NUMBERS ACL2-BUILT-INS)
   "Test inequality of two numbers
@@ -1390,9 +1387,9 @@ Subtopics
   Function: </=>
 
     (defun /= (x y)
-           (declare (xargs :guard (and (acl2-numberp x)
-                                       (acl2-numberp y))))
-           (not (equal x y)))")
+      (declare (xargs :guard (and (acl2-numberp x)
+                                  (acl2-numberp y))))
+      (not (equal x y)))")
  (1+
   (NUMBERS ACL2-BUILT-INS)
   "Increment by 1
@@ -1460,7 +1457,7 @@ Subtopics
   Macro: <<=>
 
     (defmacro <= (x y)
-              (list 'not (list '< y x)))")
+      (list 'not (list '< y x)))")
  (=
   (NUMBERS EQUAL EQUALITY-VARIANTS ACL2-BUILT-INS)
   "Test equality of two numbers
@@ -1479,9 +1476,9 @@ Subtopics
   Function: <=>
 
     (defun = (x y)
-           (declare (xargs :guard (and (acl2-numberp x)
-                                       (acl2-numberp y))))
-           (equal x y))")
+      (declare (xargs :guard (and (acl2-numberp x)
+                                  (acl2-numberp y))))
+      (equal x y))")
  (>
   (NUMBERS ACL2-BUILT-INS)
   "Greater-than test
@@ -1508,7 +1505,7 @@ Subtopics
   Macro: <>=>
 
     (defmacro >= (x y)
-              (list 'not (list '< x y)))")
+      (list 'not (list '< x y)))")
  (@
   (PROGRAMMING-WITH-STATE ACL2-BUILT-INS)
   "Get the value of a global variable in [state]
@@ -1863,8 +1860,8 @@ Subtopics
   Function: <abs>
 
     (defun abs (x)
-           (declare (xargs :guard (real/rationalp x)))
-           (if (minusp x) (- x) x))")
+      (declare (xargs :guard (real/rationalp x)))
+      (if (minusp x) (- x) x))")
  (ABSTRACT-STOBJ (POINTERS)
                  "See [defabsstobj].")
  (ACCESS
@@ -4414,19 +4411,19 @@ Subtopics
   Function: <acl2-count>
 
     (defun acl2-count (x)
-           (declare (xargs :guard t))
-           (if (consp x)
-               (+ 1 (acl2-count (car x))
-                  (acl2-count (cdr x)))
-               (if (rationalp x)
-                   (if (integerp x)
-                       (integer-abs x)
-                       (+ (integer-abs (numerator x))
-                          (denominator x)))
-                   (if (complex/complex-rationalp x)
-                       (+ 1 (acl2-count (realpart x))
-                          (acl2-count (imagpart x)))
-                       (if (stringp x) (length x) 0)))))")
+      (declare (xargs :guard t))
+      (if (consp x)
+          (+ 1 (acl2-count (car x))
+             (acl2-count (cdr x)))
+        (if (rationalp x)
+            (if (integerp x)
+                (integer-abs x)
+              (+ (integer-abs (numerator x))
+                 (denominator x)))
+          (if (complex/complex-rationalp x)
+              (+ 1 (acl2-count (realpart x))
+                 (acl2-count (imagpart x)))
+            (if (stringp x) (length x) 0)))))")
  (ACL2-CUSTOMIZATION
   (MISCELLANEOUS)
   "File of initial commands for ACL2 to run at [startup]
@@ -5450,10 +5447,10 @@ Silent loading of ACL2 customization files
   Function: <acl2-number-listp>
 
     (defun acl2-number-listp (l)
-           (declare (xargs :guard t))
-           (cond ((atom l) (eq l nil))
-                 (t (and (acl2-numberp (car l))
-                         (acl2-number-listp (cdr l))))))")
+      (declare (xargs :guard t))
+      (cond ((atom l) (eq l nil))
+            (t (and (acl2-numberp (car l))
+                    (acl2-number-listp (cdr l))))))")
  (ACL2-NUMBERP
   (NUMBERS ACL2-BUILT-INS)
   "Recognizer for numbers
@@ -5888,8 +5885,8 @@ Subtopics
   Function: <acons>
 
     (defun acons (key datum alist)
-           (declare (xargs :guard (alistp alist)))
-           (cons (cons key datum) alist))")
+      (declare (xargs :guard (alistp alist)))
+      (cons (cons key datum) alist))")
  (ACTIVE-OR-NON-RUNEP
   (THEORIES)
   "Require a [rune] to exist, and check that it is [enable]d
@@ -6784,10 +6781,10 @@ Subtopics
   Function: <alistp>
 
     (defun alistp (l)
-           (declare (xargs :guard t))
-           (cond ((atom l) (eq l nil))
-                 (t (and (consp (car l))
-                         (alistp (cdr l))))))")
+      (declare (xargs :guard t))
+      (cond ((atom l) (eq l nil))
+            (t (and (consp (car l))
+                    (alistp (cdr l))))))")
  (ALISTS
   (PROGRAMMING)
   "Operations on association lists, which bind keys to values.
@@ -6916,16 +6913,16 @@ Subtopics
   Function: <alpha-char-p>
 
     (defun alpha-char-p (x)
-           (declare (xargs :guard (and (characterp x)
-                                       (standard-char-p x))))
-           (and (member x
-                        '(#\\a #\\b #\\c
-                              #\\d #\\e #\\f #\\g #\\h #\\i #\\j #\\k #\\l #\\m
-                              #\\n #\\o #\\p #\\q #\\r #\\s #\\t #\\u #\\v #\\w
-                              #\\x #\\y #\\z #\\A #\\B #\\C #\\D #\\E #\\F #\\G
-                              #\\H #\\I #\\J #\\K #\\L #\\M #\\N #\\O #\\P #\\Q
-                              #\\R #\\S #\\T #\\U #\\V #\\W #\\X #\\Y #\\Z))
-                t))")
+      (declare (xargs :guard (and (characterp x)
+                                  (standard-char-p x))))
+      (and (member x
+                   '(#\\a #\\b #\\c
+                         #\\d #\\e #\\f #\\g #\\h #\\i #\\j #\\k #\\l #\\m
+                         #\\n #\\o #\\p #\\q #\\r #\\s #\\t #\\u #\\v #\\w
+                         #\\x #\\y #\\z #\\A #\\B #\\C #\\D #\\E #\\F #\\G
+                         #\\H #\\I #\\J #\\K #\\L #\\M #\\N #\\O #\\P #\\Q
+                         #\\R #\\S #\\T #\\U #\\V #\\W #\\X #\\Y #\\Z))
+           t))")
  (ALPHORDER
   (<< ACL2-BUILT-INS)
   "Total order on atoms
@@ -6954,32 +6951,32 @@ Subtopics
   Function: <alphorder>
 
     (defun alphorder (x y)
-           (declare (xargs :guard (and (atom x) (atom y))))
-           (cond ((real/rationalp x)
-                  (cond ((real/rationalp y) (<= x y))
-                        (t t)))
-                 ((real/rationalp y) nil)
-                 ((complex/complex-rationalp x)
-                  (cond ((complex/complex-rationalp y)
-                         (or (< (realpart x) (realpart y))
-                             (and (= (realpart x) (realpart y))
-                                  (<= (imagpart x) (imagpart y)))))
-                        (t t)))
-                 ((complex/complex-rationalp y) nil)
-                 ((characterp x)
-                  (cond ((characterp y)
-                         (<= (char-code x) (char-code y)))
-                        (t t)))
-                 ((characterp y) nil)
-                 ((stringp x)
-                  (cond ((stringp y) (and (string<= x y) t))
-                        (t t)))
-                 ((stringp y) nil)
-                 (t (cond ((symbolp x)
-                           (cond ((symbolp y) (not (symbol< y x)))
-                                 (t t)))
-                          ((symbolp y) nil)
-                          (t (bad-atom<= x y))))))")
+      (declare (xargs :guard (and (atom x) (atom y))))
+      (cond ((real/rationalp x)
+             (cond ((real/rationalp y) (<= x y))
+                   (t t)))
+            ((real/rationalp y) nil)
+            ((complex/complex-rationalp x)
+             (cond ((complex/complex-rationalp y)
+                    (or (< (realpart x) (realpart y))
+                        (and (= (realpart x) (realpart y))
+                             (<= (imagpart x) (imagpart y)))))
+                   (t t)))
+            ((complex/complex-rationalp y) nil)
+            ((characterp x)
+             (cond ((characterp y)
+                    (<= (char-code x) (char-code y)))
+                   (t t)))
+            ((characterp y) nil)
+            ((stringp x)
+             (cond ((stringp y) (and (string<= x y) t))
+                   (t t)))
+            ((stringp y) nil)
+            (t (cond ((symbolp x)
+                      (cond ((symbolp y) (not (symbol< y x)))
+                            (t t)))
+                     ((symbolp y) nil)
+                     (t (bad-atom<= x y))))))")
  (ALTERNATIVE-INTRODUCTION
   (ACL2-TUTORIAL)
   "Introduction to ACL2
@@ -7637,20 +7634,20 @@ Subtopics
   Macro: <and>
 
     (defmacro and (&rest args)
-              (and-macro args))
+      (and-macro args))
 
   Function: <and-macro>
 
     (defun and-macro (lst)
-           (declare (xargs :guard t))
-           (if (consp lst)
-               (if (consp (cdr lst))
-                   (list 'if
-                         (car lst)
-                         (and-macro (cdr lst))
-                         nil)
-                   (car lst))
-               t))")
+      (declare (xargs :guard t))
+      (if (consp lst)
+          (if (consp (cdr lst))
+              (list 'if
+                    (car lst)
+                    (and-macro (cdr lst))
+                    nil)
+            (car lst))
+        t))")
  (ANNOTATED-ACL2-SCRIPTS
   (ACL2-TUTORIAL)
   "Examples of ACL2 scripts
@@ -7840,17 +7837,17 @@ Subtopics
   Macro: <append>
 
     (defmacro append (&rest rst)
-              (cond ((null rst) nil)
-                    ((null (cdr rst)) (car rst))
-                    (t (xxxjoin 'binary-append rst))))
+      (cond ((null rst) nil)
+            ((null (cdr rst)) (car rst))
+            (t (xxxjoin 'binary-append rst))))
 
   Function: <binary-append>
 
     (defun binary-append (x y)
-           (declare (xargs :guard (true-listp x)))
-           (cond ((endp x) y)
-                 (t (cons (car x)
-                          (binary-append (cdr x) y)))))
+      (declare (xargs :guard (true-listp x)))
+      (cond ((endp x) y)
+            (t (cons (car x)
+                     (binary-append (cdr x) y)))))
 
 
 Subtopics
@@ -8951,38 +8948,37 @@ Logical Definitions
   Function: <apply$>
 
     (defun apply$ (fn args)
-           (declare (xargs :guard (apply$-guard fn args)))
-           (cond ((consp fn) (apply$-lambda fn args))
-                 ((apply$-primp fn)
-                  (apply$-prim fn args))
-                 ((eq fn 'badge) (badge (car args)))
-                 ((eq fn 'tamep) (tamep (car args)))
-                 ((eq fn 'tamep-functionp)
-                  (tamep-functionp (car args)))
-                 ((eq fn 'suitably-tamep-listp)
-                  (ec-call (suitably-tamep-listp (car args)
-                                                 (cadr args)
-                                                 (caddr args))))
-                 ((eq fn 'apply$)
-                  (if (tamep-functionp (car args))
-                      (ec-call (apply$ (car args) (cadr args)))
-                      (untame-apply$ fn args)))
-                 ((eq fn 'ev$)
-                  (if (tamep (car args))
-                      (ev$ (car args) (cadr args))
-                      (untame-apply$ fn args)))
-                 (t (apply$-userfn fn args))))
+      (declare (xargs :guard (apply$-guard fn args)))
+      (cond ((consp fn) (apply$-lambda fn args))
+            ((apply$-primp fn)
+             (apply$-prim fn args))
+            ((eq fn 'badge) (badge (car args)))
+            ((eq fn 'tamep) (tamep (car args)))
+            ((eq fn 'tamep-functionp)
+             (tamep-functionp (car args)))
+            ((eq fn 'suitably-tamep-listp)
+             (ec-call (suitably-tamep-listp (car args)
+                                            (cadr args)
+                                            (caddr args))))
+            ((eq fn 'apply$)
+             (if (tamep-functionp (car args))
+                 (ec-call (apply$ (car args) (cadr args)))
+               (untame-apply$ fn args)))
+            ((eq fn 'ev$)
+             (if (tamep (car args))
+                 (ev$ (car args) (cadr args))
+               (untame-apply$ fn args)))
+            (t (apply$-userfn fn args))))
 
   Function: <apply$-lambda>
 
     (defun apply$-lambda (fn args)
-           (declare (xargs :guard (apply$-lambda-guard fn args)))
-           (apply$-lambda-logical fn args))
+      (declare (xargs :guard (apply$-lambda-guard fn args)))
+      (apply$-lambda-logical fn args))
 
   Macro: <apply$-lambda-logical>
 
-    (defmacro
-     apply$-lambda-logical (fn args)
+    (defmacro apply$-lambda-logical (fn args)
      (declare (xargs :guard (symbolp fn)))
      (cons
         'ev$
@@ -8999,49 +8995,49 @@ Logical Definitions
   Function: <ev$>
 
     (defun ev$ (x a)
-           (declare (xargs :guard t))
-           (cond ((not (tamep x)) (untame-ev$ x a))
-                 ((variablep x)
-                  (ec-call (cdr (ec-call (assoc-equal x a)))))
-                 ((fquotep x) (cadr x))
-                 ((eq (car x) 'if)
-                  (if (ev$ (cadr x) a)
-                      (ev$ (caddr x) a)
-                      (ev$ (cadddr x) a)))
-                 ((eq (car x) 'apply$)
-                  (apply$ 'apply$
-                          (list (cadr (cadr x))
-                                (ev$ (caddr x) a))))
-                 ((eq (car x) 'ev$)
-                  (apply$ 'ev$
-                          (list (cadr (cadr x))
-                                (ev$ (caddr x) a))))
-                 (t (apply$ (car x) (ev$-list (cdr x) a)))))
+      (declare (xargs :guard t))
+      (cond ((not (tamep x)) (untame-ev$ x a))
+            ((variablep x)
+             (ec-call (cdr (ec-call (assoc-equal x a)))))
+            ((fquotep x) (cadr x))
+            ((eq (car x) 'if)
+             (if (ev$ (cadr x) a)
+                 (ev$ (caddr x) a)
+               (ev$ (cadddr x) a)))
+            ((eq (car x) 'apply$)
+             (apply$ 'apply$
+                     (list (cadr (cadr x))
+                           (ev$ (caddr x) a))))
+            ((eq (car x) 'ev$)
+             (apply$ 'ev$
+                     (list (cadr (cadr x))
+                           (ev$ (caddr x) a))))
+            (t (apply$ (car x) (ev$-list (cdr x) a)))))
 
   Function: <ev$-list>
 
     (defun ev$-list (x a)
-           (declare (xargs :guard t))
-           (cond ((atom x) nil)
-                 (t (cons (ev$ (car x) a)
-                          (ev$-list (cdr x) a)))))
+      (declare (xargs :guard t))
+      (cond ((atom x) nil)
+            (t (cons (ev$ (car x) a)
+                     (ev$-list (cdr x) a)))))
 
   Function: <apply$-guard>
 
     (defun apply$-guard (fn args)
-           (declare (xargs :guard t))
-           (if (atom fn)
-               (true-listp args)
-               (apply$-lambda-guard fn args)))
+      (declare (xargs :guard t))
+      (if (atom fn)
+          (true-listp args)
+        (apply$-lambda-guard fn args)))
 
   Function: <apply$-lambda-guard>
 
     (defun apply$-lambda-guard (fn args)
-           (declare (xargs :guard t))
-           (and (consp fn)
-                (consp (cdr fn))
-                (true-listp args)
-                (equal (len (cadr fn)) (length args))))
+      (declare (xargs :guard t))
+      (and (consp fn)
+           (consp (cdr fn))
+           (true-listp args)
+           (equal (len (cadr fn)) (length args))))
 
 
 Subtopics
@@ -9134,21 +9130,21 @@ Subtopics
   Function: <apply$-guard>
 
     (defun apply$-guard (fn args)
-           (declare (xargs :guard t))
-           (if (atom fn)
-               (true-listp args)
-               (apply$-lambda-guard fn args)))
+      (declare (xargs :guard t))
+      (if (atom fn)
+          (true-listp args)
+        (apply$-lambda-guard fn args)))
 
   where
 
   Function: <apply$-lambda-guard>
 
     (defun apply$-lambda-guard (fn args)
-           (declare (xargs :guard t))
-           (and (consp fn)
-                (consp (cdr fn))
-                (true-listp args)
-                (equal (len (cadr fn)) (length args))))
+      (declare (xargs :guard t))
+      (and (consp fn)
+           (consp (cdr fn))
+           (true-listp args)
+           (equal (len (cadr fn)) (length args))))
 
   This guard is just strong enough to allow the definitions of the
   functions in the apply$ clique to be guard verified.  It does not
@@ -9180,11 +9176,11 @@ Subtopics
   Function: <apply$-lambda-guard>
 
     (defun apply$-lambda-guard (fn args)
-           (declare (xargs :guard t))
-           (and (consp fn)
-                (consp (cdr fn))
-                (true-listp args)
-                (equal (len (cadr fn)) (length args))))
+      (declare (xargs :guard t))
+      (and (consp fn)
+           (consp (cdr fn))
+           (true-listp args)
+           (equal (len (cadr fn)) (length args))))
 
   This guard is just strong enough to allow the definitions of the
   functions in the apply$ clique to be guard verified.  It does not
@@ -9318,15 +9314,14 @@ Subtopics
 
   Function: <aref1>
 
-    (defun
-         aref1 (name l n)
-         (declare (xargs :guard (and (array1p name l)
-                                     (integerp n)
-                                     (>= n 0)
-                                     (< n (car (dimensions name l))))))
-         (let ((x (and (not (eq n :header)) (assoc n l))))
-              (cond ((null x) (default name l))
-                    (t (cdr x)))))")
+    (defun aref1 (name l n)
+      (declare (xargs :guard (and (array1p name l)
+                                  (integerp n)
+                                  (>= n 0)
+                                  (< n (car (dimensions name l))))))
+      (let ((x (and (not (eq n :header)) (assoc n l))))
+        (cond ((null x) (default name l))
+              (t (cdr x)))))")
  (AREF2
   (ARRAYS ACL2-BUILT-INS)
   "Access the elements of a 2-dimensional array
@@ -9350,18 +9345,17 @@ Subtopics
 
   Function: <aref2>
 
-    (defun
-         aref2 (name l i j)
-         (declare (xargs :guard (and (array2p name l)
-                                     (integerp i)
-                                     (>= i 0)
-                                     (< i (car (dimensions name l)))
-                                     (integerp j)
-                                     (>= j 0)
-                                     (< j (cadr (dimensions name l))))))
-         (let ((x (assoc2 i j l)))
-              (cond ((null x) (default name l))
-                    (t (cdr x)))))")
+    (defun aref2 (name l i j)
+      (declare (xargs :guard (and (array2p name l)
+                                  (integerp i)
+                                  (>= i 0)
+                                  (< i (car (dimensions name l)))
+                                  (integerp j)
+                                  (>= j 0)
+                                  (< j (cadr (dimensions name l))))))
+      (let ((x (assoc2 i j l)))
+        (cond ((null x) (default name l))
+              (t (cdr x)))))")
  (ARGLISTP (POINTERS)
            "See [system-utilities].")
  (ARGS
@@ -9395,13 +9389,13 @@ Subtopics
   Function: <arities-okp>
 
     (defun arities-okp (user-table w)
-           (declare (xargs :guard (and (symbol-alistp user-table)
-                                       (plist-worldp-with-formals w))))
-           (cond ((endp user-table) t)
-                 (t (and (equal (arity (car (car user-table)) w)
-                                (cdr (car user-table)))
-                         (logicp (car (car user-table)) w)
-                         (arities-okp (cdr user-table) w)))))")
+      (declare (xargs :guard (and (symbol-alistp user-table)
+                                  (plist-worldp-with-formals w))))
+      (cond ((endp user-table) t)
+            (t (and (equal (arity (car (car user-table)) w)
+                           (cdr (car user-table)))
+                    (logicp (car (car user-table)) w)
+                    (arities-okp (cdr user-table) w)))))")
  (ARITY
   (ACL2-BUILT-INS)
   "number of arguments of a function symbol
@@ -9437,14 +9431,12 @@ See [arity+] for a variant of arity with a stronger [guard].")
 
   Function: <array1p>
 
-    (defun
-     array1p (name l)
+    (defun array1p (name l)
      (declare (xargs :guard t))
      (and
       (symbolp name)
       (alistp l)
-      (let
-       ((header-keyword-list (cdr (assoc-eq :header l))))
+      (let ((header-keyword-list (cdr (assoc-eq :header l))))
        (and
         (keyword-value-listp header-keyword-list)
         (let
@@ -9478,14 +9470,12 @@ See [arity+] for a variant of arity with a stronger [guard].")
 
   Function: <array2p>
 
-    (defun
-     array2p (name l)
+    (defun array2p (name l)
      (declare (xargs :guard t))
      (and
       (symbolp name)
       (alistp l)
-      (let
-       ((header-keyword-list (cdr (assoc-eq :header l))))
+      (let ((header-keyword-list (cdr (assoc-eq :header l))))
        (and
         (keyword-value-listp header-keyword-list)
         (let
@@ -9497,15 +9487,15 @@ See [arity+] for a variant of arity with a stronger [guard].")
               (equal (length dimensions) 2)
               (let ((d1 (car dimensions))
                     (d2 (cadr dimensions)))
-                   (and (integerp d1)
-                        (integerp d2)
-                        (integerp maximum-length)
-                        (< 0 d1)
-                        (< 0 d2)
-                        (< (* d1 d2) maximum-length)
-                        (<= maximum-length
-                            *maximum-positive-32-bit-integer*)
-                        (bounded-integer-alistp2 l d1 d2)))))))))")
+                (and (integerp d1)
+                     (integerp d2)
+                     (integerp maximum-length)
+                     (< 0 d1)
+                     (< 0 d2)
+                     (< (* d1 d2) maximum-length)
+                     (<= maximum-length
+                         *maximum-positive-32-bit-integer*)
+                     (bounded-integer-alistp2 l d1 d2)))))))))")
  (ARRAYS
   (PROGRAMMING)
   "ACL2 arrays and operations on them
@@ -10084,16 +10074,15 @@ Subtopics
 
   Function: <aset1>
 
-    (defun
-         aset1 (name l n val)
-         (declare (xargs :guard (and (array1p name l)
-                                     (integerp n)
-                                     (>= n 0)
-                                     (< n (car (dimensions name l))))))
-         (let ((l (cons (cons n val) l)))
-              (cond ((> (length l) (maximum-length name l))
-                     (compress1 name l))
-                    (t l))))
+    (defun aset1 (name l n val)
+      (declare (xargs :guard (and (array1p name l)
+                                  (integerp n)
+                                  (>= n 0)
+                                  (< n (car (dimensions name l))))))
+      (let ((l (cons (cons n val) l)))
+        (cond ((> (length l) (maximum-length name l))
+               (compress1 name l))
+              (t l))))
 
 
 Subtopics
@@ -10122,13 +10111,12 @@ Subtopics
 
   Function: <aset1-trusted>
 
-    (defun
-         aset1-trusted (name l n val)
-         (declare (xargs :guard (and (array1p name l)
-                                     (integerp n)
-                                     (>= n 0)
-                                     (< n (car (dimensions name l))))))
-         (aset1 name l n val))")
+    (defun aset1-trusted (name l n val)
+      (declare (xargs :guard (and (array1p name l)
+                                  (integerp n)
+                                  (>= n 0)
+                                  (< n (car (dimensions name l))))))
+      (aset1 name l n val))")
  (ASET2
   (ARRAYS ACL2-BUILT-INS)
   "Set the elements of a 2-dimensional array
@@ -10165,19 +10153,18 @@ Subtopics
 
   Function: <aset2>
 
-    (defun
-         aset2 (name l i j val)
-         (declare (xargs :guard (and (array2p name l)
-                                     (integerp i)
-                                     (>= i 0)
-                                     (< i (car (dimensions name l)))
-                                     (integerp j)
-                                     (>= j 0)
-                                     (< j (cadr (dimensions name l))))))
-         (let ((l (cons (cons (cons i j) val) l)))
-              (cond ((> (length l) (maximum-length name l))
-                     (compress2 name l))
-                    (t l))))")
+    (defun aset2 (name l i j val)
+      (declare (xargs :guard (and (array2p name l)
+                                  (integerp i)
+                                  (>= i 0)
+                                  (< i (car (dimensions name l)))
+                                  (integerp j)
+                                  (>= j 0)
+                                  (< j (cadr (dimensions name l))))))
+      (let ((l (cons (cons (cons i j) val) l)))
+        (cond ((> (length l) (maximum-length name l))
+               (compress2 name l))
+              (t l))))")
  (ASH
   (NUMBERS ACL2-BUILT-INS)
   "Arithmetic shift operation
@@ -10195,8 +10182,8 @@ Subtopics
   Function: <ash>
 
     (defun ash (i c)
-           (declare (xargs :guard (and (integerp i) (integerp c))))
-           (floor (* (ifix i) (expt 2 c)) 1))")
+      (declare (xargs :guard (and (integerp i) (integerp c))))
+      (floor (* (ifix i) (expt 2 c)) 1))")
  (ASSERT$
   (ERRORS ACL2-BUILT-INS)
   "Cause a hard error if the given test is false
@@ -10242,9 +10229,9 @@ Subtopics
   Macro: <assert*>
 
     (defmacro assert* (test form)
-              (cons 'and
-                    (cons (cons 'mbt* (cons test 'nil))
-                          (cons form 'nil))))")
+      (cons 'and
+            (cons (cons 'mbt* (cons test 'nil))
+                  (cons form 'nil))))")
  (ASSERT-EVENT
   (EVENTS ERRORS)
   "Assert that a given form returns a non-nil value
@@ -10414,11 +10401,11 @@ Subtopics
   Function: <assoc-equal>
 
     (defun assoc-equal (x alist)
-           (declare (xargs :guard (alistp alist)))
-           (cond ((endp alist) nil)
-                 ((equal x (car (car alist)))
-                  (car alist))
-                 (t (assoc-equal x (cdr alist)))))")
+      (declare (xargs :guard (alistp alist)))
+      (cond ((endp alist) nil)
+            ((equal x (car (car alist)))
+             (car alist))
+            (t (assoc-equal x (cdr alist)))))")
  (ASSOC-EQ (POINTERS) "See [assoc].")
  (ASSOC-EQUAL (POINTERS) "See [assoc].")
  (ASSOC-KEYWORD
@@ -10435,10 +10422,10 @@ Subtopics
   Function: <assoc-keyword>
 
     (defun assoc-keyword (key l)
-           (declare (xargs :guard (keyword-value-listp l)))
-           (cond ((endp l) nil)
-                 ((eq key (car l)) l)
-                 (t (assoc-keyword key (cddr l)))))")
+      (declare (xargs :guard (keyword-value-listp l)))
+      (cond ((endp l) nil)
+            ((eq key (car l)) l)
+            (t (assoc-keyword key (cddr l)))))")
  (ASSOC-STRING-EQUAL
   (ALISTS ACL2-BUILT-INS)
   "Look up key, a string, in association list
@@ -10453,13 +10440,13 @@ Subtopics
   Function: <assoc-string-equal>
 
     (defun assoc-string-equal (str alist)
-           (declare (xargs :guard (and (stringp str)
-                                       (standard-string-p str)
-                                       (standard-string-alistp alist))))
-           (cond ((endp alist) nil)
-                 ((string-equal str (car (car alist)))
-                  (car alist))
-                 (t (assoc-string-equal str (cdr alist)))))")
+      (declare (xargs :guard (and (stringp str)
+                                  (standard-string-p str)
+                                  (standard-string-alistp alist))))
+      (cond ((endp alist) nil)
+            ((string-equal str (car (car alist)))
+             (car alist))
+            (t (assoc-string-equal str (cdr alist)))))")
  (ASSUME-TRUE-FALSE-AGGRESSIVE-P
   (REWRITE SYSTEM-ATTACHMENTS)
   "Control rewriter's use of the [type-alist] with IF calls
@@ -10490,8 +10477,8 @@ Subtopics
   Function: <atom>
 
     (defun atom (x)
-           (declare (xargs :guard t))
-           (not (consp x)))
+      (declare (xargs :guard t))
+      (not (consp x)))
 
 
 Subtopics
@@ -10513,10 +10500,10 @@ Subtopics
   Function: <atom-listp>
 
     (defun atom-listp (lst)
-           (declare (xargs :guard t))
-           (cond ((atom lst) (eq lst nil))
-                 (t (and (atom (car lst))
-                         (atom-listp (cdr lst))))))")
+      (declare (xargs :guard t))
+      (cond ((atom lst) (eq lst nil))
+            (t (and (atom (car lst))
+                    (atom-listp (cdr lst))))))")
  (AUTO-INSTANCE (POINTERS)
                 "See [defthm<w].")
  (A_FLYING_TOUR_OF_ACL2
@@ -11930,10 +11917,10 @@ Subtopics
   Function: <binary-append>
 
     (defun binary-append (x y)
-           (declare (xargs :guard (true-listp x)))
-           (cond ((endp x) y)
-                 (t (cons (car x)
-                          (binary-append (cdr x) y)))))")
+      (declare (xargs :guard (true-listp x)))
+      (cond ((endp x) y)
+            (t (cons (car x)
+                     (binary-append (cdr x) y)))))")
  (BIND-FREE
   (REWRITE LINEAR DEFINITION)
   "To bind free variables of a rewrite, definition, or linear rule
@@ -12422,8 +12409,8 @@ Subtopics
   Function: <bitp>
 
     (defun bitp (x)
-           (declare (xargs :guard t))
-           (or (eql x 0) (eql x 1)))")
+      (declare (xargs :guard t))
+      (or (eql x 0) (eql x 1)))")
  (BODY (POINTERS)
        "See [system-utilities].")
  (BOOK-COMPILED-FILE
@@ -14162,27 +14149,27 @@ Subtopics
   Function: <boole$>
 
     (defun boole$ (op i1 i2)
-           (declare (type (integer 0 15) op)
-                    (type integer i1 i2))
-           (cond ((eql op *boole-1*) i1)
-                 ((eql op *boole-2*) i2)
-                 ((eql op *boole-and*) (logand i1 i2))
-                 ((eql op *boole-andc1*)
-                  (logandc1 i1 i2))
-                 ((eql op *boole-andc2*)
-                  (logandc2 i1 i2))
-                 ((eql op *boole-c1*) (lognot i1))
-                 ((eql op *boole-c2*) (lognot i2))
-                 ((eql op *boole-clr*) 0)
-                 ((eql op *boole-eqv*) (logeqv i1 i2))
-                 ((eql op *boole-ior*) (logior i1 i2))
-                 ((eql op *boole-nand*) (lognand i1 i2))
-                 ((eql op *boole-nor*) (lognor i1 i2))
-                 ((eql op *boole-orc1*) (logorc1 i1 i2))
-                 ((eql op *boole-orc2*) (logorc2 i1 i2))
-                 ((eql op *boole-set*) 1)
-                 ((eql op *boole-xor*) (logxor i1 i2))
-                 (t 0)))")
+      (declare (type (integer 0 15) op)
+               (type integer i1 i2))
+      (cond ((eql op *boole-1*) i1)
+            ((eql op *boole-2*) i2)
+            ((eql op *boole-and*) (logand i1 i2))
+            ((eql op *boole-andc1*)
+             (logandc1 i1 i2))
+            ((eql op *boole-andc2*)
+             (logandc2 i1 i2))
+            ((eql op *boole-c1*) (lognot i1))
+            ((eql op *boole-c2*) (lognot i2))
+            ((eql op *boole-clr*) 0)
+            ((eql op *boole-eqv*) (logeqv i1 i2))
+            ((eql op *boole-ior*) (logior i1 i2))
+            ((eql op *boole-nand*) (lognand i1 i2))
+            ((eql op *boole-nor*) (lognor i1 i2))
+            ((eql op *boole-orc1*) (logorc1 i1 i2))
+            ((eql op *boole-orc2*) (logorc2 i1 i2))
+            ((eql op *boole-set*) 1)
+            ((eql op *boole-xor*) (logxor i1 i2))
+            (t 0)))")
  (BOOLEAN-LISTP
   (BOOLEANP LISTS ACL2-BUILT-INS)
   "Recognizer for a true list of booleans
@@ -14194,10 +14181,10 @@ Subtopics
   Function: <boolean-listp>
 
     (defun boolean-listp (lst)
-           (declare (xargs :guard t))
-           (cond ((atom lst) (eq lst nil))
-                 (t (and (or (eq (car lst) t) (eq (car lst) nil))
-                         (boolean-listp (cdr lst))))))")
+      (declare (xargs :guard t))
+      (cond ((atom lst) (eq lst nil))
+            (t (and (or (eq (car lst) t) (eq (car lst) nil))
+                    (boolean-listp (cdr lst))))))")
  (BOOLEANP
   (BASICS ACL2-BUILT-INS)
   "Recognizer for booleans
@@ -14211,8 +14198,8 @@ Subtopics
   Function: <booleanp>
 
     (defun booleanp (x)
-           (declare (xargs :guard t))
-           (if (eq x t) t (eq x nil)))
+      (declare (xargs :guard t))
+      (if (eq x t) t (eq x nil)))
 
 
 Subtopics
@@ -14561,8 +14548,9 @@ Subtopics
 
   Function: <break$>
 
-    (defun break$ nil (declare (xargs :guard t))
-           nil)")
+    (defun break$ nil
+      (declare (xargs :guard t))
+      nil)")
  (BREAK-LEMMA
   (BREAK-REWRITE)
   "A quick introduction to breaking rewrite rules in ACL2
@@ -15724,12 +15712,13 @@ Subtopics
   Function: <butlast>
 
     (defun butlast (lst n)
-           (declare (xargs :guard (and (true-listp lst)
-                                       (integerp n)
-                                       (<= 0 n))))
-           (let ((lng (len lst)) (n (nfix n)))
-                (if (<= lng n)
-                    nil (take (- lng n) lst))))")
+      (declare (xargs :guard (and (true-listp lst)
+                                  (integerp n)
+                                  (<= 0 n))))
+      (let ((lng (len lst)) (n (nfix n)))
+        (if (<= lng n)
+            nil
+          (take (- lng n) lst))))")
  (BY (POINTERS)
      "See [hints] for information about the keyword :by.")
  (CAAAAR
@@ -16125,8 +16114,8 @@ Subtopics
   Function: <case-split>
 
     (defun case-split (x)
-           (declare (xargs :guard t))
-           x)")
+      (declare (xargs :guard t))
+      x)")
  (CASE-SPLIT-LIMITATIONS
   (MISCELLANEOUS)
   "Limiting the number of immediate subgoals
@@ -16886,18 +16875,18 @@ configure-ccl.lisp
   Function: <ceiling>
 
     (defun ceiling (i j)
-           (declare (xargs :guard (and (real/rationalp i)
-                                       (real/rationalp j)
-                                       (not (eql j 0)))))
-           (let* ((q (* i (/ j)))
-                  (n (numerator q))
-                  (d (denominator q)))
-                 (cond ((= d 1) n)
-                       ((>= n 0)
-                        (+ (nonnegative-integer-quotient n d)
-                           1))
-                       (t (- (nonnegative-integer-quotient (- n)
-                                                           d))))))")
+      (declare (xargs :guard (and (real/rationalp i)
+                                  (real/rationalp j)
+                                  (not (eql j 0)))))
+      (let* ((q (* i (/ j)))
+             (n (numerator q))
+             (d (denominator q)))
+        (cond ((= d 1) n)
+              ((>= n 0)
+               (+ (nonnegative-integer-quotient n d)
+                  1))
+              (t (- (nonnegative-integer-quotient (- n)
+                                                  d))))))")
  (CERTIFICATE
   (BOOKS-TOUR)
   "A file specifying validity of a given book
@@ -17361,11 +17350,11 @@ Subtopics
   Function: <char>
 
     (defun char (s n)
-           (declare (xargs :guard (and (stringp s)
-                                       (integerp n)
-                                       (>= n 0)
-                                       (< n (length s)))))
-           (nth n (coerce s 'list)))")
+      (declare (xargs :guard (and (stringp s)
+                                  (integerp n)
+                                  (>= n 0)
+                                  (< n (length s)))))
+      (nth n (coerce s 'list)))")
  (CHAR-CODE
   (CHARACTERS NUMBERS ACL2-BUILT-INS)
   "The numeric code for a given character
@@ -17402,38 +17391,38 @@ Subtopics
   Function: <char-downcase>
 
     (defun char-downcase (x)
-           (declare (xargs :guard (and (characterp x)
-                                       (standard-char-p x))))
-           (let ((pair (assoc x
-                              '((#\\A . #\\a)
-                                (#\\B . #\\b)
-                                (#\\C . #\\c)
-                                (#\\D . #\\d)
-                                (#\\E . #\\e)
-                                (#\\F . #\\f)
-                                (#\\G . #\\g)
-                                (#\\H . #\\h)
-                                (#\\I . #\\i)
-                                (#\\J . #\\j)
-                                (#\\K . #\\k)
-                                (#\\L . #\\l)
-                                (#\\M . #\\m)
-                                (#\\N . #\\n)
-                                (#\\O . #\\o)
-                                (#\\P . #\\p)
-                                (#\\Q . #\\q)
-                                (#\\R . #\\r)
-                                (#\\S . #\\s)
-                                (#\\T . #\\t)
-                                (#\\U . #\\u)
-                                (#\\V . #\\v)
-                                (#\\W . #\\w)
-                                (#\\X . #\\x)
-                                (#\\Y . #\\y)
-                                (#\\Z . #\\z)))))
-                (cond (pair (cdr pair))
-                      ((characterp x) x)
-                      (t (code-char 0)))))")
+      (declare (xargs :guard (and (characterp x)
+                                  (standard-char-p x))))
+      (let ((pair (assoc x
+                         '((#\\A . #\\a)
+                           (#\\B . #\\b)
+                           (#\\C . #\\c)
+                           (#\\D . #\\d)
+                           (#\\E . #\\e)
+                           (#\\F . #\\f)
+                           (#\\G . #\\g)
+                           (#\\H . #\\h)
+                           (#\\I . #\\i)
+                           (#\\J . #\\j)
+                           (#\\K . #\\k)
+                           (#\\L . #\\l)
+                           (#\\M . #\\m)
+                           (#\\N . #\\n)
+                           (#\\O . #\\o)
+                           (#\\P . #\\p)
+                           (#\\Q . #\\q)
+                           (#\\R . #\\r)
+                           (#\\S . #\\s)
+                           (#\\T . #\\t)
+                           (#\\U . #\\u)
+                           (#\\V . #\\v)
+                           (#\\W . #\\w)
+                           (#\\X . #\\x)
+                           (#\\Y . #\\y)
+                           (#\\Z . #\\z)))))
+        (cond (pair (cdr pair))
+              ((characterp x) x)
+              (t (code-char 0)))))")
  (CHAR-EQUAL
   (CHARACTERS ACL2-BUILT-INS)
   "Character equality without regard to case
@@ -17450,12 +17439,12 @@ Subtopics
   Function: <char-equal>
 
     (defun char-equal (x y)
-           (declare (xargs :guard (and (characterp x)
-                                       (standard-char-p x)
-                                       (characterp y)
-                                       (standard-char-p y))))
-           (eql (char-downcase x)
-                (char-downcase y)))")
+      (declare (xargs :guard (and (characterp x)
+                                  (standard-char-p x)
+                                  (characterp y)
+                                  (standard-char-p y))))
+      (eql (char-downcase x)
+           (char-downcase y)))")
  (CHAR-UPCASE
   (CHARACTERS ACL2-BUILT-INS)
   "Turn lower-case [characters] into upper-case [characters]
@@ -17472,38 +17461,38 @@ Subtopics
   Function: <char-upcase>
 
     (defun char-upcase (x)
-           (declare (xargs :guard (and (characterp x)
-                                       (standard-char-p x))))
-           (let ((pair (assoc x
-                              '((#\\a . #\\A)
-                                (#\\b . #\\B)
-                                (#\\c . #\\C)
-                                (#\\d . #\\D)
-                                (#\\e . #\\E)
-                                (#\\f . #\\F)
-                                (#\\g . #\\G)
-                                (#\\h . #\\H)
-                                (#\\i . #\\I)
-                                (#\\j . #\\J)
-                                (#\\k . #\\K)
-                                (#\\l . #\\L)
-                                (#\\m . #\\M)
-                                (#\\n . #\\N)
-                                (#\\o . #\\O)
-                                (#\\p . #\\P)
-                                (#\\q . #\\Q)
-                                (#\\r . #\\R)
-                                (#\\s . #\\S)
-                                (#\\t . #\\T)
-                                (#\\u . #\\U)
-                                (#\\v . #\\V)
-                                (#\\w . #\\W)
-                                (#\\x . #\\X)
-                                (#\\y . #\\Y)
-                                (#\\z . #\\Z)))))
-                (cond (pair (cdr pair))
-                      ((characterp x) x)
-                      (t (code-char 0)))))")
+      (declare (xargs :guard (and (characterp x)
+                                  (standard-char-p x))))
+      (let ((pair (assoc x
+                         '((#\\a . #\\A)
+                           (#\\b . #\\B)
+                           (#\\c . #\\C)
+                           (#\\d . #\\D)
+                           (#\\e . #\\E)
+                           (#\\f . #\\F)
+                           (#\\g . #\\G)
+                           (#\\h . #\\H)
+                           (#\\i . #\\I)
+                           (#\\j . #\\J)
+                           (#\\k . #\\K)
+                           (#\\l . #\\L)
+                           (#\\m . #\\M)
+                           (#\\n . #\\N)
+                           (#\\o . #\\O)
+                           (#\\p . #\\P)
+                           (#\\q . #\\Q)
+                           (#\\r . #\\R)
+                           (#\\s . #\\S)
+                           (#\\t . #\\T)
+                           (#\\u . #\\U)
+                           (#\\v . #\\V)
+                           (#\\w . #\\W)
+                           (#\\x . #\\X)
+                           (#\\y . #\\Y)
+                           (#\\z . #\\Z)))))
+        (cond (pair (cdr pair))
+              ((characterp x) x)
+              (t (code-char 0)))))")
  (CHAR<
   (CHARACTERS ACL2-BUILT-INS)
   "Less-than test for [characters]
@@ -17519,8 +17508,8 @@ Subtopics
   Function: <char<>
 
     (defun char< (x y)
-           (declare (xargs :guard (and (characterp x) (characterp y))))
-           (< (char-code x) (char-code y)))")
+      (declare (xargs :guard (and (characterp x) (characterp y))))
+      (< (char-code x) (char-code y)))")
  (CHAR<=
   (CHARACTERS ACL2-BUILT-INS)
   "Less-than-or-equal test for [characters]
@@ -17536,8 +17525,8 @@ Subtopics
   Function: <char<=>
 
     (defun char<= (x y)
-           (declare (xargs :guard (and (characterp x) (characterp y))))
-           (<= (char-code x) (char-code y)))")
+      (declare (xargs :guard (and (characterp x) (characterp y))))
+      (<= (char-code x) (char-code y)))")
  (CHAR>
   (CHARACTERS ACL2-BUILT-INS)
   "Greater-than test for [characters]
@@ -17553,8 +17542,8 @@ Subtopics
   Function: <char>>
 
     (defun char> (x y)
-           (declare (xargs :guard (and (characterp x) (characterp y))))
-           (> (char-code x) (char-code y)))")
+      (declare (xargs :guard (and (characterp x) (characterp y))))
+      (> (char-code x) (char-code y)))")
  (CHAR>=
   (CHARACTERS ACL2-BUILT-INS)
   "Greater-than-or-equal test for [characters]
@@ -17570,8 +17559,8 @@ Subtopics
   Function: <char>=>
 
     (defun char>= (x y)
-           (declare (xargs :guard (and (characterp x) (characterp y))))
-           (>= (char-code x) (char-code y)))")
+      (declare (xargs :guard (and (characterp x) (characterp y))))
+      (>= (char-code x) (char-code y)))")
  (CHARACTER-ALISTP
   (CHARACTERS ALISTS ACL2-BUILT-INS)
   "Recognizer for association lists with characters as keys
@@ -17582,11 +17571,11 @@ Subtopics
   Function: <character-alistp>
 
     (defun character-alistp (x)
-           (declare (xargs :guard t))
-           (cond ((atom x) (eq x nil))
-                 (t (and (consp (car x))
-                         (characterp (car (car x)))
-                         (character-alistp (cdr x))))))")
+      (declare (xargs :guard t))
+      (cond ((atom x) (eq x nil))
+            (t (and (consp (car x))
+                    (characterp (car (car x)))
+                    (character-alistp (cdr x))))))")
  (CHARACTER-ENCODING
   (IO)
   "How bytes are parsed into characters
@@ -17632,10 +17621,10 @@ Subtopics
   Function: <character-listp>
 
     (defun character-listp (l)
-           (declare (xargs :guard t))
-           (cond ((atom l) (equal l nil))
-                 (t (and (characterp (car l))
-                         (character-listp (cdr l))))))")
+      (declare (xargs :guard t))
+      (cond ((atom l) (equal l nil))
+            (t (and (characterp (car l))
+                    (character-listp (cdr l))))))")
  (CHARACTERP
   (CHARACTERS ACL2-BUILT-INS)
   "Recognizer for [characters]
@@ -18371,9 +18360,9 @@ Subtopics
 
   Function: <clear-memoize-statistics>
 
-    (defun clear-memoize-statistics
-           nil (declare (xargs :guard t))
-           nil)")
+    (defun clear-memoize-statistics nil
+      (declare (xargs :guard t))
+      nil)")
  (CLEAR-MEMOIZE-TABLE
   (MEMOIZE)
   "Forget values remembered for the given function
@@ -18384,8 +18373,8 @@ Subtopics
   Function: <clear-memoize-table>
 
     (defun clear-memoize-table (fn)
-           (declare (xargs :guard t))
-           fn)")
+      (declare (xargs :guard t))
+      fn)")
  (CLEAR-MEMOIZE-TABLES
   (MEMOIZE)
   "Forget values remembered for all the memoized functions
@@ -18396,9 +18385,9 @@ Subtopics
 
   Function: <clear-memoize-tables>
 
-    (defun clear-memoize-tables
-           nil (declare (xargs :guard t))
-           nil)")
+    (defun clear-memoize-tables nil
+      (declare (xargs :guard t))
+      nil)")
  (CLOSE-INPUT-CHANNEL (POINTERS)
                       "See [io].")
  (CLOSE-OUTPUT-CHANNEL (POINTERS)
@@ -19606,11 +19595,9 @@ Subtopics
 
   Function: <compress1>
 
-    (defun
-     compress1 (name l)
+    (defun compress1 (name l)
      (declare (xargs :guard (array1p name l)))
-     (case
-      (array-order (header name l))
+     (case (array-order (header name l))
       (< (cons (header name l)
                (compress11 name l 0 (car (dimensions name l))
                            (default name l))))
@@ -19664,11 +19651,11 @@ Subtopics
   Function: <compress2>
 
     (defun compress2 (name l)
-           (declare (xargs :guard (array2p name l)))
-           (cons (header name l)
-                 (compress21 name l 0 (car (dimensions name l))
-                             (cadr (dimensions name l))
-                             (default name l))))")
+      (declare (xargs :guard (array2p name l)))
+      (cons (header name l)
+            (compress21 name l 0 (car (dimensions name l))
+                        (cadr (dimensions name l))
+                        (default name l))))")
  (COMPUTED-HINT (POINTERS)
                 "See [computed-hints].")
  (COMPUTED-HINTS
@@ -19873,21 +19860,20 @@ Subtopics
 
   Macro: <concatenate>
 
-    (defmacro concatenate
-              (result-type &rest sequences)
-              (declare (xargs :guard (or (equal result-type ''string)
-                                         (equal result-type ''list))))
-              (cond ((equal result-type ''string)
-                     (cond ((and sequences (cdr sequences)
-                                 (null (cddr sequences)))
-                            (list 'string-append
-                                  (car sequences)
-                                  (cadr sequences)))
-                           (t (list 'string-append-lst
-                                    (cons 'list sequences)))))
-                    ((endp sequences) nil)
-                    (t (cons 'append
-                             (append sequences (list nil))))))")
+    (defmacro concatenate (result-type &rest sequences)
+      (declare (xargs :guard (or (equal result-type ''string)
+                                 (equal result-type ''list))))
+      (cond ((equal result-type ''string)
+             (cond ((and sequences (cdr sequences)
+                         (null (cddr sequences)))
+                    (list 'string-append
+                          (car sequences)
+                          (cadr sequences)))
+                   (t (list 'string-append-lst
+                            (cons 'list sequences)))))
+            ((endp sequences) nil)
+            (t (cons 'append
+                     (append sequences (list nil))))))")
  (COND
   (BASICS ACL2-BUILT-INS)
   "Conditional based on if-then-else
@@ -19924,28 +19910,28 @@ Subtopics
   Macro: <cond>
 
     (defmacro cond (&rest clauses)
-              (declare (xargs :guard (cond-clausesp clauses)))
-              (cond-macro clauses))
+      (declare (xargs :guard (cond-clausesp clauses)))
+      (cond-macro clauses))
 
   Function: <cond-macro>
 
     (defun cond-macro (clauses)
-           (declare (xargs :guard (cond-clausesp clauses)))
-           (if (consp clauses)
-               (if (and (eq (car (car clauses)) t)
-                        (eq (cdr clauses) nil))
-                   (if (cdr (car clauses))
-                       (car (cdr (car clauses)))
-                       (car (car clauses)))
-                   (if (cdr (car clauses))
-                       (list 'if
-                             (car (car clauses))
-                             (car (cdr (car clauses)))
-                             (cond-macro (cdr clauses)))
-                       (list 'or
-                             (car (car clauses))
-                             (cond-macro (cdr clauses)))))
-               nil))")
+      (declare (xargs :guard (cond-clausesp clauses)))
+      (if (consp clauses)
+          (if (and (eq (car (car clauses)) t)
+                   (eq (cdr clauses) nil))
+              (if (cdr (car clauses))
+                  (car (cdr (car clauses)))
+                (car (car clauses)))
+            (if (cdr (car clauses))
+                (list 'if
+                      (car (car clauses))
+                      (car (cdr (car clauses)))
+                      (cond-macro (cdr clauses)))
+              (list 'or
+                    (car (car clauses))
+                    (cond-macro (cdr clauses)))))
+        nil))")
  (CONGRUENCE
   (RULE-CLASSES)
   "The relations to maintain while simplifying arguments
@@ -20124,8 +20110,8 @@ Subtopics
   Function: <conjugate>
 
     (defun conjugate (x)
-           (declare (xargs :guard (acl2-numberp x)))
-           (complex (realpart x) (- (imagpart x))))")
+      (declare (xargs :guard (acl2-numberp x)))
+      (complex (realpart x) (- (imagpart x))))")
  (CONS
   (CONSES ACL2-BUILT-INS)
   "Pair and list constructor
@@ -20149,14 +20135,13 @@ Subtopics
 
   Function: <cons-subtrees>
 
-    (defun
-         cons-subtrees (x al)
-         (declare (xargs :guard t))
-         (cond ((atom x) al)
-               ((hons-get x al) al)
-               (t (cons-subtrees (car x)
-                                 (cons-subtrees (cdr x)
-                                                (hons-acons x t al))))))")
+    (defun cons-subtrees (x al)
+      (declare (xargs :guard t))
+      (cond ((atom x) al)
+            ((hons-get x al) al)
+            (t (cons-subtrees (car x)
+                              (cons-subtrees (cdr x)
+                                             (hons-acons x t al))))))")
  (CONS-TERM (POINTERS)
             "See [system-utilities].")
  (CONS-TERM* (POINTERS)
@@ -20198,12 +20183,12 @@ Subtopics
   Function: <remove-equal>
 
     (defun remove-equal (x l)
-           (declare (xargs :guard (true-listp l)))
-           (cond ((endp l) nil)
-                 ((equal x (car l))
-                  (remove-equal x (cdr l)))
-                 (t (cons (car l)
-                          (remove-equal x (cdr l))))))
+      (declare (xargs :guard (true-listp l)))
+      (cond ((endp l) nil)
+            ((equal x (car l))
+             (remove-equal x (cdr l)))
+            (t (cons (car l)
+                     (remove-equal x (cdr l))))))
 
   You can see that if l doesn't have any copies of x, this function
   will essentially make a fresh copy of the whole list x.  That could
@@ -21586,12 +21571,11 @@ Subtopics
 
   Macro: <count>
 
-    (defmacro count
-              (item sequence &key (start '0) end)
-              (cons 'count-fn
-                    (cons item
-                          (cons sequence
-                                (cons start (cons end 'nil))))))")
+    (defmacro count (item sequence &key (start '0) end)
+      (cons 'count-fn
+            (cons item
+                  (cons sequence
+                        (cons start (cons end 'nil))))))")
  (COUNT-KEYS
   (STOBJ ACL2-BUILT-INS)
   "Count the number of keys in association list
@@ -21606,26 +21590,25 @@ Subtopics
   Function: <hons-remove-assoc>
 
     (defun hons-remove-assoc (k x)
-           (declare (xargs :guard t))
-           (if (atom x)
-               nil
-               (if (and (consp (car x))
-                        (not (equal k (caar x))))
-                   (cons (car x)
-                         (hons-remove-assoc k (cdr x)))
-                   (hons-remove-assoc k (cdr x)))))
+      (declare (xargs :guard t))
+      (if (atom x)
+          nil
+        (if (and (consp (car x))
+                 (not (equal k (caar x))))
+            (cons (car x)
+                  (hons-remove-assoc k (cdr x)))
+          (hons-remove-assoc k (cdr x)))))
 
   Function: <count-keys>
 
-    (defun
-         count-keys (al)
-         (declare (xargs :guard t))
-         (if (atom al)
-             0
-             (if (consp (car al))
-                 (+ 1
-                    (count-keys (hons-remove-assoc (caar al) (cdr al))))
-                 (count-keys (cdr al)))))")
+    (defun count-keys (al)
+      (declare (xargs :guard t))
+      (if (atom al)
+          0
+        (if (consp (car al))
+            (+ 1
+               (count-keys (hons-remove-assoc (caar al) (cdr al))))
+          (count-keys (cdr al)))))")
  (CPU-CORE-COUNT
   (PARALLELISM ACL2-BUILT-INS)
   "The number of cpu cores
@@ -21653,11 +21636,11 @@ Subtopics
   Function: <cpu-core-count>
 
     (defun cpu-core-count (state)
-           (declare (xargs :stobjs state :guard t))
-           (mv-let (nullp val state)
-                   (read-acl2-oracle state)
-                   (declare (ignore nullp))
-                   (mv val state)))")
+      (declare (xargs :stobjs state :guard t))
+      (mv-let (nullp val state)
+              (read-acl2-oracle state)
+        (declare (ignore nullp))
+        (mv val state)))")
  (CTX
   (ERRORS)
   "Context object for error messages
@@ -21691,10 +21674,10 @@ Subtopics
   Function: <ctxp>
 
     (defun ctxp (x)
-           (declare (xargs :guard t))
-           (or (symbolp x)
-               (and (consp x) (symbolp (car x)))
-               (msgp x)))")
+      (declare (xargs :guard t))
+      (or (symbolp x)
+          (and (consp x) (symbolp (car x)))
+          (msgp x)))")
  (CURRENT-PACKAGE
   (LD)
   "The package used for reading and printing
@@ -24143,10 +24126,9 @@ Subtopics
 
   Function: <default>
 
-    (defun
-         default (name l)
-         (declare (xargs :guard (or (array1p name l) (array2p name l))))
-         (cadr (assoc-keyword :default (cdr (header name l)))))")
+    (defun default (name l)
+      (declare (xargs :guard (or (array1p name l) (array2p name l))))
+      (cadr (assoc-keyword :default (cdr (header name l)))))")
  (DEFAULT-BACKCHAIN-LIMIT
   (RULE-CLASSES)
   "Specifying the backchain limit for a rule
@@ -29524,13 +29506,13 @@ Subtopics
   Function: <delete-file$>
 
     (defun delete-file$ (file state)
-           (declare (xargs :guard (stringp file)
-                           :stobjs state))
-           (declare (ignore file))
-           (mv-let (erp val state)
-                   (read-acl2-oracle state)
-                   (mv (and (null erp) (natp val) val)
-                       state)))")
+      (declare (xargs :guard (stringp file)
+                      :stobjs state))
+      (declare (ignore file))
+      (mv-let (erp val state)
+              (read-acl2-oracle state)
+        (mv (and (null erp) (natp val) val)
+            state)))")
  (DELETE-INCLUDE-BOOK-DIR
   (BOOKS-REFERENCE)
   "Unlink keyword for :dir argument of [ld] and [include-book]
@@ -29620,81 +29602,81 @@ Subtopics
   Macro: <digit-char-p>
 
     (defmacro digit-char-p (ch &optional (radix '10))
-              (cons 'our-digit-char-p
-                    (cons ch (cons radix 'nil))))
+      (cons 'our-digit-char-p
+            (cons ch (cons radix 'nil))))
 
   Function: <our-digit-char-p>
 
     (defun our-digit-char-p (ch radix)
-           (declare (xargs :guard (and (characterp ch)
-                                       (integerp radix)
-                                       (<= 2 radix)
-                                       (<= radix 36))))
-           (let ((l (assoc ch
-                           '((#\\0 . 0)
-                             (#\\1 . 1)
-                             (#\\2 . 2)
-                             (#\\3 . 3)
-                             (#\\4 . 4)
-                             (#\\5 . 5)
-                             (#\\6 . 6)
-                             (#\\7 . 7)
-                             (#\\8 . 8)
-                             (#\\9 . 9)
-                             (#\\a . 10)
-                             (#\\b . 11)
-                             (#\\c . 12)
-                             (#\\d . 13)
-                             (#\\e . 14)
-                             (#\\f . 15)
-                             (#\\g . 16)
-                             (#\\h . 17)
-                             (#\\i . 18)
-                             (#\\j . 19)
-                             (#\\k . 20)
-                             (#\\l . 21)
-                             (#\\m . 22)
-                             (#\\n . 23)
-                             (#\\o . 24)
-                             (#\\p . 25)
-                             (#\\q . 26)
-                             (#\\r . 27)
-                             (#\\s . 28)
-                             (#\\t . 29)
-                             (#\\u . 30)
-                             (#\\v . 31)
-                             (#\\w . 32)
-                             (#\\x . 33)
-                             (#\\y . 34)
-                             (#\\z . 35)
-                             (#\\A . 10)
-                             (#\\B . 11)
-                             (#\\C . 12)
-                             (#\\D . 13)
-                             (#\\E . 14)
-                             (#\\F . 15)
-                             (#\\G . 16)
-                             (#\\H . 17)
-                             (#\\I . 18)
-                             (#\\J . 19)
-                             (#\\K . 20)
-                             (#\\L . 21)
-                             (#\\M . 22)
-                             (#\\N . 23)
-                             (#\\O . 24)
-                             (#\\P . 25)
-                             (#\\Q . 26)
-                             (#\\R . 27)
-                             (#\\S . 28)
-                             (#\\T . 29)
-                             (#\\U . 30)
-                             (#\\V . 31)
-                             (#\\W . 32)
-                             (#\\X . 33)
-                             (#\\Y . 34)
-                             (#\\Z . 35)))))
-                (cond ((and l (< (cdr l) radix)) (cdr l))
-                      (t nil))))")
+      (declare (xargs :guard (and (characterp ch)
+                                  (integerp radix)
+                                  (<= 2 radix)
+                                  (<= radix 36))))
+      (let ((l (assoc ch
+                      '((#\\0 . 0)
+                        (#\\1 . 1)
+                        (#\\2 . 2)
+                        (#\\3 . 3)
+                        (#\\4 . 4)
+                        (#\\5 . 5)
+                        (#\\6 . 6)
+                        (#\\7 . 7)
+                        (#\\8 . 8)
+                        (#\\9 . 9)
+                        (#\\a . 10)
+                        (#\\b . 11)
+                        (#\\c . 12)
+                        (#\\d . 13)
+                        (#\\e . 14)
+                        (#\\f . 15)
+                        (#\\g . 16)
+                        (#\\h . 17)
+                        (#\\i . 18)
+                        (#\\j . 19)
+                        (#\\k . 20)
+                        (#\\l . 21)
+                        (#\\m . 22)
+                        (#\\n . 23)
+                        (#\\o . 24)
+                        (#\\p . 25)
+                        (#\\q . 26)
+                        (#\\r . 27)
+                        (#\\s . 28)
+                        (#\\t . 29)
+                        (#\\u . 30)
+                        (#\\v . 31)
+                        (#\\w . 32)
+                        (#\\x . 33)
+                        (#\\y . 34)
+                        (#\\z . 35)
+                        (#\\A . 10)
+                        (#\\B . 11)
+                        (#\\C . 12)
+                        (#\\D . 13)
+                        (#\\E . 14)
+                        (#\\F . 15)
+                        (#\\G . 16)
+                        (#\\H . 17)
+                        (#\\I . 18)
+                        (#\\J . 19)
+                        (#\\K . 20)
+                        (#\\L . 21)
+                        (#\\M . 22)
+                        (#\\N . 23)
+                        (#\\O . 24)
+                        (#\\P . 25)
+                        (#\\Q . 26)
+                        (#\\R . 27)
+                        (#\\S . 28)
+                        (#\\T . 29)
+                        (#\\U . 30)
+                        (#\\V . 31)
+                        (#\\W . 32)
+                        (#\\X . 33)
+                        (#\\Y . 34)
+                        (#\\Z . 35)))))
+        (cond ((and l (< (cdr l) radix)) (cdr l))
+              (t nil))))")
  (DIGIT-TO-CHAR
   (CHARACTERS ACL2-BUILT-INS)
   "Map a digit to a character
@@ -29713,25 +29695,25 @@ Subtopics
 
   Function: <digit-to-char>
 
-    (defun
-         digit-to-char (n)
-         (declare (xargs :guard (and (integerp n) (<= 0 n) (<= n 15))))
-         (case n (1 #\\1)
-               (2 #\\2)
-               (3 #\\3)
-               (4 #\\4)
-               (5 #\\5)
-               (6 #\\6)
-               (7 #\\7)
-               (8 #\\8)
-               (9 #\\9)
-               (10 #\\A)
-               (11 #\\B)
-               (12 #\\C)
-               (13 #\\D)
-               (14 #\\E)
-               (15 #\\F)
-               (otherwise #\\0)))")
+    (defun digit-to-char (n)
+      (declare (xargs :guard (and (integerp n) (<= 0 n) (<= n 15))))
+      (case n
+        (1 #\\1)
+        (2 #\\2)
+        (3 #\\3)
+        (4 #\\4)
+        (5 #\\5)
+        (6 #\\6)
+        (7 #\\7)
+        (8 #\\8)
+        (9 #\\9)
+        (10 #\\A)
+        (11 #\\B)
+        (12 #\\C)
+        (13 #\\D)
+        (14 #\\E)
+        (15 #\\F)
+        (otherwise #\\0)))")
  (DIMENSIONS
   (ARRAYS ACL2-BUILT-INS)
   "Return the :dimensions from the [header] of a 1- or 2-dimensional
@@ -29756,10 +29738,9 @@ Subtopics
 
   Function: <dimensions>
 
-    (defun
-         dimensions (name l)
-         (declare (xargs :guard (or (array1p name l) (array2p name l))))
-         (cadr (assoc-keyword :dimensions (cdr (header name l)))))")
+    (defun dimensions (name l)
+      (declare (xargs :guard (or (array1p name l) (array2p name l))))
+      (cadr (assoc-keyword :dimensions (cdr (header name l)))))")
  (DISABLE
   (THEORIES THEORY-FUNCTIONS)
   "Deletes names from current theory
@@ -30234,26 +30215,23 @@ Subtopics
 
   Function: <do$>
 
-    (defun
-     do$
-     (measure-fn alist do-fn finally-fn default
-                 untrans-measure untrans-do-loop$)
+    (defun do$ (measure-fn alist do-fn finally-fn default
+                           untrans-measure untrans-do-loop$)
      (declare (xargs :guard (and (apply$-guard measure-fn '(nil))
                                  (apply$-guard do-fn '(nil))
                                  (apply$-guard finally-fn '(nil)))))
-     (let*
-      ((triple (true-list-fix (apply$ do-fn (list alist))))
-       (exit-token (car triple))
-       (val (cadr triple))
-       (new-alist (caddr triple)))
+     (let* ((triple (true-list-fix (apply$ do-fn (list alist))))
+            (exit-token (car triple))
+            (val (cadr triple))
+            (new-alist (caddr triple)))
       (cond
        ((eq exit-token :return) val)
        ((eq exit-token :loop-finish)
         (let*
-          ((triple (true-list-fix (apply$ finally-fn (list new-alist))))
-           (exit-token (car triple))
-           (val (cadr triple)))
-          (if (eq exit-token :return) val nil)))
+         ((triple (true-list-fix (apply$ finally-fn (list new-alist))))
+          (exit-token (car triple))
+          (val (cadr triple)))
+         (if (eq exit-token :return) val nil)))
        ((l< (lex-fix (apply$ measure-fn (list new-alist)))
             (lex-fix (apply$ measure-fn (list alist))))
         (do$ measure-fn
@@ -31144,26 +31122,23 @@ SEMANTICS
 
   Function: <do$>
 
-    (defun
-     do$
-     (measure-fn alist do-fn finally-fn default
-                 untrans-measure untrans-do-loop$)
+    (defun do$ (measure-fn alist do-fn finally-fn default
+                           untrans-measure untrans-do-loop$)
      (declare (xargs :guard (and (apply$-guard measure-fn '(nil))
                                  (apply$-guard do-fn '(nil))
                                  (apply$-guard finally-fn '(nil)))))
-     (let*
-      ((triple (true-list-fix (apply$ do-fn (list alist))))
-       (exit-token (car triple))
-       (val (cadr triple))
-       (new-alist (caddr triple)))
+     (let* ((triple (true-list-fix (apply$ do-fn (list alist))))
+            (exit-token (car triple))
+            (val (cadr triple))
+            (new-alist (caddr triple)))
       (cond
        ((eq exit-token :return) val)
        ((eq exit-token :loop-finish)
         (let*
-          ((triple (true-list-fix (apply$ finally-fn (list new-alist))))
-           (exit-token (car triple))
-           (val (cadr triple)))
-          (if (eq exit-token :return) val nil)))
+         ((triple (true-list-fix (apply$ finally-fn (list new-alist))))
+          (exit-token (car triple))
+          (val (cadr triple)))
+         (if (eq exit-token :return) val nil)))
        ((l< (lex-fix (apply$ measure-fn (list new-alist)))
             (lex-fix (apply$ measure-fn (list alist))))
         (do$ measure-fn
@@ -32978,8 +32953,8 @@ Subtopics
   Function: <endp>
 
     (defun endp (x)
-           (declare (xargs :guard (or (consp x) (eq x nil))))
-           (atom x))")
+      (declare (xargs :guard (or (consp x) (eq x nil))))
+      (atom x))")
  (ENTER-BOOT-STRAP-MODE
   (HISTORY)
   "The first millisecond of the Big Bang
@@ -33025,8 +33000,8 @@ Subtopics
   Function: <eq>
 
     (defun eq (x y)
-           (declare (xargs :guard (if (symbolp x) t (symbolp y))))
-           (equal x y))")
+      (declare (xargs :guard (if (symbolp x) t (symbolp y))))
+      (equal x y))")
  (EQL
   (EQUAL EQUALITY-VARIANTS ACL2-BUILT-INS)
   "Test equality (of two numbers, symbols, or [characters])
@@ -33046,8 +33021,8 @@ Subtopics
   Function: <eql>
 
     (defun eql (x y)
-           (declare (xargs :guard (or (eqlablep x) (eqlablep y))))
-           (equal x y))")
+      (declare (xargs :guard (or (eqlablep x) (eqlablep y))))
+      (equal x y))")
  (EQLABLE-ALISTP
   (ALISTS ACL2-BUILT-INS)
   "Recognizer for a true list of pairs whose [car]s are suitable for
@@ -33060,11 +33035,11 @@ Subtopics
   Function: <eqlable-alistp>
 
     (defun eqlable-alistp (x)
-           (declare (xargs :guard t))
-           (cond ((atom x) (equal x nil))
-                 (t (and (consp (car x))
-                         (eqlablep (car (car x)))
-                         (eqlable-alistp (cdr x))))))")
+      (declare (xargs :guard t))
+      (cond ((atom x) (equal x nil))
+            (t (and (consp (car x))
+                    (eqlablep (car (car x)))
+                    (eqlable-alistp (cdr x))))))")
  (EQLABLE-LISTP
   (EQLABLEP EQUAL LISTS ACL2-BUILT-INS)
   "Recognizer for a true list of objects each suitable for [eql]
@@ -33075,11 +33050,11 @@ Subtopics
   Function: <eqlable-listp>
 
     (defun eqlable-listp (l)
-           (declare (xargs :guard t))
-           (if (consp l)
-               (and (eqlablep (car l))
-                    (eqlable-listp (cdr l)))
-               (equal l nil)))")
+      (declare (xargs :guard t))
+      (if (consp l)
+          (and (eqlablep (car l))
+               (eqlable-listp (cdr l)))
+        (equal l nil)))")
  (EQLABLEP
   (EQUAL ACL2-BUILT-INS)
   "The [guard] for the function [eql]
@@ -33092,10 +33067,10 @@ Subtopics
   Function: <eqlablep>
 
     (defun eqlablep (x)
-           (declare (xargs :guard t))
-           (or (acl2-numberp x)
-               (symbolp x)
-               (characterp x)))
+      (declare (xargs :guard t))
+      (or (acl2-numberp x)
+          (symbolp x)
+          (characterp x)))
 
 
 Subtopics
@@ -34887,8 +34862,8 @@ Subtopics
   Function: <evenp>
 
     (defun evenp (x)
-           (declare (xargs :guard (integerp x)))
-           (integerp (* x (/ 2))))")
+      (declare (xargs :guard (integerp x)))
+      (integerp (* x (/ 2))))")
  (EVENS
   (LISTS ACL2-BUILT-INS)
   "The even-indexed members of a list
@@ -34908,9 +34883,9 @@ Subtopics
   Function: <evens>
 
     (defun evens (l)
-           (declare (xargs :guard (true-listp l)))
-           (cond ((endp l) nil)
-                 (t (cons (car l) (evens (cddr l))))))")
+      (declare (xargs :guard (true-listp l)))
+      (cond ((endp l) nil)
+            (t (cons (car l) (evens (cddr l))))))")
  (EVENT (POINTERS) "See [events].")
  (EVENTS
   (ACL2)
@@ -36077,8 +36052,7 @@ Subtopics
 
   Function: <explode-atom>
 
-    (defun
-     explode-atom (x print-base)
+    (defun explode-atom (x print-base)
      (declare (xargs :guard (and (or (acl2-numberp x)
                                      (characterp x)
                                      (stringp x)
@@ -36130,19 +36104,18 @@ Subtopics
 
   Function: <explode-nonnegative-integer>
 
-    (defun explode-nonnegative-integer
-           (n print-base ans)
-           (declare (xargs :guard (and (integerp n)
-                                       (>= n 0)
-                                       (print-base-p print-base))))
-           (cond ((or (zp n)
-                      (not (print-base-p print-base)))
-                  (cond ((null ans) '(#\\0)) (t ans)))
-                 (t (explode-nonnegative-integer
-                         (floor n print-base)
-                         print-base
-                         (cons (digit-to-char (mod n print-base))
-                               ans)))))")
+    (defun explode-nonnegative-integer (n print-base ans)
+      (declare (xargs :guard (and (integerp n)
+                                  (>= n 0)
+                                  (print-base-p print-base))))
+      (cond ((or (zp n)
+                 (not (print-base-p print-base)))
+             (cond ((null ans) '(#\\0)) (t ans)))
+            (t (explode-nonnegative-integer
+                    (floor n print-base)
+                    print-base
+                    (cons (digit-to-char (mod n print-base))
+                          ans)))))")
  (EXPT
   (NUMBERS ACL2-BUILT-INS)
   "Exponential function
@@ -36162,13 +36135,13 @@ Subtopics
   Function: <expt>
 
     (defun expt (r i)
-           (declare (xargs :guard (and (acl2-numberp r)
-                                       (integerp i)
-                                       (not (and (eql r 0) (< i 0))))))
-           (cond ((zip i) 1)
-                 ((= (fix r) 0) 0)
-                 ((> i 0) (* r (expt r (+ i -1))))
-                 (t (* (/ r) (expt r (+ i 1))))))")
+      (declare (xargs :guard (and (acl2-numberp r)
+                                  (integerp i)
+                                  (not (and (eql r 0) (< i 0))))))
+      (cond ((zip i) 1)
+            ((= (fix r) 0) 0)
+            ((> i 0) (* r (expt r (+ i -1))))
+            (t (* (/ r) (expt r (+ i 1))))))")
  (EXTEND-PATHNAME
   (IO ACL2-BUILT-INS)
   "Extend a relative pathname to an absolute pathname
@@ -37222,11 +37195,11 @@ Subtopics
   Function: <fast-alist-clean>
 
     (defun fast-alist-clean (alist)
-           (declare (xargs :guard t))
-           (fast-alist-fork alist
-                            (if (consp alist)
-                                (cdr (last alist))
-                                alist)))
+      (declare (xargs :guard t))
+      (fast-alist-fork alist
+                       (if (consp alist)
+                           (cdr (last alist))
+                         alist)))
 
   The result is thus a corresponding fast alist, with the order
   reversed and with atoms and shadowed pairs removed, as per the
@@ -37274,14 +37247,14 @@ Subtopics
   Function: <fast-alist-fork>
 
     (defun fast-alist-fork (alist ans)
-           (declare (xargs :guard t))
-           (cond ((atom alist) ans)
-                 ((atom (car alist))
-                  (fast-alist-fork (cdr alist) ans))
-                 ((hons-assoc-equal (car (car alist)) ans)
-                  (fast-alist-fork (cdr alist) ans))
-                 (t (fast-alist-fork (cdr alist)
-                                     (cons (car alist) ans)))))
+      (declare (xargs :guard t))
+      (cond ((atom alist) ans)
+            ((atom (car alist))
+             (fast-alist-fork (cdr alist) ans))
+            ((hons-assoc-equal (car (car alist)) ans)
+             (fast-alist-fork (cdr alist) ans))
+            (t (fast-alist-fork (cdr alist)
+                                (cons (car alist) ans)))))
 
   The alist argument need not be a fast alist.
 
@@ -37381,8 +37354,8 @@ Subtopics
   Function: <fast-alist-free>
 
     (defun fast-alist-free (alist)
-           (declare (xargs :guard t))
-           alist)
+      (declare (xargs :guard t))
+      alist)
 
 
 Subtopics
@@ -37438,8 +37411,8 @@ Subtopics
   Function: <fast-alist-len>
 
     (defun fast-alist-len (alist)
-           (declare (xargs :guard t))
-           (len (fast-alist-fork alist nil)))")
+      (declare (xargs :guard t))
+      (len (fast-alist-fork alist nil)))")
  (FAST-ALIST-SUMMARY
   (FAST-ALISTS ACL2-BUILT-INS)
   "(fast-alist-summary) prints some basic statistics about any current
@@ -37455,9 +37428,9 @@ Subtopics
 
   Function: <fast-alist-summary>
 
-    (defun fast-alist-summary
-           nil (declare (xargs :guard t))
-           nil)")
+    (defun fast-alist-summary nil
+      (declare (xargs :guard t))
+      nil)")
  (FAST-ALISTS
   (ALISTS PROGRAMMING HONS-AND-MEMOIZATION)
   "Alists with hidden hash tables for faster execution
@@ -38102,13 +38075,13 @@ Example 2
   Function: <file-length$>
 
     (defun file-length$ (file state)
-           (declare (xargs :guard (stringp file)
-                           :stobjs state))
-           (declare (ignore file))
-           (mv-let (erp val state)
-                   (read-acl2-oracle state)
-                   (mv (and (null erp) (natp val) val)
-                       state)))")
+      (declare (xargs :guard (stringp file)
+                      :stobjs state))
+      (declare (ignore file))
+      (mv-let (erp val state)
+              (read-acl2-oracle state)
+        (mv (and (null erp) (natp val) val)
+            state)))")
  (FILE-READING-EXAMPLE
   (TUTORIAL5-MISCELLANEOUS-EXAMPLES)
   "Example of reading files in ACL2
@@ -38177,13 +38150,13 @@ Example 2
   Function: <file-write-date$>
 
     (defun file-write-date$ (file state)
-           (declare (xargs :guard (stringp file)
-                           :stobjs state)
-                    (ignorable file))
-           (mv-let (erp val state)
-                   (read-acl2-oracle state)
-                   (mv (and (null erp) (posp val) val)
-                       state)))")
+      (declare (xargs :guard (stringp file)
+                      :stobjs state)
+               (ignorable file))
+      (mv-let (erp val state)
+              (read-acl2-oracle state)
+        (mv (and (null erp) (posp val) val)
+            state)))")
  (FINALIZE-EVENT-USER
   (OUTPUT-CONTROLS)
   "User-supplied code to complete [events], e.g., with extra [summary]
@@ -38365,8 +38338,8 @@ Example 2
   Function: <fix>
 
     (defun fix (x)
-           (declare (xargs :guard t))
-           (if (acl2-numberp x) x 0))")
+      (declare (xargs :guard t))
+      (if (acl2-numberp x) x 0))")
  (FIX-PKG (POINTERS)
           "See [system-utilities].")
  (FIX-TRUE-LIST
@@ -38379,7 +38352,7 @@ Example 2
   Macro: <fix-true-list>
 
     (defmacro fix-true-list (x)
-              (cons 'true-list-fix (cons x 'nil)))")
+      (cons 'true-list-fix (cons x 'nil)))")
  (FLAMBDA-APPLICATIONP (POINTERS)
                        "See [system-utilities].")
  (FLAMBDAP (POINTERS)
@@ -38555,17 +38528,17 @@ Example 2
   Function: <floor>
 
     (defun floor (i j)
-           (declare (xargs :guard (and (real/rationalp i)
-                                       (real/rationalp j)
-                                       (not (eql j 0)))))
-           (let* ((q (* i (/ j)))
-                  (n (numerator q))
-                  (d (denominator q)))
-                 (cond ((= d 1) n)
-                       ((>= n 0)
-                        (nonnegative-integer-quotient n d))
-                       (t (+ (- (nonnegative-integer-quotient (- n) d))
-                             -1)))))")
+      (declare (xargs :guard (and (real/rationalp i)
+                                  (real/rationalp j)
+                                  (not (eql j 0)))))
+      (let* ((q (* i (/ j)))
+             (n (numerator q))
+             (d (denominator q)))
+        (cond ((= d 1) n)
+              ((>= n 0)
+               (nonnegative-integer-quotient n d))
+              (t (+ (- (nonnegative-integer-quotient (- n) d))
+                    -1)))))")
  (FLUSH-COMPRESS
   (ARRAYS ACL2-BUILT-INS)
   "Flush the under-the-hood array for the given name
@@ -38696,9 +38669,9 @@ Example 2
   Function: <flush-compress>
 
     (defun flush-compress (name)
-           (declare (xargs :guard t))
-           (declare (ignore name))
-           nil)")
+      (declare (xargs :guard t))
+      (declare (ignore name))
+      nil)")
  (FLUSH-HONS-GET-HASH-TABLE-LINK
       (FAST-ALIST-FREE ACL2-BUILT-INS)
       "Deprecated feature
@@ -40185,8 +40158,8 @@ Semantics
   Function: <force>
 
     (defun force (x)
-           (declare (xargs :guard t))
-           x)
+      (declare (xargs :guard t))
+      x)
 
 
 Subtopics
@@ -44924,8 +44897,8 @@ Conclusion
   Function: <get-cpu-time>
 
     (defun get-cpu-time (state)
-           (declare (xargs :stobjs state))
-           (read-run-time state))")
+      (declare (xargs :stobjs state))
+      (read-run-time state))")
  (GET-DEFUN-EVENT (POINTERS)
                   "See [system-utilities].")
  (GET-ENFORCE-REDUNDANCY
@@ -45048,8 +45021,8 @@ Conclusion
   Function: <get-real-time>
 
     (defun get-real-time (state)
-           (declare (xargs :stobjs state))
-           (read-run-time state))")
+      (declare (xargs :stobjs state))
+      (read-run-time state))")
  (GET-REGISTER-INVARIANT-RISK (POINTERS)
                               "See [set-register-invariant-risk].")
  (GET-SERIALIZE-CHARACTER (POINTERS)
@@ -45096,10 +45069,10 @@ Conclusion
   Function: <getenv$>
 
     (defun getenv$ (str state)
-           (declare (xargs :stobjs state
-                           :guard (stringp str)))
-           (declare (ignore str))
-           (read-acl2-oracle state))")
+      (declare (xargs :stobjs state
+                      :guard (stringp str)))
+      (declare (ignore str))
+      (read-acl2-oracle state))")
  (GETPROP
   (WORLD ACL2-BUILT-INS)
   "Access fast property lists
@@ -45115,20 +45088,18 @@ Conclusion
 
   Macro: <getprop>
 
-    (defmacro
-        getprop
-        (symb key default world-name world-alist)
-        (if (equal world-name ''current-acl2-world)
-            (cons 'fgetprop
-                  (cons symb
-                        (cons key
-                              (cons default (cons world-alist 'nil)))))
-            (cons 'sgetprop
-                  (cons symb
-                        (cons key
-                              (cons default
-                                    (cons world-name
-                                          (cons world-alist 'nil))))))))")
+    (defmacro getprop (symb key default world-name world-alist)
+      (if (equal world-name ''current-acl2-world)
+          (cons 'fgetprop
+                (cons symb
+                      (cons key
+                            (cons default (cons world-alist 'nil)))))
+        (cons 'sgetprop
+              (cons symb
+                    (cons key
+                          (cons default
+                                (cons world-name
+                                      (cons world-alist 'nil))))))))")
  (GETPROPC
   (WORLD ACL2-BUILT-INS)
   "Access fast property lists
@@ -45143,16 +45114,14 @@ Conclusion
 
   Macro: <getpropc>
 
-    (defmacro
-         getpropc
-         (symb key &optional
-               default (world-alist '(w state)))
-         (cons 'getprop
-               (cons symb
-                     (cons key
-                           (cons default
-                                 (cons ''current-acl2-world
-                                       (cons world-alist 'nil)))))))")
+    (defmacro getpropc (symb key &optional
+                             default (world-alist '(w state)))
+      (cons 'getprop
+            (cons symb
+                  (cons key
+                        (cons default
+                              (cons ''current-acl2-world
+                                    (cons world-alist 'nil)))))))")
  (GETTING-STARTED (POINTERS)
                   "See [ACL2-tutorial].")
  (GIT-QUICK-START
@@ -45605,13 +45574,13 @@ Subtopics
   Function: <good-atom-listp>
 
     (defun good-atom-listp (lst)
-           (declare (xargs :guard t))
-           (cond ((atom lst) (eq lst nil))
-                 (t (and (or (acl2-numberp (car lst))
-                             (symbolp (car lst))
-                             (characterp (car lst))
-                             (stringp (car lst)))
-                         (good-atom-listp (cdr lst))))))")
+      (declare (xargs :guard t))
+      (cond ((atom lst) (eq lst nil))
+            (t (and (or (acl2-numberp (car lst))
+                        (symbolp (car lst))
+                        (characterp (car lst))
+                        (stringp (car lst)))
+                    (good-atom-listp (cdr lst))))))")
  (GOOD-BYE
   (BASICS ACL2-BUILT-INS)
   "Quit entirely out of Lisp
@@ -49241,9 +49210,9 @@ Subtopics
   Function: <hard-error>
 
     (defun hard-error (ctx str alist)
-           (declare (xargs :guard t))
-           (declare (ignore ctx str alist))
-           nil)")
+      (declare (xargs :guard t))
+      (declare (ignore ctx str alist))
+      nil)")
  (HEADER
   (ARRAYS ACL2-BUILT-INS)
   "Return the header of a 1- or 2-dimensional array
@@ -49261,10 +49230,9 @@ Subtopics
 
   Function: <header>
 
-    (defun
-         header (name l)
-         (declare (xargs :guard (or (array1p name l) (array2p name l))))
-         (prog2$ name (assoc-eq :header l)))")
+    (defun header (name l)
+      (declare (xargs :guard (or (array1p name l) (array2p name l))))
+      (prog2$ name (assoc-eq :header l)))")
  (HEAVY-LINEAR-P
   (LINEAR-ARITHMETIC SYSTEM-ATTACHMENTS)
   "Extend the use of [linear-arithmetic] during rewriting
@@ -49505,8 +49473,8 @@ Subtopics
   Function: <hide>
 
     (defun hide (x)
-           (declare (xargs :guard t))
-           x)
+      (declare (xargs :guard t))
+      x)
 
 
 Subtopics
@@ -50883,8 +50851,8 @@ Subtopics
   Function: <hons>
 
     (defun hons (x y)
-           (declare (xargs :guard t))
-           (cons x y))
+      (declare (xargs :guard t))
+      (cons x y))
 
 
 Subtopics
@@ -50999,8 +50967,8 @@ Subtopics
   Function: <hons-acons>
 
     (defun hons-acons (key val alist)
-           (declare (xargs :guard t))
-           (cons (cons key val) alist))")
+      (declare (xargs :guard t))
+      (cons (cons key val) alist))")
  (HONS-ACONS!
   (FAST-ALISTS ACL2-BUILT-INS)
   "(hons-acons! key val alist) is an alternative to [hons-acons] that
@@ -51057,8 +51025,8 @@ Subtopics
   Function: <hons-acons!>
 
     (defun hons-acons! (key val alist)
-           (declare (xargs :guard t))
-           (cons (cons key val) alist))")
+      (declare (xargs :guard t))
+      (cons (cons key val) alist))")
  (HONS-AND-MEMOIZATION
   (ACL2)
   "Hash cons, function memoization, and applicative hash tables
@@ -51402,12 +51370,12 @@ Subtopics
   Function: <hons-assoc-equal>
 
     (defun hons-assoc-equal (key alist)
-           (declare (xargs :guard t))
-           (cond ((atom alist) nil)
-                 ((and (consp (car alist))
-                       (hons-equal key (caar alist)))
-                  (car alist))
-                 (t (hons-assoc-equal key (cdr alist)))))")
+      (declare (xargs :guard t))
+      (cond ((atom alist) nil)
+            ((and (consp (car alist))
+                  (hons-equal key (caar alist)))
+             (car alist))
+            (t (hons-assoc-equal key (cdr alist)))))")
  (HONS-CLEAR
   (HONS ACL2-BUILT-INS)
   "(hons-clear gc) is a drastic garbage collection mechanism that clears
@@ -51445,9 +51413,9 @@ Subtopics
   Function: <hons-clear>
 
     (defun hons-clear (gc)
-           (declare (xargs :guard t))
-           (declare (ignore gc))
-           nil)")
+      (declare (xargs :guard t))
+      (declare (ignore gc))
+      nil)")
  (HONS-CLEAR!
   (HONS ACL2-BUILT-INS)
   "A version of [hons-clear] for [parallel] execution
@@ -51496,8 +51464,8 @@ Subtopics
   Function: <hons-copy>
 
     (defun hons-copy (x)
-           (declare (xargs :guard t))
-           x)")
+      (declare (xargs :guard t))
+      x)")
  (HONS-COPY-PERSISTENT
   (HONS ACL2-BUILT-INS)
   "(hons-copy-persistent x) returns a [normed] object that is equal to X
@@ -51517,8 +51485,8 @@ Subtopics
   Function: <hons-copy-persistent>
 
     (defun hons-copy-persistent (x)
-           (declare (xargs :guard t))
-           x)")
+      (declare (xargs :guard t))
+      x)")
  (HONS-ENABLED
   (HONS-AND-MEMOIZATION)
   "Hash cons, function memoization, and applicative hash tables
@@ -51549,8 +51517,8 @@ Subtopics
   Function: <hons-equal>
 
     (defun hons-equal (x y)
-           (declare (xargs :guard t))
-           (equal x y))
+      (declare (xargs :guard t))
+      (equal x y))
 
 
 Subtopics
@@ -51580,8 +51548,8 @@ Subtopics
   Function: <hons-equal-lite>
 
     (defun hons-equal-lite (x y)
-           (declare (xargs :guard t))
-           (equal x y))")
+      (declare (xargs :guard t))
+      (equal x y))")
  (HONS-GET
   (FAST-ALISTS ACL2-BUILT-INS)
   "(hons-get key alist) is the efficient lookup operation for
@@ -51600,8 +51568,8 @@ Subtopics
   Function: <hons-get>
 
     (defun hons-get (key alist)
-           (declare (xargs :guard t))
-           (hons-assoc-equal key alist))")
+      (declare (xargs :guard t))
+      (hons-assoc-equal key alist))")
  (HONS-NOTE
   (HONS)
   "Notes about [hons], especially pertaining to expensive resizing
@@ -51761,9 +51729,9 @@ Subtopics
 
   Function: <hons-summary>
 
-    (defun hons-summary
-           nil (declare (xargs :guard t))
-           nil)")
+    (defun hons-summary nil
+      (declare (xargs :guard t))
+      nil)")
  (HONS-WASH
   (HONS ACL2-BUILT-INS)
   "(hons-wash) is like [gc$] but can also garbage collect [normed]
@@ -51803,8 +51771,9 @@ Subtopics
 
   Function: <hons-wash>
 
-    (defun hons-wash nil (declare (xargs :guard t))
-           nil)")
+    (defun hons-wash nil
+      (declare (xargs :guard t))
+      nil)")
  (HONS-WASH!
   (HONS ACL2-BUILT-INS)
   "A version of [hons-wash] for [parallel] execution
@@ -51957,8 +51926,8 @@ Subtopics
   Function: <identity>
 
     (defun identity (x)
-           (declare (xargs :guard t))
-           x)")
+      (declare (xargs :guard t))
+      x)")
  (IF
   (BASICS ACL2-BUILT-INS)
   "If-then-else function
@@ -52166,8 +52135,8 @@ Subtopics
   Function: <iff>
 
     (defun iff (p q)
-           (declare (xargs :guard t))
-           (if p (if q t nil) (if q nil t)))")
+      (declare (xargs :guard t))
+      (if p (if q t nil) (if q nil t)))")
  (IFIX
   (NUMBERS ACL2-BUILT-INS)
   "Coerce to an integer
@@ -52182,8 +52151,8 @@ Subtopics
   Function: <ifix>
 
     (defun ifix (x)
-           (declare (xargs :guard t))
-           (if (integerp x) x 0))")
+      (declare (xargs :guard t))
+      (if (integerp x) x 0))")
  (IGNORABLE (POINTERS) "See [declare].")
  (IGNORE (POINTERS) "See [declare].")
  (IGNORED-ATTACHMENT
@@ -52350,8 +52319,8 @@ Subtopics
   Function: <illegal>
 
     (defun illegal (ctx str alist)
-           (declare (xargs :guard (hard-error ctx str alist)))
-           (hard-error ctx str alist))")
+      (declare (xargs :guard (hard-error ctx str alist)))
+      (hard-error ctx str alist))")
  (ILLEGAL-STATE
   (DEFABSSTOBJ)
   "Illegal ACL2 state
@@ -52445,8 +52414,8 @@ Subtopics
   Function: <implies>
 
     (defun implies (p q)
-           (declare (xargs :guard t))
-           (if p (if q t nil) t))")
+      (declare (xargs :guard t))
+      (if p (if q t nil) t))")
  (IMPROPER-CONSP
   (LISTS ACL2-BUILT-INS)
   "Recognizer for improper (non-nil-terminated) non-empty lists
@@ -52458,8 +52427,8 @@ Subtopics
   Function: <improper-consp>
 
     (defun improper-consp (x)
-           (declare (xargs :guard t))
-           (and (consp x) (not (true-listp x))))")
+      (declare (xargs :guard t))
+      (and (consp x) (not (true-listp x))))")
  (IN-ARITHMETIC-THEORY
   (EVENTS)
   "Designate theory for some rewriting done for non-linear arithmetic
@@ -53840,11 +53809,13 @@ Subtopics
   Macro: <int=>
 
     (defmacro int= (i j)
-              (list 'eql
-                    (if (integerp i)
-                        i (list 'the 'integer i))
-                    (if (integerp j)
-                        j (list 'the 'integer j))))")
+      (list 'eql
+            (if (integerp i)
+                i
+              (list 'the 'integer i))
+            (if (integerp j)
+                j
+              (list 'the 'integer j))))")
  (INTEGER-LENGTH
   (NUMBERS ACL2-BUILT-INS)
   "Number of bits in two's complement integer representation
@@ -53861,11 +53832,12 @@ Subtopics
   Function: <integer-length>
 
     (defun integer-length (i)
-           (declare (xargs :guard (integerp i)))
-           (if (zip i)
-               0
-               (if (= i -1)
-                   0 (+ 1 (integer-length (floor i 2))))))")
+      (declare (xargs :guard (integerp i)))
+      (if (zip i)
+          0
+        (if (= i -1)
+            0
+          (+ 1 (integer-length (floor i 2))))))")
  (INTEGER-LISTP
   (NUMBERS LISTS ACL2-BUILT-INS)
   "Recognizer for a true list of integers
@@ -53876,10 +53848,10 @@ Subtopics
   Function: <integer-listp>
 
     (defun integer-listp (l)
-           (declare (xargs :guard t))
-           (cond ((atom l) (eq l nil))
-                 (t (and (integerp (car l))
-                         (integer-listp (cdr l))))))")
+      (declare (xargs :guard t))
+      (cond ((atom l) (eq l nil))
+            (t (and (integerp (car l))
+                    (integer-listp (cdr l))))))")
  (INTEGER-RANGE-P
   (NUMBERS ACL2-BUILT-INS)
   "Recognizer for integers between two bounds.
@@ -53890,10 +53862,10 @@ Subtopics
   Function: <integer-range-p>
 
     (defun integer-range-p (lower upper x)
-           (declare (type integer lower upper))
-           (and (integerp x)
-                (<= lower x)
-                (< x upper)))")
+      (declare (type integer lower upper))
+      (and (integerp x)
+           (<= lower x)
+           (< x upper)))")
  (INTEGERP
   (NUMBERS ACL2-BUILT-INS)
   "Recognizer for whole numbers
@@ -54216,14 +54188,13 @@ Subtopics
 
   Function: <intersection-equal>
 
-    (defun
-         intersection-equal (l1 l2)
-         (declare (xargs :guard (and (true-listp l1) (true-listp l2))))
-         (cond ((endp l1) nil)
-               ((member-equal (car l1) l2)
-                (cons (car l1)
-                      (intersection-equal (cdr l1) l2)))
-               (t (intersection-equal (cdr l1) l2))))")
+    (defun intersection-equal (l1 l2)
+      (declare (xargs :guard (and (true-listp l1) (true-listp l2))))
+      (cond ((endp l1) nil)
+            ((member-equal (car l1) l2)
+             (cons (car l1)
+                   (intersection-equal (cdr l1) l2)))
+            (t (intersection-equal (cdr l1) l2))))")
  (INTERSECTION-EQ (POINTERS)
                   "See [intersection$].")
  (INTERSECTION-EQUAL (POINTERS)
@@ -54283,10 +54254,10 @@ Subtopics
   Function: <intersectp-equal>
 
     (defun intersectp-equal (x y)
-           (declare (xargs :guard (and (true-listp x) (true-listp y))))
-           (cond ((endp x) nil)
-                 ((member-equal (car x) y) t)
-                 (t (intersectp-equal (cdr x) y))))")
+      (declare (xargs :guard (and (true-listp x) (true-listp y))))
+      (cond ((endp x) nil)
+            ((member-equal (car x) y) t)
+            (t (intersectp-equal (cdr x) y))))")
  (INTERSECTP-EQ (POINTERS)
                 "See [intersectp].")
  (INTERSECTP-EQUAL (POINTERS)
@@ -58520,7 +58491,7 @@ Subtopics
   [Output-to-file]
       Redirecting output to a file
 
-  [Pp-special-syms]
+  [Ppr-special-syms]
       A [table] to control indentation for pretty-printing
 
   [Princ$]
@@ -58778,11 +58749,11 @@ Subtopics
   Function: <keyword-value-listp>
 
     (defun keyword-value-listp (l)
-           (declare (xargs :guard t))
-           (cond ((atom l) (null l))
-                 (t (and (keywordp (car l))
-                         (consp (cdr l))
-                         (keyword-value-listp (cddr l))))))
+      (declare (xargs :guard t))
+      (cond ((atom l) (null l))
+            (t (and (keywordp (car l))
+                    (consp (cdr l))
+                    (keyword-value-listp (cddr l))))))
 
 
 Subtopics
@@ -58814,10 +58785,10 @@ Subtopics
   Function: <keywordp>
 
     (defun keywordp (x)
-           (declare (xargs :guard t))
-           (and (symbolp x)
-                (equal (symbol-package-name x)
-                       \"KEYWORD\")))
+      (declare (xargs :guard t))
+      (and (symbolp x)
+           (equal (symbol-package-name x)
+                  \"KEYWORD\")))
 
 
 Subtopics
@@ -58840,14 +58811,14 @@ Subtopics
   Function: <kwote>
 
     (defun kwote (x)
-           (declare (xargs :guard t))
-           (mbe :logic (list 'quote x)
-                :exec (cond ((eq x nil) *nil*)
-                            ((eq x t) *t*)
-                            ((eql x 0) *0*)
-                            ((eql x 1) *1*)
-                            ((eql x -1) *-1*)
-                            (t (list 'quote x)))))")
+      (declare (xargs :guard t))
+      (mbe :logic (list 'quote x)
+           :exec (cond ((eq x nil) *nil*)
+                       ((eq x t) *t*)
+                       ((eql x 0) *0*)
+                       ((eql x 1) *1*)
+                       ((eql x -1) *-1*)
+                       (t (list 'quote x)))))")
  (KWOTE-LST
   (TERM ACL2-BUILT-INS)
   "Quote an arbitrary true list of objects
@@ -58858,10 +58829,10 @@ Subtopics
   Function: <kwote-lst>
 
     (defun kwote-lst (lst)
-           (declare (xargs :guard (true-listp lst)))
-           (cond ((endp lst) nil)
-                 (t (cons (kwote (car lst))
-                          (kwote-lst (cdr lst))))))")
+      (declare (xargs :guard (true-listp lst)))
+      (cond ((endp lst) nil)
+            (t (cons (kwote (car lst))
+                     (kwote-lst (cdr lst))))))")
  (L<
   (TERM APPLY$)
   "Ordering on naturals or lists of naturals
@@ -58874,43 +58845,43 @@ Subtopics
   Function: <l<>
 
     (defun l< (x y)
-           (declare (xargs :guard (and (lexp x) (lexp y))))
-           (or (< (len x) (len y))
-               (and (= (len x) (len y))
-                    (if (atom x) (< x y) (d< x y)))))
+      (declare (xargs :guard (and (lexp x) (lexp y))))
+      (or (< (len x) (len y))
+          (and (= (len x) (len y))
+               (if (atom x) (< x y) (d< x y)))))
 
   Function: <lexp>
 
     (defun lexp (x)
-           (declare (xargs :guard t))
-           (or (natp x)
-               (and (consp x) (nat-listp x))))
+      (declare (xargs :guard t))
+      (or (natp x)
+          (and (consp x) (nat-listp x))))
 
   Function: <d<>
 
     (defun d< (x y)
-           (declare (xargs :guard (and (nat-listp x) (nat-listp y))))
-           (and (consp x)
-                (consp y)
-                (or (< (car x) (car y))
-                    (and (= (car x) (car y))
-                         (d< (cdr x) (cdr y))))))
+      (declare (xargs :guard (and (nat-listp x) (nat-listp y))))
+      (and (consp x)
+           (consp y)
+           (or (< (car x) (car y))
+               (and (= (car x) (car y))
+                    (d< (cdr x) (cdr y))))))
 
   Function: <lex-fix>
 
     (defun lex-fix (x)
-           (declare (xargs :guard t))
-           (cond ((atom x) (nfix x))
-                 (t (nfix-list x))))
+      (declare (xargs :guard t))
+      (cond ((atom x) (nfix x))
+            (t (nfix-list x))))
 
   Function: <nfix-list>
 
     (defun nfix-list (list)
-           (declare (xargs :guard t))
-           (if (consp list)
-               (cons (nfix (car list))
-                     (nfix-list (cdr list)))
-               nil))")
+      (declare (xargs :guard t))
+      (if (consp list)
+          (cons (nfix (car list))
+                (nfix-list (cdr list)))
+        nil))")
  (LAMBDA (TERM APPLY$)
   "Lambda expressions, LAMBDA objects, and lambda$ expressions
 
@@ -59347,8 +59318,8 @@ About Guard Verification of Lambda Objects
   Function: <last>
 
     (defun last (l)
-           (declare (xargs :guard (listp l)))
-           (if (atom (cdr l)) l (last (cdr l))))")
+      (declare (xargs :guard (listp l)))
+      (if (atom (cdr l)) l (last (cdr l))))")
  (LAST-CDR
   (LISTS ACL2-BUILT-INS)
   "The last [cdr] of a list
@@ -59366,8 +59337,8 @@ About Guard Verification of Lambda Objects
   Function: <last-cdr>
 
     (defun last-cdr (x)
-           (declare (xargs :guard t))
-           (if (atom x) x (cdr (last x))))")
+      (declare (xargs :guard t))
+      (if (atom x) x (cdr (last x))))")
  (LAST-PROVER-STEPS
   (SET-PROVER-STEP-LIMIT WITH-PROVER-STEP-LIMIT
                          PROGRAMMING-WITH-STATE ACL2-BUILT-INS)
@@ -59493,6 +59464,7 @@ About Guard Verification of Lambda Objects
                                      ;   or (:exit N)
         :ld-query-control-alist ...  ; alist supplying default responses
         :ld-verbose         ...)     ; nil or t
+        :ld-always-skip-top-level-locals      ; nil or t
         :ld-user-stobjs-modified-warning ...) ; nil, t, or :same
 
   Ld is the top-level ACL2 read-eval-print loop.  (When you call [lp],
@@ -59847,7 +59819,7 @@ Subtopics
   Ld-always-skip-top-level-locals is an [ld] special (see [ld]).  The
   accessor is (ld-always-skip-top-level-locals state) and the updater
   is (set-ld-always-skip-top-level-locals val state).  The value of
-  ld-always-skip-top-level-locals must be either nil, or t.  The
+  ld-always-skip-top-level-locals must be either nil or t.  The
   initial value of ld-always-skip-top-level-locals is nil.
 
   The general-purpose ACL2 read-eval-print loop, [ld], is controlled by
@@ -61131,8 +61103,8 @@ Subtopics
   Function: <len>
 
     (defun len (x)
-           (declare (xargs :guard t))
-           (if (consp x) (+ 1 (len (cdr x))) 0))")
+      (declare (xargs :guard t))
+      (if (consp x) (+ 1 (len (cdr x))) 0))")
  (LENGTH
   (LISTS STRINGS ACL2-BUILT-INS)
   "Length of a string or proper list
@@ -61150,10 +61122,10 @@ Subtopics
   Function: <length>
 
     (defun length (x)
-           (declare (xargs :guard (if (true-listp x) t (stringp x))))
-           (if (stringp x)
-               (len (coerce x 'list))
-               (len x)))")
+      (declare (xargs :guard (if (true-listp x) t (stringp x))))
+      (if (stringp x)
+          (len (coerce x 'list))
+        (len x)))")
  (LET (BASICS ACL2-BUILT-INS)
   "Binding of lexically scoped (local) variables
 
@@ -61347,13 +61319,13 @@ Introduction
   Function: <lexorder>
 
     (defun lexorder (x y)
-           (declare (xargs :guard t))
-           (cond ((atom x)
-                  (cond ((atom y) (alphorder x y)) (t t)))
-                 ((atom y) nil)
-                 ((equal (car x) (car y))
-                  (lexorder (cdr x) (cdr y)))
-                 (t (lexorder (car x) (car y)))))")
+      (declare (xargs :guard t))
+      (cond ((atom x)
+             (cond ((atom y) (alphorder x y)) (t t)))
+            ((atom y) nil)
+            ((equal (car x) (car y))
+             (lexorder (cdr x) (cdr y)))
+            (t (lexorder (car x) (car y)))))")
  (LEXP (POINTERS) "See [l<].")
  (LINEAR
   (RULE-CLASSES)
@@ -61665,17 +61637,17 @@ Subtopics
   Macro: <list>
 
     (defmacro list (&rest args)
-              (list-macro args))
+      (list-macro args))
 
   Function: <list-macro>
 
     (defun list-macro (lst)
-           (declare (xargs :guard t))
-           (if (consp lst)
-               (cons 'cons
-                     (cons (car lst)
-                           (cons (list-macro (cdr lst)) nil)))
-               nil))")
+      (declare (xargs :guard t))
+      (if (consp lst)
+          (cons 'cons
+                (cons (car lst)
+                      (cons (list-macro (cdr lst)) nil)))
+        nil))")
  (LIST*
   (LISTS ACL2-BUILT-INS)
   "Build a list
@@ -61690,18 +61662,18 @@ Subtopics
   Macro: <list*>
 
     (defmacro list* (&rest args)
-              (declare (xargs :guard (consp args)))
-              (list*-macro args))
+      (declare (xargs :guard (consp args)))
+      (list*-macro args))
 
   Function: <list*-macro>
 
     (defun list*-macro (lst)
-           (declare (xargs :guard (and (true-listp lst) (consp lst))))
-           (if (endp (cdr lst))
-               (car lst)
-               (cons 'cons
-                     (cons (car lst)
-                           (cons (list*-macro (cdr lst)) nil)))))")
+      (declare (xargs :guard (and (true-listp lst) (consp lst))))
+      (if (endp (cdr lst))
+          (car lst)
+        (cons 'cons
+              (cons (car lst)
+                    (cons (list*-macro (cdr lst)) nil)))))")
  (LISTP
   (LISTS CONSES ACL2-BUILT-INS)
   "Recognizer for (not necessarily proper) lists
@@ -61716,8 +61688,8 @@ Subtopics
   Function: <listp>
 
     (defun listp (x)
-           (declare (xargs :guard t))
-           (or (consp x) (equal x nil)))")
+      (declare (xargs :guard t))
+      (or (consp x) (equal x nil)))")
  (LISTS
   (PROGRAMMING)
   "Lists of objects, the classic Lisp data structure.
@@ -62114,25 +62086,25 @@ Subtopics
   Macro: <logand>
 
     (defmacro logand (&rest args)
-              (cond ((null args) -1)
-                    ((null (cdr args))
-                     (cons 'the
-                           (cons 'integer (cons (car args) 'nil))))
-                    (t (xxxjoin 'binary-logand args))))
+      (cond ((null args) -1)
+            ((null (cdr args))
+             (cons 'the
+                   (cons 'integer (cons (car args) 'nil))))
+            (t (xxxjoin 'binary-logand args))))
 
   Function: <binary-logand>
 
     (defun binary-logand (i j)
-           (declare (xargs :guard (and (integerp i) (integerp j))))
-           (cond ((zip i) 0)
-                 ((zip j) 0)
-                 ((eql i -1) j)
-                 ((eql j -1) i)
-                 (t (let ((x (* 2 (logand (floor i 2) (floor j 2)))))
-                         (+ x
-                            (cond ((evenp i) 0)
-                                  ((evenp j) 0)
-                                  (t 1)))))))")
+      (declare (xargs :guard (and (integerp i) (integerp j))))
+      (cond ((zip i) 0)
+            ((zip j) 0)
+            ((eql i -1) j)
+            ((eql j -1) i)
+            (t (let ((x (* 2 (logand (floor i 2) (floor j 2)))))
+                 (+ x
+                    (cond ((evenp i) 0)
+                          ((evenp j) 0)
+                          (t 1)))))))")
  (LOGANDC1
   (NUMBERS ACL2-BUILT-INS)
   "Bitwise logical `and' of two ints, complementing the first
@@ -62148,8 +62120,8 @@ Subtopics
   Function: <logandc1>
 
     (defun logandc1 (i j)
-           (declare (xargs :guard (and (integerp i) (integerp j))))
-           (logand (lognot i) j))")
+      (declare (xargs :guard (and (integerp i) (integerp j))))
+      (logand (lognot i) j))")
  (LOGANDC2
   (NUMBERS ACL2-BUILT-INS)
   "Bitwise logical `and' of two ints, complementing the second
@@ -62165,8 +62137,8 @@ Subtopics
   Function: <logandc2>
 
     (defun logandc2 (i j)
-           (declare (xargs :guard (and (integerp i) (integerp j))))
-           (logand i (lognot j)))")
+      (declare (xargs :guard (and (integerp i) (integerp j))))
+      (logand i (lognot j)))")
  (LOGBITP
   (NUMBERS ACL2-BUILT-INS)
   "The ith bit of an integer
@@ -62184,10 +62156,10 @@ Subtopics
   Function: <logbitp>
 
     (defun logbitp (i j)
-           (declare (xargs :guard (and (integerp j)
-                                       (integerp i)
-                                       (>= i 0))))
-           (oddp (floor (ifix j) (expt 2 (nfix i)))))")
+      (declare (xargs :guard (and (integerp j)
+                                  (integerp i)
+                                  (>= i 0))))
+      (oddp (floor (ifix j) (expt 2 (nfix i)))))")
  (LOGCOUNT
   (NUMBERS ACL2-BUILT-INS)
   "Number of ``on'' bits in a two's complement number
@@ -62202,14 +62174,13 @@ Subtopics
 
   Function: <logcount>
 
-    (defun
-         logcount (x)
-         (declare (xargs :guard (integerp x)))
-         (cond ((zip x) 0)
-               ((< x 0) (logcount (lognot x)))
-               ((evenp x)
-                (logcount (nonnegative-integer-quotient x 2)))
-               (t (1+ (logcount (nonnegative-integer-quotient x 2))))))")
+    (defun logcount (x)
+      (declare (xargs :guard (integerp x)))
+      (cond ((zip x) 0)
+            ((< x 0) (logcount (lognot x)))
+            ((evenp x)
+             (logcount (nonnegative-integer-quotient x 2)))
+            (t (1+ (logcount (nonnegative-integer-quotient x 2))))))")
  (LOGEQV
   (NUMBERS ACL2-BUILT-INS)
   "Bitwise logical equivalence of zero or more integers
@@ -62227,17 +62198,17 @@ Subtopics
   Macro: <logeqv>
 
     (defmacro logeqv (&rest args)
-              (cond ((null args) -1)
-                    ((null (cdr args))
-                     (cons 'the
-                           (cons 'integer (cons (car args) 'nil))))
-                    (t (xxxjoin 'binary-logeqv args))))
+      (cond ((null args) -1)
+            ((null (cdr args))
+             (cons 'the
+                   (cons 'integer (cons (car args) 'nil))))
+            (t (xxxjoin 'binary-logeqv args))))
 
   Function: <binary-logeqv>
 
     (defun binary-logeqv (i j)
-           (declare (xargs :guard (and (integerp i) (integerp j))))
-           (logand (logorc1 i j) (logorc1 j i)))")
+      (declare (xargs :guard (and (integerp i) (integerp j))))
+      (logand (logorc1 i j) (logorc1 j i)))")
  (LOGIC
   (DEFUN-MODE)
   "To set the default [defun-mode] to :logic
@@ -62284,11 +62255,11 @@ Subtopics
   Function: <logic-fns-list-listp>
 
     (defun logic-fns-list-listp (x wrld)
-           (declare (xargs :guard (and (plist-worldp wrld)
-                                       (pseudo-term-list-listp x))))
-           (cond ((endp x) t)
-                 (t (and (logic-fns-listp (car x) wrld)
-                         (logic-fns-list-listp (cdr x) wrld)))))")
+      (declare (xargs :guard (and (plist-worldp wrld)
+                                  (pseudo-term-list-listp x))))
+      (cond ((endp x) t)
+            (t (and (logic-fns-listp (car x) wrld)
+                    (logic-fns-list-listp (cdr x) wrld)))))")
  (LOGIC-FNS-LISTP
   (TERMP ACL2-BUILT-INS)
   "Recognizer for when a given list of [term]s calls only :[logic]-mode
@@ -62305,11 +62276,11 @@ Subtopics
   Function: <logic-fns-listp>
 
     (defun logic-fns-listp (lst wrld)
-           (declare (xargs :guard (and (plist-worldp wrld)
-                                       (pseudo-term-listp lst))))
-           (cond ((endp lst) t)
-                 (t (and (logic-fnsp (car lst) wrld)
-                         (logic-fns-listp (cdr lst) wrld)))))")
+      (declare (xargs :guard (and (plist-worldp wrld)
+                                  (pseudo-term-listp lst))))
+      (cond ((endp lst) t)
+            (t (and (logic-fnsp (car lst) wrld)
+                    (logic-fns-listp (cdr lst) wrld)))))")
  (LOGIC-FNSP
   (TERMP ACL2-BUILT-INS)
   "Recognizer for when a given [term] calls only :[logic]-mode function
@@ -62325,16 +62296,16 @@ Subtopics
   Function: <logic-fnsp>
 
     (defun logic-fnsp (term wrld)
-           (declare (xargs :guard (and (plist-worldp wrld)
-                                       (pseudo-termp term))))
-           (cond ((variablep term) t)
-                 ((fquotep term) t)
-                 ((flambdap (ffn-symb term))
-                  (and (logic-fnsp (lambda-body (ffn-symb term))
-                                   wrld)
-                       (logic-fns-listp (fargs term) wrld)))
-                 ((programp (ffn-symb term) wrld) nil)
-                 (t (logic-fns-listp (fargs term) wrld))))")
+      (declare (xargs :guard (and (plist-worldp wrld)
+                                  (pseudo-termp term))))
+      (cond ((variablep term) t)
+            ((fquotep term) t)
+            ((flambdap (ffn-symb term))
+             (and (logic-fnsp (lambda-body (ffn-symb term))
+                              wrld)
+                  (logic-fns-listp (fargs term) wrld)))
+            ((programp (ffn-symb term) wrld) nil)
+            (t (logic-fns-listp (fargs term) wrld))))")
  (LOGIC-KNOWLEDGE-TAKEN-FOR-GRANTED
   (INTRODUCTION-TO-THE-THEOREM-PROVER)
   "Background knowledge in ACL2 logic for theorem prover tutorial
@@ -63688,9 +63659,9 @@ Subtopics
   Function: <logic-term-list-listp>
 
     (defun logic-term-list-listp (x w)
-           (declare (xargs :guard (plist-worldp-with-formals w)))
-           (and (term-list-listp x w)
-                (logic-fns-list-listp x w)))")
+      (declare (xargs :guard (plist-worldp-with-formals w)))
+      (and (term-list-listp x w)
+           (logic-fns-list-listp x w)))")
  (LOGIC-TERM-LISTP
   (TERMP ACL2-BUILT-INS)
   "Recognizer for lists of [term]s that call only :[logic]-mode function
@@ -63703,9 +63674,9 @@ Subtopics
   Function: <logic-term-listp>
 
     (defun logic-term-listp (x w)
-           (declare (xargs :guard (plist-worldp-with-formals w)))
-           (and (term-listp x w)
-                (logic-fns-listp x w)))")
+      (declare (xargs :guard (plist-worldp-with-formals w)))
+      (and (term-listp x w)
+           (logic-fns-listp x w)))")
  (LOGIC-TERMP
   (TERMP ACL2-BUILT-INS)
   "Recognizer for [term]s that call only :[logic]-mode function symbols
@@ -63717,9 +63688,9 @@ Subtopics
   Function: <logic-termp>
 
     (defun logic-termp (x wrld)
-           (declare (xargs :guard (plist-worldp-with-formals wrld)))
-           (and (termp x wrld)
-                (logic-fnsp x wrld)))")
+      (declare (xargs :guard (plist-worldp-with-formals wrld)))
+      (and (termp x wrld)
+           (logic-fnsp x wrld)))")
  (LOGICAL-NAME
   (EVENTS WORLD)
   "A name created by a logical event
@@ -63775,17 +63746,17 @@ Subtopics
   Macro: <logior>
 
     (defmacro logior (&rest args)
-              (cond ((null args) 0)
-                    ((null (cdr args))
-                     (cons 'the
-                           (cons 'integer (cons (car args) 'nil))))
-                    (t (xxxjoin 'binary-logior args))))
+      (cond ((null args) 0)
+            ((null (cdr args))
+             (cons 'the
+                   (cons 'integer (cons (car args) 'nil))))
+            (t (xxxjoin 'binary-logior args))))
 
   Function: <binary-logior>
 
     (defun binary-logior (i j)
-           (declare (xargs :guard (and (integerp i) (integerp j))))
-           (lognot (logand (lognot i) (lognot j))))")
+      (declare (xargs :guard (and (integerp i) (integerp j))))
+      (lognot (logand (lognot i) (lognot j))))")
  (LOGNAND
   (NUMBERS ACL2-BUILT-INS)
   "Bitwise logical `nand' of two integers
@@ -63800,8 +63771,8 @@ Subtopics
   Function: <lognand>
 
     (defun lognand (i j)
-           (declare (xargs :guard (and (integerp i) (integerp j))))
-           (lognot (logand i j)))")
+      (declare (xargs :guard (and (integerp i) (integerp j))))
+      (lognot (logand i j)))")
  (LOGNOR
   (NUMBERS ACL2-BUILT-INS)
   "Bitwise logical `nor' of two integers
@@ -63817,8 +63788,8 @@ Subtopics
   Function: <lognor>
 
     (defun lognor (i j)
-           (declare (xargs :guard (and (integerp i) (integerp j))))
-           (lognot (logior i j)))")
+      (declare (xargs :guard (and (integerp i) (integerp j))))
+      (lognot (logior i j)))")
  (LOGNOT
   (NUMBERS ACL2-BUILT-INS)
   "Bitwise not of a two's complement number
@@ -63836,8 +63807,8 @@ Subtopics
   Function: <lognot>
 
     (defun lognot (i)
-           (declare (xargs :guard (integerp i)))
-           (+ (- (ifix i)) -1))")
+      (declare (xargs :guard (integerp i)))
+      (+ (- (ifix i)) -1))")
  (LOGORC1
   (NUMBERS ACL2-BUILT-INS)
   "Bitwise logical inclusive or of two ints, complementing the first
@@ -63853,8 +63824,8 @@ Subtopics
   Function: <logorc1>
 
     (defun logorc1 (i j)
-           (declare (xargs :guard (and (integerp i) (integerp j))))
-           (logior (lognot i) j))")
+      (declare (xargs :guard (and (integerp i) (integerp j))))
+      (logior (lognot i) j))")
  (LOGORC2
   (NUMBERS ACL2-BUILT-INS)
   "Bitwise logical inclusive or of two ints, complementing the second
@@ -63870,8 +63841,8 @@ Subtopics
   Function: <logorc2>
 
     (defun logorc2 (i j)
-           (declare (xargs :guard (and (integerp i) (integerp j))))
-           (logior i (lognot j)))")
+      (declare (xargs :guard (and (integerp i) (integerp j))))
+      (logior i (lognot j)))")
  (LOGTEST
   (NUMBERS ACL2-BUILT-INS)
   "Test if two integers share a `1' bit
@@ -63887,8 +63858,8 @@ Subtopics
   Function: <logtest>
 
     (defun logtest (x y)
-           (declare (xargs :guard (and (integerp x) (integerp y))))
-           (not (zerop (logand x y))))")
+      (declare (xargs :guard (and (integerp x) (integerp y))))
+      (not (zerop (logand x y))))")
  (LOGXOR
   (NUMBERS ACL2-BUILT-INS)
   "Bitwise logical exclusive or of zero or more integers
@@ -63906,17 +63877,17 @@ Subtopics
   Macro: <logxor>
 
     (defmacro logxor (&rest args)
-              (cond ((null args) 0)
-                    ((null (cdr args))
-                     (cons 'the
-                           (cons 'integer (cons (car args) 'nil))))
-                    (t (xxxjoin 'binary-logxor args))))
+      (cond ((null args) 0)
+            ((null (cdr args))
+             (cons 'the
+                   (cons 'integer (cons (car args) 'nil))))
+            (t (xxxjoin 'binary-logxor args))))
 
   Function: <binary-logxor>
 
     (defun binary-logxor (i j)
-           (declare (xargs :guard (and (integerp i) (integerp j))))
-           (lognot (logeqv i j)))")
+      (declare (xargs :guard (and (integerp i) (integerp j))))
+      (lognot (logeqv i j)))")
  (LOOP$
   (ACL2-BUILT-INS PROGRAMMING)
   "Iteration with an analogue of the Common Lisp loop macro
@@ -64974,13 +64945,13 @@ Subtopics
   Function: <lower-case-p>
 
     (defun lower-case-p (x)
-           (declare (xargs :guard (and (characterp x)
-                                       (standard-char-p x))))
-           (and (member x
-                        '(#\\a #\\b #\\c #\\d #\\e #\\f #\\g
-                              #\\h #\\i #\\j #\\k #\\l #\\m #\\n #\\o #\\p #\\q
-                              #\\r #\\s #\\t #\\u #\\v #\\w #\\x #\\y #\\z))
-                t))")
+      (declare (xargs :guard (and (characterp x)
+                                  (standard-char-p x))))
+      (and (member x
+                   '(#\\a #\\b #\\c #\\d #\\e #\\f #\\g
+                         #\\h #\\i #\\j #\\k #\\l #\\m #\\n #\\o #\\p #\\q
+                         #\\r #\\s #\\t #\\u #\\v #\\w #\\x #\\y #\\z))
+           t))")
  (LP
   (LD)
   "The Common Lisp entry to ACL2
@@ -69581,13 +69552,13 @@ Subtopics
   Function: <make-character-list>
 
     (defun make-character-list (x)
-           (declare (xargs :guard t))
-           (cond ((atom x) nil)
-                 ((characterp (car x))
-                  (cons (car x)
-                        (make-character-list (cdr x))))
-                 (t (cons (code-char 0)
-                          (make-character-list (cdr x))))))")
+      (declare (xargs :guard t))
+      (cond ((atom x) nil)
+            ((characterp (car x))
+             (cons (car x)
+                   (make-character-list (cdr x))))
+            (t (cons (code-char 0)
+                     (make-character-list (cdr x))))))")
  (MAKE-EVENT
   (EVENTS MACROS)
   "Evaluate (expand) a given form and then evaluate the result
@@ -71226,8 +71197,8 @@ Subtopics
   Function: <make-fast-alist>
 
     (defun make-fast-alist (alist)
-           (declare (xargs :guard t))
-           alist)
+      (declare (xargs :guard t))
+      alist)
 
   Under the hood, we construct and return an object that is equal to
   alist and which is a fast alist.  If alist is already a fast alist,
@@ -71262,16 +71233,16 @@ Subtopics
   Macro: <make-list>
 
     (defmacro make-list (size &key initial-element)
-              (cons 'make-list-ac
-                    (cons size (cons initial-element '(nil)))))
+      (cons 'make-list-ac
+            (cons size (cons initial-element '(nil)))))
 
   Function: <make-list-ac>
 
     (defun make-list-ac (n val ac)
-           (declare (xargs :guard (and (integerp n) (>= n 0))))
-           (cond ((zp n) ac)
-                 (t (make-list-ac (1- n)
-                                  val (cons val ac)))))")
+      (declare (xargs :guard (and (integerp n) (>= n 0))))
+      (cond ((zp n) ac)
+            (t (make-list-ac (1- n)
+                             val (cons val ac)))))")
  (MAKE-LIST-AC (POINTERS)
                "See [make-list].")
  (MAKE-ORD
@@ -71305,8 +71276,8 @@ Subtopics
   Function: <make-ord>
 
     (defun make-ord (fe fco rst)
-           (declare (xargs :guard (and (posp fco) (o-p fe) (o-p rst))))
-           (cons (cons fe fco) rst))")
+      (declare (xargs :guard (and (posp fco) (o-p fe) (o-p rst))))
+      (cons (cons fe fco) rst))")
  (MAKE-SUMMARY-DATA
   (CLAUSE-PROCESSOR)
   "Return summary data from a [clause-processor] function
@@ -71516,9 +71487,9 @@ Subtopics
   Function: <max>
 
     (defun max (x y)
-           (declare (xargs :guard (and (real/rationalp x)
-                                       (real/rationalp y))))
-           (if (> x y) x y))")
+      (declare (xargs :guard (and (real/rationalp x)
+                                  (real/rationalp y))))
+      (if (> x y) x y))")
  (MAXIMUM-LENGTH
   (ARRAYS ACL2-BUILT-INS)
   "Return the :maximum-length from the [header] of an array
@@ -71540,10 +71511,9 @@ Subtopics
 
   Function: <maximum-length>
 
-    (defun
-         maximum-length (name l)
-         (declare (xargs :guard (or (array1p name l) (array2p name l))))
-         (cadr (assoc-keyword :maximum-length (cdr (header name l)))))")
+    (defun maximum-length (name l)
+      (declare (xargs :guard (or (array1p name l) (array2p name l))))
+      (cadr (assoc-keyword :maximum-length (cdr (header name l)))))")
  (MAYBE-CONVERT-TO-MV (POINTERS)
                       "See [system-utilities].")
  (MAYBE-FLUSH-AND-COMPRESS1
@@ -72023,10 +71993,10 @@ Subtopics
   Function: <member-equal>
 
     (defun member-equal (x lst)
-           (declare (xargs :guard (true-listp lst)))
-           (cond ((endp lst) nil)
-                 ((equal x (car lst)) lst)
-                 (t (member-equal x (cdr lst)))))")
+      (declare (xargs :guard (true-listp lst)))
+      (cond ((endp lst) nil)
+            ((equal x (car lst)) lst)
+            (t (member-equal x (cdr lst)))))")
  (MEMBER-EQ (POINTERS) "See [member].")
  (MEMBER-EQUAL (POINTERS)
                "See [member].")
@@ -72071,7 +72041,7 @@ Subtopics
              :recursive    t/nil        ; optional (default t)
              :stats        t/nil        ; optional (default t (unless :invoke))
              :total        ; see :DOC memoize-partial
-             :verbose      t/nil        ; optional (default t)
+             :verbose      t/nil        ; optional (default nil)
              )
 
   where fn evaluates to a user-defined function symbol; condition is
@@ -72239,7 +72209,9 @@ Subtopics
   [symbol-name] of fn.  If the proof attempt fails, then you may want
   first to prove the lemma yourself with appropriate hints and
   perhaps supporting lemmas, and then supply the name of that lemma
-  as the value of :commutative.
+  as the value of :commutative.  Note that because most output is
+  inhibited by default, you might wish to supply keyword argument
+  :verbose t if the event fails.
 
   If :commutative is supplied, and a non-commutative condition is
   provided by :condition or :condition-fn, then although the results
@@ -72315,7 +72287,6 @@ Subtopics
     [[ .. output omitted .. ]]
      FIB
     ACL2 !>(memoize 'fib :ideal-okp t)
-    [[ .. output omitted .. ]]
      FIB
     ACL2 !>(time$ (fib 38)) ; slow: uses only executable-counterpart
 
@@ -72349,7 +72320,6 @@ Subtopics
     [[ .. output omitted .. ]]
      FIB-LOGIC-WRAPPER
     ACL2 !>(memoize 'fib-logic-wrapper)
-    [[ .. output omitted .. ]]
      FIB-LOGIC-WRAPPER
     ACL2 !>(time$ (fib-logic-wrapper 38)) ; slow; no fib results are stored
 
@@ -72407,14 +72377,18 @@ Subtopics
   but if parameter :ideal-okp is supplied, the [ACL2-defaults-table]
   value is ignored.
 
-  If :verbose is supplied, it should either be nil, which will inhibit
-  proof, event, and [summary] output (see [with-output]), or else t
-  (the default), which does not inhibit output.  If the output
-  baffles you, try
+  The value of :verbose is nil by default, which avoids output that is
+  typically distracting.  Otherwise verbose should be t.  We can see
+  the types of output that are inhibited by default by using
+  :[trans1] as follows follows (most output elided here); see
+  [with-output].
 
-    :trans1 (memoize ...)
-
-  to see the single-step macroexpansion of your memoize call.
+    ACL2 !>:trans1 (memoize 'nth :verbose nil)
+     (WITH-OUTPUT
+         :OFF (SUMMARY PROVE EVENT)
+         :GAG-MODE NIL
+         ...
+    ACL2 !>
 
   The default for :forget is nil.  If :forget is supplied, and not nil,
   then it must be t, which causes all memoization done for a
@@ -74106,9 +74080,9 @@ Precise specification
   Function: <min>
 
     (defun min (x y)
-           (declare (xargs :guard (and (real/rationalp x)
-                                       (real/rationalp y))))
-           (if (< x y) x y))")
+      (declare (xargs :guard (and (real/rationalp x)
+                                  (real/rationalp y))))
+      (if (< x y) x y))")
  (MINIMAL-THEORY
   (THEORIES THEORY-FUNCTIONS)
   "A minimal theory to enable
@@ -74143,8 +74117,8 @@ Precise specification
   Function: <minusp>
 
     (defun minusp (x)
-           (declare (xargs :guard (real/rationalp x)))
-           (< x 0))")
+      (declare (xargs :guard (real/rationalp x)))
+      (< x 0))")
  (MISCELLANEOUS
   (ACL2)
   "A miscellany of documented functions and concepts (often cited in
@@ -74356,10 +74330,10 @@ Subtopics
   Function: <mod>
 
     (defun mod (x y)
-           (declare (xargs :guard (and (real/rationalp x)
-                                       (real/rationalp y)
-                                       (not (eql y 0)))))
-           (- x (* (floor x y) y)))")
+      (declare (xargs :guard (and (real/rationalp x)
+                                  (real/rationalp y)
+                                  (not (eql y 0)))))
+      (- x (* (floor x y) y)))")
  (MOD-EXPT
   (NUMBERS ACL2-BUILT-INS)
   "Exponential function
@@ -74382,14 +74356,13 @@ Subtopics
 
   Function: <mod-expt>
 
-    (defun
-         mod-expt (base exp mod)
-         (declare (xargs :guard (and (real/rationalp base)
-                                     (integerp exp)
-                                     (not (and (eql base 0) (< exp 0)))
-                                     (real/rationalp mod)
-                                     (not (eql mod 0)))))
-         (mod (expt base exp) mod))")
+    (defun mod-expt (base exp mod)
+      (declare (xargs :guard (and (real/rationalp base)
+                                  (integerp exp)
+                                  (not (and (eql base 0) (< exp 0)))
+                                  (real/rationalp mod)
+                                  (not (eql mod 0)))))
+      (mod (expt base exp) mod))")
  (MODE (POINTERS)
        "See [xargs] for information about the keyword :mode.")
  (MODELING_IN_ACL2
@@ -74822,11 +74795,11 @@ Subtopics
   Function: <msgp>
 
     (defun msgp (x)
-           (declare (xargs :guard t))
-           (or (stringp x)
-               (and (consp x)
-                    (stringp (car x))
-                    (character-alistp (cdr x)))))")
+      (declare (xargs :guard t))
+      (or (stringp x)
+          (and (consp x)
+               (stringp (car x))
+               (character-alistp (cdr x)))))")
  (MULTIPLE-VALUE (POINTERS)
                  "See [mv-let].")
  (MUST-BE-EQUAL
@@ -75333,9 +75306,9 @@ Subtopics
   Function: <mv-list>
 
     (defun mv-list (input-arity x)
-           (declare (xargs :guard t)
-                    (ignore input-arity))
-           x)")
+      (declare (xargs :guard t)
+               (ignore input-arity))
+      x)")
  (MV-NTH
   (MV ACL2-BUILT-INS)
   "The mv-nth element (zero-based) of a list
@@ -75401,12 +75374,12 @@ Subtopics
   Function: <mv-nth>
 
     (defun mv-nth (n l)
-           (declare (xargs :guard (and (integerp n) (>= n 0))))
-           (if (atom l)
-               nil
-               (if (zp n)
-                   (car l)
-                   (mv-nth (- n 1) (cdr l)))))")
+      (declare (xargs :guard (and (integerp n) (>= n 0))))
+      (if (atom l)
+          nil
+        (if (zp n)
+            (car l)
+          (mv-nth (- n 1) (cdr l)))))")
  (MV?
   (MV ACL2-BUILT-INS)
   "Return one or more values
@@ -75530,10 +75503,10 @@ Subtopics
   Function: <nat-listp>
 
     (defun nat-listp (l)
-           (declare (xargs :guard t))
-           (cond ((atom l) (eq l nil))
-                 (t (and (natp (car l))
-                         (nat-listp (cdr l))))))")
+      (declare (xargs :guard t))
+      (cond ((atom l) (eq l nil))
+            (t (and (natp (car l))
+                    (nat-listp (cdr l))))))")
  (NATP
   (NUMBERS ACL2-BUILT-INS)
   "A recognizer for the natural numbers
@@ -75551,8 +75524,8 @@ Subtopics
   Function: <natp>
 
     (defun natp (x)
-           (declare (xargs :guard t))
-           (and (integerp x) (<= 0 x)))")
+      (declare (xargs :guard t))
+      (and (integerp x) (<= 0 x)))")
  (NEAR-MISSES
   (DEBUGGING)
   "Approximate event name matches
@@ -76448,8 +76421,7 @@ Subtopics
 
   Function: <newline>
 
-    (defun
-     newline (channel state)
+    (defun newline (channel state)
      (declare
           (xargs :guard (and (state-p state)
                              (symbolp channel)
@@ -76471,8 +76443,8 @@ Subtopics
   Function: <nfix>
 
     (defun nfix (x)
-           (declare (xargs :guard t))
-           (if (and (integerp x) (>= x 0)) x 0))")
+      (declare (xargs :guard t))
+      (if (and (integerp x) (>= x 0)) x 0))")
  (NFIX-LIST (POINTERS) "See [l<].")
  (NIL-GOAL
   (DEBUGGING)
@@ -76559,10 +76531,10 @@ Subtopics
   Function: <no-duplicatesp-equal>
 
     (defun no-duplicatesp-equal (l)
-           (declare (xargs :guard (true-listp l)))
-           (cond ((endp l) t)
-                 ((member-equal (car l) (cdr l)) nil)
-                 (t (no-duplicatesp-equal (cdr l)))))")
+      (declare (xargs :guard (true-listp l)))
+      (cond ((endp l) t)
+            ((member-equal (car l) (cdr l)) nil)
+            (t (no-duplicatesp-equal (cdr l)))))")
  (NO-DUPLICATESP-EQ (POINTERS)
                     "See [no-duplicatesp].")
  (NO-DUPLICATESP-EQUAL (POINTERS)
@@ -76910,15 +76882,15 @@ Subtopics
   Function: <nonnegative-integer-quotient>
 
     (defun nonnegative-integer-quotient (i j)
-           (declare (xargs :guard (and (integerp i)
-                                       (not (< i 0))
-                                       (integerp j)
-                                       (< 0 j))))
-           (if (or (= (nfix j) 0) (< (ifix i) j))
-               0
-               (+ 1
-                  (nonnegative-integer-quotient (- i j)
-                                                j))))")
+      (declare (xargs :guard (and (integerp i)
+                                  (not (< i 0))
+                                  (integerp j)
+                                  (< 0 j))))
+      (if (or (= (nfix j) 0) (< (ifix i) j))
+          0
+        (+ 1
+           (nonnegative-integer-quotient (- i j)
+                                         j))))")
  (NONTAUTOLOGICAL_SUBGOALS
   (PAGES_WRITTEN_ESPECIALLY_FOR_THE_TOURS)
   "Prover output omits some details
@@ -77046,8 +77018,8 @@ Subtopics
   Function: <not>
 
     (defun not (p)
-           (declare (xargs :guard t))
-           (if p nil t))")
+      (declare (xargs :guard t))
+      (if p nil t))")
  (NOTE-1-1
   (RELEASE-NOTES)
   "Acl2 Version 1.1 Notes
@@ -91803,19 +91775,19 @@ Changes to Existing Features
   Theorem: <commutativity-2-of-+>
 
     (defthm commutativity-2-of-+
-            (equal (+ x (+ y z)) (+ y (+ x z))))
+      (equal (+ x (+ y z)) (+ y (+ x z))))
 
   Theorem: <fold-consts-in-+>
 
     (defthm fold-consts-in-+
-            (implies (and (syntaxp (quotep x))
-                          (syntaxp (quotep y)))
-                     (equal (+ x (+ y z)) (+ (+ x y) z))))
+      (implies (and (syntaxp (quotep x))
+                    (syntaxp (quotep y)))
+               (equal (+ x (+ y z)) (+ (+ x y) z))))
 
   Theorem: <distributivity-of-minus-over-+>
 
     (defthm distributivity-of-minus-over-+
-            (equal (- (+ x y)) (+ (- x) (- y))))
+      (equal (- (+ x y)) (+ (- x) (- y))))
 
   [Type-set] reasoning has been improved for a few built-in functions,
   including first-n-ac, [substitute], [nthcdr], and [subseq], and
@@ -94306,9 +94278,9 @@ Heuristic and Efficiency Improvements
         Theorem: <bitp-compound-recognizer>
 
           (defthm bitp-compound-recognizer
-                  (equal (bitp x)
-                         (or (equal x 0) (equal x 1)))
-                  :rule-classes :compound-recognizer)
+            (equal (bitp x)
+                   (or (equal x 0) (equal x 1)))
+            :rule-classes :compound-recognizer)
 
       ACL2 can reason a bit more powerfully about existing functions in
       some cases.  For example, it now proves the following theorem
@@ -98864,8 +98836,8 @@ Changes to Existing Features
   which however was not enforced when the new event is in :[program]
   mode; that has been fixed.
 
-    4. If either the old or new event is a @(tsee mutual-recursion) event, then
-       redundancy requires that both are @(tsee mutual-recursion) events
+    4. If either the old or new event is a mutual-recursion event, then
+       redundancy requires that both are mutual-recursion events
        that define the same set of function symbols.
 
   A new feature, called ``transparent'' functions, can allow one to
@@ -98991,7 +98963,7 @@ Changes to Existing Features
   The pretty-printer has been improved by a contribution from Stephen
   Westfold to support appropriate indentation, including more
   conventional pretty-printing for calls of common macros such as
-  [defun] and [defmacro].  See [pp-special-syms]; we thank Stephen
+  [defun] and [defmacro].  See [ppr-special-syms]; we thank Stephen
   also for supplying the substance of that documentation.  Thanks too
   to Stephen for suggesting several user-defined macros to be
   pretty-printed with this mechanism, which we have modified by
@@ -99006,6 +98978,39 @@ Changes to Existing Features
   32-bit-integer-stack, and list-all-package-names-lst, as have some
   related built-in, undocumented definitions and theorems, including
   old-check-sum-obj and supporting functions.
+
+  Improved [hide] calls in prover output from failed execution of
+  [warrant]s, by adding suitable notes about attachments or warrant
+  functions not being executable during proofs.  Thanks to Eric
+  McCarthy for a remark that led to this change.
+
+  State globals inhibit-output-lst, inhibited-summary-types, and
+  ld-level are now [untouchable].  The macros
+  [set-inhibit-output-lst] and [set-inhibited-summary-types] still
+  allow you to modify the values of these variables.  Thanks to Peter
+  Dillinger for correspondence (years ago!) leading to these changes.
+
+  The macro [state-global-let*] no longer requires explicitly supplying
+  a setter for certain built-in [state] global variables.  See
+  [state-global-let*].
+
+  A proposed [defaxiom] [event] is no longer [redundant] with an
+  existing [defthm] event.  Before this change, the following book
+  could (perhaps unfortunately) be certified, even without
+  [certify-book] option :skip-proofs-okp t.
+
+    (in-package \"ACL2\")
+    (local (defthm foo (equal (car (cons x x)) x)))
+    (defaxiom foo (equal (car (cons x x)) x))
+
+  The prover sometimes reduces a goal without hypotheses (technically
+  speaking, a one-element clause) to nil using [type-set] reasoning.
+  This heuristic has not changed, but formerly there was no
+  explanation given.  Now ACL2 reports the rules (of class
+  :[type-prescription]) that were used.
+
+  The default for [memoize] keyword argument :verbose has been changed
+  from t to nil, which (by default) eliminates noise from the output.
 
 
 New Features
@@ -99074,11 +99079,11 @@ New Features
   Theorem: <acl2-count-car-cdr-linear>
 
     (defthm acl2-count-car-cdr-linear
-            (implies (consp x)
-                     (equal (acl2-count x)
-                            (+ 1 (acl2-count (car x))
-                               (acl2-count (cdr x)))))
-            :rule-classes :linear)
+      (implies (consp x)
+               (equal (acl2-count x)
+                      (+ 1 (acl2-count (car x))
+                         (acl2-count (cdr x)))))
+      :rule-classes :linear)
 
   The Common Lisp utility, [macrolet], is now supported in ACL2.
   Thanks to Alessandro Coglio for discussion leading us to make this
@@ -99152,6 +99157,10 @@ Heuristic and Efficiency Improvements
   Sped up macroexpansion for several common macros, with roughly a 2%
   to 3% speedup observed for including several large books during
   development of this change.
+
+  Tweaked [linear-arithmetic] to avoid consideration of an equality
+  between two terms that are both known (via their [type-set]s) to be
+  non-numeric.
 
 
 Bug Fixes
@@ -99253,13 +99262,13 @@ Bug Fixes
     * For a form (loop$ for tail on lst ...), the target term, lst, no
       longer needs to satisfy [true-listp].  For example, the form
       (loop$ for tail on '(a b . c) collect tail) no longer causes a
-      @(see guard) violation.</li> <li>Run-time @(see guard)-checking
-      for an expression @('(loop$ for tail on lst ...) now includes a
-      check for the target, lst, that its final tail (i.e., ,
-      (last-cdr lst) satisfies the declared type of the corresponding
-      iteration variable.  For example, evaluation of the [loop$]
-      expression below now produces a guard violation as shown, but
-      it formerly did not produce a guard violation.
+      [guard] violation.
+    * Run-time [guard]-checking for an expression (loop$ for tail on lst
+      ...) now includes a check for the target, lst, that its final
+      tail (i.e., , (last-cdr lst) satisfies the declared type of the
+      corresponding iteration variable.  For example, evaluation of
+      the [loop$] expression below now produces a guard violation as
+      shown, but it formerly did not produce a guard violation.
 
           ACL2 !>(loop$ for tail of-type cons on '(a b c) collect tail)
 
@@ -99619,14 +99628,14 @@ Experimental Versions
   Function: <nth>
 
     (defun nth (n l)
-           (declare (xargs :guard (and (integerp n)
-                                       (>= n 0)
-                                       (true-listp l))))
-           (if (endp l)
-               nil
-               (if (zp n)
-                   (car l)
-                   (nth (- n 1) (cdr l)))))
+      (declare (xargs :guard (and (integerp n)
+                                  (>= n 0)
+                                  (true-listp l))))
+      (if (endp l)
+          nil
+        (if (zp n)
+            (car l)
+          (nth (- n 1) (cdr l)))))
 
 
 Subtopics
@@ -99727,10 +99736,10 @@ Subtopics
   Function: <nthcdr>
 
     (defun nthcdr (n l)
-           (declare (xargs :guard (and (integerp n)
-                                       (<= 0 n)
-                                       (true-listp l))))
-           (if (zp n) l (nthcdr (+ n -1) (cdr l))))")
+      (declare (xargs :guard (and (integerp n)
+                                  (<= 0 n)
+                                  (true-listp l))))
+      (if (zp n) l (nthcdr (+ n -1) (cdr l))))")
  (NULL
   (BASICS ACL2-BUILT-INS)
   "Recognizer for the empty list
@@ -99745,8 +99754,8 @@ Subtopics
   Function: <null>
 
     (defun null (x)
-           (declare (xargs :guard t))
-           (eq x nil))")
+      (declare (xargs :guard t))
+      (eq x nil))")
  (NUMBER-SUBTREES
   (HONS-AND-MEMOIZATION ACL2-BUILT-INS)
   "(number-subtrees x) returns the number of distinct subtrees of X, in
@@ -99761,8 +99770,8 @@ Subtopics
   Function: <number-subtrees>
 
     (defun number-subtrees (x)
-           (declare (xargs :guard t))
-           (len (cons-subtrees x 'number-subtrees)))")
+      (declare (xargs :guard t))
+      (len (cons-subtrees x 'number-subtrees)))")
  (NUMBERS
   (PROGRAMMING)
   "Numbers in ACL2 and operations on them
@@ -100184,8 +100193,8 @@ Subtopics
   Function: <o-finp>
 
     (defun o-finp (x)
-           (declare (xargs :guard t))
-           (atom x))")
+      (declare (xargs :guard t))
+      (atom x))")
  (O-FIRST-COEFF
   (ORDINALS ACL2-BUILT-INS)
   "Returns the first coefficient of an ordinal
@@ -100202,8 +100211,8 @@ Subtopics
   Function: <o-first-coeff>
 
     (defun o-first-coeff (x)
-           (declare (xargs :guard (or (o-finp x) (consp (car x)))))
-           (if (o-finp x) x (cdar x)))")
+      (declare (xargs :guard (or (o-finp x) (consp (car x)))))
+      (if (o-finp x) x (cdar x)))")
  (O-FIRST-EXPT
   (ORDINALS ACL2-BUILT-INS)
   "The first exponent of an ordinal
@@ -100220,8 +100229,8 @@ Subtopics
   Function: <o-first-expt>
 
     (defun o-first-expt (x)
-           (declare (xargs :guard (or (o-finp x) (consp (car x)))))
-           (if (o-finp x) 0 (caar x)))")
+      (declare (xargs :guard (or (o-finp x) (consp (car x)))))
+      (if (o-finp x) 0 (caar x)))")
  (O-INFP
   (ORDINALS ACL2-BUILT-INS)
   "Recognizes if an ordinal is infinite
@@ -100399,16 +100408,16 @@ Subtopics
   Function: <o-p>
 
     (defun o-p (x)
-           (declare (xargs :guard t))
-           (if (o-finp x)
-               (natp x)
-               (and (consp (car x))
-                    (o-p (o-first-expt x))
-                    (not (eql 0 (o-first-expt x)))
-                    (posp (o-first-coeff x))
-                    (o-p (o-rst x))
-                    (o< (o-first-expt (o-rst x))
-                        (o-first-expt x)))))")
+      (declare (xargs :guard t))
+      (if (o-finp x)
+          (natp x)
+        (and (consp (car x))
+             (o-p (o-first-expt x))
+             (not (eql 0 (o-first-expt x)))
+             (posp (o-first-coeff x))
+             (o-p (o-rst x))
+             (o< (o-first-expt (o-rst x))
+                 (o-first-expt x)))))")
  (O-RST
   (ORDINALS ACL2-BUILT-INS)
   "Returns the rest of an infinite ordinal
@@ -100424,8 +100433,8 @@ Subtopics
   Function: <o-rst>
 
     (defun o-rst (x)
-           (declare (xargs :guard (consp x)))
-           (cdr x))")
+      (declare (xargs :guard (consp x)))
+      (cdr x))")
  (O<
   (ORDINALS ACL2-BUILT-INS)
   "The well-founded less-than relation on ordinals up to epsilon-0
@@ -100490,15 +100499,15 @@ Subtopics
   Function: <o<>
 
     (defun o< (x y)
-           (declare (xargs :guard (and (o<g x) (o<g y))))
-           (cond ((o-finp x) (or (o-infp y) (< x y)))
-                 ((o-finp y) nil)
-                 ((not (equal (o-first-expt x)
-                              (o-first-expt y)))
-                  (o< (o-first-expt x) (o-first-expt y)))
-                 ((not (= (o-first-coeff x) (o-first-coeff y)))
-                  (< (o-first-coeff x) (o-first-coeff y)))
-                 (t (o< (o-rst x) (o-rst y)))))")
+      (declare (xargs :guard (and (o<g x) (o<g y))))
+      (cond ((o-finp x) (or (o-infp y) (< x y)))
+            ((o-finp y) nil)
+            ((not (equal (o-first-expt x)
+                         (o-first-expt y)))
+             (o< (o-first-expt x) (o-first-expt y)))
+            ((not (= (o-first-coeff x) (o-first-coeff y)))
+             (< (o-first-coeff x) (o-first-coeff y)))
+            (t (o< (o-rst x) (o-rst y)))))")
  (O<=
   (ORDINALS ACL2-BUILT-INS)
   "The less-than-or-equal relation for the ordinals
@@ -100604,8 +100613,8 @@ Subtopics
   Function: <oddp>
 
     (defun oddp (x)
-           (declare (xargs :guard (integerp x)))
-           (not (evenp x)))")
+      (declare (xargs :guard (integerp x)))
+      (not (evenp x)))")
  (ODDS
   (LISTS ACL2-BUILT-INS)
   "The odd-indexed members of a list
@@ -100618,8 +100627,8 @@ Subtopics
   Function: <odds>
 
     (defun odds (l)
-           (declare (xargs :guard (true-listp l)))
-           (evens (cdr l)))")
+      (declare (xargs :guard (true-listp l)))
+      (evens (cdr l)))")
  (OK-IF
   (BREAK-REWRITE)
   "Conditional exit from break-rewrite
@@ -100939,20 +100948,20 @@ Subtopics
   Macro: <or>
 
     (defmacro or (&rest args)
-              (or-macro args))
+      (or-macro args))
 
   Function: <or-macro>
 
     (defun or-macro (lst)
-           (declare (xargs :guard t))
-           (if (consp lst)
-               (if (consp (cdr lst))
-                   (list 'if
-                         (car lst)
-                         (car lst)
-                         (or-macro (cdr lst)))
-                   (car lst))
-               nil))")
+      (declare (xargs :guard t))
+      (if (consp lst)
+          (if (consp (cdr lst))
+              (list 'if
+                    (car lst)
+                    (car lst)
+                    (or-macro (cdr lst)))
+            (car lst))
+        nil))")
  (ORDINALS
   (MISCELLANEOUS)
   "Ordinals in ACL2
@@ -102195,11 +102204,11 @@ Subtopics
   Function: <pairlis$>
 
     (defun pairlis$ (x y)
-           (declare (xargs :guard (and (true-listp x) (true-listp y))))
-           (mbe :logic (cond ((endp x) nil)
-                             (t (cons (cons (car x) (car y))
-                                      (pairlis$ (cdr x) (cdr y)))))
-                :exec (pairlis$-tailrec x y nil)))")
+      (declare (xargs :guard (and (true-listp x) (true-listp y))))
+      (mbe :logic (cond ((endp x) nil)
+                        (t (cons (cons (car x) (car y))
+                                 (pairlis$ (cdr x) (cdr y)))))
+           :exec (pairlis$-tailrec x y nil)))")
  (PAIRLIS-X1
   (LISTS ALISTS ACL2-BUILT-INS)
   "Cons a given element to each member of a list
@@ -103899,8 +103908,8 @@ Implementation
   Function: <plusp>
 
     (defun plusp (x)
-           (declare (xargs :guard (real/rationalp x)))
-           (> x 0))")
+      (declare (xargs :guard (real/rationalp x)))
+      (> x 0))")
  (POINTERS
   (DOCUMENTATION)
   "Links pointing to relevant documentation topics
@@ -105197,10 +105206,10 @@ Subtopics
   Function: <pos-listp>
 
     (defun pos-listp (l)
-           (declare (xargs :guard t))
-           (cond ((atom l) (eq l nil))
-                 (t (and (posp (car l))
-                         (pos-listp (cdr l))))))")
+      (declare (xargs :guard t))
+      (cond ((atom l) (eq l nil))
+            (t (and (posp (car l))
+                    (pos-listp (cdr l))))))")
  (POSITION
   (LISTS STRINGS ACL2-BUILT-INS)
   "Position of an item in a string or a list
@@ -105241,50 +105250,47 @@ Subtopics
 
   Macro: <position>
 
-    (defmacro
-       position (x seq &key (test ''eql))
-       (declare (xargs :guard (or (equal test ''eq)
-                                  (equal test ''eql)
-                                  (equal test ''equal))))
-       (cond ((equal test ''eq)
-              (cons 'let-mbe
-                    (cons (cons (cons 'x (cons x 'nil))
-                                (cons (cons 'seq (cons seq 'nil)) 'nil))
-                          '(:logic (position-equal x seq)
-                                   :exec (position-eq-exec x seq)))))
-             ((equal test ''eql)
-              (cons 'let-mbe
-                    (cons (cons (cons 'x (cons x 'nil))
-                                (cons (cons 'seq (cons seq 'nil)) 'nil))
-                          '(:logic (position-equal x seq)
-                                   :exec (position-eql-exec x seq)))))
-             (t (cons 'position-equal
-                      (cons x (cons seq 'nil))))))
+    (defmacro position (x seq &key (test ''eql))
+      (declare (xargs :guard (or (equal test ''eq)
+                                 (equal test ''eql)
+                                 (equal test ''equal))))
+      (cond ((equal test ''eq)
+             (cons 'let-mbe
+                   (cons (cons (cons 'x (cons x 'nil))
+                               (cons (cons 'seq (cons seq 'nil)) 'nil))
+                         '(:logic (position-equal x seq)
+                                  :exec (position-eq-exec x seq)))))
+            ((equal test ''eql)
+             (cons 'let-mbe
+                   (cons (cons (cons 'x (cons x 'nil))
+                               (cons (cons 'seq (cons seq 'nil)) 'nil))
+                         '(:logic (position-equal x seq)
+                                  :exec (position-eql-exec x seq)))))
+            (t (cons 'position-equal
+                     (cons x (cons seq 'nil))))))
 
   Function: <position-equal>
 
     (defun position-equal (x seq)
-           (declare (xargs :guard (or (stringp seq) (true-listp seq))))
-           (if (stringp seq)
-               (position-ac x (coerce seq 'list) 0)
-               (position-equal-ac x seq 0)))
+      (declare (xargs :guard (or (stringp seq) (true-listp seq))))
+      (if (stringp seq)
+          (position-ac x (coerce seq 'list) 0)
+        (position-equal-ac x seq 0)))
 
   Function: <position-equal-ac>
 
     (defun position-equal-ac (item lst acc)
-           (declare (xargs :guard (and (true-listp lst)
-                                       (acl2-numberp acc))))
-           (cond ((endp lst) nil)
-                 ((equal item (car lst))
-                  (mbe :exec acc :logic (fix acc)))
-                 (t (position-equal-ac item (cdr lst)
-                                       (1+ acc)))))
+      (declare (xargs :guard (and (true-listp lst)
+                                  (acl2-numberp acc))))
+      (cond ((endp lst) nil)
+            ((equal item (car lst))
+             (mbe :exec acc :logic (fix acc)))
+            (t (position-equal-ac item (cdr lst)
+                                  (1+ acc)))))
 
   Macro: <position-ac>
 
-    (defmacro
-     position-ac
-     (item lst acc &key (test ''eql))
+    (defmacro position-ac (item lst acc &key (test ''eql))
      (declare (xargs :guard (or (equal test ''eq)
                                 (equal test ''eql)
                                 (equal test ''equal))))
@@ -105328,8 +105334,8 @@ Subtopics
   Function: <posp>
 
     (defun posp (x)
-           (declare (xargs :guard t))
-           (and (integerp x) (< 0 x)))")
+      (declare (xargs :guard t))
+      (and (integerp x) (< 0 x)))")
  (POST-INDUCTION-KEY-CHECKPOINTS
   (INTRODUCTION-TO-THE-THEOREM-PROVER)
   "Reading post-induction key checkpoints
@@ -105382,52 +105388,52 @@ Subtopics
                    "See [sharp-dot-reader].")
  (POUND-U-READER (POINTERS)
                  "See [sharp-u-reader].")
- (PP-SPECIAL-SYMS
+ (PPR-SPECIAL-SYMS
   (IO)
   "A [table] to control indentation for pretty-printing
 
   ACL2 output is generally pretty-printed: that is, spacing and
   indentation are controlled to enhance readability and aesthetics of
   the output.  Indentation may be controlled by using the table,
-  pp-special-syms as described below.  We thank Stephen Westfold for
-  enhancing the pretty-printer with support for pp-special-syms.
+  ppr-special-syms as described below.  We thank Stephen Westfold for
+  enhancing the pretty-printer with support for ppr-special-syms.
 
-  The initial value of the pp-special-syms table is given by the
-  constant *pp-special-syms* as follows.  It associates each key, a
+  The initial value of the ppr-special-syms table is given by the
+  constant *ppr-special-syms* as follows.  It associates each key, a
   symbol, with a corresponding special-term-num as discussed below.
 
-  Definition: <*pp-special-syms*>
+  Definition: <*ppr-special-syms*>
 
-    (defconst *pp-special-syms*
-              '((case . 1)
-                (case-match . 1)
-                (defabsstobj . 1)
-                (defaxiom . 1)
-                (defchoose . 3)
-                (defcong . 2)
-                (defconst . 1)
-                (defmacro . 2)
-                (defstobj . 1)
-                (defthm . 1)
-                (defthmd . 1)
-                (defun . 2)
-                (defun-inline . 2)
-                (defun-sk . 2)
-                (defund . 2)
-                (encapsulate . 1)
-                (if . 2)
-                (lambda . 1)
-                (lambda$ . 1)
-                (let . 1)
-                (let* . 1)
-                (mutual-recursion . 0)
-                (mv-let . 2)
-                (table . 1)))
+    (defconst *ppr-special-syms*
+      '((case . 1)
+        (case-match . 1)
+        (defabsstobj . 1)
+        (defaxiom . 1)
+        (defchoose . 3)
+        (defcong . 2)
+        (defconst . 1)
+        (defmacro . 2)
+        (defstobj . 1)
+        (defthm . 1)
+        (defthmd . 1)
+        (defun . 2)
+        (defun-inline . 2)
+        (defun-sk . 2)
+        (defund . 2)
+        (encapsulate . 1)
+        (if . 2)
+        (lambda . 1)
+        (lambda$ . 1)
+        (let . 1)
+        (let* . 1)
+        (mutual-recursion . 0)
+        (mv-let . 2)
+        (table . 1)))
 
-  The pp-special-syms table is extended for some common macros in the
+  The ppr-special-syms table is extended for some common macros in the
   files where they are defined, for example for [define] and [b*].
 
-  For calls of special forms and macros in the pp-special-syms table,
+  For calls of special forms and macros in the ppr-special-syms table,
   their bodies are indented by 2 rather than in the usual default
   manner.  To support this we allow a special-term-num to be
   associated with a symbol.  Arguments of such symbols in the
@@ -106109,65 +106115,65 @@ Subtopics
   Definition: <*primitive-formals-and-guards*>
 
     (defconst *primitive-formals-and-guards*
-              '((acl2-numberp (x) 't)
-                (bad-atom<= (x y)
-                            (if (bad-atom x) (bad-atom y) 'nil))
-                (binary-* (x y)
-                          (if (acl2-numberp x)
-                              (acl2-numberp y)
-                              'nil))
-                (binary-+ (x y)
-                          (if (acl2-numberp x)
-                              (acl2-numberp y)
-                              'nil))
-                (unary-- (x) (acl2-numberp x))
-                (unary-/ (x)
-                         (if (acl2-numberp x)
-                             (not (equal x '0))
-                             'nil))
-                (< (x y)
-                   (if (rationalp x) (rationalp y) 'nil))
-                (car (x)
-                     (if (consp x) 't (equal x 'nil)))
-                (cdr (x)
-                     (if (consp x) 't (equal x 'nil)))
-                (char-code (x) (characterp x))
-                (characterp (x) 't)
-                (code-char (x)
-                           (if (integerp x)
-                               (if (< x '0) 'nil (< x '256))
-                               'nil))
-                (complex (x y)
-                         (if (rationalp x) (rationalp y) 'nil))
-                (complex-rationalp (x) 't)
-                (coerce (x y)
-                        (if (equal y 'list)
-                            (stringp x)
-                            (if (equal y 'string)
-                                (character-listp x)
-                                'nil)))
-                (cons (x y) 't)
-                (consp (x) 't)
-                (denominator (x) (rationalp x))
-                (equal (x y) 't)
-                (if (x y z) 't)
-                (imagpart (x) (acl2-numberp x))
-                (integerp (x) 't)
-                (intern-in-package-of-symbol
-                     (str sym)
-                     (if (stringp str) (symbolp sym) 'nil))
-                (numerator (x) (rationalp x))
-                (pkg-imports (pkg) (stringp pkg))
-                (pkg-witness (pkg)
-                             (if (stringp pkg)
-                                 (not (equal pkg '\"\"))
-                                 'nil))
-                (rationalp (x) 't)
-                (realpart (x) (acl2-numberp x))
-                (stringp (x) 't)
-                (symbol-name (x) (symbolp x))
-                (symbol-package-name (x) (symbolp x))
-                (symbolp (x) 't)))")
+      '((acl2-numberp (x) 't)
+        (bad-atom<= (x y)
+                    (if (bad-atom x) (bad-atom y) 'nil))
+        (binary-* (x y)
+                  (if (acl2-numberp x)
+                      (acl2-numberp y)
+                    'nil))
+        (binary-+ (x y)
+                  (if (acl2-numberp x)
+                      (acl2-numberp y)
+                    'nil))
+        (unary-- (x) (acl2-numberp x))
+        (unary-/ (x)
+                 (if (acl2-numberp x)
+                     (not (equal x '0))
+                   'nil))
+        (< (x y)
+           (if (rationalp x) (rationalp y) 'nil))
+        (car (x)
+             (if (consp x) 't (equal x 'nil)))
+        (cdr (x)
+             (if (consp x) 't (equal x 'nil)))
+        (char-code (x) (characterp x))
+        (characterp (x) 't)
+        (code-char (x)
+                   (if (integerp x)
+                       (if (< x '0) 'nil (< x '256))
+                     'nil))
+        (complex (x y)
+                 (if (rationalp x) (rationalp y) 'nil))
+        (complex-rationalp (x) 't)
+        (coerce (x y)
+                (if (equal y 'list)
+                    (stringp x)
+                  (if (equal y 'string)
+                      (character-listp x)
+                    'nil)))
+        (cons (x y) 't)
+        (consp (x) 't)
+        (denominator (x) (rationalp x))
+        (equal (x y) 't)
+        (if (x y z) 't)
+        (imagpart (x) (acl2-numberp x))
+        (integerp (x) 't)
+        (intern-in-package-of-symbol
+             (str sym)
+             (if (stringp str) (symbolp sym) 'nil))
+        (numerator (x) (rationalp x))
+        (pkg-imports (pkg) (stringp pkg))
+        (pkg-witness (pkg)
+                     (if (stringp pkg)
+                         (not (equal pkg '\"\"))
+                       'nil))
+        (rationalp (x) 't)
+        (realpart (x) (acl2-numberp x))
+        (stringp (x) 't)
+        (symbol-name (x) (symbolp x))
+        (symbol-package-name (x) (symbolp x))
+        (symbolp (x) 't)))")
  (PRINC$
   (IO ACL2-BUILT-INS)
   "Print an atom
@@ -106235,9 +106241,9 @@ Subtopics
   Function: <print-base-p>
 
     (defun print-base-p (print-base)
-           (declare (xargs :guard t))
-           (and (member print-base '(2 8 10 16))
-                t))")
+      (declare (xargs :guard t))
+      (and (member print-base '(2 8 10 16))
+           t))")
  (PRINT-CL-CACHE
   (APPLY$)
   "Information about the cache supporting apply$
@@ -110111,8 +110117,8 @@ Subtopics
   Function: <proper-consp>
 
     (defun proper-consp (x)
-           (declare (xargs :guard t))
-           (and (consp x) (true-listp x)))")
+      (declare (xargs :guard t))
+      (and (consp x) (true-listp x)))")
  (PROPS
   (WORLD)
   "Print the ACL2 properties on a symbol
@@ -110519,10 +110525,10 @@ Subtopics
   Function: <pseudo-term-listp>
 
     (defun pseudo-term-listp (lst)
-           (declare (xargs :guard t))
-           (cond ((atom lst) (equal lst nil))
-                 (t (and (pseudo-termp (car lst))
-                         (pseudo-term-listp (cdr lst))))))")
+      (declare (xargs :guard t))
+      (cond ((atom lst) (equal lst nil))
+            (t (and (pseudo-termp (car lst))
+                    (pseudo-term-listp (cdr lst))))))")
  (PSEUDO-TERMP
   (TERM ACL2-BUILT-INS)
   "A predicate for recognizing term-like s-expressions
@@ -111145,12 +111151,12 @@ Subtopics
   Function: <put-assoc-equal>
 
     (defun put-assoc-equal (name val alist)
-           (declare (xargs :guard (alistp alist)))
-           (cond ((endp alist) (list (cons name val)))
-                 ((equal name (caar alist))
-                  (cons (cons name val) (cdr alist)))
-                 (t (cons (car alist)
-                          (put-assoc-equal name val (cdr alist))))))")
+      (declare (xargs :guard (alistp alist)))
+      (cond ((endp alist) (list (cons name val)))
+            ((equal name (caar alist))
+             (cons (cons name val) (cdr alist)))
+            (t (cons (car alist)
+                     (put-assoc-equal name val (cdr alist))))))")
  (PUT-ASSOC-EQ (POINTERS)
                "See [put-assoc].")
  (PUT-ASSOC-EQL (POINTERS)
@@ -111172,11 +111178,11 @@ Subtopics
   Function: <putprop>
 
     (defun putprop (symb key value world-alist)
-           (declare (xargs :guard (and (symbolp symb)
-                                       (symbolp key)
-                                       (plist-worldp world-alist))))
-           (cons (cons symb (cons key value))
-                 world-alist))")
+      (declare (xargs :guard (and (symbolp symb)
+                                  (symbolp key)
+                                  (plist-worldp world-alist))))
+      (cons (cons symb (cons key value))
+            world-alist))")
  (Q
   (LP)
   "Quit ACL2 (type :q) --- reenter with (lp)
@@ -115341,11 +115347,11 @@ Recursion and Induction Table of Contents
   Function: <r-eqlable-alistp>
 
     (defun r-eqlable-alistp (x)
-           (declare (xargs :guard t))
-           (cond ((atom x) (equal x nil))
-                 (t (and (consp (car x))
-                         (eqlablep (cdr (car x)))
-                         (r-eqlable-alistp (cdr x))))))")
+      (declare (xargs :guard t))
+      (cond ((atom x) (equal x nil))
+            (t (and (consp (car x))
+                    (eqlablep (cdr (car x)))
+                    (r-eqlable-alistp (cdr x))))))")
  (R-SYMBOL-ALISTP
   (ALISTS ACL2-BUILT-INS)
   "Recognizer for association lists with symbols as values
@@ -115356,11 +115362,11 @@ Recursion and Induction Table of Contents
   Function: <r-symbol-alistp>
 
     (defun r-symbol-alistp (x)
-           (declare (xargs :guard t))
-           (cond ((atom x) (equal x nil))
-                 (t (and (consp (car x))
-                         (symbolp (cdr (car x)))
-                         (r-symbol-alistp (cdr x))))))")
+      (declare (xargs :guard t))
+      (cond ((atom x) (equal x nil))
+            (t (and (consp (car x))
+                    (symbolp (cdr (car x)))
+                    (r-symbol-alistp (cdr x))))))")
  (RANDOM$
   (STATE NUMBERS ACL2-BUILT-INS)
   "Obtain a random value
@@ -115388,16 +115394,16 @@ Recursion and Induction Table of Contents
   Function: <random$>
 
     (defun random$ (limit state)
-           (declare (type (integer 1 *) limit)
-                    (xargs :stobjs state))
-           (mv-let (erp val state)
-                   (read-acl2-oracle state)
-                   (mv (cond ((and (null erp)
-                                   (natp val)
-                                   (< val limit))
-                              val)
-                             (t 0))
-                       state)))")
+      (declare (type (integer 1 *) limit)
+               (xargs :stobjs state))
+      (mv-let (erp val state)
+              (read-acl2-oracle state)
+        (mv (cond ((and (null erp)
+                        (natp val)
+                        (< val limit))
+                   val)
+                  (t 0))
+            state)))")
  (RANDOM-REMARKS-ON-REWRITING
   (REWRITE REWRITE-QUOTED-CONSTANT)
   "Some basic facts about the ACL2 rewriter
@@ -115687,11 +115693,11 @@ Recursion and Induction Table of Contents
   Function: <rassoc-equal>
 
     (defun rassoc-equal (x alist)
-           (declare (xargs :guard (alistp alist)))
-           (cond ((endp alist) nil)
-                 ((equal x (cdr (car alist)))
-                  (car alist))
-                 (t (rassoc-equal x (cdr alist)))))
+      (declare (xargs :guard (alistp alist)))
+      (cond ((endp alist) nil)
+            ((equal x (cdr (car alist)))
+             (car alist))
+            (t (rassoc-equal x (cdr alist)))))
 
   Rassoc is defined by Common Lisp.  See any Common Lisp documentation
   for more information.")
@@ -115708,10 +115714,10 @@ Recursion and Induction Table of Contents
   Function: <rational-listp>
 
     (defun rational-listp (l)
-           (declare (xargs :guard t))
-           (cond ((atom l) (eq l nil))
-                 (t (and (rationalp (car l))
-                         (rational-listp (cdr l))))))")
+      (declare (xargs :guard t))
+      (cond ((atom l) (eq l nil))
+            (t (and (rationalp (car l))
+                    (rational-listp (cdr l))))))")
  (RATIONALP
   (NUMBERS ACL2-BUILT-INS)
   "Recognizer for rational numbers (ratios and integers)
@@ -115800,11 +115806,11 @@ Recursion and Induction Table of Contents
   Function: <read-acl2-oracle>
 
     (defun read-acl2-oracle (state-state)
-           (declare (xargs :guard (state-p1 state-state)))
-           (mv (null (acl2-oracle state-state))
-               (car (acl2-oracle state-state))
-               (update-acl2-oracle (cdr (acl2-oracle state-state))
-                                   state-state)))")
+      (declare (xargs :guard (state-p1 state-state)))
+      (mv (null (acl2-oracle state-state))
+          (car (acl2-oracle state-state))
+          (update-acl2-oracle (cdr (acl2-oracle state-state))
+                              state-state)))")
  (READ-BYTE$ (POINTERS) "See [io].")
  (READ-CHAR$ (POINTERS) "See [io].")
  (READ-FILE-INTO-STRING
@@ -115937,9 +115943,7 @@ Recursion and Induction Table of Contents
 
   Function: <read-file-into-string1>
 
-    (defun
-     read-file-into-string1
-     (channel state ans bound)
+    (defun read-file-into-string1 (channel state ans bound)
      (declare (xargs :stobjs state
                      :guard (and (symbolp channel)
                                  (open-input-channel-p channel
@@ -115948,10 +115952,8 @@ Recursion and Induction Table of Contents
                                  (natp bound))))
      (cond
       ((zp bound) (mv nil state))
-      (t
-       (mv-let
-           (val state)
-           (read-char$ channel state)
+      (t (mv-let (val state)
+                 (read-char$ channel state)
            (cond ((not (characterp val))
                   (mv (coerce (reverse ans) 'string)
                       state))
@@ -115961,60 +115963,54 @@ Recursion and Induction Table of Contents
   Definition: <*read-file-into-string-bound*>
 
     (defconst *read-file-into-string-bound*
-              (1- (ash 1 60)))
+      (1- (ash 1 60)))
 
   Function: <read-file-into-string2-logical>
 
-    (defun
-     read-file-into-string2-logical
-     (filename start bytes state)
+    (defun read-file-into-string2-logical (filename start bytes state)
      (declare (xargs :stobjs state
                      :guard (and (stringp filename)
                                  (natp start)
                                  (or (null bytes) (natp bytes)))))
      (non-exec
-      (mv-let
-       (erp val state)
        (mv-let
-        (chan state)
-        (open-input-channel filename
-                            :character state)
-        (cond
-           ((or (null chan) (not (state-p state)))
-            (mv nil nil state))
-           (t (mv-let (val state)
-                      (read-file-into-string1
-                           chan
-                           state nil *read-file-into-string-bound*)
-                      (pprogn (ec-call (close-input-channel chan state))
-                              (mv nil val state))))))
-       (declare (ignore erp state))
-       (and (stringp val)
-            (<= start (length val))
-            (subseq val start
-                    (if bytes (min (+ start bytes) (length val))
-                        (length val)))))))
+        (erp val state)
+        (mv-let (chan state)
+                (open-input-channel filename
+                                    :character state)
+          (cond ((or (null chan) (not (state-p state)))
+                 (mv nil nil state))
+                (t (mv-let (val state)
+                           (read-file-into-string1
+                                chan
+                                state nil *read-file-into-string-bound*)
+                     (pprogn (ec-call (close-input-channel chan state))
+                             (mv nil val state))))))
+        (declare (ignore erp state))
+        (and (stringp val)
+             (<= start (length val))
+             (subseq val start
+                     (if bytes (min (+ start bytes) (length val))
+                       (length val)))))))
 
   Function: <read-file-into-string2>
 
-    (defun read-file-into-string2
-           (filename start bytes close state)
-           (declare (xargs :stobjs state
-                           :guard (and (stringp filename)
-                                       (natp start)
-                                       (or (null bytes) (natp bytes))))
-                    (ignore close))
-           (read-file-into-string2-logical filename start bytes state))
+    (defun read-file-into-string2 (filename start bytes close state)
+      (declare (xargs :stobjs state
+                      :guard (and (stringp filename)
+                                  (natp start)
+                                  (or (null bytes) (natp bytes))))
+               (ignore close))
+      (read-file-into-string2-logical filename start bytes state))
 
   Macro: <read-file-into-string>
 
-    (defmacro read-file-into-string
-              (filename &key (start '0)
-                        bytes (close ':default))
-              (cons 'read-file-into-string2
-                    (cons filename
-                          (cons start
-                                (cons bytes (cons close '(state)))))))")
+    (defmacro read-file-into-string (filename &key (start '0)
+                                              bytes (close ':default))
+      (cons 'read-file-into-string2
+            (cons filename
+                  (cons start
+                        (cons bytes (cons close '(state)))))))")
  (READ-OBJECT (POINTERS) "See [io].")
  (READ-OBJECT-SUPPRESS (POINTERS)
                        "See [io].")
@@ -116050,15 +116046,14 @@ Recursion and Induction Table of Contents
 
   Function: <read-run-time>
 
-    (defun
-       read-run-time (state-state)
-       (declare (xargs :guard (state-p1 state-state)))
-       (mv (cond ((or (null (acl2-oracle state-state))
-                      (not (rationalp (car (acl2-oracle state-state)))))
-                  0)
-                 (t (car (acl2-oracle state-state))))
-           (update-acl2-oracle (cdr (acl2-oracle state-state))
-                               state-state)))
+    (defun read-run-time (state-state)
+      (declare (xargs :guard (state-p1 state-state)))
+      (mv (cond ((or (null (acl2-oracle state-state))
+                     (not (rationalp (car (acl2-oracle state-state)))))
+                 0)
+                (t (car (acl2-oracle state-state))))
+          (update-acl2-oracle (cdr (acl2-oracle state-state))
+                              state-state)))
 
   Note that logically (read-run-time state), (get-real-time state), and
   (get-cpu-time state) are all equal (defined using the acl2-oracle),
@@ -116311,8 +116306,8 @@ Subtopics
   Function: <realfix>
 
     (defun realfix (x)
-           (declare (xargs :guard t))
-           (if (real/rationalp x) x 0))")
+      (declare (xargs :guard t))
+      (if (real/rationalp x) x 0))")
  (REALPART
   (NUMBERS ACL2-BUILT-INS)
   "Real part of a complex number
@@ -117103,15 +117098,16 @@ Subtopics
   A [defaxiom] or [defthm] event is redundant if there is already an
   axiom or theorem of the given name and the two [events] are
   syntactically identical.  But there is the following more generous
-  criterion: both the formula (after macroexpansion) and the
-  [rule-classes] (after translation and certain ``truncation'') are
-  syntactically identical.  This ``truncation'' involves removing the
-  :HINTS and :INSTRUCTIONS fields from a rule-class, and also
-  removing the :COROLLARY field when it specifies the same term as
-  the event.  Note that a [defaxiom] can be redundant with a [defthm]
-  and vice-versa.  (Remark for system hackers: defthm/defaxiom
-  redundancy is implemented in ACL2 source function,
-  redundant-theoremp.)
+  criterion, which applies unless the older event is a defthm event
+  and the newer event is a defaxiom event: both the formula (after
+  macroexpansion) and the [rule-classes] (after translation and
+  certain ``truncation'') are syntactically identical.  This
+  ``truncation'' involves removing the :HINTS and :INSTRUCTIONS
+  fields from a rule-class, and also removing the :COROLLARY field
+  when it specifies the same term as the event.  Note that a [defthm]
+  can be redundant with a [defaxiom] but not vice-versa.  (Remark for
+  system hackers: defthm/defaxiom redundancy is implemented in ACL2
+  source function, redundant-theoremp.)
 
   A [defconst] is redundant if the name is already defined either with
   a syntactically identical defconst event or one that defines it to
@@ -117824,10 +117820,10 @@ Subtopics
   Function: <rem>
 
     (defun rem (x y)
-           (declare (xargs :guard (and (real/rationalp x)
-                                       (real/rationalp y)
-                                       (not (eql y 0)))))
-           (- x (* (truncate x y) y)))")
+      (declare (xargs :guard (and (real/rationalp x)
+                                  (real/rationalp y)
+                                  (not (eql y 0)))))
+      (- x (* (truncate x y) y)))")
  (REMOVE
   (LISTS ACL2-BUILT-INS)
   "Remove all occurrences
@@ -117867,12 +117863,12 @@ Subtopics
   Function: <remove-equal>
 
     (defun remove-equal (x l)
-           (declare (xargs :guard (true-listp l)))
-           (cond ((endp l) nil)
-                 ((equal x (car l))
-                  (remove-equal x (cdr l)))
-                 (t (cons (car l)
-                          (remove-equal x (cdr l))))))
+      (declare (xargs :guard (true-listp l)))
+      (cond ((endp l) nil)
+            ((equal x (car l))
+             (remove-equal x (cdr l)))
+            (t (cons (car l)
+                     (remove-equal x (cdr l))))))
 
   Remove is defined by Common Lisp.  See any Common Lisp documentation
   for more information.")
@@ -117918,12 +117914,12 @@ Subtopics
   Function: <remove-assoc-equal>
 
     (defun remove-assoc-equal (x alist)
-           (declare (xargs :guard (alistp alist)))
-           (cond ((endp alist) nil)
-                 ((equal x (car (car alist)))
-                  (remove-assoc-equal x (cdr alist)))
-                 (t (cons (car alist)
-                          (remove-assoc-equal x (cdr alist))))))")
+      (declare (xargs :guard (alistp alist)))
+      (cond ((endp alist) nil)
+            ((equal x (car (car alist)))
+             (remove-assoc-equal x (cdr alist)))
+            (t (cons (car alist)
+                     (remove-assoc-equal x (cdr alist))))))")
  (REMOVE-ASSOC-EQ (POINTERS)
                   "See [remove-assoc].")
  (REMOVE-ASSOC-EQUAL (POINTERS)
@@ -118061,13 +118057,13 @@ Subtopics
   Function: <remove-duplicates-equal>
 
     (defun remove-duplicates-equal (l)
-           (declare (xargs :guard (true-listp l)))
-           (cond ((endp l) nil)
-                 ((member-equal (car l) (cdr l))
-                  (remove-duplicates-equal (cdr l)))
-                 (t (cons-with-hint (car l)
-                                    (remove-duplicates-equal (cdr l))
-                                    l))))
+      (declare (xargs :guard (true-listp l)))
+      (cond ((endp l) nil)
+            ((member-equal (car l) (cdr l))
+             (remove-duplicates-equal (cdr l)))
+            (t (cons-with-hint (car l)
+                               (remove-duplicates-equal (cdr l))
+                               l))))
 
   Remove-duplicates is defined by Common Lisp.  See any Common Lisp
   documentation for more information.")
@@ -118300,12 +118296,12 @@ Subtopics
   Function: <remove1-equal>
 
     (defun remove1-equal (x l)
-           (declare (xargs :guard (true-listp l)))
-           (cond ((endp l) nil)
-                 ((equal x (car l)) (cdr l))
-                 (t (cons-with-hint (car l)
-                                    (remove1-equal x (cdr l))
-                                    l))))
+      (declare (xargs :guard (true-listp l)))
+      (cond ((endp l) nil)
+            ((equal x (car l)) (cdr l))
+            (t (cons-with-hint (car l)
+                               (remove1-equal x (cdr l))
+                               l))))
 
   In particular, reasoning about any of these primitives reduces to
   reasoning about the function remove1-equal.")
@@ -118351,11 +118347,11 @@ Subtopics
   Function: <remove1-assoc-equal>
 
     (defun remove1-assoc-equal (key alist)
-           (declare (xargs :guard (alistp alist)))
-           (cond ((endp alist) nil)
-                 ((equal key (caar alist)) (cdr alist))
-                 (t (cons (car alist)
-                          (remove1-assoc-equal key (cdr alist))))))")
+      (declare (xargs :guard (alistp alist)))
+      (cond ((endp alist) nil)
+            ((equal key (caar alist)) (cdr alist))
+            (t (cons (car alist)
+                     (remove1-assoc-equal key (cdr alist))))))")
  (REMOVE1-ASSOC-EQ (POINTERS)
                    "See [remove1-assoc].")
  (REMOVE1-ASSOC-EQUAL (POINTERS)
@@ -118488,9 +118484,7 @@ Subtopics
 
   Function: <resize-list-exec>
 
-    (defun
-     resize-list-exec
-     (lst n default-value acc)
+    (defun resize-list-exec (lst n default-value acc)
      (declare (xargs :guard (true-listp acc)))
      (if (and (integerp n) (> n 0))
          (resize-list-exec (if (atom lst) lst (cdr lst))
@@ -118498,20 +118492,20 @@ Subtopics
                            default-value
                            (cons (if (atom lst) default-value (car lst))
                                  acc))
-         (reverse acc)))
+       (reverse acc)))
 
   Function: <resize-list>
 
-    (defun
-        resize-list (lst n default-value)
-        (declare (xargs :guard t))
-        (mbe :logic (if (and (integerp n) (> n 0))
-                        (cons (if (atom lst) default-value (car lst))
-                              (resize-list (if (atom lst) lst (cdr lst))
-                                           (1- n)
-                                           default-value))
-                        nil)
-             :exec (resize-list-exec lst n default-value nil)))")
+    (defun resize-list (lst n default-value)
+      (declare (xargs :guard t))
+      (mbe :logic
+           (if (and (integerp n) (> n 0))
+               (cons (if (atom lst) default-value (car lst))
+                     (resize-list (if (atom lst) lst (cdr lst))
+                                  (1- n)
+                                  default-value))
+             nil)
+           :exec (resize-list-exec lst n default-value nil)))")
  (REST
   (NTH ACL2-BUILT-INS)
   "Rest ([cdr]) of the list
@@ -119070,11 +119064,12 @@ Subtopics
   Function: <return-last>
 
     (defun return-last (fn eager-arg last-arg)
-           (declare (ignore fn eager-arg)
-                    (xargs :guard (if (equal fn 'mbe1-raw)
-                                      (equal last-arg eager-arg)
-                                      t)))
-           last-arg)
+      (declare (ignore fn eager-arg)
+               (xargs :guard
+                      (if (equal fn 'mbe1-raw)
+                          (equal last-arg eager-arg)
+                        t)))
+      last-arg)
 
 
 Subtopics
@@ -119133,9 +119128,10 @@ Subtopics
   Function: <revappend>
 
     (defun revappend (x y)
-           (declare (xargs :guard (true-listp x)))
-           (if (endp x)
-               y (revappend (cdr x) (cons (car x) y))))")
+      (declare (xargs :guard (true-listp x)))
+      (if (endp x)
+          y
+        (revappend (cdr x) (cons (car x) y))))")
  (REVERSE
   (LISTS STRINGS ACL2-BUILT-INS)
   "Reverse a list or string
@@ -119152,11 +119148,11 @@ Subtopics
   Function: <reverse>
 
     (defun reverse (x)
-           (declare (xargs :guard (or (true-listp x) (stringp x))))
-           (cond ((stringp x)
-                  (coerce (revappend (coerce x 'list) nil)
-                          'string))
-                 (t (revappend x nil))))")
+      (declare (xargs :guard (or (true-listp x) (stringp x))))
+      (cond ((stringp x)
+             (coerce (revappend (coerce x 'list) nil)
+                     'string))
+            (t (revappend x nil))))")
  (REVERT-WORLD
   (PROGRAMMING)
   "Evaluate without (ultimately) changing the [world]
@@ -120883,8 +120879,8 @@ Subtopics
   Function: <rfix>
 
     (defun rfix (x)
-           (declare (xargs :guard t))
-           (if (rationalp x) x 0))")
+      (declare (xargs :guard t))
+      (if (rationalp x) x 0))")
  (ROUND
   (NUMBERS ACL2-BUILT-INS)
   "Division returning an integer by rounding off
@@ -120924,25 +120920,24 @@ Subtopics
 
   Function: <round>
 
-    (defun
-         round (i j)
-         (declare (xargs :guard (and (real/rationalp i)
-                                     (real/rationalp j)
-                                     (not (eql j 0)))))
-         (let ((q (* i (/ j))))
-              (cond ((integerp q) q)
-                    ((>= q 0)
-                     (let* ((fl (floor q 1)) (remainder (- q fl)))
-                           (cond ((> remainder 1/2) (+ fl 1))
-                                 ((< remainder 1/2) fl)
-                                 (t (cond ((integerp (* fl (/ 2))) fl)
-                                          (t (+ fl 1)))))))
-                    (t (let* ((cl (ceiling q 1))
-                              (remainder (- q cl)))
-                             (cond ((< (- 1/2) remainder) cl)
-                                   ((> (- 1/2) remainder) (+ cl -1))
-                                   (t (cond ((integerp (* cl (/ 2))) cl)
-                                            (t (+ cl -1))))))))))")
+    (defun round (i j)
+      (declare (xargs :guard (and (real/rationalp i)
+                                  (real/rationalp j)
+                                  (not (eql j 0)))))
+      (let ((q (* i (/ j))))
+        (cond ((integerp q) q)
+              ((>= q 0)
+               (let* ((fl (floor q 1)) (remainder (- q fl)))
+                 (cond ((> remainder 1/2) (+ fl 1))
+                       ((< remainder 1/2) fl)
+                       (t (cond ((integerp (* fl (/ 2))) fl)
+                                (t (+ fl 1)))))))
+              (t (let* ((cl (ceiling q 1))
+                        (remainder (- q cl)))
+                   (cond ((< (- 1/2) remainder) cl)
+                         ((> (- 1/2) remainder) (+ cl -1))
+                         (t (cond ((integerp (* cl (/ 2))) cl)
+                                  (t (+ cl -1))))))))))")
  (RULE-CLASSES
   (ACL2)
   "Adding rules to the database
@@ -122782,13 +122777,11 @@ Definition
 
   Macro: <search>
 
-    (defmacro
-     search
-     (seq1 seq2 &key from-end (test ''equal)
-           (start1 '0)
-           (start2 '0)
-           (end1 'nil end1p)
-           (end2 'nil end2p))
+    (defmacro search (seq1 seq2 &key from-end (test ''equal)
+                           (start1 '0)
+                           (start2 '0)
+                           (end1 'nil end1p)
+                           (end2 'nil end2p))
      (cons
       'search-fn
       (cons
@@ -122808,71 +122801,63 @@ Definition
 
   Function: <search-fn>
 
-    (defun
-     search-fn
-     (seq1 seq2 from-end test
-           start1 start2 end1 end2 end1p end2p)
+    (defun search-fn (seq1 seq2 from-end test
+                           start1 start2 end1 end2 end1p end2p)
      (declare
       (xargs
           :guard (search-fn-guard seq1 seq2 from-end test
                                   start1 start2 end1 end2 end1p end2p)))
-     (let*
-      ((end1 (if end1p end1 (length seq1)))
-       (end2 (if end2p end2 (length seq2)))
-       (seq1 (subseq seq1 start1 end1)))
-      (mv-let
-       (seq1 seq2)
-       (cond ((eq test 'char-equal)
-              (mv (string-downcase seq1)
-                  (string-downcase seq2)))
-             (t (mv seq1 seq2)))
+     (let* ((end1 (if end1p end1 (length seq1)))
+            (end2 (if end2p end2 (length seq2)))
+            (seq1 (subseq seq1 start1 end1)))
+      (mv-let (seq1 seq2)
+              (cond ((eq test 'char-equal)
+                     (mv (string-downcase seq1)
+                         (string-downcase seq2)))
+                    (t (mv seq1 seq2)))
        (and (<= (- end1 start1) (- end2 start2))
             (cond (from-end (search-from-end seq1 seq2 start2 end2 nil))
                   (t (search-from-start seq1 seq2 start2 end2)))))))
 
   Function: <search-from-end>
 
-    (defun
-       search-from-end
-       (seq1 seq2 start2 end2 acc)
-       (declare (xargs :guard (and (or (true-listp seq1) (stringp seq1))
-                                   (or (true-listp seq2) (stringp seq2))
-                                   (integerp start2)
-                                   (<= 0 start2)
-                                   (integerp end2)
-                                   (<= end2 (length seq2))
-                                   (<= (+ start2 (length seq1)) end2))))
-       (cond ((or (not (integerp end2))
-                  (not (integerp start2)))
-              nil)
-             (t (let* ((bound2 (+ start2 (length seq1)))
-                       (matchp (equal seq1 (subseq seq2 start2 bound2)))
-                       (new-acc (if matchp start2 acc)))
-                      (cond ((>= bound2 end2) new-acc)
-                            (t (search-from-end seq1 seq2 (1+ start2)
-                                                end2 new-acc)))))))
+    (defun search-from-end (seq1 seq2 start2 end2 acc)
+      (declare (xargs :guard (and (or (true-listp seq1) (stringp seq1))
+                                  (or (true-listp seq2) (stringp seq2))
+                                  (integerp start2)
+                                  (<= 0 start2)
+                                  (integerp end2)
+                                  (<= end2 (length seq2))
+                                  (<= (+ start2 (length seq1)) end2))))
+      (cond ((or (not (integerp end2))
+                 (not (integerp start2)))
+             nil)
+            (t (let* ((bound2 (+ start2 (length seq1)))
+                      (matchp (equal seq1 (subseq seq2 start2 bound2)))
+                      (new-acc (if matchp start2 acc)))
+                 (cond ((>= bound2 end2) new-acc)
+                       (t (search-from-end seq1 seq2 (1+ start2)
+                                           end2 new-acc)))))))
 
   Function: <search-from-start>
 
-    (defun
-       search-from-start
-       (seq1 seq2 start2 end2)
-       (declare (xargs :guard (and (or (true-listp seq1) (stringp seq1))
-                                   (or (true-listp seq2) (stringp seq2))
-                                   (integerp start2)
-                                   (<= 0 start2)
-                                   (integerp end2)
-                                   (<= end2 (length seq2))
-                                   (<= (+ start2 (length seq1)) end2))))
-       (let ((bound2 (+ start2 (length seq1))))
-            (cond ((or (not (integerp end2))
-                       (not (integerp start2)))
-                   nil)
-                  ((equal seq1 (subseq seq2 start2 bound2))
-                   start2)
-                  ((>= bound2 end2) nil)
-                  (t (search-from-start seq1 seq2 (1+ start2)
-                                        end2)))))")
+    (defun search-from-start (seq1 seq2 start2 end2)
+      (declare (xargs :guard (and (or (true-listp seq1) (stringp seq1))
+                                  (or (true-listp seq2) (stringp seq2))
+                                  (integerp start2)
+                                  (<= 0 start2)
+                                  (integerp end2)
+                                  (<= end2 (length seq2))
+                                  (<= (+ start2 (length seq1)) end2))))
+      (let ((bound2 (+ start2 (length seq1))))
+        (cond ((or (not (integerp end2))
+                   (not (integerp start2)))
+               nil)
+              ((equal seq1 (subseq seq2 start2 bound2))
+               start2)
+              ((>= bound2 end2) nil)
+              (t (search-from-start seq1 seq2 (1+ start2)
+                                    end2)))))")
  (SECOND
   (NTH ACL2-BUILT-INS)
   "Second member of the list
@@ -124010,14 +123995,13 @@ Subtopics
 
   Function: <set-difference-equal>
 
-    (defun
-         set-difference-equal (l1 l2)
-         (declare (xargs :guard (and (true-listp l1) (true-listp l2))))
-         (cond ((endp l1) nil)
-               ((member-equal (car l1) l2)
-                (set-difference-equal (cdr l1) l2))
-               (t (cons (car l1)
-                        (set-difference-equal (cdr l1) l2)))))
+    (defun set-difference-equal (l1 l2)
+      (declare (xargs :guard (and (true-listp l1) (true-listp l2))))
+      (cond ((endp l1) nil)
+            ((member-equal (car l1) l2)
+             (set-difference-equal (cdr l1) l2))
+            (t (cons (car l1)
+                     (set-difference-equal (cdr l1) l2)))))
 
   Set-difference$ is similar to the Common Lisp primitive
   set-difference.  However, Common Lisp does not specify the order of
@@ -127922,9 +127906,9 @@ Extended Example
   Function: <setenv$>
 
     (defun setenv$ (str val)
-           (declare (xargs :guard (and (stringp str) (stringp val))))
-           (declare (ignore str val))
-           nil)")
+      (declare (xargs :guard (and (stringp str) (stringp val))))
+      (declare (ignore str val))
+      nil)")
  (SEVENTH
   (NTH ACL2-BUILT-INS)
   "Seventh member of the list
@@ -128433,11 +128417,11 @@ Extended Example
   Function: <signed-byte-p>
 
     (defun signed-byte-p (bits x)
-           (declare (xargs :guard t))
-           (and (integerp bits)
-                (< 0 bits)
-                (let ((y (expt 2 (1- bits))))
-                     (integer-range-p (- y) y x))))")
+      (declare (xargs :guard t))
+      (and (integerp bits)
+           (< 0 bits)
+           (let ((y (expt 2 (1- bits))))
+             (integer-range-p (- y) y x))))")
  (SIGNUM
   (NUMBERS ACL2-BUILT-INS)
   "Indicator for positive, negative, or zero
@@ -128458,8 +128442,8 @@ Extended Example
   Function: <signum>
 
     (defun signum (x)
-           (declare (xargs :guard (real/rationalp x)))
-           (if (zerop x) 0 (if (minusp x) -1 1)))")
+      (declare (xargs :guard (real/rationalp x)))
+      (if (zerop x) 0 (if (minusp x) -1 1)))")
  (SIMPLE
   (REWRITE DEFINITION)
   ":[definition] and :[rewrite] rules used in preprocessing
@@ -128616,9 +128600,9 @@ Extended Example
   Function: <sleep>
 
     (defun sleep (n)
-           (declare (xargs :guard (and (rationalp n) (<= 0 n))))
-           (declare (ignore n))
-           nil)")
+      (declare (xargs :guard (and (rationalp n) (<= 0 n))))
+      (declare (ignore n))
+      nil)")
  (SLOW-ALIST-WARNING
   (FAST-ALISTS)
   "Warnings/errors issued when [fast-alists] are used inefficiently
@@ -129476,12 +129460,12 @@ Subtopics
   Function: <standard-char-listp>
 
     (defun standard-char-listp (l)
-           (declare (xargs :guard t))
-           (cond ((consp l)
-                  (and (characterp (car l))
-                       (standard-char-p (car l))
-                       (standard-char-listp (cdr l))))
-                 (t (equal l nil))))")
+      (declare (xargs :guard t))
+      (cond ((consp l)
+             (and (characterp (car l))
+                  (standard-char-p (car l))
+                  (standard-char-listp (cdr l))))
+            (t (equal l nil))))")
  (STANDARD-CHAR-P
   (CHARACTERS ACL2-BUILT-INS)
   "Recognizer for standard characters
@@ -129500,8 +129484,8 @@ Subtopics
   Function: <standard-char-p>
 
     (defun standard-char-p (x)
-           (declare (xargs :guard (characterp x)))
-           (if (member x *standard-chars*) t nil))
+      (declare (xargs :guard (characterp x)))
+      (if (member x *standard-chars*) t nil))
 
 
 Subtopics
@@ -129519,9 +129503,9 @@ Subtopics
   Function: <standard-char-p+>
 
     (defun standard-char-p+ (x)
-           (declare (xargs :guard t))
-           (and (characterp x)
-                (standard-char-p x)))")
+      (declare (xargs :guard t))
+      (and (characterp x)
+           (standard-char-p x)))")
  (STANDARD-CO
   (IO ACL2-BUILT-INS)
   "The character output channel to which [ld] prints
@@ -129580,12 +129564,12 @@ Subtopics
   Function: <standard-string-alistp>
 
     (defun standard-string-alistp (x)
-           (declare (xargs :guard t))
-           (cond ((atom x) (eq x nil))
-                 (t (and (consp (car x))
-                         (stringp (car (car x)))
-                         (standard-string-p (car (car x)))
-                         (standard-string-alistp (cdr x))))))")
+      (declare (xargs :guard t))
+      (cond ((atom x) (eq x nil))
+            (t (and (consp (car x))
+                    (stringp (car (car x)))
+                    (standard-string-p (car (car x)))
+                    (standard-string-alistp (cdr x))))))")
  (STANDARDP
   (REAL)
   "ACL2(r) recognizer for standard objects
@@ -130025,31 +130009,43 @@ Subtopics
   where: each vari is a variable; each formi is an expression whose
   value is a single ordinary object (i.e. not multiple values, and
   not [state] or any other [stobj]); set-vari, if supplied, is a
-  function with [signature] ((set-vari * state) => state); and body
-  is an expression that evaluates to an [error-triple].  Each formi
-  is evaluated in order, starting with form1, and with each such
-  binding the state global variable vari is bound to the value of
-  formi, sequentially in the style of [let*].  More precisely, then
-  meaning of this form is to set (in order) the global values of the
-  indicated [state] global variables vari to the values of formi
-  using [f-put-global], execute body, restore the vari to their
-  previous values (but see the discussion of setters below), and
-  return the triple produced by body (with its state as modified by
-  the restoration).  The restoration is guaranteed even in the face
-  of aborts.  The ``bound'' variables may initially be unbound in
-  state and restoration means to make them unbound again.
+  function or macro such that (set-vari _ state) returns [state]; and
+  body is an expression that evaluates to an [error-triple].  Each
+  formi is evaluated in order, starting with form1, and with each
+  such binding the state global variable vari is bound to the value
+  of formi, sequentially in the style of [let*].  More precisely, the
+  meaning of this form is to perform the following actions, in order.
 
-  Still referring to the General Form above, let old-vali be the value
-  of state global variable vari at the time vari is about to be
-  assigned the value of formi.  If set-vari is not supplied, then as
-  suggested above, the following form is evaluated at the conclusion
-  of the evaluation of the state-global-let* form, whether or not an
-  error has occurred: (f-put-global 'vari 'old-vali state).  However,
-  if set-vari is supplied, it is a function symbol that we may call a
-  ``setter'', and the form evaluated will instead be (set-vari
-  'old-vali state).  This capability is particularly useful if vari
-  is untouchable (see [push-untouchable]), since the above call of
-  [f-put-global] is illegal.
+   1. Set (in order) the global values of the indicated [state] global
+      variables vari to the values of formi.  Exception: This is
+      skipped when vari is a built-in state global and formi is
+      (f-get-global 'vari state).
+   2. Execute body.
+   3. Restore the vari to their previous values.
+   4. Return the [error-triple] produced by body, where [state] reflects
+      the modifications of the preceding step.
+
+  The restoration is guaranteed even in the face of aborts.  The
+  ``bound'' variables may initially be unbound in state and
+  restoration means to make them unbound again.
+
+  Still referring to the General Form above, we next discuss how the
+  values are set and restored.  Let old-vali be the value of state
+  global variable vari at the time vari is about to be assigned the
+  value of formi.  We say that a ``setter is supplied'' for vari if
+  set-vari is supplied, either explicitly as in the General Form
+  above, or implicitly by being associated with vari in the value of
+  the constant, *state-global-let*-untouchable-alist* (whose
+  definition appears at the end of this topic).  If no setter is
+  supplied then vari is set or restored to a value <val> by
+  evaluating (f-put-global 'vari <val> state).  However, if a setter
+  set-vari is supplied, then the form evaluated will instead be
+  (set-vari <val> state).  Having a setter supplied is particularly
+  useful if vari is [untouchable], since the call above of
+  [f-put-global] is illegal.  However, the use of
+  *state-global-let*-untouchable-alist* (mentioned above) avoids the
+  need for supplying set-vari explicitly for certain built-in
+  [untouchable] state global variables, vari.
 
   Note that the scope of the bindings of a state-global-let* form is
   the body of that form.  This may seem obvious, but to drive the
@@ -130070,13 +130066,43 @@ Subtopics
     ACL2 !>(state-global-let* ((print-base 16 set-print-base)
                                (print-radix t set-print-radix))
                               (pprogn (fms \"~x0~%\"
-                                           (list (cons #0 10))
+                                           (list (cons #\\0 10))
                                            *standard-co* state nil)
                                       (mv nil 10 state)))
 
     #xA
      10
-    ACL2 !>")
+    ACL2 !>
+
+  Finally, as promised above, here is the definition of the constant
+  that maps certain built-in untouchable variables to setters.
+
+  Definition: <*state-global-let*-untouchable-alist*>
+
+    (defconst *state-global-let*-untouchable-alist*
+      '((abbrev-evisc-tuple . set-abbrev-evisc-tuple-state)
+        (compiler-enabled . set-compiler-enabled)
+        (current-package . set-current-package-state)
+        (fmt-hard-right-margin . set-fmt-hard-right-margin)
+        (fmt-soft-right-margin . set-fmt-soft-right-margin)
+        (gag-mode-evisc-tuple . set-gag-mode-evisc-tuple-state)
+        (inhibit-output-lst . set-inhibit-output-lst-state)
+        (inhibited-summary-types . set-inhibited-summary-types-state)
+        (ld-evisc-tuple . set-ld-evisc-tuple-state)
+        (ppr-flat-right-margin . set-ppr-flat-right-margin)
+        (print-base . set-print-base)
+        (print-case . set-print-case)
+        (print-length . set-print-length)
+        (print-level . set-print-level)
+        (print-lines . set-print-lines)
+        (print-right-margin . set-print-right-margin)
+        (proofs-co . set-proofs-co-state)
+        (serialize-character . set-serialize-character)
+        (serialize-character-system . set-serialize-character-system)
+        (standard-co . set-standard-co-state)
+        (temp-touchable-fns . set-temp-touchable-fns)
+        (temp-touchable-vars . set-temp-touchable-vars)
+        (term-evisc-tuple . set-term-evisc-tuple-state)))")
  (STATING-AND-PROVING-LEMMAS-ABOUT-LOOP$S
   (LOOP$)
   "Stating and proving theorems about loop$s
@@ -132112,12 +132138,12 @@ Subtopics
   Function: <string>
 
     (defun string (x)
-           (declare (xargs :guard (or (stringp x)
-                                      (symbolp x)
-                                      (characterp x))))
-           (cond ((stringp x) x)
-                 ((symbolp x) (symbol-name x))
-                 (t (coerce (list x) 'string))))")
+      (declare (xargs :guard (or (stringp x)
+                                 (symbolp x)
+                                 (characterp x))))
+      (cond ((stringp x) x)
+            ((symbolp x) (symbol-name x))
+            (t (coerce (list x) 'string))))")
  (STRING-APPEND
   (STRINGS ACL2-BUILT-INS)
   "[concatenate] two strings
@@ -132138,11 +132164,11 @@ Subtopics
   Function: <string-append>
 
     (defun string-append (str1 str2)
-           (declare (xargs :guard (and (stringp str1) (stringp str2))))
-           (mbe :logic (coerce (append (coerce str1 'list)
-                                       (coerce str2 'list))
-                               'string)
-                :exec (concatenate 'string str1 str2)))")
+      (declare (xargs :guard (and (stringp str1) (stringp str2))))
+      (mbe :logic (coerce (append (coerce str1 'list)
+                                  (coerce str2 'list))
+                          'string)
+           :exec (concatenate 'string str1 str2)))")
  (STRING-DOWNCASE
   (STRINGS ACL2-BUILT-INS)
   "In a given string, turn upper-case [characters] into lower-case
@@ -132158,13 +132184,12 @@ Subtopics
 
   Function: <string-downcase>
 
-    (defun
-       string-downcase (x)
-       (declare
-            (xargs :guard (and (stringp x)
-                               (standard-char-listp (coerce x 'list)))))
-       (coerce (string-downcase1 (coerce x 'list))
-               'string))")
+    (defun string-downcase (x)
+      (declare
+           (xargs :guard (and (stringp x)
+                              (standard-char-listp (coerce x 'list)))))
+      (coerce (string-downcase1 (coerce x 'list))
+              'string))")
  (STRING-EQUAL
   (STRINGS ACL2-BUILT-INS)
   "String equality without regard to case
@@ -132182,13 +132207,13 @@ Subtopics
   Function: <string-equal>
 
     (defun string-equal (str1 str2)
-           (declare (xargs :guard (and (stringp str1)
-                                       (standard-string-p str1)
-                                       (stringp str2)
-                                       (standard-string-p str2))))
-           (let ((len1 (length str1)))
-                (and (= len1 (length str2))
-                     (string-equal1 str1 str2 0 len1))))")
+      (declare (xargs :guard (and (stringp str1)
+                                  (standard-string-p str1)
+                                  (stringp str2)
+                                  (standard-string-p str2))))
+      (let ((len1 (length str1)))
+        (and (= len1 (length str2))
+             (string-equal1 str1 str2 0 len1))))")
  (STRING-LISTP
   (STRINGS LISTS ACL2-BUILT-INS)
   "Recognizer for a true list of strings
@@ -132199,10 +132224,10 @@ Subtopics
   Function: <string-listp>
 
     (defun string-listp (x)
-           (declare (xargs :guard t))
-           (cond ((atom x) (eq x nil))
-                 (t (and (stringp (car x))
-                         (string-listp (cdr x))))))")
+      (declare (xargs :guard t))
+      (cond ((atom x) (eq x nil))
+            (t (and (stringp (car x))
+                    (string-listp (cdr x))))))")
  (STRING-UPCASE
   (STRINGS ACL2-BUILT-INS)
   "In a given string, turn lower-case [characters] into upper-case
@@ -132218,13 +132243,12 @@ Subtopics
 
   Function: <string-upcase>
 
-    (defun
-       string-upcase (x)
-       (declare
-            (xargs :guard (and (stringp x)
-                               (standard-char-listp (coerce x 'list)))))
-       (coerce (string-upcase1 (coerce x 'list))
-               'string))")
+    (defun string-upcase (x)
+      (declare
+           (xargs :guard (and (stringp x)
+                              (standard-char-listp (coerce x 'list)))))
+      (coerce (string-upcase1 (coerce x 'list))
+              'string))")
  (STRING<
   (STRINGS ACL2-BUILT-INS)
   "Less-than test for strings
@@ -132252,10 +132276,10 @@ Subtopics
   Function: <string<>
 
     (defun string< (str1 str2)
-           (declare (xargs :guard (and (stringp str1) (stringp str2))))
-           (string<-l (coerce str1 'list)
-                      (coerce str2 'list)
-                      0))")
+      (declare (xargs :guard (and (stringp str1) (stringp str2))))
+      (string<-l (coerce str1 'list)
+                 (coerce str2 'list)
+                 0))")
  (STRING<=
   (STRINGS ACL2-BUILT-INS)
   "Less-than-or-equal test for strings
@@ -132274,10 +132298,10 @@ Subtopics
   Function: <string<=>
 
     (defun string<= (str1 str2)
-           (declare (xargs :guard (and (stringp str1) (stringp str2))))
-           (if (equal str1 str2)
-               (length str1)
-               (string< str1 str2)))")
+      (declare (xargs :guard (and (stringp str1) (stringp str2))))
+      (if (equal str1 str2)
+          (length str1)
+        (string< str1 str2)))")
  (STRING>
   (STRINGS ACL2-BUILT-INS)
   "Greater-than test for strings
@@ -132292,8 +132316,8 @@ Subtopics
   Function: <string>>
 
     (defun string> (str1 str2)
-           (declare (xargs :guard (and (stringp str1) (stringp str2))))
-           (string< str2 str1))")
+      (declare (xargs :guard (and (stringp str1) (stringp str2))))
+      (string< str2 str1))")
  (STRING>=
   (STRINGS ACL2-BUILT-INS)
   "Less-than-or-equal test for strings
@@ -132312,10 +132336,10 @@ Subtopics
   Function: <string>=>
 
     (defun string>= (str1 str2)
-           (declare (xargs :guard (and (stringp str1) (stringp str2))))
-           (if (equal str1 str2)
-               (length str1)
-               (string> str1 str2)))")
+      (declare (xargs :guard (and (stringp str1) (stringp str2))))
+      (if (equal str1 str2)
+          (length str1)
+        (string> str1 str2)))")
  (STRINGP
   (STRINGS ACL2-BUILT-INS)
   "Recognizer for strings
@@ -132411,10 +132435,10 @@ Subtopics
   Function: <strip-cars>
 
     (defun strip-cars (x)
-           (declare (xargs :guard (alistp x)))
-           (cond ((endp x) nil)
-                 (t (cons (car (car x))
-                          (strip-cars (cdr x))))))")
+      (declare (xargs :guard (alistp x)))
+      (cond ((endp x) nil)
+            (t (cons (car (car x))
+                     (strip-cars (cdr x))))))")
  (STRIP-CDRS
   (ALISTS ACL2-BUILT-INS)
   "Collect up all second components of pairs in a list
@@ -132427,10 +132451,10 @@ Subtopics
   Function: <strip-cdrs>
 
     (defun strip-cdrs (x)
-           (declare (xargs :guard (alistp x)))
-           (cond ((endp x) nil)
-                 (t (cons (cdr (car x))
-                          (strip-cdrs (cdr x))))))")
+      (declare (xargs :guard (alistp x)))
+      (cond ((endp x) nil)
+            (t (cons (cdr (car x))
+                     (strip-cdrs (cdr x))))))")
  (STRONG-REWRITE-RULES
   (INTRODUCTION-TO-THE-THEOREM-PROVER)
   "Formulating good rewrite rules
@@ -132543,12 +132567,12 @@ Subtopics
   Function: <sublis>
 
     (defun sublis (alist tree)
-           (declare (xargs :guard (eqlable-alistp alist)))
-           (cond ((atom tree)
-                  (let ((pair (assoc tree alist)))
-                       (cond (pair (cdr pair)) (t tree))))
-                 (t (cons (sublis alist (car tree))
-                          (sublis alist (cdr tree))))))")
+      (declare (xargs :guard (eqlable-alistp alist)))
+      (cond ((atom tree)
+             (let ((pair (assoc tree alist)))
+               (cond (pair (cdr pair)) (t tree))))
+            (t (cons (sublis alist (car tree))
+                     (sublis alist (cdr tree))))))")
  (SUBLIS-FN (POINTERS)
             "See [system-utilities].")
  (SUBLIS-FN-LST-SIMPLE (POINTERS)
@@ -132580,20 +132604,19 @@ Subtopics
 
   Function: <subseq>
 
-    (defun
-         subseq (seq start end)
-         (declare (xargs :guard (and (or (true-listp seq) (stringp seq))
-                                     (integerp start)
-                                     (<= 0 start)
-                                     (or (null end)
-                                         (and (integerp end)
-                                              (<= end (length seq))))
-                                     (<= start (or end (length seq))))))
-         (if (stringp seq)
-             (coerce (subseq-list (coerce seq 'list)
-                                  start (or end (length seq)))
-                     'string)
-             (subseq-list seq start (or end (length seq)))))")
+    (defun subseq (seq start end)
+      (declare (xargs :guard (and (or (true-listp seq) (stringp seq))
+                                  (integerp start)
+                                  (<= 0 start)
+                                  (or (null end)
+                                      (and (integerp end)
+                                           (<= end (length seq))))
+                                  (<= start (or end (length seq))))))
+      (if (stringp seq)
+          (coerce (subseq-list (coerce seq 'list)
+                               start (or end (length seq)))
+                  'string)
+        (subseq-list seq start (or end (length seq)))))")
  (SUBSEQUENCEP (POINTERS)
                "See [system-utilities].")
  (SUBSETP
@@ -132630,11 +132653,11 @@ Subtopics
   Function: <subsetp-equal>
 
     (defun subsetp-equal (x y)
-           (declare (xargs :guard (and (true-listp y) (true-listp x))))
-           (cond ((endp x) t)
-                 ((member-equal (car x) y)
-                  (subsetp-equal (cdr x) y))
-                 (t nil)))
+      (declare (xargs :guard (and (true-listp y) (true-listp x))))
+      (cond ((endp x) t)
+            ((member-equal (car x) y)
+             (subsetp-equal (cdr x) y))
+            (t nil)))
 
   Subsetp is defined by Common Lisp.  See any Common Lisp documentation
   for more information.")
@@ -132659,11 +132682,11 @@ Subtopics
   Function: <subst>
 
     (defun subst (new old tree)
-           (declare (xargs :guard (eqlablep old)))
-           (cond ((eql old tree) new)
-                 ((atom tree) tree)
-                 (t (cons (subst new old (car tree))
-                          (subst new old (cdr tree))))))")
+      (declare (xargs :guard (eqlablep old)))
+      (cond ((eql old tree) new)
+            ((atom tree) tree)
+            (t (cons (subst new old (car tree))
+                     (subst new old (cdr tree))))))")
  (SUBST-EXPR (POINTERS)
              "See [system-utilities].")
  (SUBST-VAR (POINTERS)
@@ -132686,17 +132709,16 @@ Subtopics
 
   Function: <substitute>
 
-    (defun
-         substitute (new old seq)
-         (declare (xargs :guard (or (and (stringp seq) (characterp new))
-                                    (and (true-listp seq)
-                                         (or (eqlablep old)
-                                             (eqlable-listp seq))))))
-         (if (stringp seq)
-             (coerce (substitute-ac new old (coerce seq 'list)
-                                    nil)
-                     'string)
-             (substitute-ac new old seq nil)))")
+    (defun substitute (new old seq)
+      (declare (xargs :guard (or (and (stringp seq) (characterp new))
+                                 (and (true-listp seq)
+                                      (or (eqlablep old)
+                                          (eqlable-listp seq))))))
+      (if (stringp seq)
+          (coerce (substitute-ac new old (coerce seq 'list)
+                                 nil)
+                  'string)
+        (substitute-ac new old seq nil)))")
  (SUBSUMPTION_OF_INDUCTION_CANDIDATES_IN_APP_EXAMPLE
   (PAGES_WRITTEN_ESPECIALLY_FOR_THE_TOURS)
   "Subsumption of Induction Candidates in App Example
@@ -132962,7 +132984,7 @@ Subtopics
   Macro: <swap-stobjs>
 
     (defmacro swap-stobjs (x y)
-              (cons 'mv (cons y (cons x 'nil))))
+      (cons 'mv (cons y (cons x 'nil))))
 
   However, for purposes of tracking single-threadedness, the result (mv
   st2 st1) of (swap-stobjs st1 st2) is treated as a list of new
@@ -133003,11 +133025,11 @@ Subtopics
   Function: <symbol-alistp>
 
     (defun symbol-alistp (x)
-           (declare (xargs :guard t))
-           (cond ((atom x) (eq x nil))
-                 (t (and (consp (car x))
-                         (symbolp (car (car x)))
-                         (symbol-alistp (cdr x))))))")
+      (declare (xargs :guard t))
+      (cond ((atom x) (eq x nil))
+            (t (and (consp (car x))
+                    (symbolp (car (car x)))
+                    (symbol-alistp (cdr x))))))")
  (SYMBOL-CLASS (POINTERS)
                "See [system-utilities].")
  (SYMBOL-DOUBLET-LISTP (POINTERS)
@@ -133022,10 +133044,10 @@ Subtopics
   Function: <symbol-listp>
 
     (defun symbol-listp (lst)
-           (declare (xargs :guard t))
-           (cond ((atom lst) (eq lst nil))
-                 (t (and (symbolp (car lst))
-                         (symbol-listp (cdr lst))))))")
+      (declare (xargs :guard t))
+      (cond ((atom lst) (eq lst nil))
+            (t (and (symbolp (car lst))
+                    (symbol-listp (cdr lst))))))")
  (SYMBOL-NAME
   (SYMBOLS ACL2-BUILT-INS)
   "The name of a symbol (a string)
@@ -133050,10 +133072,10 @@ Subtopics
   Function: <symbol-name-lst>
 
     (defun symbol-name-lst (lst)
-           (declare (xargs :guard (symbol-listp lst)))
-           (cond ((endp lst) nil)
-                 (t (cons (symbol-name (car lst))
-                          (symbol-name-lst (cdr lst))))))")
+      (declare (xargs :guard (symbol-listp lst)))
+      (cond ((endp lst) nil)
+            (t (cons (symbol-name (car lst))
+                     (symbol-name-lst (cdr lst))))))")
  (SYMBOL-PACKAGE-NAME
   (SYMBOLS PACKAGES ACL2-BUILT-INS)
   "The name of the package of a symbol (a string)
@@ -133095,13 +133117,13 @@ Subtopics
   Function: <symbol<>
 
     (defun symbol< (x y)
-           (declare (xargs :guard (and (symbolp x) (symbolp y))))
-           (let ((x1 (symbol-name x))
-                 (y1 (symbol-name y)))
-                (or (string< x1 y1)
-                    (and (equal x1 y1)
-                         (string< (symbol-package-name x)
-                                  (symbol-package-name y))))))")
+      (declare (xargs :guard (and (symbolp x) (symbolp y))))
+      (let ((x1 (symbol-name x))
+            (y1 (symbol-name y)))
+        (or (string< x1 y1)
+            (and (equal x1 y1)
+                 (string< (symbol-package-name x)
+                          (symbol-package-name y))))))")
  (SYMBOLIC_EXECUTION_OF_MODELS
   (PAGES_WRITTEN_ESPECIALLY_FOR_THE_TOURS)
   "Symbolic Execution of Models
@@ -133980,15 +134002,15 @@ Subtopics
 
   Function: <constant-t-function-arity-0>
 
-    (defun constant-t-function-arity-0
-           nil (declare (xargs :guard t))
-           t)
+    (defun constant-t-function-arity-0 nil
+      (declare (xargs :guard t))
+      t)
 
   Function: <constant-nil-function-arity-0>
 
-    (defun constant-nil-function-arity-0
-           nil (declare (xargs :guard t))
-           nil)
+    (defun constant-nil-function-arity-0 nil
+      (declare (xargs :guard t))
+      nil)
 
   To see how to use one of these functions, consider the following
   example of a pair (f . g) as described above, i.e., a system
@@ -135164,23 +135186,24 @@ Subtopics
   Function: <first-n-ac>
 
     (defun first-n-ac (i l ac)
-           (declare (type (integer 0 *) i)
-                    (xargs :guard (and (true-listp l) (true-listp ac))))
-           (cond ((zp i) (revappend ac nil))
-                 (t (first-n-ac (1- i)
-                                (cdr l)
-                                (cons (car l) ac)))))
+      (declare (type (integer 0 *) i)
+               (xargs :guard (and (true-listp l) (true-listp ac))))
+      (cond ((zp i) (revappend ac nil))
+            (t (first-n-ac (1- i)
+                           (cdr l)
+                           (cons (car l) ac)))))
 
   Function: <take>
 
     (defun take (n l)
-           (declare (xargs :guard (and (integerp n)
-                                       (not (< n 0))
-                                       (true-listp l))))
-           (mbe :logic (if (zp n)
-                           nil
-                           (cons (car l) (take (1- n) (cdr l))))
-                :exec (first-n-ac n l nil)))")
+      (declare (xargs :guard (and (integerp n)
+                                  (not (< n 0))
+                                  (true-listp l))))
+      (mbe :logic
+           (if (zp n)
+               nil
+             (cons (car l) (take (1- n) (cdr l))))
+           :exec (first-n-ac n l nil)))")
  (TALKS
   (ACL2-TUTORIAL)
   "Some talks about ACL2
@@ -135446,25 +135469,23 @@ Logical Definitions
   Function: <tamep-functionp>
 
     (defun tamep-functionp (fn)
-           (declare (xargs :guard t))
-           (if (symbolp fn)
-               (let ((bdg (badge fn)))
-                    (and bdg
-                         (eq (access apply$-badge bdg :ilks) t)))
-               (and (consp fn) (tamep-lambdap fn))))
+      (declare (xargs :guard t))
+      (if (symbolp fn)
+          (let ((bdg (badge fn)))
+            (and bdg
+                 (eq (access apply$-badge bdg :ilks) t)))
+        (and (consp fn) (tamep-lambdap fn))))
 
   Function: <tamep>
 
-    (defun
-     tamep (x)
+    (defun tamep (x)
      (declare (xargs :guard t))
      (cond
       ((atom x) (symbolp x))
       ((eq (car x) 'quote)
        (and (consp (cdr x)) (null (cddr x))))
       ((symbolp (car x))
-       (let
-         ((bdg (badge (car x))))
+       (let ((bdg (badge (car x))))
          (cond ((null bdg) nil)
                ((eq (access apply$-badge bdg :ilks) t)
                 (suitably-tamep-listp (access apply$-badge bdg :arity)
@@ -135474,43 +135495,42 @@ Logical Definitions
                                         (cdr x))))))
       ((consp (car x))
        (let ((fn (car x)))
-            (and (tamep-lambdap fn)
-                 (suitably-tamep-listp (length (cadr fn))
-                                       nil (cdr x)))))
+         (and (tamep-lambdap fn)
+              (suitably-tamep-listp (length (cadr fn))
+                                    nil (cdr x)))))
       (t nil)))
 
   Function: <suitably-tamep-listp>
 
-    (defun
-       suitably-tamep-listp (n flags args)
-       (declare (xargs :guard (and (natp n) (true-listp flags))))
-       (cond ((zp n) (null args))
-             ((atom args) nil)
-             (t (and (let ((arg (car args)))
-                          (case (car flags)
-                                (:fn (and (consp arg)
-                                          (eq (car arg) 'quote)
-                                          (consp (cdr arg))
-                                          (null (cddr arg))
-                                          (tamep-functionp (cadr arg))))
-                                (:expr (and (consp arg)
-                                            (eq (car arg) 'quote)
-                                            (consp (cdr arg))
-                                            (null (cddr arg))
-                                            (tamep (cadr arg))))
-                                (otherwise (tamep arg))))
-                     (suitably-tamep-listp (- n 1)
-                                           (cdr flags)
-                                           (cdr args))))))
+    (defun suitably-tamep-listp (n flags args)
+      (declare (xargs :guard (and (natp n) (true-listp flags))))
+      (cond ((zp n) (null args))
+            ((atom args) nil)
+            (t (and (let ((arg (car args)))
+                      (case (car flags)
+                        (:fn (and (consp arg)
+                                  (eq (car arg) 'quote)
+                                  (consp (cdr arg))
+                                  (null (cddr arg))
+                                  (tamep-functionp (cadr arg))))
+                        (:expr (and (consp arg)
+                                    (eq (car arg) 'quote)
+                                    (consp (cdr arg))
+                                    (null (cddr arg))
+                                    (tamep (cadr arg))))
+                        (otherwise (tamep arg))))
+                    (suitably-tamep-listp (- n 1)
+                                          (cdr flags)
+                                          (cdr args))))))
 
   Macro: <tamep-lambdap>
 
     (defmacro tamep-lambdap (fn)
-              (list 'let
-                    (list (list 'fn fn))
-                    '(and (lambda-object-shapep fn)
-                          (symbol-listp (lambda-object-formals fn))
-                          (tamep (lambda-object-body fn)))))
+      (list 'let
+            (list (list 'fn fn))
+            '(and (lambda-object-shapep fn)
+                  (symbol-listp (lambda-object-formals fn))
+                  (tamep (lambda-object-body fn)))))
 
   At the top-level of the ACL2 loop you can determine whether an object
   satisfies one of these predicates by calling the appropriate formal
@@ -136733,11 +136753,11 @@ Subtopics
   Function: <term-list-listp>
 
     (defun term-list-listp (l w)
-           (declare (xargs :guard (plist-worldp-with-formals w)))
-           (if (atom l)
-               (equal l nil)
-               (and (term-listp (car l) w)
-                    (term-list-listp (cdr l) w))))")
+      (declare (xargs :guard (plist-worldp-with-formals w)))
+      (if (atom l)
+          (equal l nil)
+        (and (term-listp (car l) w)
+             (term-list-listp (cdr l) w))))")
  (TERM-LISTP
   (ACL2-BUILT-INS)
   "recognizer for a list of quotations of terms and of clauses
@@ -136770,11 +136790,11 @@ Subtopics
   Function: <term-listp>
 
     (defun term-listp (x w)
-           (declare (xargs :guard (plist-worldp-with-formals w)))
-           (cond ((atom x) (equal x nil))
-                 ((termp (car x) w)
-                  (term-listp (cdr x) w))
-                 (t nil)))")
+      (declare (xargs :guard (plist-worldp-with-formals w)))
+      (cond ((atom x) (equal x nil))
+            ((termp (car x) w)
+             (term-listp (cdr x) w))
+            (t nil)))")
  (TERM-ORDER
   (TERM ACL2-BUILT-INS)
   "The ordering relation on terms used by ACL2
@@ -137240,38 +137260,37 @@ Subtopics
 
   Function: <termp>
 
-    (defun
-         termp (x w)
-         (declare (xargs :guard (plist-worldp-with-formals w)))
-         (cond ((atom x) (legal-variablep x))
-               ((eq (car x) 'quote)
-                (and (consp (cdr x)) (null (cddr x))))
-               ((symbolp (car x))
-                (let ((arity (arity (car x) w)))
-                     (and arity (term-listp (cdr x) w)
-                          (eql (length (cdr x)) arity))))
-               ((and (consp (car x))
-                     (true-listp (car x))
-                     (eq (car (car x)) 'lambda)
-                     (eql 3 (length (car x)))
-                     (arglistp (cadr (car x)))
-                     (termp (caddr (car x)) w)
-                     (null (set-difference-eq (all-vars (caddr (car x)))
-                                              (cadr (car x))))
-                     (term-listp (cdr x) w)
-                     (eql (length (cadr (car x)))
-                          (length (cdr x))))
-                t)
-               (t nil)))
+    (defun termp (x w)
+      (declare (xargs :guard (plist-worldp-with-formals w)))
+      (cond ((atom x) (legal-variablep x))
+            ((eq (car x) 'quote)
+             (and (consp (cdr x)) (null (cddr x))))
+            ((symbolp (car x))
+             (let ((arity (arity (car x) w)))
+               (and arity (term-listp (cdr x) w)
+                    (eql (length (cdr x)) arity))))
+            ((and (consp (car x))
+                  (true-listp (car x))
+                  (eq (car (car x)) 'lambda)
+                  (eql 3 (length (car x)))
+                  (arglistp (cadr (car x)))
+                  (termp (caddr (car x)) w)
+                  (null (set-difference-eq (all-vars (caddr (car x)))
+                                           (cadr (car x))))
+                  (term-listp (cdr x) w)
+                  (eql (length (cadr (car x)))
+                       (length (cdr x))))
+             t)
+            (t nil)))
 
   Function: <term-listp>
 
     (defun term-listp (x w)
-           (declare (xargs :guard (plist-worldp-with-formals w)))
-           (cond ((atom x) (equal x nil))
-                 ((termp (car x) w)
-                  (term-listp (cdr x) w))
-                 (t nil)))
+      (declare (xargs :guard (plist-worldp-with-formals w)))
+      (cond ((atom x) (equal x nil))
+            ((termp (car x) w)
+             (term-listp (cdr x) w))
+            (t nil)))
 
 
 Subtopics
@@ -137513,8 +137532,8 @@ Subtopics
   Function: <the-number>
 
     (defun the-number (x)
-           (declare (xargs :guard (acl2-numberp x)))
-           (mbe :logic (fix x) :exec x))")
+      (declare (xargs :guard (acl2-numberp x)))
+      (mbe :logic (fix x) :exec x))")
  (THE-TRUE-LIST
   (TRUE-LISTP ACL2-BUILT-INS)
   "Coerce an expected true list to a true list
@@ -137529,8 +137548,8 @@ Subtopics
   Function: <the-true-list>
 
     (defun the-true-list (x)
-           (declare (xargs :guard (true-listp x)))
-           (mbe :logic (true-list-fix x) :exec x))")
+      (declare (xargs :guard (true-listp x)))
+      (mbe :logic (true-list-fix x) :exec x))")
  (THEORIES
   (ACL2)
   "Sets of [rune]s to [enable]/[disable] in concert
@@ -137882,21 +137901,21 @@ Subtopics
   Definition: <*definition-minimal-theory*>
 
     (defconst *definition-minimal-theory*
-              (list* 'mv-nth
-                     'iff
-                     *expandable-boot-strap-non-rec-fns*))
+      (list* 'mv-nth
+             'iff
+             *expandable-boot-strap-non-rec-fns*))
 
   Definition: <*built-in-executable-counterparts*>
 
     (defconst *built-in-executable-counterparts*
-              '(acl2-numberp binary-* binary-+ unary-- unary-/
-                             < car cdr char-code characterp code-char
-                             complex complex-rationalp coerce
-                             cons consp denominator equal if imagpart
-                             integerp intern-in-package-of-symbol
-                             numerator pkg-witness pkg-imports
-                             rationalp realpart stringp symbol-name
-                             symbol-package-name symbolp not))
+      '(acl2-numberp binary-* binary-+ unary-- unary-/
+                     < car cdr char-code characterp code-char
+                     complex complex-rationalp coerce
+                     cons consp denominator equal if imagpart
+                     integerp intern-in-package-of-symbol
+                     numerator pkg-witness pkg-imports
+                     rationalp realpart stringp symbol-name
+                     symbol-package-name symbolp not))
 
   A third class of warnings pertains to [primitive]s that do not have
   definitions, such as cons.  Here is an example of such a warning,
@@ -141553,21 +141572,24 @@ Subtopics
   Function: <true-list-fix-exec>
 
     (defun true-list-fix-exec (x)
-           (declare (xargs :guard t))
-           (if (consp x)
-               (cons (car x)
-                     (true-list-fix-exec (cdr x)))
-               nil))
+      (declare (xargs :guard t))
+      (if (consp x)
+          (cons (car x)
+                (true-list-fix-exec (cdr x)))
+        nil))
 
   Function: <true-list-fix>
 
     (defun true-list-fix (x)
-           (declare (xargs :guard t))
-           (mbe :logic (if (consp x)
-                           (cons (car x) (true-list-fix (cdr x)))
-                           nil)
-                :exec (if (true-listp x)
-                          x (true-list-fix-exec x))))")
+      (declare (xargs :guard t))
+      (mbe :logic
+           (if (consp x)
+               (cons (car x) (true-list-fix (cdr x)))
+             nil)
+           :exec
+           (if (true-listp x)
+               x
+             (true-list-fix-exec x))))")
  (TRUE-LIST-LISTP
   (LISTS TRUE-LISTP ACL2-BUILT-INS)
   "Recognizer for true (proper) lists of true lists
@@ -141579,10 +141601,10 @@ Subtopics
   Function: <true-list-listp>
 
     (defun true-list-listp (x)
-           (declare (xargs :guard t))
-           (cond ((atom x) (eq x nil))
-                 (t (and (true-listp (car x))
-                         (true-list-listp (cdr x))))))")
+      (declare (xargs :guard t))
+      (cond ((atom x) (eq x nil))
+            (t (and (true-listp (car x))
+                    (true-list-listp (cdr x))))))")
  (TRUE-LISTP
   (LISTS ACL2-BUILT-INS)
   "Recognizer for proper (nil-terminated) lists
@@ -141595,10 +141617,10 @@ right for you, see [std::strict-list-recognizers].
   Function: <true-listp>
 
     (defun true-listp (x)
-           (declare (xargs :guard t))
-           (if (consp x)
-               (true-listp (cdr x))
-               (eq x nil)))
+      (declare (xargs :guard t))
+      (if (consp x)
+          (true-listp (cdr x))
+        (eq x nil)))
 
 
 Subtopics
@@ -141647,17 +141669,17 @@ Subtopics
   Function: <truncate>
 
     (defun truncate (i j)
-           (declare (xargs :guard (and (real/rationalp i)
-                                       (real/rationalp j)
-                                       (not (eql j 0)))))
-           (let* ((q (* i (/ j)))
-                  (n (numerator q))
-                  (d (denominator q)))
-                 (cond ((= d 1) n)
-                       ((>= n 0)
-                        (nonnegative-integer-quotient n d))
-                       (t (- (nonnegative-integer-quotient (- n)
-                                                           d))))))")
+      (declare (xargs :guard (and (real/rationalp i)
+                                  (real/rationalp j)
+                                  (not (eql j 0)))))
+      (let* ((q (* i (/ j)))
+             (n (numerator q))
+             (d (denominator q)))
+        (cond ((= d 1) n)
+              ((>= n 0)
+               (nonnegative-integer-quotient n d))
+              (t (- (nonnegative-integer-quotient (- n)
+                                                  d))))))")
  (TRUST-MFC
   (EXTENDED-METAFUNCTIONS)
   "A macro that supports testing of extended metafunctions)
@@ -141684,8 +141706,7 @@ Subtopics
 
   Macro: <trust-mfc>
 
-    (defmacro
-     trust-mfc (&whole whole form)
+    (defmacro trust-mfc (&whole whole form)
      (cons
       'prog2$
       (cons
@@ -144208,14 +144229,13 @@ Subtopics
 
   Function: <union-equal>
 
-    (defun
-         union-equal (l1 l2)
-         (declare (xargs :guard (and (true-listp l1) (true-listp l2))))
-         (cond ((endp l1) l2)
-               ((member-equal (car l1) l2)
-                (union-equal (cdr l1) l2))
-               (t (cons (car l1)
-                        (union-equal (cdr l1) l2)))))
+    (defun union-equal (l1 l2)
+      (declare (xargs :guard (and (true-listp l1) (true-listp l2))))
+      (cond ((endp l1) l2)
+            ((member-equal (car l1) l2)
+             (union-equal (cdr l1) l2))
+            (t (cons (car l1)
+                     (union-equal (cdr l1) l2)))))
 
   Note that union-eq can take any number of arguments, in analogy to
   union$; indeed, (union-eq ...) expands to (union$ ... :test 'eq).
@@ -144377,10 +144397,10 @@ Subtopics
   Function: <unsigned-byte-p>
 
     (defun unsigned-byte-p (bits x)
-           (declare (xargs :guard t))
-           (and (integerp bits)
-                (<= 0 bits)
-                (integer-range-p 0 (expt 2 bits) x)))")
+      (declare (xargs :guard t))
+      (and (integerp bits)
+           (<= 0 bits)
+           (integer-range-p 0 (expt 2 bits) x)))")
  (UNSUPPORTED-PARALLELISM-FEATURES
   (PARALLELISM)
   "ACL2 features not supported in ACL2(p)
@@ -144734,11 +144754,11 @@ Subtopics
   Function: <update-nth>
 
     (defun update-nth (key val l)
-           (declare (xargs :guard (true-listp l))
-                    (type (integer 0 *) key))
-           (cond ((zp key) (cons val (cdr l)))
-                 (t (cons (car l)
-                          (update-nth (1- key) val (cdr l))))))
+      (declare (xargs :guard (true-listp l))
+               (type (integer 0 *) key))
+      (cond ((zp key) (cons val (cdr l)))
+            (t (cons (car l)
+                     (update-nth (1- key) val (cdr l))))))
 
 
 Subtopics
@@ -144756,14 +144776,14 @@ Subtopics
   Function: <update-nth-array>
 
     (defun update-nth-array (j key val l)
-           (declare (xargs :guard (and (integerp j)
-                                       (integerp key)
-                                       (<= 0 j)
-                                       (<= 0 key)
-                                       (true-listp l)
-                                       (true-listp (nth j l)))))
-           (update-nth j (update-nth key val (nth j l))
-                       l))")
+      (declare (xargs :guard (and (integerp j)
+                                  (integerp key)
+                                  (<= 0 j)
+                                  (<= 0 key)
+                                  (true-listp l)
+                                  (true-listp (nth j l)))))
+      (update-nth j (update-nth key val (nth j l))
+                  l))")
  (UPPER-CASE-P
   (CHARACTERS ACL2-BUILT-INS)
   "Recognizer for upper case characters
@@ -144780,13 +144800,13 @@ Subtopics
   Function: <upper-case-p>
 
     (defun upper-case-p (x)
-           (declare (xargs :guard (and (characterp x)
-                                       (standard-char-p x))))
-           (and (member x
-                        '(#\\A #\\B #\\C #\\D #\\E #\\F #\\G
-                              #\\H #\\I #\\J #\\K #\\L #\\M #\\N #\\O #\\P #\\Q
-                              #\\R #\\S #\\T #\\U #\\V #\\W #\\X #\\Y #\\Z))
-                t))")
+      (declare (xargs :guard (and (characterp x)
+                                  (standard-char-p x))))
+      (and (member x
+                   '(#\\A #\\B #\\C #\\D #\\E #\\F #\\G
+                         #\\H #\\I #\\J #\\K #\\L #\\M #\\N #\\O #\\P #\\Q
+                         #\\R #\\S #\\T #\\U #\\V #\\W #\\X #\\Y #\\Z))
+           t))")
  (USE (POINTERS)
       "See [hints] for information about the keyword :use.")
  (USELESS-RUNES
@@ -148748,9 +148768,9 @@ The Differences Between Well-Formed and Merely Tame Lambda Objects
   Function: <logic-termp>
 
     (defun logic-termp (x wrld)
-           (declare (xargs :guard (plist-worldp-with-formals wrld)))
-           (and (termp x wrld)
-                (logic-fnsp x wrld)))
+      (declare (xargs :guard (plist-worldp-with-formals wrld)))
+      (and (termp x wrld)
+           (logic-fnsp x wrld)))
 
   The logic-termp check can be avoided if, before you store the rule
   fn-is-correct, you prove:
@@ -148878,17 +148898,17 @@ The Differences Between Well-Formed and Merely Tame Lambda Objects
   Theorem: <arities-okp-implies-arity>
 
     (defthm arities-okp-implies-arity
-            (implies (and (arities-okp user-table w)
-                          (assoc fn user-table))
-                     (equal (arity fn w)
-                            (cdr (assoc fn user-table)))))
+      (implies (and (arities-okp user-table w)
+                    (assoc fn user-table))
+               (equal (arity fn w)
+                      (cdr (assoc fn user-table)))))
 
   Theorem: <arities-okp-implies-logicp>
 
     (defthm arities-okp-implies-logicp
-            (implies (and (arities-okp user-table w)
-                          (assoc fn user-table))
-                     (logicp fn w)))
+      (implies (and (arities-okp user-table w)
+                    (assoc fn user-table))
+               (logicp fn w)))
 
   Now we turn to the well-formedness theorem for a clause processor,
   cl-proc.  Let (cl-proc x ...) be a legal call on distinct variable
@@ -152492,8 +152512,8 @@ Subtopics
   Function: <xor>
 
     (defun xor (p q)
-           (declare (xargs :guard t))
-           (if p (if q nil t) (if q t nil)))")
+      (declare (xargs :guard t))
+      (if p (if q nil t) (if q t nil)))")
  (YOU_MUST_THINK_ABOUT_THE_USE_OF_A_FORMULA_AS_A_RULE
   (PAGES_WRITTEN_ESPECIALLY_FOR_THE_TOURS)
   "You Must Think about the Use of a Formula as a Rule
@@ -152710,8 +152730,8 @@ Subtopics
   Function: <zerop>
 
     (defun zerop (x)
-           (declare (xargs :guard (acl2-numberp x)))
-           (eql x 0))")
+      (declare (xargs :guard (acl2-numberp x)))
+      (eql x 0))")
  (ZIP
   (NUMBERS ACL2-BUILT-INS)
   "Testing an ``integer'' against 0
@@ -152743,8 +152763,8 @@ Subtopics
   Function: <zip>
 
     (defun zip (x)
-           (declare (xargs :guard (integerp x)))
-           (if (integerp x) (= x 0) t))")
+      (declare (xargs :guard (integerp x)))
+      (if (integerp x) (= x 0) t))")
  (ZP
   (NUMBERS ACL2-BUILT-INS)
   "Testing a ``natural'' against 0
@@ -152777,8 +152797,8 @@ Subtopics
   Function: <zp>
 
     (defun zp (x)
-           (declare (xargs :guard (and (integerp x) (<= 0 x))))
-           (if (integerp x) (<= x 0) t))")
+      (declare (xargs :guard (and (integerp x) (<= 0 x))))
+      (if (integerp x) (<= x 0) t))")
  (ZPF
   (NUMBERS ACL2-BUILT-INS)
   "Testing a nonnegative fixnum against 0
@@ -152791,8 +152811,8 @@ Subtopics
   Function: <zpf>
 
     (defun zpf (x)
-           (declare (type (unsigned-byte 29) x))
-           (if (integerp x) (<= x 0) t))")
+      (declare (type (unsigned-byte 29) x))
+      (if (integerp x) (<= x 0) t))")
  (ACL2-PC::=
   (PROOF-BUILDER-COMMANDS PROOF-BUILDER-COMMANDS-SHORT-LIST)
   "(atomic macro) attempt an equality (or equivalence) substitution
