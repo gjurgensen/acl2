@@ -58491,7 +58491,7 @@ Subtopics
   [Output-to-file]
       Redirecting output to a file
 
-  [Pp-special-syms]
+  [Ppr-special-syms]
       A [table] to control indentation for pretty-printing
 
   [Princ$]
@@ -72041,7 +72041,7 @@ Subtopics
              :recursive    t/nil        ; optional (default t)
              :stats        t/nil        ; optional (default t (unless :invoke))
              :total        ; see :DOC memoize-partial
-             :verbose      t/nil        ; optional (default t)
+             :verbose      t/nil        ; optional (default nil)
              )
 
   where fn evaluates to a user-defined function symbol; condition is
@@ -72209,7 +72209,9 @@ Subtopics
   [symbol-name] of fn.  If the proof attempt fails, then you may want
   first to prove the lemma yourself with appropriate hints and
   perhaps supporting lemmas, and then supply the name of that lemma
-  as the value of :commutative.
+  as the value of :commutative.  Note that because most output is
+  inhibited by default, you might wish to supply keyword argument
+  :verbose t if the event fails.
 
   If :commutative is supplied, and a non-commutative condition is
   provided by :condition or :condition-fn, then although the results
@@ -72285,7 +72287,6 @@ Subtopics
     [[ .. output omitted .. ]]
      FIB
     ACL2 !>(memoize 'fib :ideal-okp t)
-    [[ .. output omitted .. ]]
      FIB
     ACL2 !>(time$ (fib 38)) ; slow: uses only executable-counterpart
 
@@ -72319,7 +72320,6 @@ Subtopics
     [[ .. output omitted .. ]]
      FIB-LOGIC-WRAPPER
     ACL2 !>(memoize 'fib-logic-wrapper)
-    [[ .. output omitted .. ]]
      FIB-LOGIC-WRAPPER
     ACL2 !>(time$ (fib-logic-wrapper 38)) ; slow; no fib results are stored
 
@@ -72377,14 +72377,18 @@ Subtopics
   but if parameter :ideal-okp is supplied, the [ACL2-defaults-table]
   value is ignored.
 
-  If :verbose is supplied, it should either be nil, which will inhibit
-  proof, event, and [summary] output (see [with-output]), or else t
-  (the default), which does not inhibit output.  If the output
-  baffles you, try
+  The value of :verbose is nil by default, which avoids output that is
+  typically distracting.  Otherwise verbose should be t.  We can see
+  the types of output that are inhibited by default by using
+  :[trans1] as follows follows (most output elided here); see
+  [with-output].
 
-    :trans1 (memoize ...)
-
-  to see the single-step macroexpansion of your memoize call.
+    ACL2 !>:trans1 (memoize 'nth :verbose nil)
+     (WITH-OUTPUT
+         :OFF (SUMMARY PROVE EVENT)
+         :GAG-MODE NIL
+         ...
+    ACL2 !>
 
   The default for :forget is nil.  If :forget is supplied, and not nil,
   then it must be t, which causes all memoization done for a
@@ -98959,7 +98963,7 @@ Changes to Existing Features
   The pretty-printer has been improved by a contribution from Stephen
   Westfold to support appropriate indentation, including more
   conventional pretty-printing for calls of common macros such as
-  [defun] and [defmacro].  See [pp-special-syms]; we thank Stephen
+  [defun] and [defmacro].  See [ppr-special-syms]; we thank Stephen
   also for supplying the substance of that documentation.  Thanks too
   to Stephen for suggesting several user-defined macros to be
   pretty-printed with this mechanism, which we have modified by
@@ -98974,6 +98978,39 @@ Changes to Existing Features
   32-bit-integer-stack, and list-all-package-names-lst, as have some
   related built-in, undocumented definitions and theorems, including
   old-check-sum-obj and supporting functions.
+
+  Improved [hide] calls in prover output from failed execution of
+  [warrant]s, by adding suitable notes about attachments or warrant
+  functions not being executable during proofs.  Thanks to Eric
+  McCarthy for a remark that led to this change.
+
+  State globals inhibit-output-lst, inhibited-summary-types, and
+  ld-level are now [untouchable].  The macros
+  [set-inhibit-output-lst] and [set-inhibited-summary-types] still
+  allow you to modify the values of these variables.  Thanks to Peter
+  Dillinger for correspondence (years ago!) leading to these changes.
+
+  The macro [state-global-let*] no longer requires explicitly supplying
+  a setter for certain built-in [state] global variables.  See
+  [state-global-let*].
+
+  A proposed [defaxiom] [event] is no longer [redundant] with an
+  existing [defthm] event.  Before this change, the following book
+  could (perhaps unfortunately) be certified, even without
+  [certify-book] option :skip-proofs-okp t.
+
+    (in-package \"ACL2\")
+    (local (defthm foo (equal (car (cons x x)) x)))
+    (defaxiom foo (equal (car (cons x x)) x))
+
+  The prover sometimes reduces a goal without hypotheses (technically
+  speaking, a one-element clause) to nil using [type-set] reasoning.
+  This heuristic has not changed, but formerly there was no
+  explanation given.  Now ACL2 reports the rules (of class
+  :[type-prescription]) that were used.
+
+  The default for [memoize] keyword argument :verbose has been changed
+  from t to nil, which (by default) eliminates noise from the output.
 
 
 New Features
@@ -99120,6 +99157,10 @@ Heuristic and Efficiency Improvements
   Sped up macroexpansion for several common macros, with roughly a 2%
   to 3% speedup observed for including several large books during
   development of this change.
+
+  Tweaked [linear-arithmetic] to avoid consideration of an equality
+  between two terms that are both known (via their [type-set]s) to be
+  non-numeric.
 
 
 Bug Fixes
@@ -105347,23 +105388,23 @@ Subtopics
                    "See [sharp-dot-reader].")
  (POUND-U-READER (POINTERS)
                  "See [sharp-u-reader].")
- (PP-SPECIAL-SYMS
+ (PPR-SPECIAL-SYMS
   (IO)
   "A [table] to control indentation for pretty-printing
 
   ACL2 output is generally pretty-printed: that is, spacing and
   indentation are controlled to enhance readability and aesthetics of
   the output.  Indentation may be controlled by using the table,
-  pp-special-syms as described below.  We thank Stephen Westfold for
-  enhancing the pretty-printer with support for pp-special-syms.
+  ppr-special-syms as described below.  We thank Stephen Westfold for
+  enhancing the pretty-printer with support for ppr-special-syms.
 
-  The initial value of the pp-special-syms table is given by the
-  constant *pp-special-syms* as follows.  It associates each key, a
+  The initial value of the ppr-special-syms table is given by the
+  constant *ppr-special-syms* as follows.  It associates each key, a
   symbol, with a corresponding special-term-num as discussed below.
 
-  Definition: <*pp-special-syms*>
+  Definition: <*ppr-special-syms*>
 
-    (defconst *pp-special-syms*
+    (defconst *ppr-special-syms*
       '((case . 1)
         (case-match . 1)
         (defabsstobj . 1)
@@ -105389,10 +105430,10 @@ Subtopics
         (mv-let . 2)
         (table . 1)))
 
-  The pp-special-syms table is extended for some common macros in the
+  The ppr-special-syms table is extended for some common macros in the
   files where they are defined, for example for [define] and [b*].
 
-  For calls of special forms and macros in the pp-special-syms table,
+  For calls of special forms and macros in the ppr-special-syms table,
   their bodies are indented by 2 rather than in the usual default
   manner.  To support this we allow a special-term-num to be
   associated with a symbol.  Arguments of such symbols in the
@@ -117057,15 +117098,16 @@ Subtopics
   A [defaxiom] or [defthm] event is redundant if there is already an
   axiom or theorem of the given name and the two [events] are
   syntactically identical.  But there is the following more generous
-  criterion: both the formula (after macroexpansion) and the
-  [rule-classes] (after translation and certain ``truncation'') are
-  syntactically identical.  This ``truncation'' involves removing the
-  :HINTS and :INSTRUCTIONS fields from a rule-class, and also
-  removing the :COROLLARY field when it specifies the same term as
-  the event.  Note that a [defaxiom] can be redundant with a [defthm]
-  and vice-versa.  (Remark for system hackers: defthm/defaxiom
-  redundancy is implemented in ACL2 source function,
-  redundant-theoremp.)
+  criterion, which applies unless the older event is a defthm event
+  and the newer event is a defaxiom event: both the formula (after
+  macroexpansion) and the [rule-classes] (after translation and
+  certain ``truncation'') are syntactically identical.  This
+  ``truncation'' involves removing the :HINTS and :INSTRUCTIONS
+  fields from a rule-class, and also removing the :COROLLARY field
+  when it specifies the same term as the event.  Note that a [defthm]
+  can be redundant with a [defaxiom] but not vice-versa.  (Remark for
+  system hackers: defthm/defaxiom redundancy is implemented in ACL2
+  source function, redundant-theoremp.)
 
   A [defconst] is redundant if the name is already defined either with
   a syntactically identical defconst event or one that defines it to
@@ -129967,31 +130009,43 @@ Subtopics
   where: each vari is a variable; each formi is an expression whose
   value is a single ordinary object (i.e. not multiple values, and
   not [state] or any other [stobj]); set-vari, if supplied, is a
-  function with [signature] ((set-vari * state) => state); and body
-  is an expression that evaluates to an [error-triple].  Each formi
-  is evaluated in order, starting with form1, and with each such
-  binding the state global variable vari is bound to the value of
-  formi, sequentially in the style of [let*].  More precisely, then
-  meaning of this form is to set (in order) the global values of the
-  indicated [state] global variables vari to the values of formi
-  using [f-put-global], execute body, restore the vari to their
-  previous values (but see the discussion of setters below), and
-  return the triple produced by body (with its state as modified by
-  the restoration).  The restoration is guaranteed even in the face
-  of aborts.  The ``bound'' variables may initially be unbound in
-  state and restoration means to make them unbound again.
+  function or macro such that (set-vari _ state) returns [state]; and
+  body is an expression that evaluates to an [error-triple].  Each
+  formi is evaluated in order, starting with form1, and with each
+  such binding the state global variable vari is bound to the value
+  of formi, sequentially in the style of [let*].  More precisely, the
+  meaning of this form is to perform the following actions, in order.
 
-  Still referring to the General Form above, let old-vali be the value
-  of state global variable vari at the time vari is about to be
-  assigned the value of formi.  If set-vari is not supplied, then as
-  suggested above, the following form is evaluated at the conclusion
-  of the evaluation of the state-global-let* form, whether or not an
-  error has occurred: (f-put-global 'vari 'old-vali state).  However,
-  if set-vari is supplied, it is a function symbol that we may call a
-  ``setter'', and the form evaluated will instead be (set-vari
-  'old-vali state).  This capability is particularly useful if vari
-  is untouchable (see [push-untouchable]), since the above call of
-  [f-put-global] is illegal.
+   1. Set (in order) the global values of the indicated [state] global
+      variables vari to the values of formi.  Exception: This is
+      skipped when vari is a built-in state global and formi is
+      (f-get-global 'vari state).
+   2. Execute body.
+   3. Restore the vari to their previous values.
+   4. Return the [error-triple] produced by body, where [state] reflects
+      the modifications of the preceding step.
+
+  The restoration is guaranteed even in the face of aborts.  The
+  ``bound'' variables may initially be unbound in state and
+  restoration means to make them unbound again.
+
+  Still referring to the General Form above, we next discuss how the
+  values are set and restored.  Let old-vali be the value of state
+  global variable vari at the time vari is about to be assigned the
+  value of formi.  We say that a ``setter is supplied'' for vari if
+  set-vari is supplied, either explicitly as in the General Form
+  above, or implicitly by being associated with vari in the value of
+  the constant, *state-global-let*-untouchable-alist* (whose
+  definition appears at the end of this topic).  If no setter is
+  supplied then vari is set or restored to a value <val> by
+  evaluating (f-put-global 'vari <val> state).  However, if a setter
+  set-vari is supplied, then the form evaluated will instead be
+  (set-vari <val> state).  Having a setter supplied is particularly
+  useful if vari is [untouchable], since the call above of
+  [f-put-global] is illegal.  However, the use of
+  *state-global-let*-untouchable-alist* (mentioned above) avoids the
+  need for supplying set-vari explicitly for certain built-in
+  [untouchable] state global variables, vari.
 
   Note that the scope of the bindings of a state-global-let* form is
   the body of that form.  This may seem obvious, but to drive the
@@ -130012,13 +130066,43 @@ Subtopics
     ACL2 !>(state-global-let* ((print-base 16 set-print-base)
                                (print-radix t set-print-radix))
                               (pprogn (fms \"~x0~%\"
-                                           (list (cons #0 10))
+                                           (list (cons #\\0 10))
                                            *standard-co* state nil)
                                       (mv nil 10 state)))
 
     #xA
      10
-    ACL2 !>")
+    ACL2 !>
+
+  Finally, as promised above, here is the definition of the constant
+  that maps certain built-in untouchable variables to setters.
+
+  Definition: <*state-global-let*-untouchable-alist*>
+
+    (defconst *state-global-let*-untouchable-alist*
+      '((abbrev-evisc-tuple . set-abbrev-evisc-tuple-state)
+        (compiler-enabled . set-compiler-enabled)
+        (current-package . set-current-package-state)
+        (fmt-hard-right-margin . set-fmt-hard-right-margin)
+        (fmt-soft-right-margin . set-fmt-soft-right-margin)
+        (gag-mode-evisc-tuple . set-gag-mode-evisc-tuple-state)
+        (inhibit-output-lst . set-inhibit-output-lst-state)
+        (inhibited-summary-types . set-inhibited-summary-types-state)
+        (ld-evisc-tuple . set-ld-evisc-tuple-state)
+        (ppr-flat-right-margin . set-ppr-flat-right-margin)
+        (print-base . set-print-base)
+        (print-case . set-print-case)
+        (print-length . set-print-length)
+        (print-level . set-print-level)
+        (print-lines . set-print-lines)
+        (print-right-margin . set-print-right-margin)
+        (proofs-co . set-proofs-co-state)
+        (serialize-character . set-serialize-character)
+        (serialize-character-system . set-serialize-character-system)
+        (standard-co . set-standard-co-state)
+        (temp-touchable-fns . set-temp-touchable-fns)
+        (temp-touchable-vars . set-temp-touchable-vars)
+        (term-evisc-tuple . set-term-evisc-tuple-state)))")
  (STATING-AND-PROVING-LEMMAS-ABOUT-LOOP$S
   (LOOP$)
   "Stating and proving theorems about loop$s
