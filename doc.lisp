@@ -77,7 +77,7 @@ Subtopics
   [defthm], [in-theory], [xargs], [state], etc., without an acl2::
   prefix.
 
-  The constant *acl2-exports* lists 1576 symbols, including most
+  The constant *acl2-exports* lists 1573 symbols, including most
   documented ACL2 system constants, functions, and macros.  You will
   typically also want to import many symbols from Common Lisp; see
   [*common-lisp-symbols-from-main-lisp-package*].
@@ -93,14 +93,7 @@ Subtopics
        *main-lisp-package-name*
        *standard-chars* *standard-ci*
        *standard-co* *standard-oi*
-       + - / /= 1+ 1- 32-bit-integer-listp
-       32-bit-integer-listp-forward-to-integer-listp
-       32-bit-integer-stack
-       32-bit-integer-stack-length
-       32-bit-integer-stack-length1
-       32-bit-integerp
-       32-bit-integerp-forward-to-integerp
-       < <-on-others
+       + - / /= 1+ 1- < <-on-others
        <= = > >= ?-fn @ a! abort! abort-soft
        abs access accumulated-persistence
        accumulated-persistence-oops
@@ -132,12 +125,10 @@ Subtopics
        and and-macro append append$ append$+
        apply$ apply$-guard apply$-lambda
        apply$-lambda-guard apply$-userfn
-       aref-32-bit-integer-stack aref-t-stack
        aref1 aref2 args arities-okp arity
        array1p array1p-cons array1p-forward
        array1p-linear array2p array2p-cons
        array2p-forward array2p-linear
-       aset-32-bit-integer-stack aset-t-stack
        aset1 aset1-trusted aset2 ash assert$
        assert* assert-event assign assoc
        assoc-add-pair assoc-eq assoc-eq-equal
@@ -293,12 +284,12 @@ Subtopics
        er-progn@par er-soft er-soft-logic ev$
        ev$-list evenp evens event evisc-tuple
        executable-counterpart-theory
-       exists exit explode-atom
+       exists exit
+       explain-giant-lambda-object explode-atom
        explode-nonnegative-integer expt
        expt-type-prescription-non-zero-base
-       extend-32-bit-integer-stack
-       extend-pathname extend-pe-table
-       extend-t-stack extend-world
+       extend-pathname
+       extend-pe-table extend-world
        extra-info f-boundp-global f-get-global
        f-put-global fast-alist-clean
        fast-alist-clean! fast-alist-fork
@@ -386,9 +377,10 @@ Subtopics
        keywordp keywordp-forward-to-symbolp
        known-package-alist known-package-alistp
        known-package-alistp-forward-to-true-list-listp-and-alistp
-       kwote kwote-lst
-       l< lambda lambda$ last last-cdr
-       last-prover-steps ld ld-error-action
+       kwote kwote-lst l< lambda
+       lambda$ last last-cdr last-prover-steps
+       ld ld-always-skip-top-level-locals
+       ld-error-action
        ld-error-triples ld-evisc-tuple
        ld-history ld-history-entry-error-flg
        ld-history-entry-input
@@ -401,11 +393,11 @@ Subtopics
        ld-pre-eval-filter ld-pre-eval-print
        ld-prompt ld-query-control-alist
        ld-redefinition-action ld-skip-proofsp
-       ld-verbose legal-case-clausesp
-       len len-update-nth length let
-       let* let-mbe lex-fix lexorder lexp list
-       list* list*-macro list-all-package-names
-       list-all-package-names-lst
+       ld-user-stobjs-modified-warning
+       ld-verbose
+       legal-case-clausesp len len-update-nth
+       length let let* let-mbe lex-fix
+       lexorder lexp list list* list*-macro
        list-macro listp local logand
        logandc1 logandc2 logbitp logcount
        logeqv logic logic-fns-list-listp
@@ -594,8 +586,8 @@ Subtopics
        set-difference-theories
        set-duplicate-keys-action
        set-duplicate-keys-action!
-       set-enforce-redundancy
-       set-equalp-equal set-evisc-tuple
+       set-enforce-redundancy set-equalp-equal
+       set-evisc-tuple set-fast-cert
        set-fc-criteria set-fc-report-on-the-fly
        set-fmt-hard-right-margin
        set-fmt-soft-right-margin set-gag-mode
@@ -611,11 +603,20 @@ Subtopics
        set-inhibited-summary-types
        set-invisible-fns-table
        set-iprint set-irrelevant-formals-ok
+       set-ld-always-skip-top-level-locals
+       set-ld-error-action
+       set-ld-error-triples set-ld-evisc-tuple
        set-ld-keyword-aliases
        set-ld-keyword-aliases!
-       set-ld-prompt set-ld-redefinition-action
-       set-ld-skip-proofs
-       set-ld-skip-proofsp set-let*-abstraction
+       set-ld-missing-input-ok
+       set-ld-post-eval-print
+       set-ld-pre-eval-filter
+       set-ld-pre-eval-print
+       set-ld-prompt set-ld-query-control-alist
+       set-ld-redefinition-action
+       set-ld-skip-proofs set-ld-skip-proofsp
+       set-ld-user-stobjs-modified-warning
+       set-ld-verbose set-let*-abstraction
        set-let*-abstractionp
        set-match-free-default
        set-match-free-error
@@ -630,7 +631,7 @@ Subtopics
        set-print-level set-print-lines
        set-print-radix set-print-readably
        set-print-right-margin
-       set-prover-step-limit
+       set-proofs-co set-prover-step-limit
        set-raw-mode set-raw-mode-on
        set-raw-mode-on! set-raw-proof-format
        set-raw-warning-format
@@ -643,14 +644,16 @@ Subtopics
        set-skip-meta-termp-checks
        set-skip-meta-termp-checks!
        set-slow-alist-action
-       set-splitter-output set-state-ok
+       set-splitter-output set-standard-co
+       set-standard-oi set-state-ok
        set-tau-auto-mode set-temp-touchable-fns
        set-temp-touchable-vars set-timer
        set-total-parallelism-work-limit
        set-total-parallelism-work-limit-error
        set-trace-evisc-tuple
        set-verify-guards-eagerness
-       set-w set-waterfall-parallelism
+       set-w set-warnings-as-errors
+       set-waterfall-parallelism
        set-waterfall-parallelism-hacks-enabled
        set-waterfall-parallelism-hacks-enabled!
        set-waterfall-printing
@@ -661,9 +664,7 @@ Subtopics
        show-accumulated-persistence show-bdd
        show-bodies show-brr-evisc-tuple
        show-custom-keyword-hint-expansion
-       show-fc-criteria
-       shrink-32-bit-integer-stack
-       shrink-t-stack signed-byte
+       show-fc-criteria signed-byte
        signed-byte-p signum simplify
        sixth skip-proofs sleep some-slashable
        spec-mv-let splitter-output
@@ -718,8 +719,7 @@ Subtopics
        symbolp-intern-in-package-of-symbol synp
        syntactically-clean-lambda-objects-theory
        syntaxp sys-call sys-call* sys-call+
-       sys-call-status t t-stack t-stack-length
-       t-stack-length1 table table-alist
+       sys-call-status t table table-alist
        take tamep tamep-functionp tamep-lambdap
        tau-data tau-database tau-interval-dom
        tau-interval-hi tau-interval-hi-rel
@@ -758,17 +758,15 @@ Subtopics
        unsave unsigned-byte unsigned-byte-p
        until$ until$+ untouchable-marker
        untrace$ untrans-table
-       untranslate update-32-bit-integer-stack
-       update-acl2-oracle
+       untranslate update-acl2-oracle
        update-acl2-oracle-preserves-state-p1
        update-big-clock-entry update-file-clock
        update-global-table update-idates
-       update-list-all-package-names-lst
        update-nth update-nth-array
        update-open-input-channels
        update-open-output-channels
        update-read-files
-       update-t-stack update-user-stobj-alist
+       update-user-stobj-alist
        update-user-stobj-alist1
        update-written-files
        upper-case-p upper-case-p-char-upcase
@@ -781,8 +779,8 @@ Subtopics
        w walkabout warning! warrant
        waterfall-parallelism waterfall-printing
        weak-ld-history-entry-p
-       well-formed-lambda-objectp
-       wet when$ when$+ with-fast-alist
+       well-formed-lambda-objectp wet
+       when$ when$+ with-cbd with-fast-alist
        with-global-stobj with-guard-checking
        with-guard-checking-error-triple
        with-guard-checking-event
@@ -15918,8 +15916,7 @@ Subtopics
     (or (consp x) (equal x nil))
 
   Notice that in the ACL2 logic, car returns nil for every [atom].")
- (CASE
-  (BASICS ACL2-BUILT-INS)
+ (CASE (BASICS ACL2-BUILT-INS)
   "Conditional based on if-then-else using [eql]
 
     Example Form:
@@ -15987,19 +15984,18 @@ Subtopics
 
   Case is defined in Common Lisp.  See any Common Lisp documentation
   for more information.")
- (CASE-MATCH
-  (BASICS ACL2-BUILT-INS)
+ (CASE-MATCH (BASICS ACL2-BUILT-INS)
   "Pattern matching or destructuring
 
     General Form:
     (case-match x
-      (pat1 dcl1 body1)
+      (pat1 dcl1 ... body1)
       ...
-      (patk dclk bodyk))
+      (patk dclk ... bodyk))
 
-  where x is a variable symbol, the pati are structural patterns as
-  described below, the dcli are optional [declare] forms and the
-  bodyi are terms.  The legal declare forms are the same as for
+  where x is a symbol, the pati are structural patterns as described
+  below, each ``dcli ...'' indicates 0 or more [declare] forms, and
+  the bodyi are terms.  The legal declare forms are the same as for
   [let]: ignore, ignorable, and type.  Return the value(s) of the
   bodyi corresponding to the first pati matching x, or nil if none
   matches.
@@ -17049,6 +17045,13 @@ Subtopics
   arguments and their corresponding environment variables, as we
   ignore those effects in the present topic.
 
+  NOTE: If a given book includes some books (see [include-book]), then
+  those included books need to be certified before the given book is
+  certified.  See [build::cert.pl] for a tool that certifies not only
+  a given book but also all of the books that it includes, as well as
+  all the books that those books include, and so on --- all in the
+  proper order, and with parallelism by using the -j option.
+
   Certification occurs in some logical [world], called the
   ``certification [world].'' That [world] must contain the [defpkg]s
   needed to read and execute the forms in the book.  The [command]s
@@ -17153,8 +17156,8 @@ Subtopics
   [world]; (2) does the full admissibility checks on each form
   (proving termination of recursive functions, proving theorems,
   etc.), checking as it goes that each form is an embedded event form
-  (see [embedded-event-form]); (3) may roll back the [world] (how
-  far? --- see below) and perform an [include-book] to check for
+  (see [embedded-event-form]); (3) may roll back the logical [world]
+  (how far? --- see below) and perform an [include-book] to check for
   [local] incompatibilities (see [local-incompatibility]); (4) writes
   a [certificate] recording not only that the book was certified but
   also recording the [command]s necessary to recreate the
@@ -17170,16 +17173,16 @@ Subtopics
   If you don't want the included book's [events] in your present
   [world], simply execute :[u].
 
-  Technical Remark.  Step 3 above mentions rolling the logical [world]
-  back to check for local incompatibilities.  For efficiency, this
-  retraction to an initial segment of the world is skipped if a local
-  event is not encountered, and otherwise the world is rolled back
+  Remark.  Step (3) above mentions rolling back the logical [world] to
+  check for local incompatibilities.  This process is skipped if no
+  [local] event is encountered.  Otherwise, the world is rolled back
   through the first local event past the boot-strap world --- see
-  [local-incompatibility] --- before the book is included to check
-  for local incompatibilities.  Note that if that first local event
-  is in the certification world, then all commands from that event
-  onward will be undone by the certify-book call.  End of Technical
-  Remark.
+  [local-incompatibility] --- before the book is included.  Note that
+  if that first local event is in the certification world, then all
+  commands from that event onward will be rolled back.  See
+  [fast-cert] for a way to skip entirely this process of roll-back
+  and check, regardless of local events, but with a risk to
+  soundness.  End of Remark.
 
   A utility is provided to assist in debugging failures of
   certify-book; see [redo-flat].)
@@ -17251,6 +17254,9 @@ Subtopics
 
   [Certify-book-debug]
       Some possible ways to work around [certify-book] failures
+
+  [Fast-cert]
+      A mode for faster, but possibly unsound, book certification
 
   [Useless-runes]
       Speed up proofs by disabling useless [rune]s")
@@ -22816,8 +22822,7 @@ Subtopics
   of expr2 may even cause an error, for example in :[program] mode if
   the expression expr2 has been constructed in a manner that could
   cause a guard violation unless test holds of expr1.")
- (DEFABSSTOBJ
-  (EVENTS STOBJ)
+ (DEFABSSTOBJ (EVENTS STOBJ)
   "Define a new abstract single-threaded object
 
   We assume familiarity with single-threaded objects; see [stobj] and
@@ -23922,10 +23927,14 @@ Miscellaneous Remarks, with discussion of possible user errors.
   code during the proof process, essentially when the ``program
   refinement'' is on theorem prover code rather than on functions we
   are reasoning about.  The attachment to too-many-ifs-post-rewrite
-  described above provides one example of such attachments.  Meta
-  functions and clause-processor functions can also have attachments,
-  with the restriction that no common ancestor with the evaluator can
-  have an attachment; see [evaluator-restrictions].
+  described above provides one example of such attachments.  Another
+  example is that a meta function or clause-processor function can
+  call functions that have attachments, with a restriction that those
+  attached functions must not also be ancestral in a corresponding
+  evaluator.  See [evaluator-restrictions] for a discussion of that
+  restriction, and see [transparent-functions] for a device that can
+  relax the restriction (while imposing additional requirements on
+  attachments).
 
   For an attachment pair <f,g>, evaluation of f never consults the
   [guard] of f.  Rather, control passes to g, whose guard is checked
@@ -24307,8 +24316,7 @@ Subtopics
   See [set-total-parallelism-work-limit].")
  (DEFAULT-VERIFY-GUARDS-EAGERNESS (POINTERS)
                                   "See [set-verify-guards-eagerness].")
- (DEFAXIOM
-  (EVENTS)
+ (DEFAXIOM (EVENTS)
   "Add an axiom
 
   WARNING: We strongly recommend that you not add axioms.  If at all
@@ -24858,9 +24866,9 @@ Subtopics
 
     (defun f (x y) (and x y))
     (defmacro g (x) `(f ,x t))
-    (defcong iff equal (g x) 1)")
- (DEFCONST
-  (EVENTS PROGRAMMING)
+    (defcong iff equal (g x) 1)"
+)
+ (DEFCONST (EVENTS PROGRAMMING)
   "Define a constant
 
     Examples:
@@ -26169,7 +26177,8 @@ Subtopics
       Why attachments are sometimes not used
 
   [Prohibition-of-loop$-and-lambda$]
-      Certain events do not allow [loop$]s or [lambda$]s")
+      Certain events do not allow [loop$]s or [lambda$]s"
+)
  (DEFMACRO-LAST
   (EVENTS)
   "Define a macro that returns its last argument, but with side effects
@@ -26302,7 +26311,21 @@ Subtopics
 
   Upon admission of a defpkg event, the function pkg-imports is
   extended to compute a list of all symbols imported into the given
-  package, without duplicates.
+  package, without duplicates.  If \"MY-PKG\" is the name of the new
+  package and symb is the symbol returned by (intern (concatenate
+  'string \"MY-PKG\" \"-PACKAGE\") \"ACL2\"), then symb denotes the
+  [rewrite] rule added for the package.  For example, here is a
+  display of that rule for the event (defpkg \"MY-PKG\" '(a b)).
+
+    ACL2 !>:pl (pkg-imports \"MY-PKG\")
+
+    (:REWRITE MY-PKG-PACKAGE)
+      New term: '(A B)
+      Hypotheses: <none>
+      Equiv: EQUAL
+      Substitution: NIL
+
+    ....
 
   Defpkg is the only means by which an ACL2 user can create a new
   package or specify what it imports.  That is, ACL2 does not support
@@ -26781,8 +26804,7 @@ Subtopics
   generated [defthm] form are as specified by the other keyword
   arguments above.  The term generated for the [defthm] event states
   that equiv1 refines equiv2.")
- (DEFSTOBJ
-  (EVENTS STOBJ)
+ (DEFSTOBJ (EVENTS STOBJ)
   "Define a new single-threaded object
 
   Note: Novices are advised to avoid defstobj, perhaps instead using
@@ -27601,8 +27623,7 @@ Subtopics
   [rune]s in current theory.  If this form is in a book being
   certified, then the resulting deftheory form is stored in the
   book's certificate, and is used when the book is included later.")
- (DEFTHM
-  (EVENTS)
+ (DEFTHM (EVENTS)
   "Prove and name a theorem
 
     Examples:
@@ -27664,8 +27685,7 @@ Subtopics
 
   [Otf-flg]
       Allow more than one initial subgoal to be pushed for induction")
- (DEFTHMD
-  (DEFTHM EVENTS)
+ (DEFTHMD (DEFTHM EVENTS)
   "Prove and name a theorem and then disable it
 
   Use defthmd instead of [defthm] when you want to disable a theorem
@@ -28299,7 +28319,8 @@ Subtopics
       Set the default well-founded relation
 
   [Xargs]
-      Extra arguments, for example to give [hints] to [defun]")
+      Extra arguments, for example to give [hints] to [defun]"
+)
  (DEFUN$
   (DEFUN EVENTS APPLY$)
   "Define a function symbol and generate a warrant
@@ -28414,7 +28435,8 @@ Subtopics
   sessions, including that book with the second host Lisp will not
   result in any inline or notinline behavior for functions defined in
   the book.  This may be fixed in a future release if someone
-  complains.")
+  complains."
+)
  (DEFUN-MODE
   (DEFUN)
   "Determines whether a function definition is a logical act
@@ -29146,7 +29168,8 @@ Subtopics
       A Beginner's Guide to Reasoning about Quantification in ACL2
 
   [Quantifiers]
-      Issues about quantification in ACL2")
+      Issues about quantification in ACL2"
+)
  (DEFUN-SK-EXAMPLE
   (DEFUN-SK)
   "A simple example using [defun-sk]
@@ -29278,7 +29301,8 @@ Subtopics
   [in-theory] event is not redundant.  This default can be changed;
   see [set-in-theory-redundant-okp].
 
-  See [defun] for documentation of defun.")
+  See [defun] for documentation of defun."
+)
  (DEFUND-INLINE
   (DEFUN EVENTS)
   "Define a potentially disabled, inlined function symbol and associated
@@ -30583,6 +30607,46 @@ INFORMAL INTRODUCTION
              (AND (ALISTP NEW-ALIST)
                   (INTEGER-LISTP (CDR (ASSOC-EQ-SAFE 'TEMP NEW-ALIST)))))
 
+  The :guard is generally ignored when it is within the definition's
+  body for a guard-verified or a :[program]-mode function.  The
+  reason is that in these cases, the loop$ expression is converted to
+  a Common Lisp loop expression.  (There are exceptions involving
+  [set-guard-checking] and [invariant-risk].)  However, in other
+  cases the :guard is checked at runtime.  Consider the following
+  example.
+
+    (defun f (lst)
+      (loop$ with x = lst
+             do
+             :guard (consp x)
+             (cond ((consp x)
+                    (setq x (cdr x)))
+                   (t (return x)))))
+
+  Here we see a runtime guard violation.
+
+    ACL2 !>(f '(a b c d))
+
+
+    ACL2 Error [Evaluation] in TOP-LEVEL:  The guard for a DO$ form,
+    (AND (ALISTP ALIST) (CONSP (CDR (ASSOC-EQ-SAFE 'X ALIST)))),
+     has been violated by the following alist:
+    ((X)).
+    See :DOC do-loop$.
+
+    ACL2 !>
+
+  As noted in the preceding section (on ``The OF-TYPE Keyword''), a
+  call of do$ transforms an alist with each iteration through the
+  loop.  The alist initially binds the symbol X to the list (A B C
+  D), and each iteration modifies that binding by cdring the value of
+  X, until finally that value is nil --- and then a guard check fails
+  for the value of X, i.e., (CONSP (CDR (ASSOC-EQ-SAFE 'X ALIST))) is
+  nil.
+
+  A more detailed explanation may be found in the final section,
+  ``Semantics''.
+
   The :MEASURE Keyword
 
   The discussion above doesn't address the obvious possibility that a
@@ -30938,8 +31002,8 @@ SEMANTICS
   untranslated term; see [term]).  See also the subsection of
   [lambda$] entitled ``About Lambda$s and Prover Output.''
 
-  The definition of do$ is given at the end of this topic, for those
-  who care to explore it, but this discussion is intended to be
+  The definition of do$ is given later in this topic, for those who
+  care to explore it, but this discussion is intended to be
   self-contained.  Do$ operates by maintaining an alist that maps
   variables to values, for all variables referenced in the loop$
   expression --- though only variables that are declared in WITH
@@ -31076,7 +31140,8 @@ SEMANTICS
   to decrease; it can however be relevant when reasoning about do$
   calls.
 
-})
+  Here is the definition of [do$].
+
   Function: <do$>
 
     (defun
@@ -31120,6 +31185,126 @@ SEMANTICS
           (apply$ measure-fn (list new-alist))
           default)
          default)))))
+
+  We conclude by returning to an earlier example that illustrates
+  runtime guard-checking.  But this time we do some tracing, as
+  indicated.
+
+    (defun f (lst)
+      (loop$ with x = lst
+             do
+             :guard (consp x)
+             (cond ((consp x)
+                    (setq x (cdr x)))
+                   (t (return x)))))
+    (trace! (do$ :entry (list traced-fn alist) :notinline t))
+    (trace$ do-body-guard-wrapper)
+
+  As before, we have a guard violation.  The trace output is explained
+  below.
+
+    ACL2 !>(f '(a b c d))
+    1> (ACL2_*1*_ACL2::DO$ ((X A B C D)))
+      2> (DO$ ((X A B C D)))
+        3> (DO-BODY-GUARD-WRAPPER T)
+        <3 (DO-BODY-GUARD-WRAPPER T)
+        3> (DO-BODY-GUARD-WRAPPER T)
+        <3 (DO-BODY-GUARD-WRAPPER T)
+        3> (DO-BODY-GUARD-WRAPPER T)
+        <3 (DO-BODY-GUARD-WRAPPER T)
+        3> (DO$ ((X B C D)))
+          4> (DO-BODY-GUARD-WRAPPER T)
+          <4 (DO-BODY-GUARD-WRAPPER T)
+          4> (DO-BODY-GUARD-WRAPPER T)
+          <4 (DO-BODY-GUARD-WRAPPER T)
+          4> (DO-BODY-GUARD-WRAPPER T)
+          <4 (DO-BODY-GUARD-WRAPPER T)
+          4> (DO$ ((X C D)))
+            5> (DO-BODY-GUARD-WRAPPER T)
+            <5 (DO-BODY-GUARD-WRAPPER T)
+            5> (DO-BODY-GUARD-WRAPPER T)
+            <5 (DO-BODY-GUARD-WRAPPER T)
+            5> (DO-BODY-GUARD-WRAPPER T)
+            <5 (DO-BODY-GUARD-WRAPPER T)
+            5> (DO$ ((X D)))
+              6> (DO-BODY-GUARD-WRAPPER T)
+              <6 (DO-BODY-GUARD-WRAPPER T)
+              6> (DO-BODY-GUARD-WRAPPER NIL)
+              <6 (DO-BODY-GUARD-WRAPPER NIL)
+
+
+    ACL2 Error [Evaluation] in TOP-LEVEL:  The guard for a DO$ form,
+    (AND (ALISTP ALIST) (CONSP (CDR (ASSOC-EQ-SAFE 'X ALIST)))),
+     has been violated by the following alist:
+    ((X)).
+    See :DOC do-loop$.
+
+    ACL2 !>
+
+  To understand the trace output above, we first take a look at the
+  translation of the loop$ expression above.  This time we show the
+  corresponding do$ form with [declare] forms included, but as before
+  some parts of this form are simplified, untranslated, or elided.
+  (You can see the exact translation by applying :[trans] to the do$
+  call.)  Note that do-body-guard-wrapper is just an identity
+  function used by the implementation, but it is handy here for the
+  explanation that follows.
+
+    (DO$
+      ;; measure:
+      '(LAMBDA (ALIST)
+        (DECLARE
+         (XARGS :GUARD
+                (DO-BODY-GUARD-WRAPPER
+                 (AND (ALISTP ALIST)
+                      (CONSP (CDR (ASSOC-EQ-SAFE 'X ALIST)))))))
+        ((LAMBDA (X) (ACL2-COUNT X))
+         (CDR (ASSOC-EQ-SAFE 'X ALIST))))
+      ;; alist:
+      (LIST (CONS 'X LST))
+      ;; body:
+      '(LAMBDA (ALIST)
+        (DECLARE
+         (XARGS :GUARD
+                (DO-BODY-GUARD-WRAPPER
+                 (AND (ALISTP ALIST)
+                      (CONSP (CDR (ASSOC-EQ-SAFE 'X ALIST)))))))
+        ((LAMBDA (X)
+                 (IF (CONSP X)
+                     (LIST NIL NIL
+                           (LET ((X (CDR X))) (LIST (CONS 'X X))))
+                     (LIST :RETURN X (LIST (CONS 'X X)))))
+         (CDR (ASSOC-EQ-SAFE 'X ALIST))))
+      .....)
+
+  Recall that do$ works by repeatedly applying the given lambda to its
+  alist argument, which initially binds 'X to LST as shown above.
+  Do$ recurs when that application returns a triple (mv nil nil
+  new-alist), where new-alist is the alist returned by the body of
+  the loop$ expression.  But when do$ applies the given [lambda]
+  object, it first checks the :guard of that lambda.  We also see
+  that before do$ recurs, it applies its measure-fn argument to the
+  input alist and to new-alist.
+
+  So let's focus on the following from the end of the trace output
+  above.
+
+    5> (DO$ ((X D)))
+      6> (DO-BODY-GUARD-WRAPPER T)
+      <6 (DO-BODY-GUARD-WRAPPER T)
+      6> (DO-BODY-GUARD-WRAPPER NIL)
+      <6 (DO-BODY-GUARD-WRAPPER NIL)
+
+  The first DO-BODY-GUARD-WRAPPER call comes from the guard of the
+  lambda that represents the body of the do$ loop, from the
+  expression (apply$ do-fn (list alist)) in the definition of do$
+  (above).  Here alist is ((X D)), so the conjunct (CONSP (CDR
+  (ASSOC-EQ-SAFE 'X ALIST))) from that lambda's guard is true.  The
+  second call of DO-BODY-GUARD-WRAPPER comes from the expression
+  (apply$ measure-fn (list new-alist)) in the definition of do$.  But
+  new-alist is nil, so the conjunct (CONSP (CDR (ASSOC-EQ-SAFE 'X
+  ALIST))) from the measure lambda's guard is false, so the guard
+  evaluates to nil.
 
 
 Subtopics
@@ -32421,8 +32606,7 @@ Miscellaneous efficiency ideas
                 "See [system-utilities].")
  (ENABLED-RUNEP (POINTERS)
                 "See [system-utilities].")
- (ENCAPSULATE
-  (EVENTS)
+ (ENCAPSULATE (EVENTS)
   "Hide some [events] and/or constrain some functions
 
   Encapsulate provides a way to execute a sequence of [events] and then
@@ -32767,7 +32951,7 @@ Subtopics
       previous theorems.  See [hints] and see [lemma-instance].
 
   [Infected-constraints]
-      [Defun]s affecting [constraint]s of [encapsulate]s
+      [Events] affecting [constraint]s of [encapsulate]s
 
   [Partial-encapsulate]
       Introduce functions with some constraints unspecified
@@ -34010,6 +34194,9 @@ Subtopics
   [Set-inhibit-er!]
       Control error output non-[local]ly
 
+  [Set-warnings-as-errors]
+      Changing [warnings] to hard [errors] (and vice-versa)
+
   [Toggle-inhibit-er]
       Add or delete an error output string from the inhibit-er-table
 
@@ -34323,7 +34510,9 @@ Subtopics
   non-trivial encapsulate.  We also require that no function has an
   attachment (see [defattach]) that is both ancestral in the
   evaluator and also ancestral in the meta or clause-processor
-  functions.  We explain these restrictions in detail below.
+  functions.  We explain these restrictions in detail below,
+  including the notion of one function symbol being ``ancestral in'',
+  also expressed as ``an ancestor of'', in another function symbol.
 
   An argument given elsewhere (see [meta], in particular ``Aside for
   the logic-minded'') explains that the correctness argument for
@@ -34680,7 +34869,8 @@ Subtopics
   To see why this restriction is sufficient, see a comment in the ACL2
   source code entitled ``; Essay on Correctness of Meta Reasoning.''
 
-  TO DO: Explain transparent functions.")
+  One can sometimes work around this restriction; see
+  [transparent-functions].")
  (EVENP
   (NUMBERS ACL2-BUILT-INS)
   "Test whether an integer is even
@@ -37393,6 +37583,478 @@ Subtopics
       form, that table is restored.  Note that any extended table
       created from the original fast alist during form must be
       manually freed.")
+ (FAST-CERT
+  (CERTIFY-BOOK INCLUDE-BOOK)
+  "A mode for faster, but possibly unsound, book certification
+
+  See [certify-book] and [include-book] for background on certifying
+  and including [books].
+
+  By default, [certify-book] includes a ``Step 3'' that does a
+  [local-incompatibility] check.  That check can be expensive for
+  some ``industrial-size'' books if there are [local] events early in
+  the book or in its [portcullis] commands.  Fast-cert mode provides
+  a way to avoid the [local-incompatibility] check.  There are the
+  following two drawbacks to using ACL2 with fast-cert mode enabled
+  (as described further below).
+
+    * It may be unsound!  See Section ``Unsoundness'' below.
+    * Therefore, after a book is certified with fast-cert mode enabled,
+      then any subsequent attempt to include that book will consider
+      it to be uncertified unless the [include-book] event is
+      executed with fast-cert mode enabled.  See Section ``Effects of
+      fast-cert mode...'' below.
+
+    General Forms:
+
+    (set-fast-cert t state)       ; enter fast-cert active mode
+    (set-fast-cert nil state)     ; disable fast-cert mode
+    (set-fast-cert :accept state) ; enter fast-cert ACCEPT mode
+
+  When a form (set-fast-cert expr state) is evaluated, expr should
+  evaluate to a Boolean value, val.  If val is t then fast-cert mode
+  becomes (or remains) active.  If val is nil, then fast-cert mode
+  becomes (or remains) disabled.  The other legal value for val is
+  :accept, which is a sort of intermediate mode: ACL2 behaves as
+  though fast-cert mode is disabled --- we also say ``not enabled''
+  for ``disabled'' --- but books can be considered certified even if
+  they were certified with fast-cert mode enabled.  We say more about
+  these three modes in Section ``Fast-cert modes'' below.
+
+  Another way to enter fast-cert mode is to set environment variable
+  ACL2_FAST_CERT to a non-empty value before starting ACL2.  The
+  case-insensitive value, \"accept\", causes (set-fast-cert :accept
+  state) is evaluated at startup; otherwise, a non-empty value causes
+  (set-fast-cert t state) to be evaluated at startup.
+
+  We turn now to the two sections promised above, on unsoundness and
+  effects of fast-cert mode, followed by a section on miscellaneous
+  restrictions, and concluding with a suggested application of
+  fast-cert mode.
+
+
+Fast-cert modes
+
+  There are the following fast-cert modes.
+
+    * Active: entered with (set-fast-cert t state).  When ACL2 is in this
+      mode, the [local-incompatibility] check is skipped when
+      certifying a book, and the book's [certificate] marks it as a
+      ``fast-cert book''.
+    * Disabled: entered with (set-fast-cert t state), though this is the
+      default mode.  In this mode the usual [local-incompatibility]
+      checks are performed during book certification, and every
+      fast-cert book is considered to be uncertified.
+    * ACCEPT: entered with (set-fast-cert :accept state).  When ACL2 is in
+      this mode, [local-incompatibility] checks are performed just as
+      when fast-cert mode is disabled, but a fast-cert book is
+      treated as certified just like any other book.
+
+  Fast-cert mode is considered to be ``enabled'' exactly when it is not
+  disabled.
+
+  The discussion above leaves open the question of whether a book that
+  is certified in ACCEPT mode is marked as a fast-cert book.  That
+  happens only if at least one fast-cert book has been included
+  during the session, either before the book's certification began or
+  during evaluation of the book's events.
+
+  It is always legal to change fast-cert mode from disabled to enabled
+  (using set-fast-cert).  It is legal to change fast-cert mode from
+  enabled to disabled provided there has been no attempt during the
+  session to include a fast-cert book while fast-cert mode is
+  enabled.
+
+
+Potential for unsoundness
+
+  Consider the proof of nil constructed by the following two books.
+
+    ;;; fast-cert-unsound-sub.lisp
+    (in-package \"ACL2\")
+    (local (defun f () t))
+    (defun g () (f))
+    (defthm g-is-t
+      (equal (g) t))
+
+    ;;; fast-cert-unsound.lisp
+    (in-package \"ACL2\")
+    (defun f () nil)
+    (include-book \"fast-cert-unsound-sub\")
+    (thm nil
+         :hints ((\"Goal\" :use g-is-t)))
+
+  Now execute the following commands to prove nil!
+
+    (set-fast-cert t state)
+    (certify-book \"fast-cert-unsound-sub\")
+    :u
+    (certify-book \"fast-cert-unsound\")
+
+  To see what went wrong, consider what happens if we try this without
+  evaluating (set-fast-cert t state).  In that case, we can see that
+  an attempt to certify \"fast-cert-unsound-sub\" fails the
+  [local-incompatibility] check.
+
+    * Step 3:  That completes the admissibility check.  Each form read
+    was an embedded event form and was admissible.  We now retract back
+    to the initial world and try to include the book; see :DOC
+    local-incompatibility.
+
+
+    ACL2 Error [Translate] in ( DEFUN G ...):  The symbol F (in package
+    \"ACL2\") has neither a function nor macro definition in ACL2.  Please
+    define it.  See :DOC near-misses.  Note:  this error occurred in the
+    context (F).
+
+  That is, the attempt in Step 3 to include
+  \"fast-cert-unsound-sub.lisp\" fails the local-incompatibility check
+  because the definition of f is local, hence skipped, so the
+  definition of g is illegal.  Without the use of fast-cert mode, the
+  local-incompatibility check would catch this problem.
+
+  (Technical note: if the book is certified while fast-cert mode is
+  active, then when we subsequently include \"fast-cert-unsound-sub\"
+  when fast-cert mode is enabled, there is --- perhaps surprisingly
+  --- no error.  That is because the translation (see [term]) of the
+  definition of g is cached in the book's [certificate].)
+
+  Note that unsoundness can occur even when fast-cert is in accept
+  mode, not just in active mode.  That's because one may include a
+  book in accept mode that was certified in a previous session while
+  fast-cert was in active mode, and that book could prove nil as in
+  the example above.  In short, unsoundness can occur when fast-cert
+  mode is enabled (i.e., fast-cert is in accept or active mode).
+
+  Unsoundness when fast-cert mode is enabled is probably rare in
+  practice.  But because unsoundness is possible with fast-cert mode
+  enabled, a ``TTAG NOTE'' message is printed when fast-cert mode is
+  enabled, for example as follows when fast-cert mode transitions
+  from disabled to active.
+
+    ACL2 !>(set-fast-cert t state)
+
+    TTAG NOTE: Fast-cert mode is active (see :DOC fast-cert).
+     T
+    ACL2 !>
+
+  The message above may seem a bit misleading, since there is no actual
+  trust tag (ttag) involved.  The ``TTAG NOTE'' message is simply
+  ACL2's way of conveying that there is a trust issue --- typically
+  with the use of [defttag] but also when entering fast-cert mode.
+
+  We conclude this section by mentioning other potential sources of
+  unsoundness when fast-cert mode is enabled.  There are probably
+  others, but again, it is probably rare for fast-cert mode to
+  exhibit unsoundness.  These behaviors are due to avoiding the
+  [local-incompatibility] check during certification when fast-cert
+  mode is active.  Here are two key potential sources of unsoundness.
+
+    * Hidden [defpkg] events are not recorded in a book's [certificate]
+      when fast-cert mode is active.  See [hidden-death-package].
+    * Information about sub-books that is normally recorded in a
+      [certificate], including the [book-hash] values in the
+      [portcullis] and the [keep], is omitted by certification when
+      fast-cert mode is active.  This prevents ACL2 from noticing
+      when sub-books are uncertified or have changed since the time
+      of the parent book's certification.
+
+  Here are some necessary checks that may be omitted when the
+  local-incompatibility check is skipped.
+
+    * A non-local [congruence] rule needs its alleged equivalence relation
+      to be an equivalence relation non-locally.  Generally this
+      means that the supporting [defequiv] event must be non-local.
+    * A non-local rule of class :[meta] or :[clause-processor] needs its
+      evaluators to be evaluators non-locally.
+    * A [defattach] event imposes requirements on function symbols to be
+      [guard]-verified.  So if a defattach event is non-local, each
+      necessary guard verification status must hold non-locally.
+
+  Because of potential unsoundness when fast-cert mode is enabled,
+  especially as explained in the item above regarding status of books
+  that are included in a parent book, it is strongly recommended that
+  you eventually certify your collection of books with fast-cert mode
+  disabled.  Otherwise there is no sort of guarantee that your proofs
+  are valid!
+
+
+Interactions involving fast-cert mode
+
+    * When a book is successfully certified with fast-cert mode active, its
+      [certificate] records this fact.  Let's call such a certificate
+      (or book) a ``fast-cert certificate'' (or``fast-cert book'');
+      otherwise it is a ``normal`` certificate.
+    * When a book is successfully certified with fast-cert in accept mode,
+      the book is a normal book only if no fast-cert book is included
+      before or during certification.
+    * When include-book is performed on a book with a valid fast-cert
+      certificate, that book is considered to be certified if
+      fast-cert mode is enabled and otherwise is considered to be
+      uncertified.
+    * When include-book is performed on a book with a valid normal
+      certificate, that book is considered to be certified regardless
+      of whether or not fast-cert mode is enabled at include-book
+      time.
+    * When [provisional-certification] is used during certify-book while
+      fast-cert mode is active, then fast-cert is treated as being in
+      accept mode; in particular, the local-incompatibility check) is
+      performed in the normal way.
+    * Normally certify-book warns about functions that have not had their
+      [guard]s verified.  This message is suppressed when fast-cert
+      mode is active, because local include-book forms in the
+      certification world can make that message very long.
+    * When a fast-cert book is included while fast-cert mode is enabled,
+      then the rest of that ACL2 session must remain in fast-cert
+      mode.  This restriction guarantees that any book then certified
+      during that session will be given a fast-mode certificate.
+    * It is illegal to call set-fast-cert during make-event expansion (see
+      [make-event]).  There is also an explicit check to prohibit
+      calls of set-fast-cert during certify-book, though that is
+      probably unnecessary because of the make-event restriction
+      unless that restriction is subverted using a trust tag.
+
+  See [fast-cert-anomalies] for some possibly surprising (and more
+  obscure) consequences of using fast-cert mode.
+
+
+Fast-cert mode and [save-exec]
+
+  The motivation for adding fast-cert mode was to provide faster
+  certification based on executables created with [save-exec].  We
+  illustrate with an example, which starts by [local]ly including a
+  book that brings in many definitions and rules (it may take about a
+  minute to include) and then saving an executable.  The initial
+  (non-local) include-book forms below might not be necessary for all
+  uses of the executable.
+
+    (include-book \"centaur/sv/portcullis\" :dir :system)
+    (include-book \"std/util/define\" :dir :system)
+    (local (include-book \"centaur/sv/top\" :dir :system))
+    :q
+    (save-exec \"sv-top\" \"Locally includes centaur/sv/top\")
+
+  Now suppose we want to create a book that is based on a tiny part of
+  what is provided by the book included above, as follows (comments
+  omitted here).
+
+    (in-package \"SV\")
+
+    (define name-p (x)
+      :parents (name)
+      (or (stringp x)
+          (integerp x)
+          (eq x :self)
+          (and (consp x)
+               (eq (car x) :anonymous))))
+
+    (define name-fix ((x name-p))
+      :parents (name)
+      :returns (xx name-p)
+      :hooks nil
+      (mbe :logic (if (name-p x) x '(:anonymous))
+           :exec x)
+      ///
+      (defthm name-fix-when-name-p
+        (implies (name-p x)
+                 (equal (name-fix x) x))))
+
+  We now invoke the resulting executable, ./sv-top.
+
+    ; Start ./sv-top, then:
+    (set-fast-cert t state)
+    (certify-book \"name\" ? t :ttags :all)
+
+  In this little example, the certification time has been cut in half
+  with fast-cert mode active.  In many cases the reduction may be
+  less than that, but in large industrial examples the reduction
+  might be much, much greater --- -- especially when the book
+  contains time-consuming events, in particular include-book events.
+
+
+Subtopics
+
+  [Fast-cert-anomalies]
+      Potentially surprising consequences of using [fast-cert] mode")
+ (FAST-CERT-ANOMALIES
+  (FAST-CERT)
+  "Potentially surprising consequences of using [fast-cert] mode
+
+  See [fast-cert] for relevant background.  This topic discusses some
+  surprises one may encounter when using fast-cert mode.
+
+  When fast-cert mode was developed in February 2023, a call of
+  ``make'' was made with ``ACL2_FAST_CERT=t'' and target
+  ``regression-everything'', to certify the [community-books] with
+  fast-cert mode active.  There were only two failures (out of
+  thousands of books), both of which are discussed below along with
+  their fixes.  There is no plan to continue to test certification of
+  the community books with fast-cert mode enabled, but we expect
+  future failures to continue to be rare.
+
+
+Example 1
+
+  Community book system/tests/early-load-of-compiled/ttag.lisp has
+  certified regardless of whether or not fast-cert mode is used.
+  However, when it was certified with fast-cert mode active, a later
+  attempt to include the book failed.  That failure was due to the
+  way ACL2 handles raw-Lisp redefinition (using a trust tag), as
+  explained in a comment in the book.  To avoid this problem, the
+  form (set-fast-cert nil state) is in file ttag.acl2 in the same
+  directory.  Key events in the book are as follows, in this order;
+  the first forces a [local-incompatibility] check, and you can see
+  comments in ttag.lisp for why that is crucial.
+
+    (local (defun loc (x) x))
+
+    (defun ttag-f (x)
+      (declare (xargs :guard t))
+      x)
+
+    ; An assertion is here of (equal (ttag-f 3) 3), to be evaluated during both
+    ; certify-book and include-book, basically of the form:
+    (make-event ...) ; asserts (equal (ttag-f 3) 3)
+
+    (progn!
+     (set-raw-mode t)
+     (defun ttag-f (x) (cons x x)))
+
+
+Example 2
+
+  The second example is rather subtle.  Our starting point is the
+  following, from community book
+  rtl/rel9/support/lib2.delta1/add-new-proofs.lisp.
+
+    ; Matt K. addition: The following lemma, natp-lamz, is not normally necessary.
+    ; But with fast-cert mode active, we need it for the proof of lam1_alt-is-lam1.
+    ; See :DOC fast-cert-anomalies if you want an explanation.
+    (local
+     (defthm natp-lamz
+       (natp (lamz a b e))
+       :rule-classes :type-prescription))
+
+  To see why this lemma is needed when certifying in fast-cert mode,
+  let us start by re-creating the environment where the definition of
+  lamz has been introduced.  We assume here that the sub-books that
+  are included were certified with fast-cert mode active.
+
+    (set-fast-cert t state) ; so that sub-books are included as certified
+    (ld \"rtl/rel9/support/lib2.delta1/add-new-proofs.lisp\"
+        :dir :system
+        ;; to speed things up:
+        :ld-skip-proofsp t)
+
+  We see that the built-in [type-prescription] rule for lamz says only
+  that lamz returns a rational number, not necessarily a non-negative
+  integer.
+
+    ACL2 !>:pr lamz
+
+    Rune:         (:TYPE-PRESCRIPTION LAMZ)
+    Enabled:      T
+    Hyps:         T
+    Term:         (LAMZ A B E)
+    Backchain-limit-lst: NIL
+    Basic-ts:     *TS-RATIONAL*
+    Vars:         NIL
+    Corollary:    (RATIONALP (LAMZ A B E))
+
+    ...
+
+  If we do the same experiment when sub-books were certified with
+  fast-cert mode disabled, the :[pr] output will instead show a
+  built-in [type-prescription] rule for lamz saying that lamz returns
+  a non-negative integer.  This discrepancy in that built-in rule
+  explains why the additional lemma above, natp-lamz, was necessary
+  when certifying the [community-books] with fast-cert mode active.
+
+  So now let us investigate why certifying books with fast-cert mode
+  active weakens the built-in type-prescription rule for lamz.  After
+  running the set-fast-cert and [ld] commands displayed above, we see
+  where lamz is defined.
+
+    ACL2 !>:pe lamz
+       d       2  (LOCAL (INCLUDE-BOOK \"../lib2/top\"))
+
+                  [Included books, outermost to innermost:
+                   \"/Users/kaufmann/acl2/acl2/books/rtl/rel9/support/lib2/top.lisp\"
+                   \"/Users/kaufmann/acl2/acl2/books/rtl/rel9/support/lib2/add.lisp\"
+                  ]
+
+    >L             (DEFUN LAMZ (A B E)
+                          (LNOT (LIOR A (LNOT B (1+ E)) (1+ E))
+                                (1+ E)))
+    ACL2 !>
+
+  But we need to work harder to find the real source of the definition
+  of lamz.  In rtl/rel9/support/lib2/add.lisp we see that the
+  definition of lamz is preceded by (set-enforce-redundancy t) as
+  well as (local (include-book \"base\")).  When we invoke :ubt 1 and
+  then (include-book \"base\"), we can evaluate :pe lamz to see that
+  lamz is defined in rtl/rel9/support/lib1/add.lisp, which contains
+  (set-enforce-redundancy t) and the local event, (local
+  (include-book \"../support/top\")).  So we include that book after
+  invoking :ubt 1, then (again) invoke :pe lamz, and finally find the
+  true source of the definition of lamz:
+  rtl/rel9/support/support/lextra.lisp.
+
+  So now consider what happens when we start ACL2 and evaluate the
+  following commands.  For now, assume that we have used ACL2
+  fast-cert mode disabled to certify all books being included.  We
+  use :ld-skip-proofsp 'include-book to simulate what happens when
+  including the book.
+
+    ; with fast-cert mode disabled
+    (ld \"rtl/rel9/support/support/lextra.lisp\"
+        :dir :system
+        :ld-skip-proofsp 'include-book)
+    :ubt lamz
+    (defun lamz (a b e)
+      (lnot (lior a (lnot b (1+ e)) (1+ e)) (1+ e)))
+
+  Then :pr lamz shows a :type-prescription rule for lamz that this
+  function returns a non-negative integer.  That is explained in part
+  by the following output, which mentions a rule stating that lnot
+  returns a non-negative integer, which was used to compute the
+  built-in type for lamz that it returns a non-negative integer.
+
+    We used the :type-prescription rule LNOT-NONNEGATIVE-INTEGER-TYPE.
+
+  Now repeat the same experiment but where we assume that fast-cert
+  mode has been active for all book certification and we start with
+  (set-fast-cert t state).  This time there is no such output about
+  LNOT-NONNEGATIVE-INTEGER-TYPE.  Aha!  The culprit is the following
+  form near the top of \"rtl/rel9/support/support/lextra.lisp\".
+
+    (local (in-theory (current-theory 'lextra0-start)))
+
+  That form disables the :type-prescription rule
+  LNOT-NONNEGATIVE-INTEGER-TYPE, which is necessary for computing a
+  non-negative integer (i.e., natp) type for the built-in
+  :type-prescription rule for lamz.  By contrast, without fast-cert
+  mode active, the world is rolled back past local events for the
+  local-incompatibility check, and then when events in the book are
+  processed during the include-book phase of certification, the rule
+  LNOT-NONNEGATIVE-INTEGER-TYPE is available for computing the
+  built-in type-prescription for lamz, which is stored in the book's
+  [certificate].  But with fast-cert mode active, the world is not
+  rolled back, so the built-in type-prescription for lamz remains as
+  originally computed, where the rule LNOT-NONNEGATIVE-INTEGER-TYPE
+  is disabled.
+
+  Indeed, if you read the certificate file for the lextra.lisp book
+  above, you'll see that the :TYPE-PRESCRIPTION entry for lamz
+  indicates a rational type when books are certified with fast-cert
+  mode active but a non-negative integer type when certified with
+  fast-cert mode disabled.  You can read that certificate file as
+  follows.
+
+    (read-file (concatenate 'string
+                            (system-books-dir state)
+                            \"rtl/rel9/support/support/lextra.cert\")
+               state)")
  (FC-REPORT
   (FORWARD-CHAINING-REPORTS)
   "To report on the forward chaining activity in the most recent proof
@@ -37768,10 +38430,6 @@ Subtopics
   where each decli is of the form (inline g1 ... gm) or (notinline g1
   ... gm), and each gi is defined by some defi.
 
-  The only effect of the declarations is to provide advice to the host
-  Lisp compiler.  The declarations are otherwise ignored by ACL2, so
-  we mainly ignore them in the discussion below.
-
   The innermost flet or [macrolet] binding of a symbol, f, above a call
   of f, is the one that provides the definition of f for that call.
   Note that neither flet nor macrolet provide recursion: that is, the
@@ -37796,7 +38454,11 @@ Subtopics
   ACL2 imposes the following restrictions and qualifications.
 
     * Every [declare] form for a local definition (def1 through defk,
-      above) must be an ignore, ignorable, or type expression.
+      above) must be an ignore, ignorable, or type expression.  Such
+      type declarations affect evaluation and [guard]-checking in a
+      way that is completely analogous to such declarations that
+      occur between the formal parameters and the body in a [defun]
+      form.
     * Each defi must bind a different function symbol.
     * Each defi must bind a symbol that is a legal name for an ACL2
       function symbol.  In particular, the symbol may not be in the
@@ -51309,7 +51971,8 @@ Subtopics
   If has a [guard] of t.
 
   If is part of Common Lisp.  See any Common Lisp documentation for
-  more information.")
+  more information."
+)
  (IF*
   (BDD)
   "For conditional rewriting with BDDs
@@ -52156,7 +52819,13 @@ Subtopics
   This concludes the guided tour through [books].  See
   [set-compile-fns] for a subtle point about the interaction between
   include-book and on-the-fly [compilation].  See [certify-book] for
-  a discussion of how to certify a book.")
+  a discussion of how to certify a book.
+
+
+Subtopics
+
+  [Fast-cert]
+      A mode for faster, but possibly unsound, book certification")
  (INCOMPATIBLE
   (THEORIES)
   "Declaring that two rules should not both be [enable]d
@@ -52437,7 +53106,7 @@ Subtopics
   schemes.")
  (INFECTED-CONSTRAINTS
   (ENCAPSULATE)
-  "[Defun]s affecting [constraint]s of [encapsulate]s
+  "[Events] affecting [constraint]s of [encapsulate]s
 
   Here we explain briefly the two kinds of \"Infected\" [warnings] that
   are sometimes printed near the end of the output from [encapsulate]
@@ -52447,10 +53116,15 @@ Subtopics
   second kind of \"Infected\" warning mentioned below, in the last
   example.
 
-  An \"Infected\" warning indicates that a [defun] event inside an
-  encapsulate event affects the constraint exported for the function
-  introduced in the [signature] of that encapsulate.  Let's compare
-  the following three examples.
+  An \"Infected\" warning indicates that an event introducing a function
+  symbol inside encapsulate event affects the constraint exported for
+  the function introduced in the [signature] of that encapsulate.
+  That function is typically introduced with [defun], but it could be
+  introduced in a signatures of a subsidiary encapsulate event or in
+  a [defchoose] event.  Below we'll discuss the case of defun, but
+  the others are completely analogous for an \"Infected\" warning.
+
+  Let's compare the following three examples.
 
   EXAMPLE 1.
 
@@ -57846,6 +58520,9 @@ Subtopics
   [Output-to-file]
       Redirecting output to a file
 
+  [Pp-special-syms]
+      A [table] to control indentation for pretty-printing
+
   [Princ$]
       Print an atom
 
@@ -58234,8 +58911,7 @@ Subtopics
                (cons (nfix (car list))
                      (nfix-list (cdr list)))
                nil))")
- (LAMBDA
-  (TERM APPLY$)
+ (LAMBDA (TERM APPLY$)
   "Lambda expressions, LAMBDA objects, and lambda$ expressions
 
   The word ``lambda'' occurs in several different contexts in ACL2.
@@ -58444,8 +59120,7 @@ About Lambda$ Expressions
   objects.
 
   Finally, to see how a lambda$ expression translates, see [translam].")
- (LAMBDA$
-  (APPLY$)
+ (LAMBDA$ (APPLY$)
   "Lambda object constructor for use with apply$
 
   Lambda$ is a built-in ACL2 ``macro'' that allows you to enter
@@ -59091,6 +59766,9 @@ Subtopics
   [Keyword-commands]
       How keyword commands like :u and :pbt are processed
 
+  [Ld-always-skip-top-level-locals]
+      Determines whether [ld] skips [local] top-level forms
+
   [Ld-error-action]
       Determines [ld]'s response to an error
 
@@ -59107,7 +59785,7 @@ Subtopics
       Abbreviation of some keyword commands
 
   [Ld-missing-input-ok]
-      Determines which forms [ld] evaluates
+      Determine whether [ld] causes an error for a missing file
 
   [Ld-post-eval-print]
       Determines whether and how [ld] prints the result of evaluation
@@ -59162,6 +59840,23 @@ Subtopics
 
   [Wormhole]
       [ld] without [state] --- a short-cut to a parallel universe")
+ (LD-ALWAYS-SKIP-TOP-LEVEL-LOCALS
+  (LD)
+  "Determines whether [ld] skips [local] top-level forms
+
+  Ld-always-skip-top-level-locals is an [ld] special (see [ld]).  The
+  accessor is (ld-always-skip-top-level-locals state) and the updater
+  is (set-ld-always-skip-top-level-locals val state).  The value of
+  ld-always-skip-top-level-locals must be either nil, or t.  The
+  initial value of ld-always-skip-top-level-locals is nil.
+
+  The general-purpose ACL2 read-eval-print loop, [ld], is controlled by
+  various flags that control its behavior, and
+  ld-always-skip-top-level-locals is one of them.  When the value is
+  t, [local] [events] are skipped when they are at the top level in
+  the following sense: they are not evaluated in the scope of either
+  a call of [certify-book], [include-book], or [encapsulate], or else
+  during [make-event] expansion.")
  (LD-ERROR-ACTION
   (LD)
   "Determines [ld]'s response to an error
@@ -59194,7 +59889,9 @@ Subtopics
   error to its caller by returning an error triple with non-nil error
   component, and reverting the logical [world] to its value just
   before that call of [ld].  If it is (:exit N), then ACL2 quits with
-  exit status N.
+  exit status N.  Later in this topic we discuss another case in
+  which an error is said to have occurred: when the value component
+  of an error triple is of the form (:STOP-LD . x).
 
   To see this effect of :ERROR for ld-error-action, consider the
   following example.
@@ -59221,10 +59918,12 @@ Subtopics
   evaluation of a form returns an error triple (mv nil val state),
   where nil is the error component and whose ``value component'', val
   is a [cons] pair whose [car] is the symbol :STOP-LD.  Let val be
-  the pair (:STOP-LD . x).  Then the call of ld returns the error
-  triple (mv nil (:STOP-LD n . x) state), where n is the value of
-  [state] global variable 'ld-level at the time of termination.  The
-  following example illustrates how this works.
+  the pair (:STOP-LD . x).  If ld-error-action is of the form (:EXIT
+  N), then ACL2 quits with exit status N.  Otherwise (i.e., when
+  ld-error-action is :RETURN, :RETURN!, or :ERROR), the call of ld
+  returns the error triple (mv nil (:STOP-LD n . x) state), where n
+  is the value of [state] global variable 'ld-level at the time of
+  termination.  The following example illustrates how this works.
 
     (ld '((defun f1 (x) x)
           (ld '((defun f2 (x) x)
@@ -59627,13 +60326,13 @@ Subtopics
   above, for the keywords bound in the ld-keyword-aliases [table].")
  (LD-MISSING-INPUT-OK
   (LD)
-  "Determines which forms [ld] evaluates
+  "Determine whether [ld] causes an error for a missing file
 
-  ld-missing-input-ok is an [ld] special (see [ld]).  The accessor is
+  Ld-missing-input-ok is an [ld] special (see [ld]).  The accessor is
   (ld-missing-input-ok state) and the updater is
-  (set-ld-missing-input-ok val state).  ld-missing-input-ok must be
-  either nil, t, or :warn.  The initial value of ld-missing-input-ok
-  is nil.
+  (set-ld-missing-input-ok val state).  The value of
+  ld-missing-input-ok must be either nil, t, or :warn.  The initial
+  value of ld-missing-input-ok is nil.
 
   The general-purpose ACL2 read-eval-print loop, [ld], is controlled by
   various flags that control its behavior, and ld-missing-input-ok is
@@ -59800,8 +60499,9 @@ Subtopics
   define your own [prompt] printing function, fn, and install it with
   (set-ld-prompt 'fn state).  However, a trust tag must be active
   (see [defttag]) when you set ld-prompt to other than t or nil (with
-  one exception: the function brr-prompt, which prints the prompt in
-  the [break-rewrite] loop).
+  two exceptions: the functions brr-prompt and wormhole-prompt, which
+  print the prompt in the [break-rewrite] loop and the general
+  [wormhole] loop, respectively).
 
   If you supply an inappropriate [prompt] function, i.e., one that
   causes an error or does not return the correct number and type of
@@ -60155,6 +60855,8 @@ Subtopics
   [make-event] expansion).  We provide access to it simply to allow
   experimentation and rapid reconstruction of lost or modified
   logical [world]s.")
+ (LD-USER-STOBJS-MODIFIED-WARNING (POINTERS)
+                                  "See [user-stobjs-modified-warnings].")
  (LD-VERBOSE
   (LD)
   "Determines whether [ld] prints ``ACL2 Loading ...''
@@ -60452,8 +61154,7 @@ Subtopics
            (if (stringp x)
                (len (coerce x 'list))
                (len x)))")
- (LET
-  (BASICS ACL2-BUILT-INS)
+ (LET (BASICS ACL2-BUILT-INS)
   "Binding of lexically scoped (local) variables
 
 
@@ -60582,8 +61283,7 @@ Introduction
 
   Let is part of Common Lisp.  See any Common Lisp documentation for
   more information.")
- (LET*
-  (BASICS ACL2-BUILT-INS)
+ (LET* (BASICS ACL2-BUILT-INS)
   "Binding of lexically scoped (local) variables
 
   Examples
@@ -60706,11 +61406,6 @@ Introduction
    2. If concl is (not (not concl2)), replace concl by concl2.
    3. For the resulting concl, replace [=] and [/=] by [equal] and not
       equal, respectively.
-   4. Finally, the resulting concl is processed (``linearized'') to attempt
-      to create a corresponding polynomial or disjunction of two
-      polynomials.  This process includes the evaluation of ground
-      subexpressions, for example replacing (* '3 '4) by '12, and
-      employs techniques that include [type-set] reasoning.
 
   Each rule has one or more ``trigger terms'' which may be specified by
   the user using the :trigger-terms field of the rule class or which
@@ -61345,6 +62040,9 @@ Subtopics
   encapsulate, but see final Remark below) --- and then including the
   book.  But all that is skipped in the absence of either kind of
   local event.
+
+  See [fast-cert] for a way to skip the local incompatibility check,
+  although that may compromise soundness.
 
   Here is a subtle example of [local] incompatibility.  The problem is
   that in order for foo-type-prescription to be admitted using the
@@ -72661,7 +73359,11 @@ Subtopics
       Attach a heuristic filter on a rule
 
   [Term-table]
-      A table used to validate meta rules")
+      A table used to validate meta rules
+
+  [Transparent-functions]
+      Working around restrictions on the use of evaluators in meta-level
+      rules")
  (META-EXTRACT
   (META CLAUSE-PROCESSOR)
   "Meta reasoning using valid terms extracted from context or [world]
@@ -74591,7 +75293,8 @@ Subtopics
   ACL2 does not support the Common Lisp construct multiple-value-bind,
   whose logical meaning seems difficult to characterize.  Mv-let is
   the ACL2 analogue of that construct.  Also see [mv] and see
-  [mv-list].")
+  [mv-list]."
+)
  (MV-LIST
   (MV ACL2-BUILT-INS)
   "Converting [multiple-value] result to a single-value list
@@ -98098,6 +98801,9 @@ Changes to Existing Features
       Lisp stream is closed, a new keyword argument, :close, can be
       supplied to control that behavior.
     * Miscellaneous clean-up has been made in the implementation.
+    * Restrictions have been tightened a bit to avoid what could be
+      considered a soundness bug.  See discussion about that in the
+      section on ``Bugs'' below.
 
   The [trace$] option :evisc-tuple :print, which continues to use raw
   Lisp printing, has undergone the following improvements when
@@ -98162,17 +98868,16 @@ Changes to Existing Features
        redundancy requires that both are @(tsee mutual-recursion) events
        that define the same set of function symbols.
 
-  A new feature, called ``transparent'' signature functions, can allow
-  one to avoid the restriction on a rule of class :[meta] or
+  A new feature, called ``transparent'' functions, can allow one to
+  avoid the restriction on a rule of class :[meta] or
   :[clause-processor] that there are no common ancestors of its
-  evaluator and meta function.  See [evaluator-restrictions].  Thanks
-  to Mertcan Temel for requesting a way to work around that
-  restriction, and thanks to Sol Swords for suggesting (and naming)
-  the notion of transparent functions.  We are also grateful to Sol
-  for providing a very helpful sketch of a correctness proof.  The
-  [community-books] file,
-  books/system/tests/transparent-functions-input.lsp has examples of
-  the use of transparent functions and related errors.
+  evaluator and meta function.  See [evaluator-restrictions] for
+  relevant background, and see [transparent-functions] for
+  documentation of the new feature.  Thanks to Mertcan Temel for
+  requesting a way to work around that restriction, and thanks to Sol
+  Swords for suggesting (and naming) the notion of transparent
+  functions.  We are also grateful to Sol for providing a very
+  helpful sketch of a correctness proof.
 
   When there an attachment to a common ancestor of the evaluator and
   meta function of a proposed rule of class :[meta] or
@@ -98185,6 +98890,122 @@ Changes to Existing Features
   equivalent to the existing command, 0, which is still supported
   although up is highlighted in the documentation; see [walkabout]).
   Thanks to Eric Smith for suggesting up.
+
+  Arranged that [iprinting] that takes place during [break-rewrite] is
+  better reflected outside break-rewrite.  For an example, see the
+  example on iprinting in a comment in the form (defxdoc note-8-6
+  ...) in [community-book] books/system/doc/acl2-doc.lisp.
+
+  When a defined function has a [declare] form with (optimize ...),
+  that is now included in a declare form of the
+  executable-counterpart function (see [evaluation]), which had not
+  been the case.
+
+  It had been the case that for type [declaration]s of [flet]
+  definitions in a surrounding [defun] form, they were dropped in the
+  defun form's executable-counterpart (see [evaluation]).  Now they
+  are included.
+
+  The behavior of [pso] and related utilities ([pso!], [psof], and
+  [psog]) has been modified to avoid introducing warnings that were
+  not originally printed.  For example, the output generated by :pso
+  below no longer prints the warning that had been suppressed for the
+  defthm event below.
+
+    (set-inhibit-output-lst '(warning proof-tree))
+    (defthm foo t
+      :hints ((\"Goal\" :use car-cons))
+      :rule-classes nil)
+    :pso
+
+  The above change has additional, small output effects, probably for
+  the better.  For example, output from the form (with-output :off
+  (error summary) (thm (equal x y))) no longer prints the line shown
+  below (at the end).
+
+    ACL2 Error [Failure] in ( THM ...):  See :DOC failure.
+
+  When an event fails, then if it involves definition [rune]s for
+  [loop$] [scion]s, the failure message may suggest including the
+  book projects/apply/top if it hasn't already been included.  That
+  book provides quite a few lemmas about [loop$] scions.
+
+  Replaced [length] calls in the defun of [pseudo-termp] with calls of
+  a new macro, len$, which is a call of [mbe] that invokes [length]
+  in the :exec code and [len] in the :logic code.  Thanks to Eric
+  Smith for requesting such an enhancement, and for discussing
+  specifics of it, so as to avoid the need for at least one
+  unfortunate rule that if (pseudo-termp term) then (not (stringp
+  (cdr term))), apparently needed because length behaves specially on
+  strings.
+
+  When there is an error from evaluation of a form encountered by [ld],
+  in a session where the value of [ld-error-triples] is the default
+  of t and the value of [ld-error-action] is of the form (:EXIT N),
+  then ACL2 quits with exit status N in some cases where formerly it
+  did not.  The following explanation is rather technical; see
+  [ld-error-action] for relevant background.
+
+      This behavior was already present in the case that the ``error on
+      evaluation'' was from an evaluation result (mv erp val state)
+      where erp is non-nil; but it has been extended to the case that
+      erp is nil and val is of the form (:STOP-LD . x), as is
+      returned by default by ld upon an evaluation error.  A key
+      effect of this change is for the case that a .acl2 file
+      produces an error from a call of [build::cert.pl].  The
+      following example illustrates; explanation follows below.
+
+        ;;; foo.acl2
+        (ld '((defun g (x) y)) :ld-error-action :return!)
+
+        ;;; foo.lisp
+        (in-package \"ACL2\")
+
+      Before this change, the command `cert.pl foo' resulted in a hard Lisp
+      error (as seen in foo.cert.out).  To see why, first note that
+      cert.pl executes a sequence of commands as follows (several
+      omitted as shown with ``...'').
+
+        ...
+        (set-ld-error-action (quote (:exit 1)) state)
+        ...
+        ; instructions from .acl2 file foo.acl2:
+        (ld '((defun g (x) y)) :ld-error-action :return!)
+        ...
+        #!ACL2 (set-ld-error-action (quote :continue) state)
+        ...
+
+      The call of ld above returns (mv nil (:STOP-LD 2) state).  Because
+      ld-error-action at the top level no longer has the default
+      value of :CONTINUE, that result is considered an error (see
+      [ld-error-action]) and top-level evaluation halts.  Before this
+      change, then ACL2 did not quit since the value was of the form
+      (mv nil _ state); instead, ACL2 would quit the top-level call
+      of ld, leaving us in raw Lisp.  But in raw Lisp, the #! reader
+      macro (see [sharp-bang-reader]) is undefined; hence an error
+      would be signalled.  After the fix, the return value of (mv nil
+      (:STOP-LD 2) state) is treated as an error, so because
+      ld-error-action is (:EXIT N), ACL2 immediately exits with
+      status N.
+
+  The pretty-printer has been improved by a contribution from Stephen
+  Westfold to support appropriate indentation, including more
+  conventional pretty-printing for calls of common macros such as
+  [defun] and [defmacro].  See [pp-special-syms]; we thank Stephen
+  also for supplying the substance of that documentation.  Thanks too
+  to Stephen for suggesting several user-defined macros to be
+  pretty-printed with this mechanism, which we have modified by
+  adding suitable [table] events (e.g., for [define]).
+
+  Runtime [guard] violation messages from DO [loop$] expressions are
+  now much more readable.  They also now include a pointer to the
+  [do-loop$] documentation, which has new, relevant explanation
+  (first in brief, later in detail) regarding such messages.
+
+  Three obsolete fields of the ACL2 [state] have been removed: t-stack,
+  32-bit-integer-stack, and list-all-package-names-lst, as have some
+  related built-in, undocumented definitions and theorems, including
+  old-check-sum-obj and supporting functions.
 
 
 New Features
@@ -98206,10 +99027,7 @@ New Features
   of such utilities.
 
   The new utility [er-hard] is analogous to [er-soft], but for hard
-  errors instead of soft errors (see [er]).  At the moment the only
-  summary string used for inhibiting hard errors is \"Call depth\", for
-  rewriter stack overflows.  On a related note, a new soft error
-  summary string is used for inhibiting soft errors, \"Evaluation\".
+  errors instead of soft errors (see [er]).
 
   A new command, :[tc] (translate and clean), has been added.  It
   translates a given form and then ``cleans it up'', returning a
@@ -98279,8 +99097,61 @@ New Features
   [events]; see [embedded-event-form].  Thanks to Sol Swords for
   requesting that with-cbd be legal in embedded events.
 
+  See [fast-cert] for a ``fast-cert'' mode for faster, but possibly
+  unsound, book certification, in particular when using a saved
+  executable that contains [local] events.  Thanks to Sol Swords for
+  requesting such a capability and for helpful design discussions.
+
+  Added utility [set-warnings-as-errors], which can change [warnings]
+  to hard [errors].  Thanks to Mark Greenstreet for the idea and for
+  discussions that were helpful in refining it.
+
+  A new [ld] special, [ld-always-skip-top-level-locals], has the effect
+  of skipping [local] top-level forms.  Thanks to Sol Swords for
+  requesting such a capability, to support faster loading of .port
+  files by the build system (see [build::cert.pl]).
+
+  The symbol, number, is now a legal [type-spec].
+
+  It is now permitted for a [stobj] s to occur more than once as an
+  actual parameter in a function call, provided each such occurrence
+  is in a position where a stobj congruent to s is expected (possibly
+  s itself).  Thanks to Sol Swords for providing a relevant example,
+  which appears in a comment in the definition of function
+  stobjs-in-out in the ACL2 sources.
+
 
 Heuristic and Efficiency Improvements
+
+  Added a ``desperation heuristic'' to compute a stronger context, for
+  the extra try at simplification made after a goal is not changed by
+  simplification.  Thanks to Warren Hunt and Vivek Ramanathan for
+  supplying an example of a theorem whose proof had a surprising
+  failure but now succeeds.  (Technical Remark describing this
+  change: When a clause has most recently settled down at the time
+  that the simplify process is invoked (a so-called ``desperation
+  heuristics'' attempt), then the literals are reordered before
+  building the [type-alist], so that the literals that involve at
+  most one variable precede the other literals.)
+
+  Generation of guard clauses (and, probably rarely, other goals) has
+  been sped up in certain extreme cases.  For details, see
+  [system-attachments], specifically the discussion of
+  CONJOIN-CLAUSE-SETS-BOUND in the ``Summary of attachable system
+  functions''.  Thanks to Alessandro Coglio for sending an example
+  that led to our discovery of the quadratic behavior eliminated by
+  this change.
+
+  Duplicate entries in [type-alist]s (proof contexts) are now avoided
+  in many cases.  (Implementation note: some calls extending the
+  type-alist with an existing term/type-set pair are now avoided in
+  source function assume-true-false-rec.)  Thanks to Eric Smith for
+  pointing out that there can be type-alists with many consecutive
+  identical entries.
+
+  Sped up macroexpansion for several common macros, with roughly a 2%
+  to 3% speedup observed for including several large books during
+  development of this change.
 
 
 Bug Fixes
@@ -98297,6 +99168,50 @@ Bug Fixes
   :[rule-classes].  That is no longer allowed; [skip-proofs] may be
   used instead if one believes that the proposed formula is a
   theorem.
+
+  The function [read-file-into-string] has been modified to avoid what
+  might be considered a soundness bug.  The change involves causing
+  an error for two reads of the same file without first incrementing
+  the file-clock of the [state].  See [read-file-into-string] for
+  details, in particular for how to avoid that error by evaluating
+  (increment-file-clock state) after calling read-file-into-string.
+  Formerly the error was avoided if the write-date of the file didn't
+  change between the two reads, but the following example shows how
+  this permitted two calls with identical arguments to produce
+  different results, logically causing read-file-into-string to
+  violate the axiom x = x.
+
+      First run the following shell commands.
+
+        echo 'test1' > tmp1.txt ; echo 'test2' > tmp2.txt
+        cp -p tmp1.txt tmp.txt
+
+      Then start ACL2 and run a command as follows.
+
+        ACL2 !>(read-file-into-string \"tmp.txt\")
+        \"test1
+        \"
+        ACL2 !>
+
+      Now suspend ACL2 with control-Z and run the following shell command.
+
+        cp -p tmp2.txt tmp.txt
+
+      Now resume ACL2 with fg, and optionally submit some trivial form
+      (say, 3) just to get the prompt back.  Note that the file-clock
+      of the state hasn't changed.  (Probably the state hasn't
+      changed; at any rate, the parts of the state relevant to
+      read-file-into-string haven't changed.)  So the following call
+      has arguments identical to those in the corresponding call
+      above, yet yields a different result.
+
+        ACL2 !>(read-file-into-string \"tmp.txt\")
+        \"test2
+        \"
+        ACL2 !>
+
+      After the change to read-file-into-string, its call just above causes
+      an error.
 
   Fixed a bug in system function bounded-integer-listp, which may have
   allowed illegal [proof-builder] commands to be attempted.  Thanks
@@ -98404,6 +99319,35 @@ Bug Fixes
   A bug in the [brr] commands :eval$, :go$, and :ok$ was fixed so they
   now behave as described in the documentation for [brr-commands].
 
+  When a certified book is included, the logical [world] will no longer
+  be marked as having seen a [skip-proofs] call, even when the value
+  of [ld] special [ld-skip-proofsp] is non-nil at that time.  Thus,
+  that situation no longer disqualifies such a world from supplying
+  the [portcullis] commands to a book to be certified without keyword
+  argument :skip-proofs-okp t of [certify-book].  Thanks to Sol
+  Swords for pointing out this bug.
+
+  Fixed a bug that was causing calls of [wormhole] to signal an error.
+
+  Fixed a bug that could cause a [do-loop$] expressions to be
+  inappropriately rejected due to an allegedly ignored variable.  An
+  example is below.
+
+    (include-book \"projects/apply/top\" :dir :system)
+    ; BUG: The following was formerly necessary, but no longer is.
+    (set-ignore-ok t)
+    (defun f (a b)
+      (loop$ with x = a with y = b
+             do
+    ; The use of (set-ignore-ok t) was needed, but shouldn't have been,
+    ; whether or not the next line is included.
+             :measure (+ (len x) (len y))
+             (cond ((consp y)
+                    (let ((z y))
+                      (progn (setq y (cdr x))
+                             (setq x (cdr z)))))
+                   (t (return y)))))
+
 
 Changes at the System Level
 
@@ -98441,6 +99385,10 @@ Changes at the System Level
     * [Loop$-primer] provides an extensive primer on the the ACL2 [loop$]
       feature.
 
+  Allow [ld] output in [raw-mode] to go to other than the channel,
+  *standard-co*.  Thanks to Vivek Ramanathan and Warren Hunt for an
+  example illustrating the issue.
+
 
 EMACS Support
 
@@ -98451,7 +99399,12 @@ EMACS Support
   Distribution is unlimited.''
 
 
-Experimental Versions")
+Experimental Versions
+
+  The note ``Note: No checkpoints to print.'' that might be printed on
+  proof failure is now the same in ACL2(p) as in ACL2, unless
+  [waterfall-parallelism] is enabled (in which case ``no
+  checkpoints'' is followed by `` from gag-mode'' as before).")
  (NOTE1 (POINTERS) "See [note-1-1].")
  (NOTE2 (POINTERS) "See [note-1-2].")
  (NOTE3 (POINTERS) "See [note-1-3].")
@@ -100334,6 +101287,9 @@ Subtopics
   [Set-raw-warning-format]
       Print some warnings in a ``raw'', s-expression format
 
+  [Set-warnings-as-errors]
+      Changing [warnings] to hard [errors] (and vice-versa)
+
   [Summary]
       The summary printed at the conclusion of an event
 
@@ -100752,8 +101708,8 @@ Subtopics
   Suppose we allowed that and implemented it simply by setting the
   imports of \"pkg\" to the new subset.  Then consider the conjecture
   (eq a::sym pkg::sym).  This ought not be a theorem because we did
-  not import a::sym into \"pkg\".  But in fact in AKCL it is a theorem
-  because pkg::sym is read as a::sym because of the old imports.")
+  not import a::sym into \"pkg\".  But in fact in AKCL it was a theorem
+  because pkg::sym was read as a::sym because of the old imports.")
  (PACKAGES
   (PROGRAMMING)
   "Collections of symbols that act as namespaces.
@@ -103447,6 +104403,9 @@ Subtopics
   [Ld-history-entry-value]
       See [ld-history].
 
+  [Ld-user-stobjs-modified-warning]
+      See [user-stobjs-modified-warnings].
+
   [Legal-constantp]
       See [system-utilities].
 
@@ -103801,14 +104760,44 @@ Subtopics
   [Set-difference-equal]
       See [set-difference$].
 
+  [Set-fast-cert]
+      See [fast-cert].
+
+  [Set-ld-always-skip-top-level-locals]
+      See [ld-always-skip-top-level-locals].
+
+  [Set-ld-error-action]
+      See [ld-error-action].
+
+  [Set-ld-error-triples]
+      See [ld-error-triples].
+
+  [Set-ld-evisc-tuple]
+      See [ld-evisc-tuple].
+
   [Set-ld-keyword-aliases]
       See [ld-keyword-aliases].
 
   [Set-ld-keyword-aliases!]
       See [ld-keyword-aliases].
 
+  [Set-ld-missing-input-ok]
+      See [ld-missing-input-ok].
+
+  [Set-ld-post-eval-print]
+      See [ld-post-eval-print].
+
+  [Set-ld-pre-eval-filter]
+      See [ld-pre-eval-filter].
+
+  [Set-ld-pre-eval-print]
+      See [ld-pre-eval-print].
+
   [Set-ld-prompt]
       See [ld-prompt].
+
+  [Set-ld-query-control-alist]
+      See [ld-query-control-alist].
 
   [Set-ld-redefinition-action]
       See [ld-redefinition-action].
@@ -103818,6 +104807,12 @@ Subtopics
 
   [Set-ld-skip-proofsp]
       See [ld-skip-proofsp].
+
+  [Set-ld-user-stobjs-modified-warning]
+      See [user-stobjs-modified-warnings].
+
+  [Set-ld-verbose]
+      See [ld-verbose].
 
   [Set-let*-abstraction]
       See [set-let*-abstractionp].
@@ -103846,6 +104841,9 @@ Subtopics
   [Set-print-right-margin]
       See [print-control].
 
+  [Set-proofs-co]
+      See [proofs-co].
+
   [Set-ruler-extenders]
       See [rulers].
 
@@ -103854,6 +104852,12 @@ Subtopics
 
   [Set-slow-alist-action]
       See [slow-alist-warning].
+
+  [Set-standard-co]
+      See [standard-co].
+
+  [Set-standard-oi]
+      See [standard-oi].
 
   [Set-temp-touchable-fns]
       See [remove-untouchable].
@@ -104259,11 +105263,11 @@ Subtopics
 
   Function: <position-equal>
 
-    (defun position-equal (item lst)
-           (declare (xargs :guard (or (stringp lst) (true-listp lst))))
-           (if (stringp lst)
-               (position-ac item (coerce lst 'list) 0)
-               (position-equal-ac item lst 0)))
+    (defun position-equal (x seq)
+           (declare (xargs :guard (or (stringp seq) (true-listp seq))))
+           (if (stringp seq)
+               (position-ac x (coerce seq 'list) 0)
+               (position-equal-ac x seq 0)))
 
   Function: <position-equal-ac>
 
@@ -104378,6 +105382,90 @@ Subtopics
                    "See [sharp-dot-reader].")
  (POUND-U-READER (POINTERS)
                  "See [sharp-u-reader].")
+ (PP-SPECIAL-SYMS
+  (IO)
+  "A [table] to control indentation for pretty-printing
+
+  ACL2 output is generally pretty-printed: that is, spacing and
+  indentation are controlled to enhance readability and aesthetics of
+  the output.  Indentation may be controlled by using the table,
+  pp-special-syms as described below.  We thank Stephen Westfold for
+  enhancing the pretty-printer with support for pp-special-syms.
+
+  The initial value of the pp-special-syms table is given by the
+  constant *pp-special-syms* as follows.  It associates each key, a
+  symbol, with a corresponding special-term-num as discussed below.
+
+  Definition: <*pp-special-syms*>
+
+    (defconst *pp-special-syms*
+              '((case . 1)
+                (case-match . 1)
+                (defabsstobj . 1)
+                (defaxiom . 1)
+                (defchoose . 3)
+                (defcong . 2)
+                (defconst . 1)
+                (defmacro . 2)
+                (defstobj . 1)
+                (defthm . 1)
+                (defthmd . 1)
+                (defun . 2)
+                (defun-inline . 2)
+                (defun-sk . 2)
+                (defund . 2)
+                (encapsulate . 1)
+                (if . 2)
+                (lambda . 1)
+                (lambda$ . 1)
+                (let . 1)
+                (let* . 1)
+                (mutual-recursion . 0)
+                (mv-let . 2)
+                (table . 1)))
+
+  The pp-special-syms table is extended for some common macros in the
+  files where they are defined, for example for [define] and [b*].
+
+  For calls of special forms and macros in the pp-special-syms table,
+  their bodies are indented by 2 rather than in the usual default
+  manner.  To support this we allow a special-term-num to be
+  associated with a symbol.  Arguments of such symbols in the
+  function position beyond the special-term-num position are indented
+  by 2.  Earlier arguments are printed normally.  For example, the
+  symbol, let, has a special-term-num of 1, so the first argument is
+  printed normally and subsequent arguments are indented by 2, as
+  follows.
+
+    (LET ((A B)
+          (C D))
+      (F A C))
+
+  Since `if' has a special-term-num of 2, the first two arguments are
+  printed normally and the other is indented by 2, for example as
+  follows.
+
+    (IF (P A B)
+        (F A B)
+      (G A B))
+
+  Macros often have as their first argument a symbol, so these are
+  treated specially by putting them on the first line and any
+  remaining arguments before the body arguments begin on the same
+  line if there is space.  For example, defun has special-term-num 2,
+  which is evident in the following output.
+
+    (DEFUN FOO (X Y Z)
+      (F X Y Z))
+
+  Keyword pairs in macro calls can occur in other places than at the
+  end of an argument list, so keyword pairing is done more
+  aggressively, as in the following output.
+
+    (DEFINE FOO ((X P1)
+                 (Y P2))
+      :GUARD (P3 X Y)
+      (F X Y Z))")
  (PPROGN
   (PROGRAMMING-WITH-STATE ACL2-BUILT-INS)
   "Evaluate a sequence of forms that return [state]
@@ -114914,8 +116002,8 @@ Recursion and Induction Table of Contents
            (declare (xargs :stobjs state
                            :guard (and (stringp filename)
                                        (natp start)
-                                       (or (null bytes) (natp bytes)))))
-           (declare (ignore close))
+                                       (or (null bytes) (natp bytes))))
+                    (ignore close))
            (read-file-into-string2-logical filename start bytes state))
 
   Macro: <read-file-into-string>
@@ -118237,7 +119325,7 @@ Subtopics
   lambdas until we reach this form, and then we eliminate lambdas
   from the first argument of equiv but not the second argument.  Here
   equiv is a known [equivalence] relation.  If we do not reach an
-  equivalence relation, even after eliminating lamdas, then we
+  equivalence relation, even after eliminating lambdas, then we
   replace the resulting term, term by (iff term t), except that we
   replace (not term) by (iff term nil).  By these steps we reduce the
   given :[corollary] to a sequence of conjuncts, each of which is of
@@ -118856,6 +119944,9 @@ A Possible Confusion
       constants, and binary-+ and certain other arithmetic primitives
       which can match numeric constants.  See
       [random-remarks-on-rewriting] for some examples.
+
+  If a rule meets the criteria for both a form [2] rule and a form [3]
+  rule, then it is considered to be a form [2] rule.
 
   The function, fn, in a form [2] rule is called the ``normalizer.'' We
   explain this terminology as we discuss how such rules are used.
@@ -123192,6 +124283,8 @@ Subtopics
 
   [Set-brr-evisc-tuple]
       Set the [brr-evisc-tuple]")
+ (SET-FAST-CERT (POINTERS)
+                "See [fast-cert].")
  (SET-FC-CRITERIA
   (FORWARD-CHAINING-REPORTS)
   "To set the tracking criteria for forward chaining reports
@@ -123904,7 +124997,7 @@ Example
 
   ACL2 prints errors that are generally important to see.  This utility
   is appropriate for situations where one prefers not to see all
-  error messages.  to.  Individual ``labeled'' error output can be
+  error messages.  Individual ``labeled'' error output can be
   silenced.  Consider for example
 
     ACL2 Error [Failure] in ( DEFUN FOO ...):  See :DOC failure.
@@ -124596,18 +125689,41 @@ Example
 
   For a way to permit irrelevant formals in a specific definition, see
   [declare].")
+ (SET-LD-ALWAYS-SKIP-TOP-LEVEL-LOCALS
+      (POINTERS)
+      "See [ld-always-skip-top-level-locals].")
+ (SET-LD-ERROR-ACTION (POINTERS)
+                      "See [ld-error-action].")
+ (SET-LD-ERROR-TRIPLES (POINTERS)
+                       "See [ld-error-triples].")
+ (SET-LD-EVISC-TUPLE (POINTERS)
+                     "See [ld-evisc-tuple].")
  (SET-LD-KEYWORD-ALIASES (POINTERS)
                          "See [ld-keyword-aliases].")
  (SET-LD-KEYWORD-ALIASES! (POINTERS)
                           "See [ld-keyword-aliases].")
+ (SET-LD-MISSING-INPUT-OK (POINTERS)
+                          "See [ld-missing-input-ok].")
+ (SET-LD-POST-EVAL-PRINT (POINTERS)
+                         "See [ld-post-eval-print].")
+ (SET-LD-PRE-EVAL-FILTER (POINTERS)
+                         "See [ld-pre-eval-filter].")
+ (SET-LD-PRE-EVAL-PRINT (POINTERS)
+                        "See [ld-pre-eval-print].")
  (SET-LD-PROMPT (POINTERS)
                 "See [ld-prompt].")
+ (SET-LD-QUERY-CONTROL-ALIST (POINTERS)
+                             "See [ld-query-control-alist].")
  (SET-LD-REDEFINITION-ACTION (POINTERS)
                              "See [ld-redefinition-action].")
  (SET-LD-SKIP-PROOFS (POINTERS)
                      "See [ld-skip-proofsp].")
  (SET-LD-SKIP-PROOFSP (POINTERS)
                       "See [ld-skip-proofsp].")
+ (SET-LD-USER-STOBJS-MODIFIED-WARNING (POINTERS)
+                                      "See [user-stobjs-modified-warnings].")
+ (SET-LD-VERBOSE (POINTERS)
+                 "See [ld-verbose].")
  (SET-LET*-ABSTRACTION (POINTERS)
                        "See [set-let*-abstractionp].")
  (SET-LET*-ABSTRACTIONP
@@ -125081,6 +126197,8 @@ Example
                      "See [print-control].")
  (SET-PRINT-RIGHT-MARGIN (POINTERS)
                          "See [print-control].")
+ (SET-PROOFS-CO (POINTERS)
+                "See [proofs-co].")
  (SET-PROVER-STEP-LIMIT
   (MISCELLANEOUS)
   "Sets the step-limit used by the ACL2 prover
@@ -125801,6 +126919,10 @@ Subtopics
 
   Again, see [splitter] for the effects of turning on the reporting of
   splitter rules.")
+ (SET-STANDARD-CO (POINTERS)
+                  "See [standard-co].")
+ (SET-STANDARD-OI (POINTERS)
+                  "See [standard-oi].")
  (SET-STATE-OK
   (STATE)
   "Allow the use of STATE as a formal parameter
@@ -126181,6 +127303,146 @@ Subtopics
   :verify-guards-eagerness is 1.  The current behavior can be
   ascertained by evaluating the form (default-verify-guards-eagerness
   (w state)).")
+ (SET-WARNINGS-AS-ERRORS
+  (WARNINGS ERRORS OUTPUT-CONTROLS)
+  "Changing [warnings] to hard [errors] (and vice-versa)
+
+  It is common for ACL2 users not to notice warnings.  That problem can
+  be avoided by using the utility set-warnings-as-errors to convert
+  warnings to errors.  We start below with a general specification,
+  followed by example forms, a detailed specification, and finally an
+  extended example.
+
+
+General Form
+
+  The general form is
+
+    (set-warnings-as-errors flg types state)
+
+  where flg is t, :always, or nil and types is either :all or a list of
+  strings.  The effect is to turn certain [warnings] into hard
+  [errors], aborting the computation in progress.  Note that
+  set-warnings-as-errors is a function, so all arguments are
+  evaluated.  Details are described in the section below entitled
+  ``Detailed Specification''.
+
+
+Example Forms
+
+    ; When a [Subsume] or [Use] warning is to be printed, cause a hard error
+    ; instead with a similar message.
+    (set-warnings-as-errors t '(\"Subsume\" \"Use\") state)
+
+    ; As above, but cause a hard error even if the warning is not to be printed,
+    ; i.e., even if by default it would be suppressed as a warning because of
+    ; prior use of set-inhibit-output-lst or set-inhibit-warnings.
+    (set-warnings-as-errors :always '(\"Subsume\" \"Use\") state)
+
+    ; Restore the treatment of [Use] warnings as warnings.
+    (set-warnings-as-errors nil '(\"Use\") state)
+
+    ; Treat a warning as a hard error, but only if the warning is to be printed
+    ; (hence not suppressed by set-inhibit-output-lst or set-inhibit-warnings).
+    (set-warnings-as-errors t :all state)
+
+    ; Treat a warning as a hard error, whether the warning is printed or not.
+    (set-warnings-as-errors :always :all state)
+
+    ; Restore the default behavior, treating warnings as warnings, not errors.
+    (set-warnings-as-errors nil :all state)
+
+
+Detailed Specification
+
+    * No warning whose type specified by constant
+      *uninhibited-warning-summaries* is converted to an error.
+      Those types are the ones that belong, with a case-insensitive
+      check, to the list (\"Uncertified\" \"Provisionally certified\"
+      \"Skip-proofs\" \"Defaxioms\" \"Ttags\" \"Compiled file\"
+      \"User-stobjs-modified\").  This exception overrides all
+      discussion below.
+    * The behavior of [warnings] is affected for every warning type
+      specified by the types argument.  When its value is :all, then
+      all warnings are affected.  Otherwise the value of types is a
+      list of warning types (see [set-inhibit-warnings]): a true list
+      of strings, each treated as case-insensitive.  Note that when
+      the value is not :all, the existing behavior for warning types
+      is only changed for those in the value of types.
+    * When flg is :always, then every warning specified by types is
+      converted to a hard error, which aborts the evaluation in
+      progress.  This happens even if the warning is suppressed (by
+      [set-inhibit-output-lst] or [set-inhibit-warnings]).
+    * When flg is t, then when a warning specified by types is to be
+      printed, it is converted to a hard error, which aborts the
+      evaluation in progress.  There is no error, however, if the
+      warning is suppressed.
+    * When flg is nil, then every warning specified by types is treated as
+      a warning even if it had previously been treated as an error.
+    * When a warning of a given type (possibly nil type) is converted to a
+      hard error as specified above, then whether that error is
+      printed is controlled by the usual mechanism for suppressing
+      error messages; see [set-inhibit-er].  Note that the error will
+      still be signaled regardless of whether the error message is
+      thus suppressed.
+    * Previous evaluations of calls of set-warnings-as-errors are ignored
+      during [certify-book] and [include-book].  The handling of
+      warnings as errors is restored at the end of these operations
+      to what it was at the beginning.
+
+
+Extended Example
+
+  ACL2 often prints [warnings], often with a message that includes a
+  warning type.  Here is a contrived example.
+
+    (defthm foo t
+     :hints ((\"Goal\" :use car-cons))
+     :rule-classes nil)
+
+    ACL2 Warning [Use] in ( DEFTHM FOO ...):  It is unusual to :USE the
+    formula of an enabled :REWRITE or :DEFINITION rule, so you may want
+    to consider disabling (:REWRITE CAR-CONS) in the hint provided for
+    Goal.  See :DOC using-enabled-rules.
+
+  In the example above, the warning type is the string, \"Use' which is
+  treated as case-insensitive; see [set-inhibit-warnings].  But maybe
+  we prefer that every such warning be converted to an error; after
+  all, as the warning suggests, we might want to disable the used
+  rule first.  It's easy to miss a warning but not an error, so we
+  might do the following.
+
+    (set-warnings-as-errors t '(\"use\") state)
+
+  That modifies ACL2 behavior such that instead of the warning above,
+  we get the following error (after using :u to undo the effects of
+  the defthm event above).
+
+    HARD ACL2 ERROR [Use] in ( DEFTHM FOO ...):  It is unusual to :USE
+    the formula of an enabled :REWRITE or :DEFINITION rule, so you may
+    want to consider disabling (:REWRITE CAR-CONS) in the hint provided
+    for Goal.  See :DOC using-enabled-rules.
+
+  Note that this is a ``hard'' error: it aborts the computation in
+  progress.
+
+  Suppose however that we turn off the warning by evaluating either of
+  the following two forms.
+
+    (set-inhibit-output-lst '(warning proof-tree))
+    ; OR
+    (set-inhibit-warnings \"use\")
+
+  After evaluating either (or both) of these forms, the defthm form
+  above completes with no warnings or errors.  That's because there
+  was no warning to print, and the flg value of t only has an effect
+  for warnings that are printed.  If we want errors to occur even for
+  warnings whose printing is suppressed, we should use the flg value,
+  :always.
+
+    (set-warnings-as-errors :always '(\"use\") state)
+    ; OR
+    (set-warnings-as-errors :always :all state)")
  (SET-WATERFALL-PARALLELISM
   (PARALLELISM)
   "For ACL2(p): configuring the parallel execution of the waterfall
@@ -127093,22 +128355,22 @@ Subtopics
   a [keyword-value-listp], i.e., an alternating list of keywords and
   values starting with a keyword.  In this case ((fn x1 ... xn) =>
   val) must be a legal signature as described above.  The legal
-  keywords in k are normally :GUARD and :FORMALS (but see remarks at
-  the end of this topic regarding :GLOBAL-STOBJS and, for ACL2(r),
-  :CLASSICALP).  The value following :FORMALS is to be the list of
-  formal parameters of fn, which must be consistent with the
-  parameters specified in (fn x1 ... xn): they must both specify the
-  same arity (number of formal parameters) and the same [stobj]
-  inputs.  The value following :GUARD is a term that is to be the
-  [guard] of fn.  Note that this guard is never actually evaluated,
-  and is not subject to the guard verification performed on functions
-  introduced by [defun] (see [verify-guards]).  Said differently:
-  this guard need not itself have a guard of t.  Indeed, the guard is
-  only used for attachments; see [defattach].  Note that if :GUARD is
-  supplied, then :FORMALS must also be supplied as a list of distinct
-  variables that includes all variables occurring free in the
-  specified guard.  One final observation about guards: if the :GUARD
-  keyword is omitted, then the guard defaults to T.
+  keywords in k are generally :GUARD and :FORMALS, but see remarks at
+  the end of this topic regarding :GLOBAL-STOBJS and :TRANSPARENT
+  and, for ACL2(r), :CLASSICALP.  The value following :FORMALS is to
+  be the list of formal parameters of fn, which must be consistent
+  with the parameters specified in (fn x1 ... xn): they must both
+  specify the same arity (number of formal parameters) and the same
+  [stobj] inputs.  The value following :GUARD is a term that is to be
+  the [guard] of fn.  Note that this guard is never actually
+  evaluated, and is not subject to the guard verification performed
+  on functions introduced by [defun] (see [verify-guards]).  Said
+  differently: this guard need not itself have a guard of t.  Indeed,
+  the guard is only used for attachments; see [defattach].  Note that
+  if :GUARD is supplied, then :FORMALS must also be supplied as a
+  list of distinct variables that includes all variables occurring
+  free in the specified guard.  One final observation about guards:
+  if the :GUARD keyword is omitted, then the guard defaults to T.
 
   Before ACL2 supported user-declared single-threaded objects there was
   only one single-threaded object: ACL2's built-in notion of [state].
@@ -127149,9 +128411,11 @@ Subtopics
   keywords.  The keyword :GLOBAL-STOBJS specifies the use of the
   macro, with-global-stobj, in attachments (see [defattach]); see
   [with-global-stobj] for explanation of this keyword.  The keyword
-  :CLASSICALP is legal for ACL2(r) only (see [real]).  The value of
-  this keyword must be t (the default) or nil, indicating
-  respectively whether fn is classical or not.")
+  :TRANSPARENT specifies transparent functions; see
+  [transparent-functions].  Finally, the keyword :CLASSICALP is legal
+  for ACL2(r) only (see [real]).  The value of this keyword must be t
+  (the default) or nil, indicating respectively whether fn is
+  classical or not.")
  (SIGNED-BYTE-P
   (NUMBERS ACL2-BUILT-INS)
   "Recognizer for signed integers that fit in a specified bit width
@@ -128649,13 +129913,6 @@ Subtopics
       Global-table, an alist associating symbols (to be used as ``global
       variables'') with values.  See [@], and see [assign].
 
-      T-stack, a list of arbitrary objects accessed and changed by the
-      functions aref-t-stack and aset-t-stack.
-
-      32-bit-integer-stack, a list of arbitrary 32-bit-integers accessed
-      and changed by the functions aref-32-bit-integer-stack and
-      aset-32-bit-integer-stack.
-
       Big-clock-entry, an integer, that is used logically to bound the
       amount of effort spent to evaluate a quoted form.
 
@@ -128698,20 +129955,6 @@ Subtopics
       Writeable-files, an alist whose keys have the form (string type
       time).  To open a file for output, we require that the name,
       type, and time be on this list.
-
-      List-all-package-names-lst, a list of true-listps.  Roughly speaking,
-      the [car] of this list is the list of all package names known
-      to this Common Lisp right now and the [cdr] of this list is the
-      value of this state variable after you look at its [car].  The
-      function, list-all-package-names, which takes the state as an
-      argument, returns the [car] and [cdr]s the list (returning a
-      new state too).  This essentially gives ACL2 access to what is
-      provided by CLTL's list-all-packages.  [Defpkg] uses this
-      feature to ensure that the about-to-be-created package is new
-      in this lisp.  Thus, for example, in akcl it is impossible to
-      create the package \"COMPILER\" with [defpkg] because it is on
-      the list, while in Lucid that package name is not initially on
-      the list.
 
       User-stobj-alist, an alist which associates user-defined
       single-threaded objects (see [stobj]) with their values.
@@ -128802,10 +130045,11 @@ Subtopics
   suggested above, the following form is evaluated at the conclusion
   of the evaluation of the state-global-let* form, whether or not an
   error has occurred: (f-put-global 'vari 'old-vali state).  However,
-  if set-vari is supplied, then instead the form evaluated will be
-  (set-vari 'old-vali state).  This capability is particularly useful
-  if vari is untouchable (see [push-untouchable]), since the above
-  call of [f-put-global] is illegal.
+  if set-vari is supplied, it is a function symbol that we may call a
+  ``setter'', and the form evaluated will instead be (set-vari
+  'old-vali state).  This capability is particularly useful if vari
+  is untouchable (see [push-untouchable]), since the above call of
+  [f-put-global] is illegal.
 
   Note that the scope of the bindings of a state-global-let* form is
   the body of that form.  This may seem obvious, but to drive the
@@ -132554,7 +133798,8 @@ Subtopics
   can use sys-call; see [defttag].  (Note: The setting of the raw
   Lisp variable *features* below is just to illustrate that any such
   mischief is possible.  Normally *features* is a list with more than
-  a few elements.)
+  a few elements.  Also, note that this log is from many years ago;
+  the feature shown, :AKCL-SET-MV, is no longer present.)
 
     % cat foo
     print *0x85d2064=0x838E920
@@ -132799,6 +134044,14 @@ Summary of attachable system functions
   Documentation: Attach to constant-nil-function-arity-0 to extend to
   non-recursively defined functions the stack-based limitation on
   opening recursively-defined functions.
+
+  CONJOIN-CLAUSE-SETS-BOUND
+  Built-in attachment: CONJOIN-CLAUSE-SETS-BOUND-BUILTIN
+  Documentation: Attach to a constant function that returns a natural
+  number (default 50) bounding how large a clause-set can be to do
+  smart merging into another clause-set; see comments in the
+  definition of conjoin-clause-sets in the ACL2 sources for more
+  explanation.
 
   HEAVY-LINEAR-P
   Built-in attachment: CONSTANT-NIL-FUNCTION-ARITY-0
@@ -133171,7 +134424,8 @@ List of a few built-in system utilities
     * (flambda-applicationp x): For a [pseudo-termp] x that is not a
       variable, return t if it is a function call whose function
       symbol is a lambda expression, else return nil.
-    * (flambdap fn): True when fn is a lambda expression.
+    * (flambdap fn): For a [pseudo-termp] (fn arg1 ... argk), true when fn
+      is a [lambda] expression
     * (flatten-ands-in-lit term): Returns a list of terms whose conjunction
       is equivalent to the given term (which satisfies
       [pseudo-termp]), obtained by flattening its conjunctive
@@ -133434,8 +134688,7 @@ Subtopics
 
   [Untranslate]
       Show a user-level representation of a term")
- (TABLE
-  (EVENTS)
+ (TABLE (EVENTS)
   "User-managed tables
 
     Examples:
@@ -136392,10 +137645,11 @@ Subtopics
       and denotes the set of the names of all rules introduced by the
       named event.
     * If str is the string naming some [defpkg] event and symb is the
-      symbol returned by (intern str \"ACL2\"), then symb is a runic
-      designator and denotes the singleton set containing (:rewrite
-      symb), which is the name of the rule stating the conditions
-      under which the [symbol-package-name] of (intern x str) is str.
+      symbol returned by (intern (concatenate 'string str \"-PACKAGE\")
+      \"ACL2\"), then symb is a runic designator and denotes the
+      singleton set containing (:rewrite symb), which is the name of
+      the rule stating the conditions under which the
+      [symbol-package-name] of (intern x str) is str.
     * If symb is the name of a [deftheory] event, then symb is a runic
       designator and denotes the runic theory (as defined below)
       corresponding to symb.
@@ -137859,11 +139113,11 @@ Subtopics
 
   See [arrays] to read about applicative, fast [arrays] in ACL2.
 
-  To quit the ACL2 [command] loop, or (in akcl) to return to the ACL2
+  To quit the ACL2 [command] loop, or (in gcl) to return to the ACL2
   [command] loop after an interrupt, type :[q].  To continue (resume)
-  after an interrupt (in akcl), type :r.  To cause an interrupt (in
-  akcl under Unix (trademark of AT&T)), hit control-C (twice, if
-  inside Emacs).  To exit ACL2 altogether, type :[quit].
+  after an interrupt (in gcl), type :r.  To cause an interrupt hit
+  control-C (twice, if inside Emacs).  To exit ACL2 altogether, type
+  :[quit].
 
   See [state] to read about the von Neumannesque ACL2 [state] object
   that records the ``current state'' of the ACL2 session.  Also see
@@ -140142,6 +141396,125 @@ Subtopics
                  "See [system-utilities].")
  (TRANSLATE11 (POINTERS)
               "See [system-utilities].")
+ (TRANSPARENT-FUNCTIONS
+  (META)
+  "Working around restrictions on the use of evaluators in meta-level
+  rules
+
+  See [evaluator-restrictions] for relevant background.  For examples
+  of the use of transparent functions, see [community-book] file
+  books/system/tests/transparent-functions-input.lsp, with
+  corresponding output in file transparent-functions-log.txt in the
+  same directory.
+
+  A function is called a ``transparent function symbol'' when it is
+  declared with :transparent t in a [signature] of an [encapsulate]
+  event.  By thus declaring a function to be transparent, you are
+  modifying the notion of ``ancestor'' of a meta-level function as
+  follows, for purposes of the ancestor restriction described in
+  [evaluator-restrictions]: when a transparent function f has an
+  attachment g (see [defattach]), then g is the sole ancestor
+  (supporter) of f.
+
+  We illustrate with a (contrived) example, which shows how declaring a
+  function to be transparent can avoid an error.  Consider what
+  happens when we submit the following events in a fresh ACL2
+  session.
+
+    (defstub f0 (x) t)
+
+    (encapsulate
+      (((f1 *) => *)
+       ((f2 *) => *))
+      (local (defun f1 (x) (f0 x)))
+      (local (defun f2 (x) (f0 x)))
+      (defthm f2-is-f1
+        (implies (f0 x)
+                 (equal (f2 x) (f1 x)))
+        :rule-classes nil))
+
+    (defn g0 (x) x)
+
+    (defattach f0 g0)
+
+    (with-output :off :all ; avoid noisy output
+      (defevaluator evl evl-list
+        ((f0 x))))
+
+    (defn meta-fn1 (x)
+      (if (f1 x)
+          x
+        x))
+
+    (defattach (f1 consp) (f2 consp))
+
+    (defthm thm1
+      (equal (evl x a)
+             (evl (meta-fn1 x) a))
+      :rule-classes ((:meta :trigger-fns (nth))))
+
+  The final ([defthm]) event results in the following error.
+
+    ACL2 Error in ( DEFTHM THM1 ...):  The proposed :META rule, THM1, is
+    illegal because the attached function F0 is ancestral in both the evaluator
+    and meta functions.  See :DOC evaluator-restrictions and see :DOC transparent-
+    functions.
+
+    The following is an ancestor path from F0 to the meta function META-FN1,
+    i.e., each function symbol is a supporter of the next:
+
+    (F0 F1 META-FN1)
+
+    The following is an ancestor path from F0 to the evaluator function
+    EVL, i.e., each function symbol is a supporter of the next:
+
+    (F0 EVL)
+
+  The events above make it clear that the alleged ancestor paths are
+  indeed ancestor paths, in the sense that each function symbol in
+  the path occurs in the definition or [constraint] for the function
+  symbol immediately after it.
+
+  To avoid this error, we need to arrange that f0 is no longer a common
+  ancestor of meta-fn1 and evl.  The notion of ancestor doesn't
+  change for the path leading to the evaluator function; but for the
+  path leading to the meta function, a transparent function symbol
+  has its attachment as its ancestor instead of the function symbols
+  in its [constraint].  In particular, f1 normally has f0 as an
+  ancestor, since f0 occurs in the constraint on f1; but if f1 is
+  transparent and has an attachment, then its attachment is the sole
+  ancestor of f0, as though f1 had been defined to be f0.  Thus, if
+  we replace the [encapsulate] event in our example simply by
+  declaring its [signature] functions to be transparent, as follows,
+  then the error disappears.
+
+    (encapsulate
+      (((f1 *) => * :transparent t)
+       ((f2 *) => * :transparent t))
+      (local (defun f1 (x) (f0 x)))
+      (local (defun f2 (x) (f0 x)))
+      (defthm f2-is-f1
+        (implies (f0 x)
+                 (equal (f2 x) (f1 x)))
+        :rule-classes nil))
+
+  We close with some restrictions pertaining to transparent function
+  symbols.
+
+    * If any function is declared with :transparent t in the signatures of
+      an encapsulate event, then all must be.
+    * If any function is declared with :transparent t in the signatures of
+      an encapsulate event, then every signature in a superior or
+      inferior encapsulate event must also specify :transparent t.
+    * The value of the :transparent keyword in a signature must be t or the
+      default, nil.
+    * The signatures of a [partial-encapsulate] (or of any encapsulate with
+      a call of set-unknown-constraints-supporters) must not specify
+      :transparent t in its signatures.
+    * When a [defattach] event attaches to a transparent function symbol f,
+      that event must attach to every function symbol constrained in
+      an encapsulate with f, and only to such function symbols.  The
+      same holds for unattaching in place of attaching.")
  (TRUE-LIST-FIX
   (TRUE-LISTP ACL2-BUILT-INS)
   "Coerce to a true list
@@ -142344,6 +143717,7 @@ Type Specs
     (NOT type)             (NOT (p X))
                            where (p x) is the meaning for type-spec type
     NULL                   (EQ X NIL)
+    NUMBER                 (ACL2-NUMBERP x)
     (OR type1 ... typek)   (OR (p1 X) ... (pk X))
                            where (pj x) is the meaning for type-spec typej
     RATIO                  (AND (RATIONALP X) (NOT (INTEGERP X)))
@@ -146623,7 +147997,14 @@ Subtopics
 
   The prover can emit many warnings when processing [events].  See
   [set-inhibit-warnings] and see [set-inhibit-output-lst] for how to
-  disable and enable them.  See also [toggle-inhibit-warning].")
+  disable and enable them.  See also [toggle-inhibit-warning] and
+  [set-warnings-as-errors].
+
+
+Subtopics
+
+  [Set-warnings-as-errors]
+      Changing [warnings] to hard [errors] (and vice-versa)")
  (WARRANT
   (APPLY$)
   "Giving [apply$] permission to handle a user-defined function in
@@ -149515,30 +150896,33 @@ More about the stack argument
 
 Concluding remarks
 
-  Remark 1.  Warning: With-output has no effect in raw Lisp (other than
-  to expand to the provided form argument), and hence is disallowed
-  in function bodies.  However, you can probably get the effect you
-  want as illustrated below, where <form> must return an error-triple
-  (mv erp val state); see [ld] and see [error-triple].
+  With-output has no effect in raw Lisp, in the sense that a call
+  (with-output ... form) macroexpands to form in raw Lisp.  Normally
+  this produces desired behavior, but occasionally you may be a bit
+  surprised.  Consider for example the following book.
 
-  Remark 2.  Here are examples avoiding with-output, for use in
-  function definitions.  But note that with-output! can be used in
-  function definitions.
+    (in-package \"ACL2\")
 
-    ; Inhibit all output:
-    (state-global-let*
-     ((inhibit-output-lst *valid-output-names*))
-     <form>)
+    (with-output
+      :off :all
+      (make-event (prog2$ (cw \"@@@ NOISE @@@\")
+                          '(defun f (x) x))
+                  :check-expansion t))
 
-    ; Inhibit all warning output:
-    (state-global-let*
-     ((inhibit-output-lst
-       (union-eq (f-get-global 'inhibit-output-lst state)
-                 '(warning warning!))))
-     <form>)
+    (make-event (with-output!
+                  :off :all
+                  (value (prog2$ (cw \"@@@ QUIET @@@\")
+                                 '(defun g (x) x))))
+                :check-expansion t)
 
-  Note that with-output is allowed in books.  See
-  [embedded-event-form].")
+  When certifying this book, we do not see either `NOISE' or `QUIET'.
+  But then when we include this book, we see `NOISE' (but not
+  `QUIET').  To see why, we first note that both events are evaluated
+  in raw Lisp when including the book (as discussed briefly in the
+  documentaion topic, [book-compiled-file]).  The first calls
+  with-output, which (as noted above) disappears during
+  macroexpansion.  The second calls with-output!, which has the
+  desired effect of suppressing output.")
  (WITH-OUTPUT! (POINTERS)
                "See [with-output].")
  (WITH-OUTPUT-LOCK
@@ -152830,8 +154214,8 @@ Subtopics
 
   (or, control-d).
 
-  The whole point of this command is that in some Lisps (including
-  akcl), if you type control-d then it seems, on occasion, to get
+  The whole point of this command is that there have been Lisps where
+  if you type control-d then it seems, on occasion, to get
   interpreted as nil.  Without this command, one seems to get into an
   infinite loop.")
  (ACL2-PC::NOISE
