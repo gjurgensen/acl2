@@ -54747,13 +54747,14 @@ tables in the current Hons Space."
  <p>To redirect output to a file, see @(see output-to-file).</p>
 
  <p>ACL2 supports input and output facilities equivalent to a subset of those
- found in Common Lisp.  ACL2 does not support random access to files or
- bidirectional streams.  In Common Lisp, input and output are to or from
- objects of type @('stream').  In ACL2, input and output are to or from objects
- called ``channels,'' which are actually symbols.  Although a channel is a
- symbol, one may think of it intuitively as corresponding to a Common Lisp
- stream.  Channels are in one of two ACL2 packages, @('\"ACL2-INPUT-CHANNEL\"')
- and @('\"ACL2-OUTPUT-CHANNEL\"').  When one ``opens'' a file one gets back a
+ found in Common Lisp.  ACL2 does not support random access to files (with one
+ exception: see @(see read-file-into-string) or bidirectional streams.  In
+ Common Lisp, input and output are to or from objects of type @('stream').  In
+ ACL2, input and output are to or from objects called ``channels,'' which are
+ actually symbols.  Although a channel is a symbol, one may think of it
+ intuitively as corresponding to a Common Lisp stream.  Channels are in one of
+ two ACL2 packages, @('\"ACL2-INPUT-CHANNEL\"') and
+ @('\"ACL2-OUTPUT-CHANNEL\"').  When one ``opens'' a file one gets back a
  channel whose @(tsee symbol-name) is the file name passed to ``open,''
  postfixed with @('-n'), where @('n') is a counter that is incremented every
  time an open or close occurs.</p>
