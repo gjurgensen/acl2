@@ -58107,7 +58107,7 @@ Subtopics
 
   ACL2 supports input and output facilities equivalent to a subset of
   those found in Common Lisp.  ACL2 does not support random access to
-  files (with one exception: see [read-file-into-string] or
+  files (with one exception: see [read-file-into-string]) or
   bidirectional streams.  In Common Lisp, input and output are to or
   from objects of type stream.  In ACL2, input and output are to or
   from objects called ``channels,'' which are actually symbols.
