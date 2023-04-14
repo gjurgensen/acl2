@@ -14984,7 +14984,10 @@ Subtopics
       An explanation of why ACL2 has an explicit [brr] mode
 
   [Windows-installation]
-      Installing ACL2 on Windows")
+      Installing ACL2 on Windows
+
+  [With-brr-data]
+      Collecting [break-rewrite] information")
  (BREAKS
   (ERRORS)
   "Common Lisp breaks
@@ -99126,6 +99129,10 @@ New Features
   which appears in a comment in the definition of function
   stobjs-in-out in the ACL2 sources.
 
+  An advanced feature, [with-brr-data], is available for collecting the
+  same information as [break-rewrite], but non-interactively.  Thanks
+  to Eric Smith for requesting such a feature.
+
 
 Heuristic and Efficiency Improvements
 
@@ -149579,6 +149586,109 @@ Concluding Remark
   http://www.cs.utexas.edu/users/moore/acl2/v3-6/distrib/windows/},
   which mimics some of Linux and provides Emacs.  Updated ACL2
   binaries have been successfully installed in such an environment.")
+ (WITH-BRR-DATA
+  (BREAK-REWRITE)
+  "Collecting [break-rewrite] information
+
+  Warning: This topic provides only minimal documentation of a feature
+  that we expect will be used only by advanced, system-level ACL2
+  programmers.
+
+    General Forms:
+    (with-brr-data form)     ; Collect break-rewrite data for form.
+    (with-brr-data form nil) ; Same as above
+    (with-brr-data form t)   ; Collect and return break-rewrite data for form.
+
+  where form returns an [error-triple], (mv erp val state).  That error
+  triple is returned by (with-brr-data form).  But for (with-brr-data
+  form t), then (mv erp x state) is returned where x is a list of
+  brr-data records as described below, each representing a top-level
+  entry and corresponding exit from [break-rewrite] that resulted in
+  a failure.  Either way, that list of records is available is
+  available as the value component of the error triple returned by
+  (brr-data-lst state), until the next time that either a call of
+  with-brr-data or the form (clear-brr-data-lst) is evaluated.
+
+    Example Forms:
+
+    ; Collect break-rewrite data when attempting the indicated proof.
+    (with-brr-data (thm (equal (append x y) (append y x))))
+
+    ; Unlike the form above, actually return the data.
+    (with-brr-data (thm (equal (append x y) (append y x)))
+                   t)
+
+  Each record in the list described above --- that is, from
+  (brr-data-lst state) --- has following data type (also see
+  [defrec]), which is actually a recursive data type definition as
+  described below.
+
+    (defrec brr-data
+      (pre post . completed)
+      nil)
+
+  In each such record, the :pre and :post fields are respectively a
+  brr-data-1 record and a brr-data-2 record, each of which records
+  information upon entering or exiting a break (respectively).
+
+    (defrec brr-data-1
+      (((lemma . target) . (unify-subst . type-alist))
+       .
+       ((pot-list . ancestors) . (rcnst initial-ttree . gstack)))
+      nil)
+
+    (defrec brr-data-2
+      ((failure-reason unify-subst . brr-result)
+       .
+       (rcnst final-ttree . gstack))
+      nil)
+
+  The :completed field of a brr-data record is a list of brr-data
+  records, corresponding to the rewrite breaks that are one level
+  lower.
+
+  You may notice that this collection of break-rewrite data slows down
+  the theorem prover.  The slowdown will probably be modest, perhaps
+  adding an extra 25% or so to the time.
+
+  We have seen above that the use of with-brr-data activates the
+  collection of break-rewrite data.  Collection may also be activated
+  by assigning the [state] global, gstackp, to the value :brr-data.
+  (See [programming-with-state] for relevant programming background.)
+  You can use :[trans1] on a with-brr-data call to see how
+  with-brr-data sets gstackp.  Note that setting (or binding) gstackp
+  to :brr-data has the effect of :[brr] t but enhanced with
+  collection of brr-data records.  When gstackp has value :brr-data,
+  :brr t is treated as a no-op and :brr nil is an error, to avoid
+  inadvertently turning off brr-data record collection.
+
+  Future documentation may be written as needed.  For now, the
+  programmer using this utility may wish to look at the ACL2 source
+  code and the [break-rewrite] documentation to understand the fields
+  of the brr-data-1 and brr-data-2 records.  The form (brr-data-listp
+  t lst) recognizes a list of well-formed brr-data records.  The
+  :failure-reason field of the brr-data-2 record may be of particular
+  interest; see ACL2 source function tilde-@-failure-reason-phrase1
+  for the forms that this field may take.
+
+  Here is a handy way to store the current list of brr-data records
+  into a state global, in this case, brr-data-lst (but you can choose
+  your own state global name).  After collecting data, evaluating
+  this definition, and then evaluating the form (set-brr-data-lst
+  state), the form (brr-data-listp t (@ brr-data-lst)) should return
+  t.
+
+    (defun set-brr-data-lst (state)
+      (declare (xargs :stobjs state))
+      (er-let* ((x (brr-data-lst state)))
+        (cond ((eq x :none)
+               (value (er hard? 'set-brr-data-lst
+                          \"There is no brr-data available.\")))
+              (t
+               (pprogn (f-put-global 'brr-data-lst x state)
+                       (value (list '=
+                                    '(length (@ brr-data-lst))
+                                    (len x))))))))")
  (WITH-CBD
   (BOOKS-REFERENCE)
   "To set the connected book directory
