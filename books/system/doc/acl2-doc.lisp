@@ -102230,6 +102230,10 @@ it."
  in a comment in the definition of function @('stobjs-in-out') in the ACL2
  sources.</p>
 
+ <p>An advanced feature, @(see with-brr-data), is available for collecting the
+ same information as @(see break-rewrite), but non-interactively.  Thanks to
+ Eric Smith for requesting such a feature.</p>
+
  <h3>Heuristic and Efficiency Improvements</h3>
 
  <p>Added a &ldquo;desperation heuristic&rdquo; to compute a stronger context,
@@ -151184,6 +151188,119 @@ introduction-to-the-tau-system) for more information about Tau.</dd>
  a Windows installer for a previous ACL2 release</a>, which mimics some of
  Linux and provides Emacs.  Updated ACL2 binaries have been successfully
  installed in such an environment.</p>")
+
+(defxdoc with-brr-data
+  :parents (break-rewrite)
+  :short "Collecting @(see break-rewrite) information"
+  :long "<p>Warning: This topic provides only minimal documentation of a
+ feature that we expect will be used only by advanced, system-level ACL2
+ programmers.</p>
+
+ @({
+ General Forms:
+ (with-brr-data form)     ; Collect break-rewrite data for form.
+ (with-brr-data form nil) ; Same as above
+ (with-brr-data form t)   ; Collect and return break-rewrite data for form.
+ })
+
+ <p>where @('form') returns an @(see error-triple), @('(mv erp val state)').
+ That error triple is returned by @('(with-brr-data form)').  But for
+ @('(with-brr-data form t)'), then @('(mv erp x state)') is returned where
+ @('x') is a list of @('brr-data') records as described below, each
+ representing a top-level entry and corresponding exit from @(see
+ break-rewrite) that resulted in a failure.  Either way, that list of records
+ is available is available as the value component of the error triple returned
+ by @('(brr-data-lst state)'), until the next time that either a call of
+ @('with-brr-data') or the form @('(clear-brr-data-lst)') is evaluated.</p>
+
+ @({
+ Example Forms:
+
+ ; Collect break-rewrite data when attempting the indicated proof.
+ (with-brr-data (thm (equal (append x y) (append y x))))
+
+ ; Unlike the form above, actually return the data.
+ (with-brr-data (thm (equal (append x y) (append y x)))
+                t)
+ })
+
+ <p>Each record in the list described above &mdash; that is, from
+ @('(brr-data-lst state)') &mdash; has following data type (also see @(see
+ defrec)), which is actually a recursive data type definition as described
+ below.</p>
+
+ @({
+ (defrec brr-data
+   (pre post . completed)
+   nil)
+ })
+
+ <p>In each such record, the @(':pre') and @(':post') fields are respectively a
+ @('brr-data-1') record and a @('brr-data-2') record, each of which records
+ information upon entering or exiting a break (respectively).</p>
+
+ @({
+ (defrec brr-data-1
+   (((lemma . target) . (unify-subst . type-alist))
+    .
+    ((pot-list . ancestors) . (rcnst initial-ttree . gstack)))
+   nil)
+
+ (defrec brr-data-2
+   ((failure-reason unify-subst . brr-result)
+    .
+    (rcnst final-ttree . gstack))
+   nil)
+ })
+
+ <p>The @(':completed') field of a @('brr-data') record is a list of
+ @('brr-data') records, corresponding to the rewrite breaks that are one level
+ lower.</p>
+
+ <p>You may notice that this collection of break-rewrite data slows down the
+ theorem prover.  The slowdown will probably be modest, perhaps adding an extra
+ 25% or so to the time.</p>
+
+ <p>We have seen above that the use of @('with-brr-data') activates the
+ collection of break-rewrite data.  Collection may also be activated by
+ assigning the @(see state) global, @('gstackp'), to the value @(':brr-data').
+ (See @(see programming-with-state) for relevant programming background.)  You
+ can use @(':')@(tsee trans1) on a @('with-brr-data') call to see how
+ @('with-brr-data') sets @('gstackp').  Note that setting (or binding)
+ @('gstackp') to @(':brr-data') has the effect of @(':')@(tsee brr)@(' t') but
+ enhanced with collection of @('brr-data') records.  When @('gstackp') has
+ value @(':brr-data'), @(':brr t') is treated as a no-op and @(':brr nil') is
+ an error, to avoid inadvertently turning off @('brr-data') record
+ collection.</p>
+
+ <p>Future documentation may be written as needed.  For now, the programmer
+ using this utility may wish to look at the ACL2 source code and the @(see
+ break-rewrite) documentation to understand the fields of the @('brr-data-1')
+ and @('brr-data-2') records.  The form @('(brr-data-listp t lst)') recognizes
+ a list of well-formed @('brr-data') records.  The @(':failure-reason') field
+ of the @('brr-data-2') record may be of particular interest; see ACL2 source
+ function @('tilde-@-failure-reason-phrase1') for the forms that this field may
+ take.</p>
+
+ <p>Here is a handy way to store the current list of @('brr-data') records into
+ a state global, in this case, @('brr-data-lst') (but you can choose your own
+ state global name).  After collecting data, evaluating this definition, and
+ then evaluating the form @('(set-brr-data-lst state)'), the form
+ @('(brr-data-listp t (@ brr-data-lst))') should return @('t').</p>
+
+ @({
+ (defun set-brr-data-lst (state)
+   (declare (xargs :stobjs state))
+   (er-let* ((x (brr-data-lst state)))
+     (cond ((eq x :none)
+            (value (er hard? 'set-brr-data-lst
+                       \"There is no brr-data available.\")))
+           (t
+            (pprogn (f-put-global 'brr-data-lst x state)
+                    (value (list '=
+                                 '(length (@ brr-data-lst))
+                                 (len x))))))))
+ })")
 
 (defxdoc with-cbd
   :parents (books-reference)
