@@ -102265,6 +102265,10 @@ it."
  between two terms that are both known (via their @(see type-set)s) to be
  non-numeric.</p>
 
+ <p>The utility @(tsee set-cbd) is more efficient when setting to the current
+ @(tsee cbd), including the common case of calls to @('set-cbd') by @(tsee ld)
+ and (hence) @(tsee wormhole).</p>
+
  <h3>Bug Fixes</h3>
 
  <p>Fixed a soundness bug based on rules of class @(':')@(tsee meta) or
