@@ -25049,19 +25049,20 @@ subtree of X with T, without duplication.</p>
  @(see type-prescription) rule for the function.  See @(see
  type-prescription-debugging) for relevant discussion.</p>
 
- <p>The following example illustrates all of the available declarations and
- most hint keywords, but is completely nonsensical.  For documentation, see
- @(see xargs) and see @(see hints).</p>
+ <p>The following example illustrates all of the available declarations, but it
+ is completely nonsensical and it shows only a few of the many @(':xargs')
+ keywords.  See @(see xargs) for a complete list of @(':xargs') keywords; also
+ see @(see hints).</p>
 
  @({
   (defun example (x y z a b c i j)
     (declare (ignore a b c)
+             (ignorable x y)
+             (irrelevant c)
              (type integer i j)
+             (optimize (safety 3))
              (xargs :guard (symbolp x)
-                    :loop$-recursion t
                     :measure (- i j)
-                    :ruler-extenders :basic
-                    :well-founded-relation my-wfr
                     :hints ((\"Goal\"
                              :do-not-induct t
                              :do-not '(generalize fertilize)
@@ -25082,10 +25083,7 @@ subtree of X with T, without duplication.</p>
                                    :use ((:instance assoc-of-append
                                                     (x a) (y b) (z c)))))
                     :mode :logic
-                    :normalize nil
                     :verify-guards nil
-                    :non-executable t
-                    :otf-flg t ; the default
                     :type-prescription (natp (example x y z a b c i j))))
     (example-body x y z i j))
  })")
@@ -154234,7 +154232,7 @@ created from the original fast alist during @('form') must be manually freed."
                   :mode :logic
                   :non-executable t
                   :normalize nil
-                  :otf-flg t
+                  :otf-flg t ; the default for defun
                   :ruler-extenders :basic
                   :split-types t
                   :stobjs ($s)
