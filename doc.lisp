@@ -28201,18 +28201,19 @@ Subtopics
   [type-prescription] rule for the function.  See
   [type-prescription-debugging] for relevant discussion.
 
-  The following example illustrates all of the available declarations
-  and most hint keywords, but is completely nonsensical.  For
-  documentation, see [xargs] and see [hints].
+  The following example illustrates all of the available declarations,
+  but it is completely nonsensical and it shows only a few of the
+  many :xargs keywords.  See [xargs] for a complete list of :xargs
+  keywords; also see [hints].
 
     (defun example (x y z a b c i j)
       (declare (ignore a b c)
+               (ignorable x y)
+               (irrelevant c)
                (type integer i j)
+               (optimize (safety 3))
                (xargs :guard (symbolp x)
-                      :loop$-recursion t
                       :measure (- i j)
-                      :ruler-extenders :basic
-                      :well-founded-relation my-wfr
                       :hints ((\"Goal\"
                                :do-not-induct t
                                :do-not '(generalize fertilize)
@@ -28233,10 +28234,7 @@ Subtopics
                                      :use ((:instance assoc-of-append
                                                       (x a) (y b) (z c)))))
                       :mode :logic
-                      :normalize nil
                       :verify-guards nil
-                      :non-executable t
-                      :otf-flg t ; the default
                       :type-prescription (natp (example x y z a b c i j))))
       (example-body x y z i j))
 
@@ -152410,7 +152408,7 @@ Subtopics
                     :mode :logic
                     :non-executable t
                     :normalize nil
-                    :otf-flg t
+                    :otf-flg t ; the default for defun
                     :ruler-extenders :basic
                     :split-types t
                     :stobjs ($s)
