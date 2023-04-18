@@ -99168,6 +99168,10 @@ Heuristic and Efficiency Improvements
   between two terms that are both known (via their [type-set]s) to be
   non-numeric.
 
+  The utility [set-cbd] is more efficient when setting to the current
+  [cbd], including the common case of calls to set-cbd by [ld] and
+  (hence) [wormhole].
+
 
 Bug Fixes
 
