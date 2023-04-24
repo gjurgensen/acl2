@@ -25049,19 +25049,20 @@ subtree of X with T, without duplication.</p>
  @(see type-prescription) rule for the function.  See @(see
  type-prescription-debugging) for relevant discussion.</p>
 
- <p>The following example illustrates all of the available declarations and
- most hint keywords, but is completely nonsensical.  For documentation, see
- @(see xargs) and see @(see hints).</p>
+ <p>The following example illustrates all of the available declarations, but it
+ is completely nonsensical and it shows only a few of the many @(':xargs')
+ keywords.  See @(see xargs) for a complete list of @(':xargs') keywords; also
+ see @(see hints).</p>
 
  @({
   (defun example (x y z a b c i j)
     (declare (ignore a b c)
+             (ignorable x y)
+             (irrelevant c)
              (type integer i j)
+             (optimize (safety 3))
              (xargs :guard (symbolp x)
-                    :loop$-recursion t
                     :measure (- i j)
-                    :ruler-extenders :basic
-                    :well-founded-relation my-wfr
                     :hints ((\"Goal\"
                              :do-not-induct t
                              :do-not '(generalize fertilize)
@@ -25082,10 +25083,7 @@ subtree of X with T, without duplication.</p>
                                    :use ((:instance assoc-of-append
                                                     (x a) (y b) (z c)))))
                     :mode :logic
-                    :normalize nil
                     :verify-guards nil
-                    :non-executable t
-                    :otf-flg t ; the default
                     :type-prescription (natp (example x y z a b c i j))))
     (example-body x y z i j))
  })")
@@ -54747,13 +54745,14 @@ tables in the current Hons Space."
  <p>To redirect output to a file, see @(see output-to-file).</p>
 
  <p>ACL2 supports input and output facilities equivalent to a subset of those
- found in Common Lisp.  ACL2 does not support random access to files or
- bidirectional streams.  In Common Lisp, input and output are to or from
- objects of type @('stream').  In ACL2, input and output are to or from objects
- called ``channels,'' which are actually symbols.  Although a channel is a
- symbol, one may think of it intuitively as corresponding to a Common Lisp
- stream.  Channels are in one of two ACL2 packages, @('\"ACL2-INPUT-CHANNEL\"')
- and @('\"ACL2-OUTPUT-CHANNEL\"').  When one ``opens'' a file one gets back a
+ found in Common Lisp.  ACL2 does not support random access to files (with one
+ exception: see @(see read-file-into-string)) or bidirectional streams.  In
+ Common Lisp, input and output are to or from objects of type @('stream').  In
+ ACL2, input and output are to or from objects called ``channels,'' which are
+ actually symbols.  Although a channel is a symbol, one may think of it
+ intuitively as corresponding to a Common Lisp stream.  Channels are in one of
+ two ACL2 packages, @('\"ACL2-INPUT-CHANNEL\"') and
+ @('\"ACL2-OUTPUT-CHANNEL\"').  When one ``opens'' a file one gets back a
  channel whose @(tsee symbol-name) is the file name passed to ``open,''
  postfixed with @('-n'), where @('n') is a counter that is incremented every
  time an open or close occurs.</p>
@@ -55887,6 +55886,7 @@ tables in the current Hons Space."
                                   ;   or (:exit N)
      :ld-query-control-alist ...  ; alist supplying default responses
      :ld-verbose         ...)     ; nil or t
+     :ld-always-skip-top-level-locals      ; nil or t
      :ld-user-stobjs-modified-warning ...) ; nil, t, or :same
 
  </code>
@@ -56137,7 +56137,7 @@ tables in the current Hons Space."
   :long "<p>@('Ld-always-skip-top-level-locals') is an @(tsee ld) special (see
  @(see ld)).  The accessor is @('(ld-always-skip-top-level-locals state)') and
  the updater is @('(set-ld-always-skip-top-level-locals val state)').  The
- value of @('ld-always-skip-top-level-locals') must be either @('nil'), or
+ value of @('ld-always-skip-top-level-locals') must be either @('nil') or
  @('t').  The initial value of @('ld-always-skip-top-level-locals') is
  @('nil').</p>
 
@@ -68709,7 +68709,7 @@ it."
            :recursive    t/nil        ; optional (default t)
            :stats        t/nil        ; optional (default t (unless :invoke))
            :total        ; see :DOC memoize-partial
-           :verbose      t/nil        ; optional (default t)
+           :verbose      t/nil        ; optional (default nil)
            )
  })
 
@@ -68870,7 +68870,9 @@ it."
  @('\"-COMMUTATIVE\"') to the @(tsee symbol-name) of @('fn').  If the proof
  attempt fails, then you may want first to prove the lemma yourself with
  appropriate hints and perhaps supporting lemmas, and then supply the name of
- that lemma as the value of @(':commutative').</p>
+ that lemma as the value of @(':commutative').  Note that because most output
+ is inhibited by default, you might wish to supply keyword argument @(':verbose
+ t') if the event fails.</p>
 
  <p>If @(':commutative') is supplied, and a non-commutative condition is
  provided by @(':condition') or @(':condition-fn'), then although the results
@@ -68948,7 +68950,6 @@ it."
  [[ .. output omitted .. ]]
   FIB
  ACL2 !>(memoize 'fib :ideal-okp t)
- [[ .. output omitted .. ]]
   FIB
  ACL2 !>(time$ (fib 38)) ; slow: uses only executable-counterpart
 
@@ -68982,7 +68983,6 @@ it."
  [[ .. output omitted .. ]]
   FIB-LOGIC-WRAPPER
  ACL2 !>(memoize 'fib-logic-wrapper)
- [[ .. output omitted .. ]]
   FIB-LOGIC-WRAPPER
  ACL2 !>(time$ (fib-logic-wrapper 38)) ; slow; no fib results are stored
 
@@ -69041,16 +69041,20 @@ it."
  if parameter @(':ideal-okp') is supplied, the @(tsee acl2-defaults-table)
  value is ignored.</p>
 
- <p>If @(':verbose') is supplied, it should either be @('nil'), which will
- inhibit proof, event, and @(see summary) output (see @(see with-output)), or
- else @('t') (the default), which does not inhibit output.  If the output
- baffles you, try</p>
+ <p>The value of @(':verbose') is @('nil') by default, which avoids output that
+ is typically distracting.  Otherwise @('verbose') should be @('t').  We can
+ see the types of output that are inhibited by default by using @(':')@(tsee
+ trans1) as follows follows (most output elided here); see @(see
+ with-output).</p>
 
  @({
-  :trans1 (memoize ...)
+ ACL2 !>:trans1 (memoize 'nth :verbose nil)
+  (WITH-OUTPUT
+      :OFF (SUMMARY PROVE EVENT)
+      :GAG-MODE NIL
+      ...
+ ACL2 !>
  })
-
- <p>to see the single-step macroexpansion of your @('memoize') call.</p>
 
  <p>The default for @(':forget') is @('nil').  If @(':forget') is supplied, and
  not @('nil'), then it must be @('t'), which causes all memoization done for a
@@ -101767,6 +101771,20 @@ it."
 ; summary string, "Evaluation"; there may be others as well, as we probably
 ; won't track all summary strings that have been added.
 
+; Added a comment to the definition of record-macros, discussing an experiment
+; to avoid the use of defabbrev when the cheap flag is nil.
+
+; As noted in a release note, state global variables inhibit-output-lst,
+; inhibited-summary-types, and ld-level are now untouchable.
+; Inhibit-output-lst-stack is not untouchable (that would have caused problems
+; for the implementation of with-output), but pop-inhibit-output-lst-stack now
+; protects against bad settings of that variable.  Related changes include
+; the following.
+; - Removed "Unexpected error." from message for error-free-triple-to-state.
+; - Made defun-for-state work for macros that do not take state.
+; - Slightly simplified implementation of with-ubt! to avoid unnecessary
+;   binding of inhibit-output-lst.
+
   :parents (release-notes)
   :short "ACL2 Version  8.6 (xxx, 20xx) Notes"
   :long "<p>NOTE!  New users can ignore these release notes, because the @(see
@@ -101919,8 +101937,8 @@ it."
  that has been fixed.</p>
 
  @({
-   4. If either the old or new event is a @(tsee mutual-recursion) event, then
-      redundancy requires that both are @(tsee mutual-recursion) events
+   4. If either the old or new event is a mutual-recursion event, then
+      redundancy requires that both are mutual-recursion events
       that define the same set of function symbols.
  })
 
@@ -102054,7 +102072,7 @@ it."
  <p>The pretty-printer has been improved by a contribution from Stephen
  Westfold to support appropriate indentation, including more conventional
  pretty-printing for calls of common macros such as @(tsee defun) and @(tsee
- defmacro).  See @(see pp-special-syms); we thank Stephen also for supplying
+ defmacro).  See @(see ppr-special-syms); we thank Stephen also for supplying
  the substance of that documentation.  Thanks too to Stephen for suggesting
  several user-defined macros to be pretty-printed with this mechanism, which we
  have modified by adding suitable @(tsee table) events (e.g., for @(tsee
@@ -102069,6 +102087,42 @@ it."
  @('t-stack'), @('32-bit-integer-stack'), and @('list-all-package-names-lst'),
  as have some related built-in, undocumented definitions and theorems,
  including @('old-check-sum-obj') and supporting functions.</p>
+
+ <p>Improved @(tsee hide) calls in prover output from failed execution of @(see
+ warrant)s, by adding suitable notes about attachments or warrant functions not
+ being executable during proofs.  Thanks to Eric McCarthy for a remark that led
+ to this change.</p>
+
+ <p>State globals @('inhibit-output-lst'), @('inhibited-summary-types'), and
+ @('ld-level') are now @(see untouchable).  The macros @(tsee
+ set-inhibit-output-lst) and @(tsee set-inhibited-summary-types) still allow
+ you to modify the values of these variables.  Thanks to Peter Dillinger for
+ correspondence (years ago!) leading to these changes.</p>
+
+ <p>The macro @(tsee state-global-let*) no longer requires explicitly supplying
+ a setter for certain built-in @(see state) global variables.  See @(tsee
+ state-global-let*).</p>
+
+ <p>A proposed @(tsee defaxiom) @(see event) is no longer @(see redundant) with
+ an existing @(tsee defthm) event.  Before this change, the following book
+ could (perhaps unfortunately) be certified, even without @(tsee certify-book)
+ option @(':skip-proofs-okp t').</p>
+
+ @({
+ (in-package \"ACL2\")
+ (local (defthm foo (equal (car (cons x x)) x)))
+ (defaxiom foo (equal (car (cons x x)) x))
+ })
+
+ <p>The prover sometimes reduces a goal without hypotheses (technically
+ speaking, a one-element clause) to @('nil') using @(see type-set) reasoning.
+ This heuristic has not changed, but formerly there was no explanation given.
+ Now ACL2 reports the rules (of class @(':')@(tsee type-prescription)) that
+ were used.</p>
+
+ <p>The default for @(tsee memoize) keyword argument @(':verbose') has been
+ changed from @('t') to @('nil'), which (by default) eliminates noise from the
+ output.</p>
 
  <h3>New Features</h3>
 
@@ -102174,6 +102228,10 @@ it."
  in a comment in the definition of function @('stobjs-in-out') in the ACL2
  sources.</p>
 
+ <p>An advanced feature, @(see with-brr-data), is available for collecting the
+ same information as @(see break-rewrite), but non-interactively.  Thanks to
+ Eric Smith for requesting such a feature.</p>
+
  <h3>Heuristic and Efficiency Improvements</h3>
 
  <p>Added a &ldquo;desperation heuristic&rdquo; to compute a stronger context,
@@ -102202,6 +102260,10 @@ it."
  <p>Sped up macroexpansion for several common macros, with roughly a 2% to 3%
  speedup observed for including several large books during development of this
  change.</p>
+
+ <p>Tweaked @(see linear-arithmetic) to avoid consideration of an equality
+ between two terms that are both known (via their @(see type-set)s) to be
+ non-numeric.</p>
 
  <h3>Bug Fixes</h3>
 
@@ -102317,7 +102379,7 @@ it."
 
  <li>For a form @('(loop$ for tail on lst ...)'), the target term, @('lst'), no
  longer needs to satisfy @(tsee true-listp).  For example, the form @('(loop$
- for tail on '(a b . c) collect tail) no longer causes a @(see guard)
+ for tail on '(a b . c) collect tail)') no longer causes a @(see guard)
  violation.</li>
 
  <li>Run-time @(see guard)-checking for an expression @('(loop$ for tail on lst
@@ -106241,26 +106303,26 @@ arithmetic) for libraries of @(see books) for arithmetic reasoning.</p>")
  theorem prover, use your browser's <b>Back Button</b> now to @(see
  introduction-to-key-checkpoints).</p>")
 
-(defxdoc pp-special-syms
+(defxdoc ppr-special-syms
   :parents (io)
   :short "A @(see table) to control indentation for pretty-printing"
   :long "<p>ACL2 output is generally pretty-printed: that is, spacing and
  indentation are controlled to enhance readability and aesthetics of the
  output.  Indentation may be controlled by using the table,
- @('pp-special-syms') as described below.  We thank Stephen Westfold for
- enhancing the pretty-printer with support for @('pp-special-syms').</p>
+ @('ppr-special-syms') as described below.  We thank Stephen Westfold for
+ enhancing the pretty-printer with support for @('ppr-special-syms').</p>
 
- <p>The initial value of the @('pp-special-syms') table is given by the
- constant @('*pp-special-syms*') as follows.  It associates each key, a symbol,
+ <p>The initial value of the @('ppr-special-syms') table is given by the
+ constant @('*ppr-special-syms*') as follows.  It associates each key, a symbol,
  with a corresponding <i>special-term-num</i> as discussed below.</p>
 
- @(def *pp-special-syms*)
+ @(def *ppr-special-syms*)
 
- <p>The @('pp-special-syms') table is extended for some common macros in the
+ <p>The @('ppr-special-syms') table is extended for some common macros in the
  files where they are defined, for example for @(tsee define) and @(tsee
  b*).</p>
 
- <p>For calls of special forms and macros in the @('pp-special-syms') table,
+ <p>For calls of special forms and macros in the @('ppr-special-syms') table,
  their bodies are indented by 2 rather than in the usual default manner.  To
  support this we allow a <i>special-term-num</i> to be associated with a
  symbol.  Arguments of such symbols in the function position beyond the
@@ -118552,15 +118614,16 @@ work on <tt>(q x)</tt>.</p>
 
  <p>A @(tsee defaxiom) or @(tsee defthm) event is redundant if there is already
  an axiom or theorem of the given name and the two @(see events) are
- syntactically identical.  But there is the following more generous criterion:
- both the formula (after macroexpansion) and the @(see rule-classes) (after
- translation and certain ``truncation'') are syntactically identical.  This
- ``truncation'' involves removing the @(':HINTS') and @(':INSTRUCTIONS') fields
- from a rule-class, and also removing the @(':COROLLARY') field when it
- specifies the same term as the event.  Note that a @(tsee defaxiom) can be
- redundant with a @(tsee defthm) and vice-versa.  (Remark for system hackers:
- @('defthm')/@('defaxiom') redundancy is implemented in ACL2 source function,
- @('redundant-theoremp').)</p>
+ syntactically identical.  But there is the following more generous criterion,
+ which applies unless the older event is a @('defthm') event and the newer
+ event is a @('defaxiom') event: both the formula (after macroexpansion) and
+ the @(see rule-classes) (after translation and certain ``truncation'') are
+ syntactically identical.  This ``truncation'' involves removing the
+ @(':HINTS') and @(':INSTRUCTIONS') fields from a rule-class, and also removing
+ the @(':COROLLARY') field when it specifies the same term as the event.  Note
+ that a @(tsee defthm) can be redundant with a @(tsee defaxiom) but not
+ vice-versa.  (Remark for system hackers: @('defthm')/@('defaxiom') redundancy
+ is implemented in ACL2 source function, @('redundant-theoremp').)</p>
 
  <p>A @(tsee defconst) is redundant if the name is already defined either with
  a syntactically identical @('defconst') event or one that defines it to have
@@ -131472,31 +131535,49 @@ work on <tt>(q x)</tt>.</p>
  <p>where: each @('vari') is a variable; each @('formi') is an expression whose
  value is a single ordinary object (i.e. not multiple values, and not @(see
  state) or any other @(see stobj)); @('set-vari'), if supplied, is a function
- with @(see signature) @('((set-vari * state) => state)'); and @('body') is an
- expression that evaluates to an @(see error-triple).  Each @('formi') is
- evaluated in order, starting with @('form1'), and with each such binding the
- state global variable @('vari') is bound to the value of @('formi'),
- sequentially in the style of @(tsee let*).  More precisely, then meaning of
- this form is to set (in order) the global values of the indicated @(see state)
- global variables @('vari') to the values of @('formi') using @(tsee
- f-put-global), execute @('body'), restore the @('vari') to their previous
- values (but see the discussion of setters below), and return the triple
- produced by body (with its state as modified by the restoration).  The
- restoration is guaranteed even in the face of aborts.  The ``bound'' variables
- may initially be unbound in state and restoration means to make them unbound
- again.</p>
+ or macro such that @('(set-vari _ state)') returns @(tsee state); and
+ @('body') is an expression that evaluates to an @(see error-triple).  Each
+ @('formi') is evaluated in order, starting with @('form1'), and with each such
+ binding the state global variable @('vari') is bound to the value of
+ @('formi'), sequentially in the style of @(tsee let*).  More precisely, the
+ meaning of this form is to perform the following actions, in order.</p>
 
- <p>Still referring to the General Form above, let @('old-vali') be the value
- of state global variable @('vari') at the time @('vari') is about to be
- assigned the value of @('formi').  If @('set-vari') is not supplied, then as
- suggested above, the following form is evaluated at the conclusion of the
- evaluation of the @('state-global-let*') form, whether or not an error has
- occurred: @('(f-put-global 'vari 'old-vali state)').  However, if
- @('set-vari') is supplied, it is a function symbol that we may call a
- &ldquo;setter&rdquo;, and the form evaluated will instead be @('(set-vari
- 'old-vali state)').  This capability is particularly useful if @('vari') is
- untouchable (see @(see push-untouchable)), since the above call of @(tsee
- f-put-global) is illegal.</p>
+ <ol>
+
+ <li>Set (in order) the global values of the indicated @(see state) global
+ variables @('vari') to the values of @('formi').  Exception: This is skipped
+ when @('vari') is a built-in state global and @('formi') is @('(f-get-global
+ 'vari state)').</li>
+
+ <li>Execute @('body').</li>
+
+ <li>Restore the @('vari') to their previous values.</li>
+
+ <li>Return the @(see error-triple) produced by @('body'), where @(tsee state)
+ reflects the modifications of the preceding step.</li>
+
+ </ol>
+
+ <p>The restoration is guaranteed even in the face of aborts.  The ``bound''
+ variables may initially be unbound in state and restoration means to make them
+ unbound again.</p>
+
+ <p>Still referring to the General Form above, we next discuss how the values
+ are set and restored.  Let @('old-vali') be the value of state global variable
+ @('vari') at the time @('vari') is about to be assigned the value of
+ @('formi').  We say that a &ldquo;setter is supplied&rdquo; for @('vari') if
+ @('set-vari') is supplied, either explicitly as in the General Form above, or
+ implicitly by being associated with @('vari') in the value of the constant,
+ @('*state-global-let*-untouchable-alist*')
+ (whose definition appears at the end of this topic).  If no setter is supplied
+ then @('vari') is set or restored to a value @('<val>') by evaluating
+ @('(f-put-global 'vari <val> state)').  However, if a setter @('set-vari') is
+ supplied, then the form evaluated will instead be @('(set-vari <val> state)').
+ Having a setter supplied is particularly useful if @('vari') is @(see
+ untouchable), since the call above of @(tsee f-put-global) is illegal.
+ However, the use of @('*state-global-let*-untouchable-alist*') (mentioned
+ above) avoids the need for supplying @('set-vari') explicitly for certain
+ built-in @(see untouchable) state global variables, @('vari').</p>
 
  <p>Note that the scope of the bindings of a @('state-global-let*') form is the
  body of that form.  This may seem obvious, but to drive the point home, let's
@@ -131520,14 +131601,19 @@ work on <tt>(q x)</tt>.</p>
   ACL2 !>(state-global-let* ((print-base 16 set-print-base)
                              (print-radix t set-print-radix))
                             (pprogn (fms \"~x0~%\"
-                                         (list (cons #0 10))
+                                         (list (cons #\\0 10))
                                          *standard-co* state nil)
                                     (mv nil 10 state)))
 
   #xA
    10
   ACL2 !>
- })")
+ })
+
+ <p>Finally, as promised above, here is the definition of the constant that
+ maps certain built-in untouchable variables to setters.</p>
+
+ @(def *state-global-let*-untouchable-alist*)")
 
 (defxdoc stating-and-proving-lemmas-about-loop$s
   :parents (loop$)
@@ -151101,6 +151187,119 @@ introduction-to-the-tau-system) for more information about Tau.</dd>
  Linux and provides Emacs.  Updated ACL2 binaries have been successfully
  installed in such an environment.</p>")
 
+(defxdoc with-brr-data
+  :parents (break-rewrite)
+  :short "Collecting @(see break-rewrite) information"
+  :long "<p>Warning: This topic provides only minimal documentation of a
+ feature that we expect will be used only by advanced, system-level ACL2
+ programmers.</p>
+
+ @({
+ General Forms:
+ (with-brr-data form)     ; Collect break-rewrite data for form.
+ (with-brr-data form nil) ; Same as above
+ (with-brr-data form t)   ; Collect and return break-rewrite data for form.
+ })
+
+ <p>where @('form') returns an @(see error-triple), @('(mv erp val state)').
+ That error triple is returned by @('(with-brr-data form)').  But for
+ @('(with-brr-data form t)'), then @('(mv erp x state)') is returned where
+ @('x') is a list of @('brr-data') records as described below, each
+ representing a top-level entry and corresponding exit from @(see
+ break-rewrite) that resulted in a failure.  Either way, that list of records
+ is available is available as the value component of the error triple returned
+ by @('(brr-data-lst state)'), until the next time that either a call of
+ @('with-brr-data') or the form @('(clear-brr-data-lst)') is evaluated.</p>
+
+ @({
+ Example Forms:
+
+ ; Collect break-rewrite data when attempting the indicated proof.
+ (with-brr-data (thm (equal (append x y) (append y x))))
+
+ ; Unlike the form above, actually return the data.
+ (with-brr-data (thm (equal (append x y) (append y x)))
+                t)
+ })
+
+ <p>Each record in the list described above &mdash; that is, from
+ @('(brr-data-lst state)') &mdash; has following data type (also see @(see
+ defrec)), which is actually a recursive data type definition as described
+ below.</p>
+
+ @({
+ (defrec brr-data
+   (pre post . completed)
+   nil)
+ })
+
+ <p>In each such record, the @(':pre') and @(':post') fields are respectively a
+ @('brr-data-1') record and a @('brr-data-2') record, each of which records
+ information upon entering or exiting a break (respectively).</p>
+
+ @({
+ (defrec brr-data-1
+   (((lemma . target) . (unify-subst . type-alist))
+    .
+    ((pot-list . ancestors) . (rcnst initial-ttree . gstack)))
+   nil)
+
+ (defrec brr-data-2
+   ((failure-reason unify-subst . brr-result)
+    .
+    (rcnst final-ttree . gstack))
+   nil)
+ })
+
+ <p>The @(':completed') field of a @('brr-data') record is a list of
+ @('brr-data') records, corresponding to the rewrite breaks that are one level
+ lower.</p>
+
+ <p>You may notice that this collection of break-rewrite data slows down the
+ theorem prover.  The slowdown will probably be modest, perhaps adding an extra
+ 25% or so to the time.</p>
+
+ <p>We have seen above that the use of @('with-brr-data') activates the
+ collection of break-rewrite data.  Collection may also be activated by
+ assigning the @(see state) global, @('gstackp'), to the value @(':brr-data').
+ (See @(see programming-with-state) for relevant programming background.)  You
+ can use @(':')@(tsee trans1) on a @('with-brr-data') call to see how
+ @('with-brr-data') sets @('gstackp').  Note that setting (or binding)
+ @('gstackp') to @(':brr-data') has the effect of @(':')@(tsee brr)@(' t') but
+ enhanced with collection of @('brr-data') records.  When @('gstackp') has
+ value @(':brr-data'), @(':brr t') is treated as a no-op and @(':brr nil') is
+ an error, to avoid inadvertently turning off @('brr-data') record
+ collection.</p>
+
+ <p>Future documentation may be written as needed.  For now, the programmer
+ using this utility may wish to look at the ACL2 source code and the @(see
+ break-rewrite) documentation to understand the fields of the @('brr-data-1')
+ and @('brr-data-2') records.  The form @('(brr-data-listp t lst)') recognizes
+ a list of well-formed @('brr-data') records.  The @(':failure-reason') field
+ of the @('brr-data-2') record may be of particular interest; see ACL2 source
+ function @('tilde-@-failure-reason-phrase1') for the forms that this field may
+ take.</p>
+
+ <p>Here is a handy way to store the current list of @('brr-data') records into
+ a state global, in this case, @('brr-data-lst') (but you can choose your own
+ state global name).  After collecting data, evaluating this definition, and
+ then evaluating the form @('(set-brr-data-lst state)'), the form
+ @('(brr-data-listp t (@ brr-data-lst))') should return @('t').</p>
+
+ @({
+ (defun set-brr-data-lst (state)
+   (declare (xargs :stobjs state))
+   (er-let* ((x (brr-data-lst state)))
+     (cond ((eq x :none)
+            (value (er hard? 'set-brr-data-lst
+                       \"There is no brr-data available.\")))
+           (t
+            (pprogn (f-put-global 'brr-data-lst x state)
+                    (value (list '=
+                                 '(length (@ brr-data-lst))
+                                 (len x))))))))
+ })")
+
 (defxdoc with-cbd
   :parents (books-reference)
   :short "To set the connected book directory"
@@ -154033,7 +154232,7 @@ created from the original fast alist during @('form') must be manually freed."
                   :mode :logic
                   :non-executable t
                   :normalize nil
-                  :otf-flg t
+                  :otf-flg t ; the default for defun
                   :ruler-extenders :basic
                   :split-types t
                   :stobjs ($s)
